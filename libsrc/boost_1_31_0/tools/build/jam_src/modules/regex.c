@@ -16,15 +16,15 @@ rule transform ( list * : pattern )
         if $(m)
         {
             result += $(m[1]) ;
-        }        
+        }
     }
     return $(result) ;
 }
 */
 LIST *regex_transform( PARSE *parse, FRAME *frame )
 {
-    LIST* l = lol_get( frame->args, 0 );    
-    LIST* pattern = lol_get( frame->args, 1 );    
+    LIST* l = lol_get( frame->args, 0 );
+    LIST* pattern = lol_get( frame->args, 1 );
     LIST* result = 0;
 
     string buf[1];
@@ -42,14 +42,14 @@ LIST *regex_transform( PARSE *parse, FRAME *frame )
                 if (re->startp[1])
                 {
                     string_append_range( buf, re->startp[1], re->endp[1] );
-                    result = list_new( result, newstr( buf->value ) );                
+                    result = list_new( result, newstr( buf->value ) );
                     string_truncate( buf, 0 );
                 }
             }
         }
         string_free( buf );
     }
-    
+
     return result;
 }
 

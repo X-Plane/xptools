@@ -48,7 +48,7 @@ double
 to_double(double d)
 { return d; }
 
-inline 
+inline
 std::pair<double,double>
 to_interval(double d)
 { return std::make_pair(d,d);}

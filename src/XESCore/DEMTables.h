@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -47,7 +47,7 @@ typedef map<float, DEMColorBand_t>	ColorBandMap;
 typedef hash_map<int, ColorBandMap>	ColorBandTable;
 extern ColorBandTable				gColorBands;
 
-extern set<int>						gEnumDEMs;	
+extern set<int>						gEnumDEMs;
 
 enum {
 	proj_Down,
@@ -88,12 +88,12 @@ struct	NaturalTerrainInfo_t {
 	float			urban_trans_min;
 	float			urban_trans_max;
 	int				urban_square;
-	
+
 	float			lat_min;
 	float			lat_max;
 	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
 	int				related;
-	
+
 	// DEFS
 	int				name;
 	int				layer;
@@ -109,16 +109,16 @@ struct	NaturalTerrainInfo_t {
 //	float			comp_res;
 //	int				base_alpha_invert;
 //	int				comp_alpha_invert;
-	int				proj_angle;	
+	int				proj_angle;
 	string			border_tex;
 	int				custom_ter;
-	
+
 	// Forests!
 	int				forest_type;
 //	float			forest_ratio;
-	
+
 	float			map_rgb[3];
-};	
+};
 typedef vector<NaturalTerrainInfo_t>	NaturalTerrainTable;			// Natural terrain rules ordered by rule priority
 //typedef multimap<int, int>				NaturalTerrainLandUseIndex;		// Index based on land use ranges
 typedef map<int, int>					NaturalTerrainIndex;			// Index from .ter enum to line info!
@@ -128,9 +128,9 @@ extern	NaturalTerrainTable				gNaturalTerrainTable;
 extern	NaturalTerrainIndex				gNaturalTerrainIndex;
 int		FindNaturalTerrain(
 				int		terrain,
-				int 	landuse, 
-				int 	climate, 
-				float 	elevation, 
+				int 	landuse,
+				int 	climate,
+				float 	elevation,
 				float 	slope,
 				float	slope_tri,
 				float	temp,
@@ -157,7 +157,7 @@ int		FindNaturalTerrain(
 //struct	HashTerrianTuple {
 //	std::size_t operator()(const TerrainTypeTuple& key) const {
 //		return key.first ^ (key.second << 13); }
-//};	
+//};
 //typedef hash_map<TerrainTypeTuple, int, HashTerrianTuple>	TerrainPromoteTable;
 //extern	TerrainPromoteTable									gTerrainPromoteTable;
 
@@ -213,7 +213,7 @@ typedef hash_map<int, int> 	LandUseTransTable;
 extern LandUseTransTable	gLandUseTransTable;
 
 // Given two specific terrains, equivalent to priority(lsh) < priority(rhs).
-// However please note that there is no equality of priority, e.g. 
+// However please note that there is no equality of priority, e.g.
 // priority(a) == priorty((b) -> a == b
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if lhs is lower prio than rhs.  Lower prio is from lower layer or earlier rule if layers equal
 bool	IsForestType(int inType);								// Returns true if enum is for a forest
@@ -259,20 +259,20 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 	// Fast case - if these are equal, don't even bother with a lookup, we know
 	// that they can't be lower/higher prioritY!
 	if (lhs == rhs) return false;
-	
+
 	if (lhs == terrain_Water) return true;
 	if (rhs == terrain_Water) return false;
 	lhs = gNaturalTerrainIndex[lhs];
 	rhs = gNaturalTerrainIndex[rhs];
-	
+
 	int lhs_layer = gNaturalTerrainTable[lhs].layer;
 	int rhs_layer = gNaturalTerrainTable[rhs].layer;
-	
+
 	// Lookups - if we have a layer difference, that goes.
 	if (lhs_layer < rhs_layer) return true;
 	if (lhs_layer > rhs_layer) return false;
-	
-	// Tie breaker - if the terrains are diferent but the layers are the same, 
+
+	// Tie breaker - if the terrains are diferent but the layers are the same,
 	// we have to enforce a layer difference somehow or else we will get haywire
 	// results when we try to sort by layer priority.  So simply use their
 	// index numbers as priority.  Better than nothing.
@@ -283,7 +283,7 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 inline bool IncompatibleProjection(int lhs, int rhs)
 {
 	if (lhs == rhs) return false;
-	return (gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].proj_angle != 
+	return (gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].proj_angle !=
 			gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].proj_angle);
 }
 
@@ -304,9 +304,9 @@ inline int		OtherVariant(int terrain)
 	int me_idx = gNaturalTerrainIndex[terrain];
 	int base = gNaturalTerrainTable[me_idx].related;
 	if (base == -1) return terrain;
-	
+
 	if (base == me_idx) return gNaturalTerrainTable[base + 1 + rand() % 3].name;
-	
+
 	int vary = gNaturalTerrainTable[base + rand() % 4].name;
 	if (vary == terrain) 	return gNaturalTerrainTable[base].name;
 	else					return gNaturalTerrainTable[vary].name;

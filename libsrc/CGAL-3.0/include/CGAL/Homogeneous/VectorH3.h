@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_HOMOGENEOUS_VECTOR_3_H
 #define CGAL_HOMOGENEOUS_VECTOR_3_H
 
@@ -214,10 +214,10 @@ typename VectorH3<R>::FT
 VectorH3<R>::squared_length() const
 {
   typedef typename R::FT FT;
-  return 
-    FT( CGAL_NTS square(hx()) + 
-	CGAL_NTS square(hy()) + 
-	CGAL_NTS square(hz()) ) / 
+  return
+    FT( CGAL_NTS square(hx()) +
+	CGAL_NTS square(hy()) +
+	CGAL_NTS square(hz()) ) /
     FT( CGAL_NTS square(hw()) );
 }
 

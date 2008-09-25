@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,27 +27,27 @@
 /*
 
 	NOTES ON THE COORDINATE SYSTEM:
-	
+
 	As a scroller, the pane's total bounds are used as the visible rect and the
 	logical rect are found relative to it.  Internally the scroll offset deltas
 	are maintained and the width is found from the geometry host.
-	
+
 	But the geometry provider gets to provide cell boundaries in a 0,0-origin system.
 	This is done for simplicity in implementing the geometry provider; the pane classes
 	translate between drawing coordinates and these zero-based cell-geometry coordinates.
-	
+
 	Drawing and content classes receive cell bounds in drawing coordinates so that they
 	can be passed directly to drawing routines.
-	
+
 	PARTS OF THE TABLE SYSTEM:
-	
+
 	The GUI_Table, GUI_Header, and GUI_Sider make the 3 panes that make a table.
 	Tables are scrollercontents and can be embedded in scroller panes.  Headers and
 	siders take a table as a link and will internally scroll to stay in lock-step with
 	the main table.
-	
-	Four interfaces give the tables their "brains".  Content plugins do drawing and 
-	mouse interaction for the table and its header/sider.  The geometry interface 
+
+	Four interfaces give the tables their "brains".  Content plugins do drawing and
+	mouse interaction for the table and its header/sider.  The geometry interface
 	defines the total number of rows and the variable grid layout.
 
 */
@@ -70,7 +70,7 @@ public:
 	// Getting geometry
 	virtual	int			GetColCount(void)=0;
 	virtual	int			GetRowCount(void)=0;
-	
+
 	virtual	int			GetCellLeft (int n)=0;
 	virtual	int			GetCellRight(int n)=0;
 	virtual	int			GetCellWidth(int n)=0;
@@ -78,11 +78,11 @@ public:
 	virtual	int			GetCellBottom(int n)=0;
 	virtual	int			GetCellTop	 (int n)=0;
 	virtual	int			GetCellHeight(int n)=0;
-	
+
 	// Index
 	virtual	int			ColForX(int n)=0;
 	virtual	int			RowForY(int n)=0;
-	
+
 	// Setting geometry
 	virtual	bool		CanSetCellWidth (void) const=0;
 	virtual	bool		CanSetCellHeight(void) const=0;
@@ -149,14 +149,14 @@ public:
 			void		SetContent(GUI_TableContent * inContent);
 			void		SizeShowAll(void);
 
-	virtual	void		Draw(GUI_GraphState * state);	
+	virtual	void		Draw(GUI_GraphState * state);
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
 	virtual	int			TrapNotify(int x, int y, int button);
 	virtual	int			GetCursor(int x, int y);
 	virtual	int			GetHelpTip(int x, int y, int tip_bounds[4], string& tip);
-	
+
 	virtual	GUI_DragOperation			DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	GUI_DragOperation			DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void						DragScroll	(int x, int y);
@@ -174,7 +174,7 @@ public:
 			int			GetScrollH(void);
 			int			GetScrollV(void);
 
-	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);	
+	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
@@ -188,7 +188,7 @@ private:
 			int		MouseToCellX(int x);
 			int		MouseToCellY(int y);
 			int		CalcVisibleCells(int bounds[4]);
-			
+
 			void	AlignContents(void);
 
 			GUI_TableGeometry *		mGeometry;
@@ -200,12 +200,12 @@ private:
 			int						mLocked;
 			int						mDragX;
 			int						mDragY;
-		
+
 			int						mExtendSide;
 
 			bool					mAligned;
-		
-		
+
+
 };
 
 class	GUI_Header : public GUI_Pane, public GUI_Listener {
@@ -218,7 +218,7 @@ public:
 			void		SetHeader(GUI_TableHeader * inHeader);
 			void		SetTable(GUI_Table * inTable);
 
-	virtual	void		Draw(GUI_GraphState * state);	
+	virtual	void		Draw(GUI_GraphState * state);
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
@@ -234,7 +234,7 @@ private:
 			int		MouseToCellX(int x);
 			int		CalcVisibleCells(int bounds[2]);
 			int		CalcCellBounds(int x, int bounds[4]);
-	
+
 			GUI_TableGeometry *		mGeometry;
 			GUI_TableHeader *		mHeader;
 			GUI_Table *				mTable;
@@ -254,7 +254,7 @@ public:
 			void		SetSide(GUI_TableSide * inSide);
 			void		SetTable(GUI_Table * inTable);
 
-	virtual	void		Draw(GUI_GraphState * state);	
+	virtual	void		Draw(GUI_GraphState * state);
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);

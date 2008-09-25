@@ -1,12 +1,12 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: MemoryPool.h
  * Synopsis:
  *      a memory pool template class.
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
  *       Sylvain Pion <pion@cs.nyu.edu>
@@ -36,7 +36,7 @@ class MemoryPool {
 public:
   MemoryPool();
   ~MemoryPool();
-  
+
   // allocate a T element from the free list.
   void* allocate(size_t) {
     if (next == NULL)
@@ -44,7 +44,7 @@ public:
 
     MemoryPool<T> *head = next;
     next = head->next;
-    
+
     nCount --;
 
     return head;
@@ -56,14 +56,14 @@ public:
       return;
 
     MemoryPool<T> *head = static_cast<MemoryPool<T> *>(doomed);
-   
+
     head->next = next;
     next = head;
 
     nCount ++;
     //if (nCount % 2048 == 0) {
-    //  std::cout << nCount << " of " << typeid(T).name() 
-    //       << "(size=" << sizeof(T) << ")" << ", total=" 
+    //  std::cout << nCount << " of " << typeid(T).name()
+    //       << "(size=" << sizeof(T) << ")" << ", total="
     //       << (nCount>>10)*sizeof(T) << "KB" << std::endl;
     //  releaseFreeList(1024);
     //}
@@ -78,7 +78,7 @@ public:
 private:
   // next element on the free list.
   MemoryPool<T> *next;
-  
+
   // expand free list.
   void expandFreeList(int howMany = CORE_EXPANSION_SIZE);
 
@@ -106,7 +106,7 @@ MemoryPool<T>::~MemoryPool() {
 template<class T>
 void MemoryPool<T>::releaseFreeList(int howMany) {
   int i;
-  MemoryPool<T> *nextPtr = next;  
+  MemoryPool<T> *nextPtr = next;
   for (i=0; (nextPtr != NULL && i < howMany); i++) {
     nextPtr = next;
     next = nextPtr->next;
@@ -130,7 +130,7 @@ void MemoryPool<T>::expandFreeList(int howMany) {
 
   MemoryPool<T> *runner = reinterpret_cast<MemoryPool<T> *>(p);
   next = runner;
-  
+
   for (int i=0; i<howMany-1; i++) {
     p = ::new char[size];
     if (p == NULL)
@@ -141,7 +141,7 @@ void MemoryPool<T>::expandFreeList(int howMany) {
   }
 
   runner->next = NULL;
-  
+
   nCount += howMany;
 
   /* Below implementation will be faster, but if we use it, there is no way to

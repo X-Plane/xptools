@@ -21,10 +21,10 @@
 //	TextureNode::TextureNode
 ////////////////////////////////////////////////
 
-TextureNode::TextureNode() 
+TextureNode::TextureNode()
 {
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	// repeatS field
@@ -37,7 +37,7 @@ TextureNode::TextureNode()
 
 #ifdef SUPPORT_OPENGL
 	///////////////////////////
-	// Private Field 
+	// Private Field
 	///////////////////////////
 
 	// texture name field
@@ -57,7 +57,7 @@ TextureNode::TextureNode()
 //	TextureNode::~TextureNode
 ////////////////////////////////////////////////
 
-TextureNode::~TextureNode() 
+TextureNode::~TextureNode()
 {
 }
 
@@ -71,18 +71,18 @@ SFBool *TextureNode::getRepeatSField()
 		return repeatSField;
 	return (SFBool *)getField(repeatSFieldString);
 }
-	
-void TextureNode::setRepeatS(bool value) 
+
+void TextureNode::setRepeatS(bool value)
 {
 	getRepeatSField()->setValue(value);
 }
 
-void TextureNode::setRepeatS(int value) 
+void TextureNode::setRepeatS(int value)
 {
 	setRepeatS(value ? true : false);
 }
 
-bool TextureNode::getRepeatS() 
+bool TextureNode::getRepeatS()
 {
 	return getRepeatSField()->getValue();
 }
@@ -97,18 +97,18 @@ SFBool *TextureNode::getRepeatTField()
 		return repeatTField;
 	return (SFBool *)getField(repeatTFieldString);
 }
-	
-void TextureNode::setRepeatT(bool value) 
+
+void TextureNode::setRepeatT(bool value)
 {
 	getRepeatTField()->setValue(value);
 }
 
-void TextureNode::setRepeatT(int value) 
+void TextureNode::setRepeatT(int value)
 {
 	setRepeatT(value ? true : false);
 }
 
-bool TextureNode::getRepeatT() 
+bool TextureNode::getRepeatT()
 {
 	return getRepeatTField()->getValue();
 }
@@ -126,15 +126,15 @@ SFInt32 *TextureNode::getTextureNameField()
 	return (SFInt32 *)getPrivateField(textureNamePrivateFieldString);
 }
 
-void TextureNode::setTextureName(unsigned int n) 
+void TextureNode::setTextureName(unsigned int n)
 {
 	getTextureNameField()->setValue((int)n);
 }
 
-unsigned int TextureNode::getTextureName() 
+unsigned int TextureNode::getTextureName()
 {
 	return (unsigned int)getTextureNameField()->getValue();
-} 
+}
 
 #endif
 
@@ -151,15 +151,15 @@ SFBool *TextureNode::getHasTransparencyColorField()
 	return (SFBool *)getPrivateField(hasTransparencyColorPrivateFieldString);
 }
 
-void TextureNode::setHasTransparencyColor(bool value) 
+void TextureNode::setHasTransparencyColor(bool value)
 {
 	getHasTransparencyColorField()->setValue(value);
 }
 
-bool TextureNode::hasTransparencyColor() 
+bool TextureNode::hasTransparencyColor()
 {
 	return getHasTransparencyColorField()->getValue();
-} 
+}
 
 #endif
 
@@ -168,7 +168,7 @@ bool TextureNode::hasTransparencyColor()
 ////////////////////////////////////////////////
 
 #ifdef SUPPORT_OPENGL
-int GetOpenGLTextureSize(int size) 
+int GetOpenGLTextureSize(int size)
 {
 	int n = 1;
 	while ((1 << n) <= size)

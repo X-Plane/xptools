@@ -78,11 +78,11 @@ class Integer {
     // shift operations
     Integer  operator << ( unsigned long) const;
     Integer  operator >> ( unsigned long) const;
-    
+
     // shift assignment operations
     Integer&  operator <<= ( unsigned long);
     Integer&  operator >>= ( unsigned long);
-    
+
     // sign function
     int  sign( ) const;
 
@@ -368,7 +368,7 @@ operator >> ( unsigned long i) const
     return result;
 }
 
-    
+
 // shift assignment operations
 // ---------------------------
 

@@ -38,7 +38,7 @@ class Triangulation_line_face_circulator_2;
 
 template <class Tds>
 class Triangulation_ds_face_handle_2
-  : public Pointer<typename Tds::Face> 
+  : public Pointer<typename Tds::Face>
 {
 public:
   typedef Triangulation_ds_face_handle_2<Tds>          Face_handle;
@@ -63,7 +63,7 @@ public:
   Triangulation_ds_face_handle_2(const Face_iterator& fit)
     : Pointer_(&(*fit))
     {}
-  
+
   Triangulation_ds_face_handle_2(const Face_circulator& fc)
     : Pointer_(&(*fc))
     {}
@@ -79,7 +79,7 @@ public:
       ptr() = p ;
       return *this;
     }
-    
+
   Face_handle& operator=(const Face_handle& p)
     {
       ptr() = p.ptr();
@@ -89,7 +89,7 @@ public:
 
 template <class Tds>
 class Triangulation_ds_vertex_handle_2
-  : public Pointer<typename Tds::Vertex > 
+  : public Pointer<typename Tds::Vertex >
 {
 public:
   typedef Triangulation_ds_vertex_handle_2<Tds>     Vertex_handle;
@@ -97,7 +97,7 @@ public:
   typedef typename Tds::Vertex                      Vertex;
   typedef typename Tds::Vertex_iterator             Vertex_iterator;
   typedef typename Tds::Vertex_circulator           Vertex_circulator ;
-  
+
   Triangulation_ds_vertex_handle_2()
     : Pointer_(NULL)
     {}
@@ -113,23 +113,23 @@ public:
   Triangulation_ds_vertex_handle_2(const Vertex_iterator& vit)
     : Pointer_(&(*vit))
     {}
-  
+
   Triangulation_ds_vertex_handle_2(const Vertex_circulator& vc)
     : Pointer_(&(*vc))
     {}
-  
+
   Vertex_handle& operator=(Vertex* p)
     {
         ptr() = p ;
         return *this;
     }
-    
+
   Vertex_handle& operator=(const Vertex_handle& p)
     {
         ptr() = p.ptr();
         return *this;
     }
-  
+
  };
 
 CGAL_END_NAMESPACE

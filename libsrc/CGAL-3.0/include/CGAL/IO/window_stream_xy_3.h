@@ -19,7 +19,7 @@
 // $Revision: 1.5 $ $Date: 2003/10/21 12:25:50 $
 // $Name: current_submission $
 //
-// Author(s)     : Lutz Kettner 
+// Author(s)     : Lutz Kettner
 
 // Note: This file could be included multiple times. Thus, the
 // usual protection against multiple inclusion is not used.

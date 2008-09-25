@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -40,7 +40,7 @@ solid_bgnd_read(Lib3dsBackground *background, Lib3dsIo *io)
   Lib3dsChunk c;
   Lib3dsWord chunk;
   Lib3dsBool have_lin=LIB3DS_FALSE;
-          
+
   if (!lib3ds_chunk_read_start(&c, LIB3DS_SOLID_BGND, io)) {
     return(LIB3DS_FALSE);
   }
@@ -58,7 +58,7 @@ solid_bgnd_read(Lib3dsBackground *background, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -72,7 +72,7 @@ v_gradient_read(Lib3dsBackground *background, Lib3dsIo *io)
   int index[2];
   Lib3dsRgb col[2][3];
   int have_lin=0;
-  
+
 
   if (!lib3ds_chunk_read_start(&c, LIB3DS_V_GRADIENT, io)) {
     return(LIB3DS_FALSE);
@@ -120,7 +120,7 @@ lib3ds_background_read(Lib3dsBackground *background, Lib3dsIo *io)
   if (!lib3ds_chunk_read(&c, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   switch (c.chunk) {
     case LIB3DS_BIT_MAP:
       {
@@ -161,7 +161,7 @@ lib3ds_background_read(Lib3dsBackground *background, Lib3dsIo *io)
       }
       break;
   }
-  
+
   return(LIB3DS_TRUE);
 }
 
@@ -252,7 +252,7 @@ lib3ds_background_write(Lib3dsBackground *background, Lib3dsIo *io)
     c.size=6;
     lib3ds_chunk_write(&c,io);
   }
-  
+
   return(LIB3DS_TRUE);
 }
 

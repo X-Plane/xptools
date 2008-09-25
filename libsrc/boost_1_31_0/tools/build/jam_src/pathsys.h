@@ -5,7 +5,7 @@
  */
 
 /*
- * pathsys.h - PATHNAME struct 
+ * pathsys.h - PATHNAME struct
  */
 
 /*
@@ -13,7 +13,7 @@
  *
  * <grist> is salt to distinguish between targets that otherwise would
  * have the same name:  it never appears in the bound name of a target.
- * (member) is an archive member name: the syntax is arbitrary, but must 
+ * (member) is an archive member name: the syntax is arbitrary, but must
  * agree in path_parse(), path_build() and the Jambase.
  *
  * On VMS, we keep track of whether the original path was a directory

@@ -36,7 +36,7 @@ struct Compute_quotient {
 };
 
 CGAL_END_NAMESPACE
-  
+
 #endif
 
 // ===== EOF ==================================================================

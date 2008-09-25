@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,8 +34,8 @@ sql_db::sql_db(const char * in_filename)
 	}
 }
 
-sql_db::~sql_db() 
-{ 
+sql_db::~sql_db()
+{
 	int result = 	sqlite3_close(db);
 	DebugAssert(result == SQLITE_OK);
 }
@@ -91,13 +91,13 @@ sql_command::sql_command(sqlite3 * db, const char * cmd,const char * params)
 			if (*s == ',') ++s;
 		}
 	}
-	
+
 	param_index.resize(param_name.size());
-	
+
 	const char * tail;
 	int result = sqlite3_prepare_v2(db, cmd, -1, &stmt, &tail);
 	WED_ThrowOSErr(result);
-	
+
 	for (int n = 0; n < param_name.size(); ++n)
 	{
 		param_index[n] = sqlite3_bind_parameter_index(stmt, param_name[n].c_str());
@@ -117,8 +117,8 @@ void sql_command::begin(void)
 	DebugAssert(result == SQLITE_OK);
 }
 
-int sql_do(sqlite3 * db, const char * sql) 
+int sql_do(sqlite3 * db, const char * sql)
 {
-	sql_command c(db,sql, NULL); 
-	return c.simple_exec(); 
+	sql_command c(db,sql, NULL);
+	return c.simple_exec();
 }

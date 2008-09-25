@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -99,7 +99,7 @@ static void	sync_menu_checks()
 	for (vector<flag_menu_info>::iterator m = flag_menus.begin(); m != flag_menus.end(); ++m)
 	for (int i = 0; i < m->items.size(); ++i)
 	if (!m->items[i].item_name.empty())
-		XWin::CheckMenuItem(m->menu, i, m->items[i].enabled);		
+		XWin::CheckMenuItem(m->menu, i, m->items[i].enabled);
 }
 
 #if IBM
@@ -143,7 +143,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 	if(!IsConsoleApp(pipe_buf)) return true;
 #endif
 	sprintf(pipe_buf,"\"%s/%s\" --auto_config", ref,fileName);
-	FILE * fi = popen(pipe_buf, "r");		
+	FILE * fi = popen(pipe_buf, "r");
 	if (fi)
 	{
 		while(!feof(fi))
@@ -153,7 +153,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 			char	s2[512];
 			char	s3[512];
 			int		en;
-			
+
 			if(!fgets(line,sizeof(line),fi)) break;
 //			printf("%s\n",line);
 			if(sscanf(line,"CMD %s %s %[^\r\n]",s1,s2,s3)==3)
@@ -165,7 +165,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 				info->tool_name			= fileName;
 				conversions.push_back(info);
 				selected_conversions[info->input_extension] = info;
-			} 
+			}
 			else if (sscanf(line,"OPTIONS %[^\r\n]",s1)==1)
 			{
 				flag_menus.push_back(flag_menu_info());
@@ -247,13 +247,13 @@ void	grind_file(const char * inFileName)
 	{
 		string suffix(fname.substr(p));
 		string root(fname.substr(0,p));
-		
+
 		if (selected_conversions.find(suffix) == selected_conversions.end())
 			XGrinder_ShowMessage("Unable to convert file '%s' - no converter for %s files.",inFileName, suffix.c_str());
 		else {
 			conversion_info * c = selected_conversions[suffix];
 			string newname = root + c->output_extension;
-//			XGrinder_ShowMessage("Will use: %s with %s and %s", c->cmd_string.c_str(), fname.c_str(), newname.c_str());			
+//			XGrinder_ShowMessage("Will use: %s with %s and %s", c->cmd_string.c_str(), fname.c_str(), newname.c_str());
 			map<string,string>	sub_flags;
 			for(vector<flag_menu_info>::iterator m = flag_menus.begin(); m != flag_menus.end(); ++m)
 			for(vector<flag_item_info>::iterator i = m->items.begin(); i != m->items.end(); ++i)
@@ -262,7 +262,7 @@ void	grind_file(const char * inFileName)
 				if(i->enabled)
 				{
 					if (sub_flags.count(i->token) > 0)
-						sub_flags[i->token] += " ";					
+						sub_flags[i->token] += " ";
 					sub_flags[i->token] += i->flag;
 				} else if (!i->radio) {
 					sub_flags[i->token] = "";
@@ -273,7 +273,7 @@ void	grind_file(const char * inFileName)
 			sub_str(cmd_line,"OUTFILE", newname);
 			for(map<string,string>::iterator p = sub_flags.begin(); p != sub_flags.end(); ++p)
 				sub_str(cmd_line,p->first,p->second);
-			
+
 			spool_job(cmd_line.c_str());
 		}
 	} else
@@ -306,7 +306,7 @@ int	XGrinderMenuPick(xmenu menu, int item)
 			{
 				if (m->items[n].item_name.empty()) break;
 				m->items[n].enabled = 0;
-			}			
+			}
 			m->items[item].enabled = true;
 		} else
 			m->items[item].enabled = !m->items[item].enabled;
@@ -320,8 +320,8 @@ void	XGrindInit(string& t)
 {
 /*	char base[2048];
 	char resp[2048];
-	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());	
-	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());		
+	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
 	CFStringRef	res_path = CFURLCopyFileSystemPath(res_url, kCFURLPOSIXPathStyle);
 	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
 	CFStringGetCString(res_path,resp,sizeof(resp),kCFStringEncodingMacRoman);
@@ -340,7 +340,7 @@ void	XGrindInit(string& t)
 */
 	char	base[2048];
 	GetApplicationPath(base,sizeof(base));
-	
+
 	char * last_sep = base;
 	char * p = base;
 	while(*p)
@@ -350,11 +350,11 @@ void	XGrindInit(string& t)
 	}
 	*last_sep++=0;
 	g_me=last_sep;
-	
+
 	MF_GetDirectoryBulk(base, file_cb, base);
-	
+
 	// sort conversions
-	
+
 	// insert nulls at ext change
 	for (vector<conversion_info *>::iterator c = conversions.begin(); c != conversions.end(); ++c)
 	{
@@ -363,10 +363,10 @@ void	XGrindInit(string& t)
 		if (n != conversions.end() && *c != NULL && *n != NULL && (*n)->input_extension != (*c)->input_extension)
 			c = conversions.insert(n, NULL);
 	}
-	
+
 	// build conversion menu
 	const char ** items = new const char *[conversions.size()+1];
-	items[conversions.size()] = 0;	
+	items[conversions.size()] = 0;
 	for (int n = 0; n < conversions.size(); ++n)
 	{
 		char buf[256];
@@ -398,11 +398,11 @@ void	XGrindInit(string& t)
 			items[n] = "-";
 		else
 			items[n] = m->items[n].item_name.c_str();
-		
-		m->menu = XGrinder_AddMenu(m->title.c_str(), items);		
+
+		m->menu = XGrinder_AddMenu(m->title.c_str(), items);
 		delete [] items;
 	}
-	
+
 	sync_menu_checks();
 }
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -41,12 +41,12 @@ public:
 			void	LockPackage(const string& name);
 			void	UnlockPackage(const string& name);
 	virtual void	GetCellContent(
-						int							cell_x, 
-						int							cell_y, 
-						GUI_CellContent&			the_content);	
+						int							cell_x,
+						int							cell_y,
+						GUI_CellContent&			the_content);
 	virtual	void	GetEnumDictionary(
-						int							cell_x, 
-						int							cell_y, 
+						int							cell_x,
+						int							cell_y,
 						GUI_EnumDictionary&			out_dictionary);
 	virtual	void	AcceptEdit(
 						int							cell_x,
@@ -97,47 +97,47 @@ public:
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,
 											int&						allow_between_row,
-											int&						allow_into_cell);						
+											int&						allow_into_cell);
 	virtual	GUI_DragOperation		CanDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended,
 											int&						whole_col,
 											int&						whole_row);
 	virtual	GUI_DragOperation		CanDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended);
 	virtual	GUI_DragOperation		CanDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended);
 
 
 	virtual	GUI_DragOperation		DoDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended);
 	virtual	GUI_DragOperation		DoDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended);
 	virtual	GUI_DragOperation		DoDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended);
 
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
-	
+
 	virtual	int			GetCellLeft (int n);
 	virtual	int			GetCellRight(int n);
 	virtual	int			GetCellWidth(int n);
@@ -145,11 +145,11 @@ public:
 	virtual	int			GetCellBottom(int n);
 	virtual	int			GetCellTop	 (int n);
 	virtual	int			GetCellHeight(int n);
-	
+
 	// Index
 	virtual	int			ColForX(int n);
 	virtual	int			RowForY(int n);
-	
+
 	// Setting geometry
 	virtual	bool		CanSetCellWidth (void) const;
 	virtual	bool		CanSetCellHeight(void) const;

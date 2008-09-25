@@ -63,8 +63,8 @@ public:
 
   // initialization of coordinates system
   void set_window(const double x_min,
-		  const double x_max, 
-		  const double y_min, 
+		  const double x_max,
+		  const double y_min,
 		  const double y_max,
 		  bool const_ranges = false);
   void zoom(double ratio);
@@ -84,8 +84,8 @@ public:
   void do_paint() { if (Locked==0) repaint(FALSE); };
 
   virtual QSize sizeHint() const {return QSize(geometry().width(),
-					geometry().height());} 
-  
+					geometry().height());}
+
   // properties
   // ~~~~~~~~~~
   // color
@@ -165,12 +165,12 @@ public:
   inline double y_scal() { return yscal; }
 
   void new_object(CGAL::Object obj) { emit(new_cgal_object(obj)); };
-  
+
   //layers
-  
+
   void attach(Qt_widget_layer *layer);
-  
-  
+
+
   // remove a layer from the list of displayable scenes
   void detach(Qt_widget_layer* s);
 
@@ -187,7 +187,7 @@ signals:
   void s_enterEvent(QEvent *e);
   void s_leaveEvent(QEvent *e);
   void s_event(QEvent *e);
-  
+
   void custom_redraw(); //deprecated:  if user want to draw something
                         //after layers replaced by redraw_on_front
   void redraw_on_front(); //called by redraw at the end
@@ -197,7 +197,7 @@ signals:
   void new_cgal_object(CGAL::Object);	//this signal is emited every time an
 					//attached tool constructed an object
 
-  void rangesChanged(); 
+  void rangesChanged();
   // triggered when ranges (xmin, xmax, ymin,...) are changed
 
 public slots:
@@ -242,7 +242,7 @@ private:
   // resize properly the pixmap size, saving then restoring the
   // painter properties
 
-  void	  set_scales(); 
+  void	  set_scales();
   // set xscal and yscal. Update ranges if const_ranges is false.
 
   // color types convertors
@@ -545,20 +545,20 @@ Qt_widget& operator<<(Qt_widget& w, const Segment_2<R>& s)
        (scs_y > yr2 && sct_y > yr2))
       return w;
   }
-  
+
   //if is here, the segment intersect the screen boundaries or is inside
   int x1, y1, x2, y2;
   Segment_2<RT>  sr;
-  sr = Segment_2<RT>(Point_2<RT>(scs_x, scs_y), Point_2<RT>(sct_x, sct_y));;  
+  sr = Segment_2<RT>(Point_2<RT>(scs_x, scs_y), Point_2<RT>(sct_x, sct_y));;
   //next condition true if the segment is inside
   if(!(scs_x >= xr1 && scs_x <= xr2 &&
-     sct_x >= xr1 && sct_x <= xr2 && 
+     sct_x >= xr1 && sct_x <= xr2 &&
      scs_y >= yr1 && scs_y <= yr2 &&
      sct_y >= yr1 && sct_y <= yr2))
     {
     Iso_rectangle_2<RT> r = Iso_rectangle_2<RT>(Point_2<RT>(xr1, yr1),
                                               Point_2<RT>(xr2, yr2));
-    CGAL::Object obj = CGAL::intersection(r, sr);  
+    CGAL::Object obj = CGAL::intersection(r, sr);
     Point_2<R>    p;
     if (CGAL::assign(p, obj)){
       w << p;
@@ -675,8 +675,8 @@ template< class R >
 Qt_widget&
 operator<<(Qt_widget& w, const Triangle_2<R>& t)
 {
-  CGAL::Iso_rectangle_2<R> r( Point_2<R>(w.x_real(0), w.y_real(0)), 
-                              Point_2<R>(w.x_real(w.geometry().width()), 
+  CGAL::Iso_rectangle_2<R> r( Point_2<R>(w.x_real(0), w.y_real(0)),
+                              Point_2<R>(w.x_real(w.geometry().width()),
                               w.y_real(w.geometry().height())));
   CGAL::Object obj = CGAL::intersection(t, r);
   Point_2<R> pi;
@@ -691,24 +691,24 @@ operator<<(Qt_widget& w, const Triangle_2<R>& t)
   if(CGAL::assign(ti, obj))
   {
     QPointArray array(3);
-    array[0] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(0).x())), 
+    array[0] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(0).x())),
                                 w.y_pixel(CGAL::to_double(t.vertex(0).y())));
-    array[1] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(1).x())), 
+    array[1] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(1).x())),
                                 w.y_pixel(CGAL::to_double(t.vertex(1).y())));
-    array[2] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(2).x())), 
+    array[2] = QPoint(w.x_pixel(CGAL::to_double(t.vertex(2).x())),
                                 w.y_pixel(CGAL::to_double(t.vertex(2).y())));
     w.get_painter().drawPolygon(array);
-  }   
+  }
   if(CGAL::assign(vi, obj)){
     QPointArray array(int(vi.size()));
     typename std::vector<Point>::const_iterator it = vi.begin();
     int pos = 0;
     while(it != vi.end()){
-      array[pos] = QPoint(w.x_pixel(CGAL::to_double((*it).x())), 
+      array[pos] = QPoint(w.x_pixel(CGAL::to_double((*it).x())),
                           w.y_pixel(CGAL::to_double((*it).y())));
       pos++;
       it++;
-    }  
+    }
   w.get_painter().drawPolygon(array);
   }
   w.do_paint();
@@ -720,7 +720,7 @@ operator<<(Qt_widget& w, const Triangle_2<R>& t)
 template < class R>
 Qt_widget& operator<<(Qt_widget& w, const Circle_2<R>& c)
 {
-  int 
+  int
     cx=w.x_pixel(CGAL::to_double(c.center().x())),
     cy=w.y_pixel(CGAL::to_double(c.center().y())),
     rx=w.x_pixel_dist((std::sqrt(CGAL::to_double(c.squared_radius())))),
@@ -761,8 +761,8 @@ void Qt_widget::x_real(int x, FT& return_t) const
     return_t = static_cast<FT>(xmin+(int)(x/xscal));
   else{
 #ifdef CGAL_USE_GMP
-    CGAL_Rational r = simplest_rational_in_interval<CGAL_Rational>( 
-                            xmin+x/xscal-(x/xscal-(x-1)/xscal)/2, 
+    CGAL_Rational r = simplest_rational_in_interval<CGAL_Rational>(
+                            xmin+x/xscal-(x/xscal-(x-1)/xscal)/2,
                             xmin+x/xscal+((x+1)/xscal-x/xscal)/2);
     return_t = static_cast<FT>(CGAL::to_double(r));
 #else
@@ -778,14 +778,14 @@ void Qt_widget::y_real(int y, FT& return_t) const
       return_t = static_cast<FT>(ymax-(int)(y/yscal));
     else{
 #ifdef CGAL_USE_GMP
-    CGAL_Rational r = simplest_rational_in_interval<CGAL_Rational>( 
-                            ymax - y/yscal-(y/yscal-(y-1)/yscal)/2, 
+    CGAL_Rational r = simplest_rational_in_interval<CGAL_Rational>(
+                            ymax - y/yscal-(y/yscal-(y-1)/yscal)/2,
                             ymax - y/yscal+((y+1)/yscal-y/yscal)/2);
     return_t = static_cast<FT>(CGAL::to_double(r));
 #else
     return_t = static_cast<FT>(ymax-y/yscal);
 #endif
-  }  
+  }
 }
 
 } // namespace CGAL

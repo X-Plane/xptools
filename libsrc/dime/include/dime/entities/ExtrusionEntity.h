@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: ExtrusionEntity.h
  *
  *  This source file is part of DIME.
@@ -46,7 +46,7 @@ public:
 
   void setThickness(const dxfdouble val);
   dxfdouble getThickness() const;
-    
+
   virtual int typeId() const;
   virtual bool isOfType(const int thtypeid) const;
   virtual int countRecords() const;
@@ -55,18 +55,18 @@ protected:
 
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
-			    dimeMemHandler * const memhandler);  
+			    dimeMemHandler * const memhandler);
 
   void copyExtrusionData(const dimeExtrusionEntity * const entity);
   bool writeExtrusionData(dimeOutput * const out);
-  
+
 protected: // should be private :-(
   dimeVec3f extrusionDir;
   dxfdouble thickness;
 
 }; // class dimeExtrusionEntity
 
-inline void 
+inline void
 dimeExtrusionEntity::setExtrusionDir(const dimeVec3f &v)
 {
   this->extrusionDir = v;
@@ -78,13 +78,13 @@ dimeExtrusionEntity::getExtrusionDir() const
   return this->extrusionDir;
 }
 
-inline void 
+inline void
 dimeExtrusionEntity::setThickness(const dxfdouble val)
 {
   this->thickness = val;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeExtrusionEntity::getThickness() const
 {
   return this->thickness;

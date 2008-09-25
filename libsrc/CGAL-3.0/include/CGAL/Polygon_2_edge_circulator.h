@@ -96,7 +96,7 @@ class Polygon_2_const_edge_circulator {
     {
       Vertex_const_circulator second_vertex = first_vertex;
       ++second_vertex;
-      typename Traits::Construct_segment_2 construct_segment_2 = 
+      typename Traits::Construct_segment_2 construct_segment_2 =
             Traits().construct_segment_2_object();
       return construct_segment_2(*first_vertex, *second_vertex);
     }

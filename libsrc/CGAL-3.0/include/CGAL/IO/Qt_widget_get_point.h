@@ -40,11 +40,11 @@ class Qt_widget_get_point : public Qt_widget_layer
 public:
   typedef typename R::Point_2	Point;
   typedef typename R::FT	FT;
-  
+
   Qt_widget_get_point(const QCursor c=QCursor(Qt::crossCursor),
 		      QObject* parent = 0, const char* name = 0) :
     Qt_widget_layer(parent, name), cursor(c) {};
-  
+
 protected:
   bool is_pure(Qt::ButtonState s){
     if((s & Qt::ControlButton) ||
@@ -70,7 +70,7 @@ protected:
     oldcursor = widget->cursor();
     widget->setCursor(cursor);
   };
-  
+
   void deactivating()
   {
     widget->setCursor(oldcursor);

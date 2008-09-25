@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -44,18 +44,18 @@ class	FlatDecoder {
 public:
 
 	unsigned char * p;
-	
+
 	FlatDecoder(unsigned char * mem) : p(mem)
 	{
 	}
-	
+
 	T	Fetch(void)
 	{
 		T retval = *((T *) p);
 		p += sizeof(T);
 		return retval;
 	}
-	
+
 	unsigned char * EndPos(void)
 	{
 		return p;
@@ -71,14 +71,14 @@ public:
 	bool	is_run;
 	bool	is_individual;
 	int		run_length;
-	
+
 	RLEDecoder(unsigned char * mem)
 	{
 		p = mem;
 		is_run = is_individual = false;
 		run_length = 0;
 	}
-	
+
 	T	Fetch(void)
 	{
 		T	retVal;
@@ -91,22 +91,22 @@ public:
 				is_run = false;
 			} else
 				--run_length;
-			return retVal;			
-		} 
-		else if (is_individual) 
+			return retVal;
+		}
+		else if (is_individual)
 		{
 			retVal = *((T *) p);
 			p += sizeof(T);
 			if (run_length == 1)
 				is_individual = false;
 			else
-				--run_length;		
+				--run_length;
 			return retVal;
-		} 
-		else 
+		}
+		else
 		{
 			unsigned char code = *p++;
-			if (code & 0x80) 
+			if (code & 0x80)
 			{
 				is_run = true;
 			} else {
@@ -116,7 +116,7 @@ public:
 			return Fetch();
 		}
 	}
-	
+
 	unsigned char *	EndPos(void)
 	{
 		return p;
@@ -130,16 +130,16 @@ class	FlatEncoder {
 public:
 
 		FILE *		file;
-		
-	FlatEncoder(FILE * inFile) : file(inFile) 
+
+	FlatEncoder(FILE * inFile) : file(inFile)
 	{
 	}
-	
+
 	void Accum(T value)
 	{
 		fwrite(&value, sizeof(value), 1, file);
 	}
-	
+
 	void Done(void)
 	{
 	}
@@ -165,17 +165,17 @@ public:
 		file = inFile;
 		run_length = 0;
 		is_run = false;
-		is_individual = false;		
+		is_individual = false;
 	}
-	
+
 	void Accum(T value)
 	{
-		unsigned char	token;		
+		unsigned char	token;
 		T				item;
-	
+
 		if (is_run)
 		{
-			if (value == run.back()) 
+			if (value == run.back())
 			{
 				if (run_length == 127)
 				{
@@ -202,14 +202,14 @@ public:
 				run.clear();
 				run.push_back(value);
 			}
-			
-		} else if (is_individual) 
+
+		} else if (is_individual)
 		{
-			if (value != run.back()) 
+			if (value != run.back())
 			{
 				if (run.size() == 127)
 				{
-					// The run is too long.  Emit, 
+					// The run is too long.  Emit,
 					// go to neutral with this one item.
 					token = run.size();
 					fwrite(&token, sizeof(token), 1, file);
@@ -228,8 +228,8 @@ public:
 				// as the start of a homogenous run.  Why?  Well, first
 				// of all we know we can.  Any defined individual run has
 				// at least two items.  And since virtually all of the items
-				// we store are bigger than a char, it's always cheaper to 
-				// make a homogenous run even if it's only two items, AND 
+				// we store are bigger than a char, it's always cheaper to
+				// make a homogenous run even if it's only two items, AND
 				// even if it orphans a one-item individual run too.
 				// In other words, for 32-bit and larger items, this is good:
 				// 1 A 2' B 1 C 2' D for ABBCDD (28 bytes compressed into 20).
@@ -237,7 +237,7 @@ public:
 				// Pop one off of the run
 				// Emit the run
 				// Set up a new run with these two items
-				
+
 				run.pop_back();
 				token = run.size();
 				fwrite(&token, sizeof(token), 1, file);
@@ -247,7 +247,7 @@ public:
 				run.clear();
 				run.push_back(value);
 				run_length = 2;
-				
+
 			}
 		} else {
 			if (!run.empty())
@@ -267,14 +267,14 @@ public:
 				run.push_back(value);
 			}
 		}
-		
+
 	}
-	
+
 	void Done(void)
 	{
 		unsigned char token;
 		T				item;
-		
+
 		if (is_run)
 		{
 			// dump the run
@@ -282,7 +282,7 @@ public:
 			fwrite(&token, sizeof(token), 1, file);
 			item = run[0];
 			fwrite(&item, sizeof(item), 1, file);
-		
+
 		} else if (is_individual) {
 			// dump the run
 			token = run.size();
@@ -296,7 +296,7 @@ public:
 		}
 	}
 
-};	
+};
 
 
 
@@ -350,7 +350,7 @@ bool			XAtom::GetNext(const XSpan& inContainer, XAtom& outNext)
 	// Make sure we have a real length...if our length is bogus (or worse
 	// zero) we're hosed, bail now.  We use a special accessor that doesn't
 	// subtract to avoid wrap-around issues.
-	if (outNext.GetContentLengthWithHeader() < sizeof(XAtomHeader_t)) 
+	if (outNext.GetContentLengthWithHeader() < sizeof(XAtomHeader_t))
 		return false;
 
 	outNext.end += outNext.GetContentLength();
@@ -381,7 +381,7 @@ int		XAtomContainer::CountAtoms(void)
 			break;
 		atom = next;
 	} while (1);
-	
+
 	return n;
 }
 
@@ -398,7 +398,7 @@ int 	XAtomContainer::CountAtomsOfID(unsigned long inID)
 			break;
 		atom = next;
 	} while (1);
-	
+
 	return n;
 }
 
@@ -415,7 +415,7 @@ bool	XAtomContainer::GetNthAtom(int inIndex, XAtom& outAtom)
 			break;
 		outAtom = next;
 	} while (1);
-	
+
 	return false;
 }
 
@@ -435,7 +435,7 @@ bool	XAtomContainer::GetNthAtomOfID(unsigned long inID, int inIndex, XAtom& outA
 			break;
 		outAtom = next;
 	} while (1);
-	
+
 	return false;
 }
 
@@ -557,7 +557,7 @@ static int DecodeNumericPlane(
 		}
 	}
 	return inPlaneCount;
-}	
+}
 
 int	XAtomPlanerNumericTable::DecompressShort(
 					int		numberOfPlanes,
@@ -581,7 +581,7 @@ int	XAtomPlanerNumericTable::DecompressInt(
 						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
 						ioPlaneBuffer);
 }
-					
+
 int	XAtomPlanerNumericTable::DecompressFloat(
 					int		numberOfPlanes,
 					int		planeSize,
@@ -591,7 +591,7 @@ int	XAtomPlanerNumericTable::DecompressFloat(
 	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
 						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
 						ioPlaneBuffer);
-}					
+}
 int	XAtomPlanerNumericTable::DecompressDouble(
 					int		numberOfPlanes,
 					int		planeSize,
@@ -601,7 +601,7 @@ int	XAtomPlanerNumericTable::DecompressDouble(
 	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
 						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
 						ioPlaneBuffer);
-}					
+}
 
 
 
@@ -643,12 +643,12 @@ void	WritePlanarNumericAtom(
 							T *		ioData)
 {
 	T	value, diff, last;
-	
+
 	int	psize = SWAP32(planeSize);
 	unsigned char nplanes = numberOfPlanes;
 	fwrite(&psize, sizeof(psize), 1, file);
 	fwrite(&nplanes, sizeof(nplanes), 1, file);
-	
+
 	for (int pln = 0; pln < numberOfPlanes; ++pln)
 	{
 		unsigned char encode = encodeMode;
@@ -658,25 +658,25 @@ void	WritePlanarNumericAtom(
 			FlatEncoder<T>	encoder(file);
 			for (int i = 0; i < planeSize; ++i)
 			{
-				value = SwapValueTyped(interleaved ? 
-								(ioData[i * numberOfPlanes + pln]) : 
+				value = SwapValueTyped(interleaved ?
+								(ioData[i * numberOfPlanes + pln]) :
 								(ioData[pln * planeSize + i]));
 				encoder.Accum(value);
 			}
 			encoder.Done();
 		}
 		if (encodeMode == xpna_Mode_Differenced)
-		{		
+		{
 			FlatEncoder<T>	encoder(file);
 			last = 0;
 			for (int i = 0; i < planeSize; ++i)
 			{
-				value = (interleaved ? 
-								(ioData[i * numberOfPlanes + pln]) : 
+				value = (interleaved ?
+								(ioData[i * numberOfPlanes + pln]) :
 								(ioData[pln * planeSize + i]));
-								
+
 				diff = SwapValueTyped((T)(value - last));
-				encoder.Accum(diff);		
+				encoder.Accum(diff);
 				last = value;
 			}
 			encoder.Done();
@@ -686,12 +686,12 @@ void	WritePlanarNumericAtom(
 			RLEEncoder<T>	encoder(file);
 			for (int i = 0; i < planeSize; ++i)
 			{
-				value = SwapValueTyped(interleaved ? 
-								(ioData[i * numberOfPlanes + pln]) : 
+				value = SwapValueTyped(interleaved ?
+								(ioData[i * numberOfPlanes + pln]) :
 								(ioData[pln * planeSize + i]));
 				encoder.Accum(value);
 			}
-			encoder.Done();			
+			encoder.Done();
 		}
 		if (encodeMode == xpna_Mode_RLE_Differenced)
 		{
@@ -699,15 +699,15 @@ void	WritePlanarNumericAtom(
 			last = 0;
 			for (int i = 0; i < planeSize; ++i)
 			{
-				value = (interleaved ? 
-								(ioData[i * numberOfPlanes + pln]) : 
+				value = (interleaved ?
+								(ioData[i * numberOfPlanes + pln]) :
 								(ioData[pln * planeSize + i]));
-								
+
 				diff = SwapValueTyped((T)(value - last));
 				encoder.Accum(diff);
 				last = value;
 			}
-			encoder.Done();			
+			encoder.Done();
 		}
 	}
 }
@@ -722,7 +722,7 @@ void	WritePlanarNumericAtomShort(
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
 }
-							
+
 void	WritePlanarNumericAtomInt(
 							FILE *	file,
 							int		numberOfPlanes,
@@ -732,7 +732,7 @@ void	WritePlanarNumericAtomInt(
 							int *	ioData)
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
-}							
+}
 
 void	WritePlanarNumericAtomFloat(
 							FILE *	file,
@@ -743,7 +743,7 @@ void	WritePlanarNumericAtomFloat(
 							float *	ioData)
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
-}							
+}
 
 void	WritePlanarNumericAtomDouble(
 							FILE *	file,
@@ -754,7 +754,7 @@ void	WritePlanarNumericAtomDouble(
 							double *	ioData)
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
-}							
+}
 
 
 //#erro TODO: rewrite decoder to take interleaved param and do swapping, always work one at a time!

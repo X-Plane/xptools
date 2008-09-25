@@ -34,7 +34,7 @@ public:
 
     setCentralWidget(widget);
   };
-private slots:  
+private slots:
   void redraw_win()
   {
     *widget << dt;

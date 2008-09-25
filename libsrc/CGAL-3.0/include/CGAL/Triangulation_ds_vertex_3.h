@@ -28,7 +28,7 @@
 CGAL_BEGIN_NAMESPACE
 
 template < class Vb >
-struct Triangulation_ds_vertex_3 
+struct Triangulation_ds_vertex_3
   : public Vb
 {
   bool is_valid(bool verbose = false, int level = 0) const;

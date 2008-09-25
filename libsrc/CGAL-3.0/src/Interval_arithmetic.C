@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sylvain Pion
- 
+
 #include <CGAL/basic.h>
 
 // M$ VC++ doesn't like them yet.

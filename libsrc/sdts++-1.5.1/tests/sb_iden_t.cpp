@@ -1,4 +1,4 @@
-// 
+//
 // $Id: sb_iden_t.cpp,v 1.2 2002/10/10 20:35:25 mcoletti Exp $
 //
 
@@ -47,7 +47,7 @@ const long record_id = 23;
 int
 main( int argc, char** argv )
 {
-  if ( ! argv[1] ) 
+  if ( ! argv[1] )
     {
       cerr << "usage: "
            << argv[0] << " 8211file " << endl;
@@ -60,7 +60,7 @@ ifstream ddf( argv[1], ios::binary );
 ifstream ddf( argv[1] );
 #endif
 
-  if ( ! ddf ) 
+  if ( ! ddf )
     {
       cerr << "couldn't open "
            << argv[1] << endl;
@@ -118,7 +118,7 @@ ifstream ddf( argv[1] );
   iden.setID( record_id );
 
   cout << iden << endl;
-      
+
   // ident.setAttributeID( sb_ForeignID const & );
 
   if ( ! iden.getRecord( record ) )

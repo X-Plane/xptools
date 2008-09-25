@@ -15,7 +15,7 @@
 // $Revision: 1.6 $ $Date: 2003/09/18 10:19:38 $
 // $Name: current_submission $
 //
-// Author(s)     : Iddo Hanniel 
+// Author(s)     : Iddo Hanniel
 #ifndef CGAL_ARR_2_BASES_H
 #define CGAL_ARR_2_BASES_H
 
@@ -34,7 +34,7 @@ public:
   Arr_2_vertex_base() {}
 
   virtual ~Arr_2_vertex_base() {}
-  
+
   void*       halfedge()               { return hdg; }
   const void* halfedge() const         { return hdg; }
   void        set_halfedge(void* h)    { hdg = h; }
@@ -54,20 +54,20 @@ public:
   typedef typename Base_node::X_monotone_curve_2 X_monotone_curve_2;
 
   Arr_2_halfedge_base() : bn(0) {}
-  
+
   virtual ~Arr_2_halfedge_base() {}
-  
+
   void*       opposite()       { return opp; }
   const void* opposite() const { return opp; }
 
   void*       next()           { return nxt; }
   const void* next() const     { return nxt; }
   // the next halfedge along the face.
-  
+
   void  set_opposite(void* h)  { opp = h; }
 
   void  set_next(void* h)      { nxt = h; }
-  
+
 
   //    void*       prev()       { return prv;}
   //  const void* prev() const { return prv;}
@@ -75,7 +75,7 @@ public:
 
   void*       vertex()       { return v; }
   const void* vertex() const { return v; }
-  
+
   void*       face()       { return f; }
   const void* face() const { return f; }
   // the face to the left.
@@ -93,17 +93,17 @@ public:
   //we make the curve and set_curve empty so the pm can find them but not
   //use them , the curves are set in the halfedge via the edge_node!!
 
-  
-  const X_monotone_curve_2 & curve() const 
-  { 
-    return bn->x_curve(); 
+
+  const X_monotone_curve_2 & curve() const
+  {
+    return bn->x_curve();
   }
 //  void set_curve(const Curve& cv) {bn->set_curve(cv);}
 //the setting of the curve is done only in the arrangement level
   void set_curve(const X_monotone_curve_2 &) {}
-    
+
   Base_node* edge_node() {return bn;} //will become private in the arrangement
-  const Base_node* edge_node() const {return bn;} 
+  const Base_node* edge_node() const {return bn;}
   void set_edge_node(Base_node* b) {bn=b;}
 
   // assign function for non-connectivity data
@@ -116,10 +116,10 @@ protected:
 
   void* opp;
   void* nxt;
-  
-  void* v; 
+
+  void* v;
   void* f; //face
-  
+
   Base_node* bn;
 
   //debug
@@ -130,16 +130,16 @@ protected:
 
 class Arr_2_face_base {
 public:
-  typedef std::list<void*> Holes_container; 
-  
-  typedef Holes_container::iterator Holes_iterator; 
+  typedef std::list<void*> Holes_container;
+
+  typedef Holes_container::iterator Holes_iterator;
   typedef Holes_container::const_iterator Holes_const_iterator;
 
 
   Arr_2_face_base() : holes() {};
-  
+
   virtual ~Arr_2_face_base() {}
-  
+
   void* halfedge() { return hdg;}
   const void* halfedge() const { return hdg;}
 
@@ -150,10 +150,10 @@ public:
   Holes_iterator  holes_begin() {return holes.begin();}
   Holes_iterator  holes_end() {return holes.end();}
 
-  
+
   Holes_const_iterator  holes_begin() const {return holes.begin();}
   Holes_const_iterator  holes_end() const {return holes.end();}
-  
+
 
   void add_hole(void* halfedge_ptr)
   {
@@ -170,7 +170,7 @@ public:
     holes.erase(first,last);
   }
 
-  
+
   //this is not documented but needed for a private project
   Holes_container::size_type number_of_holes() const { return holes.size(); }
 
@@ -252,12 +252,12 @@ public:
   virtual ~Arr_base_node() {}
 
   const Curve_2& curve() const {return *(cv_wrap.cv);}
-  void set_curve(const Curve_2& c) 
+  void set_curve(const Curve_2& c)
   {
     *cv_wrap.cv = c;
   }
 
-  const X_monotone_curve_2& x_curve() const 
+  const X_monotone_curve_2& x_curve() const
   {
     return *(cv_wrap.x_cv);
   }
@@ -269,7 +269,7 @@ public:
     cv_wrap = bn.cv_wrap;
   }
 
-protected: 
+protected:
 //  Curve cv;
   Curve_wrap cv_wrap;
 };

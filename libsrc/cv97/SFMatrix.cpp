@@ -44,10 +44,10 @@ SFMatrix::SFMatrix(float x, float y, float z)
 }
 
 ////////////////////////////////////////////////
-//	set value 
+//	set value
 ////////////////////////////////////////////////
 
-void SFMatrix::setValue(float value[4][4]) 
+void SFMatrix::setValue(float value[4][4])
 {
 	for (int i=0; i<4; i++) {
 		for (int j=0; j<4; j++)
@@ -55,7 +55,7 @@ void SFMatrix::setValue(float value[4][4])
 	}
 }
 
-void SFMatrix::setValue(SFMatrix *matrix) 
+void SFMatrix::setValue(SFMatrix *matrix)
 {
 	float	value[4][4];
 	matrix->getValue(value);
@@ -63,21 +63,21 @@ void SFMatrix::setValue(SFMatrix *matrix)
 }
 
 ////////////////////////////////////////////////
-//	set as scaling value 
+//	set as scaling value
 ////////////////////////////////////////////////
 
-void SFMatrix::setScaling(SFVec3f *vector) 
+void SFMatrix::setScaling(SFVec3f *vector)
 {
 	setScaling(vector->getX(), vector->getY(), vector->getZ());
 }
 
-void SFMatrix::setScaling(float value[]) 
+void SFMatrix::setScaling(float value[])
 {
 	init();
 	setScaling(value[0], value[1], value[2]);
 }
 
-void SFMatrix::setScaling(float x, float y, float z) 
+void SFMatrix::setScaling(float x, float y, float z)
 {
 	init();
 	mValue[0][0] = x;
@@ -86,20 +86,20 @@ void SFMatrix::setScaling(float x, float y, float z)
 }
 
 ////////////////////////////////////////////////
-//	set as translation value 
+//	set as translation value
 ////////////////////////////////////////////////
 
-void SFMatrix::setTranslation(SFVec3f *vector) 
+void SFMatrix::setTranslation(SFVec3f *vector)
 {
 	setTranslation(vector->getX(), vector->getY(), vector->getZ());
 }
 
-void SFMatrix::setTranslation(float value[]) 
+void SFMatrix::setTranslation(float value[])
 {
 	setTranslation(value[0], value[1], value[2]);
 }
 
-void SFMatrix::setTranslation(float x, float y, float z) 
+void SFMatrix::setTranslation(float x, float y, float z)
 {
 	init();
 	mValue[3][0] = x;
@@ -108,15 +108,15 @@ void SFMatrix::setTranslation(float x, float y, float z)
 }
 
 ////////////////////////////////////////////////
-//	set as direction value 
+//	set as direction value
 ////////////////////////////////////////////////
 
-void SFMatrix::setDirection(SFVec3f *vector) 
+void SFMatrix::setDirection(SFVec3f *vector)
 {
 	setDirection(vector->getX(), vector->getY(), vector->getZ());
 }
 
-void SFMatrix::setDirection(float value[]) 
+void SFMatrix::setDirection(float value[])
 {
 	setDirection(value[0], value[1], value[2]);
 }
@@ -150,10 +150,10 @@ void SFMatrix::setDirection(float x, float y, float z) {
 		mxValue[2][1] = -sina;
 		mxValue[2][2] = cosa;
 	}
-	
+
 	float cosb = d;
 	float sinb = normal[0];
-	
+
 	myValue[0][0] = cosb;
 	myValue[0][1] = 0.0;
 	myValue[0][2] = sinb;
@@ -173,34 +173,34 @@ void SFMatrix::setDirection(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////
-//	set as rotation value 
+//	set as rotation value
 ////////////////////////////////////////////////
 
-void SFMatrix::setRotation(SFRotation *rotation) 
+void SFMatrix::setRotation(SFRotation *rotation)
 {
 	setRotation(rotation->getX(), rotation->getY(), rotation->getZ(), rotation->getAngle());
 }
 
-void SFMatrix::setRotation(float value[]) 
+void SFMatrix::setRotation(float value[])
 {
 	setRotation(value[0], value[1], value[2], value[3]);
 }
 
-void SFMatrix::setRotation(float x, float y, float z, float rot) 
+void SFMatrix::setRotation(float x, float y, float z, float rot)
 {
 	SFRotation rotation(x, y, z, rot);
 	SFMatrix matrix;
 	rotation.getSFMatrix(&matrix);
 	float value[4][4];
-	matrix.getValue(value); 
+	matrix.getValue(value);
 	setValue(value);
 }
-	
+
 ////////////////////////////////////////////////
 //	get value
 ////////////////////////////////////////////////
 
-void SFMatrix::getValue(float value[4][4]) 
+void SFMatrix::getValue(float value[4][4])
 {
 	for (int i=0; i<4; i++) {
 		for (int j=0; j<4; j++)
@@ -212,7 +212,7 @@ void SFMatrix::getValue(float value[4][4])
 //	get value only translation
 ////////////////////////////////////////////////
 
-void SFMatrix::getTranslation(float value[]) 
+void SFMatrix::getTranslation(float value[])
 {
 	value[0] = mValue[3][0];
 	value[1] = mValue[3][1];
@@ -223,11 +223,11 @@ void SFMatrix::getTranslation(float value[])
 //	toString
 ////////////////////////////////////////////////
 
-void SFMatrix::setValue(char *value) 
+void SFMatrix::setValue(char *value)
 {
 }
 
-char *SFMatrix::getValue(char *buffer, int bufferLen) 
+char *SFMatrix::getValue(char *buffer, int bufferLen)
 {
 	buffer[0] = '\0';
 	return buffer;
@@ -236,7 +236,7 @@ char *SFMatrix::getValue(char *buffer, int bufferLen)
 ////////////////////////////////////////////////
 //	other
 ////////////////////////////////////////////////
-	
+
 void SFMatrix::init()
 {
 	for (int i=0; i<4; i++) {
@@ -256,11 +256,11 @@ void SFMatrix::add(SFMatrix *matrix)
 {
 	float ma1[4][4];
 	float ma2[4][4];
-	float maOut[4][4]; 
+	float maOut[4][4];
 
 	getValue(ma1);
-	matrix->getValue(ma2); 
-	
+	matrix->getValue(ma2);
+
 	for (int i = 0; i<4; i++) {
 		for (int j = 0; j<4; j++) {
 			maOut[j][i] = 0.0f;
@@ -268,12 +268,12 @@ void SFMatrix::add(SFMatrix *matrix)
 				maOut[j][i] += ma1[k][i]*ma2[j][k];
 		}
 	}
-		
+
 	setValue(maOut);
 }
 
 ////////////////////////////////////////////////
-//	multi 
+//	multi
 ////////////////////////////////////////////////
 
 void SFMatrix::multi(float vector[])
@@ -288,7 +288,7 @@ void SFMatrix::multi(float vector[])
 	float vectorOut[4];
 
 	float ma[4][4];
-	getValue(ma); 
+	getValue(ma);
 	for (int n = 0; n<4; n++)
 		vectorOut[n] = ma[0][n]*vectorIn[0] + ma[1][n]*vectorIn[1] + ma[2][n]*vectorIn[2] + ma[3][n]*vectorIn[3];
 
@@ -318,7 +318,7 @@ void SFMatrix::multi(SFVec3f *vector)
 }
 
 ////////////////////////////////////////////////
-//	getSFRotation 
+//	getSFRotation
 ////////////////////////////////////////////////
 
 void SFMatrix::getSFRotation(SFRotation *rotation)
@@ -385,12 +385,12 @@ void SFMatrix::getSFRotation(SFRotation *rotation)
 //	Java
 ////////////////////////////////////////////////
 
-void SFMatrix::invert() 
+void SFMatrix::invert()
 {
 	float d = determinant();
 	if (d == 0.0f)
 		return;
-	
+
 	mValue[0][0] = mValue[1][1]*(mValue[2][2]*mValue[3][3] - mValue[2][3]*mValue[3][2]) + mValue[1][2]*(mValue[2][3]*mValue[3][1] - mValue[2][1]*mValue[3][3]) + mValue[1][3]*(mValue[2][1]*mValue[3][2] - mValue[2][2]*mValue[3][1]) / d;
 	mValue[0][1] = mValue[2][1]*(mValue[0][2]*mValue[3][3] - mValue[0][3]*mValue[3][2]) + mValue[2][2]*(mValue[0][3]*mValue[3][1] - mValue[0][1]*mValue[3][3]) + mValue[2][3]*(mValue[0][1]*mValue[3][2] - mValue[0][2]*mValue[3][1]) / d;
 	mValue[0][2] = mValue[3][1]*(mValue[0][2]*mValue[1][3] - mValue[0][3]*mValue[1][2]) + mValue[3][2]*(mValue[0][3]*mValue[1][1] - mValue[0][1]*mValue[1][3]) + mValue[3][3]*(mValue[0][1]*mValue[1][2] - mValue[0][2]*mValue[1][1]) / d;
@@ -412,7 +412,7 @@ void SFMatrix::invert()
 	mValue[3][3] = mValue[0][0]*(mValue[1][1]*mValue[2][2] - mValue[1][2]*mValue[2][1]) + mValue[0][1]*(mValue[1][2]*mValue[2][0] - mValue[1][0]*mValue[2][2]) + mValue[0][2]*(mValue[1][0]*mValue[2][1] - mValue[1][1]*mValue[2][0]) / d;
 }
 
-float SFMatrix::determinant()  
+float SFMatrix::determinant()
 {
 	return	 (mValue[0][0]*mValue[1][1] - mValue[0][1]*mValue[1][0])*(mValue[2][2]*mValue[3][3] - mValue[2][3]*mValue[3][2])
 			-(mValue[0][0]*mValue[1][2] - mValue[0][2]*mValue[1][0])*(mValue[2][1]*mValue[3][3] - mValue[2][3]*mValue[3][1])
@@ -429,7 +429,7 @@ float SFMatrix::determinant()
 
 #ifdef SUPPORT_JSAI
 
-jobject SFMatrix::toJavaObject(int bConstField) 
+jobject SFMatrix::toJavaObject(int bConstField)
 {
 	return NULL;
 }

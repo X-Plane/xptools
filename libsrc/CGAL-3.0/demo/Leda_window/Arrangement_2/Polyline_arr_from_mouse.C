@@ -45,14 +45,14 @@ typedef CGAL::Arrangement_2<Dcel,Traits,Base_node >     Arr_2;
 
 // global variables are used so that the redraw function for the LEDA window
 // can be defined to draw information found in these variables.
-static Arr_2                 Arr; 
+static Arr_2                 Arr;
 static leda_string           text("");
 static std::vector<Point_2>  pts;
 
 CGAL_BEGIN_NAMESPACE
 
 // Draw a polyline.
-Window_stream& operator<< (Window_stream& os, 
+Window_stream& operator<< (Window_stream& os,
 			   const X_monotone_curve_2& cv)
 {
   X_monotone_curve_2::const_iterator ps = cv.begin();
@@ -69,7 +69,7 @@ Window_stream& operator<< (Window_stream& os,
 
 Window_stream & operator<<(Window_stream & os, Arr_2 & arr)
 {
-  My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator, 
+  My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator,
     Arr_2::Holes_iterator> drawer(os);
   draw_pm(arr, drawer, os);
   return os;
@@ -85,14 +85,14 @@ void show_welcome_message(CGAL::Window_stream & os)
   text +=
     "Clicking close to a point, assumes the location is at the point.\\n ";
   text += "Isolated points will be discarded.\\n ";
- 
+
   os.set_status_string("Press Begin to enter polylines.");
   os.redraw();
   // wait for button
 }
 
 // redraw function for LEDA window. used automatically when window reappears
-void redraw(CGAL::Window_stream * wp) 
+void redraw(CGAL::Window_stream * wp)
 {
   wp->start_buffering();
   wp->clear();
@@ -100,9 +100,9 @@ void redraw(CGAL::Window_stream * wp)
   if (text) wp->text_box(text);
   // draw currently inserted polyline
     *wp << CGAL::BLACK;
-  if (pts.size() > 1) 
+  if (pts.size() > 1)
     *wp << Curve_2(pts.begin(), pts.end());
-  else if (pts.size() == 1) 
+  else if (pts.size() == 1)
     *wp << pts[0];
   // draw arragnement
   *wp << Arr;
@@ -145,19 +145,19 @@ int main()
     b = W.read_mouse(x,y);
     last_pnt = pnt;
     pnt = Point_2(x,y);
-  
+
     if (b == THE_BUTTON)
       should_exit = true;
     else if (b == MOUSE_BUTTON(1) || MOUSE_BUTTON(3)) {
       // looking for points in the vicinity of the click
       bool vicinity_point = false,
-        last_in_polyline = false;      
+        last_in_polyline = false;
 
       // first, looking in the points of this polyline
       std::vector<Point_2>::const_iterator cit = pts.begin();
       for(; ! vicinity_point && cit != pts.end(); cit++) {
-	if (CGAL::squared_distance(pnt, *cit) < 
-	    NT(((x1-x0)/50)*((x1-x0)/50))) 
+	if (CGAL::squared_distance(pnt, *cit) <
+	    NT(((x1-x0)/50)*((x1-x0)/50)))
 	{
           pnt =* cit;
           vicinity_point = true;
@@ -170,10 +170,10 @@ int main()
       // second, looking in other points of the arrangement
       for(Arr_2::Vertex_iterator vi = Arr.vertices_begin();
 	  ! vicinity_point && vi != Arr.vertices_end(); ++vi) {
-	if (CGAL::squared_distance(pnt, vi->point()) < 
+	if (CGAL::squared_distance(pnt, vi->point()) <
 	    NT(((x1-x0)/50)*((x1-x0)/50)))
         {
-          pnt = vi->point(); 
+          pnt = vi->point();
           vicinity_point = true;
         }
       }
@@ -182,7 +182,7 @@ int main()
 	pts.push_back(pnt);
       W << CGAL::BLACK;
       W << pnt;
-      if (!first_point) 
+      if (!first_point)
       {
 	W << Kernel::Segment_2(last_pnt, pnt);
 	//        W <<leda_segment(last_pnt.x().to_double(), last_pnt.y().to_double(),
@@ -190,12 +190,12 @@ int main()
       }
       first_point = false;
     }
-    // end of polyline 
+    // end of polyline
     // on right click, or on "Continue"
     if (b == MOUSE_BUTTON(3) || (should_exit && pts.size() > 1)) {
       if ( pts.size() > 1)  //(at least 2 points, otherwise ignore)
 	Arr.insert(Curve_2(pts.begin(), pts.end()));
-      
+
       pts.clear();
       W << Arr;
       first_point = true;
@@ -208,7 +208,7 @@ int main()
   Arr_2::Halfedge_handle e;
   bool map_is_empty = false;
 
-  if (Arr.halfedges_begin() == Arr.halfedges_end()) 
+  if (Arr.halfedges_begin() == Arr.halfedges_end())
     map_is_empty = true;
 
   if (map_is_empty) {
@@ -222,7 +222,7 @@ int main()
   while (W.read_mouse(x,y) != THE_BUTTON) {
     pnt = Point_2(x, y);
     W << Arr;
-    
+
     if ( ! map_is_empty ) {
       Arr_2::Locate_type lt;
       e = Arr.locate(pnt ,lt);
@@ -238,7 +238,7 @@ int main()
       }
       for (Arr_2::Holes_iterator ho=f->holes_begin(),hoe = f->holes_end();
 	   ho != hoe; ++ho) {
-	Arr_2::Ccb_halfedge_circulator cc = *ho; 
+	Arr_2::Ccb_halfedge_circulator cc = *ho;
 	do {
 	  W << cc->curve();
 	} while (++cc != *ho);
@@ -246,7 +246,7 @@ int main()
     } // if ! map_is_empty
   } // while
 
-  return 0;  
+  return 0;
 }
 
 #endif

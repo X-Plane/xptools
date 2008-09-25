@@ -76,11 +76,11 @@ class Double {
     // shift operations
     Double  operator << ( unsigned long) const;
     Double  operator >> ( unsigned long) const;
-    
+
     // shift assignment operations
     Double&  operator <<= ( unsigned long);
     Double&  operator >>= ( unsigned long);
-    
+
     // sign function
     int  sign( ) const;
 
@@ -192,7 +192,7 @@ inline
 bool
 Double::
 operator == ( const Double& d) const
-{ 
+{
     if ( e < d.e) return (   m                == ( d.m << ( d.e - e)));
     if ( e > d.e) return ( ( m << ( e - d.e)) ==   d.m               );
     return ( m == d.m);
@@ -203,7 +203,7 @@ inline
 bool
 Double::
 operator != ( const Double& d) const
-{ 
+{
     return !( *this == d);
 }
 
@@ -417,7 +417,7 @@ operator >> ( unsigned long i) const
     return Double( m, e-i);
 }
 
-    
+
 // shift assignment operations
 // ---------------------------
 

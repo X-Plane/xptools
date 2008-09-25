@@ -8,17 +8,17 @@
 // Every use of CGAL requires a license. Licenses come in three kinds:
 //
 // - For academic research and teaching purposes, permission to use and
-//   copy the software and its documentation is hereby granted free of  
+//   copy the software and its documentation is hereby granted free of
 //   charge, provided that
 //   (1) it is not a component of a commercial product, and
 //   (2) this notice appears in all copies of the software and
 //       related documentation.
-// - Development licenses grant access to the source code of the library 
-//   to develop programs. These programs may be sold to other parties as 
+// - Development licenses grant access to the source code of the library
+//   to develop programs. These programs may be sold to other parties as
 //   executable code. To obtain a development license, please contact
 //   the CGAL Consortium (at cgal@cs.uu.nl).
 // - Commercialization licenses grant access to the source code and the
-//   right to sell development licenses. To obtain a commercialization 
+//   right to sell development licenses. To obtain a commercialization
 //   license, please contact the CGAL Consortium (at cgal@cs.uu.nl).
 //
 // This software and documentation is provided "as-is" and without
@@ -46,10 +46,10 @@
 //
 // Implementation: Testprogram for 2-dimensional Segment Trees
 // Example for the construction of a two dimensional segment tree.
-// The data type of the first dimension is double and for the second 
-// dimension double. 
+// The data type of the first dimension is double and for the second
+// dimension double.
 // The elements that should be stored in the tree are pushed into
-// a list. Then a two dimensional segment tree is created and a 
+// a list. Then a two dimensional segment tree is created and a
 // window query is performed.
 //
 // email         : cgal@cs.uu.nl
@@ -82,7 +82,7 @@ int main()
   InputList.push_back(Interval(Key(2,7), Key(3,8)));
   InputList.push_back(Interval(Key(6,9), Key(9,13)));
   InputList.push_back(Interval(Key(1,3), Key(3,9)));
- 
+
   // creation of the segment tree
   std::list<Interval>::iterator first = InputList.begin();
   std::list<Interval>::iterator last = InputList.end();
@@ -98,8 +98,8 @@ int main()
   std::cerr << "\n window_query (3,6), (7,12)\n";
   while(j!=OutputList.end())
   {
-    std::cerr << (*j).first.x() << "-" << (*j).second.x() << " " 
-	 << (*j).first.y() << "-" << (*j).second.y() << std::endl; 
+    std::cerr << (*j).first.x() << "-" << (*j).second.x() << " "
+	 << (*j).first.y() << "-" << (*j).second.y() << std::endl;
     j++;
   }
   std::cerr << "\n enclosing_query (6,10),(7,11) \n";
@@ -109,8 +109,8 @@ int main()
   std::cerr << "\n enclosing_query (6,10),(7,11) \n";
   while(j!=N.end())
   {
-    std::cerr << (*j).first.x() << "-" << (*j).second.x() << " " 
-	 << (*j).first.y() << "-" << (*j).second.y() << std::endl; 
+    std::cerr << (*j).first.x() << "-" << (*j).second.x() << " "
+	 << (*j).first.y() << "-" << (*j).second.y() << std::endl;
     j++;
   }
   if(Segment_tree_2.segment_tree_2->is_valid())

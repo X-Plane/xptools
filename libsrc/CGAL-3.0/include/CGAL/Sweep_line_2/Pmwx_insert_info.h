@@ -29,7 +29,7 @@ public:
   typedef _Halfedge_handle Halfedge_handle;
 
   /*! Constructor */
-  Pmwx_insert_info() : 
+  Pmwx_insert_info() :
     m_halfedge(Halfedge_handle(NULL))
   {
   }
@@ -46,14 +46,14 @@ public:
   {
     if ( m_halfedge == Halfedge_handle(NULL))
       std::cout << "halfedge: NULL\n";
-    else 
-      std::cout << "halfedge: " << m_halfedge->source()->point() 
+    else
+      std::cout << "halfedge: " << m_halfedge->source()->point()
 		<< " " << m_halfedge->target()->point() << "\n";
   }
- 
+
 private:
   Halfedge_handle m_halfedge;
-  
+
 };
 
 CGAL_END_NAMESPACE

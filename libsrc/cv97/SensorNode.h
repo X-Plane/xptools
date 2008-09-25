@@ -15,7 +15,7 @@
 #include "Node.h"
 
 class SensorNode : public Node {
-	
+
 	SFBool *enabledField;
 	SFBool *isActiveField;
 
@@ -29,7 +29,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getEnabledField();
-	
+
 	void setEnabled(bool  value);
 	void setEnabled(int value);
 	bool  getEnabled();
@@ -38,7 +38,7 @@ public:
 	////////////////////////////////////////////////
 	//	isActive
 	////////////////////////////////////////////////
-	
+
 	SFBool *getIsActiveField();
 
 	void setIsActive(bool  value);

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@
 
 #include "PerfUtils.h"
 
-/* 
+/*
 	TODO:
 		make names that are written out to the definition manifest be what we want!
 
@@ -46,7 +46,7 @@
 #if PROFILE_PERFORMANCE
 #define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
 #else
-#define TIMER(x)	
+#define TIMER(x)
 #endif
 
 DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
@@ -79,7 +79,7 @@ struct	edge_wrapper {
 	edge_wrapper& operator=(const edge_wrapper& x) { edge = x.edge; return *this; }
 	bool operator==(const edge_wrapper& x) const { return edge == x.edge; }
 	bool operator!=(const edge_wrapper& x) const { return edge != x.edge; }
-	bool operator<(const edge_wrapper& x) const { return edge < x.edge; } 
+	bool operator<(const edge_wrapper& x) const { return edge < x.edge; }
 
 	const GISFace * orig_face(void) const { return edge.first->info().orig_face; }
 
@@ -91,7 +91,7 @@ HASH_MAP_NAMESPACE_START
 template<> inline
 size_t hash_value<edge_wrapper>(const edge_wrapper& key)
 {
-	return (size_t) &*key.edge.first + (size_t) key.edge.second; 
+	return (size_t) &*key.edge.first + (size_t) key.edge.second;
 }
 #else
 struct hash_edge {
@@ -108,10 +108,10 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 {
 	CDT::Face_circulator stop, circ;
 //	int	lterrain = NO_VALUE;
-	
+
 //	GISVertex * pm_vs = pm_edge->source();
 //	GISVertex * pm_vt = pm_edge->target();
-	
+
 //	loc = inMesh.locate(CDT::Point(pm_vs->point().x, pm_vs->point().y), lt, i, loc);
 //	Assert(lt == CDT::VERTEX);
 	CDT::Vertex_handle v_s = edge.edge.first->vertex(CDT::ccw(edge.edge.second));
@@ -192,7 +192,7 @@ inline bool IsCustom(int n)
 }
 
 inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
-{	
+{
 	double v1_dx = p2.x - p1.x;
 	double v1_dy = p2.y - p1.y;
 	double v2_dx = p3.x - p2.x;
@@ -205,7 +205,7 @@ static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_in
 	Point2 p(lon, lat);
 	double total1 = tri_area(info->corners[0],info->corners[1],info->corners[2]);
 	double total2 = tri_area(info->corners[0],info->corners[2],info->corners[3]);
-	
+
 	double a1_0 = tri_area(info->corners[1],info->corners[2],p);
 	double a1_1 = tri_area(info->corners[2],info->corners[0],p);
 	double a1_2 = tri_area(info->corners[0],info->corners[1],p);
@@ -213,10 +213,10 @@ static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_in
 	double a2_0 = tri_area(info->corners[2],info->corners[3],p);
 	double a2_2 = tri_area(info->corners[3],info->corners[0],p);
 	double a2_3 = tri_area(info->corners[0],info->corners[2],p);
-	
+
 	double most_neg_1 = min(min(a1_0,a1_1),a1_2);
 	double most_neg_2 = min(min(a2_0,a2_2),a2_3);
-	
+
 	if (most_neg_1 < most_neg_2)
 	{
 		// use 2
@@ -235,10 +235,10 @@ static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_in
 		s = info->ST[0].x * r0 + info->ST[1].x * r1 + info->ST[2].x * r2;
 		t = info->ST[0].y * r0 + info->ST[1].y * r1 + info->ST[2].y * r2;
 	}
-	if(s > -0.001 & s < 0.0) s = 0.0;		
-	if(t > -0.001 & t < 0.0) t = 0.0;		
-	if(s <  1.001 & s > 1.0) s = 1.0;		
-	if(t <  1.001 & t > 1.0) t = 1.0;		
+	if(s > -0.001 & s < 0.0) s = 0.0;
+	if(t > -0.001 & t < 0.0) t = 0.0;
+	if(s <  1.001 & s > 1.0) s = 1.0;
+	if(t <  1.001 & t > 1.0) t = 1.0;
 }
 
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
@@ -246,11 +246,11 @@ static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 	double lon, lat;
 	lon = CGAL::to_double(v_han->point().x());
 	lat = CGAL::to_double(v_han->point().y());
-	
-	
+
+
 	float ret = dem.value_linear(lon, lat);
 	v_han->info().wave_height = ret;
-	
+
 	if (ret > 1.0)
 		printf("Over.\n");
 	if (ret < 0.0)
@@ -270,7 +270,7 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 	int proj = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].proj_angle;
 	if (proj == proj_EastWest)	tproj = Vector3(1,0,0);
 	if (proj == proj_NorthSouth)	tproj = Vector3(0,1,0);
-	
+
 	Vector3	tri(f_han->info().normal[0],
 				f_han->info().normal[1],
 				f_han->info().normal[2]);
@@ -278,7 +278,7 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 	double proj_err_dot = fabs(tri.dot(tproj));
 	if (proj_err_dot < 0.7)
 	{
-		return 1.0 - proj_err_dot * proj_err_dot; 
+		return 1.0 - proj_err_dot * proj_err_dot;
 	}
 
 	// Okay we don't have proj problems...basically find the biggest angle change (smallest
@@ -299,13 +299,13 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 			Vector3	v1(circ->info().normal[0],circ->info().normal[1],circ->info().normal[2]);
 			Vector3	v2(f_han->info().normal[0],f_han->info().normal[1],f_han->info().normal[2]);
 			smallest_dot = min(smallest_dot, v1.dot(v2));
-			smallest_dot = min(smallest_dot, v1.dot(up));			
+			smallest_dot = min(smallest_dot, v1.dot(up));
 		}
-		
+
 	} while (stop != circ);
 	smallest_dot = max(0.0, smallest_dot);				// must be non-negative!
 	smallest_dot = acos(smallest_dot) / (PI / 2.0);
-	return smallest_dot;	
+	return smallest_dot;
 }
 
 // Given an edge, finds the next edge clockwise from the source vertex
@@ -357,7 +357,7 @@ int is_coast(const edge_wrapper& inEdge, const CDT& inMesh)
 	if (inMesh.is_infinite(inEdge.edge.first->neighbor(inEdge.edge.second))) return false;
 
 	if (inEdge.edge.first->info().terrain != terrain_Water) return false;
-	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;	
+	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;
 	return true;
 }
 
@@ -376,13 +376,13 @@ bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
 
 	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
 	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
-	
+
 	DebugAssert(e1t == e2s);
-	
+
 	Point2	p1(e1s->point().x(),e1s->point().y());
 	Point2	p2(e1t->point().x(),e1t->point().y());
 	Point2	p3(e2t->point().x(),e2t->point().y());
-	
+
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
 
@@ -396,13 +396,13 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 
 	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
 	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
-	
+
 	DebugAssert(e1t == e2s);
-	
+
 	Point2	p1(e1s->point().x(),e1s->point().y());
 	Point2	p2(e1t->point().x(),e1t->point().y());
 	Point2	p3(e2t->point().x(),e2t->point().y());
-	
+
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
 	double scale = cos(p2.y * DEG_TO_RAD);
@@ -410,7 +410,7 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 	v2.dx *= scale;
 	v1.normalize();
 	v2.normalize();
-	
+
 	return v1.dot(v2);
 }
 
@@ -419,30 +419,30 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 {
 	// For iphone!!
 	return false;
-	
+
 	if (!is_coast(inEdge, inMesh))	return false;
 
 	CDT::Face_handle tri = inEdge.edge.first;
-	
+
 	DebugAssert(tri->info().terrain == terrain_Water);
 	if (tri->info().terrain == terrain_Water)
 		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
 
 	int lterrain = tri->info().terrain;
 	int is_apt = IsAirportTerrain(lterrain);
-	int i;	
-	
+	int i;
+
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
 	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
-	
+
 	const GISFace * orig_face = inEdge.orig_face();
 	Assert(orig_face != NULL);
-	
+
 	double	prev_ang = 1.0, next_ang = 1.0;
 	bool	prev_convex = true, next_convex =true;
 	double prev_len = 0.0;
 	double next_len = 0.0;
-	
+
 	// Find our outgoing (next) angle
 	for (edge_wrapper iter = edge_next(inEdge); iter != edge_twin(inEdge); iter = edge_twin_next(iter))
 	if (is_coast(iter, inMesh))
@@ -453,7 +453,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 		break;
 	}
 
-	// Find our incoming (previous) angle	
+	// Find our incoming (previous) angle
 	for (edge_wrapper iter = edge_next_twin(edge_twin(inEdge)); iter != edge_twin(inEdge); iter = edge_next_twin(iter))
 	if (is_coast(iter, inMesh))
 	{
@@ -465,19 +465,19 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
 	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
 									   v_t->point().x(),v_t->point().y()) + prev_len + next_len;
-									   
+
 	double slope = tri->info().normal[2];
-	
+
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
 	{
 		if (is_apt == gBeachInfoTable[i].require_airport &&
-			slope >= gBeachInfoTable[i].min_slope && 
+			slope >= gBeachInfoTable[i].min_slope &&
 			slope <= gBeachInfoTable[i].max_slope &&
-			gBeachInfoTable[i].min_sea <= wave && 
+			gBeachInfoTable[i].min_sea <= wave &&
 			wave <= gBeachInfoTable[i].max_sea &&
 			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
-			fabs(tri->vertex(0)->point().y()) >= gBeachInfoTable[i].min_lat && 
+			fabs(tri->vertex(0)->point().y()) >= gBeachInfoTable[i].min_lat &&
 			fabs(tri->vertex(0)->point().y()) <= gBeachInfoTable[i].max_lat &&
 			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
 			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
@@ -486,7 +486,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 //			len >= gBeachInfoTable[i].min_len &&
 			gBeachInfoTable[i].min_area < GetParamConst(orig_face, af_WaterArea) &&
 			(gBeachInfoTable[i].require_open == 0 || GetParamConst(orig_face,af_WaterOpen) != 0.0))
-			
+
 		{
 			kind = gBeachInfoTable[i].x_beach_type;
 			break;
@@ -509,23 +509,23 @@ typedef hash_map<edge_wrapper, int, hash_edge> edge_info_map;
 #endif
 
 void FixBeachContinuity(
-						edge_hash_map&								linkNext, 
-						const edge_wrapper&							this_start, 
+						edge_hash_map&								linkNext,
+						const edge_wrapper&							this_start,
 						edge_info_map&								typedata)
 {
 	edge_wrapper circ, discon, stop, iter;
 	bool retry;
-	
+
 	for (int lim = 0; lim < gBeachInfoTable.size(); ++lim)
-	{	
+	{
 		do {
 			retry = false;
 			circ = stop = this_start;
 
-			// Main circulator group on each beac htype	
+			// Main circulator group on each beac htype
 			do {
 				discon = circ;
-				
+
 				// Keep trying until our beach meets requirements
 				// Calculate contiguous type-length
 				double len = 0;
@@ -536,7 +536,7 @@ void FixBeachContinuity(
 					discon = (linkNext.count(discon) == 0) ? edge_wrapper() : linkNext[discon];
 					// incr disocn!
 				} while (discon != edge_wrapper() && discon != stop && typedata[discon] == typedata[circ]);
-			
+
 				// If we failed - go back and retry, otherwise advance forward and break out
 				if (len < req_len && gBeachIndex[typedata[circ]] < lim)
 				{
@@ -547,17 +547,17 @@ void FixBeachContinuity(
 						typedata[iter] = new_type;
 						iter = (linkNext.count(iter) == 0) ? edge_wrapper() : linkNext[iter];
 					} while (iter != discon);
-					
+
 				}
 				circ = discon;
-				
+
 			} while (circ != stop && circ != edge_wrapper());
 		} while (retry);
 	}
 }
 
 
-string		get_terrain_name(int composite) 
+string		get_terrain_name(int composite)
 {
 	if (composite == terrain_Water)
 //		return FetchTokenString(composite);
@@ -657,8 +657,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		int		total_polys = 0;
 		int		total_chains = 0;
 		int		total_shapes = 0;
-		
-		
+
+
 		int		cur_id = 0, tri, tris_this_patch;
 		double	coords3[3];
 		double	coords2[2];
@@ -685,15 +685,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		void *			writer1, * writer2;
 		DSFCallbacks_t	cbs;
-		
+
 		Net_JunctionInfoSet				junctions;
 		Net_ChainInfoSet				chains;
-		Net_JunctionInfoSet::iterator 	ji;		
+		Net_JunctionInfoSet::iterator 	ji;
 		Net_ChainInfoSet::iterator 		ci;
 		vector<Point3>::iterator		shapePoint;
-		
+
 		map<int, int, SortByLULayer>landuses;
-		map<int, int>				landuses_reversed;	
+		map<int, int>				landuses_reversed;
 		map<int, int>				objects_reversed;
 		map<int, int>	facades,	facades_reversed;
 		map<int, int, ObjPrio>		objects;
@@ -702,7 +702,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	/***********************************************************************************************
 	 * PICK UP 2-D VALUES
-	 ***********************************************************************************************/	
+	 ***********************************************************************************************/
 	DEMGeo	waterType(inLanduse);
 	for (y = 0; y < waterType.mHeight;++y)
 	for (x = 0; x < waterType.mWidth; ++x)
@@ -710,7 +710,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (waterType(x,y) != lu_usgs_SEA_WATER && waterType(x,y) != lu_usgs_INLAND_WATER)
 			waterType(x,y) = NO_VALUE;
 	}
-	
+
 	{
 		DEMGeo temp(waterType);
 		for (y = 0; y < waterType.mHeight;++y)
@@ -718,7 +718,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			float e = temp.get_radial(x,y,2, NO_VALUE);
 			waterType(x,y) = (e == lu_usgs_SEA_WATER) ? 1.0 : 0.0;
-			
+
 		}
 	}
 
@@ -729,7 +729,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	float	smear[SMEAR_SIZE_WATER*SMEAR_SIZE_WATER];
 	CalculateFilter(SMEAR_SIZE_WATER,smear,demFilter_Spread,true);
-	waterType.filter_self(SMEAR_SIZE_WATER,smear);	
+	waterType.filter_self(SMEAR_SIZE_WATER,smear);
 	for (y = 0; y < waterType.mHeight;++y)
 	for (x = 0; x < waterType.mWidth; ++x)
 	{
@@ -742,48 +742,48 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 //	 	if (vert->info().vege_density > 1.0) vert->info().vege_density = 1.0;
 //	 	if (vert->info().vege_density < 0.0) vert->info().vege_density = 0.0;
 //	}
-		
+
 	/****************************************************************
 	 * SETUP
-	 ****************************************************************/	
-	 
+	 ****************************************************************/
+
 	writer1 = inFileName1 ? DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 8) : NULL;
 	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 8)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
  	DSFGetWriterCallbacks(&cbs);
-	 
+
 	/****************************************************************
 	 * MESH GENERATION
 	 ****************************************************************/
 
 	// First assign IDs to each triangle to differentiate patches.
 	// Also work out land uses.
-	
-	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.0)) return;	
-	
+
+	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.0)) return;
+
 	if(writer1)
 	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
 	{
 		fi->info().flag = 0;
 
 		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y() >= inLanduse.mNorth &&		
+			fi->vertex(1)->point().y() >= inLanduse.mNorth &&
 			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
-			
+
 		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y() <= inLanduse.mSouth &&		
+			fi->vertex(1)->point().y() <= inLanduse.mSouth &&
 			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
 
 		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
-			fi->vertex(1)->point().x() >= inLanduse.mEast &&		
+			fi->vertex(1)->point().x() >= inLanduse.mEast &&
 			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
-			
+
 		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
-			fi->vertex(1)->point().x() <= inLanduse.mWest &&		
+			fi->vertex(1)->point().x() <= inLanduse.mWest &&
 			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
-			
-			
+
+
 		if (fi->vertex(0)->point().y() == fi->vertex(1)->point().y() &&
 			fi->vertex(0)->point().y() == fi->vertex(2)->point().y())
 		{
@@ -796,24 +796,24 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			printf("WARNING: X-colinear triangle. skipping.\n");
 			continue;
 		}
-		
+
 		x = (fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x()) / 3.0;
 		y = (fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y()) / 3.0;
-		
+
 		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
 		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
-		
+
 		x = floor(x*PATCH_DIM_HI);
 		y = floor(y*PATCH_DIM_HI);
-		
+
 		if (x == PATCH_DIM_HI) x = PATCH_DIM_HI-1;
 		if (y == PATCH_DIM_HI) y = PATCH_DIM_HI-1;
 		if (x < 0 || y < 0 || x > PATCH_DIM_HI || y > PATCH_DIM_HI)
-			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y, 
+			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y,
 				fi->vertex(0)->point().x(),fi->vertex(0)->point().y(),
 				fi->vertex(1)->point().x(),fi->vertex(1)->point().y(),
 				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
-		
+
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
 		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
@@ -832,49 +832,49 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 	}
 
-	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.5)) return;	
+	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.5)) return;
 
 #if !NO_ORTHO
 	if(writer1)
 	for (fi = inLoresMesh.finite_faces_begin(); fi != inLoresMesh.finite_faces_end(); ++fi)
 	{
 		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y() >= inLanduse.mNorth &&		
+			fi->vertex(1)->point().y() >= inLanduse.mNorth &&
 			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
-			
+
 		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y() <= inLanduse.mSouth &&		
+			fi->vertex(1)->point().y() <= inLanduse.mSouth &&
 			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
 
 		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
-			fi->vertex(1)->point().x() >= inLanduse.mEast &&		
+			fi->vertex(1)->point().x() >= inLanduse.mEast &&
 			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
-			
+
 		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
-			fi->vertex(1)->point().x() <= inLanduse.mWest &&		
+			fi->vertex(1)->point().x() <= inLanduse.mWest &&
 			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
 
 		x = (fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x()) / 3.0;
 		y = (fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y()) / 3.0;
-		
+
 		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
 		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
-		
+
 		x = floor(x*PATCH_DIM_LO);
 		y = floor(y*PATCH_DIM_LO);
-		
+
 		if (x < 0 || y < 0 || x >= PATCH_DIM_LO || y >= PATCH_DIM_LO)
-			fprintf(stderr, "Lores Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y, 
+			fprintf(stderr, "Lores Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y,
 				fi->vertex(0)->point().x(),fi->vertex(0)->point().y(),
 				fi->vertex(1)->point().x(),fi->vertex(1)->point().y(),
 				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
-		
+
 		sLoResTris[(int) x + (int) y * PATCH_DIM_LO].push_back(fi);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sLoResLU[(int) x + (int) y * PATCH_DIM_LO].insert(fi->info().terrain);
 	}
 #endif
-	
+
 	// Now that we have our land uses, we can go back and calculate
 	// the DSF-file-relative indices.
 
@@ -886,20 +886,20 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		landuses_reversed[cur_id] = lu_ranked->first;
 	}
 
-	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;	
+	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
 	if(writer1)
 	for (prog_c = 0.0, lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, prog_c += 1.0)
 	{
-		if (inProgress && inProgress(1, 5, "Sorting Mesh", prog_c / (float) landuses.size())) return;	
+		if (inProgress && inProgress(1, 5, "Sorting Mesh", prog_c / (float) landuses.size())) return;
 
 		/***************************************************************************************************************************************
 		 * WRITE OUT LOW RES ORTHOPHOTO PATCHES
-		 ***************************************************************************************************************************************/	
+		 ***************************************************************************************************************************************/
 
 		is_overwater = IsCustomOverWater(lu_ranked->first);
 		is_water = lu_ranked->first == terrain_Water;
-#if !NO_ORTHO		
+#if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
 		{
@@ -907,7 +907,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (tri = 0; tri < sLoResTris[cur_id].size(); ++tri)
 			{
 				f = sLoResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first)	
+				if (f->info().terrain == lu_ranked->first)
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -916,7 +916,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			fan_builder.CalcFans();
 			cbs.BeginPatch_f(lu_ranked->second, ORTHO_NEAR_LOD, ORTHO_FAR_LOD, 0, 5, writer1);
 			list<CDT::Vertex_handle>				primv;
-			list<CDT::Vertex_handle>::iterator		vert;			
+			list<CDT::Vertex_handle>::iterator		vert;
 			int										primt;
 			while(1)
 			{
@@ -931,30 +931,30 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					tris_this_patch += (primv.size() / 3);
 				}
 				if
-				cbs.BeginPrimitive_f(primt, writer1);				
+				cbs.BeginPrimitive_f(primt, writer1);
 				for(vert = primv.begin(); vert != primv.end(); ++vert)
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
 					coords8[2] = (*vert)->info().height;
 					coords8[3] = (*vert)->info().normal[0];
-					coords8[4] =-(*vert)->info().normal[1];						
+					coords8[4] =-(*vert)->info().normal[1];
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer1);						
+					cbs.AddPatchVertex_f(coords8, writer1);
 				}
 				cbs.EndPrimitive_f(writer1);
 			}
 			cbs.EndPatch_f(writer1);
 			++total_patches;
 		}
-#endif		
+#endif
 
 		/***************************************************************************************************************************************
 		 * WRITE OUT HI RES BASE PATCHES
-		 ***************************************************************************************************************************************/	
+		 ***************************************************************************************************************************************/
 		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)
 		if (sHiResLU[cur_id].count(lu_ranked->first))
 		{
@@ -971,12 +971,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				}
 			}
 			fan_builder.CalcFans();
-			
-			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;			
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 5 : (pinfo ? 7 : 5), writer1);			
+
+			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 5 : (pinfo ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
-			list<CDT::Vertex_handle>::iterator		vert;			
-			int										primt;			
+			list<CDT::Vertex_handle>::iterator		vert;
+			int										primt;
 			while(1)
 			{
 				primt = fan_builder.GetNextPrimitive(primv);
@@ -989,14 +989,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					total_tris += (primv.size() / 3);
 					tris_this_patch += (primv.size() / 3);
 				}
-				cbs.BeginPrimitive_f(primt, writer1);				
+				cbs.BeginPrimitive_f(primt, writer1);
 				for(vert = primv.begin(); vert != primv.end(); ++vert)
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
 					coords8[2] = (*vert)->info().height;
 					coords8[3] = (*vert)->info().normal[0];
-					coords8[4] =-(*vert)->info().normal[1];						
+					coords8[4] =-(*vert)->info().normal[1];
 	//				if (is_water)
 	//					coords8[5] = GetWaterBlend(vert, waterType);
 	//				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
@@ -1004,17 +1004,17 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer1);						
+					cbs.AddPatchVertex_f(coords8, writer1);
 				}
-				cbs.EndPrimitive_f(writer1);				
+				cbs.EndPrimitive_f(writer1);
 			}
 			cbs.EndPatch_f(writer1);
 			++total_patches;
-		}		
+		}
 
 		/***************************************************************************************************************************************
 		 * WRITE OUT HI RES BORDER PATCHES
-		 ***************************************************************************************************************************************/	
+		 ***************************************************************************************************************************************/
 
 #if !NO_BORDERS
 		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)		// For each triangle in this patch
@@ -1022,7 +1022,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
 			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, TERRAIN_FAR_BORDER_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer1);
-			cbs.BeginPrimitive_f(dsf_Tri, writer1);				
+			cbs.BeginPrimitive_f(dsf_Tri, writer1);
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
 			{
@@ -1033,11 +1033,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					int vi;
 					for (vi = 0; vi < 3; ++vi)
 						bblend[vi] = f->vertex(vi)->info().border_blend[lu_ranked->first];
-					
+
 					// Ben says: normally we would like to draw one DSF overdrawn tri for each border tri.  But there is an exception case:
 					// if ALL of our border blends are 100% but our border is NOT a variant (e.g. this is a meaningful border change) then
 					// we really need to make 3 border tris that all fade out...this allows the CENTER of our tri to show the base terrain
-					// while the borders show the neighboring tris.  (Without this, a single tri of cliff will be COMPLETELY covered by 
+					// while the borders show the neighboring tris.  (Without this, a single tri of cliff will be COMPLETELY covered by
 					// the non-cliff terrain surrouding on 3 sides.)  In this case we make THREE passes and force one vertex to 0% blend for
 					// each pass.
 					int ts = -1, te = 0;
@@ -1048,17 +1048,17 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					{
 						ts = 0; te = 3;
 					}
-					
+
 					for (int border_pass = ts; border_pass < te; ++border_pass)
 					{
-				
+
 						if (tris_this_patch >= MAX_TRIS_PER_PATCH)
 						{
 							cbs.EndPrimitive_f(writer1);
-							cbs.BeginPrimitive_f(dsf_Tri, writer1);				
+							cbs.BeginPrimitive_f(dsf_Tri, writer1);
 							tris_this_patch = 0;
 						}
-					
+
 						for (vi = 2; vi >= 0 ; --vi)
 						{
 							coords8[0] = f->vertex(vi)->point().x();
@@ -1080,30 +1080,30 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						}
 						++total_tris;
 						++border_tris;
-						++tris_this_patch;						
-					}										
+						++tris_this_patch;
+					}
 				}
 			}
 			cbs.EndPrimitive_f(writer1);
 			cbs.EndPatch_f(writer1);
 			++total_patches;
 		}
-#endif		
+#endif
 	}
-	
+
 	if(writer1)
 	for (lu = landuses_reversed.begin(); lu != landuses_reversed.end(); ++lu)
 	{
 		string def = get_terrain_name(lu->second);
 		cbs.AcceptTerrainDef_f(def.c_str(), writer1);
 	}
-	
-	if (inProgress && inProgress(1, 5, "Sorting Mesh", 1.0)) return;	
+
+	if (inProgress && inProgress(1, 5, "Sorting Mesh", 1.0)) return;
 
 	/****************************************************************
 	 * BEACH EXPORT
 	 ****************************************************************/
-	
+
 	if(0)
 	if(writer1)
 	{
@@ -1115,7 +1115,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		typedef edge_hash_map														LinkMap;
 		typedef set<edge_wrapper>													LinkSet;
 		typedef edge_info_map														LinkInfo;
-		
+
 		LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
 		LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.
 		LinkInfo		all;		// Ones we haven't exported.
@@ -1136,7 +1136,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			{
 				all[edge] = beachKind;
 				starts.insert(edge);
-				// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise. 
+				// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise.
 				// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
 				for (edge_wrapper iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
 				{
@@ -1164,14 +1164,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		// Export non-ring beaches.  For each link that's not pointed to by someone else
 		// export the chain.
-		
+
 		for (LinkSet::iterator a_start = starts.begin(); a_start != starts.end(); ++a_start)
 		{
 			FixBeachContinuity(linkNext, *a_start, all);
-		
+
 			cbs.BeginPolygon_f(0, 0, 6, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
-			
+
 			for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
 			{
 	//			printf("output non-circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
@@ -1185,8 +1185,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			DebugAssert(all.count(*a_start) == 0);
 
 			BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
-			cbs.AddPolygonPoint_f(coords6, writer1);	
-			
+			cbs.AddPolygonPoint_f(coords6, writer1);
+
 			cbs.EndPolygonWinding_f(writer1);
 			cbs.EndPolygon_f(writer1);
 		}
@@ -1198,14 +1198,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 	#endif
 
-		// Now just pick an edge and export in a circulator - we should only have rings!	
+		// Now just pick an edge and export in a circulator - we should only have rings!
 		while (!all.empty())
 		{
 			edge_wrapper this_start = all.begin()->first;
-			FixBeachContinuity(linkNext, this_start, all);	
+			FixBeachContinuity(linkNext, this_start, all);
 			cbs.BeginPolygon_f(0, 1, 6, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
-		
+
 			beach = this_start;
 			do {
 	//			printf("output circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
@@ -1213,13 +1213,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(linkNext.count(beach) != 0);
 				beachKind = all.begin()->second;
 				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-				cbs.AddPolygonPoint_f(coords6, writer1);			
+				cbs.AddPolygonPoint_f(coords6, writer1);
 				all.erase(beach);
 				beach = linkNext[beach];
-			} while (beach != this_start);		
+			} while (beach != this_start);
 			cbs.EndPolygonWinding_f(writer1);
 			cbs.EndPolygon_f(writer1);
-			
+
 		}
 		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
 	}
@@ -1227,21 +1227,21 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/
 
-	if (inProgress && inProgress(2, 5, "Compiling Objects", 0.0)) return;	
+	if (inProgress && inProgress(2, 5, "Compiling Objects", 0.0)) return;
 
 	// First go through and accumulate our object and facade types.
 	// We need this in advance so we can figure out the DSF-relative
 	// IDs.
-	
+
 	for (pf = inVectorMap.faces_begin(); pf != inVectorMap.faces_end(); ++pf)
 	if (!pf->is_unbounded())
 	{
 		for (pointObj = pf->mObjs.begin(); pointObj != pf->mObjs.end(); ++pointObj)
-			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));		
+			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));
 		for (polyObj = pf->mPolyObjs.begin(); polyObj != pf->mPolyObjs.end(); ++polyObj)
 			facades.insert(map<int, int>::value_type(polyObj->mRepType, 0));
 	}
-	
+
 	int lowest_required = objects.size();
 
 	// Farm out object IDs.
@@ -1253,7 +1253,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (IsFeatureObject(obdef_prio->first))
 			lowest_required = min(lowest_required, cur_id);
 	}
-	
+
 	if(writer2)
 	if (lowest_required != objects.size())
 	{
@@ -1261,18 +1261,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		sprintf(buf,"1/%d", lowest_required);
 		cbs.AcceptProperty_f("sim/require_object", buf, writer2);
 	}
-	
+
 	cur_id = (writer2 == writer1 ? 1 : 0);
 	for (obdef = facades.begin(); obdef != facades.end(); ++obdef, ++cur_id)
 	{
 		obdef->second = cur_id;
 		facades_reversed[cur_id] = obdef->first;
 	}
-	
-	// Now go through and emit the objects.  Note: there is no point to 
+
+	// Now go through and emit the objects.  Note: there is no point to
 	// sorting them - the DSF lib is good about cleaning up the object
 	// data you give it.
-	
+
 	if(writer2)
 	for (pf = inVectorMap.faces_begin(); pf != inVectorMap.faces_end(); ++pf)
 	if (!pf->is_unbounded())
@@ -1288,7 +1288,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				writer2);
 			++total_objs;
 		}
-		
+
 		for (polyObj = pf->mPolyObjs.begin(); polyObj != pf->mPolyObjs.end(); ++polyObj)
 		{
 			bool	 broken = false;
@@ -1304,26 +1304,26 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					broken = true;
 				}
 			}
-			
-			if (broken) 
+
+			if (broken)
 				continue;
 
 			if(polyObj->mShape.size() > 254)
 				continue;
-							
+
 			cbs.BeginPolygon_f(
 					facades[polyObj->mRepType],
 					polyObj->mHeight, 2,
 					writer2);
 			for (polyRing = polyObj->mShape.begin(); polyRing != polyObj->mShape.end(); ++polyRing)
 			{
-				cbs.BeginPolygonWinding_f(writer2);					
+				cbs.BeginPolygonWinding_f(writer2);
 				for (polyPt = polyRing->begin(); polyPt != polyRing->end(); ++polyPt)
 				{
 					coords2[0] = polyPt->x;
 					coords2[1] = polyPt->y;
 					cbs.AddPolygonPoint_f(coords2, writer2);
-					
+
 				}
 				cbs.EndPolygonWinding_f(writer2);
 			}
@@ -1332,7 +1332,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 	}
 
-	// Write out definition names too.	
+	// Write out definition names too.
 	if(writer2)
 	for (obdef = objects_reversed.begin(); obdef != objects_reversed.end(); ++obdef)
 	{
@@ -1354,15 +1354,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.AcceptPolygonDef_f(facName.c_str(), writer2);
 	}
 
-	if (inProgress && inProgress(2, 5, "Compiling Objects", 1.0)) return;	
+	if (inProgress && inProgress(2, 5, "Compiling Objects", 1.0)) return;
 
 	/***************************************************************
-	 * HACKED TREE CODE 
+	 * HACKED TREE CODE
 	 ****************************************************************/
 
 #if TEST_FORESTS
 	if(writer2)
-	{	 
+	{
 		int for_def = facades_reversed.size() + 1;
 		cbs.BeginPolygon_f(for_def, 255, 2, writer2);
 		cbs.BeginPolygonWinding_f(writer2);
@@ -1429,7 +1429,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		cbs.AcceptPolygonDef_f("test.for", writer2);
 	}
-#endif	 
+#endif
 
 	/****************************************************************
 	 * VECTOR EXPORT
@@ -1437,13 +1437,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	static int vec_export_hint_id = CDT::gen_cache_key();
 
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.0)) return;	
+	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.0)) return;
 
 	if(writer2)
 	if (gDSFBuildPrefs.export_roads)
 	{
 
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.3)) return;	
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.3)) return;
 
 		{
 			TIMER(BuildNetworkTopology)
@@ -1451,15 +1451,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		{
 			TIMER(DrapeRoads)
-			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
+			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;
 			DrapeRoads(junctions, chains, inHiresMesh);
 		}
-		{	
+		{
 			TIMER(PromoteShapePoints)
 			PromoteShapePoints(junctions, chains);
 		}
 		{
-			TIMER(VerticalPartitionRoads)		
+			TIMER(VerticalPartitionRoads)
 			VerticalPartitionRoads(junctions, chains);
 		}
 		{
@@ -1486,14 +1486,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			TIMER(SpacePowerlines)
 			SpacePowerlines(junctions, chains, 1000.0, 10.0);
 		}
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;	
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;
 
 		cur_id = 1;
 		for (ji = junctions.begin(); ji != junctions.end(); ++ji)
 			(*ji)->index = cur_id++;
 
 			vector<Point3>	intermediates;
-				
+
 		for (ci = chains.begin(); ci != chains.end(); ++ci)
 		{
 			coords3[0] = (*ci)->start_junction->location.x;
@@ -1501,16 +1501,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			coords3[2] = (*ci)->start_junction->location.z;
 			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 				printf("WARNING: coordinate out of range.\n");
-				
+
 			cbs.BeginSegment_f(
-							0, 
+							0,
 							(*ci)->export_type,
 							(*ci)->start_junction->index,
 							coords3,
 							false,
 							writer2);
 			++total_chains;
-			
+
 			for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
 			{
 				coords3[0] = shapePoint->x;
@@ -1527,20 +1527,20 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			coords3[1] = (*ci)->end_junction->location.y;
 			coords3[2] = (*ci)->end_junction->location.z;
 			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
-				printf("WARNING: coordinate out of range.\n");		
+				printf("WARNING: coordinate out of range.\n");
 			cbs.EndSegment_f(
 					(*ci)->end_junction->index,
 					coords3,
 					false,
 					writer2);
 		}
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;	
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;
 
 		CleanupNetworkTopology(junctions, chains);
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;	
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
 		cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer2);
 	}
-	
+
 	/****************************************************************
 	 * MANIFEST
 	 ****************************************************************/
@@ -1555,7 +1555,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer1);
 		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer1);
 	}
-	
+
 	if (writer2 && writer2 != writer1)
 	{
 		sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer2);
@@ -1567,18 +1567,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer2);
 		cbs.AcceptProperty_f("sim/overlay", "1", writer2);
 	}
-	
+
 	/****************************************************************
 	 * WRITEOUT
 	 ****************************************************************/
-	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.0)) return;	
+	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.0)) return;
 	if (writer1) DSFWriteToFile(inFileName1, writer1);
-	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.5)) return;	
+	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.5)) return;
 	if (writer2 && writer2 != writer1) DSFWriteToFile(inFileName2, writer2);
-	if (inProgress && inProgress(4, 5, "Writing DSF file", 1.0)) return;	
-	
+	if (inProgress && inProgress(4, 5, "Writing DSF file", 1.0)) return;
+
 	printf("Patches: %d, Free Tris: %d, Tri Fans: %d, Tris in Fans: %d, Border Tris: %d, Avg Per Patch: %f, avg per fan: %f\n",
-		total_patches, total_tris, total_tri_fans, total_tri_fan_pts, border_tris, 
+		total_patches, total_tris, total_tri_fans, total_tri_fan_pts, border_tris,
 		(float) (total_tri_fan_pts + total_tris) / (float) total_patches,
 		(total_tri_fans == 0) ? 0.0 : ((float) (total_tri_fan_pts) / (float) total_tri_fans));
 	printf("Objects: %d, Polys: %d\n", total_objs, total_polys);

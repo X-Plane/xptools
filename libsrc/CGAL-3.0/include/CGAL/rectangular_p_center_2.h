@@ -183,13 +183,13 @@ rectangular_p_center_2_binary_search(
   CGAL_optimisation_assertion(
     c_diffs.size() == pierce_it.number_of_points() *
     (pierce_it.number_of_points() - 1));
-  
+
   // sort it:
   sort( c_diffs.begin(), c_diffs.end());
   // search it:
   int b( 0);
   int e( c_diffs.size());
-  
+
   // invariant of the following loop:
   // forall 0 <= a < b: c_diffs[a] is infeasible  AND
   // forall e <= a < c_diffs.size(): c_diffs[a] is feasible
@@ -205,7 +205,7 @@ rectangular_p_center_2_binary_search(
     }
   } // while ( e > b)
   CGAL_optimisation_assertion( e == b);
-  
+
   // return the result:
   r = c_diffs[e];
   OutputIterator o_return( pierce_it( r, o, ok));
@@ -274,14 +274,14 @@ rectangular_p_center_2_matrix_search(
     x_coords.push_back(p->x());
     y_coords.push_back(p->y());
   }
-  
+
   // sort coordinates:
   sort( x_coords.begin(), x_coords.end());
   sort( y_coords.begin(), y_coords.end());
-  
+
   // create matrices:
   MatrixContainer matrices;
-  
+
   // create matrix of x-differences:
   matrices.push_back(
     Matrix( x_coords.begin(),
@@ -289,7 +289,7 @@ rectangular_p_center_2_matrix_search(
             x_coords.begin(),
             x_coords.end(),
             mop));
-  
+
   // create matrix of y-differences:
   matrices.push_back(
     Matrix( y_coords.begin(),

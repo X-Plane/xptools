@@ -4,30 +4,30 @@
  * Copyright (c) 1990-1997 Sam Leffler
  * Copyright (c) 1991-1997 Silicon Graphics, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
 /*
  *	convert a GIF file into a TIFF file.
  *	based on Paul Haeberli's fromgif program which in turn is
- *	based on a GIF file reader by Marcel J.E. Mol March 23 1989 
+ *	based on a GIF file reader by Marcel J.E. Mol March 23 1989
  *
  *	if input is 320 by 200 pixel aspect is probably 1.2
  *	if input is 640 350 pixel aspect is probably 1.37
@@ -60,7 +60,7 @@ makegamtab(float gam)
 {
     int i;
 
-    for(i=0; i<256; i++) 
+    for(i=0; i<256; i++)
 	gamtab[i] = (unsigned short) (IMAX*pow(i/255.0,gam)+0.5);
 }
 
@@ -237,8 +237,8 @@ checksignature(void)
 }
 
 /*
- * 	readscreen - 
- *		Get information which is global to all the images stored 
+ * 	readscreen -
+ *		Get information which is global to all the images stored
  *	in the file
  */
 void
@@ -374,9 +374,9 @@ exitloop:
 }
 
 /*
- * 	process - 
- *		Process a compression code.  "clear" resets the code table.  
- *	Otherwise make a new code table entry, and output the bytes 
+ * 	process -
+ *		Process a compression code.  "clear" resets the code table.
+ *	Otherwise make a new code table entry, and output the bytes
  *	associated with the code.
  */
 int
@@ -400,7 +400,7 @@ process(register int code, unsigned char** fill)
     }
     if (code > avail) {
 	fprintf(stderr, "code %d too large for %d\n", code, avail);
-	return 0; 
+	return 0;
     }
 
     incode = code;
@@ -432,7 +432,7 @@ process(register int code, unsigned char** fill)
 /*
  * 	initcolors -
  *		Convert a color map (local or global) to arrays with R, G and B
- * 	values. 
+ * 	values.
  *
  */
 void
@@ -473,7 +473,7 @@ rasterize(int interleaved, char* mode)
         DRAWSEGMENT(4, 8);
         DRAWSEGMENT(2, 4);
         DRAWSEGMENT(1, 2);
-    } else 
+    } else
         DRAWSEGMENT(0, 1);
 #undef DRAWSEGMENT
 
@@ -488,7 +488,7 @@ rasterize(int interleaved, char* mode)
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
     TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, 
+    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
 	rowsperstrip = TIFFDefaultStripSize(tif, rowsperstrip));
     TIFFSetField(tif, TIFFTAG_COMPRESSION, compression);
     switch (compression) {

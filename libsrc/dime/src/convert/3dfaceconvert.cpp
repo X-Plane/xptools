@@ -31,14 +31,14 @@
 #include <dime/util/Linear.h>
 #include <dime/State.h>
 
-void 
-convert_3dface(const dimeEntity *entity, const dimeState *state, 
+void
+convert_3dface(const dimeEntity *entity, const dimeState *state,
 	       dxfLayerData *layerData, dxfConverter *)
 {
   dimeMatrix matrix;
   state->getMatrix(matrix);
   dime3DFace *face = (dime3DFace*)entity;
-  
+
   dimeVec3f v0, v1, v2, v3;
   face->getVertices(v0, v1, v2, v3);
 

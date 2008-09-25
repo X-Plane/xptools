@@ -100,7 +100,7 @@ power_testH3(
 		thz.interval(),
 		thw.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testH3 failures");
@@ -195,7 +195,7 @@ power_testH3(
 		thz.interval(),
 		thw.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testH3 failures");

@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_PREDICATES_ON_POINTSH2_H
 #define CGAL_PREDICATES_ON_POINTSH2_H

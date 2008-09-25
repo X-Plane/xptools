@@ -35,18 +35,18 @@ public:
   typedef typename Arrangement::Subcurve_iterator       Subcurve_iterator;
   typedef typename Arrangement::Edge_iterator           Edge_iterator;
   typedef typename Arrangement::Curve_const_iterator    Curve_const_iterator;
-  typedef typename Arrangement::Subcurve_const_iterator   
+  typedef typename Arrangement::Subcurve_const_iterator
                                                     Subcurve_const_iterator;
   typedef typename Arrangement::Edge_const_iterator     Edge_const_iterator;
 
   Arr_file_writer(std::ostream & o,
                   const Arrangement & arr,
-                  bool verbose = false) : 
+                  bool verbose = false) :
     Pm_file_writer<Arrangement>(o, arr, verbose) {}
 
-  Arr_file_writer(std::ostream & o, const File_header& h) : 
+  Arr_file_writer(std::ostream & o, const File_header& h) :
     Pm_file_writer<Arrangement>(o, h) {}
-  
+
   void write_curve (Curve_iterator cv){
     out () << cv->curve() << std::endl;
   }
@@ -62,11 +62,11 @@ public:
   void write_subcurve (Subcurve_const_iterator scv){
     out () << scv->x_curve() << std::endl;
   }
-  
+
   void write_edge(Edge_iterator edge){
     out () << edge->x_curve() << std::endl;
   }
-  
+
   void write_edge(Edge_const_iterator edge){
     out () << edge->x_curve() << std::endl;
   }

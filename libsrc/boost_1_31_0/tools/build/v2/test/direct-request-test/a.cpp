@@ -6,15 +6,15 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 //
 //  http://www.boost.org
-// 
+//
 
 void
 # ifdef _WIN32
 __declspec(dllimport)
-# endif 
+# endif
 foo();
 
-int main() 
+int main()
 {
     foo();
 }

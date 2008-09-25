@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -84,26 +84,26 @@ void	WED_Helipad::Import(const AptHelipad_t& x, void (* print_func)(void *, cons
 	{
 		print_func(ref,"Error importing helipad: surface code %d is illegal (not a member of type %s).\n", x.surface_code, DOMAIN_Fetch(surface.domain));
 		surface = surf_Concrete;
-	}	
+	}
 	markings = ENUM_Import(Helipad_Markings, x.marking_code);
 	if (markings == -1)
 	{
 		print_func(ref,"Error importing helipad: markings code %d is illegal (not a member of type %s).\n", x.marking_code, DOMAIN_Fetch(markings.domain));
 		markings = heli_Mark_Default;
-	}	
+	}
 	shoulder = ENUM_Import(Shoulder_Type, x.shoulder_code);
 	if (shoulder == -1)
 	{
 		print_func(ref,"Error importing helipad: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Fetch(shoulder.domain));
 		shoulder = shoulder_None;
-	}	
+	}
 	edgelights = ENUM_Import(Heli_Lights, x.edge_light_code);
 	if (edgelights == -1)
 	{
 		print_func(ref,"Error importing helipad: edge-lights code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Fetch(edgelights.domain));
 		edgelights = heli_Yellow;
-	}	
-	roughness = x.roughness_ratio;	
+	}
+	roughness = x.roughness_ratio;
 }
 
 

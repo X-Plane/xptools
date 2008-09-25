@@ -21,7 +21,7 @@
 //
 // Author(s)     : Sven Schoenherr
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_CIRCLEH2_H
 #define CGAL_CIRCLEH2_H

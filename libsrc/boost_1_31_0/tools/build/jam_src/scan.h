@@ -18,8 +18,8 @@
  *
  * The yymode() function is for the parser to adjust the lexicon of the
  * scanner.  Aside from normal keyword scanning, there is a mode to
- * handle action strings (look only for the closing }) and a mode to 
- * ignore most keywords when looking for a punctuation keyword.  This 
+ * handle action strings (look only for the closing }) and a mode to
+ * ignore most keywords when looking for a punctuation keyword.  This
  * allows non-punctuation keywords to be used in lists without quoting.
  */
 

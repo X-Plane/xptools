@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,7 +27,7 @@
 
 /*
  * DSFLib Error enumerations.
- * 
+ *
  * DSFReadFile and DSFReadMem return one of these values.
  *
  */
@@ -48,7 +48,7 @@ enum {
 	dsf_ErrUserCancel,					/* The NextPass_f callback returned false to cancel reading the next pass.					*/
 	dsf_ErrPoolOutOfRange,				/* A bad DSF point pool was selected.  (Usually a semantically corrupt file.)				*/
 	dsf_ErrBadChecksum					/* MD5 signature is bad - indicates poorly made DSF?										*/
-};	
+};
 
 /*
  * Other DSF enumerations
@@ -60,7 +60,7 @@ enum {
 	dsf_Tri,				/* DSF Triangle - three vertices form one triangle.							*/
 	dsf_TriStrip,			/* DSF Triangle Strip - N+2 vertices form N triangles (like OpenGL.)		*/
 	dsf_TriFan,				/* DSF Triangle Fan - N+2 vertices form N triangles (like OpenGL.)			*/
-	
+
 	/* Pass flags - these flags filter DSF callbacks when reading the file. */
 	dsf_CmdProps   = 0x01,	/* Return properties.							*/
 	dsf_CmdDefs    = 0x02,	/* Return definitions							*/
@@ -75,7 +75,7 @@ enum {
 /*
  * Error message strings
  *
- * DSFLib contains an array of null terminated C strings with text versions of the 
+ * DSFLib contains an array of null terminated C strings with text versions of the
  * error returns that can be shown to the user for diagnostic purposes.
  *
  */
@@ -98,17 +98,17 @@ struct	DSFCallbacks_t {
 	void (*	AcceptObjectDef_f )(const char * inPartialPath, void * inRef);
 	void (*	AcceptPolygonDef_f)(const char * inPartialPath, void * inRef);
 	void (*	AcceptNetworkDef_f)(const char * inPartialPath, void * inRef);
-	
+
 	/* This function accepts properties from the file. */
 	void (* AcceptProperty_f)(const char * inProp, const char * inValue, void * inRef);
-	
+
 	/* These functions build patches.  You receive a start
 	 * patch, then a set of homogenous triangles, then an
 	 * end patch.  All patch vertices must match the number
 	 * of coordinates passed in inCoordDepth. */
 	void (* BeginPatch_f)(
 					unsigned int	inTerrainType,
-					double 			inNearLOD, 
+					double 			inNearLOD,
 					double 			inFarLOD,
 					unsigned char	inFlags,
 					int				inCoordDepth,
@@ -118,9 +118,9 @@ struct	DSFCallbacks_t {
 					void *			inRef);
 	void (* AddPatchVertex_f)(
 					double			inCoordinates[],
-					void *			inRef);					
+					void *			inRef);
 	void (* EndPrimitive_f)(
-					void *			inRef);					
+					void *			inRef);
 	void (* EndPatch_f)(
 					void *			inRef);
 
@@ -130,7 +130,7 @@ struct	DSFCallbacks_t {
 					unsigned int	inObjectType,
 					double			inCoordinates[2],
 					double			inRotation,
-					void *			inRef);					
+					void *			inRef);
 
 	/* This function adds a complete chain.  All chains
 	 * take 3 coordinates for non-curved nodes and 6
@@ -141,7 +141,7 @@ struct	DSFCallbacks_t {
 					unsigned int	inStartNodeID,
 					double			inCoordinates[],
 					bool			inCurved,
-					void *			inRef);					
+					void *			inRef);
 	void (*	AddSegmentShapePoint_f)(
 					double			inCoordinates[],
 					bool			inCurved,
@@ -150,7 +150,7 @@ struct	DSFCallbacks_t {
 					unsigned int	inEndNodeID,
 					double			inCoordinates[],
 					bool			inCurved,
-					void *			inRef);					
+					void *			inRef);
 
 	/* These functions add polygons.  You'll get at least
 	 * one winding per polygon.  All polygons take two
@@ -159,14 +159,14 @@ struct	DSFCallbacks_t {
 					unsigned int	inPolygonType,
 					unsigned short	inParam,
 					int				inCoordDepth,
-					void *			inRef);					
+					void *			inRef);
 	void (* BeginPolygonWinding_f)(
-					void *			inRef);					
+					void *			inRef);
 	void (* AddPolygonPoint_f)(
 					double *		inCoordinates,
-					void *			inRef);					
+					void *			inRef);
 	void (* EndPolygonWinding_f)(
-					void *			inRef);					
+					void *			inRef);
 	void (* EndPolygon_f)(
 					void *			inRef);
 
@@ -188,7 +188,7 @@ struct	DSFCallbacks_t {
  *
  * inRef is a void * passed to each of your callbacks.
  *
- * if inPasses is not NULL, it is an array of ints with a 
+ * if inPasses is not NULL, it is an array of ints with a
  * set of filter flags indicating what callbacks you want
  * for each pass over the file.  You must return true from
  * your nextPass routine to go to the next pass.  The last

@@ -37,26 +37,26 @@ typedef CGAL::Creator_uniform_3<RT,Point_3> Creator;
 typedef CGAL::Random_points_in_cube_3<Point_3,Creator> Point_source;
 
 int main(int argc, char* argv[]) {
-  int dimension = 3;  
-  int n = 100; 
+  int dimension = 3;
+  int n = 100;
   if (argc > 1 && std::string(argv[1])=="-h") {
     std::cout << "usage: ch5-demo [#points]\n";
     exit(1);
   }
   if (argc > 1) n = atoi(argv[1]);
- 
+
   int r = 2*n;
   CGAL::Geomview_stream gv(CGAL::Bbox_3(-r, -r, -r, r, r, r));
   gv.clear();
 
 
-  Convex_hull_d T(dimension);  
+  Convex_hull_d T(dimension);
   Point_source g(n);
   for(int i=0; i<n; ++i) {
     T.insert(*g++);
     if (i%10==0) std::cout << i << " points inserted" << std::endl;
   }
-  T.is_valid(true); 
+  T.is_valid(true);
 
   Polyhedron P;
   CGAL::convex_hull_d_to_polyhedron_3(T,P);
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
 #else // on windows:
 
 int main(int argc, char* argv[]) {
-  std::cerr << 
+  std::cerr <<
   "This demo requires geomview, that is is not present on windows\n";
   return 0;
 }

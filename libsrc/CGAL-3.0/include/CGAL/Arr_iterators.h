@@ -395,7 +395,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 // ARR OVERLAP CIRCULATOR
-// bidirectional circulator over overlapping edges - like above 
+// bidirectional circulator over overlapping edges - like above
 
 template < class Node, class It, class Ctg>
 class Arr_overlap_circulator : public It {
@@ -443,8 +443,8 @@ public:
   }
 
   Self& operator++() {
-    //for this Subcurve_node needs to make the circ a friend 
-    nt = (*nt).past_end_child; 
+    //for this Subcurve_node needs to make the circ a friend
+    nt = (*nt).past_end_child;
     return *this;
   }
   Self  operator++(int) {
@@ -577,7 +577,7 @@ public:
 
 
 
-#ifdef BOGI 
+#ifdef BOGI
 //old implementation
 
 #ifdef CGAL_CFG_NO_DEFAULT_PREVIOUS_TEMPLATE_ARGUMENTS
@@ -607,7 +607,7 @@ public:
   typedef size_t           size_type;
   //typedef           Ref                    reference;
   //just for this special case (since Fct is an iterator) :
-  typedef           Fct                    reference; 
+  typedef           Fct                    reference;
   //typedef           Ptr                    pointer;
   typedef           C                    pointer;  //just for this special case
 
@@ -723,7 +723,7 @@ query_circulator_or_iterator(const Arr_overlap_circulator<C,Fct/*,Ref,Ptr*/>&)
 CGAL_END_NAMESPACE
 
 
-#endif 
+#endif
 // EOF //
 
 

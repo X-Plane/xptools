@@ -53,7 +53,7 @@ class Partition_traits_2  : public Partition_traits_2_base<Kernel_>
     typedef typename Kernel::Is_horizontal_2            Is_horizontal_2;
 
     // needed by visibility graph and thus by optimal convex
-    typedef typename Kernel::Ray_2                      Ray_2; 
+    typedef typename Kernel::Ray_2                      Ray_2;
     typedef typename Kernel::Collinear_are_ordered_along_line_2
                                             Collinear_are_ordered_along_line_2;
     typedef typename Kernel::Are_strictly_ordered_along_line_2
@@ -69,7 +69,7 @@ class Partition_traits_2  : public Partition_traits_2_base<Kernel_>
     typedef typename Kernel::Construct_segment_2        Construct_segment_2;
     typedef typename Kernel::Construct_ray_2            Construct_ray_2;
 
- 
+
     Construct_line_2
     construct_line_2_object() const
     {  return Construct_line_2(); }

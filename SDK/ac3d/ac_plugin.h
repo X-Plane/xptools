@@ -121,10 +121,10 @@ typedef void *ACImage;
 typedef void *ACObject;
 typedef void *ACJoint;
 
-/** object types used in new_object(type) **/ 
+/** object types used in new_object(type) **/
 #define OBJECT_NORMAL 0  /** polygon based object **/
 #define OBJECT_GROUP 1
-#define OBJECT_LIGHT 2 
+#define OBJECT_LIGHT 2
 #define OBJECT_WORLD 999  /** toplevel world object type **/
 
 
@@ -183,7 +183,7 @@ typedef struct svertex_t
 	Point3 normal; // vertex normal
 
 	// extra private stuff is here
-} SVertex;  
+} SVertex;
 
 #define SVERTEX(p) (((Vertex *) ((SVertex *)p)->v)) /** get the vertex out of an SVertex **/
 
@@ -254,7 +254,7 @@ typedef struct material_template_t
 
 
 Prototype double ac_get_version_number();
-Prototype double ac_get_version_revision(); // minor revision number e.g. '6' for 4.0f (or 4.0.6) 
+Prototype double ac_get_version_revision(); // minor revision number e.g. '6' for 4.0f (or 4.0.6)
 Prototype char *tcl_eval_file(char *str);
 Prototype char *tcl_command(char *fmt, ...);
 Prototype void ac_add_command(char *name, void (*function)( ) );
@@ -268,7 +268,7 @@ Prototype char *ac_get_export_filename(char *title, char **suffix); // returns a
 Prototype char *ac_get_export_folder(char *title); // returns a static string or NULL
 Prototype int ac_get_filesize(char *filename);
 Prototype ACObject *ac_get_world();
-Prototype Boolean ac_replace_command_function(char *name, void *function); 
+Prototype Boolean ac_replace_command_function(char *name, void *function);
 Prototype void ac_add_command_full(char *name, void *function, int numargs, char *args, char *usage, char *desc);
 
 
@@ -490,8 +490,8 @@ Prototype SVertex *surface_add_vertex(Surface *s, Vertex *p, float tx, float ty)
 Prototype SVertex *surface_add_vertex_head(Surface *s, Vertex *p, float tx, float ty);
 Prototype void surface_set_shading(Surface *s, Boolean g);
 Prototype int surface_replace_vertex_all(Surface *s, Vertex *search, Vertex *replace);
-Prototype Boolean surface_delete_svertex(Surface *s, SVertex *sv); /** remove vertex references from a surface - doesnt free vertex **/ 
-Prototype int surface_remove_vertex(Surface *s, Vertex *v); /** remove vertex references from a surface - doesnt free vertex **/ 
+Prototype Boolean surface_delete_svertex(Surface *s, SVertex *sv); /** remove vertex references from a surface - doesnt free vertex **/
+Prototype int surface_remove_vertex(Surface *s, Vertex *v); /** remove vertex references from a surface - doesnt free vertex **/
 Prototype void surface_copy_properties(Surface *from, Surface *to);
 Prototype SVertex *new_svertex(Vertex *vert, float tx, float ty);
 Prototype void svertex_free(SVertex *sv);
@@ -517,7 +517,7 @@ Prototype int surface_get_twosided(Surface *s);  // returns boolean
 Prototype int surface_get_type(Surface *s); // returns SURFACE_*
 Prototype SVertex *svertex_clone(SVertex *sv);
 Prototype Point3 *ac_surface_get_normal(Surface *s);
-Prototype List *ac_surfacelist_get_surfaces_with_col(List *slist, int col); // call list_free on result!  
+Prototype List *ac_surfacelist_get_surfaces_with_col(List *slist, int col); // call list_free on result!
 Prototype List *ac_surfacelist_get_cols_used(List *slist);  // call list_free on result!
 Prototype SVertex *surface_get_svertex_after(Surface *s, SVertex *svp);
 Prototype Vertex *surface_get_vertex(Surface *s, int indexnum);
@@ -564,7 +564,7 @@ Prototype void ac_object_get_selected_edges(ACObject *ob, Boolean wholesurfaceso
 
 /* selectmodes */
 #define SELECT_TREE 0 /** the group button used to be 'tree' **/
-#define SELECT_GROUP 0 
+#define SELECT_GROUP 0
 #define SELECT_OBJECT 1
 #define SELECT_SURFACE 2
 #define SELECT_VERTEX 3
@@ -583,7 +583,7 @@ Prototype List *ac_selection_get_vertices(); // call in vertex select mode, free
 Prototype List *ac_selection_get_surfaces(); // call in surface select mode, free list after
 Prototype List *ac_selection_get_objects(); // call in object or group select mode, free list after
 Prototype List *ac_selection_get_objects_ordered(); // in the order they were selected. free the returned list
-Prototype List *ac_selection_get_part_selected_objects(); // free the returned list 
+Prototype List *ac_selection_get_part_selected_objects(); // free the returned list
 Prototype List *ac_selection_get_unselected_objects(); // free the returned list when done
 Prototype List *ac_selection_get_groups(); // gets all selected toplevel obs, call in object or group select mode, free returned list
 Prototype List *ac_selection_get_whole_surfaces_all(void); // any select mode, free the list when you've finished with it
@@ -606,7 +606,7 @@ Prototype Boolean ac_selection_get_bounding_box_size(Point3 *bsize); // boolean 
 Prototype Boolean ac_selection_get_bounding_box_centre(Point3 *bcent); // boolean indicates if bb is valid
 
 
-typedef void *ACSelection; // private data 
+typedef void *ACSelection; // private data
 Prototype ACSelection *ac_selection_get_snapshot();
 Prototype void ac_selection_restore_from_snapshot(ACSelection *replacement);
 Prototype void ac_selection_free(ACSelection *sel);
@@ -869,15 +869,15 @@ Prototype Boolean ac_entity_get_entity_value(ACEntity *e, char *resname, ACEntit
 
 #define DIVIDEPOINT(a, d) {(a)->x/=d ; (a)->y/=d ; (a)->z/=d; }
 #define MULTIPLYPOINT(a, f) {(a)->x*=f ; (a)->y*=f ; (a)->z*=f; }
-#define AVERAGEPOINTS(a, b) {(b)->x = ((a)->x + (b)->x)/2.0; (b)->y = ((a)->y + (b)->y)/2.0; (b)->z = ((a)->z + (b)->z)/2.0;} 
+#define AVERAGEPOINTS(a, b) {(b)->x = ((a)->x + (b)->x)/2.0; (b)->y = ((a)->y + (b)->y)/2.0; (b)->z = ((a)->z + (b)->z)/2.0;}
 
 
-#define MIDPOINT(a, b, c) {(c)->x = ((a)->x + (b)->x)/2.0; (c)->y = ((a)->y + (b)->y)/2.0; (c)->z = ((a)->z + (b)->z)/2.0;} 
+#define MIDPOINT(a, b, c) {(c)->x = ((a)->x + (b)->x)/2.0; (c)->y = ((a)->y + (b)->y)/2.0; (c)->z = ((a)->z + (b)->z)/2.0;}
 
 
 #define NEGATEPOINT(a) {(a)->x=-(a)->x; (a)->y=-(a)->y ; (a)->z=-(a)->z; }
 #define INVERTPOINT(p) { (p)->x = -(p)->x; (p)->y = -(p)->y; (p)->z = -(p)->z; }
-#define ZEROPOINT(p) { (p)->x = 0; (p)->y = 0; (p)->z = 0; } 
+#define ZEROPOINT(p) { (p)->x = 0; (p)->y = 0; (p)->z = 0; }
 
 #define DOTPRODUCT(p1, p2)  (((p1)->x*(p2)->x + (p1)->y*(p2)->y + (p1)->z*(p2)->z))
 #define CROSSPRODUCT(p1, p2, r)  { (r)->x = ((p1)->y * (p2)->z - (p1)->z * (p2)->y); (r)->y = -((p1)->x * (p2)->z - (p1)->z * (p2)->x);  (r)->z = ((p1)->x * (p2)->y - (p1)->y * (p2)->x); }
@@ -885,7 +885,7 @@ Prototype Boolean ac_entity_get_entity_value(ACEntity *e, char *resname, ACEntit
 #define POINTISZERO(p) ( ((p)->x == 0) && ((p)->y == 0) && ((p)->z == 0) )
 #define POINTEQ(p, a, b, c) ( ((p)->x == (a)) && ((p)->y == (b)) && ((p)->z == (c)) )
 #define SETPOINT(p,a,b,c) {(p)->x=(a); (p)->y=(b); (p)->z=(c);}
-#define POINTCOPY(b, a) {(a)->x = (b)->x; (a)->y = (b)->y; (a)->z = (b)->z;} 
+#define POINTCOPY(b, a) {(a)->x = (b)->x; (a)->y = (b)->y; (a)->z = (b)->z;}
 #define sqr(x) ((x)*(x))
 
 #define DEGTORAD(f) (((f)*M_PI)/180)

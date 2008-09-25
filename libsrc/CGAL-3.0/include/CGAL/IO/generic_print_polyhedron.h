@@ -28,7 +28,7 @@ CGAL_BEGIN_NAMESPACE
 
 template <class Polyhedron, class Writer>
 void
-generic_print_polyhedron( std::ostream&     out, 
+generic_print_polyhedron( std::ostream&     out,
                           const Polyhedron& P,
                           Writer&           writer) {
     // writes P to `out' in the format provided by `writer'.

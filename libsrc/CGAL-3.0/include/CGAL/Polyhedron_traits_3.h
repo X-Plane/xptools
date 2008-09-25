@@ -31,7 +31,7 @@ public:
     typedef typename Kernel::Point_3  Point_3;
     typedef typename Kernel::Plane_3  Plane_3;
 
-    typedef typename Kernel::Construct_opposite_plane_3 
+    typedef typename Kernel::Construct_opposite_plane_3
                                       Construct_opposite_plane_3;
 private:
     Kernel m_kernel;

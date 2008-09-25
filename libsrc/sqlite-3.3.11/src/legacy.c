@@ -78,7 +78,7 @@ int sqlite3_exec(
       rc = sqlite3_step(pStmt);
 
       /* Invoke the callback function if required */
-      if( xCallback && (SQLITE_ROW==rc || 
+      if( xCallback && (SQLITE_ROW==rc ||
           (SQLITE_DONE==rc && !nCallback && db->flags&SQLITE_NullCallback)) ){
         if( 0==nCallback ){
           for(i=0; i<nCol; i++){

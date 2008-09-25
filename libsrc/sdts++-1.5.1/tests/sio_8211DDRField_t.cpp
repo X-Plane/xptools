@@ -1,5 +1,5 @@
 //
-//		sio_8211DDRField_t.cpp   
+//		sio_8211DDRField_t.cpp
 //
 
 #include <cassert>
@@ -29,7 +29,7 @@ const string format_string    = "(2A(10))";
 
 
 //
-// The field's attributes should be the same as the 
+// The field's attributes should be the same as the
 // global variables that were used to set it.
 // We use a copy of the field to exercise the copy ctor.
 //
@@ -46,7 +46,7 @@ test_field( sio_8211DDRField field )
 
 
 
-int 
+int
 main( int argc, char** argv )
 {
 
@@ -77,10 +77,10 @@ main( int argc, char** argv )
    sio_8211DDRLeader    ddr_leader;
    sio_8211Field        field;
 
-   const string field_data =  
+   const string field_data =
        "0100;&" +
-       field_name + sio_8211UnitTerminator + 
-       subfield_array + sio_8211UnitTerminator + 
+       field_name + sio_8211UnitTerminator +
+       subfield_array + sio_8211UnitTerminator +
        format_string;
 
                                 // but we use vectors to contain the
@@ -94,7 +94,7 @@ main( int argc, char** argv )
                                 // for making a field data area by
                                 // hand)
 
-   vector<char> raw_data( field_data.size() ); 
+   vector<char> raw_data( field_data.size() );
 
    copy( field_data.begin(), field_data.end(), raw_data.begin() );
 
@@ -108,7 +108,7 @@ main( int argc, char** argv )
    test_field( ddr_field2 );
 
 
-   // Now check out that the raw sio_Buffer you get from the 
+   // Now check out that the raw sio_Buffer you get from the
    // DDR field is ok -- it should be in synch with the raw data
    // that was used to create the DDR field in the first place.
 

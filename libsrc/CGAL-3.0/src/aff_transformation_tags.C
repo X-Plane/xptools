@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 #include <CGAL/aff_transformation_tags.h>
 
 CGAL_BEGIN_NAMESPACE

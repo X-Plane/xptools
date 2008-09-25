@@ -110,7 +110,7 @@ typedef struct FreeMemList {
 
 static FreeMemList	memlist;				//	dummy header block (always empty)
 static _CSTD::size_t _newpoolsize	= 0x00010000L;	//	number of bytes allocated for a new pool
-static _CSTD::size_t _newnonptrmax	= 0x00001000L;	//	any object bigger than this will call NewPtr(...) directly 
+static _CSTD::size_t _newnonptrmax	= 0x00001000L;	//	any object bigger than this will call NewPtr(...) directly
 
 /************************************************************************/
 /*	Purpose..: 	Set size of future allocation pools						*/
@@ -172,7 +172,7 @@ void *my_alloc(_CSTD::size_t size)
 #endif
 			return NULL;
 
-		*(long *)ptr=-1L; 
+		*(long *)ptr=-1L;
 		return ptr+4;
 	}
 
@@ -190,7 +190,7 @@ alloc:		if(list->size>=size+sizeof(FreeMemList))
 			//	remove this block from list
 			prev->next=list->next; *(long *)list=list->size; return((char *)list+4);
 		}
-	
+
 		//	not enough free memory in memlist (try to allocate a new Ptr from OS
 #if __MACH__
 		if((list=(FreeMemList *)_CSTD::malloc(_newpoolsize))==NULL)
@@ -269,7 +269,7 @@ static MemPool	*mempools;						//	list of memory pools
 static char		*lastfree;						//	pointer to last free block
 static char		*lastend;						//	pointer to last end
 static _CSTD::size_t _newpoolsize	= 0x00010000L;	//	number of bytes allocated for a new pool
-static _CSTD::size_t _newnonptrmax	= 0x00001000L;	//	any object bigger than this will call NewPtr(...) directly 
+static _CSTD::size_t _newnonptrmax	= 0x00001000L;	//	any object bigger than this will call NewPtr(...) directly
 
 /************************************************************************/
 /*	Purpose..: 	Set size of future allocation pools						*/
@@ -338,7 +338,7 @@ void *my_alloc(_CSTD::size_t size)
 #endif
 				return NULL;
 
-			*(long *)ptr=0L; 
+			*(long *)ptr=0L;
 			return ptr+4;
 		}
 

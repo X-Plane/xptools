@@ -88,14 +88,14 @@ private:
         widget->y_real(e->y(), y);
         widget->x_real(first_x, xfirst2);
         widget->y_real(first_y, yfirst2);
-  			
+
         double	xmin, xmax, ymin, ymax;
         if(x < xfirst2) {xmin = x; xmax = xfirst2;}
         else {xmin = xfirst2; xmax = x;};
         if(y < yfirst2) {ymin = y; ymax = yfirst2;}
         else {ymin = yfirst2; ymax = y;};
 
-        widget->set_window(xmin, xmax, ymin, ymax);        
+        widget->set_window(xmin, xmax, ymin, ymax);
         on_first = FALSE;
       }
     }
@@ -113,7 +113,7 @@ private:
       widget->lock();
       widget->setColor(Qt::green);
       if(!widgetrepainted)
-        widget->get_painter().drawRect(first_x, first_y, 
+        widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
       widget->get_painter().drawRect(first_x, first_y, x - first_x,
                                      y - first_y);
@@ -141,7 +141,7 @@ private:
            widget->setRasterOp(XorROP);
            *widget << CGAL::GREEN;
            if(!widgetrepainted)
-             widget->get_painter().drawRect(first_x, first_y, 
+             widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
            widget->setColor(old_color);
            widget->setRasterOp(old);
@@ -165,7 +165,7 @@ private:
       widget->setRasterOp(XorROP);
       *widget << CGAL::GREEN;
       if(!widgetrepainted)
-        widget->get_painter().drawRect(first_x, first_y, 
+        widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
       widget->setColor(old_color);
       widget->setRasterOp(old);
@@ -191,7 +191,7 @@ private:
     on_first = false;
     widget->redraw();
   };
-};//end class 
+};//end class
 
 } // namespace CGAL
 

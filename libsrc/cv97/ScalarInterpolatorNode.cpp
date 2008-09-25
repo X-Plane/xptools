@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "ScalarInterpolatorNode.h"
 
-ScalarInterpolatorNode::ScalarInterpolatorNode() 
+ScalarInterpolatorNode::ScalarInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(scalarInterpolatorNodeString);
@@ -25,7 +25,7 @@ ScalarInterpolatorNode::ScalarInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-ScalarInterpolatorNode::~ScalarInterpolatorNode() 
+ScalarInterpolatorNode::~ScalarInterpolatorNode()
 {
 }
 
@@ -39,18 +39,18 @@ MFFloat *ScalarInterpolatorNode::getKeyValueField()
 		return keyValueField;
 	return (MFFloat *)getExposedField(keyValueFieldString);
 }
-	
-void ScalarInterpolatorNode::addKeyValue(float value) 
+
+void ScalarInterpolatorNode::addKeyValue(float value)
 {
 	getKeyValueField()->addValue(value);
 }
 
-int ScalarInterpolatorNode::getNKeyValues() 
+int ScalarInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-float ScalarInterpolatorNode::getKeyValue(int index) 
+
+float ScalarInterpolatorNode::getKeyValue(int index)
 {
 	return getKeyValueField()->get1Value(index);
 }
@@ -65,13 +65,13 @@ SFFloat *ScalarInterpolatorNode::getValueField()
 		return valueField;
 	return (SFFloat *)getEventOut(valueFieldString);
 }
-	
-void ScalarInterpolatorNode::setValue(float vector) 
+
+void ScalarInterpolatorNode::setValue(float vector)
 {
 	getValueField()->setValue(vector);
 }
 
-float ScalarInterpolatorNode::getValue() 
+float ScalarInterpolatorNode::getValue()
 {
 	return getValueField()->getValue();
 }
@@ -79,21 +79,21 @@ float ScalarInterpolatorNode::getValue()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ScalarInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ScalarInterpolatorNode::initialize() 
+void ScalarInterpolatorNode::initialize()
 {
 }
 
-void ScalarInterpolatorNode::uninitialize() 
+void ScalarInterpolatorNode::uninitialize()
 {
 }
 
-void ScalarInterpolatorNode::update() 
+void ScalarInterpolatorNode::update()
 {
 
 	float fraction = getFraction();
@@ -122,7 +122,7 @@ void ScalarInterpolatorNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void ScalarInterpolatorNode::outputContext(ostream &printStream, char *indentString) 
+void ScalarInterpolatorNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
 		MFFloat *key = getKeyField();
@@ -143,12 +143,12 @@ void ScalarInterpolatorNode::outputContext(ostream &printStream, char *indentStr
 //	List
 ////////////////////////////////////////////////
 
-ScalarInterpolatorNode *ScalarInterpolatorNode::next() 
+ScalarInterpolatorNode *ScalarInterpolatorNode::next()
 {
 	return (ScalarInterpolatorNode *)Node::next(getType());
 }
 
-ScalarInterpolatorNode *ScalarInterpolatorNode::nextTraversal() 
+ScalarInterpolatorNode *ScalarInterpolatorNode::nextTraversal()
 {
 	return (ScalarInterpolatorNode *)Node::nextTraversalByType(getType());
 }

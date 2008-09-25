@@ -28,7 +28,7 @@
 CGAL_BEGIN_NAMESPACE
 
 template < class TDS = void >
-class Triangulation_ds_vertex_base_2 
+class Triangulation_ds_vertex_base_2
 {
 
 public:
@@ -47,7 +47,7 @@ public:
   void set_face(Face_handle f) { _f = f ;}
 
   //the following trivial is_valid to allow
-  // the user of derived face base classes 
+  // the user of derived face base classes
   // to add their own purpose checking
   bool is_valid(bool /*verbose*/=false, int /*level*/= 0) const
     {return face() != NULL;}

@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_ISO_CUBOID_3_H
 #define CGAL_ISO_CUBOID_3_H
 
@@ -49,7 +49,7 @@ public:
    : RIso_cuboid_3(left, right, bottom, top, far_, close) {}
 
   Iso_cuboid_3(const RT& min_hx, const RT& min_hy, const RT& min_hz,
-               const RT& max_hx, const RT& max_hy, const RT& max_hz, 
+               const RT& max_hx, const RT& max_hy, const RT& max_hz,
                const RT& hw)
    : RIso_cuboid_3(min_hx, min_hy, min_hz, max_hx, max_hy, max_hz, hw) {}
 

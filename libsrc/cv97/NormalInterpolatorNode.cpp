@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "NormalInterpolatorNode.h"
 
-NormalInterpolatorNode::NormalInterpolatorNode() 
+NormalInterpolatorNode::NormalInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(normalInterpolatorNodeString);
@@ -25,7 +25,7 @@ NormalInterpolatorNode::NormalInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-NormalInterpolatorNode::~NormalInterpolatorNode() 
+NormalInterpolatorNode::~NormalInterpolatorNode()
 {
 }
 
@@ -39,18 +39,18 @@ MFVec3f *NormalInterpolatorNode::getKeyValueField()
 		return keyValueField;
 	return (MFVec3f *)getExposedField(keyValueFieldString);
 }
-	
-void NormalInterpolatorNode::addKeyValue(float vector[]) 
+
+void NormalInterpolatorNode::addKeyValue(float vector[])
 {
 	getKeyValueField()->addValue(vector);
 }
 
-int NormalInterpolatorNode::getNKeyValues() 
+int NormalInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-void NormalInterpolatorNode::getKeyValue(int index, float vector[]) 
+
+void NormalInterpolatorNode::getKeyValue(int index, float vector[])
 {
 	getKeyValueField()->get1Value(index, vector);
 }
@@ -65,13 +65,13 @@ SFVec3f *NormalInterpolatorNode::getValueField()
 		return valueField;
 	return (SFVec3f *)getEventOut(valueFieldString);
 }
-	
-void NormalInterpolatorNode::setValue(float vector[]) 
+
+void NormalInterpolatorNode::setValue(float vector[])
 {
 	getValueField()->setValue(vector);
 }
 
-void NormalInterpolatorNode::getValue(float vector[]) 
+void NormalInterpolatorNode::getValue(float vector[])
 {
 	getValueField()->getValue(vector);
 }
@@ -79,21 +79,21 @@ void NormalInterpolatorNode::getValue(float vector[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool NormalInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void NormalInterpolatorNode::initialize() 
+void NormalInterpolatorNode::initialize()
 {
 }
 
-void NormalInterpolatorNode::uninitialize() 
+void NormalInterpolatorNode::uninitialize()
 {
 }
 
-void NormalInterpolatorNode::update() 
+void NormalInterpolatorNode::update()
 {
 	int n;
 
@@ -128,7 +128,7 @@ void NormalInterpolatorNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void NormalInterpolatorNode::outputContext(ostream &printStream, char *indentString) 
+void NormalInterpolatorNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
 		MFFloat *key = getKeyField();
@@ -149,12 +149,12 @@ void NormalInterpolatorNode::outputContext(ostream &printStream, char *indentStr
 //	List
 ////////////////////////////////////////////////
 
-NormalInterpolatorNode *NormalInterpolatorNode::next() 
+NormalInterpolatorNode *NormalInterpolatorNode::next()
 {
 	return (NormalInterpolatorNode *)Node::next(getType());
 }
 
-NormalInterpolatorNode *NormalInterpolatorNode::nextTraversal() 
+NormalInterpolatorNode *NormalInterpolatorNode::nextTraversal()
 {
 	return (NormalInterpolatorNode *)Node::nextTraversalByType(getType());
 }

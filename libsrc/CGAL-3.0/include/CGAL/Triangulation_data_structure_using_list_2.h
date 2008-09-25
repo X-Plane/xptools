@@ -21,7 +21,7 @@
 #ifndef CGAL_TRIANGULATION_DATA_STRUCTURE_USING_LIST_2_H
 #define CGAL_TRIANGULATION_DATA_STRUCTURE_USING_LIST_2_H
 
-// no longer needed 
+// no longer needed
 // maintained for backwards compatibility
 
 #endif //CGAL_TRIANGULATION_DATA_STRUCTURE_USING_LIST_2_H

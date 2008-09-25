@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,10 +26,10 @@
 
 /*
 	WED_GISPoint - THEORY OF OPERATION
-	
+
 	WED_GISPoint (and the other WED_GISxxxx classes) are intermediate implementations that provide
-	the "spatial brains" for various WED classes.  
-	
+	the "spatial brains" for various WED classes.
+
 	WED_GISPoint implements the IGISPoint, forming a single point specified in latitude and longitude.
 
 	Specific WED entities are formed from these intermediates, picking up their "GIS brains" for free
@@ -40,7 +40,7 @@
 #include "WED_Entity.h"
 #include "IGIS.h"
 
-class	WED_GISPoint : public WED_Entity, public virtual IGISPoint { 
+class	WED_GISPoint : public WED_Entity, public virtual IGISPoint {
 
 DECLARE_INTERMEDIATE(WED_GISPoint)
 
@@ -54,17 +54,17 @@ public:
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
 	virtual bool			PtWithin		(const Point2& p	 ) const;
 	virtual bool			PtOnFrame		(const Point2& p, double dist) const;
-	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);	
+	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);
 	virtual	void			Rotate			(const Point2& center, double angle);
 	// IGISPoint
 	virtual	void	GetLocation(      Point2& p) const;
-	virtual	void	SetLocation(const Point2& p)      ;	
-	
+	virtual	void	SetLocation(const Point2& p)      ;
+
 private:
 
 		WED_PropDoubleText		latitude;
 		WED_PropDoubleText		longitude;
 
-};		
+};
 
 #endif /* WED_GISPOINT_H */

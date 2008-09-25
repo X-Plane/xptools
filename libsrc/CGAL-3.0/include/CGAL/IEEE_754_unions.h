@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_IEEE_754_UNIONS_H
 #define CGAL_IEEE_754_UNIONS_H
 

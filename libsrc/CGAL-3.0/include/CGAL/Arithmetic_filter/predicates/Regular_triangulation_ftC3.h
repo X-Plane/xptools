@@ -90,7 +90,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC3 failures");
@@ -170,7 +170,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC3 failures");
@@ -247,7 +247,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC3 failures");
@@ -315,7 +315,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC3 failures");
@@ -380,7 +380,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC3 failures");
@@ -436,7 +436,7 @@ power_testC3(
 		ty.interval(),
 		tz.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC3 failures");
@@ -477,7 +477,7 @@ power_testC3(
     return power_testC3(
 		pwt.interval(),
 		qwt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC3 failures");
@@ -503,7 +503,7 @@ power_testC3(
     return power_testC3(
 		pwt.interval(),
 		qwt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC3 failures");

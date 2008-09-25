@@ -1,8 +1,8 @@
 /*
  *
  * Copyright (c) 2003 Dr John Maddock
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution is subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  * This file implements the following:
@@ -33,7 +33,7 @@ void bcp_implementation::add_directory(const fs::path& p)
    // don't add files created by build system
    //
    if((p.leaf() == "bin") || (p.leaf() == "bin-stage"))
-      return; 
+      return;
    //
    // don't add directories not under version control:
    //
@@ -53,7 +53,7 @@ void bcp_implementation::add_directory(const fs::path& p)
       std::string s(i->string());
       if(m_boost_path.string().size())
          s.erase(0, m_boost_path.string().size() + 1);
-      if(!m_dependencies.count(fs::path(s))) 
+      if(!m_dependencies.count(fs::path(s)))
          m_dependencies[fs::path(s)] = p; // set up dependency tree
       add_path(fs::path(s));
       ++i;
@@ -118,7 +118,7 @@ void bcp_implementation::add_file(const fs::path& p)
             // only concatonate if it's a relative path
             // rather than a URL:
             fs::path dep(p.branch_path() / s);
-            if(!m_dependencies.count(dep)) 
+            if(!m_dependencies.count(dep))
                m_dependencies[dep] = p; // set up dependency tree
             add_path(dep);
          }
@@ -148,7 +148,7 @@ void bcp_implementation::add_file(const fs::path& p)
    {
       if(0 == compare_paths(specials[n].first, p))
       {
-         if(!m_dependencies.count(specials[n].second)) 
+         if(!m_dependencies.count(specials[n].second))
             m_dependencies[specials[n].second] = p; // set up dependency tree
          add_path(specials[n].second);
       }
@@ -164,12 +164,12 @@ void bcp_implementation::add_dependent_lib(const std::string& libname, const fs:
    //
    if(fs::exists(m_boost_path / "libs" / libname / "src"))
    {
-      if(!m_dependencies.count(fs::path("libs") / libname / "src")) 
+      if(!m_dependencies.count(fs::path("libs") / libname / "src"))
          m_dependencies[fs::path("libs") / libname / "src"] = p; // set up dependency tree
       add_path(fs::path("libs") / libname / "src");
       if(fs::exists(m_boost_path / "libs" / libname / "build"))
       {
-         if(!m_dependencies.count(fs::path("libs") / libname / "build")) 
+         if(!m_dependencies.count(fs::path("libs") / libname / "build"))
             m_dependencies[fs::path("libs") / libname / "build"] = p; // set up dependency tree
          add_path(fs::path("libs") / libname / "build");
       }
@@ -182,7 +182,7 @@ void bcp_implementation::add_file_dependencies(const fs::path& p, bool scanfile)
       "^[[:blank:]]*#[[:blank:]]*include[[:blank:]]*[\"<]([^\">]+)[\">]"
       );
 
-   if(!m_dependencies.count(p)) 
+   if(!m_dependencies.count(p))
       m_dependencies[p] = p; // set terminal dependency
 
    fileview view;
@@ -215,13 +215,13 @@ void bcp_implementation::add_file_dependencies(const fs::path& p, bool scanfile)
       fs::path test_file(m_boost_path / p.branch_path() / include_file);
       if(fs::exists(test_file) && !fs::is_directory(test_file) && (p.branch_path().string() != "boost"))
       {
-         if(!m_dependencies.count(p.branch_path() / include_file)) 
+         if(!m_dependencies.count(p.branch_path() / include_file))
             m_dependencies[p.branch_path() / include_file] = p;
          add_path(p.branch_path() / include_file);
       }
       else if(fs::exists(m_boost_path / include_file))
       {
-         if(!m_dependencies.count(include_file)) 
+         if(!m_dependencies.count(include_file))
             m_dependencies[include_file] = p;
          add_path(include_file);
       }
@@ -239,7 +239,7 @@ void bcp_implementation::add_file_dependencies(const fs::path& p, bool scanfile)
       add_dependent_lib("test", p);
    }
    //
-   // grab the name of the library to which the header belongs, 
+   // grab the name of the library to which the header belongs,
    // and if that library has source then add the source to our
    // list:
    //

@@ -14,7 +14,7 @@ namespace stringutils
    /**
       returns number of chracters so removed
     */
-   std::size_t chomp( std::string & s );		// BAS ADDED STD 6/25/04 
+   std::size_t chomp( std::string & s );		// BAS ADDED STD 6/25/04
 } // namespace stringutils
 
 

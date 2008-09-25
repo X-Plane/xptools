@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,13 +59,13 @@ void	WED_OverlayImage::MoveCorner(int corner, const Vector2& delta)
 	IGISPoint * pt = GetOuterRing()->GetNthPoint(corner);
 	pt->GetLocation(p);
 	p += delta;
-	pt->SetLocation(p);	
+	pt->SetLocation(p);
 }
 
 void	WED_OverlayImage::MoveSide(int side, const Vector2& delta)
 {
 	MoveCorner(side, delta);
-	MoveCorner((side+1)%4, delta);	
+	MoveCorner((side+1)%4, delta);
 }
 
 void WED_OverlayImage::ResizeSide(int side, const Vector2& delta, bool symetric)
@@ -77,7 +77,7 @@ void WED_OverlayImage::ResizeSide(int side, const Vector2& delta, bool symetric)
 		GetOuterRing()->GetNthPoint(n)->SetLocation(corners[n]);
 
 }
-	
+
 void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symetric)
 {
 	Point2	corners[4], orig[4];
@@ -85,10 +85,10 @@ void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symet
 	Point2 ctr;
 	ctr.x = (corners[0].x + corners[1].x + corners[2].x + corners[3].x) * 0.25;
 	ctr.y = (corners[0].y + corners[1].y + corners[2].y + corners[3].y) * 0.25;
-	
+
 	Vector2	oldv(ctr,corners[corner]);
 	Vector2 newv(oldv+delta * (symetric ? 1.0 : 0.5));
-	
+
 	double scale = (sqrt(newv.squared_length())) / (sqrt(oldv.squared_length()));
 	for (int n = 0; n < 4; ++n)
 	{
@@ -104,6 +104,6 @@ void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symet
 	}
 
 	for (int n = 0; n < 4; ++n)
-		GetOuterRing()->GetNthPoint(n)->SetLocation(corners[n]);		
-	
+		GetOuterRing()->GetNthPoint(n)->SetLocation(corners[n]);
+
 }

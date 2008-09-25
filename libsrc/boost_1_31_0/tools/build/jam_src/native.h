@@ -12,9 +12,9 @@ struct native_rule_t
 };
 
 /* MSVC debugger gets confused unless this is provided */
-typedef struct native_rule_t native_rule_t ; 
+typedef struct native_rule_t native_rule_t ;
 
-void declare_native_rule(char* module, char* rule, char** args, 
+void declare_native_rule(char* module, char* rule, char** args,
                          LIST*(*f)(PARSE*, FRAME*));
 
 

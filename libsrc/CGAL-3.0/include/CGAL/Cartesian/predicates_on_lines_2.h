@@ -98,7 +98,7 @@ compare_y(const LineC2<K> &l,
           const LineC2<K> &h2)
 {
   return K().compare_y_2_object()(l, h1, h2);
-}  
+}
 
 template < class K >
 inline
@@ -106,7 +106,7 @@ Comparison_result
 compare_y_at_x(const PointC2<K> &p, const LineC2<K> &h)
 {
   return K().compare_y_at_x_2_object()(p, h);
-}  
+}
 
 template < class K >
 inline

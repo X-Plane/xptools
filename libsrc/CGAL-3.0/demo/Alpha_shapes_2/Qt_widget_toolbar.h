@@ -11,8 +11,8 @@
 // file          : include/CGAL/IO/Qt_widget_toolbar.h
 // package       : Qt_widget
 // author(s)     : Ursu Radu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -41,7 +41,7 @@ class Tools_toolbar : public QToolBar
 {
   Q_OBJECT
 public:
-  Tools_toolbar(CGAL::Qt_widget *w, QMainWindow *mw, 
+  Tools_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
                 Delaunay *t, Alpha_shape *a);
 signals:
   void new_object(CGAL::Object);
@@ -52,7 +52,7 @@ private:
   CGAL::Qt_widget *widget;
   QButtonGroup    *button_group;
   int             nr_of_buttons;
-	
+
   CGAL::Qt_widget_get_point<RP>              pointbut;
   Qt_widget_movepoint<Delaunay, Alpha_shape> movepointbut;
 };//end class

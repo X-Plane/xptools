@@ -75,7 +75,7 @@ compare_xC2(const FT &la, const FT &lb, const FT &lc,
   FT den2 = det2x2_by_formula( la, lb, h2a, h2b);
   Sign s = Sign (CGAL_NTS sign(den1) * CGAL_NTS sign(den2));
   CGAL_kernel_assertion( s != ZERO );
-  return Comparison_result( s * sign_of_determinant2x2(num1, 
+  return Comparison_result( s * sign_of_determinant2x2(num1,
                                                        num2, den1, den2));
   */
   FT num1 = det2x2_by_formula( la, lc, h1a, h1c);
@@ -241,7 +241,7 @@ template < class FT >
 CGAL_KERNEL_MEDIUM_INLINE
 bool
 equal_directionC2(const FT &dx1, const FT &dy1,
-                  const FT &dx2, const FT &dy2) 
+                  const FT &dx2, const FT &dy2)
 {
   return CGAL_NTS sign(dx1) == CGAL_NTS sign(dx2)
       && CGAL_NTS sign(dy1) == CGAL_NTS sign(dy2)
@@ -253,7 +253,7 @@ template < class FT >
 CGAL_KERNEL_MEDIUM_INLINE
 Comparison_result
 compare_angle_with_x_axisC2(const FT &dx1, const FT &dy1,
-                            const FT &dx2, const FT &dy2) 
+                            const FT &dx2, const FT &dy2)
 {
   // angles are in [-pi,pi], and the angle between Ox and d1 is compared
   // with the angle between Ox and d2
@@ -273,7 +273,7 @@ compare_angle_with_x_axisC2(const FT &dx1, const FT &dy1,
 template < class FT >
 CGAL_KERNEL_MEDIUM_INLINE
 Comparison_result
-compare_slopesC2(const FT &l1a, const FT &l1b, const FT &l2a, const FT &l2b) 
+compare_slopesC2(const FT &l1a, const FT &l1b, const FT &l2a, const FT &l2b)
 {
    if (l1a == FT(0))  // l1 is horizontal
     return l2b == FT(0) ? SMALLER
@@ -300,9 +300,9 @@ compare_slopesC2(const FT &l1a, const FT &l1b, const FT &l2a, const FT &l2b)
 template < class FT >
 CGAL_KERNEL_MEDIUM_INLINE
 Comparison_result
-compare_slopesC2(const FT &s1_src_x, const FT &s1_src_y, const FT &s1_tgt_x, 
-                 const FT &s1_tgt_y, const FT &s2_src_x, const FT &s2_src_y, 
-                 const FT &s2_tgt_x, const FT &s2_tgt_y) 
+compare_slopesC2(const FT &s1_src_x, const FT &s1_src_y, const FT &s1_tgt_x,
+                 const FT &s1_tgt_y, const FT &s2_src_x, const FT &s2_src_y,
+                 const FT &s2_tgt_x, const FT &s2_tgt_y)
 {
    Comparison_result cmp_y1 = CGAL_NTS compare(s1_src_y, s1_tgt_y);
    if (cmp_y1 == EQUAL) // horizontal

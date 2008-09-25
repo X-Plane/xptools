@@ -21,7 +21,7 @@ using namespace std;
 
 
 
-static const char * const ident_ = 
+static const char * const ident_ =
     "$Id: convert.cpp,v 1.3 2001/05/18 23:08:36 mcoletti Exp $";
 
 
@@ -37,13 +37,13 @@ emitSubfieldSchema_( sc_Subfield const & subfield )
       case sc_Subfield::is_A :
          cout << "A";
          break;
-      case sc_Subfield::is_I : 
+      case sc_Subfield::is_I :
          cout << "I";
          break;
-      case sc_Subfield::is_R : 
+      case sc_Subfield::is_R :
          cout << "R";
          break;
-      case sc_Subfield::is_S : 
+      case sc_Subfield::is_S :
          cout << "S";
          break;
       case sc_Subfield::is_C :
@@ -226,8 +226,8 @@ emitField_( sc_Field const & field )
       i++;
 
       if ( i != field.end() )
-      { 
-         cout << ", "; 
+      {
+         cout << ", ";
       }
 
    } while ( i != field.end() );

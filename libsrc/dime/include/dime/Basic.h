@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Basic.h
  *
  *  This source file is part of DIME.
@@ -86,7 +86,7 @@ typedef unsigned int uint32;
 #ifdef macintosh
  char* strdup( const char* );
 #endif
- 
+
 #define ARRAY_NEW(memh, type, num) \
 memh ? (type*) memh->allocMem((num)*sizeof(type)) : new type[num]
 

@@ -208,7 +208,7 @@ private slots:
   {
     is_remove_mode = b;
 
-    if ( is_remove_mode ) {	
+    if ( is_remove_mode ) {
       get_point.activate();
       get_circle.deactivate();
     } else {
@@ -223,7 +223,7 @@ private slots:
   {
     is_edit_mode = b;
 
-    if ( is_edit_mode ) {	
+    if ( is_edit_mode ) {
       get_point.activate();
       get_circle.deactivate();
     } else {
@@ -254,7 +254,7 @@ private slots:
 		  << " sites haved been inserted..." << std::flush;
       }
     }
-    std::cout << "\r" << counter 
+    std::cout << "\r" << counter
 	      << " sites haved been inserted... Done!"
 	      << std::endl;
     assert( ag.is_valid(false, 1) );

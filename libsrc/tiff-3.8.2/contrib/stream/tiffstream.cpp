@@ -31,7 +31,7 @@ TiffStream::makeFileStream(istream* str)
 	m_ioStream = NULL;
     m_streamLength = getSize(m_this);
 
-    m_tif =  TIFFClientOpen(m_name, 
+    m_tif =  TIFFClientOpen(m_name,
                            "r",
 						   m_this,
 						   read,
@@ -52,7 +52,7 @@ TiffStream::makeFileStream(ostream* str)
 	m_ioStream = NULL;
 	m_streamLength = getSize(m_this);
 
-	m_tif =  TIFFClientOpen(m_name, 
+	m_tif =  TIFFClientOpen(m_name,
                            "w",
 						   m_this,
 						   read,
@@ -73,7 +73,7 @@ TiffStream::makeFileStream(iostream* str)
     m_ioStream = str;
 	m_streamLength = getSize(m_this);
 
-    m_tif =  TIFFClientOpen(m_name, 
+    m_tif =  TIFFClientOpen(m_name,
 	                       "r+w",
 						   m_this,
 						   read,
@@ -151,7 +151,7 @@ TiffStream::size(thandle_t fd)
     return ts->getSize(fd);
 }
 
-int 
+int
 TiffStream::map(thandle_t fd, tdata_t* phase, toff_t* psize)
 {
     return 0;
@@ -196,13 +196,13 @@ TiffStream::seekInt(thandle_t fd, unsigned int offset, int origin)
 
 	ios::seek_dir org;
 	switch(origin) {
-	case beg: 
+	case beg:
 		org = ios::beg;
 		break;
-	case cur: 
+	case cur:
 		org = ios::cur;
 		break;
-	case end: 
+	case end:
 		org = ios::end;
 		break;
 	}

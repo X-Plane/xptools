@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,7 +30,7 @@ typedef	map<int, pair<xmenu, int> >	MenuMap;
 MenuMap	gMenuMap;
 
 
-static	bool	sIniting = false; 	
+static	bool	sIniting = false;
 
 static TCHAR sWindowClass[] = "XGrinderWindow";
 
@@ -41,10 +41,10 @@ map<HWND, XWin *>	sWindows;
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, "FullScreen", 
-		(WS_OVERLAPPED     | 
-         WS_CAPTION        | 
-         WS_SYSMENU        | 
+	mWindow = CreateWindow(sWindowClass, "FullScreen",
+		(WS_OVERLAPPED     |
+         WS_CAPTION        |
+         WS_SYSMENU        |
          WS_THICKFRAME      ) ,	// Style,
 		10, 10, 50, 50,
 		NULL,	// Parent
@@ -54,17 +54,17 @@ XWin::XWin(int default_dnd)
 
 	if (mWindow == NULL)
 		throw mWindow;
-		
+
 	sWindows[mWindow] = this;
 
 	if (default_dnd)
 	{
-		mDropTarget = new CDropTarget;	
+		mDropTarget = new CDropTarget;
 		RegisterDragDrop(mWindow, mDropTarget);
 		mDropTarget->SetReceiver(this, mWindow);
 	} else
 		mDropTarget = NULL;
-		
+
 	ShowWindow(mWindow, SW_SHOWMAXIMIZED);
 	memset(mDragging,0,sizeof(mDragging));
 	mMouse.x = 0;
@@ -72,7 +72,7 @@ XWin::XWin(int default_dnd)
 	mSizeMin.x = 0;
 	mSizeMin.y = 0;
 	sIniting = false;
-}	
+}
 
 XWin::XWin(
 	int				default_dnd,
@@ -87,8 +87,8 @@ XWin::XWin(
 	AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, true);
 
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, inTitle, 
-		(inAttributes & xwin_style_movable) ? WS_CAPTION : 
+	mWindow = CreateWindow(sWindowClass, inTitle,
+		(inAttributes & xwin_style_movable) ? WS_CAPTION :
 		((inAttributes & xwin_style_resizable) ? WS_OVERLAPPEDWINDOW : WS_BORDER),
 		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.left,
 		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.top,
@@ -101,33 +101,33 @@ XWin::XWin(
 
 	if (mWindow == NULL)
 		throw mWindow;
-		
+
 	mSizeMin.x = 0;
 	mSizeMin.y = 0;
-	
+
 	if (inAttributes & xwin_style_fullscreen)
 	{
 		mSizeMin.x = inWidth;
 		mSizeMin.y = inHeight;
 	}
-		
+
 	sWindows[mWindow] = this;
 
 	if (default_dnd)
 	{
-		mDropTarget = new CDropTarget;	
+		mDropTarget = new CDropTarget;
 		RegisterDragDrop(mWindow, mDropTarget);
 		mDropTarget->SetReceiver(this, mWindow);
 	} else
 		mDropTarget = NULL;
-		
+
 	if (inAttributes & xwin_style_visible)
 		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOW);
 	memset(mDragging,0,sizeof(mDragging));
 	mMouse.x = 0;
 	mMouse.y = 0;
 	sIniting = false;
-}	
+}
 
 XWin::~XWin()
 {
@@ -141,7 +141,7 @@ XWin::~XWin()
 	if (mWindow)
 		DestroyWindow(mWindow);
 	if (mDropTarget)
-		mDropTarget->Release();	
+		mDropTarget->Release();
 }
 
 void			XWin::SetTitle(const char * inTitle)
@@ -174,7 +174,7 @@ void			XWin::SetVisible(bool visible)
 	ShowWindow(mWindow, visible ? SW_SHOW : SW_HIDE);
 }
 
-bool			XWin::GetVisible(void) const 
+bool			XWin::GetVisible(void) const
 {
 	return ::IsWindowVisible(mWindow);
 }
@@ -213,17 +213,17 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 {
 	XWin * obj = sWindows[hWnd];
 	LRESULT result = 0;
-	
+
 	PAINTSTRUCT ps;
 	HDC hdc;
 
 	switch (message) {
-	
+
 	case WM_ACTIVATE:
 		if (obj && !sIniting)
 			obj->Activate(wParam != WA_INACTIVE);
 		break;
-	
+
 	case WM_CREATE:
 		break;
 
@@ -239,11 +239,11 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		PostQuitMessage(0);
 		break;
 
-	case WM_TIMER: 
+	case WM_TIMER:
 		if (obj && wParam == IDT_TIMER1)
 			obj->Timer();
-		break; 
-	
+		break;
+
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -279,7 +279,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			case WM_RBUTTONUP:	btn = 1;	break;
 			case WM_MBUTTONUP:	btn = 2;	break;
 			case WM_XBUTTONUP:	btn = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
-			}			
+			}
 
 			POINTSTOPOINT(obj->mMouse, lParam);
 			if(obj->mDragging[btn])
@@ -301,7 +301,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		break;
 
 	case WM_MOUSEMOVE:
-		if (obj) 
+		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, lParam);
 			int bc=0;
@@ -328,10 +328,10 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 				else
 				obj->Resized(p->cx, p->cy);
 			}
-		}	
+		}
 		result = DefWindowProc(hWnd, message, wParam, lParam);
 		break;
-	
+
 	case WM_ERASEBKGND:
 		break;
 
@@ -340,10 +340,10 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		{
 			MINMAXINFO * mmi = (MINMAXINFO *) lParam;
 			if (obj->mSizeMin.x != 0 && obj->mSizeMin.y != 0)
-				mmi->ptMinTrackSize = obj->mSizeMin;			
+				mmi->ptMinTrackSize = obj->mSizeMin;
 		}
 		break;
-		
+
 	case WM_KEYUP:
 		if (obj)
 		{
@@ -363,17 +363,17 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		result = DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 
-	case WM_KEYDOWN:		
+	case WM_KEYDOWN:
 		if (obj)
 		{
 			unsigned int vKey, RetCode, ScanCode;
 			unsigned short Char = 0;
 			BYTE KeyState[256];
-			HKL hKL = GetKeyboardLayout(NULL); 
+			HKL hKL = GetKeyboardLayout(NULL);
 			ScanCode = ((lParam>> 16) & 0xff);
-			vKey = MapVirtualKeyEx(ScanCode, 1, hKL); 
+			vKey = MapVirtualKeyEx(ScanCode, 1, hKL);
 			GetKeyboardState((unsigned char*)&KeyState);
-			ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL); 
+			ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL);
 			char c = Char;
 
 			if (c == 0)
@@ -420,19 +420,19 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_SYSCOMMAND:
 		if (obj && wParam == SC_CLOSE) {
 			if (obj->Closed())
-				result = DefWindowProc(hWnd, message, wParam, lParam);			
-		} else	
+				result = DefWindowProc(hWnd, message, wParam, lParam);
+		} else
 			result = DefWindowProc(hWnd, message, wParam, lParam);
 		break;
-		
+
 	case WM_COMMAND:
 		if (gMenuMap.find(LOWORD(wParam)) != gMenuMap.end())
 		{
 			if (!obj->HandleMenuCmd(gMenuMap[LOWORD(wParam)].first, gMenuMap[LOWORD(wParam)].second))
-				result = DefWindowProc(hWnd, message, wParam, lParam); 
+				result = DefWindowProc(hWnd, message, wParam, lParam);
 		} else {
 			if (!obj->HandleMenuCmd(NULL, LOWORD(wParam)))
-				result = DefWindowProc(hWnd, message, wParam, lParam); 
+				result = DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
 	default:
@@ -445,13 +445,13 @@ void	XWin::ReceiveFilesFromDrag(
 						const vector<string>& inFiles)
 {
 	ReceiveFiles(inFiles, 0, 0);
-}							
+}
 
 void	XWin::RegisterClass(HINSTANCE hInstance)
-{	
+{
 	WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX); 
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style			= CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc	= (WNDPROC)WinEventHandler;
@@ -495,8 +495,8 @@ xmenu			XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 		::InsertMenuItem(parent, -1, true, &mif);
 	} else {
 		::SetMenuItemInfo(parent, item, true, &mif);
-		
-	}		
+
+	}
 	return the_menu;
 }
 
@@ -535,7 +535,7 @@ void			XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
 	if (inCheck)
 		mif.fState |= MFS_CHECKED;
 	else
-		mif.fState &= ~MFS_CHECKED;	
+		mif.fState &= ~MFS_CHECKED;
 	::SetMenuItemInfo(menu, item, true, &mif);
 }
 
@@ -548,7 +548,7 @@ void			XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 	if (!inEnable)
 		mif.fState |= MFS_GRAYED;
 	else
-		mif.fState &= ~MFS_GRAYED;	
+		mif.fState &= ~MFS_GRAYED;
 	::SetMenuItemInfo(menu, item, true, &mif);
 }
 

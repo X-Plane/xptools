@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UCSTable.h
  *
  *  This source file is part of DIME.
@@ -33,7 +33,7 @@
 #include <dime/tables/TableEntry.h>
 #include <dime/util/Linear.h>
 
-class DIME_DLL_API dimeUCSTable : public dimeTableEntry 
+class DIME_DLL_API dimeUCSTable : public dimeTableEntry
 {
 public:
   dimeUCSTable();
@@ -44,11 +44,11 @@ public:
   const dimeVec3f &getOrigin() const;
   const dimeVec3f &getXaxis() const;
   const dimeVec3f &getYaxis() const;
-  
+
   void setOrigin(const dimeVec3f &v);
   void setXaxis(const dimeVec3f &v);
   void setYaxis(const dimeVec3f &v);
-  
+
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
@@ -57,7 +57,7 @@ protected:
   virtual bool handleRecord(const int groupcodes,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
+
 private:
   dimeVec3f origin;
   dimeVec3f xaxis;
@@ -83,19 +83,19 @@ dimeUCSTable::getYaxis() const
   return this->yaxis;
 }
 
-inline void 
+inline void
 dimeUCSTable::setOrigin(const dimeVec3f &v)
 {
   this->origin = v;
 }
 
-inline void 
+inline void
 dimeUCSTable::setXaxis(const dimeVec3f &v)
 {
   this->origin = v;
 }
 
-inline void 
+inline void
 dimeUCSTable::setYaxis(const dimeVec3f &v)
 {
   this->origin = v;

@@ -35,7 +35,7 @@
 #define TRACE(t)  std::cerr << t
 #define TRACEN(t) std::cerr << t << std::endl
 #define TRACEV(t) std::cerr << #t << " = " << (t) << std::endl
- 
+
 CGAL_BEGIN_NAMESPACE
 
 template <class R>
@@ -45,7 +45,7 @@ typedef typename R::FT FT;
 typedef typename R::LA LA;
 
 Point_d operator()(const Point_d& p) const
-{ 
+{
   int d = p.dimension();
   typename LA::Vector h(d+1);
   FT sum = 0;
@@ -64,7 +64,7 @@ typedef typename R::Point_d Point_d;
 typedef typename R::FT FT;
 
 Point_d operator()(const Point_d& p) const
-{ return Point_d(p.dimension()-1, 
+{ return Point_d(p.dimension()-1,
                  p.cartesian_begin(),p.cartesian_end()-1); }
 };
 
@@ -87,7 +87,7 @@ Point_d operator()(Forward_iterator start, Forward_iterator end) const
   typename LA::Matrix M(d);
   typename LA::Vector b(d);
   Point_d pd = *start++;
-  for (int i = 0; i < d; i++) { 
+  for (int i = 0; i < d; i++) {
     // we set up the equation for p_i
     Point_d pi = *start++;
     b[i] = 0;
@@ -121,23 +121,23 @@ typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 typedef typename R::FT FT;
 
-bool operator()(const Point_d& p, const Point_d& s, const Point_d& t, 
+bool operator()(const Point_d& p, const Point_d& s, const Point_d& t,
      FT& l) const
-{ int d = p.dimension(); 
-  CGAL_assertion_msg((d==s.dimension())&&(d==t.dimension()&& d>0), 
+{ int d = p.dimension();
+  CGAL_assertion_msg((d==s.dimension())&&(d==t.dimension()&& d>0),
   "position_along_line: argument dimensions disagree.");
-  CGAL_assertion_msg((s!=t), 
+  CGAL_assertion_msg((s!=t),
   "Position_on_line_d: line defining points are equal.");
-  FT lnum = (p.cartesian(0) - s.cartesian(0)); 
-  FT lden = (t.cartesian(0) - s.cartesian(0)); 
+  FT lnum = (p.cartesian(0) - s.cartesian(0));
+  FT lden = (t.cartesian(0) - s.cartesian(0));
   FT num(lnum), den(lden), lnum_i, lden_i;
-  for (int i = 1; i < d; i++) {  
-    lnum_i = (p.cartesian(i) - s.cartesian(i)); 
-    lden_i = (t.cartesian(i) - s.cartesian(i)); 
-    if (lnum*lden_i != lnum_i*lden) return false; 
+  for (int i = 1; i < d; i++) {
+    lnum_i = (p.cartesian(i) - s.cartesian(i));
+    lden_i = (t.cartesian(i) - s.cartesian(i));
+    if (lnum*lden_i != lnum_i*lden) return false;
     if (lden_i != FT(0)) { den = lden_i; num = lnum_i; }
   }
-  l = num/den; return true; 
+  l = num/den; return true;
 }
 };
 
@@ -148,10 +148,10 @@ typedef typename R::LA LA;
 typedef typename R::FT FT;
 
 template <class ForwardIterator, class OutputIterator>
-OutputIterator operator()(ForwardIterator first, ForwardIterator last, 
+OutputIterator operator()(ForwardIterator first, ForwardIterator last,
   const Point_d& p, OutputIterator result)
 { TUPLE_DIM_CHECK(first,last,Barycentric_coordinates_d);
-  int n = std::distance(first,last); 
+  int n = std::distance(first,last);
   int d = p.dimension();
   typename R::Affine_rank_d affine_rank;
   CGAL_assertion(affine_rank(first,last)==d);
@@ -160,11 +160,11 @@ OutputIterator operator()(ForwardIterator first, ForwardIterator last,
   typename LA::Vector b(d+1), x;
   register int i;
   for (i=0; i<d; ++i) {
-    for (register int j=0; j<V.size(); ++j) 
+    for (register int j=0; j<V.size(); ++j)
       M(i,j)=V[j].cartesian(i);
     b[i] = p.cartesian(i);
   }
-  for (register int j=0; j<V.size(); ++j) 
+  for (register int j=0; j<V.size(); ++j)
     M(d,j) = 1;
   b[d]=1;
   FT D;
@@ -178,20 +178,20 @@ OutputIterator operator()(ForwardIterator first, ForwardIterator last,
 
 
 template <class R>
-struct OrientationCd { 
+struct OrientationCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 
 template <class ForwardIterator>
 Orientation operator()(ForwardIterator first, ForwardIterator last)
 { TUPLE_DIM_CHECK(first,last,Orientation_d);
-  int d = std::distance(first,last); 
+  int d = std::distance(first,last);
   // range contains d points of dimension d-1
   CGAL_assertion_msg(first->dimension() == d-1,
   "Orientation_d: needs first->dimension() + 1 many points.");
   typename LA::Matrix M(d); // quadratic
   for (int i = 0; i < d; ++first,++i) {
-    for (int j = 0; j < d-1; ++j) 
+    for (int j = 0; j < d-1; ++j)
       M(i,j) = first->cartesian(j);
     M(i,d-1) = 1;
   }
@@ -202,34 +202,34 @@ Orientation operator()(ForwardIterator first, ForwardIterator last)
 };
 
 template <class R>
-struct Side_of_oriented_sphereCd { 
+struct Side_of_oriented_sphereCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 typedef typename R::FT FT;
 
-template <class ForwardIterator> 
-Oriented_side operator()(ForwardIterator first, ForwardIterator last, 
+template <class ForwardIterator>
+Oriented_side operator()(ForwardIterator first, ForwardIterator last,
                          const Point_d& x)
-{ 
+{
   TUPLE_DIM_CHECK(first,last,Side_of_oriented_sphere_d);
   int d = std::distance(first,last); // |A| contains |d| points
-  CGAL_assertion_msg((d-1 == first->dimension()), 
+  CGAL_assertion_msg((d-1 == first->dimension()),
   "Side_of_oriented_sphere_d: needs first->dimension()+1 many input points.");
-  typename LA::Matrix M(d + 1); 
-  for (register int i = 0; i < d; ++first, ++i) { 
+  typename LA::Matrix M(d + 1);
+  for (register int i = 0; i < d; ++first, ++i) {
     FT Sum = 0;
     M(i,0) = 1;
-    for (register int j = 0; j < d-1; j++) { 
+    for (register int j = 0; j < d-1; j++) {
       FT cj = first->cartesian(j);
-      M(i,j + 1) = cj; Sum += cj*cj; 
+      M(i,j + 1) = cj; Sum += cj*cj;
     }
-    M(i,d) = Sum; 
+    M(i,d) = Sum;
   }
-  FT Sum = 0; 
-  M(d,0) = 1; 
-  for (register int j = 0; j < d-1; j++) { 
+  FT Sum = 0;
+  M(d,0) = 1;
+  for (register int j = 0; j < d-1; j++) {
     FT hj = x.cartesian(j);
-    M(d,j + 1) = hj; Sum += hj*hj; 
+    M(d,j + 1) = hj; Sum += hj*hj;
   }
   M(d,d) = Sum;
   return Oriented_side( - LA::sign_of_determinant(M) );
@@ -237,11 +237,11 @@ Oriented_side operator()(ForwardIterator first, ForwardIterator last,
 };
 
 template <class R>
-struct Side_of_bounded_sphereCd { 
+struct Side_of_bounded_sphereCd {
 typedef typename R::Point_d Point_d;
 
-template <class ForwardIterator> 
-Bounded_side operator()(ForwardIterator first, ForwardIterator last, 
+template <class ForwardIterator>
+Bounded_side operator()(ForwardIterator first, ForwardIterator last,
                         const Point_d& p)
 {
   TUPLE_DIM_CHECK(first,last,region_of_sphere);
@@ -256,13 +256,13 @@ Bounded_side operator()(ForwardIterator first, ForwardIterator last,
         case ON_POSITIVE_SIDE    :   return ON_BOUNDED_SIDE;
         case ON_ORIENTED_BOUNDARY:   return ON_BOUNDARY;
         case ON_NEGATIVE_SIDE    :   return ON_UNBOUNDED_SIDE;
-    }       
+    }
   } else {
     switch (oside) {
         case ON_POSITIVE_SIDE    :   return ON_UNBOUNDED_SIDE;
         case ON_ORIENTED_BOUNDARY:   return ON_BOUNDARY;
         case ON_NEGATIVE_SIDE    :   return ON_BOUNDED_SIDE;
-    }     
+    }
   }
   return ON_BOUNDARY; // never reached
 }
@@ -270,63 +270,63 @@ Bounded_side operator()(ForwardIterator first, ForwardIterator last,
 
 
 template <class R>
-struct Contained_in_simplexCd { 
+struct Contained_in_simplexCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 typedef typename R::FT FT;
 
-template <class ForwardIterator> 
+template <class ForwardIterator>
 bool operator()(ForwardIterator first, ForwardIterator last,
                 const Point_d& p)
 {
   TUPLE_DIM_CHECK(first,last,Contained_in_simplex_d);
   int k = std::distance(first,last); // |A| contains |k| points
-  int d = first->dimension(); 
+  int d = first->dimension();
   CGAL_assertion_code(
     typename R::Affinely_independent_d check_independence; )
   CGAL_assertion_msg(check_independence(first,last),
     "Contained_in_simplex_d: A not affinely independent.");
   CGAL_assertion(d==p.dimension());
 
-  typename LA::Matrix M(d + 1,k); 
+  typename LA::Matrix M(d + 1,k);
   typename LA::Vector b(d +1);
   for (register int j = 0; j < k; ++first, ++j) {
-    for (register int i = 0; i < d; ++i) 
+    for (register int i = 0; i < d; ++i)
       M(i,j) = first->cartesian(i);
     M(d,j) = 1;
   }
-  for (register int i = 0; i < d; ++i) 
+  for (register int i = 0; i < d; ++i)
     b[i] = p.cartesian(i);
   b[d] = 1;
 
-  FT D; 
-  typename LA::Vector lambda; 
-  if ( LA::linear_solver(M,b,lambda,D) ) { 
-    for (int j = 0; j < k; j++) { 
+  FT D;
+  typename LA::Vector lambda;
+  if ( LA::linear_solver(M,b,lambda,D) ) {
+    for (int j = 0; j < k; j++) {
       if (lambda[j] < FT(0)) return false;
     }
     return true;
   }
-  return false; 
+  return false;
 }
 };
 
 template <class R>
-struct Contained_in_affine_hullCd { 
+struct Contained_in_affine_hullCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 
-template <class ForwardIterator> 
+template <class ForwardIterator>
 bool operator()(ForwardIterator first, ForwardIterator last,
-                const Point_d& p) 
+                const Point_d& p)
 {
   TUPLE_DIM_CHECK(first,last,Contained_in_affine_hull_d);
   int k = std::distance(first,last); // |A| contains |k| points
-  int d = first->dimension(); 
-  typename LA::Matrix M(d + 1,k); 
-  typename LA::Vector b(d + 1); 
+  int d = first->dimension();
+  typename LA::Matrix M(d + 1,k);
+  typename LA::Vector b(d + 1);
   for (register int j = 0; j < k; ++first, ++j) {
-    for (register int i = 0; i < d; ++i) 
+    for (register int i = 0; i < d; ++i)
       M(i,j) = first->cartesian(i);
     M(d,j) = 1;
   }
@@ -339,37 +339,37 @@ bool operator()(ForwardIterator first, ForwardIterator last,
 
 
 template <class R>
-struct Affine_rankCd { 
+struct Affine_rankCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::Vector_d Vector_d;
 typedef typename R::LA LA;
 
-template <class ForwardIterator> 
-int operator()(ForwardIterator first, ForwardIterator last) 
+template <class ForwardIterator>
+int operator()(ForwardIterator first, ForwardIterator last)
 {
   TUPLE_DIM_CHECK(first,last,Affine_rank_d);
   int k = std::distance(first,last); // |A| contains |k| points
   if (k == 0) return -1;
-  if (k == 1) return 0; 
+  if (k == 1) return 0;
   int d = first->dimension();
   typename LA::Matrix M(d,--k);
   Point_d p0 = *first; ++first; // first points to second
   for (int j = 0; j < k; ++first, ++j) {
     Vector_d v = *first - p0;
-    for (int i = 0; i < d; i++) 
-      M(i,j) = v.cartesian(i); 
+    for (int i = 0; i < d; i++)
+      M(i,j) = v.cartesian(i);
   }
   return LA::rank(M);
 }
 };
 
 template <class R>
-struct Affinely_independentCd { 
+struct Affinely_independentCd {
 typedef typename R::Point_d Point_d;
 typedef typename R::LA LA;
 
-template <class ForwardIterator> 
-bool operator()(ForwardIterator first, ForwardIterator last) 
+template <class ForwardIterator>
+bool operator()(ForwardIterator first, ForwardIterator last)
 { typename R::Affine_rank_d rank;
   int n = std::distance(first,last);
   return rank(first,last) == n-1;
@@ -393,18 +393,18 @@ typedef typename R::Vector_d Vector_d;
 
 template<class ForwardIterator>
 bool operator()(
-  ForwardIterator first, ForwardIterator last, const Vector_d& x) 
+  ForwardIterator first, ForwardIterator last, const Vector_d& x)
 { TUPLE_DIM_CHECK(first,last,Contained_in_linear_hull_d);
   int k = std::distance(first,last); // |A| contains |k| vectors
   int d = first->dimension();
   typename LA::Matrix M(d,k);
-  typename LA::Vector b(d); 
-  for (int i = 0; i < d; i++) { 
-     b[i] = x.cartesian(i); 
-     for (int j = 0; j < k; j++) 
-       M(i,j) = (first+j)->cartesian(i); 
+  typename LA::Vector b(d);
+  for (int i = 0; i < d; i++) {
+     b[i] = x.cartesian(i);
+     for (int j = 0; j < k; j++)
+       M(i,j) = (first+j)->cartesian(i);
   }
-  return LA::is_solvable(M,b); 
+  return LA::is_solvable(M,b);
 }
 };
 
@@ -415,10 +415,10 @@ template <class ForwardIterator>
 int operator()(ForwardIterator first, ForwardIterator last)
 { TUPLE_DIM_CHECK(first,last,linear_rank);
   int k = std::distance(first,last); // k vectors
-  int d = first->dimension(); 
+  int d = first->dimension();
   typename LA::Matrix M(d,k);
   for (int i = 0; i < d  ; i++)
-     for (int j = 0; j < k; j++)  
+     for (int j = 0; j < k; j++)
        M(i,j) = (first + j)->cartesian(i);
   return LA::rank(M);
 }
@@ -445,7 +445,7 @@ OutputIterator operator()(ForwardIterator first, ForwardIterator last,
 { TUPLE_DIM_CHECK(first,last,linear_base);
   int k = std::distance(first,last); // k vectors
   int d = first->dimension();
-  typename LA::Matrix M(d,k); 
+  typename LA::Matrix M(d,k);
   for (int j = 0; j < k; ++first, ++j)
     for (int i = 0; i < d; i++)
       M(i,j) = first->cartesian(i);

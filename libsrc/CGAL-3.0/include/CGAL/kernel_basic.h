@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_KERNEL_BASIC_H
 #define CGAL_KERNEL_BASIC_H

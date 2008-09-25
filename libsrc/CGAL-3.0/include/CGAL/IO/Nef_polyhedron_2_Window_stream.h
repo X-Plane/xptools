@@ -29,7 +29,7 @@ static long frame_default = 100;
 static bool show_triangulation = false;
 
 template <typename T>
-CGAL::Window_stream& operator<<(CGAL::Window_stream& ws, 
+CGAL::Window_stream& operator<<(CGAL::Window_stream& ws,
 const Nef_polyhedron_2<T>& P)
 {
   typedef Nef_polyhedron_2<T> Polyhedron;
@@ -52,7 +52,7 @@ const Nef_polyhedron_2<T>& P)
     P.init_locator();
     Visualizor V(ws,P.locator().triangulation());
     V.draw_skeleton(CGAL::BLUE);
-  }  
+  }
 
   return ws;
 }

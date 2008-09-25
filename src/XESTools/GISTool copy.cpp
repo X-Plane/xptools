@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -84,7 +84,7 @@ void	DoHelp(void)
 {
 	printf("GISTool <options>...\n");
 	printf("-help - Print this message.\n");
-	printf("-noinit - Disable loading init tables for non-GIS functions.  Must be first.\n");	
+	printf("-noinit - Disable loading init tables for non-GIS functions.  Must be first.\n");
 	printf("-selftest - run self diagnostics.\n");
 	printf("-extent west south east north\n");
 	printf("-tiger TGRxxxxxx [TGRxxxxxx ....] - Import US Census data.\n");
@@ -99,9 +99,9 @@ void	DoHelp(void)
 	printf("-sdts <filename> - Import SDTS VTP data.\n");
 	printf("-vpf <coverage> <tile> - Import VPF data.\n");
 	printf("-gshhs <file> - Import GSHHS data.\n");
-	printf("-obs faa|deg|old|apt|nav|asr|arsr filename [...filename] -  read obstacles from files.\n");	
+	printf("-obs faa|deg|old|apt|nav|asr|arsr filename [...filename] -  read obstacles from files.\n");
 	printf("\n");
-	printf("-crop - cut down the data to the extent.\n");	
+	printf("-crop - cut down the data to the extent.\n");
 	printf("-simplify - remove extra junk from a map.\n");
 	printf("-simplify - remove extra vectors.\n");
 	printf("-save <filename> - Save current data.\n");
@@ -146,7 +146,7 @@ void	CGALFailure(
 	fprintf(stderr,"%s: %s (%s:%d).%s\n",
 		what, expr, file, line, msg ? msg : "");
 	exit(1);
-}        
+}
 
 #if DEV
 void	HackFixTextures(const char * fnames[4], const char * fname);
@@ -162,8 +162,8 @@ const char * GetFileNameArg(int& index, int argc, char * argv[])
 int	main(int argc, char * argv[])
 {
 	try {
-	
-	
+
+
 	StElapsedTime *	total = new StElapsedTime("Total time for operation");
 
 	// Set CGAL to throw an exception rather than just
@@ -172,9 +172,9 @@ int	main(int argc, char * argv[])
 	{
 		StElapsedTime	timer("Init");
 		if (argc < 2 || strcmp(argv[1], "-noinit"))
-			XESInit();	
+			XESInit();
 	}
-	
+
 #if 0
 //	char * 	strs[] = { "", "-sdts", "/Volumes/GIS/data/test/boston_north_MA/transportation/1577430.RD.sdts/RD01CATD.DDF", "-validate", "-bbox" };
 
@@ -187,8 +187,8 @@ int	main(int argc, char * argv[])
 //	char * strs[] = { "", "-load", "ny_with_rivers.xes", "-glcc", "/Volumes/GIS/data/glcc/gusgs2_0ll.img", "43,", "-75" };
 
 //	char * strs[] = { "", "-extent", "-180", "0", "0", "90", "-tiger", "tgr36061.zip", "-save", "manhattan.xes" };
-//	char * strs[] = { "", "-gendsf", "test.dsf", "-dumpdsf", "test.dsf" };	
-//	char * strs[] = { "", "-extent", "-83", "31", "-82", "32", 
+//	char * strs[] = { "", "-gendsf", "test.dsf", "-dumpdsf", "test.dsf" };
+//	char * strs[] = { "", "-extent", "-83", "31", "-82", "32",
 //						"-tigerindex", "/Volumes/GIS/data/tiger/tiger_index.txt",  };
 //						"-crop", "-save", "boston.xes", };
 //	char * strs[] = { "", "-extent", "-156", "19", "-155", "20", "-tigerindex" ,"/Volumes/GIS/data/tiger/tiger_index.txt", "-crop", "-simplify", "-validate" };
@@ -210,7 +210,7 @@ int	main(int argc, char * argv[])
 	char * strs[] = { "", "-gshhs", "/Volumes/GIS/data/GSHHS/gshhs_1.3/gshhs_c.b" };
 	argv = strs;
 	argc = sizeof(strs) / sizeof(strs[0]);
-#endif	
+#endif
 
 	vector<pair<int, int> >	marked_degrees;
 
@@ -230,14 +230,14 @@ int	main(int argc, char * argv[])
 		int			mapNorth = 90;
 		int			mapEast = 180;
 		TigerMap	tigerMap;
-		
+
 	for (int n = 1; n < argc; ++n)
 	{
 		if (!strcmp(argv[n], "-selftest"))
 		{
 			SelfTestAll();
 		}
-#if DEV	
+#if DEV
 		if (!strcmp(argv[n], "-fixtex"))
 		{
 			string p = argv[++n];
@@ -256,7 +256,7 @@ int	main(int argc, char * argv[])
 
 			HackFixTextures(k, v[4].c_str());
 		}
-#endif		
+#endif
 
 
 
@@ -271,7 +271,7 @@ int	main(int argc, char * argv[])
 					++n,marked_degrees.push_back(pair<int,int>(x,y));
 			}
 			printf("Marked %d degrees.\n", n);
-		}		
+		}
 		if (!strcmp(argv[n], "-builddeg"))
 		{
 			char * fname = argv[++n];
@@ -285,9 +285,9 @@ int	main(int argc, char * argv[])
 				if (!WriteDegFile(buf, x, y))
 				{
 					fprintf(stderr,"Couldn't write file %s\n", buf);
-					x = 1000; 
+					x = 1000;
 					y = 1000;
-					
+
 				}
 			}
 		}
@@ -337,7 +337,7 @@ int	main(int argc, char * argv[])
 						printf("Write failed.\n");
 				} else {
 					printf("Extract %s failed.\n", fname);
-				}				
+				}
 			}
 			--n;
 		}
@@ -362,7 +362,7 @@ int	main(int argc, char * argv[])
 		}
 		if (!strcmp(argv[n], "-coverage"))
 		{
-			char buf[1024];		
+			char buf[1024];
 			char * dir = argv[++n];
 //			dir = "F:\\XPlane\\X-System 730\\Resources\\Earth nav data\\";
 			char * ext = argv[++n];
@@ -380,15 +380,15 @@ int	main(int argc, char * argv[])
 				{
 					sprintf(buf,"%s%+03d%+04d%c%+03d%+04d%s", dir, bucket(y), bucket(x), dirchar, y, x, ext);
 					FILE * f = fopen(buf, "rb");
-					if (f) { 
-						fputc(255,fi); ++c; 
+					if (f) {
+						fputc(255,fi); ++c;
 						if (fi2)
 						{
 							MD5_CTX	ctx;
 							MD5Init(&ctx);
 							int t = 0;
 							while (!feof(f))
-							{							
+							{
 								unsigned char	buf[1024];
 								int len = fread(buf, 1, 1024, f);
 								t += len;
@@ -404,13 +404,13 @@ int	main(int argc, char * argv[])
 										ctx.digest[12],ctx.digest[13],ctx.digest[14],ctx.digest[15]);
 						}
 						fclose(f);
-												
-					} else fputc(0,fi); 
+
+					} else fputc(0,fi);
 				}
 				fclose(fi);
 				if (fi2) fclose(fi2);
 				printf("Found %d files.\n", c);
-			}			
+			}
 		}
 
 		if (!strcmp(argv[n], "-obsapply"))
@@ -445,10 +445,10 @@ int	main(int argc, char * argv[])
 				printf("Mountain points set to: %d\n",gMeshPrefs.max_mountain_points);
 			}
 			printf("Building lo res mesh...\n");
-			TriangulateMesh(bigMap, bigTriangulationLo, bigDem, NULL, false);		
+			TriangulateMesh(bigMap, bigTriangulationLo, bigDem, NULL, false);
 			printf("Building hi res mesh...\n");
-			TriangulateMesh(bigMap, bigTriangulationHi, bigDem, NULL, true);		
-			printf("Hi res: %d, Lo res: %d\n", bigTriangulationHi.number_of_faces(),bigTriangulationLo.number_of_faces());			
+			TriangulateMesh(bigMap, bigTriangulationHi, bigDem, NULL, true);
+			printf("Hi res: %d, Lo res: %d\n", bigTriangulationHi.number_of_faces(),bigTriangulationLo.number_of_faces());
 		}
 		if (!strcmp(argv[n], "-assignlanduse"))
 		{
@@ -463,7 +463,7 @@ int	main(int argc, char * argv[])
 			char	buf[256];
 			sprintf(buf, "Clearing %d polygons.", c);
 			if (c > 1000)	ConsoleProgressFunc(0, 1, buf, 0.0);
-			int n = 0;		
+			int n = 0;
 			for (Pmwx::Face_iterator i = bigMap.faces_begin(); i != bigMap.faces_end(); ++i)
 			if (!i->is_unbounded())
 			{
@@ -474,7 +474,7 @@ int	main(int argc, char * argv[])
 					ConsoleProgressFunc(0, 1, buf, (float) n / (float) c);
 				}
 			}
-			if (c > 1000)	ConsoleProgressFunc(0, 1, buf, 1.0);			
+			if (c > 1000)	ConsoleProgressFunc(0, 1, buf, 1.0);
 		}
 		if (!strcmp(argv[n], "-genobjects"))
 		{
@@ -488,42 +488,42 @@ int	main(int argc, char * argv[])
 			if (!i->is_unbounded())
 			{
 				if (!i->IsWater())
-					InstantiateGTPolygon(i, bigDem[dem_UrbanDensity], bigDem[dem_UrbanPropertyValue], DEMGeo(), DEMGeo());		
+					InstantiateGTPolygon(i, bigDem[dem_UrbanDensity], bigDem[dem_UrbanPropertyValue], DEMGeo(), DEMGeo());
 				++n;
 				if ((n%500) == 0)
 				{
 					ConsoleProgressFunc(0, 1, buf, (float) n / (float) c);
 				}
 			}
-			if (c > 500)	ConsoleProgressFunc(0, 1, buf, 1.0);			
+			if (c > 500)	ConsoleProgressFunc(0, 1, buf, 1.0);
 		}
 		if (!strcmp(argv[n], "-showobjectratios"))
 		{
 			DumpPlacementCounts();
-		}		
+		}
 		if (!strcmp(argv[n], "-exportdsf"))
 		{
 			const char * f = argv[++n];
 			printf("Exporting DSF file %s...\n", f);
-			BuildDSF(f, bigDem[dem_LandUse], bigDem[dem_VegetationDensity], bigTriangulationHi, bigTriangulationLo, bigMap,ConsoleProgressFunc);		
+			BuildDSF(f, bigDem[dem_LandUse], bigDem[dem_VegetationDensity], bigTriangulationHi, bigTriangulationLo, bigMap,ConsoleProgressFunc);
 		}
-		
+
 \		if (!strcmp(argv[n], "-gendsf"))
 		{
 			StElapsedTime gendsf("GenDSF");
 			GenFakeDSFFile(argv[++n]);
 		}
 
-		
 
 
-		
-		
-			
+
+
+
+
 	}
 	delete total;
 	exit(0);
-	return 0;	
+	return 0;
 	} catch (exception& e) {
 		fprintf(stderr,"Caught unknown exception %s.  Exiting.\n", e.what());
 	} catch (...) {

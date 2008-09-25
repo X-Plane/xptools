@@ -7,13 +7,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -34,10 +34,10 @@ extern "C" {
 typedef enum _Lib3dsChunks {
   LIB3DS_NULL_CHUNK             =0x0000,
   LIB3DS_M3DMAGIC               =0x4D4D,    /*3DS file*/
-  LIB3DS_SMAGIC                 =0x2D2D,    
-  LIB3DS_LMAGIC                 =0x2D3D,    
+  LIB3DS_SMAGIC                 =0x2D2D,
+  LIB3DS_LMAGIC                 =0x2D3D,
   LIB3DS_MLIBMAGIC              =0x3DAA,    /*MLI file*/
-  LIB3DS_MATMAGIC               =0x3DFF,    
+  LIB3DS_MATMAGIC               =0x3DFF,
   LIB3DS_CMAGIC                 =0xC23D,    /*PRJ file*/
   LIB3DS_M3D_VERSION            =0x0002,
   LIB3DS_M3D_KFVERSION          =0x0005,
@@ -264,7 +264,7 @@ typedef struct _Lib3dsChunk {
     Lib3dsDword size;
     Lib3dsDword end;
     Lib3dsDword cur;
-} Lib3dsChunk; 
+} Lib3dsChunk;
 
 extern LIB3DSAPI void lib3ds_chunk_enable_dump(Lib3dsBool enable, Lib3dsBool unknown);
 extern LIB3DSAPI Lib3dsBool lib3ds_chunk_read(Lib3dsChunk *c, Lib3dsIo *io);

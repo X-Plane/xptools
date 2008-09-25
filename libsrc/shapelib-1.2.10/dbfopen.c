@@ -13,7 +13,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -182,7 +182,7 @@
  * Added header.
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: dbfopen.c,v 1.48 2003/03/10 14:51:27 warmerda Exp $";
 
 #include "shapefil.h"
@@ -248,7 +248,7 @@ static void DBFWriteHeader(DBFHandle psDBF)
 
     abyHeader[8] = psDBF->nHeaderLength % 256;
     abyHeader[9] = psDBF->nHeaderLength / 256;
-    
+
     abyHeader[10] = psDBF->nRecordLength % 256;
     abyHeader[11] = psDBF->nRecordLength / 256;
 
@@ -287,7 +287,7 @@ static void DBFFlushRecord( DBFHandle psDBF )
     {
 	psDBF->bCurrentRecordModified = FALSE;
 
-	nRecordOffset = psDBF->nRecordLength * psDBF->nCurrentRecord 
+	nRecordOffset = psDBF->nRecordLength * psDBF->nCurrentRecord
 	                                             + psDBF->nHeaderLength;
 
 	fseek( psDBF->fp, nRecordOffset, 0 );
@@ -300,7 +300,7 @@ static void DBFFlushRecord( DBFHandle psDBF )
 /*                                                                      */
 /*      Open a .dbf file.                                               */
 /************************************************************************/
-   
+
 DBFHandle SHPAPI_CALL
 DBFOpen( const char * pszFilename, const char * pszAccess )
 
@@ -313,14 +313,14 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
 /* -------------------------------------------------------------------- */
 /*      We only allow the access strings "rb" and "r+".                  */
 /* -------------------------------------------------------------------- */
-    if( strcmp(pszAccess,"r") != 0 && strcmp(pszAccess,"r+") != 0 
+    if( strcmp(pszAccess,"r") != 0 && strcmp(pszAccess,"r+") != 0
         && strcmp(pszAccess,"rb") != 0 && strcmp(pszAccess,"rb+") != 0
         && strcmp(pszAccess,"r+b") != 0 )
         return( NULL );
 
     if( strcmp(pszAccess,"r") == 0 )
         pszAccess = "rb";
- 
+
     if( strcmp(pszAccess,"r+") == 0 )
         pszAccess = "rb+";
 
@@ -330,7 +330,7 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
 /* -------------------------------------------------------------------- */
     pszBasename = (char *) malloc(strlen(pszFilename)+5);
     strcpy( pszBasename, pszFilename );
-    for( i = strlen(pszBasename)-1; 
+    for( i = strlen(pszBasename)-1;
 	 i > 0 && pszBasename[i] != '.' && pszBasename[i] != '/'
 	       && pszBasename[i] != '\\';
 	 i-- ) {}
@@ -340,7 +340,7 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
 
     pszFullname = (char *) malloc(strlen(pszBasename) + 5);
     sprintf( pszFullname, "%s.dbf", pszBasename );
-        
+
     psDBF = (DBFHandle) calloc( 1, sizeof(DBFInfo) );
     psDBF->fp = fopen( pszFullname, pszAccess );
 
@@ -349,10 +349,10 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
         sprintf( pszFullname, "%s.DBF", pszBasename );
         psDBF->fp = fopen(pszFullname, pszAccess );
     }
-    
+
     free( pszBasename );
     free( pszFullname );
-    
+
     if( psDBF->fp == NULL )
     {
         free( psDBF );
@@ -375,12 +375,12 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
         return NULL;
     }
 
-    psDBF->nRecords = 
+    psDBF->nRecords =
      pabyBuf[4] + pabyBuf[5]*256 + pabyBuf[6]*256*256 + pabyBuf[7]*256*256*256;
 
     psDBF->nHeaderLength = nHeadLen = pabyBuf[8] + pabyBuf[9]*256;
     psDBF->nRecordLength = nRecLen = pabyBuf[10] + pabyBuf[11]*256;
-    
+
     psDBF->nFields = nFields = (nHeadLen - 32) / 32;
 
     psDBF->pszCurrentRecord = (char *) malloc(nRecLen);
@@ -388,7 +388,7 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
 /* -------------------------------------------------------------------- */
 /*  Read in Field Definitions                                           */
 /* -------------------------------------------------------------------- */
-    
+
     pabyBuf = (unsigned char *) SfRealloc(pabyBuf,nHeadLen);
     psDBF->pszHeader = (char *) pabyBuf;
 
@@ -427,7 +427,7 @@ DBFOpen( const char * pszFilename, const char * pszAccess )
 	if( iField == 0 )
 	    psDBF->panFieldOffset[iField] = 1;
 	else
-	    psDBF->panFieldOffset[iField] = 
+	    psDBF->panFieldOffset[iField] =
 	      psDBF->panFieldOffset[iField-1] + psDBF->panFieldSize[iField-1];
     }
 
@@ -520,7 +520,7 @@ DBFCreate( const char * pszFilename )
 /* -------------------------------------------------------------------- */
     pszBasename = (char *) malloc(strlen(pszFilename)+5);
     strcpy( pszBasename, pszFilename );
-    for( i = strlen(pszBasename)-1; 
+    for( i = strlen(pszBasename)-1;
 	 i > 0 && pszBasename[i] != '.' && pszBasename[i] != '/'
 	       && pszBasename[i] != '\\';
 	 i-- ) {}
@@ -558,7 +558,7 @@ DBFCreate( const char * pszFilename )
     psDBF->nFields = 0;
     psDBF->nRecordLength = 1;
     psDBF->nHeaderLength = 33;
-    
+
     psDBF->panFieldOffset = NULL;
     psDBF->panFieldSize = NULL;
     psDBF->panFieldDecimals = NULL;
@@ -582,7 +582,7 @@ DBFCreate( const char * pszFilename )
 /************************************************************************/
 
 int SHPAPI_CALL
-DBFAddField(DBFHandle psDBF, const char * pszFieldName, 
+DBFAddField(DBFHandle psDBF, const char * pszFieldName,
             DBFFieldType eType, int nWidth, int nDecimals )
 
 {
@@ -610,16 +610,16 @@ DBFAddField(DBFHandle psDBF, const char * pszFieldName,
 /* -------------------------------------------------------------------- */
     psDBF->nFields++;
 
-    psDBF->panFieldOffset = (int *) 
+    psDBF->panFieldOffset = (int *)
       SfRealloc( psDBF->panFieldOffset, sizeof(int) * psDBF->nFields );
 
-    psDBF->panFieldSize = (int *) 
+    psDBF->panFieldSize = (int *)
       SfRealloc( psDBF->panFieldSize, sizeof(int) * psDBF->nFields );
 
-    psDBF->panFieldDecimals = (int *) 
+    psDBF->panFieldDecimals = (int *)
       SfRealloc( psDBF->panFieldDecimals, sizeof(int) * psDBF->nFields );
 
-    psDBF->pachFieldType = (char *) 
+    psDBF->pachFieldType = (char *)
       SfRealloc( psDBF->pachFieldType, sizeof(char) * psDBF->nFields );
 
 /* -------------------------------------------------------------------- */
@@ -667,7 +667,7 @@ DBFAddField(DBFHandle psDBF, const char * pszFieldName,
         pszFInfo[16] = nWidth;
         pszFInfo[17] = nDecimals;
     }
-    
+
 /* -------------------------------------------------------------------- */
 /*      Make the current record buffer appropriately larger.            */
 /* -------------------------------------------------------------------- */
@@ -718,7 +718,7 @@ static void *DBFReadAttribute(DBFHandle psDBF, int hEntity, int iField,
             return NULL;
         }
 
-	if( fread( psDBF->pszCurrentRecord, psDBF->nRecordLength, 
+	if( fread( psDBF->pszCurrentRecord, psDBF->nRecordLength,
                    1, psDBF->fp ) != 1 )
         {
             fprintf( stderr, "fread(%d) failed on DBF file.\n",
@@ -743,7 +743,7 @@ static void *DBFReadAttribute(DBFHandle psDBF, int hEntity, int iField,
 /* -------------------------------------------------------------------- */
 /*	Extract the requested field.					*/
 /* -------------------------------------------------------------------- */
-    strncpy( pszStringField, 
+    strncpy( pszStringField,
 	     ((const char *) pabyRec) + psDBF->panFieldOffset[iField],
 	     psDBF->panFieldSize[iField] );
     pszStringField[psDBF->panFieldSize[iField]] = '\0';
@@ -780,7 +780,7 @@ static void *DBFReadAttribute(DBFHandle psDBF, int hEntity, int iField,
             *pchDst = '\0';
     }
 #endif
-    
+
     return( pReturnField );
 }
 
@@ -878,7 +878,7 @@ DBFIsAttributeNULL( DBFHandle psDBF, int iRecord, int iField )
         return strncmp(pszValue,"00000000",8) == 0;
 
       case 'L':
-        /* NULL boolean fields have value "?" */ 
+        /* NULL boolean fields have value "?" */
         return pszValue[0] == '?';
 
       default:
@@ -946,7 +946,7 @@ DBFGetFieldInfo( DBFHandle psDBF, int iField, char * pszFieldName,
     if ( psDBF->pachFieldType[iField] == 'L' )
 	return( FTLogical);
 
-    else if( psDBF->pachFieldType[iField] == 'N' 
+    else if( psDBF->pachFieldType[iField] == 'N'
              || psDBF->pachFieldType[iField] == 'F'
              || psDBF->pachFieldType[iField] == 'D' )
     {
@@ -1031,25 +1031,25 @@ static int DBFWriteAttribute(DBFHandle psDBF, int hEntity, int iField,
           case 'N':
           case 'F':
 	    /* NULL numeric fields have value "****************" */
-            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '*', 
+            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '*',
                     psDBF->panFieldSize[iField] );
             break;
 
           case 'D':
 	    /* NULL date fields have value "00000000" */
-            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '0', 
+            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '0',
                     psDBF->panFieldSize[iField] );
             break;
 
           case 'L':
-	    /* NULL boolean fields have value "?" */ 
-            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '?', 
+	    /* NULL boolean fields have value "?" */
+            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '?',
                     psDBF->panFieldSize[iField] );
             break;
 
           default:
             /* empty string fields are considered NULL */
-            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '\0', 
+            memset( (char *) (pabyRec+psDBF->panFieldOffset[iField]), '\0',
                     psDBF->panFieldSize[iField] );
             break;
         }
@@ -1089,7 +1089,7 @@ static int DBFWriteAttribute(DBFHandle psDBF, int hEntity, int iField,
             if( sizeof(szSField)-2 < nWidth )
                 nWidth = sizeof(szSField)-2;
 
-	    sprintf( szFormat, "%%%d.%df", 
+	    sprintf( szFormat, "%%%d.%df",
                      nWidth, psDBF->panFieldDecimals[iField] );
 	    sprintf(szSField, szFormat, *((double *) pValue) );
 	    if( (int) strlen(szSField) > psDBF->panFieldSize[iField] )
@@ -1103,7 +1103,7 @@ static int DBFWriteAttribute(DBFHandle psDBF, int hEntity, int iField,
 	break;
 
       case 'L':
-        if (psDBF->panFieldSize[iField] >= 1  && 
+        if (psDBF->panFieldSize[iField] >= 1  &&
             (*(char*)pValue == 'F' || *(char*)pValue == 'T'))
             *(pabyRec+psDBF->panFieldOffset[iField]) = *(char*)pValue;
         break;
@@ -1379,9 +1379,9 @@ DBFReadTuple(DBFHandle psDBF, int hEntity )
       nTupleLen = psDBF->nRecordLength;
       pReturnTuple = (char *) SfRealloc(pReturnTuple, psDBF->nRecordLength);
     }
-    
+
     memcpy ( pReturnTuple, pabyRec, psDBF->nRecordLength );
-        
+
     return( pReturnTuple );
 }
 
@@ -1392,21 +1392,21 @@ DBFReadTuple(DBFHandle psDBF, int hEntity )
 /************************************************************************/
 
 DBFHandle SHPAPI_CALL
-DBFCloneEmpty(DBFHandle psDBF, const char * pszFilename ) 
+DBFCloneEmpty(DBFHandle psDBF, const char * pszFilename )
 {
     DBFHandle	newDBF;
 
    newDBF = DBFCreate ( pszFilename );
-   if ( newDBF == NULL ) return ( NULL ); 
-   
+   if ( newDBF == NULL ) return ( NULL );
+
    newDBF->pszHeader = (char *) malloc ( 32 * psDBF->nFields );
    memcpy ( newDBF->pszHeader, psDBF->pszHeader, 32 * psDBF->nFields );
-   
+
    newDBF->nFields = psDBF->nFields;
    newDBF->nRecordLength = psDBF->nRecordLength;
    newDBF->nHeaderLength = 32 * (psDBF->nFields+1);
-    
-   newDBF->panFieldOffset = (int *) malloc ( sizeof(int) * psDBF->nFields ); 
+
+   newDBF->panFieldOffset = (int *) malloc ( sizeof(int) * psDBF->nFields );
    memcpy ( newDBF->panFieldOffset, psDBF->panFieldOffset, sizeof(int) * psDBF->nFields );
    newDBF->panFieldSize = (int *) malloc ( sizeof(int) * psDBF->nFields );
    memcpy ( newDBF->panFieldSize, psDBF->panFieldSize, sizeof(int) * psDBF->nFields );
@@ -1417,10 +1417,10 @@ DBFCloneEmpty(DBFHandle psDBF, const char * pszFilename )
 
    newDBF->bNoHeader = TRUE;
    newDBF->bUpdated = TRUE;
-   
+
    DBFWriteHeader ( newDBF );
    DBFClose ( newDBF );
-   
+
    newDBF = DBFOpen ( pszFilename, "rb+" );
 
    return ( newDBF );

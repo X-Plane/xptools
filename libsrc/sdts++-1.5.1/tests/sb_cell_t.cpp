@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -53,14 +53,14 @@ const int GETOPTDONE = EOF;
 
 
 void
-assign_converter( sio_8211_converter_dictionary & cd,                  
+assign_converter( sio_8211_converter_dictionary & cd,
                   string const & mnemonic,
                   string const & converter_type )
 {
-  if ( mnemonic.empty() )  
-    {    
-      cerr << "binary type without a subfield\n";  
-    }  
+  if ( mnemonic.empty() )
+    {
+      cerr << "binary type without a subfield\n";
+    }
 
   cd[ mnemonic ] = sio_ConverterFactory::instance()->get( converter_type );
 
@@ -79,9 +79,9 @@ assign_converter( sio_8211_converter_dictionary & cd,
 void
 usage( const char * name )
 {
-  cerr << name << ": [flags] cell-module\n"       
+  cerr << name << ": [flags] cell-module\n"
        << "flags:\n"
-       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"       
+       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"
        << "\t\tassign binary converter to subfield mnemonic\n";
 } // usage()
 
@@ -104,7 +104,7 @@ main( int argc, char** argv )
   int ch;
 
   char * ifs_name = "-";
-  
+
   // use BI16 converter by default
   converters["ELEVATION"] = sio_ConverterFactory::instance()->get( "BI16" );
 
@@ -114,10 +114,10 @@ main( int argc, char** argv )
       case 's':
 	converters[optarg] = '\0'; // Set to null
 	last_mnemonic = optarg;
-	break;	
+	break;
 
       case 'b':
-	assign_converter( converters, last_mnemonic, optarg ); 
+	assign_converter( converters, last_mnemonic, optarg );
 	break;
 
       case 'h':
@@ -168,14 +168,14 @@ main( int argc, char** argv )
 
     while ( i )
       {
-        if ( ! i.get( record ) ) 
+        if ( ! i.get( record ) )
           {
             cerr << "unable to read from " << ifs_name << "\n";
             exit( 42 );
           }
 
         cell.setRecord( record );
-      
+
         cout << "\nand what the CELL object says it is:\n";
         cout << cell << endl;
 

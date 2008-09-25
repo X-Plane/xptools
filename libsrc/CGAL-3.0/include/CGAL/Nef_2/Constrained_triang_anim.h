@@ -33,12 +33,12 @@ public:
   typedef typename GT::Base     PMDEC;
   typedef typename PMDEC::Point Point;
 
-  Constrained_triang_anim() : _W(400,400) 
+  Constrained_triang_anim() : _W(400,400)
   { _W.set_show_coordinates(true); _W.init(-120,120,-120,5); _W.display(); }
-  VDEVICE& device() { return _W; } 
+  VDEVICE& device() { return _W; }
 
 void post_init_animation(GT& gpst)
-{ 
+{
   PM_visualizor<PMDEC,GEOM> V(_W,gpst);
   V.point(V.target(gpst.e_search)) = Point(-120,0);
   // to draw we have to embed the virtual search vertex

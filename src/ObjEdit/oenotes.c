@@ -5,7 +5,7 @@ Files:
 	Specify texture by dragging into the window
 	Merge object by dragging into the window
 	Load new file by dragging into the window
-	Create new LOD by dragging into the window	
+	Create new LOD by dragging into the window
 
 Navigation -
 
@@ -15,12 +15,12 @@ Navigation -
 
 Selection:
 	control key and more modifiers for selection?!?
-	
+
 Sel Cmds:
 	select joined
 	select opposite (if it exists)
-	
-Textures 
+
+Textures
 
 	Edit texture as a square
 	Better constrained drag (squarify, align to nearby, etc.)
@@ -35,7 +35,7 @@ Obj Processing
 	quad merging
 	tri->quad
 	build strips
-	
+
 LOD
 	A way to merge in new objs as LOD
 	A way to set LOD
@@ -44,7 +44,7 @@ LOD
 
 Attributes, etc.
 	Materials and color editing!
-	Attribute Editing	
+	Attribute Editing
 
 Hidden Faces, Locked faces, unselectable
 	(allow hidden faces, delete hidden cmd)
@@ -64,9 +64,9 @@ Anthony's Requests:
 Anthony wants: scaling of all selected S&Ts as a whole.
 Bias "reset" to current axis.
 
-	- Make deformer appear in a useful place.	
+	- Make deformer appear in a useful place.
 	- Get a rect of pts that deforms them.
-	- Fix font color ????	
+	- Fix font color ????
 
 
 TODO (obj edit soon):
@@ -92,4 +92,4 @@ SERGIO'S OBJEDIT NOTES:
 ***grouping and selection features
 ***texture rescaling to make more room in a bitmap.
 ***triangle merging
- 
+

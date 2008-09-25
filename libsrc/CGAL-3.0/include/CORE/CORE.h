@@ -2,13 +2,13 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2003 Exact Computation Project
- * 
+ *
  * File: CORE.h
  * Synopsis:
  *      The main inclusion file for the Core Library system.
  *      All "Core programs" must include this file.
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
@@ -30,7 +30,7 @@
 typedef double machine_double;
 typedef long machine_long;
 
-#ifndef CORE_LEVEL 
+#ifndef CORE_LEVEL
 #   define CORE_LEVEL  DEFAULT_CORE_LEVEL
 #endif
 

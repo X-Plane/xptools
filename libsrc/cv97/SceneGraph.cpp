@@ -14,7 +14,7 @@
 //	SceneGraph::SceneGraph
 ////////////////////////////////////////////////////////////
 
-SceneGraph::SceneGraph() 
+SceneGraph::SceneGraph()
 {
 //	setHeaderFlag(false);
 	setOption(SCENEGRAPH_OPTION_NONE);
@@ -26,7 +26,7 @@ SceneGraph::SceneGraph()
 	mBackgroundNodeVector		= new Vector<BindableNode>;
 	mFogNodeVector				= new Vector<BindableNode>;
 	mNavigationInfoNodeVector	= new Vector<BindableNode>;
-	mViewpointNodeVector		= new Vector<BindableNode>;	
+	mViewpointNodeVector		= new Vector<BindableNode>;
 
 	mDefaultBackgroundNode		= new BackgroundNode();
 	mDefaultFogNode				= new FogNode();
@@ -764,7 +764,7 @@ unsigned int SceneGraph::getNodeNumber(Node *node) {
 
 #ifdef SUPPORT_JSAI
 
-void SceneGraph::setJavaEnv(char *javaClassPath, jint (JNICALL *printfn)(FILE *fp, const char *format, va_list args)) 
+void SceneGraph::setJavaEnv(char *javaClassPath, jint (JNICALL *printfn)(FILE *fp, const char *format, va_list args))
 {
 	CreateJavaVM(javaClassPath, printfn);
 }
@@ -775,7 +775,7 @@ void SceneGraph::setJavaEnv(char *javaClassPath, jint (JNICALL *printfn)(FILE *f
 //	SceneGraph::~SceneGraph
 ////////////////////////////////////////////////////////////
 
-SceneGraph::~SceneGraph() 
+SceneGraph::~SceneGraph()
 {
 	Node *node=getNodes();
 	while (node) {
@@ -792,7 +792,7 @@ SceneGraph::~SceneGraph()
 	delete mBackgroundNodeVector;
 	delete mFogNodeVector;
 	delete mNavigationInfoNodeVector;
-	delete mViewpointNodeVector;	
+	delete mViewpointNodeVector;
 
 	delete mDefaultBackgroundNode;
 	delete mDefaultFogNode;
@@ -812,7 +812,7 @@ SceneGraph::~SceneGraph()
 //	child node list
 ////////////////////////////////////////////////
 
-int SceneGraph::getNAllNodes() 
+int SceneGraph::getNAllNodes()
 {
 	int nNode = 0;
 	for (Node *node = Parser::getNodes(); node; node = node->nextTraversal())
@@ -820,7 +820,7 @@ int SceneGraph::getNAllNodes()
 	return nNode;
 }
 
-int SceneGraph::getNNodes() 
+int SceneGraph::getNNodes()
 {
 	int nNode = 0;
 	for (Node *node = Parser::getNodes(); node; node = node->next())
@@ -828,7 +828,7 @@ int SceneGraph::getNNodes()
 	return nNode;
 }
 
-Node *SceneGraph::getNodes(char *typeName) 
+Node *SceneGraph::getNodes(char *typeName)
 {
 	Node *node = Parser::getNodes();
 	if (node == NULL)
@@ -840,7 +840,7 @@ Node *SceneGraph::getNodes(char *typeName)
 		return node->next(typeName);
 }
 
-Node *SceneGraph::getNodes() 
+Node *SceneGraph::getNodes()
 {
 	return Parser::getNodes();
 }
@@ -849,12 +849,12 @@ Node *SceneGraph::getNodes()
 //	find node
 ////////////////////////////////////////////////
 
-Node *SceneGraph::findNode(char *name) 
+Node *SceneGraph::findNode(char *name)
 {
 	return Parser::findNodeByName(name);
 }
 
-bool SceneGraph::hasNode(Node *targetNode) 
+bool SceneGraph::hasNode(Node *targetNode)
 {
 	for (Node *node = Parser::getNodes(); node; node = node->nextTraversal()) {
 		if (node == targetNode)
@@ -867,7 +867,7 @@ bool SceneGraph::hasNode(Node *targetNode)
 //	SceneGraph::clear
 ////////////////////////////////////////////////////////////
 
-void SceneGraph::clear() 
+void SceneGraph::clear()
 {
 	clearNodeList();
 	clearRouteList();
@@ -908,10 +908,10 @@ void SceneGraph::add(char *filename, bool bInitialize, void (*callbackFn)(int nL
 ////////////////////////////////////////////////////////////
 //	SceneGraph::save
 ////////////////////////////////////////////////////////////
-	
+
 bool SceneGraph::save(char *filename, void (*callbackFn)(int nNode, void *info), void *callbackFnInfo)
 {
-	
+
 	ofstream outputFile(filename);
 
 	if (!outputFile)
@@ -941,21 +941,21 @@ bool SceneGraph::save(char *filename, void (*callbackFn)(int nNode, void *info),
 //	SceneGraph::initialize
 ////////////////////////////////////////////////////////////
 
-void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *callbackFnInfo) 
+void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *callbackFnInfo)
 {
 	Node *node;
 
 	int nNode = 0;
 	for (node = Parser::getNodes(); node; node = node->nextTraversal()) {
 		node->setSceneGraph(this);
-		if (node->isInstanceNode() == false)		
+		if (node->isInstanceNode() == false)
 			node->initialize();
 		nNode++;
 		if (callbackFn)
 			callbackFn(nNode, callbackFnInfo);
 	}
 
-	// Convert from InstanceNode into DEFNode 
+	// Convert from InstanceNode into DEFNode
 	node = Parser::getNodes();
 	while(node != NULL) {
 		Node *nextNode = node->nextTraversal();
@@ -963,7 +963,7 @@ void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *cal
 			Node *referenceNode	= node->getReferenceNode();
 			Node *parentNode	= node->getParentNode();
 			Node *defNode;
-			
+
 			defNode = referenceNode->createDEFNode();
 			if (parentNode != NULL)
 				parentNode->addChildNode(defNode, false);
@@ -978,7 +978,7 @@ void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *cal
 		node = nextNode;
 	}
 
-	// Convert from DEFNode into InstanceNode 
+	// Convert from DEFNode into InstanceNode
 	node = Parser::getNodes();
 	while(node != NULL) {
 		Node *nextNode = node->nextTraversal();
@@ -986,7 +986,7 @@ void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *cal
 		if (node->isDEFNode() == true) {
 			Node *defNode = findNode(node->getName());
 			assert(defNode);
-			if (defNode) {	
+			if (defNode) {
 				Node *instanceNode = defNode->createInstanceNode();
 				Node *parentNode = node->getParentNode();
 				if (parentNode != NULL)
@@ -1011,14 +1011,14 @@ void SceneGraph::initialize(void (*callbackFn)(int nNode, void *info), void *cal
 //	update
 ////////////////////////////////////////////////
 
-void SceneGraph::update() 
+void SceneGraph::update()
 {
 	for (Node *node = Parser::getNodes(); node; node = node->nextTraversal()) {
 		node->update();
 	}
 }
 
-void SceneGraph::updateRoute(Node *eventOutNode, Field *eventOutField) 
+void SceneGraph::updateRoute(Node *eventOutNode, Field *eventOutField)
 {
 	for (Route *route = Parser::getRoutes(); route; route = route->next()) {
 		if (route->getEventOutNode() == eventOutNode && route->getEventOutField() == eventOutField) {
@@ -1032,8 +1032,8 @@ void SceneGraph::updateRoute(Node *eventOutNode, Field *eventOutField)
 ///////////////////////////////////////////////
 //	Output node infomations
 ///////////////////////////////////////////////
-	
-void SceneGraph::print() 
+
+void SceneGraph::print()
 {
 	uninitialize();
 
@@ -1051,13 +1051,13 @@ void SceneGraph::print()
 //	Delete/Remove Node
 ///////////////////////////////////////////////
 
-void SceneGraph::removeNode(Node *node) 
+void SceneGraph::removeNode(Node *node)
 {
 	deleteRoutes(node);
 	node->remove();
 }
 
-void SceneGraph::deleteNode(Node *node) 
+void SceneGraph::deleteNode(Node *node)
 {
 	deleteRoutes(node);
 	delete node;
@@ -1067,7 +1067,7 @@ void SceneGraph::deleteNode(Node *node)
 //	SceneGraph::uninitialize
 ////////////////////////////////////////////////////////////
 
-void SceneGraph::uninitialize(void (*callbackFn)(int nNode, void *info), void *callbackFnInfo) 
+void SceneGraph::uninitialize(void (*callbackFn)(int nNode, void *info), void *callbackFnInfo)
 {
 	int nNode = 0;
 	for (Node *node = Parser::getNodes(); node; node = node->nextTraversal()) {
@@ -1082,21 +1082,21 @@ void SceneGraph::uninitialize(void (*callbackFn)(int nNode, void *info), void *c
 //	BoundingBoxSize
 ////////////////////////////////////////////////
 
-void SceneGraph::setBoundingBoxSize(float value[]) 
+void SceneGraph::setBoundingBoxSize(float value[])
 {
 	boundingBoxSize[0] = value[0];
 	boundingBoxSize[1] = value[1];
 	boundingBoxSize[2] = value[2];
 }
 
-void SceneGraph::setBoundingBoxSize(float x, float y, float z) 
+void SceneGraph::setBoundingBoxSize(float x, float y, float z)
 {
 	boundingBoxSize[0] = x;
 	boundingBoxSize[1] = y;
 	boundingBoxSize[2] = z;
 }
 
-void SceneGraph::getBoundingBoxSize(float value[]) 
+void SceneGraph::getBoundingBoxSize(float value[])
 {
 	value[0] = boundingBoxSize[0];
 	value[1] = boundingBoxSize[1];
@@ -1107,21 +1107,21 @@ void SceneGraph::getBoundingBoxSize(float value[])
 //	BoundingBoxCenter
 ////////////////////////////////////////////////
 
-void SceneGraph::setBoundingBoxCenter(float value[]) 
+void SceneGraph::setBoundingBoxCenter(float value[])
 {
 	boundingBoxCenter[0] = value[0];
 	boundingBoxCenter[1] = value[1];
 	boundingBoxCenter[2] = value[2];
 }
 
-void SceneGraph::setBoundingBoxCenter(float x, float y, float z) 
+void SceneGraph::setBoundingBoxCenter(float x, float y, float z)
 {
 	boundingBoxCenter[0] = x;
 	boundingBoxCenter[1] = y;
 	boundingBoxCenter[2] = z;
 }
 
-void SceneGraph::getBoundingBoxCenter(float value[]) 
+void SceneGraph::getBoundingBoxCenter(float value[])
 {
 	value[0] = boundingBoxCenter[0];
 	value[1] = boundingBoxCenter[1];
@@ -1132,7 +1132,7 @@ void SceneGraph::getBoundingBoxCenter(float value[])
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void SceneGraph::setBoundingBox(BoundingBox *bbox) 
+void SceneGraph::setBoundingBox(BoundingBox *bbox)
 {
 	float center[3];
 	float size[3];
@@ -1142,7 +1142,7 @@ void SceneGraph::setBoundingBox(BoundingBox *bbox)
 	setBoundingBoxSize(size);
 }
 
-void SceneGraph::recomputeBoundingBox() 
+void SceneGraph::recomputeBoundingBox()
 {
 	Node	*node;
 	float	center[3];
@@ -1157,12 +1157,12 @@ void SceneGraph::recomputeBoundingBox()
 			gnode->getBoundingBoxSize(size);
 			bbox.addBoundingBox(center, size);
 		}
-		else if (node->isGeometryNode()) { 
-			GeometryNode *gnode = (GeometryNode *)node; 
-			gnode->getBoundingBoxCenter(center); 
-			gnode->getBoundingBoxSize(size); 
-			bbox.addBoundingBox(center, size); 
-		} 
+		else if (node->isGeometryNode()) {
+			GeometryNode *gnode = (GeometryNode *)node;
+			gnode->getBoundingBoxCenter(center);
+			gnode->getBoundingBoxSize(size);
+			bbox.addBoundingBox(center, size);
+		}
 	}
 
 	setBoundingBox(&bbox);
@@ -1212,7 +1212,7 @@ void SceneGraph::setBindableNode(Vector<BindableNode> *nodeVector, BindableNode 
 	}
 }
 
-void SceneGraph::setBindableNode(BindableNode *node, bool bind) 
+void SceneGraph::setBindableNode(BindableNode *node, bool bind)
 {
 	if (node->isBackgroundNode())		setBackgroundNode((BackgroundNode *)node, bind);
 	if (node->isFogNode())					setFogNode((FogNode *)node, bind);
@@ -1225,7 +1225,7 @@ void SceneGraph::setBindableNode(BindableNode *node, bool bind)
 //	Zoom All Viewpoint
 ///////////////////////////////////////////////
 
-void SceneGraph::zoomAllViewpoint() 
+void SceneGraph::zoomAllViewpoint()
 {
 	float	bboxCenter[3];
 	float	bboxSize[3];

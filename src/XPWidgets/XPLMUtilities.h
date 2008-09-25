@@ -1,29 +1,29 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
 #ifndef _XPLMUtilities_h_
 #define _XPLMUtilities_h_
 /*
- *                                                                             
+ *
  *
  */
 #include "XPLMDefs.h"
@@ -34,18 +34,18 @@ extern "C" {
  * X-PLANE USER INTERACTION
  ***************************************************************************/
 /*
- * The user interaction APIs let you simulate commands the user can do with a 
- * joystick, keyboard etc.  Note that it is generally safer for future 
- * compatibility to use one of these commands than to manipulate the 
- * underlying sim data.                                                        
+ * The user interaction APIs let you simulate commands the user can do with a
+ * joystick, keyboard etc.  Note that it is generally safer for future
+ * compatibility to use one of these commands than to manipulate the
+ * underlying sim data.
  *
  */
 /*
  * XPLMCommandKeyID
- * 
- * These enums represent all the keystrokes available within x-plane.  They 
- * can be sent to x-plane directly.  For example, you can reverse thrust using 
- * these  enumerations.                                                        
+ *
+ * These enums represent all the keystrokes available within x-plane.  They
+ * can be sent to x-plane directly.  For example, you can reverse thrust using
+ * these  enumerations.
  *
  */
 enum {
@@ -148,11 +148,11 @@ enum {
 typedef int XPLMCommandKeyID;
 /*
  * XPLMCommandButtonID
- * 
- * These are enumerations for all of the things you can do with a joystick 
- * button in X-Plane.  They currently match the buttons menu in the equipment 
- * setup dialog, but these enums will be stable even if they change in 
- * X-Plane.                                                                    
+ *
+ * These are enumerations for all of the things you can do with a joystick
+ * button in X-Plane.  They currently match the buttons menu in the equipment
+ * setup dialog, but these enums will be stable even if they change in
+ * X-Plane.
  *
  */
 enum {
@@ -255,13 +255,13 @@ enum {
 typedef int XPLMCommandButtonID;
 /*
  * XPLMHostApplicationID
- * 
- * The plug-in system is based on Austin's cross-platform OpenGL framework and 
- * could theoretically be adapted to  run in other apps like WorldMaker.  The 
- * plug-in system also runs against a test harness for internal development 
- * and could be adapted to another flight sim (in theory at least).  So an ID 
- * is providing allowing plug-ins to  indentify what app they are running 
- * under.                                                                      
+ *
+ * The plug-in system is based on Austin's cross-platform OpenGL framework and
+ * could theoretically be adapted to  run in other apps like WorldMaker.  The
+ * plug-in system also runs against a test harness for internal development
+ * and could be adapted to another flight sim (in theory at least).  So an ID
+ * is providing allowing plug-ins to  indentify what app they are running
+ * under.
  *
  */
 enum {
@@ -277,8 +277,8 @@ enum {
 typedef int XPLMHostApplicationID;
 /*
  * XPLMLanguageCode
- * 
- * These enums define what language the sim is running in.                     
+ *
+ * These enums define what language the sim is running in.
  *
  */
 enum {
@@ -293,230 +293,230 @@ enum {
 typedef int XPLMLanguageCode;
 /*
  * XPLMSimulateKeyPress
- * 
- * This function simulates a key being pressed for x-plane.  The keystroke 
- * goes directly to x-plane; it is never sent to any plug-ins.  However, since 
- * this is a raw key stroke it may be mapped by the keys file or enter text 
- * into a field. 
- * 
- * WARNING: This function will be deprecated; do not use it.  Instead use 
- * XPLMCommandKeyStroke.                                                       
+ *
+ * This function simulates a key being pressed for x-plane.  The keystroke
+ * goes directly to x-plane; it is never sent to any plug-ins.  However, since
+ * this is a raw key stroke it may be mapped by the keys file or enter text
+ * into a field.
+ *
+ * WARNING: This function will be deprecated; do not use it.  Instead use
+ * XPLMCommandKeyStroke.
  *
  */
 XPLM_API void                 XPLMSimulateKeyPress(
-                                   int                  inKeyType,    
-                                   int                  inKey);    
+                                   int                  inKeyType,
+                                   int                  inKey);
 /*
  * XPLMSpeakString
- * 
- * This function displays the string in a translucent overlay over the current 
- * display and also speaks the string if text-to-speech is enabled.  The 
- * string is spoken asynchronously, this function returns immediately.         
+ *
+ * This function displays the string in a translucent overlay over the current
+ * display and also speaks the string if text-to-speech is enabled.  The
+ * string is spoken asynchronously, this function returns immediately.
  *
  */
 XPLM_API void                 XPLMSpeakString(
-                                   const char *         inString);    
+                                   const char *         inString);
 /*
  * XPLMCommandKeyStroke
- * 
- * This routine simulates a command-key stroke.  However, the keys are done by 
- * function, not by actual letter, so this function works even if the user has 
- * remapped their keyboard.  Examples of things you might do with this include 
- * pausing the simulator.                                                      
+ *
+ * This routine simulates a command-key stroke.  However, the keys are done by
+ * function, not by actual letter, so this function works even if the user has
+ * remapped their keyboard.  Examples of things you might do with this include
+ * pausing the simulator.
  *
  */
 XPLM_API void                 XPLMCommandKeyStroke(
-                                   XPLMCommandKeyID     inKey);    
+                                   XPLMCommandKeyID     inKey);
 /*
  * XPLMCommandButtonPress
- * 
- * This function simulates any of the actions that might be taken by pressing 
- * a joystick button.  However, this lets you call the command directly rather 
- * than have to know which button is mapped where.  Important: you must 
- * release each button you press.  The APIs are separate so that you can 'hold 
- * down' a button for a fixed amount of time.                                  
+ *
+ * This function simulates any of the actions that might be taken by pressing
+ * a joystick button.  However, this lets you call the command directly rather
+ * than have to know which button is mapped where.  Important: you must
+ * release each button you press.  The APIs are separate so that you can 'hold
+ * down' a button for a fixed amount of time.
  *
  */
 XPLM_API void                 XPLMCommandButtonPress(
-                                   XPLMCommandButtonID  inButton);    
+                                   XPLMCommandButtonID  inButton);
 /*
  * XPLMCommandButtonRelease
- * 
- * This function simulates any of the actions that might be taken by pressing 
- * a joystick button.  See XPLMCommandButtonPress                              
+ *
+ * This function simulates any of the actions that might be taken by pressing
+ * a joystick button.  See XPLMCommandButtonPress
  *
  */
 XPLM_API void                 XPLMCommandButtonRelease(
-                                   XPLMCommandButtonID  inButton);    
+                                   XPLMCommandButtonID  inButton);
 /*
  * XPLMGetVirtualKeyDescription
- * 
- * Given a virtual key code (as defined in XPLMDefs.h) this routine returns a 
- * human-readable string describing the character.  This routine is provided 
- * for showing users what keyboard mappings they have set up.  The string may 
- * read 'unknown' or be a blank or NULL string if the virtual key is unknown.  
+ *
+ * Given a virtual key code (as defined in XPLMDefs.h) this routine returns a
+ * human-readable string describing the character.  This routine is provided
+ * for showing users what keyboard mappings they have set up.  The string may
+ * read 'unknown' or be a blank or NULL string if the virtual key is unknown.
  *
  */
 XPLM_API const char *         XPLMGetVirtualKeyDescription(
-                                   char                 inVirtualKey);    
+                                   char                 inVirtualKey);
 /***************************************************************************
  * X-PLANE MISC
  ***************************************************************************/
 /*
- *                                                                             
+ *
  *
  */
 /*
  * XPLMReloadScenery
- * 
- * XPLMReloadScenery reloads the current set of scenery.  You can use this 
- * function in two typical ways: simply call it to reload the scenery, picking 
- * up any new installed scenery, .env files, etc. from disk.  Or, change the 
- * lat/ref and lon/ref data refs and then call this function to shift the 
- * scenery environment.                                                        
+ *
+ * XPLMReloadScenery reloads the current set of scenery.  You can use this
+ * function in two typical ways: simply call it to reload the scenery, picking
+ * up any new installed scenery, .env files, etc. from disk.  Or, change the
+ * lat/ref and lon/ref data refs and then call this function to shift the
+ * scenery environment.
  *
  */
 XPLM_API void                 XPLMReloadScenery(void);
 /*
  * XPLMGetSystemPath
- * 
- * This function returns the full path to the X-System folder.  Note that this 
- * is a directory path, so it ends in a trailing : or /.                       
+ *
+ * This function returns the full path to the X-System folder.  Note that this
+ * is a directory path, so it ends in a trailing : or /.
  *
  */
 XPLM_API void                 XPLMGetSystemPath(
-                                   char *               outSystemPath);    
+                                   char *               outSystemPath);
 /*
  * XPLMGetPrefsPath
- * 
- * This routine returns a full path to the proper directory to store 
- * preferences in. It ends in a : or /.                                        
+ *
+ * This routine returns a full path to the proper directory to store
+ * preferences in. It ends in a : or /.
  *
  */
 XPLM_API void                 XPLMGetPrefsPath(
-                                   char *               outPrefsPath);    
+                                   char *               outPrefsPath);
 /*
  * XPLMGetDirectorySeparator
- * 
- * This routine returns a string with one char and a null terminator that is 
- * the directory separator for the current platform.  This allows you to write 
- * code that concatinates directory paths without having to #ifdef for 
- * platform.                                                                   
+ *
+ * This routine returns a string with one char and a null terminator that is
+ * the directory separator for the current platform.  This allows you to write
+ * code that concatinates directory paths without having to #ifdef for
+ * platform.
  *
  */
 XPLM_API const char *         XPLMGetDirectorySeparator(void);
 /*
  * XPLMExtractFileAndPath
- * 
- * Given a full path to a file, this routine separates the path from the file. 
- * If the path is a partial directory (e.g. ends in : or \) the trailing 
- * directory separator is removed.  This routine works in-place; a pointer to 
- * the file part of the buffer is returned; the original buffer still starts 
- * with the path.                                                              
+ *
+ * Given a full path to a file, this routine separates the path from the file.
+ * If the path is a partial directory (e.g. ends in : or \) the trailing
+ * directory separator is removed.  This routine works in-place; a pointer to
+ * the file part of the buffer is returned; the original buffer still starts
+ * with the path.
  *
  */
 XPLM_API char *               XPLMExtractFileAndPath(
-                                   char *               inFullPath);    
+                                   char *               inFullPath);
 /*
  * XPLMGetDirectoryContents
- * 
- * This routine returns a list of files in a directory (specified by a full 
- * path, no trailing : or \).  The output is returned as a list of NULL 
- * terminated strings. An index array (if specified) is filled with pointers 
- * into the strings.  This routine The last file is indicated by a zero-length 
- * string (and NULL in the indices).  This routine will return 1 if you had 
- * capacity for all files or 0 if you did not.  You can also skip a given 
- * number of files. 
- * 
- * inDirectoryPath - a null terminated C string containing the full path to 
- * the directory with no trailing directory char. 
- * 
- * inFirstReturn - the zero-based index of the first file in the directory to 
- * return.  (Usually zero to fetch all in one pass.) 
- * 
- * outFileNames - a buffer to receive a series of sequential null terminated 
- * C-string file names.  A zero-length C string will be appended to the very 
- * end. 
- * 
- * inFileNameBufSize - the size of the file name buffer in bytes. 
- * 
- * outIndices - a pointer to an array of character pointers that will become 
- * an index into the directory.  The last file will be followed by a NULL 
- * value.  Pass NULL if you do not want indexing information. 
- * 
- * inIndexCount - the max size of the index in entries. 
- * 
- * outTotalFiles - if not NULL, this is filled in with the number of files in 
- * the  directory. 
- * 
- * outReturnedFiles - if not NULL, the number of files returned by this 
- * iteration. 
- * 
- * Return value - 1 if all info could be returned, 0 if there was a buffer 
- * overrun. 
- * 
- * WARNING: Before X-Plane 7 this routine did not properly iterate through 
- * directories.  If X-Plane 6 compatibility is needed, use your own code to 
- * iterate directories.                                                        
+ *
+ * This routine returns a list of files in a directory (specified by a full
+ * path, no trailing : or \).  The output is returned as a list of NULL
+ * terminated strings. An index array (if specified) is filled with pointers
+ * into the strings.  This routine The last file is indicated by a zero-length
+ * string (and NULL in the indices).  This routine will return 1 if you had
+ * capacity for all files or 0 if you did not.  You can also skip a given
+ * number of files.
+ *
+ * inDirectoryPath - a null terminated C string containing the full path to
+ * the directory with no trailing directory char.
+ *
+ * inFirstReturn - the zero-based index of the first file in the directory to
+ * return.  (Usually zero to fetch all in one pass.)
+ *
+ * outFileNames - a buffer to receive a series of sequential null terminated
+ * C-string file names.  A zero-length C string will be appended to the very
+ * end.
+ *
+ * inFileNameBufSize - the size of the file name buffer in bytes.
+ *
+ * outIndices - a pointer to an array of character pointers that will become
+ * an index into the directory.  The last file will be followed by a NULL
+ * value.  Pass NULL if you do not want indexing information.
+ *
+ * inIndexCount - the max size of the index in entries.
+ *
+ * outTotalFiles - if not NULL, this is filled in with the number of files in
+ * the  directory.
+ *
+ * outReturnedFiles - if not NULL, the number of files returned by this
+ * iteration.
+ *
+ * Return value - 1 if all info could be returned, 0 if there was a buffer
+ * overrun.
+ *
+ * WARNING: Before X-Plane 7 this routine did not properly iterate through
+ * directories.  If X-Plane 6 compatibility is needed, use your own code to
+ * iterate directories.
  *
  */
 XPLM_API int                  XPLMGetDirectoryContents(
-                                   const char *         inDirectoryPath,    
-                                   long                 inFirstReturn,    
-                                   char *               outFileNames,    
-                                   long                 inFileNameBufSize,    
+                                   const char *         inDirectoryPath,
+                                   long                 inFirstReturn,
+                                   char *               outFileNames,
+                                   long                 inFileNameBufSize,
                                    char **              outIndices,    /* Can be NULL */
-                                   long                 inIndexCount,    
+                                   long                 inIndexCount,
                                    long *               outTotalFiles,    /* Can be NULL */
                                    long *               outReturnedFiles);    /* Can be NULL */
 /*
  * XPLMInitialized
- * 
- * This function returns 1 if X-Plane has properly initialized the plug-in 
- * system. If this routine returns 0, many XPLM functions will not work. 
- * 
- * NOTE: Under normal circumstances a plug-in should never be running while 
- * the  plug-in manager is not initialized. 
- * 
- * WARNING: This function is generally not needed and may be deprecated in the 
- * future.                                                                     
+ *
+ * This function returns 1 if X-Plane has properly initialized the plug-in
+ * system. If this routine returns 0, many XPLM functions will not work.
+ *
+ * NOTE: Under normal circumstances a plug-in should never be running while
+ * the  plug-in manager is not initialized.
+ *
+ * WARNING: This function is generally not needed and may be deprecated in the
+ * future.
  *
  */
 XPLM_API int                  XPLMInitialized(void);
 /*
  * XPLMGetVersions
- * 
- * This routine returns the revision of both X-Plane and the XPLM DLL.  All 
- * versions are three-digit decimal numbers (e.g. 606 for version 6.06 of 
- * X-Plane); the current revision of the XPLM is 100 (1.00).  This routine 
- * also returns the host ID of the app running us. 
- * 
- * The most common use of this routine is to special-case around x-plane 
- * version-specific behavior.                                                  
+ *
+ * This routine returns the revision of both X-Plane and the XPLM DLL.  All
+ * versions are three-digit decimal numbers (e.g. 606 for version 6.06 of
+ * X-Plane); the current revision of the XPLM is 100 (1.00).  This routine
+ * also returns the host ID of the app running us.
+ *
+ * The most common use of this routine is to special-case around x-plane
+ * version-specific behavior.
  *
  */
 XPLM_API void                 XPLMGetVersions(
-                                   int *                outXPlaneVersion,    
-                                   int *                outXPLMVersion,    
-                                   XPLMHostApplicationID * outHostID);    
+                                   int *                outXPlaneVersion,
+                                   int *                outXPLMVersion,
+                                   XPLMHostApplicationID * outHostID);
 /*
  * XPLMGetLanguage
- * 
- * This routine returns the langauge the sim is running in.                    
+ *
+ * This routine returns the langauge the sim is running in.
  *
  */
 XPLM_API XPLMLanguageCode     XPLMGetLanguage(void);
 /*
  * XPLMDebugString
- * 
- * This routine outputs a C-style string to the Error.out file (or 
- * deverror.out file if one is being created).  The file is immediately 
- * flushed so you will not lose  data.  (This does cause a performance 
- * penalty.)                                                                   
+ *
+ * This routine outputs a C-style string to the Error.out file (or
+ * deverror.out file if one is being created).  The file is immediately
+ * flushed so you will not lose  data.  (This does cause a performance
+ * penalty.)
  *
  */
 XPLM_API void                 XPLMDebugString(
-                                   const char *         inString);    
+                                   const char *         inString);
 #ifdef __cplusplus
 }
 #endif

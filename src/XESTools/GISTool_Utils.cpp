@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,7 +52,7 @@ void	GISTool_RegisterCommand(
 		sCmds[inName].max_params = inMaxParams;
 		sCmds[inName].cmd = inCommand;
 		sCmds[inName].help_summary = inHelpSummary;
-		sCmds[inName].help_long = inHelpLong;		
+		sCmds[inName].help_long = inHelpLong;
 	}
 }
 
@@ -72,16 +72,16 @@ void	GISTool_RegisterCommands(
 		++n;
 	}
 }
-				
 
-						
+
+
 bool	GISTool_FindCommand(
 						const char *		inName,
 						int&				outMinParams,
 						int&				outMaxParams,
 						GISTool_Command_f&	outCommand)
 {
-	if (sCmds.count(inName) == 0) return false;	
+	if (sCmds.count(inName) == 0) return false;
 	outMinParams = sCmds[inName].min_params;
 	outMaxParams = sCmds[inName].max_params;
 	outCommand = sCmds[inName].cmd;
@@ -110,7 +110,7 @@ int	GISTool_PrintHelpCommand(const char * inCommand)
 		printf("Command %s - unknown command.\n", inCommand);
 		return 1;
 	} else {
-		printf("%s - %s\n%s\n", inCommand, 
+		printf("%s - %s\n%s\n", inCommand,
 			sCmds[inCommand].help_summary.c_str(),
 			sCmds[inCommand].help_long.c_str());
 	}
@@ -126,7 +126,7 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 	const char *		cname;
 	while (n < args.size())
 	{
-		cname = args[n];	
+		cname = args[n];
 		if (!GISTool_FindCommand(cname, minp, maxp, cmd))
 		{
 			fprintf(stderr, "Command %s not known.\n", cname);
@@ -140,7 +140,7 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 				cmdargs.push_back(args[n]);
 				++n;
 			}
-			
+
 			if (cmdargs.size() < minp || cmdargs.size() > maxp)
 			{
 				fprintf(stderr, "%s - needs %d-%d args, got %d args.\n",

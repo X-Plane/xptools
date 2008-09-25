@@ -37,10 +37,10 @@ class Hyperplane_d : public pR::Hyperplane_d_base
 
   Hyperplane_d(int d=0) : Base(d) {}
   Hyperplane_d(int a, int b, int c) : Base(a,b,c) {}
-  Hyperplane_d(const RT& a, const RT& b, const RT& c) : 
+  Hyperplane_d(const RT& a, const RT& b, const RT& c) :
     Base(a,b,c) {}
   Hyperplane_d(int a, int b, int c, int d) : Base(a,b,c,d) {}
-  Hyperplane_d(const RT& a, const RT& b, const RT& c, const RT& d) : 
+  Hyperplane_d(const RT& a, const RT& b, const RT& c, const RT& d) :
     Base(a,b,c,d) {}
 
   Hyperplane_d(const Point_d<R>& p, const Direction_d<R>& dir) :
@@ -59,13 +59,13 @@ class Hyperplane_d : public pR::Hyperplane_d_base
     : Base (d, first, last, D) {}
 
   template <class ForwardIterator>
-  Hyperplane_d(ForwardIterator first, ForwardIterator last, 
+  Hyperplane_d(ForwardIterator first, ForwardIterator last,
                const Point_d<R>& o, Oriented_side side = Oriented_side(0)) :
     Base(first,last,o,side) {}
 
-  Vector_d<R> orthogonal_vector() const 
+  Vector_d<R> orthogonal_vector() const
   { return Base::orthogonal_vector(); }
-  Direction_d<R> orthogonal_direction() const 
+  Direction_d<R> orthogonal_direction() const
   { return Base::orthogonal_direction(); }
 
   bool operator==(const Self& w) const

@@ -4,7 +4,7 @@
  * Project:  PROJ.4
  * Purpose:  Implementation of pj_open_lib(), and pj_set_finder().  These
  *           provide a standard interface for opening projections support
- *           data files. 
+ *           data files.
  * Author:   Gerald Evenden, Frank Warmerdam <warmerdam@pobox.com>
  *
  ******************************************************************************
@@ -92,7 +92,7 @@ pj_open_lib(char *name, char *mode) {
         /* or try to use application provided file finder */
         else if( pj_finder != NULL && pj_finder( name ) != NULL )
             sysname = pj_finder( name );
-        
+
 	/* or is environment PROJ_LIB defined */
 	else if ((sysname = getenv("PROJ_LIB")) || (sysname = proj_lib_name)) {
 		(void)strcpy(fname, sysname);
@@ -110,6 +110,6 @@ pj_open_lib(char *name, char *mode) {
             fprintf( stderr, "pj_open_lib(%s): call fopen(%s) - %s\n",
                      name, sysname,
                      fid == NULL ? "failed" : "succeeded" );
-        
+
 	return(fid);
 }

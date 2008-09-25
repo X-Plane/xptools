@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2005, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -65,7 +65,7 @@ static void	Default_TexCoord(const float * st, void * ref)
 {
 	glTexCoord2fv(st);
 }
-	
+
 static void Default_TexCoordPointer(int size, unsigned long type, long stride, const void * pointer, void * ref)
 {
 	glTexCoordPointer(size, type, stride, pointer);
@@ -76,7 +76,7 @@ static float	Default_GetAnimParam(const char * string, float v1, float v2, void 
 	return 0.0;
 }
 
-static	ObjDrawFuncs_t sDefault = { 
+static	ObjDrawFuncs_t sDefault = {
 	Default_SetupPoly, Default_SetupLine, Default_SetupLight,
 	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam
 };
@@ -103,14 +103,14 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	int 	drawMode = drawMode_Non;
 	bool	do_draw = true;
 	float	mat_col[3] = { 1.0, 1.0, 1.0 };
-	
+
 	for (vector<XObjCmd>::const_iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
 	{
 		int	want_mode = drawMode_Non;
-		
+
 		if (cmd->cmdID == attr_LOD)
 			do_draw = dist >= cmd->attributes[0] && dist <= cmd->attributes[1];
-		
+
 		if (do_draw)
 		{
 			switch(cmd->cmdID) {
@@ -129,7 +129,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 			if (want_mode != drawMode_Non)
 			{
 				if (want_mode != drawMode)
-				{			
+				{
 					switch(want_mode) {
 					case drawMode_Tri:		funcs->SetupPoly_f(ref);	break;
 					case drawMode_Lin:		funcs->SetupLine_f(ref);	break;
@@ -137,18 +137,18 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 					case drawMode_Pan:		funcs->SetupPanel_f(ref);	break;
 					case drawMode_Mov:		funcs->SetupMovie_f(ref);	break;
 					}
-				}			
+				}
 				drawMode = want_mode;
 			}
-			
+
 			switch(cmd->cmdType) {
 			case type_Poly:
 				glColor3fv(mat_col);
 				switch(cmd->cmdID) {
 				case obj_Tri:				glBegin(GL_TRIANGLES);	break;
-				case obj_Quad:				
+				case obj_Quad:
 				case obj_Quad_Hard:
-				case obj_Quad_Cockpit:		
+				case obj_Quad_Cockpit:
 				case obj_Movie:				glBegin(GL_QUADS);	break;
 				case obj_Polygon:			glBegin(GL_POLYGON);	break;
 				case obj_Quad_Strip:		glBegin(GL_QUAD_STRIP);	break;
@@ -166,7 +166,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 			case type_PtLine:
 				switch(cmd->cmdID) {
 				case obj_Line:				glBegin(GL_LINES);	break;
-				case obj_Light:				
+				case obj_Light:
 				default:					glBegin(GL_POINTS);	break;
 				}
 				for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
@@ -201,7 +201,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				case attr_NoCull:	glDisable(GL_CULL_FACE);	break;
 				case attr_Offset:	if (cmd->attributes[0] != 0)
 					{	glEnable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(-5.0*cmd->attributes[0],-1.0);glDepthMask(GL_FALSE);	} else
-					{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	} 
+					{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	}
 					break;
 				}
 				break;
@@ -233,15 +233,15 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 	if (table.empty()) return 0.0f;
 	if (table.size() == 1) return table.front().v[n];
 	if (table.size() == 2) return extrap(table[0].key,table[0].v[n],table[1].key,table[1].v[n],input);
-	
-	vector<XObjKey>::const_iterator i = std::lower_bound(table.begin(), table.end(), input, compare_key());	
+
+	vector<XObjKey>::const_iterator i = std::lower_bound(table.begin(), table.end(), input, compare_key());
 	vector<XObjKey>::const_iterator p1, p2;
-	
-		 if (i == table.end())		{ p1 = i-2; p2 = i-1; }	
+
+		 if (i == table.end())		{ p1 = i-2; p2 = i-1; }
 	else if (i->key == input)		{ return i->v[n];	}
 	else if (i == table.begin())	{ p1 = i; p2 = i+1; }
 	else							{ p1 = i-1; p2 = i; }
-	
+
 	return extrap(p1->key,p1->v[n],p2->key,p2->v[n], input);
 }
 
@@ -254,7 +254,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	bool	tex_is_cockpit = false;
 	int 	want_draw;
 	const XObjAnim8 * anim;
-	
+
 	float v;
 
 	const XObjLOD8 * our_lod = &obj.lods.back();
@@ -269,7 +269,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 		for (vector<XObjCmd8>::const_iterator cmd = our_lod->cmds.begin(); cmd != our_lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
-			case obj8_Tris:	
+			case obj8_Tris:
 				want_draw = tex_is_cockpit ? drawMode_Pan : drawMode_Tri;
 				if (want_draw != drawMode) {
 					if (want_draw == drawMode_Pan)	funcs->SetupPanel_f(ref);
@@ -307,7 +307,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);	CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);			CHECK_GL_ERR
 				glDrawElements(GL_LINES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);	CHECK_GL_ERR
-				break;			
+				break;
 			case obj8_Lights:
 				if (drawMode_Lgt != drawMode) {
 					funcs->SetupLight_f(ref);	CHECK_GL_ERR
@@ -319,19 +319,19 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 					glVertexPointer(3, GL_FLOAT, 24, obj.geo_lights.get(0));							CHECK_GL_ERR
 					glColorPointer(3, GL_FLOAT, 24, ((const char *) obj.geo_lights.get(0)) + 12);		CHECK_GL_ERR
 				}
-				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR				
+				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
 				glDisableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);		CHECK_GL_ERR
 				glEnableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
 				glDrawArrays(GL_POINTS, cmd->idx_offset, cmd->idx_count);		CHECK_GL_ERR
-				break;			
-	
+				break;
+
 			case attr_Tex_Normal:	tex_is_cockpit = false;	drawMode = drawMode_Non;  break;
 			case attr_Tex_Cockpit:	tex_is_cockpit = true;	break;
 			case attr_No_Blend:	glDisable(GL_BLEND); CHECK_GL_ERR break;
 			case attr_Blend:	glEnable(GL_BLEND);	 CHECK_GL_ERR break;
 
-			
+
 			case anim_Begin:	glPushMatrix();	CHECK_GL_ERR break;
 			case anim_End:		glPopMatrix(); CHECK_GL_ERR break;
 			case anim_Rotate:
@@ -348,7 +348,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 					key_extrap(v, anim->keyframes, 1),
 					key_extrap(v, anim->keyframes, 2));
 				break;
-	
+
 			case attr_Shade_Flat:	glShadeModel(GL_FLAT); 	 CHECK_GL_ERR break;
 			case attr_Shade_Smooth: glShadeModel(GL_SMOOTH); CHECK_GL_ERR break;
 //			case attr_Ambient_RGB: 	glMaterialfv(GL_FRONT,GL_AMBIENT, cmd->params); 	CHECK_GL_ERR break;
@@ -374,11 +374,11 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 			case attr_NoCull:	glDisable(GL_CULL_FACE);	CHECK_GL_ERR break;
 			case attr_Offset:	if (cmd->params[0] != 0)
 				{	glEnable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(-5.0*cmd->params[0],-1.0);glDepthMask(GL_FALSE);	} else
-				{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	} 
+				{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	}
 				CHECK_GL_ERR
 				break;
 			} // Case
-						
+
 		} // cmd loop
 	} // our LOD
 }

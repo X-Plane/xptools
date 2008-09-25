@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,12 +52,12 @@ SDTSDirectory::SDTSDirectory(const char * inContainerPath, const char * inExtern
 			sio_8211ForwardIterator i( reader );
 
 			sc_Record record;
-			
+
 			while (i)
 			{
 				i.get(record);
 				sb_Catd	catd;
-				
+
 				if (catd.setRecord(record))
 				{
 					string	nm, fl, ex;
@@ -65,11 +65,11 @@ SDTSDirectory::SDTSDirectory(const char * inContainerPath, const char * inExtern
 					{
 						mModuleMap.insert(hash_map<string,pair<string, bool> >::value_type(nm, pair<string, bool>(fl,ex == "Y" || ex == "y")));
 					}
-				} else 
+				} else
 					break;
 				++i;
 			}
-			
+
 			MemFile_Close(mf);
 		}
 	}
@@ -88,10 +88,10 @@ bool			SDTSDirectory::DidLoad(void) const
 MFMemFile *		SDTSDirectory::OpenModule(const string& inModuleName)
 {
 	hash_map<string, pair<string, bool> >::iterator i = mModuleMap.find(inModuleName);
-	if (i == mModuleMap.end()) 
+	if (i == mModuleMap.end())
 		return NULL;
 	else {
-		if (i->second.second && !mExternal) 
+		if (i->second.second && !mExternal)
 			return NULL;
 		return FileSet_OpenSpecific(i->second.second ? mExternal : mFiles, i->second.first.c_str());
 	}
@@ -101,7 +101,7 @@ void	SDTSDirectory::GetAllModuleNames(vector<string>& outNames)
 {
 	outNames.clear();
 	for (hash_map<string, pair<string, bool> >::iterator i = mModuleMap.begin();
-		i != mModuleMap.end(); ++i)	
+		i != mModuleMap.end(); ++i)
 	{
 		outNames.push_back(i->first);
 	}
@@ -120,13 +120,13 @@ struct	SDTSModuleIterator::SDTSModuleIteratorImp {
 		iter(reader)
 	{
 	}
-	
+
 	bool	done(void) { return !(iter); }
 	void	get(sc_Record& r) { iter.get(r); }
 	void	increment(void) { ++iter; }
 	bool	error(void) { return ifs.bad(); }
 };
-	
+
 SDTSModuleIterator::SDTSModuleIterator(MFMemFile * inFile, sio_8211_converter_dictionary * conv) :
 	mImp(new SDTSModuleIteratorImp(inFile, conv))
 {
@@ -135,7 +135,7 @@ SDTSModuleIterator::~SDTSModuleIterator()
 {
 	delete mImp;
 }
-	
+
 bool			SDTSModuleIterator::Done(void)
 {
 	return mImp->done();
@@ -162,7 +162,7 @@ void	AddConverters(SDTSDirectory& inDirectory, sio_8211_converter_dictionary& in
 	sc_Record	rec;
 	sb_Iref		iref;
 	sb_Ddsh		ddsh;
-	
+
 	MFMemFile * irefFile = inDirectory.OpenModule("IREF");
 	if (irefFile)
 	{
@@ -176,10 +176,10 @@ void	AddConverters(SDTSDirectory& inDirectory, sio_8211_converter_dictionary& in
 			}
 			irefIter.Increment();
 		}
-		
+
 		MemFile_Close(irefFile);
 	}
-	
+
 	MFMemFile * ddshFile = inDirectory.OpenModule("DDSH");
 	if (ddshFile)
 	{
@@ -193,7 +193,7 @@ void	AddConverters(SDTSDirectory& inDirectory, sio_8211_converter_dictionary& in
 			}
 			ddshIter.Increment();
 		}
-		
+
 		MemFile_Close(ddshFile);
 	}
 }

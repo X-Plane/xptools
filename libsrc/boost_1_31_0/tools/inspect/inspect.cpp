@@ -192,13 +192,13 @@ namespace
 
   void display_summary_helper( const string & current_library, int err_count )
   {
-    std::cout << "  <tr><td><a href=\"#" 
+    std::cout << "  <tr><td><a href=\"#"
               << current_library
               << "\">" << current_library
               << "</a></td><td align=\"center\">"
               << err_count << "</td></tr>\n";
   }
-  
+
 //  display_summary  ---------------------------------------------------------//
 
   void display_summary()
@@ -211,7 +211,7 @@ namespace
             "    <td><b>Problems</b></td>\n"
             "  </tr>\n"
             ;
-    string current_library( msgs.begin()->library ); 
+    string current_library( msgs.begin()->library );
     int err_count = 0;
     for ( error_msg_vector::iterator itr ( msgs.begin() );
       itr != msgs.end(); ++itr )
@@ -324,7 +324,7 @@ namespace boost
         fs::no_check );
       if ( relative.empty() ) return "boost-root";
       string first( *relative.begin() );
-      string second =  // borland 5.61 requires op=  
+      string second =  // borland 5.61 requires op=
         ++relative.begin() == relative.end()
           ? string() : *++relative.begin();
 
@@ -452,9 +452,9 @@ int cpp_main( int argc, char * argv[] )
           "<b>Run Date:</b> " << run_date  << "\n"
           "</td>\n"
           "</table>\n"
-          "<p>An <a href=\"http://www.boost.org/tools/inspect/index.html\">inspection\n" 
-          "program</a> checks each file in the current Boost CVS for various problems,\n" 
-          "generating this web page as output. Problems detected include tabs in files,\n" 
+          "<p>An <a href=\"http://www.boost.org/tools/inspect/index.html\">inspection\n"
+          "program</a> checks each file in the current Boost CVS for various problems,\n"
+          "generating this web page as output. Problems detected include tabs in files,\n"
           "missing copyrights, broken URL's, and similar misdemeanors.</p>\n"
           ;
 

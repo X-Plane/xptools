@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Susan Hert, Sylvain Pion
- 
+
 #ifndef CGAL_SIMPLEST_RATIONAL_IN_INTERVAL_H
 #define CGAL_SIMPLEST_RATIONAL_IN_INTERVAL_H
 
@@ -40,7 +40,7 @@ CGAL_BEGIN_NAMESPACE
      4.53-39. */
 
 template <class Rational>
-Rational 
+Rational
 simplest_rational_in_interval(double x, double y) {
 
   if(x == y){
@@ -51,7 +51,7 @@ simplest_rational_in_interval(double x, double y) {
     std::swap(x,y);
   }
 
-  Rational r;  // Return value. 
+  Rational r;  // Return value.
   typename Rational_traits<Rational>::RT r_numerator, r_denominator;
   Rational_traits<Rational> t;
   // Deal with negative arguments.  We only have to deal with the case
@@ -62,7 +62,7 @@ simplest_rational_in_interval(double x, double y) {
     return  - simplest_rational_in_interval<Rational>(fabs(x),fabs(y));
   } else if (x <= 0 || y <= 0) {
     // One argument is 0, or arguments are on opposite sides of 0:
-    // simplest rational in interval is 0 exactly. 
+    // simplest rational in interval is 0 exactly.
     r_numerator = 0;
     r_denominator = 1;
   } else { // x > 0 && y > 0

@@ -41,12 +41,12 @@ class Random {
     // creation
     Random( );
     Random( unsigned int  seed);
-    
+
     // operations
     bool    get_bool  ( );
     int     get_int   ( int lower, int upper);
     double  get_double( double lower = 0.0, double upper = 1.0);
-    
+
     int     operator () ( int upper);
   private:
     // data members
@@ -83,7 +83,7 @@ Random::
 get_int( int lower, int upper)
 {
     return( lower + static_cast< int>(
-      ( static_cast< double>( upper) - lower) * 
+      ( static_cast< double>( upper) - lower) *
       CGAL_CLIB_STD::rand() / rand_max_plus_1));
 }
 
@@ -92,7 +92,7 @@ double
 Random::
 get_double( double lower, double upper)
 {
-    return( lower + ( ( upper-lower) * 
+    return( lower + ( ( upper-lower) *
 		      CGAL_CLIB_STD::rand() / rand_max_plus_1));
 }
 

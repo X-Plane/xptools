@@ -6,7 +6,7 @@
  * tiffmedian [-c n] [-f] input output
  *     -C n		- set colortable size.  Default is 256.
  *     -f		- use Floyd-Steinberg dithering.
- *     -c lzw		- compress output with LZW 
+ *     -c lzw		- compress output with LZW
  *     -c none		- use no compression on output
  *     -c packbits	- use packbits compression on output
  *     -r n		- create output with n rows/strip of data
@@ -20,7 +20,7 @@
  *  you are at X, moving left to right:
  *
  *		    X     7/16
- *	     3/16   5/16  1/16    
+ *	     3/16   5/16  1/16
  *
  *  Note that the error goes to four neighbors, not three.  I think this
  *  will probably do better (at least for black and white) than the
@@ -33,7 +33,7 @@
  *  half the error one pixel ahead (e.g. to the right on lines you scan
  *  left to right), and half one pixel straight down.  Again, this is for
  *  black and white;  I've not tried it with color.
- *  -- 
+ *  --
  *					    Lou Steinberg
  *
  * [2] Color Image Quantization for Frame Buffer Display, Paul Heckbert,

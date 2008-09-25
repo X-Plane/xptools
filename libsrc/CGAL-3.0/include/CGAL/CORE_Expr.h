@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sylvain Pion
- 
+
 #ifndef CGAL_CORE_EXPR_H
 #define CGAL_CORE_EXPR_H
 

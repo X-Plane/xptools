@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,7 +35,7 @@ public:
 	RLERegion(const RLERegion& rhs);
 
 	// OPERATORS
-		
+
 	RLERegion& operator=(const RLERegion& rhs);
 	bool operator==(const RLERegion& rhs) const;
 	bool operator!=(const RLERegion& rhs) const;
@@ -51,7 +51,7 @@ public:
 	RLERegion operator*(const RLERegion& rhs) const { RLERegion tmp(*this); tmp += rhs; return tmp; }
 
 	// MANIPULATORS
-		
+
 	void	border(RLERegion& outBorder);
 	void	set_rect(int x1, int y1, int x2, int y2);
 	void	clear(void);
@@ -60,7 +60,7 @@ public:
 	void	remove_pt(int x, int y) { RLERegion tmp(x,y,x+1,y+1); (*this) -= tmp; }
 
 	// ACCESSORS
-	
+
 	bool	empty(void) const;
 	bool	is_rect(void) const;
 
@@ -90,16 +90,16 @@ private:
 	runarray	runs_;
 
 };
-	
+
 class	RLERegionScanner {
 public:
 	RLERegionScanner(const RLERegion& region);
-	
+
 	void		reset(void);
 	void		next_row(void);
 	void		next_run(void);
 	bool		done(void) const;
-	
+
 	int			cur_row(void) const { return y_ + region_.y1_; }
 	int			cur_run_start(void) const { return x_ + region_.x1_; }
 	int			cur_run_stop (void) const { return x_ + region_.x1_ + region_.runs_[y_][r_]; }
@@ -109,7 +109,7 @@ private:
 	int					y_;
 	int					r_;
 	int					x_;
-	
+
 	RLERegionScanner();
 	RLERegionScanner(const RLERegionScanner&);
 	RLERegionScanner& operator=(const RLERegionScanner&);

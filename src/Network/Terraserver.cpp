@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -119,11 +119,11 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTheme"));
 
 	sprintf(req_string, SOAP_GETTHEMEINFO, inTheme);
-	
+
 	HTTPConnection	con(
 						"terraserver-usa.com",
 						80);
-	
+
 	HTTPRequest		client(
 						&con,
 						"/TerraService2.asmx",
@@ -137,11 +137,11 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 	{
 		con.DoProcessing();
 	}
-	
+
 	int responseNum = client.GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
 		return responseNum;
-	
+
 	vector<char>	foo;
 	client.GetData(foo);
 
@@ -160,7 +160,7 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 		XMLObject * projid = result->GetNestedSubObject("ProjectionID");
 		XMLObject * projname = result->GetNestedSubObject("ProjectionName");
 		XMLObject * copyright = result->GetNestedSubObject("CopyrightNotice");
-		
+
 		if (themeid)	themeid->GetContents(info[0]);
 		if (name)		name->GetContents(info[1]);
 		if (descrip)	descrip->GetContents(info[2]);
@@ -188,7 +188,7 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTile"));
 
 	sprintf(req_string, SOAP_GETTILE, theme, scale, domain, x, y);
-	
+
 	HTTPConnection	con(
 						"terraserver-usa.com",
 						80);
@@ -205,11 +205,11 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 	{
 		con.DoProcessing();
 	}
-	
+
 	int responseNum = client.GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
 		return responseNum;
-	
+
 	vector<char>	foo;
 	client.GetData(foo);
 
@@ -231,28 +231,28 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 		ImageInfo	mini;
 #if DUMP_RAW_JPEG
 		FILE * fi = fopen("raw.jpg", "wb");
-		fwrite(inp, 1, len, fi);		
+		fwrite(inp, 1, len, fi);
 		fclose(fi);
 #endif
-#if USE_JPEG				
+#if USE_JPEG
 		if (CreateBitmapFromJPEGData(inp, len, &mini) == 0)
 		{
 			CopyBitmapSection(&mini, destBitmap,
 			0, 0, mini.width, mini.height,
 			pixLeft,
-			pixTop, 
+			pixTop,
 			pixLeft + mini.width,
 			pixTop + mini.height);
-						
+
 			DestroyBitmap(&mini);
 			delete root;
 			return 0;	// Success!!
-			
+
 		} // Else our tile result's contents didn't look much like a JPEG image!
 #endif
 	} // Else the XML response doesn't have the nodes we exepct
 
-	delete root;	
+	delete root;
 	return -1;
 }
 
@@ -266,7 +266,7 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTileMetaFromTileId"));
 
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, theme, scale, domain, x, y);
-	
+
 	HTTPConnection	con(
 						"terraserver-usa.com",
 						80);
@@ -283,11 +283,11 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 	{
 		con.DoProcessing();
 	}
-	
+
 	int responseNum = client.GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
-		return responseNum;	
-	
+		return responseNum;
+
 	vector<char>	foo;
 	client.GetData(foo);
 	XMLObject * root = ParseXML(&*foo.begin(), foo.size());
@@ -309,7 +309,7 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 	XMLObject *	ne_lon = result->GetNestedSubObject("NorthEast/Lon");
 	XMLObject *	se_lon = result->GetNestedSubObject("SouthEast/Lon");
 	XMLObject *	sw_lon = result->GetNestedSubObject("SouthWest/Lon");
-	
+
 	if (!nw_lat || !ne_lat || !se_lat || !sw_lat ||
 		!nw_lon || !ne_lon || !se_lon || !sw_lon)
 	{
@@ -346,8 +346,8 @@ int	GetTilesForArea(const char * scale,
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetAreaFromRect"));
 
-	sprintf(req_string, SOAP_GETAREAFROMRECT,	inLonWest, inLatNorth, inLonEast, inLatSouth, theme, scale);		
-	
+	sprintf(req_string, SOAP_GETAREAFROMRECT,	inLonWest, inLatNorth, inLonEast, inLatSouth, theme, scale);
+
 	HTTPConnection	con(
 						"terraserver-usa.com",
 						80);
@@ -367,13 +367,13 @@ int	GetTilesForArea(const char * scale,
 
 	int responseNum = client.GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
-		return responseNum;	
-	
+		return responseNum;
+
 	vector<char>	foo;
 	client.GetData(foo);
 	XMLObject * root = ParseXML(&*foo.begin(), foo.size());
 	if (root == NULL) return -1;	// Bad XML
-	
+
 	XMLObject * result = root->GetNestedSubObject(
 		"soap:Envelope/soap:Body/GetAreaFromRectResponse/GetAreaFromRectResult");
 	if (!result)
@@ -381,22 +381,22 @@ int	GetTilesForArea(const char * scale,
 		delete root;
 		return -1;	// No result found
 	}
-    
+
     XMLObject * nw_x = result->GetNestedSubObject("NorthWest/TileMeta/Id/X");
     XMLObject * nw_y = result->GetNestedSubObject("NorthWest/TileMeta/Id/Y");
-    XMLObject * nw_scene = result->GetNestedSubObject("NorthWest/TileMeta/Id/Scene");        
+    XMLObject * nw_scene = result->GetNestedSubObject("NorthWest/TileMeta/Id/Scene");
 
     XMLObject * sw_x = result->GetNestedSubObject("SouthWest/TileMeta/Id/X");
     XMLObject * sw_y = result->GetNestedSubObject("SouthWest/TileMeta/Id/Y");
-    XMLObject * sw_scene = result->GetNestedSubObject("SouthWest/TileMeta/Id/Scene");       
+    XMLObject * sw_scene = result->GetNestedSubObject("SouthWest/TileMeta/Id/Scene");
 
     XMLObject * ne_x = result->GetNestedSubObject("NorthEast/TileMeta/Id/X");
     XMLObject * ne_y = result->GetNestedSubObject("NorthEast/TileMeta/Id/Y");
-    XMLObject * ne_scene = result->GetNestedSubObject("NorthEast/TileMeta/Id/Scene");       
+    XMLObject * ne_scene = result->GetNestedSubObject("NorthEast/TileMeta/Id/Scene");
 
     XMLObject * se_x = result->GetNestedSubObject("SouthEast/TileMeta/Id/X");
     XMLObject * se_y = result->GetNestedSubObject("SouthEast/TileMeta/Id/Y");
-    XMLObject * se_scene = result->GetNestedSubObject("SouthEast/TileMeta/Id/Scene");       
+    XMLObject * se_scene = result->GetNestedSubObject("SouthEast/TileMeta/Id/Scene");
 
 	if (!nw_x || !nw_y || !nw_scene ||
 		!sw_x || !sw_y || !sw_scene ||
@@ -426,7 +426,7 @@ int	GetTilesForArea(const char * scale,
 
 /*************************************************************************************************************************************************
  * ASYNC SERVER ACCESS
- *************************************************************************************************************************************************/			
+ *************************************************************************************************************************************************/
 
 AsyncConnectionPool::AsyncConnectionPool(int max_cons, int max_depth) :
 	mMaxCons(max_cons),
@@ -453,7 +453,7 @@ AsyncConnectionPool::~AsyncConnectionPool()
 }
 
 void	AsyncConnectionPool::ServiceImage(HTTPRequest * req)
-{	
+{
 	vector<HTTPConnection*>::iterator i;
 
 	for(i = mImageCon.begin(); i != mImageCon.end(); ++i)
@@ -524,7 +524,7 @@ AsyncImage::AsyncImage(AsyncConnectionPool * pool, const char * scale, const cha
 	mImage = NULL;
 	mTexNum = 0;
 	mFetchCoords = NULL;
-	mFetchImage = NULL;	
+	mFetchImage = NULL;
 }
 
 void AsyncImage::TryCoords(void)
@@ -535,7 +535,7 @@ void AsyncImage::TryCoords(void)
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTileMetaFromTileId"));
 
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, mTheme.c_str(), mScale.c_str(), mDomain, mX, mY);
-	
+
 	mFetchCoords = new HTTPRequest(
 						NULL,
 						"/TerraService2.asmx",
@@ -567,7 +567,7 @@ void AsyncImage::TryImage()
 	mPool->ServiceImage(mFetchImage);
 }
 
-	
+
 AsyncImage::~AsyncImage()
 {
 	if (mImage)
@@ -577,27 +577,27 @@ AsyncImage::~AsyncImage()
 	}
 	delete mFetchImage;
 	delete mFetchCoords;
-	
+
 	if (mTexNum != 0)
 		glDeleteTextures(1, (GLuint*) &mTexNum);
 }
-	
+
 ImageInfo *		AsyncImage::GetImage(void)
 {
 	if (mImage) return mImage;
 	if (mHasErr) return NULL;
-	
+
 	if (!mFetchImage)
 	{
 		TryImage();
-	}	
-	
+	}
+
 	if (!mFetchImage->IsDone())
 	{
 		mPool->ServiceImage(mFetchImage);
 		return NULL;
 	}
-	
+
 	int responseNum = mFetchImage->GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
 	{
@@ -605,7 +605,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 		delete mFetchImage;
 		mFetchImage = NULL;
 		return NULL;
-	}	
+	}
 	vector<char>	foo;
 	mFetchImage->GetData(foo);
 
@@ -625,12 +625,12 @@ ImageInfo *		AsyncImage::GetImage(void)
 		vector<char>	abuf;
 		abuf.resize(b64.length());		// Post-B64 decoding is always at least smaller than in b64.
 		char * inp = &*abuf.begin();
-		char *	outP;	
+		char *	outP;
 		decode(&*b64.begin(), &*b64.end(), inp, &outP);
 		int len = outP - inp;
 
 		mImage = new ImageInfo;
-#if USE_JPEG		
+#if USE_JPEG
 		if (CreateBitmapFromJPEGData(inp, len, mImage) == 0)
 		{
 			delete root;
@@ -641,17 +641,17 @@ ImageInfo *		AsyncImage::GetImage(void)
 			#else
 				XPLMGenerateTextureNumbers(&mTexNum, 1);
 			#endif
-			
-			LoadTextureFromImage(*mImage, mTexNum, tex_Linear, NULL, NULL, &mS, &mT);			
+
+			LoadTextureFromImage(*mImage, mTexNum, tex_Linear, NULL, NULL, &mS, &mT);
 			return mImage;
 		} // Else our tile result's contents didn't look much like a JPEG image!
 #endif
 	} // Else the XML response doesn't have the nodes we exepct
 
-	delete root;	
+	delete root;
 	delete mFetchImage;
 	mFetchImage = NULL;
-	
+
 	mHasErr = true;
 	return NULL;
 }
@@ -659,7 +659,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 bool			AsyncImage::GetCoords(double	coords[4][2])
 {
 	if (mHasErr) return false;
-	
+
 	if (mHasCoords)
 	{
 		memcpy(coords, mCoords, sizeof(mCoords));
@@ -669,8 +669,8 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	if (!mFetchCoords)
 	{
 		TryCoords();
-	}	
-	
+	}
+
 
 
 	if (!mFetchCoords->IsDone())
@@ -678,7 +678,7 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 		mPool->ServiceImage(mFetchCoords);
 		return false;
 	}
-	
+
 	int responseNum = mFetchCoords->GetResponseNum();
 	if ((responseNum < 200) || (responseNum > 299))
 	{
@@ -687,15 +687,15 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 		mFetchCoords = NULL;
 		return false;
 	}
-	
+
 	vector<char>	foo;
 	mFetchCoords->GetData(foo);
 	XMLObject * root = ParseXML(&*foo.begin(), foo.size());
-	if (!root) { 
-		mHasErr = true; 
+	if (!root) {
+		mHasErr = true;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
-		return false; 
+		return false;
 	}
 
 	XMLObject * result = root->GetNestedSubObject("soap:Envelope/soap:Body/GetTileMetaFromTileIdResponse/GetTileMetaFromTileIdResult");
@@ -705,7 +705,7 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 		delete root;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
-		mHasErr = true; 
+		mHasErr = true;
 		return false;
 	}
 
@@ -717,14 +717,14 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	XMLObject *	ne_lon = result->GetNestedSubObject("NorthEast/Lon");
 	XMLObject *	se_lon = result->GetNestedSubObject("SouthEast/Lon");
 	XMLObject *	sw_lon = result->GetNestedSubObject("SouthWest/Lon");
-	
+
 	if (!nw_lat || !ne_lat || !se_lat || !sw_lat ||
 		!nw_lon || !ne_lon || !se_lon || !sw_lon)
 	{
 		delete root;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
-		mHasErr = true; 
+		mHasErr = true;
 		return false;
 	}
 
@@ -824,7 +824,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 
 			int responseNum = mFetch->GetResponseNum();
 			if ((responseNum >= 200) && (responseNum <= 299))
-			{				
+			{
 				vector<char>	foo;
 				mFetch->GetData(foo);
 				XMLObject * root = ParseXML(&*foo.begin(), foo.size());
@@ -836,19 +836,19 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 					{
 					    XMLObject * nw_x = result->GetNestedSubObject("NorthWest/TileMeta/Id/X");
 					    XMLObject * nw_y = result->GetNestedSubObject("NorthWest/TileMeta/Id/Y");
-					    XMLObject * nw_scene = result->GetNestedSubObject("NorthWest/TileMeta/Id/Scene");        
+					    XMLObject * nw_scene = result->GetNestedSubObject("NorthWest/TileMeta/Id/Scene");
 
 					    XMLObject * sw_x = result->GetNestedSubObject("SouthWest/TileMeta/Id/X");
 					    XMLObject * sw_y = result->GetNestedSubObject("SouthWest/TileMeta/Id/Y");
-					    XMLObject * sw_scene = result->GetNestedSubObject("SouthWest/TileMeta/Id/Scene");       
+					    XMLObject * sw_scene = result->GetNestedSubObject("SouthWest/TileMeta/Id/Scene");
 
 					    XMLObject * ne_x = result->GetNestedSubObject("NorthEast/TileMeta/Id/X");
 					    XMLObject * ne_y = result->GetNestedSubObject("NorthEast/TileMeta/Id/Y");
-					    XMLObject * ne_scene = result->GetNestedSubObject("NorthEast/TileMeta/Id/Scene");       
+					    XMLObject * ne_scene = result->GetNestedSubObject("NorthEast/TileMeta/Id/Scene");
 
 					    XMLObject * se_x = result->GetNestedSubObject("SouthEast/TileMeta/Id/X");
 					    XMLObject * se_y = result->GetNestedSubObject("SouthEast/TileMeta/Id/Y");
-					    XMLObject * se_scene = result->GetNestedSubObject("SouthEast/TileMeta/Id/Scene");       
+					    XMLObject * se_scene = result->GetNestedSubObject("SouthEast/TileMeta/Id/Scene");
 
 						if (!nw_x || !nw_y || !nw_scene ||
 							!sw_x || !sw_y || !sw_scene ||
@@ -870,7 +870,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 							tiles[1][2] = ne_scene->GetContentsInt();
 							tiles[2][2] = se_scene->GetContentsInt();
 							tiles[3][2] = sw_scene->GetContentsInt();
-							
+
 							mX1 = mX2 = tiles[0][0];
 							mY1 = mY2 = tiles[0][1];
 							mX2++;
@@ -882,22 +882,22 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 								mX2 = max (mX2, tiles[n][0]+1);
 								mY1 = min (mY1, tiles[n][1]);
 								mY2 = max (mY2, tiles[n][1]+1);
-								
+
 								if (tiles[n][2] != mLayer)
 								{
 									mX1 = mY1 = mX2 = mY2 = -1;
 									break;
-								}								
-							}		
-							
+								}
+							}
+
 							DebugAssert(mX1 != -2147483648);
 							DebugAssert(mX2 >= mX1);
 							DebugAssert(mY2 >= mY1);
-							
-							mHas = true;								
+
+							mHas = true;
 						}
 					}
-					delete root;			
+					delete root;
 				}
 			} else {
 				char buf[512];
@@ -908,17 +908,17 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 			mFetch = NULL;
 		}
 	}
-	
+
 	if (w != mWest || e != mEast || s != mSouth || n != mNorth)
 	if (mFetch == NULL)
-	{		
+	{
 		FieldMap	fields;
 		fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 		fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 		fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetAreaFromRect"));
 
-		sprintf(req_string, SOAP_GETAREAFROMRECT,	w, n, e, s, theme, scale);		
-		
+		sprintf(req_string, SOAP_GETAREAFROMRECT,	w, n, e, s, theme, scale);
+
 		mFetch = new HTTPRequest(
 							NULL,
 							"/TerraService2.asmx",
@@ -926,14 +926,14 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 							fields,
 							req_string,
 							strlen(req_string),
-							NULL);	
+							NULL);
 		mWest = w;
 		mNorth = n;
 		mEast = e;
 		mSouth = s;
 		mPool->ServiceLocator(mFetch);
 	}
-	
+
 	if (mHas)
 	{
 		status = "";
@@ -944,13 +944,13 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 		layer = mLayer;
 	}
 	return mHas;
-}					
+}
 
 void	AsyncImageLocator::Purge(void)
 {
 	if (mFetch) delete mFetch;
 	mFetch = NULL;
-	
+
 	mHas = false;
 	mWest = -9.9e9;
 }

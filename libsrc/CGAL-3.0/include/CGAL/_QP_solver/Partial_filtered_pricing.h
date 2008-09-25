@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 
 #ifndef CGAL_PARTIAL_FILTERED_PRICING_H
 #define CGAL_PARTIAL_FILTERED_PRICING_H
@@ -30,13 +30,13 @@
 
 
 CGAL_BEGIN_NAMESPACE
-                    
+
 
 // Class declaration
 // =================
 template < class Rep >
 class Partial_filtered_pricing;
-                               
+
 
 // Class interface
 // ===============
@@ -88,12 +88,12 @@ class Partial_filtered_pricing
       std::vector<NT>    col_max;
 
   public:
-    
+
     // creation
     Partial_filtered_pricing( )
         : nt_0( 0), nt_1( 1), nt_2( 2), et_0( 0), et_2( 2) { }
-    
-    
+
+
     // initialization
     void  set( )
     {
@@ -101,11 +101,11 @@ class Partial_filtered_pricing
             vout() << "partial filtered pricing" << std::endl;
         }
     }
-    
+
     void  init( )
     {
         int i, j;
-    
+
         const Solver& solve = solver();
         int  n = solve.number_of_variables();
         int  m = solve.number_of_constraints();
@@ -113,7 +113,7 @@ class Partial_filtered_pricing
         N.erase( N.begin(), N.end());
         N.reserve( n);
         for ( i = 0; i < n; ++i) N.push_back( i);
-    
+
         // compute maxima
         row_max_A = std::vector<NT>(   m, nt_1);
         col_max   = std::vector<NT>( n+m, nt_0);
@@ -131,13 +131,13 @@ class Partial_filtered_pricing
         }
         row_max_c = nt_1;
     }
-    
+
     void  transition( )
     {
         const Solver& solve = solver();
         int  n = solve.number_of_variables();
         int  m = solve.number_of_constraints();
-    
+
         // remove artificial variables from N
         int j, i = 0;
         for ( j = n-m; j < n; ++j) {
@@ -148,7 +148,7 @@ class Partial_filtered_pricing
         }
         N.erase( N.end()-m, N.end());
         s = min( static_cast<int>(m * CGAL_CLIB_STD::sqrt(static_cast<double>(n))), n-m);
-    
+
         // update row/column maxima of `A'
         C_iterator  c_i = solve.c_begin();
         NT z;
@@ -157,14 +157,14 @@ class Partial_filtered_pricing
             if ( z > col_max[ i]) col_max[ i] = z;
             if ( z > row_max_c  ) row_max_c   = z;
         }
-    
+
         // compute row/column maxima of `D'
         if ( ! CGAL::check_tag( Is_lp())) {
             row_max_D = std::vector< NT >( n, nt_0);
             row_valid = std::vector<bool>( n, false);
         }
     }
-    
+
     // operations
     int  pricing( )
     {
@@ -174,19 +174,19 @@ class Partial_filtered_pricing
         typedef  CGAL::Join_random_access_iterator_1<
                      Basic_variable_index_iterator,
                      Access_D_Bj >      D_Bj_iterator;
-    
+
         const Solver& solve = solver();
         int  n = solve.number_of_variables();
         int  m = solve.number_of_constraints();
         int  b = solve.number_of_basic_variables();
         ET   d = solve.variables_common_denominator();
         NT   nt_d = CGAL::to_double( d);
-    
+
         int   i, j, k, min_k  = -1, min_j = -1;
         NT    nt_mu, nt_min_mu =  0;
         ET    mu, min_mu =  0;
         bool  is_phase_I = ( solve.phase() == 1);
-    
+
         // get inexact versions of `lambda' and `x_B'
         std::vector<NT>  lambda, x_B;
         lambda.reserve( m);
@@ -199,12 +199,12 @@ class Partial_filtered_pricing
                             solve.basic_variables_numerator_end(),
                             std::back_inserter( x_B), To_double<ET>());
         }
-    
+
         // loop over all active non-basic variables
         for ( k = 0; k < s; ++k) {
-    
+
             j = N[ k];
-    
+
             // compute mu_j
             if ( is_phase_I) {      // phase I
                 if ( j < n) {          // original variable
@@ -232,11 +232,11 @@ class Partial_filtered_pricing
                         nt_0);
                 }
             }
-    
+
             CGAL_optimisation_debug {
                 vout() << "nt_mu_" << j << ": " << nt_mu << std::endl;
             }
-    
+
             // new minimum?
             if ( ( nt_mu < nt_min_mu) ||
                  ( ( min_j >= n) && ( j < n) && ( nt_mu == nt_min_mu))) {
@@ -245,7 +245,7 @@ class Partial_filtered_pricing
                 nt_min_mu = nt_mu;
             }
         }
-    
+
         // exact check of entering variable
         if ( min_k >= 0) {
             j = N[ min_k];
@@ -284,19 +284,19 @@ class Partial_filtered_pricing
                 min_k = -1; min_j = -1; nt_min_mu = nt_0;
             }
         }
-    
+
         if ( min_k < 0) {
-    
+
         // --------------------------------------------------------------------
         vout() << "no entering variable found so far, test remaining variables"
         // --------------------------------------------------------------------
                << std::endl;
-    
+
             // loop over all remaining non-basic variables
             for ( k = s; k < (int)N.size(); ++k) {
-    
+
                 j = N[ k];
-    
+
                 // compute mu_j
                 if ( is_phase_I) {      // phase I
                     if ( j < n) {          // original variable
@@ -324,15 +324,15 @@ class Partial_filtered_pricing
                             nt_0);
                     }
                 }
-    
+
                 CGAL_optimisation_debug {
                     vout() << "nt_mu_" << j << ": " << nt_mu << std::endl;
                 }
-    
+
                 // improving variable?
                 if ( nt_mu < nt_0) {
                     std::swap( N[ k], N[ s]);
-    
+
                     // new minimum?
                     if ( ( nt_mu < nt_min_mu) ||
                          ( ( min_j >= n) && ( j < n) &&
@@ -341,11 +341,11 @@ class Partial_filtered_pricing
                         min_j  = j;
                         nt_min_mu = nt_mu;
                     }
-    
+
                     ++s;
                 }
             }
-    
+
             // exact check of entering variable
             if ( min_k >= 0) {
                 j = N[ min_k];
@@ -386,13 +386,13 @@ class Partial_filtered_pricing
             }
         }
         if ( min_k < 0) {
-    
+
             // ----------------------------------------------------------------
             vout()
             << "no entering variable found so far, revert to exact arithmetic"
             // ----------------------------------------------------------------
             << std::endl;
-    
+
             // compute first error bound
             k = m+b+1;
             NT q = ldexp( 1.015625*k*(k+1), -53);
@@ -429,13 +429,13 @@ class Partial_filtered_pricing
             CGAL_optimisation_debug {
                 vout() << "[ first bound: " << bound_1 << " ]" << std::endl;
             }
-    
+
             // loop again over all non-basic variables to verify optimality
             k = 0;
             while ( k < (int)N.size() && min_k < 0) {
-    
+
                 j = N[ k];
-    
+
                 // compute mu_j (inexact)
                 if ( is_phase_I) {      // phase I
                     if ( j < n) {          // original variable
@@ -463,11 +463,11 @@ class Partial_filtered_pricing
                             nt_0);
                     }
                 }
-    
+
                 CGAL_optimisation_debug {
                     vout() << "nt_mu_" << j << ": " << nt_mu;
                 }
-    
+
                 // check against first bound
                 if ( nt_mu >= bound_1) {
                     CGAL_optimisation_debug {
@@ -482,7 +482,7 @@ class Partial_filtered_pricing
                                    << bound_2 << " ]" << std::endl;
                         }
                     } else {
-    
+
                         // compute mu_j (exact)
                         if ( is_phase_I) {      // phase I
                             if ( j < n) {          // original variable
@@ -514,12 +514,12 @@ class Partial_filtered_pricing
                                     et_0);
                             }
                         }
-    
+
                         CGAL_optimisation_debug {
                             vout() << " [ exact computation needed: "
                                    << mu << " ]" << std::endl;
                         }
-    
+
                         if ( mu < et_0) min_k = k;
                     }
                 }
@@ -527,7 +527,7 @@ class Partial_filtered_pricing
             }
         }
         vout() << std::endl;
-    
+
         // return index of entering variable
         if ( min_k >= 0) {
             j = N[ min_k];
@@ -539,7 +539,7 @@ class Partial_filtered_pricing
         }
         return -1;
     }
-    
+
     void  leaving_basis( int i)
     {
         if ( s == (int)N.size()) {
@@ -550,13 +550,13 @@ class Partial_filtered_pricing
         }
         ++s;
     }
-    
-    
+
+
 };
-  
+
 
 CGAL_END_NAMESPACE
-                  
+
 
 #endif // CGAL_PARTIAL_FILTERED_PRICING_H
 

@@ -10,7 +10,7 @@
 
 #include "BindableNode.h"
 
-BindableNode::BindableNode() 
+BindableNode::BindableNode()
 {
 	// set_bind
 	setBindField = new SFBool(true);
@@ -25,7 +25,7 @@ BindableNode::BindableNode()
 	addEventOut(isBoundFieldString, isBoundField);
 }
 
-BindableNode::~BindableNode() 
+BindableNode::~BindableNode()
 {
 }
 
@@ -33,24 +33,24 @@ BindableNode::~BindableNode()
 //	bind
 ////////////////////////////////////////////////
 
-SFBool *BindableNode::getBindField() 
+SFBool *BindableNode::getBindField()
 {
 	if (isInstanceNode() == false)
 		return setBindField;
 	return (SFBool *)getEventIn(setBindFieldString);
 }
 
-void BindableNode::setBind(bool value) 
+void BindableNode::setBind(bool value)
 {
 	getBindField()->setValue(value);
 }
 
-bool BindableNode::getBind() 
+bool BindableNode::getBind()
 {
 	return getBindField()->getValue();
 }
 
-bool BindableNode::isBind() 
+bool BindableNode::isBind()
 {
 	return getBind();
 }
@@ -66,12 +66,12 @@ SFTime *BindableNode::getBindTimeField()
 	return (SFTime *)getEventOut(bindTimeFieldString);
 }
 
-void BindableNode::setBindTime(double value) 
+void BindableNode::setBindTime(double value)
 {
 	getBindTimeField()->setValue(value);
 }
 
-double BindableNode::getBindTime() 
+double BindableNode::getBindTime()
 {
 	return getBindTimeField()->getValue();
 }
@@ -87,17 +87,17 @@ SFBool *BindableNode::getIsBoundField()
 	return (SFBool *)getEventOut(isBoundFieldString);
 }
 
-void BindableNode::setIsBound(bool value) 
+void BindableNode::setIsBound(bool value)
 {
 	getIsBoundField()->setValue(value);
 }
 
-bool BindableNode::getIsBound() 
+bool BindableNode::getIsBound()
 {
 	return getIsBoundField()->getValue();
 }
 
-bool BindableNode::isBound() 
+bool BindableNode::isBound()
 {
 	return getIsBound();
 }

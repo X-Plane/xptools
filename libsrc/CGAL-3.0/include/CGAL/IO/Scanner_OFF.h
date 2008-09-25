@@ -102,7 +102,7 @@ private:
     File_scanner_OFF*  m_scan;
     std::ptrdiff_t     m_cnt;
     value_type         m_current;
-    
+
 
     void next() {
         CGAL_assertion( m_scan != NULL);

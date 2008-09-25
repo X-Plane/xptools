@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -175,10 +175,10 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				strcpy(buf, "New Scenery Package");
-				if (!GetFilePathFromUser((cmd == specCmd_UpdateTerrainPackage) ? getFile_PickFolder : getFile_Save, 
-										(cmd == specCmd_UpdateTerrainPackage) ? "Please pick your scenery package" : "Please name your scenery package", 
+				if (!GetFilePathFromUser((cmd == specCmd_UpdateTerrainPackage) ? getFile_PickFolder : getFile_Save,
+										(cmd == specCmd_UpdateTerrainPackage) ? "Please pick your scenery package" : "Please name your scenery package",
 										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf, sizeof(buf))) return;
-//				if (cmd != specCmd_UpdateTerrainPackage) 
+//				if (cmd != specCmd_UpdateTerrainPackage)
 					strcat(buf, DIR_STR);
 				CreateTerrainPackage(buf, true);
 			}
@@ -219,16 +219,16 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				{
 					n += GetParamHistogram(*f, gDem[dem_Elevation], hist);
 				}
-			
-				if (n == 0) 
+
+				if (n == 0)
 				{
 					sprintf(buf, "Lake contains no points.");
-				} 
-				else if (n == 1) 
+				}
+				else if (n == 1)
 				{
 					sprintf(buf, "Lake contains one point, h = %f", hist.begin()->first);
-				} 
-				else 
+				}
+				else
 				{
 					// BASICS - mean, min, max, mode
 					float minv = hist.begin()->first;
@@ -248,7 +248,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 						maxv = max(maxv, iter->first);
 					}
 					mean /= float (n);
-					
+
 					// STANDARD DEVIATION
 					float	devsq = 0.0;
 					for (iter = hist.begin(); iter != hist.end(); ++iter)
@@ -257,12 +257,12 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					}
 					devsq /= (float) (n-1);
 					devsq = sqrt(devsq);
-					
+
 					// CONFIDENCE LEVEL
 					multimap<int, float, greater<int> >	reverser;
 					for (iter = hist.begin(); iter != hist.end(); ++iter)
 						reverser.insert(multimap<int,float>::value_type(iter->second, iter->first));
-					
+
 					float minv_lim = 9.9e9;
 					float maxv_lim =-9.9e9;
 					float sum = 0.0;
@@ -286,7 +286,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 //				{
 //					printf("   %10f %d %f\n", iter->first, iter->second, (float) iter->second / (float) n);
 //				}
-				
+
 			}
 			break;
 		case specCmd_MeshErr:
@@ -306,7 +306,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					maxv = max(maxv, iter->first);
 				}
 				mean /= float (n);
-				
+
 				float	devsq = 0.0;
 				for (iter = hist.begin(); iter != hist.end(); ++iter)
 				{
@@ -314,9 +314,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				}
 				devsq /= (float) (n-1);
 				devsq = sqrt(devsq);
-				
+
 				sprintf(buf, "mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
-				DoUserAlert(buf);				
+				DoUserAlert(buf);
 			}
 			break;
 		case specCmd_PreviewSHP:
@@ -327,14 +327,14 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				SHPHandle file = SHPOpen(buf, "rb");
 				if (file == NULL)
 					return;
-				
+
 				int	entityCount, shapeType;
 				double	bounds_lo[4], bounds_hi[4];
-				
+
 				gMeshPoints.clear();
 				gMeshLines.clear();
 				SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-				
+
 				for (int n = 0; n < entityCount; ++n)
 				{
 					SHPObject * obj = SHPReadObject(file, n);
@@ -359,9 +359,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 								gMeshLines.push_back(pair<Point2,Point3>(pts.side(m).p2, Point3(0.8, 0.3, 0.1)));
 							}
 						}
-					}					
-					SHPDestroyObject(obj);	
-				}	
+					}
+					SHPDestroyObject(obj);
+				}
 				SHPClose(file);
 			}
 			break;
@@ -370,7 +370,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (set<GISFace*>::iterator face = gFaceSelection.begin(); face != gFaceSelection.end(); ++face)
 				{
 					(*face)->mPointFeatures.erase(remove_if((*face)->mPointFeatures.begin(), (*face)->mPointFeatures.end(), FeatureHasNoHeight()), (*face)->mPointFeatures.end());
-				}				
+				}
 			}
 			break;
 		case specCmd_TempMSL:
@@ -378,7 +378,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				gDem[dem_TemperatureSeaLevel] = gDem[dem_Temperature];
 				DEMGeo& temp(gDem[dem_TemperatureSeaLevel]);
 				const DEMGeo& elev(gDem[dem_Elevation]);
-				
+
 				if (elev.mWidth == temp.mWidth && elev.mHeight == temp.mHeight)
 				{
 					for (int y = 0; y < temp.mHeight; ++y)
@@ -389,7 +389,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 							temp(x,y) -= e * kStdLapseRate;
 					}
 				} else {
-				
+
 					for (int y = 0; y < temp.mHeight; ++y)
 					for (int x = 0; x < temp.mWidth ; ++x)
 					{
@@ -404,7 +404,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_FixMSL:
 			{
 				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
-				
+
 				float k[25];
 
 				CalculateFilter(5, k, demFilter_Spread, false);
@@ -413,14 +413,14 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (int y = 0; y < msl.mHeight; ++y)
 				for (int x = 0; x < msl.mWidth ; ++x)
 				if (msl2.get(x,y) == DEM_NO_DATA)
-					msl(x,y) = DEM_NO_DATA;				
+					msl(x,y) = DEM_NO_DATA;
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case specCmd_FixRain:
 			{
 				DEMGeo& rain(gDem[dem_Rainfall]);
-				
+
 				float k[25];
 				//Sergio sez: not too much rain smoothing - for reasons that only the master can understand! ;-)
 				CalculateFilter(3, k, demFilter_Spread, false);
@@ -429,7 +429,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (int y = 0; y < rain.mHeight; ++y)
 				for (int x = 0; x < rain.mWidth ; ++x)
 				if (rain2.get(x,y) == DEM_NO_DATA)
-					rain(x,y) = DEM_NO_DATA;				
+					rain(x,y) = DEM_NO_DATA;
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
@@ -471,15 +471,15 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					c++;
 					b += f->info().terrain_border.size();
 				}
-				
+
 				if (c > 0)
-				{					
+				{
 					char buf[512];
 					int t= b + c;
 					sprintf(buf, "Mesh contains %d base triangles, %d border triangles, %d total triangles.  Triangle-to-mesh ratio: %f",
 						c, b, t, (float) t / (float) c);
 					DoUserAlert(buf);
-				} else 
+				} else
 					DoUserAlert("The mesh has not yet been built.");
 			}
 			break;
@@ -494,7 +494,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				DEMGeo	rain_diff, temp_diff;
 				DEMMakeDifferential(temps, temp_diff);
 				DEMMakeDifferential(rain, rain_diff);
-				
+
 				set<int>	lus, olus;
 				float tmin, tmax, rmin, rmax, emin, emax, tsmin, tsmax;
 				int x, y;
@@ -502,9 +502,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				tsmin = tsmax = temps.get(0,0);
 				rmin = rmax = rain.get(0,0);
 				emin = emax = elev.get(0,0);
-				
+
 				float rain_max_dif = 0.0, temp_max_dif = 0.0;
-				
+
 				for (y = 0; y < temp.mHeight; ++y)
 				for (x = 0; x < temp.mWidth; ++x)
 				{
@@ -517,7 +517,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				{
 					tsmin = MIN_NODATA(tsmin, temps.get(x,y));
 					tsmax = MAX_NODATA(tsmax, temps.get(x,y));
-					
+
 					temp_max_dif = MAX_NODATA(temp_max_dif, temp_diff.get(x,y));
 				}
 
@@ -529,7 +529,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 
 					rain_max_dif = MAX_NODATA(rain_max_dif, rain_diff.get(x,y));
 				}
-				
+
 				for (y = 0; y < elev.mHeight; ++y)
 				for (x = 0; x < elev.mWidth; ++x)
 				{
@@ -544,7 +544,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (y = 0; y < old_lu.mHeight; ++y)
 				for (x = 0; x < old_lu.mWidth; ++x)
 					olus.insert(old_lu.get(x,y));
-		
+
 				char buf[1024];
 				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.  Max temp change = %f, Max rain dif = %f",
 						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, olus.size(), lus.size(), temp_max_dif, rain_max_dif);
@@ -567,24 +567,24 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 	} catch (...) {
 		DoUserAlert("The operation was aborted due to an unexpected internal error.");
 	}
-	
+
 }
 
 void DoScreenshot(void)
 {
 	static	int	rev = 1;
-	
+
 	GLint	viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	ImageInfo	cap;
 	int err = CreateNewBitmap(viewport[2], viewport[3], 3, &cap);
 	if (err == 0)
-	{	
-#if APL	
+	{
+#if APL
 		glReadPixels(0, 0, viewport[2], viewport[3], GL_BGR, GL_UNSIGNED_BYTE, cap.data);
 #else
 		glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB, GL_UNSIGNED_BYTE, cap.data);
-#endif		
+#endif
 		char	buf[1024];
 		do {
 //			strcpy(buf, GetApplicationPath());
@@ -600,8 +600,8 @@ void DoScreenshot(void)
 			} else
 				break;
 		} while (1);
-		++rev;		
+		++rev;
 		WriteBitmapToPNG(&cap, buf, NULL, 0);
 		DestroyBitmap(&cap);
-	}	
+	}
 }

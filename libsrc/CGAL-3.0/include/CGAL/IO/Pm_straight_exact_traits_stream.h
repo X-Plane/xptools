@@ -15,7 +15,7 @@
 // $Revision: 1.3 $ $Date: 2003/09/18 10:24:43 $
 // $Name: current_submission $
 //
-// Author(s)     : Oren Nechushtan 
+// Author(s)     : Oren Nechushtan
 //                 Shai Hirsch     <shaihi@post.tau.ac.il>
 #ifndef CGAL_IO_PM_STRAIGHT_EXACT_TRAITS_STREAM_H
 #define CGAL_IO_PM_STRAIGHT_EXACT_TRAITS_STREAM_H

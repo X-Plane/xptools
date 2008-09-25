@@ -276,7 +276,7 @@ template <class K>
 bool Ray_2_Iso_rectangle_2_pair<K>::
 intersection(typename K::Segment_2 &seg) const
 {
-  typedef typename K::Segment_2 Segment_2; 
+  typedef typename K::Segment_2 Segment_2;
   typename K::Construct_translated_point_2 translated_point;
     if (!_known)
         intersection_type();

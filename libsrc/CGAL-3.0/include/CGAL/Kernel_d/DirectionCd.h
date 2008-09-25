@@ -26,7 +26,7 @@
 #ifndef NOCGALINCL
 #include <CGAL/basic.h>
 #endif
-#include <CGAL/Kernel_d/Tuple_d.h> 
+#include <CGAL/Kernel_d/Tuple_d.h>
 
 CGAL_BEGIN_NAMESPACE
 
@@ -37,7 +37,7 @@ template <class FT, class LA>
 std::ostream& operator<<(std::ostream&, const DirectionCd<FT,LA>&);
 
 template <class _FT, class _LA>
-class DirectionCd : public Handle_for< Tuple_d<_FT,_LA> > { 
+class DirectionCd : public Handle_for< Tuple_d<_FT,_LA> > {
   typedef Tuple_d<_FT,_LA> Tuple;
   typedef Handle_for<Tuple> Base;
   typedef DirectionCd<_FT,_LA> Self;
@@ -46,7 +46,7 @@ const typename _LA::Vector& vector_rep() const { return ptr()->v; }
 _FT& entry(int i) { return ptr()->v[i]; }
 const _FT& entry(int i) const { return ptr()->v[i]; }
 
-public: 
+public:
 /*{\Mtypes 4}*/
 
 typedef _FT RT;
@@ -56,14 +56,14 @@ typedef typename Tuple::const_iterator Delta_const_iterator;
 
 class Base_direction {};
 
-friend class VectorCd<FT,LA>; 
+friend class VectorCd<FT,LA>;
 
 DirectionCd(int d = 0) : Base( Tuple(d) ) {}
 
 DirectionCd(const VectorCd<FT,LA>& v);
 
 template <class InputIterator>
-DirectionCd(int d, InputIterator first, InputIterator last) : 
+DirectionCd(int d, InputIterator first, InputIterator last) :
   Base( Tuple(d,first,last) ) {}
 
 DirectionCd(int d, Base_direction, int i) : Base( Tuple(d) )
@@ -74,40 +74,40 @@ DirectionCd(int d, Base_direction, int i) : Base( Tuple(d) )
 
 DirectionCd(const FT& x, const FT& y) : Base( Tuple(x,y) ) {}
 DirectionCd(int a, int b) : Base( Tuple(FT(a),FT(b)) ) {}
-DirectionCd(const FT& x, const FT& y, const FT& z) : 
+DirectionCd(const FT& x, const FT& y, const FT& z) :
   Base( Tuple(x,y,z) ) {}
 DirectionCd(int a, int b, int c) : Base( Tuple(FT(a),FT(b),FT(c)) ) {}
 
 DirectionCd(const DirectionCd<FT,LA>& p) : Base(p)  {}
-~DirectionCd() {}     
+~DirectionCd() {}
 
 int dimension() const { return ptr()->size(); }
 
-FT delta(int i) const  
-{ CGAL_assertion_msg((0<=i && i<(dimension())), 
+FT delta(int i) const
+{ CGAL_assertion_msg((0<=i && i<(dimension())),
     "DirectionCd::delta(): index out of range.");
   return entry(i);
 }
 FT D() { return FT(1); }
 
-FT operator[](int i) const  
+FT operator[](int i) const
 { return delta(i); }
 
 Delta_const_iterator deltas_begin() const { return ptr()->begin(); }
 Delta_const_iterator deltas_end() const { return ptr()->end(); }
 
-VectorCd<FT,LA> vector() const; 
+VectorCd<FT,LA> vector() const;
 
-bool is_degenerate() const 
+bool is_degenerate() const
 { return vector_rep().is_zero(); }
 
-DirectionCd<FT,LA> transform(const Aff_transformationCd<FT,LA>& t) const; 
+DirectionCd<FT,LA> transform(const Aff_transformationCd<FT,LA>& t) const;
 
 DirectionCd<FT,LA>  opposite() const
 { DirectionCd<FT,LA> result(*this); // creates a copied object!
   result.copy_on_write(); // creates a copied object!
   result.ptr()->invert();
-  return result; 
+  return result;
 }
 DirectionCd<FT,LA> operator- () const
 { return opposite(); }
@@ -118,7 +118,7 @@ static Comparison_result cmp(
 bool operator==(const DirectionCd<FT,LA>& w) const
 { if ( identical(w) ) return true;
   if ( dimension()!=w.dimension() ) return false;
-  return (DirectionCd<RT,LA>::cmp(*this,w) == EQUAL); 
+  return (DirectionCd<RT,LA>::cmp(*this,w) == EQUAL);
 }
 bool operator!=(const DirectionCd<FT,LA>& w) const
 { return !operator==(w); }
@@ -127,9 +127,9 @@ FT dx() const { return delta(0); }
 FT dy() const { return delta(1); }
 FT dz() const { return delta(2); }
 
-friend std::istream& operator>> CGAL_NULL_TMPL_ARGS 
+friend std::istream& operator>> CGAL_NULL_TMPL_ARGS
   (std::istream& I, DirectionCd<FT,LA>& d);
-friend std::ostream& operator<< CGAL_NULL_TMPL_ARGS 
+friend std::ostream& operator<< CGAL_NULL_TMPL_ARGS
   (std::ostream& O, const DirectionCd<FT,LA>& d);
 
 }; // end of class DirectionCd

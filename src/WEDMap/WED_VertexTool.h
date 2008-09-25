@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,10 +39,10 @@ public:
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
-										int						sel_verts);						 
-	virtual				~WED_VertexTool();	
+										int						sel_verts);
+	virtual				~WED_VertexTool();
 
-	// CONTROL HANDLE INTERFACE:	
+	// CONTROL HANDLE INTERFACE:
 	virtual		void	BeginEdit(void);
 	virtual		void	EndEdit(void);
 
@@ -58,24 +58,24 @@ public:
 	virtual		intptr_t		GetNthLinkSourceCtl(intptr_t id, intptr_t n) const;	// -1 if no bezier ctl point!
 	virtual		intptr_t		GetNthLinkTarget   (intptr_t id, intptr_t n) const;
 	virtual		intptr_t		GetNthLinkTargetCtl(intptr_t id, intptr_t n) const;
-	
+
 	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const;
-	
-	virtual		void	ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle);			
+
+	virtual		void	ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle);
 	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta);
 
 //	virtual	int			FindProperty(const char * in_prop) { return -1; }
 //	virtual int			CountProperties(void) { return 0; }
-//	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) {} 
+//	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) {}
 //	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) { }
 //	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) { }
-	
+
 //	virtual void		GetNthProperty(int n, PropertyVal_t& val) { }
 //	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
-	
+
 	virtual	void		DrawSelected			(intptr_t inCurrent, GUI_GraphState * g);
 
 
@@ -89,7 +89,7 @@ private:
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
 			void		AddSnapPointRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
 			void		SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEntity * who);
-			
+
 		int						mSelVerts;
 		int						mInEdit;
 		int						mIsRotate;
@@ -100,7 +100,7 @@ private:
 		mutable Point2			mTaxiDest;
 
 		WED_PropBoolText		mSnapToGrid;
-		
+
 		mutable vector<IGISEntity *>	mEntityCache;
 		mutable long long				mEntityCacheKeyArchive;
 		mutable long long				mEntityCacheKeyZoomer;

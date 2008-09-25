@@ -93,7 +93,7 @@ namespace
     temp.erase( temp.find_last_of( "/" ) ); // remove leaf
     string::size_type pos = temp.find_last_of( " " ); // remove leading spaces
     if ( pos != string::npos ) temp.erase( 0, pos+1 );
-    if ( temp[0] == '.' ) temp.erase( 0, temp.find_first_not_of( "./" ) ); 
+    if ( temp[0] == '.' ) temp.erase( 0, temp.find_first_not_of( "./" ) );
     else temp.erase( 0, locate_root.string().size()+1 );
 //std::cout << "\"" << s << "\", \"" << temp << "\"" << std::endl;
     return temp;
@@ -409,7 +409,7 @@ int cpp_main( int argc, char ** argv )
     --argc; ++argv;
   }
 
-  locate_root = argc > 1 
+  locate_root = argc > 1
     ? fs::path( argv[1], fs::native )
     : boost_root;
 
@@ -465,13 +465,13 @@ int cpp_main( int argc, char ** argv )
       || line.find( "Cc-action " ) != string::npos
       || line.find( "vc-Cc " ) != string::npos
       || line.find( "Link-action " ) != string::npos
-      || line.find( "vc-Link " ) != string::npos 
+      || line.find( "vc-Link " ) != string::npos
       || line.find( ".compile.") != string::npos
       || line.find( ".link") != string::npos
     )
     {
       string action( ( line.find( "Link-action " ) != string::npos
-        || line.find( "vc-Link " ) != string::npos 
+        || line.find( "vc-Link " ) != string::npos
         || line.find( ".link") != string::npos)
         ? "link" : "compile" );
       if ( line.find( "...failed " ) != string::npos )
@@ -496,7 +496,7 @@ int cpp_main( int argc, char ** argv )
       capture_lines = false;
     }
 
-    else if ( line.find( "execute-test" ) != string::npos 
+    else if ( line.find( "execute-test" ) != string::npos
              || line.find( "testing.capture-output" ) != string::npos )
     {
       if ( line.find( "...failed " ) != string::npos )
@@ -549,7 +549,7 @@ int cpp_main( int argc, char ** argv )
 
         if ( target_dir != lib_dir ) // it's a lib problem
         {
-          mgr.start_message( "lib", target_dir, 
+          mgr.start_message( "lib", target_dir,
             test_name( target_dir ), toolset( target_dir ), content );
           content = lib_dir;
           mgr.stop_message( "lib", target_dir, "fail", timestamp(), content );

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Section.h
  *
  *  This source file is part of DIME.
@@ -51,7 +51,7 @@ public:
   virtual int typeId() const = 0;
   virtual bool isOfType(const int thetypeid) const;
   virtual int countRecords() const = 0;
-  
+
 public:
   static dimeSection *createSection(const char * const sectionname,
 				   dimeMemHandler *memhandler);

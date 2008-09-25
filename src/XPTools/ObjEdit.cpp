@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -74,7 +74,7 @@ NEED TO ADD:
 
 	Mouse wheel zooming
 	Issue: selection arrows get stuck on attributes!
-	
+
 
 */
 
@@ -183,7 +183,7 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 			{
 				gFilePath = gFileName = *i;
 				StripPath(gFileName);
-				
+
 				gObjects.clear();
 				gObjectLOD.clear();
 				OE_SplitObj(obj, gObjects, gObjectLOD);
@@ -196,7 +196,7 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 					gZoomer.SetScale(50.0 / rad);
 				}
 				XGrinder_SetTitle(foo.c_str());
-				
+
 				gSelection.clear();
 				gRebuildStep = -1;
 				OE_Notifiable::Notify(catagory_Object, msg_ObjectSelectionChanged, NULL);
@@ -217,9 +217,9 @@ void	XGrindInit(string& outName)
 {
 	gFileName.clear();
 	gFilePath.clear();
-	
+
 	outName = "ObjEdit";
-	
+
 	int width, height;
 	gWidgetWin->GetBounds(&width, &height);
 
@@ -239,8 +239,8 @@ void	XGrindInit(string& outName)
 	gProjSetup = 		new OE_Preview	(width / 2 + kMargin, height / 2 - kMargin, width - kMargin, kMargin + 20, oe_PreviewType_Projection);
 	// Patches
 	gPatches = 			new OE_PatchList(width / 2 + kMargin, height / 2 - kMargin, width - kMargin, kMargin + 20);
-	
-	// Tex Editor	
+
+	// Tex Editor
 	gTexEd = new	OE_TexEdWindow(kMargin, height / 2 - kMargin, width / 2 - kMargin, kMargin + 20, oe_DirectEd);
 	// Patch Editor
 	gPatchEd = new	OE_TexEdWindow(kMargin, height / 2 - kMargin, width / 2 - kMargin, kMargin + 20, oe_PatchEd);
@@ -248,30 +248,30 @@ void	XGrindInit(string& outName)
 	gProjEd = new	OE_TexEdWindow(kMargin, height / 2 - kMargin, width / 2 - kMargin, kMargin + 20, oe_ProjEd);
 
 	gProjectionMgr = new OE_ProjectionMgr;
-	
+
 	gPatches->Show(false);
 	gPatchEd->Show(false);
 	gProjSetup->Show(false);
 	gProjPrev->Show(false);
 	gProjEd->Show(false);
-	
-	SetupFileCmds();	
+
+	SetupFileCmds();
 
 	OE_SetupUndoCmds();
 
 	SetupSelCmds();
-	
+
 	gViewMenu = XPLMCreateMenu("&View", NULL, 0, ViewCmdHandler, NULL);
 	for (int n = 0; n < view_Count; ++n)
 	{
 		XPLMAppendMenuItem(gViewMenu, kViewCmds[n], (void *) n, 1);
 		XPLMSetMenuItemKey(gViewMenu, n, '1' + n, xplm_ControlFlag);
 	}
-	
+
 	SetupTexCmds();
-	
+
 	UpdateViewCmds();
-	
+
 }
 
 bool	XGrindCanQuit(void)

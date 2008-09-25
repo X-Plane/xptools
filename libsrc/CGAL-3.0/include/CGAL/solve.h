@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 
 #ifndef CGAL_SOLVE_H
 #define CGAL_SOLVE_H

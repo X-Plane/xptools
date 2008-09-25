@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -24,10 +24,10 @@
 #include "XPWidgets.h"
 #include "XPWidgetUtils.h"
 WED_Pane::WED_Pane(
-               int                  inLeft,    
-               int                  inTop,    
-               int                  inRight,    
-               int                  inBottom,    
+               int                  inLeft,
+               int                  inTop,
+               int                  inRight,
+               int                  inBottom,
                int                  inVisible,
                const char *         inDescriptor,
                WED_Pane *			inSuper)
@@ -39,12 +39,12 @@ WED_Pane::WED_Pane(
 			inVisible, inDescriptor, super == NULL, super, StaticMessageFunc);
 	XPSetWidgetProperty(mWidget, xpProperty_Object, reinterpret_cast<long>(this));
 }
-	               
+
 WED_Pane::WED_Pane(
-                                   int                  inLeft,    
-                                   int                  inTop,    
-                                   int                  inRight,    
-                                   int                  inBottom,    
+                                   int                  inLeft,
+                                   int                  inTop,
+                                   int                  inRight,
+                                   int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
                                    WED_Pane *			inSuper,
@@ -55,15 +55,15 @@ WED_Pane::WED_Pane(
 		super = inSuper->GetWidget();
 	mWidget = XPCreateWidget(inLeft, inTop, inRight, inBottom,
 			inVisible, inDescriptor, super == NULL, super, inClass);
-	XPAddWidgetCallback(mWidget, StaticMessageFunc);					
+	XPAddWidgetCallback(mWidget, StaticMessageFunc);
 	XPSetWidgetProperty(mWidget, xpProperty_Object, reinterpret_cast<long>(this));
-}                                   
+}
 
 WED_Pane::WED_Pane(
-                                   int                  inLeft,    
-                                   int                  inTop,    
-                                   int                  inRight,    
-                                   int                  inBottom,    
+                                   int                  inLeft,
+                                   int                  inTop,
+                                   int                  inRight,
+                                   int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
                                    WED_Pane *			inSuper,
@@ -74,14 +74,14 @@ WED_Pane::WED_Pane(
 		super = inSuper->GetWidget();
 	mWidget = XPCreateCustomWidget(inLeft, inTop, inRight, inBottom,
 			inVisible, inDescriptor, super == NULL, super, inFunc);
-	XPAddWidgetCallback(mWidget, StaticMessageFunc);					
+	XPAddWidgetCallback(mWidget, StaticMessageFunc);
 	XPSetWidgetProperty(mWidget, xpProperty_Object, reinterpret_cast<long>(this));
-}                                   
+}
 
 
 
 WED_Pane::~WED_Pane()
-{	
+{
 }
 
 WED_Pane *	WED_Pane::GetPaneObj(XPWidgetID inWidget)
@@ -133,8 +133,8 @@ int		WED_Pane::HandleMouseWheel(int x, int y, int direction)
 }
 
 int		WED_Pane::MessageFunc(
-                                   XPWidgetMessage      inMessage,    
-                                   long                 inParam1,    
+                                   XPWidgetMessage      inMessage,
+                                   long                 inParam1,
                                    long                 inParam2)
 {
 	switch(inMessage) {
@@ -162,16 +162,16 @@ int		WED_Pane::MessageFunc(
 		return 0;
 	}
 }
-		
+
 int		WED_Pane::StaticMessageFunc(
-                                   XPWidgetMessage      inMessage,    
-                                   XPWidgetID           inWidget,    
-                                   long                 inParam1,   
+                                   XPWidgetMessage      inMessage,
+                                   XPWidgetID           inWidget,
+                                   long                 inParam1,
                                    long                 inParam2)
 {
 	WED_Pane * me = reinterpret_cast<WED_Pane *>(XPGetWidgetProperty(inWidget, xpProperty_Object, NULL));
 	if (me)
 		return me->MessageFunc(inMessage, inParam1, inParam2);
 	return 0;
-}                                     
+}
 

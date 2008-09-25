@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -76,9 +76,9 @@ void	WED_TerraTool::DrawFeedbackUnderlay(
 			{
 				mImages[h] = new AsyncImage(mPool, ResString(), mData.c_str(), mDomain, x, y);
 			}
-			
+
 			AsyncImage * i = mImages[h];
-			
+
 			if (!i->HasErr())
 			{
 				ImageInfo * bits = i->GetImage();
@@ -97,7 +97,7 @@ void	WED_TerraTool::DrawFeedbackUnderlay(
 				}
 			}
 		}
-	} else 
+	} else
 		mHas = 0;
 }
 
@@ -105,12 +105,12 @@ void	WED_TerraTool::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 }
-	
+
 
 bool	WED_TerraTool::HandleClick(
 				XPLMMouseStatus		inStatus,
-				int 				inX, 
-				int 				inY, 
+				int 				inX,
+				int 				inY,
 				int 				inButton)
 {
 	return false;
@@ -166,7 +166,7 @@ void	WED_TerraTool::NthButtonPressed(int n)
 				nuke.insert(i->first);
 			}
 			for (set<long long>::iterator j = nuke.begin(); j != nuke.end(); ++j)
-				mImages.erase(*j);		
+				mImages.erase(*j);
 		}
 		break;
 	case 1:
@@ -186,7 +186,7 @@ void	WED_TerraTool::NthButtonPressed(int n)
 			}
 		}
 		break;
-	}	
+	}
 }
 
 char *	WED_TerraTool::GetStatusText(void)
@@ -199,11 +199,11 @@ char *	WED_TerraTool::GetStatusText(void)
 		else ++pending;
 		++total;
 	}
-	
+
 	static char buf[1024];
 	if (mHas)
 		sprintf(buf, "Domain=%d, X=%d-%d,Y=%d-%d Done=%d Pending=%d Bad=%d Total=%d", mDomain, mX1,mX2,mY1,mY2, done, pending, bad, total);
-	else 
+	else
 		sprintf(buf, "No area established.");
 	return buf;
 }

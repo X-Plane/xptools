@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 
 #ifndef CGAL_PARTIAL_EXACT_PRICING_H
 #define CGAL_PARTIAL_EXACT_PRICING_H
@@ -30,13 +30,13 @@
 
 
 CGAL_BEGIN_NAMESPACE
-                    
+
 
 // Class declaration
 // =================
 template < class Rep >
 class Partial_exact_pricing;
-                            
+
 
 // Class interface
 // ===============
@@ -82,11 +82,11 @@ class Partial_exact_pricing
       int                s;         // size of active set
 
   public:
-    
+
     // creation
     Partial_exact_pricing( ) : et_0( 0), et_2( 2) { }
-    
-    
+
+
     // initialization
     void  set( )
     {
@@ -94,7 +94,7 @@ class Partial_exact_pricing
             vout() << "partial exact pricing" << std::endl;
         }
     }
-    
+
     void  init( )
     {
         const Solver& solve = solver();
@@ -105,7 +105,7 @@ class Partial_exact_pricing
         N.reserve( n);
         for ( int i = 0; i < n; ++i) N.push_back( i);
     }
-    
+
     // operations
     int  pricing( )
     {
@@ -115,20 +115,20 @@ class Partial_exact_pricing
         typedef  CGAL::Join_random_access_iterator_1<
                      Basic_variable_index_iterator,
                      Access_D_Bj >      D_Bj_iterator;
-    
+
         const Solver& solve = solver();
         int  n = solve.number_of_variables();
         ET   d = solve.variables_common_denominator();
-    
+
         int   j,  min_k  = -1, min_j = -1;
         ET    mu, min_mu =  0;
         bool  is_phase_I = ( solve.phase() == 1);
-    
+
         // loop over all active non-basic variables
         for ( int k = 0; k < s; ++k) {
-    
+
             j = N[ k];
-    
+
             // compute mu_j
             if ( is_phase_I) {      // phase I
                 if ( j < n) {          // original variable
@@ -160,11 +160,11 @@ class Partial_exact_pricing
                         et_0);
                 }
             }
-    
+
             CGAL_optimisation_debug {
                 vout() << "mu_" << j << ": " << mu << std::endl;
             }
-    
+
             // new minimum?
             if ( ( mu < min_mu) ||
                  ( ( min_j >= n) && ( j < n) && ( mu == min_mu))) {
@@ -173,19 +173,19 @@ class Partial_exact_pricing
                 min_mu = mu;
             }
         }
-    
+
         if ( min_k < 0) {
-    
+
         // --------------------------------------------------------------------
         vout() << "no entering variable found so far, test remaining variables"
         // --------------------------------------------------------------------
                << std::endl;
-    
+
             // loop over all remaining non-basic variables
             for ( int k = s; k < (int)N.size(); ++k) {
-    
+
                 j = N[ k];
-    
+
                 // compute mu_j
                 if ( is_phase_I) {      // phase I
                     if ( j < n) {          // original variable
@@ -217,15 +217,15 @@ class Partial_exact_pricing
                             et_0);
                     }
                 }
-    
+
                 CGAL_optimisation_debug {
                     vout() << "mu_" << j << ": " << mu << std::endl;
                 }
-    
+
                 // improving variable?
                 if ( mu < et_0) {
                     std::swap( N[ k], N[ s]);
-    
+
                     // new minimum?
                     if ( ( mu < min_mu) ||
                          ( ( min_j >= n) && ( j < n) && ( mu == min_mu))) {
@@ -233,13 +233,13 @@ class Partial_exact_pricing
                         min_j  = j;
                         min_mu = mu;
                     }
-    
+
                     ++s;
                 }
             }
         }
         vout() << std::endl;
-    
+
         // return index of entering variable
         if ( min_k >= 0) {
             j = N[ min_k];
@@ -251,7 +251,7 @@ class Partial_exact_pricing
         }
         return -1;
     }
-    
+
     void  leaving_basis( int i)
     {
         if ( s == (int)N.size()) {
@@ -262,13 +262,13 @@ class Partial_exact_pricing
         }
         ++s;
     }
-    
+
     void  transition( )
     {
         const Solver& solve = solver();
         int  n = solve.number_of_variables();
         int  m = solve.number_of_constraints();
-    
+
         // remove artificial variables from N
         int i = 0;
         for ( int j = n-m; j < n; ++j) {
@@ -280,13 +280,13 @@ class Partial_exact_pricing
         N.erase( N.end()-m, N.end());
         s = min( static_cast<int>(m * CGAL_CLIB_STD::sqrt(static_cast<double>(n))), n-m);
     }
-    
-    
+
+
 };
-  
+
 
 CGAL_END_NAMESPACE
-                  
+
 
 #endif // CGAL_PARTIAL_EXACT_PRICING_H
 

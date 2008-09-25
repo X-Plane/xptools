@@ -33,7 +33,7 @@
 #include <dime/State.h>
 
 
-void 
+void
 convert_solid_data(dimeVec3f *v, dimeVec3f &e, dxfdouble thickness,
 		   const dimeState *state,
 		   dxfLayerData *layerData)
@@ -47,10 +47,10 @@ convert_solid_data(dimeVec3f *v, dimeVec3f &e, dxfdouble thickness,
     matrix.multRight(m);
   }
   e = dimeVec3f(0,0,1) * thickness;
-  
+
   int numunique = 0;
   dimeVec3f u[4];
-  
+
   int i,j;
   for (i = 0; i < 4; i++) {
     for (j = 0; j < numunique; j++) {
@@ -104,18 +104,18 @@ convert_solid_data(dimeVec3f *v, dimeVec3f &e, dxfdouble thickness,
     break;
   }
 
-}  
+}
 
 
-void 
-convert_solid(const dimeEntity *entity, const dimeState *state, 
+void
+convert_solid(const dimeEntity *entity, const dimeState *state,
 	      dxfLayerData *layerData, dxfConverter *converter)
 {
   // respect the value in the $FILLMODE header variable
   layerData->setFillmode(converter->getFillmode());
 
   dimeSolid *solid = (dimeSolid*)entity;
-  
+
   dimeVec3f v[4];
   solid->getVertices(v[0], v[1], v[2], v[3]);
 
@@ -127,7 +127,7 @@ convert_solid(const dimeEntity *entity, const dimeState *state,
     v[3][2] = param.double_data;
   }
 
-   
+
   dimeVec3f e;
   solid->getExtrusionDir(e);
   dxfdouble thickness = solid->getThickness();

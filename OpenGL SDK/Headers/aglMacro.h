@@ -5,14 +5,14 @@
 
     Version:	Technology:	Mac OS X
                 Release:	GM
- 
+
      Copyright: (c) 2000-2002 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://developer.apple.com/bugreporter/
- 
+
 */
 
 #ifndef _AGLMACRO_H
@@ -1304,67 +1304,67 @@
 
 #define glFogCoordf(coord) \
 	(*agl_ctx->disp.fog_coordf)(agl_ctx->rend, coord)
-	
+
 #define glFogCoordfv(coord) \
 	(*agl_ctx->disp.fog_coordfv)(agl_ctx->rend, coord)
-	
+
 #define glFogCoordd(coord) \
 	(*agl_ctx->disp.fog_coordd)(agl_ctx->rend, coord)
-	
+
 #define glFogCoorddv(coord) \
 	(*agl_ctx->disp.fog_coorddv)(agl_ctx->rend,coord)
-	
+
 #define glFogCoordPointer(type, stride, pointer) \
 	(*agl_ctx->disp.fog_coord_pointer)(agl_ctx->rend, type, stride, pointer)
 
 #define glSecondaryColor3b(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3b)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3bv(components) \
 	(*agl_ctx->disp.secondary_color3bv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3d(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3d)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3dv(components) \
 	(*agl_ctx->disp.secondary_color3dv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3f(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3f)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3fv(components) \
 	(*agl_ctx->disp.secondary_color3fv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3i(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3i)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3iv(components) \
 	(*agl_ctx->disp.secondary_color3iv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3s(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3s)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3sv(components) \
 	(*agl_ctx->disp.secondary_color3sv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3ub(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3ub)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3ubv(components) \
 	(*agl_ctx->disp.secondary_color3ubv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3ui(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3ui)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3uiv(components) \
 	(*agl_ctx->disp.secondary_color3uiv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColor3us(red, green, blue) \
 	(*agl_ctx->disp.secondary_color3us)(agl_ctx->rend, red, green, blue)
-	
+
 #define glSecondaryColor3usv(components) \
 	(*agl_ctx->disp.secondary_color3usv)(agl_ctx->rend, components)
-	
+
 #define glSecondaryColorPointer(size, type, stride, pointer) \
 	(*agl_ctx->disp.secondary_color_pointer)(agl_ctx->rend, size, type, stride, pointer)
 
@@ -1439,7 +1439,7 @@
 
 #define glDeleteProgramsARB(n, programs) \
 	(*agl_ctx->disp.delete_programs_ARB)(agl_ctx->rend, n, programs)
-  
+
 #define glGenProgramsARB(n, programs) \
 	(*agl_ctx->disp.gen_programs_ARB)(agl_ctx->rend, n, programs)
 

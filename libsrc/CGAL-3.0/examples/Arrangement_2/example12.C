@@ -6,7 +6,7 @@
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/MP_Float.h>
-#include <CGAL/Quotient.h> 
+#include <CGAL/Quotient.h>
 #include <CGAL/Arr_2_default_dcel.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arr_segment_cached_traits_2.h>
@@ -32,7 +32,7 @@ CGAL_BEGIN_NAMESPACE
 std::ostream& operator<<(std::ostream& os, const Curve_2& cv)
 {
   Curve_2::const_iterator iter;
-  
+
   os << cv.points() << std::endl;
   for (iter = cv.begin(); iter != cv.end(); iter++)
     os << " " << *iter;
@@ -52,10 +52,10 @@ std::istream& operator>>(std::istream& in, Curve_2& cv)
   for (i = 0; i < size; i++)
   {
     in >> p;
-    pts.push_back(p);  
+    pts.push_back(p);
   }
   cv = Curve_2(pts.begin(), pts.end());
-  
+
   return in;
 }
 
@@ -65,8 +65,8 @@ int main()
 {
   Arr_2 arr;
   std::cin >> arr;
-  std::cout << " * * * Printing list of all halfedges " 
-            << "of the resulting Arrangement" 
+  std::cout << " * * * Printing list of all halfedges "
+            << "of the resulting Arrangement"
             << std::endl;
   Arr_writer verbose_writer(std::cout, arr, true);
   verbose_writer.write_halfedges(arr.halfedges_begin(), arr.halfedges_end());

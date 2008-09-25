@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Entity.cpp
  *
  *  This source file is part of DIME.
@@ -50,7 +50,7 @@
   one of the records stored in one of your class members, and then
   return the value of that member. If the requested group code isn't
   store by your class, you should return with a call to your parent's
-  class getRecord() method, usually dimeEntity::getRecord() or 
+  class getRecord() method, usually dimeEntity::getRecord() or
   dimeExtrusionEntity::getRecord().
 
   The getEntityName() should simply return the DXF name of the entitiy.
@@ -62,16 +62,16 @@
   argument to new(). Then you should call the copyRecords() method to
   copy records stored by dimeRecordHolder (dimeEntity inherits
   dimeRecordHolder). Then you should copy your data members into the
-  new instance. If you inherit the dimeExtrusionEntity you should 
+  new instance. If you inherit the dimeExtrusionEntity you should
   class copyExtrusionData() before returning.
-  
+
   The write() method should write your entiy using the dimeOutput
   parameter. Fist your should call the preWrite() method. This will
   take care of writing the entity name, and handle ugly stuff such
   as entity handles and ACAD REACTORS data. Then you should write
   your data members. If you inherit from dimeExtrusionEntity method
   you should call writeExtrusionData(). The last thing to do before
-  returning is to call dimeEntity::write() to write records not 
+  returning is to call dimeEntity::write() to write records not
   handled by your class.
 
   The typeId() method should be implemented if your entity is not
@@ -84,9 +84,9 @@
   It can be used to create a progress bar while writing a DXF
   file. It is really only useful for _very_ large DXF files. But you
   should implement it since it's not too much work.
-  
+
   Implement the extractGeometry() method if you feel like it. This
-  is just a convenience method so you don't have to do this. 
+  is just a convenience method so you don't have to do this.
 
   The handleRecord() should be implemented to support reading entities
   from a file, and to let users set records based on group codes.
@@ -101,7 +101,7 @@
 
   Well, that's about it I think. Good luck :) Don't hesitate to contact
   us (dime-support@sim.no) if you have questions about how to create
-  entities.  
+  entities.
 */
 
 #include <dime/entities/Entity.h>
@@ -148,21 +148,21 @@
 
 /*!
   \fn const char *dimeEntity::getEntityName() const = 0
-  Must be implemented by subclasses to return the entity name; 
+  Must be implemented by subclasses to return the entity name;
   e.g. POLYLINE, 3DFACE, etc.
 */
 
 /*!
   \fn void dimeEntity::setColorNumber(const int16 c)
   Sets the color number for this entity.
-  Zero indicates the BYBLOCK (floating) color. 256 indicates BYLAYER. 
+  Zero indicates the BYBLOCK (floating) color. 256 indicates BYLAYER.
   A negative value indicates that the layer is turned off.
 */
 
 /*!
   \fn int16 dimeEntity::getColorNumber() const
   Returns the color number for this entity.
-  
+
   \sa dimeEntity::setColorNumber()
 */
 
@@ -174,8 +174,8 @@
   Constructor.
 */
 
-dimeEntity::dimeEntity() 
-  : dimeRecordHolder(0), entityFlags(0), colorNumber(256) 
+dimeEntity::dimeEntity()
+  : dimeRecordHolder(0), entityFlags(0), colorNumber(256)
 {
   this->layer = dimeLayer::getDefaultLayer();
 }
@@ -197,18 +197,18 @@ dimeEntity::copyRecords(dimeEntity * const entity, dimeModel * const model) cons
 {
   dimeMemHandler *memh = model->getMemHandler();
   bool ok = dimeRecordHolder::copyRecords(entity, memh);
-  
+
   if (ok && this->layer) {
     entity->layer = model->addLayer(this->layer->getLayerName());
     if (!entity->layer) ok = false;
   }
   entity->entityFlags = this->entityFlags;
-  entity->colorNumber = this->colorNumber;  
+  entity->colorNumber = this->colorNumber;
   return ok;
 }
 
 /*!
-  Returns if this entity is marked as deleted or not. 
+  Returns if this entity is marked as deleted or not.
   \sa dimeEntity::setDeleted().
 */
 
@@ -238,7 +238,7 @@ dimeEntity::setDeleted(const bool onOff)
   Useful for developers (at least for me :-).
   \sa dimeEntity::setTagged()
 */
-bool 
+bool
 dimeEntity::isTagged() const
 {
   return this->entityFlags & FLAG_TAGGED ? true : false;
@@ -248,7 +248,7 @@ dimeEntity::isTagged() const
   Useful for developers.
   \sa dimeEntity::isTagged()
 */
-void 
+void
 dimeEntity::setTagged(const bool onOff)
 {
   if (onOff) {
@@ -263,18 +263,18 @@ dimeEntity::setTagged(const bool onOff)
 
 //!
 
-bool 
+bool
 dimeEntity::write(dimeOutput * const file)
 {
   return dimeRecordHolder::write(file);
 }
 
 /*!
-  Static function which creates an entity based on its name. 
+  Static function which creates an entity based on its name.
 */
 
 dimeEntity *
-dimeEntity::createEntity(const char * const name, 
+dimeEntity::createEntity(const char * const name,
 			 dimeMemHandler * const memhandler)
 {
 #ifndef NDEBUG
@@ -282,7 +282,7 @@ dimeEntity::createEntity(const char * const name,
 #endif
 
   //
-  // TODO: optimize 
+  // TODO: optimize
   //
   // right now, I just check for the most common (for 3D gfx)
   // entities first.
@@ -305,7 +305,7 @@ dimeEntity::createEntity(const char * const name,
   if (!strcmp(name, "BLOCK"))
     return new(memhandler) dimeBlock(memhandler);
   if (!strcmp(name, "SOLID"))
-    return new(memhandler) dimeSolid;   
+    return new(memhandler) dimeSolid;
   if (!strcmp(name, "TRACE"))
     return new(memhandler) dimeTrace;
   if (!strcmp(name, "POINT"))
@@ -330,9 +330,9 @@ dimeEntity::createEntity(const char * const name,
   will already have been read.
 */
 
-bool 
+bool
 dimeEntity::readEntities(dimeInput * const file,
-			dimeArray <dimeEntity*> &array, 
+			dimeArray <dimeEntity*> &array,
 			const char * const stopat)
 {
   int32 groupcode;
@@ -340,7 +340,7 @@ dimeEntity::readEntities(dimeInput * const file,
   bool ok = true;
   dimeEntity *entity = NULL;
   dimeMemHandler *memhandler = file->getMemHandler();
-  
+
   while (true) {
     if (!file->readGroupCode(groupcode) || groupcode != 0) {
       fprintf(stderr,"Error reading groupcode: %d\n", groupcode);
@@ -366,7 +366,7 @@ dimeEntity::readEntities(dimeInput * const file,
 }
 
 /*!
-  Static function which copies all non-deleted entites from 
+  Static function which copies all non-deleted entites from
   \a array of length \a nument into a
   new array. Will return the number of copied entities in
   \a nument. This function returns \e NULL either when out of
@@ -374,7 +374,7 @@ dimeEntity::readEntities(dimeInput * const file,
 */
 
 dimeEntity **
-dimeEntity::copyEntityArray(const dimeEntity *const*const array, 
+dimeEntity::copyEntityArray(const dimeEntity *const*const array,
                            int &nument,
                            dimeModel * const model)
 {
@@ -383,13 +383,13 @@ dimeEntity::copyEntityArray(const dimeEntity *const*const array,
   dimeMemHandler *memh = model->getMemHandler();
 
   nument = 0;
-  for (i = 0; i < num; i++) { 
+  for (i = 0; i < num; i++) {
     if (!array[i]->isDeleted()) nument++;
   }
   if (nument == 0) return NULL;
-    
+
   dimeEntity **newarr = ARRAY_NEW(memh, dimeEntity*, nument);
-  
+
   bool ok = newarr != NULL;
   if (ok) {
     int cnt = 0;
@@ -412,12 +412,12 @@ dimeEntity::copyEntityArray(const dimeEntity *const*const array,
 }
 
 /*!
-  Static function which copies all non-deleted entites from 
+  Static function which copies all non-deleted entites from
   \a array of length \a nument into \a destarray.
 */
 
 bool
-dimeEntity::copyEntityArray(const dimeEntity *const*const array, 
+dimeEntity::copyEntityArray(const dimeEntity *const*const array,
 			   const int nument,
 			   dimeModel * const model,
 			   dimeArray <dimeEntity*> &destarray)
@@ -426,7 +426,7 @@ dimeEntity::copyEntityArray(const dimeEntity *const*const array,
 //  dimeMemHandler *memh = model->getMemHandler();
 
   int num = 0;
-  for (i = 0; i < nument; i++) { 
+  for (i = 0; i < nument; i++) {
     if (!array[i]->isDeleted()) num++;
   }
   if (num == 0) {
@@ -435,13 +435,13 @@ dimeEntity::copyEntityArray(const dimeEntity *const*const array,
   }
 
   destarray.makeEmpty(num);
-  
+
   for (i = 0; i < nument; i++) {
     if (!array[i]->isDeleted()) {
       dimeEntity *entity = array[i]->copy(model);
       if (entity == NULL) {
 	destarray.setCount(0);
-	return false; 
+	return false;
       }
       destarray.append(entity);
     }
@@ -456,18 +456,18 @@ dimeEntity::copyEntityArray(const dimeEntity *const*const array,
 const char *
 dimeEntity::getLayerName() const
 {
-  if (this->layer) 
+  if (this->layer)
     return this->layer->getLayerName();
   return NULL;
 }
 
 /*!
-  Used to find all forward references. 
+  Used to find all forward references.
   \sa dimeEntitiesSection::fixReferences().
 */
 
-void 
-dimeEntity::fixReferences(dimeModel * const) 
+void
+dimeEntity::fixReferences(dimeModel * const)
 {
 }
 
@@ -477,7 +477,7 @@ dimeEntity::fixReferences(dimeModel * const)
   Will return an "arbitrary" axis, based on \a givenaxis. Based on code
   from DXF Parser R10, from Autodesk Inc. Is used to find the x-axis
   bases on the given z-axis.
-  
+
   \sa dimeEntity::generateUCS()
 */
 
@@ -486,13 +486,13 @@ dimeEntity::arbitraryAxis(const dimeVec3f &givenaxis, dimeVec3f &newaxis)
 {
   dimeVec3f yaxis(0.0, 1.0, 0.0);
   dimeVec3f zaxis(0.0, 0.0, 1.0);
-  
-  if (fabs(givenaxis[0]) < ARBBOUND && 
-      fabs(givenaxis[1]) < ARBBOUND) 
+
+  if (fabs(givenaxis[0]) < ARBBOUND &&
+      fabs(givenaxis[1]) < ARBBOUND)
     newaxis = yaxis.cross(givenaxis);
   else
     newaxis = zaxis.cross(givenaxis);
- 
+
   newaxis.normalize();
 }
 
@@ -516,7 +516,7 @@ dimeEntity::generateUCS(const dimeVec3f &givenaxis, dimeMatrix &m)
 
 //!
 
-int 
+int
 dimeEntity::countRecords() const
 {
   int cnt = 0;
@@ -531,8 +531,8 @@ dimeEntity::countRecords() const
   entities (INSERT, BUILD) will need to overload it.
 */
 
-bool 
-dimeEntity::traverse(const dimeState * const state, 
+bool
+dimeEntity::traverse(const dimeState * const state,
 		    dimeCallback callback,
 		    void *userdata)
 {
@@ -541,7 +541,7 @@ dimeEntity::traverse(const dimeState * const state,
 }
 
 /*!
-  
+
   A special convenience function, included for your pleasure.  Enables
   the user to ignore the type of entity, and just call this method
   when extracting geometry.  Very useful for 3D viewers that need DXF
@@ -552,28 +552,28 @@ dimeEntity::traverse(const dimeState * const state,
   function returns no geometry. Don't forget to transform vertices by
   the current transformation matrix if used in a callback from
   dimeEntity::traverse().
-  
+
   If there are coordinates, but no indices, this means running
   indices for the entire vertex array.
-  
+
   Different faces and/or line segments are separated by a \e -1 in
   the indices array, just as in VRML files.
 
   If \a thickness != 0.0, the data should, before transformation,
   be extruded by that length along the extrusion direction. Hence,
-  a point becomes a line, a line becomes a quad, and a polygon 
+  a point becomes a line, a line becomes a quad, and a polygon
   becomes an object with a volume.
 
   If \a thickness == 0.0 and \a extrusionDir != (0,0,1) all the
   vertices should be transformed by a matrix that can be created
-  using dimeEntity::generateUCS(). If you are using 
+  using dimeEntity::generateUCS(). If you are using
   dimeModel::traverseEntities() to extract the geometry, simply
   right-multiply the UCS matrix with the matrix found in dimeState
-  to get the correct transformation.  
+  to get the correct transformation.
 
 */
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimeEntity::extractGeometry(dimeArray <dimeVec3f> &verts,
 			   dimeArray <int> &indices,
 			   dimeVec3f &extrusionDir,
@@ -588,7 +588,7 @@ dimeEntity::extractGeometry(dimeArray <dimeVec3f> &verts,
 
 //!
 
-bool 
+bool
 dimeEntity::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeEntityType ||
@@ -602,7 +602,7 @@ dimeEntity::isOfType(const int thetypeid) const
   \sa dimeEntity::handleRecord().
 */
 
-bool 
+bool
 dimeEntity::read(dimeInput * const file)
 {
   // a little hack to avoid storing a useless extra pointer in the class.
@@ -629,7 +629,7 @@ dimeEntity::read(dimeInput * const file)
     }
     else this->layer = dimeLayer::getDefaultLayer();
   }
-  return ok;  
+  return ok;
 }
 
 /*!
@@ -638,7 +638,7 @@ dimeEntity::read(dimeInput * const file)
   to the default layer.
 */
 
-void 
+void
 dimeEntity::setLayer(const dimeLayer * const layer)
 {
   if (layer == NULL)
@@ -649,7 +649,7 @@ dimeEntity::setLayer(const dimeLayer * const layer)
 
 //!
 
-bool 
+bool
 dimeEntity::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
@@ -705,7 +705,7 @@ dimeEntity::handleRecord(const int groupcode,
 
 //!
 
-bool 
+bool
 dimeEntity::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
@@ -790,7 +790,7 @@ dimeEntity::preWrite(dimeOutput * const file)
       file->writeString(param.string_data);
     }
   }
-  
+
   // write color number
   if (this->colorNumber != 256) {
     file->writeGroupCode(62);
@@ -812,7 +812,7 @@ dimeEntity::preWrite(dimeOutput * const file)
 }
 
 //!
-bool 
+bool
 dimeEntity::shouldWriteRecord(const int groupcode) const
 {
   switch (groupcode) {

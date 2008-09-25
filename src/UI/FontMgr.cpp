@@ -42,9 +42,9 @@
 		A single true type font: .ttf file - this works in the lib and works on Win/Lin.
 		Suitcase file is a resource/datafork file with MANY fonts inside - both .ttf and otherwise!
 		.dfont is a datafork-only version of a suitcase.
-		
+
 		This lib will open suitcases but will NOT open .dfont files.
-		
+
 		Use "fondu" (http://fondu.sourceforge.net/) to extract .ttfs from suitcase or .dfont files.
 */
 
@@ -115,7 +115,7 @@ static void GenerateTextures	(int in1,	int* in2)	{glGenTextures(in1, (GLuint*)in
  * we can reuse textures.
  *
  * require_exact is a flag ... the client may not want rounding.
- * If the client has a lot of fonts and zooms or scales them, 
+ * If the client has a lot of fonts and zooms or scales them,
  * rounding is a non-issue.  But for a main UI font at fixed resolution
  * exact resolution looks a lot better.
  *
@@ -124,11 +124,11 @@ static int FindNearestFontSize(int inSize, bool require_exact)
 {
 	// If we want an exact size, well, nothing to do!
 	if (require_exact) return inSize;
-	
+
 	// What this does is it finds the nearest font size
 	// that is an interval of 10. It rounds up by adding half of
 	// the interval we're looking for and then it basically subtracts
-	// out a value to bring it to the nearest interval. The end result 
+	// out a value to bring it to the nearest interval. The end result
 	// is a round and truncate.
 	int rounded = (inSize + (FM_FONT_SIZE_INTERVAL/2));
 	int nearest = rounded - (rounded % FM_FONT_SIZE_INTERVAL);
@@ -271,7 +271,7 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, const char * inStartMem, co
 		CopyBitmapSection(height, width, 0, 0, glyph->bitmap.buffer,
 						  info->tex_height, info->tex_width, x_off, y_off, textureData);
 
-		
+
 		if(x_off + width + FM_PIX_PADDING<= info->tex_width)
 			x_off += width + FM_PIX_PADDING;
 		else
@@ -310,13 +310,13 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, const char * inStartMem, co
 	error = glGetError();
 
 	delete[] textureData;
-	
+
 	FT_Done_Face(face);
 	return info;
 }
 
 void FontMgr::UnloadFont(FontHandle inFont)
-{	
+{
 	if(!inFont)
 		return;
 
@@ -412,7 +412,7 @@ void FontMgr::DisplayTexture(
 {
 	if(!inFont)
 		return;
-	
+
 	mFunctions.BindTexture(GL_TEXTURE_2D, inFont->tex_id);
 	glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_QUADS);
@@ -423,26 +423,26 @@ void FontMgr::DisplayTexture(
 	glEnd();
 }
 
-void	FontMgr::DrawString(	
+void	FontMgr::DrawString(
 				FontHandle						inFont,
 				float							color[4],	//	4-part color, featuring alpha.
 				float							inX,
 				float							inY,
 				const char *					inString)
-{	
+{
 	if (!inFont || !inString) return;
 	DrawRange(
-			inFont, color, 
-			inX, 
-			inY - inFont->line_descent, 
+			inFont, color,
+			inX,
+			inY - inFont->line_descent,
 			inX, 								// Ben sez: "inRight" of box is NOT used in left-align case.  OKAY to pass anything here.
-			inY - inFont->line_descent + inFont->line_height, 
-			inString, inString + strlen(inString), 
+			inY - inFont->line_descent + inFont->line_height,
+			inString, inString + strlen(inString),
 			ALIGN_LEFT);
 }
 
 
-void FontMgr::DrawRange(	
+void FontMgr::DrawRange(
 			FontHandle						inFont,
 			float							color[4],	//	4-part color, featuring alpha.
 			float							inLeft,
@@ -466,8 +466,8 @@ void FontMgr::DrawRange(
 	{
 		// Left align is the simple case - just start on the left.  We don't need inRIght and we don't pre-measure.
 		l = inLeft;
-	} 
-	else 
+	}
+	else
 	{
 		// Justification cases.  First we measure the string and see how it compares to the box.  Set up left as needed.
 		float width, slop;
@@ -561,7 +561,7 @@ int		FontMgr::FitForward(
 				const char *					inStringEnd)
 {
 	float so_far = 0.0;
-	float scale = inHeight / inFont->line_height;	
+	float scale = inHeight / inFont->line_height;
 	int total = 0;
 	for (const char * c = inStringStart; c < inStringEnd; ++c)
 	{
@@ -571,7 +571,7 @@ int		FontMgr::FitForward(
 	}
 	return total;
 }
-	
+
 int		FontMgr::FitReverse(
 				FontHandle						inFont,
 				float							inHeight,
@@ -580,7 +580,7 @@ int		FontMgr::FitReverse(
 				const char *					inStringEnd)
 {
 	float so_far = 0.0;
-	float scale = inHeight / inFont->line_height;	
+	float scale = inHeight / inFont->line_height;
 	int total = 0;
 	for (const char * c = inStringEnd-1; c >= inStringStart; --c)
 	{

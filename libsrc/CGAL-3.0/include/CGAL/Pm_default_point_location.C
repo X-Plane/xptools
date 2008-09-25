@@ -26,13 +26,13 @@
 CGAL_BEGIN_NAMESPACE
 
 //IMPLEMENTATION
-//if unbounded face - returns NULL or some edge on unbounded face 
+//if unbounded face - returns NULL or some edge on unbounded face
 //if its a vertex returns a halfedge pointing _at_ it
 	/* postconditions:
-	The output Halfedge_handle represents a 
-	planar map subdivision region that contains the 
+	The output Halfedge_handle represents a
+	planar map subdivision region that contains the
 	input Point in its interior or equal to it.
-	The input Locate_type is equal to the type 
+	The input Locate_type is equal to the type
 	of this region.
 	*/
 template <class Planar_map>
@@ -42,8 +42,8 @@ Pm_default_point_location<Planar_map>::locate(const Point& p, Locate_type& lt)
 {
 		//there are different internal compiler errors if we
 		// typedef the Locate_type
-		typename TD::Locate_type td_lt; 
-		
+		typename TD::Locate_type td_lt;
+
 		const X_curve_plus& cv = td.locate(p,td_lt).top();
 		// treat special case, where trapezoid is unbounded.
 		//	for then get_parent() is not defined
@@ -54,7 +54,7 @@ Pm_default_point_location<Planar_map>::locate(const Point& p, Locate_type& lt)
 		}
 		Halfedge_handle h = cv.get_parent();
 		lt=convert(p,td_lt,h);
-		
+
 		return h;
     }
 
@@ -69,12 +69,12 @@ Pm_default_point_location<Planar_map>::locate(const Point& p, Locate_type& lt){
 }
 
 	/* postconditions:
-	The output Halfedge_handle represents a planar map 
-	subdivision region that contains the first Point 
-	on the closed vertical ray eminating from the input 
-	Point in upward or downward direction depending on 
+	The output Halfedge_handle represents a planar map
+	subdivision region that contains the first Point
+	on the closed vertical ray eminating from the input
+	Point in upward or downward direction depending on
 	the input bool in its interior or equal to it.
-	The input Locate_type is equal to the type 
+	The input Locate_type is equal to the type
 	of this region.
 	*/
 template <class Planar_map>
@@ -84,7 +84,7 @@ Pm_default_point_location<Planar_map>::vertical_ray_shoot(
 
 		//trying to workaround internal compiler error
 		typename TD::Locate_type td_lt;
-		
+
 		X_curve_plus cv = td.vertical_ray_shoot(p,td_lt,up);
 		// treat special case, where trapezoid is unbounded.
 		//	for then get_parent() is not defined
@@ -95,7 +95,7 @@ Pm_default_point_location<Planar_map>::vertical_ray_shoot(
 		}
 		Halfedge_handle h=cv.get_parent();
 		lt=convert(p,td_lt,h,up);
-		
+
 		return h;
     }
 

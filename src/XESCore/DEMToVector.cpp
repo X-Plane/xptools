@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -66,7 +66,7 @@ void BuildSmoothedPts(const Polygon2& pts, Polygon2& op, bool smooth)
 
 	// Ben sez: gotta use safety-checked smoothing to prevent topological insanity!
 
-//	MidpointSimplifyPolygon(op);	
+//	MidpointSimplifyPolygon(op);
 
 	if (smooth)
 	{
@@ -104,7 +104,7 @@ void ClearDEMPt(DEMGeo& ioDEM, vector<int>& ioIndex, int x, int y)
 {
 	DebugAssert(ioIndex[y] > 0);
 	DebugAssert(ioDEM.get(x,y) != DEM_NO_DATA);
-	
+
 	ioDEM(x,y) = DEM_NO_DATA;
 	ioIndex[y]--;
 }
@@ -127,17 +127,17 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 	int y_start = ioDEM.mHeight-1;
 	vector<int>	idx;
 	int total = IndexDEM(ioDEM, idx);
-	
+
 	PROGRESS_START(func, 0, 1, "Building vectors...")
-	
+
 	int ctr = 0;
-	
+
 	int raw_pts = 0, smooth_pts = 0;
-	
+
 	while(FindHighestLeft(ioDEM, idx, x, y, y_start))
 	{
 		Polygon2	pts;
-	
+
 		y_start = y;
 		sx = x;
 		sy = y;
@@ -153,11 +153,11 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 			y = y + dir_y[step];
 			step = (step+5)%8;
 			// Edge from ox, oy to x, y
-			
+
 			Point2	op(ioDEM.x_to_lon(ox), ioDEM.y_to_lat(oy));
 			Point2	np(ioDEM.x_to_lon(x), ioDEM.y_to_lat(y));
 			pts.push_back(np);
-			
+
 			ClearDEMPt(ioDEM, idx, x, y);
 			++ctr;
 		} while (x != sx || y != sy);
@@ -177,8 +177,8 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 		if (face == ioMap.unbounded_face())
 			newf->mTerrainType = inPositiveTerrain;
 		else if (face->mTerrainType != inPositiveTerrain)
-			newf->mTerrainType  = inPositiveTerrain;			
+			newf->mTerrainType  = inPositiveTerrain;
 	}
-	PROGRESS_DONE(func, 0, 1, "Building vectors...")	
+	PROGRESS_DONE(func, 0, 1, "Building vectors...")
 	printf("Ratio: %lf\n", raw_pts ? ((double) smooth_pts / (double) raw_pts) : 0.0);
 }

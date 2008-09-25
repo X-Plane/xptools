@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -60,7 +60,7 @@ class sb_ForeignID
 
       sb_ForeignID( std::string const& mn, long id, usage_t um = none );
 
-      virtual ~sb_ForeignID() 
+      virtual ~sb_ForeignID()
       {}
 
 
@@ -77,7 +77,7 @@ class sb_ForeignID
       /// set foreign identifier mnemonic, as shown in the 8211 DDR
       void mnemonic( std::string const & n )  { mnemonic_ = n; }
 
-      
+
 
       /// foriegn identifier mnemonic, as shown in the 8211 DDR
 
@@ -112,14 +112,14 @@ class sb_ForeignID
 
          assigns a packed foreign identifier string to the given
          string; returns false if the module name, record id, and /or
-         usage modifier are bogus 
+         usage modifier are bogus
 
          @returns false if the foreign id doesn't have a modue name, an inval;id record id, or an improper usage modifier
       */
       bool packedIdentifierString( std::string & ) const;
 
 
-      
+
       /**
          Adds the appropriate ISO 8211 field DDR field definitions for
          the given schema.
@@ -187,7 +187,7 @@ typedef std::list<sb_ForeignID> sb_ForeignIDs;
    This defines an SDTS attribute ID
 
    An attribute is essentially a foreign ID in structure.  Just the
-   field names and tags differ.  
+   field names and tags differ.
 */
 class sb_AttributeID : public sb_ForeignID
 {

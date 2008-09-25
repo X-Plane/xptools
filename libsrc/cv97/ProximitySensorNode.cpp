@@ -10,7 +10,7 @@
 
 #include "SceneGraph.h"
 
-ProximitySensorNode::ProximitySensorNode() 
+ProximitySensorNode::ProximitySensorNode()
 {
 	setHeaderFlag(false);
 	setType(proximitySensorNodeString);
@@ -45,7 +45,7 @@ ProximitySensorNode::ProximitySensorNode()
 	addPrivateField(inRegionField);
 }
 
-ProximitySensorNode::~ProximitySensorNode() 
+ProximitySensorNode::~ProximitySensorNode()
 {
 }
 
@@ -59,18 +59,18 @@ SFVec3f *ProximitySensorNode::getCenterField()
 		return centerField;
 	return (SFVec3f *)getExposedField(centerFieldString);
 }
-	
-void ProximitySensorNode::setCenter(float value[]) 
+
+void ProximitySensorNode::setCenter(float value[])
 {
 	getCenterField()->setValue(value);
 }
 
-void ProximitySensorNode::setCenter(float x, float y, float z) 
+void ProximitySensorNode::setCenter(float x, float y, float z)
 {
 	getCenterField()->setValue(x, y, z);
 }
 
-void ProximitySensorNode::getCenter(float value[]) 
+void ProximitySensorNode::getCenter(float value[])
 {
 	getCenterField()->getValue(value);
 }
@@ -85,18 +85,18 @@ SFVec3f *ProximitySensorNode::getSizeField()
 		return sizeField;
 	return (SFVec3f *)getExposedField(sizeFieldString);
 }
-	
-void ProximitySensorNode::setSize(float value[]) 
+
+void ProximitySensorNode::setSize(float value[])
 {
 	getSizeField()->setValue(value);
 }
 
-void ProximitySensorNode::setSize(float x, float y, float z) 
+void ProximitySensorNode::setSize(float x, float y, float z)
 {
 	getSizeField()->setValue(x, y, z);
 }
 
-void ProximitySensorNode::getSize(float value[]) 
+void ProximitySensorNode::getSize(float value[])
 {
 	getSizeField()->getValue(value);
 }
@@ -111,18 +111,18 @@ SFVec3f *ProximitySensorNode::getPositionChangedField()
 		return positionField;
 	return (SFVec3f *)getEventOut(positionFieldString);
 }
-	
-void ProximitySensorNode::setPositionChanged(float value[]) 
+
+void ProximitySensorNode::setPositionChanged(float value[])
 {
 	getPositionChangedField()->setValue(value);
 }
 
-void ProximitySensorNode::setPositionChanged(float x, float y, float z) 
+void ProximitySensorNode::setPositionChanged(float x, float y, float z)
 {
 	getPositionChangedField()->setValue(x, y, z);
 }
 
-void ProximitySensorNode::getPositionChanged(float value[]) 
+void ProximitySensorNode::getPositionChanged(float value[])
 {
 	getPositionChangedField()->getValue(value);
 }
@@ -137,18 +137,18 @@ SFRotation *ProximitySensorNode::getOrientationChangedField()
 		return orientationField;
 	return (SFRotation *)getEventOut(orientationFieldString);
 }
-	
-void ProximitySensorNode::setOrientationChanged(float value[]) 
+
+void ProximitySensorNode::setOrientationChanged(float value[])
 {
 	getOrientationChangedField()->setValue(value);
 }
 
-void ProximitySensorNode::setOrientationChanged(float x, float y, float z, float rot) 
+void ProximitySensorNode::setOrientationChanged(float x, float y, float z, float rot)
 {
 	getOrientationChangedField()->setValue(x, y, z, rot);
 }
 
-void ProximitySensorNode::getOrientationChanged(float value[]) 
+void ProximitySensorNode::getOrientationChanged(float value[])
 {
 	getOrientationChangedField()->getValue(value);
 }
@@ -163,13 +163,13 @@ SFTime *ProximitySensorNode::getEnterTimeField()
 		return enterTimeField;
 	return (SFTime *)getEventOut(enterTimeFieldString);
 }
-	
-void ProximitySensorNode::setEnterTime(double value) 
+
+void ProximitySensorNode::setEnterTime(double value)
 {
 	getEnterTimeField()->setValue(value);
 }
 
-double ProximitySensorNode::getEnterTime() 
+double ProximitySensorNode::getEnterTime()
 {
 	return getEnterTimeField()->getValue();
 }
@@ -184,13 +184,13 @@ SFTime *ProximitySensorNode::getExitTimeField()
 		return exitTimeField;
 	return (SFTime *)getEventOut(exitTimeFieldString);
 }
-	
-void ProximitySensorNode::setExitTime(double value) 
+
+void ProximitySensorNode::setExitTime(double value)
 {
 	getExitTimeField()->setValue(value);
 }
 
-double ProximitySensorNode::getExitTime() 
+double ProximitySensorNode::getExitTime()
 {
 	return getExitTimeField()->getValue();
 }
@@ -206,26 +206,26 @@ SFBool *ProximitySensorNode::getInRegionField()
 	return (SFBool *)getPrivateField(inRegionPrivateFieldString);
 }
 
-void ProximitySensorNode::setInRegion(bool value) 
+void ProximitySensorNode::setInRegion(bool value)
 {
 	getInRegionField()->setValue(value);
 }
 
-bool ProximitySensorNode::inRegion() 
+bool ProximitySensorNode::inRegion()
 {
 	return getInRegionField()->getValue();
-} 
+}
 
 ////////////////////////////////////////////////
 //	List
 ////////////////////////////////////////////////
 
-ProximitySensorNode *ProximitySensorNode::next() 
+ProximitySensorNode *ProximitySensorNode::next()
 {
 	return (ProximitySensorNode *)Node::next(getType());
 }
 
-ProximitySensorNode *ProximitySensorNode::nextTraversal() 
+ProximitySensorNode *ProximitySensorNode::nextTraversal()
 {
 	return (ProximitySensorNode *)Node::nextTraversalByType(getType());
 }
@@ -233,7 +233,7 @@ ProximitySensorNode *ProximitySensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ProximitySensorNode::isChildNodeType(Node *node)
 {
 	return false;
@@ -243,7 +243,7 @@ bool ProximitySensorNode::isChildNodeType(Node *node)
 //	Infomation
 ////////////////////////////////////////////////
 
-void ProximitySensorNode::outputContext(ostream &printStream, char *indentString) 
+void ProximitySensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *enabled = getEnabledField();
 	SFVec3f *center = getCenterField();
@@ -258,7 +258,7 @@ void ProximitySensorNode::outputContext(ostream &printStream, char *indentString
 //	ProximitySensorNode::initialize
 ////////////////////////////////////////////////
 
-void ProximitySensorNode::initialize() 
+void ProximitySensorNode::initialize()
 {
 	setInRegion(false);
 }
@@ -267,7 +267,7 @@ void ProximitySensorNode::initialize()
 //	ProximitySensorNode::uninitialize
 ////////////////////////////////////////////////
 
-void ProximitySensorNode::uninitialize() 
+void ProximitySensorNode::uninitialize()
 {
 }
 
@@ -287,7 +287,7 @@ static bool isRegion(float vpos[], float center[], float size[])
 	return true;
 }
 
-void ProximitySensorNode::update() 
+void ProximitySensorNode::update()
 {
 	if (!isEnabled())
 		return;

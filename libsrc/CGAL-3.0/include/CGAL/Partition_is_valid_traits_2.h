@@ -33,7 +33,7 @@ public:
    typedef typename Traits::Orientation_2   Orientation_2;
 
    typedef PolygonIsValid                   Is_valid;
-   
+
    Is_valid
    is_valid_object(const Traits& traits) const
    {  return Is_valid(traits); }

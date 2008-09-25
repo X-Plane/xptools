@@ -1803,7 +1803,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
+
 /* Define __yy_memcpy.  Note that the size argument
    should be passed with type unsigned int, because that is what the non-GCC
    definitions require.  With GCC, __builtin_memcpy takes an arg
@@ -1847,7 +1847,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 
 #endif
 #endif
-
+
 #line 217 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -2365,7 +2365,7 @@ case 133:
     break;}
 case 136:
 #line 435 "vrml.y"
-{   
+{
 			AnchorNode	*anchor = new AnchorNode();
 			anchor->setName(GetDEFName());
 			AddNode(anchor);
@@ -2601,7 +2601,7 @@ case 191:
     break;}
 case 194:
 #line 725 "vrml.y"
-{   
+{
 			BillboardNode *billboard = new BillboardNode();
 			billboard->setName(GetDEFName());
 			AddNode(billboard);
@@ -2654,12 +2654,12 @@ case 209:
 case 214:
 #line 824 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 215:
 #line 831 "vrml.y"
-{   
+{
 			CollisionNode *collision = new CollisionNode();
 			collision->setName(GetDEFName());
 			AddNode(collision);
@@ -3264,7 +3264,7 @@ case 338:
     break;}
 case 344:
 #line 1552 "vrml.y"
-{   
+{
 			GroupNode *group = new GroupNode();
 			group->setName(GetDEFName());
 			AddNode(group);
@@ -3470,7 +3470,7 @@ case 400:
     break;}
 case 403:
 #line 1814 "vrml.y"
-{   
+{
 			InlineNode *inlineNode = new InlineNode();
 			inlineNode->setName(GetDEFName());
 			AddNode(inlineNode);
@@ -3500,7 +3500,7 @@ case 408:
 case 409:
 #line 1859 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 410:
@@ -3512,18 +3512,18 @@ case 410:
 case 411:
 #line 1867 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 412:
 #line 1871 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 413:
 #line 1878 "vrml.y"
-{   
+{
 			LodNode	*lod = new LodNode();
 			lod->setName(GetDEFName());
 			AddNode(lod);
@@ -4717,13 +4717,13 @@ case 636:
 case 637:
 #line 3239 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 638:
 #line 3243 "vrml.y"
 {
-			PopNode();							
+			PopNode();
 		;
     break;}
 case 639:
@@ -4734,7 +4734,7 @@ case 639:
     break;}
 case 640:
 #line 3255 "vrml.y"
-{   
+{
 			SwitchNode *switchNode = new SwitchNode();
 			switchNode->setName(GetDEFName());
 			AddNode(switchNode);
@@ -5091,7 +5091,7 @@ case 715:
 }
    /* the action file gets copied in in place of this dollarsign */
 #line 543 "/usr/share/bison.simple"
-
+
   yyvsp -= yylen;
   yyssp -= yylen;
 #ifdef YYLSP_NEEDED

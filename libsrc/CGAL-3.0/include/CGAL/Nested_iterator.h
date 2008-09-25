@@ -52,7 +52,7 @@ namespace CGALi {
       return this->begin(base_it) == this->end(base_it);
     }
 
-    
+
   };
 
   template<class F_iterator>
@@ -63,7 +63,7 @@ namespace CGALi {
     typedef typename Predicate::Traits::Iterator         Iterator;
     typedef typename Predicate::Traits::Base_iterator    Base_iterator;
 
-  public:    
+  public:
     FI_w_begin_end() : F_iterator() {}
 
     FI_w_begin_end(Base_iterator it1,
@@ -142,7 +142,7 @@ public:
 	  nested_it_ = begin( this->base() );
 	}
       }
-    } 
+    }
     return *this;
   }
 
@@ -173,13 +173,13 @@ public:
 
   Self operator--(int)
   {
-    
+
     Self tmp = *this;
     --(*this);
     return tmp;
   }
 
-  
+
   reference  operator*()  const
   {
     return *nested_it_;
@@ -208,7 +208,7 @@ bool operator==(const Nested_iterator<Base_it,Traits>& it1,
   //  CGAL_precondition( it1.b_ == it2.b_ && it1.e_ == it2.e_ );
 
   if ( it1.base() != it2.base() ) { return false; }
-  
+
   return it1.is_end() || ( it1.nested_it_ == it2.nested_it_ );
 }
 
@@ -225,4 +225,4 @@ CGAL_END_NAMESPACE
 
 #endif // CGAL_NESTED_ITERATOR_H
 
-	
+

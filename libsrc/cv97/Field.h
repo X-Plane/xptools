@@ -88,10 +88,10 @@ public:
 
 	Field() {
 		mType = fieldTypeNone;
-	}	
+	}
 
 	virtual ~Field() {
-	}	
+	}
 
 	char *getTypeName();
 

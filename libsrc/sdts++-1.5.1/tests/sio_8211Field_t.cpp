@@ -21,7 +21,7 @@ using namespace std;
 #include <sdts++/io/sio_8211Utils.h>
 #include <sdts++/io/sio_Buffer.h>
 
-int 
+int
 main( int argc, char** argv )
 {
 
@@ -46,15 +46,15 @@ main( int argc, char** argv )
     assert( 25 == field.getDataLength() );
 
     // Now copy over this field to make sure that its state
-    // makes it over fine.   
+    // makes it over fine.
     sio_8211Field another_field( field );
 
     assert( 0 == another_field.getData().size() );
     assert( 25 == another_field.getDataLength() );
 
   }
-   
-  { 
+
+  {
     // Now add bogus subfield data to the field
 
     sio_8211Field field;
@@ -67,18 +67,18 @@ main( int argc, char** argv )
 
     field.setData( field_data );
 
-    // Now try and get it back -- they should be the same		
+    // Now try and get it back -- they should be the same
     vector<char> subfield_value;
     long position = 0;
 
     assert( true == field.getVariableSubfield( subfield_value, position) );
-    assert( (*mismatch( subfield_value.begin(), subfield_value.end(), 
-                      field_data.begin()).second) == 
+    assert( (*mismatch( subfield_value.begin(), subfield_value.end(),
+                      field_data.begin()).second) ==
             sio_8211UnitTerminator );
 
     // the position should be incremented to the 'start' of the next subfield
     assert( 4 == position );
-   
+
   }
 
   {
@@ -93,21 +93,21 @@ main( int argc, char** argv )
 
     sio_Buffer buffer( raw_data );
     sio_8211Field field( buffer );
-		
+
     //  Now lets see if things match
     vector<char>const& buffDataOut = field.getData();
     long buffLengthOut = field.getDataLength();
 
-    assert( equal( buffDataOut.begin(), buffDataOut.end(), 
+    assert( equal( buffDataOut.begin(), buffDataOut.end(),
                    buffData.begin() ));
 
     assert( buffLengthOut == buffData.length() );
-	
+
   }
 
   {
     // test getField
-		
+
     sio_8211Field field;
 
     string data = "ABCDEFGH";
@@ -124,10 +124,10 @@ main( int argc, char** argv )
 
     vector<char> const& buffData = buffer.data();
     long buffLength = buffer.length();
-	
+
     assert( buffLength == data.length() );
     assert( equal( buffData.begin(), buffData.end(), data.begin() ) );
-	
+
   }
 
   return 0;

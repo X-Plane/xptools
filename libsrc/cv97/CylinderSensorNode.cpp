@@ -10,7 +10,7 @@
 
 #include "CylinderSensorNode.h"
 
-CylinderSensorNode::CylinderSensorNode() 
+CylinderSensorNode::CylinderSensorNode()
 {
 	setHeaderFlag(false);
 	setType(cylinderSensorNodeString);
@@ -44,7 +44,7 @@ CylinderSensorNode::CylinderSensorNode()
 	addEventOut(trackPointFieldString, trackPointField);
 }
 
-CylinderSensorNode::~CylinderSensorNode() 
+CylinderSensorNode::~CylinderSensorNode()
 {
 }
 
@@ -58,13 +58,13 @@ SFBool *CylinderSensorNode::getAutoOffsetField()
 		return autoOffsetField;
 	return (SFBool *)getExposedField(autoOffsetFieldString);
 }
-	
-void CylinderSensorNode::setAutoOffset(bool  value) 
+
+void CylinderSensorNode::setAutoOffset(bool  value)
 {
 	getAutoOffsetField()->setValue(value);
 }
 
-void CylinderSensorNode::setAutoOffset(int value) 
+void CylinderSensorNode::setAutoOffset(int value)
 {
 	setAutoOffset(value ? true : false);
 }
@@ -74,7 +74,7 @@ bool  CylinderSensorNode::getAutoOffset()
 	return getAutoOffsetField()->getValue();
 }
 
-bool  CylinderSensorNode::isAutoOffset() 
+bool  CylinderSensorNode::isAutoOffset()
 {
 	return getAutoOffset();
 }
@@ -89,13 +89,13 @@ SFFloat *CylinderSensorNode::getDiskAngleField()
 		return diskAngleField;
 	return (SFFloat *)getExposedField(diskAngleFieldString);
 }
-	
+
 void CylinderSensorNode::setDiskAngle(float value)
 {
 	getDiskAngleField()->setValue(value);
 }
 
-float CylinderSensorNode::getDiskAngle() 
+float CylinderSensorNode::getDiskAngle()
 {
 	return getDiskAngleField()->getValue();
 }
@@ -110,13 +110,13 @@ SFFloat *CylinderSensorNode::getMinAngleField()
 		return minAngleField;
 	return (SFFloat *)getExposedField(minAngleFieldString);
 }
-	
-void CylinderSensorNode::setMinAngle(float value) 
+
+void CylinderSensorNode::setMinAngle(float value)
 {
 	getMinAngleField()->setValue(value);
 }
 
-float CylinderSensorNode::getMinAngle() 
+float CylinderSensorNode::getMinAngle()
 {
 	return getMinAngleField()->getValue();
 }
@@ -131,13 +131,13 @@ SFFloat *CylinderSensorNode::getMaxAngleField()
 		return maxAngleField;
 	return (SFFloat *)getExposedField(maxAngleFieldString);
 }
-	
-void CylinderSensorNode::setMaxAngle(float value) 
+
+void CylinderSensorNode::setMaxAngle(float value)
 {
 	getMaxAngleField()->setValue(value);
 }
 
-float CylinderSensorNode::getMaxAngle() 
+float CylinderSensorNode::getMaxAngle()
 {
 	return getMaxAngleField()->getValue();
 }
@@ -152,13 +152,13 @@ SFFloat *CylinderSensorNode::getOffsetField()
 		return offsetField;
 	return (SFFloat *)getExposedField(offsetFieldString);
 }
-	
-void CylinderSensorNode::setOffset(float value) 
+
+void CylinderSensorNode::setOffset(float value)
 {
 	getOffsetField()->setValue(value);
 }
 
-float CylinderSensorNode::getOffset() 
+float CylinderSensorNode::getOffset()
 {
 	return getOffsetField()->getValue();
 }
@@ -173,18 +173,18 @@ SFRotation *CylinderSensorNode::getRotationChangedField()
 		return rotationField;
 	return (SFRotation *)getEventOut(rotationFieldString);
 }
-	
-void CylinderSensorNode::setRotationChanged(float value[]) 
+
+void CylinderSensorNode::setRotationChanged(float value[])
 {
 	getRotationChangedField()->setValue(value);
 }
 
-void CylinderSensorNode::setRotationChanged(float x, float y, float z, float rot) 
+void CylinderSensorNode::setRotationChanged(float x, float y, float z, float rot)
 {
 	getRotationChangedField()->setValue(x, y, z, rot);
 }
 
-void CylinderSensorNode::getRotationChanged(float value[]) 
+void CylinderSensorNode::getRotationChanged(float value[])
 {
 	getRotationChangedField()->getValue(value);
 }
@@ -199,18 +199,18 @@ SFVec3f *CylinderSensorNode::getTrackPointChangedField()
 		return trackPointField;
 	return (SFVec3f *)getEventOut(trackPointFieldString);
 }
-	
-void CylinderSensorNode::setTrackPointChanged(float value[]) 
+
+void CylinderSensorNode::setTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->setValue(value);
 }
 
-void CylinderSensorNode::setTrackPointChanged(float x, float y, float z) 
+void CylinderSensorNode::setTrackPointChanged(float x, float y, float z)
 {
 	getTrackPointChangedField()->setValue(x, y, z);
 }
 
-void CylinderSensorNode::getTrackPointChanged(float value[]) 
+void CylinderSensorNode::getTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->getValue(value);
 }
@@ -219,12 +219,12 @@ void CylinderSensorNode::getTrackPointChanged(float value[])
 //	List
 ////////////////////////////////////////////////
 
-CylinderSensorNode *CylinderSensorNode::next() 
+CylinderSensorNode *CylinderSensorNode::next()
 {
 	return (CylinderSensorNode *)Node::next(getType());
 }
 
-CylinderSensorNode *CylinderSensorNode::nextTraversal() 
+CylinderSensorNode *CylinderSensorNode::nextTraversal()
 {
 	return (CylinderSensorNode *)Node::nextTraversalByType(getType());
 }
@@ -232,13 +232,13 @@ CylinderSensorNode *CylinderSensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool CylinderSensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void CylinderSensorNode::initialize() 
+void CylinderSensorNode::initialize()
 {
 	setIsActive(false);
 }
@@ -247,7 +247,7 @@ void CylinderSensorNode::uninitialize()
 {
 }
 
-void CylinderSensorNode::update() 
+void CylinderSensorNode::update()
 {
 }
 
@@ -255,7 +255,7 @@ void CylinderSensorNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void CylinderSensorNode::outputContext(ostream &printStream, char *indentString) 
+void CylinderSensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *autoOffset = getAutoOffsetField();
 	SFBool *enabled = getEnabledField();

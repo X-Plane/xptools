@@ -1,5 +1,5 @@
-//  Copyright (c) 2003 Institute of Transport, 
-//             Railway Construction and Operation, 
+//  Copyright (c) 2003 Institute of Transport,
+//             Railway Construction and Operation,
 //             University of Hanover, Germany
 //
 // Permission to copy, use, modify, sell and distribute this software is
@@ -12,7 +12,7 @@ class TestLibX
 public:
 
     TestLibX();
-    
+
     // Needed to suppress 'unused variable' warning
     // in some cases.
     void do_something() {}

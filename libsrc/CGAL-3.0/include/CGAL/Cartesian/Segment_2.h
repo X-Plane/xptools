@@ -69,7 +69,7 @@ public:
   {
       return Ptr()->e1;
   }
-  
+
   const Point_2 &    start() const;
   const Point_2 &    end() const;
 
@@ -133,7 +133,7 @@ CGAL_KERNEL_INLINE
 const typename SegmentC2<R>::Point_2 &
 SegmentC2<R>::min() const
 {
-  typename R::Less_xy_2 less_xy; 
+  typename R::Less_xy_2 less_xy;
   return less_xy(source(),target()) ? source() : target();
 }
 
@@ -142,7 +142,7 @@ CGAL_KERNEL_INLINE
 const typename SegmentC2<R>::Point_2 &
 SegmentC2<R>::max() const
 {
-  typename R::Less_xy_2 less_xy; 
+  typename R::Less_xy_2 less_xy;
   return less_xy(source(),target()) ? target() : source();
 }
 
@@ -253,8 +253,8 @@ bool
 SegmentC2<R>::
 has_on(const typename SegmentC2<R>::Point_2 &p) const
 {
-  return R().are_ordered_along_line_2_object()(source(), 
-					       p, 
+  return R().are_ordered_along_line_2_object()(source(),
+					       p,
 					       target());
 }
 

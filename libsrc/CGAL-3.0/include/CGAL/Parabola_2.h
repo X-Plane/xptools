@@ -99,7 +99,7 @@ protected:
   {
     std::vector< Point_2 > p = compute_points(t);
     if ( right(p[0]) )  return p[0];
-    return p[1]; 
+    return p[1];
   }
 
   std::vector< Point_2 > compute_points(const FT &d) const
@@ -115,7 +115,7 @@ protected:
     if ( l.a() == ZERO ) {
       FT y = d2 * CGAL::sign(l.b()) - l.c() / l.b();
 
-      FT C = CGAL::square(y) - FT(2) * c.y() * y + 
+      FT C = CGAL::square(y) - FT(2) * c.y() * y +
 	square(c.x()) + square(c.y()) - d1;
 
       FT D = square(c.x()) - C;

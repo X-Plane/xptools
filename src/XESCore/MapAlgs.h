@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,7 +35,7 @@ struct	DEMGeo;
 /************************************************************************************************
  * FACE SETS AND EDGE SETS
  ************************************************************************************************
- * 
+ *
  * It is often useful to treat a group of faces or a group of edges as a unit...two examples:
  *
  * - A body of water might be made up of multiple faces becaue bridges split the body of water.
@@ -82,7 +82,7 @@ void	FindEdgesForFaceSet(const set<GISFace *>& inFaces, set<GISHalfedge *>& outE
  * Given a face, returns all faces that are touching this face.
  *
  */
-void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces); 
+void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces);
 
 /*
  * FindAdjacentWetFaces
@@ -90,7 +90,7 @@ void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces);
  * Given a face, returns all faces that are touching this face.
  *
  */
-void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces); 
+void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
 
 /*
  * FindConnectedWetFaces
@@ -99,12 +99,12 @@ void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
  * body, taking into account things like bridges.
  *
  */
-void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces); 
+void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
 
 /*
  * CCBToPolygon
  *
- * Given a CCB (ring) in a map, this converts it to a simple polygon.  You can pass a weight function in which case a second array 
+ * Given a CCB (ring) in a map, this converts it to a simple polygon.  You can pass a weight function in which case a second array
  * of per-side weights (0th weight is the CCB edge passed in) are also built up.
  *
  */
@@ -133,10 +133,10 @@ GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx
  ************************************************************************************************
  *
  * Our fundamental map editing operations are:
- * 
+ *
  * Swap - given two rings of equal geometry in two maps, swap what's inside and on them.
  * Merge - insert all of one map into another.
- * 
+ *
  * We build all of our algorithms up from these.  One other noteworthy algorithm: "TopoIntegration"
  * just means pre-inserting the intersections of all edges from two maps into both so that we know
  * that there are no edge-edge intersections between the two.  See the topointegrate notes for why
@@ -144,10 +144,10 @@ GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx
  *
  * Besides the algs derived from swap, and merge, some of the "cleaning" algorithms simply go around
  * deleting edges.  These routines are slow because the topological transformations they can induce
- * are complex and must be computed one-at-a-time.  
+ * are complex and must be computed one-at-a-time.
  *
- * (Where possible algorithms that work on defined extents like "crop" use swap ops, which are MUCH 
- * faster.  While swap algs are still linear to the number of elements "swapped", almost all 
+ * (Where possible algorithms that work on defined extents like "crop" use swap ops, which are MUCH
+ * faster.  While swap algs are still linear to the number of elements "swapped", almost all
  * topological operations - inserting and removing edges fundamentally change topology - have a time
  * complexity greater than constant, so a topological op on a linear set is worse than linear time,
  * often by a lot!)
@@ -178,7 +178,7 @@ void	CropMap(
 /*
  * CropMap - advanced form.
  *
- * Pass in a map, and a blank map to receive what is inside the ring passed in inRingCCW.  
+ * Pass in a map, and a blank map to receive what is inside the ring passed in inRingCCW.
  * The ring MUST be counterclockwise.  This gives you more precise control over what is cropped
  * and what is saved and chucked.  (This can be used to do cut, copy, paste, clear, etc.)
  *
@@ -192,11 +192,11 @@ void	CropMap(
 			ProgressFunc			inProgress);
 
 /*
- * SwapFace 
+ * SwapFace
  *
- * Given two maps, replace the face in the master map with the contents of the submap.  
+ * Given two maps, replace the face in the master map with the contents of the submap.
  * This routine destroys interior antennas - halfedges connected to the outer CCB that have
- * the face on both sides.  This allows for a clean cut.  
+ * the face on both sides.  This allows for a clean cut.
  *
  * The remaining contents of the master face are swapped with the target face, which is chopped
  * to make the cut possible.
@@ -215,7 +215,7 @@ void	SwapFace(
 
 /*
  * CleanFace
- * 
+ *
  * Given a face on a map, this routine 'cleans' its interior, removing any
  * antennas, holes, or anything else in its interior.
  *
@@ -230,12 +230,12 @@ void	CleanFace(
  * OverlayMap
  *
  * Inserts all part of inSrc into inDst.  inSrc must not have antennas outside of the holes in
- * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was, 
+ * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was,
  * inDst has contents overwritten.
  *
  */
 void OverlayMap(
-			Pmwx& 	inDst, 
+			Pmwx& 	inDst,
 			Pmwx& 	inSrc);
 
 /*
@@ -246,7 +246,7 @@ void OverlayMap(
  * be constructed to form discrete water bodies up to the edge of the map's useful area.
  *
  * Performance: O(N*M) where N = number of removed halfedges, and M = average number
- * of halfedges in a CCB. 
+ * of halfedges in a CCB.
  *
  */
 void ReduceToWaterBodies(Pmwx& ioMap);
@@ -266,7 +266,7 @@ void ReduceToWaterBodies(Pmwx& ioMap);
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
 
 /*
- * TODO - DOC THIS 
+ * TODO - DOC THIS
  *
  */
 void UnmangleBorder(Pmwx& ioMap);
@@ -297,19 +297,19 @@ int RemoveUnboundedWater(Pmwx& ioMap);
  * F is the number of faces in the source map that have important data that must be copied.
  *
  * For optimal performance, ioDstMap should have faces with small numbers of bounds
- * and ioSrcMap should have fewer or shorter halfedges, and fewer faces that have 
+ * and ioSrcMap should have fewer or shorter halfedges, and fewer faces that have
  * data that need to be copied.
  *
  * If inForceProps is true, when there is a property conflict for terrain type or area property
- * on a face, the srcMap will win; otherwise the dstMap will win.  A merge takes place where 
+ * on a face, the srcMap will win; otherwise the dstMap will win.  A merge takes place where
  * there is no conflicts.
  *
  * If outFaces is not NULL, then the handle of every face in the dst map that had a property
- * in the source map is returned.  Two warnings: "empty" faces (terrain natural, no area 
+ * in the source map is returned.  Two warnings: "empty" faces (terrain natural, no area
  * feature) are not included, and faces that are non-empty are copied even if the dest-map has
  * a property and inForceProps is false (in which case the face in outFaces did not receive a
  * property from the source.  (A typical use might be to put a bogus mark or terrain on all
- * source faces and thus receive an idea of where in the destination map your source map 
+ * source faces and thus receive an idea of where in the destination map your source map
  * ended up, without having to do a bunch of fac-relocates from edge bounds.
  *
  */
@@ -328,18 +328,18 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
  * This routine then swaps the contents of the rings using an optimized swap.
  *
  */
-void	SwapMaps(	Pmwx& 							ioMapA, 
-					Pmwx& 							ioMapB, 
+void	SwapMaps(	Pmwx& 							ioMapA,
+					Pmwx& 							ioMapB,
 					const vector<GISHalfedge *>&	inBoundsA,
 					const vector<GISHalfedge *>&	inBoundsB);
-			
+
 /*
  * TopoIntegrateMaps
  *
  * Given two maps, guarantees that each map could only cross each other at vertices, and that
  * these vertices have the same numeric values.
  *
- */		
+ */
 void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
 
 /*
@@ -347,7 +347,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
  *
  * This alternative to insert_ring fixes a few limitations of the low-level insertion routine:
  * 1. It can insert rings with antennas on them.
- * 2. It can insert rings that share vertices with the existing mesh.  
+ * 2. It can insert rings that share vertices with the existing mesh.
  * It does an insert_ring if possible, otherwise it does a slow edge insert.  Please note that
  * this routine does NOT handle non-simple polygons (except for antennas), nor does it handle
  * rings that intersect the existing mesh, so you do need to ensure some topological integration
@@ -392,7 +392,7 @@ double	GetMapFaceAreaMeters(const Pmwx::Face_handle f);
 
 /*
  * GetMapEdgeLengthMeters
- * 
+ *
  * Given an edge in lat/lon, return is length in meters.
  *
  */
@@ -401,7 +401,7 @@ double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e);
 /*
  * GetParamAverage
  * GetParamHistogram
- * 
+ *
  * Given a face and a raster DEM in the same coordinate system, find either the min, max and average
  * of the value in the DEM over the face area, or find a full histogram for the face erea.
  * Please note that the histogram is NOT initialized; so that you can run it on multiple faces.
@@ -413,7 +413,7 @@ int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, 
 /*
  * ClipDEMToFaceSet
  *
- * Given a set of faces, copy the points in the src DEM to the dest DEM only if we're in the faces.  
+ * Given a set of faces, copy the points in the src DEM to the dest DEM only if we're in the faces.
  * Return the bounds (inclusive min, exclusive max) of the copied area.  Returns true if any points
  * were copied, otherwise the Xa and Y params may nto be valid.
  *
@@ -424,7 +424,7 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
  * SetupRasterizerForDEM
  *
  * Given a face (or edge set containing a finite area) and a DEM in the same coordinates, set up the polygon
- * rasterizer to rasterize the DEM over the face set.  
+ * rasterizer to rasterize the DEM over the face set.
  *
  * This is useful for preparing iterating to iterate over every DEM point contained within a face or edge set.
  * The lowest Y coordinate in the DEM that is within the rasterized area is returned as a good start value to
@@ -447,7 +447,7 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
  * skeleton treatmant and should not be used!
  *
  * Given a Pmwx and a face, inset the face.  This is a complex and powerful inset routine;
- * unlike InsetPolygon, it can handle (1) holes in the polygon and (2) generacy (e.g. the 
+ * unlike InsetPolygon, it can handle (1) holes in the polygon and (2) generacy (e.g. the
  * resulting polygon may be massively different than the first).
  *
  * The API is pretty strange: you pass in a map with a face to be inset.  While there is no
@@ -455,7 +455,7 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
  * and stability that you pass in a Pmwx where the face is the only hole in the CCB.
  *
  * Make sure the face's terrain type is not water.  Set each halfedge of the face to the inset
- * distance in meters.  
+ * distance in meters.
  *
  * On output, you will get the map back where every bounded face whose terrain type is not water
  * is an empty usable area not consumed by the inset.  You can then iterate across all bounded
@@ -487,7 +487,7 @@ Point2	FindRefPoint(InputIterator begin, InputIterator end)
 		if ((*i).y < best.y)
 			best = Point2(best.x, (*i).y);
 	}
-	
+
 	return best;
 }
 

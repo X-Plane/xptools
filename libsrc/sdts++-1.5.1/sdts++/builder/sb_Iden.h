@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -44,16 +44,16 @@ class sb_Iden : public sb_Module
    public:
 
       sb_Iden();
-      
+
       ~sb_Iden();
 
       sb_Iden(sc_Record const & recprox);
 
       /**
        Use these members to get subfield/field values.  Pass in an appropriate
-       type to receive the value.  These members will return false if the 
-       corresponding value is not set.  (It may not be set because a value 
-       was not assigned to it, or because you previously tried to assign 
+       type to receive the value.  These members will return false if the
+       corresponding value is not set.  (It may not be set because a value
+       was not assigned to it, or because you previously tried to assign
        an invalid value.)  Otherwise they will return true.
       */
       bool getStandardIdentification( std::string& str ) const;
@@ -73,7 +73,7 @@ class sb_Iden : public sb_Module
       bool getPRVS( std::string& str ) const { return getProfileVersion( str ); }
 
       bool getProfileDocumentationReference( std::string& str ) const;
-      bool getPDOC( std::string& str ) const 
+      bool getPDOC( std::string& str ) const
       { return getProfileDocumentationReference( str ); }
 
       bool getTitle( std::string& str ) const;
@@ -98,7 +98,7 @@ class sb_Iden : public sb_Module
       bool getCOMT( std::string& str ) const { return getComment( str ); }
 
 
-      //  Conformance field 
+      //  Conformance field
 
       bool getComposites( std::string& str ) const;
       bool getFFYN( std::string& str ) const { return getComposites( str ); }
@@ -124,7 +124,7 @@ class sb_Iden : public sb_Module
       bool getNonGeoSpatialDimensions( std::string& str ) const;
       bool getNGDM( std::string& str ) const
       { return getNonGeoSpatialDimensions( str ); }
-  
+
 
       // Attribute
 
@@ -145,7 +145,7 @@ class sb_Iden : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -216,7 +216,7 @@ class sb_Iden : public sb_Module
       void setNonGeoSpatialDimensions( std::string const & );
       void setNGDM( std::string const & str ) {  setNonGeoSpatialDimensions( str ); }
 
-      
+
 #ifdef NOT_IMPLEMENTED
       void setAttributeID( sb_ForeignID const & );
       void setATID( sb_ForeignID const & fid ) {  setAttributeID( fid ); }

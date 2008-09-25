@@ -12,7 +12,7 @@
 #if APL
 #if defined(__MWERKS__)
 #include <Events.h>
-#else 
+#else
 #include <Carbon/Carbon.h>
 #endif
 #endif
@@ -31,12 +31,12 @@ struct	XPLMDrawCallback_t {
 	XPLMDrawingPhase		phase;
 	int						preCallback;
 	void *					refcon;
-	
+
 	bool	operator==(const XPLMDrawCallback_t& rhs) const {
 		return ((callback == rhs.callback) && (phase == rhs.phase) &&
 			(preCallback == rhs.preCallback) && (refcon == rhs.refcon));
 		}
-	
+
 };
 typedef	std::vector<XPLMDrawCallback_t>	XPLMDrawCallbackVector;
 
@@ -45,7 +45,7 @@ struct	XPLMKeySniffer_t {
 	XPLMPluginID			plugin;
 	int						beforeWindows;
 	void * 					refcon;
-	
+
 	bool	operator==(const XPLMKeySniffer_t& rhs) const {
 		return ((callback == rhs.callback) && (beforeWindows == rhs.beforeWindows) &&
 			(refcon == rhs.refcon) && (plugin == rhs.plugin));
@@ -111,9 +111,9 @@ const char	xplm_Key_Map [256] = {
 /* 48 */	0,					0,					0,					XPLM_VK_DIVIDE,		XPLM_VK_NUMPAD_ENT,	0,					XPLM_VK_SUBTRACT,	0,
 /* 50 */	0,					XPLM_VK_NUMPAD_EQ,	XPLM_VK_NUMPAD0,	XPLM_VK_NUMPAD1,	XPLM_VK_NUMPAD2,	XPLM_VK_NUMPAD3,	XPLM_VK_NUMPAD4,	XPLM_VK_NUMPAD5,
 /* 58 */	XPLM_VK_NUMPAD6,	XPLM_VK_NUMPAD7,	0,					XPLM_VK_NUMPAD8,	XPLM_VK_NUMPAD9,	0,					0,					0,
-/* 60 */	XPLM_VK_F5,			XPLM_VK_F6,			XPLM_VK_F7,			XPLM_VK_F3,			XPLM_VK_F8,			XPLM_VK_F9,			0,					XPLM_VK_F11	,	
+/* 60 */	XPLM_VK_F5,			XPLM_VK_F6,			XPLM_VK_F7,			XPLM_VK_F3,			XPLM_VK_F8,			XPLM_VK_F9,			0,					XPLM_VK_F11	,
 /* 68 */	0,					0,					0,					0,					0,					XPLM_VK_F10,		0,					XPLM_VK_F12,
-/* 70 */	0,					0,					0,					XPLM_VK_HOME,		XPLM_VK_PRIOR,		0,					XPLM_VK_F4,			XPLM_VK_END,		
+/* 70 */	0,					0,					0,					XPLM_VK_HOME,		XPLM_VK_PRIOR,		0,					XPLM_VK_F4,			XPLM_VK_END,
 /* 78 */	XPLM_VK_F2,			XPLM_VK_NEXT,		XPLM_VK_F1,			XPLM_VK_LEFT,		XPLM_VK_RIGHT,		XPLM_VK_DOWN,		XPLM_VK_UP,			0
 };
 
@@ -165,12 +165,12 @@ int	XPLMRegisterDrawCallback(
 					void *				inRefcon)
 {
 		XPLMDrawCallback_t		newCB;
-		
+
 	newCB.callback = inCallback;
 	newCB.phase = inPhase;
 	newCB.preCallback = inWantsBefore;
 	newCB.refcon = inRefcon;
-	
+
 	if (std::find(gDrawCallbacks.begin(), gDrawCallbacks.end(), newCB) ==
 		gDrawCallbacks.end())
 	{
@@ -178,8 +178,8 @@ int	XPLMRegisterDrawCallback(
 		return 1;
 	} else
 		return 0;
-	
-}					
+
+}
 
 int	XPLMUnregisterDrawCallback(
 					XPLMDrawCallback_f	inCallback,
@@ -188,7 +188,7 @@ int	XPLMUnregisterDrawCallback(
 					void *				inRefcon)
 {
 		XPLMDrawCallback_t		newCB;
-		
+
 	newCB.callback = inCallback;
 	newCB.phase = inPhase;
 	newCB.preCallback = inWantsBefore;
@@ -201,8 +201,8 @@ int	XPLMUnregisterDrawCallback(
 		return 1;
 	} else
 		return 0;
-	
-}					
+
+}
 
 int XPLMRegisterKeySniffer(
 					XPLMKeySniffer_f	inCallback,
@@ -210,18 +210,18 @@ int XPLMRegisterKeySniffer(
 					void *				inRefcon)
 {
 		XPLMKeySniffer_t		newCB;
-		
+
 	newCB.callback = inCallback;
 	newCB.beforeWindows = inBeforeWindows;
 	newCB.refcon = inRefcon;
-	
+
 	if (std::find(gKeyCallbacks.begin(), gKeyCallbacks.end(), newCB) ==
 		gKeyCallbacks.end())
 	{
 		gKeyCallbacks.push_back(newCB);
 		return 1;
 	} else
-		return 0;	
+		return 0;
 }
 
 int	XPLMUnregisterKeySniffer(
@@ -230,20 +230,20 @@ int	XPLMUnregisterKeySniffer(
 					void *				inRefcon)
 {
 		XPLMKeySniffer_t		newCB;
-		
+
 	newCB.callback = inCallback;
 	newCB.beforeWindows = inBeforeWindows;
 	newCB.refcon = inRefcon;
-	
+
 	XPLMKeySnifferVector::iterator iter = std::find(gKeyCallbacks.begin(), gKeyCallbacks.end(), newCB);
-	
+
 	if (iter != gKeyCallbacks.end())
 	{
 		gKeyCallbacks.erase(iter);
 		return 1;
 	} else
-		return 0;	
-}					
+		return 0;
+}
 
 void		XPLMGetScreenSize(
 					int *				outWidth,
@@ -263,7 +263,7 @@ void		XPLMGetMouseLocation(
 	Point	p;
 	GetMouse(&p);
 	if (outX) *outX = p.h;
-	if (outY) 
+	if (outY)
 	{
 		*outY = v - p.v;
 	}
@@ -272,15 +272,15 @@ void		XPLMGetMouseLocation(
 	gWidgetWin->GetMouseLoc(outX, outY);
 	if (outY) *outY = v - *outY;
 #endif
-}					
+}
 
 XPLMKeyFlags XPLMGetModifiers(void)
 {
 #if APL
 	UInt32	mods = GetCurrentKeyModifiers();
-	
+
 	XPLMKeyFlags	flags = 0;
-	
+
 	if (mods & shiftKey)
 		flags |= xplm_ShiftFlag;
 	if (mods & cmdKey)
@@ -291,7 +291,7 @@ XPLMKeyFlags XPLMGetModifiers(void)
 #endif
 #if IBM
 	XPLMKeyFlags	flags = 0;
-	
+
 	if (::GetKeyState(VK_SHIFT) & ~1)
 		flags |= xplm_ShiftFlag;
 	if (::GetKeyState(VK_CONTROL) & ~1)
@@ -317,7 +317,7 @@ XPLMWindowID XPLMCreateWindow(
 					void *					inRefCon)
 {
 		XPLMWindowPtr	newWindow = new XPLMWindow_t;
-	
+
 	newWindow->left = inLeft;
 	newWindow->top = inTop;
 	newWindow->right = inRight;
@@ -327,11 +327,11 @@ XPLMWindowID XPLMCreateWindow(
 	newWindow->keyCallback = inKeyCallback;
 	newWindow->mouseCallback = inMouseCallback;
 	newWindow->refcon = inRefCon;
-	
+
 	gWindows.push_front(newWindow);
-	
+
 	return (XPLMWindowID) newWindow;
-}					
+}
 
 void		XPLMDestroyWindow(
 					XPLMWindowID 		inWindowID)
@@ -340,7 +340,7 @@ void		XPLMDestroyWindow(
 	XPLMWindowPtr	theWindow = XPLMWindowIsValid(inWindowID, &iter);
 	if (theWindow == NULL)
 		return;
-		
+
 	if (theWindow == gFocusWindow)
 		XPLMTakeKeyboardFocus(NULL);
 
@@ -349,8 +349,8 @@ void		XPLMDestroyWindow(
 
 	gWindows.erase(iter);
 	delete theWindow;
-	
-}					
+
+}
 
 void		XPLMGetWindowGeometry(
 					XPLMWindowID		inWindowID,
@@ -363,7 +363,7 @@ void		XPLMGetWindowGeometry(
 
 	if (theWindow == NULL)
 		return;
-		
+
 	if (outLeft)
 		*outLeft = theWindow->left;
 	if (outTop)
@@ -372,7 +372,7 @@ void		XPLMGetWindowGeometry(
 		*outRight = theWindow->right;
 	if (outBottom)
 		*outBottom = theWindow->bottom;
-}					
+}
 
 void		XPLMSetWindowGeometry(
 					XPLMWindowID		inWindowID,
@@ -380,7 +380,7 @@ void		XPLMSetWindowGeometry(
 					int					inTop,
 					int					inRight,
 					int					inBottom)
-{	
+{
 		XPLMWindowPtr	theWindow = XPLMWindowIsValid(inWindowID, NULL);
 
 	if (theWindow == NULL)
@@ -390,8 +390,8 @@ void		XPLMSetWindowGeometry(
 	theWindow->top = inTop;
 	theWindow->right = inRight;
 	theWindow->bottom = inBottom;
-}					
-					
+}
+
 
 int			XPLMGetWindowIsVisible(
 					XPLMWindowID			inWindowID)
@@ -400,10 +400,10 @@ int			XPLMGetWindowIsVisible(
 
 	if (theWindow == NULL)
 		return 0;
-		
+
 	return theWindow->visible;
-}					
-	
+}
+
 void		XPLMSetWindowIsVisible(
 					XPLMWindowID			inWindowID,
 					int						inIsVisible)
@@ -412,12 +412,12 @@ void		XPLMSetWindowIsVisible(
 
 	if (theWindow == NULL)
 		return;
-		
+
 	if ((theWindow->visible) && (!inIsVisible) && (theWindow == gFocusWindow))
 		XPLMTakeKeyboardFocus(NULL);
 	theWindow->visible = inIsVisible;
-}					
-					
+}
+
 
 void *		XPLMGetWindowRefCon(
 					XPLMWindowID			inWindowID)
@@ -426,9 +426,9 @@ void *		XPLMGetWindowRefCon(
 
 	if (theWindow == NULL)
 		return NULL;
-	
+
 	return theWindow->refcon;
-}					
+}
 
 void 		XPLMSetWindowRefCon(
 					XPLMWindowID			inWindowID,
@@ -438,56 +438,56 @@ void 		XPLMSetWindowRefCon(
 
 	if (theWindow == NULL)
 		return;
-	
+
 	theWindow->refcon = inRefcon;
-}					
+}
 
 
 void		XPLMTakeKeyboardFocus(
 					XPLMWindowID			inWindowID)
 {
 		XPLMWindowPtr	theWindow = XPLMWindowIsValid(inWindowID, NULL);
-		
+
 	if (theWindow == gFocusWindow)
 		return;
 
 	// DO NOT focus a window for a disabled plugin!  (Unlikely, but a concern.)
-		
+
 	if (gFocusWindow != NULL)
 	{
 		gFocusWindow->keyCallback(
-					inWindowID, 			
+					inWindowID,
 					0,						// ASCII
 					0,						// Flags
 					0,						// Virtual Key
 					gFocusWindow->refcon,	// Refcon
 					1);						// Losing focus
-	}	
+	}
 	gFocusWindow = theWindow;
 }
-					
+
 
 void		XPLMBringWindowToFront(
 					XPLMWindowID			inWindowID)
 {
 		XPLMWindowList::iterator	iter;
 		XPLMWindowPtr				theWindow = XPLMWindowIsValid(inWindowID, &iter);
-	
+
 	if (theWindow == NULL)
 		return;
-	
+
 	gWindows.erase(iter);
-	gWindows.push_front(theWindow);	
-}					
-					
+	gWindows.push_front(theWindow);
+}
+
 int			XPLMIsWindowInFront(
 					XPLMWindowID			inWindowID)
 {
 		XPLMWindowPtr		theWindow = XPLMWindowIsValid(inWindowID, NULL);
-		
+
 	if (theWindow == NULL)
 		return false;
-	
+
 	for (XPLMWindowList::iterator iter = gWindows.begin(); iter != gWindows.end(); ++iter)
 	{
 		if ((*iter)->visible)
@@ -495,7 +495,7 @@ int			XPLMIsWindowInFront(
 	}
 
 		return false;
-}	
+}
 
 #pragma mark -
 
@@ -524,11 +524,11 @@ void		XPLMDisplayDoDrawingHook(
 							(XPLMWindowID) (*iter),
 							(*iter)->refcon);
 		}
-	}	
+	}
 }
 
 void		XPLMDisplayMouseClickHook(
-						int 			inX, 
+						int 			inX,
 						int 			inY,
 						XPLMMouseStatus	inStatus,
 						int				inButton)
@@ -540,14 +540,14 @@ void		XPLMDisplayMouseClickHook(
 	{
 		for (XPLMWindowList::iterator iter = gWindows.begin(); iter != gWindows.end(); ++iter)
 		{
-			if (((*iter)->visible) && 
-				(inX >= (*iter)->left) && 
-				(inX < (*iter)->right) && 
+			if (((*iter)->visible) &&
+				(inX >= (*iter)->left) &&
+				(inX < (*iter)->right) &&
 				(inY < (*iter)->top) &&
 				(inY >= (*iter)->bottom))
 			{
 				XPLMWindowPtr	clickWindow = *iter; // BAS - assign iter first, once we dispatch the mouse click, our iterator could be toast.
-										
+
 				{
 					if ((*iter)->mouseCallback((XPLMWindowID) *iter, inX, inY, inStatus, inButton, (*iter)->refcon))
 					{
@@ -563,7 +563,7 @@ void		XPLMDisplayMouseClickHook(
 		return; // Don't eat the click
 	} else {
 		int	retVal = 1; // Default is to not eat the click
-		if (gDragWindow == NULL)	
+		if (gDragWindow == NULL)
 			return; // Pass to x-plane
 		{
 			{
@@ -614,7 +614,7 @@ int		XPLMDisplayKeyPressHook(
 		flags |= xplm_DownFlag;
 	if (inMsg == keyUp)
 		flags |= xplm_UpFlag;
-		
+
 	// NOTE: the XPLM_KEY ASCII defines are all mac-compatible.
 
 	// Finally, control and option keys are not available as ASCII because
@@ -670,12 +670,12 @@ int		XPLMDisplayKeyPressHook(
 		return 1;
 	}
 
-	hKL = GetKeyboardLayout(NULL); 
+	hKL = GetKeyboardLayout(NULL);
 	ScanCode = ((inParam2 >> 16) & 0xff);
 	ExtendedKey =  ((inParam2 >> 24) & 0x01);
-	vKey = MapVirtualKeyEx(ScanCode, 1, hKL); 
+	vKey = MapVirtualKeyEx(ScanCode, 1, hKL);
 	RetCode = GetKeyboardState((unsigned char*)&KeyState);
-	RetCode = ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL); 
+	RetCode = ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL);
 
 	if (RetCode != 0)
 	{
@@ -702,14 +702,14 @@ int		XPLMDisplayKeyPressHook(
 		flags |= xplm_DownFlag;
 	if (inMsg == keyUp)
 		flags |= xplm_UpFlag;
-		
+
 	// NOTE: the XPLM_KEY ASCII defines are all mac-compatible.
-		
+
 	// Finally, control and option keys are not available as ASCII because
 	// the ASCII codes are whacko.
 	if ( ((inParam2 & ShiftControlMask) == controlKey) || ((inParam2 & ShiftControlMask) == optionKey))
 		charCode = 0;
-				
+
 #else
 	#error "Must port XPLM to a new OS...key bindings come in in an OS native form."
 #endif
@@ -783,7 +783,7 @@ int		XPLMDisplayKeyPressHook(
 		return 1;
 
 	// First we have to find out if any pre-window key sniffers care about the key...
-	
+
 	XPLMKeySnifferVector::iterator iter;
 	for (iter = gKeyCallbacks.begin(); iter != gKeyCallbacks.end(); ++iter)
 	{
@@ -793,10 +793,10 @@ int		XPLMDisplayKeyPressHook(
 				return 0;
 	}
 	}
-	
+
 	if (XPLMDispatchHotKey(virtualCode, flags))
 		return 0;
-	
+
 	// Next if we have a window in focus, it gets a crack at it.
 	// Note that in focus windows ALWAYS eat the keystroke.  If they don't want it,
 	// they should lose focus!  (This may change once I think about it carefully. :-)
@@ -825,11 +825,11 @@ int		XPLMDisplayKeyPressHook(
 				return 0;
 	}
 	}
-	
+
 	// If we get this far, XP gets the keystroke.
-	
+
 	return 1;
-}						
+}
 
 #pragma mark -
 
@@ -846,7 +846,7 @@ static	int				XPLMDispatchDrawingHook(XPLMDrawingPhase inPhase, int isBefore)
 {
 		int	result = 1;
 
-	for (XPLMDrawCallbackVector::iterator iter = gDrawCallbacks.begin(); 
+	for (XPLMDrawCallbackVector::iterator iter = gDrawCallbacks.begin();
 		iter != gDrawCallbacks.end(); ++iter)
 	{
 		if ((iter->phase == inPhase) &&
@@ -875,8 +875,8 @@ XPLMHotKeyID	XPLMRegisterHotKey(
 	newID->refcon = inRefcon;
 	gHotKeys.push_back(newID);
 	return newID;
-}									
-									
+}
+
 void			XPLMUnregisterHotKey(
 									XPLMHotKeyID	inHotKey)
 {
@@ -885,8 +885,8 @@ void			XPLMUnregisterHotKey(
 	{
 		gHotKeys.erase(iter);
 	}
-}									
-									
+}
+
 long			XPLMCountHotKeys(void)
 {
 	return gHotKeys.size();
@@ -898,9 +898,9 @@ XPLMHotKeyID	XPLMGetNthHotKey(
 	if ((inIndex >= 0) && (inIndex < gHotKeys.size()))
 		return gHotKeys[inIndex];
 	else
-		return NULL;									
+		return NULL;
 }
-									
+
 void			XPLMGetHotKeyInfo(
 									XPLMHotKeyID	inHotKey,
 									char *			outVirtualKey,
@@ -918,8 +918,8 @@ void			XPLMGetHotKeyInfo(
 		if (outDescription)
 			strcpy(outDescription, info->description.c_str());
 	}
-}									
-									
+}
+
 void			XPLMSetHotKeyCombination(
 									XPLMHotKeyID	inHotKey,
 									char			inVirtualKey,
@@ -931,7 +931,7 @@ void			XPLMSetHotKeyCombination(
 		info->vkey = inVirtualKey;
 		info->flags = inFlags;
 	}
-}									
+}
 
 XPLMHotKeyInfoPtr	XPLMValidateHotKey(XPLMHotKeyID inID, XPLMHotKeyVector::iterator * outIterator)
 {

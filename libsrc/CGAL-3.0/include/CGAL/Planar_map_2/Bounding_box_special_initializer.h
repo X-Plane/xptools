@@ -32,7 +32,7 @@ const
   return new Pm_dynamic_open_bounding_box<Self>;
 }
 template <class R_>
-Bounding_box_base* 
+Bounding_box_base*
 init_default_bounding_box(const Pm_straight_traits_2<R_>*)
 const
 {
@@ -44,7 +44,7 @@ Bounding_box_base* init_default_bounding_box(Pm_straight_traits_2<R_>*)
   return new Pm_dynamic_open_bounding_box<Self>;
 }
 template <class R_>
-Bounding_box_base* 
+Bounding_box_base*
 init_default_bounding_box(const Pm_straight_traits_2<R_>*)
 {
   return new Pm_dynamic_open_bounding_box<Self>;
@@ -59,51 +59,51 @@ Bounding_box_base* init_default_bounding_box(T_*) const
 
 // special initializers for backward compatability.
 #ifdef CGAL_PM_SEGMENT_EXACT_TRAITS_H
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   Pm_segment_traits_2<R_>* t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   const Pm_segment_traits_2<R_>* t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
-  Pm_segment_traits_2<R_>* t_) 
+  Pm_segment_traits_2<R_>* t_)
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
-  const Pm_segment_traits_2<R_>* t_) 
+  const Pm_segment_traits_2<R_>* t_)
 {
   return new Pm_unbounding_box<Self>;
 }
 #endif
 #ifdef CGAL_PM_SEGMENT_EPSILON_TRAITS_H
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   const Pm_segment_epsilon_traits<R_>*  t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   Pm_segment_epsilon_traits<R_>*  t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   const Pm_segment_epsilon_traits<R_>*  t_)
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   Pm_segment_epsilon_traits<R_>*  t_)
 {
@@ -111,53 +111,53 @@ Bounding_box_base* init_default_bounding_box(
 }
 #endif
 #ifdef CGAL_PM_LEDA_SEGMENT_EXACT_TRAITS_H
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   const Pm_leda_segment_traits_2<R_>* t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
   Pm_leda_segment_traits_2<R_>* t_) const
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
-  const Pm_leda_segment_traits_2<R_>* t_) 
+  const Pm_leda_segment_traits_2<R_>* t_)
 {
   return new Pm_unbounding_box<Self>;
 }
-template <class R_> 
+template <class R_>
 Bounding_box_base* init_default_bounding_box(
-  Pm_leda_segment_traits_2<R_>* t_) 
+  Pm_leda_segment_traits_2<R_>* t_)
 {
   return new Pm_unbounding_box<Self>;
 }
 #endif
 #ifdef CGAL_PM_TRAITS_CHECKER_H
-template <class T1_,class T2_,class C_> 
+template <class T1_,class T2_,class C_>
 Bounding_box_base* init_default_bounding_box(
   const Pm_traits_checker<T1_,T2_,C_>*  t_) const
 {
   return init_default_bounding_box((const T1_* ) t_);
 }
-template <class T1_,class T2_,class C_> 
+template <class T1_,class T2_,class C_>
 Bounding_box_base* init_default_bounding_box(
   Pm_traits_checker<T1_,T2_,C_>*  t_) const
 {
   return init_default_bounding_box((T1_* ) t_);
 }
-template <class T1_,class T2_,class C_> 
+template <class T1_,class T2_,class C_>
 Bounding_box_base* init_default_bounding_box(
-  const Pm_traits_checker<T1_,T2_,C_>*  t_) 
+  const Pm_traits_checker<T1_,T2_,C_>*  t_)
 {
   return init_default_bounding_box((const T1_* ) t_);
 }
-template <class T1_,class T2_,class C_> 
+template <class T1_,class T2_,class C_>
 Bounding_box_base* init_default_bounding_box(
-  Pm_traits_checker<T1_,T2_,C_>*  t_) 
+  Pm_traits_checker<T1_,T2_,C_>*  t_)
 {
   return init_default_bounding_box((T1_* ) t_);
 }

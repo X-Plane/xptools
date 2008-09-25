@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Linear.h
  *
  *  This source file is part of DIME.
@@ -42,10 +42,10 @@ public:
   dimeVec2f(const dimeVec2f &vec) {x = vec.x; y = vec.y;}
   dimeVec2f(dxfdouble _x, dxfdouble _y) {x = _x; y = _y;}
   void setValue(const dxfdouble _x, const dxfdouble _y) {x = _x; y = _y;}
- 
-  //dxfdouble operator [] (const int i) const         
+
+  //dxfdouble operator [] (const int i) const
   //{ return (i==0?x:y); }
-  //  dxfdouble & operator [] (const int i)             
+  //  dxfdouble & operator [] (const int i)
   //{ return(i==0?x:y);}
   void print() const { printf("Coord2: (%.3f, %.3f)\n", x,y);}
   void print(const char *s) {printf("%s: (%.3f, %.3f)\n", s,x,y);}
@@ -54,16 +54,16 @@ public:
 }; // class dimeVec2f
 
 class DIME_DLL_API dimeVec3f
-{ 
+{
 public:
   dxfdouble x, y, z;
-  
+
   dimeVec3f(void) {};
-  dimeVec3f(const dxfdouble X, const dxfdouble Y, const dxfdouble Z) 
+  dimeVec3f(const dxfdouble X, const dxfdouble Y, const dxfdouble Z)
   { x=X; y=Y; z=Z; };
   dimeVec3f(const dxfdouble *xyz)
   { x = xyz[0]; y = xyz[1]; z = xyz[2]; }
-  dimeVec3f (const dimeVec3f& v) 
+  dimeVec3f (const dimeVec3f& v)
   { x=v.x; y=v.y; z=v.z; };
   dimeVec3f cross(const dimeVec3f &v) const
   { return dimeVec3f(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x); }
@@ -75,31 +75,31 @@ public:
   bool equals(const dimeVec3f &v, dxfdouble tol)
   { return (fabs(x-v.x) <= tol && fabs(y-v.y) <= tol && fabs(z-v.z) <= tol); }
 
-  operator dxfdouble *() { return &x; } 
+  operator dxfdouble *() { return &x; }
   const dxfdouble *getValue() const { return &x; }
   void getValue(dxfdouble &_x, dxfdouble &_y, dxfdouble &_z) const
   { _x = x; _y = y; _z = z;}
-  dxfdouble length() const                    
+  dxfdouble length() const
   { return (dxfdouble) sqrt(x*x+y*y+z*z); }
   dxfdouble sqrLength(void) const
   { return x*x+y*y+z*z; }
   void negate(void)
   { x = -x; y = -y; z = -z; }
-  void setValue(const dxfdouble *v) 
-  { x = v[0]; y = v[1]; z = v[2]; } 
+  void setValue(const dxfdouble *v)
+  { x = v[0]; y = v[1]; z = v[2]; }
   void setValue(const dxfdouble X, const dxfdouble Y, const dxfdouble Z)
   { x=X; y=Y; z=Z; }
 
   dxfdouble operator [] (const int i) const
   { return( (i==0)?x:((i==1)?y:z) ); };
-  dxfdouble & operator [] (const int i)             
+  dxfdouble & operator [] (const int i)
   { return( (i==0)?x:((i==1)?y:z) ); };
 
   dimeVec3f &operator *= (const dxfdouble s)
   { x*=s; y*=s; z*=s; return *this; }
   dimeVec3f &operator /= (const dxfdouble s)
   { x/=s; y/=s; z/=s; return *this; }
-  dimeVec3f &operator += (const dimeVec3f &v) 
+  dimeVec3f &operator += (const dimeVec3f &v)
   { x+=v.x; y+=v.y; z+=v.z; return *this; }
   dimeVec3f &operator -= (const dimeVec3f &v)
   { x-=v.x; y-=v.y; z-=v.z; return *this;}
@@ -112,7 +112,7 @@ public:
   friend dimeVec3f operator / (const dimeVec3f &v, dxfdouble s)
   { return dimeVec3f(v.x/s, v.y/s, v.z/s); }
   friend dimeVec3f operator + (const dimeVec3f &v1, const dimeVec3f &v2)
-  { return dimeVec3f(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z); } 
+  { return dimeVec3f(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z); }
   friend dimeVec3f operator - (const dimeVec3f &v1, const dimeVec3f &v2)
   { return dimeVec3f(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z); }
 
@@ -122,8 +122,8 @@ public:
   { return (v1.x != v2.x || v1.y != v2.y || v1.z != v2.z); }
 
   dimeVec3f& operator = (const dimeVec3f &v)        // extra
-  { x=v.x; y=v.y; z=v.z; return *this; } 
-   
+  { x=v.x; y=v.y; z=v.z; return *this; }
+
   void multMatrix(dxfdouble *matrix)       // extra
   {
     dxfdouble tx, ty, tz;
@@ -132,7 +132,7 @@ public:
     ty = matrix[4]*x+matrix[5]*y+matrix[6]*z;
     tz = matrix[8]*x+matrix[9]*y+matrix[10]*z;
     x = tx, y = ty, z = tz;
-  } 
+  }
 
   void print() const // extra
   { printf("dimeVec3f: (%.3f, %.3f, %.3f)\n",x, y, z); }
@@ -155,8 +155,8 @@ public:
   dimeMatrix(const dimeMatrix &matrix);
   // Constructor given all 16 elements in row-major order
   dimeMatrix(dxfdouble a11, dxfdouble a12, dxfdouble a13, dxfdouble a14,
-	    dxfdouble a21, dxfdouble a22, dxfdouble a23, dxfdouble a24, 
-	    dxfdouble a31, dxfdouble a32, dxfdouble a33, dxfdouble a34, 
+	    dxfdouble a21, dxfdouble a22, dxfdouble a23, dxfdouble a24,
+	    dxfdouble a31, dxfdouble a32, dxfdouble a33, dxfdouble a34,
 	    dxfdouble a41, dxfdouble a42, dxfdouble a43, dxfdouble a44);
   void transpose();
   void makeIdentity();
@@ -166,7 +166,7 @@ public:
 		    const dimeVec3f &rotAngles);
   dimeMatrix &multRight(const dimeMatrix &m); // this = this * m
   dimeMatrix &multLeft(const dimeMatrix &m);   // this = m * this
-  
+
   // Sets matrix to rotate by given rotation
   void setRotate(const dimeVec3f &rot);
 
@@ -189,10 +189,10 @@ public:
 
   // transforms vector
   void multMatrixVec(dimeVec3f &vec) const;
-  
+
   // Multiplies given row vector by matrix, giving vector result
   //void multVecMatrix(const dimeVec3f &src, dimeVec3f &dst) const;
-  
+
   // Cast: returns pointer to storage of first element
   operator dxfdouble *() { return &matrix[0][0]; }
 
@@ -204,7 +204,7 @@ public:
 
   // Performs right multiplication with another matrix
   dimeMatrix &operator *=(const dimeMatrix &m)  { return multRight(m); }
-  
+
 
   static dimeMatrix identity();
   bool inverse();

@@ -334,7 +334,7 @@ to_interval(const MP_Float &b)
     else
       d += Interval_nt_advanced(-d_exp, d_exp);
   }
-  
+
 #ifdef CGAL_EXPENSIVE_ASSERTION // force it always in early debugging
   if (d.is_point())
     CGAL_assertion(MP_Float(d.inf()) == b);

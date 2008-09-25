@@ -38,7 +38,7 @@ Window_stream& operator<<(Window_stream& ws,
   {
     // The curve is a segment - simply draw it.
     ws << leda_segment(sx, sy, tx, ty);
-  } 
+  }
   // The arc is circular
   else
   {
@@ -47,7 +47,7 @@ Window_stream& operator<<(Window_stream& ws,
     if (cv.is_x_monotone())
     {
       bool     is_source_left = (sx < tx);
-      int      x_min = is_source_left ? ws.real_to_pix(sx) : 
+      int      x_min = is_source_left ? ws.real_to_pix(sx) :
 	                                ws.real_to_pix(tx);
       int      x_max = is_source_left ? ws.real_to_pix(tx) :
                                         ws.real_to_pix(sx);
@@ -72,7 +72,7 @@ Window_stream& operator<<(Window_stream& ws,
 	  ws << leda_segment(prev_x, prev_y, curr_x, curr_y);
 	  prev_x = curr_x;
 	  prev_y = curr_y;
-	  
+
 	}
       }
 
@@ -85,7 +85,7 @@ Window_stream& operator<<(Window_stream& ws,
     }
   }
 
-  return (ws); 
+  return (ws);
 }
 
 CGAL_END_NAMESPACE

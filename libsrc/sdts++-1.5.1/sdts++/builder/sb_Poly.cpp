@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -344,7 +344,7 @@ if ( sb_Utils::getFieldByMnem( record,"RPID",curfield) )
   //grabbing fileds until we get one that's well, not anRepresentationID
   while (  curfield != record.end() && curfield->mnemonic() == "RPID" )
     {
-      
+
       poly_imp._RepresentationIDs.push_back( sb_ForeignID() );
       if ( ! poly_imp._RepresentationIDs.back().assign( *curfield ) )
 	{
@@ -759,7 +759,7 @@ _imp->_RepresentationIDs.clear();
 } // sb_Poly::unDefineRepresentationID
 
 
-sio_8211Schema& 
+sio_8211Schema&
 sb_Poly::schema_()
 {
 if ( _schema.empty() )

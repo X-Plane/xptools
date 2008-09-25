@@ -21,7 +21,7 @@
 //
 // Author(s)     : Andreas Fabri
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_LEDA_WINDOW_H
 #define CGAL_LEDA_WINDOW_H
@@ -136,7 +136,7 @@ operator<<(leda_window& w, const Point_2<R>& p)
   double x = CGAL::to_double(p.x());
   double y = CGAL::to_double(p.y());
   w.draw_point(x,y);
-  
+
   return w;
 }
 
@@ -153,9 +153,9 @@ operator>>(leda_window& w, Point_2<R>& p)
       double y = l_p.ycoord();
       w << l_p;
       w.set_mode( save);
- 
+
       w.draw_point(x,y);
-      
+
       p = Point_2<R>( RT(x), RT(y));
   }
   else
@@ -188,7 +188,7 @@ read_mouse_plus(leda_window& w, Point_2<R>& p, int& button)
   double x, y;
   button = w.read_mouse(x,y);
   w.draw_point(x,y);
-  
+
   p = Point_2<R>(RT(x), RT(y));
 }
 
@@ -392,14 +392,14 @@ operator<<(leda_window& w, const Triangle_2<R>& t)
          y2 = CGAL::to_double(t.vertex(2).y());
 
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled triangle ...
-    w.draw_filled_triangle(leda_point(x0,y0), 
-                           leda_point(x1,y1), 
-                           leda_point(x2,y2), cl); 
-  }	 
-	 
-	 
+    w.draw_filled_triangle(leda_point(x0,y0),
+                           leda_point(x1,y1),
+                           leda_point(x2,y2), cl);
+  }
+
+
   w.draw_segment(x0, y0, x1, y1);
   w.draw_segment(x1, y1, x2, y2);
   w.draw_segment(x2, y2, x0, y0);
@@ -467,15 +467,15 @@ operator>>(leda_window& w, Triangle_2<R>& t)
   double x2 = third.xcoord();
   double y2 = third.ycoord();
   w.set_mode( save);
-  
+
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled triangle ...
-    w.draw_filled_triangle(leda_point(x0,y0), 
-                           leda_point(x1,y1), 
-                           leda_point(x2,y2), cl); 
-  }  
-  
+    w.draw_filled_triangle(leda_point(x0,y0),
+                           leda_point(x1,y1),
+                           leda_point(x2,y2), cl);
+  }
+
   w.draw_segment(x0,y0, x1, y1);
   w.draw_segment(x1,y1, x2, y2);
   w.draw_segment(x2,y2, x0, y0);
@@ -565,13 +565,13 @@ operator<<(leda_window& w, const Circle_2<R>& c)
   double cx = CGAL::to_double(c.center().x()),
          cy = CGAL::to_double(c.center().y()),
          r  = CGAL::to_double(c.squared_radius());
-	 
+
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled circle ...
-    w.draw_disc(cx, cy , std::sqrt(r), cl); 
-  }		 
-	 
+    w.draw_disc(cx, cy , std::sqrt(r), cl);
+  }
+
   w.draw_circle(cx, cy , std::sqrt(r));
   return w;
 }
@@ -613,13 +613,13 @@ operator>>(leda_window& w, Circle_2<R>& c)
   double sqr = dx*dx+dy*dy;
   w.set_mode( save);
   w.set_buttons( save_but);
-  
+
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled circle ...
-    w.draw_disc(cx, cy , std::sqrt(sqr), cl); 
-  }    
-  
+    w.draw_disc(cx, cy , std::sqrt(sqr), cl);
+  }
+
   w.draw_circle(cx, cy , std::sqrt(sqr));
   c = Circle_2<R>(center, RT(sqr));
   return w;
@@ -679,13 +679,13 @@ operator<<(leda_window& w, const Iso_rectangle_2<R>& r)
          ymin = CGAL::to_double(r.min().y()),
          xmax = CGAL::to_double(r.max().x()),
          ymax = CGAL::to_double(r.max().y());
-	 
+
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled rectangle ...
-    w.draw_filled_rectangle(xmin, ymin, xmax, ymax, cl); 
-  }	 
-	 
+    w.draw_filled_rectangle(xmin, ymin, xmax, ymax, cl);
+  }
+
   w.draw_segment(xmin, ymin, xmax, ymin);
   w.draw_segment(xmax, ymin, xmax, ymax);
   w.draw_segment(xmax, ymax, xmin, ymax);
@@ -726,13 +726,13 @@ operator>>(leda_window& w, Iso_rectangle_2<R>& r)
                                                RT(first.ycoord())),
                               Point_2<R>( RT(x), RT(y)));
   w.set_mode( save);
-  
+
   leda_color cl = w.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled rectangle ...
-    w.draw_filled_rectangle(first.xcoord(), first.ycoord(), x, y, cl); 
-  }  
-  
+    w.draw_filled_rectangle(first.xcoord(), first.ycoord(), x, y, cl);
+  }
+
   w.draw_rectangle( first.xcoord(), first.ycoord(), x, y);
   w.set_buttons( save_but);
   return w;

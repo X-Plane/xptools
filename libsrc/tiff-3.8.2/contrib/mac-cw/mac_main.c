@@ -13,7 +13,7 @@ main()
 {
 	int argc;
 	char **argv;
-	
+
 	argc=ccommand(&argv);
 
 	return tool_main(argc,argv);  // Call the tool "main()" routine

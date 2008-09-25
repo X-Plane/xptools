@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,7 +31,7 @@ using std::vector;
 //---------------------------------------------------------------------------------------------------------
 // TYPE MANAGEMENT
 //---------------------------------------------------------------------------------------------------------
-// 
+//
 // Your application defines private clip types by registering them by string.  Text and any other already
 // known non-private clip types don't need to be registered - functions return their enum type.
 
@@ -78,7 +78,7 @@ public:
 	virtual	bool	NthItemHasClipType(int n, GUI_ClipType ct)=0;
 	virtual	int		GetNthItemSize(int n, GUI_ClipType ct)=0;
 	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)=0;
-	
+
 };
 
 //---------------------------------------------------------------------------------------------------------
@@ -91,13 +91,13 @@ public:
 
 inline DWORD	OP_GUI2Win(GUI_DragOperation fx)
 {
-	return (fx & gui_Drag_Move ? DROPEFFECT_MOVE : DROPEFFECT_NONE) + 
+	return (fx & gui_Drag_Move ? DROPEFFECT_MOVE : DROPEFFECT_NONE) +
 		   (fx & gui_Drag_Copy ? DROPEFFECT_COPY : DROPEFFECT_NONE);
 }
 
 inline GUI_DragOperation	OP_Win2GUI(DWORD fx)
 {
-	return (fx & DROPEFFECT_MOVE ?  gui_Drag_Move: gui_Drag_None) + 
+	return (fx & DROPEFFECT_MOVE ?  gui_Drag_Move: gui_Drag_None) +
 		   (fx & DROPEFFECT_COPY ?  gui_Drag_Copy: gui_Drag_None);
 }
 
@@ -124,7 +124,7 @@ private:
 // for stuff you can drag around on Windows.  It does this by taking an explicit pile
 // of data, or a fetch-func that can be used to get the data later on demand.  (To use
 // the fetch func, pass NULL for the specific ptr).  Typically we would create one
-// of these with "new", use it to DoDragDrop, then Release() it.  
+// of these with "new", use it to DoDragDrop, then Release() it.
 //
 // Note that we cannot attach multiple drag objects to this object, even though the
 // generic query mechanism reveals multiple items.  There is some funky stuff going on
@@ -145,9 +145,9 @@ private:
 class GUI_SimpleDataObject : public IDataObject {
 public:
 	GUI_SimpleDataObject(
-							int						type_count, 
-							GUI_ClipType			inTypes[], 
-							int						sizes[], 
+							int						type_count,
+							GUI_ClipType			inTypes[],
+							int						sizes[],
 							const void *			ptrs[],
 							GUI_GetData_f			fetch_func,
 							void *					ref);
@@ -158,26 +158,26 @@ public:
 
 	STDMETHOD(GetData)					(FORMATETC * pformatetcIn, STGMEDIUM * pmedium);
 	STDMETHOD(GetDataHere)				(FORMATETC * pformatetcIn, STGMEDIUM * pmedium);
-	STDMETHOD(QueryGetData)				(FORMATETC * pformatetcIn);             
-	STDMETHOD(GetCanonicalFormatEtc)	(FORMATETC *pformatectIn, FORMATETC  *pformatetcOut);        
-	STDMETHOD(SetData)					(FORMATETC *pformatetc, STGMEDIUM  *pmedium,BOOL fRelease);        
-	STDMETHOD(EnumFormatEtc)			(DWORD dwDirection, IEnumFORMATETC  * *ppenumFormatEtc);        
-	STDMETHOD(DAdvise)					(FORMATETC  *pformatetc, DWORD advf, IAdviseSink  *pAdvSink, DWORD  *pdwConnection);        
-	STDMETHOD(DUnadvise)				(DWORD dwConnection);        
+	STDMETHOD(QueryGetData)				(FORMATETC * pformatetcIn);
+	STDMETHOD(GetCanonicalFormatEtc)	(FORMATETC *pformatectIn, FORMATETC  *pformatetcOut);
+	STDMETHOD(SetData)					(FORMATETC *pformatetc, STGMEDIUM  *pmedium,BOOL fRelease);
+	STDMETHOD(EnumFormatEtc)			(DWORD dwDirection, IEnumFORMATETC  * *ppenumFormatEtc);
+	STDMETHOD(DAdvise)					(FORMATETC  *pformatetc, DWORD advf, IAdviseSink  *pAdvSink, DWORD  *pdwConnection);
+	STDMETHOD(DUnadvise)				(DWORD dwConnection);
 	STDMETHOD(EnumDAdvise)				(IEnumSTATDATA ** ppenumAdvise);
 
 private:
-	
+
 	friend	class	GUI_SimpleEnumFORMATETC;
-	
+
 	GUI_GetData_f				mFetchFunc;
 	void *						mFetchRef;
-	
+
 	map<GUI_ClipType, vector<char> >		mData;		// A map of buffers for our types.
 	ULONG									mRefCount;
 };
 
-   
+
 
 
 
@@ -196,13 +196,13 @@ private:
 
 inline DragActions	OP_GUI2Mac(GUI_DragOperation fx)
 {
-	return (fx & gui_Drag_Move ? kDragActionMove : kDragActionNothing) + 
+	return (fx & gui_Drag_Move ? kDragActionMove : kDragActionNothing) +
 		   (fx & gui_Drag_Copy ? kDragActionCopy : kDragActionNothing);
 }
 
 inline GUI_DragOperation	OP_Mac2GUI(DragActions fx)
 {
-	return (fx & kDragActionMove ?  gui_Drag_Move: gui_Drag_None) + 
+	return (fx & kDragActionMove ?  gui_Drag_Move: gui_Drag_None) +
 		   (fx & kDragActionCopy ?  gui_Drag_Copy: gui_Drag_None);
 }
 
@@ -227,9 +227,9 @@ private:
 
 void GUI_LoadSimpleDrag(
 							DragRef					the_drag,
-							int						type_count, 
-							GUI_ClipType			inTypes[], 
-							int						sizes[], 
+							int						type_count,
+							GUI_ClipType			inTypes[],
+							int						sizes[],
 							const void *			ptrs[],
 							GUI_GetData_f			fetch_func,
 							void *					ref);

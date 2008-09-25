@@ -34,11 +34,11 @@ Qt_widget&
 operator << ( Qt_widget& ws, const CGAL::Alpha_shape_2<Dt>& As)
 {
   //return As.op_window(ws);
-  typedef typename Alpha_shape_2<Dt>::Alpha_shape_edges_iterator 
+  typedef typename Alpha_shape_2<Dt>::Alpha_shape_edges_iterator
                     Edges_iterator;
   typedef typename Alpha_shape_2<Dt>::Segment Segment_2;
-  if (As.get_mode() == Alpha_shape_2<Dt>::REGULARIZED) 
-  { 
+  if (As.get_mode() == Alpha_shape_2<Dt>::REGULARIZED)
+  {
     for (Edges_iterator edge_alpha_it = As.alpha_shape_edges_begin();
          edge_alpha_it != As.alpha_shape_edges_end(); edge_alpha_it++)
     {

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -78,10 +78,10 @@ foundRecIdenField_( sio_8211Schema const & schema )
   // find the DDF RECORD IDENTIFIER FIELD, which has a field
   // mnemonic of "0001"
 
-  sio_8211Schema::const_iterator field_format = 
+  sio_8211Schema::const_iterator field_format =
     find( schema.begin(), schema.end(), "0001" );
 
-  if ( field_format == schema.end() ) 
+  if ( field_format == schema.end() )
   {
     return false;
   }
@@ -105,8 +105,8 @@ struct sio_8211Writer_Imp
 {
   sio_8211Writer_Imp( sio_8211Schema const & schema,
                       const char* title,
-                      ofstream& ofs ) 
-    : schema_( schema ), 
+                      ofstream& ofs )
+    : schema_( schema ),
       title_( title ),
       ofs_( ofs ),
       droppedLeaderAndDir_( false ),
@@ -117,7 +117,7 @@ struct sio_8211Writer_Imp
   }
 
   sio_8211Writer_Imp( const char* title,
-                      ofstream& ofs ) 
+                      ofstream& ofs )
     : title_( title ),
       ofs_( ofs ),
       droppedLeaderAndDir_( false ),
@@ -127,8 +127,8 @@ struct sio_8211Writer_Imp
 
   sio_8211Writer_Imp( sio_8211Schema const & schema,
                       string const& title,
-                      ofstream& ofs ) 
-    : schema_( schema ), 
+                      ofstream& ofs )
+    : schema_( schema ),
       title_( title ),
       ofs_( ofs ),
       droppedLeaderAndDir_( false ),
@@ -139,7 +139,7 @@ struct sio_8211Writer_Imp
   }
 
   sio_8211Writer_Imp( string const& title,
-                      ofstream& ofs ) 
+                      ofstream& ofs )
     : title_( title ),
       ofs_( ofs ),
       droppedLeaderAndDir_( false ),
@@ -166,7 +166,7 @@ struct sio_8211Writer_Imp
   // for each put() invocation
 
   bool                    wroteDroppedLeaderAndDir_;
-  // is true if we wrote the last leader (the special one with 
+  // is true if we wrote the last leader (the special one with
   // the type set to 'R' instead of 'D') and directory -- this means
   // that put() can tell its sio_8211DR to not emit the leader and
   // and directory
@@ -285,7 +285,7 @@ int2string_( int val, string& str )
 
 
 //
-// A utility function that adds a subfield format string to 
+// A utility function that adds a subfield format string to
 // "field_format" followed by a ','.
 //
 //  E.g., four string subfields five bytes long will add
@@ -343,7 +343,7 @@ addFormat_( sio_8211SubfieldFormat const & subfield_format,
     //_itoa( subfield_format.getLength(), buffer, 10 );
 
     string int_val;		// XXX check return value
-    int2string_( subfield_format.getLength(), int_val ); 
+    int2string_( subfield_format.getLength(), int_val );
 
     field_format.append( "(" );
     field_format.append( int_val );
@@ -391,7 +391,7 @@ doBinaryRepeatingField_( sio_8211FieldFormat const& field_format,
 // the subfield labels and the subfield formats per the 8211 spec.
 //
 // Please note that this isn't a full 8211 implementation; we take
-// advantage of SDTS specifics here.  For one thing, the standard doesn't 
+// advantage of SDTS specifics here.  For one thing, the standard doesn't
 // explicitly define character delimiters, so we don't check to see
 // if consecutive subfields differ by specific character delimiters.
 // Similarly, we don't check to see if consecutive subfield formats
@@ -404,12 +404,12 @@ makeFieldFormatString_( sio_8211FieldFormat const & field_format,
                         string & field_format_str )
 {
   field_format_str = "("; // insure we're working from an empty format
-      
+
   int count = 1; // number of current subfield formats with same type
 
-  sio_8211FieldFormat::const_iterator last_subfield_format = 
+  sio_8211FieldFormat::const_iterator last_subfield_format =
     field_format.begin();
-  sio_8211FieldFormat::const_iterator current_subfield_format = 
+  sio_8211FieldFormat::const_iterator current_subfield_format =
     last_subfield_format;
 
   for ( current_subfield_format++; // skip to second item, if any
@@ -417,9 +417,9 @@ makeFieldFormatString_( sio_8211FieldFormat const & field_format,
         current_subfield_format++ )
   {
 
-    if ( (*current_subfield_format).getType() 
+    if ( (*current_subfield_format).getType()
          == (*last_subfield_format).getType() &&
-         (*current_subfield_format).getFormat() 
+         (*current_subfield_format).getFormat()
          == (*last_subfield_format).getFormat() )
     {
 
@@ -465,13 +465,13 @@ makeFieldFormatString_( sio_8211FieldFormat const & field_format,
       }
 
     }
-    else // the subfields are different, so emit the format for the last 
+    else // the subfields are different, so emit the format for the last
     {    // subfield
       addFormat_( *last_subfield_format, count, field_format_str );
       count = 1;
       last_subfield_format = current_subfield_format;
     }
-  }       
+  }
 
   // blat out the last format
   addFormat_( *last_subfield_format, count, field_format_str );
@@ -480,7 +480,7 @@ makeFieldFormatString_( sio_8211FieldFormat const & field_format,
                                 // last character will be a comma, so
                                 // we over-write it.)
 
-  field_format_str[field_format_str.length() - 1] = ')'; 
+  field_format_str[field_format_str.length() - 1] = ')';
 
   // add additional wrapping parenthesis iff this is a repeating binary field
   doBinaryRepeatingField_( field_format, field_format_str );
@@ -544,12 +544,12 @@ addSchema_( sio_8211DDR& ddr,  sio_8211Schema const & schema )
                                 // this error.  Thanks to
                                 // BoundsChecker for nailing this one.
 
-        subfield_labels.resize( 256 ); 
+        subfield_labels.resize( 256 );
         subfield_labels.assign( "*" );
 
         break;
 
-    case sio_8211FieldFormat::vector : 
+    case sio_8211FieldFormat::vector :
     case sio_8211FieldFormat::concatenated : // fall through
         subfield_labels.assign( "" );
         break;
@@ -642,7 +642,7 @@ sio_8211Writer::makeDDR_()
 //
 // 1. find the field format in the schema that matches the sc_field
 // 2. grind through all the sc_subfields in sc_field, blatting out the
-//    data into an sio_ostreamBuffer using the corresponding 
+//    data into an sio_ostreamBuffer using the corresponding
 //    sio_8211SubfieldFormat
 // 3. add the field to the DR -- use the sc_field mnemonic and the
 //    sio_ostreamBuffer for the 8211 field tag and 8211 field data, respectively
@@ -650,24 +650,24 @@ sio_8211Writer::makeDDR_()
 // Notes:
 //
 //   It is possible for some subfields to be missing.  Which is no big deal
-//   since some subfields are optional.  In that case, the current subfield 
+//   since some subfields are optional.  In that case, the current subfield
 //   format's mnemonic won't match the current subfield mnemonic.  We blat out
 //   an empty subfield value appropriate for the type, and move on to the
 //   next subfield format.
 //
 static
 bool
-addField_( sio_8211Schema const & schema, 
-           sc_Field const & sc_field, 
+addField_( sio_8211Schema const & schema,
+           sc_Field const & sc_field,
            sio_8211DR& dr,
            bool isRepeating = false )
 {
 
-  // find the field format <1> 
-  sio_8211Schema::const_iterator field_format = 
+  // find the field format <1>
+  sio_8211Schema::const_iterator field_format =
     find( schema.begin(), schema.end(), sc_field.getMnemonic() );
 
-  if ( field_format == schema.end() ) 
+  if ( field_format == schema.end() )
   {
 #ifdef STDSXXDEBUG
     cerr << "didn't find " << sc_field.getMnemonic() << "\n";
@@ -719,8 +719,8 @@ addField_( sio_8211Schema const & schema,
       {
         if ( sio_8211SubfieldFormat::fixed == (*sf_itr).getFormat() )
         {
-          (*sf_itr).getConverter()->addFixedSubfield( *sc_subfield_itr, 
-                                                      (*sf_itr).getLength(), 
+          (*sf_itr).getConverter()->addFixedSubfield( *sc_subfield_itr,
+                                                      (*sf_itr).getLength(),
                                                       buffer );
         }
         else
@@ -743,7 +743,7 @@ addField_( sio_8211Schema const & schema,
       }
     }
 
-    is_last_subfield_variable = 
+    is_last_subfield_variable =
        ( sio_8211SubfieldFormat::variable == (*sf_itr).getFormat() ) ?
        true : false;
 
@@ -803,7 +803,7 @@ writeRecIdenField_( sio_8211RecordIdentifierField const & recIdenField,
                    sio_8211DR & dr )
 {
   // again, "0001" is the reserved field label for the
-  // ISO 8211 record identifier field 
+  // ISO 8211 record identifier field
   return dr.addField( "0001", recIdenField.recordNum() );
 } // writeRecIdenField
 
@@ -814,7 +814,7 @@ writeRecIdenField_( sio_8211RecordIdentifierField const & recIdenField,
 //
 // write out the given record to the writer's output stream
 //
-bool 
+bool
 sio_8211Writer::put( sc_Record& sc_record )
 {
   sio_8211DR  dr;
@@ -838,7 +838,7 @@ sio_8211Writer::put( sc_Record& sc_record )
 
   addField_( imp_->schema_, *sc_field_itr, dr );
 
-  sc_Record::const_iterator sc_prev_field_itr = 
+  sc_Record::const_iterator sc_prev_field_itr =
     sc_field_itr;
 
   sc_field_itr++;
@@ -847,7 +847,7 @@ sio_8211Writer::put( sc_Record& sc_record )
        sc_field_itr != sc_record.end();
        sc_field_itr++, sc_prev_field_itr++ )
   {
-    if (  (*sc_field_itr).getMnemonic() == 
+    if (  (*sc_field_itr).getMnemonic() ==
           (*sc_prev_field_itr).getMnemonic() )
     { // if the field is the same as the previous one, then it's repeating
       if ( ! addField_( imp_->schema_, *sc_field_itr, dr, true ) )

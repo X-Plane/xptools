@@ -11,10 +11,10 @@
 // file          : segment_input_layer_with_snapping.h
 // package       : Planar_map
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
-// coordinator   : 
+// coordinator   :
 //
 // ============================================================================
 
@@ -61,13 +61,13 @@ private:
       widget->x_real(e->x(), x);
       widget->y_real(e->y(), y);
       Point p(x, y);
-      Point closest_p;  
+      Point closest_p;
       //this point is the closest one to the mouse coordinates
       FT min_dist;
       typename std::list<Curve>::const_iterator it = curveslist->begin();
       min_dist = CGAL::squared_distance(p, (*it).source());
       closest_p = (*it).source();
-      
+
       while(it!=curveslist->end())
       {
         if (min_dist > CGAL::squared_distance(p, (*it).source())) {
@@ -80,15 +80,15 @@ private:
         }
         it++;
       }
-      
+
       RasterOp old = widget->rasterOp();	//save the initial raster mode
       widget->setRasterOp(XorROP);
       widget->lock();
-        *widget << CGAL::GREEN << CGAL::PointSize (5) 
+        *widget << CGAL::GREEN << CGAL::PointSize (5)
                 << CGAL::PointStyle (CGAL::DISC);
         *widget << closest_p;
       widget->unlock();
-      widget->setRasterOp(old);        
+      widget->setRasterOp(old);
       old_point = closest_p;
       if(!firstpoint){
         x1 = closest_p.x();
@@ -99,7 +99,7 @@ private:
       } else {
         if(x1 != closest_p.x() || y1 != closest_p.y()) {
           widget->new_object(
-            CGAL::make_object(Segment(Point(x1, y1), 
+            CGAL::make_object(Segment(Point(x1, y1),
               Point(closest_p.x(), closest_p.y()))));
           firstpoint = false;
         }
@@ -112,7 +112,7 @@ private:
     widget->setCursor(cursor);
     firstpoint = false;
   };
-  
+
   void deactivating()
   {
     widget->setCursor(oldcursor);

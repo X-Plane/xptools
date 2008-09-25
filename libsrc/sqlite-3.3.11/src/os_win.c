@@ -70,7 +70,7 @@ struct winFile {
   short sharedLockByte;   /* Randomly chosen byte used as a shared lock */
 #if OS_WINCE
   WCHAR *zDeleteOnClose;  /* Name of file to delete when closing */
-  HANDLE hMutex;          /* Mutex used to control access to shared lock */  
+  HANDLE hMutex;          /* Mutex used to control access to shared lock */
   HANDLE hShared;         /* Shared memory segment used for locking */
   winceLock local;        /* Locks obtained by this instance of winFile */
   winceLock *shared;      /* Global shared lock memory for the file  */
@@ -125,7 +125,7 @@ int sqlite3_os_type = 0;
 #endif /* OS_WINCE */
 
 /*
-** Convert a UTF-8 string to microsoft unicode (UTF-16?). 
+** Convert a UTF-8 string to microsoft unicode (UTF-16?).
 **
 ** Space to hold the returned string is obtained from sqliteMalloc.
 */
@@ -171,7 +171,7 @@ static char *unicodeToUtf8(const WCHAR *zWideFilename){
 /*
 ** Convert an ansi string to microsoft unicode, based on the
 ** current codepage settings for file apis.
-** 
+**
 ** Space to hold the returned string is obtained
 ** from sqliteMalloc.
 */
@@ -237,7 +237,7 @@ static char *mbcsToUtf8(const char *zFilename){
 }
 
 /*
-** Convert UTF-8 to multibyte character string.  Space to hold the 
+** Convert UTF-8 to multibyte character string.  Space to hold the
 ** returned string is obtained from sqliteMalloc().
 */
 static char *utf8ToMbcs(const char *zFilename){
@@ -335,17 +335,17 @@ static BOOL winceCreateLock(const char *zFilename, winFile *pFile){
 
   /* Acquire the mutex before continuing */
   winceMutexAcquire(pFile->hMutex);
-  
-  /* Since the names of named mutexes, semaphores, file mappings etc are 
+
+  /* Since the names of named mutexes, semaphores, file mappings etc are
   ** case-sensitive, take advantage of that by uppercasing the mutex name
   ** and using that as the shared filemapping name.
   */
   CharUpperW(zName);
   pFile->hShared = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
                                        PAGE_READWRITE, 0, sizeof(winceLock),
-                                       zName);  
+                                       zName);
 
-  /* Set a flag that indicates we're the first to create the memory so it 
+  /* Set a flag that indicates we're the first to create the memory so it
   ** must be zero-initialized */
   if (GetLastError() == ERROR_ALREADY_EXISTS){
     bInit = FALSE;
@@ -355,7 +355,7 @@ static BOOL winceCreateLock(const char *zFilename, winFile *pFile){
 
   /* If we succeeded in making the shared memory handle, map it. */
   if (pFile->hShared){
-    pFile->shared = (winceLock*)MapViewOfFile(pFile->hShared, 
+    pFile->shared = (winceLock*)MapViewOfFile(pFile->hShared,
              FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, sizeof(winceLock));
     /* If mapping failed, close the shared memory handle and erase it */
     if (!pFile->shared){
@@ -371,7 +371,7 @@ static BOOL winceCreateLock(const char *zFilename, winFile *pFile){
     pFile->hMutex = NULL;
     return FALSE;
   }
-  
+
   /* Initialize the shared memory if we're supposed to */
   if (bInit) {
     ZeroMemory(pFile->shared, sizeof(winceLock));
@@ -409,13 +409,13 @@ static void winceDestroyLock(winFile *pFile){
     CloseHandle(pFile->hShared);
 
     /* Done with the mutex */
-    winceMutexRelease(pFile->hMutex);    
+    winceMutexRelease(pFile->hMutex);
     CloseHandle(pFile->hMutex);
     pFile->hMutex = NULL;
   }
 }
 
-/* 
+/*
 ** An implementation of the LockFile() API of windows for wince
 */
 static BOOL winceLockFile(
@@ -599,7 +599,7 @@ int sqlite3WinDelete(const char *zFilename){
   if( isNT() ){
     do{
       rc = DeleteFileW(zConverted);
-    }while( rc==0 && GetFileAttributesW(zConverted)!=0xffffffff 
+    }while( rc==0 && GetFileAttributesW(zConverted)!=0xffffffff
             && cnt++ < MX_DELETION_ATTEMPTS && (Sleep(100), 1) );
   }else{
 #if OS_WINCE
@@ -956,7 +956,7 @@ int sqlite3WinTempFileName(char *zBuf){
     if( !sqlite3OsFileExists(zBuf) ) break;
   }
   TRACE2("TEMP FILENAME: %s\n", zBuf);
-  return SQLITE_OK; 
+  return SQLITE_OK;
 }
 
 /*
@@ -1155,7 +1155,7 @@ static int unlockReadLock(winFile *pFile){
 
 #ifndef SQLITE_OMIT_PAGER_PRAGMAS
 /*
-** Check that a given pathname is a directory and is writable 
+** Check that a given pathname is a directory and is writable
 **
 */
 int sqlite3WinIsDirWritable(char *zDirname){
@@ -1530,7 +1530,7 @@ void *sqlite3WinDlopen(const char *zFilename){
   }
   sqliteFree(zConverted);
   return (void*)h;
-  
+
 }
 void *sqlite3WinDlsym(void *pHandle, const char *zSymbol){
 #if OS_WINCE
@@ -1655,8 +1655,8 @@ int sqlite3_current_time = 0;
 */
 int sqlite3WinCurrentTime(double *prNow){
   FILETIME ft;
-  /* FILETIME structure is a 64-bit value representing the number of 
-     100-nanosecond intervals since January 1, 1601 (= JD 2305813.5). 
+  /* FILETIME structure is a 64-bit value representing the number of
+     100-nanosecond intervals since January 1, 1601 (= JD 2305813.5).
   */
   double now;
 #if OS_WINCE
@@ -1666,7 +1666,7 @@ int sqlite3WinCurrentTime(double *prNow){
 #else
   GetSystemTimeAsFileTime( &ft );
 #endif
-  now = ((double)ft.dwHighDateTime) * 4294967296.0; 
+  now = ((double)ft.dwHighDateTime) * 4294967296.0;
   *prNow = (now + ft.dwLowDateTime)/864000000000.0 + 2305813.5;
 #ifdef SQLITE_TEST
   if( sqlite3_current_time ){
@@ -1734,7 +1734,7 @@ ThreadData *sqlite3WinThreadSpecificData(int allocateFlag){
         TSD_COUNTER_INCR;
       }
     }
-  }else if( pTsd!=0 && allocateFlag<0 
+  }else if( pTsd!=0 && allocateFlag<0
               && memcmp(pTsd, &zeroData, sizeof(ThreadData))==0 ){
     sqlite3OsFree(pTsd);
     TlsSetValue(key, 0);

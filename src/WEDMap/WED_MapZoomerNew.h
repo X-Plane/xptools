@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,15 +32,15 @@
 	AND maintains a "windowing" system.  Thus it does scrolling and viewing at the same time.
 
 	It does this with two rectangles:
-	
+
 	- Visible bounds - what we can see.
 	- Total bounds - the entire image.
-	
+
 	It does this with two coordinate systems:
-	
+
 	- Pixels - screen drawing units.
 	- Logical - whatever units our map is in (degrees lat/lon for WED).
-	
+
 	Thus we have the pixel visible bounds, logical visible bounds, and logical total bounds.
 
 */
@@ -58,18 +58,18 @@ public:
 			double	YPixelToLat(double);
 			double	LonToXPixel(double);
 			double	LatToYPixel(double);
-			
+
 			Point2	PixelToLL(const Point2& p);
 			Point2	LLToPixel(const Point2& p);
 
 			void	PixelToLLv(Point2 * dst, const Point2 * src, int n);
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
-	
+
 			double	GetPPM(void);
 			long long	CacheKey(void) { return mCacheKey; }
-	
+
 	// This API is called by the map class to set up and modify the zoomer
-	
+
 	// Overall setup
 
 			void	SetMapLogicalBounds(			// Define the max scrollable map positions.
@@ -121,17 +121,17 @@ public:
 							double	inNorth);
 
 
-	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);	
+	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
-protected:	
+protected:
 			void	SetPixelBounds(					// Set the area on the screen the user
 							double 	inLeft,			// can see.
 							double	inBottom,
 							double	inRight,
 							double	inTop);
-							
+
 
 private:
 
@@ -145,7 +145,7 @@ private:
 	long long mCacheKey;
 protected:
 	double	mPixel2DegLat;
-	
+
 };
-	
+
 #endif

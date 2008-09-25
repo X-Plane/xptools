@@ -22,7 +22,7 @@ class SpotLightNode : public LightNode {
 	SFVec3f *attenuationField;
 	SFFloat *beamWidthField;
 	SFFloat *cutOffAngleField;
-	
+
 public:
 
 	SpotLightNode();
@@ -33,7 +33,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getAmbientIntensityField();
-	
+
 	void setAmbientIntensity(float value);
 	float getAmbientIntensity();
 
@@ -60,7 +60,7 @@ public:
 	////////////////////////////////////////////////
 	//	Radius
 	////////////////////////////////////////////////
-	
+
 	SFFloat *getRadiusField();
 
 	void setRadius(float value);
@@ -81,7 +81,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getBeamWidthField();
-	
+
 	void setBeamWidth(float value);
 	float getBeamWidth();
 
@@ -90,7 +90,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getCutOffAngleField();
-	
+
 	void setCutOffAngle(float value);
 	float getCutOffAngle();
 
@@ -116,7 +116,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

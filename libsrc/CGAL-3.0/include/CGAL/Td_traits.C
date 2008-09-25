@@ -54,7 +54,7 @@ template <class Traits,class X_curve_plus>
 const typename Td_traits<Traits,X_curve_plus>::X_curve&
 Td_traits<Traits,X_curve_plus>::get_curve_at_infinity(){
   /*
-  static typename typename Traits::X_curveTraits::X_curve 
+  static typename typename Traits::X_curveTraits::X_curve
     Td_traits<Traits,X_curve_plus>::CURVE_AT_INFINITY;
   return Td_traits<Traits,X_curve_plus>::CURVE_AT_INFINITY;
   */

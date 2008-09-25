@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -64,7 +64,7 @@ static const long    UNVALUED_LONG   = INT_MIN;
 
 static const double  UNVALUED_DOUBLE = DBL_MAX;
 
-static const sb_ForeignID UNVALUED_FOREIGN_ID( UNVALUED_STRING, 
+static const sb_ForeignID UNVALUED_FOREIGN_ID( UNVALUED_STRING,
                                                -1 );
 
 struct sb_Clrx_Imp
@@ -76,7 +76,7 @@ struct sb_Clrx_Imp
 
 
       sb_Clrx_Imp()
-         : 
+         :
          _RedComponent( UNVALUED_DOUBLE ),
          _GreenComponent( UNVALUED_DOUBLE ),
          _BlueComponent( UNVALUED_DOUBLE ),
@@ -191,7 +191,7 @@ sb_Clrx::buildSpecificSchema_(  )
 } // sb_Clrx::buildSpecificSchema_(  )
 
 
-sio_8211Schema & 
+sio_8211Schema &
 sb_Clrx::schema_()
 {
    _build_schema( _schema );

@@ -30,7 +30,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getAmbientIntensityField();
-	
+
 	void setAmbientIntensity(float value);
 	float getAmbientIntensity();
 
@@ -49,7 +49,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getRadiusField();
-	
+
 	void setRadius(float value);
 	float getRadius();
 
@@ -85,7 +85,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

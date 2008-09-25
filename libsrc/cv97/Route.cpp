@@ -10,7 +10,7 @@
 
 #include "SceneGraph.h"
 
-Route::Route(Node *eventOutNode, Field *eventOutField, Node *eventInNode, Field *eventInField) 
+Route::Route(Node *eventOutNode, Field *eventOutField, Node *eventInNode, Field *eventInField)
 {
 	setHeaderFlag(false);
 	setEventOutNode(eventOutNode);
@@ -20,7 +20,7 @@ Route::Route(Node *eventOutNode, Field *eventOutField, Node *eventInNode, Field 
 	initialize();
 }
 
-Route::Route(Route *route) 
+Route::Route(Route *route)
 {
 	setHeaderFlag(false);
 	setEventOutNode(route->getEventOutNode());
@@ -30,8 +30,8 @@ Route::Route(Route *route)
 	initialize();
 }
 
-Route::~Route() 
-{ 
+Route::~Route()
+{
 	remove();
 }
 
@@ -41,54 +41,54 @@ Route::~Route()
 
 void Route::setEventOutNode(Node *node)
 {
-	mEventOutNode = node; 
+	mEventOutNode = node;
 }
 
 void Route::setEventInNode(Node *node)
-{ 
-	mEventInNode = node; 
+{
+	mEventInNode = node;
 }
 
 Node *Route::getEventOutNode()
-{ 
-	return mEventOutNode; 
+{
+	return mEventOutNode;
 }
 
 Node *Route::getEventInNode()
-{ 
-	return mEventInNode; 
+{
+	return mEventInNode;
 }
 
 void Route::setEventOutField(Field *field)
-{ 
-	mEventOutField = field; 
+{
+	mEventOutField = field;
 }
 
 Field *Route::getEventOutField()
-{ 
-	return mEventOutField; 
+{
+	return mEventOutField;
 }
 
 void Route::setEventInField(Field *field)
-{ 
-	mEventInField = field; 
+{
+	mEventInField = field;
 }
 
 Field *Route::getEventInField()
-{ 
-	return mEventInField; 
+{
+	return mEventInField;
 }
 
 ////////////////////////////////////////////////
 //	Active
 ////////////////////////////////////////////////
 
-void Route::setIsActive(bool active) 
+void Route::setIsActive(bool active)
 {
 	mIsActive = active;
 }
 
-bool Route::isActive() 
+bool Route::isActive()
 {
 	return mIsActive;
 }
@@ -97,7 +97,7 @@ bool Route::isActive()
 //	update
 ////////////////////////////////////////////////
 
-void Route::initialize() 
+void Route::initialize()
 {
 	setIsActive(false);
 }
@@ -106,21 +106,21 @@ void Route::initialize()
 //	value
 ////////////////////////////////////////////////
 
-void Route::setValue(void *value) 
-{ 
-	mValue = value; 
+void Route::setValue(void *value)
+{
+	mValue = value;
 }
 
-void *Route::getValue() 
+void *Route::getValue()
 {
-	return mValue; 
+	return mValue;
 }
 
 ////////////////////////////////////////////////
 //	output
 ////////////////////////////////////////////////
 
-void Route::output(ostream& printStream) 
+void Route::output(ostream& printStream)
 {
 	if (!getEventOutNode() && !getEventOutField() && !getEventInNode() && !getEventInField())
 		return;
@@ -128,14 +128,14 @@ void Route::output(ostream& printStream)
 	printStream << "ROUTE ";
 	printStream << getEventOutNode()->getName() << "." << getEventOutField()->getName() << " TO ";
 	printStream << getEventInNode()->getName() << "." << getEventInField()->getName();
-	printStream << endl; 
+	printStream << endl;
 }
 
 ////////////////////////////////////////////////
 //	Route::update
 ////////////////////////////////////////////////
 
-void Route::update() 
+void Route::update()
 {
 
 	Field	*eventOutField	= getEventOutField();
@@ -152,7 +152,7 @@ void Route::update()
 		setIsActive(true);
 
 	int eventOutFieldType	= eventOutField->getType();
-	int eventInFieldType	= eventInField->getType();	
+	int eventInFieldType	= eventInField->getType();
 	switch (eventOutFieldType) {
 
 	////////////////////////////////////////////////
@@ -315,7 +315,7 @@ void Route::update()
 			}
 		}
 		break;
-*/	
+*/
 	case fieldTypeMFString :
 		{
 			MFString *outString = (MFString *)eventOutField;
@@ -440,7 +440,7 @@ void Route::update()
 		if (((BindableNode *)eventInNode)->getBindField() == eventInField) {
 			SceneGraph *sceneGraph = eventInNode->getSceneGraph();
 			if (sceneGraph)
-				sceneGraph->setBindableNode((BindableNode *)eventInNode, ((SFBool *)eventInField)->getValue());			
+				sceneGraph->setBindableNode((BindableNode *)eventInNode, ((SFBool *)eventInField)->getValue());
 		}
 	}
 

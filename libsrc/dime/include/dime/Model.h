@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Model.h
  *
  *  This source file is part of DIME.
@@ -53,7 +53,7 @@ class DIME_DLL_API dimeModel
 public:
   dimeModel(const bool usememhandler = false);
   ~dimeModel();
-  
+
   dimeModel *copy() const;
 
   bool init();
@@ -62,27 +62,27 @@ public:
 
   int countRecords() const;
 
-  bool traverseEntities(dimeCallback callback, 
+  bool traverseEntities(dimeCallback callback,
 			void *userdata = NULL,
 			bool traverseBlocksSection = false,
 			bool explodeInserts = true,
 			bool traversePolylineVertices = false);
-  
+
   const char *addReference(const char * const name, void *id);
   void *findReference(const char * const name) const;
   const char *findRefStringPtr(const char * const name) const;
   void removeReference(const char * const name);
   class dimeMemHandler *getMemHandler();
-  
+
   int getNumLayers() const;
   const class dimeLayer *getLayer(const int idx) const;
   const class dimeLayer *getLayer(const char * const layername) const;
-  const class dimeLayer *addLayer(const char * const layername, 
+  const class dimeLayer *addLayer(const char * const layername,
 				  const int16 colnum = 7,
-				  const int16 flags = 0); 
-  
+				  const int16 flags = 0);
+
   const char * getDxfVersion() const;
-  
+
   static const char *getVersionString();
   static void getVersion(int &major, int &minor);
   const char *addBlock(const char * const blockname, dimeBlock * const block);

@@ -25,19 +25,19 @@
 namespace CGAL {
 
 template <class Circulator>
-class Circulator_list : public std::list<Circulator> 
+class Circulator_list : public std::list<Circulator>
 {
 
 public:
-  Circulator_list() 
+  Circulator_list()
   {}
 
-  Circulator_list(Circulator first) 
+  Circulator_list(Circulator first)
   {
       if (first == NULL) return;
 
       Circulator current = first;
-      do 
+      do
       {
          push_back(current);
       } while (++current != first);

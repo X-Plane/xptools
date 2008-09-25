@@ -46,9 +46,9 @@ public:
 
   /*  typedef typename Traits::Bounding_box Bounding_box;
   typedef typename Traits::Boundary_type Boundary_type;
-  typedef typename Traits::Point_boundary_container 
+  typedef typename Traits::Point_boundary_container
   Point_boundary_container;
-  typedef typename Traits::X_curve_boundary_container 
+  typedef typename Traits::X_curve_boundary_container
   X_curve_boundary_container;
   */
   typedef typename Planar_map::Halfedge_handle          Halfedge_handle;
@@ -64,7 +64,7 @@ public:
   typedef typename Planar_map::Halfedge_const_iterator Halfedge_const_iterator;
   typedef typename Planar_map::Face_const_iterator      Face_const_iterator;
   typedef typename Planar_map::Locate_type              Locate_type;
-  
+
   /*
   typedef typename Base::Halfedge_handle Halfedge_handle;
   typedef typename Base::Face_handle Face_handle;
@@ -82,11 +82,11 @@ public:
   typedef Pm_point_location_base<Base> Point_location_base;
   //  typedef std::list<X_curve> X_curve_container;
   //  typedef Topological_map<_Dcel> TPM;
-  typedef typename Base::Halfedge_around_vertex_circulator 
+  typedef typename Base::Halfedge_around_vertex_circulator
   Halfedge_around_vertex_circulator;
   typedef typename Base::Holes_iterator Holes_iterator;
   typedef typename Base::Holes_const_iterator Holes_const_iterator;
-  typedef typename Base::Ccb_halfedge_const_circulator 
+  typedef typename Base::Ccb_halfedge_const_circulator
   Ccb_halfedge_const_circulator;
   typedef typename Base::Ccb_halfedge_circulator Ccb_halfedge_circulator;
   typedef typename Base::Size Size;
@@ -118,10 +118,10 @@ public:
   // workaround for MSVC6.0
   bool insert(const X_curve_iterator &, const X_curve_iterator &,
               X_monotone_curve_2 * dummy = 0)
-#endif          
+#endif
   {return true;}
 
-  /* The point location query function may updates the resulting 
+  /* The point location query function may updates the resulting
      halfedge handle and locate type as expected from the bounding box */
   bool locate(const Point_2 &, Locate_type &, Halfedge_handle &) {return true;}
 

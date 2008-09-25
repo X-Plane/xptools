@@ -84,7 +84,7 @@ public:
   }
 
   Iso_cuboidC3(const FT& min_hx, const FT& min_hy, const FT& min_hz,
-               const FT& max_hx, const FT& max_hy, const FT& max_hz, 
+               const FT& max_hx, const FT& max_hy, const FT& max_hz,
                const FT& hw)
   {
     if (hw == FT(1))
@@ -209,7 +209,7 @@ Iso_cuboidC3<R>::min_coord(int i) const
      return xmin();
   else if (i == 1)
      return ymin();
-  else 
+  else
      return zmin();
 }
 
@@ -223,7 +223,7 @@ Iso_cuboidC3<R>::max_coord(int i) const
      return xmax();
   else if (i == 1)
      return ymax();
-  else 
+  else
      return zmax();
 }
 

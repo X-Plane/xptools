@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -37,9 +37,9 @@ using namespace std;
 
 
 
-// Needed to define this else VC++ whines about no default ctor's for the 
+// Needed to define this else VC++ whines about no default ctor's for the
 // derived classes.
-sio_8211DDRField::sio_8211DDRField() 
+sio_8211DDRField::sio_8211DDRField()
   : fieldName_(""), arrayDescr_(""), formatControls_("")
 {
   fieldName_.reserve(256);         // having to reserve enough space
@@ -58,7 +58,7 @@ sio_8211DDRField::sio_8211DDRField(sio_8211DDRLeader const& leader,
                                    sio_8211Field const& field)
   : fieldControlLength_(leader.getFieldControlLength())
 {
-  
+
   dataStructCode_ = field.getData()[0];
   dataTypeCode_ = field.getData()[1];
 
@@ -76,14 +76,14 @@ sio_8211DDRField::sio_8211DDRField(sio_8211DDRLeader const& leader,
 //         copy( tmp_data.begin(), tmp_data.end(), fieldName_.begin() );
     }
 
-  
+
   if ( field.getVariableSubfield(tmp_data, pos) )
     {
       arrayDescr_.assign( &tmp_data[0], tmp_data.size() );
 //         arrayDescr_.resize( tmp_data.size() );
 //         copy( tmp_data.begin(), tmp_data.end(), arrayDescr_.begin() );
     }
-  
+
   if ( field.getVariableSubfield(tmp_data, pos) )
     {
       formatControls_.assign( &tmp_data[0], tmp_data.size() );
@@ -125,28 +125,28 @@ string const&
 sio_8211DDRField::getFormatControls() const
 {
   return formatControls_;
-}      
+}
 
-void 
-sio_8211DDRField::setDataFieldName( string const &name ) 
+void
+sio_8211DDRField::setDataFieldName( string const &name )
 {
   fieldName_ = name;
 }
 
-void 
-sio_8211DDRField::setDataStructCode( char code ) 
+void
+sio_8211DDRField::setDataStructCode( char code )
 {
   dataStructCode_ = code;
 }
 
-void 
-sio_8211DDRField::setDataTypeCode( char code ) 
+void
+sio_8211DDRField::setDataTypeCode( char code )
 {
   dataTypeCode_ = code;
 }
 
-void 
-sio_8211DDRField::setDataStructCode( sio_8211FieldFormat::data_struct_code dsc ) 
+void
+sio_8211DDRField::setDataStructCode( sio_8211FieldFormat::data_struct_code dsc )
 {
   switch ( dsc )
     {
@@ -165,8 +165,8 @@ sio_8211DDRField::setDataStructCode( sio_8211FieldFormat::data_struct_code dsc )
     }
 }
 
-void 
-sio_8211DDRField::setDataTypeCode( sio_8211FieldFormat::data_type_code dtc ) 
+void
+sio_8211DDRField::setDataTypeCode( sio_8211FieldFormat::data_type_code dtc )
 {
   switch ( dtc )
     {
@@ -193,15 +193,15 @@ sio_8211DDRField::setDataTypeCode( sio_8211FieldFormat::data_type_code dtc )
       break;
     }
 }
-            
-void 
-sio_8211DDRField::setArrayDescriptor( string const &descriptor ) 
+
+void
+sio_8211DDRField::setArrayDescriptor( string const &descriptor )
 {
   arrayDescr_.assign( descriptor );
 }
 
-void 
-sio_8211DDRField::setFormatControls( string const &control ) 
+void
+sio_8211DDRField::setFormatControls( string const &control )
 {
   formatControls_ = control;
 }

@@ -11,10 +11,10 @@
 // file          : snapping_layer.h
 // package       : Planar_map
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
-// coordinator   : 
+// coordinator   :
 //
 // ============================================================================
 
@@ -27,10 +27,10 @@
 
 #include <qobject.h>
 #include <qpopupmenu.h>
-#include <qmessagebox.h> 
+#include <qmessagebox.h>
 #include <qcursor.h>
 
-#include <CGAL/squared_distance_2.h> 
+#include <CGAL/squared_distance_2.h>
 
 template <class R>
 class Snapping_layer : public CGAL::Qt_widget_layer
@@ -52,7 +52,7 @@ public:
   Snapping_layer(const QCursor c=QCursor(Qt::crossCursor)) :
       on_first(false), cursor(c),
       source(false), target(false) {};
-  
+
   void pass_the_structure(std::list<Curve>* l, Planar_map * p) {
     curveslist = l;
     pm = p;
@@ -93,13 +93,13 @@ private:
         widget->x_real(e->x(), x);
         widget->y_real(e->y(), y);
         Point p(x, y);
-        Point closest_p;  
+        Point closest_p;
         //this point is the closest one to the mouse coordinates
         FT min_dist;
         typename std::list<Curve>::const_iterator it = curveslist->begin();
         min_dist = CGAL::squared_distance(p, (*it).source());
         closest_p = (*it).source();
-        
+
         while(it!=curveslist->end())
         {
           if (min_dist > CGAL::squared_distance(p, (*it).source())) {
@@ -116,15 +116,15 @@ private:
           }
           it++;
         }
-        
+
         RasterOp old = widget->rasterOp();	//save the initial raster mode
         widget->setRasterOp(XorROP);
         widget->lock();
-          *widget << CGAL::GREEN << CGAL::PointSize (5) 
+          *widget << CGAL::GREEN << CGAL::PointSize (5)
                   << CGAL::PointStyle (CGAL::DISC);
           *widget << closest_p;
         widget->unlock();
-        widget->setRasterOp(old);        
+        widget->setRasterOp(old);
         old_point = closest_p;
         current_v = closest_p;
         wasrepainted = false;
@@ -143,20 +143,20 @@ private:
       RasterOp old = widget->rasterOp();	//save the initial raster mode
       widget->setRasterOp(XorROP);
       widget->lock();
-      *widget << CGAL::GREEN << CGAL::PointSize (5) 
+      *widget << CGAL::GREEN << CGAL::PointSize (5)
               << CGAL::PointStyle (CGAL::DISC);
       if(!wasrepainted){
         *widget << CGAL::RED << old_curve;
         *widget << CGAL::GREEN << old_point;
       }
-      
+
       Point p(x,y);
       Point closest_p;
       FT min_dist;
       typename std::list<Curve>::const_iterator it = curveslist->begin();
       min_dist = CGAL::squared_distance(p, (*it).source());
       closest_p = (*it).source();
-      
+
       while(it!=curveslist->end())
       {
         if( (*it) == selected_curve){
@@ -173,7 +173,7 @@ private:
         }
         it++;
       }
-      
+
       if(target)
         old_curve = Curve(old_curve.source(), closest_p);
       else
@@ -184,7 +184,7 @@ private:
       widget->setRasterOp(old);
       old_point = closest_p;
     }
-  }; 
+  };
 
   void activating()
   {
@@ -193,7 +193,7 @@ private:
     on_first = false; source = false;
     target = false;
   };
-  
+
   void deactivating()
   {
     widget->setCursor(oldcursor);

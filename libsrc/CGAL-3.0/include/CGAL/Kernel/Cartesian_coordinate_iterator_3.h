@@ -31,7 +31,7 @@ CGAL_BEGIN_NAMESPACE
 
 
 template <class K>
-class Cartesian_coordinate_iterator_3 
+class Cartesian_coordinate_iterator_3
 {
 
   typedef typename K::Point_3 P;
@@ -39,7 +39,7 @@ class Cartesian_coordinate_iterator_3
   int index;
   typedef Cartesian_coordinate_iterator_3<K> Self;
 
-public: 
+public:
 
   typedef typename K::FT FT;
   typedef P Point;
@@ -51,32 +51,32 @@ public:
   typedef const value_type*               pointer;
 
   Cartesian_coordinate_iterator_3(const Point *const p = NULL,
-				  int _index = 0) 
-    : point(p), index(_index) 
+				  int _index = 0)
+    : point(p), index(_index)
   {}
 
 
-  const FT 
+  const FT
   operator*() const {
-    return point->cartesian(index); 
+    return point->cartesian(index);
   }
-  
+
   Self&  operator++() {
-    index++; 
+    index++;
     return *this;
   }
 
-  Self&  
+  Self&
   operator--() {
-    index--; 
+    index--;
     return *this;
   }
 
-  Self 
-  operator++(int) { 
+  Self
+  operator++(int) {
     Self tmp(*this);
-    ++(*this); 
-    return tmp; 
+    ++(*this);
+    return tmp;
   }
 
   Self
@@ -85,50 +85,50 @@ public:
     --(*this);
     return tmp;
   }
-  
-  Self& 
-  operator+=(difference_type i) { 
+
+  Self&
+  operator+=(difference_type i) {
     index+=i;
-    return *this; 
+    return *this;
   }
 
-  Self& 
-  operator-=(difference_type i) { 
-    index -= i; 
-    return *this; 
+  Self&
+  operator-=(difference_type i) {
+    index -= i;
+    return *this;
   }
 
-  Self 
+  Self
   operator+(difference_type i) const {
-    Self tmp=*this; 
-    return tmp += i; 
+    Self tmp=*this;
+    return tmp += i;
   }
 
   Self operator-(difference_type i) const {
-    Self tmp=*this; 
-    return tmp -= i; 
+    Self tmp=*this;
+    return tmp -= i;
   }
 
-  difference_type 
+  difference_type
   operator-(const Self& x) const {
     CGAL_kernel_assertion(point == x.point);
-    return index - x.index; 
+    return index - x.index;
   }
 
-  reference operator[](difference_type i) const { 
-    return *(*this + i); 
+  reference operator[](difference_type i) const {
+    return *(*this + i);
   }
 
   bool operator==(const Self& x) const {
-    return (point == x.point)&& (index == x.index) ; 
-  }
-  
-  bool operator!=(const Self& x) const { 
-    return ! (*this==x); 
+    return (point == x.point)&& (index == x.index) ;
   }
 
-  bool operator<(const Self& x) const 
-  { 
+  bool operator!=(const Self& x) const {
+    return ! (*this==x);
+  }
+
+  bool operator<(const Self& x) const
+  {
     return (x - *this) > 0; }
 
 };

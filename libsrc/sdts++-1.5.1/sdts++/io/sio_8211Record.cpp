@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -44,12 +44,12 @@ sio_8211Record::sio_8211Record()
 
 static
 void
-set_forward_pointers_( sio_8211Directory& dir, 
+set_forward_pointers_( sio_8211Directory& dir,
                        sio_8211FieldAreaContainer& fields )
 {
     // now reconcile the forward pointers from the directory entries
     // to their corresponding field areas
-    
+
     sio_8211FieldAreaContainer::iterator curr_fa = fields.begin();
 
     for ( sio_8211DirEntryContainer::iterator curr_dir = dir.begin();
@@ -162,7 +162,7 @@ sio_8211Record::addField( string const & tag, sio_8211Field const& field )
    sio_8211DirEntryContainer::iterator curr_dir_entry = dir_.end();
 
                                 // append to list
-   curr_dir_entry = 
+   curr_dir_entry =
      dir_.insert( curr_dir_entry, sio_8211DirEntry( getLeader_() ) );
 
                                 // note that we can use back()
@@ -171,7 +171,7 @@ sio_8211Record::addField( string const & tag, sio_8211Field const& field )
 
                                 // make sure directory entry can get to field
 
-   dir_.back().setField( &(fieldArea_.back()) ); 
+   dir_.back().setField( &(fieldArea_.back()) );
    dir_.back().setTag( tag );
 
                                 // now set the field positions and lengths
@@ -188,7 +188,7 @@ sio_8211Record::addField( string const & tag, sio_8211Field const& field )
                                 // previous directory entry's position
                                 // plus that entry's length
 
-      dir_.back().setPosition( 
+      dir_.back().setPosition(
          (*curr_dir_entry).getPosition() + (*curr_dir_entry).getFieldLength() );
    }
 
@@ -232,7 +232,7 @@ sio_8211Record::synchLeaderWithRecord_( )
 
                                 // add the directory size
 
-   length += 
+   length +=
      getDirectory().size() * ( getLeader_().getSizeOfFieldLengthField() +
                                getLeader_().getSizeOfFieldPosField() +
                                getLeader_().getSizeOfFieldTagField() );
@@ -252,7 +252,7 @@ sio_8211Record::synchLeaderWithRecord_( )
 
    getLeader_().setRecordLength( length + 1 );
 
-   getLeader_().setBaseAddrOfFieldArea( 24 + getDirectory().size() * 
+   getLeader_().setBaseAddrOfFieldArea( 24 + getDirectory().size() *
                                   ( getLeader_().getSizeOfFieldLengthField() +
                                     getLeader_().getSizeOfFieldPosField() +
                                     getLeader_().getSizeOfFieldTagField() ) + 1 );
@@ -262,7 +262,7 @@ sio_8211Record::synchLeaderWithRecord_( )
 
 
 
-ostream& 
+ostream&
 sio_8211Record::streamInsert(ostream& ostr) const
 {
   // We must cast away const as synLeaderWithRecord_() can potentially
@@ -270,7 +270,7 @@ sio_8211Record::streamInsert(ostream& ostr) const
   sio_8211Record& rec =  const_cast<sio_8211Record&>(*this);
 
   // insure that the leader is up to date with the record
-  
+
   rec.synchLeaderWithRecord_( );
 
   ostr << setfill('0');

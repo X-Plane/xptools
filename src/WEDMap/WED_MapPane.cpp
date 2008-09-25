@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -50,11 +50,11 @@
 #include "WED_UIMeasurements.h"
 #include "WED_GroupCommands.h"
 #include "IDocPrefs.h"
-char	kToolKeys[] = { 
+char	kToolKeys[] = {
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
 	'k', 't', 'h', 's',
-	'r', 'm', 'v' 
+	'r', 'm', 'v'
 };
 
 static void GetExtentAll(Bbox2& box, IResolver * resolver)
@@ -96,7 +96,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
-	
+
 	// TOOLS
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
@@ -118,7 +118,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
 	mTextTable = new GUI_TextTable(cmdr,10);
 	mTable = new GUI_Table(1);
-	
+
 	mTextTable->SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Table_Select),
@@ -127,7 +127,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
 	mTextTable->SetFont(font_UI_Small);
-	
+
 
 	mTable->SetGeometry(mInfoAdapter);
 	mTable->SetContent(mTextTable);
@@ -150,7 +150,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mToolbar->SetSticky(1,0,0,1);
 	this->PackPane(mToolbar,gui_Pack_Left);
 	mToolbar->SizeToBitmap();
-	mToolbar->AddListener(this);	
+	mToolbar->AddListener(this);
 	vector<string>	tips;
 	for (int n = 0; n < mTools.size(); ++n)
 	{
@@ -163,21 +163,21 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 		}
 		tips.push_back(tip);
 	}
-	mToolbar->SetToolTips(tips);	
-	
+	mToolbar->SetToolTips(tips);
+
 
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
 	map_scroller->SetParent(this);
 	map_scroller->Show();
 	map_scroller->SetSticky(1,1,1,1);
-	
+
 	this->PackPane(map_scroller, gui_Pack_Center);
-	
+
 	mMap->SetParent(map_scroller);
 	mMap->Show();
 	map_scroller->PositionInContentArea(mMap);
 	map_scroller->SetContent(mMap);
-	
+
 //	mMap->SetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 	mMap->SetMapLogicalBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
 
@@ -191,13 +191,13 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mMap->SetTool(mTools[0]);
 	mInfoAdapter->SetTool(mTools[0]);
 	mToolbar->SetValue(mTools.size()-1);
-	
+
 	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
 	// 1. On the commit of any operation.
 	// 2. On the undo or redo of any operation.
 	// So ... for lack of a better idea right now, we simply broker a connection between the source opf these
 	// messages (secretly it's our document's GetArchive() member) and anyone who needs it (our map).
-	
+
 	archive->AddListener(mMap);
 }
 
@@ -215,7 +215,7 @@ WED_MapPane::~WED_MapPane()
 
 	delete mTextTable;
 	delete mInfoAdapter;
-	
+
 }
 
 
@@ -264,13 +264,13 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	mMap->Refresh(); return 1;
 
 	default:		return 0;
-	}	
+	}
 }
 
 int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	Bbox2	box;
-	
+
 	switch(command) {
 	case wed_PickOverlay:																	return 1;
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
@@ -284,13 +284,13 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
 	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
 	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
-	
+
 	case wed_ZoomWorld:		return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); return !box.is_empty()  && !box.is_null();
 	case wed_ZoomSelection:	GetExtentSel(box, mResolver); return !box.is_empty()  && !box.is_null();
-	
+
 	default:		return 0;
-	}	
+	}
 	return 0;
 }
 
@@ -303,7 +303,7 @@ void	WED_MapPane::ReceiveMessage(
 	WED_MapToolNew * t = NULL;
 	if (i >= 0 && i < mTools.size())
 		t = mTools[i];
-	mMap->SetTool(t);		
+	mMap->SetTool(t);
 	mInfoAdapter->SetTool(t);
 }
 
@@ -315,7 +315,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 	mStructureLayer->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4) * 0.25f);
 	mStructureLayer->SetRealLinesShowing(	 prefs->ReadIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0) != 0);
 	mStructureLayer->SetVerticesShowing(	 prefs->ReadIntPref("map/vertices_vis",	 mStructureLayer->GetVerticesShowing() ? 1 : 0) != 0);
-	
+
 	double w,s,e,n;
 	mMap->GetMapVisibleBounds(w,s,e,n);
 	mMap->ZoomShowArea(
@@ -339,7 +339,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 			key += inf.prop_name;
 			string v;
 			string::size_type s, e;
-			
+
 			v = prefs->ReadStringPref(key.c_str(),string());
 			if (!v.empty())
 			{
@@ -352,8 +352,8 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 					break;
 				case prop_Double:
 					val.double_val = atoi(v.c_str());
-					break;			
-				case prop_String:	
+					break;
+				case prop_String:
 				case prop_FilePath:
 					val.string_val = v;
 					break;
@@ -364,13 +364,13 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 						val.set_val.insert(atoi(v.c_str() + s));
 						if (e != v.npos)
 							s = e + 1;
-					} while (e != v.npos);					
+					} while (e != v.npos);
 					break;
 				}
 				mTools[t]->SetNthProperty(p,val);
 			}
 		}
-	}	
+	}
 }
 
 void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
@@ -415,8 +415,8 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 			case prop_Double:
 				sprintf(buf,"%lf",val.double_val);
 				v = buf;
-				break;			
-			case prop_String:	
+				break;
+			case prop_String:
 			case prop_FilePath:
 				v = val.string_val;
 				break;
@@ -429,9 +429,9 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 				}
 				break;
 			}
-			
+
 			prefs->WriteStringPref(key.c_str(),v);
 		}
-	}	
+	}
 }
 

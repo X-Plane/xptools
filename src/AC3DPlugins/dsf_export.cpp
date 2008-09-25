@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -55,7 +55,7 @@ void AC3D_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 	ACObject * new_obj = new_object(OBJECT_NORMAL);
 	object_set_name(new_obj, (char *) inPartialPath);
-	terrain_layers.push_back(new_obj);		
+	terrain_layers.push_back(new_obj);
 }
 
 void AC3D_AcceptObjectDef(const char * inPartialPath, void * inRef)
@@ -78,7 +78,7 @@ void AC3D_AcceptProperty(const char * inProp, const char * inValue, void * inRef
 
 void AC3D_BeginPatch(
 				unsigned int	inTerrainType,
-				double 			inNearLOD, 
+				double 			inNearLOD,
 				double 			inFarLOD,
 				unsigned char	inFlags,
 				int				inCoordDepth,
@@ -210,26 +210,26 @@ void AC3D_EndPolygon(
 
 
 static DSFCallbacks_t ac3d_callbacks = {
- AC3D_NextPass, 
- AC3D_AcceptTerrainDef, 
+ AC3D_NextPass,
+ AC3D_AcceptTerrainDef,
  AC3D_AcceptObjectDef,
- AC3D_AcceptPolygonDef, 
- AC3D_AcceptNetworkDef, 
- AC3D_AcceptProperty, 
- AC3D_BeginPatch, 
- AC3D_BeginPrimitive, 
- AC3D_AddPatchVertex, 
- AC3D_EndPrimitive, 
- AC3D_EndPatch, 
- AC3D_AddObject, 
- AC3D_BeginSegment, 
- AC3D_AddSegmentShapePoint, 
- AC3D_EndSegment, 
- AC3D_BeginPolygon, 
- AC3D_BeginPolygonWinding, 
- AC3D_AddPolygonPoint, 
- AC3D_EndPolygonWinding, 
- AC3D_EndPolygon 
+ AC3D_AcceptPolygonDef,
+ AC3D_AcceptNetworkDef,
+ AC3D_AcceptProperty,
+ AC3D_BeginPatch,
+ AC3D_BeginPrimitive,
+ AC3D_AddPatchVertex,
+ AC3D_EndPrimitive,
+ AC3D_EndPatch,
+ AC3D_AddObject,
+ AC3D_BeginSegment,
+ AC3D_AddSegmentShapePoint,
+ AC3D_EndSegment,
+ AC3D_BeginPolygon,
+ AC3D_BeginPolygonWinding,
+ AC3D_AddPolygonPoint,
+ AC3D_EndPolygonWinding,
+ AC3D_EndPolygon
 };
 
 int 		do_dsf_save(char * fname, ACObject * obj)
@@ -240,29 +240,29 @@ int 		do_dsf_save(char * fname, ACObject * obj)
 ACObject *	do_dsf_load(char *filename)
 {
 	const int passes[] = { dsf_CmdProps + dsf_CmdDefs, dsf_CmdAll - dsf_CmdProps - dsf_CmdDefs, 0 };
-	
+
 	int n;
 	int err;
-	
+
     string	fname(filename);
-    string::size_type p = fname.find_last_of("\\/");	
+    string::size_type p = fname.find_last_of("\\/");
     string justName = (p == fname.npos) ? fname : fname.substr(p+1);
     string justPath = fname.substr(0,p+1);
 
-    ACObject * group = new_object(OBJECT_GROUP);	
+    ACObject * group = new_object(OBJECT_GROUP);
     object_set_name(group, (char*) justName.c_str());
 	terrain_layers.clear();
 	tri_count = 0;
 
 	err = DSFReadFile(filename, &ac3d_callbacks, passes, NULL);
 	if (err != 0) printf("Got error: %d\n", err);
-	
+
 	for (n = 0; n < terrain_layers.size(); ++n)
 		object_add_child(group, terrain_layers[n]);
 
 	object_calc_normals_force(group);
 
-	printf("Imported %d tris.\n", tri_count);	
+	printf("Imported %d tris.\n", tri_count);
 
 	terrain_layers.clear();
 	tri_count = 0;

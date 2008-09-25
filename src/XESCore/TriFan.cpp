@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -75,11 +75,11 @@ void		TriFanBuilder::CalcFans(void)
 		{
 			fan->circular = circular;
 			fan->self = queue.insert(TriFanQueue::value_type(fan->faces.size(), fan));
-		}		
+		}
 	}
-#if DEV	
+#if DEV
 	Validate();
-#endif	
+#endif
 }
 
 TriFan_t *		TriFanBuilder::GetNextFan(void)
@@ -89,8 +89,8 @@ TriFan_t *		TriFanBuilder::GetNextFan(void)
 	--i;
 	if (i->first == 1) return NULL;
 #if DEV
-	Validate();	
-#endif		
+	Validate();
+#endif
 	TriFan_t *	best = i->second;
 	queue.erase(i);
 	for (list<CDT::Face_handle>::iterator f = best->faces.begin(); f != best->faces.end(); ++f)
@@ -104,8 +104,8 @@ TriFan_t *		TriFanBuilder::GetNextFan(void)
 		index.erase(range.first, range.second);
 	}
 #if DEV
-	Validate();	
-#endif	
+	Validate();
+#endif
 	return best;
 }
 
@@ -116,7 +116,7 @@ void			TriFanBuilder::DoneWithFan(TriFan_t * inFan)
 #if DEV
 		if (!(*f)->info().flag)
 			printf("ERROR - this face was already used once.\n");
-#endif			
+#endif
 		(*f)->info().flag = false;
 	}
 	delete inFan;
@@ -129,16 +129,16 @@ CDT::Face_handle 	TriFanBuilder::GetNextRemainingTriangle(void)
 #if DEV
 	if (f->faces.size() != 1)
 		printf("ASSERT FAILED, REMAINING TRI CALLED ON A TRI FAN!!\n");
-#endif	
+#endif
 	queue.erase(queue.begin());
 	CDT::Face_handle	ff = f->faces.front();
 	delete f;
 #if DEV
 	if (!ff->info().flag)
 		printf("ERROR - this face was already used once.\n");
-#endif		
+#endif
 	ff->info().flag = false;
-	
+
 	// OOPS!  We have to nuke all remaining triangles from the queue!!
 	for (TriFanQueue::iterator n = queue.begin(); n != queue.end(); )
 	{
@@ -149,7 +149,7 @@ CDT::Face_handle 	TriFanBuilder::GetNextRemainingTriangle(void)
 			queue.erase(kill);
 		} else
 			++n;
-	}	
+	}
 	return ff;
 }
 
@@ -158,7 +158,7 @@ int			TriFanBuilder::GetNextPrimitive(list<CDT::Vertex_handle>& out_handles)
 	out_handles.clear();
 	GetNextTriFan(out_handles);
 	if(!out_handles.empty())	return dsf_TriFan;
-	
+
 	GetRemainingTriangles(out_handles);
 								return dsf_Tri;
 }
@@ -176,7 +176,7 @@ void		TriFanBuilder::GetNextTriFan(list<CDT::Vertex_handle>& out_handles)
 		for (list<CDT::Face_handle>::iterator nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
 		{
 			avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
-			out_handles.push_back(avert);				
+			out_handles.push_back(avert);
 		}
 		DoneWithFan(fan);
 	}
@@ -189,7 +189,7 @@ void		TriFanBuilder::GetRemainingTriangles(list<CDT::Vertex_handle>& out_handles
 	while(1)
 	{
 		f = GetNextRemainingTriangle();
-		if(f == NULL) 
+		if(f == NULL)
 			break;
 		for (int v = 2; v >= 0; --v)
 		{
@@ -207,10 +207,10 @@ void TriFanBuilder::PullFaceFromFan(CDT::Face_handle f, TriFan_t * victim)
 		printf("ERROR: TRIANGLE NOT PRESENT IN FAN.\n");
 		return;
 	}
-#endif	
+#endif
 	// Victim is CERTAINLY going to change valence, pull him now!!
 	queue.erase(victim->self);
-	
+
 	// CASE 1 - circular tri fan - rotate it around to be continuous and pop out the one tri
 	if (victim->circular)
 	{
@@ -220,21 +220,21 @@ void TriFanBuilder::PullFaceFromFan(CDT::Face_handle f, TriFan_t * victim)
 			victim->faces.pop_back();
 		}
 		victim->faces.pop_back();
-	} else 
+	} else
 	// CASE 2 - tri is in front
 	if (victim->faces.front() == f)
 	{
 		victim->faces.pop_front();
 	} else
 	// CASE 3 - tri is on the back
-	if (victim->faces.back() == f) 
+	if (victim->faces.back() == f)
 	{
 		victim->faces.pop_back();
 	} else {
 		list<CDT::Face_handle>::iterator i = find(victim->faces.begin(), victim->faces.end(), f);
-#if !DEV		
+#if !DEV
 		if (i == victim->faces.end()) return;
-#endif		
+#endif
 		TriFan_t *	new_fan = new TriFan_t;
 		new_fan->circular = false;
 		new_fan->center = victim->center;
@@ -242,7 +242,7 @@ void TriFanBuilder::PullFaceFromFan(CDT::Face_handle f, TriFan_t * victim)
 		++i;
 		victim->faces.erase(victim->faces.begin(), i);
 		new_fan->self = queue.insert(TriFanQueue::value_type(new_fan->faces.size(), new_fan));
-		
+
 		// This is a huge pain, we have to migrate our index. :-(
 		for (list<CDT::Face_handle>::iterator m = new_fan->faces.begin(); m != new_fan->faces.end(); ++m)
 		{
@@ -277,13 +277,13 @@ void				TriFanBuilder::Validate(void)
 		for (list<CDT::Face_handle>::iterator l = q->second->faces.begin(); l != q->second->faces.end(); ++l)
 			tris.insert(*l);
 	}
-	
+
 	for (TriFanTable::iterator tr = index.begin(); tr != index.end(); ++tr)
 	{
 		if (find(tr->second->faces.begin(), tr->second->faces.end(), tr->first) == tr->second->faces.end())
 			printf("VALIDATION FAILED: tri index table references a fan that is AWOL.\n");
 	}
-	
+
 	for (set<TriFan_t *>::iterator fan = fans.begin(); fan != fans.end(); ++fan)
 	{
 		for (list<CDT::Face_handle>::iterator f = (*fan)->faces.begin(); f != (*fan)->faces.end(); ++f)
@@ -297,5 +297,5 @@ void				TriFanBuilder::Validate(void)
 			if (!found)
 				printf("VALIDATION FAILED: tri fan's tri is not in the index!\n");
 		}
-	}	
+	}
 }

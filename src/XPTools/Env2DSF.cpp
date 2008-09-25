@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,15 +27,15 @@
 #include "EnvDefs.h"
 
 /*
-	NOT DONE YET: 
+	NOT DONE YET:
 	Water behind custom land use textures
 	Randomizing land use textures start offset
-	Handling land uses with more than 1 rep (e.g. not just a 1x1 square)	
+	Handling land uses with more than 1 rep (e.g. not just a 1x1 square)
 	Handling projected land use like water
 	Building tri strips and other optimizations in mesh
-	
+
 	handling default objects!
-	
+
 */
 
 int	kObjectGranularity	= 10;								// New object every 10 meters
@@ -58,7 +58,7 @@ const	char *	kCompatibilityProtoypeNames[] = {
 	"XP6SmokeStacks",
 	0
 };
-	
+
 
 string	TerrainDefFromLandUse(int inLanduse)
 {
@@ -162,8 +162,8 @@ struct	NetworkSeg_t {
 	vector<unsigned int>		shapeCurve;
 };
 
-void	AccumSegment(	float lon1, float lat1, 
-						float lon2, float lat2, int kind,	
+void	AccumSegment(	float lon1, float lat1,
+						float lon2, float lat2, int kind,
 						vector<NetworkNode_t>&		nodes,
 						map<float, int>&			nodeIndex,
 						vector<NetworkSeg_t>&		segments);
@@ -185,10 +185,10 @@ void	Env2DSF(const char * filename)
 	/********************************************************************
 	 * COLLECT DEFINITIONS NEEDED FOR THIS ENV FILE
 	 ********************************************************************/
-	 
+
 	// There are no 'built in' definitions in a DSF file, so we must reference
 	// a library of definitions that provide compatibility with built-in OBJ6
-	// entities.  We also may have to wrap some OBJ6 concepts (like custom terrain 
+	// entities.  We also may have to wrap some OBJ6 concepts (like custom terrain
 	// types and land uses) in DSF definitions.  This code goes through all of
 	// the definitions used in this file and builds up definition lists and
 	// indices for fast output.
@@ -200,11 +200,11 @@ void	Env2DSF(const char * filename)
 		map<short, int>		landUseToTerrain;	// An index from land use to def index
 		map<string, int>	customTexToTerrain;	// An idnex from custom texture to def index
 		vector<string>		terrainDefs;
-		
+
 	for (n = 0; n < gVertices.size(); ++n)
 	if (!gVertices[n].custom)
 		neededLandUses.insert(gVertices[n].landUse);
-	
+
 	n = 0;
 	for (set<short>::iterator lu = neededLandUses.begin();
 		lu != neededLandUses.end(); ++lu, ++n)
@@ -212,7 +212,7 @@ void	Env2DSF(const char * filename)
 		terrainDefs.push_back(TerrainDefFromLandUse(*lu));
 		landUseToTerrain.insert(map<short, int>::value_type(*lu, n));
 	}
-	
+
 	n = neededLandUses.size();
 	for (vector<string>::iterator tex = gTextures.begin();
 		tex != gTextures.end(); ++tex, ++n)
@@ -220,19 +220,19 @@ void	Env2DSF(const char * filename)
 		terrainDefs.push_back(TerrainDefFromCustex(*tex));
 		customTexToTerrain.insert(map<string, int>::value_type(*tex, n));
 	}
-	
+
 	// BUILD SET OF OBJECT DEFINITIONS FOR CUSTOM OBJECTS
-	
+
 		set<string>			customObjects;			// All custom objects we use
 		map<string, int>	customObjectIndex;		// An index from custom object to def index
 		vector<string>		customObjectDefinitions;// Our custom object defs we need
-		
+
 	for (n = 0; n < gObjects.size(); ++n)
 	if (gObjects[n].kind == kObstacleTypeCustom)
 		customObjects.insert(gObjects[n].name);
 	else
 		customObjects.insert(DefaultObjFromTypeAndHeight(gObjects[n].kind, gObjects[n].elevation));
-	
+
 	n = 0;
 	for(set<string>::iterator obj = customObjects.begin();
 		obj != customObjects.end(); ++obj, ++n)
@@ -240,21 +240,21 @@ void	Env2DSF(const char * filename)
 		customObjectDefinitions.push_back(*obj);
 		customObjectIndex.insert(map<string,int>::value_type(*obj, n));
 	}
-		
+
 	// BUILD A DEFAULT SET OF PROTOTYPES FOR DEFAULT OBJECTS
-	
+
 		vector<string>		prototypeDefs;
-	
+
 	// BUILD A SET OF DEFAULT PROTOTYPES FOR ROADS, ETC.
-	
+
 		vector<string>		networkDefinitions;
-	
+
 	networkDefinitions.push_back(kCompatibilityNetworkName);
 
 	/********************************************************************
 	 * EXPAND THE TERRAIN MESH
 	 ********************************************************************/
-	
+
 	// We really need to expand the terrain mesh...some interpretation is done
 	// based on combinations of nearby land use.  Best to work this out once.
 
@@ -265,7 +265,7 @@ void	Env2DSF(const char * filename)
 		gMeshXYZ[x][y][1] = gVertices[x+y*151].latitude;
 		gMeshXYZ[x][y][2] = gVertices[x+y*151].elevation;
 	}
-	
+
 	for (y = 0; y < 200; ++y)
 	for (x = 0; x < 150; ++x)
 	{
@@ -274,8 +274,8 @@ void	Env2DSF(const char * filename)
 		gDefn[x][y][2] = -1;
 		gDefn[x][y][3] = -1;
 
-		n = x+y*151;		
-		
+		n = x+y*151;
+
 		if (gVertices[n].custom)
 		{
 			gDefn[x][y][0] = customTexToTerrain[gTextures[gVertices[n].landUse]];
@@ -313,10 +313,10 @@ void	Env2DSF(const char * filename)
 					{
 						int layer = 0;
 						while (gDefn[x][y][layer] != -1)	++layer;
-						
+
 						gDefn[x][y][layer] = landUseToTerrain[*lu];
 						gMeshMulti[x][y][layer] = (layer != 0);
-						
+
 						gMeshST1[x][y][layer][0][0] = 0.0;
 						gMeshST1[x][y][layer][1][0] = 0.0;
 						gMeshST1[x][y][layer][2][0] = 1.0;
@@ -325,7 +325,7 @@ void	Env2DSF(const char * filename)
 						gMeshST1[x][y][layer][1][1] = 1.0;
 						gMeshST1[x][y][layer][2][1] = 1.0;
 						gMeshST1[x][y][layer][3][1] = 0.0;
-						
+
 						if (layer != 0)
 						{
 							gMeshST2[x][y][layer][0][0] = kLayerMasks[mask][0] / 4.0 + 0.0;
@@ -346,15 +346,15 @@ void	Env2DSF(const char * filename)
 	/********************************************************************
 	 * RECONNECT THE NETWORKS!
 	 ********************************************************************/
-	
+
 	// We need to go through and rebuild the networks.  Fortunately there are no unvertexed crossings
 	// in the network data, thanks to its original source (topology-level 2 VMAP0 VPF).
-	
+
 	// Make a node for every vertex.
 	// Make a segment for every line.
 	// For every vertex with valence 2 and equal types, consolidate the lines with a shape node
 	// (When we build this thing we'll skip valence 0 nodes!)
-	
+
 		vector<NetworkNode_t>		nodes;
 		map<float, int>				nodeIndex;	// Maps coords to nodes for fast building
 		vector<NetworkSeg_t>		segments;
@@ -363,28 +363,28 @@ void	Env2DSF(const char * filename)
 	if (!gRoads[n-1].term)
 		AccumSegment(gRoads[n-1].longitude, gRoads[n-1].latitude,
 						 gRoads[n  ].longitude, gRoads[n  ].latitude,
-						 kNetworkTypeRoad, 
+						 kNetworkTypeRoad,
 						 nodes,
 						 nodeIndex,
-						 segments);						 
+						 segments);
 
 	for (n = 1; n < gTrains.size(); ++n)
 	if (!gTrains[n-1].term)
 		AccumSegment(gTrains[n-1].longitude, gTrains[n-1].latitude,
 						 gTrains[n  ].longitude, gTrains[n  ].latitude,
-						 kNetworkTypeTrain, 
+						 kNetworkTypeTrain,
 						 nodes,
 						 nodeIndex,
-						 segments);						 
+						 segments);
 
 	for (n = 1; n < gTrails.size(); ++n)
 	if (!gTrails[n-1].term)
 		AccumSegment(gTrails[n-1].longitude, gTrails[n-1].latitude,
 						 gTrails[n  ].longitude, gTrails[n  ].latitude,
-						 kNetworkTypeTrail, 
+						 kNetworkTypeTrail,
 						 nodes,
 						 nodeIndex,
-						 segments);						 
+						 segments);
 
 	// Recursively merge any adjacent segments of same type at a 2-valence vertex
 	// down into a single segment with a shape point.
@@ -408,7 +408,7 @@ void	Env2DSF(const char * filename)
 	 ********************************************************************/
 
 	// Now we go through and collect all points in this file, replacing the points with index numbers.
-	
+
 	// BUILD VERTEX INDICES FOR MESH
 
 		vector<int>			points2d, points3d;
@@ -428,31 +428,31 @@ void	Env2DSF(const char * filename)
 	for (n = 0; n < 4; ++n)
 	{
 		if (gDefn[x][y][layer] != -1)
-		{		
+		{
 			gST1Index[x][y][layer][n] = AccumPointST(gMeshST1[x][y][layer][n][0], gMeshST1[x][y][layer][n][1], pointsST, pIndexST);
 			if (gMeshMulti[x][y][layer])
 			{
 				gST2Index[x][y][layer][n] = AccumPointST(gMeshST2[x][y][layer][n][0], gMeshST2[x][y][layer][n][1], pointsST, pIndexST);
 			}
 		}
-	}	
+	}
 
 	// BUILD VERTEX INDICES FOR OBJECTS
-	
+
 	for (n = 0; n < gObjects.size(); ++n)
 	{
 		objLocationIndex.push_back(AccumPoint2(gObjects[n].longitude, gObjects[n].latitude, points2d, pIndex2d));
 	}
-	
+
 	// BUILD VERTEX INDICES FOR PATHS
-	
+
 	for (n = 0; n < nodes.size(); ++n)
 	if (!nodes[n].segs.empty())
 	{
 		nodes[n].index = AccumPoint2(nodes[n].lon, nodes[n].lat, points2d, pIndex2d);
 		nodes[n].index3 = AccumPoint3(nodes[n].lon, nodes[n].lat, 0.0, points3d, pIndex3d);
 	}
-		
+
 	for (n = 0; n < segments.size(); ++n)
 	if (!segments[n].erased)
 	for (x = 0; x < segments[n].shapeLat.size(); ++x)
@@ -468,15 +468,15 @@ void	Env2DSF(const char * filename)
 		DSFFileWriter	dsf(filename);
 
 	// WRITE OUT DEFINITIONS
-	
+
 	dsf.AddDefinitions(terrainDefs, customObjectDefinitions, prototypeDefs, networkDefinitions);
-	
+
 	// WRITE OUT GEOMETRY
-	
-	dsf.AddGeometry(points2d.size() / 2, &*points2d.begin(), 
+
+	dsf.AddGeometry(points2d.size() / 2, &*points2d.begin(),
 					points3d.size() / 3, &*points3d.begin(),
 					pointsST.size() / 2, &*pointsST.begin());
-		
+
 	// WRITE OUT TERRAIN MESH
 
 
@@ -491,9 +491,9 @@ void	Env2DSF(const char * filename)
 		if (gDefn[x+dx][y+dy][layer] == landuse)
 		{
 			dsf.AddGeometryCmd(
-						gDefn[x+dx][y+dy][layer], 
-						(layer == 0) ? dsf_Flag_ZBuffer_Write : dsf_Flag_ZBuffer_Overlay, 
-						(layer == 0) ? dsf_Flag_Hardness_Solid : dsf_Flag_Hardness_Overlay, 
+						gDefn[x+dx][y+dy][layer],
+						(layer == 0) ? dsf_Flag_ZBuffer_Write : dsf_Flag_ZBuffer_Overlay,
+						(layer == 0) ? dsf_Flag_Hardness_Solid : dsf_Flag_Hardness_Overlay,
 						gMeshMulti[x+dx][y+dy][layer] ? 3 : 2);
 			dsf.AddGeometryPolygon(dsf_Geo_Quad);
 			for(n = 0; n < 4; ++n)
@@ -502,7 +502,7 @@ void	Env2DSF(const char * filename)
 					dsf.AddGeometryVertexMasked(gMeshIndex[x+dx+kQuadDeltaX[n]][y+dy+kQuadDeltaY[n]],
 											gST1Index[x+dx][y+dy][layer][n],
 											gST2Index[x+dy][y+dy][layer][n]);
-				else		
+				else
 					dsf.AddGeometryVertexTextured(gMeshIndex[x+dx+kQuadDeltaX[n]][y+dy+kQuadDeltaY[n]],
 											gST1Index[x+dx][y+dy][layer][n]);
 			}
@@ -520,7 +520,7 @@ void	Env2DSF(const char * filename)
 		nodePoints.push_back(nodes[n].index);
 		usedNodeIndex.insert(map<int,int>::value_type(n, nodePoints.size()-1));
 	}
-	
+
 	dsf.AddNetworkJunctionTableCmd(0, &*nodePoints.begin(), &*nodePoints.end());
 
 	for (n = 0; n < segments.size(); ++n)
@@ -544,7 +544,7 @@ void	Env2DSF(const char * filename)
 		dsf.AddObjectCmd(customObjectIndex[objName],
 						objLocationIndex[n],
 						gObjects[n].elevation);
-	} 
+	}
 }
 
 
@@ -585,8 +585,8 @@ int	AccumPointST(float s, float t, vector<short>& ioPts, map<INDEX_t, int>& ioIn
 	return (ioPts.size()) / 2 - 1;
 }
 
-void	AccumSegment(	float lon1, float lat1, 
-						float lon2, float lat2, int kind,	
+void	AccumSegment(	float lon1, float lat1,
+						float lon2, float lat2, int kind,
 						vector<NetworkNode_t>&		nodes,
 						map<float, int>&			nodeIndex,
 						vector<NetworkSeg_t>&		segments)
@@ -599,7 +599,7 @@ void	AccumSegment(	float lon1, float lat1,
 
 	float	pindex1 = lon1 + lat1 * 360.0;
 	float	pindex2 = lon2 + lat2 * 360.0;
-	
+
 	map<float, int>::iterator iter1 = nodeIndex.find(pindex1);
 	map<float, int>::iterator iter2 = nodeIndex.find(pindex2);
 	if (iter1 == nodeIndex.end())
@@ -623,7 +623,7 @@ void	AccumSegment(	float lon1, float lat1,
 		seg.end = iter1->second;
 
 	// Create a new segment
-	
+
 	seg.kind = kind;
 	seg.erased = false;
 	segments.push_back(seg);
@@ -632,7 +632,7 @@ void	AccumSegment(	float lon1, float lat1,
 
 	nodes[seg.start].segs.insert(segments.size() - 1);
 	nodes[seg.end].segs.insert(segments.size() - 1);
-}		
+}
 
 bool	CanMerge(		int nodeNum,
 						int& s1, int& s2,
@@ -641,21 +641,21 @@ bool	CanMerge(		int nodeNum,
 {
 	if (nodes[nodeNum].segs.size() != 2) return false;
 	set<int>::iterator i = nodes[nodeNum].segs.begin();
-	
+
 	s1 = *i;
 	++i;
 	s2 = *i;
-	
+
 	return segments[s1].kind == segments[s2].kind;
-}						
+}
 
 void	MergeSegs(		int inSeg1, int inSeg2,
 						vector<NetworkNode_t>&		nodes,
 						vector<NetworkSeg_t>&		segments)
-{		
+{
 	NetworkSeg_t&	seg1 = segments[inSeg1];
 	NetworkSeg_t&	seg2 = segments[inSeg2];
-	
+
 	// One or both of our segments may be 'backward' in orientation!
 	if (seg2.start != seg1.end)
 	{
@@ -666,17 +666,17 @@ void	MergeSegs(		int inSeg1, int inSeg2,
 			reverse(seg2.shapeLat.begin(), seg2.shapeLat.end());
 			reverse(seg2.shapeLon.begin(), seg2.shapeLon.end());
 		}
-		
-		
+
+
 		if (seg1.start == seg2.start && seg1.end != seg2.start)
 		{
 			// flip seg1
 			swap(seg1.start, seg1.end);
 			reverse(seg1.shapeLat.begin(), seg1.shapeLat.end());
 			reverse(seg1.shapeLon.begin(), seg1.shapeLon.end());
-		}		
+		}
 	}
-	
+
 	// Copy the shape geometry from 2 to 1, including the shared node.
 	seg1.shapeLon.push_back(nodes[seg1.end].lon);
 	seg1.shapeLat.push_back(nodes[seg1.end].lat);

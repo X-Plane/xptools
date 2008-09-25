@@ -52,13 +52,13 @@ public:
 
     PointH2() {}
 
-    PointH2(const Origin &)  
+    PointH2(const Origin &)
        : base ( rep( RT(0), RT(0), RT(1))) { }
 
-    PointH2(const PointH2<R> & p) 
+    PointH2(const PointH2<R> & p)
        : base (p) { }
 
-    PointH2(const Vector_2& v) 
+    PointH2(const Vector_2& v)
        : base (v) { }
 
     PointH2(const RT& hx, const RT& hy )
@@ -67,9 +67,9 @@ public:
     PointH2(const RT& hx, const RT& hy, const RT& hw)
     {
       if ( hw >= RT(0)   )
-        initialize_with( rep( hx, hy, hw)); 
+        initialize_with( rep( hx, hy, hw));
       else
-        initialize_with( rep(-hx,-hy,-hw)); 
+        initialize_with( rep(-hx,-hy,-hw));
     }
 
     bool    operator==( const PointH2<R>& p) const;
@@ -86,12 +86,12 @@ public:
     FT      operator[](int i)  const;
     const RT & homogeneous(int i) const;
 
-  Cartesian_const_iterator cartesian_begin() const 
+  Cartesian_const_iterator cartesian_begin() const
   {
     return Cartesian_const_iterator(static_cast<const Point_2*>(this), 0);
   }
 
-  Cartesian_const_iterator cartesian_end() const 
+  Cartesian_const_iterator cartesian_end() const
   {
     return Cartesian_const_iterator(static_cast<const Point_2*>(this), 2);
   }

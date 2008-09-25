@@ -175,7 +175,7 @@ public:
                 _result = SEGMENT;
                 return _result;
             }
-        } 
+        }
         }
     default:
         CGAL_kernel_assertion(false); // should not be reached:
@@ -358,7 +358,7 @@ Ray_2_Segment_2_pair<K>::intersection_type() const
                 _result = SEGMENT;
                 return _result;
             }
-        } 
+        }
         }
     default:
         CGAL_kernel_assertion(false); // should not be reached:
@@ -398,7 +398,7 @@ Ray_2_Segment_2_pair<K>::intersection(typename K::Segment_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Ray_2 &ray, 
+intersection(const typename CGAL_WRAP(K)::Ray_2 &ray,
 	     const typename CGAL_WRAP(K)::Segment_2&seg,
 	     const K&)
 {
@@ -425,7 +425,7 @@ intersection(const typename CGAL_WRAP(K)::Ray_2 &ray,
 template <class K>
 Object
 intersection(const typename CGAL_WRAP(K)::Segment_2 &seg,
-	     const typename CGAL_WRAP(K)::Ray_2 &ray, 
+	     const typename CGAL_WRAP(K)::Ray_2 &ray,
 	     const K& k)
 {
   return CGALi::intersection(ray, seg, k);

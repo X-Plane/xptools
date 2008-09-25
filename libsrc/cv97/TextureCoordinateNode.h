@@ -15,7 +15,7 @@
 #include "Node.h"
 
 class TextureCoordinateNode : public Node {
-	
+
 	MFVec2f *pointField;
 
 public:
@@ -24,7 +24,7 @@ public:
 	~TextureCoordinateNode();
 
 	////////////////////////////////////////////////
-	//	point 
+	//	point
 	////////////////////////////////////////////////
 
 	MFVec2f *getPointField();
@@ -36,7 +36,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

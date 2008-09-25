@@ -15,7 +15,7 @@
 #include "SFTime.h"
 
 class MFTime : public MField {
-	
+
 	static	int	mInit;
 
 public:

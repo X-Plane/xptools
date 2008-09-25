@@ -61,13 +61,13 @@ static char *time_progress[] =
 	"FOUND"
 } ;
 
-
+
 /*
  * timestamp() - return timestamp on a file, if present
  */
 
 void
-timestamp( 
+timestamp(
 	char	*target,
 	time_t	*time )
 {
@@ -76,7 +76,7 @@ timestamp(
 	string buf[1];
 
 # ifdef DOWNSHIFT_PATHS
-        string path; 
+        string path;
 	char *p;
 
         string_copy( &path, target );
@@ -89,7 +89,7 @@ timestamp(
         /* On NT, we must use backslashes or the file won't be found. */
         if (*p == '/')
             *p = PATH_DELIM;
-#  endif 
+#  endif
     }
 	while( *p++ );
 
@@ -186,7 +186,7 @@ timestamp(
 }
 
 static void
-time_enter( 
+time_enter(
 	void	*closure,
 	char	*target,
 	int	found,

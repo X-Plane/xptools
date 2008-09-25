@@ -55,7 +55,7 @@ sc_Subfield::sc_Subfield(sc_Subfield const& right)
 
 
 sc_Subfield::~sc_Subfield()
-{ 
+{
 }
 
 
@@ -305,16 +305,16 @@ sc_Subfield::getInt( int & val ) const
    unsigned long   ul;
    double d;
 
-   if ( getValue().getLong( l ) ) 
+   if ( getValue().getLong( l ) )
    {
       val = static_cast<int>(l);
-      
+
       return true;
    }
-   else if ( getValue().getUnsignedLong( ul ) ) 
+   else if ( getValue().getUnsignedLong( ul ) )
    {
       val = static_cast<int>(ul);
-      
+
       return true;
    }
    else if ( getValue().getDouble( d ) )
@@ -337,14 +337,14 @@ sc_Subfield::getFloat( float & val ) const
    unsigned long   ul;
    double d;
 
-   if ( getValue().getDouble( d ) ) 
+   if ( getValue().getDouble( d ) )
    {
       val = static_cast<float>(d);
 
       return true;
 
    }
-   else if ( getValue().getLong( l ) ) 
+   else if ( getValue().getLong( l ) )
    {
       val = static_cast<float>(l);
 
@@ -353,7 +353,7 @@ sc_Subfield::getFloat( float & val ) const
    else if ( getValue().getUnsignedLong( ul ) )
    {
       val = static_cast<float>(ul);
-      
+
       return true;
    }
 
@@ -370,11 +370,11 @@ sc_Subfield::getDouble( double & val ) const
    long l;
    unsigned long ul;
 
-   if ( getValue().getDouble( val ) ) 
+   if ( getValue().getDouble( val ) )
    {
       return true;
    }
-   else if ( getValue().getLong( l  ) ) 
+   else if ( getValue().getLong( l  ) )
    {
       val = static_cast<double>( l );
 
@@ -383,7 +383,7 @@ sc_Subfield::getDouble( double & val ) const
    else if ( getValue().getUnsignedLong( ul ) )
    {
       val = static_cast<double>(ul);
-      
+
       return true;
    }
 
@@ -571,7 +571,7 @@ sc_Subfield::setUnvalued()
 ostream&
 operator<<( ostream& s, const sc_Subfield& subfield )
 {
-  // Dump the given sc_Subfield to stream s in a format suitable for 
+  // Dump the given sc_Subfield to stream s in a format suitable for
   // use in debugging.
 
   s << "\t" << subfield.getMnemonic() << " : " << subfield.getName() << " = ";
@@ -584,7 +584,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 
   switch ( subfield.getSubfieldType() )
     {
-    case sc_Subfield::is_A : 
+    case sc_Subfield::is_A :
       if ( subfield.getA( tmp_string ) )
       {
 	s << tmp_string;
@@ -594,8 +594,8 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
-    case sc_Subfield::is_I : 
+
+    case sc_Subfield::is_I :
       if ( subfield.getI( tmp_long ) )
       {
 	s << tmp_long;
@@ -605,7 +605,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_R :
       if ( subfield.getR( tmp_double ) )
       {
@@ -618,7 +618,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_S :
       if ( subfield.getS( tmp_double ) )
       {
@@ -631,7 +631,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_C :
       if ( subfield.getC( tmp_string ) )
       {
@@ -642,7 +642,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BI8 :
       if ( subfield.getBI8( tmp_long ) )
       {
@@ -653,7 +653,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BI16 :
       if ( subfield.getBI16( tmp_long ) )
       {
@@ -664,7 +664,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BI24 :
       if ( subfield.getBI24( tmp_long ) )
       {
@@ -675,7 +675,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BI32 :
       if ( subfield.getBI32( tmp_long ) )
       {
@@ -686,7 +686,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BUI8 :
       if ( subfield.getBUI8( tmp_ulong ) )
       {
@@ -697,7 +697,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BUI16 :
       if ( subfield.getBUI16( tmp_ulong ) )
       {
@@ -708,7 +708,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BUI24 :
       if ( subfield.getBUI24( tmp_ulong ) )
       {
@@ -719,7 +719,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BUI32 :
       if ( subfield.getBUI32( tmp_ulong ) )
       {
@@ -730,7 +730,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BFP32 :
       if ( subfield.getBFP32( tmp_float ) )
       {
@@ -743,7 +743,7 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     case sc_Subfield::is_BFP64 :
       if ( subfield.getBFP64( tmp_double ) )
       {
@@ -756,12 +756,12 @@ operator<<( ostream& s, const sc_Subfield& subfield )
 	s << string("null value");
       }
       break;
-      
+
     default :
       s << "unsupported subfield type";
     }
 
-  
+
   switch ( subfield.getSubfieldType() )
     {
     case sc_Subfield::is_A :

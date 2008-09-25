@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_REPRESENTATION_TAGS_H
 #define CGAL_REPRESENTATION_TAGS_H
 

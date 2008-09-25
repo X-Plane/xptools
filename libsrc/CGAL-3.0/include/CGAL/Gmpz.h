@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra, Sylvain Pion
- 
+
 
 #ifndef CGAL_GMPZ_H
 #define CGAL_GMPZ_H
@@ -28,7 +28,7 @@
 #include <CGAL/basic.h>
 #include <CGAL/Handle_for.h>
 #include <CGAL/Quotient.h>
-#include <CGAL/double.h> 
+#include <CGAL/double.h>
 #include <CGAL/Interval_arithmetic.h>
 
 #include <string>
@@ -622,9 +622,9 @@ double to_double(const Quotient<Gmpz>& quot)
   const Gmpz& d = quot.denominator();
   mpz_set(mpq_numref(mpQ), n.mpz());
   mpz_set(mpq_denref(mpQ), d.mpz());
-    
+
   mpq_canonicalize(mpQ);
-  
+
   double ret = mpq_get_d(mpQ);
   mpq_clear(mpQ);
   return ret;
@@ -637,6 +637,6 @@ CGAL_END_NAMESPACE
   CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC(CGAL::Gmpz*);
   CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC(CGAL::Quotient<CGAL::Gmpz>);
   CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC(CGAL::Quotient<CGAL::Gmpz>*);
-#endif 
+#endif
 
 #endif // CGAL_GMPZ_H

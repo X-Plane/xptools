@@ -5,7 +5,7 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 // ----------------------------------------------------------------------
 // file          : partition_2_toolbar.h
 // package       : Qt_widget
@@ -39,13 +39,13 @@ class Tools_toolbar : public QToolBar
   Q_OBJECT
 public:
   Tools_toolbar(CGAL::Qt_widget *w, QMainWindow *mw);
-	
+
 private:
   QToolButton     *but[10];
   CGAL::Qt_widget *widget;
   QButtonGroup    *button_group;
   int             nr_of_buttons;
-	
+
   CGAL::Qt_widget_get_simple_polygon<Cgal_Polygon> getsimplebut;
 };//end class
 

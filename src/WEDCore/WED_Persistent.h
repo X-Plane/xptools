@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -37,17 +37,17 @@ class	IOWriter;
 	WED_Persistent.h - THEORY OF OPERATION
 
 	WED_Persistent is the base for an object that participates in the file format via tables and the undo system.
-	
+
 	Persistent classes have class ID, and the objects have object IDs within an archive.  Clients must define:
-	
+
 	1. The casting supported - function-based casting is used here.
 	2. Streaming methods via IODef reader/writers for the undo system.
 	3. Persistence methods via sqlite for the file format.
-	
+
 	CONSTRUCTORS AND DESTRUCTORS
- 	
+
 	All persistent objs are made via new/delete, but these are wrapped, as is the ctor.  We have only access via:
-	
+
 	(non-virtual ctors)
 	CLASS::CreateTyped - creates a new object of type CLASS, returns a CLASS *.
 	CLASS::Create - creates a new object of type CLASS, returns a WED_Persitent *.
@@ -55,12 +55,12 @@ class	IOWriter;
 	WED_Persistent::CreateByClass(class) - creates an object of type "class", returns a WED_Persistent *
 
 	To delete an object, use o->Delete();
-	
-	
+
+
 */
 
 /*
- * Persistent object header macros.  All persistent objects must have this 
+ * Persistent object header macros.  All persistent objects must have this
  * stuff - use the declare macro in the class and the define macro in the
  * translation unit.  It makes:
  *
@@ -80,14 +80,14 @@ class	IOWriter;
  *
  * to set up the boiler plate.  In the CPP you must use these:
  *
- *	DEFINE_PERSISTENT(CLASS) 
+ *	DEFINE_PERSISTENT(CLASS)
  *	IMPLEMENTS_INTERFACE(CLASS)					Use this to implement an abstract interface.
  *	INHERITS_FROM(CLASS)						Use this to inherit all of the behavior of one base class.
  *	BASE_CASE									Use this if you do not inherit from any class.
  *	END_CASTING									Use this to close off the casting control block.
  *
  */
- 
+
 #define DECLARE_PERSISTENT(__Class)		 							\
 public: 															\
 	static WED_Persistent * Create(									\
@@ -170,26 +170,26 @@ public:
 	// Destructor is hidden - you must call Delete.  This both enforces dynamic allocation
 	// and guarantees that we can fully handle destruction BEFORE we lose our typing info!
 			 void			Delete(void);
-			 
+
 	// Convenience routine for finding your peers:
 	WED_Persistent *		FetchPeer(int inID) const;
-	
+
 	// Convenience routines for undo...
 	void					StartCommand(const string& inName);		// pass-throughs
 	void					CommitCommand(void);
-	void					AbortCommand(void);	
+	void					AbortCommand(void);
 
 	// This method is called by the derived-class whenever its internals are changed
 	// by an editing operation.  It is the convenient way to signal "we better start
 	// recording persistent stuff".
 			void 			StateChanged(int change_kind = wed_Change_Any);
-	
+
 	// Methods provided by the base: all persistent objs must have an archive and
 	// GUID - this is non-negotiable!
-	
+
 			WED_Archive *	GetArchive(void) const 				{ return mArchive;	}
 			int				GetID(void) const					{ return mID;		}
-	
+
 	// IO methods to read and write state of class to a data holder.  ReadFrom
 	// does NOT call StateChanged!  Subclasses must provide.
 	virtual WED_Persistent*	Clone(void) const=0;
@@ -197,9 +197,9 @@ public:
 	virtual	void 			WriteTo(IOWriter * writer)=0;
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
 	virtual void			ToDB(sqlite3 * db)=0;
-	
+
 	virtual const char *	GetClass(void) const=0;
-	
+
 	// These are for the archive's use..
 			void			SetDirty(int dirty);
 			int				GetDirty(void) const;
@@ -226,6 +226,6 @@ private:
 			WED_Persistent(const WED_Persistent& rhs);
 			WED_Persistent& operator=(const WED_Persistent& rhs);
 
-};			
+};
 
 #endif /* WED_PERSISTENT */

@@ -27,15 +27,15 @@ METHODDEF(void) ErrorExit(j_common_ptr cinfo)
 }
 
 FileJPEG::FileJPEG(char *filename)
-{	
+{
 	imgBuffer = NULL;
 	width = height = 0;
-	
+
 	load(filename);
 }
 
 bool FileJPEG::load(char *filename)
-{	
+{
 	imgBuffer = NULL;
 	width = height = 0;
 
@@ -56,7 +56,7 @@ bool FileJPEG::load(char *filename)
 	jerr.last_addon_message = JMSG_LASTADDONCODE;
 
 	FILE *fp = fopen(filename, READ_BINARY);
-	if (!fp) 
+	if (!fp)
 		return false;
 
 	/* Specify data source for decompression */
@@ -76,7 +76,7 @@ bool FileJPEG::load(char *filename)
 	jpeg_start_decompress(&cinfo);
 
 	/* Process data */
-	unsigned char	**buffer = new unsigned char *[1]; 
+	unsigned char	**buffer = new unsigned char *[1];
 	int				scanline = 0;
 
 	while (cinfo.output_scanline < cinfo.output_height) {

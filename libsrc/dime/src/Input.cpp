@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Input.cpp
  *
  *  This source file is part of DIME.
@@ -132,7 +132,7 @@ dimeInput::init()
   This method returns wether file input was aborted or not.
 */
 
-bool 
+bool
 dimeInput::isAborted() const
 {
   return this->aborted;
@@ -143,7 +143,7 @@ dimeInput::isAborted() const
   float in the range between 0 and 1, and void * \a cbdata as arguments.
 */
 
-void 
+void
 dimeInput::setCallback(int (*cb)(float, void *), void *cbdata)
 {
   this->callback = cb;
@@ -190,7 +190,7 @@ dimeInput::setFile(const char * const filename)
   and will \e not be closed in the destuctor. No progress information
   will be avilable during loading if this method is used.
 */
-bool 
+bool
 dimeInput::setFileHandle(FILE *fp)
 {
   if (!this->init()) return false;
@@ -198,7 +198,7 @@ dimeInput::setFileHandle(FILE *fp)
   this->fpeof = false;
   this->didOpenFile = false;
   this->filesize = 1;
-  
+
   this->binary = this->checkBinary();
 
   return true;
@@ -206,18 +206,18 @@ dimeInput::setFileHandle(FILE *fp)
 
 
 /*!
-  Sets the file pointer for this instance. \a newfd is a file opened 
+  Sets the file pointer for this instance. \a newfd is a file opened
   with the unistd open() function.
 */
 
-bool 
+bool
 dimeInput::setFilePointer(const int newfd)
 {
   if (!this->init()) return false;
   this->fd = newfd;
 #if USE_GZFILE
   this->gzfp = gzdopen(this->fd, "rb");
-  this->gzeof = false; 
+  this->gzeof = false;
 #else
   this->fp = fdopen(this->fd, "rb");
   this->didOpenFile = true;
@@ -236,7 +236,7 @@ dimeInput::setFilePointer(const int newfd)
   Returns true if end of file is encountered.
 */
 
-bool 
+bool
 dimeInput::eof() const
 {
 #if USE_GZFILE
@@ -248,12 +248,12 @@ dimeInput::eof() const
 
 /*!
   Reads a group code from the file. In binary files, group codes
-  are represented as a single byte, with the exception of 
+  are represented as a single byte, with the exception of
   extended data which has 255 as the first byte, and then the
   actual group code following as a 16-bit integer.
 */
 
-bool 
+bool
 dimeInput::readGroupCode(int32 &code)
 {
   bool ret;
@@ -274,7 +274,7 @@ dimeInput::readGroupCode(int32 &code)
 	}
       }
     }
-    
+
     if (this->binary) {
       if (this->binary16bit) {
         uint16 uval;
@@ -291,7 +291,7 @@ dimeInput::readGroupCode(int32 &code)
       if (code == 255) {
 	int16 val16;
 	ret = this->readInt16(val16);
-	code = (int32) val16; 
+	code = (int32) val16;
       }
     }
     else {
@@ -313,11 +313,11 @@ dimeInput::readGroupCode(int32 &code)
 /*!
   This function is needed when a loader snoops for future group codes.
   It is possible to put back a single group code so that the next time
-  dimeInput::readGroupCode() is called, the putback value will be 
+  dimeInput::readGroupCode() is called, the putback value will be
   returned.
 */
 
-void 
+void
 dimeInput::putBackGroupCode(const int32 code)
 {
   this->putBackCode = code;
@@ -329,14 +329,14 @@ dimeInput::putBackGroupCode(const int32 code)
   Reads an 8 bit integer from the file.
 */
 
-bool 
+bool
 dimeInput::readInt8(int8 &val)
 {
   if (this->binary) {
     char *ptr = (char*)&val;
     return get(*ptr);
   }
-  
+
   long tmp;
   bool ok = skipWhiteSpace();
   if (ok && readInteger(tmp) && tmp >= -128 && tmp <= 127) {
@@ -350,7 +350,7 @@ dimeInput::readInt8(int8 &val)
   Reads a 16 bit integer from the file.
 */
 
-bool 
+bool
 dimeInput::readInt16(int16 &val)
 {
   if (this->binary) {
@@ -377,10 +377,10 @@ dimeInput::readInt16(int16 &val)
 }
 
 /*!
-  Reads a 32 bit integer from the file. 
+  Reads a 32 bit integer from the file.
 */
 
-bool 
+bool
 dimeInput::readInt32(int32 &val)
 {
   if (this->binary) {
@@ -400,7 +400,7 @@ dimeInput::readInt32(int32 &val)
     }
     return ret;
   }
-  
+
   long tmp;
   if (skipWhiteSpace() && readInteger(tmp)) {
     val = tmp;
@@ -410,10 +410,10 @@ dimeInput::readInt32(int32 &val)
 }
 
 /*!
-  Reads a single precision floating point number from the file. 
+  Reads a single precision floating point number from the file.
 */
 
-bool 
+bool
 dimeInput::readFloat(float &val)
 {
   bool ret = false;
@@ -422,13 +422,13 @@ dimeInput::readFloat(float &val)
     // binary files only contains doubles
     dxfdouble tmp;
     ret = readDouble(tmp);
-    val = (float) tmp; 
+    val = (float) tmp;
   }
   else {
     dxfdouble tmp;
     ret = skipWhiteSpace();
-    if (ret && 
-        readReal(tmp)) {    
+    if (ret &&
+        readReal(tmp)) {
       val = (float) tmp;
       ret = nextLine();
     }
@@ -451,7 +451,7 @@ dimeInput::readFloat(float &val)
   Reads a dxfdouble precision floating point number from the file.
 */
 
-bool 
+bool
 dimeInput::readDouble(dxfdouble &val)
 {
   bool ret = false;
@@ -489,7 +489,7 @@ dimeInput::readDouble(dxfdouble &val)
       }
     }
   }
-  
+
   if (ret) {
     if (!dime_finite(val)) {
       int tst = dime_isinf(val);
@@ -518,7 +518,7 @@ dimeInput::readString()
   if (ok) {
     char c;
     int idx = 0;
-#if 0     
+#if 0
     if (this->binary) {
       if (!get(c)) return NULL;
       if (c != 0) lineBuf[idx++] = c;
@@ -565,11 +565,11 @@ dimeInput::getModel()
 }
 
 /*!
-  For ASCII files, it returns the current line number. 
+  For ASCII files, it returns the current line number.
   For binary files the file position is returned.
 */
 
-int 
+int
 dimeInput::getFilePosition() const
 {
   return filePosition;
@@ -579,7 +579,7 @@ dimeInput::getFilePosition() const
   Returns true if this is a binary (DXB) file.
 */
 
-bool 
+bool
 dimeInput::isBinary() const
 {
   return binary;
@@ -589,7 +589,7 @@ dimeInput::isBinary() const
   Returns the version of this file (10, 12, 13 or 14).
 */
 
-int 
+int
 dimeInput::getVersion() const
 {
   return version;
@@ -597,8 +597,8 @@ dimeInput::getVersion() const
 
 // private funcs ***********************************************************
 
-//  
-//  Reads a relatively big block from the file into local memory.  
+//
+//  Reads a relatively big block from the file into local memory.
 //  stdio caching is not fast enough...
 //
 bool
@@ -659,7 +659,7 @@ dimeInput::putBack(const char * const string)
   if (n <= readbufIndex && backBufIndex < 0)
     readbufIndex -= n;
   else {
-    for (int i = n - 1; i >= 0; i--) 
+    for (int i = n - 1; i >= 0; i--)
       backBuf[++backBufIndex] = string[i];
   }
 }
@@ -680,7 +680,7 @@ dimeInput::read(char &c)
 
 bool
 dimeInput::get(char &c)
-{  
+{
   if(backBufIndex >= 0) {
     c = backBuf[backBufIndex--];
     return true;
@@ -778,7 +778,7 @@ bool
 dimeInput::readUnsignedInteger(unsigned long &l)
 {
   assert(!this->binary);
-  char str[TMPBUFSIZE]; 
+  char str[TMPBUFSIZE];
   if(! readUnsignedIntegerString(str))
     return false;
 
@@ -830,7 +830,7 @@ dimeInput::readDigits(char * const string)
       break;
     }
   }
-  
+
   return s - string;
 }
 
@@ -849,7 +849,7 @@ dimeInput::readChar(char * const string, char charToRead)
 
   if(!get(c))
     ret = 0;
-  
+
   else if(c == charToRead) {
     *string = c;
     ret = 1;
@@ -902,12 +902,12 @@ dimeInput::readReal(dxfdouble &d)
   if(n == 0)
     n = readChar(s, '+');
   s += n;
-  
+
   if((n = readDigits(s)) > 0) {
     gotNum = true;
     s += n;
   }
-  
+
   if(readChar(s, '.') > 0) {
     s++;
 
@@ -923,7 +923,7 @@ dimeInput::readReal(dxfdouble &d)
   n = readChar(s, 'e');
   if(n == 0)
     n = readChar(s, 'E');
-  
+
   if(n > 0) {
     s += n;
 
@@ -931,21 +931,21 @@ dimeInput::readReal(dxfdouble &d)
     if(n == 0)
       n = readChar(s, '+');
     s += n;
-    
+
     if((n = readDigits(s)) > 0)
       s += n;
-    
+
     else
-      return false; 
+      return false;
   }
-  
+
   *s = '\0';
-  
+
   d = atof(str);
   return true;
 }
 
-bool 
+bool
 dimeInput::checkBinary()
 {
   { // perform endian-test
@@ -959,7 +959,7 @@ dimeInput::checkBinary()
       this->endianSwap = true;
     }
   }
-  
+
   static char binaryid[] = "AutoCAD Binary DXF";
   char buf[64];
   int i;

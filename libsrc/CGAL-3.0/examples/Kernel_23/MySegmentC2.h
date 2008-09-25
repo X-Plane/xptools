@@ -46,7 +46,7 @@ public:
   {
       return tp_;
   }
-  
+
   const Point_2 &    start() const;
   const Point_2 &    end() const;
 
@@ -95,7 +95,7 @@ CGAL_KERNEL_INLINE
 const typename MySegmentC2<R>::Point_2 &
 MySegmentC2<R>::min() const
 {
-  typename R::Less_xy_2 less_xy; 
+  typename R::Less_xy_2 less_xy;
   return less_xy(source(),target()) ? source() : target();
 }
 
@@ -104,7 +104,7 @@ CGAL_KERNEL_INLINE
 const typename MySegmentC2<R>::Point_2 &
 MySegmentC2<R>::max() const
 {
-  typename R::Less_xy_2 less_xy; 
+  typename R::Less_xy_2 less_xy;
   return less_xy(source(),target()) ? target() : source();
 }
 

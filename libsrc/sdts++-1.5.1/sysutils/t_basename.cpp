@@ -12,9 +12,9 @@ int
 main( int argc, char** argv )
 {
    if ( argv[1] )
-      cout << fileutils::basename( argv[1] ) << "\n"; 
+      cout << fileutils::basename( argv[1] ) << "\n";
    else
-      cout << fileutils::basename( string("") ) << "\n"; 
+      cout << fileutils::basename( string("") ) << "\n";
 
    exit( 0 );
 }

@@ -45,7 +45,7 @@ int main()
 
   // insertion of a new vertex in the facet opposite to PV[0]
   PV[5] = T.insert_in_facet(c, ind);
-  
+
   assert( T.number_of_vertices() == 6 );
   assert( T.dimension() == 3 );
   assert( T.is_valid() );
@@ -58,8 +58,8 @@ int main()
   assert( T.is_valid() );
 
   std::ofstream oFileT("output_tds",std::ios::out);
-  // writing file output_tds; 
-  oFileT << T; 
+  // writing file output_tds;
+  oFileT << T;
 
   return 0;
 }

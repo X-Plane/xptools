@@ -10,7 +10,7 @@
 
 #include "TimeSensorNode.h"
 
-TimeSensorNode::TimeSensorNode() 
+TimeSensorNode::TimeSensorNode()
 {
 	setHeaderFlag(false);
 	setType(timeSensorNodeString);
@@ -44,7 +44,7 @@ TimeSensorNode::TimeSensorNode()
 	addEventOut(fractionFieldString, fractionChangedField);
 }
 
-TimeSensorNode::~TimeSensorNode() 
+TimeSensorNode::~TimeSensorNode()
 {
 }
 
@@ -52,29 +52,29 @@ TimeSensorNode::~TimeSensorNode()
 //	Loop
 ////////////////////////////////////////////////
 
-SFBool *TimeSensorNode::getLoopField() 
+SFBool *TimeSensorNode::getLoopField()
 {
 	if (isInstanceNode() == false)
 		return loopField;
 	return (SFBool *)getExposedField(loopFieldString);
 }
-	
-void TimeSensorNode::setLoop(bool value) 
+
+void TimeSensorNode::setLoop(bool value)
 {
 	getLoopField()->setValue(value);
 }
 
-void TimeSensorNode::setLoop(int value) 
+void TimeSensorNode::setLoop(int value)
 {
 	setLoop(value ? true : false);
 }
 
-bool TimeSensorNode::getLoop() 
+bool TimeSensorNode::getLoop()
 {
 	return getLoopField()->getValue();
 }
 
-bool TimeSensorNode::isLoop() 
+bool TimeSensorNode::isLoop()
 {
 	return getLoop();
 }
@@ -90,13 +90,13 @@ SFTime *TimeSensorNode::getCycleIntervalField()
 		return cycleIntervalField;
 	return (SFTime *)getExposedField(cycleIntervalFieldString);
 }
-	
-void TimeSensorNode::setCycleInterval(double value) 
+
+void TimeSensorNode::setCycleInterval(double value)
 {
 	getCycleIntervalField()->setValue(value);
 }
 
-double TimeSensorNode::getCycleInterval() 
+double TimeSensorNode::getCycleInterval()
 {
 	return getCycleIntervalField()->getValue();
 }
@@ -111,13 +111,13 @@ SFTime *TimeSensorNode::getStartTimeField()
 		return startTimeField;
 	return (SFTime *)getExposedField(startTimeFieldString);
 }
-	
-void TimeSensorNode::setStartTime(double value) 
+
+void TimeSensorNode::setStartTime(double value)
 {
 	getStartTimeField()->setValue(value);
 }
 
-double TimeSensorNode::getStartTime() 
+double TimeSensorNode::getStartTime()
 {
 	return getStartTimeField()->getValue();
 }
@@ -132,13 +132,13 @@ SFTime *TimeSensorNode::getStopTimeField()
 		return stopTimeField;
 	return (SFTime *)getExposedField(stopTimeFieldString);
 }
-	
-void TimeSensorNode::setStopTime(double value) 
+
+void TimeSensorNode::setStopTime(double value)
 {
 	getStopTimeField()->setValue(value);
 }
 
-double TimeSensorNode::getStopTime() 
+double TimeSensorNode::getStopTime()
 {
 	return getStopTimeField()->getValue();
 }
@@ -153,13 +153,13 @@ SFFloat *TimeSensorNode::getFractionChangedField()
 		return fractionChangedField;
 	return (SFFloat *)getEventOut(fractionFieldString);
 }
-	
-void TimeSensorNode::setFractionChanged(float value) 
+
+void TimeSensorNode::setFractionChanged(float value)
 {
 	getFractionChangedField()->setValue(value);
 }
 
-float TimeSensorNode::getFractionChanged() 
+float TimeSensorNode::getFractionChanged()
 {
 	return getFractionChangedField()->getValue();
 }
@@ -174,13 +174,13 @@ SFTime *TimeSensorNode::getCycleTimeField()
 		return cycleTimeField;
 	return (SFTime *)getEventOut(cycleTimeFieldString);
 }
-	
-void TimeSensorNode::setCycleTime(double value) 
+
+void TimeSensorNode::setCycleTime(double value)
 {
 	getCycleTimeField()->setValue(value);
 }
 
-double TimeSensorNode::getCycleTime() 
+double TimeSensorNode::getCycleTime()
 {
 	return getCycleTimeField()->getValue();
 }
@@ -195,13 +195,13 @@ SFTime *TimeSensorNode::getTimeField()
 		return timeField;
 	return (SFTime *)getEventOut(timeFieldString);
 }
-	
+
 void TimeSensorNode::setTime(double value)
 {
 	getTimeField()->setValue(value);
 }
 
-double TimeSensorNode::getTime() 
+double TimeSensorNode::getTime()
 {
 	return getTimeField()->getValue();
 }
@@ -210,12 +210,12 @@ double TimeSensorNode::getTime()
 //	List
 ////////////////////////////////////////////////
 
-TimeSensorNode *TimeSensorNode::next() 
+TimeSensorNode *TimeSensorNode::next()
 {
 	return (TimeSensorNode *)Node::next(getType());
 }
 
-TimeSensorNode *TimeSensorNode::nextTraversal() 
+TimeSensorNode *TimeSensorNode::nextTraversal()
 {
 	return (TimeSensorNode *)Node::nextTraversalByType(getType());
 }
@@ -223,23 +223,23 @@ TimeSensorNode *TimeSensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	Virtual functions
 ////////////////////////////////////////////////
-	
+
 bool TimeSensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void TimeSensorNode::initialize() 
+void TimeSensorNode::initialize()
 {
 	setCycleTime(-1.0f);
 	setIsActive(false);
 }
 
-void TimeSensorNode::uninitialize() 
+void TimeSensorNode::uninitialize()
 {
 }
 
-void TimeSensorNode::outputContext(ostream &printStream, char *indentString) 
+void TimeSensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *bEnabled = getEnabledField();
 	SFBool *loop = getLoopField();
@@ -255,7 +255,7 @@ void TimeSensorNode::outputContext(ostream &printStream, char *indentString)
 //	AudioClip::update
 ////////////////////////////////////////////////
 
-void TimeSensorNode::update() 
+void TimeSensorNode::update()
 {
 	static double currentTime = 0;
 
@@ -270,7 +270,7 @@ void TimeSensorNode::update()
 	if (currentTime == 0)
 		currentTime = GetCurrentSystemTime();
 
-	// isActive 
+	// isActive
 	if (bEnable == false && bActive == true) {
 		setIsActive(false);
 		sendEvent(getIsActiveField());
@@ -301,7 +301,7 @@ void TimeSensorNode::update()
 	}
 
 	currentTime = GetCurrentSystemTime();
-	
+
 	if (bActive == true && bEnable == true) {
 		if (bLoop == true && startTime < stopTime) {
 			if (stopTime < currentTime)
@@ -329,7 +329,7 @@ void TimeSensorNode::update()
 	if (bEnable == false || isActive() == false)
 		return;
 
-	// fraction_changed 
+	// fraction_changed
 	double	fraction = fmod(currentTime - startTime, cycleInterval);
 	if (fraction == 0.0 && startTime < currentTime)
 		fraction = 1.0;

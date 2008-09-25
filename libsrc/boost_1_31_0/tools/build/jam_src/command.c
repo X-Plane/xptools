@@ -56,14 +56,14 @@ cmd_new(
     do
     {
         free(cmd->buf); /* free any buffer from previous iteration */
-        
+
         cmd->buf = (char*)malloc(max_line + 1);
-        
+
         if (cmd->buf == 0)
             break;
-        
+
         allocated = var_string( rule->actions->command, cmd->buf, max_line, &cmd->args );
-        
+
         max_line = max_line * 2;
     }
     while( allocated < 0 && max_line < INT_MAX / 2 );
@@ -75,14 +75,14 @@ cmd_new(
         while ( *s )
         {
             size_t l = strcspn( s, "\n" );
-            
+
             if ( l > MAXLINE )
             {
                 /* We don't free targets/sources/shell if bailing. */
                 cmd_free( cmd );
                 return 0;
             }
-            
+
             s += l;
             if ( *s )
                 ++s;

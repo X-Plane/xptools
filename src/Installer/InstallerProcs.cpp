@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -53,7 +53,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		if (cbFunc(ent->d_name, S_ISDIR(ss.st_mode), ref))
 			break;
 
-	}     
+	}
      closedir(dir);
      return true;
 
@@ -65,7 +65,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		string::size_type 	sep;
 		Str255				fnameP;
 		int					index;
-	
+
 	sep = path.find(DIR_CHAR);
 	if (sep == path.npos)
 	{
@@ -78,42 +78,42 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	if (::FSMakeFSSpec(0, 0, fnameP, &dirLoc) != noErr) return false;
 	if (dirLoc.parID == fsRtParID)
 		dirLoc.parID = fsRtDirID;
-	
+
 	if (sep != path.npos)
 		path.erase(0,sep+1);
 	else
 		path.clear();
-		
+
 	while(!path.empty())
 	{
 		sep = path.find(DIR_CHAR);
-		if (sep == path.npos) 
+		if (sep == path.npos)
 			comp = path;
 		else
 			comp = path.substr(0, sep);
 		memcpy(fnameP+1,comp.c_str(), comp.size());
 		fnameP[0] = comp.size();
-		
+
 		pb.dirInfo.ioNamePtr = fnameP;
 		pb.dirInfo.ioVRefNum = dirLoc.vRefNum;
 		pb.dirInfo.ioDrDirID = dirLoc.parID;
 		pb.dirInfo.ioFDirIndex = 0;
-		
+
 		if (PBGetCatInfoSync(&pb) != noErr)
 			return false;
-		
-		if ((pb.dirInfo.ioFlAttrib & ioDirMask) == 0) 
+
+		if ((pb.dirInfo.ioFlAttrib & ioDirMask) == 0)
 			return false;
 		dirLoc.parID = pb.dirInfo.ioDrDirID;
 
 		if (sep == path.npos)
 			path.clear();
 		else
-			path.erase(0, sep+1);		
+			path.erase(0, sep+1);
 	}
-	
+
 	index = 1;
-	
+
 	while (1)
 	{
 		pb.hFileInfo.ioNamePtr = fnameP;
@@ -122,13 +122,13 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		pb.hFileInfo.ioFDirIndex = index;
 		if (PBGetCatInfoSync(&pb) != noErr)
 			return true;
-		
+
 		char	buf[256];
 		memcpy(buf,fnameP+1,fnameP[0]);
 		buf[fnameP[0]] = 0;
 		if (cbFunc(buf, pb.hFileInfo.ioFlAttrib & ioDirMask, ref))
 			return true;
-	
+
 		++index;
 	}
 
@@ -137,7 +137,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 	char path[MAX_PATH], SearchPath[MAX_PATH], FilePath[MAX_PATH];
 	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;		
+	HANDLE hFind;
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
 	strcat(path, "*.*");
@@ -146,7 +146,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return false;
-	else 
+	else
 	{
 		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 		{
@@ -171,7 +171,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	FindClose(hFind);
 #else
 	#error PLATFORM NOT KNOWN
-#endif	
+#endif
 }
 
 
@@ -190,7 +190,7 @@ InstallerChunk::~InstallerChunk() { if (mem) free(mem); }
 void	InstallerChunk::Decode(
 		char& exists_old,
 		char& exists_new,
-		MD5_Sig& outOldSig, MD5_Sig& 
+		MD5_Sig& outOldSig, MD5_Sig&
 		outNewSig, long& outZipSize, long& outRealSize, char ** outData)
 {
 	char * p = mem;
@@ -207,7 +207,7 @@ void	InstallerChunk::Decode(
 	p += 4;
 	memcpy(&outRealSize, p, 4);
 	p += 4;
-	*outData = p;	
+	*outData = p;
 }
 
 // FORMAT OF AN INSTALLER CHUNK:
@@ -236,14 +236,14 @@ bool	FilesAreSame(const char * inPath1, const char * inPath2)
 }
 
 int	FileStatus(const char * inPath1, InstallerChunk& inChunk)
-{	
+{
 	MD5_Sig	old_sig, new_sig, our_sig;
 	char	old_exists, new_exists;
 	char our_exists = GetFileMD5(inPath1, our_sig);
 	char * d;
 	long zsize,fsize;
 	inChunk.Decode(old_exists, new_exists, old_sig, new_sig, zsize, fsize, &d);
-	
+
 	// FILE CHANGED IN X-PLANE
 	if (new_exists && old_exists)
 	{
@@ -251,16 +251,16 @@ int	FileStatus(const char * inPath1, InstallerChunk& inChunk)
 		{
 			return (new_sig == our_sig) ? file_MatchesAlready :
 				((old_sig == our_sig) ? file_MatchesOK : file_MatchesUnexpected);
-		} else 
+		} else
 			return file_MatchesMissing;
-	} 
+	}
 	// FILE WAS CREATED IN X-PLANE
 	else if (new_exists && !old_exists)
 	{
 		if (our_exists)
 		{
 			return (new_sig == our_sig) ? file_CreatedAlready : file_CreateUnexpected;
-		} else 
+		} else
 			return file_CreateOK;
 	}
 	// FILE WAS REMOVED IN X-PLANE
@@ -270,7 +270,7 @@ int	FileStatus(const char * inPath1, InstallerChunk& inChunk)
 			return (old_sig == our_sig) ? file_DeleteOK : file_DeleteUnexpected;
 		else
 			return file_DeleteAlready;
-	} else 
+	} else
 		return file_CreatedAlready;	// SHOULD NEVER GET HERE!
 }
 
@@ -293,7 +293,7 @@ int	BuildChunk(const char * inPathOld, const char * inPathNew, InstallerChunk& o
 	char *		comp = NULL;
 	int			compS = 0;
 	MD5_Sig	old_sig, new_sig;
-	
+
 	char exists_old = GetFileMD5(inPathOld, old_sig);
 	char exists_new = GetFileMD5(inPathNew, new_sig);
 	if (exists_new)
@@ -358,13 +358,13 @@ void	InstallChunk(InstallerChunk& inChunk, const char * basePath)
 	inChunk.Decode(old_e, new_e, old_sig, new_sig, zsize, fsize, &d);
 	string	full_path(basePath);
 	full_path += string(inChunk.mem);
-	
+
 	if (new_e)
-	{	
+	{
 		char * block = (char *) malloc(fsize);
 		UnzipBlock(d, zsize, block, fsize);
 		BlockToFile(full_path.c_str(), block);
-		free(block);	
+		free(block);
 	} else if (old_e) {
 		NukeFile(full_path.c_str());
 	}

@@ -25,7 +25,7 @@
 #define CGAL_QT_WIDGET_GET_SIMPLE_POLYGON_H
 
 #include <CGAL/IO/Qt_widget_get_polygon.h>
-#include <CGAL/Segment_2_Segment_2_intersection.h>  
+#include <CGAL/Segment_2_Segment_2_intersection.h>
 #include <list>
 
 #include <qcursor.h>
@@ -44,7 +44,7 @@ public:
                                c=QCursor(Qt::crossCursor),QObject*
                                parent = 0, const char* name = 0)
     : Qt_widget_get_polygon<Polygon>(c, parent, name){}
-  
+
 protected:
 
   void mousePressEvent(QMouseEvent *e)
@@ -59,7 +59,7 @@ protected:
       }
     }
     Get_polygon::mousePressEvent(e);
-  }; 
+  };
 
 private:
   bool is_simple()
@@ -76,7 +76,7 @@ private:
         if(do_intersect(*it, rubber_segment))
         return false;
       }
-      //if I'm out of this means that all the edges, 
+      //if I'm out of this means that all the edges,
       //didn't intersect the last one
       ++it;
       Object o = intersection(*it, rubber_segment);

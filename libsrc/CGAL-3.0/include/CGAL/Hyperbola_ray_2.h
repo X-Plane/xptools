@@ -103,7 +103,7 @@ public:
     } else {
       this->p2 = f(t1 - STEP * OFFSET);
     }
-    
+
     Hyperbola_segment_2< Gt >::draw(s);
   }
 #endif
@@ -119,7 +119,7 @@ public:
 
     Hyperbola_segment_2< Gt >::draw(s);
   }
-  
+
 };
 
 template < class Gt >

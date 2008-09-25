@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 #ifndef CGAL_LEDA_INTEGER_H
 #define CGAL_LEDA_INTEGER_H
 
@@ -73,7 +73,7 @@ sign(const leda_integer& n)
 inline
 leda_integer
 div( const leda_integer& n1, const leda_integer& n2)
-{ 
+{
   return n1 / n2;
 }
 
@@ -109,7 +109,7 @@ to_interval (const leda_integer & n)
 inline
 leda_integer
 gcd( const leda_integer& n1, const leda_integer& n2)
-{ 
+{
   return CGAL_LEDA_SCOPE::gcd(n1, n2);
 }
 

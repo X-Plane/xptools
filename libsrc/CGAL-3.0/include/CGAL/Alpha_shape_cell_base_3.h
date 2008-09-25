@@ -50,14 +50,14 @@ private:
   Coord_type A;
 
 public:
-  
-  Alpha_shape_cell_base_3() 
+
+  Alpha_shape_cell_base_3()
     : Cb() {}
-  
+
   Alpha_shape_cell_base_3(Vertex_handle v0, Vertex_handle v1,
                           Vertex_handle v2, Vertex_handle v3)
     : Cb(v0, v1, v2, v3) {}
-  
+
   Alpha_shape_cell_base_3(Vertex_handle v0, Vertex_handle v1,
                           Vertex_handle v2, Vertex_handle v3,
                           Cell_handle n0, Cell_handle n1,
@@ -69,7 +69,7 @@ public:
     {
       return A;
     }
-  
+
   void set_alpha(const Coord_type & AA)
     {
       A = AA;
@@ -84,7 +84,7 @@ public:
     {
       vec_facet[i]=Inter;
     }
-  
+
   const Interval3 & get_edge_ranges(int i, int j) const
     {
       return vec_edge[i][j];

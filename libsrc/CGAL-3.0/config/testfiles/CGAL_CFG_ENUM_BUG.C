@@ -28,7 +28,7 @@
 // ---------------------------------------------------------------------
 
 //| This flag is set, if the compiler does not promote enumeration types
-//| (which depend on a template parameter) correctly when they are used 
+//| (which depend on a template parameter) correctly when they are used
 //| as int template arguments. (e.g. Borland 5.5)
 
 struct F {
@@ -45,8 +45,8 @@ struct C {
   // gives
   // Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
   // Error E2450 Undefined structure 'B<0>' in function main()
-  
-  // using 
+
+  // using
   // B< T::a > b;
   // instead gives
   // Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland

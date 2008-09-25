@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -138,7 +138,7 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * ac
 			{
 				*p = Point2(); return;
 			}
-			
+
 			if (mCacheBounds.is_point()) n = 8;
 
 			p->x = mCacheBounds.p1.x * kControlsX1[n] + mCacheBounds.p2.x * kControlsX2[n];
@@ -150,7 +150,7 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * ac
 			ctr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
 			ctr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];
 			*direction = Vector2(ctr,*p);
-		}	
+		}
 	}
 }
 
@@ -209,54 +209,54 @@ void	WED_MarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& 
 	new_b = mCacheBounds;
 	new_b.p1 += delta;
 	new_b.p2 += delta;
-	ApplyRescale(mCacheBounds,new_b);	
+	ApplyRescale(mCacheBounds,new_b);
 }
 
 void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
-	
+
 	if (mInEdit==0)
 	{
 		mInEdit=1;
 		GUI_KeyFlags flags = GetHost()->GetModifiersNow();
 		mIsRotate = (flags & gui_OptionAltFlag) && (c != 8);
-		
+
 		if (mIsRotate)
 		{
 			mRotateCtr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
-			mRotateCtr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];		
+			mRotateCtr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];
 //			mRotatePt.x = mCacheBounds.p1.x * kControlsX1[c] + mCacheBounds.p2.x * kControlsX2[c];
-//			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];			
+//			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];
 		}
-		
+
 		if ((flags & gui_OptionAltFlag) && (c == 8))
 		{
 			WED_DoDuplicate(GetResolver(), false);
 		}
 	}
-	
+
 	if (mIsRotate)
 	{
 		Point2 new_p;
-		
+
 		new_p = io_pt + delta;
-		
+
 		double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
 		double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
 		ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, delta));
 
 		io_pt = new_p;
 		mRotatePt = io_pt;
-		
+
 	}
 	else
-	{	
+	{
 		new_b = mCacheBounds;
-		
+
 		if (mCacheBounds.is_point()) c = 8;
-		
+
 		new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
 		new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
 		new_b.p1.y += (delta.dy * kApplyCtrlY1[c]);
@@ -271,7 +271,7 @@ void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& 
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
 	new_b = mCacheBounds;
-	
+
 	new_b.p1.x += (delta.dx * kApplyLinkX1[c]);
 	new_b.p2.x += (delta.dx * kApplyLinkX2[c]);
 	new_b.p1.y += (delta.dy * kApplyLinkY1[c]);
@@ -288,9 +288,9 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 
 	vector<IBase *>	iu;
 	vector<IGISEntity *> en;
-	
+
 	e.clear();
-	
+
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;
 	en.reserve(iu.size());
@@ -312,18 +312,18 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 bool	WED_MarqueeTool::GetTotalBounds(void) const
 {
 	long long key_a = WED_GetWorld(GetResolver())->GetArchive()->CacheKey();
-	
+
 	if (key_a == mCacheKeyArchive) return !mCacheBounds.is_null();
 	mCacheKeyArchive = key_a;
-	
+
 	mCacheBounds = Bbox2();
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 	mCacheIconic = false;
-	
+
 	vector<ISelectable *>	iu;
 	int ret = false;
-	
+
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;
 	bool iconic = iu.size() == 1;
@@ -335,7 +335,7 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 			if (went->GetLocked()) continue;
 			if (went->GetHidden()) continue;
 		}
-	
+
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		if (ent)
 		{
@@ -345,7 +345,7 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 			mCacheBounds += local;
 		}
 	}
-	mCacheIconic = iconic;	
+	mCacheIconic = iconic;
 	return !mCacheBounds.is_null();
 }
 
@@ -355,7 +355,7 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 	DebugAssert(sel != NULL);
 
 	vector<ISelectable *>	iu;
-	
+
 	sel->GetSelectionVector(iu);
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
@@ -366,12 +366,12 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 			if (went->GetLocked()) continue;
 			if (went->GetHidden()) continue;
 		}
-		
+
 		if (ent)
 		{
 			ent->Rescale(old_bounds,new_bounds);
 		}
-	}	
+	}
 
 }
 
@@ -381,7 +381,7 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 	DebugAssert(sel != NULL);
 
 	vector<ISelectable *>	iu;
-	
+
 	sel->GetSelectionVector(iu);
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
@@ -392,11 +392,11 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 			if (went->GetLocked()) continue;
 			if (went->GetHidden()) continue;
 		}
-		
+
 		if (ent)
 		{
 			ent->Rotate(ctr, angle);
 		}
-	}	
+	}
 
 }

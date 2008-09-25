@@ -32,29 +32,29 @@ CGAL_BEGIN_NAMESPACE
 //////////////////////////////////////////////////////////////////
 
 template <class _Planar_map>
-class Pm_advanced_point_location_base : 
+class Pm_advanced_point_location_base :
 	public Pm_advanced_point_location_base<_Planar_map>{
 public:
 	typedef _Planar_map Planar_map;
 	typedef typename Planar_map::Traits Traits;
 	typedef typename Planar_map::Locate_type Locate_type;
-	typedef typename Planar_map::Ccb_halfedge_circulator 
+	typedef typename Planar_map::Ccb_halfedge_circulator
 		Ccb_halfedge_circulator;
 	typedef typename Planar_map::Halfedge_handle Halfedge_handle;
 	typedef typename Planar_map::Halfedge Halfedge;
 	typedef typename Traits::X_curve X_curve;
 	typedef typename Traits::Point Point;
 	typedef Pm_bounding_box_base<Planar_map> Bounding_box;
-	
+
 	Pm_advanced_point_location_base():Pm_point_location_base {}
-	
-	virtual Halfedge_handle ray_shoot(const Point& p, 
-					  Locate_type& lt, 
+
+	virtual Halfedge_handle ray_shoot(const Point& p,
+					  Locate_type& lt,
 					  const X_curve&) = 0;
-	virtual Halfedge_handle x_curve_shoot(const Point& p, 
-					      Locate_type& lt, 
+	virtual Halfedge_handle x_curve_shoot(const Point& p,
+					      Locate_type& lt,
 					      const Ray&) = 0;
-	
+
 };
 
 

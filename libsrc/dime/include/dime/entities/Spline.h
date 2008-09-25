@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Spline.h
  *
  *  This source file is part of DIME.
@@ -41,7 +41,7 @@ public:
 
   enum Flags {
     CLOSED   = 0x01,
-    PERIODIC = 0x02, 
+    PERIODIC = 0x02,
     RATIONAL = 0x04,
     PLANAR   = 0x08,
     LINEAR   = 0x10
@@ -67,24 +67,24 @@ public:
   void setKnotValue(const int idx, const dxfdouble value);
   void setKnotValues(const dxfdouble * const values, const int numvalues,
 		     dimeMemHandler * const memhandler = NULL);
-  
+
   int getNumControlPoints() const;
   const dimeVec3f &getControlPoint(const int idx) const;
   void setControlPoint(const int idx, const dimeVec3f &v);
   void setControlPoints(const dimeVec3f * const pts, const int numpts,
 			dimeMemHandler * const memhandler = NULL);
-  
+
   int getNumWeights() const;
   dxfdouble getWeight(const int idx) const;
   void setWeight(const int idx, const dxfdouble w,
 		 dimeMemHandler * const memhandler = NULL);
-  
+
   int getNumFitPoints() const;
   const dimeVec3f &getFitPoint(const int idx) const;
   void setFitPoint(const int idx, const dimeVec3f &pt);
   void setFitPoints(const dimeVec3f * const pts, const int numpts,
 		    dimeMemHandler * const memhandler = NULL);
-  
+
   virtual dimeEntity *copy(dimeModel * const model) const;
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
@@ -95,7 +95,7 @@ public:
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-   
+
 protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
@@ -130,87 +130,87 @@ private:
 
 }; // class dimeSpline
 
-inline int16 
+inline int16
 dimeSpline::getFlags() const
 {
   return this->flags;
 }
 
-inline void 
+inline void
 dimeSpline::setFlags(const int16 flags)
 {
   this->flags = flags;
 }
 
-inline int16 
+inline int16
 dimeSpline::getDegree() const
 {
   return this->degree;
 }
 
-inline void 
+inline void
 dimeSpline::setDegree(const int16 degree)
 {
   this->degree = degree;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeSpline::getControlPointTolerance() const
 {
   return this->cpTolerance;
 }
 
-inline void 
+inline void
 dimeSpline::setControlPointTolerance(const dxfdouble tol)
 {
   this->cpTolerance = tol;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeSpline::getFitPointTolerance() const
 {
   return this->fitTolerance;
 }
 
-inline void 
+inline void
 dimeSpline::setFitPointTolerance(const dxfdouble tol)
 {
   this->fitTolerance = tol;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeSpline::getKnotTolerance() const
 {
   return this->knotTolerance;
 }
 
-inline void 
+inline void
 dimeSpline::setKnotTolerance(const dxfdouble tol)
 {
   this->knotTolerance = tol;
 }
 
-inline int 
+inline int
 dimeSpline::getNumKnots() const
 {
   return this->numKnots;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeSpline::getKnotValue(const int idx) const
 {
   assert(idx >= 0 && idx < this->numKnots);
   return this->knots[idx];
 }
 
-inline void 
+inline void
 dimeSpline::setKnotValue(const int idx, const dxfdouble value)
 {
   assert(idx >= 0 && idx < this->numKnots);
   this->knots[idx] = value;
 }
 
-inline int 
+inline int
 dimeSpline::getNumControlPoints() const
 {
   return this->numControlPoints;
@@ -223,20 +223,20 @@ dimeSpline::getControlPoint(const int idx) const
   return this->controlPoints[idx];
 }
 
-inline void 
+inline void
 dimeSpline::setControlPoint(const int idx, const dimeVec3f &v)
 {
   assert(idx >= 0 && idx < this->numControlPoints);
   this->controlPoints[idx] = v;
 }
 
-inline int 
+inline int
 dimeSpline::getNumWeights() const
 {
   return this->getNumControlPoints();
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeSpline::getWeight(const int idx) const
 {
   if (this->hasWeights()) {
@@ -246,7 +246,7 @@ dimeSpline::getWeight(const int idx) const
   return 1.0;
 }
 
-inline int 
+inline int
 dimeSpline::getNumFitPoints() const
 {
   return this->numFitPoints;
@@ -259,12 +259,12 @@ dimeSpline::getFitPoint(const int idx) const
   return this->fitPoints[idx];
 }
 
-inline void 
+inline void
 dimeSpline::setFitPoint(const int idx, const dimeVec3f &pt)
 {
   assert(idx >= 0 && idx < this->numFitPoints);
   this->fitPoints[idx] = pt;
 }
- 
+
 #endif // ! DIME_SPLINE_H
 

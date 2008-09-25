@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: ObjectsSection.cpp
  *
  *  This source file is part of DIME.
@@ -70,7 +70,7 @@ dimeSection *
 dimeObjectsSection::copy(dimeModel * const model) const
 {
   dimeMemHandler *memh = model->getMemHandler();
-  dimeObjectsSection *os = new dimeObjectsSection(memh); 
+  dimeObjectsSection *os = new dimeObjectsSection(memh);
   bool ok = os != NULL;
 
   int num  = this->objects.count();
@@ -84,7 +84,7 @@ dimeObjectsSection::copy(dimeModel * const model) const
       }
     }
   }
-  
+
   if (!ok) {
     if (!memh) delete os;
     os = NULL;
@@ -95,7 +95,7 @@ dimeObjectsSection::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeObjectsSection::read(dimeInput * const file)
 {
   int32 groupcode;
@@ -115,7 +115,7 @@ dimeObjectsSection::read(dimeInput * const file)
       break;
     }
     string = file->readString();
-    if (!strcmp(string, "ENDSEC")) break; 
+    if (!strcmp(string, "ENDSEC")) break;
     object = dimeObject::createObject(string, memhandler);
     if (object == NULL) {
       fprintf(stderr,"error creating object: %s.\n", string);
@@ -136,14 +136,14 @@ dimeObjectsSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeObjectsSection::write(dimeOutput * const file)
 {
 //  sim_trace("Writing section: OBJECTS\n");
 
   file->writeGroupCode(2);
   file->writeString(sectionName);
- 
+
   int i, n = this->objects.count();
   for (i = 0; i < n; i++) {
     if (!this->objects[i]->write(file)) break;
@@ -158,7 +158,7 @@ dimeObjectsSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeObjectsSection::typeId() const
 {
   return dimeBase::dimeObjectsSectionType;
@@ -185,10 +185,10 @@ dimeObjectsSection::getSectionName() const
 }
 
 /*!
-  Returns the number of objects in this section. 
+  Returns the number of objects in this section.
 */
 
-int 
+int
 dimeObjectsSection::getNumObjects() const
 {
   return this->objects.count();
@@ -209,7 +209,7 @@ dimeObjectsSection::getObject(const int idx)
   Removes (and deletes if no memhandler is used) the object at index \a idx.
 */
 
-void 
+void
 dimeObjectsSection::removeObject(const int idx)
 {
   assert(idx >= 0 && idx < this->objects.count());
@@ -222,7 +222,7 @@ dimeObjectsSection::removeObject(const int idx)
   object will be inserted at the end of the list of objects.
 */
 
-void 
+void
 dimeObjectsSection::insertObject(dimeObject * const object, const int idx)
 {
   if (idx < 0) this->objects.append(object);

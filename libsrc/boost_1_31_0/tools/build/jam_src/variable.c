@@ -63,7 +63,7 @@ struct _variable {
 static VARIABLE *var_enter( char *symbol );
 static void var_dump( char *symbol, LIST *value, char *what );
 
-
+
 
 /*
  * var_hash_swap() - swap all variable settings with those passed
@@ -80,7 +80,7 @@ void var_hash_swap( struct hash** new_vars )
 /*
  * var_defines() - load a bunch of variable=value settings
  *
- * If variable name ends in PATH, split value at :'s.  
+ * If variable name ends in PATH, split value at :'s.
  * Otherwise, split at blanks.
  */
 
@@ -104,7 +104,7 @@ var_defines( char **e )
 # ifdef OS_MAC
 	    /* On the mac (MPW), the var=val is actually var\0val */
 	    /* Think different. */
-	
+
 	    if( ( val = strchr( *e, '=' ) ) || ( val = *e + strlen( *e ) ) )
 # else
 	    if( val = strchr( *e, '=' ) )
@@ -208,7 +208,7 @@ var_string(
             return -1;
         /* Don't increment, intentionally. */
         *out= '\0';
-           
+
 	    /* If a variable encountered, expand it and and embed the */
 	    /* space-separated members of the list in the output. */
 
@@ -263,7 +263,7 @@ var_get( char *symbol )
 		var_dump( v->symbol, v->value, "get" );
 	    return v->value;
 	}
-    
+
 	return 0;
 }
 
@@ -288,7 +288,7 @@ var_set(
 
 	if( DEBUG_VARSET )
 	    var_dump( symbol, value, "set" );
-        
+
 	switch( flag )
 	{
 	case VAR_SET:
@@ -332,7 +332,7 @@ var_swap(
 	return oldvalue;
 }
 
-
+
 
 /*
  * var_enter() - make new var symbol table entry, returning var ptr

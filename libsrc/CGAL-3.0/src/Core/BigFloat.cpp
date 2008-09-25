@@ -1,13 +1,13 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: BigFloat.cpp
- * 
+ *
  * Synopsis:
- *       BigFloat numbers with error bounds 
- *           
- * Written by 
+ *       BigFloat numbers with error bounds
+ *
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
@@ -53,23 +53,23 @@ BigInt FiveTo(unsigned long exp)
 BigFloatRep::BigFloatRep(double d) : m(0), err(0), exp(0), refCount(0) {
   if (d != 0.0) {
    int isNegative = 0;
-    
+
    if (d < 0.0) {
      isNegative = 1;
      d          = - d;
    }
-        
+
    int    binExp;
    double f = frexp(d, &binExp);
-    
+
    exp = chunkFloor(binExp);
-    
+
    long s = binExp - bits(exp);
-    
+
    long   stop = 0;
    double intPart;
-   
-   // convert f into a BigInt 
+
+   // convert f into a BigInt
    while (f != 0.0 && stop < DBL_MAX_CHUNK) {
      f =   ldexp(f, (int)CHUNK_BIT);
      f =   modf(f, &intPart);
@@ -94,14 +94,14 @@ void BigFloatRep::trunc(const BigInt& I, const extLong& r, const extLong& a) {
     long tr = chunkFloor((- r + I.bitLength()).asLong());
     long ta = chunkFloor(- a.asLong());
     long t;
-    
+
     if (r.isInfty() || a.isTiny())
       t = ta;
     else if (a.isInfty())
       t = tr;
     else
       t = ta < tr ? tr : ta;
-    
+
     if (t > 0) {  // BigInt remainder;
       m   = chunkShift(I, - t);
       err = 1;
@@ -123,14 +123,14 @@ void BigFloatRep :: truncM(const BigFloatRep& B, const extLong& r, const extLong
     long tr = chunkFloor((- 1 - r + B.m.bitLength()).asLong());
     long ta = chunkFloor(- 1 - a.asLong()) - B.exp;
     long t;
-    
+
     if (r.isInfty() || a.isTiny())
       t = ta;
     else if (a.isInfty())
       t = tr;
     else
       t = ta < tr ? tr : ta;
-    
+
     if (t >= chunkCeil(clLg(B.err))) {
       m   = chunkShift(B.m, - t);
       err = 2;
@@ -139,7 +139,7 @@ void BigFloatRep :: truncM(const BigFloatRep& B, const extLong& r, const extLong
       error("truncM is called with stricter precision than current error.");
   } else {//  B.m == 0
     long t = chunkFloor(- a.asLong()) - B.exp;
-    
+
     if (t >= chunkCeil(clLg(B.err))) {
       m   = 0;
       err = 1;
@@ -168,7 +168,7 @@ void BigFloatRep::div(const BigInt& N, const BigInt& D, const extLong& r, const 
     if (sign(N)) {
       long tr = chunkFloor((- r + N.bitLength() - D.bitLength() - 1).asLong());
       long ta = chunkFloor(- a.asLong());
-      
+
       if (r.isInfty() || a.isTiny())
         exp = ta;
       else if (a.isInfty())
@@ -177,10 +177,10 @@ void BigFloatRep::div(const BigInt& N, const BigInt& D, const extLong& r, const 
         exp = ta < tr ? tr : ta;
 
       BigInt remainder;
-      
+
       // divide(chunkShift(N, - exp), D, m, remainder);
       div_rem(m, remainder, chunkShift(N, - exp), D);
-      
+
       if (exp <= 0 && sign(remainder) == 0)
         err = 0;
       else
@@ -192,7 +192,7 @@ void BigFloatRep::div(const BigInt& N, const BigInt& D, const extLong& r, const 
     }
   } else //  D == 0
     error("zero divisor.");
-  
+
   // Call normalization globally     -- IP 10/9/98
   normal();
 }//div
@@ -200,27 +200,27 @@ void BigFloatRep::div(const BigInt& N, const BigInt& D, const extLong& r, const 
 //  error-normalization
 void BigFloatRep::normal()
 {
-  long le = flrLg(err); 
-  
+  long le = flrLg(err);
+
   if (le >= CHUNK_BIT + 2) {
     long f = chunkFloor(--le);
     long bits_f = bits(f);
 #ifdef DEBUG
     assert (bits_f >= 0);
-#endif 
+#endif
     m   >>= bits_f;
     err >>= bits_f;
     err +=  2;
     exp +=  f;
   }
-  if (err == 0) 
+  if (err == 0)
     eliminateTrailingZeroes();
 }
 
 void BigFloatRep::bigNormal(BigInt& bigErr)
 {
   long le = bigErr.bitLength();
-  
+
   if (le < CHUNK_BIT + 2) {
     err = bigErr.ulongValue();
     // err = bigErr.as_long();
@@ -235,16 +235,16 @@ void BigFloatRep::bigNormal(BigInt& bigErr)
     err    = bigErr.ulongValue() + 2;
     // err    = bigErr.as_long() + 2;
     exp    += f;
-  } 
+  }
 
-  if (err == 0) 
+  if (err == 0)
   	eliminateTrailingZeroes();
 }
 
 //  arithmetics
 void BigFloatRep::add(const BigFloatRep& x, const BigFloatRep& y) {
   long expDiff = x.exp - y.exp;
-  
+
   if (expDiff > 0) {//  x.exp > y.exp
     if (!x.err) {
       m   = chunkShift(x.m, expDiff) + y.m;
@@ -279,7 +279,7 @@ void BigFloatRep::add(const BigFloatRep& x, const BigFloatRep& y) {
 
 void BigFloatRep::sub(const BigFloatRep& x, const BigFloatRep& y) {
   long expDiff = x.exp - y.exp;
-  
+
   if (expDiff > 0) {//  x.exp > y.exp
     if (!x.err) {
       m   = chunkShift(x.m, expDiff) - y.m;
@@ -319,26 +319,26 @@ void BigFloatRep::mul(const BigFloatRep& x, const BigFloatRep& y) {
         on 3 test programs (kahan, fortune/vor, geometry2d),
         strange errors appear on cgywin and linux!!
 
-  BigInt bigErr = abs(x.m) * static_cast<long>(y.err) + 
-    static_cast<long>(x.err) * abs(y.m) + 
+  BigInt bigErr = abs(x.m) * static_cast<long>(y.err) +
+    static_cast<long>(x.err) * abs(y.m) +
     static_cast<long>(x.err) * static_cast<long>(y.err);
   */
   // The following replacement removes the previous strange errors
   //    found on linux and cygwin platforms:
 
   BigInt bigErr;
-  bigErr = (abs(x.m) * BigInt(y.err)) 
-         + (BigInt(x.err) * abs(y.m)) 
+  bigErr = (abs(x.m) * BigInt(y.err))
+         + (BigInt(x.err) * abs(y.m))
          + (BigInt(x.err) * BigInt(y.err));
-  
+
   exp = x.exp + y.exp;
   bigNormal(bigErr);
- 
+
   // Call normalization globally     -- IP 10/9/98
   //  normal();
 }
 
-// BigFloat div2 will half the value of x, exactly with NO error 
+// BigFloat div2 will half the value of x, exactly with NO error
 // 	REMARK: should generalize this to dividing by any power of 2
 // 	We need this in our use of BigFloats to maintain isolation
 // 	intervals (e.g., in Sturm sequences)	--Chee/Vikram 4/2003
@@ -358,11 +358,11 @@ void BigFloatRep::centerize(const BigFloatRep& a, const BigFloatRep& b){
    }
 
    BigFloatRep r;
-   r.sub(a, b); r.div2(r); 
+   r.sub(a, b); r.div2(r);
 
    //setup mantissa and exponent, but not error bits
-   add(a, b); div2(*this); 
-   // error bits = ceil ( B^{-exp}*|a-b|/2 ) 
+   add(a, b); div2(*this);
+   // error bits = ceil ( B^{-exp}*|a-b|/2 )
    err = 1 + chunkShift(r.m, r.exp - exp).longValue();
 }
 
@@ -383,33 +383,33 @@ void BigFloatRep :: div(const BigFloatRep& x, const BigFloatRep& y,
       exp += x.exp - y.exp; // chen: adjust exp.
     } else {//  x.err > 0 or y.err > 0
       BigInt bigErr, errRemainder;
-      
+
       if (x.isZeroIn()) { //  x.m <= x.err
         m   = 0;
         exp = x.exp - y.exp;
-        
-        div_rem(bigErr, errRemainder, abs(x.m) + static_cast<long>(x.err), 
+
+        div_rem(bigErr, errRemainder, abs(x.m) + static_cast<long>(x.err),
                    abs(y.m) - static_cast<long>(y.err));
       } else { //  x.m > x.err
         long lx = x.m.bitLength();
         long ly = y.m.bitLength();
         long r;
-        
+
         if (!x.err) //  x.err == 0 and y.err > 0
           r = ly + 2;
         else if(!y.err)  //  x.err > 0 and y.err == 0
           r = lx + 2;
         else  //  x.err > 0 and y.err > 0
           r = lx < ly ? lx + 2: ly + 2;
-        
+
         long   t = chunkFloor(- r + lx - ly - 1);
         BigInt remainder;
-        
+
         div_rem(m, remainder, chunkShift(x.m, - t), y.m);
         exp = t + x.exp - y.exp;
-        
+
         long delta = ((t > 0) ? 2 : 0);
-        
+
         // Chen Li: 9/9/99
         // here again, it use ">>" operator with a negative
         // right operand. So the result is not well defined.
@@ -437,10 +437,10 @@ void BigFloatRep :: div(const BigFloatRep& x, const BigFloatRep& y,
                 abs(remainder) + errx_over_Bexp + delta + static_cast<long>(y.err) * abs(m),
                 abs(y.m) - static_cast<long>(y.err));
       }
-        
+
       if (sign(errRemainder))
         ++bigErr;
-        
+
       bigNormal(bigErr);
     }
   } else {//  y.m <= y.err
@@ -469,23 +469,23 @@ void BigFloatRep::sqrt(const BigInt& x, const extLong& a) {
     m  = x;
     err = 0;
     exp = 0;
-    
+
     BigFloatRep q, z;
     extLong     aa;
-    
+
     for (;;) {
       aa    = a - bits(exp);
       q.div(x, m, CORE_posInfty, aa);
       q.err = 0;
       q.exp -= exp;
-      
+
       z.sub(*this, q);  // this=current approximation, so z = this - q
-      
+
       if (sign(z.m) <= 0 || z.MSB() < - a)  // justification: see Koji's
         break;                              // thesis (p. 28) which states
                                             // that we can exit when
                                             // " (*this) <= q + 2**(-a)"
-      
+
       z.add(*this, q);
         // Chen Li: a bug fixed here.
         //      m   = z.m >> 1;
@@ -496,7 +496,7 @@ void BigFloatRep::sqrt(const BigInt& x, const extLong& a) {
         err = 0;
         exp = z.exp;
       } else {                      // need to shift left before division by 2
-        m = chunkShift(z.m, 1) >> 1;   
+        m = chunkShift(z.m, 1) >> 1;
         err = 0;
         exp = z.exp - 1;
       }
@@ -524,10 +524,10 @@ void BigFloatRep::sqrt(const BigInt& x, const extLong& a, const BigFloat& A) {
     m   = A.m();  // here is where we use the initial approximation
     err = 0;
     exp = A.exp();
-    
+
     BigFloatRep q, z;
     extLong     aa;
-    
+
     bool firstTime = true;    // need this to make sure that in case the
                               // initial approximation A is less than sqrt(x)
                               // then Newton iteration will still proceed at
@@ -537,9 +537,9 @@ void BigFloatRep::sqrt(const BigInt& x, const extLong& a, const BigFloat& A) {
       q.div(x, m, CORE_posInfty, aa);
       q.err = 0;
       q.exp -= exp;
-      
+
       z.sub(*this, q);  // this=current approximation, so z = this - q
-      
+
       /*
         if (sign(z.m) <= 0 || z.MSB() < - a)  // justification: see Koji's
           break;                              // thesis (p. 28) which states
@@ -550,12 +550,12 @@ void BigFloatRep::sqrt(const BigInt& x, const extLong& a, const BigFloat& A) {
 
       if (z.MSB() < -a) break;
       if (sign(z.m) <= 0) {
-        if (firstTime) 
+        if (firstTime)
           firstTime = false;
-        else 
+        else
           break;
       }
-        
+
       z.add(*this, q);
       // Chen Li: a bug fixed here.
       //      m   = z.m >> 1;
@@ -580,23 +580,23 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a) {
 // This computes the squareroot of x to absolute precision a
   if (sign(x.m) >= 0) {          //  x.m >= 0
     int delta = x.exp & 1;
-    
+
     if (x.isZeroIn()) {        //  x.m <= x.err
       m = 0;
-      
+
       if (!x.err)
         err = 0;
       else {                 //  x.err > 0
         err = (long)(:: sqrt((double)x.err));
         err++;
         err <<= 1;
-        
+
         if (delta)
           err <<= HALF_CHUNK_BIT;
       }//end else
-      
+
       exp = x.exp >> 1;
-      
+
       normal();
     } else if (!x.err) {          //  x.m > x.err = 0 (ERROR FREE CASE)
 
@@ -607,11 +607,11 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a) {
       else
          ppp = a + 1;
       extLong     pp  = ppp + bits(x.exp >> 1);
-      
+
       z.sqrt(chunkShift(x.m, delta), pp);
-      
+
       long p = (pp + bits(z.exp)).asLong();
-      
+
       if (p <= 0) {
         m = z.m;
         BigInt bigErr = 1;
@@ -631,13 +631,13 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a) {
     } else {                      //  x.m > x.err > 0 (mantissa has error)
       BigFloatRep z;
       extLong  aa = - flrLg(x.err) + (x.m.bitLength() + 1 - (bits(delta) >> 1)) + 3;
-      
+
       z.sqrt(chunkShift(x.m, delta), aa);
-      
+
       long qqq = - 1 + (x.m.bitLength() >> 1) - delta * HALF_CHUNK_BIT;
       long qq  = qqq - clLg(x.err);
       long q   = qq + bits(z.exp);
-      
+
       if (q <= 0) {
         m = z.m;
         long   qqqq   = - qqq - bits(z.exp);
@@ -646,17 +646,17 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a) {
         //        BigInt bigErr = x.err << - qqqq;
         // when (-qqqq) is negative, the result is not correct.
         // how "<<" and ">>" process negative second operand is
-        // not well defined. Seems it just take it as a unsigned 
+        // not well defined. Seems it just take it as a unsigned
         // integer and extract the last few bytes.
         // x.err is a long number which easily overflows.
-        // From page 22 of Koji's paper, I think the exponent is 
+        // From page 22 of Koji's paper, I think the exponent is
         // wrong here. So I rewrote it as:
         BigInt bigErr = x.err;
         if (qqqq >= 0) {
           bigErr <<= qqqq;
         } else {
           bigErr >>= (-qqqq);
-          ++bigErr; // we need to keep its ceiling. 
+          ++bigErr; // we need to keep its ceiling.
         }
 
         exp = z.exp + (x.exp >> 1);
@@ -683,17 +683,17 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
    // the initial approximation A
   if (sign(x.m) >= 0) {          //  x.m >= 0
     int delta = x.exp & 1;    // delta=0 if x.exp is even, otherwise delta=1
-    
+
     if (x.isZeroIn()) {         //  x.m <= x.err
       m = 0;
-      
+
       if (!x.err)
         err = 0;
       else {                  //  x.err > 0
         err = (long)(:: sqrt((double)x.err));
         err++;
         err <<= 1;
-        
+
         if (delta)
           err <<= HALF_CHUNK_BIT;
       }
@@ -707,11 +707,11 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
         BigFloatRep z;
         extLong     ppp = a + 1;
         extLong     absp  = ppp + bits(x.exp >> 1);
-      
+
         z.sqrt(chunkShift(x.m, delta), absp, AA); // call sqrt(BigInt, a, AA)
-      
+
         long p = (absp + bits(z.exp)).asLong();
-      
+
         // Next, normalize the error:
         if (p <= 0) {
           m = z.m;
@@ -734,13 +734,13 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
       } else {                      //  x.m > x.err > 0 (mantissa has error)
         BigFloatRep z;
         extLong  absp = - flrLg(x.err) + (x.m.bitLength() + 1 - (bits(delta) >> 1)) + 3;
-      
+
         z.sqrt(chunkShift(x.m, delta), absp, AA);
-      
+
         long qqq = - 1 + (x.m.bitLength() >> 1) - delta * HALF_CHUNK_BIT;
         long qq  = qqq - clLg(x.err);
         long q   = qq + bits(z.exp);
-      
+
         if (q <= 0) {
           m = z.m;
           long   qqqq   = - qqq - bits(z.exp);
@@ -748,10 +748,10 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
           //        BigInt bigErr = x.err << - qqqq;
           // when (-qqqq) is negative, the result is not correct.
           // how "<<" and ">>" process negative second operand is
-          // not well defined. Seems it just take it as a unsigned 
+          // not well defined. Seems it just take it as a unsigned
           // integer and extract the last few bits.
           // x.err is a long number which easily overflows.
-          // From page 22 of Koji's paper, I think the exponent is 
+          // From page 22 of Koji's paper, I think the exponent is
           // wrong here. So I rewrote it as:
           BigInt bigErr = x.err;
           if (qqqq >= 0) {
@@ -771,7 +771,7 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
 #endif
           err = 1 >> r;
           exp = (x.exp >> 1) - chunkCeil(qq);
-        
+
           normal();
         }
       }  // end of case with error in mantissa
@@ -781,10 +781,10 @@ void BigFloatRep::sqrt(const BigFloatRep& x, const extLong& a, const BigFloat& A
 } //sqrt with initial approximation
 
 
-//  compareMExp(x) 
+//  compareMExp(x)
 //	returns  1 if *this > x
-//	         0 if *this = x, 
-//	        -1 if *this < x, 
+//	         0 if *this = x,
+//	        -1 if *this < x,
 //
 //  	Main comparison method for BigFloat
 //  	This is called by BigFloat::compare()
@@ -795,7 +795,7 @@ int BigFloatRep :: compareMExp(const BigFloatRep& x) const
 {
   int st = sign(m);
   int sx = sign(x.m);
-    
+
   if (st > sx)
     return 1;
   else if (st == 0 && sx == 0)
@@ -804,7 +804,7 @@ int BigFloatRep :: compareMExp(const BigFloatRep& x) const
     return - 1;
   else { //  need to compare m && exp
     long expDiff = exp - x.exp;
-      
+
     if (expDiff > 0) //  exp > x.exp
       return cmp(chunkShift(m, expDiff), x.m);
     else if (!expDiff)
@@ -825,16 +825,16 @@ int BigFloatRep :: compareMExp(const BigFloatRep& x) const
 
 long BigFloatRep :: adjustE( long E, BigInt M, long ee) const
 {
-  if (M<0) 
+  if (M<0)
     M=-M;
   BigInt mm(1);
-  if (ee > 0) 
+  if (ee > 0)
     M = (M<<ee);
-  else 
+  else
     mm = (mm << (-ee));
-  if (E > 0) 
+  if (E > 0)
     mm *= (FiveTo(E)<< E);
-  else 
+  else
     M *= (FiveTo(-E) << (-E));
 
   if (M < mm) {
@@ -850,20 +850,20 @@ long BigFloatRep :: adjustE( long E, BigInt M, long ee) const
   return E;
 }
 
-BigFloatRep::DecimalOutput 
+BigFloatRep::DecimalOutput
 BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
 
   BigFloatRep::DecimalOutput decOut;                    // to be returned
-  
+
   if (err > 0) {
     decOut.isExact = false;
   } else { // err == 0
     decOut.isExact = true;
   }
 
-  if (err > 0 && err >= abs(m)) { 
+  if (err > 0 && err >= abs(m)) {
     // if err is larger than mantissa, sign and significant values
-    // can not be determined. 
+    // can not be determined.
     decOut.rep = "0.0e";            // error is too big
     decOut.isScientific = false;
     decOut.noSignificant = 0;
@@ -881,12 +881,12 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
   if (le == -1)	le = 0;
 
   long L10 = 0;
-  if (M != 0) {    
+  if (M != 0) {
     L10 = (long)::floor((lm + e2) / lgTenM);
     L10 = adjustE(L10, m, e2);          // L10: floor[log10(M 2^(e2))], M != 0
   } else {
     L10 = 0;
-  } 
+  }
   // Convention: in the positional format, when the output is
   // the following string of 8 characters:
   //             d0, d1, d2, d3, ".", d4, d5, d6, d7
@@ -894,13 +894,13 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
   // The value of L10 says that the decimal point of output should be at
   // the (L10 + 1)st position. This is
   // true regardingless of whether M = 0 or not. For zero, we output
-  // {0.0*} so L10=0.  In general, the |value| is less than 10 
+  // {0.0*} so L10=0.  In general, the |value| is less than 10
   // if and only if L10 is 0
   // and the decimal point is in the 1st place.  Note that L10 is defined even if
   // the output is an integer (in which case it does not physically appear but
   // conceptually terminates the sequence of digits).
 
-  // first, get the decimal representaion of (m * B^(exp)). 
+  // first, get the decimal representaion of (m * B^(exp)).
   if (e2 < 0) {
     M *= FiveTo(-e2); // M = x * 10^(-e2)
   } else {
@@ -908,7 +908,7 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
   }
 
   std::string decRep = M.toString();
-  // determine the "significant part" of this string, i.e. the part which is 
+  // determine the "significant part" of this string, i.e. the part which is
   // guaranteed to be correct in the presence of error,
   // except that the last digit which might be subject to +/- 1.
 
@@ -921,16 +921,16 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
 
   // All the digits in decM are correct, except the last one might
   // subject to an error +/- 1.
-  
+
   if ((decRep[0] == '+') || (decRep[0] == '-')) {
     decRep.erase(0, 1);
   }
-  
-  // Second, make choice between positional representation 
+
+  // Second, make choice between positional representation
   // and scientific notation.  Use scientific notation when:
   // 0) if scientific notation flag is on
   // 1) err * B^exp >= 1, the error contribute to the integral part.
-  // 2) (1 + L10) >= width, there is not have enough places to hold the 
+  // 2) (1 + L10) >= width, there is not have enough places to hold the
   //    positional representation, not including decimal point.
   // 3) The distance between the first significant digit and decimal
   //    point is too large for the width limit. This is equivalent to
@@ -940,7 +940,7 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
   if (Scientific ||
       ((err > 0) && (le + e2) >= 0) ||          // if err*B^exp >= 1
       ((L10 >= 0) && (L10 + 1 >= (long)width )) ||
-      ((L10 < 0) && (-L10 + 1 > (long)width ))) { 
+      ((L10 < 0) && (-L10 + 1 > (long)width ))) {
     // use scientific notation
     decRep = round(decRep, width);
     decOut.noSignificant = width;
@@ -965,7 +965,7 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
       decOut.isScientific = true;
     }
   } else {
-    // use conventional positional notation.    
+    // use conventional positional notation.
     if (L10 >= 0) { // x >= 1 or x == 0 and L10 + 1 <= width
       // round when necessary
       if (decRep.length() > width ) {
@@ -978,7 +978,7 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
       decOut.noSignificant = decRep.length();
       if (L10 + 1 < (long)width ) {
         decRep.insert(L10 + 1, ".");
-      } else { // L10 + 1 == width 
+      } else { // L10 + 1 == width
         // do nothing
       }
     } else { // L10 < 0, 0 < x < 1
@@ -1003,12 +1003,12 @@ BigFloatRep::toDecimal(unsigned int width, bool Scientific) const {
   decOut.rep = decRep;
   return decOut;
 }
-       
+
 std::string BigFloatRep::round(std::string inRep, unsigned int width) const {
   // round inRep so that the length would not exceed width.
-  if (inRep.length() <= width) 
-    return inRep; 
-  
+  if (inRep.length() <= width)
+    return inRep;
+
   int i = width; // < length
   bool carry = false;
 
@@ -1027,7 +1027,7 @@ std::string BigFloatRep::round(std::string inRep, unsigned int width) const {
       }
       i-- ;
     }
-    
+
     if ((i < 0) && carry) { // overflow
       inRep.insert(inRep.begin(), '1');
       width ++;
@@ -1041,7 +1041,7 @@ std::string BigFloatRep::round(std::string inRep, unsigned int width) const {
 // This function fromString(str, prec) is similar to the
 //      constructor Real(char * str, extLong prec)
 // See the file Real.cc for the differences
-        
+
 void BigFloatRep :: fromString(const char *str, const extLong & prec ) {
   // NOTE: prec defaults to defBigFloatInputDigits (see BigFloat.h)
   // check that prec is not INFTY
@@ -1057,14 +1057,14 @@ void BigFloatRep :: fromString(const char *str, const extLong & prec ) {
     e = str + strlen(str);
 #ifdef DEBUG
     assert(*e == '\0');
-#endif 
+#endif
   }
 
   const char *p = str;
   if (*p == '-' || *p == '+') p++;
   m = 0;
   exp = 0;
-  
+
   for (; p < e; p++) {
     if (*p == '.') {
       dot = 1;
@@ -1073,7 +1073,7 @@ void BigFloatRep :: fromString(const char *str, const extLong & prec ) {
     m = m * 10 + (*p - '0');
     if (dot) e10--;
   }
-  
+
   BigInt one = 1;
   long t = (e10 < 0) ? -e10 : e10;
   BigInt ten = FiveTo(t) * (one << t);
@@ -1083,7 +1083,7 @@ void BigFloatRep :: fromString(const char *str, const extLong & prec ) {
   // Note: this constant is rather similar to defInputDigits which
   //     is used by Real and Expr for controlling
   //     input accuracy.  The difference is that defInputDigits can
-  //     be CORE_INFTY, but defBigFloatInputDigits must be finite. 
+  //     be CORE_INFTY, but defBigFloatInputDigits must be finite.
 
   if (e10 < 0)
     div(m, ten, CORE_posInfty, 4 * prec);
@@ -1130,7 +1130,7 @@ std::istream& BigFloatRep :: operator >>(std::istream& i)
   for (; isdigit(c) || (!d && c=='.') ||
          (!e && ((c=='e') || (c=='E'))) || (!s && (c=='-' || c=='+')); i.get(c)) {
     if (!e && (c == '-' || c == '+')) break;
-    // Chen Li: put one more rule to prohibite input like 
+    // Chen Li: put one more rule to prohibite input like
     //  xxxx.xxxe+xxx.xxx:
     if (e && (c == '.')) break;
     if (p - str == size) {
@@ -1147,7 +1147,7 @@ std::istream& BigFloatRep :: operator >>(std::istream& i)
     *p++ = c;
     if (c == '.')                  d = 1;
     // Chen Li: fix a bug -- the sign of exponent can not happen before
-    // the character "e" appears! It must follow the "e' actually. 
+    // the character "e" appears! It must follow the "e' actually.
     //    if (e || c == '-' || c == '+') s = 1;
     if (e) s = 1;
     if ((c == 'e') || (c=='E'))                  e = 1;
@@ -1184,7 +1184,7 @@ std::istream& BigFloatRep :: operator >>(std::istream& i)
 //      Return +/- Infinity if BigFloat is too big
 //      Return +/- 0 if BigFloat is too small
 #ifdef _MSC_VER
-#pragma warning(disable: 4723) 
+#pragma warning(disable: 4723)
 #endif
 double BigFloatRep :: toDouble() const
 {
@@ -1216,17 +1216,17 @@ double BigFloatRep :: toDouble() const
     e2 += len;
   }
 
-  double tt = M.doubleValue(); 
+  double tt = M.doubleValue();
 
-  int ee = e2 + M.bitLength() - 1; // real exponent. 
+  int ee = e2 + M.bitLength() - 1; // real exponent.
 
   if (ee >= 1024)       // overflow!
     return (  sign(m)/foolCompilerZero  );      // return a signed infinity
 
-  if (ee <= -1075)      // underflow! 
+  if (ee <= -1075)      // underflow!
                         // NOTE: if (-52 < ee <= 0) get denormalized number
     return ( sign(m) * 0.0 );  // return signed zero.
-        
+
   // Execute this loop if e2 < 0;
   for (int i = 0; i > e2; i--)
     tt /= 2;
@@ -1252,13 +1252,13 @@ BigInt BigFloatRep::toBigInt() const
   BigInt M = m >> le; // discard the contaminated bits.
   e2 += le;           // adjust the exponent
 
-  if (e2 < 0)  
+  if (e2 < 0)
     return M >> (-e2);
   else if (e2 > 0)
     return M << e2;
-  else 
+  else
     return M;
-}                
+}
 
 long BigFloatRep :: toLong() const
 {
@@ -1271,22 +1271,22 @@ long BigFloatRep :: toLong() const
   BigInt M = m >> le; // discard the contaminated bits.
   e2 += le;           // adjust the exponent
   long t;
-  if (e2 < 0)  
+  if (e2 < 0)
     t = BigInt(M >> (-e2)).ulongValue();
   else if (e2 > 0)
     t = BigInt(M << e2).ulongValue();
-  else 
+  else
     t = BigInt(M).ulongValue();
     // t = M.as_long();
   // Note: as_long() will return LONG_MAX in case of overflow.
 
   return t;
-}                
+}
 
 // pow(r,n) function for BigFloat
 // Note: power(r,n) calls pow(r,n)
 BigFloat pow(const BigFloat& r, unsigned long n) {
-  if (n == 0) 
+  if (n == 0)
     return BigFloat(1);
   else if (n == 1)
     return r;

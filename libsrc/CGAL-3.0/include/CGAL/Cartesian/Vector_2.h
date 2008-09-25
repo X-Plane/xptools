@@ -119,7 +119,7 @@ public:
 
 template < class R >
 CGAL_KERNEL_INLINE
-bool 
+bool
 operator==(const VectorC2<R> &v, const VectorC2<R> &w)
 {
   return w.x() == v.x() && w.y() == v.y();
@@ -127,7 +127,7 @@ operator==(const VectorC2<R> &v, const VectorC2<R> &w)
 
 template < class R >
 inline
-bool 
+bool
 operator!=(const VectorC2<R> &v, const VectorC2<R> &w)
 {
   return !(v == w);
@@ -184,7 +184,7 @@ VectorC2<R>::operator[](int i) const
 
 template < class R >
 CGAL_KERNEL_INLINE
-typename VectorC2<R>::FT 
+typename VectorC2<R>::FT
 VectorC2<R>::homogeneous(int i) const
 {
   return (i == 2) ? FT(1) : cartesian(i);

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,7 +27,7 @@
 #include "WED_Archive.h"
 #include "AssertUtils.h"
 #include "WED_FastBuffer.h"
-// NOTE: we could store no turd for created objs 
+// NOTE: we could store no turd for created objs
 
 WED_UndoLayer::WED_UndoLayer(WED_Archive * inArchive, const string& inName) :
 	mArchive(inArchive), mName(inName), mChangeMask(0)
@@ -53,13 +53,13 @@ void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 	if (iter != mObjects.end())
 	{
 		// There is only one possible "rewrite" - if we are creating and knew
-		// about the obj - it better have been destroyed!  In this case 
+		// about the obj - it better have been destroyed!  In this case
 		// destroy + recreate = change.  But keep the original data, the earliest
 		// not this recent data.
-		Assert(iter->second.op == op_Destroyed);		
+		Assert(iter->second.op == op_Destroyed);
 		iter->second.op = op_Changed;
-		
-	} else {	
+
+	} else {
 		// Brand new object
 		ObjInfo	info;
 		info.the_class = inObject->GetClass();
@@ -91,10 +91,10 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject, int change_kind)
 		info.id = inObject->GetID();
 		info.buffer = mStorage->MakeNewBuffer();
 //		info.buffer = new WED_Buffer;
-		inObject->WriteTo(info.buffer);	
+		inObject->WriteTo(info.buffer);
 		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
-	}	
+	}
 }
 
 void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
@@ -111,13 +111,13 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		{
 			// Special case - a created and nuked object basically is temporary
 			// and is unneeded in the bigger scheme of things.
-			// Ben says: yes this sadly leaks space in the undo buffer, but 
+			// Ben says: yes this sadly leaks space in the undo buffer, but
 			// generally creating and then nuking a huge number of objects
 			// is a rare use pattern....the compression and speed the consolidated
 			// buffer gives us is a lot more important.
-			mObjects.erase(iter);			
+			mObjects.erase(iter);
 		} else {
-			// Note that we don't need to save the data - the original 
+			// Note that we don't need to save the data - the original
 			// change op already saved it!
 			iter->second.op = op_Destroyed;
 		}
@@ -129,11 +129,11 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		info.id = inObject->GetID();
 		info.buffer = mStorage->MakeNewBuffer();
 //		info.buffer = new WED_Buffer;
-		inObject->WriteTo(info.buffer);	
+		inObject->WriteTo(info.buffer);
 		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}
-	
+
 }
 
 void	WED_UndoLayer::Execute(void)
@@ -142,7 +142,7 @@ void	WED_UndoLayer::Execute(void)
 	for (ObjInfoMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
 	{
 		WED_Persistent * obj;
-		switch(i->second.op) { 
+		switch(i->second.op) {
 		case op_Created:
 			obj = mArchive->Fetch(i->first);
 			DebugAssert(i->second.buffer == NULL);

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -25,8 +25,8 @@
 #include "AssertUtils.h"
 #include <stdio.h>
 
-CoverageFinder::CoverageFinder(int inNumAxes) 
-{	
+CoverageFinder::CoverageFinder(int inNumAxes)
+{
 	mIsEnum.resize(inNumAxes, false);
 	mFloatValues.resize(inNumAxes);
 	mEnumValues.resize(inNumAxes);
@@ -46,7 +46,7 @@ void	CoverageFinder::NameAxis(int inAxis, const string& inName)
 
 void	CoverageFinder::AddAxisRange(int inAxis, float inMin, float inMax)
 {
-	mAxisWidth[inAxis] = max(mAxisWidth[inAxis], 14);	
+	mAxisWidth[inAxis] = max(mAxisWidth[inAxis], 14);
 	DebugAssert(mEnumValues[inAxis].empty());
 	mIsEnum[inAxis] = false;
 	mFloatValues[inAxis].insert(inMin);
@@ -55,7 +55,7 @@ void	CoverageFinder::AddAxisRange(int inAxis, float inMin, float inMax)
 
 void	CoverageFinder::AddAxisEnum(int inAxis, int inEnum, const string& inName)
 {
-	mAxisWidth[inAxis] = max(mAxisWidth[inAxis], (int) inName.size()+1);	
+	mAxisWidth[inAxis] = max(mAxisWidth[inAxis], (int) inName.size()+1);
 	DebugAssert(mFloatValues[inAxis].empty());
 	mIsEnum[inAxis] = true;
 	mEnumValues[inAxis].insert(map<int, string>::value_type(inEnum, inName));
@@ -93,7 +93,7 @@ void	CoverageFinder::AddRuleEnum(int inAxis, int inEnum)
 {
 	int s = EnumToIndex(inAxis, inEnum);
 		mRule[inAxis][s] = true;
-	
+
 }
 
 void	CoverageFinder::AddRuleAny(int inAxis)
@@ -144,7 +144,7 @@ void	CoverageFinder::OutputGaps(void)
 		{
 			if (mIsEnum[i])
 			{
-				string e = IndexToEnumString(i, indices[i]);				
+				string e = IndexToEnumString(i, indices[i]);
 				printf("%-*s ", mAxisWidth[i], e.c_str());
 			} else {
 				float r1 = IndexToRange(i, indices[i]);
@@ -154,7 +154,7 @@ void	CoverageFinder::OutputGaps(void)
 					printf(" ");
 			}
 		}
-		printf("\n");		
+		printf("\n");
 	}
 }
 

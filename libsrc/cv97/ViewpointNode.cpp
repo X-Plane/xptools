@@ -10,7 +10,7 @@
 
 #include "ViewpointNode.h"
 
-ViewpointNode::ViewpointNode() 
+ViewpointNode::ViewpointNode()
 {
 	setHeaderFlag(false);
 	setType(viewpointNodeString);
@@ -41,7 +41,7 @@ ViewpointNode::ViewpointNode()
 	addExposedField(jumpField);
 }
 
-ViewpointNode::~ViewpointNode() 
+ViewpointNode::~ViewpointNode()
 {
 }
 
@@ -55,18 +55,18 @@ SFBool *ViewpointNode::getJumpField()
 		return jumpField;
 	return (SFBool *)getExposedField(jumpFieldString);
 }
-	
-void ViewpointNode::setJump(bool value) 
+
+void ViewpointNode::setJump(bool value)
 {
 	getJumpField()->setValue(value);
 }
 
-void ViewpointNode::setJump(int value) 
+void ViewpointNode::setJump(int value)
 {
 	setJump(value ? true : false);
 }
 
-bool ViewpointNode::getJump() 
+bool ViewpointNode::getJump()
 {
 	return getJumpField()->getValue();
 }
@@ -81,13 +81,13 @@ SFFloat *ViewpointNode::getFieldOfViewField()
 		return fovField;
 	return (SFFloat *)getExposedField(fieldOfViewFieldString);
 }
-	
-void ViewpointNode::setFieldOfView(float value) 
+
+void ViewpointNode::setFieldOfView(float value)
 {
 	getFieldOfViewField()->setValue(value);
 }
 
-float ViewpointNode::getFieldOfView() 
+float ViewpointNode::getFieldOfView()
 {
 	return getFieldOfViewField()->getValue();
 }
@@ -102,13 +102,13 @@ SFString *ViewpointNode::getDescriptionField()
 		return descriptionField;
 	return (SFString *)getField(descriptionFieldString);
 }
-	
-void ViewpointNode::setDescription(char *value) 
+
+void ViewpointNode::setDescription(char *value)
 {
 	getDescriptionField()->setValue(value);
 }
 
-char *ViewpointNode::getDescription() 
+char *ViewpointNode::getDescription()
 {
 	return getDescriptionField()->getValue();
 }
@@ -123,17 +123,17 @@ SFVec3f *ViewpointNode::getPositionField()
 	return (SFVec3f *)getExposedField(positionFieldString);
 }
 
-void ViewpointNode::setPosition(float value[]) 
+void ViewpointNode::setPosition(float value[])
 {
 	getPositionField()->setValue(value);
 }
 
-void ViewpointNode::setPosition(float x, float y, float z) 
+void ViewpointNode::setPosition(float x, float y, float z)
 {
 	getPositionField()->setValue(x, y, z);
 }
 
-void ViewpointNode::getPosition(float value[]) 
+void ViewpointNode::getPosition(float value[])
 {
 	getPositionField()->getValue(value);
 }
@@ -149,17 +149,17 @@ SFRotation *ViewpointNode::getOrientationField()
 	return (SFRotation *)getExposedField(orientationFieldString);
 }
 
-void ViewpointNode::setOrientation(float value[]) 
+void ViewpointNode::setOrientation(float value[])
 {
 	getOrientationField()->setValue(value);
 }
 
-void ViewpointNode::setOrientation(float x, float y, float z, float w) 
+void ViewpointNode::setOrientation(float x, float y, float z, float w)
 {
 	getOrientationField()->setValue(x, y, z, w);
 }
 
-void ViewpointNode::getOrientation(float value[]) 
+void ViewpointNode::getOrientation(float value[])
 {
 	getOrientationField()->getValue(value);
 }
@@ -168,18 +168,18 @@ void ViewpointNode::getOrientation(float value[])
 //	Add position
 ////////////////////////////////////////////////
 
-void ViewpointNode::addPosition(float worldTranslation[3]) 
-{ 
+void ViewpointNode::addPosition(float worldTranslation[3])
+{
 	getPositionField()->add(worldTranslation);
 }
 
-void ViewpointNode::addPosition(float worldx, float worldy, float worldz) 
-{ 
+void ViewpointNode::addPosition(float worldx, float worldy, float worldz)
+{
 	getPositionField()->add(worldx, worldy, worldz);
 }
 
-void ViewpointNode::addPosition(float localTranslation[3], float frame[3][3]) 
-{ 
+void ViewpointNode::addPosition(float localTranslation[3], float frame[3][3])
+{
 	SFVec3f *position = getPositionField();
 	float	translation[3];
 	for (int axis=0; axis<3; axis++) {
@@ -190,8 +190,8 @@ void ViewpointNode::addPosition(float localTranslation[3], float frame[3][3])
 	}
 }
 
-void ViewpointNode::addPosition(float x, float y, float z, float frame[3][3]) 
-{ 
+void ViewpointNode::addPosition(float x, float y, float z, float frame[3][3])
+{
 	float localTranslation[3];
 	localTranslation[0] = x;
 	localTranslation[1] = y;
@@ -203,17 +203,17 @@ void ViewpointNode::addPosition(float x, float y, float z, float frame[3][3])
 //	Add orientation
 ////////////////////////////////////////////////
 
-void ViewpointNode::addOrientation(SFRotation *rot) 
+void ViewpointNode::addOrientation(SFRotation *rot)
 {
 	getOrientationField()->add(rot);
 }
 
-void ViewpointNode::addOrientation(float rotationValue[4]) 
+void ViewpointNode::addOrientation(float rotationValue[4])
 {
 	getOrientationField()->add(rotationValue);
 }
 
-void ViewpointNode::addOrientation(float x, float y, float z, float rot) 
+void ViewpointNode::addOrientation(float x, float y, float z, float rot)
 {
 	getOrientationField()->add(x, y, z, rot);
 }
@@ -222,12 +222,12 @@ void ViewpointNode::addOrientation(float x, float y, float z, float rot)
 //	List
 ////////////////////////////////////////////////
 
-ViewpointNode *ViewpointNode::next() 
+ViewpointNode *ViewpointNode::next()
 {
 	return (ViewpointNode *)Node::next(getType());
 }
 
-ViewpointNode *ViewpointNode::nextTraversal() 
+ViewpointNode *ViewpointNode::nextTraversal()
 {
 	return (ViewpointNode *)Node::nextTraversalByType(getType());
 }
@@ -235,21 +235,21 @@ ViewpointNode *ViewpointNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ViewpointNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ViewpointNode::initialize() 
+void ViewpointNode::initialize()
 {
 }
 
-void ViewpointNode::uninitialize() 
+void ViewpointNode::uninitialize()
 {
 }
 
-void ViewpointNode::update() 
+void ViewpointNode::update()
 {
 }
 
@@ -257,7 +257,7 @@ void ViewpointNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void ViewpointNode::outputContext(ostream& printStream, char *indentString) 
+void ViewpointNode::outputContext(ostream& printStream, char *indentString)
 {
 	SFVec3f *position = getPositionField();
 	SFRotation *orientation = getOrientationField();
@@ -274,7 +274,7 @@ void ViewpointNode::outputContext(ostream& printStream, char *indentString)
 //	Local frame
 ////////////////////////////////////////////////
 
-void ViewpointNode::getFrame(float frame[3][3]) 
+void ViewpointNode::getFrame(float frame[3][3])
 {
 	SFRotation *orientation = getOrientationField();
 	// local x frame
@@ -294,14 +294,14 @@ void ViewpointNode::getFrame(float frame[3][3])
 	orientation->multi(frame[2]);
 }
 
-void ViewpointNode::translate(float vector[3]) 
+void ViewpointNode::translate(float vector[3])
 {
 	float frame[3][3];
 	getFrame(frame);
 	addPosition(vector, frame);
 }
 
-void ViewpointNode::translate(SFVec3f vec) 
+void ViewpointNode::translate(SFVec3f vec)
 {
 	float frame[3][3];
 	float vector[3];
@@ -310,12 +310,12 @@ void ViewpointNode::translate(SFVec3f vec)
 	addPosition(vector, frame);
 }
 
-void ViewpointNode::rotate(float rotation[4]) 
+void ViewpointNode::rotate(float rotation[4])
 {
 	addOrientation(rotation);
 }
 
-void ViewpointNode::rotate(SFRotation rot) 
+void ViewpointNode::rotate(SFRotation rot)
 {
 	float rotation[4];
 	rot.getValue(rotation);
@@ -326,11 +326,11 @@ void ViewpointNode::rotate(SFRotation rot)
 //	ViewpointNode Matrix
 ////////////////////////////////////////////////
 
-void ViewpointNode::getMatrix(SFMatrix *matrix) 
+void ViewpointNode::getMatrix(SFMatrix *matrix)
 {
 	float	position[3];
 	float	rotation[4];
-	
+
 	getPosition(position);
 	SFVec3f	transView(position);
 	transView.invert();
@@ -348,17 +348,17 @@ void ViewpointNode::getMatrix(SFMatrix *matrix)
 	matrix->add(&mxTrans);
 }
 
-void ViewpointNode::getMatrix(float value[4][4]) 
+void ViewpointNode::getMatrix(float value[4][4])
 {
 	SFMatrix	mx;
 	getMatrix(&mx);
 	mx.getValue(value);
 }
 
-void ViewpointNode::getTranslationMatrix(SFMatrix *matrix) 
+void ViewpointNode::getTranslationMatrix(SFMatrix *matrix)
 {
 	float	position[3];
-	
+
 	getPosition(position);
 	SFVec3f	transView(position);
 	transView.invert();
@@ -370,7 +370,7 @@ void ViewpointNode::getTranslationMatrix(SFMatrix *matrix)
 	matrix->add(&mxTrans);
 }
 
-void ViewpointNode::getTranslationMatrix(float value[4][4]) 
+void ViewpointNode::getTranslationMatrix(float value[4][4])
 {
 	SFMatrix	mx;
 	getTranslationMatrix(&mx);

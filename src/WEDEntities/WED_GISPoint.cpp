@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,7 +30,7 @@
 TRIVIAL_COPY(WED_GISPoint, WED_Entity)
 
 WED_GISPoint::WED_GISPoint(WED_Archive * parent, int id) :
-	WED_Entity(parent, id), 
+	WED_Entity(parent, id),
 	latitude (this,"latitude" ,"GIS_points","latitude" ,0.0,10,6),
 	longitude(this,"longitude","GIS_points","longitude",0.0,11,6)
 {
@@ -46,7 +46,7 @@ GISClass_t		WED_GISPoint::GetGISClass		(void				 ) const
 }
 
 const char *	WED_GISPoint::GetGISSubtype	(void				 ) const
-{	
+{
 	return GetClass();
 }
 
@@ -106,7 +106,7 @@ void	WED_GISPoint::SetLocation(const Point2& p)
 		longitude.value = p.x;
 		latitude.value = p.y;
 		CacheInval();
-		CacheBuild();		
+		CacheBuild();
 	}
 }
 
@@ -118,19 +118,19 @@ void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
 		Point2	pt_old(longitude.value, latitude.value);
 		Vector2	v_old = VectorLLToMeters(ctr,Vector2(ctr,pt_old));
 		double old_len = sqrt(v_old.squared_length());
-		
+
 		double old_ang = VectorMeters2NorthHeading(ctr,ctr,v_old);
 		Vector2	v_new;
 
 		NorthHeading2VectorMeters(ctr, ctr, old_ang + a, v_new);
 		v_new.normalize();
 		v_new *= old_len;
-		
+
 		v_new = VectorMetersToLL(ctr,v_new);
-		
+
 		longitude.value = ctr.x + v_new.dx;
 		latitude.value = ctr.y + v_new.dy;
-		
+
 		CacheInval();
 		CacheBuild();
 	}

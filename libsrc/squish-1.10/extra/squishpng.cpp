@@ -3,30 +3,30 @@
 	Copyright (c) 2006 Simon Brown                          si@sjbrown.co.uk
 
 	Permission is hereby granted, free of charge, to any person obtaining
-	a copy of this software and associated documentation files (the 
+	a copy of this software and associated documentation files (the
 	"Software"), to	deal in the Software without restriction, including
 	without limitation the rights to use, copy, modify, merge, publish,
-	distribute, sublicense, and/or sell copies of the Software, and to 
-	permit persons to whom the Software is furnished to do so, subject to 
+	distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to
 	the following conditions:
 
 	The above copyright notice and this permission notice shall be included
 	in all copies or substantial portions of the Software.
 
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	
+
    -------------------------------------------------------------------------- */
-   
+
 /*! @file
 
 	@brief	Example program that converts between the PNG and DXT formats.
-	
+
 	This program requires libpng for PNG input and output, and is designed
 	to show how to prepare data for the squish library when it is not simply
 	a contiguous block of memory.
@@ -52,9 +52,9 @@ class Error : public std::exception
 public:
 	Error( std::string const& excuse ) : m_excuse( excuse ) {}
 	~Error() throw() {}
-	
+
 	virtual char const* what() const throw() { return m_excuse.c_str(); }
-	
+
 private:
 	std::string m_excuse;
 };
@@ -64,7 +64,7 @@ class NonCopyable
 {
 public:
 	NonCopyable() {}
-	
+
 private:
 	NonCopyable( NonCopyable const& );
 	NonCopyable& operator=( NonCopyable const& );
@@ -76,9 +76,9 @@ class Mem : NonCopyable
 public:
 	explicit Mem( int size ) : m_p( new u8[size] ) {}
 	~Mem() { delete[] m_p; }
-	
+
 	u8* Get() const { return m_p; }
-	
+
 private:
 	u8* m_p;
 };
@@ -89,7 +89,7 @@ class File : NonCopyable
 public:
 	explicit File( FILE* fp ) : m_fp( fp ) {}
 	~File() { if( m_fp ) fclose( m_fp ); }
-	
+
 	bool IsValid() const { return m_fp != 0; }
 	FILE* Get() const { return m_fp; }
 
@@ -102,14 +102,14 @@ class PngReadStruct : NonCopyable
 {
 public:
 	PngReadStruct()
-	  : m_png( 0 ), 
-		m_info( 0 ), 
+	  : m_png( 0 ),
+		m_info( 0 ),
 		m_end( 0 )
 	{
 		m_png = png_create_read_struct( PNG_LIBPNG_VER_STRING, 0, 0, 0 );
 		if( !m_png )
-			throw Error( "failed to create png read struct" );	
-			
+			throw Error( "failed to create png read struct" );
+
 		m_info = png_create_info_struct( m_png );
 		m_end = png_create_info_struct( m_png );
 		if( !m_info || !m_end )
@@ -120,9 +120,9 @@ public:
 			throw Error( "failed to create png info structs" );
 		}
 	}
-	
-	~PngReadStruct() 
-	{ 
+
+	~PngReadStruct()
+	{
 		png_destroy_read_struct( &m_png, &m_info, &m_end );
 	}
 
@@ -139,13 +139,13 @@ class PngWriteStruct : NonCopyable
 {
 public:
 	PngWriteStruct()
-	  : m_png( 0 ), 
+	  : m_png( 0 ),
 		m_info( 0 )
 	{
 		m_png = png_create_write_struct( PNG_LIBPNG_VER_STRING, 0, 0, 0 );
 		if( !m_png )
-			throw Error( "failed to create png read struct" );	
-			
+			throw Error( "failed to create png read struct" );
+
 		m_info = png_create_info_struct( m_png );
 		if( !m_info )
 		{
@@ -154,12 +154,12 @@ public:
 			throw Error( "failed to create png info structs" );
 		}
 	}
-	
+
 	~PngWriteStruct()
 	{
 		png_destroy_write_struct( &m_png, &m_info );
 	}
-	
+
 	png_structp GetPng() const { return m_png; }
 	png_infop GetInfo() const { return m_info; }
 
@@ -178,16 +178,16 @@ public:
 		for( int i = 0; i < m_height; ++i )
 			m_rows[i] = ( png_bytep )malloc( m_width*stride );
 	}
-	
-	~PngRows() 
+
+	~PngRows()
 	{
 		for( int i = 0; i < m_height; ++i )
 			free( m_rows[i] );
 		free( m_rows );
 	}
-	
+
 	png_bytep* Get() const { return m_rows; }
-	
+
 private:
 	png_bytep* m_rows;
 	int m_width, m_height;
@@ -203,7 +203,7 @@ public:
 	int GetStride() const { return m_stride; }
 	bool IsColour() const { return m_colour; }
 	bool IsAlpha() const { return m_alpha; }
-	
+
 	u8 const* GetRow( int row ) const { return ( u8* )m_rows[row]; }
 
 private:
@@ -214,7 +214,7 @@ private:
 	int m_stride;
 	bool m_colour;
 	bool m_alpha;
-	
+
 	png_bytep* m_rows;
 };
 
@@ -228,7 +228,7 @@ PngImage::PngImage( std::string const& fileName )
 		oss << "failed to open \"" << fileName << "\" for reading";
 		throw Error( oss.str() );
 	}
-	
+
 	// check the signature bytes
 	png_byte header[8];
 	fread( header, 1, 8, file.Get() );
@@ -238,7 +238,7 @@ PngImage::PngImage( std::string const& fileName )
 		oss << "\"" << fileName << "\" does not look like a png file";
 		throw Error( oss.str() );
 	}
-	
+
 	// read the image into memory
 	png_init_io( m_png.GetPng(), file.Get() );
 	png_set_sig_bytes( m_png.GetPng(), 8 );
@@ -250,7 +250,7 @@ PngImage::PngImage( std::string const& fileName )
 	int bitDepth;
 	int colourType;
 	png_get_IHDR( m_png.GetPng(), m_png.GetInfo(), &width, &height, &bitDepth, &colourType, 0, 0, 0 );
-	
+
 	// check the image is 8 bit
 	if( bitDepth != 8 )
 	{
@@ -258,7 +258,7 @@ PngImage::PngImage( std::string const& fileName )
 		oss << "cannot process " << bitDepth << "-bit image (bit depth must be 8)";
 		throw Error( oss.str() );
 	}
-	
+
 	// save the info
 	m_width = width;
 	m_height = height;
@@ -292,12 +292,12 @@ static void Compress( std::string const& sourceFileName, std::string const& targ
 			<< "image (dimensions must be multiples of 4)";
 		throw Error( oss.str() );
 	}
-	
+
 	// create the target data
 	int bytesPerBlock = ( ( flags & kDxt1 ) != 0 ) ? 8 : 16;
 	int targetDataSize = bytesPerBlock*width*height/16;
 	Mem targetData( targetDataSize );
-	
+
 	// loop over blocks and compress them
 	clock_t start = std::clock();
 	u8* targetBlock = targetData.Get();
@@ -313,7 +313,7 @@ static void Compress( std::string const& sourceFileName, std::string const& targ
 				u8 const* row = sourceImage.GetRow( y + py ) + x*stride;
 				for( int px = 0; px < 4; ++px, ++i )
 				{
-					// get the pixel colour 
+					// get the pixel colour
 					if( colour )
 					{
 						for( int j = 0; j < 3; ++j )
@@ -325,7 +325,7 @@ static void Compress( std::string const& sourceFileName, std::string const& targ
 							sourceRgba[4*i + j] = *row;
 						++row;
 					}
-					
+
 					// skip alpha for now
 					if( alpha )
 						sourceRgba[4*i + 3] = *row++;
@@ -333,18 +333,18 @@ static void Compress( std::string const& sourceFileName, std::string const& targ
 						sourceRgba[4*i + 3] = 255;
 				}
 			}
-			
+
 			// compress this block
 			Compress( sourceRgba, targetBlock, flags );
-			
+
 			// advance
-			targetBlock += bytesPerBlock;			
+			targetBlock += bytesPerBlock;
 		}
 	}
 	clock_t end = std::clock();
 	double duration = ( double )( end - start ) / CLOCKS_PER_SEC;
 	std::cout << "time taken: " << duration << " seconds" << std::endl;
-	
+
 	// open the target file
 	File targetFile( fopen( targetFileName.c_str(), "wb" ) );
 	if( !targetFile.IsValid() )
@@ -353,11 +353,11 @@ static void Compress( std::string const& sourceFileName, std::string const& targ
 		oss << "failed to open \"" << sourceFileName << "\" for writing";
 		throw Error( oss.str() );
 	}
-	
+
 	// write the header
 	fwrite( &width, sizeof( int ), 1, targetFile.Get() );
 	fwrite( &height, sizeof( int ), 1, targetFile.Get() );
-	
+
 	// write the data
 	fwrite( targetData.Get(), 1, targetDataSize, targetFile.Get() );
 }
@@ -372,23 +372,23 @@ static void Decompress( std::string const& sourceFileName, std::string const& ta
 		oss << "failed to open \"" << sourceFileName << "\" for reading";
 		throw Error( oss.str() );
 	}
-	
+
 	// get the width and height
 	int width, height;
-	fread( &width, sizeof( int ), 1, sourceFile.Get() ); 
+	fread( &width, sizeof( int ), 1, sourceFile.Get() );
 	fread( &height, sizeof( int ), 1, sourceFile.Get() );
-	
+
 	// work out the data size
 	int bytesPerBlock = ( ( flags & kDxt1 ) != 0 ) ? 8 : 16;
 	int sourceDataSize = bytesPerBlock*width*height/16;
 	Mem sourceData( sourceDataSize );
-	
+
 	// read the source data
 	fread( sourceData.Get(), 1, sourceDataSize, sourceFile.Get() );
-		
+
 	// create the target rows
 	PngRows targetRows( width, height, 4 );
-	
+
 	// loop over blocks and compress them
 	u8 const* sourceBlock = sourceData.Get();
 	for( int y = 0; y < height; y += 4 )
@@ -399,23 +399,23 @@ static void Decompress( std::string const& sourceFileName, std::string const& ta
 			// decompress back
 			u8 targetRgba[16*4];
 			Decompress( targetRgba, sourceBlock, flags );
-			
+
 			// write the data into the target rows
 			for( int py = 0, i = 0; py < 4; ++py )
 			{
 				u8* row = ( u8* )targetRows.Get()[y + py] + x*4;
 				for( int px = 0; px < 4; ++px, ++i )
-				{	
+				{
 					for( int j = 0; j < 4; ++j )
 						*row++ = targetRgba[4*i + j];
 				}
 			}
-			
+
 			// advance
 			sourceBlock += bytesPerBlock;
 		}
 	}
-	
+
 	// create the target PNG
 	PngWriteStruct targetPng;
 
@@ -423,9 +423,9 @@ static void Decompress( std::string const& sourceFileName, std::string const& ta
 	png_set_IHDR(
 		targetPng.GetPng(), targetPng.GetInfo(), width, height,
 		8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT 
+		PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
 	);
-	   
+
 	// open the target file
 	File targetFile( fopen( targetFileName.c_str(), "wb" ) );
 	if( !targetFile.IsValid() )
@@ -434,7 +434,7 @@ static void Decompress( std::string const& sourceFileName, std::string const& ta
 		oss << "failed to open \"" << targetFileName << "\" for writing";
 		throw Error( oss.str() );
 	}
-	
+
 	// write the image
 	png_set_rows( targetPng.GetPng(), targetPng.GetInfo(), targetRows.Get() );
 	png_init_io( targetPng.GetPng(), targetFile.Get() );
@@ -446,7 +446,7 @@ static void Diff( std::string const& sourceFileName, std::string const& targetFi
 	// load the images
 	PngImage sourceImage( sourceFileName );
 	PngImage targetImage( targetFileName );
-	
+
 	// get the image info
 	int width = sourceImage.GetWidth();
 	int height = sourceImage.GetHeight();
@@ -457,7 +457,7 @@ static void Diff( std::string const& sourceFileName, std::string const& targetFi
 	// check they match
 	if( width != targetImage.GetWidth() || height != targetImage.GetHeight() )
 		throw Error( "source and target dimensions do not match" );
-		
+
 	// work out the error
 	double error = 0.0;
 	for( int y = 0; y < height; ++y )
@@ -465,7 +465,7 @@ static void Diff( std::string const& sourceFileName, std::string const& targetFi
 		u8 const* sourceRow = sourceImage.GetRow( y );
 		u8 const* targetRow = targetImage.GetRow( y );
 		for( int x = 0; x < width; ++x )
-		{	
+		{
 			u8 const* sourcePixel = sourceRow + x*sourceStride;
 			u8 const* targetPixel = targetRow + x*targetStride;
 			for( int i = 0; i < stride; ++i )
@@ -476,14 +476,14 @@ static void Diff( std::string const& sourceFileName, std::string const& targetFi
 		}
 	}
 	error = std::sqrt( error / ( width*height ) );
-	
+
 	// print it out
 	std::cout << "rms error: " << error << std::endl;
 }
 
 enum Mode
 {
-	kCompress, 
+	kCompress,
 	kDecompress,
 	kDiff
 };
@@ -542,13 +542,13 @@ int main( int argc, char* argv[] )
 				}
 			}
 		}
-		
+
 		// check arguments
 		if( help )
 		{
-			std::cout 
+			std::cout
 				<< "SYNTAX" << std::endl
-				<< "\tsquishpng [-cde135] <source> <target>" << std::endl 
+				<< "\tsquishpng [-cde135] <source> <target>" << std::endl
 				<< "OPTIONS" << std::endl
 				<< "\t-c\tCompress source png to target raw dxt (default)" << std::endl
 				<< "\t-135\tSpecifies whether to use DXT1 (default), DXT3 or DXT5 compression" << std::endl
@@ -559,7 +559,7 @@ int main( int argc, char* argv[] )
 				<< "\t-d\tDecompress source raw dxt to target png" << std::endl
 				<< "\t-e\tDiff source and target png" << std::endl
 				;
-			
+
 			return 0;
 		}
 		if( sourceFileName.empty() )
@@ -579,15 +579,15 @@ int main( int argc, char* argv[] )
 		case kCompress:
 			Compress( sourceFileName, targetFileName, method | metric | fit | extra );
 			break;
-		
+
 		case kDecompress:
 			Decompress( sourceFileName, targetFileName, method );
 			break;
-			
+
 		case kDiff:
 			Diff( sourceFileName, targetFileName );
 			break;
-			
+
 		default:
 			std::cerr << "unknown mode" << std::endl;
 			throw std::exception();
@@ -599,7 +599,7 @@ int main( int argc, char* argv[] )
 		std::cerr << "squishpng error: " << excuse.what() << std::endl;
 		return -1;
 	}
-	
+
 	// done
 	return 0;
 }

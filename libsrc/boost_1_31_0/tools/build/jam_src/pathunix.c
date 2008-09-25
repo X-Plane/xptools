@@ -53,13 +53,13 @@
  */
 
 void
-path_parse( 
+path_parse(
 	char	*file,
 	PATHNAME *f )
 {
 	char *p, *q;
 	char *end;
-	
+
 	memset( (char *)f, 0, sizeof( *f ) );
 
 	/* Look for <grist> */
@@ -87,7 +87,7 @@ path_parse(
 	{
 	    f->f_dir.ptr = file;
 	    f->f_dir.len = p - file;
-	
+
 	    /* Special case for / - dirname is /, not "" */
 
 	    if( !f->f_dir.len )
@@ -112,7 +112,7 @@ path_parse(
 	    f->f_member.ptr = p + 1;
 	    f->f_member.len = end - p - 2;
 	    end = p;
-	} 
+	}
 
 	/* Look for .suffix */
 	/* This would be memrchr() */
@@ -189,17 +189,17 @@ path_build(
 	int	binding )
 {
     file_build1( f, file );
-    
+
     /* Don't prepend root if it's . or directory is rooted */
 # if PATH_DELIM == '/'
 
-    if( f->f_root.len 
+    if( f->f_root.len
         && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
         && !( f->f_dir.len && f->f_dir.ptr[0] == '/' ) )
 
 # else /* unix */
 
-    if( f->f_root.len 
+    if( f->f_root.len
         && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
         && !( f->f_dir.len && f->f_dir.ptr[0] == '/' )
         && !( f->f_dir.len && f->f_dir.ptr[0] == '\\' )
@@ -263,8 +263,8 @@ path_parent( PATHNAME *f )
 	f->f_suffix.ptr =
 	f->f_member.ptr = "";
 
-	f->f_base.len = 
-	f->f_suffix.len = 
+	f->f_base.len =
+	f->f_suffix.len =
 	f->f_member.len = 0;
 }
 
@@ -289,7 +289,7 @@ DWORD ShortPathToLongPath(LPCTSTR lpszShortPath,LPTSTR lpszLongPath,DWORD
     /* Is the string valid? */
     if (!lpszShortPath) {
         SetLastError(ERROR_INVALID_PARAMETER);
-        return 0;  
+        return 0;
     }
 
     /* Is the path valid? */
@@ -298,7 +298,7 @@ DWORD ShortPathToLongPath(LPCTSTR lpszShortPath,LPTSTR lpszLongPath,DWORD
 
     /* Convert "/" to "\" */
     for (i=0;i<len;++i) {
-        if (lpszShortPath[i]==_T('/')) 
+        if (lpszShortPath[i]==_T('/'))
             path[i]=_T('\\');
         else
             path[i]=lpszShortPath[i];
@@ -324,7 +324,7 @@ DWORD ShortPathToLongPath(LPCTSTR lpszShortPath,LPTSTR lpszLongPath,DWORD
         }
         _tcsncpy(ret,path,2);
     }
-    
+
     /* Expand the path for each subpath, and strip trailing backslashes */
     for (prev_pos = pos-1;pos<=len;++pos) {
         if (path[pos]==_T('\\') || (path[pos]==_T('\0') &&
@@ -349,9 +349,9 @@ DWORD ShortPathToLongPath(LPCTSTR lpszShortPath,LPTSTR lpszLongPath,DWORD
             /* If it's ".." element, we need to append it, not
                the name in parent that FindFirstFile will return.
                Same goes for "." */
-            
+
             if (new_element[0] == _T('.') && new_element[1] == _T('\0') ||
-                new_element[0] == _T('.') && new_element[1] == _T('.') 
+                new_element[0] == _T('.') && new_element[1] == _T('.')
                 && new_element[2] == _T('\0'))
             {
                 _tcscat(ret, new_element);
@@ -371,16 +371,16 @@ DWORD ShortPathToLongPath(LPCTSTR lpszShortPath,LPTSTR lpszLongPath,DWORD
             prev_pos = pos;
         }
     }
- 
+
     len=_tcslen(ret)+1;
     if (cchBuffer>=len)
         _tcscpy(lpszLongPath,ret);
-    
+
     return len;
 }
 
 char* short_path_to_long_path(char* short_path)
-{  
+{
     char buffer2[_MAX_PATH];
     int ret = ShortPathToLongPath(short_path, buffer2, _MAX_PATH);
 

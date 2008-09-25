@@ -20,7 +20,7 @@ class TouchSensorNode : public SensorNode {
 	SFVec3f *hitPointField;
 	SFBool *isOverField;
 	SFTime *touchTimeField;
-	
+
 public:
 
 	TouchSensorNode();
@@ -29,7 +29,7 @@ public:
 	////////////////////////////////////////////////
 	//	isOver
 	////////////////////////////////////////////////
-	
+
 	SFBool *getIsOverField();
 
 	void setIsOver(bool  value);
@@ -40,7 +40,7 @@ public:
 	////////////////////////////////////////////////
 	//	hitNormal
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getHitNormalChangedField();
 
 	void setHitNormalChanged(float value[]);
@@ -50,7 +50,7 @@ public:
 	////////////////////////////////////////////////
 	//	hitPoint
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getHitPointChangedField();
 
 	void setHitPointChanged(float value[]);
@@ -60,7 +60,7 @@ public:
 	////////////////////////////////////////////////
 	//	hitTexCoord
 	////////////////////////////////////////////////
-	
+
 	SFVec2f *getHitTexCoordField();
 
 	void setHitTexCoord(float value[]);
@@ -70,7 +70,7 @@ public:
 	////////////////////////////////////////////////
 	//	ExitTime
 	////////////////////////////////////////////////
-	
+
 	SFTime *getTouchTimeField();
 
 	void setTouchTime(double value);
@@ -86,7 +86,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

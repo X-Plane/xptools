@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,7 +49,7 @@ static double calc_water_area(void)
 					  Vector2(stop->source()->point(), circ->target()->point())));
 			++circ;
 		} while (circ != stop);
-		
+
 		for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			circ = stop = *hole;
@@ -73,16 +73,16 @@ static int	DoObjToConfig(const vector<const char *>& args)
 		fprintf(stderr, "Could not open %s for writing.\n", args[args.size()-1]);
 		return 1;
 	}
-	
-	
+
+
 	for (int n = 0;  n < (args.size()-1); ++n)
 	{
 		SpreadsheetForObject(args[n], fi);
-	}	
-	
+	}
+
 	if (fi != stdout)
 		fclose(fi);
-	
+
 	return 0;
 }
 
@@ -95,9 +95,9 @@ static int	DoCheckSpreadsheet(const vector<const char *>& args)
 static int DoCheckWaterConform(const vector<const char *>& args)
 {
 	// XES source, SHP source, output
-	
+
 	FILE * im = fopen(args[2], "wb");
-	
+
 	for (int y = 30; y < 40; ++y)
 	for (int x = -130; x < -120; ++x)
 	{
@@ -105,11 +105,11 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 		char	xes_fname[255];
 		sprintf(xes_fname,"%s%+03d%+04d/%+03d%+04d.xes", args[0], latlon_bucket(y), latlon_bucket(x), y, x);
 		sprintf(shp_fname,"%s%+03d%+04d/%+03d%+04d.shp", args[1], latlon_bucket(y), latlon_bucket(x), y, x);
-		
+
 		vector<const char *> cmd;
 		cmd.push_back("-load");
 		cmd.push_back(xes_fname);
-		if (GISTool_ParseCommands(cmd)) 
+		if (GISTool_ParseCommands(cmd))
 		{
 			fputc(0, im);
 			fputc(0, im);
@@ -117,12 +117,12 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 			continue;
 		}
 
-		double wet_xes = calc_water_area();		
-		
+		double wet_xes = calc_water_area();
+
 		cmd[0] = "-shapefile";
 		cmd[1] = shp_fname;
 
-		if (GISTool_ParseCommands(cmd)) 
+		if (GISTool_ParseCommands(cmd))
 		{
 			fputc(0, im);
 			fputc(0, im);
@@ -130,18 +130,18 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 			continue;
 		}
 
-		double wet_shp = calc_water_area();		
-		
+		double wet_shp = calc_water_area();
+
 		double err = fabs(wet_shp - wet_xes);
 		double sat = max(wet_shp, wet_xes);
 		double rel = (sat == 0.0) ? 0.0 : (err / sat);
 
 		printf("%d,%d: SHP=%lf,XES=%lf   err=%lf, sat=%lf, rel=%lf\n", x, y, wet_shp, wet_xes, err, sat, rel);
-		
+
 		unsigned char err_c = err * 255.0 * 1000.0;
 		unsigned char sat_c = sat * 255.0 * 1.0;
 		unsigned char rel_c = rel * 255.0 * 10.0;
-		
+
 		fputc(err_c, im);
 		fputc(sat_c, im);
 		fputc(rel_c, im);
@@ -182,7 +182,7 @@ int DoShowCoverage(const vector<const char *>& args)
 
 int DoMakeCoverage(const vector<const char *>& args)
 {
-	char buf[1024];		
+	char buf[1024];
 	const char * dir = args[0];
 	const char * ext = args[1];
 	const char * fname = args[2];
@@ -199,15 +199,15 @@ int DoMakeCoverage(const vector<const char *>& args)
 		{
 			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d%s", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x, ext);
 			FILE * f = fopen(buf, "rb");
-			if (f) { 
-				fputc(255,fi); ++c; 
+			if (f) {
+				fputc(255,fi); ++c;
 				if (fi2)
 				{
 					MD5_CTX	ctx;
 					MD5Init(&ctx);
 					int t = 0;
 					while (!feof(f))
-					{							
+					{
 						unsigned char	buf[1024];
 						int len = fread(buf, 1, 1024, f);
 						t += len;
@@ -223,13 +223,13 @@ int DoMakeCoverage(const vector<const char *>& args)
 								ctx.digest[12],ctx.digest[13],ctx.digest[14],ctx.digest[15]);
 				}
 				fclose(f);
-										
-			} else fputc(0,fi); 
+
+			} else fputc(0,fi);
 		}
 		fclose(fi);
 		if (fi2) fclose(fi2);
 		printf("Found %d files.\n", c);
-	}			
+	}
 	return 1;
 }
 

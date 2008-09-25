@@ -34,7 +34,7 @@ template <class R>
 void random_points_in_range(int n, int d,int l,int h,
                             std::list< CGAL::Point_d<R> >& L)
 { CGAL::Point_d<R> dummy;
-  for(int i = 0; i<n; ++i) 
+  for(int i = 0; i<n; ++i)
     L.push_back(random_point_in_range(d,l,h,dummy));
 }
 
@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 {
   // first param is dimension
   // second param is number of points
-  int dimension = 4;  
-  int n = 100; 
+  int dimension = 4;
+  int n = 100;
   int m = 100;
 
   if (argc > 1 && leda_string(argv[1])=="-h") {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   if (argc > 2)  n = atoi(argv[2]);
   if (argc > 3)  m = atoi(argv[2]);
 
-  Delaunay_d T(dimension);  
+  Delaunay_d T(dimension);
   std::list<Point_d> L;
 
   random_points_in_range(n,dimension,-m,m,L);
@@ -63,12 +63,12 @@ int main(int argc, char* argv[])
   std::list<Point_d>::iterator it;
   for(it = L.begin(); it!=L.end(); ++it) {
     T.insert(*it); i++;
-    if (i%10==0) 
+    if (i%10==0)
       std::cout << i << " points inserted" << std::endl;
   }
   std::cout << "used time for inserts  " << CGAL_LEDA_SCOPE::used_time(ti) << std::endl;
   std::cout << "entering check" << std::endl;
-  T.is_valid(); 
+  T.is_valid();
   std::cout << "used time for sanity check  " << CGAL_LEDA_SCOPE::used_time(ti) << std::endl;
   std::cout << "entering nearest neighbor location" << std::endl;
   L.clear();
@@ -79,10 +79,10 @@ int main(int argc, char* argv[])
     T.nearest_neighbor(*it); i++;
     if (i%10==0) std::cout << i << " points located" << std::endl;
   }
-  std::cout << "used time for location  " << CGAL_LEDA_SCOPE::used_time(ti) << std::endl;  
+  std::cout << "used time for location  " << CGAL_LEDA_SCOPE::used_time(ti) << std::endl;
 
-  T.print_statistics(); 
-  CGAL_LEDA_SCOPE::print_statistics(); 
+  T.print_statistics();
+  CGAL_LEDA_SCOPE::print_statistics();
   return 0;
 }
 
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 #include <iostream>
 
 int main()
-{ 
+{
   std::cout << "this program requires LEDA" << std::endl;
   return 0;
 }

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -196,7 +196,7 @@ sb_Iden::buildSpecificSchema_(  )
   field_format.back().setType( sio_8211SubfieldFormat::A );
   field_format.back().setFormat( sio_8211SubfieldFormat::variable );
   field_format.back().setConverter( &converter_A );
-   
+
 
 
   // CONFORMANCE field
@@ -326,7 +326,7 @@ struct sb_Iden_Imp
 
   bool   bad;                   // true if in bad state
 
-  sb_Iden_Imp() : 
+  sb_Iden_Imp() :
     bad( false ),
     standardIden( UNVALUED_STRING ),
     standardVer( UNVALUED_STRING ),
@@ -373,8 +373,8 @@ sb_Iden::~sb_Iden()
 // contains an IDEN module record
 static
 bool
-ingest_record_( sb_Iden & iden, 
-                sb_Iden_Imp & iden_imp, 
+ingest_record_( sb_Iden & iden,
+                sb_Iden_Imp & iden_imp,
                 sc_Record const & record )
 {
 
@@ -391,7 +391,7 @@ ingest_record_( sb_Iden & iden,
          return false;
       }
 
-   // We have a primary field from a Idenification module. Start picking 
+   // We have a primary field from a Idenification module. Start picking
    // it apart.
 
    sc_SubfieldCntr::const_iterator cursubfield;
@@ -400,11 +400,11 @@ ingest_record_( sb_Iden & iden,
    if (sb_Utils::getSubfieldByMnem(*curfield,"MODN",cursubfield))
      {
        string tmp;
-      
+
        cursubfield->getA( tmp );
        iden.setMnemonic( tmp );
      }
-      
+
 
    // RCID
    if (sb_Utils::getSubfieldByMnem(*curfield,"RCID",cursubfield))
@@ -429,7 +429,7 @@ ingest_record_( sb_Iden & iden,
    // PRID
    if (sb_Utils::getSubfieldByMnem(*curfield,"PRID",cursubfield))
       cursubfield->getA(iden_imp.profileIden);
- 
+
    // PRVS
    if (sb_Utils::getSubfieldByMnem(*curfield,"PRVS",cursubfield))
       cursubfield->getA(iden_imp.profileVer);
@@ -479,10 +479,10 @@ ingest_record_( sb_Iden & iden,
          return false;
       }
 
-   // We have a secondary field from a Idenification module. Start picking 
+   // We have a secondary field from a Idenification module. Start picking
    // it apart.
 
-   // FFYN 
+   // FFYN
    if (sb_Utils::getSubfieldByMnem(*curfield,"FFYN",cursubfield))
       cursubfield->getA(iden_imp.composites);
 
@@ -579,7 +579,7 @@ sb_Iden::getStandardDocumentationReference( string& str ) const
 
 bool
 sb_Iden::getProfileIdentification( string& str  ) const
-{  
+{
   if (  imp_->profileIden == UNVALUED_STRING )
     return false;
 
@@ -600,7 +600,7 @@ sb_Iden::getProfileVersion( string& str ) const
   return true;
 }
 
- 
+
 bool
 sb_Iden::getProfileDocumentationReference( string& str ) const
 {
@@ -672,7 +672,7 @@ sb_Iden::getDataSetCreationDate( string& str ) const
   return true;
 }
 
- 
+
 bool
 sb_Iden::getScale( long & num ) const
 {
@@ -732,7 +732,7 @@ sb_Iden::getVectorTopology( string& str ) const
   return true;
 }
 
- 
+
 bool
 sb_Iden::getRaster( string& str ) const
 {
@@ -779,7 +779,7 @@ sb_Iden::getCodingLevel( long & num ) const
 
   return true;
 }
-      
+
 
 
 bool
@@ -792,7 +792,7 @@ sb_Iden::getNonGeoSpatialDimensions( string& str ) const
 
   return true;
 }
-      
+
 
 #ifdef NOT_IMPLEMENTED
 bool
@@ -957,7 +957,7 @@ sb_Iden::getRecord( sc_Record& record ) const
   record.push_back( sc_Field() );
 
   record.back().setMnemonic( "CONF" );
-   
+
 
   if ( ! ( getComposites( tmp_str ) &&
            sb_Utils::valid_domain( tmp_str, "YN" ) ) )
@@ -974,7 +974,7 @@ sb_Iden::getRecord( sc_Record& record ) const
     }
   sb_Utils::add_subfield( record.back(), "VGYN", tmp_str );
 
-  if ( ! ( getGTYN( tmp_str ) && 
+  if ( ! ( getGTYN( tmp_str ) &&
            sb_Utils::valid_domain( tmp_str, "YN" ) ) )
     {
       return false;
@@ -1025,7 +1025,7 @@ sb_Iden::getRecord( sc_Record& record ) const
       CDLV_domain.insert( 0 );
       CDLV_domain.insert( 1 );
       CDLV_domain.insert( 2 );
-      
+
       if ( ! sb_Utils::valid_domain( tmp_long, CDLV_domain ) )
         {
           return false;
@@ -1208,7 +1208,7 @@ sb_Iden::setNonGeoSpatialDimensions( string const & str )
 }
 
 
-      
+
 #ifdef NOT_IMPLEMENTED
 void
 sb_Iden::setAttributeID( sb_ForeignID const & fid )

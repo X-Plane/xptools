@@ -71,7 +71,7 @@ int pj_datum_set(paralist *pl, PJ *projdef)
 
         /* find the end of the list, so we can add to it */
         for (curr = pl; curr && curr->next ; curr = curr->next) {}
-        
+
         /* find the datum definition */
         for (i = 0; (s = pj_datums[i].id) && strcmp(name, s) ; ++i) {}
 
@@ -80,12 +80,12 @@ int pj_datum_set(paralist *pl, PJ *projdef)
         if( pj_datums[i].ellipse_id && strlen(pj_datums[i].ellipse_id) > 0 )
         {
             char	entry[100];
-            
+
             strcpy( entry, "ellps=" );
             strncat( entry, pj_datums[i].ellipse_id, 80 );
             curr = curr->next = pj_mkparam(entry);
         }
-        
+
         if( pj_datums[i].defn && strlen(pj_datums[i].defn) > 0 )
             curr = curr->next = pj_mkparam(pj_datums[i].defn);
     }
@@ -113,7 +113,7 @@ int pj_datum_set(paralist *pl, PJ *projdef)
 
         /* parse out the parameters */
         s = towgs84;
-        for( s = towgs84; *s != '\0'; ) 
+        for( s = towgs84; *s != '\0'; )
         {
             projdef->datum_params[parm_count++] = atof(s);
             while( *s != '\0' && *s != ',' )
@@ -122,9 +122,9 @@ int pj_datum_set(paralist *pl, PJ *projdef)
                 s++;
         }
 
-        if( projdef->datum_params[3] != 0.0 
-            || projdef->datum_params[4] != 0.0 
-            || projdef->datum_params[5] != 0.0 
+        if( projdef->datum_params[3] != 0.0
+            || projdef->datum_params[4] != 0.0
+            || projdef->datum_params[5] != 0.0
             || projdef->datum_params[6] != 0.0 )
         {
             projdef->datum_type = PJD_7PARAM;
@@ -134,13 +134,13 @@ int pj_datum_set(paralist *pl, PJ *projdef)
             projdef->datum_params[4] *= SEC_TO_RAD;
             projdef->datum_params[5] *= SEC_TO_RAD;
             /* transform from parts per million to scaling factor */
-            projdef->datum_params[6] = 
+            projdef->datum_params[6] =
                 (projdef->datum_params[6]/1000000.0) + 1;
         }
-        else 
+        else
             projdef->datum_type = PJD_3PARAM;
 
-        /* Note that pj_init() will later switch datum_type to 
+        /* Note that pj_init() will later switch datum_type to
            PJD_WGS84 if shifts are all zero, and ellipsoid is WGS84 or GRS80 */
     }
 

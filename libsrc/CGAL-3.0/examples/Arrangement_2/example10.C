@@ -32,8 +32,8 @@ int main()
   pts.push_back(Point_2(  0,  0));
   pts.push_back(Point_2( 10, 10));
   pts.push_back(Point_2(  0, 20));
-  arr.insert (Curve_2(pts.begin(), pts.end())); 
-  
+  arr.insert (Curve_2(pts.begin(), pts.end()));
+
   // Curve #2, x monotone.
   pts.clear();
   pts.push_back(Point_2(100,  0));

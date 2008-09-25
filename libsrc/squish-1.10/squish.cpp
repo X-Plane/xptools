@@ -3,26 +3,26 @@
 	Copyright (c) 2006 Simon Brown                          si@sjbrown.co.uk
 
 	Permission is hereby granted, free of charge, to any person obtaining
-	a copy of this software and associated documentation files (the 
+	a copy of this software and associated documentation files (the
 	"Software"), to	deal in the Software without restriction, including
 	without limitation the rights to use, copy, modify, merge, publish,
-	distribute, sublicense, and/or sell copies of the Software, and to 
-	permit persons to whom the Software is furnished to do so, subject to 
+	distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to
 	the following conditions:
 
 	The above copyright notice and this permission notice shall be included
 	in all copies or substantial portions of the Software.
 
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	
+
    -------------------------------------------------------------------------- */
-   
+
 #include <squish.h>
 #include "colourset.h"
 #include "maths.h"
@@ -41,7 +41,7 @@ static int FixFlags( int flags )
 	int fit = flags & ( kColourIterativeClusterFit | kColourClusterFit | kColourRangeFit );
 	int metric = flags & ( kColourMetricPerceptual | kColourMetricUniform );
 	int extra = flags & kWeightColourByAlpha;
-	
+
 	// set defaults
 	if( method != kDxt3 && method != kDxt5 )
 		method = kDxt1;
@@ -49,7 +49,7 @@ static int FixFlags( int flags )
 		fit = kColourClusterFit;
 	if( metric != kColourMetricUniform )
 		metric = kColourMetricPerceptual;
-		
+
 	// done
 	return method | fit | metric | extra;
 }
@@ -73,7 +73,7 @@ void CompressMasked( u8 const* rgba, int mask, void* block, int flags )
 
 	// create the minimal point set
 	ColourSet colours( rgba, mask, flags );
-	
+
 	// check the compression type and compress colour
 	if( colours.GetCount() == 1 )
 	{
@@ -93,7 +93,7 @@ void CompressMasked( u8 const* rgba, int mask, void* block, int flags )
 		ClusterFit fit( &colours, flags );
 		fit.Compress( colourBlock );
 	}
-	
+
 	// compress alpha separately if necessary
 	if( ( flags & kDxt3 ) != 0 )
 		CompressAlphaDxt3( rgba, mask, alphaBock );
@@ -126,11 +126,11 @@ int GetStorageRequirements( int width, int height, int flags )
 {
 	// fix any bad flags
 	flags = FixFlags( flags );
-	
+
 	// compute the storage requirements
 	int blockcount = ( ( width + 3 )/4 ) * ( ( height + 3 )/4 );
 	int blocksize = ( ( flags & kDxt1 ) != 0 ) ? 8 : 16;
-	return blockcount*blocksize;	
+	return blockcount*blocksize;
 }
 
 void CompressImage( u8 const* rgba, int width, int height, void* blocks, int flags )
@@ -158,7 +158,7 @@ void CompressImage( u8 const* rgba, int width, int height, void* blocks, int fla
 					// get the source pixel in the image
 					int sx = x + px;
 					int sy = y + py;
-					
+
 					// enable if we're in the image
 					if( sx < width && sy < height )
 					{
@@ -166,7 +166,7 @@ void CompressImage( u8 const* rgba, int width, int height, void* blocks, int fla
 						u8 const* sourcePixel = rgba + 4*( width*sy + sx );
 						for( int i = 0; i < 4; ++i )
 							*targetPixel++ = *sourcePixel++;
-							
+
 						// enable this pixel
 						mask |= ( 1 << ( 4*py + px ) );
 					}
@@ -177,10 +177,10 @@ void CompressImage( u8 const* rgba, int width, int height, void* blocks, int fla
 					}
 				}
 			}
-			
+
 			// compress it into the output
 			CompressMasked( sourceRgba, mask, targetBlock, flags );
-			
+
 			// advance
 			targetBlock += bytesPerBlock;
 		}
@@ -204,7 +204,7 @@ void DecompressImage( u8* rgba, int width, int height, void const* blocks, int f
 			// decompress the block
 			u8 targetRgba[4*16];
 			Decompress( targetRgba, sourceBlock, flags );
-			
+
 			// write the decompressed pixels to the correct image locations
 			u8 const* sourcePixel = targetRgba;
 			for( int py = 0; py < 4; ++py )
@@ -217,7 +217,7 @@ void DecompressImage( u8* rgba, int width, int height, void const* blocks, int f
 					if( sx < width && sy < height )
 					{
 						u8* targetPixel = rgba + 4*( width*sy + sx );
-						
+
 						// copy the rgba value
 						for( int i = 0; i < 4; ++i )
 							*targetPixel++ = *sourcePixel++;
@@ -229,7 +229,7 @@ void DecompressImage( u8* rgba, int width, int height, void const* blocks, int f
 					}
 				}
 			}
-			
+
 			// advance
 			sourceBlock += bytesPerBlock;
 		}

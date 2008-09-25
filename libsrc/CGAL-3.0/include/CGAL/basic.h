@@ -21,7 +21,7 @@
 //
 // Author(s)     : Lutz Kettner
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_BASIC_H
 #define CGAL_BASIC_H

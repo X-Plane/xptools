@@ -24,7 +24,7 @@
  *
  * requires shapelib 1.2
  *   gcc shpproj ../shpopen.o ../dbfopen.o shpgeo.o -lm -lproj -o shpproj
- * 
+ *
  * this requires linking with the PROJ4.3 projection library available from
  *
  * ftp://kai.er.usgs.gov/ftp/PROJ.4
@@ -78,7 +78,7 @@ int main( int argc, char ** argv )
     int		inarg, outarg;
     char	*DBFRow = NULL;
 
-/* for testing only 
+/* for testing only
     char	*in_args[] = { "init=nad83:1002", "units=us-ft" };
     char	*out_args[] = { "proj=utm", "zone=16", "units=m" };
 */
@@ -103,7 +103,7 @@ int main( int argc, char ** argv )
 	printf( "Unable to open old files:%s\n", argv[1] );
 	exit( 1 );
     }
-    
+
    outf_arg = 2;
    inarg = 0;
    outarg = 0;
@@ -113,7 +113,7 @@ int main( int argc, char ** argv )
     }
 
 
-/* if shapefile has a prj component then use that 
+/* if shapefile has a prj component then use that
    else try for a file then read args as list */
 
     if( inarg == 0 )
@@ -149,20 +149,20 @@ int main( int argc, char ** argv )
        arglst = argv[inarg] + 3;
        j = 0;
        i = 0;
-       while ( j < strlen (arglst) ) {    
+       while ( j < strlen (arglst) ) {
          in_argc += sscanf ( arglst + j, "%s", parg);
-        
-         in_args[i] = malloc( strlen (parg)+1); 
+
+         in_args[i] = malloc( strlen (parg)+1);
          strcpy (in_args[i], parg);
          i++;
          j += strlen (parg) +1;
-         if ( arglst[j] + 1 == 0 ) j = strlen (argv[inarg]);  
+         if ( arglst[j] + 1 == 0 ) j = strlen (argv[inarg]);
        }
       }
-     }  
+     }
 
     i = 0;
-    if ( outarg > 0 ) ifp = fopen( asFileName ( argv[outarg] + 3, "prj" ),"rt");   
+    if ( outarg > 0 ) ifp = fopen( asFileName ( argv[outarg] + 3, "prj" ),"rt");
     if ( ifp ) {
        while( fscanf( ifp, "%s", parg) != EOF ) {
          out_args[i] = malloc ( strlen(parg));
@@ -177,33 +177,33 @@ int main( int argc, char ** argv )
        arglst = argv[outarg] + 3;
        j = 0;
        i = 0;
-       while ( j < strlen (arglst) ) {    
+       while ( j < strlen (arglst) ) {
          out_argc += sscanf ( arglst + j, "%s", parg);
-         
-         out_args[i] = malloc( strlen (parg)+1); 
+
+         out_args[i] = malloc( strlen (parg)+1);
          strcpy (out_args[i], parg);
          i++;
          j += strlen (parg) +1;
-         if ( arglst[j] + 1 == 0 ) j = strlen (argv[outarg]);  
+         if ( arglst[j] + 1 == 0 ) j = strlen (argv[outarg]);
        }
       }
-    }       
-    
+    }
+
     if ( !strcmp( argv[inarg], "-i=geographic" )) in_argc = 0;
     if ( !strcmp( argv[outarg], "-o=geographic" )) out_argc = 0;
-    
+
     orig_prj = SHPSetProjection ( in_argc, in_args );
     new_prj = SHPSetProjection ( out_argc, out_args );
 
-    if ( !(( (!in_argc) || orig_prj) && ( (!out_argc) || new_prj) )) { 
+    if ( !(( (!in_argc) || orig_prj) && ( (!out_argc) || new_prj) )) {
       fprintf (stderr, "unable to process projection, exiting...\n");
       exit(1);
-    }   
+    }
 
 
     SHPGetInfo( old_SHP, &nEntities, &nShapeType, NULL, NULL);
-    new_SHP = SHPCreate ( argv[outf_arg], nShapeType ); 
-    
+    new_SHP = SHPCreate ( argv[outf_arg], nShapeType );
+
     new_DBF = DBFCloneEmpty (old_DBF, argv[outf_arg]);
     if( new_SHP == NULL || new_DBF == NULL )
     {
@@ -212,7 +212,7 @@ int main( int argc, char ** argv )
     }
 
     DBFRow = (char *) malloc ( (old_DBF->nRecordLength) + 15 );
-     
+
     for( i = 0; i < nEntities; i++ )
     {
 	int		j;
@@ -221,7 +221,7 @@ int main( int argc, char ** argv )
 
 	SHPProject (psCShape, orig_prj, new_prj );
 
-	SHPWriteObject ( new_SHP, -1, psCShape );   
+	SHPWriteObject ( new_SHP, -1, psCShape );
 	SHPDestroyObject ( psCShape );
 
         memcpy ( DBFRow, DBFReadTuple ( old_DBF, i ), old_DBF->nRecordLength );
@@ -233,10 +233,10 @@ int main( int argc, char ** argv )
     SHPFreeProjection ( new_prj );
 
     /* store projection params into prj file */
-    ifp = fopen( asFileName ( argv[outf_arg], "prj" ),"wt");   
+    ifp = fopen( asFileName ( argv[outf_arg], "prj" ),"wt");
     if ( ifp ) {
 
-       if ( out_argc == 0 ) 
+       if ( out_argc == 0 )
         { fprintf( ifp, "proj=geographic\n" ); }
        else
         { for ( i = 0; i < out_argc; i++ )
@@ -244,7 +244,7 @@ int main( int argc, char ** argv )
         }
        fclose (ifp);
     }
-    
+
     SHPClose( old_SHP );
     SHPClose( new_SHP );
     DBFClose( old_DBF );

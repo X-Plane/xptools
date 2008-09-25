@@ -6,7 +6,7 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 //
 //  http://www.boost.org
-// 
+//
 
 #ifdef _WIN32
 __declspec(dllimport)

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -46,20 +46,20 @@ sio_8211DDRLeader::isValid( ) const
 
   if ( ! ( '1' == interchangeLevel_ ||
            '2' == interchangeLevel_ ||
-           '3' == interchangeLevel_ ) ) 
+           '3' == interchangeLevel_ ) )
     return false;
 
                                 // inline code extension indicator
 
-  if ( ! ( ' ' == inlineCodeExtensionIndicator_ || 
-           'E' == inlineCodeExtensionIndicator_ || 
-           'h' == inlineCodeExtensionIndicator_ || 
+  if ( ! ( ' ' == inlineCodeExtensionIndicator_ ||
+           'E' == inlineCodeExtensionIndicator_ ||
+           'h' == inlineCodeExtensionIndicator_ ||
            'H' == inlineCodeExtensionIndicator_ ) )
     return false;
 
                                 // version number
 
-  if ( ! ( ' ' == versionNumber_ || 
+  if ( ! ( ' ' == versionNumber_ ||
            '1' == versionNumber_ ) )
     return false;
                                 // app indicator
@@ -74,7 +74,7 @@ sio_8211DDRLeader::isValid( ) const
     {
     case 0 :
     case 3 :
-      if ( 1 == interchangeLevel_ ) 
+      if ( 1 == interchangeLevel_ )
         return true;
       else
         return false;
@@ -84,7 +84,7 @@ sio_8211DDRLeader::isValid( ) const
 
     case 6 :
     case 9 :
-      if ( '2' == interchangeLevel_ || '3' == interchangeLevel_ ) 
+      if ( '2' == interchangeLevel_ || '3' == interchangeLevel_ )
         return true;
       else
         return false;
@@ -140,7 +140,7 @@ sio_8211DDRLeader::streamExtract(istream& istr)
          istr.clear(ios::failbit);
          return istr;
       }
-      
+
    recLength_                    = sio_Utils::getLong(leader,0,5);
    interchangeLevel_             = leader[5];
    leaderIden_                   = leader[6];
@@ -187,7 +187,7 @@ sio_8211DDRLeader::streamInsert(ostream& ostr) const
    ostr << setw(1) << '0';                 // Reserved
    ostr << setw(1) << sizeFieldTag_;       // Size if Field Tag Field
 
-   return ostr; 
+   return ostr;
 
 } // sio_8211DDRLeader::streamInsert()
-                
+

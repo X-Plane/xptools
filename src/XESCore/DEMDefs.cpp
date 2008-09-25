@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@ struct	HistoHelper {
 			HistoHelper() : choices(0), best(-1) { }
 	bool	HasBest(void) const { return best != -1; }
 	float	GetBest(void) const { return (best == -1) ? DEM_NO_DATA : values[best]; }
-	void	Accum(float v, float ignore) 
+	void	Accum(float v, float ignore)
 	{
 		if (v == ignore) return;
 		for (int n = 0; n < choices; ++n)
@@ -60,9 +60,9 @@ struct	HistoHelper {
 
 
 /* DEM min/max trees are organized in powers of 2.  So a 8x8 point summary (describing the max of 64 DEM points
- * is only available on an even grid of 8 DEM points.  
+ * is only available on an even grid of 8 DEM points.
  *
- * This routine tells you the largest DEM summary block that your point is a member of that is also fully 
+ * This routine tells you the largest DEM summary block that your point is a member of that is also fully
  * contained in an arbitrary range.  You specify the max power of 2 to work with.
  *
  */
@@ -70,7 +70,7 @@ inline int		aligned_block(int x, int y, int x1, int x2, int y1, int y2, int& x_l
 {
 	int i;
 	x_loc = x;
-	y_loc = y;	
+	y_loc = y;
 	for (i = 0; i < max_power; ++i)
 	{
 		int block_size = 1 << i;
@@ -101,7 +101,7 @@ DEMGeo::DEMGeo() :
 {
 }
 
-DEMGeo::DEMGeo(const DEMGeo& x) : 
+DEMGeo::DEMGeo(const DEMGeo& x) :
 	mWest(x.mWest),
 	mSouth(x.mSouth),
 	mEast(x.mEast),
@@ -117,7 +117,7 @@ DEMGeo::DEMGeo(const DEMGeo& x) :
 		if (mData == NULL)
 			mWidth = mHeight = 0;
 		else {
-			if (x.mData) 
+			if (x.mData)
 				memcpy(mData, x.mData, mWidth * mHeight * sizeof(float));
 			else
 				memset(mData, 0, mWidth * mHeight * sizeof(float));
@@ -137,7 +137,7 @@ DEMGeo::DEMGeo(int width, int height) :
 		if (mData == NULL)
 			mWidth = mHeight = 0;
 		else
-			memset(mData, 0, mWidth * mHeight * sizeof(float));	
+			memset(mData, 0, mWidth * mHeight * sizeof(float));
 	}
 }
 
@@ -170,7 +170,7 @@ DEMGeo& DEMGeo::operator+=(float v)
 
 DEMGeo& DEMGeo::operator+=(const DEMGeo& rhs)
 {
-	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL) 
+	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL)
 		return *this;
 	int sz = mWidth * mHeight;
 	const float * src = rhs.mData;
@@ -182,7 +182,7 @@ DEMGeo& DEMGeo::operator+=(const DEMGeo& rhs)
 		++dst;
 		++src;
 	}
-	return *this;	
+	return *this;
 }
 
 DEMGeo& DEMGeo::operator*=(float v)
@@ -200,7 +200,7 @@ DEMGeo& DEMGeo::operator*=(float v)
 
 DEMGeo& DEMGeo::operator*=(const DEMGeo& rhs)
 {
-	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL) 
+	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL)
 		return *this;
 	int sz = mWidth * mHeight;
 	const float * src = rhs.mData;
@@ -212,7 +212,7 @@ DEMGeo& DEMGeo::operator*=(const DEMGeo& rhs)
 		++dst;
 		++src;
 	}
-	return *this;	
+	return *this;
 }
 
 DEMGeo& DEMGeo::operator=(const DEMGeo& x)
@@ -231,14 +231,14 @@ DEMGeo& DEMGeo::operator=(const DEMGeo& x)
 	mNorth = x.mNorth;
 	mWest = x.mWest;
 	mEast = x.mEast;
-	
+
 	if (mData == NULL)
 		mWidth = mHeight = 0;
 	else {
 		if (x.mData)
-			memcpy(mData, x.mData, mWidth * mHeight * sizeof(float));	
+			memcpy(mData, x.mData, mWidth * mHeight * sizeof(float));
 		else
-			memset(mData, 0, mWidth * mHeight * sizeof(float));	
+			memset(mData, 0, mWidth * mHeight * sizeof(float));
 	}
 	return *this;
 }
@@ -249,21 +249,21 @@ void DEMGeo::overlay(const DEMGeo& x)	// Overlay
 	{
 		return;
 	}
-		
+
 	for (int i = 0; i < (mWidth * mHeight); ++i)
 	{
 		if (x.mData[i] != DEM_NO_DATA)
-			 mData[i] = x.mData[i];		
-	} 
+			 mData[i] = x.mData[i];
+	}
 }
 
 void DEMGeo::overlay(const DEMGeo& rhs, int dx, int dy)
 {
 	if (mData == NULL || rhs.mData == NULL) return;
-	
+
 	if (mWidth < (rhs.mWidth + dx)) return;
 	if (mHeight < (rhs.mHeight + dy)) return;
-	
+
 	for (int x = 0; x < rhs.mWidth; ++x)
 	for (int y = 0; y < rhs.mHeight; ++y)
 	{
@@ -289,7 +289,7 @@ void DEMGeo::derez(int r)
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
 	smaller.mWest = mWest;
-	
+
 	for(int x = 0; x < smaller.mWidth; ++x)
 	for(int y=  0; y < smaller.mHeight; ++y)
 	{
@@ -311,17 +311,17 @@ void DEMGeo::derez(int r)
 		else
 			smaller(x,y) = DEM_NO_DATA;
 	}
-	
-	this->swap(smaller);	
+
+	this->swap(smaller);
 }
 
 void	DEMGeo::resize(int width, int height)
 {
 	if (width == mWidth && height == mHeight) return;
 	if (mData) free(mData);
-	
+
 	mWidth = width; mHeight = height;
-	
+
 	if (mWidth == 0 || mHeight == 0)
 	{
 		mData = 0;
@@ -330,7 +330,7 @@ void	DEMGeo::resize(int width, int height)
 		if (mData == NULL)
 			mWidth = mHeight = 0;
 		else
-			memset(mData, 0, mWidth * mHeight * sizeof(float));	
+			memset(mData, 0, mWidth * mHeight * sizeof(float));
 	}
 }
 
@@ -343,7 +343,7 @@ void	DEMGeo::subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const
 	for (int x = x1; x <= x2; ++x)
 	for (int y = y1; y <= y2; ++y)
 		newDEM(x - x1, y - y1) = (*this)(x, y);
-		
+
 	newDEM.mSouth = y_to_lat(y1);
 	newDEM.mNorth = y_to_lat(y2);
 	newDEM.mWest = x_to_lon(x1);
@@ -365,19 +365,19 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 {
 	outSlope.resize(mWidth, mHeight);
 	outHeading.resize(mWidth, mHeight);
-	
+
 	double	x_res = x_dist_to_m(1);
 	double	y_res = y_dist_to_m(1);
 	float	h, hl, ht, hb, hr;
 	float	ld, rd, bd, td;
-	
+
 	if (inProg) inProg(0, 1, "Calculating Slope", 0.0);
 	for (int x = 0; x < mWidth; ++x)
 	for (int y = 0; y < mHeight;++y)
 	{
 		if (y == 0 && (x % 50) == 0)
 			if (inProg) inProg(0, 1, "Calculating Slope", (double) x / (double) mWidth);
-		
+
 		h = get(x,y);
 		if (h == DEM_NO_DATA)
 		{
@@ -385,14 +385,14 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 			outHeading(x,y) = DEM_NO_DATA;
 		} else {
 			Point3 me(0,0,h);
-			hl = get_dir(x,y,-1,0,        x,DEM_NO_DATA,ld);	Point3 pl(-ld*x_res,0,hl);	
+			hl = get_dir(x,y,-1,0,        x,DEM_NO_DATA,ld);	Point3 pl(-ld*x_res,0,hl);
 			hr = get_dir(x,y, 1,0, mWidth-x,DEM_NO_DATA,rd);	Point3 pr( rd*x_res,0,hr);
 			hb = get_dir(x,y,0,-1,        y,DEM_NO_DATA,bd);	Point3 pb(0,-bd*y_res,hb);
 			ht = get_dir(x,y,0, 1,mHeight-y,DEM_NO_DATA,td);	Point3 pt(0, td*y_res,ht);
-			
+
 			Point3 * ph = NULL, * pv = NULL;
-			
-			if (hl != DEM_NO_DATA) 
+
+			if (hl != DEM_NO_DATA)
 			{
 				if (hr != DEM_NO_DATA)
 					ph = (ld < rd) ? &pl : &pr;
@@ -405,7 +405,7 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 					fprintf(stderr, "NO H ELEVATION\n");
 			}
 
-			if (hb != DEM_NO_DATA) 
+			if (hb != DEM_NO_DATA)
 			{
 				if (ht != DEM_NO_DATA)
 					pv = (bd < td) ? &pb : &pt;
@@ -417,13 +417,13 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 				else
 					fprintf(stderr, "NO V ELEVATION\n");
 			}
-						
-			if (!ph || !pv) 
+
+			if (!ph || !pv)
 			{
 				outSlope(x,y) = DEM_NO_DATA;
 				outHeading(x,y) = DEM_NO_DATA;
 				continue;
-			} 
+			}
 			Vector3	v1(me,*ph);
 			Vector3	v2(me,*pv);
 			Vector3	normal(v1.cross(v2));
@@ -437,10 +437,10 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 			normal.normalize();
 			outHeading(x,y) = normal.dy;
 //			outSlope(x,y) = atan2(xy, normal.dz) * RAD_TO_DEG;
-			
-		}	
+
+		}
 	}
-	if (inProg) inProg(0, 1, "Calculating Slope", 1.0);	
+	if (inProg) inProg(0, 1, "Calculating Slope", 1.0);
 }
 
 void DEMGeo::fill_nearest(void)
@@ -496,27 +496,27 @@ int	DEMGeo::remove_linear(int iterations, float max_err)
 	for (int i = 0; i < iterations; ++i)
 	{
 	   int os=(i%2);
-	   
+
 //		for (int c = 0; c < 4; ++c)
 		{
 			int c = 0;
 			int x1,y1,dx, dy;
 
-			switch(c) 
+			switch(c)
 			{
 				case 0: x1=os    	  ; y1=os     	   ; dx = 1; dy = 1; break;
 				case 1: x1=os    	  ; y1=mHeight-os-1; dx = 1; dy =-1; break;
 				case 2: x1=mWidth-os-1; y1=mHeight-os-1; dx =-1; dy =-1; break;
 				case 3: x1=mWidth-os-1; y1=os     	   ; dx =-1; dy = 1; break;
 			}
-				
+
 			for (int x = x1; x >= 0 && x < mWidth ; x += dx)
 			for (int y = y1; y >= 0 && y < mHeight; y += dy)
 			{
 				float t, l, r, b, c, v;
 				float dl, dr, dt, db;
 				c = get(x, y);
-				
+
 				if (c != DEM_NO_DATA)
 				{
 					t = get_dir(x, y, 0, 1, 30, DEM_NO_DATA, dt);
@@ -536,10 +536,10 @@ int	DEMGeo::remove_linear(int iterations, float max_err)
 						v = (l * dr + r * dl) / (dr + dl);
 						if (fabs(v - c) < max_err) { zap(x,y); zap_count++; }
 					}
-				}		
+				}
 			}
 		}
-		if ((zap_count - last_zap) < 10) 
+		if ((zap_count - last_zap) < 10)
 			return zap_count;
 		last_zap = zap_count;
 	}
@@ -559,7 +559,7 @@ float	DEMGeo::local_minmax(int x1, int y1, int x2, int y2,
 		float h = get(x, y);
 		if (h != DEM_NO_DATA && h < minh)
 		{
-			minx = x; 
+			minx = x;
 			miny = y;
 			minh = h;
 		}
@@ -576,9 +576,9 @@ float	DEMGeo::local_minmax(int x1, int y1, int x2, int y2,
 		minh = DEM_NO_DATA;
 	if (maxx == x1 || maxx == (x2-1) || maxy == y1 || maxy == (y2-1))
 		maxh = DEM_NO_DATA;
-	
+
 	return rise;
-}						 
+}
 
 void	DEMGeo::filter_self(int dim, float * k)
 {
@@ -608,7 +608,7 @@ void	DEMGeo::filter_self_normalize(int dim, float * k)
  *
  */
 void	DEMGeo_ReduceMinMax(
-					const DEMGeo& inMin, 
+					const DEMGeo& inMin,
 					const DEMGeo& inMax,
 						  DEMGeo& outMin,
 						  DEMGeo& outMax)
@@ -621,13 +621,13 @@ void	DEMGeo_ReduceMinMax(
 	outMax.mSouth = inMax.mSouth;
 	outMax.mEast = inMax.mEast;
 	outMax.mWest = inMax.mWest;
-	
+
 	outMin.resize((inMin.mWidth-1) / 2 + 1, (inMin.mHeight-1) / 2 + 1);
 	outMax.resize((inMax.mWidth-1) / 2 + 1, (inMax.mHeight-1) / 2 + 1);
-	
+
 	int x, y;
 	float e1, e2, e3, e4;
-	
+
 	for (x = 0; x < outMin.mWidth; ++x)
 	for (y = 0; y < outMin.mHeight; ++y)
 	{
@@ -635,12 +635,12 @@ void	DEMGeo_ReduceMinMax(
 		e2 = inMin.get(x*2+1,y*2  );
 		e3 = inMin.get(x*2+1,y*2+1);
 		e4 = inMin.get(x*2  ,y*2+1);
-		
+
 		outMin(x,y) = MIN_NODATA(
-							MIN_NODATA(e1, e2), 
+							MIN_NODATA(e1, e2),
 							MIN_NODATA(e3, e4));
 	}
-	
+
 
 	for (x = 0; x < outMax.mWidth; ++x)
 	for (y = 0; y < outMax.mHeight; ++y)
@@ -649,28 +649,28 @@ void	DEMGeo_ReduceMinMax(
 		e2 = inMax.get(x*2+1,y*2  );
 		e3 = inMax.get(x*2+1,y*2+1);
 		e4 = inMax.get(x*2  ,y*2+1);
-		
+
 		outMax(x,y) = MAX_NODATA(
-							MAX_NODATA(e1, e2), 
+							MAX_NODATA(e1, e2),
 							MAX_NODATA(e3, e4));
 	}
 }
 
 void	DEMGeo_ReduceMinMaxN(
-					const DEMGeo& inDEM, 
+					const DEMGeo& inDEM,
 						  DEMGeo& outMin,
 						  DEMGeo& outMax,
 						  int N)
 {
 	outMin.copy_geo_from(inDEM);
 	outMax.copy_geo_from(inDEM);
-	
+
 	outMin.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
 	outMax.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
-	
+
 	int x, y, dx, dy;
 	float e1, e2, e3;
-	
+
 	for (y = 0; y < outMin.mHeight; y++)
 	for (x = 0; x < outMin.mWidth; x++)
 	{
@@ -716,20 +716,20 @@ void	DEMGeo_BuildMinMax(
 
 /*
  * Given one cache square, find the actual local min and max.
- 
+
  */
 float	DEMGeo_LocalMinOfCacheSquare(
 					const DEMGeo&			inDEM,
 					const vector<DEMGeo>&	inMin,
 					int level,
-					int x, int y, 
+					int x, int y,
 					int& minx, int& miny, float& minh)
 {
 	if (level < 0)
 	{
 		minx = x; miny = y; minh = inDEM(x,y); return minh;
 	}
-	
+
 	float e, e1, e2, e3, e4;
 	e = inMin[level](x,y);
 	if (e == DEM_NO_DATA) return DEM_NO_DATA;
@@ -753,20 +753,20 @@ float	DEMGeo_LocalMinOfCacheSquare(
 		else if (e == e4) return DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, level-1, x*2  , y*2+1, minx, miny, minh);
 		else return DEM_NO_DATA;
 	}
-}					
+}
 
 float	DEMGeo_LocalMaxOfCacheSquare(
 					const DEMGeo&			inDEM,
 					const vector<DEMGeo>&	inMax,
 					int level,
-					int x, int y, 
+					int x, int y,
 					int& maxx, int& maxy, float& maxh)
 {
 	if (level < 0)
 	{
 		maxx = x; maxy = y; maxh = inDEM(x,y); return maxh;
 	}
-	
+
 	float e, e1, e2, e3, e4;
 	e = inMax[level](x,y);
 	if (e == DEM_NO_DATA) return DEM_NO_DATA;
@@ -790,7 +790,7 @@ float	DEMGeo_LocalMaxOfCacheSquare(
 		else if (e == e4) return DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, level-1, x*2  , y*2+1, maxx, maxy, maxh);
 		else return DEM_NO_DATA;
 	}
-}					
+}
 
 
 
@@ -810,7 +810,7 @@ float	DEMGeo_LocalMinMaxWithCache(
 {
 	int x, y;
 	minh = maxh = DEM_NO_DATA;
-	
+
 	for (y = y1; y < y2; ++y)
 	for (x = x1; x < x2; ++x)
 	{
@@ -843,14 +843,14 @@ float	DEMGeo_LocalMinMaxWithCache(
 	}
 	if (minh == DEM_NO_DATA && maxh == DEM_NO_DATA) return DEM_NO_DATA;
 	float rise = maxh - minh;
-	if (!inAllowEdges) 
+	if (!inAllowEdges)
 	{
 		if (minx == x1 || minx == (x2-1) || miny == y1 || miny == (y2-1))
 			minh = DEM_NO_DATA;
 		if (maxx == x1 || maxx == (x2-1) || maxy == y1 || maxy == (y2-1))
 			maxh = DEM_NO_DATA;
-	}	
-	return rise;	
+	}
+	return rise;
 }
 
 float	DEMGeo_LocalMinMaxWithCache(
@@ -865,7 +865,7 @@ float	DEMGeo_LocalMinMaxWithCache(
 	int xp, yp, bsize;
 	float lh;
 	minh = maxh = DEM_NO_DATA;
-	
+
 	for (y = y1; y < y2; ++y)
 	for (x = x1; x < x2; ++x)
 	{
@@ -881,10 +881,10 @@ float	DEMGeo_LocalMinMaxWithCache(
 				lh = inMin[bsize-1](xp >> bsize, yp >> bsize);
 				minh = MIN_NODATA(minh, lh);
 				lh = inMax[bsize-1](xp >> bsize, yp >> bsize);
-				maxh = MAX_NODATA(maxh, lh);				
+				maxh = MAX_NODATA(maxh, lh);
 			}
 		}
-	}				
+	}
 	return maxh - minh;
 }
 

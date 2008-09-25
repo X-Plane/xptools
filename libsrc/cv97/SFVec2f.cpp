@@ -10,35 +10,35 @@
 
 #include "SFVec2f.h"
 
-SFVec2f::SFVec2f() 
+SFVec2f::SFVec2f()
 {
 	setType(fieldTypeSFVec2f);
 	setValue(0.0f, 0.0f);
 	InitializeJavaIDs();
 }
 
-SFVec2f::SFVec2f(float x, float y) 
+SFVec2f::SFVec2f(float x, float y)
 {
 	setType(fieldTypeSFVec2f);
 	setValue(x, y);
 	InitializeJavaIDs();
 }
 
-SFVec2f::SFVec2f(float value[]) 
+SFVec2f::SFVec2f(float value[])
 {
 	setType(fieldTypeSFVec2f);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFVec2f::SFVec2f(SFVec2f *value) 
+SFVec2f::SFVec2f(SFVec2f *value)
 {
 	setType(fieldTypeSFVec2f);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFVec2f::InitializeJavaIDs() 
+void SFVec2f::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
@@ -49,23 +49,23 @@ void SFVec2f::InitializeJavaIDs()
 //	get value
 ////////////////////////////////////////////////
 
-void SFVec2f::getValue(float value[]) 
+void SFVec2f::getValue(float value[])
 {
 	value[0] = mValue[0];
 	value[1] = mValue[1];
 }
 
-float *SFVec2f::getValue() 
+float *SFVec2f::getValue()
 {
 	return mValue;
 }
 
-float SFVec2f::getX() 
+float SFVec2f::getX()
 {
 	return mValue[0];
 }
 
-float SFVec2f::getY() 
+float SFVec2f::getY()
 {
 	return mValue[1];
 }
@@ -74,29 +74,29 @@ float SFVec2f::getY()
 //	set value
 ////////////////////////////////////////////////
 
-void SFVec2f::setValue(float x, float y) 
+void SFVec2f::setValue(float x, float y)
 {
 	mValue[0] = x;
 	mValue[1] = y;
 }
 
-void SFVec2f::setValue(float value[]) 
+void SFVec2f::setValue(float value[])
 {
 	mValue[0] = value[0];
 	mValue[1] = value[1];
 }
 
-void SFVec2f::setValue(SFVec2f *vector) 
+void SFVec2f::setValue(SFVec2f *vector)
 {
 	setValue(vector->getX(), vector->getY());
 }
 
-void SFVec2f::setX(float x) 
+void SFVec2f::setX(float x)
 {
 	setValue(x, getY());
 }
 
-void SFVec2f::setY(float y) 
+void SFVec2f::setY(float y)
 {
 	setValue(getX(), y);
 }
@@ -105,34 +105,34 @@ void SFVec2f::setY(float y)
 //	add value
 ////////////////////////////////////////////////
 
-void SFVec2f::add(float x, float y) 
+void SFVec2f::add(float x, float y)
 {
 	mValue[0] += x;
 	mValue[1] += y;
 }
 
-void SFVec2f::add(float value[]) 
+void SFVec2f::add(float value[])
 {
 	mValue[0] += value[0];
 	mValue[1] += value[1];
 }
 
-void SFVec2f::add(SFVec2f value) 
+void SFVec2f::add(SFVec2f value)
 {
 	add(value.getValue());
 }
 
-void SFVec2f::translate(float x, float y) 
+void SFVec2f::translate(float x, float y)
 {
 	add(x, y);
 }
 
-void SFVec2f::translate(float value[]) 
+void SFVec2f::translate(float value[])
 {
 	add(value);
 }
 
-void SFVec2f::translate(SFVec2f value) 
+void SFVec2f::translate(SFVec2f value)
 {
 	add(value);
 }
@@ -141,19 +141,19 @@ void SFVec2f::translate(SFVec2f value)
 //	sub value
 ////////////////////////////////////////////////
 
-void SFVec2f::sub(float x, float y) 
+void SFVec2f::sub(float x, float y)
 {
 	mValue[0] -= x;
 	mValue[1] -= y;
 }
 
-void SFVec2f::sub(float value[]) 
+void SFVec2f::sub(float value[])
 {
 	mValue[0] -= value[0];
 	mValue[1] -= value[1];
 }
 
-void SFVec2f::sub(SFVec2f value) 
+void SFVec2f::sub(SFVec2f value)
 {
 	sub(value.getValue());
 }
@@ -162,19 +162,19 @@ void SFVec2f::sub(SFVec2f value)
 //	scale
 ////////////////////////////////////////////////
 
-void SFVec2f::scale(float value) 
+void SFVec2f::scale(float value)
 {
 	mValue[0] *= value;
 	mValue[1] *= value;
-}	
-	
-void SFVec2f::scale(float xscale, float yscale) 
+}
+
+void SFVec2f::scale(float xscale, float yscale)
 {
 	mValue[0] *= xscale;
 	mValue[1] *= yscale;
 }
 
-void SFVec2f::scale(float value[2]) 
+void SFVec2f::scale(float value[2])
 {
 	scale(value[0], value[1]);
 }
@@ -183,7 +183,7 @@ void SFVec2f::scale(float value[2])
 //	invert
 ////////////////////////////////////////////////
 
-void SFVec2f::invert() 
+void SFVec2f::invert()
 {
 	mValue[0] = -mValue[0];
 	mValue[1] = -mValue[1];
@@ -215,12 +215,12 @@ void SFVec2f::normalize()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFVec2f &vector) 
+ostream& operator<<(ostream &s, SFVec2f &vector)
 {
 	return s << vector.getX() << " " << vector.getY();
 }
 
-ostream& operator<<(ostream &s, SFVec2f *vector) 
+ostream& operator<<(ostream &s, SFVec2f *vector)
 {
 	return s << vector->getX() << " " << vector->getY();
 }
@@ -229,16 +229,16 @@ ostream& operator<<(ostream &s, SFVec2f *vector)
 //	String
 ////////////////////////////////////////////////
 
-void SFVec2f::setValue(char *value) 
+void SFVec2f::setValue(char *value)
 {
 	if (!value)
 		return;
 	float	x, y;
-	if (sscanf(value,"%f %f", &x, &y) == 2) 
+	if (sscanf(value,"%f %f", &x, &y) == 2)
 		setValue(x, y);
 }
 
-char *SFVec2f::getValue(char *buffer, int bufferLen) 
+char *SFVec2f::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%g %g", getX(), getY());
 	return buffer;
@@ -248,7 +248,7 @@ char *SFVec2f::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFVec2f::equals(Field *field) 
+bool SFVec2f::equals(Field *field)
 {
 	SFVec2f *vector = (SFVec2f *)field;
 	if (getX() == vector->getX() && getY() == vector->getY())
@@ -257,13 +257,13 @@ bool SFVec2f::equals(Field *field)
 		return false;
 }
 
-bool SFVec2f::equals(float value[2]) 
+bool SFVec2f::equals(float value[2])
 {
 	SFVec2f vector(value);
 	return equals(&vector);
 }
 
-bool SFVec2f::equals(float x, float y) 
+bool SFVec2f::equals(float x, float y)
 {
 	SFVec2f vector(x, y);
 	return equals(&vector);
@@ -354,7 +354,7 @@ jobject SFVec2f::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

@@ -14,7 +14,7 @@
 
 #include "AudioClipNode.h"
 
-AudioClipNode::AudioClipNode() 
+AudioClipNode::AudioClipNode()
 {
 	setHeaderFlag(false);
 	setType(audioClipNodeString);
@@ -52,7 +52,7 @@ AudioClipNode::AudioClipNode()
 	addEventOut(durationFieldString, durationChangedField);
 }
 
-AudioClipNode::~AudioClipNode() 
+AudioClipNode::~AudioClipNode()
 {
 }
 
@@ -67,12 +67,12 @@ SFString *AudioClipNode::getDescriptionField()
 	return (SFString *)getExposedField(descriptionFieldString);
 }
 
-void AudioClipNode::setDescription(char * value) 
+void AudioClipNode::setDescription(char * value)
 {
 	getDescriptionField()->setValue(value);
 }
 
-char *AudioClipNode::getDescription() 
+char *AudioClipNode::getDescription()
 {
 	return getDescriptionField()->getValue();
 }
@@ -87,23 +87,23 @@ SFBool *AudioClipNode::getLoopField()
 		return loopField;
 	return (SFBool *)getExposedField(loopFieldString);
 }
-	
-void AudioClipNode::setLoop(bool value) 
+
+void AudioClipNode::setLoop(bool value)
 {
 	getLoopField()->setValue(value);
 }
 
-void AudioClipNode::setLoop(int value) 
+void AudioClipNode::setLoop(int value)
 {
 	setLoop(value ? true : false);
 }
 
-bool AudioClipNode::getLoop() 
+bool AudioClipNode::getLoop()
 {
 	return getLoopField()->getValue();
 }
 
-bool AudioClipNode::isLoop() 
+bool AudioClipNode::isLoop()
 {
 	return getLoop();
 }
@@ -118,13 +118,13 @@ SFFloat *AudioClipNode::getPitchField()
 		return pitchField;
 	return (SFFloat *)getExposedField(pitchFieldString);
 }
-	
-void AudioClipNode::setPitch(float value) 
+
+void AudioClipNode::setPitch(float value)
 {
 	getPitchField()->setValue(value);
 }
 
-float AudioClipNode::getPitch() 
+float AudioClipNode::getPitch()
 {
 	return getPitchField()->getValue();
 }
@@ -139,13 +139,13 @@ SFTime *AudioClipNode::getStartTimeField()
 		return startTimeField;
 	return (SFTime *)getExposedField(startTimeFieldString);
 }
-	
-void AudioClipNode::setStartTime(double value) 
+
+void AudioClipNode::setStartTime(double value)
 {
 	getStartTimeField()->setValue(value);
 }
 
-double AudioClipNode::getStartTime() 
+double AudioClipNode::getStartTime()
 {
 	return getStartTimeField()->getValue();
 }
@@ -160,13 +160,13 @@ SFTime *AudioClipNode::getStopTimeField()
 		return stopTimeField;
 	return (SFTime *)getExposedField(stopTimeFieldString);
 }
-	
-void AudioClipNode::setStopTime(double value) 
+
+void AudioClipNode::setStopTime(double value)
 {
 	getStopTimeField()->setValue(value);
 }
 
-double AudioClipNode::getStopTime() 
+double AudioClipNode::getStopTime()
 {
 	return getStopTimeField()->getValue();
 }
@@ -181,18 +181,18 @@ SFBool *AudioClipNode::getIsActiveField()
 		return isActiveField;
 	return (SFBool *)getEventOut(isActiveFieldString);
 }
-	
-void AudioClipNode::setIsActive(bool  value) 
+
+void AudioClipNode::setIsActive(bool  value)
 {
 	getIsActiveField()->setValue(value);
 }
 
-bool AudioClipNode::getIsActive() 
+bool AudioClipNode::getIsActive()
 {
 	return getIsActiveField()->getValue();
 }
 
-bool AudioClipNode::isActive() 
+bool AudioClipNode::isActive()
 {
 	return getIsActiveField()->getValue();
 }
@@ -207,13 +207,13 @@ SFTime *AudioClipNode::getDurationChangedField()
 		return durationChangedField;
 	return (SFTime *)getEventOut(durationFieldString);
 }
-	
-void AudioClipNode::setDurationChanged(double value) 
+
+void AudioClipNode::setDurationChanged(double value)
 {
 	getDurationChangedField()->setValue(value);
 }
 
-double AudioClipNode::getDurationChanged() 
+double AudioClipNode::getDurationChanged()
 {
 	return getDurationChangedField()->getValue();
 }
@@ -229,22 +229,22 @@ MFString *AudioClipNode::getUrlField()
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void AudioClipNode::addUrl(char * value) 
+void AudioClipNode::addUrl(char * value)
 {
 	getUrlField()->addValue(value);
 }
 
-int AudioClipNode::getNUrls() 
+int AudioClipNode::getNUrls()
 {
 	return getUrlField()->getSize();
 }
 
-char *AudioClipNode::getUrl(int index) 
+char *AudioClipNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void AudioClipNode::setUrl(int index, char *urlString) 
+void AudioClipNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -253,12 +253,12 @@ void AudioClipNode::setUrl(int index, char *urlString)
 //	List
 ////////////////////////////////////////////////
 
-AudioClipNode *AudioClipNode::next() 
+AudioClipNode *AudioClipNode::next()
 {
 	return (AudioClipNode *)Node::next(getType());
 }
 
-AudioClipNode *AudioClipNode::nextTraversal() 
+AudioClipNode *AudioClipNode::nextTraversal()
 {
 	return (AudioClipNode *)Node::nextTraversalByType(getType());
 }
@@ -266,17 +266,17 @@ AudioClipNode *AudioClipNode::nextTraversal()
 ////////////////////////////////////////////////
 //	Virutual functions
 ////////////////////////////////////////////////
-	
+
 bool AudioClipNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void AudioClipNode::outputContext(ostream &printStream, char *indentString) 
+void AudioClipNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFString *description = getDescriptionField();
 	printStream << indentString << "\t" << "description " << description << endl;
-	
+
 	printStream << indentString << "\t" << "pitch " << getPitch() << endl;
 	printStream << indentString << "\t" << "startTime " << getStartTime() << endl;
 	printStream << indentString << "\t" << "stopTime " << getStopTime() << endl;
@@ -296,12 +296,12 @@ void AudioClipNode::outputContext(ostream &printStream, char *indentString)
 //	Time
 ////////////////////////////////////////////////
 
-void AudioClipNode::setCurrentTime(double time) 
+void AudioClipNode::setCurrentTime(double time)
 {
 	mCurrentTime = time;
 }
 
-double AudioClipNode::getCurrentTime() 
+double AudioClipNode::getCurrentTime()
 {
 	return mCurrentTime;
 }
@@ -336,7 +336,7 @@ static void StopAudioClip(AudioClipNode *ac)
 //	AudioClipNode::initialize
 ////////////////////////////////////////////////
 
-void AudioClipNode::initialize() 
+void AudioClipNode::initialize()
 {
 	setIsActive(false);
 	StopAudioClip(this);
@@ -347,7 +347,7 @@ void AudioClipNode::initialize()
 //	AudioClipNode::uninitialize
 ////////////////////////////////////////////////
 
-void AudioClipNode::uninitialize() 
+void AudioClipNode::uninitialize()
 {
 	StopAudioClip(this);
 }
@@ -356,7 +356,7 @@ void AudioClipNode::uninitialize()
 //	AudioClipNode::update
 ////////////////////////////////////////////////
 
-void AudioClipNode::update() 
+void AudioClipNode::update()
 {
 	double currentTime = getCurrentTime();
 
@@ -390,7 +390,7 @@ void AudioClipNode::update()
 	currentTime = GetCurrentSystemTime();
 	setCurrentTime(currentTime);
 
-/*	
+/*
 	if (bActive == true) {
 		if (bLoop == true && startTime < stopTime) {
 			if (stopTime < currentTime)

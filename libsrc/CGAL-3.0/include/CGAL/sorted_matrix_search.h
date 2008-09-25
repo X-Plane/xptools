@@ -151,7 +151,7 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
   using std::remove_if;
   using std::logical_or;
   using std::equal_to;
-  
+
   typedef typename Traits::Matrix                   Matrix;
   typedef typename Traits::Value                    Value;
   typedef Padded_matrix< Matrix >                   PaddedMatrix;
@@ -159,12 +159,12 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
   typedef std::vector< Cell >                       Cell_container;
   typedef typename Cell_container::iterator         Cell_iterator;
   typedef typename Cell_container::reverse_iterator Cell_reverse_iterator;
-  
+
   Cell_container active_cells;
-  
+
   // set of input matrices must not be empty:
   CGAL_optimisation_precondition( f != l);
-  
+
   // for each input matrix insert a cell into active_cells:
   InputIterator i( f);
   int maxdim( -1);
@@ -178,16 +178,16 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
     ++i;
   }
   CGAL_optimisation_precondition( maxdim > 0);
-  
-  
+
+
   // current cell dimension:
   int ccd( 1);
   // set ccd to a power of two >= maxdim:
   while ( ccd < maxdim)
     ccd <<= 1;
-  
-  
-  
+
+
+
 
   // now start the search:
 
@@ -196,57 +196,57 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
       // ------------------------------------------------------
       // divide cells:
       ccd >>= 1;
-    
-    
+
+
       // reserve is required here!
       // otherwise one of the insert operations might cause
       // a reallocation invalidating j
       // (should typically result in a segfault)
       active_cells.reserve( 4 * active_cells.size());
-    
+
       for ( Cell_reverse_iterator j( active_cells.rbegin());
             j != active_cells.rend();
             ++j) {
-    
+
         // upper-left quarter:
         // Cell( (*j).matrix(),
         //       (*j).x_min(),
         //       (*j).y_min()) remains in active_cells,
         // since it is implicitly shortened by decreasing ccd
-    
+
         // lower-left quarter:
         active_cells.push_back(
           Cell( (*j).matrix(),
                 (*j).x_min(),
                 (*j).y_min() + ccd));
-    
+
         // upper-right quarter:
         active_cells.push_back(
           Cell( (*j).matrix(),
                 (*j).x_min() + ccd,
                 (*j).y_min()));
-    
+
         // lower-right quarter:
         active_cells.push_back(
           Cell( (*j).matrix(),
                 (*j).x_min() + ccd,
                 (*j).y_min() + ccd));
-    
+
       } // for all active cells
     } // if ( ccd > 1)
     else if ( active_cells.size() <= 1) //!!! maybe handle <= 3
       break;
-    
+
     // there has to be at least one cell left:
     CGAL_optimisation_assertion( active_cells.size() > 0);
-    
+
     // ------------------------------------------------------
     // compute medians of smallest and largest elements:
-    
-    
+
+
     int lower_median_rank = (active_cells.size() - 1) >> 1;
     int upper_median_rank = (active_cells.size() >> 1);
-    
+
     // compute upper median of cell's minima:
     nth_element(active_cells.begin(),
                 active_cells.begin() + upper_median_rank,
@@ -255,11 +255,11 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
                   t.compare_strictly(),
                   Cell_min< Cell >(),
                   Cell_min< Cell >()));
-    
+
     Cell_iterator lower_median_cell =
       active_cells.begin() + upper_median_rank;
     Value lower_median = lower_median_cell->min();
-    
+
     // compute lower median of cell's maxima:
     nth_element(active_cells.begin(),
                 active_cells.begin() + lower_median_rank,
@@ -268,11 +268,11 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
                   t.compare_strictly(),
                   Cell_max< Cell >(ccd),
                   Cell_max< Cell >(ccd)));
-    
+
     Cell_iterator upper_median_cell =
       active_cells.begin() + lower_median_rank;
     Value upper_median = upper_median_cell->max(ccd);
-    
+
     // restore lower_median_cell, if it has been displaced
     // by the second search
     if (lower_median_cell->min() != lower_median)
@@ -286,16 +286,16 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
     // ------------------------------------------------------
     // test feasibility of medians and remove cells accordingly:
     Cell_iterator new_end;
-    
-    
+
+
     if ( t.is_feasible( lower_median))
       if ( t.is_feasible( upper_median)) {
         // lower_median and upper_median are feasible
-    
+
         // discard cells with all entries greater than
         // min( lower_median, upper_median) except for
         // one cell defining this minimum
-    
+
         Cell_iterator min_median_cell;
         Value min_median;
         if ( lower_median < upper_median) {
@@ -306,10 +306,10 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
           min_median_cell = upper_median_cell;
           min_median = upper_median;
         }
-    
+
         // save min_median_cell:
         iter_swap( min_median_cell, active_cells.begin());
-    
+
         new_end =
           remove_if(
             active_cells.begin() + 1,
@@ -317,17 +317,17 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
             compose(
               bind_1( t.compare_non_strictly(), min_median),
               Cell_min< Cell >()));
-    
+
       } // lower_median and upper_median are feasible
       else { // lower_median is feasible, but upper_median is not
-    
+
         // discard cells with all entries greater than
         // lower_median or all entries smaller than
         // upper_median except for the lower median cell
-    
+
         // save lower_median_cell:
         iter_swap( lower_median_cell, active_cells.begin());
-    
+
         new_end =
           remove_if(
             active_cells.begin() + 1,
@@ -344,19 +344,19 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
                   t.compare_non_strictly(),
                   upper_median),
                 Cell_max< Cell >( ccd))));
-    
+
       } // lower_median is feasible, but upper_median is not
     else
       if ( t.is_feasible( upper_median)) {
         // upper_median is feasible, but lower_median is not
-    
+
         // discard cells with all entries greater than
         // upper_median or all entries smaller than
         // lower_median except for the upper median cell
-    
+
         // save upper_median_cell:
         iter_swap( upper_median_cell, active_cells.begin());
-    
+
         new_end =
           remove_if(
             active_cells.begin() + 1,
@@ -373,13 +373,13 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
                   t.compare_non_strictly(),
                   lower_median),
                 Cell_max< Cell >( ccd))));
-    
+
       } // upper_median is feasible, but lower_median is not
       else { // both upper_median and lower_median are infeasible
-    
+
         // discard cells with all entries smaller than
         // max( lower_median, upper_median)
-    
+
         new_end =
           remove_if(
             active_cells.begin(),
@@ -389,9 +389,9 @@ sorted_matrix_search(InputIterator f, InputIterator l, Traits t)
                 t.compare_non_strictly(),
                 max( lower_median, upper_median)),
               Cell_max< Cell >( ccd)));
-    
+
       } // both upper_median and lower_median are infeasible
-    
+
       active_cells.erase( new_end, active_cells.end());
   } // for (;;)
 

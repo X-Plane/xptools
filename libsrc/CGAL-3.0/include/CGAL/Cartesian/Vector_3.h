@@ -142,7 +142,7 @@ operator!=(const VectorC3<R> &v, const VectorC3<R> &w)
 template < class R >
 inline
 bool
-operator==(const VectorC3<R> &v, const Null_vector &) 
+operator==(const VectorC3<R> &v, const Null_vector &)
 {
   return CGAL_NTS is_zero(v.x()) && CGAL_NTS is_zero(v.y()) &&
          CGAL_NTS is_zero(v.z());
@@ -151,7 +151,7 @@ operator==(const VectorC3<R> &v, const Null_vector &)
 template < class R >
 inline
 bool
-operator==(const Null_vector &n, const VectorC3<R> &v) 
+operator==(const Null_vector &n, const VectorC3<R> &v)
 {
   return v == n;
 }

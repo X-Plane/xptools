@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Object.h
  *
  *  This source file is part of DIME.
@@ -42,31 +42,31 @@ class DIME_DLL_API dimeObject : public dimeRecordHolder
 {
   friend class dimeObjectesSection;
   friend class dimeModel;
-  
+
 public:
   dimeObject();
   virtual ~dimeObject();
-  
-  virtual const char *getObjectName() const = 0;  
-  virtual dimeObject *copy(dimeModel * const model) const = 0; 
+
+  virtual const char *getObjectName() const = 0;
+  virtual dimeObject *copy(dimeModel * const model) const = 0;
   virtual bool read(dimeInput * const in);
   virtual bool write(dimeOutput * const out);
   virtual bool isOfType(const int thetypeid) const;
   virtual int typeId() const = 0;
   virtual int countRecords() const;
   virtual void print() const {}
-  
+
 protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
+
 public:
   static dimeObject *createObject(const char * const name,
-				 dimeMemHandler * const memhandler = NULL);    
+				 dimeMemHandler * const memhandler = NULL);
 protected:
   bool copyRecords(dimeObject * const newobject, dimeModel * const model) const;
-  
+
 }; // class dimeObject
 
 #endif // ! DIME_OBJECT_H

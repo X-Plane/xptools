@@ -10,7 +10,7 @@
 
 #include "LightNode.h"
 
-LightNode::LightNode() 
+LightNode::LightNode()
 {
 	setHeaderFlag(false);
 
@@ -30,7 +30,7 @@ LightNode::LightNode()
 	addExposedField(colorField);
 }
 
-LightNode::~LightNode() 
+LightNode::~LightNode()
 {
 }
 
@@ -44,18 +44,18 @@ SFBool *LightNode::getOnField()
 		return bonField;
 	return (SFBool *)getExposedField(onFieldString);
 }
-	
-void LightNode::setOn(bool on) 
+
+void LightNode::setOn(bool on)
 {
 	getOnField()->setValue(on);
 }
 
-void LightNode::setOn(int value) 
+void LightNode::setOn(int value)
 {
 	setOn(value ? true : false);
 }
 
-bool LightNode::isOn() 
+bool LightNode::isOn()
 {
 	return getOnField()->getValue();
 }
@@ -70,13 +70,13 @@ SFFloat *LightNode::getIntensityField()
 		return intensityField;
 	return (SFFloat *)getExposedField(intensityFieldString);
 }
-	
-void LightNode::setIntensity(float value) 
+
+void LightNode::setIntensity(float value)
 {
 	getIntensityField()->setValue(value);
 }
 
-float LightNode::getIntensity() 
+float LightNode::getIntensity()
 {
 	return getIntensityField()->getValue();
 }
@@ -97,12 +97,12 @@ void LightNode::setColor(float value[])
 	getColorField()->setValue(value);
 }
 
-void LightNode::setColor(float r, float g, float b) 
+void LightNode::setColor(float r, float g, float b)
 {
 	getColorField()->setValue(r, g, b);
 }
 
-void LightNode::getColor(float value[]) 
+void LightNode::getColor(float value[])
 {
 	getColorField()->getValue(value);
 }

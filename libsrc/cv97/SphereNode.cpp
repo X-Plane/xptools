@@ -18,13 +18,13 @@
 
 #include "SphereNode.h"
 
-SphereNode::SphereNode() 
+SphereNode::SphereNode()
 {
 	setHeaderFlag(false);
 	setType(sphereNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// radius exposed field
@@ -32,7 +32,7 @@ SphereNode::SphereNode()
 	addExposedField(radiusFieldString, radiusField);
 }
 
-SphereNode::~SphereNode() 
+SphereNode::~SphereNode()
 {
 }
 
@@ -46,27 +46,27 @@ SFFloat *SphereNode::getRadiusField()
 		return radiusField;
 	return (SFFloat *)getExposedField(radiusFieldString);
 }
-	
-void SphereNode::setRadius(float value) 
+
+void SphereNode::setRadius(float value)
 {
 	getRadiusField()->setValue(value);
 }
 
-float SphereNode::getRadius() 
+float SphereNode::getRadius()
 {
 	return getRadiusField()->getValue();
-} 
+}
 
 ////////////////////////////////////////////////
 //	List
 ////////////////////////////////////////////////
 
-SphereNode *SphereNode::next() 
+SphereNode *SphereNode::next()
 {
 	return (SphereNode *)Node::next(getType());
 }
 
-SphereNode *SphereNode::nextTraversal() 
+SphereNode *SphereNode::nextTraversal()
 {
 	return (SphereNode *)Node::nextTraversalByType(getType());
 }
@@ -74,13 +74,13 @@ SphereNode *SphereNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool SphereNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void SphereNode::initialize() 
+void SphereNode::initialize()
 {
 	recomputeBoundingBox();
 #ifdef SUPPORT_OPENGL
@@ -88,11 +88,11 @@ void SphereNode::initialize()
 #endif
 }
 
-void SphereNode::uninitialize() 
+void SphereNode::uninitialize()
 {
 }
 
-void SphereNode::update() 
+void SphereNode::update()
 {
 }
 
@@ -100,7 +100,7 @@ void SphereNode::update()
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void SphereNode::recomputeBoundingBox() 
+void SphereNode::recomputeBoundingBox()
 {
 	setBoundingBoxCenter(0.0f, 0.0f, 0.0f);
 	setBoundingBoxSize(getRadius(), getRadius(), getRadius());
@@ -110,7 +110,7 @@ void SphereNode::recomputeBoundingBox()
 //	Infomation
 ////////////////////////////////////////////////
 
-void SphereNode::outputContext(ostream &printStream, char *indentString) 
+void SphereNode::outputContext(ostream &printStream, char *indentString)
 {
 	printStream << indentString << "\t" << "radius " << getRadius() << endl;
 }
@@ -121,7 +121,7 @@ void SphereNode::outputContext(ostream &printStream, char *indentString)
 
 #ifdef SUPPORT_OPENGL
 
-void SphereNode::recomputeDisplayList() 
+void SphereNode::recomputeDisplayList()
 {
 	unsigned int nCurrentDisplayList = getDisplayList();
 	if (0 < nCurrentDisplayList)
@@ -132,11 +132,11 @@ void SphereNode::recomputeDisplayList()
 		glFrontFace(GL_CCW);
 
 	    glPushMatrix ();
-	
+
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 	    glRotatef (180.0, 0.0, 1.0, 0.0);
-		
+
 		glMatrixMode(GL_MODELVIEW);
 
 	    glRotatef (90.0, 1.0, 0.0, 0.0);

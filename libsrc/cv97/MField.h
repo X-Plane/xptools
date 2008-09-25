@@ -13,7 +13,7 @@
 
 #include <iostream.h>
 
-#include "Field.h" 
+#include "Field.h"
 #include "Vector.h"
 
 class MField : public Field {
@@ -21,7 +21,7 @@ class MField : public Field {
 	Vector<Field>	mFieldVector;
 
 public:
-	
+
 	MField();
 	~MField();
 

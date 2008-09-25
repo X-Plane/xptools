@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -48,7 +48,7 @@
 using namespace std;
 
 
-static const char* ident_ = 
+static const char* ident_ =
    "$Id: sb_Accessor.cpp,v 1.25 2003/06/10 20:51:40 mcoletti Exp $";
 
 
@@ -78,7 +78,7 @@ struct moduleDescriptor
                                 // the dust settles from the ctors and copy
                                 // ctors that the STL map::insert() is gonna do
 
-  boost::filesystem::path       file_path; // the corresponding file path for the given 
+  boost::filesystem::path       file_path; // the corresponding file path for the given
                                 // stream;  to be used to open the stream
                                 // only if the user wants to access the module
 
@@ -90,15 +90,15 @@ struct moduleDescriptor
                                 // as it doesn't support a copy ctor,
                                 // and so can't be inserted into a STL
                                 // container
-  boost::shared_ptr<sio_8211Reader> reader; 
- 
+  boost::shared_ptr<sio_8211Reader> reader;
+
 
   sio_8211ForwardIterator curr_record;
 
   moduleDescriptor() {}
 
-  moduleDescriptor( moduleDescriptor const& rhs) 
-    : stream( rhs.stream ), 
+  moduleDescriptor( moduleDescriptor const& rhs)
+    : stream( rhs.stream ),
       file_path( rhs.file_path ),
       reader( rhs.reader ),
       curr_record( rhs.curr_record )
@@ -156,7 +156,7 @@ sb_Accessor::~sb_Accessor( )
 
 
 static const char* module_mnemonics_[] =
-{ 
+{
   {"CATS"},
   {"CATD"},
   {"DDOM"},
@@ -208,9 +208,9 @@ _isValid( string const& mnemonic )
 //
 inline
 char
-toupper_( char c ) 
-{ 
-    return toupper( c ); 
+toupper_( char c )
+{
+    return toupper( c );
 } // toupper_
 
 
@@ -223,10 +223,10 @@ sb_Accessor::readCatd( std::string const& catd_fn )
 
   boost::filesystem::ifstream catd_stream( catd_fn );
 
-                                // bail if we can't open the CATD 
+                                // bail if we can't open the CATD
                                 // module
 
-  if ( ! catd_stream ) { return false; } 
+  if ( ! catd_stream ) { return false; }
 
 
   imp_->modules.clear();        // blow away any old entries
@@ -276,7 +276,7 @@ sb_Accessor::readCatd( std::string const& catd_fn )
 
   while ( curr_record )
     {
-                                // fetch the current CATD record and pull out 
+                                // fetch the current CATD record and pull out
                                 // the file name
 
       if ( ! curr_record.get( catd_record ) ) { break; }
@@ -294,7 +294,7 @@ sb_Accessor::readCatd( std::string const& catd_fn )
                                 // _should_ already be this way, but
                                 // it doesn't hurt to make sure
 
-      transform( module_name.begin(), module_name.end(), 
+      transform( module_name.begin(), module_name.end(),
                  module_name.begin(), toupper_ );
 
 
@@ -317,11 +317,11 @@ sb_Accessor::readCatd( std::string const& catd_fn )
 
       if ( ! catd_module.getFILE( file_name ) ) { return false; }
 
-      (*p.first).second.file_path = catd_path / file_name; 
+      (*p.first).second.file_path = catd_path / file_name;
 
 
       ++curr_record;            // go on to next CATD record entry
-                                
+
     }
 
   return true;
@@ -329,7 +329,7 @@ sb_Accessor::readCatd( std::string const& catd_fn )
 
 
 
- 
+
 
 // This returns an iterator to a record for the module that has the
 // given mnemonic.  Return false if there are either no more records
@@ -337,7 +337,7 @@ sb_Accessor::readCatd( std::string const& catd_fn )
 // exist.
 static
 bool
-getModuleIterator_( sb_Accessor_Imp & accessor, 
+getModuleIterator_( sb_Accessor_Imp & accessor,
                     string const& module_mnemonic,
                     sio_8211ForwardIterator & fi,
                     sio_8211_converter_dictionary* cv )
@@ -346,7 +346,7 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
                                 // module record for the given
                                 // mnemnonic; if not, then we create one
 
-  map<string,moduleDescriptor>::iterator module_itr = 
+  map<string,moduleDescriptor>::iterator module_itr =
     accessor.modules.find( module_mnemonic );
 
   if ( module_itr == accessor.modules.end() ) // *bzzt* Not there.  Bail.
@@ -365,7 +365,7 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
        if ( "DDSH" == module_mnemonic )
        {
           tmp_string = "MDEF";
-          module_itr = 
+          module_itr =
              accessor.modules.find( tmp_string );
 
           if ( module_itr == accessor.modules.end() )
@@ -377,7 +377,7 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
        else if ( "DDOM" == module_mnemonic )
        {
           tmp_string = "MDOM";
-          module_itr = 
+          module_itr =
              accessor.modules.find( tmp_string );
 
           if ( module_itr == accessor.modules.end() )
@@ -396,15 +396,15 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
 
   if ( ! module_itr->second.stream.get() )
     {
-      module_itr->second.stream = 
-         boost::shared_ptr<boost::filesystem::ifstream>( new boost::filesystem::ifstream( module_itr->second.file_path, 
+      module_itr->second.stream =
+         boost::shared_ptr<boost::filesystem::ifstream>( new boost::filesystem::ifstream( module_itr->second.file_path,
                                                                                           std::ios::in )  );
 
                                 // bail if we fail to either get a new
                                 // stream or the new stream itself is
                                 // already wedged
 
-      if ( ! ((*module_itr).second.stream.get() && 
+      if ( ! ((*module_itr).second.stream.get() &&
               (*module_itr).second.stream->good() ) )
         {
           return false;
@@ -414,7 +414,7 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
 
       if ( ! module_itr->second.reader.get() )
         {
-          module_itr->second.reader = 
+          module_itr->second.reader =
             boost::shared_ptr<sio_8211Reader>( new sio_8211Reader( *module_itr->second.stream, cv ) );
         }
       else                      // we already have a reader, so just attach
@@ -446,7 +446,7 @@ getModuleIterator_( sb_Accessor_Imp & accessor,
                                 // increment to the next record, if any
                                 // exist
 
-  ++(*module_itr).second.curr_record; 
+  ++(*module_itr).second.curr_record;
 
   fi = (*module_itr).second.curr_record;
 
@@ -465,7 +465,7 @@ sb_Accessor::get( sb_Module& module, sio_8211_converter_dictionary* cv )
 
   sio_8211ForwardIterator curr_record_itr;
 
-  if ( ! getModuleIterator_( *imp_, module.getMnemonic(), 
+  if ( ! getModuleIterator_( *imp_, module.getMnemonic(),
                              curr_record_itr,
                              cv )  )
     {
@@ -479,7 +479,7 @@ sb_Accessor::get( sb_Module& module, sio_8211_converter_dictionary* cv )
 
   sc_Record curr_record;
 
-  if ( curr_record_itr.done() || 
+  if ( curr_record_itr.done() ||
        (! curr_record_itr.get( curr_record )) )
     {
       return false;
@@ -492,7 +492,7 @@ sb_Accessor::get( sb_Module& module, sio_8211_converter_dictionary* cv )
 
 
 
-std::string const & 
+std::string const &
 sb_Accessor::fileName() const
 {
    return imp_->fileName;

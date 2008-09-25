@@ -39,13 +39,13 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Dcel,class Traits, class Base_node>
-Window_stream& operator << (Window_stream& os, 
+Window_stream& operator << (Window_stream& os,
                             const Arrangement_2<Dcel,Traits, Base_node>& arr)
 {
 
-  Pm_drawer< Arrangement_2<Dcel,Traits, Base_node> , Window_stream>  
+  Pm_drawer< Arrangement_2<Dcel,Traits, Base_node> , Window_stream>
                                                                  drawer(os);
-  
+
   draw_pm(arr, drawer, os);
 
   return os;

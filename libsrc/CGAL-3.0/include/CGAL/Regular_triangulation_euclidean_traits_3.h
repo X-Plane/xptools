@@ -29,7 +29,7 @@
 #include <CGAL/predicates/Regular_triangulation_ftC3.h>
 #include <CGAL/predicates/Regular_triangulation_rtH3.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template <class Point, class Weight>
 class Power_test_3
@@ -85,8 +85,8 @@ public:
   typedef Point_3 Point;
 
   typedef CGAL::Power_test_3<Bare_point, Weight> Power_test_3;
-  
-  Power_test_3 
+
+  Power_test_3
   power_test_3_object() const
     {  return Power_test_3();}
 

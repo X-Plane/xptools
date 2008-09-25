@@ -43,17 +43,17 @@ public:
   typedef Pm_bounding_box_base<Planar_map>              Bounding_box;
   typedef typename Base::Halfedge_handle_iterator Halfedge_handle_iterator;
   typedef typename Base::Token                          Token;
-	
-public:	
+
+public:
   Pm_dummy_point_location() :
     Pm_point_location_base<Planar_map>(), m_traits(0) {}
-  Pm_dummy_point_location(Planar_map *, Traits_wrap * traits) : 
+  Pm_dummy_point_location(Planar_map *, Traits_wrap * traits) :
     Pm_point_location_base<Planar_map>(), m_traits(traits) {}
-	
+
   void init(Planar_map &, Traits & traits)
   { m_traits = (Traits_wrap*)(&traits); }
   void insert(Halfedge_handle, const X_monotone_curve_2 &) {}
-	
+
   inline const Traits * get_traits() const {return m_traits;}
 
   Halfedge_handle locate(const Point_2 &, Locate_type &) const
@@ -61,7 +61,7 @@ public:
     CGAL_assertion_msg(false, "Dummy point location - locate not allowed");
     Halfedge_handle h; return h;
   }
-	
+
   Halfedge_handle locate(const Point_2 &, Locate_type &)
   {
     CGAL_assertion_msg(false, "Dummy point location - locate not allowed");
@@ -74,7 +74,7 @@ public:
     CGAL_assertion_msg(false, "Dummy point location - locate not allowed");
     Halfedge_handle h; return h;
   }
-	
+
   Halfedge_handle vertical_ray_shoot(const Point_2 &, Locate_type &, bool)
   {
     CGAL_assertion_msg(false, "Dummy point location - locate not allowed");

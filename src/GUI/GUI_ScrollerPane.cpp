@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,15 +36,15 @@ const int	kSBSIZE = 16;
 	Scroller deferred realignment:
 		Scroller views attempt to recompute the scroll bar limits and sizes when the content of the pane changes.  However in the case
 		of hierarchy views and other large content this can be quite expensive: O(N) where N = size of content, not size of what we can
-		realy see.  SO....we don't do this immediately when signaled - we simply mark ourselves as stale, then do it when we draw.  
+		realy see.  SO....we don't do this immediately when signaled - we simply mark ourselves as stale, then do it when we draw.
 
 		(Technically this is slightly wrong -- we should also try to trap mouse events, because technically someone could show the scroller
 		and click on the scrollbar itself while it is not calibrated before the refresh comes through.  But this would require super-human
 		user speed and be a uesless click anyway since the user would be clicking on something not yet drawn.)
-		
+
 		The big win here is that when we have 5 hierarchies, some fully open, but most hidden, we don't "pay" for the hidden ones in any way,
 		because we don't have to recompute their size.
-*/	
+*/
 
 GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 	mScrollH(NULL),
@@ -54,9 +54,9 @@ GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 {
 	// Note: we have to set some real bounds - default panes are zero rect.
 	// but we need to establish relative dimensions to our scroll bars from the outset!
-	
+
 	SetBounds(0,0,100,100);
-	
+
 	if (inHScroll)
 	{
 		mScrollH = new GUI_ScrollBar();
@@ -96,14 +96,14 @@ void	GUI_ScrollerPane::Draw(GUI_GraphState * g)
 		CalibrateSBs();
 	int bounds[4];
 	int tile[4] = { 0, 0, 1, 1 };
-	
+
 	if (!mImage.empty())
 	{
 		glColor3f(1,1,1);
 		GetBounds(bounds);
 		GUI_DrawStretched(g, mImage.c_str(), bounds, tile);
 	}
-	
+
 	if (mScrollV && mScrollH)
 	{
 		glColor3f(1,1,1);
@@ -135,7 +135,7 @@ void	GUI_ScrollerPane::PositionInContentArea(GUI_Pane * inPane)
 		bounds_me[1] += mScrollH->GetMinorAxis(0);
 	if (mScrollV)
 		bounds_me[2] -= mScrollV->GetMinorAxis(1);
-	
+
 	inPane->SetBounds(bounds_me);
 	inPane->SetSticky(1,1,1,1);
 }
@@ -152,7 +152,7 @@ void	GUI_ScrollerPane::PositionSidePane(GUI_Pane * pane)
 	pane->GetBounds(bounds_child);
 	bounds_child[1] = bounds_me[1];
 	bounds_child[3] = bounds_me[3];
-	pane->SetBounds(bounds_child);	
+	pane->SetBounds(bounds_child);
 }
 
 void	GUI_ScrollerPane::PositionHeaderPane(GUI_Pane * pane)
@@ -162,15 +162,15 @@ void	GUI_ScrollerPane::PositionHeaderPane(GUI_Pane * pane)
 	if (mScrollH)
 		bounds_me[1] += mScrollH->GetMinorAxis(0);
 
-// Bens: let header overhang scrollbar.  Sider does not!		
+// Bens: let header overhang scrollbar.  Sider does not!
 
-//	if (mScrollV)				
+//	if (mScrollV)
 //		bounds_me[2] -= mScrollV->GetMinorAxis(1);
 	int bounds_child[4];
 	pane->GetBounds(bounds_child);
 	bounds_child[0] = bounds_me[0];
 	bounds_child[2] = bounds_me[2];
-	pane->SetBounds(bounds_child);	
+	pane->SetBounds(bounds_child);
 }
 
 void	GUI_ScrollerPane::SetContent(GUI_ScrollerPaneContent * inPane)
@@ -210,19 +210,19 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 		total[5] = total[3] - total[1];
 		vis[4] = vis[2] - vis[0];
 		vis[5] = vis[3] - vis[1];
-		
+
 		if (axis == 0 && mScrollV)			dist *= (mScrollV->GetPageSize() * 0.1f);
 		if (axis == 1 && mScrollH)			dist *= (mScrollH->GetPageSize() * 0.1f);
-		
+
 		if (axis == 0)
-		{		
+		{
 			float minv = 0;
 			float maxv = max(total[5] - vis[5], 0.0f);
 			float new_v = vis[1] - total[1] + dist;
 			float old_v = vis[1] - total[1];
-			
+
 			if (maxv == 0.0) return 1;
-			
+
 			if (new_v < minv) new_v = minv;
 			if (new_v > maxv) new_v = maxv;
 
@@ -237,9 +237,9 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 			float maxv = max(total[4] - vis[4], 0.0f);
 			float new_v = vis[0] - total[0] - dist;
 			float old_v = vis[0] - total[0];
-			
+
 			if (maxv == 0.0) return 1;
-			
+
 			if (new_v < minv) new_v = minv;
 			if (new_v > maxv) new_v = maxv;
 
@@ -274,7 +274,7 @@ void	GUI_ScrollerPane::ReceiveMessage(
 		for (slave = mSlaveV.begin(); slave != mSlaveV.end(); ++slave)
 			(*slave)->mContent->ScrollV(mScrollV->GetValue());
 	}
-		
+
 	if (inSrc == mContent && inMsg == GUI_SCROLL_CONTENT_SIZE_CHANGED && mContent && !mCalibrating)
 		mCalibrateDirty = true;
 }
@@ -307,7 +307,7 @@ void	GUI_ScrollerPane::CalibrateSBs(void)
 		total[5] = total[3] - total[1];
 		vis[4] = vis[2] - vis[0];
 		vis[5] = vis[3] - vis[1];
-		
+
 		if (mScrollH)
 		{
 			mScrollH->SetMin(0);
@@ -321,7 +321,7 @@ void	GUI_ScrollerPane::CalibrateSBs(void)
 			mScrollV->SetMax(max(total[5] - vis[5], 0.0f));
 			mScrollV->SetValue(vis[1] - total[1]);
 			mScrollV->SetPageSize(vis[5]);
-		}		
+		}
 	}
 	mCalibrating = false;
 }

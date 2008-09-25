@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -80,15 +80,15 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 	if (table.empty()) return 0.0f;
 	if (table.size() == 1) return table.front().v[n];
 	if (table.size() == 2) return extrap(table[0].key,table[0].v[n],table[1].key,table[1].v[n],input);
-	
-	vector<XObjKey>::const_iterator i = std::lower_bound(table.begin(), table.end(), input, compare_key());	
+
+	vector<XObjKey>::const_iterator i = std::lower_bound(table.begin(), table.end(), input, compare_key());
 	vector<XObjKey>::const_iterator p1, p2;
-	
-		 if (i == table.end())		{ p1 = i-2; p2 = i-1; }	
+
+		 if (i == table.end())		{ p1 = i-2; p2 = i-1; }
 	else if (i->key == input)		{ return i->v[n];	}
 	else if (i == table.begin())	{ p1 = i; p2 = i+1; }
 	else							{ p1 = i-1; p2 = i; }
-	
+
 	return extrap(p1->key,p1->v[n],p2->key,p2->v[n], input);
 }
 
@@ -113,7 +113,7 @@ static void anim_add_any(
 		for (i = keys.begin(); i != keys.end(); ++i)
 		{
 			Point3 p = { i->v[0], i->v[1], i->v[2] };
-			verts.push_back(object_add_new_vertex(new_obj,&p));			
+			verts.push_back(object_add_new_vertex(new_obj,&p));
 		}
 	}
 	else
@@ -121,20 +121,20 @@ static void anim_add_any(
 		Point3	p1 = { xyz1[0], xyz1[1], xyz1[2] };
 		Point3	p2 = { xyz2[0], xyz2[1], xyz2[2] };
 		verts.push_back(object_add_new_vertex(new_obj,&p1));
-		verts.push_back(object_add_new_vertex(new_obj,&p2));		
+		verts.push_back(object_add_new_vertex(new_obj,&p2));
 	}
-		
+
 	Surface * s = new_surface();
-	
-	surface_set_rgb_long(s, rgb_floats_to_long(1.0, 1.0, 0.0));							
+
+	surface_set_rgb_long(s, rgb_floats_to_long(1.0, 1.0, 0.0));
 	surface_set_type(s, SURFACE_LINE);
 	surface_set_twosided(s, 1);
 	surface_set_shading(s, 1);
-	object_add_surface_head(new_obj, s);				
+	object_add_surface_head(new_obj, s);
 
 	for (vector<Vertex *>::iterator vv = verts.begin(); vv != verts.end(); ++vv)
 		surface_add_vertex(s, *vv, 0.0, 0.0);
-	
+
 	OBJ_set_anim_type(new_obj, anim_kind);
 	OBJ_set_anim_keyframe_count(new_obj, keys.size());
 	int n;
@@ -147,13 +147,13 @@ static void anim_add_any(
 
 	OBJ_set_anim_dataref(new_obj,dataref);
 
-	object_add_child(obj, new_obj);	
+	object_add_child(obj, new_obj);
 	if(add_head) move_child_to_head(obj, new_obj);
 
 	if (g_anim_inited)
 	{
 		tcl_command("hier_update");
-		redraw_all();	
+		redraw_all();
 	}
 }
 
@@ -179,7 +179,7 @@ void anim_add_rotate(
 {
 	float	l1[3] = { center[0] - axis[0], center[1] - axis[1], center[2] - axis[2] };
 	float	l2[3] = { center[0] + axis[0], center[1] + axis[1], center[2] + axis[2] };
-	
+
 	anim_add_any(obj, add_head, anim_rotate, l1, l2, key_table, dataref, name);
 }
 
@@ -203,7 +203,7 @@ void anim_add_show(
 				const char *				name)
 {
 	float origin[3] = { 0.0, 0.0, 0.0 };
-	anim_add_any(obj, add_head, anim_show, origin, origin, key_table, dataref, name);	
+	anim_add_any(obj, add_head, anim_show, origin, origin, key_table, dataref, name);
 }
 
 void anim_add_hide(
@@ -214,7 +214,7 @@ void anim_add_hide(
 				const char *				name)
 {
 	float origin[3] = { 0.0, 0.0, 0.0 };
-	anim_add_any(obj, add_head, anim_hide, origin, origin, key_table, dataref, name);	
+	anim_add_any(obj, add_head, anim_hide, origin, origin, key_table, dataref, name);
 }
 
 
@@ -268,7 +268,7 @@ float * center_for_rotation_negative(ACObject * obj, float buf[3])
 	{
 		buf[0] = buf[1] = buf[2] = 0.0f;
 		return buf;
-	}	
+	}
 	buf[0] = -(v2->x + v1->x) * 0.5;
 	buf[1] = -(v2->y + v1->y) * 0.5;
 	buf[2] = -(v2->z + v1->z) * 0.5;
@@ -308,7 +308,7 @@ void bake_static_transitions(ACObject * object)
 	set<ACObject *> kill_set;
 	Point3	diff = { 0.0, 0.0, 0.0 };
 	List * p;
-	List * kids = ac_object_get_childrenlist(object);	
+	List * kids = ac_object_get_childrenlist(object);
     for (p = kids; p != NULL; p = p->next)
     {
     	ACObject * child = (ACObject *)p->data;
@@ -328,12 +328,12 @@ void bake_static_transitions(ACObject * object)
 		{
 			translate_object(child, &diff);
 		}
-	}	
+	}
 
 	for (set<ACObject *>::iterator kill = kill_set.begin(); kill != kill_set.end(); ++kill)
 		object_delete(*kill);
 
-	kids = ac_object_get_childrenlist(object);	
+	kids = ac_object_get_childrenlist(object);
     for (p = kids; p != NULL; p = p->next)
 		bake_static_transitions((ACObject *)p->data);
 }
@@ -357,14 +357,14 @@ void	gather_datarefs(ACObject * obj)
 		{
 			i.min_v = min(i.min_v, OBJ_get_anim_nth_value(obj, n)-slop_for_anim(OBJ_get_anim_type(obj)));
 			i.max_v = max(i.max_v, OBJ_get_anim_nth_value(obj, n)+slop_for_anim(OBJ_get_anim_type(obj)));
-			
+
 		}
 		i.now_v = min(i.max_v,max(i.min_v,i.now_v));
 	}
 	List * p;
 	List * kids = ac_object_get_childrenlist(obj);
     for (p = kids; p != NULL; p = p->next)
-		gather_datarefs((ACObject *)p->data);	
+		gather_datarefs((ACObject *)p->data);
 }
 
 static void quote_dref(string& s)
@@ -429,15 +429,15 @@ static void make_anim_group(void)
 			parents.insert(p);
 	}
 	list_free(&objs_l);
-	
+
 	if (objs.empty())	return;
 
 	if (parents.size() > 1)
 	{
 		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
-	}	
-	
+	}
+
 	ACObject * new_obj = new_object(OBJECT_GROUP);
 
 	object_set_name(new_obj, "Animation");
@@ -445,16 +445,16 @@ static void make_anim_group(void)
 	if (!objs.empty())
 	for (int n = objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
-	
-	object_add_child(*parents.begin(), new_obj);	
+
+	object_add_child(*parents.begin(), new_obj);
 	OBJ_set_animation_group	(new_obj, 1);
-	
+
 	if (g_anim_inited)
 	{
 		tcl_command("hier_update");
 		redraw_all();
 	}
-}	
+}
 
 static void do_bake_selection(void)
 {
@@ -492,15 +492,15 @@ static void make_anim_of_type(int argc, char * argv[])
 			parents.insert(p);
 	}
 	list_free(&objs_l);
-	
+
 	if (objs.empty())	return;
 
 	if (parents.size() > 1)
 	{
 		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
-	}	
-	
+	}
+
 	vector<XObjKey>	keys(2);
 	keys[0].key = 0.0;
 	keys[0].v[0] = 0.0;
@@ -510,7 +510,7 @@ static void make_anim_of_type(int argc, char * argv[])
 	keys[1].v[0] = 0.0;
 	keys[1].v[1] = 10.0;
 	keys[1].v[2] = 0.0;
-	
+
 	float a1[3] = { 0.0, 0.0, 0.0 };
 	float a2[3] = { 0.0, 10.0, 0.0 };
 
@@ -522,7 +522,7 @@ static void make_anim_of_type(int argc, char * argv[])
 	{
 		surf = obj_get_first_surf(obj);
 	}
-	
+
 	if(surf!=NULL && surf->numvert > 0)
 	{
 		List * v;
@@ -532,11 +532,11 @@ static void make_anim_of_type(int argc, char * argv[])
 			a1[1] += SVERTEX(v->data)->y;
 			a1[2] += SVERTEX(v->data)->z;
 		}
-		
+
 		a1[0] /= (float) surf->numvert;
 		a1[1] /= (float) surf->numvert;
 		a1[2] /= (float) surf->numvert;
-		
+
 		float len=0;
 		for(v=surf->vertlist;v;v=v->next)
 		{
@@ -544,7 +544,7 @@ static void make_anim_of_type(int argc, char * argv[])
 					  sqr(a1[1]-SVERTEX(v->data)->y)+
 					  sqr(a1[2]-SVERTEX(v->data)->z));
 		}
-		
+
 		len /= (float) surf->numvert;
 
 		if (strcmp(argv[1],"rotate")!=0)
@@ -561,7 +561,7 @@ static void make_anim_of_type(int argc, char * argv[])
 			a2[2] = surf->normal.z * len;
 		}
 	}
-	
+
 	if (strcmp(argv[1],"translate")==0)
 		anim_add_translate(*parents.begin(), 1, keys, "none", "translation");
 
@@ -601,7 +601,7 @@ static void sel_if_has(ACObject * who, const char *dref)
 
     for (List * p = kids; p != NULL; p = p->next)
         sel_if_has((ACObject *)p->data, dref);
-	
+
 }
 
 static void set_anim_now(int argc, char * argv[])
@@ -643,11 +643,11 @@ static void set_sel_now(int argc, char * argv[])
 static void select_all_anim(void)
 {
 	add_undoable_change_selection("Select all animations");
-	clear_selection();		
+	clear_selection();
 	sel_if_has(ac_get_world(),NULL);
 	tcl_command("hier_update");
 	redraw_all();
-	display_status();	
+	display_status();
 }
 
 
@@ -689,13 +689,13 @@ static void add_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= (OBJ_get_anim_type(obj) == anim_trans ? 1 : 0))
 			{
-				add_undoable_all("Add Keyframe");			
+				add_undoable_all("Add Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
-				{			
+				{
 					Boolean made;
 					Vertex * v2 = surface_get_vertex(obj_get_first_surf(obj), n);
-					Vertex * v1 = (n > 0) ? surface_get_vertex(obj_get_first_surf(obj), n-1) : v2;					
-					if (v1 == NULL || v2 == NULL) 
+					Vertex * v1 = (n > 0) ? surface_get_vertex(obj_get_first_surf(obj), n-1) : v2;
+					if (v1 == NULL || v2 == NULL)
 						return;
 					surface_insert_vertex(obj_get_first_surf(obj), v1, v2, &made);
 				}
@@ -733,7 +733,7 @@ static void delete_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= 0 && m > 2)
 			{
-				add_undoable_all("Add Keyframe");			
+				add_undoable_all("Add Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{
 					SVertex * dead = surface_get_svertex_at(obj_get_first_surf(obj), n);
@@ -836,19 +836,19 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 		vis = push_stack.back();
 		push_stack.pop_back();
 	}
-	
+
 	int anim_t = OBJ_get_anim_type(ob);
-	
+
 	if (anim_t != anim_none && ac_object_get_parent(ob) && OBJ_get_animation_group(ac_object_get_parent(ob)))
-	{		
+	{
 		char dref[1024];
 		float now_v = get_dataref_value(OBJ_get_anim_dataref(ob,dref));
 		float k1, k2;
-		
+
 		float axis[3], offset[3];
-		
+
 		vector<XObjKey>	table;
-		
+
 		switch(anim_t) {
 		case anim_trans:
 			{
@@ -906,7 +906,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			}
 			break;
 		}
-	}	
+	}
 }
 
 void	rescale_keyframes			(ACObject * obj, float old_lo, float new_lo, float old_hi, float new_hi)
@@ -923,13 +923,13 @@ int		get_keyframe_range			(ACObject * obj, float& lo, float& hi)
 	if(at != anim_trans && at != anim_rotate) return 0;
 	int kk = OBJ_get_anim_keyframe_count(obj);
 	if (kk < 1) return 0;
-	
+
 	lo = hi = OBJ_get_anim_nth_value(obj,0);
 	for(int k = 1; k < kk; ++k)
 	{
 		lo = min(lo,OBJ_get_anim_nth_value(obj,k));
 		hi = max(hi,OBJ_get_anim_nth_value(obj,k));
-	}	
+	}
 	return 1;
 }
 
@@ -939,14 +939,14 @@ static void	reverse_sel(void)
 	find_all_selected_objects(objs);
 	int n,ctr=0;
 	vector<float>	old_lo(objs.size()),old_hi(objs.size());
-	
+
 	for(n=0;n < objs.size(); ++n)
 	if(get_keyframe_range(objs[n],old_lo[n],old_hi[n]))		++ctr;
 	else													objs[n]=NULL;
 
 	if (ctr==0) return;
 
-	add_undoable_all("Reverse Keyframes");			
+	add_undoable_all("Reverse Keyframes");
 
 	float lo=old_lo[0];
 	float hi=old_hi[0];
@@ -956,7 +956,7 @@ static void	reverse_sel(void)
 		lo=min(lo,old_lo[n]);
 		hi=max(hi,old_hi[n]);
 	}
-	
+
 	for (n = 0; n < objs.size(); ++n)
 	if(objs[n])
 	{
@@ -976,7 +976,7 @@ static void	rescale_sel(int argc, char * argv[])
 	find_all_selected_objects(objs);
 	if (objs.empty()) return;
 
-	add_undoable_all("Rescale Keyframes");			
+	add_undoable_all("Rescale Keyframes");
 	for (int n = 0; n < objs.size(); ++n)
 	{
 		float l,h;
@@ -993,22 +993,22 @@ void setup_obj_anim(void)
 	ac_set_post_render_object_callback(anim_post_func);
 	ac_add_command_full("xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, "f", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
 	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_now <n> <t>", "set dataref n to time t");
-	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");	
+	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");
 	ac_add_command_full("xplane_anim_select_all", CAST_CMD(select_all_anim), 0, NULL, "ac3d xplane_anim_select_all", "select all animated objects");
-	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
-	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
-	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
+	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");
+	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");
+	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");
 
-	ac_add_command_full("xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, "ac3d xplane_reverse_keyframe", "reverse key frames of selection");	
-	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, "argv", "ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", "rescale key frames of selection");		
+	ac_add_command_full("xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, "ac3d xplane_reverse_keyframe", "reverse key frames of selection");
+	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, "argv", "ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", "rescale key frames of selection");
 
 	ac_add_command_full("xplane_resync_anim", CAST_CMD(do_resync_anim), 0, NULL, "ac3d xplane_resync_anim", "resync animation with model");
 
 	ac_add_command_full("xplane_make_anim_group", CAST_CMD(make_anim_group),0, NULL, "ac3d xplane_make_anim_group", "make animation group");
 	ac_add_command_full("xplane_make_anim_typed", CAST_CMD(make_anim_of_type),1, "argv", "ac3d make_anim_of_type rotate|transate|show|hide", "make animation");
-	
+
 	ac_add_command_full("xplane_bake_static", CAST_CMD(do_bake_selection),0,NULL, "ac3d xplane_bake_static", "bake down all static transitions");
-	
+
 	OBJ_register_change_cb(obj_changed_cb);
 }
 

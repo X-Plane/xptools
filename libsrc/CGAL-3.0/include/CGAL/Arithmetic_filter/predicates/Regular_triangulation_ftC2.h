@@ -74,7 +74,7 @@ power_testC2(
 		tx.interval(),
 		ty.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC2 failures");
@@ -130,7 +130,7 @@ power_testC2(
 		tx.interval(),
 		ty.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC2 failures");
@@ -185,7 +185,7 @@ power_testC2(
 		tx.interval(),
 		ty.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA power_testC2 failures");
@@ -232,7 +232,7 @@ power_testC2(
 		tx.interval(),
 		ty.interval(),
 		twt.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA power_testC2 failures");

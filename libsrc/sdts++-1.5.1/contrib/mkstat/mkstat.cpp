@@ -45,7 +45,7 @@ const int GETOPTDONE = EOF;
 #include "emit.h"
 
 
-static const char* _ident = 
+static const char* _ident =
    "$Id: mkstat.cpp,v 1.5 2003/02/13 23:37:46 mcoletti Exp $";
 
 
@@ -105,13 +105,13 @@ _getRecordCount( string const& file_name )
   return count;
 
 } // _getRecordCount
- 
+
 
 
 
 void
-create_stat( ifstream& catd_stream, 
-             string const& catd_fn, 
+create_stat( ifstream& catd_stream,
+             string const& catd_fn,
              string const& stat_fn,
              ofstream& stat_stream )
 {
@@ -124,8 +124,8 @@ create_stat( ifstream& catd_stream,
 
   stat_module.getSchema( stat_schema );
 
-  sio_8211Writer writer( stat_stream, 
-                         fileutils::basename( stat_fn ), 
+  sio_8211Writer writer( stat_stream,
+                         fileutils::basename( stat_fn ),
                          stat_schema );
 
 
@@ -291,7 +291,7 @@ main( int argc, char** argv )
 
   if( ! catd_stream )
     {
-      cout << "Unable to open CATD module " << catd_filename 
+      cout << "Unable to open CATD module " << catd_filename
            << ".  Aborting.\n";
       return 2;
     }
@@ -303,7 +303,7 @@ main( int argc, char** argv )
 
   if( ! stat_stream )
     {
-      cout << "Unable to create STAT module " << stat_filename 
+      cout << "Unable to create STAT module " << stat_filename
            << ".  Aborting.\n";
       return 2;
     }

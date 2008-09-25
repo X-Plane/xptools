@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -99,12 +99,12 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CAPTION, "Road Radial Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.radial_weight, XP_END,
 							XP_ROW, XP_CAPTION, "Road Slope Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.slope_amp, XP_END,
 							XP_ROW, XP_CAPTION, "Road Urban Density Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.density_amp, XP_END,
-							
-						XP_END,						
+
+						XP_END,
 					XP_END,
 					XP_ROW, XP_BUTTON_CANCEL, "Cancel", XP_BUTTON_OK, "OK", XP_END,
 				XP_END,
-			XP_END);		
+			XP_END);
 	}
 	if (XPIsWidgetVisible(sPrefsDialog))
 		XPBringRootWidgetToFront(sPrefsDialog);
@@ -152,7 +152,7 @@ static bool LoadIniSectionMap(const char * inFileName, IniSectionMap& outMap)
 	{
 		vector<string>	tok;
 		TextScanner_TokenizeLine(sc, "=","\r\n", 2, ToVec, &tok);
-		
+
 		if (!tok.empty())
 		{
 			Assert(!tok[0].empty());
@@ -173,7 +173,7 @@ static bool LoadIniSectionMap(const char * inFileName, IniSectionMap& outMap)
 				}
 			}
 		}
-		
+
 		TextScanner_Next(sc);
 	}
 	TextScanner_Close(sc);
@@ -273,12 +273,12 @@ static void RestoreDefaultProcessing(XPWidgetID)
 	/*		do_assign_landuse		*/			1,
 	/*		remove_duplicate_objs	*/			0,
 	/*		place_buildings			*/			0,
-	/*		build_3d_forests		*/			0 };	
+	/*		build_3d_forests		*/			0 };
 
 	gProcessingCmdPrefs = defs;
-	
+
 	XPDataToItem(sPrefsDialog, 	TAG_COMMAND_PREFS);
-	
+
 	gProcessingCmdPrefs = temp;
-	
+
 }

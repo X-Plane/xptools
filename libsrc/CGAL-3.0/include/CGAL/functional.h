@@ -46,104 +46,104 @@ namespace CGALi {
   struct Set_arity_helper< F, 0 > {
     typedef Arity_tag< 0 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
-    
+
+
     result_type operator()
     ()
     const
     { return f_(); }
-  
+
   protected:
     F f_;
   };
-  
+
   template < class F >
   struct Set_arity_helper< F, 1 > {
     typedef Arity_tag< 1 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
+
     template < class A1 >
     result_type operator()
     (const A1& a1)
     const
     { return f_(a1); }
-  
+
   protected:
     F f_;
   };
-  
+
   template < class F >
   struct Set_arity_helper< F, 2 > {
     typedef Arity_tag< 2 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2)
     const
     { return f_(a1, a2); }
-  
+
   protected:
     F f_;
   };
-  
+
   template < class F >
   struct Set_arity_helper< F, 3 > {
     typedef Arity_tag< 3 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3)
     const
     { return f_(a1, a2, a3); }
-  
+
   protected:
     F f_;
   };
-  
+
   template < class F >
   struct Set_arity_helper< F, 4 > {
     typedef Arity_tag< 4 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4)
     const
     { return f_(a1, a2, a3, a4); }
-  
+
   protected:
     F f_;
   };
-  
+
   template < class F >
   struct Set_arity_helper< F, 5 > {
     typedef Arity_tag< 5 >           Arity;
     typedef typename F::result_type  result_type;
-  
+
     Set_arity_helper(const F& f) : f_(f) {}
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
     const
     { return f_(a1, a2, a3, a4, a5); }
-  
+
   protected:
     F f_;
   };
-  
+
 
 } // namespace CGALi
 
@@ -219,166 +219,166 @@ namespace CGALi {
   struct Swapper< F, 1, Arity_tag< 2 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2) const
     { return f(a2, a1); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 1, Arity_tag< 3 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a2, a1, a3); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 2, Arity_tag< 3 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a3, a2); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 1, Arity_tag< 4 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a2, a1, a3, a4); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 2, Arity_tag< 4 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a1, a3, a2, a4); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 3, Arity_tag< 4 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a1, a2, a4, a3); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 1, Arity_tag< 5 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
                    const A4& a4, const A5& a5) const
     { return f(a2, a1, a3, a4, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 2, Arity_tag< 5 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
                    const A4& a4, const A5& a5) const
     { return f(a1, a3, a2, a4, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 3, Arity_tag< 5 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
                    const A4& a4, const A5& a5) const
     { return f(a1, a2, a4, a3, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper< F, 4, Arity_tag< 5 > > {
     typedef typename F::result_type result_type;
     typedef typename F::Arity       Arity;
-  
+
     Swapper(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
                    const A4& a4, const A5& a5) const
     { return f(a1, a2, a3, a5, a4); }
-  
+
   protected:
     F f;
   };
-  
+
 
 } // namespace CGALi
 
@@ -428,259 +428,259 @@ namespace CGALi {
   struct Binder< F, Arity_tag< 1 >, A, 1 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 1 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
-     
+
+
     result_type operator()( ) const
     { return f(a); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 2 >, A, 1 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 2 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f(a, a1); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 2 >, A, 2 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 2 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f(a1, a); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 3 >, A, 1 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 3 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()(
                              const A1& a1, const A2& a2) const
     { return f(a, a1, a2); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 3 >, A, 2 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 3 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()(
                              const A1& a1, const A2& a2) const
     { return f(a1, a, a2); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 3 >, A, 3 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 3 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()(
                              const A1& a1, const A2& a2) const
     { return f(a1, a2, a); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 4 >, A, 1 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 4 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f(a, a1, a2, a3); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 4 >, A, 2 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 4 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a, a2, a3); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 4 >, A, 3 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 4 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a2, a, a3); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 4 >, A, 4 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 4 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a2, a3, a); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 5 >, A, 1 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 5 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f(a, a1, a2, a3, a4); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 5 >, A, 2 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 5 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f(a1, a, a2, a3, a4); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 5 >, A, 3 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 5 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f(a1, a2, a, a3, a4); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 5 >, A, 4 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 5 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f(a1, a2, a3, a, a4); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
   template < class F, class A >
   struct Binder< F, Arity_tag< 5 >, A, 5 > {
     typedef typename F::result_type  result_type;
     typedef Arity_tag< 5 - 1 >      Arity;
-  
+
     Binder(const F& f_, const A& a_) : f(f_), a(a_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f(a1, a2, a3, a4, a); }
-  
+
   protected:
     F f;
     A a;
   };
-  
+
 
 } // namespace CGALi
 
@@ -755,18 +755,18 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
-     
+
+
     result_type operator()( ) const
     { return f0(f1( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
   template < class F0, class F1 >
   struct Composer< F0, Arity_tag< 1 >,
                    F1, Arity_tag< 1 >,
@@ -775,18 +775,18 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1(a1)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
   template < class F0, class F1 >
   struct Composer< F0, Arity_tag< 1 >,
                    F1, Arity_tag< 2 >,
@@ -795,18 +795,18 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1, a2)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
   template < class F0, class F1 >
   struct Composer< F0, Arity_tag< 1 >,
                    F1, Arity_tag< 3 >,
@@ -815,19 +815,19 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3) const
     { return f0(f1(a1, a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
   template < class F0, class F1 >
   struct Composer< F0, Arity_tag< 1 >,
                    F1, Arity_tag< 4 >,
@@ -836,20 +836,20 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()(
                              const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1(a1, a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
   template < class F0, class F1 >
   struct Composer< F0, Arity_tag< 1 >,
                    F1, Arity_tag< 5 >,
@@ -858,20 +858,20 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 5 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_) : f0(f0_), f1(f1_) {}
-  
+
     template < class A1, class A2, class A3, class A4,
       class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
   };
-  
+
 
   // ------------------------------------------------------------------------
   // two functions to compose
@@ -885,21 +885,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-     
+
+
     result_type operator()( ) const
     { return f0(f1( ), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
   // unary functions
   template < class F0, class F1, class F2 >
@@ -910,21 +910,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1(a1), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 0 >,
@@ -933,21 +933,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1( ), f2(a1)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
   // binary functions
   template < class F0, class F1, class F2 >
@@ -958,21 +958,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1, a2), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 1 >,
@@ -981,21 +981,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1), f2(a2)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 0 >,
@@ -1004,21 +1004,21 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(), f2(a1, a2)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
   // 3-arg functions
   template < class F0, class F1, class F2 >
@@ -1029,22 +1029,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3) const
     { return f0(f1(a1, a2, a3), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 2 >,
@@ -1053,22 +1053,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3) const
     { return f0(f1(a1, a2), f2(a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 1 >,
@@ -1077,22 +1077,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3) const
     { return f0(f1(a1), f2(a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 0 >,
@@ -1101,22 +1101,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3) const
     { return f0(f1( ), f2(a1, a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
   // 4-arg functions
   template < class F0, class F1, class F2 >
@@ -1127,23 +1127,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1(a1, a2, a3, a4), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 3 >,
@@ -1152,23 +1152,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1(a1, a2, a3), f2(a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 2 >,
@@ -1177,23 +1177,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1(a1, a2), f2(a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 1 >,
@@ -1202,23 +1202,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1(a1), f2(a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 0 >,
@@ -1227,23 +1227,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4) const
     { return f0(f1( ), f2(a1, a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
   // 5-arg functions
   template < class F0, class F1, class F2 >
@@ -1254,23 +1254,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 5 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4, a5), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 4 >,
@@ -1279,23 +1279,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4), f2(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 3 >,
@@ -1304,23 +1304,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3), f2(a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 2 >,
@@ -1329,23 +1329,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2), f2(a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 1 >,
@@ -1354,23 +1354,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2(a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer< F0, Arity_tag< 2 >,
                    F1, Arity_tag< 0 >,
@@ -1379,29 +1379,29 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 5 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,
                              const A3& a3, const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1, a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
 
-                                          
-                                  
-                          
-                      
-            
+
+
+
+
+
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 0 >,
@@ -1410,22 +1410,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
-     
+
+
     result_type
     operator()( ) const
     { return f0(f1( ), f2( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 1 >,
@@ -1434,22 +1434,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1 >
     result_type
     operator()(const A1& a1) const
     { return f0(f1(a1), f2(a1)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 2 >,
@@ -1458,22 +1458,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
     template < class A1, class A2 >
     result_type
     operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1, a2), f2(a1, a2)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 3 >,
@@ -1482,22 +1482,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
       template < class A1, class A2, class A3 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(  a1, a2, a3), f2(  a1, a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 4 >,
@@ -1506,22 +1506,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
       template < class A1, class A2, class A3, class A4 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f0(f1(  a1, a2, a3, a4), f2(  a1, a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
   template < class F0, class F1, class F2 >
   struct Composer_shared< F0, Arity_tag< 2 >,
                           F1, Arity_tag< 5 >,
@@ -1530,23 +1530,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 5 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_, const F2& f2_)
     : f0(f0_), f1(f1_), f2(f2_)
     {}
-  
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3,
                  const A4& a4, const A5& a5) const
     { return f0(f1(  a1, a2, a3, a4, a5), f2(  a1, a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
   };
-  
+
 
 
   // ------------------------------------------------------------------------
@@ -1561,22 +1561,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-     
+
+
     result_type operator()( ) const
     { return f0(f1( ), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   // unary functions
   template < class F0, class F1, class F2, class F3 >
@@ -1587,22 +1587,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1(a1), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1611,22 +1611,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1( ), f2(a1), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1635,22 +1635,22 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
     template < class A1 >
     result_type operator()(const A1& a1) const
     { return f0(f1( ), f2( ), f3(a1)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   // binary functions
   template < class F0, class F1, class F2, class F3 >
@@ -1661,23 +1661,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1, a2), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1686,23 +1686,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 2 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1( ), f2(a1, a2), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1711,23 +1711,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1( ), f2( ), f3(a1, a2)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -1736,23 +1736,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1), f2(a2), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -1761,23 +1761,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1(a1), f2( ), f3(a2 )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1786,23 +1786,23 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2 >
     result_type operator()(const A1& a1, const A2& a2) const
     { return f0(f1( ), f2(a1), f3(a2 )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   // 3-arg functions
   template < class F0, class F1, class F2, class F3 >
@@ -1813,24 +1813,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1, a2, a3), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1839,24 +1839,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 3 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1( ), f2(a1, a2, a3), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1865,24 +1865,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1( ), f2( ), f3(a1, a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -1891,24 +1891,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1, a2), f2(a3), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -1917,24 +1917,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1, a2), f2( ), f3(a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -1943,24 +1943,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 2 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1), f2(a2, a3), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -1969,24 +1969,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 2 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1( ), f2(a1, a2), f3(a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -1995,24 +1995,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1), f2( ), f3(a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2021,24 +2021,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1( ), f2(a1), f3(a2, a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2047,24 +2047,24 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 1 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3 >
     result_type operator()(
                              const A1& a1, const A2& a2, const A3& a3) const
     { return f0(f1(a1), f2(a2), f3(a3)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   // 4-arg functions
   template < class F0, class F1, class F2, class F3 >
@@ -2075,25 +2075,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2, a3, a4), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2102,25 +2102,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 4 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1( ), f2(a1, a2, a3, a4), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2129,25 +2129,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1( ), f2( ), f3(a1, a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 3 >,
@@ -2156,25 +2156,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2, a3), f2(a4), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 3 >,
@@ -2183,25 +2183,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2, a3), f2( ), f3(a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2210,25 +2210,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 3 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1), f2(a2, a3, a4), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2237,25 +2237,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 3 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1( ), f2(a1, a2, a3), f3(a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2264,25 +2264,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1), f2( ), f3(a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2291,25 +2291,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1( ), f2(a1), f3(a2, a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2318,25 +2318,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 2 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2), f2(a3, a4), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2345,25 +2345,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 0 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2), f2( ), f3(a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2372,25 +2372,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 2 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1( ), f2(a1, a2), f3(a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2399,25 +2399,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 1 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1, a2), f2(a3), f3(a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2426,25 +2426,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 2 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1), f2(a2, a3), f3(a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2453,25 +2453,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 1 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4 >
     result_type operator()(const A1& a1, const A2& a2, const A3& a3,
                              const A4& a4) const
     { return f0(f1(a1), f2(a2), f3(a3, a4)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   // 5-arg functions
   template < class F0, class F1, class F2, class F3 >
@@ -2482,25 +2482,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 5 + 0 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4, a5), f2( ), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2509,25 +2509,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 5 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1, a2, a3, a4, a5), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2536,25 +2536,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 0 + 5 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2( ), f3(a1, a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 4 >,
@@ -2563,25 +2563,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 + 1 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4), f2(a5), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 4 >,
@@ -2590,25 +2590,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 + 0 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3, a4), f2( ), f3(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2617,25 +2617,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 4 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2(a2, a3, a4, a5), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2644,25 +2644,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 4 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1, a2, a3, a4), f3(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2671,25 +2671,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 0 + 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2( ), f3(a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2698,25 +2698,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 1 + 4 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1), f3(a2, a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 3 >,
@@ -2725,25 +2725,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 2 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3), f2(a4, a5), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 3 >,
@@ -2752,25 +2752,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 0 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3), f2( ), f3(a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2779,25 +2779,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 3 + 0 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2), f2(a3, a4, a5), f3( )); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2806,25 +2806,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 3 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1, a2, a3), f3(a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2833,25 +2833,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 0 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2), f2( ), f3(a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 0 >,
@@ -2860,25 +2860,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 + 2 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1( ), f2(a1, a2), f3(a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 3 >,
@@ -2887,25 +2887,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 + 1 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2, a3), f2(a4), f3(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2914,25 +2914,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 3 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2(a2, a3, a4), f3(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -2941,25 +2941,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 1 + 3 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2(a2), f3(a3, a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2968,25 +2968,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 2 + 1 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2), f2(a3, a4), f3(a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 2 >,
@@ -2995,25 +2995,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 + 1 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1, a2), f2(a3), f3(a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer< F0, Arity_tag< 3 >,
                    F1, Arity_tag< 1 >,
@@ -3022,25 +3022,25 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 + 2 + 2 > Arity;
-  
+
     Composer(const F0& f0_, const F1& f1_, const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-    
+
+
       template < class A1, class A2, class A3,
       class A4, class A5 >
     result_type operator()(const A1& a1, const A2& a2,const A3& a3,
                              const A4& a4, const A5& a5) const
     { return f0(f1(a1), f2(a2, a3), f3(a4, a5)); }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
@@ -3050,27 +3050,27 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 0 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
-     
+
+
     result_type
     operator()( ) const
     { return f0(f1( ),
                 f2( ),
                 f3( ));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
                           F1, Arity_tag< 1 >,
@@ -3079,12 +3079,12 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 1 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
     template < class A1 >
     result_type
     operator()(const A1& a1) const
@@ -3092,14 +3092,14 @@ namespace CGALi {
                 f2(a1),
                 f3(a1));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
                           F1, Arity_tag< 2 >,
@@ -3108,12 +3108,12 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 2 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
     template < class A1, class A2 >
     result_type
     operator()(const A1& a1, const A2& a2) const
@@ -3121,14 +3121,14 @@ namespace CGALi {
                 f2(a1, a2),
                 f3(a1, a2));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
                           F1, Arity_tag< 3 >,
@@ -3137,12 +3137,12 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 3 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
       template < class A1, class A2, class A3 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3) const
@@ -3150,14 +3150,14 @@ namespace CGALi {
                 f2(  a1, a2, a3),
                 f3(  a1, a2, a3));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
                           F1, Arity_tag< 4 >,
@@ -3166,12 +3166,12 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 4 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
       template < class A1, class A2, class A3, class A4 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
@@ -3179,14 +3179,14 @@ namespace CGALi {
                 f2(  a1, a2, a3, a4),
                 f3(  a1, a2, a3, a4));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
   template < class F0, class F1, class F2, class F3 >
   struct Composer_shared< F0, Arity_tag< 3 >,
                           F1, Arity_tag< 5 >,
@@ -3195,12 +3195,12 @@ namespace CGALi {
   {
     typedef typename F0::result_type result_type;
     typedef Arity_tag< 5 > Arity;
-  
+
     Composer_shared(const F0& f0_, const F1& f1_,
                     const F2& f2_, const F3& f3_)
     : f0(f0_), f1(f1_), f2(f2_), f3(f3_)
     {}
-  
+
       template < class A1, class A2, class A3, class A4, class A5 >
     result_type
     operator()(  const A1& a1, const A2& a2, const A3& a3,
@@ -3209,14 +3209,14 @@ namespace CGALi {
                 f2(  a1, a2, a3, a4, a5),
                 f3(  a1, a2, a3, a4, a5));
     }
-  
+
   protected:
     F0 f0;
     F1 f1;
     F2 f2;
     F3 f3;
   };
-  
+
 
 } // namespace CGALi
 

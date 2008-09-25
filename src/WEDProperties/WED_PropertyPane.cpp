@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@ WED_PropertyPane::WED_PropertyPane(
 						const char **			filter) :
 	GUI_Commander(inCommander),
 	mTextTable(this,WED_UIMeasurement("table_indent_width")),
-	mPropertyTable(resolver, col_names, def_col_widths, 
+	mPropertyTable(resolver, col_names, def_col_widths,
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
 			pane_style == propPane_Selection,
@@ -47,16 +47,16 @@ WED_PropertyPane::WED_PropertyPane(
 	int bounds[4] = { 0, 0, 100, 100 };
 //	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
-	
+
 //	mScroller->SetImage("gradient.png");
 	mScroller->SetParent(this);
 	mScroller->Show();
 //	mScroller->SetBounds(bounds);
 	mScroller->SetSticky(1,1,1,1);
-	
+
 	mTextTable.SetProvider(&mPropertyTable);
 	mTextTable.SetGeometry(&mPropertyTable);
-	
+
 	mTextTable.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Table_Select),
@@ -76,24 +76,24 @@ WED_PropertyPane::WED_PropertyPane(
 	mTable->SetParent(mScroller);
 	mTable->Show();
 	mScroller->PositionInContentArea(mTable);
-	mScroller->SetContent(mTable);	
+	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
-	
+
 	if (horizontal)
 	{
 		mTextTableHeader.SetProvider(&mPropertyTable);
-		mTextTableHeader.SetGeometry(&mPropertyTable);	
-		
+		mTextTableHeader.SetGeometry(&mPropertyTable);
+
 		mTextTableHeader.SetImage("header.png");
 		mTextTableHeader.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Header_Text));
-		
+
 		mHeader = new GUI_Header(pane_style==propPane_Hierarchy);
 
 		bounds[1] = 0;
 		bounds[3] = GUI_GetImageResourceHeight("header.png");
-		mHeader->SetBounds(bounds);	
+		mHeader->SetBounds(bounds);
 		mHeader->SetGeometry(&mPropertyTable);
 		mHeader->SetHeader(&mTextTableHeader);
 		mHeader->SetParent(this);
@@ -101,21 +101,21 @@ WED_PropertyPane::WED_PropertyPane(
 		mHeader->SetSticky(1,0,1,1);
 		mHeader->SetTable(mTable);
 	}
-	
+
 	if (vertical)
 	{
 		mTextTableSide.SetProvider(&mPropertyTable);
-		mTextTableSide.SetGeometry(&mPropertyTable);	
-		
+		mTextTableSide.SetGeometry(&mPropertyTable);
+
 		mTextTableSide.SetImage("sider.png");
 		mTextTableSide.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Header_Text));
-		
+
 		mSide = new GUI_Side;
 		bounds[0] = 0;
 		bounds[2] = 180;
-		mSide->SetBounds(bounds);	
+		mSide->SetBounds(bounds);
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);
 		mSide->SetParent(this);
@@ -123,11 +123,11 @@ WED_PropertyPane::WED_PropertyPane(
 		mSide->SetSticky(1,1,0,1);
 		mSide->SetTable(mTable);
 	}
-	
+
 	#if BENTODO
 		this is real arbitrary - would be nice if we did not have to just KNOW all the braodcaster reelatoinships outside the impls
 	#endif
-	
+
 	if (horizontal)	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
 	if (horizontal)	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
 	if (vertical)	mTextTableSide.AddListener(mSide);		// Header listens to text table to know when to refresh on col resize
@@ -135,21 +135,21 @@ WED_PropertyPane::WED_PropertyPane(
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mPropertyTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 //	main_splitter->AlignContents();
-	
+
 	if (horizontal)	this->PackPane(mHeader, gui_Pack_Top);
 	if (vertical)	this->PackPane(mSide, gui_Pack_Left);
 					this->PackPane(mScroller, gui_Pack_Center);
-					
+
 	if ( vertical)  mScroller->PositionSidePane(mSide);
 	if (horizontal)	mScroller->PositionHeaderPane(mHeader);
-	
+
 	archive_broadcaster->AddListener(&mPropertyTable);
-	
+
 }
 
 WED_PropertyPane::~WED_PropertyPane()
 {
 }
 
-		
-	
+
+

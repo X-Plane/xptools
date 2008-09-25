@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Sylvain Pion
- 
+
 
 #ifndef CGAL_GMPQ_H
 #define CGAL_GMPQ_H
@@ -44,19 +44,19 @@ public:
   mpq_t  mpQ;
 
   Gmpq_rep()
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
   }
 
   Gmpq_rep(const mpq_t z)
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
     mpq_set(mpQ, z);
   }
 
   Gmpq_rep(const Gmpq_rep & g)
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
     mpq_set(mpQ, g.mpQ);
   }
 
@@ -70,47 +70,47 @@ public:
   }
 
   Gmpq_rep(int si)
-  { 
-    mpq_init(mpQ); 
-    mpq_set_si(mpQ, si, 1); 
+  {
+    mpq_init(mpQ);
+    mpq_set_si(mpQ, si, 1);
   }
 
   Gmpq_rep(long si)
-  { 
-    mpq_init(mpQ); 
-    mpq_set_si(mpQ, si, 1); 
+  {
+    mpq_init(mpQ);
+    mpq_set_si(mpQ, si, 1);
   }
 
 
   Gmpq_rep(unsigned long ui)
-  { 
-    mpq_init(mpQ); 
-    mpq_set_ui(mpQ, ui, 1); 
+  {
+    mpq_init(mpQ);
+    mpq_set_ui(mpQ, ui, 1);
   }
 
   Gmpq_rep(const Gmpz& z)
-  { 
-    mpq_init(mpQ); 
-    mpq_set_z(mpQ, z.mpz()); 
+  {
+    mpq_init(mpQ);
+    mpq_set_z(mpQ, z.mpz());
   }
 
   Gmpq_rep(unsigned long int ui1, unsigned long int ui2)
-  { 
-    mpq_init(mpQ); 
-    mpq_set_ui(mpQ, ui1, ui2); 
+  {
+    mpq_init(mpQ);
+    mpq_set_ui(mpQ, ui1, ui2);
     mpq_canonicalize(mpQ);
   }
-  
+
   Gmpq_rep(signed long int si, unsigned long int ui)
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
     mpq_set_si(mpQ, si, ui);
     mpq_canonicalize(mpQ);
   }
-  
+
   Gmpq_rep(int num, int den)
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
     if(den < 0) {
       num = -num;
       den = -den;
@@ -120,29 +120,29 @@ public:
   }
 
   Gmpq_rep(const Gmpz& n, const Gmpz& d)
-  { 
-    mpq_init(mpQ); 
+  {
+    mpq_init(mpQ);
     mpz_set(mpq_numref(mpQ), n.mpz());
     mpz_set(mpq_denref(mpQ), d.mpz());
-    
+
     mpq_canonicalize(mpQ);
   }
 
   Gmpq_rep(double d)
-  { 
+  {
     mpq_init(mpQ);
-    mpq_set_d(mpQ, d); 
+    mpq_set_d(mpQ, d);
   }
 
   Gmpq_rep(const std::string& str)
-  { 
+  {
     mpq_init(mpQ);
     mpq_set_str(mpQ, str.c_str(), 10);
-    mpq_canonicalize(mpQ); 
+    mpq_canonicalize(mpQ);
   }
 
   Gmpq_rep(const std::string& str, int base)
-  { 
+  {
     mpq_init(mpQ);
     mpq_set_str(mpQ, str.c_str(), base);
     mpq_canonicalize(mpQ);
@@ -183,7 +183,7 @@ public:
 
   Gmpq(int n, int d)
     : Base(Gmpq_rep(n, d)) {}
-  
+
   Gmpq(signed long n, unsigned long d)
     : Base(Gmpq_rep(n, d)) {}
 
@@ -195,10 +195,10 @@ public:
 
   Gmpq(double d)
     : Base(Gmpq_rep(d)) {}
-  
+
   Gmpq(const std::string& str)
     : Base(Gmpq_rep(str)) {}
-  
+
    Gmpq(const std::string& str, int base)
     : Base(Gmpq_rep(str, base)) {}
 
@@ -211,7 +211,7 @@ public:
   Gmpz denominator() const
   {
     return Gmpz(mpq_denref(mpq()));
-    
+
   }
 
   Gmpq operator-() const;
@@ -489,7 +489,7 @@ struct Rational_traits<Gmpq> {
   RT   numerator     (const Gmpq & r) const { return r.numerator(); }
   RT   denominator   (const Gmpq & r) const { return r.denominator(); }
   Gmpq make_rational (const RT & n, const RT & d) const
-  { return Gmpq(n, d); } 
+  { return Gmpq(n, d); }
 };
 
 CGAL_END_NAMESPACE
@@ -497,6 +497,6 @@ CGAL_END_NAMESPACE
 #if defined( _MSC_VER ) && ( _MSC_VER == 1300 )
   CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC(CGAL::Gmpq);
   CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC(CGAL::Gmpq*);
-#endif 
+#endif
 
 #endif // CGAL_GMPQ_H

@@ -14,7 +14,7 @@ typedef CGAL::Segment_2<CGAL::Cartesian<double> > Curve;
 
 typedef CGAL::Pm_dcel<CGAL::Pm_vertex_base<Point>,
                       CGAL::Pm_halfedge_base<Curve>,
-                      CGAL::Pm_face_base > Dcel;  
+                      CGAL::Pm_face_base > Dcel;
 
 typedef CGAL::Topological_map<Dcel> Tpm;
 

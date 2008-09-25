@@ -251,7 +251,7 @@ SphereH3<R>::bbox() const
   Interval_nt<> minz = z-r;
   Interval_nt<> maxz = z+r;
 
-  return Bbox_3(minx.inf(), miny.inf(), minz.inf(), 
+  return Bbox_3(minx.inf(), miny.inf(), minz.inf(),
 		maxx.sup(), maxy.sup(), maxz.sup());
 }
 

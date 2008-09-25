@@ -29,12 +29,12 @@ class IndexedFaceSetNode : public GeometryNode {
 	MFInt32 *texCoordIndexField;
 	MFInt32 *colorIndexField;
 	MFInt32 *normalIndexField;
-	
+
 public:
 
 	IndexedFaceSetNode();
 	~IndexedFaceSetNode();
-	
+
 	////////////////////////////////////////////////
 	//	List
 	////////////////////////////////////////////////
@@ -47,7 +47,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getCCWField();
-	
+
 	void setCCW(bool value);
 	void setCCW(int value);
 	bool getCCW();
@@ -57,7 +57,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getColorPerVertexField();
-	
+
 	void setColorPerVertex(bool value);
 	void setColorPerVertex(int value);
 	bool getColorPerVertex();
@@ -65,7 +65,7 @@ public:
 	////////////////////////////////////////////////
 	//	NormalPerVertex
 	////////////////////////////////////////////////
-	
+
 	SFBool *getNormalPerVertexField();
 
 	void setNormalPerVertex(bool value);
@@ -77,7 +77,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getSolidField();
-	
+
 	void setSolid(bool value);
 	void setSolid(int value);
 	bool getSolid();
@@ -87,7 +87,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getConvexField();
-	
+
 	void setConvex(bool value);
 	void setConvex(int value);
 	bool getConvex();
@@ -97,7 +97,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getCreaseAngleField();
-	
+
 	void setCreaseAngle(float value);
 	float getCreaseAngle();
 
@@ -110,7 +110,7 @@ public:
 	void addCoordIndex(int value);
 	int getNCoordIndexes();
 	int getCoordIndex(int index);
-	
+
 	////////////////////////////////////////////////
 	// TexCoordIndex
 	////////////////////////////////////////////////
@@ -120,7 +120,7 @@ public:
 	void addTexCoordIndex(int value);
 	int getNTexCoordIndexes();
 	int getTexCoordIndex(int index);
-	
+
 	////////////////////////////////////////////////
 	// ColorIndex
 	////////////////////////////////////////////////
@@ -144,7 +144,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();
@@ -185,7 +185,7 @@ public:
 	////////////////////////////////////////////////
 	//	TextureCoordinate
 	////////////////////////////////////////////////
-	
+
 	bool generateTextureCoordinate();
 
 };

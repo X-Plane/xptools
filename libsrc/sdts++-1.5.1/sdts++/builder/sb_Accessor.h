@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -64,7 +64,7 @@ class sb_Accessor
           before get().  This member will use CATD information to find
           the remaining modules to populate modules for each get()
           call.  It will fail if the given file name didn't resolve to
-          a valid CATD module.  
+          a valid CATD module.
       */
       bool readCatd( std::string const & catd_fn );
 
@@ -72,7 +72,7 @@ class sb_Accessor
       /// return the CATD module file name
       std::string const & fileName() const;
 
-      /*! 
+      /*!
        * \fn  bool get( sb_Module & module, sio_8211_converter_dictionary* cv = 0x0 )
        *
        *  \note

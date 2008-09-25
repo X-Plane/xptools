@@ -72,26 +72,26 @@
 
 
 #define leda_drawing_mode  CGAL::drawing_mode
-#define leda_src_mode      CGAL::src_mode 
+#define leda_src_mode      CGAL::src_mode
 #define leda_xor_mode      CGAL::xor_mode
 #define leda_or_mode       CGAL::or_mode
 #define leda_and_mode      CGAL::and_mode
 
 #define grid_style         CGAL::grid_style
 #define invisible_grid     CGAL::invisible_grid
-#define point_grid         CGAL::point_grid 
+#define point_grid         CGAL::point_grid
 #define line_grid          CGAL::line_grid
 
 // events
-#define key_press_event      CGAL::key_press_event 
+#define key_press_event      CGAL::key_press_event
 #define key_release_event    CGAL::key_release_event
 #define button_press_event   CGAL::button_press_event
 #define button_release_event CGAL::button_release_event
 #define panel_press_event    CGAL::panel_press_event
 #define configure_event      CGAL::configure_event
-#define exposure_event       CGAL::exposure_event 
+#define exposure_event       CGAL::exposure_event
 #define motion_event         CGAL::motion_event
-#define destroy_event        CGAL::destroy_event  
+#define destroy_event        CGAL::destroy_event
 #define timer_event          CGAL::timer_event
 #define no_event             CGAL::no_event
 

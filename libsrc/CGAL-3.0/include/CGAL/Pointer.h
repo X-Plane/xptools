@@ -24,7 +24,7 @@
 #include <CGAL/assertions.h>
 #include <CGAL/circulator.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template <class T>
 struct Pointer
@@ -34,7 +34,7 @@ struct Pointer
   typedef void     difference_type;
   typedef T*       pointer;
   typedef T&       reference;
-  
+
 
   //Pointer(const T* p = NULL) : _pointer((T*)p) {}
   //Pointer( T* p = NULL) : _pointer((T*)p) {}
@@ -77,7 +77,7 @@ struct Pointer
     }
 
   bool operator!=(CGAL_NULL_TYPE n) const { return !(*this == n); }
- 
+
   T*& ptr()       { return _pointer; }
   T*  ptr() const { return _pointer; }
 

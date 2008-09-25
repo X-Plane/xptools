@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,15 +59,15 @@ static int DoExtent(const vector<const char *>& args)
 				gMapWest, gMapSouth, gMapEast, gMapNorth);
 		return 1;
 	}
-	return 0;	
+	return 0;
 }
 
 static int DoBbox(const vector<const char *>& args)
-{		
+{
 	Point2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
 	printf("SW = %lf,%lf  NE = %lf, %lf\n", sw.x, sw.y, ne.x, ne.y);
-	
+
 	for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 	{
 		printf("DEM %s: SW = %lfx%lf, NE = %lfx%lf, %d by %d\n",
@@ -117,7 +117,7 @@ static int DoWaterCount(const vector<const char *>& args)
 					  Vector2(stop->source()->point(), circ->target()->point())));
 			++circ;
 		} while (circ != stop);
-		
+
 		for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			circ = stop = *hole;
@@ -136,14 +136,14 @@ static int DoCropGrid(const vector<const char *>& args)
 {
 	gMap.unbounded_face()->mTerrainType = terrain_Natural;
 
-	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapEast,gMapSouth), NULL, NULL);				
-	gMap.insert_edge(Point2(gMapWest,gMapNorth),Point2(gMapEast,gMapNorth), NULL, NULL);				
-	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapWest,gMapNorth), NULL, NULL);				
-	gMap.insert_edge(Point2(gMapEast,gMapSouth),Point2(gMapEast,gMapNorth), NULL, NULL);				
+	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapEast,gMapSouth), NULL, NULL);
+	gMap.insert_edge(Point2(gMapWest,gMapNorth),Point2(gMapEast,gMapNorth), NULL, NULL);
+	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapWest,gMapNorth), NULL, NULL);
+	gMap.insert_edge(Point2(gMapEast,gMapSouth),Point2(gMapEast,gMapNorth), NULL, NULL);
 
 //	for (int x = sw.x; x <= ne.x; ++x)
 //	{
-//		gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);				
+//		gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);
 //	}
 //	for (int y = sw.y; y <= ne.y; ++y)
 //	{
@@ -156,13 +156,13 @@ static int DoCrop(const vector<const char *>& args)
 {
 	if (gMap.number_of_halfedges() > 0)
 		CropMap(gMap, gMapWest, gMapSouth, gMapEast, gMapNorth, false, gProgress);
-	
+
 	printf("Map contains: %d faces, %d half edges, %d vertices.\n",
 		gMap.number_of_faces(),
 		gMap.number_of_halfedges(),
 		gMap.number_of_vertices());
-	
-	set<int>	nukable;				
+
+	set<int>	nukable;
 	for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 	{
 		if (i->second.mWest > gMapEast ||
@@ -183,11 +183,11 @@ static int DoCrop(const vector<const char *>& args)
 								 i->second.y_lower(gMapSouth),
 								 i->second.x_upper(gMapEast),
 								 i->second.y_upper(gMapNorth));
-				i->second = croppy;										 
+				i->second = croppy;
 			}
 		}
 	}
-	
+
 	if (!gFAAObs.empty())
 	{
 		FAAObsTable::iterator i, n;
@@ -205,23 +205,23 @@ static int DoCrop(const vector<const char *>& args)
 			i = n;
 		}
 	}
-	return 0;	
+	return 0;
 }
 
 static int DoValidate(const vector<const char *>& args)
 {
 	bool	is_valid = gMap.is_valid();
 	if (gVerbose)
-		printf("Map %s valid.\n", is_valid ? "is" : "is not");				 
-	if (!is_valid) 
+		printf("Map %s valid.\n", is_valid ? "is" : "is not");
+	if (!is_valid)
 	{
 		fprintf(stderr,"Validation check failed for map %d,%d -> %d,%d\n", gMapWest, gMapSouth, gMapEast, gMapNorth);
 		return 1;
 	}
 	is_valid = ValidateMapDominance(gMap);
 	if (gVerbose)
-		printf("Map %s dominance valid.\n", is_valid ? "is" : "is not");				 
-	if (!is_valid) 
+		printf("Map %s dominance valid.\n", is_valid ? "is" : "is not");
+	if (!is_valid)
 	{
 		fprintf(stderr,"Dominance Validation check failed for map %d,%d -> %d,%d\n", gMapWest, gMapSouth, gMapEast, gMapNorth);
 		return 1;
@@ -238,7 +238,7 @@ static int DoLoad(const vector<const char *>& args)
 		ReadXESFile(load, &gMap, &gTriangulationHi, &gDem, &gApts, gProgress);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(load);
-		
+
 	} else {
 		fprintf(stderr,"Could not load file %s.\n", args[0]);
 		return 1;
@@ -251,8 +251,8 @@ static int DoLoad(const vector<const char *>& args)
 
 #if OPENGL_MAP
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
-#endif				
-	return 0;	
+#endif
+	return 0;
 }
 
 static int DoOverlay(const vector<const char *>& args)
@@ -264,7 +264,7 @@ static int DoOverlay(const vector<const char *>& args)
 	{
 		ReadXESFile(load, &theMap, NULL, NULL, NULL, gProgress);
 		MemFile_Close(load);
-				
+
 	} else {
 		fprintf(stderr,"Could not load file.\n");
 		return 1;
@@ -274,21 +274,21 @@ static int DoOverlay(const vector<const char *>& args)
 				theMap.number_of_faces(),
 				theMap.number_of_halfedges(),
 				theMap.number_of_vertices());
-				
+
 	RemoveUnboundedWater(theMap);
 	if (gVerbose)
 			printf("Without Water Map contains: %d faces, %d half edges, %d vertices.\n",
 				theMap.number_of_faces(),
 				theMap.number_of_halfedges(),
 				theMap.number_of_vertices());
-				
+
 	OverlayMap(gMap, theMap);
 	if (gVerbose)
 			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
 				gMap.number_of_faces(),
 				gMap.number_of_halfedges(),
 				gMap.number_of_vertices());
-	return 0;	
+	return 0;
 }
 
 static int DoMerge(const vector<const char *>& args)
@@ -300,7 +300,7 @@ static int DoMerge(const vector<const char *>& args)
 	{
 		ReadXESFile(load, &theMap, NULL, NULL, NULL, gProgress);
 		MemFile_Close(load);
-				
+
 	} else {
 		fprintf(stderr,"Could not load file.\n");
 		return 1;
@@ -318,7 +318,7 @@ static int DoMerge(const vector<const char *>& args)
 				gMap.number_of_faces(),
 				gMap.number_of_halfedges(),
 				gMap.number_of_vertices());
-	return 0;	
+	return 0;
 }
 
 
@@ -349,22 +349,22 @@ static int DoCropSave(const vector<const char *>& args)
 {
 	Point2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
-	
-	
+
+
 	for (int w = sw.x; w < ne.x; ++w)
-	for (int s = sw.y; s < ne.y; ++s)	
+	for (int s = sw.y; s < ne.y; ++s)
 	{
 		vector<Point2>	pts;
 		pts.push_back(Point2(w  ,s  ));
 		pts.push_back(Point2(w+1,s  ));
 		pts.push_back(Point2(w+1,s+1));
 		pts.push_back(Point2(w  ,s+1));
-		
-		Pmwx	cutout;		
+
+		Pmwx	cutout;
 		CropMap(gMap, cutout, pts, gProgress);
-		
+
 		SimplifyMap(cutout, false, gProgress);
-		
+
 		int nland = 0;
 		for (Pmwx::Face_iterator f = cutout.faces_begin(); f != cutout.faces_end(); ++f)
 		{
@@ -378,7 +378,7 @@ static int DoCropSave(const vector<const char *>& args)
 			char	fbuf[1024];
 			sprintf(fbuf,"%s%+03d%+04d/", args[0], latlon_bucket(s), latlon_bucket(w));
 			MakeDirExist(fbuf);
-			sprintf(fbuf,"%s%+03d%+04d/%+03d%+04d.xes", args[0], latlon_bucket(s), latlon_bucket(w), s, w);			
+			sprintf(fbuf,"%s%+03d%+04d/%+03d%+04d.xes", args[0], latlon_bucket(s), latlon_bucket(w), s, w);
 			if (gVerbose) printf("Saving file %s\n", fbuf);
 			DEMGeoMap	dem;
 			AptVector	apt;
@@ -387,7 +387,7 @@ static int DoCropSave(const vector<const char *>& args)
 		} else {
 			printf("Not writing file %s - no DEMs and no land!\n", args[0]);
 			fprintf(stderr, "Not writing file %s - no DEMs and no land!\n", args[0]);
-		}		
+		}
 	}
 	return 0;
 }
@@ -405,10 +405,10 @@ static int DoTagOrigin(const vector<const char *>& args)
 static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
-		printf("Halfedges before simplify: %d\n", gMap.number_of_halfedges());		
+		printf("Halfedges before simplify: %d\n", gMap.number_of_halfedges());
 	SimplifyMap(gMap, false, gProgress);
-	if (gVerbose)	
-		printf("Halfedges after simplify: %d\n", gMap.number_of_halfedges());			
+	if (gVerbose)
+		printf("Halfedges after simplify: %d\n", gMap.number_of_halfedges());
 	return 0;
 }
 

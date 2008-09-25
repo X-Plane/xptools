@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -50,7 +50,7 @@ static char * kFacs[] = {
 0
 };
 
-static char *	kObjs[] = { 
+static char *	kObjs[] = {
 "ind/refinery.obj",
 "ind/crane.obj",
 "ind/construction.obj",
@@ -172,7 +172,7 @@ static char *	kObjs[] = {
 };
 
 // 20 km cutover (a little over 10 miles)
-#define	LOD_CUTOVER		20000		
+#define	LOD_CUTOVER		20000
 
 int	RRI(int a, int b)
 {
@@ -208,11 +208,11 @@ void	GenFakeDSFFile(const char * path)
 	cbs.AcceptObjectDef_f("KSBD_example.obj", f);
 	cbs.AcceptPolygonDef_f("terminal.fac", f);
 	cbs.AcceptPolygonDef_f("testforest.for", f);
-	cbs.AcceptNetworkDef_f("test.net", f);	
+	cbs.AcceptNetworkDef_f("test.net", f);
 
 double	OFFSET= 0.0078125;
 //	double OFFSET =	0.125;
-	
+
 	double	oc[2];
 	for (float i = OFFSET+OFFSET/2; i < (1.0-OFFSET); i += OFFSET)
 	for (float j = OFFSET+OFFSET/2; j < (1.0-OFFSET); j += OFFSET)
@@ -221,7 +221,7 @@ double	OFFSET= 0.0078125;
 		oc[1] = 34.0 + j + RRF(-OFFSET, OFFSET);
 		cbs.AddObject_f(0, oc, 0.0, f);
 	}
-	
+
 	double	pc[7];
 
 
@@ -262,7 +262,7 @@ double	OFFSET= 0.0078125;
 			cbs.EndPatch_f(f);
 		}
 	}
-	
+
 //	SECOND LOD
 
 		OFFSET *= 2;
@@ -302,9 +302,9 @@ double	OFFSET= 0.0078125;
 			cbs.EndPatch_f(f);
 		}
 	}
-	
+
 	OFFSET =	0.0625;
-	
+
 	double	build_size = 0.0001645819618169849;
 	for (double i = OFFSET*2+OFFSET/3; i < (1.0-OFFSET*2); i += (OFFSET * 3))
 	{
@@ -318,25 +318,25 @@ double	OFFSET= 0.0078125;
 			pc[0] = -118.0 + i + build_size;	pc[1] = 34.0 + j - build_size ;	cbs.AddPolygonPoint_f(pc,f);
 			pc[0] = -118.0 + i - build_size;	pc[1] = 34.0 + j - build_size ;	cbs.AddPolygonPoint_f(pc,f);
 			cbs.EndPolygon_f(f);
-		
+
 		}
 	}
-		
+
 	cbs.BeginPolygon_f(1, 0xFFFF, f);
 	cbs.BeginPolygonWinding_f(f);
 	pc[0] = -117.50;	pc[1] = 34.25;	cbs.AddPolygonPoint_f(pc, f);
 	pc[0] = -117.25;	pc[1] = 34.50;	cbs.AddPolygonPoint_f(pc, f);
 	pc[0] = -117.50;	pc[1] = 34.75;	cbs.AddPolygonPoint_f(pc, f);
-	pc[0] = -117.75;	pc[1] = 34.50;	cbs.AddPolygonPoint_f(pc, f);	
+	pc[0] = -117.75;	pc[1] = 34.50;	cbs.AddPolygonPoint_f(pc, f);
 	cbs.EndPolygonWinding_f(f);
 //	cbs.BeginPolygonWinding_f(f);
-//	pc[0] = -117.50;	pc[1] = 34.40;	cbs.AddPolygonPoint_f(pc, f);	
+//	pc[0] = -117.50;	pc[1] = 34.40;	cbs.AddPolygonPoint_f(pc, f);
 //	pc[0] = -117.60;	pc[1] = 34.50;	cbs.AddPolygonPoint_f(pc, f);
 //	pc[0] = -117.50;	pc[1] = 34.60;	cbs.AddPolygonPoint_f(pc, f);
 //	pc[0] = -117.40;	pc[1] = 34.50;	cbs.AddPolygonPoint_f(pc, f);
 //	cbs.EndPolygonWinding_f(f);
 	cbs.EndPolygon_f(f);
-	
+
 
 	double	nc[3];
 	nc[1] = 34.5 ; nc[0] = -117.5 ; nc[2] = 0.0;		cbs.BeginSegment_f(0,0, 5, nc, false, f);
@@ -382,7 +382,7 @@ void	GenFakeDSFFile(const char * path)
 	cbs.AcceptTerrainDef_f("no_alpha_with_lights.png", f);
 	cbs.AcceptTerrainDef_f("alpha.png", f);
 	cbs.AcceptTerrainDef_f("alpha_with_lights.png", f);
-	
+
 	double	pc[5];
 
 	//-LOWER LEFT------------------------------------------------------------------------------------------------------------------/
@@ -420,7 +420,7 @@ void	GenFakeDSFFile(const char * path)
 	pc[0] = -117.0; pc[1] = 34.5;	pc[2] = 150.0;	pc[3] = 1.0;	pc[4] = 1.0;	cbs.AddPatchVertex_f(pc, f);
 	cbs.EndPrimitive_f(f);
 	cbs.EndPatch_f(f);
-	
+
 	//-UPPER LEFT------------------------------------------------------------------------------------------------------------------/
 	cbs.BeginPatch_f(0, 0.0, -1.0, dsf_Flag_Physical, NULL, NULL, 3, f);
 	cbs.BeginPrimitive_f(dsf_TriStrip, f);
@@ -438,7 +438,7 @@ void	GenFakeDSFFile(const char * path)
 	pc[0] = -117.5; pc[1] = 35.0;	pc[2] = 150.0;	pc[3] = 1.0;	pc[4] = 1.0;	cbs.AddPatchVertex_f(pc, f);
 	cbs.EndPrimitive_f(f);
 	cbs.EndPatch_f(f);
-	
+
 	//-UPPER LEFT------------------------------------------------------------------------------------------------------------------/
 	cbs.BeginPatch_f(0, 0.0, -1.0, dsf_Flag_Physical, NULL, NULL, 3, f);
 	cbs.BeginPrimitive_f(dsf_TriStrip, f);
@@ -456,7 +456,7 @@ void	GenFakeDSFFile(const char * path)
 	pc[0] = -117.0; pc[1] = 35.0;	pc[2] = 100.0;	pc[3] = 1.0;	pc[4] = 1.0;	cbs.AddPatchVertex_f(pc, f);
 	cbs.EndPrimitive_f(f);
 	cbs.EndPatch_f(f);
-	
+
 	DSFWriteToFile(path, f);
 	DSFDestroyWriter(f);
 }
@@ -487,8 +487,8 @@ int	depths[16] = {
 	3,							//	CPB
 	3							//	CPBL
 };
-	
-	
+
+
 
 void	BuildOnePatch(DSFCallbacks_t * cbs, void * f, int x, int y)
 {
@@ -499,9 +499,9 @@ void	BuildOnePatch(DSFCallbacks_t * cbs, void * f, int x, int y)
 	float	t2 = (float) (y+1) / 4.0;
 	s1 += -118.0;	t1 += 34.0;
 	s2 += -118.0;	t2 += 34.0;
-	
+
 	int	layer = x + y * 4 + 1;
-	
+
 	pc[3] = 0.0; pc[4] = 0.0;
 	cbs->BeginPatch_f(0, 0.0, -1.0, dsf_Flag_Physical, 5, f);
 	cbs->BeginPrimitive_f(dsf_TriFan, f);
@@ -537,7 +537,7 @@ void	GenFakeDSFFile(const char * path)
 	cbs.AcceptTerrainDef_f("water", f);
 	for (int q = 0; q < 16; ++q)
 		cbs.AcceptTerrainDef_f("water", f);
-	
+
 //	cbs.AcceptTerrainDef_f("ter_S.ter",f);
 //	cbs.AcceptTerrainDef_f("ter_SL.ter",f);
 //	cbs.AcceptTerrainDef_f("ter_SB.ter",f);
@@ -574,7 +574,7 @@ void	GenFakeDSFFile(const char * path)
 		BuildOnePatch(&cbs, f, x, y);
 
 
-	
+
 	DSFWriteToFile(path, f);
 	DSFDestroyWriter(f);
 }

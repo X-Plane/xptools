@@ -15,7 +15,7 @@
 // $Revision: 1.5 $ $Date: 2003/09/18 10:20:27 $
 // $Name: current_submission $
 //
-// Author(s)     : Stefan Schirra 
+// Author(s)     : Stefan Schirra
 
 #ifndef CGAL_STL_EXTENSIONS_H
 #define CGAL_STL_EXTENSIONS_H

@@ -64,9 +64,9 @@ public:
   PointH3(const RT& x, const RT& y, const RT& z, const RT& w)
   {
     if ( w < RT(0) )
-      initialize_with( rep(-x,-y,-z,-w)); 
+      initialize_with( rep(-x,-y,-z,-w));
     else
-      initialize_with( rep(x,y,z,w)); 
+      initialize_with( rep(x,y,z,w));
   }
 
   FT    x()  const;
@@ -81,12 +81,12 @@ public:
   FT    operator[](int i) const;
 
 
-  Cartesian_const_iterator cartesian_begin() const 
+  Cartesian_const_iterator cartesian_begin() const
   {
     return Cartesian_const_iterator(static_cast<const Point_3*>(this), 0);
   }
 
-  Cartesian_const_iterator cartesian_end() const 
+  Cartesian_const_iterator cartesian_end() const
   {
     return Cartesian_const_iterator(static_cast<const Point_3*>(this), 3);
   }

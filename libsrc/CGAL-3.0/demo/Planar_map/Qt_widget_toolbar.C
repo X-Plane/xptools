@@ -11,8 +11,8 @@
 // file          : demo/Qt_widget/Planar_map/Qt_widget_toolbar.C
 // package       : Planar_map
 // author(s)     : Efi Fogel
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Efi Fogel
 //
@@ -30,7 +30,7 @@
 
 #include "Qt_widget_toolbar.h"
 
-Tools_toolbar::Tools_toolbar(CGAL::Qt_widget * w, 
+Tools_toolbar::Tools_toolbar(CGAL::Qt_widget * w,
 			     QMainWindow *mw, std::list<Curve> * l1, Planar_map * pm) :
   QToolBar(mw, "NT")
 {
@@ -57,7 +57,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget * w,
                 QPixmap( (const char**)line_xpm ));
   QIconSet set3(QPixmap( (const char**)movepoint_small_xpm ),
                 QPixmap( (const char**)movepoint_xpm ));
-    
+
 
   but[0] = new QToolButton(this, "deactivate layer");
   but[0]->setIconSet(set0);
@@ -79,7 +79,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget * w,
     but[i]->setToggleButton(true);
   }
   button_group->setExclusive(true);
-  
+
   connect(but[1], SIGNAL(stateChanged(int)),
           &point_layer, SLOT(stateChanged(int)));
   connect(but[2], SIGNAL(stateChanged(int)),

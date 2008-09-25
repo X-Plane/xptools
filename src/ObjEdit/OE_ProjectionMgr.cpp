@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,7 +31,7 @@
 OE_ProjectionMgr::OE_ProjectionMgr()
 {
 	mCurProjector = 0;
-	
+
 	mTexture.s1 = mTexture.t1 = 0.0;
 	mTexture.s2 = mTexture.t2 = 1.0;
 	mDeformer = new OE_CubeDeformer;
@@ -55,15 +55,15 @@ void		OE_ProjectionMgr::DrawProjectionSetup(void)
 	glPushMatrix();
 	mDeformer->ApplyTransform();
 	mProjector[mCurProjector]->DrawProjector();
-	glPopMatrix();	
+	glPopMatrix();
 }
 
 bool		OE_ProjectionMgr::TrackClick(
 	OE_Zoomer3d *	zoomer,
 	int				bounds[4],
-	XPLMMouseStatus status, 
-	int 			x, 
-	int 			y, 
+	XPLMMouseStatus status,
+	int 			x,
+	int 			y,
 	int 			button)
 {
 	bool	result =  mDeformer->TrackClick(zoomer, bounds, status, x, y, button);
@@ -85,9 +85,9 @@ OE_Texture_t&	OE_ProjectionMgr::GetTexture(void)
 void		OE_ProjectionMgr::ApplyTexture(void)
 {
 	if (gObjects.empty()) return;
-	
+
 	ApplyToObj();
-	
+
 	gObjects[gLevelOfDetail] = mPreviewObj;
 }
 
@@ -112,7 +112,7 @@ void		OE_ProjectionMgr::ApplyToObj(void)
 {
 	if (gObjects.empty())
 		return;
-	GLdouble matrix[16], matrix_i[16];	
+	GLdouble matrix[16], matrix_i[16];
 	mDeformer->GetTransform(matrix);
 	invertMatrix(matrix_i, matrix);
 	mPreviewObj = gObjects[gLevelOfDetail];
@@ -132,7 +132,7 @@ void		OE_ProjectionMgr::ApplyToObj(void)
 			s = mTexture.s1 + s * (mTexture.s2 - mTexture.s1);
 			t = mTexture.t1 + t * (mTexture.t2 - mTexture.t1);
 			st->st[0] = s;
-			st->st[1] = t;			
+			st->st[1] = t;
 		}
 	}
 }

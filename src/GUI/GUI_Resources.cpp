@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -41,7 +41,7 @@ static int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
 {
 	#if APL
 		int found = 0;
-	
+
 		CFStringRef res_str = CFStringCreateWithCString(kCFAllocatorDefault,in_resource,kCFStringEncodingMacRoman);
 		if (res_str)
 		{
@@ -52,11 +52,11 @@ static int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
 				if(path_str)
 				{
 					CFRange range = CFRangeMake(0, CFStringGetLength(path_str));
-					vector<UInt8> buf(CFStringGetBytes(path_str,range,kCFStringEncodingMacRoman,0,false,NULL,0, NULL));				
+					vector<UInt8> buf(CFStringGetBytes(path_str,range,kCFStringEncodingMacRoman,0,false,NULL,0, NULL));
 					CFStringGetBytes(path_str,range,kCFStringEncodingMacRoman,0,false,&*buf.begin(),buf.size(), NULL);
-					out_path = string(buf.begin(), buf.end());				
+					out_path = string(buf.begin(), buf.end());
 					found = 1;
-					CFRelease(path_str);				
+					CFRelease(path_str);
 				}
 				CFRelease(res_url);
 			}
@@ -152,16 +152,16 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
      // Get the temp path.
     int result = GetTempPath(sizeof(temp_path), temp_path);
 	if (result > sizeof(temp_path) || result == 0) { GUI_UnloadResource(res); return false; }
-	
+
 	result =  GetTempFileName(temp_path, in_resource, 0, temp_file);
 	if (result == 0) { GUI_UnloadResource(res); return false; }
-	
+
 	strcat(temp_file, in_resource);
 
 	FILE * fi = fopen(temp_file, "wb");
 	if (fi == NULL) { GUI_UnloadResource(res); return false; }
 	fwrite(sp, ep - sp, 1, fi);
-	
+
 	fclose(fi);
 	GUI_UnloadResource(res);
 	out_path = temp_file;
@@ -248,84 +248,84 @@ int	GUI_GetTextureResource(
 			GUI_TexPosition_t *	out_metrics)
 {
 	string r(in_resource);
-	
+
 	TexResourceTable::iterator i = sTexes.find(r);
 	if (i != sTexes.end())
 	{
 		if (out_metrics)	memcpy(out_metrics, &i->second.metrics,sizeof(GUI_TexPosition_t));
 		return i->second.tex_id;
 	}
-	
+
 	TexInfo	info;
 	glGenTextures(1,&info.tex_id);
 	string full_path;
 
 	ImageInfo	image;
-	
+
 	if (GUI_GetImageResource(in_resource,&image) != 0)
 		AssertPrintf("Error: could not find internal bitmap %s\n", in_resource);
-	
-	if (!LoadTextureFromImage(image, info.tex_id, flags, 
+
+	if (!LoadTextureFromImage(image, info.tex_id, flags,
 			&info.metrics.tex_width, &info.metrics.tex_height,
 			&info.metrics.s_rescale, &info.metrics.t_rescale))
 		AssertPrintf("Error: could not load internal bitmap %s\n", full_path.c_str());
-	
+
 	info.metrics.real_width  = info.metrics.tex_width  * info.metrics.s_rescale;
 	info.metrics.real_height = info.metrics.tex_height * info.metrics.t_rescale;
 
 	sTexes[r] = info;
 
 	if (out_metrics)	memcpy(out_metrics, &info.metrics,sizeof(GUI_TexPosition_t));
-	
+
 	DestroyBitmap(&image);
-	
+
 	return info.tex_id;
 
 }
 
 int	GUI_GetImageResourceWidth(const char * in_resource)
 {
-	string r(in_resource);	
+	string r(in_resource);
 	TexResourceTable::iterator i = sTexes.find(r);
 	if (i != sTexes.end())
 		return i->second.metrics.real_width;
-	
+
 	ImageInfo	im;
 	int			ret;
-	
+
 	if (GUI_GetImageResource(in_resource, &im) == 0)
 	{
 		ret = im.width;
 		DestroyBitmap(&im);
 		return ret;
 	}
-	return 0;	
+	return 0;
 }
 
 int	GUI_GetImageResourceHeight(const char * in_resource)
-{	
-	string r(in_resource);	
+{
+	string r(in_resource);
 	TexResourceTable::iterator i = sTexes.find(r);
 	if (i != sTexes.end())
 		return i->second.metrics.real_height;
-	
+
 	ImageInfo	im;
 	int			ret;
-	
+
 	if (GUI_GetImageResource(in_resource, &im) == 0)
 	{
 		ret = im.height;
 		DestroyBitmap(&im);
 		return ret;
 	}
-	return 0;	
+	return 0;
 
 }
-	
+
 int	GUI_GetImageResourceSize(const char * in_resource, int bounds[2])
-{	
+{
 	bounds[0] = bounds[1] = 0;
-	string r(in_resource);	
+	string r(in_resource);
 	TexResourceTable::iterator i = sTexes.find(r);
 	if (i != sTexes.end())
 	{
@@ -333,9 +333,9 @@ int	GUI_GetImageResourceSize(const char * in_resource, int bounds[2])
 		bounds[1] = i->second.metrics.real_height;
 		return 1;
 	}
-	
+
 	ImageInfo	im;
-	
+
 	if (GUI_GetImageResource(in_resource, &im) == 0)
 	{
 		bounds[0] = im.width;
@@ -343,7 +343,7 @@ int	GUI_GetImageResourceSize(const char * in_resource, int bounds[2])
 		DestroyBitmap(&im);
 		return 1;
 	}
-	return 0;	
+	return 0;
 
 }
 

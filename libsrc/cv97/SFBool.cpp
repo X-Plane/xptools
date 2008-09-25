@@ -10,57 +10,57 @@
 
 #include "SFBool.h"
 
-SFBool::SFBool() 
+SFBool::SFBool()
 {
 	setType(fieldTypeSFBool);
 	setValue(true);
 	InitializeJavaIDs();
 }
 
-SFBool::SFBool(bool value) 
+SFBool::SFBool(bool value)
 {
 	setType(fieldTypeSFBool);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFBool::SFBool(int value) 
+SFBool::SFBool(int value)
 {
 	setType(fieldTypeSFBool);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFBool::SFBool(SFBool *value) 
+SFBool::SFBool(SFBool *value)
 {
 	setType(fieldTypeSFBool);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFBool::InitializeJavaIDs() 
+void SFBool::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void SFBool::setValue(bool value) 
+void SFBool::setValue(bool value)
 {
 	mValue = value;
 }
 
-void SFBool::setValue(int value) 
+void SFBool::setValue(int value)
 {
 	setValue(value ? true : false);
 }
 
-void SFBool::setValue(SFBool *value) 
+void SFBool::setValue(SFBool *value)
 {
 	mValue = value->getValue();
 }
 
-bool SFBool::getValue() 
+bool SFBool::getValue()
 {
 	return mValue;
 }
@@ -81,7 +81,7 @@ ostream& operator<<(ostream &s, SFBool *value) {
 //	String
 ////////////////////////////////////////////////
 
-void SFBool::setValue(char *value) 
+void SFBool::setValue(char *value)
 {
 	if (!value)
 		return;
@@ -91,7 +91,7 @@ void SFBool::setValue(char *value)
 		setValue(false);
 }
 
-char *SFBool::getValue(char *buffer, int bufferLen) 
+char *SFBool::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%s", (getValue() ? "TRUE" : "FALSE"));
 	return buffer;
@@ -101,7 +101,7 @@ char *SFBool::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFBool::equals(Field *field) 
+bool SFBool::equals(Field *field)
 {
 	SFBool *boolField = (SFBool *)field;
 	if (getValue() == boolField->getValue())
@@ -182,7 +182,7 @@ jobject SFBool::toJavaObject(int bConstField) {
 	jboolean	value			= getValue();
 	jobject		eventField		= jniEnv->NewObject(classid, initMethod, value);
 	jmethodID	setNameMethod	= bConstField ? getConstSetNameMethodID() : getSetNameMethodID();
-		
+
 	char		*fieldName		= getName();
 	jstring		jfieldName		= NULL;
 	if (fieldName && strlen(fieldName))
@@ -190,7 +190,7 @@ jobject SFBool::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	return eventField;
 }
 

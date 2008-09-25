@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -53,7 +53,7 @@ void	CGALFailure(
 
 	fprintf(stderr,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
 	exit(1);
-}        
+}
 
 static int DoHelp(const vector<const char *>& args)
 {
@@ -66,7 +66,7 @@ static int DoHelp(const vector<const char *>& args)
 		foo += args[n];
 		if (GISTool_PrintHelpCommand(foo.c_str()))
 			ok = 1;
-	}	
+	}
 	return ok;
 }
 
@@ -103,10 +103,10 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 int	main(int argc, char * argv[])
 {
 	if (argc == 1)	SelfTestAll();
-	
+
 	int result;
 	try {
-		
+
 		// Set CGAL to throw an exception rather than just
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
@@ -116,9 +116,9 @@ int	main(int argc, char * argv[])
 			if (argc < 2 || strcmp(argv[1], "-noinit"))
 				XESInit();
 			else
-				++start_arg;	
+				++start_arg;
 		}
-		
+
 		GISTool_RegisterCommands(sUtilCmds);
 
 		RegisterDemCmds();
@@ -128,25 +128,25 @@ int	main(int argc, char * argv[])
 		RegisterProcessingCmds();
 		RegisterObsCmds();
 		RegisterMiscCmds();
-		
-		vector<const char *>	args;		
+
+		vector<const char *>	args;
 		for (int n = start_arg; n < argc; ++n)
 		{
-			args.push_back(argv[n]);			
+			args.push_back(argv[n]);
 		}
 
-#if USE_CHUD		
+#if USE_CHUD
 		chudInitialize();
 		bool 				can_profile = chudInitialize() == chudSuccess;
 		if (can_profile) 	can_profile = chudAcquireRemoteAccess() == chudSuccess;
 		else 							  chudCleanup();
-#endif		
+#endif
 		result = GISTool_ParseCommands(args);
 
 #if USE_CHUD
 		if (can_profile)	chudReleaseRemoteAccess();
 		if (can_profile)	chudCleanup();
-#endif		
+#endif
 
 		exit(result);
 
@@ -154,7 +154,7 @@ int	main(int argc, char * argv[])
 		fprintf(stdout,"****************************************************************************\n");
 		fprintf(stdout,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
 		fprintf(stdout,"****************************************************************************\n");
-	
+
 		fprintf(stderr,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
 		exit(0);
 	} catch (...) {

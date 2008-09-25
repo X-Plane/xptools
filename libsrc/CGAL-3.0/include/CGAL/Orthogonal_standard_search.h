@@ -28,8 +28,8 @@
 
 namespace CGAL {
 
-template <class TreeTraits, 
-	  class Distance=Euclidean_distance<typename TreeTraits::Point>, 
+template <class TreeTraits,
+	  class Distance=Euclidean_distance<typename TreeTraits::Point>,
 	  class Tree=Kd_tree<TreeTraits> >
 class Orthogonal_standard_search {
 
@@ -43,7 +43,7 @@ typedef std::pair<Point*,NT> Point_with_distance;
 typedef typename Tree::Node_handle Node_handle;
 
 typedef typename Kd_tree<TreeTraits>::Point_iterator Point_iterator;
-typedef Kd_tree_rectangle<NT> Rectangle; 
+typedef Kd_tree_rectangle<NT> Rectangle;
 
 private:
 
@@ -56,7 +56,7 @@ bool search_nearest;
 NT multiplication_factor;
 Query_item* query_object;
 int total_item_number;
-NT distance_to_root;   
+NT distance_to_root;
 
 typedef std::list<Point_with_distance> NN_list;
 
@@ -69,25 +69,25 @@ Distance* distance_instance;
 
 	inline bool branch(NT distance) {
 		if (actual_k<max_k) return true;
-		else 
-		  if (search_nearest) return 
+		else
+		  if (search_nearest) return
 		  ( distance * multiplication_factor < l.rbegin()->second);
-		  else return 
-		  ( distance > 
+		  else return
+		  ( distance >
 		    l.begin()->second * multiplication_factor);
 	};
 
 	inline void insert(Point* I, NT dist) {
 		bool insert;
 		if (actual_k<max_k) insert=true;
-		else 
+		else
 			if (search_nearest) insert=
-			( dist < l.rbegin()->second ); 
+			( dist < l.rbegin()->second );
 			else insert=(dist > l.begin()->second);
         if (insert) {
-	   		actual_k++;	 	
+	   		actual_k++;
 			typename NN_list::iterator it=l.begin();
-			for (; (it != l.end()); ++it) 
+			for (; (it != l.end()); ++it)
 			{ if (dist < it->second) break;}
         		Point_with_distance NN_Candidate(I,dist);
         		l.insert(it,NN_Candidate);
@@ -100,36 +100,36 @@ Distance* distance_instance;
 
 	};
 
-	
+
 	public:
 
-	template<class OutputIterator>  
+	template<class OutputIterator>
 	OutputIterator  the_k_neighbors(OutputIterator res)
-	{   
-		typename NN_list::iterator it=l.begin(); 
+	{
+		typename NN_list::iterator it=l.begin();
 		for (; it != l.end(); it++) { *res= *it; res++; }
-		return res;     
+		return res;
 	}
 
 
     // constructor
-    Orthogonal_standard_search(Tree& tree, Query_item& q,  
+    Orthogonal_standard_search(Tree& tree, Query_item& q,
     const Distance& d=Distance(), int k=1, NT Eps=NT(0.0), bool Search_nearest=true) {
-   
+
 	distance_instance=new Distance(d);
 
 	multiplication_factor=
 	d.transformed_distance(1.0+Eps);
-        
+
 	max_k=k;
 	actual_k=0;
-	search_nearest = Search_nearest; 
-		
-        // if (search_nearest) 
+	search_nearest = Search_nearest;
+
+        // if (search_nearest)
 		distance_to_root=
         	d.min_distance_to_queryitem(q,
 						*(tree.bounding_box()));
-        // else 
+        // else
 	//	distance_to_root=
         //	distance_instance->max_distance_to_queryitem(q,
 	//					*(tree.bounding_box()));
@@ -141,40 +141,40 @@ Distance* distance_instance;
         number_of_leaf_nodes_visited=0;
         number_of_internal_nodes_visited=0;
         number_of_items_visited=0;
-       
+
         compute_neighbors_orthogonally(tree.root(), distance_to_root);
-       
+
     }
 
-    
+
     // Print statistics of the standard search process.
     std::ostream& statistics (std::ostream& s) {
     	s << "Standard search statistics:" << std::endl;
-    	s << "Number of internal nodes visited:" 
+    	s << "Number of internal nodes visited:"
 	<< number_of_internal_nodes_visited << std::endl;
-    	s << "Number of leaf nodes visited:" 
+    	s << "Number of leaf nodes visited:"
 	<< number_of_leaf_nodes_visited << std::endl;
-    	s << "Number of items visited:" 
+    	s << "Number of items visited:"
 	<< number_of_items_visited << std::endl;
         return s;
     }
 
     // destructor
-    ~Orthogonal_standard_search() { 
-		l.clear();  
+    ~Orthogonal_standard_search() {
+		l.clear();
 		delete distance_instance;
     };
 
     private:
-   
+
     void compute_neighbors_orthogonally(Node_handle N, NT rd) {
-		
+
                 if (!(N->is_leaf())) {
                         number_of_internal_nodes_visited++;
                         int new_cut_dim=N->cutting_dimension();
                         NT old_off, new_rd;
                         NT new_off =
-                        (*query_object)[new_cut_dim] - 
+                        (*query_object)[new_cut_dim] -
 					N->cutting_value();
                         if ( ((new_off < NT(0.0)) && (search_nearest)) ||
                         (( new_off >= NT(0.0)) && (!search_nearest))  ) {
@@ -184,38 +184,38 @@ Distance* distance_instance;
 							N->low_value();
                                 	if (old_off>NT(0.0)) old_off=NT(0.0);
                                 }
-				else 
-				{	
-                                	old_off= (*query_object)[new_cut_dim] 
+				else
+				{
+                                	old_off= (*query_object)[new_cut_dim]
 					- N->high_value();
 					if (old_off<NT(0.0)) old_off=NT(0.0);
                                 }
                                 new_rd=
                                 distance_instance->
 				new_distance(rd,old_off,new_off,new_cut_dim);
-				if (branch(new_rd)) 
+				if (branch(new_rd))
 				compute_neighbors_orthogonally(N->upper(),
-								new_rd);                               
+								new_rd);
                         }
                         else { // compute new distance
-                                compute_neighbors_orthogonally(N->upper(),rd); 
+                                compute_neighbors_orthogonally(N->upper(),rd);
 				if (search_nearest) {
-                                	old_off= N->high_value() - 
+                                	old_off= N->high_value() -
 					(*query_object)[new_cut_dim];
                                 	if (old_off>NT(0.0)) old_off=NT(0.0);
 				}
-                                else 
-                                {       
-                                	old_off= N->low_value() - 
+                                else
+                                {
+                                	old_off= N->low_value() -
 					(*query_object)[new_cut_dim];
 					if (old_off<NT(0.0)) old_off=NT(0.0);
-				}  
+				}
                                 new_rd=
                                 distance_instance->
 				new_distance(rd,old_off,new_off,new_cut_dim);
-				if (branch(new_rd)) 
+				if (branch(new_rd))
 				compute_neighbors_orthogonally(N->lower(),
-								new_rd);       
+								new_rd);
                         }
                 }
                 else
@@ -233,14 +233,14 @@ Distance* distance_instance;
 		}
     }
 
-    
-    
 
 
-    
-   
 
-}; // class 
+
+
+
+
+}; // class
 
 
 

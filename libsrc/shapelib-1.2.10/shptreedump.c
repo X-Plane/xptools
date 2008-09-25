@@ -14,7 +14,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -58,7 +58,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: shptreedump.c,v 1.7 2002/04/10 16:59:12 warmerda Exp $";
 
 #include "shapefil.h"
@@ -96,7 +96,7 @@ int main( int argc, char ** argv )
     int		nMaxDepth = 0;
     int		nDoSearch = 0;
     double	adfSearchMin[4], adfSearchMax[4];
-    
+
 
 /* -------------------------------------------------------------------- */
 /*	Consume flags.							*/
@@ -133,7 +133,7 @@ int main( int argc, char ** argv )
                 printf( "Min greater than max in search criteria.\n" );
                 Usage();
             }
-            
+
             argv += 5;
             argc -= 5;
         }
@@ -169,7 +169,7 @@ int main( int argc, char ** argv )
 /*      Trim unused nodes from the tree.                                */
 /* -------------------------------------------------------------------- */
     SHPTreeTrimExtraNodes( psTree );
-        
+
 /* -------------------------------------------------------------------- */
 /*      Dump tree by recursive descent.                                 */
 /* -------------------------------------------------------------------- */
@@ -204,7 +204,7 @@ static void EmitCoordinate( double * padfCoord, int nDimension )
 
 {
     const char	*pszFormat;
-    
+
     if( fabs(padfCoord[0]) < 180 && fabs(padfCoord[1]) < 180 )
         pszFormat = "%.9f";
     else
@@ -235,14 +235,14 @@ static void EmitShape( SHPObject * psObject, const char * pszPrefix,
 
 {
     int		i;
-    
+
     printf( "%s( Shape\n", pszPrefix );
     printf( "%s  ShapeId = %d\n", pszPrefix, psObject->nShapeId );
 
     printf( "%s  Min = (", pszPrefix );
     EmitCoordinate( &(psObject->dfXMin), nDimension );
     printf( ")\n" );
-    
+
     printf( "%s  Max = (", pszPrefix );
     EmitCoordinate( &(psObject->dfXMax), nDimension );
     printf( ")\n" );
@@ -250,14 +250,14 @@ static void EmitShape( SHPObject * psObject, const char * pszPrefix,
     for( i = 0; i < psObject->nVertices; i++ )
     {
         double	adfVertex[4];
-        
+
         printf( "%s  Vertex[%d] = (", pszPrefix, i );
 
         adfVertex[0] = psObject->padfX[i];
         adfVertex[1] = psObject->padfY[i];
         adfVertex[2] = psObject->padfZ[i];
         adfVertex[3] = psObject->padfM[i];
-        
+
         EmitCoordinate( adfVertex, nDimension );
         printf( ")\n" );
     }
@@ -291,7 +291,7 @@ static void SHPTreeNodeDump( SHPTree * psTree,
     printf( "%s  Min = (", pszPrefix );
     EmitCoordinate( psTreeNode->adfBoundsMin, psTree->nDimension );
     printf( ")\n" );
-    
+
     printf( "%s  Max = (", pszPrefix );
     EmitCoordinate( psTreeNode->adfBoundsMax, psTree->nDimension );
     printf( ")\n" );
@@ -336,7 +336,7 @@ static void SHPTreeNodeDump( SHPTree * psTree,
             SHPTreeNodeDump( psTree, psTreeNode->apsSubNode[i],
                              szNextPrefix, nExpandShapes );
     }
-    
+
     printf( "%s)\n", pszPrefix );
 
     return;
@@ -375,7 +375,7 @@ static void SHPTreeNodeSearchAndDump( SHPTree * hTree,
         psObject = SHPReadObject( hTree->hSHP, panHits[i] );
         if( psObject == NULL )
             continue;
-        
+
         if( !SHPCheckBoundsOverlap( padfBoundsMin, padfBoundsMax,
                                     &(psObject->dfXMin),
                                     &(psObject->dfXMax),

@@ -31,7 +31,7 @@ namespace CGAL {
     public:
 
     typedef typename Kernel_traits<Point>::Kernel::FT NT;
-    
+
     private:
 
     unsigned int the_dimension;
@@ -45,7 +45,7 @@ namespace CGAL {
 		assert(the_dimension>0);
     	}
 
- 
+
 
         Euclidean_distance(const int d) : the_dimension(d) {}
 
@@ -64,12 +64,12 @@ namespace CGAL {
 		NT distance = NT(0);
 		for (unsigned int i = 0; i < the_dimension; ++i) {
 			if (q[i] < r.min_coord(i))
-				distance += 
+				distance +=
 				(r.min_coord(i)-q[i])*(r.min_coord(i)-q[i]);
 			if (q[i] > r.max_coord(i))
-				distance +=  
+				distance +=
 				(q[i]-r.max_coord(i))*(q[i]-r.max_coord(i));
-			
+
 		};
 		return distance;
 	}
@@ -88,7 +88,7 @@ namespace CGAL {
 
 	inline NT new_distance(NT dist, NT old_off, NT new_off,
 			int cutting_dimension)  const {
-		
+
 		NT new_dist = dist + new_off*new_off - old_off*old_off;
                 return new_dist;
 	}

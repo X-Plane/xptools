@@ -66,6 +66,6 @@ OutputIterator random_selection( RandomAccessIterator first,
     return random_selection( first, last, n, result, default_random);
 }
 
-CGAL_END_NAMESPACE    
+CGAL_END_NAMESPACE
 #endif // CGAL_RANDOM_SELECTION_H //
 // EOF //

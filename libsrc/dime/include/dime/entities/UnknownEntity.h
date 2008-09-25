@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownEntity.h
  *
  *  This source file is part of DIME.
@@ -32,22 +32,22 @@
 
 #include <dime/entities/Entity.h>
 
-class DIME_DLL_API dimeUnknownEntity : public dimeEntity 
+class DIME_DLL_API dimeUnknownEntity : public dimeEntity
 {
 public:
   dimeUnknownEntity(const char * const name, dimeMemHandler * const memhandler);
   virtual ~dimeUnknownEntity();
 
   virtual dimeEntity *copy(dimeModel * const model) const;
-  
+
   virtual const char *getEntityName() const;
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
 private:
   char *entityName;
-  
+
 }; // class dimeUnknownEntity
 
 #endif // ! DIME_UNKNOWNENTITY_H

@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra, Sylvain Pion
- 
+
 #ifndef CGAL_HANDLE_FOR_H
 #define CGAL_HANDLE_FOR_H
 

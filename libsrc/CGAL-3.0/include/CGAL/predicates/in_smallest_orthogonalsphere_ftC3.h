@@ -17,7 +17,7 @@
 //
 // Author(s)     : Tran Kai Frank DA <Frank.Da@sophia.inria.fr>
 
-#ifndef CGAL_IN_SMALLEST_ORTHOGONALSPHERE_FTC3_H 
+#ifndef CGAL_IN_SMALLEST_ORTHOGONALSPHERE_FTC3_H
 #define CGAL_IN_SMALLEST_ORTHOGONALSPHERE_FTC3_H
 
 #include <CGAL/determinant.h>
@@ -50,12 +50,12 @@ in_smallest_orthogonalsphereC3(
   FT denom = dp*dq-CGAL_NTS square(dpdq);
   FT Lambda = (dpp*dq-dqq*dpdq)/denom;
   FT Mu = (dqq*dp-dpp*dpdq)/denom;
-  
+
   FT dtx = tx-rx;
   FT dty = ty-ry;
   FT dtz = tz-rz;
-  
-  return Bounded_side 
+
+  return Bounded_side
     (CGAL_NTS sign(
 	-(CGAL_NTS square(dtx)+CGAL_NTS square(dty)+CGAL_NTS square(dtz)-tw+rw)
         +Lambda*(dpx*dtx+dpy*dty+dpz*dtz)+Mu*(dqx*dtx+dqy*dty+dqz*dtz)));

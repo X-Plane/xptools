@@ -412,7 +412,7 @@ template < class PolyhedronTraits_3,
 #ifndef CGAL_CFG_NO_TMPL_IN_TMPL_PARAM
            template < class T, class I, class A>
 #endif
-           class T_HDS = HalfedgeDS_default, 
+           class T_HDS = HalfedgeDS_default,
            class Alloc = CGAL_ALLOCATOR(int)>
 class Polyhedron_3 {
     //

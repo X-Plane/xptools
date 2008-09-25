@@ -1,4 +1,4 @@
-#include <CGAL/basic.h> 
+#include <CGAL/basic.h>
 #include <CGAL/leda_rational.h>
 #include <CGAL/Cartesian.h>
 

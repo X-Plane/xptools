@@ -21,7 +21,7 @@ typedef CGAL::Planar_map_2<Dcel,Traits>                     Planar_map_2;
 typedef CGAL::Planar_map_with_intersections_2<Planar_map_2> Pmwx;
 typedef Pmwx::Pmwx_change_notification Pmwx_change_notification;
 
-class My_notification : public Pmwx_change_notification 
+class My_notification : public Pmwx_change_notification
 {
 public:
 
@@ -29,7 +29,7 @@ public:
   {i = 0;}
 
   void add_edge(const  Traits::X_monotone_curve_2 &,
-                Planar_map::Halfedge_handle, 
+                Planar_map::Halfedge_handle,
                 bool /* left_to_right */, bool overlap = false)
   {
     (void) overlap;
@@ -37,7 +37,7 @@ public:
     i++;
   }
 
-  void split_edge(Planar_map::Halfedge_handle /* orig_edge */, 
+  void split_edge(Planar_map::Halfedge_handle /* orig_edge */,
                   Planar_map::Halfedge_handle /* new_edge */,
                   const Traits::X_monotone_curve_2 &,
                   const Traits::X_monotone_curve_2 &)
@@ -46,13 +46,13 @@ public:
     i++;
   }
 
-  void split_face(Planar_map::Face_handle /* orig_face */, 
+  void split_face(Planar_map::Face_handle /* orig_face */,
                   Planar_map::Face_handle /* new_face */)
   {
     std::cout << "split_face" << std::endl;
   }
 
-  void add_hole(Planar_map::Face_handle /* in_face */, 
+  void add_hole(Planar_map::Face_handle /* in_face */,
                 Planar_map::Halfedge_handle /* new_hole */)
   {
     std::cout << "add_hole" << std::endl;
@@ -62,7 +62,7 @@ public:
 };
 
 int main() {
-  
+
   Pmwx pm;
   My_notification notif;
 

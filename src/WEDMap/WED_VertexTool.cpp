@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -81,7 +81,7 @@ WED_VertexTool::WED_VertexTool(
 				WED_MapZoomerNew *		zoomer,
 				IResolver *				resolver,
 				int						sel_verts) :
-		WED_HandleToolBase(tool_name, host, zoomer, resolver),				
+		WED_HandleToolBase(tool_name, host, zoomer, resolver),
 		mSelVerts(sel_verts),
 		mEntityCacheKeyArchive(-1),
 		mEntityCacheKeyZoomer(-1),
@@ -91,8 +91,8 @@ WED_VertexTool::WED_VertexTool(
 		mIsRotate(0),
 		mIsSymetric(0),
 		mIsTaxiSpin(0),
-		mIsScale(0),		
-		mSnapToGrid(this,"Snap To Vertices", "", "", 0)		
+		mIsScale(0),
+		mSnapToGrid(this,"Snap To Vertices", "", "", 0)
 {
 	SetControlProvider(this);
 }
@@ -119,7 +119,7 @@ void	WED_VertexTool::EndEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->CommitOperation();
-	mInEdit = 0;	
+	mInEdit = 0;
 	mIsRotate = 0;
 	mIsSymetric = 0;
 	mIsScale = 0;
@@ -143,12 +143,12 @@ intptr_t		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	
+
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
-	
+
 	if (rwy)													return 13;
 	else if (quad)												return 9;
 	else switch(en->GetGISClass()) {
@@ -173,17 +173,17 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	
+
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;
 	if (dir) *dir = Vector2();
 	if (!p) return;
-	
+
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
-	
+
 	if (rwy && n >= 9)
 	{
 		Point2 corners[4];
@@ -195,7 +195,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 		}
 		p->x =	corners[0].x * kRunwayBlend0[n-9] + corners[1].x * kRunwayBlend1[n-9] + corners[2].x * kRunwayBlend2[n-9] + corners[3].x * kRunwayBlend3[n-9];
 		p->y =	corners[0].y * kRunwayBlend0[n-9] + corners[1].y * kRunwayBlend1[n-9] + corners[2].y * kRunwayBlend2[n-9] + corners[3].y * kRunwayBlend3[n-9];
-		
+
 		if (dir)
 		{
 			rwy->GetCorners(corners);
@@ -203,14 +203,14 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 			if (n == 9 || n == 11) *dir = -*dir;
 		}
 		if (con_type) *con_type = handle_ArrowHead;
-		
+
 		return;
 	}
 	else if (quad)
 	{
 		Point2	corners[4];
 		quad->GetCorners(corners);
-		
+
 		Point2 ctr;
 		ctr.x =	corners[0].x * kQuadBlend0[8] + corners[1].x * kQuadBlend1[8] + corners[2].x * kQuadBlend2[8] + corners[3].x * kQuadBlend3[8];
 		ctr.y =	corners[0].y * kQuadBlend0[8] + corners[1].y * kQuadBlend1[8] + corners[2].y * kQuadBlend2[8] + corners[3].y * kQuadBlend3[8];
@@ -218,7 +218,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 		if(p)
 		{
 			p->x =	corners[0].x * kQuadBlend0[n] + corners[1].x * kQuadBlend1[n] + corners[2].x * kQuadBlend2[n] + corners[3].x * kQuadBlend3[n];
-			p->y =	corners[0].y * kQuadBlend0[n] + corners[1].y * kQuadBlend1[n] + corners[2].y * kQuadBlend2[n] + corners[3].y * kQuadBlend3[n];			
+			p->y =	corners[0].y * kQuadBlend0[n] + corners[1].y * kQuadBlend1[n] + corners[2].y * kQuadBlend2[n] + corners[3].y * kQuadBlend3[n];
 		}
 		if (dir && p) *dir = Vector2(ctr,*p);
 		if (n < 8 && con_type)
@@ -228,7 +228,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 				if (mIsRotate) *con_type = handle_RotateHead;
 				if (mIsScale) *con_type = mIsSymetric ? handle_Arrow : handle_ArrowHead;
 			}
-			else 
+			else
 			{
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 				if (mods & gui_OptionAltFlag)
@@ -268,7 +268,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 				Point2 dummy;
 			if (active) *active = (n == 0);
 			switch(n) {
-			case 0:	pt_b->GetLocation(*p);			
+			case 0:	pt_b->GetLocation(*p);
 					if (con_type)
 					{
 						*con_type = handle_VertexSharp;
@@ -279,7 +279,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 			case 1:	if (pt_b->GetControlHandleLo(*p) && active) *active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
 			case 2: if (pt_b->GetControlHandleHi(*p) && active)	*active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
 			}
-			
+
 			if (active)
 			{
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -295,18 +295,18 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 			pt_h->GetLocation(*p);
 			Vector2	vdir;
 			NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
-			if(n==1)				
-			{ 
+			if(n==1)
+			{
 				Point2 orig (*p);
 				*p = GetZoomer()->LLToPixel(*p);
 				*p += vdir * 15.0;
-				*p = GetZoomer()->PixelToLL(*p);				
+				*p = GetZoomer()->PixelToLL(*p);
 				if (dir) *dir = Vector2(orig, *p);
 				if (con_type) *con_type = handle_Rotate;
 			} else
 				if (con_type) *con_type = handle_Icon;
 				if (radius) *radius = GetFurnitureIconRadius();
-			
+
 			return;
 		}
 		break;
@@ -320,20 +320,20 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 		break;
 	}
 	DebugAssert(!"Cast failed!");
-	return; 
+	return;
 }
 
 
 intptr_t		WED_VertexTool::GetLinks		    (intptr_t id) const
-{	
+{
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	
+
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
-	
+
 	if (quad)															return 4;
 	else switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
@@ -354,13 +354,13 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active
 	if (active) *active=0;
 	if (ltype) *ltype = link_Solid;
 
-	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);	
+	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint_Bezier * pt_b;
-	
+
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
-		if (ltype) 
+		if (ltype)
 			*ltype = link_BezierCtrl;
 		break;
 	}
@@ -372,7 +372,7 @@ intptr_t		WED_VertexTool::GetNthLinkSource   (intptr_t id, intptr_t n) const
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	
+
 	if (quad) return n;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return 0;
@@ -393,7 +393,7 @@ intptr_t		WED_VertexTool::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	
+
 	if (quad) return (n+1)%4;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return n+1;
@@ -435,7 +435,7 @@ void	WED_VertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& i
 		taxi->SetHeading(VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr,io_handle)));
 		mIsTaxiSpin = 1;
 		mTaxiDest = io_handle;
-	}	
+	}
 }
 
 void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& delta, Point2& io_pt)
@@ -448,7 +448,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
-	
+
 	Point2	p;
 	if (rwy && n >= 9)
 	{
@@ -476,7 +476,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 		case 11:	rwy->SetDisp2(rwy->GetDisp2() + axis.dot(delta_m));	break;
 		case 12:	rwy->SetBlas2(rwy->GetBlas2() + axis.dot(delta_m));	break;
 		}
-		
+
 		io_pt += delta;
 		return;
 	}
@@ -487,25 +487,25 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 			mInEdit = 1;
 			if (n < 8)
 			{
-				GUI_KeyFlags mods = GetHost()->GetModifiersNow();			
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 				mIsScale = mods & gui_ShiftFlag;
 				if (mods & gui_OptionAltFlag)
 				{
 					if (mIsScale)	mIsSymetric = 1;
 					else			mIsRotate = 1;
 				}
-				if (mIsRotate) 
+				if (mIsRotate)
 				{
 					Point2	corners[4];
 					quad->GetCorners(corners);
 					mRotateCtr.x = corners[0].x * 0.25 + corners[1].x * 0.25 + corners[2].x * 0.25 + corners[3].x * 0.25;
 					mRotateCtr.y = corners[0].y * 0.25 + corners[1].y * 0.25 + corners[2].y * 0.25 + corners[3].y * 0.25;
-					
+
 					GetNthControlHandle(id, n, NULL, NULL, &io_pt, NULL, NULL);
 				}
 			}
 		}
-		
+
 		if (mIsRotate)
 		{
 			quad->Rotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr,io_pt,delta));
@@ -551,13 +551,13 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 				if ((mods & gui_OptionAltFlag) && (mods & gui_ShiftFlag))
 				{
 					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(dummy))	pt_b->DeleteHandleLo(); else pt_b->SetControlHandleLo(p+delta); }
-					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(dummy))	pt_b->DeleteHandleHi(); else pt_b->SetControlHandleHi(p+delta); }					
-				}				
+					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(dummy))	pt_b->DeleteHandleHi(); else pt_b->SetControlHandleHi(p+delta); }
+				}
 				else if (mods & gui_OptionAltFlag)
 				{
 					if (n == 1) { if (pt_b->GetControlHandleLo(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleLo(p+delta); } }
 					if (n == 2) { if (pt_b->GetControlHandleHi(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleHi(p+delta); } }
-				}					
+				}
 				else if (mods & gui_ShiftFlag && n != 0)
 				{
 					if (pt_b->IsSplit()) pt_b->SetSplit(false);
@@ -583,9 +583,9 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 		break;
 	case gis_Point_Heading:
 		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
-		{	
+		{
 			pt_h->GetLocation(p);
-			if (n == 0)	
+			if (n == 0)
 			{
 				SnapMovePoint(p,delta, en);
 				pt_h->SetLocation(p);
@@ -595,8 +595,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 				NorthHeading2VectorMeters(p,p,pt_h->GetHeading(),dir);
 				p = GetZoomer()->LLToPixel(p);
 				p += dir * 15.0;
-				p = GetZoomer()->PixelToLL(p);				
-				p += delta;				
+				p = GetZoomer()->PixelToLL(p);
+				p += delta;
 				dir = Vector2(me,p);
 				dir.normalize();
 				pt_h->SetHeading(VectorDegs2NorthHeading(me,me,dir));
@@ -617,7 +617,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 		break;
 	}
 	DebugAssert(!"Cast failed!");
-	return; 
+	return;
 }
 
 void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
@@ -628,7 +628,7 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 {
 	// Ben says: we tried always selecting INTO "fake" composite entities - that is, entities that are
 	// not technically composite but have a hierarchy.  So we would always selected polygon nodes and not
-	// the whole polygon.	
+	// the whole polygon.
 	// BUT: atomic-or-container is better:
 	// 1.	if we select the whole poly, we can STILL drag each vertex, that works automagically as part of
 	//		the object-decomposition we do.
@@ -646,7 +646,7 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 }
 
 void WED_VertexTool::GetEntityInternal(void) const
-{	
+{
 	ISelection * sel = WED_GetSelect(GetResolver());
 	WED_Thing * wrl = WED_GetWorld(GetResolver());
 	long long key_a = wrl->GetArchive()->CacheKey();
@@ -655,20 +655,20 @@ void WED_VertexTool::GetEntityInternal(void) const
 
 	mEntityCacheKeyArchive = key_a;
 	mEntityCacheKeyZoomer = key_z;
-	
+
 	DebugAssert(sel != NULL);
 	vector<ISelectable *>	iu;
 
 	mEntityCache.clear();
 
-	
+
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;
 	mEntityCache.reserve(iu.size());
-	
+
 	Bbox2	bounds;
 	GetZoomer()->GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
-	
+
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * gent = SAFE_CAST(IGISEntity,*i);
@@ -687,17 +687,17 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 
 	Bbox2	ent_bounds;
 	e->GetBounds(ent_bounds);
-	
+
 	if (!ent_bounds.overlap(vis_area))	return;
-	
+
 	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
 	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);
-	
+
 	IGISPointSequence * ps;
 	IGISPolygon * poly;
 	IGISComposite * cmp;
 	int c, n;
-	
+
 	switch(e->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Bezier:
@@ -710,9 +710,9 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
-	
+
 		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
 		{
 			c = ps->GetNumPoints();
@@ -721,7 +721,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		}
 		break;
 	case gis_Polygon:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
 
 		if (e->GetGISSubtype() == WED_OverlayImage::sClass && SAFE_CAST(WED_OverlayImage, e))
@@ -733,13 +733,13 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 			AddEntityRecursive(poly->GetOuterRing(),vis_area);
 			c = poly->GetNumHoles();
 			for (n = 0; n < c; ++n)
-				AddEntityRecursive(poly->GetNthHole(n),vis_area);				
+				AddEntityRecursive(poly->GetNthHole(n),vis_area);
 		}
 		break;
 	case gis_Composite:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
-	
+
 		if ((cmp = SAFE_CAST(IGISComposite, e)) != NULL)
 		{
 			c = cmp->GetNumEntities();
@@ -762,12 +762,12 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 
 	Bbox2	ent_bounds;
 	e->GetBounds(ent_bounds);
-	
+
 	if (!ent_bounds.overlap(vis_area))	return;
-	
+
 	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
 	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);
-	
+
 	IGISPointSequence * ps;
 	IGISPolygon * poly;
 	IGISComposite * cmp;
@@ -775,7 +775,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	IGISPoint * pt;
 	IGISPoint_Bezier * bt;
 	Point2	loc;
-	
+
 	switch(e->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Heading:
@@ -801,15 +801,15 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 			}
 		}
-		break;	
+		break;
 	case gis_Line:
 	case gis_Line_Width:
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
-	
+
 		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
 		{
 			c = ps->GetNumPoints();
@@ -818,7 +818,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		}
 		break;
 	case gis_Polygon:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
 
 		if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
@@ -826,13 +826,13 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 			AddSnapPointRecursive(poly->GetOuterRing(),vis_area, sel);
 			c = poly->GetNumHoles();
 			for (n = 0; n < c; ++n)
-				AddSnapPointRecursive(poly->GetNthHole(n),vis_area, sel);				
+				AddSnapPointRecursive(poly->GetNthHole(n),vis_area, sel);
 		}
 		break;
 	case gis_Composite:
-		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
-	
+
 		if ((cmp = SAFE_CAST(IGISComposite, e)) != NULL)
 		{
 			c = cmp->GetNumEntities();
@@ -859,7 +859,7 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 			mSnapCache.clear();
 			Bbox2	bounds;
 			GetZoomer()->GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
-	
+
 			AddSnapPointRecursive(dynamic_cast<IGISEntity *>(wrl), bounds, sel);
 		}
 
@@ -897,5 +897,5 @@ void		WED_VertexTool::DrawSelected			(intptr_t inCurrent, GUI_GraphState * g)
 		glVertex2f(GetZoomer()->LonToXPixel(mRotateCtr.x),GetZoomer()->LatToYPixel(mRotateCtr.y));
 		glVertex2f(GetZoomer()->LonToXPixel(mTaxiDest.x),GetZoomer()->LatToYPixel(mTaxiDest.y));
 		glEnd();
-	}	
+	}
 }

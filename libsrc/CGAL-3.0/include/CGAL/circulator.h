@@ -237,7 +237,7 @@ template <class IC> inline
 void Assert_random_access_category( const IC &/*ic*/) {
   typedef typename std::iterator_traits<IC>::iterator_category category;
   Assert_compile_time_tag( std::random_access_iterator_tag(),
-                           category());  
+                           category());
 }
 
 // The assert at-least-category functions use the following
@@ -404,7 +404,7 @@ template <class C> inline
 typename C::size_type
 circulator_size( const C& c) {
   typedef typename std::iterator_traits<C>::iterator_category category;
-  return I_circulator_size( c, 
+  return I_circulator_size( c,
                             category());
 }
 template <class C>
@@ -442,7 +442,7 @@ template <class C> inline
 typename C::difference_type
 circulator_distance( const C& c, const C& d) {
   typedef typename std::iterator_traits<C>::iterator_category category;
-  return I_circulator_distance( c, d, 
+  return I_circulator_distance( c, d,
                                 category());
 }
 template <class C> inline

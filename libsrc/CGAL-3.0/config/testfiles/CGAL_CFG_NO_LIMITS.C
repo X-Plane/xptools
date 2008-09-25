@@ -30,7 +30,7 @@
 
 //| If a compiler doesn't know <limits> (g++-2.95)
 //| or has a bug in the implementation (Sun CC 5.4, MipsPro CC)
-//| CGAL_CFG_NO_LIMITS is set. 
+//| CGAL_CFG_NO_LIMITS is set.
 
 #include <limits>
 

@@ -22,9 +22,9 @@
 
 #ifdef WIN32
 #define STRNICMP strnicmp
-#else 
+#else
 #define STRNICMP strncasecmp
-#endif 
+#endif
 
 typedef struct _tag_spec
 {
@@ -268,7 +268,7 @@ int formatIPTC(FILE *ifile, FILE *ofile)
             return -1;
         }
         taglen = (((long) buffer[ 0 ]) << 24) |
-                 (((long) buffer[ 1 ]) << 16) | 
+                 (((long) buffer[ 1 ]) << 16) |
 	               (((long) buffer[ 2 ]) <<  8) |
                  (((long) buffer[ 3 ]));
 	    }
@@ -364,7 +364,7 @@ char *super_fgets(char *b, int *blen, FILE *file)
 #define BUFFER_SZ 4096
 
 int main(int argc, char *argv[])
-{            
+{
   unsigned int
     length;
 
@@ -472,20 +472,20 @@ int main(int argc, char *argv[])
       int
         inputlen = BUFFER_SZ;
 
-      line = (char *) malloc(inputlen);     
+      line = (char *) malloc(inputlen);
       token = (char *)NULL;
       while((line = super_fgets(line,&inputlen,ifile))!=NULL)
       {
         state=0;
         next=0;
 
-        token = (char *) malloc(inputlen);     
-        newstr = (char *) malloc(inputlen);     
+        token = (char *) malloc(inputlen);
+        newstr = (char *) malloc(inputlen);
         while(tokenizer(0, token, inputlen, line, "", "=", "\"", 0,
           &brkused,&next,&quoted)==0)
         {
           if (state == 0)
-            {                  
+            {
               int
                 state,
                 next;

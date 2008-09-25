@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -350,7 +350,7 @@ _ingest_record( sb_Line& line, sb_Line_Imp &line_imp, sc_Record const& record )
 //SADR
 //SADR are typically repeating fields and so will be stored as
 //consolidatedSADRsc_Fields.  Therfore we'll set an sb_Spatial
-//with the current (X,Y) from the currentSADR, add it to the 
+//with the current (X,Y) from the currentSADR, add it to the
 //_SpatialAddress container, and then increment to the nextSADR,
 //if any
    if ( sb_Utils::getFieldByMnem( record,"SADR" ,curfield) )
@@ -360,12 +360,12 @@ _ingest_record( sb_Line& line, sb_Line_Imp &line_imp, sc_Record const& record )
       {
          sb_Spatial tmp_spatial;
 
-         for ( cursubfield = curfield->begin(); 
-               cursubfield != curfield->end(); 
+         for ( cursubfield = curfield->begin();
+               cursubfield != curfield->end();
                cursubfield++ )
          {
             if ( cursubfield->mnemonic() == "X" )
-            { 
+            {
                tmp_spatial.x() = *cursubfield;
             }
             else if  ( cursubfield->mnemonic() == "Y" )
@@ -801,7 +801,7 @@ sb_Line::getRecord( sc_Record & record ) const
 
 
    for ( sb_ForeignIDs::const_iterator j = _imp->_ChainComponentIDs.begin();
-         j != _imp->_ChainComponentIDs.end(); 
+         j != _imp->_ChainComponentIDs.end();
          j++ )
    {
       sb_Utils::add_foreignID ( record, *j );
@@ -811,7 +811,7 @@ sb_Line::getRecord( sc_Record & record ) const
 // for each spatial address, add a SpatialAddress to a repeating field
 
    for ( sb_Spatials::const_iterator k = _imp->_SpatialAddress.begin();
-         k != _imp->_SpatialAddress.end(); 
+         k != _imp->_SpatialAddress.end();
          k++ )
    {
 //just shove the sc_subfields directly onto the end of the field
@@ -824,7 +824,7 @@ sb_Line::getRecord( sc_Record & record ) const
 
 
    for ( sb_ForeignIDs::const_iterator l = _imp->_CompositeIDs.begin();
-         l != _imp->_CompositeIDs.end(); 
+         l != _imp->_CompositeIDs.end();
          l++ )
    {
       sb_Utils::add_foreignID ( record, *l );
@@ -832,7 +832,7 @@ sb_Line::getRecord( sc_Record & record ) const
 
 
    for ( sb_ForeignIDs::const_iterator m = _imp->_RepresentationModuleIDs.begin();
-         m != _imp->_RepresentationModuleIDs.end(); 
+         m != _imp->_RepresentationModuleIDs.end();
          m++ )
    {
       sb_Utils::add_foreignID ( record, *m );
@@ -1018,7 +1018,7 @@ sb_Line::unDefineRepresentationModuleID( )
 } // sb_Line::unDefineRepresentationModuleID
 
 
-sio_8211Schema& 
+sio_8211Schema&
 sb_Line::schema_()
 {
    if ( _schema.empty() )

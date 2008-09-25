@@ -1,26 +1,26 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
- 
+
 /*
 	Ben's TODO list:
 		Alias Wavefront OBJects
@@ -51,7 +51,7 @@ static xmenu	gSettingsM;
 
 
 /*
-	NOTE: in Y = up, 
+	NOTE: in Y = up,
 		x = x
 		y = y
 		z = z
@@ -87,8 +87,8 @@ const char *	kSettingsItems[] = {
 };
 
 enum {
-	unit_Inches = 0, 
-	unit_Feet = 1, 
+	unit_Inches = 0,
+	unit_Feet = 1,
 	unit_Meters = 2,
 	do_Center = 4,
 	flip_X = 6,
@@ -141,7 +141,7 @@ void	ConformCheckItems(void)
 void	PostProcessVertex(float v[3], bool inReverse)
 {
 	float	nv[3];
-	
+
 	if (gAxis == axis_Y)
 	{
 		nv[0] = v[0];
@@ -156,7 +156,7 @@ void	PostProcessVertex(float v[3], bool inReverse)
 	if (gFlipX)	nv[0] = -nv[0];
 	if (gFlipY)	nv[1] = -nv[1];
 	if (gFlipZ)	nv[2] = -nv[2];
-		
+
 	if (gUnits == unit_Feet)
 	{
 		nv[0] *= (inReverse ? kMetersToFeet : kFeetToMeters);
@@ -169,7 +169,7 @@ void	PostProcessVertex(float v[3], bool inReverse)
 		nv[1] *= (inReverse ? kMetersToInches : kInchesToMeters);
 		nv[2] *= (inReverse ? kMetersToInches : kInchesToMeters);
 	}
-	
+
 	v[0] = nv[0];
 	v[1] = nv[1];
 	v[2] = nv[2];
@@ -188,7 +188,7 @@ void	PostProcessObj(XObj& ioObj, bool inReverse)
 			PostProcessVertex(rgb->v, inReverse);
 		}
 	}
-	
+
 	if (gCenterH)
 	{
 		float sphere[4];
@@ -204,7 +204,7 @@ void	XGrindInit(string& t)
 
 	t = "Convert Objects";
 	XGrinder_ShowMessage("Drag a file into this window to convert it to OBJ7.");
-}	
+}
 
 int	XGrinderMenuPick(xmenu menu, int item)
 {
@@ -257,55 +257,55 @@ void	XGrindFile(const char * inFileName)
 	string	fullpath(inFileName);
 	string	path, fname(inFileName);
 	string::size_type sep = fname.rfind(DIR_CHAR);
-	if (sep != fname.npos)		
+	if (sep != fname.npos)
 	{
 		fname = fullpath.substr(sep+1);
 		path = fullpath.substr(0, sep+1);
 	}
-	
+
 	string	noext = fname;
 	string	fname_new;
 	bool	is_dxf = HasExtNoCase(fname, ".dxf");
 	bool	is_3ds = HasExtNoCase(fname, ".3ds");
 //	bool	is_wrl = HasExtNoCase(fname, ".wrl");
-	
+
 	if (HasExtNoCase(fname, ".obj") || is_dxf || is_3ds)
 	{
 		noext = fname.substr(0, fname.length() - 4);
 	}
-	
+
 	switch(gSave) {
-	case save_OBJ7: 	
+	case save_OBJ7:
 	case save_OBJ8:		fname_new = noext + "_new.obj";		break;
 	case save_3DS : 	fname_new = noext + "_new.3ds";		break;
 	case save_DXF : 	fname_new = noext + "_new.dxf";		break;
 	}
-	
+
 	string	new_full = path + fname_new;
-	
+
 	XGrinder_ShowMessage("Converting %s...",fname.c_str());
 
 	XObj	obj;
 	XObj8	obj8;
-	
+
 	bool success = false;
-	
+
 	if (is_3ds)
 	{
-		// 3DS files are normally clockwise polygon orientation...if we want CCW we 
+		// 3DS files are normally clockwise polygon orientation...if we want CCW we
 		// need to tell it to reverse.
 		success = ReadObj3DS(inFileName, obj, gPoly == poly_CCW);
 		if (success)
 			PostProcessObj(obj, false);
 	} else if (is_dxf)
 	{
-		// DXF files are normally clockwise polygon orientation...if we want CCW we 
+		// DXF files are normally clockwise polygon orientation...if we want CCW we
 		// need to tell it to reverse.
 		success = ReadObjDXF(inFileName, obj, gPoly == poly_CCW);
 		if (success)
 			PostProcessObj(obj, false);
 
-	} else {		
+	} else {
 		success = XObj8Read(inFileName, obj8);
 		if (success)
 		{
@@ -313,7 +313,7 @@ void	XGrindFile(const char * inFileName)
 		} else
 			success = XObjRead(inFileName, obj);
 	}
-	
+
 	if (success)
 	{
 		if (gSave != save_OBJ7 && gSave != save_OBJ8)
@@ -329,7 +329,7 @@ void	XGrindFile(const char * inFileName)
 			XGrinder_ShowMessage("Could not write %s as %s.",fname.c_str(), fname_new.c_str());
 		else
 			XGrinder_ShowMessage("Converted %s to %s.",fname.c_str(), fname_new.c_str());
-			
+
 	} else {
 		XGrinder_ShowMessage("Could not open and parse %s.",fname.c_str());
 	}

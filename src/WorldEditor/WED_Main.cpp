@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -99,7 +99,7 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 	for (vector<string>::const_iterator i = fileList.begin();
 		i != fileList.end(); ++i)
 	{
-		if (i->find(".elv") != string::npos)		
+		if (i->find(".elv") != string::npos)
 		{
 			BuildDifferentialDegree(i->c_str(), gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, 1201, 1201, gDem[dem_Elevation], false);
 			BuildDifferentialDegree(i->c_str(), gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, 241, 241, gDem[dem_UrbanDensity], true);
@@ -129,7 +129,7 @@ void	import_tiger_repository(const string& rt)
 	{
 		fnum = atoi(root.c_str() + root.length() - 9);
 	}
-	
+
 	if (fnum == -1)
 	{
 		printf("Could not identify file %s as a TIGER file.\n", root.c_str());
@@ -137,7 +137,7 @@ void	import_tiger_repository(const string& rt)
 
 		MFFileSet * fs = FileSet_Open(root.c_str());
 		if (fs)
-		{	
+		{
 			printf("Reading %s/TGR%05d.RT1\n", root.c_str(), fnum);
 			TIGER_LoadRT1(fs, fnum);
 			printf("Reading %s/TGR%05d.RT2\n", root.c_str(), fnum);
@@ -150,9 +150,9 @@ void	import_tiger_repository(const string& rt)
 			TIGER_LoadRT7(fs, fnum);
 			printf("Reading %s/TGR%05d.RT8\n", root.c_str(), fnum);
 			TIGER_LoadRT8(fs, fnum);
-							
+
 			FileSet_Close(fs);
-		} else 
+		} else
 			printf("Could not open %s as a file set.\n", root.c_str());
 	}
 }
@@ -192,9 +192,9 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 static int fifo = NULL;
 
 float CheckFifo(
-                                   float                inElapsedSinceLastCall,    
-                                   float                inElapsedTimeSinceLastFlightLoop,    
-                                   int                  inCounter,    
+                                   float                inElapsedSinceLastCall,
+                                   float                inElapsedTimeSinceLastFlightLoop,
+                                   int                  inCounter,
                                    void *               inRefcon)
 {
 	static vector<char> data;
@@ -216,11 +216,11 @@ float CheckFifo(
 			{
 				data.insert(data.end(),buf,buf+nread);
 			}
-			
+
 		} else {
 			printf("Got discon.\n");
 		}
-		
+
 		for(int n = 0; n < data.size();++n)
 		if(data[n]=='\r' || data[n] == '\n')
 		{
@@ -244,13 +244,13 @@ float CheckFifo(
 			data.erase(data.begin(),data.begin()+n+1);
 			n = 0;
 		}
-			
+
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
 
-		
+
 	}
 	return -1;
 }
@@ -268,7 +268,7 @@ void	XGrindInit(string& outName)
 		fifo=open("wed_cmds",O_RDONLY | O_NONBLOCK, 0);
 	}
 	#endif
-	
+
 	XPLMRegisterFlightLoopCallback(CheckFifo,-1, NULL);
 
 #if APL && defined(__MWERKS__)
@@ -282,10 +282,10 @@ void	XGrindInit(string& outName)
 	XESInit();
 
 	WED_LoadPrefs();
-	
+
 	LoadDEMTables();
 	LoadObjTables();
-	
+
 	int w, h;
 	XPLMGetScreenSize(&w, &h);
 	RegisterFileCommands();
@@ -293,9 +293,9 @@ void	XGrindInit(string& outName)
 	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL);
 	RegisterProcessingCommands();
 	RegisterSpecialCommands();
-	
+
 	WED_AssertInit();
-	
+
 	XPInitDefaultMargins();
 #if 0
 	XPWidgetID	foo = XPCreateWidgetLayout(0, XP_DIALOG_BOX, "Title", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
@@ -309,7 +309,7 @@ void	XGrindInit(string& outName)
 											XP_COLUMN,
 												XP_ROW,
 													XP_CAPTION, "String:",
-													XP_EDIT_STRING, XP_EDIT_PASSWORD, 15, 6, NULL, 
+													XP_EDIT_STRING, XP_EDIT_PASSWORD, 15, 6, NULL,
 												XP_END,
 												XP_ROW,
 													XP_CAPTION, "Int:",
@@ -317,14 +317,14 @@ void	XGrindInit(string& outName)
 												XP_END,
 												XP_ROW,
 													XP_CAPTION, "Float:",
-													XP_EDIT_FLOAT_, 8, 6, NULL, 
+													XP_EDIT_FLOAT_, 8, 6, NULL,
 												XP_END,
-												XP_ROW,														
+												XP_ROW,
 													XP_BUTTON_ACTION, "Test 1", NULL,
 													XP_BUTTON_ACTION, "Test 2 Very Long Dude", NULL,
 												XP_END,
 												XP_ROW,
-													XP_BUTTON_OK, "OK", 
+													XP_BUTTON_OK, "OK",
 													XP_BUTTON_CANCEL, "CANCEL",
 												XP_END,
 											XP_END,
@@ -335,11 +335,11 @@ void	XGrindInit(string& outName)
 												XP_RADIOBUTTON, "Radio Button 4", NULL, 4,
 											XP_END,
 										XP_END, XP_END);
-												
+
 	XPShowWidget(foo);
-	XPBringRootWidgetToFront(foo);	
+	XPBringRootWidgetToFront(foo);
 #endif
-#if 0	
+#if 0
 //////
 		TigerMap	tigerMap;
 
@@ -365,23 +365,23 @@ void	XGrindInit(string& outName)
 					import_tiger_repository(full);
 				}
 			}
-			
+
 			{
-//				StProfile	profRead("\pRoughCull");				
+//				StProfile	profRead("\pRoughCull");
 				TIGER_RoughCull(-72, 42, -71, 43);
 			}
 			printf("Sorting...\n");
 			{
 				StElapsedTime	timer("Sorting");
-//				StProfile	postProf("\pPostSort");				
+//				StProfile	postProf("\pPostSort");
 				TIGER_PostProcess(gMap);
 			}
-			
+
 			printf("Read: %d chains, %d landmarks, %d polygons.\n",
 				gChains.size(), gLandmarks.size(), gPolygons.size());
 
 			{
-//				StProfile	importProf("\pImport");				
+//				StProfile	importProf("\pImport");
 				StElapsedTime	timer("Importing");
 				TIGERImport(gChains, gLandmarks, gPolygons, gMap, ConsoleProgressFunc);
 			}
@@ -389,8 +389,8 @@ void	XGrindInit(string& outName)
 			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
 				gMap.number_of_faces(),
 				gMap.number_of_halfedges(),
-				gMap.number_of_vertices());				
-#endif	
+				gMap.number_of_vertices());
+#endif
 
 		GISTool_RegisterCommands(sUtilCmds);
 
@@ -401,7 +401,7 @@ void	XGrindInit(string& outName)
 		RegisterProcessingCmds();
 		RegisterObsCmds();
 		RegisterMiscCmds();
-		
+
 
 }
 

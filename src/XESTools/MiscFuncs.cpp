@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,7 +30,7 @@
 
 enum {
 	fake_build, fake_tree, fake_both };
-	
+
 
 void	BuildOneFakeObject(const char * dir, const char * fname, double width, double depth, double height, int faketype)
 {
@@ -38,7 +38,7 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	depth -= 2.0;
 	if (width < 2.0) width = 2.0;
 	if (depth < 2.0) depth = 2.0;
-	
+
 	float h = max(20.0, height);
 	float w = width * 0.5;
 	float d = depth * 0.5;
@@ -86,14 +86,14 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	cmd.st[0].v[0] =  w;	cmd.st[0].v[1] = 0; cmd.st[0].v[2] =  d;
 	cmd.st[1].v[0] =  w;	cmd.st[1].v[1] = h; cmd.st[1].v[2] =  d;
 	cmd.st[2].v[0] =  w;	cmd.st[2].v[1] = h; cmd.st[2].v[2] = -d;
-	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = 0; cmd.st[3].v[2] = -d;	
+	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = 0; cmd.st[3].v[2] = -d;
 	obj.cmds.push_back(cmd);
 	// TOP
 	if (faketype == fake_both) h *= 0.5;
 	cmd.st[0].v[0] = -w;	cmd.st[0].v[1] = h; cmd.st[0].v[2] =  d;
 	cmd.st[1].v[0] = -w;	cmd.st[1].v[1] = h; cmd.st[1].v[2] = -d;
 	cmd.st[2].v[0] =  w;	cmd.st[2].v[1] = h; cmd.st[2].v[2] = -d;
-	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = h; cmd.st[3].v[2] =  d;	
+	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = h; cmd.st[3].v[2] =  d;
 	if (faketype != fake_tree)
 		obj.cmds.push_back(cmd);
 	XObjWrite(path, obj);
@@ -146,8 +146,8 @@ void	BuildFakeLib(const char * dir)
 		printf("Could not write %s\n", fbuf);
 		return;
 	}
-	fprintf(lib, "A\n800\nLIBRARY\n\n");		
-		
+	fprintf(lib, "A\n800\nLIBRARY\n\n");
+
 	for (int n = 0; n < gRepTable.size(); ++n)
 	{
 		char	lname[400], oname[400];
@@ -163,7 +163,7 @@ void	BuildFakeLib(const char * dir)
 			}
 			fprintf(lib, "EXPORT %s %s\n",lname, oname);
 			BuildOneFakeObject(dir, oname, gRepTable[n].width_max,gRepTable[n].depth_max, gRepTable[n].height_max, (gRepTable[n].road && gRepTable[n].fill) ? fake_both : (gRepTable[n].road ? fake_build : fake_tree) );
-		}		
+		}
 /*
 		if (!gRepTable[n].fac_allow)
 		{
@@ -178,12 +178,12 @@ void	BuildFakeLib(const char * dir)
 			fprintf(lib, "EXPORT %s %s\n",lname, oname);
 			BuildOneFakeFacade(dir, oname);
 		}
-*/		
+*/
 	}
-	
+
 	fprintf(lib, "EXPORT lib/us/roads.net gen_roads.net\n");
-	fclose(lib);	
-	
+	fclose(lib);
+
 	strcpy(fbuf, dir);
 	strcat(fbuf, "gen_roads.net");
 	FILE * rds = fopen(fbuf, "w");
@@ -196,16 +196,16 @@ void	BuildFakeLib(const char * dir)
 //			if (feat->second.entity_type == net->first && feat->second.bridge)
 //				bridge = true;
 //		}
-		
+
 		fprintf(rds, "# %s\n", FetchTokenString(net->first));
-		
+
 		fprintf(rds, "ROAD_TYPE %d   %f %f 0   1.0 1.0 1.0 \n",
 			net->second.export_type_normal, net->second.width, net->second.width);
 //		if (bridge)	fprintf(rds, "SEGMENT 0 20000     0 -3 0.0    0  0 0.0\n");
 					fprintf(rds, "SEGMENT 0 20000     0  0 0.0    1  0 1.0\n");
 //		if (bridge)	fprintf(rds, "SEGMENT 0 20000     1  0 1.0    1 -3 1.0\n");
 		fprintf(rds, "\n");
-	}	
+	}
 	fclose(rds);
 }
 
@@ -225,7 +225,7 @@ void	CheckLib(const char * inDir)
 	fgets(buf, 1024, libf);
 	fgets(buf, 1024, libf);
 	while (fgets(buf, 1024, libf))
-	{	
+	{
 		char * t = strtok(buf, " \t");
 		if (!strcmp(t, "EXPORT"))
 		{
@@ -242,7 +242,7 @@ void	CheckLib(const char * inDir)
 		strcat(buf, i->second.c_str());
 		for (char * p = buf; *p; ++p)
 			if (*p == ':') *p = '/';
-			
+
 		if (!XObjRead(buf, foo)) {
 			printf("Could not open %s\n", buf); return; }
 		float mins[3], maxs[3];
@@ -262,14 +262,14 @@ void	CheckLib(const char * inDir)
 			strcat(buf, ".obj");
 			if (lib.count(buf) == 0)
 			{printf("Lib is missing %s\n", buf); return; }
-			
+
 			string key = lib[buf];
-			
+
 			double	w = width[key];
 			double	d = depth[key];
 			double	x = offx[key];
 			double	y = offz[key];
-			
+
 			if (w > gRepTable[n].width_max ||
 				d > gRepTable[n].depth_max)
 			{
@@ -278,5 +278,5 @@ void	CheckLib(const char * inDir)
 			}
 		}
 	}
-	
+
 }

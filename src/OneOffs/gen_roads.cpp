@@ -94,7 +94,7 @@ public:
 		assert(t==tex);
 		fprintf(fi,"SEGMENT_HARD % 5d % 5d   %f  0.00 % 4d    %f  0.00 % 4d    %s\n",
 			LOD_NEAR,LOD_FAR, r1, s1, r2, s2, surf);
-		
+
 		for(vector<car_lane>::iterator i = cars.begin(); i != cars.end(); ++i)
 		{
 			float cp = extrap(s1,r1,s2,r2,i->pixel);
@@ -188,18 +188,18 @@ class	road_composite : public road_elem, public road_container {
 public:
 	void add(road_elem * e) { parts.push_back(e); }
 	virtual void accept(road_elem * e) { add(e); }
-	virtual float	get_width() 
+	virtual float	get_width()
 	{
 		float t = 0;
 		for(vector<road_elem *>::iterator i = parts.begin(); i != parts.end(); ++i)
 			t += (*i)->get_width();
-		return t;		
+		return t;
 	}
 	virtual void	emit(FILE * fi, float r1, float r2,  float w, float d, tex_info * tex)
 	{
-		float t = this->get_width();		
+		float t = this->get_width();
 		float p = 0;
-		
+
 		for(vector<road_elem *>::iterator i = parts.begin(); i != parts.end(); ++i)
 		{
 			float sr1 = extrap(0,r1,t,r2,p);
@@ -208,7 +208,7 @@ public:
 			(*i)->emit(fi,sr1,sr2,w,d,tex);
 		}
 	}
-};	
+};
 
 class	road : public road_container {
 	road_elem * 	e;
@@ -221,7 +221,7 @@ public:
 	road(int br,tex_info * itex, const char * iname, int inum, int sl=0) :
 		bridge(br),tex(itex), name(iname), num(inum), show_level(sl) { }
 	virtual void accept(road_elem * ie) { e = ie; }
-	
+
 	void emit()
 	{
 		if(cur_scale != tex->scale_h)
@@ -240,7 +240,7 @@ public:
 		} else
 			printf("SHOW_LEVEL %d\n", max(tex->show_level, show_level));
 		e->emit(stdout,0.0, 1.0, w, bridge==2 ? 0.0 : 1.0, tex);
-		printf("\n");	
+		printf("\n");
 	}
 };
 
@@ -262,11 +262,11 @@ void	make_blade(int s1, int s2, float y1, float y2, tex_info * t) { get_top()->a
 void	make_deck(int s1, int s2, tex_info * t, const char * s) { get_top()->accept(last = new road_deck	(s1,s2,t,s)); }
 void	make_car(int r, int p, int s, float d, int t) { last->add_car(r,p,s,d,t); }
 void 	make_spacer(float f)	{	get_top()->accept(new road_spacer	(f)); }
-void	underside_start(int is1, int is2, float iy, tex_info * itex) 
+void	underside_start(int is1, int is2, float iy, tex_info * itex)
 		{ 	road_underside * u = new road_underside(is1,is2,iy,itex); get_top()->accept(u); road_stack.push_back(u); }
 void 	underside_end()	{	road_stack.pop_back(); }
-void	pylons_start(const char * iobj, float israt, float isoff, float ispacing, float istart_space, int on_ground) 
-		{	road_pylons * p = new road_pylons(iobj,israt,isoff,ispacing,istart_space, on_ground); get_top()->accept(p); road_stack.push_back(p); }				
+void	pylons_start(const char * iobj, float israt, float isoff, float ispacing, float istart_space, int on_ground)
+		{	road_pylons * p = new road_pylons(iobj,israt,isoff,ispacing,istart_space, on_ground); get_top()->accept(p); road_stack.push_back(p); }
 void 	pylons_end()	{	road_stack.pop_back(); }
 
 
@@ -280,11 +280,11 @@ void hwy_underside_start()	{ underside_start(357,409,-1.5,&highway); }
 
 void hwy_start(int b, int n, const char * na) { road_start(b, n,na,&highway); }
 void hwy_pylon1_start() { pylons_start("highway_pylon.obj", 0.5, 0, 120, 60, 0); }
-void hwy_pylon2_start() { 	pylons_start("highway_pylon.obj", 0.20, 0, 120, 60, 0); 	
+void hwy_pylon2_start() { 	pylons_start("highway_pylon.obj", 0.20, 0, 120, 60, 0);
 							pylons_start("highway_pylon.obj", 0.80, 0, 120, 60, 0); }
-void hwy_susp_start()   { pylons_start("highway_susp_twr.obj", 0.5, 0, 0, 0, 1);	} 
+void hwy_susp_start()   { pylons_start("highway_susp_twr.obj", 0.5, 0, 0, 0, 1);	}
 void hwy_arch1_start() { pylons_start("secondary_oldpylon.obj", 0.5, 0, 30, 0, 0); }
-void hwy_arch2_start() { 	pylons_start("secondary_oldpylon.obj", 0.0, 6, 30, 0, 0); 	
+void hwy_arch2_start() { 	pylons_start("secondary_oldpylon.obj", 0.0, 6, 30, 0, 0);
 							pylons_start("secondary_oldpylon.obj", 1.0, -6, 30, 0, 0); }
 
 void hwy_guard_rail()	{	make_blade(177,189,0.5,0,&highway); }
@@ -292,21 +292,21 @@ void hwy_overpass_side(){	make_blade(330,357,0.5,-1.5,&highway); }
 void hwy_suspension_side(){	make_blade(877,933,1.5,-1.5,&highway); }
 void hwy_arch_side() 	{ 	make_blade(430,580,-8,1.2,&highway);  }
 void hwy_median()		{	make_deck(199,223, &highway, "gravel"); }
-void hwy_3lane_L()		{	make_deck(0, 103, &highway, "asphalt"); 
+void hwy_3lane_L()		{	make_deck(0, 103, &highway, "asphalt");
 							make_car(1, 24, 25, 0.06, 1);
 							make_car(1, 50, 30, 0.06, 1);
-							make_car(1, 77, 35, 0.06, 0);		}																	
-void hwy_3lane_R()		{	make_deck(103, 0, &highway, "asphalt"); 
+							make_car(1, 77, 35, 0.06, 0);		}
+void hwy_3lane_R()		{	make_deck(103, 0, &highway, "asphalt");
 							make_car(0, 24, 25, 0.06, 1);
 							make_car(0, 50, 30, 0.06, 1);
 							make_car(0, 77, 35, 0.06, 0);		}
 void hwy_2lane_L()		{	make_deck(106, 177, &highway, "asphalt");
 							make_car(1, 128, 25, 0.06, 1);
 							make_car(1, 154, 35, 0.06, 0);		}
-void hwy_2lane_R()		{	make_deck(177, 106, &highway, "asphalt"); 
+void hwy_2lane_R()		{	make_deck(177, 106, &highway, "asphalt");
 							make_car(0, 128, 25, 0.06, 1);
 							make_car(0, 154, 35, 0.06, 0);		}
-void hwy_trains()		{	make_deck(235, 313, &highway, "gravel"); 
+void hwy_trains()		{	make_deck(235, 313, &highway, "gravel");
 							make_car(1, 259, 30, 0.01, 3);
 							make_car(0, 290, 30, 0.01, 3);		}
 
@@ -338,12 +338,12 @@ void sec_underside_start(float y)	{ underside_start(481,528,y,&secondary); }
 void pri_start(int b, int n, const char * na) { road_start(b, n,na,&secondary); }
 void sec_start(int b, int n, const char * na) { road_start(b, n,na,&secondary,3); }
 void sec_pylon1_start() { pylons_start("highway_pylon.obj", 0.5, 0, 120, 60, 0); }
-void sec_pylon2_start() { 	pylons_start("highway_pylon.obj", 0.20, 0, 120, 60, 0); 	
+void sec_pylon2_start() { 	pylons_start("highway_pylon.obj", 0.20, 0, 120, 60, 0);
 							pylons_start("highway_pylon.obj", 0.80, 0, 120, 60, 0); }
 void sec_stone_start() { 	pylons_start("secondary_oldpylon.obj", 0.5, 0, 30, 0, 0); }
-void sec_girdr_start() { 	pylons_start("secondary_pylon.obj", 0.0, -1.3, 60, 0, 0); 	
+void sec_girdr_start() { 	pylons_start("secondary_pylon.obj", 0.0, -1.3, 60, 0, 0);
 							pylons_start("secondary_pylon.obj", 1.0,  1.3, 60, 0, 0); }
-void sec_girdr_space() { 	pylons_start("secondary_pylon.obj", 0.5, 0, 60, 0, 0); 	
+void sec_girdr_space() { 	pylons_start("secondary_pylon.obj", 0.5, 0, 60, 0, 0);
 							make_spacer(2.6);
 							pylons_end(); }
 void sec_space()		{	make_spacer(2.6); }
@@ -352,7 +352,7 @@ void sec_overpass_side(){	make_blade(556,545,0.5,-1.5,&secondary); }
 void sec_stone_side()	{	make_blade(929,1021,-10.5,1.5,&secondary); }
 void sec_girdr_side() 	{ 	make_blade(681,810,-2,9,&secondary);  }
 
-void sec_prim_undiv()	{	make_deck(23,131, &secondary, "asphalt"); 
+void sec_prim_undiv()	{	make_deck(23,131, &secondary, "asphalt");
 							make_car(1, 38 , 20, 0.02, 1);
 							make_car(1, 63 , 25, 0.02, 1);
 							make_car(0, 90 , 25, 0.02, 1);
@@ -362,28 +362,28 @@ void sec_prim_undiv_s()	{	make_deck( 2,151, &secondary, "asphalt");
 							make_car(1, 63 , 25, 0.02, 1);
 							make_car(0, 90 , 25, 0.02, 1);
 							make_car(0, 115, 20, 0.02, 1); }
-void sec_prim_L()		{	make_deck(175,229, &secondary, "asphalt"); 
+void sec_prim_L()		{	make_deck(175,229, &secondary, "asphalt");
 							make_car(1, 190 , 20, 0.02, 1);
 							make_car(1, 215 , 25, 0.02, 1);		}
-void sec_prim_L_s()		{	make_deck(154,250, &secondary, "asphalt"); 
+void sec_prim_L_s()		{	make_deck(154,250, &secondary, "asphalt");
 							make_car(1, 190 , 20, 0.02, 1);
 							make_car(1, 215 , 25, 0.02, 1);		}
-void sec_prim_tr()		{	make_deck(569,640, &secondary, "gravel"); 
+void sec_prim_tr()		{	make_deck(569,640, &secondary, "gravel");
 							make_car(1, 588, 30, 0.01, 3);
 							make_car(0, 620, 30, 0.01, 3);		}
-void sec_prim_R()		{	make_deck(175,229, &secondary, "asphalt"); 
+void sec_prim_R()		{	make_deck(175,229, &secondary, "asphalt");
 							make_car(0, 190 , 25, 0.02, 1);
 							make_car(0, 215 , 20, 0.02, 1);		}
-void sec_prim_R_s()		{	make_deck(154,250, &secondary, "asphalt"); 
+void sec_prim_R_s()		{	make_deck(154,250, &secondary, "asphalt");
 							make_car(0, 190 , 25, 0.02, 1);
 							make_car(0, 215 , 20, 0.02, 1);		}
-void sec_sec()			{	make_deck(358,416, &secondary, "asphalt"); 
+void sec_sec()			{	make_deck(358,416, &secondary, "asphalt");
 							make_car(1, 374 , 20, 0.01, 1);
 							make_car(0, 401 , 20, 0.01, 1);		}
-void sec_sec_s()		{	make_deck(253,356, &secondary, "asphalt"); 
+void sec_sec_s()		{	make_deck(253,356, &secondary, "asphalt");
 							make_car(1, 291 , 20, 0.01, 1);
 							make_car(0, 318 , 20, 0.01, 1);		}
-void sec_sec_p()		{	make_deck(419,477, &secondary, "asphalt"); 
+void sec_sec_p()		{	make_deck(419,477, &secondary, "asphalt");
 							make_car(1, 434 , 20, 0.01, 1);
 							make_car(0, 461 , 20, 0.01, 1);		}
 
@@ -410,12 +410,12 @@ void lcl_overpass_side(){	make_blade(277,266,0.5,-1.5,&local); }
 void lcl_arch_side() 	{ 	make_blade(362,435,-8,1,&local);  }
 void lcl_walk_side() 	{ 	make_blade(277,265,0.25,-0.25,&local);  }
 
-void lcl_marked2() { make_deck(0,48, &local, "asphalt"); 
+void lcl_marked2() { make_deck(0,48, &local, "asphalt");
 						make_car(1, 15 , 15, 0.005, 1);
-						make_car(0, 34 , 15, 0.005, 1);		}					
-void lcl_marked1() { make_deck(0,48, &local, "asphalt"); 
 						make_car(0, 34 , 15, 0.005, 1);		}
-void lcl_unmarked1() { make_deck(5,44, &local, "asphalt"); 
+void lcl_marked1() { make_deck(0,48, &local, "asphalt");
+						make_car(0, 34 , 15, 0.005, 1);		}
+void lcl_unmarked1() { make_deck(5,44, &local, "asphalt");
 						make_car(0, 34 , 15, 0.005, 1);		}
 void lcl_4wd() { make_deck(51,108, &local, "gravel"); }
 
@@ -437,14 +437,14 @@ void tra_guard_rail()	{	make_blade(96,123,0,2,&railroad); }
 void tra_over_side()	{	make_blade(300,347,-1,0,&railroad); }
 void tra_bridge_side()	{	make_blade(300,347,-0.5,6.5,&railroad); }
 
-void tra_one()			{	make_deck(44, 95, &railroad, "gravel"); 
+void tra_one()			{	make_deck(44, 95, &railroad, "gravel");
 							make_car(0, 69 , 30, 0.01, 2);		}
-void tra_two()			{	make_deck(148, 251, &railroad, "gravel"); 
+void tra_two()			{	make_deck(148, 251, &railroad, "gravel");
 							make_car(1, 173 , 30, 0.01, 2);
 							make_car(0, 225 , 30, 0.01, 2);		}
-void tra_one_ovr_f()	{	make_deck(349, 391, &railroad, "gravel"); 
+void tra_one_ovr_f()	{	make_deck(349, 391, &railroad, "gravel");
 							make_car(0, 369 , 30, 0.01, 2);		}
-void tra_one_ovr_r()	{	make_deck(349, 391, &railroad, "gravel"); 
+void tra_one_ovr_r()	{	make_deck(349, 391, &railroad, "gravel");
 							make_car(1, 369 , 30, 0.01, 2);		}
 
 
@@ -452,22 +452,22 @@ int main(int argc, char * argv[])
 {
 	if(argc >= 2 && strcmp(argv[1], "-backward") == 0)
 		gBackward = 1;
-	
+
 
 	printf("A\n");
 	printf("800\n");
 	printf("ROADS\n\n");
-	
-printf("#############################################################################################################################\n");	
+
+printf("#############################################################################################################################\n");
 printf("#This file is automatically generated from a script program that is part of the scenery tools tree - source can be\n");
 printf("#ound in the XPTools tree at src/OneOffs/gen_roads.cpp.  Compile with g++ gen_roads.cpp -o gen_roads and then pipe\n");
 printf("#the output to roads.net.  Use the -backward flag to generate left-side roads for the UK and friends.\n");
 
 
-printf("#############################################################################################################################\n");	
+printf("#############################################################################################################################\n");
 printf("# TEXTURE DEFINITIONS\n");
-printf("#############################################################################################################################\n");	
-	
+printf("#############################################################################################################################\n");
+
 	do_tex(&railroad);
 	do_tex(&local);
 	do_tex(&secondary);
@@ -477,16 +477,16 @@ printf("########################################################################
 	do_tex_bridge(&secondary);
 	do_tex_bridge(&highway);
 
-printf("#############################################################################################################################\n");	
+printf("#############################################################################################################################\n");
 printf("# TRAFFIC DEFINITIONS\n");
-printf("#############################################################################################################################\n");	
+printf("#############################################################################################################################\n");
 
-printf("# 0: car-only traffic\n");	
+printf("# 0: car-only traffic\n");
 printf("CAR_MODEL	lib/cars/car.obj\n");
-printf("# 1: car+truck traffic traffic\n");	
+printf("# 1: car+truck traffic traffic\n");
 printf("CAR_MODEL	lib/cars/car_or_truck.obj\n");
 
-printf("# 2: freight trains\n");	
+printf("# 2: freight trains\n");
 printf("TRAIN\n");
 printf("TRAIN_VARIANT\n");
 printf("TRAIN_CAR		11.46	11.46		lib/trains/F_head.obj\n");
@@ -497,7 +497,7 @@ printf("TRAIN_CAR		8.665	8.665		lib/trains/F_17.33.obj\n");
 printf("TRAIN_CAR		9.155	9.155		lib/trains/F_18.31.obj\n");
 printf("TRAIN_CAR		11.46	11.46		lib/trains/F_tail.obj\n");
 
-printf("# 2: passenger-only trains\n");	
+printf("# 2: passenger-only trains\n");
 printf("# HS TRAIN\n");
 printf("TRAIN\n");
 printf("TRAIN_VARIANT\n");
@@ -517,17 +517,17 @@ printf("TRAIN_CAR		13.8	13.68	lib/trains/IC_powr.obj\n");
 printf("TRAIN_CAR		13.8	13.68	lib/trains/IC_body.obj\n");
 printf("TRAIN_CAR		14.26	15.47	lib/trains/IC_tail.obj\n");
 
-printf("#############################################################################################################################\n");	
+printf("#############################################################################################################################\n");
 printf("# HIGHWAYS\n");
-printf("#############################################################################################################################\n");	
+printf("#############################################################################################################################\n");
 printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/metal arch bridges.\n");
-	
+
 	hwy_start(0, 1, "net_SixLaneUSHighway");
 		hwy_reg_s();
 		hwy_6unsep();
 		hwy_reg_e();
 	road_end();
-	
+
 	hwy_start(1, 2, "net_SixLaneUSHighwayOverpass");
 		hwy_ovr_s(1);
 		hwy_6unsep();
@@ -551,15 +551,15 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_3lane_L(); make_spacer(3.0); hwy_3lane_R();
 		hwy_reg_e();
 	road_end();
-	
+
 	hwy_start(1, 4, "net_SixLaneUSHighwaySeparatedOverpass");
 		start_composite();
 		hwy_ovr_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_ovr_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_ovr_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_ovr_e(0);
 		end_composite();
 	road_end();
@@ -567,11 +567,11 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 78, "net_SixLaneUSHighwaySeparatedSuspensionBridge");
 		start_composite();
 		hwy_sus_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_sus_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_sus_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_sus_e(0);
 		end_composite();
 	road_end();
@@ -579,11 +579,11 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 79, "net_SixLaneUSHighwaySeparatedArchBridge");
 		start_composite();
 		hwy_arc_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_arc_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_arc_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_arc_e(0);
 		end_composite();
 	road_end();
@@ -593,7 +593,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_6oneway();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1,6, "net_SixLaneUSHighwayOnewayOverpass");
 		hwy_ovr_s(0);
 		hwy_6oneway();
@@ -611,13 +611,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_6oneway();
 		hwy_arc_e(0);
 	road_end();
-	
+
 	hwy_start(0, 7, "net_SixLaneUSHighwayWithTrain");
 		hwy_reg_s();
 		hwy_6unseptr();
 		hwy_reg_e();
 	road_end();
-	
+
 	hwy_start(1, 8, "net_SixLaneUSHighwayWithTrainOverpass");
 		hwy_ovr_s(1);
 		hwy_6unseptr();
@@ -641,16 +641,16 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_3lane_L(); 	hwy_trains(); make_spacer(3.0); hwy_3lane_R();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1, 10, "net_SixLaneUSHighwaySeparatedWithTrainOverpass");
 		start_composite();
 		hwy_ovr_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_trains();
 		hwy_ovr_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_ovr_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_ovr_e(0);
 		end_composite();
 	road_end();
@@ -658,12 +658,12 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 84, "net_SixLaneUSHighwaySeparatedWithTrainSuspensionBridge");
 		start_composite();
 		hwy_sus_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_trains();
 		hwy_sus_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_sus_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_sus_e(0);
 		end_composite();
 	road_end();
@@ -671,12 +671,12 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 85, "net_SixLaneUSHighwaySeparatedWithTrainArchBridge");
 		start_composite();
 		hwy_arc_s(0);
-		hwy_3lane_L(); 
+		hwy_3lane_L();
 		hwy_trains();
 		hwy_arc_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_arc_s(0);
-		hwy_3lane_R(); 
+		hwy_3lane_R();
 		hwy_arc_e(0);
 		end_composite();
 	road_end();
@@ -686,7 +686,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_6onewaytr();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1,12, "net_SixLaneUSHighwayOnewayWithTrainOverpass");
 		hwy_ovr_s(0);
 		hwy_6onewaytr();
@@ -712,7 +712,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_4unsep();
 		hwy_reg_e();
 	road_end();
-	
+
 	hwy_start(1, 14, "net_FourLaneUSHighwayOverpass");
 		hwy_ovr_s(1);
 		hwy_4unsep();
@@ -736,15 +736,15 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_2lane_L(); make_spacer(3.0); hwy_2lane_R();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1, 16, "net_FourLaneUSHighwaySeparatedOverpass");
 		start_composite();
 		hwy_ovr_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_ovr_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_ovr_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_ovr_e(0);
 		end_composite();
 	road_end();
@@ -754,15 +754,15 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_2lane_L(); make_spacer(3.0); hwy_2lane_R();
 		end_composite();
 	road_end();
-	
+
 	hwy_start(2, 90, "net_FourLaneUSHighwaySeparatedSuspensionBridge");
 		start_composite();
 		hwy_sus_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_sus_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_sus_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_sus_e(0);
 		end_composite();
 	road_end();
@@ -770,21 +770,21 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 91, "net_FourLaneUSHighwaySeparatedArchBridge");
 		start_composite();
 		hwy_arc_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_arc_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_arc_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_arc_e(0);
 		end_composite();
 	road_end();
-	
+
 	hwy_start(0, 18, "net_FourLaneUSHighwayOneway");
 		hwy_reg_s();
 		hwy_4oneway();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1,19, "net_FourLaneUSHighwayOnewayOverpass");
 		hwy_ovr_s(0);
 		hwy_4oneway();
@@ -802,13 +802,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_4oneway();
 		hwy_arc_e(1);
 	road_end();
-	
+
 	hwy_start(0, 20, "net_FourLaneUSHighwayWithTrain");
 		hwy_reg_s();
 		hwy_4unseptr();
 		hwy_reg_e();
 	road_end();
-	
+
 	hwy_start(1, 21, "net_FourLaneUSHighwayWithTrainOverpass");
 		hwy_ovr_s(1);
 		hwy_4unseptr();
@@ -832,16 +832,16 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_2lane_L(); 	hwy_trains(); make_spacer(3.0); hwy_2lane_R();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1, 23, "net_FourLaneUSHighwaySeparatedWithTrainOverpass");
 		start_composite();
 		hwy_ovr_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_trains();
 		hwy_ovr_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_ovr_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_ovr_e(0);
 		end_composite();
 	road_end();
@@ -849,12 +849,12 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 96, "net_FourLaneUSHighwaySeparatedWithTrainSuspensionBridge");
 		start_composite();
 		hwy_sus_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_trains();
 		hwy_sus_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_sus_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_sus_e(0);
 		end_composite();
 	road_end();
@@ -862,12 +862,12 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	hwy_start(2, 97, "net_FourLaneUSHighwaySeparatedWithTrainArchBridge");
 		start_composite();
 		hwy_arc_s(0);
-		hwy_2lane_L(); 
+		hwy_2lane_L();
 		hwy_trains();
 		hwy_arc_e(0);
-		make_spacer(3.0); 
+		make_spacer(3.0);
 		hwy_arc_s(0);
-		hwy_2lane_R(); 
+		hwy_2lane_R();
 		hwy_arc_e(0);
 		end_composite();
 	road_end();
@@ -877,7 +877,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_4onewaytr();
 		hwy_guard_rail(); end_composite();
 	road_end();
-	
+
 	hwy_start(1,25, "net_FourLaneUSHighwayOnewayWithTrainOverpass");
 		hwy_ovr_s(0);
 		hwy_4onewaytr();
@@ -903,7 +903,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_undiv();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,27, "net_PrimaryUndividedOverpass");
 		sec_ovr_s(1);
 		sec_prim_undiv();
@@ -921,7 +921,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_undiv_s();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,29, "net_PrimaryUndividedWithSidewalksOverpass");
 		sec_ovr_s(1);
 		sec_prim_undiv_s();
@@ -933,7 +933,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_undiv_s();
 		sec_grd_e(1);
 	road_end();
-	
+
 	pri_start(0, 30, "net_PrimaryUndividedWithTrains");
 		sec_reg_s();
 		sec_prim_L();
@@ -941,7 +941,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,31, "net_PrimaryUndividedWithTrainsOverpass");
 		sec_ovr_s(1);
 		sec_prim_L();
@@ -957,7 +957,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_grd_e(1);
 	road_end();
-	
+
 	pri_start(0, 32, "net_PrimaryUndividedWithSidewalksWithTrains");
 		sec_reg_s();
 		sec_prim_L_s();
@@ -965,7 +965,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,33, "net_PrimaryUndividedWithSidewalksWithTrainsOverpass");
 		sec_ovr_s(1);
 		sec_prim_L_s();
@@ -981,7 +981,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_grd_e(1);
 	road_end();
-	
+
 	pri_start(0, 34, "net_PrimaryDivided");
 		sec_reg_s();
 		sec_prim_L();
@@ -989,13 +989,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,35, "net_PrimaryDividedOverpass");
 		start_composite();
 		sec_ovr_s(0);
 		sec_prim_L();
 		sec_ovr_e(0);
-		sec_space();		
+		sec_space();
 		sec_ovr_s(0);
 		sec_prim_R();
 		sec_ovr_e(0);
@@ -1017,13 +1017,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,37, "net_PrimaryDividedWithSidewalksOverpass");
 		start_composite();
 		sec_ovr_s(0);
 		sec_prim_L_s();
 		sec_ovr_e(0);
-		sec_space();		
+		sec_space();
 		sec_ovr_s(0);
 		sec_prim_R_s();
 		sec_ovr_e(0);
@@ -1037,7 +1037,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_grd_e(1);
 	road_end();
-		
+
 	pri_start(0, 38, "net_PrimaryDividedWithTrains");
 		sec_reg_s();
 		sec_prim_L();
@@ -1046,14 +1046,14 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,39, "net_PrimaryDividedWithTrainsOverpass");
 		start_composite();
 		sec_ovr_s(0);
 		sec_prim_L();
 		sec_prim_tr();
 		sec_ovr_e(0);
-		sec_space();		
+		sec_space();
 		sec_ovr_s(0);
 		sec_prim_R();
 		sec_ovr_e(0);
@@ -1068,7 +1068,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_grd_e(1);
 	road_end();
-		
+
 	pri_start(0, 40, "net_PrimaryDividedWithSidewalksWithTrains");
 		sec_reg_s();
 		sec_prim_L_s();
@@ -1077,14 +1077,14 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,41, "net_PrimaryDividedWithSidewalksWithTrainsOverpass");
 		start_composite();
 		sec_ovr_s(0);
 		sec_prim_L_s();
 		sec_prim_tr();
 		sec_ovr_e(0);
-		sec_space();		
+		sec_space();
 		sec_ovr_s(0);
 		sec_prim_R_s();
 		sec_ovr_e(0);
@@ -1105,7 +1105,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,101, "net_PrimaryOnewayOverpass");
 		start_composite();
 		sec_ovr_s(0);
@@ -1125,7 +1125,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,103, "net_PrimaryOnewayWithSidewalksOverpass");
 		start_composite();
 		sec_ovr_s(0);
@@ -1139,14 +1139,14 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_R_s();
 		sec_grd_e(1);
 	road_end();
-		
+
 	pri_start(0, 104, "net_PrimaryOnewayWithTrains");
 		sec_reg_s();
 		sec_prim_R();
 		sec_prim_tr();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,105, "net_PrimaryOnewayWithTrainsOverpass");
 		start_composite();
 		sec_ovr_s(0);
@@ -1162,14 +1162,14 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_prim_tr();
 		sec_grd_e(1);
 	road_end();
-		
+
 	pri_start(0, 106, "net_PrimaryOnewayWithSidewalksWithTrains");
 		sec_reg_s();
 		sec_prim_R_s();
 		sec_prim_tr();
 		sec_reg_e();
 	road_end();
-	
+
 	pri_start(1,107, "net_PrimaryOnewayWithSidewalksWithTrainsOverpass");
 		start_composite();
 		sec_ovr_s(0);
@@ -1231,11 +1231,11 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 	road_end();
 
 	printf("#### LOCALS 47-53, 58-61, 73.\n");
-	
+
 	lcl_start(0, 47, "net_LocalRoad");
 		lcl_marked2();
 	road_end();
-	
+
 	lcl_start(1, 48, "net_LocalRoadOverpass");
 		lcl_pylon_start();
 		lcl_underside_start();
@@ -1247,7 +1247,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		underside_end();
 		pylons_end();
 	road_end();
-	
+
 	lcl_start(2, 73, "net_LocalRoadBridge");
 		lcl_underarch();
 		start_composite();
@@ -1259,11 +1259,11 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		end_composite();
 		underside_end();
 	road_end();
-	
+
 	lcl_start(0, 49, "net_CulDeSac");
 		lcl_marked1();
 	road_end();
-	
+
 	lcl_start(1, 50, "net_AccessRamp");
 		lcl_pylon_start();
 		lcl_underside_start();
@@ -1274,28 +1274,28 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		end_composite();
 		underside_end();
 		pylons_end();
-	road_end();	
+	road_end();
 
 	lcl_start(0, 51, "net_4WDRoad");
 		lcl_4wd();
 	road_end();
-	
+
 	lcl_start(0, 52, "net_Alley");
 		lcl_unmarked1();
 	road_end();
-	
+
 	lcl_start(0, 53, "net_Driveway");
 		lcl_unmarked1();
 	road_end();
-	
+
 	lcl_start(0, 58, "net_Walking");
 		lcl_walk();
 	road_end();
-	
+
 	lcl_start(0, 59, "net_WalkingCity");
 		lcl_walk();
 	road_end();
-	
+
 	lcl_start(1, 60, "net_WalkingCityOverpass");
 		lcl_pylon_start();
 		lcl_underwalk();
@@ -1306,13 +1306,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		end_composite();
 		underside_end();
 		pylons_end();
-	road_end();		
+	road_end();
 
-	
+
 	lcl_start(0, 61, "net_WalkingCitySteps");
 		lcl_walk();
 	road_end();
-	
+
 	printf("#### Trains 54-57, 74-75\n");
 
 	tra_start(0, 54, "net_TrainsTwoWay");
@@ -1377,7 +1377,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		underside_end();
 		pylons_end();
 	road_end();
-	
+
 	tra_start(2, 75, "net_TrainsOneWayBridge");
 		tra_pylon_start();
 		tra_underbridge_start();
@@ -1395,14 +1395,14 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 printf("####################################################################\n");
 printf("# POWER LINES\n");
 printf("####################################################################\n");
-	
+
 printf("# net_Powerlines\n");
 printf("ROAD_TYPE 62   25.000000 25.000000 3   1.0 1.0 1.0 \n");
 printf("SHOW_LEVEL 1\n");
 printf("WIRE        0 30000   0.15 22.8 0.4\n");
 printf("WIRE        0 30000   0.85 22.8 0.4\n");
 printf("OBJECT      powerline_tower.obj 0.5 0.0 0 0.0 0.0\n");
-	
+
 
 	return 0;
 }

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -39,12 +39,12 @@
 using namespace std;
 
 
-static const char* ident_ = 
+static const char* ident_ =
 "$Id: sb_Utils.cpp,v 1.16 2002/03/27 23:47:46 mcoletti Exp $";
 
 
 //
-// Support Functions for sb_Utils 
+// Support Functions for sb_Utils
 //
 
 
@@ -75,7 +75,7 @@ struct equalName : binary_function<T, const string, bool>
 };
 // comparison class equalName
 
-// This algorithm is used in find_if calls to locate modules with a 
+// This algorithm is used in find_if calls to locate modules with a
 // given module type.
 
 template< class T >
@@ -84,7 +84,7 @@ struct equalModuleType : binary_function<T, const string, bool>
   bool operator()( const T& x, const string& y ) const
     { return x.getModuleType() == y; }
 
-}; 
+};
 // comparison class equalModuleType
 
 
@@ -103,7 +103,7 @@ sb_Utils::getFieldByMnem(sc_Record const& rec,
   if ( thefield == rec.end() )
     return false;
 
-  return true; 
+  return true;
 }
 
 
@@ -221,7 +221,7 @@ sb_Utils::getDoubleFromSubfield(sc_SubfieldCntr::const_iterator const& subf, //s
   case(sc_Subfield::is_BFP64):
     rc = false;
     break;
-		
+
     // Shouldn't get here, except in an error situation
   default:
     rc = false;
@@ -279,7 +279,7 @@ String2double( sc_SubfieldCntr::const_iterator const& subf,
 
 
 void
-sb_Utils::add_field( sc_Record &         record, 
+sb_Utils::add_field( sc_Record &         record,
                      std::string const & name,
                      std::string const & mnemonic )
 {
@@ -295,7 +295,7 @@ sb_Utils::add_field( sc_Record &         record,
 
 
 void
-sb_Utils::add_foreignID( sc_Record & record, 
+sb_Utils::add_foreignID( sc_Record & record,
                          sb_ForeignID const & frid )
 {
    // first add the field
@@ -303,25 +303,25 @@ sb_Utils::add_foreignID( sc_Record & record,
 
    // now add the relevent subfields
 
-   sb_Utils::add_subfield( record.back(), 
+   sb_Utils::add_subfield( record.back(),
                            "MODN",
                            frid.moduleName() );
 
-   sb_Utils::add_subfield( record.back(), 
+   sb_Utils::add_subfield( record.back(),
                            "RCID",
                            frid.recordID() );
 
    // XXX add support for optional usage modifier
 
-} // sb_Utils::add_foreignID( sc_Record & record, 
+} // sb_Utils::add_foreignID( sc_Record & record,
 
 
 
 /// XXX Should sc_Field have an addSubfield that does this instead?
 void
-sb_Utils::add_subfield( sc_Field& field, 
+sb_Utils::add_subfield( sc_Field& field,
                         string const& mnemonic,
-                        string const& value ) 
+                        string const& value )
 { field.push_back( sc_Subfield() );
 
  field.back().setMnemonic( mnemonic );
@@ -365,7 +365,7 @@ sb_Utils::add_subfield( sc_Field& field, string const& mnemonic, double value )
 
 
 void
-sb_Utils::add_empty_subfield( sc_Field& field, 
+sb_Utils::add_empty_subfield( sc_Field& field,
 			       string const& mnemonic,
 			       sc_Subfield::SubfieldType type )
 {
@@ -471,12 +471,12 @@ sb_Utils::find( sc_Module::const_iterator begin,
          current_record != end;
          ++current_record )
    {
-      if ( getFieldByMnem( *current_record, 
-                           field_name, 
+      if ( getFieldByMnem( *current_record,
+                           field_name,
                            matched_field ) )
       {
          if ( getSubfieldByMnem( *matched_field,
-                                 subfield.mnemonic(), 
+                                 subfield.mnemonic(),
                                  matched_subfield ) )
          {
             if ( *matched_subfield == subfield )

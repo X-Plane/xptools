@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,7 +32,7 @@ class	GUI_TextField;
 /*
 
 	GUI_TextTable - THEORY OF OPERATION
-	
+
 	The text table classes provide a basic set of behavior for tables and their headers for dealing
 	with text data.  They have a further set of plugin behaviors that provide the text content,
 	and a series of structs that are used to transfer that content.
@@ -72,7 +72,7 @@ struct	GUI_CellContent {
 	int						can_disclose;
 	int						can_select;
 	int						can_drag;
-	
+
 	int						is_disclosed;
 	int						is_selected;
 	int						indent_level;
@@ -89,7 +89,7 @@ struct	GUI_CellContent {
 struct GUI_HeaderContent {
 	string					title;
 	int						is_selected;
-	
+
 	int						can_resize;
 	int						can_select;
 };
@@ -100,12 +100,12 @@ class	GUI_TextTableProvider {
 public:
 
 	virtual void	GetCellContent(
-						int							cell_x, 
-						int							cell_y, 
-						GUI_CellContent&			the_content)=0;	
+						int							cell_x,
+						int							cell_y,
+						GUI_CellContent&			the_content)=0;
 	virtual	void	GetEnumDictionary(
-						int							cell_x, 
-						int							cell_y, 
+						int							cell_x,
+						int							cell_y,
 						GUI_EnumDictionary&			out_dictionary)=0;
 	virtual	void	AcceptEdit(
 						int							cell_x,
@@ -156,54 +156,54 @@ public:
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,
 											int&						allow_between_row,
-											int&						allow_into_cell)=0;						
+											int&						allow_into_cell)=0;
 	virtual	GUI_DragOperation		CanDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended,
 											int&						whole_col,
 											int&						whole_row)=0;
 	virtual	GUI_DragOperation		CanDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 	virtual	GUI_DragOperation		CanDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 
 
 	virtual	GUI_DragOperation		DoDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 	virtual	GUI_DragOperation		DoDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 	virtual	GUI_DragOperation		DoDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended)=0;
 
 
 };
 
-class	GUI_TextTableHeaderProvider { 
+class	GUI_TextTableHeaderProvider {
 public:
 
 	virtual	void	GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			the_content)=0;
-						
+
 };
 
 // A text table is table content - that is, the drawing brains of a table.
@@ -215,7 +215,7 @@ public:
 
 						 GUI_TextTable(GUI_Commander * parent, int indent);
 	virtual				~GUI_TextTable();
-	
+
 			void		SetProvider(GUI_TextTableProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);
@@ -234,7 +234,7 @@ public:
 								float hilite_color[4],
 								float bkgnd_color[4],
 								float box_color[4]);
-								
+
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
@@ -272,9 +272,9 @@ private:
 	};
 
 			void			CreateEdit(int cell_bounds[4]);
-			int				TerminateEdit(bool inSave, bool inAll);			
+			int				TerminateEdit(bool inSave, bool inAll);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
-					
+
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;
 	int						mClickCellY;
@@ -288,18 +288,18 @@ private:
 
 	int						mCellResize;
 	int						mLastX;
-	
+
 	GUI_KeyFlags			mModifiers;
 	int						mSelStartX;
 	int						mSelStartY;
-	
-	
+
+
 	GUI_DragTableDest		mDragDest;
 	int						mDragX;
 	int						mDragY;
 	GUI_DragPart			mDragPart;
 	GUI_DragOperation		mLastOp;
-		
+
 	int						mCellIndent;
 	int						mDiscloseIndent;
 
@@ -309,18 +309,18 @@ private:
 	float					mColorTextSelect[4];
 	float					mColorInsertInto[4];
 	float					mColorInsertBetween[4];
-	
+
 	float					mTFColorText[4];
 	float					mTFColorHilite[4];
 	float					mTFColorBkgnd[4];
-	float					mTFColorBox[4];	
+	float					mTFColorBox[4];
 
 	int						mFont;
-	
+
 	string					mImage;
 	int						mAlternate;
-	
-};	
+
+};
 
 
 
@@ -328,7 +328,7 @@ class	GUI_TextTableHeader : public GUI_TableHeader, public GUI_Broadcaster {
 public:
 						 GUI_TextTableHeader();
 	virtual				~GUI_TextTableHeader();
-	
+
 			void		SetProvider(GUI_TextTableHeaderProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 
@@ -336,7 +336,7 @@ public:
 			void		SetColors(
 							float		grid_lines[4],
 							float		text[4]);
-							
+
 	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState);
 	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
@@ -349,11 +349,11 @@ private:
 	GUI_TableGeometry *				mGeometry;
 	int								mCellResize;
 	int								mLastX;
-	
+
 	string							mImage;
-	
+
 	float					mColorGridlines[4];
-	float					mColorText[4];	
+	float					mColorText[4];
 
 };
 
@@ -361,7 +361,7 @@ class	GUI_TextTableSide : public GUI_TableSide, public GUI_Broadcaster {
 public:
 						 GUI_TextTableSide();
 	virtual				~GUI_TextTableSide();
-	
+
 			void		SetProvider(GUI_TextTableHeaderProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 
@@ -384,10 +384,10 @@ private:
 	int								mLastY;
 
 	string							mImage;
-	
+
 	float					mColorGridlines[4];
-	float					mColorText[4];	
-	
+	float					mColorText[4];
+
 };
 
 

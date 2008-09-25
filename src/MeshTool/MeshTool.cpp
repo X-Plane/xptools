@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -58,26 +58,26 @@ int	main(int argc, char * argv[])
 		fprintf(stdout, "MeshTool version 1.0b2, compiled " __DATE__ ".\n");
 		exit(0);
 	}
-		
+
 	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
 	{
 		exit(0);
 	}
-		
+
 	try {
-		
+
 		// Set CGAL to throw an exception rather than just
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
 
 		XESInit();
-		
+
 		if(argc != 6)
 		{
 			fprintf(stderr, "USAGE: MeshTool <script.txt> <file.xes> <file.hgt> <dir_base> <file.dsf>\n");
 			exit(1);
 		}
-		
+
 		MFMemFile *	xes = MemFile_Open(argv[2]);
 		if(xes == NULL)
 		{
@@ -91,13 +91,13 @@ int	main(int argc, char * argv[])
 			ReadXESFile(xes, &dummy_vec, &dummy_mesh, &gDem, &dummy_apt, ConsoleProgressFunc);
 		}
 		MemFile_Close(xes);
-		
+
 		if (!ReadRawHGT(gDem[dem_Elevation], argv[3]))
 		{
 			fprintf(stderr,"Could not read HGT file: %s\n", argv[3]);
 			exit(1);
 		}
-		
+
 		FILE * script = fopen(argv[1], "r");
 		if(!script)
 		{
@@ -163,7 +163,7 @@ int	main(int argc, char * argv[])
 				nt.xon_dist = 0;
 				nt.xon_hack = 0;
 				nt.custom_ter = use_wat ? tex_custom_water : tex_custom;
-				gNaturalTerrainTable.insert(gNaturalTerrainTable.begin(),nt);				
+				gNaturalTerrainTable.insert(gNaturalTerrainTable.begin(),nt);
 			}
 			if(sscanf(buf,"PROJECT_POINT %lf %lf %lf %lf",coords,coords+1,coords+2,coords+3)==4)
 			{
@@ -214,8 +214,8 @@ int	main(int argc, char * argv[])
 				{
 					GISFace * f = gMap.insert_ring(gMap.unbounded_face(),ring);
 					f->mTerrainType = terrain_type;
-				} 
-				else 
+				}
+				else
 				{
 					Pmwx	temp;
 					GISFace * f = temp.insert_ring(temp.unbounded_face(),ring);
@@ -235,30 +235,30 @@ int	main(int argc, char * argv[])
 
 		//-calcslope
 		CalcSlopeParams(gDem, true, ConsoleProgressFunc);
-		
+
 		// -upsample
 		UpsampleEnvironmentalParams(gDem, ConsoleProgressFunc);
 
 		// -derivedems
-		DeriveDEMs(gMap, gDem,gApts, gAptIndex, ConsoleProgressFunc);			
+		DeriveDEMs(gMap, gDem,gApts, gAptIndex, ConsoleProgressFunc);
 
 		// -zoning
 		ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_Slope],gApts,ConsoleProgressFunc);
-		
+
 		// -calcmesh
-		TriangulateMesh(gMap, gTriangulationHi, gDem, argv[4], ConsoleProgressFunc);		
-		
+		TriangulateMesh(gMap, gTriangulationHi, gDem, argv[4], ConsoleProgressFunc);
+
 		// -assignterrain
 		AssignLandusesToMesh(gDem,gTriangulationHi,argv[4],ConsoleProgressFunc);
-		
+
 		// -exportDSF
-		BuildDSF(argv[5], NULL, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, ConsoleProgressFunc);			
+		BuildDSF(argv[5], NULL, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, ConsoleProgressFunc);
 
 	} catch (exception& e) {
 		fprintf(stdout,"****************************************************************************\n");
 		fprintf(stdout,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
 		fprintf(stdout,"****************************************************************************\n");
-	
+
 		fprintf(stderr,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
 		exit(0);
 	} catch (...) {

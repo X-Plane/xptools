@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,43 +38,43 @@
 
 /*
 	XBUCKETS - THEORY OF OPERATION
-	
+
 	XBuckets implements a nested set of buckets (e.g. 1x1, 2x2, etc.).
 	They are useful for storing objects by their 2-d coordinates and
 	then rapidly finding them.
-	
+
 	XBuckets is templated - you provide a traits object that defines
 	your datatypes and then make an XBuckets for them.  So you
-	can use XBuckest many times with different kinds of objects, 
+	can use XBuckest many times with different kinds of objects,
 	coordinates, and algorithms.  You must plug in a few basic
 	algorithms to make XBuckets understand your basic objects.
-	
+
 	GEOMETRY NOTE:
-	
+
 	You can search for all objects within a rectangle.  All comparisons
 	include the lower bound but not the upper bound.  For example, if
 	you search for all objects in the area 0, 0 to 1, 1, a point-sized
 	object at 0,0 will be returned, but a point-sized object at 1, 1
 	will not!  When you search from 1,1 to 2,2 you then get the objet
 	at 1,1 and not at 2,2.  So you always get each point once.
-	
+
 	Because of this, when you implement "ObjectTouchesRect" make sure
 	you register if your left edge touches the left edge of the bounding
 	rectangle, but not your right edge!
-	
+
 	LOOSE VS TIGHT BUCKETING
-	
+
 	X-Buckets has two bucketing methods:
-	
+
 	In the tight bucketing scheme, every object is within the smallest
-	bucket that fully contains it (in a 2-d sense).  The advantage of 
+	bucket that fully contains it (in a 2-d sense).  The advantage of
 	this is perfectly accurate point-hit and containment tests...there
 	will never be an object in the space you search that is not returned.
 	The disadvantage of this is speed; an object that falls on the crack
 	between buckets will move to the next higher bucket; an object in the
 	center of the screen will be in the zero bucket.  This can mean many
 	more objects returned from a spatial search than is desired.
-	
+
 	In the loose bucketing scheme, every object is put within the smallest
 	bucket that _could_ contain it if the object were translated in any
 	way.  Of the buckets of that size, the one that contains the center of
@@ -99,15 +99,15 @@
 
 	The functions provide the implementation of common operations for the
 	buckets.  Here are the traits:
-	
+
 	Point2 - This should be a two-dimensional point type.  The Point2
 	from CompGeomDefs2d.h works nicely, but you can use anything you want.
-	
+
 	Scalar - some kind of floating point numeric type that will be used for
 	all math.  xdob or double strongly recommended.
-	
+
 	Object - This is the kind of object that will be in the bucket.  These
-	values will be copied, so it is strongly recommended that this be a 
+	values will be copied, so it is strongly recommended that this be a
 	pointer type, e.g. a pointer to a struct.
 
 class	Traits {
@@ -119,27 +119,27 @@ public:
 	typedef	Point2				Point2;
 	typedef	double				Scalar;
 	typedef	Object				Object;
-	
+
 	// These accessors turn scalar coordinates into Point2s and vice versa.
 	// They should probably be inlined!
-	
+
 	static	Scalar	X(const Point2& p);
 	static	Scalar	Y(const Point2& p);
 	static	void	MakePoint(Scalar x, Scalar y, Point2& p);
-	
+
 	// This function returns the bounding box of a give object.
 	// The first point its the lowerleft (southwset), the second is the
 	// upper right (northeast).
-	
+
 	static	void	GetObjectBounds(Object o, Point2& p1, Point2& p2);
-	
+
 	// Touch functions...given rects and points, figure out if we're touching
 	// the object.
-	
+
 	static	bool	ObjectTouchesPoint(Object, const Point2& p);
 	static	bool	ObjectTouchesRect(Object o, const Point2& p1, const Point2& p2);
 	static	bool	ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2);
-	
+
 	// This function does cleanup on an object - useful to rapidly depopulate the buckets.
 	static	void	DestroyObject(Object o);
 };
@@ -147,26 +147,26 @@ public:
 
 */
 
-/*	
+/*
 	BUCKET IDs
-	
+
 	Each bucket has a 32-bit ID.  This ID is specially coded to allow
 	identification of the bucket's exact location from the ID and vice
 	versa.  For use of XBuckets you usually don't need to care about
 	IDs, but when working with XCull an XBuckets together, these IDs
 	can be important.
-	
+
 	A bucket's level is the size of the grid, e.g. 0 = 1x1, 1 = 2x2, 2 = 4x4, etc.
-	
+
 	A bucket's index is the bucket number starting from the upper left.  A bucket's
 	parent ist he bucket in the next smaller grid that fully contains it.  So
 	a bucket a 5, 3 in the 8x8 grid's parent is bucket 2x1 in the 4x4 grid.
-	
+
 	A bucket's 4 children are the 4 buckets in the next bigger grid which it
 	fully contains.  So in the 4x4 grid, bucket 2x1 has 4 children (in the 8x8)
 	grid, those are: 4x2, 5x2, 4x3, 5x3.  They are iterated in that order.
-	
-*/	
+
+*/
 
 typedef unsigned int XBucketID;
 
@@ -184,12 +184,12 @@ inline XBucketID 	XBucket_GetChild(XBucketID id, unsigned int child);
 
 /*
 	XBuckets
-	
+
 	This is the actual buckets class.  When you create XBuckets, you must have a number of
 	layers (at least 1), and two points indicating the bounds of the buckets.  You can
 	change these later with the 'rest' function.
-	
-*/	
+
+*/
 
 enum {
 	bucket_Organize_Draw,
@@ -222,7 +222,7 @@ public:
 
 	// Searching for items in an area.  This first set of functions lets you fill a vector
 	// with the result.  The second set lets you pass in a function pointer in the form
-	// of MyFunc(Object o, Ref ref) where Ref is any type you want.	
+	// of MyFunc(Object o, Ref ref) where Ref is any type you want.
 	void		FindTouchesPt(const Point2&, vector<Object>& outIDs) const;
 	void		FindTouchesRect(const Point2&, const Point2&, vector<Object>& outIDs) const;
 	void		FindFullyInRect(const Point2&, const Point2&, vector<Object>& outIDs) const;
@@ -240,23 +240,23 @@ public:
 	void		GetOneBucket(XBucketID inBucket, vector<Object>& outIDs) const;
 	inline	void		GetOneBucketUnsafe(XBucketID inBucket, Object ** ioBegin, Object ** ioEnd);
 	inline	void		GetBucketDimensions(XBucketID inBucket, Point2&, Point2&) const;
-	inline	int			GetLayerCount(void) const { return mItems.size(); } 
+	inline	int			GetLayerCount(void) const { return mItems.size(); }
 	inline	bool		Empty(void) const;
 
 	template <class __Ref>
 	void		GetOneBucket(XBucketID inBucket, void (*)(Object, __Ref), __Ref) const;
-	
+
 	template <class __Ref1, class __Ref2>
 	inline	void		IterateBucketLayer(int layer, void (*)(XBucketID, __Ref1, __Ref2), __Ref1, __Ref2) const;
-	
-	// Debug output	
+
+	// Debug output
 	void		Dump(void);
-	
+
 private:
 
 	static void	InsertIntoVector(Object, vector<Object> *);
 	void		GetIndicesForLevel(
-							const Point2&		p1, 
+							const Point2&		p1,
 							const Point2&		p2,
 							unsigned int 		level,
 							unsigned int&		x1,
@@ -272,14 +272,14 @@ private:
 #if __MWERKS__
 	typedef	Metrowerks::hash_map<XBucketID, ObjectVector>	BucketMap;
 #endif
-	
+
 		int						mMode;
 		vector<BucketMap>		mItems;
 		Point2					mMin;
 		Point2					mMax;
 		Point2					mSize;
 		int						mTotal;
-	
+
 };
 
 
@@ -303,7 +303,7 @@ inline void		XBucket_Decompose(XBucketID id, unsigned int& level, unsigned int& 
 	unsigned int index = id & 0x00ffffff;
 	unsigned int mask = (1 << level) - 1;
 	x = index & mask;
-	y = index >> level;	
+	y = index >> level;
 }
 
 inline XBucketID	XBucket_GetParent(XBucketID id)
@@ -313,7 +313,7 @@ inline XBucketID	XBucket_GetParent(XBucketID id)
 	unsigned int index = id & 0x00ffffff;
 	unsigned int mask = (1 << level) - 1;
 	x = index & mask;
-	y = index >> level;	
+	y = index >> level;
 	if (level == 0) return id;
 	x >>= 1;
 	y >>= 1;
@@ -328,7 +328,7 @@ inline XBucketID	XBucket_GetChild(XBucketID id, unsigned int child)
 	unsigned int index = id & 0x00ffffff;
 	unsigned int mask = (1 << level) - 1;
 	x = index & mask;
-	y = index >> level;	
+	y = index >> level;
 	x <<= 1;
 	y <<= 1;
 	x |= (child & 1);
@@ -343,7 +343,7 @@ inline XBucketID	XBucket_GetChild(XBucketID id, unsigned int child)
 // to have the entire stupid implementation in every header that
 // uses buckets.
 //
-// This means we have to explcitily 'instantiate' the template once 
+// This means we have to explcitily 'instantiate' the template once
 // in X-Plane to make the code for the other functions doing something
 // like:
 //
@@ -356,7 +356,7 @@ inline XBucketID	XBucket_GetChild(XBucketID id, unsigned int child)
 
 template <typename __Object, typename __Traits>
 template <class __Ref>
-inline void 
+inline void
 XBuckets<__Object, __Traits>::FindTouchesPt(const Point2& p, void (* f)(Object, __Ref), __Ref r) const
 {
 	for (int level = 0; level < mItems.size(); ++level)
@@ -366,7 +366,7 @@ XBuckets<__Object, __Traits>::FindTouchesPt(const Point2& p, void (* f)(Object, 
 		GetIndicesForLevel(p, p, level, x1, y1, x2, y2);
 		for (unsigned int y = y1; y <= y2; ++y)
 		for (unsigned int x = x1; x <= x2; ++x)
-		{		
+		{
 			XBucketID index = XBucket_GetIndex(XBucket_Compose(level, x, y));
 			typename BucketMap::const_iterator bucket = bucket_map.find(index);
 			if (bucket != bucket_map.end())
@@ -378,12 +378,12 @@ XBuckets<__Object, __Traits>::FindTouchesPt(const Point2& p, void (* f)(Object, 
 				}
 			}
 		}
-	}	
+	}
 }
 
 template <typename __Object, typename __Traits>
 template <class __Ref>
-inline void 
+inline void
 XBuckets<__Object, __Traits>::FindTouchesRect(const Point2& p1, const Point2& p2, void (* f)(Object, __Ref), __Ref r) const
 {
 	for (int level = 0; level < mItems.size(); ++level)
@@ -410,7 +410,7 @@ XBuckets<__Object, __Traits>::FindTouchesRect(const Point2& p1, const Point2& p2
 
 template <typename __Object, typename __Traits>
 template <class __Ref>
-inline void 
+inline void
 XBuckets<__Object, __Traits>::FindFullyInRect(const Point2& p1, const Point2& p2, void (* f)(Object, __Ref), __Ref r) const
 {
 	for (int level = 0; level < mItems.size(); ++level)
@@ -437,7 +437,7 @@ XBuckets<__Object, __Traits>::FindFullyInRect(const Point2& p1, const Point2& p2
 
 template <typename __Object, typename __Traits>
 template <class __Ref>
-void		
+void
 XBuckets<__Object, __Traits>::GetOneBucket(XBucketID id, void (* f)(Object, __Ref), __Ref r) const
 {
 	unsigned int level = XBucket_GetLevel(id);
@@ -456,7 +456,7 @@ XBuckets<__Object, __Traits>::GetOneBucket(XBucketID id, void (* f)(Object, __Re
 
 template <typename __Object, typename __Traits>
 template <class __Ref1, class __Ref2>
-inline void		
+inline void
 XBuckets<__Object, __Traits>::IterateBucketLayer(int layer, void (* f)(XBucketID, __Ref1, __Ref2), __Ref1 ref1, __Ref2 ref2) const
 {
 	const BucketMap& bucket_map = mItems[layer];

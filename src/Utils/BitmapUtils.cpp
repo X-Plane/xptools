@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,7 +33,7 @@
 
 /*
 	NOTES ON ENDIAN CHAOS!!!!!!!!!!!!!!!!!!!
-	
+
 	Simply viewing the way pixels are stored in memory from low to high mem:
 	BMP contains RGBRGBRGB triplets.
 		(This is a direct byte-order read out of memory, so it can't get f-cked.
@@ -42,9 +42,9 @@
 
 	TiffLib on Mach gives it to us in ARGB format...and on windows in BGRA format.
 		(Tifflib is endian-aware and always uses ARGB.  But at least it's consistent!)
-	
+
 	OpenGL strangely wants BGRA in memory when we say RGBA, which makes no sense to me.
-	
+
 
 	TODO...
 		It would be nice to generic-ize these APIs so that we could:
@@ -64,7 +64,7 @@
 #endif
 
 // Note: the std jpeg lib does not have any #ifdef C++ name
-// mangling protection.  Since wek now we're going to be CPP, 
+// mangling protection.  Since wek now we're going to be CPP,
 // add it ourself.  Gross, but perhaps better than hacking up
 // libjpeg??
 
@@ -96,61 +96,61 @@ int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageIn
 		long					pad;
 		int 					err = 0;
 		FILE *					fi = NULL;
-		
+
 	outImageInfo->data = NULL;
 
 	fi = fopen(inFilePath, "rb");
 	if (fi == NULL)
 		goto bail;
 
-	/*  First we read in the headers, endian flip them, sanity check them, and decide how big our 
+	/*  First we read in the headers, endian flip them, sanity check them, and decide how big our
 		image is. */
-		
+
 	if (fread(&header, sizeof(header), 1, fi) != 1)
 		goto bail;
 	if (fread(&imageDesc, sizeof(imageDesc), 1, fi) != 1)
 		goto bail;
-	
+
 	EndianFlipLong(&header.fileSize);
 	EndianFlipLong(&header.dataOffset);
-	
+
 	EndianFlipLong(&imageDesc.imageWidth);
 	EndianFlipLong(&imageDesc.imageHeight);
 	EndianFlipShort(&imageDesc.bitCount);
-	
-	if ((header.signature1 != 'B') || 
-		(header.signature2 != 'M') || 
+
+	if ((header.signature1 != 'B') ||
+		(header.signature2 != 'M') ||
 		(imageDesc.bitCount != 24) ||
 		(imageDesc.imageWidth <= 0) ||
 		(imageDesc.imageHeight <= 0))
 		goto bail;
-	
+
 	if ((header.fileSize - header.dataOffset) < (imageDesc.imageWidth * imageDesc.imageHeight * 3))
 		goto bail;
-	
+
 	pad = (imageDesc.imageWidth * 3 + 3) & ~3;
 	pad -= imageDesc.imageWidth * 3;
-	
+
 	outImageInfo->width = imageDesc.imageWidth;
 	outImageInfo->height = imageDesc.imageHeight;
 	outImageInfo->pad = pad;
 
 	/* Now we can allocate an image buffer. */
-	
+
 	outImageInfo->channels = 3;
 	outImageInfo->data = (unsigned char *) malloc(imageDesc.imageWidth * imageDesc.imageHeight * outImageInfo->channels + imageDesc.imageHeight * pad);
 	if (outImageInfo->data == NULL)
 		goto bail;
-		
+
 	/*  We can pretty much just read the bytes in; we know that we're 24 bit so there is no
 		color table, and 24 bit BMP files cannot be compressed. */
-		
+
 	if (fread(outImageInfo->data, imageDesc.imageWidth * imageDesc.imageHeight * outImageInfo->channels + imageDesc.imageHeight * pad, 1, fi) != 1)
 		goto bail;
-	
-	fclose(fi);	
+
+	fclose(fi);
 	return 0;
-	
+
 bail:
 	err = errno;
 	if (fi != NULL)
@@ -163,14 +163,14 @@ bail:
 }
 
 int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath)
-{	
+{
 		FILE *					fi = NULL;
 		struct	BMPHeader		header;
 		struct	BMPImageDesc	imageDesc;
 		int						err = 0;
-		
-	/* First set up the appropriate header structures to match our bitmap. */	
-		
+
+	/* First set up the appropriate header structures to match our bitmap. */
+
 	header.signature1 = 'B';
 	header.signature2 = 'M';
 	header.fileSize = sizeof(struct BMPHeader) + sizeof(struct BMPImageDesc) + ((inImage->width * 3 + inImage->pad) * inImage->height);
@@ -203,20 +203,20 @@ int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath
 	EndianFlipLong(&imageDesc.yPixelsPerM);
 	EndianFlipLong(&imageDesc.colorsUsed);
 	EndianFlipLong(&imageDesc.colorsImportant);
-		
+
 	fi = fopen(inFilePath, "wb");
 	if (fi == NULL)
 		goto bail;
-	
+
 	/* We can just write out two headers and the data and be done. */
-	
+
 	if (fwrite(&header, sizeof(header), 1, fi) != 1)
 		goto bail;
 	if (fwrite(&imageDesc, sizeof(imageDesc), 1, fi) != 1)
 		goto bail;
 	if (fwrite(inImage->data, (inImage->width * 3 + inImage->pad) * inImage->height, 1, fi) != 1)
 		goto bail;
-	
+
 	fclose(fi);
 	return 0;
 
@@ -268,51 +268,51 @@ void	CopyBitmapSection(
 	/*  This routine copies a subsection of one bitmap onto a subsection of another, using bicubic interpolation
 		for scaling. */
 
-	double	srcLeft = inSrcLeft, srcRight = inSrcRight, srcTop = inSrcTop, srcBottom = inSrcBottom; 
+	double	srcLeft = inSrcLeft, srcRight = inSrcRight, srcTop = inSrcTop, srcBottom = inSrcBottom;
 	double	dstLeft = inDstLeft, dstRight = inDstRight, dstTop = inDstTop, dstBottom = inDstBottom;
-	
+
 	/*	Here's why we subtract one from all of these...
-		(Ignore bicubic interpolation for a moment please...)  
+		(Ignore bicubic interpolation for a moment please...)
 		Every destination pixel is comprised of two pixels horizontally and two vertically.  We use these widths and heights to do the rescaling
 		of the image.  The goal is to have the rightmost pixel in the destination actually correspond to the rightmost pixel of the source.  In
 		otherwords, we want to get (inDstRight - 1) from (inSrcRight - 1).  Now since we use [inDstLeft - inDstRight) as our set of pixels, this
-		is the last pixel we ask for.  But we have to subtract one from the width to get the rescaling right, otherwise we map inDstRight to 
+		is the last pixel we ask for.  But we have to subtract one from the width to get the rescaling right, otherwise we map inDstRight to
 		inSrcRight, which for very large upscales make inDstRight - 1 derive from inSrcRight - (something less than one) which is a pixel partially
 		off the right side of the bitmap, which is bad.
 		Bicubic interpolation is not used when we're this close to the edge of the border, so it is not a factor.
 	*/
-	
+
 	double	dstWidth = dstRight - dstLeft - 1.0;
 	double	dstHeight = dstBottom - dstTop - 1.0;
 	double	srcWidth = srcRight - srcLeft - 1.0;
 	double	srcHeight = srcBottom - srcTop - 1.0;
 
-	double	dx, dy;	
-	
+	double	dx, dy;
+
 	long	srcRowBytes = inSrc->width * inSrc->channels + inSrc->pad;
 	long	srcRowBytes2 = srcRowBytes * 2;
 	long	dstRowBytes = inDst->width * inSrc->channels + inDst->pad;
 	unsigned char *	srcBaseAddr = inSrc->data;
 	unsigned char *	dstBaseAddr = inDst->data;
-	
+
 	int		channels;
-	
+
 	for (dy = dstTop; dy < dstBottom; dy += 1.0)
 	{
 		for (dx = dstLeft; dx < dstRight; dx += 1.0)
 		{
 			/*  For each pixel in the destination, find a pixel in the source.  Note that it may have a fractional part
 				if we are scaling. */
-				
+
 			double	sx = ((dx - dstLeft) / dstWidth * srcWidth) + srcLeft;
 			double	sy = ((dy - dstTop) / dstHeight * srcHeight) + srcTop;
-		
-			unsigned char *	dstPixel = dstBaseAddr + ((long) dx * inDst->channels) + ((long) dy * dstRowBytes);			
+
+			unsigned char *	dstPixel = dstBaseAddr + ((long) dx * inDst->channels) + ((long) dy * dstRowBytes);
 			unsigned char *	srcPixel = srcBaseAddr + ((long) sx * inSrc->channels) + ((long) sy * srcRowBytes);
 
 			/* 	If we would need pixels from off the edge of the image for bicubic interpolation,
 			 	just use bilinear. */
-			 	
+
 			if ((sx < 1) ||
 				(sy < 1) ||
 				(sx >= (inSrc->width - 2)) ||
@@ -333,18 +333,18 @@ void	CopyBitmapSection(
 					unsigned char tl = *srcPixel;
 					unsigned char tr = (mixH> 0.0) ? *(srcPixel+inSrc->channels) : 0;
 					unsigned char bl = (mixV> 0.0) ? *(srcPixel+srcRowBytes) : 0;
-					unsigned char br = ((mixH> 0.0) && (mixV > 0.0)) ? 
+					unsigned char br = ((mixH> 0.0) && (mixV > 0.0)) ?
 						*(srcPixel+srcRowBytes + inSrc->channels) : 0;
 
-					/*  Take the pixel (rounded down to integer coords), the one to the right, below, and below to the right.  
+					/*  Take the pixel (rounded down to integer coords), the one to the right, below, and below to the right.
 						The fractional part of the pixel is our weighting for interpolation. */
 					unsigned char pixel = (unsigned char) BilinearInterpolate2d(
-								tl, tr, bl, br, mixH, mixV);			
+								tl, tr, bl, br, mixH, mixV);
 					*dstPixel = pixel;
 					++srcPixel;
 					++dstPixel;
 				}
-			
+
 			} else {
 				channels = inSrc->channels;
 				while (channels--)
@@ -362,8 +362,8 @@ void	CopyBitmapSection(
 			}
 
 		}
-	}	
-}		
+	}
+}
 
 inline double	Interp2(double frac, double sml, double big)
 {
@@ -389,34 +389,34 @@ void	CopyBitmapSectionWarped(
 	/*  This routine copies a subsection of one bitmap onto a subsection of another, using bicubic interpolation
 		for scaling. */
 
-	double	dstLeft = inDstLeft, dstRight = inDstRight, dstTop = inDstTop, dstBottom = inDstBottom; 
+	double	dstLeft = inDstLeft, dstRight = inDstRight, dstTop = inDstTop, dstBottom = inDstBottom;
 	double	topLeftX = inTopLeftX, topLeftY = inTopLeftY, topRightX = inTopRightX, topRightY = inTopRightY;
 	double	botLeftX = inBotLeftX, botLeftY = inBotLeftY, botRightX = inBotRightX, botRightY = inBotRightY;
-	
+
 	/*	Here's why we subtract one from all of these...
-		(Ignore bicubic interpolation for a moment please...)  
+		(Ignore bicubic interpolation for a moment please...)
 		Every destination pixel is comprised of two pixels horizontally and two vertically.  We use these widths and heights to do the rescaling
 		of the image.  The goal is to have the rightmost pixel in the destination actually correspond to the rightmost pixel of the source.  In
 		otherwords, we want to get (inDstRight - 1) from (inSrcRight - 1).  Now since we use [inDstLeft - inDstRight) as our set of pixels, this
-		is the last pixel we ask for.  But we have to subtract one from the width to get the rescaling right, otherwise we map inDstRight to 
+		is the last pixel we ask for.  But we have to subtract one from the width to get the rescaling right, otherwise we map inDstRight to
 		inSrcRight, which for very large upscales make inDstRight - 1 derive from inSrcRight - (something less than one) which is a pixel partially
 		off the right side of the bitmap, which is bad.
 		Bicubic interpolation is not used when we're this close to the edge of the border, so it is not a factor.
 	*/
-	
+
 	double	dstWidth = dstRight - dstLeft - 1.0;
 	double	dstHeight = dstBottom - dstTop - 1.0;
 
-	double	dx, dy;	
-	
+	double	dx, dy;
+
 	long	srcRowBytes = inSrc->width * inSrc->channels + inSrc->pad;
 	long	srcRowBytes2 = srcRowBytes * 2;
 	long	dstRowBytes = inDst->width * inSrc->channels + inDst->pad;
 	unsigned char *	srcBaseAddr = inSrc->data;
 	unsigned char *	dstBaseAddr = inDst->data;
-	
+
 	int		channels;
-	
+
 	for (dy = dstTop; dy < dstBottom; dy += 1.0)
 	{
 		for (dx = dstLeft; dx < dstRight; dx += 1.0)
@@ -426,16 +426,16 @@ void	CopyBitmapSectionWarped(
 
 			double frac_x = ((dx - dstLeft) / dstWidth);
 			double frac_y = ((dy - dstTop) / dstHeight);
-			
+
 			double	sx = Interp2(frac_y, Interp2(frac_x, topLeftX, topRightX), Interp2(frac_x, botLeftX, botRightX));
 			double	sy = Interp2(frac_x, Interp2(frac_y, topLeftY, botLeftY), Interp2(frac_y, topRightY, botRightY));
 
-			unsigned char *	dstPixel = dstBaseAddr + ((long) dx * inDst->channels) + ((long) dy * dstRowBytes);			
+			unsigned char *	dstPixel = dstBaseAddr + ((long) dx * inDst->channels) + ((long) dy * dstRowBytes);
 			unsigned char *	srcPixel = srcBaseAddr + ((long) sx * inSrc->channels) + ((long) sy * srcRowBytes);
 
 			/* 	If we would need pixels from off the edge of the image for bicubic interpolation,
 			 	just use bilinear. */
-			 	
+
 			if ((sx < 1) ||
 				(sy < 1) ||
 				(sx >= (inSrc->width - 2)) ||
@@ -456,18 +456,18 @@ void	CopyBitmapSectionWarped(
 					unsigned char tl = *srcPixel;
 					unsigned char tr = (mixH> 0.0) ? *(srcPixel+inSrc->channels) : 0;
 					unsigned char bl = (mixV> 0.0) ? *(srcPixel+srcRowBytes) : 0;
-					unsigned char br = ((mixH> 0.0) && (mixV > 0.0)) ? 
+					unsigned char br = ((mixH> 0.0) && (mixV > 0.0)) ?
 						*(srcPixel+srcRowBytes + inSrc->channels) : 0;
 
-					/*  Take the pixel (rounded down to integer coords), the one to the right, below, and below to the right.  
+					/*  Take the pixel (rounded down to integer coords), the one to the right, below, and below to the right.
 						The fractional part of the pixel is our weighting for interpolation. */
 					unsigned char pixel = (unsigned char) BilinearInterpolate2d(
-								tl, tr, bl, br, mixH, mixV);			
+								tl, tr, bl, br, mixH, mixV);
 					*dstPixel = pixel;
 					++srcPixel;
 					++dstPixel;
 				}
-			
+
 			} else {
 				channels = inSrc->channels;
 				while (channels--)
@@ -485,8 +485,8 @@ void	CopyBitmapSectionWarped(
 			}
 
 		}
-	}	
-}	
+	}
+}
 
 void	CopyBitmapSectionDirect(
 			const struct ImageInfo&		inSrc,
@@ -499,14 +499,14 @@ void	CopyBitmapSectionDirect(
 			long						inHeight)
 {
 	if (inSrc.channels != inDst.channels) return;
-	
+
 	long	src_rb = inSrc.width * inSrc.channels + inSrc.pad;
 	long	dst_rb = inDst.width * inDst.channels + inDst.pad;
 	long	src_nr = src_rb - inWidth* inSrc.channels;
 	long	dst_nr = dst_rb - inWidth* inDst.channels;
 	unsigned char *	src_p = inSrc.data + inSrcTop * src_rb + inSrcLeft * inSrc.channels;
 	unsigned char *	dst_p = inDst.data + inDstTop * dst_rb + inDstLeft * inDst.channels;
-	
+
 	while (inHeight--)
 	{
 		long ctr = inWidth * inSrc.channels;
@@ -517,7 +517,7 @@ void	CopyBitmapSectionDirect(
 		src_p += src_nr;
 		dst_p += dst_nr;
 	}
-	
+
 }
 
 
@@ -526,7 +526,7 @@ void	RotateBitmapCCW(
 {
 	/* We have to allocate a new bitmap to transfer our old data to.  The new bitmap might not have the same
 	 * storage size as the old bitmap because of padding! */
-	 
+
 	long	newWidth = ioBitmap->height;
 	long	newHeight = ioBitmap->width;
 	long	newPad = ((newWidth * ioBitmap->channels + 3) & ~3) - (newWidth * ioBitmap->channels);
@@ -539,7 +539,7 @@ void	RotateBitmapCCW(
 	{
 		long	nx = ioBitmap->height - y - 1;
 		long	ny = x;
-		
+
 		unsigned char *	srcP = ioBitmap->data + (x * ioBitmap->channels) + (y * (ioBitmap->channels * ioBitmap->width + ioBitmap->pad));
 		unsigned char *	dstP = newData + (nx * ioBitmap->channels) + (ny * (ioBitmap->channels * newWidth + newPad));
 		long	chCount = ioBitmap->channels;
@@ -555,8 +555,8 @@ void	RotateBitmapCCW(
 	ioBitmap->height = newHeight;
 	ioBitmap->pad = newPad;
 
-}			
-			
+}
+
 int	ConvertBitmapToAlpha(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha)
@@ -564,28 +564,28 @@ int	ConvertBitmapToAlpha(
 		unsigned char * 	oldData, * newData, * srcPixel, * dstPixel;
 		long 	count;
 		long	x,y;
-		
+
 	if (ioImage->channels == 4)
 		return 0;
-		
-	/* We have to allocate a new bitmap that is larger than the old to store the alpha channel. */	
-		
+
+	/* We have to allocate a new bitmap that is larger than the old to store the alpha channel. */
+
 	newData = (unsigned char *) malloc(ioImage->width * ioImage->height * 4);
 	if (newData == NULL)
 		return ENOMEM;
 	oldData = ioImage->data;
-	
+
 	srcPixel = oldData;
 	dstPixel = newData;
 	count = ioImage->width * ioImage->height;
 	for (y = 0; y < ioImage->height; ++y)
 	for (x = 0; x < ioImage->width; ++x)
 	{
-		/* For each pixel, if it is pure magenta, it becomes pure black transparent.  Otherwise it is 
-		 * opaque and retains its color.  NOTE: one of the problems with the magenta=alpha strategy is 
+		/* For each pixel, if it is pure magenta, it becomes pure black transparent.  Otherwise it is
+		 * opaque and retains its color.  NOTE: one of the problems with the magenta=alpha strategy is
 		 * that we don't know what color was 'under' the transparency, so if we stretch or skew this bitmap
 		 * we can't really do a good job of interpolating. */
-		if (doMagentaAlpha && 
+		if (doMagentaAlpha &&
 			(srcPixel[0] == 0xFF) &&
 			(srcPixel[1] == 0x00) &&
 			(srcPixel[2] == 0xFF))
@@ -598,22 +598,22 @@ int	ConvertBitmapToAlpha(
 			dstPixel[0] = srcPixel[0];
 			dstPixel[1] = srcPixel[1];
 			dstPixel[2] = srcPixel[2];
-			dstPixel[3] = 0xFF;	
+			dstPixel[3] = 0xFF;
 		}
-		
+
 		srcPixel += 3;
 		dstPixel += 4;
-		
+
 		if (x == (ioImage->width - 1))
 			srcPixel += ioImage->pad;
 	}
-	
+
 	ioImage->data = newData;
 	ioImage->pad = 0;
 	free(oldData);
 	ioImage->channels = 4;
 	return 0;
-}			
+}
 
 
 int	ConvertAlphaToBitmap(
@@ -624,28 +624,28 @@ int	ConvertAlphaToBitmap(
 		long 	count;
 		long 	x,y;
 		int		pad;
-		
+
 	if (ioImage->channels == 3)
 		return 0;
 
 	pad = ((ioImage->width * 3 + 3) & ~3) - (ioImage->width * 3);
 	newData = (unsigned char *) malloc((ioImage->width * 3 + pad) * ioImage->height);
 	if (newData == NULL)
-		return ENOMEM;	
+		return ENOMEM;
 	oldData = ioImage->data;
-	
+
 	ioImage->pad = pad;
-	
+
 	srcPixel = oldData;
 	dstPixel = newData;
 	count = ioImage->width * ioImage->height;
-	
+
 	for (y = 0; y < ioImage->height; ++y)
 	for (x = 0; x < ioImage->width; ++x)
 	{
 		/* For each pixel, only full opaque is taken.  Here's why: if the pixel is part alpha, then it is a blend of an
 		 * alpha pixel and a non-alpha pixel.  But...we don't have good color data for the alpha pixel; from the above
-		 * routine we set the color to black.  So the color data for this pixel is mixed with black.  When viewed the 
+		 * routine we set the color to black.  So the color data for this pixel is mixed with black.  When viewed the
 		 * edges of a stretched bitmap will appear to turn dark before they fade out.
 		 *
 		 * But this point is moot anyway; we really only have one bit of alpha, on or off.  So we could pick any cutoff
@@ -653,7 +653,7 @@ int	ConvertAlphaToBitmap(
 		 *
 		 * You might ask yourself, why does X-Plane do it this way?  The answer is that as of this writing, most graphics
 		 * cards do not have the alpha-blending fill rate to blend the entire aircraft panel; this would be a huge hit on
-		 * frame rate.  So Austin is using the alpha test mechanism for transparency, which is much faster but only one 
+		 * frame rate.  So Austin is using the alpha test mechanism for transparency, which is much faster but only one
 		 * bit deep.
 		 *
 		 */
@@ -667,19 +667,19 @@ int	ConvertAlphaToBitmap(
 			dstPixel[1] = srcPixel[1];
 			dstPixel[2] = srcPixel[2];
 		}
-		
+
 		srcPixel += 4;
 		dstPixel += 3;
 
 		if (x == (ioImage->width - 1))
 			dstPixel += ioImage->pad;
 	}
-	
+
 	ioImage->data = newData;
 	free(oldData);
 	ioImage->channels = 3;
 	return 0;
-}			
+}
 
 #pragma mark -
 
@@ -740,8 +740,8 @@ METHODDEF(void) throw_error_exit (j_common_ptr cinfo)
 {
 	// On a fatal error, we deallocate the struct first,
 	// then throw.  This is a good idea because the cinfo
-	// struct may go out of scope during the throw; this 
-	// relieves client code from having to worry about 
+	// struct may go out of scope during the throw; this
+	// relieves client code from having to worry about
 	// order of destruction.
 	jpeg_destroy(cinfo);
 //	throw EXIT_FAILURE;
@@ -754,7 +754,7 @@ eat_output_message (j_common_ptr cinfo)
 	// If the user needed to see something, this is where
 	// we'd find out.  We currently don't have a good way
 	// of showing the users messages.
-	char buffer[JMSG_LENGTH_MAX]; 
+	char buffer[JMSG_LENGTH_MAX];
 	(*cinfo->err->format_message) (cinfo, buffer);
 }
 
@@ -767,7 +767,7 @@ jpeg_throw_error (setjmp_err_mgr * err)
 	jpeg_std_error(&err->pub);
 	err->pub.error_exit = throw_error_exit;
 	err->pub.output_message = eat_output_message;
-	
+
 	return &err->pub;
 }
 
@@ -778,9 +778,9 @@ jpeg_throw_error (setjmp_err_mgr * err)
 
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
-	// We bail immediately if the file is no good.  This prevents us from 
+	// We bail immediately if the file is no good.  This prevents us from
 	// having to keep track of file openings; if we have a problem, but the file must be
-	// closed.	
+	// closed.
 	outImageInfo->data = NULL;
 	FILE * fi = fopen(inFilePath, "rb");
 	if (!fi) return errno;
@@ -800,7 +800,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 		}
 
 		jpeg_stdio_src(&cinfo, fi);
-		
+
 		jpeg_read_header(&cinfo, TRUE);
 
 		jpeg_start_decompress(&cinfo);
@@ -818,7 +818,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 		{
 			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
 				break;
-			
+
 			for (int n = cinfo.output_width - 1; n >= 0; --n)
 			{
 				if (cinfo.output_components == 1)
@@ -836,12 +836,12 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 		return 0;
 	} catch (...) {
 		// If we ever get an exception, it's because we got a fatal JPEG error.  Our
-		// error handler deallocates the jpeg struct, so all we have to do is close the 
+		// error handler deallocates the jpeg struct, so all we have to do is close the
 		// file and bail.
 		fclose(fi);
 		return 1;
 	}
-}	
+}
 
 
 
@@ -890,7 +890,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 		{
 			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
 				break;
-			
+
 			for (int n = cinfo.output_width - 1; n >= 0; --n)
 			{
 				if (cinfo.output_components == 1)
@@ -907,7 +907,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 		return 0;
 	} catch (...) {
 		// If we get an exceptoin, cinfo is already cleaned up; just bail.
-		return 1; 			
+		return 1;
 	}
 }
 
@@ -932,19 +932,19 @@ void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t leng
 int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed)
 {
 	FILE * file = fopen(fname, "rb");
-	if (!file) 
+	if (!file)
 		return -1;
 
 	fseek(file, 0, SEEK_END);
 	int fileLength = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	char * buffer = new char[fileLength];
-	if (!buffer) 
+	if (!buffer)
 	{
-		fclose(file); 
+		fclose(file);
 		return -1;
 	}
-	if (fread(buffer, 1, fileLength, file) != fileLength) 
+	if (fread(buffer, 1, fileLength, file) != fileLength)
 	{
 		fclose(file);
 		delete [] buffer;
@@ -1033,7 +1033,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 
 	rows=(char**)malloc(height*sizeof(char*));
 	if (!rows) goto bail;
-	
+
 	for(int i=0;i<height;i++)
 	{
 		rows[i]=(char*)outImageInfo->data     +((outImageInfo->height-1-i)*(outImageInfo->width)*(outImageInfo->channels));
@@ -1044,7 +1044,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	rows = NULL;
 
 	png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
-	
+
 	return 0;
 bail:
 
@@ -1054,7 +1054,7 @@ bail:
 	outImageInfo->data = 0;
 	if (rows) 					free(rows);
 
-	return -1;	
+	return -1;
 
 }
 
@@ -1064,7 +1064,7 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
 	png_structp	png_ptr = NULL;
 	png_infop	info_ptr = NULL;
 	char **		rows = NULL;
-	
+
 	file = fopen(inFilePath, "wb");
 	if (!file) goto bail;
 
@@ -1075,7 +1075,7 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
     if (!info_ptr) goto bail;
 
 	if (setjmp(png_jmpbuf(png_ptr))) goto bail;
-    
+
 	png_init_io(png_ptr, file);
 	png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
     png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
@@ -1089,9 +1089,9 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
 
 	png_set_PLTE(png_ptr, info_ptr, (png_colorp) inPalette, inPaletteLen);
 
-    png_set_IHDR(png_ptr, info_ptr, inImage->width, inImage->height, 8, 
+    png_set_IHDR(png_ptr, info_ptr, inImage->width, inImage->height, 8,
     	(inImage->channels == 1) ? (inPalette ? PNG_COLOR_TYPE_PALETTE : PNG_COLOR_TYPE_GRAY) :
-    	((inImage->channels == 3) ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGBA), 
+    	((inImage->channels == 3) ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGBA),
     	PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_DEFAULT);
 
 	png_write_info(png_ptr, info_ptr);
@@ -1099,7 +1099,7 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
 
 	rows=(char**)malloc(inImage->height*sizeof(char*));
 	if (!rows) goto bail;
-	
+
 	for(int i=0;i<inImage->height;i++)
 	{
 		rows[i]=(char*)inImage->data+((inImage->height-1-i)*((inImage->width)*(inImage->channels)+inImage->pad));
@@ -1109,23 +1109,23 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
 	free(rows);
 	rows = NULL;
 
-	png_write_end(png_ptr, info_ptr);                    
-    
+	png_write_end(png_ptr, info_ptr);
+
     fclose(file);
 	file = NULL;
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	
+
 	return 0;
-	
+
 bail:
 
 	if (png_ptr && info_ptr)	png_destroy_write_struct(&png_ptr, &info_ptr);
 	else if (png_ptr)			png_destroy_write_struct(&png_ptr, NULL);
 	if (file)					fclose(file);
 	if (rows)					free(rows);
-	
+
 	return -1;
-    
+
 }
 
 #if USE_TIF
@@ -1146,8 +1146,8 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	uint16 cc;
 	size_t npixels;
 	uint32* raster;
-		
-		
+
+
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &cc);
@@ -1155,7 +1155,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	raster = (uint32*) _TIFFmalloc(npixels * sizeof (uint32));
 	if (raster != NULL) {
 	    if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
-			
+
 			outImageInfo->data = (unsigned char *) malloc(npixels * 4);
 			outImageInfo->width = w;
 			outImageInfo->height = h;
@@ -1166,7 +1166,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			unsigned char * s = (unsigned char *) raster;
 			while (count--)
 			{
-#if BIG			
+#if BIG
 				d[0] = s[1];
 				d[1] = s[2];
 				d[2] = s[3];
@@ -1178,7 +1178,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 				d[3] = s[3];
 #else
 	#error PLATFORM NOT DEFINED
-#endif				
+#endif
 				s += 4;
 				d += 4;
 			}
@@ -1186,12 +1186,12 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	    }
 	    _TIFFfree(raster);
 	}
-	TIFFClose(tif);    
+	TIFFClose(tif);
 	TIFFSetWarningHandler(errH);
     return result;
 bail:
 	TIFFSetWarningHandler(errH);
-	return -1;    
+	return -1;
 }
 
 #endif
@@ -1202,10 +1202,10 @@ static void	in_place_scaleXY(int x, int y, unsigned char * io_data)
 	unsigned char *	s1 = io_data;
 	unsigned char *	s2 = io_data + rb;
 	unsigned char * d1 = io_data;
-	
+
 	x /= 2;
 	y /= 2;
-	
+
 	int t1,t2,t3,t4;
 	while(y--)
 	{
@@ -1219,20 +1219,20 @@ static void	in_place_scaleXY(int x, int y, unsigned char * io_data)
 			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
 			t1 >>= 2;				t2 >>= 2;				t3 >>= 2;				t4 >>= 2;
 			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
-			
+
 		}
 		s1 += rb;
 		s2 += rb;
-	}	
+	}
 }
 
 static void	in_place_scaleX(int x, int y, unsigned char * io_data)
 {
 	unsigned char *	s1 = io_data;
 	unsigned char * d1 = io_data;
-	
+
 	x /= 2;
-	
+
 	int t1,t2,t3,t4;
 	int ctr = x * y;
 	while(ctr--)
@@ -1241,7 +1241,7 @@ static void	in_place_scaleX(int x, int y, unsigned char * io_data)
 		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
 		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
 		t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
-		*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;		
+		*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
 	}
 }
 
@@ -1252,10 +1252,10 @@ static void	in_place_scaleY(int x, int y, unsigned char * io_data)
 	unsigned char *	s1 = io_data;
 	unsigned char *	s2 = io_data + rb;
 	unsigned char * d1 = io_data;
-	
+
 	x /= 2;
 	y /= 2;
-	
+
 	int t1,t2,t3,t4;
 	while(y--)
 	{
@@ -1267,11 +1267,11 @@ static void	in_place_scaleY(int x, int y, unsigned char * io_data)
 			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
 			t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
 			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
-			
+
 		}
 		s1 += rb;
 		s2 += rb;
-	}	
+	}
 }
 
 #if BIG
@@ -1290,7 +1290,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * io_data)
 	#define SWAP32(x) (x)
 #else
 	#error BIG or LIL are not defined - what endian are we?
-#endif	
+#endif
 
 
 
@@ -1314,24 +1314,24 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 		y >>= 1;
 		++mips;
 	}
-	
+
 	for(y=0;y<ioImage.height;++y)
 	for(x=0;x<ioImage.width;++x)
 	{
 		unsigned char * srcp = ioImage.data + x * ioImage.channels + (ioImage.height - y - 1) * (ioImage.channels * ioImage.width + ioImage.pad);
 		unsigned char * dstp = src_mem + x * 4 + y * 4 * ioImage.width;
-		
+
 		dstp[0] = srcp[2];
 		dstp[1] = srcp[1];
 		dstp[2] = srcp[0];
 		dstp[3] = ioImage.channels == 4 ? srcp[3] : 255;
 	}
-	
+
 	x = ioImage.width;
 	y = ioImage.height;
 	int len = squish::GetStorageRequirements(x,y,flags);
-	
-	
+
+
 	TEX_dds_desc header = { 0 };
 	header.dwMagic[0] = 'D';
 	header.dwMagic[1] = 'D';
@@ -1343,7 +1343,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	header.dwWidth = SWAP32(ioImage.width);
 	header.dwLinearSize=SWAP32(len);
 	header.dwDepth=0;
-	header.dwMipMapCount=SWAP32(mips);		
+	header.dwMipMapCount=SWAP32(mips);
 	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
 	header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
 	header.ddpfPixelFormat.dwFourCC[0]='D';
@@ -1353,24 +1353,24 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	header.ddsCaps.dwCaps=SWAP32(0x00001000l|0x00400000l|0x00000008l);
 
 	fwrite(&header,sizeof(header),1,fi);
-	
+
 	do {
 		squish::CompressImage(src_mem, x, y, dst_mem, flags|squish::kColourIterativeClusterFit);
 		len = squish::GetStorageRequirements(x,y,flags);
 		// write out mem
-		
+
 		fwrite(dst_mem,len,1,fi);
-		
+
 		if(x==1 && y==1) break;
-		
+
 		if(x > 1) {
 			if (y > 1)		in_place_scaleXY(x,y,src_mem);
 			else			in_place_scaleX (x,y,src_mem);
 		} else if (y > 1)	in_place_scaleY (x,y,src_mem);
-	
+
 		if(x > 1) x >>= 1;
 		if(y > 1) y >>= 1;
-	
+
 	} while (1);
 	fclose(fi);
 	return 0;
@@ -1391,9 +1391,9 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 		y >>= 1;
 		++mips;
 	}
-	
+
 	int width = ioImage.width/2;
-		
+
 	TEX_dds_desc header = { 0 };
 	header.dwMagic[0] = 'D';
 	header.dwMagic[1] = 'D';
@@ -1405,7 +1405,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	header.dwWidth = SWAP32(width);
 	header.dwLinearSize = SWAP32(width * ioImage.channels);
 	header.dwDepth=0;
-	header.dwMipMapCount=SWAP32(mips);		
+	header.dwMipMapCount=SWAP32(mips);
 	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
 	header.ddpfPixelFormat.dwFlags=SWAP32((ioImage.channels==3 ? DDPF_RGB : (DDPF_RGB|DDPF_ALPHAPIXELS)));
 	header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
@@ -1413,31 +1413,31 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
 	header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);
 	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
-	
+
 	header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
 	fwrite(&header,sizeof(header),1,fi);
-	
+
 	int xo = 0;
 	x = ioImage.width/2;
 	y = ioImage.height;
-	
+
 	do {
-	
+
 		struct ImageInfo im;
 		CreateNewBitmap(x, y, ioImage.channels, &im);
 		CopyBitmapSectionDirect(ioImage, im, xo, 0, 0, 0, x, y);
-	
-		FlipImageY(im);	
+
+		FlipImageY(im);
 		fwrite(im.data,x*y*ioImage.channels,1,fi);
-		
+
 		if(x==1 && y==1) break;
-		
+
 		xo += x;
-		
+
 		if(x > 1) x >>= 1;
 		if(y > 1) y >>= 1;
-	
+
 	} while (1);
 	fclose(fi);
 	return 0;
@@ -1448,8 +1448,8 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 {
 	FILE * fi = fopen(inFilePath, "rb");
 	unsigned char * raw = NULL;
-	outImageInfo->data = NULL;	
-	
+	outImageInfo->data = NULL;
+
 	if(fi==NULL) return -1;
 	TEX_dds_desc header = { 0 };
 	if (fread(&header, 1, sizeof(header), fi) != sizeof(header)) goto bail;
@@ -1467,7 +1467,7 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 	header.ddpfPixelFormat.dwGBitMask=SWAP32(header.ddpfPixelFormat.dwGBitMask);
 	header.ddpfPixelFormat.dwBBitMask=SWAP32(header.ddpfPixelFormat.dwBBitMask);
 	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(header.ddpfPixelFormat.dwRGBAlphaBitMask);
-	
+
 	if (header.dwMagic[0] != 'D' ||
 		header.dwMagic[1] != 'D' ||
 		header.dwMagic[2] != 'S' ||
@@ -1485,11 +1485,11 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 		if(outImageInfo->data==NULL) goto bail;
 
 		if(fread(outImageInfo->data, 1, im_len, fi) != im_len) goto bail;
-		FlipImageY(*outImageInfo);	
+		FlipImageY(*outImageInfo);
 
 		fclose(fi);
 		return 0;
-	} 
+	}
 	else if (header.ddpfPixelFormat.dwFlags & DDPF_FOURCC)
 	{
 		int sflags;
@@ -1508,7 +1508,7 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 		outImageInfo->data = (unsigned char *) malloc(im_len);
 		if(outImageInfo->data==NULL) goto bail;
 		int im_raw = squish::GetStorageRequirements(header.dwWidth,header.dwHeight, sflags);
-		
+
 		raw = (unsigned char *) malloc(im_raw);
 		if(raw==NULL) goto bail;
 		if(fread(raw, 1, im_raw, fi) != im_raw) goto bail;
@@ -1520,13 +1520,13 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 			swap(p[0],p[2]);
 			p += 4;
 		}
-		FlipImageY(*outImageInfo);			
+		FlipImageY(*outImageInfo);
 		free(raw);
 		fclose(fi);
-		return 0;	
+		return 0;
 	}
 
-	
+
 bail:
 	if (fi) fclose(fi);
 	if (outImageInfo->data) free(outImageInfo->data);
@@ -1544,7 +1544,7 @@ inline void swap_mem(unsigned char * p1, unsigned char * p2, int len)
 		*p1 = b;
 		*p2 = a;
 		++p1;
-		++p2;		
+		++p2;
 	}
 }
 

@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "ColorInterpolatorNode.h"
 
-ColorInterpolatorNode::ColorInterpolatorNode() 
+ColorInterpolatorNode::ColorInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(colorInterpolatorNodeString);
@@ -25,7 +25,7 @@ ColorInterpolatorNode::ColorInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-ColorInterpolatorNode::~ColorInterpolatorNode() 
+ColorInterpolatorNode::~ColorInterpolatorNode()
 {
 }
 
@@ -39,18 +39,18 @@ MFColor *ColorInterpolatorNode::getKeyValueField()
 		return keyValueField;
 	return (MFColor *)getExposedField(keyValueFieldString);
 }
-	
-void ColorInterpolatorNode::addKeyValue(float color[]) 
+
+void ColorInterpolatorNode::addKeyValue(float color[])
 {
 	getKeyValueField()->addValue(color);
 }
 
-int ColorInterpolatorNode::getNKeyValues() 
+int ColorInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-void ColorInterpolatorNode::getKeyValue(int index, float color[]) 
+
+void ColorInterpolatorNode::getKeyValue(int index, float color[])
 {
 	getKeyValueField()->get1Value(index, color);
 }
@@ -65,13 +65,13 @@ SFColor *ColorInterpolatorNode::getValueField()
 		return valueField;
 	return (SFColor *)getEventOut(valueFieldString);
 }
-	
-void ColorInterpolatorNode::setValue(float color[]) 
+
+void ColorInterpolatorNode::setValue(float color[])
 {
 	getValueField()->setValue(color);
 }
 
-void ColorInterpolatorNode::getValue(float color[]) 
+void ColorInterpolatorNode::getValue(float color[])
 {
 	getValueField()->getValue(color);
 }
@@ -80,21 +80,21 @@ void ColorInterpolatorNode::getValue(float color[])
 ////////////////////////////////////////////////
 //	Virtual functions
 ////////////////////////////////////////////////
-	
+
 bool ColorInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ColorInterpolatorNode::initialize() 
+void ColorInterpolatorNode::initialize()
 {
 }
 
-void ColorInterpolatorNode::uninitialize() 
+void ColorInterpolatorNode::uninitialize()
 {
 }
 
-void ColorInterpolatorNode::update() 
+void ColorInterpolatorNode::update()
 {
 	int n;
 
@@ -110,7 +110,7 @@ void ColorInterpolatorNode::update()
 	if (index == -1)
 		return;
 
-	float scale = (fraction - getKey(index)) / (getKey(index+1) - getKey(index));	
+	float scale = (fraction - getKey(index)) / (getKey(index+1) - getKey(index));
 	float color1[3];
 	float color2[3];
 	float colorOut[3];
@@ -124,10 +124,10 @@ void ColorInterpolatorNode::update()
 	sendEvent(getValueField());
 }
 
-void ColorInterpolatorNode::outputContext(ostream &printStream, char *indentString) 
+void ColorInterpolatorNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
-		MFFloat *key = getKeyField();	
+		MFFloat *key = getKeyField();
 		printStream << indentString << "\tkey [" << endl;
 		key->MField::outputContext(printStream, indentString, "\t\t");
 		printStream << indentString << "\t]" << endl;
@@ -145,12 +145,12 @@ void ColorInterpolatorNode::outputContext(ostream &printStream, char *indentStri
 //	List
 ////////////////////////////////////////////////
 
-ColorInterpolatorNode *ColorInterpolatorNode::next() 
+ColorInterpolatorNode *ColorInterpolatorNode::next()
 {
 	return (ColorInterpolatorNode *)Node::next(getType());
 }
 
-ColorInterpolatorNode *ColorInterpolatorNode::nextTraversal() 
+ColorInterpolatorNode *ColorInterpolatorNode::nextTraversal()
 {
 	return (ColorInterpolatorNode *)Node::nextTraversalByType(getType());
 }

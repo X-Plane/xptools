@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: TableEntry.h
  *
  *  This source file is part of DIME.
@@ -39,7 +39,7 @@ class DIME_DLL_API dimeTableEntry : public dimeRecordHolder
 {
   friend class dimeUnknownTable;
   friend class dimeLayerTable;
-  
+
 public:
   dimeTableEntry();
   virtual ~dimeTableEntry();
@@ -54,14 +54,14 @@ public:
 
   static dimeTableEntry *createTableEntry(const char * const name,
 					 dimeMemHandler * const memhandler = NULL);
-  
+
 protected:
   bool preWrite(dimeOutput * const output);
 
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
+
   bool copyRecords(dimeTableEntry * const table, dimeModel * const model) const;
 
 }; // class dimeTableEntry

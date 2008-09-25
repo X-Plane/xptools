@@ -33,7 +33,7 @@
 #include <CGAL/Triangulation_short_names_2.h>
 #include <CGAL/Segment_2_Segment_2_intersection.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template < class R >
 class Triangulation_euclidean_traits_2 {
@@ -56,7 +56,7 @@ public:
   typedef typename R::Construct_triangle_2       Construct_triangle_2;
   typedef typename R::Construct_direction_2      Construct_direction_2;
   typedef typename R::Construct_ray_2            Construct_ray_2;
-  
+
   // for compatibility with previous versions
   typedef Point_2      Point;
   typedef Segment_2    Segment;
@@ -69,7 +69,7 @@ public:
   Triangulation_euclidean_traits_2 &operator=
       (const Triangulation_euclidean_traits_2 &)
   {return *this;}
- 
+
   Compare_x_2
   compare_x_2_object() const
     { return Compare_x_2();}
@@ -77,7 +77,7 @@ public:
   Compare_y_2
   compare_y_2_object() const
     { return Compare_y_2();}
-  
+
   Orientation_2
   orientation_2_object() const
     { return Orientation_2();}
@@ -85,7 +85,7 @@ public:
   Side_of_oriented_circle_2
   side_of_oriented_circle_2_object() const
     {return Side_of_oriented_circle_2();}
- 
+
   Construct_circumcenter_2
   construct_circumcenter_2_object() const
     { return Construct_circumcenter_2();}
@@ -93,7 +93,7 @@ public:
   Construct_bisector_2
   construct_bisector_2_object() const
     {return Construct_bisector_2();}
-  
+
   Compare_distance_2
   compare_distance_2_object() const
     {return Compare_distance_2();}
@@ -112,6 +112,6 @@ public:
 
 };
 
-CGAL_END_NAMESPACE 
+CGAL_END_NAMESPACE
 
 #endif // CGAL_TRIANGULATION_EUCLIDEAN_TRAITS_2_H

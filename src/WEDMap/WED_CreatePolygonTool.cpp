@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,7 +40,7 @@ const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole" };
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,
 									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer, 
+									WED_MapZoomerNew *	zoomer,
 									IResolver *			resolver,
 									WED_Archive *		archive,
 									CreateTool_t		tool) :
@@ -60,8 +60,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mMarkingsLights(this,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge)
 {
 	mPavement.value = surf_Concrete;
-}	
-									
+}
+
 WED_CreatePolygonTool::~WED_CreatePolygonTool()
 {
 }
@@ -92,26 +92,26 @@ void	WED_CreatePolygonTool::AcceptPath(
 	sel->Clear();
 
 	WED_AirportChain *	outer_ring = WED_AirportChain::CreateTyped(GetArchive());
-	
-	
+
+
 	static int n = 0;
 	++n;
-	
+
 	bool is_ccw = (mType == create_Marks) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
 	if (mType == create_Hole) is_ccw = !is_ccw;
-	
+
 	switch(mType) {
 	case create_Taxi:
 		{
-			WED_Taxiway *		tway = WED_Taxiway::CreateTyped(GetArchive());	
-			outer_ring->SetParent(tway,0);	
+			WED_Taxiway *		tway = WED_Taxiway::CreateTyped(GetArchive());
+			outer_ring->SetParent(tway,0);
 			tway->SetParent(host, idx);
-			
+
 			sprintf(buf,"New Taxiway %d",n);
 			tway->SetName(buf);
 			sprintf(buf,"Taxiway %d Outer Ring",n);
 			outer_ring->SetName(buf);
-			
+
 			tway->SetRoughness(mRoughness.value);
 			tway->SetHeading(mHeading.value);
 			tway->SetSurface(mPavement.value);
@@ -121,17 +121,17 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Boundary:
 		{
-			WED_AirportBoundary *		bwy = WED_AirportBoundary::CreateTyped(GetArchive());	
-			outer_ring->SetParent(bwy,0);	
+			WED_AirportBoundary *		bwy = WED_AirportBoundary::CreateTyped(GetArchive());
+			outer_ring->SetParent(bwy,0);
 			bwy->SetParent(host, idx);
-			
+
 			sprintf(buf,"Airport Boundary %d",n);
 			bwy->SetName(buf);
 			sprintf(buf,"Airport Boundary %d Outer Ring",n);
 			outer_ring->SetName(buf);
 
 			sel->Select(bwy);
-			
+
 		}
 		break;
 	case create_Marks:
@@ -139,9 +139,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(host, idx);
 			sprintf(buf,"Linear Feature %d",n);
 			outer_ring->SetName(buf);
-			
+
 			if (mType != create_Hole)
-				sel->Select(outer_ring);			
+				sel->Select(outer_ring);
 		}
 		break;
 	case create_Hole:
@@ -149,15 +149,15 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(host, host->CountChildren());
 			sprintf(buf,"Linear Feature %d",n);
 			outer_ring->SetName(buf);
-			
+
 			if (mType != create_Hole)
-				sel->Select(outer_ring);			
+				sel->Select(outer_ring);
 		}
 		break;
 	}
-	
+
 	outer_ring->SetClosed(closed);
-	
+
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		int idx = is_ccw ? n : pts.size()-n-1;
@@ -171,7 +171,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		else
 		{
 			node->SetSplit(has_split[idx]);
-			if (is_ccw) 
+			if (is_ccw)
 			{
 				node->SetControlHandleHi(dirs_hi[idx]);
 				node->SetControlHandleLo(dirs_lo[idx]);
@@ -215,7 +215,7 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 {
 	if (mType == create_Hole)
 	{
-		ISelection * sel = WED_GetSelect(GetResolver());		
+		ISelection * sel = WED_GetSelect(GetResolver());
 		if (sel->GetSelectionCount() != 1) return NULL;
 		return dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 	} else

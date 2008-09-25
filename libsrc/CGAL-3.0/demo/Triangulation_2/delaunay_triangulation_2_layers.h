@@ -11,8 +11,8 @@
 // file          : demo/Qt_widget/Triangulation_2/triangulation_2_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -33,19 +33,19 @@ template <class T>
 class Qt_layer_show_triangulation : public CGAL::Qt_widget_layer
 {
 public:
-	
+
   Qt_layer_show_triangulation(T &t) : tr(t){};
 
 
   void draw()
   {
-    *widget << CGAL::BLUE; 
+    *widget << CGAL::BLUE;
     *widget << tr;
   };
-	
+
 private:
   T &tr;
-};//end class 
+};//end class
 
 template <class T>
 class Qt_layer_show_voronoi : public CGAL::Qt_widget_layer
@@ -58,10 +58,10 @@ public:
     *widget << CGAL::RED ;
     tr.draw_dual(*widget);
   };
-	
+
 private:
   T	&tr;
-};//end class 
+};//end class
 
 template <class T>
 class Qt_layer_show_points : public CGAL::Qt_widget_layer {
@@ -74,20 +74,20 @@ public:
   Qt_layer_show_points(T &t) : tr(t){};
 
   void draw()
-  {  
-    Vertex_iterator it = tr.vertices_begin(), 
+  {
+    Vertex_iterator it = tr.vertices_begin(),
 		beyond = tr.vertices_end();
-    *widget << CGAL::GREEN << CGAL::PointSize (3) 
-		<< CGAL::PointStyle (CGAL::DISC);    
-    while(it != beyond) {      
+    *widget << CGAL::GREEN << CGAL::PointSize (3)
+		<< CGAL::PointStyle (CGAL::DISC);
+    while(it != beyond) {
       *widget << (*it).point();
       ++it;
     }
   };
 private:
   T	&tr;
-  
-};//end class 
+
+};//end class
 
 template <class T>
 class Qt_layer_nearest_vertex : public CGAL::Qt_widget_layer
@@ -100,7 +100,7 @@ public:
   typedef typename T::Geom_traits::FT		FT;
 
   Qt_layer_nearest_vertex(T &t) : tr(t), first_time(TRUE) {};
-	
+
   void draw(){first_time = TRUE;};
   void mouseMoveEvent(QMouseEvent *e)
   {
@@ -116,7 +116,7 @@ public:
     *widget << CGAL::GREEN << CGAL::PointSize (10)
 		<< CGAL::PointStyle (CGAL::CIRCLE);
     if(!first_time)
-      *widget << oldPoint;	
+      *widget << oldPoint;
     *widget << v->point();
     widget->unlock();
     widget->setRasterOp(old);
@@ -128,9 +128,9 @@ public:
     widget->lock();
     RasterOp old = widget->rasterOp();	//save the initial raster mode
     widget->setRasterOp(XorROP);
-    *widget << CGAL::GREEN << CGAL::PointSize (10) 
+    *widget << CGAL::GREEN << CGAL::PointSize (10)
 		<< CGAL::PointStyle (CGAL::CIRCLE);
-    *widget << oldPoint;	
+    *widget << oldPoint;
     widget->unlock();
     widget->setRasterOp(old);
     first_time = TRUE;
@@ -141,8 +141,8 @@ private:
 	T     &tr;
 	Point oldPoint, newPoint;
 	bool  first_time;
-	
-};//end class 
+
+};//end class
 
 
 template <class T>
@@ -158,7 +158,7 @@ public:
   typedef typename CGAL::Circle_2<Rep>           Circle;
 
   Qt_layer_circum_circle(T &t) : tr(t), first_time(TRUE) {};
-	
+
   void draw(){first_time = TRUE;};
   void mouseMoveEvent(QMouseEvent *e)
   {
@@ -171,15 +171,15 @@ public:
     if(!tr.is_infinite(f)){
       Point circum_center = tr.dual(f);
       Vertex_handle v1 = (*f).vertex(1);
-      newCircle = Circle(circum_center, 
-			 CGAL::squared_distance((*v1).point(), 
+      newCircle = Circle(circum_center,
+			 CGAL::squared_distance((*v1).point(),
 						circum_center));
       RasterOp old = widget->rasterOp();	//save the initial raster mode
       widget->setRasterOp(XorROP);
       widget->lock();
       *widget << CGAL::GREEN << CGAL::PointSize(10);
       if(!first_time)
-	*widget << oldCircle;	
+	*widget << oldCircle;
       *widget << newCircle;
       widget->unlock();
       widget->setRasterOp(old);
@@ -203,7 +203,7 @@ public:
     widget->setRasterOp(XorROP);
     *widget << CGAL::GREEN;
     if(!first_time)
-      *widget << oldCircle;	
+      *widget << oldCircle;
     widget->unlock();
     widget->setRasterOp(old);
     first_time = TRUE;
@@ -214,8 +214,8 @@ private:
 	T       &tr;
 	Circle oldCircle, newCircle;
 	bool		first_time;
-	
-};//end class 
+
+};//end class
 
 
 #endif

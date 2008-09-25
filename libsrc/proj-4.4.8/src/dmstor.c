@@ -80,7 +80,7 @@ dmstor(const char *is, char **rs) {
 }
 
 static double
-proj_strtod(char *nptr, char **endptr) 
+proj_strtod(char *nptr, char **endptr)
 
 {
     char c, *cp = nptr;

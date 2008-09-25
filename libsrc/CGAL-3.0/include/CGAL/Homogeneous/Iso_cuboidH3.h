@@ -53,7 +53,7 @@ public:
                const Point_3& far_,   const Point_3& close);
 
   Iso_cuboidH3(const RT& min_hx, const RT& min_hy, const RT& min_hz,
-               const RT& max_hx, const RT& max_hy, const RT& max_hz, 
+               const RT& max_hx, const RT& max_hy, const RT& max_hz,
                const RT& hw);
 
   Iso_cuboidH3(const RT& min_hx, const RT& min_hy, const RT& min_hz,
@@ -179,7 +179,7 @@ template < class R >
 CGAL_KERNEL_LARGE_INLINE
 Iso_cuboidH3<R>::
 Iso_cuboidH3(const RT& min_hx, const RT& min_hy, const RT& min_hz,
-             const RT& max_hx, const RT& max_hy, const RT& max_hz, 
+             const RT& max_hx, const RT& max_hy, const RT& max_hz,
              const RT& hw)
 {
   initialize_with( rep( Point_3(min_hx, min_hy, min_hz, hw),
@@ -252,7 +252,7 @@ template < class R >
 inline
 typename Iso_cuboidH3<R>::FT
 Iso_cuboidH3<R>::min_coord(int i) const
-{ 
+{
    CGAL_kernel_precondition(i == 0 || i == 1 || i == 2);
    if ( i == 0 )
        return xmin();
@@ -265,7 +265,7 @@ template < class R >
 inline
 typename Iso_cuboidH3<R>::FT
 Iso_cuboidH3<R>::max_coord(int i) const
-{ 
+{
    CGAL_kernel_precondition(i == 0 || i == 1 || i == 2);
    if ( i == 0 )
       return xmax();

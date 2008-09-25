@@ -36,7 +36,7 @@ template <class RT, class LA > class Aff_transformationHd;
 template <class RT, class LA > class Aff_transformationHd_rep;
 
 template <class RT, class LA>
-class Aff_transformationHd_rep 
+class Aff_transformationHd_rep
 {
   friend class Aff_transformationHd<RT,LA>;
   typedef typename LA::Matrix Matrix;
@@ -45,26 +45,26 @@ public:
   Aff_transformationHd_rep(int d) : M_(d+1) {}
   Aff_transformationHd_rep(const Matrix& M_init) : M_(M_init) {}
   ~Aff_transformationHd_rep() {}
-}; 
+};
 
 
-/*{\Moptions outfile=Aff_transformation_d.man}*/ 
+/*{\Moptions outfile=Aff_transformation_d.man}*/
 /*{\Manpage{Aff_transformation_d}{R}{Affine Transformations}{t}}*/
-/*{\Msubst 
+/*{\Msubst
 Hd<RT,LA>#_d<R>
 Aff_transformationHd#Aff_transformation_d
 Quotient<RT>#FT
 }*/
 
 template <class _RT, class _LA>
-class Aff_transformationHd : 
-  public Handle_for< Aff_transformationHd_rep<_RT,_LA> > { 
+class Aff_transformationHd :
+  public Handle_for< Aff_transformationHd_rep<_RT,_LA> > {
 
   typedef Aff_transformationHd_rep<_RT,_LA> Rep;
   typedef Handle_for<Rep> Base;
   typedef Aff_transformationHd<_RT,_LA> Self;
 
-/*{\Mdefinition 
+/*{\Mdefinition
 An instance of the data type |\Mname| is an affine transformation of
 $d$-dimensional space. It is specified by a square matrix
 $M$ of dimension $d + 1$. All entries in the last row of |M| except
@@ -73,7 +73,7 @@ A point $p$ with homogeneous coordinates $(p[0], \ldots, p[d])$ can be
 transformed into the point |p.transform(A)|, where |A| is an affine
 transformation created from |M| by the constructors below. }*/
 
-public: 
+public:
 /*{\Mtypes 4}*/
 
 typedef _RT RT;
@@ -92,7 +92,7 @@ Aff_transformationHd(int d = 0) : Base( Rep(d) ) {}
 /*{\Mcreate introduces a transformation in $d$-dimensional space.}*/
 
 Aff_transformationHd(int d, Identity_transformation) : Base( Rep(d) )
-/*{\Mcreate introduces the identity transformation in $d$-dimensional 
+/*{\Mcreate introduces the identity transformation in $d$-dimensional
     space.}*/
 { for (int i = 0; i <= d; ++i) ptr()->M_(i,i) = RT(1); }
 
@@ -108,14 +108,14 @@ template <typename Forward_iterator>
 Aff_transformationHd(Scaling, Forward_iterator start, Forward_iterator end) :
   Base( Rep(std::distance(start,end)-1) )
 /*{\Mcreate introduces the transformation of $d$-space specified by a
-diagonal matrix with entries |set [start,end)| on the diagonal 
-(a scaling of the space). \precond |set [start,end)| is a vector of 
+diagonal matrix with entries |set [start,end)| on the diagonal
+(a scaling of the space). \precond |set [start,end)| is a vector of
 dimension $d+1$.}*/
 { int i=0; while (start != end) { ptr()->M_(i,i) = *start++;++i; } }
 
 Aff_transformationHd(Translation, const VectorHd<RT,LA>& v) :
   Base( Rep(v.dimension()) )
-/*{\Mcreate introduces the translation by vector $v$.}*/ 
+/*{\Mcreate introduces the translation by vector $v$.}*/
 { register int d = v.dimension();
   for (int i = 0; i < d; ++i) {
     ptr()->M_(i,i) = v.homogeneous(d);
@@ -124,17 +124,17 @@ Aff_transformationHd(Translation, const VectorHd<RT,LA>& v) :
   ptr()->M_(d,d) = v.homogeneous(d);
 }
 
-Aff_transformationHd(int d, Scaling, const RT& num, const RT& den) 
-  : Base( Rep(d) ) 
+Aff_transformationHd(int d, Scaling, const RT& num, const RT& den)
+  : Base( Rep(d) )
 /*{\Mcreate returns a scaling by a scale factor |num/den|.}*/
 { Matrix& M = ptr()->M_;
   for (int i = 0; i < d; ++i) M(i,i) = num;
   M(d,d) = den;
 }
 
-Aff_transformationHd(int d, Rotation,  
-  const RT& sin_num, const RT& cos_num, const RT& den, 
-  int e1 = 0, int e2 = 1) : Base( Rep(d) ) 
+Aff_transformationHd(int d, Rotation,
+  const RT& sin_num, const RT& cos_num, const RT& den,
+  int e1 = 0, int e2 = 1) : Base( Rep(d) )
 /*{\Mcreate returns a planar rotation with sine and cosine values
 |sin_num/den| and |cos_num/den| in the plane spanned by
 the base vectors $b_{e1}$ and $b_{e2}$ in $d$-space. Thus
@@ -153,7 +153,7 @@ and $0 \leq e_1 < e_2 < d$}*/
   M(d,d) = den;
 }
 
-Aff_transformationHd(int d, Rotation, const DirectionHd<RT,LA>& dir, 
+Aff_transformationHd(int d, Rotation, const DirectionHd<RT,LA>& dir,
   const RT& eps_num, const RT& eps_den, int e1 = 0, int e2 = 1)
 /*{\Mcreate returns a planar rotation within the plane spanned by
 the base vectors $b_{e1}$ and $b_{e2}$ in $d$-space.  The rotation
@@ -162,7 +162,7 @@ the difference between the sines and cosines of the rotation given by
 |dir| and the approximated rotation are at most |num/den| each.\\
 \precond |dir.dimension()==2|, |!dir.is_degenerate()| and |num < den|
 is positive and $0 \leq e_1 < e_2 < d$ }*/
-  : Base( Rep(d) )  
+  : Base( Rep(d) )
 {
   CGAL_assertion(dir.dimension()==2);
   Matrix& M = ptr()->M_;
@@ -179,7 +179,7 @@ is positive and $0 \leq e_1 < e_2 < d$ }*/
 
 /*{\Moperations 5 3}*/
 
-int dimension() const 
+int dimension() const
 { return ptr()->M_.row_dimension()-1; }
 /*{\Mop the dimension of the underlying space }*/
 
@@ -197,22 +197,22 @@ bool is_odd() const
 Aff_transformationHd<RT,LA> inverse() const
 /*{\Mop returns the inverse transformation.
 \precond |\Mvar.matrix()| is invertible.}*/
-{ Aff_transformationHd<RT,LA> Inv; RT D; 
+{ Aff_transformationHd<RT,LA> Inv; RT D;
   Vector dummy;
-  if ( !LA::inverse(matrix(),Inv.ptr()->M_,D,dummy) ) 
+  if ( !LA::inverse(matrix(),Inv.ptr()->M_,D,dummy) )
   CGAL_assertion_msg(0,"Aff_transformationHd::inverse: not invertible.");
   if ( D < 0 ) Inv.ptr()->M_ = -Inv.ptr()->M_;
   return Inv;
 }
-  
-Aff_transformationHd<RT,LA>  
+
+Aff_transformationHd<RT,LA>
 operator*(const Aff_transformationHd<RT,LA>& s) const
 /*{\Mbinop composition of transformations. Note that transformations
 are not necessarily commutative. |t*s| is the transformation
 which transforms first by |t| and then by |s|.}*/
 { CGAL_assertion_msg((dimension()==s.dimension()),
   "Aff_transformationHd::operator*: dimensions disagree.");
-  return Aff_transformationHd<RT,LA>(matrix()*s.matrix()); 
+  return Aff_transformationHd<RT,LA>(matrix()*s.matrix());
 }
 
 bool operator==(const Aff_transformationHd<RT,LA>& a1) const
@@ -226,18 +226,18 @@ bool operator!=(const Aff_transformationHd<RT,LA>& a1) const
 
 template <class RT, class LA>
 std::ostream& operator<<(
-  std::ostream& os, const Aff_transformationHd<RT,LA>& t) 
+  std::ostream& os, const Aff_transformationHd<RT,LA>& t)
 { os << t.matrix(); return os; }
 
 template <class RT, class LA>
 std::istream& operator>>(
   std::istream& is, Aff_transformationHd<RT,LA>& t)
 { typename LA::Matrix M(t.dimension());
-  is >> M; t = Aff_transformationHd<RT,LA>(M); 
+  is >> M; t = Aff_transformationHd<RT,LA>(M);
   return is;
 }
 
-/*{\Mimplementation 
+/*{\Mimplementation
 Affine Transformations are implemented by matrices of integers as an
 item type.  All operations like creation, initialization, input and
 output on a transformation $t$ take time $O(|t.dimension()|^2)$. |dimension()|

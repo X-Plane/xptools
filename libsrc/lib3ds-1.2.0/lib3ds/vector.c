@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -220,7 +220,7 @@ void
 lib3ds_vector_cubic(Lib3dsVector c, Lib3dsVector a, Lib3dsVector p, Lib3dsVector q,
   Lib3dsVector b, Lib3dsFloat t)
 {
-  Lib3dsDouble x,y,z,w;   
+  Lib3dsDouble x,y,z,w;
 
   x=2*t*t*t - 3*t*t + 1;
   y=-2*t*t*t + 3*t*t;
@@ -236,7 +236,7 @@ lib3ds_vector_cubic(Lib3dsVector c, Lib3dsVector a, Lib3dsVector p, Lib3dsVector
  * c[i] = min(c[i], a[i]);
  * \ingroup vector
  */
-void 
+void
 lib3ds_vector_min(Lib3dsVector c, Lib3dsVector a)
 {
   int i;
@@ -252,7 +252,7 @@ lib3ds_vector_min(Lib3dsVector c, Lib3dsVector a)
  * c[i] = max(c[i], a[i]);
  * \ingroup vector
  */
-void 
+void
 lib3ds_vector_max(Lib3dsVector c, Lib3dsVector a)
 {
   int i;

@@ -6,7 +6,7 @@
 # define C0 (char *)0
 
 
-void declare_native_rule(char* module, char* rule, char** args, 
+void declare_native_rule(char* module, char* rule, char** args,
                          LIST*(*f)(PARSE*, FRAME*))
 
 {
@@ -14,7 +14,7 @@ void declare_native_rule(char* module, char* rule, char** args,
     if (m->native_rules == 0) {
         m->native_rules = hashinit( sizeof( native_rule_t ), "native rules");
     }
-    
+
     {
         native_rule_t n, *np = &n;
         n.name = rule;
@@ -22,12 +22,12 @@ void declare_native_rule(char* module, char* rule, char** args,
         {
             n.arguments = args_new();
             lol_build( n.arguments->data, args );
-        }   
+        }
         else
         {
             n.arguments = 0;
         }
-        n.procedure = parse_make( f, P0, P0, P0, C0, C0, 0 );        
+        n.procedure = parse_make( f, P0, P0, P0, C0, C0, 0 );
         hashenter(m->native_rules, (HASHDATA**)&np);
     }
 }

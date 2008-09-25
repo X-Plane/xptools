@@ -5,7 +5,7 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 // ----------------------------------------------------------------------
 //
 // file          : main.C
@@ -77,7 +77,7 @@ Point               pl_point;
 class Qt_layer_show_ch : public CGAL::Qt_widget_layer
 {
 public:
-	
+
   Qt_layer_show_ch(){};
 
 
@@ -92,7 +92,7 @@ public:
       *widget << (*itp++);
     }
 
-    if(pl_valid && !(arr.halfedges_begin() == arr.halfedges_end()) ) 
+    if(pl_valid && !(arr.halfedges_begin() == arr.halfedges_end()) )
     {
       *widget << CGAL::LineWidth(3);
       *widget << CGAL::YELLOW;
@@ -101,25 +101,25 @@ public:
       Arr::Point temp_p(pl_point.x(),pl_point.y());
       Arr::Halfedge_handle e = arr.locate(temp_p, lt);
 //      std::cout << "locate type " << lt << std::endl;
-	
+
       //color the face on the screen
       Arr::Face_handle f=e->face();
 
-	
-      if (f->does_outer_ccb_exist()) 
+
+      if (f->does_outer_ccb_exist())
       {
 	Arr::Ccb_halfedge_circulator cc=f->outer_ccb();
 	do {
 	  *widget << cc->curve();
 	} while (++cc != f->outer_ccb());
-	
+
       }
 
       Arr::Holes_iterator hit=f->holes_begin(),eit=f->holes_end();
-      for (;hit!=eit; ++hit) 
+      for (;hit!=eit; ++hit)
       {
-	Arr::Ccb_halfedge_circulator cc=*hit; 
-	do 
+	Arr::Ccb_halfedge_circulator cc=*hit;
+	do
 	{
 	  *widget << cc->curve();
 	} while (++cc != *hit);
@@ -128,7 +128,7 @@ public:
     }
 
     widget->unlock();
-  };	
+  };
 
   void mousePressEvent(QMouseEvent *e)
   {
@@ -155,11 +155,11 @@ public:
 	itp++;
       }
 
-      
+
       Arr::Curve_iterator ci = arr.curve_node_begin();
       while(ci != arr.curve_node_end() )
       {
-	if( (*ci).curve() == 
+	if( (*ci).curve() ==
 	  (*it_seg) )
 	{
 	  arr.remove_curve( ci );
@@ -169,13 +169,13 @@ public:
       }
 
       list_of_segments.erase( it_seg );
-      
+
       pl_valid = false;
       (*widget).redraw();
     }
   };
-  
-};//end class 
+
+};//end class
 
 class MyWindow : public QMainWindow
 {
@@ -184,7 +184,7 @@ public:
   MyWindow(int w, int h){
     widget = new CGAL::Qt_widget(this);
     setCentralWidget(widget);
-    
+
     //create a timer for checking if somthing changed
     QTimer *timer = new QTimer( this );
     connect( timer, SIGNAL(timeout()),
@@ -219,16 +219,16 @@ public:
     //the standard toolbar
     stoolbar = new CGAL::Qt_widget_standard_toolbar (widget, this, "ST");
     //the new tools toolbar
-    newtoolbar = new Tools_toolbar(widget, this, &list_of_segments);	
-  
+    newtoolbar = new Tools_toolbar(widget, this, &list_of_segments);
+
     *widget << CGAL::LineWidth(2) << CGAL::BackgroundColor (CGAL::BLACK);
-  
+
     resize(w,h);
     widget->set_window(-1, 1, -1, 1);
     widget->setMouseTracking(TRUE);
-	
+
     //connect the widget to the main function that receives the objects
-    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)), 
+    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)),
     this, SLOT(get_new_object(CGAL::Object)));
 
     //application flag stuff
@@ -241,14 +241,14 @@ public:
 
 private:
   void something_changed(){current_state++;};
-  
+
 public slots:
   void new_instance()
   {
     widget->lock();
     list_of_segments.clear();
     stoolbar->clear_history();
-    widget->set_window(-1.1, 1.1, -1.1, 1.1); 
+    widget->set_window(-1.1, 1.1, -1.1, 1.1);
 			// set the Visible Area to the Interval
     widget->unlock();
     something_changed();
@@ -271,7 +271,7 @@ private slots:
 
       pl_point = p;
       pl_valid = true;
-      
+
       something_changed();
     }
 
@@ -314,17 +314,17 @@ private slots:
       widget->redraw();
       old_state = current_state;
     }
-  }	
+  }
 
   void gen_segments()
   {
     stoolbar->clear_history();
-    widget->set_window(-1.1, 1.1, -1.1, 1.1); 
+    widget->set_window(-1.1, 1.1, -1.1, 1.1);
 		// set the Visible Area to the Interval
 
     // send resizeEvent only on show.
     CGAL::Random_points_in_square_2<Point> g(0.5);
-    for(int count=0; count<25; count++) 
+    for(int count=0; count<25; count++)
     {
       Point p1(*g++), p2(*g++);
       NT scale(2);
@@ -338,7 +338,7 @@ private slots:
 
     something_changed();
   }
-	
+
 
 private:
   CGAL::Qt_widget       *widget;

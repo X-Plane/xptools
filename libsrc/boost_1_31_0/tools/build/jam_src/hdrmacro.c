@@ -29,7 +29,7 @@
  *              #include statements.
  *
  *  we look for lines like "#define MACRO  <....>" or '#define MACRO  "    "'
- *  in the target file. When found, we 
+ *  in the target file. When found, we
  *
  *  we then phony up a rule invocation like:
  *
@@ -55,9 +55,9 @@ typedef struct header_macro
 {
   char*  symbol;
   char*  filename;  /* we could maybe use a LIST here ?? */
-  
+
 } HEADER_MACRO;
- 
+
 static struct hash*   header_macros_hash = 0;
 
 /*
@@ -72,7 +72,7 @@ macro_headers( TARGET *t )
     static regexp *re = 0;
     FILE	*f;
     char	buf[ 1024 ];
-    
+
     if ( DEBUG_HEADER )
         printf( "macro header scan for %s\n", t->name );
 
@@ -85,7 +85,7 @@ macro_headers( TARGET *t )
             "^[ 	]*#[ 	]*define[ 	]*([A-Za-z][A-Za-z0-9_]*)[ 	]*"
             "[<\"]([^\">]*)[\">].*$" );
     }
-    
+
     if( !( f = fopen( t->boundname, "r" ) ) )
         return;
 
@@ -98,7 +98,7 @@ macro_headers( TARGET *t )
             /* we detected a line that looks like "#define  MACRO  filename */
             re->endp[1][0] = '\0';
             re->endp[2][0] = '\0';
-        
+
             if ( DEBUG_HEADER )
                 printf( "macro '%s' used to define filename '%s' in '%s'\n",
                         re->startp[1], re->startp[2], t->boundname );
@@ -136,6 +136,6 @@ macro_header_get( const char*  macro_name )
       printf( "### macro '%s' evaluated to '%s'\n", macro_name, v->filename );
     return v->filename;
   }
-  return 0;  
+  return 0;
 }
 

@@ -34,7 +34,7 @@
  *    hcache_init() - read and parse the local .jamdeps file.
  *    hcache_done() - write a new .jamdeps file
  *    hcache() - return list of headers on target.  Use cache or do a scan.
- *    
+ *
  * The dependency file format is an ascii file with 1 line per target.
  * Each line has the following fields:
  * @boundname@ timestamp @file@ @file@ @file@ ... \n
@@ -53,7 +53,7 @@ typedef struct hcachedata HCACHEDATA ;
 
 
 static struct hash *hcachehash = 0;
-static HCACHEDATA  *hcachelist = 0; 
+static HCACHEDATA  *hcachelist = 0;
 
 static int queries = 0;
 static int hits = 0;
@@ -181,7 +181,7 @@ hcache_init()
 
     if (! (f = fopen (hcachename, "rb" )))
 	return;
-    
+
     version = read_netstring(f);
     if (!version || strcmp(version, CACHE_FILE_VERSION)) {
 	fclose(f);
@@ -211,14 +211,14 @@ hcache_init()
 		    hcachename, record_type ? record_type : "<null>");
 	    goto bail;
 	}
-	
+
 	c = &cachedata;
-	    
+
 	c->boundname = read_netstring(f);
 	time_str = read_netstring(f);
 	age_str = read_netstring(f);
 	includes_count_str = read_netstring(f);
-	
+
 	if (!c->boundname || !time_str || !age_str
 	    || !includes_count_str)
 	{
@@ -273,7 +273,7 @@ hcache_init()
     if (DEBUG_HEADER) {
 	printf("hcache read from file %s\n", hcachename);
     }
-    
+
  bail:
     fclose(f);
 }
@@ -286,7 +286,7 @@ hcache_done()
     int 	header_count = 0;
     char*	hcachename;
     int		maxage;
-    
+
     if (!hcachehash)
 	return;
 

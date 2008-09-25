@@ -238,7 +238,7 @@ static Keyword aKeywordTable[] = {
 static int NKEYWORD = (sizeof(aKeywordTable)/sizeof(aKeywordTable[0]));
 
 /* An array to map all upper-case characters into their corresponding
-** lower-case character. 
+** lower-case character.
 */
 const unsigned char sqlite3UpperToLower[] = {
       0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
@@ -437,7 +437,7 @@ int main(int argc, char **argv){
       j = 0;
     }
   }
-  printf("%s  };\n", j==0 ? "" : "\n");    
+  printf("%s  };\n", j==0 ? "" : "\n");
 
   printf("  static const unsigned char aNext[%d] = {\n", NKEYWORD);
   for(i=j=0; i<NKEYWORD; i++){
@@ -449,7 +449,7 @@ int main(int argc, char **argv){
       j = 0;
     }
   }
-  printf("%s  };\n", j==0 ? "" : "\n");    
+  printf("%s  };\n", j==0 ? "" : "\n");
 
   printf("  static const unsigned char aLen[%d] = {\n", NKEYWORD);
   for(i=j=0; i<NKEYWORD; i++){
@@ -461,7 +461,7 @@ int main(int argc, char **argv){
       j = 0;
     }
   }
-  printf("%s  };\n", j==0 ? "" : "\n");    
+  printf("%s  };\n", j==0 ? "" : "\n");
 
   printf("  static const unsigned short int aOffset[%d] = {\n", NKEYWORD);
   for(i=j=0; i<NKEYWORD; i++){

@@ -37,7 +37,7 @@ class Arr_polyline_traits_2
 public:
 
   typedef Tag_true                                  Has_left_category;
-    
+
   typedef Segment_traits_                           Segment_traits_2;
   typedef typename Segment_traits_2::Kernel         Kernel;
   typedef Arr_polyline_traits_2<Segment_traits_2>   Self;
@@ -76,11 +76,11 @@ public:
     return (seg_traits.compare_x (p1, p2));
   }
 
-  /*! 
+  /*!
    * Compares lexigoraphically the two points: by x, then by y.
    * \param p1 Te first point.
    * \param p2 The second point.
-   * \return LARGER if x(p1) > x(p2), or if x(p1) = x(p2) and y(p1) > y(p2); 
+   * \return LARGER if x(p1) > x(p2), or if x(p1) = x(p2) and y(p1) > y(p2);
    *         SMALLER if x(p1) < x(p2), or if x(p1) = x(p2) and y(p1) < y(p2);
    *         or else EQUAL.
    */
@@ -98,9 +98,9 @@ public:
   {
     // An x-monotone polyline can represent a vertical segment only if it
     // is comprised of a single segment.
-    return (cv._size() == 1 && 
+    return (cv._size() == 1 &&
 	    seg_traits.curve_is_vertical(cv[0]));
-  } 
+  }
 
   /*!
    * Check whether the given point is in the x-range of the given curve.
@@ -116,7 +116,7 @@ public:
   }
 
   /*!
-   * Get the relative status of two curves at the x-coordinate of a given 
+   * Get the relative status of two curves at the x-coordinate of a given
    * point.
    * \param cv1 The first curve.
    * \param cv2 The second curve.
@@ -125,8 +125,8 @@ public:
    * \return LARGER if cv1(x(q)) > cv2(x(q)); SMALLER if cv1(x(q)) < cv2(x(q));
    *  or else EQUAL.
    */
-  Comparison_result curves_compare_y_at_x(const X_monotone_curve_2 & cv1, 
-                                          const X_monotone_curve_2 & cv2, 
+  Comparison_result curves_compare_y_at_x(const X_monotone_curve_2 & cv1,
+                                          const X_monotone_curve_2 & cv2,
                                           const Point_2 & q) const
   {
     // Get the indices of the segments in cv1 and cv2 containing q.
@@ -145,14 +145,14 @@ public:
    * \param cv1 The first curve.
    * \param cv2 The second curve.
    * \param q The point.
-   * \pre The point q is in the x range of the two curves, and both of them 
+   * \pre The point q is in the x range of the two curves, and both of them
    * must be also be defined to its left. Furthermore, cv1(x(q) == cv2(x(q)).
    * \return The relative position of cv1 with respect to cv2 to the left of
    * x(q): LARGER, SMALLER or EQUAL.
    */
   Comparison_result curves_compare_y_at_x_left(const X_monotone_curve_2& cv1,
-                                               const X_monotone_curve_2& cv2, 
-                                               const Point_2& q) const 
+                                               const X_monotone_curve_2& cv2,
+                                               const Point_2& q) const
   {
     // The two curves must not be vertical.
     CGAL_precondition(! curve_is_vertical(cv1));
@@ -168,7 +168,7 @@ public:
 
     // Compare cv1[i1] and cv2[i2] at q's left.
     return (seg_traits.curves_compare_y_at_x_left (cv1[i1], cv2[i2], q));
-  } 
+  }
 
   /*!
    * Compares the y value of two curves in an epsilon environment to the right
@@ -176,14 +176,14 @@ public:
    * \param cv1 The first curve.
    * \param cv2 The second curve.
    * \param q The point.
-   * \pre The point q is in the x range of the two curves, and both of them 
+   * \pre The point q is in the x range of the two curves, and both of them
    * must be also be defined to its right. Furthermore, cv1(x(q) == cv2(x(q)).
    * \return The relative position of cv1 with respect to cv2 to the right of
    * x(q): LARGER, SMALLER or EQUAL.
    */
   Comparison_result curves_compare_y_at_x_right(const X_monotone_curve_2& cv1,
-						const X_monotone_curve_2& cv2, 
-						const Point_2& q) const 
+						const X_monotone_curve_2& cv2,
+						const Point_2& q) const
   {
     // The two curves must not be vertical.
     CGAL_precondition(! curve_is_vertical(cv1));
@@ -201,7 +201,7 @@ public:
     return (seg_traits.curves_compare_y_at_x_right (cv1[i1], cv2[i2], q));
   }
 
-  /*! 
+  /*!
    * Return the location of the given point with respect to the input curve.
    * \param cv The curve.
    * \param p The point.
@@ -221,7 +221,7 @@ public:
     // Compare the segment cv[i] and p.
     return (seg_traits.curve_compare_y_at_x (p, cv[i]));
   }
-    
+
   /*!
    * Check if the two points are the same.
    * \param p1 The first point.
@@ -229,11 +229,11 @@ public:
    * \return (true) if p1 == p2.
    */
   bool point_equal (const Point_2& p1, const Point_2& p2) const
-  { 
+  {
     return (seg_traits.point_equal(p1, p2));
   }
-  
-  /*! 
+
+  /*!
    * Check if the two curves are the same (have the same graph).
    * \param cv1 The first curve.
    * \param cv2 The second curve.
@@ -246,10 +246,10 @@ public:
     int    n1 = cv1._size();
     int    n2 = cv2._size();
 
-    if (n1 != n2) 
+    if (n1 != n2)
       return (false);
 
-    // Check the pairwise equality of the contained segments. 
+    // Check the pairwise equality of the contained segments.
     bool   equal = true;
     int    i;
 
@@ -314,7 +314,7 @@ public:
       flip_cv._push_back (seg_traits.curve_opposite(cv[n - i - 1]));
     }
 
-    return (flip_cv); 
+    return (flip_cv);
   }
 
   /*!
@@ -335,21 +335,21 @@ public:
       curr_res = seg_traits.compare_x (seg_traits.curve_source(curve[i]),
 				       seg_traits.curve_target(curve[i]));
 
-      // In case of a vertical segment, it must be the only segment in the 
+      // In case of a vertical segment, it must be the only segment in the
       // polyline to be considered x-monotone.
       if (curr_res == EQUAL)
 	return (curve._size() == 1);
 
       if (curr_res != prev_res && prev_res != EQUAL)
 	return (false);
-      
+
       prev_res = curr_res;
     }
 
     return (true);
   }
-  
-  /*! 
+
+  /*!
    * Cut the given curve into x-monotone subcurves and insert them to the
    * given output iterator.
    * \param cv The curve.
@@ -372,7 +372,7 @@ public:
       curr_res = seg_traits.compare_x (seg_traits.curve_source(curve[i]),
 				       seg_traits.curve_target(curve[i]));
 
-      // In case of a vertical segment, it must be the only segment in the 
+      // In case of a vertical segment, it must be the only segment in the
       // polyline to be considered x-monotone.
       if (curr_res == EQUAL)
       {
@@ -398,7 +398,7 @@ public:
 	  *o++ = x_cv;
 	  x_cv._clear();
 	}
-	
+
 	x_cv._push_back (curve[i]);
       }
       else
@@ -406,7 +406,7 @@ public:
 	// Just append [ps, pt] to the current chain.
 	x_cv._push_back (curve[i]);
       }
-      
+
       prev_res = curr_res;
     }
 
@@ -431,8 +431,8 @@ public:
    * \param p the split point.
    * \pre p lies on cv but is not one of its end-points.
    */
-  void curve_split (const X_monotone_curve_2& cv, 
-		    X_monotone_curve_2& c1, X_monotone_curve_2& c2, 
+  void curve_split (const X_monotone_curve_2& cv,
+		    X_monotone_curve_2& c1, X_monotone_curve_2& c2,
 		    const Point_2& p) const
   {
     // Locate the segment on the polyline cv that contains p.
@@ -444,7 +444,7 @@ public:
     CGAL_precondition(! seg_traits.point_equal(curve_target(cv), p));
 
     // Clear the output curves.
-    c1._clear(); 
+    c1._clear();
     c2._clear();
 
     // Push all segments labeled (0, 1, ... , i-1) into c1.
@@ -491,9 +491,9 @@ public:
    * Find the nearest intersection point (or points) of two given curves to
    * the right lexicographically of a given point not including the point
    * itself:
-   *  - If the intersection of the two curves is a point to the right of the 
+   *  - If the intersection of the two curves is a point to the right of the
    *    given point, it is returned through both point references p1 and p2.
-   *  - If the intersection of the two curves is an X_monotone_curve_2, 
+   *  - If the intersection of the two curves is an X_monotone_curve_2,
    *    that is, they overlap at infinitely many points, then the rightmost
    *    segment of the intersection is returned.
    * NOTE: When there is an overlap we will always return a SEGMENT (i.e.,
@@ -522,9 +522,9 @@ public:
    * Find the nearest intersection point (or points) of two given curves to
    * the left lexicographically of a given point not including the point
    * itself:
-   *  - If the intersection of the two curves is a point to the left of the 
+   *  - If the intersection of the two curves is a point to the left of the
    *    given point, it is returned through both point references p1 and p2.
-   *  - If the intersection of the two curves is an X_monotone_curve_2, 
+   *  - If the intersection of the two curves is an X_monotone_curve_2,
    *    that is, they overlap at infinitely many points, then the leftmost
    *    segment of the intersection is returned.
    * NOTE: When there is an overlap we will always return a SEGMENT (i.e.,
@@ -561,9 +561,9 @@ public:
                       const X_monotone_curve_2& cv2) const
   {
     // Get the leftmost point of cv1 and of cv2.
-    const Point_2& left1 = _is_curve_to_right(cv1) ? curve_source(cv1) : 
+    const Point_2& left1 = _is_curve_to_right(cv1) ? curve_source(cv1) :
                                                      curve_target(cv1);
-    const Point_2& left2 = _is_curve_to_right(cv2) ? curve_source(cv2) : 
+    const Point_2& left2 = _is_curve_to_right(cv2) ? curve_source(cv2) :
                                                      curve_target(cv2);
 
     // Pick the righmost point of the two to start with.
@@ -613,11 +613,11 @@ private:
     res_from = seg_traits.compare_x (seg_traits.curve_source(cv[from]), q);
     if (res_from == EQUAL)
       return (from);
-    
+
     res_to = seg_traits.compare_x (seg_traits.curve_target(cv[to]), q);
     if (res_to == EQUAL)
       return (to);
-    
+
     if (res_from == res_to)
       return (-1);
 
@@ -636,7 +636,7 @@ private:
 
 	if (res_mid_s == EQUAL)
 	  return (mid);
-	
+
 	if (res_mid_s == res_from)
 	  from = mid;
 	else
@@ -649,7 +649,7 @@ private:
 
 	if (res_mid_t == EQUAL)
 	  return (mid);
-	
+
 	if (res_mid_t == res_to)
 	  to = mid;
 	else
@@ -688,9 +688,9 @@ private:
     // Check whether x(q) is the x coordinate of an end-point of cv.
     if (seg_traits.compare_x (q, seg_traits.curve_source(cv[i])) == EQUAL)
     {
-      // If x(q) is at cv[i]'s source and its target is to the right (or left) 
-      // of q, then cv[i] is defined to the right (or left) of q. 
-      if (seg_traits.compare_x (q, 
+      // If x(q) is at cv[i]'s source and its target is to the right (or left)
+      // of q, then cv[i] is defined to the right (or left) of q.
+      if (seg_traits.compare_x (q,
 				seg_traits.curve_target(cv[i])) == cres)
       {
 	return (i);
@@ -699,7 +699,7 @@ private:
       // Otherwise, since cv[i]'s source is cv[i-1]'s target, we should check
       // if the source of the previous curve is to the right (or left) of q.
       if (i > 0 &&
-	  seg_traits.compare_x (q, 
+	  seg_traits.compare_x (q,
 			        seg_traits.curve_source(cv[i-1])) == cres)
       {
 	return (i-1);
@@ -711,9 +711,9 @@ private:
     }
     else if (seg_traits.compare_x (q, seg_traits.curve_target(cv[i])) == EQUAL)
     {
-      // If x(q) is at cv[i]'s target and its source is to the right (or left) 
-      // of q, then cv[i] is defined to the right (or left) of q. 
-      if (seg_traits.compare_x (q, 
+      // If x(q) is at cv[i]'s target and its source is to the right (or left)
+      // of q, then cv[i] is defined to the right (or left) of q.
+      if (seg_traits.compare_x (q,
 				seg_traits.curve_source(cv[i])) == cres)
       {
 	return (i);
@@ -722,7 +722,7 @@ private:
       // Otherwise, since cv[i]'s target is cv[i+1]'s source, we should check
       // if the target of the next curve is to the right (or left) of q.
       if (i < (cv._size() - 1) &&
-	  seg_traits.compare_x (q, 
+	  seg_traits.compare_x (q,
 			        seg_traits.curve_target(cv[i+1])) == cres)
       {
 	return (i+1);
@@ -748,17 +748,17 @@ private:
     const Point_2&    ps = seg_traits.curve_source(cv[0]);
     const Point_2&    pt = seg_traits.curve_target(cv[0]);
     Comparison_result res;
-    
+
     res = seg_traits.compare_x (ps, pt);
     if (res == EQUAL)
       res = seg_traits.compare_xy (ps, pt);
-				  
+
     return (res == SMALLER);
   }
 
   /*!
    * Find the nearest intersection point (or points) of two given curves to
-   * the right (or to the left) lexicographically of a given point not 
+   * the right (or to the left) lexicographically of a given point not
    * including the point itself.
    * This function is used by both nearest_intersection_to_right() and
    * nearest_intersection_to_left() to avoid code duplication.
@@ -807,15 +807,15 @@ private:
       inc2 = _is_curve_to_right(cv2) ? -1 : 1;
     }
 
-    // Check if the entire curve cv1 is defined to the right (left) of p. 
+    // Check if the entire curve cv1 is defined to the right (left) of p.
     if (i1 < 0)
     {
       if (inc1 == 1)
       {
-	// The source is the leftmost (rightmost) point in cv1, so p must be 
+	// The source is the leftmost (rightmost) point in cv1, so p must be
 	// to its left (right).
-	// Otherwise, p is to the right (left) of the x-range of cv1. 
-	if (seg_traits.compare_x(p, 
+	// Otherwise, p is to the right (left) of the x-range of cv1.
+	if (seg_traits.compare_x(p,
 				 seg_traits.curve_source(cv1[0])) == d_res)
 	  i1 = 0;
 	else
@@ -823,26 +823,26 @@ private:
       }
       else // if (inc1 == -1)
       {
-	// The target is the leftmost (rightmost) point in cv1, so p must be 
+	// The target is the leftmost (rightmost) point in cv1, so p must be
 	// to its left (right).
-	// Otherwise, p is to the right (left) of the x-range of cv1. 
+	// Otherwise, p is to the right (left) of the x-range of cv1.
 	if (seg_traits.compare_x(p,
 				 seg_traits.curve_target(cv1[n1-1])) == d_res)
 	  i1 = n1-1;
 	else
 	  return (false);
       }
-    }    
+    }
 
-    // Check if the entire curve cv2 is defined to the right (left) of p. 
+    // Check if the entire curve cv2 is defined to the right (left) of p.
     if (i2 < 0)
     {
       if (inc2 == 1)
       {
-	// The source is the leftmost (rightmost) point in cv2, so p must be 
+	// The source is the leftmost (rightmost) point in cv2, so p must be
 	// to its left (right).
-	// Otherwise, p is to the right (left) of the x-range of cv2. 
-	if (seg_traits.compare_x(p, 
+	// Otherwise, p is to the right (left) of the x-range of cv2.
+	if (seg_traits.compare_x(p,
 				 seg_traits.curve_source(cv2[0])) == d_res)
 	  i2 = 0;
 	else
@@ -850,9 +850,9 @@ private:
       }
       else // if (inc2 == -1)
       {
-	// The target is the leftmost (rightmost) point in cv2, so p must be 
+	// The target is the leftmost (rightmost) point in cv2, so p must be
 	// to its left (right).
-	// Otherwise, p is to the right (left) of the x-range of cv2. 
+	// Otherwise, p is to the right (left) of the x-range of cv2.
 	if (seg_traits.compare_x(p,
 				 seg_traits.curve_target(cv2[n2-1])) == d_res)
 	  i2 = n2-1;
@@ -887,13 +887,13 @@ private:
 	// is the next end-point of cv1[i1] or of cv2[i2].
 	bool    eq1, eq2;
 
-	eq1 = seg_traits.point_equal (p1, 
-				      (inc1 == 1) ? 
+	eq1 = seg_traits.point_equal (p1,
+				      (inc1 == 1) ?
 				      seg_traits.curve_target(cv1[i1]) :
 				      seg_traits.curve_source(cv1[i1]));
 
 	eq2 = seg_traits.point_equal (p1,
-				      (inc2 == 1) ? 
+				      (inc2 == 1) ?
 				      seg_traits.curve_target(cv2[i2]) :
 				      seg_traits.curve_source(cv2[i2]));
 
@@ -936,10 +936,10 @@ private:
 
       // Find the segment whose end-point is the leftmost (rightmost) and move
       //  forward (or backward) on its polyline.
-      res = seg_traits.compare_x ((inc1 == 1) ? 
+      res = seg_traits.compare_x ((inc1 == 1) ?
 				  seg_traits.curve_target(cv1[i1]) :
 				  seg_traits.curve_source(cv1[i1]),
-				  (inc2 == 1) ? 
+				  (inc2 == 1) ?
 				  seg_traits.curve_target(cv2[i2]) :
 				  seg_traits.curve_source(cv2[i2]));
 
@@ -981,7 +981,7 @@ public:
   typedef ::std::vector<Segment_2>                  Base;
 
 private:
-  
+
   // The segments that comprise the poyline:
   ::std::vector<Segment_2>                          segments;
 
@@ -1078,7 +1078,7 @@ public:
     }
 
   public:
-    
+
     /*!
      * Default constructor.
      */
@@ -1108,7 +1108,7 @@ public:
     /*!
      * Increment operators.
      */
-    void operator++ () 
+    void operator++ ()
     {
       if (cvP != NULL && i < n_pts)
 	i++;

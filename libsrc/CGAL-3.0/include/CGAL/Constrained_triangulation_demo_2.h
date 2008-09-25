@@ -36,15 +36,15 @@ public:
   typedef typename Gt::Segment Segment;
   typedef Window_stream Window_stream;
 
-Constrained_triangulation_demo_2() :  
-  Constrained_triangulation_2<Gt,Tds>() {} 
-  
-Constrained_triangulation_demo_2(const Gt& gt=Gt()) 
+Constrained_triangulation_demo_2() :
+  Constrained_triangulation_2<Gt,Tds>() {}
+
+Constrained_triangulation_demo_2(const Gt& gt=Gt())
   : Constrained_triangulation_2<Gt,Tds>(gt) {}
-  
+
 
 Constrained_triangulation_demo_2(Window_stream& W,
-				     list<Constraint>& lc, const Gt& gt=Gt()) 
+				     list<Constraint>& lc, const Gt& gt=Gt())
   : Constrained_triangulation_2<Gt,Tds>(gt)
 {
   Sweep_demo  sweep(W,lc, gt);

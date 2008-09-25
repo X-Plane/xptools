@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "OrientationInterpolatorNode.h"
 
-OrientationInterpolatorNode::OrientationInterpolatorNode() 
+OrientationInterpolatorNode::OrientationInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(orientationInterpolatorNodeString);
@@ -25,14 +25,14 @@ OrientationInterpolatorNode::OrientationInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-OrientationInterpolatorNode::~OrientationInterpolatorNode() 
+OrientationInterpolatorNode::~OrientationInterpolatorNode()
 {
 }
 
 ////////////////////////////////////////////////
 //	keyValue
 ////////////////////////////////////////////////
-	
+
 MFRotation *OrientationInterpolatorNode::getKeyValueField()
 {
 	if (isInstanceNode() == false)
@@ -40,17 +40,17 @@ MFRotation *OrientationInterpolatorNode::getKeyValueField()
 	return (MFRotation *)getExposedField(keyValueFieldString);
 }
 
-void OrientationInterpolatorNode::addKeyValue(float rotation[]) 
+void OrientationInterpolatorNode::addKeyValue(float rotation[])
 {
 	getKeyValueField()->addValue(rotation);
 }
 
-int OrientationInterpolatorNode::getNKeyValues() 
+int OrientationInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-void OrientationInterpolatorNode::getKeyValue(int index, float rotation[]) 
+
+void OrientationInterpolatorNode::getKeyValue(int index, float rotation[])
 {
 	getKeyValueField()->get1Value(index, rotation);
 }
@@ -58,7 +58,7 @@ void OrientationInterpolatorNode::getKeyValue(int index, float rotation[])
 ////////////////////////////////////////////////
 //	value
 ////////////////////////////////////////////////
-	
+
 SFRotation *OrientationInterpolatorNode::getValueField()
 {
 	if (isInstanceNode() == false)
@@ -66,12 +66,12 @@ SFRotation *OrientationInterpolatorNode::getValueField()
 	return (SFRotation *)getEventOut(valueFieldString);
 }
 
-void OrientationInterpolatorNode::setValue(float rotation[]) 
+void OrientationInterpolatorNode::setValue(float rotation[])
 {
 	getValueField()->setValue(rotation);
 }
 
-void OrientationInterpolatorNode::getValue(float rotation[]) 
+void OrientationInterpolatorNode::getValue(float rotation[])
 {
 	getValueField()->getValue(rotation);
 }
@@ -79,21 +79,21 @@ void OrientationInterpolatorNode::getValue(float rotation[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool OrientationInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void OrientationInterpolatorNode::initialize() 
+void OrientationInterpolatorNode::initialize()
 {
 }
 
-void OrientationInterpolatorNode::uninitialize() 
+void OrientationInterpolatorNode::uninitialize()
 {
 }
 
-void OrientationInterpolatorNode::update() 
+void OrientationInterpolatorNode::update()
 {
 	int	n;
 
@@ -129,7 +129,7 @@ void OrientationInterpolatorNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void OrientationInterpolatorNode::outputContext(ostream& printStream, char *indentString) 
+void OrientationInterpolatorNode::outputContext(ostream& printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
 		MFFloat *key = getKeyField();
@@ -150,12 +150,12 @@ void OrientationInterpolatorNode::outputContext(ostream& printStream, char *inde
 //	List
 ////////////////////////////////////////////////
 
-OrientationInterpolatorNode *OrientationInterpolatorNode::next() 
+OrientationInterpolatorNode *OrientationInterpolatorNode::next()
 {
 	return (OrientationInterpolatorNode *)Node::next(getType());
 }
 
-OrientationInterpolatorNode *OrientationInterpolatorNode::nextTraversal() 
+OrientationInterpolatorNode *OrientationInterpolatorNode::nextTraversal()
 {
 	return (OrientationInterpolatorNode *)Node::nextTraversalByType(getType());
 }

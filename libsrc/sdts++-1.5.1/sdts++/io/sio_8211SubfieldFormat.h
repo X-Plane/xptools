@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -60,7 +60,7 @@ struct sio_8211SubfieldFormatImp;
   sio_8211SubfieldFormats will typically live inside of sio_8211FieldFormats.
 
 */
-class sio_8211SubfieldFormat  
+class sio_8211SubfieldFormat
 {
    public:
 
@@ -104,7 +104,7 @@ class sio_8211SubfieldFormat
       std::string const& getLabel() const;
 
       ///
-      /** 
+      /**
           If the type is binary, the length is converted to character
           units from bits.  We used to do this in setLength().  However,
           the parser would sometimes not set the binary type before the
@@ -116,7 +116,7 @@ class sio_8211SubfieldFormat
       format getFormat() const;
 
       /// undefined results if descriptor is not controlled by length
-      int getLength() const; 
+      int getLength() const;
 
       /// undefined results if descriptor is not controlled by delimiter
       char getDelimiter() const;

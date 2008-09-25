@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "PositionInterpolatorNode.h"
 
-PositionInterpolatorNode::PositionInterpolatorNode() 
+PositionInterpolatorNode::PositionInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(positionInterpolatorNodeString);
@@ -25,14 +25,14 @@ PositionInterpolatorNode::PositionInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-PositionInterpolatorNode::~PositionInterpolatorNode() 
+PositionInterpolatorNode::~PositionInterpolatorNode()
 {
 }
 
 ////////////////////////////////////////////////
 //	keyValue
 ////////////////////////////////////////////////
-	
+
 MFVec3f *PositionInterpolatorNode::getKeyValueField()
 {
 	if (isInstanceNode() == false)
@@ -40,17 +40,17 @@ MFVec3f *PositionInterpolatorNode::getKeyValueField()
 	return (MFVec3f *)getExposedField(keyValueFieldString);
 }
 
-void PositionInterpolatorNode::addKeyValue(float vector[]) 
+void PositionInterpolatorNode::addKeyValue(float vector[])
 {
 	getKeyValueField()->addValue(vector);
 }
 
-int PositionInterpolatorNode::getNKeyValues() 
+int PositionInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-void PositionInterpolatorNode::getKeyValue(int index, float vector[]) 
+
+void PositionInterpolatorNode::getKeyValue(int index, float vector[])
 {
 	getKeyValueField()->get1Value(index, vector);
 }
@@ -65,13 +65,13 @@ SFVec3f *PositionInterpolatorNode::getValueField()
 		return valueField;
 	return (SFVec3f *)getEventOut(valueFieldString);
 }
-	
-void PositionInterpolatorNode::setValue(float vector[]) 
+
+void PositionInterpolatorNode::setValue(float vector[])
 {
 	getValueField()->setValue(vector);
 }
 
-void PositionInterpolatorNode::getValue(float vector[]) 
+void PositionInterpolatorNode::getValue(float vector[])
 {
 	getValueField()->getValue(vector);
 }
@@ -79,21 +79,21 @@ void PositionInterpolatorNode::getValue(float vector[])
 ////////////////////////////////////////////////
 //	Virtual functions
 ////////////////////////////////////////////////
-	
+
 bool PositionInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void PositionInterpolatorNode::initialize() 
+void PositionInterpolatorNode::initialize()
 {
 }
 
-void PositionInterpolatorNode::uninitialize() 
+void PositionInterpolatorNode::uninitialize()
 {
 }
 
-void PositionInterpolatorNode::update() 
+void PositionInterpolatorNode::update()
 {
 	int	n;
 
@@ -124,7 +124,7 @@ void PositionInterpolatorNode::update()
 	sendEvent(getValueField());
 }
 
-void PositionInterpolatorNode::outputContext(ostream &printStream, char *indentString) 
+void PositionInterpolatorNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
 		MFFloat *key = getKeyField();
@@ -132,7 +132,7 @@ void PositionInterpolatorNode::outputContext(ostream &printStream, char *indentS
 		key->MField::outputContext(printStream, indentString, "\t\t");
 		printStream << indentString << "\t]" << endl;
 	}
-		
+
 	if (0 < getNKeyValues()) {
 		MFVec3f *keyValue = getKeyValueField();
 		printStream << indentString << "\tkeyValue [" << endl;
@@ -145,12 +145,12 @@ void PositionInterpolatorNode::outputContext(ostream &printStream, char *indentS
 //	List
 ////////////////////////////////////////////////
 
-PositionInterpolatorNode *PositionInterpolatorNode::next() 
+PositionInterpolatorNode *PositionInterpolatorNode::next()
 {
 	return (PositionInterpolatorNode *)Node::next(getType());
 }
 
-PositionInterpolatorNode *PositionInterpolatorNode::nextTraversal() 
+PositionInterpolatorNode *PositionInterpolatorNode::nextTraversal()
 {
 	return (PositionInterpolatorNode *)Node::nextTraversalByType(getType());
 }

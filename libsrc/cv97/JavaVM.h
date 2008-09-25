@@ -24,7 +24,7 @@ void	SetJniEnv(JNIEnv *jniEnv);
 void	CreateJavaVM(char *classpath = NULL, jint (JNICALL *printfn)(FILE *fp, const char *format, va_list args) = NULL);
 void	DeleteJavaVM(void);
 
-class CJavaVM { 
+class CJavaVM {
 
 public:
 	JavaVM *getJavaVM(void) {

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -53,7 +53,7 @@ static const DragHandleInfo_t kHandleInfos[8] = {
 //static int self_intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
 //static int	intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
 
-	
+
 
 
 WED_BezierTestTool::WED_BezierTestTool(WED_MapZoomer * inZoomer) :
@@ -61,9 +61,9 @@ WED_BezierTestTool::WED_BezierTestTool(WED_MapZoomer * inZoomer) :
 	mHandles(8,kHandleInfos,4,this),
 	mSegs(200),
 	mSplit(0.5)
-{	
+{
 }
-						
+
 WED_BezierTestTool::~WED_BezierTestTool()
 {
 }
@@ -90,18 +90,18 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		mHandles.ConnectHandle(4, 5);
 		mHandles.ConnectHandle(6, 7);
 		glEnd();
-		
+
 		Bezier2 a(mBezier1),b(mBezier2);
-		
+
 		int i = a.intersect(b,10);
-		
+
 		glColor3f(i || a.self_intersect(5) ? 1 : 0, i ? 0 : 1, 0);
-		
+
 		int mx,my;
 		XPLMGetMouseLocation(&mx,&my);
 		if (a.is_near(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)),0.001))
 			glColor3f(1,1,1);
-		
+
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
@@ -112,7 +112,7 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 
 		double ts[2] = { 3.0, 3.0 };
 		int y_change = b.y_monotone_regions(ts);
-		
+
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
@@ -120,12 +120,12 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 							glColor3f(0,1,0);
 			if (t < ts[1])	glColor3f(1,0,0);
 			if (t < ts[0])	glColor3f(0,0,1);
-			
+
 			Point2 p = b.midpoint(t);
 			glVertex2f(GetZoomer()->LonToXPixel(p.x),GetZoomer()->LatToYPixel(p.y));
 		}
 		glEnd();
-		
+
 		Bbox2	f1,f2;
 		a.bounds(f1);
 		b.bounds(f2);
@@ -134,16 +134,16 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 			glVertex2f(GetZoomer()->LonToXPixel(f1.p1.x),GetZoomer()->LatToYPixel(f1.p1.y));
 			glVertex2f(GetZoomer()->LonToXPixel(f1.p1.x),GetZoomer()->LatToYPixel(f1.p2.y));
 			glVertex2f(GetZoomer()->LonToXPixel(f1.p2.x),GetZoomer()->LatToYPixel(f1.p2.y));
-			glVertex2f(GetZoomer()->LonToXPixel(f1.p2.x),GetZoomer()->LatToYPixel(f1.p1.y));		
+			glVertex2f(GetZoomer()->LonToXPixel(f1.p2.x),GetZoomer()->LatToYPixel(f1.p1.y));
 		glEnd();
 
 		glBegin(GL_LINE_LOOP);
 			glVertex2f(GetZoomer()->LonToXPixel(f2.p1.x),GetZoomer()->LatToYPixel(f2.p1.y));
 			glVertex2f(GetZoomer()->LonToXPixel(f2.p1.x),GetZoomer()->LatToYPixel(f2.p2.y));
 			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p2.y));
-			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p1.y));		
+			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p1.y));
 		glEnd();
-		
+
 		glColor4f(1,1,1,0.3);
 		double bs[4];
 		GetZoomer()->GetPixelBounds(bs[0],bs[1],bs[2],bs[3]);
@@ -155,26 +155,26 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		l.push_back(Bezier2(b.p2,b.p2,b.p1,b.p1));
 		if (inside_polygon_bez(l.begin(),l.end(),Point2(x,y)))
 			glColor3f(1,0,0);
-		
+
 		glBegin(GL_LINES);
 		glVertex2f(bs[0], my);
 		glVertex2f(bs[2], my);
 		glVertex2f(mx,bs[1]);
 		glVertex2f(mx,bs[3]);
 		glEnd();
-		
+
 		glPointSize(5);
 		glColor3f(1,1,1);
 		glBegin(GL_POINTS);
-		
-		
+
+
 		if (y_change == 0)
 		{
 			Bezier2 b1(b);
-			
+
 			b1.c1 = b1.p1;
 			b1.c2 = b1.p2;
-			
+
 			glColor3f(0,0,1);
 //			if ((x >= b1.p1.x && x <= b1.p2.x) || (x >= b1.p2.x && x <= b1.p2.y))
 //			glVertex2f(mx,GetZoomer()->LatToYPixel(b1.y_at_x(GetZoomer()->XPixelToLon(mx))));
@@ -182,7 +182,7 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 			glVertex2f(GetZoomer()->LonToXPixel(b1.x_at_y(GetZoomer()->YPixelToLat(my))), my);
 		}
 		else if (y_change == 1)
-		{	
+		{
 			Bezier2	b1,b2;
 			b.partition(b1,b2,ts[0]);
 
@@ -225,13 +225,13 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 
 		}
 		glEnd();
-	}	
+	}
 }
-							
+
 bool	WED_BezierTestTool::HandleClick(
 							XPLMMouseStatus		inStatus,
-							int 				inX, 
-							int 				inY, 
+							int 				inX,
+							int 				inY,
 							int 				inButton)
 {
 	if (inButton != 0) return false;
@@ -246,7 +246,7 @@ bool	WED_BezierTestTool::HandleClick(
 		return true;
 	}
 	return false;
-}							
+}
 
 #pragma mark -
 
@@ -281,7 +281,7 @@ void	WED_BezierTestTool::SetNthPropertyValue(int n, double v)
 }
 
 #pragma mark -
-	
+
 int		WED_BezierTestTool::GetNumButtons(void)
 {
 	return 1;
@@ -303,11 +303,11 @@ void	WED_BezierTestTool::NthButtonPressed(int n)
 		mBezier1.p1=Point2(bounds[0],bounds[1]);
 		mBezier1.c1=Point2(bounds[0],bounds[3]);
 		mBezier1.c2=Point2(bounds[2],bounds[3]);
-		mBezier1.p2=Point2(bounds[2],bounds[1]);	
+		mBezier1.p2=Point2(bounds[2],bounds[1]);
 		mBezier2.c1=Point2(bounds[0],bounds[1]);
 		mBezier2.p1=Point2(bounds[0],bounds[3]);
 		mBezier2.p2=Point2(bounds[2],bounds[3]);
-		mBezier2.c2=Point2(bounds[2],bounds[1]);	
+		mBezier2.c2=Point2(bounds[2],bounds[1]);
 		break;
 	}
 }
@@ -317,7 +317,7 @@ char *	WED_BezierTestTool::GetStatusText(void)
 	static char buf[512];
 	double d[4];
 	int n = mBezier1.monotone_regions(d);
-	sprintf(buf,"(%d: %lf,%lf,%lf,%lf)", 
+	sprintf(buf,"(%d: %lf,%lf,%lf,%lf)",
 			n,d[0],d[1],d[2],d[3]);
 	return buf;
 }
@@ -373,7 +373,7 @@ double		WED_BezierTestTool::GetHandleY(int inHandle) const
 	default: return 0.0;
 	}
 }
-	
+
 void		WED_BezierTestTool::MoveHandleX(int handle, double deltaX)
 {
 	switch(handle) {

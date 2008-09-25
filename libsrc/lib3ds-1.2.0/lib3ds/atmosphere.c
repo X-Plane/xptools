@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -46,7 +46,7 @@ fog_read(Lib3dsFog *fog, Lib3dsIo *io)
   fog->far_plane=lib3ds_io_read_float(io);
   fog->far_density=lib3ds_io_read_float(io);
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_LIN_COLOR_F:
@@ -68,7 +68,7 @@ fog_read(Lib3dsFog *fog, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -89,7 +89,7 @@ layer_fog_read(Lib3dsLayerFog *fog, Lib3dsIo *io)
   fog->density=lib3ds_io_read_float(io);
   fog->flags=lib3ds_io_read_dword(io);
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_LIN_COLOR_F:
@@ -103,7 +103,7 @@ layer_fog_read(Lib3dsLayerFog *fog, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -123,7 +123,7 @@ distance_cue_read(Lib3dsDistanceCue *cue, Lib3dsIo *io)
   cue->far_plane=lib3ds_io_read_float(io);
   cue->far_dimming=lib3ds_io_read_float(io);
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_DCUE_BGND:
@@ -135,7 +135,7 @@ distance_cue_read(Lib3dsDistanceCue *cue, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -152,7 +152,7 @@ lib3ds_atmosphere_read(Lib3dsAtmosphere *atmosphere, Lib3dsIo *io)
   if (!lib3ds_chunk_read(&c, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   switch (c.chunk) {
       case LIB3DS_FOG:
         {
@@ -292,7 +292,7 @@ lib3ds_atmosphere_write(Lib3dsAtmosphere *atmosphere, Lib3dsIo *io)
     c.size=6;
     lib3ds_chunk_write(&c,io);
   }
-  
+
   return(LIB3DS_TRUE);
 }
 

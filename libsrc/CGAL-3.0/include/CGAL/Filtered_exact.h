@@ -404,16 +404,16 @@ div (const Filtered_exact<CGAL_IA_CT,CGAL_IA_ET,Dynamic,
                           CGAL_IA_PROTECTED,CGAL_IA_CACHE>& fil1,
      const Filtered_exact<CGAL_IA_CT,CGAL_IA_ET, Dynamic,
                           CGAL_IA_PROTECTED,CGAL_IA_CACHE>& fil2)
-{ 
+{
   typedef
 #ifndef CGAL_CFG_MATCHING_BUG_2
           typename
-#endif  
+#endif
                    Filtered_exact<CGAL_IA_CT,
                                   CGAL_IA_ET,Dynamic,
                                   CGAL_IA_PROTECTED,
                                   CGAL_IA_CACHE>::Has_gcd Has_gcd;
-  return CGAL::CGALi::checked_div(fil1.value(), fil2.value(), Has_gcd()); 
+  return CGAL::CGALi::checked_div(fil1.value(), fil2.value(), Has_gcd());
 }
 
 
@@ -437,7 +437,7 @@ gcd (const Filtered_exact<CGAL_IA_CT,CGAL_IA_ET,Dynamic,
                           CGAL_IA_PROTECTED,CGAL_IA_CACHE>& fil1,
      const Filtered_exact<CGAL_IA_CT,CGAL_IA_ET,Dynamic,
                           CGAL_IA_PROTECTED,CGAL_IA_CACHE>& fil2)
-{ 
+{
  typedef
 #ifndef CGAL_CFG_MATCHING_BUG_2
          typename
@@ -459,7 +459,7 @@ inline
 static
 #endif
 Filtered_exact<CGAL_IA_CT,CGAL_IA_ET,Dynamic,CGAL_IA_PROTECTED,CGAL_IA_CACHE>
-square (const Filtered_exact<CGAL_IA_CT, CGAL_IA_ET, Dynamic, 
+square (const Filtered_exact<CGAL_IA_CT, CGAL_IA_ET, Dynamic,
                              CGAL_IA_PROTECTED, CGAL_IA_CACHE>& fil)
 { return CGAL_NTS square(fil.value()); }
 
@@ -576,12 +576,12 @@ operator<< (std::ostream& os,
 template < class CT, class ET, class Type, bool Protected, class Cache >
 inline
 std::istream &
-operator>> (std::istream &is, 
+operator>> (std::istream &is,
 	    Filtered_exact<CT, ET, Type, Protected, Cache>& d)
 {
     CT e;
     is >> e;
-    d = e; 
+    d = e;
     return is;
 }
 

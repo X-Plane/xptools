@@ -28,7 +28,7 @@ public:
 	void addValue(SFInt32 *sfvalue);
 
 	void insertValue(int index, int value);
-	
+
 	int get1Value(int index);
 
 	void set1Value(int index, int value);

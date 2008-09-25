@@ -139,7 +139,7 @@ class sb_Rsdf : public sb_Module
 
       // Phy - add gets for the new fields
       bool getInternalSpatialId( sb_ForeignID& fid ) const;
-      bool getISID( sb_ForeignID& fid ) const 
+      bool getISID( sb_ForeignID& fid ) const
       { return getInternalSpatialId( fid ); }
 
       bool getLayerIds( sb_ForeignIDs& fids ) const;
@@ -155,7 +155,7 @@ class sb_Rsdf : public sb_Module
        values -- return false if in a wedged state. (E.g., a mandatory
        field isn't set or was assigned a value outside its proper
        domain.
-      
+
        XXX NOTE THAT ONLY THE FIRST FIELD IS CURRENTLY SUPPORTED
       */
       bool getRecord( sc_Record& val ) const;
@@ -164,7 +164,7 @@ class sb_Rsdf : public sb_Module
       /**
        set the object with values found in the record; if not a valid
        RSDF record, this will return false
-      
+
        XXX NOTE THAT ONLY THE FIRST FIELD IS CURRENTLY SUPPORTED
       */
       bool setRecord( sc_Record const& val );

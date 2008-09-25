@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,22 +38,22 @@
 // - What is our overall bounds.
 // - All GIS entities must support a linear 2-d rescaling operation (described by remapping bounding boxes.
 //
-// Design note: the GIS interfaces are designe to promote the abstraction of a data model!  That is, they don't 
+// Design note: the GIS interfaces are designe to promote the abstraction of a data model!  That is, they don't
 // say HOW to edit something, just that this data has a certain amount of spatial extent that we can muck with.
 //
 // (This means that for a wide variety of spatial data model, we can reduce it to a finite number of cases
 // and write generic editing code for all of it.  This promotes the separation of GIS algorithms from the base
 // class because we can write an algorithm using only the interface.)
 //
-// The GIS class is the most specific class - that is, a bezier point will return bezier point, but not point.  
-// To correctly case out GIS classes, a client must handle the entire GIS spatial tree (or for points, at least 
+// The GIS class is the most specific class - that is, a bezier point will return bezier point, but not point.
+// To correctly case out GIS classes, a client must handle the entire GIS spatial tree (or for points, at least
 // point and all of its derivatives.
 //
 // (Someday we could make an "is-class" predicate to provide simpler casing.)
 //
 // The "sub-type" string provides an app-defined run-time type.  This is really a bit of a hack...WED does most
-// ops on GIS-type, but in a few cases casts down to a real WED type.  The "subtype" is actually the 
-// WED-persistent-class string.  If we wanted to be more pure we'd derive airport-spatial entities off of the 
+// ops on GIS-type, but in a few cases casts down to a real WED type.  The "subtype" is actually the
+// WED-persistent-class string.  If we wanted to be more pure we'd derive airport-spatial entities off of the
 // GIS-spatial entities, e.g. a runway (line-width with more points to edit0, a taxiway (poly with pavement type),
 // etc.
 
@@ -103,8 +103,8 @@ public:
 
 	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric)=0;
 	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric)=0;
-	
-};	
+
+};
 
 //------------------------------------------------------------------------------------------------------------
 // POINT INTERFACES
@@ -151,7 +151,7 @@ public:
 	virtual	void	SetWidth (double width)      =0;
 	virtual	double	GetLength(void		  ) const=0;
 	virtual	void	SetLength(double width)      =0;
-	
+
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -166,18 +166,18 @@ public:
 class	IGISPointSequence : public virtual IGISEntity {
 public:
 
-	virtual	int					GetNumPoints(void ) const=0;	
+	virtual	int					GetNumPoints(void ) const=0;
 //	virtual	void				DeletePoint (int n)		 =0;
 //	virtual		  IGISPoint *	SplitSide   (int n)		 =0;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
 	virtual	bool				GetSide(int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
-	
+
 	virtual	bool				IsClosed(void) const=0;
-	
+
 	virtual	void				Reverse(void)=0;
-	
+
 };
 
 class IGISLine : public virtual IGISPointSequence {
@@ -206,21 +206,21 @@ public:
 class	IGISPolygon  : public virtual IGISEntity {
 public:
 
-	virtual			IGISPointSequence *		GetOuterRing(void )	const=0;	
+	virtual			IGISPointSequence *		GetOuterRing(void )	const=0;
 	virtual			int						GetNumHoles (void ) const=0;
 	virtual			IGISPointSequence *		GetNthHole  (int n)	const=0;
 
 	virtual			void					DeleteHole  (int n)					=0;
 	virtual			void					AddHole		(IGISPointSequence * r) =0;
 
-	virtual			void					Reverse(void)=0;	
+	virtual			void					Reverse(void)=0;
 
 };
 
 //------------------------------------------------------------------------------------------------------------
 // Composite GIS objects...
 //------------------------------------------------------------------------------------------------------------
-// We do not provide a way to "edit" composite relationships, at least not yet.  This is just a way for code 
+// We do not provide a way to "edit" composite relationships, at least not yet.  This is just a way for code
 // written entirely from a geo-analysis standpoint to do recursive trees.
 
 class IGISComposite :  public virtual IGISEntity {
@@ -228,7 +228,7 @@ public:
 
 	virtual	int				GetNumEntities(void ) const=0;
 	virtual	IGISEntity *	GetNthEntity  (int n) const=0;
-	
+
 };
 
 #endif

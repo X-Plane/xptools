@@ -37,12 +37,12 @@
 struct II {};
 
 template < bool b > struct A;
-template <> struct A<true> { 
+template <> struct A<true> {
   template <typename T> struct B {
     typedef int type;
   };
 };
-template <> struct A<false> { 
+template <> struct A<false> {
   template <typename T> struct B {
     typedef II type;
   };

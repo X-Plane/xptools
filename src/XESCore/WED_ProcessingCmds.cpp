@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -85,7 +85,7 @@ enum {
 //	procCmd_LowResTri,
 	procCmd_HiResTri,
 	procCmd_AssignLUToMesh,
-	procCmd_Divider1,	
+	procCmd_Divider1,
 	procCmd_RemoveDupes,
 	procCmd_InstantiateFor,
 	procCmd_InstantiateGT,
@@ -93,7 +93,7 @@ enum {
 	procCmd_DoProcessing,
 	procCmd_ExportDSFNew,
 	procCmd_ExportDSFExisting,
-	procCmd_Count	
+	procCmd_Count
 };
 
 const char *	kProcCmdNames [] = {
@@ -107,7 +107,7 @@ const char *	kProcCmdNames [] = {
 	"Process Airports",
 	"Do Zoning",
 //	"Create Low Res Mesh",
-	"Create Hi Res Mesh",	
+	"Create Hi Res Mesh",
 	"Apply Terrain To Mesh",
 	"-",
 	"Remove Duplicate Features",
@@ -169,14 +169,14 @@ void	RegisterProcessingCommands(void)
 static	void	WED_HandleProcMenuCmd(void *, void * i)
 {
 	long cmd = (long) i;
-	
+
 	try {
 		switch(cmd) {
 //		case procCmd_LowResTri:
-//			TriangulateMesh(gMap, gTriangulationLo, gDem, WED_ProgressFunc, false);		
+//			TriangulateMesh(gMap, gTriangulationLo, gDem, WED_ProgressFunc, false);
 //			break;
 		case procCmd_HiResTri:
-			TriangulateMesh(gMap, gTriangulationHi, gDem, "../rendering_data/OUTPUT-border",WED_ProgressFunc);		
+			TriangulateMesh(gMap, gTriangulationHi, gDem, "../rendering_data/OUTPUT-border",WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoAirports:
@@ -194,7 +194,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 		case procCmd_UpsampleEnviro:
 			UpsampleEnvironmentalParams(gDem,WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
-			break;	
+			break;
 		case procCmd_CalcSlope:
 			CalcSlopeParams(gDem, true, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
@@ -204,7 +204,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				char	f1[1024];
 				f1[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
-						
+
 				HydroReconstruct(gMap,  gDem,f1,"../rendering_data/OUTPUT-hydro",WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
@@ -219,7 +219,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			}
 			break;
 		case procCmd_DeriveDEMs:
-			DeriveDEMs(gMap, gDem,gApts, gAptIndex, WED_ProgressFunc);			
+			DeriveDEMs(gMap, gDem,gApts, gAptIndex, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_AddUrbanRoads:
@@ -238,7 +238,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
                         Point2 master1, master2, slave1, slave2;
                         CalcBoundingBox(gMap, master1, master2);
                         CalcBoundingBox(overMap, slave1, slave2);
-                        
+
                         Vector2 delta(slave1, master1);
 
                         for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
@@ -249,11 +249,11 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 
                         for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
                         	overMap.ReindexVertex(i);
- 						
+
 						AddEuroRoads(gMap, overMap, gDem[dem_Slope], gDem[dem_LandUse], lu_usgs_URBAN_IRREGULAR, WED_ProgressFunc);
 						WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 						MemFile_Close(fi);
-					}					
+					}
 				}
 */
 			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  WED_ProgressFunc, NULL, NULL);
@@ -277,10 +277,10 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				set<int>				the_types;
 
 				GetObjTerrainTypes		(the_types);
-				
+
 				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-				
-				
+
+
 				if (gFaceSelection.empty())
 				{
 					GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, WED_ProgressFunc);
@@ -294,7 +294,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 		case procCmd_InstantiateFor:
 			{
 				StElapsedTime	timer("Total forest time.\n");
-				
+
 				vector<PreinsetFace>	insets;
 				set<int>				the_types;
 				GetAllForestLUs(the_types);
@@ -317,7 +317,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 //			AssignLandusesToMesh(gDem,gTriangulationLo,false,WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
-		case procCmd_DoProcessing:		
+		case procCmd_DoProcessing:
 			if (gProcessingCmdPrefs.do_calc_slope				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_CalcSlope	   );
 			if (gProcessingCmdPrefs.do_upsample_environment		)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_UpsampleEnviro );
 			if (gProcessingCmdPrefs.do_hydro_correct			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HydroCorrect   );
@@ -335,17 +335,17 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_ExportDSFNew:
 		case procCmd_ExportDSFExisting:
-			{	
+			{
 
 				char	buf[1024], buf2[1024];
 				strcpy(buf, "New Scenery Package");
-				if (GetFilePathFromUser((cmd == procCmd_ExportDSFExisting) ? getFile_PickFolder : getFile_Save, 
-										(cmd == procCmd_ExportDSFExisting) ? "Please pick your scenery package" : "Please name your scenery package", 
+				if (GetFilePathFromUser((cmd == procCmd_ExportDSFExisting) ? getFile_PickFolder : getFile_Save,
+										(cmd == procCmd_ExportDSFExisting) ? "Please pick your scenery package" : "Please name your scenery package",
 										(cmd == procCmd_ExportDSFExisting) ? "Update" : "Create", 5, buf, sizeof(buf)))
 				{
-//					if (cmd != procCmd_ExportDSFExisting) 
+//					if (cmd != procCmd_ExportDSFExisting)
 					strcat(buf, DIR_STR);
-					CreatePackageForDSF(buf, (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
+					CreatePackageForDSF(buf, (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
 					BuildDSF(buf2, "-", gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, WED_ProgressFunc);
 				}
 			}
@@ -357,7 +357,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 	} catch (...) {
 		DoUserAlert("The operation was aborted due to an unexpected internal error.");
 	}
-		
+
 
 }
 
@@ -383,7 +383,7 @@ void WED_UpdateProcCmds(void)
 	bool	has_beaches = true; // ???
 #if TODO
 	This could use some more inspection!
-#endif	
+#endif
 	for (CDT::Finite_faces_iterator f = gTriangulationHi.finite_faces_begin(); f != gTriangulationHi.finite_faces_end(); ++f)
 	{
 		if (f->info().terrain == NO_VALUE || f->info().terrain == terrain_Natural)
@@ -400,11 +400,11 @@ void WED_UpdateProcCmds(void)
 			break;
 		}
 	}
-	
+
 	XPLMEnableMenuItem(sProcessMenu, procCmd_CalcSlope,			has_elev);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_UpsampleEnviro, 	has_enviro);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroCorrect,		has_lu && has_slope && has_enviro_hi);
-	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroSimplfiy,		has_lu && has_slope && has_enviro_hi);	
+	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroSimplfiy,		has_lu && has_slope && has_enviro_hi);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_DeriveDEMs,		has_lu && has_slope && has_enviro_hi);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_BuildRoads,		has_deriv_raster);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_DoAirports,		!gApts.empty());

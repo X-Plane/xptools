@@ -55,7 +55,7 @@ uLong filetime(f, tmzip, dt)
   struct stat s;        /* results of stat() */
   struct tm* filedate;
   time_t tm_t=0;
-  
+
   if (strcmp(f,"-")!=0)
   {
     char name[MAXFILENAME];
@@ -115,7 +115,7 @@ void do_banner()
 }
 
 void do_help()
-{	
+{
 	printf("Usage : minizip [-o] file.zip [files_to_add]\n\n") ;
 }
 
@@ -148,9 +148,9 @@ int main(argc,argv)
 			if ((*argv[i])=='-')
 			{
 				const char *p=argv[i]+1;
-				
+
 				while ((*p)!='\0')
-				{			
+				{
 					char c=*(p++);;
 					if ((c=='o') || (c=='O'))
 						opt_overwrite = 1;
@@ -218,7 +218,7 @@ int main(argc,argv)
             printf("error opening %s\n",filename_try);
             err= ZIP_ERRNO;
         }
-        else 
+        else
             printf("creating %s\n",filename_try);
 
         for (i=zipfilenamearg+1;(i<argc) && (err==ZIP_OK);i++)
@@ -230,7 +230,7 @@ int main(argc,argv)
                 const char* filenameinzip = argv[i];
                 zip_fileinfo zi;
 
-                zi.tmz_date.tm_sec = zi.tmz_date.tm_min = zi.tmz_date.tm_hour = 
+                zi.tmz_date.tm_sec = zi.tmz_date.tm_min = zi.tmz_date.tm_hour =
                 zi.tmz_date.tm_mday = zi.tmz_date.tm_min = zi.tmz_date.tm_year = 0;
                 zi.dosDate = 0;
                 zi.internal_fa = 0;
@@ -275,7 +275,7 @@ int main(argc,argv)
                                 printf("error in writing %s in the zipfile\n",
                                                  filenameinzip);
                             }
-                                
+
                         }
                     } while ((err == ZIP_OK) && (size_read>0));
 
@@ -283,7 +283,7 @@ int main(argc,argv)
                 if (err<0)
                     err=ZIP_ERRNO;
                 else
-                {                    
+                {
                     err = zipCloseFileInZip(zf);
                     if (err!=ZIP_OK)
                         printf("error in closing %s in the zipfile\n",

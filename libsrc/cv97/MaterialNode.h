@@ -22,7 +22,7 @@ class MaterialNode : public Node {
 	SFColor *diffuseColorField;
 	SFColor *specularColorField;
 	SFColor *emissiveColorField;
-	
+
 public:
 
 	MaterialNode();
@@ -33,7 +33,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getTransparencyField();
-	
+
 	void setTransparency(float value);
 	float getTransparency();
 
@@ -42,7 +42,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getAmbientIntensityField();
-	
+
 	void setAmbientIntensity(float intensity);
 	float getAmbientIntensity();
 
@@ -51,7 +51,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getShininessField();
-	
+
 	void setShininess(float value);
 	float getShininess();
 
@@ -95,7 +95,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

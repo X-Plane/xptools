@@ -30,22 +30,22 @@ CGAL_BEGIN_NAMESPACE
 namespace CGALi {
 
 template <class K>
-bool do_intersect(const typename CGAL_WRAP(K)::Triangle_3 &t, 
+bool do_intersect(const typename CGAL_WRAP(K)::Triangle_3 &t,
 		  const typename CGAL_WRAP(K)::Plane_3   &h,
 		  const K & k)
 {
-  
+
   CGAL_kernel_precondition( ! k.is_degenerate_3_object()(t)) ;
   CGAL_kernel_precondition( ! k.is_degenerate_3_object()(h)) ;
 
-   
+
   typename K::Construct_vertex_3 vertex_on =
     k.construct_vertex_3_object();
-  
+
   typename K::Oriented_side_3 oriented_side =
     k.oriented_side_3_object();
 
-  
+
 
   switch ( oriented_side(h,vertex_on(t,0)) ) {
   case ON_POSITIVE_SIDE:
@@ -66,7 +66,7 @@ bool do_intersect(const typename CGAL_WRAP(K)::Triangle_3 &t,
 template <class K>
 inline
 bool do_intersect(const typename CGAL_WRAP(K)::Plane_3   &h,
-		  const typename CGAL_WRAP(K)::Triangle_3 &t, 
+		  const typename CGAL_WRAP(K)::Triangle_3 &t,
 		  const K & k)
 {
   return do_intersect(t, h, k);
@@ -77,14 +77,14 @@ bool do_intersect(const typename CGAL_WRAP(K)::Plane_3   &h,
 
 
 template <class K>
-inline bool do_intersect(const Triangle_3<K> &t, 
+inline bool do_intersect(const Triangle_3<K> &t,
 			 const Plane_3<K>    &h)
 {
   return CGALi::do_intersect(t,h,K());
 }
-  
+
 template <class K>
-inline bool do_intersect(const Plane_3<K>    &h, 
+inline bool do_intersect(const Plane_3<K>    &h,
 			 const Triangle_3<K> &t)
 {
   return CGALi::do_intersect(t,h,K());
@@ -92,7 +92,7 @@ inline bool do_intersect(const Plane_3<K>    &h,
 
 /*
 template <class K>
-inline bool do_intersect(const Plane_3<K>    &h, 
+inline bool do_intersect(const Plane_3<K>    &h,
 			 const Triangle_3<K> &t,
 			 const K & k)
 {

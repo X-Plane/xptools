@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sylvain Pion
- 
+
 #ifndef CGAL_GMPXX_H
 #define CGAL_GMPXX_H
 
@@ -67,7 +67,7 @@ struct Rational_traits<mpq_class> {
   RT denominator (const mpq_class & r) const { return r.get_den(); }
 
   mpq_class make_rational(const RT & n, const RT & d) const
-  { return mpq_class(n, d); } 
+  { return mpq_class(n, d); }
 };
 
 template < typename T, typename U >

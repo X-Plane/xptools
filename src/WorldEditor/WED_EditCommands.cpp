@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,7 +59,7 @@ static	void	WED_NotifyEditMenus(int catagory, int message, void * param);
 static	void	WED_RecalcEditMenus(void);
 
 
-	
+
 void	RegisterEditCommands(void)
 {
 	int n;
@@ -97,18 +97,18 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 			{
 				set<GISFace *> kill_f;
 				int ctr;
-				
+
 				PROGRESS_START(WED_ProgressFunc, 0, 3, "Accumulating Faces")
 				ctr = 0;
 				for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
 				{
 					PROGRESS_CHECK(WED_ProgressFunc, 0, 3, "Accumulating Faces", ctr, gFaceSelection.size(), gFaceSelection.size() / 200)
 					kill_f.insert(*fsel);
-				}	
+				}
 				PROGRESS_DONE(WED_ProgressFunc, 0, 3, "Accumulating Faces")
 
 				PROGRESS_START(WED_ProgressFunc, 1, 3, "Accumulating Edges")
-				set<GISHalfedge *> kill_e;			
+				set<GISHalfedge *> kill_e;
 				ctr = 0;
 				for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
 				if (e->mDominant)
@@ -126,9 +126,9 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 				{
 					PROGRESS_CHECK(WED_ProgressFunc, 2, 3, "Deleting Edges", ctr, kill_e.size(), kill_e.size() / 200)
 					gMap.remove_edge(*kill);
-				}			
+				}
 				PROGRESS_DONE(WED_ProgressFunc, 2, 3, "Deleting Edges")
-			}		
+			}
 			gEdgeSelection.clear();
 			gFaceSelection.clear();
 			gVertexSelection.clear();
@@ -150,7 +150,7 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 						Point2 master1, master2, slave1, slave2;
 						CalcBoundingBox(gMap, master1, master2);
 						CalcBoundingBox(overMap, slave1, slave2);
-						
+
 						Vector2 delta(slave1, master1);
 
 						for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
@@ -161,12 +161,12 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 
 						for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
 							overMap.ReindexVertex(i);
-						
+
 						SwapFace(gMap, overMap, *gFaceSelection.begin(), WED_ProgressFunc);
-						
+
 						WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 						MemFile_Close(fi);
-					}					
+					}
 				}
 			}
 			gEdgeSelection.clear();

@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.5, August 2002
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: geometry2d.h
  * Synopsis:
  *      Basic 2-dimensional geometry

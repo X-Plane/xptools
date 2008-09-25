@@ -36,24 +36,24 @@ private:
   double x, y;
 
 public:
- 
+
   //constructors
   Point2d();  //initialized to origin(0,0)
   Point2d(double, double);
   Point2d(const Point2d &);
   Point2d(Vector v);
-  //create a point initialized to the point $(v[0], v[1])$ 
+  //create a point initialized to the point $(v[0], v[1])$
   //precondition: v.dim() = 2
 
   //destrutor
   virtual ~Point2d() {}
 
   Point2d& operator=(const Point2d&);
-  
-  double X() const { return x; }
-  double Y() const { return y; } 
 
-  Vector toVector() const { return Vector(X(), Y()); } 
+  double X() const { return x; }
+  double Y() const { return y; }
+
+  Vector toVector() const { return Vector(X(), Y()); }
 
   int dim() const { return 2; }
 
@@ -71,7 +71,7 @@ public:
 
   bool operator==(const Point2d&) const;
   bool operator!=(const Point2d& p) const {return !operator==(p); }
-  
+
   friend std::ostream& operator<< (std::ostream&, const Point2d);
   // write point p to output stream
 
@@ -81,7 +81,7 @@ public:
 };
 
 
-Point2d center(Point2d& a, Point2d& b); 
+Point2d center(Point2d& a, Point2d& b);
 int orientation2d(const Point2d& a, const Point2d& b, const Point2d& c);
 double area(const Point2d& a, const Point2d& b, const Point2d& c);
 bool collinear(const Point2d& a, const Point2d& b, const Point2d& c);

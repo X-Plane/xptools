@@ -35,7 +35,7 @@ CGAL_BEGIN_NAMESPACE
 // This one is to show the edges of a 3D triangulation.
 // template < class GT, class TDS >
 // void
-// show_triangulation_edges(Geomview_stream &gv, 
+// show_triangulation_edges(Geomview_stream &gv,
 //                          const Alpha_shape_3<GT,TDS> &T)
 // {
 //   // Header.
@@ -52,7 +52,7 @@ CGAL_BEGIN_NAMESPACE
 //     V[vit] = inum++;
 //     gv << vit->point() << "\n";
 //   }
-  
+
 //   // Finite edges indices.
 //   for( Alpha_shape_3<GT, TDS>::Edge_iterator
 // 	  eit = T.finite_edges_begin(); eit != T.edges_end(); ++eit) {
@@ -102,7 +102,7 @@ Alpha_shape_3<Dt>::show_alpha_shape_faces(Geomview_stream &gv)
   for( Vlist_it = Vlist_begin; Vlist_it != Vlist_end; Vlist_it++) {
     gv << (*Vlist_it)->point();
   }
-  
+
   // Finite facets indices.
   for( Flist_it = Flist_begin; Flist_it != Flist_end; Flist_it++){
       gv << 3;

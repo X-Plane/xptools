@@ -22,8 +22,8 @@
 
 #include <CGAL/basic.h>
 #include <utility>
-#include <map> 
-#include <list> 
+#include <map>
+#include <list>
 #include <CGAL/Iterator_project.h>
 #include <CGAL/triangulation_assertions.h>
 
@@ -54,7 +54,7 @@ public:
     H_vertex_it    current() {return pos;}
     H_vertex_it    vertices_end() {return enclosing->end();}
     int number_of_vertices() {return enclosing->size();}
-  };                                           
+  };
   typedef std::list<H_context>                 H_context_list;
   typedef typename std::list<H_context>::iterator       H_context_iterator;
 
@@ -64,29 +64,29 @@ public:
 
   typedef typename H_c_to_sc_map::const_iterator        H_c_iterator;
   typedef typename H_sc_to_c_map::const_iterator        H_sc_iterator;
-  typedef typename H_vertex_map::const_iterator         H_v_iterator;     
+  typedef typename H_vertex_map::const_iterator         H_v_iterator;
   typedef std::pair<H_constraint, H_vertex_list*>       H_c_value;
   typedef std::pair<H_edge,   H_context_list*>          H_sc_value;
-  
+
 private:
   // data for the 1d hierarchy
   H_c_to_sc_map   c_to_sc_map;
   H_sc_to_c_map   sc_to_c_map;
   // data for the 0d hierarchy
   H_vertex_map    vertex_map;
-  
+
 public:
   Constraint_hierarchy_2() { }
-  Constraint_hierarchy_2(const Constraint_hierarchy_2& ch); 
+  Constraint_hierarchy_2(const Constraint_hierarchy_2& ch);
   ~Constraint_hierarchy_2(){ clear();}
   void clear();
   Constraint_hierarchy_2& operator=(const Constraint_hierarchy_2& ch);
 
-  // Query 
+  // Query
   bool is_subconstrained_edge(T va, T vb) const;
   bool is_constrained_edge(T va, T vb) const;
   bool is_constrained_vertex(T v) const;
-  bool vertices_in_constraint(H_constraint hc,  
+  bool vertices_in_constraint(H_constraint hc,
 			      H_vertex_it& v_first,
 			      H_vertex_it& v_past) const;
   H_vertex_it vertices_in_constraint_begin(T va, T vb);
@@ -104,14 +104,14 @@ public:
   H_context_iterator contexts_end(T va, T vb);
   int number_of_constraints() { return c_to_sc_map.size();}
   int number_of_subconstraints() {return sc_to_c_map.size();}
-  
+
 
   // insert/remove
   void add_Steiner(T va, T vb, T vx);
   bool insert_constraint(T va, T vb);
   void remove_constraint(T va, T vb);
   void split_constraint(T va, T vb, T vc);
-  
+
   void constrain_vertex(T v, Data data=Data());
   void unconstrain_vertex(T v);
   void set_data(T v, Data data);
@@ -126,15 +126,15 @@ public:
   H_c_iterator  c_end()    const{ return c_to_sc_map.end();   }
   H_v_iterator  v_begin()  const{ return vertex_map.begin(); }
   H_v_iterator  v_end()    const{ return vertex_map.end(); }
-  
+
   //Helping functions
   void copy(const Constraint_hierarchy_2& ch);
   void copy(const Constraint_hierarchy_2& ch, std::map<T,T>& vmap);
-private: 
+private:
   H_edge    make_edge(T va, T vb) const;
   H_vertex_it     get_pos(T va, T vb) const;
-  bool      get_contexts(T va, T vb, 
-			 H_context_iterator& ctxt, 
+  bool      get_contexts(T va, T vb,
+			 H_context_iterator& ctxt,
 			 H_context_iterator& past) const;
 
   bool      get_contexts(T va, T vb, H_context_list*&) const;
@@ -144,14 +144,14 @@ public:
   void   print() const;
 };
 
-template <class T, class Data> 
+template <class T, class Data>
 Constraint_hierarchy_2<T,Data>::
 Constraint_hierarchy_2(const Constraint_hierarchy_2& ch)
 {
   copy(ch);
 }
 
-template <class T, class Data> 
+template <class T, class Data>
 Constraint_hierarchy_2<T,Data>&
 Constraint_hierarchy_2<T,Data>::
 operator=(const Constraint_hierarchy_2& ch){
@@ -159,7 +159,7 @@ operator=(const Constraint_hierarchy_2& ch){
   return *this;
 }
 
-template <class T, class Data> 
+template <class T, class Data>
 void
 Constraint_hierarchy_2<T,Data>::
 copy(const Constraint_hierarchy_2& ch1)
@@ -176,7 +176,7 @@ copy(const Constraint_hierarchy_2& ch1)
   copy(ch1, vmap);
 }
 
-template <class T, class Data> 
+template <class T, class Data>
 void
 Constraint_hierarchy_2<T,Data>::
 copy(const Constraint_hierarchy_2& ch1, std::map<T,T>& vmap)
@@ -228,7 +228,7 @@ copy(const Constraint_hierarchy_2& ch1, std::map<T,T>& vmap)
 }
 
 
-template <class T, class Data> 
+template <class T, class Data>
 bool Constraint_hierarchy_2<T,Data>::
 is_constrained_vertex(T v) const
 {
@@ -236,14 +236,14 @@ is_constrained_vertex(T v) const
 }
 
 
-template <class T, class Data> 
+template <class T, class Data>
 bool Constraint_hierarchy_2<T,Data>::
 is_constrained_edge(T va, T vb) const
 {
   return( c_to_sc_map.find(make_edge(va, vb)) != c_to_sc_map.end() );
 }
 
-template <class T, class Data> 
+template <class T, class Data>
 bool Constraint_hierarchy_2<T,Data>::
 is_subconstrained_edge(T va, T vb) const
 {
@@ -251,9 +251,9 @@ is_subconstrained_edge(T va, T vb) const
 }
 
 
-template <class T, class Data> 
+template <class T, class Data>
 bool Constraint_hierarchy_2<T,Data>::
-vertices_in_constraint(H_constraint hc, 
+vertices_in_constraint(H_constraint hc,
 		       H_vertex_it& v_first,
 		       H_vertex_it& v_past ) const
 {
@@ -295,8 +295,8 @@ enclosing_constraints(T vaa, T vbb , H_constraint_list& hcl) const
   H_context_iterator hcit, past;
   if ( !get_contexts(vaa,vbb, hcit ,past)) return false;
   for (; hcit!=past; hcit++) {
-    hcl.push_back(make_edge(hcit->enclosing->front(), 
-			    hcit->enclosing->back())); 
+    hcl.push_back(make_edge(hcit->enclosing->front(),
+			    hcit->enclosing->back()));
   }
   return true;
 }
@@ -312,7 +312,7 @@ context(T va, T vb)
 }
 
 template <class T, class Data>
-int 
+int
 Constraint_hierarchy_2<T,Data>::
 number_of_enclosing_constraints(T va, T vb)
 {
@@ -335,11 +335,11 @@ template <class T, class Data>
 typename Constraint_hierarchy_2<T,Data>::H_context_iterator
 Constraint_hierarchy_2<T,Data>::
 contexts_end(T va, T vb)
-{   
+{
    H_context_iterator first, last;
    if( !get_contexts(va,vb,first,last))  CGAL_triangulation_assertion(false);
    return last;
-} 
+}
 
 template <class T, class Data>
 typename Constraint_hierarchy_2<T,Data>::H_vertex_it
@@ -350,7 +350,7 @@ vertices_in_constraint_begin(T va, T vb)
   CGAL_triangulation_assertion( cit != c_to_sc_map.end());
   return cit->second->begin();
 }
-  
+
 template <class T, class Data>
 typename Constraint_hierarchy_2<T,Data>::H_vertex_it
 Constraint_hierarchy_2<T,Data>::
@@ -370,7 +370,7 @@ template <class T, class Data>
 bool Constraint_hierarchy_2<T,Data>::
 insert_constraint(T va, T vb){
   H_edge        he = make_edge(va, vb);
-  H_vertex_list*  children = new H_vertex_list; 
+  H_vertex_list*  children = new H_vertex_list;
   H_context_list* fathers = new H_context_list;
 
   children->push_front(he.first);
@@ -397,13 +397,13 @@ remove_constraint(T va, T vb){
   typename H_c_to_sc_map::iterator c_to_sc_it = c_to_sc_map.find(he);
   CGAL_triangulation_assertion(c_to_sc_it != c_to_sc_map.end());
 
-  H_vertex_list *hvl = c_to_sc_it->second; 
-  
+  H_vertex_list *hvl = c_to_sc_it->second;
+
   // We have to look at all subconstraints
-  for(H_vertex_it it = hvl->begin(), succ = it; 
-      ++succ != hvl->end(); 
+  for(H_vertex_it it = hvl->begin(), succ = it;
+      ++succ != hvl->end();
       ++it){
-    typename H_sc_to_c_map::iterator scit = 
+    typename H_sc_to_c_map::iterator scit =
                                    sc_to_c_map.find(make_edge(*it,*succ));
     CGAL_triangulation_assertion(scit != sc_to_c_map.end());
     H_context_list* hcl = scit->second;
@@ -424,7 +424,7 @@ remove_constraint(T va, T vb){
   c_to_sc_map.erase(c_to_sc_it);
   delete hvl;
 }
- 
+
 
 template <class T, class Data>
 void Constraint_hierarchy_2<T,Data>::
@@ -513,7 +513,7 @@ remove_Steiner(T v, T va, T vb)
 {
   // remove a Steiner point
   CGAL_precondition(!is_constrained_vertex(v));
- 
+
   H_context_list*  hcl1;
   H_context_list*  hcl2;
   if(!get_contexts(va,v,hcl1)) CGAL_triangulation_assertion(false);
@@ -537,7 +537,7 @@ remove_Steiner(T v, T va, T vb)
 
 /*
   same as add_Steiner
-  precondition : va,vb est une souscontrainte. 
+  precondition : va,vb est une souscontrainte.
 */
 template <class T, class Data>
 void Constraint_hierarchy_2<T,Data>::
@@ -547,7 +547,7 @@ split_constraint(T va, T vb, T vc){
 
 
 template <class T, class Data>
-void 
+void
 Constraint_hierarchy_2<T,Data>::
 add_Steiner(T va, T vb, T vc){
   H_context_list* hcl;
@@ -563,11 +563,11 @@ add_Steiner(T va, T vb, T vc){
     ++pos;
     pos = ctit->enclosing->insert(pos, vc);
     --pos;
-    
+
     // set ctxt to the context of (vc,vb)
     // change *ctit in hcl to the context of (va,vc)
     // add ctxt to hcl2 list
-    ctxt.enclosing = ctit->enclosing;  
+    ctxt.enclosing = ctit->enclosing;
     if((*pos)==va)    {
       ctit->pos = pos;
       ctxt.pos = ++pos;
@@ -591,7 +591,7 @@ add_Steiner(T va, T vb, T vc){
   else   sc_to_c_map.insert(std::make_pair(make_edge(va,vc), hcl));
 
   if (get_contexts(vc,vb,hcl3)) {// (vc,vb) is already a subconstraint
-#ifdef __SUNPRO_CC    
+#ifdef __SUNPRO_CC
     std::copy(hcl2->begin(), hcl2->end(), std::back_inserter(*hcl3));
 #else
     hcl3->splice(hcl3->end(),*hcl2);
@@ -599,8 +599,8 @@ add_Steiner(T va, T vb, T vc){
     delete hcl2;
   }
   else  sc_to_c_map.insert(std::make_pair(make_edge(vc,vb), hcl2));
-    
-  
+
+
   sc_to_c_map.erase(make_edge(va,vb));
   return;
 }
@@ -631,15 +631,15 @@ template <class T, class Data>
 inline
 bool
 Constraint_hierarchy_2<T,Data>::
-get_contexts(T va, T vb, 
-	     H_context_iterator& ctxt, 
+get_contexts(T va, T vb,
+	     H_context_iterator& ctxt,
 	     H_context_iterator& past) const
 {
   H_context_list* hcl;
   if (!get_contexts(va,vb,hcl)) return false;
   ctxt = hcl->begin();
   past = hcl->end();
-  return true;    
+  return true;
 }
 
 
@@ -696,7 +696,7 @@ print() const
   for(; cit != c_end();  cit++){
     std::cout << std::endl ;
     std::cout << "constraint " ;
-    std::cout << vertex_num[cit->first.first]  << " " 
+    std::cout << vertex_num[cit->first.first]  << " "
 	      <<  vertex_num[cit->first.second];
     std::cout << "  subconstraints " ;
     H_vertex_it vit = cit->second->begin();
@@ -707,21 +707,21 @@ print() const
   std::cout << std::endl ;
   for(;scit != sc_end(); scit++){
     std::cout << "subconstraint " ;
-    std::cout << vertex_num[scit->first.first] << " " 
+    std::cout << vertex_num[scit->first.first] << " "
 	      << vertex_num[scit->first.second];
     H_constraint_list  hcl;
     enclosing_constraints( scit->first.first, scit->first.second,
 			   hcl);
     H_constraint_it hcit=hcl.begin();
     std::cout << "  enclosing " ;
-    for(; hcit != hcl.end(); hcit++) { 
-      std::cout << vertex_num[hcit->first] <<" " 
+    for(; hcit != hcl.end(); hcit++) {
+      std::cout << vertex_num[hcit->first] <<" "
 		<< vertex_num[hcit->second] ;
       std::cout <<  "   " ;
     }
     std::cout << std::endl ;
   }
-  return; 
+  return;
 }
 
 

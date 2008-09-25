@@ -42,11 +42,11 @@ class SceneGraph : public Parser {
 	Vector<BindableNode>	*mBackgroundNodeVector;
 	Vector<BindableNode>	*mFogNodeVector;
 	Vector<BindableNode>	*mNavigationInfoNodeVector;
-	Vector<BindableNode>	*mViewpointNodeVector;	
+	Vector<BindableNode>	*mViewpointNodeVector;
 
 	ShapeNode				*mSelectedShapeNode;
 	Node					*mSelectedNode;
-	
+
 	BackgroundNode			*mDefaultBackgroundNode;
 	FogNode					*mDefaultFogNode;
 	NavigationInfoNode		*mDefaultNavigationInfoNode;
@@ -633,7 +633,7 @@ public:
 	///////////////////////////////////////////////
 	//	Output node infomations
 	///////////////////////////////////////////////
-	
+
 	void print();
 
 	///////////////////////////////////////////////
@@ -649,7 +649,7 @@ public:
 
 	void setBindableNode(Vector<BindableNode> *nodeVector, BindableNode *node, bool bind);
 
-	void setBindableNode(BindableNode *node, bool bind); 
+	void setBindableNode(BindableNode *node, bool bind);
 
 	void setBackgroundNode(BackgroundNode *bg, bool bind) {
 		setBindableNode(mBackgroundNodeVector, bg, bind);
@@ -719,7 +719,7 @@ public:
 	///////////////////////////////////////////////
 	//	Save node infomations
 	///////////////////////////////////////////////
-	
+
 	bool save(char *filename, void (*callbackFn)(int nNode, void *info) = NULL, void *callbackFnInfo = NULL);
 
 	///////////////////////////////////////////////

@@ -35,7 +35,7 @@
  * Note that error checking in this program is weak.  Fields are read as
  * simple strings.  Anything that doesn't translate well to strings may not
  * work (does ODBC support raw binary data?).
- * 
+ *
  * $Log: odbc2csv.cpp,v $
  * Revision 1.6  2004/02/24 17:19:10  warmerda
  * fixed error in c generation case
@@ -78,7 +78,7 @@ int main( int argc, char ** argv )
     char           szDataSrc[128];
     int            bGenerateC = 0;
 
-    if( argc < 2 ) 
+    if( argc < 2 )
     {
         printf("Usage: odbc2csv [-ds odbc_data_source] [-c] tablename ...\n" );
         exit( 1 );
@@ -105,7 +105,7 @@ int main( int argc, char ** argv )
                 perror( "fopen" );
                 exit( 1 );
             }
-         
+
             sprintf( szQuery, "SELECT * FROM \"%s\"", argv[i] );
             if( oDB.ExecuteSQL( szQuery ) == SQL_SUCCESS )
             {
@@ -128,7 +128,7 @@ int main( int argc, char ** argv )
                 perror( "fopen" );
                 exit( 1 );
             }
-         
+
             fprintf( fp, "%s\n", "#include \"defs.h\"" );
             sprintf( szQuery, "SELECT * FROM \"%s\"", argv[i] );
             if( oDB.ExecuteSQL( szQuery ) == SQL_SUCCESS )
@@ -186,7 +186,7 @@ static const char *CSVEscapeString( const char * pszInput )
      */
     if( strchr( pszInput, '\"' ) == NULL
         && strchr( pszInput, ',') == NULL
-        && strchr( pszInput, 10) == NULL 
+        && strchr( pszInput, 10) == NULL
         && strchr( pszInput, 13) == NULL )
         return( pszInput );
 
@@ -244,7 +244,7 @@ static void ODBC2CSV( CSQLDirect * poDB, FILE * fp, int bGenerateC,
      * The first step is to capture, and emit all the record names.
      */
     if( bGenerateC )
-        fprintf( fp, "datafile_rows_t %s_row_%d[] = {", 
+        fprintf( fp, "datafile_rows_t %s_row_%d[] = {",
                  pszTableName, ++iRow );
 
     nFields = poDB->GetColumnCount();
@@ -267,13 +267,13 @@ static void ODBC2CSV( CSQLDirect * poDB, FILE * fp, int bGenerateC,
     while( poDB->Fetch() == SQL_SUCCESS )
     {
         if( bGenerateC )
-            fprintf( fp, "datafile_rows_t %s_row_%d[] = {", 
+            fprintf( fp, "datafile_rows_t %s_row_%d[] = {",
                      pszTableName, ++iRow );
 
         for( iField = 1; iField <= nFields; iField++ )
         {
             const char      *pszValue;
-         
+
             if( iField > 1 )
                 fprintf( fp, "," );
 
@@ -299,7 +299,7 @@ static void ODBC2CSV( CSQLDirect * poDB, FILE * fp, int bGenerateC,
     {
         int            i;
 
-        fprintf( fp, "\ndatafile_rows_t *%s_rows[] = {", 
+        fprintf( fp, "\ndatafile_rows_t *%s_rows[] = {",
                  pszTableName );
 
         for( i = 0; i < iRow; i++ )

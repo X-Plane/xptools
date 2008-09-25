@@ -18,8 +18,8 @@
 // Author(s)     : Ron Wein <wein@post.tau.ac.il>
 
 #ifdef CGAL_ARR_POLYLINE_TRAITS_H
-#ifndef CGAL_ARR_POLYLINE_TRAITS_IOSTREAM_H   
-#define CGAL_ARR_POLYLINE_TRAITS_IOSTREAM_H  
+#ifndef CGAL_ARR_POLYLINE_TRAITS_IOSTREAM_H
+#define CGAL_ARR_POLYLINE_TRAITS_IOSTREAM_H
 
 
 CGAL_BEGIN_NAMESPACE
@@ -32,14 +32,14 @@ template <class Segment_traits_>
                             const Polyline_2<Segment_traits_>& pl)
 {
   typedef Polyline_2<Segment_traits_>  Curve_2;
-  
+
   typename Curve_2::const_iterator it;
 
   // Print out the number of points in the polyline.
   os << pl.points();
 
   // Print out the polyline points.
-  for (it = pl.begin(); it != pl.end(); it++) 
+  for (it = pl.begin(); it != pl.end(); it++)
     os << " " << (*it);
 
   return (os);

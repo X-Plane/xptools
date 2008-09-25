@@ -61,21 +61,21 @@ public:
 	//ray segment
 
   Segment2d();
-  	//unit segment from (0,0) to (1,0) 
+  	//unit segment from (0,0) to (1,0)
 
   virtual ~Segment2d() {}
   /*************************************************************
    *   member functions
    *************************************************************/
 
-  Point2d startPt() const { return p0; }  
+  Point2d startPt() const { return p0; }
   Point2d stopPt() const { return p1; }
 
   void reverse() { Point2d pTmp = p0; p0=p1; p1=pTmp; }
    //  reverses the direction of the segment
 
   Line2d toLine() const { return Line2d(p0,p1); }
- 
+
   double length() const { return p0.distance(p1); }
     //length of segment
 
@@ -97,7 +97,7 @@ public:
    *************************************************************/
   bool isOpen() const {return open; }
   bool isDirected() const {return directed; }
-  bool isTrivial() const {return p0 == p1; }  
+  bool isTrivial() const {return p0 == p1; }
   bool isVertical() const { return p0.X() == p1.X(); }
   bool isHorizontal() const { return p0.Y() == p1.Y(); }
   bool isCollinear( Point2d& p ) const { return toLine().contains(p); }
@@ -106,8 +106,8 @@ public:
     return toLine().isParallel( s.toLine() );  }
 
   bool contains( const Point2d& p ) const;
-  bool contains( const Segment2d& s ) const { 
-     return contains(s.startPt()) && contains(s.stopPt()); }  
+  bool contains( const Segment2d& s ) const {
+     return contains(s.startPt()) && contains(s.stopPt()); }
 
   bool operator==(const Segment2d& s) const { return isCoincident(s); }
 
@@ -120,19 +120,19 @@ public:
   int intersects( const Line2d& l ) const;
    //decides whether *this and t intersect in one point
    // return dim of intersetion
-  
+
   int intersects( const Segment2d& s ) const;
    //decides whether *this and t intersect in one point
    // return dim of intersetion
 
   GeomObj* intersection( const Line2d& l ) const;
    // return intersection point if this segment and l intersect at a single point
-   // the intersection point is returned 
-  
+   // the intersection point is returned
+
   GeomObj* intersection( const Segment2d& s ) const;
    // return intersection point if this segment and s intersect at a single point
-   // the intersection point is returned 
- 
+   // the intersection point is returned
+
   /*************************************************************
    *   angles
    *************************************************************/
@@ -144,13 +144,13 @@ public:
   Line2d rotate90(const Point2d& q)
   { return Line2d(startPt().rotate90(q), stopPt().rotate90(q)); }
 
-   // computes the orientation (a, b, p), where a!=b and a and b appear 
+   // computes the orientation (a, b, p), where a!=b and a and b appear
    // in this order on segment l
   friend int orientation2d( const Segment2d& s, const Point2d& p) {
-    return orientation2d( s.toLine(), p ); 
+    return orientation2d( s.toLine(), p );
   }
 
-  friend int cmp_slopes( const Segment2d& s1, const Segment2d& s2) 
+  friend int cmp_slopes( const Segment2d& s1, const Segment2d& s2)
    //l1.slope > l2.slope: +1; equal: 0; otherwise: -1
   {
      Line2d l1 = s1.toLine();
@@ -159,8 +159,8 @@ public:
          return 0;
      else
          return (l1.slope() > l2.slope()) ? +1 : -1;
-  } 
-  
+  }
+
   /*************************************************************
    *   I/O
    *************************************************************/

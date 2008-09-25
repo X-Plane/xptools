@@ -7,13 +7,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -75,7 +75,7 @@ struct _Lib3dsLin1Key {
     Lib3dsFloat dd;
     Lib3dsFloat ds;
 };
-  
+
 /*!
  * Floating-point track
  * \ingroup tracks
@@ -91,12 +91,12 @@ struct _Lib3dsLin1Track {
  */
 struct _Lib3dsLin3Key {
     Lib3dsTcb tcb;
-    Lib3dsLin3Key *next;  
+    Lib3dsLin3Key *next;
     Lib3dsVector value;
     Lib3dsVector dd;
     Lib3dsVector ds;
 };
-  
+
 /*!
  * Vector track
  * \ingroup tracks
@@ -112,16 +112,16 @@ struct _Lib3dsLin3Track {
  */
 struct _Lib3dsQuatKey {
     Lib3dsTcb tcb;
-    Lib3dsQuatKey *next;  
+    Lib3dsQuatKey *next;
     Lib3dsVector axis;
     Lib3dsFloat angle;
     Lib3dsQuat q;
     Lib3dsQuat dd;
     Lib3dsQuat ds;
 };
-  
+
 /*!
- * Rotation track 
+ * Rotation track
  * \ingroup tracks
  */
 struct _Lib3dsQuatTrack {
@@ -135,10 +135,10 @@ struct _Lib3dsQuatTrack {
  */
 struct _Lib3dsMorphKey {
     Lib3dsTcb tcb;
-    Lib3dsMorphKey *next;  
+    Lib3dsMorphKey *next;
     char name[64];
 };
-  
+
 /*!
  * Morph track
  * \ingroup tracks

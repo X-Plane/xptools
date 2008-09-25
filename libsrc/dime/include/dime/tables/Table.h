@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Table.h
  *
  *  This source file is part of DIME.
@@ -44,7 +44,7 @@ class DIME_DLL_API dimeTable : public dimeBase
 public:
   dimeTable(dimeMemHandler * const memhandler);
   virtual ~dimeTable();
-  
+
   bool read(dimeInput * const in);
   bool write(dimeOutput * const out);
   dimeTable *copy(dimeModel * const model) const;
@@ -54,7 +54,7 @@ public:
 
   void setTableName(const char * name);
   const char * tableName() const;
-  
+
   int getNumTableEntries() const;
   dimeTableEntry *getTableEntry(const int idx);
   void insertTableEntry(dimeTableEntry * const tableEntry, const int idx = -1);

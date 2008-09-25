@@ -35,10 +35,10 @@ namespace CGAL {
 class Qt_widget_show_mouse_coordinates : public Qt_widget_layer
 {
 public:
-	
-  Qt_widget_show_mouse_coordinates(QMainWindow &mw, 
+
+  Qt_widget_show_mouse_coordinates(QMainWindow &mw,
 				   QObject* parent = 0,
-				   const char* name = 0) 
+				   const char* name = 0)
     : Qt_widget_layer(parent, name), qmw(mw)
     {};
 
@@ -58,7 +58,7 @@ private:
     qmw.statusBar()->clear();
   }
   QMainWindow	&qmw;
-};//end class 
+};//end class
 
 } // namespace CGAL
 

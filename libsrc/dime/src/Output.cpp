@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Output.cpp
  *
  *  This source file is part of DIME.
@@ -67,8 +67,8 @@ dimeOutput::~dimeOutput()
   void * \a cbdata argument.
 */
 
-void 
-dimeOutput::setCallback(const int num_records, 
+void
+dimeOutput::setCallback(const int num_records,
 		       int (*cb)(float, void *), void *cbdata)
 {
   this->callback = cb;
@@ -96,7 +96,7 @@ dimeOutput::setFilename(const char * const filename)
   Sets the output stream. \fp should be a valid file/stream, and
   it will not be closed in the destructor.
  */
-bool 
+bool
 dimeOutput::setFileHandle(FILE *fp)
 {
   if (this->fp && this->didOpenFile) fclose(this->fp);
@@ -188,7 +188,7 @@ dimeOutput::writeFloat(const float val)
 }
 
 /*!
-  Writes a double precision floating point number to the file.  
+  Writes a double precision floating point number to the file.
 */
 
 bool
@@ -201,7 +201,7 @@ dimeOutput::writeDouble(const dxfdouble val)
 }
 
 /*!
-  Writes a nul-terminated string to the file. 
+  Writes a nul-terminated string to the file.
 */
 
 bool

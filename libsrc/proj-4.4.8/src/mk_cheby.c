@@ -36,7 +36,7 @@ makeT(int nru, int nrv) {
 		return 0;
 }
 	Tseries *
-mk_cheby(projUV a, projUV b, double res, projUV *resid, projUV (*func)(projUV), 
+mk_cheby(projUV a, projUV b, double res, projUV *resid, projUV (*func)(projUV),
 	int nu, int nv, int power) {
 	int j, i, nru, nrv, *ncu, *ncv;
 	Tseries *T;
@@ -127,7 +127,7 @@ mk_cheby(projUV a, projUV b, double res, projUV *resid, projUV (*func)(projUV),
 			T->b.v = 1. / (b.v - a.v);
 			T->power = 0;
 			for (i = 0; i < nru; ++i) /* store coefficient rows for u */
-				if (T->cu[i].m = ncu[i]) 
+				if (T->cu[i].m = ncu[i])
 					if ((p = T->cu[i].c =
 							(double *)pj_malloc(sizeof(double) * ncu[i])))
 						for (j = 0; j < ncu[i]; ++j)

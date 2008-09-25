@@ -19,7 +19,7 @@ class SFBool : public Field {
 
 	static	int	mInit;
 
-	bool mValue; 
+	bool mValue;
 
 public:
 

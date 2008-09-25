@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -51,7 +51,7 @@ enum {
 
 	apt_rwy_new 		= 100,			// These replace the old type 10 record.
 	apt_sea_new 		= 101,
-	apt_heli_new 		= 102,	
+	apt_heli_new 		= 102,
 	apt_taxi_new 		= 110,
 	apt_free_chain		= 120,
 	apt_boundary 		= 130,
@@ -71,16 +71,16 @@ enum {
 	apt_surf_dirt,
 	apt_surf_gravel,
 	apt_surf_asphalt_heli,			// these are 810 only
-	apt_surf_concrete_heli,	
+	apt_surf_concrete_heli,
 	apt_surf_grass_heli,
 	apt_surf_dirt_heli,
 	apt_surf_asphalt_line,
-	apt_surf_concrete_line,	
+	apt_surf_concrete_line,
 	apt_surf_dry_lake,				// all versions
 	apt_surf_water,
 	apt_surf_ice,					// 850 only
 	apt_surf_transparent,
-	
+
 	// Light Fixture Codes (850)
 	apt_gls_vasi			= 1,
 	apt_gls_papi_left,
@@ -93,12 +93,12 @@ enum {
 	apt_gls_vasi_810,
 	apt_gls_papi_810,
 	apt_gls_papi20_810,
-	
+
 	// Edge Light Codes (850)
 	apt_edge_none = 0,
 	apt_edge_LIRL,
 	apt_edge_MIRL,
-	apt_edge_HIRL,	
+	apt_edge_HIRL,
 	apt_heli_edge_none = 0,
 	apt_heli_edge_yellow,
 	// REIL Codes (850)
@@ -112,7 +112,7 @@ enum {
 	apt_edge_CLL_810,
 	apt_edge_TDZL_810,
 	apt_edge_taxiway_810,
-	
+
 	// Approach Lights (850)
 	apt_app_none = 0,
 	apt_app_ALSFI,
@@ -126,7 +126,7 @@ enum {
 	apt_app_MALSF,
 	apt_app_MALS,
 	apt_app_ODALS,
-	apt_app_RAIL,	
+	apt_app_RAIL,
 	// Approach lights (810)
 	apt_app_none_810 = 1,
 	apt_app_SSALS_810,
@@ -136,12 +136,12 @@ enum {
 	apt_app_ODALS_810,
 	apt_app_CALVERTI_810,
 	apt_app_CALVERTII_810,
-	
+
 	// Shoulder codes
 	apt_shoulder_none = 0,
 	apt_shoulder_asphalt,
 	apt_shoulder_concrete,
-	
+
 	// Runway markings
 	apt_mark_none = 0,
 	apt_mark_visual,
@@ -151,7 +151,7 @@ enum {
 	apt_mark_precision_UK,
 	// Helipad Markings
 	apt_mark_heli_default = 0,	// 850 only
-	
+
 	// Airport beacons
 	apt_beacon_none = 0,
 	apt_beacon_airport,
@@ -165,7 +165,7 @@ enum {
 	apt_sign_large,
 	apt_sign_large_distance,
 	apt_sign_small_distance,
-	
+
 	// Sign Style
 	apt_sign_style_default = 0,
 
@@ -182,7 +182,7 @@ enum {
 	apt_line_wide_double_broken_yellow,
 	apt_line_solid_white = 20,
 	apt_line_chequered_white,
-	apt_line_broken_white, 
+	apt_line_broken_white,
 	apt_line_Bsolid_yellow = 51,
 	apt_line_Bbroken_yellow,
 	apt_line_Bdouble_solid_yellow,
@@ -220,7 +220,7 @@ struct	AptRunway_t {
 	int			marking_code[2];
 	int			app_light_code[2];
 	int			has_tdzl[2];
-	int			reil_code[2];	
+	int			reil_code[2];
 };
 typedef vector<AptRunway_t>		AptRunwayVector;
 
@@ -250,7 +250,7 @@ struct	AptLinearSegment_t {
 	int			code;
 	Point2		pt;
 	Point2		ctrl;
-	set<int>	attributes;	
+	set<int>	attributes;
 };
 typedef	vector<AptLinearSegment_t>		AptPolygon_t;
 
@@ -297,8 +297,8 @@ struct	AptPavement_t {
 	int			disp2_ft;
 	int			vap_lites_code2;
 	int			edge_lites_code2;
-	int			app_lites_code2;	
-	int			vasi_angle2;	// x100	
+	int			app_lites_code2;
+	int			vasi_angle2;	// x100
 };
 typedef vector<AptPavement_t>	AptPavementVector;
 
@@ -368,10 +368,10 @@ struct AptInfo_t {
 	AptHelipadVector	helipads;
 	AptTaxiwayVector	taxiways;
 	AptBoundaryVector	boundaries;
-	AptMarkingVector	lines;	
+	AptMarkingVector	lines;
 	AptLightVector		lights;
 	AptSignVector		signs;
-	
+
 	AptPavementVector	pavements;				// 810 structures
 
 	AptGateVector		gates;					// shared structures
@@ -379,18 +379,18 @@ struct AptInfo_t {
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;
 	AptATCFreqVector	atc;
-	
+
 	Bbox2				bounds;
 
-#if OPENGL_MAP	
+#if OPENGL_MAP
 	struct AptLineLoop_t {
 		float			rgb[3];
 		Polygon2		pts;
 	};
 	vector<AptLineLoop_t>	ogl;
-#endif	
-	
-	
+#endif
+
+
 };
 
 typedef vector<AptInfo_t>	AptVector;

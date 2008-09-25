@@ -194,8 +194,8 @@ public:
         // readable polyhedrons. If the representation does not support
         // insertion the object must fit in the reserved sizes.
         //    If `mode' is set to ABSOLUTE_INDEXING the incremental builder
-        // uses absolute indexing and the vertices of the old polyhedral 
-        // surface can be used in new facets. Otherwise relative indexing is 
+        // uses absolute indexing and the vertices of the old polyhedral
+        // surface can be used in new facets. Otherwise relative indexing is
         // used starting with new indices for the new construction.
 
 
@@ -295,8 +295,8 @@ public:
 
     template <class InputIterator>
     bool test_facet( InputIterator first, InputIterator beyond) {
-        // tests if the facet described by the vertex indices in the 
-        // range [first,beyond) can be inserted without creating a 
+        // tests if the facet described by the vertex indices in the
+        // range [first,beyond) can be inserted without creating a
         // a non-manifold (and therefore invalid) situation.
         // First, create a copy of the indices and close it cyclically
         std::vector< std::size_t> indices( first, beyond);
@@ -376,7 +376,7 @@ protected:
         //     Set the facet of g to the current facet and g->opposite()
         //     to a border halfedge. Assign the vertex references.
         //     Set g->opposite()->next() to g. Return g->opposite().
-        typedef typename HDS::Supports_halfedge_vertex 
+        typedef typename HDS::Supports_halfedge_vertex
             Supports_halfedge_vertex;
         Assert_compile_time_tag( Supports_halfedge_vertex(), Tag_true());
         CGAL_assertion( w < new_vertices);
@@ -720,7 +720,7 @@ Polyhedron_incremental_builder_3<HDS>::
 test_facet_indices( std::vector< std::size_t> indices) {
     typedef typename HDS::Supports_halfedge_vertex Supports_halfedge_vertex;
     Assert_compile_time_tag( Supports_halfedge_vertex(), Tag_true());
-    // tests if the facet described by the vertex indices can be inserted 
+    // tests if the facet described by the vertex indices can be inserted
     // without creating a a non-manifold (and therefore invalid) situation.
     // indices are cyclically closed once.
     std::size_t n = indices.size() - 1;
@@ -754,7 +754,7 @@ test_facet_indices( std::vector< std::size_t> indices) {
     }
     // test non-manifold vertices
     for ( std::size_t i = 0; i < n; ++i) {
-        // since we don't allow duplicates in indices[..] and we 
+        // since we don't allow duplicates in indices[..] and we
         // tested for non-manifold edges already, we just need to check
         // if the vertex indices[i] is not a closed manifold yet.
         Halfedge_handle v = get_vertex_to_edge_map(indices[i]);

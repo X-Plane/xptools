@@ -42,7 +42,7 @@ template < class Traits,
 #endif
            class HDS, class Alloc>
 void
-print_wavefront( std::ostream& out, 
+print_wavefront( std::ostream& out,
                  const Polyhedron_3<Traits,Items,HDS,Alloc>& P) {
     File_writer_wavefront  writer;
     generic_print_polyhedron( out, P, writer);

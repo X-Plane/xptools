@@ -1435,7 +1435,7 @@ typedef struct QueryTerm {
  *
  * OR binds more tightly than the implied AND, which is what the
  * major search engines seem to do.  So, for example:
- * 
+ *
  *    [one two OR three]     ==>    one AND (two OR three)
  *    [one OR two three]     ==>    (one OR two) AND three
  *
@@ -2065,7 +2065,7 @@ static void fulltext_vtab_destroy(fulltext_vtab *v){
     v->pTokenizer->pModule->xDestroy(v->pTokenizer);
     v->pTokenizer = NULL;
   }
-  
+
   free(v->azColumn);
   for(i = 0; i < v->nColumn; ++i) {
     sqlite3_free(v->azContentColumn[i]);
@@ -2088,11 +2088,11 @@ static void fulltext_vtab_destroy(fulltext_vtab *v){
 ** IdChar(X) will be true.  Otherwise it is false.
 **
 ** For ASCII, any character with the high-order bit set is
-** allowed in an identifier.  For 7-bit characters, 
+** allowed in an identifier.  For 7-bit characters,
 ** sqlite3IsIdChar[X] must be 1.
 **
 ** Ticket #1066.  the SQL standard does not allow '$' in the
-** middle of identfiers.  But many SQL implementations do. 
+** middle of identfiers.  But many SQL implementations do.
 ** SQLite will allow '$' in identifiers for compatibility.
 ** But the feature is undocumented.
 */
@@ -2109,7 +2109,7 @@ static const char isIdChar[] = {
 
 
 /*
-** Return the length of the token that begins at z[0]. 
+** Return the length of the token that begins at z[0].
 ** Store the token type in *tokenType before returning.
 */
 static int getToken(const char *z, int *tokenType){
@@ -2314,7 +2314,7 @@ static char *firstToken(char *zIn, char **pzTail){
 **   *  s begins with the string t, ignoring case
 **   *  s is longer than t
 **   *  The first character of s beyond t is not a alphanumeric
-** 
+**
 ** Ignore leading space in *s.
 **
 ** To put it another way, return true if the first token of
@@ -2356,7 +2356,7 @@ static void clearTableSpec(TableSpec *p) {
  *        USING fts2(subject, body, tokenize mytokenizer(myarg))
  *
  * We return parsed information in a TableSpec structure.
- * 
+ *
  */
 static int parseSpec(TableSpec *pSpec, int argc, const char *const*argv,
                      char**pzErr){
@@ -2635,7 +2635,7 @@ static int fulltextBestIndex(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
       /* An arbitrary value for now.
        * TODO: Perhaps rowid matches should be considered cheaper than
        * full-text searches. */
-      pInfo->estimatedCost = 1.0;   
+      pInfo->estimatedCost = 1.0;
 
       return SQLITE_OK;
     }
@@ -2748,7 +2748,7 @@ static void snippetOffsetsOfColumn(
   fulltext_vtab *pVtab;                /* The full text index */
   int nColumn;                         /* Number of columns in the index */
   const QueryTerm *aTerm;              /* Query string terms */
-  int nTerm;                           /* Number of query string terms */  
+  int nTerm;                           /* Number of query string terms */
   int i, j;                            /* Loop counters */
   int rc;                              /* Return code */
   unsigned int match, prevMatch;       /* Phrase search bitmasks */
@@ -2800,12 +2800,12 @@ static void snippetOffsetsOfColumn(
     prevMatch = match<<1;
     iRotor++;
   }
-  pTModule->xClose(pTCursor);  
+  pTModule->xClose(pTCursor);
 }
 
 
 /*
-** Compute all offsets for the current row of the query.  
+** Compute all offsets for the current row of the query.
 ** If the offsets have already been computed, this routine is a no-op.
 */
 static void snippetAllOffsets(fulltext_cursor *p){
@@ -2933,7 +2933,7 @@ static void snippetText(
   int iStart, iEnd;
   int tailEllipsis = 0;
   int iMatch;
-  
+
 
   free(pCursor->snippet.zSnippet);
   pCursor->snippet.zSnippet = 0;
@@ -3197,7 +3197,7 @@ static int tokenizeSegment(
   int firstIndex = pQuery->nTerms;
   int iCol;
   int nTerm = 1;
-  
+
   int rc = pModule->xOpen(pTokenizer, pSegment, nSegment, &pCursor);
   if( rc!=SQLITE_OK ) return rc;
   pCursor->pTokenizer = pTokenizer;
@@ -5112,7 +5112,7 @@ static int fulltextUpdate(sqlite3_vtab *pVtab, int nArg, sqlite3_value **ppArg,
   fts2HashElem *e;
 
   TRACE(("FTS2 Update %p\n", pVtab));
-  
+
   fts2HashInit(&terms, FTS2_HASH_STRING, 1);
 
   if( nArg<2 ){
@@ -5246,7 +5246,7 @@ static const sqlite3_module fulltextModule = {
   /* xColumn       */ fulltextColumn,
   /* xRowid        */ fulltextRowid,
   /* xUpdate       */ fulltextUpdate,
-  /* xBegin        */ 0, 
+  /* xBegin        */ 0,
   /* xSync         */ 0,
   /* xCommit       */ 0,
   /* xRollback     */ 0,

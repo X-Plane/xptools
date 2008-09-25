@@ -4,7 +4,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -44,7 +44,7 @@ class  sio_8211Reader;
 class sio_8211ForwardIterator
 {
    public:
-        
+
       ///
       sio_8211ForwardIterator( );
 
@@ -103,7 +103,7 @@ sio_8211Reader
       sio_8211Reader();
 
       ///
-      sio_8211Reader( std::istream & is, 
+      sio_8211Reader( std::istream & is,
                       sio_8211_converter_dictionary const * const converters = 0);
 
 
@@ -115,7 +115,7 @@ sio_8211Reader
          module; return false if there's a problem; also use the given
          converter dictionary for hints on how to read binary data
       */
-      bool attach( std::istream & is, 
+      bool attach( std::istream & is,
                    sio_8211_converter_dictionary const * const converters = 0);
 
       /// similar to STL begin

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: FloatRecord.h
  *
  *  This source file is part of DIME.
@@ -51,7 +51,7 @@ public:
 
 private:
   float value;
-  
+
 }; // class dimeFloatRecord
 
 #endif // ! DIME_FLOATRECORD_H

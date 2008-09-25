@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Vertex.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ class DIME_DLL_API dimeVertex : public dimeEntity
 {
   friend class dimePolyline;
   friend class dimeEntity;
-  
+
 public:
   dimeVertex();
 
@@ -53,7 +53,7 @@ public:
     POLYGON_MESH_VERTEX    = 0x40,
     POLYFACE_MESH_VERTEX   = 0x80
   };
-  
+
   virtual dimeEntity *copy(dimeModel * const model) const;
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
@@ -65,7 +65,7 @@ public:
 
   void setCoords(const dimeVec3f &v);
   const dimeVec3f &getCoords() const;
-  
+
   int numIndices() const;
   int getIndex(const int idx) const;
   void setIndex(const int idx, const int val);
@@ -75,10 +75,10 @@ public:
   virtual int countRecords() const;
 
 protected:
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
                             dimeMemHandler * const memhandler);
-  
+
 private:
   int16 flags;
 #ifdef DIME_FIXBIG
@@ -91,7 +91,7 @@ private:
 
 }; // class dimeVertex
 
-inline void 
+inline void
 dimeVertex::setCoords(const dimeVec3f &v)
 {
   this->coords = v;
@@ -103,20 +103,20 @@ dimeVertex::getCoords() const
   return this->coords;
 }
 
-inline void 
+inline void
 dimeVertex::setIndex(const int idx, const int val)
 {
   assert(idx >= 0 && idx < 4);
   this->indices[idx] = val;
 }
 
-inline int16 
+inline int16
 dimeVertex::getFlags() const
 {
   return this->flags;
 }
 
-inline void 
+inline void
 dimeVertex::setFlags(const int16 flags)
 {
   this->flags = flags;

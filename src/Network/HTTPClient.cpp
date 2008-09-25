@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,7 +35,7 @@ HTTPConnection::HTTPConnection(
 		return;
 
 	mSocket = new PCSBSocket(0, false);
-	mSocket->Connect(ip, inPort);	
+	mSocket->Connect(ip, inPort);
 }
 
 HTTPConnection::~HTTPConnection()
@@ -43,12 +43,12 @@ HTTPConnection::~HTTPConnection()
 	DebugAssert(mReqs.empty());
 	delete mSocket;
 }
-	
+
 int	HTTPConnection::DoProcessing(void)
 {
 	// Error handling: if our socket doesn't exist (failed to create??) or an error happened,
-	// remove anyone who is queued - they're not going to work.  
-	
+	// remove anyone who is queued - they're not going to work.
+
 	if (mSocket == NULL ||
 		mSocket->GetStatus() == PCSBSocket::status_Disconnected ||
 		mSocket->GetStatus() == PCSBSocket::status_Error)
@@ -60,7 +60,7 @@ int	HTTPConnection::DoProcessing(void)
 			mReqs.pop_front();
 		}
 		return 0;
-	}	
+	}
 
 	if (mSocket->GetStatus() == PCSBSocket::status_Connected)
 	{
@@ -70,7 +70,7 @@ int	HTTPConnection::DoProcessing(void)
 			if (writeLen > 0)
 				mOutBuf.erase(mOutBuf.begin(), mOutBuf.begin() + writeLen);
 		}
-		
+
 		char	readChunk[1024];
 		int	readLen = mSocket->ReadData(readChunk, sizeof(readChunk));
 		if (readLen > 0)
@@ -130,7 +130,7 @@ HTTPRequest::HTTPRequest(
 	string	request;
 
 	if (inIsPost)
-		request = "POST "; 
+		request = "POST ";
 	else
 		request = "GET ";
 	request += inURL;
@@ -153,27 +153,27 @@ HTTPRequest::HTTPRequest(
 
 	mRequest.insert(mRequest.end(),request.begin(),request.end());
 	if (inContentBuffer) mRequest.insert(mRequest.end(),inContentBuffer,inContentBuffer+inContentBufferLength);
-	
+
 	if (inConnection)
 		Retry(inConnection);
-}	
+}
 
 void HTTPRequest::Retry(HTTPConnection *	inConnection)
 {
-	mGotWholeHeader = false;	
-	mResponseNum = status_Pending;		
-	mResponseName.clear();		
-	mFields.clear();			
-	mPayload.clear();			
-	if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }			
-	mIncomingLength = -1;	
-	mReceivedPayload = 0;	
-	
+	mGotWholeHeader = false;
+	mResponseNum = status_Pending;
+	mResponseName.clear();
+	mFields.clear();
+	mPayload.clear();
+	if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }
+	mIncomingLength = -1;
+	mReceivedPayload = 0;
+
 	mConnection = inConnection;
 	mConnection->mReqs.push_back(this);
 	mConnection->SendData(&*mRequest.begin(), &*mRequest.end());
 }
-	
+
 HTTPRequest::~HTTPRequest()
 {
 	DebugAssert(mConnection == NULL);
@@ -192,7 +192,7 @@ void	HTTPRequest::GetData(vector<char>& foo)
 	foo.clear();
 	foo.swap(mPayload);
 }
-	
+
 int		HTTPRequest::GetTotalExpected(void)
 {
 	return mIncomingLength;
@@ -203,7 +203,7 @@ float	HTTPRequest::GetPercentDone(void)
 	if (mIncomingLength == -1) return -1.0;
 	return ((float) mReceivedPayload) / ((float) mIncomingLength);
 }
-	
+
 int		HTTPRequest::GetResponseNum(void)
 {
 	return mResponseNum;
@@ -282,9 +282,9 @@ int		HTTPRequest::ParseMore(vector<char>& io_buf)
 						}
 					}
 				}
-				
+
 				io_buf.erase(io_buf.begin(), io_buf.begin() + n + 1);
-				n = 0;				
+				n = 0;
 			}
 		}
 	}
@@ -294,17 +294,17 @@ int		HTTPRequest::ParseMore(vector<char>& io_buf)
 		{
 			int write_size = mIncomingLength - mReceivedPayload;
 			if (write_size > io_buf.size()) write_size = io_buf.size();
-			
+
 			if (mDestFile)
 				fwrite(&*io_buf.begin(), 1, write_size, mDestFile);
 			else
 				mPayload.insert(mPayload.end(),io_buf.begin(),io_buf.begin() + write_size);
-			
+
 			mReceivedPayload += write_size;
 			io_buf.erase(io_buf.begin(), io_buf.begin()+write_size);
 		}
 	}
-	
+
 	if (IsDone())
 	{
 		if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }

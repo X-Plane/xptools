@@ -144,21 +144,21 @@ Qt_help_window::Qt_help_window( const QString& home_, const QString& _path,
   go->insertItem( icon_home, "&Home", browser, SLOT( home() ) );
 
   menuBar()->insertItem("&File", file);
-  menuBar()->insertItem("&Go", go); 
+  menuBar()->insertItem("&Go", go);
 
   QToolBar* toolbar = new QToolBar( this );
   addToolBar( toolbar, "Toolbar");
   QToolButton* button;
 
 
-  button = new QToolButton( icon_back, "Backward", "", 
+  button = new QToolButton( icon_back, "Backward", "",
                             browser, SLOT(backward()), toolbar );
-  connect( browser, SIGNAL( backwardAvailable(bool) ), 
+  connect( browser, SIGNAL( backwardAvailable(bool) ),
            button, SLOT( setEnabled(bool) ) );
   button->setEnabled( FALSE );
-  button = new QToolButton( icon_forward, "Forward", "", 
+  button = new QToolButton( icon_forward, "Forward", "",
                             browser, SLOT(forward()), toolbar );
-  connect( browser, SIGNAL( forwardAvailable(bool) ), 
+  connect( browser, SIGNAL( forwardAvailable(bool) ),
 	   button, SLOT(setEnabled(bool) ) );
   button->setEnabled( FALSE );
   button = new QToolButton( icon_home, "Home", "", browser,

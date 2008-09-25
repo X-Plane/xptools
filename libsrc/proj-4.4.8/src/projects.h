@@ -85,7 +85,7 @@
 #define C_NAMESPACE extern "C"
 #define C_NAMESPACE_VAR extern "C"
 extern "C" {
-#else    
+#else
 #define C_NAMESPACE extern
 #define C_NAMESPACE_VAR
 #endif
@@ -141,15 +141,15 @@ extern double hypot(double, double);
 
 /* datum_type values */
 #define PJD_UNKNOWN   0
-#define PJD_3PARAM    1   
-#define PJD_7PARAM    2   
+#define PJD_3PARAM    1
+#define PJD_7PARAM    2
 #define PJD_GRIDSHIFT 3
 #define PJD_WGS84     4   /* WGS84 (or anything considered equivelent) */
 
 /* datum system errors */
 #define PJD_ERR_GEOCENTRIC -45
 
-#define USE_PROJUV 
+#define USE_PROJUV
 
 typedef struct { double u, v; } projUV;
 typedef struct { double r, i; }	COMPLEX;
@@ -164,7 +164,7 @@ typedef struct { double lam, phi; } LP;
 
 typedef union { double  f; int  i; char *s; } PROJ_PVALUE;
 struct PJconsts;
-    
+
 struct PJ_LIST {
 	char	*id;		/* projection keyword */
 	struct PJconsts	*(*proj)(struct PJconsts*);/* projection entry point */
@@ -198,7 +198,7 @@ struct DERIVS {
     double x_l, x_p; /* derivatives of x for lambda-phi */
     double y_l, y_p; /* derivatives of y for lambda-phi */
 };
-    
+
 struct FACTORS {
 	struct DERIVS der;
 	double h, k;	/* meridinal, parallel scales */
@@ -246,7 +246,7 @@ typedef struct PJconsts {
         int     datum_type; /* PJD_UNKNOWN/3PARAM/7PARAM/GRIDSHIFT/WGS84 */
         double  datum_params[7];
         double  from_greenwich; /* prime meridian offset (in radians) */
-        
+
 #ifdef PROJ_PARMS__
 PROJ_PARMS__
 #endif /* end of optional extensions */
@@ -261,7 +261,7 @@ extern struct PJ_LIST pj_list[];
 #else
 #define PROJ_HEAD(id, name) \
     struct PJconsts *pj_##id(struct PJconsts*); extern char * const pj_s_##id;
-    
+
 #ifndef lint
 #define DO_PJ_LIST_ID
 #endif
@@ -330,8 +330,8 @@ struct CTABLE {
 typedef struct _pj_gi {
     char *gridname;   /* identifying name of grid, eg "conus" or ntv2_0.gsb */
     char *filename;   /* full path to filename */
-    
-    const char *format; /* format of this grid, ie "ctable", "ntv1", 
+
+    const char *format; /* format of this grid, ie "ctable", "ntv1",
                            "ntv2" or "missing". */
 
     int   grid_offset; /* offset in file, for delayed loading */
@@ -375,7 +375,7 @@ struct PW_COEF {/* row coefficient structure */
     int m;		/* number of c coefficients (=0 for none) */
     double *c;	/* power coefficients */
 };
- 
+
 /* Approximation structures and procedures */
 typedef struct {	/* Chebyshev or Power series structure */
 	projUV a, b;		/* power series range for evaluation */

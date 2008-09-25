@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -39,7 +39,7 @@ class sio_ConverterFactory
 
          The type is one of:
 
-            A: graphic characters, alphanumeric characters, or 
+            A: graphic characters, alphanumeric characters, or
                alphabetic characters.
             I: implicit-point (integer)
             R: explicit-point unscaled (fixed point real)

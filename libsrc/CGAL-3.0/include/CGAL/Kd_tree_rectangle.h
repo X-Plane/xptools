@@ -35,7 +35,7 @@ namespace CGAL {
     void operator() (Point& p) {
 		T h;
 		for (int i = 0; i < dim; ++i) {
-			h=p[i]; 
+			h=p[i];
 			if (h < lower[i]) lower[i] = h;
  			if (h > upper[i]) upper[i] = h;
 		}
@@ -98,8 +98,8 @@ namespace CGAL {
 	}
       }
     }
-    
-    Kd_tree_rectangle(const int d) : 
+
+    Kd_tree_rectangle(const int d) :
     dim(d), lower_(new NT[d]), upper_(new NT[d])
     {
       std::fill(lower_, lower_ + dim, 0);
@@ -109,7 +109,7 @@ namespace CGAL {
 
     Kd_tree_rectangle() : dim(0), lower_(0), upper_(0) {}
 
-    
+
     explicit Kd_tree_rectangle(const Kd_tree_rectangle<NT>& r) : dim(r.dim),
       lower_(new NT[dim]), upper_(new NT[dim]) {
         std::copy(r.lower_, r.lower_+dim, lower_);
@@ -132,7 +132,7 @@ namespace CGAL {
     }
 
     template <class PointPointerIter>
-    void update_from_point_pointers(PointPointerIter begin, 
+    void update_from_point_pointers(PointPointerIter begin,
                                     PointPointerIter end, bool empty) {
 		if (empty) { // no points
 		  for (int i=0; i < dim; ++i)
@@ -146,7 +146,7 @@ namespace CGAL {
 	        lower_[i]= (*(*begin))[i]; upper_[i]=lower_[i];
 		  }
 	      begin++;
-          typedef typename 
+          typedef typename
 	  std::iterator_traits<PointPointerIter>::value_type P;
           std::for_each(begin, end,
 		    set_bounds_from_pointer<P,T>(dim, lower_, upper_));
@@ -185,18 +185,18 @@ namespace CGAL {
       return s;
     }
 
-    // Splits rectangle by modifying itself to lower half 
+    // Splits rectangle by modifying itself to lower half
     // and returns upper half
     Kd_tree_rectangle* split(int d, NT value) {
 		// assert(d >= 0 && d < dim);
 		// assert(lower_[d] <= value && value <= upper_[d]);
-                
+
 		Kd_tree_rectangle* r = new Kd_tree_rectangle(*this);
 		upper_[d]=value;
                 r->lower_[d]=value;
 		return r;
     }
-                      
+
 
     ~Kd_tree_rectangle() {
       if (dim) {
@@ -207,9 +207,9 @@ namespace CGAL {
 
     int dimension() const {return dim;}
 
- 
+
     Kd_tree_rectangle<NT>& operator= (const Kd_tree_rectangle<NT>& r) {
-      
+
       if (this != &r) {
         std::copy(r.lower_, r.lower_+dim, lower_);
 	std::copy(r.upper_, r.upper_+dim, upper_);
@@ -218,7 +218,7 @@ namespace CGAL {
       return *this;
     }
 
-  
+
 
 }; // of class Kd_tree_rectangle
 
@@ -227,7 +227,7 @@ namespace CGAL {
     return r.print(s);
   }
 
-  
+
 } // namespace CGAL
 #endif // CGAL_KD_TREE_RECTANGLE_H
 

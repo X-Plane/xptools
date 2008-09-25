@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownSection.cpp
  *
  *  This source file is part of DIME.
@@ -100,14 +100,14 @@ dimeUnknownSection::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeUnknownSection::read(dimeInput * const file)
 {
   dimeRecord *record;
   bool ok = true;
   dimeArray <dimeRecord*> array(512);
   dimeMemHandler *memhandler = file->getMemHandler();
-  
+
   while (true) {
     record = dimeRecord::readRecord(file);
     if (record == NULL) {
@@ -115,7 +115,7 @@ dimeUnknownSection::read(dimeInput * const file)
 	      "line: %d\n", file->getFilePosition());
       ok = false;
       break;
-    } 
+    }
     array.append(record);
     if (record->isEndOfSectionRecord()) break;
   }
@@ -138,7 +138,7 @@ dimeUnknownSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeUnknownSection::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(2) && file->writeString(this->sectionName)) {
@@ -153,7 +153,7 @@ dimeUnknownSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeUnknownSection::typeId() const
 {
   return dimeBase::dimeUnknownSectionType;

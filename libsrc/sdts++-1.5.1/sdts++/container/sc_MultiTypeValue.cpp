@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -79,9 +79,9 @@ sc_MultiTypeValue::operator=(sc_MultiTypeValue const& right)
     return *this;
 
   reset();
- 
+
  type_ = right.type_;
- 
+
  switch(type_)
     {
     case isLong :
@@ -131,7 +131,7 @@ sc_MultiTypeValue::operator==(sc_MultiTypeValue const& right) const
        // Ergo, I must strip any trailing spaces and THEN do the
        // string comparison.
 
-       return clipTrailingSpaces( *val_.sval ) == 
+       return clipTrailingSpaces( *val_.sval ) ==
               clipTrailingSpaces( *right.val_.sval );
     }
     case isNull:                // two nulls are always equal

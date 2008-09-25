@@ -296,7 +296,7 @@ insertion_event(Tree *tree, Vertex_index prev_vt,
       case LEFT_TURN: left_turn = true; break;
       case RIGHT_TURN: left_turn = false; break;
       case COLLINEAR: return false;
-      
+
     }
     Edge_data<Less_segs>
         &td_prev = edges[prev_vt.as_int()],

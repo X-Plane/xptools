@@ -1,30 +1,30 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
- 
+
  //
  //	Another 3DS lib can be found at: http://c3ds.sourceforge.net/
  //
- 
+
 #include "ConvertObj3DS.h"
 #include "ObjUtils.h"
 
@@ -52,13 +52,13 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 		{
 			materials.insert(pair<string,Lib3dsMaterial*>(material->name, material));
 		}
-	
+
 		lib3ds_file_eval(f,0.0);	// I think this sets the time of a specified motion sequence.
 
 		// We could iterate the nodes on the file, they would reference the meshes by name and we'd fetch
 		// them.  We would then apply the node's matrix and pivot point, as follows:
 
-//			mesh=lib3ds_file_mesh_by_name(f, node->name);					
+//			mesh=lib3ds_file_mesh_by_name(f, node->name);
 //			Lib3dsMatrix N,M,X;
 //			lib3ds_matrix_copy(N, node->matrix);
 //			lib3ds_matrix_translate_xyz(N, -d->pivot[0], -d->pivot[1], -d->pivot[2]);
@@ -84,7 +84,7 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 			}
 
 			// 3DS is made entirely of triangles...de-index each face and emit it.
-	        for (int p=0; p<mesh->faces; ++p) 
+	        for (int p=0; p<mesh->faces; ++p)
 	        {
 	        	float	s_offset = 0.0;
 	        	float	t_offset = 0.0;
@@ -92,7 +92,7 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 	        	float	t_scale = 1.0;
 
 				Lib3dsFace *face=&mesh->faceL[p];
-				
+
 				if (materials.find(face->material) != materials.end())
 				{
 					Lib3dsMaterial * material = materials[face->material];
@@ -101,7 +101,7 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 					s_scale = material->texture1_map.scale[0];
 					t_scale = material->texture1_map.scale[1];
 				}
-	        
+
 				vec_tex	vv;
 				XObjCmd	cmd;
 				cmd.cmdType = type_Poly;
@@ -118,19 +118,19 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 				cmd.st.push_back(vv);
 
 				if (mesh->texelL)
-				{					
+				{
 					vv.st[0] = s_offset + s_scale * mesh->texelL[face->points[1]][0];
 					vv.st[1] = t_offset + t_scale * mesh->texelL[face->points[1]][1];
 				} else
 					vv.st[0] = vv.st[1] = 0.0;
 				vv.v[0] =  mesh->pointL[face->points[1]].pos[0];
 				vv.v[1] =  mesh->pointL[face->points[1]].pos[1];
-				vv.v[2] =  mesh->pointL[face->points[1]].pos[2];							
+				vv.v[2] =  mesh->pointL[face->points[1]].pos[2];
 				cmd.st.push_back(vv);
 
 
 				if (mesh->texelL)
-				{					
+				{
 					vv.st[0] = s_offset + s_scale * mesh->texelL[face->points[2]][0];
 					vv.st[1] = t_offset + t_scale * mesh->texelL[face->points[2]][1];
 				} else
@@ -139,15 +139,15 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 				vv.v[1] =  mesh->pointL[face->points[2]].pos[1];
 				vv.v[2] =  mesh->pointL[face->points[2]].pos[2];
 				cmd.st.push_back(vv);
-				
+
 				if (inReversePoly)
 					ChangePolyCmdCW(cmd);
 				obj.cmds.push_back(cmd);
 			}
-		}			
+		}
 	 	lib3ds_file_free(f);
 	 	success = true;
-	 	
+
 	 }
 	 return success;
 }
@@ -180,15 +180,15 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 	bool	success = false;
 	Lib3dsFile * file = lib3ds_file_new();
 	if (!file) return false;
-	
+
 	Lib3dsMesh * mesh;
 	vector<int>	p1, p2, p3;
 	static	char	meshName[256];
 	sprintf(meshName,"Unnamed");
-	
+
 	XObj	obj;
 	DecomposeObj(inObj,	obj, 3);
-	
+
 	for(vector<XObjCmd>::iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
 	{
 		switch(cmd->cmdType) {
@@ -209,9 +209,9 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 						mesh->faceL[p].points[1] = p2[p];
 						mesh->faceL[p].points[2] = p3[p];
 					}
-					
+
 					lib3ds_file_insert_mesh(file, mesh);
-					
+
 					pool.clear(5);
 					p1.clear();
 					p2.clear();
@@ -223,7 +223,7 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 			break;
 		case type_Poly:
 			if (inReversePoly)
-				ChangePolyCmdCW(*cmd);		
+				ChangePolyCmdCW(*cmd);
 			switch(cmd->cmdID) {
 			case obj_Tri:
 				p1.push_back(pool_accumulate(&pool,cmd->st[0].v, cmd->st[0].st));
@@ -249,7 +249,7 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 			mesh->faceL[p].points[1] = p2[p];
 			mesh->faceL[p].points[2] = p3[p];
 		}
-		
+
 		lib3ds_file_insert_mesh(file, mesh);
 	}
 	success = lib3ds_file_save(file, inFilePath);

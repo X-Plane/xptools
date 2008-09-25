@@ -11,8 +11,8 @@
 // file          : spatial_searching_toolbar.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -51,7 +51,7 @@ private:
   CGAL::Qt_widget_get_point<R>         point_layer;
   CGAL::Qt_widget_get_iso_rectangle<R> iso_r_layer;
   CGAL::Qt_widget_get_circle<R>        circle_layer;
-  Qt_widget_move_list_point<R>         edit_layer;  
+  Qt_widget_move_list_point<R>         edit_layer;
 };//end class
 
 #endif

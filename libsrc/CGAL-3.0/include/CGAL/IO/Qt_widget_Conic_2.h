@@ -34,9 +34,9 @@ template< class R >
 Qt_widget&
 operator << ( Qt_widget& ws, const CGAL::Conic_2<R>& c)
 {
-  typedef typename R::Point_2 Point;    
+  typedef typename R::Point_2 Point;
   // pixel dimensions of window
-  int dim = std::max( ws.width(), ws.height());    
+  int dim = std::max( ws.width(), ws.height());
   // length of a pixel in window-coordinates
   double pixel_x = (ws.x_max() - ws.x_min())/dim;
   double pixel_y = (ws.y_max() - ws.y_min())/dim;
@@ -52,7 +52,7 @@ operator << ( Qt_widget& ws, const CGAL::Conic_2<R>& c)
          v = CGAL::to_double (c.v()),
          w = CGAL::to_double (c.w());
 
-  // Phase I (drawing in x-direction)    
+  // Phase I (drawing in x-direction)
   // solve conic equation for y
   if (s != 0.0)
       for (double x = ws.x_min(); x <= ws.x_max(); x+=pixel_x) {
@@ -69,12 +69,12 @@ operator << ( Qt_widget& ws, const CGAL::Conic_2<R>& c)
           if (denom != 0.0) {
               double y = -(r*x*x + u*x + w)/denom;
               vcoordinates.push_back(std::make_pair(x, y)); } }
-    
+
   for(CIT it1 = vcoordinates.begin(); it1!= vcoordinates.end(); it1++){
     ws << Point((*it1).first, (*it1).second);
   }
   vcoordinates.clear();
-  // Phase II (drawing in y-direction)  
+  // Phase II (drawing in y-direction)
   // solve conic equation for x
   if (r != 0.0)
       for (double y = ws.y_min(); y <= ws.y_max(); y+=pixel_y) {
@@ -91,7 +91,7 @@ operator << ( Qt_widget& ws, const CGAL::Conic_2<R>& c)
           if (denom != 0.0) {
               double x = -(s*y*y + v*y + w)/denom;
               vcoordinates.push_back(std::make_pair(x, y));} }
-  
+
   for(CIT it1 = vcoordinates.begin(); it1!= vcoordinates.end(); it1++){
     ws << Point((*it1).first, (*it1).second);
   }

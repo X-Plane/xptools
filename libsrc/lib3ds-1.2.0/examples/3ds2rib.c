@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -96,7 +96,7 @@ static void
 parse_args(int argc, char **argv)
 {
   int i;
-  
+
   for (i=1; i<argc; ++i) {
     if (argv[i][0]=='-') {
       if ((strcmp(argv[i],"-h")==0) || (strcmp(argv[i],"--help")==0)) {
@@ -159,7 +159,7 @@ static void
 rib_concat_transform(FILE *o, Lib3dsMatrix m)
 {
   int i,j;
-  
+
   fprintf(o, "ConcatTransform [");
   for (i=0; i<4; ++i) {
     for (j=0; j<4; ++j) {
@@ -259,13 +259,13 @@ static void
 create_node(Lib3dsFile *f, Lib3dsNode *node, FILE *o)
 {
   Lib3dsMesh *mesh;
-  
+
   if ((node->type==LIB3DS_OBJECT_NODE) && (strcmp(node->name,"$$$DUMMY")!=0)) {
     mesh=lib3ds_file_mesh_by_name(f, node->name);
     ASSERT(mesh);
     if (mesh) {
       Lib3dsObjectData *d=&node->data.object;
-      
+
       fprintf(o, "AttributeBegin\n");
       fprintf(o, "Surface \"matte\" \"Kd\" [0.75]\n");
       fprintf(o, "Color 1 1 1\n");
@@ -283,7 +283,7 @@ create_node(Lib3dsFile *f, Lib3dsNode *node, FILE *o)
         unsigned p;
         Lib3dsVector *normalL=malloc(3*sizeof(Lib3dsVector)*mesh->faces);
         lib3ds_mesh_calculate_normals(mesh, normalL);
-        
+
         for (p=0; p<mesh->faces; ++p) {
           Lib3dsFace *face=&mesh->faceL[p];
           Lib3dsMaterial *mat=lib3ds_file_material_by_name(f, face->material);
@@ -316,7 +316,7 @@ create_node(Lib3dsFile *f, Lib3dsNode *node, FILE *o)
             mesh->pointL[face->points[1]].pos[2],
             mesh->pointL[face->points[2]].pos[0],
             mesh->pointL[face->points[2]].pos[1],
-            mesh->pointL[face->points[2]].pos[2] 
+            mesh->pointL[face->points[2]].pos[2]
           );
 
           fprintf(o, "\"N\" [%f %f %f %f %f %f %f %f %f] ",
@@ -369,7 +369,7 @@ create_rib(Lib3dsFile *f, FILE *o, int current)
   );
   */
   rib_camera(o,f,M);
-  
+
   fprintf(o, "WorldBegin\n");
   rib_lights(o,f,M);
   {
@@ -425,7 +425,7 @@ main(int argc, char **argv)
       create_rib(f,o,i);
     }
   }
-  else {  
+  else {
     lib3ds_file_eval(f,frame);
     create_rib(f,o, (int)frame);
   }

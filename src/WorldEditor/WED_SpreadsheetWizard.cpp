@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -63,7 +63,7 @@ void	WED_ShowSpreadsheetWizard(void)
 					// Landuse
 					// Climate
 					// Rain
-					
+
 					XP_ROW, XP_CAPTION, "Elev Min/Max (M)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.elev_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.elev_max, XP_END,
 					XP_ROW, XP_CAPTION, "Slope Min/Max (D)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.slop_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.slop_max, XP_END,
 					XP_ROW, XP_CAPTION, "Temp Min/Max (M)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.temp_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.temp_max, XP_END,
@@ -96,7 +96,7 @@ inline float	FetchEquiv(const DEMGeo& master, const DEMGeo& slave, int x, int y)
 			if (gDem.count(__DEM) == 0 ||						\
 			sWizardParams.__MIN == sWizardParams.__MAX ||		\
 			InRange(sWizardParams.__MIN, sWizardParams.__MAX, FetchEquiv(wizard, gDem[__DEM], x, y)))
-	
+
 
 inline double cosdeg(double deg)
 {
@@ -122,18 +122,18 @@ void	WED_WizardAction(XPWidgetID)
 
 	sWizardParams.sdir_min = cosdeg(sWizardParams.sdir_min);
 	sWizardParams.sdir_max = cosdeg(sWizardParams.sdir_max);
-	
+
 
 	DEMGeo *	widest = NULL;
 	for (DEMGeoMap::iterator dem = gDem.begin(); dem != gDem.end(); ++dem)
 	{
 		if (widest == NULL || (widest->mWidth * widest->mHeight) < (dem->second.mWidth * dem->second.mHeight))
-			widest = &dem->second;			
+			widest = &dem->second;
 	}
 	if (widest == NULL) return;
 	DEMGeo&	wizard(gDem[dem_Wizard]);
 	wizard = *widest;
-	
+
 	for (int y = 0; y < wizard.mHeight; ++y)
 	for (int x = 0; x < wizard.mWidth ; ++x)
 	{
@@ -153,11 +153,11 @@ void	WED_WizardAction(XPWidgetID)
 			wizard(x,y) = 1.0;
 		}
 	}
-	
+
 	sWizardParams.slop_min = old_slop_min;
 	sWizardParams.slop_max = old_slop_max;
 	sWizardParams.sdir_min = old_sdir_min;
 	sWizardParams.sdir_max = old_sdir_max;
-	
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);	
+
+	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 }

@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 #ifndef CGAL_BBOX_3_H
 #define CGAL_BBOX_3_H
 
@@ -117,7 +117,7 @@ operator<<(std::ostream &os, const Bbox_3& b)
   switch(os.iword(IO::mode))
   {
     case IO::ASCII :
-        return os << b.xmin() << ' ' << b.ymin() << ' ' << b.zmin() 
+        return os << b.xmin() << ' ' << b.ymin() << ' ' << b.zmin()
 		  << ' ' << b.xmax() << ' ' << b.ymax() << ' ' << b.zmax();
     case IO::BINARY :
         write(os, b.xmin());

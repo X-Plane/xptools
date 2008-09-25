@@ -11,8 +11,8 @@
 // file          : demo/Qt_widget/Max_k-gon/Qt_widget_toolbar.C
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -31,7 +31,7 @@
 
 #include <qiconset.h>
 
-Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w, 
+Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
 			     QMainWindow *mw, std::list<Curve> *l1) :
   QToolBar(mw, "NT")
   {
@@ -55,7 +55,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
 //                  QPixmap( (const char**)movepoint_xpm ));
     QIconSet set2(QPixmap( (const char**)polyline_small_xpm ),
                   QPixmap( (const char**)polyline_xpm ));
-		
+
   but[0] = new QToolButton(this, "deactivate layer");
   but[0]->setIconSet(set0);
   but[0]->setTextLabel("Deactivate Layer");
@@ -68,7 +68,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
   but[2] = new QToolButton(this, "polygon layer");
   but[2]->setIconSet(set2);
   but[2]->setTextLabel("Polygon layer");
-  
+
   nr_of_buttons = 3;
   button_group = new QButtonGroup(0, "My_group");
   for(int i = 0; i<nr_of_buttons; i++) {
@@ -76,7 +76,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
     but[i]->setToggleButton(true);
   }
   button_group->setExclusive(true);
-  
+
   connect(but[1], SIGNAL(stateChanged(int)),
         &pointbut, SLOT(stateChanged(int)));
 //  connect(but[2], SIGNAL(stateChanged(int)),

@@ -17,7 +17,7 @@
 //
 // Author(s)     : Tran Kai Frank DA <Frank.Da@sophia.inria.fr>
 
-#ifndef CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALCIRCLE_FTC2_H 
+#ifndef CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALCIRCLE_FTC2_H
 #define CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALCIRCLE_FTC2_H
 
 #include <CGAL/determinant.h>
@@ -32,7 +32,7 @@ CGAL_MEDIUM_INLINE
 FT
 squared_radius_orthogonalcircleC2(
   const FT &px, const FT &py, const FT  &pw,
-  const FT &qx, const FT &qy, const FT  &qw,  
+  const FT &qx, const FT &qy, const FT  &qw,
   const FT &rx, const FT &ry, const FT  &rw)
 
 {
@@ -45,12 +45,12 @@ squared_radius_orthogonalcircleC2(
   FT dqq = CGAL_NTS square(dqx)+CGAL_NTS square(dqy)-qw+rw;
 
   FT det0 = det2x2_by_formula(dpx, dpy, dqx, dqy);
-  
+
   FT det1 = det2x2_by_formula(dpp, dpy, dqq, dqy);
 
   FT det2 = det2x2_by_formula(dpx, dpp, dqx, dqq);
 
-  return 
+  return
     (CGAL_NTS square(det1)+CGAL_NTS square(det2))/
                                   (FT4*CGAL_NTS square(det0)) - rw;
 }

@@ -38,19 +38,19 @@ namespace CGAL {
 
     public:
 
-    
+
     // default constructor
     Manhattan_distance_rectangle_point() {
 		Point p;
 		the_dimension=p.dimension();
 		assert(the_dimension>0);
     }
-    
+
 
     Manhattan_distance_rectangle_point(const int d) : the_dimension(d) {}
 
     //copy constructor
-    Manhattan_distance_rectangle_point(const Manhattan_distance_rectangle_point& d) : 
+    Manhattan_distance_rectangle_point(const Manhattan_distance_rectangle_point& d) :
     the_dimension(d.the_dimension) {}
 
     ~Manhattan_distance_rectangle_point() {
@@ -59,10 +59,10 @@ namespace CGAL {
     inline NT distance(const QueryItem& q, const Point& p) {
 		NT distance = NT(0);
 		for (unsigned int i = 0; i < the_dimension; ++i) {
-			if (p[i]>q.max()[i]) distance += 
-			(p[i]-q.max()[i]); 
-			if (p[i]<q.min()[i]) distance += 
-			(q.min()[i]-p[i]);	
+			if (p[i]>q.max()[i]) distance +=
+			(p[i]-q.max()[i]);
+			if (p[i]<q.min()[i]) distance +=
+			(q.min()[i]-p[i]);
 		}
         	return distance;
     }
@@ -72,9 +72,9 @@ namespace CGAL {
 					      const Kd_tree_rectangle<NT>& r) {
 		NT distance = NT(0);
 		for (unsigned int i = 0; i < the_dimension; ++i)  {
-			if (r.min_coord(i)>q.max()[i]) distance += 
-			(r.min_coord(i)-q.max()[i]); 
-			if (r.max_coord(i)<q.min()[i]) distance += 
+			if (r.min_coord(i)>q.max()[i]) distance +=
+			(r.min_coord(i)-q.max()[i]);
+			if (r.max_coord(i)<q.min()[i]) distance +=
 			(q.min()[i]-r.max_coord(i));
 	        }
 		return distance;
@@ -84,15 +84,15 @@ namespace CGAL {
 					      const Kd_tree_rectangle<NT>& r) {
 		NT distance=NT(0);
 		for (unsigned int i = 0; i < the_dimension; ++i)
-			if ( r.max_coord(i)-q.min()[i] > 
-			     q.max()[i]-r.min_coord(i) )  
+			if ( r.max_coord(i)-q.min()[i] >
+			     q.max()[i]-r.min_coord(i) )
 				distance += (r.max_coord(i)-q.min()[i]);
-			else 
+			else
 				distance += (q.max()[i]-r.min_coord(i));
 		return distance;
 	}
 
-	
+
   inline NT transformed_distance(NT d) {
 
 		return d;

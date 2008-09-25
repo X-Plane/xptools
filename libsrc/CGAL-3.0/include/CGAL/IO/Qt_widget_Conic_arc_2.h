@@ -38,7 +38,7 @@ Qt_widget & operator<<(Qt_widget & ws, const Conic_arc_2<Kernel> & cv)
     // The curve is a segment - simply draw it.
     ws.get_painter().drawLine(ws.x_pixel(sx), ws.y_pixel(sy),
                               ws.x_pixel(tx), ws.y_pixel(ty));
-    return (ws); 
+    return (ws);
   }
 
   // The arc is circular
@@ -58,7 +58,7 @@ Qt_widget & operator<<(Qt_widget & ws, const Conic_arc_2<Kernel> & cv)
     int nps;
 
     ws.get_painter().moveTo(x_min, ws.y_pixel(prev_y));
-      
+
     for (x = x_min + 1; x < x_max; x++) {
       curr_x = ws.x_real(x);
       nps =
@@ -71,12 +71,12 @@ Qt_widget & operator<<(Qt_widget & ws, const Conic_arc_2<Kernel> & cv)
     }
 
     ws.get_painter().lineTo(ws.x_pixel(end_x), ws.y_pixel(end_y));
-    return (ws); 
+    return (ws);
   }
 
   // We should never reach here.
   CGAL_assertion(false);
-  return (ws); 
+  return (ws);
 }
 
 CGAL_END_NAMESPACE

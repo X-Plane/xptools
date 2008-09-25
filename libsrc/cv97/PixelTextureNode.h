@@ -17,7 +17,7 @@
 class PixelTextureNode : public TextureNode {
 
 	SFImage *imageField;
-	
+
 public:
 
 	PixelTextureNode();
@@ -43,7 +43,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

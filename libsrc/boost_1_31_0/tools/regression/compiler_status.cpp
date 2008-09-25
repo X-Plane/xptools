@@ -283,7 +283,7 @@ namespace
         // This patch ignores the SunCC internal directory. Jens Maurer
         if ( (*itr).leaf() == "SunWS_cache" ) continue;
         // SGI does something similar for template instantiations. Jens Maurer
-        if(  (*itr).leaf() == "ii_files" ) continue; 
+        if(  (*itr).leaf() == "ii_files" ) continue;
 
         if ( child.empty() ) child = *itr;
         else
@@ -466,9 +466,9 @@ const string & attribute_value( const xml::element & element,
   {
     string sep;
     string target( "<sup>" );
-    add_notes( toolset + "/" + library + "/" + test, fail, sep, target ); 
-    add_notes( "*/" + library + "/" + test, fail, sep, target ); 
-    add_notes( toolset + "/" + library + "/*", fail, sep, target ); 
+    add_notes( toolset + "/" + library + "/" + test, fail, sep, target );
+    add_notes( "*/" + library + "/" + test, fail, sep, target );
+    add_notes( toolset + "/" + library + "/*", fail, sep, target );
     add_notes( "*/" + library + "/*", fail, sep, target );
     if ( target == "<sup>" ) target.clear();
     else target += "</sup>";
@@ -543,7 +543,7 @@ const string & attribute_value( const xml::element & element,
     else  target += pass ? pass_msg : fail_msg;
 
     // if notes, generate the superscript HTML
-    if ( !notes.empty() ) 
+    if ( !notes.empty() )
       target += get_notes( toolset, lib_name, test_name, !pass );
 
     target += "</td>";
@@ -613,7 +613,7 @@ const string & attribute_value( const xml::element & element,
       if ( fs::is_directory( *itr )
         && itr->string().find( ".test" ) == (itr->string().size()-5) )
       {
-        results.push_back( std::string() ); 
+        results.push_back( std::string() );
         do_row( *itr,
                 itr->leaf().substr( 0, itr->leaf().size()-5 ),
                 results[results.size()-1] );
@@ -650,7 +650,7 @@ const string & attribute_value( const xml::element & element,
           pos = line.find_first_not_of( " \t./", pos+13 );
         else
           pos = line.find_first_not_of( " \t./", pos+10 );
-      
+
         if ( pos == string::npos ) continue;
         string subinclude_bin_dir(
           line.substr( pos, line.find_first_of( " \t", pos )-pos ) );
@@ -658,7 +658,7 @@ const string & attribute_value( const xml::element & element,
         fs::path subinclude_path( locate_root / "bin/boost" / subinclude_bin_dir );
         if ( fs::exists( subinclude_path ) )
           { do_rows_for_sub_tree( subinclude_path, results ); continue; }
-        subinclude_path = fs::path( locate_root / "bin" 
+        subinclude_path = fs::path( locate_root / "bin"
                                     / subinclude_bin_dir / "bin" );
         if ( fs::exists( subinclude_path ) )
           { do_rows_for_sub_tree( subinclude_path, results ); continue; }
@@ -682,7 +682,7 @@ const string & attribute_value( const xml::element & element,
   {
     // Find test result locations, trying:
     // - Boost.Build V1 location with ALL_LOCATE_TARGET
-    // - Boost.Build V2 location with top-lelve "build-dir" 
+    // - Boost.Build V2 location with top-lelve "build-dir"
     // - Boost.Build V1 location without ALL_LOCATE_TARGET
     string relative( fs::initial_path().string() );
     relative.erase( 0, boost_root.string().size()+1 );
@@ -704,7 +704,7 @@ const string & attribute_value( const xml::element & element,
       "<td><a href=\"compiler_status.html#test-type\">Test Type</a></td>\n";
 
     fs::directory_iterator itr( bin_path );
-    while ( itr != end_itr 
+    while ( itr != end_itr
       && ((itr->string().find( ".test" ) != (itr->string().size()-5))
       || !fs::is_directory( *itr )))
       ++itr; // bypass chaff
@@ -800,7 +800,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
 
   boost_root = fs::path( argv[1], fs::native );
   if ( locate_root.empty() ) locate_root = boost_root;
-  
+
   if (jamfile_path.empty())
     jamfile_path = "Jamfile";
   jamfile_path = fs::complete( jamfile_path, fs::initial_path() );

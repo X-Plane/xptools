@@ -38,9 +38,9 @@ void d2_show(const Convex_hull_d<R>& C, CGAL::Window_stream& W);
 \precond |dim == 2|. }*/
 
 template <class R>
-void d3_surface_map(const Convex_hull_d<R>& C, 
+void d3_surface_map(const Convex_hull_d<R>& C,
           CGAL_LEDA_SCOPE::GRAPH< typename Convex_hull_d<R>::Point_d ,int>& G);
-/*{\Mfunc constructs the representation of the surface of |\Mvar| as a 
+/*{\Mfunc constructs the representation of the surface of |\Mvar| as a
 bidirected LEDA graph |G|.\\ \precond |dim == 3|.}*/
 
 
@@ -51,31 +51,31 @@ void d2_show(const Convex_hull_d<R>& C, CGAL::Window_stream& W)
   typedef typename Convex_hull_d<R>::Vertex_const_handle Vertex_handle;
   Simplex_handle S;
   forall_rc_simplices(S,C) {
-    for (int v = ( C.is_unbounded_simplex(S)  ? 1 : 0); 
+    for (int v = ( C.is_unbounded_simplex(S)  ? 1 : 0);
          v <= C.current_dimension(); v++) {
-      // for each vertex except the anti - origin 
- 
+      // for each vertex except the anti - origin
+
       for (int e = v + 1; e <= C.current_dimension(); e++) {
-        // draw undrawn edges incident to vertex 
-        if ( C.is_unbounded_simplex(S) ) W.set_line_width(3); 
-        else W.set_line_width(1); 
+        // draw undrawn edges incident to vertex
+        if ( C.is_unbounded_simplex(S) ) W.set_line_width(3);
+        else W.set_line_width(1);
         W.draw_segment(to_leda_point(C.point_of_simplex(S,v)),
-                       to_leda_point(C.point_of_simplex(S,e))); 
+                       to_leda_point(C.point_of_simplex(S,e)));
       }
     }
   }
   /* Now we draw every point */
   typename Convex_hull_d<R>::Point_const_iterator pit;
   for (pit = C.points_begin(); pit != C.points_end(); ++pit) {
-    W.draw_point(to_leda_point(*pit)); 
+    W.draw_point(to_leda_point(*pit));
   }
 }
 
 
-template <class R> 
-void d3_surface_map(const Convex_hull_d<R>& C, 
+template <class R>
+void d3_surface_map(const Convex_hull_d<R>& C,
            CGAL_LEDA_SCOPE::GRAPH< typename Convex_hull_d<R>::Point_d ,int>& G)
-{ 
+{
   typedef typename Convex_hull_d<R>::Vertex_const_handle  Vertex_handle;
   typedef typename Convex_hull_d<R>::Simplex_const_handle Simplex_handle;
   typedef typename Convex_hull_d<R>::Facet_const_handle   Facet_handle;
@@ -83,7 +83,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
   typedef typename R::RT RT;
 
   G.clear();
-  if (C.dimension() != 3) 
+  if (C.dimension() != 3)
     CGAL_assertion_msg(0,"d3_surface_map: dim must be 3");
   if (C.current_dimension() < 3) {
     Unique_hash_map<Vertex_handle,leda_node> node_for(nil);
@@ -110,7 +110,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
 
       typename R::Orthogonal_vector_d ortho_vector =
         C.kernel().orthogonal_vector_d_object();
-      typename R::Point_d pc = C.center() + 
+      typename R::Point_d pc = C.center() +
         ortho_vector(C.base_facet_plane(C.origin_simplex()));
       forall_rc_simplices(s,C) {
         if (C.is_bounded_simplex(s)) {
@@ -118,9 +118,9 @@ void d3_surface_map(const Convex_hull_d<R>& C,
             leda_node vi = node_for[C.vertex(s,i)];
             if ( untreated[vi] ) {
               untreated[vi] = false;
-              int j = (i + 1) % (C.current_dimension() + 1);  
+              int j = (i + 1) % (C.current_dimension() + 1);
               // a vertex different from i;
-              int k = (i + 2) % (C.current_dimension() + 1); 
+              int k = (i + 2) % (C.current_dimension() + 1);
               leda_node vj = node_for[C.vertex(s,j)];
               leda_node vk = node_for[C.vertex(s,k)];
               std::vector< Point_d > V(4);
@@ -129,15 +129,15 @@ void d3_surface_map(const Convex_hull_d<R>& C,
                 C.kernel().orientation_d_object();
               if ( orientation(V.begin(),V.end()) == POSITIVE ) {
                 std::swap(vj,vk);
-                std::swap(j,k); 
+                std::swap(j,k);
               }
 
-              leda_edge efirst = G.new_edge(vi,vk); 
+              leda_edge efirst = G.new_edge(vi,vk);
               // first edge incident to vi
-              Simplex_handle scur = s; 
+              Simplex_handle scur = s;
               int jcur = j, kcur = k, icur = i;
 
-              while ( C.is_bounded_simplex(C.opposite_simplex(scur,jcur)) && 
+              while ( C.is_bounded_simplex(C.opposite_simplex(scur,jcur)) &&
                       C.opposite_simplex(scur,jcur) != s ) {
                 // we have not reached the end nor closed the cycle
                 kcur = C.index_of_opposite_vertex(scur,jcur);
@@ -147,18 +147,18 @@ void d3_surface_map(const Convex_hull_d<R>& C,
                 jcur = 3 - icur - kcur;
                 vk = node_for[C.vertex(scur,kcur)];
                 G.new_edge(vi,vk);
-              } 
+              }
 
               if (C.is_unbounded_simplex(C.opposite_simplex(scur,jcur))) {
                 /* we also need to walk in the other direction */
- 
+
                 efirst = G.new_edge(efirst,vj,0,LEDA::before);  // 0 is etype
-                scur = s; jcur = j; kcur = k; icur = i;  
+                scur = s; jcur = j; kcur = k; icur = i;
                 // restore initial situation
-              
+
                 while ( C.is_bounded_simplex(
                         C.opposite_simplex(scur,kcur)) ) {
-                  // we have not reached the end 
+                  // we have not reached the end
                   jcur = C.index_of_opposite_vertex(scur,kcur);
                   scur = C.opposite_simplex(scur,kcur);
                   for (icur = 0; icur <= 2; icur++)
@@ -179,7 +179,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
     }
   }
 
-  Facet_handle f; 
+  Facet_handle f;
   Vertex_handle v;
   Unique_hash_map<Vertex_handle,leda_node> node_for(nil);
   int facet_num = 0;
@@ -197,7 +197,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
   }
   if ( 2*G.number_of_nodes() != facet_num + 4)
     CGAL_LEDA_SCOPE::error_handler(1,"d3_surface_map: node equation wrong.");
- 
+
   leda_node_array<bool> untreated(G,true);
   for(it = Surface.begin(); it != Surface.end(); ++it) {
     f = *it;
@@ -215,11 +215,11 @@ void d3_surface_map(const Convex_hull_d<R>& C,
         std::vector< Point_d > V(4);
         V[0]=G[vi]; V[1]=G[vj]; V[2]=G[vk]; V[3]=C.center();
         if ( orientation_(V.begin(),V.end()) == POSITIVE ) {
-          std::swap(vk,vj); std::swap(k,j); 
+          std::swap(vk,vj); std::swap(k,j);
         }
 
         G.new_edge(vi,vk);  // first edge incident to vi
-        Facet_handle fcur = f; 
+        Facet_handle fcur = f;
         int jcur = j; int kcur = k; int icur = i;
 
         while ( C.opposite_facet(fcur,jcur) != f ) {
@@ -231,7 +231,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
           jcur = 3 - icur - kcur;
           vk = node_for[C.vertex_of_facet(fcur,kcur)];
           G.new_edge(vi,vk);
-        } 
+        }
 
       } // end if untreated
     } // end for i
@@ -239,7 +239,7 @@ void d3_surface_map(const Convex_hull_d<R>& C,
   if (G.number_of_edges() != (3*facet_num))
     CGAL_LEDA_SCOPE::error_handler(1,"d3_surface_map: wrong number of edges");
   if (!G.make_map())
-    CGAL_LEDA_SCOPE::error_handler(1,"d3_surface_map: not bidirected"); 
+    CGAL_LEDA_SCOPE::error_handler(1,"d3_surface_map: not bidirected");
 }
 
 

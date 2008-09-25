@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Class.h
  *
  *  This source file is part of DIME.
@@ -45,13 +45,13 @@ class DIME_DLL_API dimeClass : public dimeRecordHolder
 {
   friend class dimeClassesSection;
   friend class dimeModel;
-  
+
 public:
   dimeClass();
   virtual ~dimeClass();
-  
-  virtual const char *getDxfClassName() const = 0;  
-  virtual dimeClass *copy(dimeModel * const model) const = 0; 
+
+  virtual const char *getDxfClassName() const = 0;
+  virtual dimeClass *copy(dimeModel * const model) const = 0;
   virtual bool read(dimeInput * const in);
   virtual bool write(dimeOutput * const out);
   virtual bool isOfType(const int thetypeid) const;
@@ -63,9 +63,9 @@ public:
   int8 getFlag280() const;
   int8 getFlag281() const;
 
-  void setClassName(const char * const classname, 
+  void setClassName(const char * const classname,
 		    dimeMemHandler * const memhandler = NULL);
-  void setApplicationName(const char * const appname, 
+  void setApplicationName(const char * const appname,
 			  dimeMemHandler * const memhandler = NULL);
   void setVersionNumber(const int32 v);
   void setFlag280(const int8 flag);
@@ -75,10 +75,10 @@ protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
+
 public:
   static dimeClass *createClass(const char * const name,
-			       dimeMemHandler * const memhandler = NULL);    
+			       dimeMemHandler * const memhandler = NULL);
 protected:
   bool copyRecords(dimeClass * const newclass, dimeModel * const model) const;
 
@@ -103,37 +103,37 @@ dimeClass::getApplicationName() const
   return this->appName;
 }
 
-inline int32 
+inline int32
 dimeClass::getVersionNumber() const
 {
   return this->versionNumber;
 }
 
-inline int8 
+inline int8
 dimeClass::getFlag280() const
 {
   return this->flag1;
 }
 
-inline int8 
+inline int8
 dimeClass::getFlag281() const
 {
   return this->flag2;
 }
 
-inline void 
+inline void
 dimeClass::setVersionNumber(const int32 v)
 {
   this->versionNumber = v;
 }
 
-inline void 
+inline void
 dimeClass::setFlag280(const int8 flag)
 {
   this->flag1 = flag;
 }
 
-inline void 
+inline void
 dimeClass::setFlag281(const int8 flag)
 {
   this->flag2 = flag;

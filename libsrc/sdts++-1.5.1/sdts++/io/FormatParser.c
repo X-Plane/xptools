@@ -429,7 +429,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
+
 /* Define __yy_memcpy.  Note that the size argument
    should be passed with type unsigned int, because that is what the non-GCC
    definitions require.  With GCC, __builtin_memcpy takes an arg
@@ -473,7 +473,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 
 #endif
 #endif
-
+
 #line 217 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -812,7 +812,7 @@ case 2:
     break;}
 case 3:
 #line 138 "io/FormatParser.yy"
-{ 
+{
 			// save an iterator for the first subfield
 		   sio_8211FieldFormat::iterator first_sio_8211Subfield =
 		      current_sio_8211Subfield;
@@ -870,22 +870,22 @@ case 7:
     break;}
 case 12:
 #line 194 "io/FormatParser.yy"
-{ 
-			setType( yyvsp[-1].c_val, *current_sio_8211Subfield ); 
-			setConverter( *current_sio_8211Subfield ); 
+{
+			setType( yyvsp[-1].c_val, *current_sio_8211Subfield );
+			setConverter( *current_sio_8211Subfield );
 		;
     break;}
 case 13:
 #line 199 "io/FormatParser.yy"
-{ 
-			setType( yyvsp[0].c_val, *current_sio_8211Subfield ); 
-			setConverter( *current_sio_8211Subfield ); 
+{
+			setType( yyvsp[0].c_val, *current_sio_8211Subfield );
+			setConverter( *current_sio_8211Subfield );
 		;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
 #line 543 "/usr/lib/bison.simple"
-
+
   yyvsp -= yylen;
   yyssp -= yylen;
 #ifdef YYLSP_NEEDED
@@ -1126,7 +1126,7 @@ static sio_8211Converter_S  _S_converter;
 
 
 
-void 
+void
 setConverter( sio_8211SubfieldFormat& sf )
 {
 
@@ -1154,7 +1154,7 @@ setConverter( sio_8211SubfieldFormat& sf )
 
     if ( 0 != sio_8211_binary_converter_hints )
     {
-      sio_8211_converter_dictionary::const_iterator converter_itr = 
+      sio_8211_converter_dictionary::const_iterator converter_itr =
 	(*sio_8211_binary_converter_hints).find( sf.getLabel() );
 
       // cerr << "looking for " << sf.getLabel() << "'s converter\n";
@@ -1162,7 +1162,7 @@ setConverter( sio_8211SubfieldFormat& sf )
       if ( converter_itr != (*sio_8211_binary_converter_hints).end() )
       {
 	sf.setConverter( (*converter_itr).second );
-	// cerr << "converter for " << sf.getLabel() << " found." << 
+	// cerr << "converter for " << sf.getLabel() << " found." <<
 	// "  Set to " << hex << (*converter_itr).second << dec << ".\n";
       }
       else
@@ -1179,8 +1179,8 @@ setConverter( sio_8211SubfieldFormat& sf )
     break;
   }
 
-  case sio_8211SubfieldFormat::X : 
-    /* sf.setConverter( & _X_converter ); */ 
+  case sio_8211SubfieldFormat::X :
+    /* sf.setConverter( & _X_converter ); */
     break;
 
   default :  break;

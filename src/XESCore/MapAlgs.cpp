@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -29,7 +29,7 @@
 #include "PolyRasterUtils.h"
 #include "DEMDefs.h"
 
-// NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended 
+// NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
 
 
@@ -56,7 +56,7 @@ void	FindEdgesForFace(GISFace * face, set<GISHalfedge *>& outEdges)
 			++circ;
 		} while (circ != stop);
 	}
-	
+
 	for (Pmwx::Holes_iterator hole = face->holes_begin();
 		hole != face->holes_end(); ++hole)
 	{
@@ -64,39 +64,39 @@ void	FindEdgesForFace(GISFace * face, set<GISHalfedge *>& outEdges)
 		do {
 			outEdges.insert(circ);
 			++circ;
-		} while (circ != stop);		
+		} while (circ != stop);
 	}
-	
+
 }
 
 void	FindFacesForEdgeSet(const set<GISHalfedge *>& inEdges, set<GISFace *>& outFaces)
 {
 	if (inEdges.empty()) return;
 	outFaces.clear();
-	
+
 	set<GISFace *>	working;
-	
+
 	// Ben sez: the basic idea here is a "flood fill".  We keep adding more and more faces.
-	// Each time we add a new face, we cross all edges that aren't in our hard boundary 
+	// Each time we add a new face, we cross all edges that aren't in our hard boundary
 	// (inEdges) and add that face too if we haven't seen it yet.
 	//
 	// But...there is no requirement that all faces surrounded by inEdges be contiguous!
 	// So make sure to add ALL of the faces adjacent to inEdges immediately...otherwise
 	// we might not flood-fill from one disjoint area to another.
-	
-	for (set<GISHalfedge *>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)	
+
+	for (set<GISHalfedge *>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)
 		working.insert((*e)->face());
-	
+
 	while (!working.empty())
 	{
 		GISFace *	who = *working.begin();
 		DebugAssert(!who->is_unbounded());
 		outFaces.insert(who);
 		working.erase(who);
-		
+
 		set<GISHalfedge*> edges;
 		FindEdgesForFace(who, edges);
-		
+
 		for (set<GISHalfedge*>::iterator edge = edges.begin(); edge != edges.end(); ++edge)
 		{
 			if (inEdges.count(*edge) == 0)
@@ -142,7 +142,7 @@ void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 	FindEdgesForFace(inFace, e);
 	for (set<GISHalfedge*>::iterator he = e.begin(); he != e.end(); ++he)
 	if ((*he)->twin()->face() != inFace)
-	if ((*he)->twin()->face()->IsWater())	
+	if ((*he)->twin()->face()->IsWater())
 		outFaces.insert((*he)->twin()->face());
 }
 
@@ -153,7 +153,7 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 	outFaces.clear();
 	set<GISFace *>	working;
 	working.insert(inFace);
-	
+
 	while (!working.empty())
 	{
 		GISFace * cur = *working.begin();
@@ -164,7 +164,7 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 		for (set<GISFace *>::iterator f = adjacent.begin(); f != adjacent.end(); ++f)
 		if (!(*f)->is_unbounded())
 		if (outFaces.count(*f) == 0)
-			working.insert(*f);		
+			working.insert(*f);
 	}
 }
 
@@ -172,19 +172,19 @@ void	CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> 
 {
 	if (road_types != NULL) DebugAssert(weight_func != NULL);
 	if (road_types == NULL) DebugAssert(weight_func == NULL);
-	
+
 	outPolygon.clear();
 	if (road_types) road_types->clear();
-	
+
 	const GISHalfedge * iter = ccb, * stop = ccb;
-	
+
 	if (outBounds)	(*outBounds) = iter->source()->point();
-	
+
 	do {
 		outPolygon.push_back(iter->source()->point());
 		if (outBounds) (*outBounds) += iter->source()->point();
 		if (road_types)
-			road_types->push_back(weight_func(iter));		
+			road_types->push_back(weight_func(iter));
 		iter = iter->next();
 	} while (iter != stop);
 }
@@ -193,19 +193,19 @@ void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, ve
 {
 	outPolygon.clear();
 	if (road_types)	road_types->clear();
-	
+
 	if (!face->is_unbounded())
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
 		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, outBounds);
 	}
-	
-	for (Pmwx::Holes_const_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
+
+	for (Pmwx::Holes_const_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
-		CCBToPolygon(*hole, outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, NULL);		
+		CCBToPolygon(*hole, outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, NULL);
 	}
 }
 
@@ -222,7 +222,7 @@ GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx
 			GISFace * new_f = SafeInsertRing(&outPmwx, parent, *poly);
 			outer = new_f;
 			new_f->mTerrainType = inTerrain;
-		
+
 		}
 		else
 		{
@@ -253,7 +253,7 @@ static void	__ProgNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 {
 	__CropProgInfo_t * ref = (__CropProgInfo_t *) r;
 	GISHalfedge * e = (n == NULL) ? o : n;
-	
+
 	if (o == NULL || n == NULL)
 	if (o != NULL || n != NULL)
 	{
@@ -274,7 +274,7 @@ void	CropMap(
 			ProgressFunc	inFunc)
 {
 	Pmwx	cutout;
-	
+
 	vector<Point2>	pts;
 	pts.push_back(Point2(inWest, inNorth));
 	pts.push_back(Point2(inWest, inSouth));
@@ -284,15 +284,15 @@ void	CropMap(
 	if (!inKeepOutside)
 		ioMap.swap(cutout);
 }
-			
-			
+
+
 // Advanced crop map.  Insert the crop ring into the main map with intersections
 // and into the cutout empty map using the fast "insert_ring" primitive.
 // Then swap to get the insides into the cutout ring.
 void	CropMap(
 			Pmwx&					ioMap,
 			Pmwx&					ioCutout,
-			const vector<Point2>&	ring,			
+			const vector<Point2>&	ring,
 			ProgressFunc			inFunc)
 {
 	__CropProgInfo_t	info;
@@ -302,29 +302,29 @@ void	CropMap(
 	{
 		int m = (n+1)%ring.size();
 		if (inFunc) inFunc(0,2,"Cutting map...", (float) n / (float) ring.size());
-		
+
 		ioMap.insert_edge(ring[n], ring[m], __ProgNotifier, &info);
 	}
 
 	if (inFunc) inFunc(0, 2, "Cutting map...", 1.0);
-	
+
 	ioCutout.clear();
 	GISFace * area;
 	area = ioCutout.insert_ring(ioCutout.unbounded_face(), info.pts);
 	vector<GISHalfedge *>	inner_ring;
-	
+
 	Pmwx::Ccb_halfedge_circulator stop, iter;
 	stop = iter = area->outer_ccb();
 	do {
 		inner_ring.push_back(iter);
-		++iter;		
+		++iter;
 	} while (iter != stop);
-	
+
 	SwapMaps(ioMap, ioCutout, info.edges, inner_ring);
 #if DEV
 	DebugAssert(ioMap.is_valid());
 	DebugAssert(ioCutout.is_valid());
-#endif	
+#endif
 
 }
 
@@ -334,7 +334,7 @@ static	void	__RemoveAntennasFromFace(Pmwx& inPmwx, GISFace * inFace)
 // OPTIMIZE: remove second set?
 	set<GISHalfedge *>	edges;
 	set<GISHalfedge *>	nuke;
-	
+
 	FindEdgesForFace(inFace, edges);
 	for (set<GISHalfedge *>::iterator i = edges.begin(); i != edges.end(); ++i)
 	if ((*i)->mDominant)
@@ -354,14 +354,14 @@ struct	__InduceCCBInfo_t {
 	GISHalfedge *			master;
 	vector<GISHalfedge *>	slave_halfedges;
 	vector<Point2>			break_pts;
-};	
+};
 
 void	__InduceCCBNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 {
 	__InduceCCBInfo_t *	ref = (__InduceCCBInfo_t *) r;
 	if (o && n)
 	{
-		
+
 	} else {
 		GISHalfedge * e = o ? o : n;
 		ref->slave_halfedges.push_back(e);
@@ -371,11 +371,11 @@ void	__InduceCCBNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 }
 
 static	void	__InduceCCB(
-					Pmwx& 					inMaster, 
-					Pmwx& 					inSlave, 
-					GISHalfedge * 			ccb, 
-					vector<GISHalfedge *>& 	masterE, 
-					vector<GISHalfedge *>& 	slaveE, 
+					Pmwx& 					inMaster,
+					Pmwx& 					inSlave,
+					GISHalfedge * 			ccb,
+					vector<GISHalfedge *>& 	masterE,
+					vector<GISHalfedge *>& 	slaveE,
 					bool 					outer)
 {
 	GISHalfedge * iter = ccb;
@@ -389,18 +389,18 @@ static	void	__InduceCCB(
 			last_slave = inSlave.insert_edge(iter->source()->point(), iter->target()->point(), __InduceCCBNotifier, &info);
 
 		slaveE.insert(slaveE.end(), info.slave_halfedges.begin(), info.slave_halfedges.end());
-		
+
 		masterE.push_back(info.master);
 		for (vector<Point2>::iterator pt = info.break_pts.begin(); pt != info.break_pts.end(); ++pt)
 		{
-			info.master = inMaster.split_edge(info.master, *pt)->next();			
+			info.master = inMaster.split_edge(info.master, *pt)->next();
 			masterE.push_back(info.master);
 			iter = info.master;
 		}
 
 		iter = iter->next();
 	} while (iter != ccb);
-	
+
 	if (!outer)
 	{
 		vector<GISHalfedge *>	masterR, slaveR;
@@ -409,7 +409,7 @@ static	void	__InduceCCB(
 			masterR.push_back((*riter)->twin());
 		for (riter = slaveE.rbegin(); riter != slaveE.rend(); ++riter)
 			slaveR.push_back((*riter)->twin());
-		
+
 		masterE.swap(masterR);
 		slaveE.swap(slaveR);
 	}
@@ -429,14 +429,14 @@ void	SwapFace(
 	__InduceCCB(inMaster, inSlave, inFace->outer_ccb(), ringMaster, ringSlave, true);
 	DebugAssert(ringMaster.size() == ringSlave.size());
 	SwapMaps(inMaster, inSlave, ringMaster, ringSlave);
-	
+
 	for (Pmwx::Holes_iterator hole = inFace->holes_begin(); hole != inFace->holes_end(); ++hole)
 	{
 		ringMaster.clear();
 		ringSlave.clear();
 		__InduceCCB(inSlave, inMaster, *hole, ringMaster, ringSlave, false);
 		DebugAssert(ringMaster.size() == ringSlave.size());
-		SwapMaps(inSlave, inMaster, ringMaster, ringSlave);		
+		SwapMaps(inSlave, inMaster, ringMaster, ringSlave);
 	}
 }
 
@@ -455,8 +455,8 @@ void	CleanFace(
 //
 	set<GISHalfedge *> nuke;
 	Assert(!inFace->is_unbounded());
-	
-	Pmwx::Ccb_halfedge_circulator stop, iter;	
+
+	Pmwx::Ccb_halfedge_circulator stop, iter;
 	stop = iter = inFace->outer_ccb();
 	do {
 		if (iter->mDominant)
@@ -469,7 +469,7 @@ void	CleanFace(
 	{
 		inMap.remove_edge(*kill);
 	}
-	
+
 	while (inFace->holes_begin() != inFace->holes_end())
 	{
 		inMap.remove_edge(*inFace->holes_begin());
@@ -490,7 +490,7 @@ static void __OverlayNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 	OverlayInfo_t * ref = (OverlayInfo_t *) r;
 	if (o != NULL && n != NULL) return;
 	GISHalfedge * e = (n == NULL) ? o : n;
-	
+
 	if (e->target()->point() == ref->curSrc->target()->point())
 	{
 		// this is the last edge to be added - easy!
@@ -500,7 +500,7 @@ static void __OverlayNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 		// the edge took multiple pieces in the other map.
 		ref->curSrc = ref->curSrcMap->split_edge(ref->curSrc, e->target()->point());
 		ref->dstRing.push_back(e);
-		ref->srcRing.push_back(ref->curSrc);		
+		ref->srcRing.push_back(ref->curSrc);
 		ref->curSrc = ref->curSrc->next();
 	}
 }
@@ -511,7 +511,7 @@ static void __OverlayNotifier(GISHalfedge * o, GISHalfedge * n, void * r)
 
 // TODO: it would be nice to explicitly handle antennas in inSrc's outer islands.
 void OverlayMap(
-			Pmwx& 	inDst, 
+			Pmwx& 	inDst,
 			Pmwx& 	inSrc)
 {
 	int ctr = 0;
@@ -550,7 +550,7 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 // to store the edges-to-die instead of a vector.  However this is probably NOT the major
 // bottleneck in this routine.
 	vector<Pmwx::Halfedge_handle>	deadList;
-	
+
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin();
 		he != ioMap.halfedges_end(); ++he, ++he)
 	{
@@ -559,13 +559,13 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 		if (iWet && oWet)
 			deadList.push_back(he);
 	}
-	
+
 	int i = 0;
 	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin();
-		iter != deadList.end(); ++iter, ++i)	
+		iter != deadList.end(); ++iter, ++i)
 	{
 		ioMap.remove_edge(*iter);
-	}	
+	}
 }
 
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
@@ -580,14 +580,14 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 	PROGRESS_START(func, 0, 2, "Finding unneeded half-edges...")
 	int ctr = 0;
 	int tot = ioMap.number_of_halfedges();
-	
+
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin();
 		he != ioMap.halfedges_end(); ++he, ++he, ++ctr, ++ctr)
 	{
 		PROGRESS_CHECK(func,0,2,"Finding unneeded half-edges...",ctr,tot,1000);
 		Pmwx::Halfedge_handle h = he;
 		if (!h->mDominant) h = h->twin();
-		
+
 		bool	iWet = h->face()->IsWater();
 		bool	oWet = h->twin()->face()->IsWater();
 		bool	border = h->face()->is_unbounded() != h->twin()->face()->is_unbounded();
@@ -606,17 +606,17 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 			deadList.push_back(he);
 	}
 	PROGRESS_DONE(func, 0, 2, "Finding unneeded half-edges...");
-	
+
 	tot = deadList.size();
 	ctr = 0;
-	
+
 	PROGRESS_START(func, 1,2,"Deleting halfedges...");
 	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin();
-		iter != deadList.end(); ++iter, ++ctr)	
+		iter != deadList.end(); ++iter, ++ctr)
 	{
 		PROGRESS_CHECK(func,1,2,"Deleting halfedges...",ctr,tot,1000);
 		ioMap.remove_edge(*iter);
-	}	
+	}
 	PROGRESS_DONE(func,1,2,"Deleting halfedges...");
 	return deadList.size();
 }
@@ -625,14 +625,14 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 {
 // OPTIMIZE: see above comments about nuke-lists.  Also that while loop needes some examination!
 	vector<Pmwx::Halfedge_handle>	deadList;
-	
+
 	int nuke = 0;
-	
+
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he, ++he)
 	{
 		Pmwx::Halfedge_handle h = he;
 		if (!h->mDominant) h = h->twin();
-		
+
 		bool	iWet = h->face()->IsWater();
 		bool	oWet = h->twin()->face()->IsWater();
 		bool	road = !h->mSegments.empty();
@@ -640,13 +640,13 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 		if (!road && iWet && oWet)
 			deadList.push_back(he);
 	}
-	
-	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)	
+
+	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)
 	{
 		ioMap.remove_edge(*iter);
 		++nuke;
 	}
-	
+
 	while (1)
 	{
 		deadList.clear();
@@ -655,14 +655,14 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 			deadList.push_back(he);
 		if (deadList.empty()) break;
 
-		for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)	
+		for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)
 		{
 			ioMap.remove_edge(*iter);
 			++nuke;
-		}				
+		}
 	}
-	
-	
+
+
 	return nuke;
 }
 
@@ -684,23 +684,23 @@ static void __MergeMaps_EdgeNotifier(GISHalfedge * he_old, GISHalfedge * he_new,
 		// our mapping from old to new is no longer right.  Fix it!
 		// (This case is not needed for topologically integrated maps but IS needed for not-meant-to-be-friends maps, like
 		// a forest pattern + a road grid.
-		
+
 		vector<pair<GISHalfedge*, GISHalfedge*> >	new_mappings;
 		for (multimap<GISHalfedge*, GISHalfedge*>::iterator pairing = info->edgeMap->begin(); pairing != info->edgeMap->end(); ++pairing)
 		{
 			if (pairing->second == he_old)
-				AssertPrintf("WARNING: splits in the map merge.  This case is foolishly NOT handled yet!");			
+				AssertPrintf("WARNING: splits in the map merge.  This case is foolishly NOT handled yet!");
 		}
 
 	} else {
 		// This is a new edge introduced...whether it is a real edge or a dupe of the old one, we need to copy params
 		// and establish a linking.
 		GISHalfedge * he = (he_old ? he_old : he_new);
-		
+
 		// Remember the mapping from old to new
 		info->edgeMap->insert(multimap<GISHalfedge *, GISHalfedge *>::value_type(info->srcEdge, he));
 		info->edgeMap->insert(multimap<GISHalfedge *, GISHalfedge *>::value_type(info->srcEdge->twin(), he->twin()));
-		
+
 		if (he->source()->point() == info->srcEdge->source()->point())
 			(*info->vertMap)[info->srcEdge->source()] = he->source();
 
@@ -712,11 +712,11 @@ static void __MergeMaps_EdgeNotifier(GISHalfedge * he_old, GISHalfedge * he_new,
 
 		if (he->target()->point() == info->srcEdge->target()->point())
 			(*info->vertMap)[info->srcEdge->target()] = he->target();
-		
+
 		if (!he->mDominant) he = he->twin();
-		
+
 		// Copy the halfedge
-		he->mSegments.insert(he->mSegments.end(), info->srcEdge->mSegments.begin(),info->srcEdge->mSegments.end());		
+		he->mSegments.insert(he->mSegments.end(), info->srcEdge->mSegments.begin(),info->srcEdge->mSegments.end());
 		he->mParams.insert(info->srcEdge->mParams.begin(),info->srcEdge->mParams.end());
 	}
 }
@@ -734,7 +734,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 	__MergeMaps_EdgeNotifier_t info;
 	info.edgeMap = &edgeMap;
 	info.vertMap = &vertMap;
-	
+
 	int ctr = 0;
 	int total = ioSrcMap.number_of_halfedges();
 	int step = total / 200;
@@ -744,9 +744,9 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 	if (pre_integrated)
 	{
 		// Pre-integrated edge merge case - we know there are no intersections, so find points and use the fast insertion routines.
-	
+
 		map<Point2, GISVertex *, lesser_y_then_x>			pt_index;
-		
+
 		for (Pmwx::Vertex_iterator v = ioDstMap.vertices_begin(); v != ioDstMap.vertices_end(); ++v)
 			pt_index[v->point()] = v;
 
@@ -754,10 +754,10 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 		if (iter->mDominant)
 		{
 			PROGRESS_CHECK(func, 0, 2, "Merging edges into map...", ctr, total, step)
-		
+
 			map<Point2, GISVertex *, lesser_y_then_x>::iterator i1, i2;
 			GISHalfedge * nh;
-			
+
 			i1 = pt_index.find(iter->source()->point());
 			i2 = pt_index.find(iter->target()->point());
 			if (i1 != pt_index.end())
@@ -766,14 +766,14 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 				{
 					/* CASE 1 - Both points already in. */
 					nh = ioDstMap.nox_insert_edge_between_vertices(i1->second, i2->second);
-				} 
+				}
 				else
 				{
 					/* Case 2 - Point 1 in, point 2 new. */
 					nh = ioDstMap.nox_insert_edge_from_vertex(i1->second, iter->target()->point());
 					pt_index[iter->target()->point()] = nh->target();
 				}
-			} 
+			}
 			else
 			{
 				if (i2 != pt_index.end())
@@ -781,7 +781,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 					/* Case 3 - Point 1 new, point 2 in. */
 					nh = ioDstMap.nox_insert_edge_from_vertex(i2->second, iter->source()->point())->twin();
 					pt_index[iter->source()->point()] = nh->source();
-				} 
+				}
 				else
 				{
 					/* Case 4 - both points new. */
@@ -790,18 +790,18 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 					pt_index[iter->target()->point()] = nh->target();
 				}
 			}
-			
+
 			edgeMap.insert(multimap<GISHalfedge *, GISHalfedge *>::value_type(iter, nh));
 			edgeMap.insert(multimap<GISHalfedge *, GISHalfedge *>::value_type(iter->twin(), nh->twin()));
 			if (!nh->mDominant) nh = nh->twin();
-			nh->mSegments.insert(nh->mSegments.end(), iter->mSegments.begin(),iter->mSegments.end());		
+			nh->mSegments.insert(nh->mSegments.end(), iter->mSegments.begin(),iter->mSegments.end());
 			nh->mParams.insert(iter->mParams.begin(),iter->mParams.end());
-			
+
 		}
-		
-		
+
+
 	} else {
-	
+
 		// Slow case - use inserts with intersections.
 
 		int fast = 0, slow = 0;
@@ -809,10 +809,10 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 		if (iter->mDominant)
 		{
 			PROGRESS_CHECK(func, 0, 2, "Merging edges into map...", ctr, total, step)
-		
+
 			info.srcEdge = iter;
 			map<GISVertex *, GISVertex *>::iterator hint = vertMap.find(iter->source());
-			if (hint != vertMap.end()) 
+			if (hint != vertMap.end())
 			{
 				++fast;
 				ioDstMap.insert_edge(iter->source()->point(), iter->target()->point(), hint->second->halfedge(), Pmwx::locate_Vertex, __MergeMaps_EdgeNotifier, &info);
@@ -826,73 +826,73 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 	PROGRESS_DONE(func, 0, 2, "Merging edges into map...")
 
 	PROGRESS_START(func, 1, 2, "Copying face metadata...")
-	
-	// STEP 2 - map a faces boundary from src to dst.  Flood fill to find the corresponding faces and copy 
+
+	// STEP 2 - map a faces boundary from src to dst.  Flood fill to find the corresponding faces and copy
 	// what's needed.
-	
+
 	ctr = 0;
 	total = ioSrcMap.number_of_faces();
 	step = total / 200;
-	
+
 	for (Pmwx::Face_iterator fiter = ioSrcMap.faces_begin(); fiter != ioSrcMap.faces_end(); ++fiter, ++ctr)
 	if (!fiter->is_unbounded())
 	// Fast eval - if the source face is uninteresting, skip this whole loop!
 	if (fiter->mAreaFeature.mFeatType != NO_VALUE || fiter->mTerrainType != terrain_Natural)
 	{
 		PROGRESS_CHECK(func, 1, 2, "Copying face metadata...", ctr, total, step)
-	
+
 
 		set<GISHalfedge *>	borders_old, borders_new;
 
 		FindEdgesForFace(fiter, borders_old);
-		
+
 		set<GISFace *>	sanity;
 		FindFacesForEdgeSet(borders_old, sanity);
 		DebugAssert(sanity.size() == 1);
 		DebugAssert(*sanity.begin() == &*fiter);
-		
+
 		DebugAssert(!borders_old.empty());
-		
+
 		// go through CCB - add all dests in edgemap from each CCB to borders
 		for (set<GISHalfedge *>::iterator e = borders_old.begin(); e != borders_old.end(); ++e)
 		{
 			pair<multimap<GISHalfedge *, GISHalfedge *>::iterator, multimap<GISHalfedge *, GISHalfedge *>::iterator>	range;
-			range = edgeMap.equal_range(*e);			
+			range = edgeMap.equal_range(*e);
 			DebugAssert(range.first != range.second);
-			
+
 			for (multimap<GISHalfedge *, GISHalfedge *>::iterator i = range.first; i != range.second; ++i)
 			{
 				borders_new.insert(i->second);
 			}
-		}		
+		}
 		DebugAssert(!borders_new.empty());
-		
+
 		// Next find facse for the edge set
 		set<GISFace *>		faces;
-		
-		FindFacesForEdgeSet(borders_new, faces);		
+
+		FindFacesForEdgeSet(borders_new, faces);
 		DebugAssert(!faces.empty());
 
 		// Finally, mark all items in faces.
-		
+
 		for (set<GISFace *>::iterator face = faces.begin(); face != faces.end(); ++face)
 		{
 			if (outFaces)	outFaces->insert(*face);
-			if (fiter->mTerrainType != terrain_Natural)	
+			if (fiter->mTerrainType != terrain_Natural)
 			if (inForceProps || (*face)->mTerrainType == terrain_Natural)
 				(*face)->mTerrainType = fiter->mTerrainType;
 
-			if (fiter->mAreaFeature.mFeatType != NO_VALUE)		
+			if (fiter->mAreaFeature.mFeatType != NO_VALUE)
 			if (inForceProps || (*face)->mAreaFeature.mFeatType == NO_VALUE)
 				(*face)->mAreaFeature.mFeatType = fiter->mAreaFeature.mFeatType;
-			
+
 		}
 	}
 	PROGRESS_DONE(func, 1, 2, "Copying face metadata...")
-	
+
 }
 
-// Vertex hasher - to be honest I forget why this was necessary, but without it the 
+// Vertex hasher - to be honest I forget why this was necessary, but without it the
 // STL couldn't build the hash table.  Foo.
 #if !MSC
 struct hash_vertex {
@@ -903,13 +903,13 @@ struct hash_vertex {
 
 // Map swap - Basically we build up mapping between the two maps and flood fill to
 // find the insides.
-void	SwapMaps(	Pmwx& 							ioMapA, 
-					Pmwx& 							ioMapB, 
+void	SwapMaps(	Pmwx& 							ioMapA,
+					Pmwx& 							ioMapB,
 					const vector<GISHalfedge *>&	inBoundsA,
 					const vector<GISHalfedge *>&	inBoundsB)
 {
 	DebugAssert(inBoundsA.size() == inBoundsB.size());
-	
+
 	set<GISFace *>		moveFaceFromA, moveFaceFromB;
 	set<GISHalfedge *>	moveEdgeFromA, moveEdgeFromB;
 	set<GISVertex * >	moveVertFromA, moveVertFromB;
@@ -921,9 +921,9 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	hash_map<GISVertex *, GISVertex *, hash_vertex>::iterator findVert;
 #endif
 	set<GISFace *>::iterator		faceIter;
-	set<GISHalfedge *>::iterator	edgeIter;	
-	set<GISVertex *>::iterator		vertIter;	
-	int n;	
+	set<GISHalfedge *>::iterator	edgeIter;
+	set<GISVertex *>::iterator		vertIter;
+	int n;
 
 #if DEV
 	for (n = 0; n < inBoundsA.size(); ++n)
@@ -934,33 +934,33 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		DebugAssert(inBoundsB[n]->face() != inBoundsB[n]->twin()->face());
 	}
 #endif
-	
+
 	/********************************************************************************
 	 * PREPERATION - FIGURE OUT WHO IS MOVING WHERE.
 	 ********************************************************************************/
-	
+
 	// All of the inner bounds have to move.
 	moveEdgeFromA.insert(inBoundsA.begin(), inBoundsA.end());
 	moveEdgeFromB.insert(inBoundsB.begin(), inBoundsB.end());
-	
+
 	// Inner bounds dictate contained faces, all of which move.
 	FindFacesForEdgeSet(moveEdgeFromA, moveFaceFromA);
 	FindFacesForEdgeSet(moveEdgeFromB, moveFaceFromB);
-	
+
 	// Accumulate total set of edges that must move from faces (CCBs and holes.)
 	for (faceIter = moveFaceFromA.begin(); faceIter != moveFaceFromA.end(); ++faceIter)
 		FindEdgesForFace(*faceIter, moveEdgeFromA);
 
 	for (faceIter = moveFaceFromB.begin(); faceIter != moveFaceFromB.end(); ++faceIter)
 		FindEdgesForFace(*faceIter, moveEdgeFromB);
-	
+
 	for (n = 0; n < inBoundsA.size(); ++n)
 	{
 		// We want stuff on the crop edge to go to the inside.  This is because 99% of the time
 		// the crop inside is used.  So make sure it is dominant.  It's okay to f--- with dominance
 		// because the edge gets resorted later when we do the move of the halfedge.
 		if (!inBoundsA[n]->mDominant)		inBoundsA[n]->SwapDominance();
-		if (!inBoundsB[n]->mDominant)		inBoundsB[n]->SwapDominance();	
+		if (!inBoundsB[n]->mDominant)		inBoundsB[n]->SwapDominance();
 
 		// Vertices on the CCB do NOT move since they are used by exterior stuff.
 		// We need to know the correspondence for later!  So build a map
@@ -973,7 +973,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		keepVertFromB.insert(hash_map<GISVertex *, GISVertex *, hash_vertex>::value_type(inBoundsB[n]->target(), inBoundsA[n]->target()));
 #endif
 	}
-	
+
 	// Accume all non-saved vertices as moving.
 	for (edgeIter = moveEdgeFromA.begin(); edgeIter != moveEdgeFromA.end(); ++edgeIter)
 		if (keepVertFromA.count((*edgeIter)->target()) == 0)
@@ -982,7 +982,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	for (edgeIter = moveEdgeFromB.begin(); edgeIter != moveEdgeFromB.end(); ++edgeIter)
 		if (keepVertFromB.count((*edgeIter)->target()) == 0)
 			moveVertFromB.insert((*edgeIter)->target());
-	
+
 
 	/********************************************************************************
 	 * SANITY CHECK!
@@ -995,7 +995,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 
 	for (faceIter = moveFaceFromB.begin(); faceIter != moveFaceFromB.end(); ++faceIter)
 		DebugAssert(!(*faceIter)->is_unbounded());
-		
+
 	// Edges all ref a face that's moving too
 	for (edgeIter = moveEdgeFromA.begin(); edgeIter != moveEdgeFromA.end(); ++edgeIter)
 	{
@@ -1011,12 +1011,12 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	// TODO: confirm all bounds of all faces are in the edge set?
 #endif
 
-	
+
 
 	/********************************************************************************
 	 * FIX REFS TO NON-MOVING VERTICES
 	 ********************************************************************************/
-	
+
 	// For each vertex we are keeping, if it references a CCB halfedge, better swap it
 	// over to the new CCB.	 We take the cheap way out and always force the vertex ptr!
 	for (n = 0; n < inBoundsA.size(); ++n)
@@ -1024,9 +1024,9 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		inBoundsA[n]->target()->set_halfedge(inBoundsB[n]);
 		inBoundsB[n]->target()->set_halfedge(inBoundsA[n]);
 	}
-	 
-	 // For each halfedge we are moving, we need to see if it references a non-moving 
-	 // vertex.  If so, we need to make sure it now references the new one.	 
+
+	 // For each halfedge we are moving, we need to see if it references a non-moving
+	 // vertex.  If so, we need to make sure it now references the new one.
 	for (edgeIter = moveEdgeFromA.begin(); edgeIter != moveEdgeFromA.end(); ++edgeIter)
 	{
 		findVert = keepVertFromA.find((*edgeIter)->target());
@@ -1056,20 +1056,20 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 
 		a_twin->set_twin(inBoundsB[n]);
 		b_twin->set_twin(inBoundsA[n]);
-		
+
 		inBoundsA[n]->set_twin(b_twin);
 		inBoundsB[n]->set_twin(a_twin);
-		
+
 		// Make sure dominance is on inside.
 		DebugAssert(inBoundsA[n]->mDominant);
 		DebugAssert(inBoundsB[n]->mDominant);
 	}
-		
+
 
 	/********************************************************************************
 	 * MIGRATE ALL ENTITIES
 	 ********************************************************************************/
-	
+
 	// Finally we just need to swap each entity into a new list.
 
 	for (faceIter = moveFaceFromA.begin(); faceIter != moveFaceFromA.end(); ++faceIter)
@@ -1104,7 +1104,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	for (edgeIter = moveEdgeFromB.begin(); edgeIter != moveEdgeFromB.end(); ++edgeIter)
 	if ((*edgeIter)->mDominant)
 		ioMapA.MoveEdgeToMe(&ioMapB, *edgeIter);
-		
+
 }
 
 // Sort op to sort a bbox bby its lower bounds.
@@ -1120,23 +1120,23 @@ static bool __epsi_intersect(const Segment2& segA, const Segment2& segB, double 
 	{
 		return segA.intersect(segB, cross);
 	}
-	
+
 	if (!Line2(segA).intersect(Line2(segB), cross)) return false;
-	
+
 //	epsi = epsi * epsi;
-	
+
 	double	da1 = Vector2(segA.p1, cross).squared_length();
 	double	da2 = Vector2(segA.p2, cross).squared_length();
 	double	db1 = Vector2(segB.p1, cross).squared_length();
 	double	db2 = Vector2(segB.p2, cross).squared_length();
-	
+
 	if (da1 < epsi || da2 < epsi || db1 < epsi || db2 < epsi)
-	{	
+	{
 		double da = (da1 < da2) ? da1 : da2;
 		Point2 pa = (da1 < da2) ? segA.p1 : segA.p2;
 		double db = (db1 < db2) ? db1 : db2;
 		Point2 pb = (db1 < db2) ? segB.p1 : segB.p2;
-		
+
 		if (da < epsi && db < epsi)
 		{
 			cross = (da < db) ? pa : pb;
@@ -1148,7 +1148,7 @@ static bool __epsi_intersect(const Segment2& segA, const Segment2& segB, double 
 			DebugAssert(db < epsi);
 			cross = pb;
 			return true;
-		}		
+		}
 	}
 	return segA.collinear_has_on(cross) && segB.collinear_has_on(cross);
 }
@@ -1173,7 +1173,7 @@ static bool __epsi_intersect(const Segment2& segA, const Segment2& segB, double 
  * double insert of P.
  *
  */
- 
+
  // Colinear check - this tells us if two points are very close to each other but not truly colinear.
 #define	SMALL_SEG_CUTOFF	0.01
 #define BBOX_SLOP			0.00001
@@ -1189,19 +1189,19 @@ inline bool	__near_colinear(const Segment2& seg, Point2& p)
 		return p.y == seg.p1.y && ((seg.p1.x < p.x && p.x < seg.p2.x) || (seg.p2.x < p.x && p.x < seg.p1.x));
 	if (seg.is_vertical())
 		return p.x == seg.p1.x && ((seg.p1.y < p.y && p.y < seg.p2.y) || (seg.p2.y < p.y && p.y < seg.p1.y));
-	
+
 	Point2	pp = seg.projection(p);
-	
+
 	if (p == pp || Vector2(p, pp).squared_length() < NEAR_SLIVER_COLINEAR)
 	{
 		// BEN SAYS: 11/11/07 - new check.  This is the non-horizontal/vertical colinear case.  Basically we're trying to divert segments
-		// slightly to avoid slivers.  Problem is, the dot product we use below to make sure we are within the SPAN of the segment is not very 
+		// slightly to avoid slivers.  Problem is, the dot product we use below to make sure we are within the SPAN of the segment is not very
 		// accurate and tends to let points through that are NOT really "within" the span of the segment, causing problems.
 		//
 		// This isn't a fix, but by rejecting these points we do slightly improve quality - quick BBox test.  NO WAY a point is outside the seg's
-		// bbox and still "near-colinear-on".  
+		// bbox and still "near-colinear-on".
 		if (p.x <= seg.p1.x || p.x >= seg.p2.x || p.y <= seg.p1.y || p.y >= seg.p2.y) return false;
-			
+
 		return (Vector2(seg.p1, seg.p2).dot(Vector2(seg.p1, p)) > 0.0) &&
 			   (Vector2(seg.p2, seg.p1).dot(Vector2(seg.p2, p)) > 0.0);
 	}
@@ -1209,7 +1209,7 @@ inline bool	__near_colinear(const Segment2& seg, Point2& p)
 }
 
 
-// Topo integration.  Basically for any two colinear segments, insert each other's 
+// Topo integration.  Basically for any two colinear segments, insert each other's
 // end poitns into the map, and for any crossing segments, insert the crossing point.
 // The hope is that:
 // (1) there will be no crossings between segs in map A and B - only segments ending
@@ -1218,7 +1218,7 @@ inline bool	__near_colinear(const Segment2& seg, Point2& p)
 // and non-overlapping segments.
 //
 // Please note that where a point P is near-colinear to an edge E, that edge E ends up
-// CHANGING to E1 and E2 to meet point P.  Basically we'd rather ruin our map than get 
+// CHANGING to E1 and E2 to meet point P.  Basically we'd rather ruin our map than get
 // a sliver.
 //
 // We spatially index the bounding box of all edges to speed up intersection finding!
@@ -1236,27 +1236,27 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 	typedef multimap<GISHalfedge *, Point2>		SplitMap;
 	typedef	set<GISHalfedge *>					SplitSet;
 	typedef map<double, Point2>					SortedPoints;
-		
+
 		HalfedgeMap				map_small;
 		HalfedgeMap				map_big;
 
 		double					yrange_small = 0.0;
 		double					yrange_big = 0.0;
-			
+
 		SplitMap				splitA, splitB;
-		SplitSet				setA, setB;	
+		SplitSet				setA, setB;
 		Pmwx::Halfedge_iterator iterA;
 		Pmwx::Halfedge_iterator iterB;
 		Point2					p;
 		double					dist;
 		pair<HalfedgeMap::iterator, HalfedgeMap::iterator>	possibles;
 		HalfedgeMap::iterator								he_box;
-		
+
 		pair<SplitMap::iterator, SplitMap::iterator>		range;
 		SplitSet::iterator 									he;
 		SplitMap::iterator									splitIter;
 		SortedPoints::iterator								spi;
-		
+
 		SortedPoints 										splits;
 		GISHalfedge *										subdiv;
 		Bbox2												key_lo, key_hi;
@@ -1267,10 +1267,10 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 		printf("Swapwping maps for speed.\n");
 #endif
-	
+
 		swap(mapA, mapB);
 	}
-	
+
 	// We are going to store the halfedges of B in two maps, sorted by their bbox's ymin.
 	// The idea here is to have a set of very small segments...we can be real precise in the
 	// range we scan here.  The big map will have all the huge exceptions, which we'll have to
@@ -1280,7 +1280,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 	{
 		Bbox2	bounds(iterB->source()->point(),iterB->target()->point());
 		bounds.expand(BBOX_SLOP);
-		
+
 		dist = bounds.ymax() - bounds.ymin();
 		if (dist > SMALL_SEG_CUTOFF)
 		{
@@ -1290,12 +1290,12 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			yrange_small = max(yrange_small, dist);
 			map_small.insert(HalfedgeMap::value_type(bounds, iterB));
 		}
-		
+
 	}
 
 	// Go through and search both the small and big set, looking for halfedges.
 	for (iterA = mapA->halfedges_begin(); iterA != mapA->halfedges_end(); ++iterA)
-	if (iterA->mDominant)		
+	if (iterA->mDominant)
 	{
 		Segment2	segA(iterA->source()->point(), iterA->target()->point());
 		Bbox2		boxA(iterA->source()->point(), iterA->target()->point());
@@ -1311,13 +1311,13 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (boxA.overlap(he_box->first))
 			{
 				Segment2	segB(he_box->second->source()->point(), he_box->second->target()->point());
-				
+
 				// IMPORTANT: we need to check for the almost-colinear case first.  Why?  Well, it turns out that
-				// in a near-colinear case, sometimes the intersect route will return an intersection.  But we do 
+				// in a near-colinear case, sometimes the intersect route will return an intersection.  But we do
 				// not want to insert some bogus point P into two lines if really they overlap!  P might be epsi-
 				// equal to an end point and then we're f--ed.  So do colinear first and skip the intersection
 				// if we find one.
-				
+
 				did_colinear = false;
 				if (segA.is_horizontal() == segB.is_horizontal() && segA.is_vertical() == segB.is_vertical())
 				{
@@ -1326,68 +1326,68 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p1));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p1.x,segB.p1.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segA, segB.p2))
 					{
 						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p2));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p2.x,segB.p2.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.p1))
 					{
 						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p1));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p1.x,segA.p1.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.p2))
 					{
 						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p2));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p2.x,segA.p2.y);
-#endif						
+#endif
 					}
 				}
-				
+
 				if (!did_colinear && segA.intersect(segB, p))	//__epsi_intersect(segA, segB, NEAR_INTERSECT_DIST, p))
 				{
 					if (p != segA.p1 && p != segA.p2)
 					{
 						splitA.insert(SplitMap::value_type(iterA, p));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,  p.x,p.y,  segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y);
-#endif						
-						
+#endif
+
 					}
 					if (p != segB.p1 && p != segB.p2)
 					{
 						splitB.insert(SplitMap::value_type(he_box->second, p));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,  p.x,p.y,  segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y);
-#endif						
+#endif
 					}
 				}
 			}
 		}
-		
+
 		key_lo = Point2(0.0, boxA.ymin() - yrange_small);
 		key_hi = Point2(0.0, boxA.ymax());
 		possibles.first = map_small.lower_bound(key_lo);
@@ -1397,71 +1397,71 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (boxA.overlap(he_box->first))
 			{
 				Segment2	segB(he_box->second->source()->point(), he_box->second->target()->point());
-				did_colinear = false;				
-				
+				did_colinear = false;
+
 				if (segA.is_horizontal() == segB.is_horizontal() && segA.is_vertical() == segB.is_vertical())
 				{
 					if (__near_colinear(segA, segB.p1))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p1));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p1.x,segB.p1.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segA, segB.p2))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p2));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p2.x,segB.p2.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.p1))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p1));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p1.x,segA.p1.y);
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.p2))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p2));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p2.x,segA.p2.y);
-#endif						
+#endif
 					}
 				}
-				
+
 				if (!did_colinear && segA.intersect(segB, p))
 				{
 					if (p != segA.p1 && p != segA.p2)
 					{
 						splitA.insert(SplitMap::value_type(iterA, p));
 						setA.insert(iterA);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,  p.x,p.y,  segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y);
-#endif						
+#endif
 					}
 					if (p != segB.p1 && p != segB.p2)
 					{
 						splitB.insert(SplitMap::value_type(he_box->second, p));
 						setB.insert(he_box->second);
-#if TRACE_TOPO_INTEGRATE	
+#if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,  p.x,p.y,  segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y);
-#endif						
+#endif
 					}
 				}
 			}
@@ -1480,7 +1480,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			dist = Segment2((*he)->source()->point(), splitIter->second).squared_length();
 			splits.insert(SortedPoints::value_type(dist, splitIter->second));
 		}
-		
+
 		subdiv = *he;
 		for (spi = splits.begin(); spi != splits.end(); ++spi)
 		{
@@ -1491,7 +1491,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				DebugAssert(origSegA.p1.y == spi->second.y);
 #endif
 #if TRACE_TOPO_INTEGRATE
-			printf("Splitting A: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+			printf("Splitting A: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n",
 				subdiv->source()->point().x,subdiv->source()->point().y,
 				subdiv->target()->point().x,subdiv->target()->point().y,
 				spi->second.x, spi->second.y);
@@ -1517,7 +1517,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			dist = Segment2((*he)->source()->point(), splitIter->second).squared_length();
 			splits.insert(SortedPoints::value_type(dist, splitIter->second));
 		}
-		
+
 		subdiv = *he;
 		for (spi = splits.begin(); spi != splits.end(); ++spi)
 		{
@@ -1526,9 +1526,9 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				DebugAssert(origSegB.p1.x == spi->second.x);
 			if (origSegB.is_horizontal())
 				DebugAssert(origSegB.p1.y == spi->second.y);
-#endif				
+#endif
 #if TRACE_TOPO_INTEGRATE
-			printf("Splitting B: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+			printf("Splitting B: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n",
 				subdiv->source()->point().x,subdiv->source()->point().y,
 				subdiv->target()->point().x,subdiv->target()->point().y,
 				spi->second.x, spi->second.y);
@@ -1539,7 +1539,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				subdiv = subdiv->next();
 			}
 		}
-	}	
+	}
 }
 
 
@@ -1548,7 +1548,7 @@ GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& 
 {
 // OPTIMIZE: re-examine this now that we have vertex indexing...can we use the built in index?
 // SPECULATION: even with point indexing, insert_ring is STILL faster - insert_edge, even when
-// both points are known still must find the sorting point around the vertices and worse yet 
+// both points are known still must find the sorting point around the vertices and worse yet
 // potentially has to split faces and move holes...all slow!  The ring does NONE of this.
 
 	bool	needs_slow = false;
@@ -1571,8 +1571,8 @@ GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& 
 
 	if (!needs_slow)
 		return inPmwx->insert_ring(parent, inPoints);
-	
-	GISHalfedge * he = NULL;	
+
+	GISHalfedge * he = NULL;
 	for (n = 0; n < inPoints.size(); ++n)
 	{
 		if(inPoints[n] != inPoints[(n+1)%inPoints.size()])
@@ -1587,7 +1587,7 @@ GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& 
  ************************************************************************************************/
 #pragma mark -
 
-// Dominance: for conveninence I mark half my edges with a flag...this is a rapid way to 
+// Dominance: for conveninence I mark half my edges with a flag...this is a rapid way to
 // guarantee we never list an edge and its twin even when the edge set we get is not an in-order
 // iteration.  Cheesy but it works.
 bool	ValidateMapDominance(const Pmwx& inMap)
@@ -1611,29 +1611,29 @@ bool	ValidateMapDominance(const Pmwx& inMap)
 		{
 #if DEV
 			++doubles;
-			printf("Double on edge: %lf,%lf -> %lf,%lf\n", 
+			printf("Double on edge: %lf,%lf -> %lf,%lf\n",
 				i->source()->point().x,i->source()->point().y,
 				i->target()->point().x,i->target()->point().y);
 #else
 			return false;
-#endif			
+#endif
 		}
 		if (!i->mDominant && !i->twin()->mDominant)
 		{
 #if DEV
 			++zeros;
-			printf("Zero on edge: %lf,%lf -> %lf,%lf\n", 
+			printf("Zero on edge: %lf,%lf -> %lf,%lf\n",
 				i->source()->point().x,i->source()->point().y,
 				i->target()->point().x,i->target()->point().y);
 #else
 			return false;
-#endif			
+#endif
 		}
 	}
 #if DEV
 	if (doubles > 0 || zeros > 0 || wrong > 0)
 		printf("Validation : %d double-dominant halfedges, and %d zero-dominant halfedges.  %d wrong\n", doubles, zeros, wrong);
-#endif	
+#endif
 	return doubles == 0 && zeros == 0 && wrong == 0;
 }
 
@@ -1645,7 +1645,7 @@ void	CalcBoundingBox(
 {
 	bool		inited = false;
 	Bbox2		box;
-	
+
 	for (Pmwx::Holes_const_iterator holes = inMap.unbounded_face()->holes_begin();
 		holes != inMap.unbounded_face()->holes_end(); ++holes)
 	{
@@ -1658,16 +1658,16 @@ void	CalcBoundingBox(
 				box = Bbox2(cur->source()->point());
 				inited = true;
 			}
-			
+
 			box += cur->source()->point();
 			box += cur->target()->point();
-		
+
 			++cur;
-		} while (cur != last);		
+		} while (cur != last);
 	}
 	sw = box.p1;
 	ne = box.p2;
-}			
+}
 
 double	GetMapFaceAreaMeters(const Pmwx::Face_handle f)
 {
@@ -1679,16 +1679,16 @@ double	GetMapFaceAreaMeters(const Pmwx::Face_handle f)
 			outer.push_back(Point2(circ->source()->point().x,circ->source()->point().y));
 		++circ;
 	} while (circ != start);
-	
+
 	CoordTranslator trans;
-	
+
 	CreateTranslatorForPolygon(outer, trans);
-	
+
 	for (int n = 0; n < outer.size(); ++n)
 	{
 		outer[n] = trans.Forward(outer[n]);
 	}
-	
+
 	double me = outer.area();
 
 	for (Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
@@ -1700,10 +1700,10 @@ double	GetMapFaceAreaMeters(const Pmwx::Face_handle f)
 				ib.push_back(Point2(circ->source()->point().x,circ->source()->point().y));
 			++circ;
 		} while (circ != start);
-		
+
 		for (int n = 0; n < ib.size(); ++n)
 			ib[n] = trans.Forward(ib[n]);
-		
+
 		me += ib.area();
 	}
 	return me;
@@ -1736,7 +1736,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 				e = dem.get(x,y);
 				if (e != DEM_NO_DATA)
 				{
-					if (count == 0) 
+					if (count == 0)
 					{
 						if (outMin) *outMin = e;
 						if (outMax) *outMax = e;
@@ -1751,7 +1751,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 		}
 		++y;
 		if (y >= dem.mHeight) break;
-		rast.AdvanceScanline(y);		
+		rast.AdvanceScanline(y);
 	}
 	if (count == 0)
 	{
@@ -1761,7 +1761,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 			e = dem.value_linear(i->source()->point().x,i->source()->point().y);
 			if (e != DEM_NO_DATA)
 			{
-				if (count == 0) 
+				if (count == 0)
 				{
 					if (outMin) *outMin = e;
 					if (outMax) *outMax = e;
@@ -1778,7 +1778,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 	if (count > 0)
 		return avg / (float) count;
 	else
-		return DEM_NO_DATA;	
+		return DEM_NO_DATA;
 }
 
 int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram)
@@ -1802,7 +1802,7 @@ int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, i
 		}
 		++y;
 		if (y >= dem.mHeight) break;
-		rast.AdvanceScanline(y);		
+		rast.AdvanceScanline(y);
 	}
 	if (count == 0)
 	{
@@ -1831,7 +1831,7 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
 				allEdges.insert(*e);
 		}
 	}
-	
+
 	PolyRasterizer	rast;
 	int x, y;
 	y = SetupRasterizerForDEM(allEdges, inSrcDEM, rast);
@@ -1841,7 +1841,7 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
 	outY1 = inSrcDEM.mHeight;
 	outY2 = 0;
 	bool ok = false;
-	
+
 	rast.StartScanline(y);
 	while (!rast.DoneScan())
 	{
@@ -1855,14 +1855,14 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
 				outY1 = min(outY1, y);
 				outY2 = max(outY2, y+1);
 				ok = true;
-				
+
 				if (inSrcDEM.get(x,y) != DEM_NO_DATA)
 					inDstDEM(x,y) = inSrcDEM(x,y);
 			}
 		}
 		++y;
 		if (y >= inSrcDEM.mHeight) break;
-		rast.AdvanceScanline(y);		
+		rast.AdvanceScanline(y);
 	}
 	if (outX1 < 0)	outX1 = 0;
 	if (outY1 < 0)	outY1 = 0;
@@ -1899,10 +1899,10 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
 			else
 				rasterizer.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
 		}
-	}					
+	}
 
 	rasterizer.SortMasters();
-	
+
 	if (rasterizer.masters.empty())
 		 return 0;
 	return floor(rasterizer.masters.front().y1);
@@ -1960,7 +1960,7 @@ static bool __crunch_edge(Pmwx& ioMap, GISHalfedge * e, GISHalfedge * s)
 			} else
 				return nuke;
 		} else
-			return nuke;			
+			return nuke;
 	}
 }
 
@@ -1970,8 +1970,8 @@ static bool __crunch_edge(Pmwx& ioMap, GISHalfedge * e, GISHalfedge * s)
 // edge!
 struct	he_buffer_point {
 	GISHalfedge *		prev;
-	GISHalfedge *		next;	
-	GISVertex *			orig;		// 
+	GISHalfedge *		next;
+	GISVertex *			orig;		//
 	int					cap;
 	int					split;
 	Point2				p1;
@@ -2028,7 +2028,7 @@ void	calc_vertex_ext(he_buffer_point * hbp, double dist)
 	Segment2	s2(hbp->next->source()->point(),hbp->next->target()->point());
 	Vector2		v1(s1.p1,s1.p2);
 	Vector2		v2(s2.p1,s2.p2);
-	
+
 	if (v1.right_turn(v2) && v1.dot(v2) < 0.8)	hbp->cap = true;
 
 	if (hbp->cap)
@@ -2043,7 +2043,7 @@ void	calc_vertex_ext(he_buffer_point * hbp, double dist)
 		v2 = v2.perpendicular_ccw();
 		v1 *= dist;
 		v2 *= dist;
-		
+
 		s1.p1 += v1;
 		s1.p2 += v1;
 		s2.p1 += v2;
@@ -2051,14 +2051,14 @@ void	calc_vertex_ext(he_buffer_point * hbp, double dist)
 
 		Point2 me(hbp->prev->target()->point());
 
-		
+
 		Line2	line1(s1);
 		Line2	line2(s2);
 		Line2	cross_bar(me+vc,vc.perpendicular_ccw());
 
 		if (!line1.intersect(cross_bar,hbp->p1))
 			DebugAssert(!"Mitre 1 failed.");
-		
+
 		if (!line2.intersect(cross_bar,hbp->p2))
 			DebugAssert(!"Mitre 2 failed.");
 	}
@@ -2068,24 +2068,24 @@ void	calc_vertex_ext(he_buffer_point * hbp, double dist)
 		v2 = v2.perpendicular_ccw();
 		v1.normalize();
 		v2.normalize();
-		
+
 		if (v1.dot(v2) > 0.99)
 		{
 			Vector2	va(v1+v2);
 			va.normalize();
 			va *= dist;
 			hbp->p1 = hbp->p2 = s1.p2 + va;
-		} 
-		else 
-		{			
+		}
+		else
+		{
 			v1 *= dist;
 			v2 *= dist;
-			
+
 			s1.p1 += v1;
 			s1.p2 += v1;
 			s2.p1 += v2;
 			s2.p2 += v2;
-			
+
 			if (s1.intersect(s2,hbp->p1))
 			{
 				hbp->split = false;
@@ -2104,7 +2104,7 @@ void	extend_edge_set(set<GISHalfedge *>& in_set, set<GISHalfedge *>& out_set, Ha
 {
 	out_set.clear();
 	pair<HalfedgeSplitMap::iterator,HalfedgeSplitMap::iterator> range;
-	
+
 	while(!in_set.empty())
 	{
 		GISHalfedge * k = *in_set.begin();
@@ -2125,14 +2125,14 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 	outMap = *inFace;
 	map<GISHalfedge *,he_buffer_point>		vert_table;
 	vector<he_buffer_struct>				edge_table;
-	HalfedgeSplitMap						splits;	
-	
+	HalfedgeSplitMap						splits;
+
 	GISFace * face = (*outMap.unbounded_face()->holes_begin())->twin()->face();
 
 	DebugAssert(!face->is_unbounded());
 	outMap.unbounded_face()->mTerrainType=0;
 	face->mTerrainType = 1;
-	
+
 	Pmwx::Ccb_halfedge_circulator circ, stop;
 	Pmwx::Holes_iterator h;
 	// FIRST process over all vertices...compute the locations of the extended vertices.
@@ -2159,7 +2159,7 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 			++circ;
 		} while (circ != stop);
 	}
-	
+
 	// SECOND - go over edges - make the buffer spans
 	circ = stop = face->outer_ccb();
 	do {
@@ -2186,9 +2186,9 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 			++circ;
 		} while (circ != stop);
 	}
-	
+
 	// THIRD insert all the vertex elements
-	
+
 	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
 	{
 		he_buffer_point * hbp = &v->second;
@@ -2201,7 +2201,7 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 							hbp->orig->point(),
 							hbp->p2,
 							&splits);
-		else 
+		else
 			hbp->v2 = hbp->v1;
 	}
 
@@ -2213,7 +2213,7 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 		hbs->p = insert_into_map_proxy(outMap,
 							hbs->v1->p2,
 							hbs->v2->p1,
-							&splits);		
+							&splits);
 	}
 	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
 	if (v->second.cap)
@@ -2221,9 +2221,9 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 		he_buffer_point * hbp = &v->second;
 		hbp->span = insert_into_map_proxy(outMap,
 							hbp->p1, hbp->p2,
-							&splits);		
+							&splits);
 	}
-	
+
 	// FIFTH flood fill!
 //	for(Pmwx::Face_iterator fi = outMap.faces_begin(); fi != outMap.faces_end(); ++fi)
 //		fi->mTerrainType = 0;
@@ -2237,18 +2237,18 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 		reg.insert(hbs->p->twin());
 		reg.insert(hbs->v1->v2->twin());
 		reg.insert(hbs->v2->v1);
-		
+
 		extend_edge_set(reg,ext_reg,splits);
 		FindFacesForEdgeSet(ext_reg,faces);
 		for (set<GISFace *>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 			(*fi)->mTerrainType = 0;
 	}
-	
+
 	for (vector<he_buffer_struct>::iterator hbs = edge_table.begin(); hbs != edge_table.end(); ++hbs)
 	if (hbs->flipped)
 	{
 		hbs->orig->face()->mTerrainType = 0;
-	}	
+	}
 
 	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
 	if (v->second.cap)
@@ -2259,7 +2259,7 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 		reg.insert(hbp->v1->twin());
 		reg.insert(hbp->v2);
 		reg.insert(hbp->span->twin());
-		
+
 		extend_edge_set(reg,ext_reg,splits);
 		FindFacesForEdgeSet(ext_reg,faces);
 		for (set<GISFace *>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
@@ -2272,10 +2272,10 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
 	if (he->mDominant)
 	if (he->face()->mTerrainType == he->twin()->face()->mTerrainType)
 		dead_list.insert(he);
-		
+
 	for (set<GISHalfedge *>::iterator d=dead_list.begin(); d != dead_list.end(); ++d)
 		outMap.remove_edge(*d);
-	
+
 }
 
 inline bool Near(double x, double y)
@@ -2292,7 +2292,7 @@ inline bool IsOnBox(const Point2& p1, const Point2& p2, const Bbox2& box)
 	if (Near(p1.y , p2.y ) && Near(p1.y , box.p2.y)) return true;
 	return false;
 }
-		
+
 void UnmangleBorder(Pmwx& ioMap)
 {
 /*	for (Pmwx::Holes_iterator hole = ioMap.unbounded_face()->holes_begin(); hole != ioMap.unbounded_face()->holes_end(); ++hole)
@@ -2305,12 +2305,12 @@ void UnmangleBorder(Pmwx& ioMap)
 			++iter;
 		} while (iter != stop);
 	} */
-	
+
 	set <GISHalfedge *>	dead;
-	
+
 	Bbox2	box;
 	CalcBoundingBox(ioMap, box.p1, box.p2);
-	
+
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he)
 	if (he->mDominant)
 	if (he->face() != ioMap.unbounded_face())
@@ -2322,7 +2322,7 @@ void UnmangleBorder(Pmwx& ioMap)
 	for (set<GISHalfedge *>::iterator d = dead.begin(); d != dead.end(); ++d)
 	{
 		// Ben says: not sure why this assert was here...well, I am actually, it's to try to make sure we're not
-		// changing the fundamental topology of the import...but there are zero length segments that DO change the 
+		// changing the fundamental topology of the import...but there are zero length segments that DO change the
 		// import. :-(  WTF is wrong with VMAP0?
 //		DebugAssert((*d)->face()->IsWater() == (*d)->twin()->face()->IsWater());
 		ioMap.remove_edge(*d);

@@ -79,9 +79,9 @@ Comparison_result eps_compare (const APNT& val1, const APNT& val2,
 // The roots area must be at least of size 3.
 //
 template <class NT>
-int _Tartaglia_cubic_eq (const NT& a, 
-			 const NT& b, 
-			 const NT& c, 
+int _Tartaglia_cubic_eq (const NT& a,
+			 const NT& b,
+			 const NT& c,
 			 const NT& d,
 			 NT *roots)
 {
@@ -101,9 +101,9 @@ int _Tartaglia_cubic_eq (const NT& a,
   const NT    a0 = d / a;
 
   // Caclculate the "cubic discriminant" D.
-  const NT    Q = (_Three*a1 - a2*a2) / 
+  const NT    Q = (_Three*a1 - a2*a2) /
                       _Nine;
-  const NT    R = (_Nine*a1*a2 - _Twenty_seven*a0 - _Two*a2*a2*a2) / 
+  const NT    R = (_Nine*a1*a2 - _Twenty_seven*a0 - _Two*a2*a2*a2) /
                       _Fifty_four;
   const NT    D = Q*Q*Q + R*R;
   NT          S, T;
@@ -123,7 +123,7 @@ int _Tartaglia_cubic_eq (const NT& a,
       T = ::pow(temp, _One_third);
     else
       T = - ::pow(-temp, _One_third);
-    
+
     roots[0] = S + T - a2/_Three;
     return (1);
   }
@@ -135,9 +135,9 @@ int _Tartaglia_cubic_eq (const NT& a,
     const NT  cos_phi = ::cos(phi);
 
     roots[0] = _Two*CGAL::sqrt(-Q)*cos_phi - a2/_Three;
-    roots[1] = -CGAL::sqrt(-Q)*cos_phi - 
+    roots[1] = -CGAL::sqrt(-Q)*cos_phi -
                CGAL::sqrt(-_Three*Q)*sin_phi - a2/_Three;
-    roots[2] = -CGAL::sqrt(-Q)*cos_phi + 
+    roots[2] = -CGAL::sqrt(-Q)*cos_phi +
                CGAL::sqrt(-_Three*Q)*sin_phi - a2/_Three;
 
     return (3);
@@ -177,7 +177,7 @@ void _complex_sqrt (const NT& real, const NT& imag,
   // This equation has one positive root (and one irrelevant negative root).
   const NT  sqrt_disc = CGAL::sqrt(real*real + imag*imag);
   const NT  x_2 = (real + sqrt_disc) / _Two;
-  
+
   // Calculate on of the roots (the other root is -sqrt_re - i*sqrt_im).
   sqrt_re = CGAL::sqrt(x_2);
   sqrt_im = imag / (_Two*sqrt_re);
@@ -193,10 +193,10 @@ void _complex_sqrt (const NT& real, const NT& imag,
 // The roots area must be at least of size 4.
 //
 template <class NT>
-int _Ferrari_quartic_eq (const NT& a, 
-			 const NT& b, 
+int _Ferrari_quartic_eq (const NT& a,
+			 const NT& b,
 			 const NT& c,
-			 const NT& d, 
+			 const NT& d,
 			 const NT& e,
 			 NT *roots,
 			 const NT& _eps)
@@ -223,9 +223,9 @@ int _Ferrari_quartic_eq (const NT& a,
   NT          cubic_roots[3];
   NT          y1;
 
-  _Tartaglia_cubic_eq (_One, 
-		       -a2, 
-		       a1*a3 - _Four*a0, 
+  _Tartaglia_cubic_eq (_One,
+		       -a2,
+		       a1*a3 - _Four*a0,
 		       _Four*a2*a0 - a1*a1 - a3*a3*a0,
 		       cubic_roots);
   y1 = cubic_roots[0];
@@ -238,7 +238,7 @@ int _Ferrari_quartic_eq (const NT& a,
   {
     // R is _Zero: In this case, D and E must be real-valued.
     const NT    disc_square = y1*y1 - _Four*a0;
-      
+
     if (disc_square < _Zero)
     {
       // No real roots at all.
@@ -253,7 +253,7 @@ int _Ferrari_quartic_eq (const NT& a,
     {
       // Add two real-valued roots.
       const NT    D = CGAL::sqrt(D_square);
-	  
+
       roots[n_roots] = -_One_quarter*a3 + _One_half*D;
       n_roots++;
       roots[n_roots] = -_One_quarter*a3 - _One_half*D;
@@ -264,7 +264,7 @@ int _Ferrari_quartic_eq (const NT& a,
     {
       // Add two real-valued roots.
       const NT    E = CGAL::sqrt(E_square);
-      
+
       roots[n_roots] = -_One_quarter*a3 + _One_half*E;
       n_roots++;
       roots[n_roots] = -_One_quarter*a3 - _One_half*E;
@@ -284,7 +284,7 @@ int _Ferrari_quartic_eq (const NT& a,
     {
       // Add two real-valued roots.
       const NT    D = CGAL::sqrt(D_square);
-      
+
       roots[n_roots] = -_One_quarter*a3 + _One_half*(R + D);
       n_roots++;
       roots[n_roots] = -_One_quarter*a3 + _One_half*(R - D);
@@ -295,7 +295,7 @@ int _Ferrari_quartic_eq (const NT& a,
     {
       // Add two real-valued roots.
       const NT    E = CGAL::sqrt(E_square);
-      
+
       roots[n_roots] = -_One_quarter*a3 + _One_half*(E - R);
       n_roots++;
       roots[n_roots] = -_One_quarter*a3 - _One_half*(E + R);
@@ -308,7 +308,7 @@ int _Ferrari_quartic_eq (const NT& a,
       const NT    R_im = CGAL::sqrt(-R_square);
       const NT    R_inv_im = -_One / R_im;      // The inverse of R.
       const NT    D_square_re = _Three_quarters*a3*a3 - R_square - _Two*a2;
-      const NT    D_square_im = 
+      const NT    D_square_im =
 	(a3*a2 - _Two*a1 - _One_quarter*a3*a3*a3) * R_inv_im;
       NT          D_re, D_im;
       const NT    E_square_re = D_square_re;
@@ -353,7 +353,7 @@ int _Ferrari_quartic_eq (const NT& a,
 // Solve the quadratic equation: a*x^2 + b*x + c = 0.
 // The function returns the number of distinct solutions.
 // The roots area must be at least of size 2.
-// 
+//
 template <class NT>
 int solve_quadratic_eq (const NT& a, const NT& b, const NT& c,
 			NT* roots, int* mults)
@@ -408,7 +408,7 @@ int solve_quadratic_eq (const NT& a, const NT& b, const NT& c,
 // Notice this is an auxiliary function (used only by solve_quartic_eq()).
 // The function returns the number of distinct solutions.
 // The roots area must be at least of size 3.
-// 
+//
 template <class NT>
 static int _solve_cubic_eq (const NT& _a, const NT& _b,
 			    const NT& _c, const NT& _d,
@@ -435,7 +435,7 @@ static int _solve_cubic_eq (const NT& _a, const NT& _b,
   const NT  d = _d/_a;
 
   // Check whether the equation has multiple roots.
-  // If we write: 
+  // If we write:
   //  p(x) = x^3 + b*x^2 + c*x + d = 0
   //
   // Then:
@@ -449,7 +449,7 @@ static int _solve_cubic_eq (const NT& _a, const NT& _b,
   static const NT _two = 2;
   static const NT _three = 3;
   static const NT _nine = 9;
-  
+
   const NT  A = _two*(c - b*b/_three)/_three;
   const NT  B = d - b*c/_nine;
 
@@ -457,7 +457,7 @@ static int _solve_cubic_eq (const NT& _a, const NT& _b,
   {
     // In case A,B == 0, then p'(x) divides p(x).
     // This means the equation has one solution with multiplicity of 3.
-    // We can obtain this root using the fact that -b is the sum of p(x)'s 
+    // We can obtain this root using the fact that -b is the sum of p(x)'s
     // roots.
     if (B == _zero)
     {
@@ -482,11 +482,11 @@ static int _solve_cubic_eq (const NT& _a, const NT& _b,
       return (2);
     }
   }
-      
+
   // If we reached here, we can be sure that there are no multiple roots.
   // We use Ferrari's method to approximate the solutions.
   APNT    app_roots[4];
- 
+
   n_approx = _Tartaglia_cubic_eq<APNT> (1,
 					TO_APNT(b),
 					TO_APNT(c),
@@ -507,9 +507,9 @@ static int _solve_cubic_eq (const NT& _a, const NT& _b,
 // Solve a quartic equation: _a*x^4 + _b*x^3 + _c*x^2 + _d*x + _e = 0.
 // The function returns the number of distinct solutions.
 // The roots area must be at least of size 4.
-// 
+//
 template <class NT>
-int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c, 
+int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
 		      const NT& _d, const NT& _e,
 		      NT* roots, int* mults,
 		      int& n_approx)
@@ -532,7 +532,7 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
 	  // with multiplicity of 4.
 	  if (_a == _zero)
 	    return (0);
-	  
+
 	  roots[0] = _zero;
 	  mults[0] = 4;
 	  return (1);
@@ -628,14 +628,14 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
 
   // Normalize the equation, so that the leading coefficient is 1 and we have:
   //  x^4 + b*x^3 + c*x^2 + d*x + e = 0
-  // 
+  //
   const NT b = _b/_a;
   const NT c = _c/_a;
   const NT d = _d/_a;
   const NT e = _e/_a;
 
   // Check whether the equation has multiple roots.
-  // If we write: 
+  // If we write:
   //  p(x) = x^4 + b*x^3 + c*x^2 + d*x + e = 0
   //
   // Then:
@@ -698,7 +698,7 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
     //  p'(x) mod (alpha*x^2 + beta*x + gamma) = A*x + B
     //
     // And so:
-    const NT A = _two*c - (_four*gamma + _three*b*beta)/alpha + 
+    const NT A = _two*c - (_four*gamma + _three*b*beta)/alpha +
                  _four*beta*beta/(alpha*alpha);
     const NT B = d - _three*b*gamma/alpha + _four*beta*gamma/(alpha*alpha);
 
@@ -709,12 +709,12 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
     {
       if (B == _zero)
       {
-	// There are two cases: 
-	// - If (alpha*x^2 + beta*x + gamma) has two distinct roots, that 
+	// There are two cases:
+	// - If (alpha*x^2 + beta*x + gamma) has two distinct roots, that
 	//   these roots are roots of p(x), each with multiplicity 2.
 	// - If there is one root x0, than this root is a root of p(x) with
-	//   multiplicity 3. The other root can be obtained using the fact  
-	//   that b = -(sum of p(x)'s roots).	
+	//   multiplicity 3. The other root can be obtained using the fact
+	//   that b = -(sum of p(x)'s roots).
 	int   m  = solve_quadratic_eq<NT> (alpha, beta, gamma,
 					   roots, mults);
 
@@ -749,13 +749,13 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
 
 	// The other two solutions are obtained from solving:
 	// p(x) / (x - x0)^2 = x^2 + (b + 2*x0)*x + (c + 2*b*x0 + 3*x0^2)
-	return (1 + 
+	return (1 +
 		solve_quadratic_eq<NT> (NT(1), b + 2*x0, c + x0*(2*b + 3*x0),
-					roots + 1, mults + 1));		
+					roots + 1, mults + 1));
       }
     }
   }
-  
+
   // Compute the number of real roots we should compute, using Sturm sequences.
   Polynom<NT>    p;
   p.set (4, _a);
@@ -767,7 +767,7 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
   Sturm_seq<NT>  sts (p);
   int            n_expected = sts.sign_changes_at_infinity(-1) -
                               sts.sign_changes_at_infinity(1);
- 
+
   // If we reached here, we can be sure that there are no multiple roots.
   // We use Ferrari's method to approximate the solutions.
   APNT           app_roots[4];
@@ -785,7 +785,7 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
 
     _eps *= 10;
   } while (n_approx != n_expected && _eps < 1);
-  
+
   CGAL_assertion(n_approx == n_expected);
 
   // Copy the approximations.
@@ -794,13 +794,13 @@ int solve_quartic_eq (const NT& _a, const NT& _b, const NT& _c,
     roots[i] = NT(app_roots[i]);
     mults[i] = 1;
   }
-    
+
   return (n_approx);
 }
 
 // ----------------------------------------------------------------------------
 // Find the GCD of the two given polynomials.
-// 
+//
 template <class NT>
 void _mod_polynomials (const NT* a_coeffs, const int& a_deg,
 		       const NT* b_coeffs, const int& b_deg,
@@ -909,7 +909,7 @@ void gcd_polynomials (const std::vector<NT>& a_coeffs, const int& a_deg,
 // ----------------------------------------------------------------------------
 // Check whether alpha is a root of the given polynomial p(x).
 // If so, compute: q(x) = p(x)/(x - alpha).
-// 
+//
 template <class NT>
 bool factor_root (const NT* p_coeffs, const int& p_deg,
 		  const NT& alpha,
@@ -924,7 +924,7 @@ bool factor_root (const NT* p_coeffs, const int& p_deg,
     q_coeffs[k-1] = coeff;
     coeff = p_coeffs[k-1] + alpha*coeff;
   }
-  
+
   if (coeff == _zero)
   {
     q_deg = p_deg - 1;
@@ -939,11 +939,11 @@ bool factor_root (const NT* p_coeffs, const int& p_deg,
 
 // ----------------------------------------------------------------------------
 // Check which one of the polynomial roots is greater than the other.
-// 
+//
 template <class NT>
-Comparison_result compare_roots (const std::vector<NT>& p1_coeffs, 
+Comparison_result compare_roots (const std::vector<NT>& p1_coeffs,
 				 const int& p1_deg,
-				 const NT& alpha1, const NT& delta1,  
+				 const NT& alpha1, const NT& delta1,
 				 const std::vector<NT>& p2_coeffs,
 				 const int& p2_deg,
 				 const NT& alpha2, const NT& delta2)
@@ -970,14 +970,14 @@ Comparison_result compare_roots (const std::vector<NT>& p1_coeffs,
     if (TO_APNT(p1_coeffs[i]) > max_coeff)
       max_coeff = TO_APNT(p1_coeffs[i]);
   }
-  
+
   for (i = p2_deg; i >= 0; i--)
   {
     p2.set (i, p2_coeffs[i]);
     if (TO_APNT(p2_coeffs[i]) > max_coeff)
       max_coeff = TO_APNT(p2_coeffs[i]);
   }
-  
+
   Sturm_seq<NT>  sts1 (p1);
   Sturm_seq<NT>  sts2 (p2);
 

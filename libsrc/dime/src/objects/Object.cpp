@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Object.cpp
  *
  *  This source file is part of DIME.
@@ -57,7 +57,7 @@
   Constructor.
 */
 
-dimeObject::dimeObject() 
+dimeObject::dimeObject()
   : dimeRecordHolder(0) // objects are separated by group code 0
 {
 }
@@ -86,18 +86,18 @@ dimeObject::copyRecords(dimeObject * const myobject, dimeModel * const model) co
   Writes common and unknown object records to file.
 */
 
-bool 
+bool
 dimeObject::write(dimeOutput * const file)
 {
   return dimeRecordHolder::write(file);
 }
 
 /*!
-  Static function which creates an object based on its name. 
+  Static function which creates an object based on its name.
 */
 
 dimeObject *
-dimeObject::createObject(const char * const name, 
+dimeObject::createObject(const char * const name,
 		      dimeMemHandler * const memhandler)
 {
   return new(memhandler) dimeUnknownObject(name, memhandler);
@@ -105,7 +105,7 @@ dimeObject::createObject(const char * const name,
 
 //!
 
-int 
+int
 dimeObject::countRecords() const
 {
   return dimeRecordHolder::countRecords();
@@ -113,7 +113,7 @@ dimeObject::countRecords() const
 
 //!
 
-bool 
+bool
 dimeObject::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeObjectType ||
@@ -127,7 +127,7 @@ dimeObject::isOfType(const int thetypeid) const
   \sa dimeObject::handleRecord().
 */
 
-bool 
+bool
 dimeObject::read(dimeInput * const file)
 {
   return dimeRecordHolder::read(file);
@@ -135,7 +135,7 @@ dimeObject::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeObject::handleRecord(const int /*groupcode*/,
 			const dimeParam &/*param*/,
 			dimeMemHandler * const /*memhandler*/)

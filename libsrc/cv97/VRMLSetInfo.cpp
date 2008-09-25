@@ -24,13 +24,13 @@ void AddSFColor(float color[3])
 		{
 			BackgroundNode *bg = (BackgroundNode *)GetCurrentNodeObject();
 			bg->addGroundColor(color);
-		}		
+		}
 	    break;
     case VRML_NODETYPE_BACKGROUND_SKYCOLOR:
 		{
 			BackgroundNode *bg = (BackgroundNode *)GetCurrentNodeObject();
 			bg->addSkyColor(color);
-		}		
+		}
 	    break;
 	case VRML_NODETYPE_INTERPOLATOR_KEYVALUE:
 		switch (GetPrevNodeType()) {
@@ -46,7 +46,7 @@ void AddSFColor(float color[3])
 }
 
 void AddSFRotation(float rotation[4])
-{	
+{
     switch (GetCurrentNodeType()) {
 	case VRML_NODETYPE_EXTRUSION_ORIENTATION:
 		{
@@ -67,7 +67,7 @@ void AddSFRotation(float rotation[4])
 }
 
 void AddSFVec3f(float vector[3])
-{	
+{
     switch (GetCurrentNodeType()) {
 	case VRML_NODETYPE_NORMAL:
 		{
@@ -111,7 +111,7 @@ void AddSFVec3f(float vector[3])
 }
 
 void AddSFVec2f(float vector[2])
-{	
+{
 	switch (GetCurrentNodeType()) {
 	case VRML_NODETYPE_TEXTURECOODINATE:
 		{
@@ -134,7 +134,7 @@ void AddSFVec2f(float vector[2])
 }
 
 void AddSFInt32(int	value)
-{	
+{
     switch (GetPrevNodeType()) {
     case VRML_NODETYPE_INDEXEDFACESET:
 		{
@@ -160,7 +160,7 @@ void AddSFInt32(int	value)
 			case VRML_NODETYPE_COORDINATE_INDEX:
 				idxLineSet->addCoordIndex(value); break;
 			}
-		}		
+		}
 		break;
     case VRML_NODETYPE_PIXELTEXTURE:
 		{
@@ -169,14 +169,14 @@ void AddSFInt32(int	value)
 			case VRML_NODETYPE_PIXELTEXTURE_IMAGE:
 				pixTexture->addImage(value); break;
 			}
-		}	
+		}
 		break;
     }
 
 }
 
 void AddSFFloat(float value)
-{	
+{
     switch (GetCurrentNodeType()) {
 	case VRML_NODETYPE_ELEVATIONGRID_HEIGHT:
 		{
@@ -188,13 +188,13 @@ void AddSFFloat(float value)
 		{
 			BackgroundNode *bg = (BackgroundNode *)GetCurrentNodeObject();
 			bg->addGroundAngle(value);
-		}		
+		}
 	    break;
     case VRML_NODETYPE_BACKGROUND_SKYANGLE:
 		{
 			BackgroundNode *bg = (BackgroundNode *)GetCurrentNodeObject();
 			bg->addSkyAngle(value);
-		}		
+		}
 	    break;
 	case VRML_NODETYPE_INTERPOLATOR_KEY:
 		switch (GetPrevNodeType()) {
@@ -268,7 +268,7 @@ void AddSFFloat(float value)
 
 
 void AddSFString(char *string)
-{	
+{
 	switch (GetCurrentNodeType()) {
 	case VRML_NODETYPE_ANCHOR_PARAMETER:
 		{

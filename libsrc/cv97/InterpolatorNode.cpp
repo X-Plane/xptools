@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "InterpolatorNode.h"
 
-InterpolatorNode::InterpolatorNode() 
+InterpolatorNode::InterpolatorNode()
 {
 	// key exposed field
 	keyField = new MFFloat();
@@ -22,7 +22,7 @@ InterpolatorNode::InterpolatorNode()
 	addEventIn(fractionFieldString, fractionField);
 }
 
-InterpolatorNode::~InterpolatorNode() 
+InterpolatorNode::~InterpolatorNode()
 {
 }
 
@@ -36,18 +36,18 @@ MFFloat *InterpolatorNode::getKeyField()
 		return keyField;
 	return (MFFloat *)getExposedField(keyFieldString);
 }
-	
-void InterpolatorNode::addKey(float value) 
+
+void InterpolatorNode::addKey(float value)
 {
 	getKeyField()->addValue(value);
 }
 
-int InterpolatorNode::getNKeys() 
+int InterpolatorNode::getNKeys()
 {
 	return getKeyField()->getSize();
 }
 
-float InterpolatorNode::getKey(int index) 
+float InterpolatorNode::getKey(int index)
 {
 	return getKeyField()->get1Value(index);
 }
@@ -63,13 +63,13 @@ SFFloat *InterpolatorNode::getFractionField()
 		return fractionField;
 	return (SFFloat *)getEventIn(fractionFieldString);
 }
-	
-void InterpolatorNode::setFraction(float value) 
+
+void InterpolatorNode::setFraction(float value)
 {
 	getFractionField()->setValue(value);
 }
 
-float InterpolatorNode::getFraction() 
+float InterpolatorNode::getFraction()
 {
 	return getFractionField()->getValue();
 }

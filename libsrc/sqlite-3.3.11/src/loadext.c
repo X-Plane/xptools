@@ -225,7 +225,7 @@ const sqlite3_api_routines sqlite3_apis = {
 **
 ** Return SQLITE_OK on success and SQLITE_ERROR if something goes wrong.
 **
-** If an error occurs and pzErrMsg is not 0, then fill *pzErrMsg with 
+** If an error occurs and pzErrMsg is not 0, then fill *pzErrMsg with
 ** error message text.  The calling function should free this memory
 ** by calling sqlite3_free().
 */

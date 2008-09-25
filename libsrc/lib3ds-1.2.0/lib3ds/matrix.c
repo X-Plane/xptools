@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -73,14 +73,14 @@ lib3ds_matrix_identity(Lib3dsMatrix m)
 void
 lib3ds_matrix_copy(Lib3dsMatrix dest, Lib3dsMatrix src)
 {
-  memcpy(dest, src, sizeof(Lib3dsMatrix)); 
+  memcpy(dest, src, sizeof(Lib3dsMatrix));
 }
 
 
 /*!
  * \ingroup matrix
  */
-void 
+void
 lib3ds_matrix_neg(Lib3dsMatrix m)
 {
   int i,j;
@@ -96,7 +96,7 @@ lib3ds_matrix_neg(Lib3dsMatrix m)
 /*!
  * \ingroup matrix
  */
-void 
+void
 lib3ds_matrix_abs(Lib3dsMatrix m)
 {
   int i,j;
@@ -198,7 +198,7 @@ lib3ds_matrix_scalar(Lib3dsMatrix m, Lib3dsFloat k)
 static Lib3dsFloat
 det2x2(
   Lib3dsFloat a, Lib3dsFloat b,
-  Lib3dsFloat c, Lib3dsFloat d) 
+  Lib3dsFloat c, Lib3dsFloat d)
 {
   return((a)*(d)-(b)*(c));
 }
@@ -297,16 +297,16 @@ lib3ds_matrix_adjoint(Lib3dsMatrix m)
 /*!
  * \ingroup matrix
  *
- * GGemsII, K.Wu, Fast Matrix Inversion 
+ * GGemsII, K.Wu, Fast Matrix Inversion
  */
 Lib3dsBool
 lib3ds_matrix_inv(Lib3dsMatrix m)
-{                          
-  int i,j,k;               
+{
+  int i,j,k;
   int pvt_i[4], pvt_j[4];            /* Locations of pivot elements */
   Lib3dsFloat pvt_val;               /* Value of current pivot element */
   Lib3dsFloat hold;                  /* Temporary storage */
-  Lib3dsFloat determinat;            
+  Lib3dsFloat determinat;
 
   determinat = 1.0f;
   for (k=0; k<4; k++)  {
@@ -326,7 +326,7 @@ lib3ds_matrix_inv(Lib3dsMatrix m)
 
     /* Product of pivots, gives determinant when finished */
     determinat*=pvt_val;
-    if (fabs(determinat)<LIB3DS_EPSILON) {    
+    if (fabs(determinat)<LIB3DS_EPSILON) {
       return(LIB3DS_FALSE);  /* Matrix is singular (zero determinant) */
     }
 
@@ -349,10 +349,10 @@ lib3ds_matrix_inv(Lib3dsMatrix m)
         m[i][j]=hold;
       }
     }
-    
+
     /* Divide column by minus pivot value */
     for (i=0; i<4; i++) {
-      if (i!=k) m[i][k]/=( -pvt_val) ; 
+      if (i!=k) m[i][k]/=( -pvt_val) ;
     }
 
     /* Reduce the matrix */
@@ -392,7 +392,7 @@ lib3ds_matrix_inv(Lib3dsMatrix m)
       m[i][j]=hold;
     }
   }
-  return(LIB3DS_TRUE);                          
+  return(LIB3DS_TRUE);
 }
 
 
@@ -403,7 +403,7 @@ void
 lib3ds_matrix_translate_xyz(Lib3dsMatrix m, Lib3dsFloat x, Lib3dsFloat y, Lib3dsFloat z)
 {
   int i;
-  
+
   for (i=0; i<3; i++) {
     m[3][i]+= m[0][i]*x + m[1][i]*y + m[2][i]*z;
   }
@@ -417,7 +417,7 @@ void
 lib3ds_matrix_translate(Lib3dsMatrix m, Lib3dsVector t)
 {
   int i;
-  
+
   for (i=0; i<3; i++) {
     m[3][i]+= m[0][i]*t[0] + m[1][i]*t[1] + m[2][i]*t[2];
   }
@@ -512,7 +512,7 @@ lib3ds_matrix_rotate_z(Lib3dsMatrix m, Lib3dsFloat phi)
 {
   Lib3dsFloat SinPhi,CosPhi;
   Lib3dsFloat a0[4],a1[4];
-  
+
   SinPhi=(Lib3dsFloat)sin(phi);
   CosPhi=(Lib3dsFloat)cos(phi);
   memcpy(a0,m[0],4*sizeof(Lib3dsFloat));
@@ -575,7 +575,7 @@ void
 lib3ds_matrix_rotate_axis(Lib3dsMatrix m, Lib3dsVector axis, Lib3dsFloat angle)
 {
   Lib3dsQuat q;
-  
+
   lib3ds_quat_axis_angle(q,axis,angle);
   lib3ds_matrix_rotate(m,q);
 }
@@ -593,11 +593,11 @@ lib3ds_matrix_camera(Lib3dsMatrix matrix, Lib3dsVector pos,
 
   lib3ds_vector_sub(y, tgt, pos);
   lib3ds_vector_normalize(y);
-  
+
   z[0] = 0;
   z[1] = 0;
   z[2] = 1.0;
-  
+
   lib3ds_vector_cross(x, y, z);
   lib3ds_vector_cross(z, x, y);
   lib3ds_vector_normalize(x);

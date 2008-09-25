@@ -22,7 +22,7 @@ class ProximitySensorNode : public SensorNode {
 	SFTime *enterTimeField;
 	SFTime *exitTimeField;
 	SFBool *inRegionField;
-	
+
 public:
 
 	ProximitySensorNode();
@@ -33,7 +33,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFVec3f *getCenterField();
-	
+
 	void setCenter(float value[]);
 	void setCenter(float x, float y, float z);
 	void getCenter(float value[]);
@@ -43,7 +43,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFVec3f *getSizeField();
-	
+
 	void setSize(float value[]);
 	void setSize(float x, float y, float z);
 	void getSize(float value[]);
@@ -53,7 +53,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFVec3f *getPositionChangedField();
-	
+
 	void setPositionChanged(float value[]);
 	void setPositionChanged(float x, float y, float z);
 	void getPositionChanged(float value[]);
@@ -63,7 +63,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFRotation *getOrientationChangedField();
-	
+
 	void setOrientationChanged(float value[]);
 	void setOrientationChanged(float x, float y, float z, float rot);
 	void getOrientationChanged(float value[]);
@@ -71,7 +71,7 @@ public:
 	////////////////////////////////////////////////
 	//	EnterTime
 	////////////////////////////////////////////////
-	
+
 	SFTime *getEnterTimeField();
 
 	void setEnterTime(double value);
@@ -82,7 +82,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFTime *getExitTimeField();
-	
+
 	void setExitTime(double value);
 	double getExitTime();
 
@@ -105,7 +105,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

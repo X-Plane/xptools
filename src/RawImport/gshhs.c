@@ -1,4 +1,4 @@
-/*	
+/*
 
  *
 
@@ -84,7 +84,7 @@ bool	HandleSeg(Pmwx& inMap, double clip[4], const Point2& p1, const Point2& p2)
 
 	if (p1.y > clip[3] && p2.y > clip[3]) return false;
 
-	
+
 
 	inMap.insert_edge(p1, p2, NULL, NULL);
 
@@ -102,7 +102,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 	outMap.clear();
 
-	
+
 
 	double w, e, s, n, area, lon, lat;
 
@@ -116,7 +116,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 	struct GSHHS h;
 
-        
+
 
 	if ((fp = fopen (inFile, "rb")) == NULL ) {
 
@@ -126,25 +126,25 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 	}
 
-		
+
 
 	n_read = fread ((void *)&h, (size_t)sizeof (struct GSHHS), (size_t)1, fp);
 
 	flip = (! (h.level > 0 && h.level < 5));	/* Take as sign that byte-swabbing is needed */
 
-	
+
 
 	// The face stack - GSHHS faces are embedded in containing order, so keep track of who is embedded in what.
 
-	
+
 
 	int tot = 0, keep = 0;
 
-	
+
 
 	while (n_read == 1) {
 
-	
+
 
 		if (flip) {
 
@@ -192,7 +192,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 //		me->mTerrainType = ((h.level % 2) == 1) ? terrain_Natural : terrain_Water;
 
-	
+
 
 		if (h.n < 3)
 
@@ -202,7 +202,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 			return false;
 
-			
+
 
 		}
 
@@ -210,7 +210,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 		Point2	last, now, orig;
 
-	
+
 
 		for (k = 0; k < h.n; k++) {
 
@@ -238,11 +238,11 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 //			printf ("%10.5f%9.5f\n", lon, lat);
 
-			
 
-			now = Point2(lon, lat);	
 
-			if (now.x > 180.0) now.x -= 360.0;		
+			now = Point2(lon, lat);
+
+			if (now.x > 180.0) now.x -= 360.0;
 
 			if (k > 0)
 
@@ -258,7 +258,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 			}
 
-			
+
 
 			last = now;
 
@@ -278,11 +278,11 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 	}
 
-		
+
 
 	fclose (fp);
 
-	
+
 
 	printf("Read %d points, used %d points, map has %d halfedges\n", tot, keep, outMap.number_of_halfedges());
 

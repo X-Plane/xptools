@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -36,9 +36,9 @@ class sb_Spatial
 {
    public:
 
-      sb_Spatial( sc_Subfield::SubfieldType st = sc_Subfield::is_I ) 
-         : x_( "X", "" ), 
-           y_( "Y", "" ), 
+      sb_Spatial( sc_Subfield::SubfieldType st = sc_Subfield::is_I )
+         : x_( "X", "" ),
+           y_( "Y", "" ),
            default_subfield_type_( st )
       {
          x_.setUnvalued();
@@ -46,16 +46,16 @@ class sb_Spatial
          z_.setUnvalued();
       }
 
-      sb_Spatial( sc_Subfield const & x, 
-                  sc_Subfield const & y ) 
+      sb_Spatial( sc_Subfield const & x,
+                  sc_Subfield const & y )
          : x_( x ), y_( y ), default_subfield_type_( x.getSubfieldType() )
       {}
 
 
-      sb_Spatial( sc_Subfield const & x, 
-                  sc_Subfield const & y, 
-                  sc_Subfield const & z ) 
-         : x_( x ), y_( y ), z_( z ), 
+      sb_Spatial( sc_Subfield const & x,
+                  sc_Subfield const & y,
+                  sc_Subfield const & z )
+         : x_( x ), y_( y ), z_( z ),
            default_subfield_type_( x.getSubfieldType() )
       {}
 
@@ -434,7 +434,7 @@ class sb_Spatial
 
       ///
       sc_Subfield const & z() const { return z_; }
-      
+
       ///
       sc_Subfield& x()       { return x_; }
 
@@ -469,7 +469,7 @@ class sb_Spatial
          \todo XXX The problem with this, of course, is that it presumes that both the X, Y, and Z coordinates will use the same representation; which, to be fair, is probably the case for (X,Y), and "Z" is never used.
       */
       sc_Subfield::SubfieldType default_subfield_type_;
-      
+
 }; // class sb_Spatial
 
 
@@ -478,7 +478,7 @@ typedef std::deque<sb_Spatial> sb_Spatials;
 
 
 inline
-std::ostream & 
+std::ostream &
 operator<<( std::ostream & os, sb_Spatial const & spatial )
 {
    os << "("

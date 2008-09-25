@@ -19,19 +19,19 @@
 // $Revision: 1.8 $ $Date: 2003/10/21 12:26:04 $
 // $Name: current_submission $
 //
-// Author(s)     : 
+// Author(s)     :
 
 #ifndef CGAL_ITER_VC7
 #define CGAL_ITER_VC7
 #include <iterator>
 #include <CGAL/config/msvc7/stl_iterator_base.h>
 namespace std {
-  
+
   // af: added the following:
   struct iterator_traits<unsigned int> {
     typedef _Int_iterator_tag iterator_category;
   };
-  
+
 
 template<class C__> inline
 typename iterator_traits<C__>::iterator_category
@@ -41,7 +41,7 @@ _Iter_cat(const C__&)
     return c();
   }
 
-template <class _Iter> inline 
+template <class _Iter> inline
 typename iterator_traits<_Iter>::difference_type*
   _Dist_type(const _Iter&)
   {
@@ -50,7 +50,7 @@ typename iterator_traits<_Iter>::difference_type*
   }
 
 
-template <class _Iter> inline 
+template <class _Iter> inline
 typename iterator_traits<_Iter>::value_type*
   _Val_type(const _Iter&)
 {

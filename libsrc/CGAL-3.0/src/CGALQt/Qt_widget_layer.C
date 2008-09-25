@@ -56,7 +56,7 @@ namespace CGAL {
       emit(deactivated(this));
       return true;
     }
-      
+
   }
 } // namespace CGAL
 

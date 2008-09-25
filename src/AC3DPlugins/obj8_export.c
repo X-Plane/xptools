@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -154,7 +154,7 @@ void obj8_output_polyline(XObjBuilder * builder, Surface *s)
 
 		ds1[0] = p1->x;	ds1[1] = p1->y;	ds1[2] = p1->z;
 		ds1[6] = p2->x;	ds1[7] = p2->y;	ds1[8] = p2->z;
-		
+
 		builder->AccumLine(ds1);
 	}
 
@@ -165,9 +165,9 @@ void obj8_output_polyline(XObjBuilder * builder, Surface *s)
 
 		ds1[0] = p1->x;	ds1[1] = p1->y;	ds1[2] = p1->z;
 		ds1[6] = p2->x;	ds1[7] = p2->y;	ds1[8] = p2->z;
-		
+
 		builder->AccumLine(ds1);
-	}		
+	}
 }
 
 void obj8_output_polygon(XObjBuilder * builder, Surface *s)
@@ -177,7 +177,7 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 
 	bool	is_two_sided = surface_get_twosided(s);
 	bool	is_smooth = surface_get_shading(s);
-	
+
 	if (OBJ_get_use_materials(object_of_surface(s)))
 	{
 		ACMaterial * mat = ac_palette_get_material(s->col);
@@ -197,13 +197,13 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 			if (ac_entity_get_rgb_value((ACEntity*) mat, "specular", &spec))
 			{
 				builder->SetAttribute1(attr_Shiny_Rat,(spec.r + spec.g + spec.b) / 3.0);
-			}			
+			}
 		}
-		
+
 	} else
 		builder->SetAttribute(attr_Reset);
-	
-	
+
+
 	builder->SetAttribute(is_two_sided ? attr_NoCull : attr_Cull);
 //	builder->SetAttribute(is_smooth ? attr_Shade_Smooth : attr_Shade_Flat);
 	// Ben says: smooth flag sets normals basde on face - no need to set flat shading!
@@ -231,7 +231,7 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 
 		for (t = slist; t != NULL; t = t->next)
 		{
-			obj8_output_triangle(builder, (Surface *)t->data, is_smooth); 
+			obj8_output_triangle(builder, (Surface *)t->data, is_smooth);
 			surface_free((Surface *)t->data);
 		}
 		list_free(&slist);
@@ -246,31 +246,31 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 
 	char lname[256], lref[256];
 	OBJ_get_light_named(obj, lname);
-	
+
 	if (lname[0] == 0) return;
 
 		 if (strcmp(lname,"rgb")==0)
 	{
-		float	dat[6] = { xyz.x, xyz.y, xyz.z, 
+		float	dat[6] = { xyz.x, xyz.y, xyz.z,
 			OBJ_get_light_red  (obj),
 			OBJ_get_light_green(obj),
 			OBJ_get_light_blue (obj) };
-		builder->AccumLight(dat);	
+		builder->AccumLight(dat);
 	}
 	else if (strcmp(lname,"custom")==0)
 	{
 		float params[9] = {
-			OBJ_get_light_red  (obj), 
-			OBJ_get_light_green(obj), 
-			OBJ_get_light_blue (obj), 
-			OBJ_get_light_alpha(obj), 
-			OBJ_get_light_size (obj), 
-			OBJ_get_light_s1   (obj), 
-			OBJ_get_light_t1   (obj), 
-			OBJ_get_light_s2   (obj), 
+			OBJ_get_light_red  (obj),
+			OBJ_get_light_green(obj),
+			OBJ_get_light_blue (obj),
+			OBJ_get_light_alpha(obj),
+			OBJ_get_light_size (obj),
+			OBJ_get_light_s1   (obj),
+			OBJ_get_light_t1   (obj),
+			OBJ_get_light_s2   (obj),
 			OBJ_get_light_t2   (obj) };
 		OBJ_get_light_dataref(obj,lref);
-		builder->AccumLightCustom(pos, params, lref);	
+		builder->AccumLightCustom(pos, params, lref);
 	}
 	else if (strcmp(lname,"white smoke")==0)
 	{
@@ -282,8 +282,8 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 	}
 	else
 	{
-		builder->AccumLightNamed(pos, lname);	
-	}	
+		builder->AccumLightNamed(pos, lname);
+	}
 }
 
 
@@ -291,7 +291,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 {
 	char  buf[1024];
 	if (!ac_object_is_visible(obj)) return;
-	
+
 		int 	numvert, numsurf, numkids;
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
@@ -299,7 +299,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 //    printf("outputing %s\n", ac_object_get_name(obj));
 
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
+        &vertices, &surfaces, &kids);
 
 	float	lod_start = OBJ_get_LOD_near(obj);
 	float   lod_end = OBJ_get_LOD_far(obj);
@@ -308,44 +308,44 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		builder->EndLOD();
 		builder->BeginLOD(lod_start, lod_end);
 	}
-	
+
 	if (OBJ_get_layer_group(obj, buf))
 	{
 		if (buf[0] != 0 && strcmp(buf,"none"))
-		builder->SetAttribute1Named(attr_Layer_Group, OBJ_get_layer_group_offset(obj), buf);		
+		builder->SetAttribute1Named(attr_Layer_Group, OBJ_get_layer_group_offset(obj), buf);
 	}
-	
+
 	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimBegin();
 	}
-	
+
 	char dref[256];
 	float xyz1[3];
 	float xyz2[3];
 	int k;
-	
+
 	switch(OBJ_get_anim_type(obj)) {
 	case anim_rotate:
 		builder->AccumTranslate(
 			center_for_rotation(obj, xyz2),
 			center_for_rotation(obj, xyz2),
-			0.0, 0.0, "none");	
-		builder->AccumRotateBegin(axis_for_rotation(obj,xyz1), 
+			0.0, 0.0, "none");
+		builder->AccumRotateBegin(axis_for_rotation(obj,xyz1),
 							OBJ_get_anim_dataref(obj, dref));
 		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 			builder->AccumRotateKey(OBJ_get_anim_nth_value(obj, k),
 									OBJ_get_anim_nth_angle(obj, k));
-		builder->AccumRotateEnd();							
+		builder->AccumRotateEnd();
 		builder->AccumTranslate(
 			center_for_rotation_negative(obj, xyz2),
 			center_for_rotation_negative(obj, xyz2),
-			0.0, 0.0, "none");	
+			0.0, 0.0, "none");
 		break;
 	case anim_trans:
 		{
 			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
-			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)		
+			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 				builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
 											anim_trans_nth_relative(obj, k, xyz1));
 			builder->AccumTranslateEnd();
@@ -353,26 +353,26 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		break;
 	case anim_static:
 		builder->AccumTranslate(
-							anim_trans_nth(obj,0,xyz1), 
-							anim_trans_nth(obj,1,xyz2), 
+							anim_trans_nth(obj,0,xyz1),
+							anim_trans_nth(obj,1,xyz2),
 							OBJ_get_anim_nth_value(obj,0),
 							OBJ_get_anim_nth_value(obj,1),
-							OBJ_get_anim_dataref(obj, dref));							
+							OBJ_get_anim_dataref(obj, dref));
 		break;
 	case anim_show:
 		builder->AccumShow(
 							OBJ_get_anim_nth_value(obj,0),
 							OBJ_get_anim_nth_value(obj,1),
-							OBJ_get_anim_dataref(obj, dref));							
+							OBJ_get_anim_dataref(obj, dref));
 		break;
 	case anim_hide:
 		builder->AccumHide(
 							OBJ_get_anim_nth_value(obj,0),
 							OBJ_get_anim_nth_value(obj,1),
-							OBJ_get_anim_dataref(obj, dref));							
+							OBJ_get_anim_dataref(obj, dref));
 		break;
 	case anim_none:
-		{	
+		{
 			float now_poly_os, now_blend;
 
 			now_poly_os = OBJ_get_poly_os(obj);						//  pull_int_attr_recursive(obj, "_POLY_OS=",0,root);
@@ -396,9 +396,9 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			bool bad_obj = false;
 			int panel_reg;
 			int has_real_tex = 0;
-			
+
 			if (ac_object_has_texture(obj))
-			{	
+			{
 				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
 				gHasTexNow = true;
 //				has_panel = strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel.") != NULL;
@@ -420,14 +420,14 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 						gErrDoubleTex = true;
 						list_add_item_head(&gBadObjects, obj);
 						bad_obj = true;
-					} 
+					}
 					gTexName = tex;
 				}
 			} else {
 				builder->SetAttribute(attr_Tex_Normal);
 				gHasTexNow = false;
 			}
-			
+
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
 
 			builder->SetTexRepeatParams(
@@ -435,7 +435,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				ac_object_get_texture_repeat_y(obj),
 				ac_object_get_texture_offset_x(obj),
 				ac_object_get_texture_offset_y(obj));
-				
+
 			int no_tex_count = gErrMissingTex;
 			for (p = surfaces; p != NULL; p = p->next)
 			{
@@ -449,13 +449,13 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 						obj8_output_polyline(builder, s);
 				}
 			}
-			
+
 			if (no_tex_count < gErrMissingTex && !bad_obj)
 				list_add_item_head(&gBadObjects, obj);
 		}
 		break;
 	}
-	
+
 	if (ac_entity_is_class(obj, AC_CLASS_LIGHT))
 	if (do_misc)
 	{
@@ -467,7 +467,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
     	ACObject * child = (ACObject *)p->data;
 	        obj8_output_object(builder, child, root, tex_id, do_misc);
 	}
-	
+
 	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimEnd();
@@ -478,8 +478,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefix, int tex_id, int do_misc)
 {
 	XObj8	obj8;
-	
-	obj8.lods.clear();	
+
+	obj8.lods.clear();
 	obj8.indices.clear();
 	obj8.texture.clear();
 	obj8.animation.clear();
@@ -487,7 +487,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	obj8.geo_lines.clear(6);
 	obj8.geo_lights.clear(6);
 	obj8.texture_lit.clear();
-	
+
 	gTexName.clear();
 	gErrMissingTex = 0;
 	gHasTexNow = false;
@@ -503,7 +503,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
 
     obj8_output_object(&builder, obj, obj, tex_id, do_misc);
-    
+
 	if (get_default_LOD() > 0.0f)
 	if (obj8.lods.size() == 1 && obj8.lods.front().lod_far == 0.0)
 	{
@@ -512,9 +512,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	}
 
 	// Texture path.  Ben says: users want the texture path to be relative to the ac3d file.  Doable I suppose.
-	
+
 	// tcl_get_string("acfilename")
-		
+
 	string export_path(fname);
 	string::size_type export_filename_idx, tex_dir_idx;
 	export_filename_idx = export_path.find_last_of("\\/");
@@ -536,9 +536,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	if (tex_dir_idx != gTexName.npos)
 	gTexName.erase(0,tex_dir_idx+1);
     obj8.texture = gTexName;
-	
+
 	if (!obj8.texture.empty())		obj8.texture.insert(0,get_texture_prefix());
-	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());			
+	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());
 
 	if (do_prefix)
 		export_path.insert(export_filename_idx+1,string(get_export_prefix()));
@@ -562,14 +562,14 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
-		
+
 	} else {
 		if (!XObj8Write(export_path.c_str(), obj8))
 	    {
 	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
-	}    
+	}
     if (gErrMissingTex)
     	message_dialog("Warning: %d objects did not have textures assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
@@ -579,13 +579,13 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
     	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");
    if (gErrBadHard && convert)
     	message_dialog("This model has non-quad surfaces that rae marked as hard.  Only quad surfaces may be hard in OBJ7.");
- 
+
    if (gBadSurfaces)
     {
-    	if (convert) {    	
+    	if (convert) {
 			clear_selection();
 			ac_selection_select_surfacelist(gBadSurfaces);
-			redraw_all();    	
+			redraw_all();
 		}
 		list_free(&gBadSurfaces);
 		gBadSurfaces = NULL;
@@ -596,9 +596,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 		ac_selection_select_objectlist(gBadObjects);
 		list_free(&gBadObjects);
 		gBadObjects = NULL;
-		redraw_all();    	
+		redraw_all();
     }
-    
+
     return 1;
 }
 

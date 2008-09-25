@@ -10,68 +10,68 @@
 
 #include "MFColor.h"
 
-MFColor::MFColor() 
+MFColor::MFColor()
 {
 	setType(fieldTypeMFColor);
 	InitializeJavaIDs();
 }
 
-void MFColor::InitializeJavaIDs() 
+void MFColor::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFColor::addValue(float r, float g, float b) 
+void MFColor::addValue(float r, float g, float b)
 {
 	SFColor *color = new SFColor(r, g, b);
 	add(color);
 }
 
-void MFColor::addValue(float value[]) 
+void MFColor::addValue(float value[])
 {
 	SFColor *color = new SFColor(value);
 	add(color);
 }
 
-void MFColor::addValue(SFColor *color) 
+void MFColor::addValue(SFColor *color)
 {
 	add(color);
 }
 
-void MFColor::insertValue(int index, float r, float g, float b) 
+void MFColor::insertValue(int index, float r, float g, float b)
 {
 	SFColor *color = new SFColor(r, g, b);
 	insert(color, index);
 }
 
-void MFColor::insertValue(int index, float value[]) 
+void MFColor::insertValue(int index, float value[])
 {
 	SFColor *color = new SFColor(value);
 	insert(color, index);
 }
 
-void MFColor::insertValue(int index, SFColor *color) 
+void MFColor::insertValue(int index, SFColor *color)
 {
 	insert(color, index);
 }
 
-void MFColor::get1Value(int index, float value[]) 
+void MFColor::get1Value(int index, float value[])
 {
 	SFColor *color = (SFColor *)getObject(index);
 	if (color)
 		color->getValue(value);
 }
 
-void MFColor::set1Value(int index, float value[]) 
+void MFColor::set1Value(int index, float value[])
 {
 	SFColor *color = (SFColor *)getObject(index);
 	if (color)
 		color->setValue(value);
 }
 
-void MFColor::set1Value(int index, float r, float g, float b) 
+void MFColor::set1Value(int index, float r, float g, float b)
 {
 	SFColor *color = (SFColor *)getObject(index);
 	if (color)
@@ -108,14 +108,14 @@ void MFColor::setValue(int size, float colors[][3])
 //	Output
 ////////////////////////////////////////////////
 
-void MFColor::outputContext(ostream& printStream, char *indentString) 
+void MFColor::outputContext(ostream& printStream, char *indentString)
 {
 	float value[3];
 	for (int n=0; n<getSize(); n++) {
 		get1Value(n, value);
 		if (n < getSize()-1)
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << "," << endl;
-		else	
+		else
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << endl;
 	}
 }
@@ -222,7 +222,7 @@ void MFColor::setJavaIDs() {
 //	MFColor.cpp::toJavaObject
 ////////////////////////////////////////////////
 
-jobject MFColor::toJavaObject(int bConstField) 
+jobject MFColor::toJavaObject(int bConstField)
 {
 	JNIEnv		*jniEnv			= getJniEnv();
 	jclass		classid			= bConstField ? getConstFieldID() : getFieldID();
@@ -238,7 +238,7 @@ jobject MFColor::toJavaObject(int bConstField)
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		float value[3];
@@ -256,7 +256,7 @@ jobject MFColor::toJavaObject(int bConstField)
 //	MFColor::setValue
 ////////////////////////////////////////////////
 
-void MFColor::setValue(jobject field, int bConstField) 
+void MFColor::setValue(jobject field, int bConstField)
 {
 	assert(field);
 	JNIEnv		*jniEnv			= getJniEnv();
@@ -267,7 +267,7 @@ void MFColor::setValue(jobject field, int bConstField)
 
 	jfloatArray valueArray = jniEnv->NewFloatArray(3);
     jfloat		value[3];
-	
+
 	jint	jsize	= jniEnv->CallIntMethod(field, getSizeMethod);
 	int		size	= getSize();
 

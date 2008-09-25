@@ -30,7 +30,7 @@
 #include <CGAL/Nef_2/debug.h>
 
 #ifndef CGAL_USE_LEDA
-#define LEDA_MEMORY(t) 
+#define LEDA_MEMORY(t)
 #endif
 
 CGAL_BEGIN_NAMESPACE
@@ -42,22 +42,22 @@ struct PMO_from_segs {
   typedef typename Decorator::Halfedge_handle Halfedge_handle;
   typedef typename Decorator::Point           Point;
   const Decorator& G;
-  DA& D; 
-  PMO_from_segs(const Decorator& Gi, DA& Di) : 
+  DA& D;
+  PMO_from_segs(const Decorator& Gi, DA& Di) :
     G(Gi),D(Di) {}
 
   Vertex_handle new_vertex(const Point& p)
-  { Vertex_handle v = G.new_vertex(p); 
+  { Vertex_handle v = G.new_vertex(p);
     geninfo<Halfedge_handle>::create(G.info(v));
     return v;
   }
 
-  void link_as_target_and_append(Vertex_handle v, Halfedge_handle e) 
+  void link_as_target_and_append(Vertex_handle v, Halfedge_handle e)
   { G.link_as_target_and_append(v,e); }
 
   Halfedge_handle new_halfedge_pair_at_source(Vertex_handle v)
-  { Halfedge_handle e = 
-    G.new_halfedge_pair_at_source(v,Decorator::BEFORE); 
+  { Halfedge_handle e =
+    G.new_halfedge_pair_at_source(v,Decorator::BEFORE);
     return e;
   }
 
@@ -105,10 +105,10 @@ struct PMO_from_pm {
   const Decorator& G;
   const Const_decorator* pGI[2];
   CGAL::Unique_hash_map<IT,INFO>& M;
-  PMO_from_pm(const Decorator& Gi, 
-              const Const_decorator* pG0, 
+  PMO_from_pm(const Decorator& Gi,
+              const Const_decorator* pG0,
               const Const_decorator* pG1,
-              CGAL::Unique_hash_map<IT,INFO>& Mi) : G(Gi),M(Mi) 
+              CGAL::Unique_hash_map<IT,INFO>& Mi) : G(Gi),M(Mi)
  { pGI[0]=pG0; pGI[1]=pG1; }
 
  Vertex_handle new_vertex(const Point& p) const
@@ -121,8 +121,8 @@ struct PMO_from_pm {
  { G.link_as_target_and_append(v,e); }
 
  Halfedge_handle new_halfedge_pair_at_source(Vertex_handle v) const
- { Halfedge_handle e = 
-   G.new_halfedge_pair_at_source(v,Decorator::BEFORE); 
+ { Halfedge_handle e =
+   G.new_halfedge_pair_at_source(v,Decorator::BEFORE);
    G.assoc_info(e);
    return e;
  }
@@ -141,7 +141,7 @@ struct PMO_from_pm {
  void trivial_segment(Vertex_handle v, IT it) const
  { INFO& si = M[it];
    CGAL_assertion( si.v != Vertex_const_handle() );
-   G.supp_vertex(v,si.i) = si.v; 
+   G.supp_vertex(v,si.i) = si.v;
  }
 
  void starting_segment(Vertex_handle v, IT it) const
@@ -156,7 +156,7 @@ struct PMO_from_pm {
 
  void passing_segment(Vertex_handle v, IT it) const
  { INFO& si = M[it];
-   G.supp_halfedge(v,si.i) = si.e; 
+   G.supp_halfedge(v,si.i) = si.e;
  }
 
  Halfedge_handle halfedge_below(Vertex_handle v) const
@@ -165,8 +165,8 @@ struct PMO_from_pm {
 
 }; // PMO_from_pm
 
-/*{\Moptions print_title=yes }*/ 
-/*{\Msubst 
+/*{\Moptions print_title=yes }*/
+/*{\Msubst
 PM_decorator_#PMD
 Geometry_#GEO
 }*/
@@ -188,7 +188,7 @@ to different scenarios.  The template parameter |PM_decorator_| has to
 be a model conforming to our plane map decorator concept
 |PMDecorator|.  The concept describes the interface how the
 topological information stored in |P| can be extracted.  The geometry
-|Geometry_| has to be a model conforming to the concept 
+|Geometry_| has to be a model conforming to the concept
 |OverlayerGeometry_2|.
 
 The overlay of a set of segments $S$ is stored in a plane map $P =
@@ -243,7 +243,7 @@ public:
   typedef Geometry_                     Geometry;
   /*{\Mtypemember the geometry kernel |Geometry_|.}*/
   typedef typename Geometry::Point_2    Point;
-  /*{\Mtypemember the point type of the geometric kernel, 
+  /*{\Mtypemember the point type of the geometric kernel,
      \precond |Point| equals |Plane_map::Point|.}*/
   typedef typename Geometry::Segment_2  Segment;
   /*{\Mtypemember the segment type of the geometric kernel.}*/
@@ -264,9 +264,9 @@ public:
   typedef typename Decorator::Halfedge_const_iterator Halfedge_const_iterator;
   typedef typename Decorator::Vertex_const_iterator Vertex_const_iterator;
   typedef typename Decorator::Face_const_iterator Face_const_iterator;
-  typedef typename Decorator::Halfedge_around_vertex_circulator 
+  typedef typename Decorator::Halfedge_around_vertex_circulator
     Halfedge_around_vertex_circulator;
-  typedef typename Decorator::Halfedge_around_face_circulator 
+  typedef typename Decorator::Halfedge_around_face_circulator
     Halfedge_around_face_circulator;
   typedef typename Decorator::Hole_iterator Hole_iterator;
   typedef typename Decorator::Isolated_vertex_iterator Isolated_vertex_iterator;
@@ -292,13 +292,13 @@ public:
     int                   i;
 
     Seg_info() : i(-1) {}
-    Seg_info(Halfedge_const_handle e_, int i_) 
+    Seg_info(Halfedge_const_handle e_, int i_)
     { e=e_; i=i_; }
-    Seg_info(Vertex_const_handle v_, int i_) 
+    Seg_info(Vertex_const_handle v_, int i_)
     { v=v_; i=i_; }
-    Seg_info(const Seg_info& si) 
+    Seg_info(const Seg_info& si)
     { e=si.e; v=si.v; i=si.i; }
-    Seg_info& operator=(const Seg_info& si) 
+    Seg_info& operator=(const Seg_info& si)
     { e=si.e; v=si.v; i=si.i; return *this; }
     LEDA_MEMORY(Seg_info)
   };
@@ -309,16 +309,16 @@ public:
 
 
 /*{\Mcreation 6}*/
-PM_overlayer(Plane_map& P, const Geometry& g = Geometry()) : 
+PM_overlayer(Plane_map& P, const Geometry& g = Geometry()) :
 /*{\Mcreate |\Mvar| is a decorator object manipulating |P|.}*/
   Base(P), K(g) {}
 
 
 template <typename Forward_iterator, typename Object_data_accessor>
-void create(Forward_iterator start, Forward_iterator end, 
+void create(Forward_iterator start, Forward_iterator end,
             Object_data_accessor& A) const
 /*{\Mop produces in |P| the plane map consistent with the overlay
-of the segments from the iterator range |[start,end)|. The data accessor 
+of the segments from the iterator range |[start,end)|. The data accessor
 |A| allows to initialize created vertices and edges with respect to the
 segments in the iterator range. |A| requires the following methods:\\
 [[void supporting_segment(Halfedge_handle e, Forward_iterator it)]]\\
@@ -331,11 +331,11 @@ supporting a newly created edge |e|, |trivial_segment| is called for
 each trivial segment |*it| supporting a newly created vertex |v|, and
 the three last operations are called for each non-trivial segment
 |*it| starting at/passing through/ending at the embedding of a newly
-created vertex |v|. 
+created vertex |v|.
 \precond |Forward_iterator| has value type |Segment|.}*/
 {
   TRACEN("creating from iterator range");
-  typedef PMO_from_segs<Self,Forward_iterator,Object_data_accessor> 
+  typedef PMO_from_segs<Self,Forward_iterator,Object_data_accessor>
     Output_from_segments;
   typedef Segment_overlay_traits<
     Forward_iterator, Output_from_segments, Geometry> seg_overlay;
@@ -399,14 +399,14 @@ and |\Mvar.mark(v,1) = D1.mark(f1)|.}*/
     Mark m_below[2];
     if ( e_below != Halfedge_handle() ) {
       for (int i=0; i<2; ++i) {
-        m_below[i] = incident_mark(e_below,i); 
+        m_below[i] = incident_mark(e_below,i);
       }
     } else { // e_below does not exist
-      for (int i=0; i<2; ++i) 
+      for (int i=0; i<2; ++i)
         m_below[i] = PI[i].mark(PI[i].faces_begin());
     }
 
-    for (i=0; i<2; ++i) 
+    for (i=0; i<2; ++i)
       if ( supp_halfedge(v,i) != Halfedge_const_handle() ) {
         mark(v,i) = PI[i].mark(supp_halfedge(v,i));
       } else if ( supp_vertex(v,i) != Vertex_const_handle() ) {
@@ -416,7 +416,7 @@ and |\Mvar.mark(v,1) = D1.mark(f1)|.}*/
       }
 
     if ( is_isolated(v) ) continue;
-    Halfedge_around_vertex_circulator 
+    Halfedge_around_vertex_circulator
       e(first_out_edge(v)), hend(e);
     CGAL_For_all(e,hend) {
       if ( is_forward(e) ) {
@@ -428,13 +428,13 @@ and |\Mvar.mark(v,1) = D1.mark(f1)|.}*/
           if ( supported ) {
             ei = supp_halfedge(e,i);
             TRACEN("   supp halfedge "<<i<<" "<<PE(ei));
-            incident_mark(twin(e),i) = 
+            incident_mark(twin(e),i) =
               PI[i].mark(PI[i].face(PI[i].twin(ei)));
             mark(e,i) = PI[i].mark(ei);
             incident_mark(e,i) = m_below[i] =
               PI[i].mark(PI[i].face(ei));
           } else { // no support from input PI[i]
-            incident_mark(twin(e),i) = mark(e,i) = incident_mark(e,i) = 
+            incident_mark(twin(e),i) = mark(e,i) = incident_mark(e,i) =
               m_below[i];
           }
         }
@@ -461,12 +461,12 @@ each object |u| of |P| enriched by the marks of the supporting objects
 according to the previous procedure |subdivide|, after this operation
 |\Mvar.mark(u) = predicate ( \Mvar.mark(u,0),\Mvar.mark(u,1) )|. The
 additional marks are invalidated afterwards. }*/
-{ 
+{
   Vertex_iterator vit = vertices_begin(),
                   vend = vertices_end();
   for( ; vit != vend; ++vit) {
     mark(vit) = predicate(mark(vit,0),mark(vit,1));
-    discard_info(vit); 
+    discard_info(vit);
   }
   Halfedge_iterator hit = halfedges_begin(),
                     hend = halfedges_end();
@@ -495,13 +495,13 @@ and the edges are unified. The data accessor |keep| requires the function
 call operator\\[[bool operator()(Halfedge_handle e)]]\\that allows to
 avoid the simplification for edge pairs referenced by |e|.}*/
 {
-  TRACEN("simplifying"); 
+  TRACEN("simplifying");
   typedef typename CGAL::Union_find<Face_handle>::handle Union_find_handle;
   CGAL::Unique_hash_map< Face_iterator, Union_find_handle> Pitem;
   CGAL::Union_find<Face_handle> unify_faces;
 
   Face_iterator f, fend = faces_end();
-  for (f = faces_begin(); f!= fend; ++f) { 
+  for (f = faces_begin(); f!= fend; ++f) {
      Pitem[f] = unify_faces.make_set(f);
      clear_face_cycle_entries(f);
   }
@@ -509,7 +509,7 @@ avoid the simplification for edge pairs referenced by |e|.}*/
 
   Halfedge_iterator e = halfedges_begin(), en,
                     eend = halfedges_end();
-  for(; en=e, ++(++en), e != eend; e=en) { 
+  for(; en=e, ++(++en), e != eend; e=en) {
     if ( keep(e) ) continue;
     if ( mark(e) == mark(face(e)) &&
          mark(e) == mark(face(twin(e))) ) {
@@ -551,15 +551,15 @@ avoid the simplification for edge pairs referenced by |e|.}*/
     vn=v; ++vn;
     if ( is_isolated(v) ) {
       if ( mark(v) == mark(face(v)) ) delete_vertex_only(v);
-      else set_isolated_vertex(face(v),v); 
+      else set_isolated_vertex(face(v),v);
     } else { // v not isolated
       Halfedge_handle e2 = first_out_edge(v), e1 = previous(e2);
-      Point p1 = point(source(e1)), p2 = point(v), 
+      Point p1 = point(source(e1)), p2 = point(v),
             p3 = point(target(e2));
       if ( has_outdeg_two(v) &&
            mark(v) == mark(e1) && mark(v) == mark(e2) &&
-           (K.orientation(p1,p2,p3) == 0) ) 
-        merge_halfedge_pairs_at_target(e1); 
+           (K.orientation(p1,p2,p3) == 0) )
+        merge_halfedge_pairs_at_target(e1);
     }
   }
 
@@ -578,8 +578,8 @@ struct vertex_info {
   Vertex_const_handle   v_supp[2];
   Halfedge_const_handle e_supp[2];
   Halfedge_handle       e_below;
-  vertex_info() 
-  { v_supp[0]=v_supp[1]=Vertex_const_handle(); 
+  vertex_info()
+  { v_supp[0]=v_supp[1]=Vertex_const_handle();
     e_supp[0]=e_supp[1]=Halfedge_const_handle(); }
   LEDA_MEMORY(vertex_info)
 };
@@ -611,31 +611,31 @@ struct halfedge_info {
   Halfedge_const_handle e_supp[2];
   bool                  forw;
   halfedge_info()
-  { m[0]=m[1]=mf[0]=mf[1]=Mark(); 
-    e_supp[0]=e_supp[1]=Halfedge_const_handle(); 
+  { m[0]=m[1]=mf[0]=mf[1]=Mark();
+    e_supp[0]=e_supp[1]=Halfedge_const_handle();
     forw=false; }
   LEDA_MEMORY(halfedge_info)
 };
 
 void assoc_info(Halfedge_handle e)  const
-{ geninfo<halfedge_info>::create(info(e)); 
+{ geninfo<halfedge_info>::create(info(e));
   geninfo<halfedge_info>::create(info(twin(e))); }
 
 void discard_info(Halfedge_handle e)  const
-{ geninfo<halfedge_info>::clear(info(e)); 
+{ geninfo<halfedge_info>::clear(info(e));
   geninfo<halfedge_info>::clear(info(twin(e))); }
 
 halfedge_info& ginfo(Halfedge_handle e)  const
 { return geninfo<halfedge_info>::access(info(e)); }
 
 Mark& mark(Halfedge_handle e, int i)  const
-// uedge information we store in the smaller one 
-{ if (&*e < &*(twin(e))) return ginfo(e).m[i]; 
+// uedge information we store in the smaller one
+{ if (&*e < &*(twin(e))) return ginfo(e).m[i];
   else                   return ginfo(twin(e)).m[i]; }
 
 Halfedge_const_handle& supp_halfedge(Halfedge_handle e, int i) const
-// uedge information we store in the smaller one 
-{ if (&*e < &*(twin(e))) return ginfo(e).e_supp[i]; 
+// uedge information we store in the smaller one
+{ if (&*e < &*(twin(e))) return ginfo(e).e_supp[i];
   else                   return ginfo(twin(e)).e_supp[i]; }
 
 Mark& incident_mark(Halfedge_handle e, int i)  const
@@ -664,16 +664,16 @@ face_info& ginfo(Face_handle f)  const
 Mark& mark(Face_handle f, int i)  const
 { return ginfo(f).m[i]; }
 
-void clear_associated_info_of_all_objects() const 
+void clear_associated_info_of_all_objects() const
 {
   Vertex_iterator vit;
   for (vit = vertices_begin(); vit != vertices_end(); ++vit)
     discard_info(vit);
   Halfedge_iterator hit;
-  for (hit = halfedges_begin(); hit != halfedges_end(); ++hit) 
+  for (hit = halfedges_begin(); hit != halfedges_end(); ++hit)
     discard_info(hit);
   Face_iterator fit;
-  for (fit = faces_begin(); fit != faces_end(); ++fit) 
+  for (fit = faces_begin(); fit != faces_end(); ++fit)
     discard_info(fit);
 }
 
@@ -695,7 +695,7 @@ void create_face_objects(const Below_info& D) const
       if ( K.compare_xy(point(target(hfc)), point(target(e_min))) < 0 )
         e_min = hfc;
       TRACE(PE(hfc));
-    } 
+    }
     TRACEN("");
     MinimalHalfedge.push_back(e_min); ++i;
   }
@@ -704,8 +704,8 @@ void create_face_objects(const Below_info& D) const
   for (int j=0; j<i; ++j) {
     Halfedge_handle e = MinimalHalfedge[j];
       TRACEN("  face cycle "<<j);TRACEN("  minimal halfedge "<<PE(e));
-    Point p1 = point(source(e)), 
-          p2 = point(target(e)), 
+    Point p1 = point(source(e)),
+          p2 = point(target(e)),
           p3 = point(target(next(e)));
     if ( K.left_turn(p1,p2,p3) ) { // left_turn => outer face cycle
         TRACEN("  creating new face object");
@@ -724,16 +724,16 @@ void create_face_objects(const Below_info& D) const
   for (v = vertices_begin(); v != v_end; ++v) {
     if ( !is_isolated(v) ) continue;
     Halfedge_handle e_below = D.halfedge_below(v);
-    if ( e_below == Halfedge_handle() ) 
+    if ( e_below == Halfedge_handle() )
       link_as_isolated_vertex(f_outer,v);
     else
-      link_as_isolated_vertex(face(e_below),v);    
+      link_as_isolated_vertex(face(e_below),v);
   }
 
 }
 
 template <typename Below_info>
-Face_handle determine_face(Halfedge_handle e, 
+Face_handle determine_face(Halfedge_handle e,
   const std::vector<Halfedge_handle>& MinimalHalfedge,
   const CGAL::Unique_hash_map<Halfedge_handle,int>& FaceCycle,
   const Below_info& D) const
@@ -749,17 +749,17 @@ Face_handle determine_face(Halfedge_handle e,
   return f;
 }
 
-Segment segment(const Const_decorator& N, 
+Segment segment(const Const_decorator& N,
                 Halfedge_const_handle e) const
 { return K.construct_segment(
     N.point(N.source(e)),N.point(N.target(e))); }
 
-Segment segment(const Const_decorator& N, 
+Segment segment(const Const_decorator& N,
                 Vertex_const_handle v) const
-{ Point p = N.point(v); 
+{ Point p = N.point(v);
   return K.construct_segment(p,p); }
 
-bool is_forward_edge(const Const_decorator& N, 
+bool is_forward_edge(const Const_decorator& N,
                      Halfedge_const_iterator hit) const
 { Point p1 = N.point(N.source(hit));
   Point p2 = N.point(N.target(hit));

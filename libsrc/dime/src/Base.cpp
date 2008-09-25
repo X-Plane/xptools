@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Base.cpp
  *
  *  This source file is part of DIME.
@@ -62,8 +62,8 @@ dimeBase::~dimeBase()
 
 
 /*!
-  Returns \e true if the object is of type \a typeid or is inherited 
-  from it. Function in base class checks whether \a thetypeid 
+  Returns \e true if the object is of type \a typeid or is inherited
+  from it. Function in base class checks whether \a thetypeid
   equals the virtual dimeBase::typeId() value or equals \e dimeBaseType.
   Must be implemented by all subclasses that are superclasses of other
   classes, and should check if \a thetypeid equals its typeId,
@@ -71,7 +71,7 @@ dimeBase::~dimeBase()
   do not have to implement this method.
 */
 
-bool 
+bool
 dimeBase::isOfType(const int thetypeid) const
 {
   return this->typeId() == thetypeid ||
@@ -79,7 +79,7 @@ dimeBase::isOfType(const int thetypeid) const
 }
 
 void *
-dimeBase::operator new(size_t size, dimeMemHandler *memhandler, 
+dimeBase::operator new(size_t size, dimeMemHandler *memhandler,
 		      const int alignment)
 {
   if (memhandler)
@@ -87,7 +87,7 @@ dimeBase::operator new(size_t size, dimeMemHandler *memhandler,
   else return ::operator new(size);
 }
 
-void 
+void
 dimeBase::operator delete(void * ptr)
 {
   // will only get here if we don't use a memory handler

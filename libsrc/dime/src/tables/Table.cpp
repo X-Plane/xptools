@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Table.cpp
  *
  *  This source file is part of DIME.
@@ -113,8 +113,8 @@ dimeTable::read(dimeInput * const file)
   dimeRecord *record = NULL;
   bool ok = true;
   dimeMemHandler *memh = file->getMemHandler();
-  
-  do { 
+
+  do {
     if (!file->readGroupCode(groupcode)) {ok = false; break;}
     if (groupcode == 70) {
       if (!file->readInt16(this->maxEntries)) {ok = false; break;}
@@ -130,7 +130,7 @@ dimeTable::read(dimeInput * const file)
       records.append(record);
     }
   } while (groupcode != 0);
-  
+
   if (ok) {
     if (this->maxEntries) this->tableEntries.makeEmpty(this->maxEntries);
     const char *string;
@@ -154,7 +154,7 @@ dimeTable::read(dimeInput * const file)
   Writes the table to \a file.
 */
 
-bool 
+bool
 dimeTable::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -164,7 +164,7 @@ dimeTable::write(dimeOutput * const file)
 
   file->writeGroupCode(2);
   ret = file->writeString(this->tableName());
-  
+
   if (ret) {
     for (i = 0; i < this->records.count(); i++) {
       if (!this->records[i]->write(file)) break;
@@ -176,7 +176,7 @@ dimeTable::write(dimeOutput * const file)
     ret = file->writeInt16(this->tableEntries.count());
   }
   if (ret) {
-    for (i = 0; i < this->tableEntries.count(); i++) 
+    for (i = 0; i < this->tableEntries.count(); i++)
       if (!this->tableEntries[i]->write(file)) break;
     if (i < this->tableEntries.count()) ret = false;
     if (ret) {
@@ -189,7 +189,7 @@ dimeTable::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeTable::typeId() const
 {
   return dimeBase::dimeTableType;
@@ -197,7 +197,7 @@ dimeTable::typeId() const
 
 //!
 
-int 
+int
 dimeTable::tableType() const
 {
   if (this->tableEntries.count()) return this->tableEntries[0]->typeId();
@@ -214,7 +214,7 @@ dimeTable::tableName() const
   return NULL;
 }
 
-void 
+void
 dimeTable::setTableName(const char * name)
 {
   if (!this->memHandler) {
@@ -227,7 +227,7 @@ dimeTable::setTableName(const char * name)
   Counts the number of records in this table.
 */
 
-int 
+int
 dimeTable::countRecords() const
 {
   int cnt = 2; // header + maxEntries
@@ -241,10 +241,10 @@ dimeTable::countRecords() const
 }
 
 /*!
-  Returns the number of table enties in this table. 
+  Returns the number of table enties in this table.
 */
 
-int 
+int
 dimeTable::getNumTableEntries() const
 {
   return this->tableEntries.count();
@@ -266,7 +266,7 @@ dimeTable::getTableEntry(const int idx)
   \a idx.
 */
 
-void 
+void
 dimeTable::removeTableEntry(const int idx)
 {
   assert(idx >= 0 && idx < this->tableEntries.count());
@@ -279,7 +279,7 @@ dimeTable::removeTableEntry(const int idx)
   table entry will be inserted at the end of the list of tableEntries.
 */
 
-void 
+void
 dimeTable::insertTableEntry(dimeTableEntry * const tableEntry, const int idx)
 {
   if (idx < 0)
@@ -292,12 +292,12 @@ dimeTable::insertTableEntry(dimeTableEntry * const tableEntry, const int idx)
 
 /*!
   Returns the number of table records in this table. Table records precedes
-  the table entries, and contain som information about this table. 
-  The max. entries record (group code 70), is handled automatically by this 
+  the table entries, and contain som information about this table.
+  The max. entries record (group code 70), is handled automatically by this
   class, and should not be set by the user.
 */
 
-int 
+int
 dimeTable::getNumTableRecords() const
 {
   return this->records.count();
@@ -318,7 +318,7 @@ dimeTable::getTableRecord(const int idx)
   Removes (and deletes if no memhandler is used) the record at index \a idx.
 */
 
-void 
+void
 dimeTable::removeTableRecord(const int idx)
 {
   assert(idx >= 0 && idx < this->records.count());
@@ -331,7 +331,7 @@ dimeTable::removeTableRecord(const int idx)
   record will be inserted at the end of the list of records.
 */
 
-void 
+void
 dimeTable::insertTableRecord(dimeRecord * const record, const int idx)
 {
   assert(record->getGroupCode() != 70);

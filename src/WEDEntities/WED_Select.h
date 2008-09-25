@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,20 +26,20 @@
 
 /*
 	WED_Select - THEORY OF OPERATION
-	
+
 	WED_Select implmements ISelection for WED, using a set of object persistent IDs.
-	
+
 	WED_Select is itself persistent, that is, changes in the selection are undoable.  This is done
 	to maintain sanity -- if we back up the object model without backing up the selection, we could
 	have dead objects selected, which would require a bunch of special cases to handle in our editing
 	code.
-	
+
 */
 #include "WED_Thing.h"
 #include "GUI_Broadcaster.h"
 #include "ISelection.h"
 
-class	WED_Select : public WED_Thing, public virtual ISelection, public GUI_Broadcaster { 
+class	WED_Select : public WED_Thing, public virtual ISelection, public GUI_Broadcaster {
 
 DECLARE_PERSISTENT(WED_Select)
 
@@ -66,11 +66,11 @@ public:
 	virtual		void 			WriteTo(IOWriter * writer);
 	virtual		void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual		void			ToDB(sqlite3 * db);
-	
+
 private:
 
 	set<int>		mSelected;
 
 };
-	
+
 #endif

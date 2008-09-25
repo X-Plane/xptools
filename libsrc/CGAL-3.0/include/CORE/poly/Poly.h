@@ -12,7 +12,7 @@
 		is determined by the first non-zero coefficient).
 	--coefficients are parametrized by some number type "NT".
 	--coefficients are stored in the "coeff" array of
-		length "degree + 1".  
+		length "degree + 1".
 		CONVENTION: coeff[i] is the coefficient of X^i.  So, a
 			    coefficient list begins with the constant term.
 	--IMPORTANT CONVENTION:
@@ -24,16 +24,16 @@
 	--Power
 	--Evaluation
 	--Differentiation
-	--Remainder, Quotient 
+	--Remainder, Quotient
 	--Resultant, Discriminant (planned)
 	--Polynomial Composition (planned)
 	--file I/O (planned)
-	
- Author: Chee Yap 
+
+ Author: Chee Yap
  Date:   May 28, 2002
  Core Library 1.4.1
  $Id: Poly.h,v 1.5 2003/10/17 11:44:42 afabri Exp $
- ************************************** */ 
+ ************************************** */
 
 #ifndef CORE_POLY_H
 #define CORE_POLY_H
@@ -46,7 +46,7 @@ CORE_BEGIN_NAMESPACE
 
 class Expr;
 // ==================================================
-// Typedefs 
+// Typedefs
 // ==================================================
 
 //typedef std::vector<Expr>	VecExpr;
@@ -67,7 +67,7 @@ class Polynomial {
 public:
   typedef std::vector<NT> VecNT;
 
-  int degree;	// This is the nominal degree (an upper bound 
+  int degree;	// This is the nominal degree (an upper bound
 		// on the true degree)
   NT * coeff;	// coeff is an array of size degree+1;
 		//	This remark holds even when degree = -1.
@@ -97,7 +97,7 @@ public:
   // Assignment:
   Polynomial & operator=(const Polynomial&);
 
-  // Expand and Contract  
+  // Expand and Contract
   //  -- they are semi-inverses: i.e., Contract(expand(p))=p
   int expand(int n);	// Change the current degree to n
 			// Helper function for polynomial arithmetic
@@ -119,10 +119,10 @@ public:
 			//	is returned, but (*this) is transformed
 			//	into the pseudo remainder
   Polynomial reduceStep (Polynomial& p );
-			// One step of pseudo remainder 
+			// One step of pseudo remainder
 			// What is returned is a special polynomial C+M
 			//	telling us the initial constant C and					//	the quotient M of C*(THIS) divided by p.
-			
+
   // Polynomial gcd(Polynomial p); // This may not be defined for some NT domains
 
   // Get functions
@@ -136,7 +136,7 @@ public:
   // Set functions
   bool setCoeff(int i, const NT & cc);	// Make cc the coefficient of X^i
 					// Return FALSE if invalid i
-					// !! User's responsibility to 
+					// !! User's responsibility to
 					// delete the old coefficient if
 					// necessary !!
   // Helper Functions
@@ -275,7 +275,7 @@ template < class NT >
   bool unitP(const Polynomial <NT>& p){			// =Unit Poly?
 	int d = p.getTrueDegree();
 	return ((d == 0) && p.coeff[0]==1 );
-  } 
+  }
 
 // get functions
 template < class NT >
@@ -294,7 +294,7 @@ template < class NT >
 template < class NT >
   CORE_INLINE
   const NT & Polynomial<NT>::getTailCoeff() const {
-     for (int i = 0; i<= getTrueDegree(); i++) 
+     for (int i = 0; i<= getTrueDegree(); i++)
 	if (coeff[i] != 0) return coeff[i];
      // This ought to be an error (user should check this :
      NT * zero = new NT(0);

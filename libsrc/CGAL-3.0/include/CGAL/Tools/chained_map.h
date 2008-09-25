@@ -31,7 +31,7 @@ template <typename T> class chained_map;
 template <typename T> class chained_map_elem;
 
 template <typename T>
-class chained_map_elem 
+class chained_map_elem
 {
   friend class chained_map<T>;
   unsigned long k; T i;
@@ -41,7 +41,7 @@ class chained_map_elem
 template <typename T>
 class chained_map
 {
-   const unsigned long NULLKEY; 
+   const unsigned long NULLKEY;
    const unsigned long NONNULLKEY;
 
    chained_map_elem<T> STOP;
@@ -49,14 +49,14 @@ class chained_map
    chained_map_elem<T>* table;
    chained_map_elem<T>* table_end;
    chained_map_elem<T>* free;
-   int table_size;           
-   int table_size_1;  
+   int table_size;
+   int table_size_1;
 
    chained_map_elem<T>* old_table;
    chained_map_elem<T>* old_table_end;
    chained_map_elem<T>* old_free;
-   int old_table_size;           
-   int old_table_size_1;  
+   int old_table_size;
+   int old_table_size_1;
 
    unsigned long old_index;
 
@@ -66,10 +66,10 @@ public:
 private:
    void init_inf(T& x)   const { x = STOP.i; }
 
-   
+
    chained_map_elem<T>*  HASH(unsigned long x)  const
    { return table + (x & table_size_1);  }
-   
+
    void init_table(int t);
    void rehash();
    void del_old_table();
@@ -83,10 +83,10 @@ public:
    unsigned long index(chained_map_item it) const { return it->k; }
    T&            inf(chained_map_item it) const { return it->i; }
 
-   chained_map(int n = 1); 
+   chained_map(int n = 1);
    chained_map(const chained_map<T>& D);
    chained_map& operator=(const chained_map<T>& D);
-   
+
 
    void clear_entries();
    void clear();
@@ -105,8 +105,8 @@ inline T& chained_map<T>::access(unsigned long x)
 { chained_map_item p = HASH(x);
 
   if (old_table) del_old_table();
-  if ( p->k == x ) { 
-     old_index = x; 
+  if ( p->k == x ) {
+     old_index = x;
      return p->i;
   }
   else {
@@ -115,22 +115,22 @@ inline T& chained_map<T>::access(unsigned long x)
       init_inf(p->i);  // initializes p->i to xdef
       old_index = x;
       return p->i;
-    } else 
+    } else
       return access(p,x);
   }
 }
 
 template <typename T>
 void chained_map<T>::init_table(int t)
-{ 
+{
   table_size = t;
   table_size_1 = t-1;
   table = new chained_map_elem<T>[t + t/2];
   free = table + t;
-  table_end = table + t + t/2;      
+  table_end = table + t + t/2;
 
-  for (chained_map_item p = table; p < free; p++) 
-  { p->succ = &STOP; 
+  for (chained_map_item p = table; p < free; p++)
+  { p->succ = &STOP;
     p->k = NULLKEY;
   }
   table->k = NONNULLKEY;
@@ -139,22 +139,22 @@ void chained_map<T>::init_table(int t)
 
 template <typename T>
 inline void chained_map<T>::insert(unsigned long x, T y)
-{ chained_map_item q = HASH(x);                                    
-  if ( q->k == NULLKEY ) {      
-    q->k = x;                                                  
-    q->i = y; 
-  } else { 
-    free->k = x;                                                
-    free->i = y;                                                
-    free->succ = q->succ;                                       
-    q->succ = free++; 
-  }                                         
+{ chained_map_item q = HASH(x);
+  if ( q->k == NULLKEY ) {
+    q->k = x;
+    q->i = y;
+  } else {
+    free->k = x;
+    free->i = y;
+    free->succ = q->succ;
+    q->succ = free++;
+  }
 }
 
-                                                                            
+
 template <typename T>
 void chained_map<T>::rehash()
-{ 
+{
   old_table = table;
   old_table_end = table_end;
   old_table_size = table_size;
@@ -170,7 +170,7 @@ void chained_map<T>::rehash()
   for(p = old_table + 1; p < old_table_mid; p++)
   { unsigned long x = p->k;
     if ( x != NULLKEY ) // list p is non-empty
-    { chained_map_item q = HASH(x);  
+    { chained_map_item q = HASH(x);
       q->k = x;
       q->i = p->i;
     }
@@ -217,9 +217,9 @@ template <typename T>
 T& chained_map<T>::access(chained_map_item p, unsigned long x)
 {
   STOP.k = x;
-  chained_map_item q = p->succ; 
+  chained_map_item q = p->succ;
   while (q->k != x) q = q->succ;
-  if (q != &STOP) 
+  if (q != &STOP)
   { old_index = x;
     return q->i;
   }
@@ -247,11 +247,11 @@ T& chained_map<T>::access(chained_map_item p, unsigned long x)
 
 
 template <typename T>
-chained_map<T>::chained_map(int n) : 
+chained_map<T>::chained_map(int n) :
   NULLKEY(0), NONNULLKEY(1), old_table(0)
-{ 
+{
   if (n < 512)
-    init_table(512); 
+    init_table(512);
   else {
     int ts = 1;
     while (ts < n) ts <<= 1;
@@ -261,13 +261,13 @@ chained_map<T>::chained_map(int n) :
 
 
 template <typename T>
-chained_map<T>::chained_map(const chained_map<T>& D) : 
+chained_map<T>::chained_map(const chained_map<T>& D) :
   NULLKEY(0), NONNULLKEY(1), old_table(0)
-{ 
+{
   init_table(D.table_size);
   STOP.i = D.STOP.i; // xdef
 
-  for(chained_map_item p = D.table + 1; p < D.free; p++) 
+  for(chained_map_item p = D.table + 1; p < D.free; p++)
   { if (p->k != NULLKEY || p >= D.table + D.table_size)
     { insert(p->k,p->i);
       //D.copy_inf(p->i);  // see chapter Implementation
@@ -277,13 +277,13 @@ chained_map<T>::chained_map(const chained_map<T>& D) :
 
 template <typename T>
 chained_map<T>& chained_map<T>::operator=(const chained_map<T>& D)
-{ 
+{
   clear_entries();
   delete[] table;
   init_table(D.table_size);
   STOP.i = D.STOP.i; // xdef
 
-  for(chained_map_item p = D.table + 1; p < D.free; p++) 
+  for(chained_map_item p = D.table + 1; p < D.free; p++)
   { if (p->k != NULLKEY || p >= D.table + D.table_size)
     { insert(p->k,p->i);
       //copy_inf(p->i);    // see chapter Implementation
@@ -293,38 +293,38 @@ chained_map<T>& chained_map<T>::operator=(const chained_map<T>& D)
 }
 
 template <typename T>
-void chained_map<T>::clear_entries() 
+void chained_map<T>::clear_entries()
 { for(chained_map_item p = table + 1; p < free; p++)
-    if (p->k != NULLKEY || p >= table + table_size) 
-      p->i = T();  
+    if (p->k != NULLKEY || p >= table + table_size)
+      p->i = T();
 }
 
 template <typename T>
-void chained_map<T>::clear() 
+void chained_map<T>::clear()
 { clear_entries();
   delete[] table;
-  init_table(512); 
+  init_table(512);
 }
 
 template <typename T>
-typename chained_map<T>::chained_map_item 
-chained_map<T>::lookup(unsigned long x) const 
+typename chained_map<T>::chained_map_item
+chained_map<T>::lookup(unsigned long x) const
 { chained_map_item p = HASH(x);
   ((unsigned long &)STOP.k) = x;  // cast away const
-  while (p->k != x) 
+  while (p->k != x)
   { p = p->succ; }
   return (p == &STOP) ? 0 : p;
 }
 
 
 template <typename T>
-typename chained_map<T>::chained_map_item 
+typename chained_map<T>::chained_map_item
 chained_map<T>::first_item() const
 { return next_item(table); }
 
 template <typename T>
-typename chained_map<T>::chained_map_item 
-chained_map<T>::next_item(chained_map_item it) const 
+typename chained_map<T>::chained_map_item
+chained_map<T>::next_item(chained_map_item it) const
 { if (it == 0) return 0;
   do it++; while (it < table + table_size && it->k == NULLKEY);
   return (it < free ? it : 0);
@@ -339,9 +339,9 @@ void chained_map<T>::statistics() const
   int used_in_overflow = free - (table + table_size );
   n += used_in_overflow;
   std::cout << "number of entries: " << n << "\n";
-  std::cout << "fraction of entries in first position: " << 
+  std::cout << "fraction of entries in first position: " <<
                ((double) (n - used_in_overflow))/n <<"\n";
-  std::cout << "fraction of empty lists: " << 
+  std::cout << "fraction of empty lists: " <<
                ((double) (n - used_in_overflow))/table_size<<"\n";
 }
 

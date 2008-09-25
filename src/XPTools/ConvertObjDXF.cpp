@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -50,15 +50,15 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 		{
 			dxfConverter converter;
 			converter.findHeaderVariables(model);
-			converter.setFillmode(true);	
+			converter.setFillmode(true);
 			converter.setLayercol(true);
 			if (converter.doConvert(model))
-			{				
+			{
 				success = true;
 
 				// The DXF importer gives us a bunch of layers.  Go through and merge them
 				// down into one object by appending the commands together.
-				for (int i = 0; i < 255; i++) 
+				for (int i = 0; i < 255; i++)
 				{
 					dxfLayerData *	l = converter.getLayerData(i+1);
 
@@ -71,7 +71,7 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 					lightCmd.rgb[0].rgb[0] = 1.0;
 					lightCmd.rgb[0].rgb[1] = 1.0;
 					lightCmd.rgb[0].rgb[2] = 1.0;
-					
+
 					for (int n = 0; n < l->points.count(); ++n)
 					{
 						dimeVec3f	v = l->points[n];
@@ -80,7 +80,7 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 						lightCmd.rgb[0].v[2] =  v.z;
 						obj.cmds.push_back(lightCmd);
 					}
-					
+
 					// Now do all of the lines.
 					XObjCmd		lineCmd;
 					lineCmd.cmdType = type_PtLine;
@@ -102,14 +102,14 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 							if (lineCmd.rgb.size() > 1)
 								lineCmd.rgb.erase(lineCmd.rgb.begin());
 							lineCmd.rgb.push_back(rgb);
-							
+
 							if (lineCmd.rgb.size() == 2)
 							{
 								obj.cmds.push_back(lineCmd);
 							}
 						}
 					}
-					
+
 					// Now do polygons.
 					XObjCmd		polyCmd;
 					polyCmd.cmdType = type_Poly;
@@ -125,11 +125,11 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 								polyCmd.cmdID = obj_Quad;
 							else
 								polyCmd.cmdID = obj_Polygon;
-							
+
 							if (inReversePoly)
-								ChangePolyCmdCW(polyCmd);								
+								ChangePolyCmdCW(polyCmd);
 							obj.cmds.push_back(polyCmd);
-							polyCmd.st.clear();								
+							polyCmd.st.clear();
 						} else {
 							// Accum one ST pt.
 							dimeVec3f pt;
@@ -141,7 +141,7 @@ bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 							vv.v[2] =  pt.z;
 							polyCmd.st.push_back(vv);
 						}
-					}						
+					}
 				}
 			}
 		}
@@ -174,13 +174,13 @@ bool	WriteObjDXF(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 
 	layer->registerLayer(&model);
 	layers->insertTableEntry(layer);
-	tables->insertTable(layers); 
-	
+	tables->insertTable(layers);
+
 	const dimeLayer * theLayer =  model.getLayer("Basic");
 
 	dimeEntitiesSection * entities = new dimeEntitiesSection;
 	model.insertSection(entities);
-	
+
 
 	static char lodStr[256];
 
@@ -206,8 +206,8 @@ bool	WriteObjDXF(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 				// ???
 
 				layer->registerLayer(&model);
-				layers->insertTableEntry(layer);				
-				
+				layers->insertTableEntry(layer);
+
 				theLayer =  model.getLayer(lodStr);
 				break;
 			}
@@ -346,11 +346,11 @@ bool	WriteObjDXF(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 					model.addEntity(face);
 				}
 				break;
-				
+
 			}
 			break;
 		}
-	}	
-	
+	}
+
 	return model.write(&out);
 }

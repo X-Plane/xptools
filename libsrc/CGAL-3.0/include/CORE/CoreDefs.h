@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: CoreDefs.h
  * Synopsis:
  *       This contains useful Core Library global parameters which
@@ -9,7 +9,7 @@
  *       For each parameter, we provide corresponding methods to
  *       modify or examine the values.
  *
- * Written by 
+ * Written by
  *       Chen Li <chenli@cs.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
@@ -33,13 +33,13 @@ CORE_BEGIN_NAMESPACE
 //////////////////////////////////////////////////////////////
 
 /// default accuracy level
-#define DEFAULT_CORE_LEVEL 3		
+#define DEFAULT_CORE_LEVEL 3
 
 /// short hand for positive infinity
-#define CORE_INFTY  (CORE_posInfty) 
+#define CORE_INFTY  (CORE_posInfty)
 
 //////////////////////////////////////////////////////////////
-// global precision parameters 
+// global precision parameters
 //////////////////////////////////////////////////////////////
 
 /// Abort Flag -- default value is true
@@ -69,7 +69,7 @@ extern bool EscapePrecWarning;
 
 
 
-// These following two values determine the precision of computing 
+// These following two values determine the precision of computing
 // approximations in Expr.
 
 /// default Relative Precision in bits
@@ -79,7 +79,7 @@ extern extLong defAbsPrec;
 
 /// default # of decimal digits for conversion from a BF to string.
 /** This value cannot be CORE_INFTY.
-    See also defOutputDigits. 
+    See also defOutputDigits.
     */
 /*  QUESTION: the following comment seems to contradict the above comment:
 	"controls the printout precision of std::cout for BigFloat"
@@ -89,11 +89,11 @@ extern long defBigFloatOutputDigits;
 
 /// default input precision in digits for converting a string to a Real or Expr
 /** This value can be CORE_INFTY */
-extern extLong defInputDigits; 
-					
+extern extLong defInputDigits;
+
 /// controls the printout precision of std::cout for Real and Expr
-/** This value cannot be CORE_INFTY 
-    See also defBigFloatOutputDigits. 
+/** This value cannot be CORE_INFTY
+    See also defBigFloatOutputDigits.
     (it really should be an int, as in std::cout.setprecision(int)). */
 extern long defOutputDigits;
 
@@ -101,10 +101,10 @@ extern long defOutputDigits;
 /** This value cannot be CORE_INFTY. */
 extern long defBigFloatInputDigits;
 
-/// default BigFloat Division Relative Precision 
+/// default BigFloat Division Relative Precision
 extern extLong defBFdivRelPrec;
 
-/// default BigFloat Sqrt Absolute Precision 
+/// default BigFloat Sqrt Absolute Precision
 extern extLong defBFsqrtAbsPrec;
 
 //////////////////////////////////////////////////////////////
@@ -112,24 +112,24 @@ extern extLong defBFsqrtAbsPrec;
 //////////////////////////////////////////////////////////////
 
 /// floating point filter flag
-extern bool fpFilterFlag; 
+extern bool fpFilterFlag;
 /// if true, evaluation of expressions would be incremental
 extern bool incrementalEvalFlag;
 /// progressive evaluation flag
-extern bool progressiveEvalFlag; 
+extern bool progressiveEvalFlag;
 /// rational reduction flag
-extern bool rationalReduceFlag; 
+extern bool rationalReduceFlag;
 /// default initial (bit) precision for AddSub Progressive Evaluation
 extern long defInitialProgressivePrec;
 
 //////////////////////////////////////////////////////////////
-// methods for setting global precision parameters 
+// methods for setting global precision parameters
 // 	including: scientific vs. positional format
 //	All the set methods return the previous global value if any
 //////////////////////////////////////////////////////////////
 
-/// set default composite precision [defAbsPrec, defRelPrec] 
-/** It determines the precision to which an Expr evaluates its 
+/// set default composite precision [defAbsPrec, defRelPrec]
+/** It determines the precision to which an Expr evaluates its
     (exact, implicit) constant value. */
 CORE_INLINE void setDefaultPrecision(const extLong &r, const extLong &a);
 
@@ -171,7 +171,7 @@ CORE_INLINE bool setRationalReduceFlag(bool f);
 
 /// CORE_init(..) is the CORE initialization function.
 /** We recommend calling it before anything else.  Originally motivated
-    by need to get around gnu's compiler bug in which the variable 
+    by need to get around gnu's compiler bug in which the variable
     "defAbsPrec" was not properly initialized.  But it has other uses,
     e.g., overriding the default std::cout precision to our own */
 CORE_INLINE void CORE_init(long d);

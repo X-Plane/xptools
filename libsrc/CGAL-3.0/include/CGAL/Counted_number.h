@@ -71,16 +71,16 @@ public:
     explicit Counted_number(NT n) :m_rep(n){}
     Counted_number operator-() const
             {inc_neg_count();return Counted_number(-m_rep);}
-    Counted_number const & operator+=(Counted_number const &n) 
+    Counted_number const & operator+=(Counted_number const &n)
             {
 		inc_add_count();
 		m_rep += n.m_rep;
 		return *this;}
-    Counted_number const & operator-=(Counted_number const &n) 
+    Counted_number const & operator-=(Counted_number const &n)
             {inc_sub_count(); m_rep -= n.m_rep; return *this;}
-    Counted_number const & operator*=(Counted_number const &n) 
+    Counted_number const & operator*=(Counted_number const &n)
             {inc_mul_count(); m_rep *= n.m_rep; return *this;}
-    Counted_number const & operator/=(Counted_number const &n) 
+    Counted_number const & operator/=(Counted_number const &n)
             {inc_div_count(); m_rep /= n.m_rep; return *this;}
 };
 

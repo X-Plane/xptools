@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int8Record.cpp
  *
  *  This source file is part of DIME.
@@ -59,7 +59,7 @@ dimeInt8Record::copy(dimeMemHandler * const mh) const
   Sets the value.
 */
 
-void 
+void
 dimeInt8Record::setValue(const int8 val)
 {
   this->value = val;
@@ -77,7 +77,7 @@ dimeInt8Record::getValue() const
 
 //!
 
-int 
+int
 dimeInt8Record::typeId() const
 {
   return dimeBase::dimeInt8RecordType;
@@ -85,7 +85,7 @@ dimeInt8Record::typeId() const
 
 //!
 
-bool 
+bool
 dimeInt8Record::read(dimeInput * const in)
 {
   return in->readInt8(this->value);
@@ -93,7 +93,7 @@ dimeInt8Record::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeInt8Record::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) {
@@ -104,7 +104,7 @@ dimeInt8Record::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeInt8Record::setValue(const dimeParam &param, dimeMemHandler * const )
 {
   this->value = param.int8_data;
@@ -112,7 +112,7 @@ dimeInt8Record::setValue(const dimeParam &param, dimeMemHandler * const )
 
 //!
 
-void 
+void
 dimeInt8Record::getValue(dimeParam &param) const
 {
   param.int8_data = this->value;

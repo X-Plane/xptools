@@ -30,7 +30,7 @@ CGAL_BEGIN_NAMESPACE
 template <class T> class _Tee_for_output_iterator_rep;
 
 template <class OutputIterator, class T>
-class Tee_for_output_iterator 
+class Tee_for_output_iterator
   : public Handle
 {
   typedef std::vector<T>                             container;
@@ -42,35 +42,35 @@ class Tee_for_output_iterator
   typedef typename iter_traits::reference            reference;
 
 public:
-  Tee_for_output_iterator(const OutputIterator& o) : o_it(o) 
+  Tee_for_output_iterator(const OutputIterator& o) : o_it(o)
   {  PTR = (Rep*) new _Tee_for_output_iterator_rep<T>(); }
 
-  Tee_for_output_iterator<OutputIterator,T>& 
-  operator=(const T& value) 
-  { 
+  Tee_for_output_iterator<OutputIterator,T>&
+  operator=(const T& value)
+  {
     ptr()->output_so_far.push_back(value);
     *o_it = value;
     return *this;
   }
 
-  Tee_for_output_iterator<OutputIterator,T>& 
-  operator*() 
+  Tee_for_output_iterator<OutputIterator,T>&
+  operator*()
   { return *this; }
 
-  Tee_for_output_iterator<OutputIterator,T>& 
-  operator++() 
-  { 
-    ++o_it; 
-    return *this; 
-  } 
+  Tee_for_output_iterator<OutputIterator,T>&
+  operator++()
+  {
+    ++o_it;
+    return *this;
+  }
 
-  Tee_for_output_iterator<OutputIterator,T> 
-  operator++(int) 
-  { 
+  Tee_for_output_iterator<OutputIterator,T>
+  operator++(int)
+  {
     Tee_for_output_iterator<OutputIterator,T> tmp = *this;
-    o_it++; 
-    return tmp; 
-  } 
+    o_it++;
+    return tmp;
+  }
 
   iterator
   output_so_far_begin()

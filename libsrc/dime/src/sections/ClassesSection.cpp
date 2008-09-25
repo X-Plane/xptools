@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: ClassesSection.cpp
  *
  *  This source file is part of DIME.
@@ -71,7 +71,7 @@ dimeSection *
 dimeClassesSection::copy(dimeModel * const model) const
 {
   dimeMemHandler *memh = model->getMemHandler();
-  dimeClassesSection *cs = new dimeClassesSection(memh); 
+  dimeClassesSection *cs = new dimeClassesSection(memh);
   bool ok = cs != NULL;
 
   int num  = this->classes.count();
@@ -85,7 +85,7 @@ dimeClassesSection::copy(dimeModel * const model) const
       }
     }
   }
-  
+
   if (!ok) {
     if (!memh) delete cs;
     cs = NULL;
@@ -93,10 +93,10 @@ dimeClassesSection::copy(dimeModel * const model) const
 //  sim_trace("classes section copy: %p\n", cs);
   return cs;
 }
- 
+
 //!
 
-bool 
+bool
 dimeClassesSection::read(dimeInput * const file)
 {
   int32 groupcode;
@@ -116,7 +116,7 @@ dimeClassesSection::read(dimeInput * const file)
       break;
     }
     string = file->readString();
-    if (!strcmp(string, "ENDSEC")) break; 
+    if (!strcmp(string, "ENDSEC")) break;
     myclass = dimeClass::createClass(string, memhandler);
     if (myclass == NULL) {
       fprintf(stderr,"error creating class: %s.\n", string);
@@ -137,14 +137,14 @@ dimeClassesSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeClassesSection::write(dimeOutput * const file)
 {
 //  sim_trace("Writing section: CLASSES\n");
 
   file->writeGroupCode(2);
   file->writeString(sectionName);
- 
+
   int i, n = this->classes.count();
   for (i = 0; i < n; i++) {
     if (!this->classes[i]->write(file)) break;
@@ -159,7 +159,7 @@ dimeClassesSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeClassesSection::typeId() const
 {
   return dimeBase::dimeClassesSectionType;
@@ -186,10 +186,10 @@ dimeClassesSection::getSectionName() const
 }
 
 /*!
-  Returns the number of classes in this section. 
+  Returns the number of classes in this section.
 */
 
-int 
+int
 dimeClassesSection::getNumClasses() const
 {
   return this->classes.count();
@@ -210,7 +210,7 @@ dimeClassesSection::getClass(const int idx)
   Removes (and deletes if no memhandler is used) the class at index \a idx.
 */
 
-void 
+void
 dimeClassesSection::removeClass(const int idx)
 {
   assert(idx >= 0 && idx < this->classes.count());
@@ -223,7 +223,7 @@ dimeClassesSection::removeClass(const int idx)
   class will be inserted at the end of the list of classes.
 */
 
-void 
+void
 dimeClassesSection::insertClass(dimeClass * const myclass, const int idx)
 {
   if (idx < 0) this->classes.append(myclass);

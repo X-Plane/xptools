@@ -66,7 +66,7 @@ beyond the last element to be accepted).}*/
 
 /*{\Manpage {Vector}{}{Vectors with NT Entries}{v}}*/
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 class Vector_
 {
 /*{\Mdefinition An instance of data type |Vector_| is a vector of
@@ -80,14 +80,14 @@ typedef NT_*       pointer;
 typedef const NT_* const_pointer;
 
 typedef NT_    NT;
-/*{\Mtypemember the ring type of the components.}*/ 
+/*{\Mtypemember the ring type of the components.}*/
 typedef pointer iterator;
-/*{\Mtypemember the iterator type for accessing components.}*/ 
+/*{\Mtypemember the iterator type for accessing components.}*/
 typedef const_pointer const_iterator;
-/*{\Mtypemember the const iterator type for accessing components.}*/ 
+/*{\Mtypemember the const iterator type for accessing components.}*/
 
 typedef AL_ allocator_type;
-/*{\Xtypemember the allocator type.}*/ 
+/*{\Xtypemember the allocator type.}*/
 
 protected:
   friend class Matrix_<NT_,AL_>;
@@ -96,13 +96,13 @@ protected:
 
   inline void allocate_vec_space(NT*& vi, int di)
   {
-  /* We use this procedure to allocate memory. We first get an appropriate 
-     piece of memory from the allocator and then initialize each cell 
+  /* We use this procedure to allocate memory. We first get an appropriate
+     piece of memory from the allocator and then initialize each cell
      by an inplace new. */
 
     vi = MM.allocate(di);
     NT* p = vi + di - 1;
-    while (p >= vi) { new (p) NT(0);  p--; }   
+    while (p >= vi) { new (p) NT(0);  p--; }
   }
 
   inline void deallocate_vec_space(NT*& vi, int di)
@@ -118,10 +118,10 @@ protected:
     vi = (NT*)0;
   }
 
-inline void 
+inline void
 check_dimensions(const Vector_<NT_,AL_>& vec) const
-{ 
-  CGAL_assertion_msg((d_ == vec.d_), 
+{
+  CGAL_assertion_msg((d_ == vec.d_),
     "Vector_::check_dimensions: object dimensions disagree.");
 }
 
@@ -130,29 +130,29 @@ public:
 /*{\Mcreation v 3}*/
 
 Vector_() : v_(0),d_(0) {}
-/*{\Mcreate creates an instance |\Mvar| of type |\Mname|.}*/ 
+/*{\Mcreate creates an instance |\Mvar| of type |\Mname|.}*/
 
-Vector_(int d) 
-/*{\Mcreate creates an instance |\Mvar| of type |\Mname|. 
-|\Mvar| is initialized to a vector of dimension $d$.}*/ 
-{ CGAL_assertion_msg( d >= 0 , 
+Vector_(int d)
+/*{\Mcreate creates an instance |\Mvar| of type |\Mname|.
+|\Mvar| is initialized to a vector of dimension $d$.}*/
+{ CGAL_assertion_msg( d >= 0 ,
     "Vector_::constructor: negative dimension.");
-  d_ = d; 
+  d_ = d;
   v_ = (NT*)0;
-  if (d_ > 0){ 
+  if (d_ > 0){
     allocate_vec_space(v_,d_);
     while (d--) v_[d] = NT(0);
   }
 }
 
-Vector_(int d, const NT& x) 
-/*{\Mcreate creates an instance |\Mvar| of type |\Mname|. 
-|\Mvar| is initialized to a vector of dimension $d$ with entries |x|.}*/ 
-{ 
-  CGAL_assertion_msg( d >= 0 , 
+Vector_(int d, const NT& x)
+/*{\Mcreate creates an instance |\Mvar| of type |\Mname|.
+|\Mvar| is initialized to a vector of dimension $d$ with entries |x|.}*/
+{
+  CGAL_assertion_msg( d >= 0 ,
     "Vector_::constructor: negative dimension.");
   d_ = d; v_ = (NT*)0;
-  if (d_ > 0){ 
+  if (d_ > 0){
     allocate_vec_space(v_,d_);
     while (d--) v_[d] = x;
   }
@@ -160,10 +160,10 @@ Vector_(int d, const NT& x)
 
 template <class Forward_iterator>
 Vector_(Forward_iterator first, Forward_iterator last)
-/*{\Mcreate creates an instance |\Mvar| of type |\Mname|; 
+/*{\Mcreate creates an instance |\Mvar| of type |\Mname|;
 |\Mvar| is initialized to the vector with entries
 |set [first,last)|. \require |Forward_iterator| has value type |NT|.}*/
-{ 
+{
 #if defined _MSC_VER && _MSC_VER == 1300
   d_ = 0;
   Forward_iterator fit = first;
@@ -185,12 +185,12 @@ Vector_(const Vector_<NT_,AL_>& p)
 
 
 Vector_<NT_,AL_>& operator=(const Vector_<NT_,AL_>& vec)
-{ 
+{
   if (&vec == this)
     return *this;
 
   register int n = vec.d_;
-  if (n != d_) { 
+  if (n != d_) {
     if (d_ > 0) deallocate_vec_space(v_,d_);
     d_=n;
   }
@@ -201,29 +201,29 @@ Vector_<NT_,AL_>& operator=(const Vector_<NT_,AL_>& vec)
   return *this;
 }
 
-~Vector_() 
+~Vector_()
 { if (d_ > 0) deallocate_vec_space(v_,d_); }
 
 /*{\Moperations 3 4}*/
 
 int  dimension() const { return d_; }
-/*{\Mop returns the dimension of |\Mvar|.}*/ 
+/*{\Mop returns the dimension of |\Mvar|.}*/
 
-bool is_zero() const 
-/*{\Mop returns true iff |\Mvar| is the zero vector.}*/ 
-{ for(int i=0; i<d_; ++i) if (v_[i]!=NT(0)) return false; 
+bool is_zero() const
+/*{\Mop returns true iff |\Mvar| is the zero vector.}*/
+{ for(int i=0; i<d_; ++i) if (v_[i]!=NT(0)) return false;
   return true; }
-  
+
 NT& operator[](int i)
 /*{\Marrop returns $i$-th component of |\Mvar|.\\
            \precond $0\le i \le |v.dimension()-1|$. }*/
-{ CGAL_assertion_msg((0<=i && i<d_), 
+{ CGAL_assertion_msg((0<=i && i<d_),
     "Vector_::operator[]: index out of range.");
   return v_[i];
 }
-  
+
 const NT& operator[](int i) const
-{ CGAL_assertion_msg((0<=i && i<d_), 
+{ CGAL_assertion_msg((0<=i && i<d_),
     "Vector_::operator[]: index out of range.");
   return v_[i];
 }
@@ -233,22 +233,22 @@ iterator begin() { return v_; }
 iterator end() { return v_+d_; }
 /*{\Mop iterator beyond the last component.}*/
 
-/*{\Mtext The same operations |begin()|, |end()| exist for 
+/*{\Mtext The same operations |begin()|, |end()| exist for
 |const_iterator|.}*/
 
 const_iterator begin() const { return v_; }
 const_iterator end() const { return v_+d_; }
 
 Vector_<NT_,AL_>  operator+(const Vector_<NT_,AL_>& v1) const;
-/*{\Mbinop Addition. \precond\\ 
+/*{\Mbinop Addition. \precond\\
 |v.dimension() == v1.dimension()|.}*/
 
 Vector_<NT_,AL_>  operator-(const Vector_<NT_,AL_>& v1) const;
-/*{\Mbinop Subtraction. \precond\\ 
+/*{\Mbinop Subtraction. \precond\\
 |v.dimension() = v1.dimension()|.}*/
 
 NT operator*(const Vector_<NT_,AL_>& v1) const;
-/*{\Mbinop Inner Product. \precond\\ 
+/*{\Mbinop Inner Product. \precond\\
 |v.dimension() = v1.dimension()|.}*/
 
 Vector_<NT_,AL_> compmul(const NT& r) const;
@@ -261,7 +261,7 @@ Vector_<NT_,AL_>& operator+=(const Vector_<NT_,AL_>& v1);
 |v.dimension() == v1.dimension()|.}*/
 
 Vector_<NT_,AL_>& operator-=(const Vector_<NT_,AL_>& v1);
-/*{\Mbinop Subtraction plus assignment. \precond\\ 
+/*{\Mbinop Subtraction plus assignment. \precond\\
 |v.dimension() == v1.dimension()|.}*/
 
 Vector_<NT_,AL_>& operator*=(const NT& s);
@@ -269,51 +269,51 @@ Vector_<NT_,AL_>& operator*=(const NT& s);
 
 Vector_<NT_,AL_>& operator/=(const NT& s);
 /*{\Mbinop Scalar division plus assignment.}*/
- 
+
 
 bool     operator==(const Vector_<NT_,AL_>& w) const;
-bool     operator!=(const Vector_<NT_,AL_>& w) const 
+bool     operator!=(const Vector_<NT_,AL_>& w) const
 { return !(*this == w); }
 
-static int  compare(const Vector_<NT_,AL_>&, 
+static int  compare(const Vector_<NT_,AL_>&,
                     const Vector_<NT_,AL_>&);
 
 };
 
 
-template <class NT, class AL> 
+template <class NT, class AL>
 
 inline Vector_<NT,AL> operator*(const NT& r, const Vector_<NT,AL>& v)
 /*{\Mbinopfunc Componentwise multiplication with number $r$.}*/
 { return v.compmul(r); }
 
-template <class NT, class AL> 
+template <class NT, class AL>
 
 inline Vector_<NT,AL> operator*(const Vector_<NT,AL>& v, const NT& r)
 /*{\Mbinopfunc Componentwise multiplication with number $r$.}*/
 { return v.compmul(r); }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_>& Vector_<NT_,AL_>::
 operator+=(const Vector_<NT_,AL_>& vec)
-{ 
+{
   check_dimensions(vec);
   register int n = d_;
   while (n--) v_[n] += vec.v_[n];
   return *this;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_>& Vector_<NT_,AL_>::
 operator-=(const Vector_<NT_,AL_>& vec)
-{ 
+{
   check_dimensions(vec);
   register int n = d_;
   while (n--) v_[n] -= vec.v_[n];
   return *this;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_>& Vector_<NT_,AL_>::
 operator*=(const NT& s)
 { register int n = d_;
@@ -329,10 +329,10 @@ operator/=(const NT& s)
   return *this;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_> Vector_<NT_,AL_>::
 operator+(const Vector_<NT_,AL_>& vec) const
-{ 
+{
   check_dimensions(vec);
   register int n = d_;
   Vector_<NT_,AL_> result(n);
@@ -340,10 +340,10 @@ operator+(const Vector_<NT_,AL_>& vec) const
   return result;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_> Vector_<NT_,AL_>::
 operator-(const Vector_<NT_,AL_>& vec) const
-{ 
+{
   check_dimensions(vec);
   register int n = d_;
   Vector_<NT_,AL_> result(n);
@@ -351,10 +351,10 @@ operator-(const Vector_<NT_,AL_>& vec) const
   return result;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_> Vector_<NT_,AL_>::
 operator-() const  // unary minus
-{ 
+{
   register int n = d_;
   Vector_<NT_,AL_> result(n);
   while (n--) result.v_[n] = -v_[n];
@@ -362,10 +362,10 @@ operator-() const  // unary minus
 }
 
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline Vector_<NT_,AL_> Vector_<NT_,AL_>::
 compmul(const NT& x) const
-{ 
+{
   int n = d_;
   Vector_<NT_,AL_> result(n);
   while (n--) result.v_[n] = v_[n] * x;
@@ -373,10 +373,10 @@ compmul(const NT& x) const
 }
 
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline NT_ Vector_<NT_,AL_>::
 operator*(const Vector_<NT_,AL_>& vec) const
-{ 
+{
   check_dimensions(vec);
   NT_ result=0;
   register int n = d_;
@@ -384,7 +384,7 @@ operator*(const Vector_<NT_,AL_>& vec) const
   return result;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 inline bool Vector_<NT_,AL_>::
 operator==(const Vector_<NT_,AL_>& vec)  const
 { if (vec.d_ != d_) return false;
@@ -393,7 +393,7 @@ operator==(const Vector_<NT_,AL_>& vec)  const
   return (i==d_);
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 int Vector_<NT_,AL_>::
 compare(const Vector_<NT_,AL_>& v1, const Vector_<NT_,AL_>& v2)
 { register int i;
@@ -403,7 +403,7 @@ compare(const Vector_<NT_,AL_>& v1, const Vector_<NT_,AL_>& v2)
   return (v1[i] < v2[i]) ?  -1 : 1;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 std::ostream& operator<<(std::ostream& os, const Vector_<NT_,AL_>& v)
 /*{\Xbinopfunc  writes |\Mvar| componentwise to the output stream $O$.}*/
 { /* syntax: d x_0 x_1 ... x_d-1 */
@@ -432,7 +432,7 @@ std::ostream& operator<<(std::ostream& os, const Vector_<NT_,AL_>& v)
     return os;
 }
 
-template <class NT_, class AL_> 
+template <class NT_, class AL_>
 std::istream& operator>>(std::istream& is, Vector_<NT_,AL_>& v)
 /*{\Xbinopfunc  reads |\Mvar| componentwise from the input stream $I$.}*/
 { /* syntax: d x_0 x_1 ... x_d-1 */
@@ -440,7 +440,7 @@ std::istream& operator>>(std::istream& is, Vector_<NT_,AL_>& v)
   switch (is.iword(CGAL::IO::mode)) {
     case CGAL::IO::ASCII :
     case CGAL::IO::BINARY :
-      is >> d; 
+      is >> d;
       v = Vector_<NT_,AL_>(d);
       for ( int i = 0; i < d; ++i) {
           is >> v[i];

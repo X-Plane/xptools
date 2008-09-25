@@ -5,7 +5,7 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 // ----------------------------------------------------------------------
 //
 // file          : main.C
@@ -86,7 +86,7 @@ bool polygons_covering(Polygon_list &in_poly_list,
 class Qt_layer_show_ch : public CGAL::Qt_widget_layer
 {
 public:
-	
+
   Qt_layer_show_ch(){};
 
 
@@ -128,7 +128,7 @@ public:
     *widget << CGAL::LineWidth(1);
 
     widget->unlock();
-  };	
+  };
 
 
   void mousePressEvent(QMouseEvent *e)
@@ -161,8 +161,8 @@ public:
 	}
 	pit++;
       }
-      
-      
+
+
       Arr::Curve_iterator ci = arr.curve_node_begin();
       while(ci != arr.curve_node_end() )
       {
@@ -182,12 +182,12 @@ public:
       list_of_polygons.erase( it_closest );
       list_of_covering.clear();
       list_of_segments.clear();
-      
+
       (*widget).redraw();
     }
   }
-  
-};//end class 
+
+};//end class
 
 class MyWindow : public QMainWindow
 {
@@ -196,7 +196,7 @@ public:
   MyWindow(int w, int h){
     widget = new CGAL::Qt_widget(this);
     setCentralWidget(widget);
-    
+
     //create a timer for checking if somthing changed
     QTimer *timer = new QTimer( this );
     connect( timer, SIGNAL(timeout()),
@@ -233,16 +233,16 @@ public:
     //the standard toolbar
     stoolbar = new CGAL::Qt_widget_standard_toolbar (widget, this, "ST");
     //the new tools toolbar
-    newtoolbar = new Tools_toolbar(widget, this, &list_of_polygons);	
-  
+    newtoolbar = new Tools_toolbar(widget, this, &list_of_polygons);
+
     *widget << CGAL::LineWidth(2) << CGAL::BackgroundColor (CGAL::BLACK);
-  
+
     resize(w,h);
     widget->set_window(-1, 1, -1, 1);
     widget->setMouseTracking(TRUE);
-	
+
     //connect the widget to the main function that receives the objects
-    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)), 
+    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)),
     this, SLOT(get_new_object(CGAL::Object)));
 
     //application flag stuff
@@ -255,14 +255,14 @@ public:
 
 private:
   void something_changed(){current_state++;};
-  
+
 public slots:
   void new_instance()
   {
     widget->lock();
     list_of_polygons.clear();
     stoolbar->clear_history();
-    widget->set_window(-1.1, 1.1, -1.1, 1.1); 
+    widget->set_window(-1.1, 1.1, -1.1, 1.1);
 			// set the Visible Area to the Interval
     widget->unlock();
     something_changed();
@@ -335,7 +335,7 @@ private slots:
       widget->redraw();
       old_state = current_state;
     }
-  }	
+  }
 
   void find_intersection()
   {
@@ -350,7 +350,7 @@ private slots:
 
     something_changed();
   }
-	
+
   void find_union()
   {
     if( list_of_polygons.empty() )
@@ -397,17 +397,17 @@ int face_diff (Arr::Ccb_halfedge_circulator circ) {
   int diff = 0;
   Arr::Overlap_circulator oc = circ->overlap_edges();
   do {
-    if (circ->source()->point() == t.curve_source(oc->x_curve()) ) 
+    if (circ->source()->point() == t.curve_source(oc->x_curve()) )
     diff--;     //we're inside, going outside
   else
     diff++;
   } while (++oc != circ->overlap_edges());
 
   return diff;
-} 
+}
 
 // covering_DFS will compute for each face in how many polygons it is.
-// It is a recursive DFS function and will be called with the unbounded 
+// It is a recursive DFS function and will be called with the unbounded
 // face after its counter has been initialized to 0.
 void covering_DFS(Arr::Face_handle f) {
   Arr::Ccb_halfedge_circulator start,circ;
@@ -418,7 +418,7 @@ void covering_DFS(Arr::Face_handle f) {
     do {
       if (circ->twin()->face()->counter < 0) {
         int diff = face_diff(circ);
-        circ->twin()->face()->counter = (f->counter + diff); 
+        circ->twin()->face()->counter = (f->counter + diff);
         covering_DFS(circ->twin()->face());
       }
     } while (++circ != start);
@@ -433,12 +433,12 @@ void covering_DFS(Arr::Face_handle f) {
       do {
         if (circ->twin()->face()->counter < 0) {
           int diff = face_diff(circ);
-          circ->twin()->face()->counter = (f->counter + diff); 
-          covering_DFS(circ->twin()->face());        
+          circ->twin()->face()->counter = (f->counter + diff);
+          covering_DFS(circ->twin()->face());
         }
       } while (++circ != start);
   }
-} 
+}
 
 // Convert faces of the arrangement that are in the intersection
 // to polygons.
@@ -448,7 +448,7 @@ void polygons_from_faces(Arr& arr,
 {
   std::list<Arr::Face_iterator>::iterator  lit;
   Cgal_Polygon                        poly;
-  
+
   for (lit = face_it_list.begin(); lit != face_it_list.end(); lit++) {
 
     poly.erase(poly.vertices_begin(), poly.vertices_end());
@@ -465,22 +465,22 @@ void polygons_from_faces(Arr& arr,
 // if covering = 0, will perform union
 // otherwise, if there are n polygons in the arrangement and covering == n
 // then will perform intersection
-void get_faces_with_covering(std::list<Arr::Face_iterator>& unions, 
+void get_faces_with_covering(std::list<Arr::Face_iterator>& unions,
 			     int covering)
 {
   Arr::Face_handle uf = arr.unbounded_face();
   uf->counter = 0;
   covering_DFS(uf);
-  
-  //"collecting" the union boundary faces. 
-  for(Arr::Face_iterator fit = arr.faces_begin(); fit!=arr.faces_end(); ++fit) 
+
+  //"collecting" the union boundary faces.
+  for(Arr::Face_iterator fit = arr.faces_begin(); fit!=arr.faces_end(); ++fit)
   {
-    if (fit->counter == covering) 
+    if (fit->counter == covering)
     {
       unions.push_back(fit);
     }
   }
-}                                                                          
+}
 
 void get_union()
 {
@@ -498,12 +498,12 @@ void get_union()
     }
     hi++;
   }
-  
+
 }
 
 void clean_count()
 {
-  for(Arr::Face_iterator fit = arr.faces_begin(); fit!=arr.faces_end(); ++fit) 
+  for(Arr::Face_iterator fit = arr.faces_begin(); fit!=arr.faces_end(); ++fit)
   {
     fit->counter = -1;
   }

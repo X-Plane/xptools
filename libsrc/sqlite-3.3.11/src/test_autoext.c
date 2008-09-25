@@ -34,8 +34,8 @@ static void sqrFunc(
 ** This is the entry point to register the extension for the sqr() function.
 */
 static int sqr_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   SQLITE_EXTENSION_INIT2(pApi);
@@ -59,8 +59,8 @@ static void cubeFunc(
 ** This is the entry point to register the extension for the cube() function.
 */
 static int cube_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   SQLITE_EXTENSION_INIT2(pApi);
@@ -72,8 +72,8 @@ static int cube_init(
 ** This is a broken extension entry point
 */
 static int broken_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   char *zErr;

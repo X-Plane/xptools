@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -44,7 +44,7 @@ int find_first_of_c(const char * s, const char * charset)
 	while(1)
 	{
 		for (const char * c = c1; c < c2; ++c)
-			if (s[n] == *c) 
+			if (s[n] == *c)
 				return n;
 		++n;
 	}
@@ -62,7 +62,7 @@ static void OBJ_set_property_str(ACObject * obj, const char * in_key, const char
 {
 //	printf("Obj %d setting %s -> %s\n", obj, in_key, new_value);
 	string::size_type p, e;
-	
+
 	string data(ac_object_get_data(obj) ? ac_object_get_data(obj) : "");
 	string value(new_value);
 	string key(in_key);
@@ -106,7 +106,7 @@ static void OBJ_set_property_str(ACObject * obj, const char * in_key, const char
 	ac_object_set_data	(obj, (char*) data.c_str());
 
 	for (set<OBJ_change_f>::iterator f = gChangeFuncs.begin(); f != gChangeFuncs.end(); ++f)
-		(*f)(obj);	
+		(*f)(obj);
 }
 
 static void OBJ_set_property_int(ACObject * ob, const char * tag, int v)
@@ -132,7 +132,7 @@ static const char * OBJ_get_property_str(ACObject * obj, const char * tag, char 
 	if (d == NULL) return buf;
 	const char * t = strstr(d, tag);
 	if (t == NULL) return buf;
-	
+
 	t += strlen(tag)+1;
 	int n = find_first_of_c(t,"\n\r");
 	memcpy(buf,t,n);
@@ -153,7 +153,7 @@ static float OBJ_get_property_flt(ACObject * obj, const char * tag)
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
-// TCL ACCESS 
+// TCL ACCESS
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -162,7 +162,7 @@ static void	OBJ_get_prop_tcl(const char * s)
 	vector<ACObject *>		objs;
 	vector<ACObject *>::iterator ob;
 	find_all_selected_objects(objs);
-	if (objs.empty()) return;	
+	if (objs.empty()) return;
 	ACObject * obj = objs.front();
 
 	char	temp[1024];
@@ -200,7 +200,7 @@ void		OBJ_unregister_change_cb(OBJ_change_f func)
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
-// TCL ACCESS 
+// TCL ACCESS
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
 #define STR_PROP(x,y) \
@@ -216,12 +216,12 @@ void		OBJ_unregister_change_cb(OBJ_change_f func)
 void		OBJ_set_name(ACObject * obj, const char * name)
 {
 	ac_object_set_name(obj,(char*)name);
-	
+
 	redraw_all();
-	tcl_command("hier_update");	
+	tcl_command("hier_update");
 	for (set<OBJ_change_f>::iterator f = gChangeFuncs.begin(); f != gChangeFuncs.end(); ++f)
-		(*f)(obj);	
-	
+		(*f)(obj);
+
 }
 const char *	OBJ_get_name(ACObject * obj, char * buf)
 {

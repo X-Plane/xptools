@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,7 +49,7 @@ enum {
 	axis_Z,
 	save_OBJ7,
 	save_OBJ8,
-	
+
 	size_16,
 	size_32
 };
@@ -69,7 +69,7 @@ static int	gOptimize = 0;
 void	PostProcessVertex(float v[3], bool inReverse)
 {
 	float	nv[3];
-	
+
 	if (gAxis == axis_Y)
 	{
 		nv[0] = v[0];
@@ -84,7 +84,7 @@ void	PostProcessVertex(float v[3], bool inReverse)
 	if (gFlipX)	nv[0] = -nv[0];
 	if (gFlipY)	nv[1] = -nv[1];
 	if (gFlipZ)	nv[2] = -nv[2];
-		
+
 	if (gUnits == unit_Feet)
 	{
 		nv[0] *= (inReverse ? kMetersToFeet : kFeetToMeters);
@@ -97,7 +97,7 @@ void	PostProcessVertex(float v[3], bool inReverse)
 		nv[1] *= (inReverse ? kMetersToInches : kInchesToMeters);
 		nv[2] *= (inReverse ? kMetersToInches : kInchesToMeters);
 	}
-	
+
 	v[0] = nv[0];
 	v[1] = nv[1];
 	v[2] = nv[2];
@@ -116,7 +116,7 @@ void	PostProcessObj(XObj& ioObj, bool inReverse)
 			PostProcessVertex(rgb->v, inReverse);
 		}
 	}
-	
+
 	if (gCenterH)
 	{
 		float sphere[4];
@@ -130,25 +130,25 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 	XObj	obj;
 	XObj8	obj8;
 	bool success = false;
-	
+
 	if(strcmp(inConvertFlag,"--obj23ds")==0)
 	{
 			 if (XObj8Read(inSrcFile, obj8))					Obj8ToObj7(obj8, obj);
 		else if (!XObjRead(inSrcFile, obj))					{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
-			
+
 		PostProcessObj(obj, true);
 		if (!WriteObj3DS(inDstFile, obj,gPoly == poly_CCW))	{ printf("Error: unable to write 3DS file %s\n", inDstFile); exit(1); }
 	}
-	
+
 	if(strcmp(inConvertFlag,"--obj2dxf")==0)
 	{
 			 if (XObj8Read(inSrcFile, obj8))					Obj8ToObj7(obj8, obj);
 		else if (!XObjRead(inSrcFile, obj))						{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
-			
+
 		PostProcessObj(obj, true);
 		if (!WriteObjDXF(inDstFile, obj,gPoly == poly_CCW))		{ printf("Error: unable to write DXF file %s\n", inDstFile); exit(1); }
 	}
-	
+
 	if(strcmp(inConvertFlag,"--obj2obj")==0)
 	{
 		if (gSave == save_OBJ8)
@@ -165,7 +165,7 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		{
 				 if (XObj8Read(inSrcFile, obj8))				Obj8ToObj7(obj8,obj);
 			else if (!XObjRead(inSrcFile, obj))				{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
-			
+
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 	}
@@ -176,43 +176,43 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 		if(gOptimize)
 			Obj8_Optimize(obj8);
-		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }	
-	}	
-	
+		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
+	}
+
 	if(strcmp(inConvertFlag,"--3ds2obj")==0)
 	{
 		if (!ReadObj3DS(inSrcFile, obj, gPoly == poly_CCW))	{ printf("Error: unable to read DXF file %s\n", inSrcFile); exit(1); }
-		PostProcessObj(obj, false);	
-			
+		PostProcessObj(obj, false);
+
 		if (gSave == save_OBJ8)
 		{
 			Obj7ToObj8(obj,obj8);
 
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-			
+
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
 		{
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
-			
+
 	}
 	if(strcmp(inConvertFlag,"--dxf2obj")==0)
 	{
 		if (!ReadObjDXF(inSrcFile, obj, gPoly == poly_CCW))	{ printf("Error: unable to read DXF file %s\n", inSrcFile); exit(1); }
-		PostProcessObj(obj, false);	
+		PostProcessObj(obj, false);
 
 		if (gSave == save_OBJ8)
 		{
 			Obj7ToObj8(obj,obj8);
-			
+
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-			
+
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-		} 
+		}
 		else
 		{
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
@@ -279,13 +279,13 @@ int main(int argc, const char * argv[])
 
 		else if (!strcmp(argv[a],"--polygon_ccw"))	gPoly = poly_CCW;
 		else if (!strcmp(argv[a],"--polygon_cw"))	gPoly = poly_CW;
-		
+
 		else if (!strcmp(argv[a],"--axis_y"))		gAxis = axis_Y;
 		else if (!strcmp(argv[a],"--axis_z"))		gAxis = axis_Z;
 
 		else if (!strcmp(argv[a],"--obj7"))			gSave = save_OBJ7;
 		else if (!strcmp(argv[a],"--obj8"))			gSave = save_OBJ8;
-		
+
 		else if (!strcmp(argv[a],"--16"))			gBitSize = size_16;
 		else if (!strcmp(argv[a],"--32"))			gBitSize = size_32;
 

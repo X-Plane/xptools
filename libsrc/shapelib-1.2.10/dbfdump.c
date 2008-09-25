@@ -13,7 +13,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -60,7 +60,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: dbfdump.c,v 1.9 2002/01/15 14:36:07 warmerda Exp $";
 
 #include <stdlib.h>
@@ -115,7 +115,7 @@ int main( int argc, char ** argv )
 	printf( "DBFOpen(%s,\"r\") failed.\n", argv[1] );
 	exit( 2 );
     }
-    
+
 /* -------------------------------------------------------------------- */
 /*	If there is no data in this file let the user know.		*/
 /* -------------------------------------------------------------------- */
@@ -182,18 +182,18 @@ int main( int argc, char ** argv )
     {
         if( bMultiLine )
             printf( "Record: %d\n", iRecord );
-        
+
 	for( i = 0; i < DBFGetFieldCount(hDBF); i++ )
 	{
             DBFFieldType	eType;
-            
+
             eType = DBFGetFieldInfo( hDBF, i, szTitle, &nWidth, &nDecimals );
 
             if( bMultiLine )
             {
                 printf( "%s: ", szTitle );
             }
-            
+
 /* -------------------------------------------------------------------- */
 /*      Print the record according to the type and formatting           */
 /*      information implicit in the DBF field description.              */
@@ -215,22 +215,22 @@ int main( int argc, char ** argv )
                     {
                       case FTString:
                         sprintf( szFormat, "%%-%ds", nWidth );
-                        printf( szFormat, 
+                        printf( szFormat,
                                 DBFReadStringAttribute( hDBF, iRecord, i ) );
                         break;
-                        
+
                       case FTInteger:
                         sprintf( szFormat, "%%%dd", nWidth );
-                        printf( szFormat, 
+                        printf( szFormat,
                                 DBFReadIntegerAttribute( hDBF, iRecord, i ) );
                         break;
-                        
+
                       case FTDouble:
                         sprintf( szFormat, "%%%d.%dlf", nWidth, nDecimals );
-                        printf( szFormat, 
+                        printf( szFormat,
                                 DBFReadDoubleAttribute( hDBF, iRecord, i ) );
                         break;
-                        
+
                       default:
                         break;
                     }
@@ -243,7 +243,7 @@ int main( int argc, char ** argv )
             else
             {
                 sprintf( szFormat, "%%-%ds", nWidth );
-                printf( szFormat, 
+                printf( szFormat,
                         DBFReadStringAttribute( hDBF, iRecord, i ) );
             }
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -56,7 +56,7 @@ ACObject * get_sel_single_obj(int n)
 	obj = objs[n];
 	if (ac_entity_is_class(obj, AC_CLASS_LIGHT)) return NULL;
 	if (ac_entity_is_class(obj, AC_CLASS_GROUP)) return NULL;
-	return obj;	
+	return obj;
 }
 
 static ACObject * get_sel_single_grp(int n)
@@ -94,7 +94,7 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_STR(anim_dataref,get_sel_single_obj,OBJ_set_anim_dataref,OBJ_get_anim_dataref,"","") \
 	SIMPLE_PROPERTY_INT(anim_keyframe_count, get_sel_single_obj,OBJ_set_anim_keyframe_count,OBJ_get_anim_keyframe_count) \
 	SIMPLE_PROPERTY_INT(use_materials,get_sel_single_obj,OBJ_set_use_materials,OBJ_get_use_materials) \
-	SIMPLE_PROPERTY_INT(anim_keyframe_root,get_sel_single_obj,OBJ_set_anim_keyframe_root,OBJ_get_anim_keyframe_root)	
+	SIMPLE_PROPERTY_INT(anim_keyframe_root,get_sel_single_obj,OBJ_set_anim_keyframe_root,OBJ_get_anim_keyframe_root)
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \
 //	SIMPLE_PROPERTY_FLT(anim_low_angle,get_sel_single_obj,OBJ_set_anim_low_angle,OBJ_get_anim_low_angle) \
 //	SIMPLE_PROPERTY_FLT(anim_high_value,get_sel_single_obj,OBJ_set_anim_high_value,OBJ_get_anim_high_value) \
@@ -130,7 +130,7 @@ static ACObject * get_sel_single_light(int n)
 		editor_recursion = _GET_ONE; obj = *ob; _APPLY_FUNC; editor_recursion = NULL; } \
 	} else { \
 		obj = _GET_ONE; if(obj) { editor_recursion = obj; _APPLY_FUNC; editor_recursion = NULL; } }
-	
+
 #define	SIMPLE_PROPERTY_STR(prop_name,obj_func,set_func,get_func,native_code,ui_code)	\
 	static TCL_linked_varsv * prop_name##_var = NULL; \
 	static void xplane_##prop_name##_cb(const char * value, int idx, void * ref, TCL_linked_varsv * who) { \
@@ -170,14 +170,14 @@ static void	xplane_blend_level_cb(double value, int idx, void * ref, TCL_linked_
 static void xplane_anim_type_cb(const char * value, int idx, void * ref, TCL_linked_varsv * who)
 {
 	ACObject * obj;
-	if(multi_edit->get()) 
+	if(multi_edit->get())
 	{
 		vector<ACObject *> objs;
 		find_all_selected_objects_flat(objs);
-		for(vector<ACObject *>::iterator ob = objs.begin(); ob != objs.end(); ++ob) 
+		for(vector<ACObject *>::iterator ob = objs.begin(); ob != objs.end(); ++ob)
 		{
 			obj = *ob;
-			editor_recursion = get_sel_single_obj(idx); 
+			editor_recursion = get_sel_single_obj(idx);
 			int found = 0;
 			for (int n = 0; n < 6; ++n)
 			if (strcmp(value,k_anim_names[n])==0)
@@ -187,12 +187,12 @@ static void xplane_anim_type_cb(const char * value, int idx, void * ref, TCL_lin
 			}
 			if (!found)
 				OBJ_set_anim_type(obj, 0);
-			editor_recursion = NULL;				
+			editor_recursion = NULL;
 		}
-	} 
-	else 
+	}
+	else
 	{
-		obj = get_sel_single_obj(idx); 
+		obj = get_sel_single_obj(idx);
 		if(obj)
 		{
 			editor_recursion = obj;
@@ -206,7 +206,7 @@ static void xplane_anim_type_cb(const char * value, int idx, void * ref, TCL_lin
 			if (!found)
 				OBJ_set_anim_type(obj, 0);
 			editor_recursion = NULL;
-		}		
+		}
 	}
 }
 
@@ -286,7 +286,7 @@ static void OBJ_get_sel_count_tcl(void)
 
 
 static void OBJ_get_sel_type_tcl(float n)
-{	
+{
 	command_result_append_int(OBJ_get_sel_type(n, NULL));
 }
 
@@ -317,9 +317,9 @@ static void OBJ_editor_sync(ACObject * changed)
 {
 	ACObject * obj;
 
-	vector<ACObject *>		objs;	
+	vector<ACObject *>		objs;
 	find_all_selected_objects_flat(objs);
-	
+
 	int total = (objs.size() <= MAX_MULTI_COUNT) ? objs.size() : 1;
 
 	for (int idx = 0; idx < total; ++idx)
@@ -329,15 +329,15 @@ static void OBJ_editor_sync(ACObject * changed)
 		{
 		//	printf("Sync - changed = %d, obj = %d, sel_type = %d\n", changed, obj, seltype);
 
-			char buf[1024]; 	
-			
+			char buf[1024];
+
 			#define	SIMPLE_PROPERTY_STR(prop_name,obj_func,set_func,get_func,native_code,ui_code)	\
 				prop_name##_var->set(idx, remap_str(get_func(obj,buf),native_code,ui_code));
 			#define	SIMPLE_PROPERTY_INT(prop_name,obj_func,set_func,get_func)	\
 				prop_name##_var->set(idx, get_func(obj));
 			#define	SIMPLE_PROPERTY_FLT(prop_name,obj_func,set_func,get_func)	\
 				prop_name##_var->set(idx, get_func(obj));
-			
+
 			if (seltype == sel_obj && (changed == obj || changed == NULL))
 			{
 				if (obj == NULL) message_dialog("internal err - null obj!\n");
@@ -364,10 +364,10 @@ static void OBJ_editor_sync(ACObject * changed)
 				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_GRP
 			}
-				
+
 			#undef SIMPLE_PROPERTY_STR
 			#undef SIMPLE_PROPERTY_INT
-			#undef SIMPLE_PROPERTY_FLT	
+			#undef SIMPLE_PROPERTY_FLT
 		}
 	}
 }
@@ -415,7 +415,7 @@ void	OBJ_editor_init(void)
 
 	#undef SIMPLE_PROPERTY_STR
 	#undef SIMPLE_PROPERTY_INT
-	#undef SIMPLE_PROPERTY_FLT	
+	#undef SIMPLE_PROPERTY_FLT
 
 
 	OBJ_register_change_cb(OBJ_editor_sync);

@@ -2,7 +2,7 @@
  * $Id: pj_transform.c,v 1.12 2004/05/03 19:45:23 warmerda Exp $
  *
  * Project:  PROJ.4
- * Purpose:  Perform overall coordinate system to coordinate system 
+ * Purpose:  Perform overall coordinate system to coordinate system
  *           transformations (pj_transform() function) including reprojection
  *           and datum shifting.
  * Author:   Frank Warmerdam, warmerdam@pobox.com
@@ -101,23 +101,23 @@ PJ_CVSID("$Id: pj_transform.c,v 1.12 2004/05/03 19:45:23 warmerda Exp $");
 #define Rz_BF (defn->datum_params[5])
 #define M_BF  (defn->datum_params[6])
 
-/* 
-** This table is intended to indicate for any given error code in 
+/*
+** This table is intended to indicate for any given error code in
 ** the range 0 to -44, whether that error will occur for all locations (ie.
 ** it is a problem with the coordinate system as a whole) in which case the
 ** value would be 0, or if the problem is with the point being transformed
-** in which case the value is 1. 
+** in which case the value is 1.
 **
 ** At some point we might want to move this array in with the error message
-** list or something, but while experimenting with it this should be fine. 
+** list or something, but while experimenting with it this should be fine.
 */
 
 static int transient_error[45] = {
     /*             0  1  2  3  4  5  6  7  8  9   */
-    /* 0 to 9 */   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    /* 10 to 19 */ 0, 0, 0, 0, 1, 1, 0, 1, 1, 1,  
-    /* 20 to 29 */ 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
-    /* 30 to 39 */ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+    /* 0 to 9 */   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    /* 10 to 19 */ 0, 0, 0, 0, 1, 1, 0, 1, 1, 1,
+    /* 20 to 29 */ 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    /* 30 to 39 */ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
     /* 40 to 44 */ 0, 0, 0, 0, 0 };
 
 /************************************************************************/
@@ -162,8 +162,8 @@ int pj_transform( PJ *srcdefn, PJ *dstdefn, long point_count, int point_offset,
         }
 
         if( pj_geocentric_to_geodetic( srcdefn->a, srcdefn->es,
-                                       point_count, point_offset, 
-                                       x, y, z ) != 0) 
+                                       point_count, point_offset,
+                                       x, y, z ) != 0)
             return pj_errno;
     }
 
@@ -178,7 +178,7 @@ int pj_transform( PJ *srcdefn, PJ *dstdefn, long point_count, int point_offset,
             pj_errno = -17; /* this isn't correct, we need a no inverse err */
             if( getenv( "PROJ_DEBUG" ) != NULL )
             {
-                fprintf( stderr, 
+                fprintf( stderr,
                        "pj_transform(): source projection not invertable\n" );
             }
             return pj_errno;
@@ -228,7 +228,7 @@ int pj_transform( PJ *srcdefn, PJ *dstdefn, long point_count, int point_offset,
 /* -------------------------------------------------------------------- */
 /*      Convert datums if needed, and possible.                         */
 /* -------------------------------------------------------------------- */
-    if( pj_datum_transform( srcdefn, dstdefn, point_count, point_offset, 
+    if( pj_datum_transform( srcdefn, dstdefn, point_count, point_offset,
                             x, y, z ) != 0 )
         return pj_errno;
 
@@ -315,7 +315,7 @@ int pj_transform( PJ *srcdefn, PJ *dstdefn, long point_count, int point_offset,
 /*                     pj_geodetic_to_geocentric()                      */
 /************************************************************************/
 
-int pj_geodetic_to_geocentric( double a, double es, 
+int pj_geodetic_to_geocentric( double a, double es,
                                long point_count, int point_offset,
                                double *x, double *y, double *z )
 
@@ -338,7 +338,7 @@ int pj_geodetic_to_geocentric( double a, double es,
     {
         long io = i * point_offset;
 
-        if( Convert_Geodetic_To_Geocentric( y[io], x[io], z[io], 
+        if( Convert_Geodetic_To_Geocentric( y[io], x[io], z[io],
                                             x+io, y+io, z+io ) != 0 )
         {
             pj_errno = PJD_ERR_GEOCENTRIC;
@@ -353,7 +353,7 @@ int pj_geodetic_to_geocentric( double a, double es,
 /*                     pj_geodetic_to_geocentric()                      */
 /************************************************************************/
 
-int pj_geocentric_to_geodetic( double a, double es, 
+int pj_geocentric_to_geodetic( double a, double es,
                                long point_count, int point_offset,
                                double *x, double *y, double *z )
 
@@ -379,7 +379,7 @@ int pj_geocentric_to_geodetic( double a, double es,
         if( x[io] == HUGE_VAL )
             continue;
 
-        Convert_Geocentric_To_Geodetic( x[io], y[io], z[io], 
+        Convert_Geocentric_To_Geodetic( x[io], y[io], z[io],
                                         y+io, x+io, z+io );
     }
 
@@ -400,7 +400,7 @@ int pj_compare_datums( PJ *srcdefn, PJ *dstdefn )
     {
         return 0;
     }
-    else if( srcdefn->a != dstdefn->a 
+    else if( srcdefn->a != dstdefn->a
              || ABS(srcdefn->es - dstdefn->es) > 0.000000000050 )
     {
         /* the tolerence for es is to ensure that GRS80 and WGS84 are
@@ -436,7 +436,7 @@ int pj_compare_datums( PJ *srcdefn, PJ *dstdefn )
 /*                       pj_geocentic_to_wgs84()                        */
 /************************************************************************/
 
-int pj_geocentric_to_wgs84( PJ *defn, 
+int pj_geocentric_to_wgs84( PJ *defn,
                             long point_count, int point_offset,
                             double *x, double *y, double *z )
 
@@ -450,7 +450,7 @@ int pj_geocentric_to_wgs84( PJ *defn,
         for( i = 0; i < point_count; i++ )
         {
             long io = i * point_offset;
-            
+
             if( x[io] == HUGE_VAL )
                 continue;
 
@@ -486,7 +486,7 @@ int pj_geocentric_to_wgs84( PJ *defn,
 /*                      pj_geocentic_from_wgs84()                       */
 /************************************************************************/
 
-int pj_geocentric_from_wgs84( PJ *defn, 
+int pj_geocentric_from_wgs84( PJ *defn,
                               long point_count, int point_offset,
                               double *x, double *y, double *z )
 
@@ -503,7 +503,7 @@ int pj_geocentric_from_wgs84( PJ *defn,
 
             if( x[io] == HUGE_VAL )
                 continue;
-            
+
             x[io] = x[io] - defn->datum_params[0];
             y[io] = y[io] - defn->datum_params[1];
             z[io] = z[io] - defn->datum_params[2];
@@ -536,7 +536,7 @@ int pj_geocentric_from_wgs84( PJ *defn,
 /*                         pj_datum_transform()                         */
 /************************************************************************/
 
-int pj_datum_transform( PJ *srcdefn, PJ *dstdefn, 
+int pj_datum_transform( PJ *srcdefn, PJ *dstdefn,
                         long point_count, int point_offset,
                         double *x, double *y, double *z )
 
@@ -577,7 +577,7 @@ int pj_datum_transform( PJ *srcdefn, PJ *dstdefn,
 /* -------------------------------------------------------------------- */
     if( srcdefn->datum_type == PJD_GRIDSHIFT )
     {
-        pj_apply_gridshift( pj_param(srcdefn->params,"snadgrids").s, 0, 
+        pj_apply_gridshift( pj_param(srcdefn->params,"snadgrids").s, 0,
                             point_count, point_offset, x, y, z );
         CHECK_RETURN;
 
@@ -590,14 +590,14 @@ int pj_datum_transform( PJ *srcdefn, PJ *dstdefn,
         dst_a = SRS_WGS84_SEMIMAJOR;
         dst_es = 0.006694379990;
     }
-        
+
 /* ==================================================================== */
 /*      Do we need to go through geocentric coordinates?                */
 /* ==================================================================== */
     if( src_es != dst_es || src_a != dst_a
-        || srcdefn->datum_type == PJD_3PARAM 
+        || srcdefn->datum_type == PJD_3PARAM
         || srcdefn->datum_type == PJD_7PARAM
-        || dstdefn->datum_type == PJD_3PARAM 
+        || dstdefn->datum_type == PJD_3PARAM
         || dstdefn->datum_type == PJD_7PARAM)
     {
 /* -------------------------------------------------------------------- */
@@ -610,14 +610,14 @@ int pj_datum_transform( PJ *srcdefn, PJ *dstdefn,
 /* -------------------------------------------------------------------- */
 /*      Convert between datums.                                         */
 /* -------------------------------------------------------------------- */
-        if( srcdefn->datum_type == PJD_3PARAM 
+        if( srcdefn->datum_type == PJD_3PARAM
             || srcdefn->datum_type == PJD_7PARAM )
         {
             pj_geocentric_to_wgs84( srcdefn, point_count, point_offset,x,y,z);
             CHECK_RETURN;
         }
 
-        if( dstdefn->datum_type == PJD_3PARAM 
+        if( dstdefn->datum_type == PJD_3PARAM
             || dstdefn->datum_type == PJD_7PARAM )
         {
             pj_geocentric_from_wgs84( dstdefn, point_count,point_offset,x,y,z);

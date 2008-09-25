@@ -156,10 +156,10 @@ public:
   { return transform(p); } // FIXME : not compiled by the test-suite !
 
   Aff_transformation_3 inverse() const { return Ptr()->inverse(); }
-  
+
   bool is_even() const { return Ptr()->is_even(); }
   bool is_odd() const { return  ! (Ptr()->is_even()); }
-  
+
   FT cartesian(int i, int j) const { return Ptr()->cartesian(i,j); }
   FT homogeneous(int i, int j) const { return cartesian(i,j); }
   FT m(int i, int j) const { return cartesian(i,j); }

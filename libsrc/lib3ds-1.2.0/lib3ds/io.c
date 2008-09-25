@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -42,7 +42,7 @@ struct _Lib3dsIo {
 };
 
 
-Lib3dsIo* 
+Lib3dsIo*
 lib3ds_io_new(void *self, Lib3dsIoErrorFunc error_func, Lib3dsIoSeekFunc seek_func,
   Lib3dsIoTellFunc tell_func, Lib3dsIoReadFunc read_func, Lib3dsIoWriteFunc write_func)
 {
@@ -63,7 +63,7 @@ lib3ds_io_new(void *self, Lib3dsIoErrorFunc error_func, Lib3dsIoSeekFunc seek_fu
 }
 
 
-void 
+void
 lib3ds_io_free(Lib3dsIo *io)
 {
   ASSERT(io);
@@ -85,7 +85,7 @@ lib3ds_io_error(Lib3dsIo *io)
 }
 
 
-long 
+long
 lib3ds_io_seek(Lib3dsIo *io, long offset, Lib3dsIoSeek origin)
 {
   ASSERT(io);
@@ -96,7 +96,7 @@ lib3ds_io_seek(Lib3dsIo *io, long offset, Lib3dsIoSeek origin)
 }
 
 
-long 
+long
 lib3ds_io_tell(Lib3dsIo *io)
 {
   ASSERT(io);
@@ -107,7 +107,7 @@ lib3ds_io_tell(Lib3dsIo *io)
 }
 
 
-int 
+int
 lib3ds_io_read(Lib3dsIo *io, Lib3dsByte *buffer, int size)
 {
   ASSERT(io);
@@ -118,7 +118,7 @@ lib3ds_io_read(Lib3dsIo *io, Lib3dsByte *buffer, int size)
 }
 
 
-int 
+int
 lib3ds_io_write(Lib3dsIo *io, const Lib3dsByte *buffer, int size)
 {
   ASSERT(io);
@@ -132,7 +132,7 @@ lib3ds_io_write(Lib3dsIo *io, const Lib3dsByte *buffer, int size)
 /*!
  * \ingroup io
  *
- * Read a byte from a file stream.  
+ * Read a byte from a file stream.
  */
 Lib3dsByte
 lib3ds_io_read_byte(Lib3dsIo *io)
@@ -146,7 +146,7 @@ lib3ds_io_read_byte(Lib3dsIo *io)
 
 
 /**
- * Read a word from a file stream in little endian format.   
+ * Read a word from a file stream in little endian format.
  */
 Lib3dsWord
 lib3ds_io_read_word(Lib3dsIo *io)
@@ -165,14 +165,14 @@ lib3ds_io_read_word(Lib3dsIo *io)
 /*!
  * \ingroup io
  *
- * Read a dword from file a stream in little endian format.   
+ * Read a dword from file a stream in little endian format.
  */
 Lib3dsDword
 lib3ds_io_read_dword(Lib3dsIo *io)
 {
   Lib3dsByte b[4];
-  Lib3dsDword d;        
-                         
+  Lib3dsDword d;
+
   ASSERT(io);
   lib3ds_io_read(io, b, 4);
   d=((Lib3dsDword)b[3] << 24) |
@@ -186,7 +186,7 @@ lib3ds_io_read_dword(Lib3dsIo *io)
 /*!
  * \ingroup io
  *
- * Read a signed byte from a file stream.   
+ * Read a signed byte from a file stream.
  */
 Lib3dsIntb
 lib3ds_io_read_intb(Lib3dsIo *io)
@@ -202,7 +202,7 @@ lib3ds_io_read_intb(Lib3dsIo *io)
 /*!
  * \ingroup io
  *
- * Read a signed word from a file stream in little endian format.   
+ * Read a signed word from a file stream in little endian format.
  */
 Lib3dsIntw
 lib3ds_io_read_intw(Lib3dsIo *io)
@@ -221,14 +221,14 @@ lib3ds_io_read_intw(Lib3dsIo *io)
 /*!
  * \ingroup io
  *
- * Read a signed dword a from file stream in little endian format.   
+ * Read a signed dword a from file stream in little endian format.
  */
 Lib3dsIntd
 lib3ds_io_read_intd(Lib3dsIo *io)
 {
   Lib3dsByte b[4];
-  Lib3dsDword d;        
-                         
+  Lib3dsDword d;
+
   ASSERT(io);
   lib3ds_io_read(io, b, 4);
   d=((Lib3dsDword)b[3] << 24) |
@@ -242,7 +242,7 @@ lib3ds_io_read_intd(Lib3dsIo *io)
 /*!
  * \ingroup io
  *
- * Read a float from a file stream in little endian format.   
+ * Read a float from a file stream in little endian format.
  */
 Lib3dsFloat
 lib3ds_io_read_float(Lib3dsIo *io)
@@ -264,16 +264,16 @@ lib3ds_io_read_float(Lib3dsIo *io)
  * \ingroup io
  * \ingroup vector
  *
- * Read a vector from a file stream in little endian format.   
+ * Read a vector from a file stream in little endian format.
  *
- * \param io IO input handle. 
- * \param v  The vector to store the data. 
+ * \param io IO input handle.
+ * \param v  The vector to store the data.
  */
 Lib3dsBool
 lib3ds_io_read_vector(Lib3dsIo *io, Lib3dsVector v)
 {
   ASSERT(io);
-  
+
   v[0]=lib3ds_io_read_float(io);
   v[1]=lib3ds_io_read_float(io);
   v[2]=lib3ds_io_read_float(io);
@@ -303,7 +303,7 @@ lib3ds_io_read_rgb(Lib3dsIo *io, Lib3dsRgb rgb)
  *
  * Read a zero-terminated string from a file stream.
  *
- * \param io      IO input handle. 
+ * \param io      IO input handle.
  * \param s       The buffer to store the read string.
  * \param buflen  Buffer length.
  *
@@ -478,7 +478,7 @@ lib3ds_io_write_float(Lib3dsIo *io, Lib3dsFloat l)
  * \ingroup io
  * \ingroup vector
  *
- * Writes a vector into a file stream in little endian format.   
+ * Writes a vector into a file stream in little endian format.
  */
 Lib3dsBool
 lib3ds_io_write_vector(Lib3dsIo *io, Lib3dsVector v)

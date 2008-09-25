@@ -127,34 +127,34 @@ class Min_annulus_d {
     // types from the QP solver
     typedef  typename Solver::Basic_variable_index_iterator
                                         Basic_variable_index_iterator;
-    
+
     // private types
     typedef  std::vector<Point>         Point_vector;
     typedef  std::vector<ET>            ET_vector;
-    
+
     typedef  CGAL::Access_by_index<typename std::vector<Point>::const_iterator>
                                         Point_by_index;
-    
+
     typedef  std::binder2nd< std::divides<int> >
                                         Divide;
-    
+
     typedef  std::vector<int>           Index_vector;
-    
+
     typedef  std::vector<NT>            NT_vector;
     typedef  std::vector<NT_vector>     NT_matrix;
-    
+
 
   public:
     // public types
     typedef  typename Point_vector::const_iterator
                                         Point_iterator;
-    
+
     typedef  CGAL::Join_random_access_iterator_1<
                  Basic_variable_index_iterator,
                  CGAL::Unary_compose_1<Point_by_index,Divide> >
                                         Support_point_iterator;
-    
-    
+
+
     typedef  typename Index_vector::const_iterator IVCI;
     typedef  CGAL::Join_random_access_iterator_1<
                  IVCI, Point_by_index >
@@ -162,10 +162,10 @@ class Min_annulus_d {
     typedef  CGAL::Join_random_access_iterator_1<
                  IVCI, Point_by_index >
                                         Outer_support_point_iterator;
-    
+
     typedef  typename ET_vector::const_iterator
                                         Coordinate_iterator;
-    
+
 
     // creation
     Min_annulus_d( const Traits&  traits  = Traits(),
@@ -175,7 +175,7 @@ class Min_annulus_d {
         {
             set_pricing_strategy( NT());
         }
-    
+
     template < class InputIterator >
     Min_annulus_d( InputIterator  first,
                    InputIterator  last,
@@ -187,21 +187,21 @@ class Min_annulus_d {
             set_pricing_strategy( NT());
             set( first, last);
         }
-    
+
     // access to point set
     int  ambient_dimension( ) const { return d; }
-    
+
     int  number_of_points( ) const { return points.size(); }
-    
+
     Point_iterator  points_begin( ) const { return points.begin(); }
     Point_iterator  points_end  ( ) const { return points.end  (); }
-    
+
     // access to support points
     int
     number_of_support_points( ) const
         { return number_of_points() < 2 ? number_of_points()
                                         : solver.number_of_basic_variables(); }
-    
+
     Support_point_iterator
     support_points_begin() const
         { return Support_point_iterator(
@@ -209,7 +209,7 @@ class Min_annulus_d {
                      CGAL::compose1_1(
                          Point_by_index( points.begin()),
                          std::bind2nd( std::divides<int>(), 2)));}
-    
+
     Support_point_iterator
     support_points_end() const
         { return Support_point_iterator( number_of_points() < 2
@@ -218,46 +218,46 @@ class Min_annulus_d {
                      CGAL::compose1_1(
                          Point_by_index( points.begin()),
                          std::bind2nd( std::divides<int>(), 2)));}
-    
+
     int  number_of_inner_support_points() const { return inner_indices.size();}
     int  number_of_outer_support_points() const { return outer_indices.size();}
-    
+
     Inner_support_point_iterator
     inner_support_points_begin() const
         { return Inner_support_point_iterator(
                      inner_indices.begin(),
                      Point_by_index( points.begin())); }
-    
+
     Inner_support_point_iterator
     inner_support_points_end() const
         { return Inner_support_point_iterator(
                      inner_indices.end(),
                      Point_by_index( points.begin())); }
-    
+
     Outer_support_point_iterator
     outer_support_points_begin() const
         { return Outer_support_point_iterator(
                      outer_indices.begin(),
                      Point_by_index( points.begin())); }
-    
+
     Outer_support_point_iterator
     outer_support_points_end() const
         { return Outer_support_point_iterator(
                      outer_indices.end(),
                      Point_by_index( points.begin())); }
-    
+
     // access to center (rational representation)
     Coordinate_iterator
     center_coordinates_begin( ) const { return center_coords.begin(); }
-    
+
     Coordinate_iterator
     center_coordinates_end  ( ) const { return center_coords.end  (); }
-    
+
     // access to squared radii (rational representation)
     ET  squared_inner_radius_numerator( ) const { return sqr_i_rad_numer; }
     ET  squared_outer_radius_numerator( ) const { return sqr_o_rad_numer; }
     ET  squared_radii_denominator     ( ) const { return sqr_rad_denom; }
-    
+
     // access to center and squared radii
     // NOTE: an implicit conversion from ET to RT must be available!
     Point
@@ -266,19 +266,19 @@ class Min_annulus_d {
           return tco.construct_point_d_object()( ambient_dimension(),
                                                  center_coordinates_begin(),
                                                  center_coordinates_end()); }
-    
+
     FT
     squared_inner_radius( ) const
         { CGAL_optimisation_precondition( ! is_empty());
           return FT( squared_inner_radius_numerator()) /
                  FT( squared_radii_denominator()); }
-    
+
     FT
     squared_outer_radius( ) const
         { CGAL_optimisation_precondition( ! is_empty());
           return FT( squared_outer_radius_numerator()) /
                  FT( squared_radii_denominator()); }
-    
+
     // predicates
     CGAL::Bounded_side
     bounded_side( const Point& p) const
@@ -288,32 +288,32 @@ class Min_annulus_d {
           return CGAL::Bounded_side(
                        CGAL_NTS sign( sqr_d - sqr_i_rad_numer)
                      * CGAL_NTS sign( sqr_o_rad_numer - sqr_d)); }
-    
+
     bool
     has_on_bounded_side( const Point& p) const
         { CGAL_optimisation_precondition(
             is_empty() || tco.access_dimension_d_object()( p) == d);
           ET sqr_d = sqr_dist( p);
           return ( ( sqr_i_rad_numer < sqr_d) && ( sqr_d < sqr_o_rad_numer)); }
-    
+
     bool
     has_on_boundary( const Point& p) const
         { CGAL_optimisation_precondition(
               is_empty() || tco.access_dimension_d_object()( p) == d);
           ET sqr_d = sqr_dist( p);
           return (( sqr_d == sqr_i_rad_numer) || ( sqr_d == sqr_o_rad_numer));}
-    
+
     bool
     has_on_unbounded_side( const Point& p) const
         { CGAL_optimisation_precondition(
               is_empty() || tco.access_dimension_d_object()( p) == d);
           ET sqr_d = sqr_dist( p);
           return ( ( sqr_d < sqr_i_rad_numer) || ( sqr_o_rad_numer < sqr_d)); }
-    
+
     bool  is_empty     ( ) const { return number_of_points() == 0; }
     bool  is_degenerate( ) const
         { return ! CGAL_NTS is_positive( sqr_o_rad_numer); }
-    
+
     // modifiers
     template < class InputIterator >
     void
@@ -324,7 +324,7 @@ class Min_annulus_d {
           CGAL_optimisation_precondition_msg( check_dimension(),
               "Not all points have the same dimension.");
           compute_min_annulus(); }
-    
+
     void
     insert( const Point& p)
         { if ( is_empty()) d = tco.access_dimension_d_object()( p);
@@ -332,7 +332,7 @@ class Min_annulus_d {
               tco.access_dimension_d_object()( p) == d);
           points.push_back( p);
           compute_min_annulus(); }
-    
+
     template < class InputIterator >
     void
     insert( InputIterator first, InputIterator last)
@@ -342,46 +342,46 @@ class Min_annulus_d {
           CGAL_optimisation_precondition_msg( check_dimension( old_n),
               "Not all points have the same dimension.");
           compute_min_annulus(); }
-    
+
     void
     clear( )
         { points.erase( points.begin(), points.end());
           compute_min_annulus(); }
-    
+
     // validity check
     bool  is_valid( bool verbose = false, int level = 0) const;
-    
+
     // traits class access
     const Traits&  traits( ) const { return tco; }
-    
+
 
   private:
-    
+
     Traits                   tco;       // traits class object
-    
+
     Point_vector             points;    // input points
     int                      d;         // dimension of input points
-    
+
     ET_vector                center_coords;     // center of small.encl.annulus
-    
+
     ET                       sqr_i_rad_numer;   // squared inner radius of
     ET                       sqr_o_rad_numer;   // ---"--- outer ----"----
     ET                       sqr_rad_denom;     // smallest enclosing annulus
-    
+
     Solver                   solver;    // linear programming solver
-    
+
     Index_vector             inner_indices;
     Index_vector             outer_indices;
-    
+
     NT_matrix                a_matrix;  // matrix `A' of dual LP
     NT_vector                b_vector;  // vector `b' of dual LP
     NT_vector                c_vector;  // vector `c' of dual LP
-    
+
     typename Solver::Pricing_strategy*  // pricing strategy
                              strategyP; // of the QP solver
-    
 
-    
+
+
     // squared distance to center
     ET
     sqr_dist( const Point& p) const
@@ -396,13 +396,13 @@ class Min_annulus_d {
                       CGAL::identity<ET>(),
                       std::bind2nd( std::multiplies<ET>(),
                                     center_coords.back())))); }
-    
+
     // set dimension of input points
     void
     set_dimension( )
         { d = ( points.size() == 0 ? -1 :
                     tco.access_dimension_d_object()( points[ 0])); }
-    
+
     // check dimension of input points
     bool
     check_dimension( unsigned int  offset = 0)
@@ -411,7 +411,7 @@ class Min_annulus_d {
                                      std::not_equal_to<int>(), d),
                                      tco.access_dimension_d_object()))
                    == points.end()); }
-    
+
     // compute smallest enclosing annulus
     void
     compute_min_annulus( )
@@ -419,14 +419,14 @@ class Min_annulus_d {
         // clear inner and outer support points
         inner_indices.erase( inner_indices.begin(), inner_indices.end());
         outer_indices.erase( outer_indices.begin(), outer_indices.end());
-    
+
         if ( is_empty()) {
             center_coords.resize( 1);
             sqr_i_rad_numer = -ET( 1);
             sqr_o_rad_numer = -ET( 1);
             return;
         }
-    
+
         if ( number_of_points() == 1) {
             inner_indices.push_back( 0);
             outer_indices.push_back( 0);
@@ -440,18 +440,18 @@ class Min_annulus_d {
             sqr_rad_denom   = ET( 1);
             return;
         }
-    
+
         // set up and solve dual LP
         int i, j;
         NT  nt_0 = 0, nt_1 = 1, nt_2 = 2;
         NT  nt_minus_1 = -nt_1, nt_minus_2 = -nt_2;
-        
+
         // vector b
         b_vector.resize( d+2);
         for ( j = 0; j < d; ++j) b_vector[ j] = nt_0;
         b_vector[ d  ] = nt_1;
         b_vector[ d+1] = nt_minus_1;
-        
+
         // matrix A, vector c
         a_matrix.erase( a_matrix.begin(), a_matrix.end());
         a_matrix.insert( a_matrix.end(), 2*points.size(), NT_vector( d+2));
@@ -479,7 +479,7 @@ class Min_annulus_d {
                     c_vector.begin(), D_it());
         solver.init();
         solver.solve();
-    
+
         // compute center and squared radius
         ET sqr_sum = 0;
         center_coords.resize( ambient_dimension()+1);
@@ -493,7 +493,7 @@ class Min_annulus_d {
         sqr_o_rad_numer = sqr_sum
                           - solver.dual_variable( d+1)*center_coords[ d];
         sqr_rad_denom   = center_coords[ d] * center_coords[ d];
-        
+
         // split up support points
         for ( i = 0; i < solver.number_of_basic_variables(); ++i) {
             int index = solver.basic_variables_index_begin()[ i];
@@ -504,18 +504,18 @@ class Min_annulus_d {
             }
         }
     }
-    
+
     template < class NT >
     void  set_pricing_strategy( NT)
         { strategyP = new CGAL::Partial_filtered_pricing<LP_rep>;
           solver.set_pricing_strategy( *strategyP); }
-    
+
     #ifndef _MSC_VER
     void  set_pricing_strategy( ET)
         { strategyP = new CGAL::Partial_exact_pricing<LP_rep>;
           solver.set_pricing_strategy( *strategyP); }
     #endif
-    
+
 };
 
 template < class ET_, class NT_, class Point, class PointIterator,
@@ -526,7 +526,7 @@ struct LP_rep_min_annulus_d {
 
     typedef  std::vector<NT>            NT_vector;
     typedef  std::vector<NT_vector>     NT_matrix;
-    
+
     typedef  CGAL_TYPENAME_MSVC_NULL NT_matrix::const_iterator NTMCI;
     typedef  CGAL::Join_random_access_iterator_1<
                  NTMCI, LP_rep_row_of_a<NT> >  A_iterator;
@@ -534,9 +534,9 @@ struct LP_rep_min_annulus_d {
                                         B_iterator;
     typedef  typename NT_vector::const_iterator
                                         C_iterator;
-    
+
     typedef  A_iterator                 D_iterator;     // dummy
-    
+
 
     typedef  CGAL::Tag_true         Is_lp;
 };
@@ -574,20 +574,20 @@ is_valid( bool verbose, int level) const
     // containment check (a)
     // ---------------------
     verr << "  (a) containment check..." << flush;
-    
+
     Point_iterator  point_it = points_begin();
     for ( ; point_it != points_end(); ++point_it) {
         if ( has_on_unbounded_side( *point_it))
             return CGAL::_optimisation_is_valid_fail( verr,
                        "annulus does not contain all points");
     }
-    
+
     verr << "passed." << endl;
 
     // support set check (b)
     // ---------------------
     verr << "  (b) support set check..." << flush;
-    
+
     // all inner support points on inner boundary?
     Inner_support_point_iterator  i_pt_it = inner_support_points_begin();
     for ( ; i_pt_it != inner_support_points_end(); ++i_pt_it) {
@@ -595,7 +595,7 @@ is_valid( bool verbose, int level) const
             return CGAL::_optimisation_is_valid_fail( verr,
        "annulus does not have all inner support points on its inner boundary");
     }
-    
+
     // all outer support points on outer boundary?
     Outer_support_point_iterator  o_pt_it = outer_support_points_begin();
     for ( ; o_pt_it != outer_support_points_end(); ++o_pt_it) {
@@ -614,7 +614,7 @@ is_valid( bool verbose, int level) const
               "center does not lie strictly in convex hull of support points");
     }
     */
-    
+
     verr << "passed." << endl;
 
     verr << "  object is valid!" << endl;

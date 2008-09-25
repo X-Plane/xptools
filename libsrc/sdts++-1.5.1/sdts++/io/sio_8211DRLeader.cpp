@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -50,7 +50,7 @@ sio_8211DRLeader::streamExtract(istream& istr)
          istr.clear(ios::failbit);
          return istr;
       }
-      
+
    recLength_        = sio_Utils::getLong(leader,0,5);
    leaderIden_       = leader[6];
    fieldAreaStart_   = sio_Utils::getLong(leader,12,5);
@@ -92,6 +92,6 @@ sio_8211DRLeader::streamInsert(ostream& ostr) const
    ostr << setw(1) << '0';              // Reserved
    ostr << setw(1) << sizeFieldTag_;    // Size if Field Tag Field
 
-   return ostr; 
+   return ostr;
 
 }

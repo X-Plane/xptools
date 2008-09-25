@@ -15,7 +15,7 @@
 /*
  * make1.c - execute command to bring targets up to date
  *
- * This module contains make1(), the entry point called by make() to 
+ * This module contains make1(), the entry point called by make() to
  * recursively decend the dependency graph executing update actions as
  * marked by make0().
  *
@@ -214,7 +214,7 @@ make1( TARGET *t )
 	{
 		while((pState = current_state(&state_stack)) != NULL)
 		{
-            if (intr) 
+            if (intr)
                 pop_state(&state_stack);
 
 			switch(pState->curstate)
@@ -238,7 +238,7 @@ make1( TARGET *t )
 				break;
 			}
 		}
-	
+
 
 	/* Wait for any outstanding commands to finish running. */
 	} while( execwait() );
@@ -303,9 +303,9 @@ make1a( state *pState)
     /* Add header node that was created during building process. */
 
     inc = 0;
-    for (c = t->depends; c; c = c->next) {        
+    for (c = t->depends; c; c = c->next) {
         if (c->target->rescanned && c->target->includes)
-            inc = targetentry(inc, c->target->includes);           
+            inc = targetentry(inc, c->target->includes);
     }
     t->depends = targetchain(t->depends, inc);
 
@@ -315,7 +315,7 @@ make1a( state *pState)
 
 	{
 		stack temp_stack = { NULL };
-        for( c = t->depends; c && !intr; c = c->next )            
+        for( c = t->depends; c && !intr; c = c->next )
             push_state(&temp_stack, c->target, pState->t, T_STATE_MAKE1A);
 
 		/* using stacks reverses the order of execution. Reverse it back */
@@ -330,7 +330,7 @@ static void make1atail(state *pState)
 	pState->t->progress = T_MAKE_ACTIVE;
 
 	/* Now that all dependents have bumped asynccnt, we now allow */
-	/* decrement our reference to asynccnt. */ 
+	/* decrement our reference to asynccnt. */
 	pState->curstate = T_STATE_MAKE1B;
 }
 
@@ -354,7 +354,7 @@ make1b( state *pState )
 		pop_state(&state_stack);
 		return;
 	}
-    
+
     /* Try to aquire a semaphore. If it's locked, wait until the target
        that locked it is build and signals completition. */
 #ifdef OPT_SEMAPHORE
@@ -384,7 +384,7 @@ make1b( state *pState )
             failed = c->target;
             pState->t->status = c->target->status;
         }
-    /* If a internal header node failed to build, we'd want to output the 
+    /* If a internal header node failed to build, we'd want to output the
        target that it failed on. */
     if (failed && (failed->flags & T_FLAG_INTERNAL)) {
         failed_name = failed->failed;
@@ -488,14 +488,14 @@ make1c( state *pState )
 	/* If there are (more) commands to run to build this target */
 	/* (and we haven't hit an error running earlier comands) we */
 	/* launch the command with execcmd(). */
-	
+
 	/* If there are no more commands to run, we collect the status */
 	/* from all the actions then report our completion to all the */
 	/* parents. */
 
 	if( cmd && pState->t->status == EXEC_CMD_OK )
 	{
-		if( DEBUG_MAKEQ || 
+		if( DEBUG_MAKEQ ||
             ! ( cmd->rule->actions->flags & RULE_QUIETLY ) && DEBUG_MAKE)
 	    {
 		printf( "%s ", cmd->rule->name );
@@ -513,7 +513,7 @@ make1c( state *pState )
 	    {
 			pState->curstate = T_STATE_MAKE1D;
 			pState->status = EXEC_CMD_OK;
-	    } 
+	    }
 	    else
 	    {
 			TARGET *t = pState->t;
@@ -554,7 +554,7 @@ make1c( state *pState )
 	    /* Tell parents dependent has been built */
 		{
 			stack temp_stack = { NULL };
-			TARGET *t = pState->t;            
+			TARGET *t = pState->t;
             TARGET* additional_includes = NULL;
 
 			t->progress = T_MAKE_DONE;
@@ -565,12 +565,12 @@ make1c( state *pState )
                 !t->rescanned) {
 
                 TARGET *target_to_rescan = t;
-                SETTINGS *s;               
+                SETTINGS *s;
 
                 target_to_rescan->rescanned = 1;
 
                 if (target_to_rescan->flags & T_FLAG_INTERNAL) {
-                    target_to_rescan = t->original_target;                    
+                    target_to_rescan = t->original_target;
                 }
 
                 /* Clean current includes */
@@ -587,7 +587,7 @@ make1c( state *pState )
                 if (target_to_rescan->includes) {
                     target_to_rescan->includes->rescanned = 1;
                     /* Tricky. The parents were already processed, but they
-                       did not seen the internal node, because it was just 
+                       did not seen the internal node, because it was just
                        created. We need to make the calls to make1a that would
                        have been done by parents here, and also make sure all
                        unprocessed parents will pick up the includes. We must
@@ -598,24 +598,24 @@ make1c( state *pState )
                     */
                     make0(target_to_rescan->includes, target_to_rescan->parents->target, 0, 0, 0);
                     for( c = target_to_rescan->parents; c; c = c->next) {
-                        c->target->depends = targetentry( c->target->depends, 
+                        c->target->depends = targetentry( c->target->depends,
                                                           target_to_rescan->includes );
                     }
                     /* Will be processed below. */
                     additional_includes = target_to_rescan->includes;
-                }                
+                }
             }
 
             if (additional_includes)
-                for ( c = t->parents; c; c = c->next ) {                            
+                for ( c = t->parents; c; c = c->next ) {
                     push_state(&temp_stack, additional_includes, c->target, T_STATE_MAKE1A);
-                    
+
                 }
 
 			for( c = t->parents; c; c = c->next ) {
 				push_state(&temp_stack, c->target, NULL, T_STATE_MAKE1B);
             }
-             
+
 
 
 #ifdef OPT_SEMAPHORE
@@ -646,10 +646,10 @@ make1c( state *pState )
 	    }
 #endif
 
-		
+
 			/* must pop state before pushing any more */
 			pop_state(&state_stack);
-		
+
 			/* using stacks reverses the order of execution. Reverse it back */
 			push_stack_on_stack(&state_stack, &temp_stack);
 
@@ -688,7 +688,7 @@ make1d(state *pState)
               ;
           }
         }
-        
+
 	if( status == EXEC_CMD_FAIL && ( cmd->rule->actions->flags & RULE_IGNORE ) )
 	    status = EXEC_CMD_OK;
 
@@ -746,20 +746,20 @@ static void swap_settings(
 {
     if (new_module == root_module())
         new_module = 0;
-    
+
     if (new_target == *current_target && new_module == *current_module)
         return;
 
     if (*current_target)
         popsettings( (*current_target)->settings );
-        
+
     if (new_module != *current_module)
     {
         if (*current_module)
             exit_module( *current_module );
 
         *current_module = new_module;
-        
+
         if (new_module)
             enter_module( new_module );
     }
@@ -772,7 +772,7 @@ static void swap_settings(
 /*
  * make1cmds() - turn ACTIONS into CMDs, grouping, splitting, etc
  *
- * Essentially copies a chain of ACTIONs to a chain of CMDs, 
+ * Essentially copies a chain of ACTIONs to a chain of CMDs,
  * grouping RULE_TOGETHER actions, splitting RULE_PIECEMEAL actions,
  * and handling RULE_NEWSRCS actions.  The result is a chain of
  * CMDs which can be expanded by var_string() and executed with
@@ -784,14 +784,14 @@ make1cmds( TARGET *t )
 {
 	CMD *cmds = 0;
 	LIST *shell = 0;
-        
+
         module_t *settings_module = 0;
         TARGET *settings_target = 0;
-        
+
 	/* Step through actions */
 	/* Actions may be shared with other targets or grouped with */
 	/* RULE_TOGETHER, so actions already seen are skipped. */
-        
+
         ACTIONS* a0;
 	for(a0 = t->actions ; a0; a0 = a0->next )
 	{
@@ -809,7 +809,7 @@ make1cmds( TARGET *t )
 		continue;
 
 	    a0->action->running = 1;
-	    
+
 	    /* Make LISTS of targets and sources */
 	    /* If `execute together` has been specified for this rule, tack */
 	    /* on sources from each instance of this rule for this target. */
@@ -837,24 +837,24 @@ make1cmds( TARGET *t )
             swap_settings( &settings_module, &settings_target, rule->module, t );
             if (!shell)
                 shell = var_get( "JAMSHELL" );	/* shell is per-target */
-                
+
 	    /* If we had 'actions xxx bind vars' we bind the vars now */
 
 	    boundvars = make1settings( actions->bindlist );
 	    pushsettings( boundvars );
 
 	    /*
-	     * Build command, starting with all source args. 
+	     * Build command, starting with all source args.
 	     *
 	     * If cmd_new returns 0, it's because the resulting command
 	     * length is > MAXLINE.  In this case, we'll slowly reduce
 	     * the number of source arguments presented until it does
-	     * fit.  This only applies to actions that allow PIECEMEAL 
+	     * fit.  This only applies to actions that allow PIECEMEAL
 	     * commands.
 	     *
 	     * While reducing slowly takes a bit of compute time to get
 	     * things just right, it's worth it to get as close to MAXLINE
-	     * as possible, because launching the commands we're executing 
+	     * as possible, because launching the commands we're executing
 	     * is likely to be much more compute intensive!
 	     *
 	     * Note we loop through at least once, for sourceless actions.
@@ -867,8 +867,8 @@ make1cmds( TARGET *t )
 	    {
 		/* Build cmd: cmd_new consumes its lists. */
 
-		CMD *cmd = cmd_new( rule, 
-			list_copy( L0, nt ), 
+		CMD *cmd = cmd_new( rule,
+			list_copy( L0, nt ),
 			list_sublist( ns, start, chunk ),
 			list_copy( L0, shell ) );
 
@@ -891,17 +891,17 @@ make1cmds( TARGET *t )
 		{
 		    /* Too long and not splittable. */
 
-		    printf( "%s actions too long (max %d):\n", 
+		    printf( "%s actions too long (max %d):\n",
 			rule->name, MAXLINE );
 
                     /* Tell the user what didn't fit */
                     cmd = cmd_new(
-                        rule, list_copy( L0, nt ), 
+                        rule, list_copy( L0, nt ),
 			list_sublist( ns, start, chunk ),
 			list_new( L0, newstr( "%" ) ) );
 
                     printf( cmd->buf );
-                
+
 		    exit( EXITBAD );
 		}
 	    }
@@ -928,7 +928,7 @@ make1cmds( TARGET *t )
  */
 
 static LIST *
-make1list( 
+make1list(
 	LIST	*l,
 	TARGETS	*targets,
 	int	flags )
@@ -951,7 +951,7 @@ make1list(
             continue;
     }
     else
-    { 
+    {
         if( ( flags & RULE_EXISTING ) && t->binding != T_BIND_EXISTS )
             continue;
 
@@ -995,7 +995,7 @@ make1settings( LIST *vars )
 	    LIST *l = var_get( vars->string );
 	    LIST *nl = 0;
 
-	    for( ; l; l = list_next( l ) ) 
+	    for( ; l; l = list_next( l ) )
 	    {
 		TARGET *t = bindtarget( l->string );
 
@@ -1021,12 +1021,12 @@ make1settings( LIST *vars )
 /*
  * make1bind() - bind targets that weren't bound in dependency analysis
  *
- * Spot the kludge!  If a target is not in the dependency tree, it didn't 
+ * Spot the kludge!  If a target is not in the dependency tree, it didn't
  * get bound by make0(), so we have to do it here.  Ugly.
  */
 
 static void
-make1bind( 
+make1bind(
 	TARGET	*t,
 	int	warn )
 {

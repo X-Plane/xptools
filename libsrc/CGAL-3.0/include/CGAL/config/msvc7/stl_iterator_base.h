@@ -19,7 +19,7 @@
 // $Revision: 1.5 $ $Date: 2003/10/21 12:26:05 $
 // $Name: current_submission $
 //
-// Author(s)     : 
+// Author(s)     :
 
 
 #ifndef CGAL_DEFINE_ITERATOR_TRAITS_POINTER_SPEC

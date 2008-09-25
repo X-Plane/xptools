@@ -16,9 +16,9 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 CGAL_BEGIN_NAMESPACE
-                    
+
 // Class Implementation (continued)
 // ================================
 
@@ -35,7 +35,7 @@ set( int n, int m, int max_b,
      typename QP_solver<Rep_>::C_iterator c_it,
      typename QP_solver<Rep_>::D_iterator D_it)
 {
-    
+
     CGAL_optimisation_debug {
         vout2 << std::endl
               << "------" << std::endl
@@ -45,7 +45,7 @@ set( int n, int m, int max_b,
                       << n << " variables, "
                       << m << " constraints ]" << std::endl;
     }
-     
+
 
     // store QP
     CGAL_optimisation_precondition( m >  0);
@@ -54,10 +54,10 @@ set( int n, int m, int max_b,
     qp_A = A_it; qp_b = b_it; qp_c = c_it; qp_D = D_it;
     max_basis = max_b;
 
-    
+
     // set up pricing strategy
     strategyP->set( *this, vout2);
-                                  
+
 }
 
 // set-up of auxiliary problem
@@ -112,20 +112,20 @@ set_up_basis( )
     for ( ii = 0; ii < qp_m; ++ii) B[ ii] = qp_n+ii;
     art_basic = qp_m;
 
-    
+
     CGAL_optimisation_debug {
         vout1 << "  "; vout2 << "initial ";
-        
+
         vout << "basis: ";
         if ( vout.verbose()) {
             std::copy( B.begin(), B.end(),
                        std::ostream_iterator<int>( vout.out(), " "));
             vout.out() << std::endl;
         }
-         
+
         vout3 << "initial basis-inverse:" << std::endl;
     }
-     
+
 
     // initialize positions in basis
     if ( in_B.size() > 0) in_B.clear();
@@ -190,14 +190,14 @@ void
 QP_solver<Rep_>::
 set_up_additional_variables( )
 {
-    
+
     A_j      = Values( qp_m);
     two_D_Bj = Values( qp_m);
-    
+
     q_lambda = Values( qp_m);
     q_x      = Values( qp_m);
-    
-    
+
+
     strategyP->init();
 }
 
@@ -207,14 +207,14 @@ void
 QP_solver<Rep_>::
 init( )
 {
-    
+
     CGAL_optimisation_debug {
         vout2 << std::endl
               << "--------------" << std::endl
               << "Initialization" << std::endl
               << "--------------" << std::endl;
     }
-     
+
 
     // set up auxiliary problem
     set_up_auxiliary_problem();
@@ -234,49 +234,49 @@ init( )
     m_iterations = 0;
     is_phase_I   = true;
 
-    
+
     CGAL_optimisation_debug {
         vout2 << std::endl;
-        
+
         vout2 << "     b: ";
         if ( vout2.verbose()) {
             std::copy( b.begin(), b.begin()+qp_m,
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "  -c_B: ";
         if ( vout2.verbose()) {
             std::copy( minus_c_B.begin(), minus_c_B.begin()+B.size(),
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "lambda: ";
         if ( vout2.verbose()) {
             std::copy( lambda.begin(), lambda.begin()+qp_m,
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "   x_B: ";
         if ( vout2.verbose()) {
             std::copy( x_B.begin(), x_B.begin()+B.size(),
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
+
         vout1 << "  "; vout2 << std::endl << "initial ";
-        
+
         vout << "solution: ";
         CGAL::Quotient<ET>  s = solution();
         vout  << s << "  ~= " << CGAL::to_double( s) << std::endl;
-                                                                  
+
     }
-     
+
 }
 
 // transition to phase II
@@ -285,13 +285,13 @@ void
 QP_solver<Rep_>::
 transition( )
 {
-    
+
     CGAL_optimisation_debug {
         vout1 << "  t"; vout2 << std::endl << "T";
         vout  <<  "ransition to phase II" << std::endl;
         vout2 << "----------------------" << std::endl;
         }
-         
+
     // remove artificial variables
     in_B.erase( in_B.begin()+qp_n, in_B.end());
 
@@ -312,46 +312,46 @@ transition( )
     // notify pricing strategy
     strategyP->transition();
 
-    
+
     CGAL_optimisation_debug {
-        
+
         vout2 << "     b: ";
         if ( vout2.verbose()) {
             std::copy( b.begin(), b.begin()+qp_m,
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "  -c_B: ";
         if ( vout2.verbose()) {
             std::copy( minus_c_B.begin(), minus_c_B.begin()+B.size(),
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "lambda: ";
         if ( vout2.verbose()) {
             std::copy( lambda.begin(), lambda.begin()+qp_m,
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
-        
+
+
         vout2 << "   x_B: ";
         if ( vout2.verbose()) {
             std::copy( x_B.begin(), x_B.begin()+B.size(),
                        std::ostream_iterator<ET>( vout2.out(), " "));
             vout2.out() << std::endl;
         }
-         
+
         vout1 << "  "; vout2 << std::endl;
-        
+
         vout << "solution: ";
         CGAL::Quotient<ET>  s = solution();
         vout  << s << "  ~= " << CGAL::to_double( s) << std::endl;
-                                                                  
+
     }
 
     CGAL_optimisation_assertion( check_basis( Is_lp()));
@@ -432,7 +432,7 @@ pivot_step( )
 {
     ++m_iterations;
 
-    
+
     CGAL_optimisation_debug {
         vout2 << std::endl
               << "----------" << std::endl
@@ -441,14 +441,14 @@ pivot_step( )
         vout  << "[ phase " << ( is_phase_I ? "I" : "II")
               << ", iteration " << m_iterations << " ]" << std::endl;
     }
-     
+
 
     // pricing
     // -------
     pricing();
 
     // check for optimality
-    if ( 
+    if (
          j < 0
               ) {
 
@@ -456,16 +456,16 @@ pivot_step( )
         if ( is_phase_I) {          // phase I
 
             // check for infeasibility
-            if ( 
+            if (
                  art_basic > 0
                               ) {
                 m_phase  = 3;
                 m_status = INFEASIBLE;
-                
+
                 CGAL_optimisation_debug {
                    vout1 << "  "; vout << "problem is INFEASIBLE" << std::endl;
                 }
-                 
+
             } else {
                 // QP feasible, transition to phase II
                 transition();
@@ -473,11 +473,11 @@ pivot_step( )
         } else {                    // phase II
             m_phase  = 3;
             m_status = OPTIMAL;
-            
+
             CGAL_optimisation_debug {
                 vout1 << "  "; vout << "solution is OPTIMAL" << std::endl;
             }
-             
+
         }
         return;
     }
@@ -492,16 +492,16 @@ pivot_step( )
         ratio_test();
 
         // check for unboundedness
-        if ( 
+        if (
              q_i == et_0
                         ) {
             m_phase  = 3;
             m_status = UNBOUNDED;
-            
+
             CGAL_optimisation_debug {
                 vout1 << "  "; vout << "problem is UNBOUNDED" << std::endl;
             }
-             
+
             return;
         }
 
@@ -509,7 +509,7 @@ pivot_step( )
         // ------
         update();
 
-    } while ( 
+    } while (
               j >= 0
                     );
     */
@@ -519,17 +519,17 @@ pivot_step( )
     ratio_test();
 
     // check for unboundedness
-    if ( 
+    if (
          q_i == et_0
                     ) {
         m_phase  = 3;
         m_status = UNBOUNDED;
-        
+
         CGAL_optimisation_debug {
             vout1 << "  ";
             vout << "problem is UNBOUNDED" << std::endl;
         }
-         
+
         return;
     }
 
@@ -541,27 +541,27 @@ pivot_step( )
     // -----------------------------
     iterated_ratio_test_update();
 
-    
+
     CGAL_optimisation_debug {
         vout1 << std::endl << "  ";
-        
+
         vout1 << "basis: ";
         if ( vout1.verbose()) {
             std::copy( B.begin(), B.end(),
                        std::ostream_iterator<int>( vout1.out(), " "));
             vout1.out() << std::endl;
         }
-         
+
         vout1 << "  "; vout2 << std::endl << "new ";
-        
+
         vout << "solution: ";
         CGAL::Quotient<ET>  s = solution();
         vout  << s << "  ~= " << CGAL::to_double( s) << std::endl;
-                                                                  
+
     }
-     
+
 }
- 
+
 CGAL_END_NAMESPACE
 
 // ===== EOF ==================================================================

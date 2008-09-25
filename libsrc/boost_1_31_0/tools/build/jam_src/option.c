@@ -88,7 +88,7 @@ getoptions(
  */
 
 char *
-getoptval( 
+getoptval(
 	option *optv,
 	char opt,
 	int subopt )

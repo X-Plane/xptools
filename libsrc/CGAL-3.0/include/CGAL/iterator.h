@@ -306,7 +306,7 @@ public:
 };
 
 // Microsoft 1300 cannot handle the default template parameters. Hence, ...
-template < class I, int N, class Ref, class Ptr, 
+template < class I, int N, class Ref, class Ptr,
 	   class Val, class Dist, class Ctg >
 inline
 N_step_adaptor<I,N,Ref,Ptr,Val,Dist,Ctg>
@@ -789,7 +789,7 @@ public:
       ++*this;
       return tmp;
     }
-};    
+};
 template < class IC>
 class Inverse_index {
 

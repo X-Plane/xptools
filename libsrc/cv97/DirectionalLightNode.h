@@ -18,7 +18,7 @@ class DirectionalLightNode : public LightNode {
 
 	SFFloat *ambientIntensityField;
 	SFVec3f *directionField;
-	
+
 public:
 
 	DirectionalLightNode();
@@ -27,7 +27,7 @@ public:
 	////////////////////////////////////////////////
 	//	AmbientIntensity
 	////////////////////////////////////////////////
-	
+
 	SFFloat *getAmbientIntensityField();
 
 	void setAmbientIntensity(float value);
@@ -65,7 +65,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

@@ -1,4 +1,4 @@
-/* zip.h -- IO for compress .zip files using zlib 
+/* zip.h -- IO for compress .zip files using zlib
    Version 0.15 alpha, Mar 19th, 1998,
 
    Copyright (C) 1998 Gilles Vollant
@@ -36,7 +36,7 @@
 
 */
 
-/* for more info about .ZIP format, see 
+/* for more info about .ZIP format, see
       ftp://ftp.cdrom.com/pub/infozip/doc/appnote-970311-iz.zip
    PkWare has also a specification at :
       ftp://ftp.pkware.com/probdesc.zip
@@ -56,7 +56,7 @@ extern "C" {
 #if defined(STRICTZIP) || defined(STRICTZIPUNZIP)
 /* like the STRICT of WIN32, we define a pointer that cannot be converted
     from (void*) without cast */
-typedef struct TagzipFile__ { int unused; } zipFile__; 
+typedef struct TagzipFile__ { int unused; } zipFile__;
 typedef zipFile__ *zipFile;
 #else
 typedef voidp zipFile;
@@ -68,7 +68,7 @@ typedef voidp zipFile;
 #define ZIP_INTERNALERROR               (-104)
 
 /* tm_zip contain date/time info */
-typedef struct tm_zip_s 
+typedef struct tm_zip_s
 {
 	uInt tm_sec;            /* seconds after the minute - [0,59] */
 	uInt tm_min;            /* minutes after the hour - [0,59] */

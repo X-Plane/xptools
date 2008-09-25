@@ -63,7 +63,7 @@ class Qt_help_window : public QMainWindow
 {
     Q_OBJECT
 public:
-    Qt_help_window( const QString& home_,  const QString& path, 
+    Qt_help_window( const QString& home_,  const QString& path,
                 QWidget* parent = 0, const char *name=0 );
     ~Qt_help_window();
 public slots:

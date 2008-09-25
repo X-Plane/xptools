@@ -28,12 +28,12 @@
  *
  * The following are defined:
  *
- *	RULE - a generic jam rule, the product of RULE and ACTIONS 
- *	ACTIONS - a chain of ACTIONs 
- *	ACTION - a RULE instance with targets and sources 
- *	SETTINGS - variables to set when executing a TARGET's ACTIONS 
- *	TARGETS - a chain of TARGETs 
- *	TARGET - a file or "thing" that can be built 
+ *	RULE - a generic jam rule, the product of RULE and ACTIONS
+ *	ACTIONS - a chain of ACTIONs
+ *	ACTION - a RULE instance with targets and sources
+ *	SETTINGS - variables to set when executing a TARGET's ACTIONS
+ *	TARGETS - a chain of TARGETs
+ *	TARGET - a file or "thing" that can be built
  *
  * 04/11/94 (seiwald) - Combined deps & headers into deps[2] in TARGET.
  * 04/12/94 (seiwald) - actionlist() now just appends a single action.
@@ -146,7 +146,7 @@ struct _target {
 /* this flag was added to support a new builtin rule named "RMBAD" */
 /* it is used to force removal of outdated targets whose dependencies
  * fail to build  */
-    
+
 # define        T_FLAG_RMOLD    0x0080    /* RMBAD applied */
 
 /* this flag was added to support a new builting rule named "FAIL_EXPECTED" */

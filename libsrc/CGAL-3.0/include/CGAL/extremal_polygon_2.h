@@ -176,7 +176,7 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
 // n > k,
 //  * k >= t.min_k()
 //  * value_type of RandomAccessIC is Traits::Point_2
-//  * OutputIterator accepts Traits::Point_2 as value_type 
+//  * OutputIterator accepts Traits::Point_2 as value_type
 //
 // functionality:
 // --------------
@@ -208,7 +208,7 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
   int i( t.min_k());
   t.compute_min_k_gon(
     points_begin, points_end, max_area, gon.rbegin() + k + 1 - i);
-  
+
   for (;;) {
     CGAL_optimisation_assertion( gon[0] == 0);
     gon[i] = number_of_points - 1;
@@ -226,7 +226,7 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
       gon.rbegin() + k + 1 - i,
       t);
   } // for (;;)
-  
+
   return CGAL_maximum_inscribed_rooted_k_gon_2(
     points_begin,
     points_end,
@@ -331,10 +331,10 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
   //!!! static ???
   // area container:
   FT_cont area( number_of_points);
-  
+
   // last vertex container:
   Index_cont last_vertex( number_of_points);
-  
+
   // matrix operation:
   Operation op( t.operation( points_begin[root]));
   // initialize area and last vertex containers:
@@ -342,10 +342,10 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
     area[i] = t.init( points_begin[i], points_begin[root]);
     last_vertex[i] = root;
   }
-  
-  
+
+
   for ( i = 1; i < size_of_gon; ++i) {
-  
+
     monotone_matrix_search(
       dynamic_matrix(
         extremal_polygon_matrix(
@@ -357,7 +357,7 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
           area.begin() + right_c_begin[i-1] + 1,
           op)),
           last_vertex.begin() + left_c_begin[i]);
-  
+
     // compute new area values and adjust last_vertex values
     // (they are relative to left_c_begin[i-1] now)
     int j;
@@ -366,9 +366,9 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
       area[j] = area[last_vertex[j]] +
         op( points_begin[j], points_begin[last_vertex[j]]);
     }
-  
+
   } // for ( i = 1; i < size_of_gon; ++i)
-  
+
   // find maximum in last range:
   int maxi =
     iterator_distance(
@@ -377,7 +377,7 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
                    area.begin() + right_c_begin[size_of_gon - 1] + 1));
   // set max_area:
   max_area = area[maxi];
-  
+
   // construct gon:
   *o++ = maxi;
   maxi = last_vertex[maxi];
@@ -393,10 +393,10 @@ CGAL_maximum_inscribed_rooted_k_gon_2(
       maxi = right_c_begin[i-2];
     }
   } // for ( i = size_of_gon - 1; i > 0; --i)
-  
+
   *o++ = root;
   return o;
-  
+
 
 } // CGAL_maximum_inscribed_rooted_k_gon_2( p, k, result)
 
@@ -422,7 +422,7 @@ extremal_polygon_2(
 //    enumerated clock- or counterclockwise
 //  * k >= t.min_k()
 //  * value_type of RandomAccessIC is Traits::Point_2
-//  * OutputIterator accepts Traits::Point_2 as value_type 
+//  * OutputIterator accepts Traits::Point_2 as value_type
 //
 // functionality:
 // --------------
@@ -488,7 +488,7 @@ CGAL_maximum_inscribed_k_gon_2(
 //    enumerated clock- or counterclockwise
 //  * k >= t.min_k()
 //  * value_type of RandomAccessIC is Traits::Point_2
-//  * OutputIterator accepts Traits::Point_2 as value_type 
+//  * OutputIterator accepts Traits::Point_2 as value_type
 //
 // functionality:
 // --------------
@@ -530,7 +530,7 @@ CGAL_maximum_inscribed_k_gon_2(
   // compute k-gon rooted at points_begin[P_0[1]]
   Index_cont P_1( k);
   FT area_1;
-  
+
   CGAL_maximum_inscribed_rooted_k_gon_2(
     points_begin,
     points_end,
@@ -542,10 +542,10 @@ CGAL_maximum_inscribed_k_gon_2(
     area_1,
     P_1.rbegin(),
     t);
-  
+
   CGAL_optimisation_assertion( P_1[0] == P_0[1]);
-  
-  
+
+
   // start recursive computation:
   FT area_r( 0);
   Index_cont P_r( k);
@@ -564,7 +564,7 @@ CGAL_maximum_inscribed_k_gon_2(
       P_r.rbegin(),
       t);
   }
-  
+
   if ( area_r > area_0)
     if ( area_r > area_1)
       // recursive is maximum
@@ -697,8 +697,8 @@ CGAL_maximum_inscribed_k_gon_2(
       P_l.rbegin(),
       t);
   } // if ( left_index < middle_index)
-  
-  
+
+
   // right recursive branch:
   FT area_right( 0);
   Index_cont P_r( k);
@@ -717,8 +717,8 @@ CGAL_maximum_inscribed_k_gon_2(
       P_r.rbegin(),
       t);
   } // if ( right_index > middle_index)
-  
-  
+
+
 
   if ( area_left > area_right)
     if ( area_left > area_middle) {

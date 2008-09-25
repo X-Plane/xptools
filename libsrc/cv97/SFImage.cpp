@@ -10,49 +10,49 @@
 
 #include "SFImage.h"
 
-SFImage::SFImage() 
+SFImage::SFImage()
 {
 	setType(fieldTypeSFImage);
 	InitializeJavaIDs();
 }
 
-void SFImage::InitializeJavaIDs() 
+void SFImage::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void SFImage::addValue(int value) 
+void SFImage::addValue(int value)
 {
 	SFInt32 *sfvalue = new SFInt32(value);
 	add(sfvalue);
 }
 
-void SFImage::addValue(SFInt32 *sfvalue) 
+void SFImage::addValue(SFInt32 *sfvalue)
 {
 	add(sfvalue);
 }
 
-void SFImage::insertValue(int index, int value) 
+void SFImage::insertValue(int index, int value)
 {
 	SFInt32 *sfvalue = new SFInt32(value);
 	insert(sfvalue, index);
 }
 
-int SFImage::get1Value(int index) 
+int SFImage::get1Value(int index)
 {
 	SFInt32 *sfvalue = (SFInt32 *)getObject(index);
 	return sfvalue->getValue();
 }
 
-void SFImage::set1Value(int index, int value) 
+void SFImage::set1Value(int index, int value)
 {
 	SFInt32 *sfvalue = (SFInt32 *)getObject(index);
 	sfvalue->setValue(value);
 }
 
-void SFImage::setValue(MField *mfield) 
+void SFImage::setValue(MField *mfield)
 {
 }
 
@@ -60,7 +60,7 @@ void SFImage::setValue(MField *mfield)
 //	Output
 ////////////////////////////////////////////////
 
-void SFImage::outputContext(ostream& printStream, char *indentString) 
+void SFImage::outputContext(ostream& printStream, char *indentString)
 {
 	int	nOutput = 0;
 	printStream << indentString;
@@ -80,11 +80,11 @@ void SFImage::outputContext(ostream& printStream, char *indentString)
 //	toString
 ////////////////////////////////////////////////
 
-void SFImage::setValue(char *value) 
+void SFImage::setValue(char *value)
 {
 }
 
-char *SFImage::getValue(char *buffer, int bufferLen) 
+char *SFImage::getValue(char *buffer, int bufferLen)
 {
 	buffer[0] = '\0';
 	return buffer;
@@ -165,7 +165,7 @@ jobject SFImage::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

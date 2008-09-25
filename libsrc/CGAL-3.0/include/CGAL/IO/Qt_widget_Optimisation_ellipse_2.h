@@ -39,7 +39,7 @@ operator << ( Qt_widget &ws,
   typedef Cartesian<double> Rep;
   typedef Point_2<Rep>	    Point;
   typedef Segment_2<Rep>    Segment;
-  
+
   switch ( oe.n_boundary_points) {
       case 0:
         break;
@@ -51,7 +51,7 @@ operator << ( Qt_widget &ws,
         double  py1( CGAL::to_double( oe.boundary_point1.y()));
         double  px2( CGAL::to_double( oe.boundary_point2.x()));
         double  py2( CGAL::to_double( oe.boundary_point2.y()));
-        ws << Segment( Point(px1, py1), Point(px2, py2)); 
+        ws << Segment( Point(px1, py1), Point(px2, py2));
 	      }
         break;
       case 3:

@@ -24,11 +24,11 @@
 #include <CGAL/Triangulation_short_names_2.h>
 #include <CGAL/Triangulation_utils_2.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template < class Fb >
 class  Triangulation_ds_face_2
-  : public Fb  
+  : public Fb
 {
 public:
   typedef typename Fb::Triangulation_data_structure Tds;
@@ -42,11 +42,11 @@ public :
   Triangulation_ds_face_2()
     : Fb()
   {}
-    
+
   Triangulation_ds_face_2(Vertex_handle v0, Vertex_handle v1, Vertex_handle v2)
     :  Fb(v0,v1,v2)
   {}
-    
+
   Triangulation_ds_face_2(Vertex_handle v0, Vertex_handle v1, Vertex_handle v2,
 			  Face_handle n0, Face_handle n1, Face_handle n2)
     :  Fb(v0,v1,v2,n0,n1,n2)
@@ -91,13 +91,13 @@ mirror_index(int i) const
 
 template < class Fb >
 bool
-Triangulation_ds_face_2<Fb>::  
+Triangulation_ds_face_2<Fb>::
 is_valid(bool verbose, int level) const
 {
   bool result = Fb::is_valid(verbose, level);
   for(int i = 0; i <= dimension(); i++) {
     Face_handle n = neighbor(i);
-    // the strange formulation in case dimension()==2 
+    // the strange formulation in case dimension()==2
     // is used to handle the cases of TDS allowing
     // two faces with two common edges
     int in;
@@ -105,7 +105,7 @@ is_valid(bool verbose, int level) const
     else in = mirror_index(i);
     result = result && ( this == &*(n->neighbor(in)) );
     switch(dimension()) {
-    case 0 : 
+    case 0 :
       break;
     case 1 :
       result = result &&  in == 1-i;

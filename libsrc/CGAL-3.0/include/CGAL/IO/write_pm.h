@@ -18,7 +18,7 @@
 // Author(s)     : Eti Ezra <estere@post.tau.ac.il>
 
 #ifndef CGAL_IO_WRITE_PM_H
-#define CGAL_IO_WRITE_PM_H 
+#define CGAL_IO_WRITE_PM_H
 
 #ifndef CGAL_BASIC_H
 #include <CGAL/basic.h>
@@ -48,13 +48,13 @@ void write_pm(const PM & pm, Writer & writer, std::ostream &)
 
   writer.write_comment("vertices", pm.number_of_vertices());
   writer.write_vertices(pm.vertices_begin(), pm.vertices_end());
-  
+
   writer.write_comment("halfedges", pm.number_of_halfedges());
   writer.write_halfedges(pm.halfedges_begin(), pm.halfedges_end());
 
   writer.write_comment("faces", pm.number_of_faces());
   writer.write_faces(pm.faces_begin(), pm.faces_end());
-  
+
   writer.write_title("End Planar Map");
   //writer.write_footer();
 }

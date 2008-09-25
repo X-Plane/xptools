@@ -10,14 +10,14 @@
  *
  *  Author: Niles D. Ritter
  */
- 
+
 #include "xtiffiop.h"
 #include <stdio.h>
 
 /*  Tiff info structure.
  *
  *     Entry format:
- *        { TAGNUMBER, ReadCount, WriteCount, DataType, FIELDNUM, 
+ *        { TAGNUMBER, ReadCount, WriteCount, DataType, FIELDNUM,
  *          OkToChange, PassDirCountOnSet, AsciiName }
  *
  *     For ReadCount, WriteCount, -1 = unknown; used for mult-valued
@@ -25,7 +25,7 @@
  */
 
 static const TIFFFieldInfo xtiffFieldInfo[] = {
-  
+
   /* XXX Replace these example tags with your own extended tags */
     { TIFFTAG_EXAMPLE_MULTI,	-1,-1, TIFF_DOUBLE,	FIELD_EXAMPLE_MULTI,
       TRUE,	TRUE,	"MyMultivaluedTag" },
@@ -61,10 +61,10 @@ _XTIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)
 	if (TIFFFieldSet(tif,FIELD_EXAMPLE_MULTI))
 	{
 		fprintf(fd, "  My Multi-Valued Doubles:");
-		if (flags & TIFFPRINT_MYMULTIDOUBLES) 
+		if (flags & TIFFPRINT_MYMULTIDOUBLES)
 		{
 			double *value = xd->xd_example_multi;
-	
+
 			num = xd->xd_num_multi;
 			fprintf(fd,"(");
 			for (i=0;i<num;i++) fprintf(fd, " %lg", *value++);
@@ -96,11 +96,11 @@ _XTIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 	va_list ap1 = ap;
 
 	/* va_start is called by the calling routine */
-	
+
 	switch (tag) {
-		/* 
+		/*
                  * XXX put your extended tags here; replace the implemented
-                 *     example tags with your own. 
+                 *     example tags with your own.
                  */
 	case TIFFTAG_EXAMPLE_MULTI:
 		/* multi-valued tags need to store the count as well */
@@ -157,7 +157,7 @@ _XTIFFVGetField(TIFF* tif, ttag_t tag, va_list ap)
 	XTIFFDirectory* xd = &xt->xtif_dir;
 
 	switch (tag) {
-		/* 
+		/*
                  * XXX put your extended tags here; replace the implemented
                  *     example tags with your own.
                  */
@@ -193,16 +193,16 @@ _XTIFFFreeDirectory(xtiff* xt)
 {
 	XTIFFDirectory* xd = &xt->xtif_dir;
 
-	/* 
+	/*
 	 *  XXX - Purge all Your allocated memory except
 	 *  for the xtiff directory itself. This includes
 	 *  all fields that require a _TIFFsetXXX call in
 	 *  _XTIFFVSetField().
 	 */
-	
+
 	CleanupField(xd_example_multi);
 	CleanupField(xd_example_ascii);
-	
+
 }
 #undef CleanupField
 
@@ -218,8 +218,8 @@ static void _XTIFFLocalDefaultDirectory(TIFF *tif)
 	 *  free up any dynamically allocated arrays
 	 *  before the new directory is read in.
 	 */
-	 
-	_XTIFFFreeDirectory(xt);	
+
+	_XTIFFFreeDirectory(xt);
 	_TIFFmemset(xt,0,sizeof(xtiff));
 
 	/* Override the tag access methods */
@@ -229,10 +229,10 @@ static void _XTIFFLocalDefaultDirectory(TIFF *tif)
 	PARENT(xt,vgetfield) =  TIFFMEMBER(tif,vgetfield);
 	TIFFMEMBER(tif,vgetfield) = _XTIFFVGetField;
 
-	/* 
+	/*
 	 * XXX Set up any default values here.
 	 */
-	
+
 	xd->xd_example_single = 234;
 }
 
@@ -254,7 +254,7 @@ static void
 _XTIFFDefaultDirectory(TIFF *tif)
 {
 	xtiff *xt;
-	
+
 	/* Allocate Directory Structure if first time, and install it */
 	if (!(tif->tif_flags & XTIFF_INITIALIZED))
 	{
@@ -271,7 +271,7 @@ _XTIFFDefaultDirectory(TIFF *tif)
 		TIFFMEMBER(tif,clientdir) = (tidata_t)xt;
 		tif->tif_flags |= XTIFF_INITIALIZED; /* dont do this again! */
 	}
-	
+
 	/* set up our own defaults */
 	_XTIFFLocalDefaultDirectory(tif);
 
@@ -280,7 +280,7 @@ _XTIFFDefaultDirectory(TIFF *tif)
 	 * allow it to set up the rest of its own methods.
          */
 
-	if (_ParentExtender) 
+	if (_ParentExtender)
 		(*_ParentExtender)(tif);
 
 }
@@ -294,10 +294,10 @@ static
 void _XTIFFInitialize(void)
 {
 	static first_time=1;
-	
+
 	if (! first_time) return; /* Been there. Done that. */
 	first_time = 0;
-	
+
 	/* Grab the inherited method and install */
 	_ParentExtender = TIFFSetTagExtender(_XTIFFDefaultDirectory);
 }
@@ -310,8 +310,8 @@ TIFF*
 XTIFFOpen(const char* name, const char* mode)
 {
 	/* Set up the callback */
-	_XTIFFInitialize();	
-	
+	_XTIFFInitialize();
+
 	/* Open the file; the callback will set everything up
 	 */
 	return TIFFOpen(name, mode);
@@ -321,7 +321,7 @@ TIFF*
 XTIFFFdOpen(int fd, const char* name, const char* mode)
 {
 	/* Set up the callback */
-	_XTIFFInitialize();	
+	_XTIFFInitialize();
 
 	/* Open the file; the callback will set everything up
 	 */
@@ -333,10 +333,10 @@ void
 XTIFFClose(TIFF *tif)
 {
 	xtiff *xt = XTIFFDIR(tif);
-	
+
 	/* call inherited function first */
 	TIFFClose(tif);
-	
+
 	/* Free up extended allocated memory */
 	_XTIFFFreeDirectory(xt);
 	_TIFFfree(xt);

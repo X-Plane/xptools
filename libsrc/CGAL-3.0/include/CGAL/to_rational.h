@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Susan Hert, Sylvain Pion
- 
+
 #ifndef CGAL_TO_RATIONAL_H
 #define CGAL_TO_RATIONAL_H
 
@@ -31,7 +31,7 @@ CGAL_BEGIN_NAMESPACE
 template <class Rational>
 Rational
 to_rational(double x)
-{ 
+{
     typename Rational_traits<Rational>::RT num = 0;
     typename Rational_traits<Rational>::RT den = 1;
 

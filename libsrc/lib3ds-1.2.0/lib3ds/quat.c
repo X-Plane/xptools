@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -59,7 +59,7 @@ lib3ds_quat_identity(Lib3dsQuat c)
 /*!
  * \ingroup quat
  */
-void 
+void
 lib3ds_quat_copy(Lib3dsQuat dest, Lib3dsQuat src)
 {
   int i;
@@ -170,9 +170,9 @@ lib3ds_quat_normalize(Lib3dsQuat c)
   l=sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2] + c[3]*c[3]);
   if (fabs(l)<LIB3DS_EPSILON) {
     c[0]=c[1]=c[2]=0.0f;
-    c[3]=1.0f; 
+    c[3]=1.0f;
   }
-  else {  
+  else {
     int i;
     m=1.0f/l;
     for (i=0; i<4; ++i) {
@@ -193,9 +193,9 @@ lib3ds_quat_inv(Lib3dsQuat c)
   l=sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2] + c[3]*c[3]);
   if (fabs(l)<LIB3DS_EPSILON) {
     c[0]=c[1]=c[2]=0.0f;
-    c[3]=1.0f; 
+    c[3]=1.0f;
   }
-  else {  
+  else {
     m=1.0f/l;
     c[0]=(Lib3dsFloat)(-c[0]*m);
     c[1]=(Lib3dsFloat)(-c[1]*m);

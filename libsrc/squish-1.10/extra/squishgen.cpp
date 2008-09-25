@@ -3,26 +3,26 @@
 	Copyright (c) 2006 Simon Brown                          si@sjbrown.co.uk
 
 	Permission is hereby granted, free of charge, to any person obtaining
-	a copy of this software and associated documentation files (the 
+	a copy of this software and associated documentation files (the
 	"Software"), to	deal in the Software without restriction, including
 	without limitation the rights to use, copy, modify, merge, publish,
-	distribute, sublicense, and/or sell copies of the Software, and to 
-	permit persons to whom the Software is furnished to do so, subject to 
+	distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to
 	the following conditions:
 
 	The above copyright notice and this permission notice shall be included
 	in all copies or substantial portions of the Software.
 
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	
+
    -------------------------------------------------------------------------- */
-   
+
 #include <iostream>
 
 struct SourceBlock
@@ -40,11 +40,11 @@ struct TargetValue
 static void GenerateData( std::string const& name, int bits, int colours )
 {
 	TargetValue values[256];
-	
+
 	// initialise the data
 	for( int target = 0; target < 256; ++target )
 		for( int index = 0; index < colours; ++index )
-			values[target].sources[index].error = 255;	
+			values[target].sources[index].error = 255;
 
 	// loop over all possible source points
 	int count = ( 1 << bits );
@@ -55,7 +55,7 @@ static void GenerateData( std::string const& name, int bits, int colours )
 			// compute the 8-bit endpoints
 			int a = ( value1 << ( 8 - bits ) ) | ( value1 >> ( 2*bits - 8 ) );
 			int b = ( value2 << ( 8 - bits ) ) | ( value2 >> ( 2*bits - 8 ) );
-			
+
 			// fill in the codebook with the these and intermediates
 			int codes[2];
 			codes[0] = a;
@@ -63,12 +63,12 @@ static void GenerateData( std::string const& name, int bits, int colours )
 				codes[1] = ( a + b )/2;
 			else
 				codes[1] = ( 2*a + b )/3;
-			
+
 			// mark each target point with the endpoints and index needed for it
 			for( int index = 0; index < 2; ++index )
 			{
 				int target = codes[index];
-				
+
 				SourceBlock& block = values[target].sources[index];
 				if( block.error != 0 )
 				{
@@ -79,7 +79,7 @@ static void GenerateData( std::string const& name, int bits, int colours )
 			}
 		}
 	}
-	
+
 	// iteratively fill in the missing values
 	for( ;; )
 	{
@@ -117,9 +117,9 @@ static void GenerateData( std::string const& name, int bits, int colours )
 		if( stable )
 			break;
 	}
-	
+
 	// debug
-	std::cout << "\nstatic SingleColourLookup const " << name << "[] = \n{\n"; 
+	std::cout << "\nstatic SingleColourLookup const " << name << "[] = \n{\n";
 	for( int i = 0;; )
 	{
 		std::cout << "\t{ { ";

@@ -1,18 +1,18 @@
 /*************************************************************************
  *
- * Source file for Windows 95/Win32. 
+ * Source file for Windows 95/Win32.
  *
- * The function LoadTIFFinDIB in this source file let you load 
- * a TIFF file and build a memory DIB with it and return the 
+ * The function LoadTIFFinDIB in this source file let you load
+ * a TIFF file and build a memory DIB with it and return the
  * HANDLE (HDIB) of the memory bloc containing the DIB.
  *
- *  Example : 
- * 
+ *  Example :
+ *
  *   HDIB   hDIB;
  *   hDIB = LoadTIFFinDIB("sample.tif");
  *
  *
- * To build this source file you must include the TIFF library   
+ * To build this source file you must include the TIFF library
  * in your project.
  *
  * 4/12/95   Philippe Tenenhaus   100423.3705@compuserve.com
@@ -20,7 +20,7 @@
  ************************************************************************/
 
 
-#include "tiffio.h" 
+#include "tiffio.h"
 
 #define HDIB HANDLE
 #define IS_WIN30_DIB(lpbi)  ((*(LPDWORD)(lpbi)) == sizeof(BITMAPINFOHEADER))
@@ -36,7 +36,7 @@ static int checkcmap(int n, uint16* r, uint16* g, uint16* b);
 
 /*************************************************************************
  *
- * HDIB LoadTIFFinDIB(LPSTR lpFileName) 
+ * HDIB LoadTIFFinDIB(LPSTR lpFileName)
  *
  * Parameter:
  *
@@ -56,38 +56,38 @@ static int checkcmap(int n, uint16* r, uint16* g, uint16* b);
  *
  ************************************************************************/
 
-HDIB LoadTIFFinDIB(LPSTR lpFileName)    
+HDIB LoadTIFFinDIB(LPSTR lpFileName)
 {
     TIFF          *tif;
-    unsigned long imageLength; 
-    unsigned long imageWidth; 
+    unsigned long imageLength;
+    unsigned long imageWidth;
     unsigned int  BitsPerSample;
     unsigned long LineSize;
     unsigned int  SamplePerPixel;
-    unsigned long RowsPerStrip;  
+    unsigned long RowsPerStrip;
     int           PhotometricInterpretation;
     long          nrow;
 	unsigned long row;
-    char          *buf;          
-    LPBITMAPINFOHEADER lpDIB; 
+    char          *buf;
+    LPBITMAPINFOHEADER lpDIB;
     HDIB          hDIB;
     char          *lpBits;
     HGLOBAL       hStrip;
     int           i,l;
-    int           Align; 
-    
+    int           Align;
+
     tif = TIFFOpen(lpFileName, "r");
-    
+
     if (!tif)
         goto TiffOpenError;
-    
+
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &imageWidth);
-    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imageLength);  
+    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imageLength);
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &BitsPerSample);
-    TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &RowsPerStrip);  
-    TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &RowsPerStrip);   
+    TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &RowsPerStrip);
+    TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &RowsPerStrip);
     TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &PhotometricInterpretation);
-           
+
     LineSize = TIFFScanlineSize(tif); //Number of byte in ine line
 
     SamplePerPixel = (int) (LineSize/imageWidth);
@@ -96,92 +96,92 @@ HDIB LoadTIFFinDIB(LPSTR lpFileName)
     Align = 4 - (LineSize % 4);
     if (Align == 4)	Align = 0;
 
-    
+
     //Create a new DIB
     hDIB = CreateDIB((DWORD) imageWidth, (DWORD) imageLength, (WORD)
 (BitsPerSample*SamplePerPixel));
     lpDIB  = (LPBITMAPINFOHEADER) GlobalLock(hDIB);
     if (!lpDIB)
           goto OutOfDIBMemory;
-          
+
     if (lpDIB)
        lpBits = FindDIBBits((LPSTR) lpDIB);
 
-    //In the tiff file the lines are save from up to down 
+    //In the tiff file the lines are save from up to down
 	//In a DIB the lines must be save from down to up
     if (lpBits)
       {
         lpBits = FindDIBBits((LPSTR) lpDIB);
         lpBits+=((imageWidth*SamplePerPixel)+Align)*(imageLength-1);
 		//now lpBits pointe on the bottom line
-        
+
         hStrip = GlobalAlloc(GHND,TIFFStripSize(tif));
-        buf = GlobalLock(hStrip);           
-        
+        buf = GlobalLock(hStrip);
+
         if (!buf)
            goto OutOfBufMemory;
-        
+
         //PhotometricInterpretation = 2 image is RGB
-        //PhotometricInterpretation = 3 image have a color palette              
+        //PhotometricInterpretation = 3 image have a color palette
         if (PhotometricInterpretation == 3)
         {
           uint16* red;
           uint16* green;
           uint16* blue;
           int16 i;
-          LPBITMAPINFO lpbmi;   
-          int   Palette16Bits;          
-           
-          TIFFGetField(tif, TIFFTAG_COLORMAP, &red, &green, &blue); 
+          LPBITMAPINFO lpbmi;
+          int   Palette16Bits;
+
+          TIFFGetField(tif, TIFFTAG_COLORMAP, &red, &green, &blue);
 
 		  //Is the palette 16 or 8 bits ?
-          if (checkcmap(1<<BitsPerSample, red, green, blue) == 16) 
+          if (checkcmap(1<<BitsPerSample, red, green, blue) == 16)
              Palette16Bits = TRUE;
           else
              Palette16Bits = FALSE;
-             
-          lpbmi = (LPBITMAPINFO)lpDIB;                      
-                
+
+          lpbmi = (LPBITMAPINFO)lpDIB;
+
           //load the palette in the DIB
-          for (i = (1<<BitsPerSample)-1; i >= 0; i--) 
-            {             
+          for (i = (1<<BitsPerSample)-1; i >= 0; i--)
+            {
              if (Palette16Bits)
                 {
                   lpbmi->bmiColors[i].rgbRed =(BYTE) CVT(red[i]);
                   lpbmi->bmiColors[i].rgbGreen = (BYTE) CVT(green[i]);
-                  lpbmi->bmiColors[i].rgbBlue = (BYTE) CVT(blue[i]);           
+                  lpbmi->bmiColors[i].rgbBlue = (BYTE) CVT(blue[i]);
                 }
              else
                 {
                   lpbmi->bmiColors[i].rgbRed = (BYTE) red[i];
                   lpbmi->bmiColors[i].rgbGreen = (BYTE) green[i];
-                  lpbmi->bmiColors[i].rgbBlue = (BYTE) blue[i];        
+                  lpbmi->bmiColors[i].rgbBlue = (BYTE) blue[i];
                 }
-            }  
-                 
+            }
+
         }
-        
+
         //read the tiff lines and save them in the DIB
 		//with RGB mode, we have to change the order of the 3 samples RGB
 <=> BGR
-        for (row = 0; row < imageLength; row += RowsPerStrip) 
-          {     
+        for (row = 0; row < imageLength; row += RowsPerStrip)
+          {
             nrow = (row + RowsPerStrip > imageLength ? imageLength - row :
 RowsPerStrip);
             if (TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, row, 0),
                 buf, nrow*LineSize)==-1)
                   {
                      goto TiffReadError;
-                  } 
+                  }
             else
-                  {  
-                    for (l = 0; l < nrow; l++) 
+                  {
+                    for (l = 0; l < nrow; l++)
                       {
                          if (SamplePerPixel  == 3)
                            for (i=0;i< (int) (imageWidth);i++)
                               {
                                lpBits[i*SamplePerPixel+0]=buf[l*LineSize+i*Sample
-PerPixel+2]; 
+PerPixel+2];
                                lpBits[i*SamplePerPixel+1]=buf[l*LineSize+i*Sample
 PerPixel+1];
                                lpBits[i*SamplePerPixel+2]=buf[l*LineSize+i*Sample
@@ -189,8 +189,8 @@ PerPixel+0];
                               }
                          else
                            memcpy(lpBits, &buf[(int) (l*LineSize)], (int)
-imageWidth*SamplePerPixel); 
-                          
+imageWidth*SamplePerPixel);
+
                          lpBits-=imageWidth*SamplePerPixel+Align;
 
                       }
@@ -198,23 +198,23 @@ imageWidth*SamplePerPixel);
           }
         GlobalUnlock(hStrip);
         GlobalFree(hStrip);
-        GlobalUnlock(hDIB); 
+        GlobalUnlock(hDIB);
         TIFFClose(tif);
       }
-      
+
     return hDIB;
-    
+
     OutOfBufMemory:
-       
+
     TiffReadError:
-       GlobalUnlock(hDIB); 
+       GlobalUnlock(hDIB);
        GlobalFree(hStrip);
     OutOfDIBMemory:
        TIFFClose(tif);
     TiffOpenError:
        return (HANDLE) 0;
-       
-         
+
+
 }
 
 
@@ -223,7 +223,7 @@ static int checkcmap(int n, uint16* r, uint16* g, uint16* b)
     while (n-- > 0)
         if (*r++ >= 256 || *g++ >= 256 || *b++ >= 256)
         return (16);
-    
+
     return (8);
 }
 
@@ -270,7 +270,7 @@ HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
    bi.biHeight = dwHeight;       // fill in height from parameter
    bi.biPlanes = 1;              // must be 1
    bi.biBitCount = wBitCount;    // from parameter
-   bi.biCompression = BI_RGB;    
+   bi.biCompression = BI_RGB;
    bi.biSizeImage = (dwWidth*dwHeight*wBitCount)/8; //0;           // 0's here
 mean "default"
    bi.biXPelsPerMeter = 2834; //0;

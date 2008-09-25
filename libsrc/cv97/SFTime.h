@@ -21,7 +21,7 @@ class SFTime : public Field {
 
 	static	int	mInit;
 
-	double mValue; 
+	double mValue;
 
 public:
 

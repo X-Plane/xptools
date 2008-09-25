@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -36,7 +36,7 @@
 using namespace std;
 
 
-static const char* ident_ = 
+static const char* ident_ =
   "$Id: sb_ForeignID.cpp,v 1.14 2002/11/24 22:07:42 mcoletti Exp $";
 
 
@@ -47,9 +47,9 @@ char usage_type_codes_[9] =
 { 0x0, 'S', 'E', 'L', 'R', 'F', 'B', 'I', 'X' };
 
 
-/** 
+/**
     maps a usage modifer to its character representation according to
-    the SDTS specification 
+    the SDTS specification
 */
 static
 char
@@ -96,7 +96,7 @@ static std::string const foreign_id_long_str = "FOREIGN ID";
 static std::string const foreign_id_mnemonic = "FRID";
 
 
-sb_ForeignID::sb_ForeignID() 
+sb_ForeignID::sb_ForeignID()
    : recordID_( 1 ),      // most module records start at one, not zero
      usageModifier_( sb_ForeignID::none ),
      name_( foreign_id_long_str ),
@@ -116,8 +116,8 @@ sb_ForeignID::sb_ForeignID( std::string const& name,
 sb_ForeignID::sb_ForeignID( std::string const& mn,
                             long id,
                             sb_ForeignID::usage_t um )
-   : moduleName_( mn ), 
-     recordID_( id ), 
+   : moduleName_( mn ),
+     recordID_( id ),
      usageModifier_( um ),
      name_( foreign_id_long_str ),
      mnemonic_( foreign_id_mnemonic )
@@ -226,7 +226,7 @@ static std::string const attribute_id_long_str = "ATTRIBUTE ID";
 static std::string const attribute_id_mnemonic = "ATID";
 
 
-sb_AttributeID::sb_AttributeID() 
+sb_AttributeID::sb_AttributeID()
    : sb_ForeignID( attribute_id_long_str, attribute_id_mnemonic )
 {}
 

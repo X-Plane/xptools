@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,23 +38,23 @@ void notifier(GISHalfedge * h_old, GISHalfedge * h_new, void *)
 void TEST_MapDefs(void)
 {
 	// EMPTY MAP TESTS
-	
+
 	Pmwx	amap;
-	TEST_Run(amap.empty());	
+	TEST_Run(amap.empty());
 	TEST_Run(amap.unbounded_face()->is_unbounded());
 	TEST_Run(amap.number_of_vertices() == 0);
 	TEST_Run(amap.number_of_halfedges() == 0);
 	TEST_Run(amap.number_of_faces() == 1);
 	TEST_Run(amap.is_valid());
-	
+
 	GISHalfedge * 		he;
 	Pmwx::Locate_type		loc;
-	he = amap.locate_point(Point2(0,0), loc);	
+	he = amap.locate_point(Point2(0,0), loc);
 	TEST_Run(he == NULL);
 	TEST_Run(loc == Pmwx::locate_Face);
-	
+
 	// INSERT EDGE INTO EMPTY MAP
-	
+
 	gAdded = 0;
 	amap.insert_edge(Point2(0,0), Point2(10, 0), notifier, NULL);
 	TEST_Run(gAdded  == 1);
@@ -70,39 +70,39 @@ void TEST_MapDefs(void)
 	TEST_Run(amap.number_of_faces() == 1);
 	GISHalfedge * one = gLast;
 
-	he = amap.locate_point(Point2(0,0), loc);	
+	he = amap.locate_point(Point2(0,0), loc);
 	TEST_Run(he == one->twin());
 	TEST_Run(loc == Pmwx::locate_Vertex);
-	he = amap.locate_point(Point2(10,0), loc);	
+	he = amap.locate_point(Point2(10,0), loc);
 	TEST_Run(he == one);
 	TEST_Run(loc == Pmwx::locate_Vertex);
-	he = amap.locate_point(Point2(5,0), loc);	
+	he = amap.locate_point(Point2(5,0), loc);
 	TEST_Run(he == one || he == one->twin());
 	TEST_Run(loc == Pmwx::locate_Halfedge);
 
-	he = amap.locate_point(Point2(5,-2), loc);	
+	he = amap.locate_point(Point2(5,-2), loc);
 	TEST_Run(he->face() == amap.unbounded_face());
 	TEST_Run(loc == Pmwx::locate_Face);
-	
+
 	Point2 found;
-	he = amap.ray_shoot(Point2(5, -2), Pmwx::locate_Face, NULL, Point2(5, 2), found, loc);	
+	he = amap.ray_shoot(Point2(5, -2), Pmwx::locate_Face, NULL, Point2(5, 2), found, loc);
 	TEST_Run(loc == Pmwx::locate_Halfedge);
 	TEST_Run(found == Point2(5, 0));
 	TEST_Run(he == one);
-	he = amap.ray_shoot(Point2(0, -2), Pmwx::locate_Face, NULL, Point2(0, 2), found, loc);	
+	he = amap.ray_shoot(Point2(0, -2), Pmwx::locate_Face, NULL, Point2(0, 2), found, loc);
 	TEST_Run(loc == Pmwx::locate_Vertex);
 	TEST_Run(found == Point2(0, 0));
 	TEST_Run(he == one->twin());
-	he = amap.ray_shoot(Point2(10, -2), Pmwx::locate_Face, NULL, Point2(10, 2), found, loc);	
+	he = amap.ray_shoot(Point2(10, -2), Pmwx::locate_Face, NULL, Point2(10, 2), found, loc);
 	TEST_Run(loc == Pmwx::locate_Vertex);
 	TEST_Run(found == Point2(10, 0));
 	TEST_Run(he == one);
-	he = amap.ray_shoot(Point2(-10, -2), Pmwx::locate_Face, NULL, Point2(-10, 2), found, loc);	
+	he = amap.ray_shoot(Point2(-10, -2), Pmwx::locate_Face, NULL, Point2(-10, 2), found, loc);
 	TEST_Run(loc == Pmwx::locate_Face);
 	TEST_Run(found == Point2(-10, 2));
 	TEST_Run(he == NULL || he->face() == amap.unbounded_face());
 
-	he = amap.ray_shoot(Point2(-10, -2), Pmwx::locate_Face, NULL, Point2(10, -2), found, loc);	
+	he = amap.ray_shoot(Point2(-10, -2), Pmwx::locate_Face, NULL, Point2(10, -2), found, loc);
 	TEST_Run(loc == Pmwx::locate_Face);
 	TEST_Run(found == Point2(10, -2));
 	TEST_Run(he == NULL || he->face() == amap.unbounded_face());
@@ -124,7 +124,7 @@ void TEST_MapDefs(void)
 	TEST_Run(amap.number_of_vertices() == 3);
 	TEST_Run(amap.number_of_halfedges() == 4);
 	TEST_Run(amap.number_of_faces() == 1);
-	GISHalfedge * two = gLast;	
+	GISHalfedge * two = gLast;
 	TEST_Run(one->next() == two);
 	TEST_Run(two->next() == two->twin());
 	TEST_Run(two->twin()->next() == one->twin());
@@ -139,12 +139,12 @@ void TEST_MapDefs(void)
 	TEST_Run(amap.number_of_vertices() == 4);
 	TEST_Run(amap.number_of_halfedges() == 6);
 	TEST_Run(amap.number_of_faces() == 1);
-	GISHalfedge * three = gLast;	
+	GISHalfedge * three = gLast;
 	TEST_Run(two->next() == three);
 	TEST_Run(three->next() == three->twin());
 	TEST_Run(three->twin()->next() == two->twin());
 	TEST_Run(amap.is_valid());
-	
+
 	TEST_Run(three->twin()->next() == two->twin());
 	TEST_Run(two->next() == three);
 	TEST_Run(one->next() == two);
@@ -183,7 +183,7 @@ void TEST_MapDefs(void)
 	GISHalfedge * four = gLast;
 	TEST_Run(amap.is_valid());
 
-	// TODO: when we build a horizontal bar last, we "Catch" our own bounds as a hole and 
+	// TODO: when we build a horizontal bar last, we "Catch" our own bounds as a hole and
 	// try to move it if we are just finishing a hole in something. Probably the hole code
 	// shouldn't run if we are a hole.
 

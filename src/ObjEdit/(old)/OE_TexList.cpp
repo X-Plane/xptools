@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,9 +39,9 @@ const	long	kScrollBarID = 10001;
 
 static	void	OE_ResyncScrollbars(XPWidgetID inList);
 static	void	OE_TexListNotify(int cat, int msg, void * param, void * ref);
-static	int		OE_TexListFunc(		   XPWidgetMessage      inMessage,    
-	                                   XPWidgetID           inWidget,    
-	                                   long                 inParam1,    
+static	int		OE_TexListFunc(		   XPWidgetMessage      inMessage,
+	                                   XPWidgetID           inWidget,
+	                                   long                 inParam1,
 	                                   long                 inParam2);
 
 
@@ -53,23 +53,23 @@ XPWidgetID		CreateTexListWindow(
 
 	XPWidgetID frame = XPCreateWidget(x1+5, y2-20, x2-5-16, y1+5, 1, "", 0, preview, xpWidgetClass_SubWindow);
 	XPSetWidgetProperty(frame, 	xpProperty_SubWindowType, xpSubWindowStyle_ListView);
-	
+
 	XPWidgetID scrollbar = XPCreateWidget(x2-5-16, y2-20, x2-5,y1+5, 1, "", 0, preview, xpWidgetClass_ScrollBar);
 	XPSetWidgetProperty(scrollbar, xpProperty_ScrollBarSliderPosition, 0);
 	XPSetWidgetProperty(scrollbar, xpProperty_ScrollBarMin, 0);
 	XPSetWidgetProperty(scrollbar, xpProperty_ScrollBarMax, 0);
 	XPSetWidgetProperty(scrollbar, xpProperty_ScrollBarPageAmount, kTexListItemHeight);
-	
+
 	XPWidgetID pane = XPCreateCustomWidget(x1+10,y2-25,x2-10-16,y1+10, 1, "", 0, preview, OE_TexListFunc);
 	XPSetWidgetProperty(pane, kScrollBarID, (long) scrollbar);
 	XPSetWidgetProperty(pane, xpProperty_Clip, 1);
 
 	OE_Register(OE_TexListNotify, pane);
-	
+
 	OE_ResyncScrollbars(pane);
-	
+
 	return preview;
-}							
+}
 
 static	void	OE_ResyncScrollbars(XPWidgetID inList)
 {
@@ -79,17 +79,17 @@ static	void	OE_ResyncScrollbars(XPWidgetID inList)
 	int	real_height = top - bottom;
 	int scroll = virtual_height - real_height;
 	if (scroll < 0) scroll = 0;
-	XPSetWidgetProperty((XPWidgetID) XPGetWidgetProperty(inList, kScrollBarID, NULL), xpProperty_ScrollBarMax, scroll);	
+	XPSetWidgetProperty((XPWidgetID) XPGetWidgetProperty(inList, kScrollBarID, NULL), xpProperty_ScrollBarMax, scroll);
 }
 
 void	OE_TexListNotify(int cat, int msg, void * param, void * ref)
 {
 	OE_ResyncScrollbars(ref);
-}	
+}
 
-int	OE_TexListFunc(		   XPWidgetMessage      inMessage,    
-                           XPWidgetID           inWidget,    
-                           long                 inParam1,   
+int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
+                           XPWidgetID           inWidget,
+                           long                 inParam1,
                            long                 inParam2)
 {
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, true)) return 1;
@@ -106,7 +106,7 @@ int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
 	case xpMsg_Draw:
 		if (gTextures.empty())
 		{
-			XPLMDrawString(black, l + 5, t - 24, "No textures defined.", NULL, xplmFont_Basic);			
+			XPLMDrawString(black, l + 5, t - 24, "No textures defined.", NULL, xplmFont_Basic);
 		} else {
 			for (int n = 0; n < gTextures.size(); ++n)
 			{
@@ -121,11 +121,11 @@ int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
 					glVertex2i(l, box_top);
 					glVertex2i(r, box_top);
 					glVertex2i(r, box_bot);
-					glVertex2i(l, box_bot);									
+					glVertex2i(l, box_bot);
 					glEnd();
 				}
-				
-				XPLMDrawString(black, l + 5 + kTexListItemHeight, (box_top + box_bot) / 2 - 10, gTextures[n].name.c_str(), NULL, xplmFont_Basic);			
+
+				XPLMDrawString(black, l + 5 + kTexListItemHeight, (box_top + box_bot) / 2 - 10, gTextures[n].name.c_str(), NULL, xplmFont_Basic);
 
 				XPLMSetGraphicsState(0, 0, 0,  1, 1, 0, 0);
 				glColor3f(1.0, 1.0, 1.0);
@@ -140,7 +140,7 @@ int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
 						{
 							XPLMBindTexture2d(t, 0);
 							XPLMSetGraphicsState(0, 1, 0,  1, 1, 0, 0);
-						}	
+						}
 					}
 				}
 
@@ -154,8 +154,8 @@ int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
 				glTexCoord2f(gTextures[n].s1, gTextures[n].t1);
 				glVertex2i(l + 3, box_bot + 2);
 				glEnd();
-				
-								
+
+
 				XPLMSetGraphicsState(0, 0, 0,  0, 0,  0, 0);
 				glColor3f(0.0, 0.0, 0.0);
 				glBegin(GL_LINE_LOOP);
@@ -184,4 +184,4 @@ int	OE_TexListFunc(		   XPWidgetMessage      inMessage,
 	default:
 		return 0;
 	}
-}	
+}

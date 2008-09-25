@@ -44,13 +44,13 @@ void Node::initializeMember()
 	setReferenceNode(NULL);
 }
 
-Node::Node() 
+Node::Node()
 {
 	setHeaderFlag(true);
 	initializeMember();
 }
-	
-Node::Node(char * nodeType, char * nodeName) 
+
+Node::Node(char * nodeType, char * nodeName)
 {
 	setHeaderFlag(false);
 	initializeMember();
@@ -58,7 +58,7 @@ Node::Node(char * nodeType, char * nodeName)
 	setType(nodeType);
 	setName(nodeName);
 }
-	
+
 ////////////////////////////////////////////////
 //	Node::~Node
 ////////////////////////////////////////////////
@@ -73,7 +73,7 @@ void Node::deleteChildNodes(void)
 	}
 }
 
-Node::~Node() 
+Node::~Node()
 {
 	deleteChildNodes();
 
@@ -110,10 +110,10 @@ Node::~Node()
 //	Name
 ////////////////////////////////////////////////
 
-void Node::setName(char * name) 
+void Node::setName(char * name)
 {
 	String	nodeName(name);
-	char *nameString = nodeName.getValue(); 
+	char *nameString = nodeName.getValue();
 	for (int n=0; n<nodeName.length(); n++) {
 		if (nameString[n] <= 0x20)
 			nameString[n] = '_';
@@ -121,12 +121,12 @@ void Node::setName(char * name)
 	mName->setValue(nameString);
 }
 
-char *Node::getName() 
+char *Node::getName()
 {
 	return mName->getValue();
 }
 
-bool Node::hasName() 
+bool Node::hasName()
 {
 	char *name = getName();
 	if (name == NULL)
@@ -140,12 +140,12 @@ bool Node::hasName()
 //	Type
 ////////////////////////////////////////////////
 
-void Node::setType(char * name) 
+void Node::setType(char * name)
 {
 	mType->setValue(name);
 }
 
-char *Node::getType() 
+char *Node::getType()
 {
 	return mType->getValue();
 }
@@ -171,13 +171,13 @@ void Node::addChildNodeAtFirst(Node *node, bool initialize) {
 ////////////////////////////////////////////////
 
 void Node::moveChildNode(Node *node) {
-	mChildNodes->addNode(node); 
+	mChildNodes->addNode(node);
 	node->setParentNode(this);
 	node->setSceneGraph(getSceneGraph());
 }
 
 void Node::moveChildNodeAtFirst(Node *node) {
-	mChildNodes->addNodeAtFirst(node); 
+	mChildNodes->addNodeAtFirst(node);
 	node->setParentNode(this);
 	node->setSceneGraph(getSceneGraph());
 }
@@ -186,7 +186,7 @@ void Node::moveChildNodeAtFirst(Node *node) {
 //	Node::remove
 ////////////////////////////////////////////////
 
-void Node::removeRoutes() 
+void Node::removeRoutes()
 {
 	SceneGraph *sg = getSceneGraph();
 	if (sg) {
@@ -200,7 +200,7 @@ void Node::removeRoutes()
 	}
 }
 
-void Node::removeSFNodes() 
+void Node::removeSFNodes()
 {
 	SceneGraph *sg = getSceneGraph();
 	if (sg) {
@@ -217,7 +217,7 @@ void Node::removeSFNodes()
 	}
 }
 
-void Node::removeInstanceNodes() 
+void Node::removeInstanceNodes()
 {
 	SceneGraph *sg = getSceneGraph();
 	if (sg && isInstanceNode() == false) {
@@ -236,11 +236,11 @@ void Node::removeInstanceNodes()
 			}
 			node = nextNode;
 		}
-	
+
 	}
 }
 
-void Node::remove() 
+void Node::remove()
 {
 	LinkedListNode<Node>::remove();
 
@@ -252,7 +252,7 @@ void Node::remove()
 		if (isBindableNode()) {
 			SceneGraph *sceneGraph = getSceneGraph();
 			if (sceneGraph)
-				sceneGraph->setBindableNode((BindableNode *)this, false);			
+				sceneGraph->setBindableNode((BindableNode *)this, false);
 		}
 	}
 
@@ -307,11 +307,11 @@ Field *Node::createField(int type)
 //	EventIn
 ////////////////////////////////////////////////
 
-Field *Node::getEventIn(char * fieldString) 
+Field *Node::getEventIn(char * fieldString)
 {
 
 	String fieldName(fieldString);
-		
+
 	int nEventIn = getNEventIn();
 	for (int n=0; n<nEventIn; n++) {
 		Field *field = getEventIn(n);
@@ -326,19 +326,19 @@ Field *Node::getEventIn(char * fieldString)
 	return NULL;
 }
 
-int Node::getNEventIn() 
+int Node::getNEventIn()
 {
 	return mEventInField->size();
 }
 
-void Node::addEventIn(Field *field) 
+void Node::addEventIn(Field *field)
 {
 	assert(field->getName() && strlen(field->getName()));
 	assert(!getEventIn(field->getName()));
 	mEventInField->addElement(field);
 }
 
-void Node::addEventIn(char * name, Field *field) 
+void Node::addEventIn(char * name, Field *field)
 {
 	assert(name && strlen(name));
 	assert(!getEventIn(name));
@@ -346,17 +346,17 @@ void Node::addEventIn(char * name, Field *field)
 	mEventInField->addElement(field);
 }
 
-void Node::addEventIn(char * name, int fieldType) 
+void Node::addEventIn(char * name, int fieldType)
 {
 	addEventIn(name, createField(fieldType));
 }
 
-Field *Node::getEventIn(int index) 
+Field *Node::getEventIn(int index)
 {
 	return (Field *)mEventInField->elementAt(index);
 }
 
-int Node::getEventInNumber(Field *field) 
+int Node::getEventInNumber(Field *field)
 {
 	int nEventIn = getNEventIn();
 	for (int n=0; n<nEventIn; n++) {
@@ -370,7 +370,7 @@ int Node::getEventInNumber(Field *field)
 //	EventOut
 ////////////////////////////////////////////////
 
-Field *Node::getEventOut(char *fieldString) 
+Field *Node::getEventOut(char *fieldString)
 {
 
 	String fieldName(fieldString);
@@ -388,19 +388,19 @@ Field *Node::getEventOut(char *fieldString)
 	return NULL;
 }
 
-int Node::getNEventOut() 
+int Node::getNEventOut()
 {
 	return mEventOutField->size();
 }
 
-void Node::addEventOut(Field *field) 
+void Node::addEventOut(Field *field)
 {
 	assert(field->getName() && strlen(field->getName()));
 	assert(!getEventOut(field->getName()));
 	mEventOutField->addElement(field);
 }
 
-void Node::addEventOut(char *name, Field *field) 
+void Node::addEventOut(char *name, Field *field)
 {
 	assert(name && strlen(name));
 	assert(!getEventOut(name));
@@ -408,17 +408,17 @@ void Node::addEventOut(char *name, Field *field)
 	mEventOutField->addElement(field);
 }
 
-void Node::addEventOut(char * name, int fieldType) 
+void Node::addEventOut(char * name, int fieldType)
 {
 	addEventOut(name, createField(fieldType));
 }
 
-Field *Node::getEventOut(int index) 
+Field *Node::getEventOut(int index)
 {
 	return (Field *)mEventOutField->elementAt(index);
 }
 
-int Node::getEventOutNumber(Field *field) 
+int Node::getEventOutNumber(Field *field)
 {
 	int nEventOut = getNEventOut();
 	for (int n=0; n<nEventOut; n++) {
@@ -432,9 +432,9 @@ int Node::getEventOutNumber(Field *field)
 //	ExposedField
 ////////////////////////////////////////////////
 
-Field *Node::getExposedField(char * fieldString) 
+Field *Node::getExposedField(char * fieldString)
 {
-	
+
 	String fieldName(fieldString);
 
 	int nExposedField = getNExposedFields();
@@ -455,19 +455,19 @@ Field *Node::getExposedField(char * fieldString)
 	return NULL;
 }
 
-int Node::getNExposedFields() 
+int Node::getNExposedFields()
 {
 	return mExposedField->size();
 }
 
-void Node::addExposedField(Field *field) 
+void Node::addExposedField(Field *field)
 {
 	assert(field->getName() && strlen(field->getName()));
 	assert(!getExposedField(field->getName()));
 	mExposedField->addElement(field);
 }
 
-void Node::addExposedField(char * name, Field *field) 
+void Node::addExposedField(char * name, Field *field)
 {
 	assert(name && strlen(name));
 	assert(!getExposedField(name));
@@ -475,17 +475,17 @@ void Node::addExposedField(char * name, Field *field)
 	mExposedField->addElement(field);
 }
 
-void Node::addExposedField(char * name, int fieldType) 
+void Node::addExposedField(char * name, int fieldType)
 {
 	addExposedField(name, createField(fieldType));
 }
 
-Field *Node::getExposedField(int index) 
+Field *Node::getExposedField(int index)
 {
 	return (Field *)mExposedField->elementAt(index);
 }
 
-int Node::getExposedFieldNumber(Field *field) 
+int Node::getExposedFieldNumber(Field *field)
 {
 	int nExposedField = getNExposedFields();
 	for (int n=0; n<nExposedField; n++) {
@@ -499,7 +499,7 @@ int Node::getExposedFieldNumber(Field *field)
 //	Field
 ////////////////////////////////////////////////
 
-Field *Node::getField(char *fieldString) 
+Field *Node::getField(char *fieldString)
 {
 	String fieldName(fieldString);
 
@@ -512,19 +512,19 @@ Field *Node::getField(char *fieldString)
 	return NULL;
 }
 
-int Node::getNFields() 
+int Node::getNFields()
 {
 	return mField->size();
 }
 
-void Node::addField(Field *field) 
+void Node::addField(Field *field)
 {
 	assert(field->getName() && strlen(field->getName()));
 	assert(!getField(field->getName()));
 	mField->addElement(field);
 }
 
-void Node::addField(char * name, Field *field) 
+void Node::addField(char * name, Field *field)
 {
 	assert(name && strlen(name));
 	assert(!getField(name));
@@ -532,17 +532,17 @@ void Node::addField(char * name, Field *field)
 	mField->addElement(field);
 }
 
-void Node::addField(char * name, int fieldType) 
+void Node::addField(char * name, int fieldType)
 {
 	addField(name, createField(fieldType));
 }
 
-Field *Node::getField(int index) 
+Field *Node::getField(int index)
 {
 	return (Field *)mField->elementAt(index);
 }
 
-int Node::getFieldNumber(Field *field) 
+int Node::getFieldNumber(Field *field)
 {
 	int nField = getNFields();
 	for (int n=0; n<nField; n++) {
@@ -556,9 +556,9 @@ int Node::getFieldNumber(Field *field)
 //	PrivateField
 ////////////////////////////////////////////////
 
-Field *Node::getPrivateField(char *fieldString) 
+Field *Node::getPrivateField(char *fieldString)
 {
-		
+
 	String fieldName(fieldString);
 
 	int nPrivateField = getNPrivateFields();
@@ -570,19 +570,19 @@ Field *Node::getPrivateField(char *fieldString)
 	return NULL;
 }
 
-int Node::getNPrivateFields() 
+int Node::getNPrivateFields()
 {
 	return mPrivateField->size();
 }
 
-void Node::addPrivateField(Field *field) 
+void Node::addPrivateField(Field *field)
 {
 	assert(field->getName() && strlen(field->getName()));
 	assert(!getPrivateField(field->getName()));
 	mPrivateField->addElement(field);
 }
 
-void Node::addPrivateField(char * name, Field *field) 
+void Node::addPrivateField(char * name, Field *field)
 {
 	assert(name && strlen(name));
 	assert(!getPrivateField(name));
@@ -590,12 +590,12 @@ void Node::addPrivateField(char * name, Field *field)
 	mPrivateField->addElement(field);
 }
 
-Field *Node::getPrivateField(int index) 
+Field *Node::getPrivateField(int index)
 {
 	return (Field *)mPrivateField->elementAt(index);
 }
 
-int Node::getPrivateFieldNumber(Field *field) 
+int Node::getPrivateFieldNumber(Field *field)
 {
 	int nPrivateField = getNPrivateFields();
 	for (int n=0; n<nPrivateField; n++) {
@@ -609,22 +609,22 @@ int Node::getPrivateFieldNumber(Field *field)
 //	PrivateField
 ////////////////////////////////////////////////
 
-int Node::getNPrivateNodeElements() 
+int Node::getNPrivateNodeElements()
 {
 	return mPrivateNodeVector->size();
 }
 
-void Node::addPrivateNodeElement(Node *node) 
+void Node::addPrivateNodeElement(Node *node)
 {
 	mPrivateNodeVector->addElement(node, false);
 }
 
-Node *Node::getPrivateNodeElementAt(int n) 
+Node *Node::getPrivateNodeElementAt(int n)
 {
 	return mPrivateNodeVector->elementAt(n);
 }
 
-void Node::removeAllNodeElement() 
+void Node::removeAllNodeElement()
 {
 	mPrivateNodeVector->removeAllElements();
 }
@@ -633,22 +633,22 @@ void Node::removeAllNodeElement()
 //	Parent node
 ////////////////////////////////////////////////
 
-void Node::setParentNode(Node *parentNode) 
+void Node::setParentNode(Node *parentNode)
 {
 	mParentNode = parentNode;
 }
 
-Node *Node::getParentNode() 
+Node *Node::getParentNode()
 {
 	return mParentNode;
 }
 
-bool Node::isParentNode(Node *node) 
+bool Node::isParentNode(Node *node)
 {
 	return (getParentNode() == node) ? true : false;
 }
 
-bool Node::isAncestorNode(Node *node) 
+bool Node::isAncestorNode(Node *node)
 {
 	for (Node *parentNode = getParentNode(); parentNode; parentNode = parentNode->getParentNode()) {
 		if (node == parentNode)
@@ -661,7 +661,7 @@ bool Node::isAncestorNode(Node *node)
 //	Traversal node list
 ////////////////////////////////////////////////
 
-Node *Node::nextTraversal() 
+Node *Node::nextTraversal()
 {
 	Node *nextNode = getChildNodes();
 	if (nextNode != NULL)
@@ -669,7 +669,7 @@ Node *Node::nextTraversal()
 	nextNode = next();
 	if (nextNode == NULL) {
 		Node *parentNode = getParentNode();
-		while (parentNode != NULL) { 
+		while (parentNode != NULL) {
 			Node *parentNextNode = parentNode->next();
 			if (parentNextNode != NULL)
 				return parentNextNode;
@@ -679,11 +679,11 @@ Node *Node::nextTraversal()
 	return nextNode;
 }
 
-Node *Node::nextTraversalByType(char *typeString) 
+Node *Node::nextTraversalByType(char *typeString)
 {
 	if (typeString == NULL)
 		return NULL;
-		
+
 	String type(typeString);
 
 	for (Node *node = nextTraversal(); node != NULL; node = node->nextTraversal()) {
@@ -695,7 +695,7 @@ Node *Node::nextTraversalByType(char *typeString)
 	return NULL;
 }
 
-Node *Node::nextTraversalByName(char *nameString) 
+Node *Node::nextTraversalByName(char *nameString)
 {
 	if (nameString == NULL)
 		return NULL;
@@ -715,12 +715,12 @@ Node *Node::nextTraversalByName(char *nameString)
 //	next node list
 ////////////////////////////////////////////////
 
-Node *Node::next() 
+Node *Node::next()
 {
-	return LinkedListNode<Node>::next(); 
+	return LinkedListNode<Node>::next();
 }
 
-Node *Node::next(char *typeString) 
+Node *Node::next(char *typeString)
 {
 	String type(typeString);
 	for (Node *node = next(); node != NULL; node = node->next()) {
@@ -734,16 +734,16 @@ Node *Node::next(char *typeString)
 //	child node list
 ////////////////////////////////////////////////
 
-Node *Node::getChildNodes() 
+Node *Node::getChildNodes()
 {
 	return mChildNodes->getNodes();
 }
 
-Node *Node::getChildNode(char *typeString) 
+Node *Node::getChildNode(char *typeString)
 {
 
 	String type(typeString);
-		
+
 	for (Node *node = getChildNodes(); node != NULL; node = node->next()) {
 		if (type.compareTo(node->getType()) == 0)
 			return node;
@@ -751,12 +751,12 @@ Node *Node::getChildNode(char *typeString)
 	return NULL;
 }
 
-Node *Node::getChildNode(int n) 
+Node *Node::getChildNode(int n)
 {
 	return mChildNodes->getNode(n);
 }
 
-int Node::getNChildNodes() 
+int Node::getNChildNodes()
 {
 	return mChildNodes->getNNodes();
 }
@@ -765,7 +765,7 @@ int Node::getNChildNodes()
 //	Add / Remove children (for Groupingnode)
 ////////////////////////////////////////////////
 
-bool Node::isChildNode(Node *parentNode, Node *node) 
+bool Node::isChildNode(Node *parentNode, Node *node)
 {
 	for (Node *cnode = parentNode->getChildNodes(); cnode != NULL; cnode = cnode->next()) {
 		if (cnode == node)
@@ -776,7 +776,7 @@ bool Node::isChildNode(Node *parentNode, Node *node)
 	return false;
 }
 
-bool Node::isChildNode(Node *node) 
+bool Node::isChildNode(Node *node)
 {
 	for (Node *cnode = getChildNodes(); cnode != NULL; cnode = cnode->next()) {
 		if (isChildNode(cnode, node) == true)
@@ -789,7 +789,7 @@ bool Node::isChildNode(Node *node)
 //	get child node list
 ////////////////////////////////////////////////
 
-GroupingNode *Node::getGroupingNodes() 
+GroupingNode *Node::getGroupingNodes()
 {
 	for (Node *node = getChildNodes(); node != NULL; node = node->next()) {
 		if (node->isGroupingNode())
@@ -798,7 +798,7 @@ GroupingNode *Node::getGroupingNodes()
 	return NULL;
 }
 
-Node *Node::getGeometryNode() 
+Node *Node::getGeometryNode()
 {
 	for (Node *node = getChildNodes(); node != NULL; node = node->next()) {
 		if (node->isGeometryNode())
@@ -807,7 +807,7 @@ Node *Node::getGeometryNode()
 	return NULL;
 }
 
-TextureNode *Node::getTextureNode() 
+TextureNode *Node::getTextureNode()
 {
 	for (Node *node = getChildNodes(); node != NULL; node = node->next()) {
 		if (node->isTextureNode())
@@ -841,7 +841,7 @@ void Node::getTransformMatrix(SFMatrix *mxOut)
 // is*
 ////////////////////////////////////////////////
 
-bool Node::isNode(char * nodeType) 
+bool Node::isNode(char * nodeType)
 {
 	if (!nodeType)
 		return false;
@@ -854,17 +854,17 @@ bool Node::isNode(char * nodeType)
 		return false;
 }
 
-bool Node::isRootNode() 
+bool Node::isRootNode()
 {
 	return isNode(rootNodeString);
 }
 
-bool Node::isDEFNode() 
+bool Node::isDEFNode()
 {
 	return isNode(defNodeString);
 }
 
-bool Node::isInlineChildNode() 
+bool Node::isInlineChildNode()
 {
 	Node *parentNode = getParentNode();
 	while (parentNode != NULL) {
@@ -879,7 +879,7 @@ bool Node::isInlineChildNode()
 //	SceneGraph
 ////////////////////////////////////////////////
 
-void Node::setSceneGraph(SceneGraph *sceneGraph)	
+void Node::setSceneGraph(SceneGraph *sceneGraph)
 {
 	mSceneGraph = sceneGraph;
 	for (Node *node = getChildNodes(); node; node = node->next()) {
@@ -887,7 +887,7 @@ void Node::setSceneGraph(SceneGraph *sceneGraph)
 	}
 }
 
-SceneGraph *Node::getSceneGraph() 
+SceneGraph *Node::getSceneGraph()
 {
 	return mSceneGraph;
 }
@@ -953,7 +953,7 @@ void Node::sendEvent(char *eventOutFieldString) {
 //	Node::output
 ////////////////////////////////////////////////
 
-char *Node::getIndentLevelString(int nIndentLevel) 
+char *Node::getIndentLevelString(int nIndentLevel)
 {
 	char *indentString = new char[nIndentLevel+1];
 	for (int n=0; n<nIndentLevel; n++)
@@ -962,7 +962,7 @@ char *Node::getIndentLevelString(int nIndentLevel)
 	return indentString;
 }
 
-void Node::outputHead(ostream& printStream, char *indentString) 
+void Node::outputHead(ostream& printStream, char *indentString)
 {
 	if (getName() != NULL && strlen(getName()))
 		printStream << indentString << "DEF " << getName() << " " << getType() << " {" << endl;
@@ -970,12 +970,12 @@ void Node::outputHead(ostream& printStream, char *indentString)
 		printStream << indentString << getType() << " {" << endl;
 }
 
-void Node::outputTail(ostream& printStream, char * indentString) 
+void Node::outputTail(ostream& printStream, char * indentString)
 {
 	printStream << indentString << "}" << endl;
 }
 
-void Node::outputContext(ostream& printStream, char *indentString1, char *indentString2) 
+void Node::outputContext(ostream& printStream, char *indentString1, char *indentString2)
 {
 	char *indentString = new char[strlen(indentString1)+strlen(indentString2)+1];
 	strcpy(indentString, indentString1);
@@ -984,37 +984,37 @@ void Node::outputContext(ostream& printStream, char *indentString1, char *indent
 	delete indentString;
 }
 
-void Node::output(ostream& printStream, int indentLevet) 
+void Node::output(ostream& printStream, int indentLevet)
 {
 	char *indentString = getIndentLevelString(indentLevet);
 
 	if (isInstanceNode() == false) {
 		outputHead(printStream, indentString);
 		outputContext(printStream, indentString);
-	
-		if (!isElevationGridNode() && !isShapeNode() && !isSoundNode() && !isPointSetNode() && !isIndexedFaceSetNode() && 
+
+		if (!isElevationGridNode() && !isShapeNode() && !isSoundNode() && !isPointSetNode() && !isIndexedFaceSetNode() &&
 			!isIndexedLineSetNode() && !isTextNode() && !isAppearanceNode()) {
 			if (getChildNodes() != NULL) {
-				if (isLodNode()) 
+				if (isLodNode())
 					printStream << indentString << "\tlevel [" << endl;
-				else if (isSwitchNode()) 
+				else if (isSwitchNode())
 					printStream << indentString << "\tchoice [" << endl;
 				else
 					printStream << indentString <<"\tchildren [" << endl;
-			
+
 				for (Node *node = getChildNodes(); node; node = node->next()) {
-					if (node->isInstanceNode() == false) 
+					if (node->isInstanceNode() == false)
 						node->output(printStream, indentLevet+2);
 					else
 						node->output(printStream, indentLevet+2);
 				}
-			
+
 				printStream << indentString << "\t]" << endl;
 			}
 		}
 		outputTail(printStream, indentString);
 	}
-	else 
+	else
 		printStream << indentString << "USE " << getName() << endl;
 
 	delete indentString;
@@ -1024,7 +1024,7 @@ void Node::output(ostream& printStream, int indentLevet)
 //	InstanceNode
 ////////////////////////////////////////////////
 
-void Node::setReferenceNodeMembers(Node *node) 
+void Node::setReferenceNodeMembers(Node *node)
 {
 	if (!node)
 		return;
@@ -1038,7 +1038,7 @@ void Node::setReferenceNodeMembers(Node *node)
 	mPrivateField		= node->mPrivateField;
 }
 
-void Node::setOriginalMembers() 
+void Node::setOriginalMembers()
 {
 	mName				= mOrgName;
 	//mType				= mOrgType;
@@ -1048,15 +1048,15 @@ void Node::setOriginalMembers()
 	mField				= mOrgField;
 	mPrivateField		= mOrgPrivateField;
 }
-	
 
-Node *Node::createInstanceNode() 
+
+Node *Node::createInstanceNode()
 {
 	Node *instanceNode = NULL;
-		
+
 	if (isAnchorNode())
 		instanceNode = new AnchorNode();
-	else if (isAppearanceNode()) 
+	else if (isAppearanceNode())
 		instanceNode = new AppearanceNode();
 	else if (isAudioClipNode())
 		instanceNode = new AudioClipNode();
@@ -1098,9 +1098,9 @@ Node *Node::createInstanceNode()
 		instanceNode = new ImageTextureNode();
 	else if (isIndexedFaceSetNode())
 		instanceNode = new IndexedFaceSetNode();
-	else if (isIndexedLineSetNode()) 
+	else if (isIndexedLineSetNode())
 		instanceNode = new IndexedLineSetNode();
-	else if (isInlineNode()) 
+	else if (isInlineNode())
 		instanceNode = new InlineNode();
 	else if (isLodNode())
 		instanceNode = new LodNode();
@@ -1167,15 +1167,15 @@ Node *Node::createInstanceNode()
 
 	if (instanceNode) {
 		Node *refNode = this;
-		while (refNode->isInstanceNode() == true) 
+		while (refNode->isInstanceNode() == true)
 			refNode = refNode->getReferenceNode();
 		instanceNode->setAsInstanceNode(refNode);
 		for (Node *cnode=getChildNodes(); cnode; cnode = cnode->next()) {
 			Node *childInstanceNode = cnode->createInstanceNode();
 			instanceNode->addChildNode(childInstanceNode);
 		}
-	}		
-		
+	}
+
 	return instanceNode;
 }
 
@@ -1183,12 +1183,12 @@ Node *Node::createInstanceNode()
 //	DEF node
 ////////////////////////////////////////////////
 
-DEFNode *Node::createDEFNode() 
+DEFNode *Node::createDEFNode()
 {
 	DEFNode *defNode = new DEFNode();
 
 	Node *refNode = this;
-	while (refNode->isInstanceNode() == true) 
+	while (refNode->isInstanceNode() == true)
 		refNode = refNode->getReferenceNode();
 	defNode->setAsInstanceNode(refNode);
 

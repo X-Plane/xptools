@@ -36,8 +36,8 @@ namespace CGAL{
 template <class NT>
 CGAL::Quotient<NT>
 d_to_q(double x)
-{ 
-    NT num = 0; 
+{
+    NT num = 0;
     NT den = 1;
 
     if (x != 0.0)
@@ -54,7 +54,7 @@ d_to_q(double x)
       long exponent = expt;
       double intpart;
       int k = 0;
-      
+
       while (mantissa != 0.0 && k++ < maxiter)
 
       { mantissa *= width; // shift double mantissa
@@ -100,7 +100,7 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
     typedef typename T::Standard_point_2
       Standard_point_2;
     typedef typename Polyhedron::Explorer TExplorer;
-    typedef typename TExplorer::Halfedge_around_face_const_circulator 
+    typedef typename TExplorer::Halfedge_around_face_const_circulator
       Halfedge_around_face_const_circulator;
     typedef typename TExplorer::Hole_const_iterator
       Hole_const_iterator;
@@ -139,30 +139,30 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
     //Get the screen rectangle to intersect with the current Nef
     CGAL::Quotient<Standard_RT> wsxq = d_to_q<Standard_RT>(ws.x_min()-1);
     CGAL::Quotient<Standard_RT> wsyq = d_to_q<Standard_RT>(ws.y_min()-1);
-    Standard_RT wsx = wsxq.numerator() * wsyq.denominator(); 
-    Standard_RT wsy = wsyq.numerator() * wsxq.denominator(); 
-    Standard_RT wsh  = wsxq.denominator() * wsyq.denominator(); 
+    Standard_RT wsx = wsxq.numerator() * wsyq.denominator();
+    Standard_RT wsy = wsyq.numerator() * wsxq.denominator();
+    Standard_RT wsh  = wsxq.denominator() * wsyq.denominator();
     Standard_point_2 p1(wsx, wsy, wsh);
-    
+
     wsxq = d_to_q<Standard_RT>(ws.x_min()-1);
     wsyq = d_to_q<Standard_RT>(ws.y_max()+1);
-    wsx = wsxq.numerator() * wsyq.denominator(); 
-    wsy = wsyq.numerator() * wsxq.denominator(); 
-    wsh  = wsxq.denominator() * wsyq.denominator(); 
+    wsx = wsxq.numerator() * wsyq.denominator();
+    wsy = wsyq.numerator() * wsxq.denominator();
+    wsh  = wsxq.denominator() * wsyq.denominator();
     Standard_point_2 p2(wsx, wsy, wsh);
 
     wsxq = d_to_q<Standard_RT>(ws.x_max()+1);
     wsyq = d_to_q<Standard_RT>(ws.y_max()+1);
-    wsx = wsxq.numerator() * wsyq.denominator(); 
-    wsy = wsyq.numerator() * wsxq.denominator(); 
-    wsh  = wsxq.denominator() * wsyq.denominator(); 
+    wsx = wsxq.numerator() * wsyq.denominator();
+    wsy = wsyq.numerator() * wsxq.denominator();
+    wsh  = wsxq.denominator() * wsyq.denominator();
     Standard_point_2 p3(wsx, wsy, wsh);
 
     wsxq = d_to_q<Standard_RT>(ws.x_max()+1);
     wsyq = d_to_q<Standard_RT>(ws.y_min()-1);
-    wsx = wsxq.numerator() * wsyq.denominator(); 
-    wsy = wsyq.numerator() * wsxq.denominator(); 
-    wsh  = wsxq.denominator() * wsyq.denominator(); 
+    wsx = wsxq.numerator() * wsyq.denominator();
+    wsy = wsyq.numerator() * wsxq.denominator();
+    wsh  = wsxq.denominator() * wsyq.denominator();
     Standard_point_2 p4(wsx, wsy, wsh);
 
     Standard_point_2 rect1[4] = {p4, p3, p2, p1};
@@ -171,9 +171,9 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
     TExplorer D = N2.explorer();
 
 	  //TExplorer D = P.explorer();
-    
+
     //The faces
-    Face_const_iterator 
+    Face_const_iterator
       fit = D.faces_begin(), fend = D.faces_end();
     // we don't draw the first face outside the box:
     for ( ++fit; fit != fend; ++fit) {
@@ -181,12 +181,12 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
       ws.setRasterOp(Qt::CopyROP);
       //save the initial raster mode
       if(D.mark(fit))
-      	ws.setFillColor(fillcolor);      
+      	ws.setFillColor(fillcolor);
       else
-        ws.setFillColor(bgcolor);        
+        ws.setFillColor(bgcolor);
 
       std::list<Point> l;
-      Halfedge_around_face_const_circulator fcirc(D.halfedge(fit)), 
+      Halfedge_around_face_const_circulator fcirc(D.halfedge(fit)),
                                             fend(fcirc);
       CGAL_For_all(fcirc, fend){
         if(D.is_standard(D.target(fcirc)))
@@ -203,7 +203,7 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
       ws.setRasterOp(old_raster);
 /*
       Isolated_vertex_const_iterator iv_it;
-      for (iv_it = D.isolated_vertices_begin(fit); 
+      for (iv_it = D.isolated_vertices_begin(fit);
         iv_it != D.isolated_vertices_end(fit); ++iv_it) {
         if(D.mark(iv_it))
           ws.setColor(color);
@@ -214,25 +214,25 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
       }
 */
     }//endfor Face_const_iterator
-    
+
     //save the initial raster mode
     Qt::RasterOp old_raster = ws.rasterOp();
     ws.setRasterOp(Qt::CopyROP);
 
 
-    // draw segments underlying halfedges: 
+    // draw segments underlying halfedges:
     Halfedge_const_iterator hit, hend = D.halfedges_end();
     for (hit = D.halfedges_begin(); hit != hend; ++(++hit)) {
       if(D.mark(hit))
         ws.setColor(color);
       else
         ws.setColor(bgcolor);
-      if(D.is_standard(D.source(hit)) 
+      if(D.is_standard(D.source(hit))
         && D.is_standard(D.target(hit)))
           ws << Standard_segment_2(D.point(D.source(hit)),
                                    D.point(D.target(hit)));
     }
-    
+
     // draw points underlying vertices:
     Vertex_const_iterator vit, vend = D.vertices_end();
     for (vit = D.vertices_begin(); vit != vend; ++vit){
@@ -243,9 +243,9 @@ CGAL::Qt_widget& operator<<(CGAL::Qt_widget& ws, const Nef_polyhedron_2<T>& P)
       if(D.is_standard(vit))
         ws << D.point(vit);
     }
-    
+
     ws.setRasterOp(old_raster);
-    bitBlt(&widget_pixmap, 0, 0, &copy_of_pixmap, 
+    bitBlt(&widget_pixmap, 0, 0, &copy_of_pixmap,
       0, 0, ws.width(), ws.height(), Qt::XorROP, true);
     return ws;
 }

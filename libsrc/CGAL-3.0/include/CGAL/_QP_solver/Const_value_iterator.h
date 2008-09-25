@@ -86,7 +86,7 @@ class Const_value_iterator
 };
 
 CGAL_END_NAMESPACE
-  
+
 #endif
 
 // ===== EOF ==================================================================

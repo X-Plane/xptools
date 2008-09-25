@@ -125,13 +125,13 @@ void PushParserObject(Parser *parser)
 
 void PopParserObject()
 {
-	Parser *lastNode = mParserList.getLastNode(); 
+	Parser *lastNode = mParserList.getLastNode();
 	lastNode->remove();
 }
 
 Parser *GetParserObject()
 {
-	return mParserList.getLastNode(); 
+	return mParserList.getLastNode();
 }
 
 /*
@@ -140,12 +140,12 @@ static Parser *gParserObject = NULL;
 
 void SetParserObject(Parser *parser)
 {
-	gParserObject = parser; 
+	gParserObject = parser;
 }
 
 Parser *GetParserObject(void)
 {
-	return gParserObject; 
+	return gParserObject;
 }
 */
 

@@ -164,13 +164,13 @@ namespace HomogeneousKernelFunctors {
   public:
     typedef Angle            result_type;
     typedef Arity_tag< 3 >   Arity;
-  
+
     Angle_2() {}
     Angle_2(const Construct_vector_2& c_) : c(c_) {}
 
     Angle
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { return (Angle) CGAL_NTS sign(c(q,p) * c(q,r)); } 
+    { return (Angle) CGAL_NTS sign(c(q,p) * c(q,r)); }
     // FIXME: scalar product
   };
 
@@ -189,7 +189,7 @@ namespace HomogeneousKernelFunctors {
 
     Angle
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { return (Angle) CGAL_NTS sign(c(q,p) * c(q,r)); } 
+    { return (Angle) CGAL_NTS sign(c(q,p) * c(q,r)); }
     // FIXME: scalar product
   };
 
@@ -198,18 +198,18 @@ namespace HomogeneousKernelFunctors {
   {
     typedef typename K::RT              RT;
     typedef typename K::Point_2         Point_2;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_2 Collinear_2;
     Collinear_2 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_ordered_along_line_2() {}
     Collinear_are_ordered_along_line_2(const Collinear_2& c_) : c(c_) {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
@@ -249,18 +249,18 @@ namespace HomogeneousKernelFunctors {
   class Collinear_are_ordered_along_line_3
   {
     typedef typename K::Point_3         Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_3 Collinear_3;
     Collinear_3 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_ordered_along_line_3() {}
     Collinear_are_ordered_along_line_3(const Collinear_3& c_) : c(c_) {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
@@ -324,26 +324,26 @@ namespace HomogeneousKernelFunctors {
 	}
       // p == r
       return  ((rqx == qrx) && (rqy == qry) && (rqz == qrz));
-    }  
+    }
   };
 
   template <typename K>
   class Collinear_are_strictly_ordered_along_line_2
   {
     typedef typename K::Point_2         Point_2;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_2 Collinear_2;
     Collinear_2 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_strictly_ordered_along_line_2() {}
-    Collinear_are_strictly_ordered_along_line_2(const Collinear_2& c_) : c(c_) 
+    Collinear_are_strictly_ordered_along_line_2(const Collinear_2& c_) : c(c_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
@@ -383,19 +383,19 @@ namespace HomogeneousKernelFunctors {
   {
     typedef typename K::Point_3         Point_3;
     typedef typename K::Direction_3     Direction_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_3 Collinear_3;
     Collinear_3 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_strictly_ordered_along_line_3() {}
     Collinear_are_strictly_ordered_along_line_3(const Collinear_3& c_) : c(c_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
@@ -432,13 +432,13 @@ namespace HomogeneousKernelFunctors {
     bool
     operator()( const Ray_2& r, const Point_2& p) const
     {
-      Point_2 source = cp(r,0);      
+      Point_2 source = cp(r,0);
       return p == source || Direction_2(p - source) == r.direction();
     } // FIXME
-  
+
     bool
     operator()( const Segment_2& s, const Point_2& p) const
-    { 
+    {
       return cxy(p, cp(s,1)) != LARGER && cxy(cp(s,0), p) != LARGER;
     }
   };
@@ -486,13 +486,13 @@ namespace HomogeneousKernelFunctors {
 	RT det_old =   p.hx() * (q.hy()*r.hw() - q.hw()*r.hy() )
 	+ p.hy() * (q.hw()*r.hx() - q.hx()*r.hw() )
 	+ p.hw() * (q.hx()*r.hy() - q.hy()*r.hx() );
-	
+
 	if ( !(CGAL_NTS sign(det) == CGAL_NTS sign(det_old)) )
 	{
 	std::cerr << "det: " << det << " det_old: " << det_old << flush;
 	}
       */
-      
+
       return ( det == RT0 );
     }
   };
@@ -511,7 +511,7 @@ namespace HomogeneousKernelFunctors {
     {
       Direction_3 dir_pq = (p - q).direction();
       Direction_3 dir_rq = (r - q).direction();
-      
+
       return ( dir_pq == dir_rq ) || (dir_pq == -dir_rq)
 	|| ( p == q ) || ( p == r ) || ( q == r ) ;
     } // FIXME
@@ -570,12 +570,12 @@ namespace HomogeneousKernelFunctors {
 	  // COLLINEAR        == EQUAL    ( ==  0 )
 	  // CLOCKWISE        == SMALLER  ( == -1 )
 	}
-      
+
       // ( y_sign1 * y_sign2 == 0 )
-      
+
       bool b1 = (y_sign1 == 0) && (x_sign1 >= 0);
       bool b2 = (y_sign2 == 0) && (x_sign2 >= 0);
-      
+
       if ( b1 ) { return  b2 ? EQUAL : SMALLER; }
       if ( b2 ) { return  b1 ? EQUAL : LARGER; }
       if ( y_sign1 == y_sign2 )  // == 0
@@ -633,7 +633,7 @@ namespace HomogeneousKernelFunctors {
 	//   +        phy * phy   *   qhw * qhw * rhw * rhw
 	//   -RT(2) * phy * rhy   *   phw * qhw * qhw * rhw
 	//   +        rhy * rhy   *   phw * phw * qhw * qhw
-	
+
 	rhw*rhw * (         phw * ( qhx*qhx + qhy*qhy )
 			    - RT2 * qhw * ( phx*qhx + phy*qhy )
 			    )
@@ -663,7 +663,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT phx = p.hx();
@@ -708,13 +708,13 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()(const Line_2& l1, const Line_2& l2) const
-    { 
+    {
       typedef typename K::RT RT;
       if (l1.is_horizontal())
-	return l2.is_vertical() ? 
+	return l2.is_vertical() ?
 	  SMALLER : Comparison_result(CGAL_NTS sign<RT>(l2.a() * l2.b()));
-      if (l2.is_horizontal()) 
-	return l1.is_vertical() ? 
+      if (l2.is_horizontal())
+	return l1.is_vertical() ?
 	  LARGER : Comparison_result(- CGAL_NTS sign<RT>(l1.a() * l1.b()));
       if (l1.is_vertical()) return l2.is_vertical() ? EQUAL : LARGER;
       if (l2.is_vertical()) return SMALLER;
@@ -734,7 +734,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()(const Segment_2& s1, const Segment_2& s2) const
-    {  
+    {
       typedef typename K::FT        FT;
 
       Comparison_result cmp_y1 = compare_y(s1.source(), s1.target());
@@ -780,7 +780,7 @@ namespace HomogeneousKernelFunctors {
       FT s2_ydiff = s2.source().hy()*s2_t_hw - s2.target().hy()*s2_s_hw;
       Sign s1_sign = CGAL_NTS sign(s1_ydiff * s1_xdiff);
       Sign s2_sign = CGAL_NTS sign(s2_ydiff * s2_xdiff);
- 
+
       if (s1_sign < s2_sign) return SMALLER;
       if (s1_sign > s2_sign) return LARGER;
 
@@ -806,7 +806,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Line_2& h) const
-    { 
+    {
       typedef typename K::RT RT;
       CGAL_kernel_precondition( ! h.is_horizontal() );
       Oriented_side ors = h.oriented_side( p );
@@ -848,7 +848,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       typedef typename K::RT RT;
       RT pV = p.hx()*q.hw();
       RT qV = q.hx()*p.hw();
@@ -895,7 +895,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& phx = p.hx();
@@ -933,7 +933,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       typedef typename K::RT RT;
       RT pV = p.hx()*q.hw();
       RT qV = q.hx()*p.hw();
@@ -992,7 +992,7 @@ namespace HomogeneousKernelFunctors {
     Comparison_result
     operator()( const Line_2& l1, const Line_2& l2,
 	        const Line_2& h1, const Line_2& h2) const
-    { 
+    {
       Point_2 lip = gp_linear_intersection( l1, l2 );
       Point_2 hip = gp_linear_intersection( h1, h2 );
       return compare_x( lip, hip );
@@ -1024,7 +1024,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Line_2& h) const
-    { 
+    {
       typedef typename K::RT RT;
       CGAL_kernel_precondition( ! h.is_vertical() );
       Oriented_side ors = h.oriented_side( p );
@@ -1038,7 +1038,7 @@ namespace HomogeneousKernelFunctors {
 	}
       return ( ors == ON_NEGATIVE_SIDE ) ? SMALLER : EQUAL;
     } // FIXME
-  
+
     Comparison_result
     operator()( const Point_2& p, const Line_2& h1, const Line_2& h2) const
     { return CGAL_NTS compare(h1.y_at_x( p.x() ), h2.y_at_x( p.x() )); }
@@ -1087,7 +1087,7 @@ namespace HomogeneousKernelFunctors {
     operator()( const Point_2& p,
 	        const Segment_2& s1, const Segment_2& s2) const
     {
-      // compares the y-coordinates of the vertical projections 
+      // compares the y-coordinates of the vertical projections
       //   of p on s1 and s2
       // Precondition : p is in the x-range of s1 and s2.
       // - if one or two segments are vertical :
@@ -1150,9 +1150,9 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       typedef typename K::RT RT;
-      
+
       const RT& phy = p.hy();
       const RT& phw = p.hw();
       const RT& qhy = q.hy();
@@ -1172,7 +1172,7 @@ namespace HomogeneousKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Line_2& l1, const Line_2& l2) const
-    { 
+    {
       Point_2 ip = gp_linear_intersection( l1, l2 );
       return compare_y( p, ip );
     } // FIXME
@@ -1236,7 +1236,7 @@ namespace HomogeneousKernelFunctors {
 
     FT
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       typedef typename K::FT FT;
       return squared_distance(p, q)/FT(4);
     }  // FIXME
@@ -1277,7 +1277,7 @@ namespace HomogeneousKernelFunctors {
     FT
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       return squared_distance(p, circumcenter(p, q, r, s));
     } // FIXME
   };
@@ -1288,7 +1288,7 @@ namespace HomogeneousKernelFunctors {
     typedef typename K::Vector_3   Vector_3;
     typedef typename K::Plane_3    Plane_3;
     typedef typename K::RT         RT;
-    typedef typename K::Construct_orthogonal_vector_3 
+    typedef typename K::Construct_orthogonal_vector_3
     Construct_orthogonal_vector_3;
     Construct_orthogonal_vector_3 co;
   public:
@@ -1299,7 +1299,7 @@ namespace HomogeneousKernelFunctors {
     Construct_base_vector_3(const Construct_orthogonal_vector_3& co_)
       : co(co_)
     {}
-  
+
     Vector_3
     operator()( const Plane_3& h, int index ) const
     {
@@ -1312,7 +1312,7 @@ namespace HomogeneousKernelFunctors {
 	// a() != RT0 : Point_3( -b()-d(), a(), RT0, a() );
 	// b() != RT0 : Point_3( RT0, -c()-d(), b(), b() );
 	//            : Point_3( c(), RT0, -a()-d(), c() );
-	 
+
 	const RT RT0(0);
 	if ( h.a() != RT0 )
 	  {
@@ -1363,7 +1363,7 @@ namespace HomogeneousKernelFunctors {
 
       RT a = RT(2) * ( qhx*qhw*phw*phw - phx*phw*qhw*qhw );
       RT b = RT(2) * ( qhy*qhw*phw*phw - phy*phw*qhw*qhw );
-      RT c = phx*phx*qhw*qhw + phy*phy*qhw*qhw 
+      RT c = phx*phx*qhw*qhw + phy*phy*qhw*qhw
 	- qhx*qhx*phw*phw - qhy*qhy*phw*phw;
 
       return Line_2( a, b, c );
@@ -1393,7 +1393,7 @@ namespace HomogeneousKernelFunctors {
     }
 
     Point_2
-    operator()(const Point_2& p, const Point_2& q, 
+    operator()(const Point_2& p, const Point_2& q,
                const Point_2& r, const Point_2& s) const
     {
       typedef typename K::RT  RT;
@@ -1401,7 +1401,7 @@ namespace HomogeneousKernelFunctors {
       const RT qhw(q.hw());
       const RT rhw(r.hw());
       const RT shw(s.hw());
-      RT hx(p.hx()*qhw*rhw*shw + q.hx()*phw*rhw*shw + r.hx()*phw*qhw*shw 
+      RT hx(p.hx()*qhw*rhw*shw + q.hx()*phw*rhw*shw + r.hx()*phw*qhw*shw
 	    + s.hx()*phw*qhw*rhw);
       RT hy(p.hy()*qhw*rhw*shw + q.hy()*phw*rhw*shw + r.hy()*phw*qhw*shw
 	    + s.hy()*phw*qhw*rhw);
@@ -1421,7 +1421,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       typedef typename K::RT  RT;
       const RT phw(p.hw());
       const RT qhw(q.hw());
@@ -1434,7 +1434,7 @@ namespace HomogeneousKernelFunctors {
     }
 
     Point_3
-    operator()(const Point_3& p, const Point_3& q, 
+    operator()(const Point_3& p, const Point_3& q,
                const Point_3& r, const Point_3& s) const
     {
       typedef typename K::RT  RT;
@@ -1464,7 +1464,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_2
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
+    {
       typedef typename K::RT RT;
       RT phx = p.hx();
       RT phy = p.hy();
@@ -1479,18 +1479,18 @@ namespace HomogeneousKernelFunctors {
 #ifdef CGAL_EXPANDED_CIRCUMCENTER_COMPUTATION
       RT vvx =
 	( qhy*qhw*phw*phw - phy*phw*qhw*qhw )
-	*( phx*phx*rhw*rhw + phy*phy*rhw*rhw - 
+	*( phx*phx*rhw*rhw + phy*phy*rhw*rhw -
 	   rhx*rhx*phw*phw - rhy*rhy*phw*phw )
 	-  ( rhy*rhw*phw*phw - phy*phw*rhw*rhw )
-	*( phx*phx*qhw*qhw + phy*phy*qhw*qhw - 
+	*( phx*phx*qhw*qhw + phy*phy*qhw*qhw -
 	   qhx*qhx*phw*phw - qhy*qhy*phw*phw );
 
       RT vvy =
 	-  ( qhx*qhw*phw*phw - phx*phw*qhw*qhw )
-	*( phx*phx*rhw*rhw + phy*phy*rhw*rhw - 
+	*( phx*phx*rhw*rhw + phy*phy*rhw*rhw -
 	   rhx*rhx*phw*phw - rhy*rhy*phw*phw )
 	+  ( rhx*rhw*phw*phw - phx*phw*rhw*rhw )
-	*( phx*phx*qhw*qhw + phy*phy*qhw*qhw - 
+	*( phx*phx*qhw*qhw + phy*phy*qhw*qhw -
 	   qhx*qhx*phw*phw - qhy*qhy*phw*phw );
 
       RT vvw = RT(2) *
@@ -1506,10 +1506,10 @@ namespace HomogeneousKernelFunctors {
       RT ry_py = ( rhy*rhw*phw*phw - phy*phw*rhw*rhw );
 
       RT px2_py2_rx2_ry_2 =
-	phx*phx*rhw*rhw + phy*phy*rhw*rhw - 
+	phx*phx*rhw*rhw + phy*phy*rhw*rhw -
 	rhx*rhx*phw*phw - rhy*rhy*phw*phw ;
       RT px2_py2_qx2_qy_2 =
-	phx*phx*qhw*qhw + phy*phy*qhw*qhw - 
+	phx*phx*qhw*qhw + phy*phy*qhw*qhw -
 	qhx*qhx*phw*phw - qhy*qhy*phw*phw ;
 
       RT vvx = qy_py * px2_py2_rx2_ry_2 - ry_py * px2_py2_qx2_qy_2;
@@ -1532,7 +1532,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       return gp_linear_intersection( Plane_3(p,q,r),
 				     bisector(p,q),
 				     bisector(p,r));
@@ -1636,7 +1636,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_3
     operator()(const Plane_3& h, const Point_2& p) const
-    {  
+    {
       Point_3 hp( p.hx(), p.hy(), RT(0.0), p.hw());
       return hp.transform( h.transform_to_2d().inverse() );
     }
@@ -1674,13 +1674,13 @@ namespace HomogeneousKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Point_2& q) const
-    { 
+    {
       return Line_2(
 		    //  a() * X + b() * Y + c() * W() == 0
 		    //      |    X        Y       W     |
 		    //      |  p.hx()   p.hy()  p.hw()  |
 		    //      |  q.hx()   q.hy()  q.hw()  |
-		    
+
 		    p.hy()*q.hw() - p.hw()*q.hy(),
 		    p.hw()*q.hx() - p.hx()*q.hw(),
 		    p.hx()*q.hy() - p.hy()*q.hx() );
@@ -1688,7 +1688,7 @@ namespace HomogeneousKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Vector_2& v) const
-    { 
+    {
       Point_2 q = p + v;
       return Line_2( p.hy()*q.hw() - p.hw()*q.hy(),
 		     p.hw()*q.hx() - p.hx()*q.hw(),
@@ -1697,7 +1697,7 @@ namespace HomogeneousKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Direction_2& d) const
-    { 
+    {
       Point_2 q = p + d.to_vector();
       return Line_2( p.hy()*q.hw() - p.hw()*q.hy(),
 		     p.hw()*q.hx() - p.hx()*q.hw(),
@@ -1734,8 +1734,8 @@ namespace HomogeneousKernelFunctors {
     Construct_line_3() {}
     Construct_line_3(const Construct_vector_3& cv_,
 		     const Construct_direction_3& cd_,
-		     const Construct_point_on_3& cp_) 
-      : cv(cv_), cd(cd_), cp(cp_) 
+		     const Construct_point_on_3& cp_)
+      : cv(cv_), cd(cd_), cp(cp_)
     {}
 
     Line_3
@@ -1770,11 +1770,11 @@ namespace HomogeneousKernelFunctors {
 
     Point_2
     operator()(const Point_2& p, const Point_2& q) const
-    { 
+    {
       typedef typename K::RT RT;
       const RT& phw = p.hw();
       const RT& qhw = q.hw();
-      return Point_2( p.hx()*qhw + q.hx()*phw, 
+      return Point_2( p.hx()*qhw + q.hx()*phw,
 		      p.hy()*qhw + q.hy()*phw,
 		      phw * qhw * RT( 2));
     }
@@ -1791,7 +1791,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q) const
-    { 
+    {
       typedef typename K::RT RT;
       RT phw = p.hw();
       RT qhw = q.hw();
@@ -1840,7 +1840,7 @@ namespace HomogeneousKernelFunctors {
 
     Vector_2
     operator()( const Vector_2& v, const RT& c) const
-    {  
+    {
       return Vector_2(c * v.hx(), c * v.hy(), v.hw());
     }
   };
@@ -1856,7 +1856,7 @@ namespace HomogeneousKernelFunctors {
 
     Vector_3
     operator()( const Vector_3& v, const RT& c) const
-    {  
+    {
       return Vector_3(c * v.hx(), c * v.hy(), c * v.hz(), v.hw());
     }
   };
@@ -1872,7 +1872,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_2
     operator()( const Point_2& p, const Vector_2& v) const
-    {  
+    {
       return Point_2( p.hx()*v.hw() + v.hx()*p.hw(),
 		      p.hy()*v.hw() + v.hy()*p.hw(),
 		      p.hw()*v.hw() );
@@ -1890,7 +1890,7 @@ namespace HomogeneousKernelFunctors {
 
     Point_3
     operator()( const Point_3& p, const Vector_3& v) const
-    { 
+    {
       return Point_3(p.hx()*v.hw() + v.hx()*p.hw(),
 		     p.hy()*v.hw() + v.hy()*p.hw(),
 		     p.hz()*v.hw() + v.hz()*p.hw(),
@@ -1918,7 +1918,7 @@ namespace HomogeneousKernelFunctors {
 
     Vector_2
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       return Vector_2( q.hx()*p.hw() - p.hx()*q.hw(),
 		       q.hy()*p.hw() - p.hy()*q.hw(),
 		       p.hw()*q.hw() );
@@ -1971,7 +1971,7 @@ namespace HomogeneousKernelFunctors {
 
     Vector_3
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       return Vector_3(q.hx()*p.hw() - p.hx()*q.hw(),
 		      q.hy()*p.hw() - p.hy()*q.hw(),
 		      q.hz()*p.hw() - p.hz()*q.hw(),
@@ -2009,26 +2009,26 @@ namespace HomogeneousKernelFunctors {
   class Coplanar_orientation_3
   {
     typedef typename K::Point_3      Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Coplanar_3   Coplanar_3;
     typedef typename K::Collinear_3  Collinear_3;
     Coplanar_3 cp;
     Collinear_3 cl;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef Orientation  result_type;
     typedef Arity_tag< 4 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Coplanar_orientation_3() {}
-    Coplanar_orientation_3(const Coplanar_3& cp_, const Collinear_3& cl_) 
+    Coplanar_orientation_3(const Coplanar_3& cp_, const Collinear_3& cl_)
       : cp(cp_), cl(cl_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     Orientation
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       Orientation oxy_pqr = orientationH2(p.hx(), p.hy(), p.hw(),
 					  q.hx(), q.hy(), q.hw(),
 					  r.hx(), r.hy(), r.hw());
@@ -2049,7 +2049,7 @@ namespace HomogeneousKernelFunctors {
     Orientation
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       // p,q,r,s supposed to be coplanar
       // p,q,r supposed to be non collinear
       // tests whether s is on the same side of p,q as r
@@ -2101,31 +2101,31 @@ namespace HomogeneousKernelFunctors {
   class Coplanar_side_of_bounded_circle_3
   {
     typedef typename K::Point_3   Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Coplanar_3   Coplanar_3;
     typedef typename K::Collinear_3  Collinear_3;
     Coplanar_3 cp;
     Collinear_3 cl;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef Bounded_side     result_type;
     typedef Arity_tag< 4 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Coplanar_side_of_bounded_circle_3() {}
-    Coplanar_side_of_bounded_circle_3(const Coplanar_3& cp_, 
-				      const Collinear_3& cl_) 
+    Coplanar_side_of_bounded_circle_3(const Coplanar_3& cp_,
+				      const Collinear_3& cl_)
       : cp(cp_), cl(cl_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     Bounded_side
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& t) const
-    { 
+    {
       // p,q,r,t are supposed to be coplanar.
       // p,q,r determine an orientation of this plane (not collinear).
-      // returns the equivalent of side_of_bounded_circle(p,q,r,t) 
+      // returns the equivalent of side_of_bounded_circle(p,q,r,t)
       // in this plane
       CGAL_kernel_exactness_precondition( cp(p,q,r,t) );
       CGAL_kernel_exactness_precondition( !cl(p,q,r) );
@@ -2150,7 +2150,7 @@ namespace HomogeneousKernelFunctors {
     bool
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       return o(p, q, r, s) == COPLANAR;
     }
   };
@@ -2165,7 +2165,7 @@ namespace HomogeneousKernelFunctors {
 
     bool
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       return   (p.hx() * q.hw() == q.hx() * p.hw() )
         && (p.hy() * q.hw() == q.hy() * p.hw() );
     }
@@ -2246,7 +2246,7 @@ namespace HomogeneousKernelFunctors {
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT phx = p.hx();
@@ -2278,15 +2278,15 @@ namespace HomogeneousKernelFunctors {
 	//   +        phy * phy   *   qhw * qhw * rhw * rhw
 	//   -RT(2) * phy * rhy   *   phw * qhw * qhw * rhw
 	//   +        rhy * rhy   *   phw * phw * qhw * qhw
-	
+
 	rhw*rhw * (         phw * ( qhx*qhx + qhy*qhy )
 			    - RT2 * qhw * ( phx*qhx + phy*qhy )
 			    )
 	- qhw*qhw * (         phw * ( rhx*rhx + rhy*rhy )
 			      - RT2 * rhw * ( phx*rhx + phy*rhy )
 			      );
-      
-      
+
+
       return ( dosd < RT0 );
     }
   };
@@ -2301,7 +2301,7 @@ namespace HomogeneousKernelFunctors {
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT phx = p.hx();
@@ -2380,7 +2380,7 @@ namespace HomogeneousKernelFunctors {
 
     bool
     operator()( const Plane_3& pl, const Point_3& p, const Point_3& q) const
-    { 
+    {
       const RT pla = pl.a();
       const RT plb = pl.b();
       const RT plc = pl.c();
@@ -2493,7 +2493,7 @@ namespace HomogeneousKernelFunctors {
 
     bool
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& phx = p.hx();
@@ -2568,7 +2568,7 @@ namespace HomogeneousKernelFunctors {
 
     Orientation
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& phx = p.hx();
@@ -2596,13 +2596,13 @@ namespace HomogeneousKernelFunctors {
 	RT det_old =   p.hx() * (q.hy()*r.hw() - q.hw()*r.hy() )
 	+ p.hy() * (q.hw()*r.hx() - q.hx()*r.hw() )
 	+ p.hw() * (q.hx()*r.hy() - q.hy()*r.hx() );
-	
+
 	if ( !(CGAL_NTS sign(det) == CGAL_NTS sign(det_old)) )
 	{
 	std::cerr << "det: " << det << " det_old: " << det_old << flush;
 	}
       */
-      
+
       if (det < RT0  )
 	{
 	  return CLOCKWISE;
@@ -2625,9 +2625,9 @@ namespace HomogeneousKernelFunctors {
     Orientation
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       // Two rows are switched, because of the homogeneous column.
-      return (Orientation) 
+      return (Orientation)
 	sign_of_determinant4x4( p.hx(), p.hy(), p.hz(), p.hw(),
 				r.hx(), r.hy(), r.hz(), r.hw(),
 				q.hx(), q.hy(), q.hz(), q.hw(),
@@ -2645,7 +2645,7 @@ namespace HomogeneousKernelFunctors {
 
     Bounded_side
     operator()( const Point_2& p, const Point_2& q, const Point_2& t) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& phx = p.hx();
@@ -2658,7 +2658,7 @@ namespace HomogeneousKernelFunctors {
       const RT& thy = t.hy();
       const RT& thw = t.hw();
 
-      return Bounded_side( 
+      return Bounded_side(
 	    CGAL_NTS compare((thx*phw-phx*thw)*(qhx*thw-thx*qhw),
 			     (thy*phw-phy*thw)*(thy*qhw-qhy*thw)) );
     }
@@ -2666,7 +2666,7 @@ namespace HomogeneousKernelFunctors {
     Bounded_side
     operator()( const Point_2& q, const Point_2& r,
 	        const Point_2& s, const Point_2& t) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& qhx = q.hx();
@@ -2742,7 +2742,7 @@ namespace HomogeneousKernelFunctors {
 
     Bounded_side
     operator()( const Point_3& p, const Point_3& q, const Point_3& t) const
-    { 
+    {
       typedef typename K::RT RT;
 
       const RT& phx = p.hx();
@@ -2758,7 +2758,7 @@ namespace HomogeneousKernelFunctors {
       const RT& thz = t.hz();
       const RT& thw = t.hw();
 
-      return Bounded_side( 
+      return Bounded_side(
 	  CGAL_NTS sign<RT>((thx*phw-phx*thw)*(qhx*thw-thx*qhw)
 			    + (thy*phw-phy*thw)*(qhy*thw-thy*qhw)
 			    + (thz*phw-phz*thw)*(qhz*thw-thz*qhw)));
@@ -2883,7 +2883,7 @@ namespace HomogeneousKernelFunctors {
     Oriented_side
     operator()( const Point_3& p, const Point_3& q, const Point_3& r,
 	        const Point_3& s, const Point_3& t) const
-    { 
+    {
       typedef typename K::RT RT;
       CGAL_kernel_precondition( !coplanar(p,q,r,s) );
       const RT phx = p.hx();

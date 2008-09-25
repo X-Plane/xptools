@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -128,7 +128,7 @@ sb_Xref::sb_Xref()
       SDAT_domain.insert( "MLLW" );
     }
 #endif
-} 
+}
 
 
 sb_Xref::~sb_Xref()
@@ -558,8 +558,8 @@ sb_Xref::getRecord( sc_Record & record ) const
 
 
   if ( rsnm == "SPCS" ||
-       rsnm == "UTM"  || 
-       rsnm == "UPS" ) 
+       rsnm == "UTM"  ||
+       rsnm == "UPS" )
     {
       if ( ! getZONE( tmp_str ) )
         {
@@ -611,7 +611,7 @@ sb_Xref::setRecord( sc_Record const& record )
 
 
 bool
-sb_Xref::setComment( string const & val ) 
+sb_Xref::setComment( string const & val )
 {
   imp_->comment_ = val;
   return true;
@@ -620,7 +620,7 @@ sb_Xref::setComment( string const & val )
 
 
 bool
-sb_Xref::setReferenceDocumentation( string const & val ) 
+sb_Xref::setReferenceDocumentation( string const & val )
 {
   imp_->refDoc_ = val;
   return true;
@@ -629,7 +629,7 @@ sb_Xref::setReferenceDocumentation( string const & val )
 
 
 bool
-sb_Xref::setReferenceSystemName( string const & val ) 
+sb_Xref::setReferenceSystemName( string const & val )
 {
   if ( ! sb_Utils::valid_domain( val, RSNM_domain ) )
     {
@@ -643,7 +643,7 @@ sb_Xref::setReferenceSystemName( string const & val )
 
 #ifdef NOT_RASTER_PROFILE
 bool
-sb_Xref::setVerticalDatum( string const & val ) 
+sb_Xref::setVerticalDatum( string const & val )
 {
   imp_->vertDatum_ = val;
   return true;
@@ -652,7 +652,7 @@ sb_Xref::setVerticalDatum( string const & val )
 
 
 bool
-sb_Xref::setSoundingDatum( string const & val ) 
+sb_Xref::setSoundingDatum( string const & val )
 {
   if ( ! sb_Utils::valid_domain( val, SDAT_domain ) )
     {
@@ -665,7 +665,7 @@ sb_Xref::setSoundingDatum( string const & val )
 
 
 bool
-sb_Xref::setHorizontalDatum( string const & val ) 
+sb_Xref::setHorizontalDatum( string const & val )
 {
   imp_->horizDatum_ = val;
   return true;
@@ -674,7 +674,7 @@ sb_Xref::setHorizontalDatum( string const & val )
 
 
 bool
-sb_Xref::setZoneReferenceNumber( string const & val ) 
+sb_Xref::setZoneReferenceNumber( string const & val )
 {
   imp_->zoneNum_ = val;
   return true;
@@ -682,7 +682,7 @@ sb_Xref::setZoneReferenceNumber( string const & val )
 
 
 bool
-sb_Xref::setZoneReferenceNumber( int val ) 
+sb_Xref::setZoneReferenceNumber( int val )
 {
   strstream ss;
 
@@ -696,7 +696,7 @@ sb_Xref::setZoneReferenceNumber( int val )
 
 
 bool
-sb_Xref::setProjection( string const & val ) 
+sb_Xref::setProjection( string const & val )
 {
   imp_->projection_ = val;
   return true;

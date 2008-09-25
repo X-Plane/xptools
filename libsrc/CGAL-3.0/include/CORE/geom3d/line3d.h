@@ -17,7 +17,7 @@
  *
  * $Id: line3d.h,v 1.1 2003/06/22 12:11:20 afabri Exp $
  *****************************************************************/
- 
+
 #ifndef _LINE3D_H_
 #define _LINE3D_H_
 
@@ -27,14 +27,14 @@ class Line3d : public GeomObj{
 
  /************************************************************
   *  An instance l of the class Line3d is a directed line
-  *  in the three dimensional plane. The angle between a right oriented 
+  *  in the three dimensional plane. The angle between a right oriented
   *  horizontal line and $l$ is called the direction of $l$.
   *  We assume that l is defined by two points, l.startPt()
   *  and l.stopPt().  We do not assure that these points are distinct.
   *  So the line could be "improper".  But most operators assume
   *  that lines are proper (it is the user's responsibility to check).
   *
-  *  In the future, we may generalize this to allow the dual 
+  *  In the future, we may generalize this to allow the dual
   *  representation in terms of a linear equation.
   *
   *  Member Vector is not used in this class. It is intended for use in
@@ -74,13 +74,13 @@ public:
 
   virtual int dim() const { return 1; }
 
-  Point3d startPt() const { return p0; }  
+  Point3d startPt() const { return p0; }
   Point3d stopPt() const { return p1; }
   const Vector direction() const { return V; }
-  
+
   double distance(const Point3d& q) const;
   // returns the Euclidean distance between this line and point q
-  
+
   Point3d projection(const Point3d& p) const;
   // returns the projection of p on this line
 
@@ -88,7 +88,7 @@ public:
    *   PREDICATES
    ************************************************************/
 
-  bool isProper() {return p0 == p1; }   
+  bool isProper() {return p0 == p1; }
   bool contains(const Point3d& p) const;
 
   bool isCoincident(const Line3d& g) const;
@@ -108,7 +108,7 @@ public:
   GeomObj* intersection(const Line3d &l) const;
 
   /************************************************************
-   *   I/O 
+   *   I/O
    ************************************************************/
 
   friend std::istream& operator>>(std::istream& in, Line3d& l);

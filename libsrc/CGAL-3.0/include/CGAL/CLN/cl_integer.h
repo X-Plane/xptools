@@ -39,7 +39,7 @@ CGAL_BEGIN_NAMESPACE
 // number, so it reads it, but then decides it's not a valid cl_I.
 // And there's no easy way to stop him parsing before "/" like for
 // the generic Quotient<>.
-//  
+//
 // So we read it as cl_RA, and convert to Quotient<cl_I>.
 // Note that this requires CLN >= 1.0.2 (for numerator() and denominator() ).
 
@@ -72,7 +72,7 @@ inline Interval_base to_interval (const cl_I &I)
 
 // Specialized utilities.
 
-inline bool is_negative		(const cl_I &I) { return minusp(I); } 
+inline bool is_negative		(const cl_I &I) { return minusp(I); }
 inline bool is_positive		(const cl_I &I) { return plusp(I); }
 inline bool is_zero		(const cl_I &I) { return zerop(I); }
 inline Comparison_result compare (const cl_I &I, const cl_I &J)

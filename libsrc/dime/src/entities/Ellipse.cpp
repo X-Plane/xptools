@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Ellipse.cpp
  *
  *  This source file is part of DIME.
@@ -60,7 +60,7 @@
 
 /*!
   \fn void dimeEllipse::setMajorAxisEndpoint(const dimeVec3f &v)
-  Sets the major axis endpoint of the ellipse. 
+  Sets the major axis endpoint of the ellipse.
   \sa dimeEllipse::setRatio()
 */
 
@@ -68,7 +68,7 @@
   \fn const dimeVec3f &dimeEllipse::getMajorAxisEndpoint() const
   Returns the major axis endpoint of this ellipse.
 */
-  
+
 /*!
   \fn void dimeEllipse::setMinorMajorRatio(const dxfdouble ratio)
   Sets the ratio of the minor axis to the major axis.
@@ -116,7 +116,7 @@ static char entityName[] = "ELLIPSE";
   Constructor.
 */
 
-dimeEllipse::dimeEllipse() 
+dimeEllipse::dimeEllipse()
   : center(0,0,0), majorAxisEndpoint(0,0,1), ratio(1.0), startParam(0.0),
     endParam(M_PI*2)
 {
@@ -129,7 +129,7 @@ dimeEllipse::copy(dimeModel * const model) const
 {
   dimeEllipse *e = new(model->getMemHandler()) dimeEllipse;
   if (!e) return NULL;
-  
+
   if (!this->copyRecords(e, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete e;
@@ -143,16 +143,16 @@ dimeEllipse::copy(dimeModel * const model) const
     e->startParam = this->startParam;
     e->endParam = this->endParam;
   }
-  return e;  
+  return e;
 }
 
 //!
 
-bool 
+bool
 dimeEllipse::write(dimeOutput * const file)
 {
   dimeEntity::preWrite(file);
-  
+
   file->writeGroupCode(10);
   file->writeDouble(this->center[0]);
   file->writeGroupCode(20);
@@ -166,24 +166,24 @@ dimeEllipse::write(dimeOutput * const file)
   file->writeDouble(this->majorAxisEndpoint[1]);
   file->writeGroupCode(31);
   file->writeDouble(this->majorAxisEndpoint[2]);
-   
+
   file->writeGroupCode(40);
   file->writeDouble(this->ratio);
 
   file->writeGroupCode(41);
   file->writeDouble(this->startParam);
-  
+
   file->writeGroupCode(42);
   file->writeDouble(this->endParam);
 
   this->writeExtrusionData(file);
-  
+
   return dimeExtrusionEntity::write(file);
 }
 
 //!
 
-int 
+int
 dimeEllipse::typeId() const
 {
   return dimeBase::dimeEllipseType;
@@ -191,7 +191,7 @@ dimeEllipse::typeId() const
 
 //!
 
-bool 
+bool
 dimeEllipse::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
@@ -216,7 +216,7 @@ dimeEllipse::handleRecord(const int groupcode,
   case 42:
     this->endParam = param.double_data;
     return true;
-  }  
+  }
   return dimeExtrusionEntity::handleRecord(groupcode, param, memhandler);
 }
 
@@ -230,7 +230,7 @@ dimeEllipse::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeEllipse::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
@@ -239,7 +239,7 @@ dimeEllipse::getRecord(const int groupcode,
   case 10:
   case 20:
   case 30:
-    param.double_data = this->center[groupcode/10-1]; 
+    param.double_data = this->center[groupcode/10-1];
     return true;
   case 11:
   case 21:
@@ -257,7 +257,7 @@ dimeEllipse::getRecord(const int groupcode,
     return true;
   }
 
-  return dimeExtrusionEntity::getRecord(groupcode, param, index);  
+  return dimeExtrusionEntity::getRecord(groupcode, param, index);
 }
 
 //!

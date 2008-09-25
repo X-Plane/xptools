@@ -26,11 +26,11 @@
 class Line2d : public GeomObj {
 
   /* An instance l of the data type $line$ is a directed straight line
-     in the two dimensional plane. The angle between a right oriented 
+     in the two dimensional plane. The angle between a right oriented
      horizontal line and $l$ is called the direction of $l$.
    */
   /* member Vector is not used in this class, it's intended for use in
-       the operator+,- etc 
+       the operator+,- etc
      need to do: assure p0 != p1
    */
 private:
@@ -65,9 +65,9 @@ public:
    *************************************************************/
 
   Vector direction() const { return p1-p0; }
-   // returns the direction as a vector 
+   // returns the direction as a vector
 
-  Point2d startPt() const { return p0; }  
+  Point2d startPt() const { return p0; }
   Point2d stopPt() const  { return p1; }
 
   double distance(Point2d q) const;
@@ -87,9 +87,9 @@ public:
   { return Line2d(startPt().rotate90(q), stopPt().rotate90(q)); }
 
   double y_abs() const;
-  // returns the y-abscissa of the line 
+  // returns the y-abscissa of the line
 
-  double slope() const ;    
+  double slope() const ;
   //precond: is not vertical
 
   /*************************************************************
@@ -100,10 +100,10 @@ public:
   bool isHorizontal() const { return p0.Y() == p1.Y(); }
   bool is_trivial() const {return p0 == p1; }   //meaning for a line?
 
-  bool contains( const Point2d& p) const { 
+  bool contains( const Point2d& p) const {
           return orientation2d(p0, p1, p) == 0; }
-  bool isCoincident( const Line2d& g) const { 
-          return contains(g.p0) && contains(g.p1); }  
+  bool isCoincident( const Line2d& g) const {
+          return contains(g.p0) && contains(g.p1); }
   bool isParallel(const Line2d& l) const {
     return det(V, l.direction()) == 0; }
 
@@ -116,29 +116,29 @@ public:
 
   int intersects(const Line2d& t) const;
    // decides whether *this and t intersects
-   // return dim of intersection. 
+   // return dim of intersection.
    // return -1 if no intersection
 
   GeomObj* intersection(const Line2d& g) const;
-   //if this line and g intersect in a single point, this point is 
+   //if this line and g intersect in a single point, this point is
    // assigned to p and the result is true, otherwise the result is false
 
   /*************************************************************
    *   angles and others
    *************************************************************/
   friend int orientation2d( const Line2d& l, const Point2d& p);
-  // computes the orientation (a, b, p), where a!=b and a and b appear 
+  // computes the orientation (a, b, p), where a!=b and a and b appear
   // in this order on line l
 
-  friend int cmp_slopes(const Line2d& l1, const Line2d& l2) 
+  friend int cmp_slopes(const Line2d& l1, const Line2d& l2)
   //l1.slope > l2.slope: +1; equal: 0; otherwise: -1
   {
      if (l1.slope() == l2.slope())
          return 0;
      else
          return (l1.slope() > l2.slope()) ? +1 : -1;
-  } 
-  
+  }
+
   /*************************************************************
    *   I/O
    *************************************************************/

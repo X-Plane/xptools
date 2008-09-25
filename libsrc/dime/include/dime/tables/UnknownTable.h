@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownTable.h
  *
  *  This source file is part of DIME.
@@ -32,7 +32,7 @@
 
 #include <dime/tables/TableEntry.h>
 
-class DIME_DLL_API dimeUnknownTable : public dimeTableEntry 
+class DIME_DLL_API dimeUnknownTable : public dimeTableEntry
 {
 public:
   dimeUnknownTable(const char * const name, dimeMemHandler * const memhandler);

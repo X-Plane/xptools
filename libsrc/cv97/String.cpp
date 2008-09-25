@@ -19,25 +19,25 @@
 
 #ifdef SUPPORT_STL
 
-String::String() 
+String::String()
 {
 }
 
-String::String(char value[]) 
+String::String(char value[])
 {
 	setValue(value);
 }
 
-String::String(char value[], int offset, int count) 
+String::String(char value[], int offset, int count)
 {
 	setValue(value, offset, count);
 }
 
-String::~String() 
+String::~String()
 {
 }
 
-void String::setValue(char value[]) 
+void String::setValue(char value[])
 {
 	deleteValue();
 	if (!value)
@@ -47,30 +47,30 @@ void String::setValue(char value[])
 	mValue = value;
 }
 
-void String::setValue(char value[], int offset, int count) 
-{ 
-	if (!value && (int)strlen(value) < (offset + count)) 
+void String::setValue(char value[], int offset, int count)
+{
+	if (!value && (int)strlen(value) < (offset + count))
 		return;
 	std::string orgValue = value;
 	mValue = orgValue.substr(offset, count);
 }
 
-char *String::getValue() 
+char *String::getValue()
 {
 	return (char *)mValue.c_str();
 }
 
-void String::deleteValue() 
+void String::deleteValue()
 {
 	mValue = "";
 }
 
-int String::length() 
+int String::length()
 {
 	return mValue.length();
 }
 
-char String::charAt(int  index) 
+char String::charAt(int  index)
 {
 	return mValue[index];
 }
@@ -83,29 +83,29 @@ char String::charAt(int  index)
 
 #ifndef SUPPORT_STL
 
-String::String() 
+String::String()
 {
 	mValue = NULL;
 }
 
-String::String(char value[]) 
+String::String(char value[])
 {
 	mValue = NULL;
 	setValue(value);
 }
 
-String::String(char value[], int offset, int count) 
+String::String(char value[], int offset, int count)
 {
 	mValue = NULL;
 	setValue(value, offset, count);
 }
 
-String::~String() 
+String::~String()
 {
 	deleteValue();
 }
 
-void String::setValue(char value[]) 
+void String::setValue(char value[])
 {
 	deleteValue();
 	if (!value)
@@ -116,34 +116,34 @@ void String::setValue(char value[])
 	strcpy(mValue, value);
 }
 
-void String::setValue(char value[], int offset, int count) 
-{ 
+void String::setValue(char value[], int offset, int count)
+{
 	deleteValue();
-	if (!value && (int)strlen(value) < (offset + count)) 
+	if (!value && (int)strlen(value) < (offset + count))
 		return;
 	mValue = new char[count+1];
 	strncpy(mValue, &value[offset], count);
 }
 
-char *String::getValue() 
+char *String::getValue()
 {
 	return mValue;
 }
 
-void String::deleteValue() 
+void String::deleteValue()
 {
 	delete[] mValue;
 	mValue = NULL;
 }
 
-int String::length() 
+int String::length()
 {
 	if (!mValue)
 		return 0;
 	return strlen(mValue);
 }
 
-char String::charAt(int  index) 
+char String::charAt(int  index)
 {
 	return mValue[index];
 }
@@ -154,7 +154,7 @@ char String::charAt(int  index)
 // Common
 ////////////////////////////////////////////////////
 
-int String::compareTo(char *anotherString) 
+int String::compareTo(char *anotherString)
 {
 	char *value = getValue();
 	if (!value || !anotherString)
@@ -162,14 +162,14 @@ int String::compareTo(char *anotherString)
 	return strcmp(value, anotherString);
 }
 
-void String::copyValueOf(char data[]) 
+void String::copyValueOf(char data[])
 {
 	if (!data)
 		return;
 	strcpy(data, getValue());
 }
 
-void String::copyValueOf(char  data[], int  offset, int count) 
+void String::copyValueOf(char  data[], int  offset, int count)
 {
 	if (!data)
 		return;
@@ -177,14 +177,14 @@ void String::copyValueOf(char  data[], int  offset, int count)
 	strncpy(data, &value[offset], count);
 }
 
-int String::startsWith(char *prefix) 
+int String::startsWith(char *prefix)
 {
 	if (!prefix)
 		return -1;
 	return regionMatches(0, prefix, 0, strlen(prefix));
 }
 
-int String::endsWith(char *suffix) 
+int String::endsWith(char *suffix)
 {
 	if (!suffix)
 		return -1;
@@ -195,21 +195,21 @@ int String::regionMatchesIgnoreCase(int toffset, char *other, int ooffset, int l
 {
 	if (!other)
 		return -1;
-	
+
 	int n;
 
 	int value1Len = length();
-	char *value1 = new char[value1Len+1]; 
+	char *value1 = new char[value1Len+1];
 	strcpy(value1, getValue());
 	for (n=0; n<value1Len; n++)
 		value1[n] = (char)toupper(value1[n]);
 
 	int value2Len = strlen(other);
-	char *value2 = new char[value2Len+1]; 
+	char *value2 = new char[value2Len+1];
 	strcpy(value2, other);
 	for (n=0; n<value2Len; n++)
 		value2[n] = (char)toupper(value2[n]);
-		
+
 	int ret = regionMatches(toffset, other, ooffset, len);
 
 	delete value1;
@@ -218,7 +218,7 @@ int String::regionMatchesIgnoreCase(int toffset, char *other, int ooffset, int l
 	return ret;
 }
 
-int String::regionMatches(int toffset, char *other, int ooffset, int len) 
+int String::regionMatches(int toffset, char *other, int ooffset, int len)
 {
 	char *value = getValue();
 	if (!value || !other)

@@ -192,7 +192,7 @@ operator*(const Aff_transformation_rep_baseC2<R> &t) const
 {
   return t.compose(*this);
 }
- 
+
 template < class R >
 CGAL_KERNEL_LARGE_INLINE
 typename Aff_transformation_repC2<R>::Aff_transformation_2

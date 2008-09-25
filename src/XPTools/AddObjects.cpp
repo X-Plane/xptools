@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -82,7 +82,7 @@ double	gRotation;
 inline	double interp(double i1, double i2, double i, double o1, double o2)
 {
 	return o1 + (i - i1) * (o2 - o1) / (i2 - i1);
-}		
+}
 
 static	string	LookupObjectAlias(const string& inName);
 
@@ -100,7 +100,7 @@ public:
 	virtual	void	AddObjects(InsertObj_f addFunc, void * ref)=0;
 	virtual	double	GetChance(void)=0;
 	virtual	bool	AcceptNode(SceneryNode * inNode)=0;
-	
+
 };
 
 typedef vector<SceneryNode*>	NodeVector;
@@ -158,22 +158,22 @@ private:
 SceneryNode *	ParseFile(const char * inFile)
 {
 	char	buf[512];
-	
+
 	StTextFileScanner	scanner(inFile, true);
-	if (scanner.done()) 
+	if (scanner.done())
 	{
 		XGrinder_ShowMessage("Unable to open the file %s", inFile);
 		return NULL;
 	}
-	
+
 	string 			line;
 	vector<string>	args;
-	
+
 	GroupNode * masterGroup = new GroupNode(1.0);
-	
+
 	list<SceneryNode *>	stack;
 	stack.push_back(masterGroup);
-	
+
 	while (GetNextNoComments(scanner, line))
 	{
 		BreakString(line, args);
@@ -182,9 +182,9 @@ SceneryNode *	ParseFile(const char * inFile)
 			if (args[0] == "ALIAS")
 			{
 				// ALIAS obj obj1 chance1 obj2 chance2...
-				if (args.size() < 2) 
+				if (args.size() < 2)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 				AliasList	aliases;
@@ -197,9 +197,9 @@ SceneryNode *	ParseFile(const char * inFile)
 			else if (args[0] == "OBJECT")
 			{
 				// OBJECT lon1 lon2 lat1 lat2 heading1 heading2 chance object_name
-				if (args.size() < 9) 
+				if (args.size() < 9)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 				ObjectNode * o = new ObjectNode(
@@ -210,56 +210,56 @@ SceneryNode *	ParseFile(const char * inFile)
 					args[8]);
 				if (!stack.back()->AcceptNode(o))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 			}
 			else if (args[0] == "GROUP")
 			{
 				// GROUP chance
-				if (args.size() < 2) 
+				if (args.size() < 2)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 				GroupNode * grp = new GroupNode(atof(args[1].c_str()));
 				if (!stack.back()->AcceptNode(grp))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 			}
 			else if (args[0] == "SWITCH")
 			{
 				// SWITCH
-				if (args.size() < 2) 
+				if (args.size() < 2)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 				SwitchNode * swt = new SwitchNode(atof(args[1].c_str()));
 				if (!stack.back()->AcceptNode(swt))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 			}
 			else if (args[0] == "END")
 			{
 				 // END
-				 if (stack.size() < 2) 
+				 if (stack.size() < 2)
 				 {
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 				 	return NULL;
-				 }	
+				 }
 				 stack.pop_back();
 			}
 			else if (args[0] == "LIT")
 			{
 				//LIT lon lat displacement chance elev r g b
-				if (args.size() < 9) 
+				if (args.size() < 9)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 				sprintf(buf,"DEF_LIT_%d_%d_%d_%d",
@@ -278,18 +278,18 @@ SceneryNode *	ParseFile(const char * inFile)
 					buf);
 				if (!stack.back()->AcceptNode(o))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 			}
 			else if (args[0] == "TRE" || args[0] == "FOR")
 			{
 				//TRE lon lat displacement chance type
-				if (args.size() < 6) 
+				if (args.size() < 6)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 				sprintf(buf,"DEF_%s_%d", args[0].c_str(),
 					atoi(args[5].c_str()));
 
@@ -306,16 +306,16 @@ SceneryNode *	ParseFile(const char * inFile)
 					buf);
 				if (!stack.back()->AcceptNode(o))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 			}
 			else if (args[0] == "OBJ")
 			{
 				//OBJ lon lat displacement chance heading name
-				if (args.size() < 7) 
+				if (args.size() < 7)
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
 				}
 				double	lon = atof(args[1].c_str());
@@ -332,17 +332,17 @@ SceneryNode *	ParseFile(const char * inFile)
 					args[6]);
 				if (!stack.back()->AcceptNode(o))
 				{
-					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());				
+					XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 					return NULL;
-				}	
+				}
 			}
 			else if (args[0] == "COM")
 			{
-			} else 
+			} else
 			{
 				XGrinder_ShowMessage("Unable to parse the line %s", line.c_str());
 				return NULL;
-			}			
+			}
 		}
 	}
 
@@ -354,14 +354,14 @@ string	LookupObjectAlias(const string& inName)
 	AliasMap::iterator i = gAliases.find(inName);
 	if (i == gAliases.end())
 		return inName;
-	
+
 	vector<double>	probs;
 	for (AliasList::iterator av = i->second.begin();
 		av != i->second.end(); ++av)
 		probs.push_back(av->second);
-		
+
 	int index = PickRandom(probs);
-	
+
 	if (index < i->second.size())
 		return i->second[index].first;
 	return string();
@@ -371,7 +371,7 @@ void	AccumObject(double lat, double lon, double heading, const string& name, voi
 {
 		double			plat, plon;
 		ObjectInfo		oi;
-	
+
 	switch((int) gRotation) {
 	case 90:
 		plat = 1.0 - lon;
@@ -396,7 +396,7 @@ void	AccumObject(double lat, double lon, double heading, const string& name, voi
 	oi.latitude = interp(
 						gY_S,
 						gY_N,
-						plat, 
+						plat,
 						interp(gX_W, gX_E, plon, gLat_SW, gLat_SE),
 						interp(gX_W, gX_E, plon, gLat_NW, gLat_NE));
 	oi.longitude = interp(
@@ -408,7 +408,7 @@ void	AccumObject(double lat, double lon, double heading, const string& name, voi
 	oi.kind = 8;
 	oi.elevation = ((int) (heading + gRotation)) % 360;
 	oi.name = name;
-	
+
 	if ((plon >= gX_W) && (plon <= gX_E) && (plat >= gY_S) && (plat <= gY_N))
 		gObjects.push_back(oi);
 }
@@ -422,7 +422,7 @@ void	ApplyObjects(void)
 		int	se = sw + 1;
 		int nw = sw + 151;
 		int ne = nw + 1;
-		
+
 		if (gVertices[sw].custom)
 		{
 			int ter_index = gVertices[sw].landUse;
@@ -455,7 +455,7 @@ void	ApplyObjects(void)
 						gLon_SE = vse.longitude;
 						gLon_NW = vnw.longitude;
 						gLon_NE = vne.longitude;
-						
+
 						p->AddObjects(AccumObject, NULL);
 					}
 				}
@@ -468,7 +468,7 @@ void	XGrindInit(string& outString)
 {
 	outString = "AddObjects";
 	XGrinder_ShowMessage("Drag an .env file and .opf file to apply textures.");
-}	
+}
 
 int	XGrinderMenuPick(xmenu menu, int item)
 {
@@ -479,9 +479,9 @@ void	XGrindFiles(const vector<string>& files)
 {
 	gSceneryMap.clear();
 	srand(clock());
-	
+
 	int opfCount = 0;
-	
+
 	for (vector<string>::const_iterator f = files.begin(); f != files.end(); ++f)
 	{
 		if (HasExtNoCase(*f, ".opf"))
@@ -498,13 +498,13 @@ void	XGrindFiles(const vector<string>& files)
 				return;
 		}
 	}
-	
+
 	if (opfCount == 0)
 	{
 		XGrinder_ShowMessage("Pleaes drag at least one .opf file as well as one or more .env files to add objects.");
 		return;
 	}
-	
+
 	int total = 0;
 	int	envCount = 0;
 	for (vector<string>::const_iterator f = files.begin(); f != files.end(); ++f)
@@ -521,17 +521,17 @@ void	XGrindFiles(const vector<string>& files)
 				string	nn = f->substr(0, f->length() - 4) + "_new.env";
 				if (EnvWrite(nn.c_str()))
 				{
-					XGrinder_ShowMessage("Could not write %s.", nn.c_str());				
+					XGrinder_ShowMessage("Could not write %s.", nn.c_str());
 					return;
 				} else {
 					++envCount;
-					XGrinder_ShowMessage("Added %d objects to %s.", firstCount, nn.c_str());				
+					XGrinder_ShowMessage("Added %d objects to %s.", firstCount, nn.c_str());
 				}
 			} else {
-				XGrinder_ShowMessage("Could not open file %s.", f->c_str());			
+				XGrinder_ShowMessage("Could not open file %s.", f->c_str());
 				return;
 			}
-		} 
+		}
 	}
 	if (envCount == 0)
 		XGrinder_ShowMessage("Please also drag an .env file at the same time to add objects.");
@@ -546,10 +546,10 @@ SceneryNode::~SceneryNode()
 }
 
 ObjectNode::ObjectNode(
-	DoubleRange lat, 
-	DoubleRange lon, 
-	DoubleRange heading, 
-	double chance, 
+	DoubleRange lat,
+	DoubleRange lon,
+	DoubleRange heading,
+	double chance,
 	const string& name) :
 	mLat(lat), mLon(lon),mHeading(heading),mChance(chance), mObject(name)
 {
@@ -558,11 +558,11 @@ ObjectNode::ObjectNode(
 ObjectNode::~ObjectNode()
 {
 }
-		
+
 void	ObjectNode::AddObjects(InsertObj_f addFunc, void * ref)
 {
 	string o = LookupObjectAlias(mObject);
-	if (!o.empty())		
+	if (!o.empty())
 		addFunc(
 			RandRange(mLat.first,mLat.second),
 			RandRange(mLon.first,mLon.second),
@@ -604,7 +604,7 @@ void	GroupNode::AddObjects(InsertObj_f addFunc, void * ref)
 		double	chance = n->GetChance();
 		if (RollDice(chance))
 			n->AddObjects(addFunc, ref);
-	}	
+	}
 }
 
 double	GroupNode::GetChance(void)
@@ -634,7 +634,7 @@ SwitchNode::~SwitchNode()
 void	SwitchNode::AddObjects(InsertObj_f addFunc, void * ref)
 {
 	vector<double>	probs;
-	
+
 	for (NodeVector::iterator i = mItems.begin();
 		i != mItems.end(); ++i)
 	{
@@ -642,7 +642,7 @@ void	SwitchNode::AddObjects(InsertObj_f addFunc, void * ref)
 		double	chance = n->GetChance();
 		probs.push_back(chance);
 	}
-	
+
 	int index = PickRandom(probs);
 	if (index < mItems.size())
 	{

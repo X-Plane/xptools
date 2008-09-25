@@ -257,7 +257,7 @@ private:
   Object_2 make_object(const T& t) const
   {
     return Construct_object_2()(t);
-  } 
+  }
 
 public:
   inline Object_2 operator() (const Site_2& p,

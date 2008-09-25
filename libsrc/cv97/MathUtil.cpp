@@ -55,7 +55,7 @@ void VectorInverse(float vector[3])
 ////////////////////////////////////////////////////////////
 
 void VectorGetDirection(
-float	point1[3], 
+float	point1[3],
 float	point2[3],
 float	vector[3])
 {
@@ -70,9 +70,9 @@ float	vector[3])
 ////////////////////////////////////////////////////////////
 
 void VectorGetCross(
-float	vector1[3], 
+float	vector1[3],
 float	vector2[3],
-float	result[3]) 
+float	result[3])
 {
 	result[0] = vector1[1]*vector2[2] - vector1[2]*vector2[1];
 	result[1] = vector1[2]*vector2[0] - vector1[0]*vector2[2];
@@ -85,7 +85,7 @@ float	result[3])
 ////////////////////////////////////////////////////////////
 
 float VectorGetDot(
-float	vector1[3], 
+float	vector1[3],
 float	vector2[3])
 {
 	return vector1[0]*vector2[0] + vector1[1]*vector2[1] + vector1[2]*vector2[2];
@@ -96,7 +96,7 @@ float	vector2[3])
 ////////////////////////////////////////////////////////////
 
 float VectorGetAngle(
-float vector1[3], 
+float vector1[3],
 float vector2[3] )
 {
 	float angle;
@@ -110,7 +110,7 @@ float vector2[3] )
 ////////////////////////////////////////////////////////////
 
 bool VectorEquals(
-float	vector1[3], 
+float	vector1[3],
 float	vector2[3])
 {
 	if (vector1[0] == vector2[0] && vector1[1] == vector2[1] && vector1[2] == vector2[2])

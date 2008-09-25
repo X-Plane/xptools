@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -42,63 +42,63 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 
 	int 							vnum = 0;
 	int								fnum = 0;
-	
+
 	int j;
 
 	int ctr = 0;
 	int tot = mesh.tds().number_of_vertices() * 2 + mesh.tds().number_of_full_dim_faces() * 4;
 	int step = tot / 150;
-	
+
 	PROGRESS_START(func, 0, 1, "Writing terrain mesh...")
 
-	{	
+	{
 		// TDS CONTROL ATOM
 		// This atom contains the basic mesh structure.
-	
+
 		StAtomWriter 	mainAtom(fi, kMeshControlID);
 		FileWriter		writer1(fi);
-		
+
 		// HEADER - number of vertices, number of full DIM faces,
 		// dimension of mesh.
 
 		writer1.WriteInt(mesh.tds().number_of_vertices());
 		writer1.WriteInt(mesh.tds().number_of_full_dim_faces());
 		writer1.WriteInt(mesh.tds().dimension());
-		
+
 		// Write out vertices
 		V[mesh.infinite_vertex()] = vnum++;
-		
+
 		for (vit = mesh.tds().vertices_begin(); vit != mesh.tds().vertices_end(); ++vit, ++ctr)
 		if (!(&*vit == &*mesh.infinite_vertex()))
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 			V[vit] = vnum++;
 		}
-		
+
 		// Write out faces
 		int dim = (mesh.dimension() == -1 ? 1 :  mesh.dimension() + 1);
-		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr) 
+		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 			F[ib] = fnum++;
-			for(int j = 0; j < dim ; ++j) 
+			for(int j = 0; j < dim ; ++j)
 			{
 				writer1.WriteInt(V[ib->vertex(j)]);
 			}
 		}
 
-		// Write out neighbors		
-		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr) 
+		// Write out neighbors
+		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 			for(j = 0; j < mesh.tds().dimension()+1; ++j)
 				writer1.WriteInt(F[ib->neighbor(j)]);
 		}
-		
+
 		// Write out constraints
-		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr) 
+		for(ib = mesh.tds().face_iterator_base_begin(); ib != mesh.tds().face_iterator_base_end(); ++ib, ++ctr)
 		{
-			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)		
+			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 			for (j = 0; j < 3; ++j)
 				writer1.WriteInt(ib->is_constrained(j) ? 1 : 0);
 		}
@@ -111,13 +111,13 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 		VT[viter->second] = viter->first;
 	for (map<TDS::Face_handle, int>::iterator fiter = F.begin(); fiter != F.end(); ++fiter)
 		FT[fiter->second] = fiter->first;
-		
-		
+
+
 	{
 		StAtomWriter	data1(fi, kMeshData1ID);
 		FileWriter		writer2(fi);
-		
-		// Write out per-vertex info.		
+
+		// Write out per-vertex info.
 		for (j = 0; j < vnum; ++j, ++ctr)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
@@ -129,7 +129,7 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 			writer2.WriteFloat(VT[j]->info().normal[0]);
 			writer2.WriteFloat(VT[j]->info().normal[1]);
 			writer2.WriteFloat(VT[j]->info().normal[2]);
-			
+
 			writer2.WriteInt(VT[j]->info().border_blend.size());
 			for (hash_map<int,float>::iterator bb = VT[j]->info().border_blend.begin();
 				bb != VT[j]->info().border_blend.end(); ++bb)
@@ -142,7 +142,7 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 		for (j = 0; j < fnum; ++j, ++ctr)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
-		
+
 			writer2.WriteInt(FT[j]->info().feature);
 			writer2.WriteInt(FT[j]->info().terrain);
 			writer2.WriteInt(FT[j]->info().flag);
@@ -159,32 +159,32 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 	}
 	PROGRESS_DONE(func, 0, 1, "Writing terrain mesh...")
 }
-		
+
 void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConversionMap& conv, ProgressFunc func)
 {
 	XAtom			meAtom, ctrlAtom, data1Atom;
 	XAtomContainer	meContainer, ctrlContainer, data1Container;
-	
+
 	if (!container.GetNthAtomOfID(atomID, 0, meAtom)) return;
 	meAtom.GetContents(meContainer);
-	
+
 	if (!meContainer.GetNthAtomOfID(kMeshControlID, 0, ctrlAtom)) return;
 	ctrlAtom.GetContents(ctrlContainer);
 
 	if (!meContainer.GetNthAtomOfID(kMeshData1ID, 0, data1Atom)) return;
 	data1Atom.GetContents(data1Container);
-	
+
 	MemFileReader	readCtrl(ctrlContainer.begin, ctrlContainer.end);
 	MemFileReader	readData1(data1Container.begin, data1Container.end);
 
 	if (mesh.tds().number_of_vertices() != 0)    mesh.tds().clear();
-  
+
 	int n, m, d;	// number of verts, faces, dimension
 	int i, j;
 	readCtrl.ReadInt(n);
 	readCtrl.ReadInt(m);
 	readCtrl.ReadInt(d);
-	
+
 	if (n == 0) return;
 
 	int ctr = 0;
@@ -201,7 +201,7 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 	// Create vertices
 	for (i = 0; i < n; ++i, ++ctr)
 	{
-		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)	
+		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
 		V[i] = mesh.tds().create_vertex();
 	}
 
@@ -209,9 +209,9 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 	int index;
 	int dim = (mesh.tds().dimension() == -1 ? 1 :  mesh.tds().dimension() + 1);
 
-	for(i = 0; i < m; ++i, ++ctr) 
+	for(i = 0; i < m; ++i, ++ctr)
 	{
-		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)	
+		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
 		F[i] = mesh.tds().create_face() ;
 		for(j = 0; j < dim ; ++j)
 		{
@@ -221,21 +221,21 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		}
 	}
 
-	// Setting the neighbor pointers 
-	for(i = 0; i < m; ++i, ++ctr) 
+	// Setting the neighbor pointers
+	for(i = 0; i < m; ++i, ++ctr)
 	{
-		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)		
+		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
 		for(j = 0; j < mesh.tds().dimension()+1; ++j)
 		{
 			readCtrl.ReadInt(index);
 			F[i]->set_neighbor(j, F[index]);
 		}
 	}
-	
+
 	// Read contraints;
 	for(i = 0; i < m; ++i, ++ctr)
 	{
-		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)		 
+		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
 		for(j = 0; j < 3; ++j)
 		{
 			readCtrl.ReadInt(index);
@@ -245,12 +245,12 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 	/////////////////////////////////////////////////////
 
 	// Per Vertex and Per face data
-		
-	// Write out per-vertex info.		
+
+	// Write out per-vertex info.
 	for (j = 0; j < n; ++j, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
-	
+
 		double x, y;
 		MeshVertexInfo	vi;
 		readData1.ReadDouble(x);
@@ -260,7 +260,7 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		readData1.ReadFloat(vi.normal[0]);
 		readData1.ReadFloat(vi.normal[1]);
 		readData1.ReadFloat(vi.normal[2]);
-#if DEV		
+#if DEV
 		if (j != 0)
 		{
 		DebugAssert(vi.normal[0] > -1.1);
@@ -270,8 +270,8 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		DebugAssert(vi.normal[2] > -1.1);
 		DebugAssert(vi.normal[2] <  1.1);
 		}
-#endif		
-		
+#endif
+
 		readData1.ReadInt(index);
 		while (index--)
 		{
@@ -282,16 +282,16 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 			btype = conv[btype];
 			vi.border_blend[btype] = blev;
 		}
-		
+
 		V[j]->set_point(CDT::Point(x,y));
 		V[j]->info() = vi;
-		
+
 	}
 	// Write out per-face info.
 	for (j = 0; j < m; ++j, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
-	
+
 		MeshFaceInfo	fi;
 		readData1.ReadInt(fi.feature);
 		readData1.ReadInt(fi.terrain);
@@ -303,7 +303,7 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		if (F[j]->vertex(0) != V[0] &&
 			F[j]->vertex(1) != V[0] &&
 			F[j]->vertex(2) != V[0])
-		{	
+		{
 #if DEV
 			DebugAssert(fi.normal[0] > -1.1);
 			DebugAssert(fi.normal[0] <  1.1);
@@ -311,11 +311,11 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 			DebugAssert(fi.normal[1] <  1.1);
 			DebugAssert(fi.normal[2] > -1.1);
 			DebugAssert(fi.normal[2] <  1.1);
-#endif		
+#endif
 			fi.feature = conv[fi.feature];
 			fi.terrain = conv[fi.terrain];
 		}
-		
+
 		readData1.ReadInt(index);
 		while (index--)
 		{
@@ -324,7 +324,7 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 			btp = conv[btp];
 			fi.terrain_border.insert(btp);
 		}
-		
+
 		F[j]->info() = fi;
 	}
 

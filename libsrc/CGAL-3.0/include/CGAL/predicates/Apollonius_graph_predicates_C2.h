@@ -227,7 +227,7 @@ private:
       return sign_a_plus_b_x_sqrt_c(A, B, l.delta());
     }
 
-  
+
   Orientation
   orientation(const Bitangent_line& l,
 	      const Inverted_weighted_point& u) const
@@ -375,7 +375,7 @@ private:
 
       FT uV_P_Uv = du * Dv + Du * dv;
       FT uV_M_Uv = du * Dv - Du * dv;
-      
+
 
       FT F1 = du2_P_dv2 * Dr2 + Du2_P_Dv2 * dr2
 	- uU_P_vV * drDr - CGAL::square(uV_M_Uv);
@@ -507,7 +507,7 @@ public:
   typedef CGAL::Orientation_wrt_symmetry_axis<K>
                                     Orientation_wrt_symmetry_axis;
   typedef CGAL::Compare_Voronoi_radii<K>    Compare_Voronoi_radii;
-  
+
 public:
   template<class Method_tag>
   Comparison_result
@@ -814,7 +814,7 @@ public:
     if ( !is_bs1 && is_bs2 ) { return false; }
 
     // both circles exist
-    
+
     // check whether the shadow region is connected, i.e., wether it is
     // of the form (a, b) or (-oo, a) U (b, +oo)
 
@@ -835,7 +835,7 @@ public:
   typedef CGAL::Bitangent_line<K>           Bitangent_line;
   typedef typename K::FT                    FT;
 public:
-  
+
   template< class Method_tag >
   Bounded_side operator()(const Bitangent_line& l1,
 			  const Bitangent_line& l2,

@@ -37,22 +37,22 @@
 
 
 CGAL_BEGIN_NAMESPACE
-template <class ForwardIterator, class OutputIterator, 
+template <class ForwardIterator, class OutputIterator,
           class Point, class Traits>
 OutputIterator
 ch_jarvis_march(ForwardIterator first, ForwardIterator last,
-                const Point& start_p, 
-                const Point& stop_p, 
+                const Point& start_p,
+                const Point& stop_p,
                 OutputIterator  result,
                 const Traits& ch_traits)
 {
   if (first == last) return result;
   typedef   typename Traits::Less_rotate_ccw_2     Less_rotate_ccw;
   typedef   typename Traits::Point_2               Point_2;
-  typedef   typename Traits::Equal_2               Equal_2; 
-  
-  Equal_2     equal_points = ch_traits.equal_2_object();     
-  
+  typedef   typename Traits::Equal_2               Equal_2;
+
+  Equal_2     equal_points = ch_traits.equal_2_object();
+
   #if defined(CGAL_CH_NO_POSTCONDITIONS) || defined(CGAL_NO_POSTCONDITIONS) \
     || defined(NDEBUG)
   OutputIterator  res(result);
@@ -63,15 +63,15 @@ ch_jarvis_march(ForwardIterator first, ForwardIterator last,
       int count_points = 0; )
   CGAL_ch_assertion_code( \
       for (ForwardIterator fit = first; fit!= last; ++fit) ++count_points; )
-  Less_rotate_ccw  
+  Less_rotate_ccw
       rotation_predicate = ch_traits.less_rotate_ccw_2_object( );
   *res = start_p;  ++res;
   CGAL_ch_assertion_code( \
       int constructed_points = 1; )
   CGAL_ch_exactness_assertion_code( \
-      Point previous_point = start_p; ) 
+      Point previous_point = start_p; )
 
-  ForwardIterator it = std::min_element( first, last, 
+  ForwardIterator it = std::min_element( first, last,
                                          bind_1(rotation_predicate, start_p) );
   while (! equal_points(*it, stop_p) )
   {
@@ -86,15 +86,15 @@ ch_jarvis_march(ForwardIterator first, ForwardIterator last,
       CGAL_ch_assertion( \
           constructed_points <= count_points + 1 );
 
-      it = std::min_element( first, last, 
+      it = std::min_element( first, last,
                              bind_1(rotation_predicate, *it) );
-  } 
+  }
   CGAL_ch_postcondition( \
       is_ccw_strongly_convex_2( res.output_so_far_begin(), \
                                      res.output_so_far_end(), \
                                      ch_traits));
   CGAL_ch_expensive_postcondition( \
-      ch_brute_force_check_2( 
+      ch_brute_force_check_2(
           first, last, \
           res.output_so_far_begin(), res.output_so_far_end(), \
           ch_traits));
@@ -108,7 +108,7 @@ ch_jarvis_march(ForwardIterator first, ForwardIterator last,
 
 template <class ForwardIterator, class OutputIterator, class Traits>
 OutputIterator
-ch_jarvis(ForwardIterator first, ForwardIterator last, 
+ch_jarvis(ForwardIterator first, ForwardIterator last,
                OutputIterator  result,
                const Traits& ch_traits)
 {

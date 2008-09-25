@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownSection.h
  *
  *  This source file is part of DIME.
@@ -33,24 +33,24 @@
 #include <dime/sections/Section.h>
 #include <dime/util/Array.h>
 
-class DIME_DLL_API dimeUnknownSection : public dimeSection 
+class DIME_DLL_API dimeUnknownSection : public dimeSection
 {
   friend class dimeModel;
 
 public:
-  dimeUnknownSection(const char * const sectionname, 
+  dimeUnknownSection(const char * const sectionname,
 		    dimeMemHandler *memhandler = NULL);
   virtual ~dimeUnknownSection();
-  
+
   virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
 public:
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
 private:
   char *sectionName;
   class dimeRecord **records;

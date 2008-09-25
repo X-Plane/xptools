@@ -49,7 +49,7 @@ Window_stream& operator<<(Window_stream& os,
     ++it;++it;
   }
   return os;
-}  
+}
 
 
 template <class Dcel,class Traits>
@@ -63,7 +63,7 @@ Window_stream& write(Window_stream& os, Planar_map_2<Dcel,Traits> &m)
     ++it;++it;
   }
   return os;
-}  
+}
 
 
 CGAL_END_NAMESPACE

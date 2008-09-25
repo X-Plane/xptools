@@ -264,7 +264,7 @@ static int vxprintf(
       break;
     }
     /* Find out what flags are present */
-    flag_leftjustify = flag_plussign = flag_blanksign = 
+    flag_leftjustify = flag_plussign = flag_blanksign =
      flag_alternateform = flag_altform2 = flag_zeropad = 0;
     done = 0;
     do{
@@ -704,8 +704,8 @@ struct sgMprintf {
   void *(*xRealloc)(void*,int);  /* Function used to realloc memory */
 };
 
-/* 
-** This function implements the callback from vxprintf. 
+/*
+** This function implements the callback from vxprintf.
 **
 ** This routine add nNewChar characters of text in zNewText to
 ** the sgMprintf structure pointed to by "arg".
@@ -743,7 +743,7 @@ static void mout(void *arg, const char *zNewText, int nNewChar){
 
 /*
 ** This routine is a wrapper around xprintf() that invokes mout() as
-** the consumer.  
+** the consumer.
 */
 static char *base_vprintf(
   void *(*xRealloc)(void*,int),   /* Routine to realloc memory. May be NULL */

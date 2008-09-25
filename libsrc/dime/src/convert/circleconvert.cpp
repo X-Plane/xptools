@@ -37,7 +37,7 @@
 // and return the number of circle subdivisions necessary
 // to respect the maxerr parameter.
 //
-static int 
+static int
 calc_num_sub(dxfdouble maxerr, dxfdouble radius)
 {
   if (maxerr >= radius || maxerr <= 0.0) maxerr = radius/40.0f;
@@ -46,13 +46,13 @@ calc_num_sub(dxfdouble maxerr, dxfdouble radius)
   dxfdouble y = sqrt(radius*radius - x*x);
 
   dxfdouble rad = atan(y/x);
-  
+
   return int(M_PI/fabs(rad)) + 1;
 }
 
 
-void 
-convert_circle(const dimeEntity *entity, const dimeState *state, 
+void
+convert_circle(const dimeEntity *entity, const dimeState *state,
 	       dxfLayerData *layerData, dxfConverter *converter)
 {
   dimeCircle *circle = (dimeCircle*) entity;
@@ -62,7 +62,7 @@ convert_circle(const dimeEntity *entity, const dimeState *state,
 
   dimeVec3f e = circle->getExtrusionDir();
   dxfdouble thickness = circle->getThickness();
-  
+
   if (e != dimeVec3f(0,0,1)) {
     dimeMatrix m;
     dimeEntity::generateUCS(e, m);
@@ -77,25 +77,25 @@ convert_circle(const dimeEntity *entity, const dimeState *state,
   if (circle->getRecord(38, param)) {
     center[2] = param.double_data;
   }
-  
+
   int numpts = converter->getNumSub();
   if (numpts <= 0) { // use maxerr
     numpts = calc_num_sub(converter->getMaxerr(), radius);
   }
-  dxfdouble inc = (2*M_PI) / numpts;  
+  dxfdouble inc = (2*M_PI) / numpts;
   dxfdouble rad = inc;
   int i;
-  
+
   dimeVec3f v;
   dimeVec3f prev(center[0] + radius,
 		 center[1],
 		 center[2]);
-  
+
   for (i = 1; i < numpts; i++) {
     v = dimeVec3f(center[0] + radius * cos(rad),
 		  center[1] + radius * sin(rad),
 		  center[2]);
-    
+
     if (thickness == 0.0) {
       layerData->addLine(prev, v, &matrix);
     }
@@ -110,7 +110,7 @@ convert_circle(const dimeEntity *entity, const dimeState *state,
   v = dimeVec3f(center[0] + radius,
 		center[1],
 		center[2]);
-  
+
   if (thickness == 0.0) {
     layerData->addLine(prev, v, &matrix);
   }

@@ -69,7 +69,7 @@
 /* This may be inaccurate */
 # ifndef __DECC
 # define OSPLAT "OSPLAT=VAX"
-# endif 
+# endif
 
 # endif
 
@@ -405,9 +405,9 @@
 # include <malloc.h>
 # endif
 
-# endif 
+# endif
 
-/* 
+/*
  * OSPLAT definitions - suppressed when it's a one-of-a-kind
  */
 
@@ -432,7 +432,7 @@
      !defined( OS_AS400 )
 # define OSPLAT "OSPLAT=X86"
 # endif
-# endif 
+# endif
 
 # ifdef __sparc__
 # if !defined( OS_SUNOS ) && \

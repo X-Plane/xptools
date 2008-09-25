@@ -33,7 +33,7 @@ CGAL_BEGIN_NAMESPACE
 template <class Planar_map>
 inline Window_stream& operator<<(Window_stream& os,
                           const Pm_bounding_box_base<Planar_map> &b)
-{}  
+{}
 
 CGAL_END_NAMESPACE
 

@@ -103,7 +103,7 @@ dirname( string const&  s )
          return s.substr( 0, last_pos );
       }
 
-   } 
+   }
    else                         // no '/' in path, so ...
    {
       if ( _isDir( s ) )        // if it's a directory, return that
@@ -114,7 +114,7 @@ dirname( string const&  s )
       return string("..");      // otherwise, it's a file, and so return
                                 // reference to parent directory
    }
-   
+
 } // dirname
 
 

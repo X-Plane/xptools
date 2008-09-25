@@ -16,11 +16,11 @@
 #ifndef __geokeys_h_
 #define __geokeys_h_
 
-/* The GvCurrentRevision number should be incremented whenever a 
- * new set of Keys are defined or modified in "geokeys.inc", and comments 
+/* The GvCurrentRevision number should be incremented whenever a
+ * new set of Keys are defined or modified in "geokeys.inc", and comments
  * added to the "Revision History" section above. If only code
  * _values_ are augmented, the "GvCurrentMinorRev" number should
- * be incremented instead (see "geovalues.h"). Whenever the 
+ * be incremented instead (see "geovalues.h"). Whenever the
  * GvCurrentRevision is incremented, the GvCurrentMinorRev should
  * be reset to zero.
  *
@@ -42,11 +42,11 @@ typedef enum {
 #  include "geokeys.inc"         /* geokey database */
 
    ReservedEndGeoKey  =  32767,
-   
+
    /* Key space available for Private or internal use */
    PrivateBaseGeoKey = 32768,    /* Consistent with TIFF Private tags */
-   PrivateEndGeoKey  = 65535,    
-   
+   PrivateEndGeoKey  = 65535,
+
    EndGeoKey = 65535             /* Largest Possible GeoKey ID */
 } geokey_t;
 

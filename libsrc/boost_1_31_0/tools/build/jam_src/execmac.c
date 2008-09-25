@@ -21,7 +21,7 @@
  *
  * Each word must be an individual element in a jam variable value.
  *
- * In $(JAMSHELL), % expands to the command string and ! expands to 
+ * In $(JAMSHELL), % expands to the command string and ! expands to
  * the slot number (starting at 1) for multiprocess (-j) invocations.
  * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
  * argument.
@@ -45,13 +45,13 @@
  */
 
 void
-execcmd( 
+execcmd(
 	char *string,
 	void (*func)( void *closure, int status ),
 	void *closure,
 	LIST *shell )
 {
-	
+
 	printf( "%s", string );
 	(*func)( closure, EXEC_CMD_OK );
 }

@@ -1,17 +1,17 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: Expr.cpp
  *
- * Written by 
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Igor Pechtchanski <pechtcha@cs.nyu.edu>
  *       Vijay Karamcheti <vijayk@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -45,8 +45,8 @@ const char* Add::name = "+";
 const char* Sub::name = "-";
 
 extLong ceilLg5(const extLong & a) {
-  
-#if defined( _MSC_VER) || defined(__sgi) 
+
+#if defined( _MSC_VER) || defined(__sgi)
   return (int) ::ceil(log_5 * a.toLong());
 #else
   return (int) std::ceil(log_5 * a.toLong());
@@ -64,8 +64,8 @@ const Expr& Expr::getZero() {
 
 
 // computes an interval comprising a pair of doubles
-// Note: 
-//   
+// Note:
+//
 // This function returns are two consecutive representable binary
 // IEEE double values whichs contain the real value, but when you print out
 // them, you might be confused by the decimal represention due to round.
@@ -112,7 +112,7 @@ BigInt floor(const Expr& e, Expr &sub) {
 // Chenli: implemented algorithm from Goldberg's article.
 // 7/01: Thanks to Serge Pashkov for fixing infinite loop when n=0.
 Expr pow(const Expr& e, unsigned long n) {
-  if (n == 0) 
+  if (n == 0)
     return Expr(1);
   else if (n == 1)
     return e;
@@ -137,14 +137,14 @@ Expr pow(const Expr& e, unsigned long n) {
 NodeInfo::NodeInfo() : appValue(CORE_REAL_ZERO), appComputed(false),
      flagsComputed(false), knownPrecision(CORE_negInfty),
 #ifdef DEBUG
-     relPrecision(0), absPrecision(CORE_negInfty), numNodes(0), 
+     relPrecision(0), absPrecision(CORE_negInfty), numNodes(0),
 #endif
      // Most of the following data members don't need to be
      // initialized here.
      d_e(0), visited(false), sign(0),
      uMSB(CORE_negInfty), lMSB(CORE_negInfty),
      // length(0),
-     measure(0), high(0), low(1), 
+     measure(0), high(0), low(1),
      lc(0), tc(0), v2p(0), v2m(0), v5p(0), v5m(0), u25(0), l25(0),
      ratFlag(0), ratValue(NULL)
 { }
@@ -162,7 +162,7 @@ ExprRep::ExprRep() : refCount(1), nodeInfo(NULL), ffVal(0.0)
 extLong ExprRep::computeBound() {
   extLong measureBd = measure();
   // extLong cauchyBd = length();
-  extLong ourBd = (d_e() - 1) * high() + lc(); 
+  extLong ourBd = (d_e() - 1) * high() + lc();
   // BFMSS[2,5] bound.
   extLong bfmsskBd;
   if (v2p().isInfty() || v2m().isInfty())
@@ -171,7 +171,7 @@ extLong ExprRep::computeBound() {
     bfmsskBd = l25() + u25() * (d_e() - 1) - v2() - ceilLg5(v5());
 
   // since we might compute \infty - \infty for this bound
-  if (bfmsskBd.isNaN()) 
+  if (bfmsskBd.isNaN())
 	  bfmsskBd = CORE_INFTY;
 
   extLong bd = core_min(measureBd,
@@ -186,7 +186,7 @@ extLong ExprRep::computeBound() {
 */
 
 #ifdef DEBUG_BOUND
-  
+
   // Some statistics about which one is/are the winner[s].
   computeBoundCallsCounter++;
   int number_of_winners = 0;
@@ -240,16 +240,16 @@ extLong ExprRep::computeBound() {
 
 void ExprRep::reduceToBigRat(const BigRat& rat) {
   Real value(rat);
-  
+
   //appValue() = value;
   appComputed() = false; // since appValue is not assigned until approx() is called
   flagsComputed() = true;
   knownPrecision() = CORE_negInfty;
 
 #ifdef DEBUG
-  relPrecision() = 0; 
+  relPrecision() = 0;
   absPrecision() = CORE_negInfty;
-  //numNodes() = numNodes(); 
+  //numNodes() = numNodes();
 #endif
   d_e() = 1;
   //visited() = e->visited();
@@ -278,7 +278,7 @@ void ExprRep::reduceToBigRat(const BigRat& rat) {
 
   lc() = l_e;
   tc() = u_e;
-  
+
   if (ratValue() == NULL)
     ratValue() = new BigRat(rat);
   else
@@ -286,7 +286,7 @@ void ExprRep::reduceToBigRat(const BigRat& rat) {
 }
 
 // This only copies the current information of the argument e to
-// 	*this ExprRep.  
+// 	*this ExprRep.
 void ExprRep::reduceTo(const ExprRep *e) {
   if (e->appComputed()) {
     appValue() = e->appValue();
@@ -296,7 +296,7 @@ void ExprRep::reduceTo(const ExprRep *e) {
 #ifdef DEBUG
     relPrecision() = e->relPrecision();
     absPrecision() = e->absPrecision();
-    numNodes() = e->numNodes(); 
+    numNodes() = e->numNodes();
 #endif
   }
   d_e() = e->d_e();
@@ -318,11 +318,11 @@ void ExprRep::reduceTo(const ExprRep *e) {
   high() = e->high();
   low() = e->low();		// fixed? original = 0
   lc() = e->lc();
-  tc() = e->tc(); 
-  
+  tc() = e->tc();
+
   if (rationalReduceFlag) {
-    ratFlag() = e->ratFlag();  
-  
+    ratFlag() = e->ratFlag();
+
     if (e->ratFlag() > 0 && e->ratValue() != NULL) {
       ratFlag() ++;
       if (ratValue() == NULL)
@@ -342,7 +342,7 @@ void ExprRep::reduceToZero() {
 #ifdef DEBUG
   relPrecision() = 0;
   absPrecision() = CORE_negInfty;
-//  numNodes() = 0; 
+//  numNodes() = 0;
 #endif
   d_e() = 1;
   visited() = false;
@@ -363,10 +363,10 @@ void ExprRep::reduceToZero() {
   high() = 0;
   low() = 1;		// fixed? original = 0
   lc() = 0;
-  tc() = 0; 
-  
+  tc() = 0;
+
   if (rationalReduceFlag) {
-    if (ratFlag() > 0) { 
+    if (ratFlag() > 0) {
       ratFlag() ++;
       if (ratValue() == NULL)
         ratValue() = new BigRat(0);
@@ -410,11 +410,11 @@ void ExprRep::approx(const extLong& relPrec = defRelPrec,
   if (!appComputed() || (!withinKnownPrecision(relPrec, absPrec))) {
     // it's necessary to re-evaluate.
     // to avoid huge lMSB which would cause long time and problems.
-    
+
     // if it is a rational node
-    if (rationalReduceFlag && ratFlag() > 0 && ratValue() != NULL) 
+    if (rationalReduceFlag && ratFlag() > 0 && ratValue() != NULL)
       appValue() = Real(*(ratValue())).approx(relPrec, absPrec);
-    else 
+    else
       computeApproxValue(relPrec, absPrec);
 
     // update flags
@@ -428,9 +428,9 @@ void ExprRep::approx(const extLong& relPrec = defRelPrec,
 }
 
 // return an approximate value to certain precision.
-const Real& ExprRep::getAppValue(const extLong& relPrec,const extLong& absPrec) { 
+const Real& ExprRep::getAppValue(const extLong& relPrec,const extLong& absPrec) {
   if (getSign()) {
-    approx(relPrec, absPrec); 
+    approx(relPrec, absPrec);
     return appValue();
   } else
     return CORE_REAL_ZERO;
@@ -449,12 +449,12 @@ std::ostream& operator<<(std::ostream& o, ExprRep& rep) {
 // Chee, Zilin: July 17, 2002
 //  Original algorithm is wrongly implemented, and can take time
 //	 exponential in the size of the dag.
-//	
+//
 //  METHOD:
-//	Inductively assume that all "visited" flags are false. 
+//	Inductively assume that all "visited" flags are false.
 //	This calls for a reimplementation of "count()" and "clearFlag()".
 //	Actually, we did not have to fix the count() function.
-//	
+//
 //  (1) First recursively compute d_e for each node
 //		by calling the count() function.
 //	Important thing is count() will turn the "visited" flags
@@ -556,7 +556,7 @@ void BinOpRep::fullClearFlag() {
 
 //
 // clear visited flag
-// 
+//
 /* see Expr.h
   void ConstRep::clearFlag()
   { visited = false; }
@@ -580,9 +580,9 @@ void BinOpRep::clearFlag() {
 
 //
 // count # of squareroot
-// 
+//
 /* see Expr.h
-   unsigned long ConstRep::count() 
+   unsigned long ConstRep::count()
    { return 0; }
 */
 
@@ -629,7 +629,7 @@ void computeExactFlags_temp(ConstRep* t, const Real &value) {
 
   t->sign() = value.sign();
   // t->length() = value.length();
-  t->measure() = value.height(); // for rationals and integers, 
+  t->measure() = value.height(); // for rationals and integers,
                                  // measure = height.
 
   // BFMSS[2,5] bound.
@@ -673,7 +673,7 @@ void computeExactFlags_temp(ConstRep* t, const Real &value) {
 }
 
 void ConstDoubleRep::computeExactFlags() {// can be made more efficient
-  computeExactFlags_temp(this, Real(ffVal.getValue())); 
+  computeExactFlags_temp(this, Real(ffVal.getValue()));
 }
 
 void ConstRealRep::computeExactFlags() {
@@ -682,21 +682,21 @@ void ConstRealRep::computeExactFlags() {
 
 void NegRep::computeExactFlags() {
   if (!child->flagsComputed())  child->computeExactFlags();
-  
+
   if (child->sign() == 0) {
     reduceToZero();
     return;
   }
-  
+
   if (rationalReduceFlag) {
     if (child->ratFlag()>0 && child->ratValue() != NULL) {
       BigRat val = -(*(child->ratValue()));
       reduceToBigRat(val);
       ratFlag() = child->ratFlag()+1;
-      return; 
+      return;
     } else
       ratFlag() = -1;
-  } 
+  }
 
   sign() = -child->sign();
   uMSB() = child->uMSB();
@@ -732,7 +732,7 @@ void SqrtRep::computeExactFlags() {
 
   // length() = child->length();
   measure() = child->measure();
-    
+
   // BFMSS[2,5] bound.
   if (child->v2p() + ceilLg5(child->v5p()) + child->u25() >=
       child->v2m() + ceilLg5(child->v5m()) + child->l25()) {
@@ -788,14 +788,14 @@ void MultRep::computeExactFlags() {
   if (!first->flagsComputed())  first->computeExactFlags();
   if (!second->flagsComputed())  second->computeExactFlags();
 
-  if ((!first->sign()) || (!second->sign())) { 
+  if ((!first->sign()) || (!second->sign())) {
     // value must be exactly zero.
     reduceToZero();
     return;
   }
   // rational node
   if (rationalReduceFlag) {
-    if (first->ratFlag() > 0 && second->ratFlag() > 0) { 
+    if (first->ratFlag() > 0 && second->ratFlag() > 0) {
       BigRat val = (*(first->ratValue()))*(*(second->ratValue()));
       reduceToBigRat(val);
       ratFlag() = first->ratFlag() + second->ratFlag();
@@ -824,7 +824,7 @@ void MultRep::computeExactFlags() {
   v5m() = first->v5m() + second->v5m();
   u25() = first->u25() + second->u25();
   l25() = first->l25() + second->l25();
-   
+
   high() = first->high() + second->high();
   low() = first->low() + second->low();
 
@@ -838,17 +838,17 @@ void DivRep::computeExactFlags() {
   if (!first->flagsComputed())  first->computeExactFlags();
   if (!second->flagsComputed())  second->computeExactFlags();
 
-  if (!second->sign()) 
+  if (!second->sign())
     core_error("zero divisor.", __FILE__, __LINE__, true);
 
   if (!first->sign()) {// value must be exactly zero.
     reduceToZero();
     return;
   }
-  
+
   // rational node
   if (rationalReduceFlag) {
-    if (first->ratFlag() > 0 && second->ratFlag() > 0) { 
+    if (first->ratFlag() > 0 && second->ratFlag() > 0) {
       BigRat val = (*(first->ratValue()))/(*(second->ratValue()));
       reduceToBigRat(val);
       ratFlag() = first->ratFlag() + second->ratFlag();
@@ -889,12 +889,12 @@ void DivRep::computeExactFlags() {
 
 //
 //  approximation functions
-//  
+//
 
 void ConstDoubleRep::computeApproxValue(const extLong& relPrec,
 				        const extLong& absPrec)
 // can ignore precision bounds since ffVal.getValue() returns exact value
-{ appValue() = Real(ffVal.getValue()); } 
+{ appValue() = Real(ffVal.getValue()); }
 
 void ConstRealRep::computeApproxValue(const extLong& relPrec,
 				      const extLong& absPrec)
@@ -1012,7 +1012,7 @@ const std::string ExprRep::dump(int level) const {
 	<< "tc: " << tc()
 	<< "]";
   }
-  return std::string(ost.str()); 
+  return std::string(ost.str());
   // note that str() return an array not properly terminated!
 }
 
@@ -1090,4 +1090,4 @@ void BinOpRep::debugTree(int level, int indent, int depthLimit) const {
   second->debugTree(level, indent + 2, depthLimit - 1);
 }
 
-CORE_END_NAMESPACE    
+CORE_END_NAMESPACE

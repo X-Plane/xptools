@@ -21,9 +21,9 @@ class UrlFile : public JavaVM {
 	static jclass		mUrlGetStreamClassID;
 	static jmethodID	mUrlGetStreamInitMethodID;
 	static jmethodID	mUrlGetStreamGetStreamMethodID;
-	static jobject		mUrlGetStreamObject;		
+	static jobject		mUrlGetStreamObject;
 
-	String				*mUrl;	
+	String				*mUrl;
 	String				*mUrlString;
 
 public:

@@ -31,7 +31,7 @@ namespace CGAL {
     public:
 
     typedef typename Kernel_traits<Point>::Kernel::FT NT;
-    
+
     private:
 
     unsigned int the_dimension;
@@ -68,12 +68,12 @@ namespace CGAL {
 		NT distance = NT(0);
 		for (unsigned int i = 0; i < the_dimension; ++i) {
 			if (c[i] < r.min_coord(i))
-				distance += 
+				distance +=
 				(r.min_coord(i)-c[i])*(r.min_coord(i)-c[i]);
 			if (c[i] > r.max_coord(i))
-				distance +=  
+				distance +=
 				(c[i]-r.max_coord(i))*(c[i]-r.max_coord(i));
-			
+
 		};
                 distance += -q.squared_radius();
                 if (distance<0) distance=NT(0);

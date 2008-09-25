@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -28,9 +28,9 @@
 /*
 
 	OE_Zoomer3d
-	
+
 	This class manages camera control for a 3-d model.  It implements the gestures
-	for dragging the model around.  
+	for dragging the model around.
 
 	This code has to be in one place because you need to know about camera placement
 	to implement 3-d manipulation given 2-d input.
@@ -44,14 +44,14 @@ public:
 
 	/* Setting up the camera. */
 
-	void		SetupMatrices(	
+	void		SetupMatrices(
 							int				inBounds[4]);
 	void		ResetMatrices(void);
 
 	/* Direct access */
 
 	void		ResetToIdentity(void);
-	
+
 	void		SetScale(
 							float			inScale);
 
@@ -66,12 +66,12 @@ public:
 							int				inBounds[4],
 							XPLMMouseStatus	inStatus,
 							int				inX,
-							int				inY);	
+							int				inY);
 	void		HandleZoomWheel(
 							int				inBounds[4],
 							int				inDelta,
 							int				inX,
-							int				inY);	
+							int				inY);
 
 	/* Since we are the camera, we can do various selection-like things. */
 
@@ -81,7 +81,7 @@ public:
 							double			inClickX,
 							double			inClickY,
 							double			where[3],
-							bool			doSetup = true);	
+							bool			doSetup = true);
 
 	bool		FindPointOnSphere(
 							int				inBounds[4],
@@ -89,7 +89,7 @@ public:
 							double			inClickX,
 							double			inClickY,
 							double			where[3],
-							bool			doSetup = true);	
+							bool			doSetup = true);
 
 private:
 
@@ -114,7 +114,7 @@ private:
 	float				mRotation[4];
 	float				mScale;
 	float				mTranslation[3];
-		
+
 };
 
 #endif

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -61,10 +61,10 @@ void WED_KeyObjects::Directory_Edit(const char * name, IBase * who)
 		AssertPrintf("Can't set a non-persistent to %s\n", name);
 
 	int id = target ? target->GetID() : 0;
-	
+
 	map<string,int>::iterator i = choices.find(n);
 	if (i != choices.end() && i->second == id) return;
-	
+
 	StateChanged();
 	choices[n] = id;
 }
@@ -104,13 +104,13 @@ void			WED_KeyObjects::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
 	WED_Thing::FromDB(db, mapping);
 	choices.clear();
-	
+
 	int err;
 	sql_command cmd(db,"SELECT key,value FROM WED_key_objects WHERE id=@i;","@i");
-	
+
 	sql_row1<int>			key(GetID());
 	sql_row2<string,int>	pair;
-	
+
 	cmd.set_params(key);
 	cmd.begin();
 	while((err = cmd.get_row(pair)) == SQLITE_ROW)
@@ -124,17 +124,17 @@ void			WED_KeyObjects::ToDB(sqlite3 * db)
 {
 	WED_Thing::ToDB(db);
 	int err;
-	
+
 	{
 		sql_command clear_it(db,"DELETE FROM WED_key_objects WHERE id=@i;","@i");
 		sql_row1<int>	key(GetID());
-		
+
 		err = clear_it.simple_exec(key);
 		if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	{
 		sql_command add_pair(db,"INSERT INTO WED_key_objects(id,key,value) VALUES(@i,@k,@v);","@i,@k,@v");
-		
+
 		for (map<string,int>::iterator i = choices.begin(); i != choices.end(); ++i)
 		{
 			sql_row3<int, string, int>	binding(GetID(),i->first,i->second);

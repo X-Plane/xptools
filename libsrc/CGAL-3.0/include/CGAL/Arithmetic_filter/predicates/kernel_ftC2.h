@@ -62,7 +62,7 @@ equal_lineC2(
 		l2a.interval(),
 		l2b.interval(),
 		l2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA equal_lineC2 failures");
@@ -100,7 +100,7 @@ equal_lineC2(
 		l2a.interval(),
 		l2b.interval(),
 		l2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA equal_lineC2 failures");
@@ -145,7 +145,7 @@ compare_xC2(
 		ha.interval(),
 		hb.interval(),
 		hc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_xC2 failures");
@@ -186,7 +186,7 @@ compare_xC2(
 		ha.interval(),
 		hb.interval(),
 		hc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_xC2 failures");
@@ -236,7 +236,7 @@ compare_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_xC2 failures");
@@ -283,7 +283,7 @@ compare_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_xC2 failures");
@@ -341,7 +341,7 @@ compare_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_xC2 failures");
@@ -397,7 +397,7 @@ compare_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_xC2 failures");
@@ -444,7 +444,7 @@ compare_y_at_xC2(
 		la.interval(),
 		lb.interval(),
 		lc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_y_at_xC2 failures");
@@ -479,7 +479,7 @@ compare_y_at_xC2(
 		la.interval(),
 		lb.interval(),
 		lc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_y_at_xC2 failures");
@@ -523,7 +523,7 @@ compare_y_at_xC2(
 		l2a.interval(),
 		l2b.interval(),
 		l2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_y_at_xC2 failures");
@@ -564,7 +564,7 @@ compare_y_at_xC2(
 		l2a.interval(),
 		l2b.interval(),
 		l2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_y_at_xC2 failures");
@@ -614,7 +614,7 @@ compare_y_at_xC2(
 		ha.interval(),
 		hb.interval(),
 		hc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_y_at_xC2 failures");
@@ -661,7 +661,7 @@ compare_y_at_xC2(
 		ha.interval(),
 		hb.interval(),
 		hc.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_y_at_xC2 failures");
@@ -719,7 +719,7 @@ compare_y_at_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_y_at_xC2 failures");
@@ -775,7 +775,7 @@ compare_y_at_xC2(
 		h2a.interval(),
 		h2b.interval(),
 		h2c.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_y_at_xC2 failures");
@@ -830,7 +830,7 @@ compare_y_at_x_segment_C2(
 		s2sy.interval(),
 		s2tx.interval(),
 		s2ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_y_at_x_segment_C2 failures");
@@ -877,7 +877,7 @@ compare_y_at_x_segment_C2(
 		s2sy.interval(),
 		s2tx.interval(),
 		s2ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_y_at_x_segment_C2 failures");
@@ -919,7 +919,7 @@ equal_directionC2(
 		dy1.interval(),
 		dx2.interval(),
 		dy2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA equal_directionC2 failures");
@@ -951,7 +951,7 @@ equal_directionC2(
 		dy1.interval(),
 		dx2.interval(),
 		dy2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA equal_directionC2 failures");
@@ -988,7 +988,7 @@ compare_slopesC2(
 		l1b.interval(),
 		l2a.interval(),
 		l2b.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_slopesC2 failures");
@@ -1020,7 +1020,7 @@ compare_slopesC2(
 		l1b.interval(),
 		l2a.interval(),
 		l2b.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_slopesC2 failures");
@@ -1065,7 +1065,7 @@ compare_slopesC2(
 		s2_src_y.interval(),
 		s2_tgt_x.interval(),
 		s2_tgt_y.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_slopesC2 failures");
@@ -1109,7 +1109,7 @@ compare_slopesC2(
 		s2_src_y.interval(),
 		s2_tgt_x.interval(),
 		s2_tgt_y.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_slopesC2 failures");
@@ -1150,7 +1150,7 @@ compare_deltax_deltayC2(
 		qx.interval(),
 		ry.interval(),
 		sy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA compare_deltax_deltayC2 failures");
@@ -1182,7 +1182,7 @@ compare_deltax_deltayC2(
 		qx.interval(),
 		ry.interval(),
 		sy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA compare_deltax_deltayC2 failures");
@@ -1223,7 +1223,7 @@ orientationC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA orientationC2 failures");
@@ -1261,7 +1261,7 @@ orientationC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA orientationC2 failures");
@@ -1304,7 +1304,7 @@ angleC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA angleC2 failures");
@@ -1342,7 +1342,7 @@ angleC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA angleC2 failures");
@@ -1389,7 +1389,7 @@ side_of_oriented_circleC2(
 		ry.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA side_of_oriented_circleC2 failures");
@@ -1433,7 +1433,7 @@ side_of_oriented_circleC2(
 		ry.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA side_of_oriented_circleC2 failures");
@@ -1482,7 +1482,7 @@ side_of_bounded_circleC2(
 		ry.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA side_of_bounded_circleC2 failures");
@@ -1526,7 +1526,7 @@ side_of_bounded_circleC2(
 		ry.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA side_of_bounded_circleC2 failures");
@@ -1571,7 +1571,7 @@ side_of_bounded_circleC2(
 		qy.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA side_of_bounded_circleC2 failures");
@@ -1609,7 +1609,7 @@ side_of_bounded_circleC2(
 		qy.interval(),
 		tx.interval(),
 		ty.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA side_of_bounded_circleC2 failures");
@@ -1652,7 +1652,7 @@ cmp_dist_to_pointC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA cmp_dist_to_pointC2 failures");
@@ -1690,7 +1690,7 @@ cmp_dist_to_pointC2(
 		qy.interval(),
 		rx.interval(),
 		ry.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA cmp_dist_to_pointC2 failures");
@@ -1733,7 +1733,7 @@ cmp_signed_dist_to_directionC2(
 		py.interval(),
 		qx.interval(),
 		qy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA cmp_signed_dist_to_directionC2 failures");
@@ -1771,7 +1771,7 @@ cmp_signed_dist_to_directionC2(
 		py.interval(),
 		qx.interval(),
 		qy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA cmp_signed_dist_to_directionC2 failures");
@@ -1818,7 +1818,7 @@ cmp_signed_dist_to_lineC2(
 		ry.interval(),
 		sx.interval(),
 		sy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA cmp_signed_dist_to_lineC2 failures");
@@ -1862,7 +1862,7 @@ cmp_signed_dist_to_lineC2(
 		ry.interval(),
 		sx.interval(),
 		sy.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA cmp_signed_dist_to_lineC2 failures");
@@ -1905,7 +1905,7 @@ side_of_oriented_lineC2(
 		c.interval(),
 		x.interval(),
 		y.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA side_of_oriented_lineC2 failures");
@@ -1940,7 +1940,7 @@ side_of_oriented_lineC2(
 		c.interval(),
 		x.interval(),
 		y.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA side_of_oriented_lineC2 failures");

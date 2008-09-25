@@ -35,22 +35,22 @@ private:
   std::size_t   n_vertices;
   std::size_t   n_halfedges;
   std::size_t   n_faces;
-  
+
   bool m_verbose;       // printing a format that a 'human' can read.
   bool m_no_comments;   // no comments in output.
   bool m_ascii;         // ascii format.
-  
-  int  m_offset;       // index offset for vertices, usually 0.  
+
+  int  m_offset;       // index offset for vertices, usually 0.
   // Publicly accessible but not that well supported file informations.
   bool m_colors;      // COFF detected.
-  
+
   // More privately used file informations to scan the file.
   int  m_dim;         // dimension for PM (will not be supported).
 
 public:
   typedef  File_header           Self;
-  
-  File_header(bool verbose = false, bool no_comments = false, 
+
+  File_header(bool verbose = false, bool no_comments = false,
               bool ascii = true, int offset = 0, bool colors = false,
               int dim = 2) :
     n_vertices(0),
@@ -63,7 +63,7 @@ public:
     m_colors(colors),
     m_dim(dim)
   {}
- 
+
   // copy constructor
   File_header(const Self & file_header):
     n_vertices(file_header.number_of_vertices()),
@@ -79,7 +79,7 @@ public:
   /*Self& operator= ( const Base& base) { (Base&)(*this) = base;
     return *this;
     }*/
-  
+
   std::size_t   number_of_vertices()   const { return n_vertices; }
   std::size_t   number_of_halfedges()  const { return n_halfedges; }
   std::size_t   number_of_faces()     const { return n_faces; }
@@ -91,7 +91,7 @@ public:
   int  index_offset()       const { return m_offset; }
   bool has_colors()         const { return m_colors; } // COFF detected.
   int  dimension()          const { return m_dim; }
-  
+
   void set_number_of_vertices( std::size_t  n)      { n_vertices = n; }
   void set_number_of_halfedges( std::size_t  n)     { n_halfedges = n; }
   void set_number_of_faces( std::size_t  n)         { n_faces   = n; }
@@ -99,7 +99,7 @@ public:
   void set_verbose( bool b)       { m_verbose            = b; }
   void set_ascii( bool b)         { m_ascii      = b; }
   void set_no_comments( bool b)   { m_no_comments = b; }
-  void set_index_offset( int i)   { m_offset      = i; }  
+  void set_index_offset( int i)   { m_offset      = i; }
   void set_colors( bool b)        { m_colors      = b; }
   void set_dimension( int i)      { m_dim         = i; }
 
@@ -111,7 +111,7 @@ public:
       { }		// BAS <- MODIFICATION FOR MW COMPILER, WAS JUST A SEMICOLON
     return in;
   }
-  
+
   // istream modifier that checks for OFF comments and removes them.
   inline std::istream& skip_comment_OFF( std::istream& in) {
     char c;

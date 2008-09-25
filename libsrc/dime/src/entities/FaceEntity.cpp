@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: FaceEntity.cpp
  *
  *  This source file is part of DIME.
@@ -45,7 +45,7 @@ dimeFaceEntity::dimeFaceEntity()
   Sets vertices to create a triangle.
 */
 
-void 
+void
 dimeFaceEntity::setTriangle(const dimeVec3f &v0, const dimeVec3f &v1,
 		       const dimeVec3f &v2)
 {
@@ -58,7 +58,7 @@ dimeFaceEntity::setTriangle(const dimeVec3f &v0, const dimeVec3f &v1,
   Sets vertices to create a quad.
 */
 
-void 
+void
 dimeFaceEntity::setQuad(const dimeVec3f &v0, const dimeVec3f &v1,
 		   const dimeVec3f &v2, const dimeVec3f &v3)
 {
@@ -77,7 +77,7 @@ dimeFaceEntity::setQuad(const dimeVec3f &v0, const dimeVec3f &v1,
   Returns all four vertices.
 */
 
-void 
+void
 dimeFaceEntity::getVertices(dimeVec3f &v0, dimeVec3f &v1,
 		       dimeVec3f &v2, dimeVec3f &v3) const
 {
@@ -91,7 +91,7 @@ dimeFaceEntity::getVertices(dimeVec3f &v0, dimeVec3f &v1,
   Copies the coordinates from \a entity.
 */
 
-void 
+void
 dimeFaceEntity::copyCoords(const dimeFaceEntity * const entity)
 {
   this->coords[0] = entity->coords[0];
@@ -102,7 +102,7 @@ dimeFaceEntity::copyCoords(const dimeFaceEntity * const entity)
 
 //!
 
-int 
+int
 dimeFaceEntity::typeId() const
 {
   return dimeFaceEntityType;
@@ -119,18 +119,18 @@ dimeFaceEntity::isOfType(const int thetypeid) const
 
 //!
 
-int 
+int
 dimeFaceEntity::countRecords() const
 {
   return 12 + dimeEntity::countRecords();
 }
 
 /*!
-  Will write the coordinate data to \a out. Should be called by 
+  Will write the coordinate data to \a out. Should be called by
   subclasses at some time during write.
 */
 
-bool 
+bool
 dimeFaceEntity::writeCoords(dimeOutput * const file)
 {
   for (int i = 0; i < 4; i++) {
@@ -144,8 +144,8 @@ dimeFaceEntity::writeCoords(dimeOutput * const file)
 
 //!
 
-bool 
-dimeFaceEntity::handleRecord(const int groupcode, 
+bool
+dimeFaceEntity::handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler)
 {
@@ -169,7 +169,7 @@ dimeFaceEntity::handleRecord(const int groupcode,
 
 //!
 
-bool 
+bool
 dimeFaceEntity::getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index) const
@@ -186,7 +186,7 @@ dimeFaceEntity::getRecord(const int groupcode,
       groupcode == 31 ||
       groupcode == 32 ||
       groupcode == 33) {
-    param.double_data = 
+    param.double_data =
       this->coords[groupcode % 10][groupcode / 10 - 1];
     return true;
   }
@@ -195,7 +195,7 @@ dimeFaceEntity::getRecord(const int groupcode,
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimeFaceEntity::extractGeometry(dimeArray <dimeVec3f> &verts,
 			       dimeArray <int> &indices,
 			       dimeVec3f &extrusionDir,
@@ -203,7 +203,7 @@ dimeFaceEntity::extractGeometry(dimeArray <dimeVec3f> &verts,
 {
   verts.setCount(0);
   indices.setCount(0);
-  
+
   verts.append(this->coords[0]);
   verts.append(this->coords[1]);
   if (this->isQuad()) {
@@ -219,19 +219,19 @@ dimeFaceEntity::extractGeometry(dimeArray <dimeVec3f> &verts,
   else {
     verts.append(this->coords[2]);
   }
-  
+
   thickness = getThickness();
   getExtrusionDir(extrusionDir);
 
   return dimeEntity::POLYGONS;
-}  
+}
 
 /*!
   Default method return 0.0. Should be overloaded if this is not
   correct for all cases.
 */
 
-dxfdouble 
+dxfdouble
 dimeFaceEntity::getThickness() const
 {
   return 0.0f;
@@ -242,7 +242,7 @@ dimeFaceEntity::getThickness() const
   correct for all cases.
 */
 
-void 
+void
 dimeFaceEntity::getExtrusionDir(dimeVec3f &ed) const
 {
   ed.setValue(0,0,1);
@@ -250,11 +250,11 @@ dimeFaceEntity::getExtrusionDir(dimeVec3f &ed) const
 
 /*!
   Default function returns \e false. If \e true is returned, the last
-  two vertices will be swapped before returning geometry in 
+  two vertices will be swapped before returning geometry in
   extractGeometry().
 */
 
-bool 
+bool
 dimeFaceEntity::swapQuadCoords() const
 {
   return false;

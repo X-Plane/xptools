@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_HOMOGENEOUS_VECTOR_2_h
 #define CGAL_HOMOGENEOUS_VECTOR_2_h
@@ -236,8 +236,8 @@ typename VectorH2<R>::FT
 VectorH2<R>::squared_length() const
 {
   typedef typename R::FT FT;
-  return 
-    FT( CGAL_NTS square(hx()) + CGAL_NTS square(hy()) ) / 
+  return
+    FT( CGAL_NTS square(hx()) + CGAL_NTS square(hy()) ) /
     FT( CGAL_NTS square(hw()) );
 }
 

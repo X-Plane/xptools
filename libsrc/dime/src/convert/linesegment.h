@@ -31,7 +31,7 @@
 #include <dime/util/Linear.h>
 class dxfLayerData;
 
-class dxfLineSegment 
+class dxfLineSegment
 {
 public:
   void set(const dimeVec3f &p0, const dimeVec3f &p1,
@@ -39,12 +39,12 @@ public:
 	   const dxfdouble thickness);
   void convert(dxfLineSegment *prev, dxfLineSegment *next,
 	       dxfLayerData *data, dimeMatrix *matrix);
-  
+
 private:
 
   void calculate_v();
   void calculate_connect(dxfLineSegment *next);
-  
+
   dimeVec3f p[2];
   dxfdouble w[2];
   dxfdouble thickness;

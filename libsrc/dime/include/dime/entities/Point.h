@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Point.h
  *
  *  This source file is part of DIME.
@@ -56,9 +56,9 @@ public:
 				       dimeArray <int> &indices,
 				       dimeVec3f &extrusionDir,
 				       dxfdouble &thickness);
-  
+
 protected:
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
                             const dimeParam &param,
 			    dimeMemHandler * const memhandler);
 
@@ -73,7 +73,7 @@ dimePoint::getCoords() const
   return coords;
 }
 
-inline void 
+inline void
 dimePoint::setCoords(const dimeVec3f &v)
 {
   this->coords = v;

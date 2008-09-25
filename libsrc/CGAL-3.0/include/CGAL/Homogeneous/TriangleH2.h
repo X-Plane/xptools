@@ -101,7 +101,7 @@ template <class R>
 inline
 typename TriangleH2<R>::FT
 TriangleH2<R>::area() const
-{ 
+{
    Vector_2 v1 = vertex(1) - vertex(0);
    Vector_2 v2 = vertex(2) - vertex(0);
 

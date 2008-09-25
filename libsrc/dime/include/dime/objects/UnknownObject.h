@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownObject.h
  *
  *  This source file is part of DIME.
@@ -34,22 +34,22 @@
 
 class dimeMemHandler;
 
-class DIME_DLL_API dimeUnknownObject : public dimeObject 
+class DIME_DLL_API dimeUnknownObject : public dimeObject
 {
 public:
   dimeUnknownObject(const char * const name, dimeMemHandler * const memhandler);
   virtual ~dimeUnknownObject();
 
   virtual dimeObject *copy(dimeModel * const model) const;
-  
+
   virtual const char *getObjectName() const;
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
 private:
   char *objectName;
-  
+
 }; // class dimeUnknownObject
 
 #endif // ! DIME_UNKNOWNOBJECT_H

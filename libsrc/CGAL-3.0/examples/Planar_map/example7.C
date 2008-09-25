@@ -48,13 +48,13 @@ void print_point_locate(const Point_2 & p, const Planar_map * pm)
   switch (lt) {
     case Planar_map::VERTEX :
       std::cout << "VERTEX" << std::endl
-                << "The vertex is: (" << edge->target()->point() << ")" 
+                << "The vertex is: (" << edge->target()->point() << ")"
                 << std::endl;
       break;
 
     case Planar_map::UNBOUNDED_VERTEX :
       std::cout << "UNBOUNDED_VERTEX" << std::endl
-                << "The vertex is: (" << edge->target()->point() << ")" 
+                << "The vertex is: (" << edge->target()->point() << ")"
                 << std::endl;
       break;
 
@@ -63,7 +63,7 @@ void print_point_locate(const Point_2 & p, const Planar_map * pm)
                 << "The edge is: {(" << edge->source()->point()
                 << ")->(" << edge->target()->point() << ")}" << std::endl;
       break;
-      
+
     case Planar_map::UNBOUNDED_EDGE :
       std::cout << "UNBOUNDED_EDGE" << std::endl
                 << "The edge is: {(" << edge->source()->point()
@@ -91,12 +91,12 @@ int main(int argc, char * argv[])
   Point_2 a1(1, 1), a2(1, 0), a3(0, 0), a4(0, 1), a5(1, 4, 2);
 
   /*
-       a5 
-       /\  
+       a5
+       /\
       /  \
   a4  ----  a1
-     |    | 
-     |    | 
+     |    |
+     |    |
      |    |
   a3  ----  a2
 
@@ -112,7 +112,7 @@ int main(int argc, char * argv[])
   cv[5] = X_monotone_curve_2(a1, a4);
 
   CGAL::set_ascii_mode(std::cout);
-  std::cout << "The curves of the map :" << std::endl; 
+  std::cout << "The curves of the map :" << std::endl;
   std::copy(&cv[0], &cv[6],
             std::ostream_iterator<X_monotone_curve_2>(std::cout, "\n"));
   std::cout << std::endl;
@@ -122,14 +122,14 @@ int main(int argc, char * argv[])
 #define PL_WALK         2
 #define NUM_PLS         3
   Planar_map * pms[NUM_PLS];
-  
+
   // Trap:
   Trap_point_location trap_pl;
   Planar_map pm_trap(&trap_pl);
   pms[PL_TRAP] = &pm_trap;
 
     // Naive:
-  Naive_point_location naive_pl;  
+  Naive_point_location naive_pl;
   Planar_map pm_naive(&naive_pl);
   pms[PL_NAIVE] = &pm_naive;
 
@@ -149,6 +149,6 @@ int main(int argc, char * argv[])
     print_point_locate(Point_2(2, 0), pms[i]);
     std::cout << std::endl;
   }
-  
-  return 0;  
+
+  return 0;
 }

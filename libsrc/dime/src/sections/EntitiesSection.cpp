@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: EntitiesSection.cpp
  *
  *  This source file is part of DIME.
@@ -75,13 +75,13 @@ dimeSection *
 dimeEntitiesSection::copy(dimeModel * const model) const
 {
   dimeMemHandler *memh = model->getMemHandler();
-  dimeEntitiesSection *es = new dimeEntitiesSection(memh); 
+  dimeEntitiesSection *es = new dimeEntitiesSection(memh);
   bool ok = es != NULL;
 
   int num  = this->entities.count();
   if (ok && num) {
     ok = dimeEntity::copyEntityArray((const dimeEntity**)
-				     this->entities.constArrayPointer(), 
+				     this->entities.constArrayPointer(),
 				     num,
 				     model,
 				     es->entities);
@@ -99,7 +99,7 @@ dimeEntitiesSection::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeEntitiesSection::read(dimeInput * const file)
 {
   int32 groupcode;
@@ -136,14 +136,14 @@ dimeEntitiesSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeEntitiesSection::write(dimeOutput * const file)
 {
 //  sim_trace("Writing section: ENTITIES\n");
 
   file->writeGroupCode(2);
   file->writeString(sectionName);
- 
+
   int i, n = this->entities.count();
   for (i = 0; i < n; i++) {
     if (!this->entities[i]->write(file)) break;
@@ -158,7 +158,7 @@ dimeEntitiesSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeEntitiesSection::typeId() const
 {
   return dimeBase::dimeEntitiesSectionType;
@@ -173,7 +173,7 @@ void
 dimeEntitiesSection::fixReferences(dimeModel * const model)
 {
   int i, n = this->entities.count();
-  for (i = 0; i < n; i++) 
+  for (i = 0; i < n; i++)
     this->entities[i]->fixReferences(model);
 }
 
@@ -202,7 +202,7 @@ dimeEntitiesSection::getSectionName() const
   entity with attached VERTEX entities will count as a single entity.
 */
 
-int 
+int
 dimeEntitiesSection::getNumEntities() const
 {
   return this->entities.count();
@@ -223,7 +223,7 @@ dimeEntitiesSection::getEntity(const int idx)
   Removes (and deletes if no memhandler is used) the entity at index \a idx.
 */
 
-void 
+void
 dimeEntitiesSection::removeEntity(const int idx)
 {
   assert(idx >= 0 && idx < this->entities.count());
@@ -239,7 +239,7 @@ dimeEntitiesSection::removeEntity(const int idx)
   new and delete operators to create/destroy entities.
 */
 
-void 
+void
 dimeEntitiesSection::insertEntity(dimeEntity * const entity, const int idx)
 {
   if (idx < 0) this->entities.append(entity);

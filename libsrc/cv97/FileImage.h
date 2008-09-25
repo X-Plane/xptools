@@ -40,7 +40,7 @@ public:
 	virtual ~FileImage();
 
 	bool isOk();
-	
+
 	virtual int			getFileType() = 0;
 
 	virtual int			getWidth() = 0;

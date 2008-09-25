@@ -21,7 +21,7 @@
 //
 // Author(s)     : Andreas Fabri
 //                 Stefan Schirra
- 
+
 #include <CGAL/basic.h>
 #include <CGAL/Origin.h>
 

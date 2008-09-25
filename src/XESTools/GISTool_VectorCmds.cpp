@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -55,7 +55,7 @@ inline void ClampCoord(double& v, double low, double hi, int grid, double& err, 
 	v_new = round(v_new);
 	v_new *= (hi - low);
 	v_new /= (double) grid;
-	v_new += low;	
+	v_new += low;
 	err = fabs(v_new - v);
 	if (err < epsi)
 		v = v_new;
@@ -81,7 +81,7 @@ static void	import_tiger_repository(const string& rt)
 	{
 		fnum = atoi(root.c_str() + root.length() - 9);
 	}
-	
+
 	if (fnum == -1)
 	{
 		fprintf(stderr,"Could not identify file %s as a TIGER file.\n", root.c_str());
@@ -89,7 +89,7 @@ static void	import_tiger_repository(const string& rt)
 
 		MFFileSet * fs = FileSet_Open(root.c_str());
 		if (fs)
-		{	
+		{
 			printf("Reading %s/TGR%05d.RT1\n", root.c_str(), fnum);
 			TIGER_LoadRT1(fs, fnum);
 			printf("Reading %s/TGR%05d.RT2\n", root.c_str(), fnum);
@@ -102,9 +102,9 @@ static void	import_tiger_repository(const string& rt)
 			TIGER_LoadRT7(fs, fnum);
 			printf("Reading %s/TGR%05d.RT8\n", root.c_str(), fnum);
 			TIGER_LoadRT8(fs, fnum);
-							
+
 			FileSet_Close(fs);
-		} else 
+		} else
 			fprintf(stderr,"Could not open %s as a file set.\n", root.c_str());
 	}
 }
@@ -129,7 +129,7 @@ static int DoMakeTigerIndex(const vector<const char *>& args)
 		gChains.clear();
 		gLandmarks.clear();
 		gPolygons.clear();
-		
+
 		string root(args[n]);
 		int	fnum = -1;
 		if ((root.length() > 3) &&
@@ -146,7 +146,7 @@ static int DoMakeTigerIndex(const vector<const char *>& args)
 		{
 			fnum = atoi(root.c_str() + root.length() - 9);
 		}
-		
+
 		if (fnum == -1)
 		{
 			fprintf(stderr,"Could not identify file %s as a TIGER file.\n", root.c_str());
@@ -155,21 +155,21 @@ static int DoMakeTigerIndex(const vector<const char *>& args)
 
 			MFFileSet * fs = FileSet_Open(root.c_str());
 			if (fs)
-			{	
+			{
 				TIGER_LoadRT1(fs, fnum);
 				TIGER_LoadRT2(fs, fnum);
 				FileSet_Close(fs);
-			} else 
+			} else
 				fprintf(stderr,"Could not open %s as a file set.\n", root.c_str());
 		}
-			
+
 		LatLonVector	v;
-		
+
 		double	latMin =  1000.0;
 		double	latMax = -1000.0;
 		double	lonMin =  1000.0;
 		double	lonMax = -1000.0;
-		
+
 		for (ChainInfoMap::iterator i = gChains.begin();
 			i != gChains.end(); ++i)
 		{
@@ -181,9 +181,9 @@ static int DoMakeTigerIndex(const vector<const char *>& args)
 				lonMax = max(lonMax, l->x);
 			}
 		}
-		
+
 		printf("%s %f %f %f %f\n",
-			args[n], latMin, latMax, lonMin, lonMax);		
+			args[n], latMin, latMax, lonMin, lonMax);
 	}
 	return 0;
 }
@@ -196,7 +196,7 @@ static int DoTigerIndex(const vector<const char *>& args)
 
 	tigerMap.clear();
 	ReadTigerIndex(args[0], tigerMap);
-	if (tigerMap.empty()) 
+	if (tigerMap.empty())
 	{
 		fprintf(stderr,"Could not open tiger index %s\n",args[0]);
 		return 1;
@@ -218,7 +218,7 @@ static int DoTigerIndex(const vector<const char *>& args)
 			import_tiger_repository(full);
 		}
 	}
-	
+
 	if (gVerbose) printf("Sorting...\n");
 	{
 		TIGER_EliminateZeroLengthShapePoints();
@@ -228,7 +228,7 @@ static int DoTigerIndex(const vector<const char *>& args)
 		else
 			printf("Skipping post process - no chains.\n");
 	}
-	
+
 	if (gVerbose)  printf("Read: %d chains, %d landmarks, %d polygons.\n",
 		gChains.size(), gLandmarks.size(), gPolygons.size());
 
@@ -236,8 +236,8 @@ static int DoTigerIndex(const vector<const char *>& args)
 	{
 //		StElapsedTime	timer("Importing");
 		TIGERImport(gChains, gLandmarks, gPolygons, gMap, gProgress);
-	} else 
-		printf("Skipping post process - no chains.\n");			
+	} else
+		printf("Skipping post process - no chains.\n");
 
 	if (gVerbose) printf("Map contains: %d faces, %d half edges, %d vertices.\n",
 								gMap.number_of_faces(),
@@ -245,7 +245,7 @@ static int DoTigerIndex(const vector<const char *>& args)
 								gMap.number_of_vertices());
 	return 0;
 }
-		
+
 
 // This code imports counties by name - ue to get a quick map of specific stuff.
 static int DoTigerImport(const vector<const char *>& args)
@@ -253,19 +253,19 @@ static int DoTigerImport(const vector<const char *>& args)
 	for (int n = 0; n < args.size(); ++n)
 	{
 		string	root = args[n];
-		import_tiger_repository(root);				
+		import_tiger_repository(root);
 	}
 
 	if (gVerbose) printf("Sorting...\n");
 	{
 		TIGER_EliminateZeroLengthShapePoints();
-		TIGER_RoughCull(gMapWest, gMapSouth, gMapEast, gMapNorth);		
+		TIGER_RoughCull(gMapWest, gMapSouth, gMapEast, gMapNorth);
 		if (gChains.size() > 0)
 			TIGER_PostProcess(gMap);
 		else
 			printf("Skipping post process - no chains.\n");
 	}
-	
+
 	if (gVerbose)  printf("Read: %d chains, %d landmarks, %d polygons.\n",
 		gChains.size(), gLandmarks.size(), gPolygons.size());
 
@@ -273,8 +273,8 @@ static int DoTigerImport(const vector<const char *>& args)
 	{
 //		StElapsedTime	timer("Importing");
 		TIGERImport(gChains, gLandmarks, gPolygons, gMap, gProgress);
-	} else 
-		printf("Skipping post process - no chains.\n");			
+	} else
+		printf("Skipping post process - no chains.\n");
 
 
 	if (gVerbose) printf("Map contains: %d faces, %d half edges, %d vertices.\n",
@@ -304,11 +304,11 @@ bool	ReadVPFLine(const vector<string>& tokens, void * ref)
 	{
 		if (TokenizeLine(tokens, " si", &coverage, &topology) != 3) return false;
 		sVPFRules[coverage].topology = topology;
-		
-	} 
+
+	}
 	else if (tokens[0] == "VPF_FACE_RULE")
 	{
-		if (TokenizeLine(tokens, " sttttiee", &coverage, 
+		if (TokenizeLine(tokens, " sttttiee", &coverage,
 			&face_rule.table,
 			&face_rule.attr_column,
 			&face_rule.ref_column,
@@ -317,10 +317,10 @@ bool	ReadVPFLine(const vector<string>& tokens, void * ref)
 			&face_rule.terrain_type,
 			&face_rule.area_feature) != 9) return false;
 		sVPFRules[coverage].face_rules.push_back(face_rule);
-	} 
+	}
 	else if (tokens[0] == "VPF_LINE_RULE")
 	{
-		if (TokenizeLine(tokens, " sttttiei", &coverage, 
+		if (TokenizeLine(tokens, " sttttiei", &coverage,
 			&line_rule.table,
 			&line_rule.attr_column,
 			&line_rule.ref_column,
@@ -329,7 +329,7 @@ bool	ReadVPFLine(const vector<string>& tokens, void * ref)
 			&line_rule.he_param,
 			&line_rule.he_trans_flags) != 9) return false;
 		sVPFRules[coverage].line_rules.push_back(line_rule);
-	} 
+	}
 	else if (tokens[0] == "VPF_TRANS_FLAGS")
 	{
 		if (TokenizeLine(tokens, " sie", &coverage, &flag, &feature) != 4) return false;
@@ -352,7 +352,7 @@ static int DoVPFImport(const vector<const char *>& args)
 		RegisterLineHandler("VPF_LINE_RULE", ReadVPFLine, NULL);
 		RegisterLineHandler("VPF_TRANS_FLAGS", ReadVPFLine, NULL);
 		LoadConfigFile("vmap0_import.txt");
-		
+
 		for (map<string, VPFCoverageInfo_t>::iterator rules = sVPFRules.begin(); rules != sVPFRules.end(); ++rules)
 		{
 			rules->second.trans_flags.push_back(0);
@@ -362,21 +362,21 @@ static int DoVPFImport(const vector<const char *>& args)
 			rules->second.line_rules.back().table = NULL;
 		}
 	}
-			
+
 	// VMap uses this funky lettering scheme - they drop
 	// the letters i and o to avoid confusion with 1 and 0.
 	static char chrs[] = { "abcdefghjklmnpqrstuvwxyz" };
 
 	const char * cov_dir = args[0];
 	const char * cov_list = args[1];
-	
+
 	int west = (180 + atoi(args[2]) ) / 15;
 	int south = (90 + atoi(args[3])) / 15;
-	
+
 	printf("Arg count: %d\n", args.size());
 	printf("args: %s\n%s\n%s\n%s\n", args[0], args[1], args[2], args[3]);
 	printf("West = %d, south = %d\n", west, south);
-	
+
 	char	tile[5];
 	char	coverage[1024];
 	tile[0] = chrs[west];
@@ -415,21 +415,21 @@ static int DoVPFImport(const vector<const char *>& args)
 					&*sVPFRules[found].face_rules.begin(),
 					&*sVPFRules[found].trans_flags.begin());
 //			gMap.unbounded_face()->mTerrainType = terrain_Natural;
-					
+
 			if (ok && first)
 			{
 				Point2	sw, ne;
 				CalcBoundingBox(gMap, sw, ne);
 				for (int x = sw.x + 1; x < ne.x; ++x)
 				{
-					gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);				
+					gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);
 				}
 				for (int y = sw.y + 1; y < ne.y; ++y)
 				{
 					gMap.insert_edge(Point2(sw.x,y),Point2(ne.x,y), NULL, NULL);
 				}
 			}
-			
+
 			UnmangleBorder(gMap);
 		} else {
 			Pmwx	overlay;
@@ -439,17 +439,17 @@ static int DoVPFImport(const vector<const char *>& args)
 					&*sVPFRules[found].face_rules.begin(),
 					&*sVPFRules[found].trans_flags.begin());
 			if (gVerbose) printf("Merging maps  Dst faces = %d, src hedges = %d\n", gMap.number_of_faces(), overlay.number_of_halfedges());
-			
+
 			if (sVPFRules[found].topology < 3)
 			{
 				for (Pmwx::Face_iterator ff = overlay.faces_begin(); ff != overlay.faces_end(); ++ff)
 					ff->mTerrainType = terrain_Natural;
 			}
-			
+
 			TopoIntegrateMaps(&gMap, &overlay);
 			MergeMaps(gMap, overlay, true, NULL, true, gProgress);
 		}
-				
+
 		if (ok)
 		{
 			ok_any=true;
@@ -476,7 +476,7 @@ static int DoVPFImport(const vector<const char *>& args)
 
 	if(!ok_any)
 	{
-		fprintf(stderr, "ERROR: unable to import any coverages for %s.\n",tile);		
+		fprintf(stderr, "ERROR: unable to import any coverages for %s.\n",tile);
 	}
 	return ok_any ? 0 : 1;
 }
@@ -549,10 +549,10 @@ static int DoShapeImport(const vector<const char *>& args)
 	//    to be in order in that they are CCB + hoels - this is legal since shape files have no topology.
 	// 5. Some polys have backward CW/CCW orientation; it is unclear why this is.
 	// 6. Some polygons touch each other on edges - this is legal since shape files have no topology.
-	
+
 
 	gMap.clear();
-	
+
 	SHPHandle file = SHPOpen(args[0], "rb");
 	if (file == NULL)
 	{
@@ -562,11 +562,11 @@ static int DoShapeImport(const vector<const char *>& args)
 
 	// BEN SEZ: there is NO NEED for the DBF file right now - we are using
 	// STRM Shapefiles - ALL attributes are water (and all islands are neg space
-	// in water.	
+	// in water.
 //	char	dbf_name[1024];
 //	strcpy(dbf_name, args[0]);
 //	strcpy(dbf_name + strlen(dbf_name) - 3, "dbf");
-	
+
 //	DBFHandle	dbf = DBFOpen(dbf_name, "rb");
 //	if (dbf == NULL)
 //	{
@@ -574,22 +574,22 @@ static int DoShapeImport(const vector<const char *>& args)
 //		SHPClose(file);
 //		return 1;
 //	}
-	
+
 //	int fc = DBFGetFieldCount(dbf);
 //	int rc = DBFGetRecordCount(dbf);
 //	int facc_field = DBFGetFieldIndex(dbf,"FACC_code");
-	
+
 	int	entityCount, shapeType;
 	double	bounds_lo[4], bounds_hi[4];
-	
+
 	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-	
+
 	multimap<double, pair<vector<Polygon2>, int> >	ringMap;	// Map from leftmost to a pair of rings + type - YIKES!
-	
+
 	double	biggest_err_sq = 0.0;
-	
+
 	double	lon_factor = cos(DEG_TO_RAD * gMapSouth);
-	
+
 	for (int n = 0; n < entityCount; ++n)
 	{
 		SHPObject * obj = SHPReadObject(file, n);
@@ -617,7 +617,7 @@ static int DoShapeImport(const vector<const char *>& args)
 				}
 				DebugAssert(pts.front() == pts.back());
 				pts.pop_back();
-				
+
 				for (int m = 0; m < pts.size(); ++m)
 				{
 					EpsiClamp(pts[m].x, gMapWest, kShapeFileEpsi);
@@ -630,7 +630,7 @@ static int DoShapeImport(const vector<const char *>& args)
 //					double err_local_sq = err_x * err_x + err_y * err_y;
 //					if (err_local_sq > biggest_err_sq) biggest_err_sq = err_local_sq;
 				}
-				
+
 				for (Polygon2::iterator i = pts.begin(); i != pts.end(); )
 				{
 					Polygon2::iterator j = i;
@@ -644,10 +644,10 @@ static int DoShapeImport(const vector<const char *>& args)
 					} else
 						++i;
 				}
-				
+
 				if (pts.size() < 3)
 					printf("Hrm - ring of size %d\n", pts.size());
-				else 
+				else
 				{
 	//				SimplifyPolygonMaxMove(pts, cos(pts[0].y * DEG_TO_RAD) * NM_TO_DEG_LAT * MTR_TO_NM * 30.0, true, true);
 	//				MidpointSimplifyPolygon(pts);
@@ -663,21 +663,21 @@ static int DoShapeImport(const vector<const char *>& args)
 					rings.push_back(Polygon2());
 					pts.swap(rings.back());
 				}
-				
-			}
-			
-			ringMap.insert(map<double, pair<vector<Polygon2>, int> >::value_type(left_most, pair<vector<Polygon2>, int>(rings, terrain_Water)));
-		} 
 
-		SHPDestroyObject(obj);	
-	}	
+			}
+
+			ringMap.insert(map<double, pair<vector<Polygon2>, int> >::value_type(left_most, pair<vector<Polygon2>, int>(rings, terrain_Water)));
+		}
+
+		SHPDestroyObject(obj);
+	}
 	SHPClose(file);
 //	DBFClose(dbf);
-	
+
 	printf("Leftmost = %lf, hex = %016llx\n", ringMap.begin()->first, ringMap.begin()->first);
-	
+
 	gMap.unbounded_face()->mTerrainType = terrain_Natural;
-	
+
 	for (multimap<double, pair<vector<Polygon2>, int> >::iterator poly = ringMap.begin(); poly != ringMap.end(); ++poly)
 	{
 		for (vector<Polygon2>::iterator ring = poly->second.first.begin(); ring != poly->second.first.end(); ++ring)
@@ -701,12 +701,12 @@ static int DoShapeImport(const vector<const char *>& args)
 	gMap.insert_edge(Point2(gMapWest, gMapNorth), Point2(gMapEast, gMapNorth), NULL, NULL);	// Top
 
 	gMap.unbounded_face()->mTerrainType = terrain_Water;
-	
+
 	double err_m = sqrt(biggest_err_sq) * DEG_TO_NM_LAT * NM_TO_MTR;
 	printf("biggest grid shift is: %lf meters\n", err_m);
-	
+
 	return 0;
-}	
+}
 
 int DoWetMask(const vector<const char *>& args)
 {

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Class.cpp
  *
  *  This source file is part of DIME.
@@ -76,12 +76,12 @@
   Returns the flag with group code 281.
 */
 
-/*! 
+/*!
   \fn void dimeClass::setVersionNumber(const int32 v)
   Sets the version number for this class.
 */
 
-/*! 
+/*!
   \fn void dimeClass::setFlag280(const int8 flag)
   Sets the flag for the flag with group code 280.
 */
@@ -90,12 +90,12 @@
   \fn void dimeClass::setFlag281(const int8 flag)
   Sets the group code for the flag with group code 281.
 */
- 
+
 /*!
   Constructor.
 */
 
-dimeClass::dimeClass() 
+dimeClass::dimeClass()
   : dimeRecordHolder( 0 ), // classes are separated by group code 0
     className( NULL ), appName( NULL ), versionNumber( 0 ), flag1( 0 ),
     flag2( 0 )
@@ -121,7 +121,7 @@ dimeClass::copyRecords(dimeClass * const myclass, dimeModel * const model) const
 {
   dimeMemHandler *memh = model->getMemHandler();
   bool ok = dimeRecordHolder::copyRecords(myclass, memh);
-  
+
   if (ok && this->className) {
     DXF_STRCPY(memh, myclass->className, this->className);
     ok = myclass->className != NULL;
@@ -142,7 +142,7 @@ dimeClass::copyRecords(dimeClass * const myclass, dimeModel * const model) const
   Writes common and unknown class records to file.
 */
 
-bool 
+bool
 dimeClass::write(dimeOutput * const file)
 {
   file->writeGroupCode(1);
@@ -159,11 +159,11 @@ dimeClass::write(dimeOutput * const file)
 }
 
 /*!
-  Static function which creates an class based on its name. 
+  Static function which creates an class based on its name.
 */
 
 dimeClass *
-dimeClass::createClass(const char * const name, 
+dimeClass::createClass(const char * const name,
 		      dimeMemHandler * const memhandler)
 {
   return new(memhandler) dimeUnknownClass(name, memhandler);
@@ -171,7 +171,7 @@ dimeClass::createClass(const char * const name,
 
 //!
 
-int 
+int
 dimeClass::countRecords() const
 {
   return 5 + dimeRecordHolder::countRecords();
@@ -179,7 +179,7 @@ dimeClass::countRecords() const
 
 //!
 
-bool 
+bool
 dimeClass::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeClassType || dimeRecordHolder::isOfType(thetypeid);
@@ -192,7 +192,7 @@ dimeClass::isOfType(const int thetypeid) const
   \sa dimeClass::handleRecord().
 */
 
-bool 
+bool
 dimeClass::read(dimeInput * const file)
 {
   return dimeRecordHolder::read(file);
@@ -200,7 +200,7 @@ dimeClass::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeClass::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
@@ -229,8 +229,8 @@ dimeClass::handleRecord(const int groupcode,
   Sets the C++ class name for this class.
 */
 
-void 
-dimeClass::setClassName(const char * const classname, 
+void
+dimeClass::setClassName(const char * const classname,
 		       dimeMemHandler * const memhandler)
 {
   if (!memhandler) delete this->className;
@@ -241,8 +241,8 @@ dimeClass::setClassName(const char * const classname,
   Sets the application name for this class.
 */
 
-void 
-dimeClass::setApplicationName(const char * const appname, 
+void
+dimeClass::setApplicationName(const char * const appname,
 			     dimeMemHandler * const memhandler)
 {
   if (!memhandler) delete this->appName;

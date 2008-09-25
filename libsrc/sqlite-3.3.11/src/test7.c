@@ -59,7 +59,7 @@ struct Thread {
   volatile int opnum;      /* Operation number */
   volatile int busy;       /* True if this thread is in use */
 
-  /* The next group of fields are writable by the client threads 
+  /* The next group of fields are writable by the client threads
   ** but read-only to the superviser thread.
   */
   volatile int completed;  /* Number of operations completed */
@@ -81,7 +81,7 @@ struct Thread {
 static Thread threadset[N_THREAD];
 
 /*
-** The main loop for a thread.  Threads use busy waiting. 
+** The main loop for a thread.  Threads use busy waiting.
 */
 static void *client_main(void *pArg){
   Thread *p = (Thread*)pArg;

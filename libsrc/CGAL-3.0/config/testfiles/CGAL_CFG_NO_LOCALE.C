@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------------
 
 //| If a compiler doesn't know the locale classic
-//| CGAL_CFG_NO_LOCALE is set. 
+//| CGAL_CFG_NO_LOCALE is set.
 
 #include <locale>
 

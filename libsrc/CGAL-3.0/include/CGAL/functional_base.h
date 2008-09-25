@@ -64,7 +64,7 @@ namespace CGALi {
   public:
     enum { test = (Internal::s1 != sizeof(argument_type)) };
   };
-  
+
   template < class T >
   class Second_argument_check {
     struct Big { char i[INT_MAX]; }; // hmm...
@@ -75,36 +75,36 @@ namespace CGALi {
   public:
     enum { test = (Internal::s1 != sizeof(second_argument_type)) };
   };
-  
-  template < bool b1, bool b2> 
-  struct Switch { 
+
+  template < bool b1, bool b2>
+  struct Switch {
     template < class F >
     struct Arity_tmp {
       typedef typename F::Arity Arity;
     };
   };
-  
-  template <> 
-  struct Switch< true, false > { 
+
+  template <>
+  struct Switch< true, false > {
     template < class F >
     struct Arity_tmp {
-      typedef Arity_tag< 1 > Arity; 
+      typedef Arity_tag< 1 > Arity;
     };
   };
-  
-  template <> 
-  struct Switch< false, true > { 
+
+  template <>
+  struct Switch< false, true > {
     template < class F >
     struct Arity_tmp {
-      typedef Arity_tag< 2 > Arity; 
+      typedef Arity_tag< 2 > Arity;
     };
   };
-  
+
 } // namespace CGALi
 
 template < class F >
 struct Arity_traits {
-  typedef CGALi::Switch< CGALi::First_argument_check< F >::test, 
+  typedef CGALi::Switch< CGALi::First_argument_check< F >::test,
                          CGALi::Second_argument_check< F >::test >
   Switcher;
   typedef typename Switcher::template Arity_tmp< F >::Arity Arity;

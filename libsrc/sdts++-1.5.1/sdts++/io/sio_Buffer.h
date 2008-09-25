@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -32,7 +32,7 @@ class sio_BufferImp;
  handle all the memory management for us.  This is that class.
 
  In a way, the name "sio_Buffer" is mis-leading.  We imply by using
- "buffer" that the intent is to arbitrarily add and 
+ "buffer" that the intent is to arbitrarily add and
  remove data in the container -- much like a stream.  However, we'll
  always be adding data to an sio_Buffer; and then asking its value
  in a non-destructive way.  That is, add and query, never add and remove.

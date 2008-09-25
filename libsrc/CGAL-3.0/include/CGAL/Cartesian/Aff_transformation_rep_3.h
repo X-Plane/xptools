@@ -142,7 +142,7 @@ public:
   virtual Aff_transformation_3 compose(const Transformation_3 &t) const;
   virtual Aff_transformation_3 compose(const Translation_3 &t) const;
   virtual Aff_transformation_3 compose(const Scaling_3 &t) const;
-     
+
   virtual bool is_even() const
   {
     return sign_of_determinant3x3(t11, t12, t13,
@@ -211,7 +211,7 @@ Aff_transformation_repC3<R>::inverse() const // FIXME : construction
       det2x2_by_formula( t12, t13, t22, t23),         // i 13
      -det3x3_by_formula( t12, t13, t14, t22, t23, t24, t32, t33, t34 ),
 
-     -det2x2_by_formula( t21, t23, t31, t33),         // i 21 
+     -det2x2_by_formula( t21, t23, t31, t33),         // i 21
       det2x2_by_formula( t11, t13, t31, t33),         // i 22
      -det2x2_by_formula( t11, t13, t21, t23),         // i 23
       det3x3_by_formula( t11, t13, t14, t21, t23, t24, t31, t33, t34 ),
@@ -287,12 +287,12 @@ compose(const Scaling_repC3<R> &t) const // FIXME : construction
                               t.scalefactor_ * t12,
                               t.scalefactor_ * t13,
                               t.scalefactor_ * t14,
-			      
+
                               t.scalefactor_ * t21,
                               t.scalefactor_ * t22,
                               t.scalefactor_ * t23,
                               t.scalefactor_ * t24,
-                              
+
 			      t.scalefactor_ * t31,
                               t.scalefactor_ * t32,
                               t.scalefactor_ * t33,

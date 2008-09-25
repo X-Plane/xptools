@@ -18,7 +18,7 @@
 // Author(s)     : Oren Nechushtan	<theoren@math.tau.ac.il>
 /*
 
-  Edited by 
+  Edited by
 
   Iddo Hanniel
   Oren Nechushtan
@@ -60,26 +60,26 @@ public:
   Pm_traits_checker() : Tr1(),t(),b(),P() {};
   ~Pm_traits_checker() {}
 
-  Point curve_source(const X_curve & cv) const 
-  { 
+  Point curve_source(const X_curve & cv) const
+  {
     CGAL_assertion(P(t.curve_source(cv))==b.curve_source(P(cv)));
     return t.curve_source(cv);
   }
-  Point curve_target(const X_curve & cv) const 
+  Point curve_target(const X_curve & cv) const
   {
     CGAL_assertion(P(t.curve_target(cv))==b.curve_target(P(cv)));
     return t.curve_target(cv);
   }
 
-  bool curve_is_vertical(const X_curve & cv) const 
+  bool curve_is_vertical(const X_curve & cv) const
   {
     CGAL_assertion(t.curve_is_vertical(cv)==b.curve_is_vertical(P(cv)));
     return t.curve_is_vertical(cv);
-  }	
+  }
 
   bool point_in_x_range(const X_curve & cv, const Point & q) const
   {
-    CGAL_assertion(t.point_in_x_range(cv,q) == 
+    CGAL_assertion(t.point_in_x_range(cv,q) ==
                    b.point_in_x_range(P(cv),P(q)));
     return t.point_in_x_range(cv,q);
   }
@@ -87,33 +87,33 @@ public:
   Comparison_result curve_compare_y_at_x (const Point & p,
                                           const X_curve & cv) const
   {
-    CGAL_assertion(t.curve_compare_y_at_x(p, cv) == 
+    CGAL_assertion(t.curve_compare_y_at_x(p, cv) ==
                    b.curve_compare_y_at_x(P(p), P(cv)));
     return t.curve_compare_y_at_x(p, cv);
   }
-  
-  Comparison_result 
+
+  Comparison_result
   curves_compare_y_at_x(const X_curve &cv1, const X_curve &cv2, const Point &q)
-    const 
+    const
   {
     CGAL_assertion(t.curves_compare_y_at_x(cv1,cv2,q) ==
                    b.curves_compare_y_at_x(P(cv1),P(cv2),P(q)));
     return t.curves_compare_y_at_x(cv1,cv2,q);
   }
-  
-  Comparison_result 
-  curves_compare_y_at_x_left(const X_curve &cv1, const X_curve &cv2, 
-                          const Point &q) const 
+
+  Comparison_result
+  curves_compare_y_at_x_left(const X_curve &cv1, const X_curve &cv2,
+                          const Point &q) const
   {
     CGAL_assertion(t.curves_compare_y_at_x_left(cv1,cv2,q) ==
                    b.curves_compare_y_at_x_left(P(cv1),P(cv2),P(q)));
     return t.curves_compare_y_at_x_left(cv1,cv2,q);
   }
-  
-  Comparison_result 
+
+  Comparison_result
   curves_compare_y_at_x_right(const X_curve & cv1,
-			   const X_curve & cv2, 
-			   const Point   & q) const 
+			   const X_curve & cv2,
+			   const Point   & q) const
   {
     CGAL_assertion(t.curves_compare_y_at_x_right(cv1,cv2,q) ==
 		   b.curves_compare_y_at_x_right(P(cv1),P(cv2),P(q)));
@@ -142,9 +142,9 @@ template <class Tr1,class Tr2>
 class Pm_traits_checker_default_adaptor
 {
 public:
-  const typename Tr2::Point operator()(const typename Tr1::Point& p) const 
+  const typename Tr2::Point operator()(const typename Tr1::Point& p) const
   {return typename Tr2::Point(p);}
-  const typename Tr2::X_curve operator()(const typename Tr1::X_curve& c) const 
+  const typename Tr2::X_curve operator()(const typename Tr1::X_curve& c) const
   {return typename Tr2::X_curve(c);}
 };
 

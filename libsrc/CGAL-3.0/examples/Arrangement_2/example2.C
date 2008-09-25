@@ -20,7 +20,7 @@ typedef Traits::X_monotone_curve_2                      X_monotone_curve_2;
 typedef CGAL::Arr_2_default_dcel<Traits>                Dcel;
 typedef CGAL::Arrangement_2<Dcel,Traits>                Arr_2;
 
-int main() 
+int main()
 {
   Arr_2 arr;
 
@@ -39,7 +39,7 @@ int main()
     int count = 0;
     CGAL_For_all(occ, occ_end) { ++count; }
 
-    if (count == 1) 
+    if (count == 1)
       std::cout << "Edge " << occ->x_curve() << " is covered by a single edge."
                 << std::endl;
     else

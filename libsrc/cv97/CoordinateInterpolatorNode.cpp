@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "CoordinateInterpolatorNode.h"
 
-CoordinateInterpolatorNode::CoordinateInterpolatorNode() 
+CoordinateInterpolatorNode::CoordinateInterpolatorNode()
 {
 	setHeaderFlag(false);
 	setType(coordinateInterpolatorNodeString);
@@ -25,7 +25,7 @@ CoordinateInterpolatorNode::CoordinateInterpolatorNode()
 	addEventOut(valueFieldString, valueField);
 }
 
-CoordinateInterpolatorNode::~CoordinateInterpolatorNode() 
+CoordinateInterpolatorNode::~CoordinateInterpolatorNode()
 {
 }
 
@@ -39,18 +39,18 @@ MFVec3f *CoordinateInterpolatorNode::getKeyValueField()
 		return keyValueField;
 	return (MFVec3f *)getExposedField(keyValueFieldString);
 }
-	
-void CoordinateInterpolatorNode::addKeyValue(float vector[]) 
+
+void CoordinateInterpolatorNode::addKeyValue(float vector[])
 {
 	getKeyValueField()->addValue(vector);
 }
 
-int CoordinateInterpolatorNode::getNKeyValues() 
+int CoordinateInterpolatorNode::getNKeyValues()
 {
 	return getKeyValueField()->getSize();
 }
-	
-void CoordinateInterpolatorNode::getKeyValue(int index, float vector[]) 
+
+void CoordinateInterpolatorNode::getKeyValue(int index, float vector[])
 {
 	getKeyValueField()->get1Value(index, vector);
 }
@@ -65,13 +65,13 @@ SFVec3f *CoordinateInterpolatorNode::getValueField()
 		return valueField;
 	return (SFVec3f *)getEventOut(valueFieldString);
 }
-	
-void CoordinateInterpolatorNode::setValue(float vector[]) 
+
+void CoordinateInterpolatorNode::setValue(float vector[])
 {
 	getValueField()->setValue(vector);
 }
 
-void CoordinateInterpolatorNode::getValue(float vector[]) 
+void CoordinateInterpolatorNode::getValue(float vector[])
 {
 	getValueField()->getValue(vector);
 }
@@ -79,21 +79,21 @@ void CoordinateInterpolatorNode::getValue(float vector[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool CoordinateInterpolatorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void CoordinateInterpolatorNode::initialize() 
+void CoordinateInterpolatorNode::initialize()
 {
 }
 
-void CoordinateInterpolatorNode::uninitialize() 
+void CoordinateInterpolatorNode::uninitialize()
 {
 }
 
-void CoordinateInterpolatorNode::update() 
+void CoordinateInterpolatorNode::update()
 {
 	int n;
 
@@ -128,7 +128,7 @@ void CoordinateInterpolatorNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void CoordinateInterpolatorNode::outputContext(ostream &printStream, char *indentString) 
+void CoordinateInterpolatorNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNKeys()) {
 		MFFloat *key = getKeyField();

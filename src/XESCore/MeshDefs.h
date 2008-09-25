@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,17 +40,17 @@ typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cas
 
 struct	MeshVertexInfo {
 	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
-	MeshVertexInfo(const MeshVertexInfo& rhs) : 
-								height(rhs.height), 
-								border_blend(rhs.border_blend) { 
-								normal[0] = rhs.normal[0]; 
-								normal[1] = rhs.normal[1]; 
-								normal[2] = rhs.normal[2]; }								
-	MeshVertexInfo& operator=(const MeshVertexInfo& rhs) { 
-								height = rhs.height; 
-								normal[0] = rhs.normal[0]; 
-								normal[1] = rhs.normal[1]; 
-								normal[2] = rhs.normal[2]; 
+	MeshVertexInfo(const MeshVertexInfo& rhs) :
+								height(rhs.height),
+								border_blend(rhs.border_blend) {
+								normal[0] = rhs.normal[0];
+								normal[1] = rhs.normal[1];
+								normal[2] = rhs.normal[2]; }
+	MeshVertexInfo& operator=(const MeshVertexInfo& rhs) {
+								height = rhs.height;
+								normal[0] = rhs.normal[0];
+								normal[1] = rhs.normal[1];
+								normal[2] = rhs.normal[2];
 								border_blend = rhs.border_blend; return *this; }
 
 	double					height;					// Height of mesh at this vertex.
@@ -62,24 +62,24 @@ struct	MeshVertexInfo {
 
 struct	MeshFaceInfo {
 	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
-	MeshFaceInfo(const MeshFaceInfo& rhs) : 
+	MeshFaceInfo(const MeshFaceInfo& rhs) :
 								terrain(rhs.terrain),
-								feature(rhs.feature), 
+								feature(rhs.feature),
 								flag(rhs.flag),
-								terrain_border(rhs.terrain_border) { 
-								normal[0] = rhs.normal[0]; 
-								normal[1] = rhs.normal[1]; 
+								terrain_border(rhs.terrain_border) {
+								normal[0] = rhs.normal[0];
+								normal[1] = rhs.normal[1];
 								normal[2] = rhs.normal[2];
 								orig_face = rhs.orig_face; }
-								
-								
-	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) { 
-								terrain = rhs.terrain; 
+
+
+	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) {
+								terrain = rhs.terrain;
 								feature = rhs.feature;
 								flag = rhs.flag;
-								terrain_border = rhs.terrain_border; 
-								normal[0] = rhs.normal[0]; 
-								normal[1] = rhs.normal[1]; 
+								terrain_border = rhs.terrain_border;
+								normal[0] = rhs.normal[0];
+								normal[1] = rhs.normal[1];
 								normal[2] = rhs.normal[2];
 								orig_face = rhs.orig_face;
 								return *this; }
@@ -101,7 +101,7 @@ struct	MeshFaceInfo {
 
 	FaceQueue::iterator	self;					// Queue ref to self!
 
-// BENTODO - clean this up	
+// BENTODO - clean this up
 	float			debug_slope_dem;
 	float			debug_slope_tri;
 	float			debug_temp;
@@ -119,7 +119,7 @@ typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>								TDS;
 
 typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
 
-class CDT : public CDTBase { 
+class CDT : public CDTBase {
 public:
 
 	typedef hash_map<int, Face_handle>	HintMap;
@@ -131,7 +131,7 @@ public:
 
 
 	// SAFE insert...basically when using a fast cartesian kernel, the
-	// face locate may return 'face' when it means 'edge' because the 
+	// face locate may return 'face' when it means 'edge' because the
 	// set of tests for the march-locate aren't quite specific enough to resolve
 	// rounding errors.  (At least that's what I _think_ it is.)  So...
 	// We do the locate, check for this case, and try to manually find an edge
@@ -155,7 +155,7 @@ public:
 				Point	p2(who->vertex(2)->point());
 
 				CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
-					
+
 				CGAL::Orientation 	o2 = orientation(p0, p1, p),
 									o0 = orientation(p1, p2, p),
 									o1 = orientation(p2, p0, p),
@@ -172,7 +172,7 @@ public:
 				if (o1 == CGAL::COLLINEAR && o2 == CGAL::POSITIVE && o0 == CGAL::POSITIVE) 				{ li = 1; lt = EDGE; }
 				if (o2 == CGAL::COLLINEAR && o0 == CGAL::POSITIVE && o1 == CGAL::POSITIVE) 				{ li = 2; lt = EDGE; }
 				if (o0 == CGAL::COLLINEAR && o1 == CGAL::POSITIVE && o2 == CGAL::POSITIVE) 				{ li = 0; lt = EDGE; }
-				
+
 				// On negative of a side AND its opposite?  We've got a rounding error.  Call it the edge and go home.
 				if (o0 == CGAL::NEGATIVE && o0b == CGAL::NEGATIVE) { li = 0; lt = EDGE; }
 				if (o1 == CGAL::NEGATIVE && o1b == CGAL::NEGATIVE) { li = 1; lt = EDGE; }
@@ -183,12 +183,12 @@ public:
 		}
 		return CDTBase::insert(p, lt, who, li);
 	}
-#endif	
+#endif
 private:
 
 	static	int		sKeyGen;
 	mutable	HintMap	mHintMap;
-	
+
 };
 
 #define CONVERT_POINT(__X)	(CDT::Point((__X).x,(__X).y))

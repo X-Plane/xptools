@@ -110,7 +110,7 @@ int pj_geodetic_to_geocentric( double a, double ra,
                                long point_count, int point_offset,
                                double *x, double *y, double *z );
 int pj_compare_datums( projPJ srcdefn, projPJ dstdefn );
-int pj_apply_gridshift( const char *, int, 
+int pj_apply_gridshift( const char *, int,
                         long point_count, int point_offset,
                         double *x, double *y, double *z );
 void pj_deallocate_grids();

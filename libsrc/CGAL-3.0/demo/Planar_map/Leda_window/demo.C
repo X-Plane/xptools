@@ -25,7 +25,7 @@ int main()
 #include <CGAL/Pm_walk_along_line_point_location.h>
 #endif
 
-#include "draw_map.h"  
+#include "draw_map.h"
 
 //typedef CGAL::Point_2<Rep>  Point;
 //typedef CGAL::Segment_2<Rep>  Segment;
@@ -34,7 +34,7 @@ typedef CGAL::Window_stream  Window_stream;
 
 unsigned int delete_restriction=0;
 
-void redraw(leda_window* wp, double x0, double y0, double x1, double y1) 
+void redraw(leda_window* wp, double x0, double y0, double x1, double y1)
 { wp->flush_buffer(x0,y0,x1,y1); }
 
 
@@ -47,12 +47,12 @@ int n_total=0,n_insert=0,n_remove=0,n_locate=0,n_vertical=0,n_split=0,n_merge=0;
 int test(Planar_map& M,char* name,int argc,char** argv)
 {
   Window_stream W(400, 400);
-  
+
   W.button("finish",10);
   W.set_redraw(redraw);
-  double x0=-1.1,x1=1.1 ,y0=-1.1; 
-  W.init(x0,x1,y0);   // logical window size 
-  
+  double x0=-1.1,x1=1.1 ,y0=-1.1;
+  W.init(x0,x1,y0);   // logical window size
+
   W.set_mode(leda_src_mode);
   W.set_node_width(3);
   W.display(leda_window::center,leda_window::center);
@@ -67,7 +67,7 @@ int test(Planar_map& M,char* name,int argc,char** argv)
   t_merge.reset();
   n_total=0;n_insert=0;n_remove=0;n_locate=0;n_vertical=0,n_split=0,n_merge=0;
 #endif
-  
+
   if (argc>1)
     {
 #ifdef CGAL_PM_TIMER
@@ -78,7 +78,7 @@ int test(Planar_map& M,char* name,int argc,char** argv)
 #ifdef CGAL_PM_TIMER
       t_construction.stop();
 #endif
-      win_border(x0,x1,y0,M); //rescale window 
+      win_border(x0,x1,y0,M); //rescale window
       W.init(x0,x1,y0);
       if (argc>2)
         {
@@ -88,7 +88,7 @@ int test(Planar_map& M,char* name,int argc,char** argv)
           unsigned int i,n_pt; in >> n_pt;
           //                        bool first=true;
           Planar_map::Point* p=new Planar_map::Point[n_pt];
-          
+
           for (i=0;i<n_pt;i++)
             {
               number_type x,y;
@@ -115,7 +115,7 @@ int test(Planar_map& M,char* name,int argc,char** argv)
 #else
                     while(false); // don't repeat this loop
 #endif
-                    
+
                     if (delete_restriction)
                       {
                         //				Planar_map::Locate_type lt;
@@ -142,42 +142,42 @@ int test(Planar_map& M,char* name,int argc,char** argv)
           W.set_mode(leda_src_mode);
           W.set_node_width(3);
           W.display(leda_window::center,leda_window::center);
-          draw_pm(M,W);		
+          draw_pm(M,W);
         }
     }
   else
     {
       W << CGAL::GREEN;
-      window_input(M,W);      
+      window_input(M,W);
       CGAL::Window_stream W2(400, 400);
-      W2.init(x0,x1,y0); 
+      W2.init(x0,x1,y0);
       W2.set_mode(leda_src_mode);
       W2.set_node_width(3);
       W2.button("quit",10);
       W2.display(leda_window::max,leda_window::center);
       draw_pm(M,W2);
     }
-  
+
 #ifdef CGAL_PM_TIMER
                 if (delete_restriction)
                   {
-                    std::cout << "\n" << name << " " << t_construction.time() << " " << 
-                      t_insert.time()/n_insert << " " << 
-                      t_locate.time()/n_locate << " " << 
+                    std::cout << "\n" << name << " " << t_construction.time() << " " <<
+                      t_insert.time()/n_insert << " " <<
+                      t_locate.time()/n_locate << " " <<
                       t_remove.time()/n_remove << " " <<
                       t_vertical.time()/n_vertical << " cilrv" ;
                   }
                 else if (argc>2)
                   {
-                    std::cout << "\n" << name << " " << t_construction.time() << " " << 
-                      t_insert.time()/n_insert << " " << 
-                      t_locate.time()/n_locate << " " << 
+                    std::cout << "\n" << name << " " << t_construction.time() << " " <<
+                      t_insert.time()/n_insert << " " <<
+                      t_locate.time()/n_locate << " " <<
                       t_vertical.time()/n_vertical << " cilv";
                   }
                 else // (argc>1)
                   {
-                    std::cout << "\n" << name << t_construction.time() << " " << 
-                      t_insert.time()/n_insert << " " << 
+                    std::cout << "\n" << name << t_construction.time() << " " <<
+                      t_insert.time()/n_insert << " " <<
                       t_locate.time()/n_locate << " cil";
                   }
 #endif
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
 	t_locate.reset();
 	t_vertical.reset();
 #endif
-	
+
 #ifdef USE_NAIVE_POINT_LOCATION
 #ifdef USE_DEFAULT_WITHOUT_REBUILD
 #error USE one point location
@@ -207,8 +207,8 @@ int main(int argc, char* argv[])
 	Planar_map M(&naive_pl);
 	test(M,"naive",argc,argv);
         std::cout << std::endl;
-#else 
-#if defined(USE_WALK_POINT_LOCATION) 
+#else
+#if defined(USE_WALK_POINT_LOCATION)
 #ifdef USE_NAIVE_POINT_LOCATION
 #error USE one point location
 #endif

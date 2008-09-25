@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -51,9 +51,9 @@ int		MakeDirExist(const char * inPath)
 	{
 		pos = master.find(DIR_CHAR, pos+1);
 		if (pos == master.npos) return 1;
-	
+
 		chunk = master.substr(0, pos);
-		
+
      	bool ok = (mkdir(chunk.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) == 0);
 		if (!ok)
 		{
@@ -85,12 +85,12 @@ int		GetFileBlockSizeIfExists(const char * inPath)
 int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 {
 	FILE * fi = fopen(inPath, "rb");
-	if (fi == NULL) 
+	if (fi == NULL)
 	{
 		ReportError("out of memory", errno, inPath);
 		return 0;
 	}
-	
+
 	fseek(fi, 0L, SEEK_END);
 	int file_size = ftell(fi);
 	fseek(fi, 0L, SEEK_SET);
@@ -101,10 +101,10 @@ int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 		ReportError("out of memory", errno, inPath);
 		return 0;
 	}
-	
+
 	*((int *) *outPtr) = file_size;
 	int b = fread((*outPtr)+4, 1, file_size, fi);
-	if (b != file_size) 
+	if (b != file_size)
 	{
 		ReportError("could not read file", errno, inPath);
 		free(*outPtr);
@@ -113,8 +113,8 @@ int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 	}
 	*outSize = file_size+4;
 	fclose(fi);
-	return 1;	
-}		
+	return 1;
+}
 
 int		BlockToFile(const char * inPath, char * inPtr)
 {

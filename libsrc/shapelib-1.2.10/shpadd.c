@@ -13,7 +13,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -72,7 +72,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: shpadd.c,v 1.13 2002/01/15 14:36:07 warmerda Exp $";
 
 #include <stdlib.h>
@@ -118,7 +118,7 @@ int main( int argc, char ** argv )
     nVMax = 1000;
     padfX = (double *) malloc(sizeof(double) * nVMax);
     padfY = (double *) malloc(sizeof(double) * nVMax);
-    
+
     nVertices = 0;
 
     if( (panParts = (int *) malloc(sizeof(int) * 1000 )) == NULL )
@@ -126,7 +126,7 @@ int main( int argc, char ** argv )
         printf( "Out of memory\n" );
         exit( 1 );
     }
-    
+
     nParts = 1;
     panParts[0] = 0;
 
@@ -160,7 +160,7 @@ int main( int argc, char ** argv )
                                 nVertices, padfX, padfY, NULL, NULL );
     SHPWriteObject( hSHP, -1, psObject );
     SHPDestroyObject( psObject );
-    
+
     SHPClose( hSHP );
 
     free( panParts );

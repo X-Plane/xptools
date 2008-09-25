@@ -6,7 +6,7 @@
  * This file is part of jam.
  *
  * License is hereby granted to use this software and distribute it
- * freely, as long as this copyright notice is retained and modifications 
+ * freely, as long as this copyright notice is retained and modifications
  * are clearly marked.
  *
  * ALL WARRANTIES ARE HEREBY DISCLAIMED.
@@ -29,11 +29,11 @@
  *
  * The top half of the code is structured such:
  *
- *                       jam 
- *                      / | \ 
+ *                       jam
+ *                      / | \
  *                 +---+  |  \
- *                /       |   \ 
- *         jamgram     option  \ 
+ *                /       |   \
+ *         jamgram     option  \
  *        /  |   \              \
  *       /   |    \              \
  *      /    |     \             |
@@ -78,7 +78,7 @@
  *	execvms.c - execute a shell script, ala VMS
  *	expand.c - expand a buffer, given variable values
  *	file*.c - scan directories and archives on *
- *	hash.c - simple in-memory hashing routines 
+ *	hash.c - simple in-memory hashing routines
  *  hdrmacro.c - handle header file parsing for filename macro definitions
  *	headers.c - handle #includes in source files
  *	jambase.c - compilable copy of Jambase
@@ -90,11 +90,11 @@
  *	option.c - command line option processing
  *	parse.c - make and destroy parse trees as driven by the parser
  *	path*.c - manipulate file names on *
- *	hash.c - simple in-memory hashing routines 
+ *	hash.c - simple in-memory hashing routines
  *	regexp.c - Henry Spencer's regexp
  *	rules.c - access to RULEs, TARGETs, and ACTIONs
  *	scan.c - the jam yacc scanner
- *	search.c - find a target along $(SEARCH) or $(LOCATE) 
+ *	search.c - find a target along $(SEARCH) or $(LOCATE)
  *	timestamp.c - get the timestamp of a file or archive member
  *	variable.c - handle jam multi-element variables
  *
@@ -153,7 +153,7 @@ struct globs globs = {
 
 static char *othersyms[] = { OSMAJOR, OSMINOR, OSPLAT, JAMVERSYM, 0 } ;
 
-/* Known for sure: 
+/* Known for sure:
  *	mac needs arg_enviro
  *	OS2 needs extern environ
  */
@@ -177,7 +177,7 @@ extern char **_environ;
 
 # ifndef use_environ
 # define use_environ environ
-# if !defined( __WATCOM__ ) && !defined( OS_OS2 ) && !defined( OS_NT ) 
+# if !defined( __WATCOM__ ) && !defined( OS_OS2 ) && !defined( OS_NT )
 extern char **environ;
 # endif
 # endif
@@ -192,7 +192,7 @@ static void run_unit_tests()
 # if defined( USE_EXECNT )
     extern void execnt_unit_test();
     execnt_unit_test();
-# endif 
+# endif
     string_unit_test();
     var_expand_unit_test();
 }
@@ -319,14 +319,14 @@ int  main( int argc, char **argv, char **arg_environ )
         var_set( "JAMDATE", list_new( L0, newstr( date ) ), VAR_SET );
     }
 
- 
+
     {
    /* Pleace don't change the following line. The 'bump_version.py' script
        expect a specific format of it. */
     char  *major_version = "03", *minor_version = "01", *changenum = "09";
     var_set( "JAM_VERSION",
-             list_new( list_new( list_new( L0, newstr( major_version ) ), 
-                                 newstr( minor_version ) ), 
+             list_new( list_new( list_new( L0, newstr( major_version ) ),
+                                 newstr( minor_version ) ),
                        newstr( changenum ) ),
              VAR_SET );
     }
@@ -338,12 +338,12 @@ int  main( int argc, char **argv, char **arg_environ )
 
         if( uname( &u ) >= 0 )
         {
-            var_set( "JAMUNAME", 
-                     list_new( 
+            var_set( "JAMUNAME",
+                     list_new(
                          list_new(
                              list_new(
                                  list_new(
-                                     list_new( L0, 
+                                     list_new( L0,
                                                newstr( u.sysname ) ),
                                      newstr( u.nodename ) ),
                                  newstr( u.release ) ),
@@ -430,7 +430,7 @@ int  main( int argc, char **argv, char **arg_environ )
         {
             status |= make( 1, &all, anyhow );
         }
-        else 
+        else
         {
             int targets_count = list_length(targets);
             const char **targets2 = (const char **)malloc(targets_count * sizeof(char *));
@@ -439,7 +439,7 @@ int  main( int argc, char **argv, char **arg_environ )
             {
                 targets2[n++] = targets->string;
             }
-            status |= make( targets_count, targets2, anyhow );       
+            status |= make( targets_count, targets2, anyhow );
             free(targets);
         }
     }

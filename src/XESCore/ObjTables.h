@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -41,7 +41,7 @@ struct	RepInfo_t {
 	// RULEZ
 	int		feature;
 	int		terrain;
-	
+
 //	float	temp_min;
 //	float	temp_max;
 //	float	rain_min;
@@ -63,7 +63,7 @@ struct	RepInfo_t {
 	int		fill;
 
 	// OBJECT
-	int		obj_type;	
+	int		obj_type;
 	int		obj_name;
 
 	// Dims
@@ -103,20 +103,20 @@ int	QueryUsableFacsBySize(
 					// Rule inputs!
 					int				feature,
 					int				terrain,
-					
+
 //					float			temp,
 //					float			rain,
 //					float			slope,
 //					float			urban_dense,
 //					float			urban_radial,
 //					float			urban_trans,
-					
+
 					float			inLongSide,
 					float			inShortSide,
 					float			inTargetHeight,
-					
+
 //					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
-					int *			outResults,					
+					int *			outResults,
 					int				inMaxResults);
 
 // This routine returns objects that fit this profile sorted from biggest
@@ -126,23 +126,23 @@ int QueryUsableObjsBySize(
 					// Rule inputs!
 					int				feature,
 					int				terrain,
-					
+
 //					float			temp,
 //					float			rain,
 //					float			slope,
 //					float			urban_dense,
 //					float			urban_radial,
 //					float			urban_trans,
-					
+
 					float			inWidth,
 					float			inDepth,
 					float			inHeightMax,	// If min = max, we want an exact height!
-					
+
 //					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int				road,
 					int				fill,
-										
-					int *			outResults,					
+
+					int *			outResults,
 					int				inMaxResults);
 
 void IncrementRepUsage(int inRep);
@@ -155,5 +155,5 @@ void CheckObjTable(void);
 
 extern	string	gObjPlacementFile;
 extern string	gObjLibPrefix;
-	
+
 #endif /* OBJTABLES_H */

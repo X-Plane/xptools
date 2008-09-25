@@ -10,68 +10,68 @@
 
 #include "MFVec3f.h"
 
-MFVec3f::MFVec3f() 
+MFVec3f::MFVec3f()
 {
 	setType(fieldTypeMFVec3f);
 	InitializeJavaIDs();
 }
 
-void MFVec3f::InitializeJavaIDs() 
+void MFVec3f::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFVec3f::addValue(float x, float y, float z) 
+void MFVec3f::addValue(float x, float y, float z)
 {
 	SFVec3f *vector = new SFVec3f(x, y, z);
 	add(vector);
 }
 
-void MFVec3f::addValue(float value[]) 
+void MFVec3f::addValue(float value[])
 {
 	SFVec3f *vector = new SFVec3f(value);
 	add(vector);
 }
 
-void MFVec3f::addValue(SFVec3f *vector) 
+void MFVec3f::addValue(SFVec3f *vector)
 {
 	add(vector);
 }
 
-void MFVec3f::insertValue(int index, float x, float y, float z) 
+void MFVec3f::insertValue(int index, float x, float y, float z)
 {
 	SFVec3f *vector = new SFVec3f(x, y, z);
 	insert(vector, index);
 }
 
-void MFVec3f::insertValue(int index, float value[]) 
+void MFVec3f::insertValue(int index, float value[])
 {
 	SFVec3f *vector = new SFVec3f(value);
 	insert(vector, index);
 }
 
-void MFVec3f::insertValue(int index, SFVec3f *vector) 
+void MFVec3f::insertValue(int index, SFVec3f *vector)
 {
 	insert(vector, index);
 }
 
-void MFVec3f::get1Value(int index, float value[]) 
+void MFVec3f::get1Value(int index, float value[])
 {
 	SFVec3f *vector = (SFVec3f *)getObject(index);
 	if (vector)
 		vector->getValue(value);
 }
 
-void MFVec3f::set1Value(int index, float value[]) 
+void MFVec3f::set1Value(int index, float value[])
 {
 	SFVec3f *vector = (SFVec3f *)getObject(index);
 	if (vector)
 		vector->setValue(value);
 }
 
-void MFVec3f::set1Value(int index, float x, float y, float z) 
+void MFVec3f::set1Value(int index, float x, float y, float z)
 {
 	SFVec3f *vector = (SFVec3f *)getObject(index);
 	if (vector)
@@ -108,14 +108,14 @@ void MFVec3f::setValue(int size, float vectors[][3])
 //	Output
 ////////////////////////////////////////////////
 
-void MFVec3f::outputContext(ostream& printStream, char *indentString) 
+void MFVec3f::outputContext(ostream& printStream, char *indentString)
 {
 	float value[3];
 	for (int n=0; n<getSize(); n++) {
 		get1Value(n, value);
 		if (n < getSize()-1)
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << "," << endl;
-		else	
+		else
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << endl;
 	}
 }
@@ -222,7 +222,7 @@ void MFVec3f::setJavaIDs() {
 //	MFVec3f::toJavaObject
 ////////////////////////////////////////////////
 
-jobject MFVec3f::toJavaObject(int bConstField) 
+jobject MFVec3f::toJavaObject(int bConstField)
 {
 	JNIEnv		*jniEnv			= getJniEnv();
 	jclass		classid			= bConstField ? getConstFieldID() : getFieldID();
@@ -238,7 +238,7 @@ jobject MFVec3f::toJavaObject(int bConstField)
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		float value[3];
@@ -266,5 +266,5 @@ void MFVec3f::setValue(jobject field, int bConstField) {
 void MFVec3f::getValue(jobject field, int bConstField) {
 }
 
-#endif 
+#endif
 

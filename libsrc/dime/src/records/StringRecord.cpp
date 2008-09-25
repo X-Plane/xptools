@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: StringRecord.cpp
  *
  *  This source file is part of DIME.
@@ -38,7 +38,7 @@
 #include <dime/util/MemHandler.h>
 #include <string.h>
 
-/*! 
+/*!
   Constructor.
 */
 
@@ -76,17 +76,17 @@ dimeStringRecord::copy(dimeMemHandler * const mh) const
 */
 
 bool
-dimeStringRecord::setString(const char * const s, 
+dimeStringRecord::setString(const char * const s,
 			   dimeMemHandler * const memhandler)
 {
   DXF_STRCPY(memhandler, this->string, s);
   return this->string != NULL;
 }
 
-/*!  
+/*!
   Sets the objects string pointer to point to 's'. Be aware that if
   the destructor is called for this object, the object will attempt to
-  delete the string. \sa dimeStringRecord::setString().  
+  delete the string. \sa dimeStringRecord::setString().
 */
 
 void
@@ -123,7 +123,7 @@ dimeStringRecord::isEndOfFileRecord() const
 
 //!
 
-int 
+int
 dimeStringRecord::typeId() const
 {
   return dimeBase::dimeStringRecordType;
@@ -131,7 +131,7 @@ dimeStringRecord::typeId() const
 
 //!
 
-bool 
+bool
 dimeStringRecord::read(dimeInput * const in)
 {
   this->string = NULL;
@@ -142,7 +142,7 @@ dimeStringRecord::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeStringRecord::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) { // write group code
@@ -153,7 +153,7 @@ dimeStringRecord::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeStringRecord::setValue(const dimeParam &param, dimeMemHandler * const memhandler)
 {
   if (memhandler) {
@@ -167,7 +167,7 @@ dimeStringRecord::setValue(const dimeParam &param, dimeMemHandler * const memhan
 
 //!
 
-void 
+void
 dimeStringRecord::getValue(dimeParam &param) const
 {
   param.string_data = this->string;

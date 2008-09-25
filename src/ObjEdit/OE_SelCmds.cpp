@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,7 +30,7 @@
 enum {
 	selCmd_SelectNone,
 	selCmd_SelectAll,
-	selCmd_SelectFirst,	
+	selCmd_SelectFirst,
 	selCmd_SelectPrev,
 	selCmd_SelectPrevUntextured,
 	selCmd_SelectNext,
@@ -41,7 +41,7 @@ enum {
 	selCmd_PrevLOD,
 	selCmd_NextLOD,
 	selCmd_LastLOD
-};		
+};
 
 const	char *	sSelCmds[] = {
 	"Select &None",
@@ -69,9 +69,9 @@ const	char	sSelKeys[] = {
 	XPLM_KEY_RIGHT,	xplm_ControlFlag,
 	XPLM_KEY_RIGHT,	xplm_ControlFlag + xplm_ShiftFlag,
 	XPLM_KEY_DOWN,	xplm_ControlFlag,
-	
+
 	0,				0,
-	
+
 	XPLM_KEY_UP,	xplm_ControlFlag + xplm_OptionAltFlag,
 	XPLM_KEY_LEFT,	xplm_ControlFlag + xplm_OptionAltFlag,
 	XPLM_KEY_RIGHT,	xplm_ControlFlag + xplm_OptionAltFlag,
@@ -89,16 +89,16 @@ static	XPLMMenuID	sSelMenu;
 void	SetupSelCmds(void)
 {
 	OE_RegisterNotifyFunc(SelCmdHandleNotification);
-	
+
 	sSelMenu = XPLMCreateMenu("&Select", NULL, 0, SelCmdHandler, NULL);
 	for (int n = 0; sSelCmds[n]; ++n)
 	{
 		XPLMAppendMenuItem(sSelMenu, sSelCmds[n], (void *) n, 1);
-		
+
 		if (sSelKeys[n*2])
-			XPLMSetMenuItemKey(sSelMenu, n, sSelKeys[n*2], sSelKeys[n*2+1]);		
+			XPLMSetMenuItemKey(sSelMenu, n, sSelKeys[n*2], sSelKeys[n*2+1]);
 	}
-	
+
 	SelCmdUpdateItems();
 
 }
@@ -109,7 +109,7 @@ void	SelCmdHandler(void * inMenuRef, void * inItemRef)
 	int	sel;
 	int	cmdCount = gObjects[gLevelOfDetail].cmds.size();
 	int lodCount = gObjects.size();
-	
+
 	switch((int) inItemRef) {
 	case selCmd_SelectNone:
 		gSelection.clear();
@@ -133,7 +133,7 @@ void	SelCmdHandler(void * inMenuRef, void * inItemRef)
 		if (cmdCount > 0)
 		{
 			if (gSelection.empty())
-			sel = 0; 
+			sel = 0;
 				else
 			sel = *gSelection.begin();
 			--sel;
@@ -144,8 +144,8 @@ void	SelCmdHandler(void * inMenuRef, void * inItemRef)
 			gRebuildStep = -1;
 			OE_Notifiable::Notify(catagory_Object, msg_ObjectSelectionChanged, NULL);
 		}
-		break;	
-	case selCmd_SelectNext:		
+		break;
+	case selCmd_SelectNext:
 		if (cmdCount > 0)
 		{
 			sel = OE_MaxSelected() + 1;
@@ -177,7 +177,7 @@ void	SelCmdHandler(void * inMenuRef, void * inItemRef)
 		break;
 
 	case selCmd_FirstLOD:
-		gLevelOfDetail = 0;		
+		gLevelOfDetail = 0;
 		gSelection.clear();
 		gRebuildStep = -1;
 		OE_Notifiable::Notify(catagory_Object, msg_ObjectSelectionChanged, NULL);
@@ -202,7 +202,7 @@ void	SelCmdHandler(void * inMenuRef, void * inItemRef)
 		OE_Notifiable::Notify(catagory_Object, msg_ObjectLODChanged, NULL);
 		break;
 	case selCmd_LastLOD:
-		gLevelOfDetail = lodCount - 1;		
+		gLevelOfDetail = lodCount - 1;
 		gSelection.clear();
 		gRebuildStep = -1;
 		OE_Notifiable::Notify(catagory_Object, msg_ObjectSelectionChanged, NULL);

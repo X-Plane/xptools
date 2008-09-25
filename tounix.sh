@@ -18,7 +18,7 @@ do
   #astyle --style=ansi -V -n "$sourcefile"
 
  # removing trailing whitespaces - script is buggered
- # sed -i -e 's/[[:space:]]*$//' "$sourcefile"
+  sed -i -e 's/[[:space:]]*$//' "$sourcefile"
 
  # normalize line endings
   dos2unix -q "$sourcefile"

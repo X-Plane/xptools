@@ -86,7 +86,7 @@ sign_a_plus_b_x_sqrt_e_plus_c_x_sqrt_f(const RT &a, const RT &b,
 				       const RT &f)
 {
   // computes the sign of quantity: a + b * sqrt(e) + c * sqrt(f)
-  
+
   CGAL_assertion( !(CGAL::is_negative(e)) );
   CGAL_assertion( !(CGAL::is_negative(f)) );
 
@@ -97,7 +97,7 @@ sign_a_plus_b_x_sqrt_e_plus_c_x_sqrt_f(const RT &a, const RT &b,
   if ( s_a_plus_b_x_sqrt_e == sc )  return sc;
   if ( s_a_plus_b_x_sqrt_e == ZERO )  return sc;
 
-  return s_a_plus_b_x_sqrt_e * 
+  return s_a_plus_b_x_sqrt_e *
     sign_a_plus_b_x_sqrt_c(CGAL::square(a) + CGAL::square(b) * e
 			   - CGAL::square(c) * f,
 			   RT(2) * a * b, e);
@@ -114,7 +114,7 @@ sign_a_plus_b_x_sqrt_e_plus_c_x_sqrt_f_plus_d_sqrt_e_x_f(const RT &a,
 {
   // computes the sign of quantity:
   //           a + b * sqrt(e) + c * sqrt(f) + d * sqrt(e * f)
-  
+
   CGAL_assertion( !(CGAL::is_negative(e)) );
   CGAL_assertion( !(CGAL::is_negative(f)) );
 

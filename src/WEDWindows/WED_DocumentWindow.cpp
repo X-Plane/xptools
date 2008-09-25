@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -47,34 +47,34 @@
 int kDefaultDocSize[4] = { 0, 0, 512,384 };
 
 WED_DocumentWindow::WED_DocumentWindow(
-	 		const char * 	inTitle, 
+	 		const char * 	inTitle,
 	 		GUI_Commander * inCommander,
 	 		WED_Document *	inDocument) :
 	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_fullscreen, kDefaultDocSize, inCommander),
 	mDocument(inDocument)
 {
-	
+
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
 	mDocument->AddListener(this);
-					
+
 //	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
 //	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("selection"));
 //	DebugAssert(root);
 //	DebugAssert(s);
-	
+
 	GUI_Packer * packer = new GUI_Packer;
 	packer->SetParent(this);
 	packer->SetSticky(1,1,1,1);
 	packer->Show();
-	int		splitter_b[4];	
+	int		splitter_b[4];
 	GUI_Pane::GetBounds(splitter_b);
 	packer->SetBounds(splitter_b);
-	
+
 	/****************************************************************************************************************************************************************
 	 * MAP VIEW
 	****************************************************************************************************************************************************************/
 
-//	int		splitter_b[4];	
+//	int		splitter_b[4];
 	mMainSplitter = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
 	else											mMainSplitter->SetImage1("gradient.png");
@@ -83,28 +83,28 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	GUI_Pane::GetBounds(splitter_b);
 //	mMainSplitter->SetBounds(splitter_b);
 	mMainSplitter->SetSticky(1,1,1,1);
-		
+
 	double	lb[4];
 	mDocument->GetBounds(lb);
 	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive());
 	mMapPane->SetParent(mMainSplitter);
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,0.5,1);
-	
+
 	GUI_Pane * top_bar = mMapPane->GetTopBar();
 	top_bar->SetParent(packer);
 	top_bar->Show();
 	packer->PackPane(top_bar, gui_Pack_Top);
 	top_bar->SetSticky(1,0,1,1);
 	packer->PackPane(mMainSplitter, gui_Pack_Center);
-	
+
 
 	/****************************************************************************************************************************************************************
 	 * PROPERTY-SIDE
 	****************************************************************************************************************************************************************/
 
 	// --------------- Splitter and tabs ---------------
-	
+
 	mPropSplitter = new GUI_Splitter(gui_Split_Vertical);
 	if (!WED_UIMeasurement("one_big_gradient")) {
 		mPropSplitter->SetImage1("gradient.png");
@@ -127,8 +127,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	static const char * sel_t[] = { "Name", "Type", NULL };
 	static		 int	sel_w[] = { 100, 100 };
-	
-	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);	
+
+	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
 	prop_tabs->AddPane(prop_pane1, "Selection");
 
 	// --------------- AIRPORT
@@ -136,17 +136,17 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", "Frequency", NULL };
 	static		 int	air_w[] = { 200, 100, 100, 75, 100, 150  };
 	static const char * air_f[] = { "WED_Airport", "WED_ATCFrequency", NULL };
-	
-	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
+
+	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);
 	prop_tabs->AddPane(prop_pane2, "Airports");
-	
+
 	// --------------- LIGHTS, SIGNS, BEACONS ---------------
 
 	static const char * sin_t[] = { "Name", "Type", "Size", "Angle", 0 };
 	static		 int	sin_w[] = { 200, 100, 100, 100  };
 	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
-	
-	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);	
+
+	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);
 	prop_tabs->AddPane(prop_pane3, "Signs");
 
 	// --------------- RUNWAYS ---------------
@@ -154,12 +154,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2",
 									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
 									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
-	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150, 
-									150, 150, 150, 150, 150, 150, 
+	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150,
+									150, 150, 150, 150, 150, 150,
 									150, 150, 150, 150, 150, 150, 150 };
 	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
-	
-	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);	
+
+	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);
 	prop_tabs->AddPane(prop_pane4, "Runways");
 
 	// --------------- TAXIWAYS ---------------
@@ -167,8 +167,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * tax_t[] = { "Name", "Surface", "Roughness", "Texture Heading", 0 };
 	static		 int	tax_w[] = { 200, 150, 100, 150  };
 	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
-	
-	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);	
+
+	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);
 	prop_tabs->AddPane(prop_pane5, "Taxiways");
 
 	// --------------- HELIPADS ---------------
@@ -176,8 +176,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * hel_t[] = { "Name", "Surface", "Markings", "Shoulder", "Roughness", "Lights", 0 };
 	static		 int	hel_w[] = { 200, 130, 130, 130, 100, 130 };
 	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
-	
-	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);	
+
+	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);
 	prop_tabs->AddPane(prop_pane6, "Helipads");
 
 	// --------------- Hierarchy  View ---------------
@@ -185,7 +185,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
 	static int widths[] =			{ 50,		50,		200		};
 
-	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
+	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);
 	prop_pane->SetParent(mPropSplitter);
 	prop_pane->Show();
 	prop_pane->SetSticky(1,0.5,1,1);
@@ -199,15 +199,15 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
-	
+
 	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
 	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
 
 	mMainSplitter->AlignContentsAt(main_split);
 	mPropSplitter->AlignContentsAt(prop_split);
 	mMapPane->ZoomShowAll();
-	
-	mMapPane->FromPrefs(inDocument);	
+
+	mMapPane->FromPrefs(inDocument);
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 
 }
@@ -217,7 +217,7 @@ WED_DocumentWindow::~WED_DocumentWindow()
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
-{	
+{
 	if ( mMapPane->Map_KeyPress(inKey, inVK, inFlags)) return 1;
 	if (inKey == GUI_KEY_DELETE && (inFlags & gui_DownFlag))
 	if (WED_CanClear(mDocument)) { DispatchHandleCommand(gui_Clear); return 1; }	// run through dispatcher to make sure we call the appropriate hooks!
@@ -251,7 +251,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
-	
+
 	case wed_AddATCFreq:WED_DoMakeNewATC(mDocument); return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
@@ -265,15 +265,15 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
-	
+
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
-	
+
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
 	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
-	
+
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
@@ -296,17 +296,17 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
-	case wed_AddATCFreq:return WED_CanMakeNewATC(mDocument); 
-	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument); 
+	case wed_AddATCFreq:return WED_CanMakeNewATC(mDocument);
+	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
-	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);	
-	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);	
-	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);	
-	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);	
+	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);
+	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);
+	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
+	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
 
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty();
-	
+
 	case gui_SelectAll:		return WED_CanSelectAll(mDocument);
 	case gui_SelectNone:	return WED_CanSelectNone(mDocument);
 	case wed_SelectParent:	return WED_CanSelectParent(mDocument);
@@ -318,10 +318,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_Validate:		return 1;
-	
+
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
 	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
-	
+
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }

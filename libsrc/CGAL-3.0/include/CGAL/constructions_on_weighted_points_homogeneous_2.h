@@ -25,11 +25,11 @@ CGAL_BEGIN_NAMESPACE
 
 template < class RT, class We>
 void
-weighted_circumcenterH2( const RT &phx, const RT &phy, const RT &phw, 
+weighted_circumcenterH2( const RT &phx, const RT &phy, const RT &phw,
 			 const We &pwt,
-			 const RT &qhx, const RT &qhy, const RT &qhw, 
+			 const RT &qhx, const RT &qhy, const RT &qhw,
 			 const We &qwt,
-			 const RT &rhx, const RT &rhy, const RT &rhw, 
+			 const RT &rhx, const RT &rhy, const RT &rhw,
 			 const We &rwt,
 			 RT &vvx, RT &vvy, RT &vvw )
 {
@@ -46,7 +46,7 @@ weighted_circumcenterH2( const RT &phx, const RT &phy, const RT &phw,
 //   RT px2_py2_qx2_qy_2 =
 //     phx*phx*qhw*qhw + phy*phy*qhw*qhw - qhx*qhx*phw*phw -
 //     qhy*qhy*phw*phw - RT(pwt*pwt) + RT(qwt*qwt);
-  
+
 //   vvx = qy_py * px2_py2_rx2_ry_2 - ry_py * px2_py2_qx2_qy_2;
 //   vvy = rx_px * px2_py2_qx2_qy_2 - qx_px * px2_py2_rx2_ry_2;
 //   vvw = RT(2) * ( qx_px * ry_py - rx_px * qy_py );
@@ -69,14 +69,14 @@ radical_axisH2(const RT &phx, const RT &phy, const RT &phw, const We &pwt,
 {
 //   a = RT(2) * ( qhx*qhw*phw*phw - phx*phw*qhw*qhw );
 //   b = RT(2) * ( qhy*qhw*phw*phw - phy*phw*qhw*qhw );
-//   c = phx*phx*qhw*qhw + phy*phy*qhw*qhw - qhx*qhx*phw*phw 
-//     - qhy*qhy*phw*phw- RT(pwt*pwt) + RT(qwt*qwt); 
+//   c = phx*phx*qhw*qhw + phy*phy*qhw*qhw - qhx*qhx*phw*phw
+//     - qhy*qhy*phw*phw- RT(pwt*pwt) + RT(qwt*qwt);
 
   a =  RT(2) * ( phx*phw*qhw*qhw - qhx*qhw*phw*phw );
   b =  RT(2) * ( phy*phw*qhw*qhw - qhy*qhw*phw*phw );
-  c = - phx*phx*qhw*qhw - phy*phy*qhw*qhw 
-      + qhx*qhx*phw*phw + qhy*qhy*phw*phw 
-      + RT(pwt)*phw*phw*qhw*qhw - RT(qwt)*phw*phw*qhw*qhw; 
+  c = - phx*phx*qhw*qhw - phy*phy*qhw*qhw
+      + qhx*qhx*phw*phw + qhy*qhy*phw*phw
+      + RT(pwt)*phw*phw*qhw*qhw - RT(qwt)*phw*phw*qhw*qhw;
 
 }
 

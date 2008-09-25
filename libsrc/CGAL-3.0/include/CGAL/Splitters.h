@@ -17,7 +17,7 @@
 //
 // Authors       : Hans Tangelder (<hanst@cs.uu.nl>)
 
-// Defines rules used for constructing a split node. That is, it implements, 
+// Defines rules used for constructing a split node. That is, it implements,
 // in several ways, the concept
 // Boxtree_splitter<NT>.
 
@@ -27,17 +27,17 @@
 #include <CGAL/Plane_separator.h>
 namespace CGAL {
 
-template <class Point, class Container_=Point_container<Point>, 
+template <class Point, class Container_=Point_container<Point>,
           class Separator_=Plane_separator<typename Kernel_traits<Point>::Kernel::FT>  >
 class Median_of_max_spread {
 public:
   typedef typename Kernel_traits<Point>::Kernel::FT NT;
   typedef Container_ Container;
   typedef Separator_ Separator;
- 
+
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
-  			     NT Aspect_ratio=NT(3)) {        
+  			     Container& c1,
+  			     NT Aspect_ratio=NT(3)) {
         sep=Separator(c0.max_tight_span_coord(),NT(0));
         sep.set_cutting_value(c0.median(sep.cutting_dimension()));
         c0.split_container(c1,sep,true);
@@ -45,7 +45,7 @@ public:
 };
 
 template <class Point, class Container_=Point_container<Point>,
-	  class Separator_=Plane_separator<typename Kernel_traits<Point>::Kernel::FT>  > 
+	  class Separator_=Plane_separator<typename Kernel_traits<Point>::Kernel::FT>  >
 class Fair {
 public:
   typedef typename Kernel_traits<Point>::Kernel::FT NT;
@@ -53,7 +53,7 @@ public:
   typedef Separator_ Separator;
 
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3)) {
 	// find legal cut with max spread
         sep=Separator(c0.max_tight_span_coord_balanced(Aspect_ratio),
@@ -73,13 +73,13 @@ public:
   typedef Separator_ Separator;
 
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3))  {
     // find legal cut with max spread
-   
+
     sep=Separator(c0.max_tight_span_coord_balanced(Aspect_ratio),
 			    NT(0));
-    
+
     sep.set_cutting_value(c0.balanced_sliding_fair(sep.cutting_dimension(),
 			 Aspect_ratio));
     c0.split_container(c1,sep,true);
@@ -96,20 +96,20 @@ public:
   typedef Separator_ Separator;
 
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3))
   {
         sep=Separator(c0.max_span_coord(),
               (c0.max_span_upper() + c0.max_span_lower())/NT(2));
-	NT max_span_lower = 
+	NT max_span_lower =
 	c0.tight_bounding_box().min_coord(c0.max_span_coord());
-	NT max_span_upper = 
+	NT max_span_upper =
 	c0.tight_bounding_box().max_coord(c0.max_span_coord());
 	if (max_span_upper <= sep.cutting_value()) {
-		sep.set_cutting_value(max_span_upper); 
+		sep.set_cutting_value(max_span_upper);
 	};
 	if (max_span_lower >= sep.cutting_value()) {
-		sep.set_cutting_value(max_span_lower); 
+		sep.set_cutting_value(max_span_lower);
 	};
 	c0.split_container(c1,sep,true);
   }
@@ -124,7 +124,7 @@ public:
   typedef Separator_ Separator;
 
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3))
   {
     sep=Separator(c0.max_span_coord(),NT(0));
@@ -142,7 +142,7 @@ public:
   typedef Separator_ Separator;
 
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3))
   {
     sep= Separator(c0.max_tight_span_coord(),
@@ -159,14 +159,14 @@ public:
   typedef Container_ Container;
   typedef Separator_ Separator;
   void operator() (Separator& sep, Container& c0,
-  			     Container& c1, 
+  			     Container& c1,
   			     NT Aspect_ratio=NT(3))
   {
     sep = Separator(c0.max_span_coord(),
               (c0.max_span_upper() + c0.max_span_lower())/NT(2));
-    c0.split_container(c1,sep);          
+    c0.split_container(c1,sep);
   }
- 
+
 };
 
 } // namespace CGAL

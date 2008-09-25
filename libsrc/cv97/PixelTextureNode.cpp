@@ -10,13 +10,13 @@
 
 #include "PixelTextureNode.h"
 
-PixelTextureNode::PixelTextureNode() 
+PixelTextureNode::PixelTextureNode()
 {
 	setHeaderFlag(false);
 	setType(pixelTextureNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// image field
@@ -24,7 +24,7 @@ PixelTextureNode::PixelTextureNode()
 	addExposedField(imageFieldString, imageField);
 }
 
-PixelTextureNode::~PixelTextureNode() 
+PixelTextureNode::~PixelTextureNode()
 {
 }
 
@@ -39,17 +39,17 @@ SFImage *PixelTextureNode::getImageField()
 	return (SFImage *)getExposedField(imageFieldString);
 }
 
-void PixelTextureNode::addImage(int value) 
+void PixelTextureNode::addImage(int value)
 {
 	getImageField()->addValue(value);
 }
 
-int PixelTextureNode::getNImages() 
+int PixelTextureNode::getNImages()
 {
 	return getImageField()->getSize();
 }
 
-int PixelTextureNode::getImage(int index) 
+int PixelTextureNode::getImage(int index)
 {
 	return getImageField()->get1Value(index);
 }
@@ -58,12 +58,12 @@ int PixelTextureNode::getImage(int index)
 //	List
 ////////////////////////////////////////////////
 
-PixelTextureNode *PixelTextureNode::next() 
+PixelTextureNode *PixelTextureNode::next()
 {
 	return (PixelTextureNode *)Node::next(getType());
 }
 
-PixelTextureNode *PixelTextureNode::nextTraversal() 
+PixelTextureNode *PixelTextureNode::nextTraversal()
 {
 	return (PixelTextureNode *)Node::nextTraversalByType(getType());
 }
@@ -71,21 +71,21 @@ PixelTextureNode *PixelTextureNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool PixelTextureNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void PixelTextureNode::initialize() 
+void PixelTextureNode::initialize()
 {
 }
 
-void PixelTextureNode::uninitialize() 
+void PixelTextureNode::uninitialize()
 {
 }
 
-void PixelTextureNode::update() 
+void PixelTextureNode::update()
 {
 }
 
@@ -93,7 +93,7 @@ void PixelTextureNode::update()
 //	Imagemation
 ////////////////////////////////////////////////
 
-void PixelTextureNode::outputContext(ostream &printStream, char *indentString) 
+void PixelTextureNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *repeatS = getRepeatSField();
 	SFBool *repeatT = getRepeatTField();

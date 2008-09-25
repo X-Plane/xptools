@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -237,7 +237,7 @@ lib3ds_node_eval(Lib3dsNode *node, Lib3dsFloat t)
         lib3ds_matrix_translate(M, n->pos);
         lib3ds_matrix_rotate(M, n->rot);
         lib3ds_matrix_scale(M, n->scl);
-        
+
         if (node->parent) {
           lib3ds_matrix_mul(node->matrix, node->parent->matrix, M);
         }
@@ -396,7 +396,7 @@ lib3ds_node_dump(Lib3dsNode *node, Lib3dsIntd level)
       node_names_table[node->type]
     );
   }
-  
+
   for (p=node->childs; p!=0; p=p->next) {
     lib3ds_node_dump(p, level+1);
   }
@@ -493,7 +493,7 @@ lib3ds_node_read(Lib3dsNode *node, Lib3dsFile *file, Lib3dsIo *io)
       case LIB3DS_COL_TRACK_TAG:
         {
           Lib3dsBool result=LIB3DS_TRUE;
-          
+
           switch (node->type) {
             case LIB3DS_AMBIENT_NODE:
               result=lib3ds_lin3_track_read(&node->data.ambient.col_track, io);
@@ -762,7 +762,7 @@ lib3ds_node_write(Lib3dsNode *node, Lib3dsFile *file, Lib3dsIo *io)
             break;
           }
         }
-        
+
         if (i<3) { /*---- LIB3DS_BOUNDBOX ----*/
           Lib3dsChunk c;
           c.chunk=LIB3DS_BOUNDBOX;

@@ -71,8 +71,8 @@
     FT_ULong   table_size;
     FT_Byte**  ptable;
     FT_ULong*  ptable_size;
-    
-    
+
+
     if ( vertical )
     {
       error = face->goto_table( face, TTAG_vmtx, stream, &table_size );
@@ -91,10 +91,10 @@
       ptable      = &face->horz_metrics;
       ptable_size = &face->horz_metrics_size;
     }
-    
+
     if ( FT_FRAME_EXTRACT( table_size, *ptable ) )
       goto Fail;
-      
+
     *ptable_size = table_size;
 
   Fail:
@@ -313,7 +313,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
-  /*    tt_face_get_metrics                                                */ 
+  /*    tt_face_get_metrics                                                */
   /*                                                                       */
   /* <Description>                                                         */
   /*    Returns the horizontal or vertical metrics in font units for a     */

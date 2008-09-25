@@ -68,7 +68,7 @@ in_smallest_orthogonalcircleC2(
 		tx.interval(),
 		ty.interval(),
 		tw.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA in_smallest_orthogonalcircleC2 failures");
@@ -115,7 +115,7 @@ in_smallest_orthogonalcircleC2(
 		tx.interval(),
 		ty.interval(),
 		tw.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA in_smallest_orthogonalcircleC2 failures");

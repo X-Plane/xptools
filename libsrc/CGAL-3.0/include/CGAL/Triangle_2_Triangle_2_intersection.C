@@ -112,7 +112,7 @@ public:
         }
         return _result;
     }
-    
+
 #else
     Intersection_results intersection_type() const;
 #endif // CGAL_CFG_RETURN_TYPE_BUG_2
@@ -415,7 +415,7 @@ Triangle_2_Triangle_2_pair<K>::intersection(
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Triangle_2 &tr1, 
+intersection(const typename CGAL_WRAP(K)::Triangle_2 &tr1,
 	     const typename CGAL_WRAP(K)::Triangle_2 &tr2,
 	     const K& k)
 {

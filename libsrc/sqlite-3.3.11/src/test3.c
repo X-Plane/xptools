@@ -588,7 +588,7 @@ static int btree_integrity_check(
   free(aRoot);
   if( zResult ){
     Tcl_AppendResult(interp, zResult, 0);
-    sqliteFree(zResult); 
+    sqliteFree(zResult);
   }
   return TCL_OK;
 }
@@ -707,7 +707,7 @@ static int btree_move_to(
     if( Tcl_GetInt(interp, argv[2], &iKey) ) return TCL_ERROR;
     rc = sqlite3BtreeMoveto(pCur, 0, iKey, &res);
   }else{
-    rc = sqlite3BtreeMoveto(pCur, argv[2], strlen(argv[2]), &res);  
+    rc = sqlite3BtreeMoveto(pCur, argv[2], strlen(argv[2]), &res);
   }
   if( rc ){
     Tcl_AppendResult(interp, errorName(rc), 0);
@@ -1091,7 +1091,7 @@ static int btree_fetch_key(
   if( zBuf && amt>=n ){
     assert( nKey<sizeof(zStatic) );
     if( n>0 ) nKey = n;
-    memcpy(zStatic, zBuf, (int)nKey); 
+    memcpy(zStatic, zBuf, (int)nKey);
     zStatic[nKey] = 0;
     Tcl_AppendResult(interp, zStatic, 0);
   }
@@ -1129,7 +1129,7 @@ static int btree_fetch_data(
   if( zBuf && amt>=n ){
     assert( nData<sizeof(zStatic) );
     if( n>0 ) nData = n;
-    memcpy(zStatic, zBuf, (int)nData); 
+    memcpy(zStatic, zBuf, (int)nData);
     zStatic[nData] = 0;
     Tcl_AppendResult(interp, zStatic, 0);
   }
@@ -1301,7 +1301,7 @@ static int btree_varint_test(
       n2 = sqlite3GetVarint32(zBuf, &out32);
       out = out32;
       if( n1!=n2 ){
-        sprintf(zErr, "PutVarint returned %d and GetVarint32 returned %d", 
+        sprintf(zErr, "PutVarint returned %d and GetVarint32 returned %d",
                   n1, n2);
         Tcl_AppendResult(interp, zErr, 0);
         return TCL_ERROR;

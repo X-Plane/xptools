@@ -33,7 +33,7 @@ inline
 Oriented_side
 side_of_oriented_plane(const PlaneC3<K> &h,
                        const PointC3<K> &p)
-{ 
+{
   return side_of_oriented_planeC3(h.a(), h.b(), h.c(), h.d(),
 	                          p.x(), p.y(), p.z());
 }
@@ -42,7 +42,7 @@ template < class K >
 inline
 bool
 equal_plane(const PlaneC3<K> &h, const PlaneC3<K> &p)
-{ 
+{
   return equal_planeC3(h.a(), h.b(), h.c(), h.d(),
 	               p.a(), p.b(), p.c(), p.d());
 }

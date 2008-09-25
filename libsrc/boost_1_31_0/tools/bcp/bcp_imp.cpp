@@ -1,8 +1,8 @@
 /*
  *
  * Copyright (c) 2003 Dr John Maddock
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution is subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  * This file implements the bcp_implementation virtuals.
@@ -106,7 +106,7 @@ int bcp_implementation::run()
          module = fs::path(*i, fs::native);
          exmodule = fs::path(*i + ".hpp", fs::native);
       }
-      
+
       if(m_scan_mode)
       {
          // in scan mode each module must be a real file:

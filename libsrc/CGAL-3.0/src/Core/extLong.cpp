@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: extLong.cpp
  * Synopsis:
  *      The class extLong is basically a wrapper around the machine
@@ -12,11 +12,11 @@
  *      Level i representation of a number n is just i iterations
  *      of log_2 applied to n.
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -54,32 +54,32 @@ const extLong& extLong::getNegInfty() {
 
 long extLong::add4Long(long x, long y) {
   long z;
-  
+
   if (x >= farHalfInfty) {//  x is large
     long dx = x - farHalfInfty;
-    
+
     if (y >= nearHalfInfty - dx)
-      z = LONG_MAX; 
+      z = LONG_MAX;
     else
       z = x + y;
   } else if (x <= farHalfTinyLong) {//  x is small
     long dx = farHalfTinyLong - x;
-    
+
     if (y <= nearHalfTinyLong + dx)
-      z = LONG_MIN + 1; 
+      z = LONG_MIN + 1;
     else
       z = x + y;
   } else { //  x is not small nor large
     if (y >= farHalfInfty) {//  y is large
       long dy = y - farHalfInfty;
-      
+
       if (x >= nearHalfInfty - dy)
         z = LONG_MAX;
       else
         z = x + y;
     } else if (y <= farHalfTinyLong) {//  y is small
       long dy = farHalfTinyLong - y;
-      
+
       if (x <= nearHalfTinyLong + dy)
         z = LONG_MIN + 1;
       else
@@ -93,17 +93,17 @@ long extLong::add4Long(long x, long y) {
 
 long extLong::sub4Long(long x, long y) {
   long z;
-  
+
   if (x >= farHalfInfty) {//  x is large
     long dx = x - farHalfInfty;
-    
+
     if (y <= - nearHalfInfty + dx)
-      z = LONG_MAX; 
+      z = LONG_MAX;
     else
       z = x - y;
   } else if (x <= farHalfTinyLong) {//  x is small
     long dx = farHalfTinyLong - x;
-    
+
     if (y >= - nearHalfTinyLong - dx)
       z = LONG_MIN + 1;
     else
@@ -111,16 +111,16 @@ long extLong::sub4Long(long x, long y) {
   } else {//  x is not small nor large
     if (y <= - farHalfInfty) {//  y is small
       long dy = - farHalfInfty - y;
-      
+
       if (x >= nearHalfInfty - dy)
-        z = LONG_MAX; 
+        z = LONG_MAX;
       else
         z = x - y;
     } else if (y >= - farHalfTinyLong) {//  y is large
       long dy = y + farHalfTinyLong;
-      
+
       if (x <= nearHalfTinyLong + dy)
-        z = LONG_MIN + 1; 
+        z = LONG_MIN + 1;
       else
         z = x - y;
     } else {//  both x and y are not small nor large
@@ -200,13 +200,13 @@ extLong& extLong::operator*= (const extLong& y) {
     case 0:
       val = 0; flag = 0;
       break;
-    case 1: 
+    case 1:
       *this = CORE_posInfty;
       break;
     case -1:
       *this = CORE_negInfty;
       break;
-    case 2: 
+    case 2:
     case -2: 		// Oct 30, 2002: this was a missing case
       *this = CORE_NaNLong;
       break;
@@ -242,13 +242,13 @@ extLong& extLong::operator/= (const extLong& y) {
     case 0:
       val = 0; flag = 0;
       break;
-    case 1: 
+    case 1:
       *this = CORE_posInfty;
       break;
     case -1:
       *this = CORE_negInfty;
       break;
-    case 2:  
+    case 2:
     case -2:  			// Oct 30, 2002: this case was missing before
       *this = CORE_NaNLong;
       break;
@@ -280,7 +280,7 @@ extLong extLong::operator- () const{
 //	you cannot interprete the returned value!
 int extLong::sign() const {
   switch (flag) {
-  case 0: 
+  case 0:
     if (val > 0) return 1;
     else if (val < 0) return -1;
     else return 0;
@@ -312,7 +312,7 @@ std::ostream& operator<< (std::ostream& o, const extLong& x) {
     o << " NaN ";
   else
     o << x.val;
-  return o; 
+  return o;
 }
 
 CORE_END_NAMESPACE

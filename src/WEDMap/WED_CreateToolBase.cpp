@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -60,16 +60,16 @@ static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
 			Point2 m = b.midpoint(r);
 			glVertex2f(z->LonToXPixel(m.x),z->LatToYPixel(m.y));
 		}
-		glEnd();		
+		glEnd();
 	}
 }
 
 WED_CreateToolBase::WED_CreateToolBase(
 									const char *		tool_name,
 									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer, 
+									WED_MapZoomerNew *	zoomer,
 									IResolver *			resolver,
-									WED_Archive *		archive,									
+									WED_Archive *		archive,
 									int					min_num_pts,
 									int					max_num_pts,
 									int					can_curve,
@@ -79,7 +79,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 	WED_HandleToolBase(tool_name, host,zoomer,resolver),
 	mArchive(archive),
 	mLastTime(-9.9e9),
-	mCreating(0),	
+	mCreating(0),
 	mMinPts(min_num_pts),
 	mMaxPts(max_num_pts),
 	mCanClose(can_close),
@@ -90,7 +90,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 	SetControlProvider(this);
 	SetCanSelect(0);
 }
-	
+
 WED_CreateToolBase::~WED_CreateToolBase()
 {
 }
@@ -132,7 +132,7 @@ void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t *
 		else { *active = (kind != 0) == ((mods & gui_OptionAltFlag) != 0);
 			if (kind == 1) *active = 0; }
 	}
-	
+
 	if (con_type) *con_type = (mods & (gui_ControlFlag+gui_OptionAltFlag+gui_ShiftFlag)) ? (kind == 0 ? (mHasDirs[idx] ? handle_Vertex : handle_VertexSharp) : handle_Bezier) : handle_None;
 	if (direction) *direction = Vector2();
 	if (direction && con_type && *con_type == handle_Bezier)
@@ -149,7 +149,7 @@ void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t *
 		*con_type = handle_Rotate;
 		if (direction) *direction = Vector2(mPts[idx],mControlHi[idx]);
 	}
-	
+
 	if (p)
 	{
 		switch(kind){
@@ -160,7 +160,7 @@ void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t *
 	}
 }
 
-		
+
 intptr_t		WED_CreateToolBase::GetLinks		    (intptr_t id) const
 {
 	return mPts.size() * 3;
@@ -170,10 +170,10 @@ void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, intptr_t n, intptr_t * acti
 {
 	if (active) *active = 0;
 	if (!ltype) return;
-	
+
 	intptr_t idx = n / 3;
 	intptr_t kind = n % 3;
-	
+
 	int m = (idx+1)%mPts.size();
 	switch(kind) {
 	case 0:
@@ -185,7 +185,7 @@ void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, intptr_t n, intptr_t * acti
 		if (mMaxPts == 1 && mMustCurve) *ltype = link_None;	// for directional pts.
 		break;
 	case 2:
-		*ltype = mHasDirs[idx] ? link_BezierCtrl : link_None;		
+		*ltype = mHasDirs[idx] ? link_BezierCtrl : link_None;
 		break;
 	}
 }
@@ -238,7 +238,7 @@ void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector
 	intptr_t kind = c % 3;
 	if (!mEditStarted)
 	{
-		mEditStarted = 1;	
+		mEditStarted = 1;
 		GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 		if ((kind) != 0 && (mods & gui_OptionAltFlag))
 		{
@@ -258,13 +258,13 @@ void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector
 				mHasDirs[idx] = 0;
 		}
 	}
-	
+
 	switch(kind) {
 	case 0:		mPts[idx] += delta;	mControlLo[idx] += delta; mControlHi[idx] += delta;		break;
 	case 1:		mControlLo[idx] += delta;	if (!mIsSplit[idx]) mControlHi[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
 	case 2:		mControlHi[idx] += delta;	if (!mIsSplit[idx]) mControlLo[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
 	}
-	
+
 	io_pt += delta;
 }
 
@@ -289,8 +289,8 @@ void	WED_CreateToolBase::ControlsMoveBy	 (intptr_t id,        const Vector2& del
 int			WED_CreateToolBase::CreationDown(const Point2& start_pt)
 {
 	if (!CanCreateNow()) return 0;
-	
-	float now = GetHost()->GetTimeNow();	
+
+	float now = GetHost()->GetTimeNow();
 	if (now-mLastTime < kDoubleClickTime &&
 		within_dist(start_pt, mLastPt, GetZoomer(), kDoubleClickDist))
 	{
@@ -319,13 +319,13 @@ int			WED_CreateToolBase::CreationDown(const Point2& start_pt)
 void		WED_CreateToolBase::CreationDrag(const Point2& start_pt, const Point2& now_pt)
 {
 	if (!mCreating) return;
-	
-	if (!mHasDirs.back() && mCanCurve && 
+
+	if (!mHasDirs.back() && mCanCurve &&
 		!within_dist(start_pt,now_pt,GetZoomer(), kDoubleClickDist))
 	{
 		mHasDirs.back() = 1;
 	}
-	
+
 	if (mHasDirs.back())
 		mControlHi.back() = now_pt;
 	else
@@ -340,11 +340,11 @@ void		WED_CreateToolBase::CreationDrag(const Point2& start_pt, const Point2& now
 void		WED_CreateToolBase::CreationUp(const Point2& start_pt, const Point2& now_pt)
 {
 	if (!mCreating) return;
-	
+
 	CreationDrag(start_pt, now_pt);
-	
+
 	if(mPts.size() >= mMaxPts)
-		DoEmit(0);		
+		DoEmit(0);
 	// We can only check for a closed loop on:
 	// - closed-loop-possible chains with
 	// - at least 3 points (so one can be redundent) and
@@ -357,14 +357,14 @@ void		WED_CreateToolBase::CreationUp(const Point2& start_pt, const Point2& now_p
 	}
 
 	RecalcHeadings();
-		
+
 	mCreating = 0;
 }
 
 void		WED_CreateToolBase::DoEmit(int do_close)
 {
 	int closed = mMustClose || do_close;
-		
+
 	if (do_close)
 	{
 		do_close = 1;
@@ -386,7 +386,7 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 	ClearAnchor2();
 	ClearDistance();
 	ClearHeading();
-	
+
 
 }
 
@@ -398,7 +398,7 @@ void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 			DoEmit(0);
 			RecalcHeadings();
 		}
-	
+
 	mPts.clear();
 	mHasDirs.clear();
 	mIsSplit.clear();
@@ -483,7 +483,7 @@ void		WED_CreateToolBase::RecalcHeadings(void)
 		SetAnchor2(mPts[mPts.size()-1]);
 		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x,mPts[mPts.size()-2].y,mPts[mPts.size()-1].x,mPts[mPts.size()-1].y));
 		SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-2],mPts[mPts.size()-2],Vector2(mPts[mPts.size()-2],mPts[mPts.size()-1])));
-	} 
+	}
 	else if (mPts.size() > 0)
 	{
 		SetAnchor1(mPts[mPts.size()-1]);

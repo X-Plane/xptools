@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: 3DFace.cpp
  *
  *  This source file is part of DIME.
@@ -60,10 +60,10 @@ dime3DFace::copy(dimeModel * const model) const
 {
   dime3DFace *f = new(model->getMemHandler()) dime3DFace;
   if (!f) return NULL;
-  
+
   f->copyCoords(this);
   f->flags = this->flags;
-  
+
   if (!this->copyRecords(f, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete f;
@@ -82,7 +82,7 @@ dime3DFace::getEntityName() const
 
 //!
 
-bool 
+bool
 dime3DFace::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -100,7 +100,7 @@ dime3DFace::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dime3DFace::typeId() const
 {
   return dimeBase::dime3DFaceType;
@@ -108,8 +108,8 @@ dime3DFace::typeId() const
 
 //!
 
-bool 
-dime3DFace::handleRecord(const int groupcode, 
+bool
+dime3DFace::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
 {
@@ -124,7 +124,7 @@ dime3DFace::handleRecord(const int groupcode,
 
 //!
 
-bool 
+bool
 dime3DFace::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
@@ -143,11 +143,11 @@ dime3DFace::print() const
 {
   fprintf(stderr,"3DFACE:\n");
   int stop = this->isQuad() ? 4 : 3;
-  for (int i = 0; i < stop; i++) { 
-    fprintf(stderr,"coord: %f %f %f\n", coords[i][0], 
-	    coords[i][1], coords[i][2]); 
-    
-  } 
+  for (int i = 0; i < stop; i++) {
+    fprintf(stderr,"coord: %f %f %f\n", coords[i][0],
+	    coords[i][1], coords[i][2]);
+
+  }
 }
 
 //!
@@ -161,16 +161,16 @@ dime3DFace::countRecords() const
     if (this->flags != 0) cnt++;
     cnt += dimeFaceEntity::countRecords();
   }
-  return cnt;   
+  return cnt;
 }
 
-void 
+void
 dime3DFace::setFlags(const int16 flags)
 {
   this->flags = flags;
 }
 
-int16 
+int16
 dime3DFace::getFlags() const
 {
   return this->flags;

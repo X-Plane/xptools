@@ -732,7 +732,7 @@
     return ( n % 2 );
   }
 
-  
+
   static FT_Bool
   ft_contour_enclosed( FT_Outline*  outline,
                        FT_UShort    c )

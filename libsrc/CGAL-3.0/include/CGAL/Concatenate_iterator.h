@@ -96,7 +96,7 @@ public:
     return tmp;
   }
 
-  
+
   reference  operator*()  const
   {
     if ( i1_ == e1_ ) {

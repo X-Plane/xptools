@@ -13,7 +13,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -63,7 +63,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: shptree.c,v 1.9 2003/01/28 15:53:41 warmerda Exp $";
 
 #include "shapefil.h"
@@ -188,7 +188,7 @@ SHPCreateTree( SHPHandle hSHP, int nDimension, int nMaxDepth,
     if( padfBoundsMin == NULL )
     {
         SHPGetInfo( hSHP, NULL, NULL,
-                    psTree->psRoot->adfBoundsMin, 
+                    psTree->psRoot->adfBoundsMin,
                     psTree->psRoot->adfBoundsMax );
     }
 
@@ -198,18 +198,18 @@ SHPCreateTree( SHPHandle hSHP, int nDimension, int nMaxDepth,
     if( hSHP != NULL )
     {
         int	iShape, nShapeCount;
-        
+
         SHPGetInfo( hSHP, &nShapeCount, NULL, NULL, NULL );
 
         for( iShape = 0; iShape < nShapeCount; iShape++ )
         {
             SHPObject	*psShape;
-            
+
             psShape = SHPReadObject( hSHP, iShape );
             SHPTreeAddShapeId( psTree, psShape );
             SHPDestroyObject( psShape );
         }
-    }        
+    }
 
     return psTree;
 }
@@ -222,13 +222,13 @@ static void SHPDestroyTreeNode( SHPTreeNode * psTreeNode )
 
 {
     int		i;
-    
+
     for( i = 0; i < psTreeNode->nSubNodes; i++ )
     {
         if( psTreeNode->apsSubNode[i] != NULL )
             SHPDestroyTreeNode( psTreeNode->apsSubNode[i] );
     }
-    
+
     if( psTreeNode->panShapeIds != NULL )
         free( psTreeNode->panShapeIds );
 
@@ -276,7 +276,7 @@ SHPCheckBoundsOverlap( double * padfBox1Min, double * padfBox1Max,
     {
         if( padfBox2Max[iDim] < padfBox1Min[iDim] )
             return FALSE;
-        
+
         if( padfBox1Max[iDim] < padfBox2Min[iDim] )
             return FALSE;
     }
@@ -297,18 +297,18 @@ static int SHPCheckObjectContained( SHPObject * psObject, int nDimension,
     if( psObject->dfXMin < padfBoundsMin[0]
         || psObject->dfXMax > padfBoundsMax[0] )
         return FALSE;
-    
+
     if( psObject->dfYMin < padfBoundsMin[1]
         || psObject->dfYMax > padfBoundsMax[1] )
         return FALSE;
 
     if( nDimension == 2 )
         return TRUE;
-    
+
     if( psObject->dfZMin < padfBoundsMin[2]
         || psObject->dfZMax < padfBoundsMax[2] )
         return FALSE;
-        
+
     if( nDimension == 3 )
         return TRUE;
 
@@ -340,7 +340,7 @@ SHPTreeSplitBounds( double *padfBoundsMinIn, double *padfBoundsMaxIn,
     memcpy( padfBoundsMax1, padfBoundsMaxIn, sizeof(double) * 4 );
     memcpy( padfBoundsMin2, padfBoundsMinIn, sizeof(double) * 4 );
     memcpy( padfBoundsMax2, padfBoundsMaxIn, sizeof(double) * 4 );
-    
+
 /* -------------------------------------------------------------------- */
 /*      Split in X direction.                                           */
 /* -------------------------------------------------------------------- */
@@ -375,7 +375,7 @@ SHPTreeNodeAddShapeId( SHPTreeNode * psTreeNode, SHPObject * psObject,
 
 {
     int		i;
-    
+
 /* -------------------------------------------------------------------- */
 /*      If there are subnodes, then consider wiether this object        */
 /*      will fit in them.                                               */
@@ -540,7 +540,7 @@ SHPTreeCollectShapeIds( SHPTree *hTree, SHPTreeNode * psTreeNode,
 
 {
     int		i;
-    
+
 /* -------------------------------------------------------------------- */
 /*      Does this node overlap the area of interest at all?  If not,    */
 /*      return without adding to the list at all.                       */
@@ -569,7 +569,7 @@ SHPTreeCollectShapeIds( SHPTree *hTree, SHPTreeNode * psTreeNode,
     {
         (*ppanShapeList)[(*pnShapeCount)++] = psTreeNode->panShapeIds[i];
     }
-    
+
 /* -------------------------------------------------------------------- */
 /*      Recurse to subnodes if they exist.                              */
 /* -------------------------------------------------------------------- */

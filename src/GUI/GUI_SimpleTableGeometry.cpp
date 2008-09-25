@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 		mCols[n] = p;
 	}
 }
-			
+
 GUI_SimpleTableGeometry::~GUI_SimpleTableGeometry()
 {
 }
@@ -81,7 +81,7 @@ int			GUI_SimpleTableGeometry::GetCellHeight(int n)
 {
 	return mRowHeight;
 }
-	
+
 int			GUI_SimpleTableGeometry::ColForX(int n)
 {
 	vector<int>::iterator i = lower_bound(mCols.begin(),mCols.end(),n);
@@ -98,13 +98,13 @@ int			GUI_SimpleTableGeometry::RowForY(int n)
 }
 
 bool		GUI_SimpleTableGeometry::CanSetCellWidth (void) const { return true; }
-	
+
 void		GUI_SimpleTableGeometry::SetCellWidth (int n, int w)
 {
 	if (w < 5) w = 5;
 	ExtendTo(n);
 	int delta = w - GetCellWidth(n);
-	for (int i = n; i < mCols.size(); ++i)	
+	for (int i = n; i < mCols.size(); ++i)
 		mCols[i] += delta;
 //	BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
 }
@@ -120,13 +120,13 @@ void		GUI_SimpleTableGeometry::ExtendTo(int n)
 	if (n < mCols.size()) return;
 	int last_width = mCols[mCols.size()-1] - mCols[mCols.size()-2];
 	int pos = mCols[mCols.size()-1];
-	
+
 	int num_to_add = n + 1 - mCols.size();
-	
+
 	while (num_to_add > 0)
 	{
 		pos += last_width;
 		mCols.push_back(pos);
 		--num_to_add;
-	}	
+	}
 }

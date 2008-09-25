@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -37,7 +37,7 @@ TCL_linked_vari::TCL_linked_vari(Tcl_Interp * iinterp, const char * tcl_name, TC
 	ref = iref;
 	var_name = (char *) malloc(strlen(tcl_name)+1);
 	strcpy(var_name,tcl_name);
-	set(initial);	
+	set(initial);
 
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
 		message_dialog("Internal error setting trace on %s.", var_name);
@@ -54,10 +54,10 @@ void	TCL_linked_vari::set(int value)
 //	printf("Setting %s to %d\n", var_name, value);
 	var = value;
 	setting = 1;
-	Tcl_Obj * obj = tcl_stubs.Tcl_NewIntObj(var);	
+	Tcl_Obj * obj = tcl_stubs.Tcl_NewIntObj(var);
 	Tcl_IncrRefCount(obj);
 	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
-		message_dialog("Internal tcl error - could not create variable %s", var_name);	
+		message_dialog("Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
 }
@@ -75,16 +75,16 @@ char * TCL_linked_vari::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 
     Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
-	
+
     Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
-    if (value != NULL) 
+    if (value != NULL)
 	{
 		if (tcl_stubs.Tcl_GetIntFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
 		{
 			if (me->cb)
 				me->cb(me->var, me->ref, me);
-		} else 
-		{		
+		} else
+		{
 			tcl_stubs.Tcl_SetObjResult(interp, result);
 //			Tcl_Obj * tmpPtr = Tcl_NewObj();
 //			Tcl_IncrRefCount(tmpPtr);
@@ -92,7 +92,7 @@ char * TCL_linked_vari::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 //			Tcl_DecrRefCount(tmpPtr);
 		}
 	}
-	Tcl_DecrRefCount(result);	
+	Tcl_DecrRefCount(result);
 	return NULL;
 }
 
@@ -113,9 +113,9 @@ TCL_linked_vard::TCL_linked_vard(Tcl_Interp * iinterp, const char * tcl_name, TC
 	var_name = (char *) malloc(strlen(tcl_name)+1);
 	strcpy(var_name,tcl_name);
 	set(initial);
-	
+
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
-		message_dialog("Internal error setting trace on %s.", var_name);	
+		message_dialog("Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vard::~TCL_linked_vard()
@@ -129,7 +129,7 @@ void	TCL_linked_vard::set(double value)
 //	printf("Setting %s to %lf\n", var_name, value);
 	var = value;
 	setting = 1;
-//	Tcl_Obj * obj = Tcl_NewDoubleObj(var);	
+//	Tcl_Obj * obj = Tcl_NewDoubleObj(var);
 char buf[200];
 	sprintf(buf,"%.03lf", value);
 	Tcl_Obj * obj = tcl_stubs.Tcl_NewStringObj(buf,-1);
@@ -151,23 +151,23 @@ char * TCL_linked_vard::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 	TCL_linked_vard * me = reinterpret_cast<TCL_linked_vard*>(clientData);
 //	printf("Trace on %s called with flags %x\n", me->var_name, flags);
 	if (me->setting) return NULL;
-	
+
     Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
-	
+
     Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
-    if (value != NULL) 
+    if (value != NULL)
 	{
 		Tcl_IncrRefCount(value);
 		if (tcl_stubs.Tcl_GetDoubleFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
 		{
 			if (me->cb)
 				me->cb(me->var, me->ref, me);
-		} 
-		else 
-		{		
+		}
+		else
+		{
 			tcl_stubs.Tcl_SetObjResult(interp, result);
-			
+
 //			Tcl_Obj * tmpPtr = Tcl_NewObj();
 //			Tcl_IncrRefCount(tmpPtr);
 //			Tcl_SetVar2Ex(me->interp, me->var_name, NULL, tmpPtr, TCL_GLOBAL_ONLY);
@@ -175,7 +175,7 @@ char * TCL_linked_vard::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 		}
 		Tcl_DecrRefCount(value);
 	}
-	Tcl_DecrRefCount(result);	
+	Tcl_DecrRefCount(result);
 	return NULL;
 }
 
@@ -196,7 +196,7 @@ TCL_linked_vars::TCL_linked_vars(Tcl_Interp * iinterp, const char * tcl_name, TC
 	set(initial);
 
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
-		message_dialog("Internal error setting trace on %s.", var_name);	
+		message_dialog("Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vars::~TCL_linked_vars()
@@ -211,10 +211,10 @@ void	TCL_linked_vars::set(const char * value)
 	var = value;
 	if (var.empty()) var = string("none");
 	setting = 1;
-	Tcl_Obj * obj = var.empty() ? tcl_stubs.Tcl_NewObj() : tcl_stubs.Tcl_NewStringObj(var.c_str(), -1);	
+	Tcl_Obj * obj = var.empty() ? tcl_stubs.Tcl_NewObj() : tcl_stubs.Tcl_NewStringObj(var.c_str(), -1);
 	Tcl_IncrRefCount(obj);
 	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY)==NULL)
-		message_dialog("Internal tcl error - could not create variable %s", var_name);	
+		message_dialog("Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
 }
@@ -232,9 +232,9 @@ char * TCL_linked_vars::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 
     Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
-	
+
     Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
-    if (value != NULL) 
+    if (value != NULL)
 	{
 		int len;
 		const char * c = tcl_stubs.Tcl_GetStringFromObj(value, &len);
@@ -248,16 +248,16 @@ char * TCL_linked_vars::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 //				Tcl_Obj * tmpPtr = Tcl_NewObj();
 //				Tcl_IncrRefCount(tmpPtr);
 //				Tcl_SetVar2Ex(me->interp, me->var_name, NULL, tmpPtr, TCL_GLOBAL_ONLY);
-//				Tcl_DecrRefCount(tmpPtr);			
+//				Tcl_DecrRefCount(tmpPtr);
 			}
-		} else 
+		} else
 		{
 			tcl_stubs.Tcl_SetObjResult(interp, result);
 			message_dialog("Ben has not hit this case yet - trace call wtih no string conv in a string-linked var!\n");
 //			Tcl_ResetResult(interp);
-		}		
+		}
 	}
-	Tcl_DecrRefCount(result);	
+	Tcl_DecrRefCount(result);
 	return NULL;
 }
 
@@ -284,7 +284,7 @@ TCL_linked_variv::~TCL_linked_variv()
 	for (int k = 0; k < vars.size(); ++k)
 		delete vars[k];
 }
-	
+
 void	TCL_linked_variv::set(int n, int value)
 {
 	vars[n]->set(value);
@@ -294,7 +294,7 @@ int		TCL_linked_variv::get(int n) const
 {
 	return vars[n]->get();
 }
-	
+
 void TCL_linked_variv::callback(int value, void * iref, TCL_linked_vari * who)
 {
 	TCL_linked_variv * me = (TCL_linked_variv*) iref;
@@ -330,7 +330,7 @@ TCL_linked_vardv::~TCL_linked_vardv()
 	for (int k = 0; k < vars.size(); ++k)
 		delete vars[k];
 }
-	
+
 void	TCL_linked_vardv::set(int n, double value)
 {
 	vars[n]->set(value);
@@ -340,7 +340,7 @@ double		TCL_linked_vardv::get(int n) const
 {
 	return vars[n]->get();
 }
-	
+
 void TCL_linked_vardv::callback(double value, void * iref, TCL_linked_vard * who)
 {
 	TCL_linked_vardv * me = (TCL_linked_vardv*) iref;
@@ -373,7 +373,7 @@ TCL_linked_varsv::~TCL_linked_varsv()
 	for (int k = 0; k < vars.size(); ++k)
 		delete vars[k];
 }
-	
+
 void	TCL_linked_varsv::set(int n, const char * value)
 {
 	vars[n]->set(value);
@@ -383,7 +383,7 @@ const char *		TCL_linked_varsv::get(int n) const
 {
 	return vars[n]->get();
 }
-	
+
 void TCL_linked_varsv::callback(const char * value, void * iref, TCL_linked_vars * who)
 {
 	TCL_linked_varsv * me = (TCL_linked_varsv*) iref;

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: FaceEntity.h
  *
  *  This source file is part of DIME.
@@ -34,15 +34,15 @@
 #include <dime/entities/Entity.h>
 #include <dime/util/Linear.h>
 
-class DIME_DLL_API dimeFaceEntity : public dimeEntity 
+class DIME_DLL_API dimeFaceEntity : public dimeEntity
 {
 public:
   bool isQuad() const;
-  
+
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index = 0) const;
-  
+
   void setVertex(const int idx, const dimeVec3f &v);
   void setTriangle(const dimeVec3f &v0, const dimeVec3f &v1,
 		   const dimeVec3f &v2);
@@ -51,15 +51,15 @@ public:
   const dimeVec3f &getVertex(const int idx) const;
   void getVertices(dimeVec3f &v0, dimeVec3f &v1,
 		   dimeVec3f &v2, dimeVec3f &v3) const;
-  
+
   virtual dxfdouble getThickness() const;
   virtual void getExtrusionDir(dimeVec3f &ed) const;
-  
+
   GeometryType extractGeometry(dimeArray <dimeVec3f> &verts,
 			       dimeArray <int> &indices,
 			       dimeVec3f &extrusionDir,
 			       dxfdouble &thickness);
-  
+
   virtual int typeId() const;
   virtual bool isOfType(const int thetypeid) const;
   virtual int countRecords() const;
@@ -67,13 +67,13 @@ public:
 protected:
 
   virtual bool swapQuadCoords() const;
-  
-  virtual bool handleRecord(const int groupcode, 
+
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
   void copyCoords(const dimeFaceEntity * const entity);
   bool writeCoords(dimeOutput * const file);
-  
+
   dimeFaceEntity();
   dimeVec3f coords[4];
 
@@ -83,7 +83,7 @@ inline const dimeVec3f &
 dimeFaceEntity::getVertex(const int idx) const
 {
   assert(idx >= 0 && idx < 4);
-  return this->coords[idx]; 
+  return this->coords[idx];
 }
 
 inline bool
@@ -92,7 +92,7 @@ dimeFaceEntity::isQuad() const
   return (coords[2] != coords[3]);
 }
 
-inline void 
+inline void
 dimeFaceEntity::setVertex(const int idx, const dimeVec3f &v)
 {
   assert(idx >= 0 && idx < 4);

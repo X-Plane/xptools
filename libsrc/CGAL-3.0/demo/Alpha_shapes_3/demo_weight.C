@@ -78,12 +78,12 @@ construct_alpha_shape(const std::list<Wpoint> &V_p,
 		      Alpha_shape_3::Mode mode,
 		      Alpha_shape_3& A)
   // Generate Alpha Shape
-{ 
+{
   std::vector<Gt::Segment_3> V_seg;
-  
+
   int  n = A.make_alpha_shape(V_p.begin(), V_p.end());
   std::cout << "Inserted " << n  << " points" << std::endl;
-  
+
   A.set_mode(mode);
 }
 
@@ -133,7 +133,7 @@ void set_alpha(Alpha_shape_3& A, int alpha_index)
   else
     A.set_alpha(0);
 }
-    
+
 //------------------ main -------------------------------------------
 
 int main()
@@ -143,14 +143,14 @@ int main()
   gv.set_line_width(4);
   gv.set_trace(false);
   gv.set_bg_color(CGAL::Color(0, 200, 200));
-#endif 
+#endif
 
   Alpha_shape_3 A;
   std::list<Wpoint> L;
   std::cout << "Enter a common weight for all points: ";
   coord_type w;
   std::cin >> w;
-  file_input(L, w);  
+  file_input(L, w);
   construct_alpha_shape(L,Alpha_shape_3::GENERAL,A);
 
   std::cout << "Alpha Shape computed" << std::endl;
@@ -159,7 +159,7 @@ int main()
 
     while(n >= 0){
       std::cout << "Enter an alpha index (a < 0 -> quit): ";
-      std::cin >> n; 
+      std::cin >> n;
 #if defined(GEOMVIEW_SUPPORT)
       gv.clear();
       //gv << (Triangulation_3) A;
@@ -168,7 +168,7 @@ int main()
 	A.set_alpha(*A.find_optimal_alpha(2));
       else
 	set_alpha(A,n);
-#if defined(GEOMVIEW_SUPPORT)      
+#if defined(GEOMVIEW_SUPPORT)
       gv << A;
 #else
       std::cout << A << std::endl;

@@ -101,7 +101,7 @@ public:
 
     typedef typename Items::template Vertex_wrapper<Self,Traits>
                                                        Vertex_wrapper;
-    typedef typename Items::template Halfedge_wrapper<Self,Traits> 
+    typedef typename Items::template Halfedge_wrapper<Self,Traits>
                                                        Halfedge_wrapper;
     typedef typename Items::template Face_wrapper<Self,Traits>
                                                        Face_wrapper;
@@ -181,7 +181,7 @@ public:
 };
 
 #ifndef CGAL_CFG_NO_TMPL_IN_TMPL_PARAM
-template < class Traits_, class HalfedgeDSItems, 
+template < class Traits_, class HalfedgeDSItems,
            class Alloc = CGAL_ALLOCATOR(int)>
 class HalfedgeDS_list
     : public HalfedgeDS_list_types<Traits_, HalfedgeDSItems, Alloc> {
@@ -189,7 +189,7 @@ public:
     typedef HalfedgeDS_list<Traits_, HalfedgeDSItems, Alloc> Self;
 #else
 struct HalfedgeDS_list {
-template < class Traits_, class HalfedgeDSItems, 
+template < class Traits_, class HalfedgeDSItems,
            class Alloc = CGAL_ALLOCATOR(int)>
 class HDS : public HalfedgeDS_list_types<Traits_, HalfedgeDSItems, Alloc> {
 public:
@@ -253,7 +253,7 @@ protected:
     Vertex_allocator vertex_allocator;
     Edge_allocator   edge_allocator;  // allocates pairs of halfedges
     Face_allocator   face_allocator;
-    
+
     Vertex* get_vertex_node( const Vertex& t) {
         Vertex* p = vertex_allocator.allocate(1);
         vertex_allocator.construct(p, t);
@@ -324,7 +324,7 @@ private:
         typedef Unique_hash_map< Face_const_iterator, Face_iterator>     F_map;
         // initialize maps.
         H_map h_map( hds.halfedges_begin(), hds.halfedges_end(),
-                     halfedges_begin(), Halfedge_iterator(), 
+                     halfedges_begin(), Halfedge_iterator(),
                      3 * hds.size_of_halfedges() / 2);
         Vertex_iterator vii;
         V_map v_map( vii, 3 * hds.size_of_vertices() / 2);

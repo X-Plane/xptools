@@ -10,13 +10,13 @@
 
 #include "GroupNode.h"
 
-GroupNode::GroupNode() 
+GroupNode::GroupNode()
 {
 	setHeaderFlag(false);
 	setType(groupNodeString);
 }
 
-GroupNode::~GroupNode() 
+GroupNode::~GroupNode()
 {
 }
 
@@ -24,14 +24,14 @@ GroupNode::~GroupNode()
 //	Output
 ////////////////////////////////////////////////
 
-void GroupNode::outputContext(ostream &printStream, char *indentString) 
+void GroupNode::outputContext(ostream &printStream, char *indentString)
 {
 }
 
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool GroupNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -40,16 +40,16 @@ bool GroupNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void GroupNode::initialize() 
+void GroupNode::initialize()
 {
 	recomputeBoundingBox();
 }
 
-void GroupNode::uninitialize() 
+void GroupNode::uninitialize()
 {
 }
 
-void GroupNode::update() 
+void GroupNode::update()
 {
 }
 
@@ -57,12 +57,12 @@ void GroupNode::update()
 //	List
 ////////////////////////////////////////////////
 
-GroupNode *GroupNode::next() 
+GroupNode *GroupNode::next()
 {
 	return (GroupNode *)Node::next(getType());
 }
 
-GroupNode *GroupNode::nextTraversal() 
+GroupNode *GroupNode::nextTraversal()
 {
 	return (GroupNode *)Node::nextTraversalByType(getType());
 }

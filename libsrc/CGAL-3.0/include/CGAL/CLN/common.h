@@ -47,16 +47,16 @@ template <> struct Number_type_traits<cl_number> {
   typedef Tag_true  Has_sqrt_tag;
 };
 
-inline bool        is_valid        (const cl_number&) { return true; } 
-inline bool        is_finite       (const cl_number&) { return true; } 
+inline bool        is_valid        (const cl_number&) { return true; }
+inline bool        is_finite       (const cl_number&) { return true; }
 inline io_Operator io_tag          (const cl_number&) { return io_Operator(); }
 
 // The following is a workaround for a bug that happens on Solaris 2.6 with
 // gcc 2.95, and libcln.so (not .a).  It doesn't happen on Linux with gcc 2.95.
-//  
+//
 // Namely, the default base for printing should be 10, but it's not
 // initialized as it should for some reason...
-//   
+//
 // So we make a static object that we initialize here instead.
 // We put this code here instead of src/CLN.C so that libCGAL doesn't depend
 // on CLN.
@@ -65,7 +65,7 @@ struct workaround_4_CLN
 {
   workaround_4_CLN() { cl_default_print_flags.rational_base = 10; }
 };
- 
+
 static workaround_4_CLN workaroung_4_CLN_object;
 
 CGAL_END_NAMESPACE

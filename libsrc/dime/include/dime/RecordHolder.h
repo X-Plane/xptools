@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: RecordHolder.h
  *
  *  This source file is part of DIME.
@@ -43,21 +43,21 @@ public:
   dimeRecordHolder(const int separator);
   virtual ~dimeRecordHolder();
 
-  void setRecord(const int groupcode, const dimeParam &value, 
+  void setRecord(const int groupcode, const dimeParam &value,
 		 dimeMemHandler * const memhandler = NULL);
   void setRecords(const int * const groupcodes,
 		  const dimeParam * const params,
 		  const int numrecords,
 		  dimeMemHandler * const memhandler = NULL);
-  void setIndexedRecord(const int groupcode, 
+  void setIndexedRecord(const int groupcode,
                         const dimeParam &value,
                         const int index,
                         dimeMemHandler * const memhandler = NULL);
-  
+
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index = 0) const;
-  
+
   virtual bool read(dimeInput * const in);
   virtual bool write(dimeOutput * const out);
   virtual bool isOfType(const int thetypeid) const;
@@ -72,8 +72,8 @@ protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
-  bool copyRecords(dimeRecordHolder * const rh, 
+
+  bool copyRecords(dimeRecordHolder * const rh,
 		   dimeMemHandler * const memhandler) const;
 
   virtual bool shouldWriteRecord(const int groupcode) const;

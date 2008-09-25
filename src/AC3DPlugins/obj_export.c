@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,10 +27,10 @@ THIS FILE IS OBSOLETE
 /*
 	For Andrew:
 
-	TODO: 
-	
+	TODO:
+
 	** make sure we build an object so we do not have a group with geometry
-	
+
 	FEATURES
  - Lights.
  - Materials.
@@ -49,7 +49,7 @@ CAR SUPPORT:
 2. The car hiearchy is represented by the ACObject hierarchy!
 3. The bones data for each car is in the user string.  So as we read the car file itself
 	and load each object, we translate all data but the parent by putting it in the user string.
-	
+
 THAT DATA IS:
 Type
 Animation_Type
@@ -58,7 +58,7 @@ Filename (that we came from, relative)
 (parent is encoded via the parent object!)
 Start XYZ,Rot
 End XYZ, Rot
-	
+
 OR...is the data created via an external side hash table that maps ACObject*s to their data?
 
 PREMODS:
@@ -75,7 +75,7 @@ PREMODS:
 		When we debone, we debone the child first, then the parent.
 		When we rebone, we rebone the parent first, then the child.
 		Deboning and reboning are always done on a rooted hierarchy.
-		
+
 		When we debone, we translate first, then rotate
 		When we rebone, we rotate first, then translate.
 ------------
@@ -103,7 +103,7 @@ ON EXPORT:
 
 3. When we do our save, we pass in the 'stop set' (we use the bone set for this)...the stop set
 	is the set that we do not recurse into.
-   For each object in the bone set, we export based on its bone file name 
+   For each object in the bone set, we export based on its bone file name
 4. we then write the boning table to the separate car file.
 5. Rebone the object
 
@@ -117,9 +117,9 @@ TO CHANGE THE ANIMATION VALUES
 1. Debone the objects.
 2. Change the aniamion values
 3. Rebone the objects
-	
 
-	
+
+
 */
 
 #include "ac_plugin.h"
@@ -196,7 +196,7 @@ void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxVale
 			outCmds.push_back(inCmd);
 			outCmds.back().cmdID = obj_Tri;
 			outCmds.back().st.erase(outCmds.back().st.begin()+3);
-			outCmds.push_back(inCmd);			
+			outCmds.push_back(inCmd);
 			outCmds.back().cmdID = obj_Tri;
 			outCmds.back().st.erase(outCmds.back().st.begin()+1);
 		}
@@ -215,7 +215,7 @@ void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxVale
 				c.st[2] = inCmd.st[n  ];
 				outCmds.push_back(c);
 			}
-		} else 
+		} else
 			outCmds.push_back(inCmd);
 		break;
 	case obj_Tri_Strip:
@@ -299,7 +299,7 @@ void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence)
 {
 	outObj.cmds.clear();
 	outObj.texture = inObj.texture;
-	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); 
+	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin();
 		cmd != inObj.cmds.end(); ++cmd)
 	{
 		vector<XObjCmd>		newCmds;
@@ -335,7 +335,7 @@ void obj7_output_triangle(Surface *s)
 		gErrBadCockpit = true;
 		list_add_item_head(&gBadSurfaces, s);
 	}
-		
+
 Vertex *p1, *p2, *p3;
 SVertex * s1, * s2, *s3;
 //int col;
@@ -352,7 +352,7 @@ SVertex * s1, * s2, *s3;
 	cmd.cmdType = type_Poly;
 	cmd.cmdID = obj_Tri;
 	vec_tex	st;
-	
+
 	st.v[0]  = p3->x;
 	st.v[1]  = p3->y;
 	st.v[2]  = p3->z;
@@ -379,7 +379,7 @@ SVertex * s1, * s2, *s3;
 	st.v[1]  = p1->y;
 	st.v[2]  = p1->z;
 	st.st[0] = s1->tx;
-	st.st[1] = s1->ty;	
+	st.st[1] = s1->ty;
 	st.st[0] *= gRepTexX;
 	st.st[0] += gOffTexX;
 	st.st[1] *= gRepTexY;
@@ -408,7 +408,7 @@ SVertex * s1, * s2, *s3, *s4;
 	cmd.cmdType = type_Poly;
 	cmd.cmdID = gIsCockpit ? obj_Quad_Cockpit : obj_Quad;
 	vec_tex	st;
-	
+
 	st.v[0]  = p4->x;
 	st.v[1]  = p4->y;
 	st.v[2]  = p4->z;
@@ -420,8 +420,8 @@ SVertex * s1, * s2, *s3, *s4;
 	st.st[1] += gOffTexY;
 	cmd.st.push_back(st);
 
-	
-	
+
+
 	st.v[0]  = p3->x;
 	st.v[1]  = p3->y;
 	st.v[2]  = p3->z;
@@ -448,7 +448,7 @@ SVertex * s1, * s2, *s3, *s4;
 	st.v[1]  = p1->y;
 	st.v[2]  = p1->z;
 	st.st[0] = s1->tx;
-	st.st[1] = s1->ty;	
+	st.st[1] = s1->ty;
 	st.st[0] *= gRepTexX;
 	st.st[0] += gOffTexX;
 	st.st[1] *= gRepTexY;
@@ -508,7 +508,7 @@ void obj7_output_polygon(Surface *s)
 	if (!gHasTexNow && !gIsCockpit)
 		++gErrMissingTex;
 	XObjCmd	cmd;
-	cmd.cmdType = type_Attr;	
+	cmd.cmdType = type_Attr;
 	bool	is_two_sided = surface_get_twosided(s);
 	if (is_two_sided != gTwoSided)
 	{
@@ -519,7 +519,7 @@ void obj7_output_polygon(Surface *s)
 		gObj.cmds.push_back(cmd);
 		gTwoSided = is_two_sided;
 	}
-	
+
 	bool	is_smooth = surface_get_shading(s);
 	if (is_smooth != gSmooth)
 	{
@@ -528,7 +528,7 @@ void obj7_output_polygon(Surface *s)
 		else
 			cmd.cmdID = attr_Shade_Flat;
 		gObj.cmds.push_back(cmd);
-		gSmooth = is_smooth;		
+		gSmooth = is_smooth;
 	}
 
     if (s->numvert > 4)
@@ -542,7 +542,7 @@ void obj7_output_polygon(Surface *s)
 
            for (t = slist; t != NULL; t = t->next)
                {
-               obj7_output_triangle((Surface *)t->data); 
+               obj7_output_triangle((Surface *)t->data);
                surface_free((Surface *)t->data);
                }
            list_free(&slist);
@@ -550,10 +550,10 @@ void obj7_output_polygon(Surface *s)
         }
     else
         if (s->numvert == 4)
-            obj7_output_quad(s); 
+            obj7_output_quad(s);
     else
         if (s->numvert == 3)
-            obj7_output_triangle(s); 
+            obj7_output_triangle(s);
 
 }
 
@@ -568,7 +568,7 @@ List *p;
     printf("outputing %s\n", ac_object_get_name(ob));
 
     ac_object_get_contents(ob, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
+        &vertices, &surfaces, &kids);
 
 	float	lod_start, lod_end;
 	if (sscanf(ac_object_get_name(ob), "LOD %f/%f",&lod_start, &lod_end)==2)
@@ -579,13 +579,13 @@ List *p;
 		cmd.cmdID = attr_LOD;
 		cmd.attributes.push_back(lod_start);
 		cmd.attributes.push_back(lod_end);
-		gObj.cmds.push_back(cmd);		
+		gObj.cmds.push_back(cmd);
 	}
-	
+
 	bool bad_obj = false;
-	
+
 	if (ac_object_has_texture(ob))
-	{	
+	{
 		string tex = texture_id_to_name(ac_object_get_texture_index(ob));
 		gHasTexNow = true;
 		if (strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel."))
@@ -599,7 +599,7 @@ List *p;
 				gErrDoubleTex = true;
 				list_add_item_head(&gBadObjects, ob);
 				bad_obj = true;
-			} 
+			}
 			gTexName = tex;
 		}
 	} else {
@@ -611,7 +611,7 @@ List *p;
 	gRepTexY = ac_object_get_texture_repeat_y(ob);
 	gOffTexX = ac_object_get_texture_offset_x(ob);
 	gOffTexY = ac_object_get_texture_offset_y(ob);
-        
+
     int no_tex_count = gErrMissingTex;
     for (p = surfaces; p != NULL; p = p->next)
     {
@@ -621,7 +621,7 @@ List *p;
         else
             obj7_output_polyline(s);
     }
-    
+
     if (no_tex_count < gErrMissingTex && !bad_obj)
     	list_add_item_head(&gBadObjects, ob);
 
@@ -636,7 +636,7 @@ List *p;
 
 int do_obj7_save(char * fname, ACObject * obj)
 {
-	gObj.cmds.clear();	
+	gObj.cmds.clear();
 	gTexName.clear();
 	gErrMissingTex = 0;
 	gHasTexNow = false;
@@ -650,7 +650,7 @@ int do_obj7_save(char * fname, ACObject * obj)
 	gIsCockpit = false;
     obj7_output_object(obj, NULL);
 	obj7_reset_properties();
-    
+
     string::size_type p = gTexName.find_last_of("\\/");
     if (p != gTexName.npos) gTexName.erase(0,p+1);
     if (gTexName.size() > 4)
@@ -662,7 +662,7 @@ int do_obj7_save(char * fname, ACObject * obj)
         message_dialog("can't open file '%s' for writing", fname);
         return 0;
     }
-    
+
     if (gErrMissingTex)
     	message_dialog("Warning: %d objects did not have texturse assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
@@ -670,12 +670,12 @@ int do_obj7_save(char * fname, ACObject * obj)
     if (gErrBadCockpit)
     	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture.");
     if (gBadSurfaces)
-    {    	
+    {
 		clear_selection();
 		ac_selection_select_surfacelist(gBadSurfaces);
 		list_free(&gBadSurfaces);
 		gBadSurfaces = NULL;
-		redraw_all();    	
+		redraw_all();
     }
     else if (gBadObjects)
     {
@@ -683,9 +683,9 @@ int do_obj7_save(char * fname, ACObject * obj)
 		ac_selection_select_objectlist(gBadObjects);
 		list_free(&gBadObjects);
 		gBadObjects = NULL;
-		redraw_all();    	
+		redraw_all();
     }
-    
+
     return 1;
 }
 
@@ -695,24 +695,24 @@ ACObject *	do_obj7_load(char *filename)
 {
 	Point3	p3;
 	char	lodStrBuf[256];
-	
+
 	gObj.cmds.clear();
 	if (!XObjRead(filename, gObj))
 	{
 //		message_dialog("can't read OBJ7 file '%s'", filename);
 		return NULL;
 	}
-	
-    ACObject * group = new_object(OBJECT_NORMAL);	
+
+    ACObject * group = new_object(OBJECT_NORMAL);
     string	fname(filename);
-    string::size_type p = fname.find_last_of("\\/");	
+    string::size_type p = fname.find_last_of("\\/");
     string justName = (p == fname.npos) ? fname : fname.substr(p+1);
     string justPath = fname.substr(0,p+1);
 	string::size_type p2 = gObj.texture.find_last_of("\\/:");
-	string texName = (p2 == gObj.texture.npos) ? gObj.texture : gObj.texture.substr(p2+1);    
+	string texName = (p2 == gObj.texture.npos) ? gObj.texture : gObj.texture.substr(p2+1);
     string texNameBmp = texName + ".bmp";
-    string texNamePng = texName + ".png";    
-    
+    string texNamePng = texName + ".png";
+
     bool	has_cockpit_cmd = false;
 	for(vector<XObjCmd>::iterator cmd = gObj.cmds.begin(); cmd != gObj.cmds.end(); ++cmd)
 	{
@@ -730,11 +730,11 @@ ACObject *	do_obj7_load(char *filename)
 			search_and_set_texture(group, filename, (char *) texNamePng.c_str());
 		}
 	}
-	
+
     ACObject * cockpit_group = NULL;
 	ACObject * curLOD = NULL;
 	ACObject * target = group;
-    
+
     if (has_cockpit_cmd)
     {
     	cockpit_group = new_object(OBJECT_NORMAL);
@@ -743,7 +743,7 @@ ACObject *	do_obj7_load(char *filename)
 
     	object_set_name(target, "Cockpit Object Textured Geometry");
 		if (!search_and_set_texture(target, filename, (char *) texNameBmp.c_str()))
-			search_and_set_texture(target, filename, (char *) texNamePng.c_str());    	
+			search_and_set_texture(target, filename, (char *) texNamePng.c_str());
 
     	string	cockpit_bitmap_name = "cockpit/-PANELS-/panel.png";
     	printf("Trying to set cockpit texture: %s\n", cockpit_bitmap_name.c_str());
@@ -756,17 +756,17 @@ ACObject *	do_obj7_load(char *filename)
 	    	{
 	    		message_dialog("Unable to find custom panel texture: %s", cockpit_bitmap_name.c_str());
 	    	}
-	    }	    
+	    }
     }
-    
-	
-    
+
+
+
 	XObj	obj;
 	DecomposeObj(gObj,	obj, 100);
-	
+
 	bool	is_two_sided = false;
 	bool	is_smooth = true;
-	
+
 	for(vector<XObjCmd>::iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
 	{
 		switch(cmd->cmdType) {
@@ -810,7 +810,7 @@ ACObject *	do_obj7_load(char *filename)
 					p3.z = cmd->st[i].v[2];
 					verts.push_back(object_add_new_vertex_head((cmd->cmdID == obj_Quad_Cockpit) ? cockpit_group : target, &p3));
 				}
-				
+
 		        Surface * s = new_surface();
 				for (i = 0; i < cmd->st.size(); ++i)
 				{
@@ -819,8 +819,8 @@ ACObject *	do_obj7_load(char *filename)
 			    surface_set_type(s, SURFACE_POLYGON);
 			    surface_set_twosided(s, is_two_sided);
 			    surface_set_shading(s, is_smooth);
-		        object_add_surface_head((cmd->cmdID == obj_Quad_Cockpit) ? cockpit_group : target, s);				
-			}			
+		        object_add_surface_head((cmd->cmdID == obj_Quad_Cockpit) ? cockpit_group : target, s);
+			}
 			// also set the texture appropriately.
 			break;
 		case type_PtLine:
@@ -848,7 +848,7 @@ ACObject *	do_obj7_load(char *filename)
 					surface_add_vertex_head(s, lv2, 0, 0);
 				    surface_set_twosided(s, is_two_sided);
 				    surface_set_shading(s, is_smooth);
-				    surface_set_type(s, SURFACE_LINE);					
+				    surface_set_type(s, SURFACE_LINE);
 					object_add_surface_head(target, s);
 				}
 				break;
@@ -860,7 +860,7 @@ ACObject *	do_obj7_load(char *filename)
 		object_add_child(group, curLOD);
 	if (cockpit_group)
     	object_add_child(group, cockpit_group);
-		
+
 
 	object_calc_normals_force(group);
 

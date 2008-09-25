@@ -10,7 +10,7 @@
 
 #include "TextureTransformNode.h"
 
-TextureTransformNode::TextureTransformNode() 
+TextureTransformNode::TextureTransformNode()
 {
 	setHeaderFlag(false);
 	setType(textureTransformNodeString);
@@ -36,7 +36,7 @@ TextureTransformNode::TextureTransformNode()
 	addExposedField(rotationField);
 }
 
-TextureTransformNode::~TextureTransformNode() 
+TextureTransformNode::~TextureTransformNode()
 {
 }
 
@@ -51,17 +51,17 @@ SFVec2f *TextureTransformNode::getTranslationField()
 	return (SFVec2f *)getExposedField(translationFieldString);
 }
 
-void TextureTransformNode::setTranslation(float value[]) 
+void TextureTransformNode::setTranslation(float value[])
 {
 	getTranslationField()->setValue(value);
 }
 
-void TextureTransformNode::setTranslation(float x, float y) 
+void TextureTransformNode::setTranslation(float x, float y)
 {
 	getTranslationField()->setValue(x, y);
 }
 
-void TextureTransformNode::getTranslation(float value[]) 
+void TextureTransformNode::getTranslation(float value[])
 {
 	getTranslationField()->getValue(value);
 }
@@ -77,17 +77,17 @@ SFVec2f *TextureTransformNode::getScaleField()
 	return (SFVec2f *)getExposedField(scaleFieldString);
 }
 
-void TextureTransformNode::setScale(float value[]) 
+void TextureTransformNode::setScale(float value[])
 {
 	getScaleField()->setValue(value);
 }
 
-void TextureTransformNode::setScale(float x, float y) 
+void TextureTransformNode::setScale(float x, float y)
 {
 	getScaleField()->setValue(x, y);
 }
 
-void TextureTransformNode::getScale(float value[]) 
+void TextureTransformNode::getScale(float value[])
 {
 	getScaleField()->getValue(value);
 }
@@ -103,17 +103,17 @@ SFVec2f *TextureTransformNode::getCenterField()
 	return (SFVec2f *)getExposedField(centerFieldString);
 }
 
-void TextureTransformNode::setCenter(float value[]) 
+void TextureTransformNode::setCenter(float value[])
 {
 	getCenterField()->setValue(value);
 }
 
-void TextureTransformNode::setCenter(float x, float y) 
+void TextureTransformNode::setCenter(float x, float y)
 {
 	getCenterField()->setValue(x, y);
 }
 
-void TextureTransformNode::getCenter(float value[]) 
+void TextureTransformNode::getCenter(float value[])
 {
 	getCenterField()->getValue(value);
 }
@@ -129,12 +129,12 @@ SFFloat *TextureTransformNode::getRotationField()
 	return (SFFloat *)getExposedField(rotationFieldString);
 }
 
-void TextureTransformNode::setRotation(float value) 
+void TextureTransformNode::setRotation(float value)
 {
 	getRotationField()->setValue(value);
 }
 
-float TextureTransformNode::getRotation() 
+float TextureTransformNode::getRotation()
 {
 	return getRotationField()->getValue();
 }
@@ -143,12 +143,12 @@ float TextureTransformNode::getRotation()
 //	List
 ////////////////////////////////////////////////
 
-TextureTransformNode *TextureTransformNode::next() 
+TextureTransformNode *TextureTransformNode::next()
 {
 	return (TextureTransformNode *)Node::next(getType());
 }
 
-TextureTransformNode *TextureTransformNode::nextTraversal() 
+TextureTransformNode *TextureTransformNode::nextTraversal()
 {
 	return (TextureTransformNode *)Node::nextTraversalByType(getType());
 }
@@ -156,21 +156,21 @@ TextureTransformNode *TextureTransformNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool TextureTransformNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void TextureTransformNode::initialize() 
+void TextureTransformNode::initialize()
 {
 }
 
-void TextureTransformNode::uninitialize() 
+void TextureTransformNode::uninitialize()
 {
 }
 
-void TextureTransformNode::update() 
+void TextureTransformNode::update()
 {
 }
 
@@ -178,7 +178,7 @@ void TextureTransformNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void TextureTransformNode::outputContext(ostream &printStream, char *indentString) 
+void TextureTransformNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFVec2f *translation = getTranslationField();
 	SFVec2f *center = getCenterField();
@@ -208,11 +208,11 @@ void TextureTransformNode::getSFMatrix(SFMatrix *mOut)
 	SFMatrix	mR;
 	SFMatrix	mS;
 
-	getTranslation(translation); 
+	getTranslation(translation);
 	translation[2] = 0.0f;
 	mT.setTranslation(translation);
 
-	getCenter(center); 
+	getCenter(center);
 	center[2] = 0.0f;
 	mC.setTranslation(center);
 
@@ -226,10 +226,10 @@ void TextureTransformNode::getSFMatrix(SFMatrix *mOut)
 	scale[2] = 1.0f;
 	mS.setScaling(scale);
 
-	getCenter(center); 
-	center[0] = -center[0]; 
-	center[1] = -center[1]; 
-	center[2] = 0.0f; 
+	getCenter(center);
+	center[0] = -center[0];
+	center[1] = -center[1];
+	center[2] = 0.0f;
 	mCI.setTranslation(center);
 
 	mOut->init();

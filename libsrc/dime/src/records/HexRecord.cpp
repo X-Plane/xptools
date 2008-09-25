@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: HexRecord.cpp
  *
  *  This source file is part of DIME.
@@ -50,7 +50,7 @@ dimeHexRecord::dimeHexRecord(const int group_code)
 
 //!
 
-int 
+int
 dimeHexRecord::typeId() const
 {
   return dimeBase::dimeHexRecordType;

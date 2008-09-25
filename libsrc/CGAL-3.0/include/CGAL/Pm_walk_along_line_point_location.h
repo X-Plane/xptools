@@ -35,7 +35,7 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template <class Planar_map_> class Pm_walk_along_line_point_location : 
+template <class Planar_map_> class Pm_walk_along_line_point_location :
   public Pm_point_location_base<Planar_map_> {
 public:
   typedef Planar_map_ Planar_map;
@@ -62,12 +62,12 @@ protected:
 
 public:
   // Constructor
-  Pm_walk_along_line_point_location() : 
+  Pm_walk_along_line_point_location() :
     Pm_point_location_base<Planar_map>(),
     pm(0),
     traits(0) {}
-  
-  void init(Planar_map & pmp, Traits & tr) 
+
+  void init(Planar_map & pmp, Traits & tr)
   {
     CGAL_precondition_msg(pm == NULL,
     "Point location instance should be uninitialized "
@@ -90,7 +90,7 @@ public:
                          //additions by iddo for arrangement
                          const X_curve &, const X_curve &) {}
 
-  inline void merge_edge(const X_curve &, const X_curve &, Halfedge_handle, 
+  inline void merge_edge(const X_curve &, const X_curve &, Halfedge_handle,
                          //additions by iddo for arrangement
                          const X_curve &) {}
 
@@ -100,14 +100,14 @@ public:
   inline void clear() {}
   inline void update(const Halfedge_handle_iterator &,
                      const Halfedge_handle_iterator &,
-                     const Token& token) 
+                     const Token& token)
   { token.rebuild_bounding_box(this); }
 
 private:
 
   void walk_along_line(const Point & p, bool up, bool including,
                        Halfedge_handle & e, Locate_type & lt) const ;
-  /* Simulates a walk along a vertical ray shoot whose shape is determined by 
+  /* Simulates a walk along a vertical ray shoot whose shape is determined by
      'up' and 'including'. e is the returned edge. */
 
   Halfedge_handle find_vertex_representation(Halfedge_handle e,
@@ -131,7 +131,7 @@ private:
     while(curr!=first)
     {
       if (traits->curves_compare_y_at_x_from_bottom(curr->curve(),e->curve(),p)
-          ==SMALLER) 
+          ==SMALLER)
       {
 	e=curr;
         break;// this can't be improved
@@ -142,7 +142,7 @@ private:
     while(curr!=first)
       {
         if (traits->curves_compare_y_at_x_from_top(curr->curve(),e->curve(),p)
-	    ==SMALLER) 
+	    ==SMALLER)
         {
 	  e=curr;
           break;// this can't be improved
@@ -167,7 +167,7 @@ private:
   /* Finds the closest halfedge on a ccb along a vertical ray shoot.
      The bools 'up' and 'including' set the vertical ray shoot's shape.
      The return value is true iff such an halfedge exists.
-     Locate type is 
+     Locate type is
      UNBOUNDED_FACE if point is outside ccb
      FACE if inside
      EDGE of on edge-boundary
@@ -181,8 +181,8 @@ private:
   void debug(const Halfedge_handle& e) const
     {
       {
-        if (e!=pm->halfedges_end()) 
-          std::cerr << "(" << e->source()->point() << "," 
+        if (e!=pm->halfedges_end())
+          std::cerr << "(" << e->source()->point() << ","
 		    << e->target()->point() << ")" << std::flush;
         else std::cerr << "(oo)";
       }
@@ -194,13 +194,13 @@ public:
   inline const Traits * get_traits() const {return traits;}
 
 protected:
-  inline const Bounding_box * get_bounding_box() const 
+  inline const Bounding_box * get_bounding_box() const
   {return pm->get_bounding_box();}
 
   Planar_map * pm;
   Traits_wrap * traits;
 };
-  
+
 CGAL_END_NAMESPACE
 
 #ifdef CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION

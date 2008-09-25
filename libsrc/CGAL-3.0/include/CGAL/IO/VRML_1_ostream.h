@@ -62,7 +62,7 @@ public:
 private:
     void header() {
         os() << "#VRML V1.0 ascii" << std::endl;
-        os() << "# File written with the help of the CGAL Library" 
+        os() << "# File written with the help of the CGAL Library"
 	     << std::endl;
     }
 };

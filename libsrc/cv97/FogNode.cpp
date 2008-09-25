@@ -10,15 +10,15 @@
 
 #include "FogNode.h"
 
-FogNode::FogNode() 
+FogNode::FogNode()
 {
 	setHeaderFlag(false);
 	setType(fogNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
-		
+
 	// color exposed field
 	colorField = new SFColor(1.0f, 1.0f, 1.0f);
 	addExposedField(colorFieldString, colorField);
@@ -32,7 +32,7 @@ FogNode::FogNode()
 	addExposedField(visibilityRangeFieldString, visibilityRangeField);
 }
 
-FogNode::~FogNode() 
+FogNode::~FogNode()
 {
 }
 
@@ -52,12 +52,12 @@ void FogNode::setColor(float value[])
 	getColorField()->setValue(value);
 }
 
-void FogNode::setColor(float r, float g, float b) 
+void FogNode::setColor(float r, float g, float b)
 {
 	getColorField()->setValue(r, g, b);
 }
 
-void FogNode::getColor(float value[]) 
+void FogNode::getColor(float value[])
 {
 	getColorField()->getValue(value);
 }
@@ -73,12 +73,12 @@ SFString *FogNode::getFogTypeField()
 	return (SFString *)getExposedField(fogTypeFieldString);
 }
 
-void FogNode::setFogType(char *value) 
+void FogNode::setFogType(char *value)
 {
 	getFogTypeField()->setValue(value);
 }
 
-char *FogNode::getFogType() 
+char *FogNode::getFogType()
 {
 	return getFogTypeField()->getValue();
 }
@@ -94,12 +94,12 @@ SFFloat *FogNode::getVisibilityRangeField()
 	return (SFFloat *)getExposedField(visibilityRangeFieldString);
 }
 
-void FogNode::setVisibilityRange(float value) 
+void FogNode::setVisibilityRange(float value)
 {
 	getVisibilityRangeField()->setValue(value);
 }
 
-float FogNode::getVisibilityRange() 
+float FogNode::getVisibilityRange()
 {
 	return getVisibilityRangeField()->getValue();
 }
@@ -108,12 +108,12 @@ float FogNode::getVisibilityRange()
 //	List
 ////////////////////////////////////////////////
 
-FogNode *FogNode::next() 
+FogNode *FogNode::next()
 {
 	return (FogNode *)Node::next(getType());
 }
 
-FogNode *FogNode::nextTraversal() 
+FogNode *FogNode::nextTraversal()
 {
 	return (FogNode *)Node::nextTraversalByType(getType());
 }
@@ -121,21 +121,21 @@ FogNode *FogNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool FogNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void FogNode::initialize() 
+void FogNode::initialize()
 {
 }
 
-void FogNode::uninitialize() 
+void FogNode::uninitialize()
 {
 }
 
-void FogNode::update() 
+void FogNode::update()
 {
 }
 
@@ -143,7 +143,7 @@ void FogNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void FogNode::outputContext(ostream &printStream, char *indentString) 
+void FogNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFColor *color = getColorField();
 	SFString *fogType = getFogTypeField();

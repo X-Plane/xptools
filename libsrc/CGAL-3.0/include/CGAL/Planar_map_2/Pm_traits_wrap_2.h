@@ -30,8 +30,8 @@
 CGAL_BEGIN_NAMESPACE
 
 //--------------------------------------------------------------------------
-// Pm_traits_wrap_2 - 
-//     Geometric Look Up Table. This class extends the user supplied 
+// Pm_traits_wrap_2 -
+//     Geometric Look Up Table. This class extends the user supplied
 // interface to include various less "shallow" operations that are
 // impelemented through the interface.
 //--------------------------------------------------------------------------
@@ -43,13 +43,13 @@ public:
 //  typedef  typename I::Info_vertex     Info_vertex;
 //  typedef  typename I::Info_edge       Info_edge;
 //  typedef  typename I::Info_face       Info_face;
-  
+
   typedef PlanarMapTraits_2                     Base;
   typedef typename Base::X_monotone_curve_2     X_monotone_curve_2;
   typedef typename Base::Point_2                Point_2;
 
   typedef typename Base::Has_left_category      Has_left_category;
-    
+
   // Creators:
   // ---------
   Pm_traits_wrap_2() : Base() {}
@@ -59,50 +59,50 @@ public:
   // -----------
   bool point_is_left(const Point_2 & p1, const Point_2 & p2) const
   { return (compare_x(p1, p2) == SMALLER); }
-  
+
   bool point_is_right(const Point_2 & p1, const Point_2 & p2) const
   { return (compare_x(p1, p2) == LARGER); }
-    
+
   bool point_equal_x(const Point_2 & p1, const Point_2 & p2) const
   { return (compare_x(p1, p2) == EQUAL); }
-  
+
   bool point_is_left_low(const Point_2 & p1, const Point_2 & p2) const
   { return (compare_xy(p1, p2) == SMALLER); }
-    
+
   bool point_is_right_top(const Point_2 & p1, const Point_2 & p2) const
   { return point_is_left_low(p2,p1); }
-    
+
   const Point_2 & point_leftmost(const Point_2 & p1, const Point_2 & p2) const
   { return (point_is_left(p1, p2) ? p1 : p2); }
-    
+
   const Point_2 & point_rightmost(const Point_2 & p1, const Point_2 & p2) const
   { return (point_is_right(p1, p2) ? p1 : p2); }
-    
-  const Point_2 & point_leftlow_most (const Point_2 & p1, 
+
+  const Point_2 & point_leftlow_most (const Point_2 & p1,
 				      const Point_2 & p2) const
   { return (point_is_left_low(p1, p2) ? p1 : p2); }
-    
-  const Point_2 & point_righttop_most (const Point_2 & p1, 
+
+  const Point_2 & point_righttop_most (const Point_2 & p1,
 				       const Point_2 & p2) const
   { return (point_is_right_top(p1, p2) ? p1 : p2); }
-    
-  Point_2 curve_leftmost(const X_monotone_curve_2 & cv) const 
+
+  Point_2 curve_leftmost(const X_monotone_curve_2 & cv) const
   { return point_leftmost(curve_source(cv),curve_target(cv)); }
-    
+
   Point_2 curve_rightmost(const X_monotone_curve_2 & cv) const
   { return point_rightmost(curve_source(cv),curve_target(cv)); }
-      
-  Point_2 curve_leftlow_most(const X_monotone_curve_2 & cv) const 
+
+  Point_2 curve_leftlow_most(const X_monotone_curve_2 & cv) const
   {
-    if (!curve_is_vertical(cv)) 
+    if (!curve_is_vertical(cv))
       return curve_leftmost(cv);
     else
       return point_leftlow_most(curve_source(cv), curve_target(cv));
   }
-    
+
   Point_2 curve_righttop_most(const X_monotone_curve_2 & cv) const
   {
-    if (!curve_is_vertical(cv)) 
+    if (!curve_is_vertical(cv))
       return curve_rightmost(cv);
     else
       return point_righttop_most(curve_source(cv), curve_target(cv));
@@ -158,18 +158,18 @@ public:
 	else
 	  return (false);
   }
-  
+
   /*!
    * Check whether the curve is degenerate.
    * \param cv The input curve.
    * \return (true) iff the curve source and target are the same.
    */
   inline bool curve_is_degenerate(const X_monotone_curve_2 & cv) const
-  { 
+  {
     return point_equal(curve_source(cv),curve_target(cv));
   }
-    
-  /*! 
+
+  /*!
    * Check if the given query curve is encountered when rotating the first
    * curve in a clockwise direction around a given point until reaching the
    * second curve.
@@ -182,9 +182,9 @@ public:
    * the result is always (false). If cv1 and cv2 overlap, the result is
    * (true), unless cv1 also overlaps them.
    */
-  bool curve_is_between_cw(const X_monotone_curve_2& cv, 
-                           const X_monotone_curve_2& cv1, 
-                           const X_monotone_curve_2& cv2, 
+  bool curve_is_between_cw(const X_monotone_curve_2& cv,
+                           const X_monotone_curve_2& cv1,
+                           const X_monotone_curve_2& cv2,
                            const Point_2& p) const
   {
     // Find the direction of each segment.
@@ -240,7 +240,7 @@ public:
 	  return (dir == DIR_LEFT &&
 		  curves_compare_y_at_x_left (cv1, cv, p) == SMALLER);
 	else
-	  return (dir == DIR_LEFT || 
+	  return (dir == DIR_LEFT ||
 		  dir == DIR_DOWN ||
                   (dir == DIR_RIGHT &&
                    curves_compare_y_at_x_right (cv1, cv, p) == LARGER));
@@ -263,7 +263,7 @@ public:
     {
       // Case 1: Both cv1 and cv2 are defined to the left of p.
       Comparison_result l_res = curves_compare_y_at_x_left (cv1, cv2, p);
-      
+
       if (l_res == LARGER)
       {
 	// Case 1(a) : cv1 is above cv2.
@@ -337,14 +337,14 @@ public:
    * \postcondition returns which of cv1,cv2 is first in clockwise sweep
    * around q starting from bottom direction.
    */
-  Comparison_result 
-  curves_compare_y_at_x_from_bottom(const X_monotone_curve_2 & cv1, 
-				 const X_monotone_curve_2 & cv2, 
+  Comparison_result
+  curves_compare_y_at_x_from_bottom(const X_monotone_curve_2 & cv1,
+				 const X_monotone_curve_2 & cv2,
 				 const Point_2 & q) const
   {
     if (!curve_is_vertical(cv1)) {
       if (!curve_is_vertical(cv2)) {
-        if (point_equal(curve_rightmost(cv1),q))  
+        if (point_equal(curve_rightmost(cv1),q))
         {
           // cv1 extends leftwards from q
           if (point_equal(curve_rightmost(cv2),q))
@@ -370,8 +370,8 @@ public:
           }
         }
       } else {
-        // cv2 is vertical, cv1 is not vertical 
-        if (point_equal(curve_rightmost(cv1),q) && 
+        // cv2 is vertical, cv1 is not vertical
+        if (point_equal(curve_rightmost(cv1),q) &&
           point_equal(curve_leftlow_most(cv2),   q))
           return SMALLER;
         else
@@ -380,7 +380,7 @@ public:
     } else {
       // cv1 is vertical
       if (point_equal(curve_righttop_most(cv1),q))
-        if (!curve_is_vertical(cv2) || 
+        if (!curve_is_vertical(cv2) ||
 	    point_equal(curve_leftlow_most(cv2),q))
           return SMALLER;
         else
@@ -397,15 +397,15 @@ public:
 
   /*! curves_compare_y_at_x_from_top()
    */
-  Comparison_result 
-  curves_compare_y_at_x_from_top(const X_monotone_curve_2 & cv1, 
-			      const X_monotone_curve_2 & cv2, 
+  Comparison_result
+  curves_compare_y_at_x_from_top(const X_monotone_curve_2 & cv1,
+			      const X_monotone_curve_2 & cv2,
 			      const Point_2 & q)
-    const 
+    const
   {
     if (!curve_is_vertical(cv1))
       if (!curve_is_vertical(cv2))
-        if (point_equal(curve_rightmost(cv1),q)) 
+        if (point_equal(curve_rightmost(cv1),q))
         {
           // cv1 extends leftwards from q
           if (point_equal(curve_rightmost(cv2),q))
@@ -430,7 +430,7 @@ public:
             return SMALLER;
           }
         }
-      else // cv2 is vertical, cv1 is not vertical 
+      else // cv2 is vertical, cv1 is not vertical
       {
         if (point_equal(curve_leftmost(cv1),q) &&
           point_equal(curve_righttop_most(cv2), q))
@@ -441,7 +441,7 @@ public:
     else // cv1 is vertical
     {
       if (point_equal(curve_leftlow_most(cv1),q))
-        if (!curve_is_vertical(cv2) || 
+        if (!curve_is_vertical(cv2) ||
 	    point_equal(curve_righttop_most(cv2),q))
           return SMALLER;
         else
@@ -458,12 +458,12 @@ public:
 
   /*! curve_is_unbounded()
    */
-  bool curve_is_unbounded(const X_monotone_curve_2 & cv) const 
+  bool curve_is_unbounded(const X_monotone_curve_2 & cv) const
   {
     return (curve_is_source_unbounded(cv)||
 	    curve_is_target_unbounded(cv));
   }
-    
+
   /*! curves_compare_y_at_x_left() is implemented based on the Has_left
    * category. If the category indicates that the "left" version is available,
    * it calls the function with same name defined in the base class. Otherwise,
@@ -471,27 +471,27 @@ public:
    * "right" version.
    */
   Comparison_result curves_compare_y_at_x_left(const X_monotone_curve_2 & cv1,
-                                            const X_monotone_curve_2 & cv2, 
-                                            const Point_2 & q) const 
+                                            const X_monotone_curve_2 & cv2,
+                                            const Point_2 & q) const
   {
     return curves_compare_y_at_x_left_imp(cv1, cv2, q, Has_left_category());
   }
 
-    
+
   Comparison_result
   curves_compare_y_at_x_left_imp(const X_monotone_curve_2 & cv1,
-                                 const X_monotone_curve_2 & cv2, 
+                                 const X_monotone_curve_2 & cv2,
                                  const Point_2 & q,
                                  Tag_true) const
   {
     return Base::curves_compare_y_at_x_left(cv1, cv2, q);
   }
-    
+
   Comparison_result
   curves_compare_y_at_x_left_imp(const X_monotone_curve_2 & cv1,
-                                 const X_monotone_curve_2 & cv2, 
+                                 const X_monotone_curve_2 & cv2,
                                  const Point_2 & q,
-                                 Tag_false) const 
+                                 Tag_false) const
   {
     Point_2 rq = point_reflect_in_x_and_y(q);
     X_monotone_curve_2 rcv1 = curve_reflect_in_x_and_y(cv1);
@@ -567,5 +567,5 @@ protected:
 };
 
 CGAL_END_NAMESPACE
- 
+
 #endif

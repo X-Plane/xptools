@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -89,7 +89,7 @@ bool			WED_GISPoint_HeadingWidthLength::PtOnFrame		(const Point2& p, double dist
 bool			WED_GISPoint_HeadingWidthLength::PtWithin		(const Point2& p	 ) const
 {
 	Point2 corners[4];
-	GetCorners(corners);	
+	GetCorners(corners);
 	return inside_polygon_pt(corners,corners+4,p);
 }
 
@@ -104,7 +104,7 @@ void			WED_GISPoint_HeadingWidthLength::Rescale(
 		corners[n].x = old_bounds.rescale_to_x(new_bounds,corners[n].x);
 		corners[n].y = old_bounds.rescale_to_y(new_bounds,corners[n].y);
 	}
-	
+
 	Point2	 ctr;
 	double  h, l, w;
 	Quad_4to1(corners, ctr, h, l, w);
@@ -112,7 +112,7 @@ void			WED_GISPoint_HeadingWidthLength::Rescale(
 	SetHeading(h);
 	SetWidth(w);
 	SetLength(l);
-	
+
 }
 
 double	WED_GISPoint_HeadingWidthLength::GetWidth (void		 ) const
@@ -153,7 +153,7 @@ void	WED_GISPoint_HeadingWidthLength::GetCorners(Point2 corners[4]) const
 {
 	Point2		center;
 	GetLocation(center);
-	
+
 	Quad_1to4(center, GetHeading(), GetLength(), GetWidth(), corners);
 }
 
@@ -161,7 +161,7 @@ void	WED_GISPoint_HeadingWidthLength::MoveCorner(int corner, const Vector2& delt
 {
 	Point2	corners[4];
 	Point2	ends[2];
-	
+
 	GetCorners(corners);
 	corners[corner] += delta;
 	int swapped = corner == 1 || corner == 3;
@@ -181,22 +181,22 @@ void	WED_GISPoint_HeadingWidthLength::MoveCorner(int corner, const Vector2& delt
 	SetLocation(ctr);
 	SetLength(l);
 	SetHeading(h);
-}	
+}
 
 
 void	WED_GISPoint_HeadingWidthLength::MoveSide(int side, const Vector2& delta)
-{	
+{
 	Point2	ends[2];
 	Point2	ctr;
-	double h = GetHeading(), l = GetLength(), w = GetWidth();	
+	double h = GetHeading(), l = GetLength(), w = GetWidth();
 	GetLocation(ctr);
-		
+
 	Quad_1to2(ctr, h, l, ends);
 
 	Quad_MoveSide2(ends, w, side, delta);
 
 	Quad_2to1(ends, ctr, h, l);
-	
+
 	SetWidth(w);
 	SetLocation(ctr);
 	SetLength(l);
@@ -208,7 +208,7 @@ void	WED_GISPoint_HeadingWidthLength::ResizeSide(int side, const Vector2& delta,
 	Point2	corners[4];
 	Point2	ctr;
 	double h, l, w;
-	
+
 	GetCorners(corners);
 	Quad_ResizeSide4(corners, side, delta, symetric);
 	Quad_4to1(corners, ctr, h, l, w);
@@ -222,15 +222,15 @@ void	WED_GISPoint_HeadingWidthLength::ResizeSide(int side, const Vector2& delta,
 void	WED_GISPoint_HeadingWidthLength::ResizeCorner(int corner, const Vector2& delta, bool symetric)
 {
 	Point2	ctr;
-	double h = GetHeading(), l = GetLength(), w = GetWidth();	
+	double h = GetHeading(), l = GetLength(), w = GetWidth();
 	GetLocation(ctr);
-	
+
 	Quad_ResizeCorner1(ctr, h, l, w, corner, delta, symetric);
-	
+
 	SetLocation(ctr);
 	SetLength(l);
 	SetWidth(w);
-	
+
 }
 
 

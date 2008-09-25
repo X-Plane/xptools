@@ -45,7 +45,7 @@ struct Rectangular_3_center_2_type2_operations0 {
   typedef typename R::Construct_point_2_below_left_implicit_point_2
     Construct_point_2_below_left_implicit_point_2;
   typedef typename Bind< Infinity_distance_2, Point_2, 1 >::Type  Delta;
-  
+
   Delta  delta() const { return delta_; }
   Less_x_2  less_x_2_object() const { return r_.less_x_2_object(); }
   Less_y_2  less_y_2_object() const { return r_.less_y_2_object(); }
@@ -59,7 +59,7 @@ struct Rectangular_3_center_2_type2_operations0 {
   { return r_.construct_vertex_2_object(); }
   Construct_iso_rectangle_2 construct_iso_rectangle_2_object() const
   { return r_.construct_iso_rectangle_2_object(); }
-  
+
   Construct_point_2_below_left_implicit_point_2
   pt_b_l() const
   { return r_.construct_point_2_below_left_implicit_point_2_object(); }
@@ -72,12 +72,12 @@ struct Rectangular_3_center_2_type2_operations0 {
   Construct_point_2_above_right_implicit_point_2
   pt_a_r() const
   { return r_.construct_point_2_above_right_implicit_point_2_object(); }
-  
+
   Min_x_2 minx() const { return Min_x_2(less_x_2_object()); }
   Min_y_2 miny() const { return Min_y_2(less_y_2_object()); }
   Max_x_2 maxx() const { return Max_x_2(less_x_2_object()); }
   Max_y_2 maxy() const { return Max_y_2(less_y_2_object()); }
-  
+
   private:
     R& r_;
     Delta delta_;
@@ -94,7 +94,7 @@ public:
 
   X_compare  compare_x() const { return less_x_2_object(); }
   Y_compare  compare_y() const { return greater_y_2_object(); }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -113,7 +113,7 @@ public:
                3);
   #endif
     }
-  
+
     Point place_x_square(bool constraint_empty,
                          const Rectangle& constraint,
                          const Rectangle& bbox) const
@@ -129,7 +129,7 @@ public:
                3);
   #endif
     }
-  
+
     Point place_x_square(const Point& so_far,
                          const Rectangle& bbox,
                          FT radius) const
@@ -140,7 +140,7 @@ public:
                     so_far),
              3);
     }
-  
+
     Point place_y_square(bool constraint_empty,
                          const Rectangle& constraint,
                          const Point& first_uncovered,
@@ -159,7 +159,7 @@ public:
                1);
   #endif
     }
-  
+
     Point place_y_square(bool constraint_empty,
                          const Rectangle& constraint,
                          const Rectangle& bbox) const
@@ -175,7 +175,7 @@ public:
                1);
   #endif
     }
-  
+
     Point place_y_square(const Point& so_far,
                          const Rectangle& bbox,
                          FT radius) const
@@ -187,37 +187,37 @@ public:
                            so_far)),
                1);
     }
-  
+
     Point update_x_square(const Point& s, const Point& newp) const
     {
       Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
       Construct_vertex_2        v    = construct_vertex_2_object();
-  
+
       return v(rect(minx()(s, newp), s), 3);
     }
-  
+
     Point update_y_square(const Point& s, const Point& newp) const {
       Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
       Construct_vertex_2        v    = construct_vertex_2_object();
-  
+
       return v(rect(s, miny()(s, newp)), 1);
     }
-  
+
     FT compute_x_distance(const Point& extreme,
                           const Rectangle& constraint) const
     { return distance()(extreme, construct_vertex_2_object()(constraint, 1)); }
-  
+
     FT compute_y_distance(const Point& extreme,
                           const Rectangle& constraint) const
     { return distance()(extreme, construct_vertex_2_object()(constraint, 3)); }
-  
+
     Point construct_corner_square(const Rectangle& bbox, FT r) const
     { return pt_a_r()(construct_vertex_2_object()(bbox, 0),
                       construct_vertex_2_object()(bbox, 0), r); }
-  
+
     Point construct_x_square(const Point& p, FT r) const
     { return pt_b_r()(p, p, r); }
-  
+
     Point construct_y_square(const Point& p, FT r) const
     { return pt_a_l()(p, p, r); }
 };
@@ -246,7 +246,7 @@ struct Rectangular_3_center_2_type2_operations1 {
   typedef typename R::Construct_point_2_below_left_implicit_point_2
     Construct_point_2_below_left_implicit_point_2;
   typedef typename Bind< Infinity_distance_2, Point_2, 1 >::Type  Delta;
-  
+
   Delta  delta() const { return delta_; }
   Less_x_2  less_x_2_object() const { return r_.less_x_2_object(); }
   Less_y_2  less_y_2_object() const { return r_.less_y_2_object(); }
@@ -260,7 +260,7 @@ struct Rectangular_3_center_2_type2_operations1 {
   { return r_.construct_vertex_2_object(); }
   Construct_iso_rectangle_2 construct_iso_rectangle_2_object() const
   { return r_.construct_iso_rectangle_2_object(); }
-  
+
   Construct_point_2_below_left_implicit_point_2
   pt_b_l() const
   { return r_.construct_point_2_below_left_implicit_point_2_object(); }
@@ -273,12 +273,12 @@ struct Rectangular_3_center_2_type2_operations1 {
   Construct_point_2_above_right_implicit_point_2
   pt_a_r() const
   { return r_.construct_point_2_above_right_implicit_point_2_object(); }
-  
+
   Min_x_2 minx() const { return Min_x_2(less_x_2_object()); }
   Min_y_2 miny() const { return Min_y_2(less_y_2_object()); }
   Max_x_2 maxx() const { return Max_x_2(less_x_2_object()); }
   Max_y_2 maxy() const { return Max_y_2(less_y_2_object()); }
-  
+
   private:
     R& r_;
     Delta delta_;
@@ -295,7 +295,7 @@ public:
 
   X_compare  compare_x() const { return greater_x_2_object(); }
   Y_compare  compare_y() const { return greater_y_2_object(); }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -314,7 +314,7 @@ public:
              2);
   #endif
   }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -330,7 +330,7 @@ public:
              2);
   #endif
   }
-  
+
   Point place_x_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -342,7 +342,7 @@ public:
                   so_far),
              2);
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -361,7 +361,7 @@ public:
              0);
   #endif
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -377,7 +377,7 @@ public:
              0);
   #endif
   }
-  
+
   Point place_y_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -389,34 +389,34 @@ public:
                                           v(bbox, 2), radius))),
              0);
   }
-  
+
   Point update_x_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(maxx()(s, newp), s), 2);
   }
-  
+
   Point update_y_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(s, miny()(s, newp)), 0);
   }
-  
+
   FT compute_x_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 0)); }
-  
+
   FT compute_y_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 2)); }
-  
+
   Point construct_corner_square(const Rectangle& bbox, FT r) const
   { return pt_a_l()(construct_vertex_2_object()(bbox, 2),
                     construct_vertex_2_object()(bbox, 0), r); }
-  
+
   Point construct_x_square(const Point& p, FT r) const
   { return pt_b_l()(p, p, r); }
-  
+
   Point construct_y_square(const Point& p, FT r) const
   { return pt_a_r()(p, p, r); }
 };
@@ -445,7 +445,7 @@ struct Rectangular_3_center_2_type2_operations2 {
   typedef typename R::Construct_point_2_below_left_implicit_point_2
     Construct_point_2_below_left_implicit_point_2;
   typedef typename Bind< Infinity_distance_2, Point_2, 1 >::Type  Delta;
-  
+
   Delta  delta() const { return delta_; }
   Less_x_2  less_x_2_object() const { return r_.less_x_2_object(); }
   Less_y_2  less_y_2_object() const { return r_.less_y_2_object(); }
@@ -459,7 +459,7 @@ struct Rectangular_3_center_2_type2_operations2 {
   { return r_.construct_vertex_2_object(); }
   Construct_iso_rectangle_2 construct_iso_rectangle_2_object() const
   { return r_.construct_iso_rectangle_2_object(); }
-  
+
   Construct_point_2_below_left_implicit_point_2
   pt_b_l() const
   { return r_.construct_point_2_below_left_implicit_point_2_object(); }
@@ -472,12 +472,12 @@ struct Rectangular_3_center_2_type2_operations2 {
   Construct_point_2_above_right_implicit_point_2
   pt_a_r() const
   { return r_.construct_point_2_above_right_implicit_point_2_object(); }
-  
+
   Min_x_2 minx() const { return Min_x_2(less_x_2_object()); }
   Min_y_2 miny() const { return Min_y_2(less_y_2_object()); }
   Max_x_2 maxx() const { return Max_x_2(less_x_2_object()); }
   Max_y_2 maxy() const { return Max_y_2(less_y_2_object()); }
-  
+
   private:
     R& r_;
     Delta delta_;
@@ -494,7 +494,7 @@ public:
 
   X_compare  compare_x() const { return greater_x_2_object(); }
   Y_compare  compare_y() const { return less_y_2_object(); }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -513,7 +513,7 @@ public:
              1);
   #endif
   }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -529,7 +529,7 @@ public:
              1);
   #endif
   }
-  
+
   Point place_x_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -541,7 +541,7 @@ public:
                   so_far),
              1);
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -560,7 +560,7 @@ public:
              3);
   #endif
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -576,7 +576,7 @@ public:
              3);
   #endif
   }
-  
+
   Point place_y_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -588,34 +588,34 @@ public:
                                   v(bbox, 0), radius), so_far)),
              3);
   }
-  
+
   Point update_x_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(maxx()(s, newp), s), 1);
   }
-  
+
   Point update_y_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(s, maxy()(s, newp)), 3);
   }
-  
+
   FT compute_x_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 3)); }
-  
+
   FT compute_y_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 1)); }
-  
+
   Point construct_corner_square(const Rectangle& bbox, FT r) const
   { return pt_b_l()(construct_vertex_2_object()(bbox, 2),
                     construct_vertex_2_object()(bbox, 2), r); }
-  
+
   Point construct_x_square(const Point& p, FT r) const
   { return pt_a_l()(p, p, r); }
-  
+
   Point construct_y_square(const Point& p, FT r) const
   { return pt_b_r()(p, p, r); }
 };
@@ -644,7 +644,7 @@ struct Rectangular_3_center_2_type2_operations3 {
   typedef typename R::Construct_point_2_below_left_implicit_point_2
     Construct_point_2_below_left_implicit_point_2;
   typedef typename Bind< Infinity_distance_2, Point_2, 1 >::Type  Delta;
-  
+
   Delta  delta() const { return delta_; }
   Less_x_2  less_x_2_object() const { return r_.less_x_2_object(); }
   Less_y_2  less_y_2_object() const { return r_.less_y_2_object(); }
@@ -658,7 +658,7 @@ struct Rectangular_3_center_2_type2_operations3 {
   { return r_.construct_vertex_2_object(); }
   Construct_iso_rectangle_2 construct_iso_rectangle_2_object() const
   { return r_.construct_iso_rectangle_2_object(); }
-  
+
   Construct_point_2_below_left_implicit_point_2
   pt_b_l() const
   { return r_.construct_point_2_below_left_implicit_point_2_object(); }
@@ -671,12 +671,12 @@ struct Rectangular_3_center_2_type2_operations3 {
   Construct_point_2_above_right_implicit_point_2
   pt_a_r() const
   { return r_.construct_point_2_above_right_implicit_point_2_object(); }
-  
+
   Min_x_2 minx() const { return Min_x_2(less_x_2_object()); }
   Min_y_2 miny() const { return Min_y_2(less_y_2_object()); }
   Max_x_2 maxx() const { return Max_x_2(less_x_2_object()); }
   Max_y_2 maxy() const { return Max_y_2(less_y_2_object()); }
-  
+
   private:
     R& r_;
     Delta delta_;
@@ -693,7 +693,7 @@ public:
 
   X_compare  compare_x() const { return less_x_2_object(); }
   Y_compare  compare_y() const { return less_y_2_object(); }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -712,7 +712,7 @@ public:
              0);
   #endif
   }
-  
+
   Point place_x_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -728,7 +728,7 @@ public:
              0);
   #endif
   }
-  
+
   Point place_x_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -740,7 +740,7 @@ public:
                   so_far),
              0);
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Point& first_uncovered,
@@ -759,7 +759,7 @@ public:
              2);
   #endif
   }
-  
+
   Point place_y_square(bool constraint_empty,
                        const Rectangle& constraint,
                        const Rectangle& bbox) const
@@ -775,7 +775,7 @@ public:
              2);
   #endif
   }
-  
+
   Point place_y_square(const Point& so_far,
                        const Rectangle& bbox,
                        FT radius) const
@@ -787,34 +787,34 @@ public:
                                   v(bbox, 0), radius), so_far)),
              2);
   }
-  
+
   Point update_x_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(minx()(s, newp), s), 0);
   }
-  
+
   Point update_y_square(const Point& s, const Point& newp) const {
     Construct_iso_rectangle_2 rect = construct_iso_rectangle_2_object();
     Construct_vertex_2        v    = construct_vertex_2_object();
     return v(rect(s, maxy()(s, newp)), 2);
   }
-  
+
   FT compute_x_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 2)); }
-  
+
   FT compute_y_distance(const Point& extreme,
                         const Rectangle& constraint) const
   { return distance()(extreme, construct_vertex_2_object()(constraint, 0)); }
-  
+
   Point construct_corner_square(const Rectangle& bbox, FT r) const
   { return pt_b_r()(construct_vertex_2_object()(bbox, 0),
                     construct_vertex_2_object()(bbox, 2), r); }
-  
+
   Point construct_x_square(const Point& p, FT r) const
   { return pt_a_r()(p, p, r); }
-  
+
   Point construct_y_square(const Point& p, FT r) const
   { return pt_b_l()(p, p, r); }
 };

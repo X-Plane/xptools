@@ -20,7 +20,7 @@ class SFVec2f : public Field {
 
 	static	int	mInit;
 
-	float mValue[2]; 
+	float mValue[2];
 
 public:
 

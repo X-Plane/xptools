@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,40 +49,40 @@ int	EnvWrite(const char * inFileName)
 		Vertex610	vertex;
 		long		latRef, lonRef;
 
-	sscanf(StripFileName(inFileName, DIR_CHAR), "%ld%ld", &latRef, &lonRef);	
-	
+	sscanf(StripFileName(inFileName, DIR_CHAR), "%ld%ld", &latRef, &lonRef);
+
 	fi = fopen(inFileName, "wb");
 	if (fi == NULL)
 	{
 		err = -1;
 		goto bail;
 	}
-	
+
 	err = WRITE_ERR;
-	
+
 	/* HEADER
 	 *
 	 * The header is a one-byte endian code, followed by a four-byte version.
 	 *
 	 */
-	
+
 	{
 			char		format;
 			long		version;
-	
+
 		format = ((DIR_CHAR == ':') || (DIR_CHAR == '/')) ? kFormatMac : kFormatIntel;
 		version = kVersion650;
-		
+
 		if (fwrite(&format, sizeof(format), 1, fi) != 1)
 			goto bail;
-		
+
 		if (fwrite(&version, sizeof(version), 1, fi) != 1)
 			goto bail;
 	}
 
 	/* VERTICES
 	 *
-	 * There are 201 vertical by 151 horizontal vertices, containing 200x150 quads.  They are 
+	 * There are 201 vertical by 151 horizontal vertices, containing 200x150 quads.  They are
 	 * written from left to right, then bottom to top.  The bottom left point is always at the lat/lon
 	 * coordinates of the .env file's name.
 	 *
@@ -103,7 +103,7 @@ int	EnvWrite(const char * inFileName)
 			double 	lat, lon;
 			float	elev;
 			short	use, rotation, scale, xoff, yoff, bodyID;
-	
+
 		for (v = 0; v < kEnvHeight; ++v)
 			for (h = 0; h < kEnvWidth; ++h)
 			{
@@ -113,8 +113,8 @@ int	EnvWrite(const char * inFileName)
 				vertex.altitude = elev + 10000.0;
 				vertex.texture = use % 1000;
 				if (custom) vertex.texture += 1000;
-				vertex.texture += ((360 - rotation) / 90) * 100000; 
-				
+				vertex.texture += ((360 - rotation) / 90) * 100000;
+
 				if (!custom)
 					vertex.texture += 1000000 * bodyID;
 				else {
@@ -122,15 +122,15 @@ int	EnvWrite(const char * inFileName)
 					vertex.texture += 10000000 * yoff;
 					vertex.texture += 100000000 * xoff;
 				}
-				
+
 				EndianSwapBuffer(platform_Native, platform_BigEndian, kEndianSwapVertex610BEWrite, &vertex);
-			
+
 				if (fwrite(&vertex, sizeof(vertex), 1, fi) != 1)
 					goto bail;
-			}	
+			}
 	}
 
-	/* OBSTACLES 
+	/* OBSTACLES
 	 *
 	 * Each obstacle has a 4-byte kind integer code, 4 byte floating lat
 	 * and lon.  For built-in obstacles, the next 4 bytes are a floating point altitude AGL meters.
@@ -138,12 +138,12 @@ int	EnvWrite(const char * inFileName)
 	 * custom object name.   A kind of 99 indicates the end of data (with no data following it for objects).
 	 *
 	 */
-					
-	{	
+
+	{
 			long		index = 0, stopCode = kObstacleTypeStop;
 			Obstacle	obs;
 			char		name[ENV_STR_SIZE+1];
-	
+
 		memset(name, 0, ENV_STR_SIZE+1);
 		while (GetNthObject(index++, &obs.type, &obs.lat, &obs.lon, &obs.heading, name))
 		{
@@ -157,8 +157,8 @@ int	EnvWrite(const char * inFileName)
 		if (fwrite(&stopCode, sizeof(stopCode), 1, fi) !=1)
 			goto bail;
 	}
-	
-	/* PATHS 
+
+	/* PATHS
 	 *
 	 * There are four kinds of paths in order in the file: roads, trails, train tracks, and power lines.
 	 * Each has the same format: a list of 4-byte integer codes, with 99 to stop.  The codes are fractional
@@ -166,7 +166,7 @@ int	EnvWrite(const char * inFileName)
 	 * 10000, then added together.  If the point is the last in a chain, this code is then made negative.
 	 *
 	 */
-	 
+
 	{
 			long			index;
 			long			code;
@@ -175,7 +175,7 @@ int	EnvWrite(const char * inFileName)
 			float			flat, flon;
 			int				last;
 
-		/* Roads */		
+		/* Roads */
 		index = 0;
 		while (GetNthRoadSegment(index++, &lat, &lon, &last))
 		{
@@ -190,8 +190,8 @@ int	EnvWrite(const char * inFileName)
 		code = kRoadStop;
 		if (fwrite(&code, sizeof(code), 1, fi) != 1)
 			goto bail;
-		
-		/* Trails */		
+
+		/* Trails */
 		index = 0;
 		while (GetNthTrailSegment(index++, &lat, &lon, &last))
 		{
@@ -206,8 +206,8 @@ int	EnvWrite(const char * inFileName)
 		code = kRoadStop;
 		if (fwrite(&code, sizeof(code), 1, fi) != 1)
 			goto bail;
-		
-		/* Railroad Tracks */		
+
+		/* Railroad Tracks */
 		index = 0;
 		while (GetNthTrainSegment(index++, &lat, &lon, &last))
 		{
@@ -222,8 +222,8 @@ int	EnvWrite(const char * inFileName)
 		code = kRoadStop;
 		if (fwrite(&code, sizeof(code), 1, fi) != 1)
 			goto bail;
-		
-		/* Power Lines */		
+
+		/* Power Lines */
 		index = 0;
 		while (GetNthPowerSegment(index++, &lat, &lon, &last))
 		{
@@ -239,7 +239,7 @@ int	EnvWrite(const char * inFileName)
 		if (fwrite(&code, sizeof(code), 1, fi) != 1)
 			goto bail;
 
-		/* Taxiwys */		
+		/* Taxiwys */
 		index = 0;
 		while (GetNthTaxiwaySegment(index++, &lat, &lon, &last))
 		{
@@ -262,9 +262,9 @@ int	EnvWrite(const char * inFileName)
 			goto bail;
 		if (fwrite(&taxiCode, sizeof(taxiCode), 1, fi) != 1)
 			goto bail;
-			
 
-		/* Rivers */		
+
+		/* Rivers */
 		index = 0;
 		while (GetNthRiverSegment(index++, &lat, &lon, &last))
 		{
@@ -279,10 +279,10 @@ int	EnvWrite(const char * inFileName)
 		code = kRoadStop;
 		if (fwrite(&code, sizeof(code), 1, fi) != 1)
 			goto bail;
-			
-			
+
+
 	}
-	
+
 	/* CUSTOM TEXTURES
 	 *
 	 * Each custom texture is given a 150-byte slot in a table, counted from 0 for
@@ -291,13 +291,13 @@ int	EnvWrite(const char * inFileName)
 	 * valid entries in the file.
 	 *
 	 */
-	 
+
 	{
 			char	name[ENV_STR_SIZE+1];
 			long	index = 0;
 		memset(name, 0, ENV_STR_SIZE+1);
 		strcpy(name, "Untitled");
-		
+
 		while (GetNthTexture(index++, name))
 		{
 			if (fwrite(name, ENV_STR_SIZE, 1, fi) != 1)
@@ -306,12 +306,12 @@ int	EnvWrite(const char * inFileName)
 			strcpy(name, "Untitled");
 		}
 	}
-		
+
 	err = 0;
 bail:
 	fclose(fi);
 	return err;
-	
+
 }
 
 /*
@@ -326,17 +326,17 @@ bail:
  * 4. Adding them together.
  *
  */
- 
+
 
 long	ENCODE_LAT_LON(double lat, double lon, double latRef, double lonRef)
 {
-	if ((lat - latRef) < 0.0)	
+	if ((lat - latRef) < 0.0)
 		printf("WARNING: lat too low.\t\t%lf,%lf,%lf,%lf.\n", latRef, lonRef, lat, lon);
-	if ((lon - lonRef) < 0.0)	
+	if ((lon - lonRef) < 0.0)
 		printf("WARNING: lon too left.\t\t%lf,%lf,%lf,%lf.\n", latRef, lonRef, lat, lon);
-	if ((lat - latRef) > 1.0)	
+	if ((lat - latRef) > 1.0)
 		printf("WARNING: lat too high.\t\t%lf,%lf,%lf,%lf.\n", latRef, lonRef, lat, lon);
-	if ((lon - lonRef) > 1.0)	
+	if ((lon - lonRef) > 1.0)
 		printf("WARNING: lon too right.\t\t%lf,%lf,%lf,%lf.\n", latRef, lonRef, lat, lon);
 	return 10000 * (long) round((lat - (double) latRef) * 9999.0) + (long) round((lon - (double) lonRef) * 9999.0);
 }

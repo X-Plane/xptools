@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@ enum	{
 	oe_DirectEd,
 	oe_PatchEd,
 	oe_ProjEd
-};	
+};
 
 class	OE_TexEdWindow : public OE_Pane {
 public:
@@ -51,9 +51,9 @@ private:
 
 		OE_Scroller *		mScroller;
 		OE_TexEdPane *		mPane;
-		
-};			
-						
+
+};
+
 
 class	OE_TexEdPane : public OE_Pane, OE_Notifiable {
 public:
@@ -65,9 +65,9 @@ public:
 									int			inBottom,
 									OE_Pane *	inParent);
 	virtual				~OE_TexEdPane();
-	
+
 	virtual	void		DrawSelf(void);
-	virtual	void		HandleNotification(int catagory, int message, void * param);	
+	virtual	void		HandleNotification(int catagory, int message, void * param);
 	virtual	int			HandleClick(XPLMMouseStatus status, int x, int y, int button);
 	virtual	int			HandleMouseWheel(int x, int y, int direction);
 
@@ -86,7 +86,7 @@ private:
 			void		RecalcSize(void);
 
 
-};	
+};
 
 class	OE_DirectEdPane: public OE_TexEdPane {
 public:
@@ -98,10 +98,10 @@ public:
 									int			inBottom,
 									OE_Pane *	inParent);
 	virtual				~OE_DirectEdPane();
-	
+
 	virtual	void		DrawSelf(void);
 	virtual	int			HandleClick(XPLMMouseStatus status, int x, int y, int button);
-	virtual	void		HandleNotification(int catagory, int message, void * param);	
+	virtual	void		HandleNotification(int catagory, int message, void * param);
 
 private:
 
@@ -126,10 +126,10 @@ public:
 									OE_Pane *	inParent,
 									bool		inProjection);
 	virtual				~OE_PatchEdPane();
-	
+
 	virtual	void		DrawSelf(void);
 	virtual	int			HandleClick(XPLMMouseStatus status, int x, int y, int button);
-	virtual	void		HandleNotification(int catagory, int message, void * param);	
+	virtual	void		HandleNotification(int catagory, int message, void * param);
 
 private:
 

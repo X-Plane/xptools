@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #include <CGAL/LEDA_basic.h>
 #include <CGAL/IO/Postscript_file_stream.h>
 CGAL_BEGIN_NAMESPACE

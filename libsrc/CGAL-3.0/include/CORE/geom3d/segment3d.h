@@ -67,16 +67,16 @@ public:
 	//ray segment
 
   Segment3d();
-  	//trivial segment from (0,0) to (0,0) 
+  	//trivial segment from (0,0) to (0,0)
 
   virtual ~Segment3d() {}
   /*************************************************************
    *   member functions
    *************************************************************/
-  
+
   virtual int dim() const { return 1; }
 
-  Point3d startPt() const { return p0; }  
+  Point3d startPt() const { return p0; }
   Point3d stopPt()  const { return p1; }
   Vector direction() const { return p1 - p0; }
 
@@ -85,15 +85,15 @@ public:
 
   void setDirected( bool beDirected ) { directed = beDirected; }
   void setOpen(  bool beOpen ) { open = beOpen; }
-  
+
   void setStartPt( Point3d& p ) { p0 = p; }
   void setStopPt ( Point3d& p ) { p1 = p; }
 
   double length() const { return p0.distance(p1); }
     //length of segment
-    
+
   Line3d toLine() const { return Line3d(p0,p1); }
- 
+
   double distance( const Point3d& p ) const;
   // returns the Euclidean distance between this segment and point q
 
@@ -106,16 +106,16 @@ public:
 
   bool isDirected() const { return directed; }
   bool isOpen() const {return open; }
-  bool isTrivial() const {return p0 == p1; }  
+  bool isTrivial() const {return p0 == p1; }
   bool isCollinear( const Point3d& p ) const {return toLine().contains(p); }
   bool contains( const Segment3d& s ) const { return contains(s.startPt()) && contains(s.stopPt()); }
   bool isCoincident( const Segment3d& s) const;
-  
+
   bool isCoplanar( const Line3d& s) const;
   bool isCoplanar( const Segment3d& s) const;
-  
+
   bool contains( const Point3d& p ) const;
-  
+
   bool operator==( const Segment3d& s ) { return isCoincident( s ); }
 
   bool operator!=( const Segment3d& s ) { return !operator==(s); }
@@ -127,22 +127,22 @@ public:
   int intersects( const Line3d& l ) const;
   //decides whether *this and t intersect in one point
   // return dim of intersetion
-  
+
   int intersects( const Segment3d& s ) const;
   //decides whether *this and t intersect in one point
   // return dim of intersetion
 
   GeomObj* intersection( const Line3d& l ) const;
   // return intersection point if this segment and l intersect at a single point
-  // the intersection point is returned 
-  
+  // the intersection point is returned
+
   GeomObj* intersection( const Segment3d& s ) const;
   // return intersection point if this segment and s intersect at a single point
-  // the intersection point is returned 
- 
+  // the intersection point is returned
+
   Plane3d bisect_plane() const;
    // return bisector plane
-   
+
   /*************************************************************
    *   I/O
    *************************************************************/

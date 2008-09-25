@@ -19,14 +19,14 @@
 // $Revision: 1.6 $ $Date: 2003/10/21 12:24:13 $
 // $Name: current_submission $
 //
-// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>  
+// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>
 //                 Matthias Baesken <baesken@informatik.uni-halle.de>
 
 #include <CGAL/Timer.h>
 
 // Determine if the POSIX function getrusage is available, otherwise
 // use the previous solution based on std::clock().
-// First, detect POSIX. We cannot reliably use "unistd.h", 
+// First, detect POSIX. We cannot reliably use "unistd.h",
 // but limits.h is part of the C standard.
 #include <climits>
 #ifdef _POSIX_ARG_MAX // now that should be POSIX
@@ -86,7 +86,7 @@ double Timer::user_process_time() const {
         "Call to clock() in class CGAL::Timer failed - timings will be 0.");
     if ( clk != (CGAL_CLIB_STD::clock_t)-1) {
         return double(clk) / CLOCKS_PER_SEC;
-    }        
+    }
 #endif // CGAL__GETRUSAGE //
     m_failed = true;
     return 0.0;
@@ -96,7 +96,7 @@ double Timer::compute_precision() const {
     // Computes timer precision in seconds dynamically. Note that
     // the timer system call is probably non-trivial and will show
     // up in this time here (probably for one call). But that is just
-    // fine that the call to the timer itself if reported as noise 
+    // fine that the call to the timer itself if reported as noise
     // in the precision.
     double min_res = DBL_MAX;
     for ( int i = 0; i < 5; ++i) {
@@ -123,7 +123,7 @@ double Timer::precision() const {
     return prec;
 }
 
-double Timer::max() const { 
+double Timer::max() const {
     // Depends on the operating system.
 #ifdef CGAL__GETRUSAGE
     return DBL_MAX;

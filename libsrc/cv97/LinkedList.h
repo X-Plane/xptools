@@ -21,7 +21,7 @@
 template <class T>
 class LinkedList : public std::list<T> {
 
-	LinkedListNode<T>	*mHeaderNode;		
+	LinkedListNode<T>	*mHeaderNode;
 
 public:
 
@@ -87,7 +87,7 @@ public:
 template <class T>
 class LinkedList {
 
-	LinkedListNode<T>	*mHeaderNode;		
+	LinkedListNode<T>	*mHeaderNode;
 
 public:
 
@@ -160,7 +160,7 @@ public:
 template <class T>
 class LinkedList {
 
-	LinkedListNode<T>	*mHeaderNode;		
+	LinkedListNode<T>	*mHeaderNode;
 
 public:
 

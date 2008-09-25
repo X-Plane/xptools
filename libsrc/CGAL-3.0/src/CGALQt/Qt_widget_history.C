@@ -34,7 +34,7 @@ Qt_widget_history::Qt_widget_history(Qt_widget* parent, const char* name):
 
   connect(widget, SIGNAL(rangesChanged()),
 	  this, SLOT(save()));
-  
+
   // backward compatibility with CGAL-2.4
   connect(parent, SIGNAL(internal_back()),
 	  this, SLOT(backward()));
@@ -60,11 +60,11 @@ void Qt_widget_history::backward()
 
 void Qt_widget_history::forward()
 {
-  if( it != history_list.end() ) 
+  if( it != history_list.end() )
   {
     if( ++it != history_list.end() )
       restore();
-    else 
+    else
       --it;
   }
   emit backwardAvaillable(true);
@@ -79,11 +79,11 @@ void Qt_widget_history::save()
     ++it;
     history_list.erase(it, history_list.end());
   }
-  
+
   History_atom* atom = new History_atom();
   atom->save(*widget);
   history_list.push_back(atom);
-  
+
   it = history_list.end();
   it--;
 

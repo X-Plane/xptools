@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -13,7 +13,7 @@
 #ifndef INCLUDED_SB_XREF_H
 #define INCLUDED_SB_XREF_H
 
-// $Id: sb_Xref.h,v 1.7 2002/11/24 22:07:43 mcoletti Exp $ 
+// $Id: sb_Xref.h,v 1.7 2002/11/24 22:07:43 mcoletti Exp $
 
 #include <list>
 #include <string>
@@ -52,9 +52,9 @@ class sb_Xref : public sb_Module
 
       /**
        Use these members to get subfield/field values.  Pass in an appropriate
-       type to receive the value.  These members will return false if the 
-       corresponding value is not set.  (It may not be set because a value 
-       was not assigned to it, or because you previously tried to assign 
+       type to receive the value.  These members will return false if the
+       corresponding value is not set.  (It may not be set because a value
+       was not assigned to it, or because you previously tried to assign
        an invalid value.)  Otherwise they will return true.
       */
       bool getComment( std::string & ) const;
@@ -84,7 +84,7 @@ class sb_Xref : public sb_Module
       bool getPROJ( std::string& val ) const { return getProjection( val ); }
 
 
-      // 
+      //
 
 #ifdef NOT_IMPLEMENTED
       bool getAttID( list<sb_ForeignID> & ) const;
@@ -114,7 +114,7 @@ class sb_Xref : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -148,7 +148,7 @@ class sb_Xref : public sb_Module
       bool setPROJ( std::string const & val ) { return setProjection( val ); }
 
 
-      // 
+      //
 
 #ifdef NOT_IMPLEMENTED
       bool setAttID( list<sb_ForeignID>  const & ) ;
@@ -169,7 +169,7 @@ class sb_Xref : public sb_Module
       /// used to create internal schema
       void buildSpecificSchema_();
 
-      
+
       /// NOT NEEDED
       sb_Xref(sb_Xref const& right);
 

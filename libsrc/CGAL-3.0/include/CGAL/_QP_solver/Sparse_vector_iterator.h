@@ -98,7 +98,7 @@ class Sparse_vector_iterator {
 };
 
 CGAL_END_NAMESPACE
-  
+
 #endif
 
 // ===== EOF ==================================================================

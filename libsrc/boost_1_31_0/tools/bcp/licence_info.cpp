@@ -1,8 +1,8 @@
 /*
  *
  * Copyright (c) 2003 Dr John Maddock
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution is subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -12,7 +12,7 @@
 
 std::pair<const licence_info*, int> get_licences()
 {
-   static const char* generic_author_sig = 
+   static const char* generic_author_sig =
       "(?:"
          "(?:"
             "Copyright|\\(c\\)|©"
@@ -37,10 +37,10 @@ std::pair<const licence_info*, int> get_licences()
          "([[:alpha:]][^\\n\\d]+"
       ")";
 
-   static const char* generic_author_format = 
+   static const char* generic_author_format =
       "(?1$1)(?2$2)(?3$3)";
 
-   static const licence_info licences[] = 
+   static const licence_info licences[] =
    {
       licence_info( boost::regex("Use\\W+modification\\W+and\\W+distribution\\W+(?:is|are)\\W+subject\\W+to\\W+the\\W+"
          "Boost\\W+Software\\W+License\\W+Version\\W+1.0", boost::regex::perl | boost::regex::icase)

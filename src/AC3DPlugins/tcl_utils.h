@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,10 +52,10 @@ public:
 
 	 TCL_linked_vari(Tcl_Interp * interp, const char * tcl_name, TCL_changei_f change_cb, void * ref, int initial);
 	~TCL_linked_vari();
-	
+
 	void	set(int value);
 	int		get(void) const;
-	
+
 private:
 
 	int				var;
@@ -76,10 +76,10 @@ public:
 
 	 TCL_linked_vard(Tcl_Interp * interp, const char * tcl_name, TCL_changed_f change_cb, void * ref, double initial);
 	~TCL_linked_vard();
-	
+
 	void		set(double value);
 	double		get(void) const;
-	
+
 private:
 
 	double			var;
@@ -100,10 +100,10 @@ public:
 
 	 TCL_linked_vars(Tcl_Interp * interp, const char * tcl_name, TCL_changes_f change_cb, void * ref, const char * initial);
 	~TCL_linked_vars();
-	
+
 	void			set(const char * value);
 	const char *	get(void) const;
-	
+
 private:
 
 	string			var;
@@ -124,16 +124,16 @@ public:
 
 	 TCL_linked_variv(Tcl_Interp * interp, const char * tcl_name, int n, TCL_changeiv_f change_cb, void * ref, int initial);
 	~TCL_linked_variv();
-	
+
 	void	set(int n, int value);
 	int		get(int n) const;
-	
+
 private:
-	
+
 	vector<TCL_linked_vari *>		vars;
 	void *							ref;
 	TCL_changeiv_f					cb;
-	
+
 	static void callback(int value, void * ref, TCL_linked_vari * who);
 
 };
@@ -145,10 +145,10 @@ public:
 
 	 TCL_linked_vardv(Tcl_Interp * interp, const char * tcl_name, int n, TCL_changedv_f change_cb, void * ref, double initial);
 	~TCL_linked_vardv();
-	
+
 	void		set(int n, double value);
 	double		get(int n) const;
-	
+
 private:
 
 	vector<TCL_linked_vard *>		vars;
@@ -166,10 +166,10 @@ public:
 
 	 TCL_linked_varsv(Tcl_Interp * interp, const char * tcl_name, int n, TCL_changesv_f change_cb, void * ref, const char * initial);
 	~TCL_linked_varsv();
-	
+
 	void			set(int n, const char * value);
 	const char *	get(int n) const;
-	
+
 private:
 
 	vector<TCL_linked_vars *>		vars;

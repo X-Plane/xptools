@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: FloatRecord.cpp
  *
  *  This source file is part of DIME.
@@ -59,7 +59,7 @@ dimeFloatRecord::copy(dimeMemHandler * const mh) const
   Sets the float value.
 */
 
-void 
+void
 dimeFloatRecord::setValue(const float val)
 {
   this->value = val;
@@ -75,7 +75,7 @@ dimeFloatRecord::getValue() const
 
 //!
 
-int 
+int
 dimeFloatRecord::typeId() const
 {
   return dimeBase::dimeFloatRecordType;
@@ -83,7 +83,7 @@ dimeFloatRecord::typeId() const
 
 //!
 
-bool 
+bool
 dimeFloatRecord::read(dimeInput * const in)
 {
   return in->readFloat(this->value);
@@ -91,7 +91,7 @@ dimeFloatRecord::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeFloatRecord::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) {
@@ -102,7 +102,7 @@ dimeFloatRecord::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeFloatRecord::setValue(const dimeParam &param, dimeMemHandler * const)
 {
   this->value = param.float_data;
@@ -110,7 +110,7 @@ dimeFloatRecord::setValue(const dimeParam &param, dimeMemHandler * const)
 
 //!
 
-void 
+void
 dimeFloatRecord::getValue(dimeParam &param) const
 {
   param.float_data = this->value;

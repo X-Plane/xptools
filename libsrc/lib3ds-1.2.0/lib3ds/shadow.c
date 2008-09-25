@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -34,7 +34,7 @@
 
 
 /*!
- * \ingroup shadow 
+ * \ingroup shadow
  */
 Lib3dsBool
 lib3ds_shadow_read(Lib3dsShadow *shadow, Lib3dsIo *io)
@@ -44,7 +44,7 @@ lib3ds_shadow_read(Lib3dsShadow *shadow, Lib3dsIo *io)
   if (!lib3ds_chunk_read(&c, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   switch (c.chunk) {
     case LIB3DS_SHADOW_MAP_SIZE:
       {
@@ -82,13 +82,13 @@ lib3ds_shadow_read(Lib3dsShadow *shadow, Lib3dsIo *io)
       }
       break;
   }
-  
+
   return(LIB3DS_TRUE);
 }
 
 
 /*!
- * \ingroup shadow 
+ * \ingroup shadow
  */
 Lib3dsBool
 lib3ds_shadow_write(Lib3dsShadow *shadow, Lib3dsIo *io)
@@ -116,7 +116,7 @@ lib3ds_shadow_write(Lib3dsShadow *shadow, Lib3dsIo *io)
     lib3ds_chunk_write(&c,io);
     lib3ds_io_write_intw(io, shadow->map_size);
   }
-  
+
   if (shadow->samples) { /*---- LIB3DS_SHADOW_SAMPLES ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_SHADOW_SAMPLES;

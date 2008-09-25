@@ -5,7 +5,7 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 // ----------------------------------------------------------------------
 //
 // file          : min_quadrilateral_2.C
@@ -94,7 +94,7 @@ public:
   MyWindow(int w, int h){
     widget = new CGAL::Qt_widget(this);
     setCentralWidget(widget);
-    
+
     //create a timer for checking if somthing changed
     QTimer *timer = new QTimer( this );
     connect( timer, SIGNAL(timeout()),
@@ -129,18 +129,18 @@ public:
     //the standard toolbar
     stoolbar = new CGAL::Qt_widget_standard_toolbar (widget, this, "ST");
     //the new tools toolbar
-    newtoolbar = new Tools_toolbar(widget, this, &list_of_points);	
+    newtoolbar = new Tools_toolbar(widget, this, &list_of_points);
     //the layers toolbar
     vtoolbar = new Layers_toolbar(widget, this, &list_of_points);
-  
+
     *widget << CGAL::LineWidth(2) << CGAL::BackgroundColor (CGAL::BLACK);
-  
+
     resize(w,h);
     widget->set_window(-1, 1, -1, 1);
     widget->setMouseTracking(TRUE);
-	
+
     //connect the widget to the main function that receives the objects
-    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)), 
+    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)),
       this, SLOT(get_new_object(CGAL::Object)));
 
     //application flag stuff
@@ -149,7 +149,7 @@ public:
 
 private:
   void something_changed(){current_state++;};
-  
+
 public slots:
   void new_instance()
   {
@@ -187,7 +187,7 @@ private slots:
   void howto(){
     QString home;
     home = "help/index.html";
-    CGAL::Qt_help_window *help = new 
+    CGAL::Qt_help_window *help = new
       CGAL::Qt_help_window(home, ".", 0, "help viewer");
     help->resize(400, 400);
     help->setCaption("Demo HowTo");
@@ -209,7 +209,7 @@ private slots:
       widget->redraw();
       old_state = current_state;
     }
-  }	
+  }
 
   void gen_points()
   {
@@ -224,8 +224,8 @@ private slots:
     }
     something_changed();
   }
-	
-	
+
+
 
 private:
   CGAL::Qt_widget       *widget;

@@ -126,8 +126,8 @@ static int isNumber(const char *z, int *realnum){
 }
 
 /*
-** A global char* and an SQL function to access its current value 
-** from within an SQL statement. This program used to use the 
+** A global char* and an SQL function to access its current value
+** from within an SQL statement. This program used to use the
 ** sqlite_exec_printf() API to substitue a string into an SQL statement.
 ** The correct way to do this with sqlite3 is to use the bind API, but
 ** since the shell is built around the callback paradigm it would be a lot
@@ -366,22 +366,22 @@ static void output_html_string(FILE *out, const char *z){
 ** array, then the string must be quoted for CSV.
 */
 static const char needCsvQuote[] = {
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 0, 1, 0, 0, 0, 0, 1,   0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 1, 
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
-  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 0, 1, 0, 0, 0, 0, 1,   0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
 };
 
 /*
@@ -633,7 +633,7 @@ static void set_table_name(struct callback_data *p, const char *zName){
 ** added to zIn, and the result returned in memory obtained from malloc().
 ** zIn, if it was not NULL, is freed.
 **
-** If the third argument, quote, is not '\0', then it is used as a 
+** If the third argument, quote, is not '\0', then it is used as a
 ** quote character for zAppend.
 */
 static char *appendText(char *zIn, char const *zAppend, char quote){
@@ -714,7 +714,7 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
   zTable = azArg[0];
   zType = azArg[1];
   zSql = azArg[2];
-  
+
   if( strcmp(zTable, "sqlite_sequence")==0 ){
     fprintf(p->out, "DELETE FROM sqlite_sequence;\n");
   }else if( strcmp(zTable, "sqlite_stat1")==0 ){
@@ -743,7 +743,7 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
     char *zSelect = 0;
     char *zTableInfo = 0;
     char *zTmp = 0;
-   
+
     zTableInfo = appendText(zTableInfo, "PRAGMA table_info(", 0);
     zTableInfo = appendText(zTableInfo, zTable, '"');
     zTableInfo = appendText(zTableInfo, ");", 0);
@@ -798,7 +798,7 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
 ** "ORDER BY rowid DESC" to the end.
 */
 static int run_schema_dump_query(
-  struct callback_data *p, 
+  struct callback_data *p,
   const char *zQuery,
   char **pzErrMsg
 ){
@@ -871,7 +871,7 @@ static void open_db(struct callback_data *p){
     sqlite3_create_function(db, "shellstatic", 0, SQLITE_UTF8, 0,
         shellstaticFunc, 0, 0);
     if( SQLITE_OK!=sqlite3_errcode(db) ){
-      fprintf(stderr,"Unable to open database \"%s\": %s\n", 
+      fprintf(stderr,"Unable to open database \"%s\": %s\n",
           p->zDbFilename, sqlite3_errmsg(db));
       exit(1);
     }
@@ -1002,7 +1002,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     fprintf(p->out, "BEGIN TRANSACTION;\n");
     p->writableSchema = 0;
     if( nArg==1 ){
-      run_schema_dump_query(p, 
+      run_schema_dump_query(p,
         "SELECT name, type, sql FROM sqlite_master "
         "WHERE sql NOT NULL AND type=='table'", 0
       );
@@ -1100,7 +1100,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     char *zSql;                 /* An SQL statement */
     char *zLine;                /* A single line of input from the file */
     char **azCol;               /* zLine[] broken up into columns */
-    char *zCommit;              /* How to commit changes */   
+    char *zCommit;              /* How to commit changes */
     FILE *in;                   /* The input file */
     int lineno = 0;             /* Line number of input file */
 
@@ -1733,7 +1733,7 @@ static void process_sqliterc(
 /*
 ** Show available command line options
 */
-static const char zOptions[] = 
+static const char zOptions[] =
   "   -init filename       read/process named file\n"
   "   -echo                print commands before execution\n"
   "   -[no]header          turn headers on or off\n"
@@ -1751,7 +1751,7 @@ static const char zOptions[] =
 ;
 static void usage(int showDetail){
   fprintf(stderr,
-      "Usage: %s [OPTIONS] FILENAME [SQL]\n"  
+      "Usage: %s [OPTIONS] FILENAME [SQL]\n"
       "FILENAME is the name of an SQLite database. A new database is created\n"
       "if the file does not previously exist.\n", Argv0);
   if( showDetail ){

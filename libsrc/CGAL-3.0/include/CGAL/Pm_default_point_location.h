@@ -36,15 +36,15 @@ class PL_X_curve_plus: public Planar_map_::Traits::X_curve
 public:
   typedef Planar_map_ Planar_map;
   typedef typename Planar_map::Traits Traits;
-  typedef typename Traits::X_curve curve; 
+  typedef typename Traits::X_curve curve;
   typedef typename Traits::Point Point;
 
   typedef typename Planar_map::Locate_type Locate_type;
   typedef typename Planar_map::Halfedge_handle Halfedge_handle;
   typedef typename Planar_map::Halfedge_iterator Halfedge_iterator;
-  
+
   PL_X_curve_plus() : curve(),parent() {};
-  PL_X_curve_plus(const curve &cv,const Halfedge_handle& p) : 
+  PL_X_curve_plus(const curve &cv,const Halfedge_handle& p) :
     curve(cv), parent(p) {}
   PL_X_curve_plus(const Halfedge_handle& p) : curve(p->curve()),parent(p){}
   // used when no Halfedge_handle is supplied.
@@ -102,24 +102,24 @@ public:
   typedef typename Pm_point_location_base<Planar_map>::Halfedge_handle_iterator
     Halfedge_handle_iterator;
   typedef typename Base::Token Token;
-  
+
 protected:
   typedef Trapezoidal_decomposition TD;
   typedef Planar_map PM;
   typedef const Self* cPLp;
-  
+
 public:
-  Pm_default_point_location(bool rebuild=true) : 
+  Pm_default_point_location(bool rebuild=true) :
     pm(NULL),
     traits(NULL)
   {
     td.set_needs_update(rebuild);
   }
-  ~Pm_default_point_location() 
+  ~Pm_default_point_location()
   {
     if (traits) delete traits;
   }
-  /* 
+  /*
      Postcondition:
      h->curve() with a reference back to h
      is inserted into TD.
@@ -129,14 +129,14 @@ public:
   {
     td.insert(X_curve_plus(cv,h));
   }
-  
+
   Halfedge_handle locate(const Point& p, Locate_type& lt) const;
   Halfedge_handle locate(const Point& p, Locate_type& lt);
-  
+
   Halfedge_handle vertical_ray_shoot(const Point& p, Locate_type& lt, bool up)
     const;
   Halfedge_handle vertical_ray_shoot(const Point& p, Locate_type& lt, bool up);
-  
+
   //the function is called after the combinatoric split
   //we want O(1) is it possible?? no!
   void split_edge(const X_curve &cv,
@@ -150,14 +150,14 @@ public:
     // td.split_edge(X_curve_plus(cv),X_curve_plus(e1),X_curve_plus(e2));
     td.split_edge(X_curve_plus(cv),X_curve_plus(cv1,e1),X_curve_plus(cv2,e2));
   }
-  
+
   /*
     called after combinatoric merge
     e is the new edge cv1,cv2 are the original curves
   */
   void merge_edge(const X_curve &cv1,
                   const X_curve &cv2,
-                  Halfedge_handle e 
+                  Halfedge_handle e
                   //additions by iddo for arrangement
                   ,const X_curve& cv
                   //end additions
@@ -170,7 +170,7 @@ public:
                   X_curve_plus(cv,e)
                   );
   }
-  
+
   //called before combinatoric deletion
   void remove_edge(Halfedge_handle e)
   {
@@ -184,8 +184,8 @@ public:
     while (it!=end) { c.push_back((*it)->curve());++it;}
     td.remove(c.begin(),c.end());
   }
-  
-  inline void clear() { td.clear(); } 
+
+  inline void clear() { td.clear(); }
 
   inline void update(const Halfedge_handle_iterator& begin,
                      const Halfedge_handle_iterator& end,
@@ -194,7 +194,7 @@ public:
   {
 
 #ifdef CGAL_PMBB_DEBUG
-    std::cout << "\nPL::update called with traits = "; 
+    std::cout << "\nPL::update called with traits = ";
     traits->debug();
 #endif
 
@@ -223,16 +223,16 @@ public:
       token.rebuild_bounding_box(this);
     }
 #ifdef CGAL_PMBB_DEBUG
-    std::cout << "\nPL::update exited with traits = "; 
+    std::cout << "\nPL::update exited with traits = ";
     traits->debug();
 #endif
-  }  
-  
+  }
+
   const TD* get_trapezoidal_decomposition() const {return &td;}
-  
+
   inline const Pm_traits* get_traits() const {return traits;}
 
-  void init(Planar_map& pmp, Pm_traits& tr) 
+  void init(Planar_map& pmp, Pm_traits& tr)
   {
     CGAL_precondition_msg(pm == NULL,
     "Point location instance should be uninitialized "
@@ -255,7 +255,7 @@ public:
 
   }
 #endif
-  
+
 protected:
   TD td;
 
@@ -265,7 +265,7 @@ private:
 
   bool halfedge_represents_point(const Halfedge_handle& h,const Point& p) const
   {
-    const Point 
+    const Point
       &source=h->source()->point(),
       &target=h->target()->point();
     return !(!traits->point_equal_x(target,p)||
@@ -276,9 +276,9 @@ private:
               traits->point_is_right_top(target,source)
               ));
   }
-  /* 
+  /*
      description:
-     returns if the point is located in the 
+     returns if the point is located in the
      open halfplane on the right side of the
      input curve
      (considering the halfedge orientation)
@@ -287,7 +287,7 @@ private:
      p is in its x range but not on its closure
   */
   bool halfedge_represents_point_inside_face(const Halfedge_handle& h,
-                                             const Point& p) const 
+                                             const Point& p) const
   {
     return (traits->point_in_x_range(h->curve(),p) &&
 	    traits->curve_compare_y_at_x(p, h->curve()) == LARGER) ==
@@ -309,7 +309,7 @@ private:
       // case PM is empty
       return pm->halfedges_end();
   }
-  
+
   //use the latter
   //to workaround internal compiler error in egcs1.1
   //Locate_type convert(const Point& p,const TD::Locate_type& lt,
@@ -331,7 +331,7 @@ private:
         */
         // orientation of h
         if (up==traits->point_is_left(h->source()->point(),
-                                      h->target()->point())) 
+                                      h->target()->point()))
           h=h->twin();
         return PM::EDGE;
       case TD::TRAPEZOID:
@@ -366,7 +366,7 @@ CGAL_END_NAMESPACE
 X_curve msvc6 workaround:
 
 typedef typename Traits::X_curve X_curve;
- causes 
+ causes
 error C2086: '<Unknown>' : redefinition
 */
 

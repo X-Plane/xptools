@@ -11,8 +11,8 @@
 // file          : triangulation_2_constrained_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -36,7 +36,7 @@ public:
   Qt_layer_show_constraints(T &t) : tr(t){};
 
   void draw()
-  {  
+  {
     Finite_edges_iterator it = tr.finite_edges_begin();
     *widget << CGAL::RED << CGAL::LineWidth(2);
     while(it != tr.finite_edges_end()) {
@@ -47,8 +47,8 @@ public:
   };
 private:
   T	&tr;
-  
-};//end class 
+
+};//end class
 
 template <class T>
 class Qt_layer_show_points : public CGAL::Qt_widget_layer {
@@ -61,38 +61,38 @@ public:
   Qt_layer_show_points(T &t) : tr(t){};
 
   void draw()
-  {  
-    Vertex_iterator it = tr.vertices_begin(), 
+  {
+    Vertex_iterator it = tr.vertices_begin(),
 		beyond = tr.vertices_end();
-    *widget << CGAL::GREEN << CGAL::PointSize (3) 
-		<< CGAL::PointStyle (CGAL::DISC);    
-    while(it != beyond) {      
+    *widget << CGAL::GREEN << CGAL::PointSize (3)
+		<< CGAL::PointStyle (CGAL::DISC);
+    while(it != beyond) {
       *widget << (*it).point();
       ++it;
     }
   };
 private:
   T	&tr;
-  
-};//end class 
+
+};//end class
 
 template <class T>
 class Qt_layer_show_triangulation : public CGAL::Qt_widget_layer
 {
 public:
-	
+
   Qt_layer_show_triangulation(T &t) : tr(t){};
 
 
   void draw()
   {
-    *widget << CGAL::BLUE; 
+    *widget << CGAL::BLUE;
     *widget << tr;
   };
-	
+
 private:
   T &tr;
-};//end class 
+};//end class
 
 
 #endif

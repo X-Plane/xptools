@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: EntitiesSection.h
  *
  *  This source file is part of DIME.
@@ -41,21 +41,21 @@ public:
   dimeEntitiesSection(dimeMemHandler * const memhandler = NULL);
   virtual ~dimeEntitiesSection();
 
-  virtual const char *getSectionName() const; 
+  virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
   void fixReferences(dimeModel * const model);
 
   int getNumEntities() const;
   dimeEntity *getEntity(const int idx);
   void removeEntity(const int idx);
-  void insertEntity(dimeEntity * const entity, const int idx = -1); 
-  
+  void insertEntity(dimeEntity * const entity, const int idx = -1);
+
 private:
   dimeArray <dimeEntity*> entities;
 

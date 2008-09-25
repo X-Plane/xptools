@@ -121,7 +121,7 @@ public:
                     return _result;
                 }
             }
-            
+
         } else {
             typedef typename K::FT FT;
             if (dir1.y() > FT(0)) {
@@ -165,9 +165,9 @@ public:
                     return _result;
                 }
             }
-            
+
         }
-        } 
+        }
     default:
         CGAL_kernel_assertion(false); // should not be reached:
         return _result;
@@ -289,7 +289,7 @@ Ray_2_Ray_2_pair<K>::intersection_type() const
                     return _result;
                 }
             }
-            
+
         } else {
             typedef typename K::FT FT;
             if (dir1.y() > FT(0)) {
@@ -333,9 +333,9 @@ Ray_2_Ray_2_pair<K>::intersection_type() const
                     return _result;
                 }
             }
-            
+
         }
-        } 
+        }
     default:
         CGAL_kernel_assertion(false); // should not be reached:
         return _result;
@@ -386,7 +386,7 @@ Ray_2_Ray_2_pair<K>::intersection(typename K::Ray_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Ray_2 &ray1, 
+intersection(const typename CGAL_WRAP(K)::Ray_2 &ray1,
 	     const typename CGAL_WRAP(K)::Ray_2 &ray2,
 	     const K&)
 {
@@ -420,7 +420,7 @@ intersection(const typename CGAL_WRAP(K)::Ray_2 &ray1,
 template <class K>
 inline
 bool
-do_intersect(const Ray_2<K> &ray1, 
+do_intersect(const Ray_2<K> &ray1,
 	     const Ray_2<K> &ray2)
 {
   return CGALi::do_intersect(ray1, ray2, K());
@@ -428,7 +428,7 @@ do_intersect(const Ray_2<K> &ray1,
 
 template <class K>
 Object
-intersection(const  Ray_2<K> &ray1, 
+intersection(const  Ray_2<K> &ray1,
 	     const Ray_2<K> &ray2)
 {
   return CGALi::intersection(ray1, ray2, K());

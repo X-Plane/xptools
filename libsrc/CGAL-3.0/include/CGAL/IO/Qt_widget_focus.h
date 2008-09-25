@@ -58,14 +58,14 @@ private:
   QCursor oldcursor;
 
 public:
-  Qt_widget_focus(QObject* parent = 0, const char* name = 0) 
+  Qt_widget_focus(QObject* parent = 0, const char* name = 0)
     : Qt_widget_layer(parent, name), cycle(0)
   {
 	mouse_ico1 = new QPixmap( (const char**)focus1_xpm);
 	mouse_ico2 = new QPixmap( (const char**)focus2_xpm);
 	mouse_ico3 = new QPixmap( (const char**)focus3_xpm);
-	
-	QPixmap *mouse_ico_mask1 = new QPixmap((const char**)focus1_mask_xpm);	
+
+	QPixmap *mouse_ico_mask1 = new QPixmap((const char**)focus1_mask_xpm);
 	QPixmap *mouse_ico_mask2 = new QPixmap((const char**)focus2_mask_xpm);
 	QPixmap *mouse_ico_mask3 = new QPixmap((const char**)focus3_mask_xpm);
 
@@ -115,12 +115,12 @@ private:
     {
       double x, y;
       widget->x_real(e->x(), x);
-      widget->y_real(e->y(), y);	
+      widget->y_real(e->y(), y);
       widget->set_center(x, y);
     }
   };
   void deactivating()
-  {    
+  {
     widget->setCursor(oldcursor);
 	  killTimers();
   };
@@ -132,7 +132,7 @@ private:
 	  cycle = 1;
 
   };
-};//end class 
+};//end class
 
 } // namespace CGAL
 

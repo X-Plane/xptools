@@ -23,13 +23,13 @@
 namespace CGAL {
 
 template <class Kernel_>
-class Vertex_visibility_traits_2  
+class Vertex_visibility_traits_2
 {
   public:
     typedef Kernel_                               Kernel;
-    typedef typename Kernel::Point_2              Point_2; 
-    typedef typename Kernel::Segment_2            Segment_2; 
-    typedef typename Kernel::Ray_2                Ray_2; 
+    typedef typename Kernel::Point_2              Point_2;
+    typedef typename Kernel::Segment_2            Segment_2;
+    typedef typename Kernel::Ray_2                Ray_2;
     typedef typename Kernel::Construct_segment_2  Construct_segment_2;
     typedef typename Kernel::Construct_ray_2      Construct_ray_2;
     typedef typename Kernel::Less_yx_2            Less_yx_2;

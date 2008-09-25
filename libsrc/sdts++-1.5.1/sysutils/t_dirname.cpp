@@ -12,9 +12,9 @@ int
 main( int argc, char** argv )
 {
    if ( argv[1] )
-      cout << fileutils::dirname( argv[1] ) << "\n"; 
+      cout << fileutils::dirname( argv[1] ) << "\n";
    else
-      cout << fileutils::dirname( string("") ) << "\n"; 
+      cout << fileutils::dirname( string("") ) << "\n";
 
    exit( 0 );
 }

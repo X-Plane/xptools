@@ -41,7 +41,7 @@ void call_bind_rule(
         /* No guarantee that target is an allocated string, so be on the
          * safe side */
         char* target = copystr( target_ );
-        
+
         /* Likewise, don't rely on implementation details of newstr.c: allocate
          * a copy of boundname */
         char* boundname = copystr( boundname_ );
@@ -50,14 +50,14 @@ void call_bind_rule(
             /* Prepare the argument list */
             FRAME frame[1];
             frame_init( frame );
-                    
+
             /* First argument is the target name */
             lol_add( frame->args, list_new( L0, target ) );
-                    
+
             lol_add( frame->args, list_new( L0, boundname ) );
             if( lol_get( frame->args, 1 ) )
                 evaluate_rule( bind_rule->string, frame );
-            
+
             /* Clean up */
             frame_free( frame );
         }
@@ -72,14 +72,14 @@ void call_bind_rule(
 }
 
 /*
- * search.c - find a target along $(SEARCH) or $(LOCATE) 
+ * search.c - find a target along $(SEARCH) or $(LOCATE)
  * First, check if LOCATE is set. If so, use it to determine
  * the location of target and return, regardless of whether anything
  * exists on that location.
  *
  * Second, examine all directories in SEARCH. If there's file already
  * or there's another target with the same name which was placed
- * to this location via LOCATE setting, stop and return the location. 
+ * to this location via LOCATE setting, stop and return the location.
  * In case of previous target, return it's name via the third argument.
  *
  * This bevahiour allow to handle dependency on generated files. If
@@ -88,7 +88,7 @@ void call_bind_rule(
  */
 
 char *
-search( 
+search(
     char *target,
     time_t *time,
     char **another_target
@@ -106,7 +106,7 @@ search(
         *another_target = 0;
 
     if (! explicit_bindings )
-        explicit_bindings = hashinit( sizeof(BINDING), 
+        explicit_bindings = hashinit( sizeof(BINDING),
                                      "explicitly specified locations");
 
     string_new( buf );
@@ -150,16 +150,16 @@ search(
             timestamp( buf->value, time );
 
             b.binding = buf->value;
-            
+
             if( hashcheck( explicit_bindings, (HASHDATA**)&ba ) )
             {
                 if( DEBUG_SEARCH )
-                    printf(" search %s: found explicitly located target %s\n", 
+                    printf(" search %s: found explicitly located target %s\n",
                            target, ba->target);
                 if( another_target )
                     *another_target = ba->target;
                 found = 1;
-                break;                
+                break;
             }
             else if( *time )
             {
@@ -202,7 +202,7 @@ search(
            compatibility, though. */
         hashenter(explicit_bindings, (HASHDATA**)&ba);
     }
-        
+
     /* prepare a call to BINDRULE if the variable is set */
     call_bind_rule( target, boundname );
 

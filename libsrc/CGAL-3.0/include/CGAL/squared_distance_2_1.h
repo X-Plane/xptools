@@ -39,7 +39,7 @@
 CGAL_BEGIN_NAMESPACE
 
 namespace CGALi {
-  
+
   template <class K>
   inline typename K::FT
   squared_distance(const typename CGAL_WRAP(K)::Point_2 & pt1,
@@ -87,7 +87,7 @@ namespace CGALi {
   squared_distance(const typename CGAL_WRAP(K)::Point_2 &pt,
 		   const typename CGAL_WRAP(K)::Line_2 &line,
 		   const K& k)
-  {  
+  {
     typedef typename K::Kernel_tag Tag;
     Tag tag;
     return squared_distance(pt, line, k, tag);
@@ -95,13 +95,13 @@ namespace CGALi {
 
   template <class K>
   inline typename K::FT
-  squared_distance(const typename CGAL_WRAP(K)::Line_2 &line, 
+  squared_distance(const typename CGAL_WRAP(K)::Line_2 &line,
 		   const typename CGAL_WRAP(K)::Point_2 &pt,
 		   const K& k)
   {
     return CGALi::squared_distance(pt, line, k);
   }
-  
+
   template <class K>
   extern typename K::FT
   squared_distance(const typename CGAL_WRAP(K)::Point_2 &pt,
@@ -180,10 +180,10 @@ namespace CGALi {
   }
 
   template <class K>
-  inline typename K::RT 
-  _distance_measure_sub(const typename K::RT &startwcross, 
+  inline typename K::RT
+  _distance_measure_sub(const typename K::RT &startwcross,
 			const typename K::RT &endwcross,
-			const typename CGAL_WRAP(K)::Point_2 &start, 
+			const typename CGAL_WRAP(K)::Point_2 &start,
 			const typename CGAL_WRAP(K)::Point_2 &end)
   {
     return  CGAL_NTS abs(wmult((K*)0, startwcross, end.hw())) -
@@ -284,10 +284,10 @@ namespace CGALi {
   }
 
   template <class K>
-  inline typename K::RT 
-  _distance_measure_sub(const typename K::RT &startwcross, 
+  inline typename K::RT
+  _distance_measure_sub(const typename K::RT &startwcross,
 			const typename K::RT &endwcross,
-			const typename CGAL_WRAP(K)::Vector_2 &start, 
+			const typename CGAL_WRAP(K)::Vector_2 &start,
 			const typename CGAL_WRAP(K)::Vector_2 &end)
   {
     return  CGAL_NTS abs(wmult((K*)0, startwcross, end.hw())) -
@@ -406,7 +406,7 @@ namespace CGALi {
   template <class K>
   typename K::FT
   _sqd_to_line(const typename CGAL_WRAP(K)::Vector_2 &diff,
-	       const typename K::RT & wcross, 
+	       const typename K::RT & wcross,
 	       const typename CGAL_WRAP(K)::Vector_2 &dir )
   {
     typedef typename K::RT RT;
@@ -538,7 +538,7 @@ namespace CGALi {
       }
     }
   }
-  
+
   template <class K>
   extern typename K::FT
   squared_distance(const typename CGAL_WRAP(K)::Line_2 &line,
@@ -627,7 +627,7 @@ namespace CGALi {
   template <class K>
   inline typename K::FT
   squared_distance_indexed(const typename CGAL_WRAP(K)::Point_2 &pt,
-			   const typename CGAL_WRAP(K)::Ray_2 &ray, 
+			   const typename CGAL_WRAP(K)::Ray_2 &ray,
 			   int ind,
 			   const K& k)
   {
@@ -639,7 +639,7 @@ namespace CGALi {
   template <class K>
   inline typename K::FT
   squared_distance_indexed(const typename CGAL_WRAP(K)::Point_2 &pt,
-			   const typename CGAL_WRAP(K)::Segment_2 &seg, 
+			   const typename CGAL_WRAP(K)::Segment_2 &seg,
 			   int ind,
 			   const K& k)
   {
@@ -649,7 +649,7 @@ namespace CGALi {
       return CGALi::squared_distance(pt, seg.target(), k);
     return CGALi::squared_distance(pt, seg.supporting_line(), k);
   }
-  
+
 } // namespace CGALi
 
 template <class K>

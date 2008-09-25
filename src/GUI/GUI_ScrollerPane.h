@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,12 +27,12 @@
 /*
 
 	GUI_ScrollerPane - THEORY OF OPERATION
-	
+
 	GUI_ScrollerPane is a pane that manages scrollable content.
 
 	No assumptions are made about the content - it doesn't have to be
 	a sub-pane; it's simply an aspect of some object.  The object
-	returns the logical vs physical bounds (any units) and takes 
+	returns the logical vs physical bounds (any units) and takes
 	scrolling commands.  ScrollH and ScrollV take absolute positive
 	units measured from the logical to physical lower left corners -
 	thus when the lower left corner of the logical doc is visible, the
@@ -43,7 +43,7 @@
 	are a sub-pane we don't have a double-delete.
 
 	SLAVING
-	
+
 	It is possible to slave another scroller to this one - basically it makes
 	our scroll-bars drive the slave.  However:
 	- child auto-slaving with a "contents changed" message to the master does
@@ -63,11 +63,11 @@ class	GUI_ScrollBar;
 class	GUI_ScrollerPaneContent : public GUI_Broadcaster {
 public:
 
-	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])=0;	
-	
+	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])=0;
+
 	// Offset is from the min side of the total bounds to the min side of the visible bounds.
 	// so 0 means lower left of the total bounds is visible.
-	
+
 	virtual	void	ScrollH(float xOffset)=0;
 	virtual	void	ScrollV(float yOffset)=0;
 
@@ -92,7 +92,7 @@ public:
 			void	SetImage(const char * image_res);
 
 	virtual	void	Draw(GUI_GraphState * g);
-			
+
 	// From GUI_Pane
 	virtual void	SetBounds(int x1, int y1, int x2, int y2);
 	virtual void	SetBounds(int inBounds[4]);
@@ -121,6 +121,6 @@ private:
 	bool							mCalibrateDirty;
 
 };
-	
+
 
 #endif

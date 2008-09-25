@@ -38,10 +38,10 @@
 
 #ifdef __WIN32__
 /* 0 */
-EXTERN TCHAR *		Tcl_WinUtfToTChar _ANSI_ARGS_((CONST char * str, 
+EXTERN TCHAR *		Tcl_WinUtfToTChar _ANSI_ARGS_((CONST char * str,
 				int len, Tcl_DString * dsPtr));
 /* 1 */
-EXTERN char *		Tcl_WinTCharToUtf _ANSI_ARGS_((CONST TCHAR * str, 
+EXTERN char *		Tcl_WinTCharToUtf _ANSI_ARGS_((CONST TCHAR * str,
 				int len, Tcl_DString * dsPtr));
 #endif /* __WIN32__ */
 #ifdef MAC_TCL
@@ -52,41 +52,41 @@ EXTERN void		Tcl_MacSetEventProc _ANSI_ARGS_((
 EXTERN char *		Tcl_MacConvertTextResource _ANSI_ARGS_((
 				Handle resource));
 /* 2 */
-EXTERN int		Tcl_MacEvalResource _ANSI_ARGS_((Tcl_Interp * interp, 
-				CONST char * resourceName, 
+EXTERN int		Tcl_MacEvalResource _ANSI_ARGS_((Tcl_Interp * interp,
+				CONST char * resourceName,
 				int resourceNumber, CONST char * fileName));
 /* 3 */
-EXTERN Handle		Tcl_MacFindResource _ANSI_ARGS_((Tcl_Interp * interp, 
-				long resourceType, CONST char * resourceName, 
-				int resourceNumber, CONST char * resFileRef, 
+EXTERN Handle		Tcl_MacFindResource _ANSI_ARGS_((Tcl_Interp * interp,
+				long resourceType, CONST char * resourceName,
+				int resourceNumber, CONST char * resFileRef,
 				int * releaseIt));
 /* 4 */
 EXTERN int		Tcl_GetOSTypeFromObj _ANSI_ARGS_((
-				Tcl_Interp * interp, Tcl_Obj * objPtr, 
+				Tcl_Interp * interp, Tcl_Obj * objPtr,
 				OSType * osTypePtr));
 /* 5 */
-EXTERN void		Tcl_SetOSTypeObj _ANSI_ARGS_((Tcl_Obj * objPtr, 
+EXTERN void		Tcl_SetOSTypeObj _ANSI_ARGS_((Tcl_Obj * objPtr,
 				OSType osType));
 /* 6 */
 EXTERN Tcl_Obj *	Tcl_NewOSTypeObj _ANSI_ARGS_((OSType osType));
 /* 7 */
-EXTERN int		strncasecmp _ANSI_ARGS_((CONST char * s1, 
+EXTERN int		strncasecmp _ANSI_ARGS_((CONST char * s1,
 				CONST char * s2, size_t n));
 /* 8 */
-EXTERN int		strcasecmp _ANSI_ARGS_((CONST char * s1, 
+EXTERN int		strcasecmp _ANSI_ARGS_((CONST char * s1,
 				CONST char * s2));
 #endif /* MAC_TCL */
 #ifdef MAC_OSX_TCL
 /* 0 */
 EXTERN int		Tcl_MacOSXOpenBundleResources _ANSI_ARGS_((
-				Tcl_Interp * interp, CONST char * bundleName, 
-				int hasResourceFile, int maxPathLen, 
+				Tcl_Interp * interp, CONST char * bundleName,
+				int hasResourceFile, int maxPathLen,
 				char * libraryPath));
 /* 1 */
 EXTERN int		Tcl_MacOSXOpenVersionedBundleResources _ANSI_ARGS_((
-				Tcl_Interp * interp, CONST char * bundleName, 
-				CONST char * bundleVersion, 
-				int hasResourceFile, int maxPathLen, 
+				Tcl_Interp * interp, CONST char * bundleName,
+				CONST char * bundleVersion,
+				int hasResourceFile, int maxPathLen,
 				char * libraryPath));
 #endif /* MAC_OSX_TCL */
 

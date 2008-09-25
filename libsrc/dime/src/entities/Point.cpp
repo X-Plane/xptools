@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Point.cpp
  *
  *  This source file is part of DIME.
@@ -70,7 +70,7 @@ dimePoint::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimePoint::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -83,7 +83,7 @@ dimePoint::write(dimeOutput * const file)
     file->writeDouble(this->coords[1]);
     file->writeGroupCode(30);
     file->writeDouble(this->coords[2]);
-    
+
     ret = this->writeExtrusionData(file) && dimeEntity::write(file);
   }
   return ret;
@@ -91,7 +91,7 @@ dimePoint::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimePoint::typeId() const
 {
   return dimeBase::dimePointType;
@@ -99,7 +99,7 @@ dimePoint::typeId() const
 
 //!
 
-bool 
+bool
 dimePoint::handleRecord(const int groupcode,
 		       const dimeParam &param,
 		       dimeMemHandler * const memhandler)
@@ -111,7 +111,7 @@ dimePoint::handleRecord(const int groupcode,
     this->coords[groupcode/10-1] = param.double_data;
     return true;
   }
-  return dimeExtrusionEntity::handleRecord(groupcode, param, memhandler); 
+  return dimeExtrusionEntity::handleRecord(groupcode, param, memhandler);
 }
 
 //!
@@ -124,7 +124,7 @@ dimePoint::getEntityName() const
 
 //!
 
-bool 
+bool
 dimePoint::getRecord(const int groupcode,
 		    dimeParam &param,
 		    const int index) const
@@ -136,12 +136,12 @@ dimePoint::getRecord(const int groupcode,
     param.double_data = this->coords[groupcode/10-1];
     return true;
   }
-  return dimeExtrusionEntity::getRecord(groupcode, param, index); 
+  return dimeExtrusionEntity::getRecord(groupcode, param, index);
 }
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimePoint::extractGeometry(dimeArray <dimeVec3f> &verts,
 			  dimeArray <int> &/*indices*/,
 			  dimeVec3f &extrusionDir,

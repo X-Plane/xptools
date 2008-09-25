@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -48,7 +48,7 @@ void		WED_MapBkgnd::DrawVisualization(intptr_t inCurrent, GUI_GraphState * g)
 
 	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
-	
+
 	ll = GetZoomer()->LonToXPixel(ll);
 	lr = GetZoomer()->LonToXPixel(lr);
 	lb = GetZoomer()->LatToYPixel(lb);
@@ -66,7 +66,7 @@ void		WED_MapBkgnd::DrawVisualization(intptr_t inCurrent, GUI_GraphState * g)
 	glVertex2d(pr,pt);
 	glVertex2d(pr,pb);
 
-	// Next, splat the whole world area with the world background color.  No need 
+	// Next, splat the whole world area with the world background color.  No need
 	// to intersect this to the visible area - graphics ard culls good enough.
 
 	glColor4fv(WED_Color_RGBA(wed_Map_Bkgnd));
@@ -75,7 +75,7 @@ void		WED_MapBkgnd::DrawVisualization(intptr_t inCurrent, GUI_GraphState * g)
 	glVertex2d(lr,lt);
 	glVertex2d(lr,lb);
 	glEnd();
-		
+
 }
 
 void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
@@ -88,12 +88,12 @@ void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 //	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
 	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
 	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
-	
+
 	vl = max(vl,ll);
 	vb = max(vb,lb);
 	vr = min(vr,lr);
 	vt = min(vt,lt);
-	
+
 	ll = GetZoomer()->LonToXPixel(ll);
 	lr = GetZoomer()->LonToXPixel(lr);
 	lb = GetZoomer()->LatToYPixel(lb);
@@ -104,10 +104,10 @@ void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 	// First: splat the whole area with the matte color.  This is clipped to
 	// pixel bounds cuz we don't need to draw where we can't see.
 	g->SetState(false,false,false, true,true, false,false);
-	// Gridline time...		
+	// Gridline time...
 	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));
 	g->SetState(false,false,false, false,true, false,false);
-	
+
 	double lon_span = vr - vl;
 	double lat_span = vt - vb;
 	double longest_span = max(lon_span,lat_span);
@@ -115,12 +115,12 @@ void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 	if (longest_span > 20)	divisions = 10;
 	if (longest_span > 60)	divisions = 30;
 	if (longest_span > 90)	divisions = 45;
-	
+
 	double cl = floor(vl / divisions) * divisions;
 	double cb = floor(vb / divisions) * divisions;
 	double cr = ceil (vr / divisions) * divisions;
 	double ct = ceil (vt / divisions) * divisions;
-	
+
 	glBegin(GL_LINES);
 	for(double t = cl; t <= cr; t += divisions)
 	{
@@ -133,7 +133,7 @@ void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 		glVertex2d(lr,GetZoomer()->LatToYPixel(t));
 	}
 	glEnd();
-	
+
 }
 
 void		WED_MapBkgnd::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)

@@ -22,15 +22,15 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Point, class SweepLineTraits_2>
-class Point_less_functor 
+class Point_less_functor
 {
 public:
   typedef SweepLineTraits_2 Traits;
-  
+
   Point_less_functor(Traits *traits) : m_traits(traits) {}
-  
-  bool operator()(const Point* p1, const Point* p2) const 
-  { 
+
+  bool operator()(const Point* p1, const Point* p2) const
+  {
     return (m_traits->compare_xy(*p1,*p2) == SMALLER);
   }
 
@@ -42,7 +42,7 @@ private:
 
 
 template <class SweepLineTraits_2, class Subcurve>
-class Status_line_curve_less_functor 
+class Status_line_curve_less_functor
 {
 public:
   typedef SweepLineTraits_2 Traits;
@@ -67,24 +67,24 @@ public:
   }
 
 
-  bool compare_at(const Subcurve* c1, const Subcurve* c2)  const 
+  bool compare_at(const Subcurve* c1, const Subcurve* c2)  const
   {
     const Point_2 *p = &(c2->get_last_point());
-    if ( m_compare_param->m_traits->compare_x(c1->get_last_point(),  
+    if ( m_compare_param->m_traits->compare_x(c1->get_last_point(),
 					      c2->get_last_point()) == LARGER )
       p = &(c1->get_last_point());
 
-    Comparison_result r = 
-      m_compare_param->m_traits->curves_compare_y_at_x(c1->get_curve(), 
-    				   c2->get_curve(), 
+    Comparison_result r =
+      m_compare_param->m_traits->curves_compare_y_at_x(c1->get_curve(),
+    				   c2->get_curve(),
     				   *p);
     if ( r == SMALLER) {
       return true;
-    } 
+    }
     return false;
   }
 
-  bool compare_right(const Subcurve* c1, const Subcurve* c2)  const 
+  bool compare_right(const Subcurve* c1, const Subcurve* c2)  const
   {
     const X_monotone_curve_2 &cv1 = c1->get_curve();
     const X_monotone_curve_2 &cv2 = c2->get_curve();
@@ -109,22 +109,22 @@ public:
     }
 
     const Point_2 *p = &(c2->get_last_point());
-    if ( m_compare_param->m_traits->compare_x(c1->get_last_point(),  
+    if ( m_compare_param->m_traits->compare_x(c1->get_last_point(),
 					      c2->get_last_point()) == LARGER )
       p = &c1->get_last_point();
 
-    // non of the curves is vertical... 
-    Comparison_result r =  t->curves_compare_y_at_x (c1->get_curve(), 
-						     c2->get_curve(), 
+    // non of the curves is vertical...
+    Comparison_result r =  t->curves_compare_y_at_x (c1->get_curve(),
+						     c2->get_curve(),
 						     *p);
 
     if (r == EQUAL)
-      r = t->curves_compare_y_at_x_right(c1->get_curve(), 
-					 c2->get_curve(), 
+      r = t->curves_compare_y_at_x_right(c1->get_curve(),
+					 c2->get_curve(),
 					 *p);
     if ( r == SMALLER) {
       return true;
-    } 
+    }
     if ( r == LARGER ) {
       return false;
     }

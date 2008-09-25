@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -37,7 +37,7 @@ struct	VPF_TripletKey {
 
 struct	VPF_ColumnDef {
 	string		name;
-	
+
 	char		dataType;
 	int			elementCount;
 	char		keyType;
@@ -46,19 +46,19 @@ struct	VPF_ColumnDef {
 
 	string		descTableName;
 	string		themeTableName;
-	string		narrativeFileName;	
+	string		narrativeFileName;
 };
 
 struct	VPF_TableDef {
 
 	PlatformType			endian;
-	
+
 	string					name;
 	string					desc;
 	vector<VPF_ColumnDef>	columns;
 
 	// These accessors allow you to learn things about
-	// fields without having to parse the codes from PVF.	
+	// fields without having to parse the codes from PVF.
 	// This lib simplifies the rich set of VPF types as follows:
 	// All char arrays, fixed and var length and all char sets are strings.
 	// All numeric types are interchangeable.
@@ -71,9 +71,9 @@ struct	VPF_TableDef {
 	int		IsFieldInt(int) const;
 	int		IsFieldFloat(int) const;
 	int		IsFieldTwoTuple(int) const;
-	int		IsFieldThreeTuple(int) const;	
+	int		IsFieldThreeTuple(int) const;
 	int		IsFieldTripletKey(int) const;
-	
+
 	int		GetColumnByName(const string& inName) const;
 
 };
@@ -85,11 +85,11 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef);
 class	VPFTableIterator {
 public:
 	VPFTableIterator(MFMemFile * inFile, const VPF_TableDef& inDef);
-	
+
 	bool	Done(void);
 	void	Next(void);
 	bool	Error(void);
-	
+
 	int		GetFieldCount(void);
 
 	// The following coersions are done for you:
@@ -111,9 +111,9 @@ public:
 	bool	GetNthFieldAsDoubleArray(int, vector<double>&);
 	bool	GetNthFieldAsCoordPairArray(int, vector<Point2>&);
 	bool	GetNthFieldAsCoordTripleArray(int, vector<Point3>&);
-	
+
 	bool	GetNthFieldAsTripletKey(int, VPF_TripletKey&);
-	
+
 private:
 
 	void	ParseCurrent(void);

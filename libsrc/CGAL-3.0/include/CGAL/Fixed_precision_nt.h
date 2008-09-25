@@ -47,17 +47,17 @@ static bool Fixed_incircle_perturb= false;
 static bool Fixed_insphere_perturb= false;
 
 ////// degree 0 constant
-static double Fixed_Or2   = 3.0/9007199254740992.0;      
+static double Fixed_Or2   = 3.0/9007199254740992.0;
 // 3/2^53             semi-static orientation filter
 static double Fixed_Ic2   = 3.0/9007199254740992.0;
 // 3/2^54             semi-static incircle filter
-static double Fixed_Is2   = 6.0 / 18014398509481984.0;        
+static double Fixed_Is2   = 6.0 / 18014398509481984.0;
 // 6/2^54             semi-static insphere filter
 ////// degree 1 constant
-static double Fixed_B0=0.0;              
+static double Fixed_B0=0.0;
 //   precision on coordinates
 // assumed to be 1.0 to fix value below
-static double Fixed_B24   = 16777216.0;          
+static double Fixed_B24   = 16777216.0;
 // 2^24               bound on coordinates
 static double Fixed_SNAP  = 6755399441055744.0;
 // 3 * 2^51           for rounding of coordinates
@@ -65,23 +65,23 @@ static double Fixed_SNAP  = 6755399441055744.0;
 static double Fixed_S_2_25= 453347182355485940514816.0;
 // 3 * 2^77           split to bit B0^2 * 2^25
 ////// degree 3 constant
-static double Fixed_S_3_25= Fixed_S_2_25;           
+static double Fixed_S_3_25= Fixed_S_2_25;
 // 3 * 2^77           split to bit B0^3 * 2^25
-static double Fixed_S_3_51= 30423614405477505635920876929024.0;           
+static double Fixed_S_3_51= 30423614405477505635920876929024.0;
 // 3 * 2^103          split to bit B0^3 * 2^51
 static double Fixed_Or1   = 37748736.0;
 // 9*2^22             static error for orientation filter
-static double Fixed_Bx3   = 0.5;     
+static double Fixed_Bx3   = 0.5;
 // 2^(-1)             half degree 3 unit for semi-static filter
 ////// degree 4 constant
-static double Fixed_Ic1   = 2533274790395904.0;    
+static double Fixed_Ic1   = 2533274790395904.0;
 // 9*2^48;           static error for incircle filter
-static double Fixed_Bx4   = 0.5;     
+static double Fixed_Bx4   = 0.5;
 // 2^(-1)             half degree 4 unit for semi-static filter
 ////// degree 5 constant
-static double Fixed_Is1   = 1416709944860893564108800.0;    
+static double Fixed_Is1   = 1416709944860893564108800.0;
 // 75*2^74;           static error for insphere filter
-static double Fixed_Bx5   = 0.5;     
+static double Fixed_Bx5   = 0.5;
 // 2^(-1)             half degree 5 unit for semi-static filter
 
 
@@ -93,7 +93,7 @@ private:
   float _value;          // value of the number
   // I put this function here so that GCC doesn't complain with -Winline.
   void round() {_value = ( _value+ Fixed_SNAP ) - Fixed_SNAP ;}
-  
+
 public:
   typedef Tag_false       Has_gcd;
   typedef Tag_true        Has_division;
@@ -204,9 +204,9 @@ inline bool Fixed_precision_nt::init(float b)
   Fixed_Bx3   *= Fixed_B0*Fixed_B0*Fixed_B0;
   Fixed_Ic1   *= Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0;
   Fixed_Bx4   *= Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0;
-  Fixed_Is1   *= 
+  Fixed_Is1   *=
     Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0;
-  Fixed_Bx5   *= 
+  Fixed_Bx5   *=
     Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0*Fixed_B0;
   return result;
 };
@@ -241,16 +241,16 @@ cmp_dist_to_pointC2(
   const Fixed_precision_nt& x2, const Fixed_precision_nt& y2)
 {
   return CGAL_NTS compare(
-	CGAL_NTS square(x0.to_double()-x1.to_double()) 
+	CGAL_NTS square(x0.to_double()-x1.to_double())
                 + CGAL_NTS square(y0.to_double()-y1.to_double()),
-        CGAL_NTS square(x0.to_double()-x2.to_double()) 
+        CGAL_NTS square(x0.to_double()-x2.to_double())
                 + CGAL_NTS square(y0.to_double()-y2.to_double()));
 }
 
 
 inline Orientation orientationC2
-(const Fixed_precision_nt& x0, const Fixed_precision_nt& y0, 
- const Fixed_precision_nt& x1, const Fixed_precision_nt& y1, 
+(const Fixed_precision_nt& x0, const Fixed_precision_nt& y0,
+ const Fixed_precision_nt& x1, const Fixed_precision_nt& y1,
  const Fixed_precision_nt& x2, const Fixed_precision_nt& y2)
 {
     /*  points are assumed to be distincts */
@@ -274,7 +274,7 @@ inline Oriented_side side_of_oriented_circleC2 (
   // relative position of p3 with respect to circle p0p1p2
   // if p0p1p2 is positively oriented,
   // positive side is the interior of the circle
-{  
+{
   double X1=x1.to_double()-x0.to_double();
   double Y1=y1.to_double()-y0.to_double();
   double X2=x2.to_double()-x0.to_double();
@@ -292,7 +292,7 @@ inline Oriented_side side_of_oriented_circleC2 (
   if (det <= -Fixed_Ic1) return ON_POSITIVE_SIDE;
   // static filter failed, error is small
   {
-    double error= 
+    double error=
       CGAL_NTS abs(R1*M1) + CGAL_NTS abs(R2*M2) + CGAL_NTS abs(R3*M3) ;
     error *= Fixed_Ic2 ;
     if ( error < Fixed_Bx4 ) error = 0.0;
@@ -301,7 +301,7 @@ inline Oriented_side side_of_oriented_circleC2 (
     double m1,m2,m3,r1,r2,r3;
     if (error!=0) {
       // dynamic filter failed, error is very small
-      Fixed_split(M1,M1,m1,Fixed_S_2_25); 
+      Fixed_split(M1,M1,m1,Fixed_S_2_25);
       Fixed_split(M2,M2,m2,Fixed_S_2_25);
       Fixed_split(M3,M3,m3,Fixed_S_2_25);
       // Minor i is Mi+mi
@@ -329,7 +329,7 @@ inline Oriented_side side_of_oriented_circleC2 (
     if (det >   Fixed_Ic1) return ON_NEGATIVE_SIDE;
     if (det <= -Fixed_Ic1) return ON_POSITIVE_SIDE;
     // static filter failed, error is small
-    error= 
+    error=
       (CGAL_NTS abs(R1*M1)+CGAL_NTS abs(R2*M2)+CGAL_NTS abs(R3*M3))
       * Fixed_Ic2 ;
     if ( error < Fixed_Bx4 ) error = 0.0;
@@ -356,7 +356,7 @@ inline Oriented_side side_of_oriented_circleC2 (
     if (det >   Fixed_Ic1) return ON_NEGATIVE_SIDE;
     if (det <= -Fixed_Ic1) return ON_POSITIVE_SIDE;
     // static filter failed, error is small
-    error= 
+    error=
       (CGAL_NTS abs(R1*M1)+CGAL_NTS abs(R2*M2)+CGAL_NTS abs(R3*M3))
       * Fixed_Ic2 ;
     if ( error < Fixed_Bx4 ) error = 0.0;
@@ -388,10 +388,10 @@ cmp_dist_to_pointC3(
         const Fixed_precision_nt& z2)
 {
   return CGAL_NTS compare(
-	CGAL_NTS square(x0.to_double()-x1.to_double()) 
+	CGAL_NTS square(x0.to_double()-x1.to_double())
                 + CGAL_NTS square(y0.to_double()-y1.to_double())
                 + CGAL_NTS square(z0.to_double()-z1.to_double()),
-        CGAL_NTS square(x0.to_double()-x2.to_double()) 
+        CGAL_NTS square(x0.to_double()-x2.to_double())
                 + CGAL_NTS square(y0.to_double()-y2.to_double())
                 + CGAL_NTS square(z0.to_double()-z2.to_double()));
 }
@@ -399,9 +399,9 @@ cmp_dist_to_pointC3(
 
 inline
 Orientation orientationC3
-(   const Fixed_precision_nt& x0, const Fixed_precision_nt& y0, 
+(   const Fixed_precision_nt& x0, const Fixed_precision_nt& y0,
     const Fixed_precision_nt& z0,
-    const Fixed_precision_nt& x1, const Fixed_precision_nt& y1, 
+    const Fixed_precision_nt& x1, const Fixed_precision_nt& y1,
     const Fixed_precision_nt& z1,
     const Fixed_precision_nt& x2, const Fixed_precision_nt& y2,
     const Fixed_precision_nt& z2,
@@ -410,9 +410,9 @@ Orientation orientationC3
 {
   double X1=x1.to_double() -x0.to_double();
   double Y1=y1.to_double() -y0.to_double();
-  double Z1=z1.to_double() -z0.to_double(); 
-  double X2=x2.to_double() -x0.to_double(); 
-  double Y2=y2.to_double() -y0.to_double(); 
+  double Z1=z1.to_double() -z0.to_double();
+  double X2=x2.to_double() -x0.to_double();
+  double Y2=y2.to_double() -y0.to_double();
   double Z2=z2.to_double() -z0.to_double();
   double X3=x3.to_double() -x0.to_double();
   double Y3=y3.to_double() -y0.to_double();
@@ -424,7 +424,7 @@ Orientation orientationC3
   if (det >   Fixed_Or1 ) return POSITIVE;
   if (det <  -Fixed_Or1 ) return NEGATIVE;
   /* det is small */
-  double error= 
+  double error=
     CGAL_NTS abs(X1*M1) + CGAL_NTS abs(X2*M2) + CGAL_NTS abs(X3*M3);
   error *= Fixed_Or2;
   if ( error < Fixed_Bx3) error = 0.0;
@@ -445,8 +445,8 @@ Orientation orientationC3
 }
 
 inline
-Oriented_side side_of_oriented_sphereC3 
-(     const Fixed_precision_nt& x0, const Fixed_precision_nt& y0, 
+Oriented_side side_of_oriented_sphereC3
+(     const Fixed_precision_nt& x0, const Fixed_precision_nt& y0,
       const Fixed_precision_nt& z0,
       const Fixed_precision_nt& x1, const Fixed_precision_nt& y1,
       const Fixed_precision_nt& z1,
@@ -499,13 +499,13 @@ Oriented_side side_of_oriented_sphereC3
   {
     double mm1 =CGAL_NTS abs(Z2*M34) + CGAL_NTS abs(Z3*M24)
       + CGAL_NTS abs(Z4*M23) ;
-    double mm2 =CGAL_NTS abs(Z1*M34) + CGAL_NTS abs(Z3*M14) 
+    double mm2 =CGAL_NTS abs(Z1*M34) + CGAL_NTS abs(Z3*M14)
       + CGAL_NTS abs(Z4*M13) ;
-    double mm3 =CGAL_NTS abs(Z1*M24) + CGAL_NTS abs(Z2*M14) 
+    double mm3 =CGAL_NTS abs(Z1*M24) + CGAL_NTS abs(Z2*M14)
       + CGAL_NTS abs(Z4*M12) ;
-    double mm4 =CGAL_NTS abs(Z1*M23) + CGAL_NTS abs(Z2*M13) 
+    double mm4 =CGAL_NTS abs(Z1*M23) + CGAL_NTS abs(Z2*M13)
       + CGAL_NTS abs(Z3*M12) ;
-    error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2 
+    error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2
            + CGAL_NTS abs(R3)*mm3 + CGAL_NTS abs(R4)*mm4;
     error *= Fixed_Is2;
     if ( error < Fixed_Bx5 ) error = 0.0;
@@ -565,7 +565,7 @@ Oriented_side side_of_oriented_sphereC3
 	if (det<0) return ON_POSITIVE_SIDE;
       }
       // points are cospherical
-      
+
       if (! Fixed_insphere_perturb)return ON_ORIENTED_BOUNDARY;
 
       // apply perturbation method
@@ -579,7 +579,7 @@ Oriented_side side_of_oriented_sphereC3
       if (det >=  Fixed_Is1 ) return ON_NEGATIVE_SIDE;
       if (det <= -Fixed_Is1 ) return ON_POSITIVE_SIDE;
       // static filter failed, error is small
-      error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2 
+      error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2
 	     + CGAL_NTS abs(R3)*mm3 + CGAL_NTS abs(R4)*mm4;
       error *= Fixed_Is2;
       if ( error < Fixed_Bx5 ) error = 0.0;
@@ -759,7 +759,7 @@ Oriented_side side_of_oriented_sphereC3
       if (det >=  Fixed_Is1 ) return ON_NEGATIVE_SIDE;
       if (det <= -Fixed_Is1 ) return ON_POSITIVE_SIDE;
       // static filter failed, error is small
-      error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2 
+      error= CGAL_NTS abs(R1)*mm1 + CGAL_NTS abs(R2)*mm2
 	     + CGAL_NTS abs(R3)*mm3 + CGAL_NTS abs(R4)*mm4;
       error *= Fixed_Is2;
       if ( error < Fixed_Bx5 ) error = 0.0;

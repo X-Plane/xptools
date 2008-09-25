@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,7 +26,7 @@
 
 using std::min;
 using std::max;
-	
+
 class RLERegionDualScanner {
 	const RLERegion& rgn1_;
 	const RLERegion& rgn2_;
@@ -38,23 +38,23 @@ class RLERegionDualScanner {
 	int p2_;
 	const RLERegion::run * run1_;
 	const RLERegion::run * run2_;
-		
+
 public:
 	RLERegionDualScanner(const RLERegion& r1, const RLERegion& r2) : rgn1_(r1), rgn2_(r2) { }
-	void set_rows(int y1, int y2) { 
-		run1_ = &rgn1_.runs_[y1]; 
+	void set_rows(int y1, int y2) {
+		run1_ = &rgn1_.runs_[y1];
 		run2_ = &rgn2_.runs_[y2];
 		r1_ = r2_ = 0;
 		x1_ = min(rgn1_.x1_, rgn2_.x1_);
 		p1_ = rgn1_.x1_;
 		p2_ = rgn2_.x1_;
-		x2_ = min(rgn1_.x1_ + run1_->at(0), rgn2_.x1_ + run2_->at(0));				
+		x2_ = min(rgn1_.x1_ + run1_->at(0), rgn2_.x1_ + run2_->at(0));
 	}
 	bool done(void) { return x1_ >= rgn1_.x2_ && x1_ >= rgn2_.x2_; }
 	void next(void)
 	{
 		int rs = max(rgn1_.x2_, rgn2_.x2_);
-		
+
 		// This warrants some explanation: if we are an even-number of runs,
 		// our run ends with filled area.  In that case, we need to return the maximum
 		// right bound if we are beyond the end of our runs, so that the other guy
@@ -63,7 +63,7 @@ public:
 		// from our white space to the space beyond our white space.
 		int n1 = (r1_ >= (run1_->size() & ~1)) ? rs : (p1_ + run1_->at(r1_));
 		int n2 = (r2_ >= (run2_->size() & ~1)) ? rs : (p2_ + run2_->at(r2_));
-		
+
 		if (n1 < n2)
 		{
 			x1_ = n1;
@@ -90,13 +90,13 @@ public:
 			x2_ = min(n1, n2);
 		}
 	}
-	
+
 	bool first_on(void) { return r1_ < run1_->size() && (r1_ % 2); }
 	bool second_on(void) { return r2_ < run2_->size() && (r2_ % 2); }
 	int  run_start(void) { return x1_; }
 	int	 run_stop(void) { return x2_; }
 	int  run_length(void) { return x2_ - x1_; }
-};	
+};
 
 
 RLERegion::RLERegion() : x1_(0), x2_(0), y1_(0), y2_(0)
@@ -108,7 +108,7 @@ RLERegion::RLERegion(int x1, int y1, int x2, int y2) : x1_(0), x2_(0), y1_(0), y
 	set_rect(x1, y1, x2, y2);
 }
 
-RLERegion::RLERegion(const RLERegion& rhs) : 
+RLERegion::RLERegion(const RLERegion& rhs) :
 	x1_(rhs.x1_),	x2_(rhs.x2_),
 	y1_(rhs.y1_),	y2_(rhs.y2_),
 	runs_(rhs.runs_)
@@ -143,15 +143,15 @@ RLERegion& RLERegion::operator+=(const RLERegion& rhs)
 {
 	extend_y(rhs.y1_, rhs.y2_);
 	extend_x(rhs.x1_, rhs.x2_);
-	
+
 	int offset = rhs.y1_ - y1_;
 	int hang = y2_ - rhs.y2_;
-	
+
 	runarray	new_runs;
 	if (offset > 0)
 		new_runs.insert(new_runs.end(), runs_.begin(), runs_.begin() + offset);
 
-	
+
 	RLERegionDualScanner	scanner(*this, rhs);
 	for (int y = 0; y < rhs.runs_.size(); ++y)
 	{
@@ -171,17 +171,17 @@ RLERegion& RLERegion::operator+=(const RLERegion& rhs)
 				else
 					new_runs.back().push_back(scanner.run_length());
 			}
-			
+
 			scanner.next();
 		}
 	}
 
 	if (hang > 0)
 		new_runs.insert(new_runs.end(), runs_.end() - hang, runs_.end());
-	
+
 	swap(runs_, new_runs);
 	trim();
-	
+
 	return *this;
 }
 
@@ -189,15 +189,15 @@ RLERegion& RLERegion::operator-=(const RLERegion& rhs)
 {
 	extend_y(rhs.y1_, rhs.y2_);
 	extend_x(rhs.x1_, rhs.x2_);
-	
+
 	int offset = rhs.y1_ - y1_;
 	int hang = y2_ - rhs.y2_;
-	
+
 	runarray	new_runs;
 	if (offset > 0)
 		new_runs.insert(new_runs.end(), runs_.begin(), runs_.begin() + offset);
 
-	
+
 	RLERegionDualScanner	scanner(*this, rhs);
 	for (int y = 0; y < rhs.runs_.size(); ++y)
 	{
@@ -217,17 +217,17 @@ RLERegion& RLERegion::operator-=(const RLERegion& rhs)
 				else
 					new_runs.back().push_back(scanner.run_length());
 			}
-			
+
 			scanner.next();
 		}
 	}
 
 	if (hang > 0)
 		new_runs.insert(new_runs.end(), runs_.end() - hang, runs_.end());
-	
+
 	swap(runs_, new_runs);
 	trim();
-	
+
 	return *this;
 }
 
@@ -235,15 +235,15 @@ RLERegion& RLERegion::operator*=(const RLERegion& rhs)
 {
 	extend_y(rhs.y1_, rhs.y2_);
 	extend_x(rhs.x1_, rhs.x2_);
-	
+
 	int offset = rhs.y1_ - y1_;
 	int hang = y2_ - rhs.y2_;
-	
+
 	runarray	new_runs;
 	if (offset > 0)
 		new_runs.insert(new_runs.end(), offset, run(1, x2_ - x1_));
 
-	
+
 	RLERegionDualScanner	scanner(*this, rhs);
 	for (int y = 0; y < rhs.runs_.size(); ++y)
 	{
@@ -263,23 +263,23 @@ RLERegion& RLERegion::operator*=(const RLERegion& rhs)
 				else
 					new_runs.back().push_back(scanner.run_length());
 			}
-			
+
 			scanner.next();
 		}
 	}
 
 	if (hang > 0)
 		new_runs.insert(new_runs.end(), hang, run(1, x2_ - x1_));
-	
+
 	swap(runs_, new_runs);
 	trim();
-	
+
 	return *this;
 }
 
 
 // MANIPULATORS
-	
+
 void	RLERegion::border(RLERegion& outBorder)
 {
 	static int dirs_x[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
@@ -291,7 +291,7 @@ void	RLERegion::border(RLERegion& outBorder)
 		foo.offset(dirs_x[n],dirs_y[n]);
 		outBorder += foo;
 	}
-	outBorder -= *this;	
+	outBorder -= *this;
 }
 
 void	RLERegion::set_rect(int x1, int y1, int x2, int y2)
@@ -322,7 +322,7 @@ void	RLERegion::offset(int x, int y)
 void	RLERegion::trim(void)
 {
 	int ctr;
-		
+
 	// TRIM OFF TOP
 	ctr = runs_.size();
 	while (ctr > 0 && runs_[ctr - 1].size() < 2)
@@ -381,10 +381,10 @@ void	RLERegion::extend_x(int x1, int x2)
 }
 
 // ACCESSORS
-	
+
 
 bool	RLERegion::empty(void) const
-{	
+{
 	for (int y = 0; y < runs_.size(); ++y)
 	for (int x = 1; x < runs_[y].size(); x += 2)
 		if (runs_[y][x] > 0)
@@ -407,7 +407,7 @@ RLERegionScanner::RLERegionScanner(const RLERegion& region) : region_(region)
 {
 	reset();
 }
-	
+
 void		RLERegionScanner::reset(void)
 {
 	y_ = 0;
@@ -421,11 +421,11 @@ void		RLERegionScanner::reset(void)
 
 		if (region_.runs_[y_].size() == 2 && region_.runs_[y_][1] == 0)
 			continue;
-		
+
 		r_ = 1;
 		x_ = region_.runs_[y_][0];
 		break;
-	}		
+	}
 }
 
 void		RLERegionScanner::next_row(void)
@@ -441,11 +441,11 @@ void		RLERegionScanner::next_row(void)
 
 		if (region_.runs_[y_].size() == 2 && region_.runs_[y_][1] == 0)
 			continue;
-		
+
 		r_ = 1;
 		x_ = region_.runs_[y_][0];
 		break;
-	}			
+	}
 }
 
 void		RLERegionScanner::next_run(void)

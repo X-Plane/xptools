@@ -72,7 +72,7 @@ int nad_ctable_load( struct CTABLE *ct, FILE *fid )
     /* read all the actual shift values */
     a_size = ct->lim.lam * ct->lim.phi;
     ct->cvs = (FLP *) pj_malloc(sizeof(FLP) * a_size);
-    if( ct->cvs == NULL 
+    if( ct->cvs == NULL
         || fread(ct->cvs, sizeof(FLP), a_size, fid) != a_size )
     {
         pj_errno = -38;
@@ -80,7 +80,7 @@ int nad_ctable_load( struct CTABLE *ct, FILE *fid )
     }
 
     return 1;
-} 
+}
 
 /************************************************************************/
 /*                          nad_ctable_init()                           */
@@ -95,7 +95,7 @@ struct CTABLE *nad_ctable_init( FILE * fid )
 
     /* read the table header */
     ct = (struct CTABLE *) pj_malloc(sizeof(struct CTABLE));
-    if( ct == NULL 
+    if( ct == NULL
         || fread( ct, sizeof(struct CTABLE), 1, fid ) != 1 )
     {
         pj_errno = -38;
@@ -103,13 +103,13 @@ struct CTABLE *nad_ctable_init( FILE * fid )
     }
 
     /* do some minimal validation to ensure the structure isn't corrupt */
-    if( ct->lim.lam < 1 || ct->lim.lam > 100000 
+    if( ct->lim.lam < 1 || ct->lim.lam > 100000
         || ct->lim.phi < 1 || ct->lim.phi > 100000 )
     {
         pj_errno = -38;
         return NULL;
     }
-    
+
     /* trim white space and newlines off id */
     for( id_end = strlen(ct->id)-1; id_end > 0; id_end-- )
     {
@@ -130,7 +130,7 @@ struct CTABLE *nad_ctable_init( FILE * fid )
 /*      Read a datum shift file in any of the supported binary formats. */
 /************************************************************************/
 
-struct CTABLE *nad_init(char *name) 
+struct CTABLE *nad_init(char *name)
 {
     char 	fname[MAX_PATH_FILENAME+1];
     struct CTABLE *ct;
@@ -147,7 +147,7 @@ struct CTABLE *nad_init(char *name)
         pj_errno = errno;
         return 0;
     }
-    
+
     ct = nad_ctable_init( fid );
     if( ct != NULL )
     {
@@ -168,7 +168,7 @@ struct CTABLE *nad_init(char *name)
 /*      Free a CTABLE grid shift structure produced by nad_init().      */
 /************************************************************************/
 
-void nad_free(struct CTABLE *ct) 
+void nad_free(struct CTABLE *ct)
 {
     if (ct) {
         if( ct->cvs != NULL )

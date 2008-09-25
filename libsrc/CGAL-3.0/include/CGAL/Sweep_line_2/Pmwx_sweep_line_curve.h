@@ -27,12 +27,12 @@
 
 CGAL_BEGIN_NAMESPACE
 
-/*! @class Pmwx_sweep_line_curve 
- *  
- * a class that holds information about a curve that is added to 
+/*! @class Pmwx_sweep_line_curve
+ *
+ * a class that holds information about a curve that is added to
  * the planar map.
  * In addition to the information that is contained in Sweep_line_subcurve,
- * when a planar map is constructed, a reference to an event that was 
+ * when a planar map is constructed, a reference to an event that was
  * handled last on the curve is stored. This information is used to retrieve
  * hints when a subcurve of this curve is inserted into the planar map.
  *
@@ -59,18 +59,18 @@ public:
   typedef Pmwx_insert_info<HalfedgeHandle> PmwxInsertInfo;
   typedef Pmwx_sweep_line_event<Traits, Self> Event;
 
-  Pmwx_sweep_line_curve(int id, X_monotone_curve_2 &curve, Point_2 *reference, 
-			SweepLineTraits_2 *traits) : 
+  Pmwx_sweep_line_curve(int id, X_monotone_curve_2 &curve, Point_2 *reference,
+			SweepLineTraits_2 *traits) :
     Base(id, curve, reference, traits) , m_insertInfo(0), m_lastEvent(0)
   {
   }
 
-  void set_hint(StatusLineIter hint) 
+  void set_hint(StatusLineIter hint)
   {
     m_hint1 = hint;
   }
 
-  StatusLineIter get_hint() const 
+  StatusLineIter get_hint() const
   {
     return m_hint1;
   }
@@ -99,7 +99,7 @@ private:
 
   /*! the last event that was handled on the curve */
   Event *m_lastEvent;
-  
+
   /*! */
   StatusLineIter m_hint1;
 };

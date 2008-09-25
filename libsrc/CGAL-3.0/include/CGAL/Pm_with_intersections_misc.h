@@ -25,7 +25,7 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class I>
-class Planar_map_with_intersections_traits_wrap : 
+class Planar_map_with_intersections_traits_wrap :
   public Pm_traits_wrap_2<I>
 {
 public:
@@ -34,18 +34,18 @@ public:
   typedef typename Base::Point_2                Point_2;
 
   typedef typename I::Has_left_category         Has_left_category;
-  
+
   Planar_map_with_intersections_traits_wrap() : Base() {}
 
   Planar_map_with_intersections_traits_wrap(const Base & tw) : Base(tw) {}
 
   void directed_curve_split(const X_monotone_curve_2 & cv,
-                            const Point_2 & first_pnt, 
+                            const Point_2 & first_pnt,
 			    const Point_2 & split_pnt,
 			    X_monotone_curve_2 & split1,
-                            X_monotone_curve_2 & split2) 
+                            X_monotone_curve_2 & split2)
   {
-    CGAL_assertion(point_equal(curve_source(cv), first_pnt) || 
+    CGAL_assertion(point_equal(curve_source(cv), first_pnt) ||
 	   point_equal(curve_target(cv), first_pnt));
     CGAL_assertion(!point_equal(curve_source(cv), split_pnt));
     CGAL_assertion(!point_equal(curve_target(cv), split_pnt));
@@ -89,7 +89,7 @@ public:
 //     if (point_equal(curve_target(split2), ap2))
 //       part_cv = split2;
 //     else
-//       directed_curve_split(split2, curve_source(split2), ap2, part_cv, 
+//       directed_curve_split(split2, curve_source(split2), ap2, part_cv,
   //split3);
 //     return part_cv;
 //   }
@@ -106,25 +106,25 @@ public:
   bool nearest_intersection_to_left(const X_monotone_curve_2 & cv1,
                                     const X_monotone_curve_2 & cv2,
                                     const Point_2 & pt,
-                                    Point_2 & p1, Point_2 & p2) const 
+                                    Point_2 & p1, Point_2 & p2) const
   {
     return nearest_intersection_to_left_imp(cv1, cv2, pt, p1, p2,
                                             Has_left_category());
   }
 
-    
+
   bool nearest_intersection_to_left_imp(const X_monotone_curve_2 & cv1,
                                         const X_monotone_curve_2 & cv2,
                                         const Point_2 & pt,
                                         Point_2 & p1, Point_2 & p2,
                                         Tag_true) const
   { return Base::nearest_intersection_to_left(cv1, cv2, pt, p1, p2); }
-    
+
   bool nearest_intersection_to_left_imp(const X_monotone_curve_2 & cv1,
                                         const X_monotone_curve_2 & cv2,
                                         const Point_2 & pt,
                                         Point_2 & p1, Point_2 & p2,
-                                        Tag_false) const 
+                                        Tag_false) const
   {
     Point_2 rpt = point_reflect_in_x_and_y( pt);
     X_monotone_curve_2 rcv1 = curve_reflect_in_x_and_y( cv1);

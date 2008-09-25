@@ -16,16 +16,16 @@ void WriteImage(TIFF *tif);
 void main()
 {
 	TIFF *tif=(TIFF*)0;  /* TIFF-level descriptor */
-	
+
 	tif=XTIFFOpen("newtif.tif","w");
 	if (!tif) goto failure;
-	
+
 	SetUpTIFFDirectory(tif);
 	WriteImage(tif);
-	
+
 	XTIFFClose(tif);
 	exit (0);
-	
+
 failure:
 	printf("failure in maketif\n");
 	if (tif) XTIFFClose(tif);
@@ -58,7 +58,7 @@ void WriteImage(TIFF *tif)
 {
 	int i;
 	char buffer[WIDTH];
-	
+
 	memset(buffer,0,sizeof(buffer));
 	for (i=0;i<HEIGHT;i++)
 		if (!TIFFWriteScanline(tif, buffer, i, 0))

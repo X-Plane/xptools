@@ -10,45 +10,45 @@
 
 #include "SFFloat.h"
 
-SFFloat::SFFloat() 
+SFFloat::SFFloat()
 {
 	setType(fieldTypeSFFloat);
 	setValue(0.0f);
 	InitializeJavaIDs();
 }
 
-SFFloat::SFFloat(float value) 
+SFFloat::SFFloat(float value)
 {
 	setType(fieldTypeSFFloat);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFFloat::SFFloat(SFFloat *value) 
+SFFloat::SFFloat(SFFloat *value)
 {
 	setType(fieldTypeSFFloat);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFFloat::InitializeJavaIDs() 
+void SFFloat::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void SFFloat::setValue(float value) 
+void SFFloat::setValue(float value)
 {
 	mValue = value;
 }
 
-void SFFloat::setValue(SFFloat *fvalue) 
+void SFFloat::setValue(SFFloat *fvalue)
 {
 	mValue = fvalue->getValue();
 }
 
-float SFFloat::getValue() 
+float SFFloat::getValue()
 {
 	return mValue;
 }
@@ -57,12 +57,12 @@ float SFFloat::getValue()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFFloat &value) 
+ostream& operator<<(ostream &s, SFFloat &value)
 {
 	return s << value.getValue();
 }
 
-ostream& operator<<(ostream &s, SFFloat *value) 
+ostream& operator<<(ostream &s, SFFloat *value)
 {
 	return s << value->getValue();
 }
@@ -71,14 +71,14 @@ ostream& operator<<(ostream &s, SFFloat *value)
 //	String
 ////////////////////////////////////////////////
 
-void SFFloat::setValue(char *value) 
+void SFFloat::setValue(char *value)
 {
 	if (!value)
 		return;
 	setValue((float)atof(value));
 }
 
-char *SFFloat::getValue(char *buffer, int bufferLen) 
+char *SFFloat::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%g", getValue());
 	return buffer;
@@ -88,7 +88,7 @@ char *SFFloat::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFFloat::equals(Field *field) 
+bool SFFloat::equals(Field *field)
 {
 	SFFloat *floatField = (SFFloat *)field;
 	if (getValue() == floatField->getValue())
@@ -177,7 +177,7 @@ jobject SFFloat::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

@@ -24,7 +24,7 @@
 #define CGAL_VECTOR_D_H
 
 CGAL_BEGIN_NAMESPACE
- 
+
 template <class pR>
 class Vector_d : public pR::Vector_d_base
 { public:
@@ -65,36 +65,36 @@ class Vector_d : public pR::Vector_d_base
   { return Base::operator+(w); }
   Self operator-(const Self& w) const
   { return Base::operator-(w); }
-  Self operator-() const 
+  Self operator-() const
   { return Base::operator-(); }
 
-  template <class NT> 
+  template <class NT>
   Self operator/(const NT& n) const { return Base::operator/(n); }
 
-  Self& operator+=(const Self& w) 
+  Self& operator+=(const Self& w)
   { return static_cast<Self&>(Base::operator+=(w)); }
-  Self& operator-=(const Self& w) 
+  Self& operator-=(const Self& w)
   { return static_cast<Self&>(Base::operator-=(w)); }
-  template <class NT> 
-  Self& operator*=(const NT& n) 
+  template <class NT>
+  Self& operator*=(const NT& n)
   { return static_cast<Self&>(Base::operator*=(n)); }
-  template <class NT> 
-  Self& operator/=(const NT& n) 
+  template <class NT>
+  Self& operator/=(const NT& n)
   { return static_cast<Self&>(Base::operator/=(n)); }
 
   bool operator==(const Self& w) const
   { return Base::operator==(w); }
   bool operator!=(const Self& w) const
   { return Base::operator!=(w); }
-  
+
 };
 
-template <class R> Point_d<R> 
+template <class R> Point_d<R>
 operator+ (const Origin& o, const Vector_d<R>& v)
 { return Point_d<R>( o + static_cast<typename Vector_d<R>::Base>(v) ); }
 
 template <class NT, class R>
-Vector_d<R> operator*(const NT& n, const Vector_d<R>& v) 
+Vector_d<R> operator*(const NT& n, const Vector_d<R>& v)
 { return Vector_d<R>( n * static_cast<typename Vector_d<R>::Base>(v) ); }
 
 CGAL_END_NAMESPACE

@@ -52,21 +52,21 @@ typedef std::list<Curve_2>                          CurveList;
 static Pmwx_2 arr;
 static CGAL::Window_stream
 W(400, 400, "CGAL - Segments and Circular Arcs Arrangement Demo");
- 
+
 CGAL_BEGIN_NAMESPACE
 Window_stream& operator<<(Window_stream& os, Pmwx_2 &A)
 {
-  My_Arr_drawer<Pmwx_2, Pmwx_2::Ccb_halfedge_circulator, 
+  My_Arr_drawer<Pmwx_2, Pmwx_2::Ccb_halfedge_circulator,
     Pmwx_2::Holes_iterator> drawer(os);
-  
+
   draw_pm(arr, drawer, os);
   return os;
 }
 CGAL_END_NAMESPACE
 
-// Redraw function for the LEDA window: used automatically when 
+// Redraw function for the LEDA window: used automatically when
 // the window reappears
-void redraw(CGAL::Window_stream * wp) 
+void redraw(CGAL::Window_stream * wp)
 { wp->start_buffering();
   wp->clear();
   // draw arragnement
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
   double min_y = -1, max_y = 1; // For adjusting the window size.
   char   type;
   int    i_arc;
-  
+
   for (i_arc = 0; i_arc < n_arcs; i_arc++)
   {
     // Read the arc type.
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     {
       // Read the circle, using the format "x0 y0 r^2"
       leda_real  x0, y0, r2;
-    
+
       if (type == 'c' || type == 'C' || type == 'a' || type == 'A')
       {
 	f >> x0 >> y0 >> r2;
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
       double dy = CGAL::to_double(y0);
       double dr = sqrt(CGAL::to_double(r2));
 
-      if (min_x > dx - dr) 
+      if (min_x > dx - dr)
 	min_x = dx - dr;
       if (max_x < dx + dr)
 	max_x = dx + dr;
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     else if (type == 's' || type == 'S')
     {
       std::cout << " (segment)." << std::endl;
-      
+
       // Read the end points.
       leda_real  x1, y1, x2, y2;
 
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 
       Point_2      source (x1, y1);
       Point_2      target (x2, y2);
- 
+
       insrt_t.start();
       arr.insert (Curve_2 (Segment_2 (source, target)));
       insrt_t.stop();
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
       double ymin = CGAL::to_double(y1 < y2 ? y1 : y2);
       double ymax = CGAL::to_double(y1 > y2 ? y1 : y2);
 
-      if (min_x > xmin) 
+      if (min_x > xmin)
 	min_x = xmin;
       if (max_x < xmax)
 	max_x = xmax;
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-      std::cout << "Unknown arc type '" << type 
+      std::cout << "Unknown arc type '" << type
 		<< "' - Stopping here." << std::endl;
       exit(1);
     }
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
   Point_2 p;
 
   Pmwx_2::Halfedge_handle e;
-  
+
   for (;;) {
     double x,y;
     int b=W.read_mouse(x,y);
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
       p=Point_2(x,y);
 
     W << arr;
-    
+
     Pmwx_2::Locate_type lt;
     e = arr.locate(p,lt);
 
@@ -261,10 +261,10 @@ int main(int argc, char* argv[])
         W << cc->curve();
       } while (++cc != *hit);
     }
-      
+
   }
 
-  return 0;  
+  return 0;
 }
 
 #endif

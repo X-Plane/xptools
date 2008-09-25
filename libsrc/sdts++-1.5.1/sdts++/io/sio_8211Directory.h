@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -42,7 +42,7 @@ class sio_8211Directory : public sio_8211DirEntryContainer
    public:
 
        ///
-      friend std::istream& operator>>(std::istream& istr, sio_8211Directory& dir);      
+      friend std::istream& operator>>(std::istream& istr, sio_8211Directory& dir);
       friend std::ostream& operator<<(ostream& ostr, sio_8211Directory const& dir);
 
 
@@ -75,12 +75,12 @@ class sio_8211Directory : public sio_8211DirEntryContainer
          The leader, which is stored in the encompassing sio_8211Record,
          contains formatting information used to read and write
          directory entries writable because adding directory
-         entries might change the width values 
+         entries might change the width values
       */
       sio_8211Leader * leader_;
 
 
-}; // sio_8211Directory 
+}; // sio_8211Directory
 
 
 ///

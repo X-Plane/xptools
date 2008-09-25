@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_BASIC_CONSTRUCTIONS_3_H
 #define CGAL_BASIC_CONSTRUCTIONS_3_H
 

@@ -34,7 +34,7 @@ int main()
   cv[2] = X_monotone_curve_2(p2, p3);
   cv[3] = X_monotone_curve_2(p3, p0);
   cv[4] = X_monotone_curve_2(p0, p2);
-  
+
   std::cout << "The curves of the map :" << std::endl;
   std::copy(&cv[0], &cv[5],
             std::ostream_iterator<X_monotone_curve_2>(std::cout, "\n"));
@@ -45,15 +45,15 @@ int main()
   pm.insert(&cv[0], &cv[5]);
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
-  
+
   // Shoot a vertical ray upward from p:
   Point_2 p(4, 3);
   Planar_map::Locate_type lt;
 
-  std::cout << "Upward vertical ray shooting from " << p << std::endl; 
+  std::cout << "Upward vertical ray shooting from " << p << std::endl;
   Planar_map::Halfedge_handle e = pm.vertical_ray_shoot(p, lt, true);
-  std::cout << "returned the curve " << e->curve() << ", oriented toward " 
-  	    << e->target()->point() << std::endl; 
+  std::cout << "returned the curve " << e->curve() << ", oriented toward "
+  	    << e->target()->point() << std::endl;
   return 0;
 }
 

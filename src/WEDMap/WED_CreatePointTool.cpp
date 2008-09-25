@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,7 +52,7 @@ static const char * kCreateCmds[] = {
 WED_CreatePointTool::WED_CreatePointTool(
 									const char *		tool_name,
 									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer, 
+									WED_MapZoomerNew *	zoomer,
 									IResolver *			resolver,
 									WED_Archive *		archive,
 									CreatePoint_t		tool) :
@@ -62,7 +62,7 @@ WED_CreatePointTool::WED_CreatePointTool(
 	kIsToolDirectional[tool],		// curve allowed
 	kIsToolDirectional[tool],		// curve required?
 	0,								// close allowed
-	0),								// close required? 
+	0),								// close required?
 	mType(tool),
 		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			"","",Airport_Beacon,beacon_Airport),
 		sign_text		(tool==create_Sign			?this:NULL,"Text",			"","","{@L}A"),
@@ -74,12 +74,12 @@ WED_CreatePointTool::WED_CreatePointTool(
 		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		"","",0.25,4,2),
 		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	"","",Heli_Lights,heli_Yellow),
 		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	"","",Light_Fixt,light_VASI),
-		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),		
+		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),
 		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0,5,1),
-		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0)	
+		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0)
 {
 }
-									
+
 WED_CreatePointTool::~WED_CreatePointTool()
 {
 }
@@ -103,8 +103,8 @@ void	WED_CreatePointTool::AcceptPath(
 
 	WED_GISPoint * new_pt_obj = NULL;
 	WED_GISPoint_Heading * new_pt_h = NULL;
-	
-	WED_AirportBeacon * beacon;	
+
+	WED_AirportBeacon * beacon;
 	WED_AirportSign * sign;
 	WED_Helipad * helipad;
 	WED_LightFixture * lights;
@@ -113,8 +113,8 @@ void	WED_CreatePointTool::AcceptPath(
 	WED_Windsock * sock;
 
 	switch(mType) {
-	case create_Beacon:			
-		new_pt_obj = beacon = WED_AirportBeacon::CreateTyped(GetArchive());	
+	case create_Beacon:
+		new_pt_obj = beacon = WED_AirportBeacon::CreateTyped(GetArchive());
 		beacon->SetKind(beacon_kind.value);
 		break;
 	case create_Sign:
@@ -136,26 +136,26 @@ void	WED_CreatePointTool::AcceptPath(
 	case create_Lights:
 		new_pt_obj = new_pt_h = lights = WED_LightFixture::CreateTyped(GetArchive());
 		lights->SetLightType(light_kind.value);
-		lights->SetAngle(light_angle.value);			
+		lights->SetAngle(light_angle.value);
 		break;
 	case create_RampStart:
-		new_pt_obj = new_pt_h = ramp = WED_RampPosition::CreateTyped(GetArchive());			
+		new_pt_obj = new_pt_h = ramp = WED_RampPosition::CreateTyped(GetArchive());
 		break;
 	case create_TowerViewpoint:
-		new_pt_obj = tower = WED_TowerViewpoint::CreateTyped(GetArchive());	
+		new_pt_obj = tower = WED_TowerViewpoint::CreateTyped(GetArchive());
 		tower->SetHeight(tower_height.value);
 		break;
 	case create_Windsock:
-		new_pt_obj = sock = WED_Windsock::CreateTyped(GetArchive());	
+		new_pt_obj = sock = WED_Windsock::CreateTyped(GetArchive());
 		sock->SetLit(windsock_lit.value);
 		break;
 	}
-	
+
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
-	
+
 	new_pt_obj->SetLocation(pts[0]);
 	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
-	
+
 	static int n = 0;
 	static int h = 0;
 	new_pt_obj->SetParent(host, idx);
@@ -165,11 +165,11 @@ void	WED_CreatePointTool::AcceptPath(
 		sprintf(buf,"New %s %d",kCreateCmds[mType],++n);
 	if (mType != create_Sign)
 		new_pt_obj->SetName(buf);
-		
+
 	ISelection * sel = WED_GetSelect(GetResolver());
 	sel->Clear();
 	sel->Select(new_pt_obj);
-			
+
 	GetArchive()->CommitCommand();
 
 }

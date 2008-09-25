@@ -19,7 +19,7 @@ public:
 
 typedef CGAL::Pm_dcel<CGAL::Tpm_vertex_base,
                       CGAL::Tpm_halfedge_base,
-                      Face_with_info > Dcel;  
+                      Face_with_info > Dcel;
 
 typedef CGAL::Topological_map<Dcel> Tpm;
 
@@ -29,7 +29,7 @@ typedef Tpm::Face_handle     Face_handle;
 
 int main()
 {
-  
+
   Tpm t;
 
   Face_handle uf = t.unbounded_face();
@@ -46,7 +46,7 @@ int main()
   CGAL_assertion(t.is_valid());
   std::cout << "Edge e3 inserted between target vertices of e2 and "
             << "twin of e1" << std::endl;
-  
+
   std::cout << std::endl <<"Setting info of the new face to 10" << std::endl;
   Face_handle nf = e3->face();
   nf->set_info(10);

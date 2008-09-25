@@ -2,7 +2,7 @@
  * $Id: shpdump.c,v 1.10 2002/04/10 16:59:29 warmerda Exp $
  *
  * Project:  Shapelib
- * Purpose:  Sample application for dumping contents of a shapefile to 
+ * Purpose:  Sample application for dumping contents of a shapefile to
  *           the terminal in human readable form.
  * Author:   Frank Warmerdam, warmerdam@pobox.com
  *
@@ -14,7 +14,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -64,7 +64,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: shpdump.c,v 1.10 2002/04/10 16:59:29 warmerda Exp $";
 
 #include "shapefil.h"
@@ -111,18 +111,18 @@ int main( int argc, char ** argv )
 
     printf( "Shapefile Type: %s   # of Shapes: %d\n\n",
             SHPTypeName( nShapeType ), nEntities );
-    
+
     printf( "File Bounds: (%12.3f,%12.3f,%g,%g)\n"
             "         to  (%12.3f,%12.3f,%g,%g)\n",
-            adfMinBound[0], 
-            adfMinBound[1], 
-            adfMinBound[2], 
-            adfMinBound[3], 
-            adfMaxBound[0], 
-            adfMaxBound[1], 
-            adfMaxBound[2], 
+            adfMinBound[0],
+            adfMinBound[1],
+            adfMinBound[2],
+            adfMinBound[3],
+            adfMaxBound[0],
+            adfMaxBound[1],
+            adfMaxBound[2],
             adfMaxBound[3] );
-    
+
 /* -------------------------------------------------------------------- */
 /*	Skim over the list of shapes, printing all the vertices.	*/
 /* -------------------------------------------------------------------- */
@@ -149,7 +149,7 @@ int main( int argc, char ** argv )
 
             if( j == 0 && psShape->nParts > 0 )
                 pszPartType = SHPPartTypeName( psShape->panPartType[0] );
-            
+
 	    if( iPart < psShape->nParts
                 && psShape->panPartStart[iPart] == j )
 	    {
@@ -180,7 +180,7 @@ int main( int argc, char ** argv )
                 nInvalidCount++;
             }
         }
-        
+
         SHPDestroyObject( psShape );
     }
 

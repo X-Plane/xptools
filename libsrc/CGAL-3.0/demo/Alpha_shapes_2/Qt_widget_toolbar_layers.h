@@ -11,8 +11,8 @@
 // file          : include/CGAL/IO/Qt_widget_toolbar_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -41,16 +41,16 @@ class Layers_toolbar : public QToolBar
 {
   Q_OBJECT
 public:
-  Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw, 
+  Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
                  Delaunay *t, Alpha_shape *a, QImage *i);
 
 private:
   QToolButton     *but[10];
   QButtonGroup    *button_group;
   CGAL::Qt_widget *widget;
-  QMainWindow     *window;  	
+  QMainWindow     *window;
   int             nr_of_buttons;
-	
+
   Qt_layer_show_triangulation < Delaunay >  *showT;
   Qt_layer_show_voronoi < Delaunay >        *showV;
   Qt_layer_show_points < Delaunay >         *showP;

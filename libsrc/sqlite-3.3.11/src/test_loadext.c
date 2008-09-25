@@ -32,8 +32,8 @@ static void halfFunc(
 ** Extension load function.
 */
 int testloadext_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   SQLITE_EXTENSION_INIT2(pApi);
@@ -45,8 +45,8 @@ int testloadext_init(
 ** Another extension entry point. This one always fails.
 */
 int testbrokenext_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   char *zErr;

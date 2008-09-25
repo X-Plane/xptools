@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownClass.h
  *
  *  This source file is part of DIME.
@@ -34,22 +34,22 @@
 
 class dimeMemHandler;
 
-class DIME_DLL_API dimeUnknownClass : public dimeClass 
+class DIME_DLL_API dimeUnknownClass : public dimeClass
 {
 public:
   dimeUnknownClass(const char * const name, dimeMemHandler * const memhandler);
   virtual ~dimeUnknownClass();
 
   virtual dimeClass *copy(dimeModel * const model) const;
-  
+
   virtual const char *getDxfClassName() const;
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
 private:
   char *dxfClassName;
-  
+
 }; // class dimeUnknownClass
 
 #endif // ! DIME_UNKNOWNCLASS_H

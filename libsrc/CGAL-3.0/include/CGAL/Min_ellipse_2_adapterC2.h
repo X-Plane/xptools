@@ -101,18 +101,18 @@ class Min_ellipse_2_adapterC2 {
     orientation( const Point& p, const Point& q, const Point& r) const
     {
         typedef  typename DA_::FT  FT;
-    
+
         FT  px;
         FT  py;
         FT  qx;
         FT  qy;
         FT  rx;
         FT  ry;
-    
+
         dao.get( p, px, py);
         dao.get( q, qx, qy);
         dao.get( r, rx, ry);
-    
+
         return( static_cast< CGAL::Orientation>(
                    CGAL_NTS sign( ( px-rx) * ( qy-ry) - ( py-ry) * ( qx-rx))));
     }

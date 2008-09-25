@@ -17,13 +17,13 @@
 
 #include "IndexedLineSetNode.h"
 
-IndexedLineSetNode::IndexedLineSetNode() 
+IndexedLineSetNode::IndexedLineSetNode()
 {
 	setHeaderFlag(false);
 	setType(indexedLineSetNodeString);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	// colorPerVertex  field
@@ -56,20 +56,20 @@ IndexedLineSetNode::IndexedLineSetNode()
 	addEventIn(setColorIndex);
 }
 
-IndexedLineSetNode::~IndexedLineSetNode() 
+IndexedLineSetNode::~IndexedLineSetNode()
 {
 }
-	
+
 ////////////////////////////////////////////////
 //	List
 ////////////////////////////////////////////////
 
-IndexedLineSetNode *IndexedLineSetNode::next() 
+IndexedLineSetNode *IndexedLineSetNode::next()
 {
 	return (IndexedLineSetNode *)Node::next(getType());
 }
 
-IndexedLineSetNode *IndexedLineSetNode::nextTraversal() 
+IndexedLineSetNode *IndexedLineSetNode::nextTraversal()
 {
 	return (IndexedLineSetNode *)Node::nextTraversalByType(getType());
 }
@@ -84,18 +84,18 @@ SFBool *IndexedLineSetNode::getColorPerVertexField()
 		return colorPerVertexField;
 	return (SFBool *)getField(colorPerVertexFieldString);
 }
-	
-void IndexedLineSetNode::setColorPerVertex(bool value) 
+
+void IndexedLineSetNode::setColorPerVertex(bool value)
 {
 	getColorPerVertexField()->setValue(value);
 }
 
-void IndexedLineSetNode::setColorPerVertex(int value) 
+void IndexedLineSetNode::setColorPerVertex(int value)
 {
 	setColorPerVertex(value ? true : false);
 }
 
-bool IndexedLineSetNode::getColorPerVertex() 
+bool IndexedLineSetNode::getColorPerVertex()
 {
 	return getColorPerVertexField()->getValue();
 }
@@ -111,26 +111,26 @@ MFInt32 *IndexedLineSetNode::getCoordIndexField()
 	return (MFInt32 *)getField(coordIndexFieldString);
 }
 
-void IndexedLineSetNode::addCoordIndex(int value) 
+void IndexedLineSetNode::addCoordIndex(int value)
 {
 	getCoordIndexField()->addValue(value);
 }
 
-int IndexedLineSetNode::getNCoordIndexes() 
+int IndexedLineSetNode::getNCoordIndexes()
 {
 	return getCoordIndexField()->getSize();
 }
 
-int IndexedLineSetNode::getCoordIndex(int index) 
+int IndexedLineSetNode::getCoordIndex(int index)
 {
 	return getCoordIndexField()->get1Value(index);
 }
 
-void IndexedLineSetNode::clearCoordIndex() 
+void IndexedLineSetNode::clearCoordIndex()
 {
 	getCoordIndexField()->clear();
 }
-	
+
 ////////////////////////////////////////////////
 // ColorIndex
 ////////////////////////////////////////////////
@@ -142,22 +142,22 @@ MFInt32 *IndexedLineSetNode::getColorIndexField()
 	return (MFInt32 *)getField(colorIndexFieldString);
 }
 
-void IndexedLineSetNode::addColorIndex(int value) 
+void IndexedLineSetNode::addColorIndex(int value)
 {
 	getColorIndexField()->addValue(value);
 }
 
-int IndexedLineSetNode::getNColorIndexes() 
+int IndexedLineSetNode::getNColorIndexes()
 {
 	return getColorIndexField()->getSize();
 }
 
-int IndexedLineSetNode::getColorIndex(int index) 
+int IndexedLineSetNode::getColorIndex(int index)
 {
 	return getColorIndexField()->get1Value(index);
 }
 
-void IndexedLineSetNode::clearColorIndex() 
+void IndexedLineSetNode::clearColorIndex()
 {
 	getColorIndexField()->clear();
 }
@@ -165,7 +165,7 @@ void IndexedLineSetNode::clearColorIndex()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool IndexedLineSetNode::isChildNodeType(Node *node)
 {
 	if (node->isColorNode() || node->isCoordinateNode())
@@ -174,7 +174,7 @@ bool IndexedLineSetNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void IndexedLineSetNode::initialize() 
+void IndexedLineSetNode::initialize()
 {
 	if (!isInitialized()) {
 #ifdef SUPPORT_OPENGL
@@ -185,11 +185,11 @@ void IndexedLineSetNode::initialize()
 	}
 }
 
-void IndexedLineSetNode::uninitialize() 
+void IndexedLineSetNode::uninitialize()
 {
 }
 
-void IndexedLineSetNode::update() 
+void IndexedLineSetNode::update()
 {
 }
 
@@ -197,7 +197,7 @@ void IndexedLineSetNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void IndexedLineSetNode::outputContext(ostream &printStream, char *indentString) 
+void IndexedLineSetNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *colorPerVertex = getColorPerVertexField();
 
@@ -213,7 +213,7 @@ void IndexedLineSetNode::outputContext(ostream &printStream, char *indentString)
 			color->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "color USE " << color->getName() << endl;
 	}
 
@@ -227,7 +227,7 @@ void IndexedLineSetNode::outputContext(ostream &printStream, char *indentString)
 			coord->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "coord USE " << coord->getName() << endl;
 	}
 
@@ -250,7 +250,7 @@ void IndexedLineSetNode::outputContext(ostream &printStream, char *indentString)
 //	IndexedLineSetNode::recomputeBoundingBox
 ////////////////////////////////////////////////////////////
 
-void IndexedLineSetNode::recomputeBoundingBox() 
+void IndexedLineSetNode::recomputeBoundingBox()
 {
 	CoordinateNode *coordinate = getCoordinateNodes();
 	if (!coordinate) {
@@ -336,7 +336,7 @@ static void DrawIdxLineSet(IndexedLineSetNode *idxLineSet)
 		glEnd();
 }
 
-void IndexedLineSetNode::recomputeDisplayList() 
+void IndexedLineSetNode::recomputeDisplayList()
 {
 	CoordinateNode *coordinate = getCoordinateNodes();
 	if (!coordinate)

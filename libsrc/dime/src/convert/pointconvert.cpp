@@ -31,8 +31,8 @@
 #include <dime/util/Linear.h>
 #include <dime/State.h>
 
-void 
-convert_point(const dimeEntity *entity, const dimeState *state, 
+void
+convert_point(const dimeEntity *entity, const dimeState *state,
 	      dxfLayerData *layerData, dxfConverter *)
 {
   dimePoint *point = (dimePoint*)entity;
@@ -42,10 +42,10 @@ convert_point(const dimeEntity *entity, const dimeState *state,
   if (point->getRecord(38, param)) {
     v0[2] = param.double_data;
   }
-  
+
   dimeMatrix matrix;
   state->getMatrix(matrix);
-  
+
   dxfdouble thickness = point->getThickness();
   if (thickness != 0.0) { // line
     dimeVec3f e = point->getExtrusionDir();

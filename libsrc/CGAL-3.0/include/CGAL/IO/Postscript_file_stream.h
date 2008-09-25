@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_POSTSCRIPT_FILE_STREAM_H
 #define CGAL_POSTSCRIPT_FILE_STREAM_H
@@ -130,7 +130,7 @@ create_demo_postscript_file_stream( float w = 512.0, float h = 512.0,
 
 inline
 Postscript_file_stream*
-create_and_display_demo_postscript_file_stream(float w = 512.0, 
+create_and_display_demo_postscript_file_stream(float w = 512.0,
                     float h = 512.0, const char* str = "CGAL_unnamed.ps",
                     double x_extension = 1.0)
 {

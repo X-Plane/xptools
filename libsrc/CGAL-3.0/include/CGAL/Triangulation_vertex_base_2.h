@@ -29,7 +29,7 @@ CGAL_BEGIN_NAMESPACE
 
 template < typename GT,
            typename Vb = Triangulation_ds_vertex_base_2<> >
-class Triangulation_vertex_base_2 
+class Triangulation_vertex_base_2
   : public Vb
 
 {
@@ -55,7 +55,7 @@ public:
   Triangulation_vertex_base_2(const Point & p) : Vb(), _p(p) {}
   Triangulation_vertex_base_2(const Point & p, Face_handle f)
     : Vb(f), _p(p) {}
-  Triangulation_vertex_base_2(Face_handle f) : Vb(f) {} 
+  Triangulation_vertex_base_2(Face_handle f) : Vb(f) {}
 
   void set_point(const Point & p) { _p = p; }
   const Point&  point() const { return _p; }
@@ -66,7 +66,7 @@ public:
   Point&        point() { return _p; }
 
   //the following trivial is_valid to allow
-  // the user of derived face base classes 
+  // the user of derived face base classes
   // to add their own purpose checking
   bool is_valid(bool /* verbose */ = false, int /* level */ = 0) const
     {return true;}

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -539,7 +539,7 @@ _imp->_DomainSpatialAddress.clear();
 } // sb_Spdm::unDefineDomainSpatialAddress
 
 
-sio_8211Schema& 
+sio_8211Schema&
 sb_Spdm::schema_()
 {
 if ( _schema.empty() )

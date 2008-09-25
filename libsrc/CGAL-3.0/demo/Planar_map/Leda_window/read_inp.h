@@ -74,7 +74,7 @@ public:
     p = pnts[i];
     return true;
   }
-  
+
   int curve_source(int i) const
   {
     if ((i < 0) || (i >= num_cvs))
@@ -90,16 +90,16 @@ public:
   }
 
   int get_num_pnts() const { return num_pnts; }
-  
+
   int get_num_cvs() const { return num_cvs; }
-  
+
   Point point(int i) const
   {
     if ((i < 0) || (i >= num_pnts))
       return Point(0,0);
     return pnts[i];
   }
-  
+
   friend std::ostream &operator<<(std::ostream &os, const PM_input &pmi)
   {
     CGAL::set_ascii_mode(os);
@@ -122,7 +122,7 @@ public:
     CGAL::set_ascii_mode(is);
     pmi.delete_all();
     Point p;
-    
+
     is >> pmi.num_pnts;
 #ifdef CGAL_PM_READ_DEBUG
     std::cerr << "pmi.num_pnts " << pmi.num_pnts << std::endl;
@@ -142,7 +142,7 @@ public:
       pmi.pnts[i]=Point(x,y);
 #endif
     }
-		
+
     is >> pmi.num_cvs;
 #ifdef CGAL_PM_READ_DEBUG
     std::cerr << "pmi.num_cvs " << pmi.num_cvs << std::endl;
@@ -153,7 +153,7 @@ public:
     {
       is >> pmi.cvs[i].s >> pmi.cvs[i].t;
     }
-    
+
     return is;
   }
 

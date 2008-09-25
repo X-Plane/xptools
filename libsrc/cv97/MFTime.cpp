@@ -10,37 +10,37 @@
 
 #include "MFTime.h"
 
-MFTime::MFTime() 
+MFTime::MFTime()
 {
 	setType(fieldTypeMFTime);
 	InitializeJavaIDs();
 }
 
-void MFTime::InitializeJavaIDs() 
+void MFTime::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFTime::addValue(double value) 
+void MFTime::addValue(double value)
 {
 	SFTime *sfvalue = new SFTime(value);
 	add(sfvalue);
 }
 
-void MFTime::addValue(SFTime *sfvalue) 
+void MFTime::addValue(SFTime *sfvalue)
 {
 	add(sfvalue);
 }
 
-void MFTime::insertValue(int index, double value) 
+void MFTime::insertValue(int index, double value)
 {
 	SFTime *sfvalue = new SFTime(value);
 	insert(sfvalue, index);
 }
 
-double MFTime::get1Value(int index) 
+double MFTime::get1Value(int index)
 {
 	SFTime *sfvalue = (SFTime *)getObject(index);
 	if (sfvalue)
@@ -49,7 +49,7 @@ double MFTime::get1Value(int index)
 		return 0.0;
 }
 
-void MFTime::set1Value(int index, double value) 
+void MFTime::set1Value(int index, double value)
 {
 	SFTime *sfvalue = (SFTime *)getObject(index);
 	if (sfvalue)
@@ -84,12 +84,12 @@ void MFTime::setValue(int size, double values[])
 //	Output
 ////////////////////////////////////////////////
 
-void MFTime::outputContext(ostream& printStream, char *indentString) 
+void MFTime::outputContext(ostream& printStream, char *indentString)
 {
 	for (int n=0; n<getSize(); n++) {
 		if (n < getSize()-1)
 			printStream << indentString << get1Value(n) << "," << endl;
-		else	
+		else
 			printStream << indentString << get1Value(n) << endl;
 	}
 }
@@ -211,7 +211,7 @@ jobject MFTime::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		jdouble value = get1Value(n);
@@ -225,7 +225,7 @@ jobject MFTime::toJavaObject(int bConstField) {
 //	MFTime::setValue
 ////////////////////////////////////////////////
 
-void MFTime::setValue(jobject field, int bConstField) 
+void MFTime::setValue(jobject field, int bConstField)
 {
 	assert(field);
 	JNIEnv		*jniEnv			= getJniEnv();
@@ -253,7 +253,7 @@ void MFTime::setValue(jobject field, int bConstField)
 void MFTime::getValue(jobject field, int bConstField) {
 }
 
-#endif 
+#endif
 
 
 

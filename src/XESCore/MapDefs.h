@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -42,7 +42,7 @@ using std::list;
  * instantiation. */
 typedef	map<int, double>	GISParamMap;
 
-/* GISPointFeature_t 
+/* GISPointFeature_t
  *
  * A point feature is a 0-dimensional thing in the GIS data.
  * A point feature contains a seriers of parameters indicating
@@ -53,7 +53,7 @@ typedef	map<int, double>	GISParamMap;
 struct	GISPointFeature_t {
 	int				mFeatType;
 	GISParamMap		mParams;
-	Point2			mLocation;	
+	Point2			mLocation;
 	bool			mInstantiated;
 };
 typedef vector<GISPointFeature_t>	GISPointFeatureVector;
@@ -62,7 +62,7 @@ typedef vector<GISPointFeature_t>	GISPointFeatureVector;
  *
  * An area feature is a polygon that is fully contained within
  * a GT-polygon.  We deviate from more typical GIS standards
- * in representing area features non-topologically because 
+ * in representing area features non-topologically because
  * we aren't terribly interested in doing topological operations.
  * By comparison we do want to know the containing GT land block
  * and not have it be split by a feature that's right on the street.
@@ -76,9 +76,9 @@ struct GISPolygonFeature_t {
 };
 typedef vector<GISPolygonFeature_t>	GISPolygonFeatureVector;
 
-/* GISAreaFeature_t 
+/* GISAreaFeature_t
  *
- * An area feature describes the entire GT-polygon, typically 
+ * An area feature describes the entire GT-polygon, typically
  * overriding the treatment and population of that GT-polygon.
  *
  */
@@ -103,7 +103,7 @@ struct	GISObjPlacement_t {
 typedef vector<GISObjPlacement_t>	GISObjPlacementVector;
 
 /* GISPolyObjPlacement_t
- * 
+ *
  * A single placement of a prototype by its polygon and height.
  * Derived info is saved just like a normal object. */
 struct	GISPolyObjPlacement_t {
@@ -113,10 +113,10 @@ struct	GISPolyObjPlacement_t {
 	double				mHeight;
 	bool				mDerived;
 };
-typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;	
+typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;
 
 /* GISNetworkSegment_t
- * 
+ *
  * A single road or other item along a network.  Each end has a height
  * stored in terms of levels from the network definition. */
 struct	GISNetworkSegment_t {
@@ -142,10 +142,10 @@ class	Pmwx;
  * HALFEDGE
  ************************************************************************/
 
-	
+
 class	GISHalfedge {
 
-	class	Halfedge_iterator : public iterator<bidirectional_iterator_tag, GISHalfedge> { 
+	class	Halfedge_iterator : public iterator<bidirectional_iterator_tag, GISHalfedge> {
 		GISHalfedge *	ptr;
 	public:
 		Halfedge_iterator() : ptr(NULL) { }
@@ -225,8 +225,8 @@ class	GISHalfedge {
 		Ccb_halfedge_const_circulator operator++(int) { const GISHalfedge * old = ptr; ptr = ptr->mNext; return Ccb_halfedge_const_circulator(old); }
 		operator const GISHalfedge * () const { return ptr; }
 	};
-	
-	
+
+
 	class Halfedge_around_vertex_circulator : public iterator<bidirectional_iterator_tag, GISHalfedge> {
 		GISHalfedge *	ptr;
 	public:
@@ -258,9 +258,9 @@ class	GISHalfedge {
 		Halfedge_around_vertex_const_circulator& operator++() { ptr = ptr->mNext->mTwin; return *this; }
 		Halfedge_around_vertex_const_circulator operator++(int) { const GISHalfedge * old = ptr; ptr = ptr->mNext->mTwin; return Halfedge_around_vertex_const_circulator(old); }
 		operator const GISHalfedge * () const { return ptr; }
-	};	
-	
-		
+	};
+
+
 	GISHalfedge *	mLinkPrev;
 	GISHalfedge *	mLinkNext;
 
@@ -286,7 +286,7 @@ public:
 	const GISVertex *	source() const	{ return mTwin->mTarget; }
 	GISHalfedge *		next() 			{ return mNext; }
 	const GISHalfedge *	next() const	{ return mNext; }
-	
+
 	void set_next(GISHalfedge * next) 	{ mNext = next; }
 	void set_face(GISFace * face) 		{ mFace = face; }
 	void set_twin(GISHalfedge * twin) 	{ mTwin = twin; }
@@ -316,15 +316,15 @@ public:
 	GISParamMap					mParams;
 
 	double						mInset;				// Largest unusable inset for this side
-	
+
 	bool						mMark;				// Temporary, for algorithms
 
 #if OPENGL_MAP
 	float						mGL[4];				// Pre-expanded line!
-	float						mGLColor[3];	
+	float						mGLColor[3];
 #endif
-	
-	
+
+
 private:
 
 	GISHalfedge&	operator=(const GISHalfedge&);
@@ -332,7 +332,7 @@ private:
 	friend			class	Pmwx;
 	friend			class	GISFace;
 	friend			class	GISVertex;
-	
+
 };
 
 /************************************************************************
@@ -384,7 +384,7 @@ class	GISVertex {
 
 	GISHalfedge *	mHalfedge;
 	Point2			mPoint;
-	
+
 	typedef	GISHalfedge::Halfedge_around_vertex_circulator			Halfedge_around_vertex_circulator;
 	typedef	GISHalfedge::Halfedge_around_vertex_const_circulator	Halfedge_around_vertex_const_circulator;
 
@@ -401,13 +401,13 @@ public:
 	const GISHalfedge *	halfedge() const		{ return mHalfedge; }
 
 	void			set_halfedge(GISHalfedge * e)	{ mHalfedge = e; }
-	
+
 	unsigned int 	degree() const;
 	GISHalfedge *	rightmost_rising();
-	
+
 	Halfedge_around_vertex_circulator		incident_halfedges() 		{ return Halfedge_around_vertex_circulator(mHalfedge); }
 	Halfedge_around_vertex_const_circulator	incident_halfedges() const 	{ return Halfedge_around_vertex_const_circulator(mHalfedge); }
-	
+
 					GISVertex();
 					GISVertex(const GISVertex&);
 	virtual			~GISVertex();
@@ -419,7 +419,7 @@ public:
 #endif
 
 private:
-	
+
 	GISVertex		operator=(const GISVertex&);
 
 	friend			class	Pmwx;
@@ -473,7 +473,7 @@ class	GISFace {
 	GISFace *					mLinkPrev;
 	GISFace *					mLinkNext;
 
-	GISHalfedge *				mOuterCCB;	
+	GISHalfedge *				mOuterCCB;
 	set<GISHalfedge *>			mHoles;
 
 	typedef	set<GISHalfedge *>::iterator				Holes_iterator;
@@ -483,11 +483,11 @@ class	GISFace {
 
 	GISFace *		mNextIndex;
 	friend class	MapFaceBucketTraits;
-	
+
 public:
 
 	GISFace *					next_index()			{ return mNextIndex; }
-	
+
 	bool						is_unbounded() const 	{ return mOuterCCB == NULL; }
 	Holes_iterator				holes_begin() 			{ return mHoles.begin(); }
 	Holes_const_iterator		holes_begin() const 	{ return mHoles.begin(); }
@@ -503,10 +503,10 @@ public:
 	void	add_hole(GISHalfedge * inner);
 	void	delete_hole(GISHalfedge * inner);
 	bool	is_hole_ccb(GISHalfedge * inner)				{ return mHoles.count(inner); }
-	
+
 					GISFace();
 					GISFace(const GISFace&);
-	virtual			~GISFace();	
+	virtual			~GISFace();
 
 //	int							mIsWater;
 	int							mTerrainType;
@@ -514,9 +514,9 @@ public:
 	GISPointFeatureVector		mPointFeatures;
 	GISPolygonFeatureVector		mPolygonFeatures;
 	GISAreaFeature_t			mAreaFeature;
-	
+
 	// Stuff that's been hand placed in the area by object propagation
-	GISObjPlacementVector		mObjs; 
+	GISObjPlacementVector		mObjs;
 	GISPolyObjPlacementVector	mPolyObjs;
 
 	// A temporary cache - buckets use this to speed
@@ -529,9 +529,9 @@ public:
 	vector<float>				mGLTris;						// Pre-expanded triangles
 	float						mGLColor[4];
 #endif
-	
+
 	bool			IsWater(void) const; 						// Is this polygon wet?
-	bool			TerrainMatch(const GISFace& rhs) const;		// 
+	bool			TerrainMatch(const GISFace& rhs) const;		//
 	bool			AreaMatch(const GISFace& rhs) const;
 
 private:
@@ -568,16 +568,16 @@ public:
 	void		set_empty(CullType& c);									// make zero-area cull
 
 	void		subkey(const KeyType& e, KeyType& k, int n);			// change K to be the Nth quadrant subkey of E
-	bool		contains(const KeyType& outer, const KeyType& inner);	// return true if outer fully contains inner	
+	bool		contains(const KeyType& outer, const KeyType& inner);	// return true if outer fully contains inner
 	void		make_key(const CullType& cull, KeyType&	key);
-	
-	void *		alloc(size_t bytes);		
+
+	void *		alloc(size_t bytes);
 
 	~MapBucketTraits();
 
 	list<void *>	alloc_list;
 
-};	
+};
 
 class	MapFaceBucketTraits : public MapBucketTraits {
 public:
@@ -586,7 +586,7 @@ public:
 	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
 	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
 	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
-};	
+};
 
 class	MapHalfedgeBucketTraits : public MapBucketTraits {
 public:
@@ -640,15 +640,15 @@ public:
 	typedef GISFace::Holes_iterator									Holes_iterator;
 	typedef GISFace::Holes_const_iterator							Holes_const_iterator;
 	typedef GISFace::Ccb_halfedge_circulator						Ccb_halfedge_circulator;
-	typedef GISFace::Ccb_halfedge_const_circulator					Ccb_halfedge_const_circulator;	
-	
+	typedef GISFace::Ccb_halfedge_const_circulator					Ccb_halfedge_const_circulator;
+
 	GISFace *		unbounded_face() { return mUnbounded; }
 	const GISFace *	unbounded_face() const { return mUnbounded; }
 
-	int				number_of_vertices() 	const { return mVertices;	}	
+	int				number_of_vertices() 	const { return mVertices;	}
 	int				number_of_halfedges() 	const { return mHalfedges;	}
 	int				number_of_faces() 		const { return mFaces;		}
-		
+
 	Vertex_iterator			vertices_begin()			{ return Vertex_iterator(mFirstVertex); }
 	Vertex_const_iterator	vertices_begin()	const	{ return Vertex_const_iterator(mFirstVertex); }
 	Vertex_iterator			vertices_end()				{ return Vertex_iterator(NULL); }
@@ -661,7 +661,7 @@ public:
 	Face_const_iterator		faces_begin()		const	{ return Face_const_iterator(mFirstFace); }
 	Face_iterator			faces_end()					{ return Face_iterator(NULL); }
 	Face_const_iterator		faces_end()			const	{ return Face_const_iterator(NULL); }
-		
+
 	void			clear();
 	bool			empty() const { return mVertices == 0 && mHalfedges == 0 && mFaces == 1; }
 	bool			is_valid() const;
@@ -675,7 +675,7 @@ public:
 		locate_Halfedge,
 		locate_Face
 	};
-	
+
 	/* Given a point, find it.  Returns a locate type.  For a face, halfedge
 	 * is face's outer CCB halfedge.  For vertex, halfedge's target is vertex.  For
 	 * unbounded face, NULL is returned if it's empty. */
@@ -685,7 +685,7 @@ public:
 	 * located point, e.g. the actual point, its topological location, and the
 	 * most useful halfedge we have.  Given a destination, we return the first
 	 * thing we intersect.  This will be either a vertex if we hit one, an edge
-	 * if we cross one, or a face if we terminate in a face.  (In this case, 
+	 * if we cross one, or a face if we terminate in a face.  (In this case,
 	 * the face should match our own!)  We return the crossing point, a locate type,
 	 * and a halfedge similar to above. */
 	GISHalfedge *	ray_shoot(
@@ -695,40 +695,40 @@ public:
 						const Point2&		dest,
 						Point2&				crossing,
 						Locate_type&		loc);
-						
+
 	/* Vertex location - this is more specific than point location in that it utilizes
 	 * the hash table and then bails. */
-	GISVertex *		locate_vertex(const Point2& inLocation);	
+	GISVertex *		locate_vertex(const Point2& inLocation);
 
 	/*****************************************************************************
 	 * BASIC TOPOLOGICAL EDITING
 	 *****************************************************************************/
-	
-	/* Relocate a vertex - please note that this does not check for 
-	 * induced edge collisions. */	 
+
+	/* Relocate a vertex - please note that this does not check for
+	 * induced edge collisions. */
 	void			set_vertex_location(GISVertex * inVertex, const Point2& inPoint);
-	
+
 	/* Given an edge, split it into two, creating a new vertex.
 	 * Returns inEdge, whose target is now the split pt. */
-	GISHalfedge	*	split_edge(GISHalfedge * inEdge, const Point2& split);	
+	GISHalfedge	*	split_edge(GISHalfedge * inEdge, const Point2& split);
 
 	/* Merge two edges - first->next must be second.  Next is destroyed,
 	 * first is returned.  first's target's valence must be 2.  Returns first. */
-	GISHalfedge *	merge_edges(GISHalfedge * first, GISHalfedge * second);	
+	GISHalfedge *	merge_edges(GISHalfedge * first, GISHalfedge * second);
 
-	/* Remove edge.  If a face is removed, the unbounded face must be kept, or 
+	/* Remove edge.  If a face is removed, the unbounded face must be kept, or
 	 * a face is kept over its hole.  In a tie, the edge's face is used.
 	 * This routine returns a ptr to the DELETED face!!  This means the pointer
 	 * is BAD and should only be used to figure out if a face was deleted. */
 	GISFace *			remove_edge(GISHalfedge * inEdge);
-		
+
 	/* Insert one or more edges as needed to form an edge from one point
 	 * to another.  If passed, a notifier is called on each new halfedge - in
 	 * the direction from p1 to p2 when on the new edge.  The first param is
 	 * the old halfedge, the second the new.  One will be NULL for edges along
 	 * P1 to P2.  If they are both not NULL, it is a different edge being split.
 	 * Returns the last halfedge inserted, pointing to P2. */
-	GISHalfedge *	insert_edge(const Point2& p1, const Point2& p2, 
+	GISHalfedge *	insert_edge(const Point2& p1, const Point2& p2,
 						void(* notifier)(GISHalfedge *, GISHalfedge *, void *), void * ref);
 	GISHalfedge *	insert_edge(const Point2& p1, const Point2& p2, GISHalfedge * hint, Locate_type location,
 						void(* notifier)(GISHalfedge *, GISHalfedge *, void *), void * ref);
@@ -737,54 +737,54 @@ public:
 	/*****************************************************************************
 	 * SPECIALIZED TOPOLOGICAL EDITING - USEFUL WHEN YOU KNOW THINGS ABOUT THE MAP
 	 *****************************************************************************/
-	 
+
 	/* Given a ring of points that you know to not be in topological conflict
-	 * with any other lines, and whichd do not have antennas, this does an insert 
+	 * with any other lines, and whichd do not have antennas, this does an insert
 	 * in a given face. */
 	GISFace *		insert_ring(GISFace * parent, const vector<Point2>& inPoints);
 
 	/* These three routines insert an edge in specific situations.  The requirement
 	 * is that the edge not  cross any other edges; these routines are faster because
 	 * they don't check for splits.  For inserting between vertices, the flga on_outer_ccb
-	 * tells us that we know for a fact that both points are on the face's outer CCB.  This 
+	 * tells us that we know for a fact that both points are on the face's outer CCB.  This
 	 * provides a performance boost for the split-face-from-outer-ccb case because we can avoid
 	 * checking for holes.  Setting this on false causes the PMWX to check this for you. */
-	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);	
-	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);	
+	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);
+	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);
 	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2);
 
 	/*****************************************************************************
 	 * MISC STUFF
 	 *****************************************************************************/
-	/* Returns the smallest distance between any two points.  WARNING: this is 
+	/* Returns the smallest distance between any two points.  WARNING: this is
 	 * currently O(N^2) time! */
 	double		smallest_dist(Point2& p1, Point2& p2);
-	
+
 
 	/*****************************************************************************
 	 * LOW LEVEL ACCESS - ONLY USE FOR SPECIALIZED CONSTRUCTION/FABRICATION
 	 *****************************************************************************/
 public:
 	GISVertex *		new_vertex(const Point2& inPoint);
-	GISHalfedge *	new_halfedge();	
-	GISHalfedge *	new_halfedge(const GISHalfedge *);	
-	GISHalfedge *	new_edge();	
-	GISHalfedge *	new_edge(const GISHalfedge *);	
+	GISHalfedge *	new_halfedge();
+	GISHalfedge *	new_halfedge(const GISHalfedge *);
+	GISHalfedge *	new_edge();
+	GISHalfedge *	new_edge(const GISHalfedge *);
 	GISFace *		new_face();
 	GISFace *		new_face(const GISFace *);
-	
+
 	void	MoveFaceToMe		(Pmwx * old, GISFace * inFace);
 	void	MoveVertexToMe		(Pmwx * old, GISVertex * inVertex);
 	void	MoveHalfedgeToMe	(Pmwx * old, GISHalfedge * inHalfedge);
 	void	MoveEdgeToMe		(Pmwx * old, GISHalfedge * inHalfedge);
-	
+
 	void	UnindexVertex(GISVertex * v);
 	void	ReindexVertex(GISVertex * v);
 
 	/*****************************************************************************
 	 * SPATIAL INDEXING
 	 *****************************************************************************/
-	
+
 	void		FindFaceTouchesPt(const Point2&, vector<GISFace *>& outIDs);									// Fully checks for pt containment
 	void		FindFaceTouchesRectFast(const Point2&, const Point2&, vector<GISFace *>& outIDs);				// Intersects with face bbox, not face
 	void		FindFaceFullyInRect(const Point2&, const Point2&, vector<GISFace *>& outIDs);					// Full containment
@@ -796,7 +796,7 @@ public:
 	void		FindVerticesTouchesRect(const Point2&, const Point2&, vector<GISVertex *>& outIDs);				// Full containment (any containment is full for pts)
 
 	void		Index(void);
-		
+
 private:
 
 	typedef	QuadTree<MapFaceBucketTraits,9>			MapFaceBuckets;
@@ -822,7 +822,7 @@ private:
 	void			delete_halfedge(GISHalfedge * halfedge);
 	void			delete_edge(GISHalfedge * halfedge);
 	void			delete_face(GISFace * face);
-	
+
 		GISVertex *		mFirstVertex;
 		GISVertex *		mLastVertex;
 		GISHalfedge *	mFirstHalfedge;
@@ -835,7 +835,7 @@ private:
 		int		mFaces;
 
 		GISFace *		mUnbounded;
-		
+
 	typedef	map<Point2, GISVertex *, lesser_y_then_x>	VertexMap;
 		VertexMap		mVertexIndex;
 };

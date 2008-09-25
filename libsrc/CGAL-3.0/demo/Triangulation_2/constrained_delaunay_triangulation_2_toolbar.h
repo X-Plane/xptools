@@ -5,18 +5,18 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 //
-// Every use of CGAL requires a license. 
+// Every use of CGAL requires a license.
 //
 // Academic research and teaching license
 // - For academic research and teaching purposes, permission to use and copy
 //   the software and its documentation is hereby granted free of charge,
 //   provided that it is not a component of a commercial product, and this
-//   notice appears in all copies of the software and related documentation. 
+//   notice appears in all copies of the software and related documentation.
 //
 // Commercial licenses
-// - Please check the CGAL web site http://www.cgal.org/index2.html for 
+// - Please check the CGAL web site http://www.cgal.org/index2.html for
 //   availability.
 //
 // The CGAL Consortium consists of Utrecht University (The Netherlands),
@@ -30,8 +30,8 @@
 // file          : constrained_delaunay_triangulation_2_toolbar.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau
 //
@@ -69,7 +69,7 @@ private:
   QButtonGroup       *button_group;
   void               addToolButton(QToolButton *b);
   int                nr_of_buttons;
-	
+
   CGAL::Qt_widget_get_segment<K2>            segmentbut;
   CGAL::Qt_widget_get_point<K2>              pointbut;
   CGAL::Qt_widget_get_polygon<Cgal_Polygon>  polygonbut;

@@ -11,8 +11,8 @@
 // file          : triangulation_2_toolbar_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -51,7 +51,7 @@ private:
                   *dt;
   QButtonGroup    *button_group;
   int             nr_of_buttons;
-	
+
   Qt_layer_show_triangulation < Regular_triangulation > *showT;
   Qt_layer_show_voronoi < Regular_triangulation >       *showV;
   Qt_layer_show_points < Regular_triangulation >        *showP;

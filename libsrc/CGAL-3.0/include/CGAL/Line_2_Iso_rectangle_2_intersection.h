@@ -265,7 +265,7 @@ intersection(typename K::Segment_2 &result) const
         intersection_type();
     if (_result != SEGMENT)
         return false;
-    result = construct_segment_2(translated_point(_ref_point, _dir*_min), 
+    result = construct_segment_2(translated_point(_ref_point, _dir*_min),
 				 translated_point(_ref_point, _dir*_max));
     return true;
 }
@@ -274,7 +274,7 @@ intersection(typename K::Segment_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Line_2 &line, 
+intersection(const typename CGAL_WRAP(K)::Line_2 &line,
 	     const typename CGAL_WRAP(K)::Iso_rectangle_2 &iso,
 	     const K&)
 {
@@ -302,7 +302,7 @@ template <class K>
 inline
 Object
 intersection(const typename CGAL_WRAP(K)::Iso_rectangle_2 &iso,
-	     const typename CGAL_WRAP(K)::Line_2 &line, 
+	     const typename CGAL_WRAP(K)::Line_2 &line,
 	     const K& k)
 {
   return CGALi::intersection(line, iso, k);

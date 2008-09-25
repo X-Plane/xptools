@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -64,10 +64,10 @@ WED_CropTool::WED_CropTool(WED_MapZoomer * inZoomer) :
 	WED_MapTool(inZoomer),
 	mHandles(8, kHandleInfos, 4, this),
 	mCrop(false)
-{	
+{
 	mBounds[0] = mBounds[1] = mBounds[2] = mBounds[3] = 0.0;
 }
-						
+
 WED_CropTool::~WED_CropTool()
 {
 }
@@ -96,11 +96,11 @@ void	WED_CropTool::DrawFeedbackOverlay(
 		glEnd();
 	}
 }
-							
+
 bool	WED_CropTool::HandleClick(
 							XPLMMouseStatus		inStatus,
-							int 				inX, 
-							int 				inY, 
+							int 				inX,
+							int 				inY,
 							int 				inButton)
 {
 	if (!mCrop) return false;
@@ -116,7 +116,7 @@ bool	WED_CropTool::HandleClick(
 		return true;
 	}
 	return false;
-}							
+}
 
 #pragma mark -
 
@@ -141,7 +141,7 @@ void	WED_CropTool::SetNthPropertyValue(int n, double v)
 }
 
 #pragma mark -
-	
+
 int		WED_CropTool::GetNumButtons(void)
 {
 	return 6;
@@ -183,7 +183,7 @@ void	WED_CropTool::NthButtonPressed(int n)
 		DebugAssert(gMap.is_valid());
 		DebugAssert(ValidateMapDominance(gMap));
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
-		break;		
+		break;
 	}
 }
 
@@ -227,7 +227,7 @@ double		WED_CropTool::GetHandleY(int inHandle) const
 	if (y_ind == 5) return 0.5 * (mBounds[1] + mBounds[3]);
 	return mBounds[y_ind];
 }
-	
+
 void		WED_CropTool::MoveHandleX(int handle, double deltaX)
 {
 	int	x_ind = kHandleToBoundsX[handle];

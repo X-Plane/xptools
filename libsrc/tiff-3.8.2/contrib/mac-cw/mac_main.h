@@ -1,7 +1,7 @@
-/* 
+/*
  * mac_main.h  -- redefines main entry point
  */
- 
+
 #ifndef _mac_main_h
 #define _mac_main_h
 

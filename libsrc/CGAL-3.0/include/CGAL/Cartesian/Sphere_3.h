@@ -281,7 +281,7 @@ template < class R >
 CGAL_KERNEL_INLINE
 Bbox_3
 SphereC3<R>::bbox() const
-{ 
+{
   typename R::Construct_bbox_3 construct_bbox_3;
   Bbox_3 b = construct_bbox_3(center());
 
@@ -298,7 +298,7 @@ SphereC3<R>::bbox() const
   Interval_nt<> minz = z-r;
   Interval_nt<> maxz = z+r;
 
-  return Bbox_3(minx.inf(), miny.inf(), minz.inf(), 
+  return Bbox_3(minx.inf(), miny.inf(), minz.inf(),
 		maxx.sup(), maxy.sup(), maxz.sup());
 }
 

@@ -56,7 +56,7 @@ public:
 //
 // Note that since the read in DDR will have the field terminators
 // stripped (because we don't bother to store them, the comparisons
-// have to be a bit lenient.  That is, we allow for lengths to differ by 
+// have to be a bit lenient.  That is, we allow for lengths to differ by
 // one character (presumably the missing field terminator), and then do
 // a strict binary comparison that doesn't include the field terminator.
 //
@@ -74,7 +74,7 @@ public:
 
 
 
-int 
+int
 main(int argc, char** argv)
 {
 #ifdef EFENCE
@@ -88,7 +88,7 @@ main(int argc, char** argv)
   sio_8211Field first_field;
 
   string tmp_str = "BOGUS";     // create some bogus test data
-  vector<char> tmp_data(5);     // and then copy it over to a data type 
+  vector<char> tmp_data(5);     // and then copy it over to a data type
                                 // palatable to the sio_8211Field
   copy( tmp_str.begin(), tmp_str.end(), tmp_data.begin() );
 
@@ -97,7 +97,7 @@ main(int argc, char** argv)
   first_field.setData( tmp_data );
   first_dr.addField( "0001", first_field );
 
-  //  Check contents of DRLeader.  
+  //  Check contents of DRLeader.
   const sio_8211DRLeader * const first_dr_leader =
     dynamic_cast<const sio_8211DRLeader*>(&(first_dr.getLeader()));
 
@@ -126,22 +126,22 @@ main(int argc, char** argv)
 // first the leader
   assert( first_dr_leader && second_dr_leader ); // insure we have valid leaders
 
-  assert( first_dr_leader->getRecordLength() == 
+  assert( first_dr_leader->getRecordLength() ==
           second_dr_leader->getRecordLength() );
 
-  assert( first_dr_leader->getLeaderIdentifier() == 
+  assert( first_dr_leader->getLeaderIdentifier() ==
           second_dr_leader->getLeaderIdentifier() );
 
-  assert( first_dr_leader->getBaseAddrOfFieldArea() == 
+  assert( first_dr_leader->getBaseAddrOfFieldArea() ==
           second_dr_leader->getBaseAddrOfFieldArea() );
 
-  assert( first_dr_leader->getSizeOfFieldLengthField() == 
+  assert( first_dr_leader->getSizeOfFieldLengthField() ==
           second_dr_leader->getSizeOfFieldLengthField() );
 
-  assert( first_dr_leader->getSizeOfFieldPosField() == 
+  assert( first_dr_leader->getSizeOfFieldPosField() ==
           second_dr_leader->getSizeOfFieldPosField() );
 
-  assert( first_dr_leader->getSizeOfFieldTagField() == 
+  assert( first_dr_leader->getSizeOfFieldTagField() ==
           second_dr_leader->getSizeOfFieldTagField() );
 
   // then the directories

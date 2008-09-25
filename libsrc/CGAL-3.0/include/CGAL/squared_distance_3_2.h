@@ -38,7 +38,7 @@ namespace CGALi {
 
 template <class K>
 bool
-contains_vector(const typename CGAL_WRAP(K)::Plane_3 &pl, 
+contains_vector(const typename CGAL_WRAP(K)::Plane_3 &pl,
 		const typename CGAL_WRAP(K)::Vector_3 &vec,
 		const K&)
 {
@@ -208,7 +208,7 @@ contains_vector(const Plane_3<K> &pl, const Vector_3<K> &vec)
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Point_3<K> & pt,
@@ -220,7 +220,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,
@@ -241,7 +241,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Plane_3<K> & p,
@@ -263,7 +263,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,
@@ -285,7 +285,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,

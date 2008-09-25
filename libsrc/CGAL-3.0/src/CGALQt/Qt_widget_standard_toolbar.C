@@ -60,7 +60,7 @@ namespace CGAL {
     setLabel("Qt_widget standard toolbar");
     fill_toolbar(parent);
   };
-  
+
   Qt_widget_standard_toolbar::
   Qt_widget_standard_toolbar(Qt_widget *w, QMainWindow *mw,
 			     QWidget* parent,
@@ -71,14 +71,14 @@ namespace CGAL {
   {
     fill_toolbar(mw);
   };
-  
+
   void Qt_widget_standard_toolbar::fill_toolbar(QMainWindow *mw)
   {
-    Qt_widget_focus* focuslayer = 
+    Qt_widget_focus* focuslayer =
       new Qt_widget_focus(this, "focuslayer");
-    Qt_widget_zoomrect* zoomrectlayer = 
+    Qt_widget_zoomrect* zoomrectlayer =
       new Qt_widget_zoomrect(this, "zoomrectlayer");
-    Qt_widget_handtool* handtoollayer = 
+    Qt_widget_handtool* handtoollayer =
       new Qt_widget_handtool(this, "handtoollayer");
     Qt_widget_show_mouse_coordinates* showcoordlayer = 0; // created below
 
@@ -92,7 +92,7 @@ namespace CGAL {
     if (mw)
       {
 	mw->statusBar();
-	showcoordlayer = 
+	showcoordlayer =
 	  new Qt_widget_show_mouse_coordinates(*mw, this,
 					       "showcoordlayer");
 	widget->attach_standard(showcoordlayer);
@@ -116,26 +116,26 @@ namespace CGAL {
     QToolButton* forwardBt = new QToolButton(this, "History Forward");
     forwardBt->setIconSet(forward_pixmap);
     forwardBt->setTextLabel("History Forward");
-  
+
     addSeparator();
 
     QToolButton* zoominBt =
       new QToolButton(QPixmap(zoomin_xpm ),
-			       "Zoom in", 
-			       0, 
-			       this, 
-			       SLOT(zoomin()), 
-			       this, 
+			       "Zoom in",
+			       0,
+			       this,
+			       SLOT(zoomin()),
+			       this,
 			       "Zoom in");
     zoominBt->setTextLabel("Scaling factor X2");
 
-    QToolButton* zoomoutBt = 
+    QToolButton* zoomoutBt =
       new QToolButton(QPixmap(zoomout_xpm ),
-				"Zoom out", 
-				0, 
-				this, 
-				SLOT(zoomout()), 
-				this, 
+				"Zoom out",
+				0,
+				this,
+				SLOT(zoomout()),
+				this,
 				"Zoom out");
     zoomoutBt->setTextLabel("Scaling factor 1/2");
 
@@ -212,7 +212,7 @@ namespace CGAL {
 
   void Qt_widget_standard_toolbar::group_clicked(int i)
   {
-    static int id = 0; 
+    static int id = 0;
     // This id is here to keep track of the button from the group that
     // is on (if all toolbuttons are down, nolayer is on. At the
     // beginning, it is set to 0, because
@@ -223,7 +223,7 @@ namespace CGAL {
 	if( i == 0) return;
 	// nolayer is on and cannot be set off like that.
 
-	QToolButton* tBt = 
+	QToolButton* tBt =
 	  static_cast<QToolButton*>(button_group->find(i));
 	if( tBt != 0)
 	  tBt->setOn(false);

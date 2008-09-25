@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -44,8 +44,8 @@ enum {
 	pass_FrontOverlay,
 	pass_WireNormal,
 	pass_WireOverlay
-	
-};	
+
+};
 
 void	OE_DrawObj(
 				const XObj&		inObj,
@@ -65,7 +65,7 @@ void	OE_DrawObj(
 		XPLMBindTexture2d(dayTex, 0);
 	if (nightTex)
 		XPLMBindTexture2d(nightTex, 1);
-		
+
 	if (nightTex == 0 && inTexMode == tex_Lit)	inTexMode = tex_Day;
 	if (dayTex == 0)	inTexMode = tex_None;
 
@@ -114,7 +114,7 @@ void	OE_DrawObj(
 			writeDepth = true;
 			glDisable(GL_POLYGON_OFFSET_LINE);
 			glDisable(GL_POLYGON_OFFSET_FILL);
-			break;		
+			break;
 		case	pass_FrontOverlay:
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glCullFace(GL_BACK);
@@ -142,16 +142,16 @@ void	OE_DrawObj(
 		int	cmdIndex = 0;
 		for (vector<XObjCmd>::const_iterator cmdIter = inObj.cmds.begin();
 			cmdIter != inObj.cmds.end(); ++cmdIter, ++cmdIndex)
-		{		
+		{
 			switch(cmdIter->cmdType) {
 			case type_PtLine:
 				if (writeDepth)
 				{
 					XPLMSetGraphicsState(0, 0, 0,   0, 0,    1, 1);
-					
+
 					switch(cmdIter->cmdID) {
 					case obj_Light:
-						glPointSize(inSel.count(cmdIndex) ? 3 : 1);						
+						glPointSize(inSel.count(cmdIndex) ? 3 : 1);
 						glBegin(GL_POINTS);
 						break;
 					case obj_Line:
@@ -168,9 +168,9 @@ void	OE_DrawObj(
 					glEnd();
 				}
 				break;
-				
+
 			case type_Poly:
-						
+
 				XPLMSetGraphicsState(0, inTexMode, 0, inTexMode ? 1 : 0, inTexMode ? 1 : 0, 1, writeDepth);
 
 				switch(*pass) {
@@ -238,7 +238,7 @@ void	OE_DrawObj(
 					glBegin(GL_TRIANGLE_FAN);
 					break;
 				}
-				
+
 				for (vector<vec_tex>::const_iterator piter = cmdIter->st.begin();
 					piter != cmdIter->st.end(); ++piter)
 				{
@@ -249,8 +249,8 @@ void	OE_DrawObj(
 				glEnd();
 				break;
 			}
-			
-		}	// Cmds		
+
+		}	// Cmds
 		glLineWidth(1);
 		glPointSize(1);
 		glDisable(GL_POLYGON_OFFSET_LINE);
@@ -259,7 +259,7 @@ void	OE_DrawObj(
 		glPolygonMode(GL_BACK, GL_FILL);
 		XPLMSetGraphicsState(0,0,0, 0,0,  1,1);
 	}	// Pass
-	glDisable(GL_CULL_FACE);	
+	glDisable(GL_CULL_FACE);
 }
 
 void OE_LabelVertices(const XObj& inObj, const set<int>& sel, int cur)
@@ -301,13 +301,13 @@ void OE_LabelVertices(const XObj& inObj, const set<int>& sel, int cur)
 	float	hilite[3] = { 1.0, 1.0, 0.5 };
 	float	normal[3] = { 0.5, 0.5, 0.5 };
 	char	buf[50];
-	
-	
+
+
 	float	now = XPLMGetElapsedTime();
 	now = (now - ((float) ((int) now)));
 	hilite[0] = hilite[1] = now;
 	hilite[2] = 0.5 * now;
-	
+
 	for (int n = 0; n < x.size(); ++n)
 	{
 		sprintf(buf, "%d", n);
@@ -322,5 +322,5 @@ void OE_LabelVertices(const XObj& inObj, const set<int>& sel, int cur)
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-	glPopAttrib();	
+	glPopAttrib();
 }

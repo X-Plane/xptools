@@ -71,9 +71,9 @@ ch_graham_andrew_scan( BidirectionalIterator first,
   if ( iter != last )
   {
       S.push_back( iter );
-      typedef typename std::vector<BidirectionalIterator>::reverse_iterator  
+      typedef typename std::vector<BidirectionalIterator>::reverse_iterator
               rev_iterator;
-      rev_iterator  stack_rev_iter = S.rbegin(); 
+      rev_iterator  stack_rev_iter = S.rbegin();
       alpha = iter;
       beta  = *++stack_rev_iter;
 
@@ -135,7 +135,7 @@ ch__ref_graham_andrew_scan( BidirectionalIterator first,
   typedef  typename Traits::Point_2      Point_2;
   typedef  typename Traits::Left_turn_2  Left_turn;
   typedef  typename Traits::Equal_2      Equal_2;
-  
+
   Left_turn    left_turn    = ch_traits.left_turn_2_object();
   Equal_2      equal_points = ch_traits.equal_2_object();
 
@@ -161,9 +161,9 @@ ch__ref_graham_andrew_scan( BidirectionalIterator first,
   if ( iter != last )
   {
       S.push_back( iter );
-      typedef typename std::vector<BidirectionalIterator>::reverse_iterator  
+      typedef typename std::vector<BidirectionalIterator>::reverse_iterator
               rev_iterator;
-      rev_iterator  stack_rev_iter = S.rbegin(); 
+      rev_iterator  stack_rev_iter = S.rbegin();
       alpha = iter;
       beta  = *++stack_rev_iter;
 
@@ -204,9 +204,9 @@ ch_graham_andrew( InputIterator  first,
   typedef  typename Traits::Less_xy_2   Less_xy;
   typedef  typename Traits::Point_2     Point_2;
   typedef  typename Traits::Left_turn_2  Left_turn;
-  typedef  typename Traits::Equal_2      Equal_2;  
-  
-  Equal_2      equal_points = ch_traits.equal_2_object();  
+  typedef  typename Traits::Equal_2      Equal_2;
+
+  Equal_2      equal_points = ch_traits.equal_2_object();
 
   if (first == last) return result;
   std::vector< Point_2 >  V;
@@ -255,9 +255,9 @@ ch_lower_hull_scan( InputIterator  first,
   typedef  typename Traits::Less_xy_2    Less_xy;
   typedef  typename Traits::Point_2      Point_2;
   typedef  typename Traits::Left_turn_2  Left_turn;
-  typedef  typename Traits::Equal_2      Equal_2;  
-  
-  Equal_2      equal_points = ch_traits.equal_2_object();    
+  typedef  typename Traits::Equal_2      Equal_2;
+
+  Equal_2      equal_points = ch_traits.equal_2_object();
 
   if (first == last) return result;
   std::vector< Point_2 >  V;
@@ -293,9 +293,9 @@ ch_upper_hull_scan( InputIterator  first,
   typedef  typename Traits::Less_xy_2    Less_xy;
   typedef  typename Traits::Point_2      Point_2;
   typedef  typename Traits::Left_turn_2  Left_turn;
-  typedef  typename Traits::Equal_2      Equal_2;  
-  
-  Equal_2      equal_points = ch_traits.equal_2_object();     
+  typedef  typename Traits::Equal_2      Equal_2;
+
+  Equal_2      equal_points = ch_traits.equal_2_object();
 
   if (first == last) return result;
   std::vector< Point_2 >  V;

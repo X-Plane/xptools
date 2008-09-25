@@ -25,7 +25,7 @@
  *
  * Once a string is passed to newstr(), the returned string is readonly.
  *
- * This implementation builds a hash table of all strings, so that multiple 
+ * This implementation builds a hash table of all strings, so that multiple
  * calls of newstr() on the same string allocate memory for the string once.
  * Strings are never actually freed.
  */
@@ -150,9 +150,9 @@ donestr()
         free(strblock_chain);
         strblock_chain = n;
     }
-    
+
     hashdone( strhash );
-    
+
     if( DEBUG_MEM )
         printf( "%dK in strings\n", strtotal / 1024 );
 }

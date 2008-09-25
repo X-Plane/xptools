@@ -114,7 +114,7 @@ inline bool do_intersect(
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Line_2 &line1, 
+intersection(const typename CGAL_WRAP(K)::Line_2 &line1,
 	     const typename CGAL_WRAP(K)::Line_2 &line2,
 	     const K&)
 {
@@ -175,7 +175,7 @@ bool construct_if_finite(POINT &pt, RT x, RT y, RT w, R &, const Homogeneous_tag
 
 template <class R, class POINT, class RT>
 inline
-bool 
+bool
 construct_if_finite(POINT &pt, RT x, RT y, RT w, const R &r)
 {
   typedef typename R::Kernel_tag Tag;

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: TableEntry.cpp
  *
  *  This source file is part of DIME.
@@ -75,7 +75,7 @@ dimeTableEntry::copyRecords(dimeTableEntry * const table,
 
 //!
 
-bool 
+bool
 dimeTableEntry::write(dimeOutput * const /* file */)
 {
   // moved to preWrite()
@@ -85,18 +85,18 @@ dimeTableEntry::write(dimeOutput * const /* file */)
 
 //!
 
-bool 
+bool
 dimeTableEntry::read(dimeInput * const file)
 {
   return dimeRecordHolder::read(file);
 }
 
 /*!
-  Static function that creates a table based on its name. 
+  Static function that creates a table based on its name.
 */
 
 dimeTableEntry *
-dimeTableEntry::createTableEntry(const char * const name, 
+dimeTableEntry::createTableEntry(const char * const name,
 				dimeMemHandler * const memhandler)
 {
   if (!strcmp(name, "LAYER")) {
@@ -109,13 +109,13 @@ dimeTableEntry::createTableEntry(const char * const name,
 }
 
 /*!
-  Returns the number of records for this table. Tables overloading 
+  Returns the number of records for this table. Tables overloading
   this function should first count the number of records they will write,
   then add the return value of this function to get the total number
   of records.
 */
 
-int 
+int
 dimeTableEntry::countRecords() const
 {
   return dimeRecordHolder::countRecords();
@@ -123,7 +123,7 @@ dimeTableEntry::countRecords() const
 
 //!
 
-bool 
+bool
 dimeTableEntry::handleRecord(const int,
 			     const dimeParam &,
 			     dimeMemHandler * const)
@@ -133,7 +133,7 @@ dimeTableEntry::handleRecord(const int,
 
 //!
 
-bool 
+bool
 dimeTableEntry::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeBase::dimeTableEntryType ||
@@ -145,7 +145,7 @@ dimeTableEntry::isOfType(const int thetypeid) const
 bool
 dimeTableEntry::preWrite(dimeOutput * const file)
 {
-  return file->writeGroupCode(0) && 
+  return file->writeGroupCode(0) &&
     file->writeString(this->getTableName()) &&
     dimeRecordHolder::write(file);
 }

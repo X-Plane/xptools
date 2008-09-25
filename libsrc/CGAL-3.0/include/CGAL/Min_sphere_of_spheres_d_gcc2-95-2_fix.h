@@ -281,7 +281,7 @@ unsigned long _Base_bitset<_Nw, _WordT>::_M_do_to_ulong() const
     const size_t __part = sizeof(unsigned long) % sizeof(_WordT);
 
     if (__part != 0 && __nwords <= _Nw &&
-        (_M_w[__min_nwords - 1] >> 
+        (_M_w[__min_nwords - 1] >>
         ((sizeof(_WordT) - __part) * CHAR_BIT)) != 0)
       __STL_THROW(__overflow);
 
@@ -1141,7 +1141,7 @@ namespace std
       streambuf(which), buf(), mode(static_cast<ios::open_mode>(which)),
       rpos(0), bufsize(1)
     { }
-	
+
     explicit stringbuf(const std::string &s, int which=ios::in|ios::out) :
       streambuf(which), buf(s), mode(static_cast<ios::open_mode>(which)),
       bufsize(1)
@@ -1156,7 +1156,7 @@ namespace std
 	}
       rpos = (mode & ios::ate ? s.size() : 0);
     }
-	
+
     std::string str() const
     {
       const_cast<stringbuf*>(this)->sync();  // Sigh, really ugly hack
@@ -1202,7 +1202,7 @@ namespace std
       clear();
       dynamic_cast<stringbuf*>(_strbuf)->str(s);
     }
-	
+
     stringbuf* rdbuf()
     {
       return &__my_sb;
@@ -1213,42 +1213,42 @@ namespace std
     {
       init (&__my_sb);
     }
-	
+
     stringstreambase(const std::string& s, int which) :
       __my_sb(s, which)
     {
       init (&__my_sb);
     }
   };
-    
+
   class istringstream : public stringstreambase, public istream {
   public:
     istringstream(int which=ios::in) :
       stringstreambase(which)
     { }
-	
+
     istringstream(const std::string& s, int which=ios::in) :
       stringstreambase(s, which)
     { }
   };
-    
+
   class ostringstream : public stringstreambase, public ostream {
   public:
     ostringstream(int which=ios::out) :
       stringstreambase(which)
     { }
-	
+
     ostringstream(const std::string& s, int which=ios::out) :
       stringstreambase(s, which)
     { }
   };
-    
+
   class stringstream : public stringstreambase, public iostream {
   public:
     stringstream(int which=ios::in|ios::out) :
       stringstreambase(which)
     { }
-    
+
     stringstream(const std::string &s, int which=ios::in|ios::out) :
       stringstreambase(s, which)
     { }
@@ -1286,7 +1286,7 @@ inline int std::stringbuf::overflow(int ch)
   if(ch != EOF)
     {
       std::string::size_type oldSize = buf.size();
-      
+
       buf.replace(rpos, std::string::npos, ch);
       if(buf.size() - oldSize != 1)
 	return EOF;
@@ -1306,7 +1306,7 @@ inline int std::stringbuf::underflow()
     {
       return EOF;
     }
-  
+
   std::string::size_type n = egptr() - eback();
   std::string::size_type s;
 

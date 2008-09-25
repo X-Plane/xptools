@@ -10,7 +10,7 @@
 
 #include "SpotLightNode.h"
 
-SpotLightNode::SpotLightNode() 
+SpotLightNode::SpotLightNode()
 {
 	setType(spotLightNodeString);
 
@@ -50,7 +50,7 @@ SpotLightNode::SpotLightNode()
 	addExposedField(cutOffAngleField);
 }
 
-SpotLightNode::~SpotLightNode() 
+SpotLightNode::~SpotLightNode()
 {
 }
 
@@ -64,13 +64,13 @@ SFFloat *SpotLightNode::getAmbientIntensityField()
 		return ambientIntensityField;
 	return (SFFloat *)getExposedField(ambientIntensityFieldString);
 }
-	
-void SpotLightNode::setAmbientIntensity(float value) 
+
+void SpotLightNode::setAmbientIntensity(float value)
 {
 	getAmbientIntensityField()->setValue(value);
 }
 
-float SpotLightNode::getAmbientIntensity() 
+float SpotLightNode::getAmbientIntensity()
 {
 	return getAmbientIntensityField()->getValue();
 }
@@ -86,17 +86,17 @@ SFVec3f *SpotLightNode::getLocationField()
 	return (SFVec3f *)getExposedField(locationFieldString);
 }
 
-void SpotLightNode::setLocation(float value[]) 
+void SpotLightNode::setLocation(float value[])
 {
 	getLocationField()->setValue(value);
 }
 
-void SpotLightNode::setLocation(float x, float y, float z) 
+void SpotLightNode::setLocation(float x, float y, float z)
 {
 	getLocationField()->setValue(x, y, z);
 }
 
-void SpotLightNode::getLocation(float value[]) 
+void SpotLightNode::getLocation(float value[])
 {
 	getLocationField()->getValue(value);
 }
@@ -112,17 +112,17 @@ SFVec3f *SpotLightNode::getDirectionField()
 	return (SFVec3f *)getExposedField(directionFieldString);
 }
 
-void SpotLightNode::setDirection(float value[]) 
+void SpotLightNode::setDirection(float value[])
 {
 	getDirectionField()->setValue(value);
 }
 
-void SpotLightNode::setDirection(float x, float y, float z) 
+void SpotLightNode::setDirection(float x, float y, float z)
 {
 	getDirectionField()->setValue(x, y, z);
 }
 
-void SpotLightNode::getDirection(float value[]) 
+void SpotLightNode::getDirection(float value[])
 {
 	getDirectionField()->getValue(value);
 }
@@ -137,13 +137,13 @@ SFFloat *SpotLightNode::getRadiusField()
 		return radiusField;
 	return (SFFloat *)getExposedField(radiusFieldString);
 }
-	
-void SpotLightNode::setRadius(float value) 
+
+void SpotLightNode::setRadius(float value)
 {
 	getRadiusField()->setValue(value);
 }
 
-float SpotLightNode::getRadius() 
+float SpotLightNode::getRadius()
 {
 	return getRadiusField()->getValue();
 }
@@ -159,17 +159,17 @@ SFVec3f *SpotLightNode::getAttenuationField()
 	return (SFVec3f *)getExposedField(attenuationFieldString);
 }
 
-void SpotLightNode::setAttenuation(float value[]) 
+void SpotLightNode::setAttenuation(float value[])
 {
 	getAttenuationField()->setValue(value);
 }
 
-void SpotLightNode::setAttenuation(float x, float y, float z) 
+void SpotLightNode::setAttenuation(float x, float y, float z)
 {
 	getAttenuationField()->setValue(x, y, z);
 }
 
-void SpotLightNode::getAttenuation(float value[]) 
+void SpotLightNode::getAttenuation(float value[])
 {
 	getAttenuationField()->getValue(value);
 }
@@ -184,13 +184,13 @@ SFFloat *SpotLightNode::getBeamWidthField()
 		return beamWidthField;
 	return (SFFloat *)getExposedField(beamWidthFieldString);
 }
-	
-void SpotLightNode::setBeamWidth(float value) 
+
+void SpotLightNode::setBeamWidth(float value)
 {
 	getBeamWidthField()->setValue(value);
 }
 
-float SpotLightNode::getBeamWidth() 
+float SpotLightNode::getBeamWidth()
 {
 	return getBeamWidthField()->getValue();
 }
@@ -205,13 +205,13 @@ SFFloat *SpotLightNode::getCutOffAngleField()
 		return cutOffAngleField;
 	return (SFFloat *)getExposedField(cutOffAngleFieldString);
 }
-	
-void SpotLightNode::setCutOffAngle(float value) 
+
+void SpotLightNode::setCutOffAngle(float value)
 {
 	getCutOffAngleField()->setValue(value);
 }
 
-float SpotLightNode::getCutOffAngle() 
+float SpotLightNode::getCutOffAngle()
 {
 	return getCutOffAngleField()->getValue();
 }
@@ -220,7 +220,7 @@ float SpotLightNode::getCutOffAngle()
 //	Diffuse Color
 ////////////////////////////////////////////////
 
-void SpotLightNode::getDiffuseColor(float value[]) 
+void SpotLightNode::getDiffuseColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -233,7 +233,7 @@ void SpotLightNode::getDiffuseColor(float value[])
 //	Ambient Color
 ////////////////////////////////////////////////
 
-void SpotLightNode::getAmbientColor(float value[]) 
+void SpotLightNode::getAmbientColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -247,12 +247,12 @@ void SpotLightNode::getAmbientColor(float value[])
 //	List
 ////////////////////////////////////////////////
 
-SpotLightNode *SpotLightNode::next() 
+SpotLightNode *SpotLightNode::next()
 {
 	return (SpotLightNode *)Node::next(getType());
 }
 
-SpotLightNode *SpotLightNode::nextTraversal() 
+SpotLightNode *SpotLightNode::nextTraversal()
 {
 	return (SpotLightNode *)Node::nextTraversalByType(getType());
 }
@@ -260,21 +260,21 @@ SpotLightNode *SpotLightNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool SpotLightNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void SpotLightNode::initialize() 
+void SpotLightNode::initialize()
 {
 }
 
-void SpotLightNode::uninitialize() 
+void SpotLightNode::uninitialize()
 {
 }
 
-void SpotLightNode::update() 
+void SpotLightNode::update()
 {
 }
 
@@ -282,7 +282,7 @@ void SpotLightNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void SpotLightNode::outputContext(ostream &printStream, char *indentString) 
+void SpotLightNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *bon = getOnField();
 	SFColor *color = getColorField();

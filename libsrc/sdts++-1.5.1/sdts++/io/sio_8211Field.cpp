@@ -30,13 +30,13 @@ using namespace std;
 sio_8211Field::sio_8211Field()
   : size_( 0 ), data_()
 {
-}               
+}
 
 
 sio_8211Field::sio_8211Field( sio_8211Field const & rhs)
   : size_( rhs.size_ ), data_( rhs.data_ )
 {
-}               
+}
 
 
 
@@ -82,7 +82,7 @@ sio_8211Field::getData() const
 
 
 vector<char> &
-sio_8211Field::getData() 
+sio_8211Field::getData()
 {
    return data_;
 }
@@ -178,7 +178,7 @@ sio_8211Field::streamExtract( istream& istr )
       istr.setstate( ios::badbit );
     }
 
-  return istr;  
+  return istr;
 }  // sio_8211Field::streamExtract
 
 
@@ -189,7 +189,7 @@ ostream&
 sio_8211Field::streamInsert(ostream& ostr) const
 {
 
-   // Assume istr is positioned at the start of where this field 
+   // Assume istr is positioned at the start of where this field
    // should be written.
 
    ostr.write( &data_[0], data_.size() );

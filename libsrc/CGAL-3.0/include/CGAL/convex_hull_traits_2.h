@@ -17,8 +17,8 @@
 //
 // Author(s)     : Stefan Schirra
 
-// This file's name must begin with a lower-case letter for backward 
-// compatability.  Unfortunately, you can't have a file that differs only 
+// This file's name must begin with a lower-case letter for backward
+// compatability.  Unfortunately, you can't have a file that differs only
 // in capitalization on the Windows platforms.
 
 #ifndef CGAL_CONVEX_HULL_TRAITS_2_H
@@ -34,27 +34,27 @@ class Convex_hull_traits_2 : public K_
 {
 public:
   typedef K_                                 K;
-  typedef typename K::Point_2                Point_2;    
+  typedef typename K::Point_2                Point_2;
   typedef typename K::Less_xy_2              Less_xy_2;
   typedef typename K::Less_yx_2              Less_yx_2;
-  typedef typename K::Less_signed_distance_to_line_2  
+  typedef typename K::Less_signed_distance_to_line_2
                                          Less_signed_distance_to_line_2;
   typedef typename K::Less_rotate_ccw_2      Less_rotate_ccw_2;
   typedef typename K::Left_turn_2             Left_turn_2;
   typedef typename K::Equal_2                Equal_2;
-  typedef typename K::Segment_2              Segment_2;    
-  
+  typedef typename K::Segment_2              Segment_2;
+
   Less_xy_2
-  less_xy_2_object() const 
-  { return Less_xy_2(); } 
+  less_xy_2_object() const
+  { return Less_xy_2(); }
 
   Less_yx_2
-  less_yx_2_object() const 
-  { return Less_yx_2(); } 
+  less_yx_2_object() const
+  { return Less_yx_2(); }
 
   Less_signed_distance_to_line_2
   less_signed_distance_to_line_2_object( ) const
-  { return Less_signed_distance_to_line_2( ); } 
+  { return Less_signed_distance_to_line_2( ); }
 
   Less_rotate_ccw_2
   less_rotate_ccw_2_object() const

@@ -11,8 +11,8 @@
 // file          : demo/Qt_widget/Max_k-gon/Qt_widget_toolbar.C
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -30,7 +30,7 @@
 
 #include <qiconset.h>
 
-Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w, 
+Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
 			     QMainWindow *mw, std::list<Point> *l1) :
   QToolBar(mw, "NT")
   {
@@ -58,7 +58,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
   but[2] = new QToolButton(this, "move/delete tool");
   but[2]->setIconSet(set2);
   but[2]->setTextLabel("Move/Delete Point");
-  
+
   nr_of_buttons = 3;
   button_group = new QButtonGroup(0, "My_group");
   for(int i = 0; i<nr_of_buttons; i++) {
@@ -66,7 +66,7 @@ Tools_toolbar::Tools_toolbar(CGAL::Qt_widget *w,
     but[i]->setToggleButton(true);
   }
   button_group->setExclusive(true);
-  
+
   connect(but[1], SIGNAL(stateChanged(int)),
         &pointbut, SLOT(stateChanged(int)));
   connect(but[2], SIGNAL(stateChanged(int)),

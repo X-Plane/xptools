@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Insert.cpp
  *
  *  This source file is part of DIME.
@@ -97,7 +97,7 @@ dimeInsert::copy(dimeModel * const model) const
     }
     else inst->numEntities = realnum;
   }
-  
+
   inst->attributesFollow = this->attributesFollow;
   inst->insertionPoint = this->insertionPoint;
   inst->scale = this->scale;
@@ -177,19 +177,19 @@ dimeInsert::read(dimeInput * const file)
       }
       else ret = false;
     }
-  }  
+  }
   return ret;
 }
 
 /*!
-  Writes an INSERT entity.  
+  Writes an INSERT entity.
 */
 
-bool 
+bool
 dimeInsert::write(dimeOutput * const file)
 {
   this->preWrite(file);
-  
+
   if (this->attributesFollow) {
     file->writeGroupCode(66);
     file->writeInt16(1);
@@ -248,7 +248,7 @@ dimeInsert::write(dimeOutput * const file)
     file->writeGroupCode(230);
     ret = file->writeDouble(this->extrusionDir[2]);
   }
-  
+
   if (this->attributesFollow && this->numEntities) {
     int i;
     for (i = 0; i < this->numEntities; i++) {
@@ -265,7 +265,7 @@ dimeInsert::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeInsert::typeId() const
 {
   return dimeBase::dimeInsertType;
@@ -273,19 +273,19 @@ dimeInsert::typeId() const
 
 //!
 
-bool 
+bool
 dimeInsert::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
 {
   switch (groupcode) {
-  case 66: 
+  case 66:
     this->attributesFollow = param.int16_data;
     return true;
-  case 2: 
+  case 2:
     {
       // will only arrive here during read(). Allocate a temporary buffer
-      // to store the blockname. Will be deleted in dimeInsert::read() 
+      // to store the blockname. Will be deleted in dimeInsert::read()
       const char *str = param.string_data;
       if (str) {
 	this->blockName = new char[strlen(str)+1];
@@ -343,16 +343,16 @@ dimeInsert::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeInsert::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
 {
   switch (groupcode) {
-  case 66: 
+  case 66:
     param.int16_data = this->attributesFollow;
     return true;
-  case 2: 
+  case 2:
     param.string_data = this->blockName;
     return true;
   case 10:
@@ -395,21 +395,21 @@ dimeInsert::getRecord(const int groupcode,
 
 //!
 
-bool 
-dimeInsert::traverse(const dimeState * const state, 
+bool
+dimeInsert::traverse(const dimeState * const state,
 		    dimeCallback callback,
 		    void *userdata)
 {
   dimeState newstate = *state;
   newstate.currentInsert = this;
-  
+
   if (this->block && (state->getFlags() & dimeState::EXPLODE_INSERTS)) {
     for (int i = 0; i < this->rowCount; i++) {
       for (int j = 0; j < this->columnCount; j++) {
 	dimeMatrix m = state->getMatrix();
 	dimeMatrix m2 = dimeMatrix::identity();
-	m2.setTranslate(dimeVec3f(j*this->columnSpacing, 
-				  i*this->rowSpacing, 
+	m2.setTranslate(dimeVec3f(j*this->columnSpacing,
+				  i*this->rowSpacing,
 				  0));
 	m.multRight(m2);
 	this->makeMatrix(m);
@@ -425,7 +425,7 @@ dimeInsert::traverse(const dimeState * const state,
   dimeMatrix m = state->getMatrix();
   this->makeMatrix(m);
   newstate.setMatrix(m);
-  
+
   // extract internal INSERT entities
   for (int i = 0; i < this->numEntities; i++) {
     if (!this->entities[i]->traverse(&newstate, callback, userdata)) return false;
@@ -435,8 +435,8 @@ dimeInsert::traverse(const dimeState * const state,
 
 //!
 
-void 
-dimeInsert::fixReferences(dimeModel * const model) 
+void
+dimeInsert::fixReferences(dimeModel * const model)
 {
   if (this->block == NULL && this->blockName) {
     this->block = (dimeBlock*)model->findReference(this->blockName);
@@ -450,7 +450,7 @@ dimeInsert::fixReferences(dimeModel * const model)
 
 //!
 
-void 
+void
 dimeInsert::makeMatrix(dimeMatrix &m) const
 {
   if (!this->block) {
@@ -464,7 +464,7 @@ dimeInsert::makeMatrix(dimeMatrix &m) const
     // generated from one vector (the z-vector)
     dimeEntity::generateUCS(this->extrusionDir, m2);
     m.multRight(m2);
-  }  
+  }
 
   m2.makeIdentity();
   dimeVec3f tmp = this->insertionPoint;
@@ -478,8 +478,8 @@ dimeInsert::makeMatrix(dimeMatrix &m) const
   m2.setTransform(dimeVec3f(0,0,0),
 		  this->scale,
 		  dimeVec3f(0, 0, this->rotAngle));
-  m.multRight(m2); 
-  
+  m.multRight(m2);
+
   m2.makeIdentity();
   m2.setTranslate(-block->getBasePoint());
   m.multRight(m2);
@@ -493,7 +493,7 @@ dimeInsert::countRecords() const
   int cnt = 5; // header + blockName + insertionPoint
 
   if (this->attributesFollow) cnt++;
-  
+
   if (this->scale != dimeVec3f(1.0, 1.0, 1.0)) cnt += 3;
   if (this->rotAngle != 0.0) cnt++;
   if (this->columnCount != 1) cnt++;
@@ -501,7 +501,7 @@ dimeInsert::countRecords() const
   if (this->columnSpacing != 0.0) cnt++;
   if (this->rowSpacing != 0.0) cnt++;
   if (this->extrusionDir != dimeVec3f(0,0,1)) cnt += 3;
-  
+
   if (this->attributesFollow && this->numEntities) {
     int i, n = this->numEntities;
     for (i = 0; i < n; i++) {
@@ -517,7 +517,7 @@ dimeInsert::countRecords() const
   with group code 2.
 */
 
-void 
+void
 dimeInsert::setBlock(dimeBlock * const block)
 {
   this->block = block;

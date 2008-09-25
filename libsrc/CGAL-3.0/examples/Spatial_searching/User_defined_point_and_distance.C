@@ -3,12 +3,12 @@
 #include <CGAL/Orthogonal_standard_search.h>
 #include <CGAL/Fuzzy_iso_box_d.h>
 
-#include <vector>  
+#include <vector>
 #include <iostream>
 
 // create own Point type
 
-template <class R_> 
+template <class R_>
 class Point
 {
 public:
@@ -17,11 +17,11 @@ public:
 
 private:
   FT   vec[ 3 ];
-  
-public: 
-  
+
+public:
+
   Point()
-  { 
+  {
     for  ( int ind = 0; ind < 3; ind++ )
       vec[ ind ] = 0;
   }
@@ -37,19 +37,19 @@ public:
   {
     return  3;
   }
- 
+
   FT x() const
-  { 
+  {
     return vec[ 0 ];
   }
 
   FT y() const
-  { 
+  {
     return vec[ 1 ];
   }
-  
+
   FT z() const
-  { 
+  {
     return vec[ 2 ];
   }
 
@@ -57,9 +57,9 @@ public:
   {
     vec[ k ] = x;
   }
-  
 
-  FT  & operator[](int k)  
+
+  FT  & operator[](int k)
   {
     return  vec[ k ];
   }
@@ -81,7 +81,7 @@ inline
 bool
 operator!=(const Point<R>& p, const Point<R>& q)
 {
-  return ( (p[0] != q[0]) || (p[1] != q[1]) || (p[2] != q[2]) ); 
+  return ( (p[0] != q[0]) || (p[1] != q[1]) || (p[2] != q[2]) );
 }
 
 inline
@@ -120,7 +120,7 @@ double distance(const Point& p1, const Point& p2) const
 }
 
 double min_distance_to_queryitem(const Point& q,
-                                        const CGAL::Kd_tree_rectangle<double>& b) const 
+                                        const CGAL::Kd_tree_rectangle<double>& b) const
 {   double distance(0.0);
     double h;
     h=q.x();
@@ -136,22 +136,22 @@ double min_distance_to_queryitem(const Point& q,
 }
 
 double max_distance_to_queryitem(const Point& q,
-                                        const CGAL::Kd_tree_rectangle<double>& b) const 
+                                        const CGAL::Kd_tree_rectangle<double>& b) const
 {   double distance(0.0);
     double h;
     h=q.x();
-    if (h >= (b.min_coord(0)+b.max_coord(0))/2.0) 
-                distance += (h-b.min_coord(0))*(h-b.min_coord(0)); 
+    if (h >= (b.min_coord(0)+b.max_coord(0))/2.0)
+                distance += (h-b.min_coord(0))*(h-b.min_coord(0));
 	  else
                 distance += (b.max_coord(0)-h)*(b.max_coord(0)-h);
     h=q.y();
-    if (h >= (b.min_coord(1)+b.max_coord(1))/2.0) 
-                distance += (h-b.min_coord(1))*(h-b.min_coord(1)); 
+    if (h >= (b.min_coord(1)+b.max_coord(1))/2.0)
+                distance += (h-b.min_coord(1))*(h-b.min_coord(1));
 	  else
                 distance += (b.max_coord(1)-h)*(b.max_coord(1)-h);
     h=q.z();
-    if (h >= (b.min_coord(2)+b.max_coord(2))/2.0) 
-                distance += (h-b.min_coord(2))*(h-b.min_coord(2)); 
+    if (h >= (b.min_coord(2)+b.max_coord(2))/2.0)
+                distance += (h-b.min_coord(2))*(h-b.min_coord(2));
 	  else
                 distance += (b.max_coord(2)-h)*(b.max_coord(2)-h);
     return distance;
@@ -175,7 +175,7 @@ double inverse_of_transformed_distance(double d) const {
 typedef R::Point_3 My_point;
 typedef CGAL::Creator_uniform_3<double,My_point> Creator;
 typedef CGAL::Kd_tree_traits_point<My_point> TreeTraits;
-typedef CGAL::Orthogonal_standard_search<TreeTraits, Point3D_distance<My_point> > 
+typedef CGAL::Orthogonal_standard_search<TreeTraits, Point3D_distance<My_point> >
 NN_orthogonal_search;
 
 typedef std::vector<TreeTraits::Point> Vector;
@@ -183,16 +183,16 @@ typedef std::vector<TreeTraits::Point> Vector;
 int main() {
 
   int bucket_size=10;
-  
+
   const int data_point_number=1000;
-  
+
   typedef std::list<My_point> Point_list;
   Point_list data_points, res;
 
-  // generate random data points  
+  // generate random data points
   CGAL::Random_points_in_cube_3<My_point,Creator> g( 1.0);
   CGAL::copy_n( g, data_point_number, std::back_inserter(data_points));
-  
+
   TreeTraits tr(bucket_size);
   typedef CGAL::Kd_tree<TreeTraits> Tree;
   Tree d(data_points.begin(), data_points.end(), tr);
@@ -205,32 +205,32 @@ int main() {
 
   Point3D_distance<My_point> tr_dist;
 
-  // nearest neighbor searching 
-  std::vector<NN_orthogonal_search::Point_with_distance> 
+  // nearest neighbor searching
+  std::vector<NN_orthogonal_search::Point_with_distance>
   the_nearest_neighbors;
-  
-  // furthest neighbor searching 
-  std::vector<NN_orthogonal_search::Point_with_distance> 
+
+  // furthest neighbor searching
+  std::vector<NN_orthogonal_search::Point_with_distance>
   the_furthest_neighbors;
-  
-  for (int i=0; i < query_point_number; i++) { 
+
+  for (int i=0; i < query_point_number; i++) {
      // nearest neighbour searching
      NN_orthogonal_search NN1(d, query_points[i], tr_dist);
      NN1.the_k_neighbors(std::back_inserter(the_nearest_neighbors));
-     
+
      // furthest neighbour searching
      NN_orthogonal_search NN2(d, query_points[i], tr_dist, 1, 0.0, false);
      NN2.the_k_neighbors(std::back_inserter(the_furthest_neighbors));
   }
-  
+
   std::cout << "results neighbor searching:" << std::endl;
 
-  for (int j=0; j < query_point_number; j++) { 
-     std::cout << " d(q, nearest neighbor)=  " << 
-     tr_dist.inverse_of_transformed_distance(the_nearest_neighbors[j].second) << 
-     "    d(q, furthest neighbor)= " << 
-     tr_dist.inverse_of_transformed_distance(the_furthest_neighbors[j].second) << std::endl; 
-  } 
+  for (int j=0; j < query_point_number; j++) {
+     std::cout << " d(q, nearest neighbor)=  " <<
+     tr_dist.inverse_of_transformed_distance(the_nearest_neighbors[j].second) <<
+     "    d(q, furthest neighbor)= " <<
+     tr_dist.inverse_of_transformed_distance(the_furthest_neighbors[j].second) << std::endl;
+  }
 
   return 0;
 };

@@ -35,7 +35,7 @@
 //#define CGAL_CFG_CCTYPE_MACRO_BUG 1
 
 //+--------------------------------------------------------------------------
-//| The flag CGAL_CFG_EARLY_INSTANTIATION_BUG is set, if a compiler does not 
+//| The flag CGAL_CFG_EARLY_INSTANTIATION_BUG is set, if a compiler does not
 //| not how to compile the following code. See the solution bellow.
 //| Created to workaround a cl1300 bug
 //+--------------------------------------------------------------------------
@@ -43,7 +43,7 @@
 
 //+--------------------------------------------------------------------------
 //| This flag is set, if the compiler does not promote enumeration types
-//| (which depend on a template parameter) correctly when they are used 
+//| (which depend on a template parameter) correctly when they are used
 //| as int template arguments. (e.g. Borland 5.5)
 //+--------------------------------------------------------------------------
 //#define CGAL_CFG_ENUM_BUG 1
@@ -63,14 +63,14 @@
 #define CGAL_CFG_MATCHING_BUG_2 1
 
 //+--------------------------------------------------------------------------
-//| This flag is set, if the compiler does not match function arguments 
-//| of pointer type correctly, when the return type depends on 
+//| This flag is set, if the compiler does not match function arguments
+//| of pointer type correctly, when the return type depends on
 //| the parameter's type. (e.g. sun C++ 5.3)
 //+--------------------------------------------------------------------------
 #define CGAL_CFG_MATCHING_BUG_3 1
 
 //+--------------------------------------------------------------------------
-//| This flag is set, if the compiler does not match member 
+//| This flag is set, if the compiler does not match member
 //| definition to an existing declaration (eg. cl1310 Beta)
 //+--------------------------------------------------------------------------
 //#define CGAL_CFG_NET2003_MATCHING_BUG 1
@@ -85,7 +85,7 @@
 //| - an instantiation of ABC::f is required in a compilation
 //| - no definition of ABC::f appears in the source code processed by the
 //|   compilation
-//| 
+//|
 //| In this case, the compiler may look to see if the source file xyz.n exists,
 //| where n is .c, .C, .cpp, .CPP, .cxx, .CXX, or .cc. If this feature is
 //| missing, the flag CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION is set.
@@ -109,13 +109,13 @@
 //+--------------------------------------------------------------------------
 //| If a compiler doesn't know <limits> (g++-2.95)
 //| or has a bug in the implementation (Sun CC 5.4, MipsPro CC)
-//| CGAL_CFG_NO_LIMITS is set. 
+//| CGAL_CFG_NO_LIMITS is set.
 //+--------------------------------------------------------------------------
 //#define CGAL_CFG_NO_LIMITS 1
 
 //+--------------------------------------------------------------------------
 //| If a compiler doesn't know the locale classic
-//| CGAL_CFG_NO_LOCALE is set. 
+//| CGAL_CFG_NO_LOCALE is set.
 //+--------------------------------------------------------------------------
 //#define CGAL_CFG_NO_LOCALE 1
 
@@ -151,14 +151,14 @@
 
 //+--------------------------------------------------------------------------
 //| Nested templates in template parameter, such as 'template <
-//| template <class T> class A>' are not supported by any compiler. 
+//| template <class T> class A>' are not supported by any compiler.
 //| The following definition is set if they are not supported.
 //+--------------------------------------------------------------------------
 #define CGAL_CFG_NO_TMPL_IN_TMPL_PARAM 1
 
 //+--------------------------------------------------------------------------
-//| The flag CGAL_CFG_OUTOFLINE_TEMPLATE_MEMBER_DEFINITION_BUG is set, if 
-//| a compiler does not support the definition of the members templates 
+//| The flag CGAL_CFG_OUTOFLINE_TEMPLATE_MEMBER_DEFINITION_BUG is set, if
+//| a compiler does not support the definition of the members templates
 //| out of line. The solution is to put the definition inside the class.
 //| This is a feature of cl1200 and cl1300.
 //+--------------------------------------------------------------------------
@@ -173,7 +173,7 @@
 #define CGAL_CFG_RETURN_TYPE_BUG 1
 
 //+--------------------------------------------------------------------------
-//| The flag CGAL_CFG_USING_NAMESPACE_BUG is set, if a compiler does not 
+//| The flag CGAL_CFG_USING_NAMESPACE_BUG is set, if a compiler does not
 //| not how to compile the following code.
 //| Created to workaround a cl1300 bug
 //+--------------------------------------------------------------------------

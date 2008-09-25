@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,9 +49,9 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 #if APL
 	// http://developer.apple.com/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/Reference/reference.html#//apple_ref/doc/uid/TP30000135-CH1g-DontLinkElementID_16
 	UInt32	mods = GetCurrentEventKeyModifiers();
-	
+
 	GUI_KeyFlags	flags = 0;
-	
+
 	if (mods & shiftKey)
 		flags |= gui_ShiftFlag;
 	if (mods & cmdKey)
@@ -62,7 +62,7 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 #elif IBM
 	// http://blogs.msdn.com/oldnewthing/archive/2004/11/30/272262.aspx
 	GUI_KeyFlags	flags = 0;
-	
+
 	if (::GetKeyState(VK_SHIFT) & ~1)
 		flags |= gui_ShiftFlag;
 	if (::GetKeyState(VK_CONTROL) & ~1)
@@ -100,7 +100,7 @@ GUI_Pane::GUI_Pane() :
 	mEnabled(true)
 {
 	mBounds[0] = mBounds[1] = mBounds[2] = mBounds[3] = 0;
-	mSticky[0] = mSticky[1] = mSticky[2] = mSticky[3] = 0;	
+	mSticky[0] = mSticky[1] = mSticky[2] = mSticky[3] = 0;
 }
 
 GUI_Pane::~GUI_Pane()
@@ -130,7 +130,7 @@ GUI_Pane *	GUI_Pane::GetNthChild(int n) const
 
 GUI_Pane *	GUI_Pane::GetParent(void) const
 {
-	return mParent; 
+	return mParent;
 }
 
 void		GUI_Pane::SetParent(GUI_Pane * inParent)
@@ -172,7 +172,7 @@ void		GUI_Pane::GetVisibleBounds(int outBounds[4])
 }
 
 
-void		GUI_Pane::SetBounds(int x1, int y1, int x2, int y2) 
+void		GUI_Pane::SetBounds(int x1, int y1, int x2, int y2)
 {
 	int b[4] = { x1, y1, x2, y2 };
 	SetBounds(b);
@@ -185,7 +185,7 @@ void		GUI_Pane::SetBounds(int inBounds[4])
 	mBounds[1] = inBounds[1];
 	mBounds[2] = inBounds[2];
 	mBounds[3] = inBounds[3];
-	
+
 	if (oldBounds[0] != mBounds[0] ||
 		oldBounds[1] != mBounds[1] ||
 		oldBounds[2] != mBounds[2] ||
@@ -194,7 +194,7 @@ void		GUI_Pane::SetBounds(int inBounds[4])
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 			(*c)->ParentResized(oldBounds, mBounds);
 		Refresh();
-	}	
+	}
 }
 
 void		GUI_Pane::GetSticky(float outSticky[4])
@@ -227,18 +227,18 @@ void		GUI_Pane::ParentResized(int inOldBounds[4], int inNewBounds[4])
 	// follow the opposite side.  So both bits means we stretch, but one or the other
 	// means we are tied to that side.  We no-op on NO bits, to just leave us alone...
 	// having a field that follows both opposite walls is not really useful.
-	
+
 	int new_bounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
-	
-	int delta[4] = {	inNewBounds[0] - inOldBounds[0], 
-						inNewBounds[1] - inOldBounds[1], 
-						inNewBounds[2] - inOldBounds[2], 
+
+	int delta[4] = {	inNewBounds[0] - inOldBounds[0],
+						inNewBounds[1] - inOldBounds[1],
+						inNewBounds[2] - inOldBounds[2],
 						inNewBounds[3] - inOldBounds[3] };
-						
+
 	new_bounds[0] += (delta[0] * mSticky[0] + delta[2] * (1.0 - mSticky[0]));
 	new_bounds[2] += (delta[2] * mSticky[2] + delta[0] * (1.0 - mSticky[2]));
 	new_bounds[1] += (delta[1] * mSticky[1] + delta[3] * (1.0 - mSticky[1]));
-	new_bounds[3] += (delta[3] * mSticky[3] + delta[1] * (1.0 - mSticky[3]));	
+	new_bounds[3] += (delta[3] * mSticky[3] + delta[1] * (1.0 - mSticky[3]));
 
 	SetBounds(new_bounds);
 }
@@ -270,7 +270,7 @@ GUI_Pane *	GUI_Pane::FindByPoint(int x, int y)
 	if (!IsVisible()) return NULL;
 	GetBounds(bounds);
 	if (x < bounds[0] || x > bounds[2] || y < bounds[1] || y > bounds[3]) return NULL;
-	
+
 	for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 	{
 		GUI_Pane * who = (*c)->FindByPoint(x,y);
@@ -306,7 +306,7 @@ void		GUI_Pane::Show(void)
 	{
 		mVisible = true;
 		if (IsVisibleNow())	Refresh();
-	}		
+	}
 }
 
 void		GUI_Pane::Hide(void)
@@ -318,7 +318,7 @@ void		GUI_Pane::Hide(void)
 	}
 }
 
-bool		GUI_Pane::IsEnabled(void) const 
+bool		GUI_Pane::IsEnabled(void) const
 {
 	return mEnabled;
 }
@@ -351,7 +351,7 @@ bool		GUI_Pane::IsActiveNow(void) const
 	return mParent && mParent->IsActiveNow();
 }
 
-		
+
 void		GUI_Pane::Refresh(void)
 {
 	if (mParent != NULL) mParent->Refresh();
@@ -384,15 +384,15 @@ int			GUI_Pane::TakeFocus(void)
 	// First see if some other widget is focused.
 	GUI_Pane * cur_focus = this->GetFocus();
 	if (cur_focus == this) return 1;	// Quick exit!
-	
+
 	if (cur_focus != NULL)
 	{
-		// If so, try to lose focus, but bail if that 
+		// If so, try to lose focus, but bail if that
 		// pane refuses.
 		if (!cur_focus->AcceptLoseFocus(0))
 			return 0;
 	}
-	
+
 	// Try to set the focus variable.  This is
 	// handled by some smart superclass.  If this
 	// barfs, well, we're not focused.
@@ -411,7 +411,7 @@ int			GUI_Pane::LoseFocus(int inForce)
 	int okay_to_lose = this->AcceptLoseFocus(inForce);
 	// If we're focusing, then damn straight it is!
 	if (inForce) okay_to_lose = true;
-	
+
 	if (okay_to_lose)
 	{
 		// Going to really lose..okay any parent who can take focus?  If so,
@@ -423,10 +423,10 @@ int			GUI_Pane::LoseFocus(int inForce)
 				return who->InternalSetFocus(who);
 			}
 		}
-		
+
 		// No parnet took it?  Well, as long as we can move the focus we're good
 		return this->InternalSetFocus(NULL);
-	}	
+	}
 	// Failed ot lose focus - refusal!
 	return 0;
 }
@@ -448,7 +448,7 @@ void		GUI_Pane::InternalDraw(GUI_GraphState * state)
 		if (vb[0] >= vb[2] ||
 			vb[1] >= vb[3])			return;
 		glScissor(vb[0], vb[1], vb[2]-vb[0], vb[3]-vb[1]);
-		
+
 		this->Draw(state);
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 		{
@@ -471,7 +471,7 @@ GUI_Pane *	GUI_Pane::InternalMouseMove(int x, int y)
 				if (target) return target;
 			}
 			if (this->MouseMove(x, y))
-				return this;			
+				return this;
 		}
 	}
 	return NULL;
@@ -488,7 +488,7 @@ GUI_Pane *	GUI_Pane::InternalMouseDown(int x, int y, int button)
 			if (!(*w)->TrapNotify(x,y,button))
 			mTrap.erase(w);
 		}
-	
+
 		if (x >= mBounds[0] && x <= mBounds[2] &&
 			y >= mBounds[1] && y <= mBounds[3])
 		{
@@ -498,9 +498,9 @@ GUI_Pane *	GUI_Pane::InternalMouseDown(int x, int y, int button)
 				target = (*c)->InternalMouseDown(x, y, button);
 				if (target) return target;
 			}
-			
+
 			if (this->MouseDown(x, y, button))
-				return this;			
+				return this;
 		}
 	}
 	return NULL;
@@ -517,9 +517,9 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 			{
 				if ((*c)->InternalMouseWheel(x, y, dist, axis)) return 1;
 			}
-			
+
 			if (this->ScrollWheel(x, y, dist, axis))
-				return 1;			
+				return 1;
 		}
 	}
 	return NULL;
@@ -538,7 +538,7 @@ int			GUI_Pane::InternalGetCursor(int x, int y)
 				ret = (*c)->InternalGetCursor(x, y);
 				if (ret != gui_Cursor_None) return ret;
 			}
-			
+
 			ret = this->GetCursor(x,y);
 		}
 	}
@@ -556,7 +556,7 @@ int		GUI_Pane::InternalGetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 			{
 				if ((*c)->InternalGetHelpTip(x, y, tip_bounds, tip)) return 1;
 			}
-			
+
 			if (GetHelpTip(x,y,tip_bounds,tip)) return 1;
 		}
 	}
@@ -574,7 +574,7 @@ GUI_DragOperation		GUI_Pane::InternalDragEnter	(int x, int y, GUI_DragData * dra
 GUI_DragOperation		GUI_Pane::InternalDragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
 	GUI_Pane * target = FindByPoint(x,y);
-	
+
 	if (target == mDragTarget)
 	{
 		if (mDragTarget == NULL) return gui_Drag_None;
@@ -615,13 +615,13 @@ bool				GUI_Pane::IsDragClick(int x, int y, int button)
 }
 
 GUI_DragOperation	GUI_Pane::DoDragAndDrop(
-							int						x, 
+							int						x,
 							int						y,
 							int						where[4],
 							GUI_DragOperation		operations,
-							int						type_count, 
-							GUI_ClipType			inTypes[], 
-							int						sizes[], 
+							int						type_count,
+							GUI_ClipType			inTypes[],
+							int						sizes[],
 							const void *			ptrs[],
 							GUI_GetData_f			fetch_func,
 							void *					ref)

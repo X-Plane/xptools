@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -19,7 +19,7 @@
  *
  * $Id: player.c,v 1.2 2001/07/20 16:40:16 sunshine Exp $
  */
-#include <lib3ds/file.h>                        
+#include <lib3ds/file.h>
 #include <lib3ds/camera.h>
 #include <lib3ds/mesh.h>
 #include <lib3ds/node.h>
@@ -66,7 +66,7 @@ static int halt=0;
  *
  */
 static void
-camera_menu(int value) 
+camera_menu(int value)
 {
   Lib3dsCamera *c;
   int i;
@@ -85,7 +85,7 @@ camera_menu(int value)
  *
  */
 static void
-init(void) 
+init(void)
 {
   glClearColor(0.5, 0.5, 0.5, 1.0);
   glShadeModel(GL_SMOOTH);
@@ -237,7 +237,7 @@ display(void)
 {
   Lib3dsNode *c,*t;
   Lib3dsMatrix M;
-  
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (!file) {
@@ -281,7 +281,7 @@ display(void)
 
       p[0] = l->spot[0] - l->position[0];
       p[1] = l->spot[1] - l->position[1];
-      p[2] = l->spot[2] - l->position[2];      
+      p[2] = l->spot[2] - l->position[2];
       glLightfv(li, GL_SPOT_DIRECTION, p);
       ++li;
     }
@@ -353,11 +353,11 @@ main(int argc, char** argv)
   filename=argv[1];
 
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-  glutInitWindowSize(500, 500); 
+  glutInitWindowSize(500, 500);
   glutInitWindowPosition(100, 100);
   glutCreateWindow(argv[0]);
   init();
-  glutDisplayFunc(display); 
+  glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutKeyboardFunc(keyboard);
   glutMainLoop();

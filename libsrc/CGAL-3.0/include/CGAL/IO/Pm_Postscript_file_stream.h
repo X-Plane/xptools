@@ -35,7 +35,7 @@ Postscript_file_stream & operator << (Postscript_file_stream & ps,
   Pm_drawer< Planar_map_2<Dcel,Traits> , Postscript_file_stream>  drawer(ps);
   draw_pm(pm, drawer, ps);
   return ps;
-}  
+}
 
 CGAL_END_NAMESPACE
 

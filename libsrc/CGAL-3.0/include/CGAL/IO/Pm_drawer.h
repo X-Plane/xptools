@@ -49,39 +49,39 @@ public:
   typedef typename PM::Halfedge_handle           Halfedge_handle;
   typedef typename PM::Face_handle               Face_handle;
   typedef typename PM::Vertex_const_handle       Vertex_const_handle;
-  typedef typename PM::Halfedge_const_handle     Halfedge_const_handle;  
+  typedef typename PM::Halfedge_const_handle     Halfedge_const_handle;
   typedef typename PM::Face_const_handle         Face_const_handle;
 
   typedef Window_   Window;
 
   Pm_drawer   (Window& w)  { m_window = &w; }
-  
+
   Window&  window()    { return *m_window; }
-   
-  
+
+
   //void draw_vertex_attributes(const Point& p) {}
-  
+
   void draw_vertex(Vertex_handle v) {
     window() << v->point();
   }
-  
+
   void draw_vertex(Vertex_const_handle v) {
     window() << v->point();
   }
   //void draw_halfedge_attributes(const Curve& cv) {}
-  
+
   void draw_halfedge(Halfedge_handle h) {
     window() << h->curve();
   }
-  
+
   void draw_halfedge(Halfedge_const_handle h) {
     window() << h->curve();
   }
 
   void draw_face(Face_handle f) {}
-  
+
   void draw_face(Face_const_handle f) {}
-  
+
   void draw_vertices(Vertex_iterator Vertices_begin,
                      Vertex_iterator Vertices_end)
   {
@@ -97,7 +97,7 @@ public:
          v_iter++)
       draw_vertex(v_iter);
   }
-   
+
   void draw_halfedges(Halfedge_iterator Halfedges_begin,
                       Halfedge_iterator Halfedges_end)
   {
@@ -113,7 +113,7 @@ public:
          h_iter != Halfedges_end; h_iter++)
       draw_halfedge(h_iter);
   }
-  
+
   void draw_faces(Face_iterator Faces_begin, Face_iterator Faces_end) {
     for (Face_iterator f_iter = Faces_begin; f_iter != Faces_end; f_iter++)
       draw_face(f_iter);
@@ -133,4 +133,4 @@ protected:
 
 CGAL_END_NAMESPACE
 
-#endif  // CGAL_IO_PM_DRAWER_H 
+#endif  // CGAL_IO_PM_DRAWER_H

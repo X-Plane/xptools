@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: StringRecord.h
  *
  *  This source file is part of DIME.
@@ -43,7 +43,7 @@ public:
   virtual void getValue(dimeParam &param) const;
 
   void setStringPointer(char * const s);
-  bool setString(const char * const s, 
+  bool setString(const char * const s,
                  dimeMemHandler * const memhandler = NULL);
   char *getString();
 
@@ -56,7 +56,7 @@ public:
 
 protected:
   char *string;
-  
+
 }; // class dimeStringRecord
 
 #endif // ! DIME_STRINGRECORD_H

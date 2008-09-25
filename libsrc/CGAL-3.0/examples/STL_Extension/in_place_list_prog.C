@@ -1,4 +1,4 @@
-// in_place_list_prog.C                 
+// in_place_list_prog.C
 // -------------------------------
 #include <CGAL/basic.h>
 #include <cassert>

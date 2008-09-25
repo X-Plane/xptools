@@ -36,18 +36,18 @@
 //
 // implementation in solid.cpp
 //
-extern void 
+extern void
 convert_solid_data(dimeVec3f *v, dimeVec3f &e, dxfdouble thickness,
 		   const dimeState *state,
 		   dxfLayerData *layerData);
 
 
-void 
-convert_trace(const dimeEntity *entity, const dimeState *state, 
+void
+convert_trace(const dimeEntity *entity, const dimeState *state,
 	      dxfLayerData *layerData, dxfConverter *converter)
 {
   dimeTrace *trace = (dimeTrace*)entity;
-  
+
   // respect the value in the $FILLMODE header variable
   layerData->setFillmode(converter->getFillmode());
 
@@ -61,10 +61,10 @@ convert_trace(const dimeEntity *entity, const dimeState *state,
     v[2][2] = param.double_data;
     v[3][2] = param.double_data;
   }
-   
+
   dimeVec3f e;
   trace->getExtrusionDir(e);
   dxfdouble thickness = trace->getThickness();
-  
+
   convert_solid_data(v, e, thickness, state, layerData);
 }

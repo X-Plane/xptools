@@ -181,7 +181,7 @@ static void MD5Init(MD5Context *ctx){
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-static 
+static
 void MD5Update(MD5Context *pCtx, const unsigned char *buf, unsigned int len){
         struct Context *ctx = (struct Context *)pCtx;
         uint32 t;
@@ -228,7 +228,7 @@ void MD5Update(MD5Context *pCtx, const unsigned char *buf, unsigned int len){
 }
 
 /*
- * Final wrapup - pad to 64-byte boundary with the bit pattern 
+ * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
 static void MD5Final(unsigned char digest[16], MD5Context *pCtx){
@@ -292,14 +292,14 @@ static void DigestToBase16(unsigned char *digest, char *zBuf){
 
 /*
 ** A TCL command for md5.  The argument is the text to be hashed.  The
-** Result is the hash in base64.  
+** Result is the hash in base64.
 */
 static int md5_cmd(void*cd, Tcl_Interp *interp, int argc, const char **argv){
   MD5Context ctx;
   unsigned char digest[16];
 
   if( argc!=2 ){
-    Tcl_AppendResult(interp,"wrong # args: should be \"", argv[0], 
+    Tcl_AppendResult(interp,"wrong # args: should be \"", argv[0],
         " TEXT\"", 0);
     return TCL_ERROR;
   }
@@ -321,13 +321,13 @@ static int md5file_cmd(void*cd, Tcl_Interp*interp, int argc, const char **argv){
   char zBuf[10240];
 
   if( argc!=2 ){
-    Tcl_AppendResult(interp,"wrong # args: should be \"", argv[0], 
+    Tcl_AppendResult(interp,"wrong # args: should be \"", argv[0],
         " FILENAME\"", 0);
     return TCL_ERROR;
   }
   in = fopen(argv[1],"rb");
   if( in==0 ){
-    Tcl_AppendResult(interp,"unable to open file \"", argv[1], 
+    Tcl_AppendResult(interp,"unable to open file \"", argv[1],
          "\" for reading", 0);
     return TCL_ERROR;
   }
@@ -383,6 +383,6 @@ static void md5finalize(sqlite3_context *context){
   sqlite3_result_text(context, zBuf, -1, SQLITE_TRANSIENT);
 }
 void Md5_Register(sqlite3 *db){
-  sqlite3_create_function(db, "md5sum", -1, SQLITE_UTF8, 0, 0, 
+  sqlite3_create_function(db, "md5sum", -1, SQLITE_UTF8, 0, 0,
       md5step, md5finalize);
 }

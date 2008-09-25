@@ -27,7 +27,7 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template <class R> 
+template <class R>
 std::ostream& operator<<(std::ostream& os,const Straight_2_<R>& cv)
 {
 	typedef Straight_2_<R> Straight;
@@ -70,7 +70,7 @@ std::ostream& operator<<(std::ostream& os,const Straight_2_<R>& cv)
 const Straight& cv)");
 	return os;
 }
-template <class R> 
+template <class R>
 std::istream& operator>>(std::istream& os,const Straight_2_<R>& cv)
 {
 	typedef Straight_2_<R> Straight;
@@ -109,7 +109,7 @@ std::istream& operator>>(std::istream& os,const Straight_2_<R>& cv)
 		cv.get_type()==Straight::SEGMENT||
 		cv.get_type()==Straight::RAY||
 		cv.get_type()==Straight::LINE,
-		"\nUnknown type in  leda_window& operator>>(leda_window& os," 
+		"\nUnknown type in  leda_window& operator>>(leda_window& os,"
 		<< "const Straight& cv)");
 	return os;
 }

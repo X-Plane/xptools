@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -57,7 +57,7 @@ void 			WED_Select::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		mSelected.insert(id);
 	}
-	
+
 }
 
 void 			WED_Select::WriteTo(IOWriter * writer)
@@ -66,7 +66,7 @@ void 			WED_Select::WriteTo(IOWriter * writer)
 	writer->WriteInt(mSelected.size());
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		writer->WriteInt(*i);
-		
+
 }
 
 void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
@@ -75,14 +75,14 @@ void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
 
 	mSelected.clear();
 	sql_command	cmd(db,"SELECT item FROM WED_selection WHERE id=@id;","@id");
-	
+
 	sql_row1<int>				id(GetID());
 	sql_row1<int>				item;
-	
+
 	int err;
 	cmd.set_params(id);
 	cmd.begin();
-	
+
 	while ((err = cmd.get_row(item)) == SQLITE_ROW)
 	{
 		mSelected.insert(item.a);
@@ -205,14 +205,14 @@ ISelectable *		WED_Select::GetNthSelection(int n) const
 		++i;
 	}
 	if (i == mSelected.end()) return NULL;
-	return FetchPeer(*i);	
+	return FetchPeer(*i);
 }
 
 int			WED_Select::IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const
 {
 	int n = 0;
 	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
-		if ((n=func(FetchPeer(*i), ref)) != 0) 
+		if ((n=func(FetchPeer(*i), ref)) != 0)
 			return n;
 	return 0;
 }

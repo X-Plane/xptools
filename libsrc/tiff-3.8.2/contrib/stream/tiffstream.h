@@ -57,7 +57,7 @@ private:
 	ostream* m_outStream;
 	iostream* m_ioStream;
 	int m_streamLength;
-	
+
 };
 
 #endif // _TIFF_STREAM_H_

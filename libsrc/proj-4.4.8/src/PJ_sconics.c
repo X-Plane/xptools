@@ -126,7 +126,7 @@ setup(PJ *P) {
 	case EULER:
 		P->n = sin(P->sig) * sin(del) / del;
 		del *= 0.5;
-		P->rho_c = del / (tan(del) * tan(P->sig)) + P->sig;	
+		P->rho_c = del / (tan(del) * tan(P->sig)) + P->sig;
 		P->rho_0 = P->rho_c - P->phi0;
 		break;
 	case PCONIC:

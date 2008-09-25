@@ -11,8 +11,8 @@
 // file          : delaunay_triangulation_2_toolbar_layers.C
 // package       : Qt_widget
 // author(s)     : Ursu Radu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -99,7 +99,7 @@ static char * circum_circle_small_xpm[] = {
 "   ..@.@@....   ",
 "    ..@@....    "};
 
-  Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw, 
+  Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
                                  Delaunay *t) : QToolBar(mw, "LT"),
   dt(t), nr_of_buttons(0)
   {
@@ -147,7 +147,7 @@ static char * circum_circle_small_xpm[] = {
     but[4] = new QToolButton(this, "circles");
     but[4]->setIconSet(set4);
     but[4]->setTextLabel("Circuscribed Circle");
-		
+
     nr_of_buttons = 5;
 	  button_group = new QButtonGroup(0, "nonexclusive");
     for(int i =0; i<nr_of_buttons; i++)
@@ -160,7 +160,7 @@ static char * circum_circle_small_xpm[] = {
     but[4]->toggle();
     connect(button_group, SIGNAL(clicked(int)),
           widget, SLOT(redraw()));
-    
+
     connect(but[0], SIGNAL(stateChanged(int)),
         showT, SLOT(stateChanged(int)));
     connect(but[1], SIGNAL(stateChanged(int)),
@@ -173,7 +173,7 @@ static char * circum_circle_small_xpm[] = {
         showCC, SLOT(stateChanged(int)));
 
   }
-  
+
 
 #include "delaunay_triangulation_2_toolbar_layers.moc"
 

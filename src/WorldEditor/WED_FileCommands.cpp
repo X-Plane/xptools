@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -83,7 +83,7 @@ const char *	kFileCmdNames [] = {
 	"Import...",
 	"Export...",
 	"-",
-	"Preferences...",	
+	"Preferences...",
 	0
 };
 
@@ -181,7 +181,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				LoadDEMTables();
 			}
 			break;
-		
+
 		case fileCmd_OpenLandUse:
 			{
 				char	buf[1024];
@@ -191,7 +191,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				LoadDEMTables();
 			}
 			break;
-		
+
 		case fileCmd_OpenClimateXES:
 			{
 				char	buf[1024];
@@ -219,7 +219,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				LoadObjTables();
 			}
 			break;
-			
+
 		case fileCmd_Save:
 			if (gDirty)
 			{
@@ -246,13 +246,13 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 		case fileCmd_Revert:
 			if (gDirty && !gFilePath.empty())
 			{
-				char	buf[1024];			
+				char	buf[1024];
 				sprintf(buf, "Are you sure you want to revert the file '%s'?  you will lose all changes since you last saved.",
 					gFilePath.c_str());
 				if (ConfirmMessage(buf, "Revert", "Cancel"))
 					WED_FileOpen(gFilePath);
 			}
-			break;			
+			break;
 		case fileCmd_Import:
 			WED_ShowImportDialog();
 			break;
@@ -308,12 +308,12 @@ void	WED_FileNew(void)
 	gEdgeSelection.clear();
 	gVertexSelection.clear();
 	gPointFeatureSelection.clear();
-	
+
 	float mapWest = -180.0;
 	float mapSouth = -90.0;
 	float mapEast = 180.0;
 	float mapNorth = 90.0;
-	
+
 	gMap.Index();
 
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
@@ -341,7 +341,7 @@ bool	WED_FileOpen(const string& inPath)
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(memFile);
 	} else
-		return false;		
+		return false;
 
 	Point2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
@@ -358,8 +358,8 @@ bool	WED_FileOpen(const string& inPath)
 		gFilePath.clear();
 		gDirty = false;
 		return false;;
-	}	
-	
+	}
+
 	gFilePath = inPath;
 	gDirty = false;
 

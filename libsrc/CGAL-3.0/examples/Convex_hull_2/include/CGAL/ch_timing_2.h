@@ -11,7 +11,7 @@
 // release_date  : $CGAL_Date: 2003/10/30 $
 //
 // file          : examples/Convex_hull_2/include/CGAL/ch_timing_2.h
-// package       : Convex_hull_2 
+// package       : Convex_hull_2
 // revision      : $Revision: 1.2 $
 // revision_date : $Date: 2001/12/05 15:16:09 $
 // author(s)     : Stefan Schirra
@@ -31,7 +31,7 @@ template <class ForwardIterator, class OutputIterator, class Traits>
 void
 ch_timing( ForwardIterator first, ForwardIterator last,
            OutputIterator result,
-           int iterations, 
+           int iterations,
            const Traits& ch_traits);
 
 CGAL_END_NAMESPACE

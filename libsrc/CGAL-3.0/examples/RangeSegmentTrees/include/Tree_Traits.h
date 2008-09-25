@@ -10,17 +10,17 @@
 // Every use of CGAL requires a license. Licenses come in three kinds:
 //
 // - For academic research and teaching purposes, permission to use and
-//   copy the software and its documentation is hereby granted free of  
+//   copy the software and its documentation is hereby granted free of
 //   charge, provided that
 //   (1) it is not a component of a commercial product, and
 //   (2) this notice appears in all copies of the software and
 //       related documentation.
-// - Development licenses grant access to the source code of the library 
-//   to develop programs. These programs may be sold to other parties as 
+// - Development licenses grant access to the source code of the library
+//   to develop programs. These programs may be sold to other parties as
 //   executable code. To obtain a development license, please contact
 //   the CGAL Consortium (at cgal@cs.uu.nl).
 // - Commercialization licenses grant access to the source code and the
-//   right to sell development licenses. To obtain a commercialization 
+//   right to sell development licenses. To obtain a commercialization
 //   license, please contact the CGAL Consortium (at cgal@cs.uu.nl).
 //
 // This software and documentation is provided "as-is" and without
@@ -138,7 +138,7 @@ class Tree_traits_2{
     Key_2 operator()(const Key& k)
     { return k.second;}
   };
-  
+
   class C_Compare_1{
   public:
     bool operator()(Key_1 k1, Key_1 k2)
@@ -149,7 +149,7 @@ class Tree_traits_2{
 
   class C_Compare_2{
   public:
-    
+
     bool operator()(Key_2 k1, Key_2 k2)
     {
       return std::less<double>()(k1,k2);
@@ -237,10 +237,10 @@ class Tree_traits_3{
     Key_3 operator()(const Key& k)
     { return k.key_3;}
   };
-  
+
   class C_Compare_1{
   public:
-    
+
     bool operator()(Key_1 k1, Key_1 k2)
     {
       return std::less<int>()(k1,k2);
@@ -249,7 +249,7 @@ class Tree_traits_3{
 
   class C_Compare_2{
   public:
-    
+
     bool operator()(Key_2 k1, Key_2 k2)
     {
       return std::less<double>()(k1,k2);
@@ -258,7 +258,7 @@ class Tree_traits_3{
 
   class C_Compare_3{
   public:
-    
+
     bool operator()(Key_3 k1, Key_3 k2)
     {
       return std::less<long>()(k1,k2);
@@ -371,10 +371,10 @@ class Tree_traits_4{
     Key_4 operator()(const Key& k)
     { return k.key_4;}
   };
-  
+
   class C_Compare_1{
   public:
-    
+
     bool operator()(Key_1 k1, Key_1 k2)
     {
       return std::less<int>()(k1,k2);
@@ -383,7 +383,7 @@ class Tree_traits_4{
 
   class C_Compare_2{
   public:
-    
+
     bool operator()(Key_2 k1, Key_2 k2)
     {
       return std::less<double>()(k1,k2);
@@ -392,7 +392,7 @@ class Tree_traits_4{
 
   class C_Compare_3{
   public:
-    
+
     bool operator()(Key_3 k1, Key_3 k2)
     {
       return std::less<long>()(k1,k2);
@@ -401,7 +401,7 @@ class Tree_traits_4{
 
   class C_Compare_4{
   public:
-    
+
     bool operator()(Key_4 k1, Key_4 k2)
     {
       return std::less<double>()(k1,k2);

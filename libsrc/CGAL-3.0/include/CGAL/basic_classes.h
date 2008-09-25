@@ -21,7 +21,7 @@
 //
 // Author(s)     : Andreas Fabri
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_BASIC_CLASSES_H
 #define CGAL_BASIC_CLASSES_H

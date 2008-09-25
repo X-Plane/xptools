@@ -10,7 +10,7 @@
 
 #include "NormalNode.h"
 
-NormalNode::NormalNode () 
+NormalNode::NormalNode ()
 {
 	setHeaderFlag(false);
 	setType(normalNodeString);
@@ -21,7 +21,7 @@ NormalNode::NormalNode ()
 	addExposedField(vectorField);
 }
 
-NormalNode::~NormalNode () 
+NormalNode::~NormalNode ()
 {
 }
 
@@ -35,18 +35,18 @@ MFVec3f *NormalNode::getVectorField()
 		return vectorField;
 	return (MFVec3f *)getExposedField(vectorFieldString);
 }
-	
-void NormalNode::addVector(float value[]) 
+
+void NormalNode::addVector(float value[])
 {
 	getVectorField()->addValue(value);
 }
 
-int NormalNode::getNVectors() 
+int NormalNode::getNVectors()
 {
 	return getVectorField()->getSize();
 }
 
-void NormalNode::getVector(int index, float value[]) 
+void NormalNode::getVector(int index, float value[])
 {
 	getVectorField()->get1Value(index, value);
 }
@@ -54,21 +54,21 @@ void NormalNode::getVector(int index, float value[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool NormalNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void NormalNode::initialize() 
+void NormalNode::initialize()
 {
 }
 
-void NormalNode::uninitialize() 
+void NormalNode::uninitialize()
 {
 }
 
-void NormalNode::update() 
+void NormalNode::update()
 {
 }
 
@@ -76,7 +76,7 @@ void NormalNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void NormalNode::outputContext(ostream &printStream, char *indentString) 
+void NormalNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNVectors()) {
 		MFVec3f *vector = getVectorField();
@@ -90,12 +90,12 @@ void NormalNode::outputContext(ostream &printStream, char *indentString)
 //	List
 ////////////////////////////////////////////////
 
-NormalNode *NormalNode::next() 
+NormalNode *NormalNode::next()
 {
 	return (NormalNode *)Node::next(getType());
 }
 
-NormalNode *NormalNode::nextTraversal() 
+NormalNode *NormalNode::nextTraversal()
 {
 	return (NormalNode *)Node::nextTraversalByType(getType());
 }

@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------------
 
 //| Nested templates in template parameter, such as 'template <
-//| template <class T> class A>' are not supported by any compiler. 
+//| template <class T> class A>' are not supported by any compiler.
 //| The following definition is set if they are not supported.
 
 template< class X>
@@ -51,7 +51,7 @@ struct D {
 };
 
 template < template < class T > class HDS>
-void fct(HDS<int> h1 ) {} // here it does not compile 
+void fct(HDS<int> h1 ) {} // here it does not compile
 
 
 int main() {

@@ -3,11 +3,11 @@
  *
  * Project:  TIFF Overview Builder
  * Purpose:  Library functions to maintain two rows of tiles or two strips
- *           of data for output overviews as an output cache. 
+ *           of data for output overviews as an output cache.
  * Author:   Frank Warmerdam, warmerdam@pobox.com
  *
  * This code could potentially be used by other applications wanting to
- * manage a once-through write cache. 
+ * manage a once-through write cache.
  *
  ******************************************************************************
  * Copyright (c) 2000, Frank Warmerdam
@@ -40,8 +40,8 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-    
-typedef struct 
+
+typedef struct
 {
     uint32	nXSize;
     uint32	nYSize;
@@ -64,7 +64,7 @@ typedef struct
     int		nDirOffset;
     TIFF	*hTIFF;
     int		bTiled;
-    
+
 } TIFFOvrCache;
 
 TIFFOvrCache *TIFFCreateOvrCache( TIFF *hTIFF, int nDirOffset );
@@ -79,7 +79,7 @@ void TIFFBuildOverviews( TIFF *, int, int *, int, const char *,
 void TIFF_ProcessFullResBlock( TIFF *hTIFF, int nPlanarConfig,
                                int bSubsampled, int nHorSamples, int nVerSamples,
                                int nOverviews, int * panOvList,
-                               int nBitsPerPixel, 
+                               int nBitsPerPixel,
                                int nSamples, TIFFOvrCache ** papoRawBIs,
                                int nSXOff, int nSYOff,
                                unsigned char *pabySrcTile,
@@ -96,6 +96,6 @@ uint32 TIFF_WriteOverview( TIFF *, int, int, int, int, int, int, int,
 #if defined(__cplusplus)
 }
 #endif
-    
+
 #endif /* ndef TIF_OVRCACHE_H_INCLUDED */
 

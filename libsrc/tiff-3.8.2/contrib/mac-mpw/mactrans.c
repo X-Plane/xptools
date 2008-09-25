@@ -1,6 +1,6 @@
 /*
- *  mactrans.c  -- Hack filter used to generate MPW files 
- *    with special characters from pure ASCII, denoted "%nn" 
+ *  mactrans.c  -- Hack filter used to generate MPW files
+ *    with special characters from pure ASCII, denoted "%nn"
  *    where nn is hex. (except for "%%", which is literal '%').
  *
  *  calling sequence:

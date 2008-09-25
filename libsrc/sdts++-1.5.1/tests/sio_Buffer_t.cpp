@@ -48,7 +48,7 @@ main(int argc, char** argv)
     assert ( equal( data.begin(), data.end(), buffer.data().begin() ) );
 
 
-    // now add more data  
+    // now add more data
     assert( buffer.addData( text, strlen(text) ) );
 
 
@@ -56,7 +56,7 @@ main(int argc, char** argv)
     assert( data.size() * 2 == buffer.length() );
 
     // and the second half should be identical to the original string
-    assert ( equal( buffer.data().begin() + strlen(text), 
+    assert ( equal( buffer.data().begin() + strlen(text),
                     buffer.data().end(), data.begin() ) );
 
 

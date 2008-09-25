@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -54,7 +54,7 @@ WED_Buffer::~WED_Buffer()
 void	WED_Buffer::ResetRead(void)
 {
 	mReadIterator = mStorage;
-	mReadSubpos = 0;	
+	mReadSubpos = 0;
 }
 
 void	WED_Buffer::ReadShort(short& v)
@@ -115,7 +115,7 @@ void	WED_Buffer::ReadInternal(char* p, unsigned long l)
 		// Quick check for out of data.
 		DebugAssert(a > 0 || mReadIterator->next);
 
-		
+
 		if (a > 0)
 		{
 			// Read the minimum of what we want or what we have in this blokc
@@ -125,7 +125,7 @@ void	WED_Buffer::ReadInternal(char* p, unsigned long l)
 			l -= r;
 			p += r;
 		}
-			
+
 		// If we got to the end of the block, go to the next one.
 		if (mReadIterator->size == mReadSubpos)
 		{
@@ -147,7 +147,7 @@ void	WED_Buffer::WriteInternal(const char * p, unsigned long l)
 			p += w;
 			l -= w;
 			mWriteIterator->size += w;
-			
+
 		} else {
 			Storage * block = (Storage *) new char[WED_BUFFER_ALLOC_SIZE];
 			block->next = NULL;
@@ -173,7 +173,7 @@ void *	WED_Buffer::AllocContiguous(int len)
 		mWriteIterator->size += len;
 		return p;
 	}
-	
+
 	// If we don't have enough space, waste the rest, add a new block at least big enough.
 	// Note that we do NOT resize the old vector because doing so would move its location and
 	// we NEVER want to reallocte the block, because we want to keep ptrs legit.

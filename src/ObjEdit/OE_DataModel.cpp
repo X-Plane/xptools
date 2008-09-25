@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ static const char * sUndoCmds [] = {
 	0
 };
 
-static const char	sUndoKeys [] = { 
+static const char	sUndoKeys [] = {
 	'Z',				xplm_ControlFlag,
 	'Z',				xplm_ControlFlag + xplm_ShiftFlag,
 	0,					0
@@ -57,7 +57,7 @@ struct	UndoState_t {
 	set<int>		selection;
 	int				levelOfDetail;
 	int				rebuildStep;
-	
+
 	void	FromGlobals(void);
 	void	ToGlobals(void);
 };
@@ -72,7 +72,7 @@ static UndoVector_t		sRedo;
 static UndoState_t		sCommand;
 
 static bool				sCommandInProgress = false;
-	
+
 void	UndoState_t::FromGlobals(void)
 {
 	objects 		= gObjects		;
@@ -107,7 +107,7 @@ void	OE_CompleteCommand(void)
 		int undo_amount = sUndo.size() - kMaxUndo;
 		sUndo.erase(sUndo.begin(), sUndo.begin() + undo_amount);
 	}
-	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);	
+	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);
 }
 
 void	OE_AbortCommand(void)
@@ -128,7 +128,7 @@ void	OE_Undo(void)
 	sRedo.push_back(curState);
 	sUndo.back().ToGlobals();
 	sUndo.pop_back();
-	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);	
+	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);
 }
 
 void	OE_Redo(void)
@@ -140,7 +140,7 @@ void	OE_Redo(void)
 	sUndo.push_back(curState);
 	sRedo.back().ToGlobals();
 	sRedo.pop_back();
-	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);	
+	OE_Notifiable::Notify(catagory_Object, msg_ObjectTexturingChanged, NULL);
 }
 
 void	OE_PurgeUndo(void)
@@ -168,7 +168,7 @@ bool	OE_HasRedo(char * outCmdName)
 void	OE_SetupUndoCmds()
 {
 	OE_RegisterNotifyFunc(UndoCmdNotification);
-	
+
 	sUndoCmdMenu = XPLMCreateMenu("&Edit", NULL, 0, UndoCmdHandler, NULL);
 	for (int n = 0; sUndoCmds[n]; ++n)
 	{
@@ -176,7 +176,7 @@ void	OE_SetupUndoCmds()
 		if (sUndoKeys[n*2])
 			XPLMSetMenuItemKey(sUndoCmdMenu,n,sUndoKeys[n*2],sUndoKeys[n*2+1]);
 	}
-	
+
 	UndoCmdUpdateItems();
 }
 
@@ -201,17 +201,17 @@ static	void	UndoCmdUpdateItems(void)
 	char	undoStr[120], redoStr[120];
 	bool	undoOk = OE_HasUndo(undoCmd);
 	bool	redoOk = OE_HasRedo(redoCmd);
-	
+
 	if (undoOk)
 		sprintf(undoStr, "Undo %s", undoCmd);
-	else	
+	else
 		sprintf(undoStr, "Can't Undo", undoCmd);
 	XPLMSetMenuItemName(sUndoCmdMenu, undoCmd_Undo, undoStr, 1);
 
 	if (redoOk)
 		sprintf(redoStr, "Redo %s", redoCmd);
 	else
-		sprintf(redoStr, "Can't Redo");		
+		sprintf(redoStr, "Can't Redo");
 	XPLMSetMenuItemName(sUndoCmdMenu, undoCmd_Redo, redoStr, 1);
 
 	XPLMEnableMenuItem(sUndoCmdMenu, undoCmd_Undo, undoOk);

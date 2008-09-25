@@ -3721,7 +3721,7 @@
     /* Close all modules in the library */
 #if 1
     /* XXX Modules are removed in the reversed order so that  */
-    /* type42 module is removed before truetype module.  This */ 
+    /* type42 module is removed before truetype module.  This */
     /* avoids double free in some occasions.  It is a hack.   */
     while ( library->num_modules > 0 )
       FT_Remove_Module( library,
@@ -3861,7 +3861,7 @@
 
 #endif /* FT_CONFIG_OPTION_OLD_INTERNALS */
 
-  
+
   FT_EXPORT_DEF( FT_Error )
   FT_Get_SubGlyph_Info( FT_GlyphSlot  glyph,
                         FT_UInt       sub_index,
@@ -3872,14 +3872,14 @@
                         FT_Matrix    *p_transform )
   {
     FT_Error  error = FT_Err_Invalid_Argument;
-      
 
-    if ( glyph != NULL                              && 
+
+    if ( glyph != NULL                              &&
          glyph->format == FT_GLYPH_FORMAT_COMPOSITE &&
          sub_index < glyph->num_subglyphs           )
     {
       FT_SubGlyph  subg = glyph->subglyphs + sub_index;
-        
+
 
       *p_index     = subg->index;
       *p_flags     = subg->flags;

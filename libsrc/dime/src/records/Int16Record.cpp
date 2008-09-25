@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int16Record.cpp
  *
  *  This source file is part of DIME.
@@ -59,7 +59,7 @@ dimeInt16Record::copy(dimeMemHandler * const mh) const
   Sets the int16 value.
 */
 
-void 
+void
 dimeInt16Record::setValue(const int16 val)
 {
   this->value = val;
@@ -77,7 +77,7 @@ dimeInt16Record::getValue() const
 
 //!
 
-int 
+int
 dimeInt16Record::typeId() const
 {
   return dimeBase::dimeInt16RecordType;
@@ -85,7 +85,7 @@ dimeInt16Record::typeId() const
 
 //!
 
-bool 
+bool
 dimeInt16Record::read(dimeInput * const in)
 {
   return in->readInt16(this->value);
@@ -93,7 +93,7 @@ dimeInt16Record::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeInt16Record::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) {
@@ -104,7 +104,7 @@ dimeInt16Record::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeInt16Record::setValue(const dimeParam &param, dimeMemHandler * const )
 {
   this->value = param.int16_data;
@@ -112,7 +112,7 @@ dimeInt16Record::setValue(const dimeParam &param, dimeMemHandler * const )
 
 //!
 
-void 
+void
 dimeInt16Record::getValue(dimeParam &param) const
 {
   param.int16_data = this->value;

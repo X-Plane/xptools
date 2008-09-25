@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -16,7 +16,7 @@
 #include <sdts++/io/sio_8211DR.h>
 
 #include <vector>
- 
+
 
 #ifndef INCLUDED_SIO_BUFFER_H
 #include <sdts++/io/sio_Buffer.h>
@@ -50,12 +50,12 @@ sio_8211DR::sio_8211DR()
 
 static
 void
-set_forward_pointers_( sio_8211Directory& dir, 
+set_forward_pointers_( sio_8211Directory& dir,
                        sio_8211FieldAreaContainer& fields )
 {
     // now reconcile the forward pointers from the directory entries
     // to their corresponding field areas
-    
+
     sio_8211FieldAreaContainer::iterator curr_fa = fields.begin();
 
     for ( sio_8211DirEntryContainer::iterator curr_dir = dir.begin();
@@ -90,7 +90,7 @@ sio_8211DR::operator=( sio_8211DR const& rhs )
 
 sio_8211DR::sio_8211DR( sio_8211DR const& rhs )
   : leader_( rhs.leader_ ),
-    reuseLeaderAndDir_( rhs.reuseLeaderAndDir_ ), 
+    reuseLeaderAndDir_( rhs.reuseLeaderAndDir_ ),
     wroteDroppedLeaderAndDir_( rhs.wroteDroppedLeaderAndDir_ )
 {
                                 // presumably handled by parent copy ctor
@@ -138,7 +138,7 @@ bool
 sio_8211DR::isReusingLeaderAndDirectory() const
 {
    return reuseLeaderAndDir_;
-}          
+}
 
 
 
@@ -155,7 +155,7 @@ sio_8211DR::isReusingLeaderAndDirectory() const
 // terminator so that 8211 readers know that these are repeating
 // fields.
 bool
-sio_8211DR::addRepeatingField( sio_Buffer const& buffer, 
+sio_8211DR::addRepeatingField( sio_Buffer const& buffer,
                                bool              is_variable )
 {
 
@@ -175,13 +175,13 @@ sio_8211DR::addRepeatingField( sio_Buffer const& buffer,
    {
       getFieldArea_().back().getData().erase( terminator );
    }
-  
+
                                 // now copy the new stuff to the end,
                                 // starting from the old field
                                 // terminator
 
-   getFieldArea_().back().getData().insert( 
-      getFieldArea_().back().getData().end(), 
+   getFieldArea_().back().getData().insert(
+      getFieldArea_().back().getData().end(),
       buffer.data().begin(), buffer.data().end() );
 
 
@@ -189,7 +189,7 @@ sio_8211DR::addRepeatingField( sio_Buffer const& buffer,
                                 // directory is in the loop and knows
                                 // about fatter field
 
-   getDirectory_().back().setFieldLength( 
+   getDirectory_().back().setFieldLength(
       getFieldArea_().back().getData().size() );
 
    return true;
@@ -236,10 +236,10 @@ sio_8211DR::streamExtract(istream& istr)
    // Get the new fields.
    long fieldAreaStart = istr.tellg();
 
-   for ( sio_8211Directory::iterator i = getDirectory_().begin(); 
-         i != getDirectory_().end(); 
+   for ( sio_8211Directory::iterator i = getDirectory_().begin();
+         i != getDirectory_().end();
          i++)
-      { 
+      {
          istr.seekg(fieldAreaStart + (*i).getPosition());
 
          // add a new field of the size that the directory says it has to the
@@ -266,7 +266,7 @@ sio_8211DR::streamExtract(istream& istr)
 
 
 
-ostream& 
+ostream&
 sio_8211DR::streamInsert(ostream& ostr) const
 {
    ostr << setfill('0');

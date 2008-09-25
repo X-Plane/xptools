@@ -20,16 +20,16 @@
 
 void AddDefaultParameters(ExtrusionNode *ex);
 
-ExtrusionNode::ExtrusionNode() 
+ExtrusionNode::ExtrusionNode()
 {
 
 	setHeaderFlag(false);
 	setType(extrusionNodeString);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
-		
+
 	// beginCap field
 	beginCapField = new SFBool(true);
 	addField(beginCapFieldString, beginCapField);
@@ -99,7 +99,7 @@ ExtrusionNode::ExtrusionNode()
 	addEventIn(spineFieldString, setSpineField);
 }
 
-ExtrusionNode::~ExtrusionNode() 
+ExtrusionNode::~ExtrusionNode()
 {
 }
 
@@ -113,18 +113,18 @@ SFBool *ExtrusionNode::getBeginCapField()
 		return beginCapField;
 	return (SFBool *)getField(beginCapFieldString);
 }
-	
-void ExtrusionNode::setBeginCap(bool value) 
+
+void ExtrusionNode::setBeginCap(bool value)
 {
 	getBeginCapField()->setValue(value);
 }
 
-void ExtrusionNode::setBeginCap(int value) 
+void ExtrusionNode::setBeginCap(int value)
 {
 	setBeginCap(value ? true : false);
 }
 
-bool ExtrusionNode::getBeginCap() 
+bool ExtrusionNode::getBeginCap()
 {
 	return getBeginCapField()->getValue();
 }
@@ -139,18 +139,18 @@ SFBool *ExtrusionNode::getEndCapField()
 		return endCapField;
 	return (SFBool *)getField(endCapFieldString);
 }
-	
-void ExtrusionNode::setEndCap(bool value) 
+
+void ExtrusionNode::setEndCap(bool value)
 {
 	getEndCapField()->setValue(value);
 }
 
-void ExtrusionNode::setEndCap(int value) 
+void ExtrusionNode::setEndCap(int value)
 {
 	setEndCap(value ? true : false);
 }
 
-bool ExtrusionNode::getEndCap() 
+bool ExtrusionNode::getEndCap()
 {
 	return getEndCapField()->getValue();
 }
@@ -165,18 +165,18 @@ SFBool *ExtrusionNode::getCCWField()
 		return ccwField;
 	return (SFBool *)getField(ccwFieldString);
 }
-	
-void ExtrusionNode::setCCW(bool value) 
+
+void ExtrusionNode::setCCW(bool value)
 {
 	getCCWField()->setValue(value);
 }
 
-void ExtrusionNode::setCCW(int value) 
+void ExtrusionNode::setCCW(int value)
 {
 	setCCW(value ? true : false);
 }
 
-bool ExtrusionNode::getCCW() 
+bool ExtrusionNode::getCCW()
 {
 	return getCCWField()->getValue();
 }
@@ -191,18 +191,18 @@ SFBool *ExtrusionNode::getConvexField()
 		return convexField;
 	return (SFBool *)getField(convexFieldString);
 }
-	
-void ExtrusionNode::setConvex(bool value) 
+
+void ExtrusionNode::setConvex(bool value)
 {
 	getConvexField()->setValue(value);
 }
 
-void ExtrusionNode::setConvex(int value) 
+void ExtrusionNode::setConvex(int value)
 {
 	setConvex(value ? true : false);
 }
 
-bool ExtrusionNode::getConvex() 
+bool ExtrusionNode::getConvex()
 {
 	return getConvexField()->getValue();
 }
@@ -217,13 +217,13 @@ SFFloat *ExtrusionNode::getCreaseAngleField()
 		return creaseAngleField;
 	return (SFFloat *)getField(creaseAngleFieldString);
 }
-	
-void ExtrusionNode::setCreaseAngle(float value) 
+
+void ExtrusionNode::setCreaseAngle(float value)
 {
 	getCreaseAngleField()->setValue(value);
 }
 
-float ExtrusionNode::getCreaseAngle() 
+float ExtrusionNode::getCreaseAngle()
 {
 	return getCreaseAngleField()->getValue();
 }
@@ -232,24 +232,24 @@ float ExtrusionNode::getCreaseAngle()
 //	Solid
 ////////////////////////////////////////////////
 
-SFBool *ExtrusionNode::getSolidField() 
+SFBool *ExtrusionNode::getSolidField()
 {
 	if (isInstanceNode() == false)
 		return solidField;
 	return (SFBool *)getField(solidFieldString);
 }
-	
-void ExtrusionNode::setSolid(bool value) 
+
+void ExtrusionNode::setSolid(bool value)
 {
 	getSolidField()->setValue(value);
 }
 
-void ExtrusionNode::setSolid(int value) 
+void ExtrusionNode::setSolid(int value)
 {
 	setSolid(value ? true : false);
 }
 
-bool ExtrusionNode::getSolid() 
+bool ExtrusionNode::getSolid()
 {
 	return getSolidField()->getValue();
 }
@@ -265,22 +265,22 @@ MFRotation *ExtrusionNode::getOrientationField()
 	return (MFRotation *)getField(orientationFieldString);
 }
 
-void ExtrusionNode::addOrientation(float value[]) 
+void ExtrusionNode::addOrientation(float value[])
 {
 	getOrientationField()->addValue(value);
 }
 
-void ExtrusionNode::addOrientation(float x, float y, float z, float angle) 
+void ExtrusionNode::addOrientation(float x, float y, float z, float angle)
 {
 	getOrientationField()->addValue(x, y, z, angle);
 }
 
-int ExtrusionNode::getNOrientations() 
+int ExtrusionNode::getNOrientations()
 {
 	return getOrientationField()->getSize();
 }
 
-void ExtrusionNode::getOrientation(int index, float value[]) 
+void ExtrusionNode::getOrientation(int index, float value[])
 {
 	getOrientationField()->get1Value(index, value);
 }
@@ -289,29 +289,29 @@ void ExtrusionNode::getOrientation(int index, float value[])
 // scale
 ////////////////////////////////////////////////
 
-MFVec2f *ExtrusionNode::getScaleField() 
+MFVec2f *ExtrusionNode::getScaleField()
 {
 	if (isInstanceNode() == false)
 		return scaleField;
 	return (MFVec2f *)getField(scaleFieldString);
 }
 
-void ExtrusionNode::addScale(float value[]) 
+void ExtrusionNode::addScale(float value[])
 {
 	getScaleField()->addValue(value);
 }
 
-void ExtrusionNode::addScale(float x, float z) 
+void ExtrusionNode::addScale(float x, float z)
 {
 	getScaleField()->addValue(x, z);
 }
 
-int ExtrusionNode::getNScales() 
+int ExtrusionNode::getNScales()
 {
 	return getScaleField()->getSize();
 }
 
-void ExtrusionNode::getScale(int index, float value[]) 
+void ExtrusionNode::getScale(int index, float value[])
 {
 	getScaleField()->get1Value(index, value);
 }
@@ -327,22 +327,22 @@ MFVec2f *ExtrusionNode::getCrossSectionField()
 	return (MFVec2f *)getField(crossSectionFieldString);
 }
 
-void ExtrusionNode::addCrossSection(float value[]) 
+void ExtrusionNode::addCrossSection(float value[])
 {
 	getCrossSectionField()->addValue(value);
 }
 
-void ExtrusionNode::addCrossSection(float x, float z) 
+void ExtrusionNode::addCrossSection(float x, float z)
 {
 	getCrossSectionField()->addValue(x, z);
 }
 
-int ExtrusionNode::getNCrossSections() 
+int ExtrusionNode::getNCrossSections()
 {
 	return getCrossSectionField()->getSize();
 }
 
-void ExtrusionNode::getCrossSection(int index, float value[]) 
+void ExtrusionNode::getCrossSection(int index, float value[])
 {
 	getCrossSectionField()->get1Value(index, value);
 }
@@ -358,22 +358,22 @@ MFVec3f *ExtrusionNode::getSpineField()
 	return (MFVec3f *)getField(spineFieldString);
 }
 
-void ExtrusionNode::addSpine(float value[]) 
+void ExtrusionNode::addSpine(float value[])
 {
 	getSpineField()->addValue(value);
 }
 
-void ExtrusionNode::addSpine(float x, float y, float z) 
+void ExtrusionNode::addSpine(float x, float y, float z)
 {
 	getSpineField()->addValue(x, y, z);
 }
 
-int ExtrusionNode::getNSpines() 
+int ExtrusionNode::getNSpines()
 {
 	return getSpineField()->getSize();
 }
 
-void ExtrusionNode::getSpine(int index, float value[]) 
+void ExtrusionNode::getSpine(int index, float value[])
 {
 	getSpineField()->get1Value(index, value);
 }
@@ -382,12 +382,12 @@ void ExtrusionNode::getSpine(int index, float value[])
 //	List
 ////////////////////////////////////////////////
 
-ExtrusionNode *ExtrusionNode::next() 
+ExtrusionNode *ExtrusionNode::next()
 {
 	return (ExtrusionNode *)Node::next(getType());
 }
 
-ExtrusionNode *ExtrusionNode::nextTraversal() 
+ExtrusionNode *ExtrusionNode::nextTraversal()
 {
 	return (ExtrusionNode *)Node::nextTraversalByType(getType());
 }
@@ -395,13 +395,13 @@ ExtrusionNode *ExtrusionNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ExtrusionNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ExtrusionNode::initialize() 
+void ExtrusionNode::initialize()
 {
 	if (!isInitialized()) {
 		AddDefaultParameters(this);
@@ -413,11 +413,11 @@ void ExtrusionNode::initialize()
 	}
 }
 
-void ExtrusionNode::uninitialize() 
+void ExtrusionNode::uninitialize()
 {
 }
 
-void ExtrusionNode::update() 
+void ExtrusionNode::update()
 {
 }
 
@@ -425,7 +425,7 @@ void ExtrusionNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void ExtrusionNode::outputContext(ostream &printStream, char *indentString) 
+void ExtrusionNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *beginCap = getBeginCapField();
 	SFBool *endCap = getEndCapField();
@@ -515,7 +515,7 @@ static void initializePoint(ExtrusionNode *ex, SFVec3f *point)
 static void transformPoint(SFVec3f *point, float scale[2], float scp[3][3], float orientation[4], float spine[3])
 {
 	point->scale(scale[0], 1.0f, scale[1]);
-	
+
 	float value[3];
 	point->getValue(value);
 
@@ -565,7 +565,7 @@ static void DrawExtrusion(ExtrusionNode *ex)
 	ex->getSpine(0,			spineStart);
 	ex->getSpine(nSpines-1, spineEnd);
 	bClosed = VectorEquals(spineStart, spineEnd);
-	
+
 	float	scale[2];
 	float	orientation[4];
 	float	spine[3];
@@ -576,13 +576,13 @@ static void DrawExtrusion(ExtrusionNode *ex)
 		initializePoint(ex, point[1]);
 
 		for (int i=0; i<2; i++) {
-			
+
 			if (nScales == 1)
 				ex->getScale(0, scale);
-			else  if ((n+i) < nScales) 
+			else  if ((n+i) < nScales)
 				ex->getScale(n+i, scale);
 			else {
-				scale[0] = 1.0f; 
+				scale[0] = 1.0f;
 				scale[1] = 1.0f;
 			}
 
@@ -591,9 +591,9 @@ static void DrawExtrusion(ExtrusionNode *ex)
 			else if ((n+i) < nOrientations)
 				ex->getOrientation(n+i, orientation);
 			else {
-				orientation[0] = 0.0f; 
-				orientation[1] = 0.0f; 
-				orientation[2] = 1.0f; 
+				orientation[0] = 0.0f;
+				orientation[1] = 0.0f;
+				orientation[2] = 1.0f;
 				orientation[3] = 0.0f;
 			}
 
@@ -658,7 +658,7 @@ static void DrawExtrusion(ExtrusionNode *ex)
 			// SCP X
 			VectorGetCross(scp[1], scp[2], scp[0]);
 
-			for (int j=0; j<nCrossSections; j++)  
+			for (int j=0; j<nCrossSections; j++)
 				transformPoint(&point[i][j], scale, scp, orientation, spine);
 		}
 
@@ -666,13 +666,13 @@ static void DrawExtrusion(ExtrusionNode *ex)
 
 			float	vpoint[3][3];
 			float	normal[3];
-			
-			point[1][k].getValue(vpoint[0]); 
+
+			point[1][k].getValue(vpoint[0]);
 			point[0][k].getValue(vpoint[1]);
 			point[1][(k+1)%nCrossSections].getValue(vpoint[2]);
 			GetNormalFromVertices(vpoint, normal);
 			glNormal3fv(normal);
-			
+
 			SFVec3f	*vertex;
 
 			glBegin(GL_POLYGON);
@@ -711,7 +711,7 @@ static void DrawExtrusion(ExtrusionNode *ex)
 
 	delete []point[0];
 	delete []point[1];
-}		
+}
 
 void ExtrusionNode::recomputeDisplayList()
 {

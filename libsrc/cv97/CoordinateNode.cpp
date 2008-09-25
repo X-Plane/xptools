@@ -10,7 +10,7 @@
 
 #include "CoordinateNode.h"
 
-CoordinateNode::CoordinateNode() 
+CoordinateNode::CoordinateNode()
 {
 	setHeaderFlag(false);
 	setType(coordinateNodeString);
@@ -25,7 +25,7 @@ CoordinateNode::~CoordinateNode() {
 }
 
 ////////////////////////////////////////////////
-//	point 
+//	point
 ////////////////////////////////////////////////
 
 MFVec3f *CoordinateNode::getPointField()
@@ -35,52 +35,52 @@ MFVec3f *CoordinateNode::getPointField()
 	return 	(MFVec3f *)getExposedField(pointFieldString);
 }
 
-void CoordinateNode::addPoint(float point[]) 
+void CoordinateNode::addPoint(float point[])
 {
 	getPointField()->addValue(point);
 }
 
-void CoordinateNode::addPoint(float x, float y, float z) 
+void CoordinateNode::addPoint(float x, float y, float z)
 {
 	getPointField()->addValue(x, y, z);
 }
 
-int CoordinateNode::getNPoints() 
+int CoordinateNode::getNPoints()
 {
 	return getPointField()->getSize();
 }
 
-void CoordinateNode::getPoint(int index, float point[]) 
+void CoordinateNode::getPoint(int index, float point[])
 {
 	getPointField()->get1Value(index, point);
 }
 
-void CoordinateNode::setPoint(int index, float point[]) 
+void CoordinateNode::setPoint(int index, float point[])
 {
 	getPointField()->set1Value(index, point);
 }
 
-void CoordinateNode::setPoint(int index, float x, float y, float z) 
+void CoordinateNode::setPoint(int index, float x, float y, float z)
 {
 	getPointField()->set1Value(index, x, y, z);
 }
 
-void CoordinateNode::removePoint(int index) 
+void CoordinateNode::removePoint(int index)
 {
 	getPointField()->remove(index);
 }
 
-void CoordinateNode::removeLastPoint() 
+void CoordinateNode::removeLastPoint()
 {
 	getPointField()->removeLastObject();
 }
 
-void CoordinateNode::removeFirstPoint() 
+void CoordinateNode::removeFirstPoint()
 {
 	getPointField()->removeFirstObject();
 }
 
-void CoordinateNode::removeAllPoints() 
+void CoordinateNode::removeAllPoints()
 {
 	getPointField()->clear();
 }
@@ -88,21 +88,21 @@ void CoordinateNode::removeAllPoints()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool CoordinateNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void CoordinateNode::initialize() 
+void CoordinateNode::initialize()
 {
 }
 
-void CoordinateNode::uninitialize() 
+void CoordinateNode::uninitialize()
 {
 }
 
-void CoordinateNode::update() 
+void CoordinateNode::update()
 {
 }
 
@@ -110,7 +110,7 @@ void CoordinateNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void CoordinateNode::outputContext(ostream &printStream, char *indentString) 
+void CoordinateNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNPoints()) {
 		MFVec3f *point = getPointField();
@@ -124,12 +124,12 @@ void CoordinateNode::outputContext(ostream &printStream, char *indentString)
 //	List
 ////////////////////////////////////////////////
 
-CoordinateNode *CoordinateNode::next() 
+CoordinateNode *CoordinateNode::next()
 {
 	return (CoordinateNode *)Node::next(getType());
 }
 
-CoordinateNode *CoordinateNode::nextTraversal() 
+CoordinateNode *CoordinateNode::nextTraversal()
 {
 	return (CoordinateNode *)Node::nextTraversalByType(getType());
 }

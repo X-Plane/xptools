@@ -52,8 +52,8 @@ main( int argc, char** argv )
 
    rsdf_record.getSADR( top_left_corner.first,
                         top_left_corner.second );
-   
-//     cout << "top left corner: " 
+
+//     cout << "top left corner: "
 //          << top_left_corner.first << " "
 //          << top_left_corner.second << "\n";
 
@@ -66,14 +66,14 @@ main( int argc, char** argv )
    {
       error( "unable to read IREF module" );
    }
-   
+
    double x_resolution, y_resolution;
 
    iref_record.getXComponentHorizontalResolution( x_resolution );
    iref_record.getYComponentHorizontalResolution( y_resolution );
 
-//     cout << "x resolution: " << x_resolution 
-//          << " y resolution: " << y_resolution 
+//     cout << "x resolution: " << x_resolution
+//          << " y resolution: " << y_resolution
 //          << endl;
 
 
@@ -83,7 +83,7 @@ main( int argc, char** argv )
                                 // get binary converters for
                                 // CELL module
 
-   sio_8211_converter_dictionary converters; 
+   sio_8211_converter_dictionary converters;
 
    if ( ! sb_Utils::addConverters( argv[1], converters ) )
    {
@@ -173,7 +173,7 @@ main( int argc, char** argv )
          {
             cout << top_left_corner.first + (j * x_resolution) << " "
                  << top_left_corner.second + (current_row * y_resolution) << " "
-                 << elevations[j] 
+                 << elevations[j]
                  << endl;
          }
       }

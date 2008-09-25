@@ -56,7 +56,7 @@ struct Project_site_2 {
 };
 
 template < class Gt,
-	   class Agds = Apollonius_graph_data_structure_2 < 
+	   class Agds = Apollonius_graph_data_structure_2 <
                Apollonius_graph_vertex_base_2<Gt,true>,
                Apollonius_graph_face_base_2<Gt> > >
 class Apollonius_graph_2
@@ -95,17 +95,17 @@ private:
   }
 
   Construct_Apollonius_bisector_segment_2
-  construct_Apollonius_bisector_segment_2_object() const { 
-    return Construct_Apollonius_bisector_segment_2(); 
+  construct_Apollonius_bisector_segment_2_object() const {
+    return Construct_Apollonius_bisector_segment_2();
   }
 
   Construct_Apollonius_primal_ray_2
   construct_Apollonius_primal_ray_2_object() const {
-    return Construct_Apollonius_primal_ray_2(); 
+    return Construct_Apollonius_primal_ray_2();
   }
 
   Construct_Apollonius_primal_segment_2
-  construct_Apollonius_primal_segment_2_object() const { 
+  construct_Apollonius_primal_segment_2_object() const {
     return Construct_Apollonius_primal_segment_2();
   }
 
@@ -146,14 +146,14 @@ public:
   // Auxiliary iterators for convenience
   // do not use default template argument to please VC++
   typedef Project_site_2<Vertex>                               Proj_site;
-  typedef Iterator_project<Finite_vertices_iterator, 
+  typedef Iterator_project<Finite_vertices_iterator,
                            Proj_site>
   /*                                           */ Visible_sites_iterator;
 
   typedef
   Apollonius_graph_vertex_base_nested_iterator_traits<
     Finite_vertices_iterator>  Hidden_sites_nested_iterator_traits;
-  
+
 
   typedef Nested_iterator<Finite_vertices_iterator,
 			  Hidden_sites_nested_iterator_traits>
@@ -163,7 +163,7 @@ public:
 			       Hidden_sites_iterator>     Sites_iterator;
 
   typedef Site_2               value_type; // to have a back_inserter
-  typedef const value_type&    const_reference; 
+  typedef const value_type&    const_reference;
   typedef value_type&          reference;
 
 public:
@@ -311,10 +311,10 @@ public:
   }
 
   Finite_edges_iterator finite_edges_begin() const {
-    return DG::finite_edges_begin();    
+    return DG::finite_edges_begin();
   }
   Finite_edges_iterator finite_edges_end() const {
-    return DG::finite_edges_end();    
+    return DG::finite_edges_end();
   }
 
 
@@ -388,7 +388,7 @@ public:
 
   Vertex_circulator
   incident_vertices(Vertex_handle v,
-		    Face_handle f = Face_handle(NULL)) const { 
+		    Face_handle f = Face_handle(NULL)) const {
     return DG::incident_vertices(v, f);
   }
 
@@ -397,7 +397,7 @@ public:
 		 Face_handle f = Face_handle(NULL)) const {
     return DG::incident_edges(v, f);
   }
- 
+
 public:
   // PREDICATES
   //-----------
@@ -521,7 +521,7 @@ public:
       Vertex_handle v2(++finite_vertices_begin());
       Site_2 p1 = v1->site();
       Site_2 p2 = v2->site();
-      
+
 
       typename Geom_traits::Segment_2 seg =
 	construct_Apollonius_primal_segment_2_object()(p1,p2);
@@ -542,7 +542,7 @@ public:
     return str;
   }
 
-  template < class Stream > 
+  template < class Stream >
   Stream& draw_dual(Stream &str) const
   {
     Finite_edges_iterator eit = finite_edges_begin();
@@ -555,7 +555,7 @@ public:
       CGAL::Hyperbola_segment_2<Gt>    hs;
       CGAL::Hyperbola_ray_2<Gt>        hr;
       if (assign(hs, o))  hs.draw(str);
-      if (assign(s, o))   str << s; 
+      if (assign(s, o))   str << s;
       if (assign(hr, o))  hr.draw(str);
       if (assign(r, o))   str << r;
       if (assign(h, o))   h.draw(str);
@@ -594,7 +594,7 @@ public:
   }
 
 
-  template < class Stream > 
+  template < class Stream >
   Stream& draw_dual_edge(const Finite_edges_iterator& eit,
 			 Stream &str) const
   {
@@ -611,7 +611,7 @@ public:
     CGAL::Hyperbola_segment_2<Gt>    hs;
     CGAL::Parabola_segment_2<Gt>     ps;
     if (assign(hs, o))  hs.draw(str);
-    if (assign(s, o))   str << s; 
+    if (assign(s, o))   str << s;
     if (assign(ps, o))  ps.draw(str);
     if (assign(r, o))   str << r;
     //      if (assign(hr, o))  str << hr;
@@ -620,7 +620,7 @@ public:
     return str;
   }
 
-  template < class Stream > 
+  template < class Stream >
   Stream& draw_dual_edge(const Edge& e, Stream &str) const
   {
     if ( is_infinite(e) ) { return str; }
@@ -632,7 +632,7 @@ public:
     CGAL::Hyperbola_segment_2<Gt>    hs;
     CGAL::Hyperbola_ray_2<Gt>        hr;
     if (assign(hs, o))  hs.draw(str);
-    if (assign(s, o))   str << s; 
+    if (assign(s, o))   str << s;
     if (assign(hr, o))  hr.draw(str);
     if (assign(r, o))   str << r;
     if (assign(h, o))   h.draw(str);
@@ -666,7 +666,7 @@ public:
 
 
 protected:
-  template < class Stream > 
+  template < class Stream >
   Stream& draw_dual_sites(Stream &str) const
   {
     All_faces_iterator fit = all_faces_begin();
@@ -681,7 +681,7 @@ protected:
 			       f->vertex(0)->site() );
 	} else {
 	  str << circumcircle( f->vertex(0)->site(),
-			       f->vertex(1)->site() );	  
+			       f->vertex(1)->site() );
 	}
       } else {
 	Site_2 wp = circumcircle(f);
@@ -753,7 +753,7 @@ protected:
 		const Vertex_handle& v2, const Vertex_handle& v) const;
 
 
-  
+
   bool finite_edge_interior(const Site_2& p1,
 			    const Site_2& p2,
 			    const Site_2& p3,
@@ -869,13 +869,13 @@ protected:
 protected:
   // wrappers for constructions
   Point_2 circumcenter(const Face_handle& f) const;
-  Point_2 circumcenter(const Site_2& p0, 
-		       const Site_2& p1, 
+  Point_2 circumcenter(const Site_2& p0,
+		       const Site_2& p1,
 		       const Site_2& p2) const;
 
   Site_2 circumcircle(const Face_handle& f) const;
-  Site_2 circumcircle(const Site_2& p0, 
-		      const Site_2& p1, 
+  Site_2 circumcircle(const Site_2& p0,
+		      const Site_2& p1,
 		      const Site_2& p2) const;
 
   typename Gt::Line_2 circumcircle(const Site_2& p0,

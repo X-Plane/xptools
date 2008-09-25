@@ -31,18 +31,18 @@
 #include <dime/util/Linear.h>
 #include <dime/State.h>
 
-void 
-convert_line(const dimeEntity *entity, const dimeState *state, 
+void
+convert_line(const dimeEntity *entity, const dimeState *state,
 	     dxfLayerData *layerData, dxfConverter *)
 {
   dimeLine *line = (dimeLine*)entity;
-  
+
   dxfdouble thickness;
   dimeVec3f v0, v1;
 
   dimeMatrix matrix;
   state->getMatrix(matrix);
- 
+
   v0 = line->getCoords(0);
   v1 = line->getCoords(1);
 

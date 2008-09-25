@@ -8,8 +8,8 @@
 # include "hash.h"
 # include <assert.h>
 
-/* 
- * hash.c - simple in-memory hashing routines 
+/*
+ * hash.c - simple in-memory hashing routines
  *
  * External routines:
  *
@@ -48,7 +48,7 @@ typedef struct item {
 
 # define MAX_LISTS 32
 
-struct hash 
+struct hash
 {
 	/*
 	 * the hash table, just an array of item pointers
@@ -64,7 +64,7 @@ struct hash
 	/*
 	 * the array of records, maintained by these routines
 	 * essentially a microallocator
-	 */ 
+	 */
 	struct {
 		int more;	/* how many more ITEMs fit in lists[ list ] */
         ITEM *free; /* free list of items */
@@ -111,7 +111,7 @@ hash_free(
 	while(*prev )
     {
         register ITEM* i = *prev;
-	    if( keyval == i->hdr.keyval && 
+	    if( keyval == i->hdr.keyval &&
             !strcmp( i->data.key, data->key ) )
         {
             /* unlink the record from the hash chain */
@@ -159,14 +159,14 @@ hashitem(
 	base = hp->tab.base + ( keyval % hp->tab.nel );
 
 	for( i = *base; i; i = i->hdr.next )
-	    if( keyval == i->hdr.keyval && 
+	    if( keyval == i->hdr.keyval &&
 		!strcmp( i->data.key, (*data)->key ) )
 	{
 		*data = &i->data;
 		return !0;
 	}
 
-	if( enter ) 
+	if( enter )
 	{
         /* try to grab one from the free list */
         if ( hp->items.free )
@@ -202,7 +202,7 @@ static void hashrehash( register struct hash *hp )
 	hp->items.more = i ? 2 * hp->items.nel : hp->inel;
 	hp->items.next = (char *)malloc( hp->items.more * hp->items.size );
     hp->items.free = 0;
-    
+
 	hp->items.lists[i].nel = hp->items.more;
 	hp->items.lists[i].base = hp->items.next;
 	hp->items.nel += hp->items.more;
@@ -225,8 +225,8 @@ static void hashrehash( register struct hash *hp )
 			register ITEM *i = (ITEM *)next;
 			ITEM **ip = hp->tab.base + i->hdr.keyval % hp->tab.nel;
             /* code currently assumes rehashing only when there are no free items */
-            assert( i->data.key != 0 ); 
-            
+            assert( i->data.key != 0 );
+
 			i->hdr.next = *ip;
 			*ip = i;
 		}
@@ -246,7 +246,7 @@ void hashenumerate( struct hash *hp, void (*f)(void*,void*), void* data )
         for( ; nel--; next += hp->items.size )
         {
             register ITEM *i = (ITEM *)next;
-            
+
             if ( i->data.key != 0 ) /* don't enumerate freed items */
                 f(&i->data, data);
         }
@@ -262,7 +262,7 @@ void hashenumerate( struct hash *hp, void (*f)(void*,void*), void* data )
  */
 
 struct hash *
-hashinit( 
+hashinit(
 	int datalen,
 	char *name )
 {
@@ -327,8 +327,8 @@ hashstat( struct hash *hp )
 	}
 
 	printf( "%s table: %d+%d+%d (%dK+%dK) items+table+hash, %f density\n",
-		hp->name, 
-		count, 
+		hp->name,
+		count,
 		hp->items.nel,
 		hp->tab.nel,
 		hp->items.nel * hp->items.size / 1024,

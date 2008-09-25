@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_DIRECTION_2_H
 #define CGAL_DIRECTION_2_H
 

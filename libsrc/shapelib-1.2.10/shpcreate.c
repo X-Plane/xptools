@@ -13,7 +13,7 @@
  * option is discussed in more detail in shapelib.html.
  *
  * --
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -48,7 +48,7 @@
  *
  */
 
-static char rcsid[] = 
+static char rcsid[] =
   "$Id: shpcreate.c,v 1.5 2002/01/15 14:36:07 warmerda Exp $";
 
 #include "shapefil.h"

@@ -14,7 +14,7 @@ void UpdateSwitch(SwitchNode *snode);
 void InitializeSwitch(SwitchNode *snode);
 void UninitializeSwitch(SwitchNode *snode);
 
-SwitchNode::SwitchNode() 
+SwitchNode::SwitchNode()
 {
 	setHeaderFlag(false);
 	setType(switchNodeString);
@@ -24,7 +24,7 @@ SwitchNode::SwitchNode()
 	addField(whichChoiceFieldString, whichChoiceField);
 }
 
-SwitchNode::~SwitchNode() 
+SwitchNode::~SwitchNode()
 {
 }
 
@@ -39,12 +39,12 @@ SFInt32 *SwitchNode::getWhichChoiceField()
 	return (SFInt32 *)getField(whichChoiceFieldString);
 }
 
-void SwitchNode::setWhichChoice(int value) 
+void SwitchNode::setWhichChoice(int value)
 {
 	getWhichChoiceField()->setValue(value);
 }
 
-int SwitchNode::getWhichChoice() 
+int SwitchNode::getWhichChoice()
 {
 	return getWhichChoiceField()->getValue();
 }
@@ -53,12 +53,12 @@ int SwitchNode::getWhichChoice()
 //	List
 ////////////////////////////////////////////////
 
-SwitchNode *SwitchNode::next() 
+SwitchNode *SwitchNode::next()
 {
 	return (SwitchNode *)Node::next(getType());
 }
 
-SwitchNode *SwitchNode::nextTraversal() 
+SwitchNode *SwitchNode::nextTraversal()
 {
 	return (SwitchNode *)Node::nextTraversalByType(getType());
 }
@@ -66,7 +66,7 @@ SwitchNode *SwitchNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool SwitchNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -79,7 +79,7 @@ bool SwitchNode::isChildNodeType(Node *node)
 //	Infomation
 ////////////////////////////////////////////////
 
-void SwitchNode::outputContext(ostream &printStream, char *indentString) 
+void SwitchNode::outputContext(ostream &printStream, char *indentString)
 {
 	printStream << indentString << "\t" << "whichChoice " << getWhichChoice() << endl;
 }
@@ -100,11 +100,11 @@ void UpdateSwitch(SwitchNode *snode)
 		snode->addChildNode(node);
 }
 
-void SwitchNode::update() 
+void SwitchNode::update()
 {
 	UpdateSwitch(this);
 }
-	
+
 ////////////////////////////////////////////////
 //	SwitchNode::initialize
 ////////////////////////////////////////////////
@@ -127,7 +127,7 @@ void InitializeSwitch(SwitchNode *snode)
 */
 }
 
-void SwitchNode::initialize() 
+void SwitchNode::initialize()
 {
 	if (isInitialized() == false) {
 		InitializeSwitch(this);
@@ -150,7 +150,7 @@ void UninitializeSwitch(SwitchNode *snode)
 	snode->removeAllNodeElement();
 }
 
-void SwitchNode::uninitialize() 
+void SwitchNode::uninitialize()
 {
 	if (isInitialized() == true) {
 		UninitializeSwitch(this);

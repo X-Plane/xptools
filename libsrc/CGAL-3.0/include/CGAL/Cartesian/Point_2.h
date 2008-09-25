@@ -98,12 +98,12 @@ public:
   }
 
 
-  Cartesian_const_iterator cartesian_begin() const 
+  Cartesian_const_iterator cartesian_begin() const
   {
     return Cartesian_const_iterator(static_cast<const Point_2* >(this),0);
   }
 
-  Cartesian_const_iterator cartesian_end() const 
+  Cartesian_const_iterator cartesian_end() const
   {
     return Cartesian_const_iterator(static_cast<const Point_2* >(this), 2);
   }

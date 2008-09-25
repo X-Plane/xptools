@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 1993, 1995 Christopher Seiwald.
  *
  * This file is part of Jam - see jam.c for Copyright information.
@@ -24,12 +24,12 @@
  *
  * The approach is this:
  *
- *	If the command is a single line, and shorter than WRTLEN (what we 
+ *	If the command is a single line, and shorter than WRTLEN (what we
  *	believe to be the maximum line length), we just system() it.
  *
- *	If the command is multi-line, or longer than WRTLEN, we write the 
- *	command block to a temp file, splitting long lines (using "-" at 
- *	the end of the line to indicate contiuation), and then source that 
+ *	If the command is multi-line, or longer than WRTLEN, we write the
+ *	command block to a temp file, splitting long lines (using "-" at
+ *	the end of the line to indicate contiuation), and then source that
  *	temp file.  We use special logic to make sure we don't continue in
  *	the middle of a quoted string.
  *
@@ -47,7 +47,7 @@
 char tempnambuf[ L_tmpnam + 1 + 4 ] = {0};
 
 void
-execcmd( 
+execcmd(
 	char *string,
 	void (*func)( void *closure, int status ),
 	void *closure,
@@ -83,7 +83,7 @@ execcmd(
 		(void)tmpnam( tempnambuf + 1 );
 		strcat( tempnambuf, ".com" );
 	    }
-	    
+
 	    /* Open tempfile */
 
 	    if( !( f = fopen( tempnambuf + 1, "w" ) ) )
@@ -158,7 +158,7 @@ execcmd(
 	(*func)( closure, rstat );
 }
 
-int 
+int
 execwait()
 {
 	return 0;

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,13 +31,13 @@ struct	CoordTranslator {
 	Point2	mSrcMax;
 	Point2	mDstMin;
 	Point2	mDstMax;
-	
+
 	Point2	Forward(const Point2& input);
 	Point2	Reverse(const Point2& input);
 };
-	
 
-/* 
+
+/*
  * InsetPolygon
  *
  * Given a CCW polygon (or a segment chain), this routine insets
@@ -48,9 +48,9 @@ struct	CoordTranslator {
  * This routine will handle antennas into the polygon (but not out of the
  * polygon - cut these off) if they are of equal length, and will do its best
  * to cope with very sharp angles in and out and near-colinear sides.
- * 
+ *
  * If you pass in an "antenna function", it will be called any time an extra
- * vertex must be added (introducing a new side).  The newly inserted point's 
+ * vertex must be added (introducing a new side).  The newly inserted point's
  * index is passed in, relative to the changing polygon.  (Meaning on the second
  * call, the index is +1 due to the first call.)
  *
@@ -63,8 +63,8 @@ void	InsetPolygon2(
 				Polygon2&					outChain,
 				void						(* antennaFunc)(int n, void * ref)=NULL,
 				void *						ref = NULL);
-				
-				
+
+
 void	InsetPolygon3(
 				const Polygon3&				inChain,
 				const double *				inRatios,
@@ -78,7 +78,7 @@ void	InsetPolygon3(
  *
  * Given a CCW polygon and a vector of distances to inset the
  * polygon, this routine will calculate the maximum multiplyer
- * for those distances that the polygon may be inset before 
+ * for those distances that the polygon may be inset before
  * the inset polygon becomes non-simple.  At this inset point,
  * at least two adjacent points will be colocated.
  *
@@ -87,13 +87,13 @@ void	InsetPolygon3(
  *
  * WARNING: THIS ROUTINE IS NOT CORRECT!
  *
- * In the following case it will not work: if you create a 
+ * In the following case it will not work: if you create a
  * concave simple polygon (for example, a thick letter H)
- * where concave offshoots would degenerate to triangles that 
+ * where concave offshoots would degenerate to triangles that
  * would be islands in the degeneration, this routine will not
  * catch the islands, and instead return a non-simple polygon.
  *
- * Therefore a precondition of correct insetting is that 
+ * Therefore a precondition of correct insetting is that
  * the maximum simple inset not contain islands!
  *
  * When calculating a ring, collision of the beginning and end
@@ -117,23 +117,23 @@ double	CalcMaxInset(
 void ExtendBoundingSphereToPt(const Point3& p, Sphere3& ioSphere);
 
 
-/* 
+/*
  * ExtendBoundingSphereToSphere
  *
  * Given a sphere, include another one in it.
  *
- */ 
+ */
 void ExtendBoundingSphereToSphere(const Sphere3& newSphere, Sphere3& ioSphere);
 
 /*
  * FastBoundingSphere
  *
- * Given an unsorted list of points this routine calculates an 
+ * Given an unsorted list of points this routine calculates an
  * approximate bounding sphere that contains all of them.  It does not
  * calculate the absolutely smallest bounding sphere (which is very slow)
  * but calculates a very close approximation.
  *
- */ 
+ */
 void	FastBoundingSphere(
 				const vector<Point3>&		inPoints,
 				Sphere3&					outSphere);
@@ -142,7 +142,7 @@ void	FastBoundingSphere(
  * PointInPolygon3
  *
  * Given a reasonably coplanar convex polygon and a point, this function returns
- * true if the point is within the infinitely extended prism defined by the 
+ * true if the point is within the infinitely extended prism defined by the
  * polygon.  This includes points on the polygon.
  *
  */
@@ -160,12 +160,12 @@ bool	PointInPolygon3(
  * curve.  (In this case, the straight line is created with two end points and no
  * intermediate points.)
  *
- * inProtectStart and inProtectEnd are minimum lengths for the first and last 
+ * inProtectStart and inProtectEnd are minimum lengths for the first and last
  * segment in the curve.  This can be crucial when turning a bezier curve
  * into a quad chain - see comments in the implementation for a description
  * of the "pinching" problem.
  *
- */				
+ */
 void	BezierCurve(
 				const Point3&				inStart,
 				const Point3&				inEnd,
@@ -182,7 +182,7 @@ void	BezierCurve(
  * ChainToQuadStrip
  *
  * Given a series of 3-d points defining a line through space and
- * a series of up-vectors and widths, this routine extrudes the 
+ * a series of up-vectors and widths, this routine extrudes the
  * results into a quad strip.
  *
  */
@@ -202,11 +202,11 @@ void	ReverseQuadStrip(
  * the beginning of this strip.  The removed quad stripping
  * always forms vaguely a parallelagram because the routine
  * moves down each side.  The new quad strip's end points are
- * the old one's start points when done.  
+ * the old one's start points when done.
  *
- * If (because the quad strip's end is angled, but its 
+ * If (because the quad strip's end is angled, but its
  * midsections are straight) the quad strip would be inside
- * out after the cut, vertices are dropped to make the quad 
+ * out after the cut, vertices are dropped to make the quad
  * strip regular.
  *
  */
@@ -265,7 +265,7 @@ bool	IntersectLinesAroundJunction(
 
 bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2);
 
-// Given three vectors, if they originated from the same point, and you 
+// Given three vectors, if they originated from the same point, and you
 // rotated counterclockwise from 1, would you hit 2 and then 3?
 bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3);
 
@@ -291,7 +291,7 @@ void	SmoothPolygon(Polygon2& ioPolygon, double smooth_radius, double max_turn_de
 
 
 
-// Calculate the convex hull of a polygon. 
+// Calculate the convex hull of a polygon.
 // NOTE: needs to be rewritten! - BAS
 //			Why?!? - BAS
 void	MakePolygonConvex(Polygon2& ioPolygon);

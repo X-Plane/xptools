@@ -28,9 +28,9 @@ jobject		UrlFile::mUrlGetStreamObject = NULL;
 
 UrlFile::UrlFile()
 {
-	mUrl		= new JString();	
+	mUrl		= new JString();
 	mUrlString	= new JString();
-	
+
 	initialize();
 }
 
@@ -40,7 +40,7 @@ UrlFile::UrlFile()
 
 UrlFile::~UrlFile()
 {
-	delete	mUrl;	
+	delete	mUrl;
 	delete	mUrlString;
 }
 
@@ -77,7 +77,7 @@ void UrlFile::initialize()
 //	UrlFile::getStream
 ////////////////////////////////////////////////////////////
 
-void UrlFile::setUrl(char *urlString)	
+void UrlFile::setUrl(char *urlString)
 {
 	int indexPeriod, indexSlash;
 
@@ -98,7 +98,7 @@ void UrlFile::setUrl(char *urlString)
 
 	char *string = new char[strlen(urlString)+1+1];
 	strcpy(string, urlString);
-	
+
 	if (indexSlash < indexPeriod) {
 		string[indexSlash+1] = '\0';
 	}
@@ -150,7 +150,7 @@ bool UrlFile::getStream(char *urlString)
 				char *newUrlString = new char [strlen(url) + strlen(urlString) + 1];
 				strcpy(newUrlString, url);
 				strcat(newUrlString, urlString);
-				
+
 				jstring	urlValue = NULL;
 
 				urlValue = jniEnv->NewStringUTF(newUrlString);
@@ -176,7 +176,7 @@ bool UrlFile::getStream(char *urlString)
 ////////////////////////////////////////////////////////////
 //	UrlFile::getOutputFilename
 ////////////////////////////////////////////////////////////
-	
+
 char *UrlFile::getOutputFilename()
 {
 	char *urlString = mUrlString->getValue();

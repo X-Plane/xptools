@@ -51,7 +51,7 @@ show_triangulation_edges(Geomview_stream &gv, const Triangulation_2<GT,TDS> &T)
         V[vit] = inum++;
         gv << vit->point() << "\n";
     }
-  
+
     // Finite edges indices.
     for( typename Triangulation_2<GT, TDS>::Edge_iterator
 	  eit = T.edges_begin(); eit != T.edges_end(); ++eit) {
@@ -81,7 +81,7 @@ show_triangulation_faces(Geomview_stream &gv, const Triangulation_2<GT,TDS> &T)
         V[vit] = inum++;
         gv << vit->point();
     }
-  
+
     // Finite faces indices.
     for( typename Triangulation_2<GT, TDS>::Face_iterator
 	  fit = T.faces_begin(); fit != T.faces_end(); ++fit) {

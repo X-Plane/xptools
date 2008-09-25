@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,21 +26,21 @@
 /*
 
 	MemFileUtils - THEORY OF OPERATION
-	
+
 	MemFileUtils is a set of file reading commands designed around memory-mapped or pseudo-memory-mapped files.
-	
+
 	This lib optimizes for:
 	 - Flexibility to read compressed archives.
 	 - Speed via bulk reads or memory mapping.
 	 - Ease of implementation.
-	
+
 	It does not optimize for:
 	 - Handling of very large files.
 	 - Memory and address space consumption.
-	
+
 	Files are managed as ranges of addresses; the entire file is memory mapped or read into memory all at once.
 	MemFileUtils are good for GIS systems where data is spread over multiple files and parsing may be CPU-intensive.
-	
+
 	These utilities are not good for huge files such as extremely large tar balls or large image files.
 
  */
@@ -98,7 +98,7 @@ unsigned long	TextScanner_ExtractUnsignedLong(MFTextScanner * inScanner, int inB
 typedef	bool (* TextScanner_TokenizeFunc_f)(const char * inBegin, const char * inEnd, void * inRef);
 void			TextScanner_TokenizeLine(MFTextScanner * inScanner, const char * inDelim, const char * inTerm, int inMax, TextScanner_TokenizeFunc_f inFunc, void * inRef);
 
-// The string characters are: i = int, s = short, t = char buf, T = STL string, f = float, d = double, space = skip.  
+// The string characters are: i = int, s = short, t = char buf, T = STL string, f = float, d = double, space = skip.
 // Return the number of processed arguments, limited by eitiher format or number of tokens in the line.
 int				TextScanner_FormatScan(MFTextScanner * inScanner, const char * fmt, ...);
 
@@ -151,30 +151,30 @@ typedef int MF_AnalysisLevel;
 inline bool	MF_IsCollection(MF_FileType f) { return f == mf_Directory || f == mf_ZipFile || f == mf_ZipFiles || f == mf_GZTarBall; }
 inline bool	MF_IsSingle(MF_FileType f) 	   { return f == mf_DataFile || f == mf_ZipFile || f == mf_GZFile; }
 
-/* 
+/*
  * MF_IterateDirectory
  *
- * MF_IterateDirectory goes through a real physical directory, providing a 
- * callback for each file or sub directory.  Return false from your callback 
- * to halt scanning.  Returns true if the whole directory is scanned without 
+ * MF_IterateDirectory goes through a real physical directory, providing a
+ * callback for each file or sub directory.  Return false from your callback
+ * to halt scanning.  Returns true if the whole directory is scanned without
  * error.
  *
  */
-bool		
+bool
 MF_IterateDirectory(
-		const char * 	dirPath, 
-		bool (* 		cbFunc)(const char * fileName, bool isDir, void * ref), 
+		const char * 	dirPath,
+		bool (* 		cbFunc)(const char * fileName, bool isDir, void * ref),
 		void * 			ref);
 
-/* 
+/*
  * MF_GetFileType
  *
- * Examine a path to determine what it points to. Three levels of analysis: 
+ * Examine a path to determine what it points to. Three levels of analysis:
  *
  */
-MF_FileType	
+MF_FileType
 MF_GetFileType(
-		const char *		path, 
+		const char *		path,
 		MF_AnalysisLevel 	analysis_level);
 
 
@@ -198,12 +198,12 @@ MF_GetDirectoryBulk(
  * to be used for I/O.  The second is called to add bytes to the file.  The third closes the
  * file.  Return NULL if your open routine fails; return other than the length to be written
  * if your write routine fails.  Either error will halt MF_Untar.  MF_Untar returns true if the
- * whole archive was decompressed successfully. 
+ * whole archive was decompressed successfully.
  *
  */
-bool	
+bool
 MF_Untar(
-		const char * 	path, 
+		const char * 	path,
 		bool 			unzip,
 		void * 	(* 		TarOpenFile_f)	(const char * filename, int filesize, void * tarRef),
 		int		(* 		TarWriteFile_f)	(const char * data, int len, void * tarRef, void * fileRef),

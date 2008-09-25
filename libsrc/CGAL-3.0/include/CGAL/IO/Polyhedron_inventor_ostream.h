@@ -34,7 +34,7 @@ template < class Traits,
 #endif
            class HDS, class Alloc>
 Inventor_ostream_base&
-operator<<( Inventor_ostream_base& out, 
+operator<<( Inventor_ostream_base& out,
             const Polyhedron_3<Traits,Items,HDS,Alloc>& P) {
     File_writer_inventor  writer;
     generic_print_polyhedron( out.os(), P, writer);

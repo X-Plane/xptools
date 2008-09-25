@@ -154,7 +154,7 @@ Bounded_side
 TriangleC2<R>::
 bounded_side(const typename TriangleC2<R>::Point_2 &p) const
 {
-  typename R::Collinear_are_ordered_along_line_2 
+  typename R::Collinear_are_ordered_along_line_2
     collinear_are_ordered_along_line;
   typename R::Orientation_2 orientation;
   Orientation o1 = orientation(vertex(0), vertex(1), p),
@@ -180,7 +180,7 @@ Oriented_side
 TriangleC2<R>::
 oriented_side(const typename TriangleC2<R>::Point_2 &p) const
 {
-  typename R::Collinear_are_ordered_along_line_2 
+  typename R::Collinear_are_ordered_along_line_2
     collinear_are_ordered_along_line;
   typename R::Orientation_2 orientation;
   // depends on the orientation of the vertices
@@ -262,8 +262,8 @@ Bbox_2
 TriangleC2<R>::bbox() const
 {
   typename R::Construct_bbox_2 construct_bbox_2;
-  return construct_bbox_2(vertex(0)) 
-    + construct_bbox_2(vertex(1)) 
+  return construct_bbox_2(vertex(0))
+    + construct_bbox_2(vertex(1))
     + construct_bbox_2(vertex(2));
 }
 
@@ -286,7 +286,7 @@ operator<<(std::ostream &os, const TriangleC2<R> &t)
     case IO::BINARY :
         return os << t[0] << t[1]  << t[2];
     default:
-        return os<< "TriangleC2(" << t[0] << ", " 
+        return os<< "TriangleC2(" << t[0] << ", "
 		 << t[1] << ", " << t[2] <<")";
     }
 }

@@ -1,7 +1,7 @@
 //CGAL
 #include <CGAL/basic.h>
 #include <CGAL/Cartesian.h>
-#include <CGAL/squared_distance_2.h> 
+#include <CGAL/squared_distance_2.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Regular_triangulation_2.h>
 #include <CGAL/Regular_triangulation_vertex_base_2.h>
@@ -10,8 +10,8 @@
 #include <CGAL/Triangulation_face_base_2.h>
 #include <CGAL/Triangulation_euclidean_traits_2.h>
 #include <CGAL/Alpha_shape_2.h>
-#include <CGAL/Alpha_shape_vertex_base_2.h> 
-#include <CGAL/Alpha_shape_face_base_2.h> 
+#include <CGAL/Alpha_shape_vertex_base_2.h>
+#include <CGAL/Alpha_shape_face_base_2.h>
 #include <CGAL/Alpha_shape_euclidean_traits_2.h>
 #include <CGAL/Weighted_alpha_shape_euclidean_traits_2.h>
 #include <CGAL/Weighted_point.h>
@@ -24,7 +24,7 @@ typedef CGAL::Cartesian<Coord_type> Rep;
 typedef Rep::Point_2                Point;
 typedef Rep::Segment_2              Segment;
 typedef Rep::Line_2                 Line;
-typedef Rep::Triangle_2             Triangle; 
+typedef Rep::Triangle_2             Triangle;
 
 typedef Rep::Less_xy_2              Point_compare;
 typedef CGAL::Triangulation_2<Rep>  Triangulation;
@@ -36,7 +36,7 @@ typedef CGAL::Alpha_shape_vertex_base_2<Gt_w>              Av;
 typedef CGAL::Regular_triangulation_vertex_base_2<Gt_w, Av> Av_w;
 typedef CGAL::Regular_triangulation_face_base_2<Gt_w>      Rf_w;
 typedef CGAL::Alpha_shape_face_base_2<Gt_w,Rf_w>           Af_w;
-typedef CGAL::Triangulation_default_data_structure_2<Gt_w,Av_w,Af_w> 
+typedef CGAL::Triangulation_default_data_structure_2<Gt_w,Av_w,Af_w>
                                                            Tds_w;
 typedef CGAL::Regular_triangulation_2<Gt_w,Tds_w>          Rt_w;
 typedef CGAL::Alpha_shape_2<Rt_w>                          Alpha_shape_w;

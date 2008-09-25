@@ -11,8 +11,8 @@
 // file          : include/CGAL/IO/Qt_widget_toolbar.h
 // package       : Qt_widget
 // author(s)     : Ursu Radu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -44,9 +44,9 @@ private:
   CGAL::Qt_widget    *widget;
   QButtonGroup       *button_group;
   int                activebutton;
-  bool               is_active;  
+  bool               is_active;
   int                nr_of_buttons;
-	
+
   CGAL::Qt_widget_get_circle<Rp>       input_circle_layer;
   CGAL::Qt_widget_get_point<Rp>        input_point_layer;
   triangulation_2_edit_weightedpoint<Regular_triangulation>

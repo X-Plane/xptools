@@ -30,7 +30,7 @@ namespace CGAL {
     public:
 
     typedef typename Kernel_traits<Point>::Kernel::FT NT;
-    
+
     private:
 
     Point c;
@@ -42,31 +42,31 @@ namespace CGAL {
 
     	// default constructor
     	Fuzzy_sphere_d() {}
-		
+
 
 	// constructor
-	Fuzzy_sphere_d(Point center, NT radius, NT epsilon=NT(0)) : 
-	c(center), r(radius), eps(epsilon), dim(c.dimension()) 
+	Fuzzy_sphere_d(Point center, NT radius, NT epsilon=NT(0)) :
+	c(center), r(radius), eps(epsilon), dim(c.dimension())
 	{ 	// avoid problems if eps > r
-		if (eps>r) eps=r; 
-	} 
-        	
+		if (eps>r) eps=r;
+	}
+
         bool contains(const Point& p) const {
-		// test whether the squared distance 
-		// between P and c 
+		// test whether the squared distance
+		// between P and c
 		// is at most the squared_radius
 		NT squared_radius = r*r;
-		NT distance=NT(0);		  
-		for (unsigned int i = 0; 
+		NT distance=NT(0);
+		for (unsigned int i = 0;
 		(i < dim) && (distance <= squared_radius); ++i) {
-			distance += 
+			distance +=
 			(c[i]-p[i])*(c[i]-p[i]);
 		}
-		return (distance < squared_radius); 
+		return (distance < squared_radius);
         }
 
-        
-	bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {                          
+
+	bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {
                 // test whether the interior of a sphere
 		// with radius (r-eps) intersects r, i.e.
                 // if the minimal distance of r to c is less than r-eps
@@ -74,30 +74,30 @@ namespace CGAL {
 		NT squared_radius = (r-eps)*(r-eps);
 		for (unsigned int i = 0; (i < dim) && (distance < squared_radius); ++i) {
 			if (c[i] < rectangle->min_coord(i))
-				distance += 
+				distance +=
 				(rectangle->min_coord(i)-c[i])*(rectangle->min_coord(i)-c[i]);
 			if (c[i] > rectangle->max_coord(i))
-				distance += 
+				distance +=
 				(c[i]-rectangle->max_coord(i))*(c[i]-rectangle->max_coord(i));
 		}
 		return (distance < squared_radius);
 	}
 
 
-	bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) 
-        const { 
+	bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle)
+        const {
         // test whether the interior of a sphere
 	// with radius (r+eps) is contained by r, i.e.
-        // if the minimal distance of the boundary of r 
-        // to c is less than r+eps                         
+        // if the minimal distance of the boundary of r
+        // to c is less than r+eps
 	NT distance=NT(0);
-	NT squared_radius = (r+eps)*(r+eps);	
+	NT squared_radius = (r+eps)*(r+eps);
 	for (unsigned int i = 0; (i < dim) && (distance < squared_radius) ; ++i) {
 		if (c[i] <= (rectangle->min_coord(i)+rectangle->max_coord(i))/NT(2))
-			distance += 
+			distance +=
 			(rectangle->max_coord(i)-c[i])*(rectangle->max_coord(i)-c[i]);
 		else
-			distance += 
+			distance +=
 			(c[i]-rectangle->min_coord(i))*(c[i]-rectangle->min_coord(i));
 		}
 		return (distance < squared_radius);
@@ -105,7 +105,7 @@ namespace CGAL {
 
 	~Fuzzy_sphere_d() {}
 
-	
+
 
   }; // class Fuzzy_sphere_d
 

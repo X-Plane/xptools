@@ -25,7 +25,7 @@ class SoundNode : public Node {
 	SFVec3f *directionField;
 	SFVec3f *locationField;
 	SFBool *spatializeField;
-	
+
 public:
 
 	SoundNode();
@@ -56,7 +56,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMinFrontField();
-	
+
 	void setMinFront(float value);
 	float getMinFront();
 
@@ -65,7 +65,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMaxFrontField();
-	
+
 	void setMaxFront(float value);
 	float getMaxFront();
 
@@ -74,7 +74,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMinBackField();
-	
+
 	void setMinBack(float value);
 	float getMinBack();
 
@@ -83,7 +83,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMaxBackField();
-	
+
 	void setMaxBack(float value);
 	float getMaxBack();
 
@@ -92,7 +92,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getIntensityField();
-	
+
 	void setIntensity(float value);
 	float getIntensity();
 
@@ -101,7 +101,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getPriorityField();
-	
+
 	void setPriority(float value);
 	float getPriority();
 
@@ -110,7 +110,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getSpatializeField();
-	
+
 	void setSpatialize(bool value);
 	void setSpatialize(int value);
 	bool getSpatialize();
@@ -125,7 +125,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

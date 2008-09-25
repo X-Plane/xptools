@@ -35,63 +35,63 @@ using std::string;
 /*
 
 	A BRIEF DIGRESSION ON FONT METRICS BY BEN....
-	
+
 	We have to get our terms consistent (if not straight) if we are to have any hope of drawing fonts in the right
 	location.  Some terms:
-	
-	- A "point" is a real-world physical unit...about 1/72th of an inch, more or less...see WikiPedia for more info 
+
+	- A "point" is a real-world physical unit...about 1/72th of an inch, more or less...see WikiPedia for more info
 		than you'd ever want to know.  Since the old CRTs ran at about 72 DPI, a point and a pixel have become
 		somewhat interchangeable to old-school Mac font programmers.
 
 	- A "pixel" is a single phosphor on your screen...one of the "dots" you can see.  The DPI of the monitor tells
 		how big they are.  Most monitors are around 90 DPI, more or less, I think...they used to be more like 72 DPI.
-	
+
 	- A "texel" is a pixel in a texture.  Because OpenGL will draw our fonts almost anywhere, in any shape, including
 		in 3-d, it's not really proper to talk about how m any pixels tall a letter is unless we've very carefully
-		controlled a number of aspects of the OpenGL drawing environment.  However the texture is built by the font 
+		controlled a number of aspects of the OpenGL drawing environment.  However the texture is built by the font
 		manager, so we can speak with total certainty about how many "texels" tall a letter is.
-		
+
 	- The "baseline" of a font is a line of reference that letters "sit on"...if you are in 1st grade and are learning
 		to right, you try to write on the baseline.
-		
-	- Letters that go below the baseline (like 'g' and 'p') are "descenders".  The font "descent" is the distance from 
+
+	- Letters that go below the baseline (like 'g' and 'p') are "descenders".  The font "descent" is the distance from
 		the baseline to the lowest of the descenders.
-		
-	- The "ascent" is the distance from the baseline to the tallest letter.  So the height of an A is the ascent 
+
+	- The "ascent" is the distance from the baseline to the tallest letter.  So the height of an A is the ascent
 		because it's real tall and sits on the baseline.
 
 	- The line height is the distance from one baseline to the next when spacing multiple lines.
-				
+
 	- The point size of the font is the height from the lowest descender to tallest ascender (descent + ascent) in
 		points.
-		
+
 	Now that was a lot of fun but who cares?  Well here's the KEY to understanding the fontmgr's layout:
-	
+
 	The font manager always renders fonts into their textures at a scale of 1 point = 1 texel!
-	
+
 	So...the "point size" you request should be based on roughly how many screen pixels you plan to cover.  Want
 	your 'A' to be about 13 screen pixels?  Well you have to pick the rectangle, but ask for a 13 point font so
 	that your 13 texel A looks good.
-	
+
 	Please note that this doesn't take into account the monitor resolution at all!  If you draw at 1 texel = 1 pixel
 	and draw a 13 point font on a modern monitor, it will look SMALLER than a real-world 13 point font because
-	the font manager never takes the monitor DPI into account.  Heck - the font manager doesn't KNOW the DPI of 
+	the font manager never takes the monitor DPI into account.  Heck - the font manager doesn't KNOW the DPI of
 	your monitor!
-	
+
 	Point sizes are passed into the font manager as unsigned integers - no fractional point sizes for now.
-	
+
 	Line heights and other measurements are given in float point fractional texels.  While a texel is either there
 	or not, we preserve the floating point metrics to provide the most accurate layout of the font.
-	
+
 	OPEN ISSUE: Hrm...the glyphs are rendered with rounding...can we capture that so the metrics match the real
 	texels?  The FreeType manual isn't terribly clear on this.
-	
+
 	A WARNING ABOUT MULTIPLE OPENGL CONTEXTS:
-	
+
 	FontMgr attempts to only build up each font once.  But it cannot tell if you have multiple OpenGL windows.  Therefore
 	if you hvae multiple OpenGL windows you should share your texture contexts between them using the appropriate
 	windowing-system specific stuff.
-	
+
  */
 
 /*
@@ -193,7 +193,7 @@ public:
 	 * you are using OpenGL with "pixels" as a drawing unit.
 	 *
 	 */
-	void	DrawString(	
+	void	DrawString(
 				FontHandle						inFont,
 				float							color[4],	//	4-part color, featuring alpha.
 				float							inX,
@@ -207,7 +207,7 @@ public:
 	 * drawn - even parts that exceed the passed in box.
 	 *
 	 */
-	void	DrawRange(	
+	void	DrawRange(
 				FontHandle						inFont,
 				float							color[4],	//	4-part color, featuring alpha.
 				float							inLeft,
@@ -264,7 +264,7 @@ public:
 				const char *					inStringEnd);
 
 	/******************** FONT METRICS *************************
-	 * 
+	 *
 	 * These routines return the measurements of the font in TEXELS.
 	 * You pass in the point size of the font.  Why?  Well, if you are
 	 * using a scalable font, the point size you asked for may not be
@@ -280,7 +280,7 @@ public:
 	 * Returns the line height - that is the number of texels from
 	 * one baseline to another.
 	 *
-	 */	 
+	 */
 	float	GetLineHeight(
 				FontHandle						inFont,
 				unsigned int					inFontSizePx);

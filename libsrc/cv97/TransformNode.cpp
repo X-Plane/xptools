@@ -10,7 +10,7 @@
 
 #include "TransformNode.h"
 
-TransformNode::TransformNode() 
+TransformNode::TransformNode()
 {
 	setHeaderFlag(false);
 	setType(transformNodeString);
@@ -41,7 +41,7 @@ TransformNode::TransformNode()
 	addExposedField(scaleOrientationField);
 }
 
-TransformNode::~TransformNode() 
+TransformNode::~TransformNode()
 {
 }
 
@@ -56,17 +56,17 @@ SFVec3f *TransformNode::getTranslationField()
 	return (SFVec3f *)getExposedField(translationFieldString);
 }
 
-void TransformNode::setTranslation(float value[]) 
+void TransformNode::setTranslation(float value[])
 {
 	getTranslationField()->setValue(value);
 }
 
-void TransformNode::setTranslation(float x, float y, float z) 
+void TransformNode::setTranslation(float x, float y, float z)
 {
 	getTranslationField()->setValue(x, y, z);
 }
 
-void TransformNode::getTranslation(float value[]) 
+void TransformNode::getTranslation(float value[])
 {
 	getTranslationField()->getValue(value);
 }
@@ -82,17 +82,17 @@ SFVec3f *TransformNode::getScaleField()
 	return (SFVec3f *)getExposedField(scaleFieldString);
 }
 
-void TransformNode::setScale(float value[]) 
+void TransformNode::setScale(float value[])
 {
 	getScaleField()->setValue(value);
 }
 
-void TransformNode::setScale(float x, float y, float z) 
+void TransformNode::setScale(float x, float y, float z)
 {
 	getScaleField()->setValue(x, y, z);
 }
 
-void TransformNode::getScale(float value[]) 
+void TransformNode::getScale(float value[])
 {
 	getScaleField()->getValue(value);
 }
@@ -108,17 +108,17 @@ SFVec3f *TransformNode::getCenterField()
 	return (SFVec3f *)getExposedField(centerFieldString);
 }
 
-void TransformNode::setCenter(float value[]) 
+void TransformNode::setCenter(float value[])
 {
 	getCenterField()->setValue(value);
 }
 
-void TransformNode::setCenter(float x, float y, float z) 
+void TransformNode::setCenter(float x, float y, float z)
 {
 	getCenterField()->setValue(x, y, z);
 }
 
-void TransformNode::getCenter(float value[]) 
+void TransformNode::getCenter(float value[])
 {
 	getCenterField()->getValue(value);
 }
@@ -134,17 +134,17 @@ SFRotation *TransformNode::getRotationField()
 	return (SFRotation *)getExposedField(rotationFieldString);
 }
 
-void TransformNode::setRotation(float value[]) 
+void TransformNode::setRotation(float value[])
 {
 	getRotationField()->setValue(value);
 }
 
-void TransformNode::setRotation(float x, float y, float z, float w) 
+void TransformNode::setRotation(float x, float y, float z, float w)
 {
 	getRotationField()->setValue(x, y, z, w);
 }
 
-void TransformNode::getRotation(float value[]) 
+void TransformNode::getRotation(float value[])
 {
 	getRotationField()->getValue(value);
 }
@@ -160,17 +160,17 @@ SFRotation *TransformNode::getScaleOrientationField()
 	return (SFRotation *)getExposedField(scaleOrientationFieldString);
 }
 
-void TransformNode::setScaleOrientation(float value[]) 
+void TransformNode::setScaleOrientation(float value[])
 {
 	getScaleOrientationField()->setValue(value);
 }
 
-void TransformNode::setScaleOrientation(float x, float y, float z, float w) 
+void TransformNode::setScaleOrientation(float x, float y, float z, float w)
 {
 	getScaleOrientationField()->setValue(x, y, z, w);
 }
 
-void TransformNode::getScaleOrientation(float value[]) 
+void TransformNode::getScaleOrientation(float value[])
 {
 	getScaleOrientationField()->getValue(value);
 }
@@ -179,12 +179,12 @@ void TransformNode::getScaleOrientation(float value[])
 //	List
 ////////////////////////////////////////////////
 
-TransformNode *TransformNode::next() 
+TransformNode *TransformNode::next()
 {
 	return (TransformNode *)Node::next(getType());
 }
 
-TransformNode *TransformNode::nextTraversal() 
+TransformNode *TransformNode::nextTraversal()
 {
 	return (TransformNode *)Node::nextTraversalByType(getType());
 }
@@ -192,7 +192,7 @@ TransformNode *TransformNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool TransformNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -201,16 +201,16 @@ bool TransformNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void TransformNode::initialize() 
+void TransformNode::initialize()
 {
 	recomputeBoundingBox();
 }
 
-void TransformNode::uninitialize() 
+void TransformNode::uninitialize()
 {
 }
 
-void TransformNode::update() 
+void TransformNode::update()
 {
 }
 
@@ -218,7 +218,7 @@ void TransformNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void TransformNode::outputContext(ostream &printStream, char *indentString) 
+void TransformNode::outputContext(ostream &printStream, char *indentString)
 {
 	float vec[3];
 	float rot[4];
@@ -248,29 +248,29 @@ void TransformNode::getSFMatrix(SFMatrix *mOut)
 	SFMatrix	mR;
 	SFMatrix	mS;
 
-	getTranslation(trans); 
+	getTranslation(trans);
 	mT.setTranslation(trans);
 
-	getCenter(center); 
+	getCenter(center);
 	mC.setTranslation(center);
 
 	getRotation(rotation);
 	mR.setRotation(rotation);
 
-	getScaleOrientation(scaleOri); 
+	getScaleOrientation(scaleOri);
 	mSR.setRotation(scaleOri);
 
 	getScale(scale);
 	mS.setScaling(scale);
 
-	getScaleOrientation(scaleOri); 
-	scaleOri[3] = -scaleOri[3]; 
+	getScaleOrientation(scaleOri);
+	scaleOri[3] = -scaleOri[3];
 	mSRI.setRotation(scaleOri);
 
-	getCenter(center); 
-	center[0] = -center[0]; 
-	center[1] = -center[1]; 
-	center[2] = -center[2]; 
+	getCenter(center);
+	center[0] = -center[0];
+	center[1] = -center[1];
+	center[2] = -center[2];
 	mCI.setTranslation(center);
 
 	mOut->init();

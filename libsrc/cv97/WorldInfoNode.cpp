@@ -10,7 +10,7 @@
 
 #include "WorldInfoNode.h"
 
-WorldInfoNode::WorldInfoNode() 
+WorldInfoNode::WorldInfoNode()
 {
 	setHeaderFlag(false);
 	setType(worldInfoNodeString);
@@ -38,13 +38,13 @@ SFString *WorldInfoNode::getTitleField()
 		return titleField;
 	return (SFString *)getField(titleFieldString);
 }
-	
-void WorldInfoNode::setTitle(char *value) 
+
+void WorldInfoNode::setTitle(char *value)
 {
 	getTitleField()->setValue(value);
 }
 
-char *WorldInfoNode::getTitle() 
+char *WorldInfoNode::getTitle()
 {
 	return getTitleField()->getValue();
 }
@@ -60,17 +60,17 @@ MFString *WorldInfoNode::getInfoField()
 	return (MFString *)getField(infoFieldString);
 }
 
-void WorldInfoNode::addInfo(char *value) 
+void WorldInfoNode::addInfo(char *value)
 {
 	getInfoField()->addValue(value);
 }
 
-int WorldInfoNode::getNInfos() 
+int WorldInfoNode::getNInfos()
 {
 	return getInfoField()->getSize();
 }
 
-char *WorldInfoNode::getInfo(int index) 
+char *WorldInfoNode::getInfo(int index)
 {
 	return getInfoField()->get1Value(index);
 }
@@ -79,12 +79,12 @@ char *WorldInfoNode::getInfo(int index)
 //	List
 ////////////////////////////////////////////////
 
-WorldInfoNode *WorldInfoNode::next() 
+WorldInfoNode *WorldInfoNode::next()
 {
 	return (WorldInfoNode *)Node::next(getType());
 }
 
-WorldInfoNode *WorldInfoNode::nextTraversal() 
+WorldInfoNode *WorldInfoNode::nextTraversal()
 {
 	return (WorldInfoNode *)Node::nextTraversalByType(getType());
 }
@@ -92,21 +92,21 @@ WorldInfoNode *WorldInfoNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool WorldInfoNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void WorldInfoNode::initialize() 
+void WorldInfoNode::initialize()
 {
 }
 
-void WorldInfoNode::uninitialize() 
+void WorldInfoNode::uninitialize()
 {
 }
 
-void WorldInfoNode::update() 
+void WorldInfoNode::update()
 {
 }
 
@@ -114,7 +114,7 @@ void WorldInfoNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void WorldInfoNode::outputContext(ostream& printStream, char *indentString) 
+void WorldInfoNode::outputContext(ostream& printStream, char *indentString)
 {
 	SFString *title = getTitleField();
 	printStream << indentString << "\t" << "title " << title << endl;

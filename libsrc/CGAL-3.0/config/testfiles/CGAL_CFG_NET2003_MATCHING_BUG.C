@@ -27,7 +27,7 @@
 // The following documentation will be pasted in the generated configfile.
 // ---------------------------------------------------------------------
 
-//| This flag is set, if the compiler does not match a member 
+//| This flag is set, if the compiler does not match a member
 //| definition to an existing declaration (eg., cl1310 Beta).
 
 #include <iostream>
@@ -49,15 +49,15 @@ class D_Triangulation : public Triangulation_3<Gt, Tds>
   typedef typename Tr_base::Cell_handle   Cell_handle;
   typedef typename Tr_base::Vertex_handle Vertex_handle;
   typedef typename Tr_base::Facet Facet;
-  
-  void make_hole(Vertex_handle, std::vector<Facet>&, 
+
+  void make_hole(Vertex_handle, std::vector<Facet>&,
     std::vector<Cell_handle>&);
-  
+
 };
 
 template <class Gt, class Tds>
 void
-D_Triangulation<Gt, Tds>::make_hole(Vertex_handle v, std::vector<Facet>& f, 
+D_Triangulation<Gt, Tds>::make_hole(Vertex_handle v, std::vector<Facet>& f,
 std::vector<Cell_handle>& g){
   std::cout << "test";
 }

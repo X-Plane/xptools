@@ -94,7 +94,7 @@ public:
   IA & operator-= (const IA &d) { return *this = *this - d; }
   IA & operator*= (const IA &d) { return *this = *this * d; }
   IA & operator/= (const IA &d) { return *this = *this / d; }
-  
+
   static void overlap_action() // throw (unsafe_comparison)
   {
     number_of_failures++;
@@ -143,7 +143,7 @@ public:
     // G++ 2.95 on Linux has problems with HUGE_VAL in template context.
     // (it's a macro defined by "__extension__ ..." and it gets lost.
     return IA(-CGALi::Huge_val, CGALi::Huge_val);
-  } 
+  }
 
   static IA smallest()
   {
@@ -337,8 +337,8 @@ bool
 is_valid (const Interval_nt<Protected> & d)
 {
 #if defined _MSC_VER || defined __sgi || defined __BORLANDC__
-  return CGAL::is_valid(d.inf()) && 
-    CGAL::is_valid(d.sup()) && 
+  return CGAL::is_valid(d.inf()) &&
+    CGAL::is_valid(d.sup()) &&
     d.inf() <= d.sup();
 #else
   // The 2 first is_valid() are implicitely done by the 3rd test ;-)

@@ -19,7 +19,7 @@
 // $Revision: 1.48 $ $Date: 2003/10/21 12:14:56 $
 // $Name: current_submission $
 //
-// Author(s)     : Wieger Wesselink 
+// Author(s)     : Wieger Wesselink
 //                 Michael Hoffmann <hoffmann@inf.ethz.ch>
 
 #ifndef CGAL_CONFIG_H
@@ -133,7 +133,7 @@
 
 //--------------------------------------------------------------------//
 // This addresses a bug in VC++ 7.0 that (re)defines min(a, b)
-// and max(a, b) in windows.h and windef.h 
+// and max(a, b) in windows.h and windef.h
 //-------------------------------------------------------------------//
 
 #ifdef _MSC_VER
@@ -141,10 +141,10 @@
 #endif
 
 //-------------------------------------------------------------------//
-// When the global min and max are no longer defined (as macros) 
-// because of NOMINMAX flag definition, we define our own global 
+// When the global min and max are no longer defined (as macros)
+// because of NOMINMAX flag definition, we define our own global
 // min/max functions to make the Microsoft headers compile. (afxtempl.h)
-// Users that does not want the global min/max 
+// Users that does not want the global min/max
 // should define CGAL_NOMINMAX
 //-------------------------------------------------------------------//
 #include <algorithm>
@@ -159,7 +159,7 @@ using std::max;
 // the MSVC 6.0 and 7.0 compilers cannot deal with function overloading
 // very well, so we have to use specific templating here with the CGAL
 // Polyhedron_3 type in its two different forms (one that is swallowed by
-// MSVC6 and the other by MSVC 7.0). 
+// MSVC6 and the other by MSVC 7.0).
 //----------------------------------------------------------------------//
 
 #if defined(_MSC_VER) && ! defined(__INTEL_COMPILER) && (_MSC_VER < 1310)

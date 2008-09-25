@@ -57,12 +57,12 @@ class Sturm_seq
     {
       // Calculate the greatest common divisor of p(x) and p'(x).
       Polynom<NT> gcd = polynom_gcd<NT> (f0, f1);
-    
+
       if (gcd.deg() >= 0)
       {
-	// Because two polynomials p(x) and p'(x) are not disjoint, then p(x) 
+	// Because two polynomials p(x) and p'(x) are not disjoint, then p(x)
 	// has at least one root with multiplicity >= 1:
-	// First, construct a sequence for the GCD. 
+	// First, construct a sequence for the GCD.
 	next_P = new Sturm_seq<NT> (gcd);
 
 	// We know that q(x) = p(x)/GCD(p(x),p'(x)) has only simple roots,
@@ -84,7 +84,7 @@ class Sturm_seq
     {
       // The next polynomial f[i+2] is defined by -(f[i](x) % f[i+1](x)).
       fs.push_back (-((*fi_P) % (*fi1_P)));
-      
+
       fi_P = fi1_P;
       fi1_P = &(fs.back());
     }
@@ -118,7 +118,7 @@ class Sturm_seq
 	curr_sign = 0;
       else
 	curr_sign = (y > _zero) ? 1 : -1;
-      
+
 
       // Count if there was a sign change.
       if (prev_sign != 0 && curr_sign != prev_sign)
@@ -126,7 +126,7 @@ class Sturm_seq
 
       prev_sign = curr_sign;
     }
-    
+
     // Sum up the result with the number of sign changes in the next sequence.
     if (next_P != NULL)
       return (result + next_P->sign_changes_at_x (x));
@@ -166,7 +166,7 @@ class Sturm_seq
 
       prev_sign = curr_sign;
     }
-            
+
     // Sum up the result with the number of sign changes in the next sequence.
     if (next_P != NULL)
       return (result + next_P->sign_changes_at_infinity(inf));

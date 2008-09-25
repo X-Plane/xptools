@@ -49,29 +49,29 @@
 #include <string.h>
 #include <stdio.h>
 
-PJ_CVSID("$Id: PJ_krovak.c,v 1.4 2002/12/15 22:31:04 warmerda Exp $");	
+PJ_CVSID("$Id: PJ_krovak.c,v 1.4 2002/12/15 22:31:04 warmerda Exp $");
 
 PROJ_HEAD(krovak, "Krovak") "\n\tPCyl., Sph.";
 
 /**
    NOTES: According to EPSG the full Krovak projection method should have
           the following parameters.  Within PROJ.4 the azimuth, and pseudo
-          standard parallel are hardcoded in the algorithm and can't be 
+          standard parallel are hardcoded in the algorithm and can't be
           altered from outside.  The others all have defaults to match the
           common usage with Krovak projection.
 
   lat_0 = latitude of centre of the projection
-         
+
   lon_0 = longitude of centre of the projection
-  
+
   ** = azimuth (true) of the centre line passing through the centre of the projection
 
   ** = latitude of pseudo standard parallel
-   
+
   k  = scale factor on the pseudo standard parallel
-  
+
   x_0 = False Easting of the centre of the projection at the apex of the cone
-  
+
   y_0 = False Northing of the centre of the projection at the apex of the cone
 
  **/
@@ -93,7 +93,7 @@ FORWARD(s_forward); /* spheroid */
 	s90 = 2 * s45;
 	fi0 = P->phi0;    /* Latitude of projection centre 49° 30' */
 
-   /* Ellipsoid is used as Parameter in for.c and inv.c, therefore a must 
+   /* Ellipsoid is used as Parameter in for.c and inv.c, therefore a must
       be set to 1 here.
       Ellipsoid Bessel 1841 a = 6377397.155m 1/f = 299.1528128,
       e2=0.006674372230614;
@@ -168,7 +168,7 @@ INVERSE(s_inverse); /* spheroid */
 	fi0 = P->phi0;    /* Latitude of projection centre 49° 30' */
 
 
-   /* Ellipsoid is used as Parameter in for.c and inv.c, therefore a must 
+   /* Ellipsoid is used as Parameter in for.c and inv.c, therefore a must
       be set to 1 here.
       Ellipsoid Bessel 1841 a = 6377397.155m 1/f = 299.1528128,
       e2=0.006674372230614;
@@ -240,28 +240,28 @@ ENTRY0(krovak)
 
 	ts = pj_param(P->params, "rlat_ts").f;
 	P->C_x = ts;
-	
+
 	/* we want Bessel as fixed ellipsoid */
 	P->a = 6377397.155;
 	P->e = sqrt(P->es = 0.006674372230614);
 
         /* if latitude of projection center is not set, use 49d30'N */
 	if (!pj_param(P->params, "tlat_0").i)
-            P->phi0 = 0.863937979737193; 
+            P->phi0 = 0.863937979737193;
 
         /* if center long is not set use 42d30'E of Ferro - 17d40' for Ferro */
         /* that will correspond to using longitudes relative to greenwich    */
         /* as input and output, instead of lat/long relative to Ferro */
 	if (!pj_param(P->params, "tlon_0").i)
             P->lam0 = 0.7417649320975901 - 0.308341501185665;
-; 
+;
 
         /* if scale not set default to 0.9999 */
 	if (!pj_param(P->params, "tk").i)
             P->k0 = 0.9999;
 
 	/* always the same */
-        P->inv = s_inverse; 
+        P->inv = s_inverse;
 	P->fwd = s_forward;
 
 ENDENTRY(P)

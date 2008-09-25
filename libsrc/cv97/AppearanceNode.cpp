@@ -11,13 +11,13 @@
 #include "AppearanceNode.h"
 #include "TextureNode.h"
 
-AppearanceNode::AppearanceNode() 
+AppearanceNode::AppearanceNode()
 {
 	setHeaderFlag(false);
 	setType(appearanceNodeString);
 }
 
-AppearanceNode::~AppearanceNode() 
+AppearanceNode::~AppearanceNode()
 {
 }
 
@@ -25,12 +25,12 @@ AppearanceNode::~AppearanceNode()
 //	List
 ////////////////////////////////////////////////
 
-AppearanceNode *AppearanceNode::next() 
+AppearanceNode *AppearanceNode::next()
 {
 	return (AppearanceNode *)Node::next(getType());
 }
 
-AppearanceNode *AppearanceNode::nextTraversal() 
+AppearanceNode *AppearanceNode::nextTraversal()
 {
 	return (AppearanceNode *)Node::nextTraversalByType(getType());
 }
@@ -38,7 +38,7 @@ AppearanceNode *AppearanceNode::nextTraversal()
 ////////////////////////////////////////////////
 //	virtual functions
 ////////////////////////////////////////////////
-	
+
 bool AppearanceNode::isChildNodeType(Node *node)
 {
 	if (node->isMaterialNode() || node->isTextureNode() || node->isTextureTransformNode())
@@ -47,19 +47,19 @@ bool AppearanceNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void AppearanceNode::initialize() 
+void AppearanceNode::initialize()
 {
 }
 
-void AppearanceNode::uninitialize() 
+void AppearanceNode::uninitialize()
 {
 }
 
-void AppearanceNode::update() 
+void AppearanceNode::update()
 {
 }
 
-void AppearanceNode::outputContext(ostream &printStream, char *indentString) 
+void AppearanceNode::outputContext(ostream &printStream, char *indentString)
 {
 	MaterialNode *material = getMaterialNodes();
 	if (material != NULL) {
@@ -71,7 +71,7 @@ void AppearanceNode::outputContext(ostream &printStream, char *indentString)
 			material->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "material USE " << material->getName() << endl;
 	}
 
@@ -85,7 +85,7 @@ void AppearanceNode::outputContext(ostream &printStream, char *indentString)
 			texture->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "texture USE " << texture->getName() << endl;
 	}
 
@@ -99,7 +99,7 @@ void AppearanceNode::outputContext(ostream &printStream, char *indentString)
 			textureTransform->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "textureTransform USE " << textureTransform->getName() << endl;
 	}
 }

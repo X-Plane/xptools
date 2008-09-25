@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Line.h
  *
  *  This source file is part of DIME.
@@ -56,12 +56,12 @@ public:
 				       dimeArray <int> &indices,
 				       dimeVec3f &extrusionDir,
 				       dxfdouble &thickness);
-  
+
 protected:
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
                             const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
+
 private:
   dimeVec3f coords[2];
 
@@ -74,7 +74,7 @@ dimeLine::getCoords(const int idx) const
   return this->coords[idx];
 }
 
-inline void 
+inline void
 dimeLine::setCoords(const int idx, const dimeVec3f &v)
 {
   assert(idx ==0 || idx == 1);

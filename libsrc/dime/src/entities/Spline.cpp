@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Spline.cpp
  *
  *  This source file is part of DIME.
@@ -45,11 +45,11 @@
 
 static char entityName[] = "SPLINE";
 
-/*! 
+/*!
   Constructor.
 */
 
-dimeSpline::dimeSpline() 
+dimeSpline::dimeSpline()
 {
   this->flags = dimeSpline::PLANAR;
   this->degree = 3; // FIXME: is this a correct default value
@@ -62,7 +62,7 @@ dimeSpline::dimeSpline()
   this->knots = NULL;
   this->weights = NULL;
   this->controlPoints = NULL;
-  this->fitPoints = NULL;  
+  this->fitPoints = NULL;
 }
 
 /*!
@@ -79,7 +79,7 @@ dimeSpline::~dimeSpline()
 
 /*!
   Returns \e true if the spline has control point weights.
-*/ 
+*/
 
 bool
 dimeSpline::hasWeights() const
@@ -100,7 +100,7 @@ dimeSpline::copy(dimeModel * const model) const
   dimeMemHandler *mh = model->getMemHandler();
   dimeSpline *s = new(mh) dimeSpline;
   if (!s) return NULL;
-  
+
   if (!this->copyRecords(s, model)) {
     // check if allocated on heap.
     if (!mh) delete s;
@@ -145,12 +145,12 @@ dimeSpline::copy(dimeModel * const model) const
       }
     }
   }
-  return s;  
+  return s;
 }
 
 //!
 
-bool 
+bool
 dimeSpline::write(dimeOutput * const file)
 {
   int i;
@@ -180,7 +180,7 @@ dimeSpline::write(dimeOutput * const file)
   file->writeInt16(this->numControlPoints);
   file->writeGroupCode(74);
   file->writeInt16(this->numFitPoints);
-#endif  
+#endif
 
   file->writeGroupCode(42);
   file->writeDouble(this->knotTolerance);
@@ -196,14 +196,14 @@ dimeSpline::write(dimeOutput * const file)
     file->writeGroupCode(40);
     file->writeDouble(this->knots[i]);
   }
-  
+
   if (this->hasWeights()) {
     for (i = 0; i < this->numControlPoints; i++) {
       file->writeGroupCode(41);
       file->writeDouble(this->weights[i]);
     }
   }
-  
+
   for (i = 0; i < this->numControlPoints; i++) {
     file->writeGroupCode(10);
     file->writeDouble(this->controlPoints[i][0]);
@@ -211,7 +211,7 @@ dimeSpline::write(dimeOutput * const file)
     file->writeDouble(this->controlPoints[i][1]);
     file->writeGroupCode(30);
     file->writeDouble(this->controlPoints[i][2]);
-  } 
+  }
   for (i = 0; i < this->numFitPoints; i++) {
     file->writeGroupCode(11);
     file->writeDouble(this->fitPoints[i][0]);
@@ -219,14 +219,14 @@ dimeSpline::write(dimeOutput * const file)
     file->writeDouble(this->fitPoints[i][1]);
     file->writeGroupCode(31);
     file->writeDouble(this->fitPoints[i][2]);
-  } 
-  
+  }
+
   return ret;
 }
 
 //!
 
-int 
+int
 dimeSpline::typeId() const
 {
   return dimeBase::dimeSplineType;
@@ -234,7 +234,7 @@ dimeSpline::typeId() const
 
 //!
 
-bool 
+bool
 dimeSpline::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const mh)
@@ -250,7 +250,7 @@ dimeSpline::handleRecord(const int groupcode,
     if (this->controlPoints && this->cpCnt < this->numControlPoints) {
       this->controlPoints[this->cpCnt][groupcode/10-1] = param.double_data;
     }
-    if (groupcode == 30) cpCnt++; 
+    if (groupcode == 30) cpCnt++;
     return true;
   case 11: // fit points
   case 21:
@@ -338,7 +338,7 @@ dimeSpline::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeSpline::getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index) const
@@ -437,14 +437,14 @@ dimeSpline::countRecords() const
   return cnt + dimeEntity::countRecords();
 }
 
-void 
+void
 dimeSpline::setKnotValues(const dxfdouble * const values, const int numvalues,
 			 dimeMemHandler * const memhandler)
 {
   if (memhandler == NULL && this->numKnots != numvalues) {
     delete [] this->knots;
     this->knots = NULL;
-  } 
+  }
   if (this->knots == NULL || numvalues > this->numKnots) {
     this->knots = ARRAY_NEW(memhandler, dxfdouble, numvalues);
   }
@@ -453,12 +453,12 @@ dimeSpline::setKnotValues(const dxfdouble * const values, const int numvalues,
 }
 
 /*!
-  Sets new control points for this spline. It is the user's 
+  Sets new control points for this spline. It is the user's
   responsibility to update the weights whenever the control
   point are changed.
 */
 
-void 
+void
 dimeSpline::setControlPoints(const dimeVec3f * const pts, const int numpts,
 			    dimeMemHandler * const memhandler)
 {
@@ -466,7 +466,7 @@ dimeSpline::setControlPoints(const dimeVec3f * const pts, const int numpts,
   if (this->hasWeights()) {
     if (memhandler == NULL && this->numControlPoints != numpts) {
       dxfdouble *newweights = ARRAY_NEW(memhandler, dxfdouble, numpts);
-      memcpy(newweights, this->weights, 
+      memcpy(newweights, this->weights,
 	     sizeof(dxfdouble)*DXFMIN(numpts, this->numControlPoints));
       for (int i = this->numControlPoints; i < numpts; i++) {
 	newweights[i] = 1.0;
@@ -500,12 +500,12 @@ dimeSpline::setControlPoints(const dimeVec3f * const pts, const int numpts,
   Sets the weight of control point \a idx.
 */
 
-void 
+void
 dimeSpline::setWeight(const int idx, const dxfdouble w,
 		     dimeMemHandler * const memhandler)
 {
   if (!this->hasWeights() && w != 1.0) {
-    this->weights = ARRAY_NEW(memhandler, dxfdouble, 
+    this->weights = ARRAY_NEW(memhandler, dxfdouble,
 			      this->numControlPoints);
     for (int i = 0; i < this->numControlPoints; i++) {
       this->weights[i] = 1.0;
@@ -517,18 +517,18 @@ dimeSpline::setWeight(const int idx, const dxfdouble w,
   }
 }
 
-void 
+void
 dimeSpline::setFitPoints(const dimeVec3f * const pts, const int numpts,
 			dimeMemHandler * const memhandler)
 {
   if (memhandler == NULL && this->numFitPoints != numpts) {
     delete [] this->fitPoints;
     this->fitPoints = NULL;
-  } 
+  }
   if (this->fitPoints == NULL || numpts > this->numFitPoints) {
     this->fitPoints = ARRAY_NEW(memhandler, dimeVec3f, numpts);
   }
   memcpy(this->fitPoints, pts, numpts*sizeof(dimeVec3f));
-  this->numFitPoints = numpts; 
+  this->numFitPoints = numpts;
 }
 

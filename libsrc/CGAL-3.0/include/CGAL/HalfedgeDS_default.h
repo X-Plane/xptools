@@ -32,9 +32,9 @@ CGAL_BEGIN_NAMESPACE
 
 #ifndef CGAL_CFG_NO_TMPL_IN_TMPL_PARAM
 
-template <class Traits_, class HalfedgeDSItems = HalfedgeDS_items_2, 
+template <class Traits_, class HalfedgeDSItems = HalfedgeDS_items_2,
           class Alloc = CGAL_ALLOCATOR(int)>
-class HalfedgeDS_default 
+class HalfedgeDS_default
     : public HalfedgeDS_list< Traits_, HalfedgeDSItems, Alloc> {
 public:
     typedef Traits_                                          Traits;
@@ -49,7 +49,7 @@ public:
 #else //  CGAL_CFG_NO_TMPL_IN_TMPL_PARAM //
 
 struct HalfedgeDS_default {
-  template <class Traits_, class HalfedgeDSItems = HalfedgeDS_items_2, 
+  template <class Traits_, class HalfedgeDSItems = HalfedgeDS_items_2,
             class Alloc = CGAL_ALLOCATOR(int)>
   class HDS : public HalfedgeDS_list::HDS<Traits_, HalfedgeDSItems, Alloc> {
   public:

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -31,7 +31,7 @@ static const char* ident_ = "$Id: sb_Module.cpp,v 1.8 2002/11/24 22:07:42 mcolet
 
 
 
-bool 
+bool
 sb_Module::getSchema( sio_8211Schema& schema )
 {
                                 // if the schema hasn't been built
@@ -70,9 +70,9 @@ sb_Module::buildSchema_()
    if ( willEmitRecIdenField() )
    {
       schema_().push_front( sio_8211FieldFormat() );
-      schema_().front().setDataStructCode( 
+      schema_().front().setDataStructCode(
          sio_8211FieldFormat::elementary );
-      schema_().front().setDataTypeCode( 
+      schema_().front().setDataTypeCode(
          sio_8211FieldFormat::implicit_point );
       schema_().front().setName( "DDF RECORD IDENTIFER" );
       schema_().front().setTag( "0001" );
@@ -110,7 +110,7 @@ operator<<( ostream& os, sb_Module const& module )
 
 
 sb_ForeignID
-sb_Module::foreignID() const 
+sb_Module::foreignID() const
 {
    return sb_ForeignID( getMnemonic(), getID() );
 } // sb_Module::foreignID() const

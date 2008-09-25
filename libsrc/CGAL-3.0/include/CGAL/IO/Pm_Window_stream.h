@@ -41,11 +41,11 @@ Window_stream & operator << (Window_stream & os,
                              const Planar_map_2<Dcel,Traits> & pm)
 {
   Pm_drawer< Planar_map_2<Dcel,Traits>, Window_stream>  drawer(os);
-  
+
   draw_pm(pm, drawer, os);
 
   return os;
-}  
+}
 
 
 /*template <class Dcel,class Traits>
@@ -59,7 +59,7 @@ Window_stream & operator << (Window_stream & os,
   ++it;++it;
   }
   return os;
-  } */ 
+  } */
 
 CGAL_END_NAMESPACE
 

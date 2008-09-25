@@ -287,7 +287,7 @@ gzfilebuf *gzfilestream_common::rdbuf() {
   return &buffer;
 
 }
-     
+
 gzifstream::gzifstream() :
   ios( gzfilestream_common::rdbuf() )
 {

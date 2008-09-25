@@ -35,9 +35,9 @@ CGAL_BEGIN_NAMESPACE
 namespace CGALi {
 
 template <class K>
-inline 
+inline
 bool
-do_intersect(const typename CGAL_WRAP(K)::Point_2 &pt, 
+do_intersect(const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const typename CGAL_WRAP(K)::Ray_2 &ray,
 	     const K&)
 {
@@ -46,10 +46,10 @@ do_intersect(const typename CGAL_WRAP(K)::Point_2 &pt,
 
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const typename CGAL_WRAP(K)::Ray_2 &ray,
-	     const typename CGAL_WRAP(K)::Point_2 &pt, 
+	     const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const K&)
 {
   return ray.has_on(pt);
@@ -58,7 +58,7 @@ do_intersect(const typename CGAL_WRAP(K)::Ray_2 &ray,
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Point_2 &pt, 
+intersection(const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const typename CGAL_WRAP(K)::Ray_2 &ray,
 	     const K& k)
 {
@@ -71,7 +71,7 @@ intersection(const typename CGAL_WRAP(K)::Point_2 &pt,
 template <class K>
 Object
 intersection(const typename CGAL_WRAP(K)::Ray_2 &ray,
-	     const typename CGAL_WRAP(K)::Point_2 &pt, 
+	     const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const K& k)
 {
   if (do_intersect(pt,ray, k)) {

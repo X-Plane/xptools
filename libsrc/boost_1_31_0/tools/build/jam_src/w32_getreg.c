@@ -34,10 +34,10 @@ builtin_system_registry(
     char const* path = lol_get(frame->args, 0)->string;
     LIST* result = L0;
     HKEY key;
-    
+
     {
         const KeyMap *p;
-        
+
         for (p = dlRootKeys; p->name; ++p)
         {
             int n = strlen(p->name);
@@ -50,25 +50,25 @@ builtin_system_registry(
                 }
             }
         }
-        
+
         key = p->value;
     }
 
     if (
         key != 0
-        && ERROR_SUCCESS == RegOpenKeyEx(key, path, 0, KEY_QUERY_VALUE, &key) 
+        && ERROR_SUCCESS == RegOpenKeyEx(key, path, 0, KEY_QUERY_VALUE, &key)
     )
     {
         DWORD  type, len;
         BYTE   data[MAX_REGISTRY_DATA_LENGTH];
         LIST const* const field = lol_get(frame->args, 1);
-        
+
         if ( ERROR_SUCCESS ==
              RegQueryValueEx(key, field ? field->string : 0, 0, &type, data, &len) )
         {
             switch (type)
             {
-                
+
              case REG_EXPAND_SZ:
                  {
                      long len;
@@ -88,7 +88,7 @@ builtin_system_registry(
                      string_free( expanded );
                  }
                  break;
-            
+
              case REG_MULTI_SZ:
                  {
                      char* s;
@@ -98,7 +98,7 @@ builtin_system_registry(
 
                  }
                  break;
-             
+
              case REG_DWORD:
                  {
                      char buf[100];

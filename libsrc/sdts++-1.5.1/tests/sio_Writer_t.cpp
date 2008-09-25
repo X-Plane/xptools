@@ -42,7 +42,7 @@ build_binary_schema( sio_8211Schema& schema )
   field_format.setDataTypeCode( sio_8211FieldFormat::bit_string );
   field_format.setName( "BOGUS" );
   field_format.setTag( "BLAH" );
-  field_format.setIsRepeating( true ); // hint that this is a _repeating_ 
+  field_format.setIsRepeating( true ); // hint that this is a _repeating_
                                 // binary field, so that the extra
                                 // parenthesis will be added
 
@@ -189,7 +189,7 @@ build_iden_schema( sio_8211Schema& schema )
   field_format.back().setType( sio_8211SubfieldFormat::A );
   field_format.back().setFormat( sio_8211SubfieldFormat::variable );
   field_format.back().setConverter( sio_ConverterFactory::instance()->get( "A" ) );
-   
+
 
 
   // CONFORMANCE field
@@ -317,7 +317,7 @@ build_iden_record( sc_Record& record )
   record.push_back( sc_Field() );
 
   record.back().setMnemonic( "IDEN" );
-   
+
   add_subfield( record.back(), "MODN", "IDEN" );
   add_subfield( record.back(), "RCID", 1 );
   add_subfield( record.back(), "STID", "SPATIAL DATA TRANSFER STANDARD" );
@@ -337,7 +337,7 @@ build_iden_record( sc_Record& record )
   record.push_back( sc_Field() );
 
   record.back().setMnemonic( "CONF" );
-   
+
   add_subfield( record.back(), "FFYN", "Y" );
   add_subfield( record.back(), "VGYN", "Y" );
   add_subfield( record.back(), "GTYN", "Y" );
@@ -349,11 +349,11 @@ build_iden_record( sc_Record& record )
 
 
 
-   
+
 int
 main( int argc, char** argv )
 {
-  if ( argc < 2 ) 
+  if ( argc < 2 )
     {
       cerr << "usage: " << argv[0] << " 8211outfile " <<endl;
       return 1;
@@ -365,7 +365,7 @@ main( int argc, char** argv )
   ofstream ddf( argv[1], ios::out );
 #endif
 
-  if ( ! ddf ) 
+  if ( ! ddf )
     {
       cerr << "couldn't open "
            << argv[1] << endl;
@@ -407,7 +407,7 @@ main( int argc, char** argv )
     {
       exit( 3 );
     }
-        
+
   ddf.close();
 
   exit( 0 );

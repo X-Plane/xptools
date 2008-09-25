@@ -17,19 +17,19 @@ typedef CGAL::Orthogonal_standard_search<TreeTraits> Neighbor_search;
 typedef std::vector<TreeTraits::Point> Vector;
 
 int main() {
-  
+
   const int data_point_number=1000;
   const int bucket_size=5;
-  
+
   typedef std::list<Point> point_list;
   point_list data_points;
 
-  // generate random data points  
+  // generate random data points
   CGAL::Random_points_in_square_2<Point,Creator> g( 1.0);
   CGAL::copy_n( g, data_point_number, std::back_inserter(data_points));
-  
+
   typedef CGAL::Kd_tree<TreeTraits> Tree;
-  // set bucket size 
+  // set bucket size
   TreeTraits tr(bucket_size);
   Tree d(data_points.begin(), data_points.end(),tr);
 
@@ -40,20 +40,20 @@ int main() {
   CGAL::copy_n(h, query_point_number, std::back_inserter(query_points));
 
   std::vector<Neighbor_search::Point_with_distance> the_nearest_neighbors;
-  
-  for (int i=0; i < query_point_number; i++) { 
-     Neighbor_search N(d, query_points[i]); 
+
+  for (int i=0; i < query_point_number; i++) {
+     Neighbor_search N(d, query_points[i]);
      N.the_k_neighbors(std::back_inserter(the_nearest_neighbors));
   }
-  
+
   // report query points q, nearest neighbors and their distance
-  for (int j=0; j < query_point_number; j++) { 
+  for (int j=0; j < query_point_number; j++) {
        std::cout << "q= " << query_points[j] << " ";
        std::cout << "nn= "    << *(the_nearest_neighbors[j].first) << " ";
        std::cout << " d(q, nn)= "
-       << sqrt(the_nearest_neighbors[j].second)  
+       << sqrt(the_nearest_neighbors[j].second)
                  << std::endl;
-  } 
+  }
 
   return 0;
 }

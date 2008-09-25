@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Block.h
  *
  *  This source file is part of DIME.
@@ -45,7 +45,7 @@ class DIME_DLL_API dimeBlock : public dimeEntity
   friend class dimeEntitiesSection;
   friend class dimeInsert;
   friend class dimeModel;
-  
+
 public:
   dimeBlock(dimeMemHandler * const memhandler);
   virtual ~dimeBlock();
@@ -60,7 +60,7 @@ public:
 
   const char *getName() const;
   void setName(const char * const name);
- 
+
   dimeEntity *copy(dimeModel * const model) const;
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
@@ -72,16 +72,16 @@ public:
   virtual int typeId() const;
   virtual int countRecords() const;
 
-protected:  
-  virtual bool handleRecord(const int groupcode, 
+protected:
+  virtual bool handleRecord(const int groupcode,
                             const dimeParam & param,
 			    dimeMemHandler * const memhandler);
-  
+
   virtual void fixReferences(dimeModel * const model);
-  virtual bool traverse(const dimeState * const state, 
+  virtual bool traverse(const dimeState * const state,
                         dimeCallback callback,
                         void *userdata);
-  
+
 private:
   int16 flags;
   const char *name;
@@ -93,18 +93,18 @@ private:
 }; // class dimeBlock
 
 inline const dimeVec3f &
-dimeBlock::getBasePoint() const 
+dimeBlock::getBasePoint() const
 {
   return this->basePoint;
 }
 
-inline void 
+inline void
 dimeBlock::setBasePoint(const dimeVec3f &v)
 {
   this->basePoint = v;
 }
 
-inline int 
+inline int
 dimeBlock::getNumEntities() const
 {
   return this->entities.count();
@@ -123,7 +123,7 @@ dimeBlock::getName() const
   return this->name;
 }
 
-inline void 
+inline void
 dimeBlock::setName(const char * const name)
 {
   this->name = name;

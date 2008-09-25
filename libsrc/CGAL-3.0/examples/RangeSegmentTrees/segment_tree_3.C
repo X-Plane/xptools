@@ -8,17 +8,17 @@
 // Every use of CGAL requires a license. Licenses come in three kinds:
 //
 // - For academic research and teaching purposes, permission to use and
-//   copy the software and its documentation is hereby granted free of  
+//   copy the software and its documentation is hereby granted free of
 //   charge, provided that
 //   (1) it is not a component of a commercial product, and
 //   (2) this notice appears in all copies of the software and
 //       related documentation.
-// - Development licenses grant access to the source code of the library 
-//   to develop programs. These programs may be sold to other parties as 
+// - Development licenses grant access to the source code of the library
+//   to develop programs. These programs may be sold to other parties as
 //   executable code. To obtain a development license, please contact
 //   the CGAL Consortium (at cgal@cs.uu.nl).
 // - Commercialization licenses grant access to the source code and the
-//   right to sell development licenses. To obtain a commercialization 
+//   right to sell development licenses. To obtain a commercialization
 //   license, please contact the CGAL Consortium (at cgal@cs.uu.nl).
 //
 // This software and documentation is provided "as-is" and without
@@ -74,7 +74,7 @@ int main()
   InputList.push_back(Interval(Key(2,6.7,5), Key(4,6.9, 8)));
   InputList.push_back(Interval(Key(2,4.55, 8), Key(5, 7.88, 10)));
   InputList.push_back(Interval(Key(2, 4.66, 5), Key(6, 8.99, 8)));
- 
+
   // creation of the segment tree
   std::list<Interval>::iterator first = InputList.begin();
   std::list<Interval>::iterator last = InputList.end();
@@ -90,8 +90,8 @@ int main()
   std::cerr << "\n window_query (3,4.88, 6),(6, 8.999, 9)\n";
   while(j!=OutputList.end())
   {
-    std::cerr << (*j).first.key_1 << "," << (*j).first.key_2 << ", " 
-	 << (*j).first.key_3 << "-" << (*j).second.key_1 << "," 
+    std::cerr << (*j).first.key_1 << "," << (*j).first.key_2 << ", "
+	 << (*j).first.key_3 << "-" << (*j).second.key_1 << ","
 	 << (*j).second.key_2 << ", " << (*j).second.key_3 << std::endl;
     j++;
   }
@@ -101,8 +101,8 @@ int main()
   std::cerr << "\n enclosing_query(2,6.8,9),(3,7,10)\n";
   while(j!=N.end())
   {
-    std::cerr << (*j).first.key_1 << "," << (*j).first.key_2 << ", " 
-	 << (*j).first.key_3 << "-" << (*j).second.key_1 << "," 
+    std::cerr << (*j).first.key_1 << "," << (*j).first.key_2 << ", "
+	 << (*j).first.key_3 << "-" << (*j).second.key_1 << ","
 	 << (*j).second.key_2 << ", " << (*j).second.key_3 << std::endl;
     j++;
   }

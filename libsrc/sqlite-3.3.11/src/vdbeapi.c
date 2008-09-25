@@ -81,9 +81,9 @@ int sqlite3_value_type(sqlite3_value* pVal){
 ** the function result.
 */
 void sqlite3_result_blob(
-  sqlite3_context *pCtx, 
-  const void *z, 
-  int n, 
+  sqlite3_context *pCtx,
+  const void *z,
+  int n,
   void (*xDel)(void *)
 ){
   assert( n>=0 );
@@ -112,8 +112,8 @@ void sqlite3_result_null(sqlite3_context *pCtx){
   sqlite3VdbeMemSetNull(&pCtx->s);
 }
 void sqlite3_result_text(
-  sqlite3_context *pCtx, 
-  const char *z, 
+  sqlite3_context *pCtx,
+  const char *z,
   int n,
   void (*xDel)(void *)
 ){
@@ -121,25 +121,25 @@ void sqlite3_result_text(
 }
 #ifndef SQLITE_OMIT_UTF16
 void sqlite3_result_text16(
-  sqlite3_context *pCtx, 
-  const void *z, 
-  int n, 
+  sqlite3_context *pCtx,
+  const void *z,
+  int n,
   void (*xDel)(void *)
 ){
   sqlite3VdbeMemSetStr(&pCtx->s, z, n, SQLITE_UTF16NATIVE, xDel);
 }
 void sqlite3_result_text16be(
-  sqlite3_context *pCtx, 
-  const void *z, 
-  int n, 
+  sqlite3_context *pCtx,
+  const void *z,
+  int n,
   void (*xDel)(void *)
 ){
   sqlite3VdbeMemSetStr(&pCtx->s, z, n, SQLITE_UTF16BE, xDel);
 }
 void sqlite3_result_text16le(
-  sqlite3_context *pCtx, 
-  const void *z, 
-  int n, 
+  sqlite3_context *pCtx,
+  const void *z,
+  int n,
   void (*xDel)(void *)
 ){
   sqlite3VdbeMemSetStr(&pCtx->s, z, n, SQLITE_UTF16LE, xDel);
@@ -155,7 +155,7 @@ void sqlite3_result_value(sqlite3_context *pCtx, sqlite3_value *pValue){
 ** statement is completely executed or an error occurs.
 **
 ** This routine implements the bulk of the logic behind the sqlite_step()
-** API.  The only thing omitted is the automatic recompile if a 
+** API.  The only thing omitted is the automatic recompile if a
 ** schema change has occurred.  That detail is handled by the
 ** outer sqlite3_step() wrapper procedure.
 */
@@ -371,9 +371,9 @@ void *sqlite3_get_auxdata(sqlite3_context *pCtx, int iArg){
 ** deleted by calling the delete function specified when it was set.
 */
 void sqlite3_set_auxdata(
-  sqlite3_context *pCtx, 
-  int iArg, 
-  void *pAux, 
+  sqlite3_context *pCtx,
+  int iArg,
+  void *pAux,
   void (*xDelete)(void*)
 ){
   struct AuxData *pAuxData;
@@ -386,7 +386,7 @@ void sqlite3_set_auxdata(
     pVdbeFunc = sqliteRealloc(pVdbeFunc, nMalloc);
     if( !pVdbeFunc ) return;
     pCtx->pVdbeFunc = pVdbeFunc;
-    memset(&pVdbeFunc->apAux[pVdbeFunc->nAux], 0, 
+    memset(&pVdbeFunc->apAux[pVdbeFunc->nAux], 0,
              sizeof(struct AuxData)*(iArg+1-pVdbeFunc->nAux));
     pVdbeFunc->nAux = iArg+1;
     pVdbeFunc->pFunc = pCtx->pFunc;
@@ -401,7 +401,7 @@ void sqlite3_set_auxdata(
 }
 
 /*
-** Return the number of times the Step function of a aggregate has been 
+** Return the number of times the Step function of a aggregate has been
 ** called.
 **
 ** This function is deprecated.  Do not use it for new code.  It is
@@ -451,9 +451,9 @@ static Mem *columnMem(sqlite3_stmt *pStmt, int i){
 }
 
 /*
-** This function is called after invoking an sqlite3_value_XXX function on a 
+** This function is called after invoking an sqlite3_value_XXX function on a
 ** column value (i.e. a value returned by evaluating an SQL expression in the
-** select list of a SELECT statement) that may cause a malloc() failure. If 
+** select list of a SELECT statement) that may cause a malloc() failure. If
 ** malloc() has failed, the threads mallocFailed flag is cleared and the result
 ** code of statement pStmt set to SQLITE_NOMEM.
 **
@@ -663,11 +663,11 @@ const void *sqlite3_column_origin_name16(sqlite3_stmt *pStmt, int N){
 
 
 /******************************* sqlite3_bind_  ***************************
-** 
+**
 ** Routines used to attach values to wildcards in a compiled SQL statement.
 */
 /*
-** Unbind the value bound to variable i in virtual machine p. This is the 
+** Unbind the value bound to variable i in virtual machine p. This is the
 ** the same as binding a NULL value to the column. If the "i" parameter is
 ** out of range, then SQLITE_RANGE is returned. Othewise SQLITE_OK.
 **
@@ -696,10 +696,10 @@ static int vdbeUnbind(Vdbe *p, int i){
 ** Bind a text or BLOB value.
 */
 static int bindText(
-  sqlite3_stmt *pStmt, 
-  int i, 
-  const void *zData, 
-  int nData, 
+  sqlite3_stmt *pStmt,
+  int i,
+  const void *zData,
+  int nData,
   void (*xDel)(void*),
   int encoding
 ){
@@ -726,10 +726,10 @@ static int bindText(
 ** Bind a blob value to an SQL statement variable.
 */
 int sqlite3_bind_blob(
-  sqlite3_stmt *pStmt, 
-  int i, 
-  const void *zData, 
-  int nData, 
+  sqlite3_stmt *pStmt,
+  int i,
+  const void *zData,
+  int nData,
   void (*xDel)(void*)
 ){
   return bindText(pStmt, i, zData, nData, xDel, 0);
@@ -758,21 +758,21 @@ int sqlite3_bind_int64(sqlite3_stmt *pStmt, int i, sqlite_int64 iValue){
 int sqlite3_bind_null(sqlite3_stmt* p, int i){
   return vdbeUnbind((Vdbe *)p, i);
 }
-int sqlite3_bind_text( 
-  sqlite3_stmt *pStmt, 
-  int i, 
-  const char *zData, 
-  int nData, 
+int sqlite3_bind_text(
+  sqlite3_stmt *pStmt,
+  int i,
+  const char *zData,
+  int nData,
   void (*xDel)(void*)
 ){
   return bindText(pStmt, i, zData, nData, xDel, SQLITE_UTF8);
 }
 #ifndef SQLITE_OMIT_UTF16
 int sqlite3_bind_text16(
-  sqlite3_stmt *pStmt, 
-  int i, 
-  const void *zData, 
-  int nData, 
+  sqlite3_stmt *pStmt,
+  int i,
+  const void *zData,
+  int nData,
   void (*xDel)(void*)
 ){
   return bindText(pStmt, i, zData, nData, xDel, SQLITE_UTF16NATIVE);
@@ -790,7 +790,7 @@ int sqlite3_bind_value(sqlite3_stmt *pStmt, int i, const sqlite3_value *pValue){
 
 /*
 ** Return the number of wildcards that can be potentially bound to.
-** This routine is added to support DBD::SQLite.  
+** This routine is added to support DBD::SQLite.
 */
 int sqlite3_bind_parameter_count(sqlite3_stmt *pStmt){
   Vdbe *p = (Vdbe*)pStmt;
@@ -842,7 +842,7 @@ int sqlite3_bind_parameter_index(sqlite3_stmt *pStmt, const char *zName){
   if( p==0 ){
     return 0;
   }
-  createVarMap(p); 
+  createVarMap(p);
   if( zName ){
     for(i=0; i<p->nVar; i++){
       const char *z = p->azVar[i];

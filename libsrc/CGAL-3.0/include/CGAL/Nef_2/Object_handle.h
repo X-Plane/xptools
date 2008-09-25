@@ -60,7 +60,7 @@ public:
   bool assign(T &t) const
   {
 
-      const Handle_wrapper<T> *wp = 
+      const Handle_wrapper<T> *wp =
       	dynamic_cast<const Handle_wrapper<T> *>(Ptr());
       if ( wp == static_cast<Handle_wrapper<T> *>(0) )
       	return false;

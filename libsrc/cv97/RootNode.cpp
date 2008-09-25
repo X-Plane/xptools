@@ -10,20 +10,20 @@
 
 #include "RootNode.h"
 
-RootNode::RootNode() 
+RootNode::RootNode()
 {
 	setHeaderFlag(true);
 	setType(rootNodeString);
 }
 
-RootNode::~RootNode() 
+RootNode::~RootNode()
 {
 }
 
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool RootNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -32,15 +32,15 @@ bool RootNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void RootNode::initialize() 
+void RootNode::initialize()
 {
 }
 
-void RootNode::uninitialize() 
+void RootNode::uninitialize()
 {
 }
 
-void RootNode::update() 
+void RootNode::update()
 {
 }
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,7 +38,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
-    
+
     if( defn->Model == ModelTypeGeographic )
     {
     	outLon = x;
@@ -53,8 +53,8 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 			outLat = y;
 			return true;
 		}
-	}	
-	return false;    
+	}
+	return false;
 }
 
 bool	FetchTIFFCorners(const char * inFileName, double corners[8])
@@ -91,7 +91,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8])
 	        }
 		}
 		GTIFFree(gtif);
-	}    
+	}
 	return retVal;
 }
 
@@ -101,10 +101,10 @@ struct CTABLE *		sNADGrid = NULL;
 static	void	SetupUTMMap(int inZone)
 {
 	if (sUTMProj.find(inZone) != sUTMProj.end()) return;
-	
+
 	char ** args;
 	char	argString[512];
-	projPJ	proj; 
+	projPJ	proj;
 
 //	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=WGS84 ", inZone);
 	sprintf(argString,"+units=m +proj=utm +zone=%d +ellps=clrk66 ", inZone);
@@ -114,7 +114,7 @@ static	void	SetupUTMMap(int inZone)
 	CSLDestroy(args);
 	if (proj != NULL)
 		sUTMProj.insert(hash_map<int, projPJ>::value_type(inZone, proj));
-		
+
 //	sNADGrid = nad_init("conus.bin");
 }
 
@@ -123,18 +123,18 @@ void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 	SetupUTMMap(zone);
 	if (sUTMProj.find(zone) == sUTMProj.end())
 		return;
-	
+
       projUV	sUV;
 
     sUV.u = x;
     sUV.v = y;
-    
+
 //    sUV = nad_cvt(sUV, false, sNADGrid);
 
 	sUV = pj_inv( sUV, sUTMProj[zone]);
 
 	if (outLon) *outLon = sUV.u * RAD_TO_DEG;
-	if (outLat) *outLat = sUV.v * RAD_TO_DEG;	
+	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
 }
 
 
@@ -147,7 +147,7 @@ double	LonLatDistMeters(double lon1, double lat1, double lon2, double lat2)
 	return sqrt(dy * dy  + dx * dx);
 }
 
-double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double lat2, 
+double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double lat2,
 								double deg_to_mtr_x, double deg_to_mtr_y)
 {
 	double dx = lon2 - lon1;
@@ -155,7 +155,7 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 	dy *= (deg_to_mtr_y);
 	dx *= (deg_to_mtr_x);
 	return sqrt(dy * dy  + dx * dx);
-	
+
 }
 
 
@@ -173,18 +173,18 @@ void	CreateTranslatorForPolygon(
 		trans.mSrcMax.x = max(trans.mSrcMax.x, poly[n].x);
 		trans.mSrcMax.y = max(trans.mSrcMax.y, poly[n].y);
 	}
-	
+
 	trans.mDstMin.x = 0.0;
 	trans.mDstMax.x = 0.0;
 	trans.mDstMax.x = (trans.mSrcMax.x - trans.mSrcMin.x) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y + trans.mSrcMax.y) * 0.5 * DEG_TO_RAD);
 	trans.mDstMax.y = (trans.mSrcMax.y - trans.mSrcMin.y) * DEG_TO_MTR_LAT;
-}					
+}
 
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
 	double lon_delta = p.x - ref.x;
 	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
-	
+
 	dir.dx = sin(real_heading * DEG_TO_RAD);
 	dir.dy = cos(real_heading * DEG_TO_RAD);
 }
@@ -195,14 +195,14 @@ double VectorDegs2NorthHeading(const Point2& ref, const Point2& p, const Vector2
 	double h = atan2(dx, dir.dy) * RAD_TO_DEG;
 	if (h < 0.0) h += 360.0;
 	double lon_delta = p.x - ref.x;
-	return h + lon_delta * sin(p.y * DEG_TO_RAD);	
+	return h + lon_delta * sin(p.y * DEG_TO_RAD);
 }
 
 void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
 	double lon_delta = p.x - ref.x;
 	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
-	
+
 	dir.dx = sin(real_heading * DEG_TO_RAD) / cos (ref.y * DEG_TO_RAD);
 	dir.dy = cos(real_heading * DEG_TO_RAD);
 }
@@ -212,7 +212,7 @@ double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vecto
 	double h = atan2(dir.dx, dir.dy) * RAD_TO_DEG;
 	if (h < 0.0) h += 360.0;
 	double lon_delta = p.x - ref.x;
-	return h + lon_delta * sin(p.y * DEG_TO_RAD);	
+	return h + lon_delta * sin(p.y * DEG_TO_RAD);
 }
 
 
@@ -222,7 +222,7 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts)
 	{
 		pts->y = ref.y + pts->y * MTR_TO_DEG_LAT;
 		pts->x = ref.x + pts->x * MTR_TO_DEG_LAT / cos(pts->y * DEG_TO_RAD);
-		
+
 		++pts;
 	}
 }
@@ -264,12 +264,12 @@ void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4])
 	dir.normalize();
 	Vector2 right(dir.perpendicular_cw());
 	Point2 zero;
-		
+
 	corners[0] = zero - right * width_mtr * 0.5;
 	corners[1] = zero - right * width_mtr * 0.5;
 	corners[2] = zero + right * width_mtr * 0.5;
 	corners[3] = zero + right * width_mtr * 0.5;
-	
+
 	MetersToLLE(ends[0], 1, corners  );
 	MetersToLLE(ends[1], 2, corners+1);
 	MetersToLLE(ends[0], 1, corners+3);
@@ -279,27 +279,27 @@ void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr)
 {
 	ends[0] = Segment2(corners[0],corners[3]).midpoint(0.5);
 	ends[1] = Segment2(corners[1],corners[2]).midpoint(0.5);
-	
+
 	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
 	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
-	
+
 	width_mtr = sqrt(VectorLLToMeters(Segment2(side1,side2).midpoint(),Vector2(side1,side2)).squared_length());
 }
 
 void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_mtr, Point2 corners[4])
 {
 	Vector2		dir;
-	
-	NorthHeading2VectorMeters(ctr, ctr, heading,dir);	
+
+	NorthHeading2VectorMeters(ctr, ctr, heading,dir);
 	dir.normalize();
 	Vector2 right(dir.perpendicular_cw());
-	
-	Point2	zero(0,0);	
+
+	Point2	zero(0,0);
 	corners[0] = zero - dir * len_mtr * 0.5 - right * width_mtr * 0.5;
 	corners[1] = zero + dir * len_mtr * 0.5 - right * width_mtr * 0.5;
 	corners[2] = zero + dir * len_mtr * 0.5 + right * width_mtr * 0.5;
 	corners[3] = zero - dir * len_mtr * 0.5 + right * width_mtr * 0.5;
-	
+
 	MetersToLLE(ctr, 4, corners);
 }
 
@@ -307,13 +307,13 @@ void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& le
 {
 	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
 	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
-	
+
 	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
 	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
 
 	ctr.x = (corners[0].x  + corners[1].x  + corners[2].x + corners[3].x) * 0.25;
 	ctr.y = (corners[0].y  + corners[1].y  + corners[2].y + corners[3].y) * 0.25;
-	
+
 	heading = VectorDegs2NorthHeading(ctr,ends1,Vector2(ends1,ends2));
 	width_mtr = sqrt(VectorLLToMeters(ctr,Vector2(side1, side2)).squared_length());
 	len_mtr = sqrt(VectorLLToMeters(ctr,Vector2(ends1, ends2)).squared_length());
@@ -331,31 +331,31 @@ void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_m
 void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2])
 {
 	Vector2		dir;
-	
-	NorthHeading2VectorMeters(ctr, ctr, heading,dir);	
+
+	NorthHeading2VectorMeters(ctr, ctr, heading,dir);
 	dir.normalize();
-	
-	Point2	zero(0,0);	
+
+	Point2	zero(0,0);
 	ends[0] = zero - dir * len_mtr * 0.5;
 	ends[1] = zero + dir * len_mtr * 0.5;
-	
-	MetersToLLE(ctr, 2, ends);	
+
+	MetersToLLE(ctr, 2, ends);
 }
 
 void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped)
 {
 	double diag_len = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
 	len_mtr = sqrt(diag_len * diag_len - width_mtr * width_mtr);
-	
+
 	double diag_heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
-	
+
 	double offset = asin(width_mtr / diag_len) * RAD_TO_DEG;
 
 	if (swapped)
 		heading = diag_heading + offset;
 	else
 		heading = diag_heading - offset;
-	
+
 	ctr.x = (ends[0].x + ends[1].x) * 0.5;
 	ctr.y = (ends[0].y + ends[1].y) * 0.5;
 }
@@ -371,28 +371,28 @@ void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& 
 		Quad_2to1(ends, ctr, h, len);
 		swap(width_mtr,len);
 		h-= 90.0;
-		Quad_1to2(ctr,h,len,ends);		
+		Quad_1to2(ctr,h,len,ends);
 
 		Quad_MoveSide2(ends, width_mtr, side+1, delta);
 
 		Quad_2to1(ends, ctr, h, len);
 		swap(width_mtr,len);
 		h+= 90.0;
-		Quad_1to2(ctr,h,len,ends);		
+		Quad_1to2(ctr,h,len,ends);
 
 		return;
 	}
-	
+
 	if (side == 1) ends[1] += delta;
 	if (side == 3) ends[0] += delta;
-	
+
 }
 
 void Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool symetric)
 {
 	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
 	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
-	
+
 	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
 	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
 
@@ -405,7 +405,7 @@ void Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool sym
 	}
 	dir.normalize();
 	Vector2	real_move = dir.projection(move);
-	
+
 	corners[side] += real_move;
 	corners[(side+1)%4] += real_move;
 
@@ -414,29 +414,29 @@ void Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool sym
 		corners[(side+2)%4] -= real_move;
 		corners[(side+3)%4] -= real_move;
 	}
-	
+
 }
 
 void Quad_ResizeCorner1(Point2& ctr, double heading, double& l, double& w, int corner, const Vector2& move, bool symetric)
 {
 	if (!symetric) ctr += (move * 0.5);
-	
+
 	Vector2	move_mtrs = VectorLLToMeters(ctr, move);
 	Vector2	axis;
 	NorthHeading2VectorMeters(ctr, ctr, heading, axis);
 	Vector2	right = axis.perpendicular_cw();
-	
+
 	if (corner == 0 || corner == 3) axis = -axis;
 	if (corner == 0 || corner == 1) right = -right;
-	
+
 	Vector2	move_axis = axis.projection(move_mtrs);
 	Vector2	move_right = right.projection(move_mtrs);
-	
+
 	double ascale = symetric ? 2.0  : 1.0;
 	double rscale = symetric ? 2.0  : 1.0;
 	if (axis.dot(move_axis) < 0.0) ascale = -ascale;
 	if (right.dot(move_right) < 0.0) rscale = -rscale;
-	
+
 	l += (ascale * sqrt(move_axis.squared_length()));
 	w += (rscale * sqrt(move_right.squared_length()));
 }

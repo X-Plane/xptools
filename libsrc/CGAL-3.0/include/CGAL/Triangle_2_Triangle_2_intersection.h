@@ -36,7 +36,7 @@ CGAL_BEGIN_NAMESPACE
 template <class K>
 inline
 Object
-intersection(const Triangle_2<K> &tr1, 
+intersection(const Triangle_2<K> &tr1,
 	     const Triangle_2<K>& tr2)
 {
   return CGALi::intersection(tr1, tr2, K());

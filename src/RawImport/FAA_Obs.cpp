@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -42,7 +42,7 @@ const char *	gObsNames [] = {
 	"CTRL TWR",
 	"T-L TWR",
 	"ELEVATOR",
-	"WINDMILL",		
+	"WINDMILL",
 	"RIG",
 	"STACK",
 	"REFINERY",
@@ -95,7 +95,7 @@ static	int		kFeatureTypes [] = {
 	NO_VALUE,		// "BALLOON",
 	feat_Dam,
 	0
-};	
+};
 
 static	int	kConvertLegacyObjTypes[] = {
 	NO_VALUE,
@@ -139,13 +139,13 @@ bool	LoadFAARadarFile(const char * inFile, bool isApproach)
 	MFMemFile *	f = NULL;
 	MFTextScanner * s = NULL;
 	bool		ok = false;
-	
+
 	f = MemFile_Open(inFile);
 	if (f == NULL) goto bail;
-	
+
 	s = TextScanner_Open(f);
 	if (s == NULL) goto bail;
-	
+
 	while (!TextScanner_IsDone(s))
 	{
 		const char * c = TextScanner_GetBegin(s);
@@ -158,16 +158,16 @@ bool	LoadFAARadarFile(const char * inFile, bool isApproach)
 		if (*c == '_') { TextScanner_Next(s); break; }
 		TextScanner_Next(s);
 	}
-	
+
 	while (!TextScanner_IsDone(s))
 	{
 		FAAObs_t	obs;
 
 		const char * lp = TextScanner_GetBegin(s);
 		int o = isApproach ? 46 : 59;
-		if (lp[59] != ' ') 
+		if (lp[59] != ' ')
 		{
-		
+
 			double lat_deg_tens = lp[o  ] - '0';
 			double lat_deg_ones = lp[o+1] - '0';
 			double lat_min_tens = lp[o+3] - '0';
@@ -176,8 +176,8 @@ bool	LoadFAARadarFile(const char * inFile, bool isApproach)
 			double lat_sec_ones = lp[o+7] - '0';
 			double lat_hun_tens = lp[o+9] - '0';
 			double	neg = (lp[o+10] != 'S') ? 1.0 : -1.0;
-			
-			obs.lat = neg * (lat_deg_tens * 10.0 + 
+
+			obs.lat = neg * (lat_deg_tens * 10.0 +
 							 lat_deg_ones *  1.0 +
 							 lat_min_tens * 10.0 / 60.0 +
 							 lat_min_ones *  1.0 / 60.0 +
@@ -195,9 +195,9 @@ bool	LoadFAARadarFile(const char * inFile, bool isApproach)
 			double lon_sec_ones = lp[o+8] - '0';
 			double lon_hun_tens = lp[o+10] - '0';
 			neg = (lp[o+11] == 'E') ? 1.0 : -1.0;
-			
-			obs.lon = neg * (lon_deg_huns * 100.0 + 
-							 lon_deg_tens * 10.0 + 
+
+			obs.lon = neg * (lon_deg_huns * 100.0 +
+							 lon_deg_tens * 10.0 +
 							 lon_deg_ones *  1.0 +
 							 lon_min_tens * 10.0 / 60.0 +
 							 lon_min_ones *  1.0 / 60.0 +
@@ -228,10 +228,10 @@ bool	LoadFAARadarFile(const char * inFile, bool isApproach)
 #endif
 		}
 		TextScanner_Next(s);
-	}	
-	
+	}
+
 	ok = true;
-	
+
 bail:
 	if (f) MemFile_Close(f);
 	if (s) TextScanner_Close(s);
@@ -241,24 +241,24 @@ bail:
 
 
 bool	LoadFAAObsFile(const char * inFile)
-{	
+{
 	MFMemFile *	f = NULL;
 	MFTextScanner * s = NULL;
 	bool		ok = false;
-	
+
 	f = MemFile_Open(inFile);
 	if (f == NULL) goto bail;
-	
+
 	s = TextScanner_Open(f);
 	if (s == NULL) goto bail;
-	
+
 	while (!TextScanner_IsDone(s))
 	{
 		const char * c = TextScanner_GetBegin(s);
 		if (*c == '-') { TextScanner_Next(s); break; }
 		TextScanner_Next(s);
 	}
-	
+
 	while (!TextScanner_IsDone(s))
 	{
 		FAAObs_t	obs;
@@ -268,9 +268,9 @@ bool	LoadFAAObsFile(const char * inFile)
 			obs.kind = 0;
 		else
 			obs.kind = GetObjType(obs.kind_str.c_str());
-		
+
 		obs.kind = kFeatureTypes[obs.kind];
-		
+
 		const char * lp = TextScanner_GetBegin(s);
 		double lat_deg_tens = lp[29] - '0';
 		double lat_deg_ones = lp[30] - '0';
@@ -281,8 +281,8 @@ bool	LoadFAAObsFile(const char * inFile)
 		double lat_hun_tens = lp[38] - '0';
 		double lat_hun_ones = lp[39] - '0';
 		double	neg = (lp[40] != 'S') ? 1.0 : -1.0;
-		
-		obs.lat = neg * (lat_deg_tens * 10.0 + 
+
+		obs.lat = neg * (lat_deg_tens * 10.0 +
 						 lat_deg_ones *  1.0 +
 						 lat_min_tens * 10.0 / 60.0 +
 						 lat_min_ones *  1.0 / 60.0 +
@@ -301,9 +301,9 @@ bool	LoadFAAObsFile(const char * inFile)
 		double lon_hun_tens = lp[53] - '0';
 		double lon_hun_ones = lp[54] - '0';
 		neg = (lp[55] == 'E') ? 1.0 : -1.0;
-		
-		obs.lon = neg * (lon_deg_huns * 100.0 + 
-						 lon_deg_tens * 10.0 + 
+
+		obs.lon = neg * (lon_deg_huns * 100.0 +
+						 lon_deg_tens * 10.0 +
 						 lon_deg_ones *  1.0 +
 						 lon_min_tens * 10.0 / 60.0 +
 						 lon_min_ones *  1.0 / 60.0 +
@@ -316,17 +316,17 @@ bool	LoadFAAObsFile(const char * inFile)
 
 		gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 
-#if 0	//DEV	
+#if 0	//DEV
 		printf("   %lf,%lf   %f (%f)    %d (%s)       '%s' (%s)\n",
 			obs.lon, obs.lat, obs.msl, obs.agl,
 			obs.kind, FetchTokenString(obs.kind),
 			obs.kind_str.c_str(), obs.freq.c_str());
 #endif
 		TextScanner_Next(s);
-	}	
-	
+	}
+
 	ok = true;
-	
+
 bail:
 	if (f) MemFile_Close(f);
 	if (s) TextScanner_Close(s);
@@ -382,10 +382,10 @@ bool	ReadDegFile(const char * inFile)
 		}
 		TextScanner_Next(s);
 	}
-		
+
 	ok = true;
 bail:
-	if (s) TextScanner_Close(s);	
+	if (s) TextScanner_Close(s);
 	if (f) MemFile_Close(f);
 	return ok;
 }
@@ -403,8 +403,8 @@ bool	ReadAPTNavAsObs(const char * inFile)
 
 	f = MemFile_Open(inFile);		if (f == NULL) goto bail;
 	s = TextScanner_Open(f);	if (s == NULL) goto bail;
-	
-	
+
+
 	while (!TextScanner_IsDone(s))
 	{
 		if (TextScanner_FormatScan(s, "i", &rec_type) == 1)
@@ -424,10 +424,10 @@ bool	ReadAPTNavAsObs(const char * inFile)
 					obs.lat = lat;
 					obs.lon = lon;
 					obs.agl = obs.msl = DEM_NO_DATA;
-					gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));					
+					gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 				}
 				break;
-				
+
 			case 19:
 				if (TextScanner_FormatScan(s, "idd", &rec_type, &lat, &lon) == 3)
 				{
@@ -490,7 +490,7 @@ bool	LoadLegacyObjectArchive(const char * inFile)
 			obs.lon = lon;
 			obs.kind = kConvertLegacyObjTypes[kind];
 			if (obs.kind != NO_VALUE)
-				gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));		
+				gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 		}
 	}
 	MemFile_Close(f);
@@ -500,7 +500,7 @@ bool	LoadLegacyObjectArchive(const char * inFile)
 void ApplyObjects(Pmwx& ioMap)
 {
 	if (gFAAObs.empty()) return;
-	
+
 	Point2	sw, ne;
 	CalcBoundingBox(ioMap, sw, ne);
  	ioMap.Index();
@@ -521,21 +521,21 @@ void ApplyObjects(Pmwx& ioMap)
 				else
 					++n;
 			}
-			
+
 			if (v.size() > 0)
 			{
 				GISPointFeature_t	feat;
 				feat.mFeatType = i->second.kind;
 				feat.mLocation = loc;
 				if (i->second.agl != DEM_NO_DATA)
-					feat.mParams[pf_Height] = i->second.agl;				
-				feat.mInstantiated = false;			
-				v[0]->mPointFeatures.push_back(feat);		
+					feat.mParams[pf_Height] = i->second.agl;
+				feat.mInstantiated = false;
+				v[0]->mPointFeatures.push_back(feat);
 				++placed;
 #if 0
 				printf("Placed %s at %lf, %lf\n",
 					FetchTokenString(i->second.kind), i->second.lon, i->second.lat);
-#endif		
+#endif
 			if (v.size() > 1)
 				fprintf(stderr,"WARNING (%d,%d): Point feature %lf, %lf matches multiple areas.\n",gMapWest, gMapSouth, loc.x, loc.y);
 			}

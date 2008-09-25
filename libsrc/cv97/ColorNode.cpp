@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "ColorNode.h"
 
-ColorNode::ColorNode() 
+ColorNode::ColorNode()
 {
 	setHeaderFlag(false);
 	setType(colorNodeString);
@@ -22,7 +22,7 @@ ColorNode::ColorNode()
 	addExposedField(colorField);
 }
 
-ColorNode::~ColorNode() 
+ColorNode::~ColorNode()
 {
 }
 
@@ -36,18 +36,18 @@ MFColor *ColorNode::getColorField()
 		return colorField;
 	return (MFColor *)getExposedField(colorFieldString);
 }
-	
-void ColorNode::addColor(float color[]) 
+
+void ColorNode::addColor(float color[])
 {
 	getColorField()->addValue(color);
 }
 
-int ColorNode::getNColors() 
+int ColorNode::getNColors()
 {
 	return getColorField()->getSize();
 }
 
-void ColorNode::getColor(int index, float color[]) 
+void ColorNode::getColor(int index, float color[])
 {
 	getColorField()->get1Value(index, color);
 }
@@ -55,21 +55,21 @@ void ColorNode::getColor(int index, float color[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ColorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ColorNode::initialize() 
+void ColorNode::initialize()
 {
 }
 
-void ColorNode::uninitialize() 
+void ColorNode::uninitialize()
 {
 }
 
-void ColorNode::update() 
+void ColorNode::update()
 {
 }
 
@@ -77,9 +77,9 @@ void ColorNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void ColorNode::outputContext(ostream &printStream, char *indentString) 
+void ColorNode::outputContext(ostream &printStream, char *indentString)
 {
-	if (0 < getNColors()) { 
+	if (0 < getNColors()) {
 		MFColor *color = getColorField();
 		printStream <<  indentString << "\t" << "color ["  << endl;
 		color->MField::outputContext(printStream, indentString, "\t\t");
@@ -91,12 +91,12 @@ void ColorNode::outputContext(ostream &printStream, char *indentString)
 //	List
 ////////////////////////////////////////////////
 
-ColorNode *ColorNode::next() 
+ColorNode *ColorNode::next()
 {
 	return (ColorNode *)Node::next(getType());
 }
 
-ColorNode *ColorNode::nextTraversal() 
+ColorNode *ColorNode::nextTraversal()
 {
 	return (ColorNode *)Node::nextTraversalByType(getType());
 }

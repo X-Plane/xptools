@@ -12,59 +12,59 @@
 #include "JNode.h"
 #include "Node.h"
 
-SFNode::SFNode() 
+SFNode::SFNode()
 {
 	setType(fieldTypeSFNode);
 	setValue((Node *)NULL);
 	InitializeJavaIDs();
 }
 
-SFNode::SFNode(Node *value) 
+SFNode::SFNode(Node *value)
 {
 	setType(fieldTypeSFNode);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFNode::SFNode(SFNode *value) 
+SFNode::SFNode(SFNode *value)
 {
 	setType(fieldTypeSFNode);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFNode::InitializeJavaIDs() 
+void SFNode::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-SFNode::~SFNode() 
+SFNode::~SFNode()
 {
 }
 
-void SFNode::setValue(Node *value) 
+void SFNode::setValue(Node *value)
 {
 	mValue = value;
 }
 
-void SFNode::setValue(SFNode *value) 
+void SFNode::setValue(SFNode *value)
 {
 	mValue = value->getValue();
 }
 
-void SFNode::setValue(char *buffer) 
+void SFNode::setValue(char *buffer)
 {
 }
 
-char *SFNode::getValue(char *buffer, int bufferLen) 
+char *SFNode::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%s", getValue()->getName());
 	return buffer;
 }
 
-Node *SFNode::getValue() 
+Node *SFNode::getValue()
 {
 	return mValue;
 }
@@ -73,12 +73,12 @@ Node *SFNode::getValue()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFNode &node) 
+ostream& operator<<(ostream &s, SFNode &node)
 {
 	return s;
 }
 
-ostream& operator<<(ostream &s, SFNode *node) 
+ostream& operator<<(ostream &s, SFNode *node)
 {
 	return s;
 }
@@ -87,7 +87,7 @@ ostream& operator<<(ostream &s, SFNode *node)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFNode::equals(Field *field) 
+bool SFNode::equals(Field *field)
 {
 	SFNode *nodeField = (SFNode *)field;
 	if (getValue() == nodeField->getValue())
@@ -177,7 +177,7 @@ jobject SFNode::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	return eventField;
 }
 

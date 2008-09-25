@@ -1,5 +1,5 @@
-//  Copyright (c) 2002 Institute of Transport, 
-//             Railway Construction and Operation, 
+//  Copyright (c) 2002 Institute of Transport,
+//             Railway Construction and Operation,
 //             University of Hanover, Germany
 //
 // Permission to copy, use, modify, sell and distribute this software is
@@ -15,6 +15,6 @@ int main()
 {
     TestLibX stTestLibX;
     TestA stTestA;
-    
+
     stTestLibX.do_something();
 };

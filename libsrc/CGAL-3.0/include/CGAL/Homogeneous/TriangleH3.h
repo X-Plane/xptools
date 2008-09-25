@@ -113,11 +113,11 @@ template < class R >
 CGAL_KERNEL_MEDIUM_INLINE
 typename TriangleH3<R>::FT
 TriangleH3<R>::squared_area() const
-{ 
+{
    Vector_3 v1 = vertex(1) - vertex(0);
    Vector_3 v2 = vertex(2) - vertex(0);
    Vector_3 v3 = cross_product(v1, v2);
-   return (v3 * v3)/FT(4); 
+   return (v3 * v3)/FT(4);
 }
 
 template < class R >

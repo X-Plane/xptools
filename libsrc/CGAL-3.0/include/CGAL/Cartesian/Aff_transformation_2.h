@@ -61,7 +61,7 @@ CGAL_VC7_BUG_PROTECTED
 
 public:
   typedef R_                                R;
-   
+
   Aff_transformationC2()
   {
     initialize_with(Aff_transformation_repC2<R>(FT(1), FT(0), FT(0), FT(1)));
@@ -127,15 +127,15 @@ public:
   }
 
   Point_2
-  transform(const Point_2 &p) const 
-  { return Ptr()->transform(p); } 
+  transform(const Point_2 &p) const
+  { return Ptr()->transform(p); }
 
   Point_2
   operator()(const Point_2 &p) const
   { return transform(p); }
 
   Vector_2
-  transform(const Vector_2 &v) const 
+  transform(const Vector_2 &v) const
   { return Ptr()->transform(v); }
 
   Vector_2

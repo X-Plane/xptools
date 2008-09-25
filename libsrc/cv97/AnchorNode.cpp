@@ -10,13 +10,13 @@
 
 #include "AnchorNode.h"
 
-AnchorNode::AnchorNode() 
+AnchorNode::AnchorNode()
 {
 	setHeaderFlag(false);
 	setType(anchorNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// description exposed field
@@ -32,7 +32,7 @@ AnchorNode::AnchorNode()
 	addExposedField(urlFieldString, urlField);
 }
 
-AnchorNode::~AnchorNode() 
+AnchorNode::~AnchorNode()
 {
 }
 
@@ -40,19 +40,19 @@ AnchorNode::~AnchorNode()
 //	Description
 ////////////////////////////////////////////////
 
-SFString *AnchorNode::getDescriptionField() 
+SFString *AnchorNode::getDescriptionField()
 {
 	if (isInstanceNode() == false)
 		return descriptionField;
 	return (SFString *)getExposedField(descriptionFieldString);
 }
 
-void AnchorNode::setDescription(char *value) 
+void AnchorNode::setDescription(char *value)
 {
 	getDescriptionField()->setValue(value);
 }
 
-char *AnchorNode::getDescription() 
+char *AnchorNode::getDescription()
 {
 	return getDescriptionField()->getValue();
 }
@@ -61,24 +61,24 @@ char *AnchorNode::getDescription()
 // Parameter
 ////////////////////////////////////////////////
 
-MFString *AnchorNode::getParameterField() 
+MFString *AnchorNode::getParameterField()
 {
 	if (isInstanceNode() == false)
 		return parameterField;
 	return (MFString *)getExposedField(parameterFieldString);
 }
 
-void AnchorNode::addParameter(char *value) 
+void AnchorNode::addParameter(char *value)
 {
 	getParameterField()->addValue(value);
 }
 
-int AnchorNode::getNParameters() 
+int AnchorNode::getNParameters()
 {
 	return getParameterField()->getSize();
 }
 
-char *AnchorNode::getParameter(int index) 
+char *AnchorNode::getParameter(int index)
 {
 	return getParameterField()->get1Value(index);
 }
@@ -87,29 +87,29 @@ char *AnchorNode::getParameter(int index)
 // Url
 ////////////////////////////////////////////////
 
-MFString *AnchorNode::getUrlField() 
+MFString *AnchorNode::getUrlField()
 {
 	if (isInstanceNode() == false)
 		return urlField;
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void AnchorNode::addUrl(char *value) 
+void AnchorNode::addUrl(char *value)
 {
 	getUrlField()->addValue(value);
 }
 
-int AnchorNode::getNUrls() 
+int AnchorNode::getNUrls()
 {
 	return getUrlField()->getSize();
 }
 
-char *AnchorNode::getUrl(int index) 
+char *AnchorNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void AnchorNode::setUrl(int index, char *urlString) 
+void AnchorNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -118,12 +118,12 @@ void AnchorNode::setUrl(int index, char *urlString)
 //	List
 ////////////////////////////////////////////////
 
-AnchorNode *AnchorNode::next() 
+AnchorNode *AnchorNode::next()
 {
 	return (AnchorNode *)Node::next(getType());
 }
 
-AnchorNode *AnchorNode::nextTraversal() 
+AnchorNode *AnchorNode::nextTraversal()
 {
 	return (AnchorNode *)Node::nextTraversalByType(getType());
 }
@@ -140,7 +140,7 @@ bool AnchorNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void AnchorNode::initialize() 
+void AnchorNode::initialize()
 {
 	recomputeBoundingBox();
 }
@@ -148,15 +148,15 @@ void AnchorNode::initialize()
 void AnchorNode::uninitialize() {
 }
 
-void AnchorNode::update() 
+void AnchorNode::update()
 {
 }
 
-void AnchorNode::outputContext(ostream &printStream, char *indentString) 
+void AnchorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFString *description = getDescriptionField();
 	printStream << indentString << "\t" << "description " << description << endl;
-	
+
 	if (0 < getNParameters()) {
 		MFString *parameter = getParameterField();
 		printStream << indentString << "\t" << "parameter ["  << endl;

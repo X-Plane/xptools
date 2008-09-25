@@ -92,7 +92,7 @@ bool
 has_smaller_signed_distance_to_plane(const PlaneC3<K> &h,
                                      const PointC3<K> &p,
                                      const PointC3<K> &q)
-{ 
+{
   return K().less_signed_distance_to_plane_3_object()(h, p, q);
 }
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -48,7 +48,7 @@ wed_error_exception::wed_error_exception(const char * file, int line, const char
 	va_list	arg;
 	va_start(arg, fmt);
 	vsnprintf(mMsg, sizeof(mMsg), fmt, arg);
-	
+
 }
 
 wed_error_exception::wed_error_exception(const wed_error_exception& rhs) _MSL_THROW
@@ -57,7 +57,7 @@ wed_error_exception::wed_error_exception(const wed_error_exception& rhs) _MSL_TH
 	mFile = rhs.mFile;
 	mLine = rhs.mLine;
 }
-	
+
 wed_error_exception& wed_error_exception::operator=(const wed_error_exception& rhs)
 {
 	strncpy(mMsg, rhs.mMsg, sizeof(mMsg));
@@ -65,7 +65,7 @@ wed_error_exception& wed_error_exception::operator=(const wed_error_exception& r
 	mLine = rhs.mLine;
 	return *this;
 }
-	
+
 const char* wed_error_exception::what () const _MSL_THROW
 {
 	return mMsg;
@@ -82,8 +82,8 @@ void			WED_ReportExceptionUI(const exception& what, const char * fmt, ...)
 	va_list	arg;
 	va_start(arg, fmt);
 	vsnprintf(msg, sizeof(msg), fmt, arg);
-	
+
 	strcat(msg, what.what());
-	
+
 	DoUserAlert(msg);
 }

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -55,7 +55,7 @@ inline	int	tri_forest_type(CDT::Face_handle f)
 	int forest_type = gNaturalTerrainTable[gNaturalTerrainIndex[f->info().terrain]].forest_type;
 	int forest_terrain = f->info().terrain;
 	if (forest_type == NO_VALUE) return NO_VALUE;
-	
+
 	for (set<int>::iterator border = f->info().terrain_border.begin(); border != f->info().terrain_border.end(); ++border)
 	{
 		int border_forest = gNaturalTerrainTable[gNaturalTerrainIndex[forest_terrain]].forest_type;
@@ -72,11 +72,11 @@ inline	int	tri_forest_type(CDT::Face_handle f)
 
 struct	tri_hash_t {
 	typedef	hash_multimap<int, CDT::Face_handle>	hash;
-	
+
 	int					dims;
 	Bbox2				bounds;
 	hash				tris;
-	
+
 	inline int hash_x(double x_c)
 	{
 		int x = ((x_c - bounds.p1.x) * (float) dims / (bounds.p2.x - bounds.p1.x));
@@ -91,7 +91,7 @@ struct	tri_hash_t {
 		if (y >= dims) y = dims-1;
 		return y;
 	}
-	
+
 	inline int	hash_point(int x, int y)
 	{
 		return x + y * dims;
@@ -115,7 +115,7 @@ int	tri_hash_t::accum_tri(CDT::Face_handle f)
 	int y_min = min(y1, min(y2, y3));
 	int x_max = max(x1, max(x2, x3));
 	int y_max = max(y1, max(y2, y3));
-	
+
 	for (int x = x_min; x <= x_max; ++x)
 	for (int y = y_min; y <= y_max; ++y)
 	{
@@ -176,11 +176,11 @@ void GenerateForests(
 	if (inProg && inProg(0, 2, "Indexing mesh", 0.0)) return;
 
 		Pmwx::Ccb_halfedge_circulator	iter, stop;
-	
+
 	/************************************************************************************
 	 * MESH PREPROCESSING AND INDEXING
 	 ************************************************************************************/
-	
+
 	// First step - we need to index our triangle mesh...otherwise it's going to be
 	// much much much too slow to dredge up the terrain polygons that overlay a given
 	// GT polygon.
@@ -191,8 +191,8 @@ void GenerateForests(
 	CalcBoundingBox(ioMap, tri_hash.bounds.p1, tri_hash.bounds.p2);
 	ctr = 0;
 	total = ioMesh.number_of_faces();
-	
-	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi, ++ctr)	
+
+	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi, ++ctr)
 	{
 		if (total && (ctr % 1000) == 0 && inProg && inProg(0, 2, "Indexing mesh", (float) ctr / total)) return;
 
@@ -206,18 +206,18 @@ void GenerateForests(
 		}
 	}
 	if (inProg && inProg(0, 2, "Indexing mesh", 1.0)) return;
-		
+
 	/************************************************************************************
 	 * GENERATE GT Polygons for consideration
 	 ************************************************************************************/
-	
+
 	// Go through our GT polygons...if we are going to process it...
 
 	ctr = 0;
 	total = inFaces.size();
 	int	gap = total / 100.0;
 	if (inProg && inProg(1, 2, "Processing faces", 0.0)) return;
-	
+
 	for (vector<PreinsetFace>::iterator fp = inFaces.begin(); fp != inFaces.end(); ++fp, ++ctr)
 	{
 		GISFace * face = fp->first;
@@ -229,9 +229,9 @@ void GenerateForests(
 		// First we need to figure out what triangles ovrelap us.
 		set<int>						forest_types;
 		set<CDT::Face_handle>			forest_tris;
-		
-		Bbox2							face_bounds;		
-		
+
+		Bbox2							face_bounds;
+
 		iter = stop = face->outer_ccb();
 		do {
 			if (iter == stop)
@@ -252,14 +252,14 @@ void GenerateForests(
 		{
 			// Generate the "GT polygon base map".
 			Pmwx				baseMap;
-			
+
 			for (vector<ComplexPolygon2>::iterator poly = fp->second.begin(); poly != fp->second.end(); ++poly)
 			{
 				ComplexPolygonToPmwx(*poly, baseMap, terrain_ForestPark, terrain_Water);
 			}
-		
+
 			DebugAssert(baseMap.is_valid());
-			
+
 			int forest_type_ctr = 0;
 			for (set<int>::iterator fiter = forest_types.begin(); fiter != forest_types.end(); ++fiter, ++forest_type_ctr)
 			{
@@ -271,7 +271,7 @@ void GenerateForests(
 					 * BURN IN ONE FOREST TYPE
 					 ************************************************************************************/
 					// Burn in triangles that match this forest type.
-					
+
 						Pmwx					forestMap;
 						set<GISHalfedge *>		inForest;
 						map<Point2, GISVertex *, lesser_y_then_x> 			pt_index;
@@ -282,7 +282,7 @@ void GenerateForests(
 					int num_slow = 0;
 
 					multimap<double, pair<Point2, Point2> >	sides;
-			
+
 					for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
 					if (tri_forest_type(*tri) == *fiter)
 					for (int s = 0; s < 3; ++s)
@@ -297,7 +297,7 @@ void GenerateForests(
 							sides.insert(multimap<double, pair<Point2, Point2> >::value_type(min(p1.x,p2.x), pair<Point2, Point2>(p1, p2)));
 						}
 					}
-					
+
 					for (multimap<double, pair<Point2, Point2> >::iterator s = sides.begin(); s != sides.end(); ++s)
 					{
 						Point2 p1 = s->second.first;
@@ -305,9 +305,9 @@ void GenerateForests(
 
 						GISVertex * v1 = forestMap.locate_vertex(p1);
 						GISVertex * v2 = forestMap.locate_vertex(p2);
-						
+
 						GISHalfedge * nh;
-						
+
 						if (v1 != NULL)
 						{
 							if (v2 != NULL)
@@ -338,11 +338,11 @@ void GenerateForests(
 					}
 
 					Pmwx	baseClone(baseMap);
-					
+
 					TopoIntegrateMaps(&forestMap, &baseClone);
 					MergeMaps(forestMap, baseClone, true, NULL, true, NULL);
 					SimplifyMap(forestMap, false, NULL);
-					
+
 					for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
 					if (f->mTerrainType == terrain_ForestPark)
 					if (f->mAreaFeature.mFeatType == terrain_ForestPark)
@@ -351,29 +351,29 @@ void GenerateForests(
 						GISPolyObjPlacement_t	placement;
 						placement.mRepType = *fiter;
 						FaceToComplexPolygon(f, placement.mShape, NULL, NULL, NULL);
-						
+
 						placement.mLocation = placement.mShape[0].centroid();
 						placement.mHeight = 255.0;
 						placement.mDerived = false;
-						face->mPolyObjs.push_back(placement);					
+						face->mPolyObjs.push_back(placement);
 						forest_poly_count++;
 					}
 				} catch (...) {
 					++poly_fail;
 				}
-				
+
 				InstallDebugAssertHandler(dbg);
 				InstallAssertHandler(rel);
-				
+
 			}
 		}
 	}
-	
+
 	if (inProg && inProg(1, 2, "Processing faces", 1.0)) return;
 
 	printf("Indexed Tris: %d, Hashed tris = %d, Processed Tris = %d, Processed GT Polys = %d, Hash ops = %d\n", indexed_tris, hashed_tris, processed_tris, processed_gt, hash_fetches);
 	printf("Total forest polys = %d, total forest pts = %d, poly fail = %d\n", forest_poly_count, forest_pt_count, poly_fail);
-	
+
 }
 
 void GetAllForestLUs(

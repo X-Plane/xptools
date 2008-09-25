@@ -19,7 +19,7 @@ class SFInt32 : public Field {
 
 	static	int	mInit;
 
-	int mValue; 
+	int mValue;
 
 public:
 

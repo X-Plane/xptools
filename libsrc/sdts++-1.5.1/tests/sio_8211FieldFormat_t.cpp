@@ -1,7 +1,7 @@
 //
 // sio_8211FieldFormat_t.cpp
 //
-// 
+//
 
 #include <iostream>
 #include <fstream>

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -30,7 +30,7 @@
 
 
 /// This corresponds to the DDR leader data structure
-class sio_8211DDRLeader : public sio_8211Leader  
+class sio_8211DDRLeader : public sio_8211Leader
 {
    public:
 

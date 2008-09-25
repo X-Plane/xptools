@@ -140,12 +140,12 @@ extern "C" {
 #define GLU_MAP1_TRIM_2                      100210
 #define GLU_MAP1_TRIM_3                      100211
 
-/* QuadricDrawStyle */ 
+/* QuadricDrawStyle */
 #define GLU_POINT                            100010
 #define GLU_LINE                             100011
 #define GLU_FILL                             100012
 #define GLU_SILHOUETTE                       100013
-  
+
 /* QuadricCallback */
 /*      GLU_ERROR */
 
@@ -153,7 +153,7 @@ extern "C" {
 #define GLU_SMOOTH                           100000
 #define GLU_FLAT                             100001
 #define GLU_NONE                             100002
- 
+
 /* QuadricOrientation */
 #define GLU_OUTSIDE                          100020
 #define GLU_INSIDE                           100021

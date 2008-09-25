@@ -68,32 +68,32 @@ template <class HDS>
 class _Polyhedron_halfedge : public HDS::Halfedge {
     public:
         typedef HDS                               Halfedge_data_structure;
-    
+
     protected:
         typedef typename HDS::Vertex              V;
         typedef typename HDS::Halfedge            H;
         typedef typename HDS::Facet               F;
-    
+
     public:
         typedef _Polyhedron_vertex<HDS>           Vertex_;
         typedef _Polyhedron_halfedge<HDS>         Halfedge_;
         typedef _Polyhedron_facet<HDS>            Facet_;
-    
+
         typedef typename  HDS::Size               Size;
         typedef typename  HDS::Difference         Difference;
-    
+
     // The following types denotes the (optionally) associated geometry. If
     // the specific item is not supported the type is `void*'.
-    
+
         typedef typename  HDS::Point              Point;
         typedef typename  HDS::Point              Point_3;
         typedef typename  F::Vector_3             Vector_3;
         typedef typename  F::Plane_3              Plane_3;
-    
+
     // The following types are equal to either `Tag_true' or
     // `Tag_false', dependant whether the named feature is
     // supported or not.
-    
+
         typedef typename  HDS::Supports_vertex_halfedge
                                                       Supports_vertex_halfedge;
         typedef typename  HDS::Supports_halfedge_prev
@@ -104,21 +104,21 @@ class _Polyhedron_halfedge : public HDS::Halfedge {
                                                       Supports_halfedge_facet;
         typedef typename  HDS::Supports_facet_halfedge
                                                       Supports_facet_halfedge;
-    
+
         typedef typename  HDS::Supports_vertex_point  Supports_vertex_point;
         typedef typename  HDS::Supports_facet_plane   Supports_facet_plane;
         typedef typename  HDS::Supports_facet_normal  Supports_facet_normal;
-    
+
         typedef typename  HDS::Supports_removal       Supports_removal;
-    
+
     // The iterator/circulator categories.
-    
+
         typedef typename  HDS::iterator_category      iterator_category;
         typedef Polyhedron_circulator_traits<Supports_halfedge_prev>
                                                       Circ_traits;
         typedef typename Circ_traits::iterator_category
                                                       circulator_category;
-    
+
     protected:
         // These extra (internal) typedefs are necessary to make
         // SunPro CC 4.2 happy. (And they are used.)
@@ -130,60 +130,60 @@ class _Polyhedron_halfedge : public HDS::Halfedge {
         typedef typename  HDS::Edge_const_iterator      TR_C_EI;
         typedef typename  HDS::Facet_iterator           TR_FI;
         typedef typename  HDS::Facet_const_iterator     TR_C_FI;
-    
+
     public:
         typedef _Polyhedron_iterator<
             TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_VI, TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_HI, TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_FI, TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_const_iterator;
-    
+
     // The circulators around a vertex or around a facet.
-    
+
         typedef _Polyhedron_facet_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_facet_circulator;
-    
+
         typedef _Polyhedron_vertex_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_vertex_circulator;
-    
+
         typedef _Polyhedron_facet_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>       Halfedge_around_facet_const_circulator;
-    
+
         typedef _Polyhedron_vertex_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>      Halfedge_around_vertex_const_circulator;
-    
+
     // The handles. They are currently only simple typedef's.
         typedef Vertex_iterator                       Vertex_handle;
         typedef Vertex_const_iterator                 Vertex_const_handle;
@@ -191,9 +191,9 @@ class _Polyhedron_halfedge : public HDS::Halfedge {
         typedef Halfedge_const_iterator               Halfedge_const_handle;
         typedef Facet_iterator                        Facet_handle;
         typedef Facet_const_iterator                  Facet_const_handle;
-    
+
     // Edge iterator.
-    
+
         typedef N_step_adaptor_derived<Halfedge_iterator, 2>
                                                       Edge_iterator;
         typedef N_step_adaptor_derived<Halfedge_const_iterator, 2>
@@ -291,32 +291,32 @@ template <class HDS>
 class _Polyhedron_vertex  : public HDS::Vertex  {
     public:
         typedef HDS                               Halfedge_data_structure;
-    
+
     protected:
         typedef typename HDS::Vertex              V;
         typedef typename HDS::Halfedge            H;
         typedef typename HDS::Facet               F;
-    
+
     public:
         typedef _Polyhedron_vertex<HDS>           Vertex_;
         typedef _Polyhedron_halfedge<HDS>         Halfedge_;
         typedef _Polyhedron_facet<HDS>            Facet_;
-    
+
         typedef typename  HDS::Size               Size;
         typedef typename  HDS::Difference         Difference;
-    
+
     // The following types denotes the (optionally) associated geometry. If
     // the specific item is not supported the type is `void*'.
-    
+
         typedef typename  HDS::Point              Point;
         typedef typename  HDS::Point              Point_3;
         typedef typename  F::Vector_3             Vector_3;
         typedef typename  F::Plane_3              Plane_3;
-    
+
     // The following types are equal to either `Tag_true' or
     // `Tag_false', dependant whether the named feature is
     // supported or not.
-    
+
         typedef typename  HDS::Supports_vertex_halfedge
                                                       Supports_vertex_halfedge;
         typedef typename  HDS::Supports_halfedge_prev
@@ -327,21 +327,21 @@ class _Polyhedron_vertex  : public HDS::Vertex  {
                                                       Supports_halfedge_facet;
         typedef typename  HDS::Supports_facet_halfedge
                                                       Supports_facet_halfedge;
-    
+
         typedef typename  HDS::Supports_vertex_point  Supports_vertex_point;
         typedef typename  HDS::Supports_facet_plane   Supports_facet_plane;
         typedef typename  HDS::Supports_facet_normal  Supports_facet_normal;
-    
+
         typedef typename  HDS::Supports_removal       Supports_removal;
-    
+
     // The iterator/circulator categories.
-    
+
         typedef typename  HDS::iterator_category      iterator_category;
         typedef Polyhedron_circulator_traits<Supports_halfedge_prev>
                                                       Circ_traits;
         typedef typename Circ_traits::iterator_category
                                                       circulator_category;
-    
+
     protected:
         // These extra (internal) typedefs are necessary to make
         // SunPro CC 4.2 happy. (And they are used.)
@@ -353,60 +353,60 @@ class _Polyhedron_vertex  : public HDS::Vertex  {
         typedef typename  HDS::Edge_const_iterator      TR_C_EI;
         typedef typename  HDS::Facet_iterator           TR_FI;
         typedef typename  HDS::Facet_const_iterator     TR_C_FI;
-    
+
     public:
         typedef _Polyhedron_iterator<
             TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_VI, TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_HI, TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_FI, TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_const_iterator;
-    
+
     // The circulators around a vertex or around a facet.
-    
+
         typedef _Polyhedron_facet_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_facet_circulator;
-    
+
         typedef _Polyhedron_vertex_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_vertex_circulator;
-    
+
         typedef _Polyhedron_facet_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>       Halfedge_around_facet_const_circulator;
-    
+
         typedef _Polyhedron_vertex_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>      Halfedge_around_vertex_const_circulator;
-    
+
     // The handles. They are currently only simple typedef's.
         typedef Vertex_iterator                       Vertex_handle;
         typedef Vertex_const_iterator                 Vertex_const_handle;
@@ -414,9 +414,9 @@ class _Polyhedron_vertex  : public HDS::Vertex  {
         typedef Halfedge_const_iterator               Halfedge_const_handle;
         typedef Facet_iterator                        Facet_handle;
         typedef Facet_const_iterator                  Facet_const_handle;
-    
+
     // Edge iterator.
-    
+
         typedef N_step_adaptor_derived<Halfedge_iterator, 2>
                                                       Edge_iterator;
         typedef N_step_adaptor_derived<Halfedge_const_iterator, 2>
@@ -460,32 +460,32 @@ template <class HDS>
 class _Polyhedron_facet : public HDS::Facet {
     public:
         typedef HDS                               Halfedge_data_structure;
-    
+
     protected:
         typedef typename HDS::Vertex              V;
         typedef typename HDS::Halfedge            H;
         typedef typename HDS::Facet               F;
-    
+
     public:
         typedef _Polyhedron_vertex<HDS>           Vertex_;
         typedef _Polyhedron_halfedge<HDS>         Halfedge_;
         typedef _Polyhedron_facet<HDS>            Facet_;
-    
+
         typedef typename  HDS::Size               Size;
         typedef typename  HDS::Difference         Difference;
-    
+
     // The following types denotes the (optionally) associated geometry. If
     // the specific item is not supported the type is `void*'.
-    
+
         typedef typename  HDS::Point              Point;
         typedef typename  HDS::Point              Point_3;
         typedef typename  F::Vector_3             Vector_3;
         typedef typename  F::Plane_3              Plane_3;
-    
+
     // The following types are equal to either `Tag_true' or
     // `Tag_false', dependant whether the named feature is
     // supported or not.
-    
+
         typedef typename  HDS::Supports_vertex_halfedge
                                                       Supports_vertex_halfedge;
         typedef typename  HDS::Supports_halfedge_prev
@@ -496,21 +496,21 @@ class _Polyhedron_facet : public HDS::Facet {
                                                       Supports_halfedge_facet;
         typedef typename  HDS::Supports_facet_halfedge
                                                       Supports_facet_halfedge;
-    
+
         typedef typename  HDS::Supports_vertex_point  Supports_vertex_point;
         typedef typename  HDS::Supports_facet_plane   Supports_facet_plane;
         typedef typename  HDS::Supports_facet_normal  Supports_facet_normal;
-    
+
         typedef typename  HDS::Supports_removal       Supports_removal;
-    
+
     // The iterator/circulator categories.
-    
+
         typedef typename  HDS::iterator_category      iterator_category;
         typedef Polyhedron_circulator_traits<Supports_halfedge_prev>
                                                       Circ_traits;
         typedef typename Circ_traits::iterator_category
                                                       circulator_category;
-    
+
     protected:
         // These extra (internal) typedefs are necessary to make
         // SunPro CC 4.2 happy. (And they are used.)
@@ -522,60 +522,60 @@ class _Polyhedron_facet : public HDS::Facet {
         typedef typename  HDS::Edge_const_iterator      TR_C_EI;
         typedef typename  HDS::Facet_iterator           TR_FI;
         typedef typename  HDS::Facet_const_iterator     TR_C_FI;
-    
+
     public:
         typedef _Polyhedron_iterator<
             TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_VI, TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_HI, TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_FI, TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_const_iterator;
-    
+
     // The circulators around a vertex or around a facet.
-    
+
         typedef _Polyhedron_facet_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_facet_circulator;
-    
+
         typedef _Polyhedron_vertex_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_vertex_circulator;
-    
+
         typedef _Polyhedron_facet_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>       Halfedge_around_facet_const_circulator;
-    
+
         typedef _Polyhedron_vertex_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>      Halfedge_around_vertex_const_circulator;
-    
+
     // The handles. They are currently only simple typedef's.
         typedef Vertex_iterator                       Vertex_handle;
         typedef Vertex_const_iterator                 Vertex_const_handle;
@@ -583,9 +583,9 @@ class _Polyhedron_facet : public HDS::Facet {
         typedef Halfedge_const_iterator               Halfedge_const_handle;
         typedef Facet_iterator                        Facet_handle;
         typedef Facet_const_iterator                  Facet_const_handle;
-    
+
     // Edge iterator.
-    
+
         typedef N_step_adaptor_derived<Halfedge_iterator, 2>
                                                       Edge_iterator;
         typedef N_step_adaptor_derived<Halfedge_const_iterator, 2>
@@ -628,7 +628,7 @@ private:
 
 
 
-template < class TR, class HDS 
+template < class TR, class HDS
     = CGAL::Halfedge_data_structure_polyhedron_default_3< TR> >
 class Polyhedron_3 {
     //
@@ -653,32 +653,32 @@ class Polyhedron_3 {
     public:
         typedef HDS                               Halfedge_data_structure;
         typedef HDS                               HalfedgeDS;
-    
+
     protected:
         typedef typename HDS::Vertex              V;
         typedef typename HDS::Halfedge            H;
         typedef typename HDS::Facet               F;
-    
+
     public:
         typedef _Polyhedron_vertex<HDS>           Vertex_;
         typedef _Polyhedron_halfedge<HDS>         Halfedge_;
         typedef _Polyhedron_facet<HDS>            Facet_;
-    
+
         typedef typename  HDS::Size               Size;
         typedef typename  HDS::Difference         Difference;
-    
+
     // The following types denotes the (optionally) associated geometry. If
     // the specific item is not supported the type is `void*'.
-    
+
         typedef typename  HDS::Point              Point;
         typedef typename  HDS::Point              Point_3;
         typedef typename  F::Vector_3             Vector_3;
         typedef typename  F::Plane_3              Plane_3;
-    
+
     // The following types are equal to either `Tag_true' or
     // `Tag_false', dependant whether the named feature is
     // supported or not.
-    
+
         typedef typename  HDS::Supports_vertex_halfedge
                                                       Supports_vertex_halfedge;
         typedef typename  HDS::Supports_halfedge_prev
@@ -689,21 +689,21 @@ class Polyhedron_3 {
                                                       Supports_halfedge_facet;
         typedef typename  HDS::Supports_facet_halfedge
                                                       Supports_facet_halfedge;
-    
+
         typedef typename  HDS::Supports_vertex_point  Supports_vertex_point;
         typedef typename  HDS::Supports_facet_plane   Supports_facet_plane;
         typedef typename  HDS::Supports_facet_normal  Supports_facet_normal;
-    
+
         typedef typename  HDS::Supports_removal       Supports_removal;
-    
+
     // The iterator/circulator categories.
-    
+
         typedef typename  HDS::iterator_category      iterator_category;
         typedef Polyhedron_circulator_traits<Supports_halfedge_prev>
                                                       Circ_traits;
         typedef typename Circ_traits::iterator_category
                                                       circulator_category;
-    
+
     protected:
         // These extra (internal) typedefs are necessary to make
         // SunPro CC 4.2 happy. (And they are used.)
@@ -715,60 +715,60 @@ class Polyhedron_3 {
         typedef typename  HDS::Edge_const_iterator      TR_C_EI;
         typedef typename  HDS::Facet_iterator           TR_FI;
         typedef typename  HDS::Facet_const_iterator     TR_C_FI;
-    
+
     public:
         typedef _Polyhedron_iterator<
             TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_VI, TR_VI,
             Vertex_,
             Difference, iterator_category>       Vertex_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_HI, TR_HI,
             Halfedge_,
             Difference, iterator_category>       Halfedge_const_iterator;
-    
+
         typedef _Polyhedron_iterator<
             TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_iterator;
-    
+
         typedef _Polyhedron_const_iterator<
             TR_C_FI, TR_FI,
             Facet_,
             Difference, iterator_category>       Facet_const_iterator;
-    
+
     // The circulators around a vertex or around a facet.
-    
+
         typedef _Polyhedron_facet_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_facet_circulator;
-    
+
         typedef _Polyhedron_vertex_circ<
             Halfedge_,
             Halfedge_iterator,
             circulator_category>            Halfedge_around_vertex_circulator;
-    
+
         typedef _Polyhedron_facet_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>       Halfedge_around_facet_const_circulator;
-    
+
         typedef _Polyhedron_vertex_const_circ<
             Halfedge_,
             Halfedge_const_iterator,
             circulator_category>      Halfedge_around_vertex_const_circulator;
-    
+
     // The handles. They are currently only simple typedef's.
         typedef Vertex_iterator                       Vertex_handle;
         typedef Vertex_const_iterator                 Vertex_const_handle;
@@ -776,9 +776,9 @@ class Polyhedron_3 {
         typedef Halfedge_const_iterator               Halfedge_const_handle;
         typedef Facet_iterator                        Facet_handle;
         typedef Facet_const_iterator                  Facet_const_handle;
-    
+
     // Edge iterator.
-    
+
         typedef N_step_adaptor_derived<Halfedge_iterator, 2>
                                                       Edge_iterator;
         typedef N_step_adaptor_derived<Halfedge_const_iterator, 2>
@@ -1241,7 +1241,7 @@ public:
         decorator.set_facet_halfedge( h);
         return TR_HI(h);
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1255,7 +1255,7 @@ public:
                               decorator.new_vertex( hds),
                               decorator.new_vertex( hds));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1269,7 +1269,7 @@ public:
                               decorator.new_vertex( hds, p2),
                               decorator.new_vertex( hds, p3));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1310,7 +1310,7 @@ public:
         decorator.set_facet_halfedge( d);
         return TR_HI(h);
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1325,7 +1325,7 @@ public:
                                  decorator.new_vertex( hds),
                                  decorator.new_vertex( hds));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1343,7 +1343,7 @@ public:
                                  decorator.new_vertex( hds, p3),
                                  decorator.new_vertex( hds, p4));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     bool
@@ -1361,17 +1361,17 @@ public:
         if ( h3->opposite()->next() != h2->opposite())    return false;
         // The facet is a triangle.
         if ( h1->next()->next()->next() != h1) return false;
-    
+
         if ( check_tag( Supports_halfedge_facet())
              &&  ! h1->is_border_edge())
             return false;  // implies h2 and h3
         CGAL_assertion( ! h1->is_border() || ! h1->opposite()->is_border());
-    
+
         // Assert consistency.
         CGAL_assertion( h1 != h2);
         CGAL_assertion( h1 != h3);
         CGAL_assertion( h3 != h2);
-    
+
         // check prev pointer.
         CGAL_assertion_code( Halfedge_data_structure_decorator<HDS>
                         decorator;)
@@ -1381,7 +1381,7 @@ public:
                    decorator.get_prev( h2.ptr()) == h1.ptr());
         CGAL_assertion( decorator.get_prev( h3.ptr()) == NULL ||
                    decorator.get_prev( h3.ptr()) == h2.ptr());
-    
+
         // check vertices.
         CGAL_assertion( decorator.get_vertex( h1.ptr()) ==
                    decorator.get_vertex( h2->opposite().ptr()));
@@ -1389,7 +1389,7 @@ public:
                    decorator.get_vertex( h3->opposite().ptr()));
         CGAL_assertion( decorator.get_vertex( h3.ptr()) ==
                    decorator.get_vertex( h1->opposite().ptr()));
-    
+
         CGAL_assertion( ! check_tag( Supports_halfedge_facet()) ||
                    decorator.get_vertex( h1.ptr()) !=
                    decorator.get_vertex( h2.ptr()));
@@ -1399,16 +1399,16 @@ public:
         CGAL_assertion( ! check_tag( Supports_halfedge_facet()) ||
                    decorator.get_vertex( h2.ptr()) !=
                    decorator.get_vertex( h3.ptr()));
-    
+
         // check facets.
         CGAL_assertion( decorator.get_facet( h1.ptr()) ==
                    decorator.get_facet( h2.ptr()));
         CGAL_assertion( decorator.get_facet( h1.ptr()) ==
                    decorator.get_facet( h3.ptr()));
-    
+
         return true;
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     bool
@@ -1447,7 +1447,7 @@ public:
         if ( h4->is_border()) return false;
         if ( h5->is_border()) return false;
         if ( h6->is_border()) return false;
-    
+
         // Assert consistency.
         CGAL_assertion( h1 != h2);
         CGAL_assertion( h1 != h3);
@@ -1455,7 +1455,7 @@ public:
         CGAL_assertion( h4 != h5);
         CGAL_assertion( h5 != h6);
         CGAL_assertion( h6 != h4);
-    
+
         // check prev pointer.
         CGAL_assertion_code( Halfedge_data_structure_decorator<HDS>
                         decorator;)
@@ -1471,7 +1471,7 @@ public:
                    decorator.get_prev( h5.ptr()) == h2->opposite().ptr());
         CGAL_assertion( decorator.get_prev( h6.ptr()) == NULL ||
                    decorator.get_prev( h6.ptr()) == h3->opposite().ptr());
-    
+
         // check vertices.
         CGAL_assertion( decorator.get_vertex( h1.ptr()) ==
                    decorator.get_vertex( h2->opposite().ptr()));
@@ -1489,7 +1489,7 @@ public:
                    decorator.get_vertex( h5.ptr()));
         CGAL_assertion( decorator.get_vertex( h4.ptr()) ==
                    decorator.get_vertex( h6.ptr()));
-    
+
         CGAL_assertion( ! check_tag( Supports_halfedge_vertex()) ||
                    decorator.get_vertex( h1.ptr()) !=
                    decorator.get_vertex( h2.ptr()));
@@ -1508,7 +1508,7 @@ public:
         CGAL_assertion( ! check_tag( Supports_halfedge_vertex()) ||
                    decorator.get_vertex( h3.ptr()) !=
                    decorator.get_vertex( h4.ptr()));
-    
+
         // check facets.
         CGAL_assertion( decorator.get_facet(h1.ptr()) ==
                    decorator.get_facet(h2.ptr()));
@@ -1526,7 +1526,7 @@ public:
                    decorator.get_facet(h6->next().ptr()));
         CGAL_assertion( decorator.get_facet(h6.ptr()) ==
                    decorator.get_facet(h3->opposite().ptr()));
-    
+
         CGAL_assertion( ! check_tag( Supports_halfedge_facet()) ||
                    decorator.get_facet( h1.ptr()) !=
                    decorator.get_facet( h4.ptr()));
@@ -1545,12 +1545,12 @@ public:
         CGAL_assertion( ! check_tag( Supports_halfedge_facet()) ||
                    decorator.get_facet( h5.ptr()) !=
                    decorator.get_facet( h6.ptr()));
-    
+
         return true;
     }
-    
+
     // Euler Operations
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1566,7 +1566,7 @@ public:
         CGAL_precondition( h->next() != g);
         return TR_HI( D.split_facet( hds, h.ptr(), g.ptr()));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1581,7 +1581,7 @@ public:
                     >= Size(3));
         return TR_HI( D.join_facet( hds, h.ptr()));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1595,7 +1595,7 @@ public:
         CGAL_precondition( h != g);
         return TR_HI( D.split_vertex( hds, h.ptr(), g.ptr()));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1610,7 +1610,7 @@ public:
                     >= Size(4));
         return TR_HI( D.join_vertex( hds, h.ptr()));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle
@@ -1675,7 +1675,7 @@ public:
                     != D.get_facet(j->opposite().ptr()));
         return TR_HI( D.split_loop( hds, h.ptr(), i.ptr(), j.ptr()));
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class TR, class HDS >  CGAL_LARGE_INLINE
     typename Polyhedron_3<TR,HDS>::Halfedge_handle

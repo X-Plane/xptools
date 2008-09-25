@@ -67,17 +67,17 @@ static CGAL::Window_stream W(400, 400, "CGAL - Segment Arrangement Demo");
 CGAL_BEGIN_NAMESPACE
 Window_stream & operator<<(Window_stream& os, Arr_2 &A)
 {
-  My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator, 
+  My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator,
     Arr_2::Holes_iterator> drawer(os);
-  
+
   draw_pm(arr, drawer, os);
   return os;
 }
 CGAL_END_NAMESPACE
 
-// redraw function for the LEDA window. 
+// redraw function for the LEDA window.
 // used automatically when window reappears.
-void redraw(CGAL::Window_stream * wp) 
+void redraw(CGAL::Window_stream * wp)
 { wp->start_buffering();
   wp->clear();
   // draw arragnement
@@ -101,7 +101,7 @@ int main()
 
   //read input from window
   std::cout << "Left button to start and end the segment.\n";
-  std::cout << "Clicking close to a vertex assumes the location" 
+  std::cout << "Clicking close to a vertex assumes the location"
 	    << "is at the vertex"
 	    << std::endl;
   std::vector<Point> cv1;
@@ -114,29 +114,29 @@ int main()
     int b = W.get_mouse(x,y);
     if (b==10) break;
     pnt = Point(x,y);
-  
+
     if (b == MOUSE_BUTTON(1))
       {
-        
+
         for(Arr_2::Vertex_iterator vi = arr.vertices_begin();
             vi != arr.vertices_end(); ++vi) {
           //we are using the leda sqr_dist func
           if ( pnt.sqr_dist(vi->point()) < ((x1-x0)/50)*((x1-x0)/50) )
             pnt=vi->point();
         }
-        
+
         cv1.push_back(pnt);
         W << CGAL::BLACK;
         W << pnt;
         W << CGAL::GREEN;
-        
+
         if (!begin) {
           if ( cv1[0] == cv1[1] ){
             //Error. Segment has a zero length.
              W.set_status_string("Error. Segment has a zero length.");
             redraw( &W );
           }
-          else{ 
+          else{
             arr.insert(X_curve(cv1[0],cv1[1]));
             W.set_status_string("Left mouse button - segment input. "
 				"Finish button -query mode");
@@ -148,9 +148,9 @@ int main()
       }
   }
 
-  
+
   W << arr;
-   
+
   // Point Location Queries
   W.set_status_string("Enter a query point with left mouse button. "
 		      "Finish button - exit." );
@@ -159,9 +159,9 @@ int main()
   Point p;
 
   Arr_2::Halfedge_handle e;
-  
+
   // if map is empty
-  if (arr.halfedges_begin() == arr.halfedges_end()) 
+  if (arr.halfedges_begin() == arr.halfedges_end())
     {
       std::cout << std::endl;
       std::cout << "No edges were inserted. Planar map is empty. Exiting.";
@@ -169,8 +169,8 @@ int main()
     }
   else {
     // map is not empty
-    
-    CGAL:: My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator, 
+
+    CGAL:: My_Arr_drawer<Arr_2, Arr_2::Ccb_halfedge_circulator,
       Arr_2::Holes_iterator>  drawer(W);
     for (; ;) {
       double x,y;
@@ -180,34 +180,34 @@ int main()
 	p=Point(x,y);
 
       W << arr;
-    
+
       Arr_2::Locate_type lt;
       e = arr.locate(p,lt);
-      
+
       //color the face on the screen
       Arr_2::Face_handle f=e->face();
       drawer.draw_face(f);
-      
+
       /*if (f->does_outer_ccb_exist()) {
 	Arr_2::Ccb_halfedge_circulator cc=f->outer_ccb();
 	do {
 	W << cc->curve();
 	} while (++cc != f->outer_ccb());
-	
+
 	}
-      
+
 	Arr_2::Holes_iterator hit=f->holes_begin(),eit=f->holes_end();
 	for (;hit!=eit; ++hit) {
-	Arr_2::Ccb_halfedge_circulator cc=*hit; 
+	Arr_2::Ccb_halfedge_circulator cc=*hit;
 	do {
 	W << cc->curve();
 	} while (++cc != *hit);
-      
-	} */     
+
+	} */
     }
   } // else of 'if map is empty'
 
-  return 0;  
+  return 0;
 }
 
 #endif

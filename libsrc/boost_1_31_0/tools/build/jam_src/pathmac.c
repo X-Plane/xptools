@@ -54,13 +54,13 @@
  */
 
 void
-path_parse( 
+path_parse(
 	char	*file,
 	PATHNAME *f )
 {
 	char *p, *q;
 	char *end;
-	
+
 	memset( (char *)f, 0, sizeof( *f ) );
 
 	/* Look for <grist> */
@@ -84,7 +84,7 @@ path_parse(
 
 	    while( p > f->f_dir.ptr && *--p == DELIM )
 		;
-	    
+
 	    if( p == f->f_dir.ptr )
 	    f->f_dir.len++;
 	}
@@ -98,7 +98,7 @@ path_parse(
 	    f->f_member.ptr = p + 1;
 	    f->f_member.len = end - p - 2;
 	    end = p;
-	} 
+	}
 
 	/* Look for .suffix */
 	/* This would be memrchr() */
@@ -125,7 +125,7 @@ path_parse(
 /*
  * path_build() - build a filename given dir/base/suffix/member
  */
- 
+
 # define DIR_EMPTY	0	/* "" */
 # define DIR_DOT	1	/* : */
 # define DIR_DOTDOT	2	/* :: */
@@ -149,7 +149,7 @@ char grid[5][5] = {
 } ;
 
 static int
-file_flags( 
+file_flags(
 	char	*ptr,
 	int	len )
 {
@@ -173,12 +173,12 @@ path_build(
     int dflag, rflag, act;
 
     file_build1( f, file );
-	
+
     /* Combine root & directory, according to the grid. */
-	
+
     dflag = file_flags( f->f_dir.ptr, f->f_dir.len );
     rflag = file_flags( f->f_root.ptr, f->f_root.len );
-	
+
     switch( act = grid[ rflag ][ dflag ] )
     {
     case G_DTDR:
@@ -187,35 +187,35 @@ path_build(
             string_push_back( file, DELIM );
         }
         /* fall through */
-		
-    case G_DIR: 	
+
+    case G_DIR:
         /* take dir */
         string_append_range( file, f->f_dir.ptr, f->f_dir.ptr + f->f_dir.len  );
         break;
-		
-    case G_ROOT:	
+
+    case G_ROOT:
         /* take root */
         string_append_range( file, f->f_root.ptr, f->f_root.ptr + f->f_root.len  );
         break;
-	    
-    case G_CAT:	
+
+    case G_CAT:
         /* prepend root to dir */
         string_append_range( file, f->f_root.ptr, f->f_root.ptr + f->f_root.len  );
         if( file->value[file->size - 1] == DELIM )
             string_pop_back( file );
         string_append_range( file, f->f_dir.ptr, f->f_dir.ptr + f->f_dir.len  );
         break;
-	
-    case G_DDDD:	
+
+    case G_DDDD:
         /* make it ::: (../..) */
         string_append( file, ":::" );
         break;
     }
 
     /* Put : between dir and file (if none already) */
-	
-    if( act != G_MT && 
-        file->value[file->size - 1] != DELIM && 
+
+    if( act != G_MT &&
+        file->value[file->size - 1] != DELIM &&
         ( f->f_base.len || f->f_suffix.len ) )
     {
         string_push_back( file, DELIM );
@@ -237,7 +237,7 @@ path_build(
         string_append_range( file, f->f_member.ptr, f->f_member.ptr + f->f_member.len  );
         string_push_back( file, ')' );
     }
-	
+
     if( DEBUG_SEARCH )
         printf(" -> '%s'\n", file->value);
 }
@@ -255,8 +255,8 @@ path_parent( PATHNAME *f )
 	f->f_suffix.ptr =
 	f->f_member.ptr = "";
 
-	f->f_base.len = 
-	f->f_suffix.len = 
+	f->f_base.len =
+	f->f_suffix.len =
 	f->f_member.len = 0;
 }
 

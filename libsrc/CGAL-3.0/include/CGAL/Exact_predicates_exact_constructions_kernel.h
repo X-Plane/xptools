@@ -37,7 +37,7 @@
 CGAL_BEGIN_NAMESPACE
 
 #ifdef CGAL_USE_GMP
-typedef Simple_cartesian< Lazy_exact_nt< Gmpq > >              
+typedef Simple_cartesian< Lazy_exact_nt< Gmpq > >
         Exact_predicates_exact_constructions_kernel;
 #else
 typedef Simple_cartesian< Lazy_exact_nt< Quotient<MP_Float> > >

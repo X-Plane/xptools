@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: State.cpp
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@
 */
 
 dimeState::dimeState(const bool traversePolylineVertices,
-		   const bool explodeInserts) 
+		   const bool explodeInserts)
 {
   this->matrix.makeIdentity();
   this->invmatrix.makeIdentity();
@@ -58,7 +58,7 @@ dimeState::dimeState(const bool traversePolylineVertices,
   Constructor.
 */
 
-dimeState::dimeState(const dimeState &st) 
+dimeState::dimeState(const dimeState &st)
 {
   this->matrix = st.matrix;
   this->invmatrix = st.invmatrix;
@@ -66,7 +66,7 @@ dimeState::dimeState(const dimeState &st)
   this->currentInsert = st.currentInsert;
 }
 
-void 
+void
 dimeState::setMatrix(const dimeMatrix &m)
 {
   this->matrix = m;
@@ -75,7 +75,7 @@ dimeState::setMatrix(const dimeMatrix &m)
 
 
 const dimeMatrix &
-dimeState::getInvMatrix() const 
+dimeState::getInvMatrix() const
 {
   if (this->flags & INVMATRIX_DIRTY) {
     dimeState *thisp = (dimeState*)this;
@@ -86,8 +86,8 @@ dimeState::getInvMatrix() const
   return this->invmatrix;
 }
 
-void 
-dimeState::getMatrix(dimeMatrix &m) const 
+void
+dimeState::getMatrix(dimeMatrix &m) const
 {
   m = this->matrix;
 }

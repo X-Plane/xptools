@@ -1,24 +1,24 @@
 THIS HEADER IS OBSOLETE
 
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -29,7 +29,7 @@ THIS HEADER IS OBSOLETE
 void	MapFaceBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
 {
 	Polygon2	poly;
-	
+
 	if (o->is_unbounded())
 	{
 		p1 = Point2(-9999.0, -9999.0);
@@ -46,13 +46,13 @@ void	MapFaceBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
 	} while (circ != start);
 
 	p1 = Point2(o->mBoundsCache.xmin(), o->mBoundsCache.ymin());
-	p2 = Point2(o->mBoundsCache.xmax(), o->mBoundsCache.ymax());		
+	p2 = Point2(o->mBoundsCache.xmax(), o->mBoundsCache.ymax());
 }
 
 bool	MapFaceBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
 {
 	if (o->is_unbounded()) return false;
-	
+
 	if (p.x < o->mBoundsCache.xmin() ||
 		p.x > o->mBoundsCache.xmax() ||
 		p.y < o->mBoundsCache.ymin() ||
@@ -63,7 +63,7 @@ bool	MapFaceBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
 	Pmwx::Ccb_halfedge_circulator	start = circ;
 	do {
 		poly.push_back(circ->source()->point());
-		
+
 		++circ;
 	} while (circ != start);
 
@@ -76,7 +76,7 @@ bool	MapFaceBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
 			start = circ;
 			do {
 				poly2.push_back(circ->source()->point());
-				
+
 				++circ;
 			} while (circ != start);
 			if (poly2.inside(p))
@@ -97,7 +97,7 @@ bool	MapFaceBucketTraits::ObjectTouchesRect(Object o, const Point2& p1, const Po
 						p2.x,
 						p2.y);
 
-	return o->mBoundsCache.overlap(selection);	
+	return o->mBoundsCache.overlap(selection);
 }
 
 bool	MapFaceBucketTraits::ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2)
@@ -128,9 +128,9 @@ void	MapHalfedgeBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
 {
 	Bbox2	box(o->source()->point());
 	box += o->target()->point();
-	
+
 	p1 = Point2(box.xmin(), box.ymin());
-	p2 = Point2(box.xmax(), box.ymax());		
+	p2 = Point2(box.xmax(), box.ymax());
 }
 
 bool	MapHalfedgeBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
@@ -138,10 +138,10 @@ bool	MapHalfedgeBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
 	return false;
 
 	Segment2	seg(o->source()->point(), o->target()->point());
-	
+
 	Point2	proj = seg.projection(p);
 	if (!seg.collinear_has_on(proj)) return false;
-	
+
 	return true;
 }
 
@@ -156,7 +156,7 @@ bool	MapHalfedgeBucketTraits::ObjectTouchesRect(Object o, const Point2& p1, cons
 	 box += o->target()->point();
 
 	// Warning: this isn't quite right...it's overzealous.
-	return box.overlap(selection);	
+	return box.overlap(selection);
 }
 
 bool	MapHalfedgeBucketTraits::ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2)

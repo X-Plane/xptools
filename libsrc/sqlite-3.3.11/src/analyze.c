@@ -38,7 +38,7 @@ static void openStatTable(
 
   pDb = &db->aDb[iDb];
   if( (pStat = sqlite3FindTable(db, "sqlite_stat1", pDb->zName))==0 ){
-    /* The sqlite_stat1 tables does not exist.  Create it.  
+    /* The sqlite_stat1 tables does not exist.  Create it.
     ** Note that a side-effect of the CREATE TABLE statement is to leave
     ** the rootpage of the new table on the top of the stack.  This is
     ** important because the OpenWrite opcode below will be needing it. */
@@ -62,8 +62,8 @@ static void openStatTable(
   }
 
   /* Open the sqlite_stat1 table for writing. Unless it was created
-  ** by this vdbe program, lock it for writing at the shared-cache level. 
-  ** If this vdbe did create the sqlite_stat1 table, then it must have 
+  ** by this vdbe program, lock it for writing at the shared-cache level.
+  ** If this vdbe did create the sqlite_stat1 table, then it must have
   ** already obtained a schema-lock, making the write-lock redundant.
   */
   if( iRootPage>0 ){
@@ -171,7 +171,7 @@ static void analyzeOneTable(
     sqlite3VdbeAddOp(v, OP_Next, iIdxCur, topOfLoop);
     sqlite3VdbeAddOp(v, OP_Close, iIdxCur, 0);
 
-    /* Store the results.  
+    /* Store the results.
     **
     ** The result is a single row of the sqlite_stmt1 table.  The first
     ** two columns are the names of the table and index.  The third column
@@ -185,7 +185,7 @@ static void analyzeOneTable(
     **
     **        I = (K+D-1)/D
     **
-    ** If K==0 then no entry is made into the sqlite_stat1 table.  
+    ** If K==0 then no entry is made into the sqlite_stat1 table.
     ** If K>0 then it is always the case the D>0 so division by zero
     ** is never possible.
     */
@@ -319,7 +319,7 @@ void sqlite3Analyze(Parse *pParse, Token *pName1, Token *pName2){
       if( pTab ){
         analyzeTable(pParse, pTab);
       }
-    }   
+    }
   }
 }
 
@@ -335,7 +335,7 @@ struct analysisInfo {
 
 /*
 ** This callback is invoked once for each index when reading the
-** sqlite_stat1 table.  
+** sqlite_stat1 table.
 **
 **     argv[0] = name of the index
 **     argv[1] = results of analysis - on integer for each column

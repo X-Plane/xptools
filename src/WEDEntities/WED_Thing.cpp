@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -29,7 +29,7 @@
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
-	name(this,"Name","WED_things", "name","unnamed entity")	
+	name(this,"Name","WED_things", "name","unnamed entity")
 {
 	parent_id = 0;
 }
@@ -41,14 +41,14 @@ WED_Thing::~WED_Thing()
 void WED_Thing::CopyFrom(const WED_Thing * rhs)
 {
 	StateChanged();
-	
+
 	int nn = rhs->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
 		WED_Thing * child = rhs->GetNthChild(n);
 		WED_Thing * new_child = dynamic_cast<WED_Thing *>(child->Clone());
-		new_child->SetParent(this, n);		
-	}		
+		new_child->SetParent(this, n);
+	}
 
 	int pc = rhs->CountProperties();
 	for (int p = 0; p < pc; ++p)
@@ -56,7 +56,7 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 		PropertyVal_t v;
 		rhs->GetNthProperty(p, v);
 		this->SetNthProperty(p, v);
-	}	
+	}
 }
 
 void 			WED_Thing::ReadFrom(IOReader * reader)
@@ -67,7 +67,7 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 	child_id.resize(ct);
 	for (int n = 0; n < ct; ++n)
 		reader->ReadInt(child_id[n]);
-	
+
 	ReadPropsFrom(reader);
 }
 
@@ -75,11 +75,11 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 {
 	int n;
 	writer->WriteInt(parent_id);
-	
+
 	writer->WriteInt(child_id.size());
 	for (int n = 0; n < child_id.size(); ++n)
 		writer->WriteInt(child_id[n]);
-	
+
 	WritePropsTo(writer);
 }
 
@@ -87,65 +87,65 @@ void			WED_Thing::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
 	child_id.clear();
 	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
-	
+
 	sql_row1<int>						key(GetID());
 	sql_row1<int>						me;
-	
+
 	int err = cmd.simple_exec(key, me);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete thing query: %d (%s)",err, sqlite3_errmsg(db));
-	
+
 	parent_id = me.a;
-	
+
 	sql_command kids(db, "SELECT id FROM WED_things WHERE parent=@id ORDER BY seq;","@id");
 	sql_row1<int>	kid;
-	
+
 	kids.set_params(key);
 	kids.begin();
 	while ((err = kids.get_row(kid)) == SQLITE_ROW)
 	{
 		child_id.push_back(kid.a);
 	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));	
-	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));
+
 	char where_crud[100];
-	sprintf(where_crud,"id=%d",GetID());	
+	sprintf(where_crud,"id=%d",GetID());
 	PropsFromDB(db,where_crud,mapping);
 }
 
 void			WED_Thing::ToDB(sqlite3 * db)
 {
 	int err;
-	
+
 	int persistent_class_id;
-	
+
 	{
 		const char * my_class = this->GetClass();
-		
+
 		sql_command	find_my_class(db,"SELECT id FROM WED_classes WHERE name=@name;","@name");
 		sql_row1<string>	class_key(my_class);
-		
+
 		find_my_class.set_params(class_key);
 		sql_row1<int>	found_id;
 		if (find_my_class.get_row(found_id) == SQLITE_ROW)
 		{
-			persistent_class_id = found_id.a;		
+			persistent_class_id = found_id.a;
 		}
 		else
 		{
 			sql_command	find_highest_id(db,"SELECT MAX(id) FROM WED_classes;",NULL);
 			sql_row1<int>	highest_key;
 			err = find_highest_id.simple_exec(sql_row0(), highest_key);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
-			
+			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
+
 			persistent_class_id = highest_key.a + 1;
-			
+
 			sql_command record_new_class(db,"INSERT INTO WED_classes VALUES(@id,@name);","@id,@name");
 			sql_row2<int,string> new_class_info(persistent_class_id,my_class);
 			err = record_new_class.simple_exec(new_class_info);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
+			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
 		}
 	}
-	
+
 	sql_command write_me(db,"INSERT OR REPLACE INTO WED_things VALUES(@id,@parent,@seq,@name,@class_id);","@id,@parent,@seq,@name,@class_id");
 	sql_row5<int,int,int,string,int>	bindings(
 												GetID(),
@@ -153,12 +153,12 @@ void			WED_Thing::ToDB(sqlite3 * db)
 												GetMyPosition(),
 												name.value,
 												persistent_class_id);
-	
+
 	err =  write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
-	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
+
 	char id_str[20];
-	sprintf(id_str,"%d",GetID());	
+	sprintf(id_str,"%d",GetID());
 	PropsToDB(db,"id",id_str, "WED_things");
 }
 
@@ -227,7 +227,7 @@ void				WED_Thing::AddChild(int id, int n)
 {
 	StateChanged(wed_Change_Topology);
 	DebugAssert(n >= 0);
-	DebugAssert(n <= child_id.size());	
+	DebugAssert(n <= child_id.size());
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
 	DebugAssert(i == child_id.end());
 	child_id.insert(child_id.begin()+n,id);
@@ -266,7 +266,7 @@ IBase *		WED_Thing::Array_GetNth(int n)
 {
 	return GetNthChild(n);
 }
-	
+
 IBase *		WED_Thing::Directory_Find(const char * name)
 {
 	return GetNamedChild(name);

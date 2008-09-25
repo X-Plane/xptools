@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -62,10 +62,10 @@ class sio_8211DR : public sio_8211Record
 
       /**
        If flag == true, will reuse the current leader and directory.
-       If the leader and directory haven't been valued (either by a 
+       If the leader and directory haven't been valued (either by a
        previous read operation or through a constructor), subsequent
        read operations will fail.
-      
+
        The default behavior is to NOT reuse the leader and directory.
       */
       void wroteDroppedLeaderAndDir( bool flag );
@@ -90,7 +90,7 @@ class sio_8211DR : public sio_8211Record
        don't need to be delimited by a a field terminator, otherwise
        they have to have one.
       */
-      bool addRepeatingField(sio_Buffer const& field_data, bool is_variable); 
+      bool addRepeatingField(sio_Buffer const& field_data, bool is_variable);
 
 
       ///

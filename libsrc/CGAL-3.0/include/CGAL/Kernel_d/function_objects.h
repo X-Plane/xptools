@@ -42,53 +42,53 @@ class Construct
     operator()() const
     { return ToBeConstructed(); }
 
-    template <class A1> 
+    template <class A1>
     ToBeConstructed
     operator()( const A1& a1) const
     { return ToBeConstructed(a1); }
 
-    template <class A1, class A2> 
+    template <class A1, class A2>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2) const
     { return ToBeConstructed(a1,a2); }
 
-    template <class A1, class A2, class A3> 
+    template <class A1, class A2, class A3>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3) const
     { return ToBeConstructed(a1,a2,a3); }
 
-    template <class A1, class A2, class A3, class A4> 
+    template <class A1, class A2, class A3, class A4>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return ToBeConstructed(a1,a2,a3,a4); }
 
-    template <class A1, class A2, class A3, class A4, class A5> 
+    template <class A1, class A2, class A3, class A4, class A5>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4,
 	    const A5& a5) const
     { return ToBeConstructed(a1,a2,a3,a4,a5); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7, const A& a8, const A& a9) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -96,7 +96,7 @@ class Construct
                 const A& a10) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -104,7 +104,7 @@ class Construct
                 const A& a10,const A& a11,const A& a12) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,

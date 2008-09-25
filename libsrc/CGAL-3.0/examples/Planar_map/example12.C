@@ -34,7 +34,7 @@ int main()
               << std::endl;
     return 1;
   }
-  
+
   Point_2 a0(0, 0), a1(2, 0), a2(1, 2);
 
   // Create the curves:
@@ -51,11 +51,11 @@ int main()
   // Insert the curves into the Planar_map:
   std::cout << "Inserting the curves to the map ... ";
 
-  Planar_map::Halfedge_handle e[3];  
+  Planar_map::Halfedge_handle e[3];
   e[0] = pm.insert_in_face_interior(cv[0], pm.unbounded_face());
   e[1] = pm.insert_from_vertex(cv[1], e[0]);
   e[2] = pm.insert_at_vertices(cv[2], e[1], e[0]->twin());
-  
+
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
 
@@ -65,12 +65,12 @@ int main()
               << std::endl;
     return 1;
   }
-  
+
   if (e[0]->face()->is_unbounded()) {
     std::cerr << "Error: wrong unbounded face!" << std::endl;
     return 1;
   }
-  
+
   Point_2 p2(1, 1);
   if (!pm.is_point_in_face(p2, e[0]->face())) {
     std::cerr << "Error: failed to determine point2 in face!" << std::endl;

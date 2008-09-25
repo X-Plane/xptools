@@ -20,7 +20,7 @@ class NavigationInfoNode : public BindableNode {
 	MFString *typeField;
 	SFBool *headlightField;
 	SFFloat *speedField;
-	
+
 public:
 
 	NavigationInfoNode();
@@ -51,7 +51,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getHeadlightField();
-	
+
 	void setHeadlight(bool value);
 	void setHeadlight(int value);
 	bool getHeadlight();
@@ -68,7 +68,7 @@ public:
 	////////////////////////////////////////////////
 	//	Speed
 	////////////////////////////////////////////////
-	
+
 	SFFloat *getSpeedField();
 
 	void setSpeed(float value);
@@ -85,7 +85,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	void initialize();
 	void uninitialize();
 	void update();

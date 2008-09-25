@@ -1,4 +1,4 @@
-// 
+//
 // file: demo/Convex_hull_3/incremental_3_demo.C
 //
 #include <CGAL/Homogeneous.h>
@@ -43,7 +43,7 @@ int main ()
 {
   Convex_hull_3 CH(3);  // create instance of the class with dimension == 3
 
-  // generate 250 points randomly on a sphere of radius 100 
+  // generate 250 points randomly on a sphere of radius 100
   // and insert them into the convex hull
   CGAL::Random_points_in_sphere_3<Point_3, Creator> gen(100);
 
@@ -53,7 +53,7 @@ int main ()
   assert(CH.is_valid());
 
   // define polyhedron to hold convex hull and create it
-  Polyhedron_3 P; 
+  Polyhedron_3 P;
   CGAL::convex_hull_d_to_polyhedron_3(CH,P);
 
   // display polyhedron in a geomview window

@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -106,7 +106,7 @@ lib3ds_chunk_read(Lib3dsChunk *c, Lib3dsIo *io)
     return(LIB3DS_FALSE);
   }
   return(LIB3DS_TRUE);
-  
+
 }
 
 
@@ -284,7 +284,7 @@ lib3ds_chunk_unknown(Lib3dsWord chunk)
 /*!
  * \ingroup chunk
  */
-void 
+void
 lib3ds_chunk_dump_info(const char *format, ...)
 {
   if (enable_dump) {

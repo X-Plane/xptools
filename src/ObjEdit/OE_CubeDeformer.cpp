@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,27 +27,27 @@
 #include "OE_Zoomer3d.h"
 
 const int	kDeformInfo[26][7] = {
-	// Coords		
-	//	X	Y	Z	
+	// Coords
+	//	X	Y	Z
 	{	-1,	-1,	-1 },
 	{	-1, -1,	 0 },
-	{	-1, -1,	 1 },	
+	{	-1, -1,	 1 },
 	{	-1,	 0,	-1 },
 	{	-1,  0,	 0 },
 	{	-1,  0,	 1 },
 	{	-1,	 1,	-1 },
 	{	-1,	 1,	 0 },
-	{	-1,	 1,	 1 },	
+	{	-1,	 1,	 1 },
 
-	{	 0,	-1,	-1 },	
-	{	 0, -1,	 0 },	
-	{	 0, -1,	 1 },	
-	{	 0,	 0,	-1 },	
+	{	 0,	-1,	-1 },
+	{	 0, -1,	 0 },
+	{	 0, -1,	 1 },
+	{	 0,	 0,	-1 },
 //	{	 0,  0,	 0 },
-	{	 0,  0,	 1 },	
-	{	 0,	 1,	-1 },	
-	{	 0,	 1,	 0 },	
-	{	 0,	 1,	 1 },	
+	{	 0,  0,	 1 },
+	{	 0,	 1,	-1 },
+	{	 0,	 1,	 0 },
+	{	 0,	 1,	 1 },
 
 	{ 	 1,	-1,	-1 },
 	{	 1, -1,	 0 },
@@ -92,7 +92,7 @@ inline	void	abs_average(double& a, double& b)
 
 
 OE_CubeDeformer::OE_CubeDeformer()
-{	
+{
 	mControlPoint = -1;
 	setIdentityMatrix(mRotateMatrix);
 	setIdentityMatrix(mTranslateMatrix);
@@ -120,18 +120,18 @@ void	OE_CubeDeformer::DrawDeformer(void)
 	glPointSize(1);
 	glPopMatrix();
 }
-	
+
 bool	OE_CubeDeformer::TrackClick(
 					OE_Zoomer3d *	zoomer,
 					int				bounds[4],
-					XPLMMouseStatus status, 
-					int 			x, 
-					int 			y, 
+					XPLMMouseStatus status,
+					int 			x,
+					int 			y,
 					int 			button)
 {
 		double	pt1[3], pt2[3], diff[3], cross[3];
 
-	if (status == xplm_MouseDown) 
+	if (status == xplm_MouseDown)
 	{
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -144,13 +144,13 @@ bool	OE_CubeDeformer::TrackClick(
 			double	screenPt[2];
 			double	z;
 			double	modPt[3];
-			
+
 			modPt[0] = kDeformInfo[n][0];
 			modPt[1] = kDeformInfo[n][1];
 			modPt[2] = kDeformInfo[n][2];
 			ModelToScreenPt(modPt, screenPt, &z);
-			
-			double	distSq = (x - screenPt[0]) * (x - screenPt[0]) + 
+
+			double	distSq = (x - screenPt[0]) * (x - screenPt[0]) +
 							(y - screenPt[1]) * (y - screenPt[1]);
 			if (distSq < 9.0)
 			{
@@ -166,9 +166,9 @@ bool	OE_CubeDeformer::TrackClick(
 
 		mMouseX = x;
 		mMouseY = y;
-		
+
 		return (mControlPoint != -1);
-		
+
 	} else {
 		if (mControlPoint == -1)	return false;
 
@@ -179,11 +179,11 @@ bool	OE_CubeDeformer::TrackClick(
 		double	dx = kDeformInfo[mControlPoint][0];
 		double	dy = kDeformInfo[mControlPoint][1];
 		double	dz = kDeformInfo[mControlPoint][2];
-		
+
 		double	plane[4] = { 0.0, 0.0, 0.0, 0.0 };
-		
+
 		int numNotZero = NumNotZero(dx,dy,dz);
-		
+
 		if (numNotZero == 3)
 		{
 			/* CORNER - TRACKBALL ROTATE AROUND POINT */
@@ -197,35 +197,35 @@ bool	OE_CubeDeformer::TrackClick(
 
 				double	theta = asin(vec3_length(cross)) * 180.0 / M_PI;
 				vec3_normalize(cross);
-				
+
 				double	newMatrix[16], temp[16];
 				buildRotation(newMatrix, theta, cross[0],cross[1],cross[2]);
 				multMatrices(temp, mRotateMatrix, newMatrix);
 				copyMatrix(mRotateMatrix, temp);
 			}
-		} 
+		}
 		else if (numNotZero == 1)
 		{
 			/* CENTER - 1-AXIS SCALE/DRAG/MOVE */
-			
-			// We need to pick our plane carefully here...we're only going to 
+
+			// We need to pick our plane carefully here...we're only going to
 			// care about one axis.  The other's going to be bogus.  So we need
 			// to pick a plane that is as flat against the monitor as possible.
 			// That's pretty straight forward: we know we want a line embedded
 			// in the screen to be in the plane.  We also want our axis to be in
 			// the plane.  So....
-			
+
 			// Transform the line vector into eye coordinates.
 			// Takes its X and Y and form a line in eye coordinates that
 			// goes perpendicular in the screen plane in x and Y (Z delta = 0)
 			// Transform this line back to model-view coords.
 			// Build the plane off of their cross-product
-			
+
 			double	majorAxisMV[4] = { dx, dy, dz, 1.0 };
 			double	majorAxisE[4];
 			double	minorAxisMV[4];
 			double	minorAxisE[4] = { 0.0, 0.0, 0.0, 1.0 };
-			
+
 			double	mvMatrix[16], mvMatrix_i[16];
 			glGetDoublev(GL_MODELVIEW_MATRIX, mvMatrix);
 			mvMatrix[12] = mvMatrix[13] = mvMatrix[14] = 0.0;
@@ -236,17 +236,17 @@ bool	OE_CubeDeformer::TrackClick(
 			vec3_normalize(minorAxisE);
 			multMatrixVec(minorAxisMV, mvMatrix_i, minorAxisE);
 			vec3_normalize(minorAxisMV);
-			
+
 			vec3_cross(plane, majorAxisMV, minorAxisMV);
 			vec3_normalize(plane);
-					
+
 			zoomer->FindPointOnPlane(bounds, plane, mMouseX, mMouseY, pt1, false);
 			zoomer->FindPointOnPlane(bounds, plane, x, y, pt2, false);
 			diff[0] = pt2[0] - pt1[0];
 			diff[1] = pt2[1] - pt1[1];
 			diff[2] = pt2[2] - pt1[2];
 
-			XPLMKeyFlags	flags = XPLMGetModifiers(); 			
+			XPLMKeyFlags	flags = XPLMGetModifiers();
 
 			if (dx == 0.0)	diff[0] = 0.0;
 			if (dy == 0.0)	diff[1] = 0.0;
@@ -257,7 +257,7 @@ bool	OE_CubeDeformer::TrackClick(
 				diff[0] = diff[1] = diff[2] = greatest_abs_3(diff[0], diff[1], diff[2]);
 				dx = dy = dz = 1.0;
 			}
-			
+
 			double	newScale[16], newTransform[16], temp[16];
 			setIdentityMatrix(newScale);
 			setIdentityMatrix(newTransform);
@@ -271,7 +271,7 @@ bool	OE_CubeDeformer::TrackClick(
 				newScale[0 ] = 1.0 + diff[0] * 1.0 * dx;
 				newScale[5 ] = 1.0 + diff[1] * 1.0 * dy;
 				newScale[10] = 1.0 + diff[2] * 1.0 * dz;
-			} else {			
+			} else {
 				newTransform[12] = diff[0] * 0.5;
 				newTransform[13] = diff[1] * 0.5;
 				newTransform[14] = diff[2] * 0.5;
@@ -279,7 +279,7 @@ bool	OE_CubeDeformer::TrackClick(
 				newScale[5 ] = 1.0 + diff[1] * 0.5 * dy;
 				newScale[10] = 1.0 + diff[2] * 0.5 * dz;
 			}
-			
+
 			multMatrices(temp, mScaleMatrix, newTransform);
 			copyMatrix(newTransform, temp);
 			multMatrices(temp, mRotateMatrix, newTransform);
@@ -293,25 +293,25 @@ bool	OE_CubeDeformer::TrackClick(
 			copyMatrix(mTranslateMatrix, temp);
 
 			multMatrices(temp, mScaleMatrix, newScale);
-			copyMatrix(mScaleMatrix, temp);		
-		} 
+			copyMatrix(mScaleMatrix, temp);
+		}
 		else if (numNotZero == 2 && button == 1)
 		{
 			/* EDGE RIGHT BUTTON - ROTATE AROUND AXIS */
 			if (dx == 0.0)	plane[0] = 1.0;
 			if (dy == 0.0)	plane[1] = 1.0;
 			if (dz == 0.0)	plane[2] = 1.0;
-			
+
 			zoomer->FindPointOnPlane(bounds, plane, mMouseX, mMouseY, pt1, false);
 			zoomer->FindPointOnPlane(bounds, plane, x, y, pt2, false);
-			
+
 			vec3_normalize(pt1);
-			vec3_normalize(pt2);			
+			vec3_normalize(pt2);
 			vec3_cross(cross, pt1, pt2);
-			
+
 			double	theta = asin(vec3_length(cross)) * 180.0 / M_PI;
 			vec3_normalize(cross);
-			
+
 			double	newMatrix[16], temp[16];
 			buildRotation(newMatrix, theta, cross[0],cross[1],cross[2]);
 			multMatrices(temp, mRotateMatrix, newMatrix);
@@ -320,18 +320,18 @@ bool	OE_CubeDeformer::TrackClick(
 		else if (numNotZero == 2 && button == 0)
 		{
 			/* EDGE LEFT BUTTON - 2 AXIS MOVE/ROTATE/SCALE */
-			
+
 			if (dx == 0.0)	plane[0] = 1.0;
 			if (dy == 0.0)	plane[1] = 1.0;
 			if (dz == 0.0)	plane[2] = 1.0;
-			
+
 			zoomer->FindPointOnPlane(bounds, plane, mMouseX, mMouseY, pt1, false);
 			zoomer->FindPointOnPlane(bounds, plane, x, y, pt2, false);
 			diff[0] = pt2[0] - pt1[0];
 			diff[1] = pt2[1] - pt1[1];
 			diff[2] = pt2[2] - pt1[2];
 
-			XPLMKeyFlags	flags = XPLMGetModifiers(); 			
+			XPLMKeyFlags	flags = XPLMGetModifiers();
 			if ((flags & (xplm_ShiftFlag + xplm_OptionAltFlag)) == (xplm_ShiftFlag + xplm_OptionAltFlag))
 			{
 				if (dx == 0.0)	diff[1] = diff[2] = 0.5 * (diff[1] * dy + diff[2] * dz);
@@ -346,7 +346,7 @@ bool	OE_CubeDeformer::TrackClick(
 			if (dx == 0.0)	diff[0] = 0.0;
 			if (dy == 0.0)	diff[1] = 0.0;
 			if (dz == 0.0)	diff[2] = 0.0;
-			
+
 			double	newScale[16], newTransform[16], temp[16];
 			setIdentityMatrix(newScale);
 			setIdentityMatrix(newTransform);
@@ -359,7 +359,7 @@ bool	OE_CubeDeformer::TrackClick(
 				newScale[0 ] = 1.0 + diff[0] * 1.0 * dx;
 				newScale[5 ] = 1.0 + diff[1] * 1.0 * dy;
 				newScale[10] = 1.0 + diff[2] * 1.0 * dz;
-			} else {			
+			} else {
 				newTransform[12] = diff[0] * 0.5;
 				newTransform[13] = diff[1] * 0.5;
 				newTransform[14] = diff[2] * 0.5;
@@ -367,7 +367,7 @@ bool	OE_CubeDeformer::TrackClick(
 				newScale[5 ] = 1.0 + diff[1] * 0.5 * dy;
 				newScale[10] = 1.0 + diff[2] * 0.5 * dz;
 			}
-			
+
 			multMatrices(temp, mScaleMatrix, newTransform);
 			copyMatrix(newTransform, temp);
 			multMatrices(temp, mRotateMatrix, newTransform);
@@ -381,20 +381,20 @@ bool	OE_CubeDeformer::TrackClick(
 			copyMatrix(mTranslateMatrix, temp);
 
 			multMatrices(temp, mScaleMatrix, newScale);
-			copyMatrix(mScaleMatrix, temp);		
+			copyMatrix(mScaleMatrix, temp);
 		}
-		
+
 		mMouseX = x;
 		mMouseY = y;
-		
+
 		glPopMatrix();
 		return true;
 	}
-	
-	
 
-	return false;		
-}						
+
+
+	return false;
+}
 
 void	OE_CubeDeformer::GetTransform(double	outTransform[16])
 {

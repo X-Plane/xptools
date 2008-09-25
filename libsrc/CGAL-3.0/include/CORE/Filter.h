@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: Filter.h
  *
  * Synopsis:
@@ -11,7 +11,7 @@
  *      We do not use IEEE exception mechanism here.
  *      It is used by the Expr class.
  *
- * Written by 
+ * Written by
  *       Zilin Du <zilin@cs.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *
@@ -31,7 +31,7 @@
   #define finite(x)	_finite(x)
   #define ilogb(x)	(int)_logb(x)
 #else
-  extern "C" int finite(double);	// since SunOS defined "finite" in 
+  extern "C" int finite(double);	// since SunOS defined "finite" in
   extern "C" int ilogb(double);		// <ieeefp.h>, but gnu defined it
 					// in <math.h>, so we declared it
 					// here explictly.
@@ -43,7 +43,7 @@ CORE_BEGIN_NAMESPACE
 const int POWTWO_26 = (1 << 26);  ///< constant 2^26
 
 /// constant infty double
-#define DBL_INFTY (2*DBL_MAX)  
+#define DBL_INFTY (2*DBL_MAX)
 
 /// \class filteredFp Filter.h
 /// \brief filteredFp represents filtered floating point
@@ -57,12 +57,12 @@ public:
   /// \name Constructors
   //@{
   /// constructor
-  filteredFp (double val = 0.0) 
+  filteredFp (double val = 0.0)
     : fpVal(val), maxAbs(core_abs(val)), ind(0) {}
   /// constructor
-  filteredFp (double val, double m, int i) 
+  filteredFp (double val, double m, int i)
     : fpVal(val), maxAbs(m), ind(i) {}
-  
+
   /// construct a filteredFp from Real v.
   /** if v causes an overflow, fpVal = +/- Infty
       if v causes an underflow, fpVal = ...? */
@@ -80,12 +80,12 @@ public:
   /// return filtered value (for debug)
   double getValue() const { return fpVal; }
   /// check whether filtered value is OK
-  bool isOK() const 
+  bool isOK() const
   { return (fpFilterFlag  && // To disable filter
 	    finite(fpVal) && // Test for infinite and NaNs
 	    (core_abs(fpVal) >= maxAbs*ind*CORE_EPS)); }
   /// return the sign of fitered value.
-  /** (note: call isOK() to check whether the sign is ok 
+  /** (note: call isOK() to check whether the sign is ok
       before call this function.) */
   int sign() const {
 #ifdef DEBUG
@@ -98,13 +98,13 @@ public:
   }
   /// lower bound on MSB
   /** defined to be cel(lg(real value));
-      ilogb(x) is floor(log_2(|x|)). 
+      ilogb(x) is floor(log_2(|x|)).
       Also, ilogb(0) = -INT_MAX.
    	    ilogb(NaN) = ilogb(+/-Inf) = INT_MAX */
-  extLong lMSB() const 
+  extLong lMSB() const
   { return extLong(ilogb(core_abs(fpVal)-maxAbs*ind*CORE_EPS));}
-  /// upper bound on MSB 
-  extLong uMSB() const 
+  /// upper bound on MSB
+  extLong uMSB() const
   { return extLong(ilogb(core_abs(fpVal)+maxAbs*ind*CORE_EPS));}
   //@}
 
@@ -116,7 +116,7 @@ public:
   /// addition
   filteredFp operator+ (const filteredFp& x) const
   { return filteredFp(fpVal+x.fpVal, maxAbs+x.maxAbs, 1+core_max(ind, x.ind)); }
-  /// subtraction 
+  /// subtraction
   filteredFp operator- (const filteredFp& x) const
   { return filteredFp(fpVal-x.fpVal, maxAbs+x.maxAbs, 1+core_max(ind, x.ind)); }
   /// multiplication
@@ -134,20 +134,20 @@ public:
     } else
       return filteredFp(DBL_INFTY, 0.0, 0);
   }
-  /// square root 
+  /// square root
   filteredFp sqrt () const {
     if (fpVal < 0.0)
-      core_error("possible negative sqrt!", __FILE__, __LINE__, false);    
+      core_error("possible negative sqrt!", __FILE__, __LINE__, false);
     if (fpVal > 0.0) {
       double val = ::sqrt(fpVal);
       return filteredFp(val,  ( maxAbs / fpVal ) * val, 1 + ind);
-    } else 
+    } else
       return filteredFp(0.0, ::sqrt(maxAbs) * POWTWO_26, 1 + ind);
   }
 
   void dump (std::ostream&os) const {
     os << " Filter = [fpVal = " << fpVal << " , maxAbs = " << maxAbs
-	    << " , ind = " << ind << " ]"; 
+	    << " , ind = " << ind << " ]";
   }
   //@}
 }; //filteredFp class

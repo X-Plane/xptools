@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -89,8 +89,8 @@ inline int GUI_Window::OGL2Client_Y(int y, Window w)
 // (GUI_Pane).  It handles coordinate conversion, but uses a helper class (GUI_OLE_Adapter) to convert data from the system's native
 // COM interfaces to something we can understand.
 
-class GUI_Window_DND : public IDropTarget {   
-public:    
+class GUI_Window_DND : public IDropTarget {
+public:
     GUI_Window_DND(GUI_Pane * iTarget, HWND inWindow);
    ~GUI_Window_DND();
 
@@ -103,14 +103,14 @@ public:
    STDMETHOD(DragEnter)(LPDATAOBJECT, DWORD, POINTL, LPDWORD);
    STDMETHOD(DragOver)(DWORD, POINTL, LPDWORD);
    STDMETHOD(DragLeave)(void);
-   STDMETHOD(Drop)(LPDATAOBJECT, DWORD, POINTL, LPDWORD); 
-      
+   STDMETHOD(Drop)(LPDATAOBJECT, DWORD, POINTL, LPDWORD);
+
 private:
-	ULONG			mRefCount;  	
+	ULONG			mRefCount;
 	GUI_Pane *		mTarget;
 	HWND			mWindow;
 	IDataObject *	mData;
-   
+
 };
 
 GUI_Window_DND::GUI_Window_DND(GUI_Pane * inTarget, HWND inWindow) :
@@ -157,8 +157,8 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 {
 	mData = data_obj;
 	mData->AddRef();
-	
-	GUI_OLE_Adapter	adapter(mData);	
+
+	GUI_OLE_Adapter	adapter(mData);
 
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
@@ -171,18 +171,18 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 	ScreenToClient(mWindow, &p);
 
 	*effect = OP_GUI2Win(mTarget->InternalDragEnter(
-				Client2OGL_X(p.x, mWindow), 
-				Client2OGL_Y(p.y, mWindow), 
+				Client2OGL_X(p.x, mWindow),
+				Client2OGL_Y(p.y, mWindow),
 				&adapter, OP_Win2GUI(allowed), OP_Win2GUI(recommended)));
 	mTarget->InternalDragScroll(
-				Client2OGL_X(p.x, mWindow), 
+				Client2OGL_X(p.x, mWindow),
 				Client2OGL_Y(p.y, mWindow));
 	return S_OK;
 }
 
 STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD effect)
 {
-	GUI_OLE_Adapter	adapter(mData);	
+	GUI_OLE_Adapter	adapter(mData);
 
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
@@ -192,13 +192,13 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 	p.x = where.x;
 	p.y = where.y;
 	ScreenToClient(mWindow, &p);
-	
+
 	*effect = OP_GUI2Win(mTarget->InternalDragOver(
-			Client2OGL_X(p.x, mWindow), 
-			Client2OGL_Y(p.y, mWindow), 
+			Client2OGL_X(p.x, mWindow),
+			Client2OGL_Y(p.y, mWindow),
 			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
 	 mTarget->InternalDragScroll(
-			Client2OGL_X(p.x, mWindow), 
+			Client2OGL_X(p.x, mWindow),
 			Client2OGL_Y(p.y, mWindow));
 	return S_OK;
 }
@@ -213,7 +213,7 @@ STDMETHODIMP GUI_Window_DND::DragLeave(void)
 
 STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
-	GUI_OLE_Adapter	adapter(data_obj);	
+	GUI_OLE_Adapter	adapter(data_obj);
 
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
@@ -225,16 +225,16 @@ STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL
 	ScreenToClient(mWindow, &p);
 
 	*effect = OP_GUI2Win(mTarget->InternalDrop(
-			Client2OGL_X(p.x, mWindow), 
-			Client2OGL_Y(p.y, mWindow), 
+			Client2OGL_X(p.x, mWindow),
+			Client2OGL_Y(p.y, mWindow),
 			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
 	mTarget->InternalDragLeave();
-	
+
 	return S_OK;
-	
+
 }
-    
-//	From Raymond Chen's blog: 
+
+//	From Raymond Chen's blog:
 //	http://blogs.msdn.com/oldnewthing/archive/2004/12/06/275659.aspx
 
 class GUI_DropSource : public IDropSource {
@@ -258,7 +258,7 @@ HRESULT GUI_DropSource::QueryInterface(REFIID riid, void **ppv)
 	else	if (riid == IID_IDropSource)	punk = static_cast<IDropSource*>(this);
 
 	*ppv = punk;
-	if (punk) 
+	if (punk)
 	{
 		punk->AddRef();
 		return S_OK;
@@ -315,20 +315,20 @@ pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef 
 	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
 	p.v = (bounds.bottom - bounds.top) - p.v;
 
-	DragActions	allowed;	
+	DragActions	allowed;
 	GetDragAllowableActions(theDrag, &allowed);
-	
+
 	GUI_DragMgr_Adapter	adapter(theDrag);
 
-	GUI_DragOperation recommended = allowed;	
+	GUI_DragOperation recommended = allowed;
 	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
 	{
 		SInt16 modifiers;
 		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-		if (modifiers & optionKey) 
+		if (modifiers & optionKey)
 			recommended = gui_Drag_Copy;
 	}
-	
+
 	switch(message) {
 	case kDragTrackingEnterWindow:
 		allowed = OP_GUI2Mac(win->InternalDragEnter(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
@@ -340,7 +340,7 @@ pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef 
 		// If we are dragging to ourselve, our event pump is blocked in the call to do-drag.  Flush now to
 		// force to the screen anything drawn.
 		win->UpdateNow();
-		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+		if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
 		else								return noErr;
 
 	case kDragTrackingInWindow:
@@ -349,19 +349,19 @@ pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef 
 		win->mLastDragY = p.v;
 		SetDragDropAction(theDrag, allowed);
 		win->UpdateNow();
-		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+		if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
 		else								return noErr;
 
  	case kDragTrackingLeaveWindow:
 		win->mInDrag = 0;
-		win->SetTimerInterval(0.0);	
+		win->SetTimerInterval(0.0);
 		win->InternalDragLeave();
 		win->UpdateNow();
  		return noErr;
 	}
-	return noErr;	
+	return noErr;
 }
-					
+
 pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef theDrag)
 {
 	GUI_Window *	win = (GUI_Window *) ref;
@@ -374,27 +374,27 @@ pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef
 	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
 	p.v = (bounds.bottom - bounds.top) - p.v;
 
-	DragActions	allowed;	
+	DragActions	allowed;
 	GetDragAllowableActions(theDrag, &allowed);
-	
+
 	GUI_DragMgr_Adapter	adapter(theDrag);
-	
-	GUI_DragOperation recommended = allowed;	
+
+	GUI_DragOperation recommended = allowed;
 	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
 	{
 		SInt16 modifiers;
 		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-		if (modifiers & optionKey) 
+		if (modifiers & optionKey)
 			recommended = gui_Drag_Copy;
 	}
-		
+
 	allowed = OP_GUI2Mac(win->InternalDrop(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
 	SetDragDropAction(theDrag, allowed);
-	if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+	if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
 	else								return noErr;
 }
 
-					
+
 DragTrackingHandlerUPP	GUI_Window::sTrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
 DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
 
@@ -407,12 +407,12 @@ DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(
 #if APL
 
 pascal OSStatus	GUI_Window::TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent)
-{	
+{
 	GUI_Window * me = (GUI_Window * ) GetWRefCon(inWindow);
 	int has_tip;
 	string tip_str;
 	int tip_bounds[4];
-	
+
 	switch(inRequest) {
 	case kHMSupplyContent:
         ioHelpContent->version = kMacHelpVersion;
@@ -424,7 +424,7 @@ pascal OSStatus	GUI_Window::TooltipCB(WindowRef inWindow, Point inGlobalMouse, H
 			Client2OGL_X(inGlobalMouse.h, inWindow),
 			Client2OGL_Y(inGlobalMouse.v, inWindow),
 			tip_bounds, tip_str);
-		
+
 		if (has_tip && !tip_str.empty())
 		{
 			ioHelpContent->absHotRect.top    = OGL2Client_Y(tip_bounds[3],inWindow);
@@ -436,9 +436,9 @@ pascal OSStatus	GUI_Window::TooltipCB(WindowRef inWindow, Point inGlobalMouse, H
 			ioHelpContent->content[kHMMinimumContentIndex].contentType = kHMCFStringContent;
 			ioHelpContent->content[kHMMinimumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);
 			ioHelpContent->content[kHMMaximumContentIndex].contentType = kHMCFStringContent;
-			ioHelpContent->content[kHMMaximumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);			
+			ioHelpContent->content[kHMMaximumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);
 		}
-        *outContentProvided = has_tip ? kHMContentProvided : kHMContentNotProvidedDontPropagate;	
+        *outContentProvided = has_tip ? kHMContentProvided : kHMContentNotProvidedDontPropagate;
 		break;
 	case kHMDisposeContent:
 		break;
@@ -527,12 +527,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#if APL
 
 		InstallTrackingHandler(sTrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
-		InstallReceiveHandler(sReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));	
-		
+		InstallReceiveHandler(sReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));
+
 		HMInstallWindowContentCallback(mWindow,sTooltipUPP);
-		
+
 		SetWRefCon(mWindow, (long) this);
-		
+
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -548,7 +548,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	mClearColor = true;
 	mDesc = inTitle;
 	mState.Init();
-	
+
 	// BEN SEZ: this is probably a bad idea...
 	FocusChain(1);
 }
@@ -621,8 +621,8 @@ void		GUI_Window::ClickMove(int inX, int inY)
 		switch(cursor) {
 		case gui_Cursor_Resize_H:	SetThemeCursor(kThemeResizeLeftRightCursor);	break;
 		case gui_Cursor_Resize_V:	SetThemeCursor(kThemeResizeUpDownCursor);		break;
-		case gui_Cursor_None:		
-		case gui_Cursor_Arrow:		
+		case gui_Cursor_None:
+		case gui_Cursor_Arrow:
 		default:					SetThemeCursor(kThemeArrowCursor);	break;
 		}
 	#endif
@@ -632,7 +632,7 @@ void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 {
 	InternalMouseWheel(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inDelta, inAxis);
 }
-	
+
 void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 {
 #if IBM
@@ -650,13 +650,13 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 
 #endif
 
-	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] }; 
+	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
 
 	mBounds[0] = 0;
 	mBounds[1] = 0;
 	mBounds[2] = inWidth;
 	mBounds[3] = inHeight;
-	
+
 	if (oldBounds[0] != mBounds[0] ||
 		oldBounds[1] != mBounds[1] ||
 		oldBounds[2] != mBounds[2] ||
@@ -665,13 +665,13 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 			(*c)->ParentResized(oldBounds, mBounds);
 			Refresh();
-	}	
+	}
 }
 
 void			GUI_Window::GLDraw(void)
 {
 	SetGLContext();
-	
+
 	int	w, h;
 	XWinGL::GetBounds(&w, &h);
 	glViewport(0, 0, w, h);
@@ -717,7 +717,7 @@ void	GUI_Window::SetBounds(int inBounds[4])
 	XWinGL::Resize(inBounds[2]-inBounds[0], inBounds[3]-inBounds[1]);
 }
 
-void		GUI_Window::SetBounds(int x1, int y1, int x2, int y2) 
+void		GUI_Window::SetBounds(int x1, int y1, int x2, int y2)
 {
 	int b[4] = { x1, y1, x2, y2 };
 	SetBounds(b);
@@ -755,9 +755,9 @@ const char	gui_Key_Map [256] = {
 /* 48 */	0,					0,					0,					GUI_VK_DIVIDE,		GUI_VK_NUMPAD_ENT,	0,					GUI_VK_SUBTRACT,	0,
 /* 50 */	0,					GUI_VK_NUMPAD_EQ,	GUI_VK_NUMPAD0,	GUI_VK_NUMPAD1,	GUI_VK_NUMPAD2,	GUI_VK_NUMPAD3,	GUI_VK_NUMPAD4,	GUI_VK_NUMPAD5,
 /* 58 */	GUI_VK_NUMPAD6,	GUI_VK_NUMPAD7,	0,					GUI_VK_NUMPAD8,	GUI_VK_NUMPAD9,	0,					0,					0,
-/* 60 */	GUI_VK_F5,			GUI_VK_F6,			GUI_VK_F7,			GUI_VK_F3,			GUI_VK_F8,			GUI_VK_F9,			0,					GUI_VK_F11	,	
+/* 60 */	GUI_VK_F5,			GUI_VK_F6,			GUI_VK_F7,			GUI_VK_F3,			GUI_VK_F8,			GUI_VK_F9,			0,					GUI_VK_F11	,
 /* 68 */	0,					0,					0,					0,					0,					GUI_VK_F10,		0,					GUI_VK_F12,
-/* 70 */	0,					0,					0,					GUI_VK_HOME,		GUI_VK_PRIOR,		0,					GUI_VK_F4,			GUI_VK_END,		
+/* 70 */	0,					0,					0,					GUI_VK_HOME,		GUI_VK_PRIOR,		0,					GUI_VK_F4,			GUI_VK_END,
 /* 78 */	GUI_VK_F2,			GUI_VK_NEXT,		GUI_VK_F1,			GUI_VK_LEFT,		GUI_VK_RIGHT,		GUI_VK_DOWN,		GUI_VK_UP,			0
 };
 
@@ -839,7 +839,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		flags |= gui_DownFlag;
 	if (inMsg == keyUp)
 		flags |= gui_UpFlag;
-		
+
 	// NOTE: the GUI_KEY ASCII defines are all mac-compatible.
 
 	// Finally, control and option keys are not available as ASCII because
@@ -868,19 +868,19 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	if (((inParam2 & ExtKeyMask) == numLockKey) || ((inParam2 & ShiftControlMask) == capsLockKey) || ((inParam2 & ShiftControlMask) == scrollLockKey))
 		return 1;
 
-	if (inParam1 == VK_SHIFT || 
+	if (inParam1 == VK_SHIFT ||
 		inParam1 == VK_CONTROL ||
 		inParam1 == VK_MENU)
 	{
 		return 1;
 	}
 
-	hKL = GetKeyboardLayout(NULL); 
+	hKL = GetKeyboardLayout(NULL);
 	ScanCode = ((inParam2 >> 16) & 0xff);
 	ExtendedKey =  ((inParam2 >> 24) & 0x01);
-	vKey = MapVirtualKeyEx(ScanCode, 1, hKL); 
+	vKey = MapVirtualKeyEx(ScanCode, 1, hKL);
 	RetCode = GetKeyboardState((unsigned char*)&KeyState);
-	RetCode = ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL); 
+	RetCode = ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL);
 
 	if (RetCode != 0)
 	{
@@ -904,14 +904,14 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		flags |= gui_DownFlag;
 	if (inMsg == keyUp)
 		flags |= gui_UpFlag;
-		
+
 	// NOTE: the GUI_KEY ASCII defines are all mac-compatible.
-		
+
 	// Finally, control and option keys are not available as ASCII because
 	// the ASCII codes are whacko.
 	if ( ((inParam2 & ShiftControlMask) == controlKey) || ((inParam2 & ShiftControlMask) == optionKey))
 		charCode = 0;
-				
+
 #else
 	//#error "Must port XPLM to a new OS...key bindings come in in an OS native form."
     #warning implement linux key bindings
@@ -946,11 +946,11 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 #endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
-		return 1;	
-	
+		return 1;
+
 	if (this->DispatchKeyPress(charCode, virtualCode, flags)) return 1;
-		
-	return 0;		
+
+	return 0;
 }
 
 void		GUI_Window::Activate(int active)
@@ -974,7 +974,7 @@ void		GUI_Window::Timer(void)
 	// that time has passed.  Why here?  Well, we need to force a redraw since update events are blocked.
 	// So do this down in the window where we can know these things.  Prevent knowledge of blocked window redraws
 	// from getting out into the rest of GUI or worse the whole app.
-	if (mInDrag) 
+	if (mInDrag)
 	{
 		InternalDragScroll(mLastDragX, mLastDragY);
 		UpdateNow();
@@ -998,22 +998,22 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
 {
 	static GUI_Menu	popup_temp = NULL;
-	
+
 	DebugAssert(gApplication);
 	if (popup_temp)				gApplication->RebuildMenu(popup_temp, items);
 	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-	
-	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);	
+
+	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
 }
 
 bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
 	#if APL
-	
+
 		// Ben says: we're about to block waiting for a drag.  But any immediate pre-block feedback isn't on screen
 		// because we haven't processed events (and are not about to).  So...draw now.
 		UpdateNow();
-	
+
 		Point	p;
 		int bounds[4];
 
@@ -1040,35 +1040,35 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 		else
 			mMouseFocusButton = button;
 		return ret;
-			
+
 	#else
 		#warning implement linux mouse drag handler
 	#endif
 }
 
 GUI_DragOperation	GUI_Window::DoDragAndDrop(
-							int						x, 
+							int						x,
 							int						y,
 							int						where[4],
 							GUI_DragOperation		operations,
-							int						type_count, 
-							GUI_ClipType			inTypes[], 
-							int						sizes[], 
+							int						type_count,
+							GUI_ClipType			inTypes[],
+							int						sizes[],
 							const void *			ptrs[],
 							GUI_GetData_f			fetch_func,
 							void *					ref)
 {
 	#if APL
-	
+
 		int bounds[4];
 		SetPortWindowPort(mWindow);
 		GUI_Pane::GetBounds(bounds);
-		
+
 		Point	mac_click;
 		mac_click.h = x;
 		mac_click.v = (bounds[3] - bounds[1]) - y;
 		LocalToGlobal(&mac_click);
-		
+
 		Rect	the_item;
 		the_item.left = where[0];
 		the_item.right = where[2];
@@ -1076,18 +1076,18 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		the_item.top = (bounds[3] - bounds[1]) - where[3];
 		LocalToGlobal((Point *) &the_item.top);
 		LocalToGlobal((Point *) &the_item.bottom);
-		
+
 			EventRecord	fake;
 
 		fake.what = mouseDown;
 		fake.when = TickCount();
 		fake.where = mac_click;
 		fake.modifiers = GetCurrentKeyModifiers() & 0xFFFF;
-		
+
 			DragRef		drag;
-			
+
 			NewDrag(&drag);
-			
+
 			RgnHandle rgn = NewRgn();
 			RectRgn(rgn, &the_item);
 
@@ -1100,11 +1100,11 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		GetDragItemReferenceNumber(drag, 1, &item_ref);
 		SetDragItemBounds(drag, item_ref, &the_item);
 
-								
+
 		int success = TrackDrag(drag, &fake, rgn) == noErr;
 
 		DisposeRgn(rgn);
-		
+
 		if (success)
 		{
 			DragActions act;
@@ -1113,26 +1113,26 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 			DisposeDrag(drag);
 			return result;
 		} else {
-			
+
 			DisposeDrag(drag);
 			return gui_Drag_None;
 
 		}
-		
-	
+
+
 	#elif IBM
 		GUI_DropSource	* drop_source = new GUI_DropSource;
 		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, fetch_func, ref);
 		DWORD effect;
-		
+
 		if (DoDragDrop(data, drop_source, OP_GUI2Win(operations), &effect) != DRAGDROP_S_DROP)
 			effect = DROPEFFECT_NONE;
-			
+
 		data->Release();
 		drop_source->Release();
-		
+
 		GUI_DragOperation result = OP_Win2GUI(effect);
-		
+
 		// Repost a fake up click - if we were dragging, the drag probably ate the up-click
 		PostMessage(mWindow, mMouseFocusButton ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
 
@@ -1185,11 +1185,11 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 					if (tip.empty()) di->szText[0] = 0;
 					else			 strcpy(di->szText,tip.c_str());
 					return 0;
-				default: 
+				default:
 					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
 				}
 			}
-			return 0;			
+			return 0;
 		case WM_INITMENU:
 			EnableMenusWin();
 			return 0;
@@ -1204,10 +1204,10 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 				int x, y;
 				me->GetMouseLoc(&x,&y);
 				int curs = me->InternalGetCursor(Client2OGL_X(x,me->mWindow),Client2OGL_Y(y,me->mWindow));
-				switch(curs) {				
+				switch(curs) {
 				case gui_Cursor_Resize_H:	SetCursor(LoadCursor(NULL,IDC_SIZEWE));	break;
 				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	break;
-				case gui_Cursor_None:		
+				case gui_Cursor_None:
 				case gui_Cursor_Arrow:
 				default:					SetCursor(LoadCursor(NULL,IDC_ARROW));	break;
 				}

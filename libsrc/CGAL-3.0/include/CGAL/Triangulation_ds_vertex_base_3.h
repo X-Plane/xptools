@@ -39,7 +39,7 @@ public:
 
   Triangulation_ds_vertex_base_3()
     : _c(NULL) {}
-  
+
   Triangulation_ds_vertex_base_3(const Cell_handle& c)
     : _c(c) {}
 
@@ -50,10 +50,10 @@ public:
   { _c = c; }
 
   // the following trivial is_valid allows
-  // the user of derived cell base classes 
+  // the user of derived cell base classes
   // to add their own purpose checking
   bool is_valid(bool, int ) const
-  { 
+  {
     return cell() != NULL;
   }
 

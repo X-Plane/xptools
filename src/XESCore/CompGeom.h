@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,7 +38,7 @@ bool	IsNearParallel(const Direction_2& a, const Direction_2& b);
 bool	IsNearParallel(const Vector_2& a, const Vector_2& b);
 
 
-/* 
+/*
  * InsetPolygon
  *
  * Given a CCW polygon (or a segment chain), this routine insets
@@ -59,7 +59,7 @@ void	InsetPolygon(
  *
  * Given a CCW polygon and a vector of distances to inset the
  * polygon, this routine will calculate the maximum multiplyer
- * for those distances that the polygon may be inset before 
+ * for those distances that the polygon may be inset before
  * the inset polygon becomes non-simple.  At this inset point,
  * at least two adjacent points will be colocated.
  *
@@ -68,13 +68,13 @@ void	InsetPolygon(
  *
  * WARNING: THIS ROUTINE IS NOT CORRECT!
  *
- * In the following case it will not work: if you create a 
+ * In the following case it will not work: if you create a
  * concave simple polygon (for example, a thick letter H)
- * where concave offshoots would degenerate to triangles that 
+ * where concave offshoots would degenerate to triangles that
  * would be islands in the degeneration, this routine will not
  * catch the islands, and instead return a non-simple polygon.
  *
- * Therefore a precondition of correct insetting is that 
+ * Therefore a precondition of correct insetting is that
  * the maximum simple inset not contain islands!
  *
  * When calculating a ring, collision of the beginning and end

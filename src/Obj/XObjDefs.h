@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@ using namespace std;
  * Notes: no end command is written to the command stream.
  * LODs are inline as attributes.  The absense of LOD attributes means only a default LOD.
  *
- * Multiple primitives like lines, quads and tris must only have 2 3 and 4 vertices, 
+ * Multiple primitives like lines, quads and tris must only have 2 3 and 4 vertices,
  * respectively for file-write.
  *
  */
@@ -50,8 +50,8 @@ enum {
 	type_Indexed,	// OBJ 8
 	type_Anim,		// OBJ 8
 	type_Cust		// OBJ8
-	
-};	
+
+};
 
 enum {
 	// OBJ7 commands
@@ -67,7 +67,7 @@ enum {
 	obj_Quad_Strip,
 	obj_Tri_Strip,
 	obj_Tri_Fan,
-	
+
 	// Shared commands
 	attr_Shade_Flat,
 	attr_Shade_Smooth,
@@ -85,12 +85,12 @@ enum {
 	attr_Offset,
 	obj_Smoke_Black,
 	obj_Smoke_White,
-	
+
 	// OBJ8 commands
 	obj8_Tris,
 	obj8_Lines,
 	obj8_Lights,
-	
+
 	attr_Tex_Normal,
 	attr_Tex_Cockpit,
 	attr_No_Blend,
@@ -98,12 +98,12 @@ enum {
 	attr_Hard,
 	attr_Hard_Deck,
 	attr_No_Hard,
-	
+
 	anim_Begin,
 	anim_End,
 	anim_Rotate,
 	anim_Translate,
-	
+
 	// 850 commands
 	obj8_LightCustom,			// all in name??  param is pos?
 	obj8_LightNamed,			// name has light name, param is pos
@@ -112,10 +112,10 @@ enum {
 	anim_Show,
 
 	// 900 commands
-	attr_Tex_Cockpit_Subregion,	
-	
-	attr_Max	
-};	
+	attr_Tex_Cockpit_Subregion,
+
+	attr_Max
+};
 
 struct	cmd_info {
 	int				cmd_id;
@@ -132,18 +132,18 @@ extern	int			gCmdCount;
 struct	vec_tex {
 	float	v[3];
 	float	st[2];
-};	
+};
 
 struct	vec_rgb {
 	float	v[3];
 	float	rgb[3];
-};	
+};
 
 struct XObjCmd {
 
 	int				cmdType;	// Are we a line, poly or attribute?
 	int				cmdID;		// What command are we?
-	
+
 	vector<float>	attributes;
 	vector<vec_tex>	st;
 	vector<vec_rgb>	rgb;
@@ -168,26 +168,26 @@ int	FindIndexForCmd(int inCmd);
  *
  * The library does not merge consecutive-indexed tri commands on read or write.
  *
- */ 
- 
+ */
+
 struct XObjKey {
 	float					key;
 	float					v[3];		// angle for rotation, XYZ for translation
 };
- 
+
 struct	XObjAnim8 {
 	string					dataref;
 	float					axis[3];	// Used for rotations
 	vector<XObjKey>			keyframes;
-};	
+};
 
 struct	XObjCmd8 {
 	int						cmd;
-	float					params[12];		
+	float					params[12];
 	string					name;
 	int						idx_offset;
 	int						idx_count;
-};	
+};
 
 struct	XObjLOD8 {
 	float					lod_near;

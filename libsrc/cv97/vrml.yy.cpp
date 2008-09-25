@@ -1263,7 +1263,7 @@ char *yytext;
 *	File:	vrml.l
 *
 ******************************************************************/
- 
+
 #include <stdio.h>
 #include <string.h>
 #include "SceneGraph.h"
@@ -2579,7 +2579,7 @@ YY_RULE_SETUP
 #ifdef UNUSE_DEF_NODE
 	Node *defNode = GetParserObject()->findNodeByName(buffer);
 	Node *useParentNode = GetCurrentNodeObject();
-	if (defNode) {	
+	if (defNode) {
 		if (useParentNode == NULL || (useParentNode != defNode && useParentNode->isAncestorNode(defNode) == false)) {
 			Node *instanceNode = defNode->createInstanceNode();
 			if (instanceNode)
@@ -2730,7 +2730,7 @@ YY_RULE_SETUP
 	}
 	else {
 		strcpy(name, yytext);
-		yylval.sval = name;	
+		yylval.sval = name;
 		return	NAME;
 	}
 }
@@ -2882,7 +2882,7 @@ YY_RULE_SETUP
 //	char *name = strdup(yytext);
 	char *name = new char[strlen(yytext)+1];
 	strcpy(name, yytext);
-	yylval.sval = name;	
+	yylval.sval = name;
 	return	NAME;
 }
 	YY_BREAK
@@ -3784,31 +3784,31 @@ int main()
 int yywrap()
 {
   return 1;
-} 
+}
 
-int yyerror(char *s) 
-{ 
+int yyerror(char *s)
+{
 	Parser *parser = GetParserObject();
 	parser->setErrorLineNumber(GetCurrentLineNumber());
 	parser->setErrorToken(yytext);
-	parser->setErrorLineString(GetErrorLineString());	
+	parser->setErrorLineString(GetErrorLineString());
 	return 0;
 }
 
 void CurrentLineIncrement()
 {
 	nCurrentLine++;
-	if (callbackFn) 
+	if (callbackFn)
 		callbackFn(nCurrentLine, callbackFnInfo);
 }
 
 void MakeLexerBuffers(int lexBufferSize, int lineBufferSize)
 {
-	buffer = (char *)malloc(sizeof(char) * lexBufferSize);	
-	lineBuffer = (char *)malloc(sizeof(char) * lineBufferSize);	
+	buffer = (char *)malloc(sizeof(char) * lexBufferSize);
+	lineBuffer = (char *)malloc(sizeof(char) * lineBufferSize);
 	lineBuffer[0] = '\0';
 	yy_current_buffer = yy_create_buffer(yyin, lexBufferSize);
-	name = (char *)malloc(sizeof(char) * lineBufferSize);	
+	name = (char *)malloc(sizeof(char) * lineBufferSize);
 }
 
 void DeleteLexerBuffers(void)

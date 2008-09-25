@@ -52,7 +52,7 @@ public:
     return
       static_cast<Sign>(static_cast<int>(CGAL_NTS compare( a00*a11, a10*a01)));
   }
-    
+
   /*!
    */
   Comparison_result
@@ -71,7 +71,7 @@ public:
     else if (quadrant_1 < quadrant_2) return SMALLER;
     return Comparison_result(-sign_of_determinant2x2(dx1,dy1,dx2,dy2));
   }
-      
+
   /*!
    */
   Comparison_result
@@ -89,7 +89,7 @@ public:
    */
   bool operator<=(const my_rat_direction & d) const
   { return compare_angle_with_x_axis(*this, d) != LARGER; }
-      
+
   /*!
    */
   bool counterclockwise_in_between(const my_rat_direction & d1,
@@ -103,7 +103,7 @@ public:
 class Pm_segment_traits_leda_kernel_2 {
 private:
   typedef Pm_segment_traits_leda_kernel_2       Self;
-    
+
 public:
   typedef leda_rational                         RT;
   typedef leda_rational                         FT;
@@ -169,7 +169,7 @@ public:
     bool operator()(const Point_2 & p1, const Point_2 & p2) const
     { return (Self::Point_2::cmp_x(p1, p2) < 0); }
   };
-    
+
   /*! Functor
    */
   class Less_y_2 {
@@ -177,7 +177,7 @@ public:
     bool operator()(const Point_2 & p1, const Point_2 & p2) const
     { return (Self::Point_2::cmp_y(p1, p2) < 0); }
   };
-    
+
   /*! Functor
    */
   class Construct_vertex_2 {
@@ -195,16 +195,16 @@ public:
 
     int cmp_y(const Point_2 & p1, const Point_2 & p2) const
     { return Self::Point_2::cmp_y(p1, p2); }
-      
+
     bool point_in_x_range(const Segment_2 & cv, const Point_2 & p) const
     {
       return
         !(((cmp_x(p, cv.source()) < 0) && (cmp_x(p, cv.target()) < 0)) ||
          ((cmp_x(p, cv.source()) > 0) && (cmp_x(p, cv.target()) > 0)));
     }
-	
+
     bool curve_is_in_y_range(const Segment_2 & cv, const Point_2 & p) const
-    { 
+    {
       return
         !(((cmp_y(p, cv.source()) < 0) && (cmp_y(p, cv.target()) < 0)) ||
          ((cmp_y(p, cv.source()) > 0) && (cmp_y(p, cv.target()) > 0)));
@@ -213,7 +213,7 @@ public:
     Orientation orientation(const Point_2 & p, const Point_2 & q,
                             const Point_2 & r) const
     { return CGAL::orientation(p, q, r); }
-	
+
   public:
     Comparison_result operator()(const Point_2 & q,
                                  const Segment_2 & cv1, const Segment_2 & cv2)
@@ -221,11 +221,11 @@ public:
     {
       if ((!point_in_x_range(cv1, q)) || (!point_in_x_range(cv2, q)))
         return EQUAL;
-		
-      // bug ??? in LEDA - 
+
+      // bug ??? in LEDA -
       // cmp_segments_at_xcoord returns wrong answer if
       // cv1 (or cv2) are from right to left
-      // cv1_ and cv2_ are the same as cv1 and cv2 - 
+      // cv1_ and cv2_ are the same as cv1 and cv2 -
       //   oriented from left to right
       Segment_2 cv1_ = cv1;
       Segment_2 cv2_ = cv2;
@@ -233,7 +233,7 @@ public:
         cv1_ = cv1.reversal();
       if (lexicographically_xy_larger(cv2.source(), cv2.target()))
         cv2_ = cv2.reversal();
-  		
+
       // checking verical curves.
       if (cv1_.is_vertical()) {
         if (cv2_.is_vertical()) {
@@ -245,24 +245,24 @@ public:
         // only cv1 is vertical.
         if (orientation(cv2_.source(), cv2_.target(), cv1_.source()) > 0)
           return LARGER;
-                      
+
         if (orientation(cv2_.source(), cv2_.target(), cv1_.target()) < 0)
           return SMALLER;
-  
+
         return EQUAL;
       }
-                  
+
       if (cv2_.is_vertical()) {
         // only cv2 is vertical:
         if (orientation(cv1_.source(), cv1_.target(), cv2_.source()) > 0 )
           return SMALLER;
-                      
+
         if (orientation(cv1_.source(), cv1_.target(), cv2_.target()) < 0)
           return LARGER;
-  
-        return EQUAL;  
+
+        return EQUAL;
       }
-                    
+
       // Non of the curves are vertical:
       int res = LEDA_NAMESPACE_NAME::cmp_segments_at_xcoord(cv1_, cv2_, q);
       return ((res < 0) ? SMALLER : ((res > 0) ? LARGER : EQUAL));
@@ -283,7 +283,7 @@ public:
       Orientation o = (cmp_x(cv.source(), cv.target()) < 0) ?
         orientation(cv.source(), cv.target(), p) :
         orientation(cv.target(), cv.source(), p);
-			
+
       return ((o < 0) ? SMALLER : ((o > 0) ? LARGER : EQUAL));
     }
   };

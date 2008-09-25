@@ -42,11 +42,11 @@ public:
   typedef Gt  Geom_traits;
   typedef typename Gt::Point Point;
   typedef typename Gt::Segment Segment;
-    
+
   typedef Triangulation_2<Gt,Tds> Triangulation;
   typedef Constrained_triangulation_2<Gt,Tds> Ctriangulation;
-  
-  typedef typename Ctriangulation::Face_handle Face_handle; 
+
+  typedef typename Ctriangulation::Face_handle Face_handle;
   typedef typename Ctriangulation::Vertex_handle Vertex_handle;
   typedef typename Ctriangulation::Edge Edge;
   typedef typename Ctriangulation::Vertex Vertex;
@@ -58,7 +58,7 @@ public:
   class Chain;
   class Event_less;
   class Status_comp;
-    
+
   class Event_less : public CGAL_STD::binary_function<Point, Point, bool>
   {
   private:
@@ -73,8 +73,8 @@ public:
                  t.compare_y(p,q) == SMALLER ) );
       }
   };
-    
-  class Status_comp : 
+
+  class Status_comp :
   public CGAL_STD::binary_function<Constraint, Constraint, bool>
   {
   private:
@@ -88,7 +88,7 @@ public:
         Point p2= s2.first;
         Point q1= s1.second;
         Point q2= s2.second;
-    
+
         // one of the constraint is degenerate
         if ( t.compare_x(p1,q1)  == EQUAL &&
              t.compare_y(p1,q1)  == EQUAL) {
@@ -104,7 +104,7 @@ public:
           // default case
           return( t.orientation(p2,q2,p1) == RIGHT_TURN);
         }
-    
+
         else if ( t.compare_x(p2,q2) == EQUAL &&
                   t.compare_y(p2,q2) == EQUAL) {
           // p2==q2 && p1!=q1
@@ -119,7 +119,7 @@ public:
           // default case
           return (t.orientation(p1,q1,q2) == LEFT_TURN);
         }
-    
+
         // comparison of two non degenerate constraints
         else {
           //neither of the constraints are points
@@ -142,25 +142,25 @@ public:
 	// CGAL_triangulation_assertion( false );
 	return false;
       }
-      
+
   };
-    
+
   class Neighbor_list : public CGAL_STD::list<Neighbor>
   {
   private:
      Ctriangulation* _tr;
-    
+
   public:
     Neighbor_list (Ctriangulation *tr) : _tr(tr) {}
 
     bool is_removable(Face_handle fh)
       {
 	return ( (*fh).vertex(1) == (*fh).vertex(2) &&
-		 (*fh).neighbor(1) != NULL && 
+		 (*fh).neighbor(1) != NULL &&
 		 (*fh).neighbor(2) != NULL );
       }
 
-    void remove_flat(Face_handle fh) 
+    void remove_flat(Face_handle fh)
       {
 	CGAL_triangulation_precondition((*fh).vertex(1) == (*fh).vertex(2));
 	Face_handle f2= (*fh).neighbor(2);
@@ -194,7 +194,7 @@ public:
         }
         return last;
       }
-    
+
     Face_handle up_visit( Vertex_handle v, Face_handle last)
       {
         Geom_traits t=Geom_traits();
@@ -222,7 +222,7 @@ public:
         }
         return last;
       }
-    
+
     Face_handle down_visit(Vertex_handle v, Face_handle first)
       {
         Geom_traits t=Geom_traits();
@@ -250,16 +250,16 @@ public:
         }
         return first;
       }
-    
+
   };
-    
+
   class Chain
     {
     private:
       Vertex_handle rm;
       Neighbor_list up;
       Neighbor_list down;
-    
+
     public:
       Chain(Ctriangulation* tr) : rm(NULL), up(tr), down(tr) {}
       Vertex_handle right_most() { return rm;}
@@ -267,18 +267,18 @@ public:
       Neighbor_list* down_list(){return &down;}
       void set_right_most(Vertex_handle v) { rm=v;}
     };
-  
+
   typedef std::list<Point> Out_edges;
   typedef std::map<Point,Out_edges *,Event_less> Event_queue;
   typedef std::map<Constraint,void *, Status_comp> Sweep_status;
-  // should be  
+  // should be
   //typedef std::map<Constraint, Chain *, Status_comp> Sweep_status;
-  
+
   // added to please MIPS Pro
   typedef typename Event_queue::iterator  Event_queue_iterator;
   typedef typename Sweep_status::iterator Sweep_status_iterator;
-  
-  
+
+
  protected:
     Ctriangulation* _tr;
     std::list<Constraint>* _lc;
@@ -287,27 +287,27 @@ public:
     Status_comp status_comp;
     Sweep_status status;
     Chain upper_chain;
- 
+
  public:
     Constrained_triangulation_sweep_2()
       : _tr(NULL), _lc(NULL), upper_chain(NULL)
     {
     }
-    
+
     Constrained_triangulation_sweep_2( Ctriangulation* ct,
 				       std::list<Constraint>& lc)
-       : _tr(ct), _lc(&lc), 
-      event_less(ct->geom_traits()), queue(event_less), 
+       : _tr(ct), _lc(&lc),
+      event_less(ct->geom_traits()), queue(event_less),
       status_comp(ct->geom_traits()), status(status_comp),
       upper_chain(ct)
     {
       make_event_queue();
       build_triangulation();
     }
-    
+
     Geom_traits  geom_traits() { return _tr->geom_traits(); }
     Event_less  xy_less() { return event_less;}
-     
+
     friend class Neighbor_list;
 
 public:
@@ -574,7 +574,7 @@ set_infinite_faces()
   Neighbor_list* upper_list= upper_chain.up_list();
   Neighbor_list* lower_list= upper_chain.down_list();
 //Triangulation may have only one vertex
-  if (upper_list->empty() || lower_list->empty()) 
+  if (upper_list->empty() || lower_list->empty())
     //	{return upper_chain.right_most();}
     {
       _tr->set_number_of_vertices(0);
@@ -582,7 +582,7 @@ set_infinite_faces()
       delete  &(*upper_chain.right_most());
        return;
     }
- 
+
   //Triangulation has now at least two vertices
   Face_handle first, last;
   Face_handle newf, fn;
@@ -592,7 +592,7 @@ set_infinite_faces()
   first = (lower_list->front()).first;
   last = (upper_list->back()).first;
   if (first->vertex(1) == first->vertex(2) &&
-      last->vertex(1)  == last ->vertex(2) ) { 
+      last->vertex(1)  == last ->vertex(2) ) {
     //dimension 1
     //both test are necessary because it may remain some  flat faces
     //in the upper chain.
@@ -620,7 +620,7 @@ set_infinite_faces()
     first->set_neighbor(1,fn);
     return;
   }
-  
+
     // good 2d triangulation
   _tr->set_dimension(2);
   lower_list->splice(lower_list->end(), *upper_list);
@@ -628,10 +628,10 @@ set_infinite_faces()
   fn = (*(lower_list->begin())).first;
   in = (*(lower_list->begin())).second;
   lower_list->pop_front();
-  newf = _tr->create_face( infinite, 
+  newf = _tr->create_face( infinite,
 			   fn->vertex(fn->cw(in)),
 			   fn->vertex(fn->ccw(in)));
-  fn->set_neighbor(in,newf); 
+  fn->set_neighbor(in,newf);
   newf->set_neighbor(0,fn);
   newf->set_constraint(0, fn->is_constrained(in));
   if (lower_list->is_removable(fn)) { lower_list->remove_flat(fn); }
@@ -641,10 +641,10 @@ set_infinite_faces()
     fn =(* (lower_list->begin())).first;
     in =(* (lower_list->begin())).second;
     lower_list->pop_front();
-    newf= _tr->create_face( infinite, 
+    newf= _tr->create_face( infinite,
 			    fn->vertex(fn->cw(in)),
 			    fn->vertex(fn->ccw(in)));
-    fn->set_neighbor(in,newf); 
+    fn->set_neighbor(in,newf);
     newf->set_neighbor(0,fn);
     last->set_neighbor(2,newf);
     newf->set_neighbor(1,last);

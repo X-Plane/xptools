@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 
 #ifndef CGAL_TRIANGLE_2_H
 #define CGAL_TRIANGLE_2_H

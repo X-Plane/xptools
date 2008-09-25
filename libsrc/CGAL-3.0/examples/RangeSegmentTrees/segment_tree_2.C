@@ -8,17 +8,17 @@
 // Every use of CGAL requires a license. Licenses come in three kinds:
 //
 // - For academic research and teaching purposes, permission to use and
-//   copy the software and its documentation is hereby granted free of  
+//   copy the software and its documentation is hereby granted free of
 //   charge, provided that
 //   (1) it is not a component of a commercial product, and
 //   (2) this notice appears in all copies of the software and
 //       related documentation.
-// - Development licenses grant access to the source code of the library 
-//   to develop programs. These programs may be sold to other parties as 
+// - Development licenses grant access to the source code of the library
+//   to develop programs. These programs may be sold to other parties as
 //   executable code. To obtain a development license, please contact
 //   the CGAL Consortium (at cgal@cs.uu.nl).
 // - Commercialization licenses grant access to the source code and the
-//   right to sell development licenses. To obtain a commercialization 
+//   right to sell development licenses. To obtain a commercialization
 //   license, please contact the CGAL Consortium (at cgal@cs.uu.nl).
 //
 // This software and documentation is provided "as-is" and without
@@ -79,7 +79,7 @@ int main()
   InputList.push_back(Interval(Key(465, 504), Key(499, 829.0)));
   InputList.push_back(Interval(Key(288, 875), Key(379, 982.7)));
   InputList.push_back(Interval(Key(314, 465), Key(375, 711.5)));
- 
+
   // creation of the segment tree
   std::list<Interval>::iterator first = InputList.begin();
   std::list<Interval>::iterator last = InputList.end();
@@ -96,8 +96,8 @@ int main()
   std::cerr << "\n window_query (45, 500), (200.0, 675.1)\n";
   while(j!=OutputList.end())
   {
-    std::cerr << (*j).first.first << "-" << (*j).second.first << " " 
-	 << (*j).first.second << "-" << (*j).second.second << std::endl; 
+    std::cerr << (*j).first.first << "-" << (*j).second.first << " "
+	 << (*j).first.second << "-" << (*j).second.second << std::endl;
     j++;
   }
   // Interval b(Key(320, 900),Key(330.1,910.7));
@@ -107,13 +107,13 @@ int main()
   std::cerr << "\n enclosing_query (320, 900),(330.1,910.7)\n";
   while(j!=N.end())
   {
-    std::cerr << (*j).first.first << "-" << (*j).second.first << " " 
-	 << (*j).first.second << "-" << (*j).second.second << std::endl; 
+    std::cerr << (*j).first.first << "-" << (*j).second.first << " "
+	 << (*j).first.second << "-" << (*j).second.second << std::endl;
     j++;
   }
   if(Segment_tree_2.segment_tree_2->is_valid())
     std::cerr << "Tree  is valid\n";
   else
     std::cerr << "Tree is not valid\n";
-  return 0; 
+  return 0;
 }

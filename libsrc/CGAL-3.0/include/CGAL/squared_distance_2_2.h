@@ -217,7 +217,7 @@ namespace CGALi {
   template <class K>
   extern typename K::FT
   squared_distance_indexed(const typename CGAL_WRAP(K)::Point_2 &pt,
-			   const typename CGAL_WRAP(K)::Triangle_2 &triangle, 
+			   const typename CGAL_WRAP(K)::Triangle_2 &triangle,
 			   int ind1, int ind2,
 			   const K& k)
   {
@@ -328,7 +328,7 @@ namespace CGALi {
 	mindist = FT(0);
       }
     } else {
-      // Check if all the triangle vertices lie 
+      // Check if all the triangle vertices lie
       // at the same side of the segment.
       const Line_2 &sl = ray.supporting_line();
       Oriented_side or_s = sl.oriented_side(triangle.vertex(0));
@@ -400,7 +400,7 @@ namespace CGALi {
 	mindist = FT(0);
       }
     } else {
-      // Check if all the triangle vertices lie 
+      // Check if all the triangle vertices lie
       // at the same side of the segment.
       const Point_2 &vt1 = seg.source();
       const Point_2 &vt2 = seg.target();

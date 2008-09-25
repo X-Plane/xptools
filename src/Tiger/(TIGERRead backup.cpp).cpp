@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,7 +33,7 @@ PolygonInfoMap		gPolygons;
 
 static	int	gPassNum = 0;
 
-// File loading routines.  Call them in the order they are listed in to 
+// File loading routines.  Call them in the order they are listed in to
 // get correct hashing!
 
 void	TIGER_LoadRT1(const char * inFileName)
@@ -45,10 +45,10 @@ void	TIGER_LoadRT1(const char * inFileName)
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
-		TLID		tlid;		
+
+		TLID		tlid;
 		ChainInfo_t	ci;
-		
+
 		ExtractFixedRecordUnsignedLong(line, 6, 15, tlid);
 		ci.one_side = line[15] == 'Y';
 		ci.owner = gPassNum;
@@ -58,7 +58,7 @@ void	TIGER_LoadRT1(const char * inFileName)
 		ExtractFixedRecordString(line, 201,209, ci.start.first);
 		ExtractFixedRecordString(line, 210,219, ci.end.second);
 		ExtractFixedRecordString(line, 220,228, ci.end.first);
-		
+
 		if (gChains.find(tlid) == gChains.end())
 			gChains.insert(ChainInfoMap::value_type(tlid, ci));
 	}
@@ -69,21 +69,21 @@ void	TIGER_LoadRT2(const char * inFileName)
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
-		TLID		tlid;		
+
+		TLID		tlid;
 
 		ExtractFixedRecordUnsignedLong(line, 6, 15, tlid);
 
 		ChainInfo_t&	ci = gChains[tlid];
 		if (ci.owner == gPassNum)
-		{		
+		{
 			for (int n = 0; n < 10; ++n)
 			{
 				RawCoordPair	cp;
 				ExtractFixedRecordString(line, 19 + 19 * n, 28 + 19 * n, cp.second);
 				ExtractFixedRecordString(line, 29 + 19 * n, 37 + 19 * n, cp.first);
 
-				if ((!cp.first.empty()) && 
+				if ((!cp.first.empty()) &&
 					(!cp.second.empty()) &&
 					(atoi(cp.first.c_str()) != 0) &&
 					(atoi(cp.second.c_str()) != 0))
@@ -93,14 +93,14 @@ void	TIGER_LoadRT2(const char * inFileName)
 			}
 		}
 	}
-}	
+}
 
 void	TIGER_LoadRTP(const char * inFileName)
 {
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
+
 		CENID_POLYID	id;
 		PolygonInfo_t	info;
 		info.antennas = 0;
@@ -108,7 +108,7 @@ void	TIGER_LoadRTP(const char * inFileName)
 		ExtractFixedRecordString(line, 36, 44, info.location.first);
 		ExtractFixedRecordString(line, 26, 35, info.location.second);
 		info.water = (line[44] == '1') ? 1 : 0;
-		
+
 		gPolygons.insert(PolygonInfoMap::value_type(id, info));
 	}
 }
@@ -118,26 +118,26 @@ void	TIGER_LoadRTI(const char * inFileName)
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
+
 		CENID_POLYID	rid, lid;
 		TLID			tlid;
 
 		ExtractFixedRecordString(line, 41, 55, lid);
 		ExtractFixedRecordString(line, 56, 70, rid);
 		ExtractFixedRecordUnsignedLong(line, 11, 20, tlid);
-		
+
 		if (!lid.empty())
 		{
-			PolygonInfoMap::iterator liter = gPolygons.find(lid);		
+			PolygonInfoMap::iterator liter = gPolygons.find(lid);
 			if (liter != gPolygons.end())
 			{
 				liter->second.border.push_back(DirectedTLID(tlid, false));
-				
+
 				if (rid == lid)
 					liter->second.antennas++;
 			}
 		}
-		
+
 		if (!rid.empty() && (lid != rid))
 		{
 			PolygonInfoMap::iterator riter = gPolygons.find(rid);
@@ -146,11 +146,11 @@ void	TIGER_LoadRTI(const char * inFileName)
 				riter->second.border.push_back(DirectedTLID(tlid, false));
 			}
 		}
-		
+
 		ChainInfoMap::iterator citer = gChains.find(tlid);
 		if (citer != gChains.end())
 		{
-			// Only set the poly IDs for the chain if its 
+			// Only set the poly IDs for the chain if its
 			// not the outside.  This way we will merge adjacent files.
 			if (!lid.empty()) citer->second.lpoly = lid;
 			if (!rid.empty()) citer->second.rpoly = rid;
@@ -164,12 +164,12 @@ void	TIGER_LoadRT7(const char * inFileName)
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
+
 		LAND			landID;
 		LandmarkInfo_t	info_t;
-		
+
 		ExtractFixedRecordUnsignedLong(line, 11, 20, landID);
-		
+
 		ExtractFixedRecordString(line, 22, 24, info_t.cfcc);
 		ExtractFixedRecordString(line, 25, 54, info_t.name);
 		ExtractFixedRecordString(line, 55, 64, info_t.location.second);
@@ -184,11 +184,11 @@ void	TIGER_LoadRT8(const char * inFileName)
 	for (StTextFileScanner scanner(inFileName, true); !scanner.done(); scanner.next())
 	{
 		string	line = scanner.get();
-		
+
 		LAND			landID;
 
 		ExtractFixedRecordUnsignedLong(line, 26, 35, landID);
-		
+
 		LandmarkInfo_t&	info = gLandmarks[landID];
 		ExtractFixedRecordString(line, 11, 25, info.cenid_polyid);
 	}
@@ -202,10 +202,10 @@ void TIGER_SanityCheckPerimeter(PolygonInfo_t& poly, const char * id)
 		if (nxt >= poly.border.size()) nxt = 0;
 		ChainInfo_t&	thisTLID = gChains[poly.border[n].first];
 		ChainInfo_t&	nextTLID = gChains[poly.border[nxt].first];
-		
+
 		RawCoordPair thisOutgoing = (poly.border[n  ].second) ? thisTLID.start : thisTLID.end;
 		RawCoordPair nextIncoming = (poly.border[nxt].second) ? nextTLID.end : nextTLID.start;
-		
+
 		if (thisOutgoing != nextIncoming)
 		{
 			printf("ERROR: Border check failed on polygon, CENID/POLYID = %s!\n", id);
@@ -217,11 +217,11 @@ void TIGER_SanityCheckPerimeter(PolygonInfo_t& poly, const char * id)
 void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 {
 	// This is hokey as hell, but it does work.
-	
+
 	typedef	map<Pmwx::Halfedge *, DirectedTLID>	TLIDMap;
-	
+
 	VertexIndex	ptAssistCache;
-	
+
 	Pmwx	planar_map;
 	TLIDMap	index;
 	set<TLID>	old_borders;
@@ -231,10 +231,10 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 		if (old_borders.find(i->first) != old_borders.end()) ++old_border_dupes;
 		old_borders.insert(i->first);
 	}
-	
+
 	poly.original_border_count = poly.border.size();
 	int	dupes = 0;
-	for (DirectedTLIDVector::iterator tlid = poly.border.begin(); 
+	for (DirectedTLIDVector::iterator tlid = poly.border.begin();
 		tlid != poly.border.end(); ++tlid)
 	{
 		ChainInfoMap::iterator	tlidP = gChains.find(tlid->first);
@@ -244,9 +244,9 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 			vector<RawCoordPair>	pts(tlidP->second.shape);
 			pts.insert(pts.begin(), tlidP->second.start);
 			pts.insert(pts.end(), tlidP->second.end);
-			
+
 			Pmwx::Halfedge_handle	he = Pmwx::Halfedge_handle();
-			
+
 			for (int n = 1; n < pts.size(); ++n)
 			{
 				PM_Curve_2	seg(
@@ -256,7 +256,7 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 					Point_2(
 						atof(pts[n  ].first.c_str()),
 						atof(pts[n  ].second.c_str())));
-						
+
 //				Pmwx::Halfedge_handle	he = InsertOneSegment(pts[n-1], pts[n],
 //							ptAssistCache, planar_map);
 
@@ -270,17 +270,17 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 			}
 		}
 	}
-	
-	
+
+
 	poly.border.clear();
 	Pmwx::Face_handle f = planar_map.unbounded_face();
 	if (distance(f->holes_begin(), f->holes_end()) < 1)
 	{
 		printf("ERROR: one poly made a map with no holes!!\n");
 	} else {
-		
+
 		Pmwx::Face_handle	tf = Pmwx::Face_handle();
-		
+
 		for (TLIDMap::iterator i = index.begin(); i != index.end(); ++i)
 		{
 			CENID_POLYID	rpoly = gChains[i->second.first].rpoly;
@@ -320,7 +320,7 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 					poly.border.push_back(us);
 				++cur;
 			} while (cur != last);
-		}		
+		}
 		for (Pmwx::Holes_iterator hole = tf->holes_begin(); hole != tf->holes_end(); ++hole)
 		{
 			DirectedTLIDVector	d;
@@ -332,7 +332,7 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 				++cur;
 			} while (cur != last);
 			poly.holes.push_back(d);
-		}		
+		}
 	}
 
 	int	total_tlids = poly.border.size();
@@ -340,7 +340,7 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 	{
 		total_tlids += v->size();
 	}
-	
+
 	if ((poly.original_border_count + poly.antennas) != (total_tlids))
 	{
 		printf("ERROR: changed border segment count, old = %d, new = %d, antennas = %d, halfedges = %d.\n", poly.original_border_count, total_tlids, poly.antennas, index.size());
@@ -369,9 +369,9 @@ void	TIGER_SortPerimeter(PolygonInfo_t&	poly, const char * id)
 				gChains[*i].start.second.c_str(),
 				gChains[*i].end.first.c_str(),
 				gChains[*i].end.second.c_str());
-				
-		}	
-	}	
+
+		}
+	}
 }
 
 void	TIGER_PostProcess(void)
@@ -379,7 +379,7 @@ void	TIGER_PostProcess(void)
 	// Now we go through and create the virtual 'world' face.  This is a slightly
 	// weird polygon in that its boundary will end up CCW, but secretly it is an INNER
 	// boundary.  Weird.
-	
+
 	PolygonInfo_t	worldPoly;
 	worldPoly.water = 1;
 	worldPoly.antennas = 0;
@@ -396,12 +396,12 @@ void	TIGER_PostProcess(void)
 			worldPoly.border.push_back(DirectedTLID(chain->first, false));
 		}
 	}
-	
+
 	gPolygons.insert(PolygonInfoMap::value_type(CENID_POLYID(WORLD_POLY), worldPoly));
-	
+
 	// Now go through and resort the boundaries of every polygon so that it is counter
 	// clockwise and self-consistent.
-	
+
 	for (PolygonInfoMap::iterator poly = gPolygons.begin(); poly != gPolygons.end(); ++poly)
 	{
 		TIGER_SortPerimeter(poly->second, poly->first.c_str());

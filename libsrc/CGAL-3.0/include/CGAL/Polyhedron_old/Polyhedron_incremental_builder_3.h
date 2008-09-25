@@ -270,7 +270,7 @@ protected:
         n = n - ( hds.size_of_vertices() - new_vertices);
         return n;
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class HDS>  CGAL_LARGE_INLINE
     typename HDS::Size
@@ -291,7 +291,7 @@ protected:
         n = n - ( hds.size_of_facets() - new_facets);
         return n;
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class HDS>  CGAL_LARGE_INLINE
     typename HDS::Halfedge*
@@ -384,7 +384,7 @@ protected:
         e->set_next( e->opposite());
         return e;
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class HDS>  CGAL_LARGE_INLINE
     typename HDS::Halfedge*
@@ -402,7 +402,7 @@ protected:
             }
             e = e->next()->opposite();
         } while ( e != start_edge);
-    
+
         Verbose_ostream verr( m_verbose);
         verr << " " << std::endl;
         verr << "Polyhedron_incremental_builder_3<HDS>::" << std::endl;
@@ -422,7 +422,7 @@ protected:
         m_error = true;
         return 0;
     }
-    
+
     #ifndef CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS
     template < class HDS>  CGAL_MEDIUM_INLINE
     void
@@ -448,7 +448,7 @@ protected:
         decorator.set_vertex_halfedge( v, 0);
         push_back_vertex_to_edge_map( 0);
         ++new_vertices;
-    }    
+    }
 #endif // CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS //
 };
 
@@ -651,7 +651,7 @@ add_vertex( const Point& p) {
     decorator.set_vertex_halfedge( v, 0);
     push_back_vertex_to_edge_map( 0);
     ++new_vertices;
-}    
+}
 #endif // CGAL_CFG_NO_SCOPE_MEMBER_FUNCTION_PARAMETERS //
 template < class HDS>
 void

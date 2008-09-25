@@ -58,7 +58,7 @@ public:
   struct Rebind_TDS {
     typedef typename Fb::template Rebind_TDS<AGDS2>::Other  Vb2;
     typedef Apollonius_graph_face_base_2<Gt,Vb2>            Other;
-  }; 
+  };
 
 
 public:
@@ -141,6 +141,6 @@ protected:
 
 
 
-CGAL_END_NAMESPACE 
+CGAL_END_NAMESPACE
 
 #endif // CGAL_APOLLONIUS_GRAPH_FACE_BASE_2_H

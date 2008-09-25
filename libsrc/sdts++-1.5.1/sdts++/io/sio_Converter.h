@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -38,7 +38,7 @@ class sio_Converter
 
       /**
         Make a fixed subfield. Return the length of the data converted.
-       This method works to turn data from the file into the format used 
+       This method works to turn data from the file into the format used
        internally.
       */
      virtual long makeFixedSubfield(sc_Subfield& subfield,
@@ -66,7 +66,7 @@ class sio_Converter
       /// Add a subfield (complete with it's values) to the output buffer.
       virtual long addSubfield(sc_Subfield const& subf,
                                sio_Buffer& buffer) const = 0;
-      
+
 
    protected:
 

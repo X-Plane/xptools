@@ -47,11 +47,11 @@ public:
 	~Parser();
 
 	Node *getRootNode() {
-		return (Node *)mNodeList.getRootNode();		
+		return (Node *)mNodeList.getRootNode();
 	}
 
 	Node *getNodes() {
-		return (Node *)mNodeList.getNodes();		
+		return (Node *)mNodeList.getNodes();
 	}
 
 	///////////////////////////////////////////////
@@ -59,11 +59,11 @@ public:
 	///////////////////////////////////////////////
 
 	void clearNodeList() {
-		mNodeList.deleteNodes();		
+		mNodeList.deleteNodes();
 	}
 
 	void clearRouteList() {
-		mRouteList.deleteNodes();		
+		mRouteList.deleteNodes();
 	}
 
 	////////////////////////////////////////////////
@@ -106,32 +106,32 @@ public:
 	//	for lex & yacc
 	///////////////////////////////////////////////
 
-	void setParserResult(bool bOK) { 
-		mIsOK = bOK; 
+	void setParserResult(bool bOK) {
+		mIsOK = bOK;
 	}
 	bool isOK(void) {
-		return mIsOK; 
+		return mIsOK;
 	}
 
-	void setErrorLineNumber(int n) { 
-		mErrorLineNumber = n; 
+	void setErrorLineNumber(int n) {
+		mErrorLineNumber = n;
 	}
 	int	getErrorLineNumber(void){
-		return mErrorLineNumber; 
+		return mErrorLineNumber;
 	}
 
 	void setErrorToken(char *error) {
-		mErrorToken.setValue(error); 
+		mErrorToken.setValue(error);
 	}
-	char *getErrorToken(void) { 
-		return mErrorToken.getValue(); 
+	char *getErrorToken(void) {
+		return mErrorToken.getValue();
 	}
 
-	void setErrorLineString(char *error) { 
-		mErrorLineString.setValue(error); 
+	void setErrorLineString(char *error) {
+		mErrorLineString.setValue(error);
 	}
 	char *getErrorLineString(void) {
-		return mErrorLineString.getValue(); 
+		return mErrorLineString.getValue();
 	}
 
 	///////////////////////////////////////////////
@@ -162,7 +162,7 @@ public:
 	PROTO *getPROTO(char *name);
 	void addPROTO(PROTO *proto);
 	void deletePROTOs();
-	
+
 	///////////////////////////////////////////////
 	//	ROUTE
 	///////////////////////////////////////////////

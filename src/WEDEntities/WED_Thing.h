@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,11 +26,11 @@
 
 /*
 	WED_Thing - THEORY OF OPERATION
-	
-	WED_Thing is the base persistent object for WorldEditor.  Quite literally EVERYTHIGN is a WED_Thing.  
-	
+
+	WED_Thing is the base persistent object for WorldEditor.  Quite literally EVERYTHIGN is a WED_Thing.
+
 	WED_Things have a few tricks:
-	
+
 		- They are property helpers, and thus meet the property objecct interface for generalized editing.
 		- They are persistent.
 		- They are proeprty helpers, so all subclasses can easily embed "properties".
@@ -72,25 +72,25 @@ public:
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	virtual void			ToDB(sqlite3 * db);	
-	
+	virtual void			ToDB(sqlite3 * db);
+
 	// From WED_PropertyHelper...
-	virtual	void			PropEditCallback(int before);	
+	virtual	void			PropEditCallback(int before);
 	virtual	int					CountSubs(void);
 	virtual	IPropertyObject *	GetNthSub(int n);
-	
+
 	// IArray
 	virtual	int				Array_Count (void );
 	virtual IBase *			Array_GetNth(int n);
-	
+
 	// IDirectory
 	virtual	IBase *		Directory_Find(const char * name);
 
 	// IOperation
 	virtual		void			StartOperation(const char * op_name);
 	virtual		void			CommitOperation(void);
-	virtual		void			AbortOperation(void);		
-	
+	virtual		void			AbortOperation(void);
+
 protected:
 
 	virtual		void			AddChild(int id, int n);
@@ -98,10 +98,10 @@ protected:
 
 	int				parent_id;
 	vector<int>		child_id;
-	
+
 	WED_PropStringText			name;
 
 };
-	
+
 
 #endif /* WED_THING_H */

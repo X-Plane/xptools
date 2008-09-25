@@ -30,9 +30,9 @@ class Point_2_ex : public Kernel_::Point_2
 
   typedef typename Kernel::Point_2      Base;
   typedef Point_2_ex<Kernel>            Self;
-    
+
   typedef typename Kernel::FT           NT;
- 
+
   enum Type
   {
     User_defined,
@@ -132,7 +132,7 @@ class Point_2_ex : public Kernel_::Point_2
     y_err = 2 * y().get_double_error();
   }
   // shai end
-    
+
   // Attach the generating polynomials information.
   void attach_polynomials (const int& _x_deg, std::vector<NT> _x_coeffs,
 			   const int& _y_deg, std::vector<NT> _y_coeffs)
@@ -290,16 +290,16 @@ class Point_2_ex : public Kernel_::Point_2
 	if (deg_gcd == x_deg)
 	  return (EQUAL);
 
-	if (deg_gcd > 0 && _is_approx_root (x_app, x_err, 
+	if (deg_gcd > 0 && _is_approx_root (x_app, x_err,
 					    gcd_coeffs, deg_gcd))
 	{
 	  return (EQUAL);
 	}
 
 	// The two roots are very close: perform exhaustive comparison.
-	return (compare_roots<NT>(x_coeffs, x_deg, 
+	return (compare_roots<NT>(x_coeffs, x_deg,
 				  NT(x_app), NT(x_err),
-				  p.x_coeffs, p.x_deg, 
+				  p.x_coeffs, p.x_deg,
 				  NT(p.x_app), NT(p.x_err)));
       }
     }
@@ -349,23 +349,23 @@ class Point_2_ex : public Kernel_::Point_2
 	if (deg_gcd == y_deg)
 	  return (EQUAL);
 
-	if (deg_gcd > 0 && _is_approx_root (y_app, y_err, 
+	if (deg_gcd > 0 && _is_approx_root (y_app, y_err,
 					    gcd_coeffs, deg_gcd))
 	{
 	  return (EQUAL);
 	}
-	
+
 	// The two roots are very close: perform exhaustive comparison.
-	return (compare_roots<NT>(y_coeffs, y_deg, 
+	return (compare_roots<NT>(y_coeffs, y_deg,
 				  NT(y_app), NT(y_err),
-				  p.y_coeffs, p.y_deg, 
+				  p.y_coeffs, p.y_deg,
 				  NT(p.y_app), NT(p.y_err)));
       }
     }
 
     return (CGAL::compare (y(), p.y()));
   }
-  
+
   // Equality operators.
   bool equals (const Self & p) const
   {
@@ -389,7 +389,7 @@ class Point_2_ex : public Kernel_::Point_2
 
     if (res != EQUAL)
       return (res);
-    
+
     return (this->compare_y (p));
   }
 
@@ -399,7 +399,7 @@ class Point_2_ex : public Kernel_::Point_2
 
     if (res != EQUAL)
       return (res);
-    
+
     return (this->compare_x (p));
   }
 
@@ -421,7 +421,7 @@ class Point_2_ex : public Kernel_::Point_2
     {
       ref_point.x_coeffs.resize (x_deg + 1);
       for (i = 0; i <= x_deg; i++)
-	ref_point.x_coeffs[i] = 
+	ref_point.x_coeffs[i] =
 	  (i % 2 == 0) ? x_coeffs[i] : -x_coeffs[i];
     }
 
@@ -450,7 +450,7 @@ class Point_2_ex : public Kernel_::Point_2
     {
       ref_point.x_coeffs.resize(x_deg + 1);
       for (i = 0; i <= x_deg; i++)
-	ref_point.x_coeffs[i] = 
+	ref_point.x_coeffs[i] =
 	  (i % 2 == 0) ? x_coeffs[i] : -x_coeffs[i];
     }
 
@@ -461,7 +461,7 @@ class Point_2_ex : public Kernel_::Point_2
     {
       ref_point.y_coeffs.resize(y_deg + 1);
       for (i = 0; i <= y_deg; i++)
-	ref_point.y_coeffs[i] = 
+	ref_point.y_coeffs[i] =
 	  (i % 2 == 0) ? y_coeffs[i] : -y_coeffs[i];
     }
 
@@ -470,7 +470,7 @@ class Point_2_ex : public Kernel_::Point_2
 
 private:
 
-  bool _is_root (const NT& z, 
+  bool _is_root (const NT& z,
 		 const std::vector<NT>& p, const int& deg) const
   {
     NT   val = p[deg];
@@ -482,7 +482,7 @@ private:
     return (CGAL::compare (val, NT(0)) == EQUAL);
   }
 
-  bool _is_approx_root (const APNT& z_app, const APNT& z_err, 
+  bool _is_approx_root (const APNT& z_app, const APNT& z_err,
 			const std::vector<NT>& p, const int& deg) const
   {
     APNT   val;

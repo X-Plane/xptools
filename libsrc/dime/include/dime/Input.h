@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Input.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ class DIME_DLL_API dimeInput
 public:
   dimeInput();
   ~dimeInput();
-  
+
   bool setFileHandle(FILE *fp);
   bool setFile(const char * const filename);
   bool setFilePointer(const int fd);
@@ -59,13 +59,13 @@ public:
 
   class dimeModel *getModel();
   class dimeMemHandler *getMemHandler();
-    
+
   int getFilePosition() const;
-  
+
   bool isBinary() const;
   int getVersion() const;
   bool isAborted() const;
-  
+
 private:
   friend class dimeModel;
   dimeModel *model;              // set by the dimeModel class.
@@ -86,9 +86,9 @@ private:
   char *readbuf;
   int readbufIndex;
   int readbufLen;
-  
+
   dimeArray <char> backBuf;
-  int backBufIndex; 
+  int backBufIndex;
 
   char lineBuf[DXF_MAXLINELEN];
   int32 putBackCode;

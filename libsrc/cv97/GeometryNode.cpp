@@ -17,7 +17,7 @@
 
 #include "GeometryNode.h"
 
-GeometryNode::GeometryNode() 
+GeometryNode::GeometryNode()
 {
 	// bboxCenter field
 	bboxCenterField = new SFVec3f(0.0f, 0.0f, 0.0f);
@@ -42,7 +42,7 @@ GeometryNode::GeometryNode()
 #endif
 }
 
-GeometryNode::~GeometryNode() 
+GeometryNode::~GeometryNode()
 {
 }
 
@@ -57,17 +57,17 @@ SFVec3f *GeometryNode::getBoundingBoxSizeField()
 	return (SFVec3f *)getPrivateField(bboxSizePrivateFieldName);
 }
 
-void GeometryNode::setBoundingBoxSize(float value[]) 
+void GeometryNode::setBoundingBoxSize(float value[])
 {
 	getBoundingBoxSizeField()->setValue(value);
 }
 
-void GeometryNode::setBoundingBoxSize(float x, float y, float z) 
+void GeometryNode::setBoundingBoxSize(float x, float y, float z)
 {
 	getBoundingBoxSizeField()->setValue(x, y, z);
 }
 
-void GeometryNode::getBoundingBoxSize(float value[]) 
+void GeometryNode::getBoundingBoxSize(float value[])
 {
 	getBoundingBoxSizeField()->getValue(value);
 }
@@ -83,17 +83,17 @@ SFVec3f *GeometryNode::getBoundingBoxCenterField()
 	return (SFVec3f *)getPrivateField(bboxCenterPrivateFieldName);
 }
 
-void GeometryNode::setBoundingBoxCenter(float value[]) 
+void GeometryNode::setBoundingBoxCenter(float value[])
 {
 	getBoundingBoxCenterField()->setValue(value);
 }
 
-void GeometryNode::setBoundingBoxCenter(float x, float y, float z) 
+void GeometryNode::setBoundingBoxCenter(float x, float y, float z)
 {
 	getBoundingBoxCenterField()->setValue(x, y, z);
 }
 
-void GeometryNode::getBoundingBoxCenter(float value[]) 
+void GeometryNode::getBoundingBoxCenter(float value[])
 {
 	getBoundingBoxCenterField()->getValue(value);
 }
@@ -102,7 +102,7 @@ void GeometryNode::getBoundingBoxCenter(float value[])
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void GeometryNode::setBoundingBox(BoundingBox *bbox) 
+void GeometryNode::setBoundingBox(BoundingBox *bbox)
 {
 	float center[3];
 	float size[3];
@@ -125,15 +125,15 @@ SFInt32 *GeometryNode::getDisplayListField()
 	return (SFInt32 *)getPrivateField(displayListPrivateFieldString);
 }
 
-void GeometryNode::setDisplayList(unsigned int n) 
+void GeometryNode::setDisplayList(unsigned int n)
 {
 	getDisplayListField()->setValue((int)n);
 }
 
-unsigned int GeometryNode::getDisplayList() 
+unsigned int GeometryNode::getDisplayList()
 {
 	return (unsigned int)getDisplayListField()->getValue();
-} 
+}
 
 void GeometryNode::draw()
 {

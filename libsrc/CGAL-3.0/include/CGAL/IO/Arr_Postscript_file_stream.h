@@ -45,18 +45,18 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Dcel,class Traits, class Base_node>
-Postscript_file_stream& operator << (Postscript_file_stream & ps,  
-                                     const Arrangement_2<Dcel, Traits, 
+Postscript_file_stream& operator << (Postscript_file_stream & ps,
+                                     const Arrangement_2<Dcel, Traits,
                                      Base_node>& arr)
 {
 
-  Pm_drawer<  Arrangement_2<Dcel,Traits, Base_node> , 
+  Pm_drawer<  Arrangement_2<Dcel,Traits, Base_node> ,
     Postscript_file_stream>  drawer(ps);
-  
+
   draw_pm(arr, drawer, ps);
 
   return ps;
-}  
+}
 
 CGAL_END_NAMESPACE
 

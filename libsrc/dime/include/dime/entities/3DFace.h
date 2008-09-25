@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: 3DFace.h
  *
  *  This source file is part of DIME.
@@ -42,10 +42,10 @@ class DIME_DLL_API dime3DFace : public dimeFaceEntity
   friend class dimeEntity;
   friend class dimeSolid;
   friend class dimeTrace;
-  
+
 public:
   dime3DFace();
-  
+
   virtual dimeEntity *copy(dimeModel * const model) const;
 
   virtual bool getRecord(const int groupcode,
@@ -67,14 +67,14 @@ public:
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-    
+
 protected:
 
   virtual bool handleRecord(const int groupcode,
-			    const dimeParam &param, 
+			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  
-  int16 flags; 
+
+  int16 flags;
 
 
 public:

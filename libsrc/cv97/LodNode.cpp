@@ -10,7 +10,7 @@
 
 #include "SceneGraph.h"
 
-LodNode::LodNode() 
+LodNode::LodNode()
 {
 	setHeaderFlag(false);
 	setType(lodNodeString);
@@ -24,10 +24,10 @@ LodNode::LodNode()
 	addField(rangeFieldString, rangeField);
 }
 
-LodNode::~LodNode() 
+LodNode::~LodNode()
 {
 }
-	
+
 ////////////////////////////////////////////////
 //	center
 ////////////////////////////////////////////////
@@ -39,23 +39,23 @@ SFVec3f *LodNode::getCenterField()
 	return (SFVec3f *)getField(centerFieldString);
 }
 
-void LodNode::setCenter(float value[]) 
+void LodNode::setCenter(float value[])
 {
 	getCenterField()->setValue(value);
 }
 
-void LodNode::setCenter(float x, float y, float z) 
+void LodNode::setCenter(float x, float y, float z)
 {
 	getCenterField()->setValue(x, y, z);
 }
 
-void LodNode::getCenter(float value[]) 
+void LodNode::getCenter(float value[])
 {
 	getCenterField()->getValue(value);
 }
 
 ////////////////////////////////////////////////
-//	range 
+//	range
 ////////////////////////////////////////////////
 
 MFFloat *LodNode::getRangeField()
@@ -65,17 +65,17 @@ MFFloat *LodNode::getRangeField()
 	return (MFFloat *)getField(rangeFieldString);
 }
 
-void LodNode::addRange(float value) 
+void LodNode::addRange(float value)
 {
 	getRangeField()->addValue(value);
 }
 
-int LodNode::getNRanges() 
+int LodNode::getNRanges()
 {
 	return getRangeField()->getSize();
 }
 
-float LodNode::getRange(int index) 
+float LodNode::getRange(int index)
 {
 	return getRangeField()->get1Value(index);
 }
@@ -85,12 +85,12 @@ float LodNode::getRange(int index)
 //	List
 ////////////////////////////////////////////////
 
-LodNode *LodNode::next() 
+LodNode *LodNode::next()
 {
 	return (LodNode *)Node::next(getType());
 }
 
-LodNode *LodNode::nextTraversal() 
+LodNode *LodNode::nextTraversal()
 {
 	return (LodNode *)Node::nextTraversalByType(getType());
 }
@@ -98,7 +98,7 @@ LodNode *LodNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool LodNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -111,7 +111,7 @@ bool LodNode::isChildNodeType(Node *node)
 //	Infomation
 ////////////////////////////////////////////////
 
-void LodNode::outputContext(ostream &printStream, char *indentString) 
+void LodNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFVec3f *center = getCenterField();
 	printStream << indentString << "\t" << "center " << center << endl;
@@ -160,7 +160,7 @@ void UpdateLod(LodNode *lod)
 		float lz = lodCenter[2] - viewPosition[2];
 		float distance = (float)sqrt(lx*lx + ly*ly + lz*lz);
 
-	
+
 		int numRange = lod->getNRanges();
 		int nRange = 0;
 		for (nRange=0; nRange<numRange; nRange++) {
@@ -176,7 +176,7 @@ void UpdateLod(LodNode *lod)
 	}
 }
 
-void LodNode::update() 
+void LodNode::update()
 {
 	UpdateLod(this);
 }
@@ -203,7 +203,7 @@ void InitializeLod(LodNode *lod)
 */
 }
 
-void LodNode::initialize() 
+void LodNode::initialize()
 {
 	if (isInitialized() == false) {
 		InitializeLod(this);
@@ -215,7 +215,7 @@ void LodNode::initialize()
 //	LodNode::uninitialize
 ////////////////////////////////////////////////
 
-void UninitializeLod(LodNode *lod) 
+void UninitializeLod(LodNode *lod)
 {
 	int nNodes = lod->getNPrivateNodeElements();
 	for (int n=0; n<nNodes; n++) {
@@ -226,7 +226,7 @@ void UninitializeLod(LodNode *lod)
 	lod->removeAllNodeElement();
 }
 
-void LodNode::uninitialize() 
+void LodNode::uninitialize()
 {
 	if (isInitialized() == true) {
 		UninitializeLod(this);

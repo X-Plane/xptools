@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -31,7 +31,7 @@ int
 main( int argc, char** argv )
 {
 
-   if ( ! argv[1] ) 
+   if ( ! argv[1] )
    {
       cout << "skipping read/write tests ..." << endl;
    }
@@ -43,7 +43,7 @@ main( int argc, char** argv )
       ifstream ddf( argv[1] );
 #endif
 
-      if ( ! ddf ) 
+      if ( ! ddf )
       {
          cerr << "couldn't open " << argv[1] << endl;
          exit( 2 );
@@ -65,7 +65,7 @@ main( int argc, char** argv )
             cout << record << endl;
 
             catd.setRecord( record );
-      
+
             cout << "\nand what the CATD object says it is:\n";
             cout << catd << endl;
 

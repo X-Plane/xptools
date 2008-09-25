@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -37,20 +37,20 @@
 #define MAX_OBJ_SPREAD 100000
 
 void	ZoneManMadeAreas(
-				Pmwx& 				ioMap, 
-				const DEMGeo& 		inLanduse, 
+				Pmwx& 				ioMap,
+				const DEMGeo& 		inLanduse,
 				const DEMGeo& 		inSlope,
-				const AptVector&	inApts,			
+				const AptVector&	inApts,
 				ProgressFunc		inProg)
 {
 		Pmwx::Face_iterator face;
-		
+
 	PROGRESS_START(inProg, 0, 3, "Zoning terrain...")
 
 	int total = ioMap.number_of_faces() * 2;
 	int check = total / 100;
 	int ctr = 0;
-		
+
 	/*****************************************************************************
 	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
 	 *****************************************************************************/
@@ -58,11 +58,11 @@ void	ZoneManMadeAreas(
 	if (!face->is_unbounded())
 	{
 		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
-		
+
 		double mfam = GetMapFaceAreaMeters(face);
-		
+
 		double	max_height = 0.0;
-		
+
 		if (mfam < MAX_OBJ_SPREAD)
 		for (GISPointFeatureVector::iterator feat = face->mPointFeatures.begin(); feat != face->mPointFeatures.end(); ++feat)
 		{
@@ -81,7 +81,7 @@ void	ZoneManMadeAreas(
 		// Quick bail - if we're assigned, we're done. - Moving this to first place because...
 		// airports take the cake/
 		if (face->mTerrainType != terrain_Natural) continue;
-	
+
 		switch(face->mAreaFeature.mFeatType) {
 //		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
 //		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
@@ -89,7 +89,7 @@ void	ZoneManMadeAreas(
 //		case feat_Marina:		face->mTerrainType = terrain_Marina;		break;
 		case feat_GolfCourse:	face->mTerrainType = terrain_GolfCourse;	break;
 		case feat_Cemetary:		face->mTerrainType = terrain_Cemetary;		break;
-//		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;		
+//		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;
 		case feat_Park:			face->mTerrainType = terrain_Park;			break;
 		case feat_ForestPark:	face->mTerrainType = terrain_ForestPark;	break;
 		}
@@ -99,7 +99,7 @@ void	ZoneManMadeAreas(
 	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
 	PROGRESS_START(inProg, 1, 3, "Checking approach paths...")
 
-	ctr = 0;	
+	ctr = 0;
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
 	if (face->mTerrainType != terrain_Airport)
@@ -115,17 +115,17 @@ void	ZoneManMadeAreas(
 			me.push_back(circ->target()->point());
 			++circ;
 		} while (circ != stop);
-		
+
 		Point2	myloc = me.centroid();
-		
+
 		double	my_agl = face->mParams[af_HeightObjs];
 		double	max_agl = my_agl;
-		
+
 		for (set<GISFace *>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
 		{
 			max_agl = max(max_agl, (*niter)->mParams[af_HeightObjs] * 0.5);
 		}
-		
+
 		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
 		if (apt->kind_code == apt_airport)
 		if (!apt->pavements.empty())
@@ -138,18 +138,18 @@ void	ZoneManMadeAreas(
 			{
 				midp = rwy->ends.midpoint();
 				dist = LonLatDistMeters(midp.x, midp.y, myloc.x, myloc.y);
-				
+
 				Vector2	azi_rwy = Vector2(rwy->ends.p1, rwy->ends.p2);	azi_rwy.normalize();
 				Vector2 azi_me = Vector2(midp, myloc);					azi_me.normalize();
-				
+
 				double dot = azi_rwy.dot(azi_me);
-				
+
 				double gs_elev = dist / 18.0;
 				if (dot > 0.8 && dist < 700.0)
 					max_agl = min(max_agl, gs_elev);
 			}
 		}
-				
+
 		my_agl = max(my_agl, max_agl);
 		face->mParams[af_Height] = max_agl;
 	}
@@ -170,13 +170,13 @@ void	ZoneManMadeAreas(
 			{
 				is_open = true;
 				break;
-			}			
+			}
 			++circ;
 		} while (circ != stop);
-		
-		face->mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;		
+
+		face->mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;
 		face->mParams[af_WaterArea] = GetMapFaceAreaMeters(face);
-		
+
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
 }

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Dict.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ class DIME_DLL_API dimeDictEntry
 private:
   dimeDictEntry *next;
   dimeDictEntry(const char * const k, void *v) {key = strdup(k); value = v; };
-  ~dimeDictEntry() {free(key);} 
+  ~dimeDictEntry() {free(key);}
   char *key;
   void *value;
 
@@ -68,7 +68,7 @@ private:
 
 public:
   void print_info();
-  
+
 }; // class dimeDict
 
 #endif // ! DIME_DICT_H

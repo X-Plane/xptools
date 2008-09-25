@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_CARTESIAN_HOMOGENEOUS_CONVERSION_H
 #define CGAL_CARTESIAN_HOMOGENEOUS_CONVERSION_H

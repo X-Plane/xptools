@@ -28,7 +28,7 @@ public:
 	////////////////////////////////////////////////
 
 	MFFloat *getKeyField();
-	
+
 	void addKey(float value);
 	int getNKeys();
 	float getKey(int index);
@@ -36,7 +36,7 @@ public:
 	////////////////////////////////////////////////
 	//	fraction
 	////////////////////////////////////////////////
-	
+
 	SFFloat *getFractionField();
 
 	void setFraction(float value);

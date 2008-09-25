@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,7 +32,7 @@
 #include "WED_Messages.h"
 
 #define		EDIT_DIR_NAME		DIR_STR "WED"
-#define		EARTH_DIR_NAME		DIR_STR "Earth nav data" 
+#define		EARTH_DIR_NAME		DIR_STR "Earth nav data"
 
 inline int lon_lat_to_idx  (int lon, int lat) { return lon + 180 + 360 * (lat + 90); }
 inline int lon_lat_to_idx10(int lon, int lat) { return (lon/10) + 18  +  36 * ((lat/10) +  9); }
@@ -43,12 +43,12 @@ static bool	scan_folder_exists(const char * name, bool dir, unsigned long long m
 {
 	char * dirs = (char *) ref;
 	if (dir)
-	if (strlen(name) == 7 && 
+	if (strlen(name) == 7 &&
 		(name[0] == '+' || name[0] == '-') &&
 		(name[3] == '+' || name[3] == '-') &&
-		isdigit(name[1]) && 
+		isdigit(name[1]) &&
 		isdigit(name[2]) &&
-		isdigit(name[4]) && 
+		isdigit(name[4]) &&
 		isdigit(name[5]) &&
 		isdigit(name[6]))
 	{
@@ -58,8 +58,8 @@ static bool	scan_folder_exists(const char * name, bool dir, unsigned long long m
 		if (name[3]=='-') lon = -lon;
 		if (lat >= -90 && lat < 90 && lon >= -180 && lon < 180)
 			dirs[lon_lat_to_idx10(lon, lat)] = true;
-		
-	}	
+
+	}
 	return true;
 }
 
@@ -70,9 +70,9 @@ static bool	scan_file_exists(const char * name, bool dir, unsigned long long mod
 	if (strlen(name) == 11 && strcmp(name+7, ext) == 0 &&
 		(name[0] == '+' || name[0] == '-') &&
 		(name[3] == '+' || name[3] == '-') &&
-		isdigit(name[1]) && 
+		isdigit(name[1]) &&
 		isdigit(name[2]) &&
-		isdigit(name[4]) && 
+		isdigit(name[4]) &&
 		isdigit(name[5]) &&
 		isdigit(name[6]))
 	{
@@ -84,8 +84,8 @@ static bool	scan_file_exists(const char * name, bool dir, unsigned long long mod
 		{
 			dirs[lon_lat_to_idx(lon, lat)] = mod;
 		}
-		
-	}	
+
+	}
 	return true;
 }
 
@@ -110,8 +110,8 @@ WED_Package::WED_Package(const char * inPath, bool inCreate)
 		if (err = FILE_make_dir_exist(earth_folder.c_str()))
 			WED_ThrowPrintf("Unable to create directory %s: %d", earth_folder.c_str(), err);
 	}
-	
-	Rescan();		
+
+	Rescan();
 }
 
 WED_Package::~WED_Package()
@@ -137,7 +137,7 @@ bool WED_Package::TryClose(void)
 	{
 		if (!mTiles[n]->TryClose()) return false;
 	}
-	
+
 	delete this;
 	return true;
 }
@@ -182,7 +182,7 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 	#if BENTODO
 	revisit - is opening and creating a tile really different?>?
 	#endif
-	tile->AddListener(this);	
+	tile->AddListener(this);
 //	tile->Load();
 	return tile;
 }
@@ -201,26 +201,26 @@ WED_Document *	WED_Package::NewTile(int lon, int lat)
 }
 
 
-	
+
 void			WED_Package::Rescan(void)
 {
 	static unsigned long long 		dsf[360*180];
 	static unsigned long long 		xes[360*180];
-	
+
 memset(dsf,0,sizeof(dsf));
 memset(xes,0,sizeof(xes));
 
 	char					dsf_dir[36*18] = { 0 };
 	char					xes_dir[36*18] = { 0 };
-	
+
 	string	dsf_dir_str	= mPackageBase + EARTH_DIR_NAME;
 	string	xes_dir_str	= mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME;
-	
+
 	MF_GetDirectoryBulk(dsf_dir_str.c_str(), scan_folder_exists, dsf_dir);
 	MF_GetDirectoryBulk(xes_dir_str.c_str(), scan_folder_exists, xes_dir);
-	
+
 	int lon, lat;
-	
+
 	for (lat = -90; lat < 90; lat+=10)
 	for (lon = -180; lon < 180; lon+=10)
 	{
@@ -228,19 +228,19 @@ memset(xes,0,sizeof(xes));
 		sprintf(dname,"/%+03d%+04d" DIR_STR, lat, lon);
 		string dsf_subdir_str = dsf_dir_str + dname;
 		string xes_subdir_str = xes_dir_str + dname;
-		
-		ext=".dsf";		
+
+		ext=".dsf";
 		if (dsf_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(dsf_subdir_str.c_str(), scan_file_exists, dsf);
 		ext=".xes";
 		if (xes_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(xes_subdir_str.c_str(), scan_file_exists, xes);
 		ext=NULL;
 	}
-	
+
 	for (lat = -90 ; lat <  90; ++lat)
 	for (lon = -180; lon < 180; ++lon)
 	{
 		int idx = lon_lat_to_idx(lon, lat);
-		
+
 		if (dsf[idx] != 0)
 		{
 			if (xes[idx] != 0)

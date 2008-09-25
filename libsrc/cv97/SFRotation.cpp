@@ -11,35 +11,35 @@
 #include "SFRotation.h"
 #include "SFMatrix.h"
 
-SFRotation::SFRotation() 
+SFRotation::SFRotation()
 {
 	setType(fieldTypeSFRotation);
 	setValue(0.0f, 0.0f, 1.0f, 0.0f);
 	InitializeJavaIDs();
 }
 
-SFRotation::SFRotation(float x, float y, float z, float rot) 
+SFRotation::SFRotation(float x, float y, float z, float rot)
 {
 	setType(fieldTypeSFRotation);
 	setValue(x, y, z, rot);
 	InitializeJavaIDs();
 }
 
-SFRotation::SFRotation(float vector[3], float rot) 
+SFRotation::SFRotation(float vector[3], float rot)
 {
 	setType(fieldTypeSFRotation);
 	setValue(vector, rot);
 	InitializeJavaIDs();
 }
 
-SFRotation::SFRotation(float value[]) 
+SFRotation::SFRotation(float value[])
 {
 	setType(fieldTypeSFRotation);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFRotation::SFRotation(SFRotation *value) 
+SFRotation::SFRotation(SFRotation *value)
 {
 	setType(fieldTypeSFRotation);
 	setValue(value);
@@ -62,28 +62,28 @@ void SFRotation::InitializeJavaIDs() {
 //	set value
 ////////////////////////////////////////////////
 
-void SFRotation::setValue(float x, float y, float z, float rot) 
+void SFRotation::setValue(float x, float y, float z, float rot)
 {
 	mVector.setValue(x, y, z);
 	mVector.normalize();
 	mAngle = rot;
 }
 
-void SFRotation::setValue(float value[]) 
+void SFRotation::setValue(float value[])
 {
 	mVector.setValue(value);
 	mVector.normalize();
 	mAngle = value[3];
 }
 
-void SFRotation::setValue(float value[], float angle) 
+void SFRotation::setValue(float value[], float angle)
 {
 	mVector.setValue(value);
 	mVector.normalize();
 	mAngle = angle;
 }
 
-void SFRotation::setValue(SFRotation *rotation) 
+void SFRotation::setValue(SFRotation *rotation)
 {
 	setValue(rotation->getX(), rotation->getY(), rotation->getZ(), rotation->getAngle());
 }
@@ -92,7 +92,7 @@ void SFRotation::setValue(SFRotation *rotation)
 //	get value
 ////////////////////////////////////////////////
 
-void SFRotation::getValue(float value[]) 
+void SFRotation::getValue(float value[])
 {
 	mVector.getValue(value);
 	value[3] = mAngle;
@@ -103,37 +103,37 @@ void SFRotation::getVector(float vector[])
 	mVector.getValue(vector);
 }
 
-float SFRotation::getX() 
+float SFRotation::getX()
 {
 	return mVector.getX();
 }
 
-float SFRotation::getY() 
+float SFRotation::getY()
 {
 	return mVector.getY();
 }
 
-float SFRotation::getZ() 
+float SFRotation::getZ()
 {
 	return mVector.getZ();
 }
 
-float SFRotation::getAngle() 
+float SFRotation::getAngle()
 {
 	return mAngle;
 }
 
 ////////////////////////////////////////////////
-//	add 
+//	add
 ////////////////////////////////////////////////
 
-void SFRotation::add(float rotationValue[]) 
+void SFRotation::add(float rotationValue[])
 {
 	SFRotation rotation(rotationValue);
 	add(&rotation);
 }
 
-void SFRotation::add(float x, float y, float z, float rot) 
+void SFRotation::add(float x, float y, float z, float rot)
 {
 	float rotationValue[4];
 	rotationValue[0] = x;
@@ -147,7 +147,7 @@ void SFRotation::add(float x, float y, float z, float rot)
 //	invert
 ///////////////////////////////////////////////
 
-void SFRotation::invert() 
+void SFRotation::invert()
 {
 	mAngle = -mAngle;
 }
@@ -156,12 +156,12 @@ void SFRotation::invert()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFRotation &rotation) 
+ostream& operator<<(ostream &s, SFRotation &rotation)
 {
 	return s << rotation.getX() << " " << rotation.getY() << " " << rotation.getZ() << " " << rotation.getAngle();
 }
 
-ostream& operator<<(ostream &s, SFRotation *rotation) 
+ostream& operator<<(ostream &s, SFRotation *rotation)
 {
 	return s << rotation->getX() << " " << rotation->getY() << " " << rotation->getZ()  << " " << rotation->getAngle();
 }
@@ -170,16 +170,16 @@ ostream& operator<<(ostream &s, SFRotation *rotation)
 //	String
 ////////////////////////////////////////////////
 
-void SFRotation::setValue(char *value) 
+void SFRotation::setValue(char *value)
 {
 	if (!value)
 		return;
 	float	x, y, z, angle;
-	if (sscanf(value,"%f %f %f %f", &x, &y, &z, &angle) == 4) 
+	if (sscanf(value,"%f %f %f %f", &x, &y, &z, &angle) == 4)
 		setValue(x, y, z, angle);
 }
 
-char *SFRotation::getValue(char *buffer, int bufferLen) 
+char *SFRotation::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%g %g %g %g", getX(), getY(), getZ(), getAngle());
 	return buffer;
@@ -198,7 +198,7 @@ void SFRotation::initValue()
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFRotation::equals(Field *field) 
+bool SFRotation::equals(Field *field)
 {
 	SFRotation *rotation = (SFRotation *)field;
 	if (getX() == rotation->getX() && getY() == rotation->getY() && getZ() == rotation->getZ() && getAngle() == rotation->getAngle())
@@ -207,13 +207,13 @@ bool SFRotation::equals(Field *field)
 		return false;
 }
 
-bool SFRotation::equals(float value[4]) 
+bool SFRotation::equals(float value[4])
 {
 	SFRotation rotation(value);
 	return equals(&rotation);
 }
 
-bool SFRotation::equals(float x, float y, float z, float angle) 
+bool SFRotation::equals(float x, float y, float z, float angle)
 {
 	SFRotation rotation(x, y, z, angle);
 	return equals(&rotation);
@@ -230,7 +230,7 @@ void SFRotation::add(SFRotation *rot)
 
 	SFMatrix m2;
 	rot->getSFMatrix(&m2);
-		
+
 	m1.add(&m2);
 
 	SFRotation newRotation;
@@ -408,7 +408,7 @@ jobject SFRotation::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

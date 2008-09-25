@@ -22,7 +22,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-	
+
   sio_8211DRLeader dr_leader;
 
   // insure that the leader got created with sane values
@@ -74,6 +74,6 @@ int main(int argc, char** argv)
 
 
 
-  return 0; 
+  return 0;
 }
 

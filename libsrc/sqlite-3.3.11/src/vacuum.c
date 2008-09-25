@@ -91,7 +91,7 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
 
   sqlite3OsTempFileName(zTemp);
   if( !db->autoCommit ){
-    sqlite3SetString(pzErrMsg, "cannot VACUUM from within a transaction", 
+    sqlite3SetString(pzErrMsg, "cannot VACUUM from within a transaction",
        (char*)0);
     rc = SQLITE_ERROR;
     goto end_of_vacuum;
@@ -137,17 +137,17 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   /* Query the schema of the main database. Create a mirror schema
   ** in the temporary database.
   */
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'CREATE TABLE vacuum_db.' || substr(sql,14,100000000) "
       "  FROM sqlite_master WHERE type='table' AND name!='sqlite_sequence'"
       "   AND rootpage>0"
   );
   if( rc!=SQLITE_OK ) goto end_of_vacuum;
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'CREATE INDEX vacuum_db.' || substr(sql,14,100000000)"
       "  FROM sqlite_master WHERE sql LIKE 'CREATE INDEX %' ");
   if( rc!=SQLITE_OK ) goto end_of_vacuum;
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'CREATE UNIQUE INDEX vacuum_db.' || substr(sql,21,100000000) "
       "  FROM sqlite_master WHERE sql LIKE 'CREATE UNIQUE INDEX %'");
   if( rc!=SQLITE_OK ) goto end_of_vacuum;
@@ -156,7 +156,7 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   ** an "INSERT INTO vacuum_db.xxx SELECT * FROM xxx;" to copy
   ** the contents to the temporary database.
   */
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'INSERT INTO vacuum_db.' || quote(name) "
       "|| ' SELECT * FROM ' || quote(name) || ';'"
       "FROM sqlite_master "
@@ -168,12 +168,12 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
 
   /* Copy over the sequence table
   */
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'DELETE FROM vacuum_db.' || quote(name) || ';' "
       "FROM vacuum_db.sqlite_master WHERE name='sqlite_sequence' "
   );
   if( rc!=SQLITE_OK ) goto end_of_vacuum;
-  rc = execExecSql(db, 
+  rc = execExecSql(db,
       "SELECT 'INSERT INTO vacuum_db.' || quote(name) "
       "|| ' SELECT * FROM ' || quote(name) || ';' "
       "FROM vacuum_db.sqlite_master WHERE name=='sqlite_sequence';"

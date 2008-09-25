@@ -63,7 +63,7 @@ Bbox_2 bbox_2(InputIterator first, InputIterator last);
 
 
 template <class ForwardIterator, class Traits>
-void 
+void
 area_2( ForwardIterator first, ForwardIterator last,
    	typename Traits::FT &result,
         const Traits& traits)
@@ -88,7 +88,7 @@ area_2( ForwardIterator first, ForwardIterator last,
 }
 
 template <class ForwardIterator, class Traits>
-typename Traits::FT 
+typename Traits::FT
 polygon_area_2( ForwardIterator first, ForwardIterator last,
 		const Traits& traits)
 {
@@ -152,9 +152,9 @@ template <class ForwardIterator>
 inline
 ForwardIterator left_vertex_2(ForwardIterator first,
 			      ForwardIterator last)
-{  
+{
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return left_vertex_2(first, last, K());
 }
 
@@ -164,9 +164,9 @@ template <class ForwardIterator>
 inline
 ForwardIterator right_vertex_2(ForwardIterator first,
 			       ForwardIterator last)
-{ 
+{
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return right_vertex_2(first, last, K());
 }
 
@@ -179,7 +179,7 @@ ForwardIterator top_vertex_2(ForwardIterator first,
 			     ForwardIterator last)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return top_vertex_2(first, last, K());
 }
 
@@ -191,7 +191,7 @@ ForwardIterator bottom_vertex_2(ForwardIterator first,
 				ForwardIterator last)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return bottom_vertex_2(first, last, K());
 }
 
@@ -204,7 +204,7 @@ void area_2(ForwardIterator first,
 	    Numbertype& result)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   area_2(first, last, result, K());
 }
 
@@ -216,7 +216,7 @@ bool is_convex_2(ForwardIterator first,
 		 ForwardIterator last)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return is_convex_2(first, last, K());
 }
 
@@ -228,7 +228,7 @@ bool is_simple_2(ForwardIterator first,
 		 ForwardIterator last)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return is_simple_2(first, last, K());
 }
 
@@ -240,7 +240,7 @@ Oriented_side oriented_side_2(
   const typename std::iterator_traits<ForwardIterator>::value_type& point)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return oriented_side_2(first, last, point, K());
 }
 
@@ -253,7 +253,7 @@ Bounded_side bounded_side_2(
   const typename std::iterator_traits<ForwardIterator>::value_type& point)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return bounded_side_2(first, last, point, K());
 }
 
@@ -265,14 +265,14 @@ Orientation orientation_2(ForwardIterator first,
 			  ForwardIterator last)
 {
   typedef typename Kernel_traits<
-    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K; 
+    typename std::iterator_traits<ForwardIterator>::value_type>::Kernel K;
   return orientation_2(first, last, K());
 }
 #endif // CGAL_REP_CLASS_DEFINED
 
 CGAL_END_NAMESPACE
 
-#ifdef CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION 
+#ifdef CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION
 #include <CGAL/Polygon_2_algorithms.C>
 #endif // CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION
 

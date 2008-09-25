@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -243,17 +243,17 @@ sb_At::setAttributeTypes( attribute_types const& val )
          case sc_Subfield::is_I :
             imp_->attributes_.back().setI( (long) 0 );
             imp_->attributes_.back().setUnvalued( );
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             imp_->attributes_.back().setR( 0 );
             imp_->attributes_.back().setUnvalued();
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             imp_->attributes_.back().setS( 0 );
             imp_->attributes_.back().setUnvalued();
-            break; 
+            break;
 
          case sc_Subfield::is_C :
             imp_->attributes_.back().setC( "" );
@@ -338,8 +338,8 @@ findAttribute
 bool
 sb_At::unDefineAttribute( string const& attribute_name )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp_->attributes_.begin(), imp_->attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp_->attributes_.begin(), imp_->attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp_->attributes_.end() )
@@ -360,8 +360,8 @@ static
 bool
 getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, long& val )
 {
-   list<sc_Subfield>::const_iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::const_iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp.attributes_.end() )
@@ -371,15 +371,15 @@ getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, long& val )
       {
          case sc_Subfield::is_I :
             return imp.attributes_.back().getI( val );
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return imp.attributes_.back().getBI8( val );
@@ -438,8 +438,8 @@ static
 bool
 getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, unsigned long& val )
 {
-   list<sc_Subfield>::const_iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::const_iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp.attributes_.end() )
@@ -451,15 +451,15 @@ getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, unsigned lon
             long tmp_long;
             return imp.attributes_.back().getI( tmp_long );
             val = static_cast<unsigned long>(tmp_long);
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -518,8 +518,8 @@ static
 bool
 getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, float& val )
 {
-   list<sc_Subfield>::const_iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::const_iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    double tmp_double;            // for casting convenience
@@ -531,17 +531,17 @@ getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, float& val )
       {
          case sc_Subfield::is_I :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             if ( ! imp.attributes_.back().getR( tmp_double ) ) return false;
             val = static_cast<float>(tmp_double); // XXX dangerout cast
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             if ( ! imp.attributes_.back().getS( tmp_double ) ) return false;
             val = static_cast<float>(tmp_double); // XXX dangerout cast
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -604,8 +604,8 @@ static
 bool
 getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, double& val )
 {
-   list<sc_Subfield>::const_iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::const_iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp.attributes_.end() )
@@ -615,15 +615,15 @@ getNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, double& val 
       {
          case sc_Subfield::is_I :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             return imp.attributes_.back().getR( val );
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             return imp.attributes_.back().getS( val );
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -707,8 +707,8 @@ sb_At::getAttribute( string const& attribute_name, double& val ) const
 bool
 sb_At::getAttribute( string const& attribute_name, string& val ) const
 {
-   list<sc_Subfield>::const_iterator i = 
-      find_if( imp_->attributes_.begin(), imp_->attributes_.end(), 
+   list<sc_Subfield>::const_iterator i =
+      find_if( imp_->attributes_.begin(), imp_->attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp_->attributes_.end() )
@@ -718,11 +718,11 @@ sb_At::getAttribute( string const& attribute_name, string& val ) const
       {
          case sc_Subfield::is_A :
             return imp_->attributes_.back().getA( val );
-            break; 
+            break;
 
          case sc_Subfield::is_C :
             return imp_->attributes_.back().getC( val );
-            break; 
+            break;
 
          default :
             break;
@@ -746,8 +746,8 @@ static
 bool
 _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, long const& val )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp.attributes_.end() )
@@ -758,15 +758,15 @@ _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, long const& 
          case sc_Subfield::is_I :
             (*i).setI( val );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             (*i).setBI8( val );
@@ -829,8 +829,8 @@ static
 bool
 _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, unsigned long const& val )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp.attributes_.end() )
@@ -841,15 +841,15 @@ _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, unsigned lon
          case sc_Subfield::is_I :
             (*i).setI( val );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -914,8 +914,8 @@ static
 bool
 _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, float const& val )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    double tmp_double = static_cast<double>(val);
@@ -927,17 +927,17 @@ _setNumericAttribute( string const& attribute_name, sb_At_Imp& imp, float const&
       {
          case sc_Subfield::is_I :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             (*i).setR( tmp_double );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             (*i).setS( tmp_double );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -999,8 +999,8 @@ static
 bool
 setNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, double const& val )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp.attributes_.begin(), imp.attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp.attributes_.begin(), imp.attributes_.end(),
                findAttribute( attribute_name) );
 
    float tmp_float;
@@ -1012,17 +1012,17 @@ setNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, double const
       {
          case sc_Subfield::is_I :
             return false;
-            break; 
+            break;
 
          case sc_Subfield::is_R :
             (*i).setR( val );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_S :
             (*i).setS( val );
             return true;
-            break; 
+            break;
 
          case sc_Subfield::is_BI8 :
             return false;
@@ -1080,34 +1080,34 @@ setNumericAttribute_( string const& attribute_name, sb_At_Imp& imp, double const
 
 
 bool
-sb_At::setAttribute( string const& attribute_name, long   const& val ) 
+sb_At::setAttribute( string const& attribute_name, long   const& val )
 {
    return setNumericAttribute_( attribute_name,  *imp_, val );
 } // setAttribute
 
 bool
-sb_At::setAttribute( string const& attribute_name, unsigned long   const& val ) 
+sb_At::setAttribute( string const& attribute_name, unsigned long   const& val )
 {
    return setNumericAttribute_( attribute_name,  *imp_, val );
 } // setAttribute
 
 bool
-sb_At::setAttribute( string const& attribute_name, float  const& val ) 
+sb_At::setAttribute( string const& attribute_name, float  const& val )
 {
    return setNumericAttribute_( attribute_name,  *imp_, val );
 } // setAttribute
 
 bool
-sb_At::setAttribute( string const& attribute_name, double const& val ) 
+sb_At::setAttribute( string const& attribute_name, double const& val )
 {
    return setNumericAttribute_( attribute_name,  *imp_, val );
 } // setAttribute
 
 bool
-sb_At::setAttribute( string const& attribute_name, string const& val ) 
+sb_At::setAttribute( string const& attribute_name, string const& val )
 {
-   list<sc_Subfield>::iterator i = 
-      find_if( imp_->attributes_.begin(), imp_->attributes_.end(), 
+   list<sc_Subfield>::iterator i =
+      find_if( imp_->attributes_.begin(), imp_->attributes_.end(),
                findAttribute( attribute_name) );
 
    if ( i != imp_->attributes_.end() )
@@ -1117,11 +1117,11 @@ sb_At::setAttribute( string const& attribute_name, string const& val )
       {
          case sc_Subfield::is_A :
             i->setA( val );
-            break; 
+            break;
 
          case sc_Subfield::is_C :
             i->setC( val );
-            break; 
+            break;
 
          default :
             break;
@@ -1174,25 +1174,25 @@ addSubfieldFormat
                field_format.back().setType( sio_8211SubfieldFormat::A );
                field_format.back().setConverter( &converter_A );
                field_format.back().setFormat( sio_8211SubfieldFormat::variable );
-               break; 
+               break;
 
             case sc_Subfield::is_I :
                field_format.back().setType( sio_8211SubfieldFormat::I );
                field_format.back().setConverter( &converter_I );
                field_format.back().setFormat( sio_8211SubfieldFormat::variable );
-               break; 
+               break;
 
             case sc_Subfield::is_R :
                field_format.back().setType( sio_8211SubfieldFormat::R );
                field_format.back().setConverter( &converter_R );
                field_format.back().setFormat( sio_8211SubfieldFormat::variable );
-               break; 
+               break;
 
             case sc_Subfield::is_S :
                field_format.back().setType( sio_8211SubfieldFormat::S );
                field_format.back().setConverter( &converter_S );
                field_format.back().setFormat( sio_8211SubfieldFormat::variable );
-               break; 
+               break;
 
             case sc_Subfield::is_BI8 :
                field_format.back().setType( sio_8211SubfieldFormat::B );
@@ -1256,7 +1256,7 @@ addSubfieldFormat
 
             default :
                break;
-      
+
          }
       }
 
@@ -1309,7 +1309,7 @@ sb_Atpr::buildSpecificSchema_( )
 
                                 // now add the attribute fields
 
-   for_each( attributes.begin(), attributes.end(), 
+   for_each( attributes.begin(), attributes.end(),
              addSubfieldFormat( schema_() ) );
 
 } // build__atpr_schema
@@ -1324,7 +1324,7 @@ struct sb_Atpr_Imp
 
 
 
-sb_Atpr::sb_Atpr() : imp_( new sb_Atpr_Imp() ) 
+sb_Atpr::sb_Atpr() : imp_( new sb_Atpr_Imp() )
 {
    setMnemonic( "ATPR" );
 }
@@ -1397,7 +1397,7 @@ sb_Atpr::getRecord( sc_Record & record ) const
                                 // now add the other subfields based
                                 // on the current set of attributes
 
-   for_each( getAttributes().begin(), getAttributes().end(), 
+   for_each( getAttributes().begin(), getAttributes().end(),
              addSubfield( record ) );
 
    return true;

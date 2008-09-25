@@ -104,9 +104,9 @@ void Geomview_stream::setup_geomview(const char *machine, const char *login)
         std::cerr << "execl geomview failed" << std::endl;
         switch(errno) {
         case EACCES:
-            std::cerr << "please check your environment variable PATH" 	      
+            std::cerr << "please check your environment variable PATH"
 		      << std::endl;
-            std::cerr << "make sure the file `geomview' is contained in it" 
+            std::cerr << "make sure the file `geomview' is contained in it"
 		      << std::endl;
             std::cerr << "and is executable" << std::endl;
             break;
@@ -114,7 +114,7 @@ void Geomview_stream::setup_geomview(const char *machine, const char *login)
             std::cerr << "too many links for filename `geomview'" << std::endl;
             break;
         default:
-            std::cerr << "error number " << errno << " (check `man execlp')" 
+            std::cerr << "error number " << errno << " (check `man execlp')"
 		      << std::endl;
         };
         exit(-1);
@@ -500,7 +500,7 @@ char*
 Geomview_stream::nth(char* s, int count)
 {
     s++; // skip first character (always a parenthesis)
- 
+
     // Skip "count" words.
     for(; count != 0; count--) {
         while (*s == ' ')       // skip whitespaces
@@ -511,7 +511,7 @@ Geomview_stream::nth(char* s, int count)
     }
     while (*s == ' ')           // skip whitespaces
         s++;
- 
+
     // Now we have the beginning of the searched sub-expression.
     int j = 1;
     if (*s == '(')              // Case of a well-parenthesed expression.
@@ -528,7 +528,7 @@ Geomview_stream::nth(char* s, int count)
     else                        // Case of a word terminated by ' ' or ')'.
         while (s[j] != ' ' && s[j] != ')')
             j++;
- 
+
     s[j] = '\0';
     return s;
 }

@@ -10,7 +10,7 @@
  * ERROR HANDLING
  *
  *    This component checks parameters for valid values.  If an invalid value
- *    is found, the error code is combined with the current error code using 
+ *    is found, the error code is combined with the current error code using
  *    the bitwise or.  This combining allows multiple error codes to be
  *    returned. The possible error codes are:
  *
@@ -29,13 +29,13 @@
  *    GEOCENTRIC is intended for reuse by any application that performs
  *    coordinate conversions between geodetic coordinates and geocentric
  *    coordinates.
- *    
+ *
  *
  * REFERENCES
- *    
+ *
  *    An Improved Algorithm for Geocentric to Geodetic Coordinate Conversion,
  *    Ralph Toms, February 1996  UCRL-JC-123138.
- *    
+ *
  *    Further information on GEOCENTRIC can be found in the Reuse Manual.
  *
  *    GEOCENTRIC originated from : U.S. Army Topographic Engineering Center
@@ -121,12 +121,12 @@ double Geocent_ep2 = 0.00673949675658690300; /* 2nd eccentricity squared */
 
 /***************************************************************************/
 /*
- *                              FUNCTIONS     
+ *                              FUNCTIONS
  */
 
 
-long Set_Geocentric_Parameters (double a, 
-                                double b) 
+long Set_Geocentric_Parameters (double a,
+                                double b)
 { /* BEGIN Set_Geocentric_Parameters */
 /*
  * The function Set_Geocentric_Parameters receives the ellipsoid parameters
@@ -156,7 +156,7 @@ long Set_Geocentric_Parameters (double a,
 } /* END OF Set_Geocentric_Parameters */
 
 
-void Get_Geocentric_Parameters (double *a, 
+void Get_Geocentric_Parameters (double *a,
                                 double *b)
 { /* BEGIN Get_Geocentric_Parameters */
 /*
@@ -177,7 +177,7 @@ long Convert_Geodetic_To_Geocentric (double Latitude,
                                      double Height,
                                      double *X,
                                      double *Y,
-                                     double *Z) 
+                                     double *Z)
 { /* BEGIN Convert_Geodetic_To_Geocentric */
 /*
  * The function Convert_Geodetic_To_Geocentric converts geodetic coordinates
@@ -230,7 +230,7 @@ long Convert_Geodetic_To_Geocentric (double Latitude,
 
 /*
  * The function Convert_Geocentric_To_Geodetic converts geocentric
- * coordinates (X, Y, Z) to geodetic coordinates (latitude, longitude, 
+ * coordinates (X, Y, Z) to geodetic coordinates (latitude, longitude,
  * and height), according to the current ellipsoid parameters.
  *
  *    X         : Geocentric X coordinate, in meters.         (input)
@@ -244,7 +244,7 @@ long Convert_Geodetic_To_Geocentric (double Latitude,
 #define USE_ITERATIVE_METHOD
 
 void Convert_Geocentric_To_Geodetic (double X,
-                                     double Y, 
+                                     double Y,
                                      double Z,
                                      double *Latitude,
                                      double *Longitude,
@@ -305,7 +305,7 @@ void Convert_Geocentric_To_Geodetic (double X,
                 *Latitude = PI_OVER_2;
                 *Height = -Geocent_b;
                 return;
-            } 
+            }
         }
     }
     W2 = X*X + Y*Y;

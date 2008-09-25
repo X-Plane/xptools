@@ -45,12 +45,12 @@ int main()
   Point_2 a1(1, 1), a2(1, 0), a3(0, 0), a4(0, 1), a5(1, 4, 2);
 
   /*
-       a5 
-       /\  
+       a5
+       /\
       /  \
   a4  ----  a1
-     |    | 
-     |    | 
+     |    |
+     |    |
      |    |
   a3  ----  a2
 
@@ -64,7 +64,7 @@ int main()
   cv[4] = X_monotone_curve_2(a5, a1);
   cv[5] = X_monotone_curve_2(a1, a4);
 
-  std::cout << "The curves of the map :" << std::endl; 
+  std::cout << "The curves of the map :" << std::endl;
   std::copy(&cv[0], &cv[6],
             std::ostream_iterator<X_monotone_curve_2>(std::cout, "\n"));
   std::cout << std::endl;
@@ -78,15 +78,15 @@ int main()
   e[4] = pm.insert_at_vertices(cv[4], e[0]->source(), e[3]->target());
   e[5] = pm.insert_at_vertices(cv[5], e[0]->source(), e[2]->target());
 
-  /*             
+  /*
      e3  /\  e4
         /  \
         ----
-       | e5 | 
+       | e5 |
     e2 |    | e0
        |    |
         ----
-         e1 
+         e1
   */
 
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
@@ -95,6 +95,6 @@ int main()
   // Print the map:
   std::cout << std::endl << "* * * Printing map: " << std::endl << std::endl;
   CGAL::write_pm(pm, verbose_writer, std::cout);
-       
-  return 0;  
+
+  return 0;
 }

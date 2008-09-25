@@ -46,7 +46,7 @@ public:
 //
 // Note that since the read in DDR will have the field terminators
 // stripped (because we don't bother to store them, the comparisons
-// have to be a bit lenient.  That is, we allow for lengths to differ by 
+// have to be a bit lenient.  That is, we allow for lengths to differ by
 // one character (presumably the missing field terminator), and then do
 // a strict binary comparison that doesn't include the field terminator.
 //
@@ -94,11 +94,11 @@ int main(int argc, char** argv)
   assert( first_ddr_leader->getFieldControlLength() == 6 );
   assert( first_ddr_leader->getRecordLength() == 0 );
   assert( first_ddr_leader->getLeaderIdentifier() == 'L' );
-   
+
   assert( first_ddr_leader->getSizeOfFieldPosField() == 1 );
   assert( first_ddr_leader->getSizeOfFieldTagField() == 4 );
 
-  // XXX It might be a good idea to check the fieldArea and 
+  // XXX It might be a good idea to check the fieldArea and
   // XXX directory of the DDR too.  However, it might be overkill
 
   // Build another DDR via << and >>.  Compare the 2 ddrs.  They
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
   ss >> second_ddr;
 
   if ( ! ss ) { exit(1); }      // abort if stream wedged
-		
+
 	// get leader from second_ddr
   const sio_8211DDRLeader * const second_ddr_leader =
     dynamic_cast<const sio_8211DDRLeader*>(&(second_ddr.getLeader()));
@@ -121,20 +121,20 @@ int main(int argc, char** argv)
    // first the leader
                                 // insure we have valid leaders
 
-  assert( first_ddr_leader && second_ddr_leader ); 
-  assert( first_ddr_leader->getFieldControlLength() == 
+  assert( first_ddr_leader && second_ddr_leader );
+  assert( first_ddr_leader->getFieldControlLength() ==
           second_ddr_leader->getFieldControlLength() );
-  assert( first_ddr_leader->getRecordLength() == 
+  assert( first_ddr_leader->getRecordLength() ==
           second_ddr_leader->getRecordLength() );
-  assert( first_ddr_leader->getLeaderIdentifier() == 
+  assert( first_ddr_leader->getLeaderIdentifier() ==
           second_ddr_leader->getLeaderIdentifier() );
-  assert( first_ddr_leader->getBaseAddrOfFieldArea() == 
+  assert( first_ddr_leader->getBaseAddrOfFieldArea() ==
           second_ddr_leader->getBaseAddrOfFieldArea() );
-  assert( first_ddr_leader->getSizeOfFieldLengthField() == 
+  assert( first_ddr_leader->getSizeOfFieldLengthField() ==
           second_ddr_leader->getSizeOfFieldLengthField() );
-  assert( first_ddr_leader->getSizeOfFieldPosField() == 
+  assert( first_ddr_leader->getSizeOfFieldPosField() ==
           second_ddr_leader->getSizeOfFieldPosField() );
-  assert( first_ddr_leader->getSizeOfFieldTagField() == 
+  assert( first_ddr_leader->getSizeOfFieldTagField() ==
           second_ddr_leader->getSizeOfFieldTagField() );
 
   // then the directories

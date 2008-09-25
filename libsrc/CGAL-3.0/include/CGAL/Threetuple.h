@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri
- 
+
 
 #ifndef CGAL__THREETUPLE_H
 #define CGAL__THREETUPLE_H

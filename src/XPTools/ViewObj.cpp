@@ -1,26 +1,26 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
- 
+
 #define FACADES 0
 
 #include <time.h>
@@ -116,13 +116,13 @@ public:
 
 					XObjWin(const char * inFileName);
 	virtual			~XObjWin();
-	
+
 			void			ReceiveObject(double x, double y, double z, double r, const string& obj);
-	
-	virtual	void			Timer(void) { } 
+
+	virtual	void			Timer(void) { }
 	virtual	void			GLReshaped(int inWidth, int inHeight);
 	virtual	void			GLDraw(void);
-	
+
 	virtual	bool			Closed(void) { return true; }
 	virtual	void			ClickDown(int inX, int inY, int inButton);
 	virtual	void			ClickUp(int inX, int inY, int inButton);
@@ -148,7 +148,7 @@ private:
 		string	obj;
 	};
 
-	map<string, XObj>	mObjDB;	
+	map<string, XObj>	mObjDB;
 	vector<ObjPlacement_t>	mObjInst;
 
 	XObj			mObj;
@@ -156,17 +156,17 @@ private:
 //	Prototype_t		mPrototype;
 #if FACADES
 	FacadeObj_t		mFacade;
-#endif	
+#endif
 	Polygon2 		mPts;
 //	Sphere3			mBounds;
 
 //	bool	mIsPrototype;
 #if FACADES
 	bool	mIsFacade;
-#endif	
+#endif
 	bool	mIsObj8;
 	int		mFloors;
-	
+
 //	float	mScale;
 //	float	mSpin[4];
 //	float	mXTrans;
@@ -179,11 +179,11 @@ private:
 	bool	mMeasureOnOpen;
 	int		mShowCulled;
 //	int		mShowBounds;
-	
+
 	int		mEditNum;
 	int		mLastX;
 	int		mLastY;
-	
+
 //	double	mYmax, mYmin, mXmin, mXmax, mNear, mFar;
 	OE_Zoomer3d	mZoomer;
 
@@ -198,7 +198,7 @@ void			XObjWin::ReceiveObject(double x, double y, double z, double r, const stri
 	o.r = r;
 	o.obj = obj;
 	mObjInst.push_back(o);
-}	
+}
 
 
 void	MyObjReceiver(double x, double y, double z, double r, const char * obj, void * inRef)
@@ -209,7 +209,7 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 
 
 
-XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here", 
+XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here",
 	xwin_style_resizable | xwin_style_visible | xwin_style_centered,
 	50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
 	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false),mLOD(1)
@@ -230,18 +230,18 @@ XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : 
 		XObjWin::ReceiveFiles(v, 0, 0);
 	}
 	sWindows.insert(this);
-	
+
 //	float a[3] = { 0.0, 1.0, 0.0 };
-//	axis_to_quat(a, 0.0, mSpin); 	
-}	
-	
+//	axis_to_quat(a, 0.0, mSpin);
+}
+
 XObjWin::~XObjWin()
 {
 	sWindows.erase(this);
 	if (sWindows.empty())
 		XGrinder_Quit();
 }
-	
+
 void			XObjWin::GLReshaped(int inWidth, int inHeight)
 {
 	ForceRefresh();
@@ -267,15 +267,15 @@ void			XObjWin::GLDraw(void)
 	glBlendFunc		(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	// when ALPHA-BLENDING is enabled, we blend normally
 	glDepthFunc		(GL_LEQUAL							);	// less than OR EQUAL plots on top
 	glEnable(GL_BLEND);
-	
+
 	int	i[4] = { 0, 0, 0, 0 };
 	GetBounds(i+2,i+3);
 
 	mZoomer.SetupMatrices(i);
-/*	
+/*
 //	glMatrixMode(GL_PROJECTION);
 //	glLoadIdentity();
-	
+
 //	CHECK_ERR();
 
 	mNear = 50.0;
@@ -287,27 +287,27 @@ void			XObjWin::GLDraw(void)
 	glFrustum(mXmin, mXmax, mYmin, mYmax, mNear, mFar);
 
 	CHECK_ERR();
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0.0, 0.0, -gCamDist, 
-		0.0, 0.0, 0.0, 
+	gluLookAt(0.0, 0.0, -gCamDist,
+		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0);
 
 	float	m[4][4];
 
 	glTranslatef(mXTrans, mYTrans, 0);
-	
+
 	build_rotmatrix(m, mSpin);
 	glMultMatrixf(&m[0][0]);
 
-		
+
 	glScalef(mScale, mScale, mScale);
-*/	
+*/
 	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate, DistForLOD8(mObj8,mLOD));
 	else			PlotOneObj(mObj, mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0);
-	
-		
+
+
 	for (vector<ObjPlacement_t>::iterator p = mObjInst.begin(); p != mObjInst.end(); ++p)
 	{
 		glMatrixMode(GL_MODELVIEW);
@@ -315,10 +315,10 @@ void			XObjWin::GLDraw(void)
 		glTranslatef(p->x, p->y, p->z);
 		glRotatef(-p->r, 0.0, 1.0, 0.0);
 		if (mObjDB.find(p->obj) != mObjDB.end())
-			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0f);		
+			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0f);
 		glPopMatrix();
 	}
-	
+
 /*	if (mShowBounds)
 	{
 		glDisable(GL_TEXTURE_2D);
@@ -332,7 +332,7 @@ void			XObjWin::GLDraw(void)
 		glPopMatrix();
 	}
 */
-		
+
 #if FACADES
 	if (mIsFacade)
 	{
@@ -349,9 +349,9 @@ void			XObjWin::GLDraw(void)
 		glEnd();
 		glPointSize(1.0);
 	}
-#endif	
+#endif
 	mZoomer.ResetMatrices();
-	
+
 	if (mAnimate)
 		ForceRefresh();
 
@@ -371,7 +371,7 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 	GetBounds(i+2,i+3);
 
 	mZoomer.SetupMatrices(i);
-	
+
 	mEditNum = -1;
 #if FACADES
 	if (mIsFacade)
@@ -381,14 +381,14 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 			double	mpt[3] = { mPts[n].x, 0.0, mPts[n].y };
 			double	spt[2];
 			ModelToScreenPt(mpt, spt);
-			
+
 			double	xdif = abs(spt[0] - inX);
 			double	ydif = abs(spt[1] - inY);
 			if (xdif < 4 && ydif < 4)
 				mEditNum = n;
 		}
 	}
-#endif	
+#endif
 	if (mEditNum == -1)
 	{
 		if (inButton == 0)
@@ -396,7 +396,7 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 		else
 			mZoomer.HandleRotationClick(i, xplm_MouseDown, inX, inY);
 	}
-	mZoomer.ResetMatrices();	
+	mZoomer.ResetMatrices();
 }
 
 
@@ -409,11 +409,11 @@ void			XObjWin::ClickUp(int inX, int inY, int inButton)
 	if (mEditNum >= 0)
 		this->ClickDrag(inX, inY, inButton);
 	else {
-	
+
 		int	h;
 		GetBounds(NULL, &h);
 		inY = h - inY;
-	
+
 		if (inButton == 0)
 			mZoomer.HandleTranslationClick(i, xplm_MouseUp, inX, inY);
 		else
@@ -434,10 +434,10 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 
 	if (mEditNum >= 0)
 	{
-	
+
 		double	plane[4] = { 0.0, 1.0, 0.0, 0.0 };
 		double	clickPt[3];
-		
+
 		if (mZoomer.FindPointOnPlane(i, plane, inX, inY, clickPt))
 		{
 			mPts[mEditNum].x = clickPt[0];
@@ -450,13 +450,13 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 				{
 					pts.push_back(Point3(p->x, 0.0, p->y));
 				}
-			
+
 				mObj.cmds.clear();
 				mObj.texture = mFacade.texture;
 				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			}
-#endif			
+#endif
 //			xflt	s[4];
 //			GetObjBoundingSphere(mObj, s);
 //			mBounds.c = Point3(s[0], s[1], s[2]);
@@ -468,7 +468,7 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 			mZoomer.HandleTranslationClick(i, xplm_MouseDrag, inX, inY);
 		else
 			mZoomer.HandleRotationClick(i, xplm_MouseDrag, inX, inY);
-	
+
 		ForceRefresh();
 	}
 }
@@ -495,36 +495,36 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				mIsObj8 = true;
 #if FACADES
 				mIsFacade = false;
-#endif				
+#endif
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
 				SetTitle(foo.c_str());
 				ForceRefresh();
-				
+
 				if (mMeasureOnOpen)
-					KeyPressed('m', 0,0,0);			
-			}				
+					KeyPressed('m', 0,0,0);
+			}
 			else if (XObjRead(i->c_str(), mObj))
 			{
 #if FACADES
 				mIsFacade = false;
-#endif				
+#endif
 				mIsObj8 = false;
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
 				SetTitle(foo.c_str());
 				ForceRefresh();
-				
+
 				if (mMeasureOnOpen)
-					KeyPressed('m', 0,0,0);			
+					KeyPressed('m', 0,0,0);
 			}
 		} else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i, ".png") || HasExtNoCase(*i, ".tif") || HasExtNoCase(*i,".dds"))
 		{
 			SetGLContext();
 			AccumTexture(*i);
-		} 
+		}
 #if FACADES
 		else if (HasExtNoCase(*i, ".fac"))
 		{
@@ -533,13 +533,13 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				mIsFacade = true;
 				mIsObj8 = false;
 				mFloors = mFacade.lods[0].walls[0].bottom + mFacade.lods[0].walls[0].middle + mFacade.lods[0].walls[0].top;
-				
+
 				Polygon3	pts;
 				for (vector<Point2>::iterator p = mPts.begin(); p != mPts.end(); ++p)
 				{
 					pts.push_back(Point3(p->x, 0.0, p->y));
 				}
-			
+
 				mObj.cmds.clear();
 				mObj.texture = mFacade.texture;
 				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
@@ -556,14 +556,14 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 
 			}
 		}
-#endif		 
+#endif
 	}
 }
 
 int			XObjWin::KeyPressed(char inKey, long, long, long)
 {
 	SetGLContext();
-	int x, y;	
+	int x, y;
 
 	switch(inKey) {
 	case 'M':
@@ -578,9 +578,9 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			else
 			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
-			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);		
+			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
 			DoUserAlert(buf);
-		}	
+		}
 		break;
 	case '[':
 		gCamDist -= 500;
@@ -602,7 +602,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		break;
 	case '=':
 	case '-':
-		GetMouseLoc(&x, &y);	
+		GetMouseLoc(&x, &y);
 		MouseWheel(x, y, inKey == '=' ? 1 : -1, 0);
 		break;
 	case 'f':
@@ -644,7 +644,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			{
 				pts.push_back(Point3(p->x, 0.0, p->y));
 			}
-		
+
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
 			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
@@ -653,8 +653,8 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			GetObjBoundingSphere(mObj, s);
 			mBounds.c = Point3(s[0], s[1], s[2]);
 			mBounds.radius_squared = s[3];
-		}			
-#endif		
+		}
+#endif
 		break;
 	case '1':mLOD=1;break;
 	case '2':mLOD=2;break;
@@ -673,7 +673,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			{
 				pts.push_back(Point3(p->x, 0.0, p->y));
 			}
-		
+
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
 			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
@@ -682,7 +682,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			GetObjBoundingSphere(mObj, s);
 			mBounds.c = Point3(s[0], s[1], s[2]);
 			mBounds.radius_squared = s[3];
-		}			
+		}
 #endif
 		break;
 	}
@@ -695,7 +695,7 @@ void		XObjWin::ScaleToObj(void)
 {
 	mZoomer.ResetToIdentity();
 //	xflt	s[4];
-//	if (mIsObj8)	
+//	if (mIsObj8)
 //		GetObjBoundingSphere8(mObj8, s);
 //	else
 //		GetObjBoundingSphere(mObj, s);
@@ -709,7 +709,7 @@ void		XObjWin::ScaleToObj(void)
 //	mXTrans = 0;
 //	mYTrans = 0;
 //	float a[3] = { 0.0, 1.0, 0.0 };
-//	axis_to_quat(a, 0.0, mSpin); 	
+//	axis_to_quat(a, 0.0, mSpin);
 }
 
 
@@ -743,12 +743,12 @@ void	XGrindInit(void)
 		gHasEnvAdd = true;
 	if (strstr(ext,"GL_EXT_texture_env_combine") || strstr(ext,"GL_ARB_texture_env_combine") || full >= 130)
 		gHasCombine = true;
-		
+
 	if (!gHasMultitexture)
 	{
 		DoUserAlert("Your OpenGL drivers are not new enough to run ObjView.");
 		exit(1);
-	} 
+	}
 }
 
 #pragma mark -
@@ -779,7 +779,7 @@ GLenum		FindTexture(const string& inName, bool inNight)
 
 void		AccumTexture(const string& inFileName)
 {
-	static	GLenum	gCounter = 1;	
+	static	GLenum	gCounter = 1;
 	bool	lit = HasExtNoCase(inFileName, "LIT.bmp") || HasExtNoCase(inFileName, "LIT.png") || HasExtNoCase(inFileName, "LIT.tif") || HasExtNoCase(inFileName, "LIT.dds");
 	bool	lit_new = HasExtNoCase(inFileName, "_LIT.bmp") || HasExtNoCase(inFileName, "_LIT.png") || HasExtNoCase(inFileName, "_LIT.tif") || HasExtNoCase(inFileName, "_LIT.dds");
 	map<string, pair<string, GLenum> >&	texDB = gDayTextures;
@@ -788,16 +788,16 @@ void		AccumTexture(const string& inFileName)
 		return;
 
 //	if (lit_new)
-//		shortName = shortName.substr(0, shortName.length() - 8);	
-//	else if (lit)	
+//		shortName = shortName.substr(0, shortName.length() - 8);
+//	else if (lit)
 //		shortName = shortName.substr(0, shortName.length() - 7);
-//	else 
+//	else
 		shortName = shortName.substr(0, shortName.length() - 4);
-		
-	StripPathCP(shortName);	
+
+	StripPathCP(shortName);
 
 	StringToUpper(shortName);
-		
+
 	for (map<string, pair<string, GLenum> >::iterator i = texDB.begin(); i != texDB.end(); ++i)
 	{
 		if (i->second.first == inFileName)
@@ -806,13 +806,13 @@ void		AccumTexture(const string& inFileName)
 			return;
 		}
 	}
-	
+
 	GLenum	texID = gCounter++;
 	if (LoadTextureFromFile(inFileName.c_str(), texID, tex_Wrap + (lit ? 0 : tex_MagentaAlpha), NULL, NULL, NULL, NULL))
 	{
 		texDB.insert(map<string, pair<string, GLenum> >::value_type(
 				shortName, pair<string, GLenum>(inFileName, texID)));
-	}	
+	}
 }
 
 void		ReloadTexture(const string& inName)
@@ -837,7 +837,7 @@ struct	ObjViewInfo_t {
 	bool	solid;
 	bool	backside;
 	bool	animate;
-	
+
 	GLenum		tex;
 	GLenum		tex_lit;
 	GLenum		pan;
@@ -856,7 +856,7 @@ static void	ObjView_SetupPoly(void * ref)
 	} else
 		glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
-		
+
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 	if (i->tex != 0)
 	{
@@ -864,12 +864,12 @@ static void	ObjView_SetupPoly(void * ref)
 		glEnable(GL_TEXTURE_2D);
 	} else
 		glDisable(GL_TEXTURE_2D);
-	
+
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	if (i->lit)	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	
+
 	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
 
@@ -884,7 +884,7 @@ static void	ObjView_SetupPanel(void * ref)
 	} else
 		glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
-		
+
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 	if (i->pan != 0)
 	{
@@ -892,12 +892,12 @@ static void	ObjView_SetupPanel(void * ref)
 		glEnable(GL_TEXTURE_2D);
 	} else
 		glDisable(GL_TEXTURE_2D);
-	
+
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	if (i->lit)	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	
+
 //	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
 
@@ -934,32 +934,32 @@ static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void 
 //	if (!i->animate) return (v1 + v2) * 0.5;
 	if (v1 == v2) return v1;
 	double	now = (i->animate) ? (float_clock() - gStopTime) : gStopTime;
-	
+
 	now *= 0.1;
 	now -= (float) ((int) now);
-	
-	
+
+
 	if (now > 0.5)	now = 1.0 - now;
 	now *= 2.0;
-	
+
 	return v1 + (v2 - v1) * now;
 }
 
-static	ObjDrawFuncs_t sCallbacks = { 
+static	ObjDrawFuncs_t sCallbacks = {
 	ObjView_SetupPoly, ObjView_SetupLine, ObjView_SetupLine,
 	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
 };
 
 static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 {
-	GLfloat lgt_amb[4]={ 1.0, 1.0, 1.0, 1.0 };																				
-	GLfloat lgt_dif[4]={ 0.0, 0.0, 0.0, 1.0 };																				
-	GLfloat lgt_dir[4]={ 1.0, 0.0, 0.0, 0.0 };																				
-	
+	GLfloat lgt_amb[4]={ 1.0, 1.0, 1.0, 1.0 };
+	GLfloat lgt_dif[4]={ 0.0, 0.0, 0.0, 1.0 };
+	GLfloat lgt_dir[4]={ 1.0, 0.0, 0.0, 0.0 };
+
 	if (inLighting)
 	{
 		lgt_amb[0] = lgt_amb[1] = lgt_amb[2] = 0.5;
-		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.5;		
+		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.5;
 	}
 	if (inLit) {
 		lgt_dif[0] *= 0.01;
@@ -969,13 +969,13 @@ static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 		lgt_amb[1] *= 0.01;
 		lgt_amb[2] *= 0.01;
 	}
-	
+
 	if (inShowCulled) { lgt_amb[1] = lgt_amb[2] = lgt_dif[1] = lgt_dif[2] = 0.0; }
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	
+
 	GLfloat	wicked_dahk[4] = { 0.0, 0.0, 0.0, 0.0 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, wicked_dahk);
 	glLightfv(GL_LIGHT0,GL_AMBIENT ,lgt_amb);
@@ -997,7 +997,7 @@ static void setup_baseline_ogl(int hidden_geo)
 	glEnable(GL_ALPHA_TEST);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
-	glPointSize(4);		
+	glPointSize(4);
 	glCullFace(hidden_geo ? GL_FRONT : GL_BACK);
 }
 
@@ -1005,15 +1005,15 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 {
 	string	tex = in_tex;
 //	if (tex.size() > 4)	tex.erase(tex.size()-4);
-	StripPathCP(tex);	
-	info.tex = FindTexture(tex, false);	
+	StripPathCP(tex);
+	info.tex = FindTexture(tex, false);
 	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
-		
+
 	if (inLit)
 	{
 		string tex_night = in_lit;
 //		if (tex_night.size() > 4)	tex_night.erase(tex_night.size() - 4);
-		StripPathCP(tex_night);	
+		StripPathCP(tex_night);
 									info.tex_lit = FindTexture(tex_night, false);
 		if (info.tex_lit)
 		{
@@ -1022,7 +1022,7 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 			glActiveTextureARB(GL_TEXTURE0_ARB);
 		}
 	}
-	
+
 				info.pan	 = FindTexture("panel", false);
 	if (inLit)	info.pan_lit = FindTexture("panel", true);
 
@@ -1033,7 +1033,7 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 	glEnable(GL_LIGHT0);
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-	
+
 	glEnable(GL_NORMALIZE);
 }
 
@@ -1050,23 +1050,23 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 	if (inShowCulled)
 	{
 		setup_lights(inLighting, inLit, inShowCulled);
-		setup_baseline_ogl(true);		
+		setup_baseline_ogl(true);
 		info.backside = true;
 		CHECK_ERR();
 		ObjDraw(inObj, dist, &sCallbacks, &info);
 		CHECK_ERR();
-	}	
+	}
 
 
-	setup_lights(inLighting, inLit, false);	
-	setup_baseline_ogl(false);	
+	setup_lights(inLighting, inLit, false);
+	setup_baseline_ogl(false);
 	info.backside = false;
 	CHECK_ERR();
 	ObjDraw(inObj, dist, &sCallbacks, &info);
 	CHECK_ERR();
 
 	glPointSize(1);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -1076,27 +1076,27 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 
 	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
-	setup_textures(inObj.texture.substr(0,(inObj.texture.length() > 4) ? (inObj.texture.length() - 4) : (inObj.texture.length())), 
+	setup_textures(inObj.texture.substr(0,(inObj.texture.length() > 4) ? (inObj.texture.length() - 4) : (inObj.texture.length())),
 					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())), inLit, inSolid, info);
 
 	if (inShowCulled)
 	{
-		setup_lights(inLighting, inLit, inShowCulled);	
-		setup_baseline_ogl(true);		
+		setup_lights(inLighting, inLit, inShowCulled);
+		setup_baseline_ogl(true);
 		info.backside = true;
 		CHECK_ERR();
 		ObjDraw8(inObj, dist, &sCallbacks, &info);
 		CHECK_ERR();
 	}
 
-	setup_lights(inLighting, inLit, false);	
-	setup_baseline_ogl(false);			
+	setup_lights(inLighting, inLit, false);
+	setup_baseline_ogl(false);
 	info.backside = false;
 	CHECK_ERR();
 	ObjDraw8(inObj, dist, &sCallbacks, &info);
 	CHECK_ERR();
 
 	glPointSize(1);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 

@@ -55,12 +55,12 @@ public:
     FT qw(q.weight());
     FT rx(r.point().x());
     FT ry(r.point().y());
-    FT rw(r.weight()); 
-    
+    FT rw(r.weight());
+
     result_type res = squared_radius_orthogonalcircleC2(px, py, pw,
 							qx, qy, qw,
 							rx, ry, rw);
-      
+
     return max(return_type(0), res);
   }
 
@@ -73,7 +73,7 @@ public:
       FT qx(q.point().x());
       FT qy(q.point().y());
       FT qw(q.weight());
-  
+
       result_type res =  squared_radius_smallest_orthogonalcircleC2(px, py, pw,
 								    qx, qy, qw);
       return max(return_type(0), res);
@@ -90,7 +90,7 @@ public:
   typedef Arity_tag< 3 >   Arity;
   typedef typename K::Point Point;
   result_type operator()(const Point& p, const Point& q, const Point& t)
-  {  
+  {
     typedef typename K::FT FT;
     FT px(p.point().x());
     FT py(p.point().y());
@@ -101,7 +101,7 @@ public:
     FT tx(t.point().x());
     FT ty(t.point().y());
     FT tw(t.weight());
-    
+
     return in_smallest_orthogonalcircleC2(px, py, pw,
 					  qx, qy, qw,
 					  tx, ty, tw);
@@ -112,22 +112,22 @@ public:
 
 template< class R >
 class Weighted_alpha_shape_euclidean_traits_2 : public
-Regular_triangulation_euclidean_traits_2<R, typename R::FT> 
+Regular_triangulation_euclidean_traits_2<R, typename R::FT>
 {
 
-public: 
-  
+public:
+
   typedef Weighted_alpha_shape_euclidean_traits_2<R> Self;
   typedef typename R::FT FT;
-  typedef typename 
-   Regular_triangulation_euclidean_traits_2<R, typename R::FT>::Weighted_point 
+  typedef typename
+   Regular_triangulation_euclidean_traits_2<R, typename R::FT>::Weighted_point
      Point;
 
   typedef CGAL::Compute_squared_radius_orthogonalcircleC2<FT, Self>
   Compute_squared_radius_orthogonalcircle_2;
   typedef CGAL::Side_of_bounded_orthogonalcircleC2<Self>
   Side_of_bounded_orthogonalcircle_2;
-  
+
   //------------------------------------------------------------------
 
   Compute_squared_radius_orthogonalcircle_2
@@ -143,7 +143,7 @@ public:
       return Side_of_bounded_orthogonalcircle_2();
     }
 };
-  
+
 //-------------------------------------------------------------------
 CGAL_END_NAMESPACE
 //-------------------------------------------------------------------

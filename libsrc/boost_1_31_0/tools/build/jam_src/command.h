@@ -16,8 +16,8 @@
  *	ACTIONS must be split if 'actions piecemeal' is given.
  *	ACTIONS must have current sources omitted for 'actions updated'.
  *
- * The CMD datatype holds a single command that is to be executed 
- * against a target, and they can chain together to represent the 
+ * The CMD datatype holds a single command that is to be executed
+ * against a target, and they can chain together to represent the
  * full collection of commands used to update a target.
  *
  * Structures:

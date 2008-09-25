@@ -135,7 +135,7 @@ void JNode::setJavaIDs() {
 }
 
 ////////////////////////////////////////////////
-//	add*	
+//	add*
 ////////////////////////////////////////////////
 
 void JNode::addFieldObject(jmethodID id, Field *field, int bConstField) {
@@ -151,7 +151,7 @@ void JNode::addFieldObject(jmethodID id, Field *field, int bConstField) {
 }
 
 ///////////////////////////////////////////////
-//	get*	
+//	get*
 ////////////////////////////////////////////////
 
 jobject JNode::getFieldObject(jmethodID id, char *name) {

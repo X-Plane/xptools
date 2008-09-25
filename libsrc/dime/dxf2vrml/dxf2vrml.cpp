@@ -38,7 +38,7 @@
 #include "SIOUX.h"
 #endif // macintosh
 
-static int 
+static int
 usage(char *progname)
 {
   fprintf(stderr,
@@ -55,7 +55,7 @@ usage(char *progname)
   return -1;
 }
 
-int 
+int
 main(int argc, char **argv)
 {
 #ifdef macintosh
@@ -68,9 +68,9 @@ main(int argc, char **argv)
   char *infile, *outfile;
   infile = outfile = NULL;
   float maxerr = 0.1f;
-  int sub = -1;  
+  int sub = -1;
   int i = 1;
-  
+
   int fillmode = 0;
   int layercol = 0;
   bool vrml1 = true;
@@ -129,9 +129,9 @@ main(int argc, char **argv)
   dimeInput in;
 
   //
-  // open file for reading (or use stdin) 
+  // open file for reading (or use stdin)
   //
-  
+
   if (infile == NULL) {
     if (!in.setFileHandle(stdin)) {
       fprintf(stderr,"Unexpected error opening file from stdin\n");
@@ -144,7 +144,7 @@ main(int argc, char **argv)
       return -1;
     }
   }
-  
+
   //
   // try reading the file
   //
@@ -166,7 +166,7 @@ main(int argc, char **argv)
       return -1;
     }
   }
-  
+
   dxfConverter converter;
   converter.findHeaderVariables(model);
   converter.setMaxerr(maxerr);
@@ -174,22 +174,22 @@ main(int argc, char **argv)
 
   //
   // override $FILLMODE header variable unless user tells us not to.
-  // The $FILLMODE variable just specifies if AutoCAD was in fillmode 
+  // The $FILLMODE variable just specifies if AutoCAD was in fillmode
   // when the user saved the DXF file, and may therefore not be what
   // we want when converting files.
   //
   if (fillmode == 0) converter.setFillmode(true);
 
   if (layercol) converter.setLayercol(true);
-    
+
   if (!converter.doConvert(model)) {
     fprintf(stderr,"Error during conversion\n");
     if (out && out != stdout) fclose(out);
     return -1;
   }
-  
+
   converter.writeVrml(out, vrml1, only2d);
-  
+
   if (out != stdout) fclose(out);
   return 0; // alles in ordnung :-)
 }

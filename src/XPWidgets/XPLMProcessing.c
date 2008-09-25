@@ -38,7 +38,7 @@ void			XPLMRegisterFlightLoopCallback(
 	loop.callback = inFlightLoop;
 	loop.refcon = inRefcon;
 	gFlightLoops.push_back(loop);
-}					
+}
 
 void		XPLMUnregisterFlightLoopCallback(
 					XPLMFlightLoop_f	inFlightLoop, void * inRefcon)
@@ -51,12 +51,12 @@ void		XPLMUnregisterFlightLoopCallback(
 			return;
 		}
 	}
-}					
+}
 
 void		XPLMSetFlightLoopCallbackInterval(
 					XPLMFlightLoop_f	inFlightLoop,
 					float				inInterval,
-					int					inRelativeToNow, 
+					int					inRelativeToNow,
 					void *				inRef)
 {
 	for (XPLMFlightLoopVector::iterator iter = gFlightLoops.begin(); iter != gFlightLoops.end(); ++iter)
@@ -69,7 +69,7 @@ void		XPLMSetFlightLoopCallbackInterval(
 
 		}
 	}
-}					
+}
 
 void XPLMDoFlightLoopProcessing(float inElapsedTime)
 {
@@ -82,7 +82,7 @@ void XPLMDoFlightLoopProcessing(float inElapsedTime)
 			if (targetTime <= inElapsedTime)
 			{
 				{
-					iter->interval = iter->callback(inElapsedTime - iter->lastCallTime, 
+					iter->interval = iter->callback(inElapsedTime - iter->lastCallTime,
 													inElapsedTime - gLastCallTime,
 													gLastCallNumber,
 													iter->refcon);
@@ -98,7 +98,7 @@ void XPLMDoFlightLoopProcessing(float inElapsedTime)
 			{
 				// Run the flight loop
 				{
-					iter->interval = iter->callback(inElapsedTime - iter->lastCallTime, 
+					iter->interval = iter->callback(inElapsedTime - iter->lastCallTime,
 													inElapsedTime - gLastCallTime,
 													gLastCallNumber,
 													iter->refcon);

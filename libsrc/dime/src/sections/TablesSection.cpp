@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: TablesSection.cpp
  *
  *  This source file is part of DIME.
@@ -90,7 +90,7 @@ dimeTablesSection::copy(dimeModel * const model) const
   Will read a dxf TABLES section.
 */
 
-bool 
+bool
 dimeTablesSection::read(dimeInput * const file)
 {
   int32 groupcode;
@@ -137,7 +137,7 @@ dimeTablesSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeTablesSection::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(2) && file->writeString(sectionName)) {
@@ -154,7 +154,7 @@ dimeTablesSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeTablesSection::typeId() const
 {
   return dimeBase::dimeTablesSectionType;
@@ -181,10 +181,10 @@ dimeTablesSection::getSectionName() const
 }
 
 /*!
-  Returns the number of tables in this section. 
+  Returns the number of tables in this section.
 */
 
-int 
+int
 dimeTablesSection::getNumTables() const
 {
   return this->tables.count();
@@ -205,7 +205,7 @@ dimeTablesSection::getTable(const int idx)
   Removes (and deletes if no memhandler is used) the table at index \a idx.
 */
 
-void 
+void
 dimeTablesSection::removeTable(const int idx)
 {
   assert(idx >= 0 && idx < this->tables.count());
@@ -220,7 +220,7 @@ dimeTablesSection::removeTable(const int idx)
   For instance, the LTYPE table should always precede the LAYER table.
 */
 
-void 
+void
 dimeTablesSection::insertTable(dimeTable * const table, const int idx)
 {
   if (idx < 0) this->tables.append(table);

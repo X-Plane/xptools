@@ -43,25 +43,25 @@ int main()
   cv[2] = X_monotone_curve_2(a2, a3);
   cv[3] = X_monotone_curve_2(a2, a4);
   cv[4] = X_monotone_curve_2(a3, a4);
-  
+
   // Insert the curves into the Planar_map:
   std::cout << "Inserting the curves to the map ... ";
-  Planar_map::Halfedge_handle e[5];  
+  Planar_map::Halfedge_handle e[5];
   for (i = 0; i < 5; i++)
     e[i] = pm.insert(cv[i]);
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
-  
+
   // Print map before splitting and adding:
   std::cout << "* * * Map before:" << std::endl << std::endl;
   CGAL::write_pm(pm, verbose_writer, std::cout);
-  
+
   // Split e[2] in the middle, and add a curve between the new vertex and
   // the source of e[0]:
   Point_2 p(100, 50);
   X_monotone_curve_2 c1(a2, p);
   X_monotone_curve_2 c2(p, a3);
-  Planar_map::Halfedge_handle se = pm.split_edge(e[2], c1, c2); 
+  Planar_map::Halfedge_handle se = pm.split_edge(e[2], c1, c2);
   pm.insert_at_vertices(X_monotone_curve_2(p, a1), se->target(),
                         e[0]->source());
 
@@ -69,5 +69,5 @@ int main()
   std::cout << std::endl << "* * * Map after:" << std::endl << std::endl;
   CGAL::write_pm(pm, verbose_writer, std::cout);
 
-  return 0;  
+  return 0;
 }

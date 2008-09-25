@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,20 +33,20 @@
 /*
 
 	DEMGEO - THEORY OF OPERATION
-	
+
 	A DEMGeo (Geographic DEM) is really an array-based value map, or a raster
 	representation of a continuous floating point parameter.
 	It is applied to a geoprojected area with a constant (but controllable)
 	resolution.
-	
+
 	DEMGeos use center-pixel notation, meaning the lower left pixel is the data
 	that is precisely sampled from the southwest corner of the DEM.  Therefore
 	if we have 1200 samples per degree, the DEM will contain 1201 samples, and
 	two adjacent DEMs will duplicate data by sharing their common edges.
-	
+
 	While DEM data are floating point, we sometimes stuff integer enumeration
 	coded data into them.
-	
+
 	One or more DEMGeos are used in XES files to represent elevation, land type,
 	and other continuous parameters.
 
@@ -108,35 +108,35 @@ struct	DEMGeo {
 	double	mSouth;
 	double	mEast;
 	double	mNorth;
-	
+
 	// The number of sample points east-west and north-south.  This includes
 	// the 'extra' sample, e.g. for a 3 arc-second DEM, mWidth = 1201
 	int		mWidth;
 	int		mHeight;
-	
+
 	// An array of width*height data points in floating point format.
 	// The first sample is the southwest corner, we then proceed east.
 	float *	mData;
-	
+
 	DEMGeo();
 	DEMGeo(const DEMGeo&);
 	DEMGeo(int width, int height);
 	~DEMGeo();
-	
+
 	DEMGeo& operator=(float);			// Fill
-	DEMGeo& operator=(const DEMGeo&);	// Copy	
+	DEMGeo& operator=(const DEMGeo&);	// Copy
 	DEMGeo& operator+=(float);			// These have standard mathematical meanings.
 	DEMGeo& operator+=(const DEMGeo&);	// DEM->DEM requires size-similar DEMs!
 	DEMGeo& operator*=(float);
 	DEMGeo& operator*=(const DEMGeo&);
-	
-	
+
+
 	void	resize(int width, int height);
 	void	derez(int);
 	void	overlay(const DEMGeo& onTop);					// Overlay - requires 1:1 layout
 	void	overlay(const DEMGeo& onTop, int dx, int dy);	// Overlay - requires onTop <= main
 	void	copy_geo_from(const DEMGeo& rhs);
-	
+
 	// Access to the data points by discrete address
 	inline float&	operator()(int, int);
 	inline float	operator()(int, int) const;
@@ -162,7 +162,7 @@ struct	DEMGeo {
 	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value, return coordinate used
 	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, return coordinate used
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
-	
+
 	// These routines convert grid positions to lat/lon
 	inline double	x_to_lon(int inX) const;
 	inline double	y_to_lat(int inY) const;
@@ -187,7 +187,7 @@ struct	DEMGeo {
 
 	void	fill_nearest(void);
 
-	// Advanced routines	
+	// Advanced routines
 	int		remove_linear(int iterations, float max_err);
 	float	local_minmax(int x1, int y1, int x2, int y2,
 						 int& minx, int& miny, float& minh,
@@ -211,43 +211,43 @@ struct	DEMGeo {
 // points, this routine produces two DEMs of half dimension.  Each point has the min
 // or max of the four points in the original DEMs that correspond spatially.
 void	DEMGeo_ReduceMinMax(
-			const DEMGeo& inMin, 
+			const DEMGeo& inMin,
 			const DEMGeo& inMax,
 				  DEMGeo& outMin,
 				  DEMGeo& outMax);
-				  
+
 void	DEMGeo_ReduceMinMaxN(
-			const DEMGeo& inData, 
+			const DEMGeo& inData,
 				  DEMGeo& outMin,
 				  DEMGeo& outMax,
 				  int N);
-				  
 
-// Given a DEM, produce a pair of vectors of DEMs of progressively smaller size that 
-// summarize our min and max values.  (This is like a mipmap.)  
+
+// Given a DEM, produce a pair of vectors of DEMs of progressively smaller size that
+// summarize our min and max values.  (This is like a mipmap.)
 void	DEMGeo_BuildMinMax(
 			const DEMGeo& 		inDEM,
 			vector<DEMGeo>&		outMin,
 			vector<DEMGeo>&		outMax,
 			int					inGenerations);
 
-// For a given "cache square" in the minmax'd DEM, find the actual lowest or highest			
+// For a given "cache square" in the minmax'd DEM, find the actual lowest or highest
 float	DEMGeo_LocalMinOfCacheSquare(
 			const DEMGeo&			inDEM,
 			const vector<DEMGeo>&	inMin,
 			int level,
-			int x, int y, 
-			int& minx, int& miny, float& minh);					
+			int x, int y,
+			int& minx, int& miny, float& minh);
 
 float	DEMGeo_LocalMaxOfCacheSquare(
 			const DEMGeo&			inDEM,
 			const vector<DEMGeo>&	inMax,
 			int level,
-			int x, int y, 
-			int& maxx, int& maxy, float& maxh);					
+			int x, int y,
+			int& maxx, int& maxy, float& maxh);
 
-// For a reduced DEM, find the highest and lowest points in a bounded range.  This 
-// routine runs in O(ln(n)) instead of O(n) where n = the area to be searched.  
+// For a reduced DEM, find the highest and lowest points in a bounded range.  This
+// routine runs in O(ln(n)) instead of O(n) where n = the area to be searched.
 // if inAllowEdges is true, the edge may be the min/max.  Otherwise if the edge is the
 // min max, it is treated as if no local min max was found.
 float	DEMGeo_LocalMinMaxWithCache(
@@ -344,7 +344,7 @@ inline float	DEMGeo::get_dir(int x, int y, int dx, int dy, int max, float blank,
 		float h = get(x, y);
 		if (h != blank)
 			return h;
-	} 
+	}
 	return DEM_NO_DATA;
 }
 
@@ -353,7 +353,7 @@ inline float	DEMGeo::get_radial(int x, int y, int max, float blank) const
 	float h;
 	h = get(x,y); if (h != blank) return h;
 	for (int n = 1; n <= max; ++n)
-	{	
+	{
 		h = get_clamp(x+n,y  );	if (h != blank) return h;
 		h = get_clamp(x-n,y  );	if (h != blank) return h;
 		h = get_clamp(x  ,y+n);	if (h != blank) return h;
@@ -371,7 +371,7 @@ inline int	DEMGeo::radial_dist(int x, int y, int max, float key) const
 	float h;
 	h = get(x,y); if (h == key) return 0;
 	for (int n = 1; n <= max; ++n)
-	{	
+	{
 		h = get(x+n,y  );	if (h == key) return n;
 		h = get(x-n,y  );	if (h == key) return n;
 		h = get(x  ,y+n);	if (h == key) return n;
@@ -385,13 +385,13 @@ inline int	DEMGeo::radial_dist(int x, int y, int max, float key) const
 }
 
 inline float	DEMGeo::get_lowest_heuristic(int x, int y, int r) const
-{	
-	int xo, yo, 
-			x1 = x-r, 
-			x2 = x+r, 
-			y1 = y-r, 
+{
+	int xo, yo,
+			x1 = x-r,
+			x2 = x+r,
+			y1 = y-r,
 			y2 = y+r;
-		
+
 	vector<float>	es;
 	float real = get(x,y);
 	es.reserve((r+1)*(r+1));
@@ -447,7 +447,7 @@ inline float	DEMGeo::get_lowest(int x, int y, int r, int& xo, int& yo) const
 	return e;
 }
 
-inline float	DEMGeo::kernelN(int x, int y, int dim, float * kernel) const 
+inline float	DEMGeo::kernelN(int x, int y, int dim, float * kernel) const
 {
 	float	sum, e;
 	sum = DEM_NO_DATA;
@@ -460,17 +460,17 @@ inline float	DEMGeo::kernelN(int x, int y, int dim, float * kernel) const
 		if (e != DEM_NO_DATA)
 		{
 			e *= kernel[i];
-			if (sum == DEM_NO_DATA) 
+			if (sum == DEM_NO_DATA)
 				sum = e;
-			else 
+			else
 				sum += e;
-		}		
+		}
 		++i;
 	}
 	return sum;
 }
 
-inline float	DEMGeo::kernelmaxN(int x, int y, int dim, float * kernel) const 
+inline float	DEMGeo::kernelmaxN(int x, int y, int dim, float * kernel) const
 {
 	float	sum, e;
 	sum = DEM_NO_DATA;
@@ -483,17 +483,17 @@ inline float	DEMGeo::kernelmaxN(int x, int y, int dim, float * kernel) const
 		if (e != DEM_NO_DATA)
 		{
 			e *= kernel[i];
-			if (sum == DEM_NO_DATA) 
+			if (sum == DEM_NO_DATA)
 				sum = e;
-			else 
+			else
 				sum = max(sum, e);
-		}		
+		}
 		++i;
 	}
 	return sum;
 }
 
-inline float	DEMGeo::kernelN_Normalize(int x, int y, int dim, float * kernel) const 
+inline float	DEMGeo::kernelN_Normalize(int x, int y, int dim, float * kernel) const
 {
 	float	sum, e;
 	sum = DEM_NO_DATA;
@@ -508,11 +508,11 @@ inline float	DEMGeo::kernelN_Normalize(int x, int y, int dim, float * kernel) co
 		{
 			e *= kernel[i];
 			t += kernel[i];
-			if (sum == DEM_NO_DATA) 
+			if (sum == DEM_NO_DATA)
 				sum = e;
-			else 
+			else
 				sum += e;
-		}		
+		}
 		++i;
 	}
 	return (t == 0.0) ? DEM_NO_DATA : sum / t;
@@ -529,15 +529,15 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
-	
+
 	x_fract *= (double) (mWidth-1);
 	y_fract *= (double) (mHeight-1);
-	
+
 	int x = x_fract;
 	int y = y_fract;
 	x_fract -= (double) x;
 	y_fract -= (double) y;
-	
+
 	float v1 = get(x    , y    );
 	float v2 = get(x + 1, y    );
 	float v3 = get(x    , y + 1);
@@ -551,9 +551,9 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 	if(v2 == DEM_NO_DATA) w2 = 0.0;
 	if(v3 == DEM_NO_DATA) w3 = 0.0;
 	if(v4 == DEM_NO_DATA) w4 = 0.0;
-	
+
 	float w = w1 + w2 + w3 + w4;
-	
+
 	if (w == 0.0) return DEM_NO_DATA;
 
 	return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
@@ -564,15 +564,15 @@ inline void DEMGeo::zap_linear(double lon, double lat)
 	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
-	
+
 	x_fract *= (double) (mWidth-1);
 	y_fract *= (double) (mHeight-1);
-	
+
 	int x = x_fract;
 	int y = y_fract;
 	x_fract -= (double) x;
 	y_fract -= (double) y;
-	
+
 	if (x_fract == 0.0)
 	{
 		if (y_fract == 0.0)
@@ -607,7 +607,7 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 //	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
-	
+
 	x_fract *= (double) (mWidth-1);
 	y_fract *= (double) (mHeight-1);
 	int x = x_fract;
@@ -617,7 +617,7 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 	e2 = get(x+1,y);
 	e3 = get(x,y+1);
 	e4 = get(x+1,y+1);
-	
+
 	x_fract -= x;
 	y_fract -= y;
 	if (x_fract > 0.5)
@@ -659,7 +659,7 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
-	
+
 	x_fract *= (double) (mWidth-1);
 	y_fract *= (double) (mHeight-1);
 	int x = x_fract;
@@ -667,7 +667,7 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 	float h;
 
 	h = get_clamp(x,y); if (h != DEM_NO_DATA) return h;
-	
+
 	int r = 1;
 	while (r < mWidth && r < mHeight)
 	{
@@ -718,7 +718,7 @@ inline int		DEMGeo::x_lower(double lon) const
 {
 	if (lon <= mWest) return 0;
 	if (lon >= mEast) return mWidth-1;
-	
+
 	lon -= mWest;
 	lon *= (mWidth-1);
 	lon /= (mEast - mWest);
@@ -794,19 +794,19 @@ inline float	DEMGeo::gradient_x_bilinear(float x, float y) const
 {
 	x -= 0.5f;
 	y -= 0.5f;
-	
+
 	float x1 = floor(x);
 	float x2 = x1 + 1.0f;
 	float xb = x - x1;
 	float y1 = floor(y);
 	float y2 = y1 + 1.0f;
 	float yb = y - y1;
-	
+
 	float g11 = gradient_x(x1,y1);
 	float g12 = gradient_x(x1,y2);
 	float g21 = gradient_x(x2,y1);
 	float g22 = gradient_x(x2,y2);
-	
+
 	float w11 = (1.0f - xb) * (1.0 - yb);
 	float w12 = (1.0f - xb) * (		 yb);
 	float w21 = (		xb) * (1.0 - yb);
@@ -815,7 +815,7 @@ inline float	DEMGeo::gradient_x_bilinear(float x, float y) const
 	if(g12 == DEM_NO_DATA) w12 = 0.0f;
 	if(g21 == DEM_NO_DATA) w21 = 0.0f;
 	if(g22 == DEM_NO_DATA) w22 = 0.0f;
-	
+
 	float w = w11 + w12 + w21 + w22;
 	if (w == 0.0f) return DEM_NO_DATA;
 	w = 1.0f / w;
@@ -823,27 +823,27 @@ inline float	DEMGeo::gradient_x_bilinear(float x, float y) const
 	w12 *= w;
 	w21 *= w;
 	w22 *= w;
-	
-	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;	
+
+	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;
 }
 
 inline float	DEMGeo::gradient_y_bilinear(float x, float y) const
 {
 	x -= 0.5f;
 	y -= 0.5f;
-	
+
 	float x1 = floor(x);
 	float x2 = x1 + 1.0f;
 	float xb = x - x1;
 	float y1 = floor(y);
 	float y2 = y1 + 1.0f;
 	float yb = y - y1;
-	
+
 	float g11 = gradient_y(x1,y1);
 	float g12 = gradient_y(x1,y2);
 	float g21 = gradient_y(x2,y1);
 	float g22 = gradient_y(x2,y2);
-	
+
 	float w11 = (1.0f - xb) * (1.0 - yb);
 	float w12 = (1.0f - xb) * (		 yb);
 	float w21 = (		xb) * (1.0 - yb);
@@ -852,7 +852,7 @@ inline float	DEMGeo::gradient_y_bilinear(float x, float y) const
 	if(g12 == DEM_NO_DATA) w12 = 0.0f;
 	if(g21 == DEM_NO_DATA) w21 = 0.0f;
 	if(g22 == DEM_NO_DATA) w22 = 0.0f;
-	
+
 	float w = w11 + w12 + w21 + w22;
 	if (w == 0.0f) return DEM_NO_DATA;
 	w = 1.0f / w;
@@ -860,7 +860,7 @@ inline float	DEMGeo::gradient_y_bilinear(float x, float y) const
 	w12 *= w;
 	w21 *= w;
 	w22 *= w;
-	
+
 	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;
 }
 

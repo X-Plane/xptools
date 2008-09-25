@@ -85,10 +85,10 @@
 ** 2006-10-31:  The default prefix used to be "sqlite_".  But then
 ** Mcafee started using SQLite in their anti-virus product and it
 ** started putting files with the "sqlite" name in the c:/temp folder.
-** This annoyed many windows users.  Those users would then do a 
+** This annoyed many windows users.  Those users would then do a
 ** Google search for "sqlite", find the telephone numbers of the
 ** developers and call to wake them up at night and complain.
-** For this reason, the default name prefix is changed to be "sqlite" 
+** For this reason, the default name prefix is changed to be "sqlite"
 ** spelled backwards.  So the temp files are still identified, but
 ** anybody smart enough to figure out the code is also likely smart
 ** enough to know that calling the developer will not help get rid
@@ -261,9 +261,9 @@ struct OsFile {
 ** UnlockFile().
 **
 ** LockFile() prevents not just writing but also reading by other processes.
-** A SHARED_LOCK is obtained by locking a single randomly-chosen 
-** byte out of a specific range of bytes. The lock byte is obtained at 
-** random so two separate readers can probably access the file at the 
+** A SHARED_LOCK is obtained by locking a single randomly-chosen
+** byte out of a specific range of bytes. The lock byte is obtained at
+** random so two separate readers can probably access the file at the
 ** same time, unless they are unlucky and choose the same lock byte.
 ** An EXCLUSIVE_LOCK is obtained by locking all bytes in the range.
 ** There can only be one writer.  A RESERVED_LOCK is obtained by locking
@@ -282,7 +282,7 @@ struct OsFile {
 ** The following #defines specify the range of bytes used for locking.
 ** SHARED_SIZE is the number of bytes available in the pool from which
 ** a random byte is selected for a shared lock.  The pool of bytes for
-** shared locks begins at SHARED_FIRST. 
+** shared locks begins at SHARED_FIRST.
 **
 ** These #defines are available in sqlite_aux.h so that adaptors for
 ** connecting SQLite to other operating systems can use the same byte
@@ -300,7 +300,7 @@ struct OsFile {
 ** that all locks will fit on a single page even at the minimum page size.
 ** PENDING_BYTE defines the beginning of the locks.  By default PENDING_BYTE
 ** is set high so that we don't have to allocate an unused page except
-** for very large databases.  But one should test the page skipping logic 
+** for very large databases.  But one should test the page skipping logic
 ** by setting PENDING_BYTE low and running the entire regression suite.
 **
 ** Changing the value of PENDING_BYTE results in a subtly incompatible
@@ -375,7 +375,7 @@ int sqlite3OsDlclose(void*);
 
 /*
 ** When redefinable I/O is enabled, a single global instance of the
-** following structure holds pointers to the routines that SQLite 
+** following structure holds pointers to the routines that SQLite
 ** uses to talk with the underlying operating system.  Modify this
 ** structure (before using any SQLite API!) to accomodate perculiar
 ** operating system interfaces or behaviors.
@@ -457,7 +457,7 @@ struct sqlite3OsVtbl {
   };
 #else
   /*
-  ** Files other than os.c just reference the global virtual function table. 
+  ** Files other than os.c just reference the global virtual function table.
   */
   extern struct sqlite3OsVtbl sqlite3Os;
 #endif /* _SQLITE_OS_C_ */

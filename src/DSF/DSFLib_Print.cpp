@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -75,7 +75,7 @@ void DSFPrint_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Terrain Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptObjectDef(const char * inPartialPath, void * inRef)
@@ -87,21 +87,21 @@ obj_usages.push_back(0);
 
 #if PRINT_IT_DEF
 	fprintf(REF, "Object Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Polygon Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Network Def: %s\n", inPartialPath);
-#endif		
+#endif
 }
 
 void DSFPrint_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
@@ -112,7 +112,7 @@ void DSFPrint_AcceptProperty(const char * inProp, const char * inValue, void * i
 	if (strcmp(inProp,"sim/south")==0)	sSouth = atoi(inValue);
 #if PRINT_IT_DEF
 	fprintf(REF, "Property %s=%s\n", inProp, inValue);
-#endif	
+#endif
 }
 
 static	int	dsf_print_depth = 0;
@@ -120,7 +120,7 @@ static	int	dsf_print_depth = 0;
 
 void DSFPrint_BeginPatch(
 				unsigned int	inTerrainType,
-				double 			inNearLOD, 
+				double 			inNearLOD,
 				double 			inFarLOD,
 				unsigned char	inFlags,
 				int				depth,
@@ -130,19 +130,19 @@ void DSFPrint_BeginPatch(
 #if PRINT_IT
 	fprintf(REF,"Begin patch terrain=%d,LOD=[%f-%f],flags=0x%02d,depth=%d\n",
 		inTerrainType, inNearLOD, inFarLOD, inFlags, depth);
-#endif	
-}				
+#endif
+}
 
 void DSFPrint_BeginPrimitive(int type, void * inRef)
 {
 #if CHECK_IT
 	sDSF_CheckType = type;
 	sDSF_VertNum = 0;
-#endif	
+#endif
 #if PRINT_IT
 	fprintf(REF, "  Primitive type=%d\n", type);
 #endif
-}	
+}
 
 void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 {
@@ -151,13 +151,13 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 	for (int n = 0; n < dsf_print_depth; ++n)
 		fprintf(REF, "%lf    ", inData[n]);
 	fprintf(REF, "\n");
-#endif	
+#endif
 	++sDSF_Tris;
 
 	if (inData[0] < sWest || inData[0] > sEast ||
 		inData[1] < sSouth || inData[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inData[0], inData[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inData[0], inData[1]);
 		sBad = true;
 	}
 
@@ -187,7 +187,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
 		break;
-		
+
 	case dsf_TriStrip:
 		if (sDSF_VertNum > 0)
 		{
@@ -211,7 +211,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
 		break;
-		
+
 	case dsf_TriFan:
 		if (sDSF_VertNum > 2)
 		{
@@ -231,14 +231,14 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		{
 			sTri_SaveFirst[0] = inData[0];
 			sTri_SaveFirst[1] = inData[1];
-		}		
+		}
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
-		break;				
+		break;
 	}
-		
+
 	sDSF_VertNum++;
-#endif	
+#endif
 }
 
 void DSFPrint_EndPrimitive(
@@ -246,7 +246,7 @@ void DSFPrint_EndPrimitive(
 {
 #if PRINT_IT
 	fprintf(REF, "End of primitive.\n");
-#endif	
+#endif
 }
 
 
@@ -256,7 +256,7 @@ void DSFPrint_EndPatch(
 	++sDSF_Patches;
 #if PRINT_IT
 	fprintf(REF, "End of patch.\n");
-#endif	
+#endif
 }
 
 void DSFPrint_AddObject(
@@ -272,15 +272,15 @@ void DSFPrint_AddObject(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 
 #if PRINT_IT
 	fprintf(REF, "Got object type %d, loc %lf,%lf rotate %lf\n",
 		inObjectType, inCoordinates[0],inCoordinates[1],inRotation);
-#endif	
-	++sDSF_Objs;	
+#endif
+	++sDSF_Objs;
 }
 
 void DSFPrint_BeginSegment(
@@ -294,7 +294,7 @@ void DSFPrint_BeginSegment(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 	++sDSF_Chains;
@@ -305,7 +305,7 @@ void DSFPrint_BeginSegment(
 		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
 		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
-#endif	
+#endif
 }
 
 void DSFPrint_AddSegmentShapePoint(
@@ -316,7 +316,7 @@ void DSFPrint_AddSegmentShapePoint(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 	++sDSF_ShapePoints;
@@ -325,7 +325,7 @@ void DSFPrint_AddSegmentShapePoint(
 		fprintf(REF,"       %f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
 		fprintf(REF,"       %f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
-#endif	
+#endif
 }
 
 void DSFPrint_EndSegment(
@@ -337,7 +337,7 @@ void DSFPrint_EndSegment(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 #if PRINT_IT
@@ -345,9 +345,9 @@ void DSFPrint_EndSegment(
 	if (inCurved)
 		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
-		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);	
-#endif	
-}				
+		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+#endif
+}
 
 void DSFPrint_BeginPolygon(
 				unsigned int	inPolygonType,
@@ -357,7 +357,7 @@ void DSFPrint_BeginPolygon(
 {
 #if PRINT_IT
 	fprintf(REF,"Polygon type=%d, param=0x%04x\n", inPolygonType, (int) inParam);
-#endif	
+#endif
 	dsf_print_depth = inDepth;
 }
 void DSFPrint_BeginPolygonWinding(
@@ -365,7 +365,7 @@ void DSFPrint_BeginPolygonWinding(
 {
 #if PRINT_IT
 	fprintf(REF, "  Begin winding.\n");
-#endif	
+#endif
 }
 void DSFPrint_AddPolygonPoint(
 				double *		inCoordinates,
@@ -374,7 +374,7 @@ void DSFPrint_AddPolygonPoint(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 #if PRINT_IT
@@ -382,22 +382,22 @@ void DSFPrint_AddPolygonPoint(
 	for (int n = 0; n < dsf_print_depth; ++n)
 		fprintf(REF, "%lf    ", inData[n]);
 	fprintf(REF, "\n");
-#endif	
-}		
+#endif
+}
 
 void DSFPrint_EndPolygonWinding(
 				void *			inRef)
 {
 #if PRINT_IT
 	fprintf(REF, "  End winding.\n");
-#endif	
+#endif
 }
 void DSFPrint_EndPolygon(
 				void *			inRef)
 {
 #if PRINT_IT
 	fprintf(REF, "End polygon.\n");
-#endif	
+#endif
 	++sDSF_Polys;
 }
 #undef REF
@@ -417,7 +417,7 @@ obj_names.clear();
 obj_usages.clear();
 obj_total = 0;
 #endif
-	
+
 	if (print_it) fprintf(output, "Dumping file %s\n", inPath);
 	DSFCallbacks_t	callbacks;
 	callbacks.NextPass_f = DSFPrint_NextPass;
@@ -440,7 +440,7 @@ obj_total = 0;
 	callbacks.AddPolygonPoint_f = DSFPrint_AddPolygonPoint;
 	callbacks.EndPolygonWinding_f = DSFPrint_EndPolygonWinding;
 	callbacks.EndPolygon_f = DSFPrint_EndPolygon;
-#if USE_MEM_FILE	
+#if USE_MEM_FILE
 	int err = 0;
 	MFMemFile *	mf = MemFile_Open(inPath);
 	if (mf)
@@ -449,8 +449,8 @@ obj_total = 0;
 		MemFile_Close(mf);
 	}
 #else
-	int err = DSFReadFile(inPath, &callbacks, NULL, output);	
-#endif	
+	int err = DSFReadFile(inPath, &callbacks, NULL, output);
+#endif
 	if (print_it) fprintf(output,"Done - error = %d (%s) ", err, dsfErrorMessages[err]);
 	if (print_it) fprintf(output,"Patches=%d, Tris=%d, polys=%d, objs=%d ",
 				sDSF_Patches,sDSF_Tris / 3,sDSF_Polys,sDSF_Objs);
@@ -465,7 +465,7 @@ obj_total = 0;
 		{
 			histo.insert(multimap<int, string>::value_type(obj_usages[n], obj_names[n]));
 		}
-		
+
 		for (multimap<int, string>::iterator iter = histo.begin(); iter != histo.end(); ++iter)
 		{
 			printf("%5d %3.2f %s\n", iter->first, (float) iter->first / (float) obj_total, iter->second.c_str());
@@ -473,4 +473,4 @@ obj_total = 0;
 	}
 #endif
 	return err;
-}	
+}

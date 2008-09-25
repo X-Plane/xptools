@@ -3,8 +3,8 @@
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/MP_Float.h>
-#include <CGAL/Quotient.h> 
-#include <CGAL/Sweep_line_2.h> 
+#include <CGAL/Quotient.h>
+#include <CGAL/Sweep_line_2.h>
 #include <CGAL/Arr_segment_cached_traits_2.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 #include <CGAL/IO/Arr_polyline_traits_iostream.h>
@@ -28,7 +28,7 @@ typedef CGAL::Sweep_line_2<Curves_iter, Traits>       Sweep_line;
 Curve_2 read_polyline ()
 {
   std::size_t size;
-  std::cout << 
+  std::cout <<
     "enter number of points and then the (x,y) values for each point: ";
   std::cin >> size;
 
@@ -37,7 +37,7 @@ Curve_2 read_polyline ()
   {
     Traits::Point_2 p;
     std::cin >> p;
-    pts.push_back(p);  
+    pts.push_back(p);
   }
   std::cout << std::endl;
 
@@ -53,7 +53,7 @@ void read_polylines(Container & curves)
   std::cin >> num_polylines;
   std::cout << "number of polylines is : " << num_polylines << std::endl;
 
-  while (num_polylines--) 
+  while (num_polylines--)
     curves.push_back(read_polyline());
 
   return;
@@ -65,19 +65,19 @@ int main()
   Curves_list polylines;
 
   read_polylines(polylines);
-  
-  // Use a sweep to create the sub-curves.  
+
+  // Use a sweep to create the sub-curves.
   Traits      traits;
   Curves_list subcurves;
   Sweep_line  sl(&traits);
 
-  sl.get_subcurves (polylines.begin(), polylines.end(), 
+  sl.get_subcurves (polylines.begin(), polylines.end(),
 		    std::back_inserter(subcurves));
 
   // Write the output sub-curves.
   Curves_iter scv_iter;
 
-  for (scv_iter = subcurves.begin(); scv_iter != subcurves.end(); scv_iter++)  
+  for (scv_iter = subcurves.begin(); scv_iter != subcurves.end(); scv_iter++)
     std::cout << (*scv_iter) << std::endl;
 
   return (0);

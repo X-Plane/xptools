@@ -29,7 +29,7 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_3<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_in_sphere_3 : public Random_generator_base<P> {
     void generate_point();
@@ -62,7 +62,7 @@ generate_point() {
 	    creator( T(this->d_range * ( 2 * this->_rnd.get_double() - 1.0)),
                      T(this->d_range * ( 2 * this->_rnd.get_double() - 1.0)),
                      T(this->d_range * ( 2 * this->_rnd.get_double() - 1.0)));
-   } 
+   }
    while (CGAL::to_double(this->d_item.x() * this->d_item.x() +
 			  this->d_item.y() * this->d_item.y() +
                           this->d_item.z() * this->d_item.z()) >=
@@ -70,7 +70,7 @@ generate_point() {
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_3<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_on_sphere_3 : public Random_generator_base<P> {
     void generate_point();
@@ -107,7 +107,7 @@ generate_point() {
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_3<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_in_cube_3 : public Random_generator_base<P>{
     void generate_point();
@@ -141,7 +141,7 @@ generate_point() {
 
 template <class OutputIterator, class Creator>
 OutputIterator
-points_on_cube_grid_3( double a, std::size_t n, 
+points_on_cube_grid_3( double a, std::size_t n,
                          OutputIterator o, Creator creator)
 {
     if  (n == 0)
@@ -189,7 +189,7 @@ points_on_cube_grid_3( double a, std::size_t n, OutputIterator o)
 {
     typedef std::iterator_traits<OutputIterator> ITraits;
     typedef typename ITraits::value_type         P;
-    return points_on_square_grid_3(a, n, o, 
+    return points_on_square_grid_3(a, n, o,
                  Creator_uniform_3<typename Kernel_traits<P>::Kernel::RT,P>());
 }
 

@@ -29,7 +29,7 @@ class CGAL::Window_stream;
 CGAL_BEGIN_NAMESPACE
 
 /*!
- * Representation of a segment of a simplified canonical hyperbola, 
+ * Representation of a segment of a simplified canonical hyperbola,
  * given by the equation:
  *    a*x^2 + b*y2 + c*x + d = 0
  *
@@ -37,24 +37,24 @@ CGAL_BEGIN_NAMESPACE
  * holds:
  *    y = sqrt(A*x^2 + B*x + C)
  *
- * The end-points of the hyperbolic segment are defined by x_min and x_max. 
+ * The end-points of the hyperbolic segment are defined by x_min and x_max.
  */
 template <class Kernel_>
 class Hyper_segment_2
 {
 protected:
   typedef Hyper_segment_2<Kernel_>      Self;
-        
+
 public:
   typedef Kernel_                       Kernel;
   typedef typename Kernel::FT           NT;
-    
+
   typedef typename Kernel::Point_2      Point_2;
 
 private:
 
   bool          _is_seg;      // Is this hyper-segment actaully a line segment.
-  NT            _A;           // The coefficients of the equation of 
+  NT            _A;           // The coefficients of the equation of
   NT            _B;           // the underlying canonical hyperbola:
   NT            _C;           //   y = sqrt (A*x^2 + B*x + C)
 
@@ -198,7 +198,7 @@ private:
     return (_target);
   }
 
-  /*! 
+  /*!
    * Check whether the hyper-segment is actually a line segment.
    * \return (true) if the underlying hyperbola is actually a line segment.
    */
@@ -228,7 +228,7 @@ private:
     else if (_compare (_source.x(), seg._target.x()) &&
 	     _compare (_target.x(), seg._source.x()))
       return (true);
-    
+
     return (false);
   }
 
@@ -281,7 +281,7 @@ private:
   {
     Comparison_result res1 = _compare (q.x(), _source.x());
     Comparison_result res2 = _compare (q.x(), _target.x());
-    
+
     return ((res1 == EQUAL) || (res2 == EQUAL) || (res1 != res2));
   }
 
@@ -295,7 +295,7 @@ private:
    */
   Comparison_result point_position (const Point_2& q) const
   {
-    CGAL_precondition(point_is_in_x_range (q)); 
+    CGAL_precondition(point_is_in_x_range (q));
 
     // Substitute q's x-coordinate into the equation of the hyperbola and
     // compare the result.
@@ -331,8 +331,8 @@ private:
   {
     CGAL_precondition(this->point_is_in_x_range(q));
     CGAL_precondition(seg.point_is_in_x_range(q));
-  
-    // Compare y1 = A1*x^2 + B1*x + C1 
+
+    // Compare y1 = A1*x^2 + B1*x + C1
     //     and y2 = A2*x^2 + B2*x + C2:
     return (_compare (_A*q.x()*q.x() + _B*q.x() + _C,
 		      seg._A*q.x()*q.x() + seg._B*q.x() + seg._C));
@@ -362,15 +362,15 @@ private:
     Comparison_result res = _compare (y2, 0);
 
     CGAL_precondition(_compare (y2,
-				seg._A*q.x()*q.x() + seg._B*q.x() + seg._C) 
+				seg._A*q.x()*q.x() + seg._B*q.x() + seg._C)
 		      == EQUAL);
 
     CGAL_assertion(res != SMALLER);
-    
+
     if (res == LARGER)
     {
       // The y-coordinate of the intersection point is greater than 0.
-      // It is therefore sufficient to compare the numerators of the 
+      // It is therefore sufficient to compare the numerators of the
       // expressions of the two derivatives:
       res = _compare (2*_A*q.x() + _B,
 		      2*seg._A*q.x() + seg._B);
@@ -412,9 +412,9 @@ private:
     // First check the case of overlapping hyper-segments.
     if (_has_same_base_hyperbola(seg))
     {
-      bool bs = point_is_in_x_range (seg._source); 
-      bool bt = point_is_in_x_range (seg._target); 
-      
+      bool bs = point_is_in_x_range (seg._source);
+      bool bt = point_is_in_x_range (seg._target);
+
       if (bs && bt)
       {
 	// (*this) contains the second segment:
@@ -474,8 +474,8 @@ private:
       else
       {
 	// Check if seg contains (*this).
-	bs = seg.point_is_in_x_range (_source); 
-	bt = seg.point_is_in_x_range (_target); 
+	bs = seg.point_is_in_x_range (_source);
+	bt = seg.point_is_in_x_range (_target);
 
 	if (bs && bt)
 	{
@@ -489,7 +489,7 @@ private:
 	    p2 = _source;
 	    p1 = _target;
 	  }
-	  return (2); 
+	  return (2);
 	}
       }
 
@@ -532,7 +532,7 @@ private:
       {
 	res1 = _compare(xs[i], seg._source.x());
 	res2 = _compare(xs[i], seg._target.x());
-      
+
 	if (res1 != EQUAL && res2 != EQUAL && res1 == res2)
 	  bs[i] = false;
       }
@@ -611,7 +611,7 @@ protected:
    * x-coordinate and compute it if it does.
    * \param x The x-coordinate.
    * \param p The output point.
-   * \return (true) if the underlying hyperbola contains a point with the 
+   * \return (true) if the underlying hyperbola contains a point with the
    *         given x-coordinate.
    */
   bool _get_point_at_x (const NT& x,
@@ -674,9 +674,9 @@ protected:
       x1 = (-b) / (_two*a);
       return (1);
     }
-    
+
     const NT          sqrt_disc = CGAL::sqrt (disc);
-    
+
     x1 = (sqrt_disc - b) / (_two*a);
     x2 = -(sqrt_disc + b) / (_two*a);
     return (2);
@@ -685,15 +685,15 @@ protected:
 
 #ifndef NO_OSTREAM_INSERT_CONIC_ARC_2
 template <class Kernel>
-std::ostream& operator<< (std::ostream& os, 
+std::ostream& operator<< (std::ostream& os,
 			  const Hyper_segment_2<Kernel>& seg)
 {
   os << "{ y^2 = " << CGAL::to_double(seg.A()) << "*x^2 + "
-     << CGAL::to_double(seg.B()) << "*x + " 
+     << CGAL::to_double(seg.B()) << "*x + "
      << CGAL::to_double(seg.C()) << " } : "
-     << "(" << CGAL::to_double(seg.source().x()) << "," 
+     << "(" << CGAL::to_double(seg.source().x()) << ","
      << CGAL::to_double(seg.source().y()) << ") -> "
-     << "(" << CGAL::to_double(seg.target().x()) << "," 
+     << "(" << CGAL::to_double(seg.target().x()) << ","
      << CGAL::to_double(seg.target().y()) << ")";
 
   return (os);

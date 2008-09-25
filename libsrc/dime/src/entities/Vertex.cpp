@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Vertex.cpp
  *
  *  This source file is part of DIME.
@@ -62,7 +62,7 @@ dimeEntity *
 dimeVertex::copy(dimeModel * const model) const
 {
   dimeVertex *v = new(model->getMemHandler()) dimeVertex;
-  
+
   v->flags = this->flags;
   v->indices[0] = this->indices[0];
   v->indices[1] = this->indices[1];
@@ -81,7 +81,7 @@ dimeVertex::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeVertex::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -114,7 +114,7 @@ dimeVertex::write(dimeOutput * const file)
   Returns the number of indices stored in this vertex;
 */
 
-int 
+int
 dimeVertex::numIndices() const
 {
   int cnt = 0;
@@ -128,7 +128,7 @@ dimeVertex::numIndices() const
   Returns index number \a num;
 */
 
-int 
+int
 dimeVertex::getIndex(const int num) const
 {
   return this->indices[num];
@@ -136,7 +136,7 @@ dimeVertex::getIndex(const int num) const
 
 //!
 
-int 
+int
 dimeVertex::typeId() const
 {
   return dimeBase::dimeVertexType;
@@ -144,7 +144,7 @@ dimeVertex::typeId() const
 
 //!
 
-bool 
+bool
 dimeVertex::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
@@ -182,7 +182,7 @@ dimeVertex::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeVertex::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
@@ -220,7 +220,7 @@ dimeVertex::countRecords() const
     cnt += 5; // header + flags + coords
     cnt += this->numIndices();
     cnt += dimeEntity::countRecords();
-  }  
-  return cnt;  
+  }
+  return cnt;
 }
 

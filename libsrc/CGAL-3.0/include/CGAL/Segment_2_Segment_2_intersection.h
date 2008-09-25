@@ -124,7 +124,7 @@ public:
             _intersection_point = *minpt;
             _other_point = *maxpt;
             _result = SEGMENT;
-            return _result; 
+            return _result;
         } else {
             if (start1.y() < end1.y()) {
                 minpt = &start1;
@@ -160,9 +160,9 @@ public:
             _intersection_point = *minpt;
             _other_point = *maxpt;
             _result = SEGMENT;
-            return _result; 
+            return _result;
         }
-        } 
+        }
     }
     return _result;
 }
@@ -190,7 +190,7 @@ do_intersect(const typename K::Segment_2 &seg1, const typename K::Segment_2 &seg
 
 template <class K>
 bool seg_seg_do_intersect_crossing(
-        const typename K::Point_2  &p1, const typename K::Point_2 &p2, 
+        const typename K::Point_2  &p1, const typename K::Point_2 &p2,
 	const typename K::Point_2 &p3, const typename K::Point_2 &p4,
 	const K& k)
 {
@@ -210,7 +210,7 @@ bool seg_seg_do_intersect_crossing(
 
 template <class K>
 bool seg_seg_do_intersect_contained(
-        const typename K::Point_2  &p1, const typename K::Point_2 &p2, 
+        const typename K::Point_2  &p1, const typename K::Point_2 &p2,
 	const typename K::Point_2 &p3, const typename K::Point_2 &p4,
 	const K& k)
 {
@@ -230,7 +230,7 @@ bool seg_seg_do_intersect_contained(
 
 template <class K>
 bool
-do_intersect(const typename CGAL_WRAP(K)::Segment_2 &seg1, 
+do_intersect(const typename CGAL_WRAP(K)::Segment_2 &seg1,
 	     const typename CGAL_WRAP(K)::Segment_2 &seg2,
 	     const K& k)
 {
@@ -506,7 +506,7 @@ Segment_2_Segment_2_pair<K>::intersection_type() const
             _intersection_point = *minpt;
             _other_point = *maxpt;
             _result = SEGMENT;
-            return _result; 
+            return _result;
         } else {
             if (start1.y() < end1.y()) {
                 minpt = &start1;
@@ -542,9 +542,9 @@ Segment_2_Segment_2_pair<K>::intersection_type() const
             _intersection_point = *minpt;
             _other_point = *maxpt;
             _result = SEGMENT;
-            return _result; 
+            return _result;
         }
-        } 
+        }
     }
     return _result;
 }
@@ -581,7 +581,7 @@ Segment_2_Segment_2_pair<K>::intersection(typename K::Segment_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Segment_2 &seg1, 
+intersection(const typename CGAL_WRAP(K)::Segment_2 &seg1,
 	     const typename CGAL_WRAP(K)::Segment_2 &seg2,
 	     const K&)
 {
@@ -609,7 +609,7 @@ intersection(const typename CGAL_WRAP(K)::Segment_2 &seg1,
 template <class K>
 inline
 bool
-do_intersect(const Segment_2<K> &seg1, 
+do_intersect(const Segment_2<K> &seg1,
 	     const Segment_2<K> &seg2)
 {
   return CGALi::do_intersect(seg1, seg2, K());
@@ -618,7 +618,7 @@ do_intersect(const Segment_2<K> &seg1,
 
 template <class K>
 Object
-intersection(const Segment_2<K> &seg1, 
+intersection(const Segment_2<K> &seg1,
 	     const Segment_2<K> &seg2)
 {
   return CGALi::intersection(seg1, seg2, K());

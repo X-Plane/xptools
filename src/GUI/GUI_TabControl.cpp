@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -75,13 +75,13 @@ void		GUI_TabControl::SetDescriptor(const string& inDesc)
 		if (e != inDesc.end()) ++e;
 		b = e;
 	}
-	
+
 	mWidths.resize(mItems.size());
 	for (int n = 0; n < mItems.size(); ++n)
 	{
 		mWidths[n] = GUI_MeasureRange(font_UI_Basic, &*mItems[n].begin(), &*mItems[n].end()) + TAB_PADDING * 2;
 	}
-	
+
 	SetMax(mItems.size());
 	if (GetValue() > GetMax()) SetValue(GetMax());
 	Refresh();
@@ -94,25 +94,25 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	int tile_line[4] = { 0, 0, 1, 3 };
 	glColor3f(1,1,1);
 	GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_line);
-	
+
 	int rs = bounds[2];
-	
+
 	int n;
 	for (n = 0; n < mItems.size(); ++n)
 	{
 		int tile_tab[4] = { 0, (n == GetValue()) ? 2 : 1, 1, 3 };
 		bounds[2] = bounds[0] + mWidths[n];
 		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);
-		bounds[0] = bounds[2];				
+		bounds[0] = bounds[2];
 	}
-	
+
 	if (bounds[0] < rs)
 	{
 		bounds[2] = max(rs,bounds[0]+40);
 		int tile_tab[4] = { 0, 1, 1, 3 };
-		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);		
+		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);
 	}
-	
+
 	GetBounds(bounds);
 	for (n = 0; n < mItems.size(); ++n)
 	{
@@ -121,7 +121,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 
 		bounds[0] += mWidths[n];
 	}
-	
+
 }
 
 int			GUI_TabControl::MouseDown(int x, int y, int button)
@@ -148,14 +148,14 @@ int			GUI_TabControl::MouseDown(int x, int y, int button)
 void		GUI_TabControl::MouseDrag(int x, int y, int button)
 {
 	if (mTrackBtn == -1) return;
-	
+
 	int bounds[4];
 	GetBounds(bounds);
 	for (int n = 0; n < mTrackBtn; ++n)
 		bounds[0] += mWidths[n];
-	
+
 	bounds[2] = bounds[0] + mWidths[mTrackBtn];
-	
+
 	int is_in = (x > bounds[0] && x < bounds[2] &&
 			  y > bounds[1] && y < bounds[3]);
 	if (is_in != mHilite)
@@ -168,14 +168,14 @@ void		GUI_TabControl::MouseDrag(int x, int y, int button)
 void		GUI_TabControl::MouseUp  (int x, int y, int button)
 {
 	if (mTrackBtn == -1) return;
-	
+
 	int bounds[4];
 	GetBounds(bounds);
 	for (int n = 0; n < mTrackBtn; ++n)
 		bounds[0] += mWidths[n];
-	
+
 	bounds[2] = bounds[0] + mWidths[mTrackBtn];
-	
+
 	int is_in = (x > bounds[0] && x < bounds[2] &&
 			  y > bounds[1] && y < bounds[3]);
 	if (is_in)
@@ -191,4 +191,4 @@ void		GUI_TabControl::SetValue(float inValue)
 	GUI_Control::SetValue(inValue);
 	Refresh();
 }
-	
+

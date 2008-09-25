@@ -1,8 +1,8 @@
 /*
  *
  * Copyright (c) 2003 Dr John Maddock
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution is subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -19,7 +19,7 @@
 #include <boost/throw_exception.hpp>
 
 //
-// split_path is a small helper for outputting a path name, 
+// split_path is a small helper for outputting a path name,
 // complete with a link to that path:
 //
 struct split_path
@@ -66,7 +66,7 @@ void bcp_implementation::output_licence_info()
       std::runtime_error e(msg);
       boost::throw_exception(e);
    }
-   os << 
+   os <<
       "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
       "<html>\n"
       "<head>\n"
@@ -82,7 +82,7 @@ void bcp_implementation::output_licence_info()
    while(i != j)
    {
       // title:
-      os << "   <A href=\"#" << make_link_target(licences.first[i->first].licence_name) 
+      os << "   <A href=\"#" << make_link_target(licences.first[i->first].licence_name)
          << "\">" << licences.first[i->first].licence_name << "</a>\n";
       ++i;
    }
@@ -111,7 +111,7 @@ void bcp_implementation::output_licence_info()
    }
    os << "</p><p>The Boost path was: <code>" << m_boost_path.string() << "</code></P>";
    //
-   // extract the boost version number from the boost directory tree, 
+   // extract the boost version number from the boost directory tree,
    // not from this app (which may have been built from a previous
    // version):
    //
@@ -137,13 +137,13 @@ void bcp_implementation::output_licence_info()
    while(i != j)
    {
       // title:
-      os << 
+      os <<
          "<H3>" << licences.first[i->first].licence_name << "</H3>\n";
       // licence text:
       os << "<BLOCKQUOTE>" << licences.first[i->first].licence_text << "</BLOCKQUOTE>";
       // Copyright holders:
-      os << "<P>This licence is used by " << i->second.authors.size() 
-         << " authors and " << i->second.files.size() 
+      os << "<P>This licence is used by " << i->second.authors.size()
+         << " authors and " << i->second.files.size()
          << " files <a href=\"#" << make_link_target(licences.first[i->first].licence_name) << "\">(see details)</a>";
       os << "</P></BLOCKQUOTE>\n";
       ++i;
@@ -157,8 +157,8 @@ void bcp_implementation::output_licence_info()
    while(i != j)
    {
       // title:
-      os << 
-         "<H3><A name=\"" << make_link_target(licences.first[i->first].licence_name) 
+      os <<
+         "<H3><A name=\"" << make_link_target(licences.first[i->first].licence_name)
          << "\"></a>" << licences.first[i->first].licence_name << "</H3>\n";
       // licence text:
       os << "<BLOCKQUOTE>" << licences.first[i->first].licence_text << "</BLOCKQUOTE>";
@@ -218,7 +218,7 @@ void bcp_implementation::output_licence_info()
    // output a table of copyright information:
    //
    os << "<H2><a name=\"copyright\"></a>Copyright Holder Information</H2><table border=\"1\">\n";
-   std::map<std::string, std::set<fs::path, path_less> >::const_iterator ad, ead; 
+   std::map<std::string, std::set<fs::path, path_less> >::const_iterator ad, ead;
    ad = m_author_data.begin();
    ead = m_author_data.end();
    while(ad != ead)

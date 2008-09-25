@@ -10,7 +10,7 @@
 
 #include "PlaneSensorNode.h"
 
-PlaneSensorNode::PlaneSensorNode() 
+PlaneSensorNode::PlaneSensorNode()
 {
 	setHeaderFlag(false);
 	setType(planeSensorNodeString);
@@ -30,7 +30,7 @@ PlaneSensorNode::PlaneSensorNode()
 	// offset exposed field
 	offsetField = new SFVec3f(0.0f, 0.0f, 0.0f);
 	addExposedField(offsetFieldString, offsetField);
-	
+
 	// translation eventOut field
 	translationField = new SFVec3f(0.0f, 0.0f, 0.0f);
 	addEventOut(translationFieldString, translationField);
@@ -40,7 +40,7 @@ PlaneSensorNode::PlaneSensorNode()
 	addEventOut(trackPointFieldString, trackPointField);
 }
 
-PlaneSensorNode::~PlaneSensorNode() 
+PlaneSensorNode::~PlaneSensorNode()
 {
 }
 
@@ -54,23 +54,23 @@ SFBool *PlaneSensorNode::getAutoOffsetField()
 		return autoOffsetField;
 	return (SFBool *)getExposedField(autoOffsetFieldString);
 }
-	
-void PlaneSensorNode::setAutoOffset(bool value) 
+
+void PlaneSensorNode::setAutoOffset(bool value)
 {
 	getAutoOffsetField()->setValue(value);
 }
 
-void PlaneSensorNode::setAutoOffset(int value) 
+void PlaneSensorNode::setAutoOffset(int value)
 {
 	setAutoOffset(value ? true : false);
 }
 
-bool PlaneSensorNode::getAutoOffset() 
+bool PlaneSensorNode::getAutoOffset()
 {
 	return getAutoOffsetField()->getValue();
 }
 
-bool PlaneSensorNode::isAutoOffset() 
+bool PlaneSensorNode::isAutoOffset()
 {
 	return getAutoOffset();
 }
@@ -85,23 +85,23 @@ SFVec2f *PlaneSensorNode::getMinPositionField()
 		return minPositionField;
 	return (SFVec2f *)getExposedField(minPositionFieldString);
 }
-	
-void PlaneSensorNode::setMinPosition(float value[]) 
+
+void PlaneSensorNode::setMinPosition(float value[])
 {
 	getMinPositionField()->setValue(value);
 }
 
-void PlaneSensorNode::setMinPosition(float x, float y) 
+void PlaneSensorNode::setMinPosition(float x, float y)
 {
 	getMinPositionField()->setValue(x, y);
 }
 
-void PlaneSensorNode::getMinPosition(float value[]) 
+void PlaneSensorNode::getMinPosition(float value[])
 {
 	getMinPositionField()->getValue(value);
 }
 
-void PlaneSensorNode::getMinPosition(float *x, float *y) 
+void PlaneSensorNode::getMinPosition(float *x, float *y)
 {
 	SFVec2f *sfvec2f = getMinPositionField();
 	*x = sfvec2f->getX();
@@ -118,23 +118,23 @@ SFVec2f *PlaneSensorNode::getMaxPositionField()
 		return maxPositionField;
 	return (SFVec2f *)getExposedField(maxPositionFieldString);
 }
-	
-void PlaneSensorNode::setMaxPosition(float value[]) 
+
+void PlaneSensorNode::setMaxPosition(float value[])
 {
 	getMaxPositionField()->setValue(value);
 }
 
-void PlaneSensorNode::setMaxPosition(float x, float y) 
+void PlaneSensorNode::setMaxPosition(float x, float y)
 {
 	getMaxPositionField()->setValue(x, y);
 }
 
-void PlaneSensorNode::getMaxPosition(float value[]) 
+void PlaneSensorNode::getMaxPosition(float value[])
 {
 	getMaxPositionField()->getValue(value);
 }
 
-void PlaneSensorNode::getMaxPosition(float *x, float *y) 
+void PlaneSensorNode::getMaxPosition(float *x, float *y)
 {
 	SFVec2f *sfvec2f = getMaxPositionField();
 	*x = sfvec2f->getX();
@@ -151,13 +151,13 @@ SFVec3f *PlaneSensorNode::getOffsetField()
 		return offsetField;
 	return (SFVec3f *)getExposedField(offsetFieldString);
 }
-	
-void PlaneSensorNode::setOffset(float value[]) 
+
+void PlaneSensorNode::setOffset(float value[])
 {
 	getOffsetField()->setValue(value);
 }
 
-void PlaneSensorNode::getOffset(float value[]) 
+void PlaneSensorNode::getOffset(float value[])
 {
 	getOffsetField()->getValue(value);
 }
@@ -172,18 +172,18 @@ SFVec3f *PlaneSensorNode::getTranslationChangedField()
 		return translationField;
 	return (SFVec3f *)getEventOut(translationFieldString);
 }
-	
-void PlaneSensorNode::setTranslationChanged(float value[]) 
+
+void PlaneSensorNode::setTranslationChanged(float value[])
 {
 	getTranslationChangedField()->setValue(value);
 }
 
-void PlaneSensorNode::setTranslationChanged(float x, float y, float z) 
+void PlaneSensorNode::setTranslationChanged(float x, float y, float z)
 {
 	getTranslationChangedField()->setValue(x, y, z);
 }
 
-void PlaneSensorNode::getTranslationChanged(float value[]) 
+void PlaneSensorNode::getTranslationChanged(float value[])
 {
 	getTranslationChangedField()->getValue(value);
 }
@@ -198,18 +198,18 @@ SFVec3f *PlaneSensorNode::getTrackPointChangedField()
 		return trackPointField;
 	return (SFVec3f *)getEventOut(trackPointFieldString);
 }
-	
-void PlaneSensorNode::setTrackPointChanged(float value[]) 
+
+void PlaneSensorNode::setTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->setValue(value);
 }
 
-void PlaneSensorNode::setTrackPointChanged(float x, float y, float z) 
+void PlaneSensorNode::setTrackPointChanged(float x, float y, float z)
 {
 	getTrackPointChangedField()->setValue(x, y, z);
 }
 
-void PlaneSensorNode::getTrackPointChanged(float value[]) 
+void PlaneSensorNode::getTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->getValue(value);
 }
@@ -218,12 +218,12 @@ void PlaneSensorNode::getTrackPointChanged(float value[])
 //	List
 ////////////////////////////////////////////////
 
-PlaneSensorNode *PlaneSensorNode::next() 
+PlaneSensorNode *PlaneSensorNode::next()
 {
 	return (PlaneSensorNode *)Node::next(getType());
 }
 
-PlaneSensorNode *PlaneSensorNode::nextTraversal() 
+PlaneSensorNode *PlaneSensorNode::nextTraversal()
 {
 	return (PlaneSensorNode *)Node::nextTraversalByType(getType());
 }
@@ -231,22 +231,22 @@ PlaneSensorNode *PlaneSensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool PlaneSensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void PlaneSensorNode::initialize() 
+void PlaneSensorNode::initialize()
 {
 	setIsActive(false);
 }
 
-void PlaneSensorNode::uninitialize() 
+void PlaneSensorNode::uninitialize()
 {
 }
 
-void PlaneSensorNode::update() 
+void PlaneSensorNode::update()
 {
 }
 
@@ -254,7 +254,7 @@ void PlaneSensorNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void PlaneSensorNode::outputContext(ostream &printStream, char *indentString) 
+void PlaneSensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *autoOffset = getAutoOffsetField();
 	SFBool *enabled = getEnabledField();
@@ -267,4 +267,4 @@ void PlaneSensorNode::outputContext(ostream &printStream, char *indentString)
 	printStream << indentString << "\t" << "maxPosition " << maxpos  << endl;
 	printStream << indentString << "\t" << "minPosition " << minpos  << endl;
 	printStream << indentString << "\t" << "offset " << offset << endl;
-}	
+}

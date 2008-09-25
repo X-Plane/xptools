@@ -56,10 +56,10 @@ private:
   void timerEvent( QTimerEvent *)
   {
     if(on_first)
-      widget->setCursor(QCursor( 
+      widget->setCursor(QCursor(
               QPixmap( (const char**)holddown_xpm)));
     else
-      widget->setCursor(QCursor( 
+      widget->setCursor(QCursor(
               QPixmap( (const char**)hand_xpm)));
   }
 
@@ -74,7 +74,7 @@ private:
 
   void mousePressEvent(QMouseEvent *e)
   {
-    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON 
+    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON
        && is_pure(e->state()))
     {
       widget->setCursor(QCursor( QPixmap( (const char**)holddown_xpm)));
@@ -82,7 +82,7 @@ private:
 	      first_x = e->x();
 	      first_y = e->y();
 	      on_first = TRUE;
-      }	
+      }
     }
   };
 
@@ -97,7 +97,7 @@ private:
       widget->y_real(e->y(), y);
       widget->x_real(first_x, xfirst2);
       widget->y_real(first_y, yfirst2);
-			
+
       double	xmin, xmax, ymin, ymax, distx, disty;
       if(x < xfirst2) {xmin = x; xmax = xfirst2;}
       else {xmin = xfirst2; xmax = x;};
@@ -118,7 +118,7 @@ private:
       int x = e->x();
       int y = e->y();
       //save the initial raster mode
-      RasterOp old = widget->rasterOp();	
+      RasterOp old = widget->rasterOp();
       widget->setRasterOp(XorROP);
       widget->lock();
         *widget << CGAL::GRAY;
@@ -169,7 +169,7 @@ private:
   int   x2, y2;
   bool	wasrepainted;
   bool	on_first;
-};//end class 
+};//end class
 
 } // namespace CGAL
 

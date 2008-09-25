@@ -12,7 +12,7 @@
 #include <CGAL/copy_n.h>
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/squared_distance_2.h>
-#include <CGAL/Cartesian_converter.h> 
+#include <CGAL/Cartesian_converter.h>
 #include <CGAL/kernel_to_kernel.h>
 #include <CGAL/Timer.h>
 

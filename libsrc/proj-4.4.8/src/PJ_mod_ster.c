@@ -76,7 +76,7 @@ INVERSE(e_inverse); /* ellipsoid */
 	}
 	if (nn) {
 		lp.phi = phi;
-		lp.lam = atan2(p.r * sinz, rh * P->cchio * cosz - p.i * 
+		lp.lam = atan2(p.r * sinz, rh * P->cchio * cosz - p.i *
 			P->schio * sinz);
     } else
 		lp.lam = lp.phi = HUGE_VAL;

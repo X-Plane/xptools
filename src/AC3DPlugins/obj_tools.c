@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -92,7 +92,7 @@ void do_show_transparent(void)
 	}
 	for (set<int>::iterator ii = textures.begin(); ii != textures.end(); ++ii)
 	{
-	
+
 		ACImage * image = texture_id_to_image(*ii);
 		if (image)
 			make_transparent(image);
@@ -104,7 +104,7 @@ void do_change_tex(void)
 	vector <ACObject *> all, need_new_tex;
 	find_all_selected_objects(all);
 	if (!all.empty())
-	{	
+	{
 		char *filter[] = { "PNG files", "*.png", "BMP files", "*.bmp", "All files", "*", NULL };
 	    char *filename = ac_get_load_filename("Pick a bitman to use for your models...", filter);
 	    if (STRINGISEMPTY(filename))
@@ -118,11 +118,11 @@ void do_change_tex(void)
 //			myfree(filename);
 			return;
 		}
-		
+
 		add_undoable_all("Merge textures");
-		
+
 		int total = 0, changed = 0;
-		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)		
+		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
 		{
 			if (ac_object_has_texture(*i))
 			{
@@ -139,10 +139,10 @@ void do_change_tex(void)
 						ac_image_get_dim(new_bitmap, &w, &h, &d);
 						ac_image_get_dim(tex, &ow, &oh, &od);
 						double	add_factor_x = (double) xoff / (double) w;
-						double	add_factor_y = (double) yoff / (double) h;						
+						double	add_factor_y = (double) yoff / (double) h;
 						double	mult_factor_x = (double) ow / (double) w;
 						double	mult_factor_y = (double) oh / (double) h;
-						
+
 						offset_object_textures(*i, add_factor_x, add_factor_y, mult_factor_x, mult_factor_y);
 						need_new_tex.push_back(*i);
 						++changed;
@@ -152,8 +152,8 @@ void do_change_tex(void)
 				printf("Skipping %s - has no texture.\n", ac_object_get_name(*i));
 			}
 		}
-		
-		for (vector<ACObject *>::iterator j = need_new_tex.begin(); j != need_new_tex.end(); ++j)		
+
+		for (vector<ACObject *>::iterator j = need_new_tex.begin(); j != need_new_tex.end(); ++j)
 		{
 			object_texture_set(*j, new_texture_id);
 		}
@@ -166,20 +166,20 @@ void do_change_tex(void)
 		message_dialog("Cannot substitute textures when no objects are selected.");
 
 
-/*	
+/*
 
 	int  xoff, yoff;
 	if (bitmap_match(new_bitmap, new_bitmap2, &xoff, &yoff))
 		message_dialog("Got a match at %d, %d", xoff, yoff);
 	else
 		message_dialog("No match!");
-*/		
+*/
 }
 
 void do_select_tex(const char * config)
 {
 	float st[4];
-	
+
 	if (sscanf(config,"%f %f %f %f", st,st+1,st+2,st+3) != 4)
 	{
 		printf("Bad args %s to rescale tex.\n",config);
@@ -191,7 +191,7 @@ void do_select_tex(const char * config)
 	find_all_objects(ac_get_world(),all);
 	for(vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
 		obj_sel_st(*i,st, who);
-		
+
 	List * surf_list = NULL;
 	for(vector<Surface *>::iterator i = who.begin(); i != who.end(); ++i)
 	{
@@ -199,9 +199,9 @@ void do_select_tex(const char * config)
 	}
 	clear_selection();
 	ac_selection_select_surfacelist(surf_list);
-		
+
 	list_free(&surf_list);
-		
+
 	redraw_all();
 }
 
@@ -209,37 +209,37 @@ void do_rescale_tex(const char * config)
 {
 	float old_s1,  old_t1,  old_s2,  old_t2,
 	 new_s1,  new_t1,  new_s2,  new_t2;
-	
-	if (sscanf(config,"%f %f %f %f %f %f %f %f", 
-		&old_s1, &old_t1, &old_s2, &old_t2, 
+
+	if (sscanf(config,"%f %f %f %f %f %f %f %f",
+		&old_s1, &old_t1, &old_s2, &old_t2,
 		&new_s1, &new_t1, &new_s2, &new_t2) != 8)
 	{
 		printf("Bad args %s to rescalae tex.\n",config);
 		return;
 	}
-	
+
 	vector <ACObject *> all;
 	find_all_selected_objects(all);
-	
+
 	float s_scale = (new_s2 - new_s1) / (old_s2 - old_s1);
 	float s_offset = new_s1 - old_s1 * s_scale;
 
 	float t_scale = (new_t2 - new_t1) / (old_t2 - old_t1);
 	float t_offset = new_t1 - old_t1 * t_scale;
-	
+
 	if (!all.empty())
-	{	
+	{
 		add_undoable_all("Remap textures");
-		
+
 		int total = 0, changed = 0;
-		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)		
+		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
 		{
 			if (ac_object_has_texture(*i))
 			{
 				offset_object_textures(*i, s_offset, t_offset, s_scale, t_scale);
 			}
 		}
-		
+
 	} else
 		message_dialog("Cannot substitute textures when no objects are selected.");
 
@@ -254,10 +254,10 @@ void do_calc_lod(void)
 	if (get_selection_bounds(minv, maxv))
 	{
 		float radius = GetObjectLesserRadius(minv, maxv);
-		
+
 		// resolution * radius / tan (half of field of view)
-		float LOD = 1024.0 / 2.0 * radius / tan(70.0 / 2.0);		
-		message_dialog("Recommended LOD distance: %d meters.", (int) LOD);		
+		float LOD = 1024.0 / 2.0 * radius / tan(70.0 / 2.0);
+		message_dialog("Recommended LOD distance: %d meters.", (int) LOD);
 	}
 
 
@@ -278,15 +278,15 @@ void do_named_group(char * str)
 			parents.insert(p);
 	}
 	list_free(&objs_l);
-	
+
 	if (objs.empty())	return;
 
 	if (parents.size() > 1)
 	{
 		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
-	}	
-	
+	}
+
 	ACObject * new_obj = new_object(OBJECT_GROUP);
 
 	object_set_name(new_obj, str);
@@ -294,9 +294,9 @@ void do_named_group(char * str)
 	if (!objs.empty())
 	for (int n = objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
-	
-	object_add_child(*parents.begin(), new_obj);	
-	
+
+	object_add_child(*parents.begin(), new_obj);
+
 	tcl_command("hier_update");
 }
 
@@ -312,10 +312,10 @@ void do_tree_extrude(void)
 		List 	*vertices, *surfaces, *kids;
 		int numvert, numsurf, numkids;
 
-	    ac_object_get_contents(obj, &numvert, &numsurf, &numkids, &vertices, &surfaces, &kids); 
-	    
+	    ac_object_get_contents(obj, &numvert, &numsurf, &numkids, &vertices, &surfaces, &kids);
+
 		vector<Surface *>	svec;
-		
+
 		while(numsurf > 0 && surfaces != NULL)
 		{
 	    	Surface *s = (Surface *) surfaces->data;
@@ -323,21 +323,21 @@ void do_tree_extrude(void)
 				svec.push_back(s);
 			surfaces = surfaces->next;
 		}
-	    
+
 //	    	object_set_twosided_faces(obj, 0);
 //	    	object_set_surface_shading(obj, 1);
 
-		for (vector<Surface *>::iterator siter = svec.begin(); siter != svec.end(); ++siter)	
+		for (vector<Surface *>::iterator siter = svec.begin(); siter != svec.end(); ++siter)
 		{
 	    	Surface *s = *siter;
-			Surface *	faces[4] = { s, NULL, NULL, NULL };				
+			Surface *	faces[4] = { s, NULL, NULL, NULL };
 			SVertex * s1, * s2, *s3, *s4;
 
 			s1 = ((SVertex *)s->vertlist->data);
 			s2 = ((SVertex *)s->vertlist->next->data);
 			s3 = ((SVertex *)s->vertlist->next->next->data);
 			s4 = ((SVertex *)s->vertlist->next->next->next->data);
-			
+
 			for (int n = 1; n < 4; ++n)
 			{
 				Point3	p1 = { s1->v->x, s1->v->y, s1->v->z };
@@ -355,16 +355,16 @@ void do_tree_extrude(void)
 				surface_add_vertex(faces[n], v3, s3->tx, s3->ty);
 				surface_add_vertex(faces[n], v4, s4->tx, s4->ty);
 
-				object_add_surface(obj, faces[n]);					
+				object_add_surface(obj, faces[n]);
 			}
-			
+
 			float min_x = min(min(s1->v->x,s2->v->x),min(s3->v->x,s4->v->x));
 			float max_x = max(max(s1->v->x,s2->v->x),max(s3->v->x,s4->v->x));
 			float min_z = min(min(s1->v->z,s2->v->z),min(s3->v->z,s4->v->z));
 			float max_z = max(max(s1->v->z,s2->v->z),max(s3->v->z,s4->v->z));
 
 			float ctr_x = (min_x + max_x) * 0.5;
-			float ctr_z = (min_z + max_z) * 0.5;				
+			float ctr_z = (min_z + max_z) * 0.5;
 
 			double angle = rand() % 360;
 			Point3	up = { 0.0, 1.0, 0.0 };
@@ -377,10 +377,10 @@ void do_tree_extrude(void)
 				angle += 90;
 			}
 		}
-		
+
 	}
 	list_free(&objs_l);
-	redraw_all(); 
+	redraw_all();
 }
 
 void do_bulk_export(void)
@@ -389,7 +389,7 @@ void do_bulk_export(void)
 	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
 	if (fn == NULL) return;
 	if (*fn == 0) return;
-		
+
 	ACObject * wrl = ac_get_world();
 
 	int numvert, numsurf, numkids;
@@ -397,7 +397,7 @@ void do_bulk_export(void)
 	List *iter;
 
     ac_object_get_contents(wrl, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
+        &vertices, &surfaces, &kids);
 
     for (iter = kids; iter != NULL; iter = iter->next)
     {
@@ -413,7 +413,7 @@ void do_bulk_export(void)
 			do_obj8_save_ex(path, child, 1, -1, 1);	// do prefix, all texes, do misc stuff
 		}
 	}
-	
+
 	myfree(fn);
 }
 
@@ -426,23 +426,23 @@ void do_tex_export(void)
 		message_dialog("Your model contains no textures - multi-export by texture is not useful here.");
 		return;
 	}
-	
+
 	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
 	if (fn == NULL) return;
 	if (*fn == 0) return;
 
 	char path[1024];
-	
+
 	for (set<int>::iterator i = texes.begin(); i != texes.end(); ++i)
 	{
 		string tname = texture_id_to_name(*i);
 		string::size_type p = tname.find_last_of("/\\");
-		
+
 		strcpy(path, fn);
 		strcat(path, "/");
 		strcat(path, tname.c_str() + p + 1);
 		strcpy(path+strlen(path)-3,"obj");
-		do_obj8_save_ex(path, ac_get_world(), 1, *i, i == texes.begin());		
+		do_obj8_save_ex(path, ac_get_world(), 1, *i, i == texes.begin());
 	}
 }
 
@@ -451,9 +451,9 @@ void do_make_onesided(void)
 	add_undoable_all("Make One-sided");
 
 	List * surf_l = ac_selection_get_whole_surfaces_all();
-	
-	vector<Surface *>	surfs; 
-	
+
+	vector<Surface *>	surfs;
+
 	for (List * iter = surf_l; iter != NULL; iter = iter->next)
 	{
 		Surface * surf = (Surface *) iter->data;
@@ -462,14 +462,14 @@ void do_make_onesided(void)
 			surfs.push_back(surf);
 	}
 	list_free(&surf_l);
-	
+
 	for (vector<Surface *>::iterator si = surfs.begin(); si != surfs.end(); ++si)
 	{
 		Surface * sold = *si;
 		ACObject * obj = object_of_surface(sold);
-		
+
 		Surface * snew = new_surface();
-			
+
 		for (List * svi = sold->vertlist; svi; svi = svi->next)
 		{
 			SVertex * svo = (SVertex *) svi->data;
@@ -478,28 +478,28 @@ void do_make_onesided(void)
 			svn->normal.y = -svo->normal.y;
 			svn->normal.z = -svo->normal.z;
 		}
-		
+
 		snew->normal.x = -sold->normal.x;
 		snew->normal.y = -sold->normal.y;
 		snew->normal.z = -sold->normal.z;
-		
+
 		object_add_surface(obj, snew);
-		
+
 		surface_set_twosided(sold, 0);
 		surface_set_twosided(snew, 0);
 		surface_set_shading(snew,surface_get_shading(sold));
 		surface_set_col(snew, sold->col);
 	}
-}	
+}
 
 void do_make_upnormal(void)
 {
 	add_undoable_all("Make Up Normals");
 
 	List * surf_l = ac_selection_get_whole_surfaces_all();
-	
-	vector<Surface *>	surfs; 
-	
+
+	vector<Surface *>	surfs;
+
 	for (List * iter = surf_l; iter != NULL; iter = iter->next)
 	{
 		Surface * surf = (Surface *) iter->data;
@@ -507,13 +507,13 @@ void do_make_upnormal(void)
 			surfs.push_back(surf);
 	}
 	list_free(&surf_l);
-	
+
 	Point3 up = { 0.0, 1.0, 0.0 };
 	for (vector<Surface *>::iterator si = surfs.begin(); si != surfs.end(); ++si)
 	{
 		surface_set_normals(*si, &up);
 	}
-}	
+}
 
 void do_reload_all_texes(void)
 {
@@ -531,15 +531,15 @@ struct sort_by_ac_state {
 		float poly_l = OBJ_get_poly_os(lhs);
 		float poly_r = OBJ_get_poly_os(rhs);
 		if (poly_l == 0.0f) poly_l += 1000.0f;			// hack to put poly_offset of 0 last.
-		if (poly_r == 0.0f) poly_r += 1000.0f;		
+		if (poly_r == 0.0f) poly_r += 1000.0f;
 		if (poly_l != poly_r) return poly_l < poly_r;
-		
+
 		float blend_l = OBJ_get_blend(lhs);
 		float blend_r = OBJ_get_blend(rhs);
 		if (blend_l < 0.0f) blend_l = -1.0f;			// hack to ignore negative blends, which are a way of "remembering" what our blend was.
 		if (blend_r < 0.0f) blend_r = -1.0f;
 		if (blend_l != blend_r) return blend_l < blend_r;
-		
+
 		return false;
 	}
 };
@@ -548,7 +548,7 @@ void do_optimize_selection(float do_optimize)
 {
 	vector<ACObject *>	objs;
 	find_all_selected_objects_stable(objs);
-	
+
 	if (objs.empty())
 	{
 		if (do_optimize)	message_dialog("Select one or more objects to optimize their order.");
@@ -585,17 +585,17 @@ void do_optimize_selection(float do_optimize)
 		if (functor(objs[n-1],objs[n]) ||
 			functor(objs[n],objs[n-1]))
 				++ state_post;
-				
+
 	}
-	
+
 	if (state_post == state_pre)
 	{
 		message_dialog("I cannot further optimize this selection.  It will require %d batches to draw.", state_pre);
 		return;
 	}
-	
+
 	add_undoable_all("Optimize Selection");
-	
+
 	for (vector<ACObject *>::iterator o = objs.begin(); o != objs.end(); ++o)
 	{
 		object_remove_child_nocleanup(object_parent(*o),*o);
@@ -604,9 +604,9 @@ void do_optimize_selection(float do_optimize)
 	{
 		object_add_child(parent,*o);
 	}
-		
+
 	message_dialog("X-Plane used to need %d batches for this set of objects, now we need %d batches.",state_pre,state_post);
-	
+
 	redraw_all();
 	tcl_command("hier_update");
 }
@@ -619,17 +619,17 @@ static void sel_if_light(ACObject * who)
 	List *kids = ac_object_get_childrenlist(who);
 
     for (List * p = kids; p != NULL; p = p->next)
-        sel_if_light((ACObject *)p->data);	
+        sel_if_light((ACObject *)p->data);
 }
 
 
 void do_sel_lights(void)
 {
 	add_undoable_change_selection("Select all lights");
-	clear_selection();	
+	clear_selection();
 	sel_if_light(ac_get_world());
 	tcl_command("hier_update");
 	redraw_all();
-	display_status();	
-	
+	display_status();
+
 }

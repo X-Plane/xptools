@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,10 +31,10 @@
 MACINTOSH "RESOURCE" IMPLEMENTATION.
 
 My original design used the Mac resource manager, but it turns out that
-this doesn't work - a file's rseource fork is limited to 16 MB which 
+this doesn't work - a file's rseource fork is limited to 16 MB which
 is not enough for a serious installer.  So here's what we do instead:
 
-We store our resources in a giant data chunk that is after the 
+We store our resources in a giant data chunk that is after the
 app's code fragment in the data fork of the app.  This means that we
 must adjust the cfrg resource (if necessary) to not use kWholeFrag
 as the fragment length.  We can then use the rest of the file as a data
@@ -68,7 +68,7 @@ static	void	SetupReadSelf(void)
 		if (ReportError("Installer does not have one code fragment", paramErr, "")) return;
 	} else if (frag->firstMember.length == 0) {
 		if (ReportError("Not a finished installer.",ResError(), "")) return;
-	} else 
+	} else
 		offset = frag->firstMember.length;
 	HUnlock(cfrg);
 	ReleaseResource(cfrg);
@@ -95,7 +95,7 @@ int		XRES_CountResources()
 	if (!gSetupMe) return 0;
 	return gNumResources;
 }
-	
+
 int		XRES_GetResourceData(char ** outPtr, int * outSize)
 {
 	if (!gSetupMe) SetupReadSelf();
@@ -113,7 +113,7 @@ int		XRES_GetResourceData(char ** outPtr, int * outSize)
 	l = c;
 	if (ReportError("Could not read data item", FSRead(gMyResFile, &l, *outPtr), "")) return 0;
 	return 1;
-}	
+}
 
 
 struct	ResInfo {
@@ -127,20 +127,20 @@ void *	XRES_BeginSettingResources(const char * inFilePath)
 {
 	long df, rf;
 	long start_of_data = 0;
-	if (!GetForkSizes(inFilePath,df,rf)) 
+	if (!GetForkSizes(inFilePath,df,rf))
 	{
-		ReportError("Could not determine contents of file.", paramErr, inFilePath);		
+		ReportError("Could not determine contents of file.", paramErr, inFilePath);
 		return 0;
 	}
 	FSSpec	spec;
 	if (!FilePathToFSSpec(inFilePath, spec)) return false;
 	short resFile = FSpOpenResFile(&spec, fsRdWrPerm);
-	if (resFile == -1) 
+	if (resFile == -1)
 	{
 		ReportError("could not open installer", ResError(), inFilePath);
-		return NULL;		
+		return NULL;
 	}
-	
+
 	Handle	cfrg = Get1Resource('cfrg', 0);
 	if (cfrg == NULL)
 	{
@@ -161,7 +161,7 @@ void *	XRES_BeginSettingResources(const char * inFilePath)
 		ChangedResource(cfrg);
 		WriteResource(cfrg);
 		if (ReportError("Could not modify code fragment.",ResError(), inFilePath)) ok = false;
-	} else 
+	} else
 		start_of_data = frag->firstMember.length;
 	HUnlock(cfrg);
 	CloseResFile(resFile);
@@ -183,7 +183,7 @@ void *	XRES_BeginSettingResources(const char * inFilePath)
 int		XRES_AddResource(void * inFile, char * inPtr, int inSize)
 {
 	ResInfo * info = (ResInfo *) inFile;
-	long l = 4;	
+	long l = 4;
 	if (ReportError("Could not write installer data item header", FSWrite(info->fileNum, &l, &inSize), "")) return 0;
 	l = inSize;
 	if (ReportError("Could not write installer data header", FSWrite(info->fileNum, &l, inPtr), "")) return 0;
@@ -198,7 +198,7 @@ int		XRES_EndSettingResources(void * inFile)
 	long l = 4;
 	if (ReportError("Could not write number of files to installer", FSWrite(info->fileNum, &l, &info->count), "")) return 0;
 	FSClose(info->fileNum);
-	delete info;	
+	delete info;
 	return 1;
 }
 
@@ -217,9 +217,9 @@ int		XRES_GetResourceData(int id, char ** outPtr, int * outSize)
 {
 	Handle	res = Get1Resource(kInstallerType, id);
 	if (res == NULL) return 0;
-	
+
 	*outSize = GetHandleSize(res);
-	
+
 	*outPtr = (char*) malloc(*outSize);
 	if (*outPtr == NULL)
 	{
@@ -227,12 +227,12 @@ int		XRES_GetResourceData(int id, char ** outPtr, int * outSize)
 		ReleaseResource(res);
 		return 0;
 	}
-	
+
 	HLock(res);
 	memcpy(*outPtr, *res, *outSize);
 	HUnlock(res);
 	ReleaseResource(res);
-	return 1;	
+	return 1;
 }
 
 void *	XRES_BeginSettingResources(const char * inFilePath)
@@ -242,13 +242,13 @@ void *	XRES_BeginSettingResources(const char * inFilePath)
 	FSSpec	spec;
 	if (!FilePathToFSSpec(inFilePath, spec)) return false;
 	short resFile = FSpOpenResFile(&spec, fsRdWrPerm);
-	if (resFile == -1) 
+	if (resFile == -1)
 	{
 		ReportError("could not open installer", ResError(), inFilePath);
-		return NULL;		
+		return NULL;
 	}
 	SetResLoad(FALSE);
-	
+
 	vector<Handle>	nuke;
 	int max = Count1Resources(kInstallerType);
 	for (int index = 1; index <= max; ++index)
@@ -258,7 +258,7 @@ void *	XRES_BeginSettingResources(const char * inFilePath)
 	if (nuke[n] != NULL)
 		RemoveResource(nuke[n]);
 
-	return (void *) resFile;	
+	return (void *) resFile;
 }
 
 int		XRES_AddResource(void * inFile, char * inPtr, int inSize)
@@ -268,7 +268,7 @@ int		XRES_AddResource(void * inFile, char * inPtr, int inSize)
 	gBytes += inSize;
 	short resfile = (short) inFile;
 	Handle	mem = NewHandle(inSize);
-	if (mem == NULL) 
+	if (mem == NULL)
 	{
 		ReportError("Out of memory", memFullErr, "");
 		return 0;

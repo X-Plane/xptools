@@ -38,17 +38,17 @@
 CGAL_BEGIN_NAMESPACE
 template <class ForwardIterator, class OutputIterator, class Traits>
 OutputIterator
-ch_akl_toussaint(ForwardIterator first, ForwardIterator last, 
+ch_akl_toussaint(ForwardIterator first, ForwardIterator last,
                  OutputIterator  result,
                  const Traits&   ch_traits)
 {
-  typedef  typename Traits::Point_2                    Point_2;    
+  typedef  typename Traits::Point_2                    Point_2;
   typedef  typename Traits::Left_turn_2                Left_of_line;
-  // added 
+  // added
   typedef  typename Traits::Equal_2                    Equal_2;
-  
+
   Left_of_line  left_turn        = ch_traits.left_turn_2_object();
-  Equal_2       equal_points     = ch_traits.equal_2_object();  
+  Equal_2       equal_points     = ch_traits.equal_2_object();
 
   if (first == last) return result;
   ForwardIterator n, s, e, w;
@@ -76,7 +76,7 @@ ch_akl_toussaint(ForwardIterator first, ForwardIterator last,
 
   for ( ; first != last; ++first )
   {
-      if ( left_turn(*e, *w, *first ) )   
+      if ( left_turn(*e, *w, *first ) )
       {
           if ( left_turn( *s, *w, *first ) )       region1.push_back( *first );
           else if ( left_turn( *e, *s, *first ) )  region2.push_back( *first );
@@ -94,19 +94,19 @@ ch_akl_toussaint(ForwardIterator first, ForwardIterator last,
   #else
   Tee_for_output_iterator<OutputIterator,Point_2> res(result);
   #endif // no postconditions ...
-  std::sort( successor(region1.begin() ), region1.end(), 
+  std::sort( successor(region1.begin() ), region1.end(),
              ch_traits.less_xy_2_object() );
-  std::sort( successor(region2.begin() ), region2.end(), 
+  std::sort( successor(region2.begin() ), region2.end(),
              ch_traits.less_xy_2_object() );
   std::sort( successor(region3.begin() ), region3.end(),
              swap_1(ch_traits.less_xy_2_object()) );
-  std::sort( successor(region4.begin() ), region4.end(), 
+  std::sort( successor(region4.begin() ), region4.end(),
              swap_1(ch_traits.less_xy_2_object()) );
 
   if (! equal_points(*w,*s) )
   {
       region1.push_back( *s );
-      ch__ref_graham_andrew_scan( region1.begin(), region1.end(), 
+      ch__ref_graham_andrew_scan( region1.begin(), region1.end(),
                                        res, ch_traits);
   }
   if (! equal_points(*s,*e) )

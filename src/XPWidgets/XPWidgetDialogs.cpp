@@ -30,11 +30,11 @@ todo on widgets:
 
 	1. Need a word-wrapping caption!!
 	2. grid layout? - think through justification carefully first!
-	
+
 	Eventually: justification
 	Eventually: numeric field key filters!  Other key filters?
 	Eventually: tabbing!
-	
+
 	Feature req: file format based generation
 
 */
@@ -58,18 +58,18 @@ static	LayoutContainTable	kMarginTableC;
 int		XPLayout_GetMinimumWidth(XPWidgetClass inClass, XPWidgetID inWidget)
 {
 	if (XPSendMessageToWidget(inWidget, xpMsg_RecalcMinSizeH, xpMode_Direct, 0, 0) > 0) return XPGetWidgetProperty(inWidget, xpProperty_MinWidth, NULL);
-	
+
 	int l, t, r, b;
-	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);	
+	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	return r - l;
 }
 
 int		XPLayout_GetMinimumHeight(XPWidgetClass inClass, XPWidgetID inWidget)
 {
 	if (XPSendMessageToWidget(inWidget, xpMsg_RecalcMinSizeV, xpMode_Direct, 0, 0) > 0) return XPGetWidgetProperty(inWidget, xpProperty_MinHeight, NULL);
-	
+
 	int l, t, r, b;
-	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);	
+	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	return t - b;
 }
 
@@ -77,14 +77,14 @@ void	XPLayout_Reshape(XPWidgetClass inClass, XPWidgetID inWidget, int inIdealWid
 {
 	if (inIdealWidth != -1) XPSetWidgetProperty(inWidget, xpProperty_MinWidth, inIdealWidth);
 	if (inIdealHeight != -1) XPSetWidgetProperty(inWidget, xpProperty_MinHeight, inIdealHeight);
-	if (XPSendMessageToWidget(inWidget, xpMsg_DoReshape, xpMode_Direct, 0, 0) > 0) return;	
+	if (XPSendMessageToWidget(inWidget, xpMsg_DoReshape, xpMode_Direct, 0, 0) > 0) return;
 }
 
 int		XPLayout_GetMinimumMarginH(XPWidgetClass inLeft, XPWidgetClass inRight)
 {
 	if (kMarginTableH.count(inLeft) == 0)			inLeft = 0;
 	if (kMarginTableH.count(inLeft) == 0)			return kDefaultMarginH;
-	
+
 	if (kMarginTableH[inLeft].count(inRight) == 0)	inRight = 0;
 	if (kMarginTableH[inLeft].count(inRight) == 0)	return kDefaultMarginH;
 
@@ -140,32 +140,32 @@ void	XPLayout_RegisterSpecialMarginsContains(XPWidgetClass inParent, XPWidgetCla
 static bool	XPGetTextFromClipboard(std::string& outText)
 {
 #if IBM
-		HGLOBAL   	hglb; 
-		LPTSTR    	lptstr; 
+		HGLOBAL   	hglb;
+		LPTSTR    	lptstr;
 		bool		retVal = false;
 
 	if (!IsClipboardFormatAvailable(CF_TEXT))
 		return false;
 
-	if (!OpenClipboard(NULL)) 
+	if (!OpenClipboard(NULL))
 		return false;
- 
-	hglb = GetClipboardData(CF_TEXT); 
-	if (hglb != NULL) 
-	{ 
-		lptstr = (LPSTR)GlobalLock(hglb); 
-		if (lptstr != NULL) 
+
+	hglb = GetClipboardData(CF_TEXT);
+	if (hglb != NULL)
+	{
+		lptstr = (LPSTR)GlobalLock(hglb);
+		if (lptstr != NULL)
 		{
 			outText = lptstr;
 			GlobalUnlock(hglb);
   			retVal = true;
 		}
 	}
-		
-	CloseClipboard(); 
-	
+
+	CloseClipboard();
+
 	return retVal;
-#endif	
+#endif
 #if APL
 		ScrapRef	scrap;
 	if (::GetCurrentScrap(&scrap) != noErr)
@@ -185,26 +185,26 @@ static bool	XPGetTextFromClipboard(std::string& outText)
 static bool	XPSetTextToClipboard(const std::string& inText)
 {
 #if IBM
-		LPTSTR  lptstrCopy; 
-		HGLOBAL hglbCopy; 
+		LPTSTR  lptstrCopy;
+		HGLOBAL hglbCopy;
 
-	if (!OpenClipboard(NULL)) 
+	if (!OpenClipboard(NULL))
 		return false;
 	EmptyClipboard();
 
 	hglbCopy = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR) * (inText.length() + 1));
-	if (hglbCopy == NULL) 
-	{ 
-		CloseClipboard(); 
+	if (hglbCopy == NULL)
+	{
+		CloseClipboard();
 		return false;
-	} 
+	}
 
-	lptstrCopy = (LPSTR)GlobalLock(hglbCopy); 
+	lptstrCopy = (LPSTR)GlobalLock(hglbCopy);
 	strcpy(lptstrCopy, inText.c_str());
-	GlobalUnlock(hglbCopy); 
+	GlobalUnlock(hglbCopy);
 
-	SetClipboardData(CF_TEXT, hglbCopy); 
-	CloseClipboard(); 
+	SetClipboardData(CF_TEXT, hglbCopy);
+	CloseClipboard();
 	return true;
 #endif
 #if APL
@@ -213,7 +213,7 @@ static bool	XPSetTextToClipboard(const std::string& inText)
 	if (::GetCurrentScrap(&scrap) != noErr) return false;
 
 	return ::PutScrapFlavor( scrap, kScrapFlavorTypeText, kScrapFlavorMaskNone, inText.size(), &*inText.begin()) == noErr;
-	
+
 #endif
 }
 
@@ -222,11 +222,11 @@ int XPWF_Caption			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	static XPWidgetFunc_t parent = XPGetWidgetClassFunc(xpWidgetClass_Caption);
 	if (msg == xpMsg_Create)
 		XPSetWidgetProperty(id, xpProperty_WidgetClass, xpWidgetClass_Caption);
-	
+
 	int	fh, fv;
 	int	l, t, r, b;
 	char	buf[1024];
-	
+
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
 		XPLMGetFontDimensions(xplmFont_Basic, &fh, NULL, NULL);
@@ -247,8 +247,8 @@ int XPWF_Caption			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		XPGetWidgetGeometry(id, &l, &t,&r,&b);
 		XPSetWidgetGeometry(id, l,t,l+fh,t-fv);
 		return 1;
-	}	
-	return parent(msg, id, p1, p2);	
+	}
+	return parent(msg, id, p1, p2);
 }
 
 static int	XPWF_EditText_CommonLayout(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
@@ -256,20 +256,20 @@ static int	XPWF_EditText_CommonLayout(XPWidgetMessage msg, XPWidgetID id,long p1
 	static XPWidgetFunc_t parent = XPGetWidgetClassFunc(xpWidgetClass_TextField);
 	if (msg == xpMsg_Create)
 		XPSetWidgetProperty(id, xpProperty_WidgetClass, xpWidgetClass_TextField);
-	if (msg == xpMsg_RecalcMinSizeH)	
+	if (msg == xpMsg_RecalcMinSizeH)
 	{
 		int cw, fw, ew;
 		cw = XPGetWidgetProperty(id, xpProperty_FieldVisChars, NULL);
 		XPLMGetFontDimensions(xplmFont_Basic, &fw, NULL, NULL);
-		XPGetElementDefaultDimensions(xpElement_TextField, &ew, NULL, NULL);			
+		XPGetElementDefaultDimensions(xpElement_TextField, &ew, NULL, NULL);
 		XPSetWidgetProperty(id, xpProperty_MinWidth, max(ew, 10 + cw * fw));
 		return 1;
 	}
 	if (msg == xpMsg_RecalcMinSizeV)
 	{
 		int fh;
-		XPGetElementDefaultDimensions(xpElement_TextField, NULL, &fh, NULL);			
-		XPSetWidgetProperty(id, xpProperty_MinHeight, fh);		
+		XPGetElementDefaultDimensions(xpElement_TextField, NULL, &fh, NULL);
+		XPSetWidgetProperty(id, xpProperty_MinHeight, fh);
 		return 1;
 	}
 	if (msg == xpMsg_DoReshape)
@@ -286,7 +286,7 @@ static int	XPWF_EditText_CommonLayout(XPWidgetMessage msg, XPWidgetID id,long p1
 	{
 		char			theChar = KEY_VKEY(p1);
 		XPLMKeyFlags	flags = KEY_FLAGS(p1);
-		
+
 		if ((flags & (xplm_DownFlag + xplm_ControlFlag)) == (xplm_DownFlag + xplm_ControlFlag))
 		{
 			long	selStart = XPGetWidgetProperty(id, xpProperty_EditFieldSelStart, NULL);
@@ -305,7 +305,7 @@ static int	XPWF_EditText_CommonLayout(XPWidgetMessage msg, XPWidgetID id,long p1
 						txt.replace(selStart, selEnd - selStart, scrap);
 						XPSetWidgetDescriptor(id, txt.c_str());
 						XPSetWidgetProperty(id, xpProperty_EditFieldSelStart, selStart + scrap.size());
-						XPSetWidgetProperty(id, xpProperty_EditFieldSelEnd, selStart + scrap.size());						
+						XPSetWidgetProperty(id, xpProperty_EditFieldSelEnd, selStart + scrap.size());
 					} else if ((selStart >= 0) && (selStart <= strLen)) {
 						txt.insert(selStart, scrap);
 						XPSetWidgetDescriptor(id, txt.c_str());
@@ -324,14 +324,14 @@ static int	XPWF_EditText_CommonLayout(XPWidgetMessage msg, XPWidgetID id,long p1
 					{
 						txt.erase(selStart, selEnd - selStart);
 						XPSetWidgetDescriptor(id, txt.c_str());
-						XPSetWidgetProperty(id, xpProperty_EditFieldSelEnd, selStart);						
-					}					
+						XPSetWidgetProperty(id, xpProperty_EditFieldSelEnd, selStart);
+					}
 				}
 				return 1;
 			}
 		}
 	}
-		
+
 	return parent(msg, id, p1,p2);
 }
 
@@ -360,7 +360,7 @@ int	XPWF_EditText_String	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			XPGetWidgetDescriptor(id, src, max_chars);
 		}
 		return 1;
-	}	
+	}
 	return XPWF_EditText_CommonLayout(msg, id, p1, p2);
 }
 
@@ -369,7 +369,7 @@ int	XPWF_EditText_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	char	buf[2048];
 	int max_chars = XPGetWidgetProperty(id, xpProperty_MaxCharacters, NULL);
 	if (max_chars > sizeof(buf)) max_chars = sizeof(buf);
-	
+
 	if (msg == xpMsg_DataToDialog)
 	{
 		int ptri = XPGetWidgetProperty(id, xpProperty_DataPtr, NULL);
@@ -391,7 +391,7 @@ int	XPWF_EditText_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			*src = atoi(buf);
 		}
 		return 1;
-	}	
+	}
 	return XPWF_EditText_CommonLayout(msg, id, p1, p2);
 }
 
@@ -424,7 +424,7 @@ int	XPWF_EditText_Float		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			*src = atof(buf);
 		}
 		return 1;
-	}	
+	}
 	return XPWF_EditText_CommonLayout(msg, id, p1, p2);
 }
 
@@ -436,7 +436,7 @@ int	XPWF_PushButton_Action	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 
 	if (msg == xpMsg_Create)
 		XPSetWidgetProperty(id, xpProperty_WidgetClass, xpWidgetClass_Button);
-	
+
 	if (msg == xpMsg_PushButtonPressed)
 	{
 		int ret = 0;
@@ -458,7 +458,7 @@ int	XPWF_PushButton_Action	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	}
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
-		XPGetElementDefaultDimensions(xpElement_PushButton, &width, &height, NULL);	
+		XPGetElementDefaultDimensions(xpElement_PushButton, &width, &height, NULL);
 		XPGetWidgetDescriptor(id, buf, sizeof(buf));
 		XPLMGetFontDimensions(xplmFont_Basic, &cwidth, NULL, NULL);
 		width = max((size_t) width, 20 + cwidth * strlen(buf));
@@ -502,7 +502,7 @@ int XPWF_CheckBox_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			int * src = reinterpret_cast<int *>(ptri);
 			XPSetWidgetProperty(id, xpProperty_ButtonState, *src);
 		}
-		return 1;		
+		return 1;
 	}
 	if (msg == xpMsg_DataFromDialog)
 	{
@@ -512,12 +512,12 @@ int XPWF_CheckBox_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			int * src = reinterpret_cast<int *>(ptri);
 			*src = XPGetWidgetProperty(id, xpProperty_ButtonState, NULL);
 		}
-		return 1;		
+		return 1;
 	}
-	
+
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
-		XPGetElementDefaultDimensions(xpElement_CheckBox, &width, &height, NULL);	
+		XPGetElementDefaultDimensions(xpElement_CheckBox, &width, &height, NULL);
 		XPGetWidgetDescriptor(id, buf, sizeof(buf));
 		XPLMGetFontDimensions(xplmFont_Basic, &cwidth, NULL, NULL);
 		width = max((size_t) width, 20 + cwidth * strlen(buf));
@@ -545,11 +545,11 @@ int XPWF_CheckBox_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			void (*func)(XPWidgetID) = reinterpret_cast<void (*)(XPWidgetID)>(ptri);
 			func(id);
-		}			
+		}
 		return 1;
 	}
-	
-	return parent(msg, id, p1, p2);	
+
+	return parent(msg, id, p1, p2);
 }
 
 int XPWF_RadioButton_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
@@ -573,7 +573,7 @@ int XPWF_RadioButton_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			int * src = reinterpret_cast<int *>(ptri);
 			XPSetWidgetProperty(id, xpProperty_ButtonState, (*src == my_enum) ? 1 : 0);
 		}
-		return 1;		
+		return 1;
 	}
 	if (msg == xpMsg_DataFromDialog)
 	{
@@ -585,7 +585,7 @@ int XPWF_RadioButton_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			if (XPGetWidgetProperty(id, xpProperty_ButtonState, NULL))
 				*src = my_enum;
 		}
-		return 1;		
+		return 1;
 	}
 	if (msg == xpMsg_ButtonStateChanged)
 	{
@@ -605,13 +605,13 @@ int XPWF_RadioButton_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			void (*func)(XPWidgetID) = reinterpret_cast<void (*)(XPWidgetID)>(ptri);
 			func(id);
-		}			
+		}
 		return 1;
 	}
-	
+
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
-		XPGetElementDefaultDimensions(xpElement_CheckBox, &width, &height, NULL);	
+		XPGetElementDefaultDimensions(xpElement_CheckBox, &width, &height, NULL);
 		XPGetWidgetDescriptor(id, buf, sizeof(buf));
 		XPLMGetFontDimensions(xplmFont_Basic, &cwidth, NULL, NULL);
 		width = max((size_t) width, 20 + cwidth * strlen(buf));
@@ -632,7 +632,7 @@ int XPWF_RadioButton_Int		(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		XPSetWidgetGeometry(id, l,t,l+width,t-height);
 		return 1;
 	}
-	return parent(msg, id, p1, p2);	
+	return parent(msg, id, p1, p2);
 }
 
 
@@ -662,7 +662,7 @@ int	XPWF_Popup_Int			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			*src = XPGetWidgetProperty(id, xpProperty_PopupCurrentItem, NULL);
 		}
 		return 1;
-	}	
+	}
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
 		char	buf[2048];
@@ -684,8 +684,8 @@ int	XPWF_Popup_Int			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		int		cw;
 		XPLMGetFontDimensions(xplmFont_Basic, &cw, NULL, NULL);
 		XPSetWidgetProperty(id, xpProperty_MinWidth, 35 + cw * max_num_chars);
-		return 1;	
-	} 
+		return 1;
+	}
 	if (msg == xpMsg_RecalcMinSizeV)
 	{
 		XPSetWidgetProperty(id, xpProperty_MinHeight, 20);
@@ -698,7 +698,7 @@ int	XPWF_Popup_Int			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		int 	l,t,r,b;
 		XPGetWidgetGeometry(id, &l,&t,&r,&b);
 		XPSetWidgetGeometry(id, l,t,l+width,t-height);
-		return 1;	
+		return 1;
 	}
 	if (msg == xpMessage_NewItemPicked)
 	{
@@ -707,10 +707,10 @@ int	XPWF_Popup_Int			(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			void (*func)(XPWidgetID) = reinterpret_cast<void (*)(XPWidgetID)>(ptri);
 			func(id);
-		}			
+		}
 		return 1;
 	}
-	
+
 	return XSBPopupButtonProc(msg, id, p1, p2);
 }
 #endif
@@ -753,7 +753,7 @@ int	XPWF_Tabs_IntShowHide	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 				XPShowWidget(child);
 			else
 				XPHideWidget(child);
-		}	
+		}
 		if (msg == xpMsg_TabChanged)
 		{
 			int ptri = XPGetWidgetProperty(id, xpProperty_NotifyPtr, NULL);
@@ -761,7 +761,7 @@ int	XPWF_Tabs_IntShowHide	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 			{
 				void (*func)(XPWidgetID) = reinterpret_cast<void (*)(XPWidgetID)>(ptri);
 				func(id);
-			}			
+			}
 		}
 		return 1;
 	}
@@ -778,7 +778,7 @@ int	XPWF_Tabs_IntShowHide	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			child = XPGetNthChildWidget(id, n);
 			child_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
-			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);							
+			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);
 			localdim = XPLayout_GetMinimumWidth(0, child) + ml + mr;
 			dim = max(dim, localdim);
 		}
@@ -793,7 +793,7 @@ int	XPWF_Tabs_IntShowHide	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			child = XPGetNthChildWidget(id, n);
 			child_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
-			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);							
+			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);
 			localdim = XPLayout_GetMinimumHeight(0, child) + mt + mb;
 			dim = max(dim, localdim);
 		}
@@ -815,12 +815,12 @@ int	XPWF_Tabs_IntShowHide	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			child = XPGetNthChildWidget(id, n);
 			child_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
-			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);							
+			XPLayout_GetContainMargins(xpWidgetClass_Tab, child_type, ml, mt, mr, mb);
 			XPGetWidgetGeometry(child, &cl, &ct, &cr, &cb);
-			XPSetWidgetGeometry(child, dx+mr, dy-mt, dx+mr + (cr - cl), dy-mt - (ct - cb));			
+			XPSetWidgetGeometry(child, dx+mr, dy-mt, dx+mr + (cr - cl), dy-mt - (ct - cb));
 			XPLayout_Reshape(0, child, ideal_x-ml-mr, ideal_y-mt-mb);
 		}
-		return 1;		
+		return 1;
 	}
 	return XPTabProc(msg, id, p1, p2);
 }
@@ -836,7 +836,7 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	if (XPUFixedLayout(msg, id, p1, p2)) return 1;
 
 	int last_type = -1;
-	int	our_type = -1;		
+	int	our_type = -1;
 
 	int	vertical = XPGetWidgetProperty(id, xpProperty_RowColumnIsVertical, NULL);
 	int justH = XPGetWidgetProperty(id, xpProperty_JustifyH, NULL);
@@ -847,7 +847,7 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	int n;
 	int l, t, b, r, dx, dy, cl, ct, cb, cr;
 	int	ideal_x, ideal_y;
-	
+
 	if (msg == xpMsg_Create)
 		XPSetWidgetProperty(id, xpProperty_WidgetClass, xpWidgetClass_RowColumn);
 
@@ -865,8 +865,8 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		glEnd();
 		return 1;
 	}
-#endif	
-	
+#endif
+
 	if (msg == xpMsg_RecalcMinSizeH)
 	{
 		child_count = XPCountChildWidgets(id);
@@ -875,7 +875,7 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			child = XPGetNthChildWidget(id, n);
 			last_type = our_type;
-			our_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);			
+			our_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
 			localdim = XPLayout_GetMinimumWidth(0, child);
 			if (vertical)
 				dim = max(dim, localdim);
@@ -896,7 +896,7 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		{
 			child = XPGetNthChildWidget(id, n);
 			last_type = our_type;
-			our_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);			
+			our_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
 			localdim = XPLayout_GetMinimumHeight(0, child);
 			if (vertical) {
 				dim += localdim;
@@ -933,20 +933,20 @@ int	XPWF_RowColumn	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 					dx += XPLayout_GetMinimumMarginH(last_type, our_type);
 			}
 
-			
+
 			XPGetWidgetGeometry(child, &cl, &ct, &cr, &cb);
-			XPSetWidgetGeometry(child, dx, dy, dx + (cr - cl), dy - (ct - cb));			
+			XPSetWidgetGeometry(child, dx, dy, dx + (cr - cl), dy - (ct - cb));
 			XPLayout_Reshape(0, child, vertical ? ideal_x : -1, vertical ? -1 : ideal_y);
 			XPGetWidgetGeometry(child, &cl, &ct, &cr, &cb);
-			
+
 			if (vertical) {
 				dy -= (ct - cb);
 			} else {
-				dx += (cr - cl); 
+				dx += (cr - cl);
 			}
 		}
-		return 1;		
-	}	
+		return 1;
+	}
 	return 0;
 }
 
@@ -976,7 +976,7 @@ int	XPWF_DialogBox	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 
 #if DEBUG_SHOW_ROWCOLUMNS
 	if (msg == xpMsg_Draw)
-	{		
+	{
 		int	l,t,r,b;
 		parent(msg,id,p1,p2);
 		XPGetWidgetGeometry(id, &l,&t,&r,&b);
@@ -988,11 +988,11 @@ int	XPWF_DialogBox	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		glVertex2i(l,t);
 		glVertex2i(r,t);
 		glVertex2i(r,b);
-		glEnd();	
+		glEnd();
 		return 1;
 	}
-#endif	
-	
+#endif
+
 	if (msg == xpMsg_Create)
 		XPSetWidgetProperty(id, xpProperty_WidgetClass, xpWidgetClass_Dialog);
 
@@ -1024,14 +1024,14 @@ int	XPWF_DialogBox	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		int meX = XPLayout_GetMinimumWidth(xpWidgetClass_Dialog, id);
 		int meY = XPLayout_GetMinimumHeight(xpWidgetClass_Dialog, id);
 		XPLayout_Reshape(xpWidgetClass_Dialog, id, meX, meY);
-		
-		XPSendMessageToWidget(id, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);		
+
+		XPSendMessageToWidget(id, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);
 		return 1;
 	}
 	if (msg == xpMsg_Hidden)
 	{
 		// Ben says: WTF was I thinking?!?  This is not what we want to do!!
-//		XPSendMessageToWidget(id, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);		
+//		XPSendMessageToWidget(id, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);
 		return 1;
 	}
 	if (msg == xpMsg_RecalcMinSizeH)
@@ -1048,10 +1048,10 @@ int	XPWF_DialogBox	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 	if (msg == xpMsg_RecalcMinSizeV)
 	{
 		XPWidgetID child = XPGetNthChildWidget(id, 0);
-		if (child) 
+		if (child)
 		{
 			int child_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
-			XPLayout_GetContainMargins(xpWidgetClass_Dialog, child_type, ml, mt, mr, mb);		
+			XPLayout_GetContainMargins(xpWidgetClass_Dialog, child_type, ml, mt, mr, mb);
 			XPSetWidgetProperty(id, xpProperty_MinHeight, XPLayout_GetMinimumHeight(0, child) + mt + mb);
 		}
 		return 1;
@@ -1062,7 +1062,7 @@ int	XPWF_DialogBox	(XPWidgetMessage msg, XPWidgetID id,long p1,long p2)
 		if (child)
 		{
 			int child_type = XPGetWidgetProperty(child, xpProperty_WidgetClass, 0);
-			XPLayout_GetContainMargins(xpWidgetClass_Dialog, child_type, ml, mt, mr, mb);				
+			XPLayout_GetContainMargins(xpWidgetClass_Dialog, child_type, ml, mt, mr, mb);
 
 			int width = XPGetWidgetProperty(id, xpProperty_MinWidth, 0) - ml - mr;
 			int height = XPGetWidgetProperty(id, xpProperty_MinHeight, 0) - mt - mb;
@@ -1096,7 +1096,7 @@ XPWidgetID		XPCreateWidgetLayout(int dummy, ...)
 {
 	va_list		args;
 	va_start	(args, dummy);
-	
+
 	char *				title;
 	void *				func_ptr;
 	XPWidgetID			new_widget = NULL;
@@ -1108,12 +1108,12 @@ XPWidgetID		XPCreateWidgetLayout(int dummy, ...)
 		int token = va_arg(args, int);
 		switch(token) {
 		case XP_TAG:
-			prop = va_arg(args, int);		
+			prop = va_arg(args, int);
 			if (new_widget)
 				XPSetWidgetProperty(new_widget, xpProperty_DialogTag, prop);
 			break;
 		case XP_NOTIFY:
-			func_ptr = va_arg(args, void *);		
+			func_ptr = va_arg(args, void *);
 			if (new_widget)
 				XPSetWidgetProperty(new_widget, xpProperty_NotifyPtr, (int) func_ptr);
 			break;
@@ -1130,15 +1130,15 @@ XPWidgetID		XPCreateWidgetLayout(int dummy, ...)
 			prop = va_arg(args, int);
 			XPSetWidgetProperty(new_widget, xpProperty_DialogSelfDestroy, prop);
 			func_ptr = va_arg(args, void *);
-			XPSetWidgetProperty(new_widget, xpProperty_DialogDismissCB, (int) func_ptr);			
+			XPSetWidgetProperty(new_widget, xpProperty_DialogDismissCB, (int) func_ptr);
 			widget_stack.push_back(new_widget);
 			break;
-		case XP_ROW:			
+		case XP_ROW:
 		case XP_COLUMN:
 			new_widget = XPCreateCustomWidget(50, 550, 100, 500, 1, "", 0, widget_stack.back(), XPWF_RowColumn);
 			if (token == XP_COLUMN)	XPSetWidgetProperty(new_widget, xpProperty_RowColumnIsVertical, 1);
 			widget_stack.push_back(new_widget);
-			break;		
+			break;
 		case XP_END:
 			if (widget_stack.size() <= 1)					done = true;
 			else											widget_stack.pop_back();
@@ -1172,11 +1172,11 @@ XPWidgetID		XPCreateWidgetLayout(int dummy, ...)
 			}
 			XPSetWidgetProperty(new_widget, xpProperty_MaxCharacters, prop);
 			prop = va_arg(args, int);				// max len
-			XPSetWidgetProperty(new_widget, xpProperty_FieldVisChars, prop);			
+			XPSetWidgetProperty(new_widget, xpProperty_FieldVisChars, prop);
 			if (token == XP_EDIT_FLOAT)
 			{
 				prop = va_arg(args, int);				// precision
-				XPSetWidgetProperty(new_widget, xpProperty_FieldPrecision, prop);			
+				XPSetWidgetProperty(new_widget, xpProperty_FieldPrecision, prop);
 			}
 			func_ptr = va_arg(args, void *);		// data ptr
 			XPSetWidgetProperty(new_widget, xpProperty_DataPtr, (int) func_ptr);
@@ -1237,14 +1237,14 @@ void			XPDataFromItem(XPWidgetID dialog, int tag)
 {
 	XPWidgetID who = XPFindWidgetByTag(dialog, tag);
 	if (who)
-		XPSendMessageToWidget(who, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);		
+		XPSendMessageToWidget(who, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);
 }
 
 void			XPDataToItem(XPWidgetID dialog, int tag)
 {
 	XPWidgetID who = XPFindWidgetByTag(dialog, tag);
 	if (who)
-		XPSendMessageToWidget(who, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);		
+		XPSendMessageToWidget(who, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);
 }
 
 void			XPEnableByTag(XPWidgetID dialog, int tag, int enable)
@@ -1258,13 +1258,13 @@ void			XPInitDefaultMargins(void)
 {
 	// Basic rule: 20 pixel title bar on thetop of windows - make extra room for it!
 	XPLayout_RegisterSpecialMarginsContains(xpWidgetClass_Dialog, 0,					10, 30, 10, 10);
-	
+
 	// Basic rule: 28 pixels of extra room for the etab bar on top of tabs.
 	XPLayout_RegisterSpecialMarginsContains(xpWidgetClass_Tab, 0,						10, 38, 10, 10);
-	
+
 	// Special case: when a tab is inside a dialog box, remove the side margins and cheat on the top.
 	XPLayout_RegisterSpecialMarginsContains(xpWidgetClass_Dialog, xpWidgetClass_Tab, 	0, 25, 0, 0);
-	
+
 	// Special case: when tabs are nested, remove the side margins and cheat on the top.
 	XPLayout_RegisterSpecialMarginsContains(xpWidgetClass_Tab, xpWidgetClass_Tab, 		0, 35, 0, 0);
 }

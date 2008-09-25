@@ -60,11 +60,11 @@ public:
 
        // postfix only
       Iterator& operator ++(int) { pointer = pointer->next; return *this; }
-      Iterator& operator --(int) { pointer = pointer->prev; return *this; } 
+      Iterator& operator --(int) { pointer = pointer->prev; return *this; }
       Point3d* getPoint() { return pointer->p; }
 
        // remove current node
-      void remove( )      { 
+      void remove( )      {
           PointNode* temp = pointer;
           pointer->next->prev = pointer->prev;
           pointer->prev->next = pointer->next;
@@ -80,7 +80,7 @@ public:
   // initialize given a triangle
   // not included, use Polygon3d::toPolygon() instead
   //Polygon3d(const Triangle3d& T);
-  
+
 
 
  //copy constructor
@@ -94,7 +94,7 @@ public:
 
    // view a polygon as a surface
   virtual int dim() const { return 2; }
-   
+
   int getSize() const { return size; }
 
   Iterator getIterator() { return Iterator(headN); }
@@ -102,14 +102,14 @@ public:
   bool searchPoint( const Point3d& p ) const;
   Point3d* getPoint( int index ) const;
    // append to the end of list
-  void addPoint( const Point3d& p );  
+  void addPoint( const Point3d& p );
 
    // remove point at given position
   void removePoint( int index );
    // return false if point doesn't exist
   bool removePoint( const Point3d& p );
   void removeAllPoints();
-  
+
    // get next point of p
    // return NULL if p doesn't exist
   Point3d* nextPoint( const Point3d& p ) const;
@@ -128,20 +128,20 @@ public:
 
    // verify if polygon is valid
   bool verify();
-   
-   // test coplanarity 
+
+   // test coplanarity
   bool isCoplanar( const Point3d& p ) const;
-  bool isCoplanar( const Segment3d& s )  const { 
+  bool isCoplanar( const Segment3d& s )  const {
          return isCoplanar(s.startPt()) && isCoplanar(s.stopPt()); }
-  bool isCoplanar( const Line3d& l )     const { 
+  bool isCoplanar( const Line3d& l )     const {
          return isCoplanar(l.startPt()) && isCoplanar(l.stopPt()); }
 
   bool isCoplanar( const Plane3d& pl ) const;
 
    // test if p is on any edge
   bool isOnEdge( const Point3d& p ) const;
- 
-protected:  
+
+protected:
   void freeMemory();      // delete the point list
 
    // copy point list from other polygon
@@ -149,11 +149,11 @@ protected:
   void copy( const Polygon3d& plg );
 
   /************************************************************
-   *   I/O 
+   *   I/O
    ************************************************************/
 
   friend std::ostream& operator<<(std::ostream& in, const Polygon3d& plg);
-  
+
 }; //class Polygon3d
 
 #endif

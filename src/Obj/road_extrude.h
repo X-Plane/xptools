@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -72,7 +72,7 @@ struct RoadDef_t {
 
 	};
 
-	typedef vector<SegPart> SegVector;	
+	typedef vector<SegPart> SegVector;
 
 	struct WireSpec {
 
@@ -80,7 +80,7 @@ struct RoadDef_t {
 
 		float	dy;			// Height in meters
 
-		float	droop_rat;	
+		float	droop_rat;
 
 		float	min_dis;	// meters
 
@@ -144,7 +144,7 @@ struct RoadDef_t {
 
 	RoadTypeMap		road_types;
 
-	
+
 
 	bool	ReadFromDef(const char * inFile);
 
@@ -218,7 +218,7 @@ public:
 
 
 
-	// These 2-d arrays will contain all of the finished junctions 
+	// These 2-d arrays will contain all of the finished junctions
 
 	// and chains, in buckets.
 
@@ -226,7 +226,7 @@ public:
 
 //	RoadJunctionVector	final_junctions[ROAD_SECTIONS][ROAD_SECTIONS];
 
-	
+
 
 	/************** INCREMENTAL CREATION API ****************/
 
@@ -286,11 +286,11 @@ public:
 
 						float			z2);
 
-						
 
 
 
-	/************** PREALLOCATION API ****************/						
+
+	/************** PREALLOCATION API ****************/
 
 
 
@@ -332,7 +332,7 @@ public:
 
 						RoadChain_t *	inChain,
 
-						vector<float>&	ioVec);	
+						vector<float>&	ioVec);
 
 
 
@@ -340,15 +340,15 @@ public:
 
 	void			ProcessChainsPreallocated(void);
 
-						
-
-						
 
 
 
-	/************** RENDERING API ****************/												
 
-	
+
+
+	/************** RENDERING API ****************/
+
+
 
 	// This routine extrudes one section worth of stuff.
 
@@ -356,13 +356,13 @@ public:
 
 						int					tex_index,
 
-						const RoadDef_t&	defs, 
+						const RoadDef_t&	defs,
 
-						int					x_bucket, 
+						int					x_bucket,
 
-						int					y_bucket, 
+						int					y_bucket,
 
-						ExtrudeFunc_f		func, 
+						ExtrudeFunc_f		func,
 
 						ReceiveObj_f		objFunc,
 

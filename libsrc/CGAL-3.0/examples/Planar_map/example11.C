@@ -33,7 +33,7 @@ int main()
   // Create an instance of a Planar_map:
   Planar_map pm;
   X_monotone_curve_2 cv[5];
-  Planar_map::Halfedge_handle e[5];  
+  Planar_map::Halfedge_handle e[5];
 
   Point_2 a0(100, 0), a1(20, 50), a2(100, 100), a3(180, 50);
 
@@ -60,7 +60,7 @@ int main()
 
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
-  
+
   Pm_writer verbose_writer(std::cout, pm, true);
   CGAL::write_pm(pm, verbose_writer, std::cout);
 

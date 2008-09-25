@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -60,35 +60,35 @@ void DSFPrint_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Terrain Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Object Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Polygon Def: %s\n", inPartialPath);
-#endif	
+#endif
 }
 
 void DSFPrint_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Network Def: %s\n", inPartialPath);
-#endif		
+#endif
 }
 
 void DSFPrint_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Property %s=%s\n", inProp, inValue);
-#endif	
+#endif
 }
 
 static	int	dsf_print_depth = 0;
@@ -96,7 +96,7 @@ static	int	dsf_print_depth = 0;
 
 void DSFPrint_BeginPatch(
 				unsigned int	inTerrainType,
-				double 			inNearLOD, 
+				double 			inNearLOD,
 				double 			inFarLOD,
 				unsigned char	inFlags,
 				int				depth,
@@ -106,19 +106,19 @@ void DSFPrint_BeginPatch(
 #if PRINT_IT
 	fprintf(REF,"Begin patch terrain=%d,LOD=[%f-%f],flags=0x%02d,depth=%d\n",
 		inTerrainType, inNearLOD, inFarLOD, inFlags, depth);
-#endif	
-}				
+#endif
+}
 
 void DSFPrint_BeginPrimitive(int type, void * inRef)
 {
 #if CHECK_IT
 	sDSF_CheckType = type;
 	sDSF_VertNum = 0;
-#endif	
+#endif
 #if PRINT_IT
 	fprintf(REF, "  Primitive type=%d\n", type);
 #endif
-}	
+}
 
 void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 {
@@ -127,7 +127,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 	for (int n = 0; n < dsf_print_depth; ++n)
 		fprintf(REF, "%lf    ", inData[n]);
 	fprintf(REF, "\n");
-#endif	
+#endif
 	++sDSF_Tris;
 
 #if CHECK_IT
@@ -156,7 +156,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
 		break;
-		
+
 	case dsf_TriStrip:
 		if (sDSF_VertNum > 0)
 		{
@@ -180,7 +180,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
 		break;
-		
+
 	case dsf_TriFan:
 		if (sDSF_VertNum > 2)
 		{
@@ -200,14 +200,14 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 		{
 			sTri_SaveFirst[0] = inData[0];
 			sTri_SaveFirst[1] = inData[1];
-		}		
+		}
 		sTri_SaveLast[0] = inData[0];
 		sTri_SaveLast[1] = inData[1];
-		break;				
+		break;
 	}
-		
+
 	sDSF_VertNum++;
-#endif	
+#endif
 }
 
 void DSFPrint_EndPrimitive(
@@ -215,7 +215,7 @@ void DSFPrint_EndPrimitive(
 {
 #if PRINT_IT
 	fprintf(REF, "End of primitive.\n");
-#endif	
+#endif
 }
 
 
@@ -225,7 +225,7 @@ void DSFPrint_EndPatch(
 	++sDSF_Patches;
 #if PRINT_IT
 	fprintf(REF, "End of patch.\n");
-#endif	
+#endif
 }
 
 void DSFPrint_AddObject(
@@ -237,8 +237,8 @@ void DSFPrint_AddObject(
 #if PRINT_IT
 	fprintf(REF, "Got object type %d, loc %lf,%lf rotate %lf\n",
 		inObjectType, inCoordinates[0],inCoordinates[1],inRotation);
-#endif	
-	++sDSF_Objs;	
+#endif
+	++sDSF_Objs;
 }
 
 void DSFPrint_BeginSegment(
@@ -257,7 +257,7 @@ void DSFPrint_BeginSegment(
 		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
 		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
-#endif	
+#endif
 }
 
 void DSFPrint_AddSegmentShapePoint(
@@ -271,7 +271,7 @@ void DSFPrint_AddSegmentShapePoint(
 		fprintf(REF,"       %f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
 		fprintf(REF,"       %f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
-#endif	
+#endif
 }
 
 void DSFPrint_EndSegment(
@@ -285,9 +285,9 @@ void DSFPrint_EndSegment(
 	if (inCurved)
 		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 	else
-		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);	
-#endif	
-}				
+		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+#endif
+}
 
 void DSFPrint_BeginPolygon(
 				unsigned int	inPolygonType,
@@ -296,14 +296,14 @@ void DSFPrint_BeginPolygon(
 {
 #if PRINT_IT
 	fprintf(REF,"Polygon type=%d, param=0x%04x\n", inPolygonType, (int) inParam);
-#endif	
+#endif
 }
 void DSFPrint_BeginPolygonWinding(
 				void *			inRef)
 {
 #if PRINT_IT
 	fprintf(REF, "  Begin winding.\n");
-#endif	
+#endif
 }
 void DSFPrint_AddPolygonPoint(
 				double			inCoordinates[2],
@@ -311,22 +311,22 @@ void DSFPrint_AddPolygonPoint(
 {
 #if PRINT_IT
 	fprintf(REF, "  	%lf,%lf\n", inCoordinates[0],inCoordinates[1]);
-#endif	
-}		
+#endif
+}
 
 void DSFPrint_EndPolygonWinding(
 				void *			inRef)
 {
 #if PRINT_IT
 	fprintf(REF, "  End winding.\n");
-#endif	
+#endif
 }
 void DSFPrint_EndPolygon(
 				void *			inRef)
 {
 #if PRINT_IT
 	fprintf(REF, "End polygon.\n");
-#endif	
+#endif
 	++sDSF_Polys;
 }
 #undef REF
@@ -362,7 +362,7 @@ void	PrintDSFFile(const char * inPath, FILE * output)
 	callbacks.AddPolygonPoint_f = DSFPrint_AddPolygonPoint;
 	callbacks.EndPolygonWinding_f = DSFPrint_EndPolygonWinding;
 	callbacks.EndPolygon_f = DSFPrint_EndPolygon;
-#if USE_MEM_FILE	
+#if USE_MEM_FILE
 	int err = 0;
 	MFMemFile *	mf = MemFile_Open(inPath);
 	if (mf)
@@ -371,8 +371,8 @@ void	PrintDSFFile(const char * inPath, FILE * output)
 		MemFile_Close(mf);
 	}
 #else
-	int err = DSFReadFile(inPath, &callbacks, NULL, output);	
-#endif	
+	int err = DSFReadFile(inPath, &callbacks, NULL, output);
+#endif
 	fprintf(output,"Done - error = %d (%s) ", err, dsfErrorMessages[err]);
 	fprintf(output,"Patches=%d, Tris=%d, polys=%d, objs=%d ",
 				sDSF_Patches,sDSF_Tris / 3,sDSF_Polys,sDSF_Objs);

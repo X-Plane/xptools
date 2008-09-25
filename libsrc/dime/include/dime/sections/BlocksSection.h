@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: BlocksSection.h
  *
  *  This source file is part of DIME.
@@ -33,15 +33,15 @@
 #include <dime/sections/Section.h>
 #include <dime/util/Array.h>
 
-class DIME_DLL_API dimeBlocksSection : public dimeSection 
+class DIME_DLL_API dimeBlocksSection : public dimeSection
 {
 public:
   dimeBlocksSection(dimeMemHandler * const memhandler = NULL);
   virtual ~dimeBlocksSection();
-  
+
   virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
 public:
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
@@ -49,11 +49,11 @@ public:
   virtual int countRecords() const;
 
   void fixReferences(dimeModel * const model);
-  
+
   int getNumBlocks() const;
   class dimeBlock *getBlock(const int idx);
   void removeBlock(const int idx);
-  void insertBlock(dimeBlock * const block, const int idx = -1); 
+  void insertBlock(dimeBlock * const block, const int idx = -1);
 
 private:
   dimeArray <dimeBlock*> blocks;

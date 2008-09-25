@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_RATIONAL_ROTATION_H
 #define CGAL_RATIONAL_ROTATION_H

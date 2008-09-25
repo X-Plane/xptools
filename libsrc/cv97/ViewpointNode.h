@@ -31,7 +31,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getJumpField();
-	
+
 	void setJump(bool value);
 	void setJump(int value);
 	bool getJump();
@@ -41,7 +41,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getFieldOfViewField();
-	
+
 	void setFieldOfView(float value);
 	float getFieldOfView();
 
@@ -50,7 +50,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFString *getDescriptionField();
-	
+
 	void setDescription(char *value);
 	char *getDescription();
 
@@ -78,10 +78,10 @@ public:
 	//	Add position
 	////////////////////////////////////////////////
 
-	void addPosition(float worldTranslation[3]); 
-	void addPosition(float worldx, float worldy, float worldz); 
-	void addPosition(float localTranslation[3], float frame[3][3]); 
-	void addPosition(float x, float y, float z, float frame[3][3]); 
+	void addPosition(float worldTranslation[3]);
+	void addPosition(float worldx, float worldy, float worldz);
+	void addPosition(float localTranslation[3], float frame[3][3]);
+	void addPosition(float x, float y, float z, float frame[3][3]);
 
 	////////////////////////////////////////////////
 	//	Add orientation
@@ -101,7 +101,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

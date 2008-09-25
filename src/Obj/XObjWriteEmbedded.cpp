@@ -55,24 +55,24 @@ inline void	bounding_sphere(
 		out_max_xyz[1] = max(out_max_xyz[1],p[1]);
 		out_max_xyz[2] = max(out_max_xyz[2],p[2]);
 	}
-	
+
 	out_sphere[0] = (out_min_xyz[0] + out_max_xyz[0]) * 0.5f;
 	out_sphere[1] = (out_min_xyz[1] + out_max_xyz[1]) * 0.5f;
 	out_sphere[2] = (out_min_xyz[2] + out_max_xyz[2]) * 0.5f;
 	out_sphere[3] = fltmax3(
 						out_max_xyz[0]-out_min_xyz[0],
-						out_max_xyz[1]-out_min_xyz[1],	
+						out_max_xyz[1]-out_min_xyz[1],
 						out_max_xyz[2]-out_min_xyz[2]) * 0.5;
 
 	p = pts_start;
 	for(n = 0; n < pts_count; ++n, p += pts_stride)
 	{
-		float	dV[3] = { 
+		float	dV[3] = {
 						p[0] - out_sphere[0],
 						p[1] - out_sphere[1],
 						p[2] - out_sphere[2] };
 		float	dist2 = pythag_sqr(dV[0],dV[1], dV[2]);
-		
+
 		if(dist2 > sqr(out_sphere[3]))
 		{
 			float dist = sqrt(dist2);
@@ -83,7 +83,7 @@ inline void	bounding_sphere(
 			out_sphere[2] += (dV[2] * scale);
 		}
 	}
-}	
+}
 
 // This routine takes two spheres.  Cur is the sphere we want to grow, and add is the sphere that we are adding to  it.
 // cur will become bigger such that add is fully contained in cur.  We try to grow cur as little as possible.
@@ -95,11 +95,11 @@ inline void grow_sphere(float cur[4], const float add[4])
 	if			(add[3]< 0.0)return;	// if the size is 0, we cannot add it.
 
 	// Quick exit: old sphere is gone -- use new.
-	if (cur[3] < 0.0) { 
-		cur[0] = add[0]; 
-		cur[1] = add[1]; 
-		cur[2] = add[2]; 
-		cur[3] = add[3]; 
+	if (cur[3] < 0.0) {
+		cur[0] = add[0];
+		cur[1] = add[1];
+		cur[2] = add[2];
+		cur[3] = add[3];
 		return;
 	}
 
@@ -109,9 +109,9 @@ inline void grow_sphere(float cur[4], const float add[4])
 	{
 		if (cur[3] >= add[3]) return;	// Old sphere is bigger - we win
 		cur[0] = add[0]; 				// Use the new sphere and bail
-		cur[1] = add[1]; 
-		cur[2] = add[2]; 
-		cur[3] = add[3]; 
+		cur[1] = add[1];
+		cur[2] = add[2];
+		cur[3] = add[3];
 	 	return;
 	}
 
@@ -121,7 +121,7 @@ inline void grow_sphere(float cur[4], const float add[4])
 
 	double	old_r[3] = { to_new[0] * -cur[3], to_new[1] * -cur[3], to_new[2] * -cur[3] };
 	double	new_r[3] = { to_new[0] *  add[3], to_new[1] *  add[3], to_new[2] *  add[3] };
-	
+
 	double	p1[3] = { add[0] + new_r[0], add[1] + new_r[1], add[2] + new_r[2] };
 	double	p2[3] = { cur[0] + old_r[0], cur[1] + old_r[1], cur[2] + old_r[2] };
 
@@ -129,9 +129,9 @@ inline void grow_sphere(float cur[4], const float add[4])
 	cur[1] = (p1[1]+p2[1])*0.5;
 	cur[2] = (p1[2]+p2[2])*0.5;
 	cur[3] = pythag(p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2])*0.5 + 0.1;	// add 0.1 to counter any roundoff error that would give us a dev-assert below! this will give us enough round-off error buffer to handle numbers along the lines of 800,000 m from the origin, or 2.4 million feet up
-	// What the heck is this?!?  +0.1  Here's the problem: enough rounding happens that the "Exact" new large sphere that 
-	// merges the two inputs might not be big enough to really contain it..it might be 0.000000001 to small. :-(  So - we fudge and 
-	// grow the sphere by an extra 0.1 to hedge rounding error.  Also do a quick check to see if we're definitely going to fail 
+	// What the heck is this?!?  +0.1  Here's the problem: enough rounding happens that the "Exact" new large sphere that
+	// merges the two inputs might not be big enough to really contain it..it might be 0.000000001 to small. :-(  So - we fudge and
+	// grow the sphere by an extra 0.1 to hedge rounding error.  Also do a quick check to see if we're definitely going to fail
 	// containment tests later... that would mean our fudge factor isn't large enough.
 	Assert(sqr(cur[3] - add[3]) >= pythag_sqr(cur[0]-add[0] , cur[1]-add[1] , cur[2]-add[2]) && cur[3] >= add[3]);
 }
@@ -144,7 +144,7 @@ struct named_light_info_t {
 	const char *	name;
 	int				custom;
 	const char *	dataref;
-};	
+};
 
 static named_light_info_t k_light_info[] = {
 	"airplane_landing",			1,		"sim/graphics/animation/lights/airplane_landing_light",
@@ -186,7 +186,7 @@ struct	mem_block {
 
  	 mem_block(int len) { begin = (unsigned char *) malloc(len); end = begin; lim = end + len; }
 	~mem_block() { free(begin); }
-	
+
 	int len() { return end - begin; }
 	void *	accum_mem(void * mem, int len)
 	{
@@ -196,7 +196,7 @@ struct	mem_block {
 		end += len;
 		return p;
 	}
-	
+
 	template <class T>
 	T *		accum(T v) { return (T *) accum_mem(&v,sizeof(T)); }
 };
@@ -223,7 +223,7 @@ enum {
 	setup_lines=3,
 	setup_no_tex=4,
 	draw_lines=5,		// unsigned short offset, unsigned short count
-	
+
 	attr_lod=6,			// float near, float far, ushort: bytes to skip
 
 	attr_shiny=7,		// float ratio
@@ -249,10 +249,10 @@ enum {
 	attr_light_bulk=23,		// ucahr light idx ushort count, float [xyz] x count
 
 	cmd_stop=24
-	
-};	
-	
-	
+
+};
+
+
 
 struct	embed_props_t {
 	volatile int	ref_count;
@@ -303,7 +303,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 
 	float max_c = 0;
 	float max_t = 0;
-	
+
 	for(int n = 0; n < inObj.geo_tri.count(); ++n)
 	{
 		const float * xyz_st = inObj.geo_tri.get(n);
@@ -313,7 +313,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		max_t = max(max_t,fabsf(xyz_st[6]));
 		max_t = max(max_t,fabsf(xyz_st[7]));
 	}
-	
+
 	for(int n = 0; n < inObj.geo_lines.count(); ++n)
 	{
 		const float * xyz_rgb = inObj.geo_lines.get(n);
@@ -321,7 +321,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		max_c = max(max_c,fabsf(xyz_rgb[1]));
 		max_c = max(max_c,fabsf(xyz_rgb[2]));
 	}
-	
+
 	for(vector<XObjLOD8>::const_iterator L = inObj.lods.begin(); L != inObj.lods.end(); ++L)
 	for(vector<XObjCmd8>::const_iterator C = L->cmds.begin(); C != L->cmds.end(); ++C)
 	if(C->cmd == obj8_LightNamed)
@@ -330,8 +330,8 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		max_c = max(max_c,fabsf(xyz[0]));
 		max_c = max(max_c,fabsf(xyz[1]));
 		max_c = max(max_c,fabsf(xyz[2]));
-	}	
-	
+	}
+
 	max_t = ceil(max_t);
 	float scale_up_vert = 32766.0 / max_c;	// off by one to make sure round-up doesn't exceed max!
 	float scale_up_tex = 512.0;
@@ -350,19 +350,19 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	embed_props_t	embed_props;
 	embed_props.layer_group = 1950;
 	embed_props.ref_count = 0;
-	embed_props.tex_day = accum_str(str,inObj.texture);	
+	embed_props.tex_day = accum_str(str,inObj.texture);
 	if(inObj.texture_lit.empty())
 		embed_props.tex_lit = 0;
 	else
 		{embed_props.tex_lit = accum_str(str,inObj.texture_lit);}
 
-	embed_props.cull_xyzr[0] = 
+	embed_props.cull_xyzr[0] =
 	embed_props.cull_xyzr[1] =
 	embed_props.cull_xyzr[2] =
 	embed_props.cull_xyzr[3] = 0;
-	
+
 	float min_xyz[3], max_xyz[3];
-	
+
 	Assert(inObj.geo_tri.count() > 0);
 
 	bounding_sphere(inObj.geo_tri.get(0),inObj.geo_tri.count(),8,min_xyz,max_xyz,embed_props.cull_xyzr);
@@ -388,7 +388,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	}
 
 	embed_props.max_lod = inObj.lods.back().lod_far;
-	
+
 	if(embed_props.max_lod <= 0)
 	{
 		float diff_x=max_xyz[0]-min_xyz[0];
@@ -409,22 +409,22 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			// Take the biggest of the lesser radii, that's the one we need to worry about.
 			float radius=0.5*fltmax3(lesser_front,lesser_top,lesser_side);
 			float tan_semi_width=tan(45.0*0.5*DEG2RAD);
-			
+
 			// BEN SAYS: we used to have the current FOV put in here but this is WRONG.  Remember that objs with the LOD attribute
 			// contain a hard-coded LOD - that LOD dist doesn't change with FOV.  So the renderer has to compensate, and that would
-			// happen in 1_terrain.  So we should generate a DEFALT LOD based on a "typical" 45 degree FOV here, not use the ren 
+			// happen in 1_terrain.  So we should generate a DEFALT LOD based on a "typical" 45 degree FOV here, not use the ren
 			// settings.
 
-			// What's this calc?  Well, at a 90 degree FOV, at 512 meters (half a screen width) from the object, 
-			// 1 meter is equivalent to 1 pixel. So at "radius" times that distance, the whole object is one pixel. 
+			// What's this calc?  Well, at a 90 degree FOV, at 512 meters (half a screen width) from the object,
+			// 1 meter is equivalent to 1 pixel. So at "radius" times that distance, the whole object is one pixel.
 			// We divide by the tangent of the FOV to do this for any FOV.
 			float LOD_dis=480*0.5*radius/tan_semi_width*1.5;	// throw on a 50% fudge-factor there... i can see things popping if i dont.. half a pixels still aliases between pixels
 //			if (!new_obj->lites.empty())
 //				LOD_dis = fltmax2(LOD_dis, 16000);
-				embed_props.max_lod=LOD_dis;						
+				embed_props.max_lod=LOD_dis;
 		}
 	}
-	
+
 	embed_props.scale_vert= 1.0 / scale_up_vert;
 	embed_props.scale_tex = 1.0 / scale_up_tex;
 	embed_props.line_off = 0;
@@ -432,7 +432,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	embed_props.vbo_geo = 0;
 	embed_props.vbo_idx = 0;
 	embed_props.light_info = NULL;
-	embed_props.dref_info = NULL;	
+	embed_props.dref_info = NULL;
 	if(USE_SHORT)
 	{
 		embed_props.geo_type = 0x1402;
@@ -445,7 +445,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 	// BUILD VBOS
 	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-	
+
 	// build index list
 	vector<unsigned short>	idx;
 	for(vector<int>::const_iterator I = inObj.indices.begin(); I != inObj.indices.end(); ++I)
@@ -470,7 +470,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			geo_short.push_back(xyz_st[4] * scale_up_nrm);
 			geo_short.push_back(xyz_st[5] * scale_up_nrm);
 			geo_short.push_back(xyz_st[6] * scale_up_tex);
-			geo_short.push_back(xyz_st[7] * scale_up_tex);	
+			geo_short.push_back(xyz_st[7] * scale_up_tex);
 		}
 		embed_props.line_off = geo_short.size() * 2;
 	} else {
@@ -484,16 +484,16 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			geo_float.push_back(xyz_st[4] * scale_up_nrm);
 			geo_float.push_back(xyz_st[5] * scale_up_nrm);
 			geo_float.push_back(xyz_st[6] * scale_up_tex);
-			geo_float.push_back(xyz_st[7] * scale_up_tex);	
+			geo_float.push_back(xyz_st[7] * scale_up_tex);
 		}
 		embed_props.line_off = geo_float.size() * 4;
 	}
-	
+
 	for(int n = 0; n < inObj.geo_lines.count(); ++n)
 	{
 		const float * xyz_rgb = inObj.geo_lines.get(n);
 		if(USE_SHORT)
-		{		
+		{
 			geo_short.push_back(xyz_rgb[0] * scale_up_vert);
 			geo_short.push_back(xyz_rgb[1] * scale_up_vert);
 			geo_short.push_back(xyz_rgb[2] * scale_up_vert);
@@ -502,11 +502,11 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			geo_float.push_back(xyz_rgb[1] * scale_up_vert);
 			geo_float.push_back(xyz_rgb[2] * scale_up_vert);
 		}
-		
-		unsigned char rgba[4] = { 
-				xyz_rgb[0] * 255.0, 
-				xyz_rgb[1] * 255.0, 
-				xyz_rgb[2] * 255.0, 
+
+		unsigned char rgba[4] = {
+				xyz_rgb[0] * 255.0,
+				xyz_rgb[1] * 255.0,
+				xyz_rgb[2] * 255.0,
 							 255    };
 
 		// color data - always 4-byte RGBA, no matter geo format!  Pack it into two shorts or one float.
@@ -527,7 +527,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	unsigned char * last_lod = 0;
 	unsigned short * patch_lod;
 	mem_block	cmds(1024*1024*4);	// 4 MB - if we have more than that on iphone, I will stab myself!
-	
+
 	enum { no_mode, line_mode, light_mode, tri_mode };
 	int vbo_mode = no_mode;
 	int tex_mode = tri_mode;
@@ -535,32 +535,32 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	int hard_start = 0;
 	int hard_stop = 0;
 	int is_hard = false;
-	
+
 	int has_poly_os = 0;
 	int has_no_blend = 0;
 	int has_no_cull = 0;
 	int has_emissive = 0;
 	int has_shiny = 0;
-	
+
 	for(vector<XObjLOD8>::const_iterator L = inObj.lods.begin(); L != inObj.lods.end(); ++L)
 	{
 		is_hard = false;
 		unsigned char * this_lod = cmds.accum<unsigned char>(attr_lod);
-		
+
 		if(patch_lod && last_lod)
 			*patch_lod = this_lod - last_lod;
 		last_lod = this_lod;
-		
+
 		cmds.accum<float>(L->lod_near);
 		if(L->lod_far <= 0)
 		{
 			Assert(inObj.lods.size() == 1);
 			cmds.accum<float>(embed_props.max_lod);
 		}
-		else		
+		else
 			cmds.accum<float>(L->lod_far);
 		patch_lod = cmds.accum<unsigned short>(0);
-		
+
 		for(vector<XObjCmd8>::const_iterator C = L->cmds.begin(); C != L->cmds.end(); ++C)
 		switch(C->cmd) {
 		case attr_Shade_Flat:
@@ -583,16 +583,16 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			cmds.accum<unsigned char>(attr_shiny);
 			cmds.accum<float>(C->params[0]);
 			has_shiny= (C->params[0] > 0) ? 1 : 0;
-			break;		
+			break;
 		case attr_No_Depth:
 		case attr_Depth:
 			Assert(!"Depth-write disable is not supported.\n");
 			break;
 		case attr_LOD:
 			Assert(!"Unexpected LOD command.\n");
-			break;		
+			break;
 		case attr_Reset:
-			if(has_shiny) 
+			if(has_shiny)
 			{
 				cmds.accum<unsigned char>(attr_shiny);
 				cmds.accum<float>(0.0f);
@@ -610,12 +610,12 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			{
 				cmds.accum<unsigned char>(attr_poly_offset);
 				cmds.accum<unsigned char>(0);
-				has_poly_os = 0;				
+				has_poly_os = 0;
 			}
 			if(has_no_blend)
 			{
 				cmds.accum<unsigned char>(attr_blend);
-				has_no_blend = 0;			
+				has_no_blend = 0;
 			}
 			if(has_no_cull)
 			{
@@ -659,7 +659,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 					Assert(!"ERROR: hard start and stop regions are discontiguous!");
 				hard_start = min(s,hard_start);
 				hard_stop = max(e,hard_stop);
-			}			
+			}
 			break;
 		case obj8_Lines:
 			if(tex_mode != line_mode) cmds.accum<unsigned char>(setup_no_tex);
@@ -674,7 +674,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			break;
 		case obj8_Lights:
 			Assert(!"Old RGB lights are not supported.\n");
-			break;	
+			break;
 		case attr_Tex_Normal:
 		case attr_Tex_Cockpit:
 			Assert(!"Cockpit texture is not supported.\n");
@@ -682,11 +682,11 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		case attr_No_Blend:
 			cmds.accum<unsigned char>(attr_no_blend);
 			cmds.accum<float>(C->params[0]);
-			has_no_blend = 1;			
+			has_no_blend = 1;
 			break;
 		case attr_Blend:
 			cmds.accum<unsigned char>(attr_blend);
-			has_no_blend = 0;			
+			has_no_blend = 0;
 			break;
 		case attr_Hard:
 			is_hard=true;
@@ -716,9 +716,9 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			}
 			cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 			Assert(str.size() < 256);
-			break;		
+			break;
 		case anim_Translate:
-			if (inObj.animation[C->idx_offset].keyframes.size() == 2 && 
+			if (inObj.animation[C->idx_offset].keyframes.size() == 2 &&
 				inObj.animation[C->idx_offset].keyframes[0].v[0] == inObj.animation[C->idx_offset].keyframes[1].v[0] &&
 				inObj.animation[C->idx_offset].keyframes[0].v[1] == inObj.animation[C->idx_offset].keyframes[1].v[1] &&
 				inObj.animation[C->idx_offset].keyframes[0].v[2] == inObj.animation[C->idx_offset].keyframes[1].v[2])
@@ -726,7 +726,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 				cmds.accum<unsigned char>(attr_translate_static);
 				cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].v[0] * scale_up_vert);
 				cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].v[1] * scale_up_vert);
-				cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].v[2] * scale_up_vert);				
+				cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].v[2] * scale_up_vert);
 			} else {
 				cmds.accum<unsigned char>(attr_translate);
 				cmds.accum<unsigned char>(inObj.animation[C->idx_offset].keyframes.size());
@@ -740,7 +740,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 				cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 				Assert(str.size() < 256);
 			}
-			break;		
+			break;
 		case anim_Hide:
 			Assert(inObj.animation[C->idx_offset].keyframes.size() == 2);
 			cmds.accum<unsigned char>(attr_hide);
@@ -769,8 +769,8 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 					++E;
 					if(custom)
 						break;
-				}				
-				if(custom)				
+				}
+				if(custom)
 				{
 					cmds.accum<unsigned char>(attr_light_named);
 					cmds.accum<unsigned char>(accum_str(str,k_light_info[light_from_name(C->name.c_str())].dataref));
@@ -815,7 +815,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			if(C->name == "light_objects"				 )	embed_props.layer_group = 1955 + C->params[0];
 			if(C->name == "cars"						 )	embed_props.layer_group = 1960 + C->params[0];
 			break;
-		case attr_Tex_Cockpit_Subregion:	
+		case attr_Tex_Cockpit_Subregion:
 			Assert(!"Cockpit textures are not supported..\n");
 			break;
 		default:
@@ -823,7 +823,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		}
 
 
-		if(has_shiny) 
+		if(has_shiny)
 		{
 			cmds.accum<unsigned char>(attr_shiny);
 			cmds.accum<float>(0.0f);
@@ -841,25 +841,25 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		{
 			cmds.accum<unsigned char>(attr_poly_offset);
 			cmds.accum<unsigned char>(0);
-			has_poly_os = 0;				
+			has_poly_os = 0;
 		}
 		if(has_no_blend)
 		{
 			cmds.accum<unsigned char>(attr_blend);
-			has_no_blend = 0;			
+			has_no_blend = 0;
 		}
 		if(has_no_cull)
 		{
 			cmds.accum<unsigned char>(attr_cull);
 			has_no_cull=0;
 		}
-		
+
 	}
 
 	embed_props.hard_verts = hard_stop;
 
 	if(tex_mode != tri_mode) cmds.accum<unsigned char>(setup_tex);
-	
+
 	unsigned char * end_cmd = cmds.accum<unsigned char>(cmd_stop);
 	if(patch_lod && last_lod)
 		*patch_lod = end_cmd - last_lod;
@@ -874,7 +874,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	mheader.magic[1] = 'B';
 	mheader.magic[2] = 'J';
 	mheader.magic[3] = 'e';
-	
+
 	mheader.prp_off = sizeof(mheader);
 	mheader.prp_len = sizeof(embed_props_t) + cmds.len();
 	mheader.geo_off = mheader.prp_off + mheader.prp_len;
@@ -886,22 +886,22 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	mheader.idx_len = idx.size() * 2;
 	mheader.str_off = mheader.idx_off + mheader.idx_len;
 	mheader.str_len = str.size();
-	
+
 	for(vector<string>::iterator s = str.begin(); s != str.end(); ++s)
 		mheader.str_len += s->length();
-	
-	
+
+
 	// Write out file!
-	
+
 	FILE * fi = fopen(inFile, "wb");
 	if(fi)
 	{
 		fwrite(&mheader,1,sizeof(mheader),fi);
 
 		fwrite(&embed_props,1,sizeof(embed_props),fi);
-		
+
 		fwrite(cmds.begin, 1, cmds.len(), fi);
-		
+
 		if(USE_SHORT)
 			fwrite(&*geo_short.begin(),sizeof(geo_short[0]),geo_short.size(),fi);
 		else
@@ -911,7 +911,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 
 		for(vector<string>::iterator s = str.begin(); s != str.end(); ++s)
 			fwrite(s->c_str(),1,s->length()+1,fi);
-		
+
 		fclose(fi);
 		return 1;
 	}

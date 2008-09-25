@@ -42,7 +42,7 @@ main( int argc, char** argv )
 
 
    long val;
- 
+
    assert( sadr.x().getBI32( val ) );
    assert( 1 == val );
 

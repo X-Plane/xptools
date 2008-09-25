@@ -123,7 +123,7 @@ int main( int argc, char **argv, char **envp )
 
 	    fclose( fin );
 	}
-	    
+
 	if( doDotC )
 	    fprintf( fout, "0 };\n" );
 

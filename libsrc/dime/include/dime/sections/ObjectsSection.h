@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: ObjectsSection.h
  *
  *  This source file is part of DIME.
@@ -41,9 +41,9 @@ public:
   dimeObjectsSection(dimeMemHandler * const memhandler = NULL);
   virtual ~dimeObjectsSection();
 
-  virtual const char *getSectionName() const; 
+  virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
   virtual int typeId() const;
@@ -52,8 +52,8 @@ public:
   int getNumObjects() const;
   class dimeObject *getObject(const int idx);
   void removeObject(const int idx);
-  void insertObject(dimeObject * const object, const int idx = -1); 
-  
+  void insertObject(dimeObject * const object, const int idx = -1);
+
 private:
   dimeArray <dimeObject*> objects;
 

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Circle.h
  *
  *  This source file is part of DIME.
@@ -63,10 +63,10 @@ public:
 				       dimeVec3f &extrusionDir,
 				       dxfdouble &thickness);
 
-protected:  
+protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
-			    dimeMemHandler * const memhandler);  
+			    dimeMemHandler * const memhandler);
 private:
   dimeVec3f center;
   dxfdouble radius;
@@ -79,19 +79,19 @@ dimeCircle::getCenter() const
   return this->center;
 }
 
-inline void 
+inline void
 dimeCircle::setCenter(const dimeVec3f &c)
 {
   this->center = c;
 }
 
-inline void 
+inline void
 dimeCircle::setRadius(const dxfdouble val)
 {
   this->radius = val;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeCircle::getRadius() const
 {
   return this->radius;

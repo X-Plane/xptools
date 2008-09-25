@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: LayerTable.h
  *
  *  This source file is part of DIME.
@@ -32,15 +32,15 @@
 
 #include <dime/tables/TableEntry.h>
 
-class DIME_DLL_API dimeLayerTable : public dimeTableEntry 
+class DIME_DLL_API dimeLayerTable : public dimeTableEntry
 {
 public:
   dimeLayerTable();
   virtual ~dimeLayerTable();
-  
+
   void setLayerName(const char * name, dimeMemHandler * const memhandler);
   const char * getLayerName(void) const;
-  
+
   void setColorNumber(const int16 colnum);
   int16 getColorNumber(void) const;
 

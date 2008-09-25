@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Solid.h
  *
  *  This source file is part of DIME.
@@ -51,15 +51,15 @@ public:
 			 const int index = 0) const;
   virtual const char *getEntityName() const;
   virtual int countRecords() const;
-  
+
 protected:
   virtual bool swapQuadCoords() const;
 
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
                             dimeMemHandler * const memhandler);
-  
-  
+
+
 private:
   dimeVec3f extrusionDir;
   dxfdouble thickness;

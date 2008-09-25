@@ -39,8 +39,8 @@
 #include <CGAL/Pm_point_location_base.h>
 #endif // CGAL_NO_PM_DEFAULT_POINT_LOCATION
 
-// for solving the dynamic cast in the copy constructor, 
-// these lines will be removed after writing 
+// for solving the dynamic cast in the copy constructor,
+// these lines will be removed after writing
 // copy construtor for point location.
 #include <CGAL/Pm_walk_along_line_point_location.h>
 #include <CGAL/Pm_naive_point_location.h>
@@ -61,24 +61,24 @@
 CGAL_BEGIN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////
-//      PLANAR_MAP_2   
+//      PLANAR_MAP_2
 
 /*! An object $pm$ of the class Planar_map_2<Dcel,Traits> is the planar
  * subdivision induced by a set of $x$-monotone curves such that no curve
  * intersects the interior of any other curve.
  */
-template <class PlanarMapDcel_2, class PlanarMapTraits_2> 
+template <class PlanarMapDcel_2, class PlanarMapTraits_2>
 class Planar_map_2 : public Topological_map<PlanarMapDcel_2>
 {
 public:
   typedef PlanarMapDcel_2                       Dcel;
   typedef PlanarMapTraits_2                     Traits;
-  typedef Planar_map_2<Dcel,Traits>             Planar_map;   
+  typedef Planar_map_2<Dcel,Traits>             Planar_map;
   typedef Planar_map_2<Dcel,Traits>             Self;
   typedef Pm_traits_wrap_2<Traits>              Traits_wrap;
   typedef typename Traits::X_monotone_curve_2            X_monotone_curve_2;
   typedef typename Traits::Point_2              Point_2;
-  
+
   typedef Topological_map<Dcel> TPM;
   typedef typename TPM::Vertex_iterator         Vertex_iterator;
   typedef typename TPM::Halfedge_iterator       Halfedge_iterator;
@@ -98,19 +98,19 @@ public:
   typedef typename TPM::Face_const_handle       Face_const_handle;
   typedef typename TPM::Halfedge_around_vertex_circulator
   Halfedge_around_vertex_circulator;
-  typedef typename TPM::Halfedge_around_vertex_const_circulator 
+  typedef typename TPM::Halfedge_around_vertex_const_circulator
   Halfedge_around_vertex_const_circulator;
   typedef typename TPM::Holes_iterator          Holes_iterator;
   typedef typename TPM::Holes_const_iterator    Holes_const_iterator;
-  typedef typename TPM::Ccb_halfedge_const_circulator 
+  typedef typename TPM::Ccb_halfedge_const_circulator
                                                 Ccb_halfedge_const_circulator;
   typedef typename TPM::Ccb_halfedge_circulator Ccb_halfedge_circulator;
-  
+
   typedef typename TPM::Size                    Size;
-  
+
   typedef Pm_point_location_base<Self>          Point_location_base;
   typedef Pm_bounding_box_base<Self>            Bounding_box_base;
-  
+
   typedef Pm_change_notification<Self>          Change_notification;
 
   // Obsolete, for backward compatability
@@ -121,7 +121,7 @@ public:
   // --------------------
 protected:
   typedef std::list<X_monotone_curve_2>        X_monotone_curve_2_container;
-  
+
   // sweep related types
   typedef Pm_less_point_xy<Point, Traits>      PointLessFunctor;
   typedef typename X_monotone_curve_2_container::iterator
@@ -130,24 +130,24 @@ protected:
                                                Point_plus;
   typedef std::map<Point_2, Point_plus, PointLessFunctor>
                                                PointContainer;
-  typedef typename PointContainer::value_type  PointContainer_value_type; 
+  typedef typename PointContainer::value_type  PointContainer_value_type;
   typedef typename PointContainer::iterator    PointContainer_iterator;
   typedef Pm_point_node<Traits, Point_plus>    Point_node;
   typedef std::map<Point_2,Point_node, PointLessFunctor >
                                                Event_queue;
   typedef typename Event_queue::value_type     Event_queue_value_type;
-  typedef typename Event_queue::iterator       Event_queue_iterator;  
+  typedef typename Event_queue::iterator       Event_queue_iterator;
   typedef Pm_curve_node<Traits, Point_plus>    Curve_node_;
-  typedef typename Point_node::Curve_node_iterator 
+  typedef typename Point_node::Curve_node_iterator
                                                Curve_node_iterator;
 
 public:
-  typedef enum { 
-    VERTEX = 1, 
-    EDGE, 
-    FACE , 
-    UNBOUNDED_VERTEX, 
-    UNBOUNDED_EDGE, 
+  typedef enum {
+    VERTEX = 1,
+    EDGE,
+    FACE ,
+    UNBOUNDED_VERTEX,
+    UNBOUNDED_EDGE,
     UNBOUNDED_FACE
   } Locate_type;
 
@@ -159,18 +159,18 @@ public:
 
   //! A destructor
   virtual ~Planar_map_2();
-    
+
   //! A constructor given a point-location parameter.
   Planar_map_2(Point_location_base * pl_ptr);
-  
+
   //! A constructor given a copy traits, point-location, and
   //! Bounding-box parameters.
-  Planar_map_2(const Traits & tr_, Point_location_base * pl_ptr, 
+  Planar_map_2(const Traits & tr_, Point_location_base * pl_ptr,
                Bounding_box_base * bb_ptr);
-  
+
   //! A constructor given a traits, point-location, and Bounding-box
   //! parameters. set NULLs for defaults
-  Planar_map_2(Traits_wrap * tr_ptr, Point_location_base * pl_ptr, 
+  Planar_map_2(Traits_wrap * tr_ptr, Point_location_base * pl_ptr,
                Bounding_box_base * bb_ptr);
 
   //! reads a planar map.
@@ -180,7 +180,7 @@ public:
   template <class Scanner>
   bool read(std::istream &, Scanner & scanner)
   {
-    clear(); 
+    clear();
     return scan_planar_map(scanner);
   }
 
@@ -194,7 +194,7 @@ public:
    * cv. That is, the curve source and target points coincide with the points
    * of the source and target vertices of the returned halfedge respectively.
    */
-  Halfedge_handle insert(const X_monotone_curve_2     & cv, 
+  Halfedge_handle insert(const X_monotone_curve_2     & cv,
                          Change_notification * en = NULL);
 
   //! iterates through a given range of curves, inserting the curves into the
@@ -206,7 +206,7 @@ public:
    * range.
    * \param end the input past-the-end iterator of the range.
    * \param en the notification class.
-   * \return a handle to a new halfedge directed in the same way as the last 
+   * \return a handle to a new halfedge directed in the same way as the last
    * curve in the range.
    * \todo probably doesn't need to return anything.
    */
@@ -227,9 +227,9 @@ public:
     PointLessFunctor event_queue_pred(traits);
     Event_queue event_queue(event_queue_pred);
     init_for_insert(begin, end, event_queue);
-    
+
     while ( !(event_queue.empty()) ) {
-      Event_queue_iterator event = event_queue.begin();  
+      Event_queue_iterator event = event_queue.begin();
       update_subdivision(event->second, en);
       event_queue.erase(event);
     }
@@ -250,8 +250,8 @@ public:
    * cv. That is, the curve source and target points coinside with the points
    * of the source and target vertices of the returned halfedge respectively.
    */
-  Halfedge_handle insert_in_face_interior(const X_monotone_curve_2 & cv, 
-                                          Face_handle f, 
+  Halfedge_handle insert_in_face_interior(const X_monotone_curve_2 & cv,
+                                          Face_handle f,
                                           Change_notification * en = NULL);
 
   //! inserts a given curve that one of its endpoints is held by the target
@@ -272,7 +272,7 @@ public:
    * \return a handle to a new halfedge that has v as its source vertex.
    */
   Halfedge_handle insert_from_vertex(const X_monotone_curve_2 & cv,
-                                     Halfedge_handle prev, 
+                                     Halfedge_handle prev,
                                      Change_notification * en = NULL
 #ifdef _MSC_VER
                                      ,int dummy = 0
@@ -292,17 +292,17 @@ public:
    * implies no notification on insertion.
    * \return a handle to a new halfedge that has v1 as its source vertex.
    */
-  Halfedge_handle insert_from_vertex(const X_monotone_curve_2 & cv, 
-                                     Vertex_handle v1, 
+  Halfedge_handle insert_from_vertex(const X_monotone_curve_2 & cv,
+                                     Vertex_handle v1,
                                      Change_notification * en = NULL);
   Halfedge_handle
-  non_intersecting_insert_from_vertex(const X_monotone_curve_2 & cv, 
-                                      Vertex_handle v1, 
+  non_intersecting_insert_from_vertex(const X_monotone_curve_2 & cv,
+                                      Vertex_handle v1,
                                       Change_notification * en = NULL);
 
   // Obsolete
-  Halfedge_handle insert_from_vertex(const X_monotone_curve_2 & cv, 
-                                     Vertex_handle v1, bool source, 
+  Halfedge_handle insert_from_vertex(const X_monotone_curve_2 & cv,
+                                     Vertex_handle v1, bool source,
                                      Change_notification * en = NULL);
 
   //! inserts a given curve that both of its endpoints are held by the target
@@ -328,7 +328,7 @@ public:
    * and target vertices respectively.
    */
   Halfedge_handle insert_at_vertices(const X_monotone_curve_2 & cv,
-                                     Halfedge_handle prev1, 
+                                     Halfedge_handle prev1,
                                      Halfedge_handle prev2,
                                      Change_notification * en = NULL
 #ifdef _MSC_VER
@@ -350,9 +350,9 @@ public:
    * \return a handle to a new halfedge that has v1 and v2 as its source and
    * target vertices respectively.
    */
-  Halfedge_handle insert_at_vertices(const X_monotone_curve_2 & cv, 
-                                     Vertex_handle v1, 
-                                     Vertex_handle v2, 
+  Halfedge_handle insert_at_vertices(const X_monotone_curve_2 & cv,
+                                     Vertex_handle v1,
+                                     Vertex_handle v2,
                                      Change_notification * en = NULL);
 
   //! is the planar map empty?
@@ -369,40 +369,40 @@ private:
    * connected, and -1 otherwise. Returns 0 if they are identical.
    */
   int path_length(Halfedge_const_handle prev1, Halfedge_const_handle prev2);
-  
-  //! a private implementation which defines if prev1 is on an outer ccb of 
+
+  //! a private implementation which defines if prev1 is on an outer ccb of
   // the new face (returns true) or on an inner ccb (returns false)
   bool prev1_inside_hole(Halfedge_const_handle prev1,
                          Halfedge_const_handle prev2,
-                         const X_monotone_curve_2& cv);  
-  
-public:  
-  Halfedge_handle split_edge(Halfedge_handle       e, 
-                             const X_monotone_curve_2       & c1, 
+                         const X_monotone_curve_2& cv);
+
+public:
+  Halfedge_handle split_edge(Halfedge_handle       e,
+                             const X_monotone_curve_2       & c1,
                              const X_monotone_curve_2       & c2,
                              Change_notification * en = NULL);
 
-  Halfedge_handle merge_edge(Halfedge_handle e1, 
-                             Halfedge_handle e2, 
-                             const X_monotone_curve_2 & cv, 
-                             Change_notification * en = NULL);              
+  Halfedge_handle merge_edge(Halfedge_handle e1,
+                             Halfedge_handle e2,
+                             const X_monotone_curve_2 & cv,
+                             Change_notification * en = NULL);
 
   Face_handle remove_edge(Halfedge_handle e);
 
-  Halfedge_handle vertical_ray_shoot(const Point_2 & p, 
-                                     Locate_type   & lt, 
+  Halfedge_handle vertical_ray_shoot(const Point_2 & p,
+                                     Locate_type   & lt,
                                      bool            up)
   {
     CGAL_precondition(pl);
     return pl->vertical_ray_shoot(p,lt,up);
   }
-  
+
   Halfedge_const_handle vertical_ray_shoot(const Point_2& p,
                                            Locate_type &lt, bool up) const
   {
     CGAL_precondition(pl);
     return ((const Point_location_base*)pl)->vertical_ray_shoot(p,lt,up);
-    // The type cast to const is there to ensure that the planar map 
+    // The type cast to const is there to ensure that the planar map
     // is not changed.
   }
 
@@ -414,22 +414,22 @@ public:
   Halfedge_const_handle locate(const Point_2& p, Locate_type &lt) const {
     CGAL_precondition(pl);
     return ((const Point_location_base*)pl)->locate(p,lt);
-    // The type cast to const is there to ensure that the planar map 
+    // The type cast to const is there to ensure that the planar map
     // is not changed.
   }
 
   //! determines whether a given point lies within the interior of a given
   //! face.
 
-  /*! is_point_in_face() is a predicate that determines whether a given point 
+  /*! is_point_in_face() is a predicate that determines whether a given point
    * lies within the interior of a given face.
-   * A point lies within a face interior, iff the number of intersections 
+   * A point lies within a face interior, iff the number of intersections
    * between the face boundary and a ray emanating from the point is even.
    * Note that if the given face is the unbounded face, and it has no holes,
    * the point must lie within the face interior.
    * \param p the given point.
    * \param f a handle to the given face.
-   * \return true if the given point lies within the interior of the given 
+   * \return true if the given point lies within the interior of the given
    * face, and false otherwise.
    */
 
@@ -475,12 +475,12 @@ protected:
    * \return true if the given point lies within the interior of the face
    * incident to the given halfedge, and false otherwise.
    */
-  bool point_is_in(const Point_2       & p, 
+  bool point_is_in(const Point_2       & p,
                    Halfedge_const_handle ne,
                    const X_monotone_curve_2     & ncv) const;
-  
+
   /////////////////////////////////////////////////////////
-  // Assignment functions 
+  // Assignment functions
   // Those are temporary functions and it should not be used
 public:
   void assign(const Self &pm)
@@ -495,7 +495,7 @@ public:
 
   // used in implementation of operator=(
   void clear();
-  
+
 protected:
   // used in implementation of operator=(
   void x_curve_container(X_monotone_curve_2_container &l) const;
@@ -514,7 +514,7 @@ public:
 private:
   /////////////////////////////////////////////////////////////////////////
   //                 Scanning Arrangement.
-  ///////////////////////////////////////////////////////////////////////// 
+  /////////////////////////////////////////////////////////////////////////
 
   template <class Scanner>
   bool  scan_planar_map (Scanner& scanner)
@@ -531,7 +531,7 @@ private:
       typedef typename Dcel::Vertex                 D_vertex;
     typedef typename Dcel::Halfedge                 D_halfedge;
     typedef typename Dcel::Face                     D_face;
-  
+
     typedef typename  Dcel::Vertex_iterator         D_vetrex_iterator;
     typedef typename  Dcel::Vertex_const_iterator   D_vetrex_const_iterator;
     typedef typename  Dcel::Halfedge_iterator       D_halfedge_iterator;
@@ -540,10 +540,10 @@ private:
     typedef typename  Dcel::Face_const_iterator     D_face_const_iterator;
 
     // keeping a vector of halfedges (to access them easily by their indices).
-    std::vector<D_halfedge* >  halfedges_vec;  
+    std::vector<D_halfedge* >  halfedges_vec;
 
-    std::vector<D_vertex* >    vertices_vec; 
- 
+    std::vector<D_vertex* >    vertices_vec;
+
     if ( ! scanner.in())
       return 0;
 
@@ -582,7 +582,7 @@ private:
       vertices_vec.push_back(nv);
 
       bb->insert(nv->point());
-    
+
       //scanner.skip_to_next_vertex();
       //if ( ! scanner.in()){
       //  std::cerr << "can't skip to next vertex"<<std::endl;
@@ -591,7 +591,7 @@ private:
       //  return false;
       // }
     }
-  
+
     for (i = 0; i < scanner.number_of_halfedges(); i++, i++){
       D_halfedge *nh = NULL;
       void  *nv1, *nv2;
@@ -601,7 +601,7 @@ private:
       // std::cout<<"Reading Edge no " <<i<<std::endl;
 
       nh = d.new_edge();
-    
+
       // scanner.scan_halfedge_attributes (nh);
       // if ( ! scanner.in()){
       // std::cerr << "can't read halfedge attributes"<<std::endl;
@@ -645,20 +645,20 @@ private:
       //nh->opposite()->set_curve(cv);
 
       nv1 = vertices_vec[index1];
-      ((D_vertex*) nv1)->set_halfedge(nh); 
+      ((D_vertex*) nv1)->set_halfedge(nh);
       nh->set_vertex((D_vertex*) nv1);
       //for debug
       //std::cout<<((D_vertex*) nv1)->point()<<std::endl;
-    
+
       nv2 = vertices_vec[index2];
-      ((D_vertex*) nv2)->set_halfedge(nh->opposite()); 
+      ((D_vertex*) nv2)->set_halfedge(nh->opposite());
       nh->opposite()->set_vertex((D_vertex*) nv2);
       //for debug
       //std::cout<<((D_vertex*) nv2)->point()<<std::endl;
 
       pl->insert(D_halfedge_iterator(nh->opposite()), cv);
       bb->insert(cv);
-    
+
       halfedges_vec.push_back(nh);
       halfedges_vec.push_back(nh->opposite());
 
@@ -668,15 +668,15 @@ private:
       //  scanner.in().clear( std::ios::badbit);
       //  clear();
       //  return false;
-      //} 
+      //}
     }
-  
+
     // read in all facets
     for (i = 0; i < scanner.number_of_faces(); i++) {
       //std::size_t  num_of_holes, num_halfedges_on_outer_ccb;
-    
+
       //std::cout<<"Reading Face no " <<i<<std::endl;
-   
+
       D_face* nf = u_face; //this is the unbounded face.
       if (i > 0)  // else - allocate the bounded face.
         nf = d.new_face();
@@ -688,12 +688,12 @@ private:
         return false;
       }
     }
-  
+
     if ( ! scanner.in() ) {
       scanner.in().clear( std::ios::badbit);
       return false;
-    } 
-  
+    }
+
     return true;
   }
 
@@ -714,19 +714,19 @@ private:
 
  private:
 
-  /*! Initializes the data structures to peroform and insert of a 
+  /*! Initializes the data structures to peroform and insert of a
    *  container of curves to the planar map.
    *
    * Note: At the end of this function the specified planar map is empty.
    *
-   * \param curves_begin the input iterator that points to the first curve 
+   * \param curves_begin the input iterator that points to the first curve
    * in the range.
    * \param curves_end the input past-the-end iterator of the range.
    * \param en the notification class.
    */
   template <class X_monotone_curve_2_iterator>
   inline void
-  init_for_insert(X_monotone_curve_2_iterator curves_begin, 
+  init_for_insert(X_monotone_curve_2_iterator curves_begin,
 		  X_monotone_curve_2_iterator curves_end,
 		  Event_queue &event_queue)
   {
@@ -736,76 +736,76 @@ private:
 
     // take the curves from the planar map and insert them to
     // the curve list. Clear the planar map.
-    for (Halfedge_iterator h_iter = halfedges_begin(); 
+    for (Halfedge_iterator h_iter = halfedges_begin();
 	 h_iter != halfedges_end(); ++h_iter, ++h_iter)
       all_curves.push_back(h_iter->curve());
-    
+
     // clear the planar map
-    clear(); 
-    
+    clear();
+
     // add the inout curves to the container
     for (cv_iter = curves_begin; cv_iter != curves_end; ++cv_iter)
       all_curves.push_back(*cv_iter);
-    
-    
+
+
     // Create the point_plus handles: for any pair of
     // overlapping points from the input we ensure we have only one
     // handle. - not having such a structure as input_vertices caused
     // a bug.
     PointLessFunctor pred(traits);
     PointContainer input_vertices(pred);
-    for (xcv_iter = all_curves.begin(); 
+    for (xcv_iter = all_curves.begin();
 	 xcv_iter != all_curves.end(); ++xcv_iter){
-      if (input_vertices.find(traits->curve_source(*xcv_iter)) == 
-	  input_vertices.end())  
+      if (input_vertices.find(traits->curve_source(*xcv_iter)) ==
+	  input_vertices.end())
 	input_vertices.insert( PointContainer_value_type
-			       (traits->curve_source(*xcv_iter), 
+			       (traits->curve_source(*xcv_iter),
 				Point_plus(traits->curve_source(*xcv_iter))) );
-      if (input_vertices.find(traits->curve_target(*xcv_iter)) == 
-	  input_vertices.end())  
+      if (input_vertices.find(traits->curve_target(*xcv_iter)) ==
+	  input_vertices.end())
 	input_vertices.insert( PointContainer_value_type
-			       (traits->curve_target(*xcv_iter), 
+			       (traits->curve_target(*xcv_iter),
 				Point_plus(traits->curve_target(*xcv_iter))) );
     }
 
     // Create the Curve_node handles and the event queue.
     unsigned int id = 0;
-    for(xcv_iter = all_curves.begin(); 
+    for(xcv_iter = all_curves.begin();
 	xcv_iter != all_curves.end(); ++xcv_iter, ++id) {
-      
+
       X_curve cv(*xcv_iter);
-      
-      PointContainer_iterator curr_point_plus = 
+
+      PointContainer_iterator curr_point_plus =
 	input_vertices.find( traits->curve_source(cv) );
 
-      // defining one cv_node for both source and target event points.  
-      Curve_node_  cv_node = Curve_node_(cv, curr_point_plus->second, traits); 
-      
-      // look for the interection point in the queue. if does not exist, 
+      // defining one cv_node for both source and target event points.
+      Curve_node_  cv_node = Curve_node_(cv, curr_point_plus->second, traits);
+
+      // look for the interection point in the queue. if does not exist,
       // add it. if exists, merge it with the existing one (add the curve)
-      Event_queue_iterator edge_point = 
+      Event_queue_iterator edge_point =
 	event_queue.find( traits->curve_source(cv) );
-      
-      if (edge_point == event_queue.end() || 
+
+      if (edge_point == event_queue.end() ||
 	  edge_point->second.get_point() != curr_point_plus->second) {
-	Point_node new_ix = 
+	Point_node new_ix =
 	  Point_node(cv_node, curr_point_plus->second, traits );
-	event_queue.insert(Event_queue_value_type(traits->curve_source(cv), 
+	event_queue.insert(Event_queue_value_type(traits->curve_source(cv),
 						  new_ix));
       }
       else {
 	edge_point->second.add_curve(cv_node);
       }
-      
+
       // same as above for the curve's target
       edge_point = event_queue.find( traits->curve_target(cv) );
       curr_point_plus = input_vertices.find( traits->curve_target(cv) );
-      
-      if (edge_point == event_queue.end() || 
+
+      if (edge_point == event_queue.end() ||
 	  edge_point->second.get_point() != curr_point_plus->second) {
-	Point_node  new_ix = 
+	Point_node  new_ix =
 	  Point_node(cv_node, curr_point_plus->second, traits );
-	event_queue.insert(Event_queue_value_type(traits->curve_target(cv), 
+	event_queue.insert(Event_queue_value_type(traits->curve_target(cv),
 						  new_ix));
       }
       else
@@ -813,7 +813,7 @@ private:
     }
   }
 
-  void update_subdivision(Point_node& point_node, 
+  void update_subdivision(Point_node& point_node,
 			  Change_notification *pm_change_notf);
 
 };
@@ -838,7 +838,7 @@ Planar_map_2< Dcel, Traits >::Planar_map_2()
   CGAL_assertion_msg(false,
     "No default point location is defined; you must supply one.");
 #endif
-    
+
   bb = init_default_bounding_box((Traits*)traits);
   use_delete_bb = true;
   bb->init(*this, *traits);
@@ -849,14 +849,14 @@ Planar_map_2< Dcel, Traits >::Planar_map_2()
 template < class Dcel, class Traits >
 Planar_map_2< Dcel, Traits >::
 Planar_map_2(typename Planar_map_2<Dcel, Traits>::Point_location_base * pl_ptr)
-{ 
+{
   traits = new Traits_wrap();
   use_delete_traits = true;
-    
+
   pl = pl_ptr;
   use_delete_pl = false;
   pl->init(*this, *traits);
-    
+
   bb = init_default_bounding_box((Traits*)traits);
   use_delete_bb = true;
   bb->init(*this, *traits);
@@ -868,13 +868,13 @@ Planar_map_2(typename Planar_map_2<Dcel, Traits>::Point_location_base * pl_ptr)
 template < class Dcel, class Traits >
 Planar_map_2< Dcel, Traits >::
 Planar_map_2(
-  const typename Planar_map_2<Dcel, Traits>::Traits & tr_, 
-  typename Planar_map_2<Dcel, Traits>::Point_location_base * pl_ptr, 
+  const typename Planar_map_2<Dcel, Traits>::Traits & tr_,
+  typename Planar_map_2<Dcel, Traits>::Point_location_base * pl_ptr,
   typename Planar_map_2<Dcel, Traits>::Bounding_box_base   * bb_ptr)
 {
   traits = new Traits_wrap(tr_);
   use_delete_traits = true;
-    
+
   if (pl_ptr == NULL)
   {
 #ifndef CGAL_NO_PM_DEFAULT_POINT_LOCATION
@@ -892,7 +892,7 @@ Planar_map_2(
     use_delete_pl = false;
     pl->init(*this, *traits);
   }
-    
+
   if (bb_ptr == NULL)
   {
     bb=init_default_bounding_box((Traits*)traits);
@@ -913,8 +913,8 @@ Planar_map_2(
 template < class Dcel, class Traits >
 Planar_map_2< Dcel, Traits >::
 Planar_map_2(
-  typename Planar_map_2< Dcel, Traits >::Traits_wrap         * tr_ptr, 
-  typename Planar_map_2< Dcel, Traits >::Point_location_base * pl_ptr, 
+  typename Planar_map_2< Dcel, Traits >::Traits_wrap         * tr_ptr,
+  typename Planar_map_2< Dcel, Traits >::Point_location_base * pl_ptr,
   typename Planar_map_2< Dcel, Traits >::Bounding_box_base   * bb_ptr )
 {
   if (tr_ptr == NULL)
@@ -927,7 +927,7 @@ Planar_map_2(
     traits = tr_ptr;
     use_delete_traits = false;
   }
-    
+
   if (pl_ptr == NULL)
   {
 #ifndef CGAL_NO_PM_DEFAULT_POINT_LOCATION
@@ -945,7 +945,7 @@ Planar_map_2(
     use_delete_pl = false;
     pl->init(*this,*traits);
   }
-    
+
   if (bb_ptr == NULL)
   {
     bb=init_default_bounding_box((Traits*)traits);
@@ -957,7 +957,7 @@ Planar_map_2(
     bb = bb_ptr;
     use_delete_bb = false;
     bb->init(*this,*traits);
-  }  
+  }
 }
 
 /*! A copy constructor.
@@ -970,7 +970,7 @@ Planar_map_2(const Planar_map_2<Dcel, Traits> & pm)
 {
   // doing the same as Planar_map_2(pm.get_traits(),pm.get_point_location(),
   //                                pm.get_point_bbox());
-    
+
   typedef Pm_naive_point_location<Planar_map_2<Dcel,Traits> >  Pm_naive;
   typedef Pm_naive*                                    Pm_naive_pointer;
 
@@ -1000,31 +1000,31 @@ Planar_map_2(const Planar_map_2<Dcel, Traits> & pm)
   }
   use_delete_pl = true;
   pl->init(*this,*traits);
-    
+
   bb=init_default_bounding_box((Traits*)traits);
   use_delete_bb=true;
   bb->init(*this,*traits);
-    
+
   assign(pm);
-    
+
   Halfedge_iterator h_iter;
-  for (h_iter = halfedges_begin(); 
-       h_iter != halfedges_end(); 
+  for (h_iter = halfedges_begin();
+       h_iter != halfedges_end();
        h_iter++, h_iter++)
     pl->insert(h_iter, h_iter->curve());
-    
-  for (Vertex_iterator v_iter = vertices_begin(); 
-       v_iter != vertices_end(); 
+
+  for (Vertex_iterator v_iter = vertices_begin();
+       v_iter != vertices_end();
        v_iter++)
     bb->insert(v_iter->point());
-    
-  for (h_iter = halfedges_begin(); 
-       h_iter !=  halfedges_end(); 
+
+  for (h_iter = halfedges_begin();
+       h_iter !=  halfedges_end();
        h_iter++, h_iter++)
     bb->insert(h_iter->curve());
 }
 //-----------------------------------------------------------------------------
-template < class Dcel, class Traits > 
+template < class Dcel, class Traits >
 Planar_map_2< Dcel, Traits >::~Planar_map_2()
 {
   if (use_delete_pl) delete pl;
@@ -1032,30 +1032,30 @@ Planar_map_2< Dcel, Traits >::~Planar_map_2()
   if (use_delete_traits) delete traits;
 }
 //-----------------------------------------------------------------------------
-template < class Dcel, class Traits > 
-bool 
+template < class Dcel, class Traits >
+bool
 Planar_map_2< Dcel, Traits >::
 read(std::istream & in)
 {
   clear();
-  Pm_file_scanner<Self> scanner(in); 
+  Pm_file_scanner<Self> scanner(in);
   return scan_planar_map(scanner);
 }
 
 /*!
  */
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_in_face_interior(
-  const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv, 
-  typename Planar_map_2< Dcel, Traits >::Face_handle f, 
+  const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
+  typename Planar_map_2< Dcel, Traits >::Face_handle f,
   Change_notification * en)
 {
   Halfedge_handle h = Topological_map<Dcel>::insert_in_face_interior(f);
   h->set_curve(cv);  //should set the curve of the twin as well but for now
   h->twin()->set_curve(cv);
-  
+
   //pl->insert(h);  //maybe should be above
   //iddo - for arrangement
   pl->insert(h,cv);
@@ -1077,7 +1077,7 @@ insert_in_face_interior(
  */
 template < class Dcel, class Traits >
 inline
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_from_vertex
 (const typename Planar_map_2<Dcel, Traits>::X_monotone_curve_2 & cv,
@@ -1088,19 +1088,19 @@ insert_from_vertex
 #endif
   )
 {
-  CGAL_precondition_msg(traits->point_equal(prev->target()->point(), 
+  CGAL_precondition_msg(traits->point_equal(prev->target()->point(),
                                               traits->curve_source(cv)) ||
-                        traits->point_equal(prev->target()->point(), 
+                        traits->point_equal(prev->target()->point(),
                                               traits->curve_target(cv)),
   "Point of target vertex of input halfedge should be a curve endpoint.");
 
-  Halfedge_handle h = Topological_map<Dcel>::insert_from_vertex(prev);  
-  h->set_curve(cv);  
+  Halfedge_handle h = Topological_map<Dcel>::insert_from_vertex(prev);
+  h->set_curve(cv);
   h->twin()->set_curve(cv);
 
   pl->insert(h, cv);            // for arrangement
 
-  bool source = traits->point_equal(prev->target()->point(), 
+  bool source = traits->point_equal(prev->target()->point(),
                                       traits->curve_source(cv));
   (source) ?
     h->target()->set_point(traits->curve_target(cv)) :
@@ -1114,16 +1114,16 @@ insert_from_vertex
 /*!
  */
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_from_vertex
 (const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
- typename Planar_map_2< Dcel, Traits >::Vertex_handle v1, 
+ typename Planar_map_2< Dcel, Traits >::Vertex_handle v1,
  Change_notification * en)
 {
-  CGAL_precondition_msg(traits->point_equal(v1->point(), 
+  CGAL_precondition_msg(traits->point_equal(v1->point(),
                                               traits->curve_source(cv)) ||
-                        traits->point_equal(v1->point(), 
+                        traits->point_equal(v1->point(),
                                               traits->curve_target(cv)),
   "Point of input vertex should be a curve endpoint.");
 
@@ -1152,11 +1152,11 @@ insert_from_vertex
   return insert_from_vertex(cv, prev, en);
 }
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 non_intersecting_insert_from_vertex(
        const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
-       typename Planar_map_2< Dcel, Traits >::Vertex_handle v1, 
+       typename Planar_map_2< Dcel, Traits >::Vertex_handle v1,
        Change_notification * en)
 {
   return insert_from_vertex(cv, v1, en);
@@ -1164,7 +1164,7 @@ non_intersecting_insert_from_vertex(
 
 // Obsolete
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_from_vertex
 (const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
@@ -1227,25 +1227,25 @@ path_length(typename Planar_map_2< Dcel, Traits >::Halfedge_const_handle prev1,
 /*!
  */
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_at_vertices
-(const typename Planar_map_2<Dcel, Traits>::X_monotone_curve_2 & cv, 
- typename Planar_map_2<Dcel, Traits>::Halfedge_handle prev1, 
- typename Planar_map_2<Dcel, Traits>::Halfedge_handle prev2, 
+(const typename Planar_map_2<Dcel, Traits>::X_monotone_curve_2 & cv,
+ typename Planar_map_2<Dcel, Traits>::Halfedge_handle prev1,
+ typename Planar_map_2<Dcel, Traits>::Halfedge_handle prev2,
  Change_notification                                  * en
 #ifdef _MSC_VER
                    ,int
 #endif
                    )
 {
-  CGAL_precondition_msg(traits->point_equal(prev1->target()->point(), 
+  CGAL_precondition_msg(traits->point_equal(prev1->target()->point(),
                                               traits->curve_source(cv)) &&
-                        traits->point_equal(prev2->target()->point(), 
+                        traits->point_equal(prev2->target()->point(),
                                               traits->curve_target(cv)) ||
-                        traits->point_equal(prev2->target()->point(), 
+                        traits->point_equal(prev2->target()->point(),
                                               traits->curve_source(cv)) &&
-                        traits->point_equal(prev1->target()->point(), 
+                        traits->point_equal(prev1->target()->point(),
                                               traits->curve_target(cv)),
   "Points of target vertices of input halfedges should be curve endpoints.");
 
@@ -1264,12 +1264,12 @@ insert_at_vertices
       prev1_inside_hole(prev1, prev2, cv) :
       !prev1_inside_hole(prev2, prev1, cv);
   }
-  
+
   // bool prev1_before_prev2 = prev1_inside_hole(prev1, prev2, cv);
   Halfedge_handle h = (prev1_before_prev2) ?
-    Topological_map<Dcel>::insert_at_vertices(prev1, prev2) : 
-    Topological_map<Dcel>::insert_at_vertices(prev2, prev1); 
-  
+    Topological_map<Dcel>::insert_at_vertices(prev1, prev2) :
+    Topological_map<Dcel>::insert_at_vertices(prev2, prev1);
+
   h->set_curve(cv);
   h->twin()->set_curve(cv);
 
@@ -1283,13 +1283,13 @@ insert_at_vertices
       // check if the hole is inside new face
       // new for arrangement
       if (point_is_in((*it)->target()->point(), h, cv)) {
-        Holes_iterator tmp = it;  // deletion invalidates iterators so... 
+        Holes_iterator tmp = it;  // deletion invalidates iterators so...
         ++it;   // assumes only the erased iterator is invalidated (like stl
-        // list) 
+        // list)
 
-        move_hole(tmp, of, nf); 
+        move_hole(tmp, of, nf);
       }
-      else       
+      else
         ++it;
     }
   }
@@ -1305,13 +1305,13 @@ insert_at_vertices
     Face_handle orig_face = prev1_before_prev2 ? h->twin()->face() : h->face();
 
     en->add_edge(cv, h, true, false);
-      
+
     // After fixing the notifier we won't have to check that since
     // h->face() will be surely the new face.
     (h->face() == orig_face) ?
       en->split_face(h->face(), h->twin()->face()) :
       en->split_face(h->twin()->face(), h->face());
-      
+
     // we surely know h->face() is the new face.
     // en->split_face(h->twin()->face(), h->face());
   }
@@ -1322,21 +1322,21 @@ insert_at_vertices
 /*!
  */
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 insert_at_vertices
-(const typename Planar_map_2<Dcel, Traits>::X_monotone_curve_2 & cv, 
- typename Planar_map_2< Dcel, Traits >::Vertex_handle   v1, 
- typename Planar_map_2< Dcel, Traits >::Vertex_handle   v2, 
+(const typename Planar_map_2<Dcel, Traits>::X_monotone_curve_2 & cv,
+ typename Planar_map_2< Dcel, Traits >::Vertex_handle   v1,
+ typename Planar_map_2< Dcel, Traits >::Vertex_handle   v2,
  Change_notification                                  * en)
 {
-  CGAL_precondition_msg(traits->point_equal(v1->point(), 
+  CGAL_precondition_msg(traits->point_equal(v1->point(),
                                               traits->curve_source(cv)) &&
-                        traits->point_equal(v2->point(), 
+                        traits->point_equal(v2->point(),
                                               traits->curve_target(cv)) ||
-                        traits->point_equal(v2->point(), 
+                        traits->point_equal(v2->point(),
                                               traits->curve_source(cv)) &&
-                        traits->point_equal(v1->point(), 
+                        traits->point_equal(v1->point(),
                                               traits->curve_target(cv)),
                         "Points of input vertices should be curve endpoints.");
 
@@ -1360,7 +1360,7 @@ insert_at_vertices
         return Halfedge_handle();
       }
     }
-  }    
+  }
 
   Halfedge_around_vertex_circulator prev2 = v2->incident_halfedges();
   after = prev2;
@@ -1382,27 +1382,27 @@ insert_at_vertices
         return Halfedge_handle();
       }
     }
-  }    
-  
+  }
+
 
   return insert_at_vertices(cv, prev1, prev2, en);
 }
 
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
-bool 
+bool
 Planar_map_2< Dcel, Traits >::
 prev1_inside_hole(
   typename Planar_map_2< Dcel, Traits >::Halfedge_const_handle prev1,
   typename Planar_map_2< Dcel, Traits >::Halfedge_const_handle prev2,
   const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv)
 {
-  
+
   // Defining geometrically whether there is a new face. If there is,
   // finds if prev1 is on the outside of the new face (send
   // prev1,prev2) or on the inside of the new face (send prev2,prev1)
 
-  // The algorithm: 
+  // The algorithm:
 
   // 1. go over all the halfedges of the face which
   // will hold prev1 (since the new face is not constructed yet,
@@ -1414,12 +1414,12 @@ prev1_inside_hole(
   // among the incident edges of this vertex) is directed left (we are
   // on the outside) or right (we are inside ) (if not on same ccb
   // then it doesn't matter and return true)
-  
+
   Ccb_halfedge_const_circulator left_edge(prev2);
   ++left_edge;
   Ccb_halfedge_const_circulator first(prev2),curr(left_edge),
     last(prev1);
-  ++last; //we want the prev1 to be checked as well 
+  ++last; //we want the prev1 to be checked as well
 
   Point_2 left = prev2->target()->point();
   bool b;
@@ -1427,10 +1427,10 @@ prev1_inside_hole(
   do {
     //source
     b = false;
-    if (traits->point_is_left( curr->source()->point(),left)) 
+    if (traits->point_is_left( curr->source()->point(),left))
       b = true;
     else
-      if (traits->point_equal(curr->source()->point(),left)) 
+      if (traits->point_equal(curr->source()->point(),left))
       {
         if (traits->curve_is_vertical(curr->curve()) &&
             traits->point_is_left_low(curr->target()->point(),left) ) {
@@ -1443,11 +1443,11 @@ prev1_inside_hole(
 	      (((cres = traits->curves_compare_y_at_x(curr->curve(),
 						   left_edge->curve(),
 						   left)) == SMALLER) ||
-	       (cres == EQUAL && 
+	       (cres == EQUAL &&
 	       !traits->curve_is_vertical(left_edge->curve()) &&		// <- ADDED BY BAS!
 		traits->curves_compare_y_at_x_right(curr->curve(),
 						 left_edge->curve(),
-						 left) == SMALLER))) 
+						 left) == SMALLER)))
             b = true;
 	}
       }
@@ -1479,8 +1479,8 @@ prev1_inside_hole(
 					       left) == SMALLER))) {
           b = true;
 	}
-	//we want in the degenerate case to return the halfedge 
-	//pointing _at_ the left point 
+	//we want in the degenerate case to return the halfedge
+	//pointing _at_ the left point
         else {
           if ( (curr)==(left_edge->twin()) )
             b = true;
@@ -1508,11 +1508,11 @@ prev1_inside_hole(
       if ((traits->point_is_left(left, traits->curve_source(cv)) ||
 	   traits->point_is_left(left, traits->curve_target(cv))) &&
 	  (! traits->curve_is_vertical(left_edge->curve())) &&
-	  (((cres = traits->curves_compare_y_at_x(cv,left_edge->curve(), 
+	  (((cres = traits->curves_compare_y_at_x(cv,left_edge->curve(),
 					       left)) == SMALLER) ||
 	   (cres == EQUAL &&
-	    traits->curves_compare_y_at_x_right(cv,left_edge->curve(), 
-					     left) == SMALLER))) {  
+	    traits->curves_compare_y_at_x_right(cv,left_edge->curve(),
+					     left) == SMALLER))) {
         return (traits->point_is_left(prev1->target()->point(),
                                       prev2->target()->point()));
       }
@@ -1535,9 +1535,9 @@ prev1_inside_hole(
 /*!
  */
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
-insert(const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv, 
+insert(const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
        Change_notification * en)
 {
   CGAL_precondition_msg( ! traits->curve_is_degenerate(cv),
@@ -1545,52 +1545,52 @@ insert(const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
   CGAL_precondition_msg(bb, "Bounding box should not be null.");
 
   bb->insert(cv);
-    
+
   Locate_type lt1, lt2;
   Point_2 src = traits->curve_source(cv);
   Point_2 tgt = traits->curve_target(cv);
-    
+
   // The point location may not change the bounding box.
   Halfedge_handle h1 = ((const Point_location_base*)pl)->locate(src, lt1);
   Halfedge_handle h2 = ((const Point_location_base*)pl)->locate(tgt, lt2);
-   
-  // In principal, the result of a locate should not be an edge, 
+
+  // In principal, the result of a locate should not be an edge,
   // because the planar map does not accept proper intersections.
   // It is only possible in case a bounding box curve was hit.
-  if (lt1 == EDGE || lt1 == UNBOUNDED_EDGE) 
+  if (lt1 == EDGE || lt1 == UNBOUNDED_EDGE)
   {
     // the curve intersects the bounding box.
     Halfedge_handle h = h1, h2;
     bb->split_boundary_edge(h, h1, h2, src);
-    // make sure the intersection point is in the map, 
+    // make sure the intersection point is in the map,
     // i.e. split the halfedge that contains its.
-    lt1 = VERTEX; 
+    lt1 = VERTEX;
   }
 
-  if (lt2 == EDGE || lt2 == UNBOUNDED_EDGE) 
+  if (lt2 == EDGE || lt2 == UNBOUNDED_EDGE)
   {
     Halfedge_handle h1, h = h2;
     bb->split_boundary_edge(h, h1, h2, tgt);
-    // make sure the intersection point is in the map, 
+    // make sure the intersection point is in the map,
     // i.e. split the halfedge that contains its.
     lt2 = VERTEX;
   }
 
-  if (lt1 == VERTEX && lt2 == VERTEX) 
-    return insert_at_vertices(cv, h1->target(), h2->target(), en); 
-    
+  if (lt1 == VERTEX && lt2 == VERTEX)
+    return insert_at_vertices(cv, h1->target(), h2->target(), en);
+
   if (lt1 == VERTEX && lt2 != VERTEX)
-    return insert_from_vertex(cv, h1->target(), true, en); 
+    return insert_from_vertex(cv, h1->target(), true, en);
 
   if (lt1 != VERTEX && lt2 == VERTEX)
     return insert_from_vertex(cv, h2->target(), false, en)->twin();
-    
+
   if (lt1 == UNBOUNDED_FACE)
     return insert_in_face_interior(cv, unbounded_face(), en);
-    
+
   if (lt1 == FACE)
     return insert_in_face_interior(cv, h1->face(), en);
-    
+
   CGAL_assertion_msg(lt1 == VERTEX || lt1 == UNBOUNDED_FACE || lt1 == FACE,
   "Endpoints should not coinside with an edge. No intersections allowed.");
 
@@ -1599,11 +1599,11 @@ insert(const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
 
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 split_edge
-(typename Planar_map_2< Dcel, Traits >::Halfedge_handle   e, 
- const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2   & c1, 
+(typename Planar_map_2< Dcel, Traits >::Halfedge_handle   e,
+ const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2   & c1,
  const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2   & c2,
  Change_notification                                    * en )
 {
@@ -1631,7 +1631,7 @@ split_edge
     h->target()->set_point(traits->curve_target(c1));
     pl->split_edge(cv,h,h->next_halfedge(),c1,c2);
 
-    if (en != NULL) 
+    if (en != NULL)
       en->split_edge(h, h->next_halfedge(), c1, c2);
   }
   else {
@@ -1641,30 +1641,30 @@ split_edge
     h->next_halfedge()->twin()->set_curve(c1);
     h->target()->set_point(traits->curve_target(c1));
     pl->split_edge(cv,h,h->next_halfedge(),c2,c1);
-      
-    if (en != NULL) 
+
+    if (en != NULL)
       en->split_edge(h, h->next_halfedge(), c2, c1);
   }
 
-  //if (en != NULL) 
+  //if (en != NULL)
   //  en->split_edge(h, h->next_halfedge(), c1, c2);
 
   return h;
 }
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
-typename Planar_map_2< Dcel, Traits >::Halfedge_handle 
+typename Planar_map_2< Dcel, Traits >::Halfedge_handle
 Planar_map_2< Dcel, Traits >::
 merge_edge
-(typename Planar_map_2< Dcel, Traits >::Halfedge_handle e1, 
- typename Planar_map_2< Dcel, Traits >::Halfedge_handle e2, 
- const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv, 
+(typename Planar_map_2< Dcel, Traits >::Halfedge_handle e1,
+ typename Planar_map_2< Dcel, Traits >::Halfedge_handle e2,
+ const typename Planar_map_2< Dcel, Traits >::X_monotone_curve_2 & cv,
  Change_notification * en)
 {
   CGAL_precondition((traits->point_equal(traits->curve_source(cv),
                                            e1->source()->point()) &&
                      traits->point_equal(traits->curve_target(cv),
-                                           e2->target()->point())) || 
+                                           e2->target()->point())) ||
                     (traits->point_equal(traits->curve_target(cv),
                                            e1->source()->point()) &&
                      traits->point_equal(traits->curve_source(cv),
@@ -1672,23 +1672,23 @@ merge_edge
 
   // problematic: since we assume e1 will be the new merged halfedge
   // after merging.  en->merge(e1,e2,cv);
-    
+
   X_monotone_curve_2 c1(e1->curve()), c2(e2->curve());
 
-  Halfedge_handle h = Topological_map<Dcel>::merge_edge(e1,e2); 
+  Halfedge_handle h = Topological_map<Dcel>::merge_edge(e1,e2);
   h->set_curve(cv);
   h->twin()->set_curve(cv);
 
   //pl->merge_edge(c1,c2,h);
   //iddo - for arrangement
   pl->merge_edge(c1, c2, h, cv);
-    
-  // problematic: e2 does not exist anymore 
-  //if (en != NULL) 
+
+  // problematic: e2 does not exist anymore
+  //if (en != NULL)
   //  en->merge_edge(h, e1, e2, cv);
 
   return h;
-} 
+}
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
 typename Planar_map_2< Dcel, Traits >::Face_handle
@@ -1697,10 +1697,10 @@ remove_edge(typename Planar_map_2< Dcel, Traits >::Halfedge_handle e )
 {
 
   // en->remove_edge(e);
-    
+
   pl->remove_edge(e);
 
-  //if a new hole can be created define geometrically the 
+  //if a new hole can be created define geometrically the
   //halfedge (e or e->twin) that points at the new hole.
   //if the leftmost point in the path e...e->twin
   //is left of the leftmost point in the path e->twin ... e
@@ -1726,11 +1726,11 @@ remove_edge(typename Planar_map_2< Dcel, Traits >::Halfedge_handle e )
     do {
       if (traits->compare_x(aux->target()->point(),t_left)==SMALLER) {
         t_left=aux->target()->point();
-      }        
+      }
     } while (++aux!=ccb_e);
 
     //compare the two left points
-    if (traits->compare_x(t_left,e_left) == SMALLER) //e points at hole 
+    if (traits->compare_x(t_left,e_left) == SMALLER) //e points at hole
       return Topological_map<Dcel>::remove_edge(e);
     else
       return Topological_map<Dcel>::remove_edge(e->twin());
@@ -1742,12 +1742,12 @@ remove_edge(typename Planar_map_2< Dcel, Traits >::Halfedge_handle e )
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
 bool Planar_map_2< Dcel, Traits >::
-point_is_in( const Point_2           & p, 
+point_is_in( const Point_2           & p,
              Halfedge_const_handle     ne,
              const X_monotone_curve_2         & ncv) const
 {
-  // count stores the number of curves that intersect the upward vertical 
-  // ray shot from p (except for a degenerate case which is explained in 
+  // count stores the number of curves that intersect the upward vertical
+  // ray shot from p (except for a degenerate case which is explained in
   // the code)
   int count = 0;
 
@@ -1761,7 +1761,7 @@ point_is_in( const Point_2           & p,
   // If the whole ccb is vertical then there is no face, so point p
   // cannot be in it
   if ( circ == ne && traits->curve_is_vertical(ncv) )
-    return false; 
+    return false;
 
   // 2. Go over all curves of the ccb and count those which are above p.
   Ccb_halfedge_const_circulator last = circ;
@@ -1770,30 +1770,30 @@ point_is_in( const Point_2           & p,
     // Put curve of current halfedge in circv.
     X_monotone_curve_2 circv;
     // If not on the new halfedge circ definitely has a curve
-    if (circ != ne) 
-    { 
+    if (circ != ne)
+    {
       circv=circ->curve();
     }
     // o/w, circ might not have a curve yet (e.g in arrangement)
     // so we take the input curve.
-    else { 
+    else {
       circv=ncv;
     }
 
     // If query point is vertex point on the outer ccb
-    if (traits->point_equal(circ->target()->point(), p)) 
+    if (traits->point_equal(circ->target()->point(), p))
       return false;
 
     // If current curve is not vertical
-    if ( ! traits->curve_is_vertical(circv)) 
+    if ( ! traits->curve_is_vertical(circv))
     {
       // If point is under current curve in the range (source,target] of it
       if (traits->point_in_x_range(circv,p) &&
-	  (traits->curve_compare_y_at_x(p, circv) == SMALLER) && 
-          !(traits->point_equal_x(circ->source()->point(), p))) 
-      {  
-        // If p is exactly under a vertex of the ccb 
-        if (traits->point_equal_x(circ->target()->point(), p)) 
+	  (traits->curve_compare_y_at_x(p, circv) == SMALLER) &&
+          !(traits->point_equal_x(circ->source()->point(), p)))
+      {
+        // If p is exactly under a vertex of the ccb
+        if (traits->point_equal_x(circ->target()->point(), p))
         {
           // Put curve of next halfedge that is not vertical in nextcv
           Ccb_halfedge_const_circulator next = circ;
@@ -1818,7 +1818,7 @@ point_is_in( const Point_2           & p,
             }
           }
           // If nextcv is on the same side of the vertical line
-          // from p as circv is 
+          // from p as circv is
           if ((traits->point_is_right(circ->source()->point(), p) &&
                traits->point_is_left(next->target()->point(), p)) ||
               (traits->point_is_left(circ->source()->point(), p) &&
@@ -1827,7 +1827,7 @@ point_is_in( const Point_2           & p,
             ++count;
           }
         }
-        else 
+        else
         {
           // o/w, point p is under the interior of the current curve
           // so we raise the count
@@ -1836,32 +1836,32 @@ point_is_in( const Point_2           & p,
       }
     } // If current curve is not vertical
   } while (++circ != last);
-    
+
   return (count%2 != 0);  //if count is odd return true
 }
 //-----------------------------------------------------------------------------
 template < class Dcel, class Traits >
-Planar_map_2< Dcel, Traits >& 
+Planar_map_2< Dcel, Traits >&
 Planar_map_2< Dcel, Traits >::
 operator=(const Planar_map_2< Dcel, Traits >& pm)
 {
   if( this != &pm ){
     clear();
     assign(pm);
-               
+
     Halfedge_iterator h_iter;
-    for( h_iter = halfedges_begin(); 
-         h_iter != halfedges_end(); 
+    for( h_iter = halfedges_begin();
+         h_iter != halfedges_end();
          h_iter++, h_iter++)
       pl->insert(h_iter, h_iter->curve());
-                 
-    for( Vertex_iterator v_iter = vertices_begin(); 
-         v_iter != vertices_end(); 
+
+    for( Vertex_iterator v_iter = vertices_begin();
+         v_iter != vertices_end();
          v_iter++)
       bb->insert(v_iter->point());
-                 
-    for( h_iter = halfedges_begin(); 
-         h_iter !=  halfedges_end(); 
+
+    for( h_iter = halfedges_begin();
+         h_iter !=  halfedges_end();
          h_iter++, h_iter++)
       bb->insert(h_iter->curve());
   }
@@ -1893,20 +1893,20 @@ x_curve_container(X_monotone_curve_2_container &l) const
 
 
 /*!
- * Given an intersection point, add all curves going through this 
+ * Given an intersection point, add all curves going through this
  * intersection point to the planar map.
  *
  * \param point_node a point to be handled
  * \param en the notification class. It's default value is NULL, which
  *        implies no notification on insertion.
  */
-template <class PlanarMapDcel_2, class PlanarMapTraits_2> 
+template <class PlanarMapDcel_2, class PlanarMapTraits_2>
 inline void
 Planar_map_2<PlanarMapDcel_2, PlanarMapTraits_2>::
-update_subdivision(Point_node& point_node, 
+update_subdivision(Point_node& point_node,
 		   Change_notification *en)
 {
-  for (Curve_node_iterator cv_iter = point_node.curves_begin(); 
+  for (Curve_node_iterator cv_iter = point_node.curves_begin();
        cv_iter != point_node.curves_end(); ++cv_iter) {
 
     // if the point is the source of the curve, we ignore it for now.
@@ -1925,9 +1925,9 @@ update_subdivision(Point_node& point_node,
     if (source.vertex() != Vertex_handle(NULL)){
       //if the intersection pint is already int he map....
       if (point_node.get_point().vertex() != Vertex_handle(NULL)) {
-	h = insert_at_vertices(cv, 
+	h = insert_at_vertices(cv,
 			       cv_iter->get_point().vertex(),
-			       point_node.get_point().vertex(), 
+			       point_node.get_point().vertex(),
 			       en);
       }
       else {
@@ -1948,7 +1948,7 @@ update_subdivision(Point_node& point_node,
     else if (traits->point_equal(h->target()->point(),
                                    cv_iter->get_point().point()))
       cv_iter->get_point().set_vertex(h->target());
-    
+
     if (traits->point_equal(h->source()->point(),
                               point_node.get_point().point()))
       point_node.get_point().set_vertex(h->source());

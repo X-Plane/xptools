@@ -165,7 +165,7 @@ protected:
   inline void
   store(FT dx, FT dy, FT dw)
     {
-      _dw = dw; 
+      _dw = dw;
       _a1 = dx * dw;
       _a2 = dy;
       _b1 = dy * dw;
@@ -299,7 +299,7 @@ public:
     {
       compute_gamma();
     }
-		
+
   inline FT alpha() const { return this->_d; }
   inline FT beta() const { return  this->_c1; }
   inline FT gamma() const { return _gamma; }

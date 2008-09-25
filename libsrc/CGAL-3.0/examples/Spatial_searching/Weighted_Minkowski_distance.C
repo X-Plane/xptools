@@ -6,7 +6,7 @@
 #include <string>
 
 #include <iostream>
-#include <fstream> 
+#include <fstream>
 
 #include <CGAL/Kd_tree.h>
 #include <CGAL/Kd_tree_traits_point.h>
@@ -14,28 +14,28 @@
 #include <CGAL/Orthogonal_standard_search.h>
 #include <CGAL/Cartesian_d.h>
 #include <CGAL/Weighted_Minkowski_distance.h>
- 
+
 typedef CGAL::Cartesian_d<double> R;
 typedef CGAL::Point_d<R> Point;
 typedef Point::R::FT NT;
 
 typedef CGAL::Kd_tree_traits_point<Point> Traits;
 typedef CGAL::Weighted_Minkowski_distance<Point> Distance;
-typedef CGAL::Orthogonal_standard_search<Traits, Distance> 
+typedef CGAL::Orthogonal_standard_search<Traits, Distance>
 NN_standard_search;
-  
+
 
 int main() {
 
   int bucket_size=1;
   const int dim=4;
-  
+
   const int data_point_number=100;
   const int nearest_neighbour_number=10;
-  
+
   typedef std::list<Point> point_list;
   point_list data_points;
-  
+
   // add random points of dimension dim to data_points
   CGAL::Random Rnd;
   // std::cout << "started tstrandom()" << std::endl;
@@ -45,8 +45,8 @@ int main() {
         Point Random_point(dim,v,v+dim);
         data_points.push_front(Random_point);
   }
-  
-  
+
+
   Traits tr(bucket_size, 3.0, true);
 
   Distance::Weight_vector w(4);
@@ -65,18 +65,18 @@ int main() {
   Point query_item(dim,q,q+dim);
 
   std::vector<NN_standard_search::Point_with_distance> nearest_neighbours;
-  
+
   NN_standard_search NN(d, query_item, tr_dist, nearest_neighbour_number, 0.0);
   std::cout << "neighbour searching statistics using no extended nodes: " << std::endl;
   NN.statistics(std::cout);
   NN.the_k_neighbors(std::back_inserter(nearest_neighbours));
 
-  for (int j=0; j < nearest_neighbour_number; ++j) { 
-     std::cout << " d(q,nn)= " << nearest_neighbours[j].second << 
-     " nn= " << *(nearest_neighbours[j].first) << std::endl; 
+  for (int j=0; j < nearest_neighbour_number; ++j) {
+     std::cout << " d(q,nn)= " << nearest_neighbours[j].second <<
+     " nn= " << *(nearest_neighbours[j].first) << std::endl;
   }
-  
-  
+
+
   return 0;
 
-}; 
+};

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -475,7 +475,7 @@ sb_Comp::getRecord( sc_Record & record ) const
 
 
    for ( sb_ForeignIDs::const_iterator j = _imp->_ForeignIDs.begin();
-         j != _imp->_ForeignIDs.end(); 
+         j != _imp->_ForeignIDs.end();
          j++ )
    {
       sb_Utils::add_foreignID ( record, *j );
@@ -483,7 +483,7 @@ sb_Comp::getRecord( sc_Record & record ) const
 
 
    for ( sb_ForeignIDs::const_iterator k = _imp->_CompositeIDs.begin();
-         k != _imp->_CompositeIDs.end(); 
+         k != _imp->_CompositeIDs.end();
          k++ )
    {
       sb_Utils::add_foreignID ( record, *k );
@@ -573,7 +573,7 @@ sb_Comp::unDefineCompositeID( )
 } // sb_Comp::unDefineCompositeID
 
 
-sio_8211Schema& 
+sio_8211Schema&
 sb_Comp::schema_()
 {
    if ( _schema.empty() )

@@ -20,9 +20,9 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
-// use the port of the LEDA window (CGAL::window) or the "normal" LEDA window ... 
- 
+
+// use the port of the LEDA window (CGAL::window) or the "normal" LEDA window ...
+
 #if defined(CGAL_USE_CGAL_WINDOW)
 #include <CGAL/IO/cgal_window.h>
 #else

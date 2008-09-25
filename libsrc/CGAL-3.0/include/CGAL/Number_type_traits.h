@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Susan Hert, Michael Hoffmann
- 
+
 
 #ifndef CGAL_NUMBER_TYPE_TRAITS_H
 #define CGAL_NUMBER_TYPE_TRAITS_H
@@ -40,9 +40,9 @@ struct Rational_traits {
 
   RT numerator   (const Rational & r) const { return r.numerator(); }
   RT denominator (const Rational & r) const { return r.denominator(); }
-  
+
   Rational make_rational(const RT & n, const RT & d) const
-  { return Rational(n, d); } 
+  { return Rational(n, d); }
 };
 
 // number type tags

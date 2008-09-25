@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 
 #ifndef CGAL_FULL_EXACT_PRICING_H
 #define CGAL_FULL_EXACT_PRICING_H
@@ -29,13 +29,13 @@
 
 
 CGAL_BEGIN_NAMESPACE
-                    
+
 
 // Class declaration
 // =================
 template < class Rep >
 class Full_exact_pricing;
-                         
+
 
 // Class interface
 // ===============
@@ -76,10 +76,10 @@ class Full_exact_pricing
       // some constants
       ET  et_0, et_2;
   public:
-    
+
     // creation
     Full_exact_pricing( ) : et_0( 0), et_2( 2) { }
-    
+
     // initialization
     void  set( )
     {
@@ -87,8 +87,8 @@ class Full_exact_pricing
             vout() << "full exact pricing" << std::endl;
         }
     }
-    
-    
+
+
     // operations
     int  pricing( )
     {
@@ -98,22 +98,22 @@ class Full_exact_pricing
         typedef  CGAL::Join_random_access_iterator_1<
                      Basic_variable_index_iterator,
                      Access_D_Bj >      D_Bj_iterator;
-    
+
         const Solver& s = solver();
         int  n = s.number_of_variables();
         int  m = s.number_of_constraints();
         ET   d = s.variables_common_denominator();
-    
+
         int   j,  min_j  = -1;
         ET    mu, min_mu =  0;
         bool  is_phase_I = ( s.phase() == 1);
-    
+
         // loop over all non-basic variables
         for ( j = 0; j < ( is_phase_I ? n+m : n); ++j) {
-    
+
             // variable non-basic?
             if ( ! s.is_basic( j)) {
-    
+
                 // compute mu_j
                 if ( is_phase_I) {      // phase I
                     if ( j < n) {          // original variable
@@ -145,27 +145,27 @@ class Full_exact_pricing
                             et_0);
                     }
                 }
-    
+
                 CGAL_optimisation_debug {
                     vout() << "mu_" << j << ": " << mu << std::endl;
                 }
-    
+
                 // new minimum?
                 if ( mu < min_mu) { min_j = j; min_mu = mu; }
             }
         }
         vout() << std::endl;
-    
+
         // return index of entering variable
         return min_j;
     }
-    
-    
+
+
 };
-  
+
 
 CGAL_END_NAMESPACE
-                  
+
 
 #endif // CGAL_FULL_EXACT_PRICING_H
 

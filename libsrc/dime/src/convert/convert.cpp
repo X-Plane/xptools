@@ -40,15 +40,15 @@
   \class dxfConverter convert.h
   \brief The dxfConverter class offers a simple interface for dxf converting.
   It makes it possible to extract all geometry from dxf files, and store
-  it in internal geometry sturctures, which again can be exported as 
+  it in internal geometry sturctures, which again can be exported as
   vrml.
 */
 
 
 /*!
   \fn void dxfConverter::setNumSub(const int num)
-  Sets the number of subdivisions for a circle or ellipse. 
-  This overrides the value set in dxfConverter::setMaxerr() and 
+  Sets the number of subdivisions for a circle or ellipse.
+  This overrides the value set in dxfConverter::setMaxerr() and
   should normally not be used
 
   \sa dxfConverter::getNumSub()
@@ -70,7 +70,7 @@
   Returns the maximum allowed error when converting circles, arcs
   ellipses.
 */
-  
+
 /*!
   \fn void dxfConverter::setFillmode(const bool fill)
   Sets whether polylines with width and SOLID and TRACE should be filled.
@@ -86,7 +86,7 @@
   Returns whether only layers should be used (and not color index) when
   converting
 */
-  
+
 /*!
   \fn void dxfConverter::setLayercol(const bool v)
   Sets whether only layer (and not color index) should be used when converting.
@@ -155,7 +155,7 @@ dxfConverter::getLayerData(const dimeEntity *entity)
   }
   // we don't care if layer is turned off (negative color)
   if (colidx < 0) colidx = -colidx;
-    
+
   if (colidx < 1 || colidx > 255) { // just in case
     fprintf(stderr,"Illegal color number %d. Changed to 7 (white)\n",
 	    colidx);
@@ -178,9 +178,9 @@ dxfConverter::getLayerData()
   Converts \a model to the internal geometry structures.
   \sa dxfConverter::writeWrl()
 */
-bool 
+bool
 dxfConverter::doConvert(dimeModel &model)
-{  
+{
   //
   // remove these 6 lines, and you may merge several dxf
   // files into a single vrml file by calling doConvert() several
@@ -193,7 +193,7 @@ dxfConverter::doConvert(dimeModel &model)
     }
   }
 
-  return model.traverseEntities(dime_callback, this, 
+  return model.traverseEntities(dime_callback, this,
 				false, true, false);
 }
 
@@ -208,13 +208,13 @@ dxfConverter::writeVrml(FILE *out, const bool vrml1,
   //
   // write header
   //
-  
+
   if (vrml1) {
-    fprintf(out, 
-            "#VRML V1.0 ascii\n\n");    
+    fprintf(out,
+            "#VRML V1.0 ascii\n\n");
   }
   else {
-    fprintf(out, 
+    fprintf(out,
             "#VRML V2.0 utf8\n\n");
   }
 
@@ -248,8 +248,8 @@ dxfConverter::getColorIndex(const dimeEntity *entity)
 //
 // forward the call to the correct class instance
 //
-bool 
-dxfConverter::dime_callback(const dimeState * const state, 
+bool
+dxfConverter::dime_callback(const dimeState * const state,
 			    dimeEntity *entity, void *data)
 {
   return ((dxfConverter*)data)->private_callback(state, entity);
@@ -258,16 +258,16 @@ dxfConverter::dime_callback(const dimeState * const state,
 //
 // handles the callback from the dime-library
 //
-bool 
-dxfConverter::private_callback(const dimeState * const state, 
+bool
+dxfConverter::private_callback(const dimeState * const state,
 			       dimeEntity *entity)
-{ 
+{
   if (entity->typeId() == dimeBase::dimePolylineType) {
     this->currentPolyline = entity;
   }
 
   if (state->getCurrentInsert()) {
-    this->currentInsertColorIndex = 
+    this->currentInsertColorIndex =
       getColorIndex((dimeEntity*)state->getCurrentInsert());
   }
   else {
@@ -281,8 +281,8 @@ dxfConverter::private_callback(const dimeState * const state,
   // not lines)
   //
   ld->setFillmode(true);
-  
-  switch (entity->typeId()) { 
+
+  switch (entity->typeId()) {
   case dimeBase::dime3DFaceType:
     convert_3dface(entity, state, ld, this);
     break;
@@ -332,7 +332,7 @@ dxfConverter::private_callback(const dimeState * const state,
   Finds the state of supported header variables in \a model. This
   method should be called before dxfxConverter::doConvert()
 */
-void 
+void
 dxfConverter::findHeaderVariables(dimeModel &model)
 {
   dimeHeaderSection *hs = (dimeHeaderSection*)

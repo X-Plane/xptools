@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,7 +27,7 @@
 	#if defined(__MACH__)
 		#define _STDINT_H_
 	#endif
-	#include <Carbon.h>	
+	#include <Carbon.h>
 #else
 	#define _STDINT_H_
 	#include <Carbon/Carbon.h>
@@ -74,17 +74,17 @@ const char * GetApplicationPath(char * pathBuf, int pathLen)
 	if (err != noErr)
 		return NULL;
 */
-	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());		
+	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
 	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
 	CFStringGetCString(main_path,pathBuf,pathLen,kCFStringEncodingMacRoman);
 	CFRelease(main_url);
 	CFRelease(main_path);
-	return pathBuf;	
+	return pathBuf;
 }
 
 int		GetFilePathFromUser(
 					int					inType,
-					const char * 		inPrompt, 
+					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
@@ -94,10 +94,10 @@ int		GetFilePathFromUser(
 		NavDialogCreationOptions	options;
 		FSRef						fileSpec;
 		NavDialogRef				dialog = NULL;
-		
-	err = NavGetDefaultDialogCreationOptions(&options);	
+
+	err = NavGetDefaultDialogCreationOptions(&options);
 	if (err != noErr) goto bail;
-		
+
 	if (inType == getFile_Save)
 		options.saveFileName = CFStringCreateWithCString(kCFAllocatorDefault,outFileName,kCFStringEncodingMacRoman);
 
@@ -109,7 +109,7 @@ int		GetFilePathFromUser(
 	options.preferenceKey = inID;
 
 	NavEventUPP eventUPP = NewNavEventUPP(event_proc);
-	
+
 	switch(inType) {
 	case getFile_Open:
 		err = NavCreateGetFileDialog(&options, NULL, eventUPP, NULL, NULL, NULL, &dialog);
@@ -122,22 +122,22 @@ int		GetFilePathFromUser(
 	case getFile_PickFolder:
 		err = NavCreateChooseFolderDialog(&options, eventUPP, NULL, NULL, &dialog);
 		if (err != noErr) goto bail;
-	}	
-	
+	}
+
 	err = NavDialogRun(dialog);
 	if (err != noErr) goto bail;
-	
+
 	CFRelease(options.message);
 	CFRelease(options.actionButtonLabel);
 	if(options.saveFileName) CFRelease(options.saveFileName);
-	
+
 	NavUserAction action = NavDialogGetUserAction(dialog);
 	if (action !=kNavUserActionCancel && action != kNavUserActionNone)
 	{
 		NavReplyRecord	reply;
 		err = NavDialogGetReply(dialog, &reply);
 		if (err != noErr) goto bail;
-	
+
 		err = AEGetNthPtr(&reply.selection, 1, typeFSRef, NULL, NULL, &fileSpec, sizeof(fileSpec), NULL);
 		if (err != noErr)
 			goto bail;
@@ -145,27 +145,27 @@ int		GetFilePathFromUser(
 		err = FSRefToPathName(&fileSpec, outFileName, inBufSize);
 		if (err != noErr)
 			goto bail;
-		
+
 		NavDisposeReply(&reply);
 
 		if (inType == getFile_Save)
-		{	
+		{
 			CFStringRef str = NavDialogGetSaveFileName(dialog);
-			
+
 			strcat(outFileName,DIR_STR);
-			int p = strlen(outFileName);			
+			int p = strlen(outFileName);
 			int len = CFStringGetLength(str);
 			int got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outFileName+p, len, NULL);
 			outFileName[p+len] = 0;
 		}
-		
+
 	}
-	
-	
+
+
 	NavDialogDispose(dialog);
 	dialog = NULL;
 
-	DisposeNavEventUPP(eventUPP);			
+	DisposeNavEventUPP(eventUPP);
 	return (action !=kNavUserActionCancel && action != kNavUserActionNone);
 
 bail:
@@ -179,14 +179,14 @@ void	DoUserAlert(const char * inMsg)
 {
 	Str255	p1;
 	size_t	sl;
-	
+
 	sl = strlen(inMsg);
-	if (sl > 255) 
+	if (sl > 255)
 		sl = 255;
-		
+
 	p1[0] = sl;
 	memcpy(p1+1, inMsg, sl);
-	
+
 	StandardAlert(kAlertStopAlert, p1, "\p", NULL, NULL);
 }
 
@@ -206,9 +206,9 @@ void	ShowProgressMessage(const char * inMsg, float * progress)
 	CFStringRef ref = CFStringCreateWithCString(NULL, inMsg, kCFStringEncodingMacRoman);
 	EraseRect(&windBounds);
 	InsetRect(&windBounds, 20, 15);
-	DrawThemeTextBox(ref, kThemeSystemFont, kThemeStateActive, true, &windBounds, teJustLeft, NULL);		
+	DrawThemeTextBox(ref, kThemeSystemFont, kThemeStateActive, true, &windBounds, teJustLeft, NULL);
 	CFRelease(ref);
-	
+
 	if (progress)
 	{
 		float p = *progress;
@@ -235,7 +235,7 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 	Str255					pStr, proStr, clcStr;
 	AlertStdAlertParamRec	params;
 	short					itemHit;
-	
+
 	pStr[0] = strlen(inMsg);
 	memcpy(pStr+1,inMsg,pStr[0]);
 	proStr[0] = strlen(proceedBtn);
@@ -255,7 +255,7 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 
 	StandardAlert(kAlertCautionAlert, pStr, "\p", &params, &itemHit);
 
-	return (itemHit == 1);		
+	return (itemHit == 1);
 }
 
 /*
@@ -278,7 +278,7 @@ OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname, int in_buf_si
 {
 	CFURLRef url = CFURLCreateFromFSRef(kCFAllocatorDefault, inFileRef);
 	if (url == NULL)	return -1;
-	
+
 	CFURLPathStyle st = kCFURLPOSIXPathStyle;
 	#if defined(__MWERKS__)
 	st = kCFURLHFSPathStyle;
@@ -286,14 +286,14 @@ OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname, int in_buf_si
 	CFStringRef	str = CFURLCopyFileSystemPath(url, st);
 	CFRelease(url);
 	if (str == NULL)	return -1;
-	
+
 	CFIndex		len = CFStringGetLength(str);
 	CFIndex		got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outPathname, in_buf_size-1, NULL);
 	outPathname[got] = 0;
 	CFRelease(str);
 	return noErr;
 }
-	
+
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
@@ -301,12 +301,12 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 	Str255	pstr1, pstr2;
 	SInt16	item;
 	AlertStdAlertParamRec	rec;
-	
+
 	pstr1[0] = strlen(inMessage1);
 	pstr2[0] = strlen(inMessage2);
 	memcpy(pstr1+1,inMessage1,pstr1[0]);
 	memcpy(pstr2+1,inMessage2,pstr2[0]);
-	
+
 	rec.movable = false;
 	rec.helpButton = false;
 	rec.filterProc = NULL;
@@ -316,7 +316,7 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 	rec.defaultButton = kAlertStdAlertOKButton;
 	rec.cancelButton = kAlertStdAlertCancelButton;
 	rec.position = kWindowDefaultPosition;
-	
+
 	err = StandardAlert(
 					kAlertCautionAlert,
 					pstr1,

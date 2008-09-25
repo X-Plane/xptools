@@ -58,7 +58,7 @@ sign_of_determinant2x2(
 		a01.interval(),
 		a10.interval(),
 		a11.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA sign_of_determinant2x2 failures");
@@ -90,7 +90,7 @@ sign_of_determinant2x2(
 		a01.interval(),
 		a10.interval(),
 		a11.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA sign_of_determinant2x2 failures");
@@ -137,7 +137,7 @@ sign_of_determinant3x3(
 		a20.interval(),
 		a21.interval(),
 		a22.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA sign_of_determinant3x3 failures");
@@ -184,7 +184,7 @@ sign_of_determinant3x3(
 		a20.interval(),
 		a21.interval(),
 		a22.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA sign_of_determinant3x3 failures");
@@ -250,7 +250,7 @@ sign_of_determinant4x4(
 		a31.interval(),
 		a32.interval(),
 		a33.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA sign_of_determinant4x4 failures");
@@ -318,7 +318,7 @@ sign_of_determinant4x4(
 		a31.interval(),
 		a32.interval(),
 		a33.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA sign_of_determinant4x4 failures");
@@ -409,7 +409,7 @@ sign_of_determinant5x5(
 		a42.interval(),
 		a43.interval(),
 		a44.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA sign_of_determinant5x5 failures");
@@ -504,7 +504,7 @@ sign_of_determinant5x5(
 		a42.interval(),
 		a43.interval(),
 		a44.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA sign_of_determinant5x5 failures");
@@ -626,7 +626,7 @@ sign_of_determinant6x6(
 		a53.interval(),
 		a54.interval(),
 		a55.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("IA sign_of_determinant6x6 failures");
@@ -754,7 +754,7 @@ sign_of_determinant6x6(
 		a53.interval(),
 		a54.interval(),
 		a55.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
     CGAL_PROFILER("Lazy IA sign_of_determinant6x6 failures");

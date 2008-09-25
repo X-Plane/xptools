@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -88,13 +88,13 @@ enum {
 
 /*
  * XSpan - this is just a range of memory.  'begin' points to the first byte,
- * and 'end' points to one byte AFTER the last byte in the span.  Its length is 
+ * and 'end' points to one byte AFTER the last byte in the span.  Its length is
  * end - begin.
  *
  */
 struct	XSpan {
 
-	XSpan();	
+	XSpan();
 
 	char *	begin;
 	char *	end;
@@ -112,12 +112,12 @@ struct	XAtom : public XSpan {
 	unsigned long	GetContentLength(void);
 	unsigned long	GetContentLengthWithHeader(void);
 	void			GetContents(XSpan& outContents);
-	
+
 	bool			GetNext(const XSpan& inContainer, XAtom& outNext);
-	
+
 };
 
-/* 
+/*
  * An atom container is a span as well...it is simply the memory for
  * all of the atoms in a row.
  * From this we can extract individual atoms.
@@ -145,7 +145,7 @@ struct	XAtomStringTable : public XAtom {
 	const char *	GetNextString(const char * inString);
 	const char *	GetNthString(int inIndex);
 
-};	
+};
 
 
 /*
@@ -156,7 +156,7 @@ struct	XAtomPlanerNumericTable : public XAtom {
 
 	int		GetArraySize(void);
 	int		GetPlaneCount(void);
-	
+
 	/* These routines decompress the data into a set of planes.
 	 * They return the number of planes filled, but will never
 	 * exceed numberOfPlanes. */
@@ -181,11 +181,11 @@ struct	XAtomPlanerNumericTable : public XAtom {
 						int		interleaved,
 						double * ioPlaneBuffer);
 
-};	
+};
 
 /*
  * An atom of packed data...useful for reading by type
- * and dealing with endian swaps. 
+ * and dealing with endian swaps.
  *
  */
 struct	XAtomPackedData : public XAtom {
@@ -193,7 +193,7 @@ struct	XAtomPackedData : public XAtom {
 	void	Reset(void)			{ position = begin + sizeof(XAtomHeader_t); }
 	bool	Done(void)			{ return position >= end;					}
 	bool	Overrun(void)		{ return position > end;					}
-	
+
 	unsigned char				ReadUInt8 (void)	{ unsigned char  v = *((unsigned char *	) position); position += sizeof(v); return v; 		  }
 			 char				ReadSInt8 (void)	{ char 			 v = *((char *			) position); position += sizeof(v);	return v; 		  }
 	unsigned short				ReadUInt16(void)	{ unsigned short v = *((unsigned short *) position); position += sizeof(v);	return SWAP16(v); }
@@ -202,13 +202,13 @@ struct	XAtomPackedData : public XAtom {
 			 int				ReadSInt32(void)	{ int 			 v = *((int *		  	) position); position += sizeof(v);	return SWAP32(v); }
 			 float				ReadFloat32(void)	{ float 		 v = *((float *			) position); *((int *	   ) &v) = SWAP32(*((int *		) &v));	position += sizeof(v);	return v; }
 			 double				ReadFloat64(void) 	{ double 		 v = *((double *		) position); *((long long *) &v) = SWAP32(*((long long *) &v));	position += sizeof(v);	return v; }
-	
+
 	void						Advance(int bytes)	{ position += bytes; }
-	
+
 	char *		position;
 
 };
-	
+
 
 /********************************************************************************
  * CHUNKY FILE WRITING UTILITIES
@@ -220,11 +220,11 @@ struct	XAtomPackedData : public XAtom {
 struct	StAtomWriter {
 	StAtomWriter(FILE * inFile, int inID);
 	~StAtomWriter();
-	
+
 	FILE *		mFile;
 	int			mAtomStart;
 	int			mID;
-};	
+};
 
 void	WritePlanarNumericAtomShort(
 							FILE *	file,
@@ -233,7 +233,7 @@ void	WritePlanarNumericAtomShort(
 							int		encodeMode,
 							int		interleaved,
 							short *	ioData);
-							
+
 void	WritePlanarNumericAtomInt(
 							FILE *	file,
 							int		numberOfPlanes,

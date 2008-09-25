@@ -28,9 +28,9 @@
 #include <CGAL/intersection_3_1.h>
 #include <CGAL/Triangle_3_Line_3_do_intersect.h>
 #include <CGAL/Triangle_3_Plane_3_do_intersect.h>
-#include <CGAL/Triangle_3_Point_3_do_intersect.h> 
+#include <CGAL/Triangle_3_Point_3_do_intersect.h>
 #include <CGAL/Triangle_3_Ray_3_do_intersect.h>
-#include <CGAL/Triangle_3_Segment_3_do_intersect.h> 
+#include <CGAL/Triangle_3_Segment_3_do_intersect.h>
 #include <CGAL/Triangle_3_Triangle_3_do_intersect.h>
 
 

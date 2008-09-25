@@ -74,7 +74,7 @@ usage( const char * name )
 
 void
 assign_converter( sio_8211_converter_dictionary & cd,
-                  string const & mnemonic, 
+                  string const & mnemonic,
                   string const & converter_type )
 {
   if ( mnemonic.empty() )
@@ -103,10 +103,10 @@ foundRecIdenField( sio_8211Schema const & schema )
   // find the DDF RECORD IDENTIFIER FIELD, which has a field
   // mnemonic of "0001"
 
-  sio_8211Schema::const_iterator field_format = 
+  sio_8211Schema::const_iterator field_format =
     find( schema.begin(), schema.end(), "0001" );
 
-  if ( field_format == schema.end() ) 
+  if ( field_format == schema.end() )
   {
     return false;
   }
@@ -143,7 +143,7 @@ main( int argc, char** argv )
 
   while ((ch = getopt(argc, argv, "rvis:b:")) != GETOPTDONE)
   {
-    switch(ch) 
+    switch(ch)
     {
     case 'r':
       reuse_flag = true;	// reuse directories
@@ -165,7 +165,7 @@ main( int argc, char** argv )
     case 'b' :
       assign_converter( converters, last_mnemonic, optarg );
       continue;
-  
+
     case '?':
     default:
       usage( argv[0] );
@@ -243,9 +243,9 @@ main( int argc, char** argv )
   if ( record_iden && ! foundRecIdenField(schema) )
   {
      schema.push_front( sio_8211FieldFormat() );
-     schema.front().setDataStructCode( 
+     schema.front().setDataStructCode(
         sio_8211FieldFormat::elementary );
-     schema.front().setDataTypeCode( 
+     schema.front().setDataTypeCode(
         sio_8211FieldFormat::implicit_point );
      schema.front().setName( "DDF RECORD IDENTIFER" );
      schema.front().setTag( "0001" );

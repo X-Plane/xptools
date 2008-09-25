@@ -28,7 +28,7 @@ public:
 	////////////////////////////////////////////////
 	//	Center
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getCenterField();
 
 	void	setCenter(float value[]);
@@ -40,7 +40,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFVec3f *getSizeField();
-	
+
 	void	setSize(float value[]);
 	void	setSize(float x, float y, float z);
 	void	getSize(float value[]);
@@ -50,14 +50,14 @@ public:
 	////////////////////////////////////////////////
 
 	SFTime *getEnterTimeField();
-	
+
 	void	setEnterTime(double value);
 	double	getEnterTime();
 
 	////////////////////////////////////////////////
 	//	ExitTime
 	////////////////////////////////////////////////
-	
+
 	SFTime *getExitTimeField();
 
 	void	setExitTime(double value);
@@ -73,7 +73,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool	isChildNodeType(Node *node);
 	void	initialize();
 	void	uninitialize();

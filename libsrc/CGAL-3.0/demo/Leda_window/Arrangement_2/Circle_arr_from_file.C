@@ -1,7 +1,7 @@
 // demo/Arrangement_2/Circle_arr_from_file.C
 //
 // constructs an arrangement of circles from file
-// 
+//
 // File format is:
 // #number_of_circles
 // #x_center y_center squared_radius
@@ -53,19 +53,19 @@ CGAL_BEGIN_NAMESPACE
 Window_stream& operator<<(Window_stream& os, Arr_2 &A)
 {
   My_Arr_drawer< Arr_2,
-                 Arr_2::Ccb_halfedge_circulator, 
+                 Arr_2::Ccb_halfedge_circulator,
                  Arr_2::Holes_iterator> drawer(os);
-  
+
   draw_pm(arr, drawer, os);
-  
+
   return os;
 }
 CGAL_END_NAMESPACE
 
-// redraw function for the LEDA window. used automatically when window 
+// redraw function for the LEDA window. used automatically when window
 // reappears
-void redraw(CGAL::Window_stream * wp) 
-{ 
+void redraw(CGAL::Window_stream * wp)
+{
   wp->start_buffering();
   wp->clear();
   // draw arragnement
@@ -89,13 +89,13 @@ int main(int argc, char* argv[])
   f >> circles_num;
 
   std::vector<Circle_2> circles;
-  
+
   double max_r2=1,max_x=1,min_x=-1,min_y=-1; //for adjusting the window size
-  while (circles_num--) 
+  while (circles_num--)
   {
     leda_real x,y,r2;
     f >> x >> y >> r2;
-    
+
     Point_2  center (x,y);
     circles.push_back(Circle_2(center, r2, CGAL::CLOCKWISE));
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
   W.open_status_window();
   W.display();
 
-  for (unsigned int i=0; i<circles.size(); ++i) 
+  for (unsigned int i=0; i<circles.size(); ++i)
   {
     std::cout << "inserting circle " << i+1 << std::endl;
     insrt_t.start();
@@ -133,8 +133,8 @@ int main(int argc, char* argv[])
   Point_2 p;
 
   Arr_2::Halfedge_handle e;
-  
-  for (;;) 
+
+  for (;;)
   {
     double x,y;
     int b=W.read_mouse(x,y);
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
       p=Point_2(x,y);
 
     W << arr;
-    
+
     Arr_2::Locate_type lt;
     e = arr.locate(p,lt);
 
@@ -164,10 +164,10 @@ int main(int argc, char* argv[])
         W << cc->curve();
       } while (++cc != *hit);
     }
-      
+
   }
 
-  return 0;  
+  return 0;
 }
 
 #endif

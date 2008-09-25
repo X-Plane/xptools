@@ -61,7 +61,7 @@ bool
 dominanceC3(const FT &px, const FT &py, const FT &pz,
 	    const FT &qx, const FT &qy, const FT &qz)
 {
-  return CGAL_NTS compare(px, qx) != SMALLER && 
+  return CGAL_NTS compare(px, qx) != SMALLER &&
 	 CGAL_NTS compare(py, qy) != SMALLER &&
 	 CGAL_NTS compare(pz, qz) != SMALLER;
 }

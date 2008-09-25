@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -43,19 +43,19 @@ static	double	ReadReal48(const unsigned char * p)
 	// Read a Turbopascal REAL48 - always little endian since that's what TP ran on.
 	// Format is: 8 bit exponent (+129), 39 bits of mantissa, MSB is sign.
 
-	// Special case - 0 exponent means 0.	
+	// Special case - 0 exponent means 0.
 	if (p[0] == 0) return 0.0;
-	
+
 	bool sign_negative = p[5] & 0x80;
 	int	expv = (int) p[0] - 0x81;
 	double	exponent = 1.0;
 	if (expv > 0) exponent = 1 << expv;
 	else if (expv < 0) exponent = 1.0 / double ( 1 << (-expv));
-	
+
 	double m = 1.0 + 2.0 * ((((p[1]*one_256+p[2])*one_256+p[3])*one_256+p[4])*one_256+(p[5] & 0x7f))*one_256;
 	return sign_negative ? ( -m * exponent) : (m * exponent);
 }
-	
+
 void	WriteDEM(DEMGeo& inMap, IOWriter * inWriter)
 {
 	inWriter->WriteInt(inMap.mWidth);
@@ -64,7 +64,7 @@ void	WriteDEM(DEMGeo& inMap, IOWriter * inWriter)
 	inWriter->WriteDouble(inMap.mSouth);
 	inWriter->WriteDouble(inMap.mEast);
 	inWriter->WriteDouble(inMap.mNorth);
-	
+
 	EndianSwapArray(platform_Native, platform_LittleEndian, inMap.mWidth *inMap.mHeight, sizeof(float), inMap.mData);
 	inWriter->WriteBulk((const char *) inMap.mData, inMap.mWidth * inMap.mHeight * sizeof(float), false);
 	EndianSwapArray(platform_LittleEndian, platform_Native, inMap.mWidth *inMap.mHeight, sizeof(float), inMap.mData);
@@ -75,19 +75,19 @@ void	ReadDEM (		DEMGeo& inMap, IOReader * inReader)
 	int	hpix, vpix;
 	inReader->ReadInt(hpix);
 	inReader->ReadInt(vpix);
-	
+
 	inMap.resize(hpix, vpix);
 
 	inReader->ReadDouble(inMap.mWest);
 	inReader->ReadDouble(inMap.mSouth);
 	inReader->ReadDouble(inMap.mEast);
 	inReader->ReadDouble(inMap.mNorth);
-	
+
 	if (inMap.mData)
 	{
 		inReader->ReadBulk((char *) inMap.mData, inMap.mWidth * inMap.mHeight * sizeof(float), false);
 		EndianSwapArray(platform_LittleEndian, platform_Native, inMap.mWidth * inMap.mHeight, sizeof(float), inMap.mData);
-	}	
+	}
 }
 
 void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap)
@@ -122,16 +122,16 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 		inMap.mSouth = lat;
 		inMap.mNorth = lat + 1;
 	}
-	
+
 	MFMemFile *	fi = MemFile_Open(inFileName);
 	if (!fi) return false;
-	
+
 	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_BigEndian);
-	
+
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
 	long dim = sqrt((float) words);
-	
+
 	inMap.resize(dim, dim);
 	if (inMap.mData)
 	{
@@ -143,8 +143,8 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 			inMap.mData[x + y * dim] = v;
 		}
 	}
-	
-	MemFile_Close(fi);	
+
+	MemFile_Close(fi);
 	return true;
 }
 
@@ -165,8 +165,8 @@ bool	WriteRawHGT(const DEMGeo& dem, const char * inFileName)
 		short	v = dem.mData[x + y * dem.mWidth];
 		writer.WriteShort(v);
 	}
-	
-	return true;		
+
+	return true;
 }
 
 
@@ -194,13 +194,13 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 
 	MFMemFile *	fi = MemFile_Open(inFileName);
 	if (!fi) return false;
-	
+
 	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_BigEndian);
-	
+
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(float);
 	long dim = sqrt((float)words);
-	
+
 	inMap.resize(dim, dim);
 	int dummy1;
 	char dummy2;
@@ -218,8 +218,8 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 			}
 		}
 	}
-		
-	MemFile_Close(fi);	
+
+	MemFile_Close(fi);
 	return true;
 }
 
@@ -242,13 +242,13 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
 
 	MFMemFile *	fi = MemFile_Open(inFileName);
 	if (!fi) return false;
-	
+
 	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_LittleEndian);
-	
+
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
 	long dim = sqrt((float) words);
-	
+
 	inMap.resize(dim, dim);
 	{
 		if (inMap.mData)
@@ -262,8 +262,8 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
 			}
 		}
 	}
-		
-	MemFile_Close(fi);	
+
+	MemFile_Close(fi);
 	return true;
 }
 
@@ -281,7 +281,7 @@ bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName)
 		writer.WriteFloat(v);
 	}
 	fclose(fi);
-	return true; 
+	return true;
 }
 
 
@@ -300,14 +300,14 @@ bool 	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int 
 	// In this case we are only using a FRACTION of the actual needed data.
 	// So use stdio.
 
-	// X-Off is the location of the leftmost pixel in our tile	
+	// X-Off is the location of the leftmost pixel in our tile
 	int x_off = IMG_X_RES * (inWest + 180);	// X offset puts international dateline on the left edge.
 	// Y-off is the location of the topmost pixel in our tile
 	int y_off = IMG_Y_RES * (90 - inSouth - 1);	// Y offset puts antarctica on the bottom.
-	
+
 	int	imp_y_res = IMG_Y_RES * (inNorth-inSouth);
 	int	imp_x_res = IMG_X_RES * (inEast-inWest);
-	
+
 	FILE * fi = fopen(inFileName, "rb");
 	if (!fi) return false;
 
@@ -318,9 +318,9 @@ bool 	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int 
 	inMap.mNorth = inSouth+1;
 	inMap.mWest = inWest;
 	inMap.mEast = inWest+1;
-	
+
 	float	mmax = -300, mmin = 300;
-	
+
 	for (int y = 0; y <= imp_y_res; ++y)
 	{
 		fseek(fi, (y_off + IMG_Y_RES - y) * IMG_X_SIZE + (x_off), SEEK_SET);
@@ -351,21 +351,21 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	// More info is available in said file:
 	// http://www.fao.org/giews/english/windisp/manuals/WD35EN25.htm
 	// 30-32	height					integer (2 bytes)
-	// 32-34	width					integer (2 bytes)	
+	// 32-34	width					integer (2 bytes)
 	// 170		missing value			character
 	// 171-177	slope (m)				real 6 bits
-	// 177-183	intercept (b)			real 6 bits		
+	// 177-183	intercept (b)			real 6 bits
 	unsigned short height = bp[30] + ((unsigned short) bp[31] << 8);
 	unsigned short width  = bp[32] + ((unsigned short) bp[33] << 8);
 	unsigned char  missing = bp[170];
 	double		   m = ReadReal48(bp+171);
 	double		   b = ReadReal48(bp+177);
-	
+
 	if ((ep-bp) < (512 + width * height)) goto bail;
-	
+
 	printf("File %s: %dx%d, slope=%lf,intercept=%lf, null val = %02x\n",
 		inFileName, width, height, m, b, missing);
-		
+
 	inMap.resize(width, height);
 	for (int y = 0; y < height; ++y)
 	for (int x = 0; x < width; ++x)
@@ -378,7 +378,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	}
 	ok = true;
 }
-bail:	
+bail:
 	MemFile_Close(fi);
 	return ok;
 }
@@ -441,10 +441,10 @@ double	parse_field_float(const char ** s, const char * e)
 	else
 		return sign * (mantissa * pow(10.0f, rshift));
 }
-bail:	
+bail:
 	*s = p;
 	return 0;
-	
+
 }
 
 // This routine parses a USGS "natural format" DEM, e.g. a DEM as a series of elevations in ASCII.
@@ -463,10 +463,10 @@ bail:
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 {
 	int	n;
-	
+
 	MFMemFile * fi = MemFile_Open(inFileName);
 	if (fi == NULL) return false;
-	
+
 	const char * b = MemFile_GetBegin(fi);
 	const char * s, * e;
 	s=b    ;    e=b+ 40;	trim_down(&s, &e);	string	fname(s,e);
@@ -477,18 +477,18 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 							parse_field_float(&s, e);	parse_field_float(&s, e);
 							double	east = parse_field_float(&s, e) / 3600.0; double	north = parse_field_float(&s, e)  / 3600.0;
 	s=b+852;	e=b+864;	int k = parse_field_int(&s, e); int profiles = parse_field_int(&s, e);
-		
+
 	if (geo != 0)		{printf("ERROR: %s not geo projected.\n", inFileName);	goto bail;}
 	if (hunits != 3)	{printf("ERROR: %s not in arc seconds.\n", inFileName);	goto bail;}
 	if (vunits != 2)	{printf("ERROR: %s not in meters.\n", inFileName);		goto bail;}
-	
+
 	printf("File name: '%s'\n", fname.c_str());
 	printf("Geocoding: %d\n", geo);
 	printf("Ground Units: %d\n", hunits);
 	printf("Elevation Units: %d\n", vunits);
 	printf("Profiles: %d\n", profiles);
 	printf("Bounds: %lf %lf -> %lf %lf\n", west, south, east, north);
-	
+
 	if (k != 1) { printf("ERROR: expect 1 count of profiles.\n");	goto bail; }
 {
 	inMap.mWest = west;
@@ -558,7 +558,7 @@ static	void	IgnoreTiffWarnings(const char *, const char* fmt, va_list args)
 
 static	void	IgnoreTiffErrs(const char *, const char* fmt, va_list args)
 {
-	vprintf(fmt, args);	
+	vprintf(fmt, args);
 }
 
 struct	StTiffMemFile {
@@ -567,7 +567,7 @@ struct	StTiffMemFile {
 
 	MFMemFile *		file;
 	int				offset;
-};	
+};
 
 static tsize_t	MemTIFFReadWriteProc(thandle_t handle, tdata_t data, tsize_t len)
 {
@@ -583,7 +583,7 @@ static tsize_t	MemTIFFReadWriteProc(thandle_t handle, tdata_t data, tsize_t len)
 
 static toff_t 	MemTIFFSeekProc(thandle_t handle, toff_t pos, int mode)
 {
-	StTiffMemFile *	f = (StTiffMemFile *) handle;	
+	StTiffMemFile *	f = (StTiffMemFile *) handle;
 	switch(mode) {
 	case SEEK_SET:
 	default:
@@ -623,26 +623,26 @@ static void 	MemTIFFUnmapFileProc(thandle_t, tdata_t, toff_t)
 
 
 /*
-	GeoTiff notes - 
+	GeoTiff notes -
 	First of all, Geotiff - unlike our DEMs, the first scanline is the "top" of the image, meaning north-most scanline.
 	Left edge is west like we expect.
-	
+
 	Pixels can be 'area' or 'point', but the distinction is moot...the center of the pixel, not the lower left corner,
 	is what corresponds to the geo-coding references.
-	
+
 	SRTM Problems:
-	The original SRTMs featured 1201 samples covering a single degree with point samples, covering both edges.  This is 
+	The original SRTMs featured 1201 samples covering a single degree with point samples, covering both edges.  This is
 	just like our internal system works.
-	
+
 	The GeoTiff SRTM recuts contain 1200 samples per tile.  For a given degree tile, the 1200 samples include the west'
 	and south but not north and east edge of the original SRTM file.
-	
-	BUT here's where things get weird: the samples are listed as area, with the tie points 1.5 arc-seconds to the east and 
-	north?  Why?  Well, it looks to me like someone misinterpretted the original SRTMs as being area points, with 1200 
+
+	BUT here's where things get weird: the samples are listed as area, with the tie points 1.5 arc-seconds to the east and
+	north?  Why?  Well, it looks to me like someone misinterpretted the original SRTMs as being area points, with 1200
 	points covering the DEM.  (With area pixels, we'd expect the left edge of pixel 0 to touch the left boundary and the
 	right edge of pixel 1199 to cover the right boundary.  With single sample pixels, pixel 0 and 1200 are directly on
 	the border.)
-	
+
 	In other words, the CGIAR SRTM files have essentially been shifted to the northeast by 1.5 arc-seconds.
 
 */
@@ -676,7 +676,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	inMap.mSouth = round(corners[1]);
 	inMap.mEast = round(corners[6]);
 	inMap.mNorth = round(corners[7]);
-	
+
 	printf("Corners: %lf,%lf   %lf,%lf   %lf,%lf   %lf,%lf\n",
 		corners[0], corners[1], corners[2], corners[3], corners[4], corners[5], corners[6], corners[7]);
 
@@ -685,8 +685,8 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	uint16 d;
 //	size_t npixels;
 //	uint32* raster;
-		
-		
+
+
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &cc);
@@ -697,19 +697,19 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 
 	tsize_t line_size = TIFFScanlineSize(tif);
 	tdata_t aline = _TIFFmalloc(line_size);
-	
+
 	int cs = TIFFCurrentStrip(tif);
 //	TIFFSetupStrips
 	int nos = TIFFNumberOfStrips(tif);
 	int cr = TIFFCurrentRow  (tif);
 //	printf("cs = %d, nos = %d, cr = %d, linesize=%d\n", cs, nos, cr,line_size);
-	
+
 	for (int y = 0; y < h; ++y)
 	{
 //		printf("Reading line %d\n", y);
 		result = TIFFReadScanline(tif, aline, y, 0);
 		if (result == -1) { printf("Tiff error in read.\n"); break; }
-		
+
 		if (d == 16)
 		{
 			short * v = (short *) aline;
@@ -737,7 +737,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 				if (y == 0)
 					inMap(x,h) = e;
 			}
-		}		
+		}
 		inMap(w,y) = inMap(w-1,y);
 	}
 //	printf("Extra byte.\n");
@@ -745,7 +745,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 //	printf("Done reading.\n");
 	_TIFFfree(aline);
 
-	TIFFClose(tif);    
+	TIFFClose(tif);
 //	printf("closed file.\n");
 	TIFFSetWarningHandler(warnH);
 	TIFFSetErrorHandler(errH);
@@ -773,14 +773,14 @@ bail:
 
 /*
 DTED:
-	HEADER INFO: 
+	HEADER INFO:
 
 	fixed length 80
 	fixed length header - 648 ASCII CHARS! - dataset ID
 	accuracy: 2700 chars
-	
+
 	Data is then stored in vertical columns, each column goes S->N, columns go EW
-	
+
 	column header:
 	252, 3-byte block count 0-baseD, 2-byte lon count, 2 byte lat count
 		8 bytes of crap then
@@ -812,12 +812,12 @@ struct DTED_UHL_t {
 	char			unique_ref_num[12];			// May be blank, some kind of producer-defined blob
 	char			num_lines_lon[4];			// Num scanlines H, e.g. 0121 = 121 pixels wide
 	char			num_lines_lat[4];			// Num scanlines V, e.g. 3601 = 3601 pixels wide
-	char			multiple_accuracy_flag;		// '0' or '1' 
+	char			multiple_accuracy_flag;		// '0' or '1'
 	char			reserved[24];				// Usually lblank
-};	
+};
 
 bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
-{	
+{
 	MFMemFile *			fi = NULL;
 	const DTED_UHL_t *	uhl;
 	const char *		base_ptr;
@@ -827,13 +827,13 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	fi = MemFile_Open(inFileName);
 	if (fi == NULL) goto bail;
 	if (MemFile_GetEnd(fi) - MemFile_GetBegin(fi) < (80 + 648 + 2700)) goto bail;
-	
+
 	uhl = (const DTED_UHL_t *) MemFile_GetBegin(fi);
-	
+
 	if (uhl->cookie[0] != 'U' || uhl->cookie[1] != 'H' || uhl->cookie[2] != 'L') goto bail;
 	if (uhl->version != '1') goto bail;
-{	
-	inMap.mSouth = 
+{
+	inMap.mSouth =
 		(uhl->latitude[0]-'0') * 1000000 +
 		(uhl->latitude[1]-'0') * 100000 +
 		(uhl->latitude[2]-'0') * 10000 +
@@ -845,7 +845,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 		inMap.mSouth = -inMap.mSouth;
 	inMap.mSouth /= 10000.0;
 
-	inMap.mWest = 
+	inMap.mWest =
 		(uhl->longitude[0]-'0') * 1000000 +
 		(uhl->longitude[1]-'0') * 100000 +
 		(uhl->longitude[2]-'0') * 10000 +
@@ -856,22 +856,22 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	if (uhl->longitude[7] == 'W' || uhl->longitude[7] == 'w')
 		inMap.mWest = -inMap.mWest;
 	inMap.mWest /= 10000.0;
-	
+
 	inMap.mNorth = inMap.mSouth + 1.0;
 	inMap.mEast = inMap.mWest + 1.0;
-	
-	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 + 
-				 (uhl->num_lines_lon[1]-'0') * 100 + 
-				 (uhl->num_lines_lon[2]-'0') * 10 + 
+
+	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 +
+				 (uhl->num_lines_lon[1]-'0') * 100 +
+				 (uhl->num_lines_lon[2]-'0') * 10 +
 				 (uhl->num_lines_lon[3]-'0') * 1;
-	int y_size = (uhl->num_lines_lat[0]-'0') * 1000 + 
-				 (uhl->num_lines_lat[1]-'0') * 100 + 
-				 (uhl->num_lines_lat[2]-'0') * 10 + 
+	int y_size = (uhl->num_lines_lat[0]-'0') * 1000 +
+				 (uhl->num_lines_lat[1]-'0') * 100 +
+				 (uhl->num_lines_lat[2]-'0') * 10 +
 				 (uhl->num_lines_lat[3]-'0') * 1;
 
 	if (x_size < 1 || y_size < 1 || x_size > 10000 || y_size > 10000) goto bail;
 	if (inMap.mWest < -180.0 || inMap.mEast > 180.0 || inMap.mSouth < -90.0 || inMap.mNorth > 90.0) goto bail;
-	
+
 	inMap.resize(x_size, y_size);
 
 	base_ptr = MemFile_GetBegin(fi) + 80 + 648 + 2700;
@@ -885,15 +885,15 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 			unsigned char c1 = (unsigned char) *base_ptr++;
 			if (base_ptr >= end_ptr) goto bail;
 			unsigned char c2 = (unsigned char) *base_ptr++;
-			
+
 			float height = c2 + ((c1 & 0x7F) << 8);
 			if (c1 & 0x80)	height = -height;
 			if (height == -32767.0)	height = DEM_NO_DATA;
-			inMap(x,y) = height;			
+			inMap(x,y) = height;
 		}
 		base_ptr += 4;
 	}
-	
+
 	MemFile_Close(fi);
 	return true;
 }
@@ -920,7 +920,7 @@ static 	bool	DEMLineImporter(const vector<string>& inTokenLine, void * inRef)
 		printf("Unknown token %s\n", inTokenLine[2].c_str());
 		return false;
 	}
-	if (sTranslateMap == NULL) 
+	if (sTranslateMap == NULL)
 	{
 		printf("LU_IMPORT line hit unexpecetedly.\n");
 		return false;
@@ -938,8 +938,8 @@ static 	bool	DEMLineImporter(const vector<string>& inTokenLine, void * inRef)
 	return true;
 }
 
-bool	LoadTranslationFile(const char * 		inFileName, 
-						vector<int>& 			outForwardMap, 
+bool	LoadTranslationFile(const char * 		inFileName,
+						vector<int>& 			outForwardMap,
 						hash_map<int, int> * 	outReverseMap,
 						vector<char> *			outCLUT)
 {
@@ -957,7 +957,7 @@ bool	LoadTranslationFile(const char * 		inFileName,
 		return false;
 	}
 	sTranslateMap = NULL;
-	
+
 	if (outReverseMap)
 	{
 		outReverseMap->clear();
@@ -975,7 +975,7 @@ bool	LoadTranslationFile(const char * 		inFileName,
 				RGBColor_t& c = gEnumColors[outForwardMap[n]];
 				(*outCLUT)[n*3  ] = c.rgb[0] * 255.0;
 				(*outCLUT)[n*3+1] = c.rgb[1] * 255.0;
-				(*outCLUT)[n*3+2] = c.rgb[2] * 255.0;				
+				(*outCLUT)[n*3+2] = c.rgb[2] * 255.0;
 			} else {
 				(*outCLUT)[n*3  ] = 0;
 				(*outCLUT)[n*3+1] = 0;
@@ -993,7 +993,7 @@ bool	TranslateDEMForward(DEMGeo& ioDem, const vector<int>& inForwardMap)
 	for (int y = 0; y < ioDem.mHeight;++y)
 	{
 		int v = ioDem(x,y);
-		
+
 			 if (v < 0					  ){ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
 		else if (v >= inForwardMap.size()) {ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
 		else 							   {ioDem(x,y)=inForwardMap[v];							}
@@ -1013,7 +1013,7 @@ bool	TranslateDEMReverse(DEMGeo& ioDem, const hash_map<int, int>& inReverseMap)
 		{
 			ioDem(x,y)=DEM_NO_DATA;
 			ret = false;
-		} else 
+		} else
 			ioDem(x,y) = i->second;
 	}
 	return ret;

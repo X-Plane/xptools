@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownTable.cpp
  *
  *  This source file is part of DIME.
@@ -44,7 +44,7 @@
   Constructor.
 */
 
-dimeUnknownTable::dimeUnknownTable(const char * const name, 
+dimeUnknownTable::dimeUnknownTable(const char * const name,
 				 dimeMemHandler * const memhandler)
 {
   DXF_STRCPY(memhandler, this->tableName, name);
@@ -76,7 +76,7 @@ dimeUnknownTable::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeUnknownTable::write(dimeOutput * const file)
 {
   bool ret = dimeTableEntry::preWrite(file);
@@ -88,7 +88,7 @@ dimeUnknownTable::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeUnknownTable::typeId() const
 {
   return dimeBase::dimeUnknownTableType;
@@ -101,7 +101,7 @@ dimeUnknownTable::countRecords() const
 {
   return 1 + dimeTableEntry::countRecords();
 }
-  
+
 //!
 
 const char *

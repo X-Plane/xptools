@@ -19,7 +19,7 @@
 // $Revision: 1.6 $ $Date: 2003/10/21 12:24:13 $
 // $Name: current_submission $
 //
-// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>  
+// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>
 //                 Matthias Baesken <baesken@informatik.uni-halle.de>
 
 #include <CGAL/Real_timer.h>
@@ -33,7 +33,7 @@
 #if defined (__BORLANDC__)
 #define CGAL_PROTECT_SYS_TIME_H
 #include <sys/timeb>
-#include <ctype> 
+#include <ctype>
 #endif
 
 #if defined (__MWERKS__)
@@ -45,7 +45,7 @@
 #define CGAL_PROTECT_SYS_TIME_H
   #include <sys/timeb.h>
   #include <sys/types.h>
-#endif 
+#endif
 
 // If none of the above PC compilers, use POSIX fct. gettimeofday()
 #ifndef CGAL_PROTECT_SYS_TIME_H
@@ -74,11 +74,11 @@ double Real_timer::get_real_time() const {
     // by the caller.
 #if   defined(_MSC_VER)
     struct _timeb  t;
-    _ftime(&t);  
+    _ftime(&t);
     return double(t.time) + double(t.millitm) / 1000.0;
 #elif defined(__BORLANDC__)
     struct timeb t;
-    ftime(&t);  
+    ftime(&t);
     return double(t.time) + double(t.millitm) / 1000.0;
 #elif defined(__MWERKS__)
     static bool initialized = false;
@@ -119,7 +119,7 @@ double Real_timer::compute_precision() const {
     // Computes timer precision in seconds dynamically. Note that
     // the timer system call is probably non-trivial and will show
     // up in this time here (probably for one call). But that is just
-    // fine that the call to the timer itself if reported as noise 
+    // fine that the call to the timer itself if reported as noise
     // in the precision.
     double min_res = DBL_MAX;
     for ( int i = 0; i < 5; ++i) {

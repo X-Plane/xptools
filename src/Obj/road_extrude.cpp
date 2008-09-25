@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,20 +59,20 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 	texes.clear();
 	texes_lit.clear();
 	offsets.clear();
-	
+
 	string		file(inFile), path(inFile);
 	xbyt*		MAP_add;
 	xint		c_use, c_max;
 	bool		is_forest = false;
 	string		tex, token, tex_path;
 	xint		tex_ref;
-	
+
 	float		scale = 1.0;
-	
+
 	set_dir_chars(&file);
 	set_dir_chars(&path);
 	strip_to_path(&path);
-	
+
 	XMappedFile	mappedFile(file.c_str(), &MAP_add);
 	xint cur_id = 0;
 
@@ -82,7 +82,7 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 	{
 		// TEXTURE <offset> <filename>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "TEXTURE", Xfals))
-		{					
+		{
 			offsets.push_back(TXT_MAP_int_scan(MAP_add, &c_use, c_max));
 			TXT_MAP_str_scan_space(MAP_add, &c_use, c_max, &tex);
 			DSF_LocateResourceSecondary(dsf_Res_Image, dsf_Res_RoadNetwork, path, tex, 1, tex_path);
@@ -90,41 +90,41 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 			tex_ref = tman.load_texture(Xtrue,type_tex,t_tex_DIM,tex_anymini	,tex_path);
 			if (tex_ref == null_ref) MACIBM_alert(0, "Error, could not load image for terrain", path, tex, tex_path, t_exit);
 			texes.push_back(tex_ref);
-		} else 
+		} else
 		// SCALE <scale>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "SCALE", Xfals))
 		{
 			scale = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
-		} else 
+		} else
 		// TEXTURE_LIT <filename>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "TEXTURE_LIT", Xfals))
-		{	
-			// The lit texture is not required.  So try to load it but push a null tex if necessary.  This is 
+		{
+			// The lit texture is not required.  So try to load it but push a null tex if necessary.  This is
 			// because the tex and lit tex vectors must be in sync!!  That way the user can light somes without having to light them all.
 			TXT_MAP_str_scan_space(MAP_add, &c_use, c_max, &tex);
 			tex_ref = null_ref;
 			DSF_LocateResourceSecondary(dsf_Res_Image, dsf_Res_RoadNetwork, path, tex, 1, tex_path);
 			if (!tex_path.empty()) tex_ref = tman.load_texture(Xfals,type_tex,t_tex_DIM,tex_anymini	,tex_path);
 			texes_lit.push_back(tex_ref);
-		} else 
+		} else
 		// ROAD_TYPE <id> <width> <length> <tex index>		<r> <g> <b>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "ROAD_TYPE", Xfals))
 		{
 			cur_id = TXT_MAP_int_scan(MAP_add, &c_use, c_max);
-			
-			
+
+
 			road_types[cur_id].width = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
-			
+
 			if(road_types[cur_id].width<=0.0)MACIBM_alert(0,"Road segment not greater than 0!","","","",t_exit);
-			
-			
+
+
 			road_types[cur_id].length = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
-			road_types[cur_id].tex_index = TXT_MAP_int_scan(MAP_add, &c_use, c_max);			
+			road_types[cur_id].tex_index = TXT_MAP_int_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].color[0] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].color[1] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].color[2] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].has_wires = false;
-		} else 
+		} else
 		// SEGMENT <index> <lod> <lod> <dx1> <dy1> s1 dx2 dy2 s2
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "SEGMENT", Xfals))
 		{
@@ -138,17 +138,17 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 			road_types[cur_id].segments.back().s [0] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].segments.back().dx[1] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].segments.back().dy[1] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
-			road_types[cur_id].segments.back().s [1] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);	
-			
+			road_types[cur_id].segments.back().s [1] = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
+
 			if (scale != 1.0)
 			{
 				road_types[cur_id].segments.back().s [0]	/= scale;
 				road_types[cur_id].segments.back().s [1]	/= scale;
-			}			
+			}
 		} else
 		// WIRE <lod> <lod> <dx> <dy> <droop>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "WIRE", Xfals))
-		{	
+		{
 			has_wires = true;
 			road_types[cur_id].wires.push_back(WireSpec());
 			road_types[cur_id].wires.back().lod_near = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
@@ -158,12 +158,12 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 			road_types[cur_id].wires.back().droop_rat = TXT_MAP_flt_scan(MAP_add, &c_use, c_max);
 			road_types[cur_id].wires.back().min_dis = 100.0;
 			road_types[cur_id].wires.back().max_dis = 8.0 * con.nmtomtrs;
-			road_types[cur_id].has_wires = true;			
+			road_types[cur_id].has_wires = true;
 		} else
 		// OBJECT <model name> <dx> <rotation> <on ground> <dist> <offset>
 		if (TXT_MAP_str_match_space(MAP_add, &c_use, c_max, "OBJECT", Xfals))
-		{	
-			road_types[cur_id].objects.push_back(ObjSpec());			
+		{
+			road_types[cur_id].objects.push_back(ObjSpec());
 			string model_name;
 			TXT_MAP_str_scan_space(MAP_add, &c_use, c_max, &model_name);
 			string	fullpath;
@@ -197,7 +197,7 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 		deverr << " has wires " << m->second.has_wires << " tex index " << m->second.tex_index << "\n";
 		for (SegVector::iterator s = m->second.segments.begin(); s != m->second.segments.end(); ++s) {
 			deverr << "    Near " << s->lod_near << " far " << s->lod_far << "\n";
-			deverr << "    Segment from " << s->dx[0] << "," << s->dy[0] << "->" << s->dx[1] << "," << s->dy[1] 
+			deverr << "    Segment from " << s->dx[0] << "," << s->dy[0] << "->" << s->dx[1] << "," << s->dy[1]
 				<< " [" << s->s[0] << "," << s->s[1] << "]\n";
 		}
 		for (WireVector::iterator w = m->second.wires.begin(); w != m->second.wires.end(); ++w) {
@@ -212,7 +212,7 @@ bool RoadDef_t::ReadFromDef(const char * inFile)
 	}
 #endif
 */
-	return Xtrue;	
+	return Xtrue;
 }
 
 void	RoadChain_t::reverse(void)
@@ -248,7 +248,7 @@ float		RoadChain_t::get_heading(RoadJunction_t * junc, bool force_end)
 	}
 #if DEV
 
-	else 
+	else
 		deverr<<"ERROR: get_heading called with bad junction.\n";
 
 #endif
@@ -300,7 +300,7 @@ void			RoadJunction_t::sort_clockwise(void)
 		{
 			sorted_chains.insert(map<float, RoadChain_t *>::value_type(c->get_heading(this, false), c));
 			sorted_chains.insert(map<float, RoadChain_t *>::value_type(c->get_heading(this, true ), c));
-			doubles.insert(c); 
+			doubles.insert(c);
 		} else if (c->start_node == this)
 		{
 			sorted_chains.insert(map<float, RoadChain_t *>::value_type(c->get_heading(this), c));
@@ -387,12 +387,12 @@ void			RoadData::ProcessChains(
 						float			z1,
 						float			z2)
 {
-	if (inSimplify) MakeShapePoints();	
+	if (inSimplify) MakeShapePoints();
 	BucketAll(x1,x2,z1,z2);
 ///	building_junctions.clear();
 	building_junctions.clear();
 	working_chains.clear();
-	
+
 	for (int x = 0; x < ROAD_SECTIONS; ++x)
 	for (int y = 0; y < ROAD_SECTIONS; ++y)
 	for (RoadJunctionSet::iterator j = working_junctions.begin(); j != working_junctions.end(); ++j)
@@ -406,7 +406,7 @@ void RoadData::MakeShapePoints(void)
 	int total_merged = 0;
 	int total_removed = 0;
 
-	// First go through and consider every jucntion...if it has 2 items and they're the same and not a 
+	// First go through and consider every jucntion...if it has 2 items and they're the same and not a
 	// loop, we can coalesce.  Look out for a colocated junctions.
 	for (RoadJunctionSet::iterator junc = working_junctions.begin(); junc != working_junctions.end(); ++junc)
 	{
@@ -415,10 +415,10 @@ void RoadData::MakeShapePoints(void)
 		{
 			RoadChain_t * sc = me->chains[0];
 			RoadChain_t * ec = me->chains[1];
-			
-			if (sc != ec && sc->type == ec->type && 
+
+			if (sc != ec && sc->type == ec->type &&
 				sc->start_node != sc->end_node &&
-				ec->start_node != ec->end_node)	
+				ec->start_node != ec->end_node)
 			{
 				// Organize so start chain feeds into end chain directionally, with
 				// us as the middle junction.
@@ -428,11 +428,11 @@ void RoadData::MakeShapePoints(void)
 				if (sc->end_node != me)
 					deverr<<"Topology error.\n";
 				if (ec->start_node != me)
-					deverr<<"Topology error.\n";				
+					deverr<<"Topology error.\n";
 #endif
 				// These junctions cap the new complete chain.
 				RoadJunction_t * sj = sc->start_node;
-				RoadJunction_t * ej = ec->end_node;		
+				RoadJunction_t * ej = ec->end_node;
 #if DEV
 				if (sj == me)
 					deverr<<"Topology error.\n";
@@ -476,14 +476,14 @@ void RoadData::MakeShapePoints(void)
 	{
 		working_junctions.erase(*junc);
 		delete (*junc);
-	}	
+	}
 }
 
 void		RoadData::BucketAll(float x1, float x2, float z1, float z2)
 {
 	float dx, dz;
 	int	  ix, iz;
-/*	
+/*
 	if (working_junctions.empty() && !building_junctions.empty())
 	{
 		for (RoadJunctionMap::iterator j = building_junctions.begin(); j != building_junctions.end(); ++j)
@@ -516,7 +516,7 @@ void		RoadData::BucketAll(float x1, float x2, float z1, float z2)
 		final_junctions[ix][iz].push_back(*j);
 	}
 	}
-*/	
+*/
 
 	int	chain_counts[ROAD_SECTIONS][ROAD_SECTIONS];
 #if !LIN
@@ -560,7 +560,7 @@ void		RoadData::BucketAll(float x1, float x2, float z1, float z2)
 		final_chains[ix][iz][idx] = **c;
 		ptr_migrate[(xint) *c] = &final_chains[ix][iz][idx];
 	}
-	
+
 	for (RoadJunctionSet::iterator j = working_junctions.begin(); j != working_junctions.end(); ++j)
 	if (*j)
 	{
@@ -583,9 +583,9 @@ void			RoadData::Preallocate(int max_node_id, int num_chains[ROAD_SECTIONS][ROAD
 	for (int n = 1; n <= max_node_id; ++n)
 	{
 		building_junctions[n] = new RoadJunction_t;
-		building_junctions[n]->id = n;		
+		building_junctions[n]->id = n;
 	}
-	
+
 	for (int x = 0; x < ROAD_SECTIONS; ++x)
 	for (int y = 0; y < ROAD_SECTIONS; ++y)
 	{
@@ -604,7 +604,7 @@ RoadChain_t *	RoadData::AddSimpleSegmentDirect(
 						float	xyz2[3])
 {
 	RoadJunction_t * j1, * j2;
-	
+
 	j1 = building_junctions[node1];
 	if (j1->chains.empty())
 	{
@@ -633,7 +633,7 @@ void			RoadData::AddShapePointVectorAndClear(
 						vector<float>&	ioVec)
 {
 	inChain->shape_points.swap(ioVec);
-}	
+}
 
 void			RoadData::ProcessChainsPreallocated(void)
 {
@@ -675,7 +675,7 @@ void RoadData::Dump(void)
 				i,final_chains[x][y][i],
 				final_chains[x][y][i]->start_node->id, final_chains[x][y][i]->end_node->id, final_chains[x][y][i]->type);
 			for (int j = 0; j < final_chains[x][y][i]->shape_points.size(); j += 3)
-				deverr<<"      Shape point %f,%f,%f\n", 
+				deverr<<"      Shape point %f,%f,%f\n",
 					final_chains[x][y][i]->shape_points[j  ],
 					final_chains[x][y][i]->shape_points[j+1],
 					final_chains[x][y][i]->shape_points[j+2]);
@@ -703,15 +703,15 @@ void		RoadData::Clear(void)
 	working_chains.clear();
 	working_junctions.clear();
 	building_junctions.clear();
-	
+
 }
 
 void		RoadData::ExtrudeArea(
 					    int					tex_index,
-						const RoadDef_t&	defs, 
-						int					x_bucket, 
-						int					y_bucket, 
-						ExtrudeFunc_f		func, 
+						const RoadDef_t&	defs,
+						int					x_bucket,
+						int					y_bucket,
+						ExtrudeFunc_f		func,
 						ReceiveObj_f		objFunc,
 						void *				ref,
 						void *				objRef,
@@ -734,14 +734,14 @@ void		RoadData::ExtrudeArea(
 		if (c->start_node == c->end_node && c->shape_points.size() < 6)
 			deverr << "WARNING: segment with end nodes ID " <<
 				c->start_node->id << " has " << c->shape_points.size() / 3 << " shape points.\n";
-#endif	
+#endif
 
 
 		const RoadDef_t::RoadType& road_type(road_type_it->second);
-		
+
 		// We only need to run this case if (1) this is our texture type or (2) we have wires and it's powerline time.  That's it.
 		// (This means we do make TWO passes over a powerline + road vector..the first one puts down the pavement and objects, the
-		// second one does the wires.		
+		// second one does the wires.
 		if (road_type.tex_index != tex_index && !(road_type.has_wires && defs.texes[tex_index] == t_powerlines)) { /*skipq++;*/ continue; }
 
 		double	dw0 = road_type.width * -0.5;
@@ -847,7 +847,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				}
 //				MACIBM_alert(0, "PINCH!", "", "", "", t_exit);
 				#endif
-			
+
 			} else if (dirs[n-1].dot(dirs[n]) > 0.9) {
 				d_left = dirs[n-1].perpendicular_cw();
 				d_left += dirs[n].perpendicular_cw();
@@ -903,7 +903,7 @@ if(check_nan(final_pts[n*6+2]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				else
 					deverr<<"ERROR NO INTERSECTION.\n";
 				#endif
-				
+
 				if (Line2(s1r).intersect(Line2(s2r), pr))
 				{
 					final_pts[n*6+3] = pr.x;
@@ -921,11 +921,11 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				else
 					deverr<<"ERROR NO INTERSECTION.\n";
 				#endif
-				
+
 			}
-			
+
 		} // End of point->quad extrusion loop
-			
+
 		bool	called_start = false;
 
 		if (road_type.tex_index == tex_index)
@@ -940,7 +940,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 			double s0 = road_type.segments[d].s[0];
 			double s1 = road_type.segments[d].s[1];
 
-			called_start = true;	
+			called_start = true;
 			local_pts = final_pts;
 			final_sts.resize(num_pts*4);
 			final_sts[0] = s0;
@@ -957,7 +957,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				final_sts[n*4+2] = s1;
 				final_sts[n*4+3] = last;
 				if (last > 1.0) last -= floor(last);
-				
+
 				local_pts[n*6  ] = extrap(0.0, final_pts[n*6  ], 1.0, final_pts[n*6+3], dx0);
 				local_pts[n*6+1] = final_pts[n*6+1] + dy0;
 				local_pts[n*6+2] = extrap(0.0, final_pts[n*6+2], 1.0, final_pts[n*6+5], dx0);
@@ -967,7 +967,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 			}
 			func(ext_Poly_QuadStrip, num_pts*2, &*local_pts.begin(), &*final_sts.begin(), road_type.segments[d].lod_near,road_type.segments[d].lod_far, ref);
 		}
-		if (called_start)		
+		if (called_start)
 			func(ext_Stop_Obj, 0, NULL, NULL, 0.0, -1.0, ref);
 		called_start = false;
 
@@ -993,16 +993,16 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				{
 					float rat = (float) j / WIRE_TESS_FACTOR;
 					float index = WIRE_TESS_FACTOR*i+j;
-					
+
 					local_pts[3*index  ]=interp(0.0,srcx,1.0, dstx, rat);
 					local_pts[3*index+1]=interp(0.0,srcy,1.0, dsty, rat)+dy*(1.0-droop)+dy*droop*sqr(2.0*rat-1.0);
 					local_pts[3*index+2]=interp(0.0,srcz,1.0, dstz, rat);
-				}				
+				}
 			}
 			func(ext_Line_Strip, WIRE_TESS_FACTOR*(num_pts-1)+1, &*local_pts.begin(), NULL, road_type.wires[w].lod_near, road_type.wires[w].lod_far, ref);
 			func(ext_Stop_Obj, 0, NULL, NULL, 0, 0, ref);
 		}
-		
+
 		// When do we put down our objects?  We better do it exactly once.  To accomplish that, all
 		// objects must have a texture type.  We will run this pass and get objects no matter what.
 		if (tex_index == road_type.tex_index)
@@ -1023,7 +1023,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 				else		heading_prev = heading_from_two_dirs(dirs[i-1],dirs[i]);
 				if (i==(num_segs-1)) heading_next = heading_seg;
 				else			   heading_next = heading_from_two_dirs(dirs[i],dirs[i+1]);
-			
+
 				xflt srcx,srcz,srcy,dsty,dstx,dstz;
 				srcx=extrap(0.0, final_pts[i*6  ], 1.0, final_pts[i*6+ 3], ox);
 				dstx=extrap(0.0, final_pts[i*6+6], 1.0, final_pts[i*6+ 9], ox);
@@ -1044,7 +1044,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 							road_type.objects[o].model_index, objRef, objRef2);
 #if DEV
 						++ocount;
-#endif		
+#endif
 					}
 					objFunc(dstx,dsty,dstz,
 							heading_next + road_type.objects[o].rotation,
@@ -1052,7 +1052,7 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 							road_type.objects[o].model_index, objRef, objRef2);
 #if DEV
 					++ocount;
-#endif		
+#endif
 				}
 				else
 				{
@@ -1072,14 +1072,14 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 						cume += road_type.objects[o].dist;
 #if DEV
 						++ocount;
-#endif		
-					}				
+#endif
+					}
 				}
 			}
 		}
 #if DEV
 		++quant;
-#endif		
+#endif
 	}
 
 #if DEV
@@ -1087,5 +1087,5 @@ if(check_nan(final_pts[n*6+5]))MACIBM_alert(0,"NAN value!","","","",t_exit);
 	stime /= (float) CLOCKS_PER_SEC;
 //	deverr << " Extruded " << quant << " road chains in " << stime << " seconds with " << ocount << "objects.\n";
 //	deverr << " Skipped " << skipq << " due to wrong tex, index now is " << tex_index << " skipped " << skipm << " because no def.\n";
-#endif	
+#endif
 }

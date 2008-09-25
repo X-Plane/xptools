@@ -48,7 +48,7 @@ struct Apollonius_graph_vertex_base_nested_iterator_traits
   {
     return it->hidden_sites_end();
   }
-  
+
 };
 
 
@@ -115,7 +115,7 @@ public:
     return hidden_site_list.size();
   }
 
-  Hidden_sites_iterator hidden_sites_begin() { 
+  Hidden_sites_iterator hidden_sites_begin() {
     return hidden_site_list.begin();
   }
 
@@ -153,6 +153,6 @@ private:
   Site_2 _p;
 };
 
-CGAL_END_NAMESPACE 
+CGAL_END_NAMESPACE
 
 #endif // CGAL_APOLLONIUS_GRAPH_VERTEX_BASE_2_H

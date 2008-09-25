@@ -80,7 +80,7 @@ public:
         }
     */
     }
-    
+
 #else
     Intersection_results intersection_type() const;
 #endif // CGAL_CFG_RETURN_TYPE_BUG_2
@@ -189,7 +189,7 @@ intersection(typename K::Point_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Point_2 &pt, 
+intersection(const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const typename CGAL_WRAP(K)::Triangle_2 &tr,
 	     const K&)
 {
@@ -208,7 +208,7 @@ intersection(const typename CGAL_WRAP(K)::Point_2 &pt,
 template <class K>
 Object
 intersection(const typename CGAL_WRAP(K)::Triangle_2 &tr,
-	     const typename CGAL_WRAP(K)::Point_2 &pt, 
+	     const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const K&)
 {
   return CGALi::intersection(pt, tr, k);
@@ -229,7 +229,7 @@ public:
 
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const Triangle_2<K> &tr, const Point_2<K> &pt)
 {
@@ -237,8 +237,8 @@ do_intersect(const Triangle_2<K> &tr, const Point_2<K> &pt)
 }
 
 template <class K>
-inline 
-bool 
+inline
+bool
 do_intersect(const Point_2<K> &pt, const Triangle_2<K> &tr)
 {
   return CGALi::do_intersect(pt, tr, K());

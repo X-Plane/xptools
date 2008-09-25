@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -55,7 +55,7 @@ using namespace std;
 
 
 
-static const char* ident_ = 
+static const char* ident_ =
   "$Id: sb_Catd.cpp,v 1.16 2002/11/24 22:07:42 mcoletti Exp $";
 
 
@@ -84,7 +84,7 @@ struct sb_Catd_Imp
 
 
   sb_Catd_Imp()
-    : 
+    :
     Name_( UNVALUED_STRING ),
     Type_( UNVALUED_STRING ),
     Volume_( UNVALUED_STRING ),
@@ -116,7 +116,7 @@ sb_Catd::sb_Catd( sb_Catd const & rhs )
 
 
 
-sb_Catd const & 
+sb_Catd const &
 sb_Catd::operator=( sb_Catd const & rhs )
 {
    if ( &rhs == this ) return *this;
@@ -758,7 +758,7 @@ struct sb_Directory::Imp
 
 
 
-/// Set up an sb_Directory 
+/// Set up an sb_Directory
 /**
 
    Open the CATD module referenced in directory_imp.catd_filename and
@@ -843,17 +843,17 @@ string const &
 sb_Directory::catdFilename() const
 {
    return imp_->catd_filename;
-} // sb_Directory::catdFilename() 
+} // sb_Directory::catdFilename()
 
 
 
 bool
-sb_Directory::catdFilename( string const & catd_fn ) 
+sb_Directory::catdFilename( string const & catd_fn )
 {
    imp_->catd_filename = catd_fn;
 
    return imp_->createDirectory( );
-} // sb_Directory::catdFilename() 
+} // sb_Directory::catdFilename()
 
 
 

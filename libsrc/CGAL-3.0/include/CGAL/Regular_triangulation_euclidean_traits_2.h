@@ -39,9 +39,9 @@
 #include <CGAL/constructions_on_weighted_points_homogeneous_2.h>
 #endif
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
-// constructions for DUALITY: weighted_circumcenter and radical 
+// constructions for DUALITY: weighted_circumcenter and radical
 //  axis
 template < class Bare_point, class We >
 inline
@@ -51,7 +51,7 @@ weighted_circumcenter(const Weighted_point< Bare_point,We >& p,
 		      const Weighted_point< Bare_point,We >& r,
 		      Cartesian_tag )
 {
-  
+
   typename Bare_point::R::RT x,y;
   weighted_circumcenterC2(p.x(),p.y(),p.weight(),
 			  q.x(),q.y(),q.weight(),
@@ -67,7 +67,7 @@ weighted_circumcenter(const Weighted_point< Bare_point,We >& p,
 		      const Weighted_point< Bare_point,We >& r,
 		      Homogeneous_tag )
 {
-  
+
   typename Bare_point::R::RT x,y,w;
   weighted_circumcenterH2(p.hx(),p.hy(),p.hw(),p.weight(),
 			  q.hx(),q.hy(),q.hw(),q.weight(),
@@ -85,7 +85,7 @@ weighted_circumcenter(const Weighted_point< Bare_point,We >& p,
 		      const Weighted_point< Bare_point,We >& r)
 {
   typedef typename Bare_point::R::Rep_tag Tag;
-  return weighted_circumcenter(p, q, r, Tag()); 
+  return weighted_circumcenter(p, q, r, Tag());
 }
 
 
@@ -96,13 +96,13 @@ public:
   typedef CGAL::Weighted_point <Bare_point, Weight>        Weighted_point;
   Bare_point operator() ( Weighted_point p,
 		     Weighted_point q,
-		     Weighted_point r) 
+		     Weighted_point r)
     {
       CGAL_triangulation_precondition( ! collinear(p, q, r) );
       return CGAL::weighted_circumcenter(p,q,r);
     }
 };
- 
+
 
 
 template < class Bare_point, class We >
@@ -141,7 +141,7 @@ radical_axis(const Weighted_point< Bare_point,We >& p,
 	     const Weighted_point< Bare_point,We >& q)
 {
   typedef typename Bare_point::R::Rep_tag Tag;
-  return radical_axis(p, q, Tag()); 
+  return radical_axis(p, q, Tag());
 }
 
 
@@ -152,7 +152,7 @@ public:
   typedef CGAL::Weighted_point <Bare_point, Weight>   Weighted_point;
   typedef typename Bare_point::R  R;
 
-  Line_2<R> operator() ( Weighted_point p, Weighted_point q) 
+  Line_2<R> operator() ( Weighted_point p, Weighted_point q)
   {
     return CGAL::radical_axis(p,q);
   }
@@ -204,7 +204,7 @@ power_test(const Weighted_point<Bare_point, Weight> &p,
   typedef typename Bare_point::R::Rep_tag Tag;
   return power_test(p, q, r, t, Tag());
 }
-  
+
 template < class Bare_point, class Weight >
 inline
 Oriented_side
@@ -267,7 +267,7 @@ public:
   Oriented_side operator() ( Weighted_point p,
 			     Weighted_point q,
 			     Weighted_point r,
-			     Weighted_point s) 
+			     Weighted_point s)
     {
       //CGAL_triangulation_precondition( ! collinear(p, q, r) );
       return CGAL::power_test(p,q,r,s);
@@ -286,7 +286,7 @@ public:
       //CGAL_triangulation_precondition( collinear(p, q, r) );
       //CGAL_triangulation_precondition( p.point() != q.point() );
       return CGAL::power_test(p,q,r);
-    }  
+    }
 
   Oriented_side operator() ( Weighted_point p,
 			     Weighted_point r)
@@ -315,15 +315,15 @@ public:
   typedef Weighted_point                        Point_2;
 
   typedef CGAL::Power_test_2<Bare_point, W>     Power_test_2;
-  typedef CGAL::Power_test_degenerated_2<Bare_point, W>  
+  typedef CGAL::Power_test_degenerated_2<Bare_point, W>
                                                 Power_test_degenerated_2;
  //concstruction objects
-  typedef CGAL::Construct_weighted_circumcenter_2<Bare_point, W> 
+  typedef CGAL::Construct_weighted_circumcenter_2<Bare_point, W>
                                             Construct_weighted_circumcenter_2;
-  typedef CGAL::Construct_radical_axis_2<Bare_point, W> 
+  typedef CGAL::Construct_radical_axis_2<Bare_point, W>
                                             Construct_radical_axis_2;
-  
-  Power_test_2 
+
+  Power_test_2
   power_test_2_object() const
     {  return Power_test_2();}
 
@@ -335,13 +335,13 @@ public:
   Construct_weighted_circumcenter_2
   construct_weighted_circumcenter_2_object() const
     {return Construct_weighted_circumcenter_2();}
-  
+
   Construct_radical_axis_2
   construct_radical_axis_2_object() const
     {return Construct_radical_axis_2();}
 
 };
- 
+
 CGAL_END_NAMESPACE
 
 #endif // CGAL_REGULAR_TRIANGULATION_EUCLIDEAN_TRAITS_2_H

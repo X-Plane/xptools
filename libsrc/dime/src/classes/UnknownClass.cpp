@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownClass.cpp
  *
  *  This source file is part of DIME.
@@ -43,7 +43,7 @@
   Constructor.
 */
 
-dimeUnknownClass::dimeUnknownClass(const char * const name, 
+dimeUnknownClass::dimeUnknownClass(const char * const name,
 				 dimeMemHandler * const memhandler)
 {
   DXF_STRCPY(memhandler, this->dxfClassName, name);
@@ -74,7 +74,7 @@ dimeUnknownClass::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeUnknownClass::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(9) && file->writeString(this->dxfClassName))
@@ -84,7 +84,7 @@ dimeUnknownClass::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeUnknownClass::typeId() const
 {
   return dimeBase::dimeUnknownClassType;

@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -40,7 +40,7 @@ Syntax: 3dsdump [options] filename [options]
 Options:
   -h/--help           This help
   -s/--structure      Dump structure of file
-  -u/--unknown        Report unknown chunks  
+  -u/--unknown        Report unknown chunks
   -m/--materials      Dump materials
   -t/--trimeshes      Dump meshes
   -i/--instance       Dump mesh instances
@@ -67,7 +67,7 @@ help()
 "Options:\n"
 "  -h/--help           This help\n"
 "  -s/--structure      Dump structure of file\n"
-"  -u/--unknown        Report unknown chunks\n"  
+"  -u/--unknown        Report unknown chunks\n"
 "  -m/--materials      Dump materials\n"
 "  -t/--trimeshes      Dump meshes\n"
 "  -i/--instance       Dump mesh instances\n"
@@ -101,7 +101,7 @@ static void
 parse_args(int argc, char **argv)
 {
   int i;
-  
+
   for (i=1; i<argc; ++i) {
     if (argv[i][0]=='-') {
       if ((strcmp(argv[i],"-h")==0) || (strcmp(argv[i],"--help")==0)) {
@@ -202,7 +202,7 @@ main(int argc, char **argv)
     lib3ds_file_dump_cameras(f);
     printf("\n");
   }
-  if (flags&LIB3DSDUMP_LIGHTS) {  
+  if (flags&LIB3DSDUMP_LIGHTS) {
     printf("Dumping lights:\n");
     lib3ds_file_dump_lights(f);
     printf("\n");

@@ -4,7 +4,7 @@
  * Project:  PROJ.4
  * Purpose:  Apply datum shifts based on grid shift files (normally NAD27 to
  *           NAD83 or the reverse).  This module is responsible for keeping
- *           a list of loaded grids, and calling with each one that is 
+ *           a list of loaded grids, and calling with each one that is
  *           allowed for a given datum (expressed as the nadgrids= parameter).
  * Author:   Frank Warmerdam, warmerdam@pobox.com
  *
@@ -67,7 +67,7 @@
 /*                         pj_apply_gridshift()                         */
 /************************************************************************/
 
-int pj_apply_gridshift( const char *nadgrids, int inverse, 
+int pj_apply_gridshift( const char *nadgrids, int inverse,
                         long point_count, int point_offset,
                         double *x, double *y, double *z )
 
@@ -138,7 +138,7 @@ int pj_apply_gridshift( const char *nadgrids, int inverse,
                 pj_errno = -38;
                 return pj_errno;
             }
-            
+
             output = nad_cvt( input, inverse, ct );
             if( output.lam != HUGE_VAL )
             {
@@ -154,15 +154,15 @@ int pj_apply_gridshift( const char *nadgrids, int inverse,
         {
             if( debug_flag )
             {
-                fprintf( stderr, 
+                fprintf( stderr,
                          "pj_apply_gridshift(): failed to find a grid shift table for\n"
                          "                      location (%.7fdW,%.7fdN)\n",
-                         x[io] * RAD_TO_DEG, 
+                         x[io] * RAD_TO_DEG,
                          y[io] * RAD_TO_DEG );
-                fprintf( stderr, 
+                fprintf( stderr,
                          "   tried: %s\n", nadgrids );
             }
-        
+
             pj_errno = -38;
             return pj_errno;
         }

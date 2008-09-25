@@ -5,14 +5,14 @@
 // This software and related documentation is part of an INTERNAL release
 // of the Computational Geometry Algorithms Library (CGAL). It is not
 // intended for general use.
-//	
+//
 // ----------------------------------------------------------------------------
 //
 // file          : Qt_widget_move_list_point.C
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //

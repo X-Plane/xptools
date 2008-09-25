@@ -4,10 +4,10 @@
 
    File: Sturm.h
 
-   Description: 
+   Description:
 	The templated class Sturm implements Sturm sequences.
 	Basic capabilities include:
-		counting number of roots in an interval, 
+		counting number of roots in an interval,
 		isolating all roots in an interval
 		isolating the i-th largest (or smallest) root in interval
 	It is based on the Polynomial class.
@@ -19,7 +19,7 @@
 > 	then (x+y)/2 may not be error-free (in current implementaion.
 > 	We have to call a special "exact divide by 2" method,
 > 	(x+y).div2() for this purpose.
-> 
+>
 >    TODO LIST and Potential Bugs:
 > 	(1) Split an isolating interval to give definite sign
 > 	(2) Should have a test for square-free polynomials
@@ -47,7 +47,7 @@ public:
   int len;			// length of array
   Polynomial<NT> * seq;		// array of polynomials of length "len"
   static int N_STOP_ITER;	// Stop IterE after this many iterations.  This is
-  				//    initialized below, outside the Newton class 
+  				//    initialized below, outside the Newton class
   bool NEWTON_DIV_BY_ZERO;
   				// This is set to true when there is divide by
 				//    zero in Newton iteration (at critical value)
@@ -188,7 +188,7 @@ public:
     int signx = seq[0].eval(x).sign();
     int signy = seq[0].eval(y).sign();
     // easy case: THIS SHOULD BE THE OVERWHELMING MAJORITY
-    if (signx != 0 && signy != 0) 
+    if (signx != 0 && signy != 0)
 	return (signVariations(x, signx) - signVariations(y, signy));
     // harder case: THIS SHOULD BE VERY INFREQUENT
     BigFloat sep = (seq[0].sepBound())/2;
@@ -218,15 +218,15 @@ public:
   int numberOfRootsBelow(const BigFloat &x) const
   {
     int signx = seq[0].eval(x).sign();
-    if (signx != 0) 
+    if (signx != 0)
        return signVariationsAtNegInfty() - signVariations(x, signx);
     BigFloat newx = x + (seq[0].sepBound())/2;
-    return signVariationsAtNegInfty() 
+    return signVariationsAtNegInfty()
 		- signVariations(newx, seq[0].eval(newx).sign());
   }
 
 
-  // isolateRoots(x, y, v) 
+  // isolateRoots(x, y, v)
   ///   isolates all the roots in [x,y] and returns them in v.
   /** 	v is a list of intervals
    *    [x,y] is the initial interval to be isolated
@@ -241,7 +241,7 @@ public:
       return;
     if (n == 1) {
        if ((x <= 0) && (y >= 0)) { 	// if 0 is inside our interval
-	   if (seq[0].coeff[0] == 0) 
+	   if (seq[0].coeff[0] == 0)
       		v.push_back(std::make_pair(BigFloat(0), BigFloat(0)));
 	   else if (numberOfRoots(0,y) == 0)
       		v.push_back(std::make_pair(x, BigFloat(0)));
@@ -315,7 +315,7 @@ public:
   {
     return isolateRoot(1, 0, seq[0].CauchyUpperBound());
   }
-  
+
   // First root below
   BFInterval firstRootBelow(const BigFloat &e) const
   {
@@ -326,10 +326,10 @@ public:
     if (n == 1) return BFInterval(-bdBF, e);
     return isolateRoot(n, -bdBF, e);
   }
-  
+
   // Refine an interval I to absolute precision 2^{-aprec}
   //   THIS USES bisection only!  Use only for debugging (it is too slow)
-  //      
+  //
   BFInterval refine(const BFInterval& I, int aprec) const {
      // assert( There is a unique root in I )
      // We repeat binary search till the following holds
@@ -337,30 +337,30 @@ public:
      //   => log(width/eps) <= n
      //   => n = ceil(log(width/eps)) this many steps of binary search
      //   will work.
-     // At each step we verify 
+     // At each step we verify
      //           seq[0].eval(J.first) * seq[0].eval(J.second) < 0
 
      BigFloat width = I.second - I.first;
 
      BigFloat eps = BigFloat::exp2(-aprec);	//  eps = 2^{-aprec}
-     extLong n =  width.uMSB() + (extLong)aprec; 
-     
+     extLong n =  width.uMSB() + (extLong)aprec;
+
 
      BFInterval J = I;           // Return value is the Interval J
      BigFloat midpoint;
      while(n >= 0){
-       midpoint = (J.second + J.first).div2(); 
+       midpoint = (J.second + J.first).div2();
        BigFloat m = seq[0].eval(midpoint);
        if (m == 0) {
 	       J.first = J.second = midpoint;
 	       return J;
 	}
        if (seq[0].eval(J.first) * m < 0) {
-	 J.second = midpoint;  
+	 J.second = midpoint;
        } else {
 	 J.first = midpoint;
        }
-       
+
        n--;
      }
 
@@ -384,14 +384,14 @@ public:
   // refineAllRoots(v, aprec)
   //     will modify v so that v is a list of isolating intervals for
   //     the roots of the polynomial in *this.  The size of these intervals
-  //     are at most 2^{-aprec}. 
+  //     are at most 2^{-aprec}.
   // If v is non-null, we assume it is a list of initial isolating intervals.
   // If v is null, we will first call isolateRoots(v) to set this up.
   void refineAllRoots( BFVecInterval &v, int aprec){
 
     BFVecInterval v1;
     BFInterval  J;
-    if (v.empty()) 
+    if (v.empty())
 	    isolateRoots(v);
     for (BFVecInterval::const_iterator it = v.begin();
          it != v.end(); ++it) {        // Iterate through all the intervals
@@ -410,7 +410,7 @@ public:
     BFVecInterval v1;
     BFInterval  J;
 
-    if (v.empty()) 
+    if (v.empty())
 	    isolateRoots(v);
     for (BFVecInterval::const_iterator it = v.begin();
          it != v.end(); ++it) {        // Iterate through all the intervals
@@ -427,12 +427,12 @@ public:
 
 
   /////////////////////////////////////////////////////////////////
-  //  DIAGNOSTIC TOOLS 
+  //  DIAGNOSTIC TOOLS
   /////////////////////////////////////////////////////////////////
   // Polynomial tester:	P is polynomial to be tested
   // 			prec is the bit precision for root isolation
   // 			n is the number of roots predicted
-  
+
   static void testSturm(PolyNT &P, int prec, int n = -1)
   {
     Sturm<NT> SS (P);
@@ -486,11 +486,11 @@ public:
     extLong uMSB;
     BigFloat del;
     // newton iteration
-    do { 
+    do {
       del = seq[0].eval(val)/seq[1].eval(val);
       del.makeExact();
       uMSB = del.uMSB();
-      val -= del;       
+      val -= del;
       val.makeExact();
       count ++;
     } while ((uMSB >= -prec) && (count < N_STOP_ITER)) ;
@@ -513,7 +513,7 @@ public:
 
     extLong uMSB = val.uMSB();
     // newton iteration
-    for (int i=0; i<n; i++) { 
+    for (int i=0; i<n; i++) {
       BigFloat ff = seq[1].eval(val).makeExact();
       if (ff == 0) {
 	 NEWTON_DIV_BY_ZERO = true;
@@ -549,7 +549,7 @@ public:
     int count = 0;
     BigFloat val = bf;
 
-    do { 
+    do {
       val = newtonIterN(1, val, del);
       count++;
     } while ((del != 0) && ((del.uMSB() >= -prec) && (count < N_STOP_ITER))) ;
@@ -557,11 +557,11 @@ public:
     return val;
   }
 
-  
+
   // Smale's bound
   //   smalesBound(p, q) where q is the derivative of p
   //   returns Smale's original bound for convergence in range space
-  
+
   BigFloat smaleBound(const Polynomial<NT> & p, const Polynomial<NT> & q) const{
     int deg = p.getTrueDegree();
     BigFloat rho = 1/(1 + pow(q.length(), deg)
@@ -572,7 +572,7 @@ public:
   // Yap's bound
   //   yapsBound(p) returns the bound on size of isolating interval
   //   which will guarantee being in Newton zone
-  
+
   BigFloat yapsBound(const Polynomial<NT> & p) const{
     int deg = p.getTrueDegree();
     return  1/(1 + pow(BigFloat(deg), 3*deg+9)
@@ -594,7 +594,7 @@ public:
 
     assert( leftSign * rightSign < 0 );
 
-    int steps  = 1; //The number of times Newton is called without checking 
+    int steps  = 1; //The number of times Newton is called without checking
     	// whether the iterations are still in the interval
     BigFloat x;
     BigFloat smale = smaleBound(seq[0], seq[1]);
@@ -606,18 +606,18 @@ public:
 
     x = (J.second + J.first).div2();
     // x.makeExact();
-    while ( //seq[0].eval(x).abs() > smale && (J.second - J.first) > yap && 
+    while ( //seq[0].eval(x).abs() > smale && (J.second - J.first) > yap &&
 	   del.uMSB() >= - aprec ){
 	oldval = x;
 
 	x = newtonIterN(N, x, del);
 	if (del == 0) {  // either reached exact root or Divide-by-zero.  It is
 			// the user's responsibility to check which is the case.
-		J.first = x; J.second = x; 
-		return J;	
+		J.first = x; J.second = x;
+		return J;
 	}
 	del = core_abs(del);
-	if  ( 
+	if  (
 	     (J.first <= x && x <= J.second)
 		        &&
 	     ((J.first < x - del) || (J.second > x+ del)))
@@ -655,7 +655,7 @@ public:
 	  if (N == 0) {   // do bisection in this case
 	    x = (J.second + J.first).div2();  // x.makeExact();
        		if(seq[0].eval(J.first) * seq[0].eval(x) < 0){
-	 		J.second = x;  
+	 		J.second = x;
        		}else if(seq[0].eval(J.second) * seq[0].eval(x) < 0){
 	 		J.first = x;
        		}else{
@@ -675,11 +675,11 @@ public:
     }//end of outer while
 
     /* For future work. We should exploit the fact that we have reached
-       the bounds. Could possible speed up things for high precision 
-    if(del.uMSB() >= -aprec){// If any of the bounds are satisfied 
+       the bounds. Could possible speed up things for high precision
+    if(del.uMSB() >= -aprec){// If any of the bounds are satisfied
                              //before reaching the required precision
       x = newtonIterE(aprec, x, del);
-      J.first = x; 
+      J.first = x;
       J.second = J.first;
     }
     */

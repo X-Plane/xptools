@@ -37,7 +37,7 @@ CGAL_BEGIN_NAMESPACE
 // range [|first|,|last|).
 // {\sc traits}: uses |Traits::Point_2| $\equiv$ |Point|, |Traits::Equal_2|
 // and |Traits::Less_rotate_ccw_2|.
-template <class ForwardIterator, class OutputIterator, 
+template <class ForwardIterator, class OutputIterator,
           class Point, class Traits>
 OutputIterator
 ch_jarvis_march(ForwardIterator first, ForwardIterator last,
@@ -64,19 +64,19 @@ ch_jarvis_march(ForwardIterator first, ForwardIterator last,
 // |Traits::Equal_2| and |Traits::Less_xy_2|.
 template <class ForwardIterator, class OutputIterator, class Traits>
 OutputIterator
-ch_jarvis(ForwardIterator first, ForwardIterator last, 
+ch_jarvis(ForwardIterator first, ForwardIterator last,
                OutputIterator  result,
                const Traits& ch_traits);
 template <class ForwardIterator, class OutputIterator>
 inline
 OutputIterator
 ch_jarvis(ForwardIterator first, ForwardIterator last, OutputIterator  result)
-{ 
+{
     typedef std::iterator_traits<ForwardIterator> ITraits;
     typedef typename ITraits::value_type          value_type;
     typedef CGAL::Kernel_traits<value_type>       KTraits;
     typedef typename KTraits::Kernel              Kernel;
-    return ch_jarvis( first, last, result, Kernel()); 
+    return ch_jarvis( first, last, result, Kernel());
 }
 
 

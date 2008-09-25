@@ -6,7 +6,7 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 //
 //  http://www.boost.org
-// 
+//
 
 // This file will declare 'foo' is 'MACROS' is defined.
 
@@ -14,10 +14,10 @@
 void
 # ifdef _WIN32
 __declspec(dllexport)
-# endif 
+# endif
 foo() {}
 #endif
 
 # ifdef _WIN32
 int __declspec(dllexport) force_implib_creation;
-# endif 
+# endif

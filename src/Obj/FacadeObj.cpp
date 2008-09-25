@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@
 
 	Smarter choice of facades?
 	Randomize choice of facades
-	Randomize choice of roof textures	
+	Randomize choice of roof textures
 
 */
 
@@ -69,7 +69,7 @@ int		gExtrudePtCount = 0;
 	#define OGL_CALL __stdcall
 #else
 	#define OGL_CALL
-#endif	
+#endif
 
 FacadeWall_t::FacadeWall_t() :
 	min_width(0.0),
@@ -79,14 +79,14 @@ FacadeWall_t::FacadeWall_t() :
 	roof_slope(0.0),
 	left(0),
 	center(0),
-	right(0),	
+	right(0),
 	bottom(0),
 	middle(0),
 	top(0)
 {
 }
 
-FacadeLOD_t::FacadeLOD_t() :	
+FacadeLOD_t::FacadeLOD_t() :
 	lod_near(0.0),
 	lod_far(0.0)
 {
@@ -119,7 +119,7 @@ void OGL_CALL ExtrudeTessVertex(float * pt)
 	gExtrudeXYZ[gExtrudePtCount * 3  ] = pt[0];
 	gExtrudeXYZ[gExtrudePtCount * 3+1] = pt[1];
 	gExtrudeXYZ[gExtrudePtCount * 3+2] = pt[2];
-	
+
 	gExtrudeST[gExtrudePtCount * 2  ] = gExtrudeTessS1 + gExtrudeTessS2 * (pt[0] - gExtrudeX1) / gExtrudeX2;
 	gExtrudeST[gExtrudePtCount * 2+1] = gExtrudeTessT1 + gExtrudeTessT2 * (pt[2] - gExtrudeZ1) / gExtrudeZ2;
 	gExtrudePtCount++;
@@ -154,7 +154,7 @@ bool	SaveFacadeObjFile(const char * inPath, const FacadeObj_t& inObj)
 			fprintf(fi,"  WALL %lf %lf" LSEP, inObj.lods[L].walls[F].min_width, inObj.lods[L].walls[F].max_width);
 			fprintf(fi,"    SCALE %lf %lf" LSEP, inObj.lods[L].walls[F].x_scale, inObj.lods[L].walls[F].y_scale);
 			fprintf(fi,"    ROOF_SLOPE %lf" LSEP, inObj.lods[L].walls[F].roof_slope);
-			
+
 			int S = 0, T = 0, i;
 			for (i = 0; i < inObj.lods[L].walls[F].left; ++i, ++S)
 				fprintf(fi, "    LEFT %f %f" LSEP, inObj.lods[L].walls[F].s_panels[S].first,inObj.lods[L].walls[F].s_panels[S].second);
@@ -186,7 +186,7 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 	if (!f) return false;
 	MFTextScanner * s = TextScanner_Open(f);
 	if (!s) { MemFile_Close(f); return false; }
-	
+
 	vector<string>	header;
 	while (!TextScanner_IsDone(s) && header.empty())
 		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &header); TextScanner_Next(s); }
@@ -204,22 +204,22 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &header); TextScanner_Next(s); }
 	if (header.empty()) return false;
 	if (header[0] != "FACADE") return false;
-	
+
 	while (!TextScanner_IsDone(s))
 	{
 		vector<string>	tokens;
 		TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &tokens);
-		
+
 		if (!tokens.empty())
 		{
 			// TEXTURE <file name>
 			if (tokens[0] == "TEXTURE" && tokens.size() == 2)
 				outObj.texture = tokens[1];
-			
+
 			// TEXTURE_LIT <filename>
 			if (tokens[0] == "TEXTURE_LIT" && tokens.size() == 2)
 				outObj.texture_lit = tokens[1];
-			
+
 			// LOD <near> <far>
 			if (tokens[0] == "LOD" && tokens.size() == 3)
 			{
@@ -227,7 +227,7 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 				outObj.lods.back().lod_near = atof(tokens[1].c_str());
 				outObj.lods.back().lod_far  = atof(tokens[2].c_str());
 			}
-			
+
 			// WALL <min width> <max width>
 			else if (tokens[0] == "WALL" && tokens.size() == 3 && !outObj.lods.empty())
 			{
@@ -242,7 +242,7 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 				outObj.lods.back().walls.back().middle = 0;
 				outObj.lods.back().walls.back().top = 0;
 			}
-			
+
 			// SCALE <x scale y scale>
 			else if (tokens[0] == "SCALE" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty())
 			{
@@ -256,39 +256,39 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 			// BOTTOM <t bottom> <t top>
 			else if (tokens[0] == "BOTTOM" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().t_floors.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().bottom; }				
+				++outObj.lods.back().walls.back().bottom; }
 			// MIDDLE <t bottom> <t top>
 			else if (tokens[0] == "MIDDLE" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().t_floors.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().middle; }				
+				++outObj.lods.back().walls.back().middle; }
 			// TOP <t bottom> <t top>
 			else if (tokens[0] == "TOP" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().t_floors.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().top; }				
-				
+				++outObj.lods.back().walls.back().top; }
+
 			// LEFT <s left> <s right>
 			else if (tokens[0] == "LEFT" && tokens.size() == 3 && !outObj.lods.empty()&& !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().s_panels.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().left; }				
+				++outObj.lods.back().walls.back().left; }
 			// CENTER <s left> <s right>
 			else if (tokens[0] == "CENTER" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().s_panels.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().center; }				
+				++outObj.lods.back().walls.back().center; }
 			// RIGHT <<s left> <s right>
 			else if (tokens[0] == "RIGHT" && tokens.size() == 3 && !outObj.lods.empty() && !outObj.lods.back().walls.empty()) {
 				outObj.lods.back().walls.back().s_panels.push_back(pair<float, float>(atof(tokens[1].c_str()),atof(tokens[2].c_str())));
-				++outObj.lods.back().walls.back().right; }				
-			
-			
-			
-			
+				++outObj.lods.back().walls.back().right; }
+
+
+
+
 			// ROOF <s> <t>
 			else if (tokens[0] == "ROOF" && tokens.size() == 3 && !outObj.lods.empty())
 			{
 				outObj.lods.back().roof_s.push_back(atof(tokens[1].c_str()));
 				outObj.lods.back().roof_t.push_back(atof(tokens[2].c_str()));
 			}
-			
+
 			// RING <0 or 1>
 			else if (tokens[0] == "RING" && tokens.size() == 2)
 				outObj.is_ring = atoi(tokens[1].c_str());
@@ -309,7 +309,7 @@ static	int		PanelsForLength( const FacadeWall_t& fac, double len)
 	double	d = 0.0;
 	for (int n = 0; n < fac.s_panels.size(); ++n)
 	{
-		d += ((fac.s_panels[n].second - fac.s_panels[n].first) * fac.x_scale);		
+		d += ((fac.s_panels[n].second - fac.s_panels[n].first) * fac.x_scale);
 	}
 	d /= (double) fac.s_panels.size();
 	int g = (len / d) + 0.5;
@@ -346,7 +346,7 @@ static	void	BuildOnePanel(
 	coords[ 9] = p.x;
 	coords[10] = p.y;
 	coords[11] = p.z;
-	
+
 	if (use_roof) {
 		p = inRoof.midpoint(h_start) + inUp * (v_end * fac.y_scale);
 		coords[3] = p.x;
@@ -360,7 +360,7 @@ static	void	BuildOnePanel(
 		p = inBase.midpoint(h_start) + inUp * (v_end * fac.y_scale);
 		coords[3] = p.x;
 		coords[4] = p.y;
-		coords[5] = p.z;		
+		coords[5] = p.z;
 		p = inBase.midpoint(h_end  ) + inUp * (v_end * fac.y_scale);
 		coords[6] = p.x;
 		coords[7] = p.y;
@@ -392,8 +392,8 @@ double	BuildOneFacade(
 					    void *			inRef)
 {
 	if (inFloors == 0.0) return 0.0;
-	
-	// STEP 1: compute exactly how many floors we'll be doing.	
+
+	// STEP 1: compute exactly how many floors we'll be doing.
 	int	left_c, center_c, right_c, bottom_c, middle_c, top_c, ang_c;
 	int center_r, middle_r;
 	int n, i, j;
@@ -402,7 +402,7 @@ double	BuildOneFacade(
 		ang_c = 1; --inFloors;
 	} else
 		ang_c = 0;
-	
+
 	if (inFloors == (fac.bottom + fac.middle + fac.top))
 	{
 		bottom_c = inFloors; middle_c = 0; top_c = 0;
@@ -412,7 +412,7 @@ double	BuildOneFacade(
 		bottom_c = fac.bottom + (inFloors - middle_c  - fac.bottom - fac.top) / 2;
 		top_c = (inFloors - middle_c - bottom_c);
 	}
-	
+
 	if (inPanels == (fac.left + fac.center + fac.right))
 	{
 		left_c = inPanels; right_c = 0; center_c = 0;
@@ -435,44 +435,44 @@ double	BuildOneFacade(
 	act_panel_s.push_back(0.0);
 	for (n = 0; n < left_c; ++n) {
 		act_panel_s.push_back(total_panel_width + fac.s_panels[n].second - fac.s_panels[n].first);
-		total_panel_width = act_panel_s.back(); }		
+		total_panel_width = act_panel_s.back(); }
 	for (n = 0; n < center_c; ++n) {
 		act_panel_s.push_back(total_panel_width + fac.s_panels[fac.left + (n%fac.center)].second - fac.s_panels[fac.left + (n%fac.center)].first);
-		total_panel_width = act_panel_s.back(); }		
+		total_panel_width = act_panel_s.back(); }
 	for (n = 0; n < right_c; ++n) {
 		act_panel_s.push_back(total_panel_width + fac.s_panels[fac.s_panels.size() - right_c + n].second - fac.s_panels[fac.s_panels.size() - right_c + n].first);
-		total_panel_width = act_panel_s.back(); }		
+		total_panel_width = act_panel_s.back(); }
 	if (total_panel_width == 0.0) return 0.0;
 	// Normalize our widths, now we have the right-side S coordinate per panel.
 	total_panel_width = 1.0 / total_panel_width;
 	for (n = 0; n < act_panel_s.size(); ++n)
 		act_panel_s[n] *= total_panel_width;
 	act_panel_s[act_panel_s.size()-1] = 1.0;	// Hack - make sure right edge doesn't lose a tiny bit...that way we'll line up right.
-	
+
 	// STEP 3: figure out the heights of each part of the building
 	vector<double>	act_floor_t;
 	act_floor_t.push_back(0.0);
 	double	total_floor_height = 0.0;
 	for (n = 0; n < bottom_c; ++n) {
-		act_floor_t.push_back(total_floor_height + fac.t_floors[n].second - fac.t_floors[n].first); 
+		act_floor_t.push_back(total_floor_height + fac.t_floors[n].second - fac.t_floors[n].first);
 		total_floor_height = act_floor_t.back(); }
 	for (n = 0; n < middle_c; ++n) {
-		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.bottom + (n%fac.middle)].second - fac.t_floors[fac.bottom + (n%fac.middle)].first); 
+		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.bottom + (n%fac.middle)].second - fac.t_floors[fac.bottom + (n%fac.middle)].first);
 		total_floor_height = act_floor_t.back(); }
 	for (n = 0; n < top_c; ++n) {
-		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.t_floors.size() - top_c - ang_c + n].second - fac.t_floors[fac.t_floors.size() - top_c - ang_c + n].first); 
+		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.t_floors.size() - top_c - ang_c + n].second - fac.t_floors[fac.t_floors.size() - top_c - ang_c + n].first);
 		total_floor_height = act_floor_t.back(); }
 	for (n = 0; n < ang_c; ++n) {
-		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.t_floors.size() - 1].second - fac.t_floors[fac.t_floors.size() - 1].first); 
+		act_floor_t.push_back(total_floor_height + fac.t_floors[fac.t_floors.size() - 1].second - fac.t_floors[fac.t_floors.size() - 1].first);
 		total_floor_height = act_floor_t.back(); }
 	// STEP 3: Now is the time on sprockets when we extrude.  Note that we build _one polygon_ for left, right, etc.
-	
+
 	int	l, r, t, b, h_count, v_count;
 
 	if (bottom_c)
 	{
 		if (left_c)
-			BuildOnePanel(fac, inBase, inRoof, inUp, 0, 0, left_c, bottom_c, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, 0, 0, left_c, bottom_c,
 							0.0, 0.0, act_panel_s[left_c], act_floor_t[bottom_c], false, inFunc, lod_near, lod_far, inRef);
 		for (i = 0; i < center_r; ++i)
 		{
@@ -480,23 +480,23 @@ double	BuildOneFacade(
 			r = (i+1) * fac.center;
 			if (r > center_c) r = center_c;
 			h_count = r - l;
-			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, 0, fac.left+h_count, bottom_c, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, 0, fac.left+h_count, bottom_c,
 							act_panel_s[left_c + l], 0.0, act_panel_s[left_c + r], act_floor_t[bottom_c], false, inFunc, lod_near, lod_far, inRef);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, 0, fac.s_panels.size(), bottom_c,
 							act_panel_s[left_c + center_c], 0.0, act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c], false, inFunc, lod_near, lod_far, inRef);
 	}
-	
+
 	for (j = 0; j < middle_r; ++j)
 	{
 		b = j * fac.middle;
 		t = b + fac.middle;
 		if (t > middle_c) t = middle_c;
 		v_count = t - b;
-		
+
 		if (left_c)
-			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.bottom, left_c, fac.bottom + v_count, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.bottom, left_c, fac.bottom + v_count,
 							0.0, act_floor_t[bottom_c + b], act_panel_s[left_c], act_floor_t[bottom_c + t], false, inFunc, lod_near, lod_far, inRef);
 		for (i = 0; i < center_r; ++i)
 		{
@@ -504,18 +504,18 @@ double	BuildOneFacade(
 			r = l + fac.center;
 			if (r > center_c) r = center_c;
 			h_count = r - l;
-			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.bottom, fac.left+h_count, fac.bottom + v_count, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.bottom, fac.left+h_count, fac.bottom + v_count,
 							act_panel_s[left_c + l], act_floor_t[bottom_c + b], act_panel_s[left_c + r], act_floor_t[bottom_c + t], false, inFunc, lod_near, lod_far, inRef);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.bottom, fac.s_panels.size(), fac.bottom + v_count,
 							act_panel_s[left_c + center_c], act_floor_t[bottom_c + b], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + t], false, inFunc, lod_near, lod_far, inRef);
 	}
-	
+
 	if (top_c)
 	{
 		if (left_c)
-			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - top_c - ang_c, left_c, fac.t_floors.size() - ang_c, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - top_c - ang_c, left_c, fac.t_floors.size() - ang_c,
 							0.0, act_floor_t[bottom_c + middle_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, lod_near, lod_far, inRef);
 		for (i = 0; i < center_r; ++i)
 		{
@@ -523,18 +523,18 @@ double	BuildOneFacade(
 			r = (i+1) * fac.center;
 			if (r > center_c) r = center_c;
 			h_count = r - l;
-			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - top_c - ang_c, fac.left+h_count, fac.t_floors.size() - ang_c, 
+			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - top_c - ang_c, fac.left+h_count, fac.t_floors.size() - ang_c,
 							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, lod_near, lod_far, inRef);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.t_floors.size() - top_c - ang_c, fac.s_panels.size(), fac.t_floors.size() - ang_c,
 							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c], false, inFunc, lod_near, lod_far, inRef);
 	}
-	
+
 	if (ang_c)
 	{
 		if (left_c)
-			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - ang_c, left_c, fac.t_floors.size(), 
+			BuildOnePanel(fac, inBase, inRoof, inUp, 0, fac.t_floors.size() - ang_c, left_c, fac.t_floors.size(),
 							0.0, act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, lod_near, lod_far, inRef);
 		for (i = 0; i < center_r; ++i)
 		{
@@ -542,15 +542,15 @@ double	BuildOneFacade(
 			r = (i+1) * fac.center;
 			if (r > center_c) r = center_c;
 			h_count = r - l;
-			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - ang_c, fac.left+h_count, fac.t_floors.size(), 
+			BuildOnePanel(fac, inBase, inRoof, inUp, fac.left, fac.t_floors.size() - ang_c, fac.left+h_count, fac.t_floors.size(),
 							act_panel_s[left_c + l], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + r], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, lod_near, lod_far, inRef);
 		}
 		if (right_c)
 			BuildOnePanel(fac, inBase, inRoof, inUp, fac.s_panels.size() - right_c, fac.t_floors.size() - ang_c, fac.s_panels.size(), fac.t_floors.size(),
-							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, lod_near, lod_far, inRef);		
+							act_panel_s[left_c + center_c], act_floor_t[bottom_c + middle_c + top_c], act_panel_s[left_c + center_c + right_c], act_floor_t[bottom_c + middle_c + top_c + ang_c], true, inFunc, lod_near, lod_far, inRef);
 	}
 	return total_floor_height * fac.y_scale;
-}					    
+}
 
 int		FindFloorsForHeight(const FacadeObj_t& inObj, float height)
 {
@@ -578,7 +578,7 @@ int		FindFloorsForHeight(const FacadeObj_t& inObj, float height)
 
 void	BuildFacadeObjLOD(
 						int					L,
-						const FacadeObj_t&	inObj, 
+						const FacadeObj_t&	inObj,
 					   const Polygon3& 	 	inPolygon,
 					   int					inFloors,
 					   const Vector3&		inUp,
@@ -602,21 +602,21 @@ void	BuildFacadeObjLOD(
 		for (d = 0; d < inObj.lods[L].walls.size(); ++d)
 		if (lengths.back() >= inObj.lods[L].walls[d].min_width &&
 			lengths.back() < inObj.lods[L].walls[d].max_width)
-				okDefs.push_back(d);		
+				okDefs.push_back(d);
 		if (okDefs.empty())
 			facade_types.push_back(0);	// Shit, nothing fits?!??
 		else
 			facade_types.push_back(okDefs[0]);
 	}
-	
-	double	roof = 0.0;		
-	
+
+	double	roof = 0.0;
+
 	if (!inObj.lods[L].walls.empty())
-	{	
+	{
 	for (n = 0; n < inPolygon.size(); ++n)
 	{
 		num_panels.push_back(PanelsForLength(inObj.lods[L].walls[facade_types[n]], lengths[n]));
-	}	
+	}
 
 	if (inFloors > 0)
 	for (n = 0; n < inPolygon.size(); ++n)
@@ -624,30 +624,30 @@ void	BuildFacadeObjLOD(
 		has_roof = true; break;
 	}
 	}
-	
+
 	if (has_roof)
 	{
 		for (n = 0; n < inPolygon.size(); ++n)
 		{
 			const FacadeWall_t& me = inObj.lods[L].walls[facade_types[n]];
-			insets.push_back(tan(me.roof_slope * 3.14159265358979323846 / 180.0) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale));			
+			insets.push_back(tan(me.roof_slope * 3.14159265358979323846 / 180.0) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale));
 		}
-		InsetPolygon3(inPolygon, &*insets.begin(), 1.0, inObj.is_ring, inUp, inset);		
+		InsetPolygon3(inPolygon, &*insets.begin(), 1.0, inObj.is_ring, inUp, inset);
 	} else
 		inset = inPolygon;
-	
+
 	if (!inObj.lods[L].walls.empty())
 	{
 		for (n = 0; n < inPolygon.size() - (inObj.is_ring ? 0 : 1); ++n)
 		roof = BuildOneFacade(inObj.lods[L].walls[facade_types[n]], inPolygon.side(n), inset.side(n), inFloors, num_panels[n], inUp, has_roof, inObj.lods[L].lod_near, inObj.lods[L].lod_far, inFunc, inRef);
 	}
-			
+
 	if (inObj.is_ring && !inObj.lods[L].roof_s.empty())
 	{
-		float roof_xyz[MAX_FACADE_PTS * 3];	
+		float roof_xyz[MAX_FACADE_PTS * 3];
 		if (inPolygon.size() > MAX_FACADE_PTS)
 			MACIBM_alert(0, "Too many pts in roof polygon", "", "", "", t_exit);
-	
+
 	for (n = 0; n < inPolygon.size(); ++n)
 		{
 			roof_st[n*2  ] = inObj.lods[L].roof_s[n % inObj.lods[L].roof_s.size()];
@@ -657,7 +657,7 @@ void	BuildFacadeObjLOD(
 			roof_xyz[n*3+1] = p.y;
 			roof_xyz[n*3+2] = p.z;
 		}
-		
+
 	switch(inPolygon.size()) {
 	case 3:
 			inFunc(ext_Poly_Tri, 3, roof_xyz, roof_st, inObj.lods[L].lod_near, inObj.lods[L].lod_far,inRef);
@@ -710,7 +710,7 @@ void	BuildFacadeObjLOD(
 }
 
 void	BuildFacadeObj(
-						const FacadeObj_t&	inObj, 
+						const FacadeObj_t&	inObj,
 					   const Polygon3& 	 	inPolygon,
 					   int					inFloors,
 					   const Vector3&		inUp,

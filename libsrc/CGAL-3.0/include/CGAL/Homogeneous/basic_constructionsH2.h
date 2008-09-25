@@ -21,7 +21,7 @@
 //
 // Author(s)     : Sven Schoenherr
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_BASIC_CONSTRUCTIONSH2_H
 #define CGAL_BASIC_CONSTRUCTIONSH2_H
@@ -142,7 +142,7 @@ centroid( const PointH2<R>& p,
    const RT qhw(q.hw());
    const RT rhw(r.hw());
    const RT shw(s.hw());
-   RT hx(p.hx()*qhw*rhw*shw + q.hx()*phw*rhw*shw + r.hx()*phw*qhw*shw 
+   RT hx(p.hx()*qhw*rhw*shw + q.hx()*phw*rhw*shw + r.hx()*phw*qhw*shw
          + s.hx()*phw*qhw*rhw);
    RT hy(p.hy()*qhw*rhw*shw + q.hy()*phw*rhw*shw + r.hy()*phw*qhw*shw
          + s.hy()*phw*qhw*rhw);

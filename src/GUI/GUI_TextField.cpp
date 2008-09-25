@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -44,7 +44,7 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 {
 	mColorText[0] = 0.0;	mColorText[1] = 0.0;	mColorText[2] = 0.0;	mColorText[3] = 1.0;
 	mColorHilite[0] = 1.0;	mColorHilite[1] = 1.0;	mColorHilite[2] = 0.0;	mColorHilite[3] = 1.0;
-	mColorBkgnd[0] = 1.0;	mColorBkgnd[1] = 1.0;	mColorBkgnd[2] = 1.0;	mColorBkgnd[3] = 1.0;	
+	mColorBkgnd[0] = 1.0;	mColorBkgnd[1] = 1.0;	mColorBkgnd[2] = 1.0;	mColorBkgnd[3] = 1.0;
 	mColorBox[0] = 0.3;		mColorBox[1] = 0.5;		mColorBox[2] = 1.0;		mColorBox[3] = 1.0;
 
 	mLogicalBounds[0] = 0;
@@ -52,7 +52,7 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	mLogicalBounds[2] = 100;
 	mLogicalBounds[3] = 100;
 	mMargins[0] = mMargins[1] = mMargins[2] = mMargins[3] = 0.0f;
-	
+
 	for (int n = 0; n < 256; ++n)
 		mAllowedVK[n] = mAllowed[n] = true;
 }
@@ -105,7 +105,7 @@ void		GUI_TextField::SetWidth(float width)
 	ConstrainLogicalBounds();
 	Repaginate();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
-	Refresh();	
+	Refresh();
 }
 
 
@@ -210,14 +210,14 @@ int			GUI_TextField::HandleCommand(int command)
 			GUI_SetTextToClipboard(mText.substr(s1,s2-s1));
 			DoReplaceText(s1, s2, NULL, NULL);
 		}
-		return 1;	
+		return 1;
 	case gui_Copy:
 		GetSelection(&s1, &s2);
 		if (s1 != s2)
 		{
 			GUI_SetTextToClipboard(mText.substr(s1,s2-s1));
 		}
-		return 1;	
+		return 1;
 	case gui_Paste:
 		{
 			if (GUI_GetTextFromClipboard(txt))
@@ -234,12 +234,12 @@ int			GUI_TextField::HandleCommand(int command)
 		{
 			DoReplaceText(s1, s2, NULL, NULL);
 		}
-		return 1;	
+		return 1;
 	case gui_SelectAll:
 		SetSelection(0, mText.size());
 		Refresh();
 		return 1;
-	}		
+	}
 	return 0;
 }
 
@@ -386,23 +386,23 @@ float			GUI_TextField::GetLineHeight(void)
 }
 
 float			GUI_TextField::MeasureString(
-						const char * 	tStart, 
+						const char * 	tStart,
 						const char * 	tEnd)
 {
 	return GUI_MeasureRange(mFont, tStart, tEnd);
 }
 
 int				GUI_TextField::FitStringFwd(
-						const char * 	tStart, 
-						const char * 	tEnd, 
+						const char * 	tStart,
+						const char * 	tEnd,
 						float 			space)
 {
 	return GUI_FitForward(mFont, tStart, tEnd, space);
 }
 
 int				GUI_TextField::FitStringRev(
-						const char * 	tStart, 
-						const char * 	tEnd, 
+						const char * 	tStart,
+						const char * 	tEnd,
 						float 			space)
 {
 	return GUI_FitReverse(mFont, tStart, tEnd, space);
@@ -421,7 +421,7 @@ void			GUI_TextField::DrawString(
 						tStart, tEnd, align_Left);
 }
 
-void			GUI_TextField::DrawSelection(	
+void			GUI_TextField::DrawSelection(
 								float			bounds[4])
 {
 	mState->SetState(false, 0, false, false, false, false, false);
@@ -457,7 +457,7 @@ const char *	GUI_TextField::WordBreak(
 		++p;
 	return p;
 }
-							
+
 void	GUI_TextField::ConstrainLogicalBounds(void)
 {
 	int	vbounds[4];
@@ -466,7 +466,7 @@ void	GUI_TextField::ConstrainLogicalBounds(void)
 	if (mLogicalBounds[2] < vbounds[2])
 	{
 		mLogicalBounds[0] -= (mLogicalBounds[2] - vbounds[2]);
-		mLogicalBounds[2] -= (mLogicalBounds[2] - vbounds[2]);		
+		mLogicalBounds[2] -= (mLogicalBounds[2] - vbounds[2]);
 	}
 
 	if (mLogicalBounds[1] > vbounds[1])
@@ -484,6 +484,6 @@ void	GUI_TextField::ConstrainLogicalBounds(void)
 	if (mLogicalBounds[3] < vbounds[3])
 	{
 		mLogicalBounds[1] -= (mLogicalBounds[3] - vbounds[3]);
-		mLogicalBounds[3] -= (mLogicalBounds[3] - vbounds[3]);		
+		mLogicalBounds[3] -= (mLogicalBounds[3] - vbounds[3]);
 	}
 }

@@ -2,7 +2,7 @@
  * $Id: pj_latlong.c,v 1.2 2000/07/07 06:04:23 warmerda Exp $
  *
  * Project:  PROJ.4
- * Purpose:  Stub projection implementation for lat/long coordinates. We 
+ * Purpose:  Stub projection implementation for lat/long coordinates. We
  *           don't actually change the coordinates, but we want proj=latlong
  *           to act sort of like a projection.
  * Author:   Frank Warmerdam, warmerda@home.com

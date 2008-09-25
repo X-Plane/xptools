@@ -5,7 +5,7 @@
 // Geometry Algorithms Library (CGAL).
 // This software and documentation are provided "as-is" and without warranty
 // of any kind. In no event shall the CGAL Consortium be liable for any
-// damage of any kind. 
+// damage of any kind.
 // ----------------------------------------------------------------------
 //
 // file          : demo.C
@@ -72,7 +72,7 @@ Point pl_point;
 
 class Qt_layer_show_ch : public CGAL::Qt_widget_layer {
 public:
-	
+
   Qt_layer_show_ch() {};
 
   void draw()
@@ -94,10 +94,10 @@ public:
       Point temp_p(pl_point.x(), pl_point.y());
       Halfedge_handle e = pm.locate(temp_p, lt);
       // std::cout << "locate type " << lt << std::endl;
-	
+
       //color the face on the screen
       Face_handle f = e->face();
-	
+
       if (f->does_outer_ccb_exist()) {
         Ccb_halfedge_circulator cc = f->outer_ccb();
         do {
@@ -107,7 +107,7 @@ public:
 
       Holes_iterator hit = f->holes_begin(), eit = f->holes_end();
       for (;hit != eit; ++hit) {
-        Ccb_halfedge_circulator cc = *hit; 
+        Ccb_halfedge_circulator cc = *hit;
         do {
           *widget << cc->curve();
         } while (++cc != *hit);
@@ -116,9 +116,9 @@ public:
     }//endif
 
     widget->unlock();
-  };	
+  };
 
-};//end class 
+};//end class
 
 class MyWindow : public QMainWindow
 {
@@ -129,7 +129,7 @@ public:
   {
     widget = new CGAL::Qt_widget(this);
     setCentralWidget(widget);
-    
+
     //create a timer for checking if somthing changed
     QTimer * timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timer_done()));
@@ -163,16 +163,16 @@ public:
     //the standard toolbar
     stoolbar = new CGAL::Qt_widget_standard_toolbar (widget, this, "ST");
     //the new tools toolbar
-    newtoolbar = new Tools_toolbar(widget, this, &list_of_segments, &pm);	
-  
+    newtoolbar = new Tools_toolbar(widget, this, &list_of_segments, &pm);
+
     *widget << CGAL::LineWidth(2) << CGAL::BackgroundColor (CGAL::BLACK);
-  
+
     resize(w, h);
     widget->set_window(-1, 1, -1, 1);
     widget->setMouseTracking(TRUE);
-	
+
     //connect the widget to the main function that receives the objects
-    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)), 
+    connect(widget, SIGNAL(new_cgal_object(CGAL::Object)),
             this, SLOT(get_new_object(CGAL::Object)));
 
     //application flag stuff
@@ -184,14 +184,14 @@ public:
 
 private:
   void something_changed() { current_state++; }
-  
+
 public slots:
   void new_instance()
   {
     widget->lock();
     list_of_segments.clear();
     stoolbar->clear_history();
-    widget->set_window(-1.1, 1.1, -1.1, 1.1); 
+    widget->set_window(-1.1, 1.1, -1.1, 1.1);
     // set the Visible Area to the Interval
     widget->unlock();
     something_changed();
@@ -212,7 +212,7 @@ private slots:
     if (CGAL::assign(p,obj)) {
       pl_point = p;
       pl_valid = true;
-      
+
       something_changed();
     }
   };
@@ -233,7 +233,7 @@ private slots:
   {
     QString home;
     home = "help/index.html";
-    CGAL::Qt_help_window *help = new 
+    CGAL::Qt_help_window *help = new
       CGAL::Qt_help_window(home, ".", 0, "help viewer");
     help->resize(400, 400);
     help->setCaption("Demo HowTo");
@@ -256,12 +256,12 @@ private slots:
       widget->redraw();
       old_state = current_state;
     }
-  }	
+  }
 
   void gen_segments()
   {
     stoolbar->clear_history();
-    widget->set_window(-1.1, 1.1, -1.1, 1.1); 
+    widget->set_window(-1.1, 1.1, -1.1, 1.1);
     // set the Visible Area to the Interval
 
     // send resizeEvent only on show.
@@ -279,7 +279,7 @@ private slots:
 
     something_changed();
   }
-	
+
 
 private:
   CGAL::Qt_widget * widget;

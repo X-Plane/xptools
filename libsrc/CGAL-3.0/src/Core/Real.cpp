@@ -1,19 +1,19 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: Real.cpp
- * 
- * Synopsis: The Real class is a superclass for all the number 
+ *
+ * Synopsis: The Real class is a superclass for all the number
  *           systems in the Core Library (int, long, float, double,
  *           BigInt, BigRat, BigFloat, etc)
- *           
- * Written by 
+ *
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -52,7 +52,7 @@ BigInt floor(const Real& r, Real &sub) {
 // pow(r,n) and power(r, n) are the same function
 //
 Real pow(const Real& r, unsigned long n) {
-  if (n == 0) 
+  if (n == 0)
     return Real(1);
   else if (n == 1)
     return r;
@@ -82,7 +82,7 @@ extern BigInt FiveTo(unsigned long exp);
 // 	-- Original it is the code for Real's constructor for "const char*".
 // 	   I change it to a function so that two constrcutors can share the code.
 // 	   now it is private and no default value.
-// 	   
+//
 //   --Default value of the argument "prec" is defInputDigits
 //   --If prec is CORE_posInfty, then the input is
 //	read in exactly.  Otherwise, we convert to a RealBigFloat
@@ -102,7 +102,7 @@ extern BigInt FiveTo(unsigned long exp);
 
 void Real::constructFromString(const char *str, const extLong& prec )
  	// NOTE: prec defaults to defInputDigits (see Real.h)
-{ 
+{
 //	8/8/01, Chee and Zilin: add a new rational string format:
 //		this format is indicated by the presence of a slash "/"
 //		Moreover, the value of prec is ignored (basically
@@ -123,13 +123,13 @@ void Real::constructFromString(const char *str, const extLong& prec )
     e = str + strlen(str);
 #ifdef DEBUG
     assert(*e == '\0');
-#endif 
+#endif
   }
 
   const char *p = str;
   if (*p == '-' || *p == '+') p++;
   BigInt m(0);
-  
+
   for (; p < e; p++) {
     if (*p == '.') {
       dot = 1;
@@ -138,13 +138,13 @@ void Real::constructFromString(const char *str, const extLong& prec )
     m = m * 10 + (*p - '0');
     if (dot) e10--;
   }
-  
+
   long t = (e10 < 0) ? -e10 : e10;
   BigInt one(1);
   BigInt ten = FiveTo(t) * (one << t);
   if (*str == '-') m = -m;
   if (e10 >= 0) {
-    // convert exactly from integer numbers 
+    // convert exactly from integer numbers
     m *= ten;
     rep = new RealBigInt(m);
   } else { // e10 < 0,  fractional numbers
@@ -156,9 +156,9 @@ void Real::constructFromString(const char *str, const extLong& prec )
     BigRat r(m, ten);
     if (prec.isInfty()) { // convert exactly! to a big rational
       rep = new RealBigRat(r);
-    } else { 
-      // convert approximately, to a BigFloat within the 
-      // specified precision:     
+    } else {
+      // convert approximately, to a BigFloat within the
+      // specified precision:
       // BigFloat bf(r, CORE_posInfty, prec * lgTenM) ;
       BigFloat bf(r, CORE_posInfty, prec * 4) ;
       rep = new RealBigFloat(bf);
@@ -204,7 +204,7 @@ std::istream& operator >>(std::istream& i, Real& x)
   for (; isdigit(c) || (!d && c=='.') ||
 	 (!e && c=='e') || (!s && (c=='-' || c=='+')); i.get(c)) {
     if (!e && (c == '-' || c == '+')) break;
-    // Chen Li: put one more rule to prohibite input like 
+    // Chen Li: put one more rule to prohibite input like
     //  xxxx.xxxe+xxx.xxx:
     if (e && (c == '.')) break;
     if (p - str == size) {
@@ -221,7 +221,7 @@ std::istream& operator >>(std::istream& i, Real& x)
     *p++ = c;
     if (c == '.')                  d = 1;
     // Chen Li: fix a bug -- the sign of exponent can not happen before
-    // the character "e" appears! It must follow the "e' actually. 
+    // the character "e" appears! It must follow the "e' actually.
     //    if (e || c == '-' || c == '+') s = 1;
     if (e) s = 1;
     if (c == 'e')                  e = 1;
@@ -262,7 +262,7 @@ template<>
 Realbase_for<long>::Realbase_for(const long &l)
   : ker(l)
 {
-  mostSignificantBit = ((ker != 0) ? extLong(flrLg(ker)) : CORE_negInfty); 
+  mostSignificantBit = ((ker != 0) ? extLong(flrLg(ker)) : CORE_negInfty);
   //  This computes the bit length of "ker" minus 1,
   //  i.e., floor(log_2(|ker|)) .
 }
@@ -301,7 +301,7 @@ Realbase_for<BigRat>::Realbase_for(const BigRat& R) : ker(R)
   if (ker.sign()) {
     mostSignificantBit = extLong(floorLg(x) - floorLg(y));
     x.abs();
-    if ((y << mostSignificantBit.asLong()) > x) 
+    if ((y << mostSignificantBit.asLong()) > x)
       mostSignificantBit = mostSignificantBit - 1;
   } else
     mostSignificantBit = CORE_negInfty;
@@ -316,7 +316,7 @@ Realbase_for<BigRat>::Realbase_for(const BigRat& R) : ker(R)
 
   // 5/16/02: fixed a bug in logic (Pion/Zilin/Chee)
   x.abs();
-  if ((y << mostSignificantBit.asLong()) > x) 
+  if ((y << mostSignificantBit.asLong()) > x)
        mostSignificantBit = mostSignificantBit - 1;
   */
 }

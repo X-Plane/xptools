@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: State.h
  *
  *  This source file is part of DIME.
@@ -40,12 +40,12 @@ public:
   dimeState(const bool traversePolylineVertices,
 	    const bool explodeInserts);
   dimeState(const dimeState &st);
-  
+
   const dimeMatrix &getMatrix() const;
   const dimeMatrix &getInvMatrix() const;
   void getMatrix(dimeMatrix &m) const;
   void setMatrix(const dimeMatrix &matrix);
-  
+
   enum {
     TRAVERSE_POLYLINE_VERTICES = 0x1,
     EXPLODE_INSERTS = 0x2,
@@ -73,13 +73,13 @@ dimeState::getMatrix() const {
   return this->matrix;
 }
 
-inline void 
+inline void
 dimeState::setFlags(const unsigned int flags)
 {
   this->flags = (this->flags & PRIVATE_MASK) | flags;
 }
- 
-inline unsigned int 
+
+inline unsigned int
 dimeState::getFlags() const
 {
   return (this->flags & PUBLIC_MASK);

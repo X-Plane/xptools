@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: BSPTree.cpp
  *
  *  This source file is part of DIME.
@@ -64,13 +64,13 @@ private:
     DIM_XY = 2,
     DIM_NONE
   };
-  
+
   dime_bspnode *left;
   dime_bspnode *right;
   int dimension;   // which dimension?
   // position in dimension (use double to avoid floating point
   // precision problems)
-  double position;  
+  double position;
   dimeArray <int> indices;
   dimeArray <dimeVec3f> *pointsArray;
 };
@@ -89,13 +89,13 @@ dime_bspnode::~dime_bspnode()
   delete right;
 }
 
-inline bool 
+inline bool
 dime_bspnode::leftOf(const dimeVec3f &pt) const
 {
-  return double(pt[this->dimension]) < this->position; 
+  return double(pt[this->dimension]) < this->position;
 }
 
-int 
+int
 dime_bspnode::addPoint(const dimeVec3f &pt, const int maxpts)
 {
   if (this->left) { // node has been split
@@ -115,7 +115,7 @@ dime_bspnode::addPoint(const dimeVec3f &pt, const int maxpts)
       if (pt == tmp) break;
     }
     if (i == n) {
-      int idx = this->pointsArray->count();      
+      int idx = this->pointsArray->count();
       this->pointsArray->append(pt);
       this->indices.append(idx);
       return idx;
@@ -123,8 +123,8 @@ dime_bspnode::addPoint(const dimeVec3f &pt, const int maxpts)
     return this->indices[i];
   }
 }
- 
-int 
+
+int
 dime_bspnode::findPoint(const dimeVec3f &pt) const
 {
   if (this->left) {
@@ -142,7 +142,7 @@ dime_bspnode::findPoint(const dimeVec3f &pt) const
   return -1;
 }
 
-int 
+int
 dime_bspnode::removePoint(const dimeVec3f &pt)
 {
   if (this->left) {
@@ -165,12 +165,12 @@ dime_bspnode::removePoint(const dimeVec3f &pt)
 
 }
 
-void 
+void
 dime_bspnode::split()
 {
   assert(this->left == NULL && this->right == NULL);
   this->left = new dime_bspnode(this->pointsArray);
-  this->right = new dime_bspnode(this->pointsArray); 
+  this->right = new dime_bspnode(this->pointsArray);
 
   dimeBox box;
   int i, n = this->indices.count();
@@ -193,33 +193,33 @@ dime_bspnode::split()
   this->dimension = dim; // set the dimension
 
   dxfdouble mid = (box.min[dim] + box.max[dim]) / 2.0f;
-#ifdef BSP_SORTED_SPLIT  
+#ifdef BSP_SORTED_SPLIT
   this->sort(); // sort vertices on ascending dimension values
-  
+
   int splitidx = n / 2;
   pos = (this->pointsArray->getElem(this->indices[splitidx-1])[dim]+
 	 this->pointsArray->getElem(this->indices[splitidx])[dim])/ 2.0f;
-  
+
   // got to check and adjust for special cases
-  if (pos == box.min[dim] || pos == box.max[dim]) { 
+  if (pos == box.min[dim] || pos == box.max[dim]) {
     pos = (pos + mid) / 2.0f;
   }
 
 #else
   pos = (double(box.min[this->dimension])+double(box.max[this->dimension])) / 2.0;
 #endif // BSP_SORTED_SPLIT
-  
+
   this->position = pos;
-  
+
   for (i = 0; i < n; i++) {
     int idx = this->indices[i];
     if (this->leftOf(this->pointsArray->getElem(idx)))
       this->left->indices.append(idx);
     else
       this->right->indices.append(idx);
-  }  
+  }
   assert(this->left->indices.count() && this->right->indices.count());
-  
+
   // will never be used anymore
   this->indices.freeMemory();
 }
@@ -227,7 +227,7 @@ dime_bspnode::split()
 //
 // an implementation of the shellsort algorithm
 //
-void 
+void
 dime_bspnode::sort()
 {
   int *idxarray = this->indices.arrayPointer();
@@ -241,7 +241,7 @@ dime_bspnode::sort()
     for (i = distance; i < num; i++) {
       idx = idxarray[i];
       j = i;
-      while (j >= distance && 
+      while (j >= distance &&
 	     points[idxarray[j-distance]][dim] > points[idx][dim]) {
         idxarray[j] = idxarray[j-distance];
         j -= distance;
@@ -254,7 +254,7 @@ dime_bspnode::sort()
 /*!
   Constructor. Will create an empty BSP tree with one node.
   \a maxnodepts is the maximume number of points in a BSP
-  node. \a initsize is the initial size of the arrays that 
+  node. \a initsize is the initial size of the arrays that
   holds the coordinates and userdata.
 */
 dimeBSPTree::dimeBSPTree(const int maxnodepts, const int initsize)
@@ -274,11 +274,11 @@ dimeBSPTree::~dimeBSPTree()
   delete this->topnode;
   delete this->boundingBox;
 }
-  
+
 /*!
   Returns the number of points in the BSP tree.
 */
-int 
+int
 dimeBSPTree::numPoints() const
 {
   return this->pointsArray.count();
@@ -288,7 +288,7 @@ dimeBSPTree::numPoints() const
   Returns the coordinates for the point at index \a idx.
   \sa dimeBSPTree::numPoints()
 */
-void 
+void
 dimeBSPTree::getPoint(const int idx, dimeVec3f &pt)
 {
   assert(idx < this->pointsArray.count());
@@ -308,7 +308,7 @@ dimeBSPTree::getUserData(const int idx) const
 /*!
   Sets the user data for the point with index \a idx.
 */
-void 
+void
 dimeBSPTree::setUserData(const int idx, void * const data)
 {
   assert(idx < this->userdataArray.count());
@@ -319,10 +319,10 @@ dimeBSPTree::setUserData(const int idx, void * const data)
   Attempts to add a new point into the BSP tree. If a point
   with the same coordinates as \a pt already is in the tree,
   the index to that point will be returned. Otherwise, the
-  point is appended at the end of the list of points, the userdata 
+  point is appended at the end of the list of points, the userdata
   is set, and the new index is returned.
 */
-int 
+int
 dimeBSPTree::addPoint(const dimeVec3f &pt, void * const data)
 {
   this->boundingBox->grow(pt);
@@ -336,7 +336,7 @@ dimeBSPTree::addPoint(const dimeVec3f &pt, void * const data)
 /*!
   \overload
 */
-int 
+int
 dimeBSPTree::removePoint(const dimeVec3f &pt)
 {
   return this->topnode->removePoint(pt);
@@ -346,7 +346,7 @@ dimeBSPTree::removePoint(const dimeVec3f &pt)
   Removes the point at \a index. The BSP tree will not be
   restructured, no matter how many points you remove.
 */
-void 
+void
 dimeBSPTree::removePoint(const int idx)
 {
   assert(idx < this->pointsArray.count());
@@ -355,11 +355,11 @@ dimeBSPTree::removePoint(const int idx)
 
 
 /*!
-  Searches for a point with coordinates \a pos. Returns 
+  Searches for a point with coordinates \a pos. Returns
   the index if found, -1 otherwise
 */
 
-int 
+int
 dimeBSPTree::findPoint(const dimeVec3f &pos) const
 {
   return topnode->findPoint(pos);
@@ -371,7 +371,7 @@ dimeBSPTree::findPoint(const dimeVec3f &pos) const
   tree after this method has been called.
 */
 
-void 
+void
 dimeBSPTree::clear(const int initsize)
 {
   delete this->topnode;

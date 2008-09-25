@@ -272,20 +272,20 @@ namespace Optimisation {
     typedef Identity<Point_2>           IDP;
     typedef typename Compose<SWHONS,IDP,Construct_line_2>::Type
       Right_of_implicit_line_2;
-    
+
     Right_of_implicit_line_2 right_of_implicit_line_2_object() const {
       return compose(swap_1(has_on_negative_side_2_object()),
                      IDP(),
                      construct_line_2_object());
     }
-    
+
     typedef typename Compose<CD2,CV2>::Type Construct_direction_2;
-    
+
     Construct_direction_2 construct_direction_2_object() const {
       return compose(Base::construct_direction_2_object(),
                      construct_vector_2_object());
     }
-    
+
     template < class Kernel >
     class Rdbmop
     : public CGAL_STD::binary_function< Direction_2, int, Direction_2 >
@@ -295,16 +295,16 @@ namespace Optimisation {
       typename Kernel::Construct_direction_2              dir;
       typename Kernel::Construct_opposite_direction_2     oppdir;
     public:
-    
+
       Rdbmop() {}
-    
+
       Rdbmop(const Kernel& k)
       : cperpvec(k.construct_perpendicular_vector_2_object()),
         cvec(k.construct_vector_from_direction_2_object()),
         dir(k.construct_direction_2_object()),
         oppdir(k.construct_opposite_direction_2_object())
       {}
-    
+
       Direction_2
       operator()(const Direction_2& d, int i) const
       {
@@ -318,17 +318,17 @@ namespace Optimisation {
         return dir(cperpvec(cvec(d), COUNTERCLOCKWISE));
       }
     };
-    
+
     typedef Rdbmop<Traits> Rotate_direction_by_multiple_of_pi_2;
-    
+
     Rotate_direction_by_multiple_of_pi_2
     rotate_direction_by_multiple_of_pi_2_object() const
     { return Rotate_direction_by_multiple_of_pi_2(*this); }
-    
+
     typedef std::equal_to<Comparison_result>      EQCR;
     typedef Bind<EQCR,Comparison_result,2>::Type  BEQCR;
     typedef typename Compose<BEQCR,CAWXA>::Type   Less_angle_with_x_axis_2;
-    
+
     Less_angle_with_x_axis_2 less_angle_with_x_axis_2_object() const {
       return compose(bind_2(EQCR(), SMALLER),
                      compare_angle_with_x_axis_2_object());
@@ -470,7 +470,7 @@ min_parallelogram_2(ForwardIterator f,
 
   // check for trivial cases
   if (f == l) return o;
-  
+
   ForwardIterator first;
   do {
     first = f;
@@ -520,14 +520,14 @@ min_parallelogram_2(ForwardIterator f,
         rig = first;
     while (equal(*rig, *right));
     Direction_2 d_right = direction(*right, *rig);
-  
+
     ForwardIterator len = left;
     do
       if (++len == l)
         len = first;
     while (equal(*len, *left));
     Direction_2 d_left = direction(*len, *left);
-  
+
     if (less_angle(d_right, d_left))
       if (right_of_line(*rig, *left, next_dir))
         right = rig;
@@ -585,14 +585,14 @@ min_parallelogram_2(ForwardIterator f,
           rig = first;
       while (equal(*rig, *right));
       Direction_2 d_right = direction(*right, *rig);
-    
+
       ForwardIterator len = left;
       do
         if (++len == l)
           len = first;
       while (equal(*len, *left));
       Direction_2 d_left = direction(*len, *left);
-    
+
       if (less_angle(d_right, d_left))
         if (right_of_line(*rig, *left, next_dir))
           right = rig;

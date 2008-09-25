@@ -337,7 +337,7 @@ BackgroundNode *BackgroundNode::nextTraversal()
 ////////////////////////////////////////////////
 //	Virtual functions
 ////////////////////////////////////////////////
-	
+
 bool BackgroundNode::isChildNodeType(Node *node)
 {
 	return false;

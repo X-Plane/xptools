@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -102,33 +102,33 @@ void	WED_ShowExportDialog(void)
 		sExport = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "Export", XP_DIALOG_CLOSEBOX, 1, 0, DoExport,
 				XP_COLUMN,
-					XP_ROW, 
-						XP_CAPTION, "Raster Layer:", 
-						XP_POPUP_MENU, "DEM A;DEM B;DEM C", &sExportState.dem, XP_TAG, WED_EXPORT_RASTERS, 
+					XP_ROW,
+						XP_CAPTION, "Raster Layer:",
+						XP_POPUP_MENU, "DEM A;DEM B;DEM C", &sExportState.dem, XP_TAG, WED_EXPORT_RASTERS,
 					XP_END,
-					XP_ROW, 
-						XP_CAPTION, "Format:", 
+					XP_ROW,
+						XP_CAPTION, "Format:",
 						XP_POPUP_MENU, kTitles, &sExportState.format, XP_TAG, WED_EXPORT_FORMAT, XP_NOTIFY, SetEnables,
 					XP_END,
-					XP_ROW, 
+					XP_ROW,
 						XP_CHECKBOX, "Colorize", &sExportState.color, XP_TAG, WED_EXPORT_COLOR, XP_NOTIFY, SetEnables,
 						XP_CHECKBOX, "Alpha", &sExportState.alpha, XP_TAG, WED_EXPORT_ALPHA,
 					XP_END,
-					XP_ROW, 
-						XP_BUTTON_ACTION, "Load Translation", LoadCLUT, 
-						XP_CAPTION, "(no translation)", XP_TAG, WED_EXPORT_TRANSLATION, 
+					XP_ROW,
+						XP_BUTTON_ACTION, "Load Translation", LoadCLUT,
+						XP_CAPTION, "(no translation)", XP_TAG, WED_EXPORT_TRANSLATION,
 					XP_END,
-					XP_ROW,	
+					XP_ROW,
 						XP_CHECKBOX, "Rescale", &sExportState.rescale, XP_TAG, WED_EXPORT_RESCALE, XP_NOTIFY, SetEnables,
 						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.offset, XP_TAG, WED_EXPORT_OFFSET,
 						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.scale, XP_TAG, WED_EXPORT_SCALE,
 						XP_BUTTON_ACTION, "Calculate", CalculateRescaling, XP_TAG, WED_EXPORT_CALC,
 					XP_END,
-					XP_ROW, 
-						XP_CHECKBOX, "Flip X", &sExportState.flip_x, 
-						XP_CHECKBOX, "Flip Y", &sExportState.flip_y, 
+					XP_ROW,
+						XP_CHECKBOX, "Flip X", &sExportState.flip_x,
+						XP_CHECKBOX, "Flip Y", &sExportState.flip_y,
 					XP_END,
-					XP_ROW, 
+					XP_ROW,
 						XP_CHECKBOX, "Invert", &sExportState.invert, XP_TAG, WED_EXPORT_INVERT,
 					XP_END,
 					XP_ROW, XP_BUTTON_OK, "Export", XP_END,
@@ -147,9 +147,9 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 	while (n > 0 && layer != gDem.end())
 		++layer, --n;
 	if (layer == gDem.end()) return;
-	
+
 	bool	enum_layer = layer->first == dem_LandUse || layer->first == dem_Climate;	// || layer->first == dem_NudeColor;
-	
+
 	char	fileBuf[2048];
 	strcpy(fileBuf, FetchTokenString(layer->first));
 	strcat(fileBuf, kExtensions[sExportState.format]);
@@ -171,10 +171,10 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 					if (sExportState.flip_x) ix = layer->second.mWidth - 1 - ix;
 					if (sExportState.flip_y) iy = layer->second.mHeight - 1 - iy;
 					float e = layer->second.get(ix,iy);
-					
+
 					if (!sExportReverseMap.empty())
 						e = sExportReverseMap[e];
-					
+
 					unsigned char * p = info.data + y * (info.channels * info.width + info.pad) + x * info.channels;
 					if (sExportState.color)
 					{
@@ -193,12 +193,12 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 							e += sExportState.offset;
 						}
 						for (int n = 0; n < info.channels; ++n)
-							*p++ = e;					
+							*p++ = e;
 					}
 					p = info.data + y * (info.channels * info.width + info.pad) + x * info.channels;
 					if (sExportState.invert)
 						for (int n = 0; n < info.channels; ++n, ++p)
-							*p = 255 - *p;					
+							*p = 255 - *p;
 				}
 				if (sExportState.format==export_PNG)	WriteBitmapToPNG (&info, fileBuf, sExportCLUT.empty() ? NULL : &*sExportCLUT.begin(), sExportCLUT.size() / 3);
 				if (sExportState.format==export_BMP)	WriteBitmapToFile(&info, fileBuf);
@@ -212,8 +212,8 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 		{
 			bool	range_err = false;
 			FileWriter	writer(fileBuf, (
-						sExportState.format == export_Raw16LE || 
-						sExportState.format == export_Raw32LE || 
+						sExportState.format == export_Raw16LE ||
+						sExportState.format == export_Raw32LE ||
 						sExportState.format == export_RawFloatLE) ? platform_LittleEndian : platform_BigEndian);
 			{
 				for (int y = 0; y < layer->second.mHeight; ++y)
@@ -225,7 +225,7 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 					float e = layer->second.get(ix,iy);
 					if (!sExportReverseMap.empty())
 						e = sExportReverseMap[e];
-					
+
 					if (sExportState.rescale) {
 						e *= sExportState.scale;
 						e += sExportState.offset;
@@ -254,7 +254,7 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 					}
 				}
 			}
-			if (range_err)	
+			if (range_err)
 				DoUserAlert("Warning: the raw export format you chose could not represent all of the data in this raster layer.  Some values may have been truncated or altered.");
 		}
 	}
@@ -284,7 +284,7 @@ void	CalculateRescaling(XPWidgetID)
 {
 	if (sExport == NULL) return;
 	XPDataFromItem(sExport, WED_EXPORT_RASTERS);
-	
+
 	DEMGeoMap::iterator layer = gDem.begin();
 	int n = sExportState.dem;
 	while (n > 0 && layer != gDem.end())
@@ -308,7 +308,7 @@ void	CalculateRescaling(XPWidgetID)
 			sExportState.scale = (maxv == minv)  ? 0.0 : (255.0 / (maxv - minv));
 		}
 	}
-	
+
 	XPDataToItem(sExport, WED_EXPORT_OFFSET);
 	XPDataToItem(sExport, WED_EXPORT_SCALE);
 }
@@ -321,8 +321,8 @@ static	void	LoadCLUT(XPWidgetID inID)
 		char fileBuf[2048];
 		fileBuf[0] = 0;
 		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf,sizeof(fileBuf)))
-		{			
-		
+		{
+
 			if (LoadTranslationFile(fileBuf, sExportForwardMap, &sExportReverseMap, &sExportCLUT))
 			{
 				char * s = fileBuf + strlen(fileBuf) - 1;
@@ -335,13 +335,13 @@ static	void	LoadCLUT(XPWidgetID inID)
 				sExportReverseMap.clear();
 				sExportCLUT.clear();
 				XPSetWidgetDescriptor(caption, "(no translation)");
-			}			
+			}
 		}
 	} else {
 		sExportForwardMap.clear();
 		sExportReverseMap.clear();
 		sExportCLUT.clear();
-		XPSetWidgetDescriptor(caption, "(no translation)");		
+		XPSetWidgetDescriptor(caption, "(no translation)");
 		XPSetWidgetDescriptor(inID, "Load Translation");
 	}
 }
@@ -360,13 +360,13 @@ void SetEnables(XPWidgetID)
 	XPEnableByTag(sExport, WED_EXPORT_OFFSET, 	(!is_image || !sExportState.color) && sExportState.rescale);
 	XPEnableByTag(sExport, WED_EXPORT_SCALE, 	(!is_image || !sExportState.color) && sExportState.rescale);
 	XPEnableByTag(sExport, WED_EXPORT_CALC, 	(!is_image || !sExportState.color) && sExportState.rescale);
-	
+
 	// Color inversion - image formats only.
 	XPEnableByTag(sExport, WED_EXPORT_INVERT, is_image);
-	
+
 	// Alpha mask - only available for colorized PNGs.
 	XPEnableByTag(sExport, WED_EXPORT_ALPHA, is_png && sExportState.color);
-	
+
 	// Colorization - only available for image formats.
 	XPEnableByTag(sExport, WED_EXPORT_COLOR, is_image);
 }

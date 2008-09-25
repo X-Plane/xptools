@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: DoubleRecord.cpp
  *
  *  This source file is part of DIME.
@@ -60,7 +60,7 @@ dimeDoubleRecord::copy(dimeMemHandler * const mh) const
   Sets the floating point value.
 */
 
-void 
+void
 dimeDoubleRecord::setValue(const dxfdouble val)
 {
   this->value = val;
@@ -78,7 +78,7 @@ dimeDoubleRecord::getValue() const
 
 //!
 
-int 
+int
 dimeDoubleRecord::typeId() const
 {
   return dimeBase::dimeDoubleRecordType;
@@ -86,7 +86,7 @@ dimeDoubleRecord::typeId() const
 
 //!
 
-bool 
+bool
 dimeDoubleRecord::read(dimeInput * const in)
 {
   return in->readDouble(this->value);
@@ -94,7 +94,7 @@ dimeDoubleRecord::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeDoubleRecord::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) {
@@ -105,7 +105,7 @@ dimeDoubleRecord::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeDoubleRecord::setValue(const dimeParam &param, dimeMemHandler * const)
 {
   this->value = param.double_data;
@@ -113,7 +113,7 @@ dimeDoubleRecord::setValue(const dimeParam &param, dimeMemHandler * const)
 
 //!
 
-void 
+void
 dimeDoubleRecord::getValue(dimeParam &param) const
 {
   param.double_data = this->value;

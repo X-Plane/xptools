@@ -386,7 +386,7 @@ Bounded_side bounded_side_2(ForwardIterator first,
     current = next;
     cur_y_comp_res = next_y_comp_res;
     ++next;
-    if (next == last) next = first;   
+    if (next == last) next = first;
   }
   while (current != first);
 

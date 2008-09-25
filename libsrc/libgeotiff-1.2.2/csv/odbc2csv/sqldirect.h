@@ -38,7 +38,7 @@ private:
 	HDBC		m_hDBC;
 	HSTMT		m_hStmt;
         int             m_nResultColCount;
-        
+
         int             m_nColumn;
         CSQLColumn    **m_papoColArray;
 	bool		m_bSupressErrors;

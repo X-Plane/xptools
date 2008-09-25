@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -63,12 +63,12 @@ static bool	ControlLinkToCurve(
 	sc = h->GetNthLinkSourceCtl(ei,l);
 	tp = h->GetNthLinkTarget   (ei,l);
 	tc = h->GetNthLinkTargetCtl(ei,l);
-	
+
 	if (sc == -1 && tc == -1)
 	{
 		h->GetNthControlHandle(ei,sp, NULL, NULL, &s.p1, NULL, NULL);
 		h->GetNthControlHandle(ei,tp, NULL, NULL, &s.p2, NULL, NULL);
-		
+
 		if (z)
 		{
 		s.p1.x = z->LonToXPixel(s.p1.x);
@@ -77,7 +77,7 @@ static bool	ControlLinkToCurve(
 		s.p2.y = z->LatToYPixel(s.p2.y);
 		}
 		return false;
-	} 
+	}
 	else
 	{
 		if(sc==-1)sc=sp;
@@ -86,7 +86,7 @@ static bool	ControlLinkToCurve(
 		h->GetNthControlHandle(ei,sc,NULL,NULL,&b.c1, NULL, NULL);
 		h->GetNthControlHandle(ei,tp,NULL,NULL,&b.p2, NULL, NULL);
 		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL, NULL);
-		
+
 		if (z) {
 		b.p1.x = z->LonToXPixel(b.p1.x);
 		b.c1.x = z->LonToXPixel(b.c1.x);
@@ -129,13 +129,13 @@ WED_HandleToolBase::WED_HandleToolBase(
 {
 
 }
-										
+
 WED_HandleToolBase::~WED_HandleToolBase()
 {
 }
 
 void				WED_HandleToolBase::SetCanSelect(int can_select)
-{ 
+{
 	mCanSelect = can_select;
 }
 
@@ -143,7 +143,7 @@ void		WED_HandleToolBase::SetControlProvider(IControlHandles	* provider)
 {
 	mHandles = provider;
 }
-		
+
 int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
 	if (inButton > 0) return 0;
@@ -153,7 +153,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	mSelY = inY;
 
 	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
-	
+
 	intptr_t ei_count = mHandles ? mHandles->CountEntities() : 0;
 	intptr_t  c_count;
 	intptr_t  l_count;
@@ -161,14 +161,14 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	intptr_t ei, n;
 
 	mDragType = drag_None;
-	
+
 	//------------------------------ CONTROL HANDLE TAG-UP -------------------------------------------------------
-	
+
 	mHandleEntity = -1;
 	mHandleIndex = -1;
 	double best_dist = 9.9e9;
 	double this_dist;
-	
+
 	for (ei = 0; ei < ei_count; ++ei)
 	{
 		eid = mHandles->GetNthEntityID(ei);
@@ -182,7 +182,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			float radius = HANDLE_RAD;
 			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
 			if (!active) continue;
-			
+
 			radius *= radius;
 			cloc_pixels = GetZoomer()->LLToPixel(cloc);
 			if ((this_dist=click_pt.squared_distance(cloc_pixels)) < best_dist)
@@ -192,8 +192,8 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				mHandleIndex = n;
 				best_dist = this_dist;
 				if (mDragType == drag_None)
-					mHandles->BeginEdit();			
-				mDragType = drag_Handles;	
+					mHandles->BeginEdit();
+				mDragType = drag_Handles;
 				mTrackPoint = cloc;
 			}
 		}
@@ -202,18 +202,18 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
 	best_dist = 9.9e9;
-	
+
 	if (mDragType == drag_None && ei_count > 0)
 	for (ei = 0; ei < ei_count; ++ei)
 	{
-		eid = mHandles->GetNthEntityID(ei);	
+		eid = mHandles->GetNthEntityID(ei);
 		l_count = mHandles->GetLinks(eid);
 		for (n = 0; n < l_count; ++n)
 		{
 			intptr_t active;
 			mHandles->GetNthLinkInfo(eid,n,&active, NULL);
 			if (!active) continue;
-		
+
 			Bezier2		b;
 			Segment2	s;
 			if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
@@ -223,7 +223,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 					mHandleIndex = n;
 					mDragType = drag_Links;
 					mHandleEntity = eid;
-					mHandles->BeginEdit();								
+					mHandles->BeginEdit();
 					break;
 				}
 			}
@@ -234,36 +234,36 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 					mHandleIndex = n;
 					mDragType = drag_Links;
 					mHandleEntity = eid;
-					mHandles->BeginEdit();								
+					mHandles->BeginEdit();
 					break;
 				}
-			}			
+			}
 		}
 	}
 	//----------------------------------- ENTITY DRAG ------------------------------------------------------------
-	
+
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
 	for (ei = 0; ei < ei_count; ++ei)
 	{
-		eid = mHandles->GetNthEntityID(ei);	
+		eid = mHandles->GetNthEntityID(ei);
 		if (mHandles->PointOnStructure(eid, click_pt))
 		{
 			mDragType = drag_Ent;
 			mHandleEntity = eid;
-			mHandles->BeginEdit();								
+			mHandles->BeginEdit();
 			mTrackPoint = click_pt;
 			break;
 		}
 	}
-		
+
 	//----------------------------------- CREATION DRAG ----------------------------------------------------------
 
 	if (mDragType == drag_None && this->CreationDown(click_pt))
 	{
 		mDragType = drag_Create;
 	}
-	
+
 	//------------------------------------- SELECTION-DRAG -------------------------------------------------------
 
 	if (mDragType == drag_None && mCanSelect)
@@ -291,11 +291,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				mSelManip.push_back(e);
 				if (!has_click)
 				{
-					WED_Entity * tt = SAFE_CAST(WED_Entity, t);				
+					WED_Entity * tt = SAFE_CAST(WED_Entity, t);
 					if (tt)
 					if (!tt->GetLocked())
 					if (!tt->GetHidden())
-					{				
+					{
 						double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
 						double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));
 						double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(GetFurnitureIconRadius()));
@@ -303,7 +303,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 						double	max_slop_v = max(icon_dist_v,frame_dist);
 						if(WED_IsIconic(e))
 							frame_dist = max(icon_dist_h,icon_dist_v);
-					
+
 						Bbox2		ent_bounds;
 						e->GetBounds(ent_bounds);
 						ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
@@ -312,7 +312,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 						{
 							if (e->PtWithin(click_pt) || e->PtOnFrame(click_pt, frame_dist))
 								has_click = true;
-						}				
+						}
 					}
 				}
 			}
@@ -324,9 +324,9 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 			if (GetHost()->GetModifiersNow() & gui_OptionAltFlag)
 			{
-				op->StartOperation("Copy");			
+				op->StartOperation("Copy");
 				WED_DoDuplicate(GetResolver(), false);	// dupe does not keep command open!
-				
+
 				// Yuck - we have to rebuild our cache of selected things now!
 				mSelManip.clear();
 				sel_set.clear();
@@ -346,11 +346,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 					{
 						mSelManip.push_back(e);
 					}
-				}				
+				}
 			}
 			else
-			op->StartOperation("Drag");			
-			
+			op->StartOperation("Drag");
+
 		}
 		else
 			mSelManip.clear();
@@ -361,15 +361,15 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	if (mDragType == drag_None && mCanSelect)
 	{
 		mDragType = drag_Sel;
-		
+
 		mDragX = inX;
 		mDragY = inY;
 		IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 		ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
-		
+
 		SetAnchor1(Point2(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY)));
-		
+
 		if (sel && ent_base)
 		{
 			set<IGISEntity *>	sel_set;
@@ -378,7 +378,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 							GetZoomer()->YPixelToLat(mDragY),
 							GetZoomer()->XPixelToLon(inX),
 							GetZoomer()->YPixelToLat(inY));
-		
+
 			ProcessSelectionRecursive(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
 
@@ -386,16 +386,16 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			if ((mods & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				sel->Clear();
 			mSelToggle = (mods & gui_ControlFlag) != 0;
-	
+
 			sel->GetSelectionVector(mSelSave);
 
 			for (set<IGISEntity *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 			if (mSelToggle)
 				sel->Toggle((*i));
-			else	
+			else
 				sel->Insert((*i));
-			
-				
+
+
 			#if BENTODO
 				right vs left select does touch vs include?
 			#endif
@@ -404,7 +404,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 
 	if (mDragType != drag_None)
 		GUI_Commander::RegisterNotifiable(this);
-	
+
 	return (mDragType != drag_None);
 }
 
@@ -427,7 +427,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	double	max_slop_v = max(icon_dist_v,frame_dist);
 	if(WED_IsIconic(entity))
 		frame_dist = max(icon_dist_h,icon_dist_v);
-				
+
 	Bbox2		ent_bounds;
 	entity->GetBounds(ent_bounds);
 //	if (pt_sel)
@@ -435,7 +435,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
 		ent_bounds.p2 += Vector2(max_slop_h,max_slop_v);
 	}
-		
+
 	if (pt_sel) { if (!ent_bounds.contains(psel))				return 0;	}
 	else		{ if (!ent_bounds.overlap(bounds))				return 0;	}
 
@@ -444,12 +444,12 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		if (thang->GetLocked()) return 0;
 		if (thang->GetHidden()) return 0;
 	}
-	
+
 	EntityHandling_t choice = TraverseEntity(entity,pt_sel);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
 	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
-	switch(choice) {	
+	switch(choice) {
 	case ent_Atomic:
 		if (pt_sel)	{ if (entity->PtWithin(psel) || entity->PtOnFrame(psel, frame_dist))	result.insert(entity); return 1;	}
 		else		{ if (entity->WithinBox(bounds))										result.insert(entity);	}
@@ -461,13 +461,13 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
-		else if (seq) 
+		else if (seq)
 		{
 			intptr_t count = seq->GetNumPoints();
 			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
-		else if(poly) 
+		else if(poly)
 		{
 			intptr_t count = poly->GetNumHoles();
 			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
@@ -476,29 +476,29 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		}
 		break;
 	case ent_AtomicOrContainer:
-		if (!pt_sel && entity->WithinBox(bounds)) result.insert(entity);	
+		if (!pt_sel && entity->WithinBox(bounds)) result.insert(entity);
 		else if (com)
 		{
 			intptr_t count = com->GetNumEntities();
 			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
-		else if (seq) 
+		else if (seq)
 		{
 			intptr_t count = seq->GetNumPoints();
 			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
-		else if (poly) 
+		else if (poly)
 		{
 			intptr_t count = poly->GetNumHoles();
 			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
 			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
-		}	
+		}
 		if (pt_sel && entity->PtWithin(psel))				{ result.insert(entity); return 1; }
 		if (pt_sel && entity->PtOnFrame(psel, frame_dist))  { result.insert(entity); return 1; }
-			
+
 		break;
 	}
 	return 0;
@@ -543,14 +543,14 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
 				(*e)->Rescale(old_b, new_b);
-			}			
-		}		
+			}
+		}
 		break;
 	case drag_Sel:
-		{	
+		{
 			mSelX = inX;
 			mSelY = inY;
-			SetAnchor2(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));			
+			SetAnchor2(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
 			IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
@@ -561,7 +561,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 								GetZoomer()->YPixelToLat(mDragY),
 								GetZoomer()->XPixelToLon(inX),
 								GetZoomer()->YPixelToLat(inY));
-			
+
 				ProcessSelectionRecursive(ent_base, bounds, sel_set);
 
 				sel->Clear();
@@ -574,9 +574,9 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 				for (set<IGISEntity *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 				if (mSelToggle)
 					sel->Toggle((*i));
-				else	
+				else
 					sel->Insert((*i));
-			}			
+			}
 		}
 		break;
 	}
@@ -589,7 +589,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	this->HandleClickDrag(inX, inY, inButton, modifiers);
 	if (mDragType == drag_Move)
 	{
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->CommitOperation();
 		mSelManip.clear();
 	}
@@ -597,10 +597,10 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	{
 		ClearAnchor1();
 		ClearAnchor2();
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->CommitOperation();
 		mSelSave.clear();
-	} else if ( mDragType == drag_Links || 
+	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
 				mDragType == drag_Ent)
 	{
@@ -620,18 +620,18 @@ int			WED_HandleToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 }
 
 void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
-{	
+{
 	if (mDragType == drag_Sel)
 	{
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
-		if(op) op->AbortOperation();			
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+		if(op) op->AbortOperation();
 		mSelSave.clear();
-	} else if ( mDragType == drag_Links || 
+	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
 				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
-	} 
+	}
 	GUI_Commander::UnregisterNotifiable(this);
 	mDragType = drag_None;
 }
@@ -650,22 +650,22 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 		for (intptr_t ei = 0; ei < ei_count; ++ei)
 		{
 			intptr_t eid = mHandles->GetNthEntityID(ei);
-			
+
 			intptr_t ch_count = mHandles->CountControlHandles(eid);
 			intptr_t ch_links = mHandles->GetLinks(eid);
-			
+
 			g->SetState(false,false,false, false,true, false,false);
-			
+
 			glBegin(GL_LINES);
 			for (intptr_t l = 0; l < ch_links; ++l)
 			{
 				Segment2	s;
 				Bezier2		b;
-				
+
 				LinkType_t lt;
 				mHandles->GetNthLinkInfo(eid,l,NULL, &lt);
 				if (lt != link_None)
-				{				
+				{
 					switch(lt) {
 					case link_Solid:		glColor4fv(WED_Color_RGBA(wed_Link));			break;
 					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
@@ -692,12 +692,12 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 					else
 					{
 						glVertex2d(s.p1.x,s.p1.y);
-						glVertex2d(s.p2.x,s.p2.y);									
+						glVertex2d(s.p2.x,s.p2.y);
 					}
 				}
 			}
 			glEnd();
-			
+
 			for (int cp = 0; cp < ch_count; ++cp)
 			{
 				Vector2		dir;
@@ -705,14 +705,14 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 				HandleType_t	ht;
 				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir, NULL);
 				scrpt = GetZoomer()->LLToPixel(cpt);
-				
+
 				Vector2	orient;
 
 				if (ht == handle_None || ht == handle_Icon) continue;
-				
+
 				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
-				
+
 				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier || ht == handle_RotateHead || ht == handle_Rotate)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
@@ -721,12 +721,12 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
 						glVertex2d(bscrp.x, bscrp.y);
-						glVertex2d(scrpt.x, scrpt.y);						
+						glVertex2d(scrpt.x, scrpt.y);
 						glEnd();
 					}
 					orient = Vector2(bscrp,scrpt);
 				}
-						
+
 				switch(ht) {
 				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0,1.0);		break;
 				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0,1.0);break;
@@ -734,12 +734,12 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0,1.0);	break;
 				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0,1.0);		break;
-				case handle_ArrowHead:		
+				case handle_ArrowHead:
 				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				case handle_RotateHead:		
+				case handle_RotateHead:
 				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				}							
-			}						
+				}
+			}
 		}
 	}
 	if (mDragType == drag_Sel)
@@ -751,7 +751,7 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 		glVertex2i(min(mDragX, mSelX),max(mDragY,mSelY));
 		glVertex2i(max(mDragX, mSelX),max(mDragY,mSelY));
 		glVertex2i(max(mDragX, mSelX),min(mDragY,mSelY));
-		glEnd();		
+		glEnd();
 	}
 }
 
@@ -759,15 +759,15 @@ void		WED_HandleToolBase::PreCommandNotification(GUI_Commander * focus_target, i
 {
 	if (mDragType == drag_Sel)
 	{
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
-		if(op) op->CommitOperation();			
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+		if(op) op->CommitOperation();
 		mSelSave.clear();
-	} else if ( mDragType == drag_Links || 
+	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
 				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
-	} 
+	}
 	mDragType = drag_None;
 	GUI_Commander::UnregisterNotifiable(this);
 }

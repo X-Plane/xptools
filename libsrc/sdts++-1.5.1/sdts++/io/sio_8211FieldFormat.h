@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -46,15 +46,15 @@ struct sio_8211FieldFormatImp;
   subfield formats.  (Which is why it's implemented as a container of subfield
   formats.
 
-  This is used to pull in field values from an 8211 DR.  Given the start 
-  position and length of a field's data in an 8211 DR, you need to then 
+  This is used to pull in field values from an 8211 DR.  Given the start
+  position and length of a field's data in an 8211 DR, you need to then
   find out how to convert that data into something meaningful.  You
-  would do so by getting the appropriate field format for that data, 
+  would do so by getting the appropriate field format for that data,
   and use it to convert the data.
 
   No internal consistency checking is done.  It is possible, for example, to
-  have a field format set as an elementary data structure that has subfields; 
-  this violates the standard as field formats only have subfields if it's a 
+  have a field format set as an elementary data structure that has subfields;
+  this violates the standard as field formats only have subfields if it's a
   vector or an array field.
 
   */
@@ -72,15 +72,15 @@ class sio_8211FieldFormat : public std::list<sio_8211SubfieldFormat>
       /// XXX using ``vector'' as one of the enumerated names may cause problems.
       typedef enum { elementary, vector, array, concatenated } data_struct_code;
 
-      /** 
+      /**
           XXX these are a bit verbose, though they do comply with the
           standard's nomenclature.  */
-      typedef enum { char_string, 
-                     implicit_point, 
-                     explicit_point, 
-                     explicit_point_scaled, 
-                     char_bit_string, 
-                     bit_string, 
+      typedef enum { char_string,
+                     implicit_point,
+                     explicit_point,
+                     explicit_point_scaled,
+                     char_bit_string,
+                     bit_string,
                      mixed_data_type } data_type_code;
 
       ///
@@ -172,13 +172,13 @@ class sio_8211FieldFormat : public std::list<sio_8211SubfieldFormat>
       /// hidden implementation details
       sio_8211FieldFormatImp* imp_;
 
-      friend std::ostream& operator<<( std::ostream& os, sio_8211FieldFormat const& ff ); 
+      friend std::ostream& operator<<( std::ostream& os, sio_8211FieldFormat const& ff );
 
 }; // class sio_8211FieldFormat
 
 
 ///
-std::ostream& operator<<( std::ostream& os, sio_8211FieldFormat const& ff ); 
+std::ostream& operator<<( std::ostream& os, sio_8211FieldFormat const& ff );
 
 
 class sio_8211DDRField;
@@ -191,7 +191,7 @@ sio_8211_converter_dictionary;
 
 
 
-/** 
+/**
 
 Takes the given DDR field and modifies the given field format object
 to hold the field and subfield formats found in the DDR field.  The
@@ -209,8 +209,8 @@ as to how to cope with that data.
 
         Returns true if successful, else false.
 
- XXX Does this belong here?  And what about the field tag information?  
- XXX Should that be passed in separately, or should we make the 
+ XXX Does this belong here?  And what about the field tag information?
+ XXX Should that be passed in separately, or should we make the
  XXX DDRField know its tag?
 
   */
@@ -233,7 +233,7 @@ bool sio_8211MakeFieldFormat( sio_8211FieldFormat & ff ,
 
  Each schema will be unique for a module type.  For example, an IDEN
  module schema will have field formats for the identification,
- conformance, and attribute id fields.  This will include all the 
+ conformance, and attribute id fields.  This will include all the
  subfield label and type information.  See build_iden_schema() in
  the test app "../sio_Writer_t/sio_Writer.cpp".
 

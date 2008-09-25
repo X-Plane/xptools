@@ -70,7 +70,7 @@ public:
     connect(widget, SIGNAL(redraw_on_back()), this, SLOT(redrawWin()) );
 
     statusBar();
-    
+
     // file menu
     QPopupMenu * file = new QPopupMenu( this );
     menuBar()->insertItem( "&File", file );
@@ -100,24 +100,24 @@ public:
 
   void draw_connected_component(const Point&  p)
   {
-    
+
     Face_handle fh = ct.locate(p);
     if(fh==0) return;
-    std::set<Face_handle> component; 
-    std::list<Face_handle> st; 
-    //std::list<Vertex_handle> stv; 
+    std::set<Face_handle> component;
+    std::list<Face_handle> st;
+    //std::list<Vertex_handle> stv;
     // component includes the faces of the connected_component
     // stack includes the faces in component whose neighbors
     // have not yet been looked at
-    
-  
+
+
     st.push_back(fh);
     component.insert(fh);
     while (! st.empty()){
       fh = st.back();
       st.pop_back();
       for(int i = 0 ; i < 3 ; ++i){
-	if ( (! fh->is_constrained(i)) && 
+	if ( (! fh->is_constrained(i)) &&
 	     component.find(fh->neighbor(i)) == component.end() ) {
 	  component.insert(fh->neighbor(i));
 	  st.push_back(fh->neighbor(i));
@@ -136,7 +136,7 @@ public:
     *widget << CGAL::LineWidth(width);
 
   };
-  
+
   void init_paint()
   {
     widget->lock();
@@ -151,7 +151,7 @@ public:
     if(!is) return;
 
     lc.clear();
-    
+
     int n;
     is >> n;
     qDebug("Reading %d constraints", n);

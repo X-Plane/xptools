@@ -26,7 +26,7 @@
 
 #include <CGAL/IO/Qt_widget.h>
 #include <CGAL/IO/Qt_widget_layer.h>
-#include <CGAL/squared_distance_2.h> 
+#include <CGAL/squared_distance_2.h>
 
 #ifndef CGAL_QT_WIDGET_GET_POINT_BUTTON
 #define CGAL_QT_WIDGET_GET_POINT_BUTTON Qt::LeftButton
@@ -64,7 +64,7 @@ protected:
 
   void mousePressEvent(QMouseEvent *e)
   {
-    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON 
+    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON
        && !firstpoint
        && is_pure(e->state()))
     {
@@ -77,7 +77,7 @@ protected:
       y2 = y;
       firstpoint = true;
     } else if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON){
-      FT x, y; 
+      FT x, y;
       widget->x_real(e->x(), x);
       widget->y_real(e->y(), y);
       widget->new_object(make_object(Circle(Point(x1,y1),
@@ -116,7 +116,7 @@ protected:
     {
       QColor old_color = widget->color();
       RasterOp old_raster = widget->rasterOp();//save the initial raster mode
-      
+
       widget->lock();
         widget->setRasterOp(XorROP);
         *widget << CGAL::GREEN;
@@ -132,12 +132,12 @@ protected:
   void mouseMoveEvent(QMouseEvent *e)
   {
     if(firstpoint==TRUE)
-    {		
+    {
       FT x, y;
       widget->x_real(e->x(), x);
       widget->y_real(e->y(), y);
       QColor old_color = widget->color();
-      RasterOp old_raster = widget->rasterOp();//save the initial raster mode		
+      RasterOp old_raster = widget->rasterOp();//save the initial raster mode
       widget->setRasterOp(XorROP);
       widget->lock();
       *widget << CGAL::GREEN;
@@ -152,7 +152,7 @@ protected:
 
       //save the last coordinates to redraw the screen
       x2 = x;
-      y2 = y;	
+      y2 = y;
       firsttime = false;
     }
   };
@@ -163,7 +163,7 @@ protected:
     oldcursor = widget->cursor();
     widget->setCursor(cursor);
   };
-  
+
   void deactivating()
   {
     widget->setFocusPolicy(oldpolicy);
@@ -173,7 +173,7 @@ protected:
 
   QCursor cursor;
   QCursor oldcursor;
-  
+
 
   FT    x1, //the X of the first point
         y1; //the Y of the first point
@@ -182,7 +182,7 @@ protected:
   bool	firstpoint, //true if the user left clicked once
 	firsttime;  //true if the line is not drawn
   QWidget::FocusPolicy	oldpolicy;
-};//end class 
+};//end class
 
 } // namespace CGAL
 

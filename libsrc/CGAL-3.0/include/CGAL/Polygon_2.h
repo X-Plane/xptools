@@ -59,7 +59,7 @@ inline
 typename std::iterator_traits<It>::pointer address(It it)
 {
     return it.operator->();
-}     
+}
 
 template <class Struct>
 inline
@@ -239,7 +239,7 @@ class Polygon_2 {
    template <class InputIterator>
     Polygon_2(InputIterator first, InputIterator last,
             Traits p_traits = Traits())
-        : d_container(), traits(p_traits), m_flags(CF_EMPTY) 
+        : d_container(), traits(p_traits), m_flags(CF_EMPTY)
   {
     // Sun STL switches off member templates for binary backward compatibility
     std::copy(first, last, std::back_inserter(d_container));
@@ -307,7 +307,7 @@ class Polygon_2 {
     {
       if (size() <= 1)
         return;
-      invalidate_cache(); 
+      invalidate_cache();
       typename Container_P::iterator i = d_container.begin();
       std::reverse(++i, d_container.end());
     }
@@ -332,7 +332,7 @@ class Polygon_2 {
 //      { return Vertex_const_circulator(&d_container, d_container.begin()); }
 
     Vertex_const_circulator vertices_circulator() const
-      { 
+      {
         Polygon_2& self = const_cast<Polygon_2&>(*this);
         return Vertex_const_circulator(&self.d_container,
                self.d_container.begin());
@@ -391,7 +391,7 @@ class Polygon_2 {
 
     Bbox_2 bbox() const
     { if (!is_cached(CF_BBOX)) {
-         m_bbox = bbox_2(d_container.begin(), d_container.end()); 
+         m_bbox = bbox_2(d_container.begin(), d_container.end());
 	 mark_cached(CF_BBOX);
       }
       return m_bbox;

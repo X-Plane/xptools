@@ -30,15 +30,15 @@
 
 /*
 
-For reasons of binary backward compatibility, Sun CC does not enable 
+For reasons of binary backward compatibility, Sun CC does not enable
 member templates of the STL classes.
 
-An #undef creates runtime errors for some packages, so it is not a 
+An #undef creates runtime errors for some packages, so it is not a
 viable solution. Instead, we have to offer workarounds in CGAL
 code, whereever we use this feature.
 
 */
- 
+
 #include <stdcomp.h>
 
 #if defined(RWSTD_NO_MEMBER_TEMPLATES) || defined(_RWSTD_NO_MEMBER_TEMPLATES)
@@ -87,7 +87,7 @@ namespace std {
   distance (ForwardIterator first, ForwardIterator last)
   {
     ptrdiff_t n = 0;
-    __distance(first, last, n, 
+    __distance(first, last, n,
                iterator_traits<ForwardIterator>::iterator_category());
     return n;
   }
@@ -119,12 +119,12 @@ namespace CGAL {
   { return (T*)(0); }
 
   template <class T>
-  inline std::ptrdiff_t* 
+  inline std::ptrdiff_t*
   __distance_type (T*)
   { return (std::ptrdiff_t*)(0); }
 
   template <class T>
-  inline std::random_access_iterator_tag 
+  inline std::random_access_iterator_tag
   __iterator_category (T*)
   { return std::random_access_iterator_tag(); }
 

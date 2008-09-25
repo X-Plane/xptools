@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UnknownObject.cpp
  *
  *  This source file is part of DIME.
@@ -37,13 +37,13 @@
 #include <dime/Output.h>
 #include <dime/util/MemHandler.h>
 #include <dime/Model.h>
-#include <string.h> 
+#include <string.h>
 
 /*!
   Constructor.
 */
 
-dimeUnknownObject::dimeUnknownObject(const char * const name, 
+dimeUnknownObject::dimeUnknownObject(const char * const name,
 				 dimeMemHandler * const memhandler)
 {
   DXF_STRCPY(memhandler, this->objectName, name);
@@ -75,7 +75,7 @@ dimeUnknownObject::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeUnknownObject::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(0) && file->writeString(this->objectName))
@@ -85,7 +85,7 @@ dimeUnknownObject::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeUnknownObject::typeId() const
 {
   return dimeBase::dimeUnknownObjectType;

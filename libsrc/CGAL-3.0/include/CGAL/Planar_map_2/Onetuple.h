@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Oren Nechushtan
- 
+
 
 #ifndef CGAL_PLANAR_MAP_2_ONETUPLE_H
 #define CGAL_PLANAR_MAP_2_ONETUPLE_H

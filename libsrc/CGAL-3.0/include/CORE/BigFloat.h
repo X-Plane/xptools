@@ -1,12 +1,12 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2003 Exact Computation Project
- * 
+ *
  * File: BigFloat.h
  *
  * Synopsis: An implementation of BigFloat numbers with error bounds.
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li  <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
@@ -28,7 +28,7 @@ CORE_BEGIN_NAMESPACE
 /// \brief BigFloat is a class of Float-Point number with error bounds.
 class BigFloat
 {
-public:  
+public:
   BigFloatRep* rep; ///< handle to the "real" representation
 
   /// \name Constructors and Destructor
@@ -37,7 +37,7 @@ public:
   BigFloat() { rep = new BigFloatRep(); rep->refCount++; }
   /// copy constructor
   BigFloat(const BigFloat& x) { rep = x.rep; rep->refCount++; }
-  
+
   /// constructor for <tt>int</tt>
   BigFloat(int i) { rep = new BigFloatRep(i); rep->refCount++; }
   /// constructor for <tt>long</tt>
@@ -47,10 +47,10 @@ public:
   BigFloat(double d) { rep = new BigFloatRep(d); rep->refCount++; }
 
   /// constructor for <tt>const char* </tt>(default base = 10)
-  BigFloat(const char *s) { rep = new BigFloatRep(s); rep->refCount++; }  
+  BigFloat(const char *s) { rep = new BigFloatRep(s); rep->refCount++; }
   /// constructor for <tt>std::string</tt>(default base = 10)
-  BigFloat(const std::string& s) 
-  { rep = new BigFloatRep(s.c_str()); rep->refCount++; }  
+  BigFloat(const std::string& s)
+  { rep = new BigFloatRep(s.c_str()); rep->refCount++; }
 
   /// constructor for <tt>BigInt</tt>
   BigFloat(const BigInt& I, unsigned long u = 0, long l = 0)
@@ -59,25 +59,25 @@ public:
   BigFloat(const BigRat& R, const extLong& r = defRelPrec,
            const extLong& a = defAbsPrec)
   { rep = new BigFloatRep(); rep->refCount++; rep->approx(R, r, a); }
-  
+
   /// constructor for <tt>BigFloatRep</tt>
   BigFloat(BigFloatRep * r) { this->rep = r; rep->refCount++; }
-  
-  /// destructor 
+
+  /// destructor
   ~BigFloat() { if (--rep->refCount == 0) delete rep; }
   //@}
 
   /// \name Assignment Operator
   //@{
-  /// assignment operator 
+  /// assignment operator
   BigFloat& operator= (const BigFloat& x) {
-    if (this == &x) return *this; 
+    if (this == &x) return *this;
     if (--rep->refCount == 0) delete rep;
     rep = x.rep; rep->refCount++;
     return *this;
   }
   //@}
-  
+
   /// \name Compound Assignment Operators
   //@{
   /// operator+=
@@ -87,21 +87,21 @@ public:
     rep = z.rep; rep->refCount++;
     return *this;
   }
-  /// operator-=  
+  /// operator-=
   BigFloat& operator-= (const BigFloat& x) {
     BigFloat z; z.rep->sub(*rep, *x.rep);
     if (--rep->refCount == 0) delete rep;
     rep = z.rep; rep->refCount++;
     return *this;
   }
-  /// operator*=  
+  /// operator*=
   BigFloat& operator*= (const BigFloat& x) {
     BigFloat z; z.rep->mul(*rep, *x.rep);
     if (--rep->refCount == 0) delete rep;
     rep = z.rep; rep->refCount++;
     return *this;
   }
-  /// operator/=  
+  /// operator/=
   BigFloat& operator/= (const BigFloat& x) {
     BigFloat z; z.rep->div(*rep, *x.rep, defBFdivRelPrec);
     if (--rep->refCount == 0) delete rep;
@@ -109,20 +109,20 @@ public:
     return *this;
   }
   //@}
-  
+
   /// \name Unary Minus Operator
   //@{
   /// unary minus
   BigFloat operator- () const { return BigFloat(-rep->m, rep->err, rep->exp); }
   //@}
-  
+
   /// \name String Conversion Functions
   //@{
   /// set value from <tt>const char*</tt> (base = 10)
   void fromString(const char* s, const extLong& p=defBigFloatInputDigits)
   { rep->fromString(s, p); }
   /// convert to <tt>std::string</tt> (base = 10)
-  std::string toString(long prec=defBigFloatOutputDigits, bool sci=false) const 
+  std::string toString(long prec=defBigFloatOutputDigits, bool sci=false) const
   { return rep->toString(prec, sci); }
   //@}
 
@@ -136,21 +136,21 @@ public:
     if ((l == LONG_MAX) || (l == LONG_MIN))
       return l; // return the overflown value.
     if ((sign() < 0) && (cmp(BigFloat(l)) != 0)) {
-      // a negative value not exactly rounded. 
+      // a negative value not exactly rounded.
       l--; // rounded to floor.
     }
     return l;
   }
   /// return float value
-  float floatValue() const { return (float)rep->toDouble(); } 
+  float floatValue() const { return (float)rep->toDouble(); }
   /// return double value
-  double doubleValue() const { return rep->toDouble(); } 
+  double doubleValue() const { return rep->toDouble(); }
   /// return BigInt value
   BigInt BigIntValue() const { return rep->toBigInt(); }
   /// return BigRat value
   BigRat BigRatValue() const { return rep->BigRatize(); }
   //@}
-  
+
   /// \name File I/O Functions
   //@{
   /// read from file
@@ -158,23 +158,23 @@ public:
   /// write to file
   void writeToFile(std::ostream& in, int base=10, int charsPerLine=80) const;
   //@}
-   
+
   /// \name Helper Functions
   //@{
   /// sign function
-  /** \note This is only the sign of the mantissa, it can be taken to be 
+  /** \note This is only the sign of the mantissa, it can be taken to be
       the sign of the BigFloat only if !(isZeroIn()). */
   int sign() const { return rep->signM(); }
   /// check whether contains zero
   /** \return true if contains zero, otherwise false */
-  bool isZeroIn() const { return rep->isZeroIn(); }  
+  bool isZeroIn() const { return rep->isZeroIn(); }
   /// absolute value function
-  BigFloat abs() const 
+  BigFloat abs() const
   { return (sign()>=0) ? BigFloat(*this):BigFloat(-rep->m,rep->err,rep->exp);}
-  ///  comparison function 
+  ///  comparison function
   int cmp(const BigFloat& x) const { return rep->compareMExp(*x.rep); }
 
-  /// get mantissa    
+  /// get mantissa
   const BigInt& m() const { return rep->m; }
   /// get error bits
   unsigned long err() const { return rep->err; }
@@ -182,36 +182,36 @@ public:
   long exp() const { return rep->exp; }
   /// return rep
   BigFloatRep* getRep() const { return rep; }
-  
+
   /// check whether err == 0
   /** \return true if err == 0, otherwise false */
   bool isExact() const { return rep->err == 0; }
-  /// set err to 0 
+  /// set err to 0
   /** \return an exact BigFloat, see Tutorial for why this is useful! */
   BigFloat& makeExact() { rep->err =0; return *this;}
   /// set err to 1
   /** \return an inexact BigFloat, see Tutorial for why this is useful! */
   BigFloat& makeInexact() { rep->err =1; return *this;}
-  
+
   /// return lower bound of Most Significant Bit
   extLong lMSB() const { return rep->lMSB(); }
   /// return upper bound of Most Significant Bit
   extLong uMSB() const { return rep->uMSB(); }
   /// return Most Significant Bit
   extLong MSB() const { return rep->MSB(); }
-  
+
   /// floor of Lg(err)
   extLong flrLgErr() const { return rep->flrLgErr(); }
   /// ceil of Lg(err)
-  extLong clLgErr() const { return rep->clLgErr(); }  
-  
+  extLong clLgErr() const { return rep->clLgErr(); }
+
   /// division with relative precsion <tt>r</tt>
   BigFloat div(const BigFloat& x, const extLong& r) const
   { BigFloat y; y.rep->div(*rep, *x.rep, r); return y; }
   /// exact division by 2
   BigFloat div2() const
   { BigFloat y; y.rep->div2(*rep); return y; }
-  
+
   /// squareroot
   BigFloat sqrt(const extLong& a) const
   { BigFloat x;  x.rep->sqrt(*rep, a); return x; }

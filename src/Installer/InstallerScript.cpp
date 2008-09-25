@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,46 +33,46 @@
 /************************************************************************************
  * INSTALLER SCRIPTING LANGUAGE
  ************************************************************************************
- 
+
  When we add a text file called 'installer.txt' to the same dir as the app, the updater
  becomes an installer - mostly this means a change in UI.  But the script contains
  actions to be executed.  Actions supported:
- 
+
  CONDITION Question?
  NOCONDITION
- 
+
  UPDATE
  UPDATE
  run the updater part of the installer.
- 
+
  COPY <source path relative to installer> <dest path relative to install>
  COPY repository/big_file.txt	Custom scenery folder/My package/a_file.txt
  Copies one file from the volume of the installer to the destionation dir.
- 
+
  UNZIP <source path relative to installer> <dest path relative to install>
  COPY repository/big_file.txt	Custom scenery folder/
  Unzips one file from the volume of the installer to the destionation dir.
- 
- 
+
+
 -NOTE: the command line tool 'zip' makes clean x-platform zip archives with useful
 unix paths as follows:
 	zip -r archive.zip dir_name
 e.g.
 	zip -r archive.zip Resources/sounds
 
- 
- 
- 
+
+
+
  ************************************************************************************/
 static char 	msgBuf[1024];
 
 static FILE * scriptLog = NULL;
 
  void	ScriptError(
-				const char * 	inMessage, 
-				int 			errNum,  
+				const char * 	inMessage,
+				int 			errNum,
 				const char *	descrip,
-				const char * 	inFile, 
+				const char * 	inFile,
 				const char *	inModule,
 				int				inLine,
 				void * 			inRef)
@@ -81,7 +81,7 @@ static FILE * scriptLog = NULL;
 	sprintf(buf,"Error: %s (OS Err = %d %s, file = %s)", inMessage, errNum, descrip, inFile);
 	if (scriptLog) fprintf(scriptLog, "%s (%s %d.)\n", buf, inFile, inModule);
 	DoUserAlert(buf);
-}				
+}
 
 
 
@@ -104,8 +104,8 @@ char *	get_line(FILE * fi, char * buf, int max)
 			return buf;
 		}
 		buf[n] = c;
-		++n;		
-	}	
+		++n;
+	}
 	buf[n] = 0;
 	return (n > 0) ? buf : NULL;
 }
@@ -114,22 +114,22 @@ char *	get_line(FILE * fi, char * buf, int max)
 char *	next_token(char ** buf)
 {
 	char * p = *buf;
-	
+
 	// First scan past any spaces.
 	while (*p == ' ' || *p == '\t')	++p;
-	
+
 	// If we hit the end, there was nothing to get but whitespace, bail.
 	if (*p == 0)
 	{
-		*buf = p; 
+		*buf = p;
 		return NULL;
 	}
-	
+
 	// We are now at the beginning of the token.  Remember it and
 	// scan forward.
 	char * r = p;
 	while (*p != 0 && *p != ' ' && *p != '\t') ++p;
-	
+
 	// If we hit NULL, the token is already a natural termination -
 	// update and return.
 	if (*p == 0)
@@ -137,13 +137,13 @@ char *	next_token(char ** buf)
 		*buf = p;
 		return r;
 	}
-	
+
 	// More whitespace after the token - keep scanning.
 	*p = 0;
 	++p;
 	while (*p == ' ' || *p == '\t')	++p;
 	*buf = p;
-	return r;	
+	return r;
 }
 
 void	strip_to_delim(char * buf, char delim)
@@ -162,7 +162,7 @@ void	normalize_dir_chars(char * buf)
 	{
 		if (*p == '/')
 			*p = DIR_CHAR;
-		++p;		
+		++p;
 	}
 }
 
@@ -238,7 +238,7 @@ void RunScript(FILE * script, const char * path)
 				if (!ok) return;
 				ok = BlockToFile(to_buf, mem);
 				if (!ok) return;
-				free(mem);			
+				free(mem);
 			} else {
 				if (scriptLog) fprintf(scriptLog, "Not copying %s to %s\n", from_buf, to_buf);
 			}
@@ -248,7 +248,7 @@ void RunScript(FILE * script, const char * path)
 			t = next_token(&p);
 			sprintf(msgBuf, "Installing %s...", t);
 			strcpy(from_buf, app_path);
-			strip_to_delim(from_buf,DIR_CHAR);			
+			strip_to_delim(from_buf,DIR_CHAR);
 			strcat(from_buf, t);
 			if (!strcmp(p, "/"))
 			{
@@ -257,16 +257,16 @@ void RunScript(FILE * script, const char * path)
 			} else {
 				strcpy(partial, path);
 				strcat(partial, DIR_STR);
-				strcat(partial, p);			
+				strcat(partial, p);
 			}
 			normalize_dir_chars(partial);
 			normalize_dir_chars(from_buf);
-			
+
 			if (condition)
 			{
-				if (scriptLog) fprintf(scriptLog, "Unzipping %s to %s\n", from_buf, partial);						
+				if (scriptLog) fprintf(scriptLog, "Unzipping %s to %s\n", from_buf, partial);
 				unzFile unz = unzOpen(from_buf);
-				if (unz == NULL) 
+				if (unz == NULL)
 				{
 					ReportError("Unable to open zip file.", EUNKNOWN, from_buf);
 					return;
@@ -276,27 +276,27 @@ void RunScript(FILE * script, const char * path)
 				unzGoToFirstFile(unz);
 				int counter = 0;
 				do {
-					
+
 					char				zip_path[1024];
 					unz_file_info		info;
 					unzGetCurrentFileInfo(unz, &info, zip_path, sizeof(zip_path),
 						NULL, 0, NULL, 0);
-					
+
 					sprintf(msgBuf, "Installing %s...", zip_path);
 					float prog = (global.number_entry > 0) ? ((float) counter / (float) global.number_entry) : -1.0;
 					ShowProgressMessage(msgBuf, &prog);
-					
+
 					++counter;
-					
+
 					strcpy(to_buf, partial);
 					strcat(to_buf, zip_path);
 					normalize_dir_chars(to_buf);
 					strip_to_delim(to_buf, DIR_CHAR);
-					MakeDirExist(to_buf);									
-					
-					if (info.uncompressed_size == 0) 
+					MakeDirExist(to_buf);
+
+					if (info.uncompressed_size == 0)
 						continue;
-					
+
 					char * mem = (char *) malloc(info.uncompressed_size);
 					if (!mem) { ReportError("Out of memory", ENOMEM, NULL); return; }
 					unzOpenCurrentFile(unz);
@@ -308,7 +308,7 @@ void RunScript(FILE * script, const char * path)
 					strcpy(to_buf, partial);
 					strcat(to_buf, zip_path);
 					normalize_dir_chars(to_buf);
-					
+
 					FILE * fi = fopen(to_buf, "wb");
 					if (fi == NULL)
 					{
@@ -323,11 +323,11 @@ void RunScript(FILE * script, const char * path)
 				} while(unzGoToNextFile(unz) == UNZ_OK);
 				unzClose(unz);
 			} else {
-				if (scriptLog) fprintf(scriptLog, "Not unzipping %s to %s\n", from_buf, partial);			
+				if (scriptLog) fprintf(scriptLog, "Not unzipping %s to %s\n", from_buf, partial);
 			}
-		}		
+		}
 	}
-	InstallErrFunc(old, NULL);	
+	InstallErrFunc(old, NULL);
 	if (scriptLog) fprintf(scriptLog, "Installer completed successfully.\n");
 	if (scriptLog) fclose(scriptLog);
 	DoUserAlert("Installation was successful!");

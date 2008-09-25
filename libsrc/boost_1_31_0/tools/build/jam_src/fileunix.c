@@ -31,7 +31,7 @@
 # if defined( OS_SEQUENT ) || \
      defined( OS_DGUX ) || \
      defined( OS_SCO ) || \
-     defined( OS_ISC ) 
+     defined( OS_ISC )
 # define PORTAR 1
 # endif
 
@@ -46,10 +46,10 @@
 /* need unistd for rhapsody's proper lseek */
 # include <sys/dir.h>
 # include <unistd.h>
-# define STRUCT_DIRENT struct direct 
+# define STRUCT_DIRENT struct direct
 # else
 # include <dirent.h>
-# define STRUCT_DIRENT struct dirent 
+# define STRUCT_DIRENT struct dirent
 # endif
 
 # ifdef OS_COHERENT
@@ -95,7 +95,7 @@ struct ar_hdr		/* archive file member header - printable ascii */
 # endif
 
 # include <ar.h>
-# endif	
+# endif
 
 /*
  * fileunix.c - manipulate file names and scan directories on UNIX/AmigaOS
@@ -124,7 +124,7 @@ struct ar_hdr		/* archive file member header - printable ascii */
  */
 
 void
-file_dirscan( 
+file_dirscan(
 	char *dir,
 	scanback func,
 	void *closure )
@@ -191,8 +191,8 @@ file_time(
 	if( stat( filename, &statbuf ) < 0 )
 	    return -1;
 
-    /* Technically, existing files can have 0 as statbuf.st_mtime 
-       --- in particular, the /cygdrive directory under cygwin. However, 
+    /* Technically, existing files can have 0 as statbuf.st_mtime
+       --- in particular, the /cygdrive directory under cygwin. However,
        though all the code jam assumes that timestamp of 0 means
        "does not exist" and will try to create the "missing" target, causing
        problems. Work around this problem by chanding 0 to 1.
@@ -327,24 +327,24 @@ static void file_archscan_small(
         return;
 
     sscanf( fl_hdr.fl_fstmoff, "%ld", &offset );
-  
+
     if( DEBUG_BINDSCAN )
         printf( "scan archive %s\n", archive );
-  
+
     while( offset > 0
            && lseek( fd, offset, 0 ) >= 0
            && read( fd, &ar_hdr, sizeof( ar_hdr ) ) >= sizeof( ar_hdr.hdr ) )
     {
         long    lar_date;
         int     lar_namlen;
-    
+
         sscanf( ar_hdr.hdr.ar_namlen, "%d", &lar_namlen );
         sscanf( ar_hdr.hdr.ar_date, "%ld", &lar_date );
         sscanf( ar_hdr.hdr.ar_nxtmem, "%ld", &offset );
-    
+
         if( !lar_namlen )
             continue;
-      
+
         ar_hdr.hdr._ar_name.ar_name[ lar_namlen ] = '\0';
 
         sprintf( buf, "%s(%s)", archive, ar_hdr.hdr._ar_name.ar_name );
@@ -409,7 +409,7 @@ void file_archscan(char *archive, scanback func, void *closure)
 
     if(( fd = open(archive, O_RDONLY, 0)) < 0)
         return;
-  
+
     if(read( fd, fl_magic, SAIAMAG) != SAIAMAG
        || lseek(fd, 0, SEEK_SET) == -1)
     {
@@ -429,7 +429,7 @@ void file_archscan(char *archive, scanback func, void *closure)
         file_archscan_big(fd, archive, func, closure);
     }
 #endif
-  
+
     close( fd );
 }
 

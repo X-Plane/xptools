@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int32Record.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ public:
   virtual dimeRecord *copy(dimeMemHandler * const mh) const;
   virtual void setValue(const dimeParam &param, dimeMemHandler * const memhandler = NULL);
   virtual void getValue(dimeParam &param) const;
-  
+
   int32 getValue() const;
   void setValue(const int32 val);
 
@@ -48,10 +48,10 @@ public:
   int typeId() const;
   bool read(dimeInput * const in);
   bool write(dimeOutput * const out);
-  
+
 private:
   int32 value;
-  
+
 }; // class dimeInt32Record
 
 #endif // ! DIME_INT32RECORD_H

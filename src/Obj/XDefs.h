@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,9 +26,9 @@
 #if __MWERKS__
 	#if __MACH__
 		#pragma c99 on
-		
+
 		#define _MSL_USING_MW_C_HEADERS 1
-		
+
 		#define __dest_os __mac_os_x
 	#elif APL
 		#define __dest_os __mac_os
@@ -39,9 +39,9 @@
 
 #if APL || LIN
 	#define CRLF "\n"
-#else	
+#else
 	#define CRLF "\r\n"
-#endif	
+#endif
 
 #if APL
 	#if defined(__POWERPC__)
@@ -50,7 +50,7 @@
 	#else
 		#define BIG 0
 		#define LIL 1
-	#endif	
+	#endif
 #elif IBM || LIN
 	#define BIG 0
 	#define LIL 1
@@ -58,7 +58,7 @@
 	#error NO PLATFORM!
 #endif
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 
 #include <vector>
 #include <string>
@@ -75,7 +75,7 @@ using namespace std;
 
 #define SUPPORT_STL
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 
 #if __MWERKS__							// metrowerks compiler
 	#include <hash_map>
@@ -93,7 +93,7 @@ using namespace std;
 //	#if defined(__POWERPC__) && !defined(__powerpc__)
 //		#define __powerpc__
 //	#endif
-	
+
 	#if APL || LIN
 // TODO: replace this hack with standard conform <unordered_map>, <hash_map> will disappear in the near future
 	#define GCC_VERSION (__GNUC__ * 10000 \
@@ -115,7 +115,7 @@ using namespace std;
 				operator()(const std::string& __s) const
 				{ return __stl_hash_string(__s.c_str()); }
 			};
-			
+
 			template<>
 			struct hash<float>
 			{
@@ -123,7 +123,7 @@ using namespace std;
 				operator()(const float& __s) const
 				{ return (size_t) __s; }
 			};
-			
+
 		}
 	#else
 		#include <hash_map>
@@ -141,9 +141,9 @@ using namespace std;
 #endif /* __cplusplus */
 
 #if defined(_MSC_VER) && !defined(__MWERKS__)
-	
+
 	#ifdef __cplusplus
-	
+
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
@@ -163,7 +163,7 @@ using namespace std;
 	#define ENOERR 0
 	#define round(X) floor(X + 0.5f)
 	#define snprintf _snprintf
-	
+
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 
 #endif

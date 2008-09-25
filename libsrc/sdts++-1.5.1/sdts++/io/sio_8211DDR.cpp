@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -52,7 +52,7 @@ sio_8211DDR::streamExtract(istream& istr)
    if ( ! istr ) return istr;
 
 
-   sio_8211DDRLeader& ddrLeader = 
+   sio_8211DDRLeader& ddrLeader =
      static_cast<sio_8211DDRLeader&>(getLeader_()); // reference for convenience
 
    istr >> getDirectory_();     // Get the directory.
@@ -60,14 +60,14 @@ sio_8211DDR::streamExtract(istream& istr)
    if ( ! istr ) return istr;
 
 
-                                // Get the fields. 
+                                // Get the fields.
 
    long fieldAreaStart = ddrLeader.getBaseAddrOfFieldArea();
 
-   for ( sio_8211Directory::iterator curr_direntry = getDirectory_().begin(); 
-         curr_direntry != getDirectory_().end(); 
+   for ( sio_8211Directory::iterator curr_direntry = getDirectory_().begin();
+         curr_direntry != getDirectory_().end();
          curr_direntry++ )
-      { 
+      {
          istr.seekg(fieldAreaStart + curr_direntry->getPosition());
 
          string fieldTag = curr_direntry->getTag();

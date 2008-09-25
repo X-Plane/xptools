@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -106,7 +106,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	NULL,						0,	0,										0,	0					},
 };
 
-static const GUI_MenuItem_t kPavementMenu[] = { 
+static const GUI_MenuItem_t kPavementMenu[] = {
 {	"&None",					0,	0,							0,	wed_Pavement0		},
 {	"&25%",						0,	0,							0,	wed_Pavement25		},
 {	"&50%",						0,	0,							0,	wed_Pavement50		},
@@ -147,33 +147,33 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 void WED_MakeMenus(GUI_Application * inApp)
 {
 	GUI_Menu file_menu = inApp->CreateMenu(
-		"&File", kFileMenu, inApp->GetMenuBar(), 0);		
+		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
-		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);		
+		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
-		"&View", kViewMenu, inApp->GetMenuBar(), 0);		
-	
+		"&View", kViewMenu, inApp->GetMenuBar(), 0);
+
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
-	
+
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airport_menu = inApp->CreateMenu(
-		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);	
+		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);
 
 	GUI_Menu	help_menu;
 #if APL
 	MenuRef	win_menu;
 	if (CreateStandardWindowMenu(kWindowMenuIncludeRotate,&win_menu)==noErr)
 		InsertMenu(win_menu,0);
-		
+
 	MenuRef hp = 0;
 	MenuItemIndex ind = 0;
 	OSStatus err = HMGetHelpMenu(&hp,&ind);
-	
+
 	inApp->RebuildMenu(hp, kHelpMenu);
 #else
 	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);

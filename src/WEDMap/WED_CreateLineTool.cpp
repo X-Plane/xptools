@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ static const char * kCreateCmds[] = {
 WED_CreateLineTool::WED_CreateLineTool(
 									const char *		tool_name,
 									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer, 
+									WED_MapZoomerNew *	zoomer,
 									IResolver *			resolver,
 									WED_Archive *		archive,
 									CreateLine_t		tool) :
@@ -64,7 +64,7 @@ WED_CreateLineTool::WED_CreateLineTool(
 		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",					"","",1)
 {
 }
-									
+
 WED_CreateLineTool::~WED_CreateLineTool()
 {
 }
@@ -87,12 +87,12 @@ void	WED_CreateLineTool::AcceptPath(
 	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
 
 	WED_GISLine_Width * obj = NULL;
-	
+
 	WED_Runway * rwy;
 	WED_Sealane * sea;
-	
+
 	switch(mType) {
-	case create_Runway:			
+	case create_Runway:
 		obj = rwy = WED_Runway::CreateTyped(GetArchive());
 		rwy->SetSurface(rwy_surface.value);
 		rwy->SetShoulder(rwy_shoulder.value);
@@ -112,24 +112,24 @@ void	WED_CreateLineTool::AcceptPath(
 	case create_Sealane:
 		obj = sea = WED_Sealane::CreateTyped(GetArchive());
 		sea->SetBuoys(sea_buoys.value);
-		break;	
+		break;
 	}
-	
+
 	WED_RunwayNode * n1 = WED_RunwayNode::CreateTyped(GetArchive());
 	WED_RunwayNode * n2 = WED_RunwayNode::CreateTyped(GetArchive());
-	
+
 	n1->SetParent(obj,0);
 	n2->SetParent(obj,1);
 	n1->SetName("Start");
 	n2->SetName("End");
-	
+
 	obj->GetSource()->SetLocation(pts[0]);
 	obj->GetTarget()->SetLocation(pts[1]);
 	obj->SetWidth(50.0);
 	static int n = 0;
 	++n;
 	obj->SetParent(host, idx);
-	
+
 	int h = obj->GetHeading();
 	if (h < 0) h += 360;
 	if (h > 180)
@@ -141,14 +141,14 @@ void	WED_CreateLineTool::AcceptPath(
 	}
 	h /= 10;
 	if (h < 1) h = 1;
-	
+
 	sprintf(buf,"%d/%d",h,h+18);
 	obj->SetName(buf);
 
 	ISelection * sel = WED_GetSelect(GetResolver());
 	sel->Clear();
 	sel->Select(obj);
-			
+
 	GetArchive()->CommitCommand();
 
 }

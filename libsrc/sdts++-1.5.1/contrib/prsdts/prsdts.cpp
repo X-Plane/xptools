@@ -48,10 +48,10 @@ bool totals = false;		// true if user just wants to see how many
 void
 usage( const char * name )
 {
-  cerr << name << ": [flags] sdts-module\n"       
+  cerr << name << ": [flags] sdts-module\n"
        << "flags:\n"
-       << "\t-t\tjust print totals\n"       
-       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"       
+       << "\t-t\tjust print totals\n"
+       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"
        << "\t\tassign binary converter to subfield mnemonic\n";
 } // usage()
 
@@ -71,7 +71,7 @@ main( int argc, char** argv )
   int ch;
 
   char * ifs_name = "-";
-  
+
                                 // set up default converter hints for
                                 // these mnemonics
 
@@ -89,10 +89,10 @@ main( int argc, char** argv )
       case 's':
 	converters[optarg] = '\0'; // Set to null
 	last_mnemonic = optarg;
-	break;	
+	break;
 
       case 'b':
-         converters[ last_mnemonic ] = 
+         converters[ last_mnemonic ] =
             sio_ConverterFactory::instance()->get( optarg );
 	break;
 
@@ -168,7 +168,7 @@ main( int argc, char** argv )
       cerr << "\n" << argv[0] << ": bad data\n";
       exit( 1 );
     }
-               
+
   ifs.close();
 
   exit( 0 );

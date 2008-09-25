@@ -36,7 +36,7 @@ public:
   typedef typename Planar_map::Traits_wrap Traits_wrap;
   typedef typename Planar_map::Locate_type Locate_type;
   typedef typename Planar_map::Face_handle Face_handle;
-  typedef typename Planar_map::Ccb_halfedge_circulator 
+  typedef typename Planar_map::Ccb_halfedge_circulator
     Ccb_halfedge_circulator;
   typedef typename Planar_map::Halfedge_handle Halfedge_handle;
   typedef typename Planar_map::Halfedge_iterator Halfedge_iterator;
@@ -50,16 +50,16 @@ public:
 
 public:
   // Constructors
-  Pm_naive_point_location() : 
+  Pm_naive_point_location() :
     Pm_point_location_base<Planar_map>(),
     pm(0),
-    traits(0) 
+    traits(0)
   {}
 
-  Pm_naive_point_location(Planar_map * _pm,Traits_wrap * _traits) : 
+  Pm_naive_point_location(Planar_map * _pm,Traits_wrap * _traits) :
     Pm_point_location_base<Planar_map>(), traits(_traits), pm(_pm) {}
 
-  inline void init(Planar_map & pmp, Traits & tr) 
+  inline void init(Planar_map & pmp, Traits & tr)
   {
     CGAL_precondition_msg(pm == NULL,
     "Point location instance should be uninitialized "
@@ -68,24 +68,24 @@ public:
     pm = &pmp;
     traits = (Traits_wrap*)(&tr);
   }
-  
+
   inline void insert(Halfedge_handle, const X_curve &) {}
-  
+
   Halfedge_handle locate(const Point & p, Locate_type & lt) const;
   Halfedge_handle locate(const Point & p, Locate_type & lt);
-  
+
   Halfedge_handle vertical_ray_shoot(const Point & p,
                                      Locate_type & lt, bool up) const;
   Halfedge_handle vertical_ray_shoot(const Point & p,
                                      Locate_type & lt, bool up);
-  
+
   inline void split_edge(const X_curve &,
                          Halfedge_handle, Halfedge_handle,
                          const X_curve &, const X_curve &) {}
-  
+
   inline void merge_edge(const X_curve &, const X_curve &,
                          Halfedge_handle, const X_curve &) {}
-  
+
   inline void remove_edge(Halfedge_handle) {}
   inline void remove_edge(const Halfedge_handle_iterator &,
                           const Halfedge_handle_iterator &) {};
@@ -96,20 +96,20 @@ public:
   { token.rebuild_bounding_box(this); }
 
 public:
-  inline const Bounding_box * get_bounding_box() const 
+  inline const Bounding_box * get_bounding_box() const
   {return pm->get_bounding_box();}
   inline const Traits * get_traits() const {return traits;}
-  
+
 protected:
   Halfedge_handle find_lowest(Vertex_handle v, bool highest) const;
-  
+
 #ifdef CGAL_PM_DEBUG
   void debug(){}
 #endif
 
 protected:
   typedef const Self * cPLp;
-  
+
 protected:
   Planar_map * pm;
   Traits_wrap * traits;

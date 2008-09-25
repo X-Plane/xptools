@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_HOMOGENEOUS_DIRECTION_3_H
 #define CGAL_HOMOGENEOUS_DIRECTION_3_H
 

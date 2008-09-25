@@ -13,7 +13,7 @@
  * ERROR HANDLING
  *
  *    This component checks parameters for valid values.  If an invalid value
- *    is found, the error code is combined with the current error code using 
+ *    is found, the error code is combined with the current error code using
  *    the bitwise or.  This combining allows multiple error codes to be
  *    returned. The possible error codes are:
  *
@@ -32,13 +32,13 @@
  *    GEOCENTRIC is intended for reuse by any application that performs
  *    coordinate conversions between geodetic coordinates and geocentric
  *    coordinates.
- *    
+ *
  *
  * REFERENCES
- *    
+ *
  *    An Improved Algorithm for Geocentric to Geodetic Coordinate Conversion,
  *    Ralph Toms, February 1996  UCRL-JC-123138.
- *    
+ *
  *    Further information on GEOCENTRIC can be found in the Reuse Manual.
  *
  *    GEOCENTRIC originated from : U.S. Army Topographic Engineering Center
@@ -93,7 +93,7 @@ extern "C" {
 #endif
 
 
-  long Set_Geocentric_Parameters (double a, 
+  long Set_Geocentric_Parameters (double a,
                                   double b);
 /*
  * The function Set_Geocentric_Parameters receives the ellipsoid parameters
@@ -104,7 +104,7 @@ extern "C" {
  */
 
 
-  void Get_Geocentric_Parameters (double *a, 
+  void Get_Geocentric_Parameters (double *a,
                                   double *b);
 /*
  * The function Get_Geocentric_Parameters returns the ellipsoid parameters
@@ -137,14 +137,14 @@ extern "C" {
 
 
   void Convert_Geocentric_To_Geodetic (double X,
-                                       double Y, 
+                                       double Y,
                                        double Z,
                                        double *Latitude,
                                        double *Longitude,
                                        double *Height);
 /*
  * The function Convert_Geocentric_To_Geodetic converts geocentric
- * coordinates (X, Y, Z) to geodetic coordinates (latitude, longitude, 
+ * coordinates (X, Y, Z) to geodetic coordinates (latitude, longitude,
  * and height), according to the current ellipsoid parameters.
  *
  *    X         : Geocentric X coordinate, in meters.         (input)

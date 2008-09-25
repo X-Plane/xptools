@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -73,7 +73,7 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mColorGridlines[1] = 0.5f;
 	mColorGridlines[2] = 0.5f;
 	mColorGridlines[3] = 1.0f;
-	
+
 	mColorSelect[0] = 1.0;
 	mColorSelect[1] = 1.0;
 	mColorSelect[2] = 0.0;
@@ -87,8 +87,8 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mColorTextSelect[0] = 1.0;
 	mColorTextSelect[1] = 1.0;
 	mColorTextSelect[2] = 1.0;
-	mColorTextSelect[3] = 1.0;	
-	
+	mColorTextSelect[3] = 1.0;
+
 	mColorInsertInto[0] = 1.0;
 	mColorInsertInto[1] = 0.0;
 	mColorInsertInto[2] = 0.0;
@@ -98,12 +98,12 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mColorInsertBetween[1] = 0.5;
 	mColorInsertBetween[2] = 1.0;
 	mColorInsertBetween[3] = 1.0;
-	
+
 	mTFColorText[0] = 0.0;		mTFColorText[1] = 0.0;		mTFColorText[2] = 0.0;		mTFColorText[3] = 1.0;
 	mTFColorHilite[0] = 1.0;	mTFColorHilite[1] = 1.0;	mTFColorHilite[2] = 0.0;	mTFColorHilite[3] = 1.0;
-	mTFColorBkgnd[0] = 1.0;		mTFColorBkgnd[1] = 1.0;		mTFColorBkgnd[2] = 1.0;		mTFColorBkgnd[3] = 1.0;	
-	mTFColorBox[0] = 0.3;		mTFColorBox[1] = 0.5;		mTFColorBox[2] = 1.0;		mTFColorBox[3] = 1.0;	
-	
+	mTFColorBkgnd[0] = 1.0;		mTFColorBkgnd[1] = 1.0;		mTFColorBkgnd[2] = 1.0;		mTFColorBkgnd[3] = 1.0;
+	mTFColorBox[0] = 0.3;		mTFColorBox[1] = 0.5;		mTFColorBox[2] = 1.0;		mTFColorBox[3] = 1.0;
+
 	mDiscloseIndent = GUI_GetImageResourceWidth("disclose.png") / 2;
 }
 
@@ -171,7 +171,7 @@ void		GUI_TextTable::SetGeometry(GUI_TableGeometry * geometry)
 {
 	mGeometry = geometry;
 }
-	
+
 void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 {
 	mContent = content;
@@ -188,11 +188,11 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
-		glEnd();	
+		glEnd();
 	}
-	
+
 	int cell_type = 0;
-	
+
 	GUI_CellContent	c;
 	if (mContent)
 	{
@@ -201,14 +201,14 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		if (c.can_edit)
 		if (c.content_type != gui_Cell_None) cell_type = 1;
 	}
-	
+
 	if (!mImage.empty())
 	{
 		glColor3f(1,1,1);
 		int tile[4] = { 0, cell_type, 1, 2 };
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
-	
+
 	if (!mContent) return;
 
 	if (c.is_selected)
@@ -219,12 +219,12 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glVertex2i(cell_bounds[0]  ,cell_bounds[3]  );
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]  );
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]+1);
-		glEnd();			
+		glEnd();
 		glColor4fv(mColorGridlines);
 	}
-	
+
 	cell_bounds[0] += (c.indent_level * mCellIndent);
-	
+
 	char buf[50];
 	switch(c.content_type) {
 	case gui_Cell_Disclose:
@@ -232,26 +232,26 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	case gui_Cell_CheckBox:
 		c.text_val = "";
-		break;		
+		break;
 	}
-	
+
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
-		
-		int tile[4] = { c.is_disclosed ? 1 : 0, 
+
+		int tile[4] = { c.is_disclosed ? 1 : 0,
 			(cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds) ? 1 : 0,
 			2, 2 };
-		
+
 		glColor3f(1,1,1);
 		GUI_DrawCentered(inState, "disclose.png", cell_bounds, -1, 0, tile, NULL, NULL);
-		
+
 		cell_bounds[0] += mDiscloseIndent;
 	}
-	
+
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
 	float	line_h = GUI_GetLineHeight(mFont);
-	int		descent = GUI_GetLineDescent(mFont);	
+	int		descent = GUI_GetLineDescent(mFont);
 	float	cell2line = (cell_h - line_h + descent) * 0.5f;
 
 	if (mTextField == NULL || mClickCellX != cell_x || mClickCellY != cell_y)
@@ -259,7 +259,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 		if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
 			trunc_width -= GUI_GetImageResourceWidth("arrows.png");
-			
+
 		if (c.string_is_resource)
 		{
 			string::size_type s=0, e;
@@ -274,45 +274,45 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 				else
 				{
 					res = c.text_val.substr(s,e-s);
-					s=e+1;					
+					s=e+1;
 				}
-		
+
 				int tile[4] = { 0, 0, 1, 1 };
 				glColor3f(1,1,1);
 				GUI_DrawCentered(inState, res.c_str(), cell_bounds, -1, 0, tile, NULL, NULL);
-				
+
 				cell_bounds[0] += 20;
-				
+
 				if (e == c.text_val.npos)
 					break;
 			}
 		}
 		else
-		{				
+		{
 			GUI_TruncateText(c.text_val, mFont, trunc_width);
-			GUI_FontDraw(inState, mFont, 
+			GUI_FontDraw(inState, mFont,
 				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
-				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());	
+				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
 		}
 	}
-	
+
 	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
 	{
 		int tile[4] = { 0, 0, 1, 1 };
 		glColor4fv((c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 		GUI_DrawCentered(inState, "arrows.png", cell_bounds, 1, 0, tile, NULL, NULL);
 	}
-	
+
 	if (c.content_type == gui_Cell_CheckBox)
 	{
-		int selector[4] = { 
+		int selector[4] = {
 			(c.int_val != 0) ? 1 : (c.bool_partial ? 2 : 0),
 			0,
 			c.bool_val == gui_Bool_Check ? 2 : 3,
 			1 };
-		
-		
-		 if (c.bool_val ==  gui_Bool_Check) 
+
+
+		 if (c.bool_val ==  gui_Bool_Check)
 		 		glColor4fv((c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 		else
 				glColor3f(1,1,1);
@@ -320,9 +320,9 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		case gui_Bool_Check:		GUI_DrawCentered(inState, "check.png", cell_bounds, 0, 0, selector, NULL, NULL);	break;
 		case gui_Bool_Lock:			GUI_DrawCentered(inState, "lock.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
 		case gui_Bool_Visible:		GUI_DrawCentered(inState, "eye.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
-		}		
+		}
 	}
-	
+
 	inState->SetState(false, false, false,	true, true, false, false);
 	switch(mDragDest) {
 	case gui_Table_Row:
@@ -340,7 +340,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 			glEnd();
 		}
 		break;
-	
+
 	case gui_Insert_Left:
 	case gui_Insert_Right:
 	case gui_Insert_Bottom:
@@ -351,29 +351,29 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		if ((mDragDest == gui_Insert_Left && cell_x == mDragX) || (mDragDest == gui_Insert_Right && cell_x == mDragX+1))
 		{
 			glVertex2i(cell_bounds[0],cell_bounds[1]);
-			glVertex2i(cell_bounds[0],cell_bounds[3]);			
-		}			
+			glVertex2i(cell_bounds[0],cell_bounds[3]);
+		}
 		if ((mDragDest == gui_Insert_Right && cell_x == mDragX) || (mDragDest == gui_Insert_Left && cell_x == mDragX-1))
 		{
 			glVertex2i(cell_bounds[2],cell_bounds[1]);
-			glVertex2i(cell_bounds[2],cell_bounds[3]);			
-		}			
+			glVertex2i(cell_bounds[2],cell_bounds[3]);
+		}
 		if ((mDragDest == gui_Insert_Bottom && cell_y == mDragY) || (mDragDest == gui_Insert_Top && cell_y == mDragY+1))
 		{
 			glVertex2i(cell_bounds[0],cell_bounds[1]);
-			glVertex2i(cell_bounds[2],cell_bounds[1]);			
-		}			
+			glVertex2i(cell_bounds[2],cell_bounds[1]);
+		}
 		if ((mDragDest == gui_Insert_Top && cell_y == mDragY) || (mDragDest == gui_Insert_Bottom && cell_y == mDragY-1))
 		{
 			glVertex2i(cell_bounds[0],cell_bounds[3]);
-			glVertex2i(cell_bounds[2],cell_bounds[3]);			
-		}			
+			glVertex2i(cell_bounds[2],cell_bounds[3]);
+		}
 		glEnd();
 		glLineWidth(1);
 		break;
 	}
 	glColor4fv(mColorGridlines);
-	
+
 }
 
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
@@ -397,9 +397,9 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		fabs((float)(last_mouse_y - mouse_y)) < 3.0 &&
 		time_now - last_time_now < 0.1)
 	{
-		did_double = mContent->DoubleClickCell(cell_x,cell_y);	
+		did_double = mContent->DoubleClickCell(cell_x,cell_y);
 	}
-	
+
 	last_cell_x = cell_x;
 	last_cell_y = cell_y;
 	last_mouse_x = mouse_x;
@@ -407,7 +407,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	last_time_now = time_now;
 
 	if (did_double) return 1;
-	
+
 	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
 	{
 		mLastX = mouse_x;
@@ -421,23 +421,23 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}
 
-	
-	if (!mContent) 
+
+	if (!mContent)
 	{
 		mClickCellX = -1;
-		mClickCellY = -1;	
+		mClickCellY = -1;
 		mEditInfo.content_type = gui_Cell_None;
 		return 1;
 	}
-	
-	if (!IsFocusedChain())	
+
+	if (!IsFocusedChain())
 		TakeFocus();
-	
+
 	if (mTextField)
 	{
-		TerminateEdit(true, false);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.		
+		TerminateEdit(true, false);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
 		mClickCellX = -1;
-		mClickCellY = -1;	
+		mClickCellY = -1;
 		mEditInfo.content_type = gui_Cell_None;
 		return 1;
 	}
@@ -445,12 +445,12 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 
 	mClickCellX = -1;
-	mClickCellY = -1;	
-	
+	mClickCellY = -1;
+
 	cell_bounds[0] += (mEditInfo.indent_level * mCellIndent);
-	
+
 //	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
-	
+
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
 		if (mEditInfo.can_disclose)
@@ -468,15 +468,15 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				return 1;
 			}
 		}
-		cell_bounds[0] += mDiscloseIndent;		
+		cell_bounds[0] += mDiscloseIndent;
 	}
-	
+
 	if ((!mEditInfo.is_selected || (mModifiers & (gui_ShiftFlag+gui_ControlFlag))) && mEditInfo.can_select)
 	{
 		mSelStartX = cell_x;
 		mSelStartY = cell_y;
 		want_lock = 0;
-		
+
 		int old_x1,old_y1,old_x2,old_y2;
 		if ((mModifiers & gui_ShiftFlag) && mContent->SelectGetExtent(old_x1,old_y1,old_x2,old_y2))
 		{
@@ -489,25 +489,25 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 		else
 			mContent->SelectionStart((mModifiers & (gui_ShiftFlag+gui_ControlFlag)) == 0);
-		
-		
-		mContent->SelectRange(	min(mSelStartX,cell_x), 
+
+
+		mContent->SelectRange(	min(mSelStartX,cell_x),
 								min(mSelStartY,cell_y),
-								max(mSelStartX,cell_x), 
-								max(mSelStartY,cell_y),		
+								max(mSelStartX,cell_x),
+								max(mSelStartY,cell_y),
 								mModifiers & gui_ControlFlag);
 		mEditInfo.content_type = gui_Cell_None;
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
-		
+
 		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 		{
 			mContent->SelectionEnd();
 			mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
 			return 0;
 		}
-		
+
 		return 1;
-	}	
+	}
 
 	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 	{
@@ -516,17 +516,17 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	}
 
 	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
-		
+
 	if (!mEditInfo.can_edit)	return 1;
-	
+
 	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
-	
+
 	char  buf[256];
 	switch(mEditInfo.content_type) {
 	case gui_Cell_FileText:
 		{
 			mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-			mEditInfo.content_type = gui_Cell_None;			
+			mEditInfo.content_type = gui_Cell_None;
 		}
 		break;
 	case gui_Cell_CheckBox:
@@ -536,9 +536,9 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
 				mClickCellX = cell_x;
-				mClickCellY = cell_y;				
+				mClickCellY = cell_y;
 				mInBounds = 1;
-				BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);			
+				BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 				return 1;
 			}
 		}
@@ -605,7 +605,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].flags = 0;
 					items[i].cmd = 0;
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
-					if (mEditInfo.int_val == it->first && cur == -1) cur = i;					
+					if (mEditInfo.int_val == it->first && cur == -1) cur = i;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
 				if (choice >= 0 && choice < enum_vals.size())
@@ -637,7 +637,7 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 	}
 
 	int new_in;
-	
+
 	if (mSelStartX != -1 && mSelStartY != -1)
 	{
 		int x1, y1, x2, y2;
@@ -647,18 +647,18 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 			if (cell_x > x2) cell_x = x2;
 			if (cell_y < y1) cell_y = y1;
 			if (cell_y > y2) cell_y = y2;
-			
+
 			if (mParent) mParent->RevealCell(cell_x, cell_y);
-		
-			mContent->SelectRange(min(mSelStartX,cell_x), 
+
+			mContent->SelectRange(min(mSelStartX,cell_x),
 								  min(mSelStartY,cell_y),
-								  max(mSelStartX,cell_x), 
+								  max(mSelStartX,cell_x),
 								  max(mSelStartY,cell_y),
 								  mModifiers & gui_ControlFlag);
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 		}
 	}
-	
+
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
 		new_in = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
@@ -706,9 +706,9 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 
 			if (mParent) mParent->RevealCell(cell_x, cell_y);
 
-			mContent->SelectRange(min(mSelStartX,cell_x), 
+			mContent->SelectRange(min(mSelStartX,cell_x),
 								  min(mSelStartY,cell_y),
-								  max(mSelStartX,cell_x), 
+								  max(mSelStartX,cell_x),
 								  max(mSelStartY,cell_y),
 								  mModifiers & gui_ControlFlag);
 			mContent->SelectionEnd();
@@ -719,7 +719,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 	}
 
 	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
-		
+
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
@@ -730,19 +730,19 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_CheckBox:
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
-		if (mInBounds) 
+		if (mInBounds)
 		{
 			mEditInfo.int_val = 1 - mEditInfo.int_val;
 			mContent->AcceptEdit(cell_x,cell_y, mEditInfo, all_edit);
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
-		}	
+		}
 		break;
 	}
 	if (!mTextField)
 	{
 		mEditInfo.content_type = gui_Cell_None;
 		mClickCellX = -1;
-		mClickCellY = -1;	
+		mClickCellY = -1;
 	}
 }
 
@@ -764,7 +764,7 @@ int			GUI_TextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, 
 	GUI_CellContent	c;
 	if (!mContent) return 0;
 	mContent->GetCellContent(cell_x,cell_y,c);
-	switch(c.content_type) { 
+	switch(c.content_type) {
 	case gui_Cell_EditText:
 	case gui_Cell_FileText:
 	case gui_Cell_Integer:
@@ -780,10 +780,10 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 	// MAIN DRAG HANDLER - WHAT IS GOING ON??
 	//
 	//	First: how do we try to leave the world when we're done?  Well, basically:
-	//	1. mDragX, mDragY, and mDragPart contain info about the POTENTIAL drop, no matter whether the drop is legal or not.  
+	//	1. mDragX, mDragY, and mDragPart contain info about the POTENTIAL drop, no matter whether the drop is legal or not.
 	//	   Note that horizontal vs. vertical reordering is invariant, so we do not store this.
 	//  2. mDragDest contains what WOULD happen if there is a drop.  We do not store what kind of operation (move/copy), but we do know how to draw the resulting situation.
-	//	3. We save our return value in "mLastOp" as a cache.	
+	//	3. We save our return value in "mLastOp" as a cache.
 	//
 	// To do this we:
 	// 1. Find out what legal possibilities we have.
@@ -793,26 +793,26 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 	mDragX = cell_x;
 	mDragY = cell_y;
 	mDragDest = gui_Table_None;
-	
+
 	if (mContent == NULL) return gui_Drag_None;
-	
+
 	int	can_insert_col;
 	int	can_insert_row;
 	int can_into_cell;
-	
+
 	mLastOp = gui_Drag_None;
 	mDragDest = gui_Table_None;
 	int	whole_row = 0, whole_col = 0;
-	
+
 	// 1. Find the legal drops we can do.  How we analyze depends on this!
-	
-	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);	
-	
+
+	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);
+
 	// 2. Find the part and
-	// 3.  try the drops it suggests.	
+	// 3.  try the drops it suggests.
 	if (can_insert_row)
 	{
-		mDragPart = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);		
+		mDragPart = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);
 		// 3a. We are allowed to do row inserts.
 		if (can_into_cell)
 		{
@@ -844,7 +844,7 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 	else if (can_insert_col)
 	{
 		// 3b.  We are allowed to do column inserts.
-		mDragPart = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);		
+		mDragPart = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);
 		if (can_into_cell)
 		{
 			// 3b-1.  Try column reorder or a drop-inside, depending on part.
@@ -870,7 +870,7 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 			// 3b-2.  We can only col-reorder.  Just tr y that.
 			if ((mLastOp = mContent->CanDropBetweenColumns(cell_x + ((mDragPart == drag_HigherOrInto || mDragPart == drag_IntoOrHigher) ? 1 : 0), drag, allowed, recommended)) != gui_Drag_None)
 				mDragDest = (mDragPart == drag_HigherOrInto || mDragPart == drag_IntoOrHigher) ? gui_Insert_Right : gui_Insert_Left;
-		}	
+		}
 	}
 	else if (can_into_cell)
 	{
@@ -880,12 +880,12 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 			mDragDest = gui_Table_Cell;
 	} else
 		mDragPart = drag_WholeCell;
-	
+
 	// 4. Patch up feedback for in-cell drops.
-	
+
 	if (mDragDest == gui_Table_Cell && whole_col) mDragDest = gui_Table_Column;
 	if (mDragDest == gui_Table_Cell && whole_row) mDragDest = gui_Table_Row;
-	
+
 	mParent->Refresh();
 	return mLastOp;
 }
@@ -893,19 +893,19 @@ GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, 
 GUI_DragOperation	GUI_TextTable::CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
 	if (mContent == NULL) return gui_Drag_None;
-	
+
 	int				can_insert_col;
 	int				can_insert_row;
 	int				can_into_cell;
 	GUI_DragPart	part;
-	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);	
-	
+	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);
+
 	// 2. Find the part and
-	// 3.  try the drops it suggests.	
-		 if (can_insert_row)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);		
-	else if (can_insert_col)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);		
+	// 3.  try the drops it suggests.
+		 if (can_insert_row)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);
+	else if (can_insert_col)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);
 	else							part = drag_WholeCell;
-	
+
 	// IF something has changed, retry the operation.
 
 	if (mDragPart != part || cell_x != mDragX || cell_y != mDragY)		return this->CellDragEnter(cell_bounds,cell_x,cell_y,mouse_x,mouse_y,drag,allowed,recommended);
@@ -926,19 +926,19 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 	if (mContent == NULL) return gui_Drag_None;
 
 	// Same logic as moved.  Basically if XY has changed, re-evaluate.  This shouldn't be needed but...what the heck.
-	
+
 	int				can_insert_col;
 	int				can_insert_row;
 	int				can_into_cell;
 	GUI_DragPart	part;
-	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);	
-	
+	mContent->GetLegalDropOperations(can_insert_col,can_insert_row,can_into_cell);
+
 	// 2. Find the part and
-	// 3.  try the drops it suggests.	
-		 if (can_insert_row)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);		
-	else if (can_insert_col)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);		
+	// 3.  try the drops it suggests.
+		 if (can_insert_row)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 1);
+	else if (can_insert_col)		part = GetCellDragPart(cell_bounds,mouse_x,mouse_y, 0);
 	else							part = drag_WholeCell;
-	
+
 	// IF something has changed, retry the operation.
 
 	if (mDragPart != part || cell_x != mDragX || cell_y != mDragY)
@@ -946,7 +946,7 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 		DebugAssert(!"Strange.  Drop not on location we last dragged to.");
 		mLastOp = this->CellDragEnter(cell_bounds,cell_x,cell_y,mouse_x,mouse_y,drag,allowed,recommended);
 	}
-	
+
 	if (mLastOp != gui_Drag_None)
 	switch(mDragDest) {
 	case	gui_Table_Row:
@@ -967,21 +967,21 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 		break;
 	}
 
-	return mLastOp;	
+	return mLastOp;
 }
 
 
 
 void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 {
-	if (!mTextField) 
+	if (!mTextField)
 	{
-		mTextField = new GUI_TextField(1,this); 
+		mTextField = new GUI_TextField(1,this);
 		mTextField->SetFont(mFont);
-		mTextField->SetParent(mParent); 
-		mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
-		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
-		mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
+		mTextField->SetParent(mParent);
+		mTextField->SetVKAllowed(GUI_VK_RETURN, false);
+		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false);
+		mTextField->SetKeyAllowed(GUI_KEY_TAB, false);
 		if (!mImage.empty())
 		{
 			float transparent[4] = { 0.0, 0.0, 0.0, 0.0 };
@@ -990,31 +990,31 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 			mTextField->SetColors(mTFColorText,mTFColorHilite,mTFColorBkgnd,mTFColorBox);
 		}
 	}
-	
+
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
 	float	line_h = GUI_GetLineHeight(mFont);
-	int		descent = GUI_GetLineDescent(mFont);	
+	int		descent = GUI_GetLineDescent(mFont);
 	float	cell2line = (cell_h - line_h + descent) * 0.5f;
-	
+
 	float pad_bottom = cell2line - descent;
 	float pad_top = cell_h - line_h - pad_bottom;
-	
+
 	mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
-	
-		
+
+
 	cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
 	mTextField->SetBounds(cell_bounds);
 	mTextField->SetWidth(max(cell_bounds[2] - cell_bounds[0],2048));
 //	mTextField->SetWidth(1000);
 	mTextField->Show();
 	mTextField->TakeFocus();
-	
+
 	mParent->TrapFocus();
 }
 
 int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 {
-	if (mTextField && mTextField->IsFocused() && 
+	if (mTextField && mTextField->IsFocused() &&
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
 		GUI_TextField * f = mTextField;
@@ -1030,13 +1030,13 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 				mEditInfo.double_val = atof(mEditInfo.text_val.c_str());
 				break;
 			}
-			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo, in_all);	
+			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo, in_all);
 		}
 		this->TakeFocus();
 		f->Hide();
 		delete f;
 		mEditInfo.content_type = gui_Cell_None;
-		return 1;				
+		return 1;
 	}
 	return 0;
 }
@@ -1047,7 +1047,7 @@ GUI_TextTable::GUI_DragPart	GUI_TextTable::GetCellDragPart(int cell_bounds[4], i
 	float delta = vertical ? y - cell_bounds[1] : x - cell_bounds[0];
 	if (span == 0.0) return drag_LowerOrInto;
 	float ratio = delta / span;
-	
+
 	if (ratio < 0.25) return drag_LowerOrInto;
 	if (ratio < 0.50) return drag_IntoOrLower;
 	if (ratio < 0.75) return drag_IntoOrHigher;
@@ -1083,10 +1083,10 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 		mParent->BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		mParent->Refresh();
 	}
-	
+
 	if ((inFlags & gui_UpFlag) == 0)
 	switch(inKey) {
-	case GUI_KEY_LEFT:		
+	case GUI_KEY_LEFT:
 	case GUI_KEY_RIGHT:
 	case GUI_KEY_UP:
 	case GUI_KEY_DOWN:
@@ -1106,14 +1106,14 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 					}
 
 				} else {
-				
+
 					switch(inKey) {
 					case GUI_KEY_LEFT:		--x1;	if ((inFlags & gui_ShiftFlag) == 0)	x2 = x1;	if(mParent)mParent->RevealCol(x1);	break;
 					case GUI_KEY_RIGHT:		++x2;	if ((inFlags & gui_ShiftFlag) == 0)	x1 = x2;	if(mParent)mParent->RevealCol(x2);	break;
 					case GUI_KEY_UP:		++y2;	if ((inFlags & gui_ShiftFlag) == 0)	y1 = y2;	if(mParent)mParent->RevealRow(y2);	break;
 					case GUI_KEY_DOWN:		--y1;	if ((inFlags & gui_ShiftFlag) == 0)	y2 = y1;	if(mParent)mParent->RevealRow(y1);	break;
 					}
-					
+
 					x1 = min(x1, x_max);
 					x2 = min(x2, x_max);
 					x1 = max(x1, x_min);
@@ -1122,11 +1122,11 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 					y2 = min(y2, y_max);
 					y1 = max(y1, y_min);
 					y2 = max(y2, y_min);
-					
+
 					mContent->SelectionStart(1);
 					mContent->SelectRange(x1,y1,x2,y2, 0);
 				}
-				mContent->SelectionEnd();			
+				mContent->SelectionEnd();
 			}
 		}
 		break;
@@ -1140,7 +1140,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag);
 		if (mParent)
 		{
-			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))	
+			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))
 			{
 				mParent->RevealCell(x,y);
 				mParent->CalcCellBounds(x,y,cell_bounds);
@@ -1158,14 +1158,14 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 	{
 		TerminateEdit(true, inFlags & gui_OptionAltFlag);
 		return 1;
-	} 
+	}
 	else if (inVK == GUI_VK_RETURN && mContent && mParent)
 	{
 		int x1, y1, x2, y2;
 		if (mContent->SelectGetExtent(x1,y1,x2,y2))
 		{
 			int cell_bounds[4];
-			if (mContent->TabAdvance(x1,y2, 0, mEditInfo))	
+			if (mContent->TabAdvance(x1,y2, 0, mEditInfo))
 			{
 				mParent->RevealCell(x1,y2);
 				mParent->CalcCellBounds(x1,y2,cell_bounds);
@@ -1176,7 +1176,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 				mTextField->SetSelection(0,mEditInfo.text_val.size());
 				mTextField->Refresh();
 			}
-		}	
+		}
 	}
 
 	if(inKey == GUI_KEY_ESCAPE && mTextField)
@@ -1194,7 +1194,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 GUI_TextTableHeader::GUI_TextTableHeader() : mContent(NULL), mGeometry(NULL)
-{	
+{
 	mColorGridlines[0] = 0.5f;
 	mColorGridlines[1] = 0.5f;
 	mColorGridlines[2] = 0.5f;
@@ -1209,7 +1209,7 @@ GUI_TextTableHeader::GUI_TextTableHeader() : mContent(NULL), mGeometry(NULL)
 GUI_TextTableHeader::~GUI_TextTableHeader()
 {
 }
-	
+
 void		GUI_TextTableHeader::SetProvider(GUI_TextTableHeaderProvider * content)
 {
 	mContent = content;
@@ -1256,21 +1256,21 @@ void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphS
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
-	
+
 	if (!mContent) return;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_x,c);
-	
+
 	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
-	
+
 
 	int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 	GUI_TruncateText(c.title, font_UI_Basic, trunc_width);
-	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());	
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());
 }
 
 int			GUI_TextTableHeader::HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
-{	
+{
 	want_lock = 1;
 	mCellResize = -1;
 	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
@@ -1324,7 +1324,7 @@ int			GUI_TextTableHeader::HeadGetCursor(int cell_bounds[4], int cell_x, int mou
 }
 
 int			GUI_TextTableHeader::HeadGetHelpTip(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, string& tip)
-{	
+{
 	if (!mContent) return 0;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_x,c);
@@ -1339,7 +1339,7 @@ int			GUI_TextTableHeader::HeadGetHelpTip(int cell_bounds[4], int cell_x, int mo
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 GUI_TextTableSide::GUI_TextTableSide() : mContent(NULL), mGeometry(NULL)
-{	
+{
 	mColorGridlines[0] = 0.5f;
 	mColorGridlines[1] = 0.5f;
 	mColorGridlines[2] = 0.5f;
@@ -1354,7 +1354,7 @@ GUI_TextTableSide::GUI_TextTableSide() : mContent(NULL), mGeometry(NULL)
 GUI_TextTableSide::~GUI_TextTableSide()
 {
 }
-	
+
 void		GUI_TextTableSide::SetProvider(GUI_TextTableHeaderProvider * content)
 {
 	mContent = content;
@@ -1400,15 +1400,15 @@ void		GUI_TextTableSide::SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphSta
 		int tile[4] = { 0, 0, 1, 1 };
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
-	
+
 	if (!mContent) return;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_y,c);
-	
+
 	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
 	int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 	GUI_TruncateText(c.title, font_UI_Basic, trunc_width);
-	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());	
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+CELL_MARGIN, line_h, c.title.c_str());
 }
 
 int			GUI_TextTableSide::SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)

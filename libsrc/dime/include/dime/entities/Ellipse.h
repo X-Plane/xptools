@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Ellipse.h
  *
  *  This source file is part of DIME.
@@ -48,7 +48,7 @@ public:
 
   void setMajorAxisEndpoint(const dimeVec3f &v);
   const dimeVec3f &getMajorAxisEndpoint() const;
-  
+
   void setMinorMajorRatio(const dxfdouble ratio);
   dxfdouble getMinorMajorRatio() const;
 
@@ -57,7 +57,7 @@ public:
 
   void setEndParam(const dxfdouble p);
   dxfdouble getEndParam() const;
-  
+
   virtual dimeEntity *copy(dimeModel * const model) const;
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
@@ -68,10 +68,10 @@ public:
   virtual int typeId() const;
   virtual int countRecords() const;
 
-protected:  
+protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
-			    dimeMemHandler * const memhandler);  
+			    dimeMemHandler * const memhandler);
 private:
   dimeVec3f center;
   dimeVec3f majorAxisEndpoint;
@@ -87,7 +87,7 @@ dimeEllipse::getCenter() const
   return this->center;
 }
 
-inline void 
+inline void
 dimeEllipse::setCenter(const dimeVec3f &c)
 {
   this->center = c;
@@ -104,38 +104,38 @@ dimeEllipse::getMajorAxisEndpoint() const
 {
   return this->majorAxisEndpoint;
 }
-  
-inline void 
+
+inline void
 dimeEllipse::setMinorMajorRatio(const dxfdouble ratio)
 {
   this->ratio = ratio;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeEllipse::getMinorMajorRatio() const
 {
   return this->ratio;
 }
 
-inline void 
+inline void
 dimeEllipse::setStartParam(const dxfdouble p)
 {
   this->startParam = p;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeEllipse::getStartParam() const
 {
   return this->startParam;
 }
 
-inline void 
+inline void
 dimeEllipse::setEndParam(const dxfdouble p)
 {
   this->endParam = p;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeEllipse::getEndParam() const
 {
   return this->endParam;

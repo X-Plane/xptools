@@ -75,7 +75,7 @@ protected:
   {
     std::vector< Point_2 > p = compute_points(t);
     if ( right(p[0]) )  return p[0];
-    return p[1]; 
+    return p[1];
   }
 
   inline
@@ -199,7 +199,7 @@ public:
   {
     STEP = FT(2);
     this->r = f1.weight() - f2.weight();
-    
+
     this->f1 = f1.point();
     this->f2 = f2.point();
 
@@ -237,7 +237,7 @@ public:
       //    double mind = distance(o, f1) - r1;
       for (int i = 1; i <= 100; i++) {
 	p = compute_points(FT(i * i) * STEP);
-	
+
 	if ( p.size() > 0 ) {
 	  if ( right(p[0]) ) {
 	    pright.push_back(p[0]);
@@ -258,7 +258,7 @@ public:
       for (unsigned int i = 0; i < pleft.size() - 1; i++) {
 	W << Segment_2(pleft[i], pleft[i+1]);
       }
-      
+
       for (unsigned int i = 0; i < pright.size() - 1; i++) {
 	W << Segment_2(pright[i], pright[i+1]);
       }
@@ -298,7 +298,7 @@ public:
     for (unsigned int i = 0; i < pleft.size() - 1; i++) {
       W << Segment_2(pleft[i], pleft[i+1]);
     }
-      
+
     for (unsigned int i = 0; i < pright.size() - 1; i++) {
       W << Segment_2(pright[i], pright[i+1]);
     }

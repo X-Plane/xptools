@@ -25,10 +25,10 @@
 #include <CGAL/Triangulation_short_names_2.h>
 #include <CGAL/Triangulation_ds_face_base_2.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template < typename Gt, typename Fb = Triangulation_ds_face_base_2<> >
-class Triangulation_face_base_2 
+class Triangulation_face_base_2
   : public Fb
 {
 public:
@@ -46,21 +46,21 @@ public:
   Triangulation_face_base_2()
        : Fb() {}
 
-  Triangulation_face_base_2(Vertex_handle v0, 
-			    Vertex_handle v1, 
+  Triangulation_face_base_2(Vertex_handle v0,
+			    Vertex_handle v1,
 			    Vertex_handle v2)
     : Fb(v0,v1,v2) {}
 
-  Triangulation_face_base_2(Vertex_handle v0, 
-			    Vertex_handle v1, 
+  Triangulation_face_base_2(Vertex_handle v0,
+			    Vertex_handle v1,
 			    Vertex_handle v2,
-			    Face_handle n0, 
-			    Face_handle n1, 
+			    Face_handle n0,
+			    Face_handle n1,
 			    Face_handle n2)
     : Fb(v0,v1,v2,n0,n1,n2) {}
 };
 
 
-CGAL_END_NAMESPACE 
+CGAL_END_NAMESPACE
 
 #endif //CGAL_TRIANGULATION_FACE_BASE_2_H

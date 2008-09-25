@@ -25,7 +25,7 @@
 #define CGAL_SIMPLICITY_TEST_H
 
 #error "FILE IS OBSOLETE AND SHOULD NOT GET INCLUDED"
-// ====  This file is now OBSOLETE ===== 
+// ====  This file is now OBSOLETE =====
 // ====  The functionality has been placed in Polygon_2_simplicity.h ====
 
 #include <cstdlib>
@@ -183,7 +183,7 @@ class Simplicity_test_2 {
 
       protected:
         std::set<int,EdgeComp> status;
-        // if i is an element of status, it means that 
+        // if i is an element of status, it means that
 
         std::vector<typename std::set<int,EdgeComp>::iterator> index;
         // the iterators of the edges are stored to enable fast deletion
@@ -211,7 +211,7 @@ class Simplicity_test_2 {
           typename std::set<int,EdgeComp>::const_iterator i;
           for (i = status.begin(); i != status.end(); ++i) {
             int v1 = *i;
-            int v2 = (v1<n-1) ? v1+1 : v1+1-n; 
+            int v2 = (v1<n-1) ? v1+1 : v1+1-n;
             // edge(v1) = (vertex(v1), vertex(v2))
 
             Comparison_result c1 =
@@ -522,8 +522,8 @@ Simplicity_test_2<ForwardIterator, Traits>::Test(ForwardIterator first,
         return false;
     }
     else {
-       // check for intersections between edges that become new neighbors 
-       // in the sweep status due to the deletion 
+       // check for intersections between edges that become new neighbors
+       // in the sweep status due to the deletion
        int left, right;
        if (status.left(prev) == i)
        {

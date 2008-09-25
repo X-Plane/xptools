@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Layer.cpp
  *
  *  This source file is part of DIME.
@@ -53,10 +53,10 @@ static dxfdouble colortable[] = {
   0,1,1,
   0,0,1,
   1,0,1,
-  1,1,1,          
-  0.5,0.5,0.5,  //0.5,0.5,0.5,     
-  0.75,0.75,0.75,  //0.75,0.75,0.75, 
-  1,0,0,              
+  1,1,1,
+  0.5,0.5,0.5,  //0.5,0.5,0.5,
+  0.75,0.75,0.75,  //0.75,0.75,0.75,
+  1,0,0,
   1,0.5,0.5,
   0.65,0,0,
   0.65,0.325,0.325,
@@ -66,7 +66,7 @@ static dxfdouble colortable[] = {
   0.3,0.15,0.15,
   0.15,0,0,
   0.15,0.075,0.075,
-  1,0.25,0,   // 20        
+  1,0.25,0,   // 20
   1,0.625,0.5,
   0.65,0.1625,0,
   0.65,0.4063,0.325,
@@ -307,28 +307,28 @@ static dxfdouble colortable[] = {
 dimeLayer * dimeLayer::defaultLayer;
 
 // 0 seems to be the default layer name in AutoCAD
-static char defaultName[] = "0"; 
+static char defaultName[] = "0";
 
 dimeLayer::dimeLayer()
   : layerName( NULL ), layerNum( -1 ), colorNum( -1 ), flags( 0 )
 {
 }
 
-dimeLayer::dimeLayer(const char * const name, const int num, 
-		     const int16 colnum, const int16 flagmask) 
+dimeLayer::dimeLayer(const char * const name, const int num,
+		     const int16 colnum, const int16 flagmask)
   : layerName( name ), layerNum( num ), colorNum( colnum ), flags( flagmask )
 {
 }
 
 /*!
-  \fn static void colorToRGB(const int colornum, 
+  \fn static void colorToRGB(const int colornum,
                              float &r, float &g, float &b)
-  Returns the RGB values based on the color index. Legal color 
+  Returns the RGB values based on the color index. Legal color
   numbers range from 1 through 255.
 */
 
-void 
-dimeLayer::colorToRGB(const int colornum, 
+void
+dimeLayer::colorToRGB(const int colornum,
 		      dxfdouble &r, dxfdouble &g, dxfdouble &b)
 {
   int idx = 7*3; // default white
@@ -387,7 +387,7 @@ dimeLayer::colorToRGB(const int colornum,
 */
 
 
-void 
+void
 dimeLayer::cleanup_default_layer(void)
 {
   delete defaultLayer;

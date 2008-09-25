@@ -5,11 +5,11 @@
 -                   as if it were a file.
 -                   mfs_ stands for memory file system.
 -   Author      :   Mike Johnson - Banctec AB 03/07/96
--                   
+-
 --------------------------------------------------------------------------------
 */
 
-/* 
+/*
 
 Copyright (c) 1996 Mike Johnson
 Copyright (c) 1996 BancTec AB
@@ -21,15 +21,15 @@ all copies of the software and related documentation, and (ii) the names of
 Mike Johnson and BancTec may not be used in any advertising or
 publicity relating to the software.
 
-THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
-EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
-WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 
 IN NO EVENT SHALL MIKE JOHNSON OR BANCTEC BE LIABLE FOR
 ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
 OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
-LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
@@ -97,7 +97,7 @@ static void mem_init ();
 --------------------------------------------------------------------------------
 -   Function    :   mfs_open ()
 -
--   Arguments   :   Pointer to allocated buffer, initial size of buffer, 
+-   Arguments   :   Pointer to allocated buffer, initial size of buffer,
 -                   mode spec (r, w, a)
 -
 -   Returns     :   File descriptor or -1 if error.
@@ -108,11 +108,11 @@ static void mem_init ();
 -                   back to TIFFClientOpen and used as if it was a disk
 -                   based fd.
 -                   If the call is for mode 'w' then pass (void *)NULL as
--                   the buffer and zero size and the library will 
+-                   the buffer and zero size and the library will
 -                   allocate memory for you.
 -                   If the mode is append then pass (void *)NULL and size
 -                   zero or with a valid address.
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -235,7 +235,7 @@ int mfs_open (void *buffer, int size, char *mode)
 -   Description :   Does the same as lseek (2) except on a memory based file.
 -                   Note: the memory area will be extended if the caller
 -                   attempts to seek past the current end of file (memory).
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -307,7 +307,7 @@ int mfs_lseek (int fd, int offset, int whence)
     }
 
     return (ret);
-}   
+}
 
 /*
 --------------------------------------------------------------------------------
@@ -320,7 +320,7 @@ int mfs_lseek (int fd, int offset, int whence)
 -   Description :   Does the same as read (2) except on a memory based file.
 -                   Note: An attempt to read past the end of memory currently
 -                   allocated to the file will return 0 (End Of File)
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -360,7 +360,7 @@ int mfs_read (int fd, void *clnt_buf, int size)
 -   Description :   Does the same as write (2) except on a memory based file.
 -                   Note: the memory area will be extended if the caller
 -                   attempts to write past the current end of file (memory).
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -380,7 +380,7 @@ int mfs_write (int fd, void *clnt_buf, int size)
         /* Write */
 
         if (buf_off[fd] + size > buf_size[fd])
-        {       
+        {
             extend_mem_file (fd, buf_off[fd] + size);
             buf_size[fd] = (buf_off[fd] + size);
         }
@@ -418,7 +418,7 @@ int mfs_write (int fd, void *clnt_buf, int size)
 -   Returns     :   integer file size
 -
 -   Description :   This function returns the current size of the file in bytes.
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -449,13 +449,13 @@ int mfs_size (int fd)
 -                   in memory and what size the mapped area is. It is provided
 -                   to satisfy the MapProc function in libtiff. It pretends
 -                   that the file has been mmap (2)ped.
--                   
+-
 --------------------------------------------------------------------------------
 */
 
 int mfs_map (int fd, char **addr, size_t *len)
 {
-    int ret; 
+    int ret;
 
     if (fds[fd] == -1)  /* Not open */
     {
@@ -482,7 +482,7 @@ int mfs_map (int fd, char **addr, size_t *len)
 -
 -   Description :   This function does nothing as the file is always
 -                   in memory.
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -500,13 +500,13 @@ int mfs_unmap (int fd)
 -   Returns     :   close status (succeeded or otherwise)
 -
 -   Description :   Close the open memory file. (Make fd available again.)
--                   
+-
 --------------------------------------------------------------------------------
 */
 
 int mfs_close (int fd)
 {
-    int ret; 
+    int ret;
 
     if (fds[fd] == -1)  /* Not open */
     {
@@ -531,7 +531,7 @@ int mfs_close (int fd)
 -   Returns     :   0 - All OK, -1 - realloc () failed.
 -
 -   Description :   Increase the amount of memory allocated to a file.
--                   
+-
 --------------------------------------------------------------------------------
 */
 
@@ -560,7 +560,7 @@ static int extend_mem_file (int fd, int size)
 -   Returns     :   void
 -
 -   Description :   Initialise the library.
--                   
+-
 --------------------------------------------------------------------------------
 */
 

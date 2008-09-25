@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -129,21 +129,21 @@ int		XPMainWindow(
 {
 	// First get our geometry and font size; we need this to know if our drag bar
 	// is being dispatched.
-	
+
 		int fv;
 		int 		l, t, r, b;
 		int			dragBarHeight;
 		int			cbh, cbv;
-		
+
 	XPGetElementDefaultDimensions(xpElement_WindowDragBar, NULL, &dragBarHeight, NULL);
 	XPGetElementDefaultDimensions(xpElement_WindowCloseBox, &cbh, &cbv, NULL);
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
-	
+
 
 	// Next dispatch built-in behavior: selection to front, dragging the title bar,
 	// and keeping children lined up.
-	
+
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 0/*don't eat*/))	return 1;
 
 	int	cbl_l, cbl_t, cbl_r, cbl_b;	// close box left and right rects
@@ -169,7 +169,7 @@ int		XPMainWindow(
 				XPDrawElement(l, t-dragBarHeight, r, t, xpElement_WindowDragBar, 0/*lit*/);
 				if (titleLen > 0)
 					XPDrawElement((l+r)/2 - (titleLen+16) / 2,t-dragBarHeight, (l+r)/2 + (titleLen+16) / 2, t,  xpElement_WindowDragBarSmooth,0);
-					
+
 				if (XPGetWidgetProperty(inWidget, xpProperty_MainWindowHasCloseBoxes, NULL))
 				{
 					int	hilited = XPGetWidgetProperty(inWidget, xpProperty_Hilited, NULL);
@@ -182,9 +182,9 @@ int		XPMainWindow(
 			SetProportional(1);
 			XPLMDrawString(white, (l + r) / 2 - (titleLen / 2), t-(fv/2)-(dragBarHeight/2)+2,
 						buf, NULL, xplmFont_Basic);
-			SetProportional(0);			
+			SetProportional(0);
 		}
-		return 1;	
+		return 1;
 	case xpMsg_MouseDown:
 		if (IN_RECT(MOUSE_X(inParam1), MOUSE_Y(inParam1), cbl_l, cbl_t, cbl_r, cbl_b) ||
 			IN_RECT(MOUSE_X(inParam1), MOUSE_Y(inParam1), cbr_l, cbr_t, cbr_r, cbr_b))
@@ -200,7 +200,7 @@ int		XPMainWindow(
 				IN_RECT(MOUSE_X(inParam1), MOUSE_Y(inParam1), cbr_l, cbr_t, cbr_r, cbr_b))
 			{
 				XPSetWidgetProperty(inWidget, xpProperty_Hilited, 1);
-			} else 
+			} else
 				XPSetWidgetProperty(inWidget, xpProperty_Hilited, 0);
 		}
 		break;
@@ -219,13 +219,13 @@ int		XPMainWindow(
 		}
 		break;
 	}
-	
+
 	if (XPUDragWidget(inMessage, inWidget, inParam1, inParam2, l, t, r, t - dragBarHeight))return 1;
 	if (XPUDefocusKeyboard(inMessage, inWidget, inParam1, inParam2, 0/*don't eat*/)) return 1;
 	if (XPUFixedLayout(inMessage, inWidget, inParam1, inParam2))					return 1;
 
-	return 0;	
-}	
+	return 0;
+}
 
 int		XPSubWindow(
 					XPWidgetMessage			inMessage,
@@ -259,11 +259,11 @@ int		XPSubWindow(
 			XPDrawWindow(l, b, r, t, GraphicsWindowType);
 		}
 		return 1;
-	
+
 	default:
 		return 0;
 	}
-}	
+}
 
 int		XPButton(
 					XPWidgetMessage			inMessage,
@@ -273,13 +273,13 @@ int		XPButton(
 {
 	// Select if we're in the background.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
-	
+
 	int fv;
 	int l, t, r, b;
-		
+
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
-	
+
 	int	ButtonBehaviour = XPGetWidgetProperty(inWidget, xpProperty_ButtonBehavior, NULL);
 
 	switch(inMessage) {
@@ -318,7 +318,7 @@ int		XPButton(
 
 			if ((ButtonBehaviour == xpButtonBehaviorCheckBox) || (ButtonBehaviour == xpButtonBehaviorRadioButton))
 				hilite = ButtonState;
-			
+
 			SetAlphaLevels(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? 1.0 : 0.5);
 			if (ButtonType == xpRadioButton)
 			{
@@ -336,24 +336,24 @@ int		XPButton(
 
 				SetupAmbientColor(xpColor_CaptionText, white);
 				SetupAmbientColor(xpColor_MenuText, gray);
-			
-			SetProportional(1);			
+
+			SetProportional(1);
 			// BAS - for radio buttons, draw the caption to the right of the radio button.
 			if (ButtonType == xpRadioButton)
 			{
 				int	w, h, cbl;
 				XPGetElementDefaultDimensions(xpElement_CheckBox,
 					&w, &h, &cbl);
-								
+
 				XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, l + w + 4,
 							(t + b) / 2 - (fv / 2) + 2,
 							buf, NULL, xplmFont_Basic);
 			} else // for al others, center justify the caption.  Note that a caption for something like a window close box is a bit silly....
 
-			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, (l + r) / 2 - (XPLMMeasureString(buf,xplmFont_Basic,-1) / 2), 
+			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, (l + r) / 2 - (XPLMMeasureString(buf,xplmFont_Basic,-1) / 2),
 						(t + b) / 2 - (fv / 2) + 2,
 						buf, NULL, xplmFont_Basic);
-			SetProportional(0);						
+			SetProportional(0);
 		}
 		return 1;
 	case xpMsg_MouseDown:
@@ -386,7 +386,7 @@ int		XPButton(
 		}
 		return 1;
 	case xpMsg_MouseUp:
-		if (XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0))		
+		if (XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0))
 		if (ButtonBehaviour == xpButtonBehaviorPushButton)
 		{
 			if (IN_RECT(MOUSE_X(inParam1), MOUSE_Y(inParam1), l, t, r, b))
@@ -396,8 +396,8 @@ int		XPButton(
 		return 1;
 	default:
 		return 0;
-	}	
-}					
+	}
+}
 
 int		XPTextField(
 					XPWidgetMessage			inMessage,
@@ -414,7 +414,7 @@ int		XPTextField(
 		int			focused = (XPGetWidgetWithFocus() == inWidget);
 		long		/*charWidth,*/ scrollPos, scrollLim, descLen;
 		char		buf[512];
-		
+
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
 //	charWidth = (r - l - 10) / fh;	// can't calc this anymore - depends on the real string used
@@ -462,8 +462,8 @@ int		XPTextField(
 				if (selStart != selEnd)
 				{
 					// If we're focused and have a band selection, hilite the area.
-					XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);			
-					if (TextFieldType == xpTextTranslucent)									
+					XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);
+					if (TextFieldType == xpTextTranslucent)
 					{
 						glColor4f(0.5, 0.5, 0.5, 0.7);
 					} else {
@@ -477,7 +477,7 @@ int		XPTextField(
 					glVertex2i(selEnd, b+3);
 					glVertex2i(selStart, b+3);
 					glEnd();
-				} else {				
+				} else {
 					// Otherwise draw a caret only if we're either dragging or blinking
 					// and its tthat time.
 					int	secs = XPLMGetElapsedTime()  * 100.0;
@@ -486,32 +486,32 @@ int		XPTextField(
 					// don't blink if dragging, stay constant!
 					if ((secs > 50) || (XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, NULL) != -1))
 					{
-						XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);			
-						if (TextFieldType == xpTextTranslucent)									
+						XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
+						if (TextFieldType == xpTextTranslucent)
 							glColor4f(0.1, 1.0, 0.1, 1.0);
 						else
 							SetupAmbientColor(xpColor_CaptionText, NULL);
 						glBegin(GL_LINES);
 						glVertex2i(selStart, t-2);
 						glVertex2i(selStart, b+3);
-						glEnd();						
+						glEnd();
 					}
 				}
 			}
 
 //			if ((descLen-scrollPos) > charWidth)
 //				descLen = charWidth + scrollPos;
-				
+
 			buf[descLen] = 0;
-			
+
 			if (XPGetWidgetProperty(inWidget, xpProperty_PasswordMode, NULL) > 0)
 				for (int n = scrollPos; n < descLen; ++n)
 					buf[n] = '*';
-			
+
 			GLfloat	white[4] = { 0.1, 1.0, 0.1, 1.0 };
-			if (TextFieldType != xpTextTranslucent)			
+			if (TextFieldType != xpTextTranslucent)
 				SetupAmbientColor(XPGetWidgetProperty(inWidget, xpProperty_Enabled, NULL) ? xpColor_CaptionText : xpColor_MenuDarkTinge, white);
-			
+
 			XPLMDrawString(white, l+5,
 						(t + b) / 2 - (fv / 2) + 2,
 						buf+scrollPos, NULL, XPGetWidgetProperty(inWidget, xpProperty_Font, NULL));
@@ -523,14 +523,14 @@ int		XPTextField(
 			// us getting edited too.
 			if (XPGetWidgetProperty(inWidget, xpProperty_Enabled, NULL) == 0)
 				return 0;
-		
+
 			// Focus ourselves
 			if (!focused)
 				if (XPSetKeyboardFocus(inWidget) != inWidget)
 					return 1;
-			
-			// If we can, collapse the selection and register the start of a drag.		
-			
+
+			// If we can, collapse the selection and register the start of a drag.
+
 			long	selPos = XPLMFitStringForward(buf + scrollPos, buf + descLen, xplmFont_Basic, MOUSE_X(inParam1) - l - 5);
 //			long	selPos = (MOUSE_X(inParam1) - l - 5) / fh;
 			selPos += scrollPos;
@@ -539,7 +539,7 @@ int		XPTextField(
 
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, selPos);
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, selPos);
-			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, selPos);			
+			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, selPos);
 			XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 1);
 		}
 		return 1;
@@ -576,7 +576,7 @@ int		XPTextField(
 				XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 0);
 			} else
 				XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 1);
-				
+
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, selStart);
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, selEnd);
 		}
@@ -599,7 +599,7 @@ int		XPTextField(
 				XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 0);
 			 } else
 				XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 1);
-			
+
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, selStart);
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, selEnd);
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, -1);
@@ -608,7 +608,7 @@ int		XPTextField(
 	case xpMsg_KeyTakeFocus:
 		// If we don't access this message, we can't get keyboard focus!
 		return 1;
-	case xpMsg_KeyPress:		
+	case xpMsg_KeyPress:
 		{
 			bool changed = false;
 			char	theChar = KEY_CHAR(inParam1);
@@ -616,10 +616,10 @@ int		XPTextField(
 			bool	upKey = KEY_FLAGS(inParam1) & xplm_UpFlag;
 			if (upKey)
 				return 1;
-			
+
 			std::string::size_type	insertStart = XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, NULL);
 			std::string::size_type	insertEnd = XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, NULL);
-			
+
 			std::string	me(buf);
 
 			switch(theChar) {
@@ -676,7 +676,7 @@ int		XPTextField(
 					} else {
 						insertStart++;
 						XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, (insertEnd == insertStart) ? 1 : 0);
-					}					
+					}
 				} else {
 					insertEnd++;
 					insertStart = insertEnd;
@@ -692,7 +692,7 @@ int		XPTextField(
 						insertStart = 0;
 					} else {
 						insertStart = 0;
-					}					
+					}
 					XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 0);
 				} else {
 					insertStart = insertEnd = 0;
@@ -719,7 +719,7 @@ int		XPTextField(
 				if ((XPGetWidgetProperty(inWidget, xpProperty_MaxCharacters, NULL) > 0) &&
 					(me.size() + 1 - (insertEnd - insertStart) > XPGetWidgetProperty(inWidget, xpProperty_MaxCharacters, NULL)))
 					return 0;
-			
+
 				if (insertStart == insertEnd)
 					me.insert(insertStart, 1, theChar);
 				else
@@ -728,13 +728,13 @@ int		XPTextField(
 				insertStart = insertStart + 1;
 				insertEnd = insertStart;
 				XPSetWidgetProperty(inWidget, xpProperty_ActiveEditSide, 1);
-			}			
-			
+			}
+
 			if (insertStart > me.size())
 				insertStart = me.size();
 			if (insertEnd > me.size())
 				insertEnd = me.size();
-							
+
 			if (XPGetWidgetProperty(inWidget, xpProperty_ActiveEditSide, NULL))
 			{
 //				if (insertStart < scrollPos)
@@ -747,7 +747,7 @@ int		XPTextField(
 //				if (insertStart < scrollPos)
 //					scrollPos = insertStart;
 			}
-			
+
 			if (me.empty())
 				scrollPos = 0;
 //			else if (scrollPos >= (me.size() - charWidth))
@@ -755,13 +755,13 @@ int		XPTextField(
 
 			XPSetWidgetDescriptor(inWidget, me.c_str());
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, insertStart);
-			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, insertEnd);			
+			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, insertEnd);
 			XPSetWidgetProperty(inWidget, xpProperty_ScrollPosition, scrollPos);
-		
+
 			if (changed)
 				XPSendMessageToWidget(inWidget, xpMsg_TextFieldChanged, xpMode_UpChain, (long) inWidget, 0);
 			return 1;
-		} 
+		}
 	case xpMsg_PropertyChanged:
 		{
 			if (inParam1 == xpProperty_MaxCharacters)
@@ -775,13 +775,13 @@ int		XPTextField(
 		}
 		return 1;
 	case xpMsg_Reshape:
-		{	
+		{
 			int myLen = XPGetWidgetDescriptor(inWidget, NULL, 0);
 			if (scrollPos > scrollLim)
 			{
 				XPSetWidgetProperty(inWidget, xpProperty_ScrollPosition, scrollLim);
 			}
-		}	
+		}
 		return 1;
 	case xpMsg_DescriptorChanged:
 		{
@@ -790,11 +790,11 @@ int		XPTextField(
 			if (descLen < XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, NULL))
 				XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, descLen);
 		}
-		return 1;						
+		return 1;
 	default:
 		return 0;
 	}
-}					
+}
 
 int		XPScrollBar(
 					XPWidgetMessage			inMessage,
@@ -804,12 +804,12 @@ int		XPScrollBar(
 {
 	// Select if we're in the background.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
-	
+
 	int 		l, t, r, b, x, y;
 	int SliderPosition, Min, Max, OldSliderPosition;
 	int IsVertical, DownBtnSize, DownPageSize, ThumbSize, UpPageSize, UpBtnSize;
 	bool UpBtnSelected, DownBtnSelected, ThumbSelected, UpPageSelected, DownPageSelected;
-	
+
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 
 	Min = XPGetWidgetProperty(inWidget, xpProperty_ScrollBarMin, NULL);
@@ -882,7 +882,7 @@ int		XPScrollBar(
 		}
 		else if (ThumbSelected)
 		{
-			XPSetWidgetProperty(inWidget, xpProperty_ScrollBarSlop, IsVertical ? 
+			XPSetWidgetProperty(inWidget, xpProperty_ScrollBarSlop, IsVertical ?
 				(b + DownBtnSize + DownPageSize + (ThumbSize/2) - MOUSE_Y(inParam1)) :  // WEIRD - messing with thumbsize seems close but never
 				(l + DownBtnSize + DownPageSize + (ThumbSize/2) - MOUSE_X(inParam1)) ); // is RIGHT!??!
 			XPSetWidgetProperty(inWidget, xpProperty_ScrollBarSliderPosition, SliderPosition);
@@ -890,7 +890,7 @@ int		XPScrollBar(
 		}
 		else
 			XPSetWidgetProperty(inWidget, xpProperty_Hilited, 0);
-			
+
 		if (OldSliderPosition != SliderPosition)
 			XPSendMessageToWidget(inWidget, xpMsg_ScrollBarSliderPositionChanged, xpMode_UpChain, (long) inWidget, 0);
 		return 1;
@@ -903,11 +903,11 @@ int		XPScrollBar(
 		if (ThumbSelected)
 		{
 			if (inParam1 != 0)
-			{				
+			{
 				if (IsVertical)
 				{
 					y = MOUSE_Y(inParam1) + XPGetWidgetProperty(inWidget, xpProperty_ScrollBarSlop, 0);
-					SliderPosition = round((float)((float)(y - (b + DownBtnSize + ThumbSize/2)) / 
+					SliderPosition = round((float)((float)(y - (b + DownBtnSize + ThumbSize/2)) /
 								(float)((t - UpBtnSize - ThumbSize/2) - (b + DownBtnSize + ThumbSize/2))) * Max);
 				}
 				else
@@ -937,8 +937,8 @@ int		XPScrollBar(
 		return 1;
 	default:
 		return 0;
-	}	
-}					
+	}
+}
 
 int		XPCaption(
 					XPWidgetMessage			inMessage,
@@ -951,7 +951,7 @@ int		XPCaption(
 		int fv;
 		int 		l, t, r, b;
 		int			focused = (XPGetWidgetWithFocus() == inWidget);
-		
+
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
 
@@ -966,22 +966,22 @@ int		XPCaption(
 			else
 				SetupAmbientColor(xpColor_CaptionText, green);
 
-			XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);			
-			
+			XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
+
 			char	buf[512];
 			long	titleLen = XPGetWidgetDescriptor(inWidget, buf, 512);
 
-			SetProportional(1);		
+			SetProportional(1);
 			XPLMDrawString(green, l+3,
 						(t + b) / 2 - (fv / 2),
 						buf, NULL, xplmFont_Basic);
-			SetProportional(0);	
+			SetProportional(0);
 		}
 		return 1;
 	default:
 		return 0;
 	}
-}					
+}
 
 
 int		XPGeneralGraphics(
@@ -1067,11 +1067,11 @@ int		XPGeneralGraphics(
 			XPDrawElement(l, b, r, t, GraphicsElementType, 0);
 		}
 		return 1;
-	
+
 	default:
 		return 0;
 	}
-}	
+}
 
 
 int		XPProgress(
@@ -1082,7 +1082,7 @@ int		XPProgress(
 {
 	// Select if we're in the background.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
-	
+
 	int 		l, t, r, b;
 	int ProgressPosition, Min, Max;
 
@@ -1100,6 +1100,6 @@ int		XPProgress(
 		return 1;
 	default:
 		return 0;
-	}	
-}					
+	}
+}
 

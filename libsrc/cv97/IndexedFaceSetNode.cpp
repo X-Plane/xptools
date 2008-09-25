@@ -28,13 +28,13 @@ typedef GLvoid (*GLUtessCallBackFunc)(void);
 #include "BoundingBox.h"
 #include "MathUtil.h"
 
-IndexedFaceSetNode::IndexedFaceSetNode() 
+IndexedFaceSetNode::IndexedFaceSetNode()
 {
 	setHeaderFlag(false);
 	setType(indexedFaceSetNodeString);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	// ccw  field
@@ -112,20 +112,20 @@ IndexedFaceSetNode::IndexedFaceSetNode()
 	addEventIn(setNormalIndex);
 }
 
-IndexedFaceSetNode::~IndexedFaceSetNode() 
+IndexedFaceSetNode::~IndexedFaceSetNode()
 {
 }
-	
+
 ////////////////////////////////////////////////
 //	List
 ////////////////////////////////////////////////
 
-IndexedFaceSetNode *IndexedFaceSetNode::next() 
+IndexedFaceSetNode *IndexedFaceSetNode::next()
 {
 	return (IndexedFaceSetNode *)Node::next(getType());
 }
 
-IndexedFaceSetNode *IndexedFaceSetNode::nextTraversal() 
+IndexedFaceSetNode *IndexedFaceSetNode::nextTraversal()
 {
 	return (IndexedFaceSetNode *)Node::nextTraversalByType(getType());
 }
@@ -140,18 +140,18 @@ SFBool *IndexedFaceSetNode::getCCWField()
 		return ccwField;
 	return (SFBool *)getField(ccwFieldString);
 }
-	
-void IndexedFaceSetNode::setCCW(bool value) 
+
+void IndexedFaceSetNode::setCCW(bool value)
 {
 	getCCWField()->setValue(value);
 }
 
-void IndexedFaceSetNode::setCCW(int value) 
+void IndexedFaceSetNode::setCCW(int value)
 {
 	setCCW(value ? true : false);
 }
 
-bool IndexedFaceSetNode::getCCW() 
+bool IndexedFaceSetNode::getCCW()
 {
 	return getCCWField()->getValue();
 }
@@ -166,18 +166,18 @@ SFBool *IndexedFaceSetNode::getColorPerVertexField()
 		return colorPerVertexField;
 	return (SFBool *)getField(colorPerVertexFieldString);
 }
-	
-void IndexedFaceSetNode::setColorPerVertex(bool value) 
+
+void IndexedFaceSetNode::setColorPerVertex(bool value)
 {
 	getColorPerVertexField()->setValue(value);
 }
 
-void IndexedFaceSetNode::setColorPerVertex(int value) 
+void IndexedFaceSetNode::setColorPerVertex(int value)
 {
 	setColorPerVertex(value ? true : false);
 }
 
-bool IndexedFaceSetNode::getColorPerVertex() 
+bool IndexedFaceSetNode::getColorPerVertex()
 {
 	return getColorPerVertexField()->getValue();
 }
@@ -193,17 +193,17 @@ SFBool *IndexedFaceSetNode::getNormalPerVertexField()
 	return (SFBool *)getField(normalPerVertexFieldString);
 }
 
-void IndexedFaceSetNode::setNormalPerVertex(bool value) 
+void IndexedFaceSetNode::setNormalPerVertex(bool value)
 {
 	getNormalPerVertexField()->setValue(value);
 }
 
-void IndexedFaceSetNode::setNormalPerVertex(int value) 
+void IndexedFaceSetNode::setNormalPerVertex(int value)
 {
 	setNormalPerVertex(value ? true : false);
 }
 
-bool IndexedFaceSetNode::getNormalPerVertex() 
+bool IndexedFaceSetNode::getNormalPerVertex()
 {
 	return getNormalPerVertexField()->getValue();
 }
@@ -219,17 +219,17 @@ SFBool *IndexedFaceSetNode::getSolidField()
 	return (SFBool *)getField(solidFieldString);
 }
 
-void IndexedFaceSetNode::setSolid(bool value) 
+void IndexedFaceSetNode::setSolid(bool value)
 {
 	getSolidField()->setValue(value);
 }
-	
-void IndexedFaceSetNode::setSolid(int value) 
+
+void IndexedFaceSetNode::setSolid(int value)
 {
 	setSolid(value ? true : false);
 }
 
-bool IndexedFaceSetNode::getSolid() 
+bool IndexedFaceSetNode::getSolid()
 {
 	return getSolidField()->getValue();
 }
@@ -244,18 +244,18 @@ SFBool *IndexedFaceSetNode::getConvexField()
 		return convexField;
 	return (SFBool *)getField(convexFieldString);
 }
-	
-void IndexedFaceSetNode::setConvex(bool value) 
+
+void IndexedFaceSetNode::setConvex(bool value)
 {
 	getConvexField()->setValue(value);
 }
 
-void IndexedFaceSetNode::setConvex(int value) 
+void IndexedFaceSetNode::setConvex(int value)
 {
 	setConvex(value ? true : false);
 }
 
-bool IndexedFaceSetNode::getConvex() 
+bool IndexedFaceSetNode::getConvex()
 {
 	return getConvexField()->getValue();
 }
@@ -271,12 +271,12 @@ SFFloat *IndexedFaceSetNode::getCreaseAngleField()
 	return (SFFloat *)getField(creaseAngleFieldString);
 }
 
-void IndexedFaceSetNode::setCreaseAngle(float value) 
+void IndexedFaceSetNode::setCreaseAngle(float value)
 {
 	getCreaseAngleField()->setValue(value);
 }
 
-float IndexedFaceSetNode::getCreaseAngle() 
+float IndexedFaceSetNode::getCreaseAngle()
 {
 	return getCreaseAngleField()->getValue();
 }
@@ -292,21 +292,21 @@ MFInt32 *IndexedFaceSetNode::getCoordIndexField()
 	return (MFInt32 *)getField(coordIndexFieldString);
 }
 
-void IndexedFaceSetNode::addCoordIndex(int value) 
+void IndexedFaceSetNode::addCoordIndex(int value)
 {
 	getCoordIndexField()->addValue(value);
 }
 
-int IndexedFaceSetNode::getNCoordIndexes() 
+int IndexedFaceSetNode::getNCoordIndexes()
 {
 	return getCoordIndexField()->getSize();
 }
 
-int IndexedFaceSetNode::getCoordIndex(int index) 
+int IndexedFaceSetNode::getCoordIndex(int index)
 {
 	return getCoordIndexField()->get1Value(index);
 }
-	
+
 ////////////////////////////////////////////////
 // TexCoordIndex
 ////////////////////////////////////////////////
@@ -318,21 +318,21 @@ MFInt32 *IndexedFaceSetNode::getTexCoordIndexField()
 	return (MFInt32 *)getField(texCoordIndexFieldString);
 }
 
-void IndexedFaceSetNode::addTexCoordIndex(int value) 
+void IndexedFaceSetNode::addTexCoordIndex(int value)
 {
 	getTexCoordIndexField()->addValue(value);
 }
 
-int IndexedFaceSetNode::getNTexCoordIndexes() 
+int IndexedFaceSetNode::getNTexCoordIndexes()
 {
 	return getTexCoordIndexField()->getSize();
 }
 
-int IndexedFaceSetNode::getTexCoordIndex(int index) 
+int IndexedFaceSetNode::getTexCoordIndex(int index)
 {
 	return getTexCoordIndexField()->get1Value(index);
 }
-	
+
 ////////////////////////////////////////////////
 // ColorIndex
 ////////////////////////////////////////////////
@@ -344,17 +344,17 @@ MFInt32 *IndexedFaceSetNode::getColorIndexField()
 	return (MFInt32 *)getField(colorIndexFieldString);
 }
 
-void IndexedFaceSetNode::addColorIndex(int value) 
+void IndexedFaceSetNode::addColorIndex(int value)
 {
 	getColorIndexField()->addValue(value);
 }
 
-int IndexedFaceSetNode::getNColorIndexes() 
+int IndexedFaceSetNode::getNColorIndexes()
 {
 	return getColorIndexField()->getSize();
 }
 
-int IndexedFaceSetNode::getColorIndex(int index) 
+int IndexedFaceSetNode::getColorIndex(int index)
 {
 	return getColorIndexField()->get1Value(index);
 }
@@ -370,17 +370,17 @@ MFInt32 *IndexedFaceSetNode::getNormalIndexField()
 	return (MFInt32 *)getField(normalIndexFieldString);
 }
 
-void IndexedFaceSetNode::addNormalIndex(int value) 
+void IndexedFaceSetNode::addNormalIndex(int value)
 {
 	getNormalIndexField()->addValue(value);
 }
 
-int IndexedFaceSetNode::getNNormalIndexes() 
+int IndexedFaceSetNode::getNNormalIndexes()
 {
 	return getNormalIndexField()->getSize();
 }
 
-int IndexedFaceSetNode::getNormalIndex(int index) 
+int IndexedFaceSetNode::getNormalIndex(int index)
 {
 	return getNormalIndexField()->get1Value(index);
 }
@@ -388,7 +388,7 @@ int IndexedFaceSetNode::getNormalIndex(int index)
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool IndexedFaceSetNode::isChildNodeType(Node *node)
 {
 	if (node->isColorNode() || node->isCoordinateNode() || node->isNormalNode() || node->isTextureCoordinateNode())
@@ -397,11 +397,11 @@ bool IndexedFaceSetNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void IndexedFaceSetNode::uninitialize() 
+void IndexedFaceSetNode::uninitialize()
 {
 }
 
-void IndexedFaceSetNode::update() 
+void IndexedFaceSetNode::update()
 {
 }
 
@@ -409,7 +409,7 @@ void IndexedFaceSetNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString) 
+void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *convex = getConvexField();
 	SFBool *solid = getSolidField();
@@ -434,7 +434,7 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 			normal->Node::outputContext(printStream, indentString , "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "normal USE " << normal->getName() << endl;
 	}
 
@@ -448,7 +448,7 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 			color->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "color USE " << color->getName() << endl;
 	}
 
@@ -462,7 +462,7 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 			coord->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "coord USE " << coord->getName() << endl;
 	}
 
@@ -476,7 +476,7 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 			texCoord->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "texCoord USE " << texCoord->getName() << endl;
 	}
 
@@ -486,21 +486,21 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 		coordIndex->MField::outputContext(printStream, indentString, "\t\t");
 		printStream << indentString << "\t" << "]" << endl;
 	}
-		
+
 	if (0 < getNTexCoordIndexes()) {
 		MFInt32 *texCoordIndex = getTexCoordIndexField();
 		printStream << indentString << "\t" << "texCoordIndex [" << endl;
 		texCoordIndex->MField::outputContext(printStream, indentString,"\t\t");
 		printStream << indentString << "\t" << "]" << endl;
 	}
-		
+
 	if (0 < getNColorIndexes()) {
 		MFInt32 *colorIndex = getColorIndexField();
 		printStream << indentString << "\t" << "colorIndex [" << endl;
 		colorIndex->MField::outputContext(printStream, indentString, "\t\t");
 		printStream << indentString << "\t" << "]" << endl;
 	}
-		
+
 	if (0 < getNNormalIndexes()) {
 		MFInt32 *normalIndex = getNormalIndexField();
 		printStream << indentString << "\t" << "normalIndex [" << endl;
@@ -513,7 +513,7 @@ void IndexedFaceSetNode::outputContext(ostream &printStream, char *indentString)
 //	IndexedFaceSetNode::generateNormals
 ////////////////////////////////////////////////////////////
 
-bool IndexedFaceSetNode::generateNormals() 
+bool IndexedFaceSetNode::generateNormals()
 {
 	NormalNode *normal = getNormalNodes();
 	if (normal)
@@ -561,7 +561,7 @@ bool IndexedFaceSetNode::generateNormals()
 //	IndexedFaceSetNode::recomputeBoundingBox
 ////////////////////////////////////////////////////////////
 
-void IndexedFaceSetNode::recomputeBoundingBox() 
+void IndexedFaceSetNode::recomputeBoundingBox()
 {
 	CoordinateNode *coordinateNode = getCoordinateNodes();
 	if (!coordinateNode) {
@@ -586,7 +586,7 @@ void IndexedFaceSetNode::recomputeBoundingBox()
 //	IndexedFaceSetNode::initialize
 ////////////////////////////////////////////////
 
-void IndexedFaceSetNode::initialize() 
+void IndexedFaceSetNode::initialize()
 {
 	if (!getSceneGraph())
 		return;
@@ -657,7 +657,7 @@ static void DrawIdxFaceSet(IndexedFaceSetNode *idxFaceSet)
 
 	bool	bPolygonBegin = true;
 	bool	bPolygonClose = true;
-	
+
 	int		nPolygon	= 0;
 	int		nVertex		= 0;
 
@@ -684,7 +684,7 @@ static void DrawIdxFaceSet(IndexedFaceSetNode *idxFaceSet)
 
 		if (bPolygonBegin) {
 
-			if (convex == false) 
+			if (convex == false)
 				gluBeginPolygon(tessObj);
 			else
 				glBegin(GL_POLYGON);
@@ -773,7 +773,7 @@ static void DrawIdxFaceSet(IndexedFaceSetNode *idxFaceSet)
 			}
 
 			coordinateNode->getPoint(coordIndex, point);
-			if (convex == false) { 
+			if (convex == false) {
 				tessPoint[nVertex][0] = point[0];
 				tessPoint[nVertex][1] = point[1];
 				tessPoint[nVertex][2] = point[2];
@@ -797,10 +797,10 @@ static void DrawIdxFaceSet(IndexedFaceSetNode *idxFaceSet)
 	}
 
 	if (bPolygonClose == false) {
-		if (convex == false) { 
+		if (convex == false) {
 			gluEndPolygon(tessObj);
 			delete[] tessPoint;
-		}	
+		}
 		else
 			glEnd();
 	}
@@ -817,7 +817,7 @@ static void DrawIdxFaceSet(IndexedFaceSetNode *idxFaceSet)
 	glShadeModel(GL_SMOOTH);
 }
 
-void IndexedFaceSetNode::recomputeDisplayList() 
+void IndexedFaceSetNode::recomputeDisplayList()
 {
 	CoordinateNode *coordinateNode = getCoordinateNodes();
 	if (!coordinateNode)
@@ -841,7 +841,7 @@ void IndexedFaceSetNode::recomputeDisplayList()
 //	IndexedFaceSetNode::getNPolygons
 ////////////////////////////////////////////////////////////
 
-int IndexedFaceSetNode::getNPolygons() 
+int IndexedFaceSetNode::getNPolygons()
 {
 	CoordinateNode *coordinateNode = getCoordinateNodes();
 	if (!coordinateNode)
@@ -889,10 +889,10 @@ SFMatrix	&matrix)
 		mxValue[2][1] = -sina;
 		mxValue[2][2] = cosa;
 	}
-	
+
 	float cosb = d;
 	float sinb = normal[0];
-	
+
 	myValue[0][0] = cosb;
 	myValue[0][1] = 0.0;
 	myValue[0][2] = sinb;
@@ -930,7 +930,7 @@ float	point[3])
 		minExtents.setZ(point[2]);
 }
 
-bool IndexedFaceSetNode::generateTextureCoordinate() 
+bool IndexedFaceSetNode::generateTextureCoordinate()
 {
 	TextureCoordinateNode *texCoord = getTextureCoordinateNodes();
 	if (texCoord)

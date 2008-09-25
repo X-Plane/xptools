@@ -52,7 +52,7 @@ static void var_edit_shift( string *out, VAR_EDITS *edits );
 /*
  * var_expand() - variable-expand input string into list of strings
  *
- * Would just copy input to output, performing variable expansion, 
+ * Would just copy input to output, performing variable expansion,
  * except that since variables can contain multiple values the result
  * of variable expansion may contain multiple values (a list).  Properly
  * performs "product" operations that occur in "$(var1)xxx$(var2)" or
@@ -62,7 +62,7 @@ static void var_edit_shift( string *out, VAR_EDITS *edits );
  */
 
 LIST *
-var_expand( 
+var_expand(
 	LIST	*l,
 	char	*in,
 	char	*end,
@@ -100,7 +100,7 @@ var_expand(
     /* Just try simple copy of in to out. */
 
     while( in < end )
-        if( *in++ == '$' && *in == '(' ) 
+        if( *in++ == '$' && *in == '(' )
             goto expand;
 
     /* No variables expanded - just add copy of input string to list. */
@@ -109,7 +109,7 @@ var_expand(
     /* item, we can use the copystr() to put it on the new list. */
     /* Otherwise, we use the slower newstr(). */
 
-    if( cancopyin ) 
+    if( cancopyin )
     {
         return list_new( l, copystr( inp ) );
     }
@@ -194,7 +194,7 @@ expand:
      *	out_buf         out	ov
      *
      * Later we will overwrite 'variable' in out_buf, but we'll be
-     * done with it by then.  'variable' may be a multi-element list, 
+     * done with it by then.  'variable' may be a multi-element list,
      * so may each value for '$(variable element)', and so may 'remainder'.
      * Thus we produce a product of three lists.
      */
@@ -294,7 +294,7 @@ expand:
                     }
 
                     /* First, compute the index of the last element. */
-                    sub2 = atoi(s);               
+                    sub2 = atoi(s);
                     s++;
                     while ( isdigit( *s ) ) s++;
 
@@ -308,7 +308,7 @@ expand:
                 ** introducing a modifier is a syntax error.
                 */
 
-                s++;                
+                s++;
                 if (*s && *s != MAGIC_COLON)
                     sub2 = 0;
 
@@ -316,14 +316,14 @@ expand:
             }
 
             /* Get variable value, specially handling $(<), $(>), $(n) */
-		
+
             if( varname[0] == '<' && !varname[1] )
                 value = lol_get( lol, 0 );
             else if( varname[0] == '>' && !varname[1] )
                 value = lol_get( lol, 1 );
             else if( varname[0] >= '1' && varname[0] <= '9' && !varname[1] )
                 value = lol_get( lol, varname[0] - '1' );
-            else 
+            else
                 value = var_get( varname );
 
             /* Handle negitive indexes: part two. */
@@ -399,7 +399,7 @@ expand:
                 /* keep appending them (with the join value) */
                 /* rather than creating separate LIST elements. */
 
-                if( colon && edits.join.ptr && 
+                if( colon && edits.join.ptr &&
                     ( list_next( value ) || list_next( vars ) ) )
                 {
                     string_append( out1, edits.join.ptr );
@@ -466,11 +466,11 @@ expand:
  * var_edit_parse() - parse : modifiers into PATHNAME structure
  *
  * The : modifiers in a $(varname:modifier) currently support replacing
- * or omitting elements of a filename, and so they are parsed into a 
+ * or omitting elements of a filename, and so they are parsed into a
  * PATHNAME structure (which contains pointers into the original string).
  *
  * Modifiers of the form "X=value" replace the component X with
- * the given value.  Modifiers without the "=value" cause everything 
+ * the given value.  Modifiers without the "=value" cause everything
  * but the component X to be omitted.  X is one of:
  *
  *	G <grist>
@@ -581,9 +581,9 @@ var_edit_parse(
 /*
  * var_edit_file() - copy input target name to output, modifying filename
  */
-	
+
 static void
-var_edit_file( 
+var_edit_file(
 	char	*in,
 	string	*out,
 	VAR_EDITS *edits )
@@ -629,7 +629,7 @@ var_edit_file(
  */
 
 static void
-var_edit_shift( 
+var_edit_shift(
 	string	*out,
 	VAR_EDITS *edits )
 {
@@ -645,7 +645,7 @@ var_edit_shift(
         else if ( edits->downshift )
         {
             *p = tolower( *p );
-        } 
+        }
         if ( edits->to_slashes )
         {
             if ( *p == '\\')
@@ -675,7 +675,7 @@ void var_expand_unit_test()
     char axyb[] = "a$(xy)b";
     char azb[] = "a$($(z))b";
     char path[] = "$(p:W)";
-        
+
     lol_init(lol);
     var_set("xy", list_new( list_new( L0, newstr( "x" ) ), newstr( "y" ) ), VAR_SET );
     var_set("z", list_new( L0, newstr( "xy" ) ), VAR_SET );
@@ -686,7 +686,7 @@ void var_expand_unit_test()
         assert( !strcmp( e2->string, l2->string ) );
     assert(l2 == 0 && e2 == 0);
     list_free(l);
-    
+
     l = var_expand( 0, azb, azb + sizeof(azb) - 1, lol, 0 );
     for ( l2 = l, e2 = expected; l2 && e2; l2 = list_next(l2), e2 = list_next(e2) )
         assert( !strcmp( e2->string, l2->string ) );
@@ -698,13 +698,13 @@ void var_expand_unit_test()
     assert(list_next(l) == 0);
 # ifdef OS_CYGWIN
     assert( !strcmp( l->string, "c:\\foo\\bar" ) );
-# else 
+# else
     assert( !strcmp( l->string, "/cygdrive/c/foo/bar" ) );
-# endif   
+# endif
     list_free(l);
 
     list_free(expected);
-    
+
     lol_free(lol);
 }
 #endif

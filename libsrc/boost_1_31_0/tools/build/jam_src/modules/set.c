@@ -16,8 +16,8 @@
 LIST *set_difference( PARSE *parse, FRAME *frame )
 {
 
-    LIST* b = lol_get( frame->args, 0 );    
-    LIST* a = lol_get( frame->args, 1 );    
+    LIST* b = lol_get( frame->args, 0 );
+    LIST* a = lol_get( frame->args, 1 );
 
     LIST* result = 0;
     for(; b; b = b->next)

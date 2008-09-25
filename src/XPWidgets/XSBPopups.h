@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,20 +33,20 @@ extern "C" {
  * POPUP MENU PICKS
  ************************************************************************
  *
- * This code helps do a popup menu item pick.  Since x-plane must be 
- * running to track the mouse, this popup menu pick is effectively 
- * asynchronous and non-modal to the code...you call the function and 
+ * This code helps do a popup menu item pick.  Since x-plane must be
+ * running to track the mouse, this popup menu pick is effectively
+ * asynchronous and non-modal to the code...you call the function and
  * some time later your callback is called.
  *
  * However, due to the way the popup pick is structured, it will appear to
- * be somewhat modal to the user in that the next click after the popup 
+ * be somewhat modal to the user in that the next click after the popup
  * is called must belong to it.
  *
  */
 
 /*
  * XSBPopupPick_f
- * 
+ *
  * This function is called when your popup is picked.  inChoice will be the number
  * of the item picked, or -1 if no item was picked.  (You should almost always ignore
  * a -1.
@@ -78,21 +78,21 @@ void		XSBPickPopup(
  * we first call the popup func but then we nuke ourselves.  Internally
  * there is a data structure that is in the refcon of the xplm window that
  * contains the callback for the user and the text, etc. */
- 
+
 /************************************************************************
  * POPUP MENU BUTTON WIDGET
  ************************************************************************
- * 
- * This widget implements a stanard pick-one-from-many-style popup menu 
+ *
+ * This widget implements a stanard pick-one-from-many-style popup menu
  * button.  The text is taken from the current item.  The descriptor is
  * the items, newline-terminated.
  *
  * A message is sent whenever a new item is picked by the user.
- * 
+ *
  */
 
 #define	xpWidgetClass_Popup					9
- 
+
 enum {
 	// This is the item number of the current item, starting at 0.
 	xpProperty_PopupCurrentItem				= 1800,
@@ -117,12 +117,12 @@ enum {
  *
  */
 XPWidgetID           XSBCreatePopup(
-                                   int                  inLeft,    
-                                   int                  inTop,    
-                                   int                  inRight,    
-                                   int                  inBottom,    
-                                   int                  inVisible,    
-                                   const char *         inDescriptor,    
+                                   int                  inLeft,
+                                   int                  inTop,
+                                   int                  inRight,
+                                   int                  inBottom,
+                                   int                  inVisible,
+                                   const char *         inDescriptor,
                                    XPWidgetID           inContainer);
 
 int		XSBPopupButtonProc(
@@ -131,7 +131,7 @@ int		XSBPopupButtonProc(
 					long					inParam1,
 					long					inParam2);
 
-                                   
+
 #ifdef __cplusplus
 }
 #endif

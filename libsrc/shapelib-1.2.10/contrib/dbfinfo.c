@@ -7,13 +7,13 @@
  *
  * requires shapelib 1.2
  *   gcc dbfinfo dbfopen.o dbfinfo
- * 
+ *
  *
  * $Log: dbfinfo.c,v $
  * Revision 1.2  1999/05/26 02:56:31  candrsn
  * updates to shpdxf, dbfinfo, port from Shapelib 1.1.5 of dbfcat and shpinfo
  *
- * 
+ *
  */
 
 
@@ -58,7 +58,7 @@ int main( int argc, char ** argv )
 /* -------------------------------------------------------------------- */
     i = DBFGetFieldCount(hDBF);
     printf ("%ld Columns,  %ld Records in file\n",i,DBFGetRecordCount(hDBF));
-    
+
 /* -------------------------------------------------------------------- */
 /*	Compute offsets to use when printing each of the field 		*/
 /*	values. We make each field as wide as the field title+1, or 	*/
@@ -83,14 +83,14 @@ int main( int argc, char ** argv )
 	      case FTDouble:
 	    	strcpy (ftype, "float");
 		break;
-		
+
 	      case FTInvalid:
 	    	strcpy (ftype, "invalid/unsupported");
 		break;
-		
+
 	      default:
 	      	strcpy (ftype, "unknown");
-	      	break;			
+	      	break;
 	    }
         printf ("%15.15s\t%15s  (%d,%d)\n",szTitle, ftype, nWidth, nDecimals);
 

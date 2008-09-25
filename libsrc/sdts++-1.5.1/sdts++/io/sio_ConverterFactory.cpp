@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -243,7 +243,7 @@ sio_ConverterFactory::sio_ConverterFactory()
 
 
 
-sio_ConverterFactory * 
+sio_ConverterFactory *
 sio_ConverterFactory::instance()
 {
    if ( ! sio_ConverterFactory::instance_.get() )
@@ -258,16 +258,16 @@ sio_ConverterFactory::instance()
 
 
 
-sio_8211Converter * 
+sio_8211Converter *
 sio_ConverterFactory::get( std::string const & type )
 {
-   if ( type.empty() )  
-   {    
+   if ( type.empty() )
+   {
 #ifdef SDTSXXDEBUG
-      cerr << "binary type without a subfield\n";  
+      cerr << "binary type without a subfield\n";
 #endif
       return 0x0;
-   }  
+   }
 
    // XXX change this to a switch statement!
 
@@ -291,13 +291,13 @@ sio_ConverterFactory::get( std::string const & type )
          break;
 
       case 'B' :
-         if ( 'I' == toupper(type[1]) ) // signed    
-         {      
+         if ( 'I' == toupper(type[1]) ) // signed
+         {
             switch( type[2] )
             {
                case '8' :
                   return imp_->getBI8();
-                  break;      
+                  break;
                case '1':
                   return imp_->getBI16();
                   break;
@@ -306,15 +306,15 @@ sio_ConverterFactory::get( std::string const & type )
                   break;
                case '3' :
                   return imp_->getBI32();
-                  break;      
+                  break;
             }
-         }    
+         }
          else if ( 'U' == toupper(type[1]) && // unsigned
-                   'I' == toupper(type[2]) )    
-         {      
-            switch( type[3] )      
+                   'I' == toupper(type[2]) )
+         {
+            switch( type[3] )
             {
-               case '8' :        
+               case '8' :
                   return imp_->getBUI8();
                   break;
 
@@ -330,15 +330,15 @@ sio_ConverterFactory::get( std::string const & type )
                   return imp_->getBUI32();
                   break;
             }
-         } 
+         }
          else if ( 'F' == toupper(type[1]) && // floating point
-                   'P' == toupper(type[2]) )    
-         {      
-            switch( type[3] )      
+                   'P' == toupper(type[2]) )
+         {
+            switch( type[3] )
             {
-               case '6' :        
+               case '6' :
                   return imp_->getBFP64();
-                  break;      
+                  break;
 
                case '3' :
                   return imp_->getBFP32();
@@ -346,7 +346,7 @@ sio_ConverterFactory::get( std::string const & type )
             }
          }
          break;
-   }  
+   }
 
    return 0x0;
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -57,7 +57,7 @@ void DSF2Text_AcceptProperty(const char * inProp, const char * inValue, void * i
 
 void DSF2Text_BeginPatch(
 	unsigned int	inTerrainType,
-	double 			inNearLOD, 
+	double 			inNearLOD,
 	double 			inFarLOD,
 	unsigned char	inFlags,
 	int				inCoordDepth,
@@ -67,7 +67,7 @@ void DSF2Text_BeginPatch(
 	sDSF2TEXT_CoordDepth = inCoordDepth;
 	fprintf(fi, "BEGIN_PATCH %d %lf %lf %d %d\n", inTerrainType, inNearLOD, inFarLOD, inFlags, inCoordDepth);
 }
-	
+
 void DSF2Text_BeginPrimitive(
 	int				inType,
 	void *			inRef)
@@ -75,7 +75,7 @@ void DSF2Text_BeginPrimitive(
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "BEGIN_PRIMITIVE %d\n", inType);
 }
-	
+
 void DSF2Text_AddPatchVertex(
 	double			inCoordinates[],
 	void *			inRef)
@@ -84,7 +84,7 @@ void DSF2Text_AddPatchVertex(
 	fprintf(fi, "PATCH_VERTEX");
 	for (int n = 0; n < sDSF2TEXT_CoordDepth; ++n)
 		fprintf(fi, " %.8lf", inCoordinates[n]);
-	fprintf(fi, "\n");	
+	fprintf(fi, "\n");
 }
 
 void DSF2Text_EndPrimitive(
@@ -121,10 +121,10 @@ void DSF2Text_BeginSegment(
 {
 	FILE * fi = (FILE *) inRef;
 	if (!inCurved)
-		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID, 
+		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID, 
+		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
@@ -140,7 +140,7 @@ void DSF2Text_AddSegmentShapePoint(
 	else
 		fprintf(fi, "SHAPE_POINT_CURVED %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
-}	
+}
 
 void DSF2Text_EndSegment(
 	unsigned int	inEndNodeID,
@@ -154,7 +154,7 @@ void DSF2Text_EndSegment(
 	else
 		fprintf(fi, "END_SEGMENT_CURVED %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n",inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
-}					
+}
 
 bool DSF2Text_NextPass(int pass, void * ref)
 {
@@ -212,7 +212,7 @@ bool DSF2Text(const char * inDSF, const char * inFileName)
 	fprintf(fi, "A\n800\nDSF2TEXT\n\n#%s\n\n", inDSF);
 	#elif IBM
 	fprintf(fi, "I\n800\nDSF2TEXT\n\n#%s\n\n", inDSF);
-	#endif	
+	#endif
 
 	DSFCallbacks_t	cbs;
 	cbs.AcceptTerrainDef_f			=DSF2Text_AcceptTerrainDef			;
@@ -221,7 +221,7 @@ bool DSF2Text(const char * inDSF, const char * inFileName)
 	cbs.AcceptNetworkDef_f			=DSF2Text_AcceptNetworkDef			;
 	cbs.AcceptProperty_f			=DSF2Text_AcceptProperty			;
 	cbs.BeginPatch_f				=DSF2Text_BeginPatch				;
-	cbs.BeginPrimitive_f			=DSF2Text_BeginPrimitive			;	
+	cbs.BeginPrimitive_f			=DSF2Text_BeginPrimitive			;
 	cbs.AddPatchVertex_f			=DSF2Text_AddPatchVertex			;
 	cbs.EndPrimitive_f				=DSF2Text_EndPrimitive				;
 	cbs.EndPatch_f					=DSF2Text_EndPatch					;
@@ -243,7 +243,7 @@ bool DSF2Text(const char * inDSF, const char * inFileName)
 
 	if (strcmp(inFileName, "-"))
 		fclose(fi);
-	return true;	
+	return true;
 }
 
 
@@ -251,19 +251,19 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 {
 	FILE * fi = (strcmp(inFileName, "-") ? fopen(inFileName, "r") : stdin);
 	if (!fi) return NULL;
-	
+
 	int divisions = 8;
 	float west = 999.0, south = 999.0, north = 999.0, east = 999.0;
-	
+
 	char	buf[512];
 	char	prop_id[512];
 	char	prop_value[512];
-	
+
 	DSFCallbacks_t	cbs;
 	void * writer;
 
 	int props_got = 0;
-	
+
 	vector<pair<string, string> >		properties;
 
 	printf("Scanning for dimension properties...\n");
@@ -271,7 +271,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	while (fgets(buf, sizeof(buf), fi))
 	{
 		if (sscanf(buf, "PROPERTY %s %[^\r\n]", prop_id, prop_value) == 2)
-			properties.push_back(pair<string, string>(prop_id, prop_value));	
+			properties.push_back(pair<string, string>(prop_id, prop_value));
 
 		if (sscanf(buf, "PROPERTY sim/west %f", &west) == 1) ++props_got;
 		if (sscanf(buf, "PROPERTY sim/east %f", &east) == 1) ++props_got;
@@ -284,29 +284,29 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	if (west >= 180.0 || west < -180.0 ||
 		east > 180.0 || east <= -180.0 ||
 		south >= 90.0 || south < -90.0 ||
-		north > 90.0 || north <= -90.0) 
+		north > 90.0 || north <= -90.0)
 	{
 		fprintf(stdout, "ERROR: the DSF boundaries are out of range.  This can indicate a missing or corrupt sim/dimension properties.\n");
 		return false;
 	}
 
 	printf("Got dimension properties, establishing file writer...\n");
-		
+
 	writer = DSFCreateWriter(west, south, east, north, divisions);
 	DSFGetWriterCallbacks(&cbs);
-	
+
 	for (int p = 0; p < properties.size(); ++p)
-		cbs.AcceptProperty_f(properties[p].first.c_str(), properties[p].second.c_str(), writer);			
-	
+		cbs.AcceptProperty_f(properties[p].first.c_str(), properties[p].second.c_str(), writer);
+
 	int		ptype, subtype, flags, depth = 99, nodeid, param;
 	double	lod_near, lod_far;
-	
+
 	double	coords[10];
 
 	while (fgets(buf, sizeof(buf), fi))
 	{
-	
-			 if (sscanf(buf, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);	
+
+			 if (sscanf(buf, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
 		else if (sscanf(buf, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObject_f(ptype, coords, coords[2], writer);
 
 		else if (sscanf(buf,"BEGIN_SEGMENT %d %d %d %lf %lf %lf", &ptype, &subtype, &nodeid,  &coords[0],&coords[1],&coords[2]) == 6)							cbs.BeginSegment_f(ptype, subtype, nodeid, coords, false, writer);
@@ -335,13 +335,13 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (sscanf(buf,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
 		else if (sscanf(buf,"SHAPE_POINT_CURVED %d %lf %lf %lf %lf %lf %lf ", &nodeid, &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 7) cbs.EndSegment_f(nodeid, coords, true, writer);
 	}
-	
+
 	if (strcmp(inFileName, "-"))
 		fclose(fi);
-		
-	printf("Got entire file, processing and creating DSF.\n");		
-	
+
+	printf("Got entire file, processing and creating DSF.\n");
+
 	DSFWriteToFile(inDSF, writer);
 	DSFDestroyWriter(writer);
-	return true;	
+	return true;
 }

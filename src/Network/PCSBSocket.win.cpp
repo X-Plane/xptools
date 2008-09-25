@@ -409,10 +409,10 @@ int PCSBSocket::WaitForSockets(PCSBSocket** inSockets, int inCount, long inTimeo
 	//Check the sockets.
 	//The massive nasty first argument just determines the maximum size of all possible sets
 	//and adds 1.
-	nReturn = select(((socketSetRead.fd_count > socketSetWrite.fd_count)?(socketSetRead.fd_count + 1) : (socketSetWrite.fd_count + 1)), 
-					 &socketSetRead, 
-					 &socketSetWrite, 
-					 NULL, 
+	nReturn = select(((socketSetRead.fd_count > socketSetWrite.fd_count)?(socketSetRead.fd_count + 1) : (socketSetWrite.fd_count + 1)),
+					 &socketSetRead,
+					 &socketSetWrite,
+					 NULL,
 					 &timeout);
 	//The operation timed out
 	if(nReturn == 0)

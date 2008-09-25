@@ -18,7 +18,7 @@
 // Author(s)     : Tran Kai Frank DA <Frank.Da@sophia.inria.fr>
 
 #ifndef CGAL_ALPHA_SHAPE_EUCLIDEAN_TRAITS_3_H
-#define CGAL_ALPHA_SHAPE_EUCLIDEAN_TRAITS_3_H 
+#define CGAL_ALPHA_SHAPE_EUCLIDEAN_TRAITS_3_H
 
 
 CGAL_BEGIN_NAMESPACE

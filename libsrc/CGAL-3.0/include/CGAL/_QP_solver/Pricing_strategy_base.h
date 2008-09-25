@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 #ifndef CGAL_PRICING_STRATEGY_BASE_H
 #define CGAL_PRICING_STRATEGY_BASE_H
 
@@ -25,7 +25,7 @@
 #include <CGAL/IO/Verbose_ostream.h>
 
 CGAL_BEGIN_NAMESPACE
-                    
+
 
 // Class declaration
 // =================
@@ -34,7 +34,7 @@ class Pricing_strategy_base;
 
 template < class _Rep >
 class QP_solver;
-                
+
 
 // Class interface
 // ===============
@@ -87,14 +87,14 @@ class Pricing_strategy_base {
     typedef  CGAL::Tag_false            Tag_false;
 
   public:
-    
+
     // creation
     Pricing_strategy_base( ) { }
-    
+
     // destruction
     virtual ~Pricing_strategy_base( ) { }
-    
-    
+
+
     // initialization
     void  set( const Solver&           solver,
                CGAL::Verbose_ostream&  verbose_out)
@@ -103,38 +103,38 @@ class Pricing_strategy_base {
             voutP   = &verbose_out;
             set();
         }
-    
-    
+
+
     virtual  void  set( ) { }
-    
-    
+
+
     virtual  void  init( ) { }
-    
-    
+
+
     // access
     const Solver&        solver( ) const { return *solverP; }
     CGAL::Verbose_ostream&  vout  ( ) const { return *voutP; }
-    
-    
+
+
     // operations
     virtual  int   pricing( ) = 0;
-    
-    
+
+
     virtual  void  leaving_basis( int) { }
-    
+
     virtual  void  transition( ) { }
-    
-    
+
+
 
   private:
     // data members
     const Solver*            solverP;   // the ambient QP solver
     CGAL::Verbose_ostream*   voutP;     // used for verbose output
 };
-  
+
 
 CGAL_END_NAMESPACE
-                  
+
 
 #endif // CGAL_PRICING_STRATEGY_BASE_H
 

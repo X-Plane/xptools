@@ -15,7 +15,7 @@
 #include <string>
 #endif
 
-class  String 
+class  String
 {
 
 #ifdef SUPPORT_STL
@@ -28,12 +28,12 @@ public:
 
 	String();
 	String(char value[]);
-	String(char value[], int offset, int count); 
+	String(char value[], int offset, int count);
 
 	~String();
 
 	void setValue(char value[]);
-	void setValue(char value[], int offset, int count); 
+	void setValue(char value[], int offset, int count);
 	char *getValue();
 	void deleteValue();
 	int length();

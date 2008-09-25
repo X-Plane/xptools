@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Trace.h
  *
  *  This source file is part of DIME.
@@ -29,7 +29,7 @@
 
 #ifndef DIME_TRACE_H
 #define DIME_TRACE_H
-  
+
 #include <dime/entities/FaceEntity.h>
 #include <dime/util/Linear.h>
 
@@ -51,14 +51,14 @@ public:
 			 const int index = 0) const;
   virtual const char *getEntityName() const;
   virtual int countRecords() const;
-  
+
 protected:
   virtual bool swapQuadCoords() const;
-  
-  virtual bool handleRecord(const int groupcode, 
+
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
                             dimeMemHandler * const memhandler);
-    
+
 private:
   dimeVec3f extrusionDir;
   dxfdouble thickness;

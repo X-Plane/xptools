@@ -20,8 +20,8 @@
  *  o Reduced resolution overviews for multi-sample files will currently
  *    always be generated as PLANARCONFIG_SEPARATE.  This could be fixed
  *    reasonable easily if needed to improve compatibility with other
- *    packages.  Many don't properly support PLANARCONFIG_SEPARATE. 
- * 
+ *    packages.  Many don't properly support PLANARCONFIG_SEPARATE.
+ *
  ******************************************************************************
  * Copyright (c) 1999, Frank Warmerdam
  *
@@ -78,7 +78,7 @@ void TIFFBuildOverviews( TIFF *, int, int *, int, const char *,
 /************************************************************************/
 
 uint32 TIFF_WriteOverview( TIFF *hTIFF, int nXSize, int nYSize,
-                           int nBitsPerPixel, int nPlanarConfig, int nSamples, 
+                           int nBitsPerPixel, int nPlanarConfig, int nSamples,
                            int nBlockXSize, int nBlockYSize,
                            int bTiled, int nCompressFlag, int nPhotometric,
                            int nSampleFormat,
@@ -158,10 +158,10 @@ uint32 TIFF_WriteOverview( TIFF *hTIFF, int nXSize, int nYSize,
 /*                       TIFF_GetSourceSamples()                        */
 /************************************************************************/
 
-static void 
-TIFF_GetSourceSamples( double * padfSamples, unsigned char *pabySrc, 
-                       int nPixelBytes, int nSampleFormat, 
-                       int nXSize, int nYSize, 
+static void
+TIFF_GetSourceSamples( double * padfSamples, unsigned char *pabySrc,
+                       int nPixelBytes, int nSampleFormat,
+                       int nXSize, int nYSize,
                        int nPixelOffset, int nLineOffset )
 {
     int  iXOff, iYOff, iSample;
@@ -206,14 +206,14 @@ TIFF_GetSourceSamples( double * padfSamples, unsigned char *pabySrc,
             }
         }
     }
-} 
+}
 
 /************************************************************************/
 /*                           TIFF_SetSample()                           */
 /************************************************************************/
 
-static void 
-TIFF_SetSample( unsigned char * pabyData, int nPixelBytes, int nSampleFormat, 
+static void
+TIFF_SetSample( unsigned char * pabyData, int nPixelBytes, int nSampleFormat,
                 double dfValue )
 
 {
@@ -298,7 +298,7 @@ void TIFF_DownSample( unsigned char *pabySrcTile,
             {
                 if( i + nTXOff >= nOBlockXSize )
                     break;
-            
+
                 /*
                  * For now use simple subsampling, from the top left corner
                  * of the source block of pixels.
@@ -345,7 +345,7 @@ void TIFF_DownSample( unsigned char *pabySrcTile,
                     dfTotal += padfSamples[iSample];
                 }
 
-                TIFF_SetSample( pabyDst, nPixelBytes, nSampleFormat, 
+                TIFF_SetSample( pabyDst, nPixelBytes, nSampleFormat,
                                 dfTotal / (nXSize*nYSize) );
 
                 pabySrc += nOMult * nPixelGroupBytes;
@@ -554,7 +554,7 @@ void TIFF_ProcessFullResBlock( TIFF *hTIFF, int nPlanarConfig,
                                unsigned char *pabySrcTile,
                                int nBlockXSize, int nBlockYSize,
                                int nSampleFormat, const char * pszResampling )
-    
+
 {
     int		iOverview, iSample;
 
@@ -585,7 +585,7 @@ void TIFF_ProcessFullResBlock( TIFF *hTIFF, int nPlanarConfig,
             }
         }
 
-        /*        
+        /*
          * Loop over destination overview layers
          */
         for( iOverview = 0; iOverview < nOverviews; iOverview++ )
@@ -595,7 +595,7 @@ void TIFF_ProcessFullResBlock( TIFF *hTIFF, int nPlanarConfig,
             int	nTXOff, nTYOff, nOXOff, nOYOff, nOMult;
             int	nOBlockXSize = poRBI->nBlockXSize;
             int	nOBlockYSize = poRBI->nBlockYSize;
-            int	nSkewBits, nSampleByteOffset; 
+            int	nSkewBits, nSampleByteOffset;
 
             /*
              * Fetch the destination overview tile
@@ -836,7 +836,7 @@ void TIFFBuildOverviews( TIFF *hTIFF, int nOverviews, int * panOvList,
                                          panRedMap, panGreenMap, panBlueMap,
                                          bUseSubIFDs,
                                          nHorSubsampling, nVerSubsampling );
-        
+
         papoRawBIs[i] = TIFFCreateOvrCache( hTIFF, nDirOffset );
     }
 
@@ -846,7 +846,7 @@ void TIFFBuildOverviews( TIFF *hTIFF, int nOverviews, int * panOvList,
         _TIFFfree( panGreenMap );
         _TIFFfree( panBlueMap );
     }
-    
+
 /* -------------------------------------------------------------------- */
 /*      Allocate a buffer to hold a source block.                       */
 /* -------------------------------------------------------------------- */
@@ -854,7 +854,7 @@ void TIFFBuildOverviews( TIFF *hTIFF, int nOverviews, int * panOvList,
         pabySrcTile = (unsigned char *) _TIFFmalloc(TIFFTileSize(hTIFF));
     else
         pabySrcTile = (unsigned char *) _TIFFmalloc(TIFFStripSize(hTIFF));
-    
+
 /* -------------------------------------------------------------------- */
 /*      Loop over the source raster, applying data to the               */
 /*      destination raster.                                             */
@@ -866,7 +866,7 @@ void TIFFBuildOverviews( TIFF *hTIFF, int nOverviews, int * panOvList,
             /*
              * Read and resample into the various overview images.
              */
-            
+
             TIFF_ProcessFullResBlock( hTIFF, nPlanarConfig,
                                       bSubsampled,nHorSubsampling,nVerSubsampling,
                                       nOverviews, panOvList,

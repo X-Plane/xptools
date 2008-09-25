@@ -5,14 +5,14 @@
 
     Version:	Technology:	Mac OS X
                 Release:	GM
- 
+
      Copyright:  (c) 2000-2002 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://developer.apple.com/bugreporter/
- 
+
 */
 
 #ifndef _GLM_H
@@ -84,11 +84,11 @@ typedef void (*GLMSetUByteFunc)(GLubyte *buffer, GLsizei width, GLsizei height, 
 typedef void (*GLMSetUShortFunc)(GLushort *buffer, GLsizei width, GLsizei height, GLsizei skip, GLushort value);
 typedef void (*GLMSetUIntFunc)(GLuint *buffer, GLsizei width, GLsizei height, GLsizei skip, GLuint value);
 typedef void (*GLMSetDoubleFunc)(GLdouble *buffer, GLsizei width, GLsizei height, GLsizei skip, GLdouble value);
-	
+
 typedef union {
 	GLMPageAllocFunc   page_alloc_func;
 	GLMPageFreeFunc    page_free_func;
-	
+
 	GLMZeroFunc        zero_func;
 	GLMCopyFunc        copy_func;
 	GLMSetUByteFunc    set_ubyte_func;

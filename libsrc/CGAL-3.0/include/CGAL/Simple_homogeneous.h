@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra, Sylvain Pion
- 
+
 #ifndef CGAL_SIMPLE_HOMOGENEOUS_H
 #define CGAL_SIMPLE_HOMOGENEOUS_H
 

@@ -21,11 +21,11 @@ class FilePNG : public FileImage {
 	RGBColor24	*mImgBuffer;
 	bool		mHasTransparencyColor;
 	RGBColor24	mTransparencyColor;
-public:	
+public:
 
 	FilePNG(char *filename);
 	~FilePNG();
-	
+
 	bool load(char *filename);
 
 	int getFileType() {
@@ -39,7 +39,7 @@ public:
 	int getHeight() {
 		return mHeight;
 	}
-	
+
 	RGBColor24 *getImage() {
 		return mImgBuffer;
 	}

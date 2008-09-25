@@ -4,23 +4,23 @@
  * Copyright (c) 1988-1997 Sam Leffler
  * Copyright (c) 1991-1997 Silicon Graphics, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
@@ -523,7 +523,7 @@ PlaceImage(FILE *fp, double pagewidth, double pageheight,
 			splitpage++;
 		}
 	}
-	
+
 	bottom_offset += ytran / (cnt?2:1);
 	if (cnt)
 	    left_offset += xtran / 2;
@@ -917,7 +917,7 @@ PS_Lvl2ImageDict(FILE* fd, TIFF* tif, uint32 w, uint32 h)
 	 * Workaround for some software that may crash when last strip
 	 * of image contains fewer number of scanlines than specified
 	 * by the `/Height' variable. So for stripped images with multiple
-	 * strips we will set `/Height' as `im_h', because one is 
+	 * strips we will set `/Height' as `im_h', because one is
 	 * recalculated for each strip - including the (smaller) final strip.
 	 * For tiled images and images with only one strip `/Height' will
 	 * contain number of scanlines in tile (or image height in case of
@@ -927,7 +927,7 @@ PS_Lvl2ImageDict(FILE* fd, TIFF* tif, uint32 w, uint32 h)
 		fprintf(fd, "  /Height %lu\n", (unsigned long) tile_height);
 	else
 		fprintf(fd, "  /Height im_h\n");
-	
+
 	if (planarconfiguration == PLANARCONFIG_SEPARATE && samplesperpixel > 1)
 		fputs("  /MultipleDataSources true\n", fd);
 	fprintf(fd, "  /ImageMatrix [ %lu 0 0 %ld %s %s ]\n",
@@ -1348,7 +1348,7 @@ PS_Lvl2page(FILE* fd, TIFF* tif, uint32 w, uint32 h)
 	if ( ascii85_p )
 	    _TIFFfree( ascii85_p );
 #endif
-       
+
 	_TIFFfree(buf_data);
 #ifdef ENABLE_BROKEN_BEGINENDDATA
 	fputs("%%EndData\n", fd);
@@ -1907,7 +1907,7 @@ Ascii85Flush(FILE* fd)
 	fputs("~>\n", fd);
 }
 #if	defined( EXP_ASCII85ENCODER)
-
+
 #define A85BREAKCNTR    ascii85breaklen
 #define A85BREAKLEN     (2*MAXLINE)
 
@@ -1969,33 +1969,33 @@ int Ascii85EncodeBlock( uint8 * ascii85_p, unsigned f_eod, const uint8 * raw_p, 
             val32 += *(++raw_p) << 16;
             val32 += *(++raw_p) <<  8;
             val32 += *(++raw_p);
-    
+
             if ( val32 == 0 )                   /* Special case */
             {
                 ascii85_p[ascii85_l] = 'z';
                 rc = 1;
             }
-    
+
             else
             {
                 ascii85[4] = (char) ((val32 % 85) + 33);
                 val32 /= 85;
-    
+
                 ascii85[3] = (char) ((val32 % 85) + 33);
                 val32 /= 85;
-    
+
                 ascii85[2] = (char) ((val32 % 85) + 33);
                 val32 /= 85;
-    
+
                 ascii85[1] = (char) ((val32 % 85) + 33);
                 ascii85[0] = (char) ((val32 / 85) + 33);
 
                 _TIFFmemcpy( &ascii85_p[ascii85_l], ascii85, sizeof(ascii85) );
                 rc = sizeof(ascii85);
             }
-    
+
             ascii85_l += rc;
-    
+
             if ( (A85BREAKCNTR -= rc) <= 0 )
             {
                 ascii85_p[ascii85_l] = '\n';
@@ -2003,32 +2003,32 @@ int Ascii85EncodeBlock( uint8 * ascii85_p, unsigned f_eod, const uint8 * raw_p, 
                 A85BREAKCNTR = A85BREAKLEN;
             }
         }
-    
+
         /*
          * Output any straggler bytes:
          */
-    
+
         if ( raw_l > 0 )
         {
             int             len;                /* Output this many bytes */
-    
+
             len = raw_l + 1;
             val32 = *++raw_p << 24;             /* Prime the pump */
-    
+
             if ( --raw_l > 0 )  val32 += *(++raw_p) << 16;
             if ( --raw_l > 0 )  val32 += *(++raw_p) <<  8;
-    
+
             val32 /= 85;
-    
+
             ascii85[3] = (char) ((val32 % 85) + 33);
             val32 /= 85;
-    
+
             ascii85[2] = (char) ((val32 % 85) + 33);
             val32 /= 85;
-    
+
             ascii85[1] = (char) ((val32 % 85) + 33);
             ascii85[0] = (char) ((val32 / 85) + 33);
-    
+
             _TIFFmemcpy( &ascii85_p[ascii85_l], ascii85, len );
             ascii85_l += len;
         }

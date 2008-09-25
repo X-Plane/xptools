@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: LWPolyline.h
  *
  *  This source file is part of DIME.
@@ -48,7 +48,7 @@ public:
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
   virtual GeometryType extractGeometry(dimeArray <dimeVec3f> &verts,
 				       dimeArray <int> &indices,
 				       dimeVec3f &extrusionDir,
@@ -63,7 +63,7 @@ public:
   dxfdouble getElevation() const;
   dxfdouble getConstantWidth() const;
   int16 getFlags() const;
- 
+
 protected:
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
@@ -85,7 +85,7 @@ private:
 }; // class dimeLWPolyLine
 
 
-inline int 
+inline int
 dimeLWPolyline::getNumVertices() const
 {
   return this->numVertices;
@@ -121,19 +121,19 @@ dimeLWPolyline::getBulges() const
   return this->bulge;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeLWPolyline::getElevation() const
 {
   return this->elevation;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeLWPolyline::getConstantWidth() const
 {
   return this->constantWidth;
 }
 
-inline int16 
+inline int16
 dimeLWPolyline::getFlags() const
 {
   return this->flags;

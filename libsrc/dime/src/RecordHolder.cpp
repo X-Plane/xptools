@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: RecordHolder.cpp
  *
  *  This source file is part of DIME.
@@ -71,7 +71,7 @@ dimeRecordHolder::~dimeRecordHolder()
 
 //!
 
-bool 
+bool
 dimeRecordHolder::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeRecordHolderType ||
@@ -93,7 +93,7 @@ dimeRecordHolder::copyRecords(dimeRecordHolder * const rh,
       rh->numRecords = this->numRecords;
       for (int i = 0; i < this->numRecords; i++)
 	rh->records[i] = this->records[i]->copy(memh);
-    } 
+    }
     else ok = false;
   }
   else {
@@ -104,18 +104,18 @@ dimeRecordHolder::copyRecords(dimeRecordHolder * const rh,
 }
 
 /*!
-  Reads records from \a in until the separator groupcode (specified in 
-  constructor)  is found. Can be overloaded by subclasses, but in most 
-  cases this will not be necessary as dimeRecordHolder::handleRecord() 
+  Reads records from \a in until the separator groupcode (specified in
+  constructor)  is found. Can be overloaded by subclasses, but in most
+  cases this will not be necessary as dimeRecordHolder::handleRecord()
   is called for each record found in the stream.
 
   \sa dimeEntity::handleRecord().
 */
 
-bool 
+bool
 dimeRecordHolder::read(dimeInput * const file)
 {
-  
+
   dimeRecord *record;
   bool ok = true;
   int32 groupcode;
@@ -160,8 +160,8 @@ dimeRecordHolder::read(dimeInput * const file)
     for (int i = 0; i < num; i++) {
       this->records[i] = array[i];
     }
-  }  
-  return ok;  
+  }
+  return ok;
 }
 
 /*!
@@ -181,7 +181,7 @@ dimeRecordHolder::write(dimeOutput * const file)
   return false;
 }
 
-/*!  
+/*!
   Must be overloaded by entities that directly supports a record
   type. During dimeRecordHolder::read(), dimeRecordHolder::setRecord
   and dimeRecordHolder::setRecords, this function is called for every
@@ -197,7 +197,7 @@ dimeRecordHolder::write(dimeOutput * const file)
   \sa dimeRecordHolder::read()
   \sa dimeRecordHolder::setRecord() */
 
-bool 
+bool
 dimeRecordHolder::handleRecord(const int,
 			      const dimeParam &,
 			      dimeMemHandler * const)
@@ -209,36 +209,36 @@ dimeRecordHolder::handleRecord(const int,
   Sets the data for the record with group code \a groupcode. If the
   record already exists, it's value will simply be overwritten,
   otherwise a new record will be created.
-  If the record is handled by a subclass, \a param will be passed on 
-  to the subclass (using dimeRecordHolder::handleRecord()), and will be 
+  If the record is handled by a subclass, \a param will be passed on
+  to the subclass (using dimeRecordHolder::handleRecord()), and will be
   ignored by dimeRecordHolder.
 
   For entities, you cannot use this method to set the layer name. Use
   dimeEntity::setLayer() to do that. Also, you should not use
   this function to set the block name for a dimeInsert entity;
   use dimeInsert::setBlock() instead.
-  
+
   \sa dimeRecordHolder::handleRecord()
   \sa dimeRecordHolder::getRecord()
   \sa dimeRecordHolder::setRecords()
 */
 
 void
-dimeRecordHolder::setRecord(const int groupcode, const dimeParam &value, 
+dimeRecordHolder::setRecord(const int groupcode, const dimeParam &value,
 			   dimeMemHandler * const memhandler)
 {
   this->setRecordCommon(groupcode, value, 0, memhandler);
 }
 
-/*!  
+/*!
   Basically the same function as setRecord(), but also allows you
   to specify an index for the record. This is useful if you're going
-  to set several records with the same group code.  
+  to set several records with the same group code.
   \sa dimeRecordHolder::setRecord()
 */
-  
-void 
-dimeRecordHolder::setIndexedRecord(const int groupcode, 
+
+void
+dimeRecordHolder::setIndexedRecord(const int groupcode,
                                    const dimeParam &value,
                                    const int index,
                                    dimeMemHandler * const memhandler)
@@ -249,12 +249,12 @@ dimeRecordHolder::setIndexedRecord(const int groupcode,
 /*!
   Will return the value of the record with group code \a groupcode.
   \e false is returned if the record could not be found.
-  Subclasses should overload this method if one or several records are 
+  Subclasses should overload this method if one or several records are
   stored in the class. If the groupcode queried is not stored internally, the
   subclass should call its parent's method.
 */
 
-bool 
+bool
 dimeRecordHolder::getRecord(const int groupcode,
 			   dimeParam &param,
 			   const int index) const
@@ -279,7 +279,7 @@ dimeRecordHolder::getRecord(const int groupcode,
   dimeRecordHolder::setRecord().
 */
 
-void 
+void
 dimeRecordHolder::setRecords(const int * const groupcodes,
 			    const dimeParam * const params,
 			    const int numrecords,
@@ -308,17 +308,17 @@ dimeRecordHolder::setRecords(const int * const groupcodes,
 	record->setValue(param);
       }
       else {
-	dimeRecord *record = dimeRecord::createRecord(groupcode, 
+	dimeRecord *record = dimeRecord::createRecord(groupcode,
 						    param,
 						    memhandler);
 	newrecords.append(record);
-	
+
       }
     }
   }
   if (newrecords.count()) {
     // don't forget the old records...
-    for (i = 0; i < this->numRecords; i++) { 
+    for (i = 0; i < this->numRecords; i++) {
       newrecords.append(this->records[i]);
     }
     int n = newrecords.count();
@@ -341,13 +341,13 @@ dimeRecordHolder::setRecords(const int * const groupcodes,
   written. Very useful when progress information is needed during write().
 */
 
-int 
+int
 dimeRecordHolder::countRecords() const
 {
   return this->numRecords;
 }
 
-/*!  
+/*!
   Returns the record with group code \a groupcode. If \a index > 0,
   the index'th record with group code \a groupcode will be
   returned. Returns \e NULL if the record is not found or \a index is
@@ -359,7 +359,7 @@ dimeRecordHolder::findRecord(const int groupcode, const int index)
   int i, n = this->numRecords;
   int cnt = 0;
   for (i = 0; i < n; i++) {
-    if (this->records[i]->getGroupCode() == groupcode) { 
+    if (this->records[i]->getGroupCode() == groupcode) {
       if (cnt == index) return this->records[i];
       cnt++;
     }
@@ -372,13 +372,13 @@ dimeRecordHolder::findRecord(const int groupcode, const int index)
   store a record, but handles writing themselves. Default
   method returns \a true for all group codes.
 */
-bool 
+bool
 dimeRecordHolder::shouldWriteRecord(const int /*groupcode*/) const
 {
   return true;
 }
 
-void 
+void
 dimeRecordHolder::setRecordCommon(const int groupcode, const dimeParam &param,
                                   const int index, dimeMemHandler * const memhandler)
 {
@@ -393,7 +393,7 @@ dimeRecordHolder::setRecordCommon(const int groupcode, const dimeParam &param,
     assert(0);
     return;
   }
-  
+
   if (!this->handleRecord(groupcode, param, memhandler)) {
     dimeRecord *record = this->findRecord(groupcode, index);
     if (!record) { // create new record
@@ -402,8 +402,8 @@ dimeRecordHolder::setRecordCommon(const int groupcode, const dimeParam &param,
 	fprintf( stderr, "Could not create record for group code: %d\n", groupcode);
 	return;
       }
-      dimeRecord **newarray = ARRAY_NEW(memhandler, dimeRecord*, 
-					this->numRecords+1); 
+      dimeRecord **newarray = ARRAY_NEW(memhandler, dimeRecord*,
+					this->numRecords+1);
       memcpy(newarray, this->records, this->numRecords*sizeof(dimeRecord*));
       if (!memhandler) delete [] this->records;
       this->records = newarray;
@@ -416,7 +416,7 @@ dimeRecordHolder::setRecordCommon(const int groupcode, const dimeParam &param,
 /*!
   Returns the number of records stored in this record holder.
 */
-int 
+int
 dimeRecordHolder::getNumRecordsInRecordHolder(void) const
 {
   return this->numRecords;
@@ -426,7 +426,7 @@ dimeRecordHolder::getNumRecordsInRecordHolder(void) const
   Returns the \a idx'th record in the record holder.
   \sa getNumRecordsInRecordHolder().
 */
-dimeRecord * 
+dimeRecord *
 dimeRecordHolder::getRecordInRecordHolder(const int idx) const
 {
   assert(idx < this->numRecords);

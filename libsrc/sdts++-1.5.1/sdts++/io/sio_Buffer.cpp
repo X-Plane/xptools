@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -42,15 +42,15 @@ public:
     {
     }
 
-  sio_BufferImp( const char* data, long length ) 
+  sio_BufferImp( const char* data, long length )
     {
       buffer_.resize( length );
       std::copy( &data[0], &data[length], buffer_.begin() );
     }
 
 
-  bool reset() 
-    { 
+  bool reset()
+    {
       buffer_.clear();
       return true;
     }
@@ -75,7 +75,7 @@ public:
     }
 
 private:
-   
+
   sio_BufferImp& operator=( sio_BufferImp const & ); // NOT NEEDED
 
   std::vector<char> buffer_;
@@ -154,7 +154,7 @@ sio_Buffer::data() const
 
 
 std::vector<char> &
-sio_Buffer::data() 
+sio_Buffer::data()
 {
   return imp_->data();
 } // sio_Buffer::data

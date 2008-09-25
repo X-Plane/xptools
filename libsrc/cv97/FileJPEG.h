@@ -20,11 +20,11 @@ class FileJPEG : public FileImage {
 	int			height;
 	RGBColor24	*imgBuffer;
 
-public:	
+public:
 
 	FileJPEG(char *filename);
 	~FileJPEG();
-	
+
 	bool load(char *filename);
 
 	int getFileType() {
@@ -38,7 +38,7 @@ public:
 	int getHeight() {
 		return height;
 	}
-	
+
 	RGBColor24 *getImage() {
 		return imgBuffer;
 	}

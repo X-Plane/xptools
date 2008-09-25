@@ -40,12 +40,12 @@ namespace CGAL {
   private:
 
   typedef typename TreeTraits::Point Point;
-  typedef std::list<Point> Point_list; 
+  typedef std::list<Point> Point_list;
 
   Kd_tree<TreeTraits>* t;
 
   public:
-  
+
   // constructor
 
   Kdtree_d(int k = 2) {}
@@ -68,18 +68,18 @@ namespace CGAL {
 	}
 
   template <class OutputIterator>
-	OutputIterator report_all_points(OutputIterator it) 
+	OutputIterator report_all_points(OutputIterator it)
 	{it=t->report_all_points(it);
 	 return it;}
 
   ~Kdtree_d() {}
-        
+
 
   };
 
   template <class Point,
-	    class Splitter=Sliding_midpoint<Point> > 
-  class Kdtree_interface_2d : 
+	    class Splitter=Sliding_midpoint<Point> >
+  class Kdtree_interface_2d :
 	public Kd_tree_traits_point<Point,Splitter> {
 
   public:
@@ -97,20 +97,20 @@ namespace CGAL {
 
   public:
 
-  //constuctor 
+  //constuctor
   Iso_box_d(const Point& p, const Point&q, int dim) {
 	b=new Iso_box_2(p,q);
   }
- 
-  bool contains(const Point& p) const {	 
+
+  bool contains(const Point& p) const {
 	return b->contains(p);
   }
 
-  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {   
+  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->inner_range_intersects(rectangle);
   }
 
-  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const { 
+  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->outer_range_is_contained_by(rectangle);
   }
 
@@ -118,14 +118,14 @@ namespace CGAL {
   ~Iso_box_d() { delete b;}
 };
 
-  //constructor 
-  Kdtree_interface_2d(unsigned int bucket_size=100, 
-			     NT aspect_ratio=NT(3), 
+  //constructor
+  Kdtree_interface_2d(unsigned int bucket_size=100,
+			     NT aspect_ratio=NT(3),
 			     bool use_extended_nodes=true) {
 		Kd_tree_traits_point<Point>(bucket_size,aspect_ratio,use_extended_nodes);
   }
 
-    	
+
   // destructor
   ~Kdtree_interface_2d() {}
 
@@ -134,8 +134,8 @@ namespace CGAL {
 
 
 template <class Point,
-	    class Splitter=Sliding_midpoint<Point> > 
-  class Kdtree_interface_3d : 
+	    class Splitter=Sliding_midpoint<Point> >
+  class Kdtree_interface_3d :
 	public Kd_tree_traits_point<Point,Splitter> {
 
   public:
@@ -153,20 +153,20 @@ template <class Point,
 
   public:
 
-  //constuctor 
+  //constuctor
   Iso_box_d(const Point& p, const Point&q, int dim) {
 	b=new Iso_box_3(p,q);
   }
- 
-  bool contains(const Point& p) const {	 
+
+  bool contains(const Point& p) const {
 	return b->contains(p);
   }
 
-  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {   
+  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->inner_range_intersects(rectangle);
   }
 
-  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const { 
+  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->outer_range_is_contained_by(rectangle);
   }
 
@@ -174,22 +174,22 @@ template <class Point,
   ~Iso_box_d() { delete b;}
 };
 
-  //constructor 
-  Kdtree_interface_3d(unsigned int bucket_size=100, 
-			     NT aspect_ratio=NT(3), 
+  //constructor
+  Kdtree_interface_3d(unsigned int bucket_size=100,
+			     NT aspect_ratio=NT(3),
 			     bool use_extended_nodes=true) {
 		Kd_tree_traits_point<Point>(bucket_size,aspect_ratio,use_extended_nodes);
   }
 
-    	
+
   // destructor
   ~Kdtree_interface_3d() {}
 
 };
 
 template <class Point,
-	  class Splitter=Sliding_midpoint<Point> > 
-  class Kdtree_interface : 
+	  class Splitter=Sliding_midpoint<Point> >
+  class Kdtree_interface :
 	public Kd_tree_traits_point<Point,Splitter> {
 
   public:
@@ -207,20 +207,20 @@ template <class Point,
 
   public:
 
-  //constuctor 
+  //constuctor
   Iso_box_d(const Point& p, const Point&q, int dim) {
 	b=new Iso_box(p,q);
   }
- 
-  bool contains(const Point& p) const {	 
+
+  bool contains(const Point& p) const {
 	return b->contains(p);
   }
 
-  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {   
+  bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->inner_range_intersects(rectangle);
   }
 
-  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const { 
+  bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const {
 	return b->outer_range_is_contained_by(rectangle);
   }
 
@@ -228,18 +228,18 @@ template <class Point,
   ~Iso_box_d() { delete b;}
 };
 
-  //constructor 
-  Kdtree_interface(unsigned int bucket_size=100, 
-			     NT aspect_ratio=NT(3), 
+  //constructor
+  Kdtree_interface(unsigned int bucket_size=100,
+			     NT aspect_ratio=NT(3),
 			     bool use_extended_nodes=true) {
 		Kd_tree_traits_point<Point>(bucket_size,aspect_ratio,use_extended_nodes);
   }
 
-    	
+
   // destructor
   ~Kdtree_interface() {}
 
-}; 
+};
 
 } // namespace CGAL
 #endif // CGAL_KD_TREE_D_NEW_H

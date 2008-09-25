@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Entity.h
  *
  *  This source file is part of DIME.
@@ -42,7 +42,7 @@
 #define FLAG_TMP_BUFFER_SET   0x0002 // see dimeEntity::read()
 #define FLAG_VERTICES_FOLLOW  0x0004 // used by dimePolyline
 #define FLAG_TAGGED           0x0008 // used by dimeEntity
-#define FLAG_COLOR_NUMBER     0x0010 // signals a color number was read 
+#define FLAG_COLOR_NUMBER     0x0010 // signals a color number was read
 #define FLAG_SUBCLASS_MARKER  0x0020 // will subclass marker need to be written
 #define FLAG_HANDLE           0x0040 // entity has handle in RecordHolder
 #define FLAG_ACAD_REACTORS    0x0080 // ACAD reactors in entity
@@ -74,18 +74,18 @@ public:
 
   virtual void setLayer(const dimeLayer * const layer);
   virtual const char *getEntityName() const = 0;
-  
-  const dimeLayer *getLayer() const; 
+
+  const dimeLayer *getLayer() const;
   const char *getLayerName() const;
-  
-  virtual dimeEntity *copy(dimeModel * const model) const = 0; 
+
+  virtual dimeEntity *copy(dimeModel * const model) const = 0;
   virtual bool read(dimeInput * const in);
   virtual bool write(dimeOutput * const out);
   virtual bool isOfType(const int thetypeid) const;
   virtual int countRecords() const;
   virtual void print() const {}
-  
-  
+
+
   bool isDeleted() const;
   void setDeleted(const bool onOff = true);
 
@@ -95,14 +95,14 @@ public:
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index = 0) const;
-  
+
   enum GeometryType {
     NONE,
     POLYGONS,
     LINES,
     POINTS
   };
-  
+
   virtual GeometryType extractGeometry(dimeArray <dimeVec3f> &verts,
 				       dimeArray <int> &indices,
 				       dimeVec3f &extrusionDir,
@@ -111,34 +111,34 @@ protected:
 
   bool preWrite(dimeOutput * const file);
 
-  virtual bool traverse(const dimeState * const state, 
+  virtual bool traverse(const dimeState * const state,
 			dimeCallback callback,
 			void *userdata);
-  
+
   virtual void fixReferences(dimeModel * const model);
   virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
   virtual bool shouldWriteRecord(const int groupcode) const;
-  
+
 public:
   static dimeEntity *createEntity(const char * const name,
 				 dimeMemHandler * const memhandler = NULL);
-  static bool readEntities(dimeInput * const file, 
-			   dimeArray <dimeEntity*> &array, 
+  static bool readEntities(dimeInput * const file,
+			   dimeArray <dimeEntity*> &array,
 			   const char * const stopat);
-  
-  static bool copyEntityArray(const dimeEntity *const*const array, 
+
+  static bool copyEntityArray(const dimeEntity *const*const array,
 			      const int nument,
 			      dimeModel * const model,
-			      dimeArray <dimeEntity*> &destarray);  
-  static dimeEntity **copyEntityArray(const dimeEntity *const*const array, 
+			      dimeArray <dimeEntity*> &destarray);
+  static dimeEntity **copyEntityArray(const dimeEntity *const*const array,
                                      int &nument,
-                                     dimeModel * const model);  
-  
+                                     dimeModel * const model);
+
   static void arbitraryAxis(const dimeVec3f &givenaxis, dimeVec3f &newaxis);
   static void generateUCS(const dimeVec3f &givenaxis, dimeMatrix &m);
-  
+
 protected:
   bool copyRecords(dimeEntity * const entity, dimeModel * const model) const;
 
@@ -154,25 +154,25 @@ dimeEntity::getLayer() const
   return this->layer;
 }
 
-inline int16 
+inline int16
 dimeEntity::getColorNumber() const
 {
   return this->colorNumber;
 }
 
-inline void 
+inline void
 dimeEntity::setColorNumber(const int16 c)
 {
   this->colorNumber = c;
 }
 
-inline int16 
+inline int16
 dimeEntity::getEntityFlags() const
 {
   return this->entityFlags;
 }
 
-inline void 
+inline void
 dimeEntity::setEntityFlags(const int16 flags)
 {
   this->entityFlags = flags;

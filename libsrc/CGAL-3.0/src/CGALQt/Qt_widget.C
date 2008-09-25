@@ -32,8 +32,8 @@ namespace CGAL {
 
 Qt_widget::Qt_widget(QWidget *parent, const char *name) :
   QWidget(parent, name), set_scales_to_be_done(false), Locked(0),
-  _pointSize(4), _pointStyle(DISC) 
-{ 
+  _pointSize(4), _pointStyle(DISC)
+{
   setCaption("CGAL::Qt_widget");
 
   // initialize ranges and scales
@@ -80,7 +80,7 @@ void Qt_widget::set_scales()
       double ycenter = ymin + (ymax - ymin) / 2;
 
       if(xscal<1) {
-        // if xscal < 1, width()/xscal > width(). then we can round it 
+        // if xscal < 1, width()/xscal > width(). then we can round it
         // with loosing precision.
 	      xmin = xcenter - (int)(width()/xscal)/2;
 	      xmax = xcenter + (int)(width()/xscal)/2;
@@ -127,7 +127,7 @@ void Qt_widget::set_center(const double x, const double y)
   xmin_old = xmin;
   xmax_old = xmax;
   ymin_old = ymin;
-  ymax_old = ymax;  
+  ymax_old = ymax;
   redraw();
   emit(rangesChanged());
 }
@@ -202,7 +202,7 @@ void Qt_widget::mousePressEvent(QMouseEvent *e)
     for(it = qt_layers.begin(); it!= qt_layers.end(); it++)
       if((*it)->is_active())
         (*it)->mousePressEvent(e);
-  } 
+  }
   if(is_standard_active()){
     std::list<Qt_widget_layer*>::iterator it;
     for(it = qt_standard_layers.begin();
@@ -392,7 +392,7 @@ void Qt_widget::set_window(const double x_min, const double x_max,
 
 
 void Qt_widget::zoom(double ratio, double xc, double yc)
-{  
+{
   xscal = xscal*ratio; yscal = yscal*ratio;
   set_center(xc, yc);
 }
@@ -407,14 +407,14 @@ void Qt_widget::zoom(double ratio)
 #ifdef CGAL_USE_GMP
 void Qt_widget::x_real(int x, Gmpq& return_t) const
 {
-  return_t = simplest_rational_in_interval<Gmpq>( 
+  return_t = simplest_rational_in_interval<Gmpq>(
                   xmin+x/xscal-(1/xscal)/2,
                   xmin+x/xscal+(1/xscal)/2);
 }
 
 void Qt_widget::y_real(int y, Gmpq& return_t) const
 {
-  return_t = simplest_rational_in_interval<Gmpq>( 
+  return_t = simplest_rational_in_interval<Gmpq>(
                   ymax - y/yscal-(1/yscal)/2,
                   ymax - y/yscal+(1/yscal)/2);
 }
@@ -485,7 +485,7 @@ Qt_widget& Qt_widget::operator<<(const PointStyle& ps)
   setPointStyle(ps);
   return *this;
 }
-	
+
 void Qt_widget::clear() {
   painter->eraseRect(rect());
 }
@@ -524,7 +524,7 @@ void Qt_widget::clear() {
         return true;
     return false;
   }
-  
+
   bool Qt_widget::does_standard_eat_events() {
     std::list<Qt_widget_layer*>::iterator it;
       for(it = qt_standard_layers.begin();
@@ -577,7 +577,7 @@ void Qt_widget::clear() {
       unlock();
     }
   };
-  
+
   void Qt_widget::detach(Qt_widget_layer* s)
   {
     qt_layers.erase(std::find(qt_layers.begin(),qt_layers.end(),s));

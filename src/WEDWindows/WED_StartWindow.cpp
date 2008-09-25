@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -45,7 +45,7 @@ static int *	SizeOfPng(const char * png)
 	static int bounds[4];
 	bounds[0] = 0; bounds[1] = 0;
 	GUI_GetImageResourceSize(png, bounds+2);
-	return bounds;	
+	return bounds;
 }
 
 const char * LastPart(const char * s)
@@ -54,7 +54,7 @@ const char * LastPart(const char * s)
 	while (*s)
 	{
 		if (*s==':'||*s=='/'||*s=='\\') ret=s;
-		++s;		
+		++s;
 	}
 	return ret;
 }
@@ -73,16 +73,16 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 {
 	int btns[2];
 //	GUI_GetImageResourceSize("startup_bkgnd.png", bkgnd);
-	GUI_GetImageResourceSize("startup_btns.png", btns);	
+	GUI_GetImageResourceSize("startup_btns.png", btns);
 
 //	SetBounds(100, 100, bkgnd.width + 100, bkgnd.height + 100);
 
 	int btn_width = btns[0] / 3;
 	int btn_height = btns[1] / 3;
-	
+
 	int btn_width1  = btn_width  / 2; int btn_width2  = btn_width  - btn_width1 ;
 	int btn_height1 = btn_height / 2; int btn_height2 = btn_height - btn_height1;
-	
+
 	int p2 = (kDefaultBounds[2] - kDefaultBounds[0]) * 0.50;
 
 	int	new_off[4] = { 0, 0, 3, 3 };
@@ -91,19 +91,19 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	int	opn_on [4] = { 1, 1, 3, 3 };
 	int	chs_off[4] = { 2, 0, 3, 3 };
 	int	chs_on [4] = { 2, 1, 3, 3 };
-	
+
 	mNew  = new GUI_Button("startup_btns.png", btn_Web, new_off, new_on, new_on, new_on);
 	mOpen = new GUI_Button("startup_btns.png", btn_Web, opn_off, opn_on, opn_on, opn_on);
 	mChange = new GUI_Button("startup_btns.png", btn_Web, chs_off, chs_on, chs_on, chs_on);
-	
+
 	mNew->AddRadioFriend(mOpen);
 	mNew->AddRadioFriend(mChange);
 	mOpen->AddRadioFriend(mNew);
 	mOpen->AddRadioFriend(mChange);
 	mChange->AddRadioFriend(mOpen);
 	mChange->AddRadioFriend(mNew);
-	
-	
+
+
 	mNew->SetBounds(p2 - btn_width - btn_width1, 10,
 					p2 - btn_width + btn_width2, 10 + btn_height);
 	mOpen->SetBounds(p2 - btn_width1, 10,
@@ -121,16 +121,16 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mNew->SetSticky(0.5f,1,0.5f,0);
 	mOpen->SetSticky(0.5f,1,0.5f,0);
 	mChange->SetSticky(0.5f,1,0.5f,0);
-	
+
 	mScroller = new GUI_ScrollerPane(false, true);
 	mScroller->SetParent(this);
 	mScroller->SetBounds(10, 20 + btn_height + 10, kDefaultBounds[2] - kDefaultBounds[0] - 10, kDefaultBounds[3] - kDefaultBounds[1] - 30);
 	mScroller->SetSticky(1,1,1,1);
-	
+
 	mTable = new GUI_Table(1);		// 1=  fill right
 	mPackageList = new WED_PackageListAdapter;
 	mTextTable = new GUI_TextTable(this, 10);	// 10 = indent
-	
+
 	mTextTable->SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Table_Select),
@@ -138,7 +138,7 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 				WED_Color_RGBA(wed_PropertyBar_Text),
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
-	
+
 	mTable->SetGeometry(mPackageList);
 	mTable->SetContent(mTextTable);
 	mTextTable->SetProvider(mPackageList);
@@ -146,16 +146,16 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mTextTable->AddListener(mTable);			// Table listens to text table to find out when content changed due to syntactic stuff
 	mPackageList->AddListener(mTable);			// Table listens to package list ot find out when content changed due to semantic stuff
 	mPackageList->AddListener(this);			// We listen to package list to know when content changes - recompute buttons then
-//	mTextTable->SetImage("property_bar.png", 2);	
+//	mTextTable->SetImage("property_bar.png", 2);
 
 	mTable->Show();
 	mTable->SetParent(mScroller);
 	mScroller->SetContent(mTable);
 	mScroller->PositionInContentArea(mTable);
 //	table->AddListener(mScroller);				// Not needed - scroller listens to contents automatically
-	
+
 	mScroller->SetImage("gradient.png");
-	
+
 	gPackageMgr->AddListener(this);				// We listen to package mgr to know when x-system folder changed - hide whole list if needed.
 	mTextTable->FocusChain(false);
 }
@@ -198,26 +198,26 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 	mNew->GetBounds(child);
 	child[0] = me[0];
 	child[2] = me[2];
-	
+
 	glColor3f(1,1,1);
-	
+
 	int kTileAll[4] = { 0, 0, 1, 1 };
 
 	GUI_DrawStretched(state,"gradient.png", me, kTileAll);
-	
+
 	if (!mScroller->IsVisible())
 		GUI_DrawCentered(state,"startup_bkgnd.png", me, 0, 1, kTileAll, NULL, NULL);
-	
+
 	if (mCaption.empty())
 	{
 		GUI_DrawStretched(state, "startup_bar.png", child, kTileAll);
-	} 
-	
+	}
+
 	{
 		float color[4] = { 1.0, 1.0, 1.0, 1.0 };
-		
+
 		float f = GUI_GetLineHeight(font_UI_Basic);
-		
+
 		string m(mCaption);
 		if (m.empty())
 		{
@@ -234,7 +234,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 			}
 		}
 		GUI_FontDrawScaled(state, font_UI_Basic, color, child[0], (child[1]+child[3]-f)*0.5f, child[2], (child[1]+child[3]+f)*0.5f, &*m.begin(), &*m.end(), align_Center);
-		
+
 	}
 }
 
@@ -262,14 +262,14 @@ void	WED_StartWindow::ReceiveMessage(
 		} else
 			mScroller->Hide();
 	}
-	
+
 	if (inMsg == msg_DocumentDestroyed)
 	{
 		for (int n = 0; n < sDocs.size(); ++n)
 		{
 			if (sDocs[n].d == inSrc)
 			{
-				mPackageList->UnlockPackage(sDocs[n].n);			
+				mPackageList->UnlockPackage(sDocs[n].n);
 				sDocs.erase(sDocs.begin()+n);
 				return;
 			}
@@ -294,7 +294,7 @@ int			WED_StartWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 int			WED_StartWindow::HandleCommand(int command)
 {
 	char buf[1024];
-	
+
 	switch(command) {
 	case wed_ChangeSystem:
 		if (GetFilePathFromUser(getFile_PickFolder, "Please select your X-Plane folder", "Select", FILE_DIALOG_PICK_XSYSTEM, buf, sizeof(buf) ))
@@ -308,25 +308,25 @@ int			WED_StartWindow::HandleCommand(int command)
 		mTable->RevealRow(0);
 		return 1;
 	case wed_OpenPackage:
-		if (!gPackageMgr->HasSystemFolder()) return 1;	
+		if (!gPackageMgr->HasSystemFolder()) return 1;
 		if (mPackageList->HasSelection())
-		{		
+		{
 			string name;
 			int n = mPackageList->GetSelection(&name);
 //			gPackageMgr->GetNthCustomPackagePath(n,path);
-			
+
 			for(int i = 0; i < sDocs.size(); ++i)
 			if (sDocs[i].n == name)
 			{
 				sDocs[i].w->Show();
 				return 1;
 			}
-			
+
 				try {
 					open_doc_t nd;
 					double b[4] = { -180, -90, 180, 90 };
 					nd.n = name;
-					nd.d = new WED_Document(name.c_str(), b);				
+					nd.d = new WED_Document(name.c_str(), b);
 					nd.w = new WED_DocumentWindow(name.c_str(), this->GetCmdParent(), nd.d);
 					sDocs.push_back(nd);
 					mPackageList->LockPackage(nd.n);
@@ -334,7 +334,7 @@ int			WED_StartWindow::HandleCommand(int command)
 				} catch (...) {
 					DoUserAlert("An error occurred");
 					#if ERROR_HANDLING
-					fix this					
+					fix this
 					#endif
 				}
 		}
@@ -379,7 +379,7 @@ void			WED_StartWindow::RecomputeButtonEnables()
 		mNew->SetTiles(new_off, new_on, new_on, new_on);
 	else
 		mNew->SetTiles(new_dis, new_dis, new_dis, new_dis);
-		
+
 	if (enable_open)
 		mOpen->SetTiles(opn_off, opn_on, opn_on, opn_on);
 	else

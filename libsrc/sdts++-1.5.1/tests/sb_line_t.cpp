@@ -28,7 +28,7 @@ main( int argc, char** argv )
 {
 
 
-   if ( ! argv[1] ) 
+   if ( ! argv[1] )
    {
       cerr << "usage: "
            << argv[0] << " line module " << endl;
@@ -41,7 +41,7 @@ main( int argc, char** argv )
    ifstream ddf( argv[1] );
 #endif
 
-   if ( ! ddf ) 
+   if ( ! ddf )
    {
       cerr << "couldn't open " << argv[1] << "\n";
       exit( 2 );
@@ -55,7 +55,7 @@ main( int argc, char** argv )
    converters["X"] = sio_ConverterFactory::instance()->get( "BI32" );
    converters["Y"] = sio_ConverterFactory::instance()->get( "BI32" );
 
-	
+
    sio_8211Reader  reader( ddf, &converters );
 
    sc_Record record;
@@ -68,9 +68,9 @@ main( int argc, char** argv )
    {
       i.get( record );
 
-     
-      cout << "what we read in, uninterpreted:\n" 
-           << record 
+
+      cout << "what we read in, uninterpreted:\n"
+           << record
            << "\n";
 
 
@@ -86,7 +86,7 @@ main( int argc, char** argv )
       cout << record
            << "\n";
 
-   } 
+   }
 
    exit( 0 );
 }

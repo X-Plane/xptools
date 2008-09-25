@@ -81,14 +81,14 @@ public:
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_ISO_RECTANGLE_2)
   typedef Iso_rectangle_2_archetype       Iso_rectangle_2;
 #endif
-   
+
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_CIRCLE_2)
   typedef Circle_2_archetype              Circle_2;
 #endif
 
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_OBJECT_2)
   typedef CGAL::Object                    Object_2;
-#endif  
+#endif
 
   // 3d
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_POINT_3)
@@ -96,7 +96,7 @@ public:
 #endif
 
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_VECTOR_3)
-  typedef Vector_3_archetype              Vector_3;  
+  typedef Vector_3_archetype              Vector_3;
 #endif
 
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_DIRECTION_3)
@@ -136,31 +136,31 @@ public:
 #endif
 
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || defined(CGAL_CA_OBJECT_3)
-  typedef CGAL::Object                    Object_3;  
+  typedef CGAL::Object                    Object_3;
 #endif
 
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || \
     defined(CGAL_CA_CARTESIAN_COORDINATE_CONST_ITERATOR_2)
-  typedef Cartesian_coordinate_const_iterator_2_archetype 
+  typedef Cartesian_coordinate_const_iterator_2_archetype
       Cartesian_const_iterator_2;
 #endif
-  
+
 #if !defined(CGAL_CA_LIMITED_INTERFACE) || \
     defined(CGAL_CA_CARTESIAN_COORDINATE_CONST_ITERATOR_3)
-  typedef Cartesian_coordinate_const_iterator_3_archetype 
+  typedef Cartesian_coordinate_const_iterator_3_archetype
       Cartesian_const_iterator_3;
 #endif
 
   // functors and access functions ...
-  
-// predicate ...  
+
+// predicate ...
 #define CGAL_Kernel_pred(Y,Z) typedef CGALca::Y<Kernel_archetype> Y; \
 Y Z() const {return Y();}
 // accessor function ...
 #define CGAL_Kernel_cons(Y,Z) CGAL_Kernel_pred(Y,Z)
 
-#include <CGAL/Kernel/concept_archetype_interface_macros.h>  
-  
+#include <CGAL/Kernel/concept_archetype_interface_macros.h>
+
 };
 
 CGAL_END_NAMESPACE

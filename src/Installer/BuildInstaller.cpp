@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -44,10 +44,10 @@ char	buf[4096];
 static int	gFileCount;
 
 void	InstallerError(
-				const char * 	inMessage, 
-				int 			errNum,  
+				const char * 	inMessage,
+				int 			errNum,
 				const char *	descrip,
-				const char * 	inFile, 
+				const char * 	inFile,
 				const char *	inModule,
 				int				inLine,
 				void * 			)
@@ -55,7 +55,7 @@ void	InstallerError(
 	sprintf(buf,"Error: %s (OS Err = %d %s, file = %s)", inMessage, errNum, descrip, inFile);
 	if (logFile) fprintf(logFile, "%s (%s %d.)\n", buf, inModule, inLine);
 	DoUserAlert(buf);
-}				
+}
 
 bool IterateDirsNew(const char * fileName, bool isDir, void * ref)
 {
@@ -119,7 +119,7 @@ bool IterateDirsOld(const char * fileName, bool isDir, void * ref)
 			char	buf[256];
 			sprintf(buf, "WARNING: file %s has a name length of more than 31 characters.", fileName);
 			DoUserAlert(buf);
-		}	
+		}
 		if (fileName[0] != '.') {
 			string	f1 = stat->cur_old + fileName;
 			string	f2 = stat->cur_new + fileName;
@@ -141,8 +141,8 @@ bool IterateDirsOld(const char * fileName, bool isDir, void * ref)
 	return force_bail;
 }
 
-int	BuildInstaller(const char * inOldBase, 
-					const char * inNewBase, 
+int	BuildInstaller(const char * inOldBase,
+					const char * inNewBase,
 					const char * inInstallerExe)
 {
 	ShowProgressMessage("Building Installer...", NULL);
@@ -159,12 +159,12 @@ int	BuildInstaller(const char * inOldBase,
 	stat.cur_old = inOldBase;
 	stat.cur_new = inNewBase;
 	stat.installer = XRES_BeginSettingResources(inInstallerExe);
-	
+
 	force_bail = false;
 	MF_IterateDirectory(inNewBase, IterateDirsNew, &stat);
 	if (!force_bail)
 	MF_IterateDirectory(inOldBase, IterateDirsOld, &stat);
-	
+
 	XRES_EndSettingResources(stat.installer);
 	if (logFile) fclose(logFile);
 

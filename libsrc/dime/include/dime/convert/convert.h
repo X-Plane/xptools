@@ -41,7 +41,7 @@ class DIME_DLL_API dxfConverter
 public:
   dxfConverter();
   ~dxfConverter();
-  
+
   void setMaxerr(const dxfdouble maxerr) {
     this->maxerr = maxerr;
   }
@@ -70,7 +70,7 @@ public:
   bool getLayercol() const {
     return this->layercol;
   }
-  
+
   void setLayercol(const bool v) {
     this->layercol = v;
   }
@@ -95,10 +95,10 @@ private:
   int numsub;
   bool fillmode;
   bool layercol;
-  
-  bool private_callback(const dimeState * const state, 
+
+  bool private_callback(const dimeState * const state,
 			dimeEntity *entity);
-  static bool dime_callback(const dimeState * const state, 
+  static bool dime_callback(const dimeState * const state,
 			    dimeEntity *entity, void *);
 
 };

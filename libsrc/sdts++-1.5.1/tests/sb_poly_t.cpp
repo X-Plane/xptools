@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -41,7 +41,7 @@ int
 main( int argc, char** argv )
 {
 
-  if ( ! argv[1] ) 
+  if ( ! argv[1] )
     {
       cerr << "usage: " << argv[0] << " POLY module " << endl;
       exit( 1 );
@@ -53,7 +53,7 @@ main( int argc, char** argv )
   ifstream ddf( argv[1] );
 #endif
 
-  if ( ! ddf ) 
+  if ( ! ddf )
     {
       cerr << "couldn't open " << argv[1] << endl;
       exit( 2 );
@@ -66,9 +66,9 @@ main( int argc, char** argv )
   converters["X"] = &converter_bi32;
   converters["Y"] = &converter_bi32;
 
-	
+
   sio_8211Reader  reader( ddf, &converters );
- 
+
   //  sio_8211Reader  reader( ddf );
   sc_Record record;
   sb_Poly sb_poly;
@@ -78,24 +78,24 @@ main( int argc, char** argv )
         ++i )
    {
      i.get( record );
-     
+
      cout << "what we read in:" << endl;
      cout << record << endl;
-      
-     if ( ! sb_poly.setRecord( record ) ) 
+
+     if ( ! sb_poly.setRecord( record ) )
        {
 	 cerr << " sb_poly::setRecord() failed" << endl;
 	 abort();
        }
      else
        {
-         
+
 	 sb_poly.setRecord( record );
 
 	 cout << "\nand what the POLY object says it is:" << endl;
 	 cout << sb_poly << endl;
 
-     
+
        }
   }
 

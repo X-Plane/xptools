@@ -7,7 +7,7 @@
 #include <CGAL/MP_Float.h>
 #include <CGAL/Quotient.h>
 #include <CGAL/Arr_segment_traits_2.h>
-#include <CGAL/Sweep_line_2.h> 
+#include <CGAL/Sweep_line_2.h>
 
 #include <iostream>
 #include <vector>
@@ -26,7 +26,7 @@ typedef CGAL::Sweep_line_2<CurveListIter, Traits>       Sweep_line;
 int main()
 {
   CurveList segments;
-  
+
   Curve_2 c1(Point_2(10,1), Point_2(20,1));
   Curve_2 c2(Point_2(10, -4), Point_2(20,6));
 
@@ -36,19 +36,19 @@ int main()
   std::vector<Point_2> points;
   Sweep_line sl;
   sl.get_intersection_points(segments.begin(),
-			     segments.end(), 
+			     segments.end(),
 			     std::back_inserter(points), false);
 
   // Write results...
 
-  std::cout << " Demonstrating Sweep_line_2::get_intersection_points " 
+  std::cout << " Demonstrating Sweep_line_2::get_intersection_points "
 	    << std::endl
 	    << " Curves: " << std::endl
 	    << " " << c1 << std::endl
 	    << " " << c2 << std::endl << std::endl;
-  
+
   std::cout << " Intersection point (not including end points): " << std::endl;
-  
+
   for (std::vector<Point_2>::iterator p_iter = points.begin();
        p_iter != points.end(); ++p_iter)
     std::cout<< " " << *p_iter << std::endl;

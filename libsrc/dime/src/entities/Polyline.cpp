@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Polyline.cpp
  *
  *  This source file is part of DIME.
@@ -49,9 +49,9 @@ static char entityName[] = "POLYLINE";
 */
 
 dimePolyline::dimePolyline()
-  : flags( 0 ), countM( 0 ), countN( 0 ),              
+  : flags( 0 ), countM( 0 ), countN( 0 ),
   smoothCountM( 0 ), smoothCountN( 0 ), surfaceType( 0 ), coordCnt( 0 ),
-  indexCnt( 0 ), frameCnt(0), coordVertices( NULL ), indexVertices( NULL ), 
+  indexCnt( 0 ), frameCnt(0), coordVertices( NULL ), indexVertices( NULL ),
   frameVertices( NULL),  seqend( NULL ), elevation(0,0,0)
 {
 }
@@ -64,9 +64,9 @@ dimePolyline::~dimePolyline()
 {
   int i;
   delete this->seqend;
-  for (i = 0; i < this->coordCnt; i++) 
+  for (i = 0; i < this->coordCnt; i++)
     delete this->coordVertices[i];
-  for (i = 0; i < this->indexCnt; i++) 
+  for (i = 0; i < this->indexCnt; i++)
     delete this->indexVertices[i];
   for (i = 0; i < this->frameCnt; i++)
     delete this->frameVertices[i];
@@ -87,7 +87,7 @@ dimePolyline::copy(dimeModel * const model) const
   bool ok = pl != NULL;
   if (ok && this->indexCnt) {
     int num = this->indexCnt;
-    pl->indexVertices = (dimeVertex**) 
+    pl->indexVertices = (dimeVertex**)
       dimeEntity::copyEntityArray((const dimeEntity**)this->indexVertices,
 				 num,
 				 model);
@@ -145,7 +145,7 @@ dimePolyline::copy(dimeModel * const model) const
     pl->flags = this->flags;
     pl->elevation = this->elevation;
     pl->copyExtrusionData(this);
-    
+
     pl->seqend = this->seqend->copy(model);
     if (!pl->seqend) ok = false;
   }
@@ -163,9 +163,9 @@ dimePolyline::copy(dimeModel * const model) const
 bool
 dimePolyline::read(dimeInput * const file)
 {
-  bool ret = dimeEntity::read(file);  
-  
-  if (ret && this->entityFlags & FLAG_VERTICES_FOLLOW) {      
+  bool ret = dimeEntity::read(file);
+
+  if (ret && this->entityFlags & FLAG_VERTICES_FOLLOW) {
     // read all vertices.
     dimeArray <dimeVertex*> array(1024);
     int32 groupcode;
@@ -186,14 +186,14 @@ dimePolyline::read(dimeInput * const file)
       }
       string = file->readString();
       if (!strcmp(string, "SEQEND")) {
-	this->seqend = (dimeEntity*) 
+	this->seqend = (dimeEntity*)
 	  dimeEntity::createEntity(string, memhandler);
 	ret = this->seqend && this->seqend->read(file);
 	break; // ok, no more vertices.
       }
       if (strcmp(string, "VERTEX")) {ret = false; break;}
       vertex = (dimeVertex*) dimeEntity::createEntity(string, memhandler);
-      
+
       if (vertex == NULL) {
 	fprintf(stderr,"error creating vertex\n");
 //	sim_warning("error creating vertex\n");
@@ -234,7 +234,7 @@ dimePolyline::read(dimeInput * const file)
 	this->frameCnt = 0;
 	for (int i = 0; i < n; i++) {
 	  vertex = array[i];
-	  if (vertex->getFlags() & 16) 
+	  if (vertex->getFlags() & 16)
 	    this->frameVertices[this->frameCnt++] = vertex;
 	  else if (vertex->numIndices())
 	    this->indexVertices[this->indexCnt++] = vertex;
@@ -243,15 +243,15 @@ dimePolyline::read(dimeInput * const file)
 	}
       }
     }
-  } 
+  }
   return ret;
 }
 
 /*!
-  Writes POLYLINE data to \a file.   
+  Writes POLYLINE data to \a file.
 */
 
-bool 
+bool
 dimePolyline::write(dimeOutput * const file)
 {
   if (this->isDeleted()) return true;
@@ -266,7 +266,7 @@ dimePolyline::write(dimeOutput * const file)
 
   assert(this->coordCnt == this->numCoordVertices());
   assert(this->indexCnt == this->numIndexVertices());
-  
+
   if (this->coordCnt || this->indexCnt || this->frameCnt) {
     file->writeGroupCode(66); // vertices follow flag
     file->writeInt16(1);
@@ -326,9 +326,9 @@ dimePolyline::write(dimeOutput * const file)
     if (this->smoothCountN != 0) {
       file->writeGroupCode(74);
 #ifdef DIME_FIXBIG
-      file->writeInt32(this->smoothCountN);   
+      file->writeInt32(this->smoothCountN);
 #else
-      file->writeInt16(this->smoothCountN);   
+      file->writeInt16(this->smoothCountN);
 #endif
     }
     if (this->surfaceType != 0) {
@@ -338,7 +338,7 @@ dimePolyline::write(dimeOutput * const file)
   }
   bool ret = dimeEntity::write(file); // write unknown records
   if (!ret) return false; // too lazy to check every write
-    
+
   int i;
   // write all spline frame control points
   for (i = 0; i < this->frameCnt; i++) {
@@ -352,7 +352,7 @@ dimePolyline::write(dimeOutput * const file)
   for (i = 0; i < this->indexCnt; i++) {
     this->indexVertices[i]->write(file);
   }
-  
+
   // write end-of-vertex signature...
   if (this->seqend) return this->seqend->write(file);
   // ... or just put one there!
@@ -364,7 +364,7 @@ dimePolyline::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimePolyline::typeId() const
 {
   return dimeBase::dimePolylineType;
@@ -372,7 +372,7 @@ dimePolyline::typeId() const
 
 //!
 
-bool 
+bool
 dimePolyline::handleRecord(const int groupcode,
 			  const dimeParam &param,
 			  dimeMemHandler * const memhandler)
@@ -434,7 +434,7 @@ dimePolyline::getEntityName() const
 
 //!
 
-bool 
+bool
 dimePolyline::getRecord(const int groupcode,
 		       dimeParam &param,
 		       const int index) const
@@ -489,7 +489,7 @@ dimePolyline::getRecord(const int groupcode,
   Convenience function that returns the type of the polyline.
 */
 
-int 
+int
 dimePolyline::getType() const
 {
   if (this->flags & IS_POLYLINE_3D) return POLYLINE;
@@ -501,27 +501,27 @@ dimePolyline::getType() const
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
 			     dimeArray <int> &indices,
 			     dimeVec3f &extrusionDir,
 			     dxfdouble &thickness)
 {
-  int i;  
+  int i;
 
   verts.setCount(0);
   indices.setCount(0);
-  
+
   thickness = this->thickness;
   extrusionDir = this->extrusionDir;
 
-  if ((((this->flags & 0x58) == 0) || (this->flags & 0x8)) && 
+  if ((((this->flags & 0x58) == 0) || (this->flags & 0x8)) &&
       this->coordCnt > 1) {
-    // this is a polyline 
+    // this is a polyline
     for (i = 0; i < this->coordCnt; i++) {
       verts.append(this->coordVertices[i]->coords);
     }
-    if (this->flags & 0x1) { // closed polyline 
+    if (this->flags & 0x1) { // closed polyline
       dimeVec3f tmp = verts[0];
       verts.append(tmp);
     }
@@ -532,7 +532,7 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
   for (i = 0; i < this->coordCnt; i++) {
     verts.append(this->coordVertices[i]->coords);
   }
-  
+
   if ((this->flags & 0x10) && this->coordCnt > 1) {
     // this is a polygon mesh
     int m = this->countM;
@@ -545,7 +545,7 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
       m2 = this->smoothCountM;
       n2 = this->smoothCountN;
     }
-    
+
     if (m*n + m2*n2 != this->coordCnt) {
       // FIXME: quick bugfix for stehlen.dxf... weird !
       if ((m-1)*n + m2*n2 == this->coordCnt) m--;
@@ -559,16 +559,16 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
 	else { // give up
 	  fprintf(stderr,"vertices and faces do no add up: %d * %d + %d * %d != %d.\n",
 		  m, n, m2, n2, this->coordCnt);
-	  
+
 	  fprintf(stderr,"polyline: %d %d\n", flags, surfaceType);
-	  
+
 	  verts.setCount(0);
 	  return dimeEntity::NONE;
 	}
       }
     }
 
-   
+
     int idx;
     int idxadd = m2*n2;
     int nexti, nextj;
@@ -583,10 +583,10 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
 	if (nextj == n) nextj = 0;
 	idx = i*n + j;
 	indices.append(idxadd+idx);
-	 
+
 	idx = i*n + nextj;
 	indices.append(idxadd+idx);
-	
+
 	idx = nexti*n + nextj;
 	indices.append(idxadd+idx);
 
@@ -612,13 +612,13 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
 	if (nextj == n) nextj = 0;
 	idx = i*n + j;
 	indices.append(idxadd+idx);
-	 
+
 	idx = i*n + nextj;
 	indices.append(idxadd+idx);
-	
+
 	idx = nexti*n + nextj;
 	indices.append(idxadd+idx);
-	
+
 	idx = nexti*n + j;
 	indices.append(idxadd+idx);
 	indices.append(-1);
@@ -626,7 +626,7 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
     }
     return dimeEntity::POLYGONS;
   }
-  
+
   // this must be a polyface mesh
   if (!this->indexCnt || !this->coordCnt) {
     verts.setCount(0);
@@ -648,7 +648,7 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
     }
   }
   return dimeEntity::POLYGONS;
-  // phew, should probably have spilt this function into several 
+  // phew, should probably have spilt this function into several
   // smaller ones, but I'm not a coward so...
 }
 
@@ -656,7 +656,7 @@ dimePolyline::extractGeometry(dimeArray <dimeVec3f> &verts,
   Returns the number of coordinate vertices.
 */
 
-int 
+int
 dimePolyline::numCoordVertices() const
 {
   int cnt = 0;
@@ -671,7 +671,7 @@ dimePolyline::numCoordVertices() const
   Returns the number of index vertices.
 */
 
-int 
+int
 dimePolyline::numIndexVertices() const
 {
   int cnt = 0;
@@ -725,7 +725,7 @@ dimePolyline::countRecords() const
   be deleted.
 */
 
-void 
+void
 dimePolyline::setCoordVertices(dimeVertex **vertices, const int num,
 			      dimeMemHandler * const memhandler)
 {
@@ -733,7 +733,7 @@ dimePolyline::setCoordVertices(dimeVertex **vertices, const int num,
   if (!memhandler) {
     for (i = 0; i < this->coordCnt; i++) {
       delete this->coordVertices[i];
-    } 
+    }
     delete [] this->coordVertices;
   }
   if (vertices && num) {
@@ -744,7 +744,7 @@ dimePolyline::setCoordVertices(dimeVertex **vertices, const int num,
       for (i = 0; i < num; i++) {
 	this->coordVertices[i] = vertices[i];
 	this->coordVertices[i]->polyline = this;
-	
+
       }
     }
     this->coordCnt = num;
@@ -756,11 +756,11 @@ dimePolyline::setCoordVertices(dimeVertex **vertices, const int num,
 }
 
 /*!
-  Sets the spline frame control point vertices for this polyline. 
+  Sets the spline frame control point vertices for this polyline.
   Old control points will be deleted.
 */
 
-void 
+void
 dimePolyline::setSplineFrameControlPoints(dimeVertex **vertices, const int num,
 					  dimeMemHandler * const memhandler)
 {
@@ -768,7 +768,7 @@ dimePolyline::setSplineFrameControlPoints(dimeVertex **vertices, const int num,
   if (!memhandler) {
     for (i = 0; i < this->frameCnt; i++) {
       delete this->frameVertices[i];
-    } 
+    }
     delete [] this->frameVertices;
   }
   if (vertices && num) {
@@ -779,7 +779,7 @@ dimePolyline::setSplineFrameControlPoints(dimeVertex **vertices, const int num,
       for (i = 0; i < num; i++) {
 	this->frameVertices[i] = vertices[i];
 	this->frameVertices[i]->polyline = this;
-	
+
       }
     }
     this->frameCnt = num;
@@ -795,7 +795,7 @@ dimePolyline::setSplineFrameControlPoints(dimeVertex **vertices, const int num,
   be deleted.
 */
 
-void 
+void
 dimePolyline::setIndexVertices(dimeVertex **vertices, const int num,
 			      dimeMemHandler * const memhandler)
 {
@@ -803,7 +803,7 @@ dimePolyline::setIndexVertices(dimeVertex **vertices, const int num,
   if (!memhandler) {
     for (i = 0; i < this->indexCnt; i++) {
       delete this->indexVertices[i];
-    } 
+    }
     delete [] this->indexVertices;
   }
   if (vertices && num) {
@@ -825,13 +825,13 @@ dimePolyline::setIndexVertices(dimeVertex **vertices, const int num,
 }
 
 /*!
-  Overloaded from dimeEntity. Will first do a callback for this entity, 
-  then for all vertices. Each vertex will have a pointer to its 
+  Overloaded from dimeEntity. Will first do a callback for this entity,
+  then for all vertices. Each vertex will have a pointer to its
   polyline "parent".
 */
 
 bool
-dimePolyline::traverse(const dimeState * const state, 
+dimePolyline::traverse(const dimeState * const state,
 		      dimeCallback callback,
 		      void *userdata)
 {
@@ -860,7 +860,7 @@ dimePolyline::traverse(const dimeState * const state,
 
 //!
 
-void 
+void
 dimePolyline::setLayer(const dimeLayer * const layer)
 {
   dimeEntity::setLayer(layer);
@@ -876,7 +876,7 @@ dimePolyline::setLayer(const dimeLayer * const layer)
   }
 }
 
-void 
+void
 dimePolyline::clearSurfaceData()
 {
   this->smoothCountN = this->smoothCountM = 0;

@@ -26,7 +26,7 @@ removeEndSlashes( string & path )
    {
       if ( path[last_pos] == '/' )
       { path.resize( path.size() - 1 ); }
-   } 
+   }
 
 } // removeEndSlashes( string & path )
 
@@ -49,7 +49,7 @@ fileutils::dirname( string const & original_path )
    if ( string::npos != last_pos ) // if we found a '/'
    {
       return path.substr( 0, last_pos );
-   } 
+   }
 
    return string( "." );        // no '/' in path, so just return $CWD
 
@@ -75,7 +75,7 @@ fileutils::basename( string const & original_path )
    if ( string::npos != last_pos ) // if we found a '/'
    {
       return path.substr( last_pos + 1, path.size()  );
-   } 
+   }
 
    return path;                 // no '/' in path, so just return original
 

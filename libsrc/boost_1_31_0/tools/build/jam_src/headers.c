@@ -29,10 +29,10 @@
 /*
  * headers.c - handle #includes in source files
  *
- * Using regular expressions provided as the variable $(HDRSCAN), 
+ * Using regular expressions provided as the variable $(HDRSCAN),
  * headers() searches a file for #include files and phonies up a
  * rule invocation:
- * 
+ *
  *	$(HDRRULE) <target> : <include files> ;
  *
  * External routines:
@@ -65,8 +65,8 @@ headers( TARGET *t )
     LIST	*headlist = 0;
     regexp	*re[ MAXINC ];
     int	rec = 0;
-        
-    if( !( hdrscan = var_get( "HDRSCAN" ) ) || 
+
+    if( !( hdrscan = var_get( "HDRSCAN" ) ) ||
         !( hdrrule = var_get( "HDRRULE" ) ) )
         return;
 
@@ -117,7 +117,7 @@ LIST *
 #else
 static LIST *
 #endif
-headers1( 
+headers1(
 	LIST	*l,
 	char	*file,
 	int	rec,
@@ -128,14 +128,14 @@ headers1(
 	int		i;
         static regexp *re_macros = 0;
 
-        
+
 #ifdef OPT_IMPROVED_PATIENCE_EXT
 	static int count = 0;
 	++count;
 	if ( ((count == 100) || !( count % 1000 )) && DEBUG_MAKE )
 	    printf("...patience...\n");
 #endif
-        
+
         /* the following regexp is used to detect cases where a  */
         /* file is included through a line line "#include MACRO" */
         if ( re_macros == 0 )
@@ -160,17 +160,17 @@ headers1(
 
 		l = list_new( l, newstr( re[i]->startp[1] ) );
 	    }
-            
+
             /* special treatment for #include MACRO */
             if ( regexec( re_macros, buf ) && re_macros->startp[1] )
             {
               char*  header_filename;
-              
+
               re_macros->endp[1][0] = '\0';
-              
+
               if ( DEBUG_HEADER )
                 printf( "macro header found: %s", re_macros->startp[1] );
-                
+
               header_filename = macro_header_get( re_macros->startp[1] );
               if (header_filename)
               {

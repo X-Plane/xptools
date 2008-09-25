@@ -24,7 +24,7 @@ namespace CGAL {
 
 // makes *p the rightmost child of *q
 template<class Traits>
-void Rotation_tree_2<Traits>::set_rightmost_child(Self_iterator p, 
+void Rotation_tree_2<Traits>::set_rightmost_child(Self_iterator p,
                                                   Self_iterator q)
 {
    CGAL_assertion(q != end());
@@ -50,11 +50,11 @@ void Rotation_tree_2<Traits>::set_rightmost_child(Self_iterator p,
 
 // makes *p the left sibling of *q
 template <class Traits>
-void Rotation_tree_2<Traits>::set_left_sibling(Self_iterator p, 
+void Rotation_tree_2<Traits>::set_left_sibling(Self_iterator p,
                                                Self_iterator q)
 {
    if (q == end()) return;
-       
+
    if (p != end())
    {
       if (left_sibling(q) != end())
@@ -79,11 +79,11 @@ void Rotation_tree_2<Traits>::set_left_sibling(Self_iterator p,
 
 // makes p the right sibling of q
 template <class Traits>
-void Rotation_tree_2<Traits>::set_right_sibling(Self_iterator p, 
+void Rotation_tree_2<Traits>::set_right_sibling(Self_iterator p,
                                                 Self_iterator q)
 {
    if (q == end()) return;
-       
+
    if (p != end())
    {
       if (right_sibling(q) != end())

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -75,7 +75,7 @@ struct	ChainInfo_t : public WTPM_Line {
 	bool			one_side;
 #if USE_STREET_NAMES
 	string			name;
-#endif	
+#endif
 	CFCC			cfcc;			// Census feature classifcation code
 	RawCoordKey		start;
 	RawCoordKey		end;
@@ -83,17 +83,17 @@ struct	ChainInfo_t : public WTPM_Line {
 	char			reversed;	// Current owner has vertex order opposite the one that made it 0=false1=true2=???
 	CENID_POLYID	lpoly;
 	CENID_POLYID	rpoly;
-	
+
 	bool			kill;		// Marker flag for culling
 };
 
 // Chain Infos are usually referenced by TLID
-typedef	hash_map<TLID, ChainInfo_t>	ChainInfoMap;	
+typedef	hash_map<TLID, ChainInfo_t>	ChainInfoMap;
 
 struct	LandmarkInfo_t {
 #if USE_LANDMARK_NAMES
 	string			name;
-#endif	
+#endif
 	CFCC			cfcc;
 	vector<CENID_POLYID>	cenid_polyid;
 	Point2			location;
@@ -105,7 +105,7 @@ struct	PolygonInfo_t : public WTPM_Face {
 											// culling.  WTPM handles back-links for us for topo integration.
 	Point2						location;	// Some point within the entity
 	int							water;		// Water code - is this polygon wet?
-	
+
 	bool						kill;		// Marker flag for culling
 };
 

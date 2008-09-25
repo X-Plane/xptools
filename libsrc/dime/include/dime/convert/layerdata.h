@@ -39,7 +39,7 @@ public:
   ~dxfLayerData();
 
   void setFillmode(const bool fillmode);
-  
+
   void addLine(const dimeVec3f &v0, const dimeVec3f &v1,
 	       const dimeMatrix * const matrix = NULL);
 
@@ -55,7 +55,7 @@ public:
 	       const dimeVec3f &v2,
 	       const dimeVec3f &v3,
 	       const dimeMatrix * const matrix = NULL);
-  
+
   void writeWrl(FILE *fp, int indent, const bool vrml1,
                 const bool only2d);
 

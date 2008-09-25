@@ -1,28 +1,28 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
 #include "XMLObject.h"
 #include "xmlparse.h"
-				
+
 XMLObject::XMLObject(const std::string& inTag) : mTag(inTag)
 {
 }
@@ -50,7 +50,7 @@ XMLObject *	XMLObject::GetNestedSubObject(const std::string& inKey)
 	std::string::size_type p = inKey.find("/");
 	if (p == inKey.npos)
 		return GetTaggedSubObject(inKey, 0);
-	
+
 	XMLObject * sub = GetTaggedSubObject(inKey.substr(0, p), 0);
 	if (sub == NULL) return sub;
 	return sub->GetNestedSubObject(inKey.substr(p+1));
@@ -71,7 +71,7 @@ XMLObject *	XMLObject::GetSubObject(long inIndex)
 {
 	if (inIndex >= mMap.size())
 		return NULL;
-		
+
 	return mMap[inIndex].second;
 }
 
@@ -108,7 +108,7 @@ void StartElement(void *userData, const char *name, const char **atts)
 {
 	ParserInfo* p = (ParserInfo*) userData;
 	XMLObject * newObj = new XMLObject(name);
-	p->stack.push_back(newObj);	
+	p->stack.push_back(newObj);
 }
 
 void EndElement(void *userData, const char *name)
@@ -129,7 +129,7 @@ void HandleChars(void *userData,const XML_Char *s,int len)
 {
 	ParserInfo* p = (ParserInfo*) userData;
 	if (p->stack.empty())
-		return;	
+		return;
 	p->stack.back()->AccumContents(s, len);
 }
 
@@ -143,7 +143,7 @@ XMLObject *	ParseXML(const char * inBuf, int inLen)
 	XML_SetElementHandler(p, StartElement, EndElement);
 	XML_SetCharacterDataHandler(p, HandleChars);
 
-	if (!XML_Parse(p, inBuf, inLen, 1)) 
+	if (!XML_Parse(p, inBuf, inLen, 1))
 	{
 		for (vector<XMLObject *>::iterator i = info.stack.begin();
 			i != info.stack.end(); ++i)

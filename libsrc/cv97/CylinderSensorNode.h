@@ -33,7 +33,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getAutoOffsetField();
-	
+
 	void setAutoOffset(bool  value);
 	void setAutoOffset(int value);
 	bool  getAutoOffset();
@@ -44,7 +44,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getDiskAngleField();
-	
+
 	void setDiskAngle(float value);
 	float getDiskAngle();
 
@@ -53,7 +53,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMinAngleField();
-	
+
 	void setMinAngle(float value);
 	float getMinAngle();
 
@@ -62,7 +62,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMaxAngleField();
-	
+
 	void setMaxAngle(float value);
 	float getMaxAngle();
 
@@ -71,7 +71,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getOffsetField();
-	
+
 	void setOffset(float value);
 	float getOffset();
 
@@ -80,7 +80,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFRotation *getRotationChangedField();
-	
+
 	void setRotationChanged(float value[]);
 	void setRotationChanged(float x, float y, float z, float rot);
 	void getRotationChanged(float value[]);
@@ -90,7 +90,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFVec3f *getTrackPointChangedField();
-	
+
 	void setTrackPointChanged(float value[]);
 	void setTrackPointChanged(float x, float y, float z);
 	void getTrackPointChanged(float value[]);
@@ -105,7 +105,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

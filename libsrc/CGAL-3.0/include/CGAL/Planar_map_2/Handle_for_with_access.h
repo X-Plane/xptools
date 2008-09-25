@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Oren Nechushtan
- 
+
 
 #ifndef CGAL_PLANAR_MAP_2_HANDLE_FOR_WITH_ACCESS_H
 #define CGAL_PLANAR_MAP_2_HANDLE_FOR_WITH_ACCESS_H
@@ -32,16 +32,16 @@ template <class T,
 class Handle_for_with_access : public Handle_for<T, Allocator_>
 {
   public:
-  Handle_for_with_access(const T& rc) : 
+  Handle_for_with_access(const T& rc) :
     Handle_for<T, Allocator_>(rc){}
   Handle_for_with_access() : Handle_for<T, Allocator_>(){}
-  Handle_for_with_access( const Handle_for_with_access& h) : 
+  Handle_for_with_access( const Handle_for_with_access& h) :
     Handle_for<T, Allocator_>(h){}
-  
+
   const T* pointer() const {return Ptr();}
 
   T* pointer() {return ptr();}
-  
+
 };
 
 } // namespace CGAL

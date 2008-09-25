@@ -1,10 +1,10 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: extLong.h
  *
- * Written by 
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Igor Pechtchanski <pechtcha@cs.nyu.edu>,
@@ -26,11 +26,11 @@
 
 CORE_BEGIN_NAMESPACE
 
-#ifndef LONG_MAX 
+#ifndef LONG_MAX
 #error "haven't define LONG_MAX"
 #endif
 
-#ifndef LONG_MIN 
+#ifndef LONG_MIN
 #error "haven't define LONG_MIN"
 #endif
 
@@ -40,21 +40,21 @@ CORE_BEGIN_NAMESPACE
 /// \brief extended long integer
 class extLong
 {
-private:  
+private:
   long val;  ///< internal representation
-  int  flag; ///< flags 
+  int  flag; ///< flags
              /**<  0 -- Normal;
                    1 -- Overflow (positive);
                   -1 -- Overflow (negative);
                    2 -- NaN (sign can not be determined) */
-  
-  /// comparison  
+
+  /// comparison
   int compare(const extLong &) const;
   static long add4Long(long x, long y);
   static long sub4Long(long x, long y);
 
 public:
-                 
+
   /// \name Constructors
   //@{
   /// default constructor
@@ -68,7 +68,7 @@ public:
   /// constructor for \c unsigned long
   extLong(unsigned long);
   //@}
-  
+
   /// \name Comparison operators
   //@{
   friend bool operator==(const extLong&, const extLong&);
@@ -86,15 +86,15 @@ public:
   friend extLong operator*(const extLong&, const extLong&);
   friend extLong operator/(const extLong&, const extLong&);
   //@}
-  
-  /// \name Arithmetic and assignment operators  
+
+  /// \name Arithmetic and assignment operators
   //@{
   extLong& operator +=(const extLong&);
   extLong& operator -=(const extLong&);
   extLong& operator *=(const extLong&);
   extLong& operator /=(const extLong&);
   //@}
-  
+
   /// \name Incremental, Decremental, Unary minus operators
   //@{
   extLong& operator++();
@@ -103,13 +103,13 @@ public:
   extLong  operator--(int);
   extLong  operator-() const;
   //@}
-  
+
   /// \name Conversion Function
   //@{
   CORE_INLINE long toLong() const;
   //@}
- 
-  /// \name Builtin functions  
+
+  /// \name Builtin functions
   //@{
   CORE_INLINE long asLong() const;
   CORE_INLINE bool isInfty() const;

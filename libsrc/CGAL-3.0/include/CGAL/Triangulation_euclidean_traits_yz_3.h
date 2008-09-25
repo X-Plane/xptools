@@ -32,10 +32,10 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class R>
-class Orientation_yz_3 
+class Orientation_yz_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.y(); }
   typename R::FT y(const Point &p) const { return p.z(); }
 
@@ -48,17 +48,17 @@ public:
 };
 
 template <class R>
-class Side_of_oriented_circle_yz_3 
+class Side_of_oriented_circle_yz_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.y(); }
   typename R::FT y(const Point &p) const { return p.z(); }
 
-  CGAL::Oriented_side operator() (const Point &p, 
+  CGAL::Oriented_side operator() (const Point &p,
 				  const Point &q,
-				  const Point &r, 
-				  const Point &s) 
+				  const Point &r,
+				  const Point &s)
     {
       return side_of_oriented_circleC2(x(p), y(p),
 				       x(q), y(q),
@@ -75,7 +75,7 @@ public:
   typedef typename Rp::Point_3     Point_2;
   typedef typename Rp::Segment_3   Segment_2;
   typedef typename Rp::Triangle_3  Triangle_2;
-  
+
   typedef typename Rp::Compare_y_3          Compare_x_2;
   typedef typename Rp::Compare_z_3          Compare_y_2;
   typedef Orientation_yz_3<Rp>              Orientation_2;
@@ -87,17 +87,17 @@ public:
   typedef Point_2      Point;
   typedef Segment_2    Segment;
   typedef Triangle_2   Triangle;
-    
+
   Triangulation_euclidean_traits_yz_3(){}
   Triangulation_euclidean_traits_yz_3(
 	const Triangulation_euclidean_traits_yz_3& ){}
   Triangulation_euclidean_traits_yz_3 &operator=(
         const Triangulation_euclidean_traits_yz_3& ){return *this;}
-    
+
   typename Rp::FT x(const Point_2 &p) const { return p.y(); }
   typename Rp::FT y(const Point_2 &p) const { return p.z(); }
-    
- 
+
+
   Compare_x_2
   compare_x_2_object() const
     { return Compare_x_2();}

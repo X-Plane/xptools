@@ -28,23 +28,23 @@ Window_stream&
 Alpha_shape_2<Dt>::op_window(Window_stream& W) const
 {
 
-  typedef  typename Alpha_shape_2<Dt>::Interval_edge_map 
+  typedef  typename Alpha_shape_2<Dt>::Interval_edge_map
     Interval_edge_map;
   typename Interval_edge_map::const_iterator edge_alpha_it;
 
   const typename Alpha_shape_2<Dt>::Interval3* pInterval;
 
-  if (get_mode() == Alpha_shape_2<Dt>::REGULARIZED) 
+  if (get_mode() == Alpha_shape_2<Dt>::REGULARIZED)
     {
 
-      // it is much faster looking at the sorted intervals 
+      // it is much faster looking at the sorted intervals
       // than looking at all sorted faces
       // alpha must be larger than the mid boundary
       // and alpha is smaller than the upper boundary
-      for (edge_alpha_it = _interval_edge_map.begin(); 
+      for (edge_alpha_it = _interval_edge_map.begin();
 	   edge_alpha_it != _interval_edge_map.end() &&
 	     (*edge_alpha_it).first.first < get_alpha();
-	   ++edge_alpha_it) 
+	   ++edge_alpha_it)
 	{
 
 	  pInterval = &(*edge_alpha_it).first;
@@ -55,13 +55,13 @@ Alpha_shape_2<Dt>::op_window(Window_stream& W) const
 
 	  if(pInterval->second < get_alpha() &&
 	     (pInterval->third >= get_alpha()
-	      || pInterval->third == Infinity)) 
+	      || pInterval->third == Infinity))
 	    {
 	      // alpha must be larger than the mid boundary
 	      // and alpha is smaller than the upper boundary
-	      // which might be infinity 
+	      // which might be infinity
 	      // visualize the boundary
-	    
+
  CGAL_triangulation_assertion((classify((*edge_alpha_it).second.first,
 					(*edge_alpha_it).second.second) ==
 			       Alpha_shape_2<Dt>::REGULAR));
@@ -82,34 +82,34 @@ Alpha_shape_2<Dt>::op_window(Window_stream& W) const
 	    }
 	}
     }
-  else 
+  else
     { // get_mode() == GENERAL
 
       // draw the edges
-      for (edge_alpha_it = _interval_edge_map.begin(); 
+      for (edge_alpha_it = _interval_edge_map.begin();
 	   edge_alpha_it != _interval_edge_map.end() &&
 	     (*edge_alpha_it).first.first < get_alpha();
-	   ++edge_alpha_it) 
+	   ++edge_alpha_it)
 	{
-	
+
 	  pInterval = &(*edge_alpha_it).first;
 
-	  if (pInterval->first == UNDEFINED) 
+	  if (pInterval->first == UNDEFINED)
 	    {
-	    
+
 	      CGAL_triangulation_assertion(pInterval->second != Infinity);
 	      // since this happens only for convex hull of dimension 1
 	      // thus singular
 
 	      if(pInterval->second < get_alpha() &&
 		 (pInterval->third >= get_alpha()
-		  || pInterval->third == Infinity)) 
+		  || pInterval->third == Infinity))
 		{
 		  // alpha must be larger than the mid boundary
 		  // and alpha is smaller than the upper boundary
-		  // which might be infinity 
+		  // which might be infinity
 		  // visualize the boundary
-		
+
  CGAL_triangulation_assertion((classify((*edge_alpha_it).second.first,
 					(*edge_alpha_it).second.second) ==
 			       Alpha_shape_2<Dt>::REGULAR));
@@ -117,20 +117,20 @@ Alpha_shape_2<Dt>::op_window(Window_stream& W) const
 			       (*edge_alpha_it).second.second);
 		}
 	    }
-	  else 
+	  else
 	    {
-	   
+
 
 	      if(pInterval->third >= get_alpha()
-		 || pInterval->third == Infinity) 
+		 || pInterval->third == Infinity)
 		{
 		  // if alpha is smaller than the upper boundary
-		  // which might be infinity 
+		  // which might be infinity
 		  // visualize the boundary
-		
+
  CGAL_triangulation_assertion(((classify((*edge_alpha_it).second.first,
 					 (*edge_alpha_it).second.second) ==
-				Alpha_shape_2<Dt>::REGULAR) || 
+				Alpha_shape_2<Dt>::REGULAR) ||
 			       (classify((*edge_alpha_it).second.first,
 					 (*edge_alpha_it).second.second) ==
 				Alpha_shape_2<Dt>::SINGULAR)));
@@ -147,8 +147,8 @@ Alpha_shape_2<Dt>::op_window(Window_stream& W) const
 //-------------------------------------------------------------------
 
 template < class Dt >
-Window_stream& 
-operator<<(Window_stream& W, const Alpha_shape_2<Dt>& As) 
+Window_stream&
+operator<<(Window_stream& W, const Alpha_shape_2<Dt>& As)
 {
   return As.op_window(W);
 }

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -80,7 +80,7 @@ static int DoCalcSlope(const vector<const char *>& args)
 static int DoCalcMesh(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating Mesh...\n");
-	TriangulateMesh(gMap, gTriangulationHi, gDem, args[0], gProgress);		
+	TriangulateMesh(gMap, gTriangulationHi, gDem, args[0], gProgress);
 	return 0;
 }
 
@@ -109,7 +109,7 @@ static int DoHydroSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Simplifying coastlines...\n");
 	Bbox2	bounds;
-	
+
 	CalcBoundingBox(gMap, bounds.p1, bounds.p2);
 	SimplifyCoastlines(gMap, bounds, gProgress);
 	return 0;
@@ -125,7 +125,7 @@ static int DoBridgeRebuild(const vector<const char *>& args)
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Deriving raster parameters...\n");
-	DeriveDEMs(gMap, gDem,gApts, gAptIndex, gProgress);			
+	DeriveDEMs(gMap, gDem,gApts, gAptIndex, gProgress);
 	return 0;
 }
 
@@ -143,21 +143,21 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 
 	set<int>				the_types;
 	GetObjTerrainTypes		(the_types);
-	
+
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
 	GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
 
 	InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
 	DumpPlacementCounts();
 	return 0;
-	
+
 }
 
 static int DoInstantiateForests(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Instantiating forests...\n");
 
-				
+
 	vector<PreinsetFace>	insets;
 	set<int>				the_types;
 	GetAllForestLUs(the_types);
@@ -187,9 +187,9 @@ static int DoBuildDSF(const vector<const char *>& args)
 	char buf1[1024], buf2[1024];
 	if (gVerbose) printf("Build DSF...\n");
 	char * b1 = buf1, * b2 = buf2;
-	
-	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);				
-	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
+
+	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);
+	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
 	BuildDSF(b1,b2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
 	return 0;
 }

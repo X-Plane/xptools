@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "CollisionNode.h"
 
-CollisionNode::CollisionNode() 
+CollisionNode::CollisionNode()
 {
 	setHeaderFlag(false);
 	setType(collisionNodeString);
@@ -25,7 +25,7 @@ CollisionNode::CollisionNode()
 	addEventOut(collideTimeFieldString, collideTimeField);
 }
 
-CollisionNode::~CollisionNode() 
+CollisionNode::~CollisionNode()
 {
 }
 
@@ -40,17 +40,17 @@ SFBool *CollisionNode::getCollideField()
 	return (SFBool *)getExposedField(collideFieldString);
 }
 
-void CollisionNode::setCollide(bool  value) 
+void CollisionNode::setCollide(bool  value)
 {
 	getCollideField()->setValue(value);
 }
 
-void CollisionNode::setCollide(int value) 
+void CollisionNode::setCollide(int value)
 {
 	setCollide(value ? true : false);
 }
 
-bool CollisionNode::getCollide() 
+bool CollisionNode::getCollide()
 {
 	return getCollideField()->getValue();
 }
@@ -66,12 +66,12 @@ SFTime *CollisionNode::getCollideTimeField()
 	return (SFTime *)getEventOut(collideTimeFieldString);
 }
 
-void CollisionNode::setCollideTime(double value) 
+void CollisionNode::setCollideTime(double value)
 {
 	getCollideTimeField()->setValue(value);
 }
 
-double CollisionNode::getCollideTime() 
+double CollisionNode::getCollideTime()
 {
 	return getCollideTimeField()->getValue();
 }
@@ -80,12 +80,12 @@ double CollisionNode::getCollideTime()
 //	List
 ////////////////////////////////////////////////
 
-CollisionNode *CollisionNode::next() 
+CollisionNode *CollisionNode::next()
 {
 	return (CollisionNode *)Node::next(getType());
 }
 
-CollisionNode *CollisionNode::nextTraversal() 
+CollisionNode *CollisionNode::nextTraversal()
 {
 	return (CollisionNode *)Node::nextTraversalByType(getType());
 }
@@ -93,7 +93,7 @@ CollisionNode *CollisionNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool CollisionNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -102,16 +102,16 @@ bool CollisionNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void CollisionNode::initialize() 
+void CollisionNode::initialize()
 {
 	recomputeBoundingBox();
 }
 
-void CollisionNode::uninitialize() 
+void CollisionNode::uninitialize()
 {
 }
 
-void CollisionNode::update() 
+void CollisionNode::update()
 {
 }
 
@@ -119,7 +119,7 @@ void CollisionNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void CollisionNode::outputContext(ostream &printStream, char *indentString) 
+void CollisionNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *collide = getCollideField();
 	printStream << indentString << "\t" << "collide " << collide << endl;

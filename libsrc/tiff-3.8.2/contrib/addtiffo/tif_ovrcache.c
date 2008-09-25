@@ -3,7 +3,7 @@
  *
  * Project:  TIFF Overview Builder
  * Purpose:  Library functions to maintain two rows of tiles or two strips
- *           of data for output overviews as an output cache. 
+ *           of data for output overviews as an output cache.
  * Author:   Frank Warmerdam, warmerdam@pobox.com
  *
  ******************************************************************************
@@ -49,13 +49,13 @@ TIFFOvrCache *TIFFCreateOvrCache( TIFF *hTIFF, int nDirOffset )
     psCache = (TIFFOvrCache *) _TIFFmalloc(sizeof(TIFFOvrCache));
     psCache->nDirOffset = nDirOffset;
     psCache->hTIFF = hTIFF;
-    
+
 /* -------------------------------------------------------------------- */
 /*      Get definition of this raster from the TIFF file itself.        */
 /* -------------------------------------------------------------------- */
     nBaseDirOffset = TIFFCurrentDirOffset( psCache->hTIFF );
     TIFFSetSubDirectory( hTIFF, nDirOffset );
-    
+
     TIFFGetField( hTIFF, TIFFTAG_IMAGEWIDTH, &(psCache->nXSize) );
     TIFFGetField( hTIFF, TIFFTAG_IMAGELENGTH, &(psCache->nYSize) );
 
@@ -119,7 +119,7 @@ TIFFOvrCache *TIFFCreateOvrCache( TIFF *hTIFF, int nDirOffset )
     psCache->nBlockOffset = 0;
 
     TIFFSetSubDirectory( psCache->hTIFF, nBaseDirOffset );
-    
+
     return psCache;
 }
 
@@ -137,7 +137,7 @@ static void TIFFWriteOvrRow( TIFFOvrCache * psCache )
     int		nRet, iTileX, iTileY = psCache->nBlockOffset;
     unsigned char *pabyData;
     uint32	nBaseDirOffset;
-    
+
 /* -------------------------------------------------------------------- */
 /*      If the output cache is multi-byte per sample, and the file      */
 /*      being written to is of a different byte order than the current  */
@@ -188,7 +188,7 @@ static void TIFFWriteOvrRow( TIFFOvrCache * psCache )
                                          iTileX * psCache->nBlockXSize,
                                          iTileY * psCache->nBlockYSize,
                                          0, (tsample_t) iSample );
-                    TIFFWriteEncodedTile( psCache->hTIFF, nTileID, 
+                    TIFFWriteEncodedTile( psCache->hTIFF, nTileID,
                                           pabyData,
                                           TIFFTileSize(psCache->hTIFF) );
                 }
@@ -217,7 +217,7 @@ static void TIFFWriteOvrRow( TIFFOvrCache * psCache )
                                      iTileX * psCache->nBlockXSize,
                                      iTileY * psCache->nBlockYSize,
                                      0, 0 );
-                TIFFWriteEncodedTile( psCache->hTIFF, nTileID, 
+                TIFFWriteEncodedTile( psCache->hTIFF, nTileID,
                                       pabyData,
                                       TIFFTileSize(psCache->hTIFF) );
             }
@@ -294,7 +294,7 @@ unsigned char *TIFFGetOvrBlock( TIFFOvrCache *psCache, int iTileX, int iTileY,
 /*                     TIFFGetOvrBlock_Subsampled()                     */
 /************************************************************************/
 
-unsigned char *TIFFGetOvrBlock_Subsampled( TIFFOvrCache *psCache, 
+unsigned char *TIFFGetOvrBlock_Subsampled( TIFFOvrCache *psCache,
                                            int iTileX, int iTileY )
 
 {

@@ -5,7 +5,7 @@
 
 LIST *path_exists( PARSE *parse, FRAME *frame )
 {
-    LIST* l = lol_get( frame->args, 0 );    
+    LIST* l = lol_get( frame->args, 0 );
 
     time_t time;
     timestamp(l->string, &time);

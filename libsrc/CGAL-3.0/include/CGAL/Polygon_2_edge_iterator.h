@@ -77,7 +77,7 @@ class Polygon_2_edge_iterator {
     {
       return first_vertex == x.first_vertex;
     }
-    
+
     bool operator!=(
       const Polygon_2_edge_iterator<Traits_, Container_>& x) const
     {
@@ -89,11 +89,11 @@ class Polygon_2_edge_iterator {
       ++second_vertex;
       if (second_vertex == container->end())
         second_vertex = container->begin();
-      typename Traits_::Construct_segment_2 construct_segment_2 = 
+      typename Traits_::Construct_segment_2 construct_segment_2 =
             Traits_().construct_segment_2_object();
       return construct_segment_2(*first_vertex, *second_vertex);
     }
-    
+
     Polygon_2__Segment_ptr<Segment_2> operator->()
         {return Polygon_2__Segment_ptr<Segment_2>(operator*());}
 
@@ -199,7 +199,7 @@ value_type(const Polygon_2_edge_iterator<Traits_,Container_>&)
 // cannot be implemented (???).
 //--------------------------------------------------------------------//
 
-#ifdef CGAL_CFG_NO_ITERATOR_TRAITS 
+#ifdef CGAL_CFG_NO_ITERATOR_TRAITS
 template <class Traits_, class Container_>
 inline
 bidirectional_iterator_tag

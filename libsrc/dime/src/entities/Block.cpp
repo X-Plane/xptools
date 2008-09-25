@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Block.cpp
  *
  *  This source file is part of DIME.
@@ -64,7 +64,7 @@ static char entityName[] = "BLOCK";
 /*!
   \fn dimeEntity *dimeBlock::getEntity(const int idx)
   Returns the entity at index \a idx.
-  
+
   \sa dimeBlock::getNumEntities()
 */
 
@@ -122,19 +122,19 @@ dimeBlock::copy(dimeModel * const model) const
 				     model,
 				     bl->entities);
   }
-  
+
   if (ok) {
     bl->basePoint = this->basePoint;
     bl->flags = this->flags;
     if (this->endblock)
       bl->endblock = this->endblock->copy(model);
-    
+
     if (this->name) {
       bl->name = (char*)model->addBlock(this->name, bl);
       if (!bl->name) ok = false;
     }
   }
-  
+
   if (!ok || !this->copyRecords(bl, model)) {
     if (!memh) delete bl; // delete if allocated on heap
     bl = NULL; // just return NULL
@@ -157,7 +157,7 @@ dimeBlock::read(dimeInput * const file)
     this->name = file->getModel()->addBlock(tmp, this);
     delete [] tmp;
   }
-  
+
   // got to do some reading to get all entities in the block
   if (ret) {
     dimeMemHandler *memhandler = file->getMemHandler();
@@ -174,7 +174,7 @@ dimeBlock::read(dimeInput * const file)
 #ifndef NDEBUG
   dimeParam param;
   if (getRecord(67, param) && param.int16_data == 1) {
-    fprintf(stderr,"paperspace block name: %s\n", 
+    fprintf(stderr,"paperspace block name: %s\n",
 	    ((dimeBlock*)this)->getName());
   }
 #endif
@@ -185,7 +185,7 @@ dimeBlock::read(dimeInput * const file)
   This methods writes a BLOCK entity to \a file.
 */
 
-bool 
+bool
 dimeBlock::write(dimeOutput * const file)
 {
   this->preWrite(file);
@@ -194,7 +194,7 @@ dimeBlock::write(dimeOutput * const file)
   file->writeString(this->name);
   file->writeGroupCode(70);
   file->writeInt16(this->flags);
-  
+
   file->writeGroupCode(10);
   file->writeDouble(this->basePoint[0]);
   file->writeGroupCode(20);
@@ -228,7 +228,7 @@ dimeBlock::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeBlock::typeId() const
 {
   return dimeBase::dimeBlockType;
@@ -236,8 +236,8 @@ dimeBlock::typeId() const
 
 //!
 
-bool 
-dimeBlock::handleRecord(const int groupcode, 
+bool
+dimeBlock::handleRecord(const int groupcode,
 		       const dimeParam &param,
 		       dimeMemHandler * const memhandler)
 {
@@ -277,7 +277,7 @@ dimeBlock::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeBlock::getRecord(const int groupcode,
 		    dimeParam &param,
 		    const int index) const
@@ -300,11 +300,11 @@ dimeBlock::getRecord(const int groupcode,
 
 //!
 
-void 
-dimeBlock::fixReferences(dimeModel * const model) 
+void
+dimeBlock::fixReferences(dimeModel * const model)
 {
   int i, n = this->entities.count();
-  for (i = 0; i < n; i++) 
+  for (i = 0; i < n; i++)
     this->entities[i]->fixReferences(model);
 }
 
@@ -316,11 +316,11 @@ dimeBlock::countRecords() const
   int cnt = 0;
   cnt += 3; // header
   cnt += 3; // basePoint
-  
+
   int n = this->entities.count();
   for (int i = 0; i < n; i++)
     cnt += this->entities[i]->countRecords();
-  
+
   return cnt + dimeEntity::countRecords();
 }
 
@@ -328,7 +328,7 @@ dimeBlock::countRecords() const
   Inserts an entity in this block at position \a idx.
 */
 
-void 
+void
 dimeBlock::insertEntity(dimeEntity * const entity, const int idx)
 {
   if (idx < 0) this->entities.append(entity);
@@ -339,12 +339,12 @@ dimeBlock::insertEntity(dimeEntity * const entity, const int idx)
 }
 
 /*!
-  Removes the entity at position \a idx. If \a deleteIt is \e true, and 
-  no memory handler is used, the entity will be deleted before 
+  Removes the entity at position \a idx. If \a deleteIt is \e true, and
+  no memory handler is used, the entity will be deleted before
   returing from this method.
 */
 
-void 
+void
 dimeBlock::removeEntity(const int idx, const bool deleteIt)
 {
   assert(idx >= 0 && idx < this->entities.count());
@@ -354,8 +354,8 @@ dimeBlock::removeEntity(const int idx, const bool deleteIt)
 
 //!
 
-bool 
-dimeBlock::traverse(const dimeState * const state, 
+bool
+dimeBlock::traverse(const dimeState * const state,
 		   dimeCallback callback,
 		   void *userdata)
 {
@@ -366,18 +366,18 @@ dimeBlock::traverse(const dimeState * const state,
       if (!entities[i]->traverse(state, callback, userdata)) return false;
     }
   }
-  if (this->endblock) 
+  if (this->endblock)
     return callback(state, this->endblock, userdata);
   return true;
 }
 
 /*!
   Since a growable array is used to hold the entities, it might sometimes
-  use more memory than absolutely needed. Call this method after you have 
+  use more memory than absolutely needed. Call this method after you have
   finished modifying a block if you want to free that overhead memory.
 */
 
-void 
+void
 dimeBlock::fitEntities()
 {
   this->entities.shrinkToFit();

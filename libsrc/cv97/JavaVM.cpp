@@ -17,22 +17,22 @@
 static	JavaVM	*gJavaVM	= NULL;
 static	JNIEnv	*gJavaEnv	= NULL;
 
-JavaVM *GetJavaVM(void) 
+JavaVM *GetJavaVM(void)
 {
 	return gJavaVM;
 }
 
-JNIEnv *GetJniEnv(void) 
+JNIEnv *GetJniEnv(void)
 {
 	return gJavaEnv;
 }
 
-void SetJavaVM(JavaVM *jvm) 
+void SetJavaVM(JavaVM *jvm)
 {
 	gJavaVM = jvm;
 }
 
-void SetJniEnv(JNIEnv *jniEnv) 
+void SetJniEnv(JNIEnv *jniEnv)
 {
 	gJavaEnv = jniEnv;
 }
@@ -88,7 +88,7 @@ void CreateJavaVM(char *classpath, jint (JNICALL *printfn)(FILE *fp, const char 
 #endif
 }
 
-void DeleteJavaVM(void) 
+void DeleteJavaVM(void)
 {
 	if (gJavaVM)
 		gJavaVM->DestroyJavaVM();

@@ -52,7 +52,7 @@ template<>
 A<double>::A(double d)
 {
   std::cout << "In A<double>(const double& d)" << std::endl;
-} 
+}
 
 int main(){
   A<int> a(10);
@@ -75,6 +75,6 @@ int main(){
 //inline A<double>::A(double d)
 //{
 //  std::cout << "In A<double>(const double& d)" << std::endl;
-//} 
+//}
 
 

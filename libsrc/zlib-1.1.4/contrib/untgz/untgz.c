@@ -108,7 +108,7 @@ static char *TGZfname OF((const char *fname))
 {
   static char buffer[1024];
   int origlen,i;
-  
+
   strcpy(buffer,fname);
   origlen = strlen(buffer);
 
@@ -142,7 +142,7 @@ int getoct(char *p,int width)
 {
   int result = 0;
   char c;
-  
+
   while (width --)
     {
       c = *p++;
@@ -216,7 +216,7 @@ int makedir (char *newdir)
   char *buffer = strdup(newdir);
   char *p;
   int  len = strlen(buffer);
-  
+
   if (len <= 0) {
     free(buffer);
     return 0;
@@ -234,7 +234,7 @@ int makedir (char *newdir)
   while (1)
     {
       char hold;
-      
+
       while(*p && *p != '\\' && *p != '/')
 	p++;
       hold = *p;
@@ -278,7 +278,7 @@ int tar (gzFile in,int action,int arg,int argc,char **argv)
   FILE   *outfile = NULL;
   char   fname[BLOCKSIZE];
   time_t tartime;
-  
+
   if (action == TGZ_LIST)
     printf("     day      time     size                       file\n"
 	   " ---------- -------- --------- -------------------------------------\n");
@@ -293,7 +293,7 @@ int tar (gzFile in,int action,int arg,int argc,char **argv)
        */
       if (len != BLOCKSIZE)
 	error("gzread: incomplete block read");
-      
+
       /*
        * If we have to get a tar header
        */
@@ -308,7 +308,7 @@ int tar (gzFile in,int action,int arg,int argc,char **argv)
 
 	  tartime = (time_t)getoct(buffer.header.mtime,12);
 	  strcpy(fname,buffer.header.name);
-	  
+
 	  switch (buffer.header.typeflag)
 	    {
 	    case DIRTYPE:
@@ -380,14 +380,14 @@ int tar (gzFile in,int action,int arg,int argc,char **argv)
 		  FILETIME ftm,ftLocal;
 		  SYSTEMTIME st;
 		  struct tm localt;
- 
+
 		  fclose(outfile);
 
 		  localt = *localtime(&tartime);
 
 		  hFile = CreateFile(fname, GENERIC_READ | GENERIC_WRITE,
 				     0, NULL, OPEN_EXISTING, 0, NULL);
-		  
+
 		  st.wYear = (WORD)localt.tm_year+1900;
 		  st.wMonth = (WORD)localt.tm_mon;
 		  st.wDayOfWeek = (WORD)localt.tm_wday;
@@ -415,7 +415,7 @@ int tar (gzFile in,int action,int arg,int argc,char **argv)
 	    }
 	}
     }
-  
+
   if (gzclose(in) != Z_OK)
     error("failed gzclose");
 
@@ -454,7 +454,7 @@ int main(int argc,char **argv)
     int 	arg = 1;
     char	*TGZfile;
     gzFile	*f;
-    
+
 
     prog = strrchr(argv[0],'\\');
     if (prog == NULL)
@@ -473,7 +473,7 @@ int main(int argc,char **argv)
       }
     else
       prog++;
-    
+
     if (argc == 1)
       help(0);
 
@@ -489,7 +489,7 @@ int main(int argc,char **argv)
       }
 
     if ((TGZfile = TGZfname(argv[arg])) == NULL)
-      TGZnotfound(argv[arg]);            
+      TGZnotfound(argv[arg]);
 
     ++arg;
     if ((action == TGZ_LIST) && (arg != argc))
@@ -512,7 +512,7 @@ int main(int argc,char **argv)
 	  }
 	exit(tar(f, action, arg, argc, argv));
       break;
-	
+
       default:
 	error("Unknown option!");
 	exit(1);

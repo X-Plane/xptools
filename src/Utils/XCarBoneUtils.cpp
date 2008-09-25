@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@ void *	XCarBones::GetParent(void * child)
 	if (parent == -1) return NULL;
 	return bones[parent].ref;
 }
-	
+
 void		XCarBones::GetChildren(void * p, vector<void *>& c)
 {
 	c.clear();
@@ -54,12 +54,12 @@ string		XCarBones::GetBoneName(void * v)
 	if (!IsValid(v)) return string();
 	return bones[index[v]].name;
 }
-	
+
 void		XCarBones::GetDeboneMatrix(void * who, double m[16])
 {
 	if (!IsValid(who)) return;
 	int me = index[who];
-	void * parent = GetParent(who);	
+	void * parent = GetParent(who);
 	double parent_matrix[16];
 	setIdentityMatrix(m);
 
@@ -71,7 +71,7 @@ void		XCarBones::GetDeboneMatrix(void * who, double m[16])
 	double	the = GetValueForTime(now, bones[me].rot[1]);
 	double	psi = GetValueForTime(now, bones[me].rot[2]);
 
-	applyRotation(m, psi, 0, 0,-1);	
+	applyRotation(m, psi, 0, 0,-1);
 	applyRotation(m, the, 1, 0, 0);
 	applyRotation(m, phi, 0,-1, 0);
 	applyTranslation(m, -x, -y, -z);
@@ -82,20 +82,20 @@ void		XCarBones::GetDeboneMatrix(void * who, double m[16])
 		GetDeboneMatrix(parent, parent_matrix);
 		multMatrices(temp, m, parent_matrix);
 		copyMatrix(m, temp);
-	} 	
+	}
 }
 
 void		XCarBones::GetReboneMatrix(void * who, double m[16])
 {
 	if (!IsValid(who)) return;
 	int me = index[who];
-	void * parent = GetParent(who);	
+	void * parent = GetParent(who);
 	if (parent)
 	{
 		GetReboneMatrix(parent, m);
 	} else
 		setIdentityMatrix(m);
-	
+
 	double	now = bones[me].preview_time;
 	double	x = GetValueForTime(now, bones[me].xyz[0]);
 	double	y = GetValueForTime(now, bones[me].xyz[1]);
@@ -107,7 +107,7 @@ void		XCarBones::GetReboneMatrix(void * who, double m[16])
 	applyTranslation(m, x, y, z);
 	applyRotation(m, phi, 0, 1, 0);
 	applyRotation(m, the,-1, 0, 0);
-	applyRotation(m, psi, 0, 0, 1);	
+	applyRotation(m, psi, 0, 0, 1);
 }
 
 void		XCarBones::RebuildChildCache(void)
@@ -117,14 +117,14 @@ void		XCarBones::RebuildChildCache(void)
 	{
 		iter->child_cache.clear();
 	}
-	
+
 	int me;
 	for (me = 0; me < bones.size(); ++me)
 	{
 		int my_parent = bones[me].parent;
 		if (my_parent != -1)
 			bones[my_parent].child_cache.push_back(me);
-	}	
+	}
 }
 
 void		XCarBones::RebuildIndex(void)
@@ -144,33 +144,33 @@ double	GetValueForTime(double inTime, const XCarBone::KeyTable& inTable)
 
 	// Find the earliest object that is equivalent or higher than us
 	XCarBone::KeyTable::const_iterator lb = inTable.lower_bound(inTime);
-	
+
 	// If we're off the end, then return the very last value in the data structure.
 	if (lb == inTable.end())
 	{
 		--lb;
 		return lb->second;
 	}
-	
+
 	// If we're at the beginning, return the very first value.
 	if (lb == inTable.begin()) return lb->second;
-	
+
 	// If we hit the node right on the nose, just return its value.
 	if (lb->first == inTime) return lb->second;
-	
+
 	// Our hit must be slightly after the time we want.  Find the previous key frame.
 	XCarBone::KeyTable::const_iterator prev = lb;
 	--prev;
-	
+
 	// If the previous key frame is at the same time as our time, that's a serious
 	// programming error...not only is our key table bad, but our map is broken.
 	// avoid a divide by zero just in case!
 	if (lb->first == prev->first) return lb->second;
-	
+
 	// Okay we have distinct times.  Find out how far through time we are between
 	// these key frames
 	double	tr = (inTime - prev->first) / (lb->first - prev->first);
-	
+
 	// Interpolate the value!
 	return (prev->second + tr * (lb->second - prev->second));
 }
@@ -179,7 +179,7 @@ bool	ReadBonesFromFile(const char * inFileName, XCarBones& outBones)
 {
 	outBones.bones.clear();
 	outBones.index.clear();
-	
+
 	FILE * fi = fopen(inFileName, "r");
 	if (!fi) return false;
 	int count;
@@ -192,13 +192,13 @@ bool	ReadBonesFromFile(const char * inFileName, XCarBones& outBones)
 		char		nameBuf[100];
 		float		flts[12];
 		fscanf(fi,"%s %d %d %d %f %f %f %f %f %f %f %f %f %f %f %f",
-			nameBuf, 
+			nameBuf,
 			&bone.parent, &bone.part_type, &bone.animation_type,
 			&flts[0], &flts[ 1], &flts[ 2],
 			&flts[3], &flts[ 4], &flts[ 5],
 			&flts[6], &flts[ 7], &flts[ 8],
 			&flts[9], &flts[10], &flts[11]);
-			
+
 		bone.xyz[0].insert(XCarBone::KeyTable::value_type(0.0, flts[0]));
 		bone.xyz[1].insert(XCarBone::KeyTable::value_type(0.0, flts[1]));
 		bone.xyz[2].insert(XCarBone::KeyTable::value_type(0.0, flts[2]));

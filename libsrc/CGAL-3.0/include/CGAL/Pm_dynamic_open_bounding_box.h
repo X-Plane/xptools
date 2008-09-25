@@ -68,24 +68,24 @@ public:
     typedef std::list<X_curve> X_curve_container;
     typedef Topological_map<_Dcel> TPM;
   */
-  typedef typename Planar_map::Halfedge_around_vertex_circulator 
+  typedef typename Planar_map::Halfedge_around_vertex_circulator
      Halfedge_around_vertex_circulator;
   typedef typename Planar_map::Holes_iterator Holes_iterator;
   typedef typename Planar_map::Holes_const_iterator Holes_const_iterator;
-  typedef typename Planar_map::Ccb_halfedge_const_circulator 
+  typedef typename Planar_map::Ccb_halfedge_const_circulator
     Ccb_halfedge_const_circulator;
   typedef typename Planar_map::Ccb_halfedge_circulator Ccb_halfedge_circulator;
-	
+
   struct Token : public Base::Token {
-  // The following class is used to synchronize between two instances of 
-  // Bounding_box and Point_location strategies, during 
+  // The following class is used to synchronize between two instances of
+  // Bounding_box and Point_location strategies, during
   // rebuild of the bounding box in the first and an update call in the second.
 
     typedef typename Traits::Bounding_box Bounding_box;
 
     Token(const Bounding_box& t) : b(t) {};
 
-    virtual void rebuild_bounding_box(const Point_location_base* p) const 
+    virtual void rebuild_bounding_box(const Point_location_base* p) const
     {((Traits*)p->get_traits())->set_bounding_box(b);}
   private:
     const Bounding_box& b;
@@ -93,20 +93,20 @@ public:
 
   Pm_dynamic_open_bounding_box(){}
   ~Pm_dynamic_open_bounding_box(){}
- 
+
   void init(Planar_map& pmp, Traits& tr) {
     pm = &pmp;
     traits = (Traits_wrap*)(&tr);
   }
-  
+
   bool insert(const Point& p) {
 #ifdef CGAL_PM_DEBUG
     CGAL_assertion(debug_invariant());
 #endif
 
     // Returns true if bounding box remained unchanged.
-    Bounding_box bold = traits->get_bounding_box(), 
-    b = is_empty(bold) ? traits->get_bounding_box(p) : 
+    Bounding_box bold = traits->get_bounding_box(),
+    b = is_empty(bold) ? traits->get_bounding_box(p) :
                          traits->get_bounding_box(p,bold);
     if (!traits->bounding_box_is_same(b))
       {
@@ -122,7 +122,7 @@ public:
               )
   { // workaround for MSVC6.0
     // Returns true if bounding box remained unchanged.
-    
+
 #ifdef CGAL_PM_DEBUG
     CGAL_assertion(debug_invariant());
 #endif
@@ -131,17 +131,17 @@ public:
     Bounding_box bold = traits->get_bounding_box(),b=bold;
     if (it!=end)
       {
-        b = is_empty(b) ? traits->get_bounding_box(*it) : 
+        b = is_empty(b) ? traits->get_bounding_box(*it) :
                           traits->get_bounding_box(*it,b);
         ++it;
       }
     while(it!=end)
       {
 #ifdef CGAL_PMBB_DEBUG
-        std::cout << "\nPm_dynamic_open_bounding_box<Planar_map>::insert(" 
+        std::cout << "\nPm_dynamic_open_bounding_box<Planar_map>::insert("
                   << "begin,end)" << std::endl;
 #endif
-        
+
 #ifdef CGAL_PM_DEBUG
         CGAL_assertion(debug_invariant());
 #endif
@@ -164,18 +164,18 @@ public:
     // if the curve is infinite (in both sides) we have to check that
     // it passes through the BBox.
     // Last, we change the "infinite" endpoints to lie on the BBox.
-    
-		
+
+
   Point p1, p2;
   X_curve c;
-  
+
 #ifdef CGAL_PM_DEBUG
   CGAL_assertion(debug_invariant());
 #endif
 
-  Bounding_box 
-    bold = traits->get_bounding_box(), 
-    b = is_empty(bold) ? traits->get_bounding_box(cv) : 
+  Bounding_box
+    bold = traits->get_bounding_box(),
+    b = is_empty(bold) ? traits->get_bounding_box(cv) :
                          traits->get_bounding_box(cv,bold);
 
     if (!traits->bounding_box_is_same(b))
@@ -204,7 +204,7 @@ public:
     Bounding_box bold = traits->get_bounding_box(),b=bold;
     if (it!=end)
       {
-        b = is_empty(b) ? traits->get_bounding_box(*it) : 
+        b = is_empty(b) ? traits->get_bounding_box(*it) :
                              traits->get_bounding_box(*it,b);
         ++it;
       }
@@ -220,21 +220,21 @@ public:
       }
     return true;
   }
-  
-  bool insert(const X_curve& cv,const Ray& r) { 
+
+  bool insert(const X_curve& cv,const Ray& r) {
 /* returns true if the bounding box remains unchanged, false otherwise. */
 
 #ifdef CGAL_PM_DEBUG
     CGAL_assertion(debug_invariant());
 #endif
 
-    const Bounding_box& bold = traits->get_bounding_box(), 
-      b = is_empty(bold) ? traits->get_bounding_box(cv,r) : 
+    const Bounding_box& bold = traits->get_bounding_box(),
+      b = is_empty(bold) ? traits->get_bounding_box(cv,r) :
                            traits->get_bounding_box(cv,r,bold);
 #ifdef CGAL_PMBB_DEBUG
     CGAL_postcondition(b==traits->get_bounding_box(cv,r,b));
 #endif
-    // makes sure that the intersection of the ray and the curve 
+    // makes sure that the intersection of the ray and the curve
     // (if such intersection exists) is inside the bounding box.
     if (!traits->bounding_box_is_same(b))
       {
@@ -243,15 +243,15 @@ public:
       }
     return true;
   }
-  
-  /* The point location query function may updates the resulting 
+
+  /* The point location query function may updates the resulting
      halfedge handle and locate type as expected from the bounding box */
   /* Returns true if bounding box remained unchanged */
   bool locate(const Point& p, Locate_type& lt,Halfedge_handle& h){
     //		apply_bounding_box(pm->unbounded_face(),h,lt);
     return true;
   };
-  
+
   /* Returns true if bounding box remained unchanged */
   bool vertical_ray_shoot(const Point& p, Locate_type& lt, bool up,
                           Halfedge_handle& h){
@@ -261,14 +261,14 @@ public:
       {
         Halfedge_iterator it=pm->halfedges_begin();
         Ray r(p,Direction(0,up ? 1 : -1));
-        while(it!=pm->halfedges_end()) 
+        while(it!=pm->halfedges_end())
           {
             const X_curve& cv=it->curve();
             if (!traits->point_in_x_range(cv,p) && !insert(cv,r))
               return false;
             else {++it;++it;}
           }
-        // make sure that the intersection of the curve with the vertical ray 
+        // make sure that the intersection of the curve with the vertical ray
 	// is inside the bounding box
         // (if such intersection exists).
       }
@@ -280,7 +280,7 @@ public:
     return true;
     //		apply_bounding_box(pm->unbounded_face(),h,lt);
   };
-  
+
   void split_edge(const X_curve &cv,
                   Halfedge_handle e1,
                   Halfedge_handle e2
@@ -292,7 +292,7 @@ public:
                                    Halfedge_handle h1,
                                    Halfedge_handle h2,
                                    const Point& p) {}
-  
+
   void merge_edge(const X_curve &cv1,
                   const X_curve &cv2,
                   Halfedge_handle e
@@ -300,7 +300,7 @@ public:
                   ,const X_curve& cv
                   //end additions
                   ) {}
-  
+
   void remove_edge(Halfedge_handle e) {}
   void clear()
   {
@@ -314,7 +314,7 @@ public:
     return b.identical(Traits::unbounded_box());
   }
  public:
-  
+
 #ifdef CGAL_PM_DEBUG
   void debug() const {}
   bool debug_invariant() const{
@@ -323,9 +323,9 @@ public:
     return true;
   }
 #endif
-  
-protected:	
-  void apply_bounding_box(const Face_handle& unbounded, 
+
+protected:
+  void apply_bounding_box(const Face_handle& unbounded,
                           const Halfedge_handle& he,Locate_type& lt) const
   {
     switch(lt)
@@ -336,9 +336,9 @@ protected:
         {
           Ccb_halfedge_const_circulator begin(he->twin());
           Ccb_halfedge_const_circulator circ=begin;
-          while (++circ!=begin) 
-            { 
-              if (circ->face()==unbounded) lt=Planar_map::UNBOUNDED_FACE; 
+          while (++circ!=begin)
+            {
+              if (circ->face()==unbounded) lt=Planar_map::UNBOUNDED_FACE;
               break;
             }
         }
@@ -349,12 +349,12 @@ protected:
         break;
       case Planar_map::VERTEX:
         {
-          Halfedge_around_vertex_circulator 
+          Halfedge_around_vertex_circulator
             begin=he->target()->incident_halfedges(),
             circ=begin;
-          while (++circ!=begin) 
-            { 
-              if (circ->face()==unbounded) lt=Planar_map::UNBOUNDED_VERTEX; 
+          while (++circ!=begin)
+            {
+              if (circ->face()==unbounded) lt=Planar_map::UNBOUNDED_VERTEX;
               break;}
         }
         break;
@@ -364,7 +364,7 @@ protected:
   {
 #ifdef CGAL_PMBB_DEBUG
     if (!traits->curve_equal(h->curve(),cv))
-      std::cerr << "\nbool cooriented(h," << cv << "); h->curve()=" 
+      std::cerr << "\nbool cooriented(h," << cv << "); h->curve()="
                 << h->curve() << std::endl;
 #endif
     CGAL_precondition(traits->curve_equal(h->curve(),cv));
@@ -372,7 +372,7 @@ protected:
     if (traits->point_equal_x(s,t))
       {
         CGAL_precondition(
-          traits->curve_get_status(cv)==Traits::CURVE_VERTICAL_UP || 
+          traits->curve_get_status(cv)==Traits::CURVE_VERTICAL_UP ||
           traits->curve_get_status(cv)==Traits::CURVE_VERTICAL_DOWN);
         return (traits->point_is_right_top(t,s) ==
 		(traits->curve_get_status(cv)==Traits::CURVE_VERTICAL_UP));
@@ -384,7 +384,7 @@ protected:
             traits->curve_get_status(cv)!=Traits::CURVE_RIGHT &&
             traits->curve_get_status(cv)!=Traits::CURVE_LEFT)
         {
-          std::cout << "\nCGAL_precondition(cv status is RIGHT||LEFT)" 
+          std::cout << "\nCGAL_precondition(cv status is RIGHT||LEFT)"
                     << "cv=" << cv << ",traits->curve_get_status(cv)="
                     << traits->curve_get_status(cv);
         }
@@ -396,13 +396,13 @@ protected:
                 (traits->curve_get_status(cv)==Traits::CURVE_RIGHT));
       }
   }
-  // discards the const 
-  Point_location_base* get_point_location() { 
-    return (Point_location_base*)pm->get_point_location();	
+  // discards the const
+  Point_location_base* get_point_location() {
+    return (Point_location_base*)pm->get_point_location();
   }
 
   void rebuild_bounding_box(const Bounding_box& b){
-    /* The main function in the bounding box. When called, the planar map 
+    /* The main function in the bounding box. When called, the planar map
        representation is rebuild.
     Precondition:
        The bounding box contains in its interior all the interesting points.
@@ -410,7 +410,7 @@ protected:
 
 #ifdef CGAL_PMBB_DEBUG
     std::cout << "\nPm_dynamic_open_bounding_box::rebuild_bounding_box()";
-#endif    
+#endif
 
     Halfedge_container c;
     Holes_iterator hit=pm->unbounded_face()->holes_begin(),
@@ -421,11 +421,11 @@ protected:
       do {
         if (traits->curve_is_unbounded(circ->curve()))
           {
-            // Each halfedge contributes an unbounded curve, due to the 
+            // Each halfedge contributes an unbounded curve, due to the
             // dynamic nature of the bounding box and the invariant that
             // the curves are all bounded inside.
             // We optimize here taking only one representative for each edge.
-            
+
             Halfedge_handle second=circ;
             ++second;
             if (second==circ->twin()) c.push_back(circ);
@@ -446,7 +446,7 @@ protected:
       {
         Halfedge_handle h=*it;
         const X_curve& cv=h->curve();
-        Vertex_handle s=h->source(),t=h->target(); 
+        Vertex_handle s=h->source(),t=h->target();
         if (cooriented(h,cv))
         {
           t->set_point(traits->curve_target(cv));
@@ -473,9 +473,9 @@ protected:
                                 traits->curve_target(h->curve()),
 				h->source()->point())))
           {
-            std::cout << "\ncurve_source(h->curve())=" 
+            std::cout << "\ncurve_source(h->curve())="
 		      << traits->curve_source(h->curve());
-            std::cout << " curve_target(h->curve())=" 
+            std::cout << " curve_target(h->curve())="
 		      << traits->curve_target(h->curve());
             std::cout << " h->source()->point()=" << h->source()->point();
             std::cout << " h->target()->point()=" << h->target()->point();
@@ -497,11 +497,11 @@ protected:
       }
     c.clear();
   }
-  
+
 protected:
   Planar_map* pm;
   Traits_wrap* traits;
-  
+
 };
 
 CGAL_END_NAMESPACE

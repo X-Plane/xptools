@@ -5,7 +5,7 @@
  */
 
 /*
- * hash.h - simple in-memory hashing routines 
+ * hash.h - simple in-memory hashing routines
  */
 
 typedef struct hashdata HASHDATA;

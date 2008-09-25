@@ -33,10 +33,10 @@
 namespace CGAL {
 
 
-template <class TreeTraits> 
+template <class TreeTraits>
 class Kd_tree {
 public:
-  
+
   typedef typename TreeTraits::Point Point;
   typedef typename TreeTraits::Container Point_container;
   // typedef typename std::list<Point>::iterator input_iterator;
@@ -60,7 +60,7 @@ private:
   // Instead of storing the points in arrays in the Kd_tree_node
   // we put all the data in a vector in the Kd_tree.
   // and we only store an iterator range in the Kd_tree_node.
-  // 
+  //
   std::vector<Point*> data;
   Point_iterator data_iterator;
   TreeTraits tr;
@@ -75,14 +75,14 @@ private:
   // the allocation of the nodes.
 
   // The leaf node
-  Node_handle 
+  Node_handle
   create_leaf_node(Point_container& c)
   {
     Node n;
     Node_handle nh = nodes.insert(n);
     nh->n = c.size();
     nh->the_node_type = Node::LEAF;
-    if (c.size()>0) { 
+    if (c.size()>0) {
       nh->data = data_iterator;
       data_iterator = std::copy(c.begin(), c.end(), data_iterator);
     }
@@ -96,32 +96,32 @@ private:
   //       moved to a the class Kd_tree_node.
   //       It is not proper yet, but the goal was to see if there is
   //       a potential performance gain through the Compact_container
-  Node_handle 
-  create_internal_node_use_extension(Point_container& c, TreeTraits& t) 
+  Node_handle
+  create_internal_node_use_extension(Point_container& c, TreeTraits& t)
   {
     Node n;
     Node_handle nh = nodes.insert(n);
-    
+
     nh->the_node_type = Node::EXTENDED_INTERNAL;
 
     Point_container
       c_low = Point_container(c.dimension());
-    
-    t.split(nh->sep, c, c_low);
-	        
-    int cd  = nh->sep.cutting_dimension();
-    
-    nh->low_val = c_low.bounding_box().min_coord(cd);
-   
 
-    
+    t.split(nh->sep, c, c_low);
+
+    int cd  = nh->sep.cutting_dimension();
+
+    nh->low_val = c_low.bounding_box().min_coord(cd);
+
+
+
     nh->high_val = c.bounding_box().max_coord(cd);
 
-    
+
     assert(nh->sep.cutting_value() >= nh->low_val);
     assert(nh->sep.cutting_value() <= nh->high_val);
 
-    
+
 
     if (c_low.size() > t.bucket_size())
       nh->lower_ch = create_internal_node_use_extension(c_low,t);
@@ -133,26 +133,26 @@ private:
     else
       nh->upper_ch = create_leaf_node(c);
 
-    
+
     return nh;
   }
 
-  
+
   // Note also that I duplicated the code to get rid if the if's for
   // the boolean use_extension which was constant over the construction
-  Node_handle 
-  create_internal_node(Point_container& c, TreeTraits& t) 
+  Node_handle
+  create_internal_node(Point_container& c, TreeTraits& t)
   {
     Node n;
     Node_handle nh = nodes.insert(n);
-    
+
     nh->the_node_type = Node::INTERNAL;
 
     Point_container
     c_low = Point_container(c.dimension());
-    
+
     t.split(nh->sep, c, c_low);
-	        
+
     if (c_low.size() > t.bucket_size())
       nh->lower_ch = create_internal_node(c_low,t);
     else
@@ -165,7 +165,7 @@ private:
 
     return nh;
   }
-  
+
 
 
 
@@ -174,34 +174,34 @@ public:
 
   //introduced for backward compability
   Kd_tree() {}
-  
+
   template <class input_iterator>
   Kd_tree(input_iterator first, input_iterator beyond,
 	    TreeTraits t = TreeTraits()) : tr(t) {
     assert(first != beyond);
     int dim = first->dimension();
-    
+
     std::copy(first, beyond, std::back_inserter(pts));
- 
+
     data = std::vector<Point*>(pts.size()); // guarantees that iterators we store in Kd_tree_nodes stay valid
     data_iterator = data.begin();
 
     Point_container c(dim, pts.begin(), pts.end());
 
     bbox = new Kd_tree_rectangle<NT>(c.bounding_box());
-    
+
     the_item_number=c.size();
     if (c.size() <= t.bucket_size())
       tree_root = create_leaf_node(c);
-    else 
+    else
 		if (t.use_extended_nodes())
-		tree_root = create_internal_node_use_extension(c,t);  
+		tree_root = create_internal_node_use_extension(c,t);
 		else
-		tree_root = create_internal_node(c,t); 
-	
+		tree_root = create_internal_node(c,t);
+
   }
 
- 
+
   template <class OutputIterator, class FuzzyQueryItem>
 	OutputIterator search(OutputIterator it, const FuzzyQueryItem& q) {
 		Kd_tree_rectangle<NT>* b = new Kd_tree_rectangle<NT>(*bbox);
@@ -211,11 +211,11 @@ public:
 	}
 
   template <class OutputIterator>
-	OutputIterator report_all_points(OutputIterator it) 
+	OutputIterator report_all_points(OutputIterator it)
 	{it=tree_root->tree_items(it);
 	 return it;}
 
-    ~Kd_tree() {  
+    ~Kd_tree() {
 		  delete bbox;
 	};
 
@@ -231,7 +231,7 @@ public:
   // Print statistics of the tree.
   std::ostream& statistics (std::ostream& s) {
     s << "Tree statistics:" << std::endl;
-    s << "Number of items stored: " 
+    s << "Number of items stored: "
 		  << tree_root->num_items() << std::endl;
     s << " Tree depth: " << tree_root->depth() << std::endl;
     return s;

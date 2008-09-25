@@ -130,7 +130,7 @@ RayC2<R>::point(int i) const
   if (i == 0) return source();
   if (i == 1) return second_point();
   return construct_translated_point(source(),
-				    construct_vector(source(), 
+				    construct_vector(source(),
 						     second_point())* FT(i));
 }
 

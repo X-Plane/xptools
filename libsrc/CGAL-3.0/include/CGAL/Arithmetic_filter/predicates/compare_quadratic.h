@@ -57,7 +57,7 @@ sqrt_compare_l1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -105,7 +105,7 @@ sqrt_compare_l1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -153,7 +153,7 @@ sqrt_compare_r1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -201,7 +201,7 @@ sqrt_compare_r1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -249,7 +249,7 @@ dfmt_compare_l1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -297,7 +297,7 @@ dfmt_compare_l1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -345,7 +345,7 @@ dfmt_compare_r1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -393,7 +393,7 @@ dfmt_compare_r1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -441,7 +441,7 @@ ke_compare_l1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -489,7 +489,7 @@ ke_compare_l1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -537,7 +537,7 @@ ke_compare_r1_l2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE
@@ -585,7 +585,7 @@ ke_compare_r1_r2(
 		a2.interval(),
 		b2.interval(),
 		c2.interval());
-  } 
+  }
   catch (Interval_nt_advanced::unsafe_comparison)
   {
 #ifdef CGAL_PROFILE

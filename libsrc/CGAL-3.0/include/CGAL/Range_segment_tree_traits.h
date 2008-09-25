@@ -33,7 +33,7 @@ CGAL_BEGIN_NAMESPACE
 template<class Key_1>
   class C_Compare_1{
   public:
-    
+
     bool operator()(const Key_1& k1, const Key_1& k2)
     {
       return SMALLER == compare_x(k1,k2);
@@ -43,7 +43,7 @@ template<class Key_1>
 template<class Key_2>
   class C_Compare_2{
   public:
-    
+
     bool operator()(const Key_2& k1, const Key_2& k2)
     {
       return SMALLER == compare_y(k1,k2);
@@ -53,7 +53,7 @@ template<class Key_2>
 template<class Key_3>
   class C_Compare_3{
   public:
-    
+
     bool operator()(const Key_3& k1, const Key_3& k2)
     {
       return SMALLER == compare_z(k1,k2);
@@ -357,7 +357,7 @@ class Range_segment_tree_set_traits_3{
 
 };
 
-  
+
 
 
 template <class Rep>

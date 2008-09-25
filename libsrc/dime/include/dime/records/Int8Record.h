@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int8Record.h
  *
  *  This source file is part of DIME.
@@ -51,7 +51,7 @@ public:
 
 private:
   int8 value;
-  
+
 }; // class dimeInt8Record
 
 #endif // ! DIME_INT8RECORD_H

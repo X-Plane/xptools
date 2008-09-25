@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,18 +27,18 @@
 /*
 
 	IControlHandles - THEORY OF OPERATION
-	
+
 	The control handles interface provids an abstraction for a set of structured UI elements.
-	
+
 	- Each control handle provider can specify 0 or more "entities" by arbitrary IDs.  This is
 	  really a convenience interface to allow providers to map control handles to specific bits
 	  of data model.
-	  
+
 	- Each control handle can be moved.
-	
+
 	- Control handle quadruples make "links" which are bezier curves.  Note that moving the link is
 	  NOT the same as moving the handles, so the client can decide the rules for dragging links.
-	  
+
 	- Entire entities may also be moved, and the interface provides hit testing.
 
 */
@@ -66,7 +66,7 @@ enum HandleType_t {
 enum LinkType_t {
 	link_None,			// Draw nothing
 	link_Solid,			// Draw solid line...
-	link_BezierCtrl,	// Thin line for bezier handles	
+	link_BezierCtrl,	// Thin line for bezier handles
 	link_Ghost,			// implicit ghost line
 	link_Marquee
 };
@@ -90,25 +90,25 @@ public:
 	virtual		void			GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const=0;
 
 	// Links are structural lines between the control handles.  We have 0 or more links
-	// and each one has a start and end control handle index number.  This is not editable - 
-	// it can only be queried.	
+	// and each one has a start and end control handle index number.  This is not editable -
+	// it can only be queried.
 	virtual		intptr_t		GetLinks		    (intptr_t id) const=0;
 	virtual		void			GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const =0;
 	virtual		intptr_t		GetNthLinkSource   (intptr_t id, intptr_t n) const=0;
 	virtual		intptr_t		GetNthLinkSourceCtl(intptr_t id, intptr_t n) const=0;	// -1 if no bezier ctl point!
 	virtual		intptr_t		GetNthLinkTarget   (intptr_t id, intptr_t n) const=0;
 	virtual		intptr_t		GetNthLinkTargetCtl(intptr_t id, intptr_t n) const=0;
-	
+
 	// Generic query as to whether a point is on the structure.  Some control-handle-eable entities
 	// may have "fill" area other than the structural linkeage.
 	// NOTE: control handle interface providers are NOT required to return point-on-structure for linkeage...
 	// only for ADDITIONAL areas.
 	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const=0;
-	
+
 	// Move ALL control handles (that is, the whole entity) by a delta.
-	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_handle)=0;			
-	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)=0;			
-	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_handle)=0;			
+	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_handle)=0;
+	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)=0;
+	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_handle)=0;
 
 };
 

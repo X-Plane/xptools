@@ -15,7 +15,7 @@
 // $Revision: 1.4 $ $Date: 2003/09/18 10:20:21 $
 // $Name: current_submission $
 //
-// Author(s)     : script by Geert-Jan Giezeman and Sven Schönherr 
+// Author(s)     : script by Geert-Jan Giezeman and Sven Schönherr
 
 
 

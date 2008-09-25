@@ -55,20 +55,20 @@
 /* Supply missing prototypes for lbr$-routines*/
 
 #ifdef __cplusplus
-extern "C" { 
+extern "C" {
 #endif /* __cplusplus */
 
-int lbr$set_module( 
+int lbr$set_module(
 	void **,
 	unsigned long *,
 	struct dsc$descriptor_s *,
-	unsigned short *, 
+	unsigned short *,
 	void * );
 
 int lbr$open( void **,
 	struct dsc$descriptor_s *,
 	void *,
-	void *, 
+	void *,
 	void *,
 	void *,
 	void * );
@@ -93,7 +93,7 @@ int lbr$close(
 #endif /* __cplusplus */
 
 static void
-file_cvttime( 
+file_cvttime(
     unsigned int *curtime,
     time_t *unixtime )
 {
@@ -110,7 +110,7 @@ file_cvttime(
 # define min( a,b ) ((a)<(b)?(a):(b))
 
 void
-file_dirscan( 
+file_dirscan(
 	char *dir,
 	scanback func,
 	void	*closure )
@@ -227,7 +227,7 @@ file_dirscan(
 	if( DEBUG_SEARCH )
 	    printf("root '%s' base %.*s suf %.*s = %s\n",
 		    dir,
-		    xnam.nam$b_name, xnam.nam$l_name, 
+		    xnam.nam$b_name, xnam.nam$l_name,
 		    xnam.nam$b_type, xnam.nam$l_type,
 		    filename2);
 	*/
@@ -235,7 +235,7 @@ file_dirscan(
 	(*func)( closure, filename2->value, 1 /* time valid */, time );
     }
     string_free( filename2 );
-}    
+}
 
 int
 file_time(
@@ -253,7 +253,7 @@ static void *VMS_closure;
 static void *context;
 
 static int
-file_archmember( 
+file_archmember(
     struct dsc$descriptor_s *module,
     unsigned long *rfa )
 {

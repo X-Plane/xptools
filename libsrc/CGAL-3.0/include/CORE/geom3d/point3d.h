@@ -31,9 +31,9 @@ class Point3d : public GeomObj{
 
 private:
   double x, y, z;
- 
+
 public:
- 
+
   /************************************************************
    * constructors and destructors
    ************************************************************/
@@ -41,7 +41,7 @@ public:
   Point3d(double x, double y, double z);
   Point3d(const Point3d & p);
   Point3d(const Vector& v);
-    //create a point initialized to the point $(v[0], v[1], v[2])$ 
+    //create a point initialized to the point $(v[0], v[1], v[2])$
     //precondition: v.dim() >= 3 (only the first 3 components are used)
 
   //destructor
@@ -51,12 +51,12 @@ public:
    * Methods
    ************************************************************/
   Point3d& operator=(const Point3d&);
-  
-  double X() const { return x; }
-  double Y() const { return y; } 
-  double Z() const { return z; } 
 
-  Vector toVector() const { return Vector(x, y, z); } 
+  double X() const { return x; }
+  double Y() const { return y; }
+  double Z() const { return z; }
+
+  Vector toVector() const { return Vector(x, y, z); }
 
   virtual int dim() const { return 0; }
 
@@ -71,14 +71,14 @@ public:
   Point3d operator+(const Vector &v) const;
   Point3d operator-(const Vector &v) const;
   Point3d operator*(const double& d) const;
- 
+
  /************************************************************
    * predicates
    ************************************************************/
 
   bool operator==(const Point3d&) const;
   bool operator!=(const Point3d& p) const {return !operator==(p); }
-  
+
   /************************************************************
    * I/O, debugging
    ************************************************************/
@@ -102,7 +102,7 @@ public:
   }
 
    // compute signed volume of a tetrahedron
-  friend double signed_volume(const Point3d& a, const Point3d& b, 
+  friend double signed_volume(const Point3d& a, const Point3d& b,
                      const Point3d& c, const Point3d& d);
 
 };//class Point3d
@@ -117,35 +117,35 @@ public:
 // midPt(p, q) returns (p+q)/2:
 Point3d midPt3d ( Point3d& a, Point3d& b);
 
-/* orientation3d(a, b, c, d) 
+/* orientation3d(a, b, c, d)
  *   computes the orientation of points a, b, c, d as the sign
  *   of the determinant
  *              | ax  ay  az 1 |
  *              | bx  by  bz 1 |
  *              | cx  cy  cz 1 |
  *              | dx  dy  dz 1 |
- *   i.e., it returns +1 if d lies in the opposite side w.r.t. the 
+ *   i.e., it returns +1 if d lies in the opposite side w.r.t. the
  *   counter-clockwise side of plane formed by a, b, c
  */
-int orientation3d(const Point3d& a, const Point3d& b, 
-                         const Point3d& c, const Point3d& d); 
+int orientation3d(const Point3d& a, const Point3d& b,
+                         const Point3d& c, const Point3d& d);
 
 /* area(a, b, c) returns 1/2 times the determinant of orientation(a,b,c)
  * above.  This is the signed area of the triangle determined by a, b, c,
  * positive if orientation(a,b,c) > 0, and negative otherwise.  */
 
-double volume(const Point3d& a, const Point3d& b, 
+double volume(const Point3d& a, const Point3d& b,
                      const Point3d& c, const Point3d& d);
 
 
 /* returns true if points a, b, c and d are coplanar, i.e.,
- * orientation(a, b, c, d) = 0, and false otherwise. 
+ * orientation(a, b, c, d) = 0, and false otherwise.
  */
-bool coplanar(const Point3d& a, const Point3d& b, 
+bool coplanar(const Point3d& a, const Point3d& b,
                      const Point3d& c, const Point3d& d);
 
 /************************************************************
- *  CONSTANTS 
+ *  CONSTANTS
  ************************************************************/
 
 static Point3d ORIGIN_3D(0.0, 0.0, 0.0);

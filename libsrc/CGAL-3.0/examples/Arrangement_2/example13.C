@@ -1,4 +1,4 @@
-// examples/Arrangement_2/example3.C   
+// examples/Arrangement_2/example3.C
 // ---------------------------------
 
 #include "short_names.h"
@@ -17,7 +17,7 @@ int main ()
 #include <CGAL/leda_real.h>
 #include <CGAL/Arr_2_bases.h>
 #include <CGAL/Arr_2_default_dcel.h>
-#include <CGAL/Arr_conic_traits_2.h> 
+#include <CGAL/Arr_conic_traits_2.h>
 #include <CGAL/Arrangement_2.h>
 
 typedef leda_real                                       NT;
@@ -34,8 +34,8 @@ typedef CGAL::Arrangement_2<Dcel,Traits,Base_node>      Arr_2;
 
 int main()
 {
-  Arr_2 arr;  
-             
+  Arr_2 arr;
+
   // Insert a hyperbolic arc, supported by the hyperbola y = 1/x
   // (or: xy - 1 = 0) with the end-points (0.25, 4) and (2, 0.5).
   Point_2   ps1 (0.25, 4);
@@ -48,7 +48,7 @@ int main()
   // phi=36.87 degree (such that sin(phi) = 0.6, cos(phi) = 0.8),
   // yielding: 58x^2 + 72y^2 - 48xy - 360 = 0.
   Curve_2   c2 (58, 72, -48, 0, 0, -360);
-  
+
   arr.insert(c2);
 
   // Insert the segment (1, 1) -- (0, -3).
@@ -70,12 +70,12 @@ int main()
   // Insert a full unit circle that is centered at (0, 4).
   Circle_2  circ5 (Point_2(0,4), 1*1, CGAL::COUNTERCLOCKWISE);
   Curve_2   c5 (circ5);
-  
+
   arr.insert(c5);
 
   // Insert a parabolic arc that is supported by a parabola y = -x^2
   // (or: x^2 + y = 0) and whose end-points are (-sqrt(3), -3) ~ (-1.73, -3)
-  // and (sqrt(2), -2) ~ (1.41, -2). Notice that since the x-coordinates 
+  // and (sqrt(2), -2) ~ (1.41, -2). Notice that since the x-coordinates
   // of the end-points cannot be acccurately represented, we specify them
   // as the intersections of the parabola with the lines y = -3 and y = -2.
   Curve_2   c6 (1, 0, 0, 0, 1, 0,       // The parabola.
@@ -87,12 +87,12 @@ int main()
   arr.insert(c6);
 
   // Print out the number of vertices, edges and faces in the arrangement.
-  std::cout << "Number of vertices: " 
+  std::cout << "Number of vertices: "
 	    << arr.number_of_vertices() << std::endl;
-  
-  std::cout << "Number of edges: " 
+
+  std::cout << "Number of edges: "
 	    << arr.number_of_halfedges()/2 << std::endl;
-  std::cout << "Number of faces: " 
+  std::cout << "Number of faces: "
 	    << arr.number_of_faces() << std::endl;
 
   return 0;

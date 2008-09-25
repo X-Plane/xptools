@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Geert-Jan Giezeman
- 
+
 
 #ifndef CGAL_FLOAT_H
 #define CGAL_FLOAT_H
@@ -50,7 +50,7 @@ to_double(float f)
 { return static_cast<double>(f); }
 
 
-inline 
+inline
 std::pair<double,double>
 to_interval(float f)
 {

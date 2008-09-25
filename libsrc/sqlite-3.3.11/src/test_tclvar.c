@@ -29,8 +29,8 @@
 typedef struct tclvar_vtab tclvar_vtab;
 typedef struct tclvar_cursor tclvar_cursor;
 
-/* 
-** A tclvar virtual-table object 
+/*
+** A tclvar virtual-table object
 */
 struct tclvar_vtab {
   sqlite3_vtab base;
@@ -56,7 +56,7 @@ static int tclvarConnect(
   char **pzErr
 ){
   tclvar_vtab *pVtab;
-  static const char zSchema[] = 
+  static const char zSchema[] =
      "CREATE TABLE whatever(name TEXT, arrayname TEXT, value TEXT)";
   pVtab = sqliteMalloc( sizeof(*pVtab) );
   if( pVtab==0 ) return SQLITE_NOMEM;
@@ -152,7 +152,7 @@ static int tclvarNext(sqlite3_vtab_cursor *cur){
 }
 
 static int tclvarFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -179,7 +179,7 @@ static int tclvarFilter(
 static int tclvarColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
   Tcl_Obj *p1;
   Tcl_Obj *p2;
-  const char *z1; 
+  const char *z1;
   const char *z2 = "";
   tclvar_cursor *pCur = (tclvar_cursor*)cur;
   Tcl_Interp *interp = ((tclvar_vtab *)cur->pVtab)->interp;
@@ -255,7 +255,7 @@ static sqlite3_module tclvarModule = {
   tclvarConnect,
   tclvarConnect,
   tclvarBestIndex,
-  tclvarDisconnect, 
+  tclvarDisconnect,
   tclvarDisconnect,
   tclvarOpen,                  /* xOpen - open a cursor */
   tclvarClose,                 /* xClose - close a cursor */
@@ -320,7 +320,7 @@ int Sqlitetesttclvar_Init(Tcl_Interp *interp){
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
-    Tcl_CreateObjCommand(interp, aObjCmd[i].zName, 
+    Tcl_CreateObjCommand(interp, aObjCmd[i].zName,
         aObjCmd[i].xProc, aObjCmd[i].clientData, 0);
   }
   return TCL_OK;

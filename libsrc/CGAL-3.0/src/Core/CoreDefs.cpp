@@ -1,12 +1,12 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: CoreDefs.cpp
  * Synopsis:
  *	 Useful parameters for Core Library which users may change
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
@@ -51,7 +51,7 @@ extLong defBFdivRelPrec = 30;
 extLong defBFsqrtAbsPrec = 30;
 
 /**
- * Escape Precision 
+ * Escape Precision
  *   -- we will not compare a number to precision higher than this
  *   -- if this is infinity, there there is no escape precision */
 extLong EscapePrec  = CORE_posInfty;
@@ -64,8 +64,8 @@ long EscapePrecFlag = 0;
     when EscapePrec is reached */
 bool EscapePrecWarning = true;
 
-/** The Composite Precision [defAbsPrec, defRelPrec] 
- *  determines the precision to which an Expr evaluates its 
+/** The Composite Precision [defAbsPrec, defRelPrec]
+ *  determines the precision to which an Expr evaluates its
  *  (exact, implicit) constant value. */
 
 /**  absolute precision  = 2^31 - 1 */
@@ -78,7 +78,7 @@ extLong defAbsPrec = CORE_posInfty;
 extLong defRelPrec = 60;
 
 /**  number of BigFloat digits to print out */
-long defBigFloatOutputDigits = 10; 
+long defBigFloatOutputDigits = 10;
 
 /**  NORMALLY, we like to make this equal to defBigFloatOutputDigits
   *  8/3/01, Chee: re-introduced this parameter */
@@ -86,10 +86,10 @@ long defOutputDigits = defBigFloatOutputDigits;
 
 /** String Input Precision */
 
-/** Set this to 16 if you want machine precision. This controls the 
+/** Set this to 16 if you want machine precision. This controls the
  *  absolute error in string decimal inputs to Real or Expr.
- *  If defInputDigits is finite, then the absolute error will be 
- *  at most 10^{-defInputDigits}.  Otherwise, the input is exactly 
+ *  If defInputDigits is finite, then the absolute error will be
+ *  at most 10^{-defInputDigits}.  Otherwise, the input is exactly
  *  represented by some BigFloat or BigRat value. */
 extLong defInputDigits = CORE_posInfty;
 
@@ -104,7 +104,7 @@ bool fpFilterFlag = true;
 /** IncrementaL evaluation flag
  *  incremental evaluation is requested, This means, we try to use previous
  *  approximate values to improve an approximation */
-bool incrementalEvalFlag = true; 
+bool incrementalEvalFlag = true;
 
 /** Progressive evaluation flag
  *  true = turn on progressive evaluation flag */

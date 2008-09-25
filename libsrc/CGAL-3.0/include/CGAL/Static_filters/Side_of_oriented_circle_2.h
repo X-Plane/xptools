@@ -62,7 +62,7 @@ protected:
       _static_epsilon = s._static_epsilon;
       return *this;
   }
- 
+
   SF_Side_of_oriented_circle_2()
   {
       _static_epsilon = HUGE_VAL;

@@ -36,7 +36,7 @@ int main()
   Halfedge_handle h6 = pm.insert_from_vertex(cv6, h3->twin());
   Halfedge_handle h7 = pm.insert_at_vertices(cv7, h5, h6);
   (void) h7;
-  
+
   std::cout << "Faces = " << pm.number_of_faces() << "\n";
   std::cout << "Vertices = " << pm.number_of_vertices() << "\n";
   std::cout << "Halfedges = " << pm.number_of_halfedges() << "\n";

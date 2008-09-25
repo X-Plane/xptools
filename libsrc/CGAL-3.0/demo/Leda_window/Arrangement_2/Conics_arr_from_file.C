@@ -101,31 +101,31 @@ public:
       curves.push_back(cv);
       CGAL::Bbox_2 curve_bbox = cv.bounding_box();
       if (i == 0) bbox = curve_bbox;
-      else bbox = bbox + curve_bbox;      
+      else bbox = bbox + curve_bbox;
     }
     inp.close();
     return 0;
   }
-  
+
   void ReadCurve(std::ifstream & is, Curve_2 & cv)
   {
       // Read a line from the input file.
       char one_line[128];
-      
+
       skip_comments (is, one_line);
       std::istringstream str_line (one_line);
-      
+
       // Get the arc type.
       char     type;
       bool     is_circle = false;              // Is this a circle.
       Circle_2 circle;
       NT       r, s, t, u, v, w;               // The conic coefficients.
-      
+
       str_line >> type;
-      
+
       // An ellipse (full ellipse or a partial ellipse):
       if (type == 'f' || type == 'F' || type == 'e' || type == 'E')
-      {  
+      {
           // Read the ellipse (using the format "a b x0 y0"):
           //
           //     x - x0   2      y - y0   2
@@ -133,12 +133,12 @@ public:
           //       a               b
           //
           NT     a, b, x0, y0;
-          
+
           str_line >> a >> b >> x0 >> y0;
-          
+
           NT     a_sq = a*a;
           NT     b_sq = b*b;
-          
+
           if (a == b)
           {
               is_circle = true;
@@ -153,7 +153,7 @@ public:
               v = -2*y0*a_sq;
               w = x0*x0*b_sq + y0*y0*a_sq - a_sq*b_sq;
           }
-          
+
           if (type == 'f' || type == 'F')
           {
               // Create a full ellipse (or circle).
@@ -161,7 +161,7 @@ public:
                   cv = Curve_2 (circle);
               else
                   cv = Curve_2 (r, s, t, u, v, w);
-              
+
               return;
           }
       }
@@ -174,18 +174,18 @@ public:
           //       a               b
           //
           NT     a, b, x0, y0;
-          
+
           str_line >> a >> b >> x0 >> y0;
-          
+
           NT     a_sq = a*a;
           NT     b_sq = b*b;
-          
+
           r = b_sq;
           s= -a_sq;
           t = 0;
           u = -2*x0*b_sq;
           v = 2*y0*a_sq;
-          w = x0*x0*b_sq - y0*y0*a_sq - a_sq*b_sq;  
+          w = x0*x0*b_sq - y0*y0*a_sq - a_sq*b_sq;
       }
       else if (type == 'p' || type == 'P')
       {
@@ -195,9 +195,9 @@ public:
           //  4c*(y - y0) = (x - x0)
           //
           NT     c, x0, y0;
-          
+
           str_line >> c >> x0 >> y0;
-          
+
           r = 1;
           s = 0;
           t = 0;
@@ -209,7 +209,7 @@ public:
       {
           // Read a general conic, given by its coefficients <r,s,t,u,v,w>.
           str_line >> r >> s >> t >> u >> v >> w;
-          
+
           if (type == 'c' || type == 'C')
           {
               // Create a full conic (should work only for ellipses).
@@ -221,13 +221,13 @@ public:
       {
           // Read a segment, given by its endpoints (x1,y1) and (x2,y2);
           NT      x1, y1, x2, y2;
-          
+
           str_line >> x1 >> y1 >> x2 >> y2;
-          
+
           Point_2   source (x1, y1);
           Point_2   target (x2, y2);
           Segment_2 segment (source, target);
-          
+
           // Create the segment.
           cv = Curve_2(segment);
           return;
@@ -236,29 +236,29 @@ public:
       {
           // Read a general conic, given by its coefficients <r,s,t,u,v,w>.
           str_line >> r >> s >> t >> u >> v >> w;
-          
-          // Read the approximated source, along with a general conic 
+
+          // Read the approximated source, along with a general conic
           // <r_1,s_1,t_1,u_1,v_1,w_1> whose intersection with <r,s,t,u,v,w>
           // defines the source.
           NT     r1, s1, t1, u1, v1, w1;
           NT     x1, y1;
-          
+
           str_line >> x1 >> y1;
           str_line >> r1 >> s1 >> t1 >> u1 >> v1 >> w1;
-          
+
           Point_2   app_source (x1, y1);
-          
-          // Read the approximated target, along with a general conic 
+
+          // Read the approximated target, along with a general conic
           // <r_2,s_2,t_2,u_2,v_2,w_2> whose intersection with <r,s,t,u,v,w>
           // defines the target.
           NT     r2, s2, t2, u2, v2, w2;
           NT     x2, y2;
-          
+
           str_line >> x2 >> y2;
           str_line >> r2 >> s2 >> t2 >> u2 >> v2 >> w2;
-          
+
           Point_2   app_target (x2, y2);
-          
+
           // Create the conic arc.
           cv = Curve_2 (r, s, t, u, v ,w,
                         app_source, r1, s1, t1, u1, v1, w1,
@@ -271,15 +271,15 @@ public:
                     << std::endl;
           return;
       }
-      
+
       // Read the end points of the arc and create it.
       NT    x1, y1, x2, y2;
-      
+
       str_line >> x1 >> y1 >> x2 >> y2;
-      
+
       Point_2 source (x1, y1);
       Point_2 target (x2, y2);
-      
+
       // Create the conic (or circular) arc.
       if (is_circle)
       {
@@ -291,10 +291,10 @@ public:
           cv = Curve_2 (r, s, t, u, v, w,
                         source, target);
       }
-      
+
       return;
   }
-    
+
   void skip_comments( std::ifstream& is, char* one_line )
   {
     while( !is.eof() ){
@@ -302,7 +302,7 @@ public:
       if( one_line[0] != '#' ){
 	break;
       }
-    }  
+    }
   }
 };
 
@@ -331,7 +331,7 @@ int main(int argc, char * argv[])
   int rc = reader.ReadData(filename, curveList, format, bbox);
   if (rc < 0) return rc;
   if (verbose) std::cout << curveList.size() << " curves" << std::endl;
-  
+
   // construct
   Naive_point_location strategy;
   Pmwx pm(&strategy);
@@ -342,11 +342,11 @@ int main(int argc, char * argv[])
   CurveList::const_iterator i;
   for (i = curveList.begin(); i != curveList.end(); i++)
     pm.insert(*i);
- 
+
   t.stop();
-  std::cout << "Construction took " 
+  std::cout << "Construction took "
 	    << t.time() << " seconds." << std::endl;
-  
+
   curveList.clear();
 
   // if map is empty
@@ -369,7 +369,7 @@ int main(int argc, char * argv[])
   float y_range = bbox.ymax() - bbox.ymin();
   float width = 640;
   float height = (y_range * width) / x_range;
-    
+
   CGAL::Window_stream * myWindow =
     new CGAL::Window_stream(static_cast<int>(width),
                             static_cast<int>(height),
@@ -379,11 +379,11 @@ int main(int argc, char * argv[])
   float min_range = (x_range < y_range) ? x_range : y_range;
   float x_margin = min_range / 4;
   float y_margin = (height * x_margin) / width;
-        
+
   float x0 = bbox.xmin() - x_margin;
   float x1 = bbox.xmax() + x_margin;
   float y0 = bbox.ymin() - y_margin;
-  myWindow->init(x0, x1, y0);   // logical window size 
+  myWindow->init(x0, x1, y0);   // logical window size
 
   myWindow->set_redraw(redraw);
   myWindow->set_mode(CGAL_LEDA_SCOPE::src_mode);
@@ -406,7 +406,7 @@ int main(int argc, char * argv[])
 
   Point_2 p;
   Pmwx::Halfedge_handle e;
-  
+
   CGAL::My_Arr_drawer< Pmwx, Pmwx::Ccb_halfedge_circulator,
     Pmwx::Holes_iterator> drawer(*myWindow);
   for (; ; ) {
@@ -417,10 +417,10 @@ int main(int argc, char * argv[])
       p = Point_2(x, y);
 
     (*myWindow) << pm;
-    
+
     Pmwx::Locate_type lt;
     e = pm.locate(p, lt);
-      
+
     //color the face on the screen
     Pmwx::Face_handle f = e->face();
     drawer.draw_face(f);

@@ -32,10 +32,10 @@ class Plane3d : public GeomObj{
 private:
 
   // ax + by + cz + d = 0
-  double a; 
-  double b; 
-  double c; 
-  double d; 
+  double a;
+  double b;
+  double c;
+  double d;
   Vector n;
 
 public:
@@ -50,7 +50,7 @@ public:
   //copy constructor
 
   Plane3d(const Point3d & p, const Vector &v);
-  // plane with direction v passes through point p 
+  // plane with direction v passes through point p
 
   Plane3d(const Point3d &p1, const Point3d &p2, const Point3d &p3);
   //plane passes through points p1, p2, p3
@@ -65,15 +65,15 @@ public:
   // plane determined by vector and displacement
 
   // plane determined by equation
-  Plane3d(double a1, double b1, double c1, double d1);  
-  
+  Plane3d(double a1, double b1, double c1, double d1);
+
   virtual ~Plane3d() {}
 /************************************************************
   *   member functions
  ************************************************************/
 
   virtual int dim() const { return 2; }
-  
+
   double* coeffients() const;
   double A() const { return a; }
   double B() const { return b; }
@@ -86,12 +86,12 @@ public:
 
    // apply equation of plane to a point
   double apply( const Point3d& p ) const { return a*p.X()+b*p.Y()+c*p.Z()+d; }
-  
+
    // plane against plane predicates
   bool isCoincident(const Plane3d& pl) const;
-  bool isParallel(const Plane3d& pl) const; 
+  bool isParallel(const Plane3d& pl) const;
    // test parallel
-  bool isParallel(const Line3d& l) const; 
+  bool isParallel(const Line3d& l) const;
 
   bool contains( const Point3d& p ) const;
   bool contains( const Line3d& l ) const;
@@ -114,8 +114,8 @@ public:
 
    /** intersect predicates
     * later implementation may return like this:
-    * return dimension of intersection 
-    * return -1 if not intersect 
+    * return dimension of intersection
+    * return -1 if not intersect
     * return 0 if intersect on a point ... and so on.
     **/
   int intersects( const Line3d& l ) const;
@@ -123,7 +123,7 @@ public:
   int intersects( const Segment3d& s ) const;
   int intersects( const Plane3d& pl ) const;
 
-   // return intersection 
+   // return intersection
   GeomObj* intersection( const Line3d& l ) const;
   GeomObj* intersection( const Segment3d& s ) const;
   GeomObj* intersection( const Plane3d& pl ) const;

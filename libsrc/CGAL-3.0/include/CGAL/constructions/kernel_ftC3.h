@@ -267,9 +267,9 @@ projection_lineC3(const FT &px, const FT &py, const FT &pz,
   z = lpz + lambda * ldz;
 }
 
-template <class FT> 
+template <class FT>
 CGAL_KERNEL_MEDIUM_INLINE
-void            
+void
 plane_from_pointsC3(const FT &px, const FT &py, const FT &pz,
                     const FT &qx, const FT &qy, const FT &qz,
                     const FT &rx, const FT &ry, const FT &rz,

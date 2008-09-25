@@ -520,7 +520,7 @@ public:
 
           // Scaling:
 
-          Aff_transformationH2(const Scaling, const RT& a,  
+          Aff_transformationH2(const Scaling, const RT& a,
                                const RT& b = RT(1));
 
           Aff_transformationH2(const Scaling, const RT& xa, const RT& xb,

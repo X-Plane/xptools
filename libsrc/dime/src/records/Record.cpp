@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Record.cpp
  *
  *  This source file is part of DIME.
@@ -42,7 +42,7 @@
 #include <dime/records/DoubleRecord.h>
 #include <dime/records/HexRecord.h>
 #include <dime/records/Int8Record.h>
-#include <dime/records/Int16Record.h> 
+#include <dime/records/Int16Record.h>
 #include <dime/records/Int32Record.h>
 
 /*!
@@ -86,7 +86,7 @@ dimeRecord::~dimeRecord()
   Sets the group code of this record.
 */
 
-void 
+void
 dimeRecord::setGroupCode(const int group_code)
 {
   this->groupCode = group_code;
@@ -96,7 +96,7 @@ dimeRecord::setGroupCode(const int group_code)
   Returns the group code for this record.
 */
 
-int 
+int
 dimeRecord::getGroupCode() const
 {
   return this->groupCode;
@@ -124,7 +124,7 @@ dimeRecord::isEndOfFileRecord() const
 
 /*!
   \fn int dimeRecord::typeId() const
-  This virtual function will return the type of the record. 
+  This virtual function will return the type of the record.
 */
 
 /*!
@@ -136,7 +136,7 @@ dimeRecord::isEndOfFileRecord() const
   This function will write the record to the dimeOutput file.
 */
 
-bool 
+bool
 dimeRecord::write(dimeOutput * const out)
 {
   return out->writeGroupCode(groupCode);
@@ -167,9 +167,9 @@ dimeRecord::readRecord(dimeInput * const in)
 */
 
 dimeRecord *
-dimeRecord::createRecord(const int group_code, 
+dimeRecord::createRecord(const int group_code,
 			dimeMemHandler * const memhandler)
-{  
+{
   int type = getRecordType(group_code);
   dimeRecord *record = NULL;
   switch (type) {
@@ -218,13 +218,13 @@ dimeRecord::createRecord(const int group_code,
 // used to build a look-up table
 //
 
-static int 
+static int
 get_record_type(const int group_code)
 {
   int type = dimeBase::dimeStringRecordType;
-  
+
   if (group_code < 0) {
-    // not normally used in DXF files, but return string record to 
+    // not normally used in DXF files, but return string record to
     // ensure correct read & write
     type = dimeBase::dimeStringRecordType;
   }
@@ -251,12 +251,12 @@ get_record_type(const int group_code)
   else if (group_code <= 89) {
     // not defined yet. Use string.
     type = dimeBase::dimeStringRecordType;
-  } 
+  }
   else if (group_code <= 99) {
     type = dimeBase::dimeInt32RecordType;
   }
   else if (group_code < 140) {
-    // only 100, 102 and 105 are defined. But use string for the rest also. 
+    // only 100, 102 and 105 are defined. But use string for the rest also.
     type = dimeBase::dimeStringRecordType;
   }
   else if (group_code <= 147) {
@@ -339,7 +339,7 @@ get_record_type(const int group_code)
   the group code.
 */
 
-int 
+int
 dimeRecord::getRecordType(const int group_code)
 {
   static int first = 1;
@@ -360,13 +360,13 @@ dimeRecord::getRecordType(const int group_code)
   \a param, based on the \a group_code.
 */
 
-bool 
+bool
 dimeRecord::readRecordData(dimeInput * const in, const int group_code,
 			  dimeParam &param)
 {
   bool ret;
   int type = getRecordType(group_code);
-  
+
   switch(type) {
   case dimeBase::dimeInt8RecordType:
     ret = in->readInt8(param.int8_data);

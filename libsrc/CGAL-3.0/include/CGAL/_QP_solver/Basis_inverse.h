@@ -16,7 +16,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sven Schönherr <sven@inf.ethz.ch>
-                                                                               
+
 
 #ifndef CGAL_BASIS_INVERSE_H
 #define CGAL_BASIS_INVERSE_H
@@ -29,13 +29,13 @@
 
 
 CGAL_BEGIN_NAMESPACE
-                    
+
 
 // Class declaration
 // =================
 template < class ET_, class Is_lp_ >
 class Basis_inverse;
-                    
+
 
 template < class ET, class Is_lp >
 class Basis_inverse__entry_iterator;
@@ -52,34 +52,34 @@ class Basis_inverse {
     typedef  Basis_inverse<ET,Is_lp>    Self;
 
   private:
-    
+
     // private types
     typedef  std::vector<ET>            Row;
     typedef  std::vector<Row>           Matrix;
-    
-    
+
+
     typedef  CGAL::Tag_true             Tag_true;
     typedef  CGAL::Tag_false            Tag_false;
-    
-    
+
+
     // friends
     friend  class Basis_inverse__entry_iterator<ET,Is_lp>;
-    
-    
+
+
 
   public:
-    
+
     // types
     typedef  Basis_inverse__entry_iterator<ET,Is_lp>
                                         Entry_iterator;
-                                                       
 
-    
+
+
     // creation
     Basis_inverse( CGAL::Verbose_ostream&  verbose_out)
         : et_0( 0), et_1( 1), vout( verbose_out) { }
-    
-    
+
+
     // initialization
     template < class InputIterator1, class InputIterator2 >
     void
@@ -91,7 +91,7 @@ class Basis_inverse {
             m = qp_m;
             d = et_1;
             init( l, u_it, w_it, max_size, Is_lp());
-            
+
             CGAL_optimisation_debug {
                 if ( vout.verbose()) {
                     for ( unsigned int row = 0; row < k; ++row) {
@@ -102,20 +102,20 @@ class Basis_inverse {
                     vout.out() << "denominator = " << d << std::endl;
                 }
             }
-             
+
         }
-    
-    
+
+
     // access
     const ET&  denominator( ) const { return d; }
-    
-    
+
+
     Entry_iterator  column_begin( unsigned int j) const
         { return Entry_iterator( M, 0, j); }
     Entry_iterator  column_end  ( unsigned int j) const
         { return Entry_iterator( M, k, j); }
-    
-    
+
+
     // multiplication functions
     template < class ForwardIterator, class OutputIterator >
     void
@@ -124,8 +124,8 @@ class Basis_inverse {
         {
             multiply( z_l, z_x, y_l, y_x, Is_lp());
         }
-    
-    
+
+
     // special multiplication functions for LPs
     template < class ForwardIterator, class OutputIterator >
     void
@@ -133,55 +133,55 @@ class Basis_inverse {
         {
             multiply_l( z_x, y_l, Is_lp());
         }
-    
+
     template < class ForwardIterator, class OutputIterator >
     void
     multiply_x( ForwardIterator z_l, OutputIterator y_x) const
         {
             multiply_x( z_l, y_x, Is_lp());
         }
-    
-    
+
+
     // update functions
     /*
     template < class ForwardIterator > inline
     void  append( ForwardIterator q_l, ForwardIterator q_x, const ET& nu);
-    
-    
+
+
     inline
     void  remove( unsigned int i);
-    
-    
+
+
     template < class RandomAccessIterator > inline
     void  replace( unsigned int i, RandomAccessIterator q_x);
     */
-    
+
     // swap function
     /*
     inline
     void  swap( unsigned int, unsigned int);
     */
-    
+
 
   private:
-    
+
     // some constants
     const ET                 et_0, et_1;
-                                        
 
-    
+
+
     // data members
     unsigned int             m;         // number of constraints
     unsigned int             k;         // size of matrix
     Matrix                   M;         // basis inverse, stored row-wise
     ET                       d;         // denominator
-    
-    
-    CGAL::Verbose_ostream&   vout;      // used for verbose output
-    
-    
 
-    
+
+    CGAL::Verbose_ostream&   vout;      // used for verbose output
+
+
+
+
     // initialization
     /*
     template < class InputIterator1, class InputIterator2 >
@@ -193,7 +193,7 @@ class Basis_inverse {
                         InputIterator1 u_it, InputIterator2 w_it,
                         unsigned int max_size, Tag_true );
     */
-    
+
     // multiplication functions
     /*
     template < class ForIt, class OutIt > inline                        // QP
@@ -203,25 +203,25 @@ class Basis_inverse {
     void  multiply( ForIt z_l, ForIt z_x,
                     OutIt y_l, OutIt y_x, Tag_true ) const;
     */
-    
+
     // special multiplication functions for LPs
     /*
     template < class ForIt, class OutIt > inline                        // QP
     void  multiply_l( ForIt z_x, OutIt y_l, Tag_false) const;
     template < class ForIt, class OutIt > inline                        // LP
     void  multiply_l( ForIt z_x, OutIt y_l, Tag_true ) const;
-    
+
     template < class ForIt, class OutIt > inline                        // QP
     void  multiply_x( ForIt z_l, OutIt y_x, Tag_false) const;
     template < class ForIt, class OutIt > inline                        // LP
     void  multiply_x( ForIt z_l, OutIt y_x, Tag_true ) const;
     */
-  
 
-  
+
+
 
 // ============================================================================
-                                                                               
+
 
 // Class Implementation
 // ====================
@@ -484,11 +484,11 @@ append( ForIt q_l, ForIt q_x, const ET& nu)
                               row_it != matrix_it->end();
                             ++row_it,                       ++q_it2      ){
 
-            
+
             *row_it *= nu;
             *row_it -= *q_it1 * *q_it2;
             *row_it /= d;                       // without remainder!
-                                                                     
+
         }
     }
 
@@ -502,11 +502,11 @@ append( ForIt q_l, ForIt q_x, const ET& nu)
                 column < m;
               ++column,     ++row_it,                       ++q_it2      ){
 
-            
+
             *row_it *= nu;
             *row_it -= *q_it1 * *q_it2;
             *row_it /= d;                       // without remainder!
-                                                                     
+
         }
 
         // columns: m..k-1
@@ -514,11 +514,11 @@ append( ForIt q_l, ForIt q_x, const ET& nu)
                               row_it != matrix_it->end();
                             ++row_it,                       ++q_it2      ){
 
-            
+
             *row_it *= nu;
             *row_it -= *q_it1 * *q_it2;
             *row_it /= d;                       // without remainder!
-                                                                     
+
         }
     }
 
@@ -549,7 +549,7 @@ append( ForIt q_l, ForIt q_x, const ET& nu)
     d = ( nu_negative ? -nu : nu);
     CGAL_optimisation_postcondition( d > et_0);
 
-    
+
     CGAL_optimisation_debug {
         if ( vout.verbose()) {
             for ( unsigned int row = 0; row < k; ++row) {
@@ -560,7 +560,7 @@ append( ForIt q_l, ForIt q_x, const ET& nu)
             vout.out() << "denominator = " << d << std::endl;
         }
     }
-     
+
 }
 
 // remove
@@ -610,7 +610,7 @@ remove( unsigned int i)
     d = -new_d;
     CGAL_optimisation_postcondition( d > et_0);
 
-    
+
     CGAL_optimisation_debug {
         if ( vout.verbose()) {
             for ( unsigned int row = 0; row < k; ++row) {
@@ -621,7 +621,7 @@ remove( unsigned int i)
             vout.out() << "denominator = " << d << std::endl;
         }
     }
-     
+
 }
 
 // replace
@@ -653,17 +653,17 @@ replace( unsigned int i, RanIt q_x)
             row < i;
           ++row,     ++matrix_it, ++q_x) {
 
-        
+
         // columns: 0..m-1
         for (   row_it =  matrix_it->begin(),   row_i_it = M[ i].begin();
                 row_it != matrix_it->end();
               ++row_it                      , ++row_i_it                ) {
-        
+
             *row_it *= new_d;
             *row_it -= *q_x * *row_i_it;
             *row_it /= d;                       // without remainder!
         }
-         
+
     }
 
     // rows: i (flip signs, in necessary)
@@ -681,17 +681,17 @@ replace( unsigned int i, RanIt q_x)
             row < m;
           ++row,     ++matrix_it, ++q_x) {
 
-        
+
         // columns: 0..m-1
         for (   row_it =  matrix_it->begin(),   row_i_it = M[ i].begin();
                 row_it != matrix_it->end();
               ++row_it                      , ++row_i_it                ) {
-        
+
             *row_it *= new_d;
             *row_it -= *q_x * *row_i_it;
             *row_it /= d;                       // without remainder!
         }
-         
+
     }
 
     // store new denominator
@@ -699,7 +699,7 @@ replace( unsigned int i, RanIt q_x)
     d = new_d;
     CGAL_optimisation_postcondition( d > et_0);
 
-    
+
     CGAL_optimisation_debug {
         if ( vout.verbose()) {
             for ( unsigned int row = 0; row < k; ++row) {
@@ -710,7 +710,7 @@ replace( unsigned int i, RanIt q_x)
             vout.out() << "denominator = " << d << std::endl;
         }
     }
-     
+
 }
 
 
@@ -763,7 +763,7 @@ swap( unsigned int i, unsigned int j)
     // swap entries i,i with j,j (entry <-> entry)
     std::iter_swap( row_i_it, row_j_it);
 }
- 
+
 };
 
 template < class ET, class Is_lp >
@@ -829,7 +829,7 @@ class Basis_inverse__entry_iterator {
 };
 
 CGAL_END_NAMESPACE
-                  
+
 
 #endif // CGAL_BASIS_INVERSE_H
 

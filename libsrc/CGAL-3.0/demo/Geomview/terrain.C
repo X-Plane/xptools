@@ -48,9 +48,9 @@ int main()
   std::ifstream iFile("data/points3", std::ios::in);
   Point3 p;
 
-  while ( iFile >> p ) 
-  { 
-      D.insert( Point2(p.x(), p.y()) ); 
+  while ( iFile >> p )
+  {
+      D.insert( Point2(p.x(), p.y()) );
       D3d.insert( p );
       T.insert( p );
   }

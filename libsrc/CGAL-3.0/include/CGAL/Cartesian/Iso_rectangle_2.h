@@ -69,7 +69,7 @@ public:
     CGAL_kernel_precondition(!less_y(top, bottom));
   }
 
-  Iso_rectangleC2(const FT& min_x, const FT& min_y, 
+  Iso_rectangleC2(const FT& min_x, const FT& min_y,
                   const FT& max_x, const FT& max_y)
     : base(rep(Construct_point_2()(min_x, min_y),
                Construct_point_2()(max_x, max_y)))
@@ -78,7 +78,7 @@ public:
     CGAL_kernel_precondition(min_y <= max_y);
   }
 
-  Iso_rectangleC2(const FT& min_hx, const FT& min_hy, 
+  Iso_rectangleC2(const FT& min_hx, const FT& min_hy,
                   const FT& max_hx, const FT& max_hy, const FT& hw)
   {
     Construct_point_2 construct_point_2;
@@ -298,7 +298,7 @@ template < class R >
 inline
 Bbox_2
 Iso_rectangleC2<R>::bbox() const
-{ 
+{
   typename R::Construct_bbox_2 construct_bbox_2;
   return construct_bbox_2(min()) + construct_bbox_2(max());
 }

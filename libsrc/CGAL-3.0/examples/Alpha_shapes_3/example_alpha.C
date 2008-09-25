@@ -65,12 +65,12 @@ construct_alpha_shape(const std::list<Point> &V_p,
 		      Alpha_shape_3::Mode mode,
 		      Alpha_shape_3& A)
   // Generate Alpha Shape
-{ 
+{
   std::vector<Segment> V_seg;
-  
+
   int  n = A.make_alpha_shape(V_p.begin(), V_p.end());
   std::cout << "Inserted " << n  << " points" << std::endl;
-  
+
   A.set_mode(mode);
 }
 
@@ -120,7 +120,7 @@ void set_alpha(Alpha_shape_3& A, int alpha_index)
   else
     A.set_alpha(0);
 }
-    
+
 //------------------ main -------------------------------------------
 
 int main()
@@ -131,7 +131,7 @@ int main()
 
   std::list<Point> L;
 
-  file_input(L);  
+  file_input(L);
   construct_alpha_shape(L,Alpha_shape_3::GENERAL,A);
 
   std::cout << "Alpha Shape computed" << std::endl;
@@ -142,7 +142,7 @@ int main()
   if (n == 0)
     A.set_alpha(*A.find_optimal_alpha(2));
   else
-    set_alpha(A,n);      
+    set_alpha(A,n);
   //std::cout << A;
 
 

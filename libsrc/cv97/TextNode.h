@@ -37,7 +37,7 @@ class TextNode : public GeometryNode {
 	SFFloat *maxExtentField;
 	MFFloat *lengthField;
 	MFString *stringField;
-	
+
 public:
 
 	TextNode();
@@ -48,7 +48,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getMaxExtentField();
-	
+
 	void setMaxExtent(float value);
 	float getMaxExtent();
 
@@ -83,7 +83,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

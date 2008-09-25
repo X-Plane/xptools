@@ -4,7 +4,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -77,25 +77,25 @@ class sio_8211Writer : public sio_Writer
    public:
 
       ///
-      sio_8211Writer( std::ofstream & ofs, 
+      sio_8211Writer( std::ofstream & ofs,
                       const char* title,
                       sio_8211Schema const & schema );
 
       ///
-      sio_8211Writer( std::ofstream & ofs, 
+      sio_8211Writer( std::ofstream & ofs,
                       const char* title );
 
       ///
-      sio_8211Writer( std::ofstream & ofs, 
+      sio_8211Writer( std::ofstream & ofs,
                       std::string const& title,
                       sio_8211Schema const & schema );
 
       /**
        8211 written to ``ofs''.  ``title'' is used in the 8211 file
        identifier field. ``schema'' not only is used to build a proper
-       DDR, but also is used to emit proper DR's.  
+       DDR, but also is used to emit proper DR's.
       */
-      sio_8211Writer( std::ofstream & ofs, 
+      sio_8211Writer( std::ofstream & ofs,
                       std::string const& title );
 
       // sio_8211Writer( const sio_8211Writer& ) NOT NEEDED
@@ -135,7 +135,7 @@ class sio_8211Writer : public sio_Writer
        the last leader and directory will be 're-used' to save space.
        (C.f., ISO/IEC 8211:1994(E), page 44, C.1.5.2, "repeating leaders
        and directories").
-      
+
        PLEASE NOTE THAT THIS ASSUMES THAT ALL SUBSEQUENT RECORDS HAVE
        IDENTICAL RECORD LENGTHS AND FORMATS.  The behavior of put()
        is undefined for records that do not match the format found in

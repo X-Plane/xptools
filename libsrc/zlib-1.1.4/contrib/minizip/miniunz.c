@@ -93,14 +93,14 @@ int makedir (newdir)
 {
   char *buffer ;
   char *p;
-  int  len = strlen(newdir);  
+  int  len = strlen(newdir);
 
-  if (len <= 0) 
+  if (len <= 0)
     return 0;
 
   buffer = (char*)malloc(len+1);
   strcpy(buffer,newdir);
-  
+
   if (buffer[len-1] == '/') {
     buffer[len-1] = '\0';
   }
@@ -140,7 +140,7 @@ void do_banner()
 }
 
 void do_help()
-{	
+{
 	printf("Usage : miniunz [-exvlo] file.zip [file_to_extract]\n\n") ;
 }
 
@@ -223,7 +223,7 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite)
     FILE *fout=NULL;
     void* buf;
     uInt size_buf;
-	
+
 	unz_file_info file_info;
 	uLong ratio=0;
 	err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
@@ -306,7 +306,7 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite)
 			fout=fopen(write_filename,"wb");
 
             /* some zipfile don't contain directory alone before file */
-            if ((fout==NULL) && ((*popt_extract_without_path)==0) && 
+            if ((fout==NULL) && ((*popt_extract_without_path)==0) &&
                                 (filename_withoutpath!=(char*)filename_inzip))
             {
                 char c=*(filename_withoutpath-1);
@@ -329,7 +329,7 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite)
 			do
 			{
 				err = unzReadCurrentFile(uf,buf,size_buf);
-				if (err<0)	
+				if (err<0)
 				{
 					printf("error %d with zipfile in unzReadCurrentFile\n",err);
 					break;
@@ -344,7 +344,7 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite)
 			}
 			while (err>0);
 			fclose(fout);
-			if (err==0) 
+			if (err==0)
 				change_file_date(write_filename,file_info.dosDate,
 					             file_info.tmu_date);
 		}
@@ -358,10 +358,10 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite)
 		    }
         }
         else
-            unzCloseCurrentFile(uf); /* don't lose the error */       
+            unzCloseCurrentFile(uf); /* don't lose the error */
 	}
 
-    free(buf);    
+    free(buf);
     return err;
 }
 
@@ -374,7 +374,7 @@ int do_extract(uf,opt_extract_without_path,opt_overwrite)
 	uLong i;
 	unz_global_info gi;
 	int err;
-	FILE* fout=NULL;	
+	FILE* fout=NULL;
 
 	err = unzGetGlobalInfo (uf,&gi);
 	if (err!=UNZ_OK)
@@ -448,9 +448,9 @@ int main(argc,argv)
 			if ((*argv[i])=='-')
 			{
 				const char *p=argv[i]+1;
-				
+
 				while ((*p)!='\0')
-				{			
+				{
 					char c=*(p++);;
 					if ((c=='l') || (c=='L'))
 						opt_do_list = 1;

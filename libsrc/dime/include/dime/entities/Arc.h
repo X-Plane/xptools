@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Arc.h
  *
  *  This source file is part of DIME.
@@ -29,7 +29,7 @@
 
 #ifndef DIME_ARC_H
 #define DIME_ARC_H
-  
+
 #include <dime/Basic.h>
 #include <dime/entities/ExtrusionEntity.h>
 #include <dime/util/Linear.h>
@@ -47,29 +47,29 @@ public:
   dxfdouble getStartAngle() const;
   void setEndAngle(const dxfdouble a);
   dxfdouble getEndAngle() const;
-  
+
   virtual bool getRecord(const int groupcode,
 			 dimeParam &param,
 			 const int index = 0) const;
   virtual const char *getEntityName() const;
 
   virtual dimeEntity *copy(dimeModel * const model) const;
-  
+
   virtual void print() const;
   virtual bool write(dimeOutput * const out);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
   virtual GeometryType extractGeometry(dimeArray <dimeVec3f> &verts,
 				       dimeArray <int> &indices,
 				       dimeVec3f &extrusionDir,
 				       dxfdouble &thickness);
-  
+
 protected:
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
                             dimeMemHandler * const memhandler);
-    
+
 private:
   dimeVec3f center;
   dxfdouble radius;
@@ -82,53 +82,53 @@ private:
 // inline methods
 //
 
-inline void 
+inline void
 dimeArc::setCenter(const dimeVec3f &c)
 {
   this->center = c;
 }
 
-inline void 
+inline void
 dimeArc::getCenter(dimeVec3f &c) const
 {
   c = this->center;
 }
 
-inline void 
+inline void
 dimeArc::setRadius(const dxfdouble r)
 {
   this->radius = r;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeArc::getRadius() const
 {
   return this->radius;
 }
 
-inline void 
+inline void
 dimeArc::setStartAngle(const dxfdouble a)
 {
   this->startAngle = a;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeArc::getStartAngle() const
 {
   return this->startAngle;
 }
 
-inline void 
+inline void
 dimeArc::setEndAngle(const dxfdouble a)
 {
   this->endAngle = a;
 }
 
-inline dxfdouble 
+inline dxfdouble
 dimeArc::getEndAngle() const
 {
   return this->endAngle;
 }
- 
+
 #endif // ! DIME_ARC_H
 

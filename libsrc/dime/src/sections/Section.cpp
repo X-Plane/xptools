@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Section.cpp
  *
  *  This source file is part of DIME.
@@ -30,7 +30,7 @@
 /*!
   \class dimeSection dime/sections/Section.h
   \brief The dimeSection class is the superclass for all \e section classes.
-  
+
   Currently supported sections are:
   - Header   (dimeHeaderSection)
   - Classes  (dimeClassSection)
@@ -53,7 +53,7 @@
 
 /*!
   \fn int dimeSection::countRecords() const
-  Returns the number of records in this section. 
+  Returns the number of records in this section.
 */
 
 /*!
@@ -64,7 +64,7 @@ dimeSection::dimeSection(dimeMemHandler * const memhandler)
   : memHandler( memhandler )
 {
 }
- 
+
 /*!
   Empty virtual destructor.
 */
@@ -84,7 +84,7 @@ dimeSection::createSection(const char * const sectionname,
 {
   if (!strcmp(sectionname, "HEADER"))
     return new dimeHeaderSection(memhandler);
-#if 0 // passthrough for the moment. I can't imaging anybody is using them 
+#if 0 // passthrough for the moment. I can't imaging anybody is using them
   if (!strcmp(sectionname, "CLASSES"))
     return new dimeClassesSection(memhandler);
   if (!strcmp(sectionname, "OBJECTS"))
@@ -101,7 +101,7 @@ dimeSection::createSection(const char * const sectionname,
 
 //!
 
-bool 
+bool
 dimeSection::isOfType(const int thetypeid) const
 {
   return thetypeid == dimeSectionType ||

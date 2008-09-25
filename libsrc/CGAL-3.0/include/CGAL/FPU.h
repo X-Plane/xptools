@@ -33,15 +33,15 @@
 
 #ifdef __MWERKS__
 #  include <fenv.h>
-#elif defined __alpha__  && defined __linux__ 
+#elif defined __alpha__  && defined __linux__
 extern "C" {
 #  include <fenv.h>
 }
-#elif defined __linux__ 
+#elif defined __linux__
 #  include <fpu_control.h>
 #elif defined __SUNPRO_CC || (defined __KCC && defined __sun)
 #  include <ieeefp.h>
-#elif defined __osf || defined __osf__ 
+#elif defined __osf || defined __osf__
 #  ifdef __GNUG__
      // GCC seems to remove (fixincludes) read_rnd/write_rnd...
 #    include "/usr/include/float.h"
@@ -189,7 +189,7 @@ typedef unsigned short FPU_CW_t;
 #define CGAL_FE_UPWARD       (0x800 | 0x127f)
 #define CGAL_FE_DOWNWARD     (0x400 | 0x127f)
 
-#elif defined __powerpc__  
+#elif defined __powerpc__
 #define CGAL_IA_SETFPCW(CW) _FPU_SETCW(CW)
 #define CGAL_IA_GETFPCW(CW) _FPU_GETCW(CW)
 typedef fpu_control_t FPU_CW_t;
@@ -265,9 +265,9 @@ typedef unsigned int FPU_CW_t;
 #define CGAL_IA_GETFPCW(CW) (CW = __ieee_get_fp_control())
 typedef unsigned long FPU_CW_t;
 #define CGAL_FE_TONEAREST   FE_TONEAREST
-#define CGAL_FE_TOWARDZERO  FE_TOWARDZERO 
-#define CGAL_FE_UPWARD      FE_UPWARD 
-#define CGAL_FE_DOWNWARD    FE_DOWNWARD 
+#define CGAL_FE_TOWARDZERO  FE_TOWARDZERO
+#define CGAL_FE_UPWARD      FE_UPWARD
+#define CGAL_FE_DOWNWARD    FE_DOWNWARD
 
 #elif defined _MSC_VER
 #ifndef _M_X64
@@ -336,7 +336,7 @@ void force_ieee_double_precision(); // Used by the Fixed_precision_nt.
 // and whose destructor resets it back to the saved state.
 
 template <bool Protected> struct Protect_FPU_rounding;
- 
+
 template <>
 struct Protect_FPU_rounding<true>
 {
@@ -351,7 +351,7 @@ struct Protect_FPU_rounding<true>
 private:
   FPU_CW_t backup;
 };
- 
+
 template <>
 struct Protect_FPU_rounding<false>
 {

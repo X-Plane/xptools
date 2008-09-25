@@ -32,7 +32,7 @@ int main()
   std::cout << std::endl << std::endl;
   std::cin >> arr;
   std::cout << arr;
-  
+
   std::cout << std::endl;
 
   std::cout << "* * * Presenting the use of verbose format";

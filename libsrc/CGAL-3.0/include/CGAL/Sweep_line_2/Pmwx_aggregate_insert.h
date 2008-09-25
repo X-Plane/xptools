@@ -28,14 +28,14 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template <class CurveInputIterator, class SweepLineTraits_2, 
+template <class CurveInputIterator, class SweepLineTraits_2,
           class PM_, class Change_notification_>
 class Pmwx_aggregate_insert :
   public Sweep_line_2_impl<CurveInputIterator, SweepLineTraits_2,
-    Pmwx_sweep_line_event<SweepLineTraits_2, 
-      Pmwx_sweep_line_curve<SweepLineTraits_2, 
+    Pmwx_sweep_line_event<SweepLineTraits_2,
+      Pmwx_sweep_line_curve<SweepLineTraits_2,
                             typename PM_::Halfedge_handle> > ,
-        Pmwx_sweep_line_curve<SweepLineTraits_2, 
+        Pmwx_sweep_line_curve<SweepLineTraits_2,
                               typename PM_::Halfedge_handle> >
 {
 public:
@@ -44,10 +44,10 @@ public:
   typedef typename Traits::Point_2 Point_2;
 
   typedef PM_ PM;
-  typedef typename PM::Halfedge_iterator  Halfedge_iterator; 
+  typedef typename PM::Halfedge_iterator  Halfedge_iterator;
   typedef typename PM::Halfedge_handle Halfedge_handle;
 
-  typedef Pmwx_sweep_line_curve<SweepLineTraits_2, 
+  typedef Pmwx_sweep_line_curve<SweepLineTraits_2,
                                 Halfedge_handle> SubCurve;
   typedef Pmwx_sweep_line_event<SweepLineTraits_2, SubCurve> Event;
   typedef typename SubCurve::PmwxInsertInfo PmwxInsertInfo;
@@ -58,7 +58,7 @@ public:
   typedef typename Event::VerticalXEventList VerticalXEventList;
   typedef typename Event::VerticalXEventListIter VerticalXEventListIter;
 
-  typedef Pmwx_sweep_line_curve<SweepLineTraits_2, 
+  typedef Pmwx_sweep_line_curve<SweepLineTraits_2,
                                 typename PM_::Halfedge_handle>  Subcurve;
 
   // repeated typedefs from the base class to avoid warnings
@@ -72,50 +72,50 @@ public:
   typedef typename Base::SweepLinePlanarmap SweepLinePlanarmap;
   typedef typename Base::EventQueueValueType EventQueueValueType;
 
-  Pmwx_aggregate_insert() : 
+  Pmwx_aggregate_insert() :
     Base(), m_change_not(NULL) {}
-  
-  Pmwx_aggregate_insert(Traits *traits_) : 
-    Base(traits_), m_change_not(NULL) {} 
-  
+
+  Pmwx_aggregate_insert(Traits *traits_) :
+    Base(traits_), m_change_not(NULL) {}
+
   virtual ~Pmwx_aggregate_insert() {}
-  
+
   /*! Initializes the data structures to work with:
     - x-monotonize the input curves
     - for each end point of each curve create an event
     - for each curve in the planarmap do the same
     - initialize the event queue
     -
-  */  
+  */
   void init(CurveInputIterator begin, CurveInputIterator end, PM &pm)
   {
     Base::init(begin, end);
-    
+
     Halfedge_iterator eit;
-    for (eit = pm.halfedges_begin(); eit != pm.halfedges_end(); ++eit, ++eit) 
+    for (eit = pm.halfedges_begin(); eit != pm.halfedges_end(); ++eit, ++eit)
     {
       init_curve(eit->curve());
     }
     pm.clear();
   }
 
-  void insert_curves(CurveInputIterator begin, 
-                     CurveInputIterator end, 
+  void insert_curves(CurveInputIterator begin,
+                     CurveInputIterator end,
                      PM &planarMap,
                      Change_notification* change_notification)
   {
     m_change_not = change_notification;
     std::vector<X_monotone_curve_2> subcurves;
-    init(begin, end, planarMap); 
-    
+    init(begin, end, planarMap);
 
-    // initialize the last event in each event 
+
+    // initialize the last event in each event
     for ( EventQueueIter qiter = m_queue->begin();
-	  qiter != m_queue->end() ; ++qiter ) 
+	  qiter != m_queue->end() ; ++qiter )
     {
       Event *e = qiter->second;
       for  (EventCurveIter rightCurveIter = e->right_curves_begin() ;
-	    rightCurveIter != e->right_curves_end() ; 
+	    rightCurveIter != e->right_curves_end() ;
 	    ++rightCurveIter )
 	(*rightCurveIter)->set_last_event(e);
       VerticalCurveList &vcurves = e->get_vertical_curves();
@@ -136,13 +136,13 @@ public:
 
     sweep(planarMap, SweepLinePlanarmap());
   }
-  
+
 protected:
 
   /*! The main loop to calculate intersections among the curves
     Looping over the events in the queue, for each event we first
-    handle the curves that are tothe left of the event point (i.e., 
-    curves that we are done with), and then we look at the curves 
+    handle the curves that are tothe left of the event point (i.e.,
+    curves that we are done with), and then we look at the curves
     to the right of the point, which means we attept to find intersections
     between them and their neighbours on the sweep line.
   */
@@ -175,7 +175,7 @@ protected:
       if ( m_traits->compare_x(*((*eventIter).first), m_sweepLinePos) !=
            EQUAL)
       {
-	SL_DEBUG(std::cout << "clearing miniq " 
+	SL_DEBUG(std::cout << "clearing miniq "
 		           << (*eventIter).first  << " "
 		           << m_prevPos << "\n";)
 	m_miniq.clear();
@@ -194,8 +194,8 @@ protected:
     }
   }
 
-  /*! For each left-curve, if it is the "last" subcurve, i.e., the 
-    event point is the right-edge of the original curve, the 
+  /*! For each left-curve, if it is the "last" subcurve, i.e., the
+    event point is the right-edge of the original curve, the
     last sub curve is created and added to the result. Otherwise
     the curve is added as is to the result.
   */
@@ -211,10 +211,10 @@ protected:
 
     Halfedge_handle h(NULL);
     m_use_hint_for_erase = false;
-    while ( leftCurveIter != m_currentEvent->left_curves_end() )  
+    while ( leftCurveIter != m_currentEvent->left_curves_end() )
     // ** fix here
     {
-      SubCurve *leftCurve = *leftCurveIter; 
+      SubCurve *leftCurve = *leftCurveIter;
       const X_monotone_curve_2 &cv = leftCurve->get_curve();
       const Point_2 &lastPoint = leftCurve->get_last_point();
 
@@ -239,7 +239,7 @@ protected:
 	  h = insert_to_pm(cv, leftCurve, h, pm);
         }
 
-      } else { 
+      } else {
         X_monotone_curve_2 a,b;
         if ( leftCurve->is_source(lastPoint)) {
           m_traits->curve_split(cv, a, b, eventPoint);
@@ -258,32 +258,32 @@ protected:
           }
         }
         leftCurve->set_last_point(eventPoint);
-        leftCurve->set_last_curve(b); 
+        leftCurve->set_last_curve(b);
 	leftCurve->set_last_event(m_currentEvent);
       }
 
       // before deleting check new neighbors that will become after deletion
       remove_curve_from_status_line(leftCurve);
       m_use_hint_for_erase = true;
-      
+
       m_currentPos = m_prevPos;
       ++leftCurveIter;
-    }  
-    
+    }
+
     // when done handling the left curves, we prepare for the right curves
     m_currentEvent->init_right_curves();
   }
 
   /*!
    * Handles the degenerate case of vertical curves. Most of the cases
-   * that occur with vertical curves are handled by this method and 
+   * that occur with vertical curves are handled by this method and
    * HandleVerticalCurveTop method.
    * When the current event is the bottom end of a vertical curve, we look
    * for intersection points between the vertical curve and any curve
-   * in the status line that in the y-range that is defined by the bottom 
+   * in the status line that in the y-range that is defined by the bottom
    * and top ends of the vertical curve. When those are found, we create
    * new events, unless ones already exist, in which case we update the events.
-   * 
+   *
    * @param tag a tag that indicates the version of this method
    * \sa HandleVerticalCurveTop
    */
@@ -295,13 +295,13 @@ protected:
     {
       SL_DEBUG(std::cout<<" - not vertical - exiting\n ";)
       return;
-    } 
+    }
     SL_DEBUG(std::cout<<"\n ";)
 
     VerticalCurveList &vcurves = m_currentEvent->get_vertical_curves();
     VerticalCurveListIter vciter = vcurves.begin();
     const Point_2 &currentPoint = m_currentEvent->get_point();
-    
+
     SL_DEBUG(std::cout << vcurves.size() << " vertical curves in event\n";)
     while ( vciter != vcurves.end() )
     {
@@ -312,45 +312,45 @@ protected:
 	vciter++;
 	continue;
       }
-    
+
       SL_DEBUG(std::cout<<"handling bottom point of vertical curve\n";)
       StatusLineIter slIter = m_statusLine->lower_bound(vcurve);
-      if ( slIter == m_statusLine->end() ) 
+      if ( slIter == m_statusLine->end() )
       {
 	SL_DEBUG(std::cout<<"no curves intersecting. exiting\n";)
         vciter++;
 	continue;
-      }    
-      
+      }
+
       SL_DEBUG(std::cout<<"starting at curve \n";)
       SL_DEBUG((*slIter)->Print();)
       const Point_2 &topEnd = vcurve->get_top_end();
       EventQueueIter topEndEventIter = m_queue->find(&topEnd);
       CGAL_assertion(topEndEventIter != m_queue->end());
       Event *topEndEvent = topEndEventIter->second;
-      
+
       bool lastEventCreatedHere = false;
       Event *prevEvent = 0;
 
       while (slIter != m_statusLine->end() &&
-	     (! m_traits->point_in_x_range((*slIter)->get_curve(), 
+	     (! m_traits->point_in_x_range((*slIter)->get_curve(),
 					      topEnd) ||
 	      m_traits->curve_compare_y_at_x(topEnd, (*slIter)->get_curve()) !=
               SMALLER) &&
-	     (! m_traits->point_in_x_range((*slIter)->get_curve(), 
+	     (! m_traits->point_in_x_range((*slIter)->get_curve(),
 					      currentPoint) ||
 	      m_traits->curve_compare_y_at_x(currentPoint,
                                          (*slIter)->get_curve()) != LARGER))
       {
 	SL_DEBUG(std::cout<<"intersecting with \n";)
-	SL_DEBUG((*slIter)->Print();) 
-	  
+	SL_DEBUG((*slIter)->Print();)
+
 	if ( handle_vertical_curve_x_at_end(vcurve, *slIter, topEndEvent, tag))
 	{
 	  ++slIter;
 	  continue;
 	}
-	
+
 	// handle a curve that goes through the interior of the vertical curve
 	const X_monotone_curve_2 &cv1 = vcurve->get_curve();
 	const X_monotone_curve_2 &cv2 = (*slIter)->get_curve();
@@ -359,20 +359,20 @@ protected:
                                                            currentPoint, p, p);
 	SL_DEBUG(CGAL_assertion(res==true);)
 	  res = 0;
-      
+
 	EventQueueIter eqi = m_queue->find(&p);
 	Event *e = 0;
 	if ( eqi == m_queue->end() )
 	{
-	  e = new Event(p, m_traits); 
+	  e = new Event(p, m_traits);
 	  SL_DEBUG(e->id = m_eventId++;)
 	    m_events.push_back(e);
-	  
+
 	  e->add_curve_to_left(*slIter, m_sweepLinePos);
 	  e->add_curve_to_right(*slIter);
 	  PRINT_NEW_EVENT(p, e);
 	  m_queue->insert(EventQueueValueType(&(e->get_point()), e));
-	  
+
 	  lastEventCreatedHere = true;
 
 	} else {
@@ -380,43 +380,43 @@ protected:
 	  if ( e == prevEvent ) {
 	    if ( lastEventCreatedHere )
 	    {
-	      if ( !(*slIter)->is_left_end(p) ) 
+	      if ( !(*slIter)->is_left_end(p) )
 		e->add_curve_to_left(*slIter, m_sweepLinePos);
-	      if ( !(*slIter)->is_right_end(p) ) 
+	      if ( !(*slIter)->is_right_end(p) )
 		e->add_curve_to_right(*slIter);
 	    }
 	  }
 	  else {
 	    lastEventCreatedHere = false;
 	  }
-	
+
 	  SL_DEBUG(std::cout << "Updating event \n";)
 	  SL_DEBUG(e->Print();)
 	}
-	
+
 	topEndEvent->add_vertical_curve_x_event(e);
 	++slIter;
 	prevEvent = e;
-      }    
+      }
       vciter++;
     }
-    
+
     SL_DEBUG(std::cout<<"Done Handling vertical\n";)
   }
 
   /*!
-   *  Handle a vertical curve when the event being processed is the top end 
+   *  Handle a vertical curve when the event being processed is the top end
    *  of the curve. In this situation, the event contains a list of
    *  intersection points on the vertical curve. We go through this list and
    *  outpt the subcurves induced by these intersection points.
    *  If the curve is not vertical, returns without doing anything.
-   * 
+   *
    *  @param out an iterator to the output
    *  @param tag a tag that indicates the version of the method
    */
   void handle_vertical_curve_top(PM &pm, SweepLinePlanarmap &tag)
   {
-    SL_DEBUG(std::cout<<"handle_vertical_curve_top... (" 
+    SL_DEBUG(std::cout<<"handle_vertical_curve_top... ("
 	              << m_currentEvent->get_point() << ")\n";)
     if ( !m_currentEvent->does_contain_vertical_curve() ) {
       SL_DEBUG(std::cout<<"exiting\n ";)
@@ -442,56 +442,56 @@ protected:
       SL_DEBUG(std::cout<<"handling top point of vertical curve\n";)
 
 
-      // the following while loop comes to handle  | 
+      // the following while loop comes to handle  |
       // in the case where a new curve begins at   |------
       // a vertical curve                          |
 
       // find the "position" of the curve of the status line
       StatusLineIter slIter = m_statusLine->lower_bound(vcurve);
-      
-      if ( slIter != m_statusLine->end() ) 
+
+      if ( slIter != m_statusLine->end() )
       {
 	SL_DEBUG(std::cout<<"starting at curve \n";)
 	SL_DEBUG((*slIter)->Print();)
 
 	while (slIter != m_statusLine->end() &&
-	       m_traits->point_in_x_range((*slIter)->get_curve(), 
+	       m_traits->point_in_x_range((*slIter)->get_curve(),
 					     topPoint) &&
 	       m_traits->curve_compare_y_at_x(topPoint,
                                               (*slIter)->get_curve()) ==
                LARGER &&
-	       m_traits->point_in_x_range((*slIter)->get_curve(), 
+	       m_traits->point_in_x_range((*slIter)->get_curve(),
 					     vcurve->get_bottom_end()) &&
 	       m_traits->curve_compare_y_at_x(vcurve->get_bottom_end(),
-                                              (*slIter)->get_curve()) == 
+                                              (*slIter)->get_curve()) ==
 	       SMALLER)
 	{
 	  SL_DEBUG(std::cout<<"checking \n";)
-	  SL_DEBUG((*slIter)->Print();) 
-	  if ( m_traits->compare_x((*slIter)->get_left_end(), topPoint) == 
+	  SL_DEBUG((*slIter)->Print();)
+	  if ( m_traits->compare_x((*slIter)->get_left_end(), topPoint) ==
 	                                                               EQUAL)
 	  {
 	    m_currentEvent->add_vertical_curve_x_event(
-	                                       (*slIter)->get_last_event(), 
+	                                       (*slIter)->get_last_event(),
 					       true);
 	  }
 	  ++slIter;
-	}   
+	}
       }
 
       // now we go over the list of intersection points on the vertical
       // curve in at the event and process them...
       SL_DEBUG(std::cout<<"handling the splitting now\n";)
-      VerticalXEventList &pointList = 
+      VerticalXEventList &pointList =
 	                     m_currentEvent->get_vertical_x_event_list();
       if ( pointList.empty() )
       {
-	insert_to_pm_v(vcurve->get_curve(), vcurve, 
+	insert_to_pm_v(vcurve->get_curve(), vcurve,
 			m_currentEvent, vcurve->get_last_event(), pm);
 	++vciter;
 	continue;
       }
-    
+
       X_monotone_curve_2 a, b, c;
       a = vcurve->get_curve();
       SL_DEBUG(std::cout << "there are " << pointList.size() << " points\n";)
@@ -534,11 +534,11 @@ protected:
    * @param vcurve the vertical curve we are dealing with
    * @param curve a cerve that intersects with the vertical curve
    * @param topEndEvent the event attached to the top end of the vertical curve
-   * @param tag 
-   * @return returns true if the curve passed through one of the ends of the 
+   * @param tag
+   * @return returns true if the curve passed through one of the ends of the
    *              vertical curve. Returns false otherwise.
    */
-  bool handle_vertical_curve_x_at_end(Subcurve *vcurve, Subcurve *curve, 
+  bool handle_vertical_curve_x_at_end(Subcurve *vcurve, Subcurve *curve,
 				 Event *topEndEvent, SweepLinePlanarmap &tag)
   {
     const Point_2 &topEnd = vcurve->get_top_end();
@@ -553,8 +553,8 @@ protected:
 	topEndEvent->add_curve_to_right(curve);
       }
        return true;
-    } 
-    
+    }
+
     // handle a curve that goes through the bottom point of the vertical curve
     const Point_2 &currentPoint = m_currentEvent->get_point();
     if (m_traits->point_in_x_range((curve)->get_curve(), currentPoint) &&
@@ -571,10 +571,10 @@ protected:
     }
     return false;
   }
-  
+
   void handle_vertical_overlap_curves()
   {
-    SL_DEBUG(std::cout<<"\nhandle_vertical_overlap_curves... (" 
+    SL_DEBUG(std::cout<<"\nhandle_vertical_overlap_curves... ("
 	     << m_currentEvent->get_point() << ")";)
 
     if ( !m_currentEvent->does_contain_vertical_curve() ) {
@@ -589,12 +589,12 @@ protected:
     while ( iter != m_verticals.end() )
     {
       Subcurve *curve = *iter;
-      
+
       if (m_traits->point_in_x_range(curve->get_curve(), point) &&
 	  m_traits->curve_compare_y_at_x(point, curve->get_curve()) == LARGER)
       {
 	iter = m_verticals.erase(iter);
-	
+
       } else if (!curve->is_end_point(point)) {
 	EventQueueIter eventIter = m_queue->find(&(curve->get_top_end()));
 	CGAL_assertion(eventIter != m_queue->end());
@@ -619,14 +619,14 @@ protected:
 
 
   // reverse = false ==> we check if the curve starts at the list of curves
-  // reverse = true ==> we check if any of the curves in the list start at 
+  // reverse = true ==> we check if any of the curves in the list start at
   // the single curve
   void intersect_curve_group(Subcurve *c1, SubCurveList &mylist,
 			   PM &pm, bool reverse=false)
   {
     m_tmpOut.clear();
     SL_DEBUG(std::cout << "intersect_curve_group (with out)\n";)
-    SL_DEBUG(std::cout << "Intersecting with " << mylist.size() 
+    SL_DEBUG(std::cout << "Intersecting with " << mylist.size()
                        << " curves\n";)
     SubCurveListIter i = mylist.begin();
     while ( i != mylist.end())
@@ -639,22 +639,22 @@ protected:
 	  m_currentEvent->add_curve_to_right(c1);
 	  m_currentEvent->add_curve_to_left(c1, m_prevPos);
 	  X_monotone_curve_2 a,b;
-	  SL_DEBUG(std::cout << "splitting " << (c1)->get_last_curve() 
-                             << " at " 
+	  SL_DEBUG(std::cout << "splitting " << (c1)->get_last_curve()
+                             << " at "
 		             << m_currentEvent->get_point() << "\n";)
-	  if ( (c1)->is_source_left_to_target() ) 
-	    m_traits->curve_split((c1)->get_last_curve(), a, b, 
+	  if ( (c1)->is_source_left_to_target() )
+	    m_traits->curve_split((c1)->get_last_curve(), a, b,
 				  m_currentEvent->get_point());
 	  else
-	    m_traits->curve_split((c1)->get_last_curve(), b, a, 
+	    m_traits->curve_split((c1)->get_last_curve(), b, a,
 				  m_currentEvent->get_point());
 
 	  Halfedge_handle h(NULL);
 	  h = insert_to_pm(a, c1, h, pm);
 
 	  (c1)->set_last_point(m_currentEvent->get_point());
-	  (c1)->set_last_curve(b); 
-	  (c1)->set_last_subcurve(a); 
+	  (c1)->set_last_curve(b);
+	  (c1)->set_last_subcurve(a);
 	  (c1)->set_last_event(m_currentEvent);
 	  m_tmpOut.push_back(c1);
 	}
@@ -662,46 +662,46 @@ protected:
       else
       {
 	flag = CurveStartsAtCurve(c1, *i);
-	if ( flag && ((*i)->get_last_point() != m_currentEvent->get_point())) 
+	if ( flag && ((*i)->get_last_point() != m_currentEvent->get_point()))
 	{
 	  SL_DEBUG(std::cout << "CurveStartsAtCurve 3 \n";)
 	  m_currentEvent->add_curve_to_right(*i);
 	  m_currentEvent->add_curve_to_left(*i, m_prevPos);
 	  X_monotone_curve_2 a,b;
-	  SL_DEBUG(std::cout << "splitting " << (*i)->get_last_curve() 
-                             << " at " 
+	  SL_DEBUG(std::cout << "splitting " << (*i)->get_last_curve()
+                             << " at "
 		             << m_currentEvent->get_point() << "\n";)
-	  if ( (*i)->is_source_left_to_target() ) 
-	    m_traits->curve_split((*i)->get_last_curve(), a, b, 
+	  if ( (*i)->is_source_left_to_target() )
+	    m_traits->curve_split((*i)->get_last_curve(), a, b,
 				  m_currentEvent->get_point());
 	  else
-	    m_traits->curve_split((*i)->get_last_curve(), b, a, 
+	    m_traits->curve_split((*i)->get_last_curve(), b, a,
 				  m_currentEvent->get_point());
 
 	  Halfedge_handle h(NULL);
 	  h = insert_to_pm(a, *i, h, pm);
 
 	  (*i)->set_last_point(m_currentEvent->get_point());
-	  (*i)->set_last_curve(b); 
-	  (*i)->set_last_subcurve(a); 
+	  (*i)->set_last_curve(b);
+	  (*i)->set_last_subcurve(a);
 	  (*i)->set_last_event(m_currentEvent);
 	  m_tmpOut.push_back(*i);
-	  
+
 	}
       }
-      
+
       intersect(c1, *i);
       ++i;
-    }    
+    }
   }
 
 private:
 
 /*! Loop over the curves to the right of the status line and handle them:
- * - if we are at the beginning of the curve, we insert it to the status 
+ * - if we are at the beginning of the curve, we insert it to the status
  *   line, then we look if it intersects any of its neighbours.
  * - if we are at an intersection point between two curves, we add them
- *   to the status line and attempt to intersect them with their neighbours. 
+ *   to the status line and attempt to intersect them with their neighbours.
  * - We also check to see if the two intersect again to the right of the point.
  */
 void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
@@ -723,7 +723,7 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
     )
 
     StatusLineIter slIter = m_statusLine->insert(
-                    m_status_line_insert_hint, 
+                    m_status_line_insert_hint,
 		    *(m_currentEvent->right_curves_begin()));
 
     (*(m_currentEvent->right_curves_begin()))->set_hint(slIter); //xxx
@@ -745,22 +745,22 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
       --prev;
       StatusLineIter tmp = prev;
       mylist.push_back(*prev);
-      while ( tmp != m_statusLine->begin() ) 
+      while ( tmp != m_statusLine->begin() )
       {
 	--tmp;
 	if ( do_curves_overlap(*prev, *tmp) )
 	  mylist.push_back(*tmp);
-	else 
+	else
 	  break;
       }
     }
-    
+
     if ( next != m_statusLine->end() )
-    { 
+    {
       StatusLineIter tmp = next;
       mylist.push_back(*next);
       ++tmp;
-      while ( tmp != m_statusLine->end() ) 
+      while ( tmp != m_statusLine->end() )
       {
 	if ( do_curves_overlap(*next, *tmp) )
 	{
@@ -772,10 +772,10 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
       }
     }
     intersect_curve_group(*(m_currentEvent->right_curves_begin()), mylist, pm);
-    
+
   } else
   {
-    /* this block takes care of 
+    /* this block takes care of
     //
     //           /
     //          /
@@ -798,10 +798,10 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 	    m_currentEvent->add_curve_to_right(c);
 	    X_monotone_curve_2 a,b;
 	    if ( c->is_source_left_to_target() ) {
-	      m_traits->curve_split(c->get_last_curve(), a, b, 
+	      m_traits->curve_split(c->get_last_curve(), a, b,
 				    m_currentEvent->get_point());
 	    } else {
-	      m_traits->curve_split(c->get_last_curve(), b, a, 
+	      m_traits->curve_split(c->get_last_curve(), b, a,
 				    m_currentEvent->get_point());
 	    }
 
@@ -830,19 +830,19 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 
     PRINT_INSERT(*firstOne);
 
-    StatusLineIter slIter = m_statusLine->insert(m_status_line_insert_hint, 
+    StatusLineIter slIter = m_statusLine->insert(m_status_line_insert_hint,
 						 *firstOne);
     (*firstOne)->set_hint(slIter);//xxx
 
     SL_DEBUG(PrintStatusLine();)
     if ( slIter != m_statusLine->begin() )
-    { 
+    {
       StatusLineIter prev = slIter; --prev;
 
       // find all curves that are overlapping with the prev curve
       StatusLineIter tmp = prev;
       prevlist.push_back(*prev);
-      while ( tmp != m_statusLine->begin() ) 
+      while ( tmp != m_statusLine->begin() )
       {
 	--tmp;
 	if ( do_curves_overlap(*prev, *tmp))
@@ -850,7 +850,7 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 	else
 	  break;
       }
- 
+
       intersect_curve_group(*slIter, prevlist, pm);
     }
     currentlist.push_back(*firstOne);
@@ -876,23 +876,23 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 	currentlist.clear();
 	currentlist.push_back(*currentOne);
       }
-      
+
       intersect_curve_group(*currentOne, prevlist, pm);
       prevOne = currentOne;
       ++currentOne;
     }
     m_status_line_insert_hint = slIter; ++m_status_line_insert_hint;
-    
+
     lastOne = currentOne; --lastOne;
     m_currentPos = m_sweepLinePos;
     PRINT_INSERT(*lastOne);
-    
+
     SL_DEBUG(PrintStatusLine();)
     StatusLineIter next = slIter; ++next;
     if ( next != m_statusLine->end() ) {
       intersect_curve_group(*next, currentlist, pm, true);
       StatusLineIter tmp = next; ++tmp;
-      while ( tmp != m_statusLine->end() ) 
+      while ( tmp != m_statusLine->end() )
       {
 	if ( do_curves_overlap(*next, *tmp))
 	{
@@ -908,31 +908,31 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 
 
   /*! Insert a curve to the planar map.
-   *  If an identical curve was already inserted into the planarmap, it is 
-   *  not inserted again. 
+   *  If an identical curve was already inserted into the planarmap, it is
+   *  not inserted again.
    *
    *  @param cv the curve to insert
    *  @param leftCurve the original curve
    *  @param hhandle a prev halfedge handle (may be NULL)
    *  @param pm a reference to the planar map
    */
-  Halfedge_handle insert_to_pm(const X_monotone_curve_2 &cv, 
+  Halfedge_handle insert_to_pm(const X_monotone_curve_2 &cv,
 			     SubCurve *leftCurve,
 			     Halfedge_handle hhandle, PM &pm)
   {
 
-    SL_DEBUG(std::cout << "*X inserting " << cv << "(" 
+    SL_DEBUG(std::cout << "*X inserting " << cv << "("
 	               << leftCurve->getId() << ")\n";)
     static SubCurve *prevCurve = 0;
     static X_monotone_curve_2 prevXCv;
-    
+
     Event *lastEvent = leftCurve->get_last_event();
     PmwxInsertInfo *insertInfo = lastEvent->get_insert_info();
-    
+
     SL_DEBUG(std::cout << "lastEvent = " << lastEvent << "\n";
 	     lastEvent->Print();
 	     insertInfo->Print();)
-    
+
     // if this is the same as the previous curve, don't add it again
     if ( prevCurve && similar_curves(cv, prevXCv)) {
       leftCurve->set_last_event(m_currentEvent);
@@ -945,12 +945,12 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
     }
     prevCurve = leftCurve;
     prevXCv = cv;
-    
-    Halfedge_handle res; 
+
+    Halfedge_handle res;
     int jump = lastEvent->get_halfedge_jump_count(leftCurve);
-    
+
     // if the previous event on the curve is not in the planar map yet
-    if ( insertInfo->get_halfedge_handle() == Halfedge_handle(NULL) ) 
+    if ( insertInfo->get_halfedge_handle() == Halfedge_handle(NULL) )
     {
       // we have a handle from the previous insert
       if ( hhandle != Halfedge_handle(NULL) ) {
@@ -958,18 +958,18 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 	     hhandle->target()->point() != m_traits->curve_target(cv) )
 	  hhandle = hhandle->twin();
 	SL_DEBUG(std::cout << "  from vertex (1)";
-		 std::cout << hhandle->source()->point() << " " 
+		 std::cout << hhandle->source()->point() << " "
 		 << hhandle->target()->point() << "\n";)
-        res = pm.non_intersecting_insert_from_vertex(cv, hhandle, 
+        res = pm.non_intersecting_insert_from_vertex(cv, hhandle,
 						     m_change_not);
-      } else { 
+      } else {
 	// if this is the first left curve being inserted
 	SL_DEBUG(std::cout << "  in face interior\n";)
-	res = pm.insert_in_face_interior(cv, pm.unbounded_face(), 
+	res = pm.insert_in_face_interior(cv, pm.unbounded_face(),
 					 m_change_not);
       }
-    } else 
-      // the previous event on the curve is already in the planar map. 
+    } else
+      // the previous event on the curve is already in the planar map.
       // Let's use it.
     {
       // skip to the right halfedge
@@ -980,56 +980,56 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
 	prev = prev->twin();
       for ( int i = 0 ; i < jump ; i++ )
 	prev = (prev->next_halfedge())->twin();
-      
+
       // we have a handle from the previous insert
-      if ( hhandle != Halfedge_handle(NULL) ) 
+      if ( hhandle != Halfedge_handle(NULL) )
       {
 	if ( hhandle->target()->point() != m_traits->curve_source(cv) &&
 	     hhandle->target()->point() != m_traits->curve_target(cv) )
 	  hhandle = hhandle->twin();
 
 	SL_DEBUG(std::cout << "  at vertices";
-		 std::cout << prev->source()->point() << " " 
+		 std::cout << prev->source()->point() << " "
 		           << prev->target()->point() << " --- ";
-		 std::cout << hhandle->source()->point() << " " 
+		 std::cout << hhandle->source()->point() << " "
                            << hhandle->target()->point() << "\n";)
-	res = pm.non_intersecting_insert_at_vertices(cv, prev, hhandle, 
+	res = pm.non_intersecting_insert_at_vertices(cv, prev, hhandle,
 							 m_change_not);
       } else {
 
 	SL_DEBUG(std::cout << "  from vertex (2)";
-		 std::cout << prev->source()->point() << " " 
+		 std::cout << prev->source()->point() << " "
 	                   << prev->target()->point() << "\n";)
 	res = pm.non_intersecting_insert_from_vertex(cv, prev, m_change_not);
       }
     }
-  
-    SL_DEBUG(std::cout << "*** returning: (" << res->source()->point() << " " 
+
+    SL_DEBUG(std::cout << "*** returning: (" << res->source()->point() << " "
 	               << res->target()->point()  << ")\n\n";)
-   
+
     // update the information in the events so they can be used in the future
     if ( lastEvent->get_num_left_curves() == 0 &&
-	 lastEvent->is_curve_largest(leftCurve)) 
+	 lastEvent->is_curve_largest(leftCurve))
     {
       insertInfo->set_halfedge_handle(res->twin());
     }
-  
+
     insertInfo = m_currentEvent->get_insert_info();
     insertInfo->set_halfedge_handle(res);
-    
+
     return res;
 
   }
 
-  void insert_to_pm_v(const X_monotone_curve_2 &a, SubCurve *origCurve, 
+  void insert_to_pm_v(const X_monotone_curve_2 &a, SubCurve *origCurve,
 		   Event *topEvent, Event *bottomEvent, PM &pm);
 
   Change_notification *m_change_not;
 };
 
 /*! Insert a vertical curve to the planar map.
- *  If an identical curve was already inserted into the planarmap, it is 
- *  not inserted again. 
+ *  If an identical curve was already inserted into the planarmap, it is
+ *  not inserted again.
  *
  *  @param a the curve
  *  @param origCurve the original curve
@@ -1037,12 +1037,12 @@ void handle_right_curves(PM &pm, SweepLinePlanarmap &tag)
  *  @param bottomEvent a pointer to the event at the bottom end of the curve
  *  @param pm a reference to the planar map
  */
-template <class CurveInputIterator, class SweepLineTraits_2, 
+template <class CurveInputIterator, class SweepLineTraits_2,
           class PM_, class Change_notification_>
-void 
+void
 Pmwx_aggregate_insert<CurveInputIterator, SweepLineTraits_2,
                       PM_, Change_notification_>::
-insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve, 
+insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve,
 	    Event *topEvent, Event *bottomEvent, PM &pm)
 {
   SL_DEBUG(std::cout << "insert_to_pm_v \n";
@@ -1050,7 +1050,7 @@ insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve,
 
   PmwxInsertInfo *topII = topEvent->get_insert_info();
   PmwxInsertInfo *bottomII = bottomEvent->get_insert_info();
-  Halfedge_handle res; 
+  Halfedge_handle res;
 
   // if the curve is already in the planar map, update the data and return
   if (vertical_subcurve_exists(cv)) {
@@ -1069,44 +1069,44 @@ insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve,
       res = pm.insert_in_face_interior(cv, pm.unbounded_face(), m_change_not);
       if ( !origCurve->is_source_left_to_target() ){
 	res = res->twin();
-      }	
-    } else 
+      }
+    } else
     {
       SL_DEBUG(std::cout << "  from vertex (1) ";
-	       std::cout << bottomII->get_halfedge_handle()->source()->point() 
+	       std::cout << bottomII->get_halfedge_handle()->source()->point()
 	                 << bottomII->get_halfedge_handle()->target()->point()
 	                 << "\n";)
       Halfedge_handle h1 = bottomII->get_halfedge_handle();
       if ( h1->target()->point() != m_traits->curve_source(cv) &&
 	   h1->target()->point() != m_traits->curve_target(cv) )
 	h1 = h1->twin();
-      res = pm.non_intersecting_insert_from_vertex(cv, 
+      res = pm.non_intersecting_insert_from_vertex(cv,
 						   h1,
 						   m_change_not);
     }
-  } else 
+  } else
   {
     if ( bottomII->get_halfedge_handle() == Halfedge_handle(NULL))
     {
       SL_DEBUG(std::cout << "  from vertex (2) ";
-	       std::cout << topII->get_halfedge_handle()->source()->point() 
-	                 << topII->get_halfedge_handle()->target()->point() 
+	       std::cout << topII->get_halfedge_handle()->source()->point()
+	                 << topII->get_halfedge_handle()->target()->point()
                          << "\n";)
       Halfedge_handle h1 = topII->get_halfedge_handle();
       if ( h1->target()->point() != m_traits->curve_source(cv) &&
 	   h1->target()->point() != m_traits->curve_target(cv) )
 	h1 = h1->twin();
-      res = pm.non_intersecting_insert_from_vertex(cv, 
+      res = pm.non_intersecting_insert_from_vertex(cv,
 						   h1,
 						   m_change_not);
       res = res->twin();
-    } else 
+    } else
     {
       SL_DEBUG(std::cout << "  at vertices";
 	       std::cout << bottomII->get_halfedge_handle()->source()->point();
 	       std::cout << bottomII->get_halfedge_handle()->target()->point();
 	       std::cout << topII->get_halfedge_handle()->source()->point();
-	       std::cout << topII->get_halfedge_handle()->target()->point() 
+	       std::cout << topII->get_halfedge_handle()->target()->point()
                          << "\n";)
       Halfedge_handle h1 = bottomII->get_halfedge_handle();
       Halfedge_handle h2 = topII->get_halfedge_handle();
@@ -1117,7 +1117,7 @@ insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve,
 	   h2->target()->point() != m_traits->curve_target(cv) )
 	h2 = h2->twin();
       res = pm.non_intersecting_insert_at_vertices(cv,
-					     h1, 
+					     h1,
 					     h2,
 					     m_change_not);
     }
@@ -1129,11 +1129,11 @@ insert_to_pm_v(const X_monotone_curve_2 &cv, SubCurve *origCurve,
 
   bottomII->set_halfedge_handle(res->twin());
 
-  SL_DEBUG(std::cout << "*** returning: (" << res->source()->point() << " " 
+  SL_DEBUG(std::cout << "*** returning: (" << res->source()->point() << " "
 	   << res->target()->point()  << ")\n\n";)
 
 }
-  
+
 CGAL_END_NAMESPACE
 
 #endif // CGAL_PMWX_AGGREGATE_INSERT_H

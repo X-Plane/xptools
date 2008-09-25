@@ -10,7 +10,7 @@
 
 #include "TextureCoordinateNode.h"
 
-TextureCoordinateNode::TextureCoordinateNode() 
+TextureCoordinateNode::TextureCoordinateNode()
 {
 	setHeaderFlag(false);
 	setType(textureCoordinateNodeString);
@@ -21,12 +21,12 @@ TextureCoordinateNode::TextureCoordinateNode()
 	addExposedField(pointField);
 }
 
-TextureCoordinateNode::~TextureCoordinateNode() 
+TextureCoordinateNode::~TextureCoordinateNode()
 {
 }
 
 ////////////////////////////////////////////////
-//	point 
+//	point
 ////////////////////////////////////////////////
 
 MFVec2f *TextureCoordinateNode::getPointField()
@@ -36,17 +36,17 @@ MFVec2f *TextureCoordinateNode::getPointField()
 	return (MFVec2f *)getExposedField(pointFieldString);
 }
 
-void TextureCoordinateNode::addPoint(float point[]) 
+void TextureCoordinateNode::addPoint(float point[])
 {
 	getPointField()->addValue(point);
 }
 
-int TextureCoordinateNode::getNPoints() 
+int TextureCoordinateNode::getNPoints()
 {
 	return getPointField()->getSize();
 }
 
-void TextureCoordinateNode::getPoint(int index, float point[]) 
+void TextureCoordinateNode::getPoint(int index, float point[])
 {
 	getPointField()->get1Value(index, point);
 }
@@ -54,21 +54,21 @@ void TextureCoordinateNode::getPoint(int index, float point[])
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool TextureCoordinateNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void TextureCoordinateNode::initialize() 
+void TextureCoordinateNode::initialize()
 {
 }
 
-void TextureCoordinateNode::uninitialize() 
+void TextureCoordinateNode::uninitialize()
 {
 }
 
-void TextureCoordinateNode::update() 
+void TextureCoordinateNode::update()
 {
 }
 
@@ -76,7 +76,7 @@ void TextureCoordinateNode::update()
 //	Output
 ////////////////////////////////////////////////
 
-void TextureCoordinateNode::outputContext(ostream &printStream, char *indentString) 
+void TextureCoordinateNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNPoints()) {
 		MFVec2f *point = getPointField();
@@ -90,12 +90,12 @@ void TextureCoordinateNode::outputContext(ostream &printStream, char *indentStri
 //	List
 ////////////////////////////////////////////////
 
-TextureCoordinateNode *TextureCoordinateNode::next() 
+TextureCoordinateNode *TextureCoordinateNode::next()
 {
 	return (TextureCoordinateNode *)Node::next(getType());
 }
 
-TextureCoordinateNode *TextureCoordinateNode::nextTraversal() 
+TextureCoordinateNode *TextureCoordinateNode::nextTraversal()
 {
 	return (TextureCoordinateNode *)Node::nextTraversalByType(getType());
 }

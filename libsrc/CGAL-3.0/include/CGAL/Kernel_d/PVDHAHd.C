@@ -28,7 +28,7 @@
 
 #include <CGAL/Kernel_d/PointHd.C>
 #include <CGAL/Kernel_d/VectorHd.C>
-#include <CGAL/Kernel_d/DirectionHd.C> 
+#include <CGAL/Kernel_d/DirectionHd.C>
 #include <CGAL/Kernel_d/HyperplaneHd.C>
 #include <CGAL/Kernel_d/Aff_transformationHd.C>
 

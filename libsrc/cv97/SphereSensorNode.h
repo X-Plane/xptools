@@ -19,7 +19,7 @@ class SphereSensorNode : public SensorNode {
 	SFRotation *offsetField;
 	SFRotation *rotationField;
 	SFVec3f *trackPointField;
-	
+
 public:
 
 	SphereSensorNode();
@@ -30,7 +30,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getAutoOffsetField();
-	
+
 	void setAutoOffset(bool value);
 	void setAutoOffset(int value);
 	bool getAutoOffset();
@@ -41,7 +41,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFRotation *getOffsetField();
-	
+
 	void setOffset(float value[]);
 	void getOffset(float value[]);
 
@@ -50,7 +50,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFRotation *getRotationChangedField();
-	
+
 	void setRotationChanged(float value[]);
 	void setRotationChanged(float x, float y, float z, float rot);
 	void getRotationChanged(float value[]);
@@ -75,7 +75,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

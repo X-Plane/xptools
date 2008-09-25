@@ -29,7 +29,7 @@ struct Halfedge__base {
     typedef typename Refs::Halfedge_handle Halfedge_handle;
     typedef typename Refs::Halfedge_const_handle Halfedge_const_handle;
 protected:
-    Halfedge_handle opp; 
+    Halfedge_handle opp;
 public:
     Halfedge_handle       opposite()                        { return opp; }
     Halfedge_const_handle opposite() const                  { return opp; }
@@ -38,7 +38,7 @@ public:
 
 
 //#ifndef CGAL_USE_LEDA
-//#define LEDA_MEMORY(t) 
+//#define LEDA_MEMORY(t)
 //#endif
 
 template <typename Refs, typename Traits>
@@ -72,23 +72,23 @@ private:
 public:
 
     Nef_vertex_2() : _h(),_f(),_ivit(nil_),_m(0),_i((GenPtr)0xABCD) {}
-    // constructs an uninitialized vertex concerning embedding 
+    // constructs an uninitialized vertex concerning embedding
     // and mark. All links are initialized by their default value.
 
-    Nef_vertex_2( const Point& p) : 
+    Nef_vertex_2( const Point& p) :
         _h(),_f(),_p(p),_ivit(nil_),_m(0),_i((GenPtr)0xABCD) {}
     // constructs a vertex with embedding |p| and mark |m|.
     //  All links are initialized by their default value.
 
     bool is_isolated() const  { return _h == Halfedge_handle(); }
-    // returns true iff |\Mvar| is isolated, else false.       
-   
+    // returns true iff |\Mvar| is isolated, else false.
+
     Halfedge_handle halfedge() { return _h; }
     /*{\Mop returns an incident halfedge. \precond |!is_isolated()|.}*/
     Halfedge_const_handle halfedge() const { return _h; }
 
     void set_halfedge(Halfedge_handle h) { _h=h; }
-    /*{\Mop makes |h| the entry point into the adjacency cycle of 
+    /*{\Mop makes |h| the entry point into the adjacency cycle of
       |\Mvar|.}*/
 
     Face_handle face() { return _f; }
@@ -113,7 +113,7 @@ public:
     iv_iterator ivit() const { return _ivit; }
     void set_ivit(iv_iterator it) { _ivit = it; }
     static iv_iterator nil_;
-    /* stl iterators have default construction but are only equal 
+    /* stl iterators have default construction but are only equal
        comparable when copy constructed, what a mess in the specification */
 };
 
@@ -139,21 +139,21 @@ public:
 
     typedef typename std::list<Halfedge_handle>::iterator fc_iterator;
 
-    typedef typename Traits::Mark  Mark;  // information 
+    typedef typename Traits::Mark  Mark;  // information
 
 protected:
     Halfedge_handle  opp, prv, nxt;
     Vertex_handle    _v;
-    Face_handle      _f;    
+    Face_handle      _f;
     fc_iterator      _fcit;
     Mark             _m;
     GenPtr           _i;
 public:
-       
-    Nef_halfedge_2() : 
+
+    Nef_halfedge_2() :
         opp(),prv(),nxt(),_v(),_f(),_fcit(nil_),_m(0),_i((GenPtr)0xABCD) {}
-    /*{\Mcreate constructs an uninitialized halfedge concerning embedding 
-      and mark. All links are initialized by their default value.}*/   
+    /*{\Mcreate constructs an uninitialized halfedge concerning embedding
+      and mark. All links are initialized by their default value.}*/
 
     Halfedge_handle       opposite()                        { return opp; }
     /*{\Mop returns the twin of |\Mvar|.}*/
@@ -203,7 +203,7 @@ public:
     fc_iterator fcit() const      { return _fcit; }
     void set_fcit(fc_iterator it) { _fcit=it; }
 
-    bool is_hole_entry() const 
+    bool is_hole_entry() const
         /*{\Mop returns true iff |\Mvar| is entry point into a hole face
           cycle of |\Mvar.face()|.}*/
         { return _fcit != nil_; }
@@ -231,65 +231,65 @@ public:
 
     typedef typename Traits::Mark  Mark;  // mark information
 
-    class Hole_iterator 
-    /*{\Mtypemember iterator for face cycles. Fits the concept 
-      |Halfedge_handle|.}*/ 
-        : public std::list<Halfedge_handle>::iterator 
+    class Hole_iterator
+    /*{\Mtypemember iterator for face cycles. Fits the concept
+      |Halfedge_handle|.}*/
+        : public std::list<Halfedge_handle>::iterator
     {
         typedef typename std::list<Halfedge_handle>::iterator Ibase;
     public:
         Hole_iterator() : Ibase() {}
         Hole_iterator(const Ibase& b) : Ibase(b) {}
-        Hole_iterator(const Hole_iterator& i) : Ibase(i) {}  
+        Hole_iterator(const Hole_iterator& i) : Ibase(i) {}
         operator Halfedge_handle() const { return Ibase::operator*(); }
         Halfedge& operator*() { return *(Ibase::operator*()); }
         Halfedge_handle operator->() { return Ibase::operator*(); }
     };
 
-    class Hole_const_iterator : 
-        public std::list<Halfedge_handle>::const_iterator 
+    class Hole_const_iterator :
+        public std::list<Halfedge_handle>::const_iterator
     {
         typedef typename std::list<Halfedge_handle>::const_iterator Ibase;
     public:
         Hole_const_iterator() : Ibase() {}
         Hole_const_iterator(const Ibase& b) : Ibase(b) {}
-        Hole_const_iterator(const Hole_const_iterator& i) : Ibase(i) {}  
+        Hole_const_iterator(const Hole_const_iterator& i) : Ibase(i) {}
         operator Halfedge_const_handle() const { return Ibase::operator*(); }
         const Halfedge& operator*() { return *(Ibase::operator*()); }
         Halfedge_const_handle operator->() { return Ibase::operator*(); }
     };
 
-    class Isolated_vertex_iterator 
-    /*{\Mtypemember iterator for isolated vertices. Fits the concept 
-      |Vertex_handle|.}*/ 
-        : public std::list<Vertex_handle>::iterator 
+    class Isolated_vertex_iterator
+    /*{\Mtypemember iterator for isolated vertices. Fits the concept
+      |Vertex_handle|.}*/
+        : public std::list<Vertex_handle>::iterator
     {
         typedef typename std::list<Vertex_handle>::iterator Ibase;
     public:
         Isolated_vertex_iterator() : Ibase() {}
         Isolated_vertex_iterator(const Ibase& b) : Ibase(b) {}
-        Isolated_vertex_iterator(const Isolated_vertex_iterator& i) 
-            : Ibase(i) {}  
+        Isolated_vertex_iterator(const Isolated_vertex_iterator& i)
+            : Ibase(i) {}
         operator Vertex_handle() const { return Ibase::operator*(); }
         Vertex& operator*() { return *(Ibase::operator*()); }
         Vertex_handle operator->() { return Ibase::operator*(); }
     };
 
-    class Isolated_vertex_const_iterator  
-        : public std::list<Vertex_handle>::const_iterator 
-    { 
+    class Isolated_vertex_const_iterator
+        : public std::list<Vertex_handle>::const_iterator
+    {
         typedef typename std::list<Vertex_handle>::const_iterator Ibase;
     public:
         Isolated_vertex_const_iterator() : Ibase() {}
         Isolated_vertex_const_iterator(const Ibase& b) : Ibase(b) {}
         Isolated_vertex_const_iterator(
-            const Isolated_vertex_const_iterator& i) : Ibase(i) {}  
+            const Isolated_vertex_const_iterator& i) : Ibase(i) {}
         operator Vertex_const_handle() const { return Ibase::operator*(); }
         const Vertex& operator*() { return *(Ibase::operator*()); }
         Vertex_const_handle operator->() { return Ibase::operator*(); }
     };
 
-    /*{\Mtext |Hole_const_iterator| and |Isolated_vertex_const_iterator| 
+    /*{\Mtext |Hole_const_iterator| and |Isolated_vertex_const_iterator|
       are the non mutable versions.}*/
 
 private:
@@ -302,17 +302,17 @@ public:
 
     Nef_face_2() : _e(),_m(0),_i((GenPtr)0xABCD) {}
     /*{\Mcreate constructs an uninitialized face with undefined mark,
-      empty face cycle list, and empty isolated vertices list.}*/   
+      empty face cycle list, and empty isolated vertices list.}*/
 
     ~Nef_face_2() { FC.clear(); IV.clear(); }
 
-    void store_fc(Halfedge_handle h) 
+    void store_fc(Halfedge_handle h)
         /*{\Mop stores halfedge |h| as an entry into a face cycle of |\Mvar|.
           Postcondition: |h->is_hole_entry()|.}*/
-        { FC.push_back(h); h->set_fcit(--FC.end());  
+        { FC.push_back(h); h->set_fcit(--FC.end());
         CGAL_assertion(h->is_hole_entry()); }
 
-    void remove_fc(Halfedge_handle h) 
+    void remove_fc(Halfedge_handle h)
         /*{\Mop removes halfedge |h| as an entry into a face cycle of |\Mvar|.
           \precond |h->is_hole_entry()| and |h|  is stored in the
           face cycle list of |\Mvar|.
@@ -327,32 +327,32 @@ public:
     void remove_iv(Vertex_handle v)
         /*{\Mop removes vertex |v| as an isolated vertex of |\Mvar|.
           \precond |v->is_isolated()| and |v| is stored in the
-          isolated vertices list of |\Mvar|. 
+          isolated vertices list of |\Mvar|.
           Postcondition: |!v->is_isolated()|.}*/
-        { CGAL_assertion(v->is_isolated()); 
+        { CGAL_assertion(v->is_isolated());
         IV.erase(v->ivit()); v->set_ivit(Vertex::nil_); }
-      
+
     /*{\Mtext\setopdims{4cm}{0cm}}*/
 
     Hole_iterator  fc_begin() { return FC.begin(); }
     /*{\Mop}*/
 
     Hole_iterator  fc_end()   { return FC.end(); }
-    /*{\Mop the iterator range |[fc_begin(),fc_end())| spans the set of 
+    /*{\Mop the iterator range |[fc_begin(),fc_end())| spans the set of
       interior face cycles.}*/
 
     Isolated_vertex_iterator  iv_begin() { return IV.begin(); }
     /*{\Mop}*/
 
     Isolated_vertex_iterator  iv_end()   { return IV.end(); }
-    /*{\Mop the iterator range |[iv_begin(),iv_end())| spans the set of 
+    /*{\Mop the iterator range |[iv_begin(),iv_end())| spans the set of
       isolated vertices.}*/
 
     void clear_all_entries()
         {
-        for (Hole_iterator hit = fc_begin(); hit!=fc_end(); ++hit) 
+        for (Hole_iterator hit = fc_begin(); hit!=fc_end(); ++hit)
             hit->set_fcit(Halfedge::nil_);
-        for (Isolated_vertex_iterator vit = iv_begin(); vit!=iv_end(); ++vit) 
+        for (Isolated_vertex_iterator vit = iv_begin(); vit!=iv_end(); ++vit)
             vit->set_ivit(Vertex::nil_);
         FC.clear(); IV.clear(); }
 
@@ -365,7 +365,7 @@ public:
     Isolated_vertex_const_iterator iv_begin() const { return IV.begin(); }
     Isolated_vertex_const_iterator iv_end() const   { return IV.end(); }
 
-    void set_halfedge(Halfedge_handle h)   { _e = h; } 
+    void set_halfedge(Halfedge_handle h)   { _e = h; }
     /*{\Mop makes |h| the entry edge into the outer face cycle.}*/
     Halfedge_handle       halfedge()       { return _e; }
     /*{\Mop returns a halfedge in the outer face cycle.}*/
@@ -381,10 +381,10 @@ public:
 };
 
 
-template <typename R,class T> 
+template <typename R,class T>
 typename Nef_vertex_2<R,T>::iv_iterator    Nef_vertex_2<R,T>::nil_;
 
-template <typename R,class T> 
+template <typename R,class T>
 typename Nef_halfedge_2<R,T>::fc_iterator  Nef_halfedge_2<R,T>::nil_;
 
 

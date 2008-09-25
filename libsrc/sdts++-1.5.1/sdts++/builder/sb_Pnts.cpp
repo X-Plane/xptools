@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -138,7 +138,7 @@ void
 _build_schema( sio_8211Schema& schema )
 {
   schema.clear();               // make sure we are starting with clean schema
-  
+
   schema.push_back( sio_8211FieldFormat() );
 
   sio_8211FieldFormat& field_format = schema.back();
@@ -216,7 +216,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
   // External Spatial Reference module.
 
   sc_FieldCntr::const_iterator curfield;
-  
+
   if ( ! sb_Utils::getFieldByMnem( record,"PNTS",curfield) )
     {
       #ifdef SDTSXX_DEBUG
@@ -235,7 +235,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
   string tmp_str;
   long   tmp_int;
 
-  
+
   // MODN
   if (sb_Utils::getSubfieldByMnem(*curfield,"MODN",cursubfield))
     {
@@ -268,7 +268,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
   if ( sb_Utils::getFieldByMnem( record,"SADR" ,curfield) )
     {
       sb_Spatial tmp_spatial;
-      
+
       if ( sb_Utils::getSubfieldByMnem(*curfield,"X",cursubfield ) )
 	{
 	  tmp_spatial.x() = *cursubfield;
@@ -277,7 +277,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
 	{
 	  return false;
 	}
-      
+
       if ( sb_Utils::getSubfieldByMnem(*curfield,"Y",cursubfield ) )
 	{
 	  tmp_spatial.y() = *cursubfield;
@@ -304,7 +304,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
 	    {
 	      return false;
 	    }
-	  
+
 	  curfield++;
 	}
     }
@@ -321,7 +321,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
       //grabbing fields until we get one that's well, not anLineID
       while ( curfield != record.end() && curfield->mnemonic() == "LNID" )
 	{
-	  
+
 	  pnts_imp._LineIDs.push_back( sb_ForeignID() );
 	  if ( ! pnts_imp._LineIDs.back().assign( *curfield ) )
 	    {
@@ -390,7 +390,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
       //grabbing fields until we get one that's well, not anRepresentationModuleID
       while ( curfield != record.end() && curfield->mnemonic() == "RPID" )
 	{
-	  
+
 	  pnts_imp._RepresentationModuleIDs.push_back( sb_ForeignID() );
 	  if ( ! pnts_imp._RepresentationModuleIDs.back().assign( *curfield ) )
 	    {
@@ -459,13 +459,13 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
       //grabbing fields until we get one that's well, not anArrtibuteLabel
       while ( curfield != record.end() && curfield->mnemonic() == "ATLB" )
 	{
-	  
+
 	  pnts_imp._ArrtibuteLabels.push_back( sb_AttributeID() );
 	  if ( ! pnts_imp._ArrtibuteLabels.back().assign( *curfield ) )
 	    {
 	      return false;
 	    }
-	  
+
 	  curfield++;
 	}
     }
@@ -480,7 +480,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
   if ( sb_Utils::getFieldByMnem( record,"SSAD" ,curfield) )
     {
       sb_Spatial tmp_spatial;
-      
+
       if ( sb_Utils::getSubfieldByMnem(*curfield,"X",cursubfield ) )
 	{
 	  tmp_spatial.x() = *cursubfield;
@@ -489,7 +489,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
 	{
 	  return false;
 	}
-      
+
       if ( sb_Utils::getSubfieldByMnem(*curfield,"Y",cursubfield ) )
 	{
 	  tmp_spatial.y() = *cursubfield;
@@ -500,7 +500,7 @@ _ingest_record( sb_Pnts& pnts, sb_Pnts_Imp &pnts_imp, sc_Record const& record )
 	}
 
       pnts_imp._SymbolOrientationSpatialAddress.assign( tmp_spatial );
-      
+
     }
 
   return true;
@@ -601,12 +601,12 @@ sb_Pnts::getAreaID( std::list<std::string> & val ) const
 {
   if ( _imp->_AreaIDs.empty() )
     return false;
-  
+
   // We'll let the programmer worry about the proper maintanence of
   // the given list of strings.  HTat is, it'll be up to them to
   // clear the contents or not before invoking this member function.
   string tmp_string;
-  
+
   for ( sb_ForeignIDs::const_iterator i =_imp->_AreaIDs.begin(); i != _imp->_AreaIDs.end();i++ )
     {
       if ( ! i->packedIdentifierString( tmp_string ) )
@@ -632,7 +632,7 @@ sb_Pnts::getCompositeID( std::list<std::string> & val ) const
 {
   if ( _imp->_CompositeIDs.empty() )
     return false;
-  
+
   // We'll let the programmer worry about the proper maintanence of
   // the given list of strings.  HTat is, it'll be up to them to
   // clear the contents or not before invoking this member function.
@@ -663,12 +663,12 @@ sb_Pnts::getRepresentationModuleID( std::list<std::string> & val ) const
 {
   if ( _imp->_RepresentationModuleIDs.empty() )
     return false;
-  
+
   // We'll let the programmer worry about the proper maintanence of
   // the given list of strings.  HTat is, it'll be up to them to
   // clear the contents or not before invoking this member function.
   string tmp_string;
- 
+
   for ( sb_ForeignIDs::const_iterator i =_imp->_RepresentationModuleIDs.begin(); i != _imp->_RepresentationModuleIDs.end();i++ )
     {
       if ( ! i->packedIdentifierString( tmp_string ) )
@@ -699,7 +699,7 @@ sb_Pnts::getOrientationSpatialAddress( std::list<std::string> & val ) const
   // the given list of strings.  HTat is, it'll be up to them to
   // clear the contents or not before invoking this member function.
   string tmp_string;
-  
+
   for ( sb_ForeignIDs::const_iterator i =_imp->_OrientationSpatialAddresss.begin(); i != _imp->_OrientationSpatialAddresss.end();i++ )
     {
       if ( ! i->packedIdentifierString( tmp_string ) )
@@ -787,9 +787,9 @@ sb_Pnts::getSymbolOrientationSpatialAddress( sb_Spatial & val ) const
 {
   if ( _imp->_SymbolOrientationSpatialAddress.x().isUnvalued()  )
     return false;
-  
+
   val = _imp->_SymbolOrientationSpatialAddress;
-  
+
   return true;
 } // sb_Pnts::getSymbolOrientationSpatialAddress
 
@@ -799,7 +799,7 @@ sb_Pnts::getSchema( sio_8211Schema& schema ) const
 {
   // If the schema hasn't been
   // initialized, please do so.
-  
+
   if ( _schema.empty() )
     {
       _build_schema( _schema );
@@ -825,11 +825,11 @@ sb_Pnts::getRecord( sc_Record & record ) const
   record.clear();               // start with a clean slate
 
   // first field, which contains module name and record number
-  
+
   sb_ForeignID tmp_foreign_id;
 
   record.push_back( sc_Field() );
-  
+
   record.back().setMnemonic( "PNTS" );
 
   record.back().setName( "Point" );
@@ -853,7 +853,7 @@ sb_Pnts::getRecord( sc_Record & record ) const
 
 
   //XXX for each spatial address, add a SpatialAddress to a repeating field
-  
+
   sb_Utils::add_field( record, "SpatialAddress","SADR" );
 
   {
@@ -924,9 +924,9 @@ sb_Pnts::getRecord( sc_Record & record ) const
 
 
   //XXX for each spatial address, add a SymbolOrientationSpatialAddress to a repeating field
-  
+
   sb_Utils::add_field( record, "SymbolOrientationSpatialAddress","SSAD" );
-  
+
   {
     //just shove the sc_subfields directly onto the end of the field
 
@@ -948,7 +948,7 @@ bool
 sb_Pnts::setObjectRepresentation( string const& val )
 {
   _imp->_ObjectRepresentation = val;
-  
+
   return true;
 } // sb_Pnts::setObjectRepresentation
 
@@ -957,7 +957,7 @@ bool
 sb_Pnts::setSpatialAddress( sb_Spatial const& val )
 {
   _imp->_SpatialAddress = val;
-  
+
   return true;
 } // sb_Pnts::setSpatialAddress
 
@@ -993,7 +993,7 @@ bool
 sb_Pnts::setCompositeID( sb_ForeignIDs const& val )
 {
   _imp->_CompositeIDs = val;
-  
+
   return true;
 } // sb_Pnts::setCompositeID
 
@@ -1135,7 +1135,7 @@ sb_Pnts::unDefineSymbolOrientationSpatialAddress( )
 } // sb_Pnts::unDefineSymbolOrientationSpatialAddress
 
 
-sio_8211Schema& 
+sio_8211Schema&
 sb_Pnts::schema_()
 {
   if ( _schema.empty() )

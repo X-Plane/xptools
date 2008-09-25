@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -29,16 +29,16 @@ static const char* ident_ = "$Id: sio_8211SubfieldFormat.cpp,v 1.5 2002/10/07 20
 
 
 
-// This contains the implementation details for 
+// This contains the implementation details for
 // sio_8211SubfieldFormat.
 
 struct sio_8211SubfieldFormatImp
 {
-  sio_8211SubfieldFormatImp() : 
-    label_(""), 
-    type_(sio_8211SubfieldFormat::A), 
-    format_(sio_8211SubfieldFormat::variable), 
-    control_(sio_8211UnitTerminator), 
+  sio_8211SubfieldFormatImp() :
+    label_(""),
+    type_(sio_8211SubfieldFormat::A),
+    format_(sio_8211SubfieldFormat::variable),
+    control_(sio_8211UnitTerminator),
     converter_(0) {}
 
   ~sio_8211SubfieldFormatImp()
@@ -57,7 +57,7 @@ struct sio_8211SubfieldFormatImp
 
   sio_8211Converter const * converter_;
 
-  // XXX Since a subfield format is either going to be 
+  // XXX Since a subfield format is either going to be
   // XXX character delimited or read by length, there's no
   // XXX reason to store the character delimeter and length
   // XXX separately.  The union effects this and conveys
@@ -173,7 +173,7 @@ sio_8211SubfieldFormat::getConverter() const
 
 
 void
-sio_8211SubfieldFormat::setLabel( string const & label ) 
+sio_8211SubfieldFormat::setLabel( string const & label )
 {
   imp_->label_ = label;
 } // sio_8211SubfieldFormat::setLabel()
@@ -188,9 +188,9 @@ sio_8211SubfieldFormat::setType( sio_8211SubfieldFormat::type t )
 
 #ifdef BOGUS
   // if the subfield type is binary, its length will be in bits__ and
-  // not in characters.  If so, convert to character units to be 
+  // not in characters.  If so, convert to character units to be
   // consistent with the other subfields.
-  if ( imp_->control_._length > 0 && 
+  if ( imp_->control_._length > 0 &&
        imp_->type_ == sio_8211SubfieldFormat::B )
     {
       imp_->control_._length /= 8;
@@ -213,7 +213,7 @@ sio_8211SubfieldFormat::setFormat( sio_8211SubfieldFormat::format f )
 void
 sio_8211SubfieldFormat::setLength( int val )
 {
- 
+
   imp_->control_.length_ = val;
   imp_->format_ = sio_8211SubfieldFormat::fixed;
 } // sio_8211SubfieldFormat::setLabel()

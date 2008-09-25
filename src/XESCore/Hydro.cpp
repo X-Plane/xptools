@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -101,16 +101,16 @@ struct DemPt {
 	DemPt& operator=(const DemPt& rhs) { x = rhs.x; y = rhs.y; return *this; }
 	int x;
 	int y;
-	bool operator<(const DemPt& rhs) const { 
+	bool operator<(const DemPt& rhs) const {
 		if (y < rhs.y) return true;
 		if (y > rhs.y) return false;
 		return x < rhs.x;
 	}
 	bool operator==(const DemPt& rhs) const {
-		return x == rhs.x && y == rhs.y; 
+		return x == rhs.x && y == rhs.y;
 	}
 	bool operator!=(const DemPt& rhs) const {
-		return x != rhs.x || y != rhs.y; 
+		return x != rhs.x || y != rhs.y;
 	}
 };
 
@@ -154,17 +154,17 @@ inline void GetNeighbors(const DemPtSet& pts, DemPtSet& neighbors, DemPtMap& bor
 				neighbors.insert(np);
 				float e = elev.get(np.x, np.y);
 				borderMap.insert(DemPtMap::value_type(e, np));
-				
+
 			}
 		}
-	}	
+	}
 }
 
 inline void AddPtToSet(DemPtSet& area, DemPtSet& border, DemPtMap& borderMap, const DemPtMap::iterator it, int width, int height, const DEMGeo& elev)
 {
 	DemPt	p = it->second;
 	DebugAssert(border.count(p) == 1);
-	
+
 	area.insert(p);
 	border.erase(p);
 	borderMap.erase(it);
@@ -197,19 +197,19 @@ inline int	GetFlowDir(float e[DIRS_COUNT+1])
 		dif[n] = e[DIRS_COUNT] - e[n];
 		if (e[n] == DEM_NO_DATA) dif[n] = DEM_NO_DATA;
 	}
-	
+
 	float best = dif[0];
 	int dir = drain_Dir0;
 	for (n = 1; n < DIRS_COUNT; ++n)
 		if (dif[n] > best) dir = drain_Dir0 + n, best = dif[n];
 	if (best <= 0.0) dir = sink_Unresolved;
-	return dir;	
+	return dir;
 }
 
 inline bool GetNext(int& x, int& y, const DEMGeo& dem)
 {
 	int code = dem(x,y);
-	if (code < drain_Dir0) return false;	
+	if (code < drain_Dir0) return false;
 	DebugAssert(code < (drain_Dir0+DIRS_COUNT));
 	x += dirs_x[code - drain_Dir0];
 	y += dirs_y[code - drain_Dir0];
@@ -280,7 +280,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 }
 
 int FixSink(int x, int y, DEMGeo& elev, DEMGeo& hydro_dir)
-{	
+{
 	DemPt		orig; orig.x = x; orig.y = y;
 	DemPtSet	sink; sink.insert(orig);
 	float		low_elev;
@@ -293,10 +293,10 @@ int FixSink(int x, int y, DEMGeo& elev, DEMGeo& hydro_dir)
 	GetNeighbors(sink, last_border, border_elev, elev.mWidth, elev.mHeight, elev);
 	while (1)
 	{
-		if (last_border.empty()) 
+		if (last_border.empty())
 			goto hosed;
 		DebugAssert(!border_elev.empty());
-	
+
 		DemPtMap::iterator i = border_elev.begin();
 		low_elev = i->first;
 
@@ -308,25 +308,25 @@ int FixSink(int x, int y, DEMGeo& elev, DEMGeo& hydro_dir)
 			DemPt foo(drainPt);
 			if (GetNext(foo.x, foo.y, hydro_dir))
 				DebugAssert(sink.count(foo) == 0);
-#endif			
-			goto found;				
+#endif
+			goto found;
 		}
-			
-		hydro_dir(i->second.x, i->second.y) = sink_Unresolved;			
+
+		hydro_dir(i->second.x, i->second.y) = sink_Unresolved;
 		AddPtToSet(sink, last_border, border_elev, i, elev.mWidth, elev.mHeight, elev);
 
 		elev(x, y) = low_elev;
-			
+
 		DebugAssert(low_elev >= orig_elev);
 		if ((low_elev - orig_elev) > MAX_FLOOD)
 			goto hosed;
 		if (sink.size() > MAX_AREA)
 		{
-			// BEN SEZ:: at this point our lakes are so @#$@#ing huge we probably do NOT want to fill them in - 
+			// BEN SEZ:: at this point our lakes are so @#$@#ing huge we probably do NOT want to fill them in -
 			// if there was a lake there, it'd be on VMAP0.
 			hosed_fill = sink_Invalid;	// sink_Lake;
 			goto hosed;
-		}		
+		}
 	}
 hosed:
 
@@ -336,7 +336,7 @@ hosed:
 	for (DemPtSet::iterator j = sink.begin(); j != sink.end(); ++j)
 		hydro_dir(j->x, j->y) = hosed_fill;
 	return ctr;
-		
+
 found:
 
 	for (DemPtSet::iterator j = sink.begin(); j != sink.end(); ++j)
@@ -350,7 +350,7 @@ found:
 		DemPt tr = *working.begin();
 		working.erase(working.begin());
 		ok.insert(tr);
-		
+
 		for (int n = 0; n < DIRS_COUNT; ++n)
 		{
 			DemPt	tr_n(tr);
@@ -390,13 +390,13 @@ inline int HydroFlowToPt(int x, int y, DEMGeo * elev, DEMGeo * dirs, DEMGeo * fl
 	for (int n = 0; n < DIRS_COUNT; ++n)
 	{
 		if (dirs->get(x-dirs_x[n],y-dirs_y[n]) == (n+drain_Dir0))
-		{			
+		{
 			sum += HydroFlowToPt(x-dirs_x[n],y-dirs_y[n], elev, dirs, flows, slope, ctr);
 			if (me_elev != DEM_NO_DATA)
 			{
 				float other_elev = elev->get(x-dirs_x[n],y-dirs_y[n]);
 				if (other_elev != DEM_NO_DATA)
-				{	
+				{
 					float grad = other_elev - me_elev;
 					if (grad >= 0.0)
 						slp = MIN_NODATA(grad, slp);
@@ -416,12 +416,12 @@ static void BurnRiver(DEMGeo& dem, const Point2& p1, const Point2& p2, float v)
 	double	x2 = dem.lon_to_x(p2.x);
 	double	y1 = dem.lat_to_y(p1.y);
 	double	y2 = dem.lat_to_y(p2.y);
-	
+
 	Segment2	seg(Point2(x1, y1), Point2(x2, y2));
 	double len = sqrt(seg.squared_length());
 	if (len == 0.0) len = 1.0;
 	len = 1.0 / len;
-	
+
 	for (double t = 0.0; t <= 1.0; t += len)
 	{
 		Point2 p = seg.midpoint(t);
@@ -443,19 +443,19 @@ bool	RiverPtsConnected(int x1, int y1, int x2, int y2, const DEMGeo& hydro_dir, 
 {
 	if (hydro_elev.get(x1,y1) == DEM_NO_DATA) return false;
 	if (hydro_elev.get(x2,y2) == DEM_NO_DATA) return false;
-	
+
 	int flow1 = hydro_dir.get(x1,y1);
-	if (flow1 >= drain_Dir0 && 
+	if (flow1 >= drain_Dir0 &&
 		flow1 <= drain_Dir7 &&
 		x1 + dirs_x[flow1 - drain_Dir0] == x2 &&
 		y1 + dirs_y[flow1 - drain_Dir0] == y2)			return true;
 
 	int flow2 = hydro_dir.get(x2,y2);
-	if (flow2 >= drain_Dir0 && 
+	if (flow2 >= drain_Dir0 &&
 		flow2 <= drain_Dir7 &&
 		x2 + dirs_x[flow2 - drain_Dir0] == x1 &&
 		y2 + dirs_y[flow2 - drain_Dir0] == y1)			return true;
-		
+
 	return false;
 }
 
@@ -479,7 +479,7 @@ void	FindNextRiverSegment(int old_x, int old_y, int cur_x, int cur_y, int& new_x
 {
 	int	stop, angle = RiverPtsConnectedAngle(cur_x, cur_y, old_x, old_y);
 	stop = angle;
-	
+
 	do {
 		angle = DrainDir_CW(angle);
 		new_x = cur_x + dirs_x[angle - drain_Dir0];
@@ -494,32 +494,32 @@ void	BuildRiverPolygon(int x, int y, const DEMGeo& hydro_dir, const DEMGeo& hydr
 {
 	poly.clear();
 	height.clear();
-	
+
 		int a;
-		
+
 	for (a = 0; a < 8; ++a)
 	if (RiverPtsConnected(x, y, x + dirs_x[a], y + dirs_y[a], hydro_dir, hydro_flw, hydro_elev, is_river))
 		break;
-		
+
 	if (a == 8) return;
-	
+
 	int last_x = x, last_y = y;
 	int cur_x = x + dirs_x[a], cur_y = y + dirs_y[a];
 	int new_x, new_y;
 	int start_last_x = last_x, start_last_y = last_y;
 	int start_cur_x = cur_x, start_cur_y = cur_y;
-	
+
 	do {
 		poly.push_back(Point2(hydro_elev.x_to_lon(cur_x), hydro_elev.y_to_lat(cur_y)));
-		
+
 		FindNextRiverSegment(last_x, last_y, cur_x, cur_y, new_x, new_y, hydro_dir, hydro_flw, hydro_elev, is_river);
 
-		double h_diff = 
+		double h_diff =
 			(fabs(hydro_elev.get(cur_x, cur_y) - hydro_elev.get(last_x, last_y)) +
 			 fabs(hydro_elev.get(cur_x, cur_y) - hydro_elev.get(new_x, new_y)));
-	
+
 		double dist = sqrt(hydro_elev.x_dist_to_m(cur_x-last_x) * hydro_elev.x_dist_to_m(cur_x-last_x) +
-						   hydro_elev.y_dist_to_m(cur_y-last_y) * hydro_elev.y_dist_to_m(cur_y-last_y)) + 
+						   hydro_elev.y_dist_to_m(cur_y-last_y) * hydro_elev.y_dist_to_m(cur_y-last_y)) +
 					  sqrt(hydro_elev.x_dist_to_m(cur_x-new_x ) * hydro_elev.x_dist_to_m(cur_x-new_x ) +
 						   hydro_elev.y_dist_to_m(cur_y-new_y ) * hydro_elev.y_dist_to_m(cur_y-new_y ));
 
@@ -527,15 +527,15 @@ void	BuildRiverPolygon(int x, int y, const DEMGeo& hydro_dir, const DEMGeo& hydr
 
 		double width = (h_diff == 0.0) ? 125.0 : (125.0 * dist / h_diff);
 		width *= 0.5;
-		
+
 		if (width < 12.0) width = 12.0;
 		if (width > 30.0) width = 30.0;
-		
+
 		height.push_back(width);
-		
+
 		last_x = cur_x;	last_y = cur_y;
 		cur_x = new_x;	cur_y = new_y;
-		
+
 	} while (last_x != start_last_x || last_y != start_last_y || cur_x != start_cur_x || cur_y != start_cur_y);
 }
 
@@ -552,7 +552,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 	DEMGeo  elev(ioDEMs[dem_Elevation]);
 	DEMGeo&	hydro_elev(ioDEMs[dem_HydroElevation]);
 	DEMGeo	is_river(61, 61);
-	
+
 	DEMGeo	hydro_dir(elev.mWidth, elev.mHeight);
 	DEMGeo	hydro_flw(elev.mWidth, elev.mHeight);
 	DEMGeo	hydro_slp(elev.mWidth, elev.mHeight);
@@ -560,10 +560,10 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 	hydro_flw.copy_geo_from(elev);
 	hydro_slp.copy_geo_from(elev);
 	is_river.copy_geo_from(elev);
-	
+
 	hydro_dir = sink_Unresolved;
 	is_river = 0;
-	
+
 	// Burn each river from VMAP0 into the "is river" low-res DEM
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
 	if (he->mDominant)
@@ -571,11 +571,11 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 	{
 		BurnRiver(is_river, he->source()->point(), he->target()->point(), 1);
 	}
-	
+
 	if (inProg) inProg(0, 4, "Preparing elevation maps", 1.0);
 
 	// For each border, if we have a border file, it means our adjacent tile is already done.  It's not up to us to decide
-	// whether we sink to this edge, so mark the entire edge as invalid.  
+	// whether we sink to this edge, so mark the entire edge as invalid.
 	for (y = 0; y < hydro_elev.mHeight;++y)
 	{
 		if(borders[0])	hydro_dir(0					, y) = sink_Invalid;
@@ -587,7 +587,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		if(borders[3])	hydro_dir(x, hydro_dir.mHeight-1) = sink_Invalid;
 	}
 	// Furthermore, if our hydro-elevation has water elevation, this is a known waterbody.  (Note that this comes from both our water
-	// and any water that came from a border, so between the invalid marking of the borders and sink-known, every border that was 
+	// and any water that came from a border, so between the invalid marking of the borders and sink-known, every border that was
 	// previously rendered by another tile is sink_invalid or sink_known - 100% deterministic.)
 	for (y = 0; y < hydro_elev.mHeight;++y)
 	for (x = 0; x < hydro_elev.mWidth; ++x)
@@ -595,7 +595,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		hydro_dir(x,y) = sink_Known;
 
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
-	if (he->mDominant)	
+	if (he->mDominant)
 	if (he->mParams.count(he_IsRiver) > 0)
 	{
 		Point2	sp = he->source()->point();
@@ -618,30 +618,30 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 
 	max_hydro = elev.mWidth * elev.mHeight;
 	float e[DIRS_COUNT+1];
-	if (inProg) inProg(1, 4, "Calculating drainage...", 0.0);	
+	if (inProg) inProg(1, 4, "Calculating drainage...", 0.0);
 	for (x = 0; x < hydro_dir.mWidth; ++x)
 	{
 		if (inProg && (x % 20) == 0) inProg(1, 4, "Calculating drainage...", (float) x / (float) hydro_dir.mWidth);
 
 		for (y = 0; y < hydro_dir.mHeight; ++y)
 		{
-			if (hydro_dir(x,y) == sink_Known || hydro_dir(x,y) == sink_Invalid) 
-				continue;		
+			if (hydro_dir(x,y) == sink_Known || hydro_dir(x,y) == sink_Invalid)
+				continue;
 			for (n = 0; n < DIRS_COUNT; ++n)
-				e[n] = elev.get(x+dirs_x[n], y + dirs_y[n]);	
+				e[n] = elev.get(x+dirs_x[n], y + dirs_y[n]);
 			e[DIRS_COUNT] = elev.get(x  ,y  );
 			hydro_dir(x,y) = GetFlowDir(e);
 		}
 	}
 	if (inProg) inProg(1, 4, "Calculating drainage...", 1.0);
-	
-	
-	if (inProg) inProg(2, 4, "Removing sinks...", 0.0);	
+
+
+	if (inProg) inProg(2, 4, "Removing sinks...", 0.0);
 	int total_sink_pts = 0;
 //	map<int, int>	histo;
 	for (x = 0; x < hydro_dir.mWidth; ++x)
 	{
-		if (inProg && (x % 20) == 0) inProg(2, 4, "Removing sinks...", (float) x / (float) hydro_dir.mWidth);	
+		if (inProg && (x % 20) == 0) inProg(2, 4, "Removing sinks...", (float) x / (float) hydro_dir.mWidth);
 		for (y = 0; y < hydro_dir.mHeight; ++y)
 		{
 			if (hydro_dir(x,y) == sink_Unresolved)
@@ -656,13 +656,13 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 //	printf("HISTO:\n");
 //	for (map<int, int>::iterator i = histo.begin(); i != histo.end(); ++i)
 //		printf("%10d %10d\n", i->first, i->second);
-	if (inProg) inProg(2, 4, "Removing sinks...", 1.0);	
+	if (inProg) inProg(2, 4, "Removing sinks...", 1.0);
 
-	if (inProg) inProg(3, 4, "Calculating Flow...", 0.0);	
+	if (inProg) inProg(3, 4, "Calculating Flow...", 0.0);
 	int ctr = 0;
 	for (y = 0; y < hydro_dir.mHeight; ++y)
 	{
-		if (inProg && (y % 20) == 0) inProg(3, 4, "Calculating Flow...", (float) y / (float) hydro_dir.mHeight);	
+		if (inProg && (y % 20) == 0) inProg(3, 4, "Calculating Flow...", (float) y / (float) hydro_dir.mHeight);
 		for (x = 0; x < hydro_dir.mWidth; ++x)
 		if (hydro_dir(x,y) < drain_Dir0)
 			HydroFlowToPt(x, y, &elev, &hydro_dir, &hydro_flw, &hydro_slp, &ctr);
@@ -679,9 +679,9 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		if (hydro_dir(x,y) == sink_Lake)
 			hydro_elev(x,y) = elev(x,y);
 	}
-	if (inProg) inProg(3, 4, "Calculating Flow...", 1.0);	
+	if (inProg) inProg(3, 4, "Calculating Flow...", 1.0);
 
-#if 0		
+#if 0
 	for (y = 0; y < hydro_dir.mHeight; ++y)
 	for (x = 0; x < hydro_dir.mWidth; ++x)
 	if (hydro_dir(x,y) == sink_Known)
@@ -690,7 +690,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		vector<double>	widths;
 		BuildRiverPolygon(x, y, hydro_dir, hydro_flw, hydro_elev, is_river, foo, widths);
 		if (!foo.empty())
-		{		
+		{
 			for (int k = 0; k < foo.size(); ++k)
 			{
 				if (k != 0)	gMeshLines.push_back(foo[k]);
@@ -713,11 +713,11 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 			}
 		}
 	}
-#endif	
-			
+#endif
+
 	ioDEMs[dem_HydroDirection].swap(hydro_dir);
 	ioDEMs[dem_HydroQuantity].swap(hydro_flw);
-	
+
 	printf("Total sink points: %d\n", total_sink_pts);
 }
 
@@ -735,9 +735,9 @@ inline bool	IsCoastal(const DEMGeo& dem, int x, int y)
 	if (dem.get(x+1,y  ) == DEM_NO_DATA)	return true;
 	if (dem.get(x  ,y-1) == DEM_NO_DATA)	return true;
 	if (dem.get(x  ,y+1) == DEM_NO_DATA)	return true;
-	
+
 // Hrm...diagonals let the algorithm hop all over the place and trace
-// out discontinuous stuff.  Not good to do.	
+// out discontinuous stuff.  Not good to do.
 
 //	if (dem.get(x-1,y-1) == DEM_NO_DATA)	return true;
 //	if (dem.get(x+1,y-1) == DEM_NO_DATA)	return true;
@@ -764,11 +764,11 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 	float					e;
 	float 					minv_lim = 9.9e9;
 	float 					maxv_lim =-9.9e9;
-	
+
 	/* STEP 1. BURN THE DEM INTO THE WORKING MAP AND DETERMINE SEALEVEL. */
 
 	workingElev.copy_geo_from(origElev);
-	workingElev = DEM_NO_DATA;	
+	workingElev = DEM_NO_DATA;
 	FindEdgesForFaceSet(wetFaces, bounds);
 
 	y = SetupRasterizerForDEM(bounds, origElev, raster);
@@ -794,15 +794,15 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 			}
 		}
 		++y;
-		if (y >= origElev.mHeight) 
+		if (y >= origElev.mHeight)
 			break;
-		raster.AdvanceScanline(y);		
+		raster.AdvanceScanline(y);
 	}
 	y2 = y;
-	
+
 	// If we have no area, quick bail!
 	if (count == 0) return;
-	
+
 	if (x2 == (workingElev.mWidth-1))
 	{
 		for (y = 0; y < workingElev.mHeight; ++y)
@@ -815,12 +815,12 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 			workingElev(x, y2) = workingElev.get(x, y2-1);
 		++y2;
 	}
-	
+
 	{
 		multimap<int, float, greater<int> >	freqtable;
 		for (hash_map<float, int>::iterator iter = histogram.begin(); iter != histogram.end(); ++iter)
 			freqtable.insert(multimap<int,float>::value_type(iter->second, iter->first));
-		
+
 		float sum = 0.0;
 		int ctr = 0;
 		int needed = 0.5 * (float) count;
@@ -834,17 +834,17 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 				break;
 		}
 	}
-	
+
 	minv_lim -= SRTM_VERTICAL_SLOP;
 	maxv_lim += SRTM_VERTICAL_SLOP;
 
 	DemPtVector	coastal;
-	
+
 	DEMGeo	hit(workingElev.mWidth, workingElev.mHeight);
-	
+
 //	StElapsedTime	processOne("checking coastal pts.");
 	int check = 0, total = 0;
-	
+
 	for (y = y1; y < y2; ++y)
 	for (x = x1; x < x2; ++x)
 	{
@@ -881,7 +881,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 		e = workingElev.get(x,y);
 		if (e != DEM_NO_DATA)
 			wetElev(x,y) = e;
-	}	
+	}
 }
 
 void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
@@ -891,19 +891,19 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 	if (!f->is_unbounded())
 	if (f->IsWater())
 		water.insert(f);
-		
+
 	const DEMGeo& elev(dems[dem_Elevation]);
 
 	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
 	new_wet.copy_geo_from(elev);
 	new_wet = DEM_NO_DATA;
-	
+
 	int ctr = 0;
 //	StElapsedTime	oceans("oceans");
-	
+
 	int total = water.size();
 	PROGRESS_START(inProg, 0, 1, "Editing Coastlines...")
-	
+
 	while (!water.empty())
 	{
 		PROGRESS_SHOW(inProg, 0, 1, "Editing Coastlines...", (total - water.size()), total)
@@ -913,8 +913,8 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 		BuildCorrectedWaterBody(elev, new_wet, group);
 		for (set<GISFace *>::iterator g = group.begin(); g != group.end(); ++g)
 			water.erase(*g);
-	}	
-	
+	}
+
 	new_wet.swap(dems[dem_HydroElevation]);
 	PROGRESS_DONE(inProg, 0, 1, "Editing Coastlines...")
 }
@@ -969,7 +969,7 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 	if (!f->is_unbounded())
 	if (f->IsWater())
 		water.insert(f);
-		
+
 	while (!water.empty())
 	{
 		set<GISFace *> group;
@@ -977,15 +977,15 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 		BuildCorrectedWaterBody(elev, old_wet, group);
 		for (set<GISFace *>::iterator g = group.begin(); g != group.end(); ++g)
 			water.erase(*g);
-	}	
-	
+	}
+
 	/************************************************************************************
 	 * OR JUST A STRAIGHT RENDER OF VMAP0?
 	 ************************************************************************************/
 
 #if 0
 	PolyRasterizer	raster_old;
-	SetupRasterizerForDEM(edges, old_wet, raster_old);	
+	SetupRasterizerForDEM(edges, old_wet, raster_old);
 
 	y = 0;
 	raster_old.StartScanline(y);
@@ -1001,22 +1001,22 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 			}
 		}
 		++y;
-		if (y >= elev.mHeight) 
+		if (y >= elev.mHeight)
 			break;
-		raster_old.AdvanceScanline(y);		
+		raster_old.AdvanceScanline(y);
 	}
-	
-#endif	
+
+#endif
 
 	/************************************************************************************
 	 * COMBINE RESULTS
 	 ************************************************************************************/
-	
+
 	int dx, dy;
 	float e;
 	for (y = 0; y < elev.mHeight ; y++)
 	for (x = 0; x < elev.mWidth  ; x++)
-	if (new_wet.get(x,y) == DEM_NO_DATA && 
+	if (new_wet.get(x,y) == DEM_NO_DATA &&
 		old_wet.get(x,y) != DEM_NO_DATA)
 	{
 		double	bmin, bmax;
@@ -1026,7 +1026,7 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 		{
 			e = elev.get(dx,dy);
 			bmin = MIN_NODATA(bmin, e);
-			
+
 			// We only consider points LOWER than us.  We are trying to find the span of water bodies, which will generally be the lowest point.  So only consider
 			// for a point P that its surroundings go down.  (If P has a lot of stuff above it, so what - it can still be water - it is surrounded by cliffs!)
 //			bmax = MAX_NODATA(bmax, e);
@@ -1038,7 +1038,7 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 			continue;
 		}
 //		relief(x,y) = bmax-bmin;
-	
+
 		int	c_old = 0, c_new = 0;
 		for (dy = -SRTM_CHOICE_BLOCK_SIZE; dy <= SRTM_CHOICE_BLOCK_SIZE; ++dy)
 		for (dx = -SRTM_CHOICE_BLOCK_SIZE; dx <= SRTM_CHOICE_BLOCK_SIZE; ++dx)
@@ -1057,8 +1057,8 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 	{
 		new_wet(x,y) = old_wet(x,y);
 	}
-	
-	new_wet.swap(dems[dem_HydroElevation]);	
+
+	new_wet.swap(dems[dem_HydroElevation]);
 	wetness.swap(dems[dem_Wizard]);
 }
 
@@ -1074,13 +1074,13 @@ void TagOriginalBridges(Pmwx& io_map)
 {
 	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); ++e)
 	if(e->mDominant)
-	if(!e->mSegments.empty())	
+	if(!e->mSegments.empty())
 	{
 		e->mParams[he_Bridge] = (
 			!e->face()->is_unbounded() &&
 			!e->twin()->face()->is_unbounded() &&
 			e->face()->IsWater() &&
-			e->twin()->face()->IsWater()) ? 1.0 : 0.0;		
+			e->twin()->face()->IsWater()) ? 1.0 : 0.0;
 	}
 }
 
@@ -1089,7 +1089,7 @@ enum {
 	is_water,
 	is_coast,
 	is_border };
-	
+
 typedef list<GISHalfedge *>	LongStrand;
 
 int CategorizeHalfedge(GISHalfedge * e)
@@ -1120,7 +1120,7 @@ bool	BuildBypass(GISHalfedge * b, GISHalfedge * e, LongStrand& s)
 		if(CategorizeHalfedge(i) != is_coast) return false;
 		s.push_back(i);
 		i = i->next();
-	}	
+	}
 	return (i == e);
 }
 
@@ -1165,7 +1165,7 @@ GISHalfedge * PrevOneRoad(GISHalfedge * r, bool allow_bridge)
 	circ=stop=r->source()->incident_halfedges();
 	do {
 		++circ;
-		if(r->twin() != &*circ && HasRoad(circ)) 
+		if(r->twin() != &*circ && HasRoad(circ))
 		if(allow_bridge || !IsBridge(circ))
 			{ ++n; ret = circ; }
 	} while(circ != stop);
@@ -1184,7 +1184,7 @@ void	BuildLongStrand(GISHalfedge * seed, LongStrand& out_s)
 		if(CategorizeHalfedge(i) != is_water) break;
 		out_s.push_front(i);
 		i->mMark = 1;
-	}	
+	}
 	i = seed;
 	while (1)
 	{
@@ -1194,7 +1194,7 @@ void	BuildLongStrand(GISHalfedge * seed, LongStrand& out_s)
 		if(CategorizeHalfedge(i) != is_water) break;
 		out_s.push_back(i);
 		i->mMark = 1;
-	}	
+	}
 }
 
 bool AllSameType(const LongStrand& s)
@@ -1265,7 +1265,7 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 		strands.push_back(LongStrand());
 		BuildLongStrand(e,strands.back());
 	}
-	
+
 	for(list<LongStrand>::iterator s = strands.begin(); s != strands.end(); ++s)
 	if(CategorizeVertex(s->front()->source()) == is_coast &&
 	   CategorizeVertex(s->back()->target()) == is_coast)
@@ -1277,33 +1277,33 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 		double len = 0;
 		double strand_len = StrandLength(*s);
 		double bridge_len = strand_len;
-		
+
 		LongStrand l, r;
 		bool hl = BuildBypass(s->back(), s->front(), l);
 		bool hr = BuildBypass(s->front()->twin(), s->back()->twin(), r);
-		
+
 		if(!hl) l.clear();
 		if(!hr) r.clear();
 /*
 		for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
 		{
 			gMeshLines.push_back(pair<Point2,Point3>((*ss)->source()->point(),Point3(0,1,0)));
-			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(0,1,0)));				
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(0,1,0)));
 		}
 
 		for(LongStrand::iterator ss = r.begin(); ss != r.end(); ++ss)
 		{
 			gMeshLines.push_back(pair<Point2,Point3>((*ss)->source()->point(),Point3(1,1,0)));
-			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(1,1,0)));				
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(1,1,0)));
 		}
-*/		
+*/
 		double ll = hl ? StrandLength(l) : 9.9e9;
 		double rl = hr ? StrandLength(r) : 9.9e9;
-		
+
 		if (!AllSameType(*s)) bridge_len =  9.9e9;
-		
+
 		if (rl < ll) { swap(l,r); swap(rl,ll); }
-		
+
 		if(bridge_len < 500.0 && bridge_len < (ll / 1.2) && s->size() == 1)
 		{
 			for(LongStrand::iterator ss = s->begin(); ss != s->end(); ++ss)
@@ -1313,14 +1313,14 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 			{
 				for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
 				{
-					(*ss)->dominant()->mSegments = s->front()->dominant()->mSegments;				
+					(*ss)->dominant()->mSegments = s->front()->dominant()->mSegments;
 				}
 			}
 		}
 	}
-	
+
 	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-	if(e->mDominant)	
+	if(e->mDominant)
 	if(!IsBridge(e))
 	if(HasRoad(e))
 	if(CategorizeHalfedge(e) == is_water)
@@ -1338,10 +1338,10 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int borders[4])
 {
 	DEMGeo&	water_elev(dems[dem_HydroElevation]);
-	char	fname_left[1024]; 
-	char	fname_rigt[1024]; 
-	char	fname_bott[1024]; 
-	char	fname_topp[1024]; 
+	char	fname_left[1024];
+	char	fname_rigt[1024];
+	char	fname_bott[1024];
+	char	fname_topp[1024];
 	char	fname_self[1024];
 
 	string border_loc = hydro_dir;
@@ -1386,7 +1386,7 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 		fi = fopen(fname_bott, "r");
 		borders[1] = fi != NULL;
 		if (fi)
-		{	
+		{
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
 			if (w == water_elev.mWidth)
 			for (n = 0; n < water_elev.mWidth; ++n)
@@ -1397,7 +1397,7 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 		fi = fopen(fname_topp, "r");
 		borders[3] = fi != NULL;
 		if (fi)
-		{	
+		{
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
 			if (w == water_elev.mWidth)
 			for (n = 0; n < water_elev.mWidth; ++n)
@@ -1405,16 +1405,16 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 				water_elev(n, water_elev.mHeight-1) = e1;
 			fclose(fi);
 		}
-		
+
 		fi = fopen(fname_left, "r");
 		borders[0] = fi != NULL;
 		if (fi)
-		{	
+		{
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
 			if (h == water_elev.mHeight)
 			{
 				for (n = 0; n < water_elev.mWidth; ++n)
-					fscanf(fi, "%f,%f", &e1,&e2);							
+					fscanf(fi, "%f,%f", &e1,&e2);
 				for (n = 0; n < water_elev.mHeight; ++n)
 				if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
 					water_elev(0, n) = e2;
@@ -1424,18 +1424,18 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 		fi = fopen(fname_rigt, "r");
 		borders[2] = fi != NULL;
 		if (fi)
-		{	
+		{
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
 			if (h == water_elev.mHeight)
 			{
 				for (n = 0; n < water_elev.mWidth; ++n)
-					fscanf(fi, "%f,%f", &e1,&e2);							
+					fscanf(fi, "%f,%f", &e1,&e2);
 				for (n = 0; n < water_elev.mHeight; ++n)
 				if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
 					water_elev(water_elev.mWidth-1, n) = e1;
 			}
 			fclose(fi);
-		}		
+		}
 	}
 }
 
@@ -1453,7 +1453,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	Pmwx	water;
 	water.unbounded_face()->mTerrainType = terrain_Natural;
 	DemToVector(foo, water, false, terrain_Water, inFunc);
-	
+
 	water.insert_edge(Point2(foo.mWest, foo.mSouth), Point2(foo.mEast, foo.mSouth), NULL, NULL);
 	water.insert_edge(Point2(foo.mWest, foo.mNorth), Point2(foo.mEast, foo.mNorth), NULL, NULL);
 	water.insert_edge(Point2(foo.mWest, foo.mSouth), Point2(foo.mWest, foo.mNorth), NULL, NULL);
@@ -1466,13 +1466,13 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	{
 		f->mTerrainType = terrain_Natural;
 	}
-	
+
 	SimplifyMap(ioMap, true, inFunc);
 	TopoIntegrateMaps(&ioMap, &water);
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap.swap(water);
-	
-	ConformWater(ioDem, hydro_dir, true, NULL);	
+
+	ConformWater(ioDem, hydro_dir, true, NULL);
 }
 
 /******************************************************************************************************************************
@@ -1524,24 +1524,24 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 	bool	did_work;
 	int nuke = 0;
 	int total = ioMap.number_of_halfedges();
-	
+
 	PROGRESS_START(func, 0, 1, "Simplifying coastlines...")
 	for (Pmwx::Face_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
 	if (!face->is_unbounded())
 	{
 		face->mTemp1 = GetMapFaceAreaMeters(face);
-	}	
+	}
 
 	do {
 		// One cycle through: try to identify and cut off unneeded points.
-	
+
 		set <GISHalfedge *>	nuke_he;
-		did_work = false;	
+		did_work = false;
 		int ctr = 0;
-		
+
 		// Start by finding any halfedge that's water on the left, land on the right, not border.
 		for (he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he, ++ctr)
-		if (!he->face()->is_unbounded() && !he->twin()->face()->is_unbounded())		
+		if (!he->face()->is_unbounded() && !he->twin()->face()->is_unbounded())
 		if (he->face()->mTerrainType == terrain_Water && he->twin()->face()->mTerrainType != terrain_Water)
 		{
 			// Find the next segment (follow the water curve - this implies we're simplified.)  We must terrain match.
@@ -1569,7 +1569,7 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 //							if (NoHalfedgeInDir(he->source(), new_dir, true))
 //							if (NoHalfedgeInDir(next->target(), new_dir, false))
 						{
-						
+
 							// Ray test - if we can't fire a ray, this isn't a clear curve to cut off!
 							Pmwx::Locate_type	loc;
 							Point2				pt;
@@ -1591,15 +1591,15 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 										ne->face()->mTerrainType = he->face()->mTerrainType;
 										ne->face()->mAreaFeature = he->face()->mAreaFeature;
 									}
-									
+
 									if (next->mSegments.empty())
 										nuke_he.insert(next->mDominant ? next : next->twin());
 
 									if (he->mSegments.empty())
 										nuke_he.insert(he->mDominant ? he : he->twin());
-										
+
 									PROGRESS_SHOW(func, 0, 1, "Simplifying coastlines...", ctr, total)
-										
+
 									did_work = true;
 									++nuke;
 								}
@@ -1609,25 +1609,25 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 				}
 			}
 		}
-		
-		// Now nuke anyone we got rid of and recalc face sizes.		
+
+		// Now nuke anyone we got rid of and recalc face sizes.
 		for (set<GISHalfedge *>::iterator nuke_e = nuke_he.begin(); nuke_e != nuke_he.end(); ++nuke_e)
 		{
 //			gMeshLines.push_back((*nuke_e)->source()->point());
 //			gMeshLines.push_back((*nuke_e)->target()->point());
-			
+
 			GISFace * a = (*nuke_e)->face();
 			GISFace * b = (*nuke_e)->twin()->face();
-			
+
 			GISFace * d = ioMap.remove_edge(*nuke_e);
 
 			if (a != d)	a->mTemp1 = GetMapFaceAreaMeters(a);
 			if (b != d)	b->mTemp1 = GetMapFaceAreaMeters(b);
-			
+
 		}
-			
+
 	} while (did_work);
-	
+
 	// clean up any additional map crap??
 	SimplifyMap(ioMap, false, func);
 	PROGRESS_DONE(func, 0, 1, "Simplifying coastlines...")
@@ -1647,13 +1647,13 @@ inline int SubBoxIdx(const Bbox2& lim, const Point2& p, int div)
 {
 	float dx = (p.x - lim.p1.x) / (lim.p2.x - lim.p1.x);
 	float dy = (p.y - lim.p1.y) / (lim.p2.y - lim.p1.y);
-	
+
 	dx *= (float) div;
 	dy *= (float) div;
-	
+
 	int idx = max(0, min((int) dx, div-1));
 	int idy = max(0, min((int) dy, div-1));
-	
+
 	return idx + idy * div;
 }
 
@@ -1674,26 +1674,26 @@ static void BuildPtCache(Pmwx& inMap, const Bbox2& lim, int divs, vector<pair<Bb
 	for (Pmwx::Vertex_iterator i = inMap.vertices_begin(); i != inMap.vertices_end(); ++i)
 	{
 		Point2 p = i->point();
-		
+
 		int idx = SubBoxIdx(lim, p, divs);
 		if (index[idx].second == -1)
 		{
 			idx = index[idx].second = outCache.size();
 			outCache.push_back(pair<Bbox2, vector<Point2> >());
 			outCache[idx].first = p;
-			outCache[idx].second.push_back(p);				
+			outCache[idx].second.push_back(p);
 		} else {
 			idx = index[idx].second;
 			outCache[idx].first += p;
 			outCache[idx].second.push_back(p);
 		}
 	}
-	
+
 #if DEV
 	for (vector<pair<Bbox2, vector<Point2> > >::iterator zone = outCache.begin(); zone != outCache.end(); ++zone)
 	for (vector<Point2>::iterator p = zone->second.begin(); p != zone->second.end(); ++p)
 		DebugAssert(zone->first.contains(*p));
-#endif	
+#endif
 }
 
 
@@ -1701,7 +1701,7 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<
 {
 	DebugAssert(e1->next() == e2);
 	if (e2->next() == e1) return true;
-	
+
 	Bbox2	lim(e1->source()->point());
 	lim += e1->target()->point();
 	lim += e2->target()->point();
@@ -1709,11 +1709,11 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<
 	Segment2	s1(e1->source()->point(), e1->target()->point());
 	Segment2	s2(e2->source()->point(), e2->target()->point());
 	Segment2	s3(e2->target()->point(), e1->source()->point());
-	
+
 	DebugAssert(Vector2(s1.p1,s1.p2).signed_area(Vector2(s2.p1,s2.p2)) > 0.0);
-	
+
 	Pmwx::Ccb_halfedge_circulator circ, stop;
-	
+
 	for (vector<pair<Bbox2, vector<Point2> > >::iterator zone = cache.begin(); zone != cache.end(); ++zone)
 	if (lim.overlap(zone->first))
 	{
@@ -1727,7 +1727,7 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<
 			if (p != s1.p1 && p != s2.p1 && p != s3.p1)
 			{
 				return true;
-			}			
+			}
 		}
 	}
 
@@ -1739,31 +1739,31 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 {
 	bool	is_split = false;
 	bool	first_split = false;
-	GISHalfedge * stop = edge;	
+	GISHalfedge * stop = edge;
 	bool	first_loop = true;
 	bool	last_loop = false;
 	do {
-	
+
 		DebugAssert(edge->face()->IsWater());
 		DebugAssert(!edge->face()->is_unbounded());
-	
-		if (edge->twin()->face()->is_unbounded() || 
-			edge->next()->twin()->face()->is_unbounded() || 
+
+		if (edge->twin()->face()->is_unbounded() ||
+			edge->next()->twin()->face()->is_unbounded() ||
 			edge->next()->twin()->next()->twin() != edge ||
 			edge->twin()->face()->IsWater())
 		{
 			edge = edge->next();
 			is_split = false;
 		} else {
-			
+
 			// We want to make sure E is the edge after the split from the first edge.
 			if (!is_split)
 			{
 				edge = ioMap.split_edge(edge, Segment2(edge->source()->point(),edge->target()->point()).midpoint())->next();
 			}
-			
+
 			if (edge->next() == stop) last_loop = true;
-			
+
 			if (!first_split || edge->next() != stop)
 				ioMap.split_edge(edge->next(), Segment2(edge->next()->source()->point(),edge->next()->target()->point()).midpoint());
 
@@ -1787,7 +1787,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 			{
 				bool is_left = Vector2(pt_a, pt_b).left_turn(Vector2(pt_b, pt_c));
 				bool occupied = is_left ? AnyPtInEdgeSpaceCCB(edge, edge->next(), cache) : AnyPtInEdgeSpaceCCB(edge->next()->twin(), edge->next()->twin()->next(), cache);
-			
+
 				if (!occupied)
 				{
 					ioMap.merge_edges(edge, edge->next());
@@ -1795,11 +1795,11 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 					edge=edge->next();
 				/*
 					bool	is_left = Vector2(pt_a, pt_b).left_turn(Vector2(pt_b, pt_c));
-					
+
 					int terrain_new = is_left ? edge->twin()->face()->mTerrainType : edge->face()->mTerrainType;
 
 					DebugAssert(cross_pt == pt_c);
-					
+
 					GISHalfedge * new_edge;
 					if (is_left)
 						new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
@@ -1812,14 +1812,14 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 //					gMeshLines.push_back(edge->next()->source()->point());
 //					gMeshLines.push_back(edge->next()->target()->point());
 //					gMeshLines.push_back(edge->source()->point());
-//					gMeshLines.push_back(edge->target()->point());					
-					
+//					gMeshLines.push_back(edge->target()->point());
+
 					ioMap.remove_edge(edge->next());
 					ioMap.remove_edge(edge);
 					is_split = true;
 					edge = new_edge->next();
 					if (first_loop) first_split = true;
-*/					
+*/
 				} else {
 					ioMap.merge_edges(edge->next(), edge->next()->next());
 					if (!is_split)
@@ -1833,7 +1833,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 				}
 
 			} else {
-			
+
 				ioMap.merge_edges(edge->next(), edge->next()->next());
 				if (!is_split)
 				{
@@ -1844,11 +1844,11 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 					is_split = false;
 				edge = edge->next();
 			}
-		
+
 		}
-	
+
 		first_loop = false;
-	
+
 	} while (edge != stop && !last_loop);
 }
 
@@ -1868,8 +1868,8 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face, vector<pair<Bbox2, vecto
 
 	set<GISHalfedge *> ee;
 
-	face->copy_holes(ee);			
-	
+	face->copy_holes(ee);
+
 	for (set<GISHalfedge *>::iterator e = ee.begin(); e != ee.end(); ++e)
 	{
 		SimplifyWaterCCB(ioMap,*e, cache);
@@ -1883,14 +1883,14 @@ void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())
 	if (f->IsWater())
-		water.insert(f);			
+		water.insert(f);
 
 	vector<pair<Bbox2, vector<Point2> > >		cache;
 	BuildPtCache(ioMap, bounds, 16, cache);
-		
+
 	PROGRESS_START(func, 0, 1, "Smoothing coastlines");
 	int ctr = 0;
-	
+
 	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
@@ -1911,11 +1911,11 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 	int	entityCount, shapeType;
 	int x, y, rx1, rx2;
 	double	bounds_lo[4], bounds_hi[4];
-	
+
 	Bbox2	dem_limit(elev.mWest, elev.mSouth, elev.mEast, elev.mNorth);
-	
+
 	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-	
+
 	PolyRasterizer	raster;
 
 	for (int n = 0; n < entityCount; ++n)
@@ -1930,7 +1930,7 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 			{
 				shape_limit += Point2(obj->padfX[pt],obj->padfY[pt]);
 			}
-		
+
 			if (dem_limit.overlap(shape_limit))
 			for (int part = 0; part < obj->nParts; ++part)
 			{
@@ -1943,7 +1943,7 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 				}
 				DebugAssert(pts.front() == pts.back());
 				pts.pop_back();
-				
+
 				for (int i = 0; i < pts.size(); ++i)
 				{
 					int j = (i + 1) % pts.size();
@@ -1961,14 +1961,14 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 					}
 				}
 			}
-		} 
+		}
 
-		SHPDestroyObject(obj);	
-	}	
+		SHPDestroyObject(obj);
+	}
 	SHPClose(file);
-	
+
 	raster.SortMasters();
-	
+
 	y = 0;
 	raster.StartScanline(y);
 	while (!raster.DoneScan())
@@ -1981,9 +1981,9 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 			}
 		}
 		++y;
-		if (y >= elev.mHeight) 
+		if (y >= elev.mHeight)
 			break;
-		raster.AdvanceScanline(y);		
+		raster.AdvanceScanline(y);
 	}
 	return true;
 }
@@ -1996,7 +1996,7 @@ bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskD
 	wet_mask.mEast  = lon+1;
 	wet_mask.mSouth = lat  ;
 	wet_mask.mNorth = lat+1;
-	
+
 	char	fname_me[1024];
 	char	fname_r [1024];
 	char	fname_t [1024];
@@ -2006,7 +2006,7 @@ bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskD
 	char	fname_tl[1024];
 	char	fname_br[1024];
 	char	fname_bl[1024];
-	
+
 	sprintf(fname_me,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat  ),  latlon_bucket(lon  ), DIR_STR, lat  , lon  );
 
 	sprintf(fname_r ,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat  ),  latlon_bucket(lon+1), DIR_STR, lat  , lon+1);
@@ -2039,7 +2039,7 @@ bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskD
 		if (!got_l)
 		for (n = 1; n < 1200; ++n)
 			wet_mask(0,n) = wet_mask.get(1,n);
-		
+
 		if (!got_t)
 		for (n = 1; n < 1200; ++n)
 			wet_mask(n,1200) = wet_mask.get(n,1199);
@@ -2047,7 +2047,7 @@ bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskD
 		if (!got_b)
 		for (n = 1; n < 1200; ++n)
 			wet_mask(n,0) = wet_mask.get(n,1);
-		
+
 		if (!got_tr)
 		{
 				 if (got_t)	wet_mask(1200,1200) = wet_mask(1199, 1200);
@@ -2077,22 +2077,22 @@ bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskD
 		}
 
 
-		
+
 		char	final[1024], internal[1024];
 		sprintf(final,"%s%+03d%+04d%s%+03d%+04d.mask.zip", inMaskDir, latlon_bucket(lat  ), latlon_bucket(lon  ), DIR_STR, lat  , lon  );
 		sprintf(internal,"%+03d%+04d.mask", lat  , lon  );
 		printf("Writing: %s\n", final);
-		
+
 		char	buf[1201*1201];
 		for (y = 0; y < 1201; ++y)
 		for (x = 0; x < 1201; ++x)
 			buf[x+y*1201] = wet_mask.get(x,y) > 0.0 ? 1 : 0;
-		
+
 		ZipFileWriter	writer(final, internal, platform_BigEndian);
 		writer.WriteBulk(buf, sizeof(buf), false);
-		
+
 	}
-	
+
 	return got_me;
-}	
+}
 

@@ -10,7 +10,7 @@
 
 #include "TouchSensorNode.h"
 
-TouchSensorNode::TouchSensorNode() 
+TouchSensorNode::TouchSensorNode()
 {
 	setHeaderFlag(false);
 	setType(touchSensorNodeString);
@@ -36,7 +36,7 @@ TouchSensorNode::TouchSensorNode()
 	addEventOut(touchTimeFieldString, touchTimeField);
 }
 
-TouchSensorNode::~TouchSensorNode() 
+TouchSensorNode::~TouchSensorNode()
 {
 }
 
@@ -50,23 +50,23 @@ SFBool *TouchSensorNode::getIsOverField()
 		return isOverField;
 	return (SFBool *)getEventOut(isOverFieldString);
 }
-	
-void TouchSensorNode::setIsOver(bool  value) 
+
+void TouchSensorNode::setIsOver(bool  value)
 {
 	getIsOverField()->setValue(value);
 }
 
-void TouchSensorNode::setIsOver(int value) 
+void TouchSensorNode::setIsOver(int value)
 {
 	setIsOver(value ? true : false);
 }
 
-bool  TouchSensorNode::getIsOver() 
+bool  TouchSensorNode::getIsOver()
 {
 	return getIsOverField()->getValue();
 }
 
-bool  TouchSensorNode::isOver() 
+bool  TouchSensorNode::isOver()
 {
 	return getIsOver();
 }
@@ -81,18 +81,18 @@ SFVec3f *TouchSensorNode::getHitNormalChangedField()
 		return hitNormalField;
 	return (SFVec3f *)getEventOut(hitNormalFieldString);
 }
-	
-void TouchSensorNode::setHitNormalChanged(float value[]) 
+
+void TouchSensorNode::setHitNormalChanged(float value[])
 {
 	getHitNormalChangedField()->setValue(value);
 }
 
-void TouchSensorNode::setHitNormalChanged(float x, float y, float z) 
+void TouchSensorNode::setHitNormalChanged(float x, float y, float z)
 {
 	getHitNormalChangedField()->setValue(x, y, z);
 }
 
-void TouchSensorNode::getHitNormalChanged(float value[]) 
+void TouchSensorNode::getHitNormalChanged(float value[])
 {
 	getHitNormalChangedField()->getValue(value);
 }
@@ -107,18 +107,18 @@ SFVec3f *TouchSensorNode::getHitPointChangedField()
 		return hitPointField;
 	return (SFVec3f *)getEventOut(hitPointFieldString);
 }
-	
-void TouchSensorNode::setHitPointChanged(float value[]) 
+
+void TouchSensorNode::setHitPointChanged(float value[])
 {
 	getHitPointChangedField()->setValue(value);
 }
 
-void TouchSensorNode::setHitPointChanged(float x, float y, float z) 
+void TouchSensorNode::setHitPointChanged(float x, float y, float z)
 {
 	getHitPointChangedField()->setValue(x, y, z);
 }
 
-void TouchSensorNode::getHitPointChanged(float value[]) 
+void TouchSensorNode::getHitPointChanged(float value[])
 {
 	getHitPointChangedField()->getValue(value);
 }
@@ -133,18 +133,18 @@ SFVec2f *TouchSensorNode::getHitTexCoordField()
 		return hitTexCoordField;
 	return (SFVec2f *)getEventOut(hitTexCoordFieldString);
 }
-	
-void TouchSensorNode::setHitTexCoord(float value[]) 
+
+void TouchSensorNode::setHitTexCoord(float value[])
 {
 	getHitTexCoordField()->setValue(value);
 }
 
-void TouchSensorNode::setHitTexCoord(float x, float y) 
+void TouchSensorNode::setHitTexCoord(float x, float y)
 {
 	getHitTexCoordField()->setValue(x, y);
 }
 
-void TouchSensorNode::getHitTexCoord(float value[]) 
+void TouchSensorNode::getHitTexCoord(float value[])
 {
 	getHitTexCoordField()->getValue(value);
 }
@@ -159,13 +159,13 @@ SFTime *TouchSensorNode::getTouchTimeField()
 		return touchTimeField;
 	return (SFTime *)getEventOut(touchTimeFieldString);
 }
-	
-void TouchSensorNode::setTouchTime(double value) 
+
+void TouchSensorNode::setTouchTime(double value)
 {
 	getTouchTimeField()->setValue(value);
 }
 
-double TouchSensorNode::getTouchTime() 
+double TouchSensorNode::getTouchTime()
 {
 	return getTouchTimeField()->getValue();
 }
@@ -174,12 +174,12 @@ double TouchSensorNode::getTouchTime()
 //	List
 ////////////////////////////////////////////////
 
-TouchSensorNode *TouchSensorNode::next() 
+TouchSensorNode *TouchSensorNode::next()
 {
 	return (TouchSensorNode *)Node::next(getType());
 }
 
-TouchSensorNode *TouchSensorNode::nextTraversal() 
+TouchSensorNode *TouchSensorNode::nextTraversal()
 {
 	return (TouchSensorNode *)Node::nextTraversalByType(getType());
 }
@@ -187,21 +187,21 @@ TouchSensorNode *TouchSensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool TouchSensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void TouchSensorNode::initialize() 
+void TouchSensorNode::initialize()
 {
 }
 
-void TouchSensorNode::uninitialize() 
+void TouchSensorNode::uninitialize()
 {
 }
 
-void TouchSensorNode::update() 
+void TouchSensorNode::update()
 {
 }
 
@@ -209,7 +209,7 @@ void TouchSensorNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void TouchSensorNode::outputContext(ostream &printStream, char *indentString) 
+void TouchSensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *enabled = getEnabledField();
 	printStream << indentString << "\t" << "enabled " << enabled << endl;

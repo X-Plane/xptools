@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,7 +40,7 @@
  *  X-PLANE UI INFRASTRUCTURE CODE
  ************************************************************************
  *
- * This code helps provde an x-plane compatible look.  It is copied from 
+ * This code helps provde an x-plane compatible look.  It is copied from
  * the source code from the widgets DLL; someday popups will be part of
  * this, so our popups are written off of the same APIs.
  *
@@ -85,17 +85,17 @@ void	DrawStretchedQuad(int left, int bottom, int right, int top,
 	int mid_tex = ty3 - ty2;
 	int mid_repeats = mid_stripe / mid_tex;
 	int mid_slop = (mid_stripe - (mid_repeats * mid_tex) + 1) & ~1;
-	
+
 	int left_h = tx2 - tx1;
 	int right_h = tx4 - tx3;
-	
+
 	glBegin(GL_QUADS);
-	
+
 	// Draw the bottom three elements.
 	SingleQuad(left, bottom, left + left_h, bottom + bot_stripe,				tx1, ty1, tx2, ty2);
 	SingleQuad(left + left_h, bottom, right - right_h, bottom + bot_stripe,		tx2, ty1, tx3, ty2);
 	SingleQuad(right - right_h, bottom, right, bottom + bot_stripe,				tx3, ty1, tx4, ty2);
-	
+
 	// Draw horizontal stripes working up.
 	for (int n = 0; n < mid_repeats; ++n)
 	{
@@ -104,7 +104,7 @@ void	DrawStretchedQuad(int left, int bottom, int right, int top,
 		SingleQuad(left + left_h, offset, right - right_h, offset + mid_tex,		tx2, ty2, tx3, ty3);
 		SingleQuad(right - right_h, offset, right, offset + mid_tex,				tx3, ty2, tx4, ty3);
 	}
-	
+
 	// If we're not an even number of repetitions, draw a partial stripe too.
 	if (mid_slop != 0)
 	{
@@ -118,9 +118,9 @@ void	DrawStretchedQuad(int left, int bottom, int right, int top,
 	SingleQuad(left, top - top_stripe, left + left_h, top,						tx1, ty3, tx2, ty4);
 	SingleQuad(left + left_h, top - top_stripe, right - right_h, top,			tx2, ty3, tx3, ty4);
 	SingleQuad(right - right_h, top - top_stripe, right, top,					tx3, ty3, tx4, ty4);
-	
-	glEnd();	
-}						
+
+	glEnd();
+}
 
 
 #pragma mark -
@@ -155,7 +155,7 @@ struct	XSBPopupMenu_t {
 
 	XSBPopupPick_f				function;	// Info for our callback function.
 	void *						ref;
-	
+
 };
 
 // This routine finds the item that is in a given point, or returns -1 if there is none.
@@ -172,12 +172,12 @@ static int XSBItemForHeight(XSBPopupMenu_t * pmenu, int inX, int inY)
 			return n;
 		}
 	}
-	return -1;	
+	return -1;
 }
 
 // This is the drawing hook for a popup menu.
 static void XSBPopupDrawWindowCB(
-                                   XPLMWindowID         inWindowID,    
+                                   XPLMWindowID         inWindowID,
                                    void *               inRefcon)
 {
 	static	int	firstTime = true;
@@ -188,25 +188,25 @@ static void XSBPopupDrawWindowCB(
 
 	// This is the index number of the currently selected item, based
 	// on where the mouse is.
-	int menu_offset = XSBItemForHeight(pmenu, x, y);	
+	int menu_offset = XSBItemForHeight(pmenu, x, y);
 
-		// For x-plane 7, we stretch the popup menu background from the 
+		// For x-plane 7, we stretch the popup menu background from the
 		// general interface bitmap.  Use alpha blending.
 		XPLMSetGraphicsState(0, 1, 0,  0, 1,  0, 0);
 		XPLMBindTexture2d(XPLMGetTexture(xplm_Tex_GeneralInterface), 0);
 		glColor4f(1.0, 1.0, 1.0, 1.0);
-		
+
 		// These are offsets for the popup menu bkgnd in the texture.
-		DrawStretchedQuad(pmenu->left - 8, pmenu->bottom - 13, pmenu->right + 8, pmenu->top + 2, 
+		DrawStretchedQuad(pmenu->left - 8, pmenu->bottom - 13, pmenu->right + 8, pmenu->top + 2,
 							70, 70+12, 70+12+18, 70+12+18+12, // h
 							315, 315+14, 315+14+10, 315+14+10+18); // verts
-		
+
 		XPLMSetGraphicsState(0, 0, 0,  0, 0,  0, 0);
-			
+
 	int	item_top = pmenu->top;
 	int n;
 	XPLMSetGraphicsState(0, 0, 0,  0, 0,  0, 0);
-	
+
 	// Draw any vertical stripes that must be drawn for multi-column menus.
 	for (n = 0; n < pmenu->vstripes.size(); ++n)
 	{
@@ -219,9 +219,9 @@ static void XSBPopupDrawWindowCB(
 		glBegin(GL_LINES);
 		glVertex2i(pmenu->left + pmenu->vstripes[n], pmenu->top);
 		glVertex2i(pmenu->left + pmenu->vstripes[n], pmenu->bottom);
-		glEnd();	
+		glEnd();
 	}
-	
+
 	// Now draw each item.
 	for (n = 0; n < pmenu->items.size(); ++n)
 	{
@@ -230,7 +230,7 @@ static void XSBPopupDrawWindowCB(
 		int item_top    = pmenu->tops[n] + pmenu->top;
 		int item_left   = pmenu->lefts[n] + pmenu->left;
 		int item_right  = pmenu->rights[n] + pmenu->left;
-		
+
 		if (!pmenu->enabled[n] && pmenu->items[n] == "-")
 		{
 			// Draw two lines for dividers.
@@ -260,38 +260,38 @@ static void XSBPopupDrawWindowCB(
 				glVertex2i(item_right, item_top);
 				glVertex2i(item_right, item_bottom);
 				glVertex2i(item_left, item_bottom);
-				glEnd();						
+				glEnd();
 			}
-			
+
 			// Draw the text for the menu item, taking into account
 			// disabling as a color.
 			float	text[3];
 			SetupAmbientColor(pmenu->enabled[n] ? xpColor_MenuText : xpColor_MenuTextDisabled, text);
-			
+
 			XPLMDrawString(text,
 						item_left + 18, item_bottom + 2,
 						const_cast<char *>(pmenu->items[n].c_str()), NULL, xplmFont_Menus);
 		}
 	}
-}                                   
+}
 
 static void XSBPopupHandleKeyCB(
-                                   XPLMWindowID         inWindowID,    
-                                   char                 inKey,    
-                                   XPLMKeyFlags         inFlags,    
-                                   char                 inVirtualKey,    
-                                   void *               inRefcon,    
+                                   XPLMWindowID         inWindowID,
+                                   char                 inKey,
+                                   XPLMKeyFlags         inFlags,
+                                   char                 inVirtualKey,
+                                   void *               inRefcon,
                                    int                  losingFocus)
 {
 	// Nothing to do when a key is pressed; popup menus don't use keys.
-}                                     
+}
 
 // This is the mouse click handler.
 static int XSBPopupHandleMouseClickCB(
-                                   XPLMWindowID         inWindowID,    
-                                   int                  x,    
-                                   int                  y,    
-                                   XPLMMouseStatus      inMouse,    
+                                   XPLMWindowID         inWindowID,
+                                   int                  x,
+                                   int                  y,
+                                   XPLMMouseStatus      inMouse,
                                    int					inButton,
                                    void *               inRefcon)
 {
@@ -300,13 +300,13 @@ static int XSBPopupHandleMouseClickCB(
 	{
 		XSBPopupMenu_t * pmenu = (XSBPopupMenu_t *) inRefcon;
 
-		int menu_offset = XSBItemForHeight(pmenu, x, y);	
-		
+		int menu_offset = XSBItemForHeight(pmenu, x, y);
+
 		// If we got an item click and it is not enabled,
 		// pretend nothing was picked.
 		if (menu_offset >= 0 && !pmenu->enabled[menu_offset])
 			menu_offset = -1;
-			
+
 		// Call the callback
 		if (pmenu->function)
 			pmenu->function(menu_offset, pmenu->ref);
@@ -331,17 +331,17 @@ void		XSBPickPopup(
 	int	fontWidth, fontHeight;
 	XPLMGetScreenSize(&screenWidth, &screenHeight);
 	XPLMGetFontDimensions(xplmFont_Menus, &fontWidth, &fontHeight, NULL);
-	
+
 	// Allocate mem for the structure and build a new window as big as teh screen.
 	XSBPopupMenu_t *	info = new XSBPopupMenu_t;
-	
-	XPLMWindowID		windID = XPLMCreateWindow(0, screenHeight, screenWidth, 0, 1, 
+
+	XPLMWindowID		windID = XPLMCreateWindow(0, screenHeight, screenWidth, 0, 1,
 		XSBPopupDrawWindowCB, XSBPopupHandleKeyCB, XSBPopupHandleMouseClickCB, info);
-	
+
 	if (inCurrentItem < 0) inCurrentItem = 0;
-	
+
 	/************ PARSE THE MENU STRING INTO MENU ITEMS **********/
-	
+
 	// Parse the itemes into arrays.  Remember how tall they are so
 	// we can calculate the geometry.
 	std::vector<int>	heights;
@@ -373,30 +373,30 @@ void		XSBPickPopup(
 				heights.push_back(12);
 			}
 		}
-		
+
 		if (item.size() == items.size())
 			break;
 		else
 			items = items.substr(split+1);
 	}
-	
+
 	/************ PLACE THE ITEMS IN COLUMNS **********/
 
 	int	menuWidth = 0;
 	int	leftOff = 0, topOff = 0;
-	
+
 	// Calculate the widest menu item anywhere.
 	for (std::vector<std::string>::iterator iter = info->items.begin(); iter != info->items.end(); ++iter)
 		if (iter->size() > menuWidth)
 			menuWidth = iter->size();
 	menuWidth *= fontWidth;
 	menuWidth += 35;
-	
+
 	int cols = 1;
 	int itemsInCol = 0;
 	int	maxLen = 0;
 	int	ourItemLeft = 0, ourItemTop = 0;
-	
+
 	// Stack up each item, building new columns as necessary.
 	for (int i = 0; i < heights.size(); ++i)
 	{
@@ -405,7 +405,7 @@ void		XSBPickPopup(
 		info->rights.push_back(leftOff + menuWidth);
 		info->tops.push_back(topOff);
 		info->bottoms.push_back(topOff - heights[i]);
-		if (i == inCurrentItem) 
+		if (i == inCurrentItem)
 		{
 			ourItemLeft = leftOff;
 			ourItemTop = topOff;
@@ -413,7 +413,7 @@ void		XSBPickPopup(
 		topOff -= heights[i];
 		if (maxLen > topOff)
 			maxLen = topOff;
-		
+
 		if (topOff < -(screenHeight - 50))
 		{
 			itemsInCol = 0;
@@ -423,21 +423,21 @@ void		XSBPickPopup(
 			info->vstripes.push_back(leftOff);
 		}
 	}
-	
+
 	// If we built a new column but had no items for it, throw it out.
 	if (itemsInCol == 0)
 	{
 		cols--;
 		info->vstripes.pop_back();
 	}
-	
+
 	// Now place the window.  Make sure to not let it go off screen.
 	info->window = windID;
 	info->left = inMouseX - ourItemLeft;
 	info->top = inMouseY - ourItemTop;
 	info->right = inMouseX + (menuWidth * cols) - ourItemLeft;
 	info->bottom = inMouseY + maxLen - ourItemTop;
-	
+
 	if (info->right > (screenWidth-10))
 	{
 		int deltaLeft = (info->right - (screenWidth-10));
@@ -462,7 +462,7 @@ void		XSBPickPopup(
 		info->top -= deltaDown;
 		info->bottom -= deltaDown;
 	}
-	
+
 	info->function = inCallback;
 	info->ref = inRefcon;
 }
@@ -475,7 +475,7 @@ void		XSBPickPopup(
 
 
 
-// This routine is called by our popup menu when it is picked; we 
+// This routine is called by our popup menu when it is picked; we
 // have stored our widget in our refcon, so we save the new choice
 // and send a widget message.
 static	void 	XSBPopupWidgetProc(int inChoice, void * inRefcon)
@@ -497,14 +497,14 @@ int		XSBPopupButtonProc(
 {
 	// Select if we're in the background.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
-	
+
 	int fh, fv;
 	int l, t, r, b;
 	char	buf[4096];
-	
+
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
 	XPLMGetFontDimensions(xplmFont_Basic, &fh, &fv, NULL);
-	
+
 	int	curItem = XPGetWidgetProperty(inWidget, xpProperty_PopupCurrentItem, NULL);
 
 	switch(inMessage) {
@@ -528,7 +528,7 @@ int		XSBPopupButtonProc(
 			while (*term && *term != ';') ++term;
 			// Store an offset and length of our descriptor that will show as our current text.
 			XPSetWidgetProperty(inWidget, xpProperty_OffsetToCurrentItem, p - buf);
-			XPSetWidgetProperty(inWidget, xpProperty_CurrentItemLen, term - p);			
+			XPSetWidgetProperty(inWidget, xpProperty_CurrentItemLen, term - p);
 			XPSetWidgetProperty(inWidget, xpProperty_Enabled, 1);
 		}
 		return 1;
@@ -536,7 +536,7 @@ int		XSBPopupButtonProc(
 		{
 			float		white [4];
 			float		gray [4];
-			
+
 			int itemOffset = XPGetWidgetProperty(inWidget, xpProperty_OffsetToCurrentItem, NULL);
 			int itemLen = XPGetWidgetProperty(inWidget, xpProperty_CurrentItemLen, NULL);
 
@@ -546,45 +546,45 @@ int		XSBPopupButtonProc(
 			if (firstTime)
 			{
 				firstTime = false;
-				
+
 				XPLMGetFontDimensions(xplmFont_Basic, &charWidth, NULL, NULL);
 			}
-			
+
 			// If we are version 7 of the sim, use Sergio's great new popup item.
 			// Since there is no UI element code for this, we must draw it by hand!
 
 				XPLMSetGraphicsState(0, 1, 0,  0, 1,  0, 0);
 				XPLMBindTexture2d(XPLMGetTexture(xplm_Tex_GeneralInterface), 0);
 				glColor4f(1.0, 1.0, 1.0, 1.0);
-				
+
 				int center = (t + b) / 2;
-				
+
 				// These are offsets for the popup button in the texture
-				DrawStretchedQuad(l - 4, center - 13, r + 4, center + 13, 
-									357, 357+12,357+12+30, 357+12+30+26, 
+				DrawStretchedQuad(l - 4, center - 13, r + 4, center + 13,
+									357, 357+12,357+12+30, 357+12+30+26,
 									486, 486+8, 486+8+6, 486+8+6+12);
-		
+
 			// Now draw the button label.
 			long	titleLen = XPGetWidgetDescriptor(inWidget, buf, sizeof(buf));
 
 			SetupAmbientColor(xpColor_MenuText, white);
 			SetupAmbientColor(xpColor_MenuTextDisabled, gray);
-			
+
 			if (charWidth)
 			{
 				long	maxCharCapacity = (r - l - 24) / charWidth;
 				if (itemLen > maxCharCapacity)
 					itemLen = maxCharCapacity;
 			}
-			
+
 			buf[itemOffset + itemLen] = 0;
 			if (buf[itemOffset] == '(')	++itemOffset;
 			titleLen = strlen(buf + itemOffset);
-			
-			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, l + 4, //(l + r) / 2 - (fh * titleLen / 2), 
+
+			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, l + 4, //(l + r) / 2 - (fh * titleLen / 2),
 						(t + b) / 2 - (fv / 2) + 2,
 						buf + itemOffset, NULL, xplmFont_Basic);
-						
+
 		}
 		return 1;
 	case xpMsg_MouseDown:
@@ -592,37 +592,37 @@ int		XSBPopupButtonProc(
 		if (XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0))
 		{
 			XPGetWidgetDescriptor(inWidget, buf, sizeof(buf));
-			
+
 			XSBPickPopup(l, t, buf, XPGetWidgetProperty(inWidget, xpProperty_PopupCurrentItem, NULL),
 								XSBPopupWidgetProc, inWidget);
 			return 1;
 		}
 	default:
 		return 0;
-	}	
-}				
+	}
+}
 
 // To create a popup, make a new widget with our button proc as the widget proc.
 XPWidgetID           XSBCreatePopup(
-                                   int                  inLeft,    
-                                   int                  inTop,    
-                                   int                  inRight,    
-                                   int                  inBottom,    
-                                   int                  inVisible,    
-                                   const char *         inDescriptor,    
+                                   int                  inLeft,
+                                   int                  inTop,
+                                   int                  inRight,
+                                   int                  inBottom,
+                                   int                  inVisible,
+                                   const char *         inDescriptor,
                                    XPWidgetID           inContainer)
 {
 	return XPCreateCustomWidget(
-                                   inLeft,    
-                                   inTop,    
-                                   inRight,    
-                                   inBottom,    
-                                   inVisible,    
-                                   inDescriptor,    
+                                   inLeft,
+                                   inTop,
+                                   inRight,
+                                   inBottom,
+                                   inVisible,
+                                   inDescriptor,
                                    0,
-                                   inContainer,    
+                                   inContainer,
                                    XSBPopupButtonProc);
-}                                   
+}
 
 #pragma mark -
 

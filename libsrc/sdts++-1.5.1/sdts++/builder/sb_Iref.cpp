@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -77,24 +77,24 @@ static sio_8211Converter_A converter_A; // XXX sio_8211Converter.h
 static sio_8211Converter_R converter_R;
 
 
-struct 
+struct
 sb_Iref_Imp
 {
   string comment_;
-      
+
   string spatialAddType_;
   string spatialAddXCompLbl_;
   string spatialAddYCompLbl_;
   string horizontalCompFmt_;
   string verticalCompFmt_;
-     
+
   double scaleFactX_;
   double scaleFactY_;
   double scaleFactZ_;
   double xOrigin_;
-  double yOrigin_; 
+  double yOrigin_;
   double zOrigin_;
-      
+
   double xCompHorizRes_;
   double yCompHorizRes_;
   double verticalResComp_;
@@ -350,8 +350,8 @@ sb_Iref::buildSpecificSchema_( )
 
 static
 bool
-ingest_record_( sb_Iref & iref, 
-                sb_Iref_Imp & iref_imp, 
+ingest_record_( sb_Iref & iref,
+                sb_Iref_Imp & iref_imp,
                 sc_Record const & record )
 {
 
@@ -377,11 +377,11 @@ ingest_record_( sb_Iref & iref,
   if ( sb_Utils::getSubfieldByMnem( *curfield, "MODN", cursubfield ) )
     {
       string tmp;
-      
+
       cursubfield->getA(  tmp  );
       iref.setMnemonic(  tmp  );
     }
-      
+
 
   // RCID
   if ( sb_Utils::getSubfieldByMnem( *curfield, "RCID", cursubfield ) )
@@ -396,7 +396,7 @@ ingest_record_( sb_Iref & iref,
   if ( sb_Utils::getSubfieldByMnem( *curfield, "COMT", cursubfield ) )
     cursubfield->getA( iref_imp.comment_ );
 
-   // SATP 
+   // SATP
   if ( sb_Utils::getSubfieldByMnem( *curfield, "SATP", cursubfield ) )
     cursubfield->getA( iref_imp.spatialAddType_ );
 
@@ -449,11 +449,11 @@ ingest_record_( sb_Iref & iref,
   // XHRS
   if ( sb_Utils::getSubfieldByMnem( *curfield, "XHRS", cursubfield ) )
     sb_Utils::getDoubleFromSubfield(  cursubfield,  iref_imp.xCompHorizRes_ );
-     
+
    // YHRS
   if ( sb_Utils::getSubfieldByMnem( *curfield, "YHRS", cursubfield ) )
     sb_Utils::getDoubleFromSubfield(  cursubfield, iref_imp.yCompHorizRes_ );
-         
+
 #ifdef NOT_RASTER_PROFILE
    // VRES
   if ( sb_Utils::getSubfieldByMnem( *curfield, "VRES", cursubfield ) )
@@ -464,7 +464,7 @@ ingest_record_( sb_Iref & iref,
   // Secondary Fields
 
 #ifdef NOT_IMPLEMENTED
-  sc_FieldCntr const& fields = record; 
+  sc_FieldCntr const& fields = record;
   for ( curfield  = fields.begin( );
         curfield != fields.end( );
         curfield++ )
@@ -540,7 +540,7 @@ sb_Iref::getHorizontalComponentFormat(  string& val  ) const
   return true;
 }
 
- 
+
 #ifdef NOT_RASTER_PROFILE
 bool
 sb_Iref::getVerticalComponentFormat(  string& val  ) const
@@ -616,7 +616,7 @@ sb_Iref::getYOrigin(  double& val  ) const
   return true;
 }
 
- 
+
 #ifdef NOT_RASTER_PROFILE
 bool
 sb_Iref::getZOrigin(  double& val  ) const
@@ -779,7 +779,7 @@ sb_Iref::getRecord( sc_Record & record ) const
   FMT_domain.insert( "BFP64" );
 
 
-  if ( ! ( getHFMT( tmp_str )  && 
+  if ( ! ( getHFMT( tmp_str )  &&
            sb_Utils::valid_domain( tmp_str, FMT_domain) ) )
     {
       return false;
@@ -791,7 +791,7 @@ sb_Iref::getRecord( sc_Record & record ) const
 #ifdef NOT_RASTER_PROFILE
   if ( SATP == THREE_TUPLE )
   {
-    if ( ! ( getVFMT( tmp_str )   && 
+    if ( ! ( getVFMT( tmp_str )   &&
              sb_Utils::valid_domain( tmp_str, FMT_domain) ) )
     {
       return false;
@@ -911,35 +911,35 @@ sb_Iref::getRecord( sc_Record & record ) const
 
 
 void
-sb_Iref::setComment( string const & val ) 
+sb_Iref::setComment( string const & val )
 {
   imp_->comment_ = val;
 } // sb_Iref::setComment
 
 
 void
-sb_Iref::setSpatialAddressType( string const & val ) 
+sb_Iref::setSpatialAddressType( string const & val )
 {
   imp_->spatialAddType_ = val;
 } // sb_Iref::setSpatialAddressType
 
 
 void
-sb_Iref::setSpatialAddressXLabel( string const & val ) 
+sb_Iref::setSpatialAddressXLabel( string const & val )
 {
   imp_->spatialAddXCompLbl_ = val;
 } // sb_Iref::setSpatialAddressXLabel
 
 
 void
-sb_Iref::setSpatialAddressYLabel( string const & val ) 
+sb_Iref::setSpatialAddressYLabel( string const & val )
 {   imp_->spatialAddYCompLbl_ = val;
 } // sb_Iref::setSpatialAddressYLabel
 
 
 
 void
-sb_Iref::setHorizontalComponentFormat( string const & val ) 
+sb_Iref::setHorizontalComponentFormat( string const & val )
 {   imp_->horizontalCompFmt_ = val;
 } // sb_Iref::setHorizontalComponentFormat
 
@@ -947,21 +947,21 @@ sb_Iref::setHorizontalComponentFormat( string const & val )
 
 #ifdef NOT_RASTER_PROFILE
 void
-sb_Iref::setVerticalComponentFormat( string const & val ) 
+sb_Iref::setVerticalComponentFormat( string const & val )
 {   imp_->verticalCompFmt_ = val;
 } // sb_Iref::setVerticalComponentFormat
 #endif
 
-       
+
 void
-sb_Iref::setScaleFactorX( double const & val ) 
+sb_Iref::setScaleFactorX( double const & val )
 {   imp_->scaleFactX_ = val;
 } // sb_Iref::setScaleFactorX
 
 
 
 void
-sb_Iref::setScaleFactorY( double const & val ) 
+sb_Iref::setScaleFactorY( double const & val )
 {   imp_->scaleFactY_ = val;
 } // sb_Iref::setScaleFactorY
 
@@ -969,21 +969,21 @@ sb_Iref::setScaleFactorY( double const & val )
 
 #ifdef NOT_RASTER_PROFILE
 void
-sb_Iref::setScaleFactorZ( double const & val ) 
+sb_Iref::setScaleFactorZ( double const & val )
 {   imp_->scaleFactZ_ = val;
 } // sb_Iref::setScaleFactorZ
 #endif
 
 
 void
-sb_Iref::setXOrigin( double const & val ) 
+sb_Iref::setXOrigin( double const & val )
 {   imp_->xOrigin_ = val;
 } // sb_Iref::setXOrigin
 
 
 
 void
-sb_Iref::setYOrigin( double const & val ) 
+sb_Iref::setYOrigin( double const & val )
 {   imp_->yOrigin_ = val;
 } // sb_Iref::setYOrigin
 
@@ -991,22 +991,22 @@ sb_Iref::setYOrigin( double const & val )
 
 #ifdef NOT_RASTER_PROFILE
 void
-sb_Iref::setZOrigin( double const & val ) 
+sb_Iref::setZOrigin( double const & val )
 {   imp_->zOrigin_ = val;
 } // sb_Iref::setZOrigin
 #endif
 
 
-      
+
 void
-sb_Iref::setXComponentHorizontalResolution( double const & val ) 
+sb_Iref::setXComponentHorizontalResolution( double const & val )
 {   imp_->xCompHorizRes_ = val;
 } // sb_Iref::setXComponentHorizontalResolution
 
 
 
 void
-sb_Iref::setYComponentHorizontalResolution( double const & val ) 
+sb_Iref::setYComponentHorizontalResolution( double const & val )
 {   imp_->yCompHorizRes_ = val;
 } // sb_Iref::setYComponentHorizontalResolution
 
@@ -1014,7 +1014,7 @@ sb_Iref::setYComponentHorizontalResolution( double const & val )
 
 #ifdef NOT_RASTER_PROFILE
 void
-sb_Iref::setVerticalResolutionComponent( double const & val ) 
+sb_Iref::setVerticalResolutionComponent( double const & val )
 {   imp_->verticalResComp_ = val;
 } // sb_Iref::setVerticalResolutionComponent
 #endif
@@ -1023,7 +1023,7 @@ sb_Iref::setVerticalResolutionComponent( double const & val )
 
 #ifdef NOT_IMPLEMENTED
 void
-sb_Iref::setDimensionID( vector<sb_ForeignID> const & val ) 
+sb_Iref::setDimensionID( vector<sb_ForeignID> const & val )
 {   imp_->dimensionID_ = val;
 } // sb_Iref::setDimensionID
 #endif

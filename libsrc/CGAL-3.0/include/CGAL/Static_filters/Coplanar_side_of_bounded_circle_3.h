@@ -73,7 +73,7 @@ protected:
       _static_epsilon = s._static_epsilon;
       return *this;
   }
- 
+
   SF_Side_of_bounded_circle_3()
   {
       _static_epsilon = HUGE_VAL;

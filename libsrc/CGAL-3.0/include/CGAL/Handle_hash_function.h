@@ -32,11 +32,11 @@ CGAL_BEGIN_NAMESPACE
 
 struct Handle_hash_function {
     typedef std::size_t result_type;
-    template <class H> 
-    std::size_t operator() (const H& h) const { 
-        return std::size_t(&*h) / 
+    template <class H>
+    std::size_t operator() (const H& h) const {
+        return std::size_t(&*h) /
             sizeof( typename std::iterator_traits<H>::value_type);
-    } 
+    }
 };
 
 CGAL_END_NAMESPACE

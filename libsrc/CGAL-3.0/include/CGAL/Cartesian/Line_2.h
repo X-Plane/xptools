@@ -295,7 +295,7 @@ operator<<(std::ostream &os, const LineC2<R> &l)
         write(os, l.c());
         return os;
     default:
-        return os << "LineC2(" << l.a() 
+        return os << "LineC2(" << l.a()
 		  << ", " << l.b() << ", " << l.c() <<')';
     }
 }

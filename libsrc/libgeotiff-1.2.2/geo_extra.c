@@ -52,7 +52,7 @@
 #include "geo_normalize.h"
 #include "geovalues.h"
 
-static int StatePlaneTable[] = 
+static int StatePlaneTable[] =
 {
     PCS_NAD83_Alabama_East,		Proj_Alabama_CS83_East,
     PCS_NAD83_Alabama_West,		Proj_Alabama_CS83_West,
@@ -224,7 +224,7 @@ static int StatePlaneTable[] =
     PCS_NAD83_Wyoming_E_Cen,		Proj_Wyoming_CS83_East_Central,
     PCS_NAD83_Wyoming_W_Cen,		Proj_Wyoming_CS83_West_Central,
     PCS_NAD83_Wyoming_West,		Proj_Wyoming_CS83_West,
-    
+
     PCS_NAD83_Puerto_Rico_Virgin_Is,	Proj_Puerto_Rico_Virgin_Is,
 
     PCS_NAD27_Alabama_East,		Proj_Alabama_CS27_East,
@@ -402,7 +402,7 @@ static int StatePlaneTable[] =
     PCS_NAD27_Wyoming_E_Cen,		Proj_Wyoming_CS27_East_Central,
     PCS_NAD27_Wyoming_W_Cen,		Proj_Wyoming_CS27_West_Central,
     PCS_NAD27_Wyoming_West,		Proj_Wyoming_CS27_West,
-    
+
     PCS_NAD27_Puerto_Rico,		Proj_Puerto_Rico_CS27,
 
     KvUserDefined
@@ -549,7 +549,7 @@ int	GTIFMapSysToProj( int MapSys, int nZone )
  * This function is useful to recognise (most) UTM and State Plane coordinate
  * systems, even if CSV files aren't available to translate them automatically.
  * It is used as a fallback mechanism by GTIFGetDefn() for normalization when
- * CSV files aren't found. 
+ * CSV files aren't found.
  */
 
 int GTIFPCSToMapSys( int PCSCode, int * pDatum, int * pZone )
@@ -568,7 +568,7 @@ int GTIFPCSToMapSys( int PCSCode, int * pDatum, int * pZone )
 	Proj = MapSys_UTM_North;
 	nZone = PCSCode - PCS_NAD27_UTM_zone_3N + 3;
     }
-    else if( PCSCode >= PCS_NAD83_UTM_zone_3N 
+    else if( PCSCode >= PCS_NAD83_UTM_zone_3N
 	     && PCSCode <= PCS_NAD83_UTM_zone_23N )
     {
 	Datum = GCS_NAD83;
@@ -620,7 +620,7 @@ int GTIFPCSToMapSys( int PCSCode, int * pDatum, int * pZone )
 	Proj = MapSys_UTM_South;
 	nZone = PCSCode - PCS_WGS84_UTM_zone_1S + 1;
     }
-    else if( PCSCode >= PCS_SAD69_UTM_zone_18N 
+    else if( PCSCode >= PCS_SAD69_UTM_zone_18N
 	     && PCSCode <= PCS_SAD69_UTM_zone_22N )
     {
 	Datum = KvUserDefined;
@@ -657,7 +657,7 @@ int GTIFPCSToMapSys( int PCSCode, int * pDatum, int * pZone )
             Proj = MapSys_State_Plane_27;
 	    Datum = GCS_NAD27;
         }
-	
+
 	nZone = PCSCode - 10000;
 	if( Datum == GCS_NAD83 )
 	    nZone -= 30;
@@ -738,7 +738,7 @@ int GTIFProjToMapSys( int ProjCode, int * pZone )
             nZone = ProjCode - 10000;
         }
     }
-    
+
     if( pZone != NULL )
         *pZone = nZone;
 

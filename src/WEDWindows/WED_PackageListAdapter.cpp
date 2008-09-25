@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -42,27 +42,27 @@ WED_PackageListAdapter::~WED_PackageListAdapter()
 
 
 void	WED_PackageListAdapter::GetCellContent(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			GUI_CellContent&			the_content)
 {
 	the_content.content_type = gui_Cell_EditText;
 	the_content.can_disclose = 0;
 	the_content.string_is_resource = 0;
 	the_content.can_select = 1;
-	the_content.can_drag = 0;	
+	the_content.can_drag = 0;
 	the_content.is_disclosed = 0;
 	the_content.is_selected = cell_y==mSel;
 	the_content.indent_level = 0;
 
-	gPackageMgr->GetNthCustomPackageName(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);	
+	gPackageMgr->GetNthCustomPackageName(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);
 
 	the_content.can_edit = mLock.count(the_content.text_val)==0;
 }
 
 void	WED_PackageListAdapter::GetEnumDictionary(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			GUI_EnumDictionary&			out_dictionary)
 {
 }
@@ -113,11 +113,11 @@ int		WED_PackageListAdapter::SelectGetLimits(
 			int&						high_x,
 			int&						high_y)
 {
-	
+
 	low_x = low_y = 0;
 	high_x = 1;
 	high_y = gPackageMgr->CountCustomPackages()-1;
-	
+
 	return high_y != -1;
 }
 
@@ -179,8 +179,8 @@ void					WED_PackageListAdapter::GetLegalDropOperations(
 GUI_DragOperation		WED_PackageListAdapter::CanDropIntoCell(
 								int							cell_x,
 								int							cell_y,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended,
 								int&						whole_col,
 								int&						whole_row)
@@ -190,8 +190,8 @@ GUI_DragOperation		WED_PackageListAdapter::CanDropIntoCell(
 
 GUI_DragOperation		WED_PackageListAdapter::CanDropBetweenColumns(
 								int							cell_x,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended)
 {
 	return gui_Drag_None;
@@ -199,8 +199,8 @@ GUI_DragOperation		WED_PackageListAdapter::CanDropBetweenColumns(
 
 GUI_DragOperation		WED_PackageListAdapter::CanDropBetweenRows(
 								int							cell_y,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended)
 {
 	return gui_Drag_None;
@@ -209,8 +209,8 @@ GUI_DragOperation		WED_PackageListAdapter::CanDropBetweenRows(
 GUI_DragOperation		WED_PackageListAdapter::DoDropIntoCell(
 								int							cell_x,
 								int							cell_y,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended)
 {
 	return gui_Drag_None;
@@ -218,8 +218,8 @@ GUI_DragOperation		WED_PackageListAdapter::DoDropIntoCell(
 
 GUI_DragOperation		WED_PackageListAdapter::DoDropBetweenColumns(
 								int							cell_x,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended)
 {
 	return gui_Drag_None;
@@ -227,8 +227,8 @@ GUI_DragOperation		WED_PackageListAdapter::DoDropBetweenColumns(
 
 GUI_DragOperation		WED_PackageListAdapter::DoDropBetweenRows(
 								int							cell_y,
-								GUI_DragData *				drag, 
-								GUI_DragOperation			allowed, 
+								GUI_DragData *				drag,
+								GUI_DragOperation			allowed,
 								GUI_DragOperation			recommended)
 {
 	return gui_Drag_None;

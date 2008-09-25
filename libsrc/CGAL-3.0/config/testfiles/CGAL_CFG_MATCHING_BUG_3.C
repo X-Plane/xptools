@@ -27,8 +27,8 @@
 // The following documentation will be pasted in the generated configfile.
 // ---------------------------------------------------------------------
 
-//| This flag is set, if the compiler does not match function arguments 
-//| of pointer type correctly, when the return type depends on 
+//| This flag is set, if the compiler does not match function arguments
+//| of pointer type correctly, when the return type depends on
 //| the parameter's type. (e.g. sun C++ 5.3)
 
 template < class T > struct A     { typedef typename T::CCC CCC; };

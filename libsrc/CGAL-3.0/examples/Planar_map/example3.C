@@ -64,7 +64,7 @@ int main()
   cv[16] = X_monotone_curve_2(a10, a11);
   cv[17] = X_monotone_curve_2(a10, a12);
 
-  std::cout << "The curves of the map :" << std::endl; 
+  std::cout << "The curves of the map :" << std::endl;
   std::copy(&cv[0], &cv[18],
             std::ostream_iterator<X_monotone_curve_2>(std::cout, "\n"));
   std::cout << std::endl;
@@ -74,14 +74,14 @@ int main()
   pm.insert(&cv[0], &cv[18]);
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
-  
+
   // Draw the map:
   std::cout << "    1  3 4  6  8 9 11		 " << std::endl;
   std::cout << "                                 "
                "                                " << std::endl;
   std::cout << "           a12            9             ";
   std::cout << "a1(" << a1 << ")  a2(" << a2 << ")  a3(" << a3 << ")";
-  std::cout << std::endl;        
+  std::cout << std::endl;
   std::cout << "           *  *           8             ";
   std::cout << "a4(" << a4 << ")  a5(" << a5 << ")  a6(" << a6 << ")";
   std::cout << std::endl;
@@ -109,7 +109,7 @@ int main()
   std::cout << "Enter y coordinate for point location:" << std::endl;
   double y;
   std::cin >> y;
-        
+
   print_point_locate(Point_2(x, y) ,pm);
 
   return 0;
@@ -129,13 +129,13 @@ void print_point_locate(const Point_2 & p, const Planar_map & pm)
   switch (lt) {
     case Planar_map::VERTEX :
       std::cout << "VERTEX" << std::endl
-                << "The vertex is: (" << edge->target()->point() << ")" 
+                << "The vertex is: (" << edge->target()->point() << ")"
                 << std::endl;
       break;
 
     case Planar_map::UNBOUNDED_VERTEX :
       std::cout << "UNBOUNDED_VERTEX" << std::endl
-                << "The vertex is: (" << edge->target()->point() << ")" 
+                << "The vertex is: (" << edge->target()->point() << ")"
                 << std::endl;
       break;
 
@@ -144,7 +144,7 @@ void print_point_locate(const Point_2 & p, const Planar_map & pm)
                 << "The edge is: {(" << edge->source()->point()
                 << ")->(" << edge->target()->point() << ")}" << std::endl;
       break;
-      
+
     case Planar_map::UNBOUNDED_EDGE :
       std::cout << "UNBOUNDED_EDGE" << std::endl
                 << "The edge is: {(" << edge->source()->point()

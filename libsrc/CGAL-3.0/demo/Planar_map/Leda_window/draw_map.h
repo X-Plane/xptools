@@ -9,7 +9,7 @@
 #include "configuration"
 
 #include <CGAL/Cartesian.h>
-#include <CGAL/squared_distance_2.h>  
+#include <CGAL/squared_distance_2.h>
 #include <CGAL/Point_2.h>
 #include <CGAL/predicates_on_points_2.h>
 #include <CGAL/Segment_2.h>
@@ -46,7 +46,7 @@
 #endif
 typedef leda_rational                           number_type;
 #else
-typedef double                                  number_type; 
+typedef double                                  number_type;
 #endif
 
 #ifdef USE_LEDA_RAT_KERNEL
@@ -75,7 +75,7 @@ typedef Planar_map::Halfedge_iterator           Halfedge_iterator;
 typedef Planar_map::Ccb_halfedge_circulator     Ccb_halfedge_circulator;
 
 typedef Traits::Point                           Pm_point;
-typedef Traits::X_curve                         Pm_curve; 
+typedef Traits::X_curve                         Pm_curve;
 
 
 extern  int draw_pm (Planar_map & pm , CGAL::Window_stream & W);
@@ -98,11 +98,11 @@ extern int n_total,n_insert,n_remove,n_locate,n_vertical;
 /* move to Eyals leda_rat ? */
 #ifdef USE_LEDA_RAT_KERNEL
 inline CGAL::Window_stream& operator<<(CGAL::Window_stream& os, const Pm_point& p){
-    return os << leda_point(p.xcoordD(),p.ycoordD()); 
-  } 
+    return os << leda_point(p.xcoordD(),p.ycoordD());
+  }
 inline CGAL::Window_stream& operator<<(CGAL::Window_stream& os, const Pm_curve& c){
-    leda_segment s(c.xcoord1D(),c.ycoord1D(),c.xcoord2D(),c.ycoord2D()); 
-    return os << s; 
+    leda_segment s(c.xcoord1D(),c.ycoord1D(),c.xcoord2D(),c.ycoord2D());
+    return os << s;
   }
 #endif
 

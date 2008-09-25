@@ -34,9 +34,9 @@ CGAL_BEGIN_NAMESPACE
 
 template < class Triang >
 void
-triangulation_print_OFF( std::ostream& out, 
-			 const Triang& triang, 
-			 bool binary  = false, 
+triangulation_print_OFF( std::ostream& out,
+			 const Triang& triang,
+			 bool binary  = false,
 			 bool noc     = false,
 			 bool verbose = false) {
     CGAL_precondition( triang.is_valid());

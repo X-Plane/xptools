@@ -11,13 +11,13 @@
 #include "SceneGraph.h"
 #include "UrlFile.h"
 
-Parser::Parser() 
+Parser::Parser()
 {
 	setParserResult(false);
 	setParseringState(false);
 }
 
-Parser::~Parser() 
+Parser::~Parser()
 {
 }
 
@@ -25,7 +25,7 @@ Parser::~Parser()
 //	find node
 ////////////////////////////////////////////////
 
-Node *Parser::findNodeByType(char *typeName) 
+Node *Parser::findNodeByType(char *typeName)
 {
 	if (!typeName)
 		return NULL;
@@ -39,7 +39,7 @@ Node *Parser::findNodeByType(char *typeName)
 	return node;
 }
 
-Node *Parser::findNodeByName(char *name) 
+Node *Parser::findNodeByName(char *name)
 {
 	if (!name)
 		return NULL;
@@ -57,7 +57,7 @@ Node *Parser::findNodeByName(char *name)
 //	Parser::getNLines
 ////////////////////////////////////////////////
 
-int Parser::getNLines(char *fileName) 
+int Parser::getNLines(char *fileName)
 {
 	FILE *fp;
 	if ((fp = fopen(fileName, "rt")) == NULL){
@@ -82,7 +82,7 @@ int Parser::getNLines(char *fileName)
 //	Parser::load
 ////////////////////////////////////////////////
 
-void Parser::load(char *fileName, void (*callbackFn)(int nLine, void *info), void *callbackFnInfo) 
+void Parser::load(char *fileName, void (*callbackFn)(int nLine, void *info), void *callbackFnInfo)
 {
 	FILE *fp = fopen(fileName, "rt");
 
@@ -151,21 +151,21 @@ void Parser::load(char *fileName, void (*callbackFn)(int nLine, void *info), voi
 //	Parse Action
 ////////////////////////////////////////////////
 
-void Parser::addNode(Node *node, bool initialize) 
+void Parser::addNode(Node *node, bool initialize)
 {
 	moveNode(node);
 	if (initialize)
 		node->initialize();
 }
 
-void Parser::addNodeAtFirst(Node *node, bool initialize) 
+void Parser::addNodeAtFirst(Node *node, bool initialize)
 {
 	moveNodeAtFirst(node);
 	if (initialize)
 		node->initialize();
 }
 
-void Parser::moveNode(Node *node) 
+void Parser::moveNode(Node *node)
 {
 	Node *parentNode = getCurrentNode();
 	if (!parentNode || !getParseringState())
@@ -177,7 +177,7 @@ void Parser::moveNode(Node *node)
 	node->setSceneGraph((SceneGraph *)this);
 }
 
-void Parser::moveNodeAtFirst(Node *node) 
+void Parser::moveNodeAtFirst(Node *node)
 {
 	Node *parentNode = getCurrentNode();
 	if (!parentNode || !getParseringState())
@@ -197,35 +197,35 @@ void Parser::pushNode(Node *node, int type)
 
 void Parser::popNode()
 {
-	ParserNode *lastNode = mParserNodeList.getLastNode(); 
+	ParserNode *lastNode = mParserNodeList.getLastNode();
 	delete lastNode;
 }
 
-Node *Parser::getCurrentNode() 
+Node *Parser::getCurrentNode()
 {
-	ParserNode *lastNode = mParserNodeList.getLastNode(); 
+	ParserNode *lastNode = mParserNodeList.getLastNode();
 	if (!lastNode)
 		return NULL;
 	else
 		return lastNode->getNode();
 }
 
-int Parser::getCurrentNodeType() 
+int Parser::getCurrentNodeType()
 {
-	ParserNode *lastNode = mParserNodeList.getLastNode(); 
+	ParserNode *lastNode = mParserNodeList.getLastNode();
 	if (!lastNode)
 		return 0;
 	else
 		return lastNode->getType();
 }
 
-int Parser::getPrevNodeType() 
+int Parser::getPrevNodeType()
 {
-	ParserNode *lastNode = mParserNodeList.getLastNode(); 
+	ParserNode *lastNode = mParserNodeList.getLastNode();
 	if (!lastNode)
 		return 0;
 	else {
-		ParserNode *prevNode = lastNode->prev(); 
+		ParserNode *prevNode = lastNode->prev();
 		if (prevNode->isHeaderNode())
 			return 0;
 		else
@@ -237,12 +237,12 @@ int Parser::getPrevNodeType()
 //	DEF
 ///////////////////////////////////////////////
 
-DEF *Parser::getDEFs() 
+DEF *Parser::getDEFs()
 {
 	return (DEF *)mDEFList.getNodes();
 }
 
-char *Parser::getDEFString(char *name) 
+char *Parser::getDEFString(char *name)
 {
 	for (DEF *def=getDEFs(); def; def=def->next()) {
 		char *defName = def->getName();
@@ -252,18 +252,18 @@ char *Parser::getDEFString(char *name)
 	return NULL;
 }
 
-void Parser::addDEF(DEF *def) 
+void Parser::addDEF(DEF *def)
 {
 	mDEFList.addNode(def);
 }
-	
-void Parser::addDEF(char *name, char *string) 
+
+void Parser::addDEF(char *name, char *string)
 {
 	DEF *def = new DEF(name, string);
 	addDEF(def);
 }
 
-void Parser::deleteDEFs() 
+void Parser::deleteDEFs()
 {
 	mDEFList.deleteNodes();
 }
@@ -272,12 +272,12 @@ void Parser::deleteDEFs()
 //	PROTO
 ///////////////////////////////////////////////
 
-PROTO *Parser::getPROTOs() 
+PROTO *Parser::getPROTOs()
 {
 	return (PROTO *)mPROTOList.getNodes();
 }
 
-PROTO *Parser::getPROTO(char *name) 
+PROTO *Parser::getPROTO(char *name)
 {
 	if (!name || !strlen(name))
 		return NULL;
@@ -290,12 +290,12 @@ PROTO *Parser::getPROTO(char *name)
 	return NULL;
 }
 
-void Parser::addPROTO(PROTO *proto) 
+void Parser::addPROTO(PROTO *proto)
 {
 	mPROTOList.addNode(proto);
 }
 
-void Parser::deletePROTOs() 
+void Parser::deletePROTOs()
 {
 	mPROTOList.deleteNodes();
 }
@@ -304,7 +304,7 @@ void Parser::deletePROTOs()
 //	ROUTE
 ///////////////////////////////////////////////
 
-Route *Parser::getRoutes() 
+Route *Parser::getRoutes()
 {
 	return (Route *)mRouteList.getNodes();
 }
@@ -320,7 +320,7 @@ Route *Parser::getRoute(Node *eventOutNode, Field *eventOutField, Node *eventInN
 	return NULL;
 }
 
-void Parser::addRoute(Route *route) 
+void Parser::addRoute(Route *route)
 {
 	if (route->getEventOutNode() == route->getEventInNode())
 		return;
@@ -349,7 +349,7 @@ Route *Parser::addRoute(char *eventOutNodeName, char *eventOutFieldName, char *e
 		if (!eventInField)
 			eventInField = eventInNode->getExposedField(eventInFieldName);
 	}
-	
+
 	if (!eventInNode || !eventOutNode || !eventInField || !eventOutField)
 		return NULL;
 	Route *route = new Route(eventOutNode, eventOutField, eventInNode, eventInField);
@@ -426,7 +426,7 @@ void Parser::removeRoute(Node *eventOutNode, Field *eventOutField, Node *eventIn
 		route->remove();
 }
 
-void Parser::removeRoutes(Node *node) 
+void Parser::removeRoutes(Node *node)
 {
 	Route *route = getRoutes();
 	while (route) {

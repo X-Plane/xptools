@@ -33,7 +33,7 @@ class identity
 };
 
 CGAL_END_NAMESPACE
-  
+
 #endif // CGAL_IDENTITY_H
 
 // ===== EOF ==================================================================

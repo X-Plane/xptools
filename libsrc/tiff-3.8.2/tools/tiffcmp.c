@@ -4,23 +4,23 @@
  * Copyright (c) 1988-1997 Sam Leffler
  * Copyright (c) 1991-1997 Silicon Graphics, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
@@ -320,7 +320,7 @@ ContigCompare(int sample, uint32 row,
     samples_to_test = (sample == -1) ? samplesperpixel : 1;
 
     switch (bitspersample) {
-      case 1: case 2: case 4: case 8: 
+      case 1: case 2: case 4: case 8:
       {
           unsigned char *pix1 = p1, *pix2 = p2;
 
@@ -341,7 +341,7 @@ ContigCompare(int sample, uint32 row,
           }
           break;
       }
-      case 16: 
+      case 16:
       {
           uint16 *pix1 = (uint16 *)p1, *pix2 = (uint16 *)p2;
 
@@ -351,14 +351,14 @@ ContigCompare(int sample, uint32 row,
               for(s = 0; s < samples_to_test; s++) {
                   if (*pix1 != *pix2)
                       PrintIntDiff(row, sample, pix, *pix1, *pix2);
-                        
+
                   pix1++;
                   pix2++;
               }
           }
           break;
       }
-      case 32: 
+      case 32:
 	if (sampleformat == SAMPLEFORMAT_UINT
 	    || sampleformat == SAMPLEFORMAT_INT) {
 		uint32 *pix1 = (uint32 *)p1, *pix2 = (uint32 *)p2;
@@ -371,7 +371,7 @@ ContigCompare(int sample, uint32 row,
 					PrintIntDiff(row, sample, pix,
 						     *pix1, *pix2);
 				}
-                        
+
 				pix1++;
 				pix2++;
 			}
@@ -387,7 +387,7 @@ ContigCompare(int sample, uint32 row,
 					PrintFloatDiff(row, sample, pix,
 						       *pix1, *pix2);
 				}
-                        
+
 				pix1++;
 				pix2++;
 			}
@@ -437,7 +437,7 @@ PrintIntDiff(uint32 row, int sample, uint32 pix, uint32 w1, uint32 w2)
 		}
 		break;
 	    }
-	case 8: 
+	case 8:
 		printf("Scanline %lu, pixel %lu, sample %d: %02x %02x\n",
 		       (unsigned long) row, (unsigned long) pix, sample,
 		       (unsigned int) w1, (unsigned int) w2);
@@ -469,7 +469,7 @@ PrintFloatDiff(uint32 row, int sample, uint32 pix, double w1, double w2)
 	if (sample < 0)
 		sample = 0;
 	switch (bitspersample) {
-	case 32: 
+	case 32:
 		printf("Scanline %lu, pixel %lu, sample %d: %g %g\n",
 		    (long) row, (long) pix, sample, w1, w2);
 		if (--stopondiff == 0)

@@ -42,12 +42,12 @@ namespace CGAL_MINIBALL_NAMESPACE {
     if (u >= FT(0)) {
       if (bp <= uu)
         return false;
-  
+
       // here (1) holds
       const FT v = uu-b+bp;
       if (v <= 0)
         return false;
-  
+
       // here (2) holds
       return 4 * uu * bp < sqr(v);
     } else {
@@ -55,7 +55,7 @@ namespace CGAL_MINIBALL_NAMESPACE {
       const FT v = uu-b+bp;
       if (v >= FT(0))
         return true;
-  
+
       // here (3) holds
       return 4 * uu *bp > sqr(v);
     }
@@ -72,28 +72,28 @@ namespace CGAL_MINIBALL_NAMESPACE {
     typedef typename Traits::Algorithm Algorithm;
     static const int D = Traits::D;
     typedef typename Traits::Cartesian_const_iterator CIt;
-  
+
   private: // traits class:
     Traits t; // To allow the traits to not only vary at compile- but
               // also at runtime, we instantiate it here.
-  
+
   private: // for internal consisteny checks:
     // The following variable is true if and only if the miniball
     // has been computed of all inserted balls, i.e. iff every checked-in
     // ball has been respected in the miniball computation.
     bool is_up_to_date;
-  
+
   public: // iterators:
     typedef const Result *Cartesian_const_iterator; // coordinate iterator
-  
+
     class Support_iterator {
       typedef typename std::vector<Sphere>::const_iterator It;
       It it;
-  
+
     private:
       friend class Min_sphere_of_spheres_d<Traits>;
       Support_iterator(It it) : it(it) {}
-  
+
     public:
       const Sphere& operator*() { return *(*it); }
       Support_iterator& operator++() { ++it; return *this; }
@@ -104,10 +104,10 @@ namespace CGAL_MINIBALL_NAMESPACE {
       }
       bool operator!=(const Support_iterator& i) { return it != i.it; }
     };
-  
+
   public: // construction and destruction:
     inline Min_sphere_of_spheres_d(const Traits& traits = Traits());
-  
+
     template<typename InputIterator>
     inline Min_sphere_of_spheres_d(InputIterator begin,InputIterator end,
                                    const Traits& traits = Traits()) :
@@ -116,11 +116,11 @@ namespace CGAL_MINIBALL_NAMESPACE {
       CGAL_MINIBALL_ASSERT(is_neg(ss.radius(),ss.disc()));
       insert(begin,end);            // todo. better way?
     }
-  
+
     inline void prepare(int size);
-  
+
     inline void insert(const Sphere& b);
-  
+
     template<typename InputIterator>
     inline void insert(InputIterator begin,InputIterator end) {
       prepare(l.size()+(end-begin)); // todo. istream?
@@ -129,45 +129,45 @@ namespace CGAL_MINIBALL_NAMESPACE {
         ++begin;
       }
     }
-  
+
     inline void clear();
-  
+
     template<typename InputIterator>
     inline void set(InputIterator begin,InputIterator end) {
       clear();
       insert(begin,end);
     }
-  
+
   public: // predicates and accessors:
     inline bool is_empty();
-  
+
     inline const Result& radius();
-  
+
     inline Cartesian_const_iterator center_cartesian_begin();
     inline Cartesian_const_iterator center_cartesian_end();
-  
+
     inline const FT& discriminant();
-  
+
     inline Support_iterator support_begin();
-  
+
     inline Support_iterator support_end();
-  
+
     inline const Traits& traits() const {
       return t;
     }
-  
+
   public: // validity check:
     bool is_valid();
     bool is_valid(const Tag_true is_exact);
     bool is_valid(const Tag_false is_exact);
-  
+
   private:
     bool pivot(int B);
-  
+
     void update();
     void update(LP_algorithm);
     void update(Farthest_first_heuristic);
-  
+
     bool find_farthest(int from,int to,int& i,
                        Tag_true use_sqrt,Tag_false is_exact);
     bool find_farthest(int from,int to,int& i,
@@ -176,13 +176,13 @@ namespace CGAL_MINIBALL_NAMESPACE {
                        Tag_false use_sqrt,Tag_false is_exact);
     bool find_farthest(int from,int to,int& i,
                        Tag_false use_sqrt,Tag_true is_exact);
-  
+
   private:
     std::vector<Sphere> S;         // list of the added bals
     std::vector<const Sphere *> l; // list of pointers to the added bals
     Support_set<Traits> ss;        // current support set
     int e;                         // l[0..(e-1)] is a basis
-  
+
   private: // forbid copy constructing and assignment (because our
            // pointers in ss would be wrong then):
     Min_sphere_of_spheres_d(const Min_sphere_of_spheres_d&);

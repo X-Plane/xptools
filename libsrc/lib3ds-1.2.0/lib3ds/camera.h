@@ -7,13 +7,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -45,7 +45,7 @@ struct _Lib3dsCamera {
     Lib3dsBool see_cone;
     Lib3dsFloat near_range;
     Lib3dsFloat far_range;
-}; 
+};
 
 extern LIB3DSAPI Lib3dsCamera* lib3ds_camera_new(const char *name);
 extern LIB3DSAPI void lib3ds_camera_free(Lib3dsCamera *mesh);

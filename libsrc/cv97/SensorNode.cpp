@@ -11,7 +11,7 @@
 #include "VRMLField.h"
 #include "SensorNode.h"
 
-SensorNode::SensorNode() 
+SensorNode::SensorNode()
 {
 	// enabled exposed field
 	enabledField = new SFBool(true);
@@ -22,7 +22,7 @@ SensorNode::SensorNode()
 	addEventOut(isActiveFieldString, isActiveField);
 }
 
-SensorNode::~SensorNode() 
+SensorNode::~SensorNode()
 {
 }
 
@@ -36,23 +36,23 @@ SFBool *SensorNode::getEnabledField()
 		return enabledField;
 	return (SFBool *)getExposedField(enabledFieldString);
 }
-	
-void SensorNode::setEnabled(bool  value) 
+
+void SensorNode::setEnabled(bool  value)
 {
 	getEnabledField()->setValue(value);
 }
 
-void SensorNode::setEnabled(int value) 
+void SensorNode::setEnabled(int value)
 {
 	setEnabled(value ? true : false);
 }
 
-bool  SensorNode::getEnabled() 
+bool  SensorNode::getEnabled()
 {
 	return getEnabledField()->getValue();
 }
 
-bool  SensorNode::isEnabled() 
+bool  SensorNode::isEnabled()
 {
 	return getEnabled();
 }
@@ -67,23 +67,23 @@ SFBool *SensorNode::getIsActiveField()
 		return isActiveField;
 	return (SFBool *)getEventOut(isActiveFieldString);
 }
-	
-void SensorNode::setIsActive(bool  value) 
+
+void SensorNode::setIsActive(bool  value)
 {
 	getIsActiveField()->setValue(value);
 }
 
-void SensorNode::setIsActive(int value) 
+void SensorNode::setIsActive(int value)
 {
 	setIsActive(value ? true : false);
 }
 
-bool  SensorNode::getIsActive() 
+bool  SensorNode::getIsActive()
 {
 	return getIsActiveField()->getValue();
 }
 
-bool SensorNode::isActive() 
+bool SensorNode::isActive()
 {
 	return getIsActive();
 }

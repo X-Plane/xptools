@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Chris Serio.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,23 +40,23 @@
 	#endif
 #endif
 
-static	InetSvcRef		sSvcRef; 
-	
+static	InetSvcRef		sSvcRef;
+
 bool PCSBSocket::StartupNetworking(bool inInitDLL)
 {
 		OSStatus 		result;
-	
+
 	if (inInitDLL)
-	{	
+	{
 		result = ::InitOpenTransportInContext(kInitOTForApplicationMask, NULL);
 		if (result != noErr)
 			return false;
 	}
-			
+
 	sSvcRef = ::OTOpenInternetServicesInContext(kDefaultInternetServicesPath, 0, &result, NULL);
 	if (result != noErr)
 		return false;
-	
+
 	return true;
 }
 
@@ -86,8 +86,8 @@ PCSBSocket::PCSBSocket(
 	mIncomingIP.fHost = 0;
 	mIncoming.sequence = 0;
 	mHasIncoming = false;
-			
-	mWorker = NULL;			
+
+	mWorker = NULL;
 	mMacSocket = ::OTOpenEndpointInContext(
 			::OTCreateConfiguration(kTCPName),
 			0, 					// Options must be 0
@@ -95,9 +95,9 @@ PCSBSocket::PCSBSocket(
 			&err,
 			NULL);
 	if (err != noErr)	throw err;
-	
+
 	// If we're a server, reuse the port address...
-	
+
 		TOptMgmt    optreq;
 		TOption*	Opt;
 		UInt8 		OptionBuf[kOTFourByteOptionSize];
@@ -112,40 +112,40 @@ PCSBSocket::PCSBSocket(
 	Opt->len    = kOTFourByteOptionSize;
 	*(UInt32*)Opt->value = true;
 
-	::OTOptionManagement(mMacSocket, &optreq, &optreq);	
-	
+	::OTOptionManagement(mMacSocket, &optreq, &optreq);
+
 	// bind to a port immediately.
-	
+
 		InetAddress		localAddress, realAddress;
-		TBind			req, ret;	
+		TBind			req, ret;
 
 	localAddress.fAddressType = AF_INET;
 	localAddress.fPort = inPort;
 	localAddress.fHost = kOTAnyInetAddress;
-	
+
 	req.addr.maxlen = req.addr.len = sizeof(localAddress);
 	req.addr.buf = (unsigned char *) &localAddress;
 	req.qlen = inServer ? 1 : 0;
 
 	ret.addr.maxlen = sizeof(realAddress);
 	ret.addr.buf = (unsigned char *) &realAddress;
-		
+
 	err = ::OTBind(mMacSocket, &req, &ret);
 	if (err != noErr)
 	{
 		OTCloseProvider(mMacSocket);
 		throw err;
 	}
-	
+
 	mRemoteIP = realAddress.fHost;
 	mRemotePort = realAddress.fPort;
 
 	// Now that we are bound, go to async I/O and we will poll.
 
 	::OTSetAsynchronous(mMacSocket);
-	
-}				
-								
+
+}
+
 PCSBSocket::~PCSBSocket()
 {
 	if (mWorker)
@@ -156,7 +156,7 @@ PCSBSocket::~PCSBSocket()
 PCSBSocket::Status			PCSBSocket::GetStatus(void)
 {
 	if (mErr) return status_Error;
-	
+
 	MopupEvents();
 	switch(::OTGetEndpointState(mMacSocket)) {
 	case T_UNINIT:
@@ -175,38 +175,38 @@ PCSBSocket::Status			PCSBSocket::GetStatus(void)
 		return status_Error;
 	}
 }
-			
+
 bool			PCSBSocket::ReceivedRelease(void)
 {
 	return (::OTGetEndpointState(mMacSocket) == T_INREL);
-	
+
 }
 
 long			PCSBSocket::ReadData(
-								void * 			outBuf, 
+								void * 			outBuf,
 								long 			inLength)
 {
 	OTResult	result;
 	OTFlags		flags;
-	
+
 	while (1)
-	{	
+	{
 		result = ::OTGetEndpointState(mMacSocket);
-		
+
 		if (result == T_INREL)
 			return 0;
 		if ((result != T_DATAXFER) && (result != T_OUTREL))
 			return -1;
-		
+
 		result = ::OTRcv(mMacSocket, outBuf, inLength, &flags);
-		
+
 		if (result > 0)
 		{
 			// We got data.  If we didn't get enough, we can clean up the data flags.
 			return result;
-			
+
 		} else switch(result) {
-		
+
 		case kOTLookErr:
 			// An event came up.  We'll mop it up and retry; if our state changes,
 			// we pick it up at the top of the loop.
@@ -220,26 +220,26 @@ long			PCSBSocket::ReadData(
 			mErr = true;
 			return -1;
 		}
-	}							
+	}
 }
-								
+
 long			PCSBSocket::WriteData(
-								const void * 	inBuf, 
+								const void * 	inBuf,
 								long 			inLength)
 {
 	OTResult	result;
 	OTFlags		flags = 0;
-	
+
 	while (1)
 	{
 		// Now check out the event state.  If we are in a bad state,
-		// return -1.  Note that unlike reading, if you try to write 
+		// return -1.  Note that unlike reading, if you try to write
 		// after issueing a release, you get a -1 error since you
 		// were a dork.
 		result = ::OTGetEndpointState(mMacSocket);
 		if ((result != T_INREL) && (result != T_DATAXFER))
 			return -1;
-	
+
 		// I am 99.9% sure that OTSnd really doesn't @#$@# with the data...
 		result = ::OTSnd(mMacSocket, const_cast<void *>(inBuf), inLength, flags);
 		if (result >= 0)
@@ -258,7 +258,7 @@ long			PCSBSocket::WriteData(
 			mErr = true;
 			return -1;
 		}
-	}								
+	}
 }
 
 void	PCSBSocket::Disconnect(void)
@@ -269,11 +269,11 @@ void	PCSBSocket::Disconnect(void)
 	mDone = true;
 	mRemotePort = 0;
 	mRemoteIP = 0;
-	
+
 	while (1)
 	{
 		OTResult	state = ::OTGetEndpointState(mMacSocket);
-		if ((state != T_OUTCON) && (state != T_DATAXFER) && 
+		if ((state != T_OUTCON) && (state != T_DATAXFER) &&
 			(state != T_INREL) && (state != T_OUTREL))
 		{
 			// We're not even remotely connected, just bail.
@@ -294,7 +294,7 @@ void	PCSBSocket::Disconnect(void)
 		}
 	}
 }
-			
+
 void			PCSBSocket::Release(void)
 {
 	while (1)
@@ -326,17 +326,17 @@ void			PCSBSocket::GetAddresses(
 {
 	if (outInfo == NULL)
 		return;
-	
+
 	outInfo->localIP = mLocalIP;
 	outInfo->remoteIP = mRemoteIP;
 	outInfo->localPort = mLocalPort;
 	outInfo->remotePort = mRemotePort;
-}	
+}
 
 #pragma mark -
 
-void			PCSBSocket::Connect( 
-					unsigned long 	inIP, 
+void			PCSBSocket::Connect(
+					unsigned long 	inIP,
 					unsigned short 	inPort)
 {
 	if (mDone)
@@ -344,17 +344,17 @@ void			PCSBSocket::Connect(
 		mErr = true;
 		return;
 	}
-	
+
 	mRemoteIP = inIP;
 	mRemotePort = inPort;
-	
+
 	InetAddress		serverAddr;
 	TCall			remoteCall;
-	
+
 	serverAddr.fAddressType = AF_INET;
 	serverAddr.fPort = inPort;
 	serverAddr.fHost = inIP;
-	
+
 	remoteCall.addr.buf = (unsigned char *) &serverAddr;
 	remoteCall.addr.maxlen = remoteCall.addr.len = sizeof(serverAddr);
 
@@ -364,7 +364,7 @@ void			PCSBSocket::Connect(
 	remoteCall.sequence = 0;
 
 	// OPEN ISSUE: How do we clear connect here?!?
-	
+
 	while (1)
 	{
 		OTResult	status = ::OTGetEndpointState(mMacSocket);
@@ -377,7 +377,7 @@ void			PCSBSocket::Connect(
 
 #if LOG_MAC_SOCKETS
 		dprintf("Connecting.\n");
-#endif			
+#endif
 
 		OSStatus	err = ::OTConnect(mMacSocket, &remoteCall, NULL/* what we really get*/);
 		switch(err) {
@@ -385,13 +385,13 @@ void			PCSBSocket::Connect(
 		case noErr:
 #if LOG_MAC_SOCKETS
 		dprintf("Connect is async, returning.\n");
-#endif			
-		
+#endif
+
 			return;
-		case kOTLookErr:			
+		case kOTLookErr:
 #if LOG_MAC_SOCKETS
 			dprintf("Clearing look events.\n");
-#endif			
+#endif
 			MopupEvents();
 			break;
 		default:
@@ -399,8 +399,8 @@ void			PCSBSocket::Connect(
 			return;
 		}
 	}
-}					
-			
+}
+
 PCSBSocket * PCSBSocket::Accept(void)
 {
 	OSStatus	err = noErr;
@@ -411,7 +411,7 @@ PCSBSocket * PCSBSocket::Accept(void)
 									NULL, 				// Don't care about endpoint info
 									&err,
 									NULL);
-	if (err != noErr)	
+	if (err != noErr)
 		return NULL;
 
 	while (1)
@@ -434,15 +434,15 @@ PCSBSocket * PCSBSocket::Accept(void)
 		}
 	}
 }
-			
+
 #pragma mark -
-		 
+
 unsigned long		PCSBSocket::LookupAddress(
 	 							const char *	inAddress)
 {
 		OSStatus 		result;
 		InetHostInfo	theInfo;
-	
+
 	result = ::OTInetStringToAddress(sSvcRef, const_cast<char *>(inAddress), &theInfo);
 
 	if (result == noErr)
@@ -454,19 +454,19 @@ unsigned long		PCSBSocket::LookupAddress(
 void	PCSBSocket::MopupEvents(void)
 {
 	OTResult	result = ::OTLook(mMacSocket);
-	
+
 	switch(result) {
 	case T_CONNECT:
 #if LOG_MAC_SOCKETS
 		dprintf("Received connect.\n");
-#endif				
+#endif
 		if (::OTRcvConnect(mMacSocket, NULL) != noErr)
 			mErr = true;
 		break;
 	case T_ORDREL:
 #if LOG_MAC_SOCKETS
 		dprintf("Received orderly release.\n");
-#endif				
+#endif
 		if (::OTRcvOrderlyDisconnect(mMacSocket) != noErr)
 			mErr = true;
 		mDone = true;
@@ -474,7 +474,7 @@ void	PCSBSocket::MopupEvents(void)
 	case T_DISCONNECT:
 #if LOG_MAC_SOCKETS
 		dprintf("Received disconnect.\n");
-#endif				
+#endif
 		if (::OTRcvDisconnect(mMacSocket, NULL) != noErr)
 			mErr = true;
 		mDone = true;
@@ -494,7 +494,7 @@ PCSBSocket::PCSBSocket(EndpointRef inSocket)
 {
 	mErr = false;
 	mDone = false;
-	
+
 	mIncoming.addr.buf = (unsigned char *) &mIncomingIP;
 	mIncoming.addr.len = mIncoming.addr.maxlen = sizeof(mIncomingIP);
 	mIncoming.udata.buf = mIncoming.opt.buf = nil;
@@ -504,8 +504,8 @@ PCSBSocket::PCSBSocket(EndpointRef inSocket)
 	mIncomingIP.fHost = 0;
 	mIncoming.sequence = 0;
 	mHasIncoming = false;
-			
-	mWorker = NULL;			
+
+	mWorker = NULL;
 	mMacSocket = inSocket;
 
 	TBind		local, remote;

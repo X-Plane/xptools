@@ -53,14 +53,14 @@ extern int EF_PROTECT_FREE;
 
 
 void
-assign_converter( sio_8211_converter_dictionary & cd,                  
+assign_converter( sio_8211_converter_dictionary & cd,
                   string const & mnemonic,
                   string const & converter_type )
 {
-  if ( mnemonic.empty() )  
-    {    
-      cerr << "binary type without a subfield\n";  
-    }  
+  if ( mnemonic.empty() )
+    {
+      cerr << "binary type without a subfield\n";
+    }
 
   cd[ mnemonic ] = sio_ConverterFactory::instance()->get( mnemonic );
 
@@ -76,10 +76,10 @@ assign_converter( sio_8211_converter_dictionary & cd,
 void
 usage( const char * name )
 {
-  cerr << name << ": [flags] sdts-module\n"       
+  cerr << name << ": [flags] sdts-module\n"
        << "flags:\n"
-       << "\t-t\tjust print totals\n"       
-       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"       
+       << "\t-t\tjust print totals\n"
+       << "\t-s\tmnemonic -b (b(u)?i(8|16|24|32))|(bfp(32|64))\n"
        << "\t\tassign binary converter to subfield mnemonic\n";
 } // usage()
 
@@ -106,7 +106,7 @@ main( int argc, char** argv )
 
   char * ifs_name = "-";
 
-  
+
   // set up meaningful default converters for these subfields
 
   converters["X"] = sio_ConverterFactory::instance()->get( "BI32" );
@@ -123,10 +123,10 @@ main( int argc, char** argv )
       case 's':
 	converters[optarg] = '\0'; // Set to null
 	last_mnemonic = optarg;
-	break;	
+	break;
 
       case 'b':
-	assign_converter( converters, last_mnemonic, optarg ); 
+	assign_converter( converters, last_mnemonic, optarg );
 	break;
 
       case 'h':
@@ -201,7 +201,7 @@ main( int argc, char** argv )
       cerr << "\n" << argv[0] << ": bad data\n";
       exit( 1 );
     }
-               
+
   ifs.close();
 
   {
@@ -235,7 +235,7 @@ main( int argc, char** argv )
         cout << record << "\n";
      }
 
-     
+
   }
 
 

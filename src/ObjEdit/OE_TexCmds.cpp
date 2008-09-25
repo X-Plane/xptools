@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -66,7 +66,7 @@ static const char *	sTexCmds [] = {
 	"&New Texture",
 	"&Delete Texture",
 	0
-};	
+};
 
 static	const char	sTexKeys [] = {
 	'R',				xplm_ControlFlag,
@@ -96,8 +96,8 @@ static	void	TexCmdUpdateItems(void);
 void	TexCmdUpdateItems(void)
 {
 	bool	hasSel = !gSelection.empty();
-	bool	hasTex = gCurTexture != -1; 
-	
+	bool	hasTex = gCurTexture != -1;
+
 	XPLMEnableMenuItem(sTexCmdMenu, texCmd_ResetTexture, hasSel);
 	XPLMEnableMenuItem(sTexCmdMenu, texCmd_ClearTexture, hasSel);
 	XPLMEnableMenuItem(sTexCmdMenu, texCmd_SpecifyTexture, hasSel);
@@ -108,7 +108,7 @@ void	TexCmdUpdateItems(void)
 	XPLMEnableMenuItem(sTexCmdMenu, texCmd_Flip, hasSel);
 
 	XPLMEnableMenuItem(sTexCmdMenu, texCmd_ApplyProjection, hasSel);
-	
+
 	XPLMCheckMenuItem(sTexCmdMenu, texCmd_ApplyPlane, (gProjectionMgr->GetProjector() == projector_Plane) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sTexCmdMenu, texCmd_ApplyCylinder, (gProjectionMgr->GetProjector() == projector_Cylinder) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sTexCmdMenu, texCmd_ApplySphere, (gProjectionMgr->GetProjector() == projector_Sphere) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
@@ -119,7 +119,7 @@ void	TexCmdUpdateItems(void)
 void	SetupTexCmds(void)
 {
 	OE_RegisterNotifyFunc(TexCmdHandleNotification);
-	
+
 	sTexCmdMenu = XPLMCreateMenu("&Textures", NULL, 0, TexCmdHandler, NULL);
 	for (int n = 0; sTexCmds[n]; ++n)
 	{
@@ -127,7 +127,7 @@ void	SetupTexCmds(void)
 		if (sTexKeys[n*2])
 			XPLMSetMenuItemKey(sTexCmdMenu,n,sTexKeys[n*2],sTexKeys[n*2+1]);
 	}
-	
+
 	TexCmdUpdateItems();
 }
 
@@ -150,7 +150,7 @@ void	TexCmdHandleNotification(int inCatagory, int inMsg, void * inParam)
 			break;
 		}
 		break;
-	}	
+	}
 }
 
 void	TexCmdHandler(void * inMenuRef, void * inItemRef)
@@ -170,7 +170,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 			}
 			cmd.Commit();
 		}
-		break;	
+		break;
 	case texCmd_ClearTexture:
 		gRebuildStep = -1;
 		if (!gObjects.empty())
@@ -182,7 +182,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 			}
 			cmd.Commit();
 		}
-		break;	
+		break;
 	case texCmd_SpecifyTexture:
 		OE_Notifiable::Notify(catagory_Texture,	msg_DoRebuild, NULL);
 		break;
@@ -205,7 +205,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 			}
 			cmd.Commit();
 		}
-		break;	
+		break;
 	case texCmd_RotateCW:
 	case texCmd_RotateCCW:
 	case texCmd_Flip:
@@ -221,7 +221,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 			}
 			cmd.Commit();
 		}
-		break;	
+		break;
 	case texCmd_ApplyPlane:
 		gProjectionMgr->SetProjector(projector_Plane);
 		TexCmdUpdateItems();
@@ -264,7 +264,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 					newt.t2 = max(newt.t2, st->st[1]);
 				}
 			}
-			
+
 			newt.name = buf;
 			if (gCurTexture == -1)
 			{
@@ -277,7 +277,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 				advance(i, gCurTexture);
 				gTextures.insert(i, newt);
 				OE_Notifiable::Notify(catagory_Texture, msg_TexAdded, NULL);
-			}			
+			}
 		}
 		break;
 	case texCmd_DelTex:
@@ -291,7 +291,7 @@ void	TexCmdHandler(void * inMenuRef, void * inItemRef)
 				gCurTexture = gTextures.size() - 1;
 				OE_Notifiable::Notify(catagory_Texture, msg_TexDeleted, NULL);
 				OE_Notifiable::Notify(catagory_Texture, msg_TexSelectionChanged, NULL);
-			} else 			
+			} else
 				OE_Notifiable::Notify(catagory_Texture, msg_TexDeleted, NULL);
 		}
 		break;

@@ -242,7 +242,7 @@
 
         return axismap->design_points[j - 1] +
                  FT_MulDiv( t,
-                            axismap->design_points[j] - 
+                            axismap->design_points[j] -
                               axismap->design_points[j - 1],
                             1L );
       }
@@ -732,7 +732,7 @@
     FT_Memory    memory = face->root.memory;
 
 
-    T1_ToTokenArray( parser, axis_tokens, 
+    T1_ToTokenArray( parser, axis_tokens,
                      T1_MAX_MM_AXIS, &num_axis );
     if ( num_axis < 0 )
     {
@@ -1969,7 +1969,7 @@
 
     {
       FT_UInt  n;
-      
+
 
       for ( n = 0; n < T1_FIELD_COUNT; n++ )
         keyword_flags[n] = 0;
@@ -1989,7 +1989,7 @@
                         keyword_flags );
     if ( error )
       goto Exit;
- 
+
     /* ensure even-ness of `num_blue_values' */
     priv->num_blue_values &= ~1;
 

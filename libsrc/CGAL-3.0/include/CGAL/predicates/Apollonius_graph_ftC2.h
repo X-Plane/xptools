@@ -86,7 +86,7 @@ compare_ad_distances_test_ring_C2(const RT &x1, const RT &y1, const RT &w1,
 #endif
   must_be_filtered(x1);
 
-  // this function compares the distances of the point(x, y) from the 
+  // this function compares the distances of the point(x, y) from the
   // disks {(x1, y1), w1} and {(x2, y2), w2}
   RT D1 = CGAL::square(x1 - x) + CGAL::square(y1 - y);
   RT D2 = CGAL::square(x2 - x) + CGAL::square(y2 - y);
@@ -126,7 +126,7 @@ compare_ad_distances_test_sqrtf_C2(const RT &x1, const RT &y1, const RT &w1,
 #ifdef AG2_PROFILE_PREDICATES
   ag2_predicate_profiler::side_of_bisector_counter++;
 #endif
-  // this function compares the distances of the point(x, y) from the 
+  // this function compares the distances of the point(x, y) from the
   // disks {(x1, y1), w1} and {(x2, y2), w2}
 
   RT D1 = CGAL::square(x1 - x) + CGAL::square(y1 - y);
@@ -488,7 +488,7 @@ ad_infinite_edge_test_sqrtf_C2(const RT &x2, const RT &y2,
 			       const RT &w4,
 			       const RT &qx, const RT &qy,
 			       const RT &qw, bool b)
-{ 
+{
   must_be_filtered(x2);
 
   typedef Simple_cartesian<RT>                     Rep;

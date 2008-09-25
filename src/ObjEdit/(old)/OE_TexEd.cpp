@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -62,9 +62,9 @@ int kHandleWriteFlags[9][4] = {
 
 
 static	void	OE_TexEdNotify(int cat, int msg, void * param, void * ref);
-static	int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,    
-	                                   XPWidgetID           inWidget,    
-	                                   long                 inParam1,    
+static	int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
+	                                   XPWidgetID           inWidget,
+	                                   long                 inParam1,
 	                                   long                 inParam2);
 static	void	ResyncScrollBars(XPWidgetID);
 
@@ -86,7 +86,7 @@ XPWidgetID	OE_CreateTexEd(
 	XPSetWidgetProperty(hScrollbar, xpProperty_ScrollBarSliderPosition, 0);
 	XPSetWidgetProperty(hScrollbar, xpProperty_ScrollBarMin, 0);
 	XPSetWidgetProperty(hScrollbar, xpProperty_ScrollBarMax, 100);
-	
+
 	XPWidgetID pane = XPCreateCustomWidget(x1, y2-18, x2-16, y1+16, 1, "", 0, texEd, OE_TexEdFunc);
 
 	XPSetWidgetProperty(pane, kHScrollBarID, (long) hScrollbar);
@@ -98,7 +98,7 @@ XPWidgetID	OE_CreateTexEd(
 	OE_Register(OE_TexEdNotify, pane);
 
 	return texEd;
-}					
+}
 
 void	OE_TexEdNotify(int cat, int msg, void * param, void * ref)
 {
@@ -124,31 +124,31 @@ void	ResyncScrollBars(XPWidgetID me)
 				twidth /= kZoomFactor;
 				theight *= zoom;
 				theight /= kZoomFactor;
-				
+
 				int t, l, r, b;
 				XPGetWidgetGeometry(me, &l, &t, &r, &b);
-				
+
 				int hScrollDis = twidth - (r - l);
 				if (hScrollDis < 0) hScrollDis = 0;
 				int vScrollDis = theight - (t - b);
 				if (vScrollDis < 0) vScrollDis = 0;
-				
+
 				XPSetWidgetProperty((XPWidgetID) XPGetWidgetProperty(me, kHScrollBarID, NULL),
 					xpProperty_ScrollBarMax, hScrollDis);
 				XPSetWidgetProperty((XPWidgetID) XPGetWidgetProperty(me, kVScrollBarID, NULL),
 					xpProperty_ScrollBarMax, vScrollDis);
 			}
 		}
-	}		
+	}
 }
 
-int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,    
-	                                   XPWidgetID           inWidget,    
-	                                   long                 inParam1,    
+int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
+	                                   XPWidgetID           inWidget,
+	                                   long                 inParam1,
 	                                   long                 inParam2)
 {
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, true)) return 1;
-	
+
 		int		left, top, right, bottom;			// The dimensions of our total pane
 		int		cleft, ctop, cright, cbottom;		// The dimensions in which we actually show the texture
 		int 	tleft, ttop, tright, tbottom;		// The dimensions of the texture in screen coordinates, after zooming, etc.
@@ -157,24 +157,24 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 		int		twidth = 32, theight = 32;			// Texture raw dimensions
 		GLenum 	texID = 0; 							// The texture's OGL ID.
 		float	handles[9][2];						// 8 handles in window coords: TL, TR, BR, BL, then T, R, B, L, Center
-	
+
 	/*
 	 * Before we do much of anything, we have a ton of geometry data to calculate...
   	 * stuff we'll need both in drawing and mouse tracking.
   	 *
   	 */
-	
+
 	/* Calculate the locations of the window and its parts */
-		
+
 	hScroll = XPGetWidgetProperty((XPWidgetID) XPGetWidgetProperty(inWidget, kHScrollBarID, NULL), xpProperty_ScrollBarSliderPosition, NULL);
 	vScroll = XPGetWidgetProperty((XPWidgetID) XPGetWidgetProperty(inWidget, kVScrollBarID, NULL), xpProperty_ScrollBarSliderPosition, NULL);
-		
+
 	XPGetWidgetGeometry(inWidget, &left, &top, &right, &bottom);
-	cleft	 = left 	+ kMargin; 
-	cright	 = right 	- kMargin; 
-	cbottom	 = bottom 	+ kMargin; 
+	cleft	 = left 	+ kMargin;
+	cright	 = right 	- kMargin;
+	cbottom	 = bottom 	+ kMargin;
 	ctop	 = top 		- kMargin;
-	
+
 	/* Calculate the texture's location */
 	if (!gObjects.empty())
 	{
@@ -191,7 +191,7 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 	zoom = XPGetWidgetProperty(inWidget, kZoomID, NULL);
 	twidth *= zoom; twidth /= kZoomFactor;
 	theight *= zoom; theight /= kZoomFactor;
-	
+
 	/* Calculate control handle positions */
 	if (gCurTexture != -1)
 	{
@@ -216,7 +216,7 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 		handles[8][0] = InterpF(tleft, tright, InterpF(gTextures[gCurTexture].s1, gTextures[gCurTexture].s2, 0.5));
 		handles[8][1] = InterpF(tbottom, ttop, InterpF(gTextures[gCurTexture].t1, gTextures[gCurTexture].t2, 0.5));
 	}
-	
+
 	switch(inMessage) {
 	case xpMsg_Destroy:
 		OE_Unregister(OE_TexEdNotify, inWidget);
@@ -232,23 +232,23 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 			glVertex2i(right, bottom);
 			glVertex2i(left, bottom);
 			glEnd();
-			
+
 			// Now draw the texture if we have one.
 			if (texID)
 			{
 				XPLMBindTexture2d(texID, 0);
-				XPLMSetGraphicsState(0, 1, 0, 1, 1, 0, 0);				
-			} else 
+				XPLMSetGraphicsState(0, 1, 0, 1, 1, 0, 0);
+			} else
 				XPLMSetGraphicsState(0, 0, 0,    0, 0, 0, 0);
-						
+
 			glColor3f(1.0, 1.0, 1.0);
 			glBegin(GL_QUADS);
-			glTexCoord2f(0.0, 1.0);		glVertex2i(tleft, ttop);			
+			glTexCoord2f(0.0, 1.0);		glVertex2i(tleft, ttop);
 			glTexCoord2f(1.0, 1.0);		glVertex2i(tright, ttop);
 			glTexCoord2f(1.0, 0.0);		glVertex2i(tright, tbottom);
 			glTexCoord2f(0.0, 0.0);		glVertex2i(tleft, tbottom);
 			glEnd();
-			
+
 			if (gCurTexture != -1)
 			{
 				// Draw the outline of the texture
@@ -258,7 +258,7 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 				for (int n = 0; n < 4; ++n)
 					glVertex2fv(handles[n]);
 				glEnd();
-				
+
 				// Draw all 8 control handles
 				glColor3f(0.5, 1.0, 1.0);
 				glBegin(GL_QUADS);
@@ -270,7 +270,7 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 					glVertex2f(handles[n][0] - kHandleRad, handles[n][1] - kHandleRad);
 				}
 				glEnd();
-			}			
+			}
 		}
 		return 1;
 	case xpMsg_MouseDown:
@@ -294,35 +294,35 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 					}
 				}
 			}
-			
+
 			int curHandle = XPGetWidgetProperty(inWidget, kCurHandle, NULL);
 			if (curHandle != -1)
 			{
 				int	new_handle_x = MOUSE_X(inParam1) + XPGetWidgetProperty(inWidget, kHandleSlopX, NULL);
 				int	new_handle_y = MOUSE_Y(inParam1) + XPGetWidgetProperty(inWidget, kHandleSlopY, NULL);
-				
+
 				float s_loc = GetInterpF(tleft, tright, new_handle_x);
 				float t_loc = GetInterpF(tbottom, ttop, new_handle_y);
-				
+
 				if (curHandle == 8)
 				{
 					float s_dif = s_loc - InterpF(gTextures[gCurTexture].s1, gTextures[gCurTexture].s2, 0.5);
 					float t_dif = t_loc - InterpF(gTextures[gCurTexture].t1, gTextures[gCurTexture].t2, 0.5);
-					
+
 					gTextures[gCurTexture].s1 += s_dif;
 					gTextures[gCurTexture].s2 += s_dif;
 					gTextures[gCurTexture].t1 += t_dif;
 					gTextures[gCurTexture].t2 += t_dif;
-				} else {				
+				} else {
 					if (kHandleWriteFlags[curHandle][0])	gTextures[gCurTexture].s1 = s_loc;
 					if (kHandleWriteFlags[curHandle][1])	gTextures[gCurTexture].s2 = s_loc;
 					if (kHandleWriteFlags[curHandle][2])	gTextures[gCurTexture].t1 = t_loc;
 					if (kHandleWriteFlags[curHandle][3])	gTextures[gCurTexture].t2 = t_loc;
 				}
-								
+
 				OE_Notify(catagory_Texture, msg_TexSelectionEdited, NULL);
-			}						
-			
+			}
+
 			if (inMessage == xpMsg_MouseUp)
 				XPSetWidgetProperty(inWidget, kCurHandle, -1);
 		}
@@ -330,4 +330,4 @@ int		OE_TexEdFunc(		   XPWidgetMessage      inMessage,
 	default:
 		return 0;
 	}
-}	                                   
+}

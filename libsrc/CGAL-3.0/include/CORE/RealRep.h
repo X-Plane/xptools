@@ -1,17 +1,17 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: RealRep.h
  *
  * Synopsis: Internal Representation for Real
  *
- * Written by 
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -40,20 +40,20 @@ typedef Realbase_for<BigFloat> RealBigFloat;
 //  forward reference
 class Real;
 
-/// \class RealRep 
+/// \class RealRep
 /// \brief The internal representation of Real
 class RealRep
 {
 public:
   /// reference counter
   unsigned refCount;
-  
+
   /// most Significant Bit
   /** DEFINITION: MSB(0)=-\infty.  When E is not 0, and real, we define MSB(E)
-      to be the natural number m such that 2^{m} <= |E| < 2^{m+1}. Hence, 
+      to be the natural number m such that 2^{m} <= |E| < 2^{m+1}. Hence,
       MSB(E) is equal to floor(log_2(|E|)).  Intuitively, MSB is the position
       of the most significant bit in a binary rational representation of |E|.
-      Thus, the bit before the binary point is considered to be position 0, 
+      Thus, the bit before the binary point is considered to be position 0,
       the the bit after the binary point is position -1.  Thus,
                ... b_2 b_1 b_0.b_{-1} b_{-2} ...
       E.g., MSB(1) = 0,
@@ -73,7 +73,7 @@ public:
          If a <= 0 <= b, then    lMSB(E) = MSB(0) = -\infty
                                  uMSB(E) >=  max( MSB(a), MSB(b) ) */
   extLong mostSignificantBit;
-  
+
   /// \name Constructor and Destructor
   //@{
   /// Constructor
@@ -81,7 +81,7 @@ public:
   /// Destructor
   virtual ~RealRep() {}
   //@}
- 
+
   /// \name Cast Operators
   //@{
   virtual operator double() const = 0;
@@ -95,19 +95,19 @@ public:
   /** give decimal string representation */
   // Joaquin Grech 31/5/2003
   virtual std::string toString(long prec, bool sci) const = 0;
-  
+
   //@}
-  
+
   /// \name Approximation
   //@{
   virtual Real approx(const extLong&, const extLong&) const = 0;
   //@}
- 
+
   /// \name unary minus
   //@{
   virtual Real operator -() const = 0;
   //@}
-  
+
   /// \name addition
   //@{
   virtual Real operator +(const Real&) const = 0;
@@ -136,8 +136,8 @@ public:
   virtual Real mulBigInt(const RealBigInt&) const = 0;
   virtual Real mulBigFloat(const RealBigFloat&) const = 0;
   virtual Real mulBigRat(const RealBigRat&) const = 0;
-  //@}  
-  
+  //@}
+
   /// \name division
   //@{
   // virtual Real operator /(const Real&) const;
@@ -153,7 +153,7 @@ public:
   //@{
   virtual Real sqrt(const extLong&) const = 0;
   // sqrt with initial approximation
-  virtual Real sqrt(const extLong&, const BigFloat &) const = 0; 
+  virtual Real sqrt(const extLong&, const BigFloat &) const = 0;
   //@}
 
   /// \name equality
@@ -165,7 +165,7 @@ public:
   virtual bool eqlBigFloat(const RealBigFloat&) const = 0;
   virtual bool eqlBigRat(const RealBigRat&) const = 0;
   //@}
-  
+
   /// \name smaller than
   //@{
   virtual bool operator <(const Real&) const = 0;
@@ -175,7 +175,7 @@ public:
   virtual bool grtBigFloat(const RealBigFloat&) const = 0;
   virtual bool grtBigRat(const RealBigRat&) const = 0;
   //@}
-  
+
   //  builtin functions
   //@{
   virtual bool    isExact() const = 0;
@@ -204,7 +204,7 @@ public:
 
   /// Kernel
   T ker;
-  
+
   /// \name Constructor and Destructor
   //@{
   /// Constructor
@@ -212,7 +212,7 @@ public:
   /// Destructor
   ~Realbase_for() {}
   //@}
-  
+
   /// Access to ker
   const T& get_ker() const { return ker; }
 
@@ -232,12 +232,12 @@ public:
   //@{
   Real approx(const extLong&, const extLong&) const;
   //@}
-  
+
   /// \name unary minus
   //@{
   Real operator -() const;
   //@}
-  
+
   /// \name addition
   //@{
   Real operator +(const Real&) const;
@@ -247,7 +247,7 @@ public:
   Real addBigFloat(const RealBigFloat&) const;
   Real addBigRat(const RealBigRat&) const;
   //@}
-  
+
   /// \name subtraction
   //@{
   Real operator -(const Real&) const;
@@ -257,7 +257,7 @@ public:
   Real subBigFloat(const RealBigFloat&) const;
   Real subBigRat(const RealBigRat&) const;
   //@}
-  
+
   /// \name multiplication
   //@{
   Real operator *(const Real&) const;
@@ -277,13 +277,13 @@ public:
   Real divBigFloat(const RealBigFloat&, const extLong&) const;
   Real divBigRat(const RealBigRat&, const extLong&) const;
   //@}
-  
+
   /// \name squareroot
   //@{
   Real sqrt(const extLong&) const;
   Real sqrt(const extLong&,  const BigFloat&) const;
   //@}
-  
+
   /// \name equality
   //@{
   bool operator ==(const Real&) const;
@@ -293,7 +293,7 @@ public:
   bool eqlBigFloat(const RealBigFloat&) const;
   bool eqlBigRat(const RealBigRat&) const;
   //@}
-  
+
   /// \name smaller-than
   //@{
   bool operator <(const Real&) const;
@@ -303,7 +303,7 @@ public:
   bool grtBigFloat(const RealBigFloat&) const;
   bool grtBigRat(const RealBigRat&) const;
   //@}
-  
+
   /// \name builtin functions
   //@{
   bool    isExact() const;
@@ -311,7 +311,7 @@ public:
 	     extLong &v5p, extLong &v5m) const;
   extLong flrLgErr() const;
   extLong clLgErr() const;
-  bool    isZeroIn() const; 
+  bool    isZeroIn() const;
   unsigned long degree() const;
   unsigned long length() const;
   unsigned long height() const;
@@ -334,7 +334,7 @@ inline
 Realbase_for<long>::Realbase_for(const long &l)
   : ker(l)
 {
-  mostSignificantBit = ((ker != 0) ? extLong(flrLg(ker)) : CORE_negInfty); 
+  mostSignificantBit = ((ker != 0) ? extLong(flrLg(ker)) : CORE_negInfty);
   //  This computes the bit length of "ker" minus 1,
   //  i.e., floor(log_2(|ker|)) .
 }
@@ -373,7 +373,7 @@ Realbase_for<BigRat>::Realbase_for(const BigRat& R)
   if (ker.sign()) {
     mostSignificantBit = extLong(floorLg(x) - floorLg(y));
     x.abs();
-    if ((y << mostSignificantBit.asLong()) > x) 
+    if ((y << mostSignificantBit.asLong()) > x)
       mostSignificantBit = mostSignificantBit - 1;
   } else
     mostSignificantBit = CORE_negInfty;
@@ -388,7 +388,7 @@ Realbase_for<BigRat>::Realbase_for(const BigRat& R)
 
   // 5/16/02: fixed a bug in logic (Pion/Zilin/Chee)
   x.abs();
-  if ((y << mostSignificantBit.asLong()) > x) 
+  if ((y << mostSignificantBit.asLong()) > x)
        mostSignificantBit = mostSignificantBit - 1;
   */
 }

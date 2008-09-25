@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Arc.cpp
  *
  *  This source file is part of DIME.
@@ -58,7 +58,7 @@ static char entityName[] = "ARC";
   Constructor.
 */
 
-dimeArc::dimeArc() 
+dimeArc::dimeArc()
   : center( 0, 0, 0 ), radius( 0.0 ), startAngle( 0.0 ), endAngle( 2*M_PI )
 {
 }
@@ -70,7 +70,7 @@ dimeArc::copy(dimeModel * const model) const
 {
   dimeArc *a = new(model->getMemHandler()) dimeArc;
   if (!a) return NULL;
-  
+
   if (!this->copyRecords(a, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete a;
@@ -83,23 +83,23 @@ dimeArc::copy(dimeModel * const model) const
     a->endAngle = this->endAngle;
     a->copyExtrusionData(this);
   }
-  return a;  
+  return a;
 }
 
 //!
 
-bool 
+bool
 dimeArc::write(dimeOutput * const file)
 {
   this->preWrite(file);
-  
+
   file->writeGroupCode(10);
   file->writeDouble(this->center[0]);
   file->writeGroupCode(20);
   file->writeDouble(this->center[1]);
   file->writeGroupCode(30);
   file->writeDouble(this->center[2]);
-  
+
   file->writeGroupCode(40);
   file->writeDouble(this->radius);
 
@@ -113,7 +113,7 @@ dimeArc::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeArc::typeId() const
 {
   return dimeBase::dimeArcType;
@@ -121,7 +121,7 @@ dimeArc::typeId() const
 
 //!
 
-bool 
+bool
 dimeArc::handleRecord(const int groupcode,
 		     const dimeParam &param,
 		     dimeMemHandler * const memhandler)
@@ -155,7 +155,7 @@ dimeArc::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeArc::getRecord(const int groupcode,
 		  dimeParam &param,
 		  const int index) const
@@ -185,18 +185,18 @@ void
 dimeArc::print() const
 {
   fprintf(stderr,"ARC:\n");
-  fprintf(stderr, " center: %.3f %.3f %.3f\n", 
+  fprintf(stderr, " center: %.3f %.3f %.3f\n",
 	  center[0], center[1], center[2]);
   fprintf(stderr, " radius: %f\n", radius);
   fprintf(stderr, " start: %f, end: %f\n", startAngle, endAngle);
-  fprintf(stderr, " extrusionDir: %f %f %f\n", 
+  fprintf(stderr, " extrusionDir: %f %f %f\n",
 	  extrusionDir[0], extrusionDir[1], extrusionDir[2]);
   fprintf(stderr, " thickness: %f\n", thickness);
 }
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimeArc::extractGeometry(dimeArray <dimeVec3f> &verts,
 			dimeArray <int> &indices,
 			dimeVec3f &extrusionDir,
@@ -210,10 +210,10 @@ dimeArc::extractGeometry(dimeArray <dimeVec3f> &verts,
   extrusionDir = this->extrusionDir;
 
   // split the arc into lines
-  
+
   double end = this->endAngle;
   if (end < this->startAngle) end += 360.0;
-  
+
   double delta = DXFDEG2RAD(end - this->startAngle);
   if (delta == 0.0) {
 #ifndef NDEBUG
@@ -222,15 +222,15 @@ dimeArc::extractGeometry(dimeArray <dimeVec3f> &verts,
     end += 2*M_PI;
     //return dimeEntity::NONE;
   }
-  
+
   // find the number of this ARC that fits inside 2PI
   int parts = (int) DXFABS((2*M_PI)/delta);
-  
+
   // find # pts to use for arc
   // add one to avoid arcs with 0 line segments
   int numpts = ARC_NUMPTS / parts + 1;
   if (numpts > ARC_NUMPTS) numpts = ARC_NUMPTS;
-  
+
   double inc = delta / numpts;
   double rad = DXFDEG2RAD(this->startAngle);
   int i;
@@ -241,7 +241,7 @@ dimeArc::extractGeometry(dimeArray <dimeVec3f> &verts,
     rad += inc;
   }
   rad = DXFDEG2RAD(end);
-  
+
   verts.append(dimeVec3f(this->center.x + this->radius * cos(rad),
 			 this->center.y + this->radius * sin(rad),
 			 this->center.z));
@@ -255,7 +255,7 @@ int
 dimeArc::countRecords() const
 {
   int cnt = 1 + 3 + 1 + 2; // header + center point + radius + angles
-  
+
   return cnt + dimeExtrusionEntity::countRecords();
 }
 

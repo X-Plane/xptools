@@ -14,7 +14,7 @@ static void MyTrimRight( char * pszString )
 }
 
 CSQLDirect::CSQLDirect()
-{ 
+{
 	Init();
 }
 
@@ -72,14 +72,14 @@ int CSQLDirect::ExecuteSQL( LPCSTR svSQL )
 
 	if( m_hStmt!=NULL )
 		Close();
-	
+
         m_nResultColCount = -1;
 	m_psvSQL=new unsigned char[ strlen( svSQL )+1 ];
 	strcpy( (char*)m_psvSQL,svSQL );
 
 	int nRet=SQLExecDirect( m_hStmt,m_psvSQL,SQL_NTS );
 
-	if( ( nRet!=SQL_SUCCESS && nRet!=SQL_SUCCESS_WITH_INFO ) && !m_bSupressErrors ) 
+	if( ( nRet!=SQL_SUCCESS && nRet!=SQL_SUCCESS_WITH_INFO ) && !m_bSupressErrors )
 		DisplayError();
 
 	return nRet;
@@ -113,10 +113,10 @@ int CSQLDirect::Connect( LPCSTR svSource )
          delete psvUser;
          delete psvPassword;
       }
-      else 
+      else
          DisplayError();
    }
-   else 
+   else
       DisplayError();
 
    return nConnect;
@@ -148,13 +148,13 @@ void CSQLDirect::GetError( const char *& svMsg )
 	svMsg=(const char *) m_psvErrorMsg;
 }
 
-void CSQLDirect::KillCols( void ) 
+void CSQLDirect::KillCols( void )
 {
    for( int nItem=0;nItem< m_nColumn; nItem++ ) {
       delete m_papoColArray[nItem];
    }
 
-   if( m_papoColArray )        
+   if( m_papoColArray )
       free( m_papoColArray );
 
    m_papoColArray = NULL;
@@ -231,7 +231,7 @@ void CSQLDirect::AddColumn( int nCol,const char * svData )
 {
     m_nColumn++;
 
-    m_papoColArray = (CSQLColumn **) 
+    m_papoColArray = (CSQLColumn **)
        realloc(m_papoColArray, sizeof(void*) * m_nColumn );
 
    m_papoColArray[m_nColumn-1] = new CSQLColumn;
@@ -263,7 +263,7 @@ int CSQLDirect::Fetch( void )
    // Fetch the next row.
    int nRet=SQLFetch( m_hStmt );
 
-   if( ( nRet!=SQL_SUCCESS && nRet!=SQL_SUCCESS_WITH_INFO ) 
+   if( ( nRet!=SQL_SUCCESS && nRet!=SQL_SUCCESS_WITH_INFO )
             && !m_bSupressErrors )
       DisplayError();
 
@@ -287,12 +287,12 @@ int CSQLDirect::GetColumnCount()
 {
    if( m_nResultColCount == -1 )
    {
-      short nMaxCols=0; 
-      SQLNumResultCols(m_hStmt,&nMaxCols); 
+      short nMaxCols=0;
+      SQLNumResultCols(m_hStmt,&nMaxCols);
       m_nResultColCount = nMaxCols;
    }
 
-   return m_nResultColCount; 
+   return m_nResultColCount;
 }
 
 int CSQLDirect::GetColumnID( const char * svField,const char * svTable )
@@ -353,7 +353,7 @@ CSQLColumn* CSQLDirect::GetColumn( int nCol )
 
 	if( nIndex==-1 )
 		return 0;
-	
+
 	return m_papoColArray[nIndex];
 }
 

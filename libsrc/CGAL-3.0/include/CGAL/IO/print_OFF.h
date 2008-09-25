@@ -29,7 +29,7 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Polyhedron>
-void print_polyhedron_with_header_OFF( std::ostream& out, 
+void print_polyhedron_with_header_OFF( std::ostream& out,
                                        const Polyhedron& P,
                                        const File_header_OFF& header) {
     File_writer_OFF  writer( header);
@@ -40,7 +40,7 @@ void print_polyhedron_with_header_OFF( std::ostream& out,
 
 
 template <class Polyhedron>
-void print_polyhedron_OFF( std::ostream& out, 
+void print_polyhedron_OFF( std::ostream& out,
                            const Polyhedron& P,
                            bool verbose = false) {
     File_header_OFF header( verbose);

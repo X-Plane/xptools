@@ -45,50 +45,50 @@ operator<<(Window_stream& ws,
 {
   typedef typename Polygon_2<Traits,Container>::Edge_const_circulator EI;
   typedef typename Traits::Point_2  Point_2;
-  
+
   EI e = polygon.edges_circulator();
-  
+
 #if defined(CGAL_USE_CGAL_WINDOW)
   CGAL::color cl = ws.get_fill_color();
-  
-  if (cl != CGAL::invisible) { 
+
+  if (cl != CGAL::invisible) {
     std::list<CGAL::window_point> LP;
-      
+
     if (e != NULL) {
      EI end = e;
      do {
       Point_2 p = (*e).source();
       double x = CGAL::to_double(p.x());
-      double y = CGAL::to_double(p.y());      
-     
+      double y = CGAL::to_double(p.y());
+
       LP.push_back(CGAL::window_point(x,y));
       ++e;
       } while (e != end);
     }
-    
-    ws.draw_filled_polygon(LP,cl);    
+
+    ws.draw_filled_polygon(LP,cl);
   }
-#else  
+#else
   leda_color cl = ws.get_fill_color();
-  
+
   if (cl != leda_invisible) { // draw filled polygon ...
     leda_list<leda_point> LP;
-      
+
     if (e != NULL) {
      EI end = e;
      do {
       Point_2 p = (*e).source();
       double x = CGAL::to_double(p.x());
-      double y = CGAL::to_double(p.y());      
-     
+      double y = CGAL::to_double(p.y());
+
       LP.append(leda_point(x,y));
       ++e;
       } while (e != end);
     }
-    
-    ws.draw_filled_polygon(LP,cl);    
+
+    ws.draw_filled_polygon(LP,cl);
   }
-#endif  
+#endif
   else {
   if (e != NULL) {
     EI end = e;
@@ -99,7 +99,7 @@ operator<<(Window_stream& ws,
       } while (e != end);
     }
   }
-  
+
   return ws;
 }
 

@@ -35,7 +35,7 @@ namespace CGAL {
 class Qt_widget_layer : public QObject {
   Q_OBJECT
 public:
-  Qt_widget_layer(QObject* parent = 0, const char* name = 0) 
+  Qt_widget_layer(QObject* parent = 0, const char* name = 0)
     : QObject(parent, name), does_eat_events(false), active(false){};
 
   // Event handlers

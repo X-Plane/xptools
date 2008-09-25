@@ -1,5 +1,5 @@
 /*
- * Copyright 1994 Christopher Seiwald.  All rights reserved. 
+ * Copyright 1994 Christopher Seiwald.  All rights reserved.
  *
  * This file is part of Jam - see jam.c for Copyright information.
  */
@@ -14,7 +14,7 @@
  *	[a-z]	any single character in the range a-z
  *	[^a-z]	any single character not in the range a-z
  *	\x	match x
- *	
+ *
  * External functions:
  *
  *	glob() - match a string against a simple pattern
@@ -75,7 +75,7 @@ glob(
 	case '*':
 		here = s;
 
-		while( *s ) 
+		while( *s )
 			s++;
 
 		/* Try to match the rest of the pattern in a recursive */
@@ -117,16 +117,16 @@ glob(
  */
 
 static void
-globchars( 
-	char *s, 
-	char *e, 
+globchars(
+	char *s,
+	char *e,
 	char *b )
 {
 	int neg = 0;
 
 	memset( b, '\0', BITLISTSIZE  );
 
-	if( *s == '^') 
+	if( *s == '^')
 		neg++, s++;
 
 	while( s < e )
@@ -143,7 +143,7 @@ globchars(
 			b[ c/8 ] |= (1<<(c%8));
 		}
 	}
-			
+
 	if( neg )
 	{
 		int i;

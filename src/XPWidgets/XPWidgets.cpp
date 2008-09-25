@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -53,9 +53,9 @@ typedef	std::map<XPWidgetPropertyID, long>	XPPropertyTable;
 // This is the info in an actual widget.
 
 struct	XPWidgetInfo {
-	
+
 	XPCallbackList			callbacks;
-	
+
 	// Our geometry.
 	int						left;
 	int						top;
@@ -72,10 +72,10 @@ struct	XPWidgetInfo {
 	int						visible;
 
 	XPLMWindowID			root;
-	
+
 	XPWidgetID				parent;
 	XPWidgetList			children;
-	
+
 	XPPropertyTable			properties;
 	std::string				descriptor;
 
@@ -114,14 +114,14 @@ XPWidgetID		XPCreateWidget(
 						XPWidgetClass	inClass)
 {
 		XPWidgetFunc_t	func;
-	
+
 	func = XPGetWidgetClassFunc(inClass);
 	if (func == NULL)
 		return NULL;
-		
+
 	return XPCreateCustomWidget(inLeft, inTop, inRight, inBottom,
 		inVisible, inDescriptor, inIsRoot, inContainer, func);
-}						
+}
 
 XPWidgetID		XPCreateCustomWidget(
 						int				inLeft,
@@ -135,10 +135,10 @@ XPWidgetID		XPCreateCustomWidget(
 						XPWidgetFunc_t  inCallback)
 {
 		XPLMWindowID	rootID = NULL;
-		
+
 	if (inIsRoot && (inContainer != NULL))
 		return NULL;
-		
+
 	if (inIsRoot)
 	{
 		rootID = XPLMCreateWindow(inLeft, inTop, inRight, inBottom, inVisible,
@@ -146,9 +146,9 @@ XPWidgetID		XPCreateCustomWidget(
 		if (rootID == NULL)
 			return NULL;
 	}
-		
+
 	XPWidgetInfo *		info = new XPWidgetInfo;
-	
+
 	info->callbacks.insert(info->callbacks.begin(), inCallback);
 	info->left = inLeft;
 	info->top = inTop;
@@ -162,16 +162,16 @@ XPWidgetID		XPCreateCustomWidget(
 		info->descriptor = std::string(inDescriptor);
 
 	XPLMSetWindowRefCon(rootID, info);
-	
+
 	gWidgets.insert(info);
-	
+
 	XPSendMessageToWidget((XPWidgetID) info, xpMsg_Create, xpMode_Direct, 0/*creating*/, 0);
 
 	if (inContainer != NULL)
 		XPPlaceWidgetWithin((XPWidgetID) info, inContainer);
 
 	return (XPWidgetID)	info;
-}						
+}
 
 
 void			XPDestroyWidget(
@@ -185,12 +185,12 @@ void			XPDestroyWidget(
 	XPWidgetPtr	me = XPFindWidgetInfo(inWidget, &iter);
 	if (me == NULL)
 		return;
-	
+
 	XPLoseKeyboardFocus(inWidget);
 
 	if (me->parent != NULL)
 		XPPlaceWidgetWithin(inWidget, NULL);
-	
+
 	XPWidgetList	children = me->children;
 	for (XPWidgetList::iterator iter2 = children.begin(); iter2 != children.end(); ++iter2)
 		XPPlaceWidgetWithin(*iter2, NULL/*no parent*/);
@@ -204,20 +204,20 @@ void			XPDestroyWidget(
 	}
 
 	XPSendMessageToWidget(inWidget, xpMsg_Destroy, xpMode_DirectAllCallbacks, recursive/*delete by par*/, 0);
-	
+
 	if (me->root != NULL)
 		XPLMDestroyWindow(me->root);
-	
+
 	gWidgets.erase(iter);
-	
+
 	if (gMouseWidget == inWidget)
 		gMouseWidget = NULL;
-	
+
 	delete me;
 }
-						
+
 int				XPSendMessageToWidget(
-						XPWidgetID		inWidget,				
+						XPWidgetID		inWidget,
 						XPWidgetMessage	inMessage,
 						XPDispatchMode	inMode,
 						long			inParam1,
@@ -228,24 +228,24 @@ int				XPSendMessageToWidget(
 
 	if (me == NULL)
 		return 0;
-	
-		int handled = 0;	
-	
+
+		int handled = 0;
+
 	for (XPCallbackList::iterator iter = me->callbacks.begin(); iter !=
 		me->callbacks.end(); ++iter)
 	{
 		int	result = (*iter)(inMessage, inWidget, inParam1, inParam2);
-		
+
 		if (result)
 			handled = 1;
-			
+
 		if (inMode == xpMode_Once)
 			return handled;
-			
+
 		if (result && (inMode != xpMode_DirectAllCallbacks))
 			break;
 	}
-	
+
 	switch(inMode) {
 	case xpMode_Direct:
 	case xpMode_DirectAllCallbacks:
@@ -256,7 +256,7 @@ int				XPSendMessageToWidget(
 		else
 			return handled;
 	case xpMode_Recursive:
-		for (childIter = me->children.begin(); 
+		for (childIter = me->children.begin();
 			childIter != me->children.end(); ++childIter)
 		{
 			XPSendMessageToWidget(*childIter, inMessage, inMode, inParam1, inParam2);
@@ -266,20 +266,20 @@ int				XPSendMessageToWidget(
 	// and industrial drawing mechanism...see XPPaintOneWidgetRecursive.
 #if 0
 	case xpMode_RecursiveVisible:
-		for (childIter = me->children.begin(); 
+		for (childIter = me->children.begin();
 			childIter != me->children.end(); ++childIter)
 		{
 			XPWidgetInfo * child = XPFindWidgetInfo(*childIter, NULL);
 			if ((child != NULL) && (child->visible))
-				XPSendMessageToWidget(*childIter, inMessage, inMode, inParam1, inParam2);		
+				XPSendMessageToWidget(*childIter, inMessage, inMode, inParam1, inParam2);
 		}
 		return handled;
-#endif		
+#endif
 	default:
 		return handled;
 	}
-}						
-						
+}
+
 #pragma mark -
 
 void			XPPlaceWidgetWithin(
@@ -289,10 +289,10 @@ void			XPPlaceWidgetWithin(
 	XPWidgetInfo *	child = XPFindWidgetInfo(inSubWidget, NULL);
 	if (child == NULL)
 		return;
-	
+
 	XPWidgetInfo *	oldParent = XPFindWidgetInfo(child->parent, NULL);
 	XPWidgetInfo *	newParent = XPFindWidgetInfo(inContainer, NULL);
-	
+
 	if (oldParent)
 	{
 		XPSendMessageToWidget(child->parent, xpMsg_LoseChild, xpMode_Direct,
@@ -302,9 +302,9 @@ void			XPPlaceWidgetWithin(
 		if (iter != oldParent->children.end())
 			oldParent->children.erase(iter);
 	}
-	
+
 	XPInvalidateExposureCache(inSubWidget);
-	
+
 	XPSendMessageToWidget(inSubWidget, xpMsg_AcceptParent, xpMode_Direct,
 				(long) inContainer, 0);
 	child->parent = inContainer;
@@ -324,7 +324,7 @@ int			XPCountChildWidgets(
 		return 0;
 	return me->children.size();
 }
-						
+
 XPWidgetID		XPGetNthChildWidget(
 						XPWidgetID		inWidget,
 						long			inIndex)
@@ -336,9 +336,9 @@ XPWidgetID		XPGetNthChildWidget(
 	{
 		return NULL;
 	}
-	
+
 	return me->children[inIndex];
-}						
+}
 
 XPWidgetID		XPGetParentWidget(
 						XPWidgetID		inWidget)
@@ -346,7 +346,7 @@ XPWidgetID		XPGetParentWidget(
 	XPWidgetInfo *	me = XPFindWidgetInfo(inWidget, NULL);
 
 	return (me == NULL) ? NULL : me->parent;
-}						
+}
 
 void			XPShowWidget(
 						XPWidgetID		inWidget)
@@ -372,7 +372,7 @@ void			XPHideWidget(
 			XPLMSetWindowIsVisible(me->root, 0);
 		XPSendMessageToWidget(inWidget, xpMsg_Hidden, xpMode_UpChain, (long) inWidget, 0);
 	}
-}						
+}
 
 int				XPIsWidgetVisible(
 						XPWidgetID		inWidget)
@@ -389,7 +389,7 @@ int				XPIsWidgetVisible(
 		// We're not hidden and we do have a parent, crawl up the chain.
 		me = XPFindWidgetInfo(me->parent, NULL);
 	}
-}						
+}
 
 XPWidgetID		XPFindRootWidget(XPWidgetID inWidget)
 {
@@ -414,24 +414,24 @@ void			XPBringRootWidgetToFront(
 		else
 			XPBringRootWidgetToFront(me->parent);
 	}
-}						
+}
 
 int			XPIsWidgetInFront(
 						XPWidgetID		inWidget)
 {
 	XPWidgetInfo *	me = XPFindWidgetInfo(inWidget, NULL);
 	while (me != NULL)
-	{	
+	{
 		if (me->root != NULL)
 		{
 			return XPLMIsWindowInFront(me->root);
-		}	
-			
+		}
+
 		me = XPFindWidgetInfo(me->parent, NULL);
 	}
 	return 0;
-}						
-						
+}
+
 void			XPGetWidgetGeometry(
 						XPWidgetID		inWidgetID,
 						int *			outLeft,
@@ -446,7 +446,7 @@ void			XPGetWidgetGeometry(
 	if (outTop)		*outTop = me->top;
 	if (outRight)	*outRight = me->right;
 	if (outBottom)	*outBottom = me->bottom;
-}						
+}
 
 void			XPSetWidgetGeometry(
 						XPWidgetID 		inWidgetID,
@@ -464,21 +464,21 @@ void			XPSetWidgetGeometry(
 	deltas.dy = inBottom - me->bottom;
 	deltas.dwidth = (inRight - inLeft) - (me->right - me->left);
 	deltas.dheight = (inTop - inBottom) - (me->top - me->bottom);
-		
+
 	me->left = inLeft;
 	me->top = inTop;
 	me->right = inRight;
 	me->bottom = inBottom;
-	
+
 	if (me->root != NULL)
 		XPLMSetWindowGeometry(me->root, inLeft, inTop, inRight, inBottom);
-	
+
 	XPInvalidateExposureCache(inWidgetID);
-	
-	XPSendMessageToWidget(inWidgetID, xpMsg_Reshape, xpMode_UpChain, 
+
+	XPSendMessageToWidget(inWidgetID, xpMsg_Reshape, xpMode_UpChain,
 		(long) inWidgetID, (long) &deltas);
-}						
- 
+}
+
 XPWidgetID		XPGetWidgetForLocation(
 						XPWidgetID		inContainer,
 						int				x,
@@ -489,7 +489,7 @@ XPWidgetID		XPGetWidgetForLocation(
 	XPWidgetInfo *	me = XPFindWidgetInfo(inContainer, NULL);
 	if (me == NULL)
 		return NULL;
-	
+
 	if ((x < me->left) ||
 		(x > me->right) ||
 		(y < me->bottom) ||
@@ -498,7 +498,7 @@ XPWidgetID		XPGetWidgetForLocation(
 	{
 		return NULL;
 	}
-	
+
 	if (inRecursive)
 	{
 		for (XPWidgetList::reverse_iterator iter = me->children.rbegin(); iter
@@ -522,7 +522,7 @@ void			XPGetWidgetExposedGeometry(
 	XPWidgetPtr me = XPFindWidgetInfo(inWidgetID, NULL);
 	if (me == NULL)
 		return;
-		
+
 	if (!me->vis_valid)
 	{
 		XPWidgetID	root = XPFindRootWidget(inWidgetID);
@@ -542,7 +542,7 @@ void			XPGetWidgetExposedGeometry(
 			return;
 		}
 	}
-	
+
 	// Now we're valid and in a rooted hierarchy, etc.
 	if (outLeft)
 		*outLeft = me->vis_left;
@@ -552,7 +552,7 @@ void			XPGetWidgetExposedGeometry(
 		*outRight = me->vis_right;
 	if (outBottom)
 		*outBottom = me->vis_bottom;
-}						
+}
 
 #pragma mark -
 
@@ -577,9 +577,9 @@ long			XPGetWidgetDescriptor(
 		return 0;
 	if (outDescriptor != NULL)
 		strncpy(outDescriptor, me->descriptor.c_str(), inMaxDescLength);
-	
+
 	return me->descriptor.size();
-}						
+}
 
 void			XPSetWidgetProperty(
 						XPWidgetID			inWidget,
@@ -589,11 +589,11 @@ void			XPSetWidgetProperty(
 	XPWidgetInfo *	me = XPFindWidgetInfo(inWidget, NULL);
 	if (me == NULL)
 		return;
-	
-	me->properties[inProperty] = inValue;	
+
+	me->properties[inProperty] = inValue;
 	XPSendMessageToWidget(inWidget, xpMsg_PropertyChanged, xpMode_Direct, inProperty, inValue);
-}						
-						
+}
+
 long			XPGetWidgetProperty(
 						XPWidgetID			inWidget,
 						XPWidgetPropertyID	inProperty,
@@ -606,13 +606,13 @@ long			XPGetWidgetProperty(
 			*inExists = 0;
 		return 0;
 	}
-	
+
 	XPPropertyTable::iterator iter = me->properties.find(inProperty);
 	if (inExists)
 		*inExists = (iter != me->properties.end());
-	
+
 	return (iter == me->properties.end()) ? 0 : iter->second;
-}						
+}
 
 #pragma mark -
 
@@ -622,11 +622,11 @@ XPWidgetID		XPSetKeyboardFocus(
 	// Short circuit
 	if (inWidget == gFocusWidget)
 		return gFocusWidget;
-		
+
 	XPWidgetInfo *	me = XPFindWidgetInfo(inWidget, NULL);
 	if (me == NULL)
 		return NULL;
-		
+
 	XPWidgetID	root = XPFindRootWidget(inWidget);
 	if (root == NULL)
 		return NULL;
@@ -635,7 +635,7 @@ XPWidgetID		XPSetKeyboardFocus(
 	if (rootInfo == NULL)
 		return NULL;
 
-			
+
 	// First we have to preflight whether the widget wants focus.
 	long	result = XPSendMessageToWidget(inWidget, xpMsg_KeyTakeFocus, xpMode_Direct,
 					0/*explicit keybd focus*/, 0);
@@ -643,7 +643,7 @@ XPWidgetID		XPSetKeyboardFocus(
 	// If the widget don't want it, the widget don't get it
 	if (result == 0)
 		return NULL;
-		
+
 	if (gFocusWidget != NULL)
 	{
 		// Someone else is losing focus for us to get it.
@@ -656,9 +656,9 @@ XPWidgetID		XPSetKeyboardFocus(
 	XPLMTakeKeyboardFocus(rootInfo->root);
 	gInternalFocusChange = 0;
 	gFocusWidget = inWidget;
-	
+
 	return inWidget;
-}						
+}
 
 
 void			XPLoseKeyboardFocus(
@@ -670,7 +670,7 @@ void			XPLoseKeyboardFocus(
 	XPWidgetInfo *	me = XPFindWidgetInfo(inWidget, NULL);
 	if (me == NULL)
 		return;
-		
+
 	// Ok, this widget wants to lose focus...first tell it what happened.
 	XPSendMessageToWidget(inWidget, xpMsg_KeyLoseFocus, xpMode_Direct, 0/*commanded*/, 0);
 
@@ -685,7 +685,7 @@ void			XPLoseKeyboardFocus(
 			gFocusWidget = (XPWidgetID) me;
 			return;
 		}
-		
+
 		// This guy doesn't want it.  If he's the root we're done.
 		if (me->root != NULL)
 		{
@@ -696,20 +696,20 @@ void			XPLoseKeyboardFocus(
 			gFocusWidget = NULL;
 			return;
 		}
-		
+
 		// Try the next guy
-		me = XPFindWidgetInfo(me->parent, NULL);	
+		me = XPFindWidgetInfo(me->parent, NULL);
 	}
-	
+
 	// If no one is going to have focus, and we had focus, some root
 	/// must have had the XPLMDisplay focus.  Best return it to x-plane!
-	gFocusWidget = NULL;	
+	gFocusWidget = NULL;
 	gInternalFocusChange = 1;
 	XPLMTakeKeyboardFocus(0);	// Back to x-plane
 	gInternalFocusChange = 0;
-	gFocusWidget = NULL;	
+	gFocusWidget = NULL;
 }
-						
+
 XPWidgetID		XPGetWidgetWithFocus(void)
 {
 	return	gFocusWidget;
@@ -725,15 +725,15 @@ void			XPAddWidgetCallback(
 	if (me == NULL)
 		return;
 	me->callbacks.insert(me->callbacks.begin(), inNewCallback);
-	
+
 	XPSendMessageToWidget(inWidget, xpMsg_Create, xpMode_Once, 1/*subclassing*/, 0);
-}						
-						
+}
+
 XPWidgetFunc_t			XPGetWidgetClassFunc(
 						XPWidgetClass		inWidgetClass)
 {
 	return gStandardWidgets[inWidgetClass];
-}						
+}
 
 #pragma mark -
 
@@ -759,18 +759,18 @@ void			XPWidgetDraw(XPLMWindowID inWindowID, void * inRefcon)
 {
 	XPWidgetID	me = (XPWidgetID) inRefcon;
 	XPRebuildExposureCache(me);
-	
+
 	XPPaintOneWidgetRecursive(me);
 }
 
 // This is the keyboard handler.  It dispatches keys and also defocuses
 // widgets when keyboard focus is stolen.
 
-void			XPWidgetKey(XPLMWindowID inWindowID, 
-							char inKey, 
-							XPLMKeyFlags inFlags, 
+void			XPWidgetKey(XPLMWindowID inWindowID,
+							char inKey,
+							XPLMKeyFlags inFlags,
 							char inVirtualKey,
-							void * inRefcon, 
+							void * inRefcon,
 							int losingFocus)
 {
 	if (losingFocus)
@@ -798,7 +798,7 @@ void			XPWidgetKey(XPLMWindowID inWindowID,
 	}
 }
 
-// The XPLMDisplay mouse handler.  It finds the widget responsible and always 
+// The XPLMDisplay mouse handler.  It finds the widget responsible and always
 // dispatches to that one.
 
 int			XPWidgetMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus inMouse, int button, void * inRefcon)
@@ -840,7 +840,7 @@ int			XPWidgetMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus inMou
 			}
 		}
 		break;
-	case xplm_MouseDrag:	
+	case xplm_MouseDrag:
 		if (gMouseWidget != NULL)
 			XPSendMessageToWidget(gMouseWidget, xpMsg_MouseDrag, xpMode_Direct, (long) &st, 0);
 		break;
@@ -866,7 +866,7 @@ void			XPRebuildExposureCache(XPWidgetID inWidget)
 	if (!me->vis_valid)
 	{
 		XPWidgetPtr	par = XPFindWidgetInfo(me->parent, NULL);
-		
+
 		// BAS - this is a hack to use ourselves as a parent...
 		// this effectively leaves the exposure cache of parent widgets wide open.
 		int	l, r, t, b;
@@ -884,7 +884,7 @@ void			XPRebuildExposureCache(XPWidgetID inWidget)
 			b = WIDGET_TMAX(me->bottom, par->vis_bottom);
 			t = WIDGET_TMIN(me->top, par->vis_top);
 		}
-		
+
 		if ((l != me->vis_left) ||
 			(r != me->vis_right) ||
 			(t != me->vis_top) ||
@@ -898,8 +898,8 @@ void			XPRebuildExposureCache(XPWidgetID inWidget)
 		}
 		me->vis_valid = 1;
 	}
-	
-	for (XPWidgetList::iterator iter = me->children.begin(); 
+
+	for (XPWidgetList::iterator iter = me->children.begin();
 		iter != me->children.end(); ++iter)
 	{
 		XPRebuildExposureCache(*iter);
@@ -913,7 +913,7 @@ void			XPInvalidateExposureCache(XPWidgetID inWidget)
 	XPWidgetPtr me = XPFindWidgetInfo(inWidget, NULL);
 	if (me == NULL)
 		return;
-	
+
 	me->vis_valid = 0;
 	for (XPWidgetList::iterator iter = me->children.begin();
 		iter != me->children.end(); ++iter)
@@ -929,17 +929,17 @@ void 			XPPaintOneWidgetRecursive(XPWidgetID	inWidget)
 	XPWidgetPtr me = XPFindWidgetInfo(inWidget, NULL);
 	if (me == NULL)
 		return;
-		
+
 	if ((!me->visible)
-#if !NO_ROUGH_WIDGET_CULL	
+#if !NO_ROUGH_WIDGET_CULL
 		|| (me->vis_right <= me->vis_left)
 		|| (me->vis_top <= me->vis_bottom)
-#endif		
+#endif
 		)
 	{
 		return;
-	}		
-		
+	}
+
 	if (!XPSendMessageToWidget(inWidget, xpMsg_Paint, xpMode_Direct, 0, 0))
 	{
 		if (XPGetWidgetProperty(inWidget, xpProperty_Clip, NULL))

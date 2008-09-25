@@ -10,37 +10,37 @@
 
 #include "MFFloat.h"
 
-MFFloat::MFFloat() 
+MFFloat::MFFloat()
 {
 	setType(fieldTypeMFFloat);
 	InitializeJavaIDs();
 }
 
-void MFFloat::InitializeJavaIDs() 
+void MFFloat::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFFloat::addValue(float value) 
+void MFFloat::addValue(float value)
 {
 	SFFloat *sfvalue = new SFFloat(value);
 	add(sfvalue);
 }
 
-void MFFloat::addValue(SFFloat *sfvalue) 
+void MFFloat::addValue(SFFloat *sfvalue)
 {
 	add(sfvalue);
 }
 
-void MFFloat::insertValue(int index, float value) 
+void MFFloat::insertValue(int index, float value)
 {
 	SFFloat *sfvalue = new SFFloat(value);
 	insert(sfvalue, index);
 }
 
-float MFFloat::get1Value(int index) 
+float MFFloat::get1Value(int index)
 {
 	SFFloat *sfvalue = (SFFloat *)getObject(index);
 	if (sfvalue)
@@ -49,7 +49,7 @@ float MFFloat::get1Value(int index)
 		return 0.0f;
 }
 
-void MFFloat::set1Value(int index, float value) 
+void MFFloat::set1Value(int index, float value)
 {
 	SFFloat *sfvalue = (SFFloat *)getObject(index);
 	if (sfvalue)
@@ -84,12 +84,12 @@ void MFFloat::setValue(int size, float values[])
 //	Output
 ////////////////////////////////////////////////
 
-void MFFloat::outputContext(ostream& printStream, char *indentString) 
+void MFFloat::outputContext(ostream& printStream, char *indentString)
 {
 	for (int n=0; n<getSize(); n++) {
 		if (n < getSize()-1)
 			printStream << indentString << get1Value(n) << "," << endl;
-		else	
+		else
 			printStream << indentString << get1Value(n) << endl;
 	}
 }
@@ -210,7 +210,7 @@ jobject MFFloat::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		jfloat value = get1Value(n);
@@ -225,7 +225,7 @@ jobject MFFloat::toJavaObject(int bConstField) {
 //	MFFloat::setValue
 ////////////////////////////////////////////////
 
-void MFFloat::setValue(jobject field, int bConstField) 
+void MFFloat::setValue(jobject field, int bConstField)
 {
 	assert(field);
 	JNIEnv		*jniEnv			= getJniEnv();

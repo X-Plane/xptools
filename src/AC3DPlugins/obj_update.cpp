@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,7 +59,7 @@ static void obj8_update_light(ACObject *obj)
 	Point3	rgb = { 1.0, 1.0, 1.0 };
 	char * token;
 	char * title = ac_object_get_name(obj);
-	
+
 	token = strstr(title, "LIGHT_NAMED");
 	if (token)
 	{
@@ -74,7 +74,7 @@ static void obj8_update_light(ACObject *obj)
 	{
 		char lname[256];
 		float params[9];
-		sscanf(token,"LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", 
+		sscanf(token,"LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s",
 			params  , params+1, params+2,
 			params+3, params+4, params+5,
 			params+6, params+7, params+8, lname);
@@ -88,10 +88,10 @@ static void obj8_update_light(ACObject *obj)
 		OBJ_set_light_t1(obj, params[6]);
 		OBJ_set_light_s2(obj, params[7]);
 		OBJ_set_light_t2(obj, params[8]);
-		OBJ_set_light_dataref(obj, lname);		
+		OBJ_set_light_dataref(obj, lname);
 		return;
 	}
-	
+
 	token = strstr(title, "_RGB=");
 	if (token != NULL)
 	{
@@ -106,7 +106,7 @@ static void obj8_update_light(ACObject *obj)
 				OBJ_set_light_blue(obj, rgb.x);
 			}
 		}
-	}	
+	}
 }
 
 void obj8_split_anim(ACObject * obj)
@@ -129,13 +129,13 @@ void obj8_split_anim(ACObject * obj)
 			obj8_split_anim(new_grp);
 		}
 	}
-	
+
 		int 	numvert, numsurf, numkids;
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
 
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
+        &vertices, &surfaces, &kids);
 
     for (p = kids; p != NULL; )
     {
@@ -143,20 +143,20 @@ void obj8_split_anim(ACObject * obj)
     	ACObject * child = (ACObject *)p->data;
 	        obj8_split_anim(child);
 		p = pn;
-	}	
-	
+	}
+
 }
 
 void obj8_update_object(ACObject * obj, ACObject * root)
 {
 	if (!ac_object_is_visible(obj)) return;
-	
+
 		int 	numvert, numsurf, numkids;
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
 
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
+        &vertices, &surfaces, &kids);
 
 	float	lod_start, lod_end;
 	if (sscanf(ac_object_get_name(obj), "LOD %f/%f",&lod_start, &lod_end)==2)
@@ -170,7 +170,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 	{
 		OBJ_set_light_named(obj, light_name);
 	}
-	
+
 	float r,g,b,a,s,s1,s2,t1,t2;
 	if(sscanf(ac_object_get_name(obj), "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", &r,&g,&b,&a,&s,&s1,&t1,&s2,&t2,&light_name) == 10)
 	{
@@ -184,19 +184,19 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 		OBJ_set_light_t1(obj,t1);
 		OBJ_set_light_s2(obj,s2);
 		OBJ_set_light_t2(obj,t2);
-		OBJ_set_light_dataref(obj,light_name);		
+		OBJ_set_light_dataref(obj,light_name);
 	}
-	
+
 	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
 	{
-	
+
 		OBJ_set_animation_group(obj,1);
 		char * startp = ac_object_get_data(obj);
 		if (startp)
 		{
 			// ben says: these are needed for now because we have to insert our animaitons BACKWARD because we insert them at the HEAD of the object.  Yuck!
 			vector<update_anim_op>		anim_ops;
-		
+
 			char * endp = startp + strlen(startp);
 			while (startp != endp)
 			{
@@ -204,18 +204,18 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 				while (stopp < endp && *stopp != '\n')
 					++stopp;
 				if (stopp < endp) ++stopp;
-				
+
 				char		dataref[512];
 				float		xyz1[3], xyz2[3], v1, v2, r1, r2;
-				
+
 				if (sscanf(startp, "TRANSLATE %f %f %f %f %f %f %f %f %s",
 					xyz1,xyz1+1,xyz1+2,
 					xyz2,xyz2+1,xyz2+2,
 					&v1,&v2,dataref) == 9)
-				{	
+				{
 					if(xyz1[0] != 0.0 || xyz1[1] != 0.0 || xyz1[2] != 0.0)
 					{
-						anim_ops.push_back(update_anim_op());					
+						anim_ops.push_back(update_anim_op());
 						anim_ops.back().xyz1[0] = xyz1[0];
 						anim_ops.back().xyz1[1] = xyz1[1];
 						anim_ops.back().xyz1[2] = xyz1[2];
@@ -229,12 +229,12 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 					}
 					if(xyz1[0] != xyz2[0] || xyz1[1] != xyz2[1] || xyz1[2] != xyz2[2])
 					{
-						anim_ops.push_back(update_anim_op());					
+						anim_ops.push_back(update_anim_op());
 						anim_ops.back().xyz1[0] = xyz1[0];
 						anim_ops.back().xyz1[1] = xyz1[1];
 						anim_ops.back().xyz1[2] = xyz1[2];
 						anim_ops.back().xyz2[0] = xyz2[0];	// Ben says - this is NOT a relative animation!  This is the "end point".  If it's off in space, that's okay!
-						anim_ops.back().xyz2[1] = xyz2[1];	// 
+						anim_ops.back().xyz2[1] = xyz2[1];	//
 						anim_ops.back().xyz2[2] = xyz2[2];
 						anim_ops.back().v1 = v1;
 						anim_ops.back().v2 = v2;
@@ -262,13 +262,13 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 					anim_ops.back().r2 = r2;
 					anim_ops.back().dataref = dataref;
 					anim_ops.back().op = update_rotate;
-				}				
-				
-				startp = stopp;				
+				}
+
+				startp = stopp;
 			}
-			
+
 //			optimize_animations(anim_ops);
-			
+
 			for (vector<update_anim_op>::reverse_iterator i = anim_ops.rbegin(); i != anim_ops.rend(); ++i)
 			{
 				vector<XObjKey>	keys(2);
@@ -285,7 +285,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 			}
 		}
 	}
-	
+
 		int	now_poly_os, now_hard, now_blend;
 
 	now_poly_os = pull_int_attr_recursive(obj, "_POLY_OS=",0,root);
@@ -308,7 +308,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
     	ACObject * child = (ACObject *)p->data;
 	        obj8_update_object(child, root);
 		p = pn;
-	}	
+	}
 }
 
 static void do_obj8_update(void)
@@ -316,12 +316,12 @@ static void do_obj8_update(void)
 	add_undoable_all("Update object");
 	obj8_split_anim(ac_get_world());
 	obj8_update_object(ac_get_world(),ac_get_world());
-	bake_static_transitions(ac_get_world());	
+	bake_static_transitions(ac_get_world());
 	redraw_all();
 }
 
 
 void register_updater(void)
 {
-	ac_add_command_full("xplane_update_selection", CAST_CMD(do_obj8_update), 0, NULL, "ac3d xplane_update_selection", "change obj to new system.");	
+	ac_add_command_full("xplane_update_selection", CAST_CMD(do_obj8_update), 0, NULL, "ac3d xplane_update_selection", "change obj to new system.");
 }

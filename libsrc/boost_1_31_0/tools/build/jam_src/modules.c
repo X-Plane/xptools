@@ -42,9 +42,9 @@ module_t* bindmodule( char* name )
         string_append( &s, name );
         string_push_back( &s, '.' );
     }
-        
+
     m->name = s.value;
-    
+
     if ( hashenter( module_hash, (HASHDATA **)&m ) )
     {
         m->name = newstr( m->name );
@@ -114,7 +114,7 @@ void exit_module( module_t* m )
 }
 
 void import_module(LIST* module_names, module_t* target_module)
-{ 
+{
     struct hash* h;
 
     if (!target_module->imported_modules)
@@ -122,10 +122,10 @@ void import_module(LIST* module_names, module_t* target_module)
     h = target_module->imported_modules;
 
     for(;module_names; module_names = module_names->next) {
-        
+
         char* s = module_names->string;
         char** ss = &s;
-        
+
         hashenter(h, (HASHDATA**)&ss);
     }
 }

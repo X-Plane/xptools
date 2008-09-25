@@ -173,130 +173,130 @@ namespace CGALi {
   struct Swapper_1 {
     typedef typename F::result_type            result_type;
     typedef typename Arity_traits< F >::Arity  Arity;
-  
+
     Swapper_1(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2) const
     { return f(a2, a1); }
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a2, a1, a3); }
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a2, a1, a3, a4); }
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
      const A4& a4, const A5& a5) const
     { return f(a2, a1, a3, a4, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper_2 {
     typedef typename F::result_type            result_type;
     typedef typename Arity_traits< F >::Arity  Arity;
-  
+
     Swapper_2(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2) const
     { return f(a1, a2); }
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a3, a2); }
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a1, a3, a2, a4); }
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
      const A4& a4, const A5& a5) const
     { return f(a1, a3, a2, a4, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper_3 {
     typedef typename F::result_type            result_type;
     typedef typename Arity_traits< F >::Arity  Arity;
-  
+
     Swapper_3(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2) const
     { return f(a1, a2); }
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a2, a3); }
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a1, a2, a4, a3); }
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
      const A4& a4, const A5& a5) const
     { return f(a1, a2, a4, a3, a5); }
-  
+
   protected:
     F f;
   };
-  
+
   template < class F >
   struct Swapper_4 {
     typedef typename F::result_type            result_type;
     typedef typename Arity_traits< F >::Arity  Arity;
-  
+
     Swapper_4(const F& f_) : f(f_) {}
-  
+
     template < class A1, class A2 >
     result_type operator()
     (const A1& a1, const A2& a2) const
     { return f(a1, a2); }
-  
+
     template < class A1, class A2, class A3 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3) const
     { return f(a1, a2, a3); }
-  
+
     template < class A1, class A2, class A3, class A4 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return f(a1, a2, a3, a4); }
-  
+
     template < class A1, class A2, class A3, class A4, class A5 >
     result_type operator()
     (const A1& a1, const A2& a2, const A3& a3,
      const A4& a4, const A5& a5) const
     { return f(a1, a2, a3, a5, a4); }
-  
+
   protected:
     F f;
   };
-  
+
 
   template < class F >
   struct Swap_helper {

@@ -86,12 +86,12 @@ get_opt(FILE *fid, char *name, paralist *next) {
         } else if (!first && !pj_param(start, sword).i) {
             /* don't default ellipse if datum, ellps or any earth model
                information is set. */
-            if( strncmp(word,"ellps=",6) != 0 
-                || (!pj_param(start, "tdatum").i 
-                    && !pj_param(start, "tellps").i 
-                    && !pj_param(start, "ta").i 
-                    && !pj_param(start, "tb").i 
-                    && !pj_param(start, "trf").i 
+            if( strncmp(word,"ellps=",6) != 0
+                || (!pj_param(start, "tdatum").i
+                    && !pj_param(start, "tellps").i
+                    && !pj_param(start, "ta").i
+                    && !pj_param(start, "tb").i
+                    && !pj_param(start, "trf").i
                     && !pj_param(start, "tf").i) )
             {
                 next = next->next = pj_mkparam(word);
@@ -161,7 +161,7 @@ pj_init_plus( const char *definition )
     char	*defn_copy;
     int		argc = 0, i;
     PJ	        *result;
-    
+
     /* make a copy that we can manipulate */
     defn_copy = (char *) pj_malloc( strlen(definition)+1 );
     strcpy( defn_copy, definition );
@@ -180,7 +180,7 @@ pj_init_plus( const char *definition )
                     pj_errno = -44;
                     return NULL;
                 }
-                
+
                 argv[argc++] = defn_copy + i + 1;
             }
             break;
@@ -272,7 +272,7 @@ pj_init(int argc, char **argv) {
 	PIN->rone_es = 1./PIN->one_es;
 
         /* Now that we have ellipse information check for WGS84 datum */
-        if( PIN->datum_type == PJD_3PARAM 
+        if( PIN->datum_type == PJD_3PARAM
             && PIN->datum_params[0] == 0.0
             && PIN->datum_params[1] == 0.0
             && PIN->datum_params[2] == 0.0
@@ -281,7 +281,7 @@ pj_init(int argc, char **argv) {
         {
             PIN->datum_type = PJD_WGS84;
         }
-        
+
 	/* set PIN->geoc coordinate system */
 	PIN->geoc = (PIN->es && pj_param(start, "bgeoc").i);
 
@@ -312,7 +312,7 @@ pj_init(int argc, char **argv) {
 
 	/* set units */
 	s = 0;
-	if (name = pj_param(start, "sunits").s) { 
+	if (name = pj_param(start, "sunits").s) {
 		for (i = 0; (s = pj_units[i].id) && strcmp(name, s) ; ++i) ;
 		if (!s) { pj_errno = -7; goto bum_call; }
 		s = pj_units[i].to_meter;
@@ -327,7 +327,7 @@ pj_init(int argc, char **argv) {
 
 	/* prime meridian */
 	s = 0;
-	if (name = pj_param(start, "spm").s) { 
+	if (name = pj_param(start, "spm").s) {
             const char *value = NULL;
             char *next_str = NULL;
 
@@ -339,9 +339,9 @@ pj_init(int argc, char **argv) {
                     break;
                 }
             }
-            
-            if( value == NULL 
-                && dmstor(name,&next_str) != 0.0 
+
+            if( value == NULL
+                && dmstor(name,&next_str) != 0.0
                 && *next_str == '\0' )
                 value = name;
 

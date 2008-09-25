@@ -33,10 +33,10 @@
 CGAL_BEGIN_NAMESPACE
 
 template <typename PMCDEC>
-class PM_BooleColor 
+class PM_BooleColor
 {
-  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;   
-  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle; 
+  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;
+  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle;
   typedef typename PMCDEC::Face_const_handle Face_const_handle;
   typedef typename PMCDEC::Mark Mark;
 public:
@@ -54,18 +54,18 @@ public:
 
 
 template <typename PMCDEC>
-class PM_DefColor 
+class PM_DefColor
 {
   CGAL::Color _cs, _cf;
   int _wv, _we;
 public:
-  PM_DefColor() : 
+  PM_DefColor() :
     _cs(CGAL::BLACK), _cf(CGAL::WHITE), _wv(3), _we(2) {}
-  PM_DefColor(CGAL::Color cs, CGAL::Color cf, int wv, int we) : 
+  PM_DefColor(CGAL::Color cs, CGAL::Color cf, int wv, int we) :
     _cs(cs), _cf(cf), _wv(wv), _we(we) {}
 
-  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;   
-  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle; 
+  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;
+  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle;
   typedef typename PMCDEC::Face_const_handle Face_const_handle;
   typedef typename PMCDEC::Mark Mark;
 
@@ -85,7 +85,7 @@ public:
 /*{\Moptions outfile=PM_visualizor.man }*/
 /*{\Manpage {PM_visualizor}{PMCDEC,GEOM,COLORDA}{Drawing plane maps}{V}}*/
 
-template <typename PMCDEC, typename GEOM, 
+template <typename PMCDEC, typename GEOM,
           typename COLORDA = PM_DefColor<PMCDEC> >
 class PM_visualizor : public PMCDEC
 {
@@ -107,18 +107,18 @@ public:
   typedef PMCDEC Base;
 
   typedef typename PMCDEC::Plane_map Plane_map;
-  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;   
-  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle; 
-  typedef typename PMCDEC::Face_const_handle Face_const_handle;     
+  typedef typename PMCDEC::Vertex_const_handle Vertex_const_handle;
+  typedef typename PMCDEC::Halfedge_const_handle Halfedge_const_handle;
+  typedef typename PMCDEC::Face_const_handle Face_const_handle;
   typedef typename PMCDEC::Vertex_const_iterator Vertex_const_iterator;
   typedef typename PMCDEC::Halfedge_const_iterator Halfedge_const_iterator;
   typedef typename PMCDEC::Face_const_iterator Face_const_iterator;
-  typedef typename PMCDEC::Halfedge_around_face_const_circulator 
+  typedef typename PMCDEC::Halfedge_around_face_const_circulator
     Halfedge_around_face_const_circulator;
-  typedef typename PMCDEC::Halfedge_around_vertex_const_circulator 
+  typedef typename PMCDEC::Halfedge_around_vertex_const_circulator
     Halfedge_around_vertex_const_circulator;
   typedef typename PMCDEC::Hole_const_iterator Hole_const_iterator;
-  typedef typename PMCDEC::Isolated_vertex_const_iterator 
+  typedef typename PMCDEC::Isolated_vertex_const_iterator
     Isolated_vertex_const_iterator;
   typedef typename PMCDEC::Point Point;
   typedef typename PMCDEC::Mark Mark;
@@ -139,15 +139,15 @@ public:
   const Color_objects& _CO;
 
 /*{\Mcreation 4}*/
-PM_visualizor(CGAL::Window_stream& W, 
+PM_visualizor(CGAL::Window_stream& W,
   const PM_const_decorator& D,
   const Geometry& K = Geometry(),
-  const Color_objects& C = Color_objects() ) 
+  const Color_objects& C = Color_objects() )
 /*{\Mcreate creates an instance |\Mvar| of type |\Mname|
     to visualize the vertices, edges, and faces of |D| in window |W|.
     The coloring of the objects is determined by data accessor |C|.}*/
-  : Base(D), _W(W), _K(K), _CO(C) 
-{ _W.set_node_width(3); 
+  : Base(D), _W(W), _K(K), _CO(C)
+{ _W.set_node_width(3);
   _W.set_line_width(2);
 }
 
@@ -177,14 +177,14 @@ void draw_face_cycle(const std::list<Draw_point>& fc, int c) const
   double* yc = new double[n];
   int i = 0;
   std::list<Draw_point>::const_iterator it;
-  for (it = fc.begin(); it != fc.end(); ++i,++it) 
+  for (it = fc.begin(); it != fc.end(); ++i,++it)
   { xc[i] = (*it).x(); yc[i] = (*it).y(); }
   _W.clip_mask_polygon(n,xc,yc,c);
   delete[] xc;
   delete[] yc;
 }
 
-void get_point_list(std::list<Draw_point>& L, 
+void get_point_list(std::list<Draw_point>& L,
                     Halfedge_const_iterator e) const
 {
   Halfedge_around_face_const_circulator fcirc(e), fend(fcirc);
@@ -192,12 +192,12 @@ void get_point_list(std::list<Draw_point>& L,
     Point p = point(target(fcirc));
     L.push_back(Draw_point(CGAL::to_double(p.x()),
 			   CGAL::to_double(p.y())));
-  }   
+  }
 }
 
 void draw(Face_const_handle f) const
 /*{\Mop draws |f| with color |C.color(f)|.}*/
-{ 
+{
   CGAL::Color cc = _CO.color(f,mark(f));
   leda_color c (cc.r(),cc.g(),cc.b());
   std::list<Draw_point> outer_cycle;
@@ -223,7 +223,7 @@ void draw(Face_const_handle f) const
   frame.push_back(Draw_point(x1,y1));
   frame.push_back(Draw_point(x0,y1));
   frame.reverse();
-  draw_face_cycle(frame,0); 
+  draw_face_cycle(frame,0);
   // enforcing transparent mode outside f and inside frame
   draw_face_cycle(outer_cycle,1);
   // drawing non-transparent outer face cycle
@@ -236,9 +236,9 @@ void draw(Face_const_handle f) const
     // enforcing transparent mode for holes
   }
   Isolated_vertex_const_iterator iv_it;
-  for (iv_it = isolated_vertices_begin(f); 
+  for (iv_it = isolated_vertices_begin(f);
        iv_it != isolated_vertices_end(f); ++iv_it) {
-    draw(iv_it); 
+    draw(iv_it);
   }
   _W.draw_box(x0,y0,x1,y1,c);
   _W.reset_clip_mask();
@@ -247,29 +247,29 @@ void draw(Face_const_handle f) const
 void draw_map() const
 /*{\Mop draw the whole plane map.}*/
 {
-  Face_const_iterator 
+  Face_const_iterator
     fit = faces_begin(), fend = faces_end();
   // we don't draw the first face outside the box:
-  for ( ++fit; fit != fend; ++fit) 
+  for ( ++fit; fit != fend; ++fit)
     draw(fit);
 
-  // draw segments underlying halfedges: 
+  // draw segments underlying halfedges:
   Halfedge_const_iterator hit, hend = halfedges_end();
-  for (hit = halfedges_begin(); hit != hend; ++(++hit)) 
+  for (hit = halfedges_begin(); hit != hend; ++(++hit))
     draw(hit);
 
   // draw points underlying vertices:
   Vertex_const_iterator vit, vend = vertices_end();
-  for (vit = vertices_begin(); vit != vend; ++vit) 
+  for (vit = vertices_begin(); vit != vend; ++vit)
     draw(vit);
 }
 
 void init_window() const
-{ _W.set_show_coordinates(true); _W.init(-110,110,-110); _W.display(); 
+{ _W.set_show_coordinates(true); _W.init(-110,110,-110); _W.display();
   _W.set_node_width(3); }
 
 void draw_skeleton(const CGAL::Color& c=CGAL::BLACK) const
-{ 
+{
   int old = _W.set_line_width(1);
   _W << c;
   Halfedge_const_iterator hit, hend = halfedges_end();
@@ -278,12 +278,12 @@ void draw_skeleton(const CGAL::Color& c=CGAL::BLACK) const
 
   // draw points underlying vertices:
   Vertex_const_iterator vit, vend = vertices_end();
-  for (vit = vertices_begin(); vit != vend; ++vit) 
+  for (vit = vertices_begin(); vit != vend; ++vit)
     _W << point(vit);
   _W.set_line_width(old);
 }
 
-void draw_ending_bundle(Vertex_const_handle v, 
+void draw_ending_bundle(Vertex_const_handle v,
         const CGAL::Color& c=CGAL::BLACK)
 { if (is_isolated(v)) return;
   _W << c;
@@ -295,7 +295,7 @@ void draw_ending_bundle(Vertex_const_handle v,
   }
 }
 
-}; // end of PM_visualizor 
+}; // end of PM_visualizor
 
 
 

@@ -46,7 +46,7 @@ Constrained_triangulation_sweep_demo_2(Window_stream& W,
 				       std::list<Constraint>& lc, const Gt& t=Gt())
   : Constrained_triangulation_sweep_2<Gt,Tds>()
   {
-    _t = t ; 
+    _t = t ;
     _lc = &lc;
     event_less= Event_less();
     queue = Event_queue(event_less);
@@ -60,10 +60,10 @@ Constrained_triangulation_sweep_demo_2(Window_stream& W,
 
 
 private:
-void 
+void
 demo_build_triangulation(Window_stream& W);
 
-void 
+void
 draw_face(Face_handle f, Window_stream& W)
   {
     for(int i =0; i<3; i++){
@@ -72,7 +72,7 @@ draw_face(Face_handle f, Window_stream& W)
   return;
   }
 
-void 
+void
 draw_new_faces(Vertex_handle v, Window_stream& W)
 {
    drawing_mode dm=W.set_mode(leda_src_mode);
@@ -86,7 +86,7 @@ draw_new_faces(Vertex_handle v, Window_stream& W)
    }
 }
 
-void 
+void
 draw_chain(Chain * pc,Window_stream& W)
 {
    Neighbor_list::iterator nit;
@@ -96,22 +96,22 @@ draw_chain(Chain * pc,Window_stream& W)
    while (nit != (pc-> down_list())->end()) {
      f = (*nit).first;
      i = (*nit).second;
-     W << Segment(f->vertex(f->cw(i))->point(), 
+     W << Segment(f->vertex(f->cw(i))->point(),
 		  f->vertex(f->ccw(i))->point());
      nit++;
    }
-   nit = (pc->up_list())->begin();	 
+   nit = (pc->up_list())->begin();
    while (nit != (pc->up_list())->end()) {
      f = (*nit).first;
      i = (*nit).second;
-     W << Segment(f->vertex(f->cw(i))->point(), 
+     W << Segment(f->vertex(f->cw(i))->point(),
 		    f->vertex(f->ccw(i))->point());
      nit++;
    }
    return;
 }
 
-void 
+void
 draw_status_chains(Window_stream& W)
 {
   drawing_mode dm=W.set_mode(leda_src_mode);
@@ -128,8 +128,8 @@ draw_status_chains(Window_stream& W)
   draw_chain(pc,W);
   return;
 }
-  
-void 
+
+void
 draw_constraints(Window_stream& W)
 {
   drawing_mode dm=W.set_mode(leda_src_mode);
@@ -144,13 +144,13 @@ draw_constraints(Window_stream& W)
 }
 
 
-void 
+void
 draw_next_event(Window_stream& W)
 {
   return;
 }
 
-void 
+void
 any_button(Window_stream& W)
 {
   double x, y;
@@ -166,7 +166,7 @@ void
 Constrained_triangulation_sweep_demo_2<Gt,Tds>::
 demo_build_triangulation(Window_stream& W)
 {
-  Point p; 
+  Point p;
   Vertex_handle v;
   Out_edges * out;
   typename Event_queue::iterator event;
@@ -175,7 +175,7 @@ demo_build_triangulation(Window_stream& W)
   while (! queue.empty()) {
     count++;
     event = queue.begin();
-             
+
     // locate (p,p) dans status
     p = (*event).first;
     out = (*event).second;
@@ -190,8 +190,8 @@ demo_build_triangulation(Window_stream& W)
     draw_status_chains(W);
     draw_next_event(W);
     any_button(W);
-	
-	
+
+
     // delete event from event_queue
     out= (*event).second;
     CGAL_triangulation_assertion( (*out).empty());
@@ -199,7 +199,7 @@ demo_build_triangulation(Window_stream& W)
     queue.erase(event);
     //delete la liste out
   }
-  // make inifinite vertex, infinite faces 
+  // make inifinite vertex, infinite faces
   // at this stage status is empty
   // and the lists of upper_chain correspond to the convex hull
   CGAL_triangulation_assertion( status.empty());

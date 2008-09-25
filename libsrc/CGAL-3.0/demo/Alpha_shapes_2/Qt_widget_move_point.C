@@ -5,14 +5,14 @@
 // This software and related documentation is part of an INTERNAL release
 // of the Computational Geometry Algorithms Library (CGAL). It is not
 // intended for general use.
-//	
+//
 // ----------------------------------------------------------------------------
 //
 // file          : src/Qt_widget_MovePoint.C
 // package       : Qt_widget
 // author(s)     : Laurent Rineau
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //

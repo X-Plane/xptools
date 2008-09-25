@@ -23,7 +23,7 @@
 #include <iterator>
 #include <CGAL/iterator.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 // TODO :
 // - comparison operators should be global, but it causes problems...
@@ -127,7 +127,7 @@ public:
   // To allow conversion from iterator to const_iterator.
 #if  defined CGAL_LIMITED_ITERATOR_TRAITS_SUPPORT
   template <class I2, class Ref2, class Ptr2, class Val2, class Dist2>
-  Trivial_comparable_iterator(const Trivial_comparable_iterator<I2, 
+  Trivial_comparable_iterator(const Trivial_comparable_iterator<I2,
 			      Ref2, Ptr2, Val2, Dist2> &t)
     : base_(t.base()) {}
 #else
@@ -139,18 +139,18 @@ public:
   reference operator*() const { return *base_;  }
   pointer operator->() const  { return &*base_; }
 
-  bool operator==(const Trivial_comparable_iterator &b) const 
+  bool operator==(const Trivial_comparable_iterator &b) const
     { return base()==b.base(); }
-  bool operator!=(const Trivial_comparable_iterator &b) const  
+  bool operator!=(const Trivial_comparable_iterator &b) const
     { return base()!=b.base(); }
 
-  bool operator< (const Trivial_comparable_iterator &b) const  
+  bool operator< (const Trivial_comparable_iterator &b) const
     { return base()< b.base(); }
-  bool operator> (const Trivial_comparable_iterator &b) const  
+  bool operator> (const Trivial_comparable_iterator &b) const
     { return base()> b.base(); }
-  bool operator<=(const Trivial_comparable_iterator &b) const  
+  bool operator<=(const Trivial_comparable_iterator &b) const
     { return base()<=b.base(); }
-  bool operator>=(const Trivial_comparable_iterator &b) const  
+  bool operator>=(const Trivial_comparable_iterator &b) const
     { return base()>=b.base(); }
 
 private:

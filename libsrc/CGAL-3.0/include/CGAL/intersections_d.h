@@ -34,7 +34,7 @@ Object intersection(const Line_d<R>& l1, const Line_d<R>& l2)
   ll_pair LL(l1, l2);
   switch (LL.intersection_type()) {
     case ll_pair::NO:
-    default: 
+    default:
       return Object();
     case ll_pair::POINT: {
       Point_d<R> pt;
@@ -55,7 +55,7 @@ Object intersection(const Ray_d<R>& l1, const Ray_d<R>& l2)
   ll_pair LL(l1,l2);
   switch (LL.intersection_type()) {
     case ll_pair::NO:
-    default: 
+    default:
       return Object();
     case ll_pair::POINT: {
       Point_d<R> p;
@@ -84,7 +84,7 @@ Object intersection(const Segment_d<R>& l1, const Segment_d<R>& l2)
   ll_pair LL(l1,l2);
   switch (LL.intersection_type()) {
     case ll_pair::NO:
-    default: 
+    default:
       return Object();
     case ll_pair::POINT: {
       Point_d<R> p;

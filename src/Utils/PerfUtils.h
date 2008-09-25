@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -36,7 +36,7 @@ struct StProfileInit {
 	StProfileInit() { ProfilerInit(collectDetailed, bestTimeBase, 1000, 300); }
 	~StProfileInit() { ProfilerTerm(); }
 };
-	
+
 #endif
 
 #if APL
@@ -61,37 +61,37 @@ class	PerfTimer {
 	unsigned long long	mStart;
 #else
 	clock_t				mStart;
-#endif	
+#endif
 	double				mTime;
 	unsigned long		mCalls;
 	const char *		mName;
 
 public:
 
-	PerfTimer(const char * inName) : 
+	PerfTimer(const char * inName) :
 		mName(inName), mTime(0), mCalls(0)
 	{
 	}
-	
+
 	~PerfTimer()
 	{
 	}
-	
+
 	void	GetStats(double& totalSeconds, unsigned long& calls)
 	{
 		totalSeconds = mTime;
 		calls = mCalls;
 	}
-	
+
 	inline	void Start(void)
 	{
 #if APL
 		::Microseconds((UnsignedWide *) &mStart);
-#else	
+#else
 		mStart = clock();
-#endif		
+#endif
 	}
-	
+
 	inline	void Stop(void)
 	{
 #if APL	&& 0
@@ -99,11 +99,11 @@ public:
 		::Microseconds((UnsignedWide *) &stopTime);
 		unsigned long long delta = stopTime - mStart;
 		mTime += (double) delta / 1000000.0;
-#else		
+#else
 		clock_t stopTime = clock();
 		clock_t delta = stopTime - mStart;
 		mTime += ((double) delta) / ((double) CLOCKS_PER_SEC);
-#endif		
+#endif
 		++mCalls;
 	}
 
@@ -114,7 +114,7 @@ class	StElapsedTime {
 	unsigned long long 	mStartTime;
 #else
 	clock_t				mStartTime;
-#endif	
+#endif
 	const char *		mName;
 public:
 	StElapsedTime(const char * inName): mName(inName)
@@ -123,20 +123,20 @@ public:
 		::Microseconds((UnsignedWide *) &mStartTime);
 #else
 		mStartTime = clock();
-#endif				
+#endif
 	}
 	~StElapsedTime()
 	{
 #if APL	&& 0
 		unsigned long long stopTime;
-		::Microseconds((UnsignedWide *) &stopTime);		
+		::Microseconds((UnsignedWide *) &stopTime);
 		unsigned long long delta = stopTime - mStartTime;
 		printf("%s - %lf seconds.\n", mName, (double) delta / 1000000.0);
 #else
 		clock_t stopTime = clock();
 		printf("%s - %lf seconds.\n", mName, (double) (stopTime - mStartTime) / (double) CLOCKS_PER_SEC);
-		
-#endif		
+
+#endif
 	}
 };
 

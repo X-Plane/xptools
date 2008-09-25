@@ -80,7 +80,7 @@ struct sb_Rsdf_Imp
   // long     PlaneExtent_;  // Phy - cut out unneeded stuff
   string   ScanOrigin_;
   string   ScanPattern_;
-  string   TesseralIndexing_; 
+  string   TesseralIndexing_;
   // string   TesseralIndexFormat_;   -- Phy - cut out unneeded stuff
   // string   TesseralIndexingDescription_; -- Phy - cut out unneeded stuff
   long     NumberLinesAlternation_;
@@ -89,7 +89,7 @@ struct sb_Rsdf_Imp
   long     NumberLayers_;
   double   SADR__X;
   double   SADR__Y;
- 
+
   sb_ForeignID isid_;           // internal spatial foreign ID
   sb_ForeignIDs  lyids_;          // layer ID foreign ID container
   sb_ForeignIDs  ratps_;          // raster attribute foreign ID container
@@ -109,7 +109,7 @@ struct sb_Rsdf_Imp
   //  PlaneExtent_( UNVALUED_LONG ),  Phy - cut out unneeded stuff
     ScanOrigin_( UNVALUED_STRING ),
     ScanPattern_( UNVALUED_STRING ),
-    TesseralIndexing_( UNVALUED_STRING ), 
+    TesseralIndexing_( UNVALUED_STRING ),
   //  TesseralIndexFormat_( UNVALUED_STRING ),  Phy - cut out unneeded stuff
   //  TesseralIndexingDescription_( UNVALUED_STRING ), Phy - cut out unneeded stuff
     NumberLinesAlternation_( UNVALUED_LONG ),
@@ -804,7 +804,7 @@ ingest_record_( sb_Rsdf& rsdf, sb_Rsdf_Imp &rsdf_imp, sc_Record const& record )
   // XXX will have to be added to sb_Utils to handle this case, or we'll
   // XXX have to unravel the record by hand here.  Since we're not needing to
   // XXX read Raster records yet , I'll put off implementing this for now.
- 
+
   if ( ! sb_Utils::getFieldByMnem( record,"ISID",curfield) )
   {
 #ifdef SDTSXX_DEBUG
@@ -1157,7 +1157,7 @@ sb_Rsdf::getInternalSpatialId( sb_ForeignID & fid ) const
   fid = imp_->isid_;
 
   return true;
-} 
+}
 
 
 bool
@@ -1171,7 +1171,7 @@ sb_Rsdf::getLayerIds( sb_ForeignIDs& fids ) const
   fids = imp_->lyids_;
 
   return true;
-} 
+}
 
 
 
@@ -1186,7 +1186,7 @@ sb_Rsdf::getRasterAttributeIds( sb_ForeignIDs& fids ) const
   fids = imp_->ratps_;
 
   return true;
-} 
+}
 
 
 
@@ -1249,7 +1249,7 @@ sb_Rsdf::getRecord( sc_Record & record ) const
   }
   else
   {
-    // Phy - change to not make date mandatory 
+    // Phy - change to not make date mandatory
     sb_Utils::add_empty_subfield( record.back(), "AQDT", sc_Subfield::is_A );
   }
 
@@ -1314,7 +1314,7 @@ sb_Rsdf::getRecord( sc_Record & record ) const
     return false;
   }
 
-  
+
   // Phy - cut out unneeded stuff
   //if ( getPlaneExtent( tmp_long ) )
   //{
@@ -1442,7 +1442,7 @@ sb_Rsdf::getRecord( sc_Record & record ) const
 
 
 
-  // Field SADR 
+  // Field SADR
 
   record.push_back( sc_Field() );
 

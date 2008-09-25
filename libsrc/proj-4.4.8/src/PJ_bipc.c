@@ -79,8 +79,8 @@ FORWARD(s_forward); /* spheroid */
 	xy.y += (tag ? -r : r) * cos(t);
 	if (P->noskew) {
 		t = xy.x;
-		xy.x = -xy.x * cAzc - xy.y * sAzc; 
-		xy.y = -xy.y * cAzc + t * sAzc; 
+		xy.x = -xy.x * cAzc - xy.y * sAzc;
+		xy.y = -xy.y * cAzc + t * sAzc;
 	}
 	return (xy);
 }
@@ -90,8 +90,8 @@ INVERSE(s_inverse); /* spheroid */
 
 	if (P->noskew) {
 		t = xy.x;
-		xy.x = -xy.x * cAzc + xy.y * sAzc; 
-		xy.y = -xy.y * cAzc - t * sAzc; 
+		xy.x = -xy.x * cAzc + xy.y * sAzc;
+		xy.y = -xy.y * cAzc - t * sAzc;
 	}
 	if( (neg = (xy.x < 0.)) ) {
 		xy.y = rhoc - xy.y;

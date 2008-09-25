@@ -43,9 +43,9 @@ namespace CommonKernelFunctors {
   {
     typedef typename K::Point_2     Point_2;
     typedef typename K::Collinear_2 Collinear_2;
-    typedef typename K::Collinear_are_ordered_along_line_2 
+    typedef typename K::Collinear_are_ordered_along_line_2
     Collinear_are_ordered_along_line_2;
-  
+
     Collinear_2 c;
     Collinear_are_ordered_along_line_2 cao;
   public:
@@ -53,7 +53,7 @@ namespace CommonKernelFunctors {
     typedef Arity_tag< 3 >   Arity;
 
     Are_ordered_along_line_2() {}
-    Are_ordered_along_line_2(const Collinear_2& c_, 
+    Are_ordered_along_line_2(const Collinear_2& c_,
 			     const Collinear_are_ordered_along_line_2& cao_)
       : c(c_), cao(cao_)
     {}
@@ -68,9 +68,9 @@ namespace CommonKernelFunctors {
   {
     typedef typename K::Point_3     Point_3;
     typedef typename K::Collinear_3 Collinear_3;
-    typedef typename K::Collinear_are_ordered_along_line_3 
+    typedef typename K::Collinear_are_ordered_along_line_3
     Collinear_are_ordered_along_line_3;
-  
+
     Collinear_3 c;
     Collinear_are_ordered_along_line_3 cao;
   public:
@@ -78,7 +78,7 @@ namespace CommonKernelFunctors {
     typedef Arity_tag< 3 >   Arity;
 
     Are_ordered_along_line_3() {}
-    Are_ordered_along_line_3(const Collinear_3& c_, 
+    Are_ordered_along_line_3(const Collinear_3& c_,
 			     const Collinear_are_ordered_along_line_3& cao_)
       : c(c_), cao(cao_)
     {}
@@ -93,9 +93,9 @@ namespace CommonKernelFunctors {
   {
     typedef typename K::Point_2 Point_2;
     typedef typename K::Collinear_2 Collinear_2;
-    typedef typename K::Collinear_are_strictly_ordered_along_line_2 
+    typedef typename K::Collinear_are_strictly_ordered_along_line_2
     Collinear_are_strictly_ordered_along_line_2;
-  
+
     Collinear_2 c;
     Collinear_are_strictly_ordered_along_line_2 cao;
   public:
@@ -104,7 +104,7 @@ namespace CommonKernelFunctors {
 
     Are_strictly_ordered_along_line_2() {}
     Are_strictly_ordered_along_line_2(
-				      const Collinear_2& c_, 
+				      const Collinear_2& c_,
 				      const Collinear_are_strictly_ordered_along_line_2& cao_)
       : c(c_), cao(cao_)
     {}
@@ -119,9 +119,9 @@ namespace CommonKernelFunctors {
   {
     typedef typename K::Point_3     Point_3;
     typedef typename K::Collinear_3 Collinear_3;
-    typedef typename K::Collinear_are_strictly_ordered_along_line_3 
+    typedef typename K::Collinear_are_strictly_ordered_along_line_3
     Collinear_are_strictly_ordered_along_line_3;
-  
+
     Collinear_3 c;
     Collinear_are_strictly_ordered_along_line_3 cao;
   public:
@@ -130,7 +130,7 @@ namespace CommonKernelFunctors {
 
     Are_strictly_ordered_along_line_3() {}
     Are_strictly_ordered_along_line_3(
-				      const Collinear_3& c_, 
+				      const Collinear_3& c_,
 				      const Collinear_are_strictly_ordered_along_line_3& cao_)
       : c(c_), cao(cao_)
     {}
@@ -1331,7 +1331,7 @@ namespace CommonKernelFunctors {
     operator()( const Segment_2& s) const
     { return s.bbox(); }
 
-    
+
     Bbox_2
     operator()( const Triangle_2& t) const
     { return t.bbox(); }
@@ -1367,7 +1367,7 @@ namespace CommonKernelFunctors {
     operator()( const Segment_3& s) const
     { return s.bbox(); }
 
-    
+
     Bbox_3
     operator()( const Triangle_3& t) const
     { return t.bbox(); }
@@ -1391,7 +1391,7 @@ namespace CommonKernelFunctors {
     typedef typename K::Point_2          Point_2;
     typedef typename K::Cartesian_const_iterator_2
     Cartesian_const_iterator_2;
-    
+
   public:
     typedef Cartesian_const_iterator_2 result_type;
     typedef Arity_tag< 1 >   Arity;
@@ -1401,7 +1401,7 @@ namespace CommonKernelFunctors {
       {
 	return p.cartesian_begin();
       }
-    
+
     Cartesian_const_iterator_2
     operator()( const Point_2& p, int) const
     {
@@ -1415,7 +1415,7 @@ namespace CommonKernelFunctors {
     typedef typename K::Point_3          Point_3;
     typedef typename K::Cartesian_const_iterator_3
     Cartesian_const_iterator_3;
-    
+
   public:
     typedef Cartesian_const_iterator_3 result_type;
     typedef Arity_tag< 1 >   Arity;
@@ -1425,7 +1425,7 @@ namespace CommonKernelFunctors {
       {
 	return p.cartesian_begin();
       }
-    
+
     Cartesian_const_iterator_3
     operator()( const Point_3& p, int) const
     {
@@ -1981,7 +1981,7 @@ namespace CommonKernelFunctors {
 
     Left_turn_2() {}
     Left_turn_2(const Orientation_2& o_) : o(o_) {}
-  
+
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
     { return o(p, q, r) == LEFT_TURN; }
@@ -1992,7 +1992,7 @@ namespace CommonKernelFunctors {
   {
     typedef typename K::Point_2        Point_2;
     typedef typename K::Orientation_2  Orientation_2;
-    typedef typename K::Collinear_are_ordered_along_line_2 
+    typedef typename K::Collinear_are_ordered_along_line_2
     Collinear_are_ordered_along_line_2;
     Orientation_2 o;
     Collinear_are_ordered_along_line_2 co;
@@ -2001,8 +2001,8 @@ namespace CommonKernelFunctors {
     typedef Arity_tag< 3 >   Arity;
 
     Less_rotate_ccw_2() {}
-    Less_rotate_ccw_2(const Orientation_2& o_, 
-		      const Collinear_are_ordered_along_line_2& co_) 
+    Less_rotate_ccw_2(const Orientation_2& o_,
+		      const Collinear_are_ordered_along_line_2& co_)
       : o(o_), co(co_)
     {}
 
@@ -2368,53 +2368,53 @@ namespace CommonKernelFunctors {
     operator()() const
     { return ToBeConstructed(); }
 
-    template <class A1> 
+    template <class A1>
     ToBeConstructed
     operator()( const A1& a1) const
     { return ToBeConstructed(a1); }
 
-    template <class A1, class A2> 
+    template <class A1, class A2>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2) const
     { return ToBeConstructed(a1,a2); }
 
-    template <class A1, class A2, class A3> 
+    template <class A1, class A2, class A3>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3) const
     { return ToBeConstructed(a1,a2,a3); }
 
-    template <class A1, class A2, class A3, class A4> 
+    template <class A1, class A2, class A3, class A4>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return ToBeConstructed(a1,a2,a3,a4); }
 
-    template <class A1, class A2, class A3, class A4, class A5> 
+    template <class A1, class A2, class A3, class A4, class A5>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4,
 		const A5& a5) const
     { return ToBeConstructed(a1,a2,a3,a4,a5); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7, const A& a8, const A& a9) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -2422,7 +2422,7 @@ namespace CommonKernelFunctors {
                 const A& a10) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -2430,7 +2430,7 @@ namespace CommonKernelFunctors {
                 const A& a10,const A& a11,const A& a12) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -2452,53 +2452,53 @@ namespace CommonKernelFunctors {
     operator()() const
     { return ToBeConstructed(); }
 
-    template <class A1> 
+    template <class A1>
     ToBeConstructed
     operator()( const A1& a1) const
     { return ToBeConstructed(a1); }
 
-    template <class A1, class A2> 
+    template <class A1, class A2>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2) const
     { return ToBeConstructed(a1,a2); }
 
-    template <class A1, class A2, class A3> 
+    template <class A1, class A2, class A3>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3) const
     { return ToBeConstructed(a1,a2,a3); }
 
-    template <class A1, class A2, class A3, class A4> 
+    template <class A1, class A2, class A3, class A4>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4) const
     { return ToBeConstructed(a1,a2,a3,a4); }
 
-    template <class A1, class A2, class A3, class A4, class A5> 
+    template <class A1, class A2, class A3, class A4, class A5>
     ToBeConstructed
     operator()( const A1& a1, const A2& a2, const A3& a3, const A4& a4,
 		const A5& a5) const
     { return ToBeConstructed(a1,a2,a3,a4,a5); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7 ) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
                 const A& a7, const A& a8, const A& a9) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -2506,7 +2506,7 @@ namespace CommonKernelFunctors {
                 const A& a10) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,
@@ -2514,7 +2514,7 @@ namespace CommonKernelFunctors {
                 const A& a10,const A& a11,const A& a12) const
     { return ToBeConstructed(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12); }
 
-    template <class A> 
+    template <class A>
     ToBeConstructed
     operator()( const A& a1, const A& a2, const A& a3,
                 const A& a4, const A& a5, const A& a6,

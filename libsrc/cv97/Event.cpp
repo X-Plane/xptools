@@ -10,7 +10,7 @@
 
 #include "Event.h"
 
-Event::Event(Field *field) 
+Event::Event(Field *field)
 {
 	setName(field->getName());
 	setTimeStamp(GetCurrentSystemTime());
@@ -18,7 +18,7 @@ Event::Event(Field *field)
 	InitializeJavaIDs();
 }
 
-Event::Event(char *name, double time, Field *field) 
+Event::Event(char *name, double time, Field *field)
 {
 	setName(name);
 	setTimeStamp(time);
@@ -26,7 +26,7 @@ Event::Event(char *name, double time, Field *field)
 	InitializeJavaIDs();
 }
 
-void Event::InitializeJavaIDs() 
+void Event::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	JNIEnv *jniEnv = getJniEnv();
@@ -39,12 +39,12 @@ void Event::InitializeJavaIDs()
 //	Name
 ////////////////////////////////////////////////
 
-void Event::setName(char *name) 
+void Event::setName(char *name)
 {
 	mName.setValue(name);
 }
 
-char *Event::getName() 
+char *Event::getName()
 {
 	return mName.getValue();
 }
@@ -52,13 +52,13 @@ char *Event::getName()
 ////////////////////////////////////////////////
 //	Time
 ////////////////////////////////////////////////
-	
-void Event::setTimeStamp(double time) 
+
+void Event::setTimeStamp(double time)
 {
 	mTime = time;
 }
 
-double Event::getTimeStamp() 
+double Event::getTimeStamp()
 {
 	return mTime;
 }
@@ -67,12 +67,12 @@ double Event::getTimeStamp()
 //	ConstField
 ////////////////////////////////////////////////
 
-void Event::setField(Field *field) 
+void Event::setField(Field *field)
 {
 	mField = field;
 }
 
-Field *Event::getField() 
+Field *Event::getField()
 {
 	return mField;
 }
@@ -83,19 +83,19 @@ Field *Event::getField()
 
 #ifdef SUPPORT_JSAI
 
-void Event::setEventClass(jclass eventClass) 
+void Event::setEventClass(jclass eventClass)
 {
 	mEventClass = eventClass;
 }
 
-jclass Event::getEventClass() 
+jclass Event::getEventClass()
 {
 	return mEventClass;
 }
 
-jobject Event::toJavaObject() 
+jobject Event::toJavaObject()
 {
-	
+
 	JNIEnv *jniEnv = getJniEnv();
 
 	Field	*field = getField();

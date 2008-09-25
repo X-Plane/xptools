@@ -10,12 +10,12 @@
 
 #include "NodeList.h"
 
-NodeList::NodeList() 
+NodeList::NodeList()
 {
 	RootNode *rootNode = new RootNode();
 	setRootNode(rootNode);
 }
 
-NodeList::~NodeList() 
+NodeList::~NodeList()
 {
 }

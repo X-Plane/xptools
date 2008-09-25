@@ -17,7 +17,7 @@
 
 #include "PointSetNode.h"
 
-PointSetNode::PointSetNode() 
+PointSetNode::PointSetNode()
 {
 	setHeaderFlag(false);
 	setType(pointSetNodeString);
@@ -30,12 +30,12 @@ PointSetNode::~PointSetNode() {
 //	List
 ////////////////////////////////////////////////
 
-PointSetNode *PointSetNode::next() 
+PointSetNode *PointSetNode::next()
 {
 	return (PointSetNode *)Node::next(getType());
 }
 
-PointSetNode *PointSetNode::nextTraversal() 
+PointSetNode *PointSetNode::nextTraversal()
 {
 	return (PointSetNode *)Node::nextTraversalByType(getType());
 }
@@ -43,7 +43,7 @@ PointSetNode *PointSetNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool PointSetNode::isChildNodeType(Node *node)
 {
 	if (node->isCoordinateNode() || node->isColorNode())
@@ -52,7 +52,7 @@ bool PointSetNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void PointSetNode::initialize() 
+void PointSetNode::initialize()
 {
 	if (!isInitialized()) {
 #ifdef SUPPORT_OPENGL
@@ -63,11 +63,11 @@ void PointSetNode::initialize()
 	}
 }
 
-void PointSetNode::uninitialize() 
+void PointSetNode::uninitialize()
 {
 }
 
-void PointSetNode::update() 
+void PointSetNode::update()
 {
 }
 
@@ -75,7 +75,7 @@ void PointSetNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void PointSetNode::outputContext(ostream &printStream, char *indentString) 
+void PointSetNode::outputContext(ostream &printStream, char *indentString)
 {
 	ColorNode *color = getColorNodes();
 	if (color != NULL) {
@@ -87,7 +87,7 @@ void PointSetNode::outputContext(ostream &printStream, char *indentString)
 			color->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "color USE " << color->getName() << endl;
 	}
 
@@ -101,7 +101,7 @@ void PointSetNode::outputContext(ostream &printStream, char *indentString)
 			coord->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "coord USE " << coord->getName() << endl;
 	}
 }
@@ -110,7 +110,7 @@ void PointSetNode::outputContext(ostream &printStream, char *indentString)
 //	PointSetNode::recomputeBoundingBox
 ////////////////////////////////////////////////////////////
 
-void PointSetNode::recomputeBoundingBox() 
+void PointSetNode::recomputeBoundingBox()
 {
 	CoordinateNode *coordinate = getCoordinateNodes();
 	if (!coordinate) {
@@ -169,7 +169,7 @@ static void DrawPointSet(PointSetNode *pointSet)
 	glEnd();
 }
 
-void PointSetNode::recomputeDisplayList() 
+void PointSetNode::recomputeDisplayList()
 {
 	CoordinateNode *coordinate = getCoordinateNodes();
 	if (!coordinate)

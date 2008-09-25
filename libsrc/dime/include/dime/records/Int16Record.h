@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int16Record.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ public:
   virtual dimeRecord *copy(dimeMemHandler * const mh) const;
   virtual void setValue(const dimeParam &param, dimeMemHandler * const memhandler = NULL);
   virtual void getValue(dimeParam &param) const;
-  
+
   int16 getValue() const;
   void setValue(const int16 val);
 
@@ -51,7 +51,7 @@ public:
 
 private:
   int16 value;
-  
+
 }; // class dimeInt16Record
 
 #endif // ! DIME_INT16RECORD_H

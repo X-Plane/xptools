@@ -20,7 +20,7 @@ typedef CGAL::Arrangement_2<Dcel,Traits>                Arr_2;
 
 int main()
 {
-  Arr_2 arr; 
+  Arr_2 arr;
 
   // Read the segments
 
@@ -28,7 +28,7 @@ int main()
   int x,y;
   std::cout << "Enter number of segments: " ;
   std::cin >> num_curves;
-  while (num_curves--) 
+  while (num_curves--)
   {
     std::cout << "Enter source coordinates (2 integers): " ;
     std::cin >> x >> y;
@@ -51,13 +51,13 @@ int main()
   Arr_2::Halfedge_handle e = arr.halfedges_begin();
   Arr_2::Locate_type lt;
   e = arr.vertical_ray_shoot(p, lt, true);
-  
+
   // Check the location type
-  if (lt == Arr_2::UNBOUNDED_FACE) 
+  if (lt == Arr_2::UNBOUNDED_FACE)
   {
     std::cout << "UNBOUNDED_FACE" << std::endl;
   }
-  else 
+  else
   {
     std::cout << "The half-edge shot is :" << std::endl;
     std::cout << "(Using homogeneous coordinates <hx, hy, hw> ";
@@ -66,5 +66,5 @@ int main()
     std::cout << std::endl;
   }
 
-  return 0;  
+  return 0;
 }

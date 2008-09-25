@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: DoubleRecord.h
  *
  *  This source file is part of DIME.
@@ -51,7 +51,7 @@ public:
 
 private:
   dxfdouble value;
-  
+
 }; // class dimeDoubleRecord
 
 #endif // ! DIME_DOUBLERECORD_H

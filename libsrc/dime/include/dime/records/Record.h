@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Record.h
  *
  *  This source file is part of DIME.
@@ -39,19 +39,19 @@ class dimeOutput;
 
 class DIME_DLL_API dimeRecord : public dimeBase
 {
-public: 
+public:
   dimeRecord(const int group_code);
   virtual ~dimeRecord();
-  
+
   virtual void setValue(const dimeParam &param, dimeMemHandler * const memhandler = NULL) = 0;
   virtual void getValue(dimeParam &param) const = 0;
   virtual dimeRecord *copy(dimeMemHandler * const memhandler) const = 0;
-  
+
   void setGroupCode(const int group_code);
   int getGroupCode() const;
 
-  
-public:    
+
+public:
   virtual bool isEndOfSectionRecord() const;
   virtual bool isEndOfFileRecord() const;
   virtual int typeId() const = 0;
@@ -63,13 +63,13 @@ public:
   static bool readRecordData(dimeInput * const in, const int group_code,
 			     dimeParam &param);
   static dimeRecord *readRecord(dimeInput * const in);
-  static dimeRecord *createRecord(const int group_code, 
+  static dimeRecord *createRecord(const int group_code,
 				 dimeMemHandler * const memhandler);
   static dimeRecord *createRecord(const int group_code,
 				 const dimeParam &param,
 				 dimeMemHandler * const memhandler);
   static int getRecordType(const int group_code);
-  
+
 protected:
   int groupCode;
 

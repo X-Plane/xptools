@@ -17,7 +17,7 @@
 class BoxNode : public GeometryNode {
 
 	SFVec3f *sizeField;
-	
+
 public:
 
 	BoxNode();
@@ -46,7 +46,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

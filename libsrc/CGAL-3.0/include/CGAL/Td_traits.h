@@ -24,7 +24,7 @@ CGAL_BEGIN_NAMESPACE
 template <class Pm_traits_,class X_curve_> class Td_traits : public Pm_traits_
 {
 public:
-  typedef Pm_traits_ Traits_base;  
+  typedef Pm_traits_ Traits_base;
   typedef X_curve_ X_curve;
   typedef Td_traits<Traits_base,X_curve> Self;
   typedef typename Traits_base::Point Point;
@@ -35,7 +35,7 @@ public:
   typedef X_trapezoid* X_trapezoid_ptr;
   typedef X_trapezoid& X_trapezoid_ref;
   typedef const X_trapezoid& X_trapezoid_const_ref;
-  
+
   Td_traits(const Traits_base& t) : Traits_base(t){}
   Td_traits() {}
 
@@ -57,7 +57,7 @@ public:
 
 protected:
   typedef X_trapezoid_const_ref const_ref;
-  
+
 public:
   /*
     note:
@@ -88,35 +88,35 @@ inline bool trapezoid_top_curve_equal(X_trapezoid_const_ref left,
 }
 
   bool is_degenerate(const_ref tr) const {
-    return is_degenerate_point(tr) || 
-      !tr.is_top_unbounded() && 
-      !tr.is_bottom_unbounded() && 
+    return is_degenerate_point(tr) ||
+      !tr.is_top_unbounded() &&
+      !tr.is_bottom_unbounded() &&
       curve_equal(tr.bottom(),tr.top());
-  }		
-  
+  }
+
   bool is_degenerate_point(const_ref tr) const
   {
-    return !tr.is_left_unbounded() && !tr.is_right_unbounded() && 
+    return !tr.is_left_unbounded() && !tr.is_right_unbounded() &&
       point_equal(tr.left(),tr.right());
   }
   bool is_degenerate_curve(const_ref tr) const
   {
-    return !tr.is_top_unbounded() && !tr.is_bottom_unbounded() && 
+    return !tr.is_top_unbounded() && !tr.is_bottom_unbounded() &&
       curve_equal(tr.bottom(), tr.top()) && !is_degenerate_point(tr);
   }
   bool is_vertical(const_ref tr) const
   {
-    return !tr.is_left_unbounded() && 
-      !tr.is_right_unbounded() && 
+    return !tr.is_left_unbounded() &&
+      !tr.is_right_unbounded() &&
       point_equal_x(tr.left(),tr.right());
   }
-  
+
   /* Description:
      returns whether point is inside trapezoid using lexicographic order */
-  
+
   bool is_inside(const_ref tr,const Point& p) const
   {
-    return	
+    return
       (tr.is_left_unbounded()||
        point_is_left_low(tr.left(),p))&&
       (tr.is_right_unbounded()||
@@ -136,7 +136,7 @@ inline bool trapezoid_top_curve_equal(X_trapezoid_const_ref left,
          !point_is_right_top(p,tr.right())))
       {
         // test bottom side
-        if (!tr.is_bottom_unbounded()) 
+        if (!tr.is_bottom_unbounded())
           {
             if (curve_compare_y_at_x(p, tr.bottom()) == SMALLER)
               return false;
@@ -151,8 +151,8 @@ inline bool trapezoid_top_curve_equal(X_trapezoid_const_ref left,
       }
     return false;
   }
-  
-  
+
+
 public:
   static const Point& get_point_at_left_top_infinity();
   static const Point& get_point_at_right_bottom_infinity();

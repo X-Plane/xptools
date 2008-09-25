@@ -22,7 +22,7 @@
 
 //#include <CGAL/Cartesian/redefine_names_2.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 
 template < class RT >
@@ -61,7 +61,7 @@ weighted_circumcenterC2( const RT &px, const RT &py, const We &pw,
 {
   RT dqw = RT(qw-pw);
   RT drw = RT(rw-pw);
- 
+
   weighted_circumcenter_translateC2(qx-px, qy-py, dqw,rx-px, ry-py,drw,x, y);
   x += px;
   y += py;
@@ -76,8 +76,8 @@ radical_axisC2(const RT &px, const RT &py, const We &pw,
 {
   a =  RT(2)*(px - qx);
   b =  RT(2)*(py - qy);
-  c = - CGAL_NTS square(px) - CGAL_NTS square(py) 
-      + CGAL_NTS square(qx) + CGAL_NTS square(qy) 
+  c = - CGAL_NTS square(px) - CGAL_NTS square(py)
+      + CGAL_NTS square(qx) + CGAL_NTS square(qy)
        +RT(pw) - RT(qw);
 }
 

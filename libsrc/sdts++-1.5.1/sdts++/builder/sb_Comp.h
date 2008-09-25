@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -68,7 +68,7 @@ class sb_Comp : public sb_Module
          return false if the corresponding value is not set.  (It may
          not be set because a value was not assigned to it, or because
          you previously tried to assign an invalid value.)  Otherwise
-         they will return true.  
+         they will return true.
       */
       bool getObjectRepresentation( std::string& val ) const;
       bool getOBRP( std::string& val ) const { return getObjectRepresentation( val ); }
@@ -91,7 +91,7 @@ class sb_Comp : public sb_Module
          fill the given record based on the builder's object
          field/subfield values -- return false if in a wedged
          state. (E.g., a mandatory field isn't set or was assigned a
-         value outside its proper domain.  
+         value outside its proper domain.
       */
       bool getRecord( sc_Record& val ) const;
 
@@ -157,7 +157,7 @@ class sb_Comp : public sb_Module
       virtual sio_8211Schema& schema_();
 
       virtual void buildSpecificSchema_();
-      
+
       sb_Comp(sb_Comp const& right); // NOT NEEDED
       sb_Comp const& operator=(sb_Comp const& right); // NOT NEEDED
 

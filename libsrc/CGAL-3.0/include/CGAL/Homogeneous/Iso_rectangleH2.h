@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_ISO_RECTANGLEH2_H
 #define CGAL_ISO_RECTANGLEH2_H
 
@@ -51,10 +51,10 @@ public:
   Iso_rectangleH2(const Point_2& left, const Point_2& right,
                   const Point_2& bottom, const Point_2& top);
 
-  Iso_rectangleH2(const RT& min_hx, const RT& min_hy, 
+  Iso_rectangleH2(const RT& min_hx, const RT& min_hy,
                   const RT& max_hx, const RT& max_hy);
 
-  Iso_rectangleH2(const RT& min_hx, const RT& min_hy, 
+  Iso_rectangleH2(const RT& min_hx, const RT& min_hy,
                   const RT& max_hx, const RT& max_hy, const RT& hw);
 
   bool      operator==(const Iso_rectangleH2<R>& s) const;
@@ -144,19 +144,19 @@ Iso_rectangleH2(const typename Iso_rectangleH2<R>::Point_2& left,
 
 template < class R >
 inline
-Iso_rectangleH2<R>::Iso_rectangleH2(const RT& min_hx, const RT& min_hy, 
+Iso_rectangleH2<R>::Iso_rectangleH2(const RT& min_hx, const RT& min_hy,
                                     const RT& max_hx, const RT& max_hy)
-  : base( rep( Point_2(min_hx, min_hy), 
+  : base( rep( Point_2(min_hx, min_hy),
                Point_2(max_hx, max_hy)))
 {}
 
 template < class R >
 inline
-Iso_rectangleH2<R>::Iso_rectangleH2(const RT& min_hx, const RT& min_hy, 
+Iso_rectangleH2<R>::Iso_rectangleH2(const RT& min_hx, const RT& min_hy,
                                     const RT& max_hx, const RT& max_hy,
                                     const RT& hw)
 {
-  initialize_with( rep( Point_2(min_hx, min_hy, hw), 
+  initialize_with( rep( Point_2(min_hx, min_hy, hw),
                         Point_2(max_hx, max_hy, hw)) );
 }
 
@@ -212,7 +212,7 @@ template < class R >
 inline
 typename Iso_rectangleH2<R>::FT
 Iso_rectangleH2<R>::min_coord(int i) const
-{ 
+{
    CGAL_kernel_precondition ( i == 0 || i == 1 );
    if (i == 0)
       return xmin();
@@ -224,7 +224,7 @@ template < class R >
 inline
 typename Iso_rectangleH2<R>::FT
 Iso_rectangleH2<R>::max_coord(int i) const
-{ 
+{
    CGAL_kernel_precondition ( i == 0 || i == 1 );
    if (i == 0)
       return xmax();

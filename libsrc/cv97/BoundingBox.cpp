@@ -43,7 +43,7 @@ void BoundingBox::addPoint(float point[3])
 	for (int n=0; n<3; n++) {
 		if (point[n] < mMinPosition[n])
 			mMinPosition[n] = point[n];
-		if (mMaxPosition[n] < point[n]) 
+		if (mMaxPosition[n] < point[n])
 			mMaxPosition[n] = point[n];
 	}
 	setNPoints(getNPoints()+1);

@@ -32,21 +32,21 @@ int main()
   cv.push_back(Curve(Point(0, 1), Point(1, 0)));
   cv.push_back(Curve(Point(0, 0), Point(1, 1)));
   cv.push_back(Curve(Point(0, 1), Point(1, 1)));
-  
+
   std::cout << "The curves of the map :" << std::endl;
-  std::copy(cv.begin(), cv.end(), 
+  std::copy(cv.begin(), cv.end(),
 	    std::ostream_iterator<Curve>(std::cout, "\n"));
   std::cout << std::endl;
 
   // Insert the curves into the Planar_map:
   std::cout << "Inserting the curves to the map ... \n";
   pm.insert(cv.begin(), cv.end());
-  
+
   // insert another segment...
   cv.clear();
   cv.push_back(Curve(Point(0, 0), Point(1, 2)));
   pm.insert(cv.begin(), cv.end());
-  
+
   std::cout << ((pm.is_valid()) ? "map valid!" : "map invalid!") << std::endl
             << std::endl;
 

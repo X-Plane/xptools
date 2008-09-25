@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	XWin(default_dnd)
 {
 	mDC = ::GetDC(mWindow);
-	
+
 		PIXELFORMATDESCRIPTOR pfd;
 
 	memset(&pfd,0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -47,7 +47,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	pfd.iLayerType=PFD_MAIN_PLANE;
 
 	int pixelFormat = ChoosePixelFormat(mDC, &pfd);
-	if (pixelFormat == 0)	
+	if (pixelFormat == 0)
 		throw "no pixel format";
 
 	if (!SetPixelFormat (mDC, pixelFormat, &pfd))
@@ -72,14 +72,14 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
-}	
+}
 
-	
+
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
 	XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
 {
 	mDC = ::GetDC(mWindow);
-	
+
 		PIXELFORMATDESCRIPTOR pfd;
 
 	memset(&pfd,0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -92,7 +92,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	pfd.iLayerType=PFD_MAIN_PLANE;
 
 	int pixelFormat = ChoosePixelFormat(mDC, &pfd);
-	if (pixelFormat == 0)	
+	if (pixelFormat == 0)
 		throw "no pixel format";
 
 	if (!SetPixelFormat (mDC, pixelFormat, &pfd))
@@ -116,7 +116,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
-}	
+}
 
 XWinGL::~XWinGL()
 {
@@ -143,7 +143,7 @@ void			XWinGL::Resized(int inWidth, int inHeight)
 {
 	wglMakeCurrent(mDC, mContext);
 	glViewport(0, 0, inWidth, inHeight);
-	this->GLReshaped(inWidth, inHeight);	
+	this->GLReshaped(inWidth, inHeight);
 }
 
 void			XWinGL::Update(XContext ctx)

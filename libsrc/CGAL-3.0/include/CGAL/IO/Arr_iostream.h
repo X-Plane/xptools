@@ -29,21 +29,21 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Dcel, class Traits, class Base_node> inline
-::std::ostream & operator << (::std::ostream & o, 
+::std::ostream & operator << (::std::ostream & o,
                               const Arrangement_2<Dcel,Traits,Base_node> & arr)
 {
   typedef Arrangement_2<Dcel,Traits,Base_node>        Arr_2;
   typedef Arr_file_writer<Arr_2>                      Writer;
 
   //print_OFF(o, arr);
-  
+
   Writer writer(o, arr);
   write_arr<Arr_2,Writer>(arr, writer, o);
   return o;
 }
 
 template <class Dcel, class Traits, class Base_node> inline
-::std::istream & operator >> (std::istream & in, 
+::std::istream & operator >> (std::istream & in,
                               Arrangement_2<Dcel,Traits, Base_node> & arr)
 {
   // reads a polyhedron from `in' and appends it to P.

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: MemHandler.h
  *
  *  This source file is part of DIME.
@@ -42,10 +42,10 @@ public:
 
   char *stringAlloc(const char * const string);
   void *allocMem(const int size, const int alignment = 4);
-  
+
 private:
 
-  class dimeMemNode *bigmemnode; // linked list of big memory chunks 
+  class dimeMemNode *bigmemnode; // linked list of big memory chunks
   class dimeMemNode *memnode;   // linked list of memory nodes.
 
 }; // class dimeMemHandler

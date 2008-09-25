@@ -8,27 +8,30 @@
  ******************************************************************************
  * Copyright (c) 2000, Frank Warmerdam
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  ******************************************************************************
  *
  * $Log$
+ * Revision 1.2  2008-09-25 06:21:27  sothis
+ * applied tounix.sh, removing trailing whitespaces from the end of a line
+ *
  * Revision 1.1  2006-09-22 21:02:47  bsupnik
  * tiff and geotiff
  *
@@ -128,7 +131,7 @@ main(int argc, char* argv[])
                              wc, fip->field_name, argc - arg_index);
                     return 4;
                 }
-                    
+
                 if (wc > 1) {
                         int     i, size;
                         void    *array;
@@ -214,7 +217,7 @@ main(int argc, char* argv[])
                             default:
                                 break;
                         }
-                
+
                         if (fip->field_passcount) {
                                 ret = TIFFSetField(tiff, fip->field_tag,
                                                    wc, array);
@@ -291,7 +294,7 @@ main(int argc, char* argv[])
             fclose( fp );
 
             if(TIFFSetField( tiff, fip->field_tag, text ) != 1) {
-                fprintf(stderr, "Failed to set %s from file %s\n", 
+                fprintf(stderr, "Failed to set %s from file %s\n",
                         fip->field_name, argv[arg_index]);
             }
 

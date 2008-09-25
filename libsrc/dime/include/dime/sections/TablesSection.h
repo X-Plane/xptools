@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: TablesSection.h
  *
  *  This source file is part of DIME.
@@ -33,7 +33,7 @@
 #include <dime/sections/Section.h>
 #include <dime/util/Array.h>
 
-class DIME_DLL_API dimeTablesSection : public dimeSection 
+class DIME_DLL_API dimeTablesSection : public dimeSection
 {
 public:
   dimeTablesSection(dimeMemHandler * const memhandler = NULL);
@@ -41,7 +41,7 @@ public:
 
   virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
 public:
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
@@ -51,7 +51,7 @@ public:
   int getNumTables() const;
   class dimeTable *getTable(const int idx);
   void removeTable(const int idx);
-  void insertTable(dimeTable * const table, const int idx = -1); 
+  void insertTable(dimeTable * const table, const int idx = -1);
 
 private:
   dimeArray <dimeTable*> tables;

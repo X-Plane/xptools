@@ -49,7 +49,7 @@ typedef struct WhereClause WhereClause;
 ** help it analyze the subexpressions of the WHERE clause.  Each WHERE
 ** clause subexpression is separated from the others by an AND operator.
 **
-** All WhereTerms are collected into a single WhereClause structure.  
+** All WhereTerms are collected into a single WhereClause structure.
 ** The following identity holds:
 **
 **        WhereTerm.pWC->a[WhereTerm.idx] == WhereTerm
@@ -116,8 +116,8 @@ struct WhereClause {
 ** An instance of the following structure keeps track of a mapping
 ** between VDBE cursor numbers and bits of the bitmasks in WhereTerm.
 **
-** The VDBE cursor numbers are small integers contained in 
-** SrcList_item.iCursor and Expr.iTable fields.  For any given WHERE 
+** The VDBE cursor numbers are small integers contained in
+** SrcList_item.iCursor and Expr.iTable fields.  For any given WHERE
 ** clause, the cursor numbers might not begin with 0 and they might
 ** contain gaps in the numbering sequence.  But we want to make maximum
 ** use of the bits in our bitmasks.  This structure provides a mapping
@@ -458,7 +458,7 @@ static WhereTerm *findTerm(
 static void exprAnalyze(SrcList*, ExprMaskSet*, WhereClause*, int);
 
 /*
-** Call exprAnalyze on all terms in a WHERE clause.  
+** Call exprAnalyze on all terms in a WHERE clause.
 **
 **
 */
@@ -480,7 +480,7 @@ static void exprAnalyzeAll(
 ** so and false if not.
 **
 ** In order for the operator to be optimizible, the RHS must be a string
-** literal that does not begin with a wildcard.  
+** literal that does not begin with a wildcard.
 */
 static int isLikeOrGlob(
   sqlite3 *db,      /* The database */
@@ -1054,7 +1054,7 @@ static void TRACE_IDX_OUTPUTS(sqlite3_index_info *p){
 ** same virtual table.  The sqlite3_index_info structure is created
 ** and initialized on the first invocation and reused on all subsequent
 ** invocations.  The sqlite3_index_info structure is also used when
-** code is generated to access the virtual table.  The whereInfoDelete() 
+** code is generated to access the virtual table.  The whereInfoDelete()
 ** routine takes care of freeing the sqlite3_index_info structure after
 ** everybody has finished with it.
 */
@@ -1095,7 +1095,7 @@ static double bestVirtualIndex(
       nTerm++;
     }
 
-    /* If the ORDER BY clause contains only columns in the current 
+    /* If the ORDER BY clause contains only columns in the current
     ** virtual table then allocate space for the aOrderBy part of
     ** the sqlite3_index_info structure.
     */
@@ -1176,7 +1176,7 @@ static double bestVirtualIndex(
     return 0.0;
   }
 
-  /* Set the aConstraint[].usable fields and initialize all 
+  /* Set the aConstraint[].usable fields and initialize all
   ** output variables to zero.
   **
   ** aConstraint[].usable is true for constraints where the right-hand
@@ -1185,7 +1185,7 @@ static double bestVirtualIndex(
   **
   **           column = expr
   **
-  ** and we are evaluating a join, then the constraint on column is 
+  ** and we are evaluating a join, then the constraint on column is
   ** only valid if all tables referenced in expr occur to the left
   ** of the table containing column.
   **
@@ -1550,7 +1550,7 @@ static void buildIndexProbe(
 
 /*
 ** Generate code for a single equality term of the WHERE clause.  An equality
-** term can be either X=expr or X IN (...).   pTerm is the term to be 
+** term can be either X=expr or X IN (...).   pTerm is the term to be
 ** coded.
 **
 ** The current value for the constraint is left on the top of the stack.
@@ -1604,7 +1604,7 @@ static void codeEqualityTerm(
 ** For example, consider table t1(a,b,c,d,e,f) with index i1(a,b,c).
 ** Suppose the WHERE clause is this:  a==5 AND b IN (1,2,3) AND c>5 AND c<10
 ** The index has as many as three equality constraints, but in this
-** example, the third "c" value is an inequality.  So only two 
+** example, the third "c" value is an inequality.  So only two
 ** constraints are coded.  This routine will generate code to evaluate
 ** a==5 and b IN (1,2,3).  The current values for a and b will be left
 ** on the stack - a is the deepest and b the shallowest.
@@ -1813,7 +1813,7 @@ WhereInfo *sqlite3WhereBegin(
   int andFlags;              /* AND-ed combination of all wc.a[].flags */
 
   /* The number of tables in the FROM clause is limited by the number of
-  ** bits in a Bitmask 
+  ** bits in a Bitmask
   */
   if( pTabList->nSrc>BMS ){
     sqlite3ErrorMsg(pParse, "at most %d tables in a join", BMS);
@@ -1826,7 +1826,7 @@ WhereInfo *sqlite3WhereBegin(
   initMaskSet(&maskSet);
   whereClauseInit(&wc, pParse);
   whereSplit(&wc, pWhere, TK_AND);
-    
+
   /* Allocate and initialize the WhereInfo structure that will become the
   ** return value.
   */
@@ -1919,7 +1919,7 @@ WhereInfo *sqlite3WhereBegin(
         }
         pIdx = 0;
         nEq = 0;
-      }else 
+      }else
 #endif
       {
         cost = bestIndex(pParse, &wc, pTabItem, notReady,
@@ -2224,7 +2224,7 @@ WhereInfo *sqlite3WhereBegin(
         sqlite3VdbeAddOp(v, OP_Dup, nEq-1, 0);
       }
 
-      /* Figure out what comparison operators to use for top and bottom 
+      /* Figure out what comparison operators to use for top and bottom
       ** search bounds. For an ascending index, the bottom bound is a > or >=
       ** operator and the top bound is a < or <= operator.  For a descending
       ** index the operators are reversed.
@@ -2412,7 +2412,7 @@ WhereInfo *sqlite3WhereBegin(
     }
 
     /* For a LEFT OUTER JOIN, generate code that will record the fact that
-    ** at least one row of the right table has matched the left table.  
+    ** at least one row of the right table has matched the left table.
     */
     if( pLevel->iLeftJoin ){
       pLevel->top = sqlite3VdbeCurrentAddr(v);
@@ -2490,7 +2490,7 @@ whereBeginNoMem:
 }
 
 /*
-** Generate the end of the WHERE loop.  See comments on 
+** Generate the end of the WHERE loop.  See comments on
 ** sqlite3WhereBegin() for additional information.
 */
 void sqlite3WhereEnd(WhereInfo *pWInfo){
@@ -2550,7 +2550,7 @@ void sqlite3WhereEnd(WhereInfo *pWInfo){
 
     /* Make cursor substitutions for cases where we want to use
     ** just the index and never reference the table.
-    ** 
+    **
     ** Calls to the code generator in between sqlite3WhereBegin and
     ** sqlite3WhereEnd will have created code that references the table
     ** directly.  This loop scans all that code looking for opcodes

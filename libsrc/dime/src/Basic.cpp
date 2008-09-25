@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Basic.cpp
  *
  *  This source file is part of DIME.
@@ -62,7 +62,7 @@ char *strdup(const char *istr)
 
 /* Returns -1 if value equals negative infinity, +1 if it is equal to
    positive infinity, or 0 if the number is not infinite.
-   
+
    Note that on some systems, this method will always return 0
    (i.e. false positives).
 */

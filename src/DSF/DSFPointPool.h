@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,11 +33,11 @@ using namespace std;
 /* A tuple - an N dimensional coordinate.  Real
  * handy because it can be used for any kind of DSF coordinate. */
 
-/* Of course, in practice, variable sized arrays are way too 
+/* Of course, in practice, variable sized arrays are way too
  * expensive to manipulate, so we're fixed sized.  Right now
- * 10 planes covers the worst case - XYZ, norm, STx2 + A */ 
+ * 10 planes covers the worst case - XYZ, norm, STx2 + A */
  #define	MAX_TUPLE_LEN 10
- 
+
 class	DSFTuple {
 public:
 
@@ -46,21 +46,21 @@ public:
 	DSFTuple(const DSFTuple& rhs);
 	DSFTuple(const double * values, int length);
 	~DSFTuple();
-	
+
 	inline DSFTuple& operator=(const DSFTuple& rhs);
 	inline bool operator==(const DSFTuple& rhs) const;
 	inline bool operator< (const DSFTuple& rhs) const;
-	
+
 	inline DSFTuple& operator += (const DSFTuple& rhs);
 	inline DSFTuple& operator -= (const DSFTuple& rhs);
 	inline DSFTuple& operator *= (const DSFTuple& rhs);
 	inline DSFTuple& operator /= (const DSFTuple& rhs);
-	
+
 	inline DSFTuple operator+ (const DSFTuple& rhs) const;
 	inline DSFTuple operator- (const DSFTuple& rhs) const;
 	inline DSFTuple operator* (const DSFTuple& rhs) const;
 	inline DSFTuple operator/ (const DSFTuple& rhs) const;
-	
+
 	inline bool in_range(const DSFTuple& offset, const DSFTuple& scale) const;
 	inline bool encode(const DSFTuple& offset, const DSFTuple& scale);
 	inline bool encode32(const DSFTuple& offset, const DSFTuple& scale);
@@ -74,7 +74,7 @@ public:
 	inline const double * end() const 		{ return mData+mLen;}
 	inline void push_back(double v);
 	inline void insert(double * ptr, double v);
-	
+
 	void dump(void) const;
 	void dumphex(void) const;
 
@@ -84,7 +84,7 @@ private:
 
 	int		mLen;
 	double	mData[MAX_TUPLE_LEN];
-	
+
 };
 
 HASH_MAP_NAMESPACE_START
@@ -106,7 +106,7 @@ HASH_MAP_NAMESPACE_END
 typedef	vector<DSFTuple>			DSFTupleVector;
 typedef list<DSFTupleVector>		DSFTupleVectorVector;
 
-/* A shared point pool.  Every point is pooled, and the 
+/* A shared point pool.  Every point is pooled, and the
  * points are sorted spatially.  The shared point pool
  * is really N sub-point-pools, so each point ends up
  * with a pair of indices. */
@@ -124,15 +124,15 @@ public:
 	void			SetRange(
 				const DSFTuple& 		min,
 				const DSFTuple& 		max);
-	
-				
+
+
 	void			AddPool(DSFTuple& minFrac, DSFTuple& maxFrac);
 
 	// This returns true if the set of points can be kept as a run...
 	// it tests only whether the points span subpools, and can be
 	// run before any points are accepted.
 	bool			CanBeContiguous(const DSFTupleVector& inPoints);
-	
+
 	// This routine accepts a run as a contiguous set in one pool, and
 	// returns the pool and index, or -1, -1 if any of the points are
 	// already in one of the point pools (and thus it should be shared).
@@ -144,25 +144,25 @@ public:
 
 	void			ProcessPoints(void);
 	int				MapPoolNumber(int);	// From full to used pool #s
-	
+
 	int				WritePoolAtoms(FILE * fi, int id);
 	int				WriteScaleAtoms(FILE * fi, int id);
-	
+
 private:
 
 	DSFTuple			mMin;
 	DSFTuple			mMax;
 
 	struct	SharedSubPool {
-		
+
 		DSFTuple					mOffset;
 		DSFTuple					mScale;
-		
+
 		DSFTupleVector				mPoints;			// These are our points
 		hash_map<DSFTuple, int>		mPointsIndex;		// This is used to see if we already have a point.
 
 	};
-	
+
 	list<SharedSubPool>			mPools;
 	vector<int>					mUsageMapping;
 
@@ -180,7 +180,7 @@ public:
 	void			SetRange(
 				const DSFTuple& 		min,
 				const DSFTuple& 		max);
-	
+
 	void			AddPool(DSFTuple& minFrac, DSFTuple& maxFrac);
 	DSFPointPoolLoc	AccumulatePoint(const DSFTuple& inPoint);
 	DSFPointPoolLoc	AccumulatePoints(const DSFTupleVector& inPoints);
@@ -190,20 +190,20 @@ public:
 	int				WritePoolAtoms(FILE * fi, int id);
 	int				WriteScaleAtoms(FILE * fi, int id);
 
-private:	
+private:
 
 	DSFTuple			mMin;
 	DSFTuple			mMax;
 
 	struct	ContiguousSubPool {
-		
+
 		DSFTuple					mOffset;
 		DSFTuple					mScale;
-		
+
 		DSFTupleVector			mPoints;
 
 	};
-	
+
 	list<ContiguousSubPool>		mPools;
 	vector<int>					mUsageMapping;
 };
@@ -219,14 +219,14 @@ public:
 	void			SetRange(
 				const DSFTuple& 		min,
 				const DSFTuple& 		max);
-	
+
 	int				CountShared(const DSFTupleVector& inPoints);
 	DSFPointPoolLoc	AcceptContiguous(const DSFTupleVector& inPoints);
 	DSFPointPoolLoc	AcceptShared(const DSFTuple& inPoint);
 
 	int				WritePoolAtoms(FILE * fi, int id);
 	int				WriteScaleAtoms(FILE * fi, int id);
-	
+
 private:
 
 	DSFTuple			mMin;
@@ -234,10 +234,10 @@ private:
 
 	DSFTuple					mOffset;
 	DSFTuple					mScale;
-		
+
 	DSFTupleVector				mPoints;			// These are our points
 	hash_map<DSFTuple, int>		mPointsIndex;		// This is used to see if we already have a point.
-	
+
 };
 
 
@@ -276,7 +276,7 @@ inline DSFTuple::DSFTuple(const double * values, int length) : mLen(length)
 inline DSFTuple::~DSFTuple()
 {
 }
-	
+
 inline DSFTuple& DSFTuple::operator=(const DSFTuple& rhs)
 {
 	mLen = rhs.mLen;
@@ -395,11 +395,11 @@ inline bool DSFTuple::in_range(const DSFTuple& offset, const DSFTuple& scale) co
 {
 	if (size() != offset.size()) return false;
 	if (size() != scale.size()) return false;
-	
+
 	const double * i = mData;
 	const double * j = offset.mData;
 	const double * k = scale.mData;
-	int c = mLen;	
+	int c = mLen;
 	while (c--)
 	{
 		if (*i < *j) return false;
@@ -414,7 +414,7 @@ inline bool DSFTuple::encode(const DSFTuple& offset, const DSFTuple& scale)
 {
 	if (size() != offset.size()) return false;
 	if (size() != scale.size()) return false;
-	
+
 	double * i = mData;
 	const double * j = offset.mData;
 	const double * k = scale.mData;
@@ -439,8 +439,8 @@ inline bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
 	if (size() != scale.size()) return false;
 
 #if DEV
-	DSFTuple	backup(*this);	
-#endif	
+	DSFTuple	backup(*this);
+#endif
 	double * i = mData;
 	const double * j = offset.mData;
 	const double * k = scale.mData;
@@ -453,7 +453,7 @@ inline bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
 		{
 #if DEV
 			*this = backup;
-#endif			
+#endif
 			return false;
 		}
 		++i, ++j, ++k;
@@ -474,8 +474,8 @@ inline void DSFTuple::insert(double * ptr, double v)
 {
 #if DEV
 	if (mLen == MAX_TUPLE_LEN)
-		AssertPrintf( "ERROR: overrun DSF tuple.\n");		
-#endif		
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
+#endif
 	int index = ptr - mData;
 	if (index < mLen)
 		memmove(ptr + sizeof(double), ptr, (mLen - index) * sizeof(double));
@@ -521,7 +521,7 @@ inline size_t DSFTuple::hash(void) const
 	while (words--)
 	if (*p != 0.0)
 		res *= *p++;
-	
+
 	size_t * pp = (size_t *) &res;
 	size_t ret = *pp++;
 	ret ^= *pp;

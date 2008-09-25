@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,12 +30,12 @@
 
 	IPropertyObject provides an interface for a class to describe and I/O it's own data.  But...implementing that a hundred times over
 	for each object would grow old fast.
-	
+
 	WED_PropertyHelper is an implementation that uses objects wrapped around member vars to simplify building up objects quickly.
-	
-	As a side note besides providing prop interfaces, it provides a way to stream properties to IODef reader/writers.  This is used to 
+
+	As a side note besides providing prop interfaces, it provides a way to stream properties to IODef reader/writers.  This is used to
 	save undo work in WED_thing.
-	
+
 */
 
 #include <vector>
@@ -58,7 +58,7 @@ class	WED_PropertyItem {
 public:
 	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, const char * table, const char * column);
 
-	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;	
+	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
 	virtual	void		GetPropertyDictItem(int e, string& item)=0;
 	virtual void		GetProperty(PropertyVal_t& val) const=0;
@@ -82,12 +82,12 @@ public:
 
 	virtual	int			FindProperty(const char * in_prop);
 	virtual int			CountProperties(void) const;
-	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);	
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
 	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
-	
+
 	virtual	void				PropEditCallback(int before)=0;
 	virtual	int					CountSubs(void)=0;
 	virtual	IPropertyObject *	GetNthSub(int n)=0;
@@ -95,15 +95,15 @@ public:
 
 	// Utility to help manage streaming
 			void 		ReadPropsFrom(IOReader * reader);
-			void 		WritePropsTo(IOWriter * writer);	
+			void 		WritePropsTo(IOWriter * writer);
 			void		PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
-	
+
 private:
 
 	friend class	WED_PropertyItem;
 	vector<WED_PropertyItem *>		mItems;
-	
+
 };
 
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------
@@ -131,8 +131,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 class	WED_PropBoolText : public WED_PropertyItem {
 public:
@@ -155,8 +155,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 
 class	WED_PropDoubleText : public WED_PropertyItem {
@@ -166,11 +166,11 @@ public:
 
 	int				mDigits;
 	int				mDecimals;
-	
+
 						operator double&() { return value; }
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	
+
 	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial, int digits, int decimals)  : WED_PropertyItem(parent, title, table, column), mDigits(digits), mDecimals(decimals), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -183,8 +183,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
@@ -204,7 +204,7 @@ public:
 						operator string&() { return value; }
 						operator string() const { return value; }
 	WED_PropStringText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	
+
 	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const string& initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -217,8 +217,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 class	WED_PropFileText : public WED_PropertyItem {
 public:
@@ -228,7 +228,7 @@ public:
 						operator string&() { return value; }
 						operator string() const { return value; }
 	WED_PropFileText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	
+
 	WED_PropFileText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const string& initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -241,8 +241,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 
 class	WED_PropIntEnum : public WED_PropertyItem {
@@ -254,7 +254,7 @@ public:
 						operator int&() { return value; }
 						operator int() const { return value; }
 	WED_PropIntEnum& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	
+
 	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial), domain(idomain) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -267,8 +267,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 class	WED_PropIntEnumSet : public WED_PropertyItem {
 public:
@@ -279,7 +279,7 @@ public:
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-	
+
 	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain)  : WED_PropertyItem(parent, title, table, column), domain(idomain) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
@@ -292,8 +292,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 
 class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
@@ -315,8 +315,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
 public:
@@ -335,8 +335,8 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
-	
-};	
+
+};
 
 
 

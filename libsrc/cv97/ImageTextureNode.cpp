@@ -25,10 +25,10 @@
 //	GetFileType
 ////////////////////////////////////////////////
 
-static int GetFileType(char *filename) 
+static int GetFileType(char *filename)
 {
 	FILE *fp = fopen(filename, "rb");
-	if (!fp)	
+	if (!fp)
 		return FILETYPE_NONE;
 
 	unsigned char signature[4];
@@ -58,21 +58,21 @@ static int GetFileType(char *filename)
 //	ImageTextureNode::ImageTextureNode
 ////////////////////////////////////////////////
 
-ImageTextureNode::ImageTextureNode() 
+ImageTextureNode::ImageTextureNode()
 {
 	setHeaderFlag(false);
 	setType(imageTextureNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
- 
+
 	// url field
 	urlField = new MFString();
 	addExposedField(urlFieldString, urlField);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	mImageBuffer	= NULL;
@@ -83,7 +83,7 @@ ImageTextureNode::ImageTextureNode()
 //	ImageTextureNode::~ImageTextureNode
 ////////////////////////////////////////////////
 
-ImageTextureNode::~ImageTextureNode() 
+ImageTextureNode::~ImageTextureNode()
 {
 	if (mImageBuffer)
 		delete []mImageBuffer;
@@ -102,7 +102,7 @@ MFString *ImageTextureNode::getUrlField()
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void ImageTextureNode::addUrl(char * value) 
+void ImageTextureNode::addUrl(char * value)
 {
 	getUrlField()->addValue(value);
 }
@@ -112,12 +112,12 @@ int ImageTextureNode::getNUrls()
 	return getUrlField()->getSize();
 }
 
-char *ImageTextureNode::getUrl(int index) 
+char *ImageTextureNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void ImageTextureNode::setUrl(int index, char *urlString) 
+void ImageTextureNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -201,7 +201,7 @@ bool ImageTextureNode::createImage()
 		delete []mImageBuffer;
 
 	mImageBuffer = mFileImage->getRGBAImage(mWidth, mHeight);
-	
+
 	if (mImageBuffer == NULL) {
 		mWidth	= 0;
 		mHeight	= 0;
@@ -218,9 +218,9 @@ bool ImageTextureNode::createImage()
 //	ImageTextureNode::createImage
 ////////////////////////////////////////////////
 
-void ImageTextureNode::initialize() 
+void ImageTextureNode::initialize()
 {
-	if (0 < getNUrls()) 
+	if (0 < getNUrls())
 		updateTexture();
 	else
 		setCurrentTextureName(NULL);
@@ -230,7 +230,7 @@ void ImageTextureNode::initialize()
 //	ImageTextureNode::uninitialize
 ////////////////////////////////////////////////
 
-void ImageTextureNode::uninitialize() 
+void ImageTextureNode::uninitialize()
 {
 }
 
@@ -238,11 +238,11 @@ void ImageTextureNode::uninitialize()
 //	ImageTextureNode::updateTexture
 ////////////////////////////////////////////////
 
-void ImageTextureNode::updateTexture() 
+void ImageTextureNode::updateTexture()
 {
 #ifdef SUPPORT_OPENGL
 	GLuint texName = (GLuint)getTextureName();
-	if (0 < texName) 
+	if (0 < texName)
 		glDeleteTextures(1, &texName);
 
 	if (createImage() == false) {
@@ -265,10 +265,10 @@ void ImageTextureNode::updateTexture()
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, getWidth(), getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, getImage());
-		
+
 		setTextureName(texName);
-		
-		if (0 < getNUrls()) 
+
+		if (0 < getNUrls())
 			setCurrentTextureName(getUrl(0));
 		else
 			setCurrentTextureName(NULL);
@@ -284,19 +284,19 @@ void ImageTextureNode::updateTexture()
 //	ImageTextureNode::update
 ////////////////////////////////////////////////
 
-void ImageTextureNode::update() 
+void ImageTextureNode::update()
 {
 	if (0 < getNUrls()) {
 		char *urlFilename = getUrl(0);
 		char *currTexFilename = getCurrentTextureName();
-		
+
 		if (urlFilename != NULL && currTexFilename != NULL) {
 			if (strcmp(urlFilename, currTexFilename) != 0)
 				updateTexture();
 		}
-		if (urlFilename == NULL && currTexFilename != NULL) 
+		if (urlFilename == NULL && currTexFilename != NULL)
 			updateTexture();
-		if (urlFilename != NULL && currTexFilename == NULL) 
+		if (urlFilename != NULL && currTexFilename == NULL)
 			updateTexture();
 	}
 }
@@ -305,7 +305,7 @@ void ImageTextureNode::update()
 //	infomation
 ////////////////////////////////////////////////
 
-void ImageTextureNode::outputContext(ostream &printStream, char *indentString) 
+void ImageTextureNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *repeatS = getRepeatSField();
 	SFBool *repeatT = getRepeatTField();

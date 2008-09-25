@@ -42,18 +42,18 @@ using std::jmp_buf;
 using std::va_list;
 
 #include <ctime>
-using std::time_t;   
-using std::clock_t;  
-using std::tm;       
-using std::asctime;  
-using std::ctime;    
-using std::clock;    
-using std::difftime; 
-using std::gmtime;   
+using std::time_t;
+using std::clock_t;
+using std::tm;
+using std::asctime;
+using std::ctime;
+using std::clock;
+using std::difftime;
+using std::gmtime;
 using std::localtime;
-using std::mktime;   
-using std::time;     
-using std::strftime; 
+using std::mktime;
+using std::time;
+using std::strftime;
 
 #include <csignal>
 using std::sig_atomic_t;
@@ -284,7 +284,7 @@ using std::localeconv;
 using std::setlocale;
 */
 
-#include <cfloat> 
+#include <cfloat>
 /* Values defined as macros
 using std::DBL_DIG;
 using std::DBL_EPSILON;

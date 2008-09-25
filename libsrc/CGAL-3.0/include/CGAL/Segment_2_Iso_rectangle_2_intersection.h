@@ -102,7 +102,7 @@ public:
     _result = SEGMENT;
     return _result;
 }
- 
+
 #endif // CGAL_CFG_RETURN_TYPE_BUG_2
 
     bool                       intersection(

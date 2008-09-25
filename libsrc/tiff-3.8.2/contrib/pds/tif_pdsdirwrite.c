@@ -15,23 +15,23 @@
  * Copyright (c) 1991-1996 Silicon Graphics, Inc.
  * Copyright (c( 1996 USAF Phillips Laboratory
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
@@ -116,7 +116,7 @@ static	int TIFFWriteRational(TIFF*,
    calling this function, because some of the fields may have caused various
    data items to be written out BEFORE writing the directory structure.
 
-   This code was basically written by ripping of the TIFFWriteDirectory() 
+   This code was basically written by ripping of the TIFFWriteDirectory()
    code and generalizing it, using RPS's TIFFWritePliIfd() code for
    inspiration.  My original goal was to make this code general enough that
    the original TIFFWriteDirectory() could be rewritten to just call this
@@ -457,7 +457,7 @@ TIFFWriteNormalSubTag(TIFF* tif, TIFFDirEntry* dir, const TIFFFieldInfo* fip,
 		  if (wc == (u_short) TIFF_VARIABLE) {
 			(*getFieldFn)(tif, fip->field_tag, &wc, &cp);
 			dir->tdir_count = wc;
-		  } else 
+		  } else
 			(*getFieldFn)(tif, fip->field_tag, &cp);
 		  if (!TIFFWriteByteArray(tif, dir, cp))
 			return (0);

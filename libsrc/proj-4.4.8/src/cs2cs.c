@@ -78,7 +78,7 @@ tag = '#';	/* beginning of line tag character */
 "                   [+to [+opts[=arg] [ files ]\n";
 
 static struct FACTORS facs;
-static double (*informat)(const char *, 
+static double (*informat)(const char *,
                           char **); /* input data deformatter function */
 
 
@@ -87,7 +87,7 @@ static double (*informat)(const char *,
 /*                                                                      */
 /*      File processing function.                                       */
 /************************************************************************/
-static void process(FILE *fid) 
+static void process(FILE *fid)
 
 {
     char line[MAX_LINE+3], *s, pline[40];
@@ -135,7 +135,7 @@ static void process(FILE *fid)
         }
 
         if (data.u != HUGE_VAL) {
-            if( pj_transform( fromProj, toProj, 1, 0, 
+            if( pj_transform( fromProj, toProj, 1, 0,
                               &(data.u), &(data.v), &z ) != 0 )
             {
                 data.u = HUGE_VAL;
@@ -184,7 +184,7 @@ static void process(FILE *fid)
 /*                                main()                                */
 /************************************************************************/
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
     char *arg, **eargv = argv, *from_argv[MAX_PARGS], *to_argv[MAX_PARGS],
         **iargv = argv;
@@ -282,7 +282,7 @@ int main(int argc, char **argv)
                 continue; /* artificial */
               case 'e': /* error line alternative */
                 if (--argc <= 0)
-                    noargument:			   
+                    noargument:
                 emess(1,"missing argument for -%c",*arg);
                 oterr = *++argv;
                 continue;
@@ -321,7 +321,7 @@ int main(int argc, char **argv)
                 else
                     emess(1,"overflowed + argument table");
             }
-            else 
+            else
             {
                 if (from_argc < MAX_PARGS)
                     from_argv[from_argc++] = *argv + 1;
@@ -334,14 +334,14 @@ int main(int argc, char **argv)
     if (eargc == 0 ) /* if no specific files force sysin */
         eargv[eargc++] = "-";
 
-    /* 
+    /*
      * If the user has requested inverse, then just reverse the
      * coordinate systems.
      */
     if( inverse )
     {
         int     argcount;
-        
+
         for( i = 0; i < MAX_PARGS; i++ )
         {
             char *arg;
@@ -375,10 +375,10 @@ int main(int argc, char **argv)
             for( i = 0; i < to_argc; i++ )
                 printf( "%s ", to_argv[i] );
             printf( "\n" );
-            
+
             emess(3,"projection initialization failure\ncause: %s",
                   pj_strerrno(pj_errno));
-        }   
+        }
     }
     else if (!(toProj = pj_init(to_argc, to_argv)))
     {

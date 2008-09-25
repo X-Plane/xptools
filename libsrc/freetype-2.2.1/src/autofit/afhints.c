@@ -1152,7 +1152,7 @@
     AF_Point  points       = hints->points;
     AF_Point  points_limit = points + hints->num_points;
     AF_Point  point;
-    
+
 
     if ( dim == AF_DIMENSION_HORZ )
     {

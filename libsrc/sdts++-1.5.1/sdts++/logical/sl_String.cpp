@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -14,7 +14,7 @@
 #include "sl_String.h"
 
 
-static const char* ident_ = 
+static const char* ident_ =
   "$Id: sl_String.cpp,v 1.2 2002/11/24 22:07:44 mcoletti Exp $";
 
 

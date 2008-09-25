@@ -126,7 +126,7 @@ private:
       this->addSeparator();
       QWhatsThis::whatsThisButton(this);
     }
-  
+
   /** setup the statusbar */
 
 public slots:
@@ -141,7 +141,7 @@ public slots:
       QString fileName =
 	QFileDialog::getOpenFileName(QString::null, QString::null,
 				     window, "Open file...");
-						      
+
       if ( !fileName.isNull() ) {
 	emit fileToRead(fileName);
       }
@@ -149,7 +149,7 @@ public slots:
   /** save a document */
   void slotFileSave()
     {
-      
+
     }
   /** save a document under a different filename*/
   void slotFileSaveAs()
@@ -157,7 +157,7 @@ public slots:
       QString fileName =
 	QFileDialog::getSaveFileName(tr("data.out"), QString::null,
 				     window, "Save file As...");
-						      
+
       if ( !fileName.isNull() ) {
 	emit fileToWrite(fileName);
       }

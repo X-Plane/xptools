@@ -17,7 +17,7 @@ file_build1(
 	if( f->f_base.len )
             printf( "base = '%.*s' ", f->f_base.len, f->f_base.ptr );
     }
-	
+
     /* Start with the grist.  If the current grist isn't */
     /* surrounded by <>'s, add them. */
 

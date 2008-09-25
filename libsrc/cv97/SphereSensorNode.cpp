@@ -10,7 +10,7 @@
 
 #include "SphereSensorNode.h"
 
-SphereSensorNode::SphereSensorNode() 
+SphereSensorNode::SphereSensorNode()
 {
 	setHeaderFlag(false);
 	setType(sphereSensorNodeString);
@@ -32,7 +32,7 @@ SphereSensorNode::SphereSensorNode()
 	addEventOut(trackPointFieldString, trackPointField);
 }
 
-SphereSensorNode::~SphereSensorNode() 
+SphereSensorNode::~SphereSensorNode()
 {
 }
 
@@ -46,23 +46,23 @@ SFBool *SphereSensorNode::getAutoOffsetField()
 		return autoOffsetField;
 	return (SFBool *)getExposedField(autoOffsetFieldString);
 }
-	
-void SphereSensorNode::setAutoOffset(bool value) 
+
+void SphereSensorNode::setAutoOffset(bool value)
 {
 	getAutoOffsetField()->setValue(value);
 }
 
-void SphereSensorNode::setAutoOffset(int value) 
+void SphereSensorNode::setAutoOffset(int value)
 {
 	setAutoOffset(value ? true : false);
 }
 
-bool SphereSensorNode::getAutoOffset() 
+bool SphereSensorNode::getAutoOffset()
 {
 	return getAutoOffsetField()->getValue();
 }
 
-bool  SphereSensorNode::isAutoOffset() 
+bool  SphereSensorNode::isAutoOffset()
 {
 	return getAutoOffset();
 }
@@ -77,13 +77,13 @@ SFRotation *SphereSensorNode::getOffsetField()
 		return offsetField;
 	return (SFRotation *)getExposedField(offsetFieldString);
 }
-	
-void SphereSensorNode::setOffset(float value[]) 
+
+void SphereSensorNode::setOffset(float value[])
 {
 	getOffsetField()->setValue(value);
 }
 
-void SphereSensorNode::getOffset(float value[]) 
+void SphereSensorNode::getOffset(float value[])
 {
 	getOffsetField()->getValue(value);
 }
@@ -98,18 +98,18 @@ SFRotation *SphereSensorNode::getRotationChangedField()
 		return rotationField;
 	return (SFRotation *)getEventOut(rotationFieldString);
 }
-	
-void SphereSensorNode::setRotationChanged(float value[]) 
+
+void SphereSensorNode::setRotationChanged(float value[])
 {
 	getRotationChangedField()->setValue(value);
 }
 
-void SphereSensorNode::setRotationChanged(float x, float y, float z, float rot) 
+void SphereSensorNode::setRotationChanged(float x, float y, float z, float rot)
 {
 	getRotationChangedField()->setValue(x, y, z, rot);
 }
 
-void SphereSensorNode::getRotationChanged(float value[]) 
+void SphereSensorNode::getRotationChanged(float value[])
 {
 	getRotationChangedField()->getValue(value);
 }
@@ -124,18 +124,18 @@ SFVec3f *SphereSensorNode::getTrackPointChangedField()
 		return trackPointField;
 	return (SFVec3f *)getEventOut(trackPointFieldString);
 }
-	
-void SphereSensorNode::setTrackPointChanged(float value[]) 
+
+void SphereSensorNode::setTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->setValue(value);
 }
 
-void SphereSensorNode::setTrackPointChanged(float x, float y, float z) 
+void SphereSensorNode::setTrackPointChanged(float x, float y, float z)
 {
 	getTrackPointChangedField()->setValue(x, y, z);
 }
 
-void SphereSensorNode::getTrackPointChanged(float value[]) 
+void SphereSensorNode::getTrackPointChanged(float value[])
 {
 	getTrackPointChangedField()->getValue(value);
 }
@@ -144,12 +144,12 @@ void SphereSensorNode::getTrackPointChanged(float value[])
 //	List
 ////////////////////////////////////////////////
 
-SphereSensorNode *SphereSensorNode::next() 
+SphereSensorNode *SphereSensorNode::next()
 {
 	return (SphereSensorNode *)Node::next(getType());
 }
 
-SphereSensorNode *SphereSensorNode::nextTraversal() 
+SphereSensorNode *SphereSensorNode::nextTraversal()
 {
 	return (SphereSensorNode *)Node::nextTraversalByType(getType());
 }
@@ -157,22 +157,22 @@ SphereSensorNode *SphereSensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool SphereSensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void SphereSensorNode::initialize() 
+void SphereSensorNode::initialize()
 {
 	setIsActive(false);
 }
 
-void SphereSensorNode::uninitialize() 
+void SphereSensorNode::uninitialize()
 {
 }
 
-void SphereSensorNode::update() 
+void SphereSensorNode::update()
 {
 }
 
@@ -180,7 +180,7 @@ void SphereSensorNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void SphereSensorNode::outputContext(ostream &printStream, char *indentString) 
+void SphereSensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *autoOffset = getAutoOffsetField();
 	SFBool *enabled = getEnabledField();

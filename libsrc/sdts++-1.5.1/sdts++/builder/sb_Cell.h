@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -108,9 +108,9 @@ class sb_Cell : public sb_Module
 
       /**
        Use these members to get subfield/field values.  Pass in an appropriate
-       type to receive the value.  These members will return false if the 
-       corresponding value is not set.  (It may not be set because a value 
-       was not assigned to it, or because you previously tried to assign 
+       type to receive the value.  These members will return false if the
+       corresponding value is not set.  (It may not be set because a value
+       was not assigned to it, or because you previously tried to assign
        an invalid value.)  Otherwise they will return true.
       */
       bool getRowI( long& val ) const;
@@ -126,7 +126,7 @@ class sb_Cell : public sb_Module
 
       */
       bool loadData( back_insert_iterator<Container> & ) const;
-                                
+
 
 
       /**
@@ -148,7 +148,7 @@ class sb_Cell : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -203,7 +203,7 @@ class sb_Cell : public sb_Module
       static sio_8211Schema cell_schema_; // module specific schema
 
       ///
-      bool ingest_record_( sb_Cell<Container>& cell, 
+      bool ingest_record_( sb_Cell<Container>& cell,
                            sc_Record const& record );
 
       ///
@@ -262,7 +262,7 @@ sb_Cell<T>::~sb_Cell()
 ///
 template <class T>
 bool
-sb_Cell<T>::ingest_record_( sb_Cell<T>&      cell, 
+sb_Cell<T>::ingest_record_( sb_Cell<T>&      cell,
                             sc_Record const& record )
 {
                                 // Make sure we have a record from an
@@ -496,8 +496,8 @@ sb_Cell<T>::loadData( back_insert_iterator<T> & bi ) const
 
    sc_Record::const_iterator cvls_field;
 
-   if ( record_ && sb_Utils::getFieldByMnem( *record_, 
-                                                 "CVLS", 
+   if ( record_ && sb_Utils::getFieldByMnem( *record_,
+                                                 "CVLS",
                                              cvls_field ) )
    {
       long            tmp_long;

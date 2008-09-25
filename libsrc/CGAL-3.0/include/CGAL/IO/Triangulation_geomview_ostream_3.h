@@ -49,7 +49,7 @@ show_triangulation_edges(Geomview_stream &gv, const Triangulation_3<GT,TDS> &T)
     V[vit] = inum++;
     gv << vit->point() << "\n";
   }
-  
+
   // Finite edges indices.
   for( typename Triangulation_3<GT, TDS>::Finite_edges_iterator
 	  eit = T.finite_edges_begin(); eit != T.finite_edges_end(); ++eit) {

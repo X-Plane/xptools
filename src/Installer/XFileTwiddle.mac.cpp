@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -70,7 +70,7 @@ int		MakeDirExist(const char * inPath)
 				if (FSpDirCreate(&spec, smSystemScript, &id) != noErr)
 					return 0;
 			}
-		} else 
+		} else
 			return 0;
 	}
 	return 1;
@@ -91,15 +91,15 @@ int		GetFileBlockSizeIfExists(const char * inPath)
 {
 	FSSpec	spec;
 	if (!FilePathToFSSpec(inPath, spec)) return -1;
-	
+
 	CInfoPBRec	block;
 	block.hFileInfo.ioNamePtr = spec.name;
 	block.hFileInfo.ioVRefNum = spec.vRefNum;
 	block.hFileInfo.ioFDirIndex = 0;
-	block.hFileInfo.ioDirID = spec.parID;		
+	block.hFileInfo.ioDirID = spec.parID;
 	if (PBGetCatInfoSync(&block) != noErr) return -1;
-	
-	return 20 + block.hFileInfo.ioFlLgLen + block.hFileInfo.ioFlRLgLen;	
+
+	return 20 + block.hFileInfo.ioFlLgLen + block.hFileInfo.ioFlRLgLen;
 }
 
 int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
@@ -110,7 +110,7 @@ int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 	if (!FilePathToFSSpec(inPath, spec)) return 0;
 	err = FSpGetFInfo(&spec, &finfo);
 	ReportError("Unable to get info about file", err, inPath);
-	
+
 	long	df_len = 0;
 	long	rf_len = 0;
 	bool opened_df = false, opened_rf = false;
@@ -138,7 +138,7 @@ int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 	{
 		if (opened_rf) FSClose(rf_fork);
 		if (opened_df) FSClose(df_fork);
-		ReportError("Out of memory reading file", memFullErr, inPath);		
+		ReportError("Out of memory reading file", memFullErr, inPath);
 		return 0;
 	}
 	char * p = *outPtr;
@@ -163,9 +163,9 @@ int		FileToBlock(const char * inPath, char ** outPtr, int * outSize)
 	*outSize = mem_needed;
 	if (opened_rf) FSClose(rf_fork);
 	if (opened_df) FSClose(df_fork);
-	
-	return 1;	
-}		
+
+	return 1;
+}
 
 int		BlockToFile(const char * inPath, char * inPtr)
 {
@@ -175,23 +175,23 @@ int		BlockToFile(const char * inPath, char * inPtr)
 	string::size_type pos = dirPath.rfind(DIR_CHAR);
 	dirPath.erase(pos+1);
 	MakeDirExist(dirPath.c_str());
-	
-	if (!FilePathToFSSpec(inPath, spec)) 
+
+	if (!FilePathToFSSpec(inPath, spec))
 	{
 		ReportError("file path may be bad", fnfErr, inPath);
 		return 0;
 	}
-	
-	long * l = (long *) inPtr;	
+
+	long * l = (long *) inPtr;
 	OSType	fdType = *l;			++l;
 	OSType	fdCreator = *l;			++l;
 	UInt16	fdFlags = *l;			++l;
 	long	df_len = *l;			++l;
 	long	 rf_len = *l;
-	
+
 	OSErr err = FSpCreate(&spec,  fdCreator, fdType, smSystemScript);
 	if (err != noErr && err != dupFNErr)  {
-		ReportError("could not create file", err, inPath);	
+		ReportError("could not create file", err, inPath);
 		return 0;
 	}
 	short df_fork, rf_fork;
@@ -217,6 +217,6 @@ int		BlockToFile(const char * inPath, char * inPtr)
 	info.fdCreator = fdCreator;
 	info.fdFlags = fdFlags;
 	err = FSpSetFInfo(&spec, &info);								if (ReportError("Unable to write finder info", err, inPath)) return 0;
-	
+
 	return 1;
 }

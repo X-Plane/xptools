@@ -33,7 +33,7 @@
 
 // see kernel functors for original version
 // all deprecated stuff was removed ...
-// all functors were put into namespace CGALca 
+// all functors were put into namespace CGALca
 // (to avoid ambiguities with the original functors)
 
 CGAL_BEGIN_NAMESPACE
@@ -48,10 +48,10 @@ public:
     typedef Angle            result_type;
     typedef Arity_tag< 3 >   Arity;
 
-    Angle operator()(const Point_2&, const Point_2&, 
+    Angle operator()(const Point_2&, const Point_2&,
                      const Point_2&) const
     { CGAL::Angle a = CGAL::RIGHT;
-      return a; 
+      return a;
     }
 };
 
@@ -63,10 +63,10 @@ public:
     typedef Angle            result_type;
     typedef Arity_tag< 3 >   Arity;
 
-    Angle operator()(const Point_3&, const Point_3&, 
+    Angle operator()(const Point_3&, const Point_3&,
                      const Point_3&) const
     { CGAL::Angle a = CGAL::RIGHT;
-      return a; 
+      return a;
     }
 };
 
@@ -787,7 +787,7 @@ public:
     { Point_2 obj; return obj; }
 
     Point_2
-    operator()(const Point_2&, const Point_2&, 
+    operator()(const Point_2&, const Point_2&,
                const Point_2&, const Point_2&) const
     { Point_2 obj; return obj; }
 };
@@ -805,7 +805,7 @@ public:
     { Point_3 obj; return obj; }
 
     Point_3
-    operator()(const Point_3&, const Point_3&, 
+    operator()(const Point_3&, const Point_3&,
                const Point_3&, const Point_3&) const
     { Point_3 obj; return obj; }
 };
@@ -2057,7 +2057,7 @@ public:
     operator()( const Segment_2& s) const
     { Bbox_2 b; return b; }
 
-    
+
     Bbox_2
     operator()( const Triangle_2& t) const
     { Bbox_2 b; return b; }
@@ -2093,7 +2093,7 @@ public:
     operator()( const Segment_3& s) const
     { Bbox_3 b; return b; }
 
-    
+
     Bbox_3
     operator()( const Triangle_3& t) const
     { Bbox_3 b; return b; }
@@ -2115,9 +2115,9 @@ public:
   class Construct_cartesian_const_iterator_2
   {
     typedef typename K::Point_2          Point_2;
-    typedef typename K::Cartesian_const_iterator_2 
+    typedef typename K::Cartesian_const_iterator_2
       Cartesian_const_iterator_2;
-    
+
   public:
     typedef Cartesian_const_iterator_2 result_type;
     typedef Arity_tag< 1 >   Arity;
@@ -2139,9 +2139,9 @@ public:
   class Construct_cartesian_const_iterator_3
   {
     typedef typename K::Point_3          Point_3;
-    typedef typename K::Cartesian_const_iterator_3 
+    typedef typename K::Cartesian_const_iterator_3
       Cartesian_const_iterator_3;
-    
+
   public:
     typedef Cartesian_const_iterator_3 result_type;
     typedef Arity_tag< 1 >   Arity;
@@ -3161,4 +3161,4 @@ public:
 
 CGAL_END_NAMESPACE
 
-#endif 
+#endif

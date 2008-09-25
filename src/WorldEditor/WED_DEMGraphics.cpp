@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,23 +34,23 @@
 #define	ARRAY_COUNT(x)		(sizeof(x) / sizeof(x[0]))
 
 float	kColorBandsRelativeElevation[][4] = {
-	0, 255, 0,	-5.0,			
-	0, 255, 0,   0.0,			
-	255, 255, 0,   0.3,			
-	255, 255, 0,   0.7,			
-	127, 127, 127,   1.0,			
-	127, 127, 127,   5.0,			
+	0, 255, 0,	-5.0,
+	0, 255, 0,   0.0,
+	255, 255, 0,   0.3,
+	255, 255, 0,   0.7,
+	127, 127, 127,   1.0,
+	127, 127, 127,   5.0,
 	0, 0, 0,   -99.0
 };
 
 float kColorBandsElevationRange[][4] = {
-0, 0, 0,		0.0,			
-0, 127, 0,  	100.0,			
-127, 127, 0,  	500.0,			
-127, 0, 0,  	1000.0,			
-127, 0, 127,  	2000.0,			
-0, 0, 127,  	3000.0,			
-0, 0, 0,  	-99.0,			
+0, 0, 0,		0.0,
+0, 127, 0,  	100.0,
+127, 127, 0,  	500.0,
+127, 0, 0,  	1000.0,
+127, 0, 127,  	2000.0,
+0, 0, 127,  	3000.0,
+0, 0, 0,  	-99.0,
 };
 
 float	kColorBands[][4] = {
@@ -96,7 +96,7 @@ float	kColorBandsRainfallYearly[][4] = {
 	255,0  ,255,4975		,
 	128,0  ,128,7475		,
 	0  ,138,255,10005		,
-	0  ,0  ,0	,DEM_NO_DATA    
+	0  ,0  ,0	,DEM_NO_DATA
 };
 
 float	kColorBandsDrainage[][4] = {
@@ -115,25 +115,25 @@ float	kColorBandsDrainage[][4] = {
 	255,0  ,255,4975		,
 	128,0  ,128,7475		,
 	0  ,138,255,10005		,
-	0  ,0  ,0	,DEM_NO_DATA    
+	0  ,0  ,0	,DEM_NO_DATA
 };
 
-float	kColorBandsBioMass[][4] = {	
-	230,230,230,0,	  
-	160,160,160,10,	 
-	255,230,150,30,	 
-	255,199,117,50,	 
-	181,112,110,70,	 
-	158,186,90,	110,	
-	255,255,0,	170,	
-	160,255,0,	310,	
-	10,	230,30,	610,	
+float	kColorBandsBioMass[][4] = {
+	230,230,230,0,
+	160,160,160,10,
+	255,230,150,30,
+	255,199,117,50,
+	181,112,110,70,
+	158,186,90,	110,
+	255,255,0,	170,
+	160,255,0,	310,
+	10,	230,30,	610,
 	0,	170,0,	1210,
 	5,	112,94,	1510,
 	0,	250,255,2010,
 	0,	138,255,2510,
 	0,	0,	0,	DEM_NO_DATA
-};	
+};
 
 float	kColorBandsTemperature[][4] = {
 160	,160	,160	,-60.0		,
@@ -170,8 +170,8 @@ float	kColorBandsTemperature[][4] = {
 255,0,		0,		 20.0,
 255,0,		0,		 60.0,
 */
-0	,0		,0		,DEM_NO_DATA    
-};								
+0	,0		,0		,DEM_NO_DATA
+};
 
 
 float	kColorBandsTemperatureRange[][4] = {
@@ -200,20 +200,20 @@ void	GetColorForTable(float v, ColorBandMap& table, unsigned char col[3])
 		col[0] = col[1] = col[2] = 0;
 		return;
 	}
-	
+
 	if (v < i->second.lo_value || v > i->second.hi_value)
 	{
 		col[0] = col[1] = col[2] = 0;
 		return;
 	}
-	
+
 	float mix2 = (v - i->second.lo_value) / (i->second.hi_value - i->second.lo_value);
 	float mix1 = 1.0 - mix2;
-	
+
 	float red = i->second.lo_color.rgb[0] * mix1 + i->second.hi_color.rgb[0] * mix2;
 	float grn = i->second.lo_color.rgb[1] * mix1 + i->second.hi_color.rgb[1] * mix2;
 	float blu = i->second.lo_color.rgb[2] * mix1 + i->second.hi_color.rgb[2] * mix2;
-	
+
 	col[0] = red * 255.0;
 	col[1] = grn * 255.0;
 	col[2] = blu * 255.0;
@@ -226,10 +226,10 @@ void	GetColorForParam(float	v, float mapping[][4], int num_bands, unsigned char 
 		if (mapping[n  ][3] <= v &&
 			mapping[n+1][3] >= v)
 		{
-			double	scale = (v - mapping[n][3]) / 
+			double	scale = (v - mapping[n][3]) /
 							(mapping[n+1][3] - mapping[n][3]);
 			double	scalei = 1.0 - scale;
-			
+
 			col[0] = mapping[n][0] * scalei + mapping[n+1][0] * scale;
 			col[1] = mapping[n][1] * scalei + mapping[n+1][1] * scale;
 			col[2] = mapping[n][2] * scalei + mapping[n+1][2] * scale;
@@ -240,7 +240,7 @@ void	GetColorForParam(float	v, float mapping[][4], int num_bands, unsigned char 
 	col[1] = 	mapping[num_bands-1][1];
 	col[2] = 	mapping[num_bands-1][2];
 }
-	
+
 void	GetColorForAlt(float alt, unsigned char col[3])
 {
 	int n = 0;
@@ -249,25 +249,25 @@ void	GetColorForAlt(float alt, unsigned char col[3])
 		if (kColorBands[n  ][0] <= alt &&
 			kColorBands[n+1][0] >= alt)
 		{
-			double	scale = (alt - kColorBands[n][0]) / 
+			double	scale = (alt - kColorBands[n][0]) /
 							(kColorBands[n+1][0] - kColorBands[n][0]);
 			double	scalei = 1.0 - scale;
-			
+
 			double	r = kColorBands[n][1] * scalei + kColorBands[n+1][1] * scale;
 			double	g = kColorBands[n][2] * scalei + kColorBands[n+1][2] * scale;
 			double	b = kColorBands[n][3] * scalei + kColorBands[n+1][3] * scale;
-			
+
 			col[0] = 255.0 * r;
 			col[1] = 255.0 * g;
 			col[2] = 255.0 * b;
 			return;
 		}
-		
+
 		++n;
-	}	
+	}
 	col[0] = 255;
 	col[1] = 0;
-	col[2] = 255;	
+	col[2] = 255;
 }
 
 void GetColorForLU(float alt, unsigned char col[3])
@@ -277,7 +277,7 @@ void GetColorForLU(float alt, unsigned char col[3])
 	col[1] = 255.0 * c.rgb[1];
 	col[2] = 255.0 * c.rgb[2];
 }
-	
+
 
 int	DEMToBitmap(
 				const DEMGeo& 	inDEM,
@@ -288,11 +288,11 @@ int	DEMToBitmap(
 	int	err = CreateNewBitmap(inDEM.mWidth, inDEM.mHeight, 3, &outImage);
 	if (err) return err;
 	outImage.pad = 0;
-	
+
 	float	dh_max = 0;
-	
+
 	float h, ha, hr, dh, smin, smax, scaled;
-	
+
 	float (*vp)[4];
 	int		cnt;
 	switch(inMode) {
@@ -325,7 +325,7 @@ int	DEMToBitmap(
 		cnt = ARRAY_COUNT(kColorBandsDrainage);
 		break;
 	}
-	
+
 	if (gColorBands.count(inMode) != 0)
 	{
 		ColorBandMap& table(gColorBands[inMode]);
@@ -334,15 +334,15 @@ int	DEMToBitmap(
 		{
 			float h = inDEM(x,y);
 			unsigned char col[3];
-			GetColorForTable(h, table, col);			
+			GetColorForTable(h, table, col);
 			outImage.data[(x + y * outImage.width) * outImage.channels  ] = col[2];
 			outImage.data[(x + y * outImage.width) * outImage.channels+1] = col[1];
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[0];
 		}
-		return 0;	
+		return 0;
 	}
-	
-	
+
+
 	switch(inMode) {
 	case dem_StrataBiomass:
 	case dem_StrataRainfallYearly:
@@ -357,7 +357,7 @@ int	DEMToBitmap(
 			float h = inDEM(x,y);
 			unsigned char col[3];
 			GetColorForParam(h, vp, cnt, col);
-			
+
 			outImage.data[(x + y * outImage.width) * outImage.channels  ] = col[2];
 			outImage.data[(x + y * outImage.width) * outImage.channels+1] = col[1];
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[0];
@@ -369,7 +369,7 @@ int	DEMToBitmap(
 		{
 			float h = inDEM(x,y);
 			unsigned char col[3];
-			GetColorForLU(h, col);			
+			GetColorForLU(h, col);
 			outImage.data[(x + y * outImage.width) * outImage.channels  ] = col[2];
 			outImage.data[(x + y * outImage.width) * outImage.channels+1] = col[1];
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[0];
@@ -392,7 +392,7 @@ int	DEMToBitmap(
 			if (h != DEM_NO_DATA && smin != smax) h = ((h - smin) * 1000.0 / (smax - smin));
 			unsigned char col[3];
 			GetColorForAlt(h, col);
-			
+
 			outImage.data[(x + y * outImage.width) * outImage.channels  ] = col[0];
 			outImage.data[(x + y * outImage.width) * outImage.channels+1] = col[1];
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[2];
@@ -405,22 +405,22 @@ int	DEMToBitmap(
 			h = inDEM(x,y);
 			ha = inDEM(x,y+1);
 			hr = inDEM(x+1,y);
-			
+
 			Point3	p_h(0,0,h);
 			Point3	p_ha(0, inDEM.y_dist_to_m(1), ha);
 			Point3	p_hr(inDEM.x_dist_to_m(1), 0, hr);
-			
+
 			Vector3	to_a(p_h, p_ha);
 			Vector3	to_r(p_h, p_hr);
-			
+
 			Vector3	n(to_r.cross(to_a));
 			n.normalize();
-			
+
 			if (h == DEM_NO_DATA || ha == DEM_NO_DATA || hr == DEM_NO_DATA)
 			{
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = 0x80;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = 0x80;
-				outImage.data[(x + y * outImage.width) * outImage.channels+2] = 0x80;			
+				outImage.data[(x + y * outImage.width) * outImage.channels+2] = 0x80;
 			} else {
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = n.dz * 127.0 + 127.0;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = n.dy * 127.0 + 127.0;
@@ -428,7 +428,7 @@ int	DEMToBitmap(
 			}
 		}
 		break;
-		
+
 	case dem_Shaded:
 		for (y = 0; y < (inDEM.mHeight-1); ++y)
 		for (x = 0; x < (inDEM.mWidth-1); ++x)
@@ -440,7 +440,7 @@ int	DEMToBitmap(
 			ha -= h;
 			hr -= h;
 			dh = fabs(ha + hr);
-			if (dh > dh_max) 
+			if (dh > dh_max)
 				dh_max = dh;
 		}
 		for (y = 0; y < (inDEM.mHeight-1); ++y)
@@ -463,20 +463,20 @@ int	DEMToBitmap(
 			{
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = scaled;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = 0;
-				outImage.data[(x + y * outImage.width) * outImage.channels+2] = 0;			
+				outImage.data[(x + y * outImage.width) * outImage.channels+2] = 0;
 			} else {
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = scaled;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = scaled;
-				outImage.data[(x + y * outImage.width) * outImage.channels+2] = scaled;			
+				outImage.data[(x + y * outImage.width) * outImage.channels+2] = scaled;
 			}
 		}
 		for (y = 0; y < (inDEM.mHeight-1); ++y)
 		for (ch = 0; ch < 3; ++ch)
-			outImage.data[(outImage.width-1 + y * outImage.width) * outImage.channels + ch] = 
+			outImage.data[(outImage.width-1 + y * outImage.width) * outImage.channels + ch] =
 			outImage.data[(outImage.width-2 + y * outImage.width) * outImage.channels + ch];
 		for (x = 0; x < inDEM.mWidth; ++x)
 		{
-			outImage.data[(x + (outImage.height-1) * outImage.width) * outImage.channels + ch] = 
+			outImage.data[(x + (outImage.height-1) * outImage.width) * outImage.channels + ch] =
 			outImage.data[(x + (outImage.height-2) * outImage.width) * outImage.channels + ch];
 		}
 		break;
@@ -497,16 +497,16 @@ int	DEMToBitmap(
 				Point2 s(p + e * n);
 				v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
 			}
-			v /= (DDA_STEPS*2.0f+1.0f);			
+			v /= (DDA_STEPS*2.0f+1.0f);
 //			v = e.dy * 0.5 + 0.5;
 			outImage.data[(x + y * outImage.width) * outImage.channels  ] = v * 255.0f;
 			outImage.data[(x + y * outImage.width) * outImage.channels+1] = v * 255.0f;
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = v * 255.0f;
 		}
 		break;
-	}	
+	}
 	return 0;
-}				
+}
 
 void ColorForValue(
 				int				dem_type,
@@ -516,18 +516,18 @@ void ColorForValue(
 	if (gColorBands.count(dem_type) != 0)
 	{
 		ColorBandMap& table(gColorBands[dem_type]);
-		GetColorForTable(value, table, rgb);			
+		GetColorForTable(value, table, rgb);
 		return;
 	}
 	if (gEnumDEMs.count(dem_type))
 	{
-		GetColorForLU(value, rgb);			
+		GetColorForLU(value, rgb);
 		return;
 	}
 
 	RGBColor_t * c = NULL;
 	switch(dem_type) {
-	case dem_Elevation:	
+	case dem_Elevation:
 	case dem_LandUse:
 	case dem_Climate:
 //	case dem_NudeColor:
@@ -569,8 +569,8 @@ void TensorDDA(
 			Point2 s(pi + e * n);
 			v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
 		}
-		v /= (DDA_STEPS*2.0f+1.0f);	
-		for(int c = 0; c < ioImage.channels; ++c)		
+		v /= (DDA_STEPS*2.0f+1.0f);
+		for(int c = 0; c < ioImage.channels; ++c)
 			ioImage.data[(x + y * ioImage.width) * ioImage.channels+c] = v * 255.0f;
 //		ioImage.data[(x + y * ioImage.width) * ioImage.channels+0] = 255.0 * e.dx;
 //		ioImage.data[(x + y * ioImage.width) * ioImage.channels+1] = 255.0 * e.dy;

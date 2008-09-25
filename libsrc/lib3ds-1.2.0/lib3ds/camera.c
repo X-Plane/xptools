@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -49,7 +49,7 @@ lib3ds_camera_new(const char *name)
 
   ASSERT(name);
   ASSERT(strlen(name)<64);
-  
+
   camera=(Lib3dsCamera*)calloc(sizeof(Lib3dsCamera), 1);
   if (!camera) {
     return(0);
@@ -61,7 +61,7 @@ lib3ds_camera_new(const char *name)
 
 
 /*!
- * \ingroup camera 
+ * \ingroup camera
  */
 void
 lib3ds_camera_free(Lib3dsCamera *camera)
@@ -79,9 +79,9 @@ lib3ds_camera_dump(Lib3dsCamera *camera)
 {
   ASSERT(camera);
   printf("  name:       %s\n", camera->name);
-  printf("  position:   (%f, %f, %f)\n", 
+  printf("  position:   (%f, %f, %f)\n",
     camera->position[0], camera->position[1], camera->position[2]);
-  printf("  target      (%f, %f, %f)\n", 
+  printf("  target      (%f, %f, %f)\n",
     camera->target[0], camera->target[1], camera->target[2]);
   printf("  roll:       %f\n", camera->roll);
   printf("  fov:        %f\n", camera->fov);
@@ -125,7 +125,7 @@ lib3ds_camera_read(Lib3dsCamera *camera, Lib3dsIo *io)
     }
   }
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_CAM_SEE_CONE:
@@ -143,7 +143,7 @@ lib3ds_camera_read(Lib3dsCamera *camera, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }

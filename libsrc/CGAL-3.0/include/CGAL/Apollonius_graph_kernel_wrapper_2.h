@@ -38,7 +38,7 @@ public:
 
   struct Compare_x_2 : public Kernel_base_2
   {
-    typedef Comparison_result   result_type;    
+    typedef Comparison_result   result_type;
     typedef Arity_tag<2>        Arity;
 
     Comparison_result operator()(const Site_2& s1,

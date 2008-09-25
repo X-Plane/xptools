@@ -42,28 +42,28 @@ public:
   typedef typename PM::Halfedge_handle           Halfedge_handle;
   typedef typename PM::Face_handle               Face_handle;
   typedef typename PM::Vertex_const_handle       Vertex_const_handle;
-  typedef typename PM::Halfedge_const_handle     Halfedge_const_handle;  
+  typedef typename PM::Halfedge_const_handle     Halfedge_const_handle;
   typedef typename PM::Face_const_handle         Face_const_handle;
- 
+
   typedef typename PM::Holes_const_iterator      Holes_const_iterator;
   typedef typename PM::Ccb_halfedge_const_circulator
                                                  Ccb_halfedge_const_circulator;
-  
+
   typedef Inverse_index<Halfedge_const_iterator> H_index;
   typedef Inverse_index<Vertex_const_iterator>   V_index;
 
-  Pm_file_writer(std::ostream & o, const PM & pm, bool verbose = false) : 
+  Pm_file_writer(std::ostream & o, const PM & pm, bool verbose = false) :
     File_header(verbose), m_out(&o), m_pm(pm), m_h_index(0), m_v_index(0)
     { }
 
-  Pm_file_writer(std::ostream & o, const PM & pm, const File_header & h) : 
+  Pm_file_writer(std::ostream & o, const PM & pm, const File_header & h) :
     File_header(h),  m_out(&o), m_pm(pm), m_h_index(0), m_v_index(0)
     { }
-  
+
   std::ostream & out() const { return *m_out; }
 
   void write_title(const char * feature_name) const
-  { 
+  {
     if (comments()){
       out() <<"# ------------------------------------- "<< feature_name
             << std::endl;
@@ -90,23 +90,23 @@ public:
   {
     out() << val << delimiter;
   }
-  
+
   /*void  write_header(const char   *title_name) {
     //set_vertices(vertices);
     //set_halfedges(halfedges);
     //set_faces(faces);
-    
+
     // Print header.
     write_title(title_name);
     } */
-  
+
   void write_pm_vhf_sizes(int num_vertices, int num_halfedges,
                           int num_faces) const
   {
     out() << num_vertices << ' ' << num_halfedges << ' ' << num_faces
           << std::endl;
   }
-  
+
   /*void write_footer() {
     if (comments())
       write_title("End of Planar map");
@@ -135,7 +135,7 @@ public:
   {
     if (no_comments())
       out() << std::endl;
-    
+
     else {
       out() << "# " << number_of_halfedges() << " halfedges "<< std::endl;
       out() << "# ------------------------------------------"<< std::endl;
@@ -143,20 +143,20 @@ public:
   }
 
   /*  void write_halfedge(Halfedge_handle h) {
-    if (verbose()) 
+    if (verbose())
       write_vertex(h->target());
     else
       write_index(v_index[ Vertex_const_iterator(h->target())]);
-    
+
     out() << h->curve() << std::endl;
   }
 
   void write_halfedge(Halfedge_const_handle h) {
-    if (verbose()) 
+    if (verbose())
       write_vertex(h->target());
     else
       write_index(v_index[ Vertex_const_iterator(h->target())]);
-  
+
     out() << h->curve() << std::endl;
     }*/
 
@@ -182,7 +182,7 @@ public:
   {
     if (no_comments())
       out() << std::endl;
-    
+
     else {
       out() << "# " << number_of_faces() << " faces "<< std::endl;
       out() << "# ------------------------------------------"<< std::endl;
@@ -205,7 +205,7 @@ protected:
     }
     else {
       write_comment("outer ccb");
-      
+
       Ccb_halfedge_const_circulator first = f->outer_ccb(), iter = first;
 
       std::size_t n = 0;
@@ -216,7 +216,7 @@ protected:
 
       write_comment("number halfedges on outer boundary");
       write_value(n);
-      
+
       do{
         if (verbose())
           write_halfedge_verbose(iter);
@@ -224,32 +224,32 @@ protected:
           write_index(get_h_index(Halfedge_const_iterator(iter)));
         ++iter;
       } while (iter != first);
-      
+
       out() << std::endl;
     }
-    
+
     for (ck=0, iccbit = (Holes_const_iterator)f->holes_begin();
          iccbit != (Holes_const_iterator)f->holes_end(); ++iccbit, ck++);
     write_comment("number of holes");
     write_value(ck);
-    
+
     for (iccbit = (Holes_const_iterator)f->holes_begin();
          iccbit != (Holes_const_iterator)f->holes_end(); ++iccbit)
     {
       write_comment("inner ccb");
-      
+
       Ccb_halfedge_const_circulator ccb_circ = (*iccbit);
       Ccb_halfedge_const_circulator iter = ccb_circ;
-      
+
       std::size_t n = 0;
       do {
         n++;
         iter++;
       } while (iter != ccb_circ);
-      
+
       write_comment("number halfedges on inner boundary");
       write_value(n);
-      
+
       do {
         if (verbose())
           write_halfedge_verbose(iter);
@@ -257,7 +257,7 @@ protected:
           write_index(get_h_index(Halfedge_const_iterator(iter)));
         ++iter;
       } while (iter != ccb_circ);
-      
+
       out() <<std::endl;
     }
 
@@ -280,7 +280,7 @@ public:
   // corresponding classes with the index arrays as data members and
   // functors to perform the respective operations. Their constructor will
   // take the pm as a parameter to compure the index arrays.
-  // 
+  //
   // void write_halfedges(Halfedge_const_iterator Halfedges_begin,
   //                      Halfedge_const_iterator Halfedges_end)
   // {
@@ -319,7 +319,7 @@ public:
       write_face(f_iter);
     m_h_index = 0;
   }
-  
+
   //void skip_line(){
   //  out() << std::endl;
   // }
@@ -329,7 +329,7 @@ protected:
   {
     out() << index << ' ';
   }
-  
+
   std::size_t get_v_index(Vertex_const_iterator vic) const
   {
     CGAL_assertion(m_v_index);

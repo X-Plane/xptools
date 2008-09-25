@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -24,17 +24,17 @@
 THIS IS STUFF THAT IS GENERALLY NO LONGER USED IN MESH ALGS
 
 /* This defines the ratio of skip to ok points for vector rivers.  It's
-   a real pain to do a perfect computation of vital river points, and 
+   a real pain to do a perfect computation of vital river points, and
    frankly it doesn't matter...every river point is DEM-wise useful and
    for the most part the data is organized to keep adjacent rivers nearby
-   in the map.  So skipping a few produces surprisingly pleasing results 
+   in the map.  So skipping a few produces surprisingly pleasing results
    for like, no work. */
 #define RIVER_SKIP 6
 #define FAR_TEX_DIVISIONS 2
 
 
 // About 80 degrees
-#define ROCK_SLOPE_CUTOFF	0.17364	
+#define ROCK_SLOPE_CUTOFF	0.17364
 
 
 /*
@@ -43,14 +43,14 @@ THIS IS STUFF THAT IS GENERALLY NO LONGER USED IN MESH ALGS
  * Given a map with marked rivers, a master DEM and a derived DEM of
  * important points, this routine will copy a few of the river points
  * into the DEM using nearest neighbor (so all DEM points falll on the grid)
- * to help get valleys into the mesh. 
+ * to help get valleys into the mesh.
  *
  */
 int	AddRiverPoints(
 			const DEMGeo& 		orig, 		// The original DEM
 			DEMGeo& 			deriv, 		// A few river points are added to this one
 			const Pmwx& 		map)		// A vector map with the rivers
-{	
+{
 	// BAS - we do not care about being slightly outside the DEM here...points are only
 	// processed via xy_nearsest and clamped onto the DEM, and we skip a lot of river points anyway.
 	int added = 0;
@@ -67,8 +67,8 @@ int	AddRiverPoints(
 			h = orig.xy_nearest(i->source()->point().x, i->source()->point().y, x, y);
 			if (h != NO_DATA)
 			{
-				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0) 
-				{   
+				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0)
+				{
 					++added;
 					deriv(x,y) = h;
 				}
@@ -77,8 +77,8 @@ int	AddRiverPoints(
 			h = orig.xy_nearest(i->target()->point().x, i->target()->point().y, x, y);
 			if (h != NO_DATA)
 			{
-				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0) 
-				{   
+				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0)
+				{
 					++added;
 					deriv(x,y) = h;
 				}
@@ -119,13 +119,13 @@ int	AddExtremeVerticalPoints(const DEMGeo& orig, DEMGeo& deriv, float gap)
 			}
 		}
 	}
-	return added;	
+	return added;
 }
 
 
 /* This is the damned weirdest point-selection routine of all.  If there
  * is only one change in angle across a point (e.g. from flat to vertical),
- * it's on an "edge" of a cliff or mountain.  But if there are two changes 
+ * it's on an "edge" of a cliff or mountain.  But if there are two changes
  * in angle, it is on a "corner" of a cliff or mountain and is very important
  * for the mesh.  This routine tries to measure such a phenomenon.
  *
@@ -136,7 +136,7 @@ int	AddExtremeVerticalPoints(const DEMGeo& orig, DEMGeo& deriv, float gap)
  * to our top and right is different enough from our bottom-left, then we need
  * this point.
  *
- * WHY does this work?  Well, generally a change in just the X or Y axis 
+ * WHY does this work?  Well, generally a change in just the X or Y axis
  * means we've got a reasonably flat gradient.  (As the one-fold change rotates
  * around, the X and Y multiplication work out to be vaguely constant.  A dot
  * product is probably more appropriate).  BUT if we have a fold in two dimensions,
@@ -145,7 +145,7 @@ int	AddExtremeVerticalPoints(const DEMGeo& orig, DEMGeo& deriv, float gap)
  *
  */
 int	AddAngularDifferencePoints(
-					const DEMGeo& 		orig, 	// Original mesh	
+					const DEMGeo& 		orig, 	// Original mesh
 					DEMGeo& 			deriv, 	// Interesting points are added here
 					double 				level)	// Heuristic cutoff level
 {
@@ -172,7 +172,7 @@ int	AddAngularDifferencePoints(
 				height_right[range] = orig.get(x+range,y);
 				height_bottom[range] = orig.get(x,y-range);
 				height_top[range] = orig.get(x,y+range);
-				
+
 				if (height_left[range] != NO_DATA)
 				{
 					height_left[range] = h - height_left[range];
@@ -251,12 +251,12 @@ void FowlerLittle(const DEMGeo& orig, DEMGeo& deriv)
 		dif[5] = orig.get(x-1,y-1) > e;
 		dif[6] = orig.get(x-1,y  ) > e;
 		dif[7] = orig.get(x-1,y+1) > e;
-		
+
 		int cycles = 0;
 		for (int n = 0; n < 8; ++n)
 		if (dif[n] != dif[(n+7)%8])
 			++cycles;
-		
+
 		if (cycles == 0)
 			deriv(x,y) = orig(x,y);
 		if (cycles > 2)
@@ -297,7 +297,7 @@ void FowlerLittle(const DEMGeo& orig, DEMGeo& deriv)
 			e[3] < e[2])	lowest(x  ,y  ) = 1;
 		if (e[3] > e[0] &&
 			e[3] > e[1] &&
-			e[3] > e[2])	highest(x  ,y  ) = 1;		
+			e[3] > e[2])	highest(x  ,y  ) = 1;
 	}
 
 	for (y = 0; y < (orig.mHeight); ++y)
@@ -306,11 +306,11 @@ void FowlerLittle(const DEMGeo& orig, DEMGeo& deriv)
 		if (passes(x,y) != 0.0)
 		if (lowest(x,y) == 0.0 || highest(x,y) == 0.0)
 			deriv(x,y) = orig(x,y);
-	}	
+	}
 }
 
 
-/* 
+/*
  * FindMinMaxPointsOnMesh
  *
  * This routine selects points based on local minima and maxima.  We use a sliding window (sliding
@@ -329,7 +329,7 @@ int	FindMinMaxPointsOnMesh(
 	int x, y, added = 0, total = 0;
 	vector<DEMGeo>	mincache, maxcache;
 	DEMGeo_BuildMinMax(orig, mincache, maxcache, 4);
-			
+
 	for (int window = (hires ? 10 : 30); window < 40; window += 10)
 	{
 		for (y = 0; y < (deriv.mHeight - window); y += (window / 2))
@@ -360,7 +360,7 @@ int	FindMinMaxPointsOnMesh(
 				}
 			}
 		}
-	}	
+	}
 	return added;
 }
 
@@ -384,7 +384,7 @@ void	BuildCutLinesInDEM(
 	int y_interval = (ioDem.mHeight-1) / segments;
 	vector<CDT::Vertex_handle>	junctions;
 	junctions.resize((segments+1)*(segments+1));
-	
+
 	// First, there will be some crossing points - add every one of them to the triangulation.
 	int x, y, dx, dy;
 	for (y = 0; y < ioDem.mHeight; y += y_interval)
@@ -392,7 +392,7 @@ void	BuildCutLinesInDEM(
 	{
 		float h = ioDem(x,y);
 		if (h != NO_DATA)
-		{			
+		{
 //			gMeshPoints.push_back(Point_2(ioDem.x_to_lon(x),ioDem.y_to_lat(y)));
 #if !NO_TRIANGULATE
 			CDT::Vertex_handle vv = outMesh.insert(CDT::Point(ioDem.x_to_lon(x),ioDem.y_to_lat(y)), local);
@@ -403,7 +403,7 @@ void	BuildCutLinesInDEM(
 		} else
 			AssertPrintf("Needed DEM point AWOL - %d,%d.\n",x,y);
 	}
-	
+
 	// Next, add the vertical segments.  Run through each vertical stripe except the edges,
 	// for every horizontal one except the top.  This is each vertical band we must add.
 	for (y = y_interval; y < ioDem.mHeight; y += y_interval)
@@ -423,14 +423,14 @@ void	BuildCutLinesInDEM(
 				local = v2->face();
 				outMesh.insert_constraint(v1, v2);
 				v2 = v1;
-	#endif				
-			} 			
+	#endif
+			}
 		}
 		v2 = junctions[(x / x_interval) + (y / y_interval) * (segments+1)];
 		outMesh.insert_constraint(v1, v2);
-		
+
 	}
-	
+
 	// Same thing but horizontal-like.
 	for (y = y_interval; y < (ioDem.mHeight-y_interval); y += y_interval)
 	for (x = x_interval; x < ioDem.mWidth; x += x_interval)
@@ -441,7 +441,7 @@ void	BuildCutLinesInDEM(
 		{
 			float h = ioDem(dx,y);
 			if (h != NO_DATA)
-			{				
+			{
 //				gMeshPoints.push_back(Point_2(ioDem.x_to_lon(dx),ioDem.y_to_lat(y)));
 	#if !NO_TRIANGULATE
 				v2 = outMesh.insert(CDT::Point(ioDem.x_to_lon(dx),ioDem.y_to_lat(y)), local);
@@ -449,11 +449,10 @@ void	BuildCutLinesInDEM(
 				local = v2->face();
 				outMesh.insert_constraint(v1, v2);
 				v2 = v1;
-	#endif				
-			} 			
-		}		
+	#endif
+			}
+		}
 		v2 = junctions[(x / x_interval) + (y / y_interval) * (segments+1)];
-		outMesh.insert_constraint(v1, v2);		
+		outMesh.insert_constraint(v1, v2);
 	}
 }
-				

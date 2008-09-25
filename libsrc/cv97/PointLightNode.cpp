@@ -10,7 +10,7 @@
 
 #include "PointLightNode.h"
 
-PointLightNode::PointLightNode() 
+PointLightNode::PointLightNode()
 {
 	setHeaderFlag(false);
 	setType(pointLightNodeString);
@@ -36,7 +36,7 @@ PointLightNode::PointLightNode()
 	addExposedField(attenuationField);
 }
 
-PointLightNode::~PointLightNode() 
+PointLightNode::~PointLightNode()
 {
 }
 
@@ -50,13 +50,13 @@ SFFloat *PointLightNode::getAmbientIntensityField()
 		return ambientIntensityField;
 	return (SFFloat *)getExposedField(ambientIntensityFieldString);
 }
-	
-void PointLightNode::setAmbientIntensity(float value) 
+
+void PointLightNode::setAmbientIntensity(float value)
 {
 	getAmbientIntensityField()->setValue(value);
 }
 
-float PointLightNode::getAmbientIntensity() 
+float PointLightNode::getAmbientIntensity()
 {
 	return getAmbientIntensityField()->getValue();
 }
@@ -72,17 +72,17 @@ SFVec3f *PointLightNode::getLocationField()
 	return (SFVec3f *)getExposedField(locationFieldString);
 }
 
-void PointLightNode::setLocation(float value[]) 
+void PointLightNode::setLocation(float value[])
 {
 	getLocationField()->setValue(value);
 }
 
-void PointLightNode::setLocation(float x, float y, float z) 
+void PointLightNode::setLocation(float x, float y, float z)
 {
 	getLocationField()->setValue(x, y, z);
 }
 
-void PointLightNode::getLocation(float value[]) 
+void PointLightNode::getLocation(float value[])
 {
 	getLocationField()->getValue(value);
 }
@@ -97,13 +97,13 @@ SFFloat *PointLightNode::getRadiusField()
 		return radiusField;
 	return (SFFloat *)getExposedField(radiusFieldString);
 }
-	
-void PointLightNode::setRadius(float value) 
+
+void PointLightNode::setRadius(float value)
 {
 	getRadiusField()->setValue(value);
 }
 
-float PointLightNode::getRadius() 
+float PointLightNode::getRadius()
 {
 	return getRadiusField()->getValue();
 }
@@ -119,17 +119,17 @@ SFVec3f *PointLightNode::getAttenuationField()
 	return (SFVec3f *)getExposedField(attenuationFieldString);
 }
 
-void PointLightNode::setAttenuation(float value[]) 
+void PointLightNode::setAttenuation(float value[])
 {
 	getAttenuationField()->setValue(value);
 }
 
-void PointLightNode::setAttenuation(float x, float y, float z) 
+void PointLightNode::setAttenuation(float x, float y, float z)
 {
 	getAttenuationField()->setValue(x, y, z);
 }
 
-void PointLightNode::getAttenuation(float value[]) 
+void PointLightNode::getAttenuation(float value[])
 {
 	getAttenuationField()->getValue(value);
 }
@@ -138,7 +138,7 @@ void PointLightNode::getAttenuation(float value[])
 //	Diffuse Color
 ////////////////////////////////////////////////
 
-void PointLightNode::getDiffuseColor(float value[]) 
+void PointLightNode::getDiffuseColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -151,7 +151,7 @@ void PointLightNode::getDiffuseColor(float value[])
 //	Ambient Color
 ////////////////////////////////////////////////
 
-void PointLightNode::getAmbientColor(float value[]) 
+void PointLightNode::getAmbientColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -165,12 +165,12 @@ void PointLightNode::getAmbientColor(float value[])
 //	List
 ////////////////////////////////////////////////
 
-PointLightNode *PointLightNode::next() 
+PointLightNode *PointLightNode::next()
 {
 	return (PointLightNode *)Node::next(getType());
 }
 
-PointLightNode *PointLightNode::nextTraversal() 
+PointLightNode *PointLightNode::nextTraversal()
 {
 	return (PointLightNode *)Node::nextTraversalByType(getType());
 }
@@ -178,21 +178,21 @@ PointLightNode *PointLightNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool PointLightNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void PointLightNode::initialize() 
+void PointLightNode::initialize()
 {
 }
 
-void PointLightNode::uninitialize() 
+void PointLightNode::uninitialize()
 {
 }
 
-void PointLightNode::update() 
+void PointLightNode::update()
 {
 }
 
@@ -200,7 +200,7 @@ void PointLightNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void PointLightNode::outputContext(ostream &printStream, char *indentString) 
+void PointLightNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFColor *color = getColorField();
 	SFVec3f *attenuation = getAttenuationField();

@@ -66,7 +66,7 @@ static enum
 {
   REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
 } ordering;
-
+
 #ifdef	__GNU_LIBRARY__
 #include <string.h>
 #define	my_index	strchr

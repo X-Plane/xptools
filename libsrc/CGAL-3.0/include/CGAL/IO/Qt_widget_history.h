@@ -41,7 +41,7 @@ namespace CGAL {
       xmax = widget.x_max();
       ymax = widget.y_max();
     }
-    
+
     void restore(Qt_widget& widget) const {
       widget.set_window(xmin, xmax, ymin, ymax);
     }
@@ -61,15 +61,15 @@ namespace CGAL {
   public slots:
     void backward();
     void forward();
-    
+
   private:
     struct Free {
       void operator()(History_atom* atom) const
       {
         delete atom;
       }
-    };    
-    
+    };
+
   public slots:
     void save();
     void clear() {
@@ -82,10 +82,10 @@ namespace CGAL {
 
   private:
     void restore(){
-      disconnect( widget, SIGNAL(rangesChanged()), 
+      disconnect( widget, SIGNAL(rangesChanged()),
         this, SLOT(save()));
       (*it)->restore(*widget);
-      connect(widget, SIGNAL(rangesChanged()), 
+      connect(widget, SIGNAL(rangesChanged()),
         this, SLOT(save()));
       widget->redraw();
     }

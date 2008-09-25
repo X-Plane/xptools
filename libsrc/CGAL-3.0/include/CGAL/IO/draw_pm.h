@@ -38,12 +38,12 @@ CGAL_BEGIN_NAMESPACE
 
 template <class PM, class Drawer, class Window>
 void draw_pm(const PM& pm,
-             Drawer& drawer, 
-             Window& w) 
+             Drawer& drawer,
+             Window& w)
 {
 
   drawer.draw_faces(pm.faces_begin(), pm.faces_end());
-  
+
   drawer.draw_halfedges(pm.halfedges_begin(), pm.halfedges_end());
 
   drawer.draw_vertices(pm.vertices_begin(), pm.vertices_end());

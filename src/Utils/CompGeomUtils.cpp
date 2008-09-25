@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -54,15 +54,15 @@ static	double	CCW_Angle(const Point2& p1, const Point2& p2, const Point2& p3)
 {
 	Vector2 v1(p1, p2);
 	Vector2 v2(p2, p3);
-	
+
 	double	a1 = atan2(v1.dy, v1.dx);
 	double	a2 = atan2(v2.dy, v2.dx);
-	
+
 	double a_turn = PI - (a2 - a1);
 
 	if (a_turn > PI)
 		a_turn -= PI2;
-	
+
 	return a_turn;
 }
 
@@ -95,10 +95,10 @@ void	InsetPolygon2(
 {
 	if (!outChain.empty())
 		outChain.clear();
-	
+
 	int n = 0;
 	vector<Segment2>	segments, orig_segments;
-	
+
 	// First we calculate the inset edges of each side of the polygon.
 
 	for (int n = 0, m = 1; n < inChain.size(); ++n, ++m)
@@ -109,15 +109,15 @@ void	InsetPolygon2(
 		MoveSegLeft(edge, (inRatios == NULL) ? inInset : (inRatios[n] * inInset), seg);
 		segments.push_back(seg);
 	}
-	
+
 	// Now we go through and find each vertex, the intersection of the supporting
 	// lines of the edges.  For the very first and last point if not in a polygon,
 	// we don't use the intersection, we just find where that segment ends for a nice
 	// crips 90 degree angle.
-	
-	int num_inserted = 0;	
+
+	int num_inserted = 0;
 	int last_vertex = segments.size() - 1;
-	
+
 	for (int outgoing_n = 0; outgoing_n < segments.size(); ++outgoing_n)
 	{
 		// the Nth segment goes from the Nth vertex to the Nth + 1 vertex.
@@ -132,10 +132,10 @@ void	InsetPolygon2(
 		 * (1) The first point in a non-ring is determined only by the second side.
 		 * (2) the last point in a non-ring is determined only by the first side.
 		 * (3) If we have a side that overlaps exactly backward onto itself, we generate two
-		 *     points to make a nice square corner around this 'antenna'.  Please note the 
+		 *     points to make a nice square corner around this 'antenna'.  Please note the
 		 *     requirement that both sides be the same length!!
 		 * (4) If two sides are almost colinear (or are colinear) then the intersection we would
-		 *     normally use to find the intersect point will have huge precision problems.  In 
+		 *     normally use to find the intersect point will have huge precision problems.  In
 		 *     this case we take an approximate point by just treating it as straight and splitting
 		 *     the difference.  The inset will be a bit too thin, but only by a fractional amount that
 		 *     is close to our precision limits anyway.
@@ -143,7 +143,7 @@ void	InsetPolygon2(
 		 *     sharp end.  We "mitre" this end by adding two points to prevent absurdity.
 		 *
 		 * GENERAL CASE: when all else fails, we inset both sides, and intersect - that's where the inset
-		 * polygon turns a corner. 
+		 * polygon turns a corner.
 		 *
 		 *****/
 
@@ -152,14 +152,14 @@ void	InsetPolygon2(
 			/* CASE 1 */
 			// We're the first in a chain.  Outgoing vertex is always right.
 			outChain.insert(outChain.end(), segments[outgoing_n].p1);
-		} 
+		}
 		else if (outgoing_n == last_vertex && !inIsRing)
 		{
 			/* CASE 2 */
 			// We're the last in a chain.  Incoming vertex is always right
-			outChain.insert(outChain.end(), segments[incoming_n].p2);			
-		}  
-		else if (orig_segments[incoming_n].p1 == orig_segments[outgoing_n].p2) 
+			outChain.insert(outChain.end(), segments[incoming_n].p2);
+		}
+		else if (orig_segments[incoming_n].p1 == orig_segments[outgoing_n].p2)
 		{
 			/* CASE 3 */
 			// Are the two sides in exactly opposite directions?  Special case...we have to add a vertex.
@@ -179,27 +179,27 @@ void	InsetPolygon2(
 			v1.normalize();
 			v2.normalize();
 			double dot = v1.dot(v2);
-						
+
 			if (dot > 0.999961923064)
 			{
 				/* CASE 4 */
 				// Our sides are nearly colinear - don't trust intersect!
 				outChain.insert(outChain.end(), Segment2(segments[incoming_n].p2, segments[outgoing_n].p1).midpoint());
-			} 
+			}
 			else if (dot < -0.5 && !v1.left_turn(v2))
 			{
 				/* CASE 5 */
 				// A sharp outward turn of more than 60 degrees - at this point the intersect point will be over
-				// twice the road thickness from the intersect point.  Not good!  
+				// twice the road thickness from the intersect point.  Not good!
 				Point2	p1(segments[incoming_n].p2);
 				Point2	p2(segments[outgoing_n].p1);
 				p1 += (v1 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) *  inInset);
 				p2 += (v2 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) * -inInset);
 				outChain.insert(outChain.end(), p1);
 				outChain.insert(outChain.end(), p2);
-				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);				
+				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);
 			}
-			else  
+			else
 			{
 				/* GENERAL CASE */
 				// intersect the supporting line of two segments.
@@ -209,11 +209,11 @@ void	InsetPolygon2(
 				if (line1.intersect(line2, p))
 					outChain.insert(outChain.end(), p);
 				else
-					outChain.insert(outChain.end(), Segment2(segments[incoming_n].p2, segments[outgoing_n].p1).midpoint());			
+					outChain.insert(outChain.end(), Segment2(segments[incoming_n].p2, segments[outgoing_n].p1).midpoint());
 			}
 		}
-	}	
-}				
+	}
+}
 
 void	InsetPolygon3(
 				const Polygon3&				inChain,
@@ -225,10 +225,10 @@ void	InsetPolygon3(
 {
 	if (!outChain.empty())
 		outChain.clear();
-	
+
 	int n = 0;
 	vector<Segment3>	segments, orig_segments;
-	
+
 	// First we calculate the inset edges of each side of the polygon.
 
 	for (int n = 0, m = 1; n < inChain.size(); ++n, ++m)
@@ -239,12 +239,12 @@ void	InsetPolygon3(
 		MoveSegLeft(edge, (inRatios == NULL) ? inInset : (inRatios[n] * inInset), seg, inUp);
 		segments.push_back(seg);
 	}
-	
+
 	// Now we go through and find each vertex, the intersection of the supporting
 	// lines of the edges.  For the very first and last point if not in a polygon,
 	// we don't use the intersection, we just find where that segment ends for a nice
 	// crips 90 degree angle.
-	
+
 	int last_vertex = segments.size() - 1;
 	for (int outgoing_n = 0; outgoing_n < segments.size(); ++outgoing_n)
 	{
@@ -253,7 +253,7 @@ void	InsetPolygon3(
 		int incoming_n = outgoing_n - 1;
 		if (incoming_n < 0)
 			incoming_n = last_vertex;
-			
+
 		if (outgoing_n == 0 && !inIsRing)
 		{
 			// Special case 1: we're the first in a chain.  Outgoing vertex is always right.
@@ -261,7 +261,7 @@ void	InsetPolygon3(
 		} else if (outgoing_n == last_vertex && !inIsRing)
 		{
 			// Special case 2: we're the last in a chain.  Incoming vertex is always right
-			outChain.insert(outChain.end(), segments[incoming_n].p2);			
+			outChain.insert(outChain.end(), segments[incoming_n].p2);
 		}  else if (orig_segments[incoming_n].p1 == orig_segments[outgoing_n].p2) {
 			// Special case 3: are the two sides in exactly opposite directions?  Special case...we have to add a vertex.
 			// (This is almost always an "antenna" in the data, that's why we have to add the new side, the point of the antenna
@@ -269,7 +269,7 @@ void	InsetPolygon3(
 			Segment3	new_side(segments[incoming_n].p2, segments[outgoing_n].p1), new_side2;
 			MoveSegLeft(new_side, (inRatios != NULL) ? (inRatios[outgoing_n] * inInset) : inInset, new_side2, inUp);
 			outChain.insert(outChain.end(), new_side2.p1);
-			outChain.insert(outChain.end(), new_side2.p2);			
+			outChain.insert(outChain.end(), new_side2.p2);
 		}else {
 			// General case: intersect the supporting line of two segments.
 			// Note: we can't intersect 2 lines reliably so much...make line2 into a plane.
@@ -281,8 +281,8 @@ void	InsetPolygon3(
 			if (plane2.intersect(line1, p))
 				outChain.insert(outChain.end(), p);
 		}
-	}	
-}				
+	}
+}
 
 
 double	CalcMaxInset(
@@ -293,18 +293,18 @@ double	CalcMaxInset(
 	/*
 		For any side of length L, with an inset of D, the left and right
 		sides have angles A1 and A2, and insets D1 and D2, and an inset factor F
-		
+
 		We are ok as long as
 		L > F*D/tan(A1) + F*D1/sin(A1) + F*D/tan(A2) + F*D2/sin(A2)
 		So our max inset is:
-		
+
 		L/ ( D/tan(A1) + D1/sin(A1) + D/tan(A2) + D2/sin(A2) )
 	*/
-	
+
 	int	sides = inChain.size();
 	if (!inIsRing) sides--;
 	double	best_f = 0.0;
-	
+
 	for (int n = 0; n < sides; ++n)
 	{
 		int	prev = n-1;
@@ -313,20 +313,20 @@ double	CalcMaxInset(
 		if (next >= inChain.size()) next = 0;
 		int nextnext = next+1;
 		if (nextnext >= inChain.size()) nextnext = 0;
-	
+
 		double	D = (inRatios == NULL) ? 1.0 : inRatios[n];
 		double 	D1 = (inRatios == NULL) ? 1.0 : inRatios[prev];
 		double  D2 = (inRatios == NULL) ? 1.0 : inRatios[next];
-		
+
 		double	A1 = CCW_Angle(inChain[prev], inChain[n], inChain[next]);
 		double	A2 = CCW_Angle(inChain[n], inChain[next], inChain[nextnext]);
-		
+
 		double	divisor = 0;
 		if (inIsRing || n != 0)
 			divisor += (D * cot(A1) + D1 * csc(A1));
 		if (inIsRing || n != (sides - 1))
 			divisor += (D * cot(A2) + D1 * csc(A2));
-			
+
 		if (divisor > 0.0)
 		{
 			double seglen = sqrt(Segment2(inChain[n], inChain[next]).squared_length());
@@ -348,11 +348,11 @@ void ExtendBoundingSphereToSphere(const Sphere3& newSphere, Sphere3& ioSphere)
 	smaller.radius_squared = sqrt(ioSphere.radius_squared) - sqrt(newSphere.radius_squared);
 	smaller.radius_squared *= smaller.radius_squared;
 	if (smaller.contains(newSphere.c)) return;
-	
+
 	// Find a vector from the old to the new scale, and normalize it for direction.
 	Vector3	to_new = Vector3(ioSphere.c, newSphere.c);
 	to_new.normalize();
-	// Build vectors in the same and opposite direction of radius length - 
+	// Build vectors in the same and opposite direction of radius length -
 	// these go to the farthest points.
 	Vector3 new_r(to_new), old_r(to_new);
 	old_r *= -sqrt(ioSphere.radius_squared);
@@ -362,11 +362,11 @@ void ExtendBoundingSphereToSphere(const Sphere3& newSphere, Sphere3& ioSphere)
 	Segment3	seg(newSphere.c + new_r, ioSphere.c + old_r);
 	ioSphere.c = seg.midpoint();
 	seg.p1 = ioSphere.c;
-	ioSphere.radius_squared = seg.squared_length();	
+	ioSphere.radius_squared = seg.squared_length();
 }
 
 // Given a bounding sphere and a point not in the sphere, grow the sphere
-// to contain it.  We have this routine broken out so that we don't 
+// to contain it.  We have this routine broken out so that we don't
 // have to make a function call for included points in the fast bounding
 // sphere routine below.
 void ExtendBoundingSphereToPt1(const Point3& p, Sphere3& ioSphere)
@@ -380,8 +380,8 @@ void ExtendBoundingSphereToPt1(const Point3& p, Sphere3& ioSphere)
 	// now pointing at the pt farthest from the new pt on the sphere.
 	to_pt *= -sqrt(ioSphere.radius_squared);
 	Point3	opposite_pt = ioSphere.c + to_pt;
-	// The sphere must contain opposite_pt and p, so put the midpoint halfway and 
-	// recalc the bounds.	
+	// The sphere must contain opposite_pt and p, so put the midpoint halfway and
+	// recalc the bounds.
 	ioSphere.c = Segment3(opposite_pt, p).midpoint();
 	ioSphere.radius_squared = Vector3(ioSphere.c, p).squared_length();
 }
@@ -397,17 +397,17 @@ void	FastBoundingSphere(
 				Sphere3&					outSphere)
 {
 	if (inPoints.empty())	return;
-	
+
 	// sort the points first so we can take the widest span
 	// to build the sphere.
 	vector<Point3>	pts(inPoints);
 	sort(pts.begin(), pts.end(), lesser_y_then_x_then_z());
-	
+
 	// Make an initial sphere from the two ends...this will hopefully
 	// contain almost everyone.
 	outSphere.c = Segment3(pts[0], pts[pts.size()-1]).midpoint();
 	outSphere.radius_squared = Vector3(outSphere.c, pts[0]).squared_length();
-	
+
 	// Now grow the sphere for any points we missed.
 	for (int n = 1; n < (pts.size() - 1); ++n)
 	{
@@ -420,21 +420,21 @@ bool	PointInPolygon3(
 				const Polygon3&				inPolygon,
 				const Point3&				inPoint)
 {
-	// Our strategy is this: for each side of the polygon, 
-	// build a plane normal to the polygon along that edge and see if 
+	// Our strategy is this: for each side of the polygon,
+	// build a plane normal to the polygon along that edge and see if
 	// the point is on the inside of it.  Note that we must have a convex
 	// polygon for this to work!
 
 	if (inPolygon.size() < 3)
 		return false;
-		
+
 	// First find the normal for the polygon.  This normal points
 	// toward a viewer looking at the clockwise face.
 	Vector3	v1 = Vector3(inPolygon[0], inPolygon[1]);
 	Vector3	v2 = Vector3(inPolygon[2], inPolygon[1]);
 	Vector3	polyNormal = v1.cross(v2);
 	polyNormal.normalize();
-	
+
 	for (int n = 0; n < inPolygon.size(); ++n)
 	{
 		// Construct a half-plane throught this side of the polygon perpendicular
@@ -442,15 +442,15 @@ bool	PointInPolygon3(
 		// The half-plane is pointing away from the inside of the polygon.
 		Vector3	side = Vector3(inPolygon[n], inPolygon[(n+1)%inPolygon.size()]);
 		Vector3 faceVector = polyNormal.cross(side);
-		faceVector.normalize();				
+		faceVector.normalize();
 		double	d = -faceVector.dot(Vector3(inPolygon[n]));
-		
+
 		// If the point is on the positive side of the half-plane, it's outside
 		// the polygon; bail.
 		double	eq = faceVector.dot(Vector3(inPoint)) + d;
 		if (eq > 0)
-			return false;		
-	}	
+			return false;
+	}
 	return true;
 }
 
@@ -462,34 +462,34 @@ bool	PointInPolygon3(
 	   small segments forming the curve, using this function, BezierCurve.
 	2. Those points and a series of width and up vectors are fed into ChainToQuadStrip to form a
 	   3-d quad strip that can then be rendered (or covered with pavement.
-	
+
 	The problem happens when we combine (1) a bezier curve with many polygons for smoothness with (2)
 	a very sharp hard turn in the curve.
-	
+
 	Normallly ChainToQuadStrip intersects two adjacent quads to form a sharp corner...for example in
-	a 90 degree turn the two quads around the turn are angled so the "inside" of the turn quads are 
+	a 90 degree turn the two quads around the turn are angled so the "inside" of the turn quads are
 	reduced in length and the outside of the turn is extended, forming an L-joint that flows smoothly.
-	
-	The problem happens when the segments leading up to a hard turn are very short (typically due to a 
+
+	The problem happens when the segments leading up to a hard turn are very short (typically due to a
 	very detailed bezier curve).  The result is that many quads overlap each other, and ChainToQuadStrip
 	cannot unpinch them all the way it would need to.  Instead it ends up causing part of the road to
 	go inside out.
-	
+
 	Our _hacky_ solution:
-	
+
 	"Doctor it hurts when I do this."
 	"Well, then don't do this."
-	
-	You can pass a length to BezierCurve...this is an initial length of each side of the curve that 
+
+	You can pass a length to BezierCurve...this is an initial length of each side of the curve that
 	_must_ be made of one straight segment.  This reduces the number of total segments.  The result is
-	that when a tight corner hits, if your "protected" length is wider than the effective angled 
+	that when a tight corner hits, if your "protected" length is wider than the effective angled
 	amount of the road on the inside of the curve, you are guaranteed only one quad on each side for
 	that length and no pinching problem happens.
-	
+
 	How long should that length be?  Well, it should for our side be:
 	width_us / tan(angle) + width_them / sin(angle)
-	
-*/	
+
+*/
 
 void	BezierCurve(
 				const Point3&				inStart,
@@ -505,39 +505,39 @@ void	BezierCurve(
 {
 	if (inNumSegments < 1) inNumSegments = 1;
 	if (!inHasStartCurve && !inHasEndCurve) inNumSegments = 1;
-	
+
 	outPoints.clear();
 	outPoints.push_back(inStart);
-	
+
 	Point3	startCurve = inHasStartCurve ? inStartCurve : inStart;
 	Point3	endCurve =   inHasEndCurve   ? inEndCurve   : inEnd;
-	
+
 	if (inNumSegments > 1)
 	{
 		Line3	base_line(inStart, inEnd);
 		if (base_line.on_line(startCurve) && base_line.on_line(endCurve))
 			inNumSegments = 1;
 	}
-	
+
 	inProtectStart *= inProtectStart;
 	inProtectEnd *= inProtectEnd;
-	
+
 	for (int t = 1; t < inNumSegments; ++t)
 	{
 		float	p = (float) t / (float) inNumSegments;
 		float	mp = 1.0 - p;
-		
+
 		float	w0 = mp * mp * mp;
 		float	w1 = 3.0 * mp * mp * p;
 		float	w2 = 3.0 * mp * p  * p;
 		float	w3 = p  * p  * p;
-		
+
 		Point3	loc(
 			inStart.x * w0 + startCurve.x * w1 + endCurve.x * w2 + inEnd.x * w3,
 			inStart.y * w0 + startCurve.y * w1 + endCurve.y * w2 + inEnd.y * w3,
 			inStart.z * w0 + startCurve.z * w1 + endCurve.z * w2 + inEnd.z * w3);
-			
-		bool	skip = false;	
+
+		bool	skip = false;
 		if (inProtectStart > 0.0 && Segment3(inStart, loc).squared_length() < inProtectStart)
 			skip = true;
 		if (inProtectEnd > 0.0 && Segment3(inEnd, loc).squared_length() < inProtectEnd)
@@ -571,7 +571,7 @@ void	ChainToQuadStrip(
 			right = centerline.cross(inUp[0]);
 			right.normalize();
 			right *= (inWidth[0] * 0.5);
-			
+
 			outQuadStrip.push_back(inChain[n] + right);
 			outQuadStrip.push_back(inChain[n] - right);
 		} else if (n == last) {
@@ -579,11 +579,11 @@ void	ChainToQuadStrip(
 			right = centerline.cross(inUp[last]);
 			right.normalize();
 			right *= (inWidth[last] * 0.5);
-			
+
 			outQuadStrip.push_back(inChain[n] + right);
 			outQuadStrip.push_back(inChain[n] - right);
 		} else {
-			
+
 			// First we construct four planes...these planes define
 			// the sides of the outgoing and incoming segments.
 			Vector3 centerline1(inChain[n-1], inChain[n  ]);
@@ -603,65 +603,65 @@ void	ChainToQuadStrip(
 			if (normal1.dot(normal2) > NEAR_COLINEAR)
 			{
 				outQuadStrip.push_back(inChain[n] - normal1);
-				outQuadStrip.push_back(inChain[n] + normal1);				
+				outQuadStrip.push_back(inChain[n] + normal1);
 			} else if (normal1.dot(normal2) < -NEAR_COLINEAR) {
 				outQuadStrip.push_back(inChain[n] - normal1);
-				outQuadStrip.push_back(inChain[n] + normal1);				
+				outQuadStrip.push_back(inChain[n] + normal1);
 				outQuadStrip.push_back(inChain[n] - normal2);
-				outQuadStrip.push_back(inChain[n] + normal2);								
+				outQuadStrip.push_back(inChain[n] + normal2);
 			} else {
-			
+
 			normal1 *= (inWidth[n] * 0.5);
 			normal2 *= (inWidth[n] * 0.5);
-			
+
 			Point3	left1 = inChain[n] - normal1;
 			Point3	left2 = inChain[n] - normal2;
 			Point3	right1 = inChain[n] + normal1;
 			Point3	right2 = inChain[n] + normal2;
-			
+
 			Plane3	leftWall1 = Plane3(left1, normal1);
 			Plane3	leftWall2 = Plane3(left2, normal2);
 			Plane3	rightWall1 = Plane3(right1, normal1);
 			Plane3	rightWall2 = Plane3(right2, normal2);
 
-			// Next we intersect them.  This forms two lines that 
-			// represent the valid set of possible end points for 
+			// Next we intersect them.  This forms two lines that
+			// represent the valid set of possible end points for
 			// the planes where the widths of the planes are consistent.
 
 			// If we don't have an intersection, that means that the
 			// side wall planes are the same, which makes life easy.
 			// Just pick the end of one of the segments because they're straight.
-			
+
 			Line3	leftEdge, rightEdge;
 			if (!leftWall1.intersect(leftWall2, leftEdge))
 				leftEdge = Line3(left1, inUp[n]);
 			if (!rightWall1.intersect(rightWall2, rightEdge))
 				rightEdge = Line3(right1, inUp[n]);
-			
+
 			// Build the plane that contains both pavement end lines.  This
 			// is the plane within which we'd like our end points to occur if
 			// we're going to interpolate our end lines reasonably.
-			
+
 			Plane3	junctionPlane(inChain[n], inUp[n]);
-			
-			// Now intersect those end lines with that plane...that is 
+
+			// Now intersect those end lines with that plane...that is
 			// theoretically a good compromise of road continuity and
 			// outer distance.  (Yeah right!)
-			
+
 			Point3	leftPt, rightPt;
-			
+
 			if (!junctionPlane.intersect(leftEdge, leftPt))
 				leftPt = left1;
-				
+
 			if (!junctionPlane.intersect(rightEdge, rightPt))
 				rightPt = right1;
-				
+
 			outQuadStrip.push_back(rightPt);
-			outQuadStrip.push_back(leftPt);	
+			outQuadStrip.push_back(leftPt);
 			}
 		}
 	}
-}	
+}
 
 void	ReverseQuadStrip(
 				vector<Point3>&				ioQuadStrip)
@@ -673,7 +673,7 @@ void	ReverseQuadStrip(
 		std::swap(ioQuadStrip[n], ioQuadStrip[p-n-1]);
 	}
 }
-			
+
 
 
 void	RemoveFromQuadStripFront(
@@ -684,12 +684,12 @@ void	RemoveFromQuadStripFront(
 {
 	outFront.clear();
 	if (ioChain.size() < 4)	return;
-	
+
 //	double	left_first_dist = sqrt(Segment3(ioChain[1], ioChain[3]).squared_length());
 //	double	right_first_dist = sqrt(Segment3(ioChain[0], ioChain[2]).squared_length());
-	
+
 	double	removeFromStartLeft = inRemoveFromStart, removeFromStartRight = inRemoveFromStart;
-	
+
 	if (inTrimOffAngle)
 	{
 		double	trim_dist = LongerSideOfQuad(ioChain);
@@ -698,12 +698,12 @@ void	RemoveFromQuadStripFront(
 		else
 			removeFromStartLeft -= trim_dist;
 	}
-	
+
 	int	last_left = ioChain.size() - 1;
 	int last_right = ioChain.size() - 2;
 	int	left, right;
 	double	length, accum;
-	
+
 	if (inRemoveFromStart > 0.0)
 	{
 		Point3	left_split, right_split;
@@ -713,31 +713,31 @@ void	RemoveFromQuadStripFront(
 		{
 			Segment3	seg(ioChain[left], ioChain[left+2]);
 			length = sqrt(seg.squared_length());
-			
+
 			if ((accum + length) > removeFromStartLeft)
 			{
 				left_split = seg.midpoint((removeFromStartLeft - accum) / length);
 				cut_left = left;
 				break;
-			} else 
-				accum += length;			
+			} else
+				accum += length;
 		}
-		
+
 		accum = 0.0;
 		for (right = 0; right < last_right; right += 2)
 		{
 			Segment3	seg(ioChain[right], ioChain[right+2]);
 			length = sqrt(seg.squared_length());
-			
+
 			if ((accum + length) >= removeFromStartRight)
 			{
 				right_split = seg.midpoint((removeFromStartRight - accum) / length);
 				cut_right = right;
 				break;
-			} else 
-				accum += length;			
+			} else
+				accum += length;
 		}
-		
+
 		if (cut_left != -1 && cut_right != -1)
 		{
 			int		cut_proj_left = cut_right + 1;
@@ -747,10 +747,10 @@ void	RemoveFromQuadStripFront(
 			outFront.insert(outFront.end(), ioChain.begin(), ioChain.begin() + vertices_to_copy);
 			ioChain.erase(ioChain.begin(), ioChain.begin() + vertices_to_nuke);
 
-			
+
 			outFront.push_back(right_split);
 			outFront.push_back(left_split);
-			
+
 			// If our split points _both_ hit on exactly the edge of a quad strip unit (damn unlikely)
 			// then our split points are the same as the start of the old strip.  Check this case.
 			// If they both match, no need to put the splits in.  But if one doesn't match, push back
@@ -760,9 +760,9 @@ void	RemoveFromQuadStripFront(
 				ioChain.insert(ioChain.begin(), left_split);
 				ioChain.insert(ioChain.begin(), right_split);
 			}
-		}		
-	}	
-}				
+		}
+	}
+}
 
 void	RemoveFromQuadStripBack(
 				vector<Point3>&				ioChain,
@@ -780,10 +780,10 @@ double	LongerSideOfQuad(
 {
 	Vector3	left_v(inChain[3], inChain[1]);
 	Vector3	right_v(inChain[2], inChain[0]);
-	
+
 	double	tl = left_v.dot(Vector3(inChain[3], inChain[0])) / left_v.dot(left_v);
 	double	tr = right_v.dot(Vector3(inChain[2], inChain[1])) / right_v.dot(right_v);
-	
+
 	if (tl < 1.0)
 		return -sqrt(Segment3(inChain[1], inChain[3] + left_v * tl).squared_length());
 	else
@@ -799,10 +799,10 @@ void	ClipToHalfPlane3(
 {
 	outPolygon.clear();
 	if (inPolygon.empty()) return;
-	
+
 	bool culled = inPlane.on_normal_side(inPolygon[0]);
 	Point3	pt;
-	
+
 	for (int n = 0; n < inPolygon.size(); ++n)
 	{
 		int nn = (n + 1) % inPolygon.size();
@@ -825,25 +825,25 @@ bool	IntersectLinesAroundJunction(
 				Point3&						outIntersection)
 {
 	if (inLine1.parallel(inLine2))	return false;
-	
+
 	Vector3	ground_plane_normal = inLine1.v.cross(inLine2.v);
 	ground_plane_normal.normalize();
-	
+
 	Plane3	ground_plane(inJunctionPt, ground_plane_normal);
-	
+
 	Vector3	plane1_normal = inLine1.v.cross(ground_plane_normal);
 	Vector3	plane2_normal = inLine2.v.cross(ground_plane_normal);
-	
+
 	Plane3	plane1(inLine1.p, plane1_normal);
 	Plane3	plane2(inLine2.p, plane2_normal);
-	
+
 	Line3	plane_crossing;
 	if (plane1.intersect(plane2, plane_crossing))
 	{
 		return ground_plane.intersect(plane_crossing, outIntersection);
-	} else 
+	} else
 		return false;
-}				
+}
 
 bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2)
 {
@@ -852,11 +852,11 @@ bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2)
 	DebugAssert(v1.dy != 0.0 || v1.dx < 0.0);		// Can't be horizontal facing to the right - that's our "test" pooint.
 	DebugAssert(v2.dy != 0.0 || v2.dx < 0.0);
 	DebugAssert(v1.dy != 0.0 || v2.dy != 0.0);		// Can't both be horizontal - they'd both be to the left.
-	
+
 	// Special case horizontal...if the first or second line is horizontal to the left we just have to know which hemisphere the other is in.
 	if(v1.dy == 0.0)	return v2.dy > 0.0;
 	if(v2.dy == 0.0)	return v1.dy < 0.0;
-	
+
 	if(v1.dy > 0.0 && v2.dy < 0.0)	return false;
 	if(v1.dy < 0.0 && v2.dy > 0.0)	return true;
 	return v2.perpendicular_ccw().dot(v1) > 0.0;
@@ -872,7 +872,7 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 	double	angle1 = atan2(v1.dy, v1.dx);
 	double	angle2 = atan2(v2.dy, v2.dx);
 	double	angle3 = atan2(v3.dy, v3.dx);
-	
+
 	// Special case...if angle 1 and 3 are the same, then treat the whole circle as
 	// inside and always return true.  This is important when an antenna gets near its
 	// end...the two choices are a return path equal to the current path and an alternate
@@ -880,9 +880,9 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 	// Is this computationally safe?  It is because two vectors of equal angle will be overlapping
 	// and are therefore two sides of the same edge.  They MUST have the same extent in opposite
 	// direction by topological rules, so their angles should be deterministically the same!
-	if (angle1 == angle3) 
+	if (angle1 == angle3)
 		return true;
-	// This was a special case to try to detect funky data.		
+	// This was a special case to try to detect funky data.
 	if (angle1 == angle2 || angle3 == angle2)
 	{
 #if DEV
@@ -890,30 +890,30 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 		printf("Vec1: %lf,%lf\n", v1.dx, v1.dy);
 		printf("Vec2: %lf,%lf\n", v2.dx, v2.dy);
 		printf("Vec3: %lf,%lf\n", v3.dx, v3.dy);
-#endif		
+#endif
 		return true;
 	}
-	
+
 	// Normalize all angles to be from 0 to 360.
 	if (angle1 <= -PI)	angle1 += PI2;
 	if (angle2 <= -PI)	angle2 += PI2;
 	if (angle3 <= -PI)	angle3 += PI2;
-	
+
 	// Special case - if we have to increase BOTH angle 2 and 3,
 	// we know that (1) angle 1 will be smaller than angle 2 after the increase AND
 	// (2) the compare of angle 2 and 3 is the smae whether or not we add.
-	// BUT adding PI2 causes floating point rounding to give us wrong answers for a few 
+	// BUT adding PI2 causes floating point rounding to give us wrong answers for a few
 	// rare cases.  So special-case this to avoid the add.
 	if (angle2 < angle1 && angle3 < angle1)
 	{
 		return angle2 < angle3;
 	}
-	
+
 	// Normalize angles 2 and 3 to be at least as big as angle 1 (represents counterclockwise rotation
 	// from angle 1), even if exceeds 360.
 	if (angle2 < angle1)	angle2 += PI2;
 	if (angle3 < angle1)	angle3 += PI2;
-	
+
 	// Now if the headings go 1 2 3 we're CCW.
 	return (angle1 < angle2 && angle2 < angle3);
 }
@@ -956,7 +956,7 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 					Polygon2::iterator ii = ioPolygon.begin();
 					advance(ii, i);
 					ioPolygon.erase(ii);
-				}				
+				}
 			}
 		}
 	}
@@ -967,19 +967,19 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 inline bool IsIntegral(const Point2& p)
 {
 	return (p.x == (double) (int) p.x ||
-			p.y == (double) (int) p.y); 
+			p.y == (double) (int) p.y);
 }
 
 // HACK UTILIITY: is this point a corner of a DSF
 inline bool IsCorner(const Point2& p)
 {
 	return (p.x == (double) (int) p.x &&
-			p.y == (double) (int) p.y); 
+			p.y == (double) (int) p.y);
 }
 
 // UTILITY: give na span of points in a polygon defined by P and deltas from
 // it, calculate the max error any point between the two edges in terms of
-// a deviation from the line from the end points. 
+// a deviation from the line from the end points.
 inline double	calc_error(Polygon2& ioPolygon, int p, int d_prev, int d_next, bool allow_in, bool allow_out, double max_err)
 {
 	double worst = 0.0;
@@ -990,14 +990,14 @@ inline double	calc_error(Polygon2& ioPolygon, int p, int d_prev, int d_next, boo
 
 	p1 = (p + d_prev) + 1;
 	p2 = (p + d_next) - 1;
-	
+
 	Vector2		inside(Vector2(seg.p1, seg.p2).perpendicular_ccw());
-	
-	
+
+
 	for (int i = p1; i <= p2; ++i)
 	{
 		Point2	t = ioPolygon[(i + sz) % sz];
-	
+
 		// ILLEGAL MOVE CHECK - we can restrict our operation to only widening or narrowing
 		// the poly.  Here we look at whether the original point is on the left or right side
 		// of the new simple edge.  This is counter-intuitive...if the old point is INSIDE
@@ -1005,7 +1005,7 @@ inline double	calc_error(Polygon2& ioPolygon, int p, int d_prev, int d_next, boo
 		double dot = inside.dot(Vector2(seg.p1));
 		if (dot < 0.0 && !allow_in) return max_err;
 		if (dot > 0.0 && !allow_out) return max_err;
-	
+
 		// ERROR CALCULATION
 		double me = Line2(seg).squared_distance(t);
 		if (me > worst) worst = me;
@@ -1014,7 +1014,7 @@ inline double	calc_error(Polygon2& ioPolygon, int p, int d_prev, int d_next, boo
 }
 
 // Polygon simplification
-// 
+//
 // Basic idea: for any given point, removing the pt introduces a
 // certain amount of error - the max of which is the max of the
 // distance from the new line to any of the points the line crosses
@@ -1034,9 +1034,9 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 	int sz = ioPolygon.size();
 	double						err;
 	int							pts_total = ioPolygon.size();
-	
+
 	double max_err_sq = max_err * max_err;
-	
+
 	// SETUP - Calculate each pts error and queue it.
 	for (int n = 0; n < ioPolygon.size(); ++n)
 	{
@@ -1044,9 +1044,9 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 		if (IsIntegral(ioPolygon[n])) err = max_err_sq;
 		q_backlinks[n] = q.insert(q_type::value_type(err, n));
 	}
-	
+
 	while (!q.empty() && q.begin()->first < max_err_sq && pts_total > 3)
-	{	
+	{
 		--pts_total;
 		// Find the point with the least error and rmeove it.
 		int k = q.begin()->second;
@@ -1061,14 +1061,14 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 		q_backlinks[k] = q.end();
 		c1 = (c1 + sz) % sz;
 		c2 = (c2 + sz) % sz;
-		
+
 		DebugAssert(prev_delta[c1] != 0);
 		DebugAssert(next_delta[c1] != 0);
 		DebugAssert(q_backlinks[c1] != q.end());
 		DebugAssert(prev_delta[c2] != 0);
 		DebugAssert(next_delta[c2] != 0);
 		DebugAssert(q_backlinks[c2] != q.end());
-		
+
 		// Recalculate the error of the points that
 		// formed lines with our removed point.  Those
 		// points (c1 and c2) now link to each other
@@ -1091,9 +1091,9 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 
 		err = calc_error(ioPolygon, c2, prev_delta[c2], next_delta[c2], allow_in, allow_out, max_err_sq);
 		if (IsIntegral(ioPolygon[c2])) err = max_err_sq;
-		q_backlinks[c2] = q.insert(q_type::value_type(err, c2));		
+		q_backlinks[c2] = q.insert(q_type::value_type(err, c2));
 	}
-	
+
 	// Put the polygon back together with only remaining pts.
 	Polygon2	npoly(q.size());
 	int ni = 0;
@@ -1114,14 +1114,14 @@ void	MidpointSimplifyPolygon(Polygon2& ioPolygon)
 	{
 		dst[n] = (ioPolygon.side(n).midpoint());
 	}
-	
+
 	ioPolygon.clear();
-	
+
 	for (int n = 0; n < dst.size(); ++n)
 	{
 		Vector2	prev(dst[dst.prev(n)], dst[n]);
 		Vector2	next(dst[n], dst[dst.next(n)]);
-		
+
 		if (prev.dx * next.dy != prev.dy * next.dx)
 			ioPolygon.push_back(dst[n]);
 	}
@@ -1137,13 +1137,13 @@ void	SmoothPolygon(Polygon2& ioPolygon, double smooth_radius, double max_turn_de
 	int sz = ioPolygon.size();
 	Polygon2	npoly;
 	int n;
-	
+
 	for (n = 0; n < sz; ++n)
 	{
 		Point2	prev(ioPolygon[(n+sz-1)%sz]);
 		Point2	now (ioPolygon[(n     )   ]);
 		Point2	next(ioPolygon[(n+   1)%sz]);
-		
+
 		Vector2	v1(prev, now);
 		Vector2 v2(now, next);
 		v1.normalize();
@@ -1157,9 +1157,9 @@ void	SmoothPolygon(Polygon2& ioPolygon, double smooth_radius, double max_turn_de
 			Point2	c1 = now - (v1 * (smooth_radius*0.5));
 			Point2	c2 = now + (v2 * (smooth_radius*0.5));
 			Bezier2	curve(turn_start, c1, c2, turn_end);
-			
+
 			int num_segs = angle / max_turn_deg + 1;
-			
+
 			for (int t = 0; t <= num_segs; ++t)
 			{
 				double param = (double) t/ (double) num_segs;
@@ -1174,7 +1174,7 @@ void	SmoothPolygon(Polygon2& ioPolygon, double smooth_radius, double max_turn_de
 // First we do a dot product of the right-side normal to the best vector - if the newer
 // is to the right (positive dot product) it's better, to the left it's worse
 // Then we have the colinear case.  First deal with equal points.  Then if the newer point
-// makes opposite dor product vectors to the anchor and best, the newer is in the middle 
+// makes opposite dor product vectors to the anchor and best, the newer is in the middle
 // and is superior.
 inline bool	IsBetterHullPt(const Point2& anchor, const Point2& best_so_far, const Point2& newer)
 {
@@ -1183,14 +1183,14 @@ inline bool	IsBetterHullPt(const Point2& anchor, const Point2& best_so_far, cons
 	double dot_v = Vector2(anchor, best_so_far).perpendicular_cw().dot(Vector2(anchor, newer));
 	if (dot_v > 0.0) return true;
 	if (dot_v < 0.0) return false;
-	
-	// Colinear cases - don't ever accept a zero length side.	
+
+	// Colinear cases - don't ever accept a zero length side.
 	if (best_so_far == anchor) return true;
 	if (best_so_far == newer) return false;
 	if (newer == anchor) return false;
-	
+
 	// Take the shortest side possible.
-	return Vector2(newer, best_so_far).dot(Vector2(newer, anchor)) < 0.0;	
+	return Vector2(newer, best_so_far).dot(Vector2(newer, anchor)) < 0.0;
 }
 
 void	MakePolygonConvex(Polygon2& ioPolygon)
@@ -1202,25 +1202,25 @@ void	MakePolygonConvex(Polygon2& ioPolygon)
 // (from the last pt found in the hull) to another pt in the hull.  If the other pt is outside, IT must
 // be in the hull.
 //
-// Time complexity is O(n*h) where N = number of pts in the dataset, H = number of pts in the hull. 
+// Time complexity is O(n*h) where N = number of pts in the dataset, H = number of pts in the hull.
 // for complex hulls this is SLOW, worst case (circle) = O(N^2).  Best is a triangular hole where the
 // alg runs in O(N).
 //
 // http://www.cs.princeton.edu/~ah/alg_anim/version1/JarvisMarch.html
 
 	if (ioPolygon.size() < 3) return;
-	
+
 	Polygon2		new_poly;
 	int				start_pt = 0;
 	int				now_pt;
 	int				best_pt;
 	int				i;
-	
+
 	for (i = 1; i < ioPolygon.size(); ++i)
 	if (ioPolygon[i].y > ioPolygon[start_pt].y)
 		start_pt = i;
 
-	now_pt = start_pt;	
+	now_pt = start_pt;
 	do {
 		new_poly.push_back(ioPolygon[now_pt]);
 		best_pt = 0;
@@ -1229,11 +1229,11 @@ void	MakePolygonConvex(Polygon2& ioPolygon)
 			if (IsBetterHullPt(ioPolygon[now_pt], ioPolygon[best_pt], ioPolygon[i]))
 				best_pt = i;
 		}
-				
+
 		now_pt = best_pt;
-		
+
 	} while (start_pt != now_pt);
-	
+
 	ioPolygon.swap(new_poly);
 
 	DebugAssert(ioPolygon.convex());
@@ -1247,7 +1247,7 @@ void	CheckSplit(GISHalfedge * a, GISHalfedge * b, void * ref)
 	int * foo = (int *) ref;
 	DebugAssert(a == NULL || b == NULL);
 	(*foo)++;
-		
+
 }
 
 #define SLIVER_PROTECTION	0.9999
@@ -1272,9 +1272,9 @@ inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
 // Convert a polygon to a one-face pmwx.  Polygon must have no antennas and be simple.
 static GISFace* PolyToPmwx(const Polygon2& inPoly, Pmwx& outMap, vector<GISVertex*> * outVertices)
 {
-	DebugAssert(outMap.empty()); 
+	DebugAssert(outMap.empty());
 	GISFace * face = outMap.insert_ring(outMap.unbounded_face(), inPoly);
-	if (outVertices) 
+	if (outVertices)
 	{
 		outVertices->resize(inPoly.size());
 		int i;
@@ -1298,27 +1298,27 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 	int ctr = 0;
 
 	Assert(inMap.unbounded_face()->holes_count() == 1);
-	
+
 	outPoly.clear();
-	
+
 	circ = stop = *(inMap.unbounded_face()->holes_begin());
 	do {
 		++ctr;
 		++circ;
-	} while (circ != stop); 
+	} while (circ != stop);
 
 	outPoly.resize(ctr);
 
 	circ = stop = *(inMap.unbounded_face()->holes_begin());
 	do {
 		--ctr;
-		outPoly[ctr] = circ->target()->point();		
+		outPoly[ctr] = circ->target()->point();
 		++circ;
-	} while (circ != stop); 
+	} while (circ != stop);
 }
 
 // Polygon Gap coverage
-// 
+//
 // For a given polygon, try to fill in small "leaks" by connecting any external
 // points that are visible to each other and smaller than 'dist'.
 void	FillPolygonGaps(Polygon2& ioPolygon, double dist)
@@ -1361,30 +1361,30 @@ void	FillPolygonGaps(Polygon2& ioPolygon, double dist)
 			int sn = 0;
 			if (pc == seg.p2 && l2 == Pmwx::locate_Vertex)
 			{
-#if DEV			
+#if DEV
 				pmwx.insert_edge(seg.p1, seg.p2, h, le, CheckSplit, &sn);
 				DebugAssert(sn == 1);
 #else
 				pmwx.insert_edge(seg.p1, seg.p2, h, le, NULL, NULL);
-#endif				
-				
+#endif
+
 #if 0
 				for (k = 0; k < ioPolygon.size(); ++k)
 				{
 					Pmwx::Locate_type t;
 					pmwx.locate_point(ioPolygon[k], t);
 					DebugAssert(t == Pmwx::locate_Vertex);
-				}				
-#endif					
+				}
+#endif
 			}
 		}
 	}
-	
+
 	PmwxToPoly(pmwx, ioPolygon);
 }
 
 
-// Make a polygon more convex.  Basically go around the 
+// Make a polygon more convex.  Basically go around the
 // edge and if we can safely insert a ray that cuts off the
 // concave edge, do so.  Keep doing this until we're stuck.
 // Don't insert an edge that adds more than max_area.
@@ -1392,13 +1392,13 @@ void	FillPolygonGaps(Polygon2& ioPolygon, double dist)
 void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
 {
 	Pmwx	pmwx;
-	
+
 	PolyToPmwx(ioPolygon, pmwx, NULL);
-	
+
 	bool did_work;
 	do {
 		did_work = false;
-		
+
 		Pmwx::Ccb_halfedge_circulator stop, iter, next;
 		stop = iter = *(pmwx.unbounded_face()->holes_begin());
 		do {
@@ -1424,12 +1424,12 @@ void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
 					int sn = 0;
 					if (pc == seg.p2 && l2 == Pmwx::locate_Vertex)
 					{
-		#if DEV			
+		#if DEV
 						pmwx.insert_edge(seg.p1, seg.p2, h, le, CheckSplit, &sn);
 						DebugAssert(sn == 1);
 		#else
 						pmwx.insert_edge(seg.p1, seg.p2, h, le, NULL, NULL);
-		#endif				
+		#endif
 						did_work = true;
 						break;
 					}
@@ -1438,7 +1438,7 @@ void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
 			++iter;
 		} while (iter != stop);
 	} while (did_work);
-	
+
 	PmwxToPoly(pmwx, ioPolygon);
 }
 
@@ -1449,7 +1449,7 @@ struct sort_by_ymin {
 // Simple self-intersection check.
 // We build up a sorted map of our sides by their lower Y coordinate.
 // Then for each side, check all sides above us until the sides are starting
-// clearly above us.  (Why no need to check below?  Well, that's handled 
+// clearly above us.  (Why no need to check below?  Well, that's handled
 // when the other side is the 'i' - in other words, given two polys X and Y
 // where X is below Y, we check XY, not YX).
 bool	ValidatePolygonSimply(const Polygon2& ioPolygon)
@@ -1463,7 +1463,7 @@ bool	ValidatePolygonSimply(const Polygon2& ioPolygon)
 		Segment2 side = ioPolygon.side(n);
 		sides.insert(sort_map::value_type(Bbox2(side.p1, side.p2), side));
 	}
-	
+
 	for (sort_map::iterator i = sides.begin(); i != sides.end(); ++i)
 	{
 		sort_map::iterator j = i;

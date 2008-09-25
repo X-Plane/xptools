@@ -53,7 +53,7 @@ public:
     typedef Alloc                                      Allocator;
     typedef Alloc                                      allocator_type;
 
-    typedef typename Items::template Vertex_wrapper<Self,Traits>   
+    typedef typename Items::template Vertex_wrapper<Self,Traits>
                                                        Vertex_wrapper;
     typedef typename Items::template Halfedge_wrapper<Self,Traits>
                                                        Halfedge_wrapper;
@@ -143,7 +143,7 @@ public:
 
 
 #ifndef CGAL_CFG_NO_TMPL_IN_TMPL_PARAM
-template < class Traits_, class HalfedgeDSItems, 
+template < class Traits_, class HalfedgeDSItems,
            class Alloc = CGAL_ALLOCATOR(int)>
 class HalfedgeDS_vector
     : public HalfedgeDS_vector_types<Traits_, HalfedgeDSItems, Alloc> {
@@ -151,7 +151,7 @@ public:
     typedef HalfedgeDS_vector<Traits_,HalfedgeDSItems,Alloc> Self;
 #else
 struct HalfedgeDS_vector {
-template < class Traits_, class HalfedgeDSItems, 
+template < class Traits_, class HalfedgeDSItems,
            class Alloc = CGAL_ALLOCATOR(int)>
 class HDS : public HalfedgeDS_vector_types<Traits_, HalfedgeDSItems, Alloc> {
 public:
@@ -568,7 +568,7 @@ public:
                               // Elements in [begin..ll) <  pivot (non border)
         while (ll < rr) {
                               // Pivot is in *ll, ll <= rr.
-            while ( rr > ll && (rr->is_border() 
+            while ( rr > ll && (rr->is_border()
                               || rr->opposite()->is_border())) {
                 if ( ! rr->opposite()->is_border()) {
                     CGAL_assertion( rr + 1 == get_h_iter(rr->opposite()));

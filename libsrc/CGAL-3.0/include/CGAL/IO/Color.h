@@ -31,9 +31,9 @@ CGAL_BEGIN_NAMESPACE
 class Color {
 public:
   Color() {}
-  Color(unsigned char red, 
-	unsigned char green, 
-	unsigned char blue, 
+  Color(unsigned char red,
+	unsigned char green,
+	unsigned char blue,
 	unsigned char alpha = 120)
     : _red(red), _green(green), _blue(blue), _alpha(alpha)
   {}

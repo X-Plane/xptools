@@ -42,8 +42,8 @@ CGAL_BEGIN_NAMESPACE
   parameters    Traits,X_curve
   Description   Implementation for a planar trapezoidal map also known as
   trapezoidal decomposition and vertical decomposition.
-  
-  For requirements on Traits and X_curve classes see 
+
+  For requirements on Traits and X_curve classes see
   Trapezoidal_decomposition_2 documentation.
 
 ////////////////////////////////////////////////////////////////////////// */
@@ -75,21 +75,21 @@ public:
   typedef In_face_iterator Iterator;
   typedef class Base_trapezoid_iterator Base_trapezoid_circulator;
   // friend class Td_traits::X_trapezoid;
-  
+
   typedef Td_active_trapezoid<X_trapezoid> Active_trapezoid;
-  typedef Td_active_non_degenerate_trapezoid<X_trapezoid,Traits> 
+  typedef Td_active_non_degenerate_trapezoid<X_trapezoid,Traits>
   Active_non_degenerate_trapezoid;
-  typedef Td_active_right_degenerate_curve_trapezoid<X_trapezoid,Traits> 
+  typedef Td_active_right_degenerate_curve_trapezoid<X_trapezoid,Traits>
   Active_right_degenerate_curve_trapezoid;
   typedef Td_dag< X_trapezoid> Data_structure;
   typedef std::map<int,Data_structure> map_nodes;
-  
+
   /*
    * class Base_trapezoid_iterator
    * member of Trapezoidal_decomposition_2<Traits>
    * Description Implements a basic Trapezoid iterator
    */
-  
+
   class Base_trapezoid_iterator
   {
   public:
@@ -115,7 +115,7 @@ public:
     reference operator*() const
     {
       CGAL_precondition(curr);
-      
+
       return *curr;
     }
     pointer operator->() const
@@ -126,36 +126,36 @@ public:
     {
       return curr==0;
     }
-    
+
   protected:
     Traits* traits;
     pointer curr;
   };
 
   /* *********************************************************************
-     
+
      class In_face_iterator
      member of Trapezoidal_decomposition_2<Traits>
      Description Implements a Trapezoid iterator along a X_curve
-     
+
      ********************************************************************* */
-  
+
   class In_face_iterator : public Base_trapezoid_iterator
   {
   protected:
     const X_curve& sep;
   public:
-    
+
     In_face_iterator(Traits* traits_,const X_curve& sepc,pointer currt=0) :
       Base_trapezoid_iterator(traits_,currt),sep(sepc){}
     In_face_iterator(const In_face_iterator &it) :
       Base_trapezoid_iterator((Base_trapezoid_iterator&)it),sep(it.sep){}
     bool operator==(const In_face_iterator &it) const
     {
-      return ( Base_trapezoid_iterator::operator==(it) && 
+      return ( Base_trapezoid_iterator::operator==(it) &&
                traits->curve_equal(sep,it.sep) );
     }
-    
+
     /*
       destription:
       advances curr to one of the right neighbours according to the relation
@@ -173,41 +173,41 @@ public:
     In_face_iterator& operator++()
     {
       if (!curr) return *this;// end reached, do nothing!
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_warning(traits);
-      
+
 #else
-      
+
       CGAL_assertion(traits);
-      
+
 #endif
-      
+
       Point right(curr->right());
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(curr->is_active());
       CGAL_assertion(!traits->is_degenerate_point(*curr));
-      
+
 #endif
       if (!traits->is_degenerate(*curr))
       {
 #ifndef NDEBUG
         Data_structure* tt=curr->get_node();
-          
+
 #ifndef CGAL_TD_DEBUG
-          
+
         CGAL_warning(!tt->is_inner_node());
-          
+
 #else
-          
+
         CGAL_assertion(tt);
         CGAL_assertion(!tt->is_inner_node());
 #endif
 #endif
-          
+
         // handle degeneracies
         if (!traits->point_is_left_low(curr->left(),
                                        traits->curve_righttop_most(sep)))
@@ -226,7 +226,7 @@ public:
               // end reached
               curr=0;
               break;
-            default:       
+            default:
               curr=0;
               break;
           }
@@ -234,42 +234,42 @@ public:
       }
       else // pass along degenerate X_curve.
       {
-#ifndef NDEBUG          
+#ifndef NDEBUG
 #ifndef CGAL_TD_DEBUG
-          
+
         Data_structure* tt=curr->get_node();
         CGAL_warning(tt);
         CGAL_warning(tt->is_inner_node());
-          
+
 #else
-          
+
         Data_structure* tt=curr->get_node();
         CGAL_assertion(tt);
         CGAL_assertion(tt->is_inner_node());
 #endif
 #endif
-          
+
         curr=curr->right_bottom_neighbour();
         if (curr)
         {
           while(traits->is_degenerate_point(*curr))
             curr=curr->get_node()->left().operator->();
-              
+
 #ifndef CGAL_TD_DEBUG
-              
+
           CGAL_warning(traits->is_degenerate_curve(*curr));
-              
+
 #else
-              
+
           CGAL_precondition(traits->is_degenerate_curve(*curr));
-              
+
 #endif
-              
+
         }
       }
       return *this;
     }
-    
+
     In_face_iterator operator++(int)
     {
       In_face_iterator tmp = *this;
@@ -281,7 +281,7 @@ public:
       return sep;
     }
   };
-  
+
   /*
    * class Around_point_circulator
    * member of Trapezoidal_decomposition_2<Traits>
@@ -292,34 +292,34 @@ public:
   protected:
     const Point& fixed;
   public:
-    
+
     Around_point_circulator(Traits * traits_, const Point & fixedp,
                             pointer currt) :
       Base_trapezoid_iterator(traits_,currt),fixed(fixedp) {};
-    
+
     Around_point_circulator(const Around_point_circulator &it) :
       Base_trapezoid_iterator(it),fixed(it.fixed){};
-    
+
     Around_point_circulator &operator++()
     {
       if (operator!()) return *this;
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_warning(!curr->is_left_unbounded() &&
                    traits->point_equal(fixed,curr->left()) ||
                    !curr->is_right_unbounded() &&
                    traits->point_equal(fixed,curr->right()));
-      
+
 #else
-      
+
       CGAL_precondition(!curr->is_left_unbounded() &&
                         traits->point_equal(fixed,curr->left()) ||
                         !curr->is_right_unbounded() &&
                         traits->point_equal(fixed,curr->right()));
-      
+
 #endif
-      
+
       curr=operator->();
       return *this;
     }
@@ -342,7 +342,7 @@ public:
        ciruclator is not empty*/
     reference operator*() const
     {
-      
+
       CGAL_precondition(!operator!());
       return *operator->();
     }
@@ -353,7 +353,7 @@ public:
     {
       pointer cand;
       if (operator!()) return curr;
-      cand=is_right_rotation() ? 
+      cand=is_right_rotation() ?
         curr->right_top_neighbour() : curr->left_bottom_neighbour();
       if (traits->is_degenerate_curve(*cand)) return cand;
       // cand was splited by a point
@@ -373,7 +373,7 @@ public:
         (!curr->is_right_unbounded() &&
          traits->point_equal(fixed,curr->right()));
     }
-    
+
     /* description:
        inserts the input trapezoid between the
        current trapezoid and the next trapezoid
@@ -385,25 +385,25 @@ public:
     */
     void insert(reference tr)
     {
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_precondition(curr);
       CGAL_warning(!tr.is_left_unbounded() && traits->point_equal(tr.left(),
                                                                     fixed) ||
                    !tr.is_right_unbounded()&& traits->point_equal(tr.right(),
                                                                     fixed));
-      
+
 #else
-      
+
       CGAL_precondition(curr);
       CGAL_precondition(!tr.is_left_unbounded() &&
                         traits->point_equal(tr.left(),fixed) ||
                         !tr.is_right_unbounded() &&
                         traits->point_equal(tr.right(),fixed));
-      
+
 #endif
-      
+
       if (!tr.is_left_unbounded()&&traits->point_equal(tr.left(),fixed))
         tr.set_lb(operator->());
       else
@@ -418,25 +418,25 @@ public:
     */
     void remove()
     {
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_precondition(curr);
       CGAL_warning(!curr->is_left_unbounded() &&
                    traits->point_equal(curr->left(), fixed) ||
                    !curr->is_right_unbounded() &&
                    traits->point_equal(curr->right(), fixed));
-      
+
 #else
-      
+
       CGAL_precondition(curr);
       CGAL_warning(!curr->is_left_unbounded() &&
                    traits->point_equal(curr->left(),fixed) ||
                    !curr->is_right_unbounded() &&
                    traits->point_equal(curr->right(),fixed));
-      
+
 #endif
-      
+
       Around_point_circulator old=*this;
       old++;
       pointer next=old.operator->();
@@ -470,25 +470,25 @@ public:
     }
     void replace(reference tr)
     {
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_precondition(curr);
       CGAL_warning(!curr->is_left_unbounded() &&
                    traits->point_equal(curr->left(),fixed) ||
                    !curr->is_right_unbounded() &&
                    traits->point_equal(curr->right(),fixed));
-      
+
 #else
-      
+
       CGAL_precondition(curr);
       CGAL_precondition(!curr->is_left_unbounded() &&
                         traits->point_equal(curr->left(),fixed) ||
                         !curr->is_right_unbounded() &&
                         traits->point_equal(curr->right(),fixed));
-      
+
 #endif
-      
+
       Around_point_circulator old=*this;
       old++;
       pointer next=old.operator->();
@@ -533,9 +533,9 @@ public:
   //////////////////////////////////////////////
   //Trapezoidal_decomposition_2 member functions:
   //////////////////////////////////////////////
-  
+
 #ifndef CGAL_TD_DEBUG
-  
+
 protected:
 
 #else
@@ -551,10 +551,10 @@ X_curve's target degenerate trapezoid
 output: trapezoid iterator
 
  Description:
- the output (trapezoid iterator) is initialized with 
+ the output (trapezoid iterator) is initialized with
  the leftmost and rightmost
- (non degenerate) trapezoids in the trapezoid interval that corresponds 
- to the input from either the top side or the bottom side, 
+ (non degenerate) trapezoids in the trapezoid interval that corresponds
+ to the input from either the top side or the bottom side,
  depending on the up flag.
  preconditions:
  There exist non degenerate trapezoids between the roots of the input DS's
@@ -574,22 +574,22 @@ output: trapezoid iterator
       CGAL_warning(traits->point_equal(traits->curve_leftlow_most(cv),
                                          left_end_point->left()));
     }
-    
+
 #else
-    
+
     CGAL_assertion(traits);
     CGAL_precondition(traits->is_degenerate_point(*left_end_point));
     CGAL_precondition(traits->point_equal(traits->curve_leftlow_most(cv),
                                             left_end_point->left()));
-    
+
 #endif
-    
+
     const Point& p1=left_end_point->left();
     Data_structure left=left_end_point.right();
     search_using_data_structure(left,traits,p1,&cv,up);
     return In_face_iterator(traits,cv,left.operator->());
   }
-  
+
   /*
   input:
   X_trapezoid reference
@@ -622,12 +622,12 @@ output: trapezoid iterator
     }
     return false;
   }
-  
+
   /* Description:
   splits the trapezoid with vertical line through p */
   /* Precondition:
   The trapezoid is active and contains p in its closure */
-  
+
   Data_structure& split_trapezoid_by_point(
     Data_structure& tt,
     const Point& p,
@@ -635,25 +635,25 @@ output: trapezoid iterator
     const X_curve& cv_top_ray_shoot
     )
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(!!tt);
     if (!tt)  return tt;
-    
+
 #else
-    
+
     CGAL_precondition(!!tt);
-    
+
 #endif
-    
+
     reference curr=*tt;
     pointer
       lb=curr.left_bottom_neighbour(),
       lt=curr.left_top_neighbour(),
       rb=curr.right_bottom_neighbour(),
       rt=curr.right_top_neighbour();
-    
+
 #ifndef CGAL_TD_DEBUG
     CGAL_warning(curr.is_active());
     CGAL_warning(traits->is_in_closure(curr,p));
@@ -666,7 +666,7 @@ output: trapezoid iterator
     }
     CGAL_precondition(traits->is_in_closure(curr,p));
 #endif
-    
+
     // left and right are set to the point itself,
     // bottom and top are set to the ray shooting resulting curves at this
     // stage.
@@ -684,10 +684,10 @@ output: trapezoid iterator
                           CGAL_TRAPEZOIDAL_DECOMPOSITION_2_BOTTOM_UNBOUNDED |
                           CGAL_TRAPEZOIDAL_DECOMPOSITION_2_TOP_UNBOUNDED)
       ));
-    
+
     reference left = *leftDS;
     reference right = *rightDS;
-    
+
 #ifndef CGAL_TD_DEBUG
     CGAL_warning(traits->trapezoid_top_curve_equal(left,right));
     CGAL_warning(traits->trapezoid_bottom_curve_equal(left,right));
@@ -699,7 +699,7 @@ output: trapezoid iterator
     CGAL_assertion(left.is_left_unbounded()==curr.is_left_unbounded());
     CGAL_assertion(right.is_right_unbounded()==curr.is_right_unbounded());
 #endif
-    
+
     if (!traits->is_degenerate_curve(curr))
     {
       left.init_neighbours(lb,lt,&right,&right);
@@ -728,8 +728,8 @@ output: trapezoid iterator
       *rightPtr=&tt.right();
     (*leftPtr)->set_node((Data_structure*)leftPtr);
     (*rightPtr)->set_node((Data_structure*)rightPtr);
-    
-#ifdef CGAL_TD_DEBUG    
+
+#ifdef CGAL_TD_DEBUG
     CGAL_assertion(&left==leftDS.operator->());
     CGAL_assertion(&right==rightDS.operator->());
     CGAL_assertion(left==*leftDS);
@@ -741,25 +741,25 @@ output: trapezoid iterator
     CGAL_assertion(right.get_node()==&tt.right());
 */
     CGAL_assertion(**left.get_node()==left);
-    CGAL_assertion(**right.get_node()==right);    
+    CGAL_assertion(**right.get_node()==right);
 #endif
-    
+
     return tt;
   }
-  
+
   /* Description:
-  the opposite operation for spliting the trapezoid with 
+  the opposite operation for spliting the trapezoid with
   vertical line through p */
   /* Precondition:
   The root trapezoid is degenerate point (p) and is active */
-  
+
   void remove_split_trapezoid_by_point(
     Data_structure& tt,
     const Point& p)
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     if (!tt||
       !tt->is_active()||
       !traits->is_degenerate_point(*tt)||
@@ -772,26 +772,26 @@ output: trapezoid iterator
       CGAL_warning(traits->point_equal(tt->left(),p));
       return;
     }
-    
+
 #else
-    
+
     CGAL_precondition(!!tt);
     CGAL_precondition(tt->is_active());
     CGAL_precondition(traits->is_degenerate_point(*tt));
     CGAL_precondition(traits->point_equal(tt->left(),p));
-    
+
 #endif
-    
+
     Data_structure
       tt_left=tt.left(),
       tt_right=tt.right();
-    
+
     search_using_data_structure(tt_left,traits,p,0);
     search_using_data_structure(tt_right,traits,p,0);
 
 #ifndef CGAL_TD_DEBUG
     merge_if_possible(&*tt_left,&*tt_right);
-    
+
     CGAL_warning(!tt_left.is_inner_node());
     CGAL_warning(!tt_right.is_inner_node());
     CGAL_warning(tt_left->is_right_unbounded() ==
@@ -816,12 +816,12 @@ output: trapezoid iterator
                    tt_right->is_right_unbounded());
     CGAL_assertion(**tt_left->get_node()==*tt_left);
 #endif
-    
+
     tt_right->remove(&tt_left);
     // mark root as deleted
     tt->remove();
   }
-  
+
   /* Description:
   splits the trapezoid that corresponds to the root of the
   trapezoidal tree with an input edge cv*/
@@ -839,24 +839,24 @@ output: trapezoid iterator
     pointer& prev_top,
     const X_curve& cv)
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(traits);
-    
+
 #else
-    
+
     CGAL_assertion(traits);
-    
+
 #endif
-    
+
     reference currt=*tt;
     Point p[2];
     int i= traits->point_is_left_low(
       p[0]=traits->curve_source(cv),
       p[1]=traits->curve_target(cv)
       ) ? 0 : 1;
-    
+
     // sets left and right accoring to curves source's and target's positions
     // sets bottom and top to X_curve itself
     X_trapezoid sep(p[i],p[1-i],cv,cv);
@@ -906,7 +906,7 @@ output: trapezoid iterator
     prev=tt.operator->();
     return tt;
   }
-  
+
   /* replace X_curve-point adjacency in the data structure with
   a new one
   precondition:
@@ -937,25 +937,25 @@ output: trapezoid iterator
   }
   void insert_curve_at_point_using_geometry(reference sep, reference end_point)
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(traits);
     CGAL_warning(traits->is_degenerate_point(end_point));
     CGAL_warning(traits->is_degenerate_curve(sep));
     CGAL_warning(traits->point_equal(end_point.left(),sep.right()) ||
                  traits->point_equal(end_point.left(),sep.left()));
-    
+
 #else
-    
+
     CGAL_assertion(traits);
     CGAL_precondition(traits->is_degenerate_point(end_point));
     CGAL_precondition(traits->is_degenerate_curve(sep));
     CGAL_precondition(traits->point_equal(end_point.left(),sep.right()) ||
                       traits->point_equal(end_point.left(),sep.left()));
-    
+
 #endif
-    
+
     /* update (in this order)
     end_point.left_bottom_neighbour()
     if no curves adjacent to the point eminating toward up
@@ -988,41 +988,41 @@ output: trapezoid iterator
       }
       else
       {
-      /* set circ[0] to first X_curve on a counter clockwise 
+      /* set circ[0] to first X_curve on a counter clockwise
         sweep starting at cv */
         Around_point_circulator circ(traits,p,rt ? rt : lb),stopper=circ;
         // if !rt set circ to lb
         // otherwise advance as required
 #ifdef CGAL_TD_DEBUG
-        
+
         Around_point_circulator first_circ(circ);
-        
+
 #endif
-        
+
         while(traits->curves_compare_y_at_x_from_top(circ->top(),cv,p)
           ==SMALLER)
         {
           circ++;
           if (circ==stopper)
             break;
-          
+
 #ifdef CGAL_TD_DEBUG
-          
+
           CGAL_assertion(first_circ!=circ);
           CGAL_assertion(circ->is_active());
-          
+
 #endif
-          
+
         }
-        
+
 #ifdef CGAL_TD_DEBUG
-        
+
         CGAL_assertion(traits->curves_compare_y_at_x_from_top(circ->top(), cv,
                                                               p)
                        != EQUAL);
-        
+
 #endif
-        
+
         circ.insert(sep);
         // set end_point.left_bottom_neighbour()
         // set end_point.right_top_neighbour();
@@ -1050,7 +1050,7 @@ output: trapezoid iterator
       }
       else
       {
-      /* set circ[0] to first X_curve on a counter clockwise 
+      /* set circ[0] to first X_curve on a counter clockwise
         sweep starting at cv */
         Around_point_circulator circ(traits,p,lb ? lb : rt),stopper=circ;
         // if !lb set circ to rt
@@ -1062,15 +1062,15 @@ output: trapezoid iterator
           if (circ==stopper)
             break;
         }
-        
+
 #ifdef CGAL_TD_DEBUG
-        
+
         CGAL_assertion(traits->curves_compare_y_at_x_from_bottom(circ->top(),
                                                                  cv, p)
                        != EQUAL);
-        
+
 #endif
-        
+
         circ.insert(sep);
         if (rt)
           // set end_point.left_bottom_neighbour()
@@ -1109,12 +1109,12 @@ output: trapezoid iterator
   degenerate trapezoid
   in a clockwise sweep to the first top right and bottom left respectively.
   */
-  
+
   void remove_curve_at_point_using_geometry(const_ref sep,reference end_point)
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(traits);
     CGAL_warning(traits->is_degenerate_point(end_point));
     CGAL_warning(traits->is_degenerate_curve(sep));
@@ -1122,9 +1122,9 @@ output: trapezoid iterator
                  traits->point_equal(end_point.left(),sep.left()));
     CGAL_warning(end_point.is_active());
     CGAL_warning(sep.is_active());
-    
+
 #else
-    
+
     CGAL_assertion(traits);
     CGAL_precondition(traits->is_degenerate_point(end_point));
     CGAL_precondition(traits->is_degenerate_curve(sep));
@@ -1132,9 +1132,9 @@ output: trapezoid iterator
                       traits->point_equal(end_point.left(),sep.left()));
     CGAL_precondition(end_point.is_active());
     CGAL_precondition(sep.is_active());
-    
+
 #endif
-    
+
     /* update (in this order)
     end_point.left_bottom_neighbour()
     if no curves adjacent to the point eminating toward up
@@ -1158,19 +1158,19 @@ output: trapezoid iterator
     Around_point_circulator
       prev_top(traits,p,end_point.right_top_neighbour()),
       prev_bottom(traits,p,end_point.left_bottom_neighbour());
-    
+
     // update bottom
     if(traits->curve_equal(cv,end_point.bottom()))
     {
       Around_point_circulator bottom=(!!prev_bottom) ? prev_bottom : prev_top;
       bottom++;
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(!!bottom);
-      
+
 #endif
-      
+
       if (!bottom->is_bottom_unbounded())
         end_point.set_bottom(bottom->bottom());
       else
@@ -1181,30 +1181,30 @@ output: trapezoid iterator
     {
       Around_point_circulator top=(!!prev_top) ? prev_top : prev_bottom;
       top++;
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(!!top);
-      
+
 #endif
-      
+
       if (!top->is_top_unbounded())
         end_point.set_top(top->top());
       else
         end_point.set_top_unbounded();
     }
-    
+
     //update right top neighbour and left bottom neighbour
     bool b=traits->point_is_left_low(p,sep.right());
     Around_point_circulator circ(traits,p,b ? end_point.right_top_neighbour() :
                                  end_point.left_bottom_neighbour());
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_precondition(!!circ);
-    
+
 #endif
-    
+
     while(*circ!=sep)circ++;
     pointer removed=circ.operator->();
     circ.remove();
@@ -1238,7 +1238,7 @@ output: trapezoid iterator
       end_point.set_lb(0);
     }
   }
-  
+
   /*update
   tr.bottom()
   vertical_ray_shoot downward from tr
@@ -1252,49 +1252,49 @@ output: trapezoid iterator
   {
     CGAL_assertion(traits);
     CGAL_precondition(lt==POINT);
-    
+
     if (traits->curves_compare_y_at_x_from_top(cv,tr->top(),p)==SMALLER)
       tr->set_top(cv);
     if (traits->curves_compare_y_at_x_from_bottom(cv,tr->bottom(),p)==SMALLER)
       tr->set_bottom(cv);
     return *tr;
   }
-  
+
   reference insert_curve_at_point_using_data_structure(const X_curve & cv,
                                                        const Point & p,
                                                        pointer & tr,
                                                        const Locate_type & lt)
   {
     CGAL_precondition(lt==TRAPEZOID || lt==UNBOUNDED_TRAPEZOID);
-    
+
     Data_structure *tt=tr->get_node();
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(tr->get_node());
-    
+
 #endif
-    
+
     return *split_trapezoid_by_point(*tt,p,cv,cv);
     //return *tr;
   }
-        
+
   void replace_curve_at_point_using_geometry(const X_curve& old_cv,
     const X_curve& new_cv,reference sep)
   {
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_precondition(traits->is_degenerate_point(sep));
-    
+
 #endif
-    
+
     if (!sep.is_top_unbounded() && traits->curve_equal(sep.top(), old_cv))
       sep.set_top(new_cv);
     if (!sep.is_bottom_unbounded() &&
         traits->curve_equal(sep.bottom(), old_cv)) sep.set_bottom(new_cv);
   }
-  
+
   /* update geometric boundary(top and bottom) for trapezoids
   traveled along an iterator till end reached
   precondition:
@@ -1318,10 +1318,10 @@ output: trapezoid iterator
     }
     end=last;
   }
-  
+
   /*
     description:
-    advances input Data structure using data structure,input point p and 
+    advances input Data structure using data structure,input point p and
     possibly X_curve cv till
     p is found(if cv hadn't been given)
     cv is found(if cv was given)
@@ -1339,11 +1339,11 @@ output: trapezoid iterator
   {
     const Point* pp;
     const X_curve* pc;
-    
+
 #ifdef CGAL_TD_DEBUG
     pointer old = NULL;
 #endif
-    
+
     while(true)
     {
 #ifdef CGAL_TD_DEBUG
@@ -1376,7 +1376,7 @@ output: trapezoid iterator
               curr = curr.left();
             }
             else if ( up == LARGER ) {          // vertical ray shut up
-              curr = curr.right();                      
+              curr = curr.right();
             }
             else /*if ( up == SMALLER ) */ {
               curr = curr.left();               // vertical ray shut down
@@ -1398,13 +1398,13 @@ output: trapezoid iterator
             curr = traits->point_equal(traits->curve_leftlow_most(*cv), p) ?
               curr.right() : curr.left();
             // (Oren 14/4/02) ??
-                    
+
             continue;
           }
         }
         else
         {
-                
+
 #ifndef CGAL_TD_DEBUG
           CGAL_warning(traits->point_is_left_low(p,*pp) ||
                        traits->point_is_left_low(*pp,p) ||
@@ -1434,14 +1434,14 @@ output: trapezoid iterator
           continue;
         }
         else
-        {  
-          // p on CURVE  
-#ifndef CGAL_TD_DEBUG      
+        {
+          // p on CURVE
+#ifndef CGAL_TD_DEBUG
           CGAL_warning(cres == EQUAL &&
             !traits->point_is_right(p,traits->curve_rightmost(*pc))&&
             !traits->point_is_left(p,traits->curve_leftmost(*pc)));
 #else
-                
+
           CGAL_postcondition(cres == EQUAL &&
             !traits->point_is_right(p,traits->curve_rightmost(*pc))&&
             !traits->point_is_left(p,traits->curve_leftmost(*pc)));
@@ -1465,8 +1465,8 @@ output: trapezoid iterator
           }
           else
           {
-                    
-#ifndef CGAL_TD_DEBUG          
+
+#ifndef CGAL_TD_DEBUG
             CGAL_warning(traits->point_equal
                          (traits->curve_leftlow_most(*cv),
                           traits->curve_leftlow_most(*pc)) ||
@@ -1489,7 +1489,7 @@ output: trapezoid iterator
                              traits->point_equal
                              (traits->curve_righttop_most(*cv),
                               traits->curve_righttop_most(*pc)));
-            }       
+            }
 #endif
 
             Comparison_result res =
@@ -1497,7 +1497,7 @@ output: trapezoid iterator
                                     traits->curve_leftlow_most(*pc)) ?
               traits->curves_compare_y_at_x_from_top(*pc,*cv,p) :
               traits->curves_compare_y_at_x_from_bottom(*cv,*pc,p);
-                    
+
             switch(res)
             {
              case LARGER:
@@ -1519,7 +1519,7 @@ output: trapezoid iterator
                 if (curr->is_active()) return CURVE;
                 curr = curr.left();
                 break;
-                            
+
 #ifdef CGAL_TD_DEBUG
                default:
                 CGAL_assertion(up==LARGER||up==SMALLER||up==EQUAL);
@@ -1536,7 +1536,7 @@ output: trapezoid iterator
 
             }
           }
-        } 
+        }
       }
       else
       {
@@ -1554,15 +1554,15 @@ output: trapezoid iterator
   {
 
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(traits);
-    
+
 #else
-    
+
     CGAL_assertion(traits);
-    
+
 #endif
-    
+
     if (right>left)
     {
       int d=(int)CGAL_CLIB_STD::floor((double(right+left))/2);
@@ -1592,32 +1592,32 @@ output: trapezoid iterator
   Trapezoidal_decomposition_2 public member functions
   ==============================================*/
 public:
-  
+
   Trapezoidal_decomposition_2(bool rebuild=true) :
     depth_threshold(CGAL_TD_DEFAULT_DEPTH_THRESHOLD),
-    size_threshold(CGAL_TD_DEFAULT_SIZE_THRESHOLD) 
+    size_threshold(CGAL_TD_DEFAULT_SIZE_THRESHOLD)
     {init();set_needs_update(rebuild);}
-  Trapezoidal_decomposition_2(const double& depth_th,const double& size_th) : 
-    depth_threshold(depth_th),size_threshold(size_th) 
+  Trapezoidal_decomposition_2(const double& depth_th,const double& size_th) :
+    depth_threshold(depth_th),size_threshold(size_th)
     {init();set_needs_update(rebuild);}
-  
+
   virtual ~Trapezoidal_decomposition_2()
   {
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(DS);
     if (!DS) return;
-    
+
 #else
-    
+
     CGAL_assertion(DS);
-    
+
 #endif
-    
+
     delete DS;
   }
-  
+
   /*  Input:
   X_curve
   Output:
@@ -1637,14 +1637,14 @@ public:
 /*
     Point tmp;
     // maintaining some bounding box for future use.
-    
-    if (!number_of_curves_) 
+
+    if (!number_of_curves_)
       // give initiale values to  bounding points when empty
     {
       POINT_AT_LEFT_TOP_INFINITY=POINT_AT_RIGHT_BOTTOM_INFINITY=
       traits->curve_source(cv);
     }
-    
+
     if (!traits->point_is_left_low(POINT_AT_LEFT_TOP_INFINITY,tmp=
     traits->curve_leftlow_most(cv)))
       POINT_AT_LEFT_TOP_INFINITY=traits->point_to_left(tmp);
@@ -1654,7 +1654,7 @@ public:
 */
     return insert_in_face_interior(cv);
   }
-  
+
   /*        Input:
   X_curve
   Output:
@@ -1672,7 +1672,7 @@ public:
     *cv.get_parent();
 #endif
 #ifdef CGAL_TDBB_DEBUG
-    std::cout << "\ninsert_in_face_interior(" << cv << ")" 
+    std::cout << "\ninsert_in_face_interior(" << cv << ")"
       << "\nBbox " << traits->get_bounding_box();
 #endif
 
@@ -1687,19 +1687,19 @@ public:
     // locate the input X_curve end points in the X_trapezoid Dag
 
     CGAL_assertion(traits);
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(!traits->point_equal(traits->curve_source(cv),
                                         traits->curve_target(cv)));
-    
+
 #else
-    
+
     CGAL_precondition(!traits->point_equal(traits->curve_source(cv),
                                              traits->curve_target(cv)));
-    
+
 #endif
-    
+
     Point p[2];
     int i= traits->point_is_left_low(
       p[0]=traits->curve_source(cv),
@@ -1707,72 +1707,72 @@ public:
       ) ? 0 : 1;
     Locate_type lt1,lt2;
     pointer tr1,tr2;
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_optimization(p[i],tr1,lt1);
-    
+
 #else
-    
+
     tr1=&locate(p[i],lt1);
-    
+
 #endif
-    
+
     if (lt1==CURVE)
     {
       CGAL_precondition_msg(lt1!=CURVE,"Input is not planar as\
         one of the input point inside previously inserted X_curve.");
       return X_trapezoid();
     }
-    
+
     reference t_p1=
       (lt1==POINT) ?
       insert_curve_at_point_using_geometry(cv,p[i],tr1,lt1) :
     insert_curve_at_point_using_data_structure(cv,p[i],tr1,lt1);
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_optimization(p[1-i],tr2,lt2);
     locate_opt_empty();
-    
+
 #else
-    
+
     tr2=&locate(p[1-i],lt2);
-    
+
 #endif
-    
+
     if (lt2==CURVE)
     {
       CGAL_precondition_msg(lt2!=CURVE,"Input is not planar as\
         one of the input point inside previously inserted X_curve.");
       return X_trapezoid();
     }
-    
+
     reference t_p2= (lt2==POINT) ?
       insert_curve_at_point_using_geometry(cv,p[1-i],tr2,lt2) :
     insert_curve_at_point_using_data_structure(cv,p[1-i],tr2,lt2);
-    
+
     // locate and insert end points of the input X_curve to the X_trapezoid
     // Dag if needed
     Data_structure tt_p1(*t_p1.get_node());
     Data_structure tt_p2(*t_p2.get_node());
-    
+
     // create the X_trapezoid iterator for traveling along the Trapezoids that
     // intersect the input X_curve, using left-low to right-high order
     In_face_iterator it=follow_curve(tt_p1,cv,LARGER);
     pointer curr,prev=&t_p1,prev_bottom,prev_top;
     pointer old_output = it.operator->(), old_top = 0, old_bottom = 0;
-    
+
 #ifndef CGAL_TD_DEBUG
 
     CGAL_warning(!traits->is_degenerate(*old_output));
 
 #else
-    
+
     CGAL_assertion(!traits->is_degenerate(*old_output));
-    
+
 #endif
-    
+
     old_output=0;
     Data_structure *tt;
     bool first_time=true;
@@ -1786,31 +1786,31 @@ public:
       tt = curr->get_node();
       if(first_time)
       {
-        
+
 #ifndef CGAL_TD_DEBUG
-        
+
         if(!curr->is_top_unbounded()&&traits->curve_equal(curr->top(),cv))
         {
           CGAL_warning(!traits->curve_equal(curr->top(),cv));
           return X_trapezoid();
         }
-        
+
 #else
-        
+
         CGAL_precondition(curr->is_top_unbounded()||
                           !traits->curve_equal(curr->top(),cv));
-        
+
 #endif
-        
+
       }
       split_trapezoid_by_curve(*tt,old_output, old_bottom, old_top, cv);
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(traits->curve_equal((**tt).top(),cv));
-      
+
 #endif
-      
+
       if(first_time)
       {
         insert_curve_at_point_using_geometry(*old_output,t_p1);
@@ -1836,7 +1836,7 @@ public:
           tt->set_right(*(prev_top->get_node()));
           old_top=prev_top;
         }
-        
+
         // update trapezoid's left/right neighbouring relations
         if(!traits->is_degenerate(*prev) &&
           !traits->is_degenerate(*curr))
@@ -1849,41 +1849,41 @@ public:
       }
       else
       {
-        
+
 #ifdef CGAL_TD_DEBUG
-        
+
         CGAL_assertion(curr->is_valid(traits));
-        
+
 #endif
-        
+
         break;
       }
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(curr->is_valid(traits));
-      
+
 #endif
-      
+
     }
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_postcondition(traits->is_degenerate_curve(*old_output));
     CGAL_postcondition(traits->curve_equal((const X_curve)old_output->top(),
                                              cv));
-    
+
 #endif
-    
+
     insert_curve_at_point_using_geometry(*old_output,t_p2);
     number_of_curves_++;
-    
+
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::insert_in_face_interior() exited with data structure" 
+   std::cout << "\nTD::insert_in_face_interior() exited with data structure"
       << is_valid(*DS) << std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
-    
+
     return *old_output;
   }
 
@@ -1899,9 +1899,9 @@ public:
   {
     if(begin == end)
       return;
-    
+
     std::random_shuffle(begin,end);
-    
+
     curve_iterator it=begin,next=it;
     while(it!=end) {++next;remove(*it);it=next;}
   }
@@ -1923,17 +1923,17 @@ public:
 #endif
 
     if (needs_update_) update();
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
     locate_opt_empty();
 #endif
-    
+
 #ifndef CGAL_TD_DEBUG
     CGAL_warning(traits);
 #else
     CGAL_assertion(traits);
 #endif
-    
+
     // calculating leftmost and rightmost points of X_curve cv
     Point
       leftmost=traits->curve_leftlow_most(cv),
@@ -1942,52 +1942,52 @@ public:
     reference
       t1=locate(leftmost,lt1),
       t2=locate(rightmost,lt2);
-    
+
         CGAL_warning(lt1==POINT && lt2==POINT);
     if (!(lt1==POINT && lt2==POINT)) return;
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(t1.get_node());
     CGAL_warning(t2.get_node());
-    
+
 #endif
-    
+
     Data_structure
       &tt1=*t1.get_node(),
       &tt2=*t2.get_node();
 
-/* calculate the immediate lower central and upper neighbourhood of the curve 
+/* calculate the immediate lower central and upper neighbourhood of the curve
     in the data structure */
     In_face_iterator
       bottom_it(follow_curve(tt1,cv,SMALLER)),
       mid_it(follow_curve(tt1,cv,EQUAL)),
       top_it(follow_curve(tt1,cv,LARGER));
-    
+
     bool bottom, old_bottom = false, end_reached;
     map_nodes new_array;
     int last_index[]={0,0};
     int sz=0;
     Point left=bottom_it->left(),right;
     pointer last_bottom,last_top,last=0,old;
-    
+
 #ifndef CGAL_TD_DEBUG
     CGAL_warning(traits->point_equal(top_it->left(),left));
 #else
     CGAL_precondition(traits->point_equal(top_it->left(),left));
 #endif
-    
+
     // remove adjacency at left end point
     const_ref first=*mid_it;
     //X_curve const * old_cv=&first.top();
-    
+
 #ifdef CGAL_TD_DEBUG
     CGAL_assertion(traits->curve_equal(first.top(),cv));
     CGAL_assertion(traits->point_equal(t1.left(),leftmost));
 #endif
-    
+
     remove_curve_at_point_using_geometry(first,t1);
-    
+
     do
     {
       // which of bottom_it,top_it to advance.
@@ -2028,12 +2028,12 @@ public:
       left=right;
       last_bottom=bottom_it.operator->();
       last_top=top_it.operator->();
-      
+
 #ifdef CGAL_TD_DEBUG
       CGAL_warning(last_bottom);
       CGAL_warning(last_top);
 #endif
-      
+
       old=it.operator->();
       it++;
       end_reached=!bottom_it||!top_it;
@@ -2086,11 +2086,11 @@ public:
     }
     while(!end_reached);
     Iterator & it = !old_bottom ? bottom_it : top_it;
-    
+
 #ifdef CGAL_TD_DEBUG
     CGAL_warning(traits->point_equal(it->right(),rightmost));
 #endif
-    
+
     pointer rb=it->right_bottom_neighbour(),rt=it->right_top_neighbour();
 
     Data_structure tmp=container2data_structure(new_array,
@@ -2108,42 +2108,42 @@ public:
     (*real)->set_node((Data_structure*)real);
     if (rb) {last->set_rb(rb);rb->set_lb(last);}
     if (rt) {last->set_rt(rt);rt->set_lt(last);}
-    
+
     Base_trapezoid_iterator last_mid=mid_it;
     while(!!++mid_it)
     {
-      
+
 #ifdef CGAL_TD_DEBUG
       CGAL_warning(traits->is_degenerate_curve(*last_mid));
 #endif
-      
+
       last_mid->remove();
       last_mid=mid_it;
     }
-    
+
     // remove adjacency at right end point
-    
+
 #ifdef CGAL_TD_DEBUG
     CGAL_assertion(traits->curve_equal(cv,last_mid->top()));
     CGAL_assertion(traits->point_equal(rightmost,t2.left()));
 #endif
-    
+
     remove_curve_at_point_using_geometry(*last_mid,t2);
     last_mid->remove();
-    
+
     if (is_isolated_point(t1)) remove_split_trapezoid_by_point(tt1,leftmost);
     if (is_isolated_point(t2)) remove_split_trapezoid_by_point(tt2,rightmost);
     //freeing memory that was allocated for X_curve
     //delete old_cv;
     // reevaluating number of curves
     number_of_curves_--;
-    
+
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::remove_in_face_interior() exited with data structure" 
+   std::cout << "\nTD::remove_in_face_interior() exited with data structure"
       << is_valid(*DS) << std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
-    
+
   }
   /*
   output:
@@ -2155,47 +2155,47 @@ public:
   remarks:
   locate call may change the class
   */
-  
+
   reference locate(const Point& p,Locate_type &t) const
   {
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(traits);
     CGAL_assertion(DS);
-    
+
 #endif
-    
+
     Data_structure curr=*DS;
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_precondition(!!curr);
-    
+
 #endif
-    
+
     t=search_using_data_structure(curr,traits,p,0);
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_postcondition(t == POINT || t == CURVE || t == TRAPEZOID ||
                        t == UNBOUNDED_TRAPEZOID);
-    
+
 #endif
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_opt_push(curr.operator->());
-    
+
 #endif
-    
+
     return *curr;
   }
-  
+
   /* preconditions:
   p is not on an edge or a vertex.
   */
-  
+
   curve_const_ref vertical_ray_shoot(const Point & p,Locate_type & t,
                                      const bool up_direction = true) const
   {
@@ -2203,17 +2203,17 @@ public:
     CGAL_assertion(traits);
 #endif
 
-    // We replace the following locate with a direct call to 
+    // We replace the following locate with a direct call to
                 // search_using_data_structure because we need to deal
                 // with cases where the source of shoot is a point/curve.
                 // reference t_p = locate(p,t);
-    
+
     Data_structure curr=*DS;
 #ifdef CGAL_TD_DEBUG
     CGAL_precondition(!!curr);
 #endif
 
-    t = search_using_data_structure(curr, traits, p, NULL, 
+    t = search_using_data_structure(curr, traits, p, NULL,
                                     up_direction ?
                                     CGAL::LARGER : CGAL::SMALLER);
     reference t_p = *curr;
@@ -2234,7 +2234,7 @@ public:
     with the trapezoid extending to the left.
     In this case vertical ray shoot upwards(downwards)
     doesn't returns c as output.
-    
+
      Example.
      x---x
      p
@@ -2242,11 +2242,11 @@ public:
     */
 
     if (up_direction && !tr.is_right_unbounded() &&
-        traits->point_equal_x(p,tr.right()) && 
+        traits->point_equal_x(p,tr.right()) &&
         (tr.is_left_unbounded() ||
          !traits->point_equal(tr.left(),tr.right())) ||
         !up_direction && !tr.is_left_unbounded() &&
-        traits->point_equal_x(p,tr.left()) && 
+        traits->point_equal_x(p,tr.left()) &&
         (tr.is_right_unbounded() ||
          !traits->point_equal(tr.left(),tr.right())))
     {
@@ -2264,50 +2264,50 @@ public:
     {
       // Now we know that the trapezoid is bounded on in the
       // direction of the shoot.
-      t = (traits->point_equal(p,traits->curve_source(c)) || 
-           traits->point_equal(p,traits->curve_target(c))) ? 
+      t = (traits->point_equal(p,traits->curve_source(c)) ||
+           traits->point_equal(p,traits->curve_target(c))) ?
         POINT : CURVE;
     }
     return c;
   }
-  
+
   /*    Input:
   1 whole curves
   2 partial curves
   Output:
   X_curve
   precondition:
-  c          
+  c
   The first input X_curve is the union of the other two.
-  The intersection of the latter is a point inside the 
+  The intersection of the latter is a point inside the
   interior of the former.
   The latter are ordered from left-down to right-up
   postcondition:
-  The first input X_curve is broken into two curves 
+  The first input X_curve is broken into two curves
   corresponding to the input.
-  The output is the degenerate point trapezoid that 
+  The output is the degenerate point trapezoid that
   corresponds to the splitting point.*/
-  
+
   void split_edge(curve_const_ref cv,curve_const_ref cv1, curve_const_ref cv2)
   {
-    
+
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::split_edge(" << cv << "," << cv1 << "," << cv2 
-     << ") called with " << (is_valid(*DS) ? "valid" : "invalid") 
+   std::cout << "\nTD::split_edge(" << cv << "," << cv1 << "," << cv2
+     << ") called with " << (is_valid(*DS) ? "valid" : "invalid")
      << " data structure" <<  std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
-    
+
     if (needs_update_) update();
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_opt_empty();
-    
+
 #endif
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     if (!traits)
     {
       CGAL_warning(traits);
@@ -2318,9 +2318,9 @@ public:
       CGAL_warning(traits->curve_merge_condition(cv,cv1,cv2));
       return;
     }
-    
+
 #else
-    
+
     if (!traits->curve_merge_condition(cv,cv1,cv2))
     {
       std::cerr << "\ncv " << cv;
@@ -2329,36 +2329,36 @@ public:
     }
     CGAL_precondition(traits);
     CGAL_precondition(traits->curve_merge_condition(cv,cv1,cv2));
-    
+
 #endif
-    
+
     // spliting point
     Point p = traits->point_equal(traits->curve_target(cv1),
                                     traits->curve_source(cv2)) ?
         traits->curve_target(cv1) : traits->curve_target(cv2);
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(
       traits->point_is_left_low(
       traits->curve_leftlow_most(cv),p));
-    
+
     CGAL_warning(
       traits->point_is_right_top(
       traits->curve_righttop_most(cv),p));
-    
+
 #else
-    
+
     CGAL_precondition(
       traits->point_is_left_low(
       traits->curve_leftlow_most(cv),p));
-    
+
     CGAL_precondition(
       traits->point_is_right_top(
       traits->curve_righttop_most(cv),p));
-    
+
 #endif
-    
+
     // extremal points
     Point
       leftmost=traits->curve_leftlow_most(cv),
@@ -2368,21 +2368,21 @@ public:
     reference
       t1=locate(leftmost,lt1),
       t2=locate(rightmost,lt2);
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(lt1==POINT && lt2==POINT);
     CGAL_warning(t1.is_active() && t2.is_active());
 
 #else
-    
+
     CGAL_precondition(lt1==POINT && lt2==POINT);
     CGAL_precondition(t1.is_active() && t2.is_active());
     CGAL_warning(t1.get_node());
     CGAL_warning(t2.get_node());
-    
+
 #endif
-    
+
     Data_structure
       &tt1=*t1.get_node();
     In_face_iterator
@@ -2392,23 +2392,23 @@ public:
     Locate_type lt;
     reference old_t=locate(p,lt);
     //X_curve const * old_cv=&old_t.top();
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(lt==CURVE);
     CGAL_precondition(old_t.is_active());
     CGAL_warning(old_t.get_node());
-    
+
 #endif
-    
+
     Data_structure
       &old_tt=*old_t.get_node();
-    
+
     // previous left and right sons of old_tt
     const Data_structure
       &old_left=old_tt.left(),
       &old_right=old_tt.right();
-    
+
     X_curve left_cv,right_cv;
     if (traits->point_equal(traits->curve_leftlow_most(cv2),p))
     {
@@ -2431,10 +2431,10 @@ public:
       new_left_t=*new_left_tt,
       new_right_t=*new_right_tt,
       new_t=*new_tt;
-    
+
       /* locate trapezoid trees that correspond to the closest
     trapezoids above and below p */
-    pointer 
+    pointer
       left_top_t=top_it.operator->(),
       left_bottom_t=bottom_it.operator->();
     while(traits->point_is_left_low(left_top_t->right(),p))
@@ -2444,7 +2444,7 @@ public:
     Data_structure
       left_top=*left_top_t->get_node(),
       left_bottom=*left_bottom_t->get_node();
-    
+
     replace_curve_at_point_using_geometry(cv,left_cv,t1);
     replace_curve_at_point_using_geometry(cv,right_cv,t2);
     // the point p belongs to cv interior
@@ -2456,7 +2456,7 @@ public:
     new_right_t.set_lb(&new_left_t);
     new_right_t.set_rt(old_t.right_top_neighbour() != &old_t ?
                        old_t.right_top_neighbour() : &new_right_t);
-    
+
     // update geometric boundary for trapezoids representing cv
     pointer prev=0;
     while(*mid_it != old_t) {
@@ -2497,39 +2497,39 @@ public:
     }
     if (t2.right_top_neighbour()==&old_t) t2.set_rt(&new_right_t);
     if (t2.left_bottom_neighbour()==&old_t) t2.set_lb(&new_right_t);
-    
+
     /* update geometric boundary for trapezoids below cv*/
     while (*bottom_it!=*left_bottom)
     {
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(traits->curve_equal(bottom_it->top()
           ,cv));
-      
+
 #endif
-      
+
       bottom_it->set_top(left_cv);
       bottom_it++;
     }
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(*bottom_it==*left_bottom);
-    
+
 #endif
-    
+
     Data_structure &bottom_tt=*bottom_it->get_node();
     bottom_it++;
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(traits->is_in_closure(*bottom_tt,p));
-    
+
 #endif
-    
+
     split_trapezoid_by_point(bottom_tt,p,left_cv,right_cv);
-    // set the splitting trapezoid to be the same one that splits the 
+    // set the splitting trapezoid to be the same one that splits the
     // X_curve'like trapezoid
     *bottom_tt=new_t;
     // update top curves
@@ -2540,47 +2540,47 @@ public:
     bottom_tt.right()->set_lt(0);
     while(!!bottom_it)
     {
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(traits->curve_equal(bottom_it->top(),cv));
-      
+
 #endif
-      
+
       bottom_it->set_top(right_cv);
       bottom_it++;
     }
     /* update geometric boundary for trapezoids above cv*/
     while (*top_it!=*left_top)
     {
-      
+
 #ifdef CGAL_TD_DEBUG
-      
+
       CGAL_assertion(traits->curve_equal(top_it->bottom(),cv));
-      
+
 #endif
-      
+
       top_it->set_bottom(left_cv);
       top_it++;
     }
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(*top_it==*left_top);
-    
+
 #endif
-    
+
     Data_structure &top_tt=*top_it->get_node();
     top_it++;
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(traits->is_in_closure(*bottom_tt,p));
-    
+
 #endif
-    
+
     split_trapezoid_by_point(top_tt,p,left_cv,right_cv);
-    // set the splitting trapezoid to be the same one that splits the 
+    // set the splitting trapezoid to be the same one that splits the
     // X_curve'like trapezoid
     *top_tt=new_t;
     // update bottom side
@@ -2591,20 +2591,20 @@ public:
     top_tt.right()->set_lb(0);
     while(!!top_it)
     {
-      
+
 #ifndef CGAL_TD_DEBUG
-      
+
       CGAL_warning(traits->curve_equal(top_it->bottom(),cv));
-      
+
 #else
-      
+
       if (!traits->curve_equal(top_it->bottom(),cv))
         std::cout << "\ntop_it->bottom() "<< top_it->bottom() << "\t cv= "
                   << cv;
       CGAL_assertion(traits->curve_equal(top_it->bottom(),cv));
-      
+
 #endif
-      
+
       top_it->set_bottom(right_cv);
       top_it++;
     }
@@ -2621,9 +2621,9 @@ public:
     (*newrightPtr)->set_node((Data_structure*)newrightPtr);
     (*oldleftPtr)->set_node((Data_structure*)oldleftPtr);
     (*oldrightPtr)->set_node((Data_structure*)oldrightPtr);
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(old_tt->is_valid(traits));
     CGAL_assertion(new_tt->is_valid(traits));
     CGAL_assertion((*newPtr)->is_valid(traits));
@@ -2651,18 +2651,18 @@ public:
       )
       );
 #endif
-    
+
     // reevaluating number of curves
     number_of_curves_++;
-    
+
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::split_edge() exited with data structure" 
+   std::cout << "\nTD::split_edge() exited with data structure"
       << is_valid(*DS) << std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
 
   }
-  
+
   void merge_edge(
     curve_const_ref cv1 ,
     curve_const_ref cv2,
@@ -2670,22 +2670,22 @@ public:
   {
 
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::merge_edge(" << cv1 << "," << cv2 << "," << cv 
-     << ") called with " << (is_valid(*DS) ? "valid" : "invalid") 
+   std::cout << "\nTD::merge_edge(" << cv1 << "," << cv2 << "," << cv
+     << ") called with " << (is_valid(*DS) ? "valid" : "invalid")
      << " data structure" <<  std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
 
    if (needs_update_) update();
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_opt_empty();
-    
+
 #endif
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     if (!traits)
     {
       CGAL_warning(traits);
@@ -2696,33 +2696,33 @@ public:
       CGAL_warning(traits->curve_merge_condition(cv,cv1,cv2));
       return;
     }
-    
+
 #else
     if (!traits->curve_merge_condition(cv,cv1,cv2))
     {
       std::cerr << "\ncv " << cv;
       std::cerr << "\ncv1 " << cv1;
       std::cerr << "\ncv2 " << cv2 << std::endl;
-    }    
+    }
     CGAL_assertion(traits);
     CGAL_precondition(traits->curve_merge_condition(cv,cv1,cv2));
-    
-#endif    
+
+#endif
     Point p=
-      // Calculate the common point of cv1 and cv2. 
+      // Calculate the common point of cv1 and cv2.
       // There should be one!
       traits->point_equal(traits->curve_target(cv1),
-          traits->curve_source(cv2)) ? 
-      traits->curve_target(cv1) : 
+          traits->curve_source(cv2)) ?
+      traits->curve_target(cv1) :
       // [-- cv1 -->] p [-- cv2 -->] or [<-- cv2 --] p [<-- cv1 --]
       traits->point_equal(traits->curve_source(cv1),
-          traits->curve_target(cv2)) ? 
+          traits->curve_target(cv2)) ?
       // [<-- cv1 --] p [<-- cv2 --] or [-- cv2 -->] p [-- cv1 -->]
       traits->curve_source(cv1) : //
       traits->point_equal(traits->curve_source(cv1),
-          traits->curve_source(cv2)) ? 
+          traits->curve_source(cv2)) ?
       // [<-- cv1 --] p [-- cv2 -->]
-      traits->curve_source(cv1) : 
+      traits->curve_source(cv1) :
       // [-- cv1 -->] p [<-- cv2 --]
       traits->curve_target(cv1);
 
@@ -2737,7 +2737,7 @@ public:
       traits->curve_righttop_most(cv),p
       ));
 #endif
-    
+
     Point
       leftmost=traits->curve_leftlow_most(cv),
       rightmost=traits->curve_righttop_most(cv);
@@ -2746,23 +2746,23 @@ public:
       t1=locate(leftmost,lt1),
       t2=locate(rightmost,lt2),
       t=locate(p,lt);
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(t1.get_node());
     CGAL_warning(t2.get_node());
     CGAL_warning(t.get_node());
-    
+
 #else
-    
+
     CGAL_precondition(lt1==POINT && lt2==POINT && lt==POINT);
     CGAL_precondition(t1.is_active() && t2.is_active() && t.is_active());
     CGAL_assertion(t1.get_node());
     CGAL_assertion(t2.get_node());
     CGAL_assertion(t.get_node());
-    
+
 #endif
-    
+
     X_curve left_cv,right_cv;
     if (traits->point_equal(traits->curve_leftlow_most(cv2),p))
     {
@@ -2774,9 +2774,9 @@ public:
       left_cv=cv2;
       right_cv=cv1;
     }
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(traits->point_equal(
       t1.left(),leftmost
       ));
@@ -2807,9 +2807,9 @@ public:
     CGAL_assertion(traits->point_equal(
       traits->curve_righttop_most(cv),rightmost
       ));
-    
+
 #endif
-    
+
     Data_structure
       &tt1=*t1.get_node(),
       &tt=*t.get_node();
@@ -2820,9 +2820,9 @@ public:
       bottom_right_it(follow_curve(tt,right_cv,SMALLER)),
       mid_right_it(follow_curve(tt,right_cv,EQUAL)),
       top_right_it(follow_curve(tt,right_cv,LARGER));
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(bottom_left_it.operator->());
     CGAL_assertion(mid_left_it.operator->());
     CGAL_assertion(top_left_it.operator->());
@@ -2835,9 +2835,9 @@ public:
     CGAL_assertion(bottom_right_it->is_active());
     CGAL_assertion(mid_right_it->is_active());
     CGAL_assertion(top_right_it->is_active());
-    
+
 #endif
-    
+
     pointer
       left=mid_left_it.operator->(),
       mid_left=0,
@@ -2857,35 +2857,35 @@ public:
     replace_curve_using_geometry(bottom_right_it,right_cv,cv,dummy2);
     // merge trapezoids splited by the upward and downward
     // vertical extensions from p
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     merge_if_possible(top_left,top_right);
     merge_if_possible(bottom_left,bottom_right);
-    
+
 #else
-    
+
     CGAL_warning(top_left);
     CGAL_warning(top_right);
     CGAL_warning(merge_if_possible(top_left,top_right));
     CGAL_warning(bottom_left);
     CGAL_warning(bottom_right);
     CGAL_warning(merge_if_possible(bottom_left,bottom_right));
-    
+
 #endif
-    
+
     // mark older trapezoids as inactive
     top_right->remove(top_left->get_node());
     bottom_right->remove(bottom_left->get_node());
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_warning(mid_left);
     CGAL_warning(mid_right);
     CGAL_warning(tt->is_active());
-    
+
 #endif
-    
+
     // make p's representative inactive
     tt->remove();
     mid_left->set_rb(mid_right);
@@ -2895,27 +2895,27 @@ public:
     mid_right->set_lb(0);
     replace_curve_at_point_using_geometry(left_cv,cv,t1);
     replace_curve_at_point_using_geometry(right_cv,cv,t2);
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_warning(left);
     CGAL_warning(right);
-    
+
 #endif
-    
+
     replace_curve_at_point_using_geometry(*left,t1,true);
     replace_curve_at_point_using_geometry(*right,t2,false);
     // reevaluating number of curves
     number_of_curves_--;
-    
+
 #ifdef CGAL_TD_DEBUG
-   std::cout << "\nTD::merge_edge() exited with data structure" 
+   std::cout << "\nTD::merge_edge() exited with data structure"
       << is_valid(*DS) << std::endl;
    write(std::cout,*DS,*traits) << std::endl;
 #endif
 
   }
-  
+
   unsigned long size()
   {
     return DS->size();
@@ -2923,7 +2923,7 @@ public:
   unsigned long depth()
   {
     return DS->depth();
-  }  
+  }
   unsigned long number_of_curves()
   {
     return number_of_curves_;
@@ -2931,15 +2931,15 @@ public:
   void init_traits(Traits* t)
   {
     traits = t;
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(!!*DS);
-    
+
 #endif
-    
+
   }
-  
+
   /* update geometric boundary(top and bottom) for trapezoids
   traveled along an iterator till end reached
   precondition:
@@ -2951,15 +2951,15 @@ public:
   description:
   returns whether the Trapezoidal Dag is valid
   */
-  
+
 #ifdef CGAL_TD_DEBUG
-  
+
   bool is_valid(const Data_structure& ds) const
   {
     return !ds || ds->is_valid(traits) && ds->get_node() &&
         is_valid(ds.left()) && is_valid(ds.right());
   }
-  
+
   /*------------------------------------------------------------------
   description:
   returns whether the member Trapezoidal data structure is valid
@@ -2968,7 +2968,7 @@ public:
   {
     return is_valid(*DS);
   }
-  
+
   void debug()
   {
     std::cout << "\nTrapezoidal_decomposition_2<Traits>::debug()\n" << *this
@@ -2976,12 +2976,12 @@ public:
     X_trapezoid x;
     x.debug();
   }
-  
+
 #endif
-  
+
 /*------------------------------------------------------------------
 description:
-  Rebuilds the trapezoid data structure by reinserting the curves 
+  Rebuilds the trapezoid data structure by reinserting the curves
   in a random order in an empty data structure.
 
 postcondition:
@@ -2992,7 +2992,7 @@ postcondition:
 #ifdef CGAL_TD_DEBUG
     std::cout << "\nrebuild()" << std::flush;
 #endif
-    
+
     X_curve_container content;
     unsigned long rep = container(content);
     clear();
@@ -3003,16 +3003,16 @@ postcondition:
       bool o=set_needs_update(false);
       typename std::vector<X_curve>::iterator it = content.begin(),
           it_end = content.end();
-      while(it!=it_end) 
+      while(it!=it_end)
       {
         insert(*it);
         ++it;
       }
       set_needs_update(o);
     }
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_assertion(is_valid());
     unsigned long sz=number_of_curves();
     if(sz!=rep)
@@ -3021,23 +3021,23 @@ postcondition:
         std::cerr << "\nrepresentatives.size()=" << rep;
         CGAL_assertion(number_of_curves()==rep);
       }
-    
+
 #endif
-    
+
     content.clear();
     return *this;
   }
-  
-  /* 
-     Input:  
+
+  /*
+     Input:
      a list of pointers to X_trapezoids and a X_trapezoid boolean predicate.
-     Output: 
+     Output:
      void
      Postcondition:
      the list pointers correspond to all the X_trapezoids in the data
-     structure for which the predicate value is true. 
+     structure for which the predicate value is true.
   */
-  
+
   template <class Container,class Predicate>
   void container(Container& c, const Predicate& pr) const
   {
@@ -3049,13 +3049,13 @@ postcondition:
     list_container representatives;
     container(representatives,
               Active_right_degenerate_curve_trapezoid(*traits));
-    
+
 #ifndef CGAL_TD_DEBUG
-    
+
     CGAL_warning(sz==representatives.size());
-    
+
 #else
-    
+
     unsigned long rep=representatives.size();
     if (sz!=rep)
     {
@@ -3063,9 +3063,9 @@ postcondition:
       std::cerr << "\nrepresentatives.size()=" << rep;
       CGAL_assertion(number_of_curves()==representatives.size());
     }
-    
+
 #endif
-    
+
     if (sz>0)
     {
       typename list_container::iterator it = representatives.begin(),
@@ -3081,9 +3081,9 @@ postcondition:
     }
     return sz;
 }
-    
-    
-    
+
+
+
     /*------------------------------------------------------------------
     Input:
     None
@@ -3095,7 +3095,7 @@ postcondition:
     Postconditions:
     The output is true iff the depth of the Trapezoidal Tree is more then
     DepthThreshold times log of the X_curve count or the Trapezoidal Tree's
-    size 
+    size
     is more then SizeThreshold times the log of the last count.
     */
     bool set_needs_update(bool u)
@@ -3109,7 +3109,7 @@ postcondition:
       unsigned long sz = number_of_curves();
       //to avoid signed / unsigned conversion warnings
                         // rand() returns an int but a non negative one.
-      if (static_cast<unsigned long>(rand()) > 
+      if (static_cast<unsigned long>(rand()) >
                             RAND_MAX / (sz+1))
                           return false;
       /*       INTERNAL COMPILER ERROR overide
@@ -3127,11 +3127,11 @@ postcondition:
         return ((depth()/10)>log(sz+1))||((size()/10)>(sz+1));
         //return ((((signed)depth())/10)>log(sz+1))||
         ((((signed)size())/10)>(sz+1));
-        
+
          #endif
       */
     }
-    
+
     /*------------------------------------------------------------------
     input:
     None
@@ -3150,10 +3150,10 @@ postcondition:
       std::cout << "\n|" << needs_update() << std::flush;
 #endif
       if (needs_update()) {rebuild();return true;}
-      
+
       return false;
     }
-    
+
 /* returns a reference to the internal data structure */
     const Data_structure& get_data_structure() const {return *DS;}
 
@@ -3170,14 +3170,14 @@ postcondition:
     {
       return size_threshold;
     }
-/* sets the internal depth threshold constant to the parameter and 
+/* sets the internal depth threshold constant to the parameter and
   returns its reference */
     const double& set_depth_threshold(const double& depth_th)
     {
       return depth_threshold=depth_th;
     }
 
-/* sets the internal size threshold constant to the parameter and 
+/* sets the internal size threshold constant to the parameter and
   returns its reference */
     const double& set_size_threshold(const double& size_th)
     {
@@ -3188,23 +3188,23 @@ protected:
   bool needs_update_;
   unsigned long number_of_curves_;
   Traits* traits;
-  
+
 private:
-  
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-  
+
   mutable pointer last_cv,prev_cv;
-  
+
 #endif
-  
+
   void init()
   {
     // traits may be initialized later
     DS = new Data_structure(X_trapezoid());
     (*DS)->set_node(DS);
-    
-    
-    
+
+
+
     /*    Point tmp;
     if (!traits->point_is_left_low(TD_X_trapezoid<Traits,
     X_curve>::POINT_AT_LEFT_TOP_INFINITY,tmp=TD_X_trapezoid<Traits,
@@ -3212,25 +3212,25 @@ private:
     TD_X_trapezoid<Traits,
     X_curve>::POINT_AT_LEFT_TOP_INFINITY=traits->point_to_left(tmp);
     */
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_warning(!!*DS);
-    
+
 #endif
-    
+
     number_of_curves_=0;
-    
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-    
+
     locate_opt_empty();
-    
+
 #endif
-    
+
   }
-  
+
 #ifndef CGAL_NO_TRAPEZOIDAL_DECOMPOSITION_2_OPTIMIZATION
-  
+
   void locate_opt_push(pointer cv) const
   {
     prev_cv=last_cv;
@@ -3268,19 +3268,19 @@ private:
     else
       tr=&locate(p,lt);
   }
-  
+
 #endif
 
 protected:
   bool is_isolated_point(const_ref tr) const
   {
-    
+
 #ifdef CGAL_TD_DEBUG
-    
+
     CGAL_precondition(traits->is_degenerate_point(tr));
-    
+
 #endif
-    
+
     return !tr.right_top_neighbour()&&!tr.left_bottom_neighbour();
   }
 

@@ -49,7 +49,7 @@ protected:
 public:
   Td_dag_base() {init();}
   Td_dag_base(const Td_dag_base<T> & x) : Handle(x) {}
-  Td_dag_base & operator=(const Td_dag_base<T> & x) 
+  Td_dag_base & operator=(const Td_dag_base<T> & x)
   {Handle::operator=(x); return *this; }
   bool operator!() const { return PTR == 0; }
 };
@@ -64,7 +64,7 @@ public:
   typedef Td_dag_base<T> Td_dag_handle;
   typedef Td_dag<T> Self;
   typedef std::list<pointer> list_pointer;
-protected:	
+protected:
   class node : public Rep
   {
 #ifndef __BORLANDC__
@@ -74,13 +74,13 @@ protected:
     friend class Td_dag;
 #endif
   public:
-    node(const T& e,unsigned long _depth=0) : 
+    node(const T& e,unsigned long _depth=0) :
       data(e),leftPtr(),rightPtr(),depth_(_depth){}
-    node(const T& e, const Td_dag_handle& left, 
-         const Td_dag_handle& right,unsigned long _depth=0) : 
+    node(const T& e, const Td_dag_handle& left,
+         const Td_dag_handle& right,unsigned long _depth=0) :
       data(e),leftPtr(left),rightPtr(right),depth_(_depth){}
     //		node(const T& e) : data(e),leftPtr(),rightPtr(){}
-    //		node(const T& e, const Td_dag_handle& left, 
+    //		node(const T& e, const Td_dag_handle& left,
     // const Td_dag_handle& right) : data(e),leftPtr(left),rightPtr(right) {}
     ~node(){}
     bool is_inner_node() const {return !!leftPtr && !!rightPtr;}
@@ -91,7 +91,7 @@ protected:
     mutable unsigned long depth_;
     mutable bool visited_;
   };
-  
+
 public:
   /* -------constructors destructors -----*/
   Td_dag(){}
@@ -107,7 +107,7 @@ public:
   {
     CGAL_precondition(!operator!());
     return *(const Self*)&ptr()->leftPtr;
-    
+
   }
   const Self& right() const
   {
@@ -124,7 +124,7 @@ public:
     CGAL_precondition(!operator!());
     return &operator*();
   }
-  bool is_inner_node() const 
+  bool is_inner_node() const
   {return !operator!() && ptr()->is_inner_node();}
   unsigned long size() const
   {
@@ -145,7 +145,7 @@ public:
     return !operator==(b);
   }
   /* dynamic management ---------*/
-  
+
   /* description:
      Shallow copy	*/
   Self& operator=(const Self& b)
@@ -222,7 +222,7 @@ public:
     CGAL_precondition(!operator!());
     ptr()->leftPtr=left;
     if (left.depth()<depth()+1) left.ptr()->depth_=depth()+1;
-    left.rebalance_depth(); 
+    left.rebalance_depth();
     // does nothing if right is a leaf
   }
   void set_right(const Self& right)
@@ -230,7 +230,7 @@ public:
     CGAL_precondition(!operator!());
     ptr()->rightPtr=right;
     if (right.depth()<depth()+1) right.ptr()->depth_=depth()+1;
-    right.rebalance_depth(); 
+    right.rebalance_depth();
     // does nothing if right is a leaf
   }
   void replace(const T& data,const Self& left,const Self& right)
@@ -283,11 +283,11 @@ public:
       }
   }
 #endif
-  
+
 #if _MSC_VER>=1100
   friend std::ostream& operator<<(std::ostream&  out, const Self& t);
 #endif
-  
+
   template <class Container,class Predicate>
   Container& filter(Container& c,const Predicate& pr) const
   {
@@ -297,8 +297,8 @@ public:
 protected:
   void rebalance_depth() const
   {
-    if (is_inner_node()) 
-      {  
+    if (is_inner_node())
+      {
         unsigned long depth_=depth();
         if (left().depth()<depth_+1)
           {
@@ -312,7 +312,7 @@ protected:
           }
       }
   }
-  
+
   unsigned long recursive_size() const
   {
     if (!operator!() && !ptr()->visited())
@@ -332,7 +332,7 @@ protected:
   {
     if (!operator!() && !ptr()->visited())
       {
-        if (pr(operator*())) 
+        if (pr(operator*()))
           c.insert(c.end(),operator*());
         visit_one();
         left().recursive_filter(c,pr);
@@ -344,9 +344,9 @@ private:
   node* ptr() const {return (node*)PTR;}
 };
 
-template<class T,class Traits> 
+template<class T,class Traits>
 std::ostream& write(
-	std::ostream&  out, 
+	std::ostream&  out,
 	const Td_dag<T>& t,
 	const Traits& traits)
 {
@@ -378,7 +378,7 @@ std::ostream& write(
 	return out ;
 }
 
-template<class T> std::ostream& operator<<(std::ostream&  out, 
+template<class T> std::ostream& operator<<(std::ostream&  out,
                                            const Td_dag<T>& t)
 {
   static int depth;
@@ -409,10 +409,10 @@ template<class T> std::ostream& operator<<(std::ostream&  out,
 CGAL_END_NAMESPACE
 
 #endif
-/* 
+/*
    tech notes:
    The code is Handle designed.
-   left(),right() are designed to cope with Handle(Handle& x) 
+   left(),right() are designed to cope with Handle(Handle& x)
      precondition x.PTR!=0
    operator=() performs shallow copy
    operator*() returns data type

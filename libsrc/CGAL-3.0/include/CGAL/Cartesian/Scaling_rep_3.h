@@ -77,12 +77,12 @@ public:
                                 scalefactor_ * t.t12,
                                 scalefactor_ * t.t13,
                                 t.t14,
-				
+
                                 scalefactor_ * t.t21,
                                 scalefactor_ * t.t22,
                                 scalefactor_ * t.t23,
                                 t.t24,
-				
+
                                 scalefactor_ * t.t31,
                                 scalefactor_ * t.t32,
                                 scalefactor_ * t.t33,
@@ -96,12 +96,12 @@ public:
                                 ft0,
                                 ft0,
 				t.translationvector_.x(),
-				
+
                                 ft0,
 				scalefactor_,
                                 ft0,
 				t.translationvector_.y(),
-				
+
                                 ft0,
                                 ft0,
 				scalefactor_,

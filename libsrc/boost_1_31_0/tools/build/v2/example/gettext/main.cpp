@@ -7,7 +7,7 @@
 using namespace std;
 
 int main()
-{    
+{
     // Specify that translations are stored in directory
     // "messages".
     bindtextdomain("main", "messages");

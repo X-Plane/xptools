@@ -27,9 +27,9 @@ class Pm_change_notification
 public:
   typedef Planar_map_ Planar_map;
   typedef typename Planar_map::Traits Traits;
-  
-  virtual void add_edge(const typename Traits::X_curve &, 
-                        typename Planar_map::Halfedge_handle, 
+
+  virtual void add_edge(const typename Traits::X_curve &,
+                        typename Planar_map::Halfedge_handle,
                         bool /* original_direction */, bool overlap = false)
   {
       (void) overlap;
@@ -42,7 +42,7 @@ public:
   {
   }
 
-  //  virtual void merge_edge(typename Planar_map::Halfedge_handle orig_edge, 
+  //  virtual void merge_edge(typename Planar_map::Halfedge_handle orig_edge,
   //                          typename Planar_map::Halfedge_handle new_edge,
   //                          const typename Traits::X_curve & c)
   //    {
@@ -52,12 +52,12 @@ public:
   //    {
   //    }
 
-  virtual void split_face(typename Planar_map::Face_handle /* org */, 
+  virtual void split_face(typename Planar_map::Face_handle /* org */,
                           typename Planar_map::Face_handle /* new */)
   {
   }
 
-  virtual void add_hole(typename Planar_map::Face_handle /* in_face */, 
+  virtual void add_hole(typename Planar_map::Face_handle /* in_face */,
                         typename Planar_map::Halfedge_handle /* new_hole */)
   {
   }

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,11 +35,11 @@ float	gWidthBottom = 0.08;	// Thickness at sign bottom
 int		gUseMaterials = 0;		// Do we use materials to make taxiways light up?
 string	gTextureName = "taxiways:taxi2";
 
-/* TODO: 
+/* TODO:
 
 	Need to add space to end caps
-	Need to generally fix how length is managed!	
-	
+	Need to generally fix how length is managed!
+
 */
 
 #define	SYM_SPACE -1
@@ -51,7 +51,7 @@ enum {
 	mode_Black = 2,
 	mode_Red = 3,
 	mode_White = 4
-};	
+};
 
 enum {
 	sym_None,
@@ -59,7 +59,7 @@ enum {
 	sym_Leftcap,
 	sym_Rightcap,
 	sym_Bordered
-};	
+};
 
 struct	taxi_element_t {
 	const char *			name;		// Symbol of the token
@@ -85,8 +85,8 @@ struct	taxi_element_t {
 	{ "[" c "]"	, s * 32	, t * 32, 32, 32, mode_Any, mode_None, sym_Bordered }, \
 	{ "[" c		, s * 32	, t * 32, 26, 32, mode_Any, mode_Black, sym_Leftcap }, \
 	{ c "]"		, s * 32 + 6, t * 32, 26, 32, mode_Black, mode_None, sym_Rightcap }, \
-	{ c			, s * 32 + 6, t * 32, 20, 32, mode_Black, mode_Black, sym_Middle }, 
-	
+	{ c			, s * 32 + 6, t * 32, 20, 32, mode_Black, mode_Black, sym_Middle },
+
 
 #define BORDERED_LETTER2(c, s, t)			\
 	{ c, s * 32, t * 32, 64, 32, mode_Any, mode_None, sym_Bordered },
@@ -199,7 +199,7 @@ BORDERED_LETTER1("@", 14, 0)
 	{ "{", 960 , 64, 8, 32, mode_Any,    mode_Red,    sym_Leftcap  },
 
 	{	0, 0, 0, 0, 0, 0, 0 }
-};	
+};
 
 static	bool	MatchMode(int cur, int possible)
 {
@@ -218,13 +218,13 @@ static	bool	IsBorderPair(int leftSym, int rightSym)
 {
 	return ((leftSym == sym_Rightcap || leftSym == sym_Bordered) &&
 			(rightSym == sym_Leftcap || rightSym == sym_Bordered));
-}			
+}
 
 void	StringToElements(const string& desc, vector<int>& outElements)
 {
 	int	curMode = mode_None;
 	int	nextMode;
-	
+
 	for (string::size_type p = 0; p < desc.length(); )
 	{
 		int i = 0;
@@ -256,7 +256,7 @@ void	StringToElements(const string& desc, vector<int>& outElements)
 			outElements.push_back(best_index);
 			curMode = nextMode;
 		}
-			
+
 	}
 }
 
@@ -280,18 +280,18 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 			{
 				caps += 1.0;
 			}
-	}			
-		
-	if (caps > 0.0)	
+	}
+
+	if (caps > 0.0)
 		add_extra = add_extra / caps;
 	else
 		add_extra = 0.0;
-		
+
 	double	hwidth = width * 0.5;
 	double	pos = (isBack) ? hwidth : -hwidth;
-	
+
 	double	accum_width = 0.0;
-	
+
 	if (isUnmarked)
 	{
 		double	s1 = 608.0 / 1024.0;
@@ -303,14 +303,14 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 			s1 = 640.0 / 1024.0;
 			s2 = 704.0 / 1024.0;
 		}
-			
+
 		double	x1 = pos / 32.0;
 		double	x2 = -pos / 32.0;
 		double	y1 = 0.0;
 		double	y2 = 32.0 / 32.0;
-		
+
 		XObjCmd		quadCmd;
-		
+
 		quadCmd.cmdType = type_Poly;
 		quadCmd.cmdID = obj_Quad;
 
@@ -326,10 +326,10 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 		// RB
 		PushST(quadCmd, x2 * gMasterScale, y1 * gMasterScale + gPoleHeight,
 			isBack ? -gWidthBottom : gWidthBottom, s2, t1);
-		obj.cmds.push_back(quadCmd);		
-			
+		obj.cmds.push_back(quadCmd);
+
 	} else {
-		
+
 		last = elements.end();
 		for (ii = elements.begin(); ii != elements.end(); ++ii)
 		{
@@ -337,11 +337,11 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 			{
 				last = ii;
 				continue;
-			}	
-				
+			}
+
 			next = ii;
-			++next;			
-			
+			++next;
+
 			double	w = kNormal[*ii].w;
 			double	o = 0.0;
 			if (last != elements.end())
@@ -358,7 +358,7 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 					w -= 1.0;
 				}
 			}
-			
+
 			if (next != elements.end())
 			{
 				if (*next == SYM_SPACE)
@@ -372,7 +372,7 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 					w -= 1.0;
 				}
 			}
-			
+
 			if (kNormal[*ii].category == sym_Leftcap)
 			{
 				w += add_extra;
@@ -382,23 +382,23 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 			{
 				w += add_extra;
 				o -= add_extra;
-			}			
-			
+			}
+
 			double	x1 = pos / 32.0;
 			double	x2 = (isBack ? (pos - w) : (pos + w) ) / 32.0;
 			double	y1 = 0.0;
 			double	y2 = kNormal[*ii].h / 32.0;
-			
+
 			double	s1 = (o + kNormal[*ii].s) / 1024.0;
 			double	s2 = (o + kNormal[*ii].s + w) / 1024.0;
 			double	t1 = kNormal[*ii].t / 128.0;
 			double	t2 = (kNormal[*ii].t + kNormal[*ii].h) / 128.0;
-			
+
 			XObjCmd		quadCmd;
-			
+
 			quadCmd.cmdType = type_Poly;
-			quadCmd.cmdID = obj_Quad;				
-		
+			quadCmd.cmdID = obj_Quad;
+
 			// LB
 			PushST(quadCmd, x1 * gMasterScale, y1 * gMasterScale + gPoleHeight,
 				isBack ? -gWidthBottom : gWidthBottom, s1, t1);
@@ -411,15 +411,15 @@ double	BuildElements(XObj& obj, const vector<int>& elements, bool isBack, bool i
 			// RB
 			PushST(quadCmd, x2 * gMasterScale, y1 * gMasterScale + gPoleHeight,
 				isBack ? -gWidthBottom : gWidthBottom, s2, t1);
-			obj.cmds.push_back(quadCmd);		
-				
+			obj.cmds.push_back(quadCmd);
+
 			if (isBack)
 				pos -= w;
 			else
 				pos += w;
-			
+
 			accum_width += w;
-				
+
 			last = ii;
 		}
 	}
@@ -431,14 +431,14 @@ void	BuildEndCaps(XObj& obj, double width)
 	XObjCmd	cmd, s1, s2;
 
 	width *= 0.5;
-	
+
 	if (gWidthBottom > 0.0)
 	{
 		if (gWidthTop > 0.0)
 		{
 			cmd.cmdID = obj_Quad_Strip;
 			cmd.cmdType = type_Poly;
-			
+
 			PushST(cmd, -width, gPoleHeight, 				  gWidthBottom,608.0 / 1024.0, 0.0 / 128.0);
 			PushST(cmd, -width, gPoleHeight, 				 -gWidthBottom,640.0 / 1024.0, 0.0 / 128.0);
 
@@ -450,14 +450,14 @@ void	BuildEndCaps(XObj& obj, double width)
 
 			PushST(cmd,  width, gPoleHeight, 				  gWidthBottom,608.0 / 1024.0, 32.0 / 128.0);
 			PushST(cmd,  width, gPoleHeight, 				 -gWidthBottom,640.0 / 1024.0, 32.0 / 128.0);
-			
+
 			obj.cmds.push_back(cmd);
-			
+
 		} else {
-		
+
 			s1.cmdID = s2.cmdID = obj_Tri;
 			s1.cmdType = s2.cmdType = type_Poly;
-			
+
 			PushST(s1, -width, gPoleHeight, 				  gWidthBottom,608.0 / 1024.0, 0.0 / 128.0);
 			PushST(s1, -width, gPoleHeight, 				 -gWidthBottom,640.0 / 1024.0, 0.0 / 128.0);
 			PushST(s1, -width, gPoleHeight + gMasterScale,  0.0,			608.0 / 1024.0, 8.0 / 128.0);
@@ -465,10 +465,10 @@ void	BuildEndCaps(XObj& obj, double width)
 			PushST(s2,  width, gPoleHeight, 				 -gWidthBottom,640.0 / 1024.0, 32.0 / 128.0);
 			PushST(s2,  width, gPoleHeight, 				  gWidthBottom,608.0 / 1024.0, 32.0 / 128.0);
 			PushST(s2,  width, gPoleHeight + gMasterScale, 0.0,				640.0 / 1024.0, 24.0 / 128.0);
-		
+
 			obj.cmds.push_back(s1);
 			obj.cmds.push_back(s2);
-		
+
 		}
 	}
 }
@@ -478,11 +478,11 @@ void	BuildPoles(XObj& obj, double width)
 	if (gPoleHeight > 0.0 && gPoleRadius > 0.0)
 	{
 		width *= 0.7;
-		
+
 		XObjCmd	pole;
 		pole.cmdType = type_Poly;
 		pole.cmdID = obj_Quad_Strip;
-		
+
 		PushST(pole,  gPoleRadius, 0, 			-gPoleRadius, 	704.0 / 1024.0,  0.0 / 128.0);
 		PushST(pole,  gPoleRadius, gPoleHeight, -gPoleRadius, 	704.0 / 1024.0, 32.0 / 128.0);
 
@@ -502,13 +502,13 @@ void	BuildPoles(XObj& obj, double width)
 		for (i = pole.st.begin(); i != pole.st.end(); ++i)
 		{
 			i->v[0] -= (width * 0.5);
-		}		
+		}
 		obj.cmds.push_back(pole);
 
 		for (i = pole.st.begin(); i != pole.st.end(); ++i)
 		{
 			i->v[0] += width;
-		}		
+		}
 		obj.cmds.push_back(pole);
 	}
 }
@@ -545,15 +545,15 @@ void	XGrindFile(const char * inFileName)
 	if (sep != path.npos)
 	{
 		fname = path.substr(sep+1);
-		dir = path.substr(0, sep+1);		
+		dir = path.substr(0, sep+1);
 	}
 
 	if (HasExtNoCase(fname, ".taxi"))
 	{
 		XGrinder_ShowMessage("Processing file %s.",fname.c_str());
-		
+
 		StTextFileScanner	fs(inFileName, true);
-		
+
 		if (!fs.done())
 		{
 			string	ln;
@@ -562,7 +562,7 @@ void	XGrindFile(const char * inFileName)
 			{
 				if (ln == "HALT_HALT_HALT")	break;
 				BreakString(ln, args);
-				
+
 				if (args.size() > 1)
 				{
 					if (args[0] == "MATERIALS")
@@ -571,7 +571,7 @@ void	XGrindFile(const char * inFileName)
 					} else if (args[0] == "SCALE")
 					{
 						gMasterScale = atof(args[1].c_str());
-					} else if (args[0] == "HEIGHT") 
+					} else if (args[0] == "HEIGHT")
 					{
 						gPoleHeight = atof(args[1].c_str());
 					} else if (args[0] == "RADIUS")
@@ -587,28 +587,28 @@ void	XGrindFile(const char * inFileName)
 					{
 						gTextureName = args[1];
 					} else {
-				
+
 						vector<int>	front, back;
-						
+
 						StringToElements(args[1], front);
-						
+
 						if ((args.size() > 2) && (!args[2].empty()))
 							StringToElements(args[2], back);
-						
+
 						XObj	obj;
 						obj.texture = gTextureName;
-						
+
 						double	front_width = BuildElements(obj, front, false, false, 0.0, 0.0);
 						double	back_width = 0.0;
 						if ((args.size() > 2) && (!args[2].empty()))
 							back_width = BuildElements(obj, back, true, false, 0.0, 0.0);
-							
-						double 	width = (front_width > back_width) ? front_width : back_width;	
+
+						double 	width = (front_width > back_width) ? front_width : back_width;
 						double	add_front = width - front_width;
 						double	add_back = width - back_width;
-						
+
 						obj.cmds.clear();
-						
+
 						XObjCmd	emissive;
 						emissive.cmdType = type_Attr;
 						emissive.cmdID = attr_Emission_RGB;
@@ -619,7 +619,7 @@ void	XGrindFile(const char * inFileName)
 							obj.cmds.push_back(emissive);
 						emissive.cmdID = attr_Reset;
 						emissive.attributes.clear();
-						
+
 						BuildElements(obj, front, false/*front*/, false/*for real*/, add_front, width);
 						if ((args.size() > 2) && (!args[2].empty())) {
 							back_width = BuildElements(obj, back, true/*back*/, false/*for real*/, add_back, width);
@@ -636,9 +636,9 @@ void	XGrindFile(const char * inFileName)
 						BuildPoles(obj, width * gMasterScale / 32.0);
 
 						string	fullnewpath = dir + args[0];
-						
+
 						double	radius = GetObjRadius(obj);
-						
+
 						XObjCmd	lodCmd;
 						lodCmd.cmdType = type_Attr;
 						lodCmd.cmdID = attr_LOD;
@@ -648,10 +648,10 @@ void	XGrindFile(const char * inFileName)
 						// signs are always centered.  so for each meter of radius, we want
 						// a mile of vis.  About 1900 m per nm.
 						lodCmd.attributes.push_back(3000);
-						obj.cmds.insert(obj.cmds.begin(), lodCmd);						
+						obj.cmds.insert(obj.cmds.begin(), lodCmd);
 
 						XGrinder_ShowMessage("Outputing file %s.",fullnewpath.c_str());
-						
+
 						XObjWrite(fullnewpath.c_str(), obj);
 					}
 				}
@@ -659,5 +659,5 @@ void	XGrindFile(const char * inFileName)
 		} else {
 			XGrinder_ShowMessage("Unable to process file %s.",fname.c_str());
 		}
-	}	
+	}
 }

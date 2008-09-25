@@ -2,7 +2,7 @@
  * Copyright (c) 1999, Carl Anderson
  *
  * This code is based in part on the earlier work of Frank Warmerdam
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************
  * shpgeo.h
- * 
+ *
  * support for geometric and other additions to shapelib
  *
  *
@@ -33,10 +33,10 @@
  * Revision 1.2  1999/05/26 02:56:31  candrsn
  * updates to shpdxf, dbfinfo, port from Shapelib 1.1.5 of dbfcat and shpinfo
  *
- * 
+ *
  */
- 
- 
+
+
 
  /* I'm using some shorthand throughout this file
  *      R+ is a Clockwise Ring and is the positive portion of an object
@@ -51,7 +51,7 @@
  *
  *   SHPT_POLYGON, SHPT_POLYGONZ, SHPT_POLYGONM and SHPT_MULTIPATCH
  *   can have SHPObjects that are compound as well as complex
- *  
+ *
  *   SHP_POINT and its Z and M derivatives are strictly simple
  *   MULTI_POINT, SHPT_ARC and their derivatives may be simple or compound
  *
@@ -89,9 +89,9 @@ extern "C" {
 
 typedef struct { int	StreamPos;
 		 int	NeedSwap;
-		 char	*wStream;	
+		 char	*wStream;
 		} WKBStreamObj;
-		
+
 typedef struct { double x; double y; } PT;
 
 
@@ -104,7 +104,7 @@ typedef struct { int		cParts;
 
 
 extern char * asFileName ( const char *fil, char *ext );
-extern int 	SHPProject ( SHPObject *psCShape, 
+extern int 	SHPProject ( SHPObject *psCShape,
                              projPJ inproj, projPJ outproj );
 extern projPJ 	SHPSetProjection ( int param_cnt, char **params );
 extern int 	SHPFreeProjection ( projPJ p);
@@ -118,7 +118,7 @@ extern PT 	SHPCentrd_2d ( SHPObject *psCShape );
 extern PT	SHPPointinPoly_2d ( SHPObject *psCShape );
 extern PT*	SHPPointsinPoly_2d ( SHPObject *psCShape );
 
-extern int 	RingCentroid_2d ( int nVertices, double *a, double *b, PT *C, 
+extern int 	RingCentroid_2d ( int nVertices, double *a, double *b, PT *C,
 	double *Area );
 extern double 	RingLength_2d ( int nVertices, double *a, double *b );
 extern int	RingDir_2d ( int nVertices, double *a, double *b );

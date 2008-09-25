@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -54,12 +54,12 @@ units in meters
 Table 1. Effects of hemisphere, latitude and climatic dryness on the average snowline’s elevation, in metres (1). SH = southern hemisphere; NH = northern hemisphere. The figures for South America are from (2).
 */
 static const SnowLineInfo_t kSnowLineInfo[] = {
-//	Lati	SHdry	SHmoist	NHdry	NHmoist	
+//	Lati	SHdry	SHmoist	NHdry	NHmoist
 {	90,		0,		0,		400,	100		},
 {	80,		0,		0,		400,	100		},
-{	60,		700,	200,	2500,	600		},	
-{	40,		3300,	1200,	5100,	2400	},	
-{	20,		6200,	4900,	5500,	4800	},	
+{	60,		700,	200,	2500,	600		},
+{	40,		3300,	1200,	5100,	2400	},
+{	20,		6200,	4900,	5500,	4800	},
 {	 0,		5200,	4500,	5200,	4500	},
 {	-9999,	0,		0,		0,		0		}
 };
@@ -112,7 +112,7 @@ void	SpreadDEMValues(DEMGeo& ioDem)
 				h = ioDem.get(x+n,y+n);	if (h != DEM_NO_DATA) break;
 				h = ioDem.get(x-n,y-n);	if (h != DEM_NO_DATA) break;
 				h = ioDem.get(x-n,y+n);	if (h != DEM_NO_DATA) break;
-				++n;								
+				++n;
 			}
 			if (h != DEM_NO_DATA)
 				temp(x,y) = h;
@@ -132,9 +132,9 @@ void	SpreadDEMValuesTotal(DEMGeo& ioDem)
 	for (int x = 0; x < ioDem.mWidth; ++x)
 	{
 		float	h =  temp(x,y);
-		if (h == DEM_NO_DATA)	
+		if (h == DEM_NO_DATA)
 		{
-			for (int r = 1; r <= max(ioDem.mWidth, ioDem.mHeight); ++r)			
+			for (int r = 1; r <= max(ioDem.mWidth, ioDem.mHeight); ++r)
 			{
 				for (int rd = 1; rd <= r; ++rd)
 				{
@@ -150,7 +150,7 @@ void	SpreadDEMValuesTotal(DEMGeo& ioDem)
 			}
 		}
 
-foo:		
+foo:
 		if (h != DEM_NO_DATA)
 			temp(x,y) = h;
 	}
@@ -165,7 +165,7 @@ bool	SpreadDEMValuesIterate(DEMGeo& ioDem)
 	for (int x = 0; x < ioDem.mWidth; ++x)
 	{
 		float	h =  temp(x,y);
-		if (h == DEM_NO_DATA)	
+		if (h == DEM_NO_DATA)
 		{
 			int n = rand() % 4;
 			switch(n) {
@@ -235,7 +235,7 @@ void	SpreadDEMValues(DEMGeo& ioDem, int dist, int x1, int y1, int x2, int y2)
 				h = ioDem.get(x+n,y+n);	if (h != DEM_NO_DATA) break;
 				h = ioDem.get(x-n,y-n);	if (h != DEM_NO_DATA) break;
 				h = ioDem.get(x-n,y+n);	if (h != DEM_NO_DATA) break;
-				++n;								
+				++n;
 			}
 			if (h != DEM_NO_DATA)
 				temp(x,y) = h;
@@ -301,21 +301,21 @@ void	DownsampleDEM(const DEMGeo& ioDem, DEMGeo& smaller, int ratio)
 	smaller.mSouth = ioDem.mSouth;
 	smaller.mEast = ioDem.mEast;
 	smaller.mWest = ioDem.mWest;
-	
+
 	for (int y = 0; y < smaller.mHeight; ++y)
 	for (int x = 0; x < smaller.mWidth; ++x)
 	{
 		float c = 0;
 		float h = 0.0;
-		for (int dy = y * ratio - (ratio / 2); dy < (y * ratio + (ratio / 2)); ++dy) 
-		for (int dx = x * ratio - (ratio / 2); dx < (x * ratio + (ratio / 2)); ++dx) 
+		for (int dy = y * ratio - (ratio / 2); dy < (y * ratio + (ratio / 2)); ++dy)
+		for (int dx = x * ratio - (ratio / 2); dx < (x * ratio + (ratio / 2)); ++dx)
 		{
 			float lh = ioDem.get(dx, dy);
 			if (lh != DEM_NO_DATA) c+=1.0, h += lh;
 		}
-		if (c > 0) 
-			h /= c; 
-		else 
+		if (c > 0)
+			h /= c;
+		else
 			h = DEM_NO_DATA;
 
 		smaller(x,y)=h;
@@ -343,10 +343,10 @@ void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
 	for (y = 0; y < inDEM.mHeight;++y)
 	for (x = 0; x < inDEM.mWidth; ++x)
 		bigger(x*2,y*2) = inDEM.get(x,y);
-	
+
 	static int x_dir[8] = { 0, 1, 0, -1, 1, 1, -1,-1 };
 	static int y_dir[8] = { 1, 0, -1, 0, 1,-1,  1,-1 };
-	
+
 	for (y = 0; y < bigger.mHeight;++y)
 	for (x = 0; x < bigger.mWidth; ++x)
 	if ((x%2) || (y%2))
@@ -401,7 +401,7 @@ void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM)
 	}
 }
 
-// This routine takes a low res datasource and upsamples it.  It varies within a linear interpolation block 
+// This routine takes a low res datasource and upsamples it.  It varies within a linear interpolation block
 // from the min to max seen in the corners based on another DEM used for 'noise' (usually relative elevation).
 // We blend to make sure we have linear interp at the edge of the linear interp block, so we get good tiling.
 // A weight factor also tunes this in and out.
@@ -409,7 +409,7 @@ void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo
 {
 	derived.resize((base.mWidth-1)*xmult+1,(base.mHeight-1)*ymult+1);
 	derived.copy_geo_from(base);
-	
+
 	// for every 'block' to be usampled
 	for (int yiz = 0; yiz < base.mHeight-1; ++yiz)
 	for (int xiz = 0; xiz < base.mWidth-1; ++xiz)
@@ -420,19 +420,19 @@ void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo
 		{
 			float dx_fac = (float) dx / (float) xmult;
 			float dy_fac = (float) dy / (float) ymult;
-			
+
 			// This is the weights for a linear blend
 			double q1 = 	 dx_fac  * 		dy_fac;
 			double q2 = (1.0-dx_fac) * 		dy_fac;
 			double q3 = 	 dx_fac  * (1.0-dy_fac);
 			double q4 = (1.0-dx_fac) * (1.0-dy_fac);
-			
+
 			// Four corner values
 			float v1 = base.get(xiz+1, yiz+1);
 			float v2 = base.get(xiz  , yiz+1);
 			float v3 = base.get(xiz+1, yiz  );
 			float v4 = base.get(xiz  , yiz  );
-			
+
 			// clean interp
 			float v_linear = q1 * v1 +
 					  		 q2 * v2 +
@@ -443,7 +443,7 @@ void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo
 			float x_weird = (0.5 - fabs(dx_fac - 0.5)) * 2.0;
 			float y_weird = (0.5 - fabs(dy_fac - 0.5)) * 2.0;
 			float weird_mix = min(x_weird, y_weird) * gDemPrefs.rain_disturb;
-			
+
 			// This is the 'noise' ratio from the variant source
 			float weird_ratio = variant_source.value_linear(derived.x_to_lon(xiz * xmult + dx),
 															derived.y_to_lat(yiz * ymult + dy));
@@ -451,16 +451,16 @@ void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo
 			weird_ratio = min(max(weird_ratio, 0.0f), 1.0f);
 			float max_ever = max(max(v1,v2),max(v3,v4));
 			float min_ever = min(min(v1,v2),min(v3,v4));
-			
+
 			// Generated weird value
 			float v_weird = min_ever + weird_ratio * (max_ever - min_ever);
 
 			// mix werid and linear
-			derived(xiz * xmult + dx, yiz * ymult + dy) = 
+			derived(xiz * xmult + dx, yiz * ymult + dy) =
 				v_linear * (1.0 - weird_mix) +
 				v_weird  *        weird_mix;
 		}
-	}	
+	}
 }
 
 /*
@@ -477,7 +477,7 @@ void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& sl
 	float slaveMax = slaveOrig(0,0);
 	float masterMin = masterOrig(0,0);
 	float masterMax = masterOrig(0,0);
-	
+
 	int x, y;
 	for (y = 0; y < masterOrig.mHeight;++y)
 	for (x = 0; x < masterOrig.mWidth ;++x)
@@ -491,13 +491,13 @@ void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& sl
 		slaveMin = min(slaveMin, slaveOrig(x,y));
 		slaveMax = max(slaveMax, slaveOrig(x,y));
 	}
-	
+
 	// Here comes the whacko part: we're basically going to vary the slope of the relationship
 	// between the master and slave param over the DEM so that we hit an exact match on the grid
 	// points from the original.
-	
+
 	float	offset = slaveMin - masterMin;
-	
+
 	DEMGeo	slope(slaveOrig), hack_offset(slaveOrig);
 	for (y = 0; y < slope.mHeight;++y)
 	for (x = 0; x < slope.mWidth; ++x)
@@ -510,7 +510,7 @@ void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& sl
 			slope(x,y) = 0.0;
 		else
 			slope(x,y) = sVal / mVal;
-		
+
 		// Hack offset: if the slope of the master data is 0, e.g. the
 		// slave is changing without the master changing, we simply use
 		// a linear offset to interpolate the slave - otherwise we get
@@ -520,9 +520,9 @@ void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& sl
 		else
 			hack_offset(x,y) = 0.0;
 	}
-	
+
 	slaveDeriv = masterDeriv;
-	
+
 	for (y = 0; y < slaveDeriv.mHeight; ++y)
 	for (x = 0; x < slaveDeriv.mWidth; ++x )
 	{
@@ -536,7 +536,7 @@ void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& sl
 /*
  * BinarayDEMFromEnum
  *
- * Replace each point in the DEM with 1.0 if the value matches the 
+ * Replace each point in the DEM with 1.0 if the value matches the
  * passed in param, or 0.0 if it does not.  Return the number of
  * found instances.
  *
@@ -573,7 +573,7 @@ static	float	GetSnowLine(float lat, float moisture)
 			if (lat > 0)
 				return kSnowLineInfo[n].nh_dry * dry + kSnowLineInfo[n].nh_wet * moisture;
 			else
-				return kSnowLineInfo[n].sh_dry * dry + kSnowLineInfo[n].sh_wet * moisture;			
+				return kSnowLineInfo[n].sh_dry * dry + kSnowLineInfo[n].sh_wet * moisture;
 		}
 		if (alat < kSnowLineInfo[n].lat && alat > kSnowLineInfo[n+1].lat)
 		{
@@ -582,11 +582,11 @@ static	float	GetSnowLine(float lat, float moisture)
 			if (lat > 0)
 				v1 = kSnowLineInfo[n].nh_dry * dry + kSnowLineInfo[n].nh_wet * moisture;
 			else
-				v1 = kSnowLineInfo[n].sh_dry * dry + kSnowLineInfo[n].sh_wet * moisture;			
+				v1 = kSnowLineInfo[n].sh_dry * dry + kSnowLineInfo[n].sh_wet * moisture;
 			if (lat > 0)
 				v2 = kSnowLineInfo[n+1].nh_dry * dry + kSnowLineInfo[n+1].nh_wet * moisture;
 			else
-				v2 = kSnowLineInfo[n+1].sh_dry * dry + kSnowLineInfo[n+1].sh_wet * moisture;			
+				v2 = kSnowLineInfo[n+1].sh_dry * dry + kSnowLineInfo[n+1].sh_wet * moisture;
 
 			return rat * v1 + (1.0 - rat) * v2;
 		}
@@ -611,7 +611,7 @@ static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point2& whe
 {
 	if (gFeatures.find(feature) == gFeatures.end()) return;
 	float p = gFeatures[feature].property_value;
-	
+
 	int x, y;
 	float h = ioValues.xy_nearest(where.x,where.y,x,y);
 	if (h != DEM_NO_DATA)
@@ -621,7 +621,7 @@ static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point2& whe
 }
 
 
-// We are passed in a rough urban density calculation, basically a ballpark esetimate.  We then 
+// We are passed in a rough urban density calculation, basically a ballpark esetimate.  We then
 // make it more detailed via roads.
 //
 // URBAN DENSITY - HOW THIS WORKS
@@ -675,7 +675,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 		if (y >= ioTransport.mHeight) break;
 		rasterizer.AdvanceScanline(y);
 	}
-	
+
 	for (Pmwx::Halfedge_const_iterator iter = inMap.halfedges_begin();
 		iter != inMap.halfedges_end(); ++iter)
 	{
@@ -684,10 +684,10 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 			int tsx, tsy, tdx, tdy;
 			ioTransport.xy_nearest(iter->source()->point().x,iter->source()->point().y, tsx, tsy);
 			ioTransport.xy_nearest(iter->target()->point().x,iter->target()->point().y, tdx, tdy);
-			
+
 			for (GISNetworkSegmentVector::const_iterator seg = iter->mSegments.begin(); seg != iter->mSegments.end(); ++seg)
 			{
-				
+
 				switch(seg->mFeatType) {
 				case road_PrimaryLimUnsep:
 				case road_PrimaryLimUnsepRail:
@@ -725,13 +725,13 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 //		else
 			ioDem(x,y) = 0.5;
 	}
-	
+
 	float	filter[7*7], filter2[3*3];
 	CalculateFilter(7, filter, demFilter_Spread, true);		// Take basic prop values and splat them all over the place
 	CalculateFilter(3, filter2, demFilter_Spread, true);	// slight diffusion of feature values just for niceness.
-	
+
 	ioDem.filter_self(7, filter);
-	
+
 	for (Pmwx::Face_const_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
 	{
 		if (face->is_unbounded()) continue;
@@ -739,7 +739,7 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mLocation);
 		for (GISPolygonFeatureVector::const_iterator f = face->mPolygonFeatures.begin(); f != face->mPolygonFeatures.end(); ++f)
 		{
-			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());			
+			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());
 		}
 		if (face->mAreaFeature.mFeatType != NO_VALUE)
 		{
@@ -749,11 +749,11 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 				ApplyFeatureAtPoint(ioDem, face->mAreaFeature.mFeatType, i->source()->point());
 				++i;
 			} while (i != s);
-		}		
+		}
 	}
 
 	ioDem.filter_self(3, filter2);
-	
+
 }
 
 /*
@@ -799,8 +799,8 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 			}
 
 			++iter;
-		} while (iter != stop);	
-	}	
+		} while (iter != stop);
+	}
 	rasterizer.SortMasters();
 	int y = 0;
 	rasterizer.StartScanline(y);
@@ -821,7 +821,7 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 		if (y >= landuse.mHeight) break;
 		rasterizer.AdvanceScanline(y);
 	}
-	
+
 }
 
 #pragma mark -
@@ -829,7 +829,7 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 /*
  * UpsampleEnvironmentalParams
  *
- * Given our DEM parameters, upsample the environmental ones (rainfall, 
+ * Given our DEM parameters, upsample the environmental ones (rainfall,
  * biomass, climate, and temperature) based on elevation variations.
  * This produces a high-res environmental model with local variations
  * based on the high res DEMs and low-res global climate info.
@@ -852,38 +852,38 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 				double east = ioDEMs[dem_Elevation ].mSouth;
 				double south = ioDEMs[dem_Elevation].mEast ;
 				double north = ioDEMs[dem_Elevation].mNorth;
-		
+
 				for (DEMGeoMap::iterator dem_iter = new_dems.begin();
 					dem_iter != new_dems.end(); ++dem_iter)
 				{
 					if (dem_iter->first != dem_Elevation)
 					{
 						DEMGeo& target(ioDEMs[dem_iter->first]);
-						dem_iter->second.subset(target, 
+						dem_iter->second.subset(target,
 								 dem_iter->second.x_lower(west ),
 								 dem_iter->second.y_lower(east ),
 								 dem_iter->second.x_upper(south),
 								 dem_iter->second.y_upper(north));
 					}
-				}				
-				
+				}
+
 				MemFile_Close(fi);
 			}
-		}		
+		}
 	}
 	int x, y, c;
 	float real_temp, expected;
-	// Envrionmental resampling: 
+	// Envrionmental resampling:
 	if (ioDEMs.find(dem_Elevation) == ioDEMs.end())				return;
-	if (ioDEMs.find(dem_Temperature) == ioDEMs.end() && 
+	if (ioDEMs.find(dem_Temperature) == ioDEMs.end() &&
 		ioDEMs.find(dem_TemperatureSeaLevel) == ioDEMs.end())	return;
 	if (ioDEMs.find(dem_Climate) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Rainfall) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Biomass) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_TemperatureRange) == ioDEMs.end())		return;
-		
+
 	bool	has_sealevel = 	ioDEMs.find(dem_TemperatureSeaLevel) != ioDEMs.end();
-		
+
 	DEMGeo&		elevation	 = ioDEMs[dem_Elevation];
 	DEMGeo&		temperature	 = ioDEMs[has_sealevel ? dem_TemperatureSeaLevel : dem_Temperature];
 	DEMGeo&		climate		 = ioDEMs[dem_Climate];
@@ -894,7 +894,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	DEMGeo		elevation_reduced, elevation_general;
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.0);
-		
+
 	DownsampleDEM(elevation, elevation_reduced, 5);
 	DownsampleDEM(elevation_reduced, elevation_general, (elevation_reduced.mWidth-1) / (temperature.mWidth-1));
 	SpreadDEMValues(temperature);
@@ -902,7 +902,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	SpreadDEMValues(rainfall);
 	SpreadDEMValues(biomass);
 	SpreadDEMValues(temprange);
-	
+
 	/*************** STEP 1 - INTERPOLATE TEMPERATURE DATA ***************/
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.1);
@@ -910,7 +910,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	// We need to interperate temperature based on standard lapse rate!
 	// So we build a temperature deviation map - this is how much more the local
 	// temperature is than the std lapse rate.
-	
+
 	if (has_sealevel)
 	{
 		DEMGeo	derived_temperature(elevation_reduced);
@@ -918,10 +918,10 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		for (x = 0; x < derived_temperature.mWidth ; ++x)
 			derived_temperature(x,y) = derived_temperature(x,y) * kStdLapseRate + temperature.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));
 
-		ioDEMs[dem_Temperature].swap(derived_temperature);		
-		
+		ioDEMs[dem_Temperature].swap(derived_temperature);
+
 	} else {
-		
+
 		DEMGeo		temperature_deviation(temperature);
 		for (y = 0; y < temperature_deviation.mHeight; ++y)
 		for (x = 0; x < temperature_deviation.mWidth; ++x)
@@ -934,11 +934,11 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 			int				yp = elevation.lat_to_y(temperature_deviation.y_to_lat(y));
 			samples = DEMMakeHistogram(elevation, histo, xp-300, yp-300, xp+300,yp+300);
 			expected = HistogramGetPercentile(histo, samples, gDemPrefs.temp_percentile) * kStdLapseRate;
-			
+
 	//		expected = elevation_general.value_linear(temperature_deviation.x_to_lon(x),temperature_deviation.y_to_lat(y)) * kStdLapseRate;
 			temperature_deviation(x,y) = real_temp - expected;
-		}	
-		
+		}
+
 		// Now we can convert elevation to temperature.
 		DEMGeo	derived_temperature(elevation_reduced);
 		temp_msl.resize(elevation_reduced.mWidth,elevation_reduced.mHeight);
@@ -947,18 +947,18 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		for (x = 0; x < derived_temperature.mWidth; ++x)
 		{
 			expected = derived_temperature(x,y) * kStdLapseRate;
-			derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
-			temp_msl(x,y) = temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
+			derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));
+			temp_msl(x,y) = temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));
 		}
-		temperature.swap(derived_temperature);		
+		temperature.swap(derived_temperature);
 	}
-		
+
 	/*************** STEP 2 - INTERPOLATE OTHER CONTINUOUS PARAMs ***************/
-	
+
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.3);
 
 	DEMGeo	final_temperature(ioDEMs[dem_Temperature]);
-	
+
 	// Other continuous parameters are easy - we just do an upsample based on the apparent
 	// relationship to temperature.  See comments from UpsampleFromParamLinear on whether
 	// this is really a good idea in practice or not.
@@ -970,22 +970,22 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	/*************** STEP 3 - INTERPOLATE CLIMATE! ***************/
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.5);
-	
+
 	// Climate is trickier since it is an enum.  What we do is we treat climate as a blendable
 	// attribute by creating linear-interpolated values for this climate from 0-1.  We then pick
 	// the max climate for any given point as our final climate.
 	int	climate_enums[] = {
-	climate_TropicalRainForest,		climate_DrySteppe,	climate_TemperateAny,		climate_ColdAny,		climate_PolarTundra,		
+	climate_TropicalRainForest,		climate_DrySteppe,	climate_TemperateAny,		climate_ColdAny,		climate_PolarTundra,
 	climate_TropicalMonsoon,	    climate_DryDesert,	climate_TemperateSummerDry,	climate_ColdSummerDry,	climate_PolarFrozen,
-	climate_TropicalDry,								climate_TemperateWinterDry,	climate_ColdWinterDry,		
-														climate_TemperateWet,		    
+	climate_TropicalDry,								climate_TemperateWinterDry,	climate_ColdWinterDry,
+														climate_TemperateWet,
 	};
-																							
+
 	const int climate_count = sizeof(climate_enums) / sizeof(int);
 	DEMGeo	climates_orig[climate_count];
 	bool	has_climate[climate_count];
 	DEMGeo	climates_deriv[climate_count];
-	
+
 	for (c = 0; c < climate_count; ++c)
 	{
 		climates_orig[c] = climate;
@@ -993,9 +993,9 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		if (has_climate[c])
 			UpsampleFromParamLinear(temperature, final_temperature, climates_orig[c], climates_deriv[c]);
 	}
-	
-	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.7);	
-	
+
+	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.7);
+
 	DEMGeo	derived_climate(final_temperature);
 	for (y = 0; y < derived_climate.mHeight;++y)
 	for (x = 0; x < derived_climate.mWidth; ++x)
@@ -1013,7 +1013,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		}
 		derived_climate(x,y) = best_climate;
 	}
-	
+
 	/************ POST PROCESSING - STUFF ALL DEMS **********/
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.9);
@@ -1046,10 +1046,10 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
  *
  */
 void	DeriveDEMs(
-			const Pmwx& 	inMap, 
-			DEMGeoMap& 		ioDEMs, 
+			const Pmwx& 	inMap,
+			DEMGeoMap& 		ioDEMs,
 			AptVector&		ioApts,
-			AptIndex&		ioAptIndex,			
+			AptIndex&		ioAptIndex,
 			ProgressFunc 	inProg)
 {
 	int x, y;
@@ -1064,7 +1064,7 @@ void	DeriveDEMs(
 			if (gLandUseTransTable.count(luv))
 				lu_t(x,y) = gLandUseTransTable[luv];
 		}
-		
+
 	}
 
 	const DEMGeo&		climate = 	ioDEMs[dem_Climate];
@@ -1077,12 +1077,12 @@ void	DeriveDEMs(
 	const DEMGeo&		slopeHeading = ioDEMs[dem_SlopeHeading];
 	const DEMGeo&		rainfall = 	ioDEMs[dem_Rainfall];
 		  DEMGeo&		urbanSquare =	ioDEMs[dem_UrbanSquare];
-	
+
 	DEMGeo elevation_reduced;
-	DownsampleDEM(elevation, elevation_reduced, 6);	
+	DownsampleDEM(elevation, elevation_reduced, 6);
 	DEMGeo	landuseBig;
 	UpsampleDEM(landuse, landuseBig, 2);
-		  
+
 	DEMGeo	urban(landuse);
 	DEMGeo	values(landuse);
 //	DEMGeo	nudeColor(landuse);
@@ -1095,7 +1095,7 @@ void	DeriveDEMs(
 	urban.mSouth = landuseBig.mSouth;
 	urban.mEast = landuseBig.mEast;
 	urban.mWest = landuseBig.mWest;
-	
+
 //	double lon, lat;
 
 	/********************************************************************************************************
@@ -1109,7 +1109,7 @@ void	DeriveDEMs(
 	CalculateFilter(URBAN_TRANS_KERN_SIZE, sUrbanTransSpreaderKernel, demFilter_Spread, true);
 
 	double	radial_max = 0.0;
-	
+
 	{
 		DEMGeo	urbanTemp(urban);
 		for (y = 0; y < urban.mHeight;++y)
@@ -1117,8 +1117,8 @@ void	DeriveDEMs(
 		{
 			urbanTemp(x,y) = (urban(x,y) == lu_usgs_URBAN_IRREGULAR || urban(x,y) == lu_usgs_URBAN_SQUARE) ? 1 : 0;
 		}
-		
-		
+
+
 		for (y = 0; y < urban.mHeight;++y)
 		for (x = 0; x < urban.mWidth; ++x)
 		{
@@ -1155,11 +1155,11 @@ void	DeriveDEMs(
 		float e = urbanTrans.xy_nearest(p.x, p.y, x, y);
 		if (e != DEM_NO_DATA)
 			urbanTrans(x,y) = 1.0;
-		
+
 	}
-	
+
 	urbanTrans.filter_self(URBAN_TRANS_KERN_SIZE, sUrbanTransSpreaderKernel);
-	
+
 	for (y = 0; y < urbanTrans.mHeight; ++y)
 	for (x = 0; x < urbanTrans.mWidth; ++x)
 		urbanTrans(x,y) = max(0.0f, min(urbanTrans(x,y), 1.0f));
@@ -1194,7 +1194,7 @@ void	DeriveDEMs(
 	{
 		lon = vegetation.x_to_lon(x);
 		lat = vegetation.y_to_lat(y);
-		
+
 		float our_slope = slope.value_linear(lon, lat);
 		float our_slopeh = slopeHeading.value_linear(lon, lat);
 		if (lat > 0)
@@ -1210,9 +1210,9 @@ void	DeriveDEMs(
 	/********************************************************************************************************
 	 * CALCULATE VEGETATION AND TERRAIN FROM PHENONMEA
 	 ********************************************************************************************************/
-	
+
 	// Pass 1 - extract land use values and apply some limits to phenomena.
-	
+
 	for (y = 0; y < landuseBig.mHeight;++y)
 	for (x = 0; x < landuseBig.mWidth; ++x)
 	{
@@ -1230,25 +1230,25 @@ void	DeriveDEMs(
 			phenomTerrain(x,y) = it->second.terrain_type;
 			phenom2d(x,y) = it->second.veg2d_type;
 			phenom3d(x,y) = it->second.veg3d_type;
-			
+
 			float	biomass_here = biomass.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y));
 			biomass_here /= 2500.0;
 			if (biomass_here > 1.0) biomass_here = 1.0;
 			if (biomass_here < 0.0) biomass_here = 0.0;
-			
+
 			if (it->second.veg2d_density == -1.0)
 				density2d(x,y) = biomass_here;
 			else
 				density2d(x,y) = biomass_here * 0.5 + it->second.veg2d_density * 0.5;
-			
+
 			if (it->second.veg3d_density != -1)
 				density3d(x,y) = it->second.veg3d_density * 0.5 + biomass_here;
 			else
 				density3d(x,y) = biomass_here;
-				
+
 			// Phenom control!  If the max temp (ave temp plus half the range) is less than 10 degrees,
 			// trees can't grow!
-			float max_isotherm_here = temp.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) + 
+			float max_isotherm_here = temp.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) +
 								0.5 * tempRange.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y));
 			if (max_isotherm_here < 10.0)
 				phenom3d(x,y) = NO_VALUE;
@@ -1260,29 +1260,29 @@ void	DeriveDEMs(
 			// forest to have snow cover.  (Besides, users like seeing snow-capped mountains - the sim can be run at any
 			// month, but in winter the snow line will of course be lower.)
 			float	sn = GetSnowLine(landuseBig.y_to_lat(y),rainfall.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) / 1200.0);
-			// One sanity check - make sure the min temperature is no warmer than 5 degrees - anything more would indicate a 
+			// One sanity check - make sure the min temperature is no warmer than 5 degrees - anything more would indicate a
 			// very hot area, one that would never form snow.  Because temperature is a function of std lapse rate, we know that
 			// (1) our temp values are going to be reasonable even after interpolation, and (2) they're never going to get
 			// that hot due to a DEM problem, because that would require a giant crater.
-			float	min_isotherm_here = temp.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) - 
+			float	min_isotherm_here = temp.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) -
 								0.5 * tempRange.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y));
 			if (elevation.value_linear(landuseBig.x_to_lon(x), landuseBig.y_to_lat(y)) > sn && min_isotherm_here < 5)
 			{
-			
+
 				phenomTerrain(x,y) = phenom_Ice;
 				phenom2d(x,y) = NO_VALUE;
-			}															
+			}
 		}
 	}
-	
+
 	float	smear2[5*5];
 	CalculateFilter(5,smear2,demFilter_Spread,true);
 	density3d.filter_self(5,smear2);
-	density2d.filter_self(5,smear2);	
-	
+	density2d.filter_self(5,smear2);
+
 	// Pass 2 - go through and spread a 2-d and terrain phenomenon everywhere, but clamp the 2-d vege
 	// value so we don't actually change what we have!  One special case - for water, go as far as we
-	// can to get a 2-d and terrain phenom, and mix 50-50.  
+	// can to get a 2-d and terrain phenom, and mix 50-50.
 	{
 		int	search_radius = 10;	// Limit smearing.
 		int	wide_radius = max(landuseBig.mWidth, landuseBig.mHeight);
@@ -1291,27 +1291,27 @@ void	DeriveDEMs(
 		float tt, vt;
 		for (y = 0; y < landuseBig.mHeight;++y)
 		for (x = 0; x < landuseBig.mWidth; ++x)
-		{	
+		{
 			tt = phenomTerrain(x,y);
 			vt = phenom2d(x,y);
 			if (vt == NO_VALUE && tt == NO_VALUE)
 				fprintf(stderr, "WARNING: %d, %d has NO terrain type!!\n", x, y);
-			
+
 			if (tt == phenom_SeaWater || tt == phenom_FreshWater || tt == phenom_Water)
 			{
 				phenomTerrain(x,y) = NO_VALUE;
 				phenom2d(x,y) = NO_VALUE;
 			}
-		}	
+		}
 
 		for (y = 0; y < landuseBig.mHeight;++y)
 		for (x = 0; x < landuseBig.mWidth; ++x)
-		{	
+		{
 			tt = phenomTerrain(x,y);
 			vt = phenom2d(x,y);
 			bool	use_wide = tt == NO_VALUE && vt == NO_VALUE;
 			if (tt == NO_VALUE)
-			{			
+			{
 				tempTerrain(x,y) = phenomTerrain.get_radial(x, y, use_wide ? wide_radius : search_radius, NO_VALUE);
 				density2d(x,y) = 1.0;
 			}
@@ -1337,19 +1337,19 @@ void	DeriveDEMs(
 		bool	can_vary_3d = false;
 		for (int n = 0; n < 9; ++n)
 		if (non_integral(density2d.get(x+local_deltas_x[n], y + local_deltas_y[n])))
-		{	
-			can_vary_2d = true; 
-			break; 
+		{
+			can_vary_2d = true;
+			break;
 		}
 		for (int n = 0; n < 9; ++n)
 		if (non_integral(density3d.get(x+local_deltas_x[n], y + local_deltas_y[n])))
-		{	
-			can_vary_3d = true; 
-			break; 
+		{
+			can_vary_3d = true;
+			break;
 		}
-		
+
 		if (!can_vary_2d && !can_vary_3d) continue;
-		
+
 		float	min_change = -0.1;
 		float	max_change =  0.1;
 		float	slope_factor = slope.get(x,y);
@@ -1358,27 +1358,27 @@ void	DeriveDEMs(
 		float	heading_factor = slopeHeading.get(x,y);
 		min_change += (heading_factor / 8.0);
 		max_change += (heading_factor / 8.0);
-		
+
 		if (can_vary_2d)
 		{
 			float h = density2d.get(x,y);
 			h += RandRange(min_change, max_change);
 			if (h < 0.0) h = 0.0; if (h > 1.0) h = 1.0;
 			density2d(x,y) = h;
-		}		
+		}
 		if (can_vary_3d)
 		{
 			float h = density3d.get(x,y);
 			h += RandRange(min_change, max_change);
 			if (h < 0.0) h = 0.0; if (h > 1.0) h = 1.0;
 			density3d(x,y) = h;
-		}		
+		}
 	}
 
 	/********************************************************************************************************
 	 * CALCULATE ACTUAL X-PLANE TERRAIN TYPES
 	 ********************************************************************************************************/
-	
+
 	// Go through and calculate terrain types
 	for (y = 0 ;y < terrain.mHeight; ++y)
 	for (x = 0; x < terrain.mWidth; ++x)
@@ -1403,7 +1403,7 @@ void	DeriveDEMs(
 			float the_slope = slope(x * xrat + dx, y * yrat + dy);
 			if (the_slope > max_slope) max_slope = the_slope;
 		}
-		
+
 		// Try 1 -- exact match
 		terrain(x,y) = DEM_NO_DATA;
 		int hashv = HashTerrainTypes(tt,tc,vt,c);
@@ -1420,7 +1420,7 @@ void	DeriveDEMs(
 				terrain(x,y) = i->second.terrain_file;
 			}
 		}
-		
+
 		// Huh...no match.  Probably we smeared out a landuseBig that can't be matched, e.g.
 		// grass over urban.  Try just the base terrain.
 		if (terrain(x,y) == DEM_NO_DATA && density2d(x,y) < 0.5)
@@ -1438,9 +1438,9 @@ void	DeriveDEMs(
 				{
 					terrain(x,y) = i->second.terrain_file;
 				}
-			}		
+			}
 		}
-		
+
 		// Or the other way, try just the vege
 		if (terrain(x,y) == DEM_NO_DATA && density2d(x,y) > 0.5)
 		{
@@ -1457,7 +1457,7 @@ void	DeriveDEMs(
 				{
 					terrain(x,y) = i->second.terrain_file;
 				}
-			}		
+			}
 		}
 		if (terrain(x,y) == DEM_NO_DATA)
 			fprintf(stderr,"ERROR: Could not find land use for: %s %s %s %s\n", FetchTokenString(tt), FetchTokenString(tc),FetchTokenString(vt),FetchTokenString(c));
@@ -1471,14 +1471,14 @@ void	DeriveDEMs(
 		float e = landuse(x,y);
 		if (e != lu_usgs_INLAND_WATER &&
 			e != lu_usgs_SEA_WATER)
-			landuse(x,y) = DEM_NO_DATA;			
+			landuse(x,y) = DEM_NO_DATA;
 	}
-	landuse.fill_nearest();	
+	landuse.fill_nearest();
 #endif
-	
+
 	if (inProg) inProg(0, 1, "Calculating Derived Raster Data", 1.0);
 
-	
+
 	ioDEMs[dem_UrbanDensity	   ].swap(urban);
 //	ioDEMs[dem_TerrainPhenomena].swap(phenomTerrain);
 //	ioDEMs[dem_2dVegePhenomena ].swap(phenom2d);
@@ -1498,16 +1498,16 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 {
 	if (!force && ioDEMs.count(dem_Slope) > 0 && ioDEMs.count(dem_SlopeHeading) > 0) return;
 	if (ioDEMs.count(dem_Elevation) == 0) return;
-	
+
 	DEMGeo& elev = ioDEMs[dem_Elevation];
 	DEMGeo&	slope = ioDEMs[dem_Slope];
 	DEMGeo&	slopeHeading = ioDEMs[dem_SlopeHeading];
 	DEMGeo&	relativeElev = ioDEMs[dem_RelativeElevation];
 	DEMGeo& elevationRange = ioDEMs[dem_ElevationRange];
-	
+
 	int y, x, x0, x1;
 	float e0, e1;
-	
+
 	// This fills in missing datapoints with a simple, fast, scanline fill.
 	// this is needed to clean up raw SRTM data.
 	for (y = 0; y < elev.mHeight; ++y)
@@ -1520,7 +1520,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 			x1 = x0;
 			while (x1 < elev.mWidth && elev(x1,y) == DEM_NO_DATA)
 				++x1;
-			
+
 			if (x0 < 0 && x1 >= elev.mWidth)
 				printf("ERROR: MISSING SCANLINED %d from dem.\n", y);
 			else if (x0 == 0)
@@ -1542,14 +1542,14 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 					elev(x,y) = e0 + rat * (e1 - e0);
 				}
 			}
-				
+
 			x0 = x1;
 		}
 	}
-	
+
 	DEMGeo	elev2(elev);
 	elev2.derez(2);
-	
+
 	slope.resize(elev.mWidth, elev.mHeight);
 	slopeHeading.resize(elev.mWidth, elev.mHeight);
 	relativeElev.resize(elev2.mWidth, elev2.mHeight);
@@ -1558,7 +1558,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 	elevationRange.mSouth = relativeElev.mSouth = slope.mSouth = slopeHeading.mSouth = elev.mSouth;
 	elevationRange.mEast = relativeElev.mEast = slope.mEast = slopeHeading.mEast = elev.mEast;
 	elevationRange.mWest = relativeElev.mWest = slope.mWest = slopeHeading.mWest = elev.mWest;
-	
+
 	elev.calc_slope(slope, slopeHeading, inProg);
 
 	{
@@ -1578,7 +1578,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 				relativeElev(x,y) = min(1.0f, max(0.0f, (elev2(x,y) - e0) / (e1 - e0)));
 		}
 		if (inProg) inProg(1, 2, "Calculating local min/max", 1.0);
-		
+
 	}
 
 #if 0
@@ -1587,8 +1587,8 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 		int levels = log2((double) elev.mWidth) / log2((double) 2.0);
 		if (levels > 4) levels = 4;
 		DEMGeo_BuildMinMax(elev, minCache, maxCache, levels);
-		
-		
+
+
 		for (y = 0; y < elev.mHeight; ++y)
 		for (x = 0; x < elev.mWidth ; ++x)
 		{
@@ -1605,7 +1605,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 		}
 		if (inProg) inProg(1, 2, "Calculating local min/max", 1.0);
 	}
-#endif	
+#endif
 
 }
 
@@ -1620,7 +1620,7 @@ static	void	FFTSplit(const DEMGeo& inSrc, DEMGeo& equiv, DEMGeo& reduc, int n)
 
 	int  x, y;
 	float et, e;
-		
+
 	DEMGeo temp(inSrc);
 	temp.derez(n);
 	for (y = 0; y < equiv.mHeight; ++y)
@@ -1646,9 +1646,9 @@ void	DEMMakeFFT(const DEMGeo& inDEM, vector<DEMGeo>& outFFT)
 {
 	DEMGeo	equiv, reduc;
 	DEMGeo cur(inDEM);
-	
+
 	int n = 2;
-	
+
 	while (n < inDEM.mWidth && n < inDEM.mHeight)
 	{
 		FFTSplit(cur, equiv, reduc, n);
@@ -1658,7 +1658,7 @@ void	DEMMakeFFT(const DEMGeo& inDEM, vector<DEMGeo>& outFFT)
 		n *= 2;
 	}
 	outFFT.push_back(DEMGeo());
-	cur.swap(outFFT.back());	
+	cur.swap(outFFT.back());
 }
 
 void	FFTMakeDEM(const vector<DEMGeo>& inFFT, DEMGeo& outDEM)
@@ -1672,7 +1672,7 @@ void	FFTMakeDEM(const vector<DEMGeo>& inFFT, DEMGeo& outDEM)
 			float ex = inFFT[n](x,y);
 			e = ADD_NODATA(e, ex);
 		}
-		
+
 		outDEM(x,y) = e;
 	}
 }
@@ -1724,7 +1724,7 @@ void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
 			en[4] = src.get(x+1,y+1);
 			en[5] = src.get(x+1,y  );
 			en[6] = src.get(x+1,y-1);
-			en[7] = src.get(x  ,y-1);			
+			en[7] = src.get(x  ,y-1);
 			float dif = 0;
 			for (int k = 0; k < 8; ++k)
 			if (en[k] != DEM_NO_DATA)

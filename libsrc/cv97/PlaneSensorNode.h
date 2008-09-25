@@ -21,7 +21,7 @@ class PlaneSensorNode : public SensorNode {
 	SFVec3f *offsetField;
 	SFVec3f *translationField;
 	SFVec3f *trackPointField;
-	
+
 public:
 
 	PlaneSensorNode();
@@ -30,7 +30,7 @@ public:
 	////////////////////////////////////////////////
 	//	AutoOffset
 	////////////////////////////////////////////////
-	
+
 	SFBool *getAutoOffsetField();
 
 	void setAutoOffset(bool value);
@@ -41,7 +41,7 @@ public:
 	////////////////////////////////////////////////
 	//	MinPosition
 	////////////////////////////////////////////////
-	
+
 	SFVec2f *getMinPositionField();
 
 	void setMinPosition(float value[]);
@@ -52,7 +52,7 @@ public:
 	////////////////////////////////////////////////
 	//	MaxPosition
 	////////////////////////////////////////////////
-	
+
 	SFVec2f *getMaxPositionField();
 
 	void setMaxPosition(float value[]);
@@ -63,7 +63,7 @@ public:
 	////////////////////////////////////////////////
 	//	Offset
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getOffsetField();
 
 	void setOffset(float value[]);
@@ -72,7 +72,7 @@ public:
 	////////////////////////////////////////////////
 	//	Translation
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getTranslationChangedField();
 
 	void setTranslationChanged(float value[]);
@@ -82,7 +82,7 @@ public:
 	////////////////////////////////////////////////
 	//	TrackPoint
 	////////////////////////////////////////////////
-	
+
 	SFVec3f *getTrackPointChangedField();
 
 	void setTrackPointChanged(float value[]);
@@ -99,7 +99,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

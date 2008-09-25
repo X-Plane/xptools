@@ -36,7 +36,7 @@
  * 04/08/94 (seiwald) - progress report now reflects only targets with actions
  * 04/11/94 (seiwald) - Combined deps & headers into deps[2] in TARGET.
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
- * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
+ * 12/20/94 (seiwald) - make0() headers after determining fate of target, so
  *			that headers aren't seen as dependents on themselves.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  * 02/02/95 (seiwald) - propagate leaf source time for new LEAVES rule.
@@ -76,7 +76,7 @@ static TARGETS *make0sort( TARGETS *c );
 static void dependGraphOutput( TARGET *t, int depth );
 #endif
 
-static const char *target_fate[] = 
+static const char *target_fate[] =
 {
 	"init",		/* T_FATE_INIT */
 	"making", 	/* T_FATE_MAKING */
@@ -92,7 +92,7 @@ static const char *target_fate[] =
 	"nomake" 	/* T_FATE_CANTMAKE */
 } ;
 
-static const char *target_bind[] = 
+static const char *target_bind[] =
 {
 	"unbound",
 	"missing",
@@ -107,7 +107,7 @@ static const char *target_bind[] =
  */
 
 int
-make( 
+make(
 	int		n_targets,
 	const char	**targets,
 	int		anyhow )
@@ -123,7 +123,7 @@ make(
 	memset( (char *)counts, 0, sizeof( *counts ) );
 
     /* First bind all targets with LOCATE_TARGET setting. This is
-       needed to correctly handle dependencies to generated headers.       
+       needed to correctly handle dependencies to generated headers.
     */
     bind_explicitly_located_targets();
 
@@ -133,7 +133,7 @@ make(
 
 	    make0( t, 0, 0, counts, anyhow );
 	}
-        
+
 #ifdef OPT_GRAPH_DEBUG_EXT
 	if( DEBUG_GRAPH )
 	{
@@ -184,7 +184,7 @@ make(
  */
 
 void
-make0( 
+make0(
 	TARGET	*t,
 	TARGET  *p,		/* parent */
 	int	depth,		/* for display purposes */
@@ -205,7 +205,7 @@ make0(
 	if( DEBUG_MAKEPROG )
 	    printf( "make\t--\t%s%s\n", spaces( depth ), t->name );
 
-	/* 
+	/*
 	 * Step 1: initialize
 	 */
 
@@ -232,7 +232,7 @@ make0(
             t->boundname = search( t->name, &t->time, &another_target );
             /* If it was detected that this target refers to an already
                existing and bound one, we add include dependency, so that
-               every target which depends on us will depend on that other 
+               every target which depends on us will depend on that other
                target. */
             if( another_target )
             {
@@ -245,7 +245,7 @@ make0(
                 includes->depends = targetlist( includes->depends,
                                               list_new( L0, another_target ) );
             }
-        
+
 	    t->binding = t->time ? T_BIND_EXISTS : T_BIND_MISSING;
 	}
 
@@ -255,8 +255,8 @@ make0(
 	    ptime = p;
 
 	/* If temp file doesn't exist but parent does, use parent */
-	if( p && t->flags & T_FLAG_TEMP && 
-	    t->binding == T_BIND_MISSING && 
+	if( p && t->flags & T_FLAG_TEMP &&
+	    t->binding == T_BIND_MISSING &&
 	    p->binding != T_BIND_MISSING )
     {
 	    t->binding = T_BIND_PARENTS;
@@ -286,8 +286,8 @@ make0(
 	popsettings( s );
 	freesettings( s );
 
-	/* 
-	 * Pause for a little progress reporting 
+	/*
+	 * Pause for a little progress reporting
 	 */
 
 	if( DEBUG_BIND )
@@ -315,7 +315,7 @@ make0(
 	    }
 	}
 
-	/* 
+	/*
 	 * Step 3: recursively make0() dependents & headers
 	 */
 
@@ -326,7 +326,7 @@ make0(
 	    int internal = t->flags & T_FLAG_INTERNAL;
 /* Seems like it's not relevant for us....
 	    if( DEBUG_DEPENDS )
-		printf( "%s \"%s\" : \"%s\" ;\n", 
+		printf( "%s \"%s\" : \"%s\" ;\n",
 		    internal ? "Includes" : "Depends",
 		    t->name, c->target->name );
 */
@@ -356,7 +356,7 @@ make0(
 	t->depends = targetchain( t->depends, incs );
 
 	/*
-	 * Step 4: compute time & fate 
+	 * Step 4: compute time & fate
 	 */
 
 	/* Step 4a: pick up dependents' time and fate */
@@ -395,9 +395,9 @@ make0(
 
 	/* Step 4b: pick up included headers time */
 
-	/* 
-	 * If a header is newer than a temp source that includes it, 
-	 * the temp source will need building.   
+	/*
+	 * If a header is newer than a temp source that includes it,
+	 * the temp source will need building.
 	 */
 
 	hlast = t->includes ? t->includes->time : 0;
@@ -433,7 +433,7 @@ make0(
 
 	/* Step 4d: determine fate: rebuild target or what? */
 
-	/* 
+	/*
 	    In English:
 		If can't find or make child, can't make target.
 		If children changed, make target.
@@ -498,7 +498,7 @@ make0(
 	{
 	    fate = T_FATE_ISTMP;
 	}
-	else if( t->binding == T_BIND_EXISTS && p && 
+	else if( t->binding == T_BIND_EXISTS && p &&
 		 p->binding != T_BIND_UNBOUND && t->time > p->time )
 	{
 #ifdef OPT_GRAPH_DEBUG_EXT
@@ -555,15 +555,15 @@ make0(
 	t->leaf = leaf ? leaf : t->time ;
 	t->fate = fate;
 
-	/* 
-	 * Step 5: sort dependents by their update time. 
+	/*
+	 * Step 5: sort dependents by their update time.
 	 */
 
 	if( globs.newestfirst )
 	    t->depends = make0sort( t->depends );
 
-	/* 
-	 * Step 6: a little harmless tabulating for tracing purposes 
+	/*
+	 * Step 6: a little harmless tabulating for tracing purposes
 	 */
 
 	/* Don't count or report interal includes nodes. */
@@ -574,7 +574,7 @@ make0(
     if (counts) {
 #ifdef OPT_IMPROVED_PATIENCE_EXT
         ++counts->targets;
-#else	
+#else
         if( !( ++counts->targets % 1000 ) && DEBUG_MAKE )
             printf( "...patience...\n" );
 #endif
@@ -595,13 +595,13 @@ make0(
 	    flag = "*";
 
 	if( DEBUG_MAKEPROG )
-	    printf( "made%s\t%s\t%s%s\n", 
-		flag, target_fate[ t->fate ], 
+	    printf( "made%s\t%s\t%s%s\n",
+		flag, target_fate[ t->fate ],
 		spaces( depth ), t->name );
 
-/* We don't have DEBUG_CAUSES. 
-	if( DEBUG_CAUSES && 
-	    t->fate >= T_FATE_NEWER && 
+/* We don't have DEBUG_CAUSES.
+	if( DEBUG_CAUSES &&
+	    t->fate >= T_FATE_NEWER &&
 	    t->fate <= T_FATE_MISSING )
 		printf( "%s %s\n", target_fate[ t->fate ], t->name );
 */
@@ -706,7 +706,7 @@ dependGraphOutput( TARGET *t, int depth )
     if (c->target->time == t->time)
         printf( " (max time)");
     printf("\n");
-    
+
     }
 
 

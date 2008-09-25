@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Base.h
  *
  *  This source file is part of DIME.
@@ -90,11 +90,11 @@ public:
   };
   dimeBase(void);
   virtual ~dimeBase();
-  
+
   virtual int typeId() const = 0;
   virtual bool isOfType(const int thetypeid) const;
 public:
-  void *operator new(size_t size, dimeMemHandler *memhandler = NULL, 
+  void *operator new(size_t size, dimeMemHandler *memhandler = NULL,
 		     const int alignment = 4);
   void operator delete(void *ptr);
 

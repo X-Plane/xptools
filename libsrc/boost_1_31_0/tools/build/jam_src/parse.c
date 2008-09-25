@@ -70,7 +70,7 @@ parse_save( PARSE *p )
 }
 
 PARSE *
-parse_make( 
+parse_make(
 	LIST	*(*func)( PARSE *p, FRAME *args ),
 	PARSE	*left,
 	PARSE	*right,
@@ -90,7 +90,7 @@ parse_make(
 	p->num = num;
 	p->refs = 1;
         p->rulename = 0;
-        
+
         if ( left )
         {
             p->file = left->file;
@@ -128,7 +128,7 @@ parse_free( PARSE *p )
 	    parse_free( p->third );
         if ( p->rulename )
             freestr( p->rulename );
-	
+
 	free( (char *)p );
 }
 

@@ -1,8 +1,8 @@
 /*
  *
  * Copyright (c) 2003 Dr John Maddock
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution is subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  * This file implements the cpp_main entry point
@@ -31,7 +31,7 @@ void show_usage()
       "\n"
       "Options:\n"
       "   --boost=path   sets the location of the boost tree to path\n"
-      "   --scan         treat the module list as a list of (possibly non-boost)\n" 
+      "   --scan         treat the module list as a list of (possibly non-boost)\n"
       "                  files to scan for boost dependencies\n"
       "   --cvs          only copy files under cvs version control\n"
       "   --unix-lines   make sure that all copied files use Unix style line endings\n"

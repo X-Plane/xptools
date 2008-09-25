@@ -59,16 +59,16 @@ class Width_halfedge_default_base : public CGAL::Halfedge_min_base {
 
   Width_halfedge_default_base() : f(NULL) {}
 
-  void* prev() { return prv;} 
+  void* prev() { return prv;}
   const void* prev() const { return prv;}
   // the previous halfedge along the facet.
 
-  void* vertex() { return v;} 
-  const void* vertex() const { return v;} 
+  void* vertex() { return v;}
+  const void* vertex() const { return v;}
   // the incident vertex.
 
-  void* facet() { return f;} 
-  const void* facet() const { return f;} 
+  void* facet() { return f;}
+  const void* facet() const { return f;}
   //the facet to the left.
 
   bool is_border() const { return f == NULL;}
@@ -97,10 +97,10 @@ class Width_facet_default_base : public CGAL::Facet_max_base {
  protected:
   Plane_3   pln;
  public:
-  Plane_3& plane() { 
+  Plane_3& plane() {
     return pln;
   }
-  const Plane_3& plane() const { 
+  const Plane_3& plane() const {
     return pln;
   }
 };
@@ -108,8 +108,8 @@ class Width_facet_default_base : public CGAL::Facet_max_base {
 #else // CGAL_USE_POLYHEDRON_DESIGN_ONE //
 
 template <class Refs, class Traits>
-class Width_vertex_default_base 
-    : public CGAL::HalfedgeDS_vertex_base< 
+class Width_vertex_default_base
+    : public CGAL::HalfedgeDS_vertex_base<
         Refs, Tag_true, CGAL_TYPENAME_MSVC_NULL Traits::Point_3> {
 private:
     typedef Traits          WT;
@@ -169,7 +169,7 @@ class Data_access {
  private:
   //Precondition: Plane Equation already computed in a deterministic way
   struct Facet_compare {
-    bool operator()(Facet_const_handle f, 
+    bool operator()(Facet_const_handle f,
 		    Facet_const_handle g) const {
       Width_Traits tco;
       Plane fpp=f->plane();
@@ -177,16 +177,16 @@ class Data_access {
       RT fa,fb,fc,fd,ga,gb,gc,gd;
       tco.get_plane_coefficients(fpp,fa,fb,fc,fd);
       tco.get_plane_coefficients(gpp,ga,gb,gc,gd);
-      return (fa<ga 
-	      || fa==ga && fb<gb 
+      return (fa<ga
+	      || fa==ga && fb<gb
 	      || fa==ga && fb==gb && fc<gc
 	      || fa==ga && fb==gb && fc==gc && fd<gd);
     }
   };
   //Precondition: Plane Equation already computed in a deterministic way
-  //and a facet is bounded by exactly 3 edges! 
+  //and a facet is bounded by exactly 3 edges!
   struct Halfedge_compare {
-    bool operator()(Halfedge_const_handle e, 
+    bool operator()(Halfedge_const_handle e,
 		    Halfedge_const_handle h) const {
       Width_Traits tco;
       PolyPoint etail=e->opposite()->vertex()->point();
@@ -199,38 +199,38 @@ class Data_access {
       RT htx,hty,htz,hth,hhx,hhy,hhz,hhh;
       tco.get_point_coordinates(htail,htx,hty,htz,hth);
       tco.get_point_coordinates(hhead,hhx,hhy,hhz,hhh);
-      
+
       return (etx*hth <htx*eth ||
 	      etx*hth==htx*eth && ety*hth <hty*eth ||
 	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth <htz*eth ||
 	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth==htz*eth
 	      && ehx*hhh <hhx*ehh ||
-	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth==htz*eth 
+	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth==htz*eth
 	      && ehx*hhh==hhx*ehh && ehy*hhh <hhy*ehh ||
-	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth==htz*eth 
+	      etx*hth==htx*eth && ety*hth==hty*eth && etz*hth==htz*eth
 	      && ehx*hhh==hhx*ehh && ehy*hhh==hhy*ehh && ehz*hhh<hhz*ehh
 	      );
     }
   };
 
-  std::map< Facet_const_handle, 
+  std::map< Facet_const_handle,
     std::vector<Vertex_handle>,
-    Facet_compare> 
+    Facet_compare>
     antipodal_vertices;
 
-  std::map< Halfedge_const_handle, 
-    bool, 
-    Halfedge_compare> 
+  std::map< Halfedge_const_handle,
+    bool,
+    Halfedge_compare>
     visited_halfedges;
 
-  std::map< Halfedge_const_handle, 
-    bool, 
-    Halfedge_compare> 
+  std::map< Halfedge_const_handle,
+    bool,
+    Halfedge_compare>
     impassable_halfedges;
-  
+
  public:
   bool is_visited(Halfedge_handle& e) const {
-    typename std::map < Halfedge_const_handle, bool, 
+    typename std::map < Halfedge_const_handle, bool,
       Halfedge_compare > ::const_iterator it;
     it=visited_halfedges.find(e);
     CGAL_assertion(it!=visited_halfedges.end());
@@ -243,10 +243,10 @@ class Data_access {
     DEBUGENDL(VISITED_CHECK,"Set visited flag to: ",val);
     visited_halfedges[e]=val;
   }
-  
+
   bool is_impassable(Halfedge_handle& e) const {
-    typename std::map < Halfedge_const_handle, 
-      bool, 
+    typename std::map < Halfedge_const_handle,
+      bool,
       Halfedge_compare > ::const_iterator it;
     it=impassable_halfedges.find(e);
     CGAL_assertion(it!=impassable_halfedges.end());
@@ -259,15 +259,15 @@ class Data_access {
     DEBUGENDL(IMPASSABLE_CHECK,"Set impassable flag to: ",val);
     impassable_halfedges[e]=val;
   }
-  
-  void set_antipodal_vertices(Facet_handle& f, 
+
+  void set_antipodal_vertices(Facet_handle& f,
 				 std::vector<Vertex_handle>& V) {
     antipodal_vertices[f]=V;
   }
-  
-  void get_antipodal_vertices(Facet_handle& f, 
+
+  void get_antipodal_vertices(Facet_handle& f,
 			      std::vector<Vertex_handle>& res) const {
-    typename std::map< Facet_const_handle, 
+    typename std::map< Facet_const_handle,
       std::vector<Vertex_handle>, Facet_compare>::const_iterator it;
     it=antipodal_vertices.find(f);
     CGAL_assertion(it!=antipodal_vertices.end());

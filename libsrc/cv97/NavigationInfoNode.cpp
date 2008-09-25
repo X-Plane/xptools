@@ -10,13 +10,13 @@
 
 #include "NavigationInfoNode.h"
 
-NavigationInfoNode::NavigationInfoNode() 
+NavigationInfoNode::NavigationInfoNode()
 {
 	setHeaderFlag(false);
 	setType(navigationInfoNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// visibilityLimit exposed field
@@ -40,7 +40,7 @@ NavigationInfoNode::NavigationInfoNode()
 	addExposedField(speedFieldString, speedField);
 }
 
-NavigationInfoNode::~NavigationInfoNode() 
+NavigationInfoNode::~NavigationInfoNode()
 {
 }
 
@@ -55,17 +55,17 @@ MFString *NavigationInfoNode::getTypeField()
 	return (MFString *)getExposedField(typeFieldString);
 }
 
-void NavigationInfoNode::addType(char *value) 
+void NavigationInfoNode::addType(char *value)
 {
 	getTypeField()->addValue(value);
 }
 
-int NavigationInfoNode::getNTypes() 
+int NavigationInfoNode::getNTypes()
 {
 	return getTypeField()->getSize();
 }
 
-char *NavigationInfoNode::getType(int index) 
+char *NavigationInfoNode::getType(int index)
 {
 	return getTypeField()->get1Value(index);
 }
@@ -81,17 +81,17 @@ MFFloat *NavigationInfoNode::getAvatarSizeField()
 	return (MFFloat *)getExposedField(avatarSizeFieldString);
 }
 
-void NavigationInfoNode::addAvatarSize(float value) 
+void NavigationInfoNode::addAvatarSize(float value)
 {
 	getAvatarSizeField()->addValue(value);
 }
 
-int NavigationInfoNode::getNAvatarSizes() 
+int NavigationInfoNode::getNAvatarSizes()
 {
 	return getAvatarSizeField()->getSize();
 }
 
-float NavigationInfoNode::getAvatarSize(int index) 
+float NavigationInfoNode::getAvatarSize(int index)
 {
 	return getAvatarSizeField()->get1Value(index);
 }
@@ -106,18 +106,18 @@ SFBool *NavigationInfoNode::getHeadlightField()
 		return headlightField;
 	return (SFBool *)getExposedField(headlightFieldString);
 }
-	
-void NavigationInfoNode::setHeadlight(bool value) 
+
+void NavigationInfoNode::setHeadlight(bool value)
 {
 	getHeadlightField()->setValue(value);
 }
 
-void NavigationInfoNode::setHeadlight(int value) 
+void NavigationInfoNode::setHeadlight(int value)
 {
 	setHeadlight(value ? true : false);
 }
 
-bool NavigationInfoNode::getHeadlight() 
+bool NavigationInfoNode::getHeadlight()
 {
 	return getHeadlightField()->getValue();
 }
@@ -133,12 +133,12 @@ SFFloat *NavigationInfoNode::getVisibilityLimitField()
 	return (SFFloat *)getExposedField(visibilityLimitFieldString);
 }
 
-void NavigationInfoNode::setVisibilityLimit(float value) 
+void NavigationInfoNode::setVisibilityLimit(float value)
 {
 	getVisibilityLimitField()->setValue(value);
 }
 
-float NavigationInfoNode::getVisibilityLimit() 
+float NavigationInfoNode::getVisibilityLimit()
 {
 	return getVisibilityLimitField()->getValue();
 }
@@ -153,13 +153,13 @@ SFFloat *NavigationInfoNode::getSpeedField()
 		return speedField;
 	return (SFFloat *)getExposedField(speedFieldString);
 }
-	
-void NavigationInfoNode::setSpeed(float value) 
+
+void NavigationInfoNode::setSpeed(float value)
 {
 	getSpeedField()->setValue(value);
 }
 
-float NavigationInfoNode::getSpeed() 
+float NavigationInfoNode::getSpeed()
 {
 	return getSpeedField()->getValue();
 }
@@ -173,12 +173,12 @@ bool NavigationInfoNode::isChildNodeType(Node *node)
 	return false;
 }
 
-NavigationInfoNode *NavigationInfoNode::next() 
+NavigationInfoNode *NavigationInfoNode::next()
 {
 	return (NavigationInfoNode *)Node::next(Node::getType());
 }
 
-NavigationInfoNode *NavigationInfoNode::nextTraversal() 
+NavigationInfoNode *NavigationInfoNode::nextTraversal()
 {
 	return (NavigationInfoNode *)Node::nextTraversalByType(Node::getType());
 }
@@ -186,16 +186,16 @@ NavigationInfoNode *NavigationInfoNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
-void NavigationInfoNode::initialize() 
+
+void NavigationInfoNode::initialize()
 {
 }
 
-void NavigationInfoNode::uninitialize() 
+void NavigationInfoNode::uninitialize()
 {
 }
 
-void NavigationInfoNode::update() 
+void NavigationInfoNode::update()
 {
 }
 
@@ -203,7 +203,7 @@ void NavigationInfoNode::update()
 //	infomation
 ////////////////////////////////////////////////
 
-void NavigationInfoNode::outputContext(ostream &printStream, char *indentString) 
+void NavigationInfoNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *headlight = getHeadlightField();
 

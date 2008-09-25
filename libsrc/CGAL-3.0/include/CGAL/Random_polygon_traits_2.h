@@ -31,7 +31,7 @@ CGAL_BEGIN_NAMESPACE
 //-----------------------------------------------------------------------//
 
 template <class R_>
-class Random_polygon_traits_2 
+class Random_polygon_traits_2
 {
   public:
     typedef R_                            R;

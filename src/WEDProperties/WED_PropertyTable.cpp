@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -81,7 +81,7 @@ WED_PropertyTable::WED_PropertyTable(
 	if (col_names)
 	while(*col_names)
 		mColNames.push_back(*col_names++);
-		
+
 	if (filter)
 	while (*filter)
 		mFilter.insert(*filter++);
@@ -93,12 +93,12 @@ WED_PropertyTable::~WED_PropertyTable()
 }
 
 void	WED_PropertyTable::GetCellContent(
-						int							cell_x, 
-						int							cell_y, 
+						int							cell_x,
+						int							cell_y,
 						GUI_CellContent&			the_content)
 {
 	char buf[100], fmt[10];
-	
+
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
 	the_content.can_edit = 0;
@@ -106,25 +106,25 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_select = 0;
 	the_content.is_disclosed = 0;
 	the_content.is_selected = 0;
-	the_content.can_drag = 1;	
+	the_content.can_drag = 1;
 	the_content.indent_level = 0;
-	
+
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t == NULL) return;
-	
-	ISelection * s = WED_GetSelect(mResolver);	
-	
+
+	ISelection * s = WED_GetSelect(mResolver);
+
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 	if (idx == -1) return;
-	
+
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
 	t->GetNthProperty(idx, val);
-	
+
 	the_content.can_select = 1;
 	the_content.is_selected = s->IsSelected(t);
-	
+
 	switch(inf.prop_kind) {
 	case prop_Int:
 		the_content.content_type = gui_Cell_Integer;
@@ -161,8 +161,8 @@ void	WED_PropertyTable::GetCellContent(
 		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
 		the_content.int_val = val.int_val;
 		break;
-	case prop_EnumSet:	
-		the_content.content_type = gui_Cell_EnumSet;		
+	case prop_EnumSet:
+		the_content.content_type = gui_Cell_EnumSet;
 		the_content.int_set_val = val.set_val;
 		the_content.text_val.clear();
 		for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
@@ -177,10 +177,10 @@ void	WED_PropertyTable::GetCellContent(
 				the_content.string_is_resource = 1;
 			}
 			the_content.text_val += label;
-		}		
+		}
 		if (the_content.text_val.empty())	the_content.text_val="none";
 		if(gExclusion && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
-		break;		
+		break;
 	}
 	int unused_vis, unused_kids;
 //	if (cell_x == 0)
@@ -194,7 +194,7 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_edit = inf.can_edit;
 	if (the_content.can_edit)
 	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
-	
+
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
@@ -202,16 +202,16 @@ void	WED_PropertyTable::GetCellContent(
 }
 
 void	WED_PropertyTable::GetEnumDictionary(
-						int							cell_x, 
-						int							cell_y, 
+						int							cell_x,
+						int							cell_y,
 						map<int, string>&			out_dictionary)
 {
 	out_dictionary.clear();
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
-	
+
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
-	if (idx == -1) return;	
-	
+	if (idx == -1) return;
+
 	t->GetNthPropertyDict(idx, out_dictionary);
 	if(gExclusion)
 		out_dictionary.insert(map<int,string>::value_type(0,"None"));
@@ -227,7 +227,7 @@ void	WED_PropertyTable::AcceptEdit(
 
 	GUI_CellContent content(the_content);
 
-	
+
 	if (content.content_type == gui_Cell_FileText)
 	{
 		ILibrarian * librarian = WED_GetLibrarian(mResolver);
@@ -240,15 +240,15 @@ void	WED_PropertyTable::AcceptEdit(
 		content.text_val = fbuf;
 		librarian->ReducePath(content.text_val);
 	}
-	
+
 	if (apply_all)
 	{
 		ISelection * sel = WED_GetSelect(mResolver);
 		sel->IterateSelection(Iterate_GetSelectThings, &apply_vec);
 	}
-	else 
+	else
 	{
-		WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);	
+		WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 		if (t != NULL)  apply_vec.push_back(t);
 	}
 
@@ -257,13 +257,13 @@ void	WED_PropertyTable::AcceptEdit(
 	for (int iter = 0; iter < apply_vec.size(); ++iter)
 	{
 		WED_Thing * t = apply_vec[iter];
-		
+
 		int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 		if (idx == -1) continue;
 		PropertyInfo_t	inf;
 		PropertyVal_t	val;
-		t->GetNthPropertyInfo(idx,inf);	
-		
+		t->GetNthPropertyInfo(idx,inf);
+
 		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
 		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
 		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
@@ -271,7 +271,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
 		if (inf.prop_kind == prop_EnumSet	&& content.content_type != gui_Cell_EnumSet	)	continue;
-		
+
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
@@ -297,7 +297,7 @@ void	WED_PropertyTable::AcceptEdit(
 			val.prop_kind = prop_Enum;
 			val.int_val = content.int_val;
 			break;
-		case prop_EnumSet:	
+		case prop_EnumSet:
 			val.prop_kind = prop_EnumSet;
 			if (gExclusion)
 			{
@@ -306,10 +306,10 @@ void	WED_PropertyTable::AcceptEdit(
 					val.set_val.insert(content.int_val);
 			} else
 				val.set_val = content.int_set_val;
-			break;			
+			break;
 		}
 		string foo = string("Change ") + inf.prop_name;
-		if (!started) {	started = t; started->StartCommand(foo); } 
+		if (!started) {	started = t; started->StartCommand(foo); }
 		t->SetNthProperty(idx, val);
 	}
 	if (started) started->CommitCommand();
@@ -323,7 +323,7 @@ void	WED_PropertyTable::ToggleDisclose(
 	if (t)
 		ToggleOpen(t->GetID());
 	mCacheValid = false;
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);		
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
 
 void	WED_PropertyTable::DoDrag(
@@ -343,7 +343,7 @@ void	WED_PropertyTable::SelectionStart(
 	IOperation * op = dynamic_cast<IOperation *>(s);
 	op->StartOperation("Change Selection");
 	if (clear) s->Clear();
-	
+
 	s->GetSelectionVector(mSelSave);
 }
 
@@ -357,7 +357,7 @@ int		WED_PropertyTable::SelectGetExtent(
 		speed of this sux
 	#endif
 	ISelection * s = WED_GetSelect(mResolver);
-	
+
 	int num = mVertical ? GetColCount() : GetRowCount();
 	int op = mVertical ? GetRowCount() : GetColCount();
 
@@ -372,7 +372,7 @@ int		WED_PropertyTable::SelectGetExtent(
 		low_x = 0; high_x = op;
 		low_y = num; high_y = 0;
 	}
-	
+
 	for (int n = 0; n < num; ++n)
 	{
 		WED_Thing * t = FetchNth(n);
@@ -381,18 +381,18 @@ int		WED_PropertyTable::SelectGetExtent(
 			if (s->IsSelected(t))
 			{
 				has = 1;
-				
+
 				if (mVertical)
 				{
 					low_x = min(low_x, n);
 					high_x = max(high_x, n);
 				}
-				else 
+				else
 				{
 					low_y = min(low_y, n);
 					high_y = max(high_y, n);
 				}
-				
+
 			}
 		}
 	}
@@ -420,7 +420,7 @@ void	WED_PropertyTable::SelectRange(
 						int							is_toggle)
 {
 	ISelection * s = WED_GetSelect(mResolver);
-	
+
 	s->Clear();
 	for (vector<ISelectable *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 		s->Insert(*u);
@@ -480,7 +480,7 @@ int		WED_PropertyTable::SelectDisclose(
 		}
 	}
 	mCacheValid = false;
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);		
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	return 1;
 }
 
@@ -493,15 +493,15 @@ int		WED_PropertyTable::TabAdvance(
 {
 	int start_x = io_x;
 	int start_y = io_y;
-	
+
 	int width = GetColCount();
-	int height =GetRowCount(); 
-	
+	int height =GetRowCount();
+
 	if (height == 0 || width == 0) return 0;
-	
+
 	int tries = 0;
-	
-	do 
+
+	do
 	{
 		if (mVertical)
 		{
@@ -554,43 +554,43 @@ void					WED_PropertyTable::GetLegalDropOperations(
 							int&						allow_between_col,
 							int&						allow_between_row,
 							int&						allow_into_cell)
-{ 
-	allow_between_col = mVertical && !mSelOnly && mFilter.empty(); 
-	allow_between_row = !mVertical && !mSelOnly && mFilter.empty(); 
-	allow_into_cell = !mSelOnly && mFilter.empty(); 
+{
+	allow_between_col = mVertical && !mSelOnly && mFilter.empty();
+	allow_between_row = !mVertical && !mSelOnly && mFilter.empty();
+	allow_into_cell = !mSelOnly && mFilter.empty();
 }
 
 GUI_DragOperation		WED_PropertyTable::CanDropIntoCell(
 							int							cell_x,
 							int							cell_y,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
 							GUI_DragOperation			recommended,
 							int&						whole_col,
-							int&						whole_row) 
-{ 
+							int&						whole_row)
+{
 	if (mSelOnly) return gui_Drag_None;
 	if (!mFilter.empty()) return gui_Drag_None;
-	whole_col = mVertical; 
-	whole_row = !mVertical; 
-	
+	whole_col = mVertical;
+	whole_row = !mVertical;
+
 	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
-	
+
 	#if BENTODO
 		address allow/recommend
 	#endif
-	
+
 	WED_Thing * who = FetchNth(mVertical ? cell_x : cell_y);
 	if (who)
 		return WED_CanMoveSelectionTo(mResolver, who, who->CountChildren()) ? gui_Drag_Move : gui_Drag_None;
-	
-	return gui_Drag_None; 
+
+	return gui_Drag_None;
 }
 
 GUI_DragOperation		WED_PropertyTable::CanDropBetweenColumns(
 							int							cell_x,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
 							GUI_DragOperation			recommended)
 {
 	if (mSelOnly) return gui_Drag_None;
@@ -598,7 +598,7 @@ GUI_DragOperation		WED_PropertyTable::CanDropBetweenColumns(
 
 	if (!mVertical) return gui_Drag_None;
 	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
-	
+
 	if (cell_x == GetColCount())
 	{
 		WED_Thing * who = FetchNth(cell_x-1);
@@ -610,15 +610,15 @@ GUI_DragOperation		WED_PropertyTable::CanDropBetweenColumns(
 		WED_Thing * who = FetchNth(cell_x);
 		if (who && who->GetParent())
 			return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()) ? gui_Drag_Move : gui_Drag_None;
-	}	
-	
-	return gui_Drag_None; 
+	}
+
+	return gui_Drag_None;
 }
 
 GUI_DragOperation		WED_PropertyTable::CanDropBetweenRows(
 							int							cell_y,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
 							GUI_DragOperation			recommended)
 {
 	if (mSelOnly) return gui_Drag_None;
@@ -626,14 +626,14 @@ GUI_DragOperation		WED_PropertyTable::CanDropBetweenRows(
 
 	if (mVertical) return gui_Drag_None;
 	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
-	
+
 	if (cell_y == GetRowCount())
 	{
 		// We are dragging into the top slot of the table.  Go right before the top entity.
 		WED_Thing * who = FetchNth(cell_y-1);
 		if (who && who->GetParent())
 			return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()) ? gui_Drag_Move : gui_Drag_None;
-	} 
+	}
 	else
 	{
 		// All drags other than the top slot are handled by finding teh guy above us.  If above us is open, we drop right into his
@@ -647,16 +647,16 @@ GUI_DragOperation		WED_PropertyTable::CanDropBetweenRows(
 			else		return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1) ? gui_Drag_Move : gui_Drag_None;
 		}
 	}
-	
-	return gui_Drag_None; 
+
+	return gui_Drag_None;
 }
 
 
 GUI_DragOperation		WED_PropertyTable::DoDropIntoCell(
 							int							cell_x,
 							int							cell_y,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
 							GUI_DragOperation			recommended)
 {
 	WED_Thing * who = FetchNth(mVertical ? cell_x : cell_y);
@@ -667,13 +667,13 @@ GUI_DragOperation		WED_PropertyTable::DoDropIntoCell(
 
 GUI_DragOperation		WED_PropertyTable::DoDropBetweenColumns(
 							int							cell_x,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
 							GUI_DragOperation			recommended)
-{ 	
+{
 	if (!mVertical) return gui_Drag_None;
 	if (cell_x == GetColCount())
-	{	
+	{
 		WED_Thing * who = FetchNth(cell_x-1);
 		if (who && who->GetParent())
 			WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1);
@@ -687,19 +687,19 @@ GUI_DragOperation		WED_PropertyTable::DoDropBetweenColumns(
 
 GUI_DragOperation		WED_PropertyTable::DoDropBetweenRows(
 							int							cell_y,
-							GUI_DragData *				drag, 
-							GUI_DragOperation			allowed, 
-							GUI_DragOperation			recommended)  
+							GUI_DragData *				drag,
+							GUI_DragOperation			allowed,
+							GUI_DragOperation			recommended)
 {
 	if (mVertical) return gui_Drag_None;
 
-	
+
 	if (cell_y == GetRowCount())
 	{
 		WED_Thing * who = FetchNth(cell_y-1);
 		if (who && who->GetParent())
 			WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1);
-	} 
+	}
 	else
 	{
 		WED_Thing * who = FetchNth(cell_y);
@@ -726,11 +726,11 @@ void WED_PropertyTable::RebuildCacheRecursive(WED_Thing * e, ISelection * sel, s
 
 	if (vis)
 		mThingCache.push_back(e);
-	
+
 	if (sel_and_friends)
 	if (sel_and_friends->count(e) == 0)
 		return;
-		
+
 	for (int n = 0; n < kids; ++n)
 		RebuildCacheRecursive(e->GetNthChild(n), sel, sel_and_friends);
 }
@@ -745,7 +745,7 @@ static int SelectAndParents(ISelectable * what, void * ref)
 		if (all->count(who)) return 0;
 		all->insert(who);
 		who = who->GetParent();
-	}	
+	}
 	return 0;
 }
 
@@ -753,16 +753,16 @@ void WED_PropertyTable::RebuildCache(void)
 {
 	mThingCache.clear();
 	mCacheValid = true;
-	set<WED_Thing*> all_sel;	
+	set<WED_Thing*> all_sel;
 
 	// Performance note: the "selection" hierarchy (all selected entities) is effectively ALWAYS fully disclosed, because we must iterate
 	// through everything to find the selection.  In a situation with a huge hierarchy, this gives us a horribly slow time to rebuild
 	// the contents of the table, even if only one object is selected.  (But we DO want to iterate, to go in hierarchy order.)
-	
+
 	// It turns out we can do better: we build a set (all_sel) that contains the selection and all views that have a selected thing as its
 	// child.  This represents a subset of the total tree that needs iteration.  When we rebulid our cache, if we hit a thing that isn't in
-	// "selection and friends" set, we simply stop.  
-	
+	// "selection and friends" set, we simply stop.
+
 	// This cuts out iteration of whole sub-trees where there is no selection...for a trivial selection this really speeds up rebuild.
 
 	WED_Thing * root = WED_GetWorld(mResolver);
@@ -793,7 +793,7 @@ int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
 		d = d->GetParent();
 		++ret;
 	}
-	return ret;	
+	return ret;
 }
 
 int			WED_PropertyTable::GetColCount(void)
@@ -832,10 +832,10 @@ void	WED_PropertyTable::ReceiveMessage(
 		// Set this to false FIRST, lest we have an explosion due to a stale cache!
 		if (inParam & (wed_Change_CreateDestroy | wed_Change_Topology))
 			mCacheValid = false;
-	
+
 		if (mSelOnly && (inParam & wed_Change_Selection))
 			mCacheValid = false;
-	
+
 		if (mDynamicCols)
 		{
 			set<string>	cols;
@@ -861,15 +861,15 @@ void	WED_PropertyTable::ReceiveMessage(
 						}
 					}
 				}
-			}			
-		}		
+			}
+		}
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
 
 
 void	WED_PropertyTable::GetHeaderContent(
-				int							cell_x, 
+				int							cell_x,
 				GUI_HeaderContent&			the_content)
 {
 	the_content.is_selected = 0;
@@ -878,7 +878,7 @@ void	WED_PropertyTable::GetHeaderContent(
 	if (cell_x >= 0 && cell_x < mColNames.size())
 	{
 		the_content.title = mColNames[cell_x];
-		the_content.can_resize = true;		
+		the_content.can_resize = true;
 	}
 }
 
@@ -914,8 +914,8 @@ void WED_PropertyTable::SetOpen(int id, int o)
 // - Right now it is programmed not to iterate on the children of not-truly-composite GIS entities
 //  (Thus it hides the guts of a polygon).
 
-void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel, 
-									int&	visible, 
+void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
+									int&	visible,
 									int&	recurse_children,
 									int&	can_disclose,
 									int&	is_disclose)
@@ -925,7 +925,7 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 
 	int is_composite = 0;
 	visible = 0;
-	
+
 	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 	if (e) is_composite = e->GetGISClass() == gis_Composite;
 	if (mSelOnly) is_composite = 1;
@@ -935,9 +935,9 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 		visible = 1;
 
 	recurse_children = what->CountChildren();
-	
+
 	if (!visible || mVertical)
-	{	
+	{
 		if (!is_composite) recurse_children = 0;
 	}
 	else

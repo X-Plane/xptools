@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,8 +35,8 @@ enum {
 	xyZ,
 	XyZ,
 	xYZ,
-	XYZ	
-};	
+	XYZ
+};
 
 #if 0
 
@@ -55,7 +55,7 @@ static	void	CalcRepeats(const vector<int>	objRepeatPattern,
 {
 	int		total_fixed = 0;
 	int		total_repeat = 0;
-	
+
 	for (vector<int>::const_iterator i = objRepeatPattern.begin(); i != objRepeatPattern.end(); ++i)
 	{
 		if ((*i) == 0)
@@ -63,13 +63,13 @@ static	void	CalcRepeats(const vector<int>	objRepeatPattern,
 		else
 			total_repeat += *i;
 	}
-	
+
 	int		variable_len = desiredTotal - total_fixed;
-	
+
 	int		clean_repeats = variable_len / total_repeat;
-	
+
 	int		slop = (variable_len - (total_repeat * clean_repeats));
-	
+
 	for (vector<int>::const_iterator i = objRepeatPattern.begin(); i != objRepeatPattern.end(); ++i)
 	{
 		if ((*i) == 0)
@@ -83,16 +83,16 @@ static	void	CalcRepeats(const vector<int>	objRepeatPattern,
 			} else
 				usePattern.push_back((*i) * clean_repeats);
 		}
-	}	
-}							
-							
+	}
+}
+
 static	void	CalcRepeatsWeighted(const vector<pair<int, float> >&	objRepeatPattern,
 							float				desiredTotal,
 							vector<int>&			usePattern)
 {
 	float		total_fixed = 0.0;
 	float		total_repeat = 0.0;
-	
+
 	for (vector<pair<int, float> >::const_iterator i = objRepeatPattern.begin(); i != objRepeatPattern.end(); ++i)
 	{
 		if ((i->first) == 0)
@@ -100,13 +100,13 @@ static	void	CalcRepeatsWeighted(const vector<pair<int, float> >&	objRepeatPatter
 		else
 			total_repeat += ((float) i->first * i->second);
 	}
-	
+
 	float		variable_len = desiredTotal - total_fixed;
-	
+
 	int			clean_repeats = variable_len / total_repeat;
-	
+
 	float		slop = (variable_len - ((float) total_repeat * clean_repeats));
-	
+
 	for (vector<pair<int, float> >::const_iterator i = objRepeatPattern.begin(); i != objRepeatPattern.end(); ++i)
 	{
 		if ((i->first) == 0)
@@ -120,7 +120,7 @@ static	void	CalcRepeatsWeighted(const vector<pair<int, float> >&	objRepeatPatter
 			} else
 				usePattern.push_back((i->first) * clean_repeats);
 		}
-	}	
+	}
 }
 
 static	void	ApplySegment(
@@ -131,13 +131,13 @@ static	void	ApplySegment(
 {
 	float	objMin[3], objMax[3];
 	float	theBox[8][3];
-	
+
 	GetObjDimensions(inSegment.obj, objMin, objMax);
-	
+
 	// Important: we set our dimensions in the Y to be the same as X.  This makes our bounding box look square
 	// from the top.  Since our destination box is like this, we must have this property!
 	float	range = objMax[0] - objMin[0];
-	float	center = (objMax[2] + objMin[2]) * 0.5;	
+	float	center = (objMax[2] + objMin[2]) * 0.5;
 	center = 0.0;	// LOCK to Z axis for now!  This is necessary for asymetric weighting
 	objMin[2] = center - range;
 	objMax[2] = center + range;
@@ -152,7 +152,7 @@ static	void	ApplySegment(
 
 	outObject.texture = changed.texture;
 	outObject.cmds.insert(outObject.cmds.end(), changed.cmds.begin(), changed.cmds.end());
-}							
+}
 
 static	void	BuildWall(
 							const ProtoWall_t&					inWall,
@@ -165,26 +165,26 @@ static	void	BuildWall(
 	vector<int>					usagePattern;
 
 	float						objMin[3], objMax[3];
-	
+
 	float						wall_vec[2];
 	wall_vec[0] = inEndTop[0] - inStartBot[0];
 	wall_vec[1] = inEndTop[2] - inStartBot[2];
 	float						start_pt[02];
 	start_pt[0] = inStartBot[0];
 	start_pt[1] = inStartBot[2];
-		
-	float	total_wall_len = sqrt((wall_vec[0])*(wall_vec[0]) + 
+
+	float	total_wall_len = sqrt((wall_vec[0])*(wall_vec[0]) +
 								  (wall_vec[1])*(wall_vec[1]));
-		
-	for (SegVector_t::const_iterator seg = inWall.segments.begin(); 
+
+	for (SegVector_t::const_iterator seg = inWall.segments.begin();
 		seg != inWall.segments.end(); ++seg)
 	{
 		GetObjDimensions(seg->obj, objMin, objMax);
 		seg_lengths.push_back(objMax[0] - objMin[0]);
-		
+
 		repeatPattern.push_back(pair<int, float>(seg->repeats, objMax[0] - objMin[0]));
 	}
-	
+
 	CalcRepeatsWeighted(repeatPattern, total_wall_len, usagePattern);
 
 	float		ideal_wall_len = 0.0;
@@ -192,9 +192,9 @@ static	void	BuildWall(
 	{
 		ideal_wall_len += ((float) usagePattern[n] * seg_lengths[n]);
 	}
-	
+
 	float		scaleFactor = total_wall_len / ideal_wall_len;
-	
+
 	for (int n = 0; n < inWall.segments.size(); ++n)
 	{
 		for (int c = 0; c < usagePattern[n]; ++c)
@@ -202,7 +202,7 @@ static	void	BuildWall(
 			float	segLen = seg_lengths[n];
 			segLen *= scaleFactor;
 			Rescale2f(wall_vec, segLen);
-			
+
 			float pt1[3], pt2[3];
 			pt1[0] = start_pt[0];
 			pt1[1] = inStartBot[1];
@@ -212,13 +212,13 @@ static	void	BuildWall(
 			pt2[2] = start_pt[1] + wall_vec[1];
 
 			ApplySegment(inWall.segments[n], pt1, pt2, outObject);
-			
+
 			start_pt[0] += wall_vec[0];
 			start_pt[1] += wall_vec[1];
-			
+
 		}
 	}
-}							
+}
 
 static	void	BuildLayer(
 							const ProtoLayer_t&					inLayer,
@@ -230,9 +230,9 @@ static	void	BuildLayer(
 	if (inLayer.layer_type == layer_FinalRoof)
 	{
 		Polygon2		pts;
-		
+
 		InsetPolygon2(inPoints, NULL, inLayer.bottom_inset, inClosed, pts);
-		
+
 		XObjCmd	cmd;
 		cmd.cmdType = type_Poly;
 		cmd.cmdID = obj_Polygon;
@@ -240,15 +240,15 @@ static	void	BuildLayer(
 			cmd.cmdID = obj_Tri;
 		if (pts.size() == 4)
 			cmd.cmdID = obj_Quad;
-			
+
 		vec_tex	v;
 		v.st[0] = 0.0; v.st[1] = 0.0;
-		
+
 		for (int n = 0; n < pts.size(); ++n)
 		{
 			v.v[0] = pts[n].x;
 			v.v[1] = inHeight;
-			v.v[2] = pts[n].y;		
+			v.v[2] = pts[n].y;
 			cmd.st.push_back(v);
 		}
 		outObject.cmds.push_back(cmd);
@@ -257,45 +257,45 @@ static	void	BuildLayer(
 	if (inLayer.layer_type == layer_Roof)
 	{
 		Polygon2		bottomPts, topPts;
-		
+
 		InsetPolygon2(inPoints, NULL, inLayer.bottom_inset, inClosed, bottomPts);
 		InsetPolygon2(inPoints, NULL, inLayer.top_inset, inClosed, topPts);
-		
+
 		// If the top is inside the bottom, it's a roof.  Otherwise it's a floor.
-		
+
 		XObjCmd	cmd;
 		cmd.cmdType = type_Poly;
 		cmd.cmdID = obj_Quad_Strip;
 
 			vec_tex	v;
 		v.st[0] = 0.0; v.st[1] = 0.0;
-		
+
 		for (int n = 0; n < bottomPts.size(); ++n)
-		{			
+		{
 			v.v[0] = topPts[n].x;
 			v.v[1] = inHeight + inLayer.height;
-			v.v[2] = topPts[n].y;		
+			v.v[2] = topPts[n].y;
 			cmd.st.push_back(v);
 
 			v.v[0] = bottomPts[n].x;
 			v.v[1] = inHeight;
 			v.v[2] = bottomPts[n].y;
-			cmd.st.push_back(v);			
+			cmd.st.push_back(v);
 		}
-		
+
 		if (inClosed)
 		{
 			v.v[0] = topPts[0].x;
 			v.v[1] = inHeight + inLayer.height;
-			v.v[2] = topPts[0].y;			
+			v.v[2] = topPts[0].y;
 			cmd.st.push_back(v);
 
 			v.v[0] = bottomPts[0].x;
 			v.v[1] = inHeight;
 			v.v[2] = bottomPts[0].y;
-			cmd.st.push_back(v);		
-		}	
-		
+			cmd.st.push_back(v);
+		}
+
 		outObject.cmds.push_back(cmd);
 
 	}
@@ -303,15 +303,15 @@ static	void	BuildLayer(
 	if (inLayer.layer_type == layer_Facade)
 	{
 		int	sides = inPoints.size() - (inClosed ? 0 : 1);
-		Polygon2		pts;		
+		Polygon2		pts;
 		InsetPolygon2(inPoints, NULL, inLayer.bottom_inset, inClosed, pts);
-				
+
 		for (int n = 0; n < sides; ++n)
 		{
 			int next = n+1;
 			if (next == inPoints.size())
 				next = 0;
-				
+
 			float	startPt[3], endPt[3];
 			startPt[0] = pts[n].x;
 			startPt[1] = inHeight;
@@ -320,14 +320,14 @@ static	void	BuildLayer(
 			endPt[0] = pts[next].x;
 			endPt[1] = inHeight + inLayer.height;
 			endPt[2] = pts[next].y;
-		
+
 			BuildWall(inLayer.walls[n % inLayer.walls.size()],
-						startPt, 
-						endPt, 
-						outObject);			
+						startPt,
+						endPt,
+						outObject);
 		}
 	}
-}						   
+}
 
 void	ApplyPrototype(const Prototype_t& 					inPrototype,
 					   const Polygon2& 						inPoints,
@@ -335,19 +335,19 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 					   XObj&							    outObject)
 {
 	outObject.cmds.clear();
-	
+
 	vector<int>	repeatPattern, usagePattern;
 
-	for (LayerVector_t::const_iterator layer = inPrototype.layers.begin(); 
+	for (LayerVector_t::const_iterator layer = inPrototype.layers.begin();
 		layer != inPrototype.layers.end(); ++layer)
 	{
 		repeatPattern.push_back(layer->repeats);
 	}
-	
+
 	CalcRepeats(repeatPattern, inFloors, usagePattern);
 
 	double	curHeight = 0.0;
-	
+
 	for (int n = 0; n < inPrototype.layers.size(); ++n)
 	{
 		for (int c = 0; c < usagePattern[n]; ++c)
@@ -357,12 +357,12 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 						inPrototype.closed,
 						curHeight,
 						outObject);
-						
-			curHeight += inPrototype.layers[n].height;			
+
+			curHeight += inPrototype.layers[n].height;
 		}
 	}
 }
-#endif					   
+#endif
 
 #pragma mark -
 
@@ -370,7 +370,7 @@ void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 {
 	float minxyz[3] = {  9.9e9, 9.9e9, 9.9e9 };
 	float maxxyz[3] = { -9.9e9,-9.9e9,-9.9e9 };
-	
+
 	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); cmd != inObj.cmds.end(); ++cmd)
 	{
 		for (vector<vec_tex>::const_iterator st = cmd->st.begin(); st != cmd->st.end(); ++st)
@@ -382,7 +382,7 @@ void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 			maxxyz[1] = max(maxxyz[1], st->v[1]);
 			maxxyz[2] = max(maxxyz[2], st->v[2]);
 		}
-		
+
 		for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 		{
 			minxyz[0] = min(minxyz[0], rgb->v[0]);
@@ -406,7 +406,7 @@ void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4])
 {
 	vector<Point3>	pts;
-	
+
 	int 	n;
 	const  float * d;
 	for (n = 0; n < inObj.geo_tri.count(); ++n)
@@ -424,7 +424,7 @@ void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4])
 		d = inObj.geo_lights.get(n);
 		pts.push_back(Point3(d[0], d[1], d[2]));
 	}
-	
+
 	Sphere3	sphere;
 	FastBoundingSphere(pts, sphere);
 	outSphere[0] = sphere.c.x;
@@ -444,7 +444,7 @@ void OffsetObject(XObj& ioObj, double x, double y, double z)
 			st->v[1] += y;
 			st->v[2] += z;
 		}
-		
+
 		for (vector<vec_rgb>::iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 		{
 			rgb->v[0] += x;
@@ -459,12 +459,12 @@ void OffsetObject(XObj& ioObj, double x, double y, double z)
 void	GetObjDimensions(const XObj& inObj,
 						float	minCoords[3],
 						float	maxCoords[3])
-{	
+{
 	minCoords[0] = minCoords[1] = minCoords[2] =  0.0;
 	maxCoords[0] = maxCoords[1] = maxCoords[2] =  0.0;
 
 	bool assigned = false;
-	
+
 	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); cmd != inObj.cmds.end(); ++cmd)
 	{
 		for (vector<vec_tex>::const_iterator st = cmd->st.begin(); st != cmd->st.end(); ++st)
@@ -478,14 +478,14 @@ void	GetObjDimensions(const XObj& inObj,
 				}
 				assigned = true;
 			}
-			
+
 			for (int n = 0; n < 3; ++n)
 			{
 				minCoords[n] = min(minCoords[n], st->v[n]);
 				maxCoords[n] = max(maxCoords[n], st->v[n]);
 			}
 		}
-		
+
 		for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 		{
 			if (!assigned)
@@ -497,7 +497,7 @@ void	GetObjDimensions(const XObj& inObj,
 				}
 				assigned = true;
 			}
-		
+
 			for (int n = 0; n < 3; ++n)
 			{
 				minCoords[n] = min(minCoords[n], rgb->v[n]);
@@ -510,11 +510,11 @@ void	GetObjDimensions(const XObj& inObj,
 void	GetObjDimensions8(const XObj8& inObj,
 						float	minCoords[3],
 						float	maxCoords[3])
-{	
+{
 	float	mintemp[3], maxtemp[3];
-	
+
 	bool has = false;
-	
+
 	if (inObj.geo_tri.count() > 0)
 	{
 		inObj.geo_tri.get_minmax(minCoords, maxCoords);
@@ -530,7 +530,7 @@ void	GetObjDimensions8(const XObj8& inObj,
 			minCoords[0] = min(minCoords[0], mintemp[0]);	maxCoords[0] = max(maxCoords[0], maxtemp[0]);
 			minCoords[1] = min(minCoords[1], mintemp[1]);	maxCoords[0] = max(maxCoords[1], maxtemp[1]);
 			minCoords[2] = min(minCoords[2], mintemp[2]);	maxCoords[0] = max(maxCoords[2], maxtemp[2]);
-		} else 
+		} else
 			inObj.geo_lines.get_minmax(minCoords, maxCoords);
 		has = true;
 	}
@@ -542,7 +542,7 @@ void	GetObjDimensions8(const XObj8& inObj,
 			minCoords[0] = min(minCoords[0], mintemp[0]);	maxCoords[0] = max(maxCoords[0], maxtemp[0]);
 			minCoords[1] = min(minCoords[1], mintemp[1]);	maxCoords[0] = max(maxCoords[1], maxtemp[1]);
 			minCoords[2] = min(minCoords[2], mintemp[2]);	maxCoords[0] = max(maxCoords[2], maxtemp[2]);
-		} else 
+		} else
 			inObj.geo_lights.get_minmax(minCoords, maxCoords);
 		has = true;
 	}
@@ -554,7 +554,7 @@ void	GetObjDimensions8(const XObj8& inObj,
 #if 0
 // Given two points that will be the minimum and max X
 // locations for a given object at the min and max Y locations
-// this routine extrudes them in an axis opposite the wall 
+// this routine extrudes them in an axis opposite the wall
 // line to make sure X-Z coordinates are square.
 void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
 					float outNewCoords[8][3])
@@ -563,17 +563,17 @@ void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
 	float		half_line[3];
 	float		half_right[3];
 	float		half_left[3];
-	
+
 	main_line[0] = maxCorner[0] - minCorner[0];
 	main_line[2] = maxCorner[2] - minCorner[2];
 	half_line[0] = main_line[0] * 0.5;
 	half_line[2] = main_line[2] * 0.5;
-	
+
 	half_right[0] = -half_line[2];
-	half_right[2] = half_line[0];	
+	half_right[2] = half_line[0];
 	half_left[0] = half_line[2];
 	half_left[2] = -half_line[0];
-	
+
 	outNewCoords[xyz][0] = minCorner[0] + half_left[0];
 	outNewCoords[xyz][1] = minCorner[1];
 	outNewCoords[xyz][2] = minCorner[2] + half_left[2];
@@ -604,8 +604,8 @@ void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
 
 	outNewCoords[XYZ][0] = maxCorner[0] + half_right[0];
 	outNewCoords[XYZ][1] = maxCorner[1];
-	outNewCoords[XYZ][2] = maxCorner[2] + half_right[2];	
-}					
+	outNewCoords[XYZ][2] = maxCorner[2] + half_right[2];
+}
 
 #endif
 
@@ -617,7 +617,7 @@ static	inline	float	Interp2d(
 							float		outMax)
 {
 	return outMin + ((val - inMin) * (outMax - outMin) / (inMax - inMin));
-}							
+}
 
 // Given a point in an old cartesian bounding box and a new
 // bounding box, calc its position
@@ -629,39 +629,39 @@ static	void	Interp3d(
 							float		outNewPt[3])
 {
 	// X Coordinate
-	
+
 	float	xBotBack =  Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], inNewCoords[xyz][0], inNewCoords[Xyz][0]);
 	float	xBotFront = Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], inNewCoords[xyZ][0], inNewCoords[XyZ][0]);
 	float	xTopBack =  Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], inNewCoords[xYz][0], inNewCoords[XYz][0]);
 	float	xTopFront = Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], inNewCoords[xYZ][0], inNewCoords[XYZ][0]);
-	
+
 	float	xBack  = Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], xBotBack,  xTopBack);
 	float	xFront = Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], xBotFront, xTopFront);
-	
+
 	outNewPt[0] = Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], xBack, xFront);
-	
+
 	// Y Coordinate
 	float	yLeftBack =   Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], inNewCoords[xyz][1], inNewCoords[xYz][1]);
 	float	yRightBack =  Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], inNewCoords[Xyz][1], inNewCoords[XYz][1]);
 	float	yLeftFront =  Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], inNewCoords[xyZ][1], inNewCoords[xYZ][1]);
 	float	yRightFront = Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], inNewCoords[XyZ][1], inNewCoords[XYZ][1]);
-	
+
 	float	yBack =  Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], yLeftBack,  yRightBack);
 	float	yFront = Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], yLeftFront, yRightFront);
-	
+
 	outNewPt[1] = Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], yBack, yFront);
-	
+
 	// Z coordinate
 	float	zLeftBottom =  Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], inNewCoords[xyz][2], inNewCoords[xyZ][2]);
 	float	zRightBottom = Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], inNewCoords[Xyz][2], inNewCoords[XyZ][2]);
 	float	zLeftTop =     Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], inNewCoords[xYz][2], inNewCoords[xYZ][2]);
 	float	zRightTop =    Interp2d(inOldPt[2], inMinCoords[2], inMaxCoords[2], inNewCoords[XYz][2], inNewCoords[XYZ][2]);
-	
+
 	float	zBottom = Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], zLeftBottom, zRightBottom);
 	float	zTop = 	  Interp2d(inOldPt[0], inMinCoords[0], inMaxCoords[0], zLeftTop,    zRightTop);
-	
-	outNewPt[2] = Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], zBottom, zTop);	
-}							
+
+	outNewPt[2] = Interp2d(inOldPt[1], inMinCoords[1], inMaxCoords[1], zBottom, zTop);
+}
 
 // New coords go xyz Xyz xYz XYz xyZ Xyz xYZ XYZ
 void	ConformObjectToBox( XObj&		obj,
@@ -671,7 +671,7 @@ void	ConformObjectToBox( XObj&		obj,
 {
 	// Do an interp3d on every S, T, RGB pt
 			float	p[3];
-	
+
 	for (vector<XObjCmd>::iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
 	{
 		for (vector<vec_tex>::iterator st = cmd->st.begin(); st != cmd->st.end(); ++st)
@@ -681,7 +681,7 @@ void	ConformObjectToBox( XObj&		obj,
 			st->v[1] = p[1];
 			st->v[2] = p[2];
 		}
-		
+
 		for (vector<vec_rgb>::iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 		{
 			Interp3d(inMinCoords, inMaxCoords, inNewCoords, rgb->v, p);
@@ -697,7 +697,7 @@ bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 {
 	outProto.layers.clear();
 	bool ok = false;
-	
+
 	StTextFileScanner	scanner(inFileName, true);
 	string	s;
 	while (GetNextNoComments(scanner, s))
@@ -719,13 +719,13 @@ bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 				if (v.size() > 1)
 				{
 					ProtoLayer_t	layer;
-					
+
 					if (v[1] == "FACADE" && (v.size() > 4))
 					{
 						layer.layer_type = layer_Facade;
 						layer.bottom_inset = atof(v[2].c_str());
 						layer.height = atof(v[3].c_str());
-						layer.repeats = atoi(v[4].c_str());						
+						layer.repeats = atoi(v[4].c_str());
 					}
 					if (v[1] == "ROOF" && (v.size() > 5))
 					{
@@ -733,7 +733,7 @@ bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 						layer.bottom_inset = atof(v[2].c_str());
 						layer.top_inset = atof(v[3].c_str());
 						layer.height = atof(v[4].c_str());
-						layer.repeats = atoi(v[5].c_str());						
+						layer.repeats = atoi(v[5].c_str());
 					}
 					if (v[1] == "FINALROOF" && (v.size() > 2))
 					{
@@ -764,7 +764,7 @@ bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 				fpath += v[1];
 				XObjRead(fpath.c_str(), seg.obj);
 				seg.name = v[1];
-				
+
 				if (!outProto.layers.empty())
 				{
 					ProtoLayer_t&	l = outProto.layers[outProto.layers.size() - 1];
@@ -772,7 +772,7 @@ bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 					{
 						ProtoWall_t& w = l.walls[l.walls.size() - 1];
 						w.segments.push_back(seg);
-					} else ok = false;					
+					} else ok = false;
 				} else ok = false;
 			}
 		}
@@ -809,7 +809,7 @@ bool	SavePrototype(const char * inFileName, const Prototype_t& outProto)
 		}
 	}
 
-	fprintf(fi,"END" CRLF);	
+	fprintf(fi,"END" CRLF);
 	fclose(fi);
 	return true;
 }
@@ -829,7 +829,7 @@ void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float L
 			break;
 		}
 	}
-	
+
 	if (last_near != LOD_near || last_far != LOD_far)
 	{
 		XObjCmd	lod;
@@ -839,7 +839,7 @@ void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float L
 		lod.attributes.push_back(LOD_far);
 		obj->cmds.push_back(lod);
 	}
-	
+
 	XObjCmd	cmd;
 	cmd.cmdType = type_Poly;
 	switch(polyType) {
@@ -885,7 +885,7 @@ void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxVale
 			outCmds.push_back(inCmd);
 			outCmds.back().cmdID = obj_Tri;
 			outCmds.back().st.erase(outCmds.back().st.begin()+3);
-			outCmds.push_back(inCmd);			
+			outCmds.push_back(inCmd);
 			outCmds.back().cmdID = obj_Tri;
 			outCmds.back().st.erase(outCmds.back().st.begin()+1);
 		}
@@ -904,7 +904,7 @@ void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxVale
 				c.st[2] = inCmd.st[n  ];
 				outCmds.push_back(c);
 			}
-		} else 
+		} else
 			outCmds.push_back(inCmd);
 		break;
 	case obj_Tri_Strip:
@@ -988,7 +988,7 @@ void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence)
 {
 	outObj.cmds.clear();
 	outObj.texture = inObj.texture;
-	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); 
+	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin();
 		cmd != inObj.cmds.end(); ++cmd)
 	{
 		vector<XObjCmd>		newCmds;
@@ -1012,7 +1012,7 @@ double	GetObjRadius(const XObj& inObj)
 {
 	double	dist = 0, d;
 	for (vector<XObjCmd>::const_iterator c = inObj.cmds.begin();
-		c != inObj.cmds.end(); ++c)	
+		c != inObj.cmds.end(); ++c)
 	{
 		for (vector<vec_tex>::const_iterator v = c->st.begin();
 			v != c->st.end(); ++v)
@@ -1022,7 +1022,7 @@ double	GetObjRadius(const XObj& inObj)
 					 v->v[2] * v->v[2]);
 			if (d > dist) dist = d;
 		}
-		
+
 		for (vector<vec_rgb>::const_iterator p = c->rgb.begin();
 			p != c->rgb.end(); ++p)
 		{

@@ -57,7 +57,7 @@ extern const char sqlite3IsIdChar[];
 **   (1) NORMAL    We are in the middle of statement which ends with a single
 **                 semicolon.
 **
-**   (2) EXPLAIN   The keyword EXPLAIN has been seen at the beginning of 
+**   (2) EXPLAIN   The keyword EXPLAIN has been seen at the beginning of
 **                 a statement.
 **
 **   (3) CREATE    The keyword CREATE has been seen at the beginning of a

@@ -70,7 +70,7 @@ public:
   const Point_3 & operator[](int i) const;
 
   Bbox_3     bbox() const;
-  
+
   FT         squared_area() const;
 };
 
@@ -140,8 +140,8 @@ Bbox_3
 TriangleC3<R>::bbox() const
 {
   typename R::Construct_bbox_3 construct_bbox_3;
-  return construct_bbox_3(vertex(0)) 
-    + construct_bbox_3(vertex(1)) 
+  return construct_bbox_3(vertex(0))
+    + construct_bbox_3(vertex(1))
     + construct_bbox_3(vertex(2));
 }
 

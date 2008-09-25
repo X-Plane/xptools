@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,9 +59,9 @@ double	WED_MapZoomer::LatToYPixel(double lat)
 {
 	return rescale(mVisibleBounds[1], mVisibleBounds[3], mPixels[1], mPixels[3], lat);
 }
-	
-void	WED_MapZoomer::SetPixelBounds(		
-					double 	inLeft,			
+
+void	WED_MapZoomer::SetPixelBounds(
+					double 	inLeft,
 					double	inBottom,
 					double	inRight,
 					double	inTop)
@@ -71,10 +71,10 @@ void	WED_MapZoomer::SetPixelBounds(
 	mPixels[2] = inRight;
 	mPixels[3] = inTop;
 }
-					
+
 void	WED_MapZoomer::SetMapVisibleBounds(
 					double	inWest,
-					double	inSouth,		
+					double	inSouth,
 					double	inEast,
 					double	inNorth)
 {
@@ -82,8 +82,8 @@ void	WED_MapZoomer::SetMapVisibleBounds(
 	mVisibleBounds[1] = inSouth;
 	mVisibleBounds[2] = inEast;
 	mVisibleBounds[3] = inNorth;
-}					
-void	WED_MapZoomer::SetMapLogicalBounds(	
+}
+void	WED_MapZoomer::SetMapLogicalBounds(
 					double	inWest,
 					double	inSouth,
 					double	inEast,
@@ -92,12 +92,12 @@ void	WED_MapZoomer::SetMapLogicalBounds(
 	mLogicalBounds[0] = inWest;
 	mLogicalBounds[1] = inSouth;
 	mLogicalBounds[2] = inEast;
-	mLogicalBounds[3] = inNorth;					
-}					
+	mLogicalBounds[3] = inNorth;
+}
 
 
-void	WED_MapZoomer::GetPixelBounds(		
-					double& outLeft,			
+void	WED_MapZoomer::GetPixelBounds(
+					double& outLeft,
 					double&	outBottom,
 					double&	outRight,
 					double&	outTop)
@@ -107,10 +107,10 @@ void	WED_MapZoomer::GetPixelBounds(
 	outRight = mPixels[2];
 	outTop = mPixels[3];
 }
-					
+
 void	WED_MapZoomer::GetMapVisibleBounds(
 					double&	outWest,
-					double&	outSouth,		
+					double&	outSouth,
 					double&	outEast,
 					double&	outNorth)
 {
@@ -118,18 +118,18 @@ void	WED_MapZoomer::GetMapVisibleBounds(
 	outSouth = mVisibleBounds[1];
 	outEast = mVisibleBounds[2];
 	outNorth = mVisibleBounds[3];
-}					
-void	WED_MapZoomer::GetMapLogicalBounds(	
+}
+void	WED_MapZoomer::GetMapLogicalBounds(
 					double&	outWest,
 					double&	outSouth,
 					double&	outEast,
 					double&	outNorth)
-{					
+{
 	outWest	= 	mLogicalBounds[0];
 	outSouth=	mLogicalBounds[1];
 	outEast	=	mLogicalBounds[2];
 	outNorth=	mLogicalBounds[3];
-}					
+}
 
 
 void	WED_MapZoomer::SetAspectRatio(double a)
@@ -145,21 +145,21 @@ void	WED_MapZoomer::ZoomShowAll(void)
 	double	mapCenterY = 0.5 * (mLogicalBounds[3] + mLogicalBounds[1]);
 	double	viewWidth = mPixels[2] - mPixels[0];
 	double	viewHeight = mPixels[3] - mPixels[1];
-	
+
 	// Our official aspect ratio is the shape of a 1x1 logical unit box.
 	// So we have to bias our logical zoomout to take in extra dead area to
 	// preserve this aspect ratio!!  Here's how we do it:
-	
+
 	// Our visible aspect ratio is the aspect ratio of the actual window...
 	// probably varies depending on the user's monitor and other weird stuff.
 	double	visAspectPixels = viewHeight / viewWidth;
 	// Map aspect ratio is the difference in logical units of the shape of our map.
 	double	mapAspect = mapHeight / mapWidth;
-	
-	// Now we have to transform the map's aspect ratio into logical units, e.g. 
+
+	// Now we have to transform the map's aspect ratio into logical units, e.g.
 	// how much of the map _should_ be visible.
 	double	visAspectLogical = visAspectPixels / mAspectRatio;
-	
+
 	// This number needs to be the same as mapAspect...if it's not we have to make
 	// an adjustment.
 	if (visAspectLogical > mapAspect)
@@ -172,7 +172,7 @@ void	WED_MapZoomer::ZoomShowAll(void)
 		// right.
 		mapWidth = mapHeight / visAspectLogical;
 	}
-	
+
 	// Now set the map bounds.
 	mVisibleBounds[0] = mapCenterX - 0.5 * mapWidth;
 	mVisibleBounds[1] = mapCenterY - 0.5 * mapHeight;
@@ -191,7 +191,7 @@ void	WED_MapZoomer::PanPixels(
 	// therefore the map's bounds are decreasing!  Whacky, eh?
 	double delta_lon = XPixelToLon(x2) - XPixelToLon(x1);
 	double delta_lat = YPixelToLat(y2) - YPixelToLat(y1);
-	
+
 	// Move the map in the opposite direction.
 	mVisibleBounds[0] -= delta_lon;
 	mVisibleBounds[1] -= delta_lat;
@@ -209,9 +209,9 @@ void	WED_MapZoomer::ZoomAround(
 	// 2. Zoom the map by adjusting only the top and right logical bounds, not
 	//    the lower left.
 	// 3. Scroll the map back.
-	
+
 	PanPixels(centerXPixel, centerYPixel, mPixels[0], mPixels[1]);
-	
+
 	double	width = mVisibleBounds[2] - mVisibleBounds[0];
 	double	height = mVisibleBounds[3] - mVisibleBounds[1];
 	width /= zoomFactor;
@@ -220,7 +220,7 @@ void	WED_MapZoomer::ZoomAround(
 	mVisibleBounds[3] = mVisibleBounds[1] + height;
 
 	PanPixels(mPixels[0], mPixels[1], centerXPixel, centerYPixel);
-}					
+}
 
 void	WED_MapZoomer::ScrollReveal(
 				double	inLon,
@@ -232,7 +232,7 @@ void	WED_MapZoomer::ScrollReveal(
 	mVisibleBounds[1] += delta_lat;
 	mVisibleBounds[2] += delta_lon;
 	mVisibleBounds[3] += delta_lat;
-	
+
 }
 
 void	WED_MapZoomer::ScrollReveal(
@@ -257,14 +257,14 @@ void	WED_MapZoomer::ScrollReveal(
 	double	visAspectPixels = viewHeight / viewWidth;
 	double	visAspectLogical = visAspectPixels / mAspectRatio;
 
-	
+
 	if (aspect > visAspectLogical)
 	{
 		mVisibleBounds[0] = x - height / visAspectLogical;
 		mVisibleBounds[1] = y - height;
 		mVisibleBounds[2] = x + height / visAspectLogical;
 		mVisibleBounds[3] = y + height;
-		
+
 	} else {
 
 		mVisibleBounds[0] = x - width;
@@ -286,7 +286,7 @@ void	WED_MapZoomer::GetScrollbarValues(
 	double	vVis = mVisibleBounds[3] - mVisibleBounds[1];
 	double	hTot = mLogicalBounds[2] - mLogicalBounds[0];
 	double	vTot = mLogicalBounds[3] - mLogicalBounds[1];
-	
+
 	hMin = 0;
 	vMin = 0;
 	hMax = hTot - hVis;
@@ -294,9 +294,9 @@ void	WED_MapZoomer::GetScrollbarValues(
 	if (hMax < 0.0) hMax = 0.0;
 	if (vMax < 0.0) vMax = 0.0;
 	hPos = mVisibleBounds[0] - mLogicalBounds[0];
-	vPos = mVisibleBounds[1] - mLogicalBounds[1];	
+	vPos = mVisibleBounds[1] - mLogicalBounds[1];
 }
-				
+
 void	WED_MapZoomer::ScrollH(double lon)
 {
 	double	width = mVisibleBounds[2] - mVisibleBounds[0];

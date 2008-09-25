@@ -11,8 +11,8 @@
 // file          : src/Qt_widget_toolbar_layers.C
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -105,7 +105,7 @@ Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
                                 Delaunay *t, Alpha_shape *a, QImage
 			       *i) : QToolBar(mw, "LT") ,nr_of_buttons(0)
 {
-  
+
   showT = new Qt_layer_show_triangulation< Delaunay >(*t);
   showV = new Qt_layer_show_voronoi< Delaunay >(*t);
   showP = new Qt_layer_show_points< Delaunay >(*t);
@@ -125,9 +125,9 @@ Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
   showV->deactivate();
 
   QIconSet set0(QPixmap( (const char**)image_small_xpm ),
-                QPixmap( (const char**)image_xpm ));		
+                QPixmap( (const char**)image_xpm ));
   QIconSet set1(QPixmap( (const char**)triangulation_small_xpm ),
-                QPixmap( (const char**)triangulation_xpm ));		
+                QPixmap( (const char**)triangulation_xpm ));
   QIconSet set2(QPixmap( (const char**)alpha_shape_small_xpm ),
                 QPixmap( (const char**)alpha_shape_xpm ));
   QIconSet set3(QPixmap( (const char**)voronoi_small_xpm ),
@@ -164,7 +164,7 @@ Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
         widget, SLOT(redraw()));
 
   connect(but[0], SIGNAL(stateChanged(int)),
-      showI, SLOT(stateChanged(int)));    
+      showI, SLOT(stateChanged(int)));
   connect(but[1], SIGNAL(stateChanged(int)),
       showT, SLOT(stateChanged(int)));
   connect(but[2], SIGNAL(stateChanged(int)),
@@ -173,8 +173,8 @@ Layers_toolbar::Layers_toolbar(CGAL::Qt_widget *w, QMainWindow *mw,
       showV, SLOT(stateChanged(int)));
   connect(but[4], SIGNAL(stateChanged(int)),
       showP, SLOT(stateChanged(int)));
-  
-}  
+
+}
 
 #include "Qt_widget_toolbar_layers.moc"
 

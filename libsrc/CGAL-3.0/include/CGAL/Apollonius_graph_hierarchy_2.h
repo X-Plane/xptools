@@ -77,7 +77,7 @@ public:
   typedef typename Ag_base::Finite_faces_iterator Finite_faces_iterator;
 
   typedef typename Ag_base::All_vertices_iterator All_vertices_iterator;
-  typedef typename Ag_base::Finite_vertices_iterator 
+  typedef typename Ag_base::Finite_vertices_iterator
                                                      Finite_vertices_iterator;
 
   typedef typename Ag_base::All_edges_iterator    All_edges_iterator;
@@ -190,7 +190,7 @@ private:
   // private methods
   void
   nearest_neighbor(const Point_2& p,
-		   Vertex_handle vnear[ag_hierarchy_2__maxlevel]) const; 
+		   Vertex_handle vnear[ag_hierarchy_2__maxlevel]) const;
 
   int random_level();
 

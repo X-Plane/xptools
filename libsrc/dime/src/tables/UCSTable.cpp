@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: UCSTable.cpp
  *
  *  This source file is part of DIME.
@@ -79,7 +79,7 @@ dimeUCSTable::getTableName() const
 
 //!
 
-bool 
+bool
 dimeUCSTable::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -105,14 +105,14 @@ dimeUCSTable::write(dimeOutput * const file)
   file->writeDouble(this->yaxis[1]);
   file->writeGroupCode(32);
   file->writeDouble(this->yaxis[2]);
-  
+
   ret = dimeTableEntry::write(file);
   return ret;
 }
 
 //!
 
-int 
+int
 dimeUCSTable::typeId() const
 {
   return dimeBase::dimeUCSTableType;
@@ -120,7 +120,7 @@ dimeUCSTable::typeId() const
 
 //!
 
-bool 
+bool
 dimeUCSTable::handleRecord(const int groupcode,
 			  const dimeParam &param,
 			  dimeMemHandler * const memhandler)

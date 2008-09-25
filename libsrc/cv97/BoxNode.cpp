@@ -18,7 +18,7 @@
 
 #include "BoxNode.h"
 
-BoxNode::BoxNode() 
+BoxNode::BoxNode()
 {
 	setHeaderFlag(false);
 	setType(boxNodeString);
@@ -29,7 +29,7 @@ BoxNode::BoxNode()
 	addExposedField(sizeField);
 }
 
-BoxNode::~BoxNode() 
+BoxNode::~BoxNode()
 {
 }
 
@@ -37,39 +37,39 @@ BoxNode::~BoxNode()
 //	size
 ////////////////////////////////////////////////
 
-SFVec3f *BoxNode::getSizeField() 
+SFVec3f *BoxNode::getSizeField()
 {
 	if (isInstanceNode() == false)
 		return sizeField;
 	return (SFVec3f *)getExposedField(sizeFieldString);
 }
 
-void BoxNode::setSize(float value[]) 
+void BoxNode::setSize(float value[])
 {
 	getSizeField()->setValue(value);
 }
 
-void BoxNode::setSize(float x, float y, float z) 
+void BoxNode::setSize(float x, float y, float z)
 {
 	getSizeField()->setValue(x, y, z);
 }
 
-void BoxNode::getSize(float value[]) 
+void BoxNode::getSize(float value[])
 {
 	getSizeField()->getValue(value);
 }
 
-float BoxNode::getX() 
+float BoxNode::getX()
 {
 	return getSizeField()->getX();
 }
 
-float BoxNode::getY() 
+float BoxNode::getY()
 {
 	return getSizeField()->getY();
 }
 
-float BoxNode::getZ() 
+float BoxNode::getZ()
 {
 	return getSizeField()->getZ();
 }
@@ -78,12 +78,12 @@ float BoxNode::getZ()
 //	List
 ////////////////////////////////////////////////
 
-BoxNode *BoxNode::next() 
+BoxNode *BoxNode::next()
 {
 	return (BoxNode *)Node::next(getType());
 }
 
-BoxNode *BoxNode::nextTraversal() 
+BoxNode *BoxNode::nextTraversal()
 {
 	return (BoxNode *)Node::nextTraversalByType(getType());
 }
@@ -91,13 +91,13 @@ BoxNode *BoxNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool BoxNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void BoxNode::initialize() 
+void BoxNode::initialize()
 {
 	recomputeBoundingBox();
 #ifdef SUPPORT_OPENGL
@@ -105,11 +105,11 @@ void BoxNode::initialize()
 #endif
 }
 
-void BoxNode::uninitialize() 
+void BoxNode::uninitialize()
 {
 }
 
-void BoxNode::update() 
+void BoxNode::update()
 {
 }
 
@@ -117,7 +117,7 @@ void BoxNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void BoxNode::outputContext(ostream &printStream, char *indentString) 
+void BoxNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFVec3f *size = getSizeField();
 	printStream << indentString << "\t" << "size " << size << endl;
@@ -127,7 +127,7 @@ void BoxNode::outputContext(ostream &printStream, char *indentString)
 //	BoxNode::recomputeBoundingBox
 ////////////////////////////////////////////////
 
-void BoxNode::recomputeBoundingBox() 
+void BoxNode::recomputeBoundingBox()
 {
 	setBoundingBoxCenter(0.0f, 0.0f, 0.0f);
 	setBoundingBoxSize(getX()/2.0f, getY()/2.0f, getZ()/2.0f);

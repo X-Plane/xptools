@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: geometry3d.h
  *
  * Written by

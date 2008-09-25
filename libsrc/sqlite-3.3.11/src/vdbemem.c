@@ -165,7 +165,7 @@ int sqlite3VdbeMemStringify(Mem *pMem, int enc){
   /* For a Real or Integer, use sqlite3_snprintf() to produce the UTF-8
   ** string representation of the value. Then, if the required encoding
   ** is UTF-16le or UTF-16be do a translation.
-  ** 
+  **
   ** FIX ME: It would be better if sqlite3_snprintf() could do UTF-16.
   */
   if( fg & MEM_Int ){
@@ -460,7 +460,7 @@ int sqlite3VdbeMemSetStr(
   pMem->type = enc==0 ? SQLITE_BLOB : SQLITE_TEXT;
   pMem->n = n;
 
-  assert( enc==0 || enc==SQLITE_UTF8 || enc==SQLITE_UTF16LE 
+  assert( enc==0 || enc==SQLITE_UTF8 || enc==SQLITE_UTF16LE
       || enc==SQLITE_UTF16BE );
   switch( enc ){
     case 0:
@@ -515,7 +515,7 @@ int sqlite3MemCompare(const Mem *pMem1, const Mem *pMem2, const CollSeq *pColl){
   f1 = pMem1->flags;
   f2 = pMem2->flags;
   combined_flags = f1|f2;
- 
+
   /* If one value is NULL, it is less than the other. If both values
   ** are NULL, return 0.
   */
@@ -570,7 +570,7 @@ int sqlite3MemCompare(const Mem *pMem1, const Mem *pMem2, const CollSeq *pColl){
     }
 
     assert( pMem1->enc==pMem2->enc );
-    assert( pMem1->enc==SQLITE_UTF8 || 
+    assert( pMem1->enc==SQLITE_UTF8 ||
             pMem1->enc==SQLITE_UTF16LE || pMem1->enc==SQLITE_UTF16BE );
 
     /* The collation sequence must be defined at this point, even if
@@ -607,7 +607,7 @@ int sqlite3MemCompare(const Mem *pMem1, const Mem *pMem2, const CollSeq *pColl){
     /* If a NULL pointer was passed as the collate function, fall through
     ** to the blob case and use memcmp().  */
   }
- 
+
   /* Both values must be blobs.  Compare using memcmp().  */
   rc = memcmp(pMem1->z, pMem2->z, (pMem1->n>pMem2->n)?pMem2->n:pMem1->n);
   if( rc==0 ){
@@ -709,9 +709,9 @@ void sqlite3VdbeMemSanity(Mem *pMem){
     assert( pMem->xDel==0 || (pMem->flags & MEM_Dyn)!=0 );
 
     if( (flags & MEM_Str) ){
-      assert( pMem->enc==SQLITE_UTF8 || 
+      assert( pMem->enc==SQLITE_UTF8 ||
               pMem->enc==SQLITE_UTF16BE ||
-              pMem->enc==SQLITE_UTF16LE 
+              pMem->enc==SQLITE_UTF16LE
       );
       /* If the string is UTF-8 encoded and nul terminated, then pMem->n
       ** must be the length of the string.  (Later:)  If the database file
@@ -719,7 +719,7 @@ void sqlite3VdbeMemSanity(Mem *pMem){
       ** into the middle of the string.  In that case, the strlen() might
       ** be less.
       */
-      if( pMem->enc==SQLITE_UTF8 && (flags & MEM_Term) ){ 
+      if( pMem->enc==SQLITE_UTF8 && (flags & MEM_Term) ){
         assert( strlen(pMem->z)<=pMem->n );
         assert( pMem->z[pMem->n]==0 );
       }
@@ -733,7 +733,7 @@ void sqlite3VdbeMemSanity(Mem *pMem){
   assert( (pMem->flags&(MEM_Str|MEM_Int|MEM_Real|MEM_Blob))==0
           || (pMem->flags&MEM_Null)==0 );
   /* If the MEM is both real and integer, the values are equal */
-  assert( (pMem->flags & (MEM_Int|MEM_Real))!=(MEM_Int|MEM_Real) 
+  assert( (pMem->flags & (MEM_Int|MEM_Real))!=(MEM_Int|MEM_Real)
           || pMem->r==pMem->i );
 }
 #endif
@@ -802,8 +802,8 @@ sqlite3_value* sqlite3ValueNew(void){
 ** cannot be converted to a value, then *ppVal is set to NULL.
 */
 int sqlite3ValueFromExpr(
-  Expr *pExpr, 
-  u8 enc, 
+  Expr *pExpr,
+  u8 enc,
   u8 affinity,
   sqlite3_value **ppVal
 ){
@@ -861,9 +861,9 @@ no_mem:
 ** Change the string value of an sqlite3_value object
 */
 void sqlite3ValueSetStr(
-  sqlite3_value *v, 
-  int n, 
-  const void *z, 
+  sqlite3_value *v,
+  int n,
+  const void *z,
   u8 enc,
   void (*xDel)(void*)
 ){

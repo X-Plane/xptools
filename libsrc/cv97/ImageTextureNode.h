@@ -45,12 +45,12 @@ public:
 	//	List
 	////////////////////////////////////////////////
 
-	ImageTextureNode *next() 
+	ImageTextureNode *next()
 	{
 		return (ImageTextureNode *)Node::next(getType());
 	}
 
-	ImageTextureNode *nextTraversal() 
+	ImageTextureNode *nextTraversal()
 	{
 		return (ImageTextureNode *)Node::nextTraversalByType(getType());
 	}
@@ -60,22 +60,22 @@ public:
 	////////////////////////////////////////////////
 
 	bool createImage();
-	
+
 	int getWidth()
 	{
 		return mWidth;
 	}
-	
+
 	int getHeight()
 	{
 		return mHeight;
 	}
-	
+
 	RGBAColor32 *getImage()
 	{
 		return mImageBuffer;
 	}
-	
+
 	FileImage *getFileImage()
 	{
 		return mFileImage;
@@ -84,7 +84,7 @@ public:
 	////////////////////////////////////////////////
 	//	virtual functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node)
 	{
 		return false;
@@ -94,12 +94,12 @@ public:
 
 	void uninitialize();
 
-	void setCurrentTextureName(char *name) 
+	void setCurrentTextureName(char *name)
 	{
 		mCurrentTextureName.setValue(name);
 	}
 
-	char *getCurrentTextureName() 
+	char *getCurrentTextureName()
 	{
 		return mCurrentTextureName.getValue();
 	}

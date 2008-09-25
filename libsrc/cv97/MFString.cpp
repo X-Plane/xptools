@@ -10,37 +10,37 @@
 
 #include "MFString.h"
 
-MFString::MFString() 
+MFString::MFString()
 {
 	setType(fieldTypeMFString);
 	InitializeJavaIDs();
 }
 
-void MFString::InitializeJavaIDs() 
+void MFString::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFString::addValue(char *value) 
+void MFString::addValue(char *value)
 {
 	SFString *sfvalue = new SFString(value);
 	add(sfvalue);
 }
 
-void MFString::addValue(SFString *sfvalue) 
+void MFString::addValue(SFString *sfvalue)
 {
 	add(sfvalue);
 }
 
-void MFString::insertValue(int index, char *value) 
+void MFString::insertValue(int index, char *value)
 {
 	SFString *sfvalue = new SFString(value);
 	insert(sfvalue, index);
 }
 
-char *MFString::get1Value(int index) 
+char *MFString::get1Value(int index)
 {
 	SFString *sfvalue = (SFString *)getObject(index);
 	if (sfvalue)
@@ -49,7 +49,7 @@ char *MFString::get1Value(int index)
 		return NULL;
 }
 
-void MFString::set1Value(int index, char *value) 
+void MFString::set1Value(int index, char *value)
 {
 	SFString *sfvalue = (SFString *)getObject(index);
 	if (sfvalue)
@@ -84,20 +84,20 @@ void MFString::setValue(int size, char *values[])
 //	Output
 ////////////////////////////////////////////////
 
-void MFString::outputContext(ostream& printStream, char *indentString) 
+void MFString::outputContext(ostream& printStream, char *indentString)
 {
 	for (int n=0; n<getSize(); n++) {
 		char *value = get1Value(n);
 		if (value) {
 			if (n < getSize()-1)
 				printStream << indentString << "\"" << get1Value(n) << "\"" << "," << endl;
-			else	
+			else
 				printStream << indentString << "\"" << get1Value(n) << "\"" << endl;
 		}
 		else {
 			if (n < getSize()-1)
 				printStream << indentString << "\"" << "\"" << "," << endl;
-			else	
+			else
 				printStream << indentString << "\"" << "\"" << endl;
 		}
 	}
@@ -219,7 +219,7 @@ jobject MFString::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		char *value = get1Value(n);
@@ -234,7 +234,7 @@ jobject MFString::toJavaObject(int bConstField) {
 	return fieldObject;
 }
 
-void MFString::setValue(jobject field, int bConstField) 
+void MFString::setValue(jobject field, int bConstField)
 {
 	assert(field);
 	JNIEnv		*jniEnv			= getJniEnv();
@@ -254,7 +254,7 @@ void MFString::setValue(jobject field, int bConstField)
 				set1Value(n, (char *)string);
 			else
 				addValue((char *)string);
-			jniEnv->ReleaseStringUTFChars(value, string);	
+			jniEnv->ReleaseStringUTFChars(value, string);
 			jniEnv->DeleteLocalRef(value);
 		}
 		else {
@@ -269,4 +269,4 @@ void MFString::setValue(jobject field, int bConstField)
 void MFString::getValue(jobject field, int bConstField) {
 }
 
-#endif 
+#endif

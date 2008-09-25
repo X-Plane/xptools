@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -53,13 +53,13 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 {
 	int mx, my;
 	XPLMGetMouseLocation(&mx, &my);
-	
+
 	vector<Point2>		fps;
 	if (inCurrent && mRayShoot)
 	{
 		mTarget.x = GetZoomer()->XPixelToLon(mx);
 		mTarget.y = GetZoomer()->YPixelToLat(my);
-		
+
 		Vector2	dist(mAnchor, mTarget);
 		if (XPLMGetModifiers() & xplm_ShiftFlag)
 		{
@@ -69,34 +69,34 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 				mTarget.y = mAnchor.y;
 		}
 
-		gVertexSelection.clear();						
-		gFaceSelection.clear();						
-		gEdgeSelection.clear();						
-	
+		gVertexSelection.clear();
+		gFaceSelection.clear();
+		gEdgeSelection.clear();
+
 		Point2				st_p = mAnchor;
 		GISHalfedge *		st_h = mAnchorHint;
 		Pmwx::Locate_type	st_l = mAnchorLoc;
 
 		fps.push_back(mAnchor);
-		
+
 		while (st_p != mTarget)
 		{
 			mFoundHint = gMap.ray_shoot(st_p, st_l, st_h,
 									mTarget, mFound, mFoundLoc);
-			
-			
+
+
 			if (mFoundHint != NULL)
 			switch(mFoundLoc) {
-			case Pmwx::locate_Face:	
+			case Pmwx::locate_Face:
 				if (mFoundHint->face() != gMap.unbounded_face())
 					gFaceSelection.insert(mFoundHint->face());
 				gSelectionMode = wed_Select_Face;
 				break;
-			case Pmwx::locate_Halfedge:	
+			case Pmwx::locate_Halfedge:
 				gEdgeSelection.insert(mFoundHint->mDominant ? mFoundHint : mFoundHint->twin());
 				gSelectionMode = wed_Select_Edge;
 				break;
-			case Pmwx::locate_Vertex:	
+			case Pmwx::locate_Vertex:
 				gVertexSelection.insert(mFoundHint->target());
 				gSelectionMode = wed_Select_Vertex;
 				break;
@@ -113,18 +113,18 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		mAnchor.y = GetZoomer()->YPixelToLat(my);
 		mAnchorHint = gMap.locate_point(mAnchor, mAnchorLoc);
 
-		gVertexSelection.clear();						
-		gFaceSelection.clear();						
-		gEdgeSelection.clear();						
+		gVertexSelection.clear();
+		gFaceSelection.clear();
+		gEdgeSelection.clear();
 
 		if (mAnchorHint != NULL)
 		switch(mAnchorLoc) {
-		case Pmwx::locate_Face:	
+		case Pmwx::locate_Face:
 			if (mAnchorHint->face() != gMap.unbounded_face())
 				gFaceSelection.insert(mAnchorHint->face());
 			gSelectionMode = wed_Select_Face;
 			break;
-		case Pmwx::locate_Halfedge:	
+		case Pmwx::locate_Halfedge:
 			gEdgeSelection.insert(mAnchorHint->mDominant ? mAnchorHint : mAnchorHint->twin());
 			gSelectionMode = wed_Select_Edge;
 			break;
@@ -133,7 +133,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 			gSelectionMode = wed_Select_Vertex;
 			break;
 		}
-		
+
 	}
 
 	if (inCurrent && mRayShoot)
@@ -145,7 +145,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 			glVertex2f( GetZoomer()->LonToXPixel(fps[n].x),
 						GetZoomer()->LatToYPixel(fps[n].y));
 		glEnd();
-		
+
 		glPointSize(3);
 
 		glColor4f(1.0, 1.0, 0.0, 0.8);
@@ -161,22 +161,22 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 
 bool	WED_TopoTester::HandleClick(
 				XPLMMouseStatus		inStatus,
-				int 				inX, 
-				int 				inY, 
+				int 				inX,
+				int 				inY,
 				int 				inButton)
 {
 	if (inButton > 0) return false;
 	switch(inStatus) {
-	case xplm_MouseDown: 
-		mRayShoot = true;  
+	case xplm_MouseDown:
+		mRayShoot = true;
 		break;
-	case xplm_MouseUp:   
+	case xplm_MouseUp:
 		if (XPLMGetModifiers() & xplm_OptionAltFlag)
 		{
 			gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		}
-		mRayShoot = false; 
+		mRayShoot = false;
 		break;
 	}
 	return 1;
@@ -207,6 +207,6 @@ char *	WED_TopoTester::GetStatusText(void)
 		case Pmwx::locate_Halfedge:			return "Halfedge";
 		}
 	}
-	
+
 	return NULL;
 }

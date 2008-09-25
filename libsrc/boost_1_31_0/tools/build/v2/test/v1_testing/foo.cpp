@@ -6,7 +6,7 @@
 
 #if NOCOMPILE
 1 = 1;
-#endif 
+#endif
 
 void lib();
 

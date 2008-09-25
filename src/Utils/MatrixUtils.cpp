@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -337,7 +337,7 @@ invertMatrix(GLdouble *out, const GLdouble *m)
 
  MAT(out,3,0) = r3[4]; MAT(out,3,1) = r3[5],
 
- MAT(out,3,2) = r3[6]; MAT(out,3,3) = r3[7]; 
+ MAT(out,3,2) = r3[6]; MAT(out,3,3) = r3[7];
 
 
 
@@ -521,13 +521,13 @@ multMatrices(GLdouble dst[16], const GLdouble a[16], const GLdouble b[16])
 
   }
 
-#endif  
+#endif
 
 }
 
 
 
-void 
+void
 
 multMatrixVec(GLdouble dst[4], const GLdouble m[16], const GLdouble v[4])
 
@@ -591,7 +591,7 @@ copyMatrix(GLdouble dst[16], GLdouble src[16])
 
   }
 
-#endif  
+#endif
 
 }
 
@@ -1281,7 +1281,7 @@ void	vec3_assign(GLdouble vec[3], GLdouble x, GLdouble y, GLdouble z)
 
 	vec[2] = z;
 
-}	
+}
 
 
 
@@ -1289,9 +1289,9 @@ GLdouble vec3_dot(GLdouble op1[3], GLdouble op2[3])
 
 {
 
-	return op1[0] * op2[0] + 
+	return op1[0] * op2[0] +
 
-		   op1[1] * op2[1] + 
+		   op1[1] * op2[1] +
 
 		   op1[2] * op2[2];
 

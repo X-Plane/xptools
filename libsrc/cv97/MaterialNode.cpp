@@ -10,7 +10,7 @@
 
 #include "MaterialNode.h"
 
-MaterialNode::MaterialNode() 
+MaterialNode::MaterialNode()
 {
 	setHeaderFlag(false);
 	setType(materialNodeString);
@@ -46,7 +46,7 @@ MaterialNode::MaterialNode()
 	addExposedField(emissiveColorField);
 }
 
-MaterialNode::~MaterialNode() 
+MaterialNode::~MaterialNode()
 {
 }
 
@@ -60,13 +60,13 @@ SFFloat *MaterialNode::getTransparencyField()
 		return transparencyField;
 	return (SFFloat *)getExposedField(transparencyFieldString);
 }
-	
-void MaterialNode::setTransparency(float value) 
+
+void MaterialNode::setTransparency(float value)
 {
 	getTransparencyField()->setValue(value);
 }
 
-float MaterialNode::getTransparency() 
+float MaterialNode::getTransparency()
 {
 	return getTransparencyField()->getValue();
 }
@@ -81,13 +81,13 @@ SFFloat *MaterialNode::getAmbientIntensityField()
 		return ambientIntensityField;
 	return (SFFloat *)getExposedField(ambientIntensityFieldString);
 }
-	
-void MaterialNode::setAmbientIntensity(float intensity) 
+
+void MaterialNode::setAmbientIntensity(float intensity)
 {
 	getAmbientIntensityField()->setValue(intensity);
 }
 
-float MaterialNode::getAmbientIntensity() 
+float MaterialNode::getAmbientIntensity()
 {
 	return getAmbientIntensityField()->getValue();
 }
@@ -102,13 +102,13 @@ SFFloat *MaterialNode::getShininessField()
 		return shininessField;
 	return (SFFloat *)getExposedField(shininessFieldString);
 }
-	
-void MaterialNode::setShininess(float value) 
+
+void MaterialNode::setShininess(float value)
 {
 	getShininessField()->setValue(value);
 }
 
-float MaterialNode::getShininess() 
+float MaterialNode::getShininess()
 {
 	return getShininessField()->getValue();
 }
@@ -124,17 +124,17 @@ SFColor *MaterialNode::getDiffuseColorField()
 	return (SFColor *)getExposedField(diffuseColorFieldString);
 }
 
-void MaterialNode::setDiffuseColor(float value[]) 
+void MaterialNode::setDiffuseColor(float value[])
 {
 	getDiffuseColorField()->setValue(value);
 }
 
-void MaterialNode::setDiffuseColor(float r, float g, float b) 
+void MaterialNode::setDiffuseColor(float r, float g, float b)
 {
 	getDiffuseColorField()->setValue(r, g, b);
 }
 
-void MaterialNode::getDiffuseColor(float value[]) 
+void MaterialNode::getDiffuseColor(float value[])
 {
 	getDiffuseColorField()->getValue(value);
 }
@@ -150,17 +150,17 @@ SFColor *MaterialNode::getSpecularColorField()
 	return (SFColor *)getExposedField(specularColorFieldString);
 }
 
-void MaterialNode::setSpecularColor(float value[]) 
+void MaterialNode::setSpecularColor(float value[])
 {
 	getSpecularColorField()->setValue(value);
 }
 
-void MaterialNode::setSpecularColor(float r, float g, float b) 
+void MaterialNode::setSpecularColor(float r, float g, float b)
 {
 	getSpecularColorField()->setValue(r, g, b);
 }
 
-void MaterialNode::getSpecularColor(float value[]) 
+void MaterialNode::getSpecularColor(float value[])
 {
 	getSpecularColorField()->getValue(value);
 }
@@ -176,17 +176,17 @@ SFColor *MaterialNode::getEmissiveColorField()
 	return (SFColor *)getExposedField(emissiveColorFieldString);
 }
 
-void MaterialNode::setEmissiveColor(float value[]) 
+void MaterialNode::setEmissiveColor(float value[])
 {
 	getEmissiveColorField()->setValue(value);
 }
 
-void MaterialNode::setEmissiveColor(float r, float g, float b) 
+void MaterialNode::setEmissiveColor(float r, float g, float b)
 {
 	getEmissiveColorField()->setValue(r, g, b);
 }
 
-void MaterialNode::getEmissiveColor(float value[]) 
+void MaterialNode::getEmissiveColor(float value[])
 {
 	getEmissiveColorField()->getValue(value);
 }
@@ -195,12 +195,12 @@ void MaterialNode::getEmissiveColor(float value[])
 //	List
 ////////////////////////////////////////////////
 
-MaterialNode *MaterialNode::next() 
+MaterialNode *MaterialNode::next()
 {
 	return (MaterialNode *)Node::next(getType());
 }
 
-MaterialNode *MaterialNode::nextTraversal() 
+MaterialNode *MaterialNode::nextTraversal()
 {
 	return (MaterialNode *)Node::nextTraversalByType(getType());
 }
@@ -208,21 +208,21 @@ MaterialNode *MaterialNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool MaterialNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void MaterialNode::initialize() 
+void MaterialNode::initialize()
 {
 }
 
-void MaterialNode::uninitialize() 
+void MaterialNode::uninitialize()
 {
 }
 
-void MaterialNode::update() 
+void MaterialNode::update()
 {
 }
 
@@ -230,7 +230,7 @@ void MaterialNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void MaterialNode::outputContext(ostream &printStream, char *indentString) 
+void MaterialNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFColor *dcolor = getDiffuseColorField();
 	SFColor *scolor = getSpecularColorField();

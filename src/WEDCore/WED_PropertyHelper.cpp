@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -110,9 +110,9 @@ void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const ch
 		mItems[n]->ToDB(db,id_col, id_val);
 		mItems[n]->GetUpdate(update);
 	}
-	
+
 	string skip(skip_table ? skip_table : "");
-	
+
 	for (SQL_Update::iterator table = update.begin(); table != update.end(); ++table)
 	{
 		if (table->first == skip) continue;
@@ -125,12 +125,12 @@ void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const ch
 			vals += ",";
 			vals += col->second;
 		}
-		
-		string cmd = string("INSERT OR REPLACE INTO ") + table->first + 
+
+		string cmd = string("INSERT OR REPLACE INTO ") + table->first +
 					 string("(") + cols +
 					 string(") VALUES(") +
 					 vals + ");";
-		
+
 		sql_command write_to_table(db, cmd.c_str(), NULL);
 		int err = write_to_table.simple_exec();
 		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
@@ -193,10 +193,10 @@ void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause, const map
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0		k;
-	sql_row1<int>	v;	
+	sql_row1<int>	v;
 	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;	
+	value = v.a;
 }
 
 void		WED_PropIntText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -241,7 +241,7 @@ void		WED_PropBoolText::SetProperty(const PropertyVal_t& val, WED_PropertyHelper
 	DebugAssert(val.prop_kind == prop_Bool);
 	if (value != val.int_val)
 	{
-		parent->PropEditCallback(1);	
+		parent->PropEditCallback(1);
 		value = val.int_val;
 		parent->PropEditCallback(0);
 	}
@@ -263,10 +263,10 @@ void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause, const ma
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0		k;
-	sql_row1<int>	v;	
+	sql_row1<int>	v;
 	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;	
+	value = v.a;
 }
 
 void		WED_PropBoolText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -335,10 +335,10 @@ void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause, const 
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<double>	v;	
+	sql_row1<double>	v;
 	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;	
+	value = v.a;
 }
 
 void		WED_PropDoubleText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -356,7 +356,7 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropDoubleTextMeters::GetProperty(PropertyVal_t& val) const
 {
-	WED_PropDoubleText::GetProperty(val);	
+	WED_PropDoubleText::GetProperty(val);
 	if(gIsFeet)val.double_val *= MTR_TO_FT;
 }
 
@@ -398,7 +398,7 @@ void		WED_PropStringText::SetProperty(const PropertyVal_t& val, WED_PropertyHelp
 	DebugAssert(val.prop_kind == prop_String);
 	if (value != val.string_val)
 	{
-		parent->PropEditCallback(1);	
+		parent->PropEditCallback(1);
 		value = val.string_val;
 		parent->PropEditCallback(0);
 	}
@@ -426,10 +426,10 @@ void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause, const 
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<string>	v;	
+	sql_row1<string>	v;
 	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;	
+	value = v.a;
 }
 
 void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -474,7 +474,7 @@ void		WED_PropFileText::SetProperty(const PropertyVal_t& val, WED_PropertyHelper
 	DebugAssert(val.prop_kind == prop_FilePath);
 	if (value != val.string_val)
 	{
-		parent->PropEditCallback(1);	
+		parent->PropEditCallback(1);
 		value = val.string_val;
 		parent->PropEditCallback(0);
 	}
@@ -502,10 +502,10 @@ void		WED_PropFileText::FromDB(sqlite3 * db, const char * where_clause, const ma
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<string>	v;	
+	sql_row1<string>	v;
 	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;	
+	value = v.a;
 }
 
 void		WED_PropFileText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -550,9 +550,9 @@ void		WED_PropIntEnum::SetProperty(const PropertyVal_t& val, WED_PropertyHelper 
 {
 	DebugAssert(val.prop_kind == prop_Enum);
 	if (value != val.int_val)
-	{		
+	{
 		if (ENUM_Domain(val.int_val) != domain) return;
-		parent->PropEditCallback(1);	
+		parent->PropEditCallback(1);
 		value = val.int_val;
 		parent->PropEditCallback(0);
 	}
@@ -574,10 +574,10 @@ void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause, const map
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<int>		v;	
-	int err = cmd.simple_exec(k,v);	
+	sql_row1<int>		v;
+	int err = cmd.simple_exec(k,v);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	
+
 	value = remap(mapping,v.a);
 	DebugAssert(value != -1);
 	DebugAssert(ENUM_Domain(value)==domain);
@@ -624,7 +624,7 @@ void		WED_PropIntEnumSet::SetProperty(const PropertyVal_t& val, WED_PropertyHelp
 {
 	DebugAssert(val.prop_kind == prop_EnumSet);
 	if (value != val.set_val)
-	{		
+	{
 		for (set<int>::const_iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
 		if (ENUM_Domain(*e) != domain)
 			return;
@@ -661,8 +661,8 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const 
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<int>		v;	
-	
+	sql_row1<int>		v;
+
 	value.clear();
 	cmd.begin();
 	int rc;
@@ -672,11 +672,11 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const 
 		{
 			v.a = remap(mapping, v.a);
 			DebugAssert(v.a != -1);
-			value.insert(v.a);		
+			value.insert(v.a);
 			DebugAssert(ENUM_Domain(v.a)==domain);
 		}
-	} while (rc == SQLITE_ROW); 
-	
+	} while (rc == SQLITE_ROW);
+
 	if (rc != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),rc);
 }
 
@@ -690,20 +690,20 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 		int err = cmd.simple_exec();
 		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
-	
+
 	if (!value.empty())
 	{
 		sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
 		sql_command cmd2(db,cmd_buf,"@e");
 		for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
-		{			
+		{
 			sql_row1<int>	p;
 
 			p.a = *i;
 			int err = cmd2.simple_exec(p);
 			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
-	}		
+	}
 }
 
 void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
@@ -717,7 +717,7 @@ void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 {
 	int me = mParent->FindProperty(host);
 	mParent->GetNthPropertyInfo(me, info);
-	info.prop_name = mTitle;	
+	info.prop_name = mTitle;
 }
 
 void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
@@ -729,7 +729,7 @@ void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
 	if (i->first >= minv && i->first <= maxv)
 		dict.insert(PropertyDict_t::value_type(i->first,i->second));
 }
-	
+
 void		WED_PropIntEnumSetFilter::GetPropertyDictItem(int e, string& item)
 {
 	int me = mParent->FindProperty(host);
@@ -746,7 +746,7 @@ void		WED_PropIntEnumSetFilter::GetProperty(PropertyVal_t& val) const
 	for(set<int>::iterator i = local.set_val.begin(); i != local.set_val.end(); ++i)
 	if (*i >= minv && *i <= maxv)
 		val.set_val.insert(*i);
-	
+
 }
 
 void		WED_PropIntEnumSetFilter::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
@@ -755,7 +755,7 @@ void		WED_PropIntEnumSetFilter::SetProperty(const PropertyVal_t& val, WED_Proper
 	PropertyVal_t	clone(val), old;
 	clone.set_val.clear();
 	set<int>::const_iterator i;
-	mParent->GetNthProperty(me, old);	
+	mParent->GetNthProperty(me, old);
 	for(i=old.set_val.begin();i!=old.set_val.end();++i)
 	if(*i < minv || *i > maxv)
 		clone.set_val.insert(*i);
@@ -843,14 +843,14 @@ void		WED_PropIntEnumSetUnion::SetProperty(const PropertyVal_t& val, WED_Propert
 {
 	PropertyVal_t	old_val;
 	this->GetProperty(old_val);
-	
+
 	set<int>	added, deleted;
 	set_difference(val.set_val.begin(),val.set_val.end(),
 					old_val.set_val.begin(),old_val.set_val.end(),
 					set_inserter(added));
 
 	set_difference(old_val.set_val.begin(),old_val.set_val.end(),
-					val.set_val.begin(),val.set_val.end(),					
+					val.set_val.begin(),val.set_val.end(),
 					set_inserter(deleted));
 
 	int nn = mParent->CountSubs();

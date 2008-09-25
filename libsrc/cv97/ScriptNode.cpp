@@ -15,7 +15,7 @@
 // ScriptNode::ScriptNode
 ////////////////////////////////////////////////
 
-ScriptNode::ScriptNode() 
+ScriptNode::ScriptNode()
 {
 	setHeaderFlag(false);
 	setType(scriptNodeString);
@@ -43,7 +43,7 @@ ScriptNode::ScriptNode()
 // ScriptNode::~ScriptNode
 ////////////////////////////////////////////////
 
-ScriptNode::~ScriptNode() 
+ScriptNode::~ScriptNode()
 {
 #ifdef SUPPORT_JSAI
 	if (mpJScriptNode)
@@ -62,17 +62,17 @@ SFBool *ScriptNode::getDirectOutputField()
 	return (SFBool *)getField(directOutputFieldString);
 }
 
-void ScriptNode::setDirectOutput(bool  value) 
+void ScriptNode::setDirectOutput(bool  value)
 {
 	getDirectOutputField()->setValue(value);
 }
 
-void ScriptNode::setDirectOutput(int value) 
+void ScriptNode::setDirectOutput(int value)
 {
 	setDirectOutput(value ? true : false);
 }
 
-bool ScriptNode::getDirectOutput() 
+bool ScriptNode::getDirectOutput()
 {
 	return getDirectOutputField()->getValue();
 }
@@ -88,17 +88,17 @@ SFBool *ScriptNode::getMustEvaluateField()
 	return (SFBool *)getField(mustEvaluateFieldString);
 }
 
-void ScriptNode::setMustEvaluate(bool  value) 
+void ScriptNode::setMustEvaluate(bool  value)
 {
 	getMustEvaluateField()->setValue(value);
 }
 
-void ScriptNode::setMustEvaluate(int value) 
+void ScriptNode::setMustEvaluate(int value)
 {
 	setMustEvaluate(value ? true : false);
 }
 
-bool ScriptNode::getMustEvaluate() 
+bool ScriptNode::getMustEvaluate()
 {
 	return getMustEvaluateField()->getValue();
 }
@@ -114,22 +114,22 @@ MFString *ScriptNode::getUrlField()
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void ScriptNode::addUrl(char * value) 
+void ScriptNode::addUrl(char * value)
 {
 	getUrlField()->addValue(value);
 }
 
-int ScriptNode::getNUrls() 
+int ScriptNode::getNUrls()
 {
 	return getUrlField()->getSize();
 }
 
-char *ScriptNode::getUrl(int index) 
+char *ScriptNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void ScriptNode::setUrl(int index, char *urlString) 
+void ScriptNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -138,12 +138,12 @@ void ScriptNode::setUrl(int index, char *urlString)
 //	List
 ////////////////////////////////////////////////
 
-ScriptNode *ScriptNode::next() 
+ScriptNode *ScriptNode::next()
 {
 	return (ScriptNode *)Node::next(getType());
 }
 
-ScriptNode *ScriptNode::nextTraversal() 
+ScriptNode *ScriptNode::nextTraversal()
 {
 	return (ScriptNode *)Node::nextTraversalByType(getType());
 }
@@ -157,7 +157,7 @@ bool ScriptNode::isChildNodeType(Node *node)
 	return false;
 }
 
-void ScriptNode::update() 
+void ScriptNode::update()
 {
 }
 
@@ -165,7 +165,7 @@ void ScriptNode::update()
 //	output
 ////////////////////////////////////////////////
 
-void ScriptNode::outputContext(ostream &printStream, char *indentString) 
+void ScriptNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *directOutput = getDirectOutputField();
 	SFBool *mustEvaluate = getMustEvaluateField();
@@ -179,7 +179,7 @@ void ScriptNode::outputContext(ostream &printStream, char *indentString)
 		url->MField::outputContext(printStream, indentString, "\t\t");
 		printStream << indentString << "\t" << "]" << endl;
 	}
-		
+
 	int	n;
 
 	for (n=0; n<getNEventIn(); n++) {
@@ -216,7 +216,7 @@ void ScriptNode::outputContext(ostream &printStream, char *indentString)
 // ScriptNode::initialize
 ////////////////////////////////////////////////
 
-void ScriptNode::initialize() 
+void ScriptNode::initialize()
 {
 #ifdef SUPPORT_JSAI
 	if (!isInitialized()) {
@@ -227,7 +227,7 @@ void ScriptNode::initialize()
 		}
 
 		JScript *sjnode = new JScript(this);
-	
+
 		assert(sjnode);
 
 		if (sjnode->isOK()) {
@@ -252,7 +252,7 @@ void ScriptNode::initialize()
 // ScriptNode::initialize
 ////////////////////////////////////////////////
 
-void ScriptNode::uninitialize() 
+void ScriptNode::uninitialize()
 {
 	setInitialized(false);
 

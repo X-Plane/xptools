@@ -66,11 +66,11 @@ std::ostream& write(std::ostream &out,const Td_X_trapezoid<Traits>& t,
 	out << ",";
 	if (!t.is_top_unbounded()) out << t.top(); else out << "+oo";
 	out << ",neighbours(" << std::flush;
-	
+
 	// debug neighbours equivalence relation
 	int max_size=4+1;
 	int null_size=2,size=null_size,i,j;
-	
+
 	X_trapezoid* value[] =
 	{
 		0,
@@ -115,7 +115,7 @@ std::ostream& write(std::ostream &out,const Td_X_trapezoid<Traits>& t,
 		out << " ";
 	}
 	out << ")" << std::flush;
-	
+
 	if (t.is_active())
 	{
 		if (!traits.is_degenerate(t))
@@ -142,8 +142,8 @@ std::ostream& write(std::ostream &out,const Td_X_trapezoid<Traits>& t,
 	}
 	else
 		out << ",D";
-	
-/*	Calling t.is_valid requires the traits to be initialized with the proper 
+
+/*	Calling t.is_valid requires the traits to be initialized with the proper
 bounding box */
 	if (validate)
 	{
@@ -152,9 +152,9 @@ bounding box */
 		else
 			out << ",-";
 	}
-	
+
 	out << ")" << std::flush;
-	
+
 	return out;
 }
 
@@ -175,11 +175,11 @@ std::ostream& operator<<(std::ostream &out,const Td_X_trapezoid<Traits>& t)
 	out << ",";
 	if (!t.is_top_unbounded()) out << t.top(); else out << "+oo";
 	out << ",neighbours(" << std::flush;
-	
+
 	// debug neighbours equivalence relation
 	int max_size=4+1;
 	int null_size=2,size=null_size,i,j;
-	
+
 	X_trapezoid* value[] =
 	{
 		0,
@@ -224,7 +224,7 @@ std::ostream& operator<<(std::ostream &out,const Td_X_trapezoid<Traits>& t)
 		out << " ";
 	}
 	out << ")" << std::flush;
-	
+
 	if (t.is_active())
 	{
 		if (!traits.is_degenerate(t))
@@ -251,8 +251,8 @@ std::ostream& operator<<(std::ostream &out,const Td_X_trapezoid<Traits>& t)
 	}
 	else
 		out << ",D";
-	
-/*	Calling t.is_valid requires the traits to be initialized with the proper 
+
+/*	Calling t.is_valid requires the traits to be initialized with the proper
 bounding box
 	if (traits)
 	{
@@ -261,9 +261,9 @@ bounding box
 		else
 			out << ",-";
 	}
-*/	
+*/
 	out << ")" << std::flush;
-	
+
 	return out;
 }
 

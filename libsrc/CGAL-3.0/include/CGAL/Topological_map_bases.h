@@ -53,18 +53,18 @@ public:
   void*       next()           { return nxt;}
   const void* next() const     { return nxt;}
   // the next halfedge along the face.
-  
+
   void  set_opposite( void* h)  { opp = h;}
 
   void  set_next( void* h)      { nxt = h;}
-  
+
   //will probably be in a max base in the future
   //    void*       prev()       { return prv;}
   //  const void* prev() const { return prv;}
 
   void*       vartex()       { return v;}
   const void* vertex() const { return v;}
-  
+
   void*       face()       { return f;}
   const void* face() const { return f;}
   // the face to the left.
@@ -77,18 +77,18 @@ protected:
 
   void* opp;
   void* nxt;
-  
-  void* v; 
+
+  void* v;
   void* f; //face
-  
+
 };
 
 
 class Tpm_face_base {
 public:
-  typedef std::list<void*> Holes_container; 
-  
-  typedef Holes_container::iterator Holes_iterator; 
+  typedef std::list<void*> Holes_container;
+
+  typedef Holes_container::iterator Holes_iterator;
   typedef Holes_container::const_iterator Holes_const_iterator;
 
 
@@ -104,10 +104,10 @@ public:
   Holes_iterator  holes_begin() {return holes.begin();}
   Holes_iterator  holes_end() {return holes.end();}
 
-  
+
   Holes_const_iterator  holes_begin() const {return holes.begin();}
   Holes_const_iterator  holes_end() const {return holes.end();}
-  
+
 
   void add_hole(void* halfedge_ptr)
   {
@@ -124,7 +124,7 @@ public:
     holes.erase(first,last);
   }
 
-  
+
 
 private:
   void* hdg;
@@ -136,9 +136,9 @@ private:
 
 CGAL_END_NAMESPACE
 
-#else   
+#else
 #error  Header file .h included twice
-#endif  
+#endif
 
 
 

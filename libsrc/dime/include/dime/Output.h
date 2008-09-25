@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Output.h
  *
  *  This source file is part of DIME.
@@ -40,7 +40,7 @@ class DIME_DLL_API dimeOutput
 public:
   dimeOutput();
   ~dimeOutput();
-  
+
   void setCallback(const int numrecords,
                    int (*cb)(float, void *), void *cbdata);
   bool setFileHandle(FILE *fp);

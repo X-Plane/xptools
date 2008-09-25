@@ -4,23 +4,23 @@
  * Copyright (c) 1991-1996 Sam Leffler
  * Copyright (c) 1991-1996 Silicon Graphics, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
@@ -36,7 +36,7 @@
  * ignore those details. The calling program does, however, need to be
  * conscious of the type of the pixel data that it is receiving.
  *
- * For reasons of efficiency, the callback function actually gets called for 
+ * For reasons of efficiency, the callback function actually gets called for
  * "blocks" of pixels rather than for individual pixels. The format of the
  * callback arguments is given below.
  *
@@ -146,7 +146,7 @@ TIFFImageIterBegin(TIFFImageIter* img, TIFF* tif, int stop, char emsg[1024])
 	  }
 	}
 	break;
-    case PHOTOMETRIC_RGB: 
+    case PHOTOMETRIC_RGB:
 	if (colorchannels < 3) {
 	    sprintf(emsg, "Sorry, can not handle RGB image with %s=%d",
 		"Color channels", colorchannels);
@@ -255,7 +255,7 @@ TIFFReadImageIter(TIFF* tif,
  *	PlanarConfiguration contiguous if SamplesPerPixel > 1
  * or
  *	SamplesPerPixel == 1
- */	
+ */
 static int
 gtTileContig(TIFFImageIter* img, void *udata, uint32 w, uint32 h)
 {
@@ -303,7 +303,7 @@ gtTileContig(TIFFImageIter* img, void *udata, uint32 w, uint32 h)
  *	 SamplesPerPixel > 1
  *	 PlanarConfiguration separated
  * We assume that all such images are RGB.
- */	
+ */
 static int
 gtTileSeparate(TIFFImageIter* img, void *udata, uint32 w, uint32 h)
 {
@@ -370,7 +370,7 @@ gtTileSeparate(TIFFImageIter* img, void *udata, uint32 w, uint32 h)
  *	PlanarConfiguration contiguous if SamplesPerPixel > 1
  * or
  *	SamplesPerPixel == 1
- */	
+ */
 static int
 gtStripContig(TIFFImageIter* img, void *udata, uint32 w, uint32 h)
 {
@@ -495,8 +495,8 @@ main(int argc, char **argv)
 	fprintf(stderr,"usage: %s tiff_file\n",argv[0]);
 	exit(1);
     }
-    tif = (TIFF *)PLIGetImage(argv[1], (void *) &data, &ColorMap, 
-			      &nx, &ny, &BitsPerSample, &SamplesPerPixel, 
+    tif = (TIFF *)PLIGetImage(argv[1], (void *) &data, &ColorMap,
+			      &nx, &ny, &BitsPerSample, &SamplesPerPixel,
 			      &isColorMapped, &isPliFile);
     if (tif != NULL) {
 
@@ -513,6 +513,6 @@ main(int argc, char **argv)
 	    TIFFErrorExt(tif->tif_clientdata, TIFFFileName(tif), emsg);
 	}
     }
-    
+
 }
 #endif

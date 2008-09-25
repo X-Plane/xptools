@@ -12,7 +12,7 @@
 #include "GroupingNode.h"
 #include "GeometryNode.h"
 
-GroupingNode::GroupingNode() 
+GroupingNode::GroupingNode()
 {
 	setHeaderFlag(false);
 
@@ -37,7 +37,7 @@ GroupingNode::GroupingNode()
 	addField(bboxSizeField);
 }
 
-GroupingNode::~GroupingNode() 
+GroupingNode::~GroupingNode()
 {
 }
 
@@ -52,17 +52,17 @@ SFVec3f *GroupingNode::getBoundingBoxSizeField()
 	return (SFVec3f *)getField(bboxSizeFieldName);
 }
 
-void GroupingNode::setBoundingBoxSize(float value[]) 
+void GroupingNode::setBoundingBoxSize(float value[])
 {
 	getBoundingBoxSizeField()->setValue(value);
 }
 
-void GroupingNode::setBoundingBoxSize(float x, float y, float z) 
+void GroupingNode::setBoundingBoxSize(float x, float y, float z)
 {
 	getBoundingBoxSizeField()->setValue(x, y, z);
 }
 
-void GroupingNode::getBoundingBoxSize(float value[]) 
+void GroupingNode::getBoundingBoxSize(float value[])
 {
 	getBoundingBoxSizeField()->getValue(value);
 }
@@ -78,17 +78,17 @@ SFVec3f *GroupingNode::getBoundingBoxCenterField()
 	return (SFVec3f *)getField(bboxCenterFieldName);
 }
 
-void GroupingNode::setBoundingBoxCenter(float value[]) 
+void GroupingNode::setBoundingBoxCenter(float value[])
 {
 	getBoundingBoxCenterField()->setValue(value);
 }
 
-void GroupingNode::setBoundingBoxCenter(float x, float y, float z) 
+void GroupingNode::setBoundingBoxCenter(float x, float y, float z)
 {
 	getBoundingBoxCenterField()->setValue(x, y, z);
 }
 
-void GroupingNode::getBoundingBoxCenter(float value[]) 
+void GroupingNode::getBoundingBoxCenter(float value[])
 {
 	getBoundingBoxCenterField()->getValue(value);
 }
@@ -97,7 +97,7 @@ void GroupingNode::getBoundingBoxCenter(float value[])
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void GroupingNode::setBoundingBox(BoundingBox *bbox) 
+void GroupingNode::setBoundingBox(BoundingBox *bbox)
 {
 	float center[3];
 	float size[3];
@@ -111,7 +111,7 @@ void GroupingNode::setBoundingBox(BoundingBox *bbox)
 //	List
 ////////////////////////////////////////////////
 
-GroupingNode *GroupingNode::next() 
+GroupingNode *GroupingNode::next()
 {
 	for (Node *node = Node::next(); node != NULL; node = node->next()) {
 		if (node->isGroupNode() || node->isTransformNode() || node->isBillboardNode() || node->isCollisionNode() || node->isLodNode() || node->isSwitchNode() || node->isInlineNode())
@@ -120,7 +120,7 @@ GroupingNode *GroupingNode::next()
 	return NULL;
 }
 
-GroupingNode *GroupingNode::nextTraversal() 
+GroupingNode *GroupingNode::nextTraversal()
 {
 	for (Node *node = Node::nextTraversal(); node != NULL; node = node->nextTraversal()) {
 		if (node->isGroupNode() || node->isTransformNode() || node->isBillboardNode() || node->isCollisionNode() || node->isLodNode() || node->isSwitchNode() || node->isInlineNode())
@@ -160,7 +160,7 @@ BoundingBox	*bbox)
 		}
 	}
 
-	for (Node *cnode=node->getChildNodes(); cnode; cnode=cnode->next()) 
+	for (Node *cnode=node->getChildNodes(); cnode; cnode=cnode->next())
 		RecomputeExtents(cnode, bbox);
 }
 
@@ -168,7 +168,7 @@ void GroupingNode::recomputeBoundingBox()
 {
 	BoundingBox bbox;
 
-	for (Node *node=getChildNodes(); node; node=node->next()) 
+	for (Node *node=getChildNodes(); node; node=node->next())
 		RecomputeExtents(node, &bbox);
 
 	setBoundingBox(&bbox);

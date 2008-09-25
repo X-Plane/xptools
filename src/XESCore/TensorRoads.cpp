@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -33,7 +33,7 @@
 #include "GISTool_Globals.h"
 #include "PerfUtils.h"
 #define XUTILS_EXCLUDE_MAC_CRAP
-#include "XUtils.h" 
+#include "XUtils.h"
 
 #define	ADVANCE_RATIO 0.0005
 
@@ -42,7 +42,7 @@
 #if PROFILE_PERFORMANCE
 #define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
 #else
-#define TIMER(x)	
+#define TIMER(x)
 #endif
 
 /************************************************************************************************************************************************
@@ -63,7 +63,7 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 	   s1.p2 == s2.p1 ||
 	   s1.p2 == s2.p2)			return false;
 	if(!s1.could_intersect(s2))	return false;
-	
+
 	if(s1.p1.y == s2.p1.y)
 	{
 		DebugAssert(s1.p1.x != s2.p2.x);
@@ -99,7 +99,7 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 //						s2.p1.x,s2.p1.y,s2.p2.x,s2.p2.y);
 				return true;
 			} else return false;
-		}	
+		}
 		else
 		{
 			if (s2.intersect(s1,p))
@@ -110,7 +110,7 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 				return true;
 			} else return false;
 		}
-	}	
+	}
 }
 
 GISHalfedge * InsertOneEdge(const Point2& p1, const Point2& p2, Pmwx& io_map)
@@ -118,13 +118,13 @@ GISHalfedge * InsertOneEdge(const Point2& p1, const Point2& p2, Pmwx& io_map)
 	DebugAssert(p1 != p2);
 	GISVertex * v1 = io_map.locate_vertex(p1);
 	GISVertex * v2 = io_map.locate_vertex(p2);
-	
+
 	if(v1 && v2)		return io_map.nox_insert_edge_between_vertices(v1,v2);
 	else if (v1)		return io_map.nox_insert_edge_from_vertex(v1,p2);
 	else if (v2)		return io_map.nox_insert_edge_from_vertex(v2,p1);
 	else				return io_map.nox_insert_edge_in_hole(p1,p2);
 }
-		
+
 void	SetRoadProps(GISHalfedge * e)
 {
 	if (!e->mDominant) e = e->twin();
@@ -135,14 +135,14 @@ void	SetRoadProps(GISHalfedge * e)
 inline bool LessEdgesThan(GISFace * f, int c)
 {
 	if(f->is_unbounded()) return false;
-	
+
 	Pmwx::Ccb_halfedge_circulator circ,stop;
 	circ = stop = f->outer_ccb();
 	do {
 		if(c-- <= 0) return false;
 		++circ;
 	} while(circ != stop);
-	
+
 	for(Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 	{
 		circ = stop = *h;
@@ -164,7 +164,7 @@ void BulkZapRoads(const DEMGeo& inUrbanDensity, Pmwx& io_map)
 		   e->face() != e->twin()->face() &&								// We divide two DIFFERENT faces (so we don't make an island) AND
 		   LessEdgesThan(e->face(), 6) &&									// The faces aren't too complex
 		   LessEdgesThan(e->twin()->face(), 6)) ||
-		   
+
 		   (e->source()->degree() == 1 || e->target()->degree() == 1)		// Or if we're an antenna
 			)
 		{
@@ -191,11 +191,11 @@ void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 {
 	typedef multimap<double, Segment2>	RoadIndex;
 	typedef	map<double, Point2>			CrossIndex;
-	
+
 	int n;
 	double		y_max = 0;
 	RoadIndex	road_idx;
-	
+
 	for(n = 0; n < roads.size(); ++n)
 	{
 		Segment2	r(roads[n]);
@@ -204,26 +204,26 @@ void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 		y_max = max(y_max,r.p2.y - r.p1.y);
 		road_idx.insert(RoadIndex::value_type(r.p1.y,r));
 	}
-	
+
 	for(RoadIndex::iterator i = road_idx.begin(); i != road_idx.end(); ++i)
 	{
 		RoadIndex::iterator j1(i), j2(i);
-		
+
 		CrossIndex	c;
 		Point2		p;
 		if(j1 != road_idx.begin())
 		{
 			do {
 				--j1;
-				
+
 				if ((j1->first + y_max) < i->second.p1.y)	break;
-				
+
 				if (CrossCheck(i->second, j1->second, p))
 					c.insert(CrossIndex::value_type(Vector2(i->second.p1,p).squared_length(),p));
-				
+
 			} while(j1 != road_idx.begin());
 		}
-		
+
 		++j2;
 		while(j2 != road_idx.end())
 		{
@@ -257,7 +257,7 @@ void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 	}
 }
 
-int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)	
+int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)
 {
 	max_dist_move *= max_dist_move;
 	max_dist_seg *= max_dist_seg;
@@ -266,7 +266,7 @@ int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)
 	{
 		list<Point2>::iterator best_dead = pts.end();
 		double d_sq = 0.0f;
-		
+
 		for(list<Point2>::iterator i = pts.begin(); i != pts.end(); ++i)
 		{
 			if(i != pts.begin())
@@ -291,7 +291,7 @@ int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)
 			}
 		}
 		if(best_dead == pts.end()) break;
-		
+
 		pts.erase(best_dead);
 		++t;
 	}
@@ -308,7 +308,7 @@ struct	TensorSeed {
 	Point2		p;
 	bool		major;
 	int			x;
-	int			y;		
+	int			y;
 };
 typedef list<TensorSeed>		SeedQueue;
 
@@ -320,9 +320,9 @@ struct Tensor_info {
 	const DEMGeo *	grdy;
 	const DEMGeo *	uden;
 	const DEMGeo *	urad;
-	const DEMGeo *	usqr;	
+	const DEMGeo *	usqr;
 	Bbox2			bounds;
-};	
+};
 
 inline int	dem_get(const DEMGeo& d, int x, int y)
 {
@@ -351,10 +351,10 @@ inline int	dem_get(const DEMGeo& d, int x, int y)
 static Vector2	Tensor_Func(const Point2& p, void * ref)
 {
 	Tensor_info * i = (Tensor_info *) ref;
-	
+
 	double lon = interp(0,i->bounds.p1.x,1,i->bounds.p2.x,p.x);
 	double lat = interp(0,i->bounds.p1.y,1,i->bounds.p2.y,p.y);
-		
+
 	double xe = i->elev->lon_to_x(lon);
 	double ye = i->elev->lat_to_y(lat);
 	double xr = i->urad->lon_to_x(lon);
@@ -363,22 +363,22 @@ static Vector2	Tensor_Func(const Point2& p, void * ref)
 	double yu = i->usqr->lat_to_y(lat);
 	double xg = i->grdx->lon_to_x(lon);
 	double yg = i->grdx->lat_to_y(lat);
-	
+
 	double	sq_w = 0.0f;
 	double	ir_w = 1.0f;
 	float sqv = i->usqr->get(xu,yu);
 	if (sqv == 1.0) sq_w = 1.f, ir_w = 0.0f;
 	if (sqv == 2.0) sq_w = 0.f, ir_w = 1.0f;
-	
+
 	Vector2	basis  = (Gradient2Tensor(Vector2(i->elev->gradient_x_bilinear(xe,ye),i->elev->gradient_y_bilinear(xe,ye))) * gRoadPrefs.elevation_weight);
 	if(ir_w > 0.0f)
 			basis += (Gradient2Tensor(Vector2(i->urad->gradient_x_bilinear(xr,yr),i->urad->gradient_y_bilinear(xr,yr))) * gRoadPrefs.radial_weight * ir_w);
-	
+
 	if (sq_w > 0.0f)
 		basis += Vector2(i->grdx->get(xg,yg),i->grdy->get(xg,yg));
 
 	return basis;
-	
+
 
 }
 
@@ -417,14 +417,14 @@ void	QueueSeed(
 		dem(s.x,s.y) = old;
 		q.push_back(s);
 	}
-}	
+}
 
 bool CheckStats(const Point2& p, const Point2& p_old, const DEMGeo& elev, const DEMGeo& slope, const DEMGeo& density, float amp)
 {
 //	return true;
 	float d = density.get(density.lon_to_x(p.x),density.lat_to_y(p.y));
 	float s = slope.get(slope.lon_to_x(p.x),slope.lat_to_y(p.y));
-	if(d == DEM_NO_DATA) return false;	
+	if(d == DEM_NO_DATA) return false;
 	d += amp;
 	if (!RollDice(d)) return false;
 //	if (!RollDice((d*gRoadPrefs.density_amp))) return false;
@@ -438,8 +438,8 @@ bool CheckStats(const Point2& p, const Point2& p_old, const DEMGeo& elev, const 
 }
 
 bool CheckAndRegister(
-			const Point2&		p, 
-			DEMGeo&				dem, 
+			const Point2&		p,
+			DEMGeo&				dem,
 			int&				ox,
 			int&				oy,
 			int&				ctr,
@@ -447,7 +447,7 @@ bool CheckAndRegister(
 {
 	int x = intlim(dem.lon_to_x(p.x),0,dem.mWidth -1);
 	int y = intlim(dem.lat_to_y(p.y),0,dem.mHeight-1);
-	if(x == ox && y == oy) 
+	if(x == ox && y == oy)
 		return (ctr-- > 0);
 	ox =x;
 	oy =y;
@@ -471,16 +471,16 @@ void	TensorForFace(
 					const DEMGeo&	inUrbanSquare,
 					const DEMGeo&	inGridX,
 					const DEMGeo&	inGridY,
-					Tensor_info&	t)		
+					Tensor_info&	t)
 {
 
 	t.elev = &inElevation;
 	t.urad = &inUrbanRadial;
-	t.usqr = &inUrbanSquare;		
+	t.usqr = &inUrbanSquare;
 	t.uden = &inUrbanDensity;
 	t.grdx = &inGridX;
 	t.grdy = &inGridY;
-	t.bounds.p1.x = inElevation.mWest ; 
+	t.bounds.p1.x = inElevation.mWest ;
 	t.bounds.p1.y = inElevation.mSouth;
 	t.bounds.p2.x = inElevation.mEast ;
 	t.bounds.p2.y = inElevation.mNorth;
@@ -496,10 +496,10 @@ void	RasterEdge(
 	int x2 = intlim(dem.lon_to_x(e->target()->point().x),0,dem.mWidth-1);
 	int y1 = intlim(dem.lat_to_y(e->source()->point().y),0,dem.mHeight-1);
 	int y2 = intlim(dem.lat_to_y(e->target()->point().y),0,dem.mHeight-1);
-	
+
 	Vector2	road_dir(e->source()->point(),e->target()->point());
 	road_dir.normalize();
-	
+
 	if(abs(x2-x1) > abs(y2-y1))
 	{
 		// "Horizontal line"
@@ -520,15 +520,15 @@ void	RasterEdge(
 
 			int old = dem.get(x,y);
 			if(align_major > 0.7) old |= 1;
-			if(align_minor > 0.7) old |= 2;			
+			if(align_minor > 0.7) old |= 2;
 			dem(x,y)=old;
 		}
-	} 
+	}
 	else
 	{
 		// "Vertical line"
 		if(y2 < y1)
-		{ 
+		{
 			swap(x1,x2);
 			swap(y1,y2);
 		}
@@ -544,9 +544,9 @@ void	RasterEdge(
 
 			int old = dem.get(x,y);
 			if(align_major > 0.8) old |= 1;
-			if(align_minor > 0.8) old |= 2;			
+			if(align_minor > 0.8) old |= 2;
 			dem(x,y)=old;
-		}		
+		}
 	}
 }
 
@@ -556,7 +556,7 @@ void	BuildRoadsForFace(
 					const DEMGeo&	inSlope,
 					const DEMGeo&	inUrbanDensity,
 					const DEMGeo&	inUrbanRadial,
-					const DEMGeo&	inUrbanSquare,					
+					const DEMGeo&	inUrbanSquare,
 					GISFace *		inFace,
 					ProgressFunc	inProg,
 					ImageInfo *		ioTensorImage,
@@ -575,7 +575,7 @@ void	BuildRoadsForFace(
 	road_restrict.copy_geo_from(inElevation);
 	grid_x.copy_geo_from(inElevation);
 	grid_y.copy_geo_from(inElevation);
-		
+
 	/**********************************************************************************************************************************
 	 * INITIALIZE THE ROAD RESTRICTION GRID USING WATER AND OTHER NON-PASSABLES!
 	**********************************************************************************************************************************/
@@ -583,15 +583,15 @@ void	BuildRoadsForFace(
 	// Best to zap out a lot here since more possiblep points means more time in the alg.
 	{
 		TIMER(burn_water)
-		
+
 		set<GISFace *>			no_road_faces;
 		set<GISHalfedge *>		bounds;
 		PolyRasterizer			raster;
 		for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
-		if (!f->is_unbounded())	
+		if (!f->is_unbounded())
 		if(!RoadsForThisFace(f))
-			no_road_faces.insert(f);	
-		
+			no_road_faces.insert(f);
+
 		FindEdgesForFaceSet(no_road_faces, bounds);
 		y = SetupRasterizerForDEM(bounds, road_restrict, raster);
 
@@ -608,11 +608,11 @@ void	BuildRoadsForFace(
 				}
 			}
 			++y;
-			if (y >= road_restrict.mHeight) 
+			if (y >= road_restrict.mHeight)
 				break;
-			raster.AdvanceScanline(y);		
+			raster.AdvanceScanline(y);
 		}
-		
+
 		{
 			DEMGeo	temp(road_restrict);
 			for(y = 0; y < temp.mHeight; ++y)
@@ -623,7 +623,7 @@ void	BuildRoadsForFace(
 			}
 		}
 	}
-	
+
 	/**********************************************************************************************************************************
 	 * BURN EACH VECTOR INTO THE RESTRICTION GRID TOO
 	**********************************************************************************************************************************/
@@ -634,7 +634,7 @@ void	BuildRoadsForFace(
 				inElevation,
 				inUrbanDensity,
 				inUrbanRadial,
-				inUrbanSquare,					
+				inUrbanSquare,
 				grid_x,
 				grid_y,
 				t);
@@ -650,28 +650,28 @@ void	BuildRoadsForFace(
 	/**********************************************************************************************************************************
 	 * BUILD GRID TENSOR FIELD
 	**********************************************************************************************************************************/
-	
+
 	// Running a tensor func that accesses every polygon vertex in its evaluator would be unacceptably slow.  So we simply rasterize
 	// each polygon's interior using its own internal tensor func, which simplifies the cost of building this.  This lowers the accuracy
 	// of the grid tensor field, but we don't care that much anyway.
-	
+
 	{
 		TIMER(calc_linear_tensors)
 //		int tcalcs = 0;
-		
+
 		for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
-		if (!f->is_unbounded())	
+		if (!f->is_unbounded())
 		if(RoadsForThisFace(f))
 		{
-			// First build a polygon with tensor weights for the face we're working on.		
+			// First build a polygon with tensor weights for the face we're working on.
 			vector<Point2>		poly;
 			vector<Vector2>		tensors;
 			PolyRasterizer		raster;
-			
+
 
 			Pmwx::Ccb_halfedge_circulator	circ = f->outer_ccb();
-			Pmwx::Ccb_halfedge_circulator	start = circ;		
-			Bbox2	bounds(circ->source()->point());	
+			Pmwx::Ccb_halfedge_circulator	start = circ;
+			Bbox2	bounds(circ->source()->point());
 			do {
 				poly.push_back(circ->target()->point());
 				bounds += circ->target()->point();
@@ -679,12 +679,12 @@ void	BuildRoadsForFace(
 				Vector2 next(	circ->next()->source()->point(),circ->next()->target()->point());
 				prev.normalize();
 				next.normalize();
-				Vector2 v(prev+next);	
+				Vector2 v(prev+next);
 				v.normalize();
 				tensors.push_back(/*Eigen2Tensor*/(v));
 				++circ;
 			} while (circ != start);
-			
+
 			for(Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 			{
 				Pmwx::Ccb_halfedge_circulator	circ(*h);
@@ -702,8 +702,8 @@ void	BuildRoadsForFace(
 				} while(circ != start);
 			}
 
-			// Now rasterize into the polygon...		
-			double sz = (bounds.p2.y - bounds.p1.y) * (bounds.p2.x - bounds.p1.x);		
+			// Now rasterize into the polygon...
+			double sz = (bounds.p2.y - bounds.p1.y) * (bounds.p2.x - bounds.p1.x);
 			y = SetupRasterizerForDEM(f, road_restrict, raster);
 			raster.StartScanline(y);
 			while (!raster.DoneScan())
@@ -719,25 +719,25 @@ void	BuildRoadsForFace(
 									inUrbanSquare.lon_to_x(grid_x.x_to_lon(x)),
 									inUrbanSquare.lat_to_y(grid_x.y_to_lat(y)));
 						if(sq == 1.0)
-						{				
+						{
 							Vector2	t(grid_x.get(x,y),grid_y.get(x,y));
 							for (int n = 0; n < poly.size(); ++n)
 							{
 //								++tcalcs;
 								t += (Linear_Tensor(poly[n],tensors[n], 4.0 / sz, Point2(road_restrict.x_to_lon(x),road_restrict.y_to_lat(y))));
 							}
-							grid_x(x,y) = t.dx;	
-							grid_y(x,y) = t.dy;	
+							grid_x(x,y) = t.dx;
+							grid_y(x,y) = t.dy;
 						}
 					}
 				}
 				++y;
-				if (y >= road_restrict.mHeight) 
+				if (y >= road_restrict.mHeight)
 					break;
-				raster.AdvanceScanline(y);		
-			}			
+				raster.AdvanceScanline(y);
+			}
 		}
-		
+
 //		printf("Total tensor calcs for road grid: %d\n",tcalcs);
 	}
 
@@ -772,11 +772,11 @@ void	BuildRoadsForFace(
 
 		printf("Queued %d seeds origially.\n", seedQ.size());
 	}
-	
+
 	/**********************************************************************************************************************************
 	 * RUN THROUGH THE QUEUE, BUILDING ROADS
 	**********************************************************************************************************************************/
-	
+
 	vector<Segment2> roads;
 	int ctr=0;
 	{
@@ -808,11 +808,11 @@ void	BuildRoadsForFace(
 						if (!seedQ.front().major) e = e.perpendicular_ccw();
 						if(e.dot(fe) < 0) e = -e;
 						fe = e;
-						e *= ADVANCE_RATIO;					
+						e *= ADVANCE_RATIO;
 						fp += e;
-						front_alive = CheckAndRegister(fp,road_restrict,fx, fy, fc, major);					
-						if(front_alive) front_alive = CheckStats(fp,pts.front(),inElevation,inSlope, inUrbanDensity, gRoadPrefs.density_amp);					
-						if(front_alive) 
+						front_alive = CheckAndRegister(fp,road_restrict,fx, fy, fc, major);
+						if(front_alive) front_alive = CheckStats(fp,pts.front(),inElevation,inSlope, inUrbanDensity, gRoadPrefs.density_amp);
+						if(front_alive)
 						{
 							pts.push_front(fp);
 							if (CheckStats(fp,pts.front(),inElevation,inSlope, inUrbanDensity, 0.0f))
@@ -824,13 +824,13 @@ void	BuildRoadsForFace(
 						Vector2	e = -Tensor2Eigen(Tensor_Func(
 											Point2(interp(road_restrict.mWest , 0, road_restrict.mEast ,1,bp.x),
 												   interp(road_restrict.mSouth, 0, road_restrict.mNorth,1,bp.y)),&t));
-						if (!seedQ.front().major) e = e.perpendicular_ccw();					
+						if (!seedQ.front().major) e = e.perpendicular_ccw();
 						if (e.dot(be) < 0) e = -e;
 						be = e;
 						e *= ADVANCE_RATIO;
 						bp+= e;
 						back_alive = CheckAndRegister(bp,road_restrict,bx, by, bc, major);
-						if(back_alive) back_alive = CheckStats(bp,pts.back(),inElevation,inSlope, inUrbanDensity, gRoadPrefs.density_amp);					
+						if(back_alive) back_alive = CheckStats(bp,pts.back(),inElevation,inSlope, inUrbanDensity, gRoadPrefs.density_amp);
 						if(back_alive) {
 							pts.push_back(bp);
 							if(CheckStats(bp,pts.back(),inElevation,inSlope, inUrbanDensity, 0.0f))
@@ -838,10 +838,10 @@ void	BuildRoadsForFace(
 						}
 					}
 				} while (front_alive || back_alive);
-				
+
 				Point3	c(1,1,0);
 				if(!major)c.y = 0;
-				
+
 				int k = ThinLine(pts, 10.0 * MTR_TO_NM * NM_TO_DEG_LAT, 500 * MTR_TO_NM * NM_TO_DEG_LAT);
 	//			printf("Killed %d points, kept %d points.\n", k, pts.size());
 				for(list<Point2>::iterator i = pts.begin(); i != pts.end(); ++i)
@@ -864,7 +864,7 @@ void	BuildRoadsForFace(
 	//			printf("Q contains: %d, pts: %d\n", seedQ.size(), gMeshPoints.size());
 		}
 	}
-	
+
 	{
 		TIMER(build_real_roads)
 		Pmwx	sub;
@@ -877,15 +877,15 @@ void	BuildRoadsForFace(
 	//		sf->mTerrainType = terrain_Natural;
 		DebugAssert(ioMap.is_valid());
 		DebugAssert(sub.is_valid());
-		
+
 		MergeMaps(ioMap, sub, false, NULL, true, inProg);
 	}
-	
+
 	/**********************************************************************************************************************************
 	 * DEBUG OUTPUT
 	**********************************************************************************************************************************/
 
-#if OPENGL_MAP	
+#if OPENGL_MAP
 	if(inFace && ioTensorImage)
 	{
 		Pmwx::Ccb_halfedge_circulator	circ = inFace->outer_ccb();
@@ -895,8 +895,8 @@ void	BuildRoadsForFace(
 			t.bounds += circ->source()->point();
 			++circ;
 		} while (circ != start);
-	
-	
+
+
 		TensorDDA(*ioTensorImage,Tensor_Func,&t);
 		outTensorBounds[0] = t.bounds.p1.x;
 		outTensorBounds[1] = t.bounds.p1.y;

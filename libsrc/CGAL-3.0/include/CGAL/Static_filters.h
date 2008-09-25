@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sylvain Pion
- 
+
 #ifndef CGAL_STATIC_FILTERS_H
 #define CGAL_STATIC_FILTERS_H
 

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,18 +35,18 @@ XWin::XWin(int default_dnd)
 {
 	sIniting = true;
 	memset(mInDrag, 0, sizeof(mInDrag));
-	
+
 		Rect	bounds;
-		
+
 	bounds = (**(::GetMainDevice())).gdRect;
 	bounds.top += GetMBarHeight();
-	
+
 	OSStatus	err = CreateNewWindow(kPlainWindowClass, kWindowStandardHandlerAttribute,
 						&bounds,
 						&mWindow);
 	if (err != noErr) throw err;
-	
-		EventTypeSpec	events[] = { 
+
+		EventTypeSpec	events[] = {
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
 			kEventClassMouse,	kEventMouseMoved,
@@ -63,11 +63,11 @@ XWin::XWin(int default_dnd)
 			kEventClassKeyboard,kEventRawKeyRepeat,
 			kEventClassKeyboard,kEventRawKeyModifiersChanged,
 			kEventClassCommand,	kEventCommandProcess
-		};			
-		
-	
+		};
+
+
 	err = InstallEventHandler(GetWindowEventTarget(mWindow),
-		mEventHandler, GetEventTypeCount(events), events, 
+		mEventHandler, GetEventTypeCount(events), events,
 			reinterpret_cast<void *>(this),
 			NULL);
 	if (err != noErr) throw err;
@@ -76,15 +76,15 @@ XWin::XWin(int default_dnd)
 	{
 		err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
 		if (err != noErr) throw err;
-		
+
 		err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
 		if (err != noErr) throw err;
 	}
-	
-	ShowWindow(mWindow);	
+
+	ShowWindow(mWindow);
 	sIniting = false;
-	
-	err = InstallEventLoopTimer(GetMainEventLoop(), kDurationForever, kDurationForever, mTimerHandler, 
+
+	err = InstallEventLoopTimer(GetMainEventLoop(), kDurationForever, kDurationForever, mTimerHandler,
 		reinterpret_cast<void *>(this), &mTimer);
 	if (err != noErr) throw err;
 }
@@ -101,14 +101,14 @@ XWin::XWin(
 {
 	sIniting = true;
 	memset(mInDrag,0,sizeof(mInDrag));
-	
+
 		Rect	bounds;
-	
+
 	bounds.left = inX;
 	bounds.right = inX + inWidth;
 	bounds.top = inY;
 	bounds.bottom = inY + inHeight;
-	
+
 	if (inAttributes & xwin_style_fullscreen)
 	{
 		GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
@@ -118,19 +118,19 @@ XWin::XWin(
 		#endif
 		InsetRect(&bounds, 20, 20);
 	}
-		
+
 	OSStatus	err = CreateNewWindow(
 						(inAttributes & xwin_style_movable) ?			kDocumentWindowClass:
-						((inAttributes & xwin_style_resizable)  ?		kDocumentWindowClass : 
+						((inAttributes & xwin_style_resizable)  ?		kDocumentWindowClass :
 																		kPlainWindowClass),
 						(inAttributes & xwin_style_movable) ?			(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute) :
-						((inAttributes & xwin_style_resizable) ?		(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute | kWindowFullZoomAttribute | kWindowCollapseBoxAttribute | kWindowResizableAttribute | kWindowLiveResizeAttribute) : 
+						((inAttributes & xwin_style_resizable) ?		(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute | kWindowFullZoomAttribute | kWindowCollapseBoxAttribute | kWindowResizableAttribute | kWindowLiveResizeAttribute) :
 																		kWindowStandardHandlerAttribute),
 						&bounds,
 						&mWindow);
 	if (err != noErr) throw err;
-	
-		EventTypeSpec	events[] = { 
+
+		EventTypeSpec	events[] = {
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
 			kEventClassMouse,	kEventMouseMoved,
@@ -147,7 +147,7 @@ XWin::XWin(
 			kEventClassKeyboard,kEventRawKeyRepeat,
 			kEventClassKeyboard,kEventRawKeyModifiersChanged,
 			kEventClassCommand,	kEventCommandProcess
-		};			
+		};
 
 
 	if (inAttributes & xwin_style_fullscreen)
@@ -156,42 +156,42 @@ XWin::XWin(
 		min_lim.width = inWidth;
 		min_lim.height = inHeight;
 		SetWindowResizeLimits(mWindow, &min_lim, NULL);
-	}		
-	
+	}
+
 	err = InstallEventHandler(GetWindowEventTarget(mWindow),
-		mEventHandler, GetEventTypeCount(events), events, 
+		mEventHandler, GetEventTypeCount(events), events,
 			reinterpret_cast<void *>(this),
 			NULL);
 	if (err != noErr) throw err;
-	
+
 	if (default_dnd)
 	{
 		err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
 		if (err != noErr) throw err;
-		
+
 		err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
 		if (err != noErr) throw err;
 	}
-	
+
 	if (inAttributes & (xwin_style_centered | xwin_style_fullscreen))
 		RepositionWindow(mWindow, NULL, kWindowCenterOnMainScreen);
-	
+
 	if (inAttributes & xwin_style_visible)
 		ShowWindow(mWindow);
 	sIniting = false;
-	
+
 	SetTitle(inTitle);
-	
-	err = InstallEventLoopTimer(GetMainEventLoop(), kDurationForever, kDurationForever, mTimerHandler, 
+
+	err = InstallEventLoopTimer(GetMainEventLoop(), kDurationForever, kDurationForever, mTimerHandler,
 		reinterpret_cast<void *>(this), &mTimer);
 	if (err != noErr) throw err;
 }
-	
+
 XWin::~XWin()
 {
 	// BEN SEZ: note that disposeWindow calls our event handler, which calls closed() and deletes the obj.
 	// Prevent recursion here - don't ever re-bite on that one!
-	sIniting = true;	
+	sIniting = true;
 	RemoveEventLoopTimer(mTimer);
 	if (mWindow)
 		DisposeWindow(mWindow);
@@ -220,7 +220,7 @@ void	XWin::SetVisible(bool visible)
 
 bool	XWin::GetVisible(void) const
 {
-	return ::IsWindowVisible(mWindow);	
+	return ::IsWindowVisible(mWindow);
 }
 
 bool	XWin::GetActive(void) const
@@ -250,7 +250,7 @@ void			XWin::ForceRefresh(void)
 void			XWin::UpdateNow(void)
 {
 	RgnHandle	vis = NewRgn();
-	
+
 	GetWindowRegion(mWindow, kWindowUpdateRgn,vis);
 	if (!EmptyRgn(vis))
 	{
@@ -264,17 +264,17 @@ void			XWin::UpdateNow(void)
 void			XWin::SetTimerInterval(double seconds)
 {
 	RemoveEventLoopTimer(mTimer);
-	OSErr err = InstallEventLoopTimer(GetMainEventLoop(), seconds ? seconds : kDurationForever, seconds ? seconds : kDurationForever, mTimerHandler, 
+	OSErr err = InstallEventLoopTimer(GetMainEventLoop(), seconds ? seconds : kDurationForever, seconds ? seconds : kDurationForever, mTimerHandler,
 		reinterpret_cast<void *>(this), &mTimer);
-}		
-	
+}
+
 void			XWin::GetBounds(int * outX, int * outY)
 {
 	Rect	bounds;
 
 	::GetWindowBounds(mWindow, kWindowContentRgn, &bounds);
 	::OffsetRect(&bounds, -bounds.left, -bounds.top);
-	
+
 	if (outX) *outX = bounds.right;
 	if (outY) *outY = bounds.bottom;
 }
@@ -293,13 +293,13 @@ void		XWin::GetMouseLoc(int * outX, int * outY)
 #pragma mark -
 
 pascal OSStatus	XWin::MacEventHandler(
-						EventHandlerCallRef		inHandlerCallRef, 
-						EventRef				inEvent, 
+						EventHandlerCallRef		inHandlerCallRef,
+						EventRef				inEvent,
 						void *					inUserData)
 {
 	if (sIniting)
 		return eventNotHandledErr;
-		
+
 	XWin * me = reinterpret_cast<XWin *>(inUserData);
 
 	Point				pt;
@@ -319,17 +319,17 @@ pascal OSStatus	XWin::MacEventHandler(
 	GetEventParameter(inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(delta), NULL, &delta);
 	GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar, NULL, sizeof(macChar), NULL, &macChar);
 	GetEventParameter(inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(modifiers), NULL, &modifiers);
-	
+
 	EventRecord	e;
 
-	UInt32	clss = ::GetEventClass(inEvent);	
+	UInt32	clss = ::GetEventClass(inEvent);
 	UInt32	kind = ::GetEventKind(inEvent);
-	
+
 	SetPortWindowPort(me->mWindow);
 	GlobalToLocal(&pt);
-	
+
 	int bcount;
-	
+
 	switch(clss) {
 	case kEventClassMouse:
 		if (btn == 1 && me->mIsControlClick) btn = 2;
@@ -346,10 +346,10 @@ pascal OSStatus	XWin::MacEventHandler(
 			if (me->mInDrag[btn])
 			{
 				++bcount;
-				me->ClickDrag(pt.h, pt.v, btn);	
+				me->ClickDrag(pt.h, pt.v, btn);
 			}
 			if(bcount==0)
-				me->ClickMove(pt.h, pt.v);	
+				me->ClickMove(pt.h, pt.v);
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
 //			if (kind == kEventMouseDragged)
@@ -369,7 +369,7 @@ pascal OSStatus	XWin::MacEventHandler(
 			return noErr;
 		case kEventWindowDeactivated:
 			me->Activate(false);
-			return noErr;			
+			return noErr;
 		case kEventWindowHandleContentClick:
 			me->mIsControlClick = ((btn == 1) && (modifiers & controlKey));
 			if (me->mIsControlClick) btn=2;
@@ -425,7 +425,7 @@ pascal OSStatus	XWin::MacEventHandler(
 				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,btn);
 			}
 			if(bcount==0)
-				me->ClickMove(me->mLastMouseX, me->mLastMouseY);				
+				me->ClickMove(me->mLastMouseX, me->mLastMouseY);
 			return noErr;
 		default:
 			return eventNotHandledErr;
@@ -443,16 +443,16 @@ pascal OSStatus	XWin::MacEventHandler(
 			}
 		default:
 			return eventNotHandledErr;
-		}		
+		}
 	default:
 		return eventNotHandledErr;
 	}
-}						
+}
 
 pascal OSErr	XWin::MacTrackingHandler(
-					DragTrackingMessage message, 
-					WindowRef theWindow, 
-					void *handlerRefCon, 
+					DragTrackingMessage message,
+					WindowRef theWindow,
+					void *handlerRefCon,
 					DragRef theDrag)
 {
 	XWin * me = reinterpret_cast<XWin *>(handlerRefCon);
@@ -489,16 +489,16 @@ pascal OSErr	XWin::MacTrackingHandler(
 		me->ForceRefresh();
  		return noErr;
 	}
-	return noErr;	
+	return noErr;
 }
-					
+
 pascal OSErr	XWin::MacReceiveHandler(
-					WindowRef theWindow, 
-					void *handlerRefCon, 
+					WindowRef theWindow,
+					void *handlerRefCon,
 					DragRef theDrag)
 {
 	XWin * me = reinterpret_cast<XWin *>(handlerRefCon);
-	
+
 	vector<string>	files;
 	if (MacCanAcceptDrag(theDrag, &files))
 	{
@@ -511,8 +511,8 @@ pascal OSErr	XWin::MacReceiveHandler(
 		return noErr;
 	} else
 		return dragNotAcceptedErr;
-}					
-		
+}
+
 bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles)
 {
 	UInt16			count, index;
@@ -520,13 +520,13 @@ bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles)
 	FlavorFlags		flags;
 	HFSFlavor		hfsFlavor;
 	Size			dataSize;
-	
+
 	if (::CountDragItems(theDrag, &count) != noErr) return false;
-	
+
 	for (index = 1; index <= count; ++index)
 	{
 		if (::GetDragItemReferenceNumber(theDrag, index, &item) != noErr) return false;
-		
+
 		if ((::GetFlavorFlags(theDrag, item, kDragFlavorTypeHFS, &flags) == noErr) &&
 			((flags & flavorSenderOnly) == 0))
 		{
@@ -536,20 +536,20 @@ bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles)
 			{
 				return false;
 			}
-			
+
 			if (outFiles)
 			{
 				string	foo;
 				FSSpec_2_String(hfsFlavor.fileSpec, foo);
 				outFiles->push_back(foo);
 			}
-			
-		} else 
+
+		} else
 			return false;
-	
-		
+
+
 	}
-	
+
 	return true;
 }
 
@@ -576,16 +576,16 @@ xmenu	XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 		memcpy(pStr+1, inTitle, pStr[0]);
 	} else
 		pStr[0] = 0;
-		
+
 	xmenu new_menu = ::NewMenu(gID++, pStr);
-	
+
 	if (parent)
 	{
 		SetMenuItemHierarchicalID(parent,item + 1, GetMenuID(new_menu));
 	}
-	
+
 	InsertMenu(new_menu,0);
-	
+
 	return new_menu;
 }
 
@@ -595,7 +595,7 @@ int		XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 	pStr[0] = strlen(inTitle);
 	memcpy(pStr+1,inTitle, pStr[0]);
 	AppendMenuItemText(menu, pStr);
-	return CountMenuItems(menu) - 1;	
+	return CountMenuItems(menu) - 1;
 }
 
 int		XWin::AppendSeparator(xmenu menu)

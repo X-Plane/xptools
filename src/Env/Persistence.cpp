@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -91,12 +91,12 @@ void	AcceptVertex(
 	i.yOff = inTextureYOffset;
 	i.bodyID = inBodyID;
 	gVertices[inH + sWidth * inV] = i;
-}					
+}
 
 #endif
 
 #if PERSIST_OBJECTS
-					
+
 void	AcceptObject(
 					long	inKind,
 					float	inLatitude,
@@ -112,11 +112,11 @@ void	AcceptObject(
 	if (inKind == 8)
 		i.name = std::string(inName);
 	gObjects.push_back(i);
-}					
+}
 
 #endif
 
-#if PERSIST_PATHS					
+#if PERSIST_PATHS
 void	AcceptRoadSegment(
 					double	inLatitude,
 					double	inLongitude,
@@ -127,7 +127,7 @@ void	AcceptRoadSegment(
 	i.longitude = inLongitude;
 	i.term = isLast;
 	gRoads.push_back(i);
-}					
+}
 
 void	AcceptTrailSegment(
 					double	inLatitude,
@@ -139,7 +139,7 @@ void	AcceptTrailSegment(
 	i.longitude = inLongitude;
 	i.term = isLast;
 	gTrails.push_back(i);
-}					
+}
 
 void	AcceptTrainSegment(
 					double	inLatitude,
@@ -151,7 +151,7 @@ void	AcceptTrainSegment(
 	i.longitude = inLongitude;
 	i.term = isLast;
 	gTrains.push_back(i);
-}					
+}
 
 void	AcceptElectricSegment(
 					double	inLatitude,
@@ -163,7 +163,7 @@ void	AcceptElectricSegment(
 	i.longitude = inLongitude;
 	i.term = isLast;
 	gLines.push_back(i);
-}		
+}
 
 void	AcceptTaxiwaySegment(
 					double	inLatitude,
@@ -176,7 +176,7 @@ void	AcceptTaxiwaySegment(
 	i.term = isLast;
 	gTaxiways.push_back(i);
 }
-		
+
 void	AcceptRiverSegment(
 					double	inLatitude,
 					double	inLongitude,
@@ -188,11 +188,11 @@ void	AcceptRiverSegment(
 	i.term = isLast;
 	gRiverVectors.push_back(i);
 }
-				
-					
+
+
 #endif
 
-#if PERSIST_TEXTURES					
+#if PERSIST_TEXTURES
 void	AcceptCustomTexture(
 					short	inIndex,
 					char *	inName)
@@ -200,7 +200,7 @@ void	AcceptCustomTexture(
 	if (gTextures.size() <= inIndex)
 		gTextures.resize(inIndex + 1);
 	gTextures[inIndex] = std::string(inName);
-}					
+}
 
 #endif
 
@@ -233,12 +233,12 @@ void	GetNthVertex(
 	*outTextureXOffset = gVertices[index].xOff;
 	*outTextureYOffset = gVertices[index].yOff;
 	*outBodyID = gVertices[index].bodyID;
-}					
+}
 
 #endif
 
 #if PERSIST_OBJECTS
-					
+
 int		GetNthObject(
 					long	inNth,
 					long *	outKind,
@@ -247,7 +247,7 @@ int		GetNthObject(
 					float *	outElevationHeading,
 					char *	outName)
 {
-	if (inNth >= gObjects.size())	
+	if (inNth >= gObjects.size())
 		return 0;
 	*outKind = gObjects[inNth].kind;
 	*outLatitude = gObjects[inNth].latitude;
@@ -256,11 +256,11 @@ int		GetNthObject(
 	if (gObjects[inNth].kind == 8)
 		strcpy(outName, gObjects[inNth].name.c_str());
 	return 1;
-}			
+}
 
 #endif
 
-#if PERSIST_PATHS		
+#if PERSIST_PATHS
 
 int		GetNthRoadSegment(
 					long	inNth,
@@ -275,7 +275,7 @@ int		GetNthRoadSegment(
 	*outLongitude = gRoads[inNth].longitude;
 	*outLast = gRoads[inNth].term;
 	return 1;
-}					
+}
 
 int		GetNthTrailSegment(
 					long	inNth,
@@ -290,7 +290,7 @@ int		GetNthTrailSegment(
 	*outLongitude = gTrails[inNth].longitude;
 	*outLast = gTrails[inNth].term;
 	return 1;
-}					
+}
 
 int		GetNthTrainSegment(
 					long	inNth,
@@ -305,7 +305,7 @@ int		GetNthTrainSegment(
 	*outLongitude = gTrains[inNth].longitude;
 	*outLast = gTrains[inNth].term;
 	return 1;
-}					
+}
 
 int		GetNthPowerSegment(
 					long	inNth,
@@ -320,7 +320,7 @@ int		GetNthPowerSegment(
 	*outLongitude = gLines[inNth].longitude;
 	*outLast = gLines[inNth].term;
 	return 1;
-}					
+}
 
 int		GetNthTaxiwaySegment(
 					long		inNth,
@@ -330,7 +330,7 @@ int		GetNthTaxiwaySegment(
 {
 	if (inNth >= gTaxiways.size())
 		return 0;
-		
+
 	*outLatitude = gTaxiways[inNth].latitude;
 	*outLongitude = gTaxiways[inNth].longitude;
 	*outLast = gTaxiways[inNth].term;
@@ -345,7 +345,7 @@ int		GetNthRiverSegment(
 {
 	if (inNth >= gRiverVectors.size())
 		return 0;
-		
+
 	*outLatitude = gRiverVectors[inNth].latitude;
 	*outLongitude = gRiverVectors[inNth].longitude;
 	*outLast = gRiverVectors[inNth].term;
@@ -364,7 +364,7 @@ int		GetNthTexture(
 {
 	if (inNth >= gTextures.size())
 		return 0;
-		
+
 	if (!gTextures[inNth].empty())
 		strcpy(outName, gTextures[inNth].c_str());
 	return 1;
@@ -376,7 +376,7 @@ void	ClearEnvData(void)
 {
 #if PERSIST_VERTICES
 	gVertices.clear();
-#endif	
+#endif
 #if PERSIST_OBJECTS
 	gObjects.clear();
 #endif

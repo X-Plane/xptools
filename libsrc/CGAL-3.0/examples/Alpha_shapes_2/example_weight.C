@@ -64,13 +64,13 @@ alpha_edges(InputIterator begin, InputIterator end,
 	    bool mode,
 	    OutputIterator out)
   // Generate Alpha Shape
-{ 
+{
   std::vector<Gt::Segment> V_seg;
   Alpha_shape_2 A(begin,end);
-  
-  if (mode) 
-    { A.set_mode(Alpha_shape_2::GENERAL); } 
-  else 
+
+  if (mode)
+    { A.set_mode(Alpha_shape_2::GENERAL); }
+  else
     { A.set_mode(Alpha_shape_2::REGULARIZED); };
   A.set_alpha(Alpha);
 
@@ -108,7 +108,7 @@ file_input(std::list<Point>& L)
   std::cout << "Points inserted" << std::endl;
   return true;
 }
-    
+
 //------------------ main -------------------------------------------
 
 int main()

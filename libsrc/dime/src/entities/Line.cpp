@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Line.cpp
  *
  *  This source file is part of DIME.
@@ -44,7 +44,7 @@ static char entityName[] = "LINE";
   Constructor.
 */
 
-dimeLine::dimeLine() 
+dimeLine::dimeLine()
 {
   coords[0].setValue(0,0,0);
   coords[1].setValue(0,0,0);
@@ -60,7 +60,7 @@ dimeLine::copy(dimeModel * const model) const
 
   for (int i = 0; i < 2; i++)
     l->coords[i] = this->coords[i];
-  
+
   if (!this->copyRecords(l, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete l;
@@ -69,14 +69,14 @@ dimeLine::copy(dimeModel * const model) const
   else {
     l->copyExtrusionData(this);
   }
-  return l;  
+  return l;
 }
 
 /*!
-  Writes a \e Line entity.  
+  Writes a \e Line entity.
 */
 
-bool 
+bool
 dimeLine::write(dimeOutput * const file)
 {
   this->preWrite(file);
@@ -87,13 +87,13 @@ dimeLine::write(dimeOutput * const file)
       file->writeDouble(this->coords[i][j]);
     }
   }
-  return this->writeExtrusionData(file) && 
+  return this->writeExtrusionData(file) &&
     dimeEntity::write(file);
 }
 
 //!
 
-int 
+int
 dimeLine::typeId() const
 {
   return dimeBase::dimeLineType;
@@ -103,7 +103,7 @@ dimeLine::typeId() const
   Handles the callback from dimeEntity::readRecords().
 */
 
-bool 
+bool
 dimeLine::handleRecord(const int groupcode,
 		      const dimeParam &param,
 		      dimeMemHandler * const memhandler)
@@ -131,7 +131,7 @@ dimeLine::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeLine::getRecord(const int groupcode,
 		   dimeParam &param,
 		   const int index) const
@@ -155,16 +155,16 @@ void
 dimeLine::print() const
 {
   fprintf(stderr,"LINE:\n");
-  for (int i = 0; i < 2; i++) { 
-    fprintf(stderr,"coord: %f %f %f\n", coords[i][0], 
-	    coords[i][1], coords[i][2]); 
-    
-  } 
+  for (int i = 0; i < 2; i++) {
+    fprintf(stderr,"coord: %f %f %f\n", coords[i][0],
+	    coords[i][1], coords[i][2]);
+
+  }
 }
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimeLine::extractGeometry(dimeArray <dimeVec3f> &verts,
 			 dimeArray <int> &/*indices*/,
 			 dimeVec3f &extrusionDir,

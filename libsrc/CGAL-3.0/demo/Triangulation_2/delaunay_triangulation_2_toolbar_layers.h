@@ -11,8 +11,8 @@
 // file          : delaunay_triangulation_2_toolbar_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -51,7 +51,7 @@ private:
   Delaunay        *dt;
   QButtonGroup    *button_group;
   int             nr_of_buttons;
-	
+
   Qt_layer_show_triangulation < Delaunay > *showT;
   Qt_layer_show_voronoi < Delaunay >       *showV;
   Qt_layer_show_points < Delaunay >        *showP;

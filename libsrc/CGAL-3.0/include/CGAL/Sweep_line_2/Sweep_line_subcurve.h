@@ -34,20 +34,20 @@ CGAL_BEGIN_NAMESPACE
  *
  * The information contained in this class is:
  * - the curve itself
- * - two points which are the source and target of the curve. We keep 
- *   the points in order to avoid many calls to the source() and 
- *   target() methods of the traits class 
- * - an indication for the direction of the curve (source point 
- *   is left or right to the target point). 
- * - a reference point that is used when comparing the y values of 
- *   any two curves. Since the curves are inserted in to a balanced 
- *   tree, and at any given time they are sorted on the status line, 
- *   and since their order may change, depending on the position of 
- *   the status line, we need to be able to compare the curves 
+ * - two points which are the source and target of the curve. We keep
+ *   the points in order to avoid many calls to the source() and
+ *   target() methods of the traits class
+ * - an indication for the direction of the curve (source point
+ *   is left or right to the target point).
+ * - a reference point that is used when comparing the y values of
+ *   any two curves. Since the curves are inserted in to a balanced
+ *   tree, and at any given time they are sorted on the status line,
+ *   and since their order may change, depending on the position of
+ *   the status line, we need to be able to compare the curves
  *   relative to a point that will produce a correct answer.
- * - a reference to the last event point on the curve that was already 
- *   handled and also the curve that is the portion of the original 
- *   curve that is to the right of the last event point mentioned. 
+ * - a reference to the last event point on the curve that was already
+ *   handled and also the curve that is the portion of the original
+ *   curve that is to the right of the last event point mentioned.
  *   This is stored to avoid unneccesary splits of the curve.
  *
  */
@@ -69,7 +69,7 @@ public:
 
   typedef Sweep_line_event<Traits, Self> Event;
 
-  Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference, 
+  Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference,
 		      SweepLineTraits_2 *traits);
 
   virtual ~Sweep_line_subcurve() {}
@@ -79,70 +79,70 @@ public:
   }
 
   /*!
-    @return a reference to the curve 
+    @return a reference to the curve
   */
-  const X_monotone_curve_2 &get_curve() const { 
+  const X_monotone_curve_2 &get_curve() const {
     return m_curve;
   }
 
   /*! @return  the pointer to the reference point */
-  const Point_2 *get_reference_point() const { 
+  const Point_2 *get_reference_point() const {
     return m_referencePoint;
   }
 
-  /*! 
-    @return a reference to the rightmost intersection point 
+  /*!
+    @return a reference to the rightmost intersection point
   */
-  const Point_2 &get_last_point()  const { 
-    return m_lastPoint; 
+  const Point_2 &get_last_point()  const {
+    return m_lastPoint;
   }
 
-  /*! 
+  /*!
     Updates the rightmost intersection point.
     @param point a reference to the point
    */
-  void set_last_point(const Point_2 &point) { 
-    m_lastPoint = point; 
+  void set_last_point(const Point_2 &point) {
+    m_lastPoint = point;
   }
 
   /*!
     @return a reference to the last intersecing curve so far
   */
-  const X_monotone_curve_2 &get_last_curve() const { 
-    return m_lastCurve; 
+  const X_monotone_curve_2 &get_last_curve() const {
+    return m_lastCurve;
   }
-  /*! 
+  /*!
     updates the last intersecting curve so far.
     @param cv a reference to the curve
   */
-  void set_last_curve(const X_monotone_curve_2 &cv) { 
-    m_lastCurve = cv; 
+  void set_last_curve(const X_monotone_curve_2 &cv) {
+    m_lastCurve = cv;
   }
 
-  const X_monotone_curve_2 &get_last_subcurve() const { 
-    return m_lastSubCurve; 
+  const X_monotone_curve_2 &get_last_subcurve() const {
+    return m_lastSubCurve;
   }
-  void set_last_subcurve(const X_monotone_curve_2 &cv) { 
-    m_lastSubCurve = cv; 
-  }
-
-
-  bool is_source_left_to_target() const { 
-    return m_isRightSide; 
+  void set_last_subcurve(const X_monotone_curve_2 &cv) {
+    m_lastSubCurve = cv;
   }
 
-  bool is_source(const Point_2 &p) { 
+
+  bool is_source_left_to_target() const {
+    return m_isRightSide;
+  }
+
+  bool is_source(const Point_2 &p) {
     return m_traits->point_equal(p, m_source);
   }
 
-  bool is_target(const Point_2 &p) { 
+  bool is_target(const Point_2 &p) {
     return m_traits->point_equal(p, m_target);
   }
 
   /*! returns true if the specified point is the source or the target
       of the curve. Returns false otherwise.
   */
-  bool is_end_point(const Point_2 &p) { 
+  bool is_end_point(const Point_2 &p) {
     return is_target(p) || is_source(p);
   }
 
@@ -223,12 +223,12 @@ public:
     return true;
   }
 
-  void set_hint(StatusLineIter hint) 
+  void set_hint(StatusLineIter hint)
   {
     m_hint = hint;
   }
 
-  StatusLineIter get_hint() const 
+  StatusLineIter get_hint() const
   {
     return m_hint;
   }
@@ -247,17 +247,17 @@ private:
   /*! thecurve */
   X_monotone_curve_2 m_curve;
 
-  /* a pointer to a point that is used as a reference point when two 
-     curves are compared. This is used when inserting and erasing 
+  /* a pointer to a point that is used as a reference point when two
+     curves are compared. This is used when inserting and erasing
      curves from the status line. */
   Point_2 *m_referencePoint;
 
-  /*! the rightmost point handled so far on the curve. It is initialized 
-    to the left end of the curve and is updated with every intersection 
+  /*! the rightmost point handled so far on the curve. It is initialized
+    to the left end of the curve and is updated with every intersection
     point on the curve. */
   Point_2 m_lastPoint;
 
-  /*! the portion of the curve to the right of the last event point 
+  /*! the portion of the curve to the right of the last event point
       on the curve */
   X_monotone_curve_2 m_lastCurve;
 
@@ -280,7 +280,7 @@ private:
 
 template<class SweepLineTraits_2>
 inline Sweep_line_subcurve<SweepLineTraits_2>::
-Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference, 
+Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference,
 		    SweepLineTraits_2 *traits)  : m_id(id), m_traits(traits)
 {
   m_curve = curve;
@@ -290,12 +290,12 @@ Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference,
   Comparison_result res = traits->compare_xy(m_source, m_target);
   if ( res  == LARGER )
   {
-    m_lastPoint = m_target; 
+    m_lastPoint = m_target;
     m_isRightSide = false;
   }
   else if ( res == SMALLER )
   {
-    m_lastPoint = m_source; 
+    m_lastPoint = m_source;
     m_isRightSide = true;
 
   }
@@ -304,13 +304,13 @@ Sweep_line_subcurve(int id, X_monotone_curve_2 &curve, Point_2 *reference,
 
 #ifndef NDEBUG
 template<class SweepLineTraits_2>
-void 
+void
 Sweep_line_subcurve<SweepLineTraits_2>::
 Print() const
 {
   std::cout << "Curve " << m_id << "  (" << m_curve << ") "
 	    << "last P = (" << m_lastPoint << ")" << std::endl;
-  
+
 }
 
 #endif

@@ -22,7 +22,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-	
+
   sio_8211DDRLeader ddr_leader;
 
   // insure that the leader got created with sane values
@@ -75,6 +75,6 @@ int main(int argc, char** argv)
   assert( 6   == second_ddr_leader.getFieldControlLength() ); // this is hard-set to 6
 
 
-  return 0; 
+  return 0;
 }
 

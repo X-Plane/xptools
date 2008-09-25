@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -25,7 +25,7 @@
 #define GUI_TEXTFIELD_H
 
 /*
-	
+
 	TODO: occlusion - tell OGLE if we don't need to draw the entire visible bounds??
 
 */
@@ -38,7 +38,7 @@
 
 class	GUI_GraphState;
 
-class	GUI_TextField : public GUI_Pane, 
+class	GUI_TextField : public GUI_Pane,
 						public GUI_Commander,
 						public GUI_ScrollerPaneContent,
 						public GUI_Timer,
@@ -82,8 +82,8 @@ public:
 	virtual	void		ScrollV(float yOffset);
 
 	// GUI_Timer
-	virtual	void		TimerFired(void);	
-	
+	virtual	void		TimerFired(void);
+
 protected:
 
 	// OGLE
@@ -105,29 +105,29 @@ protected:
 								const char *	t2);
 	virtual	float			GetLineHeight(void);
 	virtual	float			MeasureString(
-								const char * 	tStart, 
+								const char * 	tStart,
 								const char * 	tEnd);
 	virtual	int				FitStringFwd(
-								const char * 	tStart, 
-								const char * 	tEnd, 
+								const char * 	tStart,
+								const char * 	tEnd,
 								float 			space);
 	virtual	int				FitStringRev(
-								const char * 	tStart, 
-								const char * 	tEnd, 
+								const char * 	tStart,
+								const char * 	tEnd,
 								float 			space);
 	virtual	void			DrawString(
 								const char *	tStart,
 								const char *	tEnd,
 								float			x,
 								float			y);
-	virtual	void			DrawSelection(	
+	virtual	void			DrawSelection(
 								float			bounds[4]);
 	virtual	const char *	WordBreak(
 								const char *	t1,
 								const char *	t2);
-	
+
 private:
-	
+
 			void			ConstrainLogicalBounds(void);
 
 		int					mFont;
@@ -135,7 +135,7 @@ private:
 		int					mScrollH;
 		float				mLogicalBounds[4];
 		GUI_GraphState * 	mState;
-		string				mText;		
+		string				mText;
 		bool				mAllowed[256];
 		bool				mAllowedVK[256];
 		float				mMargins[4];

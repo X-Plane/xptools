@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -28,7 +28,7 @@
 /*
 
 	CLEAN IMPORT CONCEPTS:
-	
+
 	1. Make sure that when we merge two census databases that we:
 Ã		- when we see a rerun TLID, count shape pts for safety.
 Ã		- when we see a rerun tlid, merge any right/left data from record I
@@ -39,32 +39,32 @@
 		and add each of these edges to the list of edges for the world gt polygon.
 
 	2. For every Gt-polygon, sort the perimeter to form a counter-clockwise border based on the TLID direction.
-	
+
 		Build an array with each TLID in it.  For TLIDs that have our polyID on _both_ sides we should have it in this array twice.
 		index it twice, once by from, once by to.
-		
+
 		Find the lower left most segment, we need this to figure out which the hell way is counter clockwise!
 			The segment with at least one vertex on the left edge of the polygon is our vertex of choice.
 			If we have two vertical segments, the one with the lowest point wins.
 			if we have a vertical and non-vertical segment, the vertical segment is good enough.
 			if we have two non-vertical segments, pick one that is lower.
-			
+
 			then...if the segment goes down or to the right, it is directed around the CCW boundary. If it goes up or left it is
-			backwards!!		
-		
+			backwards!!
+
 		from this segment, find the most left turning next segment
 			remove this segment, make it current, repeat
-			
+
 		when we run out of cases, if we didn't hit our start, we're screwed!
-		
+
 		Note: when we pick the left most, we should go by the first segment in the TLID.
-		
+
 		The order that we picked the segments is the CCW order.  If we had to link to the target
 		and not the source of the vector, it needs to go in backward.
-		
-	
+
+
 	3. The import algorithm then goes something like this:
-	
+
 		1. For every TLID + shape point in the DB, create a vertex.  Create an index from the tiger strings to the vertices.
 			the vertex gets assigned the pt's equivalent point_2.
 		2. for every TLID:
@@ -84,11 +84,11 @@
 				set every part of the half edges for this face to point to the face.
 			now for each TLID in the table
 				set its second half-edges "next" to the first half edge looked up via its target through the table.
-			
+
 */
 
 
-	/*			
+	/*
 			TODO: ADD COUNTERS OF ALL PHENOMENA
 			TODO: build major catagories of land classes....
 	*/
@@ -98,11 +98,11 @@
  Census Feature Classification Codes - areas.  These codes are applied to points
  or areas and either result in a land class (basically a zoning decision that will
  autogen buildings later) or a point object.  The 'allow_from_point' field allows
- a single point object to apply a land class to the underlying polygon.  This is 
- appropriate for big things where the presence of the object would dominate the 
+ a single point object to apply a land class to the underlying polygon.  This is
+ appropriate for big things where the presence of the object would dominate the
  block.  It is not appropriate for small things that might just be one single building
  instance in a land use.
- 
+
  */
 #define DO_CHECKS 0
 
@@ -113,7 +113,7 @@ struct	AreaInfo_t {
 };
 
 const AreaInfo_t	kAreaCodes[] = {
-	"D10",				lc_MilitaryBase,		1,	
+	"D10",				lc_MilitaryBase,		1,
 	"D20",				lc_TransientQuarters,	1,
 	"D21",				lc_ApartmentComplex,	1,
 	"D23",				lc_TrailerPark,			1,
@@ -136,7 +136,7 @@ const AreaInfo_t	kAreaCodes[] = {
 	"D42",				lc_Monastary,				0,
 	"D43",				lc_EducationalInstitution,	1,
 	"D44",				lc_ReligiousInstitution,	0,
-	
+
 	"D50",				lc_TransportationTerminal,	0,
 	"D51",				lc_Airport,					1,
 	"D52",				lc_TrainStation,			0,
@@ -159,11 +159,11 @@ const AreaInfo_t	kAreaCodes[] = {
 	"D83",				lc_Park,					1,
 	"D84",				lc_NationalForest,			1,
 	"D85",				lc_Park,					1,
-	
+
 	"D91",				lc_PostOffice,				0,
-	
+
 	"E23",				lc_GenericLand,				0,
-	
+
 	"H00",				lc_GenericWater,			1,
 	"H11",				lc_Stream,					1,
 	"H12",				lc_Stream,					1,
@@ -194,48 +194,48 @@ const RoadInfo_t	kRoadCodes[] = {
 	"A11",	road_PrimaryLimUnsep,		0,
 	"A13",	road_PrimaryLimUnsep,		1,
 	"A14",	road_PrimaryLimUnsepRail,	0,
-	
+
 	"A15",	road_PrimaryLimSep,			0,
 	"A17",	road_PrimaryLimSep,			1,
 	"A18",	road_PrimaryLimSepRail,		0,
-	
+
 	"A21",	road_PrimaryUnsep,			0,
 	"A23",	road_PrimaryUnsep,			1,
 	"A24",	road_PrimaryUnsepRail,		0,
 	"A25",	road_PrimarySep,			0,
 	"A27",	road_PrimarySep,			1,
 	"A28",	road_PrimarySepRail,		0,
-	
+
 	"A31",	road_SecondUnsep,			0,
 	"A33",	road_PrimarySep,			1,
 	"A34",	road_SecondUnsepRail,		0,
 	"A35",	road_SecondSep,				0,
 	"A37",	road_SecondSep,				1,
 	"A38",	road_SecondSepRail,			0,
-	
+
 	"A41",	road_LocalUnsep,			0,
 	"A43",	road_LocalUnsep,			1,
 	"A44",	road_LocalUnsepRail,		0,
 	"A45",	road_LocalSep,				0,
 	"A47",	road_LocalSep,				1,
 	"A48",	road_LocalSepRail,			0,
-	
+
 	"A51",	road_4WDUnsep,				0,
 	"A53",	road_4WDUnsep,				1,
-	
+
 	"A60",	road_Unknown,				0,
 	"A61",	road_Culdesac,				0,
 	"A62",	road_TrafficCircle,			0,
 	"A63",	road_Ramp,					0,
 	"A64",	road_Service,				0,	// Should we set some of these underpassings?!?
-	
+
 	"A70",	walk_Unknown,				0,
 	"A71",	walk_Trail,					0,
 	"A72",	walk_Stairway,				0,
 	"A73",	road_Alley,					0,
 	"A74",	road_Driveway,				0,
 	NULL, 0, 0
-};	
+};
 
 int	LookupAreaCFCC(const char * inCode)
 {
@@ -258,7 +258,7 @@ int LookupNetCFCC(const char * inCode)
 	}
 	return -1;
 }
-	
+
 inline	string	RawCoordToKey(const RawCoordPair& p) { return p.first + p.second; }
 inline	Point_2 RawCoordToCoord(const RawCoordPair& p) { return Point_2(atof(p.second.c_str())/* / 1000000.0*/, atof(p.first.c_str())/* / 1000000.0*/); }
 
@@ -273,7 +273,7 @@ PerfTimer	twoV("Two Vertex Insertion");
 
 
 Pmwx::Halfedge_handle	InsertOneSegment(
-							const RawCoordPair& p1, 
+							const RawCoordPair& p1,
 							const RawCoordPair& p2,
 							VertexIndex&		index,
 							Pmwx&				ioMap)
@@ -285,10 +285,10 @@ Pmwx::Halfedge_handle	InsertOneSegment(
 
 	VertexIndex::iterator i1 = index.find(key1);
 	VertexIndex::iterator i2 = index.find(key2);
-		
+
 	Pmwx::Halfedge_handle	he = Pmwx::Halfedge_handle();
 
-#if 0	
+#if 0
 	Pmwx::Locate_type loc1, loc2;
 	ioMap.locate(pt1, loc1);
 	ioMap.locate(pt2, loc2);
@@ -316,7 +316,7 @@ Pmwx::Halfedge_handle	InsertOneSegment(
 			if (he != Pmwx::Halfedge_handle())
 			{
 				index[key1] = he->source();
-				index[key2] = he->target();			
+				index[key2] = he->target();
 			}
 		} else {
 			// We know pt 2 but pt 1 is floating.  Make a vector
@@ -364,7 +364,7 @@ Pmwx::Halfedge_handle	InsertOneSegment(
 	// Whenever we create a half edge we have to pick dominance...this works.
 	he->mDominant = true;
 	return he;
-}					
+}
 
 void	TIGERImport(
 			const	ChainInfoMap&		chains,
@@ -373,27 +373,27 @@ void	TIGERImport(
 			Pmwx&						outMap)
 {
 	// Our planar map MUST be empty!
-	
+
 	// First we go in and insert every segment from the TIGER database into our map.
 	// We keep a table from coordinates into the map so we can avoid doing a search
 	// when we have a segment that is already at least partially inserted.
-	
+
 	VertexIndex		vertices;
 	EdgeIndex		edges;
 	FaceIndex		faces;
-	
+
 	set<TLID>		badTLIDs;
-	
+
 	int	gSegs = 0, gBad = 0, gDupes = 0;
 	set<TLID>	tlids;
-#if DO_CHECKS	
+#if DO_CHECKS
 	map<string, TLID>	lines;
 #endif
-	
+
 	for (ChainInfoMap::const_iterator chain = chains.begin(); chain != chains.end(); ++chain)
 	{
 		int i = LookupNetCFCC(chain->second.cfcc.c_str());
-		
+
 		vector<RawCoordPair>	pts = chain->second.shape;
 		pts.insert(pts.begin(), chain->second.start);
 		pts.insert(pts.end(), chain->second.end);
@@ -404,18 +404,18 @@ void	TIGERImport(
 			continue;
 		}
 		tlids.insert(chain->first);
-		
+
 		for (int n = 1; n < pts.size(); ++n)
 		{
 			++gSegs;
 
-#if DO_CHECKS	
+#if DO_CHECKS
 			string	masterkey, k1 = RawCoordToKey(pts[n-1]), k2 = RawCoordToKey(pts[n]);
 			if (k1 < k2)
 				masterkey = k1 + k2;
 			else
 				masterkey = k2 + k1;
-			
+
 			map<string, TLID>::iterator tlidCheck = lines.find(masterkey);
 			if (tlidCheck != lines.end())
 			{
@@ -427,10 +427,10 @@ void	TIGERImport(
 #endif
 
 			try {
-		
+
 				Pmwx::Halfedge_handle he = InsertOneSegment(pts[n-1], pts[n], vertices, outMap);
 				if (he != outMap.halfedges_end())
-				{				
+				{
 					// InsertOneSegment always returns the dominant half-edge.  Tag it with
 					// our road type, underpassing info, and our TLID.
 					if (i != -1)
@@ -447,7 +447,7 @@ void	TIGERImport(
 					printf("Got dupe seg, CFCC = %s, name = %s, tlid = %d\n", chain->second.cfcc.c_str(), chain->second.name.c_str(), chain->first);
 					++gDupes;
 				}
-				
+
 			} catch (...) {
 				++gBad;
 				printf("Got bad seg, CFCC = %s, name = %s, tlid = %d\n", chain->second.cfcc.c_str(), chain->second.name.c_str(), chain->first);
@@ -478,17 +478,17 @@ void	TIGERImport(
 	twoV.GetStats(elapsed, calls);
 	ave = elapsed / (double) calls;
 	printf("Two-V insertion: %f total, %d calls, %f average.\n", elapsed, calls, ave);
-	
-	
-	// Now we go in and apply our polygon data.  We have set the dominant flag to be the halfedge 
-	// that goes in the same direction as the tiger database.  Since CGAL faces have CCW outer 
-	// boundaries, that means that the left hand poly of a TLID is adjacent to the dominant 
-	// halfedge.  
-	
-	
-	
+
+
+	// Now we go in and apply our polygon data.  We have set the dominant flag to be the halfedge
+	// that goes in the same direction as the tiger database.  Since CGAL faces have CCW outer
+	// boundaries, that means that the left hand poly of a TLID is adjacent to the dominant
+	// halfedge.
+
+
+
 	int	gPolys = 0, gMissingTLIDs = 0, gBadEdges = 0, gBadBackLink = 0, gDeadTLID = 0;
-	
+
 	for (PolygonInfoMap::const_iterator poly = polygons.begin(); poly != polygons.end(); ++poly)
 	{
 		if (poly->first == WORLD_POLY)
@@ -498,7 +498,7 @@ void	TIGERImport(
 		for (DirectedTLIDVector::const_iterator t = poly->second.border.begin(); t != poly->second.border.end(); ++t)
 			ourTLIDs.insert(t->first);
 		vector<TLID>	ourBads;
-		set_intersection(ourTLIDs.begin(), ourTLIDs.end(), badTLIDs.begin(), badTLIDs.end(), 
+		set_intersection(ourTLIDs.begin(), ourTLIDs.end(), badTLIDs.begin(), badTLIDs.end(),
 						back_insert_iterator<vector<TLID> >(ourBads));
 		if (!ourBads.empty())
 		{
@@ -506,10 +506,10 @@ void	TIGERImport(
 			++gDeadTLID;
 			continue;
 		}
-		
+
 		EdgeIndex::iterator edgeIter = edges.find(*ourTLIDs.begin());
 		ChainInfoMap::const_iterator tlidIter = chains.find(*ourTLIDs.begin());
-	
+
 		if (edgeIter != edges.end() && tlidIter != chains.end())
 		{
 			Pmwx::Face_handle		our_face = outMap.faces_end();
@@ -521,7 +521,7 @@ void	TIGERImport(
 				printf("WARNING: Halfedge with no dominance!!\n");
 				continue;
 			}
-			
+
 			if (poly->first == tlidIter->second.lpoly)
 			{
 				our_face = he->face();
@@ -540,22 +540,22 @@ void	TIGERImport(
 					our_face->mLandClass = lc_GenericWater;
 				}
 				faces[poly->first] = our_face;
-			} 			
+			}
 		} else
 			++gMissingTLIDs;
 	}
-	
+
 
 	printf("Polygons: %d, missing TLIDs from indices: %d, edges with no dominance: %d, bad back links: %d, dead TLIDS: %d\n",
 			gPolys, gMissingTLIDs, gBadEdges, gBadBackLink, gDeadTLID);
-	
+
 
 
 
 
 	int	gLand = 0, gNoID = 0, gNoLocAtAll = 0, gPtOnEdge = 0;
 	for (LandmarkInfoMap::const_iterator landmark = landmarks.begin();
-		landmark != landmarks.end(); ++landmark)	
+		landmark != landmarks.end(); ++landmark)
 	{
 		++gLand;
 		int cfcc = LookupAreaCFCC(landmark->second.cfcc.c_str());
@@ -571,17 +571,17 @@ void	TIGERImport(
 					fprintf(stderr, "WARNING: Cenid/polyid not found.\n");
 					++gNoID;
 				}
-				
+
 			} else if (!landmark->second.location.first.empty()) {
-			
+
 				if (kAreaCodes[cfcc].allow_from_point)
 				{
 					try {
 						Pmwx::Locate_type	lt;
-						
-						Pmwx::Halfedge_handle h = 
+
+						Pmwx::Halfedge_handle h =
 							outMap.locate(RawCoordToCoord(landmark->second.location), lt);
-							
+
 						if (lt == Pmwx::EDGE || lt == Pmwx::FACE)
 						{
 							h->face()->mLandClass = kAreaCodes[cfcc].land_class;
@@ -594,7 +594,7 @@ void	TIGERImport(
 					}
 				} else {
 					// TODO: Add pt object
-				}			
+				}
 			} else {
 				fprintf(stderr, "Warning: landmark without polygon or pt.\n");
 				gNoLocAtAll++;

@@ -51,7 +51,7 @@ static char *symdump( YYSTYPE *s );
 
 # define BIGGEST_TOKEN 10240	/* no single token can be larger */
 
-/* 
+/*
  * Set parser mode: normal, string, or keyword
  */
 
@@ -252,7 +252,7 @@ yylex()
 	    yylval.string = newstr( buf );
         yylval.file = incp->fname;
         yylval.line = incp->line;
-        
+
 	}
 	else
 	{
@@ -260,7 +260,7 @@ yylex()
 	    struct keyword *k;
 	    int inquote = 0;
 	    int notkeyword;
-		
+
 	    /* Eat white space */
 
 	    for( ;; )
@@ -285,7 +285,7 @@ yylex()
 
         yylval.file = incp->fname;
         yylval.line = incp->line;
-        
+
 	    /* While scanning the word, disqualify it for (expensive) */
 	    /* keyword lookup when we can: $anything, "anything", \anything */
 
@@ -295,7 +295,7 @@ yylex()
 	    /* "'s get stripped but preserve white space */
 	    /* \ protects next character */
 
-	    while( 
+	    while(
 		c != EOF &&
 		b < buf + sizeof( buf ) &&
 		( inquote || !isspace( c ) ) )
@@ -375,7 +375,7 @@ yylex()
 eof:
     yylval.file = "end-of-input"; /* just in case */
     yylval.line = 0;
-        
+
 	yylval.type = EOF;
 	return yylval.type;
 }

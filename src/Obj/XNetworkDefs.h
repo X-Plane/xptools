@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,7 +31,7 @@ using namespace std;
 
 /************************************************************************
  * NETWORK GRAPHICAL DEFINITIONS
-************************************************************************/ 
+************************************************************************/
 
 // A network segment item is a single quad of road that is repeated.
 struct	NetworkSegmentItem_t {
@@ -53,11 +53,11 @@ struct	NetworkObjectItem_t {
 // This represents one version of the below network segment.
 struct	NetworkSegmentLOD_t {
 	float	lod_near;			// Near and far len for this segment to be visible.
-	float	lod_far;			
+	float	lod_far;
 	float	width;				// Total width of segment
 	float	vert_offset;		// Start position from 0
 	float	scale_lon;			// Length of segment in meters
-	
+
 	float	start_pixel_t;		// Start pixel in texture (always 0 for a non-cap)
 	float	end_pixel_t;		// End pixel in texture (always 1 in non-cap)
 	float	chop_point_percent;	// Percent through cap to crop at for cropped, -1 for scaled caps or segments
@@ -71,7 +71,7 @@ struct	NetworkSegmentLOD_t {
 struct	NetworkSegment_t {
 
 	vector<NetworkSegmentLOD_t>	lod;
-	
+
 	void for_lod(float lod_near, float lod_far, NetworkSegmentLOD_t& lod) const;
 };
 
@@ -100,9 +100,9 @@ struct	JunctionRule_t {
 	vector<int>			junction_types;
 	vector<float>		s_coord;
 	vector<float>		t_coord;
-	
+
 	void				rotate();
-};	
+};
 
 // A set of network defs is defined first by the segments for each type of road.
 struct	NetworkDef_t {
@@ -111,19 +111,19 @@ struct	NetworkDef_t {
 	vector<NetworkSegment_t>	segments;			// For each highway type, the main segment
 	vector<NetworkCapRules_t>	caps;				// For each hgihway type, the prioritized cap rules
 	vector<JunctionRule_t>		junctions;			// Rules for filling in junctions.
-	
+
 	// This routine, given two junction lists, returns the caps for a chain.  It is expected
 	// that (1) frontJunction and backJunction have at least one item (no such thing as a 0-item
 	// junction!) and (2) the first item of frontJunction and backJunction be the same, since
 	// that is the chain we are querying about.
 	void	find_caps(
-					const vector<int>& 	frontJunction, 
+					const vector<int>& 	frontJunction,
 					const vector<int>& 	backJunction,
 					float					lod_near,
 					float					lod_far,
 					NetworkSegmentLOD_t&	outFrontCap,
 					NetworkSegmentLOD_t&	outBackCap) const;
-		
+
 	// Returns true if we found an all-encompassing rule for the junction.
 	bool	find_junction(
 					const vector<int>&	junctionPattern,
@@ -131,14 +131,14 @@ struct	NetworkDef_t {
 	bool	find_junction_part(
 					int					roadType,
 					JunctionRule_t&		outJunction) const;
-					
+
 };
 
 /************************************************************************
  * ACTUAL NETWORK LOCATIONS
-************************************************************************/ 
+************************************************************************/
 
-// A network junction has a location, and for each level, a series of 
+// A network junction has a location, and for each level, a series of
 // junctions sticking out in all directions.  The junctions are listed
 // in clockwise order (looking from above).  a flag of true indicates
 // that this spur ends in the junction, rather than starts.
@@ -171,14 +171,14 @@ struct	Network_Chain_t {
 	Point3								end_curve;
 	vector<Shape_Point_t>				shape_points;
 };
-	
+
 // Network data: all junctions (which are defined by index nubmer), and...
 struct	NetworkData_t {
 	vector<NetworkJunction_t>		junctions;
 	vector<Network_Chain_t>			chains;
-	
+
 	void		build_back_links(void);
-	
+
 	// Headings of various chains at the start and end.  Both start and
 	// end tangents are in the direction of the chain.  The spur heading
 	// is always towards the appropriate junction.
@@ -186,13 +186,13 @@ struct	NetworkData_t {
 	Vector3		chain_get_end_tangent(int chain) const;
 	Vector3		junction_get_spur_heading(NetworkJunction_t::spur chain) const;
 
-	// These routines, given a spur and a junction, give you the next or 
+	// These routines, given a spur and a junction, give you the next or
 	// previous spur.
-	NetworkJunction_t::spur			
+	NetworkJunction_t::spur
 				previous_chain(NetworkJunction_t::spur chain) const;
 	NetworkJunction_t::spur
 				next_chain(NetworkJunction_t::spur chain) const;
-	
+
 	// Given a spur, return the types of the chains plugged into its junction
 	// starting at the spur and going CW.
 	void		get_junction_types(int junction					, vector<int>& out_types) const;

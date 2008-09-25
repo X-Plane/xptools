@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -45,9 +45,9 @@ public:
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver);
-										
+
 	virtual				~WED_HandleToolBase();
-				
+
 	// WED_MapToolNew
 	virtual	int			HandleClickDown			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	void		HandleClickDrag			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
@@ -65,18 +65,18 @@ public:
 protected:
 
 	// When iterating composite GIS structure, how do we handle an entity?
-	enum EntityHandling_t { 
+	enum EntityHandling_t {
 		ent_Skip,					// Skip it, don't look at kids.
 		ent_Atomic,					// Take or leave it as a whole.
 		ent_Container,				// Iterate over kids.
 		ent_AtomicOrContainer		// Try whole obj.  If it fails, try kids.
 	};
 
-	// Template method for subclass	
+	// Template method for subclass
 	virtual	int					CreationDown(const Point2& start_pt) { return 0; }
 	virtual	void				CreationDrag(const Point2& start_pt, const Point2& now_pt) { }
 	virtual	void				CreationUp(const Point2& start_pt, const Point2& now_pt) { }
-	
+
 	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent, int pt_sel)  { return ent_Skip; }
 			void				SetCanSelect(int can_select);
 			void				SetControlProvider(IControlHandles * provider);
@@ -100,10 +100,10 @@ private:
 
 		IControlHandles *		mHandles;
 		int						mCanSelect;
-		
-		vector<ISelectable *>	mSelSave;		
+
+		vector<ISelectable *>	mSelSave;
 		int						mSelToggle;
-		
+
 		// Variables for drag tracking
 		DragType_t				mDragType;
 		int						mDragX;
@@ -114,9 +114,9 @@ private:
 		int						mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
 		Point2					mTrackPoint;
-		
+
 		vector<IGISEntity *>	mSelManip;
-		
+
 };
 
 #endif /* WED_HANDLETOOLBASE_H */

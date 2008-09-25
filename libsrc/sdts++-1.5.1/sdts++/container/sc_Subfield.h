@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -27,7 +27,7 @@
 
 /**
    \note
-  
+
          * Attribute subfields should have their mnemonic set to
          either "ATTP" or "ATTS", and their name set to the actual
          name of the attribute. Non- attribute subfields should have
@@ -62,14 +62,14 @@
          "The Data Type shall indicate the manner in which the subfield
          shall be encoded." -- The SDTS, section 4.2.1 "Specification Layout".
          The data type is one of:
-            A: graphic characters, alphanumeric characters, or 
+            A: graphic characters, alphanumeric characters, or
                alphabetic characters.
             I: implicit-point (integer)
             R: explicit-point unscaled (fixed point real)
             S: explicit-point scaled (floating point real)
             B: bitfield data
             C: character mode bitfield (binary in zero and one characters)
-  
+
          The 'B' type may have additional qualification as follows:
             BI8:    8 bit signed integer
             BI16:   16 bit signed integer
@@ -97,17 +97,17 @@
             BUI8, BUI16, BUI24, BUI32    unsigned long
             BFP32                        float
             BFP64                        double
-  
+
       Value:
          The actual value stored in the Subfield.
-  
+
       Name:
          A string representing the subfield name ("Module Name",
          "Record ID", etc).
-  
+
       Mnemonic:
          A string representing the subfield mnemonic ("MODN", "RCID", etc).
-   
+
 
 
 */
@@ -117,9 +117,9 @@ class sc_Subfield
 
       /// Denotes a subfield's type.
       enum SubfieldType { is_A,
-                          is_I, 
-                          is_R, 
-                          is_S, 
+                          is_I,
+                          is_R,
+                          is_S,
                           is_C,
                           is_B,
                           is_BI8,
@@ -159,7 +159,7 @@ class sc_Subfield
       ///
       SubfieldType getSubfieldType() const;
 
-      /// Returns the SDTS Name of this subfield (if one has been set).      
+      /// Returns the SDTS Name of this subfield (if one has been set).
       std::string const& getName() const;
 
       /// abbreviation for getName()
@@ -255,7 +255,7 @@ class sc_Subfield
       bool getDouble( double & val ) const;
 
       /**
-       Returns the 'value' of the subfield in an object that can be 
+       Returns the 'value' of the subfield in an object that can be
        one of several different types.
        SlUtils defines functions for extracting specific
        C++ types from a sc_Subfield using this member function.
@@ -303,7 +303,7 @@ class sc_Subfield
 
       /// SDTS Subfield Name
       std::string name_;
-      
+
       /// SDTS Subfield Mnemonic
       std::string mnemonic_;
 

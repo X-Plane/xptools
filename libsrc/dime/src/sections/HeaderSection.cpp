@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: HeaderSection.cpp
  *
  *  This source file is part of DIME.
@@ -49,7 +49,7 @@ static const char sectionName[] = "HEADER";
 */
 
 dimeHeaderSection::dimeHeaderSection(dimeMemHandler * const memhandler)
-  : dimeSection(memhandler) 
+  : dimeSection(memhandler)
 {
 }
 
@@ -68,7 +68,7 @@ dimeHeaderSection::~dimeHeaderSection()
 /*!
   Returns a header variable.
   The variable attributes are copied into the \a groupcodes and \a params
-  arrays. No more than \a maxparams attributes are copied. 
+  arrays. No more than \a maxparams attributes are copied.
   This method returns the number of attributes copied into the arrays,
   or -1 if the variable could not be found.
 */
@@ -93,7 +93,7 @@ dimeHeaderSection::getVariable(const char * const variableName,
     return cnt;
   }
   return -1;
-}  
+}
 
 /*!
   Sets a header variable.
@@ -116,7 +116,7 @@ dimeHeaderSection::setVariable(const char * const variableName,
     dimeStringRecord *sr = (dimeStringRecord*)dimeRecord::createRecord(9, memhandler);
     if (!sr) return false;
     sr->setString(variableName, memhandler);
-    
+
     this->records.append(sr);
     for (int j = 0; j < numparams; j++) {
       this->records.append(dimeRecord::createRecord(groupcodes[j], memhandler));
@@ -164,13 +164,13 @@ dimeHeaderSection::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeHeaderSection::read(dimeInput * const file)
 {
   dimeRecord *record;
   bool ok = true;
   this->records.makeEmpty(512);
-  
+
   while (true) {
     record = dimeRecord::readRecord(file);
     if (record == NULL) {
@@ -189,7 +189,7 @@ dimeHeaderSection::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeHeaderSection::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(2) && file->writeString(sectionName)) {
@@ -206,7 +206,7 @@ dimeHeaderSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeHeaderSection::typeId() const
 {
   return dimeBase::dimeHeaderSectionType;
@@ -214,14 +214,14 @@ dimeHeaderSection::typeId() const
 
 //!
 
-int 
+int
 dimeHeaderSection::countRecords() const
 {
   return this->records.count() + 2; // numrecords + SECTIONNAME + EOS
 }
 
 //
-// returns the index of the variable, or -1 if variable isn't found. 
+// returns the index of the variable, or -1 if variable isn't found.
 //
 
 int

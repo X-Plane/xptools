@@ -10,68 +10,68 @@
 
 #include "MFRotation.h"
 
-MFRotation::MFRotation() 
+MFRotation::MFRotation()
 {
 	setType(fieldTypeMFRotation);
 	InitializeJavaIDs();
 }
 
-void MFRotation::InitializeJavaIDs() 
+void MFRotation::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFRotation::addValue(float x, float y, float z, float rot) 
+void MFRotation::addValue(float x, float y, float z, float rot)
 {
 	SFRotation *rotation = new SFRotation(x, y, z, rot);
 	add(rotation);
 }
 
-void MFRotation::addValue(float value[]) 
+void MFRotation::addValue(float value[])
 {
 	SFRotation *rotation = new SFRotation(value);
 	add(rotation);
 }
 
-void MFRotation::addValue(SFRotation *rotation) 
+void MFRotation::addValue(SFRotation *rotation)
 {
 	add(rotation);
 }
 
-void MFRotation::insertValue(int index, float x, float y, float z, float rot) 
+void MFRotation::insertValue(int index, float x, float y, float z, float rot)
 {
 	SFRotation *rotation = new SFRotation(x, y, z, rot);
 	insert(rotation, index);
 }
 
-void MFRotation::insertValue(int index, float value[]) 
+void MFRotation::insertValue(int index, float value[])
 {
 	SFRotation *rotation = new SFRotation(value);
 	insert(rotation, index);
 }
 
-void MFRotation::insertValue(int index, SFRotation *rotation) 
+void MFRotation::insertValue(int index, SFRotation *rotation)
 {
 	insert(rotation, index);
 }
 
-void MFRotation::get1Value(int index, float value[]) 
+void MFRotation::get1Value(int index, float value[])
 {
 	SFRotation *rotation = (SFRotation *)getObject(index);
 	if (rotation)
 		rotation->getValue(value);
 }
 
-void MFRotation::set1Value(int index, float value[]) 
+void MFRotation::set1Value(int index, float value[])
 {
 	SFRotation *rotation = (SFRotation *)getObject(index);
 	if (rotation)
 		rotation->setValue(value);
 }
 
-void MFRotation::set1Value(int index, float x, float y, float z, float angle) 
+void MFRotation::set1Value(int index, float x, float y, float z, float angle)
 {
 	SFRotation *rotation = (SFRotation *)getObject(index);
 	if (rotation)
@@ -108,14 +108,14 @@ void MFRotation::setValue(int size, float rotations[][4])
 //	Output
 ////////////////////////////////////////////////
 
-void MFRotation::outputContext(ostream& printStream, char *indentString) 
+void MFRotation::outputContext(ostream& printStream, char *indentString)
 {
 	float value[4];
 	for (int n=0; n<getSize(); n++) {
 		get1Value(n, value);
 		if (n < getSize()-1)
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << " " << value[3] << "," << endl;
-		else	
+		else
 			printStream << indentString << value[0] << " " << value[1] << " " << value[2] << " " << value[3] << endl;
 	}
 }
@@ -223,7 +223,7 @@ void MFRotation::setJavaIDs() {
 //	MFRotation::toJavaObject
 ////////////////////////////////////////////////
 
-jobject MFRotation::toJavaObject(int bConstField) 
+jobject MFRotation::toJavaObject(int bConstField)
 {
 	JNIEnv		*jniEnv			= getJniEnv();
 	jclass		classid			= bConstField ? getConstFieldID() : getFieldID();
@@ -239,7 +239,7 @@ jobject MFRotation::toJavaObject(int bConstField)
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		float value[4];
@@ -268,5 +268,5 @@ void MFRotation::setValue(jobject field, int bConstField) {
 void MFRotation::getValue(jobject field, int bConstField) {
 }
 
-#endif 
+#endif
 

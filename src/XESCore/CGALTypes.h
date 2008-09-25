@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -72,22 +72,22 @@ public:
 
     CGAL_precondition (less_x(q, source1) || less_x(q, target1));
     CGAL_precondition (!(less_x(q, source1) && less_x(q, target1)));
-    
+
     CGAL_precondition (less_x(q, source2) || less_x(q, target2));
     CGAL_precondition (!(less_x(q, source2) && less_x(q, target2)));
-    
+
     // Since the curves are continuous, if they are not equal at q, the same
     // result also applies to q's left.
-    CGAL_precondition (curves_compare_y_at_x(cv1, cv2, q) == CGAL::EQUAL);     
-    
+    CGAL_precondition (curves_compare_y_at_x(cv1, cv2, q) == CGAL::EQUAL);
+
     // <cv1> and <cv2> meet at a point with the same x-coordinate as q
     // compare their derivatives
     return compare_slope_2_object()(cv1, cv2);
   }
-  
+
   CGAL::Comparison_result curves_compare_y_at_x_left(const X_monotone_curve_2 & cv1,
-                                               const X_monotone_curve_2 & cv2, 
-                                               const Point_2 & q) const 
+                                               const X_monotone_curve_2 & cv2,
+                                               const Point_2 & q) const
   {
     // The two curves must not be vertical.
     CGAL_precondition(! curve_is_vertical(cv1));
@@ -105,29 +105,29 @@ public:
 
     CGAL_precondition (less_x(source1, q) || less_x(target1, q));
     CGAL_precondition (!(less_x(source1, q) && less_x(target1, q)));
-    
+
     CGAL_precondition (less_x(source2, q) || less_x(target2, q));
     CGAL_precondition (!(less_x(source2, q) && less_x(target2, q)));
-    
+
     // Since the curves are continuous, if they are not equal at q, the same
     // result also applies to q's left.
 //    CGAL_precondition (compare_y_at_x_2_object()(q, cv1, cv2) == CGAL::EQUAL);
-//  BAS sez: why are the left and right versions different?!?!  The above 
+//  BAS sez: why are the left and right versions different?!?!  The above
 //	avoids my bottlenecks!
-    CGAL_precondition (curves_compare_y_at_x(cv1, cv2, q) == CGAL::EQUAL);     
-    
+    CGAL_precondition (curves_compare_y_at_x(cv1, cv2, q) == CGAL::EQUAL);
+
     // <cv2> and <cv1> meet at a point with the same x-coordinate as q
     // compare their derivatives.
     return compare_slope_2_object()(cv2, cv1);
-  }  
+  }
 
-  CGAL::Comparison_result curves_compare_y_at_x(const X_monotone_curve_2 & cv1, 
-                                          const X_monotone_curve_2 & cv2, 
+  CGAL::Comparison_result curves_compare_y_at_x(const X_monotone_curve_2 & cv1,
+                                          const X_monotone_curve_2 & cv2,
                                           const Point_2 & q) const
   {
   	// In the vertical case we return the relationship of their projections...not hard
-  	// to special case but for now doesn't seem necessary.  One thing is clear: if they 
-  	// don't intersect and we don't catch this case, we return EQUAL and we get hosed.  
+  	// to special case but for now doesn't seem necessary.  One thing is clear: if they
+  	// don't intersect and we don't catch this case, we return EQUAL and we get hosed.
   	// Not good. :-(  (In our planar map, two vertical lines NEVER intersect because..well...
   	// that'd be a hosed map.)
   	if (cv1.is_vertical() || cv2.is_vertical())
@@ -153,7 +153,7 @@ public:
 	} else {
 		has_one = false;
 	}
-	
+
 	if (cv2s && cv2t)
 	{
 		if (compare_y(cv2.source(), cv2.target()) == CGAL::SMALLER)
@@ -167,7 +167,7 @@ public:
 	} else {
 		has_two = false;
 	}
-	
+
 	if (has_one && has_two)
 	{
 		return compare_y(p1, p2);

@@ -37,12 +37,12 @@ class Triangulation_ds_cell_3
     static int ccw(int i)
     {
       return Triangulation_utils_3::ccw(i);
-    } 
+    }
 
     static int cw(int i)
     {
       return Triangulation_utils_3::cw(i);
-    } 
+    }
 
   typedef typename Cb::Triangulation_data_structure Tds;
 
@@ -184,9 +184,9 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 
     case 1:
       {
-      Vertex_handle v0 = vertex(0); 
+      Vertex_handle v0 = vertex(0);
       Vertex_handle v1 = vertex(1);
-      Cell_handle n0 = neighbor(0); 
+      Cell_handle n0 = neighbor(0);
       Cell_handle n1 = neighbor(1);
 
       if ( v0 == NULL || v1 == NULL ) {
@@ -213,22 +213,22 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
       }
       if ( v1 != n0->vertex(0) ) {
 	if (verbose)
-	    std::cerr << "neighbor 0 does not have vertex 1 as vertex 0" 
+	    std::cerr << "neighbor 0 does not have vertex 1 as vertex 0"
 		      << std::endl;
 	CGAL_triangulation_assertion(false);
 	return false;
       }
-      
+
       if ( &*n0->neighbor(1) != this ) {
 	if (verbose)
-	    std::cerr << "neighbor 0 does not have this as neighbor 1" 
+	    std::cerr << "neighbor 0 does not have this as neighbor 1"
 		      << std::endl;
 	CGAL_triangulation_assertion(false);
 	return false;
       }
       if ( &*n1->neighbor(0) != this ) {
 	if (verbose)
-	    std::cerr << "neighbor 1 does not have this as neighbor 0" 
+	    std::cerr << "neighbor 1 does not have this as neighbor 0"
 		      << std::endl;
 	CGAL_triangulation_assertion(false);
 	return false;
@@ -260,16 +260,16 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	}
 	if ( ! n->has_vertex(vertex(cw(i)),in ) ) {
 	  if (verbose)
-	      std::cerr << "vertex " << cw(i) 
+	      std::cerr << "vertex " << cw(i)
 		        << " not vertex of neighbor " << i << std::endl;
 	  CGAL_triangulation_assertion(false);
 	  return false;
 	}
-	in = cw(in); 
+	in = cw(in);
 	if ( &*n->neighbor(in) != this ) {
 	  if (verbose)
 	      std::cerr << "neighbor " << i
-		        << " does not have this as neighbor " 
+		        << " does not have this as neighbor "
 		        << in << std::endl;
 	  CGAL_triangulation_assertion(false);
 	  return false;
@@ -277,7 +277,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	if ( vertex(ccw(i)) != n->vertex(cw(in)) ) {
 	  if (verbose)
 	      std::cerr << "vertex " << ccw(i)
-		        << " is not vertex " << cw(in) 
+		        << " is not vertex " << cw(in)
 		        << " of neighbor " << i << std::endl;
 	  CGAL_triangulation_assertion(false);
 	  return false;
@@ -320,18 +320,18 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    CGAL_triangulation_assertion(false);
 	    return false;
 	  }
-	  
+
 	  int j1n,j2n,j3n;
 	  if ( ! n->has_vertex(vertex((i+1)&3),j1n) ) {
 	    if (verbose) { std::cerr << "vertex " << ((i+1)&3)
-				     << " not vertex of neighbor " 
+				     << " not vertex of neighbor "
 				     << i << std::endl; }
 	    CGAL_triangulation_assertion(false);
 	    return false;
 	  }
 	  if ( ! n->has_vertex(vertex((i+2)&3),j2n) ) {
 	    if (verbose) { std::cerr << "vertex " << ((i+2)&3)
-				     << " not vertex of neighbor " 
+				     << " not vertex of neighbor "
 				     << i << std::endl; }
 	    CGAL_triangulation_assertion(false);
 	    return false;
@@ -343,19 +343,19 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    CGAL_triangulation_assertion(false);
 	    return false;
 	  }
-	  
+
 	  if ( in+j1n+j2n+j3n != 6) {
-	    if (verbose) { std::cerr << "sum of the indices != 6 " 
+	    if (verbose) { std::cerr << "sum of the indices != 6 "
 				     << std::endl; }
 	    CGAL_triangulation_assertion(false);
 	    return false;
 	  }
-	  
+
 	  // tests whether the orientations of this and n are consistent
 	  if ( ((i+in)&1) == 0 ) { // i and in have the same parity
 	    if ( j1n == ((in+1)&3) ) {
 	      if ( ( j2n != ((in+3)&3) ) || ( j3n != ((in+2)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);
@@ -364,7 +364,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    }
 	    if ( j1n == ((in+2)&3) ) {
 	      if ( ( j2n != ((in+1)&3) ) || ( j3n != ((in+3)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);
@@ -373,7 +373,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    }
 	    if ( j1n == ((in+3)&3) ) {
 	      if ( ( j2n != ((in+2)&3) ) || ( j3n != ((in+1)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);
@@ -384,7 +384,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	  else { // i and in do not have the same parity
 	    if ( j1n == ((in+1)&3) ) {
 	      if ( ( j2n != ((in+2)&3) ) || ( j3n != ((in+3)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);
@@ -393,7 +393,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    }
 	    if ( j1n == ((in+2)&3) ) {
 	      if ( ( j2n != ((in+3)&3) ) || ( j3n != ((in+1)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);
@@ -402,7 +402,7 @@ Triangulation_ds_cell_3<Cb>::is_valid(int dim, bool verbose, int level) const
 	    }
 	    if ( j1n == ((in+3)&3) ) {
 	      if ( ( j2n != ((in+1)&3) ) || ( j3n != ((in+2)&3) ) ) {
-		if (verbose) { 
+		if (verbose) {
 		  error_orient(n,i);
 		}
 		CGAL_triangulation_assertion(false);

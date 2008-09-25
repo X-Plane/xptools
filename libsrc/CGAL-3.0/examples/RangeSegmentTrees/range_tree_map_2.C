@@ -8,17 +8,17 @@
 // Every use of CGAL requires a license. Licenses come in three kinds:
 //
 // - For academic research and teaching purposes, permission to use and
-//   copy the software and its documentation is hereby granted free of  
+//   copy the software and its documentation is hereby granted free of
 //   charge, provided that
 //   (1) it is not a component of a commercial product, and
 //   (2) this notice appears in all copies of the software and
 //       related documentation.
-// - Development licenses grant access to the source code of the library 
-//   to develop programs. These programs may be sold to other parties as 
+// - Development licenses grant access to the source code of the library
+//   to develop programs. These programs may be sold to other parties as
 //   executable code. To obtain a development license, please contact
 //   the CGAL Consortium (at cgal@cs.uu.nl).
 // - Commercialization licenses grant access to the source code and the
-//   right to sell development licenses. To obtain a commercialization 
+//   right to sell development licenses. To obtain a commercialization
 //   license, please contact the CGAL Consortium (at cgal@cs.uu.nl).
 //
 // This software and documentation is provided "as-is" and without
@@ -52,7 +52,7 @@
 //
 // ======================================================================
 
-#include <CGAL/basic.h> 
+#include <CGAL/basic.h>
 #include <iostream>
 #include <CGAL/Cartesian.h>
 #include <CGAL/Point_2.h>
@@ -105,7 +105,7 @@ int main()
 
   while(current!=OutputList.end())
   {
-    std::cerr << (*current).first.x()<< "-" << (*current).first.y() << " +char= " 
+    std::cerr << (*current).first.x()<< "-" << (*current).first.y() << " +char= "
 	 << (*current).second << std::endl;
     current++;
   }
@@ -113,7 +113,7 @@ int main()
     std::cerr << "Tree is valid\n";
   else
     std::cerr << "Tree is not valid\n";
-  return 0; 
+  return 0;
 }
 
 

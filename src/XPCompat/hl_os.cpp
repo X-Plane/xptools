@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -80,12 +80,12 @@ extern "C" void xstart(void)
 			}
 		}
 	}
-	
+
 	if (sysBundle)
 	{
 		xmalloc = (void * (*)(unsigned long)) ::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("malloc"));
-		xfree = (void (*)(void *)) ::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("free"));		
-		
+		xfree = (void (*)(void *)) ::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("free"));
+
 		// If we fail to get either allocator we can't use either because we can't
 		// use malloc from one lib and free from another.
 		if (!xmalloc || !xfree || DISABLE_UNIX_ALLOCATORS)
@@ -95,7 +95,7 @@ extern "C" void xstart(void)
 			// Can't debug this message, the static infrastructure for the deverr
 			// stream does NOT EXIST YET!
 		}
-		
+
 		bsd_open = (int (*)(const char *path, int flags, mode_t mode))	::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("open"));
 		bsd_close = (int (*)(int d))									::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("close"));
 		bsd_lseek = (off_t (*)(int fildes, off_t offset, int whence))	::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("lseek"));
@@ -104,9 +104,9 @@ extern "C" void xstart(void)
 				  	flags, int fd, off_t offset))							::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("mmap"));
 		bsd_munmap = (int (*)(void * start, size_t length))	::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("munmap"));
 		bsd_fstat = (int (*)(int, struct stat *)) ::CFBundleGetFunctionPointerForName(sysBundle, CFSTR("fstat"));
-		
+
 //		CFRelease(sysBundle);
 	}
-	__start();	
+	__start();
 #endif
-}	
+}

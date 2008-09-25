@@ -90,7 +90,7 @@ void convert(const pminpR &i1, pminpD &i2)
   pntR pR;
   int i,k, j;
 
-        
+
   for(i = 0; i < i1.get_num_pnts(); i++)
     {
       i1.get(i, pR);
@@ -140,7 +140,7 @@ void intersect(const pminpD &in, pminpD &out)
 
   Lines<double>::pmcurve *cvs = new Lines<double>::pmcurve[nc];
   Lines<double>::pmpoint *pnts = new Lines<double>::pmpoint[np];
-	
+
   Lines<double>::pmcurve *intr_cvs;
   Lines<double>::pmpoint *intr_pnts;
 
@@ -195,7 +195,7 @@ void intersect(const pminpR &in, pminpR &out)
 
   Lines<leda_rational>::pmcurve *cvs = new Lines<leda_rational>::pmcurve[nc];
   Lines<leda_rational>::pmpoint *pnts = new Lines<leda_rational>::pmpoint[np];
-	
+
   Lines<leda_rational>::pmcurve *intr_cvs;
   Lines<leda_rational>::pmpoint *intr_pnts;
 
@@ -266,7 +266,7 @@ void random(int num, pminpR &out, int max = 200)
   int i;
   for (i =0; i < num*2; i++)
     {
-      p = pntR(leda_rational(rand() % max), 
+      p = pntR(leda_rational(rand() % max),
 	       leda_rational(rand() % max));
       out.set(i, p);
     }
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
       if (use_rational)
 	{
 	  std::cout << "Create random file using rationals with ";
-	  std::cout << CGAL_CLIB_STD::atoi(argv[3]) 
+	  std::cout << CGAL_CLIB_STD::atoi(argv[3])
 		    << "segments" << std::endl;
 	  std::cout << "Attention: the segments might intersect.";
 	  std::cout << std::endl;
@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
       else
 	{
 	  std::cout << "Create random file using doubles with ";
-	  std::cout << CGAL_CLIB_STD::atoi(argv[3]) 
+	  std::cout << CGAL_CLIB_STD::atoi(argv[3])
 		    << " segments" << std::endl;
 	  std::cout << "Attention: the segments might intersect.";
 	  std::cout << std::endl;
@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
     case 'i': // intersect argv[3] to argv[4]
       if (argc < 5)
 	print_help();
-      std::cout << "Intersect the segments in " << argv[3] 
+      std::cout << "Intersect the segments in " << argv[3]
 		<< " and write the intersected segments in ";
       std::cout << argv[4] << std::endl;
 
@@ -348,11 +348,11 @@ int main(int argc, char *argv[])
 	{
 	  pminpR inpR1;
 	  pminpR inpR2;
-			
+
 	  std::ifstream in(argv[3]);
 	  in >> inpR1;
 	  in.close();
-			
+
 	  intersect(inpR1, inpR2);
 
 	  std::ofstream out(argv[4]);
@@ -363,11 +363,11 @@ int main(int argc, char *argv[])
 	{
 	  pminpD inpD1;
 	  pminpD inpD2;
-			
+
 	  std::ifstream in(argv[3]);
 	  in >> inpD1;
 	  in.close();
-			
+
 	  intersect(inpD1, inpD2);
 
 	  std::ofstream out(argv[4]);
@@ -380,18 +380,18 @@ int main(int argc, char *argv[])
       if (argc < 5)
 	print_help();
 
-      std::cout << "Convert the numbers in " << argv[3] 
+      std::cout << "Convert the numbers in " << argv[3]
 		<< " and write the new file " << argv[4] << std::endl;
 
       if (use_rational)
 	{
 	  pminpR inpR;
 	  pminpD inpD;
-			
+
 	  std::ifstream in(argv[3]);
 	  in >> inpR;
 	  in.close();
-			
+
 	  convert(inpR, inpD);
 
 	  std::ofstream out(argv[4]);
@@ -402,11 +402,11 @@ int main(int argc, char *argv[])
 	{
 	  pminpR inpR;
 	  pminpD inpD;
-			
+
 	  std::ifstream in(argv[3]);
 	  in >> inpD;
 	  in.close();
-			
+
 	  convert(inpD, inpR);
 
 	  std::ofstream out(argv[4]);
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
       print_help();
       break;
     };
-	
+
 
   return 0;
 }

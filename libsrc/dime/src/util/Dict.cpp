@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Dict.cpp
  *
  *  This source file is part of DIME.
@@ -65,7 +65,7 @@ dimeDict::~dimeDict()
 }
 
 /*!
-  Clear all entries in the dictionary.  
+  Clear all entries in the dictionary.
 */
 
 void
@@ -94,7 +94,7 @@ const char *
 dimeDict::enter(const char * const key, void *value)
 {
   dimeDictEntry *&entry = findEntry(key);
-  
+
   if(entry == NULL) {
     entry = new dimeDictEntry(key, value);
     if (entry == NULL) return NULL;
@@ -113,11 +113,11 @@ dimeDict::enter(const char * const key, void *value)
   \e false otherwise. The string pointer is returned in \a ptr.
 */
 
-bool 
+bool
 dimeDict::enter(const char * const key, char *&ptr, void *value)
 {
   dimeDictEntry *&entry = findEntry(key);
-  
+
   if(entry == NULL) {
     entry = new dimeDictEntry(key, value);
     if (entry == NULL) {
@@ -137,14 +137,14 @@ dimeDict::enter(const char * const key, char *&ptr, void *value)
 
 /*!
   Finds if \a key is in the dictionary. Returns the string pointer
-  if found, NULL otherwise.  
+  if found, NULL otherwise.
 */
 
 const char *
 dimeDict::find(const char * const key) const
 {
   dimeDictEntry *&entry = findEntry(key);
-  if (entry) 
+  if (entry)
     return entry->key;
   return NULL;
 }
@@ -196,7 +196,7 @@ dimeDict::findEntry(const char * const key) const
   dimeDictEntry **entry;
 
   entry = &buckets[bucketNr(key) % tableSize];
-  
+
   while(*entry != NULL) {
     if(strcmp((*entry)->key, key) == 0) break;
     entry = &(*entry)->next;
@@ -236,7 +236,7 @@ dimeDict::dump(void)
   }
 }
 
-void 
+void
 dimeDict::print_info()
 {
   int i, cnt;

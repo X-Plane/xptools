@@ -29,7 +29,7 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template < class P, class Creator = 
+template < class P, class Creator =
                   Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_in_disc_2 : public Random_generator_base<P>{
     void generate_point();
@@ -59,12 +59,12 @@ generate_point() {
     double alpha = this->_rnd.get_double() * 2.0 * CGAL_PI;
     double r = this->d_range * CGAL_CLIB_STD::sqrt( this->_rnd.get_double());
     Creator creator;
-    this->d_item = creator( T(r * CGAL_CLIB_STD::cos(alpha)), 
+    this->d_item = creator( T(r * CGAL_CLIB_STD::cos(alpha)),
                             T(r * CGAL_CLIB_STD::sin(alpha)));
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                   Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT, P> >
 class Random_points_on_circle_2 : public Random_generator_base<P> {
     void generate_point();
@@ -93,12 +93,12 @@ generate_point() {
     typedef typename Creator::argument_type T;
     double a = this->_rnd.get_double() * 2.0 * CGAL_PI;
     Creator creator;
-    this->d_item = creator( T(this->d_range * CGAL_CLIB_STD::cos(a)), 
+    this->d_item = creator( T(this->d_range * CGAL_CLIB_STD::cos(a)),
                             T(this->d_range * CGAL_CLIB_STD::sin(a)));
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_in_square_2 : public Random_generator_base<P> {
     void generate_point();
@@ -134,7 +134,7 @@ generate_point() {
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_on_square_2 : public Random_generator_base<P> {
     void generate_point();
@@ -186,7 +186,7 @@ generate_point() {
 }
 
 
-template < class P, class Creator = 
+template < class P, class Creator =
                    Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT,P> >
 class Random_points_on_segment_2 : public Random_generator_base<P> {
     P _p;
@@ -306,7 +306,7 @@ points_on_square_grid_2( double a, std::size_t n, OutputIterator o)
 {
     typedef std::iterator_traits<OutputIterator> ITraits;
     typedef typename ITraits::value_type         P;
-    return points_on_square_grid_2(a, n, o, 
+    return points_on_square_grid_2(a, n, o,
                 Creator_uniform_2<typename Kernel_traits<P>::Kernel::RT,P>());
 }
 

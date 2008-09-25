@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -137,7 +137,7 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 			break;
 		}
 	}
-	
+
 	mHilite = 0;
 	Refresh();
 }
@@ -151,7 +151,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	glColor3f(1,1,1);
 	GetDescriptor(desc);
 	GetBounds(bounds);
-	int * tile_p = GetValue() > 0 ? 
+	int * tile_p = GetValue() > 0 ?
 					(mHilite ? mCellOnHilite : mCellOnReg ) :
 					(mHilite ? mCellOffHilite : mCellOffReg );
 	switch(mBehavior) {
@@ -159,7 +159,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	case btn_Web:
 		{
 			GUI_DrawStretched(state,mResource.c_str(),bounds,tile_p);
-			
+
 			if (!desc.empty())
 			{
 				w = GUI_MeasureRange(font_UI_Basic, &*desc.begin(), &*desc.end());
@@ -172,7 +172,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	case btn_Radio:
 		{
 			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, NULL);
-			
+
 			if (!desc.empty())
 				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1], desc.c_str());
 		}

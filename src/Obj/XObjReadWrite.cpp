@@ -1,29 +1,29 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
- 
+
  // TODO
  // - Clean up writing code a bit to handle decimals better.
- 
+
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 
@@ -44,7 +44,7 @@
 /****************************************************************************************
  * FILE SCANNING UTILS
  ****************************************************************************************/
- 
+
 typedef unsigned char 	xbyt;
 typedef int				xint;
 typedef float			xflt;
@@ -54,16 +54,16 @@ typedef float			xflt;
 // Identify chars that indicate a new line
 inline xint  TXT_MAP_eoln(const xbyt* c)
 {
-	return(*c==0 || *c==13 || *c=='\n');							  
+	return(*c==0 || *c==13 || *c=='\n');
 }
 
 // Identify chars that separate with whitespace
 inline xint  TXT_MAP_space(const xbyt* c)
 {
-	return(*c=='\t' || *c==' ');							  
+	return(*c=='\t' || *c==' ');
 }
 
-// Consume all white space and newlines to get to the beginning of the next non-blank line.  
+// Consume all white space and newlines to get to the beginning of the next non-blank line.
 // This implies that leading and trailing white space for a newline is ignored, as are blank lines.
 inline void  TXT_MAP_finish_line(xbyt*& c, const xbyt* c_max)
 {
@@ -78,7 +78,7 @@ inline void TXT_MAP_str_scan_eoln(xbyt*& c,const xbyt* c_max,string* input)
 	xbyt* c1=c;
 	while(c<c_max && !TXT_MAP_eoln(c)) ++c;
 	xbyt* c2=c;
-	
+
 	if(input)*input=string(c1,c2);
 
 	TXT_MAP_finish_line(c,c_max);	// call the proc to go to EOLN here since windows can have TWO eoln chars!
@@ -91,18 +91,18 @@ inline void TXT_MAP_str_scan_space(xbyt*& c,const xbyt* c_max,string* input)
 
 	xbyt* c1=c;
 	while(c<c_max && !TXT_MAP_space(c) && !TXT_MAP_eoln(c)) ++c;
-	xbyt* c2=c;	
-	
+	xbyt* c2=c;
+
 	if(input)*input=string(c1,c2);
 }
 
 inline xint TXT_MAP_str_match_space(xbyt*& c,const xbyt* c_max,const char* input, bool eol_ok)
 {
 	while(c<c_max && TXT_MAP_space(c)) ++c;
-	
+
 	xbyt* c1=c;
 	while(c<c_max && *c==*input && *input != 0) { ++c; ++input; }
-		
+
 	if (*input==0 && 		   TXT_MAP_space(c)) return xtrue;
 	if (*input==0 && eol_ok && TXT_MAP_eoln (c)) return xtrue;
 	c=c1;
@@ -173,14 +173,14 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 	outObj.cmds.clear();
 
 	float scanned_st_rgb[4][3]={0,0,0 , 0,0,0,// [corner][color or st]
-                               0,0,0 , 0,0,0};	
-	
+                               0,0,0 , 0,0,0};
+
 	outObj.cmds.clear();
 
 	/*********************************************************************
 	 * READ FILE INTO MEM
 	 *********************************************************************/
-	
+
 	FILE * objFile = fopen(inFile, "rb");
 	if (!objFile) return false;
 	fseek(objFile,0L,SEEK_END);
@@ -197,17 +197,17 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 	/*********************************************************************
 	 * READ HEADER
 	 *********************************************************************/
-	
+
 	unsigned char *	cur_ptr = mem_buf;
 	unsigned char *	end_ptr = mem_buf + filesize;
-	
+
 	// LINE 1: A/I - who cares?!?
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
+
 	// LINE 2: version
 	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
+
 	// LINE 3: "OBJ"
 	if (vers == 700)
 	{
@@ -215,19 +215,19 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 			vers = 0;
 		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	}
-	
+
 	// If we don't have a good version, bail.
 	if (vers != 2 && vers != 700)
 	{
 		free(mem_buf);
 		return false;
 	}
-	
-	// LINE 4: Texture	
+
+	// LINE 4: Texture
 	TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture);
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
-		
+
+
 	/************************************************************
 	 * READ GEOMETRIC COMMANDS
 	 ************************************************************/
@@ -238,10 +238,10 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 	{
 		XObjCmd	cmd;
 		double xav, yav, zav;
-		
+
 		/************************************************************
 		 * OBJ2 SCANNING
-		 ************************************************************/		
+		 ************************************************************/
 		if (vers == 2)
 		{
 			int obj2_op = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
@@ -283,9 +283,9 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				if (obj2_op == 3) cmd.cmdID = obj_Tri;
 				cmd.cmdType = type_Poly;
 				count = obj2_op;
-				if (count > 4) count = 4;				
-				// Make sure to 'spread' the 4 S/T coords to 8 points.  This is 
-				// because 
+				if (count > 4) count = 4;
+				// Make sure to 'spread' the 4 S/T coords to 8 points.  This is
+				// because
 				scanned_st_rgb[2][0]=scanned_st_rgb[3][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// s1
 				scanned_st_rgb[0][0]=scanned_st_rgb[1][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// s2
 				scanned_st_rgb[1][1]=scanned_st_rgb[2][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// t1
@@ -319,12 +319,12 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 					smoke_cmd.attributes.push_back(xav);
 					smoke_cmd.attributes.push_back(yav);
 					smoke_cmd.attributes.push_back(zav);
-					smoke_cmd.attributes.push_back(1.0);					
+					smoke_cmd.attributes.push_back(1.0);
 					outObj.cmds.push_back(smoke_cmd);
 				}
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-				break;				
-				
+				break;
+
 			case 99:
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				stop = true;
@@ -356,25 +356,25 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 					cmd.st.push_back(vst);
 					cmd.st.push_back(vst2);
 				}
-				outObj.cmds.push_back(cmd);					
+				outObj.cmds.push_back(cmd);
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				break;
 			}
-			
+
 		} else {
 
 			/************************************************************
 			 * OBJ7 SCANNING
-			 ************************************************************/		
-		
+			 ************************************************************/
+
 			string	cmd_name;
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &cmd_name);
 			int cmd_id = FindObjCmd(cmd_name.c_str(), false);
-			
+
 			cmd.cmdType = gCmds[cmd_id].cmd_type;
 			cmd.cmdID = gCmds[cmd_id].cmd_id;
 			count = gCmds[cmd_id].elem_count;
-			
+
 			switch(gCmds[cmd_id].cmd_type) {
 			case type_None:
 				if (cmd.cmdID == obj_End)
@@ -382,7 +382,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				break;
 			case type_PtLine:
-			
+
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				while (count--)
 				{
@@ -392,13 +392,13 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 					vrgb.rgb[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					vrgb.rgb[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					vrgb.rgb[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
-					
+
 					cmd.rgb.push_back(vrgb);
 				}
 				outObj.cmds.push_back(cmd);
-				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);				
+				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				break;
-				
+
 			case type_Poly:
 
 				if (count == 0) count = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
@@ -411,17 +411,17 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
-					
+
 					cmd.st.push_back(vst);
 				}
 				outObj.cmds.push_back(cmd);
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				break;
 			case type_Attr:
-				
+
 				for (int n = 0; n < count; ++n)
 					cmd.attributes.push_back(TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals));
-					
+
 				outObj.cmds.push_back(cmd);
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				break;
@@ -430,7 +430,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 		}	// Obj 7 Paraser
 
 	} // While loop
-	
+
 	free(mem_buf);
 	return true;
 }
@@ -448,18 +448,18 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 	fprintf(fi,"700" CRLF);
 	fprintf(fi,"OBJ" CRLF CRLF);
 	fprintf(fi,"%s\t\t//" CRLF CRLF, inObj.texture.c_str());
-	
+
 	for (vector<XObjCmd>::const_iterator iter = inObj.cmds.begin(); iter != inObj.cmds.end(); ++iter)
 	{
 		int 	index	= FindIndexForCmd(iter->cmdID);
 		switch(iter->cmdType) {
 		case type_PtLine:
-		
+
 			if (gCmds[index].elem_count == 0)
 				fprintf(fi,"%s %d\t\t//" CRLF, gCmds[index].name, iter->rgb.size());
 			else
 				fprintf(fi,"%s\t\t//" CRLF, gCmds[index].name);
-			
+
 			for (vector<vec_rgb>::const_iterator riter = iter->rgb.begin();
 				riter != iter->rgb.end(); ++riter)
 			{
@@ -469,15 +469,15 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 			}
 			fprintf(fi,CRLF);
 			break;
-			
-			
+
+
 		case type_Poly:
-		
+
 			if (gCmds[index].elem_count == 0)
 				fprintf(fi,"%s %d\t\t//" CRLF, gCmds[index].name, iter->st.size());
 			else
 				fprintf(fi,"%s\t\t//" CRLF, gCmds[index].name);
-			
+
 			for (vector<vec_tex>::const_iterator siter = iter->st.begin();
 				siter != iter->st.end(); ++siter)
 			{
@@ -488,7 +488,7 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 			fprintf(fi,CRLF);
 			break;
 
-		
+
 		case type_Attr:
 			fprintf(fi,"%s",gCmds[index].name);
 			for (vector<float>::const_iterator aiter = iter->attributes.begin();
@@ -498,11 +498,11 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 			}
 			fprintf(fi, "\t\t//" CRLF CRLF);
 			break;
-		}	
+		}
 	}
 
 	fprintf(fi,"end\t\t//" CRLF);
-	
+
 	fclose(fi);
 	return true;
 }
@@ -526,7 +526,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	/*********************************************************************
 	 * READ FILE INTO MEM
 	 *********************************************************************/
-	
+
 	FILE * objFile = fopen(inFile, "rb");
 	if (!objFile) return false;
 	fseek(objFile,0L,SEEK_END);
@@ -543,39 +543,39 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	/*********************************************************************
 	 * READ HEADER
 	 *********************************************************************/
-	
+
 	unsigned char *	cur_ptr = mem_buf;
 	unsigned char *	end_ptr = mem_buf + filesize;
-	
+
 	// LINE 1: A/I - who cares?!?
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
+
 	// LINE 2: version
 	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
+
 	// LINE 3: "OBJ"
 	if (!TXT_MAP_str_match_space(cur_ptr, end_ptr, "OBJ", xtrue))
 		vers = 0;
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	
+
 	// If we don't have a good version, bail.
 	if (vers != 800)
 	{
 		free(mem_buf);
 		return false;
 	}
-			
+
 	/************************************************************
 	 * READ GEOMETRIC COMMANDS
 	 ************************************************************/
 
 	bool	stop = false;
-	
+
 	int trimax, linemax, lightmax, idxmax;
 	int tricount = 0, linecount = 0, lightcount = 0, idxcount = 0;
 	float	stdat[8];
-	
+
 	XObjCmd8	cmd;
 	XObjAnim8	animation;
 
@@ -593,7 +593,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_LIT", xfals))
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_lit);
-		} 
+		}
 		// POINT_COUNTS tris lines lites geo indices
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "POINT_COUNTS", xfals))
 		{
@@ -656,7 +656,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		}
 		// IDX10 <n> x 10
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", xfals))
-		{			
+		{
 			if (idxcount >= idxmax) break;
 			for (n = 0; n < 10; ++n)
 				outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -691,16 +691,16 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			if (outObj.lods.back().lod_far != 0)	outObj.lods.push_back(XObjLOD8());
 			outObj.lods.back().lod_near = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.lods.back().lod_far = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-		} 
+		}
 		// ANIM_rotate x y z r1 r2 v1 v2 dref
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", xfals))
 		{
-			animation.keyframes.clear();			
+			animation.keyframes.clear();
 			cmd.cmd = anim_Rotate;
-			cmd.idx_offset = outObj.animation.size();			
+			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
-			animation.keyframes.push_back(XObjKey());						
+			animation.keyframes.push_back(XObjKey());
 			animation.axis[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.axis[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.axis[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -719,7 +719,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
-			animation.keyframes.push_back(XObjKey());						
+			animation.keyframes.push_back(XObjKey());
 			animation.keyframes[0].v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.keyframes[0].v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.keyframes[0].v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -750,14 +750,14 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.cmd = obj8_LightCustom;
 			for (n = 0; n < 12; ++n)
 				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
-			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// LIGHT_NAMED <name> <x> <y> <z>
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"LIGHT_NAMED", xfals))
 		{
 			cmd.cmd = obj8_LightNamed;
-			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			for (n = 0; n < 3; ++n)
 				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			outObj.lods.back().cmds.push_back(cmd);
@@ -766,7 +766,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_layer_group", xfals))
 		{
 			cmd.cmd = attr_Layer_Group;
-			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
@@ -774,7 +774,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard", xtrue))
 		{
 			cmd.cmd = attr_Hard;
-			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			if (cmd.name.empty()) cmd.name = "object";
 			outObj.lods.back().cmds.push_back(cmd);
 		}
@@ -782,7 +782,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard_deck", xtrue))
 		{
 			cmd.cmd = attr_Hard_Deck;
-			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			if (cmd.name.empty()) cmd.name = "object";
 			outObj.lods.back().cmds.push_back(cmd);
 		}
@@ -816,7 +816,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
-			animation.keyframes.push_back(XObjKey());			
+			animation.keyframes.push_back(XObjKey());
 			animation.keyframes[0].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.keyframes[1].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
@@ -826,9 +826,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ANIM_rotate_begin x y z dref
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_begin", xfals))
 		{
-			animation.keyframes.clear();			
+			animation.keyframes.clear();
 			cmd.cmd = anim_Rotate;
-			cmd.idx_offset = outObj.animation.size();			
+			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.axis[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.axis[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -844,9 +844,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
-			outObj.animation.push_back(animation);		
+			outObj.animation.push_back(animation);
 		}
-		// ANIM_rotate_key v r 
+		// ANIM_rotate_key v r
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_key", xfals))
 		{
 			outObj.animation.back().keyframes.push_back(XObjKey());
@@ -870,7 +870,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_end", xtrue))
 		{
 		}
-/******************************************************************************************************************************/		
+/******************************************************************************************************************************/
 		// COCKPIT_REGION
 /******************************************************************************************************************************/
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"COCKPIT_REGION", false))
@@ -895,13 +895,13 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 					cmd.params[n] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 				}
 				outObj.lods.back().cmds.push_back(cmd);
-			}			
-			
+			}
+
 		}
 
 		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
-	} // While loop	
-	
+	} // While loop
+
 	free(mem_buf);
 	return true;
 }
@@ -912,22 +912,22 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 bool	XObj8Write(const char * inFile, const XObj8& outObj)
 {
 	int n;
-	
+
 	FILE * fi = fopen(inFile, "w");
 	if (fi == NULL) return false;
 	const float * v;
-	
+
 	// HEADER
 	fprintf(fi, "%c" CRLF "800" CRLF "OBJ" CRLF CRLF, APL ? 'A' : 'I');
 
-	// TEXTURES	
+	// TEXTURES
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
 
 	// SUBREGIONS
 	for (int r = 0; r < outObj.regions.size(); ++r)
 	{
-		fprintf(fi,"COCKPIT_REGION %d %d %d %d" CRLF, 
+		fprintf(fi,"COCKPIT_REGION %d %d %d %d" CRLF,
 			outObj.regions[r].left,
 			outObj.regions[r].bottom,
 			outObj.regions[r].right,
@@ -969,14 +969,14 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	}
 
 	// CMDS
-	
+
 	for (vector<XObjLOD8>::const_iterator lod = outObj.lods.begin(); lod != outObj.lods.end(); ++lod)
 	{
 		if (lod->lod_far != 0.0)
 		{
 			fprintf(fi, "ATTR_LOD %f %f" CRLF, lod->lod_near, lod->lod_far);
 		}
-		
+
 		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
@@ -993,20 +993,20 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.animation[cmd->idx_offset].dataref.c_str());
 				else
 				{
-					fprintf(fi, "ANIM_rotate_begin %f %f %f %s" CRLF, 
+					fprintf(fi, "ANIM_rotate_begin %f %f %f %s" CRLF,
 						outObj.animation[cmd->idx_offset].axis[0],
 						outObj.animation[cmd->idx_offset].axis[1],
 						outObj.animation[cmd->idx_offset].axis[2],
 						outObj.animation[cmd->idx_offset].dataref.c_str());
 					for(n = 0; n < outObj.animation[cmd->idx_offset].keyframes.size(); ++n)
-						fprintf(fi, "ANIM_rotate_key %f %f" CRLF, 
+						fprintf(fi, "ANIM_rotate_key %f %f" CRLF,
 							outObj.animation[cmd->idx_offset].keyframes[n].key,
 							outObj.animation[cmd->idx_offset].keyframes[n].v[0]);
 					fprintf(fi, "ANIM_rotate_end" CRLF);
 				}
 				break;
 			case anim_Translate:
-				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)			
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
 					fprintf(fi, "ANIM_trans %f %f %f %f %f %f %f %f %s" CRLF,
 						outObj.animation[cmd->idx_offset].keyframes[0].v[0],
 						outObj.animation[cmd->idx_offset].keyframes[0].v[1],
@@ -1019,10 +1019,10 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.animation[cmd->idx_offset].dataref.c_str());
 				else
 				{
-					fprintf(fi, "ANIM_trans_begin %s" CRLF, 
+					fprintf(fi, "ANIM_trans_begin %s" CRLF,
 						outObj.animation[cmd->idx_offset].dataref.c_str());
 					for(n = 0; n < outObj.animation[cmd->idx_offset].keyframes.size(); ++n)
-						fprintf(fi, "ANIM_trans_key %f %f %f %f" CRLF, 
+						fprintf(fi, "ANIM_trans_key %f %f %f %f" CRLF,
 							outObj.animation[cmd->idx_offset].keyframes[n].key,
 							outObj.animation[cmd->idx_offset].keyframes[n].v[0],
 							outObj.animation[cmd->idx_offset].keyframes[n].v[1],
@@ -1055,15 +1055,15 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 				fprintf(fi,"ATTR_layer_group %s %d" CRLF, cmd->name.c_str(), (int) cmd->params[0]);
 				break;
 			case anim_Hide:
-				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)						
-					fprintf(fi, "ANIM_hide %f %f %s" CRLF, 
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
+					fprintf(fi, "ANIM_hide %f %f %s" CRLF,
 						outObj.animation[cmd->idx_offset].keyframes[0].key,
 						outObj.animation[cmd->idx_offset].keyframes[1].key,
 						outObj.animation[cmd->idx_offset].dataref.c_str());
 				break;
 			case anim_Show:
-				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)			
-					fprintf(fi, "ANIM_show %f %f %s" CRLF, 
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
+					fprintf(fi, "ANIM_show %f %f %s" CRLF,
 						outObj.animation[cmd->idx_offset].keyframes[0].key,
 						outObj.animation[cmd->idx_offset].keyframes[1].key,
 						outObj.animation[cmd->idx_offset].dataref.c_str());
@@ -1086,7 +1086,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 				else
 					fprintf(fi,"ATTR_no_blend %f" CRLF, cmd->params[0]);
 				break;
-			default: 
+			default:
 				{
 					int idx = FindIndexForCmd(cmd->cmd);
 					if (idx != gCmdCount)

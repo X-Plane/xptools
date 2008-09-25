@@ -37,10 +37,10 @@ nad_cvt(LP in, int inverse, struct CTABLE *ct) {
                            no result.  NFW
                            To demonstrate use -112.5839956 49.4914451 against
                            the NTv2 grid shift file from Canada. */
-			if (del.lam == HUGE_VAL) 
+			if (del.lam == HUGE_VAL)
                         {
                             if( getenv( "PROJ_DEBUG" ) != NULL )
-                                fprintf( stderr, 
+                                fprintf( stderr,
                                          "Inverse grid shift iteration failed, presumably at grid edge.\n"
                                          "Using first approximation.\n" );
                             /* return del */;
@@ -52,7 +52,7 @@ nad_cvt(LP in, int inverse, struct CTABLE *ct) {
 		} while (i-- && fabs(dif.lam) > TOL && fabs(dif.phi) > TOL);
 		if (i < 0) {
                     if( getenv( "PROJ_DEBUG" ) != NULL )
-                        fprintf( stderr, 
+                        fprintf( stderr,
                                  "Inverse grid shift iterator failed to converge.\n" );
                     t.lam = t.phi = HUGE_VAL;
                     return t;

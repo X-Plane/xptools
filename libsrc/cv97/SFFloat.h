@@ -19,7 +19,7 @@ class SFFloat : public Field {
 
 	static	int	mInit;
 
-	float mValue; 
+	float mValue;
 
 public:
 

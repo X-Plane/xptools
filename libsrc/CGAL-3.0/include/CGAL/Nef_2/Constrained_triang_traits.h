@@ -44,7 +44,7 @@ void operator()(ARG&) const {}
 };
 
 
-template <typename PMDEC, typename GEOM, 
+template <typename PMDEC, typename GEOM,
           typename NEWEDGE = Do_nothing>
 class Constrained_triang_traits : public PMDEC {
 public:
@@ -53,7 +53,7 @@ public:
 
   // the types interfacing the sweep:
   typedef NEWEDGE                   INPUT;
-  typedef typename PMDEC::Plane_map OUTPUT; 
+  typedef typename PMDEC::Plane_map OUTPUT;
   typedef GEOM                      GEOMETRY;
 
   typedef typename GEOM::Point_2     Point;
@@ -76,12 +76,12 @@ public:
      const Halfedge_handle& e_top;
      const GEOMETRY& K;
   public:
-  lt_edges_in_sweepline(const Point& pi, 
-     const Halfedge_handle& e1, const Halfedge_handle& e2, 
-     const PMDEC& D, const GEOMETRY& k) : 
+  lt_edges_in_sweepline(const Point& pi,
+     const Halfedge_handle& e1, const Halfedge_handle& e2,
+     const PMDEC& D, const GEOMETRY& k) :
        PMDEC(D), p(pi), e_bottom(e1), e_top(e2), K(k) {}
 
-  lt_edges_in_sweepline(const lt_edges_in_sweepline& lt) : 
+  lt_edges_in_sweepline(const lt_edges_in_sweepline& lt) :
      PMDEC(lt), p(lt.p), e_bottom(lt.e_bottom), e_top(lt.e_top), K(lt.K) {}
 
   Segment seg(const Halfedge_handle& e) const
@@ -92,7 +92,7 @@ public:
 
   bool operator()(const Halfedge_handle& e1, const Halfedge_handle& e2) const
   { // Precondition:
-    // [[p]] is identical to the source of either [[e1]] or [[e2]]. 
+    // [[p]] is identical to the source of either [[e1]] or [[e2]].
     if (e1 == e_bottom || e2 == e_top) return true;
     if (e2 == e_bottom || e1 == e_top) return false;
     if ( e1 == e2 ) return 0;
@@ -100,7 +100,7 @@ public:
     if ( p == point(source(e1)) )      s =   orientation(e2,p);
     else if ( p == point(source(e2)) ) s = - orientation(e1,p);
     else CGAL_error_handler(1,"compare error in sweep.");
-    if ( s || source(e1) == target(e1) || source(e2) == target(e2) ) 
+    if ( s || source(e1) == target(e1) || source(e2) == target(e2) )
       return ( s < 0 );
     s = orientation(e2,point(target(e1)));
     if (s==0) CGAL_error_handler(1,"parallel edges not allowed.");
@@ -120,8 +120,8 @@ public:
   }; // lt_pnts_xy
 
 
-    typedef std::map<Halfedge_handle, Halfedge_handle, lt_edges_in_sweepline> 
-            Sweep_status_structure; 
+    typedef std::map<Halfedge_handle, Halfedge_handle, lt_edges_in_sweepline>
+            Sweep_status_structure;
     typedef typename Sweep_status_structure::iterator   ss_iterator;
     typedef typename Sweep_status_structure::value_type ss_pair;
     typedef std::set<Vertex_iterator,lt_pnts_xy> Event_Q;
@@ -129,7 +129,7 @@ public:
 
     const GEOMETRY&         K;
     Event_Q                 event_Q;
-    event_iterator          event_it;         
+    event_iterator          event_it;
     Vertex_handle           event;
     Point                   p_sweep;
     Sweep_status_structure  SL;
@@ -138,9 +138,9 @@ public:
     Halfedge_handle         e_low,e_high; // framing edges !
     Halfedge_handle         e_search;
 
-    Constrained_triang_traits(const INPUT& in, OUTPUT& out, const GEOMETRY& k) 
-      : Base(out), K(k), event_Q(lt_pnts_xy(*this,K)), 
-        SL(lt_edges_in_sweepline(p_sweep,e_low,e_high,*this,K)), 
+    Constrained_triang_traits(const INPUT& in, OUTPUT& out, const GEOMETRY& k)
+      : Base(out), K(k), event_Q(lt_pnts_xy(*this,K)),
+        SL(lt_edges_in_sweepline(p_sweep,e_low,e_high,*this,K)),
         SLItem(SL.end()),  Treat_new_edge(in)
     { TRACEN("Constrained Triangulation Sweep"); }
 
@@ -153,7 +153,7 @@ public:
   }
 
   Halfedge_handle new_bi_edge(Halfedge_handle e_bf, Halfedge_handle e_af)
-  { // ccw before e_bf and after e_af 
+  { // ccw before e_bf and after e_af
     Halfedge_handle e = Base::new_halfedge_pair(e_bf,e_af,Halfedge_base(),
       Base::BEFORE, Base::AFTER);
     Treat_new_edge(e);
@@ -194,7 +194,7 @@ public:
     Vertex_handle v_apex = source(e_apex);
     while (true) {
       Halfedge_handle e_vis = previous(twin(e_apex));
-      bool in_sweep_line = (SLItem[e_vis] != SL.end()); 
+      bool in_sweep_line = (SLItem[e_vis] != SL.end());
       bool not_visible = !edge_is_visible_from(v_apex,e_vis);
         TRACEN(" checking "<<in_sweep_line<<not_visible<<" "<<seg(e_vis));
       if ( in_sweep_line || not_visible) {
@@ -242,10 +242,10 @@ public:
       if (en_vis == e_end) return;
       e_upper = twin(new_bi_edge(twin(e_vis),e_upper));
       TRACEN(" produced " << seg(e_upper));
-    } 
+    }
   }
 
-  void process_event() 
+  void process_event()
   {
       TRACEN("\nPROCESS_EVENT " << p_sweep);
     Halfedge_handle e, ep, eb_low, eb_high, e_end;
@@ -273,7 +273,7 @@ public:
 
     bool ending_edges(0), starting_edges(0);
     while ( e != Halfedge_handle() ) { // walk adjacency list clockwise
-      if ( SLItem[e] != SL.end() ) 
+      if ( SLItem[e] != SL.end() )
       {
         TRACEN("ending " << seg(e));
         if (ending_edges) triangulate_between(e,cyclic_adj_succ(e));
@@ -295,15 +295,15 @@ public:
       if (e == e_end) break;
       e = cyclic_adj_pred(e);
     }
-    if (!ending_edges) 
+    if (!ending_edges)
     {
       Halfedge_handle e_vis = sit_pred->second;
       Halfedge_handle e_vis_n = cyclic_adj_succ(e_vis);
-      eb_low = eb_high = new_bi_edge(event,e_vis_n); 
+      eb_low = eb_high = new_bi_edge(event,e_vis_n);
       TRACEN(" producing link "<<seg(eb_low)<<"\n    before "<<seg(e_vis_n));
     }
 
-      
+
 
 
     triangulate_up(eb_high);
@@ -311,36 +311,36 @@ public:
     sit_pred->second = eb_low;
   }
 
-  bool event_exists() 
+  bool event_exists()
   { if ( event_it != event_Q.end() ) {
       // event is set at end of loop and in init
       event = *event_it;
       p_sweep = point(event);
       return true;
     }
-    return false; 
+    return false;
   }
 
-  void procede_to_next_event() 
+  void procede_to_next_event()
   { ++event_it; }
 
   void link_bi_edge_to(Halfedge_handle e, ss_iterator sit) {
-    SLItem[e] = SLItem[twin(e)] = sit; 
+    SLItem[e] = SLItem[twin(e)] = sit;
   }
 
   void initialize_structures()
   {
       TRACEN("initialize_structures ");
-    
+
     for ( event=vertices_begin(); event != vertices_end(); ++event )
       event_Q.insert(event); // sorted order of vertices
 
     event_it = event_Q.begin();
     if ( event_Q.empty() ) return;
     event = *event_it;
-    p_sweep = point(event); 
+    p_sweep = point(event);
     if ( !is_isolated(event) ) {
-      Halfedge_around_vertex_circulator 
+      Halfedge_around_vertex_circulator
         e(first_out_edge(event)), eend(e);
       CGAL_For_all(e,eend) {
         TRACEN("init with "<<PE(e));
@@ -363,7 +363,7 @@ public:
     // inserting sentinels into SL
     link_bi_edge_to(e_high, sit_high);
     link_bi_edge_to(e_low , sit_low);
-    // we mark them being in the sweepline, which they will never leave 
+    // we mark them being in the sweepline, which they will never leave
 
 
     // we move to the second vertex:
@@ -372,7 +372,7 @@ public:
     TRACEN("EOF initialization");
   }
 
-  void complete_structures() 
+  void complete_structures()
   {
     if (e_low != Halfedge_handle()) {
       delete_vertex(target(e_search));
@@ -381,7 +381,7 @@ public:
 
 
   void check_ccw_local_embedding() const
-  { PM_checker<PMDEC,GEOM> C(*this,K); 
+  { PM_checker<PMDEC,GEOM> C(*this,K);
     C.check_order_preserving_embedding(event);
   }
 

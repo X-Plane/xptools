@@ -17,9 +17,9 @@
 #include "JScript.h"
 
 #ifdef SUPPORT_JSAI
-class ScriptNode : public Node, public CJavaVM { 
+class ScriptNode : public Node, public CJavaVM {
 #else
-class ScriptNode : public Node { 
+class ScriptNode : public Node {
 #endif
 
 	SFBool *directOutputField;

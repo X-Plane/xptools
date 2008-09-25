@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,10 +27,10 @@
 /*
 
 	XPWidgetDialogs - THEORY OF OPERATION
-	
+
 	XPWidgetDialogs is a set of 4 APIs that makes it easy to build complex dialog box using
 	plugin widgets:
-	
+
 	1. Layout management APIs.  These provide a central facility for organizing widgets,
 	   something that was not provided in the original widgets kit.
 	2. Wrapper widgets.  These are specializations of a few common widgets for the use in
@@ -39,91 +39,91 @@
 	3. Layout widgets.  These widgets serve as intermediates for organizing a dialog box.
 	4. Dialog box constructor and utilities.  These APIs let you easily create and access
 	   a dialog box.
-	   
+
 	LAYOUT CALCULATION
-	
+
 	Layout management is done in two passes.  First in the measurement phase, messeages
-	flow from the top down in a depth-first search to find the minimum dimensions of 
+	flow from the top down in a depth-first search to find the minimum dimensions of
 	every widget, first horizontally then vertically.  Basically the leaf widgets drive
 	the process by defining their minimum sizes.  Then in the second phase, widgets are
 	layed out from the top down, conforming to the layout dictated by the size calculations.
-	
+
 	Three new properties and three new messages are defined for layout management:
-	
+
 	xpProperty_WidgetClass - this property contains the enum value of a widget's class.
 		This is done to provide a numeric idea of what kind of widget we have for margin
 		calculation (see below).
 	xpProperty_MinWidth/Height - these are the calculated minimum dimensions of a widget.
 		These fields are used as I/O fields by the messages below.
-		
+
 	xpMsg_RecalcMinSizeH/V - this message is sent to a widget to calculate its minimum
 		size.  A widget that responds to this message should store its minimum size in
 		the xpProperty_MinWidth/Height fields.
-	
+
 	xpMsg_DoReshape - this message is sent to tell a widget to resize for layout
-		management.  The widget should change its size but not position based on the 
+		management.  The widget should change its size but not position based on the
 		values of xpProperty_MinWidth and xpProperty_MinHeight, which may have changed
 		since last set.  (For example, if a widget is set to full justify in a large
-		container, its widget may be expanded.) 
-		
+		container, its widget may be expanded.)
+
 	Values of -1 for width and height mean "don't care" - widgets should leave their
 	dimensions alone.
-	
+
 	The layout manager calls are separate APIs to hide the casing code that handles the
 	situation where the layout messages are not handled.
-	
+
 	MARGIN HANDLING
-	
+
 	The layout manager also provides margin information - spacing between two widgets.
 	This is always done based on the class of a widget, e.g. the space between a button
 	and text field.  A default is provided, but overrides can be entered by the host
 	program, and a few widgets come special cased.  Two kind sof margins are provided:
-	
+
 	1. Sibbling margins (H & V) - two widgets next to each other in the same dialog
 	   box.  This is the spacing between their bounding rects.
-	2. Containment margins - for a widget containing another, how much must the 
+	2. Containment margins - for a widget containing another, how much must the
 	   contained widget be inset.
-	
+
 	DIALOG BOX TAGS
-	
+
 	The xpProperty_DialogTag property contains a unique 'tag' that lets you identify
 	each widget.  Since widgets are created dynamically you don't have their Widget IDs
 	to work with your dialog.  You can optionally attach an arbitrary numeric tag
 	to widgets that you will need during the dialog box's period.  Tags are optional.
 	Typically you'll need tags to:
-	
+
 	 - Manually exchange data to and from your dialog box during its operation.
 	 - Enable and disable items.
 	 - Change the captions on text, update a popup's choices, etc.
-	
+
 	DIALOG BOX DDX
-	
+
 	Data-dialog-exchange (DDX) is the process of transferring data between your dialog
 	box and application.  The widget dialogs code contains some helpers to do this
 	for you.  Some general ideas:
-	
+
 	1. You must provide fixed-location storage for your dialog's data that lasts at
 	   least as long as the dialog box.
 	2. You will always access your dialog box via this storage.  You should not need
 	   to decode the values of specific text fields, for example.
-	   
+
 	DDX has two parts: first leaf widgets (like text fields) contain a data pointer
 	property that points to your variable that will store the widget's variable.
 	Second, these widgets respond to recursive messages to copy their values from
 	or to the variables.  Each widget knows its data type and handles type
 	coercion, string processing, etc.  Generally types make sense for the widgets, e.g.
 	you can have an int check box but not a string text box.
-	
-	DDX happens automatically when an OK button is clicked or when the dialog box 
+
+	DDX happens automatically when an OK button is clicked or when the dialog box
 	is shown.  It can also happen manually in your code.  If you want to preserve
 	the state of variables for when 'cancel' is clicked and you do your own DDX,
 	make sure to preserve your dialog box variables yourself.  Dialog boxes are
 	not modal unless you shut off the rest of the world separately, so use caution
 	in this case.  Manual dialog DDX is done via tags, so you'll need to tag any
 	widget that you want to manually DDX.
-	
+
 	DIALOG BOX NOTIFICATIONS
-	
+
 	You can also attach a notification function to any of the leaf widgets that make
 	up a dialog box.  This function is a callback that is called when the widget
 	changes.  The function receives a pointer to that widget.  A typical use of
@@ -131,9 +131,9 @@
 	set up a notification to automatically disable certain text fields when a radio
 	button is picked.  NOTE: notifications are available for action push buttons and
 	are called after the action callback is called.
-	
+
 	AUTOMATIC BEHAVIOR
-	
+
 	The dialog APIs provide the following automatic behavior:
 
 	 - Radio buttons within a single parent widget are mutually exclusive.
@@ -170,9 +170,9 @@
 
 enum {
 	xpProperty_WidgetClass					= 28300,	// If the widget class is stored in this property, layout mgr can easily find it
-	xpProperty_MinWidth						= 28301,	// where your layout leaves its min dimensions 
+	xpProperty_MinWidth						= 28301,	// where your layout leaves its min dimensions
 	xpProperty_MinHeight					= 28302,	// after it gets the RecalcMinSize msg
-	
+
 	xpMsg_RecalcMinSizeH					= 28300,	// tells your widget to recalc its min size.
 	xpMsg_RecalcMinSizeV					= 28301,	// tells your widget to recalc its min size.
 	xpMsg_DoReshape							= 28302		// tells your widget to reshape - min size props have been set
@@ -200,7 +200,7 @@ void	XPLayout_RegisterSpecialMarginsContains(XPWidgetClass inParent, XPWidgetCla
  * WRAPPER WIDGETS
  **********************************************************************
  *
- * These are wrapper functions around the regular widgets, except that 
+ * These are wrapper functions around the regular widgets, except that
  * they can have added behavior: they have a data ptr property which is
  * a ptr to some kind of storage.  When the dialog box exchange messages
  * go down the widget hierarchy, they copy data to and from this pointer.
@@ -261,7 +261,7 @@ enum {
 	xpProperty_JustifyH						= 28501,		// justify, default = 0 = min (left/bot)
 	xpProperty_JustifyV						= 28502		// justify, default = 0 = min (left/bot)
 };
-int	XPWF_RowColumn	(XPWidgetMessage,XPWidgetID,long,long); 
+int	XPWF_RowColumn	(XPWidgetMessage,XPWidgetID,long,long);
 
 /**********************************************************************
  * DIALOG BOX STUFF
@@ -277,11 +277,11 @@ enum {
 
 	xpMsg_DataToDialog					= 28600,	// Sent by dialog to all children to copy data to widgets
 	xpMsg_DataFromDialog				= 28601,	// Sent by dialog to all children to copy data from widgets
-	xpMsg_DialogDone					= 28602,	// Sent to dialog to close, - param 1 = result	
-	
+	xpMsg_DialogDone					= 28602,	// Sent to dialog to close, - param 1 = result
+
 	xpDialog_ResultOK 		= 1,						// OK button pressed
 	xpDialog_ResultCancel 	= 0,						// Dialog canceled
-	
+
 	xpProperty_DialogSelfDestroy			= 28600,	// if 1, dialog deallocates when dismissed.
 	xpProperty_DialogSelfHide				= 28601,	// if 1, dialog deallocates when dismissed.
 	xpProperty_DialogDismissCB				= 28602,	// Ptr to a void (*)(XPWidgetID, int), called when dismissed.
@@ -290,11 +290,11 @@ enum {
 
 // These are action procs your push button can use to
 // nuke a dialog box.
-void	PBAction_DoneDialogOK(XPWidgetID);	
+void	PBAction_DoneDialogOK(XPWidgetID);
 void	PBAction_DoneDialogCancel(XPWidgetID);
 
 // This is the dialog box top widget - manages layout with children and dialog box data exchange.
-int	XPWF_DialogBox	(XPWidgetMessage,XPWidgetID,long,long); 
+int	XPWF_DialogBox	(XPWidgetMessage,XPWidgetID,long,long);
 
 /**********************************************************************
  * CONSTRUCTION HELPER
@@ -312,22 +312,22 @@ const	int		XP_BUTTON_ACTION=	5;	//	XP_BUTTON_ACTION, "Help", MyHelpFunc
 const	int		XP_BUTTON_OK	=	6;	//	XP_BUTTON_OK, "OK"
 const	int		XP_BUTTON_CANCEL=	7;	//	XP_BUTTON_CANCEL, "CANCEL"
 const	int		XP_CAPTION		=	8;	//	XP_CAPTION, "This is a caption"
-const	int		XP_EDIT_STRING	=	9;	//	XP_EDIT_STRING, [XP_EDIT_PASSWORD], <max len>, <vis len>, <string ptr> 
-const	int		XP_EDIT_INT		=	10;	//	XP_EDIT_INT, [XP_EDIT_PASSWORD], <max char len>, <vis len>, <int ptr> 
+const	int		XP_EDIT_STRING	=	9;	//	XP_EDIT_STRING, [XP_EDIT_PASSWORD], <max len>, <vis len>, <string ptr>
+const	int		XP_EDIT_INT		=	10;	//	XP_EDIT_INT, [XP_EDIT_PASSWORD], <max char len>, <vis len>, <int ptr>
 const	int		XP_EDIT_FLOAT	=	11;	//	XP_EDIT_FLOAT_,  [XP_EDIT_PASSWORD], <max char len>, <vis len>, <precision len>, <float ptr>
 const	int		XP_POPUP_MENU	=	12;	//	XP_POPUP_MENU, "Title", <int ptr>
 const	int		XP_TABS			=	13;	//	XP_TABS, "Title", <int ptr>
 const	int		XP_CHECKBOX		=	14;	// 	XP_CHECKBOX, "Title", <int ptr>
 const	int		XP_RADIOBUTTON	=	15;	// 	XP_CHECKBOX, "Title", <int ptr>, <enum_value>
 
-const	int		XP_TAG			=	16;	//	XP_TAG, <int>,	
+const	int		XP_TAG			=	16;	//	XP_TAG, <int>,
 const	int		XP_NOTIFY		=	17;	//	XP_NOTIFY, <func>
 
 // Special flags - these can be inserted optionally in certain locations in the string, as shown above.
 // The use of negative numbers allows us to get them via context.
 const	int		XP_EDIT_PASSWORD=	-100;
 const	int		XP_DIALOG_CLOSEBOX=	-101;
- 
+
 XPWidgetID		XPCreateWidgetLayout(int dummy, ...);
 XPWidgetID		XPFindWidgetByTag(XPWidgetID dialog, int tag);
 void			XPDataFromItem(XPWidgetID dialog, int tag);

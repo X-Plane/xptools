@@ -8,7 +8,7 @@
 #ifndef _DEBUG
 	#define CORE_ENABLE_INLINES
 	#ifdef _MSC_VER
-		#define CORE_INLINE __forceinline 
+		#define CORE_INLINE __forceinline
 	#else
 		#define CORE_INLINE inline
 	#endif

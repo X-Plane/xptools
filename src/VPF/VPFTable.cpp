@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -45,7 +45,7 @@ void	TokenizeString(const string& inString, vector<string>& outTokens, char inSe
 {
 	string::size_type startPos = 0;
 	string::size_type endPos;
-	
+
 	while (startPos < inString.length())
 	{
 		endPos = inString.find(inSep, startPos);
@@ -66,12 +66,12 @@ bool	ReadVPFTableHeader(MFMemFile * inFile, VPF_TableDef& outDef)
 	const char *	ePtr = MemFile_GetEnd(inFile);
 	int				len = ePtr - bPtr;
 	bool			hasEndian = false;
-	
+
 	if (len < 5)
 		return false;
 
 	outDef.endian = platform_LittleEndian;
-		
+
 	if (bPtr[5] == ';')
 	{
 		if (bPtr[4] == 'L' || bPtr[4] == 'l')
@@ -79,34 +79,34 @@ bool	ReadVPFTableHeader(MFMemFile * inFile, VPF_TableDef& outDef)
 		if (bPtr[4] == 'M' || bPtr[4] == 'm')
 			outDef.endian = platform_BigEndian, hasEndian = true;
 	}
-	
+
 	const char *	hStart = bPtr + 4;	// (hasEndian ? 6 : 4);
 	int				headerLen = *((int *) bPtr);
-	
+
 	EndianSwapBuffer(outDef.endian, platform_Native, kFlipInt, &headerLen);
-	
+
 	const char *	hEnd = hStart + headerLen;
-	
+
 	string	header(hStart, hEnd);
 
 	vector<string>	headerFields, columnDefs;
-	
+
 	TokenizeString(header, headerFields, ';');
-	
+
 	if (headerFields.empty()) return false;
 	if (hasEndian) headerFields.erase(headerFields.begin());
-	
+
 	if (headerFields.size() < 3) return false;
 	outDef.name = headerFields[0];
-	outDef.desc = headerFields[1];	
+	outDef.desc = headerFields[1];
 	TokenizeString(headerFields[2], columnDefs, ':');
-	
+
 	for (vector<string>::iterator col = columnDefs.begin(); col != columnDefs.end(); ++col)
 	{
 		vector<string>	defParts;
 		string::size_type div = col->find('=');
 		if (div == col->npos) return false;
-		
+
 		VPF_ColumnDef 	colDef;
 		colDef.name = col->substr(0, div);
 		// Must have at least the first 3 columns
@@ -127,7 +127,7 @@ bool	ReadVPFTableHeader(MFMemFile * inFile, VPF_TableDef& outDef)
 		if (defParts.size() > 4)	colDef.descTableName = defParts[4];
 		if (defParts.size() > 5)	colDef.themeTableName = defParts[5];
 		if (defParts.size() > 6)	colDef.narrativeFileName = defParts[6];
-		
+
 		outDef.columns.push_back(colDef);
 	}
 	return true;
@@ -260,10 +260,10 @@ VPFTableIterator::VPFTableIterator(MFMemFile * inFile, const VPF_TableDef& inDef
 	int headerLen = *((int *) mCurrentRecord);
 	EndianSwapBuffer(mDef.endian, platform_Native, kFlipInt, &headerLen);
 	mCurrentRecord += (headerLen + 4);
-	
+
 	ParseCurrent();
 }
-		
+
 bool	VPFTableIterator::Done(void)
 {
 	return (mCurrentRecord == NULL || mCurrentRecord == MemFile_GetEnd(mFile));
@@ -306,7 +306,7 @@ bool	VPFTableIterator::GetNthFieldAsString(int n, string& s)
 	int len = mDef.columns[n].elementCount;
 	if (len == 0)
 	{
-		sstart = GetRawInt(sstart, len, mDef.endian);		
+		sstart = GetRawInt(sstart, len, mDef.endian);
 	}
 	switch(mDef.columns[n].dataType) {
 	case 'T':
@@ -361,13 +361,13 @@ bool	VPFTableIterator::GetNthFieldAsCoordPair(int n, Point2& p)
 {
 	if (mCurrentRecord) return false;
 	if (mDef.columns[n].elementCount != 1) return false;
-	
+
 	double	d1, d2;
 	float	f1, f2;
 	const char * start = mCurrentRecord + mFieldOffsets[n];
-	
+
 	switch(mDef.columns[n].dataType) {
-	case 'C':		// Two-pair float		
+	case 'C':		// Two-pair float
 	case 'Z':		// Three-pair float
 		start = GetRawFloat(start, f1, mDef.endian);
 		start = GetRawFloat(start, f2, mDef.endian);
@@ -385,21 +385,21 @@ bool	VPFTableIterator::GetNthFieldAsCoordPair(int n, Point2& p)
 		return true;
 	default:
 		return false;
-	}	
+	}
 }
 
 bool	VPFTableIterator::GetNthFieldAsCoordTriple(int n , Point3& p)
 {
 	if (mCurrentRecord) return false;
 	if (mDef.columns[n].elementCount != 1) return false;
-	
+
 	double	d1, d2, d3 = 0.0;;
 	float	f1, f2, f3 = 0.0;;
 	const char * start = mCurrentRecord + mFieldOffsets[n];
 	bool	hasThree = true;
-	
+
 	switch(mDef.columns[n].dataType) {
-	case 'C':		// Two-pair float		
+	case 'C':		// Two-pair float
 		hasThree = false;
 	case 'Z':		// Three-pair float
 		start = GetRawFloat(start, f1, mDef.endian);
@@ -417,7 +417,7 @@ bool	VPFTableIterator::GetNthFieldAsCoordTriple(int n , Point3& p)
 		start = GetRawDouble(start, d1, mDef.endian);
 		start = GetRawDouble(start, d2, mDef.endian);
 		if (hasThree)
-		start = GetRawDouble(start, d3, mDef.endian);		
+		start = GetRawDouble(start, d3, mDef.endian);
 		ZeroFixd(d1);
 		ZeroFixd(d2);
 		ZeroFixd(d3);
@@ -425,7 +425,7 @@ bool	VPFTableIterator::GetNthFieldAsCoordTriple(int n , Point3& p)
 		return true;
 	default:
 		return false;
-	}	
+	}
 }
 
 bool	VPFTableIterator::GetNthFieldAsIntArray(int n, vector<int>& v)
@@ -438,7 +438,7 @@ bool	VPFTableIterator::GetNthFieldAsIntArray(int n, vector<int>& v)
 	float	fval;
 	double	dval;
 	if (len == 0)
-		start = GetRawInt(start, len, mDef.endian);		
+		start = GetRawInt(start, len, mDef.endian);
 	v.clear();
 	while (len--)
 	{
@@ -450,7 +450,7 @@ bool	VPFTableIterator::GetNthFieldAsIntArray(int n, vector<int>& v)
 		default:	return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
 bool	VPFTableIterator::GetNthFieldAsDoubleArray(int n, vector<double>& v)
@@ -463,7 +463,7 @@ bool	VPFTableIterator::GetNthFieldAsDoubleArray(int n, vector<double>& v)
 	float	fval;
 	double	dval;
 	if (len == 0)
-		start = GetRawInt(start, len, mDef.endian);		
+		start = GetRawInt(start, len, mDef.endian);
 	v.clear();
 	while (len--)
 	{
@@ -475,7 +475,7 @@ bool	VPFTableIterator::GetNthFieldAsDoubleArray(int n, vector<double>& v)
 		default:	return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
 bool	VPFTableIterator::GetNthFieldAsCoordPairArray(int n, vector<Point2>& v)
@@ -486,7 +486,7 @@ bool	VPFTableIterator::GetNthFieldAsCoordPairArray(int n, vector<Point2>& v)
 	double	d1, d2, d3;
 	float	f1, f2, f3;
 	if (len == 0)
-		start = GetRawInt(start, len, mDef.endian);		
+		start = GetRawInt(start, len, mDef.endian);
 	v.clear();
 	while (len--)
 	{
@@ -520,11 +520,11 @@ bool	VPFTableIterator::GetNthFieldAsCoordPairArray(int n, vector<Point2>& v)
 			ZeroFixd(d1);
 			ZeroFixd(d2);
 			v.push_back(Point2(d1, d2));
-			break;		
+			break;
 		default:	return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
 bool	VPFTableIterator::GetNthFieldAsCoordTripleArray(int n, vector<Point3>& v)
@@ -535,7 +535,7 @@ bool	VPFTableIterator::GetNthFieldAsCoordTripleArray(int n, vector<Point3>& v)
 	double	d1, d2, d3;
 	float	f1, f2, f3;
 	if (len == 0)
-		start = GetRawInt(start, len, mDef.endian);		
+		start = GetRawInt(start, len, mDef.endian);
 	v.clear();
 	while (len--)
 	{
@@ -553,7 +553,7 @@ bool	VPFTableIterator::GetNthFieldAsCoordTripleArray(int n, vector<Point3>& v)
 			start = GetRawDouble(start, d2, mDef.endian);
 			d3 = 0.0;
 			ZeroFixd(d1);
-			ZeroFixd(d2);						
+			ZeroFixd(d2);
 			v.push_back(Point3(d1, d2, d3));
 			break;
 		case 'Z':
@@ -561,8 +561,8 @@ bool	VPFTableIterator::GetNthFieldAsCoordTripleArray(int n, vector<Point3>& v)
 			start = GetRawFloat(start, f2, mDef.endian);
 			start = GetRawFloat(start, f3, mDef.endian);
 			ZeroFixf(f1);
-			ZeroFixf(f2);			
-			ZeroFixf(f3);			
+			ZeroFixf(f2);
+			ZeroFixf(f3);
 			v.push_back(Point3(f1, f2, f3));
 			break;
 		case 'Y':
@@ -570,14 +570,14 @@ bool	VPFTableIterator::GetNthFieldAsCoordTripleArray(int n, vector<Point3>& v)
 			start = GetRawDouble(start, d2, mDef.endian);
 			start = GetRawDouble(start, d3, mDef.endian);
 			ZeroFixd(d1);
-			ZeroFixd(d2);			
-			ZeroFixd(d3);			
+			ZeroFixd(d2);
+			ZeroFixd(d3);
 			v.push_back(Point3(d1, d2, d3));
-			break;		
+			break;
 		default:	return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
 bool	VPFTableIterator::GetNthFieldAsTripletKey(int n, VPF_TripletKey& k)
@@ -611,7 +611,7 @@ bool	VPFTableIterator::GetNthFieldAsTripletKey(int n, VPF_TripletKey& k)
 	return true;
 }
 
-	
+
 void	VPFTableIterator::ParseCurrent(void)
 {
 	if (mCurrentRecord == MemFile_GetEnd(mFile))	return;
@@ -624,7 +624,7 @@ void	VPFTableIterator::ParseCurrent(void)
 	{
 		switch(mDef.columns[i].dataType) {
 		case 'X':				// Null field
-			itemSize = 0;		
+			itemSize = 0;
 		case 'T':					// ASCII
 		case 'L':					// Latin-1
 		case 'M':					// Multilingual
@@ -675,19 +675,19 @@ void	VPFTableIterator::ParseCurrent(void)
 		{
 			varCount = *((int *) (mCurrentRecord + off));
 			EndianSwapBuffer(mDef.endian, platform_Native, kFlipInt, &varCount);
-			itemSize = 4 + itemSize * varCount;			
+			itemSize = 4 + itemSize * varCount;
 		} else
 			itemSize *= mDef.columns[i].elementCount;
-			
+
 		mFieldOffsets.push_back(off);
 		off += itemSize;
 	}
-	
+
 	mNextRecord = mCurrentRecord + off;
 	if (mNextRecord <= mCurrentRecord || mNextRecord > MemFile_GetEnd(mFile))
 		mCurrentRecord = NULL;
 }
-	
+
 
 const char *	GetRawChar(const char * inP, char& outValue, PlatformType endian)
 {
@@ -760,7 +760,7 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 			} else if (inDef.IsFieldTripletKey(n)) {
 				VPF_TripletKey	k;
 				iter.GetNthFieldAsTripletKey(n, k);
-				printf("%d/%d/%d ", k.row_id, k.tile_id, k.next_row_id);			
+				printf("%d/%d/%d ", k.row_id, k.tile_id, k.next_row_id);
 			} else {
 				if (inDef.IsFieldArray(n))
 				{
@@ -781,14 +781,14 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 						{
 							printf("%lf ", d[n]);
 						}
-						printf(")");					
+						printf(")");
 					}  else if (inDef.IsFieldTwoTuple(n)) {
 						vector<Point2> 	p2;
 						iter.GetNthFieldAsCoordPairArray(n, p2);
 						printf("(");
 						for (int n = 0; n < p2.size(); ++n)
 						{
-							printf("%f,%f ", p2[n].x, p2[n].y);					
+							printf("%f,%f ", p2[n].x, p2[n].y);
 						}
 						printf(")");
 					} else if (inDef.IsFieldThreeTuple(n)) {
@@ -797,10 +797,10 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 						printf("(");
 						for (int n = 0; n < p3.size(); ++n)
 						{
-							printf("%f,%f,%f ", p3[n].x, p3[n].y, p3[n].z);					
+							printf("%f,%f,%f ", p3[n].x, p3[n].y, p3[n].z);
 						}
-						printf(")");						
-					}									
+						printf(")");
+					}
 				} else {
 					if (inDef.IsFieldInt(n)) {
 						int i;
@@ -813,22 +813,22 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 					} else if (inDef.IsFieldTwoTuple(n)) {
 						Point2 	p2;
 						iter.GetNthFieldAsCoordPair(n, p2);
-						printf("%f,%f ", p2.x, p2.y);					
+						printf("%f,%f ", p2.x, p2.y);
 					} else if (inDef.IsFieldThreeTuple(n)) {
 						Point3 	p3;
 						iter.GetNthFieldAsCoordTriple(n, p3);
-						printf("%f,%f,%f ", p3.x, p3.y, p3.z);					
-					}					
+						printf("%f,%f,%f ", p3.x, p3.y, p3.z);
+					}
 				}
 			}
 		}
-		
+
 		printf("\n");
-	
+
 		iter.Next();
 	}
 	if (iter.Error())
 		printf("Got error with table.\n");
 	else
-		printf("End of table.\n");	
+		printf("End of table.\n");
 }

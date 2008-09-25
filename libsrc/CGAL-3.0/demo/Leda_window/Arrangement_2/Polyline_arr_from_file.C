@@ -45,7 +45,7 @@ Pmwx_2 pmwx;           // The arrangement, defined as a global variable.
 #include <CGAL/IO/Window_stream.h>
 
 // draw a polyline, with points as 'x's
-CGAL::Window_stream& operator<< (CGAL::Window_stream& os, 
+CGAL::Window_stream& operator<< (CGAL::Window_stream& os,
 				 const X_monotone_curve_2& cv)
 {
   X_monotone_curve_2::const_iterator ps = cv.begin();
@@ -79,7 +79,7 @@ CGAL::Window_stream& operator<< (CGAL::Window_stream& os, Pmwx_2& _pmwx)
 void read_curves (const char* filename,
 		  std::list<Curve_2>& curves,
 		  CGAL::Bbox_2& bbox)
-{  
+{
   std::ifstream file(filename);
   curves.clear();
 
@@ -89,7 +89,7 @@ void read_curves (const char* filename,
   int                i, j;
 
   file >> num_polylines;
-  for (i = 0; i < num_polylines; i++) 
+  for (i = 0; i < num_polylines; i++)
   {
     file >> num_segments;
     points.clear();
@@ -112,7 +112,7 @@ void read_curves (const char* filename,
 }
 
 // redraw function for LEDA window. used automatically when window reappears
-void redraw(CGAL::Window_stream * wp) 
+void redraw(CGAL::Window_stream * wp)
 {
   wp->start_buffering();
   wp->clear();
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
   float y_range = bbox.ymax() - bbox.ymin();
   float width = 640;
   float height = (y_range * width) / x_range;
-    
+
   CGAL::Window_stream W (static_cast<int>(width),
 			 static_cast<int>(height),
 			 "CGAL - Polyline Arrangement Demo");
@@ -154,11 +154,11 @@ int main(int argc, char* argv[])
   float min_range = (x_range < y_range) ? x_range : y_range;
   float x_margin = min_range / 5;
   float y_margin = (height * x_margin) / width;
-        
+
   float x0 = bbox.xmin() - x_margin;
   float x1 = bbox.xmax() + x_margin;
   float y0 = bbox.ymin() - y_margin;
-  W.init(x0, x1, y0);   // logical window size 
+  W.init(x0, x1, y0);   // logical window size
 
   W.set_redraw(redraw);
   W.set_mode(CGAL_LEDA_SCOPE::src_mode);
@@ -170,46 +170,46 @@ int main(int argc, char* argv[])
 
   // Draw the arrangement.
   W << pmwx;
-  
+
   // Point Location part.
   Pmwx_2::Halfedge_handle e;
   double  x,y;
   Point_2 pnt;
 
-  W.set_status_string("Enter a point with left button. Press Quit to quit.");  
+  W.set_status_string("Enter a point with left button. Press Quit to quit.");
   W.set_button_label(THE_BUTTON, "  Quit  ");
-  while (W.read_mouse(x,y) != THE_BUTTON) 
+  while (W.read_mouse(x,y) != THE_BUTTON)
   {
     // Read the query point from the mouse.
     pnt = Point_2(x,y);
     W << pmwx;
-    
+
     Pmwx_2::Locate_type lt;
     e = pmwx.locate(pnt ,lt);
 
     // Color the face containing the query point on the screen.
     W << CGAL::GREEN;
     Pmwx_2::Face_handle f=e->face();
-    if (f->does_outer_ccb_exist()) 
+    if (f->does_outer_ccb_exist())
     {
       Pmwx_2::Ccb_halfedge_circulator cc = f->outer_ccb();
-      do 
+      do
       {
 	W << cc->curve();
       } while (++cc != f->outer_ccb());
     }
 
     for (Pmwx_2::Holes_iterator ho = f->holes_begin(), hoe = f->holes_end();
-	 ho != hoe; ++ho) 
+	 ho != hoe; ++ho)
     {
-      Pmwx_2::Ccb_halfedge_circulator cc = *ho; 
+      Pmwx_2::Ccb_halfedge_circulator cc = *ho;
       do {
 	W << cc->curve();
       } while (++cc != *ho);
     }
   }
 
-  return (0);  
+  return (0);
 }
 
 #endif

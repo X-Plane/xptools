@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_ORIENTATION_PREDICATESH3_H
 #define CGAL_ORIENTATION_PREDICATESH3_H

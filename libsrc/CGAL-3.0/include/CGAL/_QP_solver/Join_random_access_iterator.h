@@ -80,7 +80,7 @@ class Join_random_access_iterator_1 {
 };
 
 CGAL_END_NAMESPACE
-  
+
 #endif
 
 // ===== EOF ==================================================================

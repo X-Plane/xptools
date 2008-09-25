@@ -25,7 +25,7 @@
  */
 
 
-// define this to create dime3DFace, otherwise dimeLine will be used. 
+// define this to create dime3DFace, otherwise dimeLine will be used.
 #define DXFSPHERE_FILLED 1
 
 // define this to use UnknownEntity instead of dime3DFace
@@ -57,7 +57,7 @@
 class point {
 public:
   point() { }
-  point(const point & p) 
+  point(const point & p)
     : x(p.x), y(p.y), z(p.z) { }
   point(double x, double y, double z)
     : x(x), y(y), z(z) { }
@@ -74,7 +74,7 @@ public:
     pt[1] = p1;
     pt[2] = p2;
     area = area;
-  } 
+  }
 public:
   point     pt[3];    /* Vertices of triangle */
   double    area;     /* Unused; might be used for adaptive subdivision */
@@ -83,7 +83,7 @@ public:
 class object {
 public:
   object(void) : npoly(0), poly(NULL) { }
-  object(int npoly, triangle * poly) 
+  object(int npoly, triangle * poly)
     : npoly(npoly), poly(poly) { }
 public:
   int       npoly;    /* # of triangles in object */
@@ -217,7 +217,7 @@ main(int ac, char ** av)
   int useblock = 0;
 
   char * outfile = NULL;
-  
+
   /* Parse arguments */
   for (i = 1; i < ac; i++) {
     if (!strcmp(av[i], "-c"))
@@ -237,12 +237,12 @@ main(int ac, char ** av)
 	fprintf(stderr, "dxfsphere: # of levels must be >= 1\n");
 	exit(1);
       }
-    } 
+    }
     else {
       break;
     }
   }
-  
+
   if (i < ac || ac == 1) {
     fprintf(stderr, "dxfsphere: [-c] [-t] [-i] [-b] [-o <outfile>] <levels>\n");
     exit(1);
@@ -261,16 +261,16 @@ main(int ac, char ** av)
     // DIME: add tables section (needed for layers).
     dimeTablesSection * tables = new dimeTablesSection;
     model.insertSection(tables);
-    
+
     // DIME: set up a layer table to store our layers
     dimeTable * layers = new dimeTable(NULL);
-    
+
     // DIME: set up our layers
     add_layer(LAYERNAME1, 16, &model, layers);
     add_layer(LAYERNAME2, 8, &model, layers);
 
     // DIME: insert the layer in the table
-    tables->insertTable(layers); 
+    tables->insertTable(layers);
   }
 
   // DIME: only needed if you want to create the sphere as a BLOCK
@@ -289,7 +289,7 @@ main(int ac, char ** av)
 
   if (ccwflag)
     flip_object(old);
-  
+
   /* Subdivide each starting triangle (maxlevel - 1) times */
   for (level = 1; level < maxlevel; level++) {
     /* Allocate a new object */
@@ -301,7 +301,7 @@ main(int ac, char ** av)
       exit(1);
     }
     newobj->npoly = old->npoly * 4;
-    
+
     /* Allocate 4* the number of points in the current approximation */
     newobj->poly  = (triangle *)malloc(newobj->npoly * sizeof(triangle));
     if (newobj->poly == NULL) {
@@ -309,7 +309,7 @@ main(int ac, char ** av)
               av[0], level);
       exit(1);
     }
-      
+
     /* Subdivide each triangle in the old approximation and normalize
      *  the new points thus generated to lie on the surface of the unit
      *  sphere.
@@ -334,40 +334,40 @@ main(int ac, char ** av)
         *oldt = &old->poly[i],
         *newt = &newobj->poly[i*4];
       point a, b, c;
-      
+
       a = *normalize(midpoint(&oldt->pt[0], &oldt->pt[2]));
       b = *normalize(midpoint(&oldt->pt[0], &oldt->pt[1]));
       c = *normalize(midpoint(&oldt->pt[1], &oldt->pt[2]));
-        
+
       newt->pt[0] = oldt->pt[0];
       newt->pt[1] = b;
       newt->pt[2] = a;
       newt++;
-        
+
       newt->pt[0] = b;
       newt->pt[1] = oldt->pt[1];
       newt->pt[2] = c;
       newt++;
-      
+
       newt->pt[0] = a;
       newt->pt[1] = b;
       newt->pt[2] = c;
       newt++;
-      
+
       newt->pt[0] = a;
       newt->pt[1] = c;
       newt->pt[2] = oldt->pt[2];
     }
-    
+
     if (level > 1) {
       free(old->poly);
       free(old);
     }
-    
+
     /* Continue subdividing new triangles */
     old = newobj;
   }
-  
+
   /* Print out resulting approximation */
   print_object(old, maxlevel, model, LAYERNAME1, block);
 
@@ -388,7 +388,7 @@ point * normalize(point * p)
 {
   static point r;
   double mag;
-  
+
   r = *p;
   mag = r.x * r.x + r.y * r.y + r.z * r.z;
   if (mag != 0.0) {
@@ -397,7 +397,7 @@ point * normalize(point * p)
     r.y *= mag;
     r.z *= mag;
   }
-  
+
   return &r;
 }
 
@@ -405,11 +405,11 @@ point * normalize(point * p)
 point * midpoint(point * a, point * b)
 {
   static point r;
-  
+
   r.x = (a->x + b->x) * 0.5;
   r.y = (a->y + b->y) * 0.5;
   r.z = (a->z + b->z) * 0.5;
-  
+
   return &r;
 }
 
@@ -430,11 +430,11 @@ void print_object(object * obj, int level, dimeModel & model, const char * layer
                   dimeBlock * block)
 {
   int i;
-  
+
   const dimeLayer * layer = model.getLayer(layername);
 
   for (i = 0; i < obj->npoly; i++) {
-    print_triangle(&obj->poly[i], model, layer, block);  
+    print_triangle(&obj->poly[i], model, layer, block);
   }
 }
 
@@ -465,7 +465,7 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer,
   const int BUFSIZE = 1024;
   char buf[BUFSIZE];
   const char * handle = model.getUniqueHandle(buf, BUFSIZE);
-  
+
   dimeParam param;
   param.string_data = handle;
   face->setRecord(5, param);
@@ -497,7 +497,7 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer,
     face->setRecord(i + 20, param);
 
     param.double_data = t->pt[i].z;
-    face->setRecord(i + 30, param);    
+    face->setRecord(i + 30, param);
   }
   // to make 3DFACE contain a triangle and not a quad, the fourth
   // vertex must be equal to the third. We therefore iterate from 0 to
@@ -514,7 +514,7 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer,
   const int BUFSIZE = 1024;
   char buf[BUFSIZE];
   const char * handle = model.getUniqueHandle(buf, BUFSIZE);
-  
+
   param.string_data = handle;
   face->setRecord(5, param);
 
@@ -541,12 +541,12 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer,
 
     line->setCoords(0, v[0]);
     line->setCoords(1, v[1]);
-    
+
     // DIME: create unique handle for the entity (needed to load the file into AutoCAD)
     const int BUFSIZE = 1024;
     char buf[BUFSIZE];
     const char * handle = model.getUniqueHandle(buf, BUFSIZE);
-    
+
     dimeParam param;
     param.string_data = handle;
     line->setRecord(5, param);

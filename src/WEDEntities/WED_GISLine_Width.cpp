@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -29,7 +29,7 @@
 
 TRIVIAL_COPY(WED_GISLine_Width, WED_GISLine)
 
-WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) : 
+WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) :
 	WED_GISLine(parent, id),
 	width(this,"width","GIS_lines_heading", "width", 50.0,6,2)
 {
@@ -55,7 +55,7 @@ enum {
 	rwy_prop_count
 };
 
-const char * kRwyPropNames[rwy_prop_count] = { 
+const char * kRwyPropNames[rwy_prop_count] = {
 	"Length",
 	"Heading",
 	"Latitude 1",
@@ -63,7 +63,7 @@ const char * kRwyPropNames[rwy_prop_count] = {
 	"Latitude Ctr",
 	"Longitude Ctr",
 	"Latitude 2",
-	"Longitude 2" 
+	"Longitude 2"
 };
 
 int			WED_GISLine_Width::FindProperty(const char * in_prop)
@@ -101,7 +101,7 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
 	case rwy_prop_lat2:		info.digits = 10; info.decimals = 6; break;
 	case rwy_prop_lon2:		info.digits = 11; info.decimals = 6; break;
 	default: WED_GISLine::GetNthPropertyInfo(n-rwy_prop_count, info);
-	}	
+	}
 }
 
 void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict)
@@ -125,7 +125,7 @@ void		WED_GISLine_Width::GetNthProperty(int n, PropertyVal_t& val) const
 		Quad_2to1(ends, ctr, h, l);
 		if (gIsFeet) l *= MTR_TO_FT;
 	}
-	
+
 	val.prop_kind = prop_Double;
 	switch(n) {
 	case rwy_prop_length:	val.double_val = l;			break;
@@ -150,37 +150,37 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 		GetTarget()->GetLocation(ends[1]);
 		Quad_2to1(ends, ctr, h, l);
 	}
-	
+
 	switch(n) {
-	case rwy_prop_length:	
+	case rwy_prop_length:
 		l = val.double_val;
 		if (gIsFeet) l *= FT_TO_MTR;
 		Quad_1to2(ctr, h, l, ends);
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
-		break;		
+		break;
 	case rwy_prop_heading:
 		h = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
 		break;
-			
-	case rwy_prop_lat1:		
+
+	case rwy_prop_lat1:
 		ends[0].y = val.double_val;
 		GetSource()->SetLocation(ends[0]);
-		break;		
+		break;
 	case rwy_prop_lon1:
 		ends[0].x = val.double_val;
 		GetSource()->SetLocation(ends[0]);
 		break;
-	
+
 	case rwy_prop_latc:
 		ctr.y = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
-		break;	
+		break;
 	case rwy_prop_lonc:
 		ctr.x = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
@@ -196,8 +196,8 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 		ends[1].x = val.double_val;
 		GetTarget()->SetLocation(ends[1]);
 		break;
-	
-	default: 
+
+	default:
 		WED_GISLine::SetNthProperty(n-rwy_prop_count, val);
 	}
 
@@ -254,7 +254,7 @@ bool			WED_GISLine_Width::PtOnFrame		(const Point2& p, double dist) const
 bool			WED_GISLine_Width::PtWithin		(const Point2& p	 ) const
 {
 	Point2 corners[4];
-	GetCorners(corners);	
+	GetCorners(corners);
 	return inside_polygon_pt(corners,corners+4,p);
 }
 
@@ -269,14 +269,14 @@ void			WED_GISLine_Width::Rescale(
 		corners[n].x = old_bounds.rescale_to_x(new_bounds,corners[n].x);
 		corners[n].y = old_bounds.rescale_to_y(new_bounds,corners[n].y);
 	}
-	
+
 	Point2	 ends[2];
 	double  w;
 	Quad_4to2(corners, ends, w);
 	GetSource()->SetLocation(ends[0]);
 	GetTarget()->SetLocation(ends[1]);
 	SetWidth(w);
-	
+
 }
 
 
@@ -304,7 +304,7 @@ void	WED_GISLine_Width::GetCorners(Point2 corners[4]) const
 	Point2		ends[2];
 	GetSource()->GetLocation(ends[0]);
 	GetTarget()->GetLocation(ends[1]);
-	
+
 	Quad_2to4(ends, GetWidth(), corners);
 }
 
@@ -312,7 +312,7 @@ void	WED_GISLine_Width::MoveCorner(int corner, const Vector2& delta)
 {
 	Point2	corners[4];
 	Point2	ends[2];
-	
+
 	GetCorners(corners);
 	corners[corner] += delta;
 	int swapped = corner == 1 || corner == 3;
@@ -332,7 +332,7 @@ void	WED_GISLine_Width::MoveCorner(int corner, const Vector2& delta)
 
 	GetSource()->SetLocation(ends[0]);
 	GetTarget()->SetLocation(ends[1]);
-}	
+}
 
 
 void	WED_GISLine_Width::MoveSide(int side, const Vector2& delta)
@@ -341,7 +341,7 @@ void	WED_GISLine_Width::MoveSide(int side, const Vector2& delta)
 	GetSource()->GetLocation(ends[0]);
 	GetTarget()->GetLocation(ends[1]);
 	double w = GetWidth();
-	
+
 	Quad_MoveSide2(ends, w, side, delta);
 
 	SetWidth(w);
@@ -353,14 +353,14 @@ void	WED_GISLine_Width::ResizeSide(int side, const Vector2& delta, bool symetric
 {
 	Point2	ends[2], corners[4];
 	double	width;
-	
+
 	GetCorners(corners);
 	Quad_ResizeSide4(corners, side, delta, symetric);
 	Quad_4to2(corners, ends, width);
 
 	GetSource()->SetLocation(ends[0]);
 	GetTarget()->SetLocation(ends[1]);
-	SetWidth(width);	
+	SetWidth(width);
 }
 
 void	WED_GISLine_Width::ResizeCorner(int corner, const Vector2& delta, bool symetric)
@@ -374,8 +374,8 @@ void	WED_GISLine_Width::ResizeCorner(int corner, const Vector2& delta, bool syme
 	Quad_1to2(ctr, h, l, ends);
 	GetSource()->SetLocation(ends[0]);
 	GetTarget()->SetLocation(ends[1]);
-	SetWidth(w);	
-	
+	SetWidth(w);
+
 }
 
 

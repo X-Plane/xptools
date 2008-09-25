@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,7 +27,7 @@ ENUM_DOMAIN(Airport_Type, "Airport Type")
 	ENUM(type_Seaport,	"Seaport", apt_seaport)
 
 ENUM_DOMAIN(Edge_Lights, "Runway Edge Light Types")
-	
+
 	ENUM(edge_None, "None", apt_edge_none)
 	ENUM(edge_LIRL, "LIRL", apt_edge_LIRL)
 	ENUM(edge_MIRL,	"MIRL",	apt_edge_MIRL)
@@ -37,7 +37,7 @@ ENUM_DOMAIN(REIL_Lights,"Runway End Identifier Lights")
 	ENUM(reil_None,"None",apt_reil_none)
 	ENUM(reil_Omni,"Omnidirectional REIL", apt_reil_omni)
 	ENUM(reil_Uni,"Unidirectional REIL",apt_reil_uni)
-	
+
 ENUM_DOMAIN(Heli_Lights,"Helipad Edge Lights")
 	ENUM(heli_None,"None",apt_heli_edge_none)
 	ENUM(heli_Yellow,"Yellow",apt_heli_edge_yellow)
@@ -64,7 +64,7 @@ ENUM_DOMAIN(Surface_Type,"Surface Type")
 	ENUM(surf_Water,"Water",apt_surf_water)
 	ENUM(surf_Snow,"Snow",apt_surf_ice)
 	ENUM(surf_Trans,"Transparent",apt_surf_transparent)
-	
+
 ENUM_DOMAIN(Light_Fixt,"Light Fixtures")
 	ENUM(light_VASI,"VASI", apt_gls_vasi)
 	ENUM(light_PAPI_Left,"PAPI (Left Side)",apt_gls_papi_left)
@@ -82,7 +82,7 @@ ENUM_DOMAIN(Light_App,"Approach Lights")
 
 	ENUM(app_SSALR,		"SSALR",					apt_app_SSALR)
 	ENUM(app_SSALF,		"SSALF",					apt_app_SSALF)
-	ENUM(app_SALS,		"SALS",						apt_app_SALS)	
+	ENUM(app_SALS,		"SALS",						apt_app_SALS)
 
 	ENUM(app_MALSR,		"MALSR",					apt_app_MALSR)
 	ENUM(app_MALSF,		"MALSF",					apt_app_MALSF)
@@ -90,12 +90,12 @@ ENUM_DOMAIN(Light_App,"Approach Lights")
 
 	ENUM(app_ODALS,		"ODALS",					apt_app_ODALS)
 	ENUM(app_RAIL,		"RAIL",						apt_app_RAIL)
-	
+
 ENUM_DOMAIN(Shoulder_Type,"Shoulder Type")
 	ENUM(shoulder_None,			"None",				apt_shoulder_none)
 	ENUM(shoulder_Asphalt,		"Asphalt",			apt_shoulder_asphalt)
-	ENUM(shoulder_Concrete,		"Concrete",			apt_shoulder_concrete)	
-	
+	ENUM(shoulder_Concrete,		"Concrete",			apt_shoulder_concrete)
+
 ENUM_DOMAIN(Runway_Markings,"Runway Markings")
 	ENUM(mark_None,				"None",						apt_mark_none)
 	ENUM(mark_Visual,			"Visual",					apt_mark_visual)
@@ -106,7 +106,7 @@ ENUM_DOMAIN(Runway_Markings,"Runway Markings")
 
 ENUM_DOMAIN(Helipad_Markings,"Helipad Markings")
 	ENUM(heli_Mark_Default,		"Default",					apt_mark_heli_default)
-	
+
 ENUM_DOMAIN(Airport_Beacon,"Airport Beacon Type")
 	ENUM(beacon_Airport,		"Airport",					apt_beacon_airport)
 	ENUM(beacon_Seaport,		"Seaport",					apt_beacon_seaport)
@@ -141,7 +141,7 @@ ENUM_DOMAIN(LinearFeature, "Linear Markings")
 	ENUM(line_TaxiCenter,		"Taxiway Centerline Lights (Green)",	apt_light_taxi_centerline)
 	ENUM(line_TaxiEdge,			"Taxiway Edge Lights (Blue)",			apt_light_taxi_edge)
 	ENUM(line_HoldLights,		"Hold Short Lights (Amber)",			apt_light_hold_short)
-	ENUM(line_HoldLightsPulse,	"Hold Short Lights (Pulsing Amber)",	apt_light_hold_short_flash)	
+	ENUM(line_HoldLightsPulse,	"Hold Short Lights (Pulsing Amber)",	apt_light_hold_short_flash)
 	ENUM(line_HoldShortCenter,	"Hold Short Centerline Lights (Amber/Green)",apt_light_hold_short_centerline)
 	ENUM(line_BoundaryEdge,		"Boundary Edge Lights (Red)",			apt_light_bounary)
 

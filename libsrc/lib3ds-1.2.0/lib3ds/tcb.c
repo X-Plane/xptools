@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -33,7 +33,7 @@
 
 
 /*!
- * \ingroup tcb 
+ * \ingroup tcb
  */
 void
 lib3ds_tcb(Lib3dsTcb *p, Lib3dsTcb *pc, Lib3dsTcb *c, Lib3dsTcb *nc, Lib3dsTcb *n,
@@ -48,7 +48,7 @@ lib3ds_tcb(Lib3dsTcb *p, Lib3dsTcb *pc, Lib3dsTcb *c, Lib3dsTcb *nc, Lib3dsTcb *
   if (!nc) {
     nc=c;
   }
-  
+
   fp=fn=1.0f;
   if (p&&n) {
     dt=0.5f*(Lib3dsFloat)(pc->frame-p->frame+n->frame-nc->frame);
@@ -63,7 +63,7 @@ lib3ds_tcb(Lib3dsTcb *p, Lib3dsTcb *pc, Lib3dsTcb *c, Lib3dsTcb *nc, Lib3dsTcb *
   tm=0.5f*(1.0f-c->tens);
   cp=2.0f-cm;
   bm=1.0f-c->bias;
-  bp=2.0f-bm;      
+  bp=2.0f-bm;
   tmcm=tm*cm;
   tmcp=tm*cp;
   *ksm=tmcm*bp*fp;
@@ -74,13 +74,13 @@ lib3ds_tcb(Lib3dsTcb *p, Lib3dsTcb *pc, Lib3dsTcb *c, Lib3dsTcb *nc, Lib3dsTcb *
 
 
 /*!
- * \ingroup tcb 
+ * \ingroup tcb
  */
 Lib3dsBool
 lib3ds_tcb_read(Lib3dsTcb *tcb, Lib3dsIo *io)
 {
   Lib3dsWord flags;
-  
+
   tcb->frame=lib3ds_io_read_intd(io);
   tcb->flags=flags=lib3ds_io_read_word(io);
   if (flags&LIB3DS_USE_TENSION) {
@@ -106,7 +106,7 @@ lib3ds_tcb_read(Lib3dsTcb *tcb, Lib3dsIo *io)
 
 
 /*!
- * \ingroup tcb 
+ * \ingroup tcb
  */
 Lib3dsBool
 lib3ds_tcb_write(Lib3dsTcb *tcb, Lib3dsIo *io)

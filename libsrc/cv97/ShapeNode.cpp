@@ -10,13 +10,13 @@
 
 #include "ShapeNode.h"
 
-ShapeNode::ShapeNode() 
+ShapeNode::ShapeNode()
 {
 	setHeaderFlag(false);
 	setType(shapeNodeString);
 }
 
-ShapeNode::~ShapeNode() 
+ShapeNode::~ShapeNode()
 {
 }
 
@@ -24,12 +24,12 @@ ShapeNode::~ShapeNode()
 //	List
 ////////////////////////////////////////////////
 
-ShapeNode *ShapeNode::next() 
+ShapeNode *ShapeNode::next()
 {
 	return (ShapeNode *)Node::next(getType());
 }
 
-ShapeNode *ShapeNode::nextTraversal() 
+ShapeNode *ShapeNode::nextTraversal()
 {
 	return (ShapeNode *)Node::nextTraversalByType(getType());
 }
@@ -38,7 +38,7 @@ ShapeNode *ShapeNode::nextTraversal()
 //	Geometry
 ////////////////////////////////////////////////
 
-GeometryNode *ShapeNode::getGeometry() 
+GeometryNode *ShapeNode::getGeometry()
 {
 	for (Node *node=getChildNodes(); node; node=node->next()) {
 		if (node->isGeometryNode())
@@ -50,7 +50,7 @@ GeometryNode *ShapeNode::getGeometry()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ShapeNode::isChildNodeType(Node *node)
 {
 	if (node->isAppearanceNode() || node->isGeometryNode())
@@ -59,15 +59,15 @@ bool ShapeNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void ShapeNode::initialize() 
+void ShapeNode::initialize()
 {
 }
 
-void ShapeNode::uninitialize() 
+void ShapeNode::uninitialize()
 {
 }
 
-void ShapeNode::update() 
+void ShapeNode::update()
 {
 }
 
@@ -75,7 +75,7 @@ void ShapeNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void ShapeNode::outputContext(ostream &printStream, char *indentString) 
+void ShapeNode::outputContext(ostream &printStream, char *indentString)
 {
 	AppearanceNode *appearance = getAppearanceNodes();
 	if (appearance != NULL) {
@@ -87,10 +87,10 @@ void ShapeNode::outputContext(ostream &printStream, char *indentString)
 			appearance->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "appearance USE " << appearance->getName() << endl;
 	}
-	
+
 	Node *node = getGeometryNode();
 	if (node != NULL) {
 		if (node->isInstanceNode() == false) {
@@ -101,7 +101,7 @@ void ShapeNode::outputContext(ostream &printStream, char *indentString)
 			node->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "geometry USE " << node->getName() << endl;
 	}
 }

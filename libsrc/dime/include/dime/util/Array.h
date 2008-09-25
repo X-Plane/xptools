@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Array.h
  *
  *  This source file is part of DIME.
@@ -96,7 +96,7 @@ private:
 
 }; // class dimeArray<>
 
-template <class T> inline 
+template <class T> inline
 dimeArray<T>::dimeArray(const int size)
 {
   this->array = new T[size];
@@ -104,13 +104,13 @@ dimeArray<T>::dimeArray(const int size)
   this->num = 0;
 }
 
-template <class T> inline 
+template <class T> inline
 dimeArray<T>::~dimeArray()
 {
   delete [] this->array;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::growArray()
 {
   int oldsize = this->size;
@@ -121,7 +121,7 @@ dimeArray<T>::growArray()
   delete [] oldarray;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::append(const T &elem)
 {
   if (this->num >= this->size) growArray();
@@ -129,7 +129,7 @@ dimeArray<T>::append(const T &elem)
 }
 
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::append(const dimeArray<T> &array)
 {
   while (this->size <= this->num+array.count()) growArray();
@@ -137,7 +137,7 @@ dimeArray<T>::append(const dimeArray<T> &array)
     this->array[this->num++] = array[i];
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::prepend(const dimeArray<T> &array)
 {
   int newsize=this->num+array.count();
@@ -157,20 +157,20 @@ dimeArray<T>::prepend(const dimeArray<T> &array)
   this->num+=array.count();
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::insertElem(const int idx, const T &elem)
 {
   int n = this->num;
   this->append(elem); // make room for one more
   if (idx < n) {
     for (int i = n; i > idx; i--) {
-      this->array[i] = this->array[i-1]; 
+      this->array[i] = this->array[i-1];
     }
     this->array[idx] = elem;
   }
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::setElem(const int index, const T &elem)
 {
   while (index >= this->size) growArray();
@@ -178,25 +178,25 @@ dimeArray<T>::setElem(const int index, const T &elem)
   this->array[index] = elem;
 }
 
-template <class T> inline T 
+template <class T> inline T
 dimeArray<T>::getElem(const int index) const
 {
   return this->array[index];
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::getElem(const int index, T &elem) const
 {
   elem = this->array[index];
 }
 
-template <class T> inline T 
+template <class T> inline T
 dimeArray<T>::getLastElem() const
 {
   return this->array[this->num-1];
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::getLastElem(T &elem) const
 {
   elem = this->array[this->num-1];
@@ -205,33 +205,33 @@ dimeArray<T>::getLastElem(T &elem) const
 template <class T> inline T &
 dimeArray<T>::operator [](const int index)
 {
-  while (index >= this->size) growArray();   
+  while (index >= this->size) growArray();
   if (this->num <= index) this->num = index + 1;
   return this->array[index];
 }
 
-template <class T> inline T 
+template <class T> inline T
 dimeArray<T>::operator [](const int index) const
 {
   return this->array[index];
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::removeElem(const int index)
 {
-  if (this->num <= 0 || index >= this->num) return; 
+  if (this->num <= 0 || index >= this->num) return;
   for (int i = index; i < this->num-1; i++)
     this->array[i] = this->array[i+1];
   this->num--;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::removeElemFast(const int index)
 {
   this->array[index] = this->array[--this->num];
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::reverse()
 {
   T tmp;
@@ -242,20 +242,20 @@ dimeArray<T>::reverse()
   }
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::setCount(const int count)
 {
   if (count < this->num)
-    this->num = count;  
+    this->num = count;
 }
 
-template <class T> inline int 
+template <class T> inline int
 dimeArray<T>::count() const
 {
   return this->num;
 }
 
-template <class T> inline int 
+template <class T> inline int
 dimeArray<T>::allocSize() const
 {
   return this->size;
@@ -273,16 +273,16 @@ dimeArray<T>::constArrayPointer() const
   return this->array;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::makeEmpty(const int initsize)
 {
   delete [] this->array;
   this->array = new T[initsize];
   this->size = initsize;
-  this->num = 0; 
+  this->num = 0;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::freeMemory()
 {
   delete [] this->array;
@@ -291,7 +291,7 @@ dimeArray<T>::freeMemory()
   this->num = 0;
 }
 
-template <class T> inline void 
+template <class T> inline void
 dimeArray<T>::shrinkToFit()
 {
   T *oldarray = this->array;

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -35,7 +35,7 @@
 /*
 
 	Name:
-	
+
 			Pixels	%
 	Left
 	Right
@@ -60,14 +60,14 @@ static void	PrintToWidget(XPWidgetID host, long sub_id, const char * fmt, ...)
 	va_start(args, fmt);
 	static	char buf[512];
 	vsprintf(buf, fmt, args);
-	
+
 	XPSetWidgetDescriptor((XPWidgetID) XPGetWidgetProperty(host, sub_id, NULL), buf);
-}	
+}
 
 static	void	OE_TexInfoNotify(int cat, int msg, void * param, void * ref);
-static	int		OE_TexInfoFunc(		   XPWidgetMessage      inMessage,    
-	                                   XPWidgetID           inWidget,    
-	                                   long                 inParam1,    
+static	int		OE_TexInfoFunc(		   XPWidgetMessage      inMessage,
+	                                   XPWidgetID           inWidget,
+	                                   long                 inParam1,
 	                                   long                 inParam2);
 static	void	ResyncTexInfo(XPWidgetID, bool inPush, long inWho);
 
@@ -82,16 +82,16 @@ XPWidgetID	OE_CreateTexInfo(int x1, int y1, int x2, int y2)
 	XPWidgetID name = XPCreateWidget(x1 + 100, y2 - 20, x1 + 290, y2 - 40,
 				1, "untitled", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kNameField, (long) name);
-	
+
 	// Captions
 	XPCreateWidget(x1 + 100, y2 - 40, x1 + 190, y2 - 60,
 				1, "Pixels", 0, texInfo, xpWidgetClass_Caption);
 	XPCreateWidget(x1 + 200, y2 - 40, x1 + 290, y2 - 60,
 				1, "Percent", 0, texInfo, xpWidgetClass_Caption);
-	
+
 	// Left
 	XPCreateWidget(x1 + 10, y2 - 60, x1 + 90, y2 - 80,
-				1, "Left:", 0, texInfo, xpWidgetClass_Caption);			
+				1, "Left:", 0, texInfo, xpWidgetClass_Caption);
 	XPWidgetID leftPix = XPCreateWidget(x1 + 100, y2 - 60, x1 + 190, y2 - 80,
 				1, "0", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kPixLField, (long) leftPix);
@@ -101,7 +101,7 @@ XPWidgetID	OE_CreateTexInfo(int x1, int y1, int x2, int y2)
 
 	// Right
 	XPCreateWidget(x1 + 10, y2 - 80, x1 + 90, y2 - 100,
-				1, "Right:", 0, texInfo, xpWidgetClass_Caption);			
+				1, "Right:", 0, texInfo, xpWidgetClass_Caption);
 	XPWidgetID rightPix = XPCreateWidget(x1 + 100, y2 - 80, x1 + 190, y2 - 100,
 				1, "1", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kPixRField, (long) rightPix);
@@ -111,7 +111,7 @@ XPWidgetID	OE_CreateTexInfo(int x1, int y1, int x2, int y2)
 
 	// Bottom
 	XPCreateWidget(x1 + 10, y2 - 100, x1 + 90, y2 - 120,
-				1, "Bottom:", 0, texInfo, xpWidgetClass_Caption);			
+				1, "Bottom:", 0, texInfo, xpWidgetClass_Caption);
 	XPWidgetID botPix = XPCreateWidget(x1 + 100, y2 - 100, x1 + 190, y2 - 120,
 				1, "0", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kPixBField, (long) botPix);
@@ -121,19 +121,19 @@ XPWidgetID	OE_CreateTexInfo(int x1, int y1, int x2, int y2)
 
 	// Top
 	XPCreateWidget(x1 + 10, y2 - 120, x1 + 90, y2 - 140,
-				1, "Top:", 0, texInfo, xpWidgetClass_Caption);			
+				1, "Top:", 0, texInfo, xpWidgetClass_Caption);
 	XPWidgetID topPix = XPCreateWidget(x1 + 100, y2 - 120, x1 + 190, y2 - 140,
 				1, "0", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kPixTField, (long) topPix);
 	XPWidgetID topPer = XPCreateWidget(x1 + 200, y2 - 120, x1 + 290, y2 - 140,
 				1, "0.0", 0, texInfo, xpWidgetClass_TextField);
 	XPSetWidgetProperty(texInfo, kPerTField, (long) topPer);
-				
-	
 
-	XPAddWidgetCallback(texInfo, OE_TexInfoFunc);		
+
+
+	XPAddWidgetCallback(texInfo, OE_TexInfoFunc);
 	OE_Register(OE_TexInfoNotify, texInfo);
-	
+
 	return texInfo;
 }
 
@@ -143,7 +143,7 @@ void	OE_TexInfoNotify(int cat, int msg, void * param, void * ref)
 		(cat == catagory_Object && msg == msg_ObjectLoaded))
 	{
 		ResyncTexInfo((XPWidgetID) ref, true, 0);
-	}	
+	}
 }
 
 void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
@@ -157,7 +157,7 @@ void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
 			int twidth, theight;
 			FindTexture(tex, false, &twidth, &theight);
 		}
-	}			
+	}
 
 	if (inPush)
 	{
@@ -173,8 +173,8 @@ void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
 			PrintToWidget(me, kPerTField, "1.0");
 			PrintToWidget(me, kPixTField, "1");
 		} else {
-			
-		
+
+
 			PrintToWidget(me, kNameField, "%s", gTextures[gCurTexture].name.c_str());
 			PrintToWidget(me, kPerLField, "%f", gTextures[gCurTexture].s1);
 			PrintToWidget(me, kPixLField, "%d", (int) (gTextures[gCurTexture].s1 * twidth));
@@ -195,7 +195,7 @@ void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
 				XPGetWidgetDescriptor((XPWidgetID) inWho, buf, sizeof(buf));
 				gTextures[gCurTexture].name = buf;
 			}
-			
+
 			if (inWho == XPGetWidgetProperty(me, kPerLField, NULL))
 			{
 				char	buf[256];
@@ -224,7 +224,7 @@ void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
 				sscanf(buf, "%f", &f);
 				gTextures[gCurTexture].t2 = f;
 			}
-			
+
 			if (inWho == XPGetWidgetProperty(me, kPixLField, NULL))
 			{
 				char	buf[256];
@@ -253,15 +253,15 @@ void	ResyncTexInfo(XPWidgetID me, bool inPush, long inWho)
 				sscanf(buf, "%f", &f);
 				gTextures[gCurTexture].t2 = f / (float) theight;
 			}
-			
+
 			OE_Notify(catagory_Texture, msg_TexSelectionEdited, NULL);
 		}
 	}
 }
 
-int		OE_TexInfoFunc(		   XPWidgetMessage      inMessage,    
-	                                   XPWidgetID           inWidget,    
-	                                   long                 inParam1,    
+int		OE_TexInfoFunc(		   XPWidgetMessage      inMessage,
+	                                   XPWidgetID           inWidget,
+	                                   long                 inParam1,
 	                                   long                 inParam2)
 {
 	switch(inMessage) {
@@ -271,4 +271,4 @@ int		OE_TexInfoFunc(		   XPWidgetMessage      inMessage,
 	default:
 		return 0;
 	}
-}	                                   
+}

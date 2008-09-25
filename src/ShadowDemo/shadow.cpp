@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -57,7 +57,7 @@ of that building, you can say how far that pixel is from youj.  Some are farther
 others.  At high noon, the tops of buildings are closer than the streets.  As the sunsets,
 the western buildings are closer than the eastern ones.
 
-Also, consider what the world looks like from the sun's perspective.  Only certain 
+Also, consider what the world looks like from the sun's perspective.  Only certain
 buildings will be visible to you.  For each point that you see, you can say how close
 the nearest buildings are.  Walls of buildings that you can't see are shadowed.
 
@@ -78,7 +78,7 @@ We can use texture coordinate generation to 'project' a texture.  Basically the 
 two matrices (projection, then model view) that we apply to all our coordinates, we
 can apply to vertices to get texture coordinate S & Ts.
 
-We combine those matrices with a rescaling matrix (our projection and model view 
+We combine those matrices with a rescaling matrix (our projection and model view
 matrices give us coords from -1 to 1, but we really want 0 to 1 for S & T) with
 X, Y and Z mapped to S, T and R.  Thus our S & T projects onto Our scene.  But since
 our matrix can have a rotation, we can project a texture anywhere.
@@ -100,29 +100,29 @@ works:
 
  - First we use a depth texture instead of a luminance one.  A depth texture is a one
    channel texture, but it is special in that it may be any number of bits we want.
-   This is important because the number of bits in the depth texture is basically a 
+   This is important because the number of bits in the depth texture is basically a
    distorted version of our depth buffer.  If we only have 8 bits per pixel our shadows
    will Z fight as badly as if x-plane had an 8 bit depth buffer.
  - The shadow mapping extension is a filter.  Before the texture pixels are output, the
-   depth texture pixel value (which is how far away the closest object is for the pixel 
-   we're drawing) is compared to the R ("Z") coordinate of the texture coordinates, which 
-   is how far away the current object is at the pixel we're drawing.  The resulting 
+   depth texture pixel value (which is how far away the closest object is for the pixel
+   we're drawing) is compared to the R ("Z") coordinate of the texture coordinates, which
+   is how far away the current object is at the pixel we're drawing.  The resulting
    comparison is a 0 or 1, 1 if the pixel is not shadowed, 0 if it is.
-   
+
    (What really rules about this technique is that the R (Z) coord of the texture
    is pretty damned close to free...we're projecting vertex modelview XYZ coordinates
-   into sun-camera-eye coordinates STR, and we need S&T anyway to fetch the texel.  
+   into sun-camera-eye coordinates STR, and we need S&T anyway to fetch the texel.
    Using the hardware to get R is much nicer than having to use another texture unit.)
-   
+
 So we basically bind the shadow map texture to one texture unit, set up projective
 texturing on all four coordiantes, and turn on this filter and we're good to go.
 We can then use the various combiner functions to input this into the lighting equation.
 
 We end up with a boolean value as our texel.  We can then use a combiner operation like
 blend to transition from the primary colour (which is the lit value) to a static colour.
-We just feed the ambient levels into the texture environment and there we are. 
+We just feed the ambient levels into the texture environment and there we are.
 
-We can then modulate this texture with a cloud map texture to provide cloud shadows, 
+We can then modulate this texture with a cloud map texture to provide cloud shadows,
 modulate it with a spotlight texture to produce a spotlight, and then modulate it with
 the texture color of the fragment and/or any incoming overlays.
 
@@ -133,7 +133,7 @@ pixel.  How can we use the hardware to do this for us?
 
 The answer again is projective texturing.  We first set up our texture matrix
 again using the sun's view and projection matrices to set it up as if we're looking
-from the sun's perspective.  But now think of what we have...the Z axis runs 
+from the sun's perspective.  But now think of what we have...the Z axis runs
 straight to and from the sun (that's where the depth buffer comes from, right)?  So
 whatever our Z coordinate is, that's the answer.
 
@@ -171,9 +171,9 @@ The basic algorithm is:
    unit 1.  Thus for each pixel we know, the alpha of texture unit 1 is D(p).
 7c. We use a fragment program to figure out whether we want diffuse lighting based
    on a comparison of the texture 0 and 1 alphas.
-   
 
-   
+
+
 
 */
 
@@ -203,7 +203,7 @@ void glut_print_string(int x, int y, char *string)
 
 	glRasterPos2f(x, y);
 	len = (int) strlen(string);
-	for (i = 0; i < len; i++) 
+	for (i = 0; i < len; i++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, string[i]);
 	}
@@ -214,14 +214,14 @@ void	copy_to_clipboard(void)
 {
 	int	width = glutGet(GLUT_WINDOW_WIDTH);
 	int	height = glutGet(GLUT_WINDOW_HEIGHT);
-	
+
 	unsigned char * buf = (unsigned char *) malloc(width * height * 3);
 	if (buf)
 	{
 		glReadPixels(0,0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buf);
-#if APL				
+#if APL
 		MacImageToClipboard(buf, width, height);
-#endif		
+#endif
 		free(buf);
 	}
 }
@@ -263,11 +263,11 @@ void	create_normal_map(
 		outMap[x * 3 + y * 3 * width + 1] = (dy * 0.5 + 0.5) * 255.0;
 		outMap[x * 3 + y * 3 * width + 2] = (dz * 0.5 + 0.5) * 255.0;
 	}
-}				
+}
 
 
 
-#define NORMAL_MAP_WIDTH	32	
+#define NORMAL_MAP_WIDTH	32
 #define	NORMAL_MAP_HEIGHT	32
 #define	NORMAL_FREQ			1.0
 #define	NORMAL_PIXEL(x,y) (x * 3 + y * 3 * NORMAL_MAP_WIDTH)
@@ -277,15 +277,15 @@ unsigned char height_map[NORMAL_MAP_WIDTH * NORMAL_MAP_HEIGHT];
 
 
 unsigned char	decalBuf[32 * 32] = {
-	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0x30, 0x30, 0x30, 0x30, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0x30, 0xD0, 0xD0, 0x30, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0x30, 0xD0, 0xD0, 0x30, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0x30, 0x30, 0x30, 0x30, 0xD0, 0xD0, 
-	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 
+	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0,
+	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0,
+	0xD0, 0xD0, 0x30, 0x30, 0x30, 0x30, 0xD0, 0xD0,
+	0xD0, 0xD0, 0x30, 0xD0, 0xD0, 0x30, 0xD0, 0xD0,
+	0xD0, 0xD0, 0x30, 0xD0, 0xD0, 0x30, 0xD0, 0xD0,
+	0xD0, 0xD0, 0x30, 0x30, 0x30, 0x30, 0xD0, 0xD0,
+	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0,
 	0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0, 0xD0
-};	
+};
 
 XObj		gObj;
 double		gGroundDist = 100.0;
@@ -310,7 +310,7 @@ bool 	show_depth_tex = false;		// Show the depth map for the user (so they can s
 bool	do_shadows = false;			// Draw the actual shadows
 
 // It is necessary to use polygon offseting when drawing the depth map.  Why?  Well,
-// if D(p) and D(c) are damn close enough, OGL jitters cause objects to randomly 
+// if D(p) and D(c) are damn close enough, OGL jitters cause objects to randomly
 // self-shadow on every other pixel, which looks most shitty.  So we use polygon
 // offset to make the depth texture map D(c) a little bit too far away.  This resolves
 // our jitters.
@@ -339,21 +339,21 @@ GLdouble	SMatrix[16] = {
 	0.5, 0,   0,   0,
 	0,   0.5, 0,   0,
 	0,   0,   0.5, 0,
-	0.5, 0.5, 0.5, 1.0 
-};	
+	0.5, 0.5, 0.5, 1.0
+};
 
-// This takes our depth value and puts it into S, and it puts 256 * 
+// This takes our depth value and puts it into S, and it puts 256 *
 // the depth and puts it in T.  It also leaves Q and zeros out R.
 // We use this for now to get our D(p) value.  (Note: if we wanted to use
 // 16 bits of depth info, we would need two texture components, like
 // luminance and alpha.)
 
-GLdouble	RSMatrix[16] = { 
+GLdouble	RSMatrix[16] = {
 	0,   0,   0, 0,
 	0,   0,   0, 0,
 	0.5, 128, 0, 0,
 	0.5, 128, 0, 1.0
-};	
+};
 
 
 // Memory storage for our depth buffer...eventually this will be done on card.
@@ -365,14 +365,14 @@ enum {
 	TEX_1D_LOOKUP = 1,
 	SHADOW_MAP,
 	NORMAL_MAP,
-	DECAL	
-};	
+	DECAL
+};
 
 
 /*******************************************************************************************
  * TEXTURING UTILITIES
  *******************************************************************************************/
- 
+
 /* This routine builds our 1-d lookup texture, used to convert texture-coordinate S
  * into an alpha of the same value.  Really this maps 0-1 to 0-255. */
 void	build_original_textures(void)
@@ -380,13 +380,13 @@ void	build_original_textures(void)
 	GLubyte	texmap[256];
 	for (int n =0 ;n < 256; ++n)
 		texmap[n] = n;
-	
+
 	glBindTexture(GL_TEXTURE_1D, TEX_1D_LOOKUP);
 	glTexImage1D (GL_TEXTURE_1D, 0, GL_INTENSITY8, 256, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, texmap);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	
+
 	glBindTexture(GL_TEXTURE_2D, SHADOW_MAP);
 	if (gl_Has_Shadow)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32_SGIX, 512, 512, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, depthBuf);
@@ -399,11 +399,11 @@ void	build_original_textures(void)
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+
 	glBindTexture(GL_TEXTURE_2D, DECAL);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, decalBuf);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 /* This routine transfers the frame buffer's depth component into our shadow map.
@@ -415,7 +415,7 @@ void	framebuffer_to_shadowmap(void)
 	if (gl_Has_Shadow)
 	{
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32_SGIX, 0, 0, 512, 512, 0);
-	} else {	
+	} else {
 		glReadPixels(0, 0, 512, 512, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, depthBuf);
 		glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_LUMINANCE, GL_UNSIGNED_BYTE, depthBuf);
 	}
@@ -423,29 +423,29 @@ void	framebuffer_to_shadowmap(void)
 
 void reset_textures(void)
 {
-	GL_ActiveTextureARB(GL_TEXTURE1_ARB);	
+	GL_ActiveTextureARB(GL_TEXTURE1_ARB);
 	glDisable(GL_TEXTURE_1D);
 	glDisable(GL_TEXTURE_2D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_Q);
-	glDisable(GL_TEXTURE_GEN_T);	
-	glDisable(GL_TEXTURE_GEN_R);		
-	GL_ActiveTextureARB(GL_TEXTURE0_ARB);	
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
+	GL_ActiveTextureARB(GL_TEXTURE0_ARB);
 	glDisable(GL_TEXTURE_1D);
 	glDisable(GL_TEXTURE_2D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_Q);
-	glDisable(GL_TEXTURE_GEN_T);	
-	glDisable(GL_TEXTURE_GEN_R);		
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
 }
 
 void	setup_textures_for_obj_mapped_dist(void)
 {
 	GLdouble	m1[16], m2[16];
-	
+
 	glBindTexture(GL_TEXTURE_2D, SHADOW_MAP);
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_TEXTURE_1D);
@@ -455,12 +455,12 @@ void	setup_textures_for_obj_mapped_dist(void)
 	// 1. We transform it by the camera's model view to get it into
 	//	  "eye" coordinates for the sun camera.
 	// 2. We transform it by the perspective matrix for the sun camera.
-	// 3. We transform it by a scaling matrix that maps all texture 
+	// 3. We transform it by a scaling matrix that maps all texture
 	//	  params to be 0..1 instead of -1..1.
 	//
 	// You might ask yourself: is it important whether we're in eye linear
 	// or object-linear coordinate generation mode?  The ansewr is YES!
-	// The difference between eye and object tex gen is that the tex gen 
+	// The difference between eye and object tex gen is that the tex gen
 	// transform "remembers" the world modelview coordinate system when it was
 	// applied by (1) building it into the texgen 'matrix' and (2) always
 	// apolying the current modelview's inverse as we draw.
@@ -472,51 +472,51 @@ void	setup_textures_for_obj_mapped_dist(void)
 	//  - World space is the real global cartesian space we're used to.
 	//  - Camera space is...just that, camera space, camera's at the origin looking down -Z.
 	//
-	// So when we use eye linear coordinates, every vertex is effectively given to us in 
+	// So when we use eye linear coordinates, every vertex is effectively given to us in
 	// the modelview space when we set this operation up, no matter what the modelview
 	// system is doing as we emit our vertices.  So changes to the modelview coordinate
 	// system do NOT change the mapping of the projected shadow texture onto the world.
-	
+
 	// (Compare this to object space texgen, which is useful for always mapping the same
 	// texture to the same object as we make multiple copies of that object by messing
 	// with the model-view matrix.  This is a truly local texgen...unmolested coordinates go
 	// to the texgen matrix right off of glVertex.)
 
 	copyMatrix(m1, SMatrix);
-	
+
 	multMatrices(m2, m1, light_camera.mPerspective);
 	multMatrices(m1, m2, light_camera.mModelView);
-	
+
 	float p[4];
 
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	
+
 	p[0] = m1[0];
 	p[1] = m1[4];
 	p[2] = m1[8];
-	p[3] = m1[12];		
+	p[3] = m1[12];
 	glTexGenfv(GL_S, GL_EYE_PLANE, p);
 	p[0] = m1[1];
 	p[1] = m1[5];
 	p[2] = m1[9];
-	p[3] = m1[13];		
+	p[3] = m1[13];
 	glTexGenfv(GL_T, GL_EYE_PLANE, p);
 	p[0] = m1[2];
 	p[1] = m1[6];
 	p[2] = m1[10];
-	p[3] = m1[14];	
+	p[3] = m1[14];
 	glTexGenfv(GL_R, GL_EYE_PLANE, p);
 	p[0] = m1[3];
 	p[1] = m1[7];
 	p[2] = m1[11];
-	p[3] = m1[15];	
+	p[3] = m1[15];
 	glTexGenfv(GL_Q, GL_EYE_PLANE, p);
 	glEnable(GL_TEXTURE_GEN_S);
-	glEnable(GL_TEXTURE_GEN_T);	
-	glEnable(GL_TEXTURE_GEN_R);		
+	glEnable(GL_TEXTURE_GEN_T);
+	glEnable(GL_TEXTURE_GEN_R);
 	glEnable(GL_TEXTURE_GEN_Q);
 }
 
@@ -528,38 +528,38 @@ void	setup_textures_for_obj_dist(void)
 	glEnable(GL_TEXTURE_1D);
 	glDisable(GL_TEXTURE_2D);
 	copyMatrix(m1, RSMatrix);
-	
+
 	multMatrices(m2, m1, light_camera.mPerspective);
 	multMatrices(m1, m2, light_camera.mModelView);
-	
+
 	float p[4];
-	
+
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	p[0] = m1[0];
 	p[1] = m1[4];
 	p[2] = m1[8];
-	p[3] = m1[12];	
+	p[3] = m1[12];
 	glTexGenfv(GL_S, GL_EYE_PLANE, p);
 	p[0] = m1[3];
 	p[1] = m1[7];
 	p[2] = m1[11];
-	p[3] = m1[15];	
+	p[3] = m1[15];
 	glTexGenfv(GL_Q, GL_EYE_PLANE, p);
 	glEnable(GL_TEXTURE_GEN_S);
 	glEnable(GL_TEXTURE_GEN_Q);
-	glDisable(GL_TEXTURE_GEN_T);	
-	glDisable(GL_TEXTURE_GEN_R);	
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
 }
 
 void	setup_textures_for_shadows(void)
 {
 	// Tex 0 is the mapped distance, darker means your element is closer.
 	// Tex 1 is the real distance, darker means your element is closer.
-	
+
 	GL_ActiveTextureARB(GL_TEXTURE0_ARB);
 	setup_textures_for_obj_mapped_dist();
-	
+
 	if (gl_Has_Shadow)
 	{
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
@@ -578,24 +578,24 @@ void	setup_textures_for_shadows(void)
 		glTexEnvf(GL_TEXTURE_ENV,GL_OPERAND0_ALPHA_EXT,GL_SRC_ALPHA);
 
 
-		
+
 //		GLfloat	col[4] = { 0.0, 1.0, 0.0, 1.0 };
 //		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, col);
-		
-	
+
+
 	} else {
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-		
+
 		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_PRIMARY_COLOR_EXT);
 		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-		
+
 		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE);
 		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
 		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA);
 
 		GL_ActiveTextureARB(GL_TEXTURE1_ARB);
-		setup_textures_for_obj_dist();	
+		setup_textures_for_obj_dist();
 
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 
@@ -612,13 +612,13 @@ void	setup_textures_for_shadows(void)
 		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_ALPHA);
 		GL_ActiveTextureARB(GL_TEXTURE0_ARB);
 	}
-	
+
 	if (gl_Has_Shadow)
 	{
 		glDisable(GL_ALPHA_TEST);
 	} else {
 		glAlphaFunc(GL_GEQUAL, 0.5);
-		glEnable(GL_ALPHA_TEST);	
+		glEnable(GL_ALPHA_TEST);
 	}
 }
 
@@ -634,10 +634,10 @@ void	build_camera_matrices(void)
 void	build_light_matrices(void)
 {
 //	light_camera.SetupPerspective(60, 1.0, 50.0, 400.0);
-//	light_camera.LookAtPtFromDir(0.0, 0.0, 0.0, light_heading, light_tilt, light_dist);				
+//	light_camera.LookAtPtFromDir(0.0, 0.0, 0.0, light_heading, light_tilt, light_dist);
 
 	GLdouble	look_dir[3];
-	
+
 	look_dir[0] = cos(-light_tilt * DEG2RAD) * cos(light_heading * DEG2RAD);
 	look_dir[1] = sin(-light_tilt * DEG2RAD);
 	look_dir[2] = cos(-light_tilt * DEG2RAD) * sin(light_heading * DEG2RAD);
@@ -668,25 +668,25 @@ void	setup_lighting(bool doLights)
 		static GLfloat	position[4] = { 0.0, 0.0, 0.0, 0.0 };
 		GLdouble	position_eye[4] = { 0.0, 0.0, -1.0, 1.0 };
 		GLdouble	position_mod[4];
-		GLdouble	im[16]; 
+		GLdouble	im[16];
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
 		glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-		
+
 		invertMatrix(im, light_camera.mModelView);
-		
+
 		multMatrixVec(position_mod, im, position_eye);
-		
+
 		position[0] = position_mod[0];
 		position[1] = position_mod[1];
 		position[2] = position_mod[2];
-		
+
 		glLightfv(GL_LIGHT0, GL_POSITION, position);
 		glLightModelfv(GL_LIGHT_MODEL_AMBIENT,ogl_base_amb);
 
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, ambient);
-		
+
 		static	GLfloat	materialAmb[4] = { 1.0, 1.0, 1.0, 1.0 };
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, materialAmb);
 
@@ -697,18 +697,18 @@ void	setup_lighting(bool doLights)
 void	preview_camera(xcam_class * inCamera, GLfloat color[3])
 {
 	glColor3fv(color);
-	
+
 	glPushMatrix();
-	
+
 	GLdouble	lightProjMatrix_i[16],lightModViewMatrix_i[16];
-					
+
 	invertMatrix(lightProjMatrix_i, inCamera->mPerspective);
 	invertMatrix(lightModViewMatrix_i, inCamera->mModelView);
-	
+
 	glMultMatrixd(lightModViewMatrix_i);
 	glPushMatrix();
 	glMultMatrixd(lightProjMatrix_i);
-	
+
 	glutWireCube(2.0);
 
 	glPopMatrix();
@@ -718,7 +718,7 @@ void	preview_camera(xcam_class * inCamera, GLfloat color[3])
 	glVertex3f(0, 0, 0);
 	glEnd();
 	glPointSize(1);
-	
+
 	glPopMatrix();
 }
 
@@ -728,35 +728,35 @@ void	draw_world(bool drawLightDiagram)
 	glEnable(GL_DEPTH_TEST);
 	glShadeModel(GL_FLAT);
 
-	setup_lighting(show_lighting);	
+	setup_lighting(show_lighting);
 
 #if DO_NORMAL_MAP
-	
+
 	for (int x = 0; x < NORMAL_MAP_HEIGHT; ++x)
 	for (int y = 0; y < NORMAL_MAP_WIDTH; ++y)
 	{
-		height_map[x + y * NORMAL_MAP_WIDTH] = 
+		height_map[x + y * NORMAL_MAP_WIDTH] =
 			(x > 5 && x < 20 && y > 5 && y < 20) ? 3.0 : 1.0;
 	}
 
 	create_normal_map(height_map, normal_map, NORMAL_MAP_WIDTH, NORMAL_MAP_HEIGHT, 1.0);
-	
+
 	glBindTexture(GL_TEXTURE_2D, NORMAL_MAP);
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, NORMAL_MAP_WIDTH, NORMAL_MAP_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, normal_map);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glEnable(GL_TEXTURE_2D);
-	
+
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-	
+
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, 0x86AE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_PRIMARY_COLOR_EXT);
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_TEXTURE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-	
+
 	GLdouble	look_dir[3];
-	
+
 	look_dir[0] = -cos(-light_tilt * DEG2RAD) * cos(light_heading * DEG2RAD);
 	look_dir[1] = -sin(-light_tilt * DEG2RAD);
 	look_dir[2] = -cos(-light_tilt * DEG2RAD) * sin(light_heading * DEG2RAD);
@@ -764,7 +764,7 @@ void	draw_world(bool drawLightDiagram)
 		look_dir[0] * 0.5 + 0.5,
 		look_dir[1] * 0.5 + 0.5,
 		look_dir[2] * 0.5 + 0.5);
-	
+
 	glNormal3f(0.0, 1.0, 0.0);
 
 	glBegin(GL_QUADS);
@@ -777,15 +777,15 @@ void	draw_world(bool drawLightDiagram)
 	glTexCoord2f(1.0, 0.0);
 	glVertex3f( 100.0, 0.0, -100.0);
 	glEnd();
-	
+
 	glDisable(GL_TEXTURE_2D);
-	
-#else	
+
+#else
 #if FORCE_NO_COLOR
 	glColor3f(1.0, 1.0, 1.0);
 #else
 	glColor3f(0.6, 0.7, 0.8);
-#endif	
+#endif
 
 	glBegin(GL_QUADS);
 	glNormal3f(0.0, 1.0, 0.0);
@@ -794,8 +794,8 @@ void	draw_world(bool drawLightDiagram)
 	glVertex3f( gGroundDist, 0.0,  gGroundDist);
 	glVertex3f( gGroundDist, 0.0, -gGroundDist);
 	glEnd();
-	
-#endif	
+
+#endif
 
 	GL_ActiveTextureARB(GL_TEXTURE1_ARB);
 	glBindTexture(GL_TEXTURE_2D, DECAL);
@@ -805,8 +805,8 @@ void	draw_world(bool drawLightDiagram)
 	if (!gObj.cmds.empty())
 	{
 		glAlphaFunc		(GL_GREATER,0						);	// when ALPHA-TESTING  is enabled, we display the GREATEST alpha
-		glBlendFunc		(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	// when ALPHA-BLENDING is enabled, we blend normally				
-	
+		glBlendFunc		(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	// when ALPHA-BLENDING is enabled, we blend normally
+
 		glEnable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);
 		glPointSize(3);
@@ -825,7 +825,7 @@ void	draw_world(bool drawLightDiagram)
 		for (float z = -80.0; z < 80.0; z += 50.0)
 		{
 			int height = ((int) fabs(x * (z + 20)) % 40) + 10;
-			
+
 			bool	visible = camera_camera[0].SphereInView(x, 0.0, z, 10.0);
 	#if FORCE_NO_COLOR
 		glColor3f(1.0, 1.0, 1.0);
@@ -834,7 +834,7 @@ void	draw_world(bool drawLightDiagram)
 				glColor3f(0.6, 0.7, 0.6);
 			else
 				glColor3f(1.0, 0, 0.0);
-	#endif			
+	#endif
 			glBegin(GL_QUAD_STRIP);
 			glNormal3f(-1.0, 0.0, 0.0);
 			GL_MultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0, 0.0);		glVertex3f(x - 10.0,  0, z - 10.0);
@@ -852,38 +852,38 @@ void	draw_world(bool drawLightDiagram)
 			GL_MultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0, 1.0);		glVertex3f(x - 10.0, height, z - 10.0);
 			glEnd();
 
-			glNormal3f(0.0, 1.0, 0.0);		
+			glNormal3f(0.0, 1.0, 0.0);
 	#if FORCE_NO_COLOR
 		glColor3f(1.0, 1.0, 1.0);
 	#else
 			if (visible)
 				glColor3f(0.3, 0.7, 0.6);
-	#endif			
+	#endif
 			glBegin(GL_QUADS);
 			glVertex3f(x - 10.0, height, z - 10.0);
 			glVertex3f(x - 10.0, height, z + 10.0);
 			glVertex3f(x + 10.0, height, z + 10.0);
 			glVertex3f(x + 10.0, height, z - 10.0);
 			glEnd();
-		}	
+		}
 	}
-	
+
 	GL_ActiveTextureARB(GL_TEXTURE1_ARB);
 	glDisable(GL_TEXTURE_2D);
 	GL_ActiveTextureARB(GL_TEXTURE0_ARB);
 
 
 	if (drawLightDiagram)
-	{		
+	{
 		setup_lighting(false);
-		
+
 		GLfloat	light[3] =  { 1.0, 1.0, 0.0 };
 		GLfloat	obj[3] = { 0.5, 0.5, 0.5 };
-		
+
 		preview_camera(&light_camera, light);
 		if (cur_cam == 1)
 			preview_camera(&camera_camera[0], obj);
-		
+
 	}
 }
 
@@ -893,7 +893,7 @@ void handle_redisplay(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setup_light_world();
 
-	reset_textures();	
+	reset_textures();
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(poly_slope, poly_offset * depth_scale);
@@ -909,19 +909,19 @@ void handle_redisplay(void)
 	else
 		setup_camera_world();
 
-	reset_textures();	
-		
+	reset_textures();
+
 	glDisable(GL_TEXTURE_1D);
 	glDisable(GL_TEXTURE_2D);
 	if (show_depth)
 		setup_textures_for_obj_dist();
 	if (show_depth_map)
-		setup_textures_for_obj_mapped_dist();	
+		setup_textures_for_obj_mapped_dist();
 	if (do_shadows)
 		setup_textures_for_shadows();
-	
+
 	draw_world(true);
-	
+
 	if (show_depth_tex)
 	{
 		reset_textures();
@@ -935,7 +935,7 @@ void handle_redisplay(void)
 		glRasterPos2i(-256,-256);
 		glDrawPixels(512, 512, GL_LUMINANCE, GL_UNSIGNED_BYTE, depthBuf);
 	}
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-256, 256, -256, 256, -1, 1);
@@ -943,7 +943,7 @@ void handle_redisplay(void)
 	glLoadIdentity();
 	static	char	buf[1024], camera[256], light[256], oper[256];
 	static	clock_t	last_time = clock();
-	
+
 	clock_t	now = clock();
 	double	dif = now - last_time;
 	last_time = now;
@@ -954,17 +954,17 @@ void handle_redisplay(void)
 	else {
 		sprintf(light, "Lighting is %s.", show_lighting ? "on" : "off");
 		sprintf(camera, "Camera at %s.", show_from_light ? "sun's position" : (cur_cam ? "God's-eye-view" : "eye location"));
-		sprintf(oper, "Showing %s.", do_shadows ? (gl_Has_Shadow ? "shadows" : "disabled shadows") : 
+		sprintf(oper, "Showing %s.", do_shadows ? (gl_Has_Shadow ? "shadows" : "disabled shadows") :
 			(show_depth_map ? "projected depth map texture" :
 			(show_depth ? "generated depth of scene" : "raw geometry")));
-		sprintf(buf, "FPS: %1.3f %s %s %s", fps, light, camera, oper);		
+		sprintf(buf, "FPS: %1.3f %s %s %s", fps, light, camera, oper);
 	}
 	if (show_depth_tex)
 		glColor3f(1.0, 0.0, 0.0);
 	else
 		glColor3f(1.0, 1.0, 1.0);
 	glut_print_string(-250, -230, buf);
-	
+
 	glutSwapBuffers();
 }
 
@@ -978,7 +978,7 @@ void handle_key(unsigned char key, int x, int y)
 	case 'l':
 		show_lighting = !show_lighting;
 		glutPostRedisplay();
-		break;		
+		break;
 	case 'd':
 		show_depth = !show_depth;
 		if (show_depth) show_depth_map = false, do_shadows = false;
@@ -1070,7 +1070,7 @@ void handle_key_special(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 		if (glutGetModifiers() & GLUT_ACTIVE_SHIFT)
 			light_heading += 10;
-		else if (glutGetModifiers() & GLUT_ACTIVE_CTRL)		
+		else if (glutGetModifiers() & GLUT_ACTIVE_CTRL)
 			camera_heading[0] += 10;
 		else
 			camera_heading[cur_cam] += 10;
@@ -1119,17 +1119,17 @@ extern "C" extern void APIENTRY glutInit(int * argcp, char **argv);
 
 int main(int argc, char ** argv)
 {
-	glutInit(&argc, argv);		
+	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(10, 40);
 	glutInitWindowSize(512, 512);
-	
+
 	glutCreateWindow("Shadow Demo");
-	
+
 #if !defined(__POWERPC__)
 	GL_ActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC) wglGetProcAddress("glActiveTextureARB"   );
 	GL_MultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC) wglGetProcAddress("glMultiTexCoord2fARB");
-#endif	
+#endif
 
 	// In order to use hardware shadow mapping we need both the GL_SGIX_shadow extension, which
 	// gives us the compare on one texture unit op, and the GL_SGIX_depth_texture op, which lets us
@@ -1137,7 +1137,7 @@ int main(int argc, char ** argv)
 	// for the ARB versions too just in case; my GF-FX-MX has both.
 	gl_Has_Shadow = (glutExtensionSupported("GL_SGIX_shadow") || glutExtensionSupported("GL_ARB_shadow")) &&
 					(glutExtensionSupported("GL_SGIX_depth_texture") || glutExtensionSupported("GL_ARB_depth_texture"));
-	
+
 	glutDisplayFunc(handle_redisplay);
 	glutKeyboardFunc(handle_key);
 	glutSpecialFunc(handle_key_special);
@@ -1147,21 +1147,21 @@ int main(int argc, char ** argv)
 	build_original_textures();
 	build_camera_matrices();
 	build_light_matrices();
-	
+
 	GLint	depthBits;
 	glGetIntegerv(GL_DEPTH_BITS, &depthBits);
 	if (depthBits < 8)
 		depth_scale = 1;
 	else
 		depth_scale = 1 << (depthBits - 8);
-	
+
 	glutPostRedisplay();
 
    glEnable			(GL_COLOR_MATERIAL					);	// GL_COLOR_MATERIAL lets us use OGL_setcolor to set material PROPERTIES FOR LIGHTING TO BOUNCE OFF OF. needed for specularity.
    glColorMaterial	(GL_FRONT,GL_AMBIENT_AND_DIFFUSE	);	// use color material for ambient and diffuse lighting
 
 	XObjRead("shadow.obj", gObj);
-	gListID = glGenLists(1);	
+	gListID = glGenLists(1);
 	if (!gObj.cmds.empty())
 	{
 		ObjectToDL(gListID, gObj, 1, 50, true, (PFNGLMULTITEXCOORD2FARBPROC) GL_MultiTexCoord2fARB);
@@ -1171,7 +1171,7 @@ int main(int argc, char ** argv)
 		gGroundDist = max((maxc[0] - minc[0]), (maxc[2] - minc[2]));
 		gGroundDist += maxc[1] - minc[1];
 	}
-	
+
 	glutMainLoop();
 	return 0;
 }

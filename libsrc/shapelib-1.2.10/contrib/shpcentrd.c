@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************
  *
- * shpcentrd.c  - compute XY centroid for complex shapes 
+ * shpcentrd.c  - compute XY centroid for complex shapes
  *			and create a new SHPT_PT file of then
  * 			specifically undo compound objects but not complex ones
  *
@@ -32,7 +32,7 @@
  * updates to shpdxf, dbfinfo, port from Shapelib 1.1.5 of dbfcat and shpinfo
  *
  *
- * 
+ *
  */
 
 
@@ -41,7 +41,7 @@
  *      Cx = sum (x dArea ) / Total Area
  *  and
  *      Cy = sum (y dArea ) / Total Area
- */           
+ */
 
 #include "shapefil.h"
 #include "shpgeo.h"
@@ -74,7 +74,7 @@ int main( int argc, char ** argv )
 	printf( "shpcentrd shp_file new_shp_file\n" );
 	exit( 1 );
     }
-    
+
     old_SHP = SHPOpen (argv[1], "rb" );
     old_DBF = DBFOpen (argv[1], "rb");
     if( old_SHP == NULL || old_DBF == NULL )
@@ -84,8 +84,8 @@ int main( int argc, char ** argv )
     }
 
     SHPGetInfo( old_SHP, &nEntities, &nShapeType, NULL, NULL );
-    new_SHP = SHPCreate ( argv[2], SHPT_POINT ); 
-    
+    new_SHP = SHPCreate ( argv[2], SHPT_POINT );
+
     new_DBF = DBFCloneEmpty (old_DBF, argv[2]);
     if( new_SHP == NULL || new_DBF == NULL )
     {
@@ -103,7 +103,7 @@ int main( int argc, char ** argv )
     for( i = 0; i < nEntities; i++ )
     {
 	int		res ;
- 
+
 	psCShape = SHPReadObject( old_SHP, i );
 
         if ( byRing == 1 ) {
@@ -112,16 +112,16 @@ int main( int argc, char ** argv )
 	    SHPObject 	*psO;
 	    psO = SHPClone ( psCShape, ring,  ring + 1 );
 
-            Centrd = SHPCentrd_2d ( psO ); 
+            Centrd = SHPCentrd_2d ( psO );
 
-            cent_pt = SHPCreateSimpleObject ( SHPT_POINT, 1, 
-        	(double*) &(Centrd.x), (double*) &(Centrd.y), NULL ); 
+            cent_pt = SHPCreateSimpleObject ( SHPT_POINT, 1,
+        	(double*) &(Centrd.x), (double*) &(Centrd.y), NULL );
 
-            SHPWriteObject ( new_SHP, -1, cent_pt ); 
-                        
+            SHPWriteObject ( new_SHP, -1, cent_pt );
+
             memcpy ( DBFRow, DBFReadTuple ( old_DBF, i ),
 		 old_DBF->nRecordLength );
-            DBFWriteTuple ( new_DBF, new_DBF->nRecords, DBFRow );            
+            DBFWriteTuple ( new_DBF, new_DBF->nRecords, DBFRow );
 
             SHPDestroyObject ( cent_pt );
 
@@ -130,17 +130,17 @@ int main( int argc, char ** argv )
 
           }
         else {
-        
-          Centrd = SHPCentrd_2d ( psCShape ); 
 
-          cent_pt = SHPCreateSimpleObject ( SHPT_POINT, 1, 
-        	(double*) &(Centrd.x), (double*) &(Centrd.y), NULL ); 
+          Centrd = SHPCentrd_2d ( psCShape );
 
-          SHPWriteObject ( new_SHP, -1, cent_pt ); 
-                        
+          cent_pt = SHPCreateSimpleObject ( SHPT_POINT, 1,
+        	(double*) &(Centrd.x), (double*) &(Centrd.y), NULL );
+
+          SHPWriteObject ( new_SHP, -1, cent_pt );
+
           memcpy ( DBFRow, DBFReadTuple ( old_DBF, i ),
 		 old_DBF->nRecordLength );
-          DBFWriteTuple ( new_DBF, new_DBF->nRecords, DBFRow );            
+          DBFWriteTuple ( new_DBF, new_DBF->nRecords, DBFRow );
 
           SHPDestroyObject ( cent_pt );
          }

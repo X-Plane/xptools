@@ -124,7 +124,7 @@ static int pj_gridlist_merge_gridfile( const char *gridname )
                 new_list = (PJ_GRIDINFO **) pj_malloc(sizeof(void*) * new_max);
                 if( last_nadgrids_list != NULL )
                 {
-                    memcpy( new_list, last_nadgrids_list, 
+                    memcpy( new_list, last_nadgrids_list,
                             sizeof(void*) * last_nadgrids_max );
                     pj_dalloc( last_nadgrids_list );
                 }
@@ -155,7 +155,7 @@ static int pj_gridlist_merge_gridfile( const char *gridname )
         assert( FALSE );
         return 0;
     }
-    
+
     if( tail != NULL )
         tail->next = this_grid;
     else
@@ -185,7 +185,7 @@ PJ_GRIDINFO **pj_gridlist_from_nadgrids( const char *nadgrids, int *grid_count)
     pj_errno = 0;
     *grid_count = 0;
 
-    if( last_nadgrids != NULL 
+    if( last_nadgrids != NULL
         && strcmp(nadgrids,last_nadgrids) == 0 )
     {
         *grid_count = last_nadgrids_count;
@@ -199,7 +199,7 @@ PJ_GRIDINFO **pj_gridlist_from_nadgrids( const char *nadgrids, int *grid_count)
     {
         pj_dalloc(last_nadgrids);
     }
-    
+
     last_nadgrids = (char *) pj_malloc(strlen(nadgrids)+1);
     strcpy( last_nadgrids, nadgrids );
 
@@ -220,8 +220,8 @@ PJ_GRIDINFO **pj_gridlist_from_nadgrids( const char *nadgrids, int *grid_count)
             s++;
         }
 
-        for( end_char = 0; 
-             s[end_char] != '\0' && s[end_char] != ','; 
+        for( end_char = 0;
+             s[end_char] != '\0' && s[end_char] != ',';
              end_char++ ) {}
 
         if( end_char > sizeof(name) )
@@ -229,7 +229,7 @@ PJ_GRIDINFO **pj_gridlist_from_nadgrids( const char *nadgrids, int *grid_count)
             pj_errno = -38;
             return NULL;
         }
-        
+
         strncpy( name, s, end_char );
         name[end_char] = '\0';
 

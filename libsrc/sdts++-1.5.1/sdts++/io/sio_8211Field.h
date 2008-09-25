@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -59,7 +59,7 @@ class sio_8211Field
          All fields have two things we're interested in... the raw
          data it contains, and how much of that data there is.
          somewhat redundant as now you can directly query the vector
-         for its size 
+         for its size
       */
       long getDataLength() const;
 
@@ -82,10 +82,10 @@ class sio_8211Field
 
       /**
        All getVariableSubfield() operations attempt to extract a variable width
-       value. By default, the variable width subfield delimeter is the ISO8211 
+       value. By default, the variable width subfield delimeter is the ISO8211
        Unit Terminator. This can be overridden.
        Value should refer to a buffer that's allocated enough space to hold
-       the subfield, in the case of the char*.  'startPos' should indicate 
+       the subfield, in the case of the char*.  'startPos' should indicate
        where in the field's data area the subfield starts.  It will be changed
        to refer to the next position in the field's data area; this will
        either be the first byte of the next subfield, or one past the last

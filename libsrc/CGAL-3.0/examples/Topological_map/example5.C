@@ -11,7 +11,7 @@
 
 typedef CGAL::Pm_dcel<CGAL::Tpm_vertex_base,
                       CGAL::Tpm_halfedge_base,
-                      CGAL::Tpm_face_base> Dcel;  
+                      CGAL::Tpm_face_base> Dcel;
 
 typedef CGAL::Topological_map<Dcel> Tpm;
 
@@ -52,7 +52,7 @@ int main()
   std::cout << "map is valid!" << std::endl;
 
   std::cout << "Removing edge ... ";
-  Face_handle f = t.remove_edge(e5); 
+  Face_handle f = t.remove_edge(e5);
   CGAL_assertion(t.is_valid());
   std::cout << "map is valid!" << std::endl;
 

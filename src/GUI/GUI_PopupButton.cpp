@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -56,7 +56,7 @@ void		GUI_PopupButton::SetDescriptor(const string& inDesc)
 		if (e != inDesc.end()) ++e;
 		b = e;
 	}
-	
+
 	SetMax(mItems.size());
 	if (GetValue() > GetMax()) SetValue(GetMax());
 	Refresh();
@@ -65,7 +65,7 @@ void		GUI_PopupButton::SetDescriptor(const string& inDesc)
 void		GUI_PopupButton::Draw(GUI_GraphState * state)
 {
 	string desc, sub;
-	
+
 	int bounds[4];
 	GetBounds(bounds);
 	state->SetState(0,0,0,  0,0,0,0);
@@ -87,7 +87,7 @@ void		GUI_PopupButton::Draw(GUI_GraphState * state)
 
 	int i = GetValue();
 	if (i >= 0 && i < mItems.size())
-	{		
+	{
 		float c[4] = { 0,0,0,1 };
 		float w = GUI_MeasureRange(font_UI_Basic, &*mItems[i].begin(), &*mItems[i].end());
 		GUI_FontDraw(state,font_UI_Basic, c, (bounds[0]+bounds[2]-w) /2, bounds[1], mItems[i].c_str());
@@ -97,7 +97,7 @@ void		GUI_PopupButton::Draw(GUI_GraphState * state)
 int			GUI_PopupButton::MouseDown(int x, int y, int button)
 {
 	vector<GUI_MenuItem_t>	items;
-	
+
 	items.resize(mItems.size()+1);
 	for (int n = 0; n < mItems.size(); ++n)
 	{
@@ -106,7 +106,7 @@ int			GUI_PopupButton::MouseDown(int x, int y, int button)
 		items[n].flags = 0;
 		items[n].cmd = 0;
 		items[n].checked = 0;
-	}	
+	}
 
 	items.back().name = NULL;
 	items.back().key = 0;
@@ -139,4 +139,4 @@ void		GUI_PopupButton::SetValue(float inValue)
 	GUI_Control::SetValue(inValue);
 	Refresh();
 }
-	
+

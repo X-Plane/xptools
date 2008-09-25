@@ -19,7 +19,7 @@ class LightNode : public Node {
 	SFBool *bonField;
 	SFFloat *intensityField;
 	SFColor *colorField;
-	
+
 public:
 
 	LightNode();
@@ -30,7 +30,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getOnField();
-	
+
 	void setOn(bool on);
 	void setOn(int value);
 	bool isOn();
@@ -40,7 +40,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getIntensityField();
-	
+
 	void setIntensity(float value);
 	float getIntensity();
 
@@ -57,7 +57,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	virtual bool isChildNodeType(Node *node) = 0;
 
 	virtual void initialize() = 0;

@@ -123,7 +123,7 @@ FORWARD(s_forward); /* spherical */
 oblcon:
 		if (fabs(fabs(xy.y) - 1.) < TOL)
 			if (xy.y < 0.)
-				F_ERROR 
+				F_ERROR
 			else
 				xy.x = xy.y = 0.;
 		else {

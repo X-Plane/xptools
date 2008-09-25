@@ -12,7 +12,7 @@ namespace boost
   namespace inspect
   {
     long_name_check::long_name_check() : m_long_name_errors(0) {}
-     
+
     void long_name_check::inspect(
       const string & library_name,
       const path & full_path )

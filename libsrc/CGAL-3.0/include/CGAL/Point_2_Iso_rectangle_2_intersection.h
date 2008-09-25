@@ -35,7 +35,7 @@ CGAL_BEGIN_NAMESPACE
 namespace CGALi {
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const typename CGAL_WRAP(K)::Point_2 &pt,
 	     const typename CGAL_WRAP(K)::Iso_rectangle_2 &iso,
@@ -45,7 +45,7 @@ do_intersect(const typename CGAL_WRAP(K)::Point_2 &pt,
 }
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const typename CGAL_WRAP(K)::Iso_rectangle_2 &iso,
 	     const typename CGAL_WRAP(K)::Point_2 &pt,
@@ -83,7 +83,7 @@ intersection(const typename CGAL_WRAP(K)::Iso_rectangle_2 &iso,
 
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const Iso_rectangle_2<K> &iso,
 	     const Point_2<K> &pt)
@@ -92,7 +92,7 @@ do_intersect(const Iso_rectangle_2<K> &iso,
 }
 
 template <class K>
-inline 
+inline
 bool
 do_intersect(const Point_2<K> &pt,
 	     const Iso_rectangle_2<K> &iso)
@@ -101,7 +101,7 @@ do_intersect(const Point_2<K> &pt,
 }
 
 template <class K>
-inline 
+inline
 Object
 intersection(const Iso_rectangle_2<K> &iso,
 	     const Point_2<K> &pt)
@@ -109,7 +109,7 @@ intersection(const Iso_rectangle_2<K> &iso,
   return CGALi::intersection(pt, iso, K());;
 }
 template <class K>
-inline 
+inline
 Object
 intersection(const Point_2<K> &pt,
 	     const Iso_rectangle_2<K> &iso)

@@ -28,10 +28,10 @@ int main()
   std::vector<Curve_2>  segments;
   Sweep_line sl;
 
-  std::cout << "Demonstrating Sweep_line_2::do_curves_intersect " 
+  std::cout << "Demonstrating Sweep_line_2::do_curves_intersect "
 	    << std::endl;
 
-  // case 1 
+  // case 1
   Curve_2 c1(Point_2(10,1), Point_2(20,1));
   Curve_2 c2(Point_2(10, -4), Point_2(20,6));
   segments.push_back(c1);
@@ -48,7 +48,7 @@ int main()
   else
     std::cout << "Curves do NOT intersect"<<std::endl<<std::endl;
 
-  // case 2  
+  // case 2
   segments.clear();
   Curve_2 c3(Point_2(10,1), Point_2(20,1));
   Curve_2 c4(Point_2(16, 2), Point_2(20,6));
@@ -64,7 +64,7 @@ int main()
     std::cout << "Curves intersect"<<std::endl<<std::endl;
   else
     std::cout << "Curves do NOT intersect"<<std::endl<<std::endl;
-  
+
   return 0;
 }
 

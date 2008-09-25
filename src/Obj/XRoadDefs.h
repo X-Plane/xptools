@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -45,8 +45,8 @@ struct	RoadSegInfo_t {
 	double	pixel_left;				// Left pixel position as frac
 	double	width_meters[seg_Total];// Width of each segment in meters in x-plane
 	double	width_pixels[seg_Total];// Width of each segment in pixels on bitmap
-	// Height in meters of each seg?	
-};	
+	// Height in meters of each seg?
+};
 
 struct	QuadPavementInfo_t {
 	double	s1;
@@ -66,10 +66,10 @@ struct	CrossingInfo_t {
 	RoadTypeID			top;
 	RoadTypeID			right;
 	RoadTypeID			bottom;
-};	
+};
 
 struct	RoadTypeInfo_t {
-	// These segments define the basic road.	
+	// These segments define the basic road.
 	RoadSegID		begin_cap;
 	RoadSegID		main_stretch;
 	RoadSegID		end_cap;
@@ -78,10 +78,10 @@ struct	RoadTypeInfo_t {
 	// By convention, the lower right half of the triangle is used for starting
 	// a road, and the upper left is used for ending it.
 	QuadPavementInfo_t	multi_join;
-	
+
 	// For now our layering is simple: a height for each stack of this type.
 	double			height_per_layer;
-	
+
 	// A mapping for an incoming T intersection from our left or right for each type.
 	RoadTypeSegMap	left_joins;
 	RoadTypeSegMap	right_joins;

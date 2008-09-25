@@ -40,16 +40,16 @@ namespace sb_Utils
    /**
       Searches 'rec' for the first field with a mnemonic matching
       'mnemonic'.  If found, sets 'thefield' to point it and returns
-      true. Returns false if not found.  
+      true. Returns false if not found.
       */
    bool getFieldByMnem( sc_Record const& rec,
                         std::string const& mnemonic,
                         sc_Record::const_iterator& thefield );
 
-   /** 
+   /**
           Searches 'field' for the first subfield with a mnemonic
           matching 'mnemonic'.  If found, sets 'thesubf' to point to it and
-          returns true. Returns false if not found.  
+          returns true. Returns false if not found.
       */
    bool getSubfieldByMnem( sc_Field const& field,
                            std::string const& mnemonic,
@@ -73,7 +73,7 @@ namespace sb_Utils
                                double& dataOut );
 
    /// Add field with given name and mnemonic to the record
-   void add_field( sc_Record & record, 
+   void add_field( sc_Record & record,
                    std::string const & name,
                    std::string const & mnemonic );
 
@@ -85,54 +85,54 @@ namespace sb_Utils
 
       \todo XXX maybe we should add a member to support packed identifiers?
    */
-   void add_foreignID( sc_Record & record, 
+   void add_foreignID( sc_Record & record,
                        sb_ForeignID const & frid );
 
    //@{
-   /** 
+   /**
        convenience functions for adding subfields to a field
    */
-   void add_subfield( sc_Field& field, 
-                      std::string const& mnemonic, 
+   void add_subfield( sc_Field& field,
+                      std::string const& mnemonic,
                       std::string const& value );
 
-   void add_subfield( sc_Field& field, 
-                      std::string const& mnemonic, 
+   void add_subfield( sc_Field& field,
+                      std::string const& mnemonic,
                       int value );
 
-   void add_subfield( sc_Field& field, 
-                      std::string const& mnemonic, 
+   void add_subfield( sc_Field& field,
+                      std::string const& mnemonic,
                       long value );
 
-   void add_subfield( sc_Field& field, 
-                      std::string const& mnemonic, 
+   void add_subfield( sc_Field& field,
+                      std::string const& mnemonic,
                       double value );
    //@}
 
 
       /// for adding empty subfields
-   void add_empty_subfield( sc_Field& field, 
-                            std::string const& mnemonic, 
+   void add_empty_subfield( sc_Field& field,
+                            std::string const& mnemonic,
                             sc_Subfield::SubfieldType type );
 
 
    //@{
    /**
       determine if a value is within a set of values expressing a domain
-   
+
       \note
 
-       Will return true if the char value in ``str'' is within the set of 
+       Will return true if the char value in ``str'' is within the set of
        characters found in ``values''.
 
       */
-   bool valid_domain( std::string const & str, 
+   bool valid_domain( std::string const & str,
                       std::string const & domain_values );
 
-   bool valid_domain( std::string const & str, 
+   bool valid_domain( std::string const & str,
                       std::set<std::string> const & domain_values );
 
-   bool valid_domain( long val, 
+   bool valid_domain( long val,
                       std::set<long> const& domain_values );
    //@}
 

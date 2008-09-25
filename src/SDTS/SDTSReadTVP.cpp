@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -46,7 +46,7 @@ const char *		kSDTSErrMsgs[] = {
 	"Unreadable spatial address.",
 	"Logic check failed."
 };
-	
+
 struct	CoordTransform {
 	bool	UTM;			// Are we in UTM?  If so we need to go to geo.
 	int		zone;			// UTM zone number
@@ -60,7 +60,7 @@ struct	StMemFile {
 	StMemFile(MFMemFile * mf) : mf_(mf) { }
 	~StMemFile() { if (mf_) MemFile_Close(mf_); }
 	operator MFMemFile* () const { return mf_; }
-	
+
 	MFMemFile * mf_;
 };
 
@@ -81,7 +81,7 @@ struct	LineRecord : public WTPM_Line {
 	ForeignKey				leftFaceKey;
 	ForeignKey				rightFaceKey;
 	ForeignKey				startNodeKey;
-	ForeignKey				endNodeKey;	
+	ForeignKey				endNodeKey;
 };
 typedef hash_map<int, LineRecord>		LineMap;
 typedef	hash_map<string, LineMap>		LineTable;
@@ -96,7 +96,7 @@ struct Topology {
 	PointTable		points;
 	LineTable		lines;
 	PolygonTable	polygons;
-	
+
 	PointRecord *			FetchForeignKeyPoint(const ForeignKey& inKey);
 	LineRecord *			FetchForeignKeyLine(const ForeignKey& inKey);
 	PolygonRecord *			FetchForeignKeyPolygon(const ForeignKey& inKey);
@@ -124,17 +124,17 @@ SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_co
 {
 		sc_Record	rawRec;
 		sb_Line		line;
-		
+
 	SDTSModuleIterator	modIter(file, dictionary);
-	
+
 	LineMap * vec = NULL;
-	
+
 	while (!modIter.Done())
 	{
 		modIter.Get(rawRec);
-		
+
 		if (!line.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected line-type");
-		
+
 		if (vec == NULL)
 		{
 			if (ioTopology.lines.find(line.getModuleName()) == ioTopology.lines.end())
@@ -143,7 +143,7 @@ SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_co
 			}
 			vec = &(ioTopology.lines[line.getModuleName()]);
 		}
-		
+
 		LineRecord	newLine;
 		string	objRep;
 		sb_ForeignID	lpoly, rpoly, snode, enode;
@@ -162,7 +162,7 @@ SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_co
 			for (sb_Spatials::iterator i = spatial.begin(); i != spatial.end(); ++i)
 			{
 				Point2	p;
-				if (i->x().getDouble(p.x) && i->y().getDouble(p.y))				
+				if (i->x().getDouble(p.x) && i->y().getDouble(p.y))
 					newLine.shape.push_back(p);
 				else
 					throw SDTSException(sdts_BadSpatialID, *i);
@@ -170,23 +170,23 @@ SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_co
 		}
 		if (newLine.shape.size() < 2)
 			throw SDTSException(sdts_MissingInfo, rawRec, "need at least two spatial addresses on a line");
-		
+
 		if (newLine.startNodeKey == newLine.endNodeKey && newLine.shape.size() < 3)
 			throw SDTSException(sdts_MissingInfo, rawRec, "need at least three spatial addresses for a line with same start and end points");
-		
+
 		for (int n = 1; n < newLine.shape.size(); ++n)
 		{
 			if (newLine.shape[n-1] == newLine.shape[n])
 				throw SDTSException(sdts_MissingInfo, rawRec, "zero length segment defined in line record");
 		}
-		
+
 		if (vec->find(line.getRecordID()) != vec->end())
 			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
 		vec->insert(LineMap::value_type(line.getRecordID(), newLine));
 
-		modIter.Increment();		
-	}	
-	
+		modIter.Increment();
+	}
+
 	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
 }
 
@@ -195,17 +195,17 @@ SDTSErrorType	ReadPointModule(Topology& ioTopology, MFMemFile * file, sio_8211_c
 {
 		sc_Record	rawRec;
 		sb_Pnts		pnts;
-		
+
 	SDTSModuleIterator	modIter(file, dictionary);
-	
+
 	PointMap * vec = NULL;
-	
+
 	while (!modIter.Done())
 	{
 		modIter.Get(rawRec);
-		
+
 		if (!pnts.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected pnts-type");
-		
+
 		if (vec == NULL)
 		{
 			if (ioTopology.points.find(pnts.getModuleName()) == ioTopology.points.end())
@@ -214,7 +214,7 @@ SDTSErrorType	ReadPointModule(Topology& ioTopology, MFMemFile * file, sio_8211_c
 			}
 			vec = &(ioTopology.points[pnts.getModuleName()]);
 		}
-		
+
 		PointRecord	newPt;
 		string	objRep;
 
@@ -222,22 +222,22 @@ SDTSErrorType	ReadPointModule(Topology& ioTopology, MFMemFile * file, sio_8211_c
 		if (objRep.size() != 2) 	throw SDTSException(sdts_LogicError, rawRec, "objrep isn't 2 chars");
 		newPt.objType[0] = objRep[0];
 		newPt.objType[1] = objRep[1];
-		
+
 		newPt.isTopo = newPt.objType[1] == 'O';	// NO = node point, NA = area point (attached to poly), NP = non-topological point
 
 		sb_Spatial		spatial;
 		if (!pnts.getSpatialAddress(spatial))	throw SDTSException(sdts_MissingInfo, rawRec, "need one spatial address");
 		if (!(spatial.x().getDouble(newPt.location.x) && spatial.y().getDouble(newPt.location.y)))
 			throw SDTSException(sdts_BadSpatialID, spatial);
-		
+
 		if (vec->find(pnts.getRecordID()) != vec->end())
 			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
-		
-		vec->insert(PointMap::value_type(pnts.getRecordID(), newPt));					
 
-		modIter.Increment();		
-	}	
-	
+		vec->insert(PointMap::value_type(pnts.getRecordID(), newPt));
+
+		modIter.Increment();
+	}
+
 	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
 }
 
@@ -246,17 +246,17 @@ SDTSErrorType	ReadPolygonModule(Topology& ioTopology, MFMemFile * file, sio_8211
 {
 		sc_Record	rawRec;
 		sb_Poly		poly;
-		
+
 	SDTSModuleIterator	modIter(file, dictionary);
-	
+
 	PolygonMap * vec = NULL;
-	
+
 	while (!modIter.Done())
 	{
 		modIter.Get(rawRec);
-		
+
 		if (!poly.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected poly-type");
-		
+
 		if (vec == NULL)
 		{
 			if (ioTopology.polygons.find(poly.getModuleName()) == ioTopology.polygons.end())
@@ -265,7 +265,7 @@ SDTSErrorType	ReadPolygonModule(Topology& ioTopology, MFMemFile * file, sio_8211
 			}
 			vec = &(ioTopology.polygons[poly.getModuleName()]);
 		}
-		
+
 		PolygonRecord	newPoly;
 		string	objRep;
 
@@ -278,11 +278,11 @@ SDTSErrorType	ReadPolygonModule(Topology& ioTopology, MFMemFile * file, sio_8211
 
 		if (vec->find(poly.getRecordID()) != vec->end())
 			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
-		vec->insert(PolygonMap::value_type(poly.getRecordID(), newPoly));		
+		vec->insert(PolygonMap::value_type(poly.getRecordID(), newPoly));
 
-		modIter.Increment();		
-	}	
-	
+		modIter.Increment();
+	}
+
 	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
 }
 
@@ -304,7 +304,7 @@ void	ReadTransfer(Topology& ioTopology, SDTSDirectory * inDirectory, sio_8211_co
 		modIter.Get(rawRec);
 		if (modIter.Error()) throw SDTSException(sdts_BadRecordFile, "unable to read module record", "xref");
 		if (!xref.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected xref");
-		
+
 		if (!xref.getReferenceSystemName(sys))	throw SDTSException(sdts_MissingInfo, rawRec, "reference system");
 		transform.UTM = (sys == "UTM");
 		if (transform.UTM)
@@ -313,22 +313,22 @@ void	ReadTransfer(Topology& ioTopology, SDTSDirectory * inDirectory, sio_8211_co
 			transform.zone = atoi(zoneStr.c_str());
 		}
 	}
-	
+
 	{
 		StMemFile	irefMem(inDirectory->OpenModule("IREF"));
 		if (irefMem == NULL) throw SDTSException(sdts_BadRecordFile, "unable to open module", "iref");
-		
+
 		SDTSModuleIterator modIter(irefMem, inDictionary);
 		modIter.Get(rawRec);
 		if (modIter.Error()) throw SDTSException(sdts_BadRecordFile, "unable to rea dmodule record", "iref");
 		if (!iref.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected iref");
-		
+
 		if (!iref.getScaleFactorX(transform.xscale)) transform.xscale = 1.0;
 		if (!iref.getScaleFactorY(transform.yscale)) transform.yscale = 1.0;
 		if (!iref.getXOrigin(transform.xoffset)) transform.xoffset = 0.0;
 		if (!iref.getYOrigin(transform.yoffset)) transform.yoffset = 0.0;
 	}
-	
+
 	inDirectory->GetAllModuleNames(mods);
 	for (vector<string>::iterator modName = mods.begin(); modName != mods.end(); ++modName)
 	{
@@ -373,7 +373,7 @@ void	ConvertCoordinates(Topology& sdts, const CoordTransform& coords)
 		if (coords.UTM)
 			UTMToLonLat(pt->second.location.x, pt->second.location.y, coords.zone, &pt->second.location.x, &pt->second.location.y);
 	}
-	
+
 	for (LineTable::iterator ltable = sdts.lines.begin(); ltable != sdts.lines.end(); ++ltable)
 	for (LineMap::iterator line = ltable->second.begin(); line != ltable->second.end(); ++line)
 	for (vector<Point2>::iterator pt = line->second.shape.begin(); pt != line->second.shape.end(); ++pt)
@@ -382,7 +382,7 @@ void	ConvertCoordinates(Topology& sdts, const CoordTransform& coords)
 		pt->y *= coords.yscale;
 		pt->x += coords.xoffset;
 		pt->y += coords.yoffset;
-		if (coords.UTM)	
+		if (coords.UTM)
 			UTMToLonLat(pt->x, pt->y, coords.zone, &pt->x, &pt->y);
 	}
 }
@@ -408,7 +408,7 @@ void	FindVectors(Topology& sdts,
 	for (PointMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
 	if (row->second.isTopo)
 		nodes.push_back(&row->second);
-		
+
 	for (LineTable::iterator table = sdts.lines.begin(); table != sdts.lines.end(); ++table)
 	for (LineMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
 	lines.push_back(&row->second);
@@ -419,7 +419,7 @@ void	FindVectors(Topology& sdts,
 
 }
 
-		
+
 PointRecord *			Topology::FetchForeignKeyPoint(const ForeignKey& inKey)
 {
 	PointTable::iterator table = points.find(inKey.first);
@@ -447,7 +447,7 @@ PolygonRecord *			Topology::FetchForeignKeyPolygon(const ForeignKey& inKey)
 		return &row->second;
 }
 
-ForeignKey::ForeignKey() : pair<string,int>() 
+ForeignKey::ForeignKey() : pair<string,int>()
 {
 }
 
@@ -475,13 +475,13 @@ void	ImportSDTSTransferTVP(const char * path, const char * ext, Pmwx& pmwx)
 		WTPM_NodeVector	nodes;
 		WTPM_LineVector	lines;
 		WTPM_FaceVector	faces;
-		
+
 		sio_8211_converter_dictionary	dict;
 		AddConverters(dir, dict);
-		
+
 		ReadTransfer(topology, &dir, &dict, transform);
 		ConvertKeysToLinks(topology);
-		FindVectors(topology, nodes, lines, faces);		
+		FindVectors(topology, nodes, lines, faces);
 		WTPM_CreateBackLinks(lines);
 		WTPM_RestoreTopology(nodes, lines, faces);
 		ConvertCoordinates(topology, transform);

@@ -44,7 +44,7 @@ static int my_wait( int *status );
  *
  * Each word must be an individual element in a jam variable value.
  *
- * In $(JAMSHELL), % expands to the command string and ! expands to 
+ * In $(JAMSHELL), % expands to the command string and ! expands to
  * the slot number (starting at 1) for multiprocess (-j) invocations.
  * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
  * argument.
@@ -96,7 +96,7 @@ onintr( int disp )
  */
 
 void
-execcmd( 
+execcmd(
 	char *string,
 	void (*func)( void *closure, int status ),
 	void *closure,
@@ -133,7 +133,7 @@ execcmd(
 
 	    cmdtab[ slot ].tempfile = malloc( strlen( tempdir ) + 14 );
 
-	    sprintf( cmdtab[ slot ].tempfile, "%s\\jamtmp%02d.bat", 
+	    sprintf( cmdtab[ slot ].tempfile, "%s\\jamtmp%02d.bat",
 				tempdir, slot );
 	}
 
@@ -222,7 +222,7 @@ execcmd(
 	    exit( EXITBAD );
 	}
 # else
-	if ((pid = vfork()) == 0) 
+	if ((pid = vfork()) == 0)
    	{
 		execvp( argv[0], argv );
 		_exit(127);
@@ -265,7 +265,7 @@ execwait()
 	    return 0;
 
 	/* Pick up process pid and status */
-    
+
 	while( ( w = wait( &status ) ) == -1 && errno == EINTR )
 		;
 
@@ -367,7 +367,7 @@ my_wait( int *status )
 FAILED:
 	errno = GetLastError();
 	return -1;
-    
+
 }
 
 # endif /* NT && !__BORLANDC__ */

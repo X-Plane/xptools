@@ -10,7 +10,7 @@
 
 #include "SceneGraph.h"
 
-InlineNode::InlineNode() 
+InlineNode::InlineNode()
 {
 	setHeaderFlag(false);
 	setType(inlineNodeString);
@@ -20,7 +20,7 @@ InlineNode::InlineNode()
 	addExposedField(urlFieldString, urlField);
 }
 
-InlineNode::~InlineNode() 
+InlineNode::~InlineNode()
 {
 }
 
@@ -35,22 +35,22 @@ MFString *InlineNode::getUrlField()
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void InlineNode::addUrl(char *value) 
+void InlineNode::addUrl(char *value)
 {
 	getUrlField()->addValue(value);
 }
 
-int InlineNode::getNUrls() 
+int InlineNode::getNUrls()
 {
 	return getUrlField()->getSize();
 }
 
-char *InlineNode::getUrl(int index) 
+char *InlineNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void InlineNode::setUrl(int index, char *urlString) 
+void InlineNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -59,12 +59,12 @@ void InlineNode::setUrl(int index, char *urlString)
 //	List
 ////////////////////////////////////////////////
 
-InlineNode *InlineNode::next() 
+InlineNode *InlineNode::next()
 {
 	return (InlineNode *)Node::next(getType());
 }
 
-InlineNode *InlineNode::nextTraversal() 
+InlineNode *InlineNode::nextTraversal()
 {
 	return (InlineNode *)Node::nextTraversalByType(getType());
 }
@@ -72,13 +72,13 @@ InlineNode *InlineNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool InlineNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void InlineNode::update() 
+void InlineNode::update()
 {
 }
 
@@ -86,7 +86,7 @@ void InlineNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void InlineNode::outputContext(ostream &printStream, char *indentString) 
+void InlineNode::outputContext(ostream &printStream, char *indentString)
 {
 	if (0 < getNUrls()) {
 		MFString *url = getUrlField();

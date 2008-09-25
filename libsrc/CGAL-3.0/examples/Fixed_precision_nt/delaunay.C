@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
     int N;
     if (argc==2)
-      CGAL_CLIB_STD::sscanf(argv[1], "%d", &N); 
+      CGAL_CLIB_STD::sscanf(argv[1], "%d", &N);
     else {
       N=100;
       std::cerr<<"usage : "<<argv[0]<<" nb-of-points"<<std::endl<<std::endl;

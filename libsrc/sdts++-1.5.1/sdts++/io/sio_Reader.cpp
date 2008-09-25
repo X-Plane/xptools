@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -87,7 +87,7 @@ struct sio_8211Reader_Imp
   sio_8211Reader_Imp( istream& file ) : file_( file ) {}
 
 
-  istream& file_;               // stream to an open 8211 file; the user has 
+  istream& file_;               // stream to an open 8211 file; the user has
                                 // responsibility of managing this stream
   sio_8211DDR ddr_;
 
@@ -108,7 +108,7 @@ struct sio_8211Reader_Imp
 //
 static
 bool
-readDDR_( sio_8211Reader_Imp& reader_imp, 
+readDDR_( sio_8211Reader_Imp& reader_imp,
           sio_8211_converter_dictionary const * const converters )
 {
   if ( ! reader_imp.file_ ) { return false; }
@@ -127,7 +127,7 @@ readDDR_( sio_8211Reader_Imp& reader_imp,
   // Now we need to build the field format "dictionary" that we'll later
   // use to properly parse a DR.
 
-  for ( sio_8211Directory::const_iterator dir_entry = 
+  for ( sio_8211Directory::const_iterator dir_entry =
           reader_imp.ddr_.getDirectory().begin();
         dir_entry != reader_imp.ddr_.getDirectory().end();
         dir_entry++ )
@@ -143,10 +143,10 @@ readDDR_( sio_8211Reader_Imp& reader_imp,
 
                                 // XXX This will need to change in the same way
                                 // XXX that DDRField changed.  That is, we get
-                                // XXX a leader and explicitly morph it into a 
+                                // XXX a leader and explicitly morph it into a
                                 // XXX DDRLeader.
 
-      sio_8211DDRLeader const * const ddr_leader = 
+      sio_8211DDRLeader const * const ddr_leader =
         dynamic_cast<sio_8211DDRLeader const * const>(&(reader_imp.ddr_.getLeader()));
 
       if ( ! ddr_leader ) return false;
@@ -165,7 +165,7 @@ readDDR_( sio_8211Reader_Imp& reader_imp,
 
       sio_8211MakeFieldFormat( reader_imp.fieldFormats_.back(),
                                ddr_field,
-                               (*dir_entry).getTag(), 
+                               (*dir_entry).getTag(),
                                converters );
 
     } // for each DDR field tag
@@ -185,7 +185,7 @@ sio_8211Reader::~sio_8211Reader()
 
 
 bool
-sio_8211Reader::attach( istream & is, 
+sio_8211Reader::attach( istream & is,
                         sio_8211_converter_dictionary const * const converters )
 {
                                 // create a brand spanking new
@@ -208,7 +208,7 @@ sio_8211Reader::attach( istream & is,
     }
 
   imp_ = new_imp;               // now that we have new guts, we need to
-                                // read in the DDR in preparation for 
+                                // read in the DDR in preparation for
                                 // reading records
 
   return readDDR_( *imp_, converters );
@@ -239,7 +239,7 @@ sio_8211Reader::getSchema()
 //
 // Returns: < 0 if error, 0 if ok, > 0 for the field_data_pos if
 // there're more fields to read.
-// 
+//
 // Fields of the same type that occur consecutively are called
 // repeating fields.  If a field is processed and there's more "space"
 // left over, then chances are you are dealing with repeating fields.
@@ -250,7 +250,7 @@ sio_8211Reader::getSchema()
 
 static
 int
-fillScField_( sio_8211Field const &       dr_field, 
+fillScField_( sio_8211Field const &       dr_field,
               sio_8211FieldFormat const & field_format,
               sc_Field&                   sc_field,
               long                        field_data_pos = 0 )
@@ -259,7 +259,7 @@ fillScField_( sio_8211Field const &       dr_field,
   field_data += field_data_pos;
 
   const long   field_data_length = dr_field.getDataLength();
-        
+
 
   sc_field.setMnemonic( field_format.getTag() );
   sc_field.setName( field_format.getName() );
@@ -273,8 +273,8 @@ fillScField_( sio_8211Field const &       dr_field,
   sc_Field::iterator sc_subfield_itr = sc_field.begin();
 
 
-  for ( list<sio_8211SubfieldFormat>::const_iterator subfield_format_itr = 
-          field_format.begin(); 
+  for ( list<sio_8211SubfieldFormat>::const_iterator subfield_format_itr =
+          field_format.begin();
         subfield_format_itr != field_format.end();
         subfield_format_itr++, sc_subfield_itr++ )
     {
@@ -301,8 +301,8 @@ fillScField_( sio_8211Field const &       dr_field,
       else
         {
           (*sc_subfield_itr).setMnemonic( (*subfield_format_itr).getLabel() );
-        }  
-        
+        }
+
       // fill the actual subfield value
 
       if ( (*subfield_format_itr).getConverter() )
@@ -313,16 +313,16 @@ fillScField_( sio_8211Field const &       dr_field,
           // convert the raw DR subfield into a proper sc_Subfield
           switch ( (*subfield_format_itr).getFormat() )
             {
-            case sio_8211SubfieldFormat::fixed : 
+            case sio_8211SubfieldFormat::fixed :
               chunk_size =
                 (*subfield_format_itr).getConverter()->makeFixedSubfield( *sc_subfield_itr,
-                                                                          &*field_data, 
+                                                                          &*field_data,
                                                                           static_cast<long int>((*subfield_format_itr).getLength()) );
               break;
             case sio_8211SubfieldFormat::variable :
               chunk_size =
                 (*subfield_format_itr).getConverter()->makeVarSubfield( *sc_subfield_itr,
-                                                                        &*field_data, 
+                                                                        &*field_data,
                                                                         static_cast<long int>(field_data_length - field_data_pos),
                                                                         (*subfield_format_itr).getDelimiter() );
               field_data++;             // skip unit terminator
@@ -366,7 +366,7 @@ fillScField_( sio_8211Field const &       dr_field,
   // check to insure that there's only one character left in the field
   // before checking that it is indeed a field terminator.
 
-  if ( (1 == field_data_length - field_data_pos )  && 
+  if ( (1 == field_data_length - field_data_pos )  &&
        (sio_8211FieldTerminator == *field_data) )
     {
       field_data++;             // skip any field terminator
@@ -387,7 +387,7 @@ fillScField_( sio_8211Field const &       dr_field,
 
 
 
-bool 
+bool
 sio_8211Reader::fillScRecord_( sio_8211DR const & dr, sc_Record& sc_record )
 {
 
@@ -431,30 +431,30 @@ sio_8211Reader::fillScRecord_( sio_8211DR const & dr, sc_Record& sc_record )
 
 
               field_data_pos = fillScField_( *dr_field,
-                                             (*field_format_itr), 
+                                             (*field_format_itr),
                                              (*sc_field_itr),
                                              field_data_pos );
 
-              if ( field_data_pos < 0 ) 
-              { 
+              if ( field_data_pos < 0 )
+              {
                  return false;
               }
 
               sc_field_itr++;
 
-            } 
+            }
           while ( field_data_pos > 0 ); // while we've got repeating fields
         }
       else
         {                       // XXX Error handling, anyone?  (But for
                                 // XXX reserved tags, this is ok.)
 #ifdef DEBUG
-          cerr << "field format for " 
+          cerr << "field format for "
                << (*dir_entry).getTag() << " not found" << endl;
 #endif
         }
 
-                
+
     }
 
   // snip off any fields that may be left over
@@ -472,7 +472,7 @@ sio_8211Reader::fillScRecord_( sio_8211DR const & dr, sc_Record& sc_record )
 
 
 
-bool 
+bool
 sio_8211Reader::fillScRecord_( long DRoffset, sc_Record& sc_record )
 {
   sio_8211DR dr;
@@ -495,8 +495,8 @@ sio_8211Reader::sio_8211Reader()
 
 
 
-sio_8211Reader::sio_8211Reader( istream & is, 
-                                sio_8211_converter_dictionary const * const converters ) 
+sio_8211Reader::sio_8211Reader( istream & is,
+                                sio_8211_converter_dictionary const * const converters )
   : imp_(  new sio_8211Reader_Imp( is )  )
 {
   if ( imp_ )
@@ -534,12 +534,12 @@ sio_8211ForwardIteratorImp
 
   sio_8211Reader* reader_;      // reader iterator currently docked with
 
-  bool isDone_;                 // true iff the iterator is pointing of the 
+  bool isDone_;                 // true iff the iterator is pointing of the
 				// DA's "end"  XXX seems kludgy, but makes
 				// iterator done() more intuitive and fixes
 				// premature finishing behavior.
 
-  long DR_end_;                 // stream positioned just past current 
+  long DR_end_;                 // stream positioned just past current
 				// DR end
 
   sio_8211DR DR_;
@@ -553,17 +553,17 @@ sio_8211ForwardIteratorImp
 
 sio_8211ForwardIteratorImp::sio_8211ForwardIteratorImp( )
   : reader_( 0x0 ), isDone_( false ), DR_end_( 0 )
-{ 
+{
 } // sio_8211ForwardIteratorImp::ctor
 
 
 
 sio_8211ForwardIteratorImp::sio_8211ForwardIteratorImp( sio_8211ForwardIteratorImp const & rhs )
-  : reader_( rhs.reader_ ), 
-    isDone_( rhs.isDone_ ), 
-    DR_end_( rhs.DR_end_ ), 
+  : reader_( rhs.reader_ ),
+    isDone_( rhs.isDone_ ),
+    DR_end_( rhs.DR_end_ ),
     DR_( rhs.DR_ )
-{ 
+{
 } // sio_8211ForwardIteratorImp::ctor
 
 
@@ -571,7 +571,7 @@ sio_8211ForwardIteratorImp::sio_8211ForwardIteratorImp( sio_8211ForwardIteratorI
 
 sio_8211ForwardIteratorImp&
 sio_8211ForwardIteratorImp::operator=( sio_8211ForwardIteratorImp const & rhs )
-{ 
+{
     if ( this == &rhs ) return *this;
 
     reader_ = rhs.reader_;
@@ -585,9 +585,9 @@ sio_8211ForwardIteratorImp::operator=( sio_8211ForwardIteratorImp const & rhs )
 
 
 
-sio_8211ForwardIteratorImp::sio_8211ForwardIteratorImp( sio_8211Reader & reader ) 
+sio_8211ForwardIteratorImp::sio_8211ForwardIteratorImp( sio_8211Reader & reader )
   : reader_( 0x0 ), isDone_( false ), DR_end_( 0 )
-{ 
+{
   attach( reader );             // dock with the given reader
 } // sio_8211ForwardIteratorImp::ctor
 
@@ -603,7 +603,7 @@ sio_8211ForwardIteratorImp::attach( sio_8211Reader & reader )
                                 // the first DR
 
   reader_->imp_->file_.seekg( reader_->imp_->DRStart_ );
-        
+
   reader_->imp_->file_.peek();  // FORCE stream to set fail bit if seek
                                 // beyond end
 
@@ -620,7 +620,7 @@ sio_8211ForwardIteratorImp::attach( sio_8211Reader & reader )
                                 // need that information
                                 // for operator++()
 
-      DR_end_ = reader_->imp_->file_.tellg(); 
+      DR_end_ = reader_->imp_->file_.tellg();
 
                                 // check to see if we're dealing with
                                 // dropped leaders
@@ -646,7 +646,7 @@ sio_8211ForwardIteratorImp::attach( sio_8211Reader & reader )
 
 //
 // sio_8211ForwardIterator
-// 
+//
 
 
 
@@ -712,7 +712,7 @@ void
 sio_8211ForwardIterator::operator++()
 {
 
-  // first seek to where we supposedly left off with the last read as another 
+  // first seek to where we supposedly left off with the last read as another
   // iterator may have moved the stream
 
   imp_->reader_->imp_->file_.seekg( imp_->DR_end_, ios::beg );
@@ -756,6 +756,6 @@ sio_8211ForwardIterator::done() const
 
 sio_8211ForwardIterator::operator void*() const
 {
-  return ( done() ) ?  reinterpret_cast<void*>(0x0) : 
+  return ( done() ) ?  reinterpret_cast<void*>(0x0) :
     reinterpret_cast<void*>(0x1);
 } // sio_8211ForwardIterator::done

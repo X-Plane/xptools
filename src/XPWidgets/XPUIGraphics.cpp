@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -50,7 +50,7 @@ extern int	gProportional;
 extern double round(double inValue);
 #endif
 
-// Slice Hacking.  Here's the deal: Sergio made the new drag bars repeat every 8 pixels...I liked 
+// Slice Hacking.  Here's the deal: Sergio made the new drag bars repeat every 8 pixels...I liked
 // the old ones better but he is the artist.  Anyway, the normal slicing code doesn't handle
 // tesolation terribly well.  In the long term we need a good solution (like storing the slices
 // in a table so they can be specifically hand-sliced), but for now this variable, when non-zero,
@@ -71,7 +71,7 @@ static	float	gColors[][3] = {
 	{ 0.192, 0.223, 0.278 },			// Caption text
 	{ 0.215, 0.235, 0.270 },			// List text
 	{ 0.564, 0.886, 0.733 }				// Glass text
-};	
+};
 
 static float		gAlphaLevel = 1.0;
 
@@ -79,7 +79,7 @@ void	SetupAmbientColor(int inColorID, float * outColor)
 {
 	float	theColor[4];
 	float * target = outColor ? outColor : theColor;
-	
+
 	memcpy(target, gColors[inColorID], sizeof(float) * 3);
 	if (!outColor)
 	{
@@ -106,7 +106,7 @@ void	SetProportional(int inProportional)
  * the main widget, not shadows.  These are the ones users would expect to have do something.
  *
  * The first rectangle is usually the wide rectangle in left, bottom, width, height notation.  Negative widths or
- * heights notate scalable elements.  
+ * heights notate scalable elements.
  *
  * The second set of values are 'insets', the difference between the wide and narrow box, as a distance from the wide
  * to the narrow box, bottom, left, right, then top.  These numbers are always non-negative ast he narrow rectangle
@@ -115,10 +115,10 @@ void	SetProportional(int inProportional)
  */
 
 /*************************************************************************************
- * Window offsets.  
+ * Window offsets.
  *************************************************************************************/
- 
-int WindowOffsetTable[6][8] = {	
+
+int WindowOffsetTable[6][8] = {
 	// Left, bottom, width, height, Left inset, bot inset, right inset, top inset
 	{304, 358, -100, -100,   9, 14,  9, 4},			//	xpWindow_SolidDkBlue				FIXED (help window)
 	{1,   358, -100, -100,   9, 14,  9, 22},         //	xpWindow_DkBlueWithMetalFrame		FIXED (main window)
@@ -157,7 +157,7 @@ int ElementOffsetTable[66][9] = {
 /*13*/	{372, 337,   23,   23,	 	0, 0, 0, 0,		0},  //  xpElement_DoubleUpDownArrows				DEPRECIATED
 /*14*/	{120, 178,   18,   18,	 	0, 0, 0, 0,		1},  //  xpElement_WindowCloseBox					Ben Fixed
 /*15*/	{120, 197,   18,   18,	 	0, 0, 0, 0,		0},  //  xpElement_WindowCloseBoxPressed			Ben Fixed
-/*16*/	{304, 486,  -52,   26,	 	4, 5, 4, 6,		1},  //  xpElement_PushButton						Ben Fixed	
+/*16*/	{304, 486,  -52,   26,	 	4, 5, 4, 6,		1},  //  xpElement_PushButton						Ben Fixed
 /*17*/	{304, 459,  -52,   26,	 	4, 5, 4, 6,		0},  //  xpElement_PushButtonLit					Ben Fixed
 /*18*/	{464, 292,   22,   22,	 	0, 0, 0, 0,		1},  //  xpElement_ScrollBarButton					DEPRECIATED
 /*19*/	{464, 315,   22,   22,	 	0, 0, 0, 0,		0},  //  xpElement_ScrollBarButtonLit				DEPRECIATED
@@ -215,7 +215,7 @@ int ElementOffsetTable[66][9] = {
 /*************************************************************************************
  * TRACK BAR OFFSETS
  *************************************************************************************/
- 
+
 // This is the dimensions and slop for the actual track.  Negative dimensions mean scalable.
 // left, bottom, width, height, left inset, bot inset, right inset, top inset
 int	TBTrackTable[4][8] = {
@@ -229,7 +229,7 @@ int	TBTrackTable[4][8] = {
 // NOTE: this does not currently address how the thumb is to be placed within the track in the non-expandable dimension.
 int	TBThumbTable[4][8] = {
 	{	83,  239, 18, 26,	4, 5, 5, 5 },	// Scroll bar
-	{	240, 267, 21, 20,	5, 4, 5, 2 },	// Slider	
+	{	240, 267, 21, 20,	5, 4, 5, 2 },	// Slider
 	{	0,   0,   0,  0,    0, 0, 0, 0 },	// Progress bar has no thumb!
 	{	125, 216, 28, 18,	6, 5, 6, 4 }
 };
@@ -309,7 +309,7 @@ void XPDrawWindow(
 	int minWidth = WindowOffsetTable[inStyle][2];
 	int minHeight = WindowOffsetTable[inStyle][3];
 
-	if (minWidth > 0)	xScalable = false;	else	minWidth = -0.67 * minWidth;	
+	if (minWidth > 0)	xScalable = false;	else	minWidth = -0.67 * minWidth;
 	if (minHeight > 0)	yScalable = false;	else	minHeight = -0.67 * minHeight;
 
 	// Dimension enforcement: if an element cannot be scaled, force it's size.  (It will be aligned to the bottom
@@ -350,7 +350,7 @@ void XPDrawElement(
 	// If this element can be lit and is lit, use the next element ID!
 	if (ElementOffsetTable[inStyle][8] && inLit)
 		++inStyle;
-		
+
 	XPLMTextureID actualGenInterface;
 
 	actualGenInterface = XPLMGetTexture(xplm_Tex_GeneralInterface);
@@ -362,7 +362,7 @@ void XPDrawElement(
 	inY1 -= ElementOffsetTable[inStyle][5];
 	inX2 += ElementOffsetTable[inStyle][6];
 	inY2 += ElementOffsetTable[inStyle][7];
-	
+
 	int tempWidth = inX2 - inX1;
 	int tempHeight = inY2 - inY1;
 
@@ -382,7 +382,7 @@ void XPDrawElement(
 
 	/// If the texture is scalable then call texture repeating function
 	/// otherwise just do normal texture draw.
-	
+
 	if (inStyle == xpElement_WindowDragBar)
 		gHackSliceX = 32;
 	if ((xScalable) || (yScalable))
@@ -417,14 +417,14 @@ void XPDrawTrack(
 {
 	if (((inX2 - inX1) > (inY2 - inY1)) && (inTrackStyle == xpTrack_ScrollBar))
 		inTrackStyle = xpTrack_Progress + 1;
-		
+
 	XPLMTextureID actualGenInterface = XPLMGetTexture(xplm_Tex_GeneralInterface);
 	XPLMBindTexture2d(actualGenInterface, 0);
 	XPLMSetGraphicsState(0,	1, 0, 0, 1, 0, 0);
 	glColor4f(1.0, 1.0, 1.0, gAlphaLevel);
 
 	int	isVertical, downBtnSize, downPageSize, thumbSize, upPageSize, upBtnSize;
-	
+
 	XPGetTrackMetrics(inX1, inY1, inX2, inY2, inMin, inMax, inValue, inTrackStyle,
 		&isVertical, &downBtnSize, &downPageSize, &thumbSize, &upPageSize, &upBtnSize);
 	int isRotated = isVertical != TBVertical[inTrackStyle];
@@ -439,7 +439,7 @@ void XPDrawTrack(
 	int	upBtnL, upBtnB, upBtnR, upBtnT;
 	int	thumbL, thumbB, thumbR, thumbT;
 	int	fillL, fillB, fillR, fillT;
-	
+
 	if (isVertical)
 	{
 		thumbL = fillL = downBtnL = upBtnL = trackL = inX1;
@@ -462,9 +462,9 @@ void XPDrawTrack(
 		thumbL = inX1 + downBtnSize + downPageSize;
 		thumbR = inX2 - upBtnSize - upPageSize;
 	}
-	
+
 	// Now we have to 'whack' all of the rectangles to deal with expansion factors...
-	if (isRotated) 
+	if (isRotated)
 	{
 		// FIX
 		trackT += TBTrackTable[inTrackStyle][4];
@@ -509,7 +509,7 @@ void XPDrawTrack(
 		thumbR += (inLit ? TBThumbLitTable[inTrackStyle][6] : TBThumbTable[inTrackStyle][6]);
 		thumbT += (inLit ? TBThumbLitTable[inTrackStyle][7] : TBThumbTable[inTrackStyle][7]);
 	}
-	
+
 	if (isVertical)
 	{
 		fillL += TBFillTable[inTrackStyle][8];
@@ -518,11 +518,11 @@ void XPDrawTrack(
 		fillB += TBFillTable[inTrackStyle][8];
 		fillT += TBFillTable[inTrackStyle][8];
 	}
-	
+
 	bool	hasFill = (TBFillTable[inTrackStyle][2] != 0) && (isVertical ? ((fillT - fillB) > TBFillTable[inTrackStyle][9]) : ((fillR - fillL) > TBFillTable[inTrackStyle][9]));
-	
+
 	if (isRotated)
-	{		
+	{
 		DrawTextureRepeatedRotated(trackL, trackB, trackR - trackL, trackT - trackB,
 				TBTrackTable[inTrackStyle][0], TBTrackTable[inTrackStyle][1], abs(TBTrackTable[inTrackStyle][2]), abs(TBTrackTable[inTrackStyle][3]), isVertical, !isVertical);
 
@@ -536,27 +536,27 @@ void XPDrawTrack(
 						(float) TBThumbLitTable[inTrackStyle][9] / 255.0,
 						(float) TBThumbLitTable[inTrackStyle][10] / 255.0,
 						gAlphaLevel);
-		
+
 		if (downBtnSize)
-			DrawTextureCenteredRotated(downBtnL, downBtnB, downBtnR - downBtnL, downBtnT - downBtnB, 
+			DrawTextureCenteredRotated(downBtnL, downBtnB, downBtnR - downBtnL, downBtnT - downBtnB,
 				TBPageDownTable[inTrackStyle][0], TBPageDownTable[inTrackStyle][1], TBPageDownTable[inTrackStyle][2], TBPageDownTable[inTrackStyle][3]);
 		if (upBtnSize)
-			DrawTextureCenteredRotated(upBtnL, upBtnB, upBtnR - upBtnL, upBtnT - upBtnB, 
+			DrawTextureCenteredRotated(upBtnL, upBtnB, upBtnR - upBtnL, upBtnT - upBtnB,
 				TBPageUpTable[inTrackStyle][0], TBPageUpTable[inTrackStyle][1], TBPageUpTable[inTrackStyle][2], TBPageUpTable[inTrackStyle][3]);
 		if (thumbSize)
 		{
 			if (inLit)
-				DrawTextureCenteredRotated(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB, 
+				DrawTextureCenteredRotated(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB,
 					TBThumbLitTable[inTrackStyle][0], TBThumbLitTable[inTrackStyle][1], TBThumbLitTable[inTrackStyle][2], TBThumbLitTable[inTrackStyle][3]);
 			else
-				DrawTextureCenteredRotated(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB, 
+				DrawTextureCenteredRotated(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB,
 					TBThumbTable[inTrackStyle][0], TBThumbTable[inTrackStyle][1], TBThumbTable[inTrackStyle][2], TBThumbTable[inTrackStyle][3]);
 		}
-		
+
 	} else {
 		DrawTextureRepeated(trackL, trackB, trackR - trackL, trackT - trackB,
 				TBTrackTable[inTrackStyle][0], TBTrackTable[inTrackStyle][1], abs(TBTrackTable[inTrackStyle][2]), abs(TBTrackTable[inTrackStyle][3]), !isVertical, isVertical);
-		
+
 		if (inLit)
 			glColor4f(	(float) TBThumbLitTable[inTrackStyle][8] / 255.0,
 						(float) TBThumbLitTable[inTrackStyle][9] / 255.0,
@@ -567,20 +567,20 @@ void XPDrawTrack(
 			DrawTextureRepeated(fillL, fillB, fillR - fillL, fillT - fillB,
 				TBFillTable[inTrackStyle][0], TBFillTable[inTrackStyle][1], abs(TBFillTable[inTrackStyle][2]), abs(TBFillTable[inTrackStyle][3]), !isVertical, isVertical);
 		}
-		
+
 		if (downBtnSize)
-			DrawTextureCentered(downBtnL, downBtnB, downBtnR - downBtnL, downBtnT - downBtnB, 
+			DrawTextureCentered(downBtnL, downBtnB, downBtnR - downBtnL, downBtnT - downBtnB,
 				TBPageDownTable[inTrackStyle][0], TBPageDownTable[inTrackStyle][1], TBPageDownTable[inTrackStyle][2], TBPageDownTable[inTrackStyle][3]);
 		if (upBtnSize)
-			DrawTextureCentered(upBtnL, upBtnB, upBtnR - upBtnL, upBtnT - upBtnB, 
+			DrawTextureCentered(upBtnL, upBtnB, upBtnR - upBtnL, upBtnT - upBtnB,
 				TBPageUpTable[inTrackStyle][0], TBPageUpTable[inTrackStyle][1], TBPageUpTable[inTrackStyle][2], TBPageUpTable[inTrackStyle][3]);
 		if (thumbSize)
 		{
 			if (inLit)
-				DrawTextureCentered(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB, 
+				DrawTextureCentered(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB,
 					TBThumbLitTable[inTrackStyle][0], TBThumbLitTable[inTrackStyle][1], TBThumbLitTable[inTrackStyle][2], TBThumbLitTable[inTrackStyle][3]);
 			else
-				DrawTextureCentered(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB, 
+				DrawTextureCentered(thumbL, thumbB, thumbR - thumbL, thumbT - thumbB,
 					TBThumbTable[inTrackStyle][0], TBThumbTable[inTrackStyle][1], TBThumbTable[inTrackStyle][2], TBThumbTable[inTrackStyle][3]);
 		}
 	}
@@ -591,11 +591,11 @@ void XPGetTrackDefaultDimensions(
 				int *			outWidth,
 				int *			outCanBeLit)
 {
-	if (outWidth) *outWidth = 
-		TBVertical[inStyle] ? 
+	if (outWidth) *outWidth =
+		TBVertical[inStyle] ?
 		(TBTrackTable[inStyle][2] - TBTrackTable[inStyle][4] - TBTrackTable[inStyle][6]) :
 		(TBTrackTable[inStyle][3] - TBTrackTable[inStyle][5] - TBTrackTable[inStyle][7]);
-	
+
 	if (outCanBeLit)
 		*outCanBeLit = (TBThumbTable[inStyle][2] != 0) ? 1 : 0;
 }
@@ -618,20 +618,20 @@ void XPGetTrackMetrics(
 {
 	int width = inX2 - inX1;
 	int height = inY2 - inY1;
-	
+
 	int	vertical = (height > width);
-	int thumbSize = TBVertical[inTrackStyle] ? 
-		(TBThumbTable[inTrackStyle][3] - TBThumbTable[inTrackStyle][5] - TBThumbTable[inTrackStyle][7]) : 
+	int thumbSize = TBVertical[inTrackStyle] ?
+		(TBThumbTable[inTrackStyle][3] - TBThumbTable[inTrackStyle][5] - TBThumbTable[inTrackStyle][7]) :
 		(TBThumbTable[inTrackStyle][2] - TBThumbTable[inTrackStyle][4] - TBThumbTable[inTrackStyle][6]);
-	int	upBtnSize = TBVertical[inTrackStyle] ? 
-		(TBPageUpTable[inTrackStyle][3] - TBPageUpTable[inTrackStyle][5] - TBPageUpTable[inTrackStyle][7]) : 
+	int	upBtnSize = TBVertical[inTrackStyle] ?
+		(TBPageUpTable[inTrackStyle][3] - TBPageUpTable[inTrackStyle][5] - TBPageUpTable[inTrackStyle][7]) :
 		(TBPageUpTable[inTrackStyle][2] - TBPageUpTable[inTrackStyle][4] - TBPageUpTable[inTrackStyle][6]);
-	int	downBtnSize = TBVertical[inTrackStyle] ? 
-		(TBPageDownTable[inTrackStyle][3] - TBPageDownTable[inTrackStyle][5] - TBPageDownTable[inTrackStyle][7]) : 
+	int	downBtnSize = TBVertical[inTrackStyle] ?
+		(TBPageDownTable[inTrackStyle][3] - TBPageDownTable[inTrackStyle][5] - TBPageDownTable[inTrackStyle][7]) :
 		(TBPageDownTable[inTrackStyle][2] - TBPageDownTable[inTrackStyle][4] - TBPageDownTable[inTrackStyle][6]);
-	
+
 	int	remainingTrack = (vertical ? height : width) - upBtnSize - downBtnSize - thumbSize;
-	
+
 	int rangeDif = inMax - inMin;
 	int thumbOffset = rangeDif ? (round((float) remainingTrack * float(inValue - inMin) / (float) rangeDif)) : 0;
 	int thumbDec = thumbSize / 2;
@@ -662,7 +662,7 @@ void DrawTextureCentered(
 {
 	int dx = (inWidth - inTextureWidth) / 2;
 	int dy = (inHeight - inTextureHeight) / 2;
-	DrawTextureStretched(inXOffset + dx, inYOffset + dy, inTextureWidth, inTextureHeight, inXTextureOffset, inYTextureOffset, inTextureWidth, inTextureHeight);	
+	DrawTextureStretched(inXOffset + dx, inYOffset + dy, inTextureWidth, inTextureHeight, inXTextureOffset, inYTextureOffset, inTextureWidth, inTextureHeight);
 }
 
 void DrawTextureCenteredRotated(
@@ -677,7 +677,7 @@ void DrawTextureCenteredRotated(
 {
 	int dx = (inWidth - inTextureHeight) / 2;
 	int dy = (inHeight - inTextureWidth) / 2;
-	DrawTextureStretchedRotated(inXOffset + dx, inYOffset + dy, inTextureHeight, inTextureWidth, inXTextureOffset, inYTextureOffset, inTextureWidth, inTextureHeight);	
+	DrawTextureStretchedRotated(inXOffset + dx, inYOffset + dy, inTextureHeight, inTextureWidth, inXTextureOffset, inYTextureOffset, inTextureWidth, inTextureHeight);
 }
 
 
@@ -757,7 +757,7 @@ void DrawTextureRepeated(
 		inXOffset += ((inWidth - inTextureWidth) / 2);
 		inWidth = inTextureWidth;
 	}
-	
+
 	if (!yScalable && (inHeight != inTextureHeight))
 	{
 		inYOffset += ((inHeight - inTextureHeight) / 2);
@@ -768,7 +768,7 @@ void DrawTextureRepeated(
 	// Here's the deal with the rounding: we need our vertical slices to be multiples of 2 for windows
 	// so that the pinstriping works.  Yes, we can be one pixel short, this is ok, windows should be
 	// a multiple of two anyway...
-	
+
 	int	xSliceSize =  gHackSliceX ? gHackSliceX : (inTextureWidth / 3); // & (~1); // No need to mess around horizontally!
 	int ySliceSize =  (inTextureHeight / 3) & (~1);
 	int xSliceCount = (xScalable && (inWidth != inTextureWidth)) ? (inWidth / xSliceSize) : 1;
@@ -781,12 +781,12 @@ void DrawTextureRepeated(
 	int texRightSlop = inTextureWidth - (xSliceSize * 3) - texLeftSlop;
 	int topSlop = (inHeight - (ySliceCount * ySliceSize) - bottomSlop) & (~1);
 	int texTopSlop = (inTextureHeight - (3 * ySliceSize) - texBottomSlop) & (~1);
-		
+
 	int	xDraw = inXOffset;
 	int yDraw = inYOffset;
 	int xTex = inXTextureOffset;
-	int yTex = inYTextureOffset;	
-	
+	int yTex = inYTextureOffset;
+
 	for (int y = 0; y < ySliceCount; ++y)
 	{
 		int thisYSliceSize = ySliceSize;
@@ -794,7 +794,7 @@ void DrawTextureRepeated(
 			thisYSliceSize += bottomSlop;
 		if (y == (ySliceCount-1))
 			thisYSliceSize += topSlop;
-		
+
 		for (int x = 0; x < xSliceCount; ++x)
 		{
 			int	thisXSliceSize = xSliceSize;
@@ -802,16 +802,16 @@ void DrawTextureRepeated(
 				thisXSliceSize += leftSlop;
 			if (x == (xSliceCount-1))
 				thisXSliceSize += rightSlop;
-			
+
 			DrawTextureStretched(xDraw, yDraw, thisXSliceSize, thisYSliceSize, xTex, yTex, thisXSliceSize, thisYSliceSize);
-			
+
 			xDraw += thisXSliceSize;
 			if (x == 0)
 				xTex += (xSliceSize+texLeftSlop);
 			if (x == (xSliceCount-2))
 				xTex += (xSliceSize + texRightSlop - rightSlop);
 		}
-		
+
 		xDraw = inXOffset;
 		yDraw += thisYSliceSize;
 		xTex = inXTextureOffset;
@@ -840,7 +840,7 @@ void DrawTextureRepeatedRotated(
 		inXOffset += ((inWidth - inTextureHeight) / 2);
 		inWidth = inTextureHeight;
 	}
-	
+
 	if (!xScalable && (inHeight != inTextureWidth))
 	{
 		inYOffset += ((inHeight - inTextureWidth) / 2);
@@ -863,12 +863,12 @@ void DrawTextureRepeatedRotated(
 	int texRightSlop = inTextureWidth - (ySliceSize * 3) - texLeftSlop;
 	int topSlop = inHeight - (ySliceCount * ySliceSize) - bottomSlop;
 	int texTopSlop = inTextureHeight - (3 * xSliceSize) - texBottomSlop;
-		
+
 	int	xDraw = inXOffset;
 	int yDraw = inYOffset;
 	int xTex = inXTextureOffset+inTextureWidth;
-	int yTex = inYTextureOffset;	
-	
+	int yTex = inYTextureOffset;
+
 	for (int y = 0; y < ySliceCount; ++y)
 	{
 		int thisYSliceSize = ySliceSize;
@@ -876,7 +876,7 @@ void DrawTextureRepeatedRotated(
 			thisYSliceSize += bottomSlop;
 		if (y == (ySliceCount-1))
 			thisYSliceSize += topSlop;
-		
+
 		for (int x = 0; x < xSliceCount; ++x)
 		{
 			int	thisXSliceSize = xSliceSize;
@@ -884,16 +884,16 @@ void DrawTextureRepeatedRotated(
 				thisXSliceSize += leftSlop;
 			if (x == (xSliceCount-1))
 				thisXSliceSize += rightSlop;
-			
+
 			DrawTextureStretchedRotated(xDraw, yDraw, thisXSliceSize, thisYSliceSize, xTex - thisYSliceSize, yTex, thisYSliceSize, thisXSliceSize);
-			
+
 			xDraw += thisXSliceSize;
 			if (x == 0)
 				yTex += (xSliceSize+texBottomSlop);
 			if (x == (xSliceCount-2))
 				yTex += (xSliceSize + texTopSlop - rightSlop);
 		}
-		
+
 		xDraw = inXOffset;
 		yDraw += thisYSliceSize;
 		yTex = inYTextureOffset;

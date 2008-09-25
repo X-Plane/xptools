@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,9 +52,9 @@
 				if (!WriteDegFile(buf, x, y))
 				{
 					fprintf(stderr,"Couldn't write file %s\n", buf);
-					x = 1000; 
+					x = 1000;
 					y = 1000;
-					
+
 				}
 			}
 		}
@@ -81,7 +81,7 @@ static int DoObsImport(const vector<const char *>& args)
 		if (!ok)
 			fprintf(stderr, "Could not import obstacles from %s\n", fname);
 		else
-			printf("Imported %s (%d obs)\n", fname, gFAAObs.size() - countl);				
+			printf("Imported %s (%d obs)\n", fname, gFAAObs.size() - countl);
 		if (!ok) return 1;
 	}
 	printf("Imported %d obstacles.\n", gFAAObs.size());
@@ -125,7 +125,7 @@ static int DoAptBulkExport(const vector<const char *>& args)
 				if (bounds.overlap(gApts[*iter].bounds))
 					aptCopy.push_back(gApts[*iter]);
 			}
-			
+
 			if (!aptCopy.empty())
 			{
 				char	path[1024];
@@ -139,7 +139,7 @@ static int DoAptBulkExport(const vector<const char *>& args)
 		}
 		if (gProgress)	gProgress(0, 1, "Indexing apt.dat", (double) (y+90) / 180.0);
 	}
-	if (gProgress)		gProgress(0, 1, "Indexing apt.dat", 1.0);	
+	if (gProgress)		gProgress(0, 1, "Indexing apt.dat", 1.0);
 	return 0;
 }
 
@@ -180,7 +180,7 @@ static int DoAptInfo(const vector<const char *>& args)
 			}
 		}
 	}
-	
+
 	#define PRINT_LIST(vec,cap)	\
 		printf(cap); \
 		for (set<int>::iterator bd = vec.begin(); bd != vec.end(); ++bd) { \
@@ -188,7 +188,7 @@ static int DoAptInfo(const vector<const char *>& args)
 				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(), \
 				gApts[*bd].bounds.p1.x, \
 				gApts[*bd].bounds.p1.y); }
-	
+
 	PRINT_LIST(new_bounded,"New airports with boundaries.\n");
 	PRINT_LIST(new_unbounded,"New airports with no boundaries.\n");
 	PRINT_LIST(empty_bounded,"Boundary-only airports.\n");
@@ -203,26 +203,26 @@ static int DoAptGenBounds(const vector<const char *>& args)
 	{
 		if(gProgress)
 		if ((n % 100) == 0)
-			gProgress(0, 1, "Processing airports", (float) n / (float) gApts.size());	
+			gProgress(0, 1, "Processing airports", (float) n / (float) gApts.size());
 		GenBoundary(&gApts[n]);
 		#if OPENGL_MAP
 			GenerateOGL(&gApts[n]);
 		#endif
 	}
 	if(gProgress)
-			gProgress(0, 1, "Processing airports", 1.0);	
+			gProgress(0, 1, "Processing airports", 1.0);
 	return 0;
 }
 
 static int DoAptFilter(const vector<const char *>& args)
 {
 	if (gApts.empty()) return 0;
-	
+
 	int wv = atoi(args[0]);
 	int wb = strcmp(args[1],"yes")==0;
 	if(gVerbose) printf("Want version: %d.  Want boundaries: %s.\n", wv, wb ? "yes" : "no");
 	if(gVerbose) printf("Before filter: %d airports.\n", gApts.size());
-	
+
 	vector<int>	keep(gApts.size());
 	int keep_ctr = 0;
 
@@ -230,7 +230,7 @@ static int DoAptFilter(const vector<const char *>& args)
 	{
 		if(gProgress)
 		if ((n % 100) == 0)
-			gProgress(0, 2, "Filtering airports", (float) n / (float) gApts.size());		
+			gProgress(0, 2, "Filtering airports", (float) n / (float) gApts.size());
 
 		int v = (gApts[n].taxiways.empty()) ? 810 : 850;
 		int b = (gApts[n].boundaries.empty()) ? 0 : 1;
@@ -246,16 +246,16 @@ static int DoAptFilter(const vector<const char *>& args)
 	}
 	if(gProgress)
 		gProgress(0, 2, "Filtering airports", 1.0);
-	
+
 	AptVector keepers(keep_ctr);
 	int m = 0;
 	for(int n = 0; n < gApts.size(); ++n)
 	{
 		if(gProgress)
 		if ((n % 100) == 0)
-			gProgress(1, 2, "Deleting airports", (float) n / (float) gApts.size());		
+			gProgress(1, 2, "Deleting airports", (float) n / (float) gApts.size());
 
-	
+
 		if(keep[n])
 		{
 			swap(gApts[n], keepers[m]);
@@ -263,14 +263,14 @@ static int DoAptFilter(const vector<const char *>& args)
 		}
 	}
 	swap(gApts,keepers);
-	
+
 	gAptIndex.clear();
 	IndexAirports(gApts,gAptIndex);
 
 	if(gProgress)
 		gProgress(1, 2, "Deleting airports", 1.0);
-	
-	
+
+
 	if(gVerbose) printf("After filter: %d airports.\n", gApts.size());
 	return 0;
 }
@@ -303,7 +303,7 @@ static int DoAptTest(const vector<const char *>& args)
 //				gApts[a].icao.c_str(), gApts[a].name.c_str());
 			++ok;
 		} catch (const char * msg) {
-			if (gVerbose) 
+			if (gVerbose)
 				printf("Assertion failure stopped airport: %s\n", msg);
 			++bad;
 			bad_idx.insert(a);
@@ -312,7 +312,7 @@ static int DoAptTest(const vector<const char *>& args)
 					gApts[a].icao.c_str(), gApts[a].name.c_str());
 
 		} catch (exception& e) {
-			if (gVerbose) 
+			if (gVerbose)
 				printf("Exception stopped airport: %s\n", e.what());
 			++bad;
 			bad_idx.insert(a);
@@ -320,9 +320,9 @@ static int DoAptTest(const vector<const char *>& args)
 				printf("There was a problem with the airport '%s' %s\n",
 					gApts[a].icao.c_str(), gApts[a].name.c_str());
 
-		
+
 		} catch (...) {
-			if (gVerbose) 
+			if (gVerbose)
 				printf("Unknown Exception stopped airport.\n");
 			++bad;
 			bad_idx.insert(a);
@@ -359,7 +359,7 @@ static int DoShowObjRange(const vector<const char *>& args)
 		printf("%30s %7d %7d\n",
 			FetchTokenString(i->first),
 			(int) mins[i->first], (int) maxs[i->first]);
-	}	
+	}
 	printf("Processed %d obs.\n", num);
 	return 0;
 }

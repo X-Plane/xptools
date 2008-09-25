@@ -41,7 +41,7 @@ static int my_wait( int *status );
  *
  * Each word must be an individual element in a jam variable value.
  *
- * In $(JAMSHELL), % expands to the command string and ! expands to 
+ * In $(JAMSHELL), % expands to the command string and ! expands to
  * the slot number (starting at 1) for multiprocess (-j) invocations.
  * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
  * argument.
@@ -88,10 +88,10 @@ set_is_win95( void )
   os_info.dwOSVersionInfoSize = sizeof(os_info);
   os_info.dwPlatformId        = VER_PLATFORM_WIN32_WINDOWS;
   GetVersionEx( &os_info );
-  
+
   is_win95         = (os_info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
   is_win95_defined = 1;
-  
+
   /* now, test wether we're running Windows 3.51                */
   /* this is later used to limit the system call command length */
   if (os_info.dwPlatformId ==  VER_PLATFORM_WIN32_NT)
@@ -102,7 +102,7 @@ int maxline()
 {
     if (!is_win95_defined)
         set_is_win95();
-    
+
     /* Set the maximum command line length according to the OS */
     return is_nt_351 ? 996
         : is_win95 ? 1023
@@ -120,25 +120,25 @@ string_to_args( const char*  string, int*  pcount )
   char** arg;
   char** args;
 
-  *pcount = 0;  
+  *pcount = 0;
 
-  /* do not copy trailing newlines, if any */  
+  /* do not copy trailing newlines, if any */
   while ( total > 0 )
   {
       if ( !isspace( string[total - 1] ) )
           break;
       --total;
   }
-  
+
   /* first of all, copy the input string */
   line    = (char*)malloc( total+2 );
   if (!line)
     return 0;
-    
+
   memcpy( line+1, string, total );
   line[0]       = 0;
   line[total+1] = 0;
-  
+
   in_quote = 0;
   for ( p = line+1; p[0]; p++ )
   {
@@ -147,22 +147,22 @@ string_to_args( const char*  string, int*  pcount )
       case '"':
         in_quote = !in_quote;
         break;
-        
+
       case ' ':
       case '\t':
         if (!in_quote)
           p[0]    = 0;
-        
+
       default:
         ;
     }
   }
-  
+
   /* now count the arguments.. */
   for ( p = line; p < line+total+1; p++ )
     if ( !p[0] && p[1] )
       num_args++;
-      
+
   /* allocate the args array */
   /* dwa -- did you really mean to allocate only 2 additional bytes? */
 #if 0 /* was like this */
@@ -174,7 +174,7 @@ string_to_args( const char*  string, int*  pcount )
     free( line );
     return 0;
   }
-  
+
   arg = args+1;
   for ( p = line; p < line+total+1; p++ )
     if ( !p[0] && p[1] )
@@ -218,11 +218,11 @@ process_del( char*  command )
     /* skip leading spaces */
     while ( *p && isspace(*p) )
       p++;
-      
+
     /* exit if we encounter an end of string */
     if (!*p)
       return 0;
-      
+
     /* ignore toggles/flags */
     while (*p == '/')
     {
@@ -233,12 +233,12 @@ process_del( char*  command )
           ++p;
     }
 
-    
+
     {
       int  in_quote = 0;
       int  wildcard = 0;
       int  go_on    = 1;
-      
+
       q = p;
       while (go_on)
       {
@@ -247,18 +247,18 @@ process_del( char*  command )
           case '"':
             in_quote = !in_quote;
             break;
-          
+
           case '?':
           case '*':
             if (!in_quote)
               wildcard = 1;
             break;
-            
+
           case '\0':
             if (in_quote)
               return 1;
             /* fall-through */
-              
+
           case ' ':
           case '\t':
             if (!in_quote)
@@ -266,31 +266,31 @@ process_del( char*  command )
               int    len = p - q;
               int    result;
               char*  line;
-              
+
               /* q..p-1 contains the delete argument */
               if ( len <= 0 )
                 return 1;
-  
+
               line = (char*)malloc( len+4+1 );
               if (!line)
                 return 1;
-                
+
               strncpy( line, "del ", 4 );
               strncpy( line+4, q, len );
               line[len+4] = '\0';
-              
+
               if ( wildcard )
                 result = system( line );
               else
                 result = !DeleteFile( line+4 );
-  
+
               free( line );
               if (result)
                 return 1;
-                
+
               go_on = 0;
             }
-            
+
           default:
             ;
         }
@@ -321,7 +321,7 @@ onintr( int disp )
 int use_bat_file(char* command)
 {
     char *p = command;
-    
+
     char inquote = 0;
 
     p += strspn( p, " \t" );
@@ -333,7 +333,7 @@ int use_bat_file(char* command)
         if ( *q == '"' || *q == ' ' )
             return 1;
     }
-        
+
     /* Look for newlines and unquoted i/o redirection */
     do
     {
@@ -351,7 +351,7 @@ int use_bat_file(char* command)
             if (*p)
                 return 1;
             break;
-            
+
         case '"':
         case '\'':
             if (p > command && p[-1] != '\\')
@@ -361,10 +361,10 @@ int use_bat_file(char* command)
                 else if (inquote == 0)
                     inquote = *p;
             }
-                
+
             ++p;
             break;
-            
+
         case '<':
         case '>':
         case '|':
@@ -375,7 +375,7 @@ int use_bat_file(char* command)
         }
     }
     while (*p);
-    
+
     return p - command >= MAXLINE;
 }
 #endif
@@ -417,7 +417,7 @@ void execnt_unit_test()
         assert( use_bat_file( long_command ) );
         free( long_command );
     }
-#endif 
+#endif
 }
 
 // SVA - handle temp dirs with spaces in the path
@@ -453,7 +453,7 @@ static const char *getTempDir(void)
  */
 
 void
-execcmd( 
+execcmd(
 	char *string,
 	void (*func)( void *closure, int status ),
 	void *closure,
@@ -477,7 +477,7 @@ execcmd(
 
     if ( !is_win95_defined )
         set_is_win95();
-          
+
     /* Find a slot in the running commands table for this one. */
     if ( is_win95 )
     {
@@ -495,21 +495,21 @@ execcmd(
         printf( "no slots for child!\n" );
         exit( EXITBAD );
     }
-  
+
     if( !cmdtab[ slot ].tempfile )
     {
         const char *tempdir;
         DWORD procID;
 
         tempdir = getTempDir();
-  
+
         // SVA - allocate 64 other just to be safe
         cmdtab[ slot ].tempfile = malloc( strlen( tempdir ) + 64 );
-  
+
         procID = GetCurrentProcessId();
-  
-        sprintf( cmdtab[ slot ].tempfile, "%s\\jam%d-%02d.bat", 
-                 tempdir, procID, slot );		
+
+        sprintf( cmdtab[ slot ].tempfile, "%s\\jam%d-%02d.bat",
+                 tempdir, procID, slot );
     }
 
     /* Trim leading, ending white space */
@@ -534,7 +534,7 @@ execcmd(
         fclose( f );
 
         string = cmdtab[ slot ].tempfile;
-        
+
         if( DEBUG_EXECCMD )
         {
             if (shell)
@@ -606,11 +606,11 @@ execcmd(
                 "del", "erase", "copy", "mkdir", "rmdir", "cls", "dir",
                 "ren", "rename", "move", 0
             };
-          
+
         const char**  keyword;
         int           len, spawn = 1;
         int           result;
-          
+
         for ( keyword = hard_coded; keyword[0]; keyword++ )
         {
             len = strlen( keyword[0] );
@@ -628,12 +628,12 @@ execcmd(
                 break;
             }
         }
-          
+
         if (spawn)
         {
             char**  args;
             int     num_args;
-            
+
             /* convert the string into an array of arguments */
             /* we need to take care of double quotes !!      */
             args = string_to_args( string, &num_args );
@@ -649,7 +649,7 @@ execcmd(
                     arg++;
                 }
                 fprintf( stderr, "\n" );
-#endif              
+#endif
                 result = spawnvp( P_WAIT, args[0], args );
                 free_args( args );
             }
@@ -691,7 +691,7 @@ execcmd(
     while( cmdsrunning >= MAXJOBS || cmdsrunning >= globs.jobs )
         if( !execwait() )
             break;
-    
+
     if (argv != argv_static)
     {
         free_args(argv);
@@ -716,9 +716,9 @@ execwait()
 
         if ( is_win95 )
           return 0;
-          
+
 	/* Pick up process pid and status */
-    
+
 	while( ( w = wait( &status ) ) == -1 && errno == EINTR )
 		;
 
@@ -821,7 +821,7 @@ my_wait( int *status )
 FAILED:
 	errno = GetLastError();
 	return -1;
-    
+
 }
 
 # endif /* !__BORLANDC__ */

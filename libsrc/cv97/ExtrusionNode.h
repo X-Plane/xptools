@@ -34,7 +34,7 @@ public:
 	////////////////////////////////////////////////
 	//	BeginCap
 	////////////////////////////////////////////////
-	
+
 	SFBool *getBeginCapField();
 
 	void setBeginCap(bool value);
@@ -46,7 +46,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getEndCapField();
-	
+
 	void setEndCap(bool value);
 	void setEndCap(int value);
 	bool getEndCap();
@@ -56,7 +56,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getCCWField();
-	
+
 	void setCCW(bool value);
 	void setCCW(int value);
 	bool getCCW();
@@ -66,7 +66,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getConvexField();
-	
+
 	void setConvex(bool value);
 	void setConvex(int value);
 	bool getConvex();
@@ -76,7 +76,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getCreaseAngleField();
-	
+
 	void setCreaseAngle(float value);
 	float getCreaseAngle();
 
@@ -85,7 +85,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getSolidField();
-	
+
 	void setSolid(bool value);
 	void setSolid(int value);
 	bool getSolid();
@@ -144,7 +144,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

@@ -10,37 +10,37 @@
 
 #include "MFInt32.h"
 
-MFInt32::MFInt32() 
+MFInt32::MFInt32()
 {
 	setType(fieldTypeMFInt32);
 	InitializeJavaIDs();
 }
 
-void MFInt32::InitializeJavaIDs() 
+void MFInt32::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void MFInt32::addValue(int value) 
+void MFInt32::addValue(int value)
 {
 	SFInt32 *sfvalue = new SFInt32(value);
 	add(sfvalue);
 }
 
-void MFInt32::addValue(SFInt32 *sfvalue) 
+void MFInt32::addValue(SFInt32 *sfvalue)
 {
 	add(sfvalue);
 }
 
-void MFInt32::insertValue(int index, int value) 
+void MFInt32::insertValue(int index, int value)
 {
 	SFInt32 *sfvalue = new SFInt32(value);
 	insert(sfvalue, index);
 }
 
-int MFInt32::get1Value(int index) 
+int MFInt32::get1Value(int index)
 {
 	SFInt32 *sfvalue = (SFInt32 *)getObject(index);
 	if (sfvalue)
@@ -49,7 +49,7 @@ int MFInt32::get1Value(int index)
 		return 0;
 }
 
-void MFInt32::set1Value(int index, int value) 
+void MFInt32::set1Value(int index, int value)
 {
 	SFInt32 *sfvalue = (SFInt32 *)getObject(index);
 	if (sfvalue)
@@ -84,12 +84,12 @@ void MFInt32::setValue(int size, int values[])
 //	Output
 ////////////////////////////////////////////////
 
-void MFInt32::outputContext(ostream& printStream, char *indentString) 
+void MFInt32::outputContext(ostream& printStream, char *indentString)
 {
 	for (int n=0; n<getSize(); n++) {
 		if (n < getSize()-1)
 			printStream << indentString << get1Value(n) << "," << endl;
-		else	
+		else
 			printStream << indentString << get1Value(n) << endl;
 	}
 }
@@ -211,7 +211,7 @@ jobject MFInt32::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(fieldObject, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-	
+
 	int size = getSize();
 	for (int n=0; n<size; n++) {
 		jint value = get1Value(n);
@@ -252,7 +252,7 @@ void MFInt32::setValue(jobject field, int bConstField) {
 void MFInt32::getValue(jobject field, int bConstField) {
 }
 
-#endif 
+#endif
 
 
 

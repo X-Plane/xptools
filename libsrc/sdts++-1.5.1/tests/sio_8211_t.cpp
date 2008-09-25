@@ -116,7 +116,7 @@ printDirectory(ostream& ostr, sio_8211Directory const& dir)
       ostr << "\t\tEntry:\n";
       ostr << "\t\t\tField Tag: '" << (*i).getTag() << "'\n";
       ostr << "\t\t\tField Length: " << (*i).getFieldLength() << "\n";
-      ostr << "\t\t\tField Position: " << (*i).getPosition() << "\n";         
+      ostr << "\t\t\tField Position: " << (*i).getPosition() << "\n";
     }
 
 } // printDirectory
@@ -155,7 +155,7 @@ showDDRField
 {
 public:
 
-  showDDRField( ostream& os, sio_8211DDRLeader ddrl ) 
+  showDDRField( ostream& os, sio_8211DDRLeader ddrl )
     : _os( os ), _leader( ddrl ) {}
 
   void operator()( sio_8211DirEntry const & de )
@@ -164,7 +164,7 @@ public:
         {
           printField( _os, *(de.getField()) );
         }
-      else                      // DDR field format field 
+      else                      // DDR field format field
         {
           sio_8211DDRField ddf( _leader, *(de.getField()) );
           printDDRField( _os, ddf );
@@ -189,7 +189,7 @@ printDDR(ostream& ostr, sio_8211DDR const& ddr)
 
   sio_8211Leader const& leader = ddr.getLeader();
 
-  sio_8211DDRLeader const* ddr_leader = 
+  sio_8211DDRLeader const* ddr_leader =
     dynamic_cast<sio_8211DDRLeader const*>(&leader);
   printDDRLeader(ostr,*ddr_leader);
 

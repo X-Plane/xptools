@@ -10,45 +10,45 @@
 
 #include "SFInt32.h"
 
-SFInt32::SFInt32() 
+SFInt32::SFInt32()
 {
 	setType(fieldTypeSFInt32);
 	setValue(0);
 	InitializeJavaIDs();
 }
 
-SFInt32::SFInt32(int value) 
+SFInt32::SFInt32(int value)
 {
 	setType(fieldTypeSFInt32);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFInt32::SFInt32(SFInt32 *value) 
+SFInt32::SFInt32(SFInt32 *value)
 {
 	setType(fieldTypeSFInt32);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFInt32::InitializeJavaIDs() 
+void SFInt32::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-void SFInt32::setValue(int value) 
+void SFInt32::setValue(int value)
 {
 	mValue = value;
 }
 
-void SFInt32::setValue(SFInt32 *value) 
+void SFInt32::setValue(SFInt32 *value)
 {
 	mValue = value->getValue();
 }
 
-int SFInt32::getValue() 
+int SFInt32::getValue()
 {
 	return mValue;
 }
@@ -57,12 +57,12 @@ int SFInt32::getValue()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFInt32 &value) 
+ostream& operator<<(ostream &s, SFInt32 &value)
 {
 	return s << value.getValue();
 }
 
-ostream& operator<<(ostream &s, SFInt32 *value) 
+ostream& operator<<(ostream &s, SFInt32 *value)
 {
 	return s << value->getValue();
 }
@@ -71,14 +71,14 @@ ostream& operator<<(ostream &s, SFInt32 *value)
 //	String
 ////////////////////////////////////////////////
 
-void SFInt32::setValue(char *value) 
+void SFInt32::setValue(char *value)
 {
 	if (!value)
 		return;
 	setValue(atoi(value));
 }
 
-char *SFInt32::getValue(char *buffer, int bufferLen) 
+char *SFInt32::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%d", getValue());
 	return buffer;
@@ -88,7 +88,7 @@ char *SFInt32::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFInt32::equals(Field *field) 
+bool SFInt32::equals(Field *field)
 {
 	SFInt32 *intField = (SFInt32 *)field;
 	if (getValue() == intField->getValue())
@@ -178,7 +178,7 @@ jobject SFInt32::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

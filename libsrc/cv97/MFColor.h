@@ -31,9 +31,9 @@ public:
 	void insertValue(int index, float r, float g, float b);
 	void insertValue(int index, float value[]);
 	void insertValue(int index, SFColor *color);
-	
+
 	void get1Value(int index, float value[]);
-	
+
 	void set1Value(int index, float value[]);
 	void set1Value(int index, float r, float g, float b);
 

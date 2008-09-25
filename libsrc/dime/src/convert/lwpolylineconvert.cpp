@@ -32,8 +32,8 @@
 #include <dime/util/Linear.h>
 #include <dime/State.h>
 
-void 
-convert_lwpolyline(const dimeEntity *entity, const dimeState *state, 
+void
+convert_lwpolyline(const dimeEntity *entity, const dimeState *state,
 		   dxfLayerData *layerData, dxfConverter *)
 {
   dimeLWPolyline *pline = (dimeLWPolyline*)entity;
@@ -43,7 +43,7 @@ convert_lwpolyline(const dimeEntity *entity, const dimeState *state,
 
   dimeVec3f e = pline->getExtrusionDir();
   dxfdouble thickness = pline->getThickness();
-  
+
   if (e != dimeVec3f(0,0,1)) {
     dimeMatrix m;
     dimeEntity::generateUCS(e, m);
@@ -53,17 +53,17 @@ convert_lwpolyline(const dimeEntity *entity, const dimeState *state,
 
   float elev = pline->getElevation();
   if (!dime_finite(elev)) elev = 0.0f;
-  
+
   int n = pline->getNumVertices();
   if (n <= 0) return;
-  
+
   dxfdouble constantWidth = pline->getConstantWidth();
   const dxfdouble *x = pline->getXCoords();
   const dxfdouble *y = pline->getYCoords();
   const dxfdouble *sw = pline->getStartingWidths();
   const dxfdouble *ew = pline->getEndWidths();
   dimeVec3f v0, v1;
-  
+
 #define SET_SEGMENT(s, i0, i1) \
   s.set(dimeVec3f(x[i0], y[i0], elev), \
         dimeVec3f(x[i1], y[i1], elev), \
@@ -79,21 +79,21 @@ convert_lwpolyline(const dimeEntity *entity, const dimeState *state,
 
   for (int i = 0; i < stop; i++) {
     next = (i+1) % n;
-    
+
     if (i == 0) {
       SET_SEGMENT(segment, i, next);
       if (closed) {
 	SET_SEGMENT(prevseg, n-1, 0);
       }
     }
-    
+
     next2 = (i+2) % n;
     SET_SEGMENT(nextseg, next, next2);
-    
-    segment.convert(i > 0 || closed ? &prevseg : NULL, 
-		    i < (stop-1) ? &nextseg : NULL, 
+
+    segment.convert(i > 0 || closed ? &prevseg : NULL,
+		    i < (stop-1) ? &nextseg : NULL,
 		    layerData, &matrix);
-    
+
     prevseg = segment;
     segment = nextseg;
   }

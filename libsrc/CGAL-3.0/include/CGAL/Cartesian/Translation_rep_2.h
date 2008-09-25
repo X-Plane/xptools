@@ -53,9 +53,9 @@ public:
   {}
 
   Point_2     transform(const Point_2 &p) const
-  { 
+  {
     typename R::Construct_translated_point_2 translated_point;
-    return translated_point(p, translationvector_); 
+    return translated_point(p, translationvector_);
   }
 
   Vector_2    transform(const Vector_2 &v) const { return v; }

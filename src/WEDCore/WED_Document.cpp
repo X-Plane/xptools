@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,7 +38,7 @@
 #include "GUI_Prefs.h"
 #include "PlatformUtils.h"
 #include "WED_TexMgr.h"
-// TODO: 
+// TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
 
@@ -48,7 +48,7 @@ static set<WED_Document *> sDocuments;
 static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
-								const string& 		package, 
+								const string& 		package,
 								double				inBounds[4]) :
 //	mProperties(mDB.get()),
 	mPackage(package),
@@ -60,13 +60,13 @@ WED_Document::WED_Document(
 	mTexMgr = new WED_TexMgr(package);
 	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
-	
+
 	string buf;
-	
+
 	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
 	if (res == NULL)
 		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf.c_str());
-	
+
 	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
 	GUI_UnloadResource(res);
 
@@ -74,8 +74,8 @@ WED_Document::WED_Document(
 	mBounds[0] = inBounds[0];
 	mBounds[1] = inBounds[1];
 	mBounds[2] = inBounds[2];
-	mBounds[3] = inBounds[3];	
-	
+	mBounds[3] = inBounds[3];
+
 	Revert();
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
@@ -124,14 +124,14 @@ void	WED_Document::Save(void)
 
 	mArchive.SaveToDB(mDB.get());
 	ENUM_write(mDB.get());
-	
+
 	int err;
 	{
 		sql_command	clear_table(mDB.get(),"DELETE FROM WED_doc_prefs WHERE 1;",NULL);
 		err = clear_table.simple_exec();
 		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
 	}
-	
+
 	{
 		sql_command add_item(mDB.get(),"INSERT INTO WED_doc_prefs VALUES(@k,@v);","@k,@v");
 		for(map<string,string>::iterator i = mDocPrefs.begin(); i != mDocPrefs.end(); ++i)
@@ -140,23 +140,23 @@ void	WED_Document::Save(void)
 			r.a = i->first;
 			r.b = i->second;
 			err = add_item.simple_exec(r);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);			
+			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
 		}
 	}
-	
+
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 }
 
 void	WED_Document::Revert(void)
 {
 	mUndo.StartCommand("Revert from Saved.");
-	
+
 	enum_map_t	mapping;
 	ENUM_read(mDB.get(), mapping);
 	mArchive.ClearAll();
 	mArchive.LoadFromDB(mDB.get(), mapping);
 	mUndo.CommitCommand();
-	
+
 	mDocPrefs.clear();
 	int err;
 	{
@@ -169,11 +169,11 @@ void	WED_Document::Revert(void)
 			mDocPrefs[p.a] = p.b;
 			sGlobalPrefs[p.a] = p.b;
 		}
-		if (err != SQLITE_DONE)	
+		if (err != SQLITE_DONE)
 			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
 	}
-	
-	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));	
+
+	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
 }
 
 bool	WED_Document::IsDirty(void)
@@ -186,7 +186,7 @@ bool	WED_Document::TryClose(void)
 	if (IsDirty())
 	{
 		string msg = string("Save changes to scenery package ") + mPackage + string(" before closing?");
-	
+
 		switch(DoSaveDiscardDialog("Save changes before closing...",msg.c_str())) {
 		case close_Save:	Save();	break;
 		case close_Discard:			break;
@@ -202,13 +202,13 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 {
 	const char * sp = in_path;
 	const char * ep;
-	
+
 	if (strcmp(in_path,"librarian")==0) return (ILibrarian *) this;
 	if (strcmp(in_path,"texmgr")==0) return (ITexMgr *) mTexMgr;
 	if (strcmp(in_path,"docprefs")==0) return (IDocPrefs *) this;
-	
+
 	IBase * who = mArchive.Fetch(1);
-	
+
 	while(*sp != 0)
 	{
 		if(*sp == '[')
@@ -218,28 +218,28 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 			while(*sp != 0 && *sp != ']') ++sp;
 			if (*sp == 0) return NULL;
 			++sp;
-			
+
 			IArray * arr = SAFE_CAST(IArray, who);
 			if(arr == NULL) return NULL;
 			who = arr->Array_GetNth(idx);
 			if (who == NULL) return NULL;
-			
-			if (*sp == '.') ++sp;			
+
+			if (*sp == '.') ++sp;
 		}
 		else
 		{
 			ep = sp;
-			while (*ep != 0 && *ep != '[' && *ep != '.') ++ep;			
+			while (*ep != 0 && *ep != '[' && *ep != '.') ++ep;
 			string comp(sp,ep);
-			
+
 			IDirectory * dir = SAFE_CAST(IDirectory,who);
 			if (dir == NULL) return NULL;
 			who = dir->Directory_Find(comp.c_str());
 			if (who == NULL) return NULL;
 			sp = ep;
-			
+
 			if (*sp == '.') ++sp;
-		}		
+		}
 	}
 	return who;
 }
@@ -281,7 +281,7 @@ int			WED_Document::ReadIntPref(const char * in_key, int in_default)
 {
 	string key(in_key);
 	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end()) 
+	if (i == mDocPrefs.end())
 	{
 		i = sGlobalPrefs.find(key);
 		if (i == sGlobalPrefs.end())
@@ -303,7 +303,7 @@ double			WED_Document::ReadDoublePref(const char * in_key, double in_default)
 {
 	string key(in_key);
 	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end()) 
+	if (i == mDocPrefs.end())
 	{
 		i = sGlobalPrefs.find(key);
 		if (i == sGlobalPrefs.end())
@@ -327,7 +327,7 @@ string			WED_Document::ReadStringPref(const char * in_key, const string& in_defa
 {
 	string key(in_key);
 	map<string,string>::iterator i = mDocPrefs.find(key);
-	if (i == mDocPrefs.end()) 
+	if (i == mDocPrefs.end())
 	{
 		i = sGlobalPrefs.find(key);
 		if (i == sGlobalPrefs.end())
@@ -356,6 +356,6 @@ void	WED_Document::ReadGlobalPrefs(void)
 
 void	WED_Document::WriteGlobalPrefs(void)
 {
-	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)	
+	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }

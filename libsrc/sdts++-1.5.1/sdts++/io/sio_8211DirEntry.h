@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -40,7 +40,7 @@ class sio_8211DirEntry
       /**
          You can't really construct a valid DirEntry without a
          leader. This ctor allows sio_8211DirEntry to be stored in an
-         STL container.  
+         STL container.
       */
       sio_8211DirEntry();
 
@@ -84,7 +84,7 @@ class sio_8211DirEntry
 
       ///
       string const&  getTag() const;
-      
+
       ///
       ostream& streamInsert(ostream& ostr) const;
 

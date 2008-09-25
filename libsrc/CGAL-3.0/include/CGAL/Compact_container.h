@@ -636,7 +636,7 @@ namespace CGALi {
     typedef typename DSC::difference_type             difference_type;
     typedef std::bidirectional_iterator_tag           iterator_category;
 
-    CC_iterator() : p(NULL) {}   // VC7.0 needs the initialisation with NULL 
+    CC_iterator() : p(NULL) {}   // VC7.0 needs the initialisation with NULL
 
     // Either a harmless copy-ctor,
     // or a conversion from iterator to const_iterator.
@@ -658,7 +658,7 @@ namespace CGALi {
     friend class Compact_container<value_type, typename DSC::allocator_type>;
 
   public:
-    
+
     // For the construction from NULL
     // The construction  from NULL is a non-documented feature
     // which might disappear in the future.
@@ -668,10 +668,10 @@ namespace CGALi {
     {
       CGAL_assertion( n == NULL);
     }
-  
-  private:   
-  
-    // For begin() 
+
+  private:
+
+    // For begin()
     CC_iterator(pointer ptr, int, int)
     : p(ptr)
     {
@@ -791,18 +791,18 @@ namespace CGALi {
   inline
   bool operator==(const CC_iterator<DSC, Ptr, Ref> &rhs,
 		  CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs == NULL; 
+    return &*rhs == NULL;
   }
 
   template < class DSC, class Val >
   inline
   bool operator==(const CC_iterator<DSC, Val*, Val&> &rhs,
 		  CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs == NULL; 
+    return &*rhs == NULL;
   }
 
 
@@ -810,40 +810,40 @@ namespace CGALi {
   inline
   bool operator==(const CC_iterator<DSC, const Val*, const Val&> &rhs,
 		  CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs == NULL; 
+    return &*rhs == NULL;
   }
 
-  
+
   template < class DSC, class Ptr, class Ref >
   inline
   bool operator!=(const CC_iterator<DSC, Ptr, Ref> &rhs,
 		  CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs != NULL; 
+    return &*rhs != NULL;
   }
 
   template < class DSC, class Val >
   inline
   bool operator!=(const CC_iterator<DSC, Val*, Val&> &rhs,
                   CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs != NULL; 
+    return &*rhs != NULL;
   }
 
   template < class DSC, class Val >
   inline
   bool operator!=(const CC_iterator<DSC, const Val*, const Val&> &rhs,
                   CGAL_NULL_TYPE CGAL_assertion_code(n))
-  { 
+  {
     CGAL_assertion( n == NULL);
-    return &*rhs != NULL; 
+    return &*rhs != NULL;
   }
 
-  
+
 
 
 #else

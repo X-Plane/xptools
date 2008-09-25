@@ -28,7 +28,7 @@
 #include <CGAL/Tree_base.h>
 
 // A d-dimensional Segment Tree or a multilayer tree consisting of a Segment
-// and other trees that are derived public Tree_base<C_Data, C_Window, 
+// and other trees that are derived public Tree_base<C_Data, C_Window,
 // C_Interface> can be constructed within this class.
 // C_Data: container class which contains the d-dim data the tree holds.
 // C_Window: Query window -- a d-dimensional interval
@@ -54,7 +54,7 @@ struct Segment_tree_node: public Tree_node_base
   Tree_base<C_Data, C_Window> *sublayer;
 public:
   friend class Segment_tree_d< C_Data,  C_Window,  C_Interface>;
-  
+
   Segment_tree_node()
     : Tree_node_base(), sublayer(0)
   {}
@@ -70,7 +70,7 @@ public:
 		    const Key& p_right_key)
     : Tree_node_base(p_left,p_right), left_key(p_left_key), right_key(p_right_key), sublayer(0)
   {}
-  
+
   ~Segment_tree_node(){
     objects.clear();
     if (sublayer != 0)//(tree_base_type *)
@@ -90,17 +90,17 @@ private:
 public:
   typedef Tree_base<C_Data, C_Window> tbt;
 protected:
-  Tree_base<C_Data, C_Window> *sublayer_tree; 
+  Tree_base<C_Data, C_Window> *sublayer_tree;
 
   // type of a vertex
   // struct Segment_tree_node;
-  
+
   friend class Segment_tree_node<C_Data,C_Window,C_Interface>;
   typedef Segment_tree_node<C_Data,C_Window,C_Interface> Segment_tree_node_t;
   typedef Segment_tree_node<C_Data,C_Window,C_Interface> *link_type;
-  
+
   static std::allocator<Segment_tree_node_t> alloc;
-  
+
   C_Interface interface;
   bool is_built;
 
@@ -108,13 +108,13 @@ protected:
   bool is_less_equal(const Key& x, const Key&  y) const
   {
     return (!interface.comp(y,x));
-  }   
-  
-  static link_type left(link_type x) { 
+  }
+
+  static link_type left(link_type x) {
     return static_cast<link_type>(x->left_link);
   }
   static link_type right(link_type x) {
-    return static_cast<link_type>(x->right_link); 
+    return static_cast<link_type>(x->right_link);
    }
   static link_type parent(link_type x) {
     return static_cast<link_type>( x->parent_link);
@@ -126,14 +126,14 @@ protected:
   link_type leftmost(){return left(header);}
   link_type root() const{
     if(header!=0)
-      return static_cast<link_type>(header->parent_link); 
+      return static_cast<link_type>(header->parent_link);
     return 0;
   }
-  
+
   // returns true, if the object lies inside of win
   bool is_inside( C_Window const &win,  C_Data const& object) const
   {
-    if(is_less_equal(interface.get_left_win(win), interface.get_left(object)) 
+    if(is_less_equal(interface.get_left_win(win), interface.get_left(object))
        && is_less_equal(interface.get_right(object),
 			interface.get_right_win(win)))
     {
@@ -144,11 +144,11 @@ protected:
 
   // this tree is not a recursion anchor
   bool is_anchor() const
-  { return false;}  
+  { return false;}
 
   void insert_segment(link_type v,  C_Data& element)
   {
-    if ((is_less_equal(interface.get_left(element), v->left_key) && 
+    if ((is_less_equal(interface.get_left(element), v->left_key) &&
 	 is_less_equal(v->right_key, interface.get_right(element)))
 	|| left(v)==TREE_BASE_NULL)
       v->objects.push_back( element);
@@ -158,9 +158,9 @@ protected:
 	 insert_segment(left(v), element);
        if (!is_less_equal(interface.get_right(element), (*right(v)).left_key))
 	 insert_segment(right(v), element);
-     }	
+     }
    }
-  
+
   // according to the list of elements at vertex v, a sublayer tree for these
   // elements is created.
    void build_next_dimension(link_type v)
@@ -213,7 +213,7 @@ protected:
    void build_segment_tree(int n, link_type& leftchild, link_type& rightchild,
 		   link_type& prevchild, link_type& leftmostlink,
 		   int& index, int last, const std::vector<Key>& keys)
-   { 
+   {
      // only two elements ==> two leaves and a parent is constructed
      if (n==2)
      {
@@ -264,12 +264,12 @@ protected:
        else
        {
 	 // recursiv call for the construction. the interval is devided.
-	 build_segment_tree(n - (int)n/2, leftchild, rightchild, 
+	 build_segment_tree(n - (int)n/2, leftchild, rightchild,
 			 prevchild, leftmostlink, index, last, keys);
 	 link_type vparent = new_Segment_tree_node_t
 	   (prevchild, TREE_BASE_NULL, prevchild->left_key, prevchild->left_key);
 	 prevchild->parent_link   = vparent;
-	 build_segment_tree((int)n/2, leftchild, rightchild, 
+	 build_segment_tree((int)n/2, leftchild, rightchild,
 			 prevchild, leftmostlink, index, last, keys);
 	 vparent->right_link = prevchild;
 	 prevchild->parent_link = vparent;
@@ -281,12 +281,12 @@ protected:
   void delete_tree(link_type v)
   {
     if(v->left_link!=TREE_BASE_NULL)
-    { 
+    {
       delete_tree(left(v));
       delete_tree(right(v));
     }
     delete_node(v);
-  }	    
+  }
 
   void delete_node(Segment_tree_node_t* node_ptr)
   {
@@ -296,12 +296,12 @@ protected:
 
   // all elements that contain win are inserted into result
   template <class A>
-  inline  
+  inline
   A enclosing_query( C_Window const &win,
 		     A result,
 		     link_type v)
    {
-     if(is_less_equal(interface.get_right_win(win), v->left_key) 
+     if(is_less_equal(interface.get_right_win(win), v->left_key)
 	|| is_less_equal(v->right_key,interface.get_left_win(win)))
        return result;
      if (v->sublayer!=0 && (!v->sublayer->is_anchor())) //(tree_base_type *)
@@ -309,16 +309,16 @@ protected:
        Tree_base<C_Data, C_Window> *T = v->sublayer;
 
        std::list< C_Data> tmp_result;
-       std::back_insert_iterator<std::list< C_Data> > tmp_back_inserter = 
+       std::back_insert_iterator<std::list< C_Data> > tmp_back_inserter =
 	 std::back_inserter(tmp_result);
        T->enclosing_query(win, tmp_back_inserter);
        typename std::list<  C_Data>::iterator tmp = tmp_result.begin();
        while(tmp!=tmp_result.end())
        {
-	 if(is_less_equal(interface.get_left(*tmp), 
+	 if(is_less_equal(interface.get_left(*tmp),
 			  interface.get_left_win(win)))
 	 {
-	   if(is_less_equal(interface.get_right_win(win), 
+	   if(is_less_equal(interface.get_right_win(win),
 			    interface.get_right(*tmp)))
 	     if(is_less_equal(v->left_key, interface.get_left_win(win)))
 	       *result++=(*tmp);
@@ -333,10 +333,10 @@ protected:
 	 typename std::list< C_Data>::iterator j=v->objects.begin();
 	 while (j!= v->objects.end())
 	 {
-	   if(is_less_equal(interface.get_left(*j), 
+	   if(is_less_equal(interface.get_left(*j),
 			    interface.get_left_win(win)))
 	   {
-	     if(is_less_equal(interface.get_right_win(win), 
+	     if(is_less_equal(interface.get_right_win(win),
 			      interface.get_right(*j)))
 	       if(is_less_equal(v->left_key, interface.get_left_win(win)))
 		 *result++=(*j);
@@ -356,12 +356,12 @@ protected:
 
   // all elements that habe non empty intersection with win are put into result
   template <class A>
-  inline 
+  inline
   A window_query( C_Window const &win,
 		  A result,
 		  const link_type& v) // af: was not const
    {
-     if(is_less_equal(interface.get_right_win(win), v->left_key) || 
+     if(is_less_equal(interface.get_right_win(win), v->left_key) ||
 	is_less_equal(v->right_key,interface.get_left_win(win)))
        return result;
      if (v->sublayer!=0 && (!v->sublayer->is_anchor())) //(tree_base_type *)
@@ -369,13 +369,13 @@ protected:
        Tree_base<C_Data, C_Window> *T = v->sublayer;
 
        std::list< C_Data> tmp_result;
-       std::back_insert_iterator<std::list< C_Data> > tmp_back_inserter = 
+       std::back_insert_iterator<std::list< C_Data> > tmp_back_inserter =
 	 std::back_inserter(tmp_result);
        T->window_query(win, tmp_back_inserter);
        typename std::list< C_Data>::iterator tmp = tmp_result.begin();
        while(tmp!=tmp_result.end())
        {
-	 if(interface.comp(interface.get_left(*tmp), 
+	 if(interface.comp(interface.get_left(*tmp),
 			   interface.get_left_win(win)))
 	 {
 	   if(is_less_equal(v->left_key, interface.get_left_win(win))){
@@ -421,7 +421,7 @@ protected:
      }
      return result;
    }
-  
+
   bool is_valid(const link_type& v) const // af:was not const reference
   {
     if (v->sublayer != 0)//(tree_base_type *)
@@ -439,7 +439,7 @@ protected:
     }
     if(! v->objects.empty())
     {
-//      true falls das Object das Segment enthaelt, 
+//      true falls das Object das Segment enthaelt,
 //	  der parent aber das Segment nicht enthaelt.
       typename std::list< C_Data>::iterator j=v->objects.begin();
       link_type parent_of_v = parent(v);
@@ -450,15 +450,15 @@ protected:
 	if(!is_less_equal( v->right_key, interface.get_right(*j)))
 	  return false;
 	if (parent_of_v != root())
-	  if((is_less_equal(interface.get_left(*j), parent_of_v->left_key))&& 
-	     (is_less_equal( parent_of_v->right_key, 
+	  if((is_less_equal(interface.get_left(*j), parent_of_v->left_key))&&
+	     (is_less_equal( parent_of_v->right_key,
 			     interface.get_right(*j))))
 	    return false;
 	j++;
       }
     }
     return true;
-  } 
+  }
 
 
 
@@ -474,37 +474,37 @@ public:
     sublayer_tree(sub_tree.clone()), is_built(false), header(TREE_BASE_NULL)
   {}
 
-  // destruction 
+  // destruction
   ~Segment_tree_d()
   {
     link_type v=root();
     if(v!=TREE_BASE_NULL)
       delete_tree(v);
-    if (header!=0)  
+    if (header!=0)
       delete_node(header);
     if(sublayer_tree!=0)
       delete sublayer_tree;
   }
-   
+
   // clone creates a prototype
-  Tree_base<C_Data, C_Window> *clone() const { 
+  Tree_base<C_Data, C_Window> *clone() const {
     return new Segment_tree_d(*this, true); }
 
   bool make_tree(const typename std::list< C_Data>::iterator& beg,
 		const typename std::list< C_Data>::iterator& end,
-                 typename tbt::lit * =0){ 
+                 typename tbt::lit * =0){
     return make_tree_impl(beg,end);
   }
 
   #ifdef stlvector
-  bool make_tree(const typename std::vector< C_Data>::iterator& beg, 
+  bool make_tree(const typename std::vector< C_Data>::iterator& beg,
                  const typename std::vector< C_Data>::iterator& end,
-                 typename tbt::vbit * =0){ 
+                 typename tbt::vbit * =0){
     return make_tree_impl(beg,end);
   }
   #endif
   #ifdef carray
-  bool make_tree(const C_Data *beg, 
+  bool make_tree(const C_Data *beg,
                  const C_Data *end){
      return make_tree_impl(beg,end);
    }
@@ -512,7 +512,7 @@ public:
 
   // the tree is build according to Data [first,last)
   template<class A>
-  inline 
+  inline
   bool make_tree_impl(const A& first, const A& last)
   {
     if(!is_built)
@@ -527,14 +527,14 @@ public:
     {
       if (interface.comp(interface.get_left(*count),
 			 interface.get_right(*count)))
-      { 
+      {
 	keys[n++]=interface.get_left(*count);
 	keys[n++]=interface.get_right(*count);
       }
       else
       {
 	CGAL_Tree_warning_msg(interface.comp(interface.get_left(*count),
-					     interface.get_right(*count)), 
+					     interface.get_right(*count)),
 				  "invalid segment ignored");
       }
       count++;
@@ -552,7 +552,7 @@ public:
     keys2[0]=keys[0];
     for(m=1;m<n;m++)
     {
-      if(interface.comp(keys[m],keys2[num-1])|| 
+      if(interface.comp(keys[m],keys2[num-1])||
 	 interface.comp(keys2[num-1],keys[m]))
       {
 	keys2[num++]=keys[m];
@@ -565,7 +565,7 @@ public:
     link_type leftmostlink = TREE_BASE_NULL;
 
     int start = 0;
-    build_segment_tree(num-1, leftchild, rightchild, prevchild, 
+    build_segment_tree(num-1, leftchild, rightchild, prevchild,
 		      leftmostlink, start, num-1, keys2);
 
     header = new_Segment_tree_node_t();
@@ -590,7 +590,7 @@ public:
 
 
   std::back_insert_iterator< std::list< C_Data> > window_query
-          ( C_Window const &win, 
+          ( C_Window const &win,
             std::back_insert_iterator< std::list< C_Data> > out,
             typename tbt::lbit * =0){
     return window_query_impl(win,out);
@@ -598,7 +598,7 @@ public:
 
 
   std::back_insert_iterator< std::vector< C_Data> > window_query
-          ( C_Window const &win, 
+          ( C_Window const &win,
             std::back_insert_iterator< std::vector< C_Data> > out,
             typename tbt::vbit * =0){
     return window_query_impl(win,out);
@@ -610,7 +610,7 @@ public:
   #endif
 
 #ifdef ostreamiterator
-  std::ostream_iterator< C_Data>  window_query( C_Window const &win, 
+  std::ostream_iterator< C_Data>  window_query( C_Window const &win,
                      std::ostream_iterator< C_Data> out,
                      typename tbt::oit *dummy=0){
     return window_query_impl(win,out);
@@ -621,33 +621,33 @@ public:
 
   // all elements that ly inside win are inserted into result
   template <class A>
-  inline A window_query_impl( C_Window const &win, 
+  inline A window_query_impl( C_Window const &win,
 			     A result,typename tbt::lbit * =0)
   {
-    if(is_less_equal(interface.get_right_win(win), 
+    if(is_less_equal(interface.get_right_win(win),
 		     interface.get_left_win(win)))
-    { 
-      CGAL_Tree_warning_msg(interface.comp(interface.get_right_win(win), 
+    {
+      CGAL_Tree_warning_msg(interface.comp(interface.get_right_win(win),
 					       interface.get_left_win(win)),
 				"invalid window -- query ignored");
       return result;
     }
     link_type v = root();
     if(v!=TREE_BASE_NULL)
-      return window_query(win, result, v);  
+      return window_query(win, result, v);
     return result;
   }
 
-  
-  std::back_insert_iterator< std::list< C_Data> > enclosing_query( 
-	       C_Window const &win, 
+
+  std::back_insert_iterator< std::list< C_Data> > enclosing_query(
+	       C_Window const &win,
                std::back_insert_iterator< std::list< C_Data> > out,
                typename tbt::lbit * =0){
     return enclosing_query_impl(win,out);
   }
 
-  std::back_insert_iterator< std::vector< C_Data> > enclosing_query( 
-	      C_Window const &win, 
+  std::back_insert_iterator< std::vector< C_Data> > enclosing_query(
+	      C_Window const &win,
               std::back_insert_iterator< std::vector< C_Data> > out,
               typename tbt::vbit * =0){
     return enclosing_query_impl(win,out);
@@ -661,8 +661,8 @@ public:
   #endif
 
 #ifdef ostreamiterator
-  std::ostream_iterator< C_Data>  
-  enclosing_query( C_Window const &win, 
+  std::ostream_iterator< C_Data>
+  enclosing_query( C_Window const &win,
 		   std::ostream_iterator< C_Data> out,
 		   typename tbt::oit *dummy=0){
     return enclosing_query_impl(win,out);
@@ -674,13 +674,13 @@ public:
   // all objects that enclose win are inserted into result
   template <class A>
   inline
-  A enclosing_query_impl( C_Window const &win, 
+  A enclosing_query_impl( C_Window const &win,
 			  A result, typename tbt::lbit * =0)
   {
-    if(is_less_equal(interface.get_right_win(win), 
+    if(is_less_equal(interface.get_right_win(win),
 		     interface.get_left_win(win)))
-    { 
-      CGAL_Tree_warning_msg(interface.comp(interface.get_right_win(win), 
+    {
+      CGAL_Tree_warning_msg(interface.comp(interface.get_right_win(win),
 					       interface.get_left_win(win)),
 				"invalid window -- query ignored");
       return result;
@@ -701,7 +701,7 @@ public:
 };
 
 template <class C_Data, class C_Window, class C_Interface>
-std::allocator<Segment_tree_node<C_Data,C_Window,C_Interface> > 
+std::allocator<Segment_tree_node<C_Data,C_Window,C_Interface> >
     Segment_tree_d<C_Data,C_Window,C_Interface>::alloc;
 
 CGAL_END_NAMESPACE

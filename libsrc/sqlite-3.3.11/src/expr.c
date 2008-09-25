@@ -21,7 +21,7 @@
 ** Return the 'affinity' of the expression pExpr if any.
 **
 ** If pExpr is a column, a reference to a column via an 'AS' alias,
-** or a sub-select with a column as the return value, then the 
+** or a sub-select with a column as the return value, then the
 ** affinity of that column is returned. Otherwise, 0x00 is returned,
 ** indicating no affinity for the expression.
 **
@@ -61,7 +61,7 @@ CollSeq *sqlite3ExprCollSeq(Parse *pParse, Expr *pExpr){
       return sqlite3ExprCollSeq(pParse, pExpr->pLeft);
     }
   }
-  if( sqlite3CheckCollSeq(pParse, pColl) ){ 
+  if( sqlite3CheckCollSeq(pParse, pColl) ){
     pColl = 0;
   }
   return pColl;
@@ -190,9 +190,9 @@ Expr *sqlite3Expr(int op, Expr *pLeft, Expr *pRight, const Token *pToken){
   Expr *pNew;
   pNew = sqliteMalloc( sizeof(Expr) );
   if( pNew==0 ){
-    /* When malloc fails, delete pLeft and pRight. Expressions passed to 
-    ** this function must always be allocated with sqlite3Expr() for this 
-    ** reason. 
+    /* When malloc fails, delete pLeft and pRight. Expressions passed to
+    ** this function must always be allocated with sqlite3Expr() for this
+    ** reason.
     */
     sqlite3ExprDelete(pLeft);
     sqlite3ExprDelete(pRight);
@@ -309,7 +309,7 @@ Expr *sqlite3ExprFunction(ExprList *pList, Token *pToken){
 
 /*
 ** Assign a variable number to an expression that encodes a wildcard
-** in the original SQL statement.  
+** in the original SQL statement.
 **
 ** Wildcards consisting of a single "?" are assigned the next sequential
 ** variable number.
@@ -373,7 +373,7 @@ void sqlite3ExprAssignVarNumber(Parse *pParse, Expr *pExpr){
         pParse->apVarExpr[pParse->nVarExpr++] = pExpr;
       }
     }
-  } 
+  }
 }
 
 /*
@@ -413,7 +413,7 @@ void sqlite3DequoteExpr(Expr *p){
 ** without effecting the originals.
 **
 ** The expression list, ID, and source lists return by sqlite3ExprListDup(),
-** sqlite3IdListDup(), and sqlite3SrcListDup() can not be further expanded 
+** sqlite3IdListDup(), and sqlite3SrcListDup() can not be further expanded
 ** by subsequent calls to sqlite*ListAppend() routines.
 **
 ** Any tables that the SrcList might point to are not duplicated.
@@ -460,7 +460,7 @@ ExprList *sqlite3ExprListDup(ExprList *p){
   if( pItem==0 ){
     sqliteFree(pNew);
     return 0;
-  } 
+  }
   pOldItem = p->a;
   for(i=0; i<p->nExpr; i++, pItem++, pOldItem++){
     Expr *pNewExpr, *pOldExpr;
@@ -471,7 +471,7 @@ ExprList *sqlite3ExprListDup(ExprList *p){
       ** the names of columns in the result set needs this information */
       sqlite3TokenCopy(&pNewExpr->span, &pOldExpr->span);
     }
-    assert( pNewExpr==0 || pNewExpr->span.z!=0 
+    assert( pNewExpr==0 || pNewExpr->span.z!=0
             || pOldExpr->span.z==0
             || sqlite3MallocFailed() );
     pItem->zName = sqliteStrDup(pOldItem->zName);
@@ -484,7 +484,7 @@ ExprList *sqlite3ExprListDup(ExprList *p){
 
 /*
 ** If cursors, triggers, views and subqueries are all omitted from
-** the build, then none of the following routines, except for 
+** the build, then none of the following routines, except for
 ** sqlite3SelectDup(), can be called. sqlite3SelectDup() is sometimes
 ** called with a NULL argument.
 */
@@ -607,7 +607,7 @@ ExprList *sqlite3ExprListAppend(ExprList *pList, Expr *pExpr, Token *pName){
   }
   return pList;
 
-no_mem:     
+no_mem:
   /* Avoid leaking memory if malloc has failed. */
   sqlite3ExprDelete(pExpr);
   sqlite3ExprListDelete(pList);
@@ -797,7 +797,7 @@ int sqlite3IsRowid(const char *z){
 
 /*
 ** Given the name of a column of the form X.Y.Z or Y.Z or just Z, look up
-** that name in the set of source tables in pSrcList and make the pExpr 
+** that name in the set of source tables in pSrcList and make the pExpr
 ** expression node refer back to that source column.  The following changes
 ** are made to pExpr:
 **
@@ -857,7 +857,7 @@ static int lookupName(
         Table *pTab;
         int iDb;
         Column *pCol;
-  
+
         pTab = pItem->pTab;
         assert( pTab!=0 );
         iDb = sqlite3SchemaToIndex(db, pTab->pSchema);
@@ -918,7 +918,7 @@ static int lookupName(
     }
 
 #ifndef SQLITE_OMIT_TRIGGER
-    /* If we have not already resolved the name, then maybe 
+    /* If we have not already resolved the name, then maybe
     ** it is a new.* or old.* trigger argument reference
     */
     if( zDb==0 && zTab!=0 && cnt==0 && pParse->trigStack!=0 ){
@@ -934,7 +934,7 @@ static int lookupName(
         pTab = pTriggerStack->pTab;
       }
 
-      if( pTab ){ 
+      if( pTab ){
         int iCol;
         Column *pCol = pTab->aCol;
 
@@ -988,7 +988,7 @@ static int lookupName(
           assert( zTab==0 && zDb==0 );
           goto lookupname_end_2;
         }
-      } 
+      }
     }
 
     /* Advance to the next name context.  The loop will exit when either
@@ -1126,7 +1126,7 @@ static int nameResolverStep(void *pArg, Expr *pExpr){
       lookupName(pParse, 0, 0, &pExpr->token, pNC, pExpr);
       return 1;
     }
-  
+
     /* A table name and column name:     ID.ID
     ** Or a database, table and column:  ID.ID.ID
     */
@@ -1217,7 +1217,7 @@ static int nameResolverStep(void *pArg, Expr *pExpr){
       }
       if( is_agg ) pNC->allowAgg = 1;
       /* FIX ME:  Compute pExpr->affinity based on the expected return
-      ** type of the function 
+      ** type of the function
       */
       return is_agg;
     }
@@ -1256,12 +1256,12 @@ static int nameResolverStep(void *pArg, Expr *pExpr){
 /*
 ** This routine walks an expression tree and resolves references to
 ** table columns.  Nodes of the form ID.ID or ID resolve into an
-** index to the table in the table list and a column offset.  The 
+** index to the table in the table list and a column offset.  The
 ** Expr.opcode for such nodes is changed to TK_COLUMN.  The Expr.iTable
 ** value is changed to the index of the referenced table in pTabList
 ** plus the "base" value.  The base value will ultimately become the
 ** VDBE cursor number for a cursor that is pointing into the referenced
-** table.  The Expr.iColumn value is changed to the index of the column 
+** table.  The Expr.iColumn value is changed to the index of the column
 ** of the referenced table.  The Expr.iColumn value for the special
 ** ROWID column is -1.  Any INTEGER PRIMARY KEY column is tried as an
 ** alias for ROWID.
@@ -1350,7 +1350,7 @@ void sqlite3CodeSubselect(Parse *pParse, Expr *pExpr){
       affinity = sqlite3ExprAffinity(pExpr->pLeft);
 
       /* Whether this is an 'x IN(SELECT...)' or an 'x IN(<exprlist>)'
-      ** expression it is handled the same way. A virtual table is 
+      ** expression it is handled the same way. A virtual table is
       ** filled with single-field index keys representing the results
       ** from the SELECT or the <exprlist>.
       **
@@ -1379,7 +1379,7 @@ void sqlite3CodeSubselect(Parse *pParse, Expr *pExpr){
         assert( (pExpr->iTable&0x0000FFFF)==pExpr->iTable );
         sqlite3Select(pParse, pExpr->pSelect, SRT_Set, iParm, 0, 0, 0, 0);
         pEList = pExpr->pSelect->pEList;
-        if( pEList && pEList->nExpr>0 ){ 
+        if( pEList && pEList->nExpr>0 ){
           keyInfo.aColl[0] = binaryCompareCollSeq(pParse, pExpr->pLeft,
               pEList->a[0].pExpr);
         }
@@ -1620,7 +1620,7 @@ void sqlite3ExprCode(Parse *pParse, Expr *pExpr){
     case TK_BITOR:
     case TK_SLASH:
     case TK_LSHIFT:
-    case TK_RSHIFT: 
+    case TK_RSHIFT:
     case TK_CONCAT: {
       assert( TK_AND==OP_And );
       assert( TK_OR==OP_Or );
@@ -1712,7 +1712,7 @@ void sqlite3ExprCode(Parse *pParse, Expr *pExpr){
       ** see if it is a column in a virtual table.  This is done because
       ** the left operand of infix functions (the operand we want to
       ** control overloading) ends up as the second argument to the
-      ** function.  The expression "A glob B" is equivalent to 
+      ** function.  The expression "A glob B" is equivalent to
       ** "glob(B,A).  We want to use the A in "A glob B" to test
       ** for function overloading.  But we use the B term in "glob(B,A)".
       */
@@ -1731,7 +1731,7 @@ void sqlite3ExprCode(Parse *pParse, Expr *pExpr){
         }
       }
       if( pDef->needCollSeq ){
-        if( !pColl ) pColl = pParse->db->pDfltColl; 
+        if( !pColl ) pColl = pParse->db->pDfltColl;
         sqlite3VdbeOp3(v, OP_CollSeq, 0, 0, (char *)pColl, P3_COLLSEQ);
       }
       sqlite3VdbeOp3(v, OP_Function, constMask, nExpr, (char*)pDef, P3_FUNCDEF);
@@ -1884,7 +1884,7 @@ void sqlite3ExprCode(Parse *pParse, Expr *pExpr){
 ** This routine might also cache the result and modify the pExpr tree
 ** so that it will make use of the cached result on subsequent evaluations
 ** rather than evaluate the whole expression again.  Trivial expressions are
-** not cached.  If the expression is cached, its result is stored in a 
+** not cached.  If the expression is cached, its result is stored in a
 ** memory location.
 */
 void sqlite3ExprCodeAndCache(Parse *pParse, Expr *pExpr){
@@ -2177,7 +2177,7 @@ static int addAggInfoColumn(AggInfo *pInfo){
     return -1;
   }
   return i;
-}    
+}
 
 /*
 ** Add a new element to the pAggInfo->aFunc[] array.  Return the index of
@@ -2190,10 +2190,10 @@ static int addAggInfoFunc(AggInfo *pInfo){
     return -1;
   }
   return i;
-}    
+}
 
 /*
-** This is an xFunc for walkExprTree() used to implement 
+** This is an xFunc for walkExprTree() used to implement
 ** sqlite3ExprAnalyzeAggregates().  See sqlite3ExprAnalyzeAggregates
 ** for additional information.
 **
@@ -2205,7 +2205,7 @@ static int analyzeAggregate(void *pArg, Expr *pExpr){
   Parse *pParse = pNC->pParse;
   SrcList *pSrcList = pNC->pSrcList;
   AggInfo *pAggInfo = pNC->pAggInfo;
-  
+
 
   switch( pExpr->op ){
     case TK_AGG_COLUMN:
@@ -2218,7 +2218,7 @@ static int analyzeAggregate(void *pArg, Expr *pExpr){
           struct AggInfo_col *pCol;
           if( pExpr->iTable==pItem->iCursor ){
             /* If we reach this point, it means that pExpr refers to a table
-            ** that is in the FROM clause of the aggregate query.  
+            ** that is in the FROM clause of the aggregate query.
             **
             ** Make an entry for the column in pAggInfo->aCol[] if there
             ** is not an entry there already.
@@ -2273,7 +2273,7 @@ static int analyzeAggregate(void *pArg, Expr *pExpr){
       /* The pNC->nDepth==0 test causes aggregate functions in subqueries
       ** to be ignored */
       if( pNC->nDepth==0 ){
-        /* Check to see if pExpr is a duplicate of another aggregate 
+        /* Check to see if pExpr is a duplicate of another aggregate
         ** function that is already in the pAggInfo structure
         */
         struct AggInfo_func *pItem = pAggInfo->aFunc;

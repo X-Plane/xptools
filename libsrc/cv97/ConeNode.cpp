@@ -19,7 +19,7 @@
 
 #include "ConeNode.h"
 
-ConeNode::ConeNode() 
+ConeNode::ConeNode()
 {
 	setHeaderFlag(false);
 	setType(coneNodeString);
@@ -41,7 +41,7 @@ ConeNode::ConeNode()
 	addExposedField(bottomFieldString, bottomField);
 }
 
-ConeNode::~ConeNode() 
+ConeNode::~ConeNode()
 {
 }
 
@@ -56,12 +56,12 @@ SFFloat *ConeNode::getBottomRadiusField()
 	return (SFFloat *)getExposedField(bottomRadiusFieldString);
 }
 
-void ConeNode::setBottomRadius(float value) 
+void ConeNode::setBottomRadius(float value)
 {
 	getBottomRadiusField()->setValue(value);
 }
 
-float ConeNode::getBottomRadius() 
+float ConeNode::getBottomRadius()
 {
 	return getBottomRadiusField()->getValue();
 }
@@ -77,12 +77,12 @@ SFFloat *ConeNode::getHeightField()
 	return (SFFloat *)getExposedField(heightFieldString);
 }
 
-void ConeNode::setHeight(float value) 
+void ConeNode::setHeight(float value)
 {
 	getHeightField()->setValue(value);
 }
 
-float ConeNode::getHeight() 
+float ConeNode::getHeight()
 {
 	return getHeightField()->getValue();
 }
@@ -98,17 +98,17 @@ SFBool *ConeNode::getSideField()
 	return (SFBool *)getExposedField(sideFieldString);
 }
 
-void ConeNode::setSide(bool value) 
+void ConeNode::setSide(bool value)
 {
 	getSideField()->setValue(value);
 }
 
-void ConeNode::setSide(int value) 
+void ConeNode::setSide(int value)
 {
 	setSide(value ? true : false);
 }
 
-bool ConeNode::getSide() 
+bool ConeNode::getSide()
 {
 	return getSideField()->getValue();
 }
@@ -124,17 +124,17 @@ SFBool *ConeNode::getBottomField()
 	return (SFBool *)getExposedField(bottomFieldString);
 }
 
-void ConeNode::setBottom(bool value) 
+void ConeNode::setBottom(bool value)
 {
 	getBottomField()->setValue(value);
 }
 
-void ConeNode::setBottom(int value) 
+void ConeNode::setBottom(int value)
 {
 	setBottom(value ? true : false);
 }
 
-bool ConeNode::getBottom() 
+bool ConeNode::getBottom()
 {
 	return getBottomField()->getValue();
 }
@@ -143,12 +143,12 @@ bool ConeNode::getBottom()
 //	List
 ////////////////////////////////////////////////
 
-ConeNode *ConeNode::next() 
+ConeNode *ConeNode::next()
 {
 	return (ConeNode *)Node::next(getType());
 }
 
-ConeNode *ConeNode::nextTraversal() 
+ConeNode *ConeNode::nextTraversal()
 {
 	return (ConeNode *)Node::nextTraversalByType(getType());
 }
@@ -156,13 +156,13 @@ ConeNode *ConeNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ConeNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void ConeNode::initialize() 
+void ConeNode::initialize()
 {
 	recomputeBoundingBox();
 #ifdef SUPPORT_OPENGL
@@ -170,11 +170,11 @@ void ConeNode::initialize()
 #endif
 }
 
-void ConeNode::uninitialize() 
+void ConeNode::uninitialize()
 {
 }
 
-void ConeNode::update() 
+void ConeNode::update()
 {
 }
 
@@ -182,7 +182,7 @@ void ConeNode::update()
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void ConeNode::recomputeBoundingBox() 
+void ConeNode::recomputeBoundingBox()
 {
 	setBoundingBoxCenter(0.0f, 0.0f, 0.0f);
 	setBoundingBoxSize(getBottomRadius(), getHeight()/2.0f, getBottomRadius());
@@ -192,7 +192,7 @@ void ConeNode::recomputeBoundingBox()
 //	Infomation
 ////////////////////////////////////////////////
 
-void ConeNode::outputContext(ostream &printStream, char *indentString) 
+void ConeNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *side = getSideField();
 	SFBool *bottom = getBottomField();
@@ -228,7 +228,7 @@ void ConeNode::recomputeDisplayList() {
 	    glRotatef (180.0, 0.0, 1.0, 0.0);
 
 		glMatrixMode(GL_MODELVIEW);
-	
+
 	    glRotatef (180.0, 0.0, 1.0, 0.0);
 	    glRotatef (90.0, 1.0, 0.0, 0.0);
 	    glTranslatef (0.0, 0.0, -getHeight()/2.0f);

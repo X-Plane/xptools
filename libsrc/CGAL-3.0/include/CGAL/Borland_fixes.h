@@ -33,14 +33,14 @@
  * Copyright (c) 1997
  * Moscow Center for SPARC Technology
  *
- * Copyright (c) 1999 
+ * Copyright (c) 1999
  * Boris Fomitchev
  *
  * This material is provided "as is", with absolutely no warranty expressed
  * or implied. Any use is at your own risk.
  *
  * Permission to use or copy this software for any purpose is hereby
- * granted 
+ * granted
  * without fee, provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is
  * granted,
@@ -119,7 +119,7 @@ CGAL__value_type(const _Iter&)
 
 template <class _Iter>
 inline typename iterator_traits<_Iter>::iterator_category
-iterator_category(const _Iter& __i) { 
+iterator_category(const _Iter& __i) {
   return CGAL__iterator_category(__i); }
 
 
@@ -142,9 +142,9 @@ __value_type(_Iter& const)
 }
 
 // quick (and dirty ?) fix for reverse_bidirectional_iterator
-template <class It, class Cat, class T, class Ref = T&, 
+template <class It, class Cat, class T, class Ref = T&,
   class P = T*, class Dist = ptrdiff_t>
-class reverse_bidirectional_iterator : 
+class reverse_bidirectional_iterator :
   public std::reverse_iterator<It> {};
 
 template <class P_Value,class P_Dist = ptrdiff_t>
@@ -158,14 +158,14 @@ class output_iterator
 // unary_compose and binary_compose (extensions, not part of the standard).
 
 template <class _Operation1, class _Operation2>
-class unary_compose : 
+class unary_compose :
   public unary_function<typename  _Operation2 :: argument_type  ,
                         typename  _Operation1 :: result_type  > {
 protected:
   _Operation1 _M_fn1;
   _Operation2 _M_fn2;
 public:
-  unary_compose(const _Operation1& __x, const _Operation2& __y) 
+  unary_compose(const _Operation1& __x, const _Operation2& __y)
     : _M_fn1(__x), _M_fn2(__y) {}
   typename _Operation1::result_type
   operator()(const typename _Operation2::argument_type& __x) const {
@@ -174,14 +174,14 @@ public:
 };
 
 template <class _Operation1, class _Operation2>
-inline unary_compose<_Operation1,_Operation2> 
+inline unary_compose<_Operation1,_Operation2>
 compose1(const _Operation1& __fn1, const _Operation2& __fn2)
 {
   return unary_compose<_Operation1,_Operation2>(__fn1, __fn2);
 }
 
 template <class _Operation1, class _Operation2, class _Operation3>
-class binary_compose : 
+class binary_compose :
     public unary_function<typename  _Operation2 :: argument_type  ,
                           typename  _Operation1 :: result_type  > {
 protected:
@@ -189,8 +189,8 @@ protected:
   _Operation2 _M_fn2;
   _Operation3 _M_fn3;
 public:
-  binary_compose(const _Operation1& __x, const _Operation2& __y, 
-                 const _Operation3& __z) 
+  binary_compose(const _Operation1& __x, const _Operation2& __y,
+                 const _Operation3& __z)
     : _M_fn1(__x), _M_fn2(__y), _M_fn3(__z) { }
   typename _Operation1::result_type
   operator()(const typename _Operation2::argument_type& __x) const {
@@ -199,8 +199,8 @@ public:
 };
 
 template <class _Operation1, class _Operation2, class _Operation3>
-inline binary_compose<_Operation1, _Operation2, _Operation3> 
-compose2(const _Operation1& __fn1, const _Operation2& __fn2, 
+inline binary_compose<_Operation1, _Operation2, _Operation3>
+compose2(const _Operation1& __fn1, const _Operation2& __fn2,
          const _Operation3& __fn3)
 {
   return binary_compose<_Operation1,_Operation2,_Operation3>
@@ -231,7 +231,7 @@ __copy_n(_RAIter __first, _Size __count,
          _OutputIter __result,
          std::random_access_iterator_tag) {
   _RAIter __last = __first + __count;
-  return std::pair<_RAIter, _OutputIter>(__last, 
+  return std::pair<_RAIter, _OutputIter>(__last,
                                        std::copy(__first, __last, __result));
 }
 
@@ -242,6 +242,6 @@ copy_n(_InputIter __first, _Size __count, _OutputIter __result) {
                 std::iterator_category(__first));
 
   }
-  
+
 } // namespace std
 #endif

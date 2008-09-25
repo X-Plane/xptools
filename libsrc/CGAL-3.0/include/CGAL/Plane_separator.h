@@ -35,17 +35,17 @@ template < class NT> class Plane_separator {
 
   void set_cutting_value(NT val) {
 	  cutting_val=val;
-  }  
+  }
 
-  template <class Point>  
+  template <class Point>
   inline bool has_on_negative_side(const Point& i) {
     return i[cutting_dimension()] < cutting_value();
   }
 
-  Plane_separator(const int d, const NT& v) : 
+  Plane_separator(const int d, const NT& v) :
 		cutting_dim(d), cutting_val(v) {}
-  Plane_separator(const Plane_separator<NT>& s) : 
-		cutting_dim(s.cutting_dimension()), 
+  Plane_separator(const Plane_separator<NT>& s) :
+		cutting_dim(s.cutting_dimension()),
 		cutting_val(s.cutting_value()) {}
   explicit Plane_separator() : cutting_dim(0), cutting_val(0) {}
   Plane_separator<NT>& operator= (const Plane_separator<NT>& s) {
@@ -58,7 +58,7 @@ template < class NT> class Plane_separator {
 
 };
 
- template < class NT> 
+ template < class NT>
  std::ostream& operator<< (std::ostream& s, Plane_separator<NT>& x) {
    s << "\n Separator coordinate: " << x.cutting_dimension() <<
      " value: " << x.cutting_value() << "\n";

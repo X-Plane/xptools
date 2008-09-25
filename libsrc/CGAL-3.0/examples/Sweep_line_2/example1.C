@@ -33,22 +33,22 @@ int main()
   segments.push_back(c3);
   segments.push_back(c4);
 
-  // Use a sweep to create the sub curves  
+  // Use a sweep to create the sub curves
   Traits traits;
   std::list<Curve_2> subcurves;
   Sweep_line sl(&traits);
-  sl.get_subcurves(segments.begin(), 
-		   segments.end(), 
+  sl.get_subcurves(segments.begin(),
+		   segments.end(),
 		   std::back_inserter(subcurves), true);
-  
+
   // Write output
-  std::cout << std::endl << "Demonstrating Sweep_line_2::get_subcurves " 
+  std::cout << std::endl << "Demonstrating Sweep_line_2::get_subcurves "
 	    << std::endl << std::endl << "Curves: " << std::endl
 	    << c1 << std::endl << c2 << std::endl
 	    << c3 << std::endl << c4 << std::endl << std::endl;
   std::cout <<"Number of sub segments: " << subcurves.size()
             << std::endl<< std::endl;
-  for (std::list<Curve_2>::iterator scv_iter = subcurves.begin(); 
+  for (std::list<Curve_2>::iterator scv_iter = subcurves.begin();
        scv_iter != subcurves.end(); scv_iter++)
     std::cout<< *scv_iter<< std::endl;
   return 0;

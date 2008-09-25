@@ -25,7 +25,7 @@
 #include <cassert>
 
 namespace CGAL {
-  
+
   template <class R> class Iso_rectangle_d {
   public:
     typedef typename R::FT NT;
@@ -36,7 +36,7 @@ namespace CGAL {
     int dim;
     NT *lower;
     NT *upper;
-    
+
   public:
 
     Iso_rectangle_d(const Point_d& p, const Point_d& q)
@@ -46,27 +46,27 @@ namespace CGAL {
       upper = new NT[dim];
       for (int i = 0; i < dim; ++i) {
 	  if (p[i] <= q[i]) {
-		lower[i]=p[i]; 
+		lower[i]=p[i];
                 upper[i]=q[i];
 	  }
 	  else {
-		lower[i]=q[i]; 
+		lower[i]=q[i];
                 upper[i]=p[i];
 	  }
-     }	  
+     }
     }
-  
+
   // copy constructor
   Iso_rectangle_d(const Iso_rectangle_d& b) : dim(b.dim) {
       lower = new NT[dim];
       upper = new NT[dim];
       for (int i = 0; i < dim; ++i) {
-		lower[i]=b.lower[i]; 
+		lower[i]=b.lower[i];
                 upper[i]=b.upper[i];
       }
   }
 
-  
+
   bool has_on_bounded_side(const Point_d& p) const
   {
     NT h;
@@ -75,10 +75,10 @@ namespace CGAL {
         if ( (h < lower[i]) || (h > upper[i]) ) return 0;
     }
     return 1;
-  } 
+  }
 
     inline int dimension() const { return dim;}
-    
+
     inline NT min_coord(int i) const {
       return lower[i];
     }

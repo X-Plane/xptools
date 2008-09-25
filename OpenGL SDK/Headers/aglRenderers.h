@@ -5,14 +5,14 @@
 
     Version:	Technology:	Mac OS X
                 Release:	GM
- 
+
      Copyright:  (c) 2000-2002 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://developer.apple.com/bugreporter/
- 
+
 */
 
 #ifndef _AGLRENDERERS_H
@@ -32,7 +32,7 @@
 #define AGL_RENDERER_MESA_3DFX_ID          0x00040000
 
 /* depreciated for Mac OS X, use above instead for specific renderer*/
-/* AGL_RENDERER_ATI_ID    */ 
+/* AGL_RENDERER_ATI_ID    */
 /* AGL_RENDERER_NVIDIA_ID */
 /* AGL_RENDERER_FORMAC_ID */
 /* AGL_RENDERER_3DFX_ID   */

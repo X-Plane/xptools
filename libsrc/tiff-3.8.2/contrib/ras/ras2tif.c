@@ -94,7 +94,7 @@ main(argc, argv)
     long        width,
                 height;
     long        rowsperstrip;
-    int         year; 
+    int         year;
     short       photometric;
     short       samplesperpixel;
     short       bitspersample;
@@ -104,7 +104,7 @@ main(argc, argv)
 
     gettimeofday(&tv, (struct timezone *) NULL);
     ct = localtime(&tv.tv_sec);
-    year=1900 + ct->tm_year; 
+    year=1900 + ct->tm_year;
     sprintf(datetime, "%04d:%02d:%02d %02d:%02d:%02d",
 	    year, ct->tm_mon + 1, ct->tm_mday,
 	    ct->tm_hour, ct->tm_min, ct->tm_sec);

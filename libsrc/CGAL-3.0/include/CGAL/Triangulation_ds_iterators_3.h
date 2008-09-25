@@ -69,7 +69,7 @@ public:
 	return;
       }
     }
-  
+
   // used to initialize the past-the end iterator
   Triangulation_ds_facet_iterator_3(const Tds* tds, int)
     : _tds(tds)
@@ -79,7 +79,7 @@ public:
 	if (_tds->dimension() == 2)
 	    facet.second = 3;
     }
-  
+
   Facet_iterator& operator++()
   {
     if (_tds->dimension() < 2)
@@ -98,12 +98,12 @@ public:
     ++pos; // dimension 2
     return *this;
   }
-    
+
   Facet_iterator& operator--()
   {
     if (_tds->dimension() < 2)
 	return *this;
-    
+
     if ( _tds->dimension() == 2 ) {
       --pos; // index remains 3
       return *this;
@@ -205,7 +205,7 @@ public:
       edge.second = 0;
       edge.third = 1;
     }
-  
+
   Triangulation_ds_edge_iterator_3(const Tds * tds)
     : _tds(tds)
     {
@@ -257,7 +257,7 @@ public:
 	}
       }
     }
-  
+
   // used to initialize the past-the end iterator
   Triangulation_ds_edge_iterator_3(const Tds* tds, int)
     : _tds(tds)
@@ -266,7 +266,7 @@ public:
 	edge.third = 1;
 	pos = _tds->cell_container().end();
     }
-  
+
   Edge_iterator& operator++()
   {
     switch ( _tds->dimension() ) {
@@ -279,7 +279,7 @@ public:
       {
 	do {
 	  increment2();
-	} while ( pos != _tds->cell_container().end() && 
+	} while ( pos != _tds->cell_container().end() &&
 		  pos->neighbor(3-edge.second-edge.third) < pos );
 	break;
       }
@@ -311,7 +311,7 @@ public:
     }
     return *this;
   }
-    
+
   Edge_iterator& operator--()
   {
     switch ( _tds->dimension() ) {
@@ -332,7 +332,7 @@ public:
 	    edge.third = edge.second+1;
 	    // case edge.second==2, edge.third==0 forbids to write edge.third--
 	  }
-	} while ( pos != _tds->cell_container().end() && 
+	} while ( pos != _tds->cell_container().end() &&
 		  pos->neighbor(3-edge.second-edge.third) < pos );
 	break;
       }
@@ -380,27 +380,27 @@ public:
     // to the pointer of the neighbor cell
     return *this;
   }
-    
+
   Edge_iterator operator++(int)
     {
       Edge_iterator tmp(*this);
       ++(*this);
       return tmp;
     }
-    
+
   Edge_iterator operator--(int)
     {
       Edge_iterator tmp(*this);
       --(*this);
       return tmp;
     }
-    
+
   bool operator==(const Edge_iterator& ei) const
     {
       return _tds == ei._tds && pos == ei.pos &&
 	     edge.second == ei.edge.second && edge.third == ei.edge.third;
     }
-    
+
   bool operator!=(const Edge_iterator& ei) const
     {
       return !(*this == ei);
@@ -420,7 +420,7 @@ public:
 
 private:
   const Tds*  _tds;
-  Cell_iterator pos; // current "cell". Even if the dimension is <3 when 
+  Cell_iterator pos; // current "cell". Even if the dimension is <3 when
               // there is no true cell yet.
   mutable Edge edge;  // keeps the indices of the current edge.
 
@@ -432,7 +432,7 @@ private:
       ++pos;
     }
     // be careful : index should always be 0 when pos = cells_end
-    else { 
+    else {
       ++edge.second;
       if ( edge.second == 2 )
 	edge.third = 0;

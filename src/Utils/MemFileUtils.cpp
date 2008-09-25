@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,14 +38,14 @@
 /*
 	TODO - level two analysis
 	TODO - single file open handles zip, gz
-	TODO - caching of open files in mem for all types of archives in case they are opened repeatedly	
+	TODO - caching of open files in mem for all types of archives in case they are opened repeatedly
 */
 
 /*
 	UNIT TEST - DIR ITERATION
 
 	FILE * fi = fopen("junk", "a");
-	
+
 	fprintf(fi, "Dumping Macintosh HD:code:\n");
 	if (!IterateDirectory("Macintosh HD:code:", hacktoFile, fi))
 		fprintf(fi,"Failed dumping dir.\n");
@@ -79,7 +79,7 @@
 	fclose(fi);
 
 	UNIT TEST - TARBALLS
-	
+
 	static	void * UTTest_Open(const char * fname, void * ref)
 	{
 		printf("Starting file %s\n", fname);
@@ -100,7 +100,7 @@
 				MF_Untar(argv[++n], true, UTTest_Open, UTTest_Print, UTTest_Close, NULL);
 
 */
-	
+
 #if LIN || (APL && __MACH__)
 		#include <dirent.h>
 		#include <sys/stat.h>
@@ -130,12 +130,12 @@
 		#define bsd_munmap		munmap
 		#define bsd_fstat 		fstat
 #elif APL
-		#include "hl_types.h"		
+		#include "hl_types.h"
 #elif IBM
 	#include <windows.h>
 #else
 	#error PLATFORM NOT DEFINED
-#endif	
+#endif
 
 #include <unzip.h>
 
@@ -193,21 +193,21 @@ struct	MFFileSet {
 	vector<string>		mNames;			// Per file - filename
 	vector<int>			mSizes;			// Per file - size of this file in bytes
 	vector<char *>		mFileData;		// Per file - bytes of this file if pre-loaded (NULLs allowed to keep array ok.)
-};	
+};
 
 struct	MFMemFile {
 	bool			mFree;	// True if we need to free memory when done.
 	bool			mClose;	// True if we need to close our file descriptor.
 	bool			mUnmap;	// True if we need to unmap memory.
 
-	int				mFile;	// File descriptor	
+	int				mFile;	// File descriptor
 	const char *	mBegin;	// Span of memory the file is loaded into.
 	const char *	mEnd;
 #if IBM
 	HANDLE 			mWinFile;
 	HANDLE 			mWinFileMapping;
-#endif	
-};	
+#endif
+};
 
 /*
 
@@ -218,7 +218,7 @@ struct	MFMemFile {
 	  need for an individual file, then nuke it when done.
 	- File set made from a gz tar ball...immediately unzip, process whole tar ball keeping various
 	  file chunks around.  Just return the buffer on open, don't nuke it later.
-	  
+
 	A few kinds of files:
 	 - Regular file (fopen/fclose with its own malloc).
 	 - Regular GZ'd file.  Same as above, but use GZ/IO
@@ -270,7 +270,7 @@ MFFileSet *		FileSet_Open(const char * inPath)
 	MFFileSet * ns = NULL;
 	MF_FileType	pathType = MF_GetFileType(inPath, mf_CheckType);
 	if (pathType == mf_BadFile) return NULL;
-	
+
 	if (pathType == mf_Directory)
 	{
 		ns = new MFFileSet;
@@ -288,31 +288,31 @@ MFFileSet *		FileSet_Open(const char * inPath)
 			return NULL;
 		}
 		fclose(fi);
-		
+
 		if (sig[0] == 'P' && sig[1] == 'K')
 		{
 			// We have a zip archive.
 			unzFile zipFile = unzOpen(inPath);
 			if (zipFile == NULL) return NULL;
-			
+
 			ns = new MFFileSet;
-			
+
 			unzGoToFirstFile(zipFile);
-			do { 
+			do {
 				char			fname[512];
 				unz_file_info	info;
-						
+
 				unzGetCurrentFileInfo(zipFile, &info, fname, sizeof(fname), NULL, 0, NULL, 0);
 				ns->mNames.push_back(fname);
 				ns->mSizes.push_back(info.uncompressed_size);
-				
+
 			} while (unzGoToNextFile(zipFile) == UNZ_OK);
-			
+
 			ns->mZipFile = zipFile;
 			ns->mType = (ns->mNames.size() > 1) ? mf_ZipFiles : mf_ZipFile;
 			ns->mHasListing = true;
 			ns->mPath = inPath;
-			
+
 			return ns;
 		}
 		if (sig[0] == 0x1f && sig[1] == 0x8b)
@@ -323,18 +323,18 @@ MFFileSet *		FileSet_Open(const char * inPath)
 			ns->mType = mf_GZTarBall;
 			ns->mHasListing = true;
 			ns->mPath = inPath;
-			MF_Untar(inPath, true, 
+			MF_Untar(inPath, true,
 				FileSet_TarballOpen, FileSet_TarballRead, FileSet_TarballClose, ns);
 			if (ns->mNames.empty())
 			{
 				delete ns;
 				return NULL;
 			}
-			return ns;			
+			return ns;
 		}
 	}
-	
-	return NULL;	
+
+	return NULL;
 }
 
 void			FileSet_Close(MFFileSet * fs)
@@ -353,7 +353,7 @@ int				FileSet_Count(MFFileSet * fs)
 {
 	FileSet_LoadDirectory(fs);
 	return fs->mNames.size();
-	
+
 }
 
 const char *	FileSet_GetNth(MFFileSet * fs, int n)
@@ -365,9 +365,9 @@ const char *	FileSet_GetNth(MFFileSet * fs, int n)
 MFMemFile *		FileSet_OpenNth(MFFileSet * fs, int n)
 {
 	FileSet_LoadDirectory(fs);
-	
+
 	// If we have the data cached just use it.  This could
-	// be the case for a tar ball or for some other file 
+	// be the case for a tar ball or for some other file
 	// format where we're doing file-open caching.
 	if (fs->mFileData.size() > n && fs->mFileData[n])
 	{
@@ -380,20 +380,20 @@ MFMemFile *		FileSet_OpenNth(MFFileSet * fs, int n)
 		mf->mEnd = mf->mBegin + fs->mSizes[n];
 		return mf;
 	}
-	
+
 	if (fs->mType == mf_Directory)
 	{
 		string	fpath = fs->mPath + DIR_CHAR + fs->mNames[n];
 		return MemFile_Open(fpath.c_str());
 	} else if (fs->mType == mf_ZipFile || fs->mType == mf_ZipFiles) {
 
-		if (unzLocateFile(fs->mZipFile, fs->mNames[n].c_str(), 1) != UNZ_OK)			
+		if (unzLocateFile(fs->mZipFile, fs->mNames[n].c_str(), 1) != UNZ_OK)
 			return NULL;
 
 		char * buf = (char *) malloc(fs->mSizes[n]);
 		if (buf == NULL) return NULL;
 
-		if (unzOpenCurrentFile(fs->mZipFile) == UNZ_OK) 
+		if (unzOpenCurrentFile(fs->mZipFile) == UNZ_OK)
 		{
 			if (unzReadCurrentFile(fs->mZipFile, buf, fs->mSizes[n]) == fs->mSizes[n])
 			{
@@ -456,10 +456,10 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	void *		addr = NULL;		// Not that you should be doing that
 	int			len = 0;	// anyway.
 #endif
-	
+
 	obj = new MFMemFile;
 	if (!obj) goto bail;
-	
+
 	unz = unzOpen(inPath);
 	if (unz)
 	{
@@ -474,7 +474,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 				file_size = finfo.uncompressed_size;
 				mem = (char *) malloc(file_size);
 				if (!mem) goto bail;
-				
+
 				unzOpenCurrentFile(unz);
 				unzReadCurrentFile(unz, mem, file_size);
 				unzCloseCurrentFile(unz);
@@ -485,13 +485,13 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 				obj->mFree = true;
 				obj->mClose = false;
 				obj->mUnmap = false;
-				obj->mFile = 0;				
+				obj->mFile = 0;
 				return obj;
 			}
 		}
 		unzClose(unz);
 	}
-	
+
 #if APL	|| LIN
 
 	#if LIN || __MACH__
@@ -512,24 +512,24 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 #endif
 
 	if (fd == 0 || fd == -1) goto cleanmmap;
-	
+
 	if (bsd_fstat(fd, &ss) < 0) goto cleanmmap;
 	len = ss.st_size;
 
 	addr = bsd_mmap(NULL, len, PROT_READ, MAP_FILE, fd, 0);
 	if (addr == 0) goto cleanmmap;
 	if (addr == (void *) -1) goto cleanmmap;
-	
+
 	obj->mBegin = (char *) addr;
 	obj->mEnd = obj->mBegin + len;
 	obj->mFree = false;
 	obj->mClose = true;
 	obj->mUnmap = true;
-	obj->mFile = fd;	
+	obj->mFile = fd;
 	return obj;
-	
+
 cleanmmap:
-	if (addr != 0 && addr != (void *) -1) bsd_munmap(addr, len);	
+	if (addr != 0 && addr != (void *) -1) bsd_munmap(addr, len);
 	if (fd) bsd_close(fd);
 	fd = 0;
 	addr = NULL;
@@ -562,17 +562,17 @@ cleanupwin:
 	if (winFile) 		CloseHandle(winFile);
 #endif
 
-	
+
 	fi = fopen(inPath, "rb");
 	if (!fi) goto bail;
 
 	fseek(fi, 0L, SEEK_END);
 	file_size = ftell(fi);
 	fseek(fi, 0L, SEEK_SET);
-	
+
 	mem = (char *) malloc(file_size);
 	if (!mem) goto bail;
-	
+
 	if (fread(mem, 1, file_size, fi) != file_size)
 		goto bail;
 
@@ -584,12 +584,12 @@ cleanupwin:
 	obj->mUnmap = false;
 	obj->mFile = 0;
 
-	return obj;	
+	return obj;
 bail:
 	if (unz) unzClose(unz);
 	if (obj) delete obj;
 	if (mem) free(mem);
-	if (fi) fclose(fi);	
+	if (fi) fclose(fi);
 	return NULL;
 }
 
@@ -602,10 +602,10 @@ void		MemFile_Close(MFMemFile * inFile)
 		bsd_munmap((void *) inFile->mBegin, inFile->mEnd - inFile->mBegin);
 	if (inFile->mClose)
 		bsd_close(inFile->mFile);
-#endif		
+#endif
 #if IBM
 	if (inFile->mUnmap)
-	{	
+	{
 		UnmapViewOfFile(inFile->mBegin);
 		CloseHandle(inFile->mWinFileMapping);
 		CloseHandle(inFile->mWinFile);
@@ -636,12 +636,12 @@ MFTextScanner *	TextScanner_Open		(MFMemFile * inFile)
 	scanner->mRunBegin = inFile->mBegin;
 	scanner->mRunEnd = inFile->mBegin;
 	scanner->mFileEnd = inFile->mEnd;
-	
-	while (scanner->mRunEnd < scanner->mFileEnd && 
+
+	while (scanner->mRunEnd < scanner->mFileEnd &&
 				*(scanner->mRunEnd) != '\n' &&
 				*(scanner->mRunEnd) != '\r')
 		scanner->mRunEnd++;
-	
+
 	return scanner;
 }
 
@@ -651,12 +651,12 @@ MFTextScanner *	TextScanner_OpenMem		(const char * inBegin, const char * inEnd)
 	scanner->mRunBegin = inBegin;
 	scanner->mRunEnd = inBegin;
 	scanner->mFileEnd = inEnd;
-	
-	while (scanner->mRunEnd < scanner->mFileEnd && 
+
+	while (scanner->mRunEnd < scanner->mFileEnd &&
 				*(scanner->mRunEnd) != '\n' &&
 				*(scanner->mRunEnd) != '\r')
 		scanner->mRunEnd++;
-	
+
 	return scanner;
 }
 
@@ -681,12 +681,12 @@ void			TextScanner_Next		(MFTextScanner * s)
 		if (s->mRunBegin == s->mFileEnd)	return;
 
 		if (*(s->mRunBegin) == '\n')
-			s->mRunBegin++;			
+			s->mRunBegin++;
 	} else
 		s->mRunBegin++;
 	s->mRunEnd = s->mRunBegin;
-	
-	while (s->mRunEnd < s->mFileEnd && 
+
+	while (s->mRunEnd < s->mFileEnd &&
 				*(s->mRunEnd) != '\n' &&
 				*(s->mRunEnd) != '\r')
 		s->mRunEnd++;
@@ -707,7 +707,7 @@ void			TextScanner_ExtractString(MFTextScanner * inScanner, int inBegin, int inE
 		++sp;
 	while (sp < ep && isspace(*(ep-1)))
 		--ep;
-			
+
 	outString = string(sp, ep);
 }
 
@@ -716,14 +716,14 @@ long			TextScanner_ExtractLong(MFTextScanner * inScanner, int inBegin, int inEnd
 	const char * line = TextScanner_GetBegin(inScanner);
 	const char * s = line + inBegin;
 	const char * e = line + inEnd;
-	
+
 	long	retVal = 0;
 	bool	neg = false;
-	
+
 	while (s < e && isspace(*s)) ++s;
 	if (*s == '-') { neg = true; ++s; }
 	if (*s == '+') ++s;
-	
+
 	while (s < e && (*s) >= '0' && (*s) <= '9')
 	{
 		retVal *= 10;
@@ -739,12 +739,12 @@ unsigned long	TextScanner_ExtractUnsignedLong(MFTextScanner * inScanner, int inB
 	const char * line = TextScanner_GetBegin(inScanner);
 	const char * s = line + inBegin;
 	const char * e = line + inEnd;
-	
+
 	long	retVal = 0;
-	
+
 	while (s < e && isspace(*s)) ++s;
 	if (*s == '+') ++s;
-	
+
 	while (s < e && (*s) >= '0' && (*s) <= '9')
 	{
 		retVal *= 10;
@@ -789,15 +789,15 @@ void	TextScanner_TokenizeLine(MFTextScanner * inScanner, const char * inDelim, c
 
 		// If the token starts with a # or we hit the newline, we're done, bail.
 		if (termLookup[*begin]) return;
-		
+
 		// Mark the token start.
 		const unsigned char * tokenStart = begin;
-		
+
 		// If the token will go to the end becuase of a max limit, nuke
 		// the delim table so we just go
 		if (tokens_so_far == inMax)
 			memset(delimLookup, 0, sizeof(delimLookup));
-		
+
 		// Scan to the next white space or # symbol.  This is the whole token.
 		while (begin < end && !delimLookup[*begin] && !termLookup[*begin])
 			++begin;
@@ -810,7 +810,7 @@ void	TextScanner_TokenizeLine(MFTextScanner * inScanner, const char * inDelim, c
 static 	bool TokenizeToVector(const char * inBegin, const char * inEnd, void * inRef)
 {
 	pair<vector<string>,int> * v = (pair<vector<string>,int> *) inRef;
-	
+
 	v->first.push_back(string(inBegin, inEnd));
 	return v->first.size() < v->second;
 }
@@ -872,7 +872,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		if (cbFunc(ent->d_name, S_ISDIR(ss.st_mode), ref))
 			break;
 
-	}     
+	}
      closedir(dir);
      return true;
 
@@ -884,7 +884,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		string::size_type 	sep;
 		Str255				fnameP;
 		int					index;
-	
+
 	sep = path.find(DIR_CHAR);
 	if (sep == path.npos)
 	{
@@ -897,42 +897,42 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	if (::FSMakeFSSpec(0, 0, fnameP, &dirLoc) != noErr) return false;
 	if (dirLoc.parID == fsRtParID)
 		dirLoc.parID = fsRtDirID;
-	
+
 	if (sep != path.npos)
 		path.erase(0,sep+1);
 	else
 		path.clear();
-		
+
 	while(!path.empty())
 	{
 		sep = path.find(DIR_CHAR);
-		if (sep == path.npos) 
+		if (sep == path.npos)
 			comp = path;
 		else
 			comp = path.substr(0, sep);
 		memcpy(fnameP+1,comp.c_str(), comp.size());
 		fnameP[0] = comp.size();
-		
+
 		pb.dirInfo.ioNamePtr = fnameP;
 		pb.dirInfo.ioVRefNum = dirLoc.vRefNum;
 		pb.dirInfo.ioDrDirID = dirLoc.parID;
 		pb.dirInfo.ioFDirIndex = 0;
-		
+
 		if (PBGetCatInfoSync(&pb) != noErr)
 			return false;
-		
-		if ((pb.dirInfo.ioFlAttrib & ioDirMask) == 0) 
+
+		if ((pb.dirInfo.ioFlAttrib & ioDirMask) == 0)
 			return false;
 		dirLoc.parID = pb.dirInfo.ioDrDirID;
 
 		if (sep == path.npos)
 			path.clear();
 		else
-			path.erase(0, sep+1);		
+			path.erase(0, sep+1);
 	}
-	
+
 	index = 1;
-	
+
 	while (1)
 	{
 		pb.hFileInfo.ioNamePtr = fnameP;
@@ -941,13 +941,13 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		pb.hFileInfo.ioFDirIndex = index;
 		if (PBGetCatInfoSync(&pb) != noErr)
 			return true;
-		
+
 		char	buf[256];
 		memcpy(buf,fnameP+1,fnameP[0]);
 		buf[fnameP[0]] = 0;
 		if (cbFunc(buf, pb.hFileInfo.ioFlAttrib & ioDirMask, ref))
 			return true;
-	
+
 		++index;
 	}
 
@@ -955,7 +955,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 	char path[MAX_PATH], SearchPath[MAX_PATH];
 	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;		
+	HANDLE hFind;
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
@@ -965,8 +965,8 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
 		return false;
-	} 
-	else 
+	}
+	else
 	{
 		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 		{
@@ -993,7 +993,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	return true;
 #else
 	#error PLATFORM NOT KNOWN
-#endif	
+#endif
 }
 
 
@@ -1016,7 +1016,7 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 		FSSpec				dirLoc = { 0 };
 		string::size_type 	sep;
 		Str255				fnameP;
-	
+
 	sep = stlpath.find(DIR_CHAR);
 	if (sep == stlpath.npos)
 	{
@@ -1029,44 +1029,44 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	if (::FSMakeFSSpec(0, 0, fnameP, &dirLoc) != noErr) return mf_BadFile;
 	if (dirLoc.parID == fsRtParID)
 		dirLoc.parID = fsRtDirID;
-	
+
 	if (sep != stlpath.npos)
 		stlpath.erase(0,sep+1);
-	else  
+	else
 		stlpath.clear();
 
-	if (stlpath.empty()) 
+	if (stlpath.empty())
 		return mf_Directory;
-	
+
 	while(!stlpath.empty())
 	{
 		sep = stlpath.find(DIR_CHAR);
-		if (sep == stlpath.npos) 
+		if (sep == stlpath.npos)
 			comp = stlpath;
 		else
 			comp = stlpath.substr(0, sep);
 		memcpy(fnameP+1,comp.c_str(), comp.size());
 		fnameP[0] = comp.size();
-		
+
 		pb.dirInfo.ioNamePtr = fnameP;
 		pb.dirInfo.ioVRefNum = dirLoc.vRefNum;
 		pb.dirInfo.ioDrDirID = dirLoc.parID;
 		pb.dirInfo.ioFDirIndex = 0;
-		
+
 		if (PBGetCatInfoSync(&pb) != noErr)
 			return mf_BadFile;
-		
+
 		dirLoc.parID = pb.dirInfo.ioDrDirID;
 
 		if (sep == stlpath.npos)
 			stlpath.clear();
 		else
-			stlpath.erase(0, sep+1);		
+			stlpath.erase(0, sep+1);
 	}
 
 	if (pb.dirInfo.ioFlAttrib & ioDirMask)
-		return mf_Directory;			
-	
+		return mf_Directory;
+
 	file_size = pb.hFileInfo.ioFlLgLen;
 
 #elif IBM
@@ -1074,7 +1074,7 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	if (stat(path, &ss) < 0)
 		return mf_BadFile;
 //	if (ss.st_mode & S_IFDIR) return mf_Directory;
-	if (S_ISDIR(ss.st_mode) != 0) 
+	if (S_ISDIR(ss.st_mode) != 0)
 		return mf_Directory;
 	file_size = ss.st_size;
 */
@@ -1093,12 +1093,12 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	// At this point we know we have a file.
 	if (analysis_level == mf_CheckHeaders)
 	{
-		// What kind of datafile is it?  Well, if its size is < 2 bytes and known, it must not 
+		// What kind of datafile is it?  Well, if its size is < 2 bytes and known, it must not
 		// be some kind of zip.
-		
+
 		if (file_size > 0 && file_size < 2) return mf_DataFile;
-		
-		// Read the first two bytes as a signature...that'll ID a ZIP vs. a 
+
+		// Read the first two bytes as a signature...that'll ID a ZIP vs. a
 		FILE * fi = fopen(path, "rb");
 		if (!fi)	return mf_BadFile;
 		unsigned char	buf[2] = { 0 };
@@ -1115,7 +1115,7 @@ static int getoct(char *p,int width)
 {
   int result = 0;
   char c;
-  
+
   while (width --)
     {
       c = *p++;
@@ -1150,7 +1150,7 @@ MF_GetDirectoryBulk(
 
 	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingMacRoman);
 	if (cfstr == NULL) return 0;
-	
+
 	#if defined(__MWERKS__)
 		cfurl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfstr, kCFURLHFSPathStyle, TRUE);
 	#else
@@ -1165,7 +1165,7 @@ MF_GetDirectoryBulk(
 		return 0;
 	}
 	CFRelease(cfurl);
-		
+
 	err = FSOpenIterator(&ref, kFSIterateFlat, &iter);
 	if (err != noErr) return 0;
 
@@ -1174,7 +1174,7 @@ MF_GetDirectoryBulk(
 		err = FSGetCatalogInfoBulk(iter, 256, &fetched, NULL, kFSCatInfoNodeFlags | kFSCatInfoContentMod, infos, NULL, NULL, names);
 		if (err != noErr && err != errFSNoMoreItems)
 			break;
-			
+
 		for (int n = 0; n < fetched; ++n)
 		{
 			int m = names[n].length;
@@ -1190,14 +1190,14 @@ MF_GetDirectoryBulk(
 			}
 			++total;
 		}
-		
+
 		if (err == errFSNoMoreItems)
 			break;
 	}
-	
+
 	FSCloseIterator(iter);
 	return total;
-			
+
 #elif IBM
 
 	char				searchPath[MAX_PATH];
@@ -1249,7 +1249,7 @@ bool	MF_Untar(		const char * 	path,
 	tar_buffer	block_buf;
 	void *		openOut = NULL;
 	int			len;
-	
+
 	if (unzip) {
 		gfi = gzopen(path, "rb"); if (!gfi) goto bail;
 	} else {
@@ -1264,7 +1264,7 @@ bool	MF_Untar(		const char * 	path,
 			len = fread(&block_buf, 1, BLOCKSIZE, fi);
 		if (len != BLOCKSIZE)
 			goto bail;
-			
+
 		if (expect_header)
 		{
 			switch(block_buf.header.typeflag) {
@@ -1300,7 +1300,7 @@ bool	MF_Untar(		const char * 	path,
 bail:
 	if (fi) fclose(fi);
 	if (gfi) gzclose(gfi);
-	return success;		
+	return success;
 }
 
 inline int iseoln(const char c) { return c == '\n' || c == '\r'; }

@@ -30,7 +30,7 @@
 ** option is set.  Thus NDEBUG becomes an opt-in rather than an opt-out
 ** feature.
 */
-#if !defined(NDEBUG) && !defined(SQLITE_DEBUG) 
+#if !defined(NDEBUG) && !defined(SQLITE_DEBUG)
 # define NDEBUG 1
 #endif
 
@@ -85,9 +85,9 @@
 
 /*
 ** The maximum number of in-memory pages to use for the main database
-** table and for temporary tables. Internally, the MAX_PAGES and 
+** table and for temporary tables. Internally, the MAX_PAGES and
 ** TEMP_PAGES macros are used. To override the default values at
-** compilation time, the SQLITE_DEFAULT_CACHE_SIZE and 
+** compilation time, the SQLITE_DEFAULT_CACHE_SIZE and
 ** SQLITE_DEFAULT_TEMP_CACHE_SIZE macros should be set.
 */
 #ifdef SQLITE_DEFAULT_CACHE_SIZE
@@ -103,7 +103,7 @@
 
 /*
 ** OMIT_TEMPDB is set to 1 if SQLITE_OMIT_TEMPDB is defined, or 0
-** afterward. Having this macro allows us to cause the C compiler 
+** afterward. Having this macro allows us to cause the C compiler
 ** to omit code used by TEMP tables without messy #ifndef statements.
 */
 #ifdef SQLITE_OMIT_TEMPDB
@@ -220,7 +220,7 @@ extern const int sqlite3one;
 
 /*
 ** An instance of the following structure is used to store the busy-handler
-** callback for a given sqlite handle. 
+** callback for a given sqlite handle.
 **
 ** The sqlite.busyHandler member of the sqlite struct contains the busy
 ** callback for the database handle. Each pager opened via the sqlite
@@ -235,7 +235,7 @@ struct BusyHandler {
 };
 
 /*
-** Defer sourcing vdbe.h and btree.h until after the "u8" and 
+** Defer sourcing vdbe.h and btree.h until after the "u8" and
 ** "BusyHandler typedefs.
 */
 #include "vdbe.h"
@@ -392,7 +392,7 @@ struct Schema {
 };
 
 /*
-** These macros can be used to test, set, or clear bits in the 
+** These macros can be used to test, set, or clear bits in the
 ** Db.flags field.
 */
 #define DbHasProperty(D,I,P)     (((D)->aDb[I].pSchema->flags&(P))==(P))
@@ -470,9 +470,9 @@ struct sqlite3 {
   void *pTraceArg;                          /* Argument to the trace function */
   void (*xProfile)(void*,const char*,u64);  /* Profiling function */
   void *pProfileArg;                        /* Argument to profile function */
-  void *pCommitArg;                 /* Argument to xCommitCallback() */   
+  void *pCommitArg;                 /* Argument to xCommitCallback() */
   int (*xCommitCallback)(void*);    /* Invoked at every commit. */
-  void *pRollbackArg;               /* Argument to xRollbackCallback() */   
+  void *pRollbackArg;               /* Argument to xRollbackCallback() */
   void (*xRollbackCallback)(void*); /* Invoked at every commit. */
   void *pUpdateArg;
   void (*xUpdateCallback)(void*,int, const char*,const char*,sqlite_int64);
@@ -537,7 +537,7 @@ struct sqlite3 {
 #define SQLITE_SqlTrace       0x00000200  /* Debug print SQL as it executes */
 #define SQLITE_VdbeListing    0x00000400  /* Debug listings of VDBE programs */
 #define SQLITE_WriteSchema    0x00000800  /* OK to update SQLITE_MASTER */
-#define SQLITE_NoReadlock     0x00001000  /* Readlocks are omitted when 
+#define SQLITE_NoReadlock     0x00001000  /* Readlocks are omitted when
                                           ** accessing read-only databases */
 #define SQLITE_IgnoreChecks   0x00002000  /* Do not enforce check constraints */
 #define SQLITE_ReadUncommitted 0x00004000 /* For shared-cache mode */
@@ -654,7 +654,7 @@ struct CollSeq {
 **
 ** These used to have mnemonic name like 'i' for SQLITE_AFF_INTEGER and
 ** 't' for SQLITE_AFF_TEXT.  But we can save a little space and improve
-** the speed a little by number the values consecutively.  
+** the speed a little by number the values consecutively.
 **
 ** But rather than start with 0 or 1, we begin with 'a'.  That way,
 ** when multiple affinity types are concatenated into a string and
@@ -695,10 +695,10 @@ struct CollSeq {
 ** in sqlite.aDb[].  0 is for the main database and 1 is for the file that
 ** holds temporary tables and indices.  If Table.isEphem
 ** is true, then the table is stored in a file that is automatically deleted
-** when the VDBE cursor to the table is closed.  In this case Table.tnum 
+** when the VDBE cursor to the table is closed.  In this case Table.tnum
 ** refers VDBE cursor number that holds the table open, not to the root
 ** page number.  Transient tables are used to hold the results of a
-** sub-query that appears instead of a real table name in the FROM clause 
+** sub-query that appears instead of a real table name in the FROM clause
 ** of a SELECT statement.
 */
 struct Table {
@@ -808,7 +808,7 @@ struct FKey {
 ** key is set to NULL.  CASCADE means that a DELETE or UPDATE of the
 ** referenced table row is propagated into the row that holds the
 ** foreign key.
-** 
+**
 ** The following symbolic values are used to record which type
 ** of action to take.
 */
@@ -829,7 +829,7 @@ struct FKey {
 
 /*
 ** An instance of the following structure is passed as the first
-** argument to sqlite3VdbeKeyCompare and is used to control the 
+** argument to sqlite3VdbeKeyCompare and is used to control the
 ** comparison of the two index keys.
 **
 ** If the KeyInfo.incrKey value is true and the comparison would
@@ -858,7 +858,7 @@ struct KeyInfo {
 ** In the Table structure describing Ex1, nCol==3 because there are
 ** three columns in the table.  In the Index structure describing
 ** Ex2, nColumn==2 since 2 of the 3 columns of Ex1 are indexed.
-** The value of aiColumn is {2, 0}.  aiColumn[0]==2 because the 
+** The value of aiColumn is {2, 0}.  aiColumn[0]==2 because the
 ** first column to be indexed (c3) has an index of 2 in Ex1.aCol[].
 ** The second column to be indexed (c1) has an index of 0 in
 ** Ex1.aCol[], hence Ex2.aiColumn[1]==0.
@@ -866,7 +866,7 @@ struct KeyInfo {
 ** The Index.onError field determines whether or not the indexed columns
 ** must be unique and what to do if they are not.  When Index.onError=OE_None,
 ** it means this is not a unique index.  Otherwise it is a unique index
-** and the value of Index.onError indicate the which conflict resolution 
+** and the value of Index.onError indicate the which conflict resolution
 ** algorithm to employ whenever an attempt is made to insert a non-unique
 ** element.
 */
@@ -1023,7 +1023,7 @@ struct Expr {
 #define EP_InfixFunc    0x80  /* True for an infix function: LIKE, GLOB, etc */
 
 /*
-** These macros can be used to test, set, or clear bits in the 
+** These macros can be used to test, set, or clear bits in the
 ** Expr.flags field.
 */
 #define ExprHasProperty(E,P)     (((E)->flags&(P))==(P))
@@ -1138,12 +1138,12 @@ struct SrcList {
 ** All the pIdxInfo pointers are freed by whereInfoFree() in where.c.
 ** The pBestIdx pointer is a copy of pIdxInfo for the i-th table after
 ** FROM clause ordering.  This is a little confusing so I will repeat
-** it in different words.  WhereInfo.a[i].pIdxInfo is index information 
+** it in different words.  WhereInfo.a[i].pIdxInfo is index information
 ** for WhereInfo.pTabList.a[i].  WhereInfo.a[i].pBestInfo is the
 ** index information for the i-th loop of the join.  pBestInfo is always
-** either NULL or a copy of some pIdxInfo.  So for cleanup it is 
+** either NULL or a copy of some pIdxInfo.  So for cleanup it is
 ** sufficient to free all of the pIdxInfo pointers.
-** 
+**
 */
 struct WhereLevel {
   int iFrom;            /* Which entry in the FROM clause */
@@ -1196,12 +1196,12 @@ struct WhereInfo {
 ** pEList corresponds to the result set of a SELECT and is NULL for
 ** other statements.
 **
-** NameContexts can be nested.  When resolving names, the inner-most 
+** NameContexts can be nested.  When resolving names, the inner-most
 ** context is searched first.  If no match is found, the next outer
 ** context is checked.  If there is still no match, the next context
 ** is checked.  This process continues until either a match is found
 ** or all contexts are check.  When a match is found, the nRef member of
-** the context containing the match is incremented. 
+** the context containing the match is incremented.
 **
 ** Each subquery gets a new NameContext.  The pNext field points to the
 ** NameContext in the parent query.  Thus the process of scanning the
@@ -1291,7 +1291,7 @@ struct Select {
 ** is constant but the second part is reset at the beginning and end of
 ** each recursion.
 **
-** The nTableLock and aTableLock variables are only used if the shared-cache 
+** The nTableLock and aTableLock variables are only used if the shared-cache
 ** feature is enabled (if sqlite3Tsd()->useSharedData is true). They are
 ** used to store the set of table-locks required by the statement being
 ** compiled. Function sqlite3TableLock() is used to add entries to the
@@ -1369,10 +1369,10 @@ struct AuthContext {
 
 /*
  * Each trigger present in the database schema is stored as an instance of
- * struct Trigger. 
+ * struct Trigger.
  *
  * Pointers to instances of struct Trigger are stored in two ways.
- * 1. In the "trigHash" hash table (part of the sqlite3* that represents the 
+ * 1. In the "trigHash" hash table (part of the sqlite3* that represents the
  *    database). This allows Trigger structures to be retrieved by name.
  * 2. All triggers associated with a single table form a linked list, using the
  *    pNext member of struct Trigger. A pointer to the first element of the
@@ -1400,7 +1400,7 @@ struct Trigger {
 
 /*
 ** A trigger is either a BEFORE or an AFTER trigger.  The following constants
-** determine which. 
+** determine which.
 **
 ** If there are multiple triggers, you might of some BEFORE and some AFTER.
 ** In that cases, the constants below can be ORed together.
@@ -1410,15 +1410,15 @@ struct Trigger {
 
 /*
  * An instance of struct TriggerStep is used to store a single SQL statement
- * that is a part of a trigger-program. 
+ * that is a part of a trigger-program.
  *
  * Instances of struct TriggerStep are stored in a singly linked list (linked
- * using the "pNext" member) referenced by the "step_list" member of the 
+ * using the "pNext" member) referenced by the "step_list" member of the
  * associated struct Trigger instance. The first element of the linked list is
  * the first step of the trigger-program.
- * 
+ *
  * The "op" member indicates whether this is a "DELETE", "INSERT", "UPDATE" or
- * "SELECT" statement. The meanings of the other members is determined by the 
+ * "SELECT" statement. The meanings of the other members is determined by the
  * value of "op" as follows:
  *
  * (op == TK_INSERT)
@@ -1428,7 +1428,7 @@ struct Trigger {
  * target    -> A token holding the name of the table to insert into.
  * pExprList -> If this is an INSERT INTO ... VALUES ... statement, then
  *              this stores values to be inserted. Otherwise NULL.
- * pIdList   -> If this is an INSERT INTO ... (<column-names>) VALUES ... 
+ * pIdList   -> If this is an INSERT INTO ... (<column-names>) VALUES ...
  *              statement, then this stores the column-names to be
  *              inserted into.
  *
@@ -1436,7 +1436,7 @@ struct Trigger {
  * target    -> A token holding the name of the table to delete from.
  * pWhere    -> The WHERE clause of the DELETE statement if one is specified.
  *              Otherwise NULL.
- * 
+ *
  * (op == TK_UPDATE)
  * target    -> A token holding the name of the table to update rows of.
  * pWhere    -> The WHERE clause of the UPDATE statement if one is specified.
@@ -1444,18 +1444,18 @@ struct Trigger {
  * pExprList -> A list of the columns to update and the expressions to update
  *              them to. See sqlite3Update() documentation of "pChanges"
  *              argument.
- * 
+ *
  */
 struct TriggerStep {
   int op;              /* One of TK_DELETE, TK_UPDATE, TK_INSERT, TK_SELECT */
   int orconf;          /* OE_Rollback etc. */
   Trigger *pTrig;      /* The trigger that this step is a part of */
 
-  Select *pSelect;     /* Valid for SELECT and sometimes 
+  Select *pSelect;     /* Valid for SELECT and sometimes
 			  INSERT steps (when pExprList == 0) */
   Token target;        /* Valid for DELETE, UPDATE, INSERT steps */
   Expr *pWhere;        /* Valid for DELETE, UPDATE steps */
-  ExprList *pExprList; /* Valid for UPDATE statements and sometimes 
+  ExprList *pExprList; /* Valid for UPDATE statements and sometimes
 			   INSERT steps (when pSelect == 0)         */
   IdList *pIdList;     /* Valid for INSERT statements only */
   TriggerStep *pNext;  /* Next in the link-list */
@@ -1468,24 +1468,24 @@ struct TriggerStep {
  * coded, its associated TriggerStack instance is pointed to by the
  * "pTriggerStack" member of the Parse structure.
  *
- * The pTab member points to the table that triggers are being coded on. The 
+ * The pTab member points to the table that triggers are being coded on. The
  * newIdx member contains the index of the vdbe cursor that points at the temp
  * table that stores the new.* references. If new.* references are not valid
  * for the trigger being coded (for example an ON DELETE trigger), then newIdx
  * is set to -1. The oldIdx member is analogous to newIdx, for old.* references.
  *
- * The ON CONFLICT policy to be used for the trigger program steps is stored 
- * as the orconf member. If this is OE_Default, then the ON CONFLICT clause 
+ * The ON CONFLICT policy to be used for the trigger program steps is stored
+ * as the orconf member. If this is OE_Default, then the ON CONFLICT clause
  * specified for individual triggers steps is used.
  *
  * struct TriggerStack has a "pNext" member, to allow linked lists to be
  * constructed. When coding nested triggers (triggers fired by other triggers)
- * each nested trigger stores its parent trigger's TriggerStack as the "pNext" 
+ * each nested trigger stores its parent trigger's TriggerStack as the "pNext"
  * pointer. Once the nested trigger has been coded, the pNext value is restored
  * to the pTriggerStack member of the Parse stucture and coding of the parent
  * trigger continues.
  *
- * Before a nested trigger is coded, the linked list pointed to by the 
+ * Before a nested trigger is coded, the linked list pointed to by the
  * pTriggerStack is scanned to ensure that the trigger is not about to be coded
  * recursively. If this condition is detected, the nested trigger is not coded.
  */
@@ -1502,7 +1502,7 @@ struct TriggerStack {
 /*
 ** The following structure contains information used by the sqliteFix...
 ** routines as they walk the parse tree to make database references
-** explicit.  
+** explicit.
 */
 typedef struct DbFixer DbFixer;
 struct DbFixer {
@@ -1525,7 +1525,7 @@ typedef struct {
 
 /*
  * This global flag is set for performance testing of triggers. When it is set
- * SQLite will perform the overhead of building new and old trigger references 
+ * SQLite will perform the overhead of building new and old trigger references
  * even when no triggers exist
  */
 extern int sqlite3_always_code_trigger_setup;
@@ -1705,7 +1705,7 @@ void sqlite3ChangeCookie(sqlite3*, Vdbe*, int);
   void sqlite3DropTrigger(Parse*, SrcList*, int);
   void sqlite3DropTriggerPtr(Parse*, Trigger*);
   int sqlite3TriggersExist(Parse*, Table*, int, ExprList*);
-  int sqlite3CodeRowTrigger(Parse*, int, ExprList*, int, Table *, int, int, 
+  int sqlite3CodeRowTrigger(Parse*, int, ExprList*, int, Table *, int, int,
                            int, int);
   void sqliteViewTriggers(Parse*, Table*, Expr*, int, ExprList*);
   void sqlite3DeleteTriggerStep(TriggerStep*);
@@ -1819,7 +1819,7 @@ void sqlite3SchemaFree(void *);
 Schema *sqlite3SchemaGet(Btree *);
 int sqlite3SchemaToIndex(sqlite3 *db, Schema *);
 KeyInfo *sqlite3IndexKeyinfo(Parse *, Index *);
-int sqlite3CreateFunc(sqlite3 *, const char *, int, int, void *, 
+int sqlite3CreateFunc(sqlite3 *, const char *, int, int, void *,
   void (*)(sqlite3_context*,int,sqlite3_value **),
   void (*)(sqlite3_context*,int,sqlite3_value **), void (*)(sqlite3_context*));
 int sqlite3ApiExit(sqlite3 *db, int);

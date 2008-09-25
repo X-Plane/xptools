@@ -19,7 +19,7 @@
 #include "x86_Win32 DLL.h"
 
 /*	This DLL user entry point function is only required when your application
-	has special initialization or termination requirements.  Otherwise 
+	has special initialization or termination requirements.  Otherwise
 	the MSL runtime provides the appropriate startup code.  */
 BOOL WINAPI DllMain ( HINSTANCE hInst, DWORD wDataSeg, LPVOID lpvReserved );
 
@@ -28,10 +28,10 @@ BOOL WINAPI DllMain( HINSTANCE hInst, DWORD fdwReason, LPVOID lpReserved )
 	char buf[512];
 	char exename[256];
 	char dllname[256];
-	
+
 	GetModuleFileName(0L, exename, sizeof(exename));
 	GetModuleFileName(hInst, dllname, sizeof(dllname));
-		
+
 	switch(fdwReason)
 	{
 		case DLL_PROCESS_ATTACH:

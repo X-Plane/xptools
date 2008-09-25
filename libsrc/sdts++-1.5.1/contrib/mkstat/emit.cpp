@@ -18,12 +18,12 @@ extern bool verbose;
 
 
 void
-emit( sb_Module const & module, 
+emit( sb_Module const & module,
       sio_8211Writer& writer )
 {
 
   sc_Record record;
-      
+
   if ( ! module.getRecord( record ) )
     {
       cerr << "unable to build record\n";

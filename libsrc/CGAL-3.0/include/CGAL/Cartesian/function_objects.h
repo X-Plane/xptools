@@ -183,7 +183,7 @@ namespace CartesianKernelFunctors {
 
     Angle
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       return angleC3(p.x(), p.y(), p.z(),
 		     q.x(), q.y(), q.z(),
 		     r.x(), r.y(), r.z());
@@ -194,18 +194,18 @@ namespace CartesianKernelFunctors {
   class Collinear_are_ordered_along_line_2
   {
     typedef typename K::Point_2         Point_2;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_2 Collinear_2;
     Collinear_2 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_ordered_along_line_2() {}
     Collinear_are_ordered_along_line_2(const Collinear_2& c_) : c(c_) {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
@@ -220,18 +220,18 @@ namespace CartesianKernelFunctors {
   class Collinear_are_ordered_along_line_3
   {
     typedef typename K::Point_3         Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_3 Collinear_3;
     Collinear_3 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_ordered_along_line_3() {}
     Collinear_are_ordered_along_line_3(const Collinear_3& c_) : c(c_) {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
@@ -240,26 +240,26 @@ namespace CartesianKernelFunctors {
       return collinear_are_ordered_along_lineC3(p.x(), p.y(), p.z(),
 						q.x(), q.y(), q.z(),
 						r.x(), r.y(), r.z());
-    }  
+    }
   };
 
   template <typename K>
   class Collinear_are_strictly_ordered_along_line_2
   {
     typedef typename K::Point_2         Point_2;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_2 Collinear_2;
     Collinear_2 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_strictly_ordered_along_line_2() {}
-    Collinear_are_strictly_ordered_along_line_2(const Collinear_2& c_) : c(c_) 
+    Collinear_are_strictly_ordered_along_line_2(const Collinear_2& c_) : c(c_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
@@ -274,19 +274,19 @@ namespace CartesianKernelFunctors {
   class Collinear_are_strictly_ordered_along_line_3
   {
     typedef typename K::Point_3         Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Collinear_3 Collinear_3;
     Collinear_3 c;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef bool             result_type;
     typedef Arity_tag< 3 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Collinear_are_strictly_ordered_along_line_3() {}
     Collinear_are_strictly_ordered_along_line_3(const Collinear_3& c_) : c(c_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
@@ -295,7 +295,7 @@ namespace CartesianKernelFunctors {
       return collinear_are_strictly_ordered_along_lineC3(p.x(), p.y(), p.z(),
 							 q.x(), q.y(), q.z(),
 							 r.x(), r.y(), r.z());
-    }  
+    }
   };
 
   template <typename K>
@@ -307,7 +307,7 @@ namespace CartesianKernelFunctors {
     typedef typename K::Construct_point_on_2  Construct_point_on_2;
     typedef typename K::Compare_x_2           Compare_x_2;
     typedef typename K::Compare_y_2           Compare_y_2;
-    typedef typename K::Collinear_are_ordered_along_line_2  
+    typedef typename K::Collinear_are_ordered_along_line_2
     Collinear_are_ordered_along_line_2;
     Construct_point_on_2 cp;
     Compare_x_2 cx;
@@ -321,14 +321,14 @@ namespace CartesianKernelFunctors {
     Collinear_has_on_2(const Construct_point_on_2& cp_,
 		       const Compare_x_2& cx_,
 		       const Compare_y_2& cy_,
-		       const Collinear_are_ordered_along_line_2& co_) 
+		       const Collinear_are_ordered_along_line_2& co_)
       : cp(cp_), cx(cx_), cy(cy_), co(co_)
     {}
 
     bool
     operator()( const Ray_2& r, const Point_2& p) const
     {
-      Point_2 source = cp(r,0);      
+      Point_2 source = cp(r,0);
       Point_2 second = cp(r,1);
       switch(cx(source, second)) {
       case SMALLER:
@@ -346,10 +346,10 @@ namespace CartesianKernelFunctors {
         }
       } // switch
     }
-  
+
     bool
     operator()( const Segment_2& s, const Point_2& p) const
-    { 
+    {
       return co(cp(s,0), p, cp(s,1));
     }
   };
@@ -429,7 +429,7 @@ namespace CartesianKernelFunctors {
 
     Comparison_result
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       return cmp_dist_to_pointC3(p.x(), p.y(), p.z(),
 				 q.x(), q.y(), q.z(),
 				 r.x(), r.y(), r.z());
@@ -447,13 +447,13 @@ namespace CartesianKernelFunctors {
 
     Comparison_result
     operator()(const Line_2& l1, const Line_2& l2) const
-    { 
+    {
       return compare_slopesC2(l1.a(), l1.b(), l2.a(), l2.b());
     }
 
     Comparison_result
     operator()(const Segment_2& s1, const Segment_2& s2) const
-    { 
+    {
       return compare_slopesC2(s1.source().x(), s1.source().y(),
 			      s1.target().x(), s1.target().y(),
 			      s2.source().x(), s2.source().y(),
@@ -476,14 +476,14 @@ namespace CartesianKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Line_2& h1, const Line_2& h2) const
-    { 
+    {
       return compare_y_at_xC2(p.y(), h1.b(), h1.a(), h1.c(),
 			      h2.b(), h2.a(), h2.c());
     }
 
     Comparison_result
     operator()( const Line_2& l1, const Line_2& l2, const Line_2& h) const
-    { 
+    {
       return compare_y_at_xC2(l1.b(), l1.a(), l1.c(), l2.b(), l2.a(), l2.c(),
 			      h.b(), h.a(), h.c());
     }
@@ -491,7 +491,7 @@ namespace CartesianKernelFunctors {
     Comparison_result
     operator()( const Line_2& l1, const Line_2& l2,
 	        const Line_2& h1, const Line_2& h2) const
-    { 
+    {
       return compare_y_at_xC2(l1.b(), l1.a(), l1.c(), l2.b(), l2.a(), l2.c(),
 			      h1.b(), h1.a(), h1.c(), h2.b(), h2.a(), h2.c());
     }
@@ -507,7 +507,7 @@ namespace CartesianKernelFunctors {
 
     Comparison_result
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       return compare_lexicographically_xyzC3(p.x(), p.y(), p.z(),
 					     q.x(), q.y(), q.z());
     }
@@ -566,7 +566,7 @@ namespace CartesianKernelFunctors {
     Comparison_result
     operator()( const Line_2& l1, const Line_2& l2,
 	        const Line_2& h1, const Line_2& h2) const
-    { 
+    {
       return compare_xC2(l1.a(), l1.b(), l1.c(), h1.a(), h1.b(), h1.c(),
 			 l2.a(), l2.b(), l2.c(), h2.a(), h2.b(), h2.c());
     }
@@ -656,9 +656,9 @@ namespace CartesianKernelFunctors {
 
     Comparison_result
     operator()( const Point_2& p, const Line_2& l1, const Line_2& l2) const
-    { 
-      return compare_xC2(p.y(), 
-			 l1.b(), l1.a(), l1.c(), 
+    {
+      return compare_xC2(p.y(),
+			 l1.b(), l1.a(), l1.c(),
 			 l2.b(), l2.a(), l2.c());
     }
 
@@ -715,7 +715,7 @@ namespace CartesianKernelFunctors {
 
     FT
     operator()( const Point_2& p, const Point_2& q) const
-    { 
+    {
       return squared_distanceC2(p.x(), p.y(), q.x(), q.y());
     }
   };
@@ -776,7 +776,7 @@ namespace CartesianKernelFunctors {
     FT
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       return squared_radiusC3(p.x(), p.y(), p.z(),
 			      q.x(), q.y(), q.z(),
 			      r.x(), r.y(), r.z(),
@@ -792,7 +792,7 @@ namespace CartesianKernelFunctors {
     typedef typename K::FT         FT;
     typedef typename K::Construct_cross_product_vector_3
     Construct_cross_product_vector_3;
-    typedef typename K::Construct_orthogonal_vector_3 
+    typedef typename K::Construct_orthogonal_vector_3
     Construct_orthogonal_vector_3;
     Construct_cross_product_vector_3 cp;
     Construct_orthogonal_vector_3 co;
@@ -805,20 +805,20 @@ namespace CartesianKernelFunctors {
 			    const Construct_orthogonal_vector_3& co_)
       : cp(cp_), co(co_)
     {}
-  
+
     Vector_3
     operator()( const Plane_3& h, int index ) const
     {
       if (index == 1) {
 	if ( CGAL_NTS is_zero(h.a()) )  // parallel to x-axis
 	  return Vector_3(FT(1), FT(0), FT(0));
-	 
+
 	if ( CGAL_NTS is_zero(h.b()) )  // parallel to y-axis
 	  return Vector_3(FT(0), FT(1), FT(0));
-	 
+
 	if ( CGAL_NTS is_zero(h.c()) )  // parallel to z-axis
 	  return Vector_3(FT(0), FT(0), FT(1));
-	 
+
 	return Vector_3(-h.b(), h.a(), FT(0));
       } else {
 	return cp(co(h), this->operator()(h,1));
@@ -864,7 +864,7 @@ namespace CartesianKernelFunctors {
     }
 
     Point_2
-    operator()(const Point_2& p, const Point_2& q, 
+    operator()(const Point_2& p, const Point_2& q,
                const Point_2& r, const Point_2& s) const
     {
       typename K::Construct_point_2 construct_point_2;
@@ -885,7 +885,7 @@ namespace CartesianKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       typename K::Construct_point_3 construct_point_3;
       FT x, y, z;
       centroidC3(p.x(), p.y(), p.z(),
@@ -896,7 +896,7 @@ namespace CartesianKernelFunctors {
     }
 
     Point_3
-    operator()(const Point_3& p, const Point_3& q, 
+    operator()(const Point_3& p, const Point_3& q,
                const Point_3& r, const Point_3& s) const
     {
       typename K::Construct_point_3 construct_point_3;
@@ -921,7 +921,7 @@ namespace CartesianKernelFunctors {
 
     Point_2
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
+    {
       typename K::Construct_point_2 construct_point_2;
       FT x, y;
       circumcenterC2(p.x(), p.y(), q.x(), q.y(), r.x(), r.y(), x, y);
@@ -940,7 +940,7 @@ namespace CartesianKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       typename K::Construct_point_3 construct_point_3;
       FT x, y, z;
       circumcenterC3(p.x(), p.y(), p.z(),
@@ -991,7 +991,7 @@ namespace CartesianKernelFunctors {
     typedef typename K::Construct_base_vector_3    Construct_base_vector_3;
     typedef typename K::Construct_point_on_3       Construct_point_on_3;
     typedef typename K::Construct_scaled_vector_3  Construct_scaled_vector_3;
-    typedef typename K::Construct_translated_point_3  
+    typedef typename K::Construct_translated_point_3
     Construct_translated_point_3;
     Construct_base_vector_3 cb;
     Construct_point_on_3 cp;
@@ -1011,7 +1011,7 @@ namespace CartesianKernelFunctors {
 
     Point_3
     operator()(const Plane_3& h, const Point_2& p) const
-    {  
+    {
       return ct(ct(cp(h), cs(cb(h,1), p.x())), cs(cb(h,2), p.y()));
     }
   };
@@ -1048,7 +1048,7 @@ namespace CartesianKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Point_2& q) const
-    { 
+    {
       FT a, b, cc;
       line_from_pointsC2(p.x(), p.y(), q.x(), q.y(), a, b, cc);
       return Line_2(a, b, cc);
@@ -1056,7 +1056,7 @@ namespace CartesianKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Direction_2& d) const
-    { 
+    {
       FT a, b, cc;
       line_from_point_directionC2(p.x(), p.y(), d.dx(), d.dy(), a, b, cc);
       return Line_2(a, b, cc);
@@ -1064,7 +1064,7 @@ namespace CartesianKernelFunctors {
 
     Line_2
     operator()(const Point_2& p, const Vector_2& v) const
-    { 
+    {
       FT a, b, cc;
       line_from_point_directionC2(p.x(), p.y(), v.x(), v.y(), a, b, cc);
       return Line_2(a, b, cc);
@@ -1100,8 +1100,8 @@ namespace CartesianKernelFunctors {
     Construct_line_3() {}
     Construct_line_3(const Construct_vector_3& cv_,
 		     const Construct_direction_3& cd_,
-		     const Construct_point_on_3& cp_) 
-      : cv(cv_), cd(cd_), cp(cp_) 
+		     const Construct_point_on_3& cp_)
+      : cv(cv_), cd(cd_), cp(cp_)
     {}
 
     Line_3
@@ -1136,7 +1136,7 @@ namespace CartesianKernelFunctors {
 
     Point_2
     operator()(const Point_2& p, const Point_2& q) const
-    { 
+    {
       typename K::Construct_point_2 construct_point_2;
       FT x, y;
       midpointC2(p.x(), p.y(), q.x(), q.y(), x, y);
@@ -1155,7 +1155,7 @@ namespace CartesianKernelFunctors {
 
     Point_3
     operator()(const Point_3& p, const Point_3& q) const
-    { 
+    {
       typename K::Construct_point_3 construct_point_3;
       FT x, y, z;
       midpointC3(p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), x, y, z);
@@ -1200,7 +1200,7 @@ namespace CartesianKernelFunctors {
 
     Vector_2
     operator()( const Vector_2& v, const FT& c) const
-    {  
+    {
       return Vector_2(c * v.x(), c * v.y());
     }
   };
@@ -1216,7 +1216,7 @@ namespace CartesianKernelFunctors {
 
     Vector_3
     operator()( const Vector_3& w, const FT& c) const
-    {  
+    {
       return Vector_3(c * w.x(), c * w.y(), c * w.z());
     }
   };
@@ -1232,7 +1232,7 @@ namespace CartesianKernelFunctors {
 
     Point_2
     operator()( const Point_2& p, const Vector_2& v) const
-    {  
+    {
       typename K::Construct_point_2 construct_point_2;
       return construct_point_2(p.x() + v.x(), p.y() + v.y());
     }
@@ -1249,7 +1249,7 @@ namespace CartesianKernelFunctors {
 
     Point_3
     operator()( const Point_3& p, const Vector_3& v) const
-    { 
+    {
       typename K::Construct_point_3 construct_point_3;
       return construct_point_3(p.x() + v.x(), p.y() + v.y(), p.z() + v.z());
     }
@@ -1324,7 +1324,7 @@ namespace CartesianKernelFunctors {
 
     Vector_3
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       return Vector_3(q.x() - p.x(), q.y() - p.y(), q.z() - p.z());
     }
 
@@ -1359,26 +1359,26 @@ namespace CartesianKernelFunctors {
   class Coplanar_orientation_3
   {
     typedef typename K::Point_3      Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Coplanar_3   Coplanar_3;
     typedef typename K::Collinear_3  Collinear_3;
     Coplanar_3 cp;
     Collinear_3 cl;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef Orientation  result_type;
     typedef Arity_tag< 4 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Coplanar_orientation_3() {}
-    Coplanar_orientation_3(const Coplanar_3& cp_, const Collinear_3& cl_) 
+    Coplanar_orientation_3(const Coplanar_3& cp_, const Collinear_3& cl_)
       : cp(cp_), cl(cl_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     Orientation
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       return coplanar_orientationC3(p.x(), p.y(), p.z(),
 				    q.x(), q.y(), q.z(),
 				    r.x(), r.y(), r.z());
@@ -1387,7 +1387,7 @@ namespace CartesianKernelFunctors {
     Orientation
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       // p,q,r,s supposed to be coplanar
       // p,q,r supposed to be non collinear
       // tests whether s is on the same side of p,q as r
@@ -1408,31 +1408,31 @@ namespace CartesianKernelFunctors {
   class Coplanar_side_of_bounded_circle_3
   {
     typedef typename K::Point_3   Point_3;
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     typedef typename K::Coplanar_3   Coplanar_3;
     typedef typename K::Collinear_3  Collinear_3;
     Coplanar_3 cp;
     Collinear_3 cl;
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
   public:
     typedef Bounded_side     result_type;
     typedef Arity_tag< 4 >   Arity;
 
-#ifdef CGAL_kernel_exactness_preconditions 
+#ifdef CGAL_kernel_exactness_preconditions
     Coplanar_side_of_bounded_circle_3() {}
-    Coplanar_side_of_bounded_circle_3(const Coplanar_3& cp_, 
-				      const Collinear_3& cl_) 
+    Coplanar_side_of_bounded_circle_3(const Coplanar_3& cp_,
+				      const Collinear_3& cl_)
       : cp(cp_), cl(cl_)
     {}
-#endif // CGAL_kernel_exactness_preconditions 
+#endif // CGAL_kernel_exactness_preconditions
 
     Bounded_side
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& t) const
-    { 
+    {
       // p,q,r,t are supposed to be coplanar.
       // p,q,r determine an orientation of this plane (not collinear).
-      // returns the equivalent of side_of_bounded_circle(p,q,r,t) 
+      // returns the equivalent of side_of_bounded_circle(p,q,r,t)
       // in this plane
       CGAL_kernel_exactness_precondition( cp(p,q,r,t) );
       CGAL_kernel_exactness_precondition( !cl(p,q,r) );
@@ -1459,7 +1459,7 @@ namespace CartesianKernelFunctors {
     bool
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       return o(p, q, r, s) == COPLANAR;
     }
   };
@@ -1474,7 +1474,7 @@ namespace CartesianKernelFunctors {
 
     bool
     operator()( const Point_3& p, const Point_3& q) const
-    { 
+    {
       return p.x() == q.x() && p.y() == q.y();
     }
   };
@@ -1554,9 +1554,9 @@ namespace CartesianKernelFunctors {
 
     bool
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
-      return has_smaller_dist_to_pointC2(p.x(), p.y(), 
-					 q.x(), q.y(), 
+    {
+      return has_smaller_dist_to_pointC2(p.x(), p.y(),
+					 q.x(), q.y(),
 					 r.x(), r.y());
     }
   };
@@ -1571,7 +1571,7 @@ namespace CartesianKernelFunctors {
 
     bool
     operator()(const Point_3& p, const Point_3& q, const Point_3& r) const
-    { 
+    {
       return has_smaller_dist_to_pointC3(p.x(), p.y(), p.z(),
 					 q.x(), q.y(), q.z(),
 					 r.x(), r.y(), r.z());
@@ -1592,7 +1592,7 @@ namespace CartesianKernelFunctors {
                const Point_2& c, const Point_2& d) const
     {
       typename K::Less_xy_2 less_xy;
-      Comparison_result res = cmp_signed_dist_to_lineC2(a.x(), a.y(), 
+      Comparison_result res = cmp_signed_dist_to_lineC2(a.x(), a.y(),
 							b.x(), b.y(),
 							c.x(), c.y(),
 							d.x(), d.y());
@@ -1617,7 +1617,7 @@ namespace CartesianKernelFunctors {
 
     bool
     operator()( const Plane_3& h, const Point_3& p, const Point_3& q) const
-    { 
+    {
       return has_smaller_signed_dist_to_directionC3(h.a(), h.b(), h.c(),
 						    p.x(), p.y(), p.z(),
 						    q.x(), q.y(), q.z());
@@ -1714,9 +1714,9 @@ namespace CartesianKernelFunctors {
 
     bool
     operator()( const Point_2& p, const Point_2& q) const
-    { 
-      return compare_lexicographically_xyC2(p.y(), p.x(), 
-					    q.y(), q.x()) == SMALLER; 
+    {
+      return compare_lexicographically_xyC2(p.y(), p.x(),
+					    q.y(), q.x()) == SMALLER;
     }
   };
 
@@ -1769,7 +1769,7 @@ namespace CartesianKernelFunctors {
 
     Orientation
     operator()(const Point_2& p, const Point_2& q, const Point_2& r) const
-    { 
+    {
       return orientationC2(p.x(), p.y(), q.x(), q.y(), r.x(), r.y());
     }
   };
@@ -1785,7 +1785,7 @@ namespace CartesianKernelFunctors {
     Orientation
     operator()( const Point_3& p, const Point_3& q,
 	        const Point_3& r, const Point_3& s) const
-    { 
+    {
       return orientationC3(p.x(), p.y(), p.z(),
 			   q.x(), q.y(), q.z(),
 			   r.x(), r.y(), r.z(),
@@ -1803,16 +1803,16 @@ namespace CartesianKernelFunctors {
 
     Bounded_side
     operator()( const Point_2& p, const Point_2& q, const Point_2& t) const
-    { 
-      return side_of_bounded_circleC2(p.x(), p.y(), 
-				      q.x(), q.y(), 
+    {
+      return side_of_bounded_circleC2(p.x(), p.y(),
+				      q.x(), q.y(),
 				      t.x(), t.y());
     }
 
     Bounded_side
     operator()( const Point_2& p, const Point_2& q,
 	        const Point_2& r, const Point_2& t) const
-    { 
+    {
       return side_of_bounded_circleC2(p.x(), p.y(), q.x(), q.y(), r.x(), r.y(),
 				      t.x(), t.y());
     }
@@ -1828,7 +1828,7 @@ namespace CartesianKernelFunctors {
 
     Bounded_side
     operator()( const Point_3& p, const Point_3& q, const Point_3& test) const
-    { 
+    {
       return side_of_bounded_sphereC3(p.x(), p.y(), p.z(),
 				      q.x(), q.y(), q.z(),
 				      test.x(), test.y(), test.z());
@@ -1868,8 +1868,8 @@ namespace CartesianKernelFunctors {
     operator()( const Point_2& p, const Point_2& q,
 	        const Point_2& r, const Point_2& t) const
     {
-      return side_of_oriented_circleC2(p.x(), p.y(), 
-				       q.x(), q.y(), 
+      return side_of_oriented_circleC2(p.x(), p.y(),
+				       q.x(), q.y(),
 				       r.x(), r.y(),
 				       t.x(), t.y());
     }
@@ -1886,7 +1886,7 @@ namespace CartesianKernelFunctors {
     Oriented_side
     operator()( const Point_3& p, const Point_3& q, const Point_3& r,
 	        const Point_3& s, const Point_3& test) const
-    { 
+    {
       return side_of_oriented_sphereC3(p.x(), p.y(), p.z(),
 				       q.x(), q.y(), q.z(),
 				       r.x(), r.y(), r.z(),

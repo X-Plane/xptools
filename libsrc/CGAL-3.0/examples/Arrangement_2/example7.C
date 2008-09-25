@@ -21,16 +21,16 @@ typedef Traits::X_monotone_curve_2                      X_monotone_curve_2;
 // A global variable to keep track of when we inserted the edges.
 int global_int = 0;
 
-struct Info 
-{ 
-  Info() : d(global_int) {} 
+struct Info
+{
+  Info() : d(global_int) {}
   // Initializes the private instance with the global variable
-  
+
   int num() {return d;}
   int d;
 };
 
-struct My_base_node : public CGAL::Arr_base_node<Curve, X_monotone_curve_2> 
+struct My_base_node : public CGAL::Arr_base_node<Curve, X_monotone_curve_2>
 {
   typedef CGAL::Arr_base_node<Curve, X_monotone_curve_2> Base;
   My_base_node() : Base(), info() {}
@@ -46,23 +46,23 @@ struct My_halfedge : public CGAL::Arr_2_halfedge_base<My_base_node> {
   Info info; // Will be initialized with the default ctr.
 };
 
-typedef CGAL::Pm_dcel<CGAL::Arr_2_vertex_base<Point>,  
-                      My_halfedge, 
+typedef CGAL::Pm_dcel<CGAL::Arr_2_vertex_base<Point>,
+                      My_halfedge,
                       CGAL::Arr_2_face_base>            Dcel;
 
 typedef CGAL::Arrangement_2<Dcel,Traits,My_base_node>   Arr_2;
 
-int main() 
+int main()
 {
   Arr_2 arr;
-  
+
   arr.set_update(false); // The insertions won't update the planar map.
 
   // Insertion of the curves
   Arr_2::Curve_iterator cit=arr.insert(Curve(Point(0,0),Point(1,1)));
-  cit=arr.insert(Curve(Point(0,1),Point(1,0))); 
+  cit=arr.insert(Curve(Point(0,1),Point(1,0)));
   CGAL_assertion(arr.number_of_halfedges()==0);
- 
+
   // Change the global variable so we will see the changes
   // all Info structs will have 1 in them from now on.
   global_int=1;
@@ -72,12 +72,12 @@ int main()
 
   // Traversal of the curves
   Arr_2::Edge_iterator eit;
-  for (cit = arr.curve_node_begin(); cit!=arr.curve_node_end(); ++cit) 
+  for (cit = arr.curve_node_begin(); cit!=arr.curve_node_end(); ++cit)
   {
-    std::cout << std::endl << "Curve level info:" << std::endl 
+    std::cout << std::endl << "Curve level info:" << std::endl
               << cit->info.num() << std::endl ;
     std::cout << "Edge level info:" << std::endl;
-    for (eit = cit->edges_begin(); eit!=cit->edges_end(); ++eit) 
+    for (eit = cit->edges_begin(); eit!=cit->edges_end(); ++eit)
     {
       std::cout << eit->info.num() << std::endl ;
     }

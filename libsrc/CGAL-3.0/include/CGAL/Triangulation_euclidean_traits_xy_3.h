@@ -31,13 +31,13 @@
 #include <CGAL/Triangle_3.h>
 #include <CGAL/predicates/kernel_ftC2.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template <class R>
-class Orientation_xy_3 
+class Orientation_xy_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.x(); }
   typename R::FT y(const Point &p) const { return p.y(); }
 
@@ -50,17 +50,17 @@ public:
 };
 
 template <class R>
-class Side_of_oriented_circle_xy_3 
+class Side_of_oriented_circle_xy_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.x(); }
   typename R::FT y(const Point &p) const { return p.y(); }
 
-  CGAL::Oriented_side operator() (const Point &p, 
+  CGAL::Oriented_side operator() (const Point &p,
 				  const Point &q,
-				  const Point &r, 
-				  const Point &s) 
+				  const Point &r,
+				  const Point &s)
     {
       return side_of_oriented_circleC2(x(p), y(p),
 				       x(q), y(q),
@@ -98,8 +98,8 @@ public:
 
   typename Rp::FT x(const Point_2 &p) const { return p.x(); }
   typename Rp::FT y(const Point_2 &p) const { return p.y(); }
-    
- 
+
+
   Compare_x_2
   compare_x_2_object() const
     { return Compare_x_2();}
@@ -123,8 +123,8 @@ public:
     {return Construct_triangle_2();}
 
 };
-  
 
-CGAL_END_NAMESPACE 
+
+CGAL_END_NAMESPACE
 
 #endif // CGAL_TRIANGULATION_EUCLIDEAN_TRAITS_XY_3_H

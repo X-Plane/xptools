@@ -118,27 +118,27 @@ class Min_sphere_d {
     // types from the QP solver
     typedef  typename Solver::Basic_variable_index_iterator
                                         Basic_variable_index_iterator;
-    
+
     // private types
     typedef  std::vector<Point>         Point_vector;
     typedef  std::vector<ET>            ET_vector;
-    
+
     typedef  CGAL::Access_by_index<typename std::vector<Point>::const_iterator>
                                         Point_by_index;
-    
+
 
   public:
     // public types
     typedef  typename Point_vector::const_iterator
                                         Point_iterator;
-    
+
     typedef  CGAL::Join_random_access_iterator_1<
                  Basic_variable_index_iterator, Point_by_index >
                                         Support_point_iterator;
-    
+
     typedef  typename ET_vector::const_iterator
                                         Coordinate_iterator;
-    
+
 
     // creation
     Min_sphere_d( const Traits&  traits  = Traits(),
@@ -148,7 +148,7 @@ class Min_sphere_d {
         {
             set_pricing_strategy( NT());
         }
-    
+
     template < class InputIterator >
     Min_sphere_d( InputIterator  first,
                   InputIterator  last,
@@ -160,44 +160,44 @@ class Min_sphere_d {
             set_pricing_strategy( NT());
             set( first, last);
         }
-    
+
     // access to point set
     int  ambient_dimension( ) const { return d; }
-    
+
     int  number_of_points( ) const { return points.size(); }
-    
+
     Point_iterator  points_begin( ) const { return points.begin(); }
     Point_iterator  points_end  ( ) const { return points.end  (); }
-    
+
     // access to support points
     int
     number_of_support_points( ) const
         { return is_empty() ? 0 : solver.number_of_basic_variables(); }
-    
+
     Support_point_iterator
     support_points_begin() const
         { return Support_point_iterator(
                      solver.basic_variables_index_begin(),
                      Point_by_index( points.begin())); }
-    
+
     Support_point_iterator
     support_points_end() const
         { return Support_point_iterator(
                      is_empty() ? solver.basic_variables_index_begin()
                                 : solver.basic_variables_index_end(),
                      Point_by_index( points.begin())); }
-    
+
     // access to center (rational representation)
     Coordinate_iterator
     center_coordinates_begin( ) const { return center_coords.begin(); }
-    
+
     Coordinate_iterator
     center_coordinates_end  ( ) const { return center_coords.end  (); }
-    
+
     // access to squared radius (rational representation)
     ET  squared_radius_numerator  ( ) const { return sqr_rad_numer; }
     ET  squared_radius_denominator( ) const { return sqr_rad_denom; }
-    
+
     // access to center and squared radius
     // NOTE: an implicit conversion from ET to RT must be available!
     Point
@@ -206,13 +206,13 @@ class Min_sphere_d {
           return tco.construct_point_d_object()( ambient_dimension(),
                                                  center_coordinates_begin(),
                                                  center_coordinates_end()); }
-    
+
     FT
     squared_radius( ) const
         { CGAL_optimisation_precondition( ! is_empty());
           return FT( squared_radius_numerator  ()) /
                  FT( squared_radius_denominator()); }
-    
+
     // predicates
     CGAL::Bounded_side
     bounded_side( const Point& p) const
@@ -220,28 +220,28 @@ class Min_sphere_d {
               is_empty() || tco.access_dimension_d_object()( p) == d);
           return CGAL::Bounded_side( CGAL_NTS sign(
               sqr_rad_numer - sqr_dist( p))); }
-    
+
     bool
     has_on_bounded_side( const Point& p) const
         { CGAL_optimisation_precondition(
               is_empty() || tco.access_dimension_d_object()( p) == d);
           return ( sqr_dist( p) < sqr_rad_numer); }
-    
+
     bool
     has_on_boundary( const Point& p) const
         { CGAL_optimisation_precondition(
               is_empty() || tco.access_dimension_d_object()( p) == d);
           return ( sqr_dist( p) == sqr_rad_numer); }
-    
+
     bool
     has_on_unbounded_side( const Point& p) const
         { CGAL_optimisation_precondition(
               is_empty() || tco.access_dimension_d_object()( p) == d);
           return( sqr_dist( p) > sqr_rad_numer); }
-    
+
     bool  is_empty     ( ) const { return number_of_points() == 0; }
     bool  is_degenerate( ) const { return number_of_support_points() < 2; }
-    
+
     // modifiers
     template < class InputIterator >
     void
@@ -252,14 +252,14 @@ class Min_sphere_d {
           CGAL_optimisation_precondition_msg( check_dimension(),
               "Not all points have the same dimension.");
           compute_min_sphere(); }
-    
+
     void
     insert( const Point& p)
         { CGAL_optimisation_precondition( is_empty() ||
               ( tco.access_dimension_d_object()( p) == d));
           points.push_back( p);
           compute_min_sphere(); }
-    
+
     template < class InputIterator >
     void
     insert( InputIterator first, InputIterator last)
@@ -269,40 +269,40 @@ class Min_sphere_d {
           CGAL_optimisation_precondition_msg( check_dimension( old_n),
               "Not all points have the same dimension.");
           compute_min_sphere(); }
-    
+
     void
     clear( )
         { points.erase( points.begin(), points.end());
           compute_min_sphere(); }
-    
+
     // validity check
     bool  is_valid( bool verbose = false, int level = 0) const;
-    
+
     // traits class access
     const Traits&  traits( ) const { return tco; }
-    
+
 
   private:
-    
+
     Traits                   tco;       // traits class object
-    
+
     Point_vector             points;    // input points
     int                      d;         // dimension of input points
-    
+
     ET_vector                center_coords;     // center of small.encl.sphere
-    
+
     ET                       sqr_rad_numer;     // squared radius of
     ET                       sqr_rad_denom;     // smallest enclosing sphere
-    
+
     Solver                   solver;    // quadratic programming solver
-    
+
     std::vector<NT>          c_vector;  // vector `c' of QP
-    
+
     typename Solver::Pricing_strategy*  // pricing strategy
                              strategyP; // of the QP solver
-    
 
-    
+
+
     // squared distance to center
     ET
     sqr_dist( const Point& p) const
@@ -317,13 +317,13 @@ class Min_sphere_d {
                       CGAL::identity<ET>(),
                       std::bind2nd( std::multiplies<ET>(),
                                     center_coords.back())))); }
-    
+
     // set dimension of input points
     void
     set_dimension( )
         { d = ( points.size() == 0 ? -1 :
                     tco.access_dimension_d_object()( points[ 0])); }
-    
+
     // check dimension of input points
     bool
     check_dimension( unsigned int  offset = 0)
@@ -332,7 +332,7 @@ class Min_sphere_d {
                                      std::not_equal_to<int>(), d),
                                      tco.access_dimension_d_object()))
                    == points.end()); }
-    
+
     // compute smallest enclosing sphere
     void
     compute_min_sphere( )
@@ -342,7 +342,7 @@ class Min_sphere_d {
             sqr_rad_numer = -ET( 1);
             return;
         }
-    
+
         // set up and solve QP
         c_vector.resize( points.size());
         int i;
@@ -371,7 +371,7 @@ class Min_sphere_d {
                             tco.access_dimension_d_object())));
         solver.init();
         solver.solve();
-    
+
         // compute center and squared radius
         center_coords.resize( ambient_dimension()+1);
         std::fill( center_coords.begin(), center_coords.end(), ET( 0));
@@ -386,26 +386,26 @@ class Min_sphere_d {
         sqr_rad_numer     = -solver.solution_numerator();
         sqr_rad_denom     = center_coords[ d] * center_coords[ d];
     }
-    
+
     #ifdef _MSC_VER
-    
+
     template < class NT >
     void  set_pricing_strategy( NT)
     { }
-    
+
     #else
-    
+
     template < class NT >
     void  set_pricing_strategy( NT)
         { strategyP = new CGAL::Partial_filtered_pricing<QP_rep>;
           solver.set_pricing_strategy( *strategyP); }
-    
+
     void  set_pricing_strategy( ET)
         { strategyP = new CGAL::Partial_exact_pricing<QP_rep>;
           solver.set_pricing_strategy( *strategyP); }
-    
+
     #endif
-    
+
 };
 
 template < class NT, class Point,
@@ -474,7 +474,7 @@ struct QP_rep_min_sphere_d {
                      NT, Point, Point_iterator,
                      Access_coord, Access_dim > >
                                         D_iterator;
-    
+
 
     typedef  CGAL::Tag_false        Is_lp;
 };
@@ -512,20 +512,20 @@ is_valid( bool verbose, int level) const
     // containment check (a)
     // ---------------------
     verr << "  (a) containment check..." << flush;
-    
+
     Point_iterator  point_it = points_begin();
     for ( ; point_it != points_end(); ++point_it) {
         if ( has_on_unbounded_side( *point_it))
             return CGAL::_optimisation_is_valid_fail( verr,
                        "sphere does not contain all points");
     }
-    
+
     verr << "passed." << endl;
 
     // support set check (b)
     // ---------------------
     verr << "  (b) support set check..." << flush;
-    
+
     // all support points on boundary?
     Support_point_iterator  support_point_it = support_points_begin();
     for ( ; support_point_it != support_points_end(); ++support_point_it) {
@@ -533,7 +533,7 @@ is_valid( bool verbose, int level) const
             return CGAL::_optimisation_is_valid_fail( verr,
                 "sphere does not have all support points on its boundary");
     }
-    
+
     // center strictly in convex hull of support points?
     typename Solver::Basic_variable_numerator_iterator
         num_it = solver.basic_variables_numerator_begin();
@@ -543,7 +543,7 @@ is_valid( bool verbose, int level) const
             return CGAL::_optimisation_is_valid_fail( verr,
               "center does not lie strictly in convex hull of support points");
     }
-    
+
     verr << "passed." << endl;
 
     verr << "  object is valid!" << endl;

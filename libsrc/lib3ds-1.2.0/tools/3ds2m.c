@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -89,7 +89,7 @@ static void
 parse_args(int argc, char **argv)
 {
   int i;
-  
+
   for (i=1; i<argc; ++i) {
     if (argv[i][0]=='-') {
       if ((strcmp(argv[i],"-h")==0) || (strcmp(argv[i],"--help")==0)) {
@@ -146,7 +146,7 @@ dump_m_file(Lib3dsFile *f, FILE *o)
         continue;
       }
     }
-    
+
     fprintf(o, "#\n");
     fprintf(o, "# %s vertices=%ld faces=%ld\n",
       m->name,
@@ -154,7 +154,7 @@ dump_m_file(Lib3dsFile *f, FILE *o)
       m->faces
     );
     fprintf(o, "#\n");
-    
+
     for (i=0; i<m->points; ++i) {
       lib3ds_vector_copy(pos, m->pointL[i].pos);
       fprintf(o, "Vertex %d %f %f %f\n", points+i, pos[0], pos[1],pos[2]);

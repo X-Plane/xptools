@@ -39,11 +39,11 @@ class Point_pair_less_xy_2
    public:
      Point_pair_less_xy_2() : _less_xy_2(Traits().less_xy_2_object())
      { }
-     
 
-     bool 
+
+     bool
      operator()(const Point_pair& p, const Point_pair& q) const
-     { 
+     {
         if (_less_xy_2(p.first, q.first))
             return true;
         else if (_less_xy_2(q.first, p.first))

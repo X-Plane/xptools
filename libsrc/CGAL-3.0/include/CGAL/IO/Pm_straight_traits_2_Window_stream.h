@@ -30,7 +30,7 @@
 
 CGAL_BEGIN_NAMESPACE
 
-template <class R> 
+template <class R>
 leda_window& operator<<(leda_window& os,const Straight_2_<R>& cv)
 {
 	typedef Straight_2_<R> Straight;
@@ -73,7 +73,7 @@ leda_window& operator<<(leda_window& os,const Straight_2_<R>& cv)
 const Straight& cv)");
 	return os;
 }
-template <class R> 
+template <class R>
 leda_window& operator>>(leda_window& os,const Straight_2_<R>& cv)
 {
 	typedef Straight_2_<R> Straight;
@@ -118,11 +118,11 @@ leda_window& operator>>(leda_window& os,const Straight_2_<R>& cv)
 }
 template <class R>
 Window_stream& write(
-		     Window_stream& os, 
+		     Window_stream& os,
 		     const typename Pm_straight_traits_2<R>::X_curve& cv,
 		     const Pm_straight_traits_2<R>& traits)
 {
-	typedef Pm_straight_traits_2<R> Traits; 
+	typedef Pm_straight_traits_2<R> Traits;
 	typedef typename Traits::X_bounded_curve X_bounded_curve;
 	return os << X_bounded_curve(
 		traits.curve_source(cv),

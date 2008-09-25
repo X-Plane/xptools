@@ -181,17 +181,17 @@ static int writeCache2(crashFile *pFile, int crash){
           if( random & 0x02 ){
             trash = 1;
 #ifdef TRACE_WRITECACHE
-printf("Trashing block %d of %s\n", i, pFile->zName); 
+printf("Trashing block %d of %s\n", i, pFile->zName);
 #endif
           }else{
             skip = 1;
 #ifdef TRACE_WRITECACHE
-printf("Skiping block %d of %s\n", i, pFile->zName); 
+printf("Skiping block %d of %s\n", i, pFile->zName);
 #endif
           }
         }else{
 #ifdef TRACE_WRITECACHE
-printf("Writing block %d of %s\n", i, pFile->zName); 
+printf("Writing block %d of %s\n", i, pFile->zName);
 #endif
         }
       }
@@ -496,10 +496,10 @@ static const IoMethod crashIoMethod = {
 static void initFile(OsFile **pId, char const *zName, OsFile *pBase){
   crashFile *pFile = sqliteMalloc(sizeof(crashFile) + strlen(zName)+1);
   pFile->pMethod = &crashIoMethod;
-  pFile->nMaxWrite = 0; 
+  pFile->nMaxWrite = 0;
   pFile->offset = 0;
-  pFile->nBlk = 0; 
-  pFile->apBlk = 0; 
+  pFile->nBlk = 0;
+  pFile->apBlk = 0;
   pFile->zName = (char *)(&pFile[1]);
   strcpy(pFile->zName, zName);
   pFile->pBase = pBase;

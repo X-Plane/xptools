@@ -11,35 +11,35 @@
 #include "SFVec3f.h"
 #include "SFRotation.h"
 
-SFVec3f::SFVec3f() 
+SFVec3f::SFVec3f()
 {
 	setType(fieldTypeSFVec3f);
 	setValue(0.0f, 0.0f, 0.0f);
 	InitializeJavaIDs();
 }
 
-SFVec3f::SFVec3f(float x, float y, float z) 
+SFVec3f::SFVec3f(float x, float y, float z)
 {
 	setType(fieldTypeSFVec3f);
 	setValue(x, y, z);
 	InitializeJavaIDs();
 }
 
-SFVec3f::SFVec3f(float value[]) 
+SFVec3f::SFVec3f(float value[])
 {
 	setType(fieldTypeSFVec3f);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFVec3f::SFVec3f(SFVec3f *value) 
+SFVec3f::SFVec3f(SFVec3f *value)
 {
 	setType(fieldTypeSFVec3f);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFVec3f::InitializeJavaIDs() 
+void SFVec3f::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
@@ -50,29 +50,29 @@ void SFVec3f::InitializeJavaIDs()
 //	get value
 ////////////////////////////////////////////////
 
-void SFVec3f::getValue(float value[]) 
+void SFVec3f::getValue(float value[])
 {
 	value[0] = mValue[0];
 	value[1] = mValue[1];
 	value[2] = mValue[2];
 }
 
-float *SFVec3f::getValue() 
+float *SFVec3f::getValue()
 {
 	return mValue;
 }
 
-float SFVec3f::getX() 
+float SFVec3f::getX()
 {
 	return mValue[0];
 }
 
-float SFVec3f::getY() 
+float SFVec3f::getY()
 {
 	return mValue[1];
 }
 
-float SFVec3f::getZ() 
+float SFVec3f::getZ()
 {
 	return mValue[2];
 }
@@ -81,36 +81,36 @@ float SFVec3f::getZ()
 //	set value
 ////////////////////////////////////////////////
 
-void SFVec3f::setValue(float x, float y, float z) 
+void SFVec3f::setValue(float x, float y, float z)
 {
 	mValue[0] = x;
 	mValue[1] = y;
 	mValue[2] = z;
 }
 
-void SFVec3f::setValue(float value[]) 
+void SFVec3f::setValue(float value[])
 {
 	mValue[0] = value[0];
 	mValue[1] = value[1];
 	mValue[2] = value[2];
 }
 
-void SFVec3f::setValue(SFVec3f *vector) 
+void SFVec3f::setValue(SFVec3f *vector)
 {
 	setValue(vector->getX(), vector->getY(), vector->getZ());
 }
 
-void SFVec3f::setX(float x) 
+void SFVec3f::setX(float x)
 {
 	setValue(x, getY(), getZ());
 }
 
-void SFVec3f::setY(float y) 
+void SFVec3f::setY(float y)
 {
 	setValue(getX(), y, getZ());
 }
 
-void SFVec3f::setZ(float z) 
+void SFVec3f::setZ(float z)
 {
 	setValue(getX(), getY(), z);
 }
@@ -119,36 +119,36 @@ void SFVec3f::setZ(float z)
 //	add value
 ////////////////////////////////////////////////
 
-void SFVec3f::add(float x, float y, float z) 
+void SFVec3f::add(float x, float y, float z)
 {
 	mValue[0] += x;
 	mValue[1] += y;
 	mValue[2] += z;
 }
 
-void SFVec3f::add(float value[]) 
+void SFVec3f::add(float value[])
 {
 	mValue[0] += value[0];
 	mValue[1] += value[1];
 	mValue[2] += value[2];
 }
 
-void SFVec3f::add(SFVec3f value) 
+void SFVec3f::add(SFVec3f value)
 {
 	add(value.getValue());
 }
 
-void SFVec3f::translate(float x, float y, float z) 
+void SFVec3f::translate(float x, float y, float z)
 {
 	add(x, y, z);
 }
 
-void SFVec3f::translate(float value[]) 
+void SFVec3f::translate(float value[])
 {
 	add(value);
 }
 
-void SFVec3f::translate(SFVec3f value) 
+void SFVec3f::translate(SFVec3f value)
 {
 	add(value);
 }
@@ -157,21 +157,21 @@ void SFVec3f::translate(SFVec3f value)
 //	sub value
 ////////////////////////////////////////////////
 
-void SFVec3f::sub(float x, float y, float z) 
+void SFVec3f::sub(float x, float y, float z)
 {
 	mValue[0] -= x;
 	mValue[1] -= y;
 	mValue[2] -= z;
 }
 
-void SFVec3f::sub(float value[]) 
+void SFVec3f::sub(float value[])
 {
 	mValue[0] -= value[0];
 	mValue[1] -= value[1];
 	mValue[2] -= value[2];
 }
 
-void SFVec3f::sub(SFVec3f value) 
+void SFVec3f::sub(SFVec3f value)
 {
 	sub(value.getValue());
 }
@@ -180,21 +180,21 @@ void SFVec3f::sub(SFVec3f value)
 //	scale
 ////////////////////////////////////////////////
 
-void SFVec3f::scale(float value) 
+void SFVec3f::scale(float value)
 {
 	mValue[0] *= value;
 	mValue[1] *= value;
 	mValue[2] *= value;
 }
 
-void SFVec3f::scale(float xscale, float yscale, float zscale) 
+void SFVec3f::scale(float xscale, float yscale, float zscale)
 {
 	mValue[0] *= xscale;
 	mValue[1] *= yscale;
 	mValue[2] *= zscale;
 }
 
-void SFVec3f::scale(float value[3]) 
+void SFVec3f::scale(float value[3])
 {
 	scale(value[0], value[1], value[2]);
 }
@@ -203,18 +203,18 @@ void SFVec3f::scale(float value[3])
 //	rotate
 ////////////////////////////////////////////////
 
-void SFVec3f::rotate(SFRotation *rotation) 
+void SFVec3f::rotate(SFRotation *rotation)
 {
 	rotation->multi(mValue);
 }
 
-void SFVec3f::rotate(float x, float y, float z, float angle) 
+void SFVec3f::rotate(float x, float y, float z, float angle)
 {
 	SFRotation rotation(x, y, z, angle);
 	rotate(&rotation);
 }
 
-void SFVec3f::rotate(float value[3]) 
+void SFVec3f::rotate(float value[3])
 {
 	rotate(value[0], value[1], value[2], value[3]);
 }
@@ -223,7 +223,7 @@ void SFVec3f::rotate(float value[3])
 //	invert
 ////////////////////////////////////////////////
 
-void SFVec3f::invert() 
+void SFVec3f::invert()
 {
 	mValue[0] = -mValue[0];
 	mValue[1] = -mValue[1];
@@ -257,16 +257,16 @@ void SFVec3f::normalize()
 //	String
 ////////////////////////////////////////////////
 
-void SFVec3f::setValue(char *value) 
+void SFVec3f::setValue(char *value)
 {
 	if (!value)
 		return;
 	float	x, y, z;
-	if (sscanf(value,"%f %f %f", &x, &y, &z) == 3) 
+	if (sscanf(value,"%f %f %f", &x, &y, &z) == 3)
 		setValue(x, y, z);
 }
 
-char *SFVec3f::getValue(char *buffer, int bufferLen) 
+char *SFVec3f::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%g %g %g", getX(), getY(), getZ());
 	return buffer;
@@ -276,7 +276,7 @@ char *SFVec3f::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFVec3f::equals(Field *field) 
+bool SFVec3f::equals(Field *field)
 {
 	SFVec3f *vector = (SFVec3f *)field;
 	if (getX() == vector->getX() && getY() == vector->getY() && getZ() == vector->getZ())
@@ -285,13 +285,13 @@ bool SFVec3f::equals(Field *field)
 		return false;
 }
 
-bool SFVec3f::equals(float value[3]) 
+bool SFVec3f::equals(float value[3])
 {
 	SFVec3f vector(value);
 	return equals(&vector);
 }
 
-bool SFVec3f::equals(float x, float y, float z) 
+bool SFVec3f::equals(float x, float y, float z)
 {
 	SFVec3f vector(x, y, z);
 	return equals(&vector);
@@ -302,12 +302,12 @@ bool SFVec3f::equals(float x, float y, float z)
 //	Overload
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFVec3f &vector) 
+ostream& operator<<(ostream &s, SFVec3f &vector)
 {
 	return s << vector.getX() << " " << vector.getY() << " " << vector.getZ();
 }
 
-ostream& operator<<(ostream &s, SFVec3f *vector) 
+ostream& operator<<(ostream &s, SFVec3f *vector)
 {
 	return s << vector->getX() << " " << vector->getY() << " " << vector->getZ();
 }
@@ -402,7 +402,7 @@ jobject SFVec3f::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

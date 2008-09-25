@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -57,14 +57,14 @@ class	GUI_Commander;
 
 class	WED_MapPane : public GUI_Packer, GUI_Listener {
 public:
-		
+
 						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive);
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
-			
+
 			GUI_Pane *	GetTopBar(void);
-			
+
 			int				Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 			int				Map_HandleCommand(int command) 									;
 			int				Map_CanHandleCommand(int command, string& ioName, int& ioCheck) ;
@@ -76,25 +76,25 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
-			
+
 private:
-	
+
 	WED_Map *				mMap;
 
 	vector<WED_MapLayer *>	mLayers;
 	vector<WED_MapToolNew *>mTools;
-	
+
 	WED_TerraserverLayer *	mTerraserver;
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_WorldMapLayer *		mWorldMap;
 
 	GUI_ToolBar *			mToolbar;
-	
+
 	GUI_Table *						mTable;
 	GUI_TextTable *					mTextTable;
 	WED_ToolInfoAdapter *			mInfoAdapter;
-	
+
 	IResolver *				mResolver;
 
 };

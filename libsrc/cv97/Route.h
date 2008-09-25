@@ -27,7 +27,7 @@ class Route : public LinkedListNode<Route> {
 	Node	*mEventInNode;
 	Field	*mEventOutField;
 	Field	*mEventInField;
-	
+
 	bool	mIsActive;
 	void	*mValue;
 
@@ -35,7 +35,7 @@ public:
 
 	Route(Node *eventOutNode, Field *eventOutField, Node *eventInNode, Field *eventInField);
 	Route(Route *route);
-	~Route(); 
+	~Route();
 
 	void	setEventOutNode(Node *node);
 	void	setEventInNode(Node *node);
@@ -64,7 +64,7 @@ public:
 	//	update
 	////////////////////////////////////////////////
 
-	void setValue(void *value); 
+	void setValue(void *value);
 	void *getValue();
 
 	////////////////////////////////////////////////

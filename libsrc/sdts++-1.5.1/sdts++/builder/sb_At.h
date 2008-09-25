@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -109,7 +109,7 @@ class sb_At : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -194,7 +194,7 @@ class sb_Atpr : public sb_At
        set the object with values found in the record; if not a valid
        AT record, this will return false
       */
-      bool setRecord( sc_Record const& val ) 
+      bool setRecord( sc_Record const& val )
       { /* XXX NOT IMPLEMENTED YET */ return false; }
 
 

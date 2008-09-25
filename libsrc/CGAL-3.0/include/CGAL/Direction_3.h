@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra
- 
+
 #ifndef CGAL_DIRECTION_3_H
 #define CGAL_DIRECTION_3_H
 

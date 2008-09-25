@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,7 +52,7 @@ inline int		sql_bind_param(sqlite3_stmt * s, int iparam, const string& value)	{ 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // sql_rowN is a template around N datatypes for a single "row" of data.  This struct is used both
-// to bind parameters (an input row, sort of) and to get out data.  
+// to bind parameters (an input row, sort of) and to get out data.
 //
 // The method sql_bind binds to the statement in order.
 // The method sql_fetch pulls out the current row from the statement.
@@ -60,7 +60,7 @@ inline int		sql_bind_param(sqlite3_stmt * s, int iparam, const string& value)	{ 
 struct	sql_row0 {
 	void	sql_bind(sqlite3_stmt * s, int * swizzle) const {
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
+	void	sql_fetch(sqlite3_stmt * s) {
 	}
 };
 
@@ -68,12 +68,12 @@ template <typename A>
 struct	sql_row1 {
 	sql_row1() { }
 	sql_row1(const A& ia) : a(ia) { }
-	A		a;	
+	A		a;
 	void	sql_bind(sqlite3_stmt * s, int * swizzle) const {
 		sql_bind_param(s,swizzle[0],a);
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
-		sql_fetch_column(s,0,a); 		
+	void	sql_fetch(sqlite3_stmt * s) {
+		sql_fetch_column(s,0,a);
 	}
 };
 
@@ -87,9 +87,9 @@ struct	sql_row2 {
 		sql_bind_param(s,swizzle[0],a);
 		sql_bind_param(s,swizzle[1],b);
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
-		sql_fetch_column(s,0,a); 
-		sql_fetch_column(s,1,b); 
+	void	sql_fetch(sqlite3_stmt * s) {
+		sql_fetch_column(s,0,a);
+		sql_fetch_column(s,1,b);
 	}
 };
 
@@ -105,10 +105,10 @@ struct	sql_row3 {
 		sql_bind_param(s,swizzle[1],b);
 		sql_bind_param(s,swizzle[2],c);
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
-		sql_fetch_column(s,0,a); 
-		sql_fetch_column(s,1,b); 
-		sql_fetch_column(s,2,c); 
+	void	sql_fetch(sqlite3_stmt * s) {
+		sql_fetch_column(s,0,a);
+		sql_fetch_column(s,1,b);
+		sql_fetch_column(s,2,c);
 	}
 };
 
@@ -126,11 +126,11 @@ struct	sql_row4 {
 		sql_bind_param(s,swizzle[2],c);
 		sql_bind_param(s,swizzle[3],d);
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
-		sql_fetch_column(s,0,a); 
-		sql_fetch_column(s,1,b); 
-		sql_fetch_column(s,2,c); 
-		sql_fetch_column(s,3,d); 
+	void	sql_fetch(sqlite3_stmt * s) {
+		sql_fetch_column(s,0,a);
+		sql_fetch_column(s,1,b);
+		sql_fetch_column(s,2,c);
+		sql_fetch_column(s,3,d);
 	}
 };
 
@@ -150,12 +150,12 @@ struct	sql_row5 {
 		sql_bind_param(s,swizzle[3],d);
 		sql_bind_param(s,swizzle[4],e);
 	}
-	void	sql_fetch(sqlite3_stmt * s) { 
-		sql_fetch_column(s,0,a); 
-		sql_fetch_column(s,1,b); 
-		sql_fetch_column(s,2,c); 
-		sql_fetch_column(s,3,d); 
-		sql_fetch_column(s,4,e); 
+	void	sql_fetch(sqlite3_stmt * s) {
+		sql_fetch_column(s,0,a);
+		sql_fetch_column(s,1,b);
+		sql_fetch_column(s,2,c);
+		sql_fetch_column(s,3,d);
+		sql_fetch_column(s,4,e);
 	}
 };
 
@@ -164,7 +164,7 @@ struct	sql_row5 {
 // TEMPLATED SQL COMMANDS
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-//	This object represents a SQL command.  The command is compiled once and persisted inside the object.  
+//	This object represents a SQL command.  The command is compiled once and persisted inside the object.
 //	cmd must be a SQL command that can be ENTIRELY consumed by the SQL parser - that is, a single statement.
 //	params is a comma-separated list of any params that must be keyed.  When binding the params, the order
 //	they are bound from comes from "params", NOT the order in the SQL command and NOT the order that sqlite3
@@ -188,9 +188,9 @@ public:
 	{
 		params.sql_bind(stmt,&*param_index.begin());
 	}
-	
+
 	void begin(void);
-	
+
 	template <typename R>
 	int get_row(R& row)
 	{
@@ -199,7 +199,7 @@ public:
 			row.sql_fetch(stmt);
 		return result;
 	}
-	
+
 	template <typename B, typename R>
 	int simple_exec(const B& binding, R& row)
 	{
@@ -208,23 +208,23 @@ public:
 		int rc;
 		do {
 			rc = get_row(row);
-		} while (rc == SQLITE_ROW); 
+		} while (rc == SQLITE_ROW);
 		return rc;
 	}
-	
+
 	template <typename B>
 	int simple_exec(const B& binding)
 	{
 		sql_row0 r;
 		return simple_exec(binding,r);
 	}
-	
+
 	int simple_exec(void)
 	{
 		sql_row0 b, r;
 		return simple_exec(b,r);
 	}
-	
+
 private:
 	sqlite3_stmt *	stmt;
 	vector<string>	param_name;
@@ -257,7 +257,7 @@ public:
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// DATABASE C++ WRAPPER 
+// DATABASE C++ WRAPPER
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // This is a simple C++ wrapper around a sqlite3 DB.  This is useful when you want the database to match C++ object lifetime.
@@ -266,12 +266,12 @@ class	sql_db {
 public:
 	 sql_db(const char * in_filename);
 	~sql_db();
-	
+
 	sqlite3 * get(void);
 private:
 
 	sqlite3	*	db;
-	
+
 	sql_db();
 	sql_db(const sql_db&);
 	sql_db& operator=(const sql_db&);

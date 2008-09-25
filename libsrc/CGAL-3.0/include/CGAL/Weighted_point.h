@@ -48,12 +48,12 @@ public:
 // They belong to the traits class anyway.
 //
 //  Weight power(const Point &p)
-//  {	
+//  {
 //      return squared_distance(*this, p) - weight();
 //  }
-// 
+//
 //  Weight power(const Weighted_point &p)
-//  {	
+//  {
 //      return squared_distance(*this, p) - weight() - p.weight();
 //  }
 

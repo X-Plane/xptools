@@ -1,17 +1,17 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: Expr.h
  *
- * Written by 
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Igor Pechtchanski <pechtcha@cs.nyu.edu>
  *       Vijay Karamcheti <vijayk@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *       Vikram Sharma<sharma@cs.nyu.edu>
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -29,35 +29,35 @@ CORE_BEGIN_NAMESPACE
 /// \class Expr Expr.h
 /// \brief Expr is a class of Expression in Level 3
 class Expr {
-public:   
+public:
   ExprRep* rep; ///< handle to the "real" representation
-  
+
   /// \name Constructors and Destructor
   //@{
   /// default constructor
   Expr() { rep = new ConstDoubleRep(); }
   /// copy constructor
-  Expr(const Expr& e) { rep = e.rep;  rep->incRefCount(); } 
+  Expr(const Expr& e) { rep = e.rep;  rep->incRefCount(); }
 
   /// constructor for <tt>int</tt>
   Expr(int i) { rep = new ConstDoubleRep(i); }
   /// constructor for <tt>unsigned int</tt>
   Expr(unsigned int ui) { rep = new ConstDoubleRep(ui); }
-  
+
   /// constructor for <tt>long</tt>
   Expr(long l) { rep = new ConstRealRep(Real(l)); }
   /// constructor for <tt>unsigned long</tt>
   Expr(unsigned long ul) { rep = new ConstRealRep(Real(ul)); }
-  
+
   /// constructor for <tt>float</tt>
   /** \note the results of this constructor can be somewhat unpredictable.
    *  One might assume that new Expr(.1) is exactly equal to .1, but it is
    *  actually equal to
    *      .1000000000000000055511151231257827021181583404541015625.
    *  This is so because .1 cannot be represented exactly as a double
-   *  (or, for that matter, as a binary fraction of any finite length). 
+   *  (or, for that matter, as a binary fraction of any finite length).
    *  Thus, the long value that is being passed in to the constructor is not
-   *  exactly equal to .1, appearances nonwithstanding. 
+   *  exactly equal to .1, appearances nonwithstanding.
    */
   Expr(float f) { // check for valid numbers (i.e., not infinite and not NaN)
     if (!finite(f)) {
@@ -76,16 +76,16 @@ public:
     }
   	rep = new ConstDoubleRep(d);
   }
-  
+
   /// constructor for <tt>BigInt</tt>
   Expr(const BigInt& I) { rep = new ConstRealRep(Real(I)); }
   /// constructor for <tt>BigRat</tt>
   Expr(const BigRat& R) { rep = new ConstRealRep(Real(R)); }
   /// constructor for <tt>BigFloat</tt>
   Expr(const BigFloat& F) { rep = new ConstRealRep(Real(F)); }
-  
+
   /// constructor for <tt>const char*</tt>
-  /** construct Expr from a string representation \a s 
+  /** construct Expr from a string representation \a s
    * with precision \a prec. It is perfectly predictable:
    * new Expr(".1") is exactly equal to .1, as one would expect. Therefore,
    * it is generally recommended that the (String) constructor be used in
@@ -97,10 +97,10 @@ public:
   /// constructor for <tt>std::string</tt>
   Expr(const std::string& s, const extLong& prec = defInputDigits)
   { rep = new ConstRealRep(Real(s, prec)); }
-  
+
   /// constructor for <tt>Real</tt>
   Expr(const Real &r) { rep = new ConstRealRep(r); }
-  
+
   /// constructor for Polynomial node (n-th root)
   /** default value n=0 means the first positive root */
   template <class NT>
@@ -111,16 +111,16 @@ public:
   template <class NT>
   Expr(const Polynomial<NT>& p, const BFInterval& I)
   { rep = new ConstPolyRep<NT>(p, I); }
-  
+
   /// constructor for ExprRep
   Expr(ExprRep* p) : rep(p) {}
 
   /// destructor
-  ~Expr() { rep->decRefCount(); }          
+  ~Expr() { rep->decRefCount(); }
   //@}
 
   /// \name Assignment Operators
-  //@{ 
+  //@{
   /// = operator
   Expr& operator=(const Expr& e) {
     if (this == &e) return *this;
@@ -128,9 +128,9 @@ public:
     rep = e.rep; return *this;
   }
   //@}
-  
+
   /// \name Compound Assignment Operators
-  //@{ 
+  //@{
   /// += operator
   Expr& operator+=(const Expr& e) {
     ExprRep *old = rep;
@@ -188,10 +188,10 @@ public:
   /// convert to <tt>std::string</tt>
   /** give decimal string representation */
   std::string toString(long prec=defOutputDigits, bool sci=false) const
-  { return rep->toString(prec, sci); }		  
+  { return rep->toString(prec, sci); }
   //@}
   //
-  
+
   /// \name Conversion Functions
   //@{
   /// convert to \c int
@@ -210,18 +210,18 @@ public:
    */
   void doubleInterval(double & lb, double & ub) const;
   /// convert to \c BigInt (approximate it first!)
-  BigFloat BigIntValue() const { return rep->BigIntValue(); }  	
+  BigFloat BigIntValue() const { return rep->BigIntValue(); }
   /// convert to \c BigRat (approximate it first!)
-  BigFloat BigRatValue() const { return rep->BigRatValue(); }  	
+  BigFloat BigRatValue() const { return rep->BigRatValue(); }
   /// convert to \c BigFloat (approximate it first!)
   /** Ought to allow BigFloatValue() take an optional precision argument */
-  BigFloat BigFloatValue() const { return rep->BigFloatValue(); }  	
+  BigFloat BigFloatValue() const { return rep->BigFloatValue(); }
   //@}
 
   /// \name Approximation Function
   //@{
   /// Compute approximation to combined precision [\a r, \a a].
-  /** Here is the definition of what this means: 
+  /** Here is the definition of what this means:
        If e is the exact value and ee is the approximate value,
        then  |e - ee| <= 2^{-a} or  |e - ee| <= 2^{-r} |e|. */
   const Real & approx(const extLong& relPrec = defRelPrec,
@@ -237,13 +237,13 @@ public:
   bool isZero() const { return sign() == 0; }
   /// absolute value
   Expr abs() const { Expr x = (sign() >= 0) ? (*this) : -(*this); return x; }
-  
+
   /// compare function
-  int cmp(const Expr& e) const 
+  int cmp(const Expr& e) const
   { return rep == e.rep ? 0 : SubRep(rep, e.rep).getSign(); }
-  
+
   /// get exponent of current approximate value
-  long getExponent() const { return BigFloatValue().exp(); } 
+  long getExponent() const { return BigFloatValue().exp(); }
   /// get mantissa of current approximate value
   BigInt getMantissa() const { return BigFloatValue().m(); }
   /// return rep pointer:
@@ -256,7 +256,7 @@ public:
   /// \name Debug Helper Function
   //@{
   /// debug function
-  void  debug(int mode = TREE_MODE, int level = DETAIL_LEVEL, 
+  void  debug(int mode = TREE_MODE, int level = DETAIL_LEVEL,
               int depthLimit = INT_MAX) const;
   //@}
   /// debug information levels
@@ -303,7 +303,7 @@ inline Expr operator%(const Expr& e1, const Expr& e2)
 { Expr result; floor(e1/e2, result); return result; }
 
 /// operator ==
-/** this is inefficient if you compare to zero: 
+/** this is inefficient if you compare to zero:
  *  e.g., if (e != 0) {...} use e.isZero() instead */
 inline bool operator==(const Expr& e1, const Expr& e2)
 { return e1.cmp(e2) == 0; }
@@ -337,7 +337,7 @@ inline int cmp(const Expr& e1, const Expr& e2) { return e1.cmp(e2); }
 inline Expr abs(const Expr& x) { return x.abs(); }
 /// absolute value (same as abs)
 inline Expr fabs(const Expr& x) { return abs(x); }
-/// floor 
+/// floor
 inline BigInt floor(const Expr& e) { Expr tmp; return floor(e, tmp); }
 /// ceiling
 inline BigInt ceil(const Expr& e) { return -floor(-e); }

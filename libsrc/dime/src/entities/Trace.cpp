@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Trace.cpp
  *
  *  This source file is part of DIME.
@@ -46,7 +46,7 @@ static char entityName[] = "TRACE";
   Constructor.
 */
 
-dimeTrace::dimeTrace() 
+dimeTrace::dimeTrace()
   : extrusionDir( 0, 0, 1 ), thickness( 0 )
 {
 }
@@ -58,11 +58,11 @@ dimeTrace::copy(dimeModel * const model) const
 {
   dimeTrace *f = new(model->getMemHandler())dimeTrace;
   if (!f) return NULL;
-  
+
   f->copyCoords(this);
   f->thickness = this->thickness;
   f->extrusionDir = this->extrusionDir;
-  
+
   if (!this->copyRecords(f, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete f;
@@ -73,7 +73,7 @@ dimeTrace::copy(dimeModel * const model) const
 
 //!
 
-bool 
+bool
 dimeTrace::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -100,7 +100,7 @@ dimeTrace::write(dimeOutput * const file)
 
 //!
 
-bool 
+bool
 dimeTrace::handleRecord(const int groupcode, const dimeParam &param,
 		       dimeMemHandler * const memhandler)
 {
@@ -127,7 +127,7 @@ dimeTrace::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeTrace::getRecord(const int groupcode,
 		    dimeParam &param,
 		    const int index) const
@@ -147,37 +147,37 @@ dimeTrace::getRecord(const int groupcode,
 
 //!
 
-int 
+int
 dimeTrace::typeId() const
 {
   return dimeBase::dimeTraceType;
 }
 
-dxfdouble 
+dxfdouble
 dimeTrace::getThickness() const
 {
   return this->thickness;
 }
 
-void 
+void
 dimeTrace::getExtrusionDir(dimeVec3f &ed) const
 {
   ed = this->extrusionDir;
 }
 
-bool 
+bool
 dimeTrace::swapQuadCoords() const
 {
   return true;
 }
 
-void 
+void
 dimeTrace::setThickness(const dxfdouble &thickness)
 {
   this->thickness = thickness;
 }
 
-void 
+void
 dimeTrace::setExtrusionDir(const dimeVec3f &ed)
 {
   this->extrusionDir = ed;
@@ -185,14 +185,14 @@ dimeTrace::setExtrusionDir(const dimeVec3f &ed)
 
 //!
 
-int 
+int
 dimeTrace::countRecords() const
 {
   int cnt = 0;
   if (!this->isDeleted()) {
     cnt++; // header
     if (this->thickness != 0.0) cnt++;
-    if (this->extrusionDir != dimeVec3f(0,0,1)) cnt += 3; 
+    if (this->extrusionDir != dimeVec3f(0,0,1)) cnt += 3;
     cnt += dimeFaceEntity::countRecords();
   }
   return cnt;

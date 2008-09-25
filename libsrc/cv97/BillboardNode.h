@@ -13,7 +13,7 @@
 
 #include "VRMLField.h"
 #include "Node.h"
-	
+
 class BillboardNode : public GroupingNode {
 
 	SFVec3f *axisOfRotationField;
@@ -43,7 +43,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

@@ -10,7 +10,7 @@
 
 #include "VisibilitySensorNode.h"
 
-VisibilitySensorNode::VisibilitySensorNode() 
+VisibilitySensorNode::VisibilitySensorNode()
 {
 	setHeaderFlag(false);
 	setType(visibilitySensorNodeString);
@@ -32,7 +32,7 @@ VisibilitySensorNode::VisibilitySensorNode()
 	addEventOut(exitTimeFieldString, exitTimeField);
 }
 
-VisibilitySensorNode::~VisibilitySensorNode() 
+VisibilitySensorNode::~VisibilitySensorNode()
 {
 }
 
@@ -46,18 +46,18 @@ SFVec3f *VisibilitySensorNode::getCenterField()
 		return centerField;
 	return (SFVec3f *)getExposedField(centerFieldString);
 }
-	
-void VisibilitySensorNode::setCenter(float value[]) 
+
+void VisibilitySensorNode::setCenter(float value[])
 {
 	getCenterField()->setValue(value);
 }
 
-void VisibilitySensorNode::setCenter(float x, float y, float z) 
+void VisibilitySensorNode::setCenter(float x, float y, float z)
 {
 	getCenterField()->setValue(x, y, z);
 }
 
-void VisibilitySensorNode::getCenter(float value[]) 
+void VisibilitySensorNode::getCenter(float value[])
 {
 	getCenterField()->getValue();
 }
@@ -72,18 +72,18 @@ SFVec3f *VisibilitySensorNode::getSizeField()
 		return sizeField;
 	return (SFVec3f *)getExposedField(sizeFieldString);
 }
-	
-void VisibilitySensorNode::setSize(float value[]) 
+
+void VisibilitySensorNode::setSize(float value[])
 {
 	getSizeField()->setValue(value);
 }
 
-void VisibilitySensorNode::setSize(float x, float y, float z) 
+void VisibilitySensorNode::setSize(float x, float y, float z)
 {
 	getSizeField()->setValue(x, y, z);
 }
 
-void VisibilitySensorNode::getSize(float value[]) 
+void VisibilitySensorNode::getSize(float value[])
 {
 	getSizeField()->getValue();
 }
@@ -98,13 +98,13 @@ SFTime *VisibilitySensorNode::getEnterTimeField()
 		return enterTimeField;
 	return (SFTime *)getEventOut(enterTimeFieldString);
 }
-	
-void VisibilitySensorNode::setEnterTime(double value) 
+
+void VisibilitySensorNode::setEnterTime(double value)
 {
 	getEnterTimeField()->setValue(value);
 }
 
-double VisibilitySensorNode::getEnterTime() 
+double VisibilitySensorNode::getEnterTime()
 {
 	return getEnterTimeField()->getValue();
 }
@@ -119,13 +119,13 @@ SFTime *VisibilitySensorNode::getExitTimeField()
 		return exitTimeField;
 	return (SFTime *)getEventOut(exitTimeFieldString);
 }
-	
-void VisibilitySensorNode::setExitTime(double value) 
+
+void VisibilitySensorNode::setExitTime(double value)
 {
 	getExitTimeField()->setValue(value);
 }
 
-double VisibilitySensorNode::getExitTime() 
+double VisibilitySensorNode::getExitTime()
 {
 	return getExitTimeField()->getValue();
 }
@@ -134,12 +134,12 @@ double VisibilitySensorNode::getExitTime()
 //	List
 ////////////////////////////////////////////////
 
-VisibilitySensorNode *VisibilitySensorNode::next() 
+VisibilitySensorNode *VisibilitySensorNode::next()
 {
 	return (VisibilitySensorNode *)Node::next(getType());
 }
 
-VisibilitySensorNode *VisibilitySensorNode::nextTraversal() 
+VisibilitySensorNode *VisibilitySensorNode::nextTraversal()
 {
 	return (VisibilitySensorNode *)Node::nextTraversalByType(getType());
 }
@@ -147,21 +147,21 @@ VisibilitySensorNode *VisibilitySensorNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool VisibilitySensorNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void VisibilitySensorNode::initialize() 
+void VisibilitySensorNode::initialize()
 {
 }
 
-void VisibilitySensorNode::uninitialize() 
+void VisibilitySensorNode::uninitialize()
 {
 }
 
-void VisibilitySensorNode::update() 
+void VisibilitySensorNode::update()
 {
 }
 
@@ -169,7 +169,7 @@ void VisibilitySensorNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void VisibilitySensorNode::outputContext(ostream &printStream, char *indentString) 
+void VisibilitySensorNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *enabled = getEnabledField();
 	SFVec3f *center = getCenterField();

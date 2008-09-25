@@ -28,8 +28,8 @@
 CGAL_BEGIN_NAMESPACE
 template <class InputIterator, class Polyhedron>
 void
-convex_hull_incremental_3(InputIterator first, InputIterator beyond, 
-                                     Polyhedron& P, 
+convex_hull_incremental_3(InputIterator first, InputIterator beyond,
+                                     Polyhedron& P,
                                      bool test_correctness = false)
 {
   typedef typename Polyhedron::Traits       PolyTraits;

@@ -20,12 +20,12 @@ class IndexedLineSetNode : public GeometryNode {
 	SFBool *colorPerVertexField;
 	MFInt32 *coordIndexField;
 	MFInt32 *colorIndexField;
-	
+
 public:
 
 	IndexedLineSetNode();
 	~IndexedLineSetNode();
-	
+
 	////////////////////////////////////////////////
 	//	List
 	////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getColorPerVertexField();
-	
+
 	void setColorPerVertex(bool value);
 	void setColorPerVertex(int value);
 	bool getColorPerVertex();
@@ -53,7 +53,7 @@ public:
 	int getNCoordIndexes();
 	int getCoordIndex(int index);
 	void clearCoordIndex();
-	
+
 	////////////////////////////////////////////////
 	// ColorIndex
 	////////////////////////////////////////////////
@@ -68,7 +68,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,9 +32,9 @@
 
 	TOKEN(NO_VALUE)
 
-	/* CONTINUOUS PARAM (DEM) TYPES */	
+	/* CONTINUOUS PARAM (DEM) TYPES */
 
-	/* These are continuous data DEMs. */	
+	/* These are continuous data DEMs. */
 	TOKEN(dem_Elevation)			//	Height above sea level, meters from a DEM (raw elevation)
 
 	TOKEN(dem_Temperature)			//	Average Temperature Data
@@ -60,7 +60,7 @@
 	TOKEN(dem_HydroQuantity)		// Quantity of water transit per DEM point
 	TOKEN(dem_HydroElevation)		// Water level or NO_VALUE for dry land for hydro reprocessing
 
-	/* These are enum DEMs. */	
+	/* These are enum DEMs. */
 	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_Climate)				//	Type of climate
@@ -80,19 +80,19 @@
 	TOKEN(he_Bridge)				// Indicates that this is a bridge in the original vector data, not an error in water-road merging.
 
 	/* AREA PARAMS */
-	
+
 	/* POINT FEATURE PARAMS */
-	
+
 	TOKEN(pf_Height)
-	
+
 	/* POLYGONAL (AREA) FEATURE PARAMS */
-	
+
 	TOKEN(af_Height)				// Highest legal auto-gen obj we can put here
 	TOKEN(af_HeightObjs)			// Height of tallest obj in face
-	
+
 	TOKEN(af_WaterArea)				// square area in sq meters
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
-	
+
 	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?
 
 /*******************NETWORK TYPE CODES***********************************
@@ -101,8 +101,8 @@
 
 
 	TOKEN(road_Unknown)
-	
-	TOKEN(road_Start_Highway)	
+
+	TOKEN(road_Start_Highway)
 		TOKEN(road_PrimaryLimUnsep)
 		TOKEN(road_PrimaryLimUnsepRail)
 		TOKEN(road_PrimaryLimSep)
@@ -111,8 +111,8 @@
 		TOKEN(road_PrimaryLimOnewayRail)
 		TOKEN(road_PrimaryLimBridge)
 	TOKEN(road_End_Highway)
-	
-	TOKEN(road_Start_MainDrag)	
+
+	TOKEN(road_Start_MainDrag)
 		TOKEN(road_PrimaryUnsep)
 		TOKEN(road_PrimaryUnsepRail)
 		TOKEN(road_PrimarySep)
@@ -127,10 +127,10 @@
 		TOKEN(road_SecondSepRail)
 		TOKEN(road_SecondOneway)
 		TOKEN(road_SecondOnewayRail)
-		TOKEN(road_SecondBridge)	
+		TOKEN(road_SecondBridge)
 	TOKEN(road_End_MainDrag)
-	
-	TOKEN(road_Start_LocalRoad)	
+
+	TOKEN(road_Start_LocalRoad)
 		TOKEN(road_LocalUnsep)
 		TOKEN(road_LocalUnsepRail)
 		TOKEN(road_LocalSep)
@@ -138,54 +138,54 @@
 		TOKEN(road_LocalOneway)
 		TOKEN(road_LocalOnewayRail)
 		TOKEN(road_LocalBridge)
-		
+
 		TOKEN(road_Culdesac)
-		TOKEN(road_TrafficCircle)	
+		TOKEN(road_TrafficCircle)
 	TOKEN(road_End_LocalRoad)
-	
+
 	TOKEN(road_Start_Access)
-		TOKEN(road_4WDUnsep)	
+		TOKEN(road_4WDUnsep)
 		TOKEN(road_Ramp)
-		TOKEN(road_Service)	
+		TOKEN(road_Service)
 		TOKEN(road_Alley)
 		TOKEN(road_Driveway)
 	TOKEN(road_End_Access)
-	
-	TOKEN(road_Start_Walkway)	
+
+	TOKEN(road_Start_Walkway)
 		TOKEN(walk_Unknown)
 		TOKEN(walk_Trail)
-		TOKEN(walk_Stairway)	
+		TOKEN(walk_Stairway)
 	TOKEN(road_End_Walkway)
-	
+
 	TOKEN(train_Start)
 		TOKEN(train_Generic)
 		TOKEN(train_Spur)
-	TOKEN(train_End)	
+	TOKEN(train_End)
 	TOKEN(powerline_Generic)
 	TOKEN(dam_Generic)
 
 
 /*******************FEATURE CLASS CODES**********************************
- * Features are source phenomenon, in other words, stuff cataloged in 
+ * Features are source phenomenon, in other words, stuff cataloged in
  * data sets like hospitals, shopping malls, jails, etc.  Features fall
- * into two rough catagories: generic landmarks are features that are 
+ * into two rough catagories: generic landmarks are features that are
  * identifiable among themselves (e.g. a campground doesn't look like
  * anything other than a campground).  Generic features are not as easily
  * identified; the visual representation may not be unique to the code.
  * (A mid-rise residential feature may not look that different from other
  * mid-size buildings, depending on the locality).
  *
- * It is important to remember that features do NOT specify a visual 
+ * It is important to remember that features do NOT specify a visual
  * encoding.  A military base may be visually represented with different
  * technology based on climate and global position.  A medical center may
  * change in appearance based on urban density, etc.
  *
  * In a few cases, the feature code itself implies parameters that would
- * otherwise be taken from continuous data.  For example, 
+ * otherwise be taken from continuous data.  For example,
  * feat_ResidentialLowValueComplex implies low economic value (a grubby
  * housing complex) regardless of the economic or density data.  These
  * overrides are provided to allow features to keep their fidelity.  For
- * example, a 'poor house' in US data might be mapped to a low value 
+ * example, a 'poor house' in US data might be mapped to a low value
  * residential feature so that even if the economic indicators say otherwise,
  * a low-value graphic will be used.  Where no continuous data is implied,
  * the feature should be subject to local constraints.
@@ -212,7 +212,7 @@
 	TOKEN(feat_GolfCourse)
 	TOKEN(feat_Cemetary)
 	TOKEN(feat_Airport)
-	
+
 	/* Building-type features */
 	TOKEN(feat_MedicalCenter)
 	TOKEN(feat_EducationalCenter)
@@ -220,14 +220,14 @@
 	TOKEN(feat_Religious)
 	TOKEN(feat_PostOffice)
 	TOKEN(feat_Refinery)
-	
+
 	/* Transportation-type features */
 	TOKEN(feat_BusTerminal)
 	TOKEN(feat_TrainTerminal)
 	TOKEN(feat_SeaTerminal)
 	TOKEN(feat_Dam)
 	TOKEN(feat_Tramway)
-	
+
 	/* Tall Obstacles */
 	TOKEN(feat_RadioTower)
 	TOKEN(feat_Pole)
@@ -237,22 +237,22 @@
 	TOKEN(feat_Tank)
 	TOKEN(feat_Smokestack)
 	TOKEN(feat_Smokestacks)
-	
+
 	/* Landmarks */
 	TOKEN(feat_Arch)
 	TOKEN(feat_CoolingTower)
-	TOKEN(feat_Monument)	
+	TOKEN(feat_Monument)
 	TOKEN(feat_Spire)
 	TOKEN(feat_Dome)
 	TOKEN(feat_Sign)
-	
+
 	/* Misc. features */
 	TOKEN(feat_AmusementCenter)
-	
+
 	/* Airport features.  Note: these features are NOT put in the
 	   global scenery final output, but they are modeled in XES files
 	   so we can avoid having collisions and chaos! */
-	
+
 	TOKEN(feat_FirstAirportFurniture)
 	TOKEN(feat_Windsock)
 	TOKEN(feat_BeaconNDB)
@@ -265,8 +265,8 @@
 	TOKEN(feat_RadarASR)
 	TOKEN(feat_RadarARSR)
 	TOKEN(feat_LastAirportFurniture)
-	
-	/* Generic features - these features are not distinguishable 
+
+	/* Generic features - these features are not distinguishable
 	 * from other feature types...can you tell an apartment building
 	 * from a dormitory? */
 
@@ -276,20 +276,20 @@
 	TOKEN(feat_ResidentialComplex)
 	TOKEN(feat_ResidentialHouse)
 	TOKEN(feat_ResidentialLowValueComplex)
-	
+
 	/* Buildings - Commercial */
 	TOKEN(feat_CommercialOffice)
 	TOKEN(feat_CommercialShoppingPlaza)
 	TOKEN(feat_Government)
-	
+
 	/* Buildings - Industrial */
 	TOKEN(feat_Industrial)
 	TOKEN(feat_Plant)
-	
+
 	/* Buildings - Generic */
 	TOKEN(feat_Skyscraper)
 	TOKEN(feat_Building)
-	
+
 	/* Generic open space */
 	TOKEN(feat_Park)
 	TOKEN(feat_ForestPark)
@@ -415,7 +415,7 @@
 	TOKEN(lu_usgs_Unused99)
 	TOKEN(lu_usgs_NO_DATA)
 
-	/* Natural phenomena for dem_TerrainPhenomena - these define things 
+	/* Natural phenomena for dem_TerrainPhenomena - these define things
 	   that happen on the ground other than plants. */
 
 #if 0
@@ -433,16 +433,16 @@
 
 	/* Natural phenomena for dem_2dVegePhenomena - what is on ground. */
 
-	TOKEN(phenom_Grass)	
+	TOKEN(phenom_Grass)
 	TOKEN(phenom_TallGrass)
 	TOKEN(phenom_GrassAndShrubs)
 	TOKEN(phenom_TallShrubs)
-	TOKEN(phenom_Swamp)	
+	TOKEN(phenom_Swamp)
 	TOKEN(phenom_Crops)							// Any kind of field crops
-	TOKEN(phenom_WetCrops)					
+	TOKEN(phenom_WetCrops)
 
 	/* Natural phenomena for dem_3dVegePhenomena - what grows up. */
-	
+
 	TOKEN(phenom_Forest)						// Trees
 	TOKEN(phenom_DeciForest)
 	TOKEN(phenom_ConiForest)
@@ -455,7 +455,7 @@
 
 	/* Climate types, for dem_Climate.  These are the different climates in
 	 * which the above phenomena instantiate themselves. */
-	
+
 	TOKEN(climate_TropicalRainForest)	// Type Af
 	TOKEN(climate_TropicalMonsoon)		// Type Am
 	TOKEN(climate_TropicalDry)			// Type Aw
@@ -470,14 +470,14 @@
 	TOKEN(climate_ColdWinterDry)		// Type Dw
 	TOKEN(climate_PolarTundra)			// Type ET
 	TOKEN(climate_PolarFrozen)			// Type EF
-	
+
 	/* Rock and bare earth colors */
 	TOKEN(nude_Red)
 	TOKEN(nude_Yellow)
 	TOKEN(nude_Gray)
 	TOKEN(nude_Brown)
-	TOKEN(nude_Black)	
-	
+	TOKEN(nude_Black)
+
 	/* 2-D Vegetation colors */
 	TOKEN(grass_TropicalWet)
 	TOKEN(grass_TropicalMed)
@@ -486,24 +486,24 @@
 	TOKEN(grass_TemperateWet)
 	TOKEN(grass_TemperateMed_Wet)
 	TOKEN(grass_TemperateMed_Dry)
-	TOKEN(grass_TemperateDry)				
+	TOKEN(grass_TemperateDry)
 	TOKEN(grass_ColdWet)
-	TOKEN(grass_ColdMed)				
-	TOKEN(grass_ColdDry)						
-	TOKEN(grass_PolarWet)			
+	TOKEN(grass_ColdMed)
+	TOKEN(grass_ColdDry)
+	TOKEN(grass_PolarWet)
 	TOKEN(grass_PolarDry)
-	
+
 	/* TERRAIN CLASSES
 	 * These values can be stored in the mTerrainType field on a per-polygon
-	 * basis.  terrain_Natural indicates that land uses should be used to 
+	 * basis.  terrain_Natural indicates that land uses should be used to
 	 * rebuild this terrain.
 	 *
 	 * NOTE: These terrains are in priority order in the sim!!  Also, the 'hill'
 	 * variant MUST follow the non-hill variant!
 	 *
 	 */
-	 
-	 
+
+
 	 /*
 	 	IMPORTANT: this area needs to be cleaned up after the V8 global render!  Basically:
 	 	terrain_Water and all .ter enum types are FINAL terrain types - they can go to a DSF
@@ -513,12 +513,12 @@
 	 	terrain_Airport, et. al. are feature-placeholders; they indicate that we also want to
 	 	use the terrain rule system, but inputting this feature into the 'terrain' column
 	 	as a restriction.
-	 	
+
 	 	All other types are no longer used (but were part of zoning once upon a time.)
-	 
+
 	 */
-	 
-/*		
+
+/*
 	TOKEN(terrain_VirtualOrtho00)			// Do not use in mTerrainType
 	TOKEN(terrain_VirtualOrtho01)			// Do not use in mTerrainType
 	TOKEN(terrain_VirtualOrtho10)			// Do not use in mTerrainType
@@ -528,7 +528,7 @@
 	TOKEN(terrain_Water)
 
 	// Man made land uses....each of tehse must have a hill variant
-/*	
+/*
 	// Aggricultural land uses.
 	TOKEN(terrain_Marker_Artificial)
 	TOKEN(terrain_MixedFarm)				// A mix of farm + natural terrain
@@ -537,7 +537,7 @@
 	TOKEN(terrain_FarmHill)
 	TOKEN(terrain_FarmTown)					// Farm + buildings and town
 	TOKEN(terrain_FarmTownHill)					// Farm + buildings and town
-		
+
 	// Man-made city-like land uses.
 	TOKEN(terrain_OutlayResidential)		// Sparse housing
 	TOKEN(terrain_OutlayResidentialHill)
@@ -553,7 +553,7 @@
 	TOKEN(terrain_IndustrialHill)
 	TOKEN(terrain_Downtown)					// High-rise and sky scrapers
 	TOKEN(terrain_DowntownHill)
-*/		
+*/
 	// Feature land uses - for specific things that are in the scenery.  No hill variants.
 	TOKEN(terrain_Marker_Features)
 	TOKEN(terrain_MilitaryBase)				// Feature terrains - these terrains
@@ -568,16 +568,16 @@
 	TOKEN(terrain_AirportOuter)				// Temporary - we use two land-uses when building airports to make sure we have inner and outer area.
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
-	// specific natural terrain after this!	
+	// specific natural terrain after this!
 	TOKEN(terrain_Natural)					// "landuse" types Do not use in final triangles
 
-	
+
 /************************ X-PLANE ENTITIES *******************************
  * These enums describe X-Plane entities that can be placed in X-plane.
  ************************************************************************/
 
 	/* Rep Types - direct representations */
-		
+
 	TOKEN(rep_Refinery)
 	TOKEN(rep_Crane)
 	TOKEN(rep_ConstructionSite)
@@ -686,21 +686,21 @@
 	TOKEN(rep_MarkerBeacon)
 	TOKEN(rep_RadarASR)
 	TOKEN(rep_RadarARSR)
-	
+
 	/* ROAD USAGES */
-	
+
 	TOKEN(use_None)
 	TOKEN(use_Limited)
 	TOKEN(use_Street)
 	TOKEN(use_Ramp)
 	TOKEN(use_Rail)
 	TOKEN(use_Power)
-	
+
 	/* X-Plane Road Types - this is the master list of all road types that
 	   x-plane knows about. */
-	
+
 	/* Six and four-lane highways...may be together or seprated.  If separated,
-	 * small, and with no trains or brigdeg, there may be no guard rails (for out in Arizona). 
+	 * small, and with no trains or brigdeg, there may be no guard rails (for out in Arizona).
 	 * The inner edge line is always yellow, the outer edge line is white. */
 	TOKEN(net_SixLaneUSHighway)
 	TOKEN(net_SixLaneUSHighwaySeparated)
@@ -709,7 +709,7 @@
 	TOKEN(net_SixLaneUSHighwayWithTrain)
 	TOKEN(net_SixLaneUSHighwaySeparatedWithTrain)
 	TOKEN(net_SixLaneUSHighwayOnewayWithTrain)
-	
+
 	TOKEN(net_FourLaneUSHighway)
 	TOKEN(net_FourLaneUSHighwaySeparated)
 	TOKEN(net_FourLaneUSHighwaySeparatedNoGuardRails)
@@ -718,7 +718,7 @@
 	TOKEN(net_FourLaneUSHighwayWithTrain)
 	TOKEN(net_FourLaneUSHighwaySeparatedWithTrain)
 	TOKEN(net_FourLaneUSHighwayOnewayWithTrain)
-		
+
 	/* Primary road - two lanes in each direction, double yellow lines in the center
 	 * and white lines on the edge.  If there are no sidewalks, there should be a rough
 	 * edge.  If there are no sidewalks, the trains should show grass (clear alpha)
@@ -742,31 +742,31 @@
 	TOKEN(net_PrimaryOnewayWithTrains)
 	TOKEN(net_PrimaryOnewayWithSidewalksWithTrains)
 
-	/* Secondary road - in the city with sidewalks - double yellow line.  In 
+	/* Secondary road - in the city with sidewalks - double yellow line.  In
 	 * the country - single yellow line.  Passing - dashed yellow line. */
 	TOKEN(net_SecondaryRoadWithSidewalks)
 	TOKEN(net_SecondaryRoad)
 	TOKEN(net_SecondaryRoadPassing)
 
 	/* Local roads - two directions, no separators.  Only access ramps have
-	 * markings.  Alleys are damaged. */	
+	 * markings.  Alleys are damaged. */
 	TOKEN(net_LocalRoad)
 	TOKEN(net_CulDeSac)
 	TOKEN(net_AccessRamp)	// Always a bridge?
 	TOKEN(net_4WDRoad)
 	TOKEN(net_Alley)
 	TOKEN(net_Driveway)
-	
-	/* Trains - one or two tracks.  Need graphics for both by themselves and 
+
+	/* Trains - one or two tracks.  Need graphics for both by themselves and
 	 * crossing roads */
 	TOKEN(net_TrainsTwoWay)
 	TOKEN(net_TrainsOneWay)
-	
+
 	/* Walking trail - enough said */
 	TOKEN(net_Walking)
 	TOKEN(net_WalkingCity)
 	TOKEN(net_WalkingCitySteps)
-	
+
 	/* Electrical */
 	TOKEN(net_Powerlines)
 
@@ -784,7 +784,7 @@
 	inline	int	Road_IsAccess  (int x) { return x > road_Start_Access    && x < road_End_Access;    }
 	inline	int Road_IsWalkway (int x) { return x > road_Start_Walkway   && x < road_End_Walkway;   }
 	inline	int	Road_IsTrain   (int x) { return x > train_Start			 && x < train_End;			}
-	
+
 	inline	int	Feature_IsAirportFurniture(int x) { return x > feat_FirstAirportFurniture && x < feat_LastAirportFurniture; }
 
 	#endif
@@ -799,7 +799,7 @@
 
 
 	/******************* DRAINAGE RELATED ENUMS *********************/
-	
+
 	TOKEN(sink_Known)		// We expect a sink - we hvae a vector lake here.
 	TOKEN(sink_Invalid)		// We couldn't flood out - bad DEM point?
 	TOKEN(sink_Unresolved)	// We haven't tried to fix this sink yet.

@@ -1,26 +1,26 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
-#include "XWin32DND.h"          
+#include "XWin32DND.h"
 
 /**************************************************************************
 
@@ -30,7 +30,7 @@
 
 CDropTarget::CDropTarget(void)
 {
-m_cRefCount = 1; 
+m_cRefCount = 1;
 m_fAcceptFmt = FALSE;
 m_pDropTargetHelper = NULL;
 m_ReceiverObj = NULL;
@@ -41,7 +41,7 @@ CoCreateInstance( CLSID_DragDropHelper,
                   CLSCTX_INPROC_SERVER,
                   IID_IDropTargetHelper,
                   (LPVOID*)&m_pDropTargetHelper);
-}   
+}
 
 /**************************************************************************
 
@@ -56,7 +56,7 @@ if(m_pDropTargetHelper)
    m_pDropTargetHelper->Release();
    m_pDropTargetHelper = NULL;
    }
-}   
+}
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -69,7 +69,7 @@ if(m_pDropTargetHelper)
 
 **************************************************************************/
 
-STDMETHODIMP CDropTarget::QueryInterface(REFIID riid, LPVOID *ppvOut) 
+STDMETHODIMP CDropTarget::QueryInterface(REFIID riid, LPVOID *ppvOut)
 {
 *ppvOut = NULL;
 
@@ -118,9 +118,9 @@ if(--m_cRefCount == 0)
    delete this;
    return 0;
    }
-   
+
 return m_cRefCount;
-}  
+}
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -133,25 +133,25 @@ return m_cRefCount;
 
 **************************************************************************/
 
-STDMETHODIMP CDropTarget::DragEnter(   LPDATAOBJECT pDataObj, 
-                                       DWORD grfKeyState, 
-                                       POINTL pt, 
+STDMETHODIMP CDropTarget::DragEnter(   LPDATAOBJECT pDataObj,
+                                       DWORD grfKeyState,
+                                       POINTL pt,
                                        LPDWORD pdwEffect)
 {
 if(m_pDropTargetHelper)
    m_pDropTargetHelper->DragEnter(m_Window, pDataObj, (LPPOINT)&pt, *pdwEffect);
 
 FORMATETC fe;
-       
+
 fe.cfFormat = CF_HDROP;
 fe.ptd      = NULL;
-fe.dwAspect = DVASPECT_CONTENT;  
+fe.dwAspect = DVASPECT_CONTENT;
 fe.lindex   = -1;
-fe.tymed    = TYMED_HGLOBAL; 
-    
+fe.tymed    = TYMED_HGLOBAL;
+
 // Does the drag source provide the clipboard format we are looking for?
-m_fAcceptFmt = (S_OK == pDataObj->QueryGetData(&fe)) ? TRUE : FALSE;    
-    
+m_fAcceptFmt = (S_OK == pDataObj->QueryGetData(&fe)) ? TRUE : FALSE;
+
 QueryDrop(grfKeyState, pdwEffect);
 
 return S_OK;
@@ -163,8 +163,8 @@ return S_OK;
 
 **************************************************************************/
 
-STDMETHODIMP CDropTarget::DragOver( DWORD grfKeyState, 
-                                    POINTL pt, 
+STDMETHODIMP CDropTarget::DragOver( DWORD grfKeyState,
+                                    POINTL pt,
                                     LPDWORD pdwEffect)
 {
 if(m_pDropTargetHelper)
@@ -186,7 +186,7 @@ STDMETHODIMP CDropTarget::DragLeave()
 if(m_pDropTargetHelper)
    m_pDropTargetHelper->DragLeave();
 
-m_fAcceptFmt = FALSE;   
+m_fAcceptFmt = FALSE;
 return S_OK;
 }
 
@@ -196,10 +196,10 @@ return S_OK;
 
 **************************************************************************/
 
-STDMETHODIMP CDropTarget::Drop(  LPDATAOBJECT pDataObj, 
-                                 DWORD grfKeyState, 
-                                 POINTL pt, 
-                                 LPDWORD pdwEffect)  
+STDMETHODIMP CDropTarget::Drop(  LPDATAOBJECT pDataObj,
+                                 DWORD grfKeyState,
+                                 POINTL pt,
+                                 LPDWORD pdwEffect)
 {
 if(m_pDropTargetHelper)
    m_pDropTargetHelper->Drop(pDataObj, (LPPOINT)&pt, *pdwEffect);
@@ -207,30 +207,30 @@ if(m_pDropTargetHelper)
 FORMATETC   fe;
 STGMEDIUM   sm;
 HRESULT     hr = E_FAIL;
-     
+
 if(QueryDrop(grfKeyState, pdwEffect))
-   {      
+   {
    fe.cfFormat = CF_HDROP;
    fe.ptd = NULL;
-   fe.dwAspect = DVASPECT_CONTENT;  
+   fe.dwAspect = DVASPECT_CONTENT;
    fe.lindex = -1;
-   fe.tymed = TYMED_HGLOBAL;       
-        
+   fe.tymed = TYMED_HGLOBAL;
+
    // User has dropped on us. Get the data from drag source
    hr = pDataObj->GetData(&fe, &sm);
    if(SUCCEEDED(hr))
       {
       // Display the data and release it.
       DisplayFileNames(m_Window, sm.hGlobal);
-      
+
       ReleaseStgMedium(&sm);
       }
    }
 
 *pdwEffect = DROPEFFECT_NONE;
 
-return hr; 
-}   
+return hr;
+}
 
 /* OleStdGetDropEffect
 ** -------------------
@@ -263,30 +263,30 @@ return hr;
 **************************************************************************/
 
 BOOL CDropTarget::QueryDrop(DWORD grfKeyState, LPDWORD pdwEffect)
-{  
-DWORD dwOKEffects = *pdwEffect; 
+{
+DWORD dwOKEffects = *pdwEffect;
 
 if(!m_fAcceptFmt)
    {
    *pdwEffect = DROPEFFECT_NONE;
    return FALSE;
    }
-     
+
 *pdwEffect = OleStdGetDropEffect(grfKeyState);
-if(*pdwEffect == 0) 
+if(*pdwEffect == 0)
    {
-   // No modifier keys used by user while dragging. 
+   // No modifier keys used by user while dragging.
    if (DROPEFFECT_COPY & dwOKEffects)
       *pdwEffect = DROPEFFECT_COPY;
    else if (DROPEFFECT_MOVE & dwOKEffects)
-      *pdwEffect = DROPEFFECT_MOVE; 
+      *pdwEffect = DROPEFFECT_MOVE;
    else if (DROPEFFECT_LINK & dwOKEffects)
-      *pdwEffect = DROPEFFECT_LINK; 
-   else 
+      *pdwEffect = DROPEFFECT_LINK;
+   else
       {
       *pdwEffect = DROPEFFECT_NONE;
       }
-   } 
+   }
 else
    {
    // Check if the drag source application allows the drop effect desired by user.
@@ -297,10 +297,10 @@ else
    // We don't accept links
    if(*pdwEffect == DROPEFFECT_LINK)
       *pdwEffect = DROPEFFECT_NONE;
-   }  
+   }
 
 return (DROPEFFECT_NONE == *pdwEffect) ? FALSE : TRUE;
-}   
+}
 
 /**************************************************************************
 

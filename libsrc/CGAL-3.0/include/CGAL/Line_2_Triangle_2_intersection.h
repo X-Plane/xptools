@@ -95,7 +95,7 @@ public:
             return _result;
         }
     }
-    
+
 #else
     Intersection_results intersection_type() const;
 #endif // CGAL_CFG_RETURN_TYPE_BUG_2
@@ -111,8 +111,8 @@ protected:
 };
 
 template <class K>
-inline 
-bool 
+inline
+bool
 do_intersect(const typename CGAL_WRAP(K)::Line_2 &p1,
 	     const typename CGAL_WRAP(K)::Triangle_2 &p2,
 	     const K&)
@@ -123,8 +123,8 @@ do_intersect(const typename CGAL_WRAP(K)::Line_2 &p1,
 }
 
 template <class K>
-inline 
-bool 
+inline
+bool
 do_intersect(const typename CGAL_WRAP(K)::Triangle_2 &p2,
 	     const typename CGAL_WRAP(K)::Line_2 &p1,
 	     const K& k)
@@ -237,7 +237,7 @@ intersection(typename K::Segment_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Line_2 &line, 
+intersection(const typename CGAL_WRAP(K)::Line_2 &line,
 	     const typename CGAL_WRAP(K)::Triangle_2 &tr,
 	     const K&)
 {
@@ -285,8 +285,8 @@ public:
 } // namespace CGALi
 
 template <class K>
-inline 
-bool 
+inline
+bool
 do_intersect(const Line_2<K> &p1,
 	     const Triangle_2<K> &p2)
 {

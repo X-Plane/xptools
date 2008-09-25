@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -31,7 +31,7 @@ class sc_Record;
 class sb_ForeignID;
 
 
-/** 
+/**
     Consolidates common module attributes for the rest of the builder
     classes
 */
@@ -75,7 +75,7 @@ class sb_Module
       }
 
       ///
-      void setMnemonic( std::string const & mnemonic ) 
+      void setMnemonic( std::string const & mnemonic )
       {
          mnemonic_ = mnemonic;
       }
@@ -148,7 +148,7 @@ class sb_Module
       int    id_;
 
       /// true if to write ISO 8211 record identifierfield
-      bool   emitRecIdenField_; 
+      bool   emitRecIdenField_;
 
       friend std::ostream& operator<<( std::ostream&, sb_Module const& );
 

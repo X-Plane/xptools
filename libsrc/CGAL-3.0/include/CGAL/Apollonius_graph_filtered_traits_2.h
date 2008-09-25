@@ -291,7 +291,7 @@ public:
   }
 
   Construct_object_2
-  construct_object_2_object() const { 
+  construct_object_2_object() const {
     return Construct_object_2();
   }
 
@@ -299,7 +299,7 @@ public:
   // CONSTRUCTIONS
   //--------------
   Construct_Apollonius_vertex_2
-  construct_Apollonius_vertex_2_object() const { 
+  construct_Apollonius_vertex_2_object() const {
     return Construct_Apollonius_vertex_2();
   }
 

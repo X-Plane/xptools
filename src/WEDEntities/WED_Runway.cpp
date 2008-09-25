@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -69,16 +69,16 @@ bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 	if (blas1.value == 0.0) return false;
 	Point2	bounds[4];
 	GetCorners(bounds);
-	
+
 	Point2	p1, p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
 	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
 	if (my_len == 0.0) return false;
-	
+
 	double frac = blas1.value / my_len;
-	
+
 	corners[0] = Segment2(bounds[0],bounds[1]).midpoint(-frac);
 	corners[1] = bounds[0];
 	corners[2] = bounds[3];
@@ -95,16 +95,16 @@ bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
 	if (blas2.value == 0.0) return false;
 	Point2	bounds[4];
 	GetCorners(bounds);
-	
+
 	Point2	p1, p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
 	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
 	if (my_len == 0.0) return false;
-	
+
 	double frac = blas2.value / my_len;
-	
+
 	corners[0] = bounds[1];
 	corners[1] = Segment2(bounds[0],bounds[1]).midpoint(1.0 + frac);
 	corners[2] = Segment2(bounds[3],bounds[2]).midpoint(1.0 + frac);
@@ -121,16 +121,16 @@ bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
 	if (disp1.value == 0.0) return false;
 	Point2	bounds[4];
 	GetCorners(bounds);
-	
+
 	Point2	p1, p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
 	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
 	if (my_len == 0.0) return false;
-	
+
 	double frac = disp1.value / my_len;
-	
+
 	corners[0] = bounds[0];
 	corners[1] = Segment2(bounds[0],bounds[1]).midpoint(frac);
 	corners[2] = Segment2(bounds[3],bounds[2]).midpoint(frac);
@@ -147,16 +147,16 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 	if (disp2.value == 0.0) return false;
 	Point2	bounds[4];
 	GetCorners(bounds);
-	
+
 	Point2	p1, p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
 	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
 	if (my_len == 0.0) return false;
-	
+
 	double frac = disp2.value / my_len;
-	
+
 	corners[0] = Segment2(bounds[0],bounds[1]).midpoint(1.0-frac);
 	corners[1] = bounds[1];
 	corners[2] = bounds[2];
@@ -172,7 +172,7 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 	if (shoulder.value == shoulder_None) return false;
 	Point2	bounds[4];
 	GetCorners(bounds);
-	
+
 	Point2	p1, p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
@@ -182,22 +182,22 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 
 	if (blas1.value != 0.0)
 	{
-		double frac = blas1.value / my_len;	
+		double frac = blas1.value / my_len;
 		corners[0] = Segment2(bounds[0],bounds[1]).midpoint(-frac);
 		corners[3] = Segment2(bounds[3],bounds[2]).midpoint(-frac);
 	}
 	if (blas2.value != 0.0)
 	{
-		double frac = blas2.value / my_len;	
+		double frac = blas2.value / my_len;
 		corners[1] = Segment2(bounds[0],bounds[1]).midpoint(1.0 + frac);
 		corners[2] = Segment2(bounds[3],bounds[2]).midpoint(1.0 + frac);
 	}
-	
+
 	bounds[0] = corners[0];
 	bounds[1] = corners[1];
 	bounds[2] = corners[2];
 	bounds[3] = corners[3];
-	
+
 	corners[0] = Segment2(bounds[0],bounds[3]).midpoint(-0.25);
 	corners[1] = Segment2(bounds[1],bounds[2]).midpoint(-0.25);
 	corners[2] = bounds[1];
@@ -221,10 +221,10 @@ int			WED_Runway::GetShoulder(void) const
 
 void		WED_Runway::SetDisp1(double n)
 {
-	if (n < 0.0) n = 0.0;	
+	if (n < 0.0) n = 0.0;
 	double m = GetLength() - GetDisp2();
 	if (n > m) n = m;
-	
+
 	disp1 = n;
 }
 
@@ -233,7 +233,7 @@ void		WED_Runway::SetDisp2(double n)
 	if (n < 0.0) n = 0.0;
 	double m = GetLength() - GetDisp1();
 	if (n > m) n = m;
-	
+
 	disp2 = n;
 }
 
@@ -276,7 +276,7 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	GetSource()->SetLocation(x.ends.p1  );
 	GetTarget()->SetLocation(x.ends.p2  );
 				 SetWidth	(x.width_mtr);
-	
+
 	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
 	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code			);
 	roughness		=								x.roughness_ratio		 ;
@@ -288,18 +288,18 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	{
 		print_func(ref,"Error importing runway: surface code %d is illegal (not a member of type %s).\n", x.surf_code, DOMAIN_Fetch(surface.domain));
 		surface = surf_Concrete;
-	}	
+	}
 	if (shoulder == -1)
 	{
 		print_func(ref,"Error importing runway: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Fetch(shoulder.domain));
 		shoulder = shoulder_None;
-	}	
+	}
 	if (edge_lites == -1)
 	{
 		print_func(ref,"Error importing runway: edge light code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Fetch(edge_lites.domain));
 		edge_lites = edge_MIRL;
-	}	
-	
+	}
+
 	string	full = x.id[0] + string("/") + x.id[1];
 	SetName(full);
 
@@ -313,17 +313,17 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	{
 		print_func(ref,"Error importing runway: low-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[0], DOMAIN_Fetch(mark1.domain));
 		mark1 = mark_NonPrecis;
-	}	
+	}
 	if (appl1 == -1)
 	{
 		print_func(ref,"Error importing runway: low-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[0], DOMAIN_Fetch(appl1.domain));
 		appl1 = app_None;
-	}	
+	}
 	if (reil1 == -1)
 	{
 		print_func(ref,"Error importing runway: low-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[0], DOMAIN_Fetch(reil1.domain));
 		reil1 = reil_None;
-	}	
+	}
 
 	disp2 =									x.disp_mtr		[1] ;
 	blas2 =									x.blas_mtr		[1] ;
@@ -336,20 +336,20 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	{
 		print_func(ref,"Error importing runway: high-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[1], DOMAIN_Fetch(mark2.domain));
 		mark2 = mark_NonPrecis;
-	}	
+	}
 	if (appl2 == -1)
 	{
 		print_func(ref,"Error importing runway: high-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[1], DOMAIN_Fetch(appl2.domain));
 		appl2 = app_None;
-	}	
+	}
 	if (reil2 == -1)
 	{
 		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Fetch(reil2.domain));
 		reil2 = reil_None;
-	}	
-	
-	
-	
+	}
+
+
+
 }
 
 void		WED_Runway::Export(		 AptRunway_t& x) const
@@ -357,14 +357,14 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	GetSource()->GetLocation(x.ends.p1  );
 	GetTarget()->GetLocation(x.ends.p2  );
 							 x.width_mtr = GetWidth();
-	
+
 	x.surf_code				 = ENUM_Export(surface.value   );
 	x.shoulder_code			 = ENUM_Export(shoulder.value  );
 	x.roughness_ratio		 =			   roughness		;
 	x.has_centerline		 =			   center_lites		;
 	x.edge_light_code		 = ENUM_Export(edge_lites.value);
 	x.has_distance_remaining =			   remaining_signs	;
-	
+
 	string	full;
 	GetName(full);
 	string::size_type p = full.find('/');
@@ -376,9 +376,9 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	else
 	{
 		x.id[0] = full.substr(0,p);
-		x.id[1] = full.substr(p+1);		
+		x.id[1] = full.substr(p+1);
 	}
-	
+
 	x.disp_mtr		[0] =			  disp1		  ;
 	x.blas_mtr		[0] =			  blas1		  ;
 	x.marking_code	[0] = ENUM_Export(mark1.value);

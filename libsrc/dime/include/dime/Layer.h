@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Layer.h
  *
  *  This source file is part of DIME.
@@ -47,7 +47,7 @@ public:
 
   int16 getColorNumber() const;
   void setColorNumber(const int16 num);
-  
+
   int16 getFlags() const;
   void setFlags(const int16 &flags);
 
@@ -55,15 +55,15 @@ public:
 
   static const dimeLayer *getDefaultLayer();
 
-  static void colorToRGB(const int colornum, 
+  static void colorToRGB(const int colornum,
                          dxfdouble &r, dxfdouble &g, dxfdouble &b);
 
 private:
   friend class dimeModel;
-  
+
   dimeLayer();
-  dimeLayer(const char * const name, const int num, 
-            const int16 colnum, const int16 flags); 
+  dimeLayer(const char * const name, const int num,
+            const int16 colnum, const int16 flags);
   const char *layerName;
   int layerNum;
   int16 colorNum;
@@ -80,37 +80,37 @@ dimeLayer::getLayerName() const
   return layerName;
 }
 
-inline int 
+inline int
 dimeLayer::getLayerNum() const
 {
   return layerNum;
 }
 
-inline int16 
+inline int16
 dimeLayer::getColorNumber() const
 {
   return colorNum;
 }
 
-inline void 
+inline void
 dimeLayer::setColorNumber(const int16 num)
 {
   this->colorNum = num;
 }
-  
-inline int16 
+
+inline int16
 dimeLayer::getFlags() const
 {
   return this->flags;
 }
 
-inline void 
+inline void
 dimeLayer::setFlags(const int16 &flags)
 {
   this->flags = flags;
 }
 
-inline bool 
+inline bool
 dimeLayer::isDefaultLayer() const
 {
   return this == dimeLayer::getDefaultLayer();

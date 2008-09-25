@@ -59,7 +59,7 @@ FORWARD(e_forward); /* ellipsoid */
 		goto eqcon;
 		break;
 	case EQUIT:
-		xy.y = (b = sqrt(2. / (1. + cosb * coslam))) * sinb * P->ymf; 
+		xy.y = (b = sqrt(2. / (1. + cosb * coslam))) * sinb * P->ymf;
 eqcon:
 		xy.x = P->xmf * b * cosb * sinlam;
 		break;

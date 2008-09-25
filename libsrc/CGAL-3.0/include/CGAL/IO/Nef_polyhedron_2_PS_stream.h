@@ -52,7 +52,7 @@ ps_file& operator<<(ps_file& PS, const Nef_polyhedron_2<T>& P)
   typedef typename T::RT  RT;
   typedef typename T::Standard_RT Standard_RT;
 
-  PMCDec D = P.explorer(); 
+  PMCDec D = P.explorer();
   const T& E = Nef_polyhedron_2<T>::EK;
 
   Standard_RT frame_radius = frame_default;

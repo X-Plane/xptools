@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_PREDICATES_ON_RTH2_H
 #define CGAL_PREDICATES_ON_RTH2_H
@@ -35,18 +35,18 @@ orientationH2( const RT& phx, const RT& phy, const RT& phw,
                const RT& rhx, const RT& rhy, const RT& rhw )
 {
   const RT  RT0 = RT(0);
-  
+
   // | A B |
   // | C D |
-  
+
   RT  A = phx*rhw - phw*rhx;
   RT  B = phy*rhw - phw*rhy;
   RT  C = qhx*rhw - qhw*rhx;
   RT  D = qhy*rhw - qhw*rhy;
-  
+
   RT  det =  A*D - B*C;
-  
-  
+
+
   if (det < RT0  )
   {
       return CLOCKWISE;
@@ -65,18 +65,18 @@ left_turnH2( const RT& phx, const RT& phy, const RT& phw,
              const RT& rhx, const RT& rhy, const RT& rhw )
 {
   const RT  RT0 = RT(0);
-  
+
   // | A B |
   // | C D |
-  
+
   RT  A = phx*rhw - phw*rhx;
   RT  B = phy*rhw - phw*rhy;
   RT  C = qhx*rhw - qhw*rhx;
   RT  D = qhy*rhw - qhw*rhy;
-  
+
   RT  det =  A*D - B*C;
-  
-  
+
+
   return ( RT0 < det );
 }
 
@@ -100,18 +100,18 @@ right_turnH2(const RT& phx, const RT& phy, const RT& phw,
              const RT& rhx, const RT& rhy, const RT& rhw )
 {
   const RT  RT0 = RT(0);
-  
+
   // | A B |
   // | C D |
-  
+
   RT  A = phx*rhw - phw*rhx;
   RT  B = phy*rhw - phw*rhy;
   RT  C = qhx*rhw - qhw*rhx;
   RT  D = qhy*rhw - qhw*rhy;
-  
+
   RT  det =  A*D - B*C;
-  
-  
+
+
   return ( det < RT0 );
 }
 
@@ -135,18 +135,18 @@ collinearH2(const RT& phx, const RT& phy, const RT& phw,
             const RT& rhx, const RT& rhy, const RT& rhw )
 {
   const RT  RT0 = RT(0);
-  
+
   // | A B |
   // | C D |
-  
+
   RT  A = phx*rhw - phw*rhx;
   RT  B = phy*rhw - phw*rhy;
   RT  C = qhx*rhw - qhw*rhx;
   RT  D = qhy*rhw - qhw*rhy;
-  
+
   RT  det =  A*D - B*C;
-  
-  
+
+
   return ( det == RT0 );
 }
 
@@ -163,28 +163,28 @@ side_of_bounded_circleH2( const RT& qhx, const RT& qhy, const RT& qhw,
   CGAL_kernel_precondition( ! collinearH2(qhx, qhy, qhw,
                                           rhx, rhy, rhw,
                                           shx, shy, shw) );
-  
+
   // compute sign of      |qx  qy  qx^2+qy^2  1 |   | a b c d |
   //                      |      --  r  --      | = | e f g h |
   //     determinant      |      --  s  --      | = | i j k l |
   //                      |      --  t  --      |   | m n o p |
   //           where
-  
+
   RT a = qhx*qhw;
   RT b = qhy*qhw;
   RT c = qhx*qhx + qhy*qhy;
   RT d = qhw*qhw;
-  
+
   RT e = rhx*rhw;
   RT f = rhy*rhw;
   RT g = rhx*rhx + rhy*rhy;
   RT h = rhw*rhw;
-  
+
   RT i = shx*shw;
   RT j = shy*shw;
   RT k = shx*shx + shy*shy;
   RT l = shw*shw;
-  
+
   RT m = thx*thw;
   RT n = thy*thw;
   RT o = thx*thx + thy*thy;
@@ -193,7 +193,7 @@ side_of_bounded_circleH2( const RT& qhx, const RT& qhy, const RT& qhw,
            - e * ( b*(k*p - l*o) + j*(d*o - c*p) + n*(c*l - d*k) )
            + i * ( b*(g*p - h*o) + f*(d*o - c*p) + n*(c*h - d*g) )
            - m * ( b*(g*l - h*k) + f*(d*k - c*l) + j*(c*h - d*g) );
-  
+
   if ( det == RT(0) )
   {
       return ON_BOUNDARY;
@@ -220,28 +220,28 @@ side_of_oriented_circleH2(const RT& qhx, const RT& qhy, const RT& qhw,
   CGAL_kernel_precondition( ! collinearH2(qhx, qhy, qhw,
                                           rhx, rhy, rhw,
                                           shx, shy, shw) );
-  
+
   // compute sign of      |qx  qy  qx^2+qy^2  1 |   | a b c d |
   //                      |      --  r  --      | = | e f g h |
   //     determinant      |      --  s  --      | = | i j k l |
   //                      |      --  t  --      |   | m n o p |
   //           where
-  
+
   RT a = qhx*qhw;
   RT b = qhy*qhw;
   RT c = qhx*qhx + qhy*qhy;
   RT d = qhw*qhw;
-  
+
   RT e = rhx*rhw;
   RT f = rhy*rhw;
   RT g = rhx*rhx + rhy*rhy;
   RT h = rhw*rhw;
-  
+
   RT i = shx*shw;
   RT j = shy*shw;
   RT k = shx*shx + shy*shy;
   RT l = shw*shw;
-  
+
   RT m = thx*thw;
   RT n = thy*thw;
   RT o = thx*thx + thy*thy;
@@ -250,7 +250,7 @@ side_of_oriented_circleH2(const RT& qhx, const RT& qhy, const RT& qhw,
            - e * ( b*(k*p - l*o) + j*(d*o - c*p) + n*(c*l - d*k) )
            + i * ( b*(g*p - h*o) + f*(d*o - c*p) + n*(c*h - d*g) )
            - m * ( b*(g*l - h*k) + f*(d*k - c*l) + j*(c*h - d*g) );
-  
+
   if ( det < RT(0) )  return ON_NEGATIVE_SIDE;
   else return (RT(0) < det ) ? ON_POSITIVE_SIDE :
                                ON_ORIENTED_BOUNDARY;

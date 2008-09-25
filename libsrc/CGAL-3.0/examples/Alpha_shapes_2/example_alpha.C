@@ -60,12 +60,12 @@ alpha_edges(InputIterator begin, InputIterator end,
 	    const coord_type &Alpha,
 	    bool mode,
 	    OutputIterator out)
-{ 
+{
   Alpha_shape_2 A(begin,end);
-  
-  if (mode) 
-    { A.set_mode(Alpha_shape_2::GENERAL); } 
-  else 
+
+  if (mode)
+    { A.set_mode(Alpha_shape_2::GENERAL); }
+  else
     { A.set_mode(Alpha_shape_2::REGULARIZED); };
   A.set_alpha(Alpha);
 
@@ -94,7 +94,7 @@ file_input(OutputIterator out)
 
   return true;
 }
-    
+
 //------------------ main -------------------------------------------
 
 int main()
@@ -105,7 +105,7 @@ int main()
   }
   std::vector<Segment> segments;
   alpha_edges(points.begin(), points.end(),
-	      coord_type(10000),Alpha_shape_2::GENERAL, 
+	      coord_type(10000),Alpha_shape_2::GENERAL,
 	      std::back_inserter(segments));
 
   std::cout << segments.size() << " alpha shape edges" << std::endl;

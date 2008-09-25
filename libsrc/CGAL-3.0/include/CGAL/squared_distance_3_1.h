@@ -156,7 +156,7 @@ squared_distance(
     const typename CGAL_WRAP(K)::Point_3 &pt,
     const typename CGAL_WRAP(K)::Segment_3 &seg,
     const K& k)
-{ 
+{
   typedef typename K::Kernel_tag Tag;
   Tag tag;
   return squared_distance(pt, seg, k, tag);
@@ -164,7 +164,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const typename CGAL_WRAP(K)::Segment_3 & seg,
@@ -187,7 +187,7 @@ squared_distance_parallel(
   typedef typename K::Vector_3 Vector_3;
     const Vector_3 &dir1 = seg1.direction().vector();
     const Vector_3 &dir2 = seg2.direction().vector();
- 
+
     if (same_direction(dir1, dir2, k)) {
         if (!is_acute_angle(seg1.source(), seg1.target(), seg2.source(), k))
             return squared_distance(seg1.target(), seg2.source(), k);
@@ -206,9 +206,9 @@ squared_distance_parallel(
 
 template <class K>
 inline
-typename K::RT 
+typename K::RT
 _distance_measure_sub(typename K::RT startwdist, typename K::RT endwdist,
-			 const typename CGAL_WRAP(K)::Vector_3 &start, 
+			 const typename CGAL_WRAP(K)::Vector_3 &start,
 			 const typename CGAL_WRAP(K)::Vector_3 &end,
 			 const K&)
 {
@@ -238,14 +238,14 @@ squared_distance(
         return squared_distance(start1, seg2, k);
     if (start2 == end2)
         return squared_distance(start2, seg1, k);
-    
+
     Vector_3 dir1, dir2, normal;
     dir1 = seg1.direction().vector();
     dir2 = seg2.direction().vector();
     normal = wcross(dir1, dir2, k);
     if (is_null(normal, k))
         return squared_distance_parallel(seg1, seg2, k);
-    
+
     bool crossing1, crossing2;
     RT sdm_s1to2, sdm_e1to2, sdm_s2to1, sdm_e2to1;
     Vector_3 perpend1, perpend2, s2mins1, e2mins1, e1mins2;
@@ -258,7 +258,7 @@ squared_distance(
     sdm_e1to2 = wdot(perpend2, e1mins2, k);
     sdm_s2to1 = wdot(perpend1, s2mins1, k);
     sdm_e2to1 = wdot(perpend1, e2mins1, k);
-    
+
     if (sdm_s1to2 < RT(0)) {
         crossing1 = (sdm_e1to2 >= RT(0));
     } else {
@@ -277,12 +277,12 @@ squared_distance(
             crossing2 = (sdm_s2to1 == RT(0));
         }
     }
-    
+
     if (crossing1) {
         if (crossing2) {
             return squared_distance_to_plane(normal, s2mins1, k);
         }
-    
+
         RT dm;
         dm = _distance_measure_sub(
                   sdm_s2to1, sdm_e2to1, s2mins1, e2mins1, k);
@@ -331,7 +331,7 @@ squared_distance(
             return (min1 < min2) ? min1 : min2;
         }
     }
-    
+
 }
 
 
@@ -492,7 +492,7 @@ squared_distance(
     Vector_3 segdir = seg.direction().vector();
     Vector_3 normal = wcross(segdir, linedir, k);
     if (is_null(normal, k))
-        return squared_distance_to_line(linedir, 
+        return squared_distance_to_line(linedir,
 					construct_vector(linepoint,start), k);
 
     bool crossing;
@@ -529,7 +529,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const typename CGAL_WRAP(K)::Line_3 & line,
@@ -688,7 +688,7 @@ squared_distance(
     const typename CGAL_WRAP(K)::Line_3 &line1,
     const typename CGAL_WRAP(K)::Line_3 &line2,
     const K& k)
-{   
+{
   typename K::Construct_vector_3 construct_vector;
     typedef typename K::Vector_3 Vector_3;
 
@@ -741,7 +741,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Ray_3<K> & ray,
@@ -763,7 +763,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Segment_3<K> & seg,
@@ -848,7 +848,7 @@ squared_distance(
 
 
 template <class K>
-inline 
+inline
 typename K::FT
 squared_distance(
     const Line_3<K> & line,
@@ -868,7 +868,7 @@ ray_ray_squared_distance_parallel(
     const Vector_3<K> &ray2dir,
     const Vector_3<K> &s1_min_s2)
 {
-  return CGALi::ray_ray_squared_distance_parallel(ray1dir, ray2dir, 
+  return CGALi::ray_ray_squared_distance_parallel(ray1dir, ray2dir,
 						  s1_min_s2, K());
 }
 
@@ -916,7 +916,7 @@ typename K::FT
 squared_distance(
     const Line_3<K> &line1,
     const Line_3<K> &line2)
-{  
+{
     return CGALi::squared_distance(line1, line2, K());
 }
 

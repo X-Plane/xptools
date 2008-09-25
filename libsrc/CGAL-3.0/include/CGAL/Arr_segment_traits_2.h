@@ -35,11 +35,11 @@ public:
   typedef int                                   Info_face;
   typedef int                                   Info_edge;
   typedef int                                   Info_vertex;
-  
+
   typedef Pm_segment_traits_2<Kernel>           Base;
 
   typedef typename Base::Has_left_category      Has_left_category;
-    
+
   typedef typename Base::Point_2                Point_2;
   typedef typename Base::X_monotone_curve_2     X_monotone_curve_2;
   typedef X_monotone_curve_2                    Curve_2;
@@ -59,7 +59,7 @@ protected:
   typedef typename Kernel::Is_vertical_2        Is_vertical_2;
   typedef typename Kernel::Equal_2              Equal_2;
   typedef typename Kernel::Orientation_2        Orientation_2;
-  
+
 public:
   Arr_segment_traits_2() : Base() { }
 
@@ -68,7 +68,7 @@ public:
    * For segments, this is always true
    */
   bool is_x_monotone(const Curve_2 &) {return true;}
-  
+
   /*! curve_make_x_monotone() cuts the given curve into x-monotone subcurves
    * and inserts them to the given output iterator. The order in which they
    * are inserted defines their order in the hierarchy tree.
@@ -83,7 +83,7 @@ public:
   {
     *o++ = cv;
     return o;
-  } 
+  }
 
   /*! curve_opposite() flips a given curve
    * \param cv the curve
@@ -93,7 +93,7 @@ public:
   {
     return construct_opposite_segment_2_object()(cv);
   }
- 
+
   /*! curve_split() splits a given curve at a given split point into two
    * sub-curves.
    * \param cv the curve to split
@@ -105,7 +105,7 @@ public:
    * \pre split_pt is on cv but is not an endpoint.
    */
   void curve_split(const X_monotone_curve_2 & cv,
-                   X_monotone_curve_2 & c1, X_monotone_curve_2 & c2, 
+                   X_monotone_curve_2 & c1, X_monotone_curve_2 & c2,
                    const Point_2 & split_pt) const
   {
     //split curve at split point (x coordinate) into c1 and c2
@@ -113,7 +113,7 @@ public:
     CGAL_precondition_code(Equal_2 is_equal = equal_2_object());
     CGAL_precondition(!is_equal(curve_source(cv), split_pt));
     CGAL_precondition(!is_equal(curve_target(cv), split_pt));
-    
+
     Construct_vertex_2 construct_vertex = construct_vertex_2_object();
     const Point_2 & source = construct_vertex(cv, 0);
     const Point_2 & target = construct_vertex(cv, 1);
@@ -131,7 +131,7 @@ public:
    * subcurve are strickly to the right, they are returned through two
    * other point references p1 and p2. If pt is between the source and target
    * of the overlapping subcurve, or pt is its left endpoint, pt and the target
-   * of the right endpoint of the subcurve are returned through p1 and p2 
+   * of the right endpoint of the subcurve are returned through p1 and p2
    * respectively.
    * If the intersection of the two curves is a point to the right of pt, pt
    * is returned through the p1 and p2.
@@ -162,7 +162,7 @@ public:
       }
       return false;
     }
-    
+
     // Intersection is a segment
     X_monotone_curve_2 seg;
     if (assign(seg, res)) {
@@ -180,7 +180,7 @@ public:
         p2 = trg;
         return true;
       }
-      
+
       if (trg_pt != LARGER && src_pt == LARGER) {
         // target is to the left, source is to the right:
         p1 = pt;
@@ -212,7 +212,7 @@ public:
    * subcurve are strickly to the left, they are returned through two
    * other point references p1 and p2. If pt is between the source and target
    * of the overlapping subcurve, or pt is its left endpoint, pt and the target
-   * of the left endpoint of the subcurve are returned through p1 and p2 
+   * of the left endpoint of the subcurve are returned through p1 and p2
    * respectively.
    * If the intersection of the two curves is a point to the left of pt, pt
    * is returned through the p1 and p2.
@@ -243,7 +243,7 @@ public:
       }
       return false;
     }
-    
+
     // Intersection is a segment
     X_monotone_curve_2 seg;
     if (assign(seg, res)) {
@@ -261,7 +261,7 @@ public:
         p2 = trg;
         return true;
       }
-      
+
       if (trg_pt != SMALLER && src_pt == SMALLER) {
         // target is to the right, source is to the left:
         p1 = pt;
@@ -279,7 +279,7 @@ public:
       // the subcurve is completely to the right:
       return false;
     }
-    
+
     // the curves do not intersect:
     return false;
   }

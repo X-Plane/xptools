@@ -42,7 +42,7 @@ int main()
   cv[3] = X_monotone_curve_2(a4, a1);
 
   // Insert the curves into the Planar_map:
-  Planar_map::Halfedge_handle e[4];  
+  Planar_map::Halfedge_handle e[4];
 
   e[0] = pm.insert_in_face_interior(cv[0], pm.unbounded_face());
   for (i = 1; i < 3; i++)
@@ -54,6 +54,6 @@ int main()
 
   // Check the validity of the map:
   CGAL_assertion(pm.is_valid());
-    
-  return 0;  
+
+  return 0;
 }

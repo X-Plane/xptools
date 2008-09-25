@@ -12,7 +12,7 @@
 
 class UndoableSelection : public Undoable
 {
-public: 
+public:
 
 	UndoableSelection();
 	~UndoableSelection();
@@ -77,7 +77,7 @@ protected:
 
 public:
 
-	List *record_texture_coords(); // record the texture coors of the surfaces and svs that we have 
+	List *record_texture_coords(); // record the texture coors of the surfaces and svs that we have
 	UndoableChangeTextureCoords(List *surface_list, List *svl);
 
 	void execute();
@@ -100,7 +100,7 @@ protected:
 	List *oldvertices, *oldsurfaces; // vertices and surfaces that were removed (to be re-added on undo)
 	ACSelection *oldselection, *newselection;
 	Boolean newstuffactive; // is the new stuff current in the world?  (indicates what to free when deleting the undoable)
-	List *svbackuplist; 
+	List *svbackuplist;
 
 	void swap_svlists();
 	void free_svlists();

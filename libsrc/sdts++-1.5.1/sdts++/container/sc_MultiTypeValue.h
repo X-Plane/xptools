@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -41,14 +41,14 @@
   member function must be used.
 
   An sc_MultiTypeValue can also be in a 'null' state, meaning it
-  has no current value or type; naturally it starts in that state, 
+  has no current value or type; naturally it starts in that state,
   but can arbitrarily be reset to the null state.  When in a null
   state, all of the get*() members will return false.
 
  */
 class sc_MultiTypeValue
 {
- 
+
    public:
 
       /// The type of the value stored in an sc_MultiTypeValue instance.
@@ -70,7 +70,7 @@ class sc_MultiTypeValue
 
       ///
       bool operator==(sc_MultiTypeValue const& right) const;
-      
+
 
       /// Returns the type of the current value.
       ValueType getValueType() const;

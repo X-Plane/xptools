@@ -113,7 +113,7 @@ static void attachFunc(
     aNew = sqliteRealloc(db->aDb, sizeof(db->aDb[0])*(db->nDb+1) );
     if( aNew==0 ){
       return;
-    } 
+    }
   }
   db->aDb = aNew;
   aNew = &db->aDb[db->nDb++];
@@ -129,7 +129,7 @@ static void attachFunc(
     if( !aNew->pSchema ){
       rc = SQLITE_NOMEM;
     }else if( aNew->pSchema->file_format && aNew->pSchema->enc!=ENC(db) ){
-      strcpy(zErr, 
+      strcpy(zErr,
         "attached databases must use the same text encoding as main database");
       goto attach_error;
     }
@@ -150,7 +150,7 @@ static void attachFunc(
         zErrDyn = sqliteStrDup("Invalid key value");
         rc = SQLITE_ERROR;
         break;
-        
+
       case SQLITE_TEXT:
       case SQLITE_BLOB:
         nKey = sqlite3_value_bytes(argv[2]);
@@ -168,7 +168,7 @@ static void attachFunc(
 #endif
 
   /* If the file was opened successfully, read the schema for the new database.
-  ** If this fails, or if opening the file failed, then close the file and 
+  ** If this fails, or if opening the file failed, then close the file and
   ** remove the entry from the db->aDb[] array. i.e. put everything back the way
   ** we found it.
   */
@@ -195,7 +195,7 @@ static void attachFunc(
     }
     goto attach_error;
   }
-  
+
   return;
 
 attach_error:
@@ -300,7 +300,7 @@ static void codeAttach(
   memset(&sName, 0, sizeof(NameContext));
   sName.pParse = pParse;
 
-  if( 
+  if(
       SQLITE_OK!=(rc = resolveAttachExpr(&sName, pFilename)) ||
       SQLITE_OK!=(rc = resolveAttachExpr(&sName, pDbname)) ||
       SQLITE_OK!=(rc = resolveAttachExpr(&sName, pKey))
@@ -326,7 +326,7 @@ static void codeAttach(
     */
     sqlite3VdbeAddOp(v, OP_Expire, (type==SQLITE_ATTACH), 0);
   }
-  
+
 attach_end:
   sqlite3ExprDelete(pFilename);
   sqlite3ExprDelete(pDbname);

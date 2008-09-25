@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Circle.cpp
  *
  *  This source file is part of DIME.
@@ -58,7 +58,7 @@ static char entityName[] = "CIRCLE";
   Constructor.
 */
 
-dimeCircle::dimeCircle() 
+dimeCircle::dimeCircle()
   : center(0,0,0), radius( 0.0 )
 {
 }
@@ -70,7 +70,7 @@ dimeCircle::copy(dimeModel * const model) const
 {
   dimeCircle *c = new(model->getMemHandler()) dimeCircle;
   if (!c) return NULL;
-  
+
   if (!this->copyRecords(c, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete c;
@@ -81,36 +81,36 @@ dimeCircle::copy(dimeModel * const model) const
     c->center = this->center;
     c->radius = this->radius;
   }
-  return c;  
+  return c;
 }
 
 /*!
   This method writes a DXF \e Circle entity to \a file.
 */
 
-bool 
+bool
 dimeCircle::write(dimeOutput * const file)
 {
   dimeEntity::preWrite(file);
-  
+
   file->writeGroupCode(10);
   file->writeDouble(this->center[0]);
   file->writeGroupCode(20);
   file->writeDouble(this->center[1]);
   file->writeGroupCode(30);
   file->writeDouble(this->center[2]);
-  
+
   file->writeGroupCode(40);
   file->writeDouble(this->radius);
 
   this->writeExtrusionData(file);
-  
+
   return dimeEntity::write(file); // write unknown records.
 }
 
 //!
 
-int 
+int
 dimeCircle::typeId() const
 {
   return dimeBase::dimeCircleType;
@@ -120,7 +120,7 @@ dimeCircle::typeId() const
   Handles the callback from dimeEntity::readRecords().
 */
 
-bool 
+bool
 dimeCircle::handleRecord(const int groupcode,
 			const dimeParam &param,
 			dimeMemHandler * const memhandler)
@@ -148,7 +148,7 @@ dimeCircle::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeCircle::getRecord(const int groupcode,
 		     dimeParam &param,
 		     const int index) const
@@ -157,13 +157,13 @@ dimeCircle::getRecord(const int groupcode,
   case 10:
   case 20:
   case 30:
-    param.double_data = this->center[groupcode/10-1]; 
+    param.double_data = this->center[groupcode/10-1];
     return true;
   case 40:
     param.double_data = this->radius;
     return true;
   }
-  return dimeExtrusionEntity::getRecord(groupcode, param, index);  
+  return dimeExtrusionEntity::getRecord(groupcode, param, index);
 }
 
 //!
@@ -178,7 +178,7 @@ dimeCircle::print() const
 
 //!
 
-dimeEntity::GeometryType 
+dimeEntity::GeometryType
 dimeCircle::extractGeometry(dimeArray <dimeVec3f> &verts,
 			   dimeArray <int> &/*indices*/,
 			   dimeVec3f &extrusionDir,
@@ -197,10 +197,10 @@ dimeCircle::extractGeometry(dimeArray <dimeVec3f> &verts,
 			   this->center.z));
     rad += inc;
   }
-  
+
   dimeVec3f tmp = verts[0];
   verts.append(tmp); // closed line/polygon
-  
+
   if (this->thickness == 0.0) return dimeEntity::LINES;
   else return dimeEntity::POLYGONS;
 }

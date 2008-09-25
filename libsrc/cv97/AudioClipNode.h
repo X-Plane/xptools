@@ -48,7 +48,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getLoopField();
-	
+
 	void setLoop(bool value);
 	void setLoop(int value);
 	bool getLoop();
@@ -59,7 +59,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getPitchField();
-	
+
 	void setPitch(float value);
 	float getPitch();
 
@@ -68,7 +68,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFTime *getStartTimeField();
-	
+
 	void setStartTime(double value);
 	double getStartTime();
 
@@ -77,14 +77,14 @@ public:
 	////////////////////////////////////////////////
 
 	SFTime *getStopTimeField();
-	
+
 	void setStopTime(double value);
 	double getStopTime();
 
 	////////////////////////////////////////////////
 	//	isActive
 	////////////////////////////////////////////////
-	
+
 	SFBool *getIsActiveField();
 
 	void setIsActive(bool  value);
@@ -96,7 +96,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFTime *getDurationChangedField();
-	
+
 	void setDurationChanged(double value);
 	double getDurationChanged();
 
@@ -121,7 +121,7 @@ public:
 	////////////////////////////////////////////////
 	//	Virutual functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

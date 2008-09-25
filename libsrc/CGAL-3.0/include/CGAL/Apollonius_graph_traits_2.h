@@ -104,7 +104,7 @@ ad_is_hidden_test_2(const typename K::Site_2& p,
 		    const typename K::Site_2& q,
 		    Homogeneous_tag)
 {
-  Sign s = sign_of_ad_distance2_testH2(p.hx(), p.hy(), p.hw(), 
+  Sign s = sign_of_ad_distance2_testH2(p.hx(), p.hy(), p.hw(),
 				       p.weight(),
 				       q.hx(), q.hy(), q.hw(),
 				       q.weight());
@@ -293,7 +293,7 @@ ad_incircle_test_2(const typename K::Site_2& p1,
 		   const typename K::Site_2& q,
 		   Homogeneous_tag )
 {
-  return 
+  return
     ad_incircle_testH2(p1.hx(), p1.hy(), p1.hw(), p1.weight(),
 		       p2.hx(), p2.hy(), p2.hw(), p2.weight(),
 		        q.hx(),  q.hy(),  q.hw(),  q.weight());
@@ -358,7 +358,7 @@ ad_incircle_test_2(const typename K::Site_2& p1,
 		   const typename K::Site_2& q,
 		   Homogeneous_tag )
 {
-  return 
+  return
     ad_incircle_testH2(p1.hx(), p1.hy(), p1.hw(), p1.weight(),
 		       p2.hx(), p2.hy(), p2.hw(), p2.weight(),
 		       p3.hx(), p3.hy(), p3.hw(), p3.weight(),
@@ -393,7 +393,7 @@ public:
     typedef typename K::Rep_tag Tag;
     return ad_incircle_test_2<K,Method_tag>(p1, p2, q, Tag());
   }
- 
+
 
 
 };
@@ -937,7 +937,7 @@ public:
 
   // BASIC TYPES
   //------------
-private:  
+private:
   typedef Apollonius_graph_traits_2<Rep,MTag>           Self;
   typedef Apollonius_graph_kernel_wrapper_2<Rep>        Kernel;
 
@@ -978,7 +978,7 @@ public:
   typedef CGAL::Compare_weight_2<Kernel>                Compare_weight_2;
   typedef typename Kernel::Orientation_2                Orientation_2;
   typedef CGAL::Is_hidden_2<Kernel,MTag>                Is_hidden_2;
-  typedef CGAL::Oriented_side_of_bisector_2<Kernel,MTag> 
+  typedef CGAL::Oriented_side_of_bisector_2<Kernel,MTag>
   /*                                          */ Oriented_side_of_bisector_2;
   typedef CGAL::Vertex_conflict_2<Kernel,MTag >            Vertex_conflict_2;
   typedef CGAL::Finite_edge_interior_conflict_2<Kernel,MTag >
@@ -1000,7 +1000,7 @@ public:
   }
 
   Construct_object_2
-  construct_object_2_object() const { 
+  construct_object_2_object() const {
     return Construct_object_2();
   }
 
@@ -1008,7 +1008,7 @@ public:
   // CONSTRUCTIONS
   //--------------
   Construct_Apollonius_vertex_2
-  construct_Apollonius_vertex_2_object() const { 
+  construct_Apollonius_vertex_2_object() const {
     return Construct_Apollonius_vertex_2();
   }
 

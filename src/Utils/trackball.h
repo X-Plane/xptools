@@ -81,5 +81,5 @@ void
 axis_to_quat(float a[3], float phi, float q[4]);
 
 #ifdef __cplusplus
-}; 
+};
 #endif

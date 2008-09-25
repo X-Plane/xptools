@@ -10,35 +10,35 @@
 
 #include "SFColor.h"
 
-SFColor::SFColor() 
+SFColor::SFColor()
 {
 	setType(fieldTypeSFColor);
 	setValue(1.0f, 1.0f, 1.0f);
 	InitializeJavaIDs();
 }
 
-SFColor::SFColor(float r, float g, float b) 
+SFColor::SFColor(float r, float g, float b)
 {
 	setType(fieldTypeSFColor);
 	setValue(r, g, b);
 	InitializeJavaIDs();
 }
 
-SFColor::SFColor(float value[]) 
+SFColor::SFColor(float value[])
 {
 	setType(fieldTypeSFColor);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFColor::SFColor(SFColor *color) 
+SFColor::SFColor(SFColor *color)
 {
 	setType(fieldTypeSFColor);
 	setValue(color);
 	InitializeJavaIDs();
 }
 
-void SFColor::InitializeJavaIDs() 
+void SFColor::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
@@ -49,29 +49,29 @@ void SFColor::InitializeJavaIDs()
 //	get value
 ////////////////////////////////////////////////
 
-void SFColor::getValue(float value[]) 
+void SFColor::getValue(float value[])
 {
 	value[0] = mValue[0];
 	value[1] = mValue[1];
 	value[2] = mValue[2];
 }
 
-float *SFColor::getValue() 
+float *SFColor::getValue()
 {
 	return mValue;
 }
 
-float SFColor::getRed() 
+float SFColor::getRed()
 {
 	return mValue[0];
 }
 
-float SFColor::getGreen() 
+float SFColor::getGreen()
 {
 	return mValue[1];
 }
 
-float SFColor::getBlue() 
+float SFColor::getBlue()
 {
 	return mValue[2];
 }
@@ -80,21 +80,21 @@ float SFColor::getBlue()
 //	set value
 ////////////////////////////////////////////////
 
-void SFColor::setValue(float r, float g, float b) 
+void SFColor::setValue(float r, float g, float b)
 {
 	mValue[0] = r;
 	mValue[1] = g;
 	mValue[2] = b;
 }
 
-void SFColor::setValue(float value[]) 
+void SFColor::setValue(float value[])
 {
 	mValue[0] = value[0];
 	mValue[1] = value[1];
 	mValue[2] = value[2];
 }
 
-void SFColor::setValue(SFColor *color) 
+void SFColor::setValue(SFColor *color)
 {
 	setValue(color->getRed(), color->getGreen(), color->getBlue());
 }
@@ -103,7 +103,7 @@ void SFColor::setValue(SFColor *color)
 //	add value
 ////////////////////////////////////////////////
 
-void SFColor::add(float x, float y, float z) 
+void SFColor::add(float x, float y, float z)
 {
 	mValue[0] += x;
 	mValue[1] += y;
@@ -113,12 +113,12 @@ void SFColor::add(float x, float y, float z)
 	mValue[2] /= 2.0f;
 }
 
-void SFColor::add(float value[]) 
+void SFColor::add(float value[])
 {
 	add(value[0], value[1], value[2]);
 }
 
-void SFColor::add(SFColor value) 
+void SFColor::add(SFColor value)
 {
 	add(value.getValue());
 }
@@ -127,7 +127,7 @@ void SFColor::add(SFColor value)
 //	sub value
 ////////////////////////////////////////////////
 
-void SFColor::sub(float x, float y, float z) 
+void SFColor::sub(float x, float y, float z)
 {
 	mValue[0] -= x;
 	mValue[1] -= y;
@@ -137,12 +137,12 @@ void SFColor::sub(float x, float y, float z)
 	mValue[2] /= 2.0f;
 }
 
-void SFColor::sub(float value[]) 
+void SFColor::sub(float value[])
 {
 	sub(value[0], value[1], value[2]);
 }
 
-void SFColor::sub(SFColor value) 
+void SFColor::sub(SFColor value)
 {
 	sub(value.getValue());
 }
@@ -151,12 +151,12 @@ void SFColor::sub(SFColor value)
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFColor &vector) 
+ostream& operator<<(ostream &s, SFColor &vector)
 {
 	return s << vector.getRed() << " " << vector.getGreen() << " " << vector.getBlue();
 }
 
-ostream& operator<<(ostream &s, SFColor *vector) 
+ostream& operator<<(ostream &s, SFColor *vector)
 {
 	return s << vector->getRed() << " " << vector->getGreen() << " " << vector->getBlue();
 }
@@ -165,16 +165,16 @@ ostream& operator<<(ostream &s, SFColor *vector)
 //	String
 ////////////////////////////////////////////////
 
-void SFColor::setValue(char *value) 
+void SFColor::setValue(char *value)
 {
 	if (!value)
 		return;
 	float	r, g, b;
-	if (sscanf(value,"%f %f %f", &r, &g, &b) == 3) 
+	if (sscanf(value,"%f %f %f", &r, &g, &b) == 3)
 		setValue(r, g, b);
 }
 
-char *SFColor::getValue(char *buffer, int bufferLen) 
+char *SFColor::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%g %g %g", getRed(), getGreen(), getBlue());
 	return buffer;
@@ -184,7 +184,7 @@ char *SFColor::getValue(char *buffer, int bufferLen)
 //	scale
 ////////////////////////////////////////////////
 
-void SFColor::scale(float scale) 
+void SFColor::scale(float scale)
 {
 	mValue[0] *= scale;
 	mValue[1] *= scale;
@@ -195,7 +195,7 @@ void SFColor::scale(float scale)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFColor::equals(Field *field) 
+bool SFColor::equals(Field *field)
 {
 	SFColor *color = (SFColor *)field;
 	if (getRed() == color->getRed() && getGreen() == color->getGreen() && getBlue() == color->getBlue())
@@ -294,7 +294,7 @@ jobject SFColor::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

@@ -19,13 +19,13 @@
 #include <GL/gl.h>
 #endif
 
-TextNode::TextNode() 
+TextNode::TextNode()
 {
 	setHeaderFlag(false);
 	setType(textNodeString);
 
 	///////////////////////////
-	// ExposedField 
+	// ExposedField
 	///////////////////////////
 
 	// maxExtent exposed field
@@ -41,7 +41,7 @@ TextNode::TextNode()
 	addExposedField(stringFieldString, stringField);
 }
 
-TextNode::~TextNode() 
+TextNode::~TextNode()
 {
 }
 
@@ -55,16 +55,16 @@ SFFloat *TextNode::getMaxExtentField()
 		return maxExtentField;
 	return (SFFloat *)getExposedField(maxExtentFieldString);
 }
-	
-void TextNode::setMaxExtent(float value) 
+
+void TextNode::setMaxExtent(float value)
 {
 	getMaxExtentField()->setValue(value);
 }
 
-float TextNode::getMaxExtent() 
+float TextNode::getMaxExtent()
 {
 	return getMaxExtentField()->getValue();
-} 
+}
 
 ////////////////////////////////////////////////
 // String
@@ -77,22 +77,22 @@ MFString *TextNode::getStringField()
 	return (MFString *)getExposedField(stringFieldString);
 }
 
-void TextNode::addString(char *value) 
+void TextNode::addString(char *value)
 {
 	getStringField()->addValue(value);
 }
 
-int TextNode::getNStrings() 
+int TextNode::getNStrings()
 {
 	return getStringField()->getSize();
 }
 
-char *TextNode::getString(int index) 
+char *TextNode::getString(int index)
 {
 	return getStringField()->get1Value(index);
 }
 
-void TextNode::setString(int index, char* value) 
+void TextNode::setString(int index, char* value)
 {
 	getStringField()->set1Value(index, value);
 }
@@ -108,17 +108,17 @@ MFFloat *TextNode::getLengthField()
 	return (MFFloat *)getExposedField(lengthFieldString);
 }
 
-void TextNode::addLength(float value) 
+void TextNode::addLength(float value)
 {
 	getLengthField()->addValue(value);
 }
 
-int TextNode::getNLengths() 
+int TextNode::getNLengths()
 {
 	return getLengthField()->getSize();
 }
 
-float TextNode::getLength(int index) 
+float TextNode::getLength(int index)
 {
 	return getLengthField()->get1Value(index);
 }
@@ -127,12 +127,12 @@ float TextNode::getLength(int index)
 //	List
 ////////////////////////////////////////////////
 
-TextNode *TextNode::next() 
+TextNode *TextNode::next()
 {
 	return (TextNode *)Node::next(getType());
 }
 
-TextNode *TextNode::nextTraversal() 
+TextNode *TextNode::nextTraversal()
 {
 	return (TextNode *)Node::nextTraversalByType(getType());
 }
@@ -140,7 +140,7 @@ TextNode *TextNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool TextNode::isChildNodeType(Node *node)
 {
 	if (node->isFontStyleNode())
@@ -149,7 +149,7 @@ bool TextNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void TextNode::initialize() 
+void TextNode::initialize()
 {
 	recomputeBoundingBox();
 #ifdef SUPPORT_OPENGL
@@ -157,11 +157,11 @@ void TextNode::initialize()
 #endif
 }
 
-void TextNode::uninitialize() 
+void TextNode::uninitialize()
 {
 }
 
-void TextNode::update() 
+void TextNode::update()
 {
 }
 
@@ -169,19 +169,19 @@ void TextNode::update()
 //	FontStyle
 ////////////////////////////////////////////////
 
-int TextNode::getFontStyleFamilyNumber() 
+int TextNode::getFontStyleFamilyNumber()
 {
 	FontStyleNode *fontStyle = getFontStyleNodes();
-	
+
 	if (fontStyle == NULL)
 		return FONTSTYLE_FAMILY_SERIF;
 	return fontStyle->getFamilyNumber();
 }
 
-int TextNode::getFontStyleStyleNumber() 
+int TextNode::getFontStyleStyleNumber()
 {
 	FontStyleNode *fontStyle = getFontStyleNodes();
-		
+
 	if (fontStyle == NULL)
 		return FONTSTYLE_STYLE_PLAIN;
 
@@ -192,7 +192,7 @@ int TextNode::getFontStyleStyleNumber()
 //	Stringmation
 ////////////////////////////////////////////////
 
-void TextNode::outputContext(ostream &printStream, char *indentString) 
+void TextNode::outputContext(ostream &printStream, char *indentString)
 {
 	printStream << indentString << "\t" << "maxExtent " << getMaxExtent() << endl;
 
@@ -220,7 +220,7 @@ void TextNode::outputContext(ostream &printStream, char *indentString)
 			fontStyle->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "fontStyle USE " << fontStyle->getName() << endl;
 	}
 }
@@ -229,7 +229,7 @@ void TextNode::outputContext(ostream &printStream, char *indentString)
 //	TextNode::recomputeBoundingBox
 ////////////////////////////////////////////////
 
-void TextNode::recomputeBoundingBox() 
+void TextNode::recomputeBoundingBox()
 {
 	int nStrings = getNStrings();
 	char *string = NULL;
@@ -240,7 +240,7 @@ void TextNode::recomputeBoundingBox()
 				string = NULL;
 		}
 	}
-	
+
 	if (string != NULL) {
 		float width = (float)strlen(string);
 		setBoundingBoxCenter(-width/4.0f/1.0f, 0.5f, 0.0f);
@@ -258,12 +258,12 @@ void TextNode::recomputeBoundingBox()
 
 #if defined(SUPPORT_OPENGL) && defined(WIN32)
 
-OGLFontOutline *TextNode::getOGLFontOutlines() 
+OGLFontOutline *TextNode::getOGLFontOutlines()
 {
 	return mOGLFontOutlines.getNodes();
 }
 
-OGLFontOutline *TextNode::getOGLFontOutline(int family, int style) 
+OGLFontOutline *TextNode::getOGLFontOutline(int family, int style)
 {
 	for (OGLFontOutline *node = getOGLFontOutlines(); node != NULL; node = node->next()) {
 		if (family == node->getFamily() && style == node->getStyle())
@@ -272,17 +272,17 @@ OGLFontOutline *TextNode::getOGLFontOutline(int family, int style)
 	return NULL;
 }
 
-void TextNode::addOGLFontOutline(OGLFontOutline *node) 
+void TextNode::addOGLFontOutline(OGLFontOutline *node)
 {
-	mOGLFontOutlines.addNode(node); 
+	mOGLFontOutlines.addNode(node);
 }
 
-void TextNode::addOGLFontOutline(int family, int style, unsigned int id) 
+void TextNode::addOGLFontOutline(int family, int style, unsigned int id)
 {
 	addOGLFontOutline(new OGLFontOutline(family, style, id));
 }
 
-int TextNode::getNOGLFontOutlines() 
+int TextNode::getNOGLFontOutlines()
 {
 	return mOGLFontOutlines.getNNodes();
 }
@@ -335,13 +335,13 @@ unsigned int TextNode::createUseFontOutline(int family, int style)
 	HFONT font = CreateFontIndirect(&lf);
 	HDC hdc = wglGetCurrentDC();
 
-	HFONT oldFont = (HFONT)SelectObject(hdc, font);		
+	HFONT oldFont = (HFONT)SelectObject(hdc, font);
 
 	id = glGenLists(256);
 	GLYPHMETRICSFLOAT gmf[256];
 	wglUseFontOutlines(hdc, 0, 255, id, 1.0f, 0.1f, WGL_FONT_POLYGONS, gmf);
 
-	SelectObject(hdc, oldFont);		
+	SelectObject(hdc, oldFont);
 #endif
 
 	return id;
@@ -386,14 +386,14 @@ void TextNode::draw()
 
 #ifdef SUPPORT_OPENGL
 
-void TextNode::recomputeDisplayList() 
+void TextNode::recomputeDisplayList()
 {
 #ifdef WIN32
 	int family	= getFontStyleFamilyNumber();
 	int style	= getFontStyleStyleNumber();
 
 	OGLFontOutline *fontOutline = getOGLFontOutline(family, style);
-	
+
 	unsigned int id = 0;
 
 	if (fontOutline != NULL) {
@@ -408,7 +408,7 @@ void TextNode::recomputeDisplayList()
 
 	setDisplayList(id);
 #endif
-}	
+}
 
 #endif
 
@@ -420,46 +420,46 @@ void TextNode::recomputeDisplayList()
 
 LinkedList<OGLFontOutline> TextNode::mOGLFontOutlines;
 
-OGLFontOutline::OGLFontOutline(int family, int style, unsigned int id) 
+OGLFontOutline::OGLFontOutline(int family, int style, unsigned int id)
 {
 	setFamily(family);
 	setStyle(style);
 	setListBaseID(id);
 }
 
-void OGLFontOutline::setFamily(int family) 
+void OGLFontOutline::setFamily(int family)
 {
 	mFamily = family;
 }
 
-int OGLFontOutline::getFamily() 
+int OGLFontOutline::getFamily()
 {
 	return mFamily;
 }
 
-void OGLFontOutline::setStyle(int style) 
+void OGLFontOutline::setStyle(int style)
 {
 	mStyle = style;
 }
 
-int OGLFontOutline::getStyle() 
+int OGLFontOutline::getStyle()
 {
 	return mStyle;
 }
 
-void OGLFontOutline::setListBaseID(unsigned int id) 
+void OGLFontOutline::setListBaseID(unsigned int id)
 {
 	mListBaseID = id;
 }
 
-int OGLFontOutline::getListBaseID() 
+int OGLFontOutline::getListBaseID()
 {
 	return mListBaseID;
 }
 
-OGLFontOutline *OGLFontOutline::next() 
+OGLFontOutline *OGLFontOutline::next()
 {
-	return LinkedListNode<OGLFontOutline>::next(); 
+	return LinkedListNode<OGLFontOutline>::next();
 }
 
 #endif

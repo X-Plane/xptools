@@ -94,7 +94,7 @@ public:
             return _result;
         }
     }
-    
+
 #else
     Intersection_results intersection_type() const;
 #endif // CGAL_CFG_RETURN_TYPE_BUG_2
@@ -215,7 +215,7 @@ bool
 Segment_2_Triangle_2_pair<K>::
 intersection(typename K::Segment_2 &result) const
 {
-  typedef typename K::Segment_2 Segment_2; 
+  typedef typename K::Segment_2 Segment_2;
     if (!_known)
         intersection_type();
     if (_result != SEGMENT)
@@ -229,7 +229,7 @@ intersection(typename K::Segment_2 &result) const
 
 template <class K>
 Object
-intersection(const typename CGAL_WRAP(K)::Segment_2 &seg, 
+intersection(const typename CGAL_WRAP(K)::Segment_2 &seg,
 	     const typename CGAL_WRAP(K)::Triangle_2&tr,
 	     const K&)
 {
@@ -256,7 +256,7 @@ intersection(const typename CGAL_WRAP(K)::Segment_2 &seg,
 template <class K>
 Object
 intersection(const typename CGAL_WRAP(K)::Triangle_2&tr,
-	     const typename CGAL_WRAP(K)::Segment_2 &seg, 
+	     const typename CGAL_WRAP(K)::Segment_2 &seg,
 	     const K& k)
 {
   return CGALi::intersection(seg, tr, k);

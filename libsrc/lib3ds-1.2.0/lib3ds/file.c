@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -106,7 +106,7 @@ fileio_write_func(void *self, const Lib3dsByte *buffer, int size)
  * \param filename  The filename of the .3DS file
  *
  * \return   A pointer to the Lib3dsFile structure containing the
- *           data of the .3DS file. 
+ *           data of the .3DS file.
  *           If the .3DS file can not be loaded NULL is returned.
  *
  * \note     To free the returned pointer use lib3ds_free.
@@ -135,7 +135,7 @@ lib3ds_file_load(const char *filename)
     return(0);
   }
   io = lib3ds_io_new(
-    f, 
+    f,
     fileio_error_func,
     fileio_seek_func,
     fileio_tell_func,
@@ -185,7 +185,7 @@ lib3ds_file_save(Lib3dsFile *file, const char *filename)
     return(LIB3DS_FALSE);
   }
   io = lib3ds_io_new(
-    f, 
+    f,
     fileio_error_func,
     fileio_seek_func,
     fileio_tell_func,
@@ -196,7 +196,7 @@ lib3ds_file_save(Lib3dsFile *file, const char *filename)
     fclose(f);
     return LIB3DS_FALSE;
   }
-  
+
   result = lib3ds_file_write(file, io);
 
   fclose(f);
@@ -242,7 +242,7 @@ lib3ds_file_free(Lib3dsFile* file)
   lib3ds_viewport_set_views(&file->viewport,0);
   {
     Lib3dsMaterial *p,*q;
-    
+
     for (p=file->materials; p; p=q) {
       q=p->next;
       lib3ds_material_free(p);
@@ -251,7 +251,7 @@ lib3ds_file_free(Lib3dsFile* file)
   }
   {
     Lib3dsCamera *p,*q;
-    
+
     for (p=file->cameras; p; p=q) {
       q=p->next;
       lib3ds_camera_free(p);
@@ -260,7 +260,7 @@ lib3ds_file_free(Lib3dsFile* file)
   }
   {
     Lib3dsLight *p,*q;
-    
+
     for (p=file->lights; p; p=q) {
       q=p->next;
       lib3ds_light_free(p);
@@ -269,7 +269,7 @@ lib3ds_file_free(Lib3dsFile* file)
   }
   {
     Lib3dsMesh *p,*q;
-    
+
     for (p=file->meshes; p; p=q) {
       q=p->next;
       lib3ds_mesh_free(p);
@@ -278,7 +278,7 @@ lib3ds_file_free(Lib3dsFile* file)
   }
   {
     Lib3dsNode *p,*q;
-  
+
     for (p=file->nodes; p; p=q) {
       q=p->next;
       lib3ds_node_free(p);
@@ -369,7 +369,7 @@ named_object_read(Lib3dsFile *file, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -413,7 +413,7 @@ ambient_read(Lib3dsFile *file, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -428,7 +428,7 @@ mdata_read(Lib3dsFile *file, Lib3dsIo *io)
   if (!lib3ds_chunk_read_start(&c, LIB3DS_MDATA, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_MESH_VERSION:
@@ -548,7 +548,7 @@ kfdata_read(Lib3dsFile *file, Lib3dsIo *io)
   if (!lib3ds_chunk_read_start(&c, LIB3DS_KFDATA, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_KFHDR:
@@ -802,7 +802,7 @@ mdata_write(Lib3dsFile *file, Lib3dsIo *io)
       lib3ds_io_write_vector(io, file->construction_plane);
     }
   }
-  
+
   { /*---- LIB3DS_AMBIENT_LIGHT ----*/
     int i;
     for (i=0; i<3; ++i) {
@@ -833,7 +833,7 @@ mdata_write(Lib3dsFile *file, Lib3dsIo *io)
   {
     Lib3dsCamera *p;
     Lib3dsChunk c;
-    
+
     for (p=file->cameras; p!=0; p=p->next) {
       c.chunk=LIB3DS_NAMED_OBJECT;
       if (!lib3ds_chunk_write_start(&c,io)) {
@@ -849,7 +849,7 @@ mdata_write(Lib3dsFile *file, Lib3dsIo *io)
   {
     Lib3dsLight *p;
     Lib3dsChunk c;
-    
+
     for (p=file->lights; p!=0; p=p->next) {
       c.chunk=LIB3DS_NAMED_OBJECT;
       if (!lib3ds_chunk_write_start(&c,io)) {
@@ -865,7 +865,7 @@ mdata_write(Lib3dsFile *file, Lib3dsIo *io)
   {
     Lib3dsMesh *p;
     Lib3dsChunk c;
-    
+
     for (p=file->meshes; p!=0; p=p->next) {
       c.chunk=LIB3DS_NAMED_OBJECT;
       if (!lib3ds_chunk_write_start(&c,io)) {
@@ -907,12 +907,12 @@ static Lib3dsBool
 kfdata_write(Lib3dsFile *file, Lib3dsIo *io)
 {
   Lib3dsChunk c;
-  
+
   c.chunk=LIB3DS_KFDATA;
   if (!lib3ds_chunk_write_start(&c,io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   { /*---- LIB3DS_KFHDR ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_KFHDR;
@@ -938,7 +938,7 @@ kfdata_write(Lib3dsFile *file, Lib3dsIo *io)
     lib3ds_io_write_intd(io, file->current_frame);
   }
   lib3ds_viewport_write(&file->viewport_keyf, io);
-  
+
   {
     Lib3dsNode *p;
     for (p=file->nodes; p!=0; p=p->next) {
@@ -950,7 +950,7 @@ kfdata_write(Lib3dsFile *file, Lib3dsIo *io)
       }
     }
   }
-  
+
   if (!lib3ds_chunk_write_end(&c,io)) {
     return(LIB3DS_FALSE);
   }
@@ -1002,7 +1002,7 @@ void
 lib3ds_file_insert_material(Lib3dsFile *file, Lib3dsMaterial *material)
 {
   Lib3dsMaterial *p,*q;
-  
+
   ASSERT(file);
   ASSERT(material);
   ASSERT(!material->next);
@@ -1095,7 +1095,7 @@ void
 lib3ds_file_insert_mesh(Lib3dsFile *file, Lib3dsMesh *mesh)
 {
   Lib3dsMesh *p,*q;
-  
+
   ASSERT(file);
   ASSERT(mesh);
   ASSERT(!mesh->next);
@@ -1223,7 +1223,7 @@ void
 lib3ds_file_insert_camera(Lib3dsFile *file, Lib3dsCamera *camera)
 {
   Lib3dsCamera *p,*q;
-  
+
   ASSERT(file);
   ASSERT(camera);
   ASSERT(!camera->next);
@@ -1316,7 +1316,7 @@ void
 lib3ds_file_insert_light(Lib3dsFile *file, Lib3dsLight *light)
 {
   Lib3dsLight *p,*q;
-  
+
   ASSERT(file);
   ASSERT(light);
   ASSERT(!light->next);
@@ -1417,7 +1417,7 @@ lib3ds_file_bounding_box(Lib3dsFile *file, Lib3dsVector min, Lib3dsVector max)
     if (!init && p) {
       init = LIB3DS_TRUE;
       lib3ds_mesh_bounding_box(p, min, max);
-      p = p->next;  
+      p = p->next;
     }
     while (p) {
       lib3ds_mesh_bounding_box(p, lmin, lmax);
@@ -1460,7 +1460,7 @@ lib3ds_file_bounding_box(Lib3dsFile *file, Lib3dsVector min, Lib3dsVector max)
       p=p->next;
     }
   }
-}  
+}
 
 
 /*!
@@ -1514,7 +1514,7 @@ void
 lib3ds_file_insert_node(Lib3dsFile *file, Lib3dsNode *node)
 {
   Lib3dsNode *parent,*p,*n;
-  
+
   ASSERT(node);
   ASSERT(!node->next);
   ASSERT(!node->parent);
@@ -1524,7 +1524,7 @@ lib3ds_file_insert_node(Lib3dsFile *file, Lib3dsNode *node)
     parent=lib3ds_file_node_by_id(file, node->parent_id);
   }
   node->parent=parent;
-  
+
   if (!parent) {
     for (p=0,n=file->nodes; n!=0; p=n,n=n->next) {
       if (strcmp(n->name, node->name)>0) {
@@ -1585,7 +1585,7 @@ lib3ds_file_remove_node(Lib3dsFile *file, Lib3dsNode *node)
     if (!n) {
       return(LIB3DS_FALSE);
     }
-    
+
     if (!p) {
       node->parent->childs=n->next;
     }
@@ -1602,7 +1602,7 @@ lib3ds_file_remove_node(Lib3dsFile *file, Lib3dsNode *node)
     if (!n) {
       return(LIB3DS_FALSE);
     }
-    
+
     if (!p) {
       file->nodes=n->next;
     }

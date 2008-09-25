@@ -25,7 +25,7 @@ namespace boost
      register_signature( "Jamfile" );
      register_signature( ".jam" );
    }
-     
+
    void copyright_check::inspect(
       const string & library_name,
       const path & full_path,   // example: c:/foo/boost/filesystem/path.hpp

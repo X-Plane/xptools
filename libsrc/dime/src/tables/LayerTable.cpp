@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: LayerTable.cpp
  *
  *  This source file is part of DIME.
@@ -68,7 +68,7 @@ dimeLayerTable::copy(dimeModel * const model) const
     DXF_STRCPY(memh, l->layerName, this->layerName);
   }
   if (this->layerInfo) {
-    l->layerInfo = (dimeLayer*)model->addLayer(this->layerInfo->getLayerName(), 
+    l->layerInfo = (dimeLayer*)model->addLayer(this->layerInfo->getLayerName(),
                                                DXFABS(this->colorNumber));
   }
   if (!copyRecords(l, model)) {
@@ -89,7 +89,7 @@ dimeLayerTable::getTableName() const
 
 //!
 
-bool 
+bool
 dimeLayerTable::read(dimeInput * const file)
 {
   bool ret = dimeTableEntry::read(file);
@@ -101,25 +101,25 @@ dimeLayerTable::read(dimeInput * const file)
 
 //!
 
-bool 
+bool
 dimeLayerTable::write(dimeOutput * const file)
 {
   bool ret = dimeTableEntry::preWrite(file);
-  
-  if (this->layerName) { 
-    ret = file->writeGroupCode(2); 
+
+  if (this->layerName) {
+    ret = file->writeGroupCode(2);
     file->writeString(this->layerName);
   }
   file->writeGroupCode(62);
   file->writeInt16(this->colorNumber);
-  
+
   ret = dimeTableEntry::write(file);
   return ret;
 }
 
 //!
 
-int 
+int
 dimeLayerTable::typeId() const
 {
   return dimeBase::dimeLayerTableType;
@@ -127,7 +127,7 @@ dimeLayerTable::typeId() const
 
 //!
 
-bool 
+bool
 dimeLayerTable::handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler)
@@ -157,7 +157,7 @@ dimeLayerTable::countRecords() const
 /*!
   Sets the layer name.
 */
-void 
+void
 dimeLayerTable::setLayerName(const char * name, dimeMemHandler * const memhandler)
 {
   /* FIXME: there are probably other characters aswell that are not
@@ -166,7 +166,7 @@ dimeLayerTable::setLayerName(const char * name, dimeMemHandler * const memhandle
   assert((strchr(name, (int)' ') == NULL) &&
          "space characters not allowed in layer names");
 #endif // disabled
-  
+
   if (this->layerName && memhandler == NULL) {
     delete this->layerName;
   }
@@ -176,7 +176,7 @@ dimeLayerTable::setLayerName(const char * name, dimeMemHandler * const memhandle
 /*!
   Returns the layer name.
  */
-const char * 
+const char *
 dimeLayerTable::getLayerName(void) const
 {
   return this->layerName;
@@ -185,7 +185,7 @@ dimeLayerTable::getLayerName(void) const
 /*!
   Sets the color number.
  */
-void 
+void
 dimeLayerTable::setColorNumber(const int16 colnum)
 {
   this->colorNumber = colnum;
@@ -195,25 +195,25 @@ dimeLayerTable::setColorNumber(const int16 colnum)
 /*!
   Returns the color number.
  */
-int16 
+int16
 dimeLayerTable::getColorNumber(void) const
 {
   return this->colorNumber;
 }
 
-/*!  
+/*!
   Should be called _once_ after you've finished setting up your
   layer (name and color number).  Calling this method more than once
   for a layer might lead to hard-to-find bugs. After calling this
   method, the layer information (color number) will be available to
-  entities using this layer.  
+  entities using this layer.
 */
-void 
+void
 dimeLayerTable::registerLayer(dimeModel * model)
 {
   if (this->layerInfo == NULL && this->layerName != NULL) {
-    this->layerInfo = (dimeLayer*) 
-      model->addLayer(this->layerName, DXFABS(this->colorNumber));    
+    this->layerInfo = (dimeLayer*)
+      model->addLayer(this->layerName, DXFABS(this->colorNumber));
   }
 }
 

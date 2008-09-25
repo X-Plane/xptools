@@ -22,7 +22,7 @@
 #define	displayListPrivateFieldString	"oglDisplayList"
 #endif
 
-class GeometryNode : public Node 
+class GeometryNode : public Node
 {
 
 	SFVec3f *bboxCenterField;

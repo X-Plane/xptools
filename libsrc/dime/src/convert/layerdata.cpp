@@ -58,7 +58,7 @@ dxfLayerData::~dxfLayerData()
   polylines with width and/or height will be converter to polygons
   and not lines. The same goes for the SOLID and TRACE entities.
 */
-void 
+void
 dxfLayerData::setFillmode(const bool fillmode)
 {
   this->fillmode = fillmode;
@@ -68,24 +68,24 @@ dxfLayerData::setFillmode(const bool fillmode)
   Adds a line to this layer's geometry. If \a matrix != NULL, the
   points will be transformed by this matrix before they are added.
 */
-void 
+void
 dxfLayerData::addLine(const dimeVec3f &v0, const dimeVec3f &v1,
 		      const dimeMatrix * const matrix)
 {
   int i0, i1;
-  
+
   if (matrix) {
     dimeVec3f t0, t1;
     matrix->multMatrixVec(v0, t0);
     matrix->multMatrixVec(v1, t1);
     i0 = linebsp.addPoint(t0);
-    i1 = linebsp.addPoint(t1);  
+    i1 = linebsp.addPoint(t1);
   }
   else {
     i0 = linebsp.addPoint(v0);
     i1 = linebsp.addPoint(v1);
   }
-  
+
   //
   // take care of line strips (more effective than single lines)
   //
@@ -103,7 +103,7 @@ dxfLayerData::addLine(const dimeVec3f &v0, const dimeVec3f &v1,
   Adds a point to this layer's geometry. If \a matrix != NULL, the
   point will be transformed by this matrix before they are added.
 */
-void 
+void
 dxfLayerData::addPoint(const dimeVec3f &v,
 		       const dimeMatrix * const matrix)
 {
@@ -121,7 +121,7 @@ dxfLayerData::addPoint(const dimeVec3f &v,
   Adds a triangle to this layer's geometry. If \a matrix != NULL, the
   points will be transformed by this matrix before they are added.
 */
-void 
+void
 dxfLayerData::addTriangle(const dimeVec3f &v0,
 			  const dimeVec3f &v1,
 			  const dimeVec3f &v2,
@@ -156,7 +156,7 @@ dxfLayerData::addTriangle(const dimeVec3f &v0,
   Adds a quad to this layer's geometry. If \a matrix != NULL, the
   points will be transformed by this matrix before they are added.
 */
-void 
+void
 dxfLayerData::addQuad(const dimeVec3f &v0,
 		      const dimeVec3f &v1,
 		      const dimeVec3f &v2,
@@ -195,7 +195,7 @@ dxfLayerData::addQuad(const dimeVec3f &v0,
 /*!
   Exports this layer's geometry as vrml nodes.
 */
-void 
+void
 dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
                        const bool only2d)
 {
@@ -205,15 +205,15 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
   int i, n;
 
   dxfdouble r,g,b;
-  
+
   dimeLayer::colorToRGB(this->colidx, r, g, b);
 
   if (vrml1) {
-    fprintf(fp, 
+    fprintf(fp,
             "Separator {\n");
   }
   else {
-    fprintf(fp, 
+    fprintf(fp,
             "Group {\n"
             "  children [\n");
   }
@@ -234,7 +234,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
               "      point [\n", r, g, b);
     }
     else {
-      fprintf(fp, 
+      fprintf(fp,
               "    Shape {\n"
               "      appearance Appearance {\n"
               "        material Material {\n"
@@ -255,10 +255,10 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
       if (only2d) v[2] = 0.0f;
       if (i < n-1)
 	fprintf(fp, "            %.8g %.8g %.8g,\n", v[0], v[1], v[2]);
-      else 
+      else
 	fprintf(fp, "            %.8g %.8g %.8g\n", v[0], v[1], v[2]);
     }
-    fprintf(fp, 
+    fprintf(fp,
 	    "          ]\n"
 	    "        }\n");
     if (vrml1) {
@@ -301,7 +301,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
               "      point [\n", r, g, b);
     }
     else {
-      fprintf(fp, 
+      fprintf(fp,
               "    Shape {\n"
               "      appearance Appearance {\n"
               "        material Material {\n"
@@ -319,10 +319,10 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
       if (only2d) v[2] = 0.0f;
       if (i < n-1)
 	fprintf(fp, "            %.8g %.8g %.8g,\n", v[0], v[1], v[2]);
-      else 
+      else
 	fprintf(fp, "            %.8g %.8g %.8g\n", v[0], v[1], v[2]);
     }
-    fprintf(fp, 
+    fprintf(fp,
 	    "          ]\n"
 	    "        }\n");
     if (vrml1) {
@@ -333,7 +333,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
     else {
       fprintf(fp, "        coordIndex [\n          ");
     }
-    
+
     n = lineindices.count();
     int cnt = 1;
     for (i = 0; i < n; i++) {
@@ -352,7 +352,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
   }
 
 
-  if (points.count() && 0) { // FIXME disabled, suspect bug. pederb, 2001-12-11 
+  if (points.count() && 0) { // FIXME disabled, suspect bug. pederb, 2001-12-11
     if (vrml1) {
       fprintf(fp,
               "  Separator {\n"
@@ -363,7 +363,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
               "      point [\n", r, g, b);
     }
     else {
-      fprintf(fp, 
+      fprintf(fp,
               "    Shape {\n"
               "      appearance Appearance {\n"
               "        material Material {\n"
@@ -381,32 +381,32 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
       if (only2d) v[2] = 0.0f;
       if (i < n-1)
 	fprintf(fp, "            %g %g %g,\n", v[0], v[1], v[2]);
-      else 
+      else
 	fprintf(fp, "            %g %g %g\n", v[0], v[1], v[2]);
     }
-    fprintf(fp, 
+    fprintf(fp,
 	    "          ]\n"
 	    "        }\n");
     if (vrml1) {
       fprintf(fp,
               "    PointSet {\n"
               "      numPoints %d\n"
-              "    }\n"  
+              "    }\n"
               "  }\n", points.count());
     }
     else {
       fprintf(fp,
               "      }\n"
               "    }\n");
-    
+
     }
   }
-    
+
   if (vrml1) {
     fprintf(fp, "}\n");
   }
   else {
-    fprintf(fp, 
+    fprintf(fp,
             "  ]\n"
             "}\n");
   }

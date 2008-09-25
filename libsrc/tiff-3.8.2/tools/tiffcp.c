@@ -18,23 +18,23 @@
  * Copies the 2nd image in source.tif to the destination.
  *
  *****
- * Permission to use, copy, modify, distribute, and sell this software and 
+ * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
  * that (i) the above copyright notices and this permission notice appear in
  * all copies of the software and related documentation, and (ii) the names of
  * Sam Leffler and Silicon Graphics may not be used in any advertising or
  * publicity relating to the software without the specific, prior written
  * permission of Sam Leffler and Silicon Graphics.
- * 
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
- * 
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
 
@@ -102,24 +102,24 @@ static int nextSrcImage (TIFF *tif, char **imageSpec)
     if (start == *imageSpec) nextImage = TIFFCurrentDirectory (tif);
     if (**imageSpec)
     {
-      if (**imageSpec == comma) {  
+      if (**imageSpec == comma) {
         /* a trailing comma denotes remaining images in sequence */
         if ((*imageSpec)[1] == '\0') *imageSpec = NULL;
       }else{
-        fprintf (stderr, 
+        fprintf (stderr,
           "Expected a %c separated image # list after %s\n",
           comma, TIFFFileName (tif));
         exit (-4);   /* syntax error */
       }
     }
-    if (TIFFSetDirectory (tif, nextImage)) return 1;  
-    fprintf (stderr, "%s%c%d not found!\n", 
-             TIFFFileName(tif), comma, (int) nextImage); 
+    if (TIFFSetDirectory (tif, nextImage)) return 1;
+    fprintf (stderr, "%s%c%d not found!\n",
+             TIFFFileName(tif), comma, (int) nextImage);
   }
   return 0;
 }
 
-  
+
 static TIFF* openSrcImage (char **imageSpec)
 /*
   imageSpec points to a pointer to a filename followed by optional ,image#'s
@@ -131,11 +131,11 @@ static TIFF* openSrcImage (char **imageSpec)
     char *fn = *imageSpec;
     *imageSpec = strchr (fn, comma);
     if (*imageSpec) {  /* there is at least one image number specifier */
-        **imageSpec = '\0'; 
+        **imageSpec = '\0';
         tif = TIFFOpen (fn, "r");
         /* but, ignore any single trailing comma */
         if (!(*imageSpec)[1]) {*imageSpec = NULL; return tif;}
-        if (tif) { 
+        if (tif) {
             **imageSpec = comma;  /* replace the comma */
             if (!nextSrcImage(tif, imageSpec)) {
               TIFFClose (tif);
@@ -373,7 +373,7 @@ char* stuff[] = {
 " -t		write output in tiles",
 " -i		ignore read errors",
 " -b file[,#]	bias (dark) monochrome image to be subtracted from all others",
-" -,=%		use % rather than , to separate image #'s (per Note below)",           
+" -,=%		use % rather than , to separate image #'s (per Note below)",
 "",
 " -r #		make each strip have no more than # rows",
 " -w #		set output tile width (pixels)",
@@ -715,7 +715,7 @@ tiffcp(TIFF* in, TIFF* out)
 	  if (TIFFGetField(in, TIFFTAG_PAGENUMBER, &pg0, &pg1)) {
 		if (pageNum < 0) /* only one input file */
 			TIFFSetField(out, TIFFTAG_PAGENUMBER, pg0, pg1);
-		else 
+		else
 			TIFFSetField(out, TIFFTAG_PAGENUMBER, pageNum++, 0);
 	  }
 	}
@@ -814,7 +814,7 @@ DECLAREcpFunc(cpBiasedContig2Contig)
 	  uint32 biasWidth = 0, biasLength = 0;
 	  TIFFGetField(bias, TIFFTAG_IMAGEWIDTH, &biasWidth);
 	  TIFFGetField(bias, TIFFTAG_IMAGELENGTH, &biasLength);
-	  if (biasSize == bufSize && 
+	  if (biasSize == bufSize &&
 	      imagelength == biasLength && imagewidth == biasWidth) {
 		uint16 sampleBits = 0;
 		biasFn *subtractLine;
@@ -847,7 +847,7 @@ DECLAREcpFunc(cpBiasedContig2Contig)
 					goto bad;
 				}
 			}
-		
+
 			_TIFFfree(buf);
 			_TIFFfree(biasBuf);
 			TIFFSetDirectory(bias,
@@ -1107,7 +1107,7 @@ cpImage(TIFF* in, TIFF* out, readFunc fin, writeFunc fout,
 	int status = 0;
 	tdata_t buf = NULL;
 	tsize_t scanlinesize = TIFFRasterScanlineSize(in);
-        tsize_t bytes = scanlinesize * (tsize_t)imagelength;                                      
+        tsize_t bytes = scanlinesize * (tsize_t)imagelength;
         /*
          * XXX: Check for integer overflow.
          */
@@ -1116,7 +1116,7 @@ cpImage(TIFF* in, TIFF* out, readFunc fin, writeFunc fout,
 	    && bytes / (tsize_t)imagelength == scanlinesize) {
                 buf = _TIFFmalloc(bytes);
 		if (buf) {
-			if ((*fin)(in, (uint8*)buf, imagelength, 
+			if ((*fin)(in, (uint8*)buf, imagelength,
 				   imagewidth, spp)) {
 				status = (*fout)(out, (uint8*)buf,
 						 imagelength, imagewidth, spp);
@@ -1210,7 +1210,7 @@ DECLAREreadFunc(readContigTilesIntoBuffer)
 		return 0;
 	(void) TIFFGetField(in, TIFFTAG_TILEWIDTH, &tw);
 	(void) TIFFGetField(in, TIFFTAG_TILELENGTH, &tl);
-        
+
 	for (row = 0; row < imagelength; row += tl) {
 		uint32 nrow = (row+tl > imagelength) ? imagelength-row : tl;
 		uint32 colb = 0;
@@ -1355,7 +1355,7 @@ DECLAREwriteFunc(writeBufferToSeparateStrips)
 			tsize_t stripsize = TIFFVStripSize(out, nrows);
 
 			cpContigBufToSeparateBuf(
-			    obuf, (uint8*) buf + row*rowsize + s, 
+			    obuf, (uint8*) buf + row*rowsize + s,
 			    nrows, imagewidth, 0, 0, spp, 1);
 			if (TIFFWriteEncodedStrip(out, strip++, obuf, stripsize) < 0) {
 				TIFFError(TIFFFileName(out),
@@ -1439,7 +1439,7 @@ DECLAREwriteFunc(writeBufferToSeparateTiles)
 	(void) TIFFGetField(out, TIFFTAG_BITSPERSAMPLE, &bps);
         assert( bps % 8 == 0 );
         bytes_per_sample = bps/8;
-        
+
 	for (row = 0; row < imagelength; row += tl) {
 		uint32 nrow = (row+tl > imagelength) ? imagelength-row : tl;
 		uint32 colb = 0;

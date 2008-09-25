@@ -32,10 +32,10 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class R>
-class Orientation_xz_3 
+class Orientation_xz_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.x(); }
   typename R::FT y(const Point &p) const { return p.z(); }
 
@@ -48,17 +48,17 @@ public:
 };
 
 template <class R>
-class Side_of_oriented_circle_xz_3 
+class Side_of_oriented_circle_xz_3
 {
 public:
-  typedef typename R::Point_3     Point; 
+  typedef typename R::Point_3     Point;
   typename R::FT x(const Point &p) const { return p.x(); }
   typename R::FT y(const Point &p) const { return p.z(); }
 
-  CGAL::Oriented_side operator() (const Point &p, 
+  CGAL::Oriented_side operator() (const Point &p,
 				  const Point &q,
-				  const Point &r, 
-				  const Point &s) 
+				  const Point &r,
+				  const Point &s)
     {
       return side_of_oriented_circleC2(x(p), y(p),
 				       x(q), y(q),
@@ -87,7 +87,7 @@ public:
   typedef Point_2      Point;
   typedef Segment_2    Segment;
   typedef Triangle_2   Triangle;
-  
+
   Triangulation_euclidean_traits_xz_3(){}
   Triangulation_euclidean_traits_xz_3(
 	      const Triangulation_euclidean_traits_xz_3& ){}

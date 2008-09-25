@@ -1,12 +1,12 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2003 Exact Computation Project
- * 
+ *
  * File: BigFloatRep.h
  *
  * Synopsis: Internal Representation BigFloat.
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
  *
@@ -47,48 +47,48 @@ private:
   static double lg10(BigInt x); //inline
   static long floorlg10(BigInt x); //inline
   static void error(const char*); //inline
-  
+
   /// exp2(e) returns 2^e : called by BigFloat::exp2(e)
   /** e can be negative */
   static BigFloatRep* exp2(int e);
-  
+
   struct DecimalOutput;
 
   friend class BigFloat;
-  
+
   BigInt        m;
   unsigned long err;
   long          exp;
-  
-  unsigned      refCount;  
 
-public:  
+  unsigned      refCount;
+
+public:
   //  constructors
   BigFloatRep(double);
   CORE_INLINE BigFloatRep(const BigInt& I = 0, unsigned long u = 0, long l = 0);
   CORE_INLINE BigFloatRep(const char *);
-  
+
   CORE_INLINE BigRat BigRatize() const;
-  
+
   //  the destructor
   CORE_INLINE ~BigFloatRep();
 
   CORE_MEMORY(BigFloatRep)
-  
-  //  approximation  
+
+  //  approximation
   void trunc(const BigInt&, const extLong&, const extLong&);
   void truncM(const BigFloatRep&, const extLong&, const extLong&);
   void approx(const BigFloatRep&, const extLong&, const extLong&);
-  
+
   void div(const BigInt&, const BigInt&, const extLong&, const extLong&);
   void approx(const BigRat&, const extLong&, const extLong&); //inline
-  
+
   //  error-normalization
   void eliminateTrailingZeroes(); //inline
   void normal();
   void bigNormal(BigInt&);
-  
-  //  arithmetics  
+
+  //  arithmetics
 public:
   void add(const BigFloatRep&, const BigFloatRep&);
   void sub(const BigFloatRep&, const BigFloatRep&);
@@ -96,7 +96,7 @@ public:
   void div(const BigFloatRep&, const BigFloatRep&, const extLong&);
   void div2(const BigFloatRep&);	// exact division by 2
   void centerize(const BigFloatRep&, const BigFloatRep&);
-private:  
+private:
   //  squareroot
   //    arguments:      r = value whose square root we want
   //                    a = absolute precision of the desired result
@@ -108,14 +108,14 @@ private:
 
   //  comparison
   int compareMExp(const BigFloatRep&) const;
-  
+
   //  builtin functions
   CORE_INLINE extLong lMSB() const;      //inline
   CORE_INLINE extLong uMSB() const;      //inline
   CORE_INLINE extLong MSB() const;       //inline
   CORE_INLINE extLong flrLgErr() const;  //inline
   CORE_INLINE extLong clLgErr() const;   //inline
-  
+
   CORE_INLINE bool    isZeroIn() const;  //inline
   CORE_INLINE int     signM() const;     //inline
 
@@ -123,16 +123,16 @@ private:
   double toDouble() const;
   long toLong() const;
   BigInt toBigInt() const;
-  
+
   //  conversion
-  
+
   // toString() Joaquin Grech 31/5/2003
   std::string toString(long prec=defBigFloatOutputDigits, bool sci=false) const;
   std::string round(std::string inRep, unsigned int width) const;
-  DecimalOutput toDecimal(unsigned int width=defBigFloatOutputDigits, 
+  DecimalOutput toDecimal(unsigned int width=defBigFloatOutputDigits,
                           bool Scientific=false) const;
   void fromString(const char *p, const extLong & prec = defBigFloatInputDigits);
-  
+
   void dump() const;  //inline
   long adjustE(long E, BigInt M, long e) const;
 
@@ -155,14 +155,14 @@ struct BigFloatRep::DecimalOutput {
                       //  is smaller than error)
 
   DecimalOutput() : rep(""), sign(1), isScientific(false),
-                    noSignificant(0), isExact(false), errorCode(0) 
+                    noSignificant(0), isExact(false), errorCode(0)
   {}
 };
 
 // constants used by BigFloatRep
 //	NOTES:  CHUNK_BIT is the number of bits in each Chunk
-//	Since LONG_BIT = 32 or 64, then CHUNK_BIT = 14 or 30.  
-//	We have:  0 <= err < 4 * 2^{CHUNK_BIT} 
+//	Since LONG_BIT = 32 or 64, then CHUNK_BIT = 14 or 30.
+//	We have:  0 <= err < 4 * 2^{CHUNK_BIT}
 
 const long CHUNK_BIT = (long)(LONG_BIT / 2 - 2); 	//  chunks
 const long HALF_CHUNK_BIT = (CHUNK_BIT + 1) / 2;

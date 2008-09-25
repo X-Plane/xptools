@@ -158,7 +158,7 @@ void process_file(char* filename, int min_height, int max_height)
 			glyphstruct.bwidth = bwidth;
 			glyphstruct.bheight = bheight;
 			glyphstruct.charcode = charcode;
-		
+
 			write(texfile, &glyphstruct.size, sizeof(int));
 			write(texfile, &glyphstruct.advance, sizeof(float));
 			write(texfile, &glyphstruct.dl_width, sizeof(int));
@@ -217,7 +217,7 @@ void process_file(char* filename, int min_height, int max_height)
 					printf("finished. successfully created \"%s\".\n", texfilename);
 			}
 		}
-		
+
 	}
 	close(texfile);
 	return;

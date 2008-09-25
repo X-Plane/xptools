@@ -29,7 +29,7 @@
 namespace CGAL {
 
 template <class T>
-class Max_coordinate_3 
+class Max_coordinate_3
 {
 public:
 
@@ -54,9 +54,9 @@ template <class R_, class Polyhedron_ = CGAL::Polyhedron_3<R_> >
 #else
 template <class R_>
 #endif
-class Convex_hull_traits_3 
+class Convex_hull_traits_3
 {
- public:  
+ public:
   typedef R_                                     R;
   typedef typename R::Point_3                    Point_3;
   typedef typename R::Segment_3                  Segment_3;
@@ -93,8 +93,8 @@ class Convex_hull_traits_3
   typedef Convex_hull_projective_yz_traits_2<Point_3>  Traits_yz;
   typedef CGAL::Max_coordinate_3<Vector_3>             Max_coordinate_3;
 
-  // for postcondition checking 
-  typedef typename R::Ray_3                      Ray_3; 
+  // for postcondition checking
+  typedef typename R::Ray_3                      Ray_3;
 
   typedef typename R::Has_on_3                   Has_on_3;
   typedef typename R::Oriented_side_3            Oriented_side_3;
@@ -120,7 +120,7 @@ class Convex_hull_traits_3
   construct_vector_3_object() const
   { return Construct_vector_3(); }
 
-  Construct_centroid_3  
+  Construct_centroid_3
   construct_centroid_3_object() const
   { return Construct_centroid_3(); }
 
@@ -135,7 +135,7 @@ class Convex_hull_traits_3
   Coplanar_3
   coplanar_3_object() const
   { return Coplanar_3(); }
- 
+
   Has_on_3
   has_on_3_object() const
   { return Has_on_3(); }
@@ -156,11 +156,11 @@ class Convex_hull_traits_3
   intersect_3_object() const
   { return Intersect_3(); }
 
-  Less_signed_distance_to_plane_3  
+  Less_signed_distance_to_plane_3
   less_signed_distance_to_plane_3_object() const
   { return Less_signed_distance_to_plane_3(); }
 
-  Max_coordinate_3  
+  Max_coordinate_3
   max_coordinate_3_object() const
   { return Max_coordinate_3(); }
 };

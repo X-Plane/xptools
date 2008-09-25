@@ -26,17 +26,17 @@
 CGAL_BEGIN_NAMESPACE
 
 //IMPLEMENTATION
-//if unbounded face - returns NULL or some edge on unbounded face 
+//if unbounded face - returns NULL or some edge on unbounded face
 //if its a vertex returns a halfedge pointing _at_ it
 template <class Planar_map>
 typename Pm_naive_point_location<Planar_map>::Halfedge_handle
-Pm_naive_point_location<Planar_map>::locate(const Point & p, 
+Pm_naive_point_location<Planar_map>::locate(const Point & p,
                                             Locate_type & lt) const
 {
   typename Planar_map::Vertex_iterator vit=pm->vertices_begin();
   for (; vit != pm->vertices_end(); ++vit) {
     if (traits->point_equal(p,vit->point()) ) {
-      lt = Planar_map::VERTEX; 
+      lt = Planar_map::VERTEX;
       Halfedge_handle h(vit->incident_halfedges());
       return h;
     }
@@ -46,7 +46,7 @@ Pm_naive_point_location<Planar_map>::locate(const Point & p,
   for (; hit != pm->halfedges_end(); ++hit) {
     if (traits->point_in_x_range(hit->curve(),p) &&
 	traits->curve_compare_y_at_x(p, hit->curve()) == EQUAL) {
-      lt = Planar_map::EDGE; 
+      lt = Planar_map::EDGE;
       return hit;
     }
   }
@@ -55,19 +55,19 @@ Pm_naive_point_location<Planar_map>::locate(const Point & p,
   Locate_type temp;
   Halfedge_handle h = vertical_ray_shoot(p,temp,true);
   if (temp != Planar_map::UNBOUNDED_FACE) {
-    if (temp == Planar_map::VERTEX) {  
-      //since h points at the vertex and is the first 
+    if (temp == Planar_map::VERTEX) {
+      //since h points at the vertex and is the first
       //halfedge after the ray clockwise! then the  face
-      //is to its _right_ (maybe the specs will change in the future) 
-      h = h->twin();        
-    }        
+      //is to its _right_ (maybe the specs will change in the future)
+      h = h->twin();
+    }
 
     if (!(h->face()->is_unbounded())) lt = Planar_map::FACE;
     return h;
   }
 
   //==the vertical ray shoot returned the halfedges_end() iterator.
-  if (pm->unbounded_face()->holes_begin() == 
+  if (pm->unbounded_face()->holes_begin() ==
       pm->unbounded_face()->holes_end() ) //an empty map
     return h; //return halfedges_end()
 
@@ -99,7 +99,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
 
   lt = Planar_map::EDGE;
 
-  // set the flags for comparison acording to the ray 
+  // set the flags for comparison acording to the ray
   // direction (up/down)
   if (up) {
     point_above_under = SMALLER;
@@ -130,7 +130,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
         // We found another curve in the x-range and we want to remember
         // the closest
         if (traits->curves_compare_y_at_x(closest_edge->curve(), it->curve(),
-                                          p) == curve_above_under) 
+                                          p) == curve_above_under)
         {
           closest_edge = it;
         }
@@ -145,7 +145,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
       // In this case the Locate type is always EDGE
       // Remark: This treatment was originally written in the walk PL.
       //
-      if (up && 
+      if (up &&
 	  traits->point_is_right_top
 	      (traits->curve_righttop_most(it->curve()), p) ||
 	  ! up &&
@@ -163,13 +163,13 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
         if (up == traits->point_is_left_low(it->target()->point(),
                                             it->source()->point()))
           return it;
-        else 
+        else
           return it->twin();
       }
     }
     ++it; ++it;
   }
-  
+
   // if we didn't find any edge above p then it is the empty face
   if ( ! first) {
     lt = Planar_map::UNBOUNDED_FACE;
@@ -177,7 +177,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
     return h; //==NULL
   }
 
-  // if the closest point is a vertex then find the first clockwise 
+  // if the closest point is a vertex then find the first clockwise
   // edge from the vertical segment
   typename Planar_map::Vertex_handle v = pm->vertices_end();
   bool maybe_vertical = false; // BUG fix (Oren)
@@ -186,16 +186,16 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
     maybe_vertical=true; // BUG fix (Oren)
   }
 
-  if ( traits->point_equal_x( closest_edge->source()->point(), p) ) 
+  if ( traits->point_equal_x( closest_edge->source()->point(), p) )
     {
-      if (!maybe_vertical || 
+      if (!maybe_vertical ||
 	  traits->point_is_right_top(closest_edge->target()->point(),
-				     closest_edge->source()->point())==up) 
+				     closest_edge->source()->point())==up)
                                   // BUG fix (Oren)
 	v = closest_edge->source();
       /*
 	special care for the vertical cases:
-		  
+
 	x             p
 	|
 	x     and     x
@@ -203,7 +203,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
 	p             x
       */
     }
-	
+
   //if (closest_is_vertex)
   if (v != pm->vertices_end()) {
     lt = Planar_map::VERTEX;
@@ -218,7 +218,7 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
     return (traits->point_is_right(closest_edge->source()->point(),
                                    closest_edge->target()->point())) ?
       closest_edge : closest_edge->twin();
-  } 
+  }
   return (traits->point_is_left(closest_edge->source()->point(),
                                 closest_edge->target()->point())) ?
     closest_edge : closest_edge->twin();
@@ -226,8 +226,8 @@ vertical_ray_shoot(const Point & p, Locate_type & lt, bool up) const
 
 template <class Planar_map>
 typename Pm_naive_point_location<Planar_map>::Halfedge_handle
-Pm_naive_point_location<Planar_map>::vertical_ray_shoot(const Point & p, 
-                                                        Locate_type & lt, 
+Pm_naive_point_location<Planar_map>::vertical_ray_shoot(const Point & p,
+                                                        Locate_type & lt,
                                                         bool up)
 {
   /* Make sure the source point is in the bounding box on the output */
@@ -245,7 +245,7 @@ Pm_naive_point_location<Planar_map>::vertical_ray_shoot(const Point & p,
 //find the first halfedge pointing at v, when going clockwise
 //if highest==true - start from 12 oclock, else start from 6 oclock
 template <class Planar_map>
-typename Pm_naive_point_location<Planar_map>::Halfedge_handle 
+typename Pm_naive_point_location<Planar_map>::Halfedge_handle
 Pm_naive_point_location<Planar_map>::
 find_lowest(typename Pm_naive_point_location<Planar_map>::Vertex_handle v,
             bool highest) const
@@ -255,7 +255,7 @@ find_lowest(typename Pm_naive_point_location<Planar_map>::Vertex_handle v,
   Halfedge_handle vertical_up = pm->halfedges_end();
   Halfedge_handle vertical_down = pm->halfedges_end();
 
-  typename Planar_map::Halfedge_around_vertex_circulator first = 
+  typename Planar_map::Halfedge_around_vertex_circulator first =
     v->incident_halfedges();
   typename Planar_map::Halfedge_around_vertex_circulator curr = first;
 
@@ -264,7 +264,7 @@ find_lowest(typename Pm_naive_point_location<Planar_map>::Vertex_handle v,
       if (lowest_left == pm->halfedges_end())
         lowest_left = curr;
       else if (traits->curves_compare_y_at_x_left(curr->curve(),
-                                               lowest_left->curve(), 
+                                               lowest_left->curve(),
                                                v->point()) == SMALLER)
         lowest_left = curr;
     }
@@ -273,34 +273,34 @@ find_lowest(typename Pm_naive_point_location<Planar_map>::Vertex_handle v,
       if (lowest_right == pm->halfedges_end())
         lowest_right = curr;
       else if (traits->curves_compare_y_at_x_right(curr->curve(),
-                                                lowest_right->curve(), 
+                                                lowest_right->curve(),
                                                 v->point()) == LARGER)
         lowest_right = curr;
     }
 
-    if (traits->curve_is_vertical(curr->curve())) 
+    if (traits->curve_is_vertical(curr->curve()))
     {
       if (traits->compare_xy(v->point(),
 			     curr->source()->point()) == LARGER)
-	vertical_up=curr; 
-			
+	vertical_up=curr;
+
       if (traits->compare_xy(v->point(),
 			     curr->source()->point()) == SMALLER)
-	vertical_down=curr;			
-    }        
-        
+	vertical_down=curr;
+    }
+
   } while (++curr != first);
-        
+
   /*
-     vertical_down  
+     vertical_down
      |
-     v   <- lowest_right      
-     'v'  
-     lowest_left->  ^ 
+     v   <- lowest_right
+     'v'
+     lowest_left->  ^
      |
      vertical_up
   */
-        
+
   if (!highest) {
     if (lowest_left != pm->halfedges_end()) return lowest_left;
     if (vertical_down != pm->halfedges_end()) return vertical_down;

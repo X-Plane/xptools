@@ -37,25 +37,25 @@ class dxfConverter;
 #define M_PI 3.14159265358979323846
 #endif // M_PI
 
-void convert_3dface(const dimeEntity *, const dimeState *, 
+void convert_3dface(const dimeEntity *, const dimeState *,
 		    dxfLayerData *, dxfConverter *);
-void convert_line(const dimeEntity *, const dimeState *, 
+void convert_line(const dimeEntity *, const dimeState *,
 		  dxfLayerData *, dxfConverter *);
-void convert_point(const dimeEntity *, const dimeState *, 
+void convert_point(const dimeEntity *, const dimeState *,
 		   dxfLayerData *, dxfConverter *);
-void convert_circle(const dimeEntity *, const dimeState *, 
+void convert_circle(const dimeEntity *, const dimeState *,
 		    dxfLayerData *, dxfConverter *);
-void convert_ellipse(const dimeEntity *, const dimeState *, 
+void convert_ellipse(const dimeEntity *, const dimeState *,
 		     dxfLayerData *, dxfConverter *);
-void convert_arc(const dimeEntity *, const dimeState *, 
+void convert_arc(const dimeEntity *, const dimeState *,
 		 dxfLayerData *, dxfConverter *);
-void convert_solid(const dimeEntity *, const dimeState *, 
+void convert_solid(const dimeEntity *, const dimeState *,
 		   dxfLayerData *, dxfConverter *);
-void convert_trace(const dimeEntity *, const dimeState *, 
+void convert_trace(const dimeEntity *, const dimeState *,
 		   dxfLayerData *, dxfConverter *);
-void convert_polyline(const dimeEntity *, const dimeState *, 
+void convert_polyline(const dimeEntity *, const dimeState *,
 		      dxfLayerData *, dxfConverter *);
-void convert_lwpolyline(const dimeEntity *, const dimeState *, 
+void convert_lwpolyline(const dimeEntity *, const dimeState *,
 			dxfLayerData *, dxfConverter *);
 
 #endif // _DXF2VRML_CONVERT_FUNCS_H_

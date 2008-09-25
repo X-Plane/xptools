@@ -47,14 +47,14 @@ void Polynomial<int>::euclidean_div(
 
 
 void Polynomial<int>::pseudo_div(
-  const Polynomial<int>& f, const Polynomial<int>& g, 
+  const Polynomial<int>& f, const Polynomial<int>& g,
   Polynomial<int>& q, Polynomial<int>& r, int& D)
 {
   TRACEN("pseudo_div "<<f<<" , "<< g);
   int fd=f.degree(), gd=g.degree();
-  if ( fd<gd ) 
-  { q = Polynomial<int>(0); r = f; D = 1; 
-    CGAL_postcondition(Polynomial<int>(D)*f==q*g+r); return; 
+  if ( fd<gd )
+  { q = Polynomial<int>(0); r = f; D = 1;
+    CGAL_postcondition(Polynomial<int>(D)*f==q*g+r); return;
   }
   // now we know fd >= gd and f>=g
   int qd=fd-gd, delta=qd+1, rd=fd;
@@ -67,7 +67,7 @@ void Polynomial<int>::pseudo_div(
     int F = res[rd]; // highest order coeff of res
     int t = F/G;     // ensured to be integer by multiplication of D
     q.coeff(qd) = t;    // store q coeff
-    res.minus_offsetmult(g,t,qd); 
+    res.minus_offsetmult(g,t,qd);
     if (res.is_zero()) break;
     rd = res.degree();
     qd = rd - gd;
@@ -95,7 +95,7 @@ Polynomial<int> Polynomial<int>::gcd(
   int F = CGAL_NTS gcd(f1c,f2c);
   Polynomial<int> q,r; int M=1,D;
   bool first = true;
-  while ( ! f2.is_zero() ) { 
+  while ( ! f2.is_zero() ) {
     Polynomial<int>::pseudo_div(f1,f2,q,r,D);
     if (!first) M*=D;
     TRACEV(f1);TRACEV(f2);TRACEV(q);TRACEV(r);TRACEV(M);
@@ -131,14 +131,14 @@ void Polynomial<double>::euclidean_div(
 
 
 void Polynomial<double>::pseudo_div(
-  const Polynomial<double>& f, const Polynomial<double>& g, 
+  const Polynomial<double>& f, const Polynomial<double>& g,
   Polynomial<double>& q, Polynomial<double>& r, double& D)
 {
   TRACEN("pseudo_div "<<f<<" , "<< g);
   int fd=f.degree(), gd=g.degree();
-  if ( fd<gd ) 
-  { q = Polynomial<double>(0); r = f; D = 1; 
-    CGAL_postcondition(Polynomial<double>(D)*f==q*g+r); return; 
+  if ( fd<gd )
+  { q = Polynomial<double>(0); r = f; D = 1;
+    CGAL_postcondition(Polynomial<double>(D)*f==q*g+r); return;
   }
   // now we know fd >= gd and f>=g
   int qd=fd-gd, delta=qd+1, rd=fd;
@@ -151,7 +151,7 @@ void Polynomial<double>::pseudo_div(
     double F = res[rd]; // highest order coeff of res
     double t = F/G;     // ensured to be integer by multiplication of D
     q.coeff(qd) = t;    // store q coeff
-    res.minus_offsetmult(g,t,qd); 
+    res.minus_offsetmult(g,t,qd);
     if (res.is_zero()) break;
     rd = res.degree();
     qd = rd - gd;
@@ -176,7 +176,7 @@ Polynomial<double> Polynomial<double>::gcd(
   f1 /= f1c; f2 /= f2c;
   Polynomial<double> q,r; double M=1,D;
   bool first = true;
-  while ( ! f2.is_zero() ) { 
+  while ( ! f2.is_zero() ) {
     Polynomial<double>::pseudo_div(f1,f2,q,r,D);
     if (!first) M*=D;
     TRACEV(f1);TRACEV(f2);TRACEV(q);TRACEV(r);TRACEV(M);

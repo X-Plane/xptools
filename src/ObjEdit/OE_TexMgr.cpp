@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -48,13 +48,13 @@ GLenum		FindTexture(const string& inName, bool inNight, int * outWidth, int * ou
 		map<string, TexInfo_t >::iterator i = gNightTextures.find(name);
 		if (i == gNightTextures.end()) return 0;
 		if (outWidth) *outWidth = i->second.width;
-		if (outHeight) *outHeight = i->second.height;			
+		if (outHeight) *outHeight = i->second.height;
 		return i->second.id;
 	} else {
 		map<string, TexInfo_t >::iterator i = gDayTextures.find(name);
 		if (i == gDayTextures.end()) return 0;
 		if (outWidth) *outWidth = i->second.width;
-		if (outHeight) *outHeight = i->second.height;			
+		if (outHeight) *outHeight = i->second.height;
 		return i->second.id;
 	}
 }
@@ -62,22 +62,22 @@ GLenum		FindTexture(const string& inName, bool inNight, int * outWidth, int * ou
 void		AccumTexture(const string& inFileName)
 {
 	int 	w, h;
-	static	GLenum	gCounter = 1000;	
+	static	GLenum	gCounter = 1000;
 	bool	lit = HasExtNoCase(inFileName, "LIT.bmp") || HasExtNoCase(inFileName, "LIT.png");
 	map<string, TexInfo_t >&	texDB = lit ? gNightTextures : gDayTextures;
 	string	shortName = inFileName;
 	if (!HasExtNoCase(inFileName, ".bmp") && !HasExtNoCase(inFileName, ".png"))
 		return;
 
-	if (lit)	
+	if (lit)
 		shortName = shortName.substr(0, shortName.length() - 7);
-	else 
+	else
 		shortName = shortName.substr(0, shortName.length() - 4);
-		
-	StripPathCP(shortName);	
+
+	StripPathCP(shortName);
 
 	StringToUpper(shortName);
-		
+
 	for (map<string, TexInfo_t >::iterator i = texDB.begin();	 i != texDB.end(); ++i)
 	{
 		if (i->second.fileName == inFileName)
@@ -87,7 +87,7 @@ void		AccumTexture(const string& inFileName)
 			return;
 		}
 	}
-	
+
 	GLenum	texID = gCounter++;
 	if (LoadTextureFromFile(inFileName.c_str(), texID, (!lit ? tex_MagentaAlpha : 0) + tex_Linear + tex_Mipmap, &w, &h, NULL, NULL))
 	{
@@ -99,7 +99,7 @@ void		AccumTexture(const string& inFileName)
 		texDB.insert(map<string, TexInfo_t >::value_type(
 				shortName, ti));
 		OE_Notifiable::Notify(catagory_Texture, msg_TexLoaded, NULL);
-	}	
+	}
 }
 
 void		ReloadTexture(const string& inName)

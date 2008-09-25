@@ -24,9 +24,9 @@ static int GetFieldTypeFromString(char *typeString)
 	SFBool	field;
 	field.setType(typeString);
 	return field.getType();
-}	
+}
 
-static bool IsTokenChar(char c, char *tokenChars) 
+static bool IsTokenChar(char c, char *tokenChars)
 {
 	if (tokenChars == NULL)
 		return false;
@@ -43,7 +43,7 @@ static bool IsTokenChar(char c, char *tokenChars)
 static char *currentStringPos = NULL;
 
 static char *GetStringToken(
-char	*string, 
+char	*string,
 char	*ignoreToken,
 char	*separatorToken,
 char	*buffer)
@@ -55,7 +55,7 @@ char	*buffer)
 	int tokenLen = 0;
 
 	int pos = 0;
-	while (pos < stringLen && IsTokenChar(string[pos], ignoreToken)) 
+	while (pos < stringLen && IsTokenChar(string[pos], ignoreToken))
 		pos++;
 
 	int startPos = pos;
@@ -70,7 +70,7 @@ char	*buffer)
 		}
 		tokenLen++;
 	}
-	
+
 	if (tokenLen == 0)
 		return NULL;
 
@@ -106,12 +106,12 @@ char *PROTO::getName(void)
 	return mName.getValue();
 }
 
-void PROTO::setString(char *string) 
+void PROTO::setString(char *string)
 {
 	mString.setValue(string);
 }
 
-char *PROTO::getString() 
+char *PROTO::getString()
 {
 	return mString.getValue();
 }
@@ -121,12 +121,12 @@ void PROTO::addDefaultField(Field *field)
 	mDefaultFieldVector.addElement(field);
 }
 
-void PROTO::addField(Field *field) 
+void PROTO::addField(Field *field)
 {
 	mFieldVector.addElement(field);
 }
 
-int PROTO::getNDefaultFields() 
+int PROTO::getNDefaultFields()
 {
 	return mDefaultFieldVector.size();
 }
@@ -152,24 +152,24 @@ void PROTO::addDefaultFields(char *fieldString)
 	addFieldValues(fieldString, 1);
 }
 
-void PROTO::addFields(char *fieldString) 
+void PROTO::addFields(char *fieldString)
 {
-	deleteFields(); 
+	deleteFields();
 	addFieldValues(fieldString, 0);
 }
 
-void PROTO::deleteDefaultFields(void) 
+void PROTO::deleteDefaultFields(void)
 {
 	mDefaultFieldVector.removeAllElements();
 }
 
-void PROTO::deleteFields(void) 
+void PROTO::deleteFields(void)
 {
 	mFieldVector.removeAllElements();
 }
 
 void PROTO::addFieldValues(
-char		*fieldString, 
+char		*fieldString,
 int			bDefaultField)
 {
 	char	string[256];
@@ -266,7 +266,7 @@ int			bDefaultField)
 			{
 				field = new SFBool();
 				token = strtok( NULL, FIELD_SEPARATOR_TOKENS);
-				bool btrue = !strcmp(token, "TRUE") ? true : false; 
+				bool btrue = !strcmp(token, "TRUE") ? true : false;
 				((SFBool *)field)->setValue(btrue);
 				break;
 			}
@@ -292,7 +292,7 @@ int			bDefaultField)
 		}
 
 		//assert(field);
-		
+
 		if (field) {
 			field->setName(fieldName);
 			if (bDefaultField)
@@ -306,7 +306,7 @@ int			bDefaultField)
 
 }
 
-bool isTokenChar(char c) 
+bool isTokenChar(char c)
 {
 	if ('a' <= c && c <= 'z')
 		return true;
@@ -356,7 +356,7 @@ void PROTO::getString(char *returnBuffer)
 		}
 		else
 			sprintf(&returnBuffer[strlen(returnBuffer)], "%s ", token);
-		
+
 		//token = strtok( NULL, PROTO_IGONRE_TOKENS  );
 		token = GetStringToken(NULL, PROTO_IGONRE_TOKENS, PROTO_SEPARATOR_TOKENS, tokenBuffer);
 	}

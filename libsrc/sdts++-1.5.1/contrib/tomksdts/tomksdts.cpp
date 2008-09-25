@@ -38,7 +38,7 @@ main( int argc, char** argv )
    int   ch;
 
    while ((ch = getopt(argc, argv, "v")) != -1 )
-      switch(ch) 
+      switch(ch)
       {
          case 'v':
             verbose = true;           // verbose output
@@ -60,7 +60,7 @@ main( int argc, char** argv )
 
    if ( ! module_stream )
    {
-      cerr << "unable to open " << argv[ optind ] 
+      cerr << "unable to open " << argv[ optind ]
            << "\n";
       exit( 1 );
    }

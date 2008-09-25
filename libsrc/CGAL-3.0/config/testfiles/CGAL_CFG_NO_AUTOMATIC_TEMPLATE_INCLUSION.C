@@ -38,7 +38,7 @@
 //| - an instantiation of ABC::f is required in a compilation
 //| - no definition of ABC::f appears in the source code processed by the
 //|   compilation
-//| 
+//|
 //| In this case, the compiler may look to see if the source file xyz.n exists,
 //| where n is .c, .C, .cpp, .CPP, .cxx, .CXX, or .cc. If this feature is
 //| missing, the flag CGAL_CFG_NO_AUTOMATIC_TEMPLATE_INCLUSION is set.

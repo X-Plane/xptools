@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@ TRIVIAL_COPY(WED_GISPoint_Bezier, WED_GISPoint)
 
 
 WED_GISPoint_Bezier::WED_GISPoint_Bezier(WED_Archive * parent, int id) :
-	WED_GISPoint(parent, id),	
+	WED_GISPoint(parent, id),
 	is_split(this,"Split", "GIS_points_bezier","split",0),
 	ctrl_lat_lo(this,"control_latitude_lo" ,"GIS_points_bezier","ctrl_latitude_lo" ,0.0,10,6),
 	ctrl_lon_lo(this,"control_longitude_lo","GIS_points_bezier","ctrl_longitude_lo",0.0,11,6),
@@ -92,7 +92,7 @@ void	WED_GISPoint_Bezier::SetControlHandleLo (const Point2& p)
 	Vector2	hi_vec(ctrl_lon_hi.value,ctrl_lat_hi.value);
 	if (!is_split.value)
 		hi_vec = -lo_vec;
-	
+
 	if (lo_vec.dx != ctrl_lon_lo.value ||
 		lo_vec.dy != ctrl_lat_lo.value ||
 		hi_vec.dx != ctrl_lon_hi.value ||
@@ -116,7 +116,7 @@ void	WED_GISPoint_Bezier::SetControlHandleHi (const Point2& p)
 	Vector2	lo_vec(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	if (!is_split.value)
 		lo_vec = -hi_vec;
-	
+
 	if (lo_vec.dx != ctrl_lon_lo.value ||
 		lo_vec.dy != ctrl_lat_lo.value ||
 		hi_vec.dx != ctrl_lon_hi.value ||
@@ -138,7 +138,7 @@ void	WED_GISPoint_Bezier::DeleteHandleLo	   (void)
 	Vector2	hi_vec(ctrl_lon_hi.value,ctrl_lat_hi.value);
 	if (!is_split.value)
 		hi_vec = lo_vec;
-	
+
 	if (lo_vec.dx != ctrl_lon_lo.value ||
 		lo_vec.dy != ctrl_lat_lo.value ||
 		hi_vec.dx != ctrl_lon_hi.value ||
@@ -160,7 +160,7 @@ void	WED_GISPoint_Bezier::DeleteHandleHi	   (void)
 	Vector2	lo_vec(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	if (!is_split.value)
 		lo_vec = hi_vec;
-	
+
 	if (lo_vec.dx != ctrl_lon_lo.value ||
 		lo_vec.dy != ctrl_lat_lo.value ||
 		hi_vec.dx != ctrl_lon_hi.value ||
@@ -194,7 +194,7 @@ void WED_GISPoint_Bezier::Reverse(void)
 	CacheBuild();
 	swap(ctrl_lat_lo.value, ctrl_lat_hi.value);
 	swap(ctrl_lon_lo.value, ctrl_lon_hi.value);
-	
+
 }
 
 
@@ -204,16 +204,16 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 	if (a != 0.0)
 	{
 		Point2 p;
-		GetLocation(p);	
+		GetLocation(p);
 		StateChanged();
-	
+
 		Point2	pt_old_lo(p.x + ctrl_lon_lo.value, p.y + ctrl_lat_lo.value);
 		Point2	pt_old_hi(p.x + ctrl_lon_hi.value, p.y + ctrl_lat_hi.value);
 		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
 		Vector2	v_old_hi = VectorLLToMeters(ctr, Vector2(ctr,pt_old_hi));
 		double old_len_lo = sqrt(v_old_lo.squared_length());
 		double old_len_hi = sqrt(v_old_hi.squared_length());
-		
+
 		double old_ang_lo = VectorMeters2NorthHeading(ctr,ctr,v_old_lo);
 		double old_ang_hi = VectorMeters2NorthHeading(ctr,ctr,v_old_hi);
 		Vector2	v_new_lo;
@@ -230,13 +230,13 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 		v_new_hi = VectorMetersToLL(ctr,v_new_hi);
 
 		WED_GISPoint::Rotate(ctr,a);
-		GetLocation(p);	
+		GetLocation(p);
 
 		ctrl_lon_lo.value = ctr.x + v_new_lo.dx - p.x;
 		ctrl_lon_hi.value = ctr.x + v_new_hi.dx - p.x;
 		ctrl_lat_lo.value = ctr.y + v_new_lo.dy - p.y;
 		ctrl_lat_hi.value = ctr.y + v_new_hi.dy - p.y;
-		
+
 	}
 }
 

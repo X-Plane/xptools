@@ -25,7 +25,7 @@ typedef CGAL::Planar_map_2<Dcel,Traits>         Planar_map;
 typedef CGAL::Pm_file_writer<Planar_map>        Pm_writer;
 
 int main()
-{ 
+{
   Planar_map pm;
   Pm_writer verbose_writer(std::cout, pm, true);
   Pm_writer writer(std::cout, pm);
@@ -34,12 +34,12 @@ int main()
             << std::endl << std::endl;
   std::cin  >> pm;
   std::cout << pm;
-  
+
   std::cout << std::endl;
   std::cout << "* * * Presenting the use of verbose format" << std::endl;
   std::cout << std::endl;
   CGAL::write_pm(pm, verbose_writer, std::cout);
-  
+
   std::cout << std::endl;
   std::cout << "* * * Demonstrating the use of the writer class interface."
             << std::endl;
@@ -50,7 +50,7 @@ int main()
   std::cout << "* * * Printing all halfedges in a verbose format" << std::endl
             << std::endl;
   verbose_writer.write_halfedges(pm.halfedges_begin(), pm.halfedges_end());
-   
+
 #if defined(CGAL_USE_LEDA) && defined(CGAL_POSTSCRIPT)
   // Print to Postscript file:
   CGAL::Postscript_file_stream  LPF(500, 500 ,"pm.ps");

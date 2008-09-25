@@ -54,7 +54,7 @@ public:
 	void		setJavaIDs();
 
 	////////////////////////////////////////////////
-	//	class ID	
+	//	class ID
 	////////////////////////////////////////////////
 
 	virtual		jclass		getNodeObjectClassID()			{return mNodeObjectClassID;}
@@ -82,7 +82,7 @@ public:
 	virtual		jmethodID	getGetNExposedFieldsMethodID()	{return mGetNExposedFieldsMethodID;}
 
 	////////////////////////////////////////////////
-	//	Object	
+	//	Object
 	////////////////////////////////////////////////
 
 	void		setNodeObject(jobject object)				{mNodeObject = object;}
@@ -91,7 +91,7 @@ public:
 	void		addFields(Node *node);
 
 	////////////////////////////////////////////////
-	//	add*	
+	//	add*
 	////////////////////////////////////////////////
 
 	void addFieldObject(jmethodID id, Field *field, int bConstField = JAVAOBJECT_FIELD);
@@ -110,7 +110,7 @@ public:
 	}
 
 	////////////////////////////////////////////////
-	//	get*	
+	//	get*
 	////////////////////////////////////////////////
 
 	jobject getFieldObject(jmethodID id, char *name);
@@ -146,7 +146,7 @@ public:
 	}
 
 	////////////////////////////////////////////////
-	//	set/getValue	
+	//	set/getValue
 	////////////////////////////////////////////////
 
 	virtual void setValue(Node *node);

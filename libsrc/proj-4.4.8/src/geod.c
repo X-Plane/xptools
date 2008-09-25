@@ -178,13 +178,13 @@ noargument:		   emess(1,"missing argument for -%c",*arg);
 			case 'l':
 				if (!arg[1] || arg[1] == 'e') { /* list of ellipsoids */
                                     struct PJ_ELLPS *le;
-                                    
+
                                     for (le = pj_ellps; le->id ; ++le)
                                         (void)printf("%9s %-16s %-16s %s\n",
                                                      le->id, le->major, le->ell, le->name);
 				} else if (arg[1] == 'u') { /* list of units */
                                     struct PJ_UNITS *lu;
-                                    
+
                                     for (lu = pj_units; lu->id ; ++lu)
                                         (void)printf("%12s %-20s %s\n",
                                                      lu->id, lu->to_meter, lu->name);

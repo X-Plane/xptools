@@ -21,7 +21,7 @@ class SFRotation;
 class SFVec3f : public Field {
 
 	static	int	mInit;
-	float	mValue[3]; 
+	float	mValue[3];
 
 public:
 

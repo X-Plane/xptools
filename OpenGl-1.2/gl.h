@@ -2276,9 +2276,9 @@ typedef void GLvoid;
 
 /* WIN_phong_shading */
 
-#define GL_PHONG_WIN                      0x80EA 
+#define GL_PHONG_WIN                      0x80EA
 
-#define GL_PHONG_HINT_WIN                 0x80EB 
+#define GL_PHONG_HINT_WIN                 0x80EB
 
 
 

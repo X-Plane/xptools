@@ -1,10 +1,10 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: CoreIO.cpp
  *
- * Written by 
+ * Written by
  *       Chee Yap <yap@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
  *
@@ -43,7 +43,7 @@ void allocate (char * &s, int old_size, int new_size) {
 
   if (s == NULL)
     old_size = 0;
-   
+
   char *t = new char[new_size];
   core_io_memory_handler(t, "CoreIO", "allocate::out of memory error");
 
@@ -54,7 +54,7 @@ void allocate (char * &s, int old_size, int new_size) {
   delete[] s;
   s = t;
 }
- 
+
 // appends c to s at position pos.
 // sz is the size of s
 void append_char (char * &s, int & sz, int pos, char c) {
@@ -72,7 +72,7 @@ void append_char (char * &s, int & sz, int pos, char c) {
 // skip blanks, tabs, line breaks and comment lines
 int skip_comment_line (std::istream & in) {
   int c;
-  
+
   do {
     c = in.get();
     while ( c == '#' ) {
@@ -81,11 +81,11 @@ int skip_comment_line (std::istream & in) {
       } while ( c != '\n' );
       c = in.get();
     }
-  } while (c == ' ' || c == '\t' || c == '\n');     
-  
+  } while (c == ' ' || c == '\t' || c == '\n');
+
   if (c == EOF)
     core_io_error_handler("CoreIO::read_from_file()","unexpected end of file.");
-  
+
   in.putback(c);
   return c;
 }
@@ -96,7 +96,7 @@ int skip_backslash_new_line (std::istream & in) {
 
   while (c == '\\') {
     c = in.get();
-      
+
     if (c == '\n')
       c = in.get();
     else
@@ -106,10 +106,10 @@ int skip_backslash_new_line (std::istream & in) {
   return c;
 }
 
-void read_string(std::istream& in, char* &buffer, int sz) {  
-  int c, pos=0;  
-  skip_comment_line(in);  
-  
+void read_string(std::istream& in, char* &buffer, int sz) {
+  int c, pos=0;
+  skip_comment_line(in);
+
   while ( (c = in.get()) != EOF ) {
     if ( c == ' ' || c == '\t' || c == '\n' || c == '#')
       break;
@@ -124,10 +124,10 @@ void read_base_number(std::istream& in, BigInt& m, long length, long maxBits) {
   int size, offset;
   int base;
   bool is_negate;
-  
+
   int c, pos = 0;
-  skip_comment_line(in);  
-  
+  skip_comment_line(in);
+
   // read sign
   c = in.get();
   if (c == '-') {
@@ -135,7 +135,7 @@ void read_base_number(std::istream& in, BigInt& m, long length, long maxBits) {
     c = in.get();
   } else
     is_negate = false;
-  
+
   // read base and compute digits
   if (c == '0') {
     c = in.get();
@@ -163,35 +163,35 @@ void read_base_number(std::istream& in, BigInt& m, long length, long maxBits) {
     in.putback(c);
   }
 
-  buffer = new char[size+2];  
-  // read digits    
+  buffer = new char[size+2];
+  // read digits
   for (int i=0; (i<size)&&((c=skip_backslash_new_line(in)) != EOF ); i++) {
     if (c != ' ' && c != '\t' && c != '\n')
-      append_char(buffer, size, pos++, c); 
+      append_char(buffer, size, pos++, c);
   }
   if (base == 10) {
     for(int j=0; j<offset; j++)
-      append_char(buffer, size, pos++, '0'); 
-  } 
+      append_char(buffer, size, pos++, '0');
+  }
   append_char(buffer, size, pos, '\0');
 
-  // convert string to bigint. 
-  if (m.fromString(buffer, base) < 0) 
-    core_io_error_handler("CoreIO::read_from_file()","bad big number format.");  
+  // convert string to bigint.
+  if (m.fromString(buffer, base) < 0)
+    core_io_error_handler("CoreIO::read_from_file()","bad big number format.");
   delete[] buffer;
 
   // shift left if neccessary
   if (offset > 0 && base != 10) {
     m <<= offset;
   }
-    
+
   if (is_negate)
     m.negate();
-}  
-  
+}
+
 
 void write_base_number(std::ostream& out, char* buffer, int length, int base, int charsPerLine) {
-   // write big number in a format that gmp's mpz_set_str() can 
+   // write big number in a format that gmp's mpz_set_str() can
    // automatically recognize with argument base = 0.
    if (base == 2)
      out << "0b";
@@ -199,7 +199,7 @@ void write_base_number(std::ostream& out, char* buffer, int length, int base, in
      out << "0x";
    else if (base == 8)
      out << '0';
-     
+
    // write big number in charsPerLine.
    char* start, *end, c;
    for (int i=0; i<length; i += charsPerLine) {
@@ -210,7 +210,7 @@ void write_base_number(std::ostream& out, char* buffer, int length, int base, in
        end = start + charsPerLine;
        c = *end;
        *end = '\0';
-      
+
        out << start << "\\\n";
        *end = c;
      }
@@ -220,40 +220,40 @@ void write_base_number(std::ostream& out, char* buffer, int length, int base, in
 void BigInt::readFromFile(std::istream& in, long maxLength) {
   char *buffer;
   long length;
-  
+
   // check type name whether it is Integer or not.
   buffer = new char[8];
   read_string(in, buffer, sizeof(buffer));
   if ( strcmp(buffer, "Integer") != 0)
-    core_io_error_handler("BigInt::read_from_file()","type name expected.");  
+    core_io_error_handler("BigInt::read_from_file()","type name expected.");
   delete[] buffer;
-  
+
   // read the bit length field.
   buffer = new char[100];
   read_string(in, buffer, sizeof(buffer));
   length = atol(buffer);
-  delete[] buffer;  
-  
+  delete[] buffer;
+
   // read bigint
   read_base_number(in, *this, length, maxLength);
 }
 
 void BigInt::writeToFile(std::ostream& out, int base, int charsPerLine) const{
-  BigInt c = CORE::abs(*this); 
-   
+  BigInt c = CORE::abs(*this);
+
   // get the absoulte value string
   char* buffer = new char[mpz_sizeinbase(c.mpz(), base) + 2];
   mpz_get_str(buffer, base, c.mpz());
   int length = strlen(buffer);
-   
-  // write type name of big number and length  
+
+  // write type name of big number and length
   //out << "# This is an experimental big number format.\n";
   out << "Integer " << length << "\n";
-   
+
   // if bigint is negative, then write an sign '-'.
   if ( sign() < 0  )
     out << '-';
-   
+
   write_base_number(out, buffer, length, base, charsPerLine);
   out << "\n";
   delete[] buffer;
@@ -264,7 +264,7 @@ void BigFloat::readFromFile (std::istream& in, long maxLength) {
   long length;
   long exponent;
   BigInt mantissa;
-  
+
   // check type name whether it is Float
   buffer = new char[6];
   read_string(in, buffer, sizeof(buffer));
@@ -272,19 +272,19 @@ void BigFloat::readFromFile (std::istream& in, long maxLength) {
     core_io_error_handler("BigFloat::read_from_file()", "type name expected");
   delete[] buffer;
 
-  // read base (default is 16384) 
+  // read base (default is 16384)
   buffer = new char[8];
   read_string(in, buffer, sizeof(buffer));
   if (strcmp(buffer, "(16384)") != 0)
     core_io_error_handler("BigFloat::read_from_file()", "base expected");
   delete[] buffer;
-  
+
   // read the bit length field.
   buffer = new char[100];
   read_string(in, buffer, sizeof(buffer));
   length = atol(buffer);
-  delete[] buffer;  
-  
+  delete[] buffer;
+
   // read exponent
   buffer = new char[100];
   read_string(in, buffer, sizeof(buffer));
@@ -293,7 +293,7 @@ void BigFloat::readFromFile (std::istream& in, long maxLength) {
 
   // read mantissa
   read_base_number(in, mantissa, length, maxLength);
-  
+
   // construct BigFloat
   *this = BigFloat(mantissa, 0, exponent);
 }
@@ -301,32 +301,32 @@ void BigFloat::readFromFile (std::istream& in, long maxLength) {
 void BigFloat::writeToFile(std::ostream& out, int base, int charsPerLine) const{
   BigInt c = CORE::abs(m());
 
-  // get the absoulte value string  
+  // get the absoulte value string
   char* buffer = new char[mpz_sizeinbase(c.mpz(), base) + 2];
   mpz_get_str(buffer, base, c.mpz());
   int length = strlen(buffer);
-   
-  
+
+
   // write type name, base, length
   //out << "# This is an experimental Big Float format." << std::endl;
   out << "Float (16384) " << length << std::endl;
   // write exponent
   out << exp() << std::endl;
-  
+
   // write mantissa
   if ( CORE::sign(m()) < 0 )
     out << '-';
-  
+
   write_base_number(out, buffer, length, base, charsPerLine);
   out << '\n';
-  delete[] buffer;  
+  delete[] buffer;
 }
 
 /* Underconstruction ----
 void BigFloat::read_from_file2(std::istream& in, long maxLength) {
   long length = 1024;
   char *buffer;
-  
+
   // check type name whether it is Float
   buffer = new char[7];
   BigInt::read_string(in, buffer, sizeof(buffer));
@@ -334,17 +334,17 @@ void BigFloat::read_from_file2(std::istream& in, long maxLength) {
     core_io_error_handler("BigFloat::read_from_file2()", "type name expected");
   delete[] buffer;
 
-  // read base (default is 16) 
+  // read base (default is 16)
   buffer = new char[5];
   BigInt::read_string(in, buffer, sizeof(buffer));
   if (strcmp(buffer, "(16)") != 0)
     core_io_error_handler("BigFloat::read_from_file2()", "base expected");
   delete[] buffer;
-  
+
   // read length field
   buffer = new char[100];
   BigInt::read_string(in, buffer, sizeof(buffer));
-  
+
   // get the length field if it is not null.
   if (buffer[0] != '\0') {
     length = atol(buffer);
@@ -362,12 +362,12 @@ void BigFloat::read_from_file2(std::istream& in, long maxLength) {
   // read mantissa
   buffer = new char[length+2];
   //BigInt::read_base_number(in, buffer, length);
- 
+
   BigInt m16(buffer);
   delete[] buffer;
-  
+
   // convert to base CHUNK_BIT
-  exp16 = exp16 - length + 1; 
+  exp16 = exp16 - length + 1;
   if ( m16.is_negative() )
     exp16 ++;
 
@@ -378,17 +378,17 @@ void BigFloat::read_from_file2(std::istream& in, long maxLength) {
     r += CHUNK_BIT;
     q --;
   }
-  
+
   BigInt mantissa = m16 << r;
   long exponent = q;
 
   // construct BigFloat
   if (--rep->refCount == 0)
     delete rep;
-  
+
   rep = new BigFloatRep(mantissa, 0, exponent);
   rep->refCount++;
-  
+
 }
 
 // write normal float
@@ -406,9 +406,9 @@ void BigFloat::write_to_file2(std::ostream& out, int base, int charsPerLine) {
     q--;
   }
   std::cout << "DEBUG: q=" << q << ", r=" << r << std::endl;
-  
+
   BigInt m16 = (rep->m) << r;
- 
+
   int size = mpz_sizeinbase(m16.I, base) + 2;
   std::cout << "size=" << size << std::endl;
   char* buffer = new char[size];
@@ -416,23 +416,23 @@ void BigFloat::write_to_file2(std::ostream& out, int base, int charsPerLine) {
   int length = bigint_to_string(m16, buffer, base);
   std::cout << "length=" << length << std::endl;
 
-  long exp16 = q + length - 1; 
+  long exp16 = q + length - 1;
   if ( m16.is_negative() )
     exp16 --;
 
   // write type name, base, length
   out << "# This is an experimental Big Float format." << std::endl;
   out << "NFloat (16) " << length << std::endl;
-  
+
   // write exponent
   out << exp16 << std::endl;
-  
+
   // write mantissa
   if ( m16.is_negative() ) {
     out << '-';
     buffer ++;
   }
-  
+
   BigInt::write_base_number(out, buffer, length, base, charsPerLine);
   out << '\n';
   delete[] buffer;

@@ -19,23 +19,23 @@ public:
 
   void set_color(const std::string & c) { color = c; }
   std::string get_color() const { return color;}
-  
+
 private:
   std::string color;
 };
 
 // building new dcel with my vertex base.
 template <class Traits>
-class Pm_my_dcel : 
+class Pm_my_dcel :
   public CGAL::Pm_dcel<Pm_my_vertex<typename Traits::Point_2>,
-               CGAL::Pm_halfedge_base<typename Traits::X_monotone_curve_2>, 
-                       CGAL::Pm_face_base> 
+               CGAL::Pm_halfedge_base<typename Traits::X_monotone_curve_2>,
+                       CGAL::Pm_face_base>
 {
 public:  // Creation
   Pm_my_dcel() { }
 };
 
-// extend the drawer to print the color as well. 
+// extend the drawer to print the color as well.
 template <class PM>
 class Pm_my_file_writer : public CGAL::Pm_file_writer<PM>
 {
@@ -45,9 +45,9 @@ public:
   typedef typename PM::Vertex_iterator           Vertex_iterator;
   typedef typename PM::Vertex_const_iterator     Vertex_const_iterator;
 
-  Pm_my_file_writer(std::ostream & o, const PM & pm, bool verbose = false) : 
+  Pm_my_file_writer(std::ostream & o, const PM & pm, bool verbose = false) :
     CGAL::Pm_file_writer<PM>(o, pm, verbose) { }
-  
+
   void write_vertex(Vertex_const_handle v) const
   {
     out() << v->point() <<"  ";
@@ -66,22 +66,22 @@ int main()
 {
   Planar_map pm;
   std::cin >> pm;
- 
+
   std::cout << "* * * Demonstrating definition of user attributes for "
             << "Planar map components" << std::endl << std::endl
             << std::endl;
-  
+
   // Update the colors for halfedge and vertex:
-  for (Vertex_iterator v_iter = pm.vertices_begin(); 
-       v_iter != pm.vertices_end(); 
+  for (Vertex_iterator v_iter = pm.vertices_begin();
+       v_iter != pm.vertices_end();
        ++v_iter)
     v_iter->set_color("BLUE");
 
  // Print the map to output stream with the user attributes:
   std::cout << "* * * Printing the Planar map" << std::endl;
   std::cout << std::endl;
-  
-  Pm_my_file_writer<Planar_map>  writer(std::cout, pm); 
+
+  Pm_my_file_writer<Planar_map>  writer(std::cout, pm);
   CGAL::write_pm(pm, writer, std::cout);
 
   return 0;

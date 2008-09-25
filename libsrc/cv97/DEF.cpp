@@ -10,13 +10,13 @@
 
 #include "DEF.h"
 
-DEF::DEF(char *name, char *string) 
+DEF::DEF(char *name, char *string)
 {
 	setName(name);
 	setString(string);
 }
 
-DEF::~DEF() 
+DEF::~DEF()
 {
 	remove();
 }
@@ -25,12 +25,12 @@ DEF::~DEF()
 //	Name
 ////////////////////////////////////////////////
 
-void DEF::setName(char *name) 
+void DEF::setName(char *name)
 {
 	mName.setValue(name);
 }
 
-char *DEF::getName() 
+char *DEF::getName()
 {
 	return mName.getValue();
 }
@@ -39,12 +39,12 @@ char *DEF::getName()
 //	String
 ////////////////////////////////////////////////
 
-void DEF::setString(char *string) 
+void DEF::setString(char *string)
 {
 	mString.setValue(string);
 }
 
-char *DEF::getString() 
+char *DEF::getString()
 {
 	return mString.getValue();
 }

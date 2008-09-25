@@ -65,15 +65,15 @@ class Optimisation_ellipse_2 {
     typedef  typename K_::FT            FT;
     typedef           CGAL::Point_2<K>  Point;
     typedef           CGAL::Conic_2<K>  Conic;
-    
+
     /**************************************************************************
     WORKAROUND: Some compilers are unable to match member functions defined
     outside the class template. Therefore, all member functions are implemented
     in the class interface.
-    
+
     // creation
     Optimisation_ellipse_2( );
-    
+
     void  set( );
     void  set( const Point& p);
     void  set( const Point& p,  const Point& q);
@@ -82,20 +82,20 @@ class Optimisation_ellipse_2 {
                const Point& p3, const Point& p4);
     void  set( const Point& p1, const Point& p2,
                const Point& p3, const Point& p4, const Point& p5);
-    
+
     // access functions
     int  number_of_boundary_points()
-    
+
     // equality tests
     bool  operator == ( const Optimisation_ellipse_2<K>& e) const;
     bool  operator != ( const Optimisation_ellipse_2<K>& e) const;
-    
+
     // predicates
     CGAL::Bounded_side  bounded_side( const Point& p) const;
     bool  has_on_bounded_side      ( const Point& p) const;
     bool  has_on_boundary          ( const Point& p) const;
     bool  has_on_unbounded_side    ( const Point& p) const;
-    
+
     bool  is_empty     ( ) const;
     bool  is_degenerate( ) const;
     **************************************************************************/
@@ -106,7 +106,7 @@ class Optimisation_ellipse_2 {
     Point  boundary_point1, boundary_point2;    // two boundary points
     Conic  conic1, conic2;                      // two conics
     RT     dr, ds, dt, du, dv, dw;              // the gradient vector
-    
+
 
 // ============================================================================
 
@@ -128,7 +128,7 @@ class Optimisation_ellipse_2 {
     {
         n_boundary_points = 0;
     }
-    
+
     inline
     void
     set( const Point& p)
@@ -136,7 +136,7 @@ class Optimisation_ellipse_2 {
         n_boundary_points = 1;
         boundary_point1   = p;
     }
-    
+
     inline
     void
     set( const Point& p, const Point& q)
@@ -145,7 +145,7 @@ class Optimisation_ellipse_2 {
         boundary_point1   = p;
         boundary_point2   = q;
     }
-    
+
     inline
     void
     set( const Point& p1, const Point& p2, const Point& p3)
@@ -153,7 +153,7 @@ class Optimisation_ellipse_2 {
         n_boundary_points = 3;
         conic1.set_ellipse( p1, p2, p3);
     }
-    
+
     inline
     void
     set( const Point& p1, const Point& p2, const Point& p3, const Point& p4)
@@ -167,7 +167,7 @@ class Optimisation_ellipse_2 {
         dv = conic1.r() * conic2.v() - conic2.r() * conic1.v(),
         dw = conic1.r() * conic2.w() - conic2.r() * conic1.w();
     }
-    
+
     inline
     void
     set( const Point&, const Point&,
@@ -186,17 +186,17 @@ class Optimisation_ellipse_2 {
     {
         return( n_boundary_points);
     }
-    
+
     Conic_2< Cartesian< double > >
     to_double( ) const
     {
         CGAL_optimisation_precondition( ! is_degenerate());
-    
+
         double t = 0.0;
-    
+
         if ( n_boundary_points == 4)
             t = conic1.vol_minimum( dr, ds, dt, du, dv, dw);
-    
+
         Conic_2<K> c( conic1);
         Conic_2< Cartesian<double> > e;
         e.set( CGAL::to_double( c.r()) + t*CGAL::to_double( dr),
@@ -205,7 +205,7 @@ class Optimisation_ellipse_2 {
                CGAL::to_double( c.u()) + t*CGAL::to_double( du),
                CGAL::to_double( c.v()) + t*CGAL::to_double( dv),
                CGAL::to_double( c.w()) + t*CGAL::to_double( dw));
-    
+
         return( e);
     }
 
@@ -216,7 +216,7 @@ class Optimisation_ellipse_2 {
     {
         if ( n_boundary_points != e.n_boundary_points)
             return( false);
-    
+
         switch ( n_boundary_points) {
           case 0:
             return( true);
@@ -241,7 +241,7 @@ class Optimisation_ellipse_2 {
         // keeps g++ happy
         return( false);
     }
-    
+
     inline
     bool
     operator != ( const Optimisation_ellipse_2<K>& e) const
@@ -287,35 +287,35 @@ class Optimisation_ellipse_2 {
         // keeps g++ happy
         return( CGAL::Bounded_side( 0));
     }
-    
+
     inline
     bool
     has_on_bounded_side( const Point& p) const
     {
         return( bounded_side( p) == CGAL::ON_BOUNDED_SIDE);
     }
-    
+
     inline
     bool
     has_on_boundary( const Point& p) const
     {
         return( bounded_side( p) == CGAL::ON_BOUNDARY);
     }
-    
+
     inline
     bool
     has_on_unbounded_side( const Point& p) const
     {
         return( bounded_side( p) == CGAL::ON_UNBOUNDED_SIDE);
     }
-    
+
     inline
     bool
     is_empty( ) const
     {
         return( n_boundary_points == 0);
     }
-    
+
     inline
     bool
     is_degenerate( ) const

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -49,9 +49,9 @@ class sb_Dq : public sb_Module
 
       /**
        Use these members to get subfield/field values.  Pass in an appropriate
-       type to receive the value.  These members will return false if the 
-       corresponding value is not set.  (It may not be set because a value 
-       was not assigned to it, or because you previously tried to assign 
+       type to receive the value.  These members will return false if the
+       corresponding value is not set.  (It may not be set because a value
+       was not assigned to it, or because you previously tried to assign
        an invalid value.)  Otherwise they will return true.
       */
       bool getComment( std::string& val ) const;
@@ -76,7 +76,7 @@ class sb_Dq : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -98,7 +98,7 @@ class sb_Dq : public sb_Module
       ///
       sb_Dq_Imp& getImp() { return *imp_; }
 
-      
+
       /// returns reference to schema
       virtual sio_8211Schema& schema_() = 0;
 
@@ -109,7 +109,7 @@ class sb_Dq : public sb_Module
    private:
 
 
-      /// NOT NEEDED 
+      /// NOT NEEDED
       sb_Dq(sb_Dq const& right);
 
       /// NOT NEEDED

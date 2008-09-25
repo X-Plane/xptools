@@ -10,7 +10,7 @@
 
 #include "DirectionalLightNode.h"
 
-DirectionalLightNode::DirectionalLightNode() 
+DirectionalLightNode::DirectionalLightNode()
 {
 	setType(directionalLightNodeString);
 
@@ -25,7 +25,7 @@ DirectionalLightNode::DirectionalLightNode()
 	addExposedField(directionField);
 }
 
-DirectionalLightNode::~DirectionalLightNode() 
+DirectionalLightNode::~DirectionalLightNode()
 {
 }
 
@@ -39,13 +39,13 @@ SFFloat *DirectionalLightNode::getAmbientIntensityField()
 		return ambientIntensityField;
 	return (SFFloat *)getExposedField(ambientIntensityFieldString);
 }
-	
-void DirectionalLightNode::setAmbientIntensity(float value) 
+
+void DirectionalLightNode::setAmbientIntensity(float value)
 {
 	getAmbientIntensityField()->setValue(value);
 }
 
-float DirectionalLightNode::getAmbientIntensity() 
+float DirectionalLightNode::getAmbientIntensity()
 {
 	return getAmbientIntensityField()->getValue();
 }
@@ -61,17 +61,17 @@ SFVec3f *DirectionalLightNode::getDirectionField()
 	return (SFVec3f *)getExposedField(directionFieldString);
 }
 
-void DirectionalLightNode::setDirection(float value[]) 
+void DirectionalLightNode::setDirection(float value[])
 {
 	getDirectionField()->setValue(value);
 }
 
-void DirectionalLightNode::setDirection(float x, float y, float z) 
+void DirectionalLightNode::setDirection(float x, float y, float z)
 {
 	getDirectionField()->setValue(x, y, z);
 }
 
-void DirectionalLightNode::getDirection(float value[]) 
+void DirectionalLightNode::getDirection(float value[])
 {
 	getDirectionField()->getValue(value);
 }
@@ -80,7 +80,7 @@ void DirectionalLightNode::getDirection(float value[])
 //	Diffuse Color
 ////////////////////////////////////////////////
 
-void DirectionalLightNode::getDiffuseColor(float value[]) 
+void DirectionalLightNode::getDiffuseColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -93,7 +93,7 @@ void DirectionalLightNode::getDiffuseColor(float value[])
 //	Ambient Color
 ////////////////////////////////////////////////
 
-void DirectionalLightNode::getAmbientColor(float value[]) 
+void DirectionalLightNode::getAmbientColor(float value[])
 {
 	getColor(value);
 	float	intensity = getIntensity();
@@ -107,12 +107,12 @@ void DirectionalLightNode::getAmbientColor(float value[])
 //	List
 ////////////////////////////////////////////////
 
-DirectionalLightNode *DirectionalLightNode::next() 
+DirectionalLightNode *DirectionalLightNode::next()
 {
 	return (DirectionalLightNode *)Node::next(getType());
 }
 
-DirectionalLightNode *DirectionalLightNode::nextTraversal() 
+DirectionalLightNode *DirectionalLightNode::nextTraversal()
 {
 	return (DirectionalLightNode *)Node::nextTraversalByType(getType());
 }
@@ -120,21 +120,21 @@ DirectionalLightNode *DirectionalLightNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool DirectionalLightNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void DirectionalLightNode::initialize() 
+void DirectionalLightNode::initialize()
 {
 }
 
-void DirectionalLightNode::uninitialize() 
+void DirectionalLightNode::uninitialize()
 {
 }
 
-void DirectionalLightNode::update() 
+void DirectionalLightNode::update()
 {
 }
 
@@ -142,7 +142,7 @@ void DirectionalLightNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void DirectionalLightNode::outputContext(ostream &printStream, char *indentString) 
+void DirectionalLightNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *bon = getOnField();
 	SFVec3f *direction = getDirectionField();

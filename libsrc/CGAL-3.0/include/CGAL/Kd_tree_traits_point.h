@@ -24,7 +24,7 @@
 
 namespace CGAL {
 
-  template <class Point_, 
+  template <class Point_,
             class Splitter=Sliding_midpoint<Point_> >
   class Kd_tree_traits_point {
 
@@ -34,7 +34,7 @@ namespace CGAL {
     typedef typename Kernel_traits<Point>::Kernel::FT NT;
     typedef typename Splitter::Container Container;
     typedef typename Splitter::Separator Separator;
-    
+
   private:
 
     unsigned int the_bucket_size;
@@ -46,13 +46,13 @@ namespace CGAL {
         //default constructor
 
 	Kd_tree_traits_point() {
-		the_bucket_size = 5;		
+		the_bucket_size = 5;
 		the_aspect_ratio = NT(3);
 		use_extended_nodes_option = true;
         }
-               
-	Kd_tree_traits_point(unsigned int bucket_size, 
-			     NT aspect_ratio=NT(3), 
+
+	Kd_tree_traits_point(unsigned int bucket_size,
+			     NT aspect_ratio=NT(3),
 			     bool use_extended_nodes=true) {
 		the_bucket_size = bucket_size;
 		the_aspect_ratio = aspect_ratio;
@@ -60,13 +60,13 @@ namespace CGAL {
 	}
 
     	NT aspect_ratio() const {return the_aspect_ratio;}
-	
+
         unsigned int bucket_size() const {return the_bucket_size;}
 	bool use_extended_nodes() const {return use_extended_nodes_option;}
 
 	// split c0 in c0 and c1
     	void split(Separator& sep,
-    	           Container& c0, Container& c1) 
+    	           Container& c0, Container& c1)
 	{
 		Splitter S;
 		S(sep,c0,c1,the_aspect_ratio);
@@ -74,6 +74,6 @@ namespace CGAL {
 
   };
 
-  
+
 } // namespace CGAL
 #endif // KD_TREE_TRAITS_POINT_H

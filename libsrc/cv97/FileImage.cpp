@@ -21,7 +21,7 @@ FileImage::~FileImage()
 {
 }
 
-bool FileImage::isOk() 
+bool FileImage::isOk()
 {
 	if (0 < getWidth() && 0 < getHeight() && getImage())
 		return true;

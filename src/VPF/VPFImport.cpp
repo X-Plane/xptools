@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@
 // VPF coordinates at 0.0 are not exactly 0 - but they are close, so we must round them down.
 
 // A note on skipping: it is possible for a node to be in a VPF tile but not link to any actual entity in the tile (e.g. not link to any
-// halfedge) because it is a corner that touches the cut line and there is no boundary inserted around the tile.  Therefore 
+// halfedge) because it is a corner that touches the cut line and there is no boundary inserted around the tile.  Therefore
 // we need to blow this node off - skip allows us to track this.
 
 struct VPF_Node : public WTPM_Node {
@@ -49,25 +49,25 @@ struct VPF_Line : public WTPM_Line {
 	int		right_fac_index;
 	int		left_edg_index;
 	int		right_edg_index;
-	Point2	start_node_pt;			// Some VPF data is missing node coordinates on the nodes themselves. 
+	Point2	start_node_pt;			// Some VPF data is missing node coordinates on the nodes themselves.
 	Point2	end_node_pt;			// Copy it from the lines via this.
-	
+
 	bool	is_loop(void) const 			{ return start_cnd_index == end_cnd_index; }
-	
-	int			he_param;	
+
+	int			he_param;
 	int			he_trans_flags;
 };
-	
+
 struct VPF_Face : public WTPM_Face {
 	vector<int>	edg_index;
-	
+
 	int			terrain_type;
 	set<int>	area_features;
 };
-	
+
 struct	StMemFile {
-	StMemFile(const char * p) : f_(MemFile_Open(p)) 
-	{ 
+	StMemFile(const char * p) : f_(MemFile_Open(p))
+	{
 		if (f_ == NULL)
 		{
 			string fname(p);
@@ -152,15 +152,15 @@ static bool FindColumn(const VPF_TableDef& header, const char * column, int& ind
 			return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
-static bool GetVPFLink(VPFTableIterator& iter, const VPF_TableDef& header, int row, int& value) 
+static bool GetVPFLink(VPFTableIterator& iter, const VPF_TableDef& header, int row, int& value)
 {
 	if (header.IsFieldInt(row)) return iter.GetNthFieldAsInt(row, value);
 	VPF_TripletKey key;
-	
-	if (header.IsFieldTripletKey(row)) 
+
+	if (header.IsFieldTripletKey(row))
 	{
 		if (iter.GetNthFieldAsTripletKey(row, key))
 		{
@@ -173,21 +173,21 @@ static bool GetVPFLink(VPFTableIterator& iter, const VPF_TableDef& header, int r
 }
 
 bool	VPFImportTopo3(
-					const char * 		inCoverageDir, 
-					const char * 		inTile, 
+					const char * 		inCoverageDir,
+					const char * 		inTile,
 					Pmwx& 				ioMap,
 					bool				inHasTopo,
-					VPF_LineRule_t * 	inLineRules, 
+					VPF_LineRule_t * 	inLineRules,
 					VPF_FaceRule_t * 	inFaceRules,
 					int *				inTransTable)
 {
 	char	tilePath[1024], thePath[1024];
 	char	tileMajorX[2] = { inTile[0], 0 };
-	char	tileMajorY[2] = { inTile[1], 0 };	
+	char	tileMajorY[2] = { inTile[1], 0 };
 	bool		ok = true;
 	MFMemFile *	mem = NULL;
 	int		expected_row, row_num, foreign_key, i, j;
-	
+
 	strcpy(tilePath, inCoverageDir);
 	strcat(tilePath, DIR_STR);
 	strcat(tilePath, tileMajorX);
@@ -197,14 +197,14 @@ bool	VPFImportTopo3(
 	if (inTile[2] != 0)
 	{
 		char	tileMinorX[2] = { inTile[2], 0 };
-		char	tileMinorY[2] = { inTile[3], 0 };	
+		char	tileMinorY[2] = { inTile[3], 0 };
 		strcat(tilePath, tileMinorX);
 		strcat(tilePath, DIR_STR);
 		strcat(tilePath, tileMinorY);
 		strcat(tilePath, DIR_STR);
-		
+
 	}
-	
+
 	vector<VPF_Node>	nodes;
 	vector<VPF_Line>	lines;
 	vector<VPF_Face>	faces;
@@ -222,7 +222,7 @@ bool	VPFImportTopo3(
 	int					numLines = 0;
 	int					numFaces = 0;
 	{
-		set<string>			tables;			// Every attribute table we need to read.	
+		set<string>			tables;			// Every attribute table we need to read.
 		string				strAttr;
 		int					intAttr;
 		int					id_col;
@@ -237,12 +237,12 @@ bool	VPFImportTopo3(
 			tables.insert(inFaceRules[numFaces].table);
 			++numFaces;
 		}
-		
+
 		lineMatches.resize(numLines);
 		faceMatches.resize(numFaces);
 		lineColumns.resize(numLines);
 		faceColumns.resize(numFaces);
-		
+
 		for(set<string>::iterator tableIter = tables.begin(); tableIter != tables.end(); ++tableIter)
 		{
 			strcpy(thePath, inCoverageDir);
@@ -251,10 +251,10 @@ bool	VPFImportTopo3(
 			StMemFile		theTable(thePath);
 			VPF_TableDef	tableDef;
 
-			if (!theTable()) { printf("Could not open '%s'\n", thePath); return false; }		
-			if (!ReadVPFTableHeader(theTable, tableDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }		
+			if (!theTable()) { printf("Could not open '%s'\n", thePath); return false; }
+			if (!ReadVPFTableHeader(theTable, tableDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }
 			if (!FindColumn(tableDef, "id", id_col, require_Int, thePath)) return false;
-		
+
 			for (i = 0; i < numLines; ++i)
 			if (*tableIter == inLineRules[i].table)
 			{
@@ -263,7 +263,7 @@ bool	VPFImportTopo3(
 				} else {
 					if (!FindColumn(tableDef, inLineRules[i].attr_column, lineColumns[i], require_Int, thePath)) return false;
 				}
-			}					
+			}
 
 			for (i = 0; i < numFaces; ++i)
 			if (*tableIter == inFaceRules[i].table)
@@ -273,7 +273,7 @@ bool	VPFImportTopo3(
 				} else {
 					if (!FindColumn(tableDef, inFaceRules[i].attr_column, faceColumns[i], require_Int, thePath)) return false;
 				}
-			}					
+			}
 
 			expected_row = 1;
 			for (VPFTableIterator tableRowIter(theTable, tableDef); !tableRowIter.Done(); tableRowIter.Next(), ++expected_row)
@@ -293,7 +293,7 @@ bool	VPFImportTopo3(
 						if (intAttr == inLineRules[i].ival)
 							lineMatches[i].insert(expected_row);
 					}
-				}					
+				}
 
 				for (i = 0; i < numFaces; ++i)
 				if (*tableIter == inFaceRules[i].table)
@@ -308,11 +308,11 @@ bool	VPFImportTopo3(
 						if (intAttr == inFaceRules[i].ival)
 							faceMatches[i].insert(expected_row);
 					}
-				}					
-			}			
+				}
+			}
 		}
 	}
-	
+
 	/****************************************************************************************
 	 * CONNECTED NODES (CND)
 	 ****************************************************************************************/
@@ -320,33 +320,33 @@ bool	VPFImportTopo3(
 		printf("Importing points...\n");
 		strcpy(thePath, tilePath);
 		strcat(thePath, "cnd");
-	
+
 		StMemFile			cnd(thePath);
 		VPF_TableDef		cndDef;
 		if (!cnd()) { printf("Could not open '%s'\n", thePath); return false; }
-		
+
 		if (!ReadVPFTableHeader(cnd, cndDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }
-		
+
 		int cnd_id;
 		int cnd_first_edge;
-		
+
 		if (!FindColumn(cndDef, "id", cnd_id, require_Int, thePath)) return false;
 		if (!FindColumn(cndDef, "first_edge", cnd_first_edge, require_Link, thePath)) return false;
-		
+
 		expected_row = 1;
 		for (VPFTableIterator cndIter(cnd, cndDef); !cndIter.Done(); cndIter.Next(), ++expected_row)
 		{
 			if (!cndIter.GetNthFieldAsInt(cnd_id, row_num)) { printf("Could not read id on row %d of '%s'\n", expected_row, thePath); return false; }
-			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }			
+			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }
 			if (!GetVPFLink(cndIter, cndDef, cnd_first_edge, foreign_key)) { printf("Could not read first_edge on row %d of '%s'\n", expected_row, thePath); return false; }
-			
+
 			nodes.push_back(VPF_Node());
 			nodes.back().edg_index = foreign_key-1;
 			nodes.back().skip = foreign_key == 0;
-			
+
 		}
 	}
-	
+
 	/****************************************************************************************
 	 * EDGES (EDG)
 	 ****************************************************************************************/
@@ -354,14 +354,14 @@ bool	VPFImportTopo3(
 		printf("Importing lines...\n");
 		strcpy(thePath, tilePath);
 		strcat(thePath, "edg");
-	
+
 		StMemFile			edg(thePath);
 		VPF_TableDef		edgDef;
 		vector<Point2>		edgPts;
 		if (!edg()) { printf("Could not open '%s'\n", thePath); return false; }
-		
+
 		if (!ReadVPFTableHeader(edg, edgDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }
-		
+
 		int edg_id, edg_start_node, edg_end_node, edg_right_face, edg_left_face, edg_coordinates;
 		int edg_right_edge, edg_left_edge, lin_attr_ref;
 		if (!FindColumn(edgDef, "id", edg_id, require_Int, thePath)) return false;
@@ -380,34 +380,34 @@ bool	VPFImportTopo3(
 		for (VPFTableIterator edgIter(edg, edgDef); !edgIter.Done(); edgIter.Next(), ++expected_row)
 		{
 			if (!edgIter.GetNthFieldAsInt(edg_id, row_num)) { printf("Could not read id on row %d of '%s'\n", expected_row, thePath); return false; }
-			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }			
+			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }
 			lines.push_back(VPF_Line());
 
 			if (inHasTopo) {
-			if (!GetVPFLink(edgIter, edgDef, edg_left_face, foreign_key)) { printf("Could not read left_face on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_left_face, foreign_key)) { printf("Could not read left_face on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().left_fac_index = foreign_key-1;
-			if (!GetVPFLink(edgIter, edgDef, edg_right_face, foreign_key)) { printf("Could not read right_face on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_right_face, foreign_key)) { printf("Could not read right_face on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().right_fac_index = foreign_key-1;
 			}
-			if (!GetVPFLink(edgIter, edgDef, edg_left_edge, foreign_key)) { printf("Could not read left_edge on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_left_edge, foreign_key)) { printf("Could not read left_edge on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().left_edg_index = foreign_key-1;
-			if (!GetVPFLink(edgIter, edgDef, edg_right_edge, foreign_key)) { printf("Could not read right_edge on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_right_edge, foreign_key)) { printf("Could not read right_edge on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().right_edg_index = foreign_key-1;
-			if (!GetVPFLink(edgIter, edgDef, edg_start_node, foreign_key)) { printf("Could not read start_node on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_start_node, foreign_key)) { printf("Could not read start_node on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().start_cnd_index = foreign_key-1;
-			if (!GetVPFLink(edgIter, edgDef, edg_end_node, foreign_key)) { printf("Could not read end_node on row %d of '%s'\n", expected_row, thePath); return false; }			
+			if (!GetVPFLink(edgIter, edgDef, edg_end_node, foreign_key)) { printf("Could not read end_node on row %d of '%s'\n", expected_row, thePath); return false; }
 			lines.back().end_cnd_index = foreign_key-1;
-			
+
 			if (!edgIter.GetNthFieldAsCoordPairArray(edg_coordinates, edgPts)) { printf("Could not read edge coordinates on row %s of '%s'\n", expected_row, thePath); return false; }
 			if (edgPts.size() < 2) { printf("Less than two pts for edge on row %s of '%s'\n", expected_row, thePath); return false; }
-			
+
 			lines.back().start_node_pt = edgPts.front();
 			lines.back().end_node_pt = edgPts.back();
 			lines.back().shape = edgPts;
 			NukeDupePts(lines.back().shape);
 			lines.back().he_trans_flags = 0;
 			lines.back().he_param = NO_VALUE;
-			
+
 			for (i = 0; i < numLines; ++i)
 			{
 				if (!edgIter.GetNthFieldAsInt(lineColumns[i], lin_attr_ref)) { printf("Could not read col %d of row %d as int in file %s\n", lineColumns[i], expected_row, thePath); return false; }
@@ -420,8 +420,8 @@ bool	VPFImportTopo3(
 						lines.back().he_trans_flags |= inLineRules[i].he_trans_flags;
 				}
 			}
-			
-		}	
+
+		}
 	}
 
 	/****************************************************************************************
@@ -432,29 +432,29 @@ bool	VPFImportTopo3(
 		printf("Importing faces...\n");
 		strcpy(thePath, tilePath);
 		strcat(thePath, "fac");
-	
+
 		StMemFile			fac(thePath);
 		VPF_TableDef		facDef;
 		if (!fac()) { printf("Could not open '%s'\n", thePath); return false; }
-		
+
 		if (!ReadVPFTableHeader(fac, facDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }
-		
+
 		int fac_id, fac_attr_ref;
-		
+
 		if (!FindColumn(facDef, "id", fac_id, require_Int, thePath)) return false;
 		for (i = 0; i < numFaces; ++i)
 			if (!FindColumn(facDef, inFaceRules[i].ref_column, faceColumns[i], require_Int, thePath)) return false;
-		
+
 		expected_row = 1;
 		for (VPFTableIterator facIter(fac, facDef); !facIter.Done(); facIter.Next(), ++expected_row)
 		{
 			if (!facIter.GetNthFieldAsInt(fac_id, row_num)) { printf("Could not read id on row %d of '%s'\n", expected_row, thePath); return false; }
-			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }			
-			
+			if (row_num != expected_row) { printf("Row numbers in table '%s' are not consecutive one-based.\n", thePath); return false; }
+
 			faces.push_back(VPF_Face());
 			faces.back().isWorld = (expected_row == 1);
 			faces.back().terrain_type = terrain_Natural;
-			
+
 			for (i = 0; i < numFaces; ++i)
 			{
 				if (!facIter.GetNthFieldAsInt(faceColumns[i], fac_attr_ref)) { printf("Could not read col %d of row %d as int in file %s\n", faceColumns[i], expected_row, thePath); return false; }
@@ -476,67 +476,67 @@ bool	VPFImportTopo3(
 		printf("Importing Rings...\n");
 		strcpy(thePath, tilePath);
 		strcat(thePath, "rng");
-	
+
 		StMemFile			rng(thePath);
 		VPF_TableDef		rngDef;
 		if (!rng()) { printf("Could not open '%s'\n", thePath); return false; }
-		
+
 		if (!ReadVPFTableHeader(rng, rngDef)) { printf("Could not read VPF header for '%s'\n", thePath); return false; }
-		
+
 		int face_id, start_edge_index;
-		
+
 		if (!FindColumn(rngDef, "face_id", face_id, require_Int, thePath)) return false;
 		if (!FindColumn(rngDef, "start_edge", start_edge_index, require_Int, thePath)) return false;
-		
+
 		for (VPFTableIterator rngIter(rng, rngDef); !rngIter.Done(); rngIter.Next())
 		{
 			int	the_face, the_edge;
 			if (!rngIter.GetNthFieldAsInt(face_id, the_face)) { printf("Could not read face_id on row %d of '%s'\n", expected_row, thePath); return false; }
 			if (!rngIter.GetNthFieldAsInt(start_edge_index, the_edge)) { printf("Could not start_edge face_id on row %d of '%s'\n", expected_row, thePath); return false; }
-			
+
 			if (the_edge != 0x80000000)
 				faces[the_face-1].edg_index.push_back(the_edge-1);
 		}
-	}	
-	
+	}
+
 	/****************************************************************************************
 	 * TOPOLOGICAL IMPORT
-	 ****************************************************************************************/	
+	 ****************************************************************************************/
 	if (inHasTopo)
 	{
 		WTPM_LineVector		wtpm_lines(lines.size());
 		WTPM_NodeVector		wtpm_nodes(nodes.size());
 		WTPM_FaceVector		wtpm_faces(faces.size());
-		
+
 		printf("Setting up pointers...\n");
 		for (i = 0; i < lines.size(); ++i)
 		{
-			wtpm_lines[i] = &lines[i];		
-			
+			wtpm_lines[i] = &lines[i];
+
 			VPF_Line&	me = 	lines[i];
 			VPF_Line&	left =	lines[lines[i].left_edg_index];
 			VPF_Line&	right =	lines[lines[i].right_edg_index];
-			
+
 			lines[i].leftFace = &faces[lines[i].left_fac_index];
 			lines[i].rightFace = &faces[lines[i].right_fac_index];
 
 			lines[i].startNode = &nodes[lines[i].start_cnd_index];
 			lines[i].endNode = &nodes[lines[i].end_cnd_index];
-			
+
 			lines[i].startNode->location = lines[i].start_node_pt;
 			lines[i].endNode->location = lines[i].end_node_pt;
 
 			// this is a little bit tricky - VPF's idea of "right and left" are OPPOSITE of ours -
 			// basically the one-way pointers are reversed.
-			
+
 			// Figure out linkage from my "next left" ptr.
 			if (left.end_cnd_index == me.start_cnd_index && left.start_cnd_index == me.start_cnd_index)
 			{
 				if (me.left_fac_index == left.left_fac_index)
-					left.nextLeft = WTPM_DirectedLinePtr(&me, true);				
+					left.nextLeft = WTPM_DirectedLinePtr(&me, true);
 				else
-					left.nextRight = WTPM_DirectedLinePtr(&me, true);				
-			} 
+					left.nextRight = WTPM_DirectedLinePtr(&me, true);
+			}
 			else if (left.end_cnd_index == me.start_cnd_index)
 			{
 				left.nextLeft = WTPM_DirectedLinePtr(&me, true);
@@ -549,7 +549,7 @@ bool	VPFImportTopo3(
 			{
 				printf("ERROR: left edge does not share a vertex with my start node.\n");
 			}
-			
+
 			// Figure out linkage from my "next right" ptr
 			if (right.end_cnd_index == me.end_cnd_index && right.start_cnd_index == me.end_cnd_index)
 			{
@@ -557,7 +557,7 @@ bool	VPFImportTopo3(
 					right.nextRight = WTPM_DirectedLinePtr(&me, false);
 				else
 					right.nextLeft = WTPM_DirectedLinePtr(&me, false);
-			} 
+			}
 			else if (right.end_cnd_index == me.end_cnd_index)
 			{
 				right.nextLeft = WTPM_DirectedLinePtr(&me, false);
@@ -568,10 +568,10 @@ bool	VPFImportTopo3(
 			}
 			else
 			{
-				printf("ERROR: right edge does not share a vertex with my end node.\n");		
-			}		
+				printf("ERROR: right edge does not share a vertex with my end node.\n");
+			}
 		}
-		
+
 		for (i = 0; i < faces.size(); ++i)
 		{
 			wtpm_faces[i] = &faces[i];
@@ -585,10 +585,10 @@ bool	VPFImportTopo3(
 					faces[i].outerRing = &lines[faces[i].edg_index[k]];
 				else
 					faces[i].innerRings.push_back(&lines[faces[i].edg_index[k]]);
-				
-			}		
+
+			}
 		}
-		
+
 		for (i = 0, j = 0; i < nodes.size(); ++i)
 		{
 			if (!nodes[i].skip)
@@ -597,19 +597,19 @@ bool	VPFImportTopo3(
 	//			printf("Bad key %d on node %d.\n", nodes[i].edg_index, i);
 		}
 		wtpm_nodes.resize(j);
-		
+
 
 		printf("Building map...\n");
 		WTPM_ExportToMap(wtpm_nodes, wtpm_lines, wtpm_faces, ioMap);
-		
+
 		printf("Read %d nodes.\n", nodes.size());
 		printf("Read %d lines.\n", lines.size());
 		printf("Read %d faces.\n", faces.size());
-	}	
-	
+	}
+
 	/****************************************************************************************
 	 * NON-TOPOLOGICAL IMPORT
-	 ****************************************************************************************/	
+	 ****************************************************************************************/
 	if (!inHasTopo)
 	{
 		int	slow = 0, fast = 0;
@@ -617,12 +617,12 @@ bool	VPFImportTopo3(
 		{
 			nodes[i].pm_vertex = NULL;
 		}
-		
+
 		for (i = 0; i < lines.size(); ++i)
 		{
 			lines[i].startNode = &nodes[lines[i].start_cnd_index];
 			lines[i].endNode = &nodes[lines[i].end_cnd_index];
-			
+
 			lines[i].startNode->location = lines[i].start_node_pt;
 			lines[i].endNode->location = lines[i].end_node_pt;
 		}
@@ -651,7 +651,7 @@ bool	VPFImportTopo3(
 					++fast;
 				}
 			}
-			
+
 			if (lines[i].startNode->pm_vertex == NULL)
 				lines[i].startNode->pm_vertex = lines[i].pm_edges.first.front()->twin()->target();
 			if (lines[i].endNode->pm_vertex == NULL)
@@ -662,7 +662,7 @@ bool	VPFImportTopo3(
 
 	/****************************************************************************************
 	 * APPLY ATTRIBUTE CRAP
-	 ****************************************************************************************/	
+	 ****************************************************************************************/
 
 	printf("Applying attributes to %d faces, %d lines...\n", faces.size(), lines.size());
 	for (i = 0; i < faces.size(); ++i)
@@ -686,7 +686,7 @@ bool	VPFImportTopo3(
 			for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
 			if ((*he)->mDominant)
 				(*he)->mParams[lines[i].he_param] = 0.0;
-		}		
+		}
 
 		if (inTransTable && lines[i].he_trans_flags)
 		{
@@ -709,26 +709,26 @@ bool	VPFImportTopo3(
 						(*he)->mSegments.push_back(seg);
 				}
 			}
-		}		
+		}
 	}
-	
-	
-	
+
+
+
 	return true;
 }
 
 
-/* 
-edge table 
-  0 id                I    1 P Row Identifier                                     -              -              -             
-   1 aquecanl.lft_id   I    1 N Line Feature Table ID                              -              -              -             
-   2 watrcrsl.lft_id   I    1 N Line Feature Table ID                              -              -              -             
-   3 start_node        I    1 N Start/Left Node                                    -              -              -             
-   4 end_node          I    1 N End/Right Node                                     -              -              -             
-   5 right_face        K    1 N Right Face                                         -              -              -             
-   6 left_face         K    1 N Left Face                                          -              -              -             
-   7 right_edge        K    1 N Right Edge from End Node                           -              -              -             
-   8 left_edge         K    1 N Left Edge from Start Node                          -              -              -             
-   9 coordinates       Z    0 N Coordinates of Edge                                -              -              -             
+/*
+edge table
+  0 id                I    1 P Row Identifier                                     -              -              -
+   1 aquecanl.lft_id   I    1 N Line Feature Table ID                              -              -              -
+   2 watrcrsl.lft_id   I    1 N Line Feature Table ID                              -              -              -
+   3 start_node        I    1 N Start/Left Node                                    -              -              -
+   4 end_node          I    1 N End/Right Node                                     -              -              -
+   5 right_face        K    1 N Right Face                                         -              -              -
+   6 left_face         K    1 N Left Face                                          -              -              -
+   7 right_edge        K    1 N Right Edge from End Node                           -              -              -
+   8 left_edge         K    1 N Left Edge from Start Node                          -              -              -
+   9 coordinates       Z    0 N Coordinates of Edge                                -              -              -
 
 */

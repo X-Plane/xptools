@@ -3,7 +3,7 @@
  *
  * This file is part of Jam - see jam.c for Copyright information.
  */
- 
+
 /*  This file is ALSO:
  *  (C) Copyright David Abrahams 2001. Permission to copy, use,
  *  modify, sell and distribute this software is granted provided this
@@ -48,10 +48,10 @@
 void CopyC2PStr(const char * cstr, StringPtr pstr)
 {
 	int	len;
-	
+
 	for (len = 0; *cstr && len<255; pstr[++len] = *cstr++)
 		;
-	
+
 	pstr[0] = len;
 }
 
@@ -60,7 +60,7 @@ void CopyC2PStr(const char * cstr, StringPtr pstr)
  */
 
 void
-file_dirscan( 
+file_dirscan(
 	char	*dir,
 	scanback func,
 	void	*closure )
@@ -71,10 +71,10 @@ file_dirscan(
 
     FSSpec spec;
     WDPBRec vol;
-    Str63 volName;	
+    Str63 volName;
     CInfoPBRec lastInfo;
     int index = 1;
-	
+
     /* First enter directory itself */
 
     memset( (char *)&f, '\0', sizeof( f ) );
@@ -84,7 +84,7 @@ file_dirscan(
 
     if( DEBUG_BINDSCAN )
         printf( "scan directory %s\n", dir );
-		
+
     /* Special case ":" - enter it */
 
     if( f.f_dir.len == 1 && f.f_dir.ptr[0] == ':' )
@@ -93,21 +93,21 @@ file_dirscan(
     /* Now enter contents of directory */
 
     vol.ioNamePtr = volName;
-	
+
     if( PBHGetVolSync( &vol ) )
         return;
 
     CopyC2PStr( dir, fullPath );
-	
+
     if( FSMakeFSSpec( vol.ioWDVRefNum, vol.ioWDDirID, fullPath, &spec ) )
         return;
-	
+
     lastInfo.dirInfo.ioVRefNum 	= spec.vRefNum;
     lastInfo.dirInfo.ioDrDirID 	= spec.parID;
     lastInfo.dirInfo.ioNamePtr 	= spec.name;
     lastInfo.dirInfo.ioFDirIndex 	= 0;
     lastInfo.dirInfo.ioACUser 	= 0;
-			
+
     if( PBGetCatInfoSync(&lastInfo) )
         return;
 
@@ -115,7 +115,7 @@ file_dirscan(
         return;
 
     // ioDrDirID must be reset each time.
-	
+
     spec.parID = lastInfo.dirInfo.ioDrDirID;
 
     string_new( filename );
@@ -125,10 +125,10 @@ file_dirscan(
         lastInfo.dirInfo.ioDrDirID	= spec.parID;
         lastInfo.dirInfo.ioNamePtr 	= fullPath;
         lastInfo.dirInfo.ioFDirIndex = index++;
-	   		
+
         if( PBGetCatInfoSync(&lastInfo) )
             return;
-			
+
         f.f_base.ptr = (char *)fullPath + 1;
         f.f_base.len = *fullPath;
 
@@ -144,7 +144,7 @@ file_dirscan(
  */
 
 int
-file_time( 
+file_time(
 	char	*filename,
 	time_t	*time )
 {
@@ -154,7 +154,7 @@ file_time(
 	    return -1;
 
 	*time = statbuf.st_mtime;
-	
+
 	return 0;
 }
 

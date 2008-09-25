@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: MemHandler.cpp
  *
  *  This source file is part of DIME.
@@ -64,12 +64,12 @@ class dimeMemNode
 {
   friend class dimeMemHandler;
 public:
-  dimeMemNode(const int numbytes, dimeMemNode *next_node) 
+  dimeMemNode(const int numbytes, dimeMemNode *next_node)
     : next( next_node ), currPos( 0 ), size( numbytes )
   {
     this->block = (unsigned char*)malloc(numbytes);
   }
-  
+
   ~dimeMemNode()
   {
     free((void*)this->block);
@@ -79,13 +79,13 @@ public:
   {
     return (this->block != NULL);
   }
-  
+
   void *alloc(const int numbytes, const int alignment)
   {
     unsigned int mask = alignment - 1;
     unsigned char *ret = NULL;
     if (alignment > 1) {
-      if (this->currPos & mask) 
+      if (this->currPos & mask)
 	this->currPos = (this->currPos & ~mask) + alignment;
     }
     if (this->currPos + numbytes <= this->size) {
@@ -121,7 +121,7 @@ dimeMemHandler::~dimeMemHandler()
 {
   dimeMemNode *curr = this->memnode;
   dimeMemNode *next;
-  
+
   while (curr) {
     next = curr->next;
     delete curr;
@@ -133,11 +133,11 @@ dimeMemHandler::~dimeMemHandler()
     next = curr->next;
     delete curr;
     curr = next;
-  } 
+  }
 }
 
 /*!
-  Bullshit function.  Can be called right after constructor 
+  Bullshit function.  Can be called right after constructor
   to test if initial memory was allocated ok.
 */
 
@@ -164,11 +164,11 @@ dimeMemHandler::stringAlloc(const char * const string)
 }
 
 /*!
-  Allocates a chunk (\a size) of memory. Memory is allocates in big 
+  Allocates a chunk (\a size) of memory. Memory is allocates in big
   blocks. New blocks of memory is allocated whenever needed, and
-  is handled automatically. The returned pointer is aligned according 
-  to the \a alignment argument. The default alignment is four bytes, 
-  but when compiled on 64 bits systems the default alignment 
+  is handled automatically. The returned pointer is aligned according
+  to the \a alignment argument. The default alignment is four bytes,
+  but when compiled on 64 bits systems the default alignment
   should probably be changed to eight.
 */
 

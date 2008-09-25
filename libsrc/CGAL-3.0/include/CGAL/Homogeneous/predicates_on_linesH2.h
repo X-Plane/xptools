@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_PREDICATES_ON_LINESH2_H
 #define CGAL_PREDICATES_ON_LINESH2_H
 
@@ -197,10 +197,10 @@ compare_slopes(const LineH2<R>& l1, const LineH2<R>& l2)
 {
    typedef typename R::RT RT;
    if (l1.is_horizontal())
-     return l2.is_vertical() ? 
+     return l2.is_vertical() ?
          SMALLER : Comparison_result(CGAL_NTS sign<RT>(l2.a() * l2.b()));
-   if (l2.is_horizontal()) 
-     return l1.is_vertical() ? 
+   if (l2.is_horizontal())
+     return l1.is_vertical() ?
          LARGER : Comparison_result(- CGAL_NTS sign<RT>(l1.a() * l1.b()));
    if (l1.is_vertical()) return l2.is_vertical() ? EQUAL : LARGER;
    if (l2.is_vertical()) return SMALLER;

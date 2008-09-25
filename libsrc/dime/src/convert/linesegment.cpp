@@ -37,12 +37,12 @@
 #endif
 
 //
-// line_intersection. bounds are not checked, 
+// line_intersection. bounds are not checked,
 // just unlimited lines
 //
-bool 
+bool
 intersect_line(const dimeVec3f &v0, // first line
-	       const dimeVec3f &v1, //    ""	 
+	       const dimeVec3f &v1, //    ""
 	       const dimeVec3f &v2, // second line
 	       const dimeVec3f &v3, //    ""
 	       dimeVec3f &isect)
@@ -55,9 +55,9 @@ intersect_line(const dimeVec3f &v0, // first line
   dxfdouble y3 = v2[1];
   dxfdouble x4 = v3[0];
   dxfdouble y4 = v3[1];
-  
+
   dxfdouble Ax,Bx,Cx,Ay,By,Cy,d,f,num;
-  
+
   Ax = x2-x1;
   Bx = x3-x4;
   Ay = y2-y1;
@@ -68,10 +68,10 @@ intersect_line(const dimeVec3f &v0, // first line
   f = Ay*Bx - Ax*By;   // both denominator
 
   // compute intersection coordinates
-  
+
   // check if lines are colinear
   if (f==0.0) { // should never happen
-    isect = v1; // just set some value 
+    isect = v1; // just set some value
     return false;
   }
   num = d*Ax;
@@ -98,7 +98,7 @@ intersect_line(const dimeVec3f &v0, // first line
   of the line segment.
 */
 
-void 
+void
 dxfLineSegment::set(const dimeVec3f &p0, const dimeVec3f &p1,
 		    const dxfdouble startwidth, const dxfdouble endwidth,
 		    const dxfdouble thickness)
@@ -120,12 +120,12 @@ dxfLineSegment::set(const dimeVec3f &p0, const dimeVec3f &p1,
   Converts the line segment to geometry, and puts the geometry into
   \a layerData.
  */
-void 
+void
 dxfLineSegment::convert(dxfLineSegment *prev, dxfLineSegment *next,
 			dxfLayerData *layerData, dimeMatrix *matrix)
-{  
+{
   this->calculate_v();
-  
+
   if (this->w[0] > 0.0 || this->w[1] > 0.0) {
 
     /* fixme: check cases where connect[0] != connect[3] ++ */
@@ -148,12 +148,12 @@ dxfLineSegment::convert(dxfLineSegment *prev, dxfLineSegment *next,
       v1 = this->v[1];
       v3 = this->v[3];
     }
-    
+
     layerData->addQuad(v0, v1, v3, v2, matrix);
-    
-    if (thickness != 0.0) {   
+
+    if (thickness != 0.0) {
       layerData->addQuad(v0+e, v1+e, v3+e, v2+e, matrix);
-      layerData->addQuad(v0, v1, v1+e, v0+e, matrix); 
+      layerData->addQuad(v0, v1, v1+e, v0+e, matrix);
       if (!next) layerData->addQuad(v1, v3, v3+e, v1+e, matrix);
       layerData->addQuad(v3, v2, v2+e, v3+e, matrix);
       if (!prev) layerData->addQuad(v2, v0, v0+e, v2+e, matrix);
@@ -161,7 +161,7 @@ dxfLineSegment::convert(dxfLineSegment *prev, dxfLineSegment *next,
   }
   else {
     if (thickness != 0.0) {
-      layerData->addQuad(p[0], p[1], p[1]+e, p[0]+e, matrix); 
+      layerData->addQuad(p[0], p[1], p[1]+e, p[0]+e, matrix);
     }
     else {
       layerData->addLine(p[0], p[1], matrix);
@@ -192,13 +192,13 @@ dxfLineSegment::calculate_v()
 // private method that calculates the intersection points between
 // line segments.
 //
-void 
+void
 dxfLineSegment::calculate_connect(dxfLineSegment *next)
 {
   if (!(this->flags & FLAG_CONNECT_CALCULATED)) {
     this->calculate_v(); /* make sure these are caluclated */
     next->calculate_v();
-    
+
     dxfdouble angle = this->dir.angle(next->dir);
 
     //
@@ -206,27 +206,27 @@ dxfLineSegment::calculate_connect(dxfLineSegment *next)
     // intersection even if widths are unequal
     //
     if ((this->w[1] == next->w[0]) || (DXFRAD2DEG(angle) > 28)) {
-      // connect where lines intersect. common intersection points      
+      // connect where lines intersect. common intersection points
       dimeVec3f isect;
-      intersect_line(this->v[0], this->v[1], 
+      intersect_line(this->v[0], this->v[1],
 		     next->v[0], next->v[1],
 		     isect);
       this->connect[0] = this->connect[2] = isect;
 
-      intersect_line(this->v[2], this->v[3], 
+      intersect_line(this->v[2], this->v[3],
 		     next->v[2], next->v[3],
 		     isect);
       this->connect[1] = this->connect[3] = isect;
     }
     else {
       dimeVec3f vec = this->wdir + next->wdir + this->p[1];
-      
+
       dimeVec3f isect;
       intersect_line(this->v[0], this->v[1],
 		     this->p[1], vec,
 		     isect);
       this->connect[0] = isect;
-      
+
       intersect_line(next->v[0], next->v[1],
 		     this->p[1], vec,
 		     isect);

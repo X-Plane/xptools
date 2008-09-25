@@ -62,7 +62,7 @@ protected:
 
   void mousePressEvent(QMouseEvent *e)
   {
-    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON 
+    if(e->button() == CGAL_QT_WIDGET_GET_POINT_BUTTON
        && !firstpoint
        && is_pure(e->state()))
     {
@@ -82,7 +82,7 @@ protected:
       if(x1!=x || y1!=y) {
         widget->new_object(make_object(Line(Point(x1,y1),Point(x,y))));
         firstpoint = FALSE;
-      }    
+      }
     }
   }
 
@@ -174,7 +174,7 @@ protected:
   bool	firstpoint, //true if the user left clicked once
 	firsttime;  //true if the line is not drawn
   QWidget::FocusPolicy	oldpolicy;
-};//end class 
+};//end class
 
 } // namespace CGAL
 

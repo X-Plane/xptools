@@ -104,7 +104,7 @@ public:
     }
     int count;
     inp >> count;
-    
+
     int i;
     for (i = 0; i < count; i++) {
       NT x0, y0, x1, y1;
@@ -147,7 +147,7 @@ public:
         ymin = CGAL::to_double(p2.ycoord());
         ymax = CGAL::to_double(p1.ycoord());
       }
-      
+
       CGAL::Bbox_2 curve_bbox(xmin, ymin, xmax, ymax);
 #else
       CGAL::Bbox_2 curve_bbox = curve.bbox();
@@ -185,7 +185,7 @@ int main(int argc, char * argv[])
   int rc = reader.ReadData(filename, curveList, format, bbox);
   if (rc < 0) return rc;
   if (verbose) std::cout << curveList.size() << " curves" << std::endl;
-  
+
   // construct
   Naive_point_location strategy;
   Pmwx pm(&strategy);
@@ -212,7 +212,7 @@ int main(int argc, char * argv[])
   float y_range = bbox.ymax() - bbox.ymin();
   float width = 640;
   float height = (y_range * width) / x_range;
-    
+
   CGAL::Window_stream * myWindow =
     new CGAL::Window_stream(static_cast<int>(width),
                             static_cast<int>(height));
@@ -221,11 +221,11 @@ int main(int argc, char * argv[])
   float min_range = (x_range < y_range) ? x_range : y_range;
   float x_margin = min_range / 4;
   float y_margin = (height * x_margin) / width;
-        
+
   float x0 = bbox.xmin() - x_margin;
   float x1 = bbox.xmax() + x_margin;
   float y0 = bbox.ymin() - y_margin;
-  myWindow->init(x0, x1, y0);   // logical window size 
+  myWindow->init(x0, x1, y0);   // logical window size
 
   myWindow->set_redraw(redraw);
   myWindow->set_mode(CGAL_LEDA_SCOPE::src_mode);
@@ -250,7 +250,7 @@ int main(int argc, char * argv[])
 
   Point p;
   Pmwx::Halfedge_handle e;
-  
+
   CGAL::My_Arr_drawer< Pmwx, Pmwx::Ccb_halfedge_circulator,
     Pmwx::Holes_iterator> drawer(*myWindow);
   for (; ; ) {
@@ -261,10 +261,10 @@ int main(int argc, char * argv[])
       p = Point(x, y);
 
     (*myWindow) << pm;
-    
+
     Pmwx::Locate_type lt;
     e = pm.locate(p, lt);
-      
+
     //color the face on the screen
     Pmwx::Face_handle f = e->face();
     drawer.draw_face(f);

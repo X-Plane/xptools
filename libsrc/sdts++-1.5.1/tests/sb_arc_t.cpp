@@ -15,11 +15,11 @@ using namespace std;
 int
 main( int argc, char** argv )
 {
-    
+
   cout << "this module isn't supported by sdts++ yet\n";
 
 #ifdef NOP
-  if ( ! argv[1] ) 
+  if ( ! argv[1] )
     {
       cerr << "usage: "
            << argv[0] << " 8211file " << endl;
@@ -32,7 +32,7 @@ main( int argc, char** argv )
   ifstream ddf( argv[1] );
 #endif
 
-  if ( ! ddf ) 
+  if ( ! ddf )
     {
       cerr << "couldn't open " << argv[1] << endl;
       return 2;

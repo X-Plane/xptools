@@ -10,13 +10,13 @@
 
 #include "DEFNode.h"
 
-DEFNode::DEFNode() 
+DEFNode::DEFNode()
 {
 	setHeaderFlag(false);
 	setType(defNodeString);
 }
 
-DEFNode::~DEFNode() 
+DEFNode::~DEFNode()
 {
 }
 
@@ -24,12 +24,12 @@ DEFNode::~DEFNode()
 //	List
 ////////////////////////////////////////////////
 
-DEFNode *DEFNode::next() 
+DEFNode *DEFNode::next()
 {
 	return (DEFNode *)Node::next(getType());
 }
 
-DEFNode *DEFNode::nextTraversal() 
+DEFNode *DEFNode::nextTraversal()
 {
 	return (DEFNode *)Node::nextTraversalByType(getType());
 }
@@ -37,7 +37,7 @@ DEFNode *DEFNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool DEFNode::isChildNodeType(Node *node)
 {
 	return false;
@@ -51,11 +51,11 @@ void DEFNode::uninitialize()
 {
 }
 
-void DEFNode::update() 
+void DEFNode::update()
 {
 }
 
-void DEFNode::outputContext(ostream &printStream, char *indentString) 
+void DEFNode::outputContext(ostream &printStream, char *indentString)
 {
 }
 

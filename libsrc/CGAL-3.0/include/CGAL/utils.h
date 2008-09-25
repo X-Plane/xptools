@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Geert-Jan Giezeman
- 
+
 
 #ifndef CGAL_UTILS_H
 #define CGAL_UTILS_H

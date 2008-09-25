@@ -43,37 +43,37 @@ static int debugthread=3141592;
 #define TRACE(t)   if((debugthread%_DEBUG)==0)\
  std::cerr<<" "<<t;std::cerr.flush()
 #else
-#define TRACE(t) 
+#define TRACE(t)
 #endif
 
 #if _DEBUG>0
 #define TRACEV(t)  if((debugthread%_DEBUG)==0)\
  std::cerr<<" "<<#t<<" = "<<(t)<<std::endl;std::cerr.flush()
 #else
-#define TRACEV(t) 
+#define TRACEV(t)
 #endif
 
 #if _DEBUG>0
 #define TRACEN(t)  if((debugthread%_DEBUG)==0)\
  std::cerr<<" "<<t<<std::endl;std::cerr.flush()
 #else
-#define TRACEN(t) 
+#define TRACEN(t)
 #endif
 
 #if _DEBUG>0
 #define CTRACE(b,t)  if(b) std::cerr<<" "<<t; else std::cerr<<" 0"
 #else
-#define CTRACE(b,t) 
+#define CTRACE(b,t)
 #endif
 
 #if _DEBUG>0
 #define CTRACEN(b,t) if(b) std::cerr<<" "<<t<<"\n"; else std::cerr<<" 0\n"
 #else
-#define CTRACEN(b,t) 
+#define CTRACEN(b,t)
 #endif
 
 #ifndef _ASSERT
-#define  CGAL_NEF_ASSERT(cond,fstr) 
+#define  CGAL_NEF_ASSERT(cond,fstr)
 #else
 #define CGAL_NEF_ASSERT(cond,fstr)   \
   if (!(cond)) {       \

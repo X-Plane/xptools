@@ -19,7 +19,7 @@
 //
 // coordinator   : Herve Bronnimann  <Herve.Bronnimann@sophia.inria.fr>
 //
-// Converts Geometry Information in Inventor files (*.iv) into OFF format. 
+// Converts Geometry Information in Inventor files (*.iv) into OFF format.
 // The scanner triggers on Coordinate3, IndexedFaceSet, and IndexedLineSet
 // keywords. It does not recognize transformations nor groups.
 // ============================================================================
@@ -97,7 +97,7 @@ void iv_file_scanner( istream& in) {
                             if ( c == ',')
                                 in >> c;   // ignoring commas
                         }
-                        vout << "    " << points.size() - offset 
+                        vout << "    " << points.size() - offset
                              << " point coordinates read." << endl;
                     }
                 }
@@ -113,7 +113,7 @@ void iv_file_scanner( istream& in) {
             if ( c == '{') {
                 in >> str;
                 if ( strcmp( str, "coordIndex") == 0) {
-                    vout << "\"IndexedFaceSet { coordIndex\" block found." 
+                    vout << "\"IndexedFaceSet { coordIndex\" block found."
                          << endl;
                     // indices start here
                     int face_offset = facets.size();
@@ -137,7 +137,7 @@ void iv_file_scanner( istream& in) {
                             in >> c;   // ignoring commas
                     }
                     facets.pop_back();
-                    vout << "    " << facets.size() - face_offset 
+                    vout << "    " << facets.size() - face_offset
                          << " facets read." << endl;
                 }
             }
@@ -147,7 +147,7 @@ void iv_file_scanner( istream& in) {
             if ( c == '{') {
                 in >> str;
                 if ( strcmp( str, "coordIndex") == 0) {
-                    vout << "\"IndexedLineSet { coordIndex\" block found." 
+                    vout << "\"IndexedLineSet { coordIndex\" block found."
                          << endl;
                     // indices start here
                     int face_offset = facets.size();
@@ -171,7 +171,7 @@ void iv_file_scanner( istream& in) {
                             in >> c;   // ignoring commas
                     }
                     facets.pop_back();
-                    vout << "    " << facets.size() - face_offset 
+                    vout << "    " << facets.size() - face_offset
                          << " polylines read." << endl;
                 }
             }
@@ -192,7 +192,7 @@ void print_OFF( ostream& out) {
     writer.write_header( out, points.size(), 0, facets.size());
     while( ! points.empty()) {
         writer.write_vertex( points.front().x(),
-                             points.front().y(), 
+                             points.front().y(),
                              points.front().z());
         points.pop_front();
     }
@@ -236,11 +236,11 @@ int main( int argc, char **argv) {
                     help = true;
                 }
             } else {
-                cerr << argv[0] << ": error: -# needs an integer parameter." 
+                cerr << argv[0] << ": error: -# needs an integer parameter."
                      << endl;
                 help = true;
             }
-        } else if ( (strcmp( "-h", argv[i]) == 0) || 
+        } else if ( (strcmp( "-h", argv[i]) == 0) ||
                     (strcmp( "-help", argv[i]) == 0))
             help = true;
         else if ( n < 2 ) {
@@ -275,7 +275,7 @@ int main( int argc, char **argv) {
         p_in = &in;
         iname = filename[0];
     }
-    if ( !*p_in) { 
+    if ( !*p_in) {
         cerr << argv[0] << ": error: cannot open file '"<< iname
 	     << "' for reading." <<endl;
         exit( 1);
@@ -289,7 +289,7 @@ int main( int argc, char **argv) {
         p_out = &out;
         oname = filename[1];
     }
-    if ( !*p_out) { 
+    if ( !*p_out) {
         cerr << argv[0] << ": error: cannot open file '"<< oname
              << "' for writing." <<endl;
         exit( 1);
@@ -302,8 +302,8 @@ int main( int argc, char **argv) {
     iv_file_scanner( *p_in);
     vout << "--------\n    .... done." << endl;
 
-    if ( !*p_in  && !p_in->eof()) { 
-        cerr << argv[0] << " read error: while reading file '"<< iname << "'." 
+    if ( !*p_in  && !p_in->eof()) {
+        cerr << argv[0] << " read error: while reading file '"<< iname << "'."
              << endl;
         exit( 1);
     }
@@ -312,8 +312,8 @@ int main( int argc, char **argv) {
     print_OFF( *p_out);
     vout << "    .... done." << endl;
 
-    if ( !*p_out) { 
-        cerr << argv[0] << " write error: while writing file '"<< oname 
+    if ( !*p_out) {
+        cerr << argv[0] << " write error: while writing file '"<< oname
              << "'." << endl;
         exit( 1);
     }

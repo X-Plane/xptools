@@ -36,7 +36,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFString *getTitleField();
-	
+
 	void setTitle(char *value);
 	char *getTitle();
 
@@ -53,7 +53,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

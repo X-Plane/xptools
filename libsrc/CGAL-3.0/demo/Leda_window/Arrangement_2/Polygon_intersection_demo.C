@@ -8,7 +8,7 @@ int main(int, char *[])
   std::cout << std::endl;
   return 0;
 }
- 
+
 #else
 
 // Uses types associated with Polygon as declared in the interface of
@@ -33,14 +33,14 @@ leda_polygon cgal_to_leda_polygon(Polygon& poly)
   for (Polygon::Vertex_iterator it=poly.vertices_begin();
        it != poly.vertices_end();
        it++) {
-    plist.push_back(leda_point(CGAL::to_double(it->x()), 
+    plist.push_back(leda_point(CGAL::to_double(it->x()),
 			       CGAL::to_double(it->y())));
   }
-  
+
   return leda_polygon(plist);
 }
 
-// read a polygon from mouse 
+// read a polygon from mouse
 void PolygonRead(Polygon &poly, Window &W)
 {
   poly.erase(poly.vertices_begin(), poly.vertices_end());
@@ -50,8 +50,8 @@ void PolygonRead(Polygon &poly, Window &W)
     {
       poly.push_back(Point((*it).xcoord(), (*it).ycoord()));
     }
-}  
- 
+}
+
 // A redraw function
 void redraw(Window &W, Polygon &poly1, Polygon &poly2,
             Polygon_list &poly_list)
@@ -59,8 +59,8 @@ void redraw(Window &W, Polygon &poly1, Polygon &poly2,
   W.clear();
 
   W << CGAL::PURPLE;
-  for (Polygon_list::iterator pit = poly_list.begin(); 
-       pit != poly_list.end(); 
+  for (Polygon_list::iterator pit = poly_list.begin();
+       pit != poly_list.end();
        pit++) {
     W.draw_filled_polygon(cgal_to_leda_polygon(*pit));
   }
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
   W.init(0, 1000, 0);
   W.set_mode(CGAL_LEDA_SCOPE::src_mode);
   W.set_node_width(3);
-    
+
   // Define Buttons
   W.button("Clear",        CLEAR);
   W.button("Insert Poly1", POLY1);
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
   W.clear();
 
   // Main demo loop
-  double x,y; 
+  double x,y;
   while (true) {
     int b = W.read_mouse(x,y);
     // Quit button
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
     // Perform redraw for whatever operation was performed.
     // In particular, for a refresh operation.
     redraw(W, poly1, poly2, out_poly_list);
-  } 
+  }
   return 0;
 }
 

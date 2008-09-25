@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 #ifndef CGAL_IO_FORWARD_DECL_WINDOW_STREAM_H
 #define CGAL_IO_FORWARD_DECL_WINDOW_STREAM_H
 

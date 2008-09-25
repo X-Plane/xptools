@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -56,28 +56,28 @@ class sb_Iref : public sb_Module
 
       /**
        Use these members to get subfield/field values.  Pass in an appropriate
-       type to receive the value.  These members will return false if the 
-       corresponding value is not set.  (It may not be set because a value 
-       was not assigned to it, or because you previously tried to assign 
+       type to receive the value.  These members will return false if the
+       corresponding value is not set.  (It may not be set because a value
+       was not assigned to it, or because you previously tried to assign
        an invalid value.)  Otherwise they will return true.
       */
       bool getComment( std::string& ) const;
       bool getCOMT( std::string& val ) const { return getComment( val ); }
 
       bool getSpatialAddressType( std::string& ) const;
-      bool getSATP( std::string& val ) const 
+      bool getSATP( std::string& val ) const
       { return getSpatialAddressType( val ); }
 
       bool getSpatialAddressXLabel( std::string& ) const;
-      bool getXLBL( std::string& val ) const 
+      bool getXLBL( std::string& val ) const
       { return getSpatialAddressXLabel( val ); }
 
       bool getSpatialAddressYLabel( std::string& ) const;
-      bool getYLBL( std::string& val ) const 
+      bool getYLBL( std::string& val ) const
       { return getSpatialAddressYLabel( val ); }
 
       bool getHorizontalComponentFormat( std::string& ) const;
-      bool getHFMT( std::string& val ) const 
+      bool getHFMT( std::string& val ) const
       { return getHorizontalComponentFormat( val ); }
 
 #ifdef NOT_RASTER_PROFILE
@@ -85,7 +85,7 @@ class sb_Iref : public sb_Module
       bool getVFMT( std::string& val ) const
       { return getVerticalComponentFormat( val ); }
 #endif
-       
+
       bool getScaleFactorX( double& ) const;
       bool getSFAX( double& val ) const { return getScaleFactorX( val ); }
 
@@ -107,18 +107,18 @@ class sb_Iref : public sb_Module
       bool getZOrigin( double& ) const;
       bool getZORG( double& val ) const { return getZOrigin( val ); }
 #endif
-      
+
       bool getXComponentHorizontalResolution( double& ) const;
-      bool getXHRS( double& val ) const 
+      bool getXHRS( double& val ) const
       { return getXComponentHorizontalResolution( val ); }
 
       bool getYComponentHorizontalResolution( double& ) const;
-      bool getYHRS( double& val ) const 
+      bool getYHRS( double& val ) const
       { return getYComponentHorizontalResolution( val ); }
 
 #ifdef NOT_RASTER_PROFILE
       bool getVerticalResolutionComponent( double& ) const;
-      bool getVRES( double& val ) const 
+      bool getVRES( double& val ) const
       { return getVerticalResolutionComponent( val ); }
 #endif
 
@@ -137,7 +137,7 @@ class sb_Iref : public sb_Module
       /**
        Use these members to set subfield/field values.  Pass in an appropriate
        value for the particular subfield/field to be set to.  They will return
-       false if you try to assign a value outside the domain of the given 
+       false if you try to assign a value outside the domain of the given
        subfield/field.  (Note that this is not too pedantic; for example, we
        do not check to see if a conditionally mandatory or optional field has
        been set.)
@@ -146,24 +146,24 @@ class sb_Iref : public sb_Module
       void setCOMT( std::string const & val )  { setComment( val ); }
 
       void setSpatialAddressType( std::string const & ) ;
-      void setSATP( std::string const & val )  
+      void setSATP( std::string const & val )
       { setSpatialAddressType( val ); }
 
       void setSpatialAddressXLabel( std::string const & ) ;
-      void setXLBL( std::string const & val )  
+      void setXLBL( std::string const & val )
       { setSpatialAddressXLabel( val ); }
 
       void setSpatialAddressYLabel( std::string const & ) ;
-      void setYLBL( std::string const & val )  
+      void setYLBL( std::string const & val )
       { setSpatialAddressYLabel( val ); }
 
       void setHorizontalComponentFormat( std::string const & ) ;
-      void setHFMT( std::string const & val )  
+      void setHFMT( std::string const & val )
       { setHorizontalComponentFormat( val ); }
 
 #ifdef NOT_RASTER_PROFILE
       void setVerticalComponentFormat( std::string const & ) ;
-      void setVFMT( std::string const & val ) 
+      void setVFMT( std::string const & val )
       { setVerticalComponentFormat( val ); }
 #endif
 
@@ -188,18 +188,18 @@ class sb_Iref : public sb_Module
       void setZOrigin( double const & ) ;
       void setZORG( double const & val )  { setZOrigin( val ); }
 #endif
-      
+
       void setXComponentHorizontalResolution( double const & ) ;
-      void setXHRS( double const & val )  
+      void setXHRS( double const & val )
       { setXComponentHorizontalResolution( val ); }
 
       void setYComponentHorizontalResolution( double const & ) ;
-      void setYHRS( double const & val )  
+      void setYHRS( double const & val )
       { setYComponentHorizontalResolution( val ); }
 
 #ifdef NOT_RASTER_PROFILE
       void setVerticalResolutionComponent( double const & ) ;
-      void setVRES( double const & val )  
+      void setVRES( double const & val )
       { setVerticalResolutionComponent( val ); }
 #endif
 

@@ -23,7 +23,7 @@ class AnchorNode : public GroupingNode {
 public:
 
 	AnchorNode();
-	~AnchorNode(); 
+	~AnchorNode();
 
 	////////////////////////////////////////////////
 	//	Description

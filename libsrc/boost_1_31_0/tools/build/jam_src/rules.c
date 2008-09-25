@@ -62,7 +62,7 @@ struct _located_target {
 static struct hash *located_targets = 0;
 
 
-
+
 
 /*
  * enter_rule() - return pointer to RULE, creating it if necessary in
@@ -100,7 +100,7 @@ define_rule( module_t *src_module, char *rulename, module_t *target_module )
 
     if ( r->module != src_module ) /* if the rule was imported from elsewhere, clear it now */
     {
-        set_rule_body( r, 0, 0 ); 
+        set_rule_body( r, 0, 0 );
         set_rule_actions( r, 0 );
         r->module = src_module; /* r will be executed in the source module */
     }
@@ -157,8 +157,8 @@ static void bind_explicitly_located_target(void* xtarget, void* data)
         /* Check if there's a setting for LOCATE */
         SETTINGS* s = t->settings;
         for(; s ; s = s->next)
-        {            
-            if (strcmp(s->symbol, "LOCATE") == 0) 
+        {
+            if (strcmp(s->symbol, "LOCATE") == 0)
             {
                 pushsettings(t->settings);
                 /* We're binding a target with explicit LOCATE. So
@@ -236,7 +236,7 @@ TARGET* search_for_target ( char * name, LIST* search_path )
         string_truncate( buf, 0 );
         path_build( f, buf, 1 );
 
-        timestamp( buf->value, &time );        
+        timestamp( buf->value, &time );
     }
 
     result = bindtarget( name );
@@ -245,7 +245,7 @@ TARGET* search_for_target ( char * name, LIST* search_path )
     result->binding = time ? T_BIND_EXISTS : T_BIND_MISSING;
 
     call_bind_rule( result->name, result->boundname );
-    
+
     string_free( buf );
 
     return result;
@@ -292,7 +292,7 @@ touchtarget( char *t )
  */
 
 TARGETS *
-targetlist( 
+targetlist(
 	TARGETS	*chain,
 	LIST 	*targets )
 {
@@ -311,7 +311,7 @@ targetlist(
  */
 
 TARGETS *
-targetentry( 
+targetentry(
 	TARGETS	*chain,
 	TARGET	*target )
 {
@@ -337,7 +337,7 @@ targetentry(
  */
 
 TARGETS *
-targetchain( 
+targetchain(
 	TARGETS	*chain,
 	TARGETS	*targets )
 {
@@ -394,7 +394,7 @@ addsettings(
 	LIST	*value )
 {
 	SETTINGS *v;
-	
+
 	/* Look for previous setting */
 
 	for( v = head; v; v = v->next )
@@ -408,12 +408,12 @@ addsettings(
 	if( !v )
 	{
         v = settings_freelist;
-        
+
         if ( v )
             settings_freelist = v->next;
         else
             v = (SETTINGS *)malloc( sizeof( *v ) );
-        
+
 	    v->symbol = newstr( symbol );
 	    v->value = value;
 	    v->next = head;
@@ -427,7 +427,7 @@ addsettings(
 	{
 	    list_free( v->value );
 	    v->value = value;
-	} 
+	}
 
 	/* Return (new) head of list. */
 
@@ -608,7 +608,7 @@ static void set_rule_body( RULE* rule, argument_list* args, PARSE* procedure )
     if ( rule->arguments )
         args_free( rule->arguments );
     rule->arguments = args;
-    
+
     if ( procedure )
         parse_refer( procedure );
     if ( rule->procedure )
@@ -663,7 +663,7 @@ RULE* new_rule_body( module_t* m, char* rulename, argument_list* args, PARSE* pr
     RULE* local = define_rule( m, rulename, m );
     local->exported = exported;
     set_rule_body( local, args, procedure );
-    
+
     /* Mark the procedure with the global rule name, regardless of
      * whether the rule is exported. That gives us something
      * reasonably identifiable that we can use, e.g. in profiling
@@ -683,7 +683,7 @@ static void set_rule_actions( RULE* rule, rule_actions* actions )
     if ( rule->actions )
         actions_free( rule->actions );
     rule->actions = actions;
-    
+
 }
 
 static rule_actions* actions_new( char* command, LIST* bindlist, int flags )
@@ -707,7 +707,7 @@ RULE* new_rule_actions( module_t* m, char* rulename, char* command, LIST* bindli
 
 /* Looks for a rule in the specified module, and returns it, if found.
    First checks if the rule is present in the module's rule table.
-   Second, if name of the rule is in the form name1.name2 and name1 is in 
+   Second, if name of the rule is in the form name1.name2 and name1 is in
    the list of imported modules, look in module 'name1' for rule 'name2'.
 */
 RULE *lookup_rule( char *rulename, module_t *m, int local_only )
@@ -732,7 +732,7 @@ RULE *lookup_rule( char *rulename, module_t *m, int local_only )
                 result = lookup_rule(p+1, bindmodule(rulename), 1);
             }
             *p = '.';
-        }        
+        }
     }
 
     if (result)
@@ -746,15 +746,15 @@ RULE *lookup_rule( char *rulename, module_t *m, int local_only )
                Mark it for execution in the instance where we've started lookup.
             */
             int execute_in_class = (result->module == m);
-            int execute_in_some_instance = 
+            int execute_in_some_instance =
             (result->module->class_module && result->module->class_module == m);
             if (original_module != m && (execute_in_class || execute_in_some_instance))
-                result->module = original_module;            
+                result->module = original_module;
         }
     }
 
     return result;
-        
+
 }
 
 
@@ -765,7 +765,7 @@ RULE *bindrule( char *rulename, module_t* m)
     result = lookup_rule(rulename, m, 0);
     if (!result)
         result = lookup_rule(rulename, root_module(), 0);
-    /* We've only one caller, 'evaluate_rule', which will complain about 
+    /* We've only one caller, 'evaluate_rule', which will complain about
        calling underfined rule. We could issue the error
        here, but we don't have necessary information, such as frame.
     */

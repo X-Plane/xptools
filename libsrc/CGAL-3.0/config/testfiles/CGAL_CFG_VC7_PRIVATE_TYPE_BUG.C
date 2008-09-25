@@ -36,12 +36,12 @@ class A
 {
   typedef typename R::B B;
 public:
- 
+
   A() :i(0) {}
- 
+
   int i;
 };
- 
+
 template <class R>
 class B
 : public R::A
@@ -50,7 +50,7 @@ public:
   typedef typename R::A base;
   B() : base() {}
 };
- 
+
 template <class FT>
 class RR
 {
@@ -58,7 +58,7 @@ public:
   typedef ::A<RR> A;
   typedef ::B<RR> B;
 };
- 
+
 int main()
 {
   typedef RR<int> r;

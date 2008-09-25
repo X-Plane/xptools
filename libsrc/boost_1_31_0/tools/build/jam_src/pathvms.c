@@ -31,7 +31,7 @@
  * File_parse() and path_build() just manipuate a string and a structure;
  * they do not make system calls.
  *
- * WARNING!  This file contains voodoo logic, as black magic is 
+ * WARNING!  This file contains voodoo logic, as black magic is
  * necessary for wrangling with VMS file name.  Woe be to people
  * who mess with this code.
  *
@@ -44,13 +44,13 @@
  */
 
 void
-path_parse( 
+path_parse(
 	char	*file,
 	PATHNAME *f )
 {
 	char *p, *q;
 	char *end;
-	
+
 	memset( (char *)f, 0, sizeof( *f ) );
 
 	/* Look for <grist> */
@@ -80,7 +80,7 @@ path_parse(
 	    f->f_member.ptr = p + 1;
 	    f->f_member.len = end - p - 2;
 	    end = p;
-	} 
+	}
 
 	/* Look for .suffix */
 	/* This would be memrchr() */
@@ -113,7 +113,7 @@ path_parse(
  *	---		---		------
  * Rerooting:
  *
- *	(none)		:R=dev:		dev:		
+ *	(none)		:R=dev:		dev:
  *	devd:		:R=dev:		devd:
  *	devd:[dir]	:R=dev:		devd:[dir]
  *	[.dir]		:R=dev:		dev:[dir]	questionable
@@ -173,7 +173,7 @@ struct dirinf {
 } ;
 
 static char *
-strnchr( 
+strnchr(
 	char	*buf,
 	int	c,
 	int	len )
@@ -186,7 +186,7 @@ strnchr(
 }
 
 static void
-dir_flags( 
+dir_flags(
 	char	*buf,
 	int	len,
 	struct dirinf *i )
@@ -246,7 +246,7 @@ path_build(
     int g;
 
     file_build1( f, file );
-        
+
     /* Get info on root and dir for combining. */
 
     dir_flags( f->f_root.ptr, f->f_root.len, &root );
@@ -256,23 +256,23 @@ path_build(
 
     switch( g = grid[ root.flags ][ dir.flags ] )
     {
-    case G_DIR:	
+    case G_DIR:
         /* take dir */
         string_append_range( file, f->f_dir.ptr, f->f_dir.ptr + f->f_dir.len  );
         break;
 
-    case G_ROOT:	
+    case G_ROOT:
         /* take root */
         string_append_range( file, f->f_root.ptr, f->f_root.ptr + f->f_root.len  );
         break;
 
-    case G_VAD:	
+    case G_VAD:
         /* root's dev + abs directory */
         string_append_range( file, root.dev.ptr, root.dev.ptr + root.dev.len  );
         string_append_range( file, dir.dir.ptr, dir.dir.ptr + dir.dir.len  );
         break;
-		
-    case G_DRD:	
+
+    case G_DRD:
     case G_DDD:
         /* root's dev:[dir] + rel directory */
         string_append_range( file, f->f_root.ptr, f->f_root.ptr + f->f_root.len  );
@@ -291,7 +291,7 @@ path_build(
         string_append_range( file, dir.dir.ptr + 1, dir.dir.ptr + 1 + dir.dir.len - 1  );
         break;
 
-    case G_VRD:	
+    case G_VRD:
         /* root's dev + rel directory made abs */
         string_append_range( file, root.dev.ptr, root.dev.ptr + root.dev.len  );
         string_push_back( file, '[' );
@@ -306,9 +306,9 @@ path_build(
         printf( "%d x %d = %d (%s)\n", root.flags, dir.flags,
                 grid[ root.flags ][ dir.flags ], file->value );
     }
-# endif 
+# endif
 
-    /* 
+    /*
      * Now do the special :P modifier when no file was present.
      *	(none)		(none)
      *	[dir1.dir2]	[dir1]
@@ -339,7 +339,7 @@ path_build(
                 /* handle .- or - */
                 if( p > file->value && p[-1] == '.' )
                     --p;
-                
+
                 *p++ = ']';
                 break;
             }
@@ -390,7 +390,7 @@ path_build(
 
 # ifdef DEBUG
     if( DEBUG_SEARCH )
-        printf("built %.*s + %.*s / %.*s suf %.*s mem %.*s -> %s\n", 
+        printf("built %.*s + %.*s / %.*s suf %.*s mem %.*s -> %s\n",
                f->f_root.len, f->f_root.ptr,
                f->f_dir.len, f->f_dir.ptr,
                f->f_base.len, f->f_base.ptr,

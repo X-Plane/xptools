@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* 
+/*
  * GenTerrain is compiled with
  *
  * gcc GenTerrain.c -o GenTerrain
@@ -37,7 +37,7 @@
  *
  * Usually it is used like this:
  *
- * ./GenTerrain 1 > /rendering_code/config/obj_properties_us.txt 
+ * ./GenTerrain 1 > /rendering_code/config/obj_properties_us.txt
  *
  */
 
@@ -67,10 +67,10 @@ typedef struct {
 
 const char * gObjs[10000];
 int gCtr = 0;
- 
+
 void PrintObj(const char * feature, const char * terrain, int variant, int width1, int width2, int depth1, int depth2, int height1, int height2, int road, int fill, const char * name)
 {
-	int n;	
+	int n;
 	for (n = 0; n < gCtr; ++n)
 	{
 		if (strcmp(gObjs[n], name)==0)
@@ -85,7 +85,7 @@ void PrintObj(const char * feature, const char * terrain, int variant, int width
 	}
 
 	char	tbuf[256];
-	
+
 	if (terrain && variant && variant == 5)
 		sprintf(tbuf, "terrain/%s_av", terrain);
 	else if (terrain && variant)
@@ -94,28 +94,28 @@ void PrintObj(const char * feature, const char * terrain, int variant, int width
 		sprintf(tbuf, "terrain/%s", terrain);
 	else
 		strcpy(tbuf, "NO_VALUE");
-	
+
 	if (width2 != 0)
 	{
 		printf("FAC_PROP %-20s %-30s %5d %5d %5d %5d %5d %5d %3d %3d %s\n",
-			feature, tbuf, width1, width2, depth1, depth2, height1, height2, road, fill, name);		
-	} 
+			feature, tbuf, width1, width2, depth1, depth2, height1, height2, road, fill, name);
+	}
 	else if (height2 != 0)
 	{
 		printf("OBS_PROP %-20s %-30s %5d %5s %5d %5s %5d %5d %3d %3d %s\n",
-			feature, tbuf, width1, " ", depth1, " ", height1, height2, road, fill, name);		
-	} 
+			feature, tbuf, width1, " ", depth1, " ", height1, height2, road, fill, name);
+	}
 	else
 	{
 		printf("OBJ_PROP %-20s %-30s %5d %5s %5d %5s %5d %5s %3d %3d %s\n",
-			feature, tbuf, width1, " ", depth1, " ", height1, " ", road, fill, name);		
+			feature, tbuf, width1, " ", depth1, " ", height1, " ", road, fill, name);
 	}
-} 
- 
+}
+
 void PrintHeader(const char * label, const char * comment)
 {
 	if (gOnce) return;
-	printf("# ---------------------- %s    %s\n", label ? label : "Obstacles",comment ? comment : "");	
+	printf("# ---------------------- %s    %s\n", label ? label : "Obstacles",comment ? comment : "");
 	printf("#COMMAND %-20s %-30s %5s %5s %5s %5s %5s %5s %3s %3s %s\n",
 		"FEATURE", "TERRAIN", "WID1", "WID2", "DEP1", "DEP2", "HGT1", "HGT2", "RD", "FIL", "OBJ");
 
@@ -125,7 +125,7 @@ void PrintSpec(const char * suite, const char * terrain, int variant, const ObjS
 {
 	int n;
 	int j;
-	const char * sterrain;	
+	const char * sterrain;
 	int j1 = 0, j2 = 0;
 	if (variant) { j1 = 1; j2 = 5; }
 	for (j = j1; j <= j2; ++j)
@@ -151,8 +151,8 @@ void PrintSpec(const char * suite, const char * terrain, int variant, const ObjS
 			else if (spec[n].fill)
 				strcat(buf, "f");
 			else
-				strcat(buf, "r");				
-			PrintObj(spec[n].feature ? spec[n].feature : "NO_VALUE", terrain, j, spec[n].width,0,spec[n].depth,0,spec[n].height1, spec[n].height2, spec[n].road, spec[n].fill, buf);		
+				strcat(buf, "r");
+			PrintObj(spec[n].feature ? spec[n].feature : "NO_VALUE", terrain, j, spec[n].width,0,spec[n].depth,0,spec[n].height1, spec[n].height2, spec[n].road, spec[n].fill, buf);
 			++n;
 		}
 	}
@@ -173,14 +173,14 @@ enum {
 	spec_OutSq,		// Outer-town area - basically residential
 	spec_InSq,		// City inner - non-single-unit buildings + sky scrapers limited by height restrictions
 	spec_IndSq,		// Industrial
-	spec_HillSq,		// Like out, but with hill patterns	
+	spec_HillSq,		// Like out, but with hill patterns
 	spec_TownIrr,		// Town - the outlay transition between city and farm/natural
 	spec_OutIrr,		// Outer-town area - basically residential
 	spec_InIrr,		// City inner - non-single-unit buildings + sky scrapers limited by height restrictions
 	spec_IndIrr,		// Industrial
-	spec_HillIrr,		// Like out, but with hill patterns	
+	spec_HillIrr,		// Like out, but with hill patterns
 	spec_Park,		// Parkland and grass/forset areas
-	
+
 	spec_Max
 };
 
@@ -199,7 +199,7 @@ void FuncHillIrr(const char *, int);
 void FuncPark(const char *, int);
 void FuncObjs(const char *, const char *, int);
 
-TerrainFunc_t	gFuncs[spec_Max] = { 
+TerrainFunc_t	gFuncs[spec_Max] = {
 	FuncTownSq,
 	FuncOutSq,
 	FuncInSq,
@@ -260,7 +260,7 @@ TerrainItem_t terrains[] = {
 {"temp_cityhill_irr",		spec_HillIrr,	1},
 {"temp_cityhill_sq",		spec_HillSq,	1},
 
-//------------------------ DRY CITY	
+//------------------------ DRY CITY
 {"dry_city_park",			spec_Park,		0},
 {"dry_city_golf",			spec_Park,		0},
 
@@ -309,8 +309,8 @@ void FuncTownSq(const char * t, int vari)
 	static ObjSpec_t	the_spec_us[] = {
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  Widen smaller pieces to create
-		{	90, 40, 0, 0, 1, 0, NULL },			
-		{	90, 30, 0, 0, 1, 0, NULL },			
+		{	90, 40, 0, 0, 1, 0, NULL },
+		{	90, 30, 0, 0, 1, 0, NULL },
 		{	60, 30, 0, 0, 1, 0, NULL },
 		{	30, 30, 0, 0, 1, 0, NULL },
 
@@ -342,7 +342,7 @@ void FuncOutSq(const char * t, int vari)
 	static ObjSpec_t	the_spec_us[] = {
 		{	 40,  20,  40, 0,    1, 0, NULL },	// B2-B
 		{	 20,  20,  40, 0,    1, 0, NULL },
-	
+
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  Widen smaller pieces to create
 		{	90, 30, 0, 0, 1, 0, NULL },			// sparseness
@@ -392,7 +392,7 @@ void FuncInSq(const char * t, int vari)
 		{	 30,  20,  45, 0,    1, 0, NULL },
 		{	 40,  20,  40, 0,    1, 0, NULL },	// B2-B
 		{	 20,  20,  40, 0,    1, 0, NULL },
-	
+
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  High granularity for precise placement.
 		{	120, 15, 0, 0, 1, 0, NULL },
@@ -470,7 +470,7 @@ void FuncHillSq(const char * t, int vari)
 		{	250, 120, 0, 0, 1, 1, NULL },
 		{	120, 120, 0, 0, 1, 1, NULL },
 		{	120, 50, 0, 0, 1, 1, NULL },	// Small objs backin Europe for hill!
-		{	50, 50, 0, 0, 1, 1, NULL },		
+		{	50, 50, 0, 0, 1, 1, NULL },
 
 		{	0,	0,	0, 0, 1, 1, NULL }
 	};
@@ -485,8 +485,8 @@ void FuncTownIrr(const char * t, int vari)
 	static ObjSpec_t	the_spec_us[] = {
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  Widen smaller pieces to create
-		{	90, 40, 0, 0, 1, 0, NULL },			
-		{	90, 30, 0, 0, 1, 0, NULL },			
+		{	90, 40, 0, 0, 1, 0, NULL },
+		{	90, 30, 0, 0, 1, 0, NULL },
 		{	60, 30, 0, 0, 1, 0, NULL },
 		{	30, 30, 0, 0, 1, 0, NULL },
 
@@ -520,7 +520,7 @@ void FuncOutIrr(const char * t, int vari)
 	static ObjSpec_t	the_spec_us[] = {
 		{	 40,  20,  40, 0,    1, 0, NULL },	// B2-B
 		{	 20,  20,  40, 0,    1, 0, NULL },
-	
+
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  Widen smaller pieces to create
 		{	90, 30, 0, 0, 1, 0, NULL },			// sparseness
@@ -568,7 +568,7 @@ void FuncInIrr(const char * t, int vari)
 		{	 30,  20,  45, 0,    1, 0, NULL },
 		{	 40,  20,  40, 0,    1, 0, NULL },	// B2-B
 		{	 20,  20,  40, 0,    1, 0, NULL },
-	
+
 		{	200, 200, 0, 0, 1, 0, NULL },		// Splat a huge block - use for big-box or other meta-areas
 		{	120, 30, 0, 0, 1, 0, NULL },		// Now build long-thin pieces.  High granularity for precise placement.
 		{	120, 15, 0, 0, 1, 0, NULL },
@@ -647,7 +647,7 @@ void FuncHillIrr(const char * t, int vari)
 		{	250, 120, 0, 0, 1, 1, NULL },
 		{	120, 120, 0, 0, 1, 1, NULL },
 		{	120, 50, 0, 0, 1, 1, NULL },	// Small objs backin Europe for hill!
-		{	50, 50, 0, 0, 1, 1, NULL },		
+		{	50, 50, 0, 0, 1, 1, NULL },
 
 		{	0,	0,	0, 0, 1, 1, NULL }
 	};
@@ -723,8 +723,8 @@ int main(int argc, char ** argv)
 	if (argc < 2) { fprintf(stderr, "PLEASE ENTER A COUNTRY CODE 0 = world 1 = us\n"); exit(1); }
 	int ctr = 1;
 	if (strcmp(argv[ctr], "-once")==0) { gOnce = 1; ++ctr; }
-	if (ctr >= argc) { fprintf(stderr, "PLEASE ENTER A COUNTRY CODE 0 = world 1 = us\n"); exit(1); } 
-	gCountry = atoi(argv[ctr]);	
+	if (ctr >= argc) { fprintf(stderr, "PLEASE ENTER A COUNTRY CODE 0 = world 1 = us\n"); exit(1); }
+	gCountry = atoi(argv[ctr]);
 	printf("## OBJECTS FOR COUNTRY %s\n",gCountryNames[gCountry]);
 	printf("OBJ_PREFIX %s\n", gCountryPrefix[gCountry]);
 	int		t = 0;

@@ -10,24 +10,24 @@
 
 #include "ParserNode.h"
 
-ParserNode::ParserNode(Node *node, int type) 
-{ 
-	setHeaderFlag(false); 
-	mNode = node; 
+ParserNode::ParserNode(Node *node, int type)
+{
+	setHeaderFlag(false);
+	mNode = node;
 	mType = type;
 }
 
-ParserNode::~ParserNode() 
-{ 
+ParserNode::~ParserNode()
+{
 	remove();
 }
-	
-Node *ParserNode::getNode() 
-{ 
-	return mNode; 
+
+Node *ParserNode::getNode()
+{
+	return mNode;
 }
-	
-int ParserNode::getType() 
-{ 
-	return mType; 
+
+int ParserNode::getType()
+{
+	return mType;
 }

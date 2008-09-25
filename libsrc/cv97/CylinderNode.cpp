@@ -18,7 +18,7 @@
 #include <GL/glu.h>
 #endif
 
-CylinderNode::CylinderNode() 
+CylinderNode::CylinderNode()
 {
 	setHeaderFlag(false);
 	setType(cylinderNodeString);
@@ -44,7 +44,7 @@ CylinderNode::CylinderNode()
 	addExposedField(bottomFieldString, bottomField);
 }
 
-CylinderNode::~CylinderNode() 
+CylinderNode::~CylinderNode()
 {
 }
 
@@ -59,12 +59,12 @@ SFFloat *CylinderNode::getRadiusField()
 	return (SFFloat *)getExposedField(radiusFieldString);
 }
 
-void CylinderNode::setRadius(float value) 
+void CylinderNode::setRadius(float value)
 {
 	getRadiusField()->setValue(value);
 }
 
-float CylinderNode::getRadius() 
+float CylinderNode::getRadius()
 {
 	return getRadiusField()->getValue();
 }
@@ -80,12 +80,12 @@ SFFloat *CylinderNode::getHeightField()
 	return (SFFloat *)getExposedField(heightFieldString);
 }
 
-void CylinderNode::setHeight(float value) 
+void CylinderNode::setHeight(float value)
 {
 	getHeightField()->setValue(value);
 }
 
-float CylinderNode::getHeight() 
+float CylinderNode::getHeight()
 {
 	return getHeightField()->getValue();
 }
@@ -101,17 +101,17 @@ SFBool *CylinderNode::getTopField()
 	return (SFBool *)getExposedField(topFieldString);
 }
 
-void CylinderNode::setTop(bool value) 
+void CylinderNode::setTop(bool value)
 {
 	getTopField()->setValue(value);
 }
 
-void CylinderNode::setTop(int value) 
+void CylinderNode::setTop(int value)
 {
 	setTop(value ? true : false);
 }
 
-bool CylinderNode::getTop() 
+bool CylinderNode::getTop()
 {
 	return getTopField()->getValue();
 }
@@ -127,17 +127,17 @@ SFBool *CylinderNode::getSideField()
 	return (SFBool *)getExposedField(sideFieldString);
 }
 
-void CylinderNode::setSide(bool value) 
+void CylinderNode::setSide(bool value)
 {
 	getSideField()->setValue(value);
 }
 
-void CylinderNode::setSide(int value) 
+void CylinderNode::setSide(int value)
 {
 	setSide(value ? true : false);
 }
 
-bool CylinderNode::getSide() 
+bool CylinderNode::getSide()
 {
 	return getSideField()->getValue();
 }
@@ -153,17 +153,17 @@ SFBool *CylinderNode::getBottomField()
 	return (SFBool *)getExposedField(bottomFieldString);
 }
 
-void CylinderNode::setBottom(bool  value) 
+void CylinderNode::setBottom(bool  value)
 {
 	getBottomField()->setValue(value);
 }
 
-void CylinderNode::setBottom(int value) 
+void CylinderNode::setBottom(int value)
 {
 	setBottom(value ? true : false);
 }
 
-bool  CylinderNode::getBottom() 
+bool  CylinderNode::getBottom()
 {
 	return getBottomField()->getValue();
 }
@@ -172,12 +172,12 @@ bool  CylinderNode::getBottom()
 //	List
 ////////////////////////////////////////////////
 
-CylinderNode *CylinderNode::next() 
+CylinderNode *CylinderNode::next()
 {
 	return (CylinderNode *)Node::next(getType());
 }
 
-CylinderNode *CylinderNode::nextTraversal() 
+CylinderNode *CylinderNode::nextTraversal()
 {
 	return (CylinderNode *)Node::nextTraversalByType(getType());
 }
@@ -185,13 +185,13 @@ CylinderNode *CylinderNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool CylinderNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void CylinderNode::initialize() 
+void CylinderNode::initialize()
 {
 	recomputeBoundingBox();
 #ifdef SUPPORT_OPENGL
@@ -199,11 +199,11 @@ void CylinderNode::initialize()
 #endif
 }
 
-void CylinderNode::uninitialize() 
+void CylinderNode::uninitialize()
 {
 }
 
-void CylinderNode::update() 
+void CylinderNode::update()
 {
 }
 
@@ -211,7 +211,7 @@ void CylinderNode::update()
 //	BoundingBox
 ////////////////////////////////////////////////
 
-void CylinderNode::recomputeBoundingBox() 
+void CylinderNode::recomputeBoundingBox()
 {
 	setBoundingBoxCenter(0.0f, 0.0f, 0.0f);
 	setBoundingBoxSize(getRadius(), getHeight()/2.0f, getRadius());
@@ -221,7 +221,7 @@ void CylinderNode::recomputeBoundingBox()
 //	Infomation
 ////////////////////////////////////////////////
 
-void CylinderNode::outputContext(ostream &printStream, char *indentString) 
+void CylinderNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *top = getTopField();
 	SFBool *side = getSideField();

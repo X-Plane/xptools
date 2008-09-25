@@ -27,7 +27,7 @@
 #include <CGAL/Homogeneous/SegmentH2.h>
 #include <CGAL/Homogeneous/predicates_on_pointsH2.h>
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 
 template <class R>
 CGAL_KERNEL_MEDIUM_INLINE
@@ -79,7 +79,7 @@ compare_slopes(const SegmentH2<R>& s1, const SegmentH2<R>& s2)
    FT s2_ydiff = s2.source().hy()*s2_t_hw - s2.target().hy()*s2_s_hw;
    Sign s1_sign = CGAL_NTS sign(s1_ydiff * s1_xdiff);
    Sign s2_sign = CGAL_NTS sign(s2_ydiff * s2_xdiff);
- 
+
    if (s1_sign < s2_sign) return SMALLER;
    if (s1_sign > s2_sign) return LARGER;
 
@@ -179,6 +179,6 @@ compare_y_at_x(const PointH2<R> &p,
     }
 }
 
-CGAL_END_NAMESPACE 
+CGAL_END_NAMESPACE
 
 #endif // CGAL_PREDICATES_ON_SEGMENTSH2_H

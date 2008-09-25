@@ -31,7 +31,7 @@ namespace CGAL {
     public:
 
     typedef typename Kernel_traits<Point>::Kernel::FT NT;
-    
+
     private:
 
     Iso_box_d *box;
@@ -48,36 +48,36 @@ namespace CGAL {
 	Fuzzy_iso_box_d(const Point& p, const Point& q, NT epsilon=NT(0)) :
         eps(epsilon), dim(p.dimension())
         {box= new Iso_box_d(p,q);}
-        	
-        bool contains(const Point& p) const {	 
+
+        bool contains(const Point& p) const {
 		for (unsigned int i = 0; i < dim; ++i) {
 			if ( (p[i] < box->min()[i]) || (p[i] >= box->max()[i]) ) return false;
 		}
-		return true; 
+		return true;
         }
 
-	bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {   
+	bool inner_range_intersects(const Kd_tree_rectangle<NT>* rectangle) const {
  		for (unsigned int i = 0; i < dim; ++i) {
-        		if ( (box->max()[i]-eps < rectangle->min_coord(i)) 
+        		if ( (box->max()[i]-eps < rectangle->min_coord(i))
 			|| (box->min()[i]+eps >= rectangle->max_coord(i)) ) return false;
     		}
-    		return true;                                     
+    		return true;
 	}
 
 
-	bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const { 
+	bool outer_range_is_contained_by(const Kd_tree_rectangle<NT>* rectangle) const {
     		for (unsigned int i = 0; i < dim; ++i) {
-        		if (  (box->max()[i]+eps < rectangle->max_coord(i) ) 
+        		if (  (box->max()[i]+eps < rectangle->max_coord(i) )
 			|| (box->min()[i]-eps >= rectangle->min_coord(i)) ) return false;
     		}
     		return true;
-  	} 
+  	}
 
-	
+
 
 	~Fuzzy_iso_box_d() {delete box;}
 
-	
+
 
   }; // class Fuzzy_iso_box_d
 

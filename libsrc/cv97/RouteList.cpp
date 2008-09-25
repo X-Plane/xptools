@@ -18,22 +18,22 @@ RouteList::~RouteList()
 {
 }
 
-void RouteList::addRoute(Route *route) 
+void RouteList::addRoute(Route *route)
 {
 	addNode(route);
 }
 
-Route *RouteList::getRoutes() 
+Route *RouteList::getRoutes()
 {
 	return (Route *)getNodes();
 }
 
-Route *RouteList::getRoute(int n) 
+Route *RouteList::getRoute(int n)
 {
 	return (Route *)getNode(n);
 }
 
-int RouteList::getNRoutes() 
+int RouteList::getNRoutes()
 {
 	return getNNodes();
 }

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -54,12 +54,12 @@ void			DSFSharedPointPool::AddPool(DSFTuple& minFrac, DSFTuple& maxFrac)
 {
 	DSFTuple	submin = mMin + minFrac * (mMax - mMin);
 	DSFTuple	submax = mMin + maxFrac * (mMax - mMin);
-	
+
 	mPools.push_back(SharedSubPool());
 	mPools.back().mOffset = submin;
-	mPools.back().mScale = submax - submin;	
+	mPools.back().mScale = submax - submin;
 }
-	
+
 bool			DSFSharedPointPool::CanBeContiguous(const DSFTupleVector& inPoints)
 {
 	for (list<SharedSubPool>::iterator p = mPools.begin(); p != mPools.end(); ++p)
@@ -89,7 +89,7 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 	int	first_ok_pool = -1;
 	int p = 0;
 	SharedSubPool * found;
-	
+
 	for (list <SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
 	{
 		bool ok = true;
@@ -105,7 +105,7 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 		}
 		if (ok)
 		{
-			// This is the first pool we've found where we at least could 
+			// This is the first pool we've found where we at least could
 			// all fit.  Check for sharing.
 			for (n = 0; n < encoded.size(); ++n)
 			{
@@ -141,7 +141,7 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguousPool(int p, SharedSubPool * p
 
 pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 {
-	int p = 0;	
+	int p = 0;
 	// First check every scale for the point already existing.
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
 	{
@@ -187,7 +187,7 @@ void			DSFSharedPointPool::ProcessPoints(void)
 			printf("   %d loading     %d times\n", j->first, j->second);
 		}
 */
-	
+
 		if (i->mPoints.empty())
 		{
 			i = mPools.erase(i);
@@ -220,8 +220,8 @@ int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int id)
 			}
 		}
 		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (short *) &*shorts.begin());
-	}			
-	return mPools.size();			
+	}
+	return mPools.size();
 }
 
 int			DSFSharedPointPool::WriteScaleAtoms(FILE * fi, int id)
@@ -235,7 +235,7 @@ int			DSFSharedPointPool::WriteScaleAtoms(FILE * fi, int id)
 			WriteFloat32(fi, pool->mOffset[d]);
 		}
 	}
-	return mPools.size();			
+	return mPools.size();
 }
 
 #pragma mark -
@@ -264,10 +264,10 @@ void			DSFContiguousPointPool::AddPool(DSFTuple& minFrac, DSFTuple& maxFrac)
 {
 	DSFTuple	submin = mMin + minFrac * (mMax - mMin);
 	DSFTuple	submax = mMin + maxFrac * (mMax - mMin);
-	
+
 	mPools.push_back(ContiguousSubPool());
 	mPools.back().mOffset = submin;
-	mPools.back().mScale = submax - submin;	
+	mPools.back().mScale = submax - submin;
 }
 
 pair<int, int>	DSFContiguousPointPool::AccumulatePoint(const DSFTuple& inPoint)
@@ -290,8 +290,8 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 		for (n = 0; n < inPoints.size(); ++n)
 		{
 			if (!inPoints[n].in_range(pool->mOffset, pool->mScale)) {
-				ok = false; break; 
-			}			
+				ok = false; break;
+			}
 		}
 		if (ok)
 		{
@@ -302,7 +302,7 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 			pool->mPoints.insert(pool->mPoints.end(), trans.begin(), trans.end());
 			return pair<int, int>(p, pos);
 		}
-	}		
+	}
 	printf("point pool failure...%d out of %d tried.  Points = %d.\n", tris, p, inPoints.size());
 		inPoints[n].dump();
 	printf("\n");
@@ -349,7 +349,7 @@ int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int id)
 //		printf("\n");
 		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (short *) &*shorts.begin());
 	}
-	return mPools.size();			
+	return mPools.size();
 }
 
 int			DSFContiguousPointPool::WriteScaleAtoms(FILE * fi, int id)
@@ -363,7 +363,7 @@ int			DSFContiguousPointPool::WriteScaleAtoms(FILE * fi, int id)
 			WriteFloat32(fi, pool->mOffset[d]);
 		}
 	}
-	return mPools.size();				
+	return mPools.size();
 }
 
 #pragma mark -
@@ -387,7 +387,7 @@ void			DSF32BitPointPool::SetRange(
 	mMin = min; mMax = max;
 	mOffset = min;
 	mScale = mMax - mMin;
-}			
+}
 
 int				DSF32BitPointPool::CountShared(const DSFTupleVector& inPoints)
 {
@@ -413,7 +413,7 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 		{
 			return DSFPointPoolLoc(-1, -1);
 		}
-			
+
 		mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, mPoints.size()));
 		mPoints.push_back(pt);
 	}
@@ -423,9 +423,9 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 DSFPointPoolLoc	DSF32BitPointPool::AcceptShared(const DSFTuple& inPoint)
 {
 	DSFTuple	pt(inPoint);
-	if (!pt.encode32(mOffset, mScale)) 
+	if (!pt.encode32(mOffset, mScale))
 		return DSFPointPoolLoc(-1, -1);
-	
+
 	hash_map<DSFTuple, int>::iterator iter = mPointsIndex.find(pt);
 	if (iter != mPointsIndex.end())
 		return DSFPointPoolLoc(0, iter->second);

@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra
- 
+
 #ifndef CGAL_PREDICATES_ON_POINTS_3_H
 #define CGAL_PREDICATES_ON_POINTS_3_H
 

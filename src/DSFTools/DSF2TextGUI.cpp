@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -57,7 +57,7 @@ void	XGrindInit(string& t)
 
 	t = "DSF2Text 1.2";
 	XGrinder_ShowMessage("Drag a DSF or text file here to convert it.");
-}	
+}
 
 int	XGrinderMenuPick(xmenu menu, int item)
 {
@@ -69,23 +69,23 @@ void	XGrindFile(const char * inFileName)
 {
 	char	newname[512];
 	int l = strlen(inFileName);
-	
+
 	if (!strcasecmp(inFileName+l-4, ".env"))
 	{
 		strcpy(newname,inFileName);
 		strcat(newname,".dsf");
-		try {			
+		try {
 			if (ENV2Overlay(inFileName, newname))
 				XGrinder_ShowMessage("Env -> overlay Conversion successful.");
 			else
 				XGrinder_ShowMessage("Env -> overlay Conversion Failure.");
 		} catch (const char *& e) {
 			XGrinder_ShowMessage(e);
-		} catch (...) { 
+		} catch (...) {
 			XGrinder_ShowMessage("ENV -> overlay Conversion Failure.");
 		}
 	}
-	
+
 	if (!strcasecmp(inFileName+l-4, ".dsf"))
 	{
 		strcpy(newname,inFileName);

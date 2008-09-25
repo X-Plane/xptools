@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -35,7 +35,7 @@
 
 
 /*!
- * \ingroup viewport 
+ * \ingroup viewport
  */
 Lib3dsBool
 lib3ds_viewport_read(Lib3dsViewport *viewport, Lib3dsIo *io)
@@ -46,7 +46,7 @@ lib3ds_viewport_read(Lib3dsViewport *viewport, Lib3dsIo *io)
   if (!lib3ds_chunk_read_start(&c, 0, io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   switch (c.chunk) {
     case LIB3DS_VIEWPORT_LAYOUT:
       {
@@ -174,7 +174,7 @@ lib3ds_viewport_read(Lib3dsViewport *viewport, Lib3dsIo *io)
 
 
 /*!
- * \ingroup viewport 
+ * \ingroup viewport
  */
 void
 lib3ds_viewport_set_views(Lib3dsViewport *viewport, Lib3dsDword views)
@@ -201,7 +201,7 @@ lib3ds_viewport_set_views(Lib3dsViewport *viewport, Lib3dsDword views)
 
 
 /*!
- * \ingroup viewport 
+ * \ingroup viewport
  */
 Lib3dsBool
 lib3ds_viewport_write(Lib3dsViewport *viewport, Lib3dsIo *io)
@@ -222,7 +222,7 @@ lib3ds_viewport_write(Lib3dsViewport *viewport, Lib3dsIo *io)
     lib3ds_io_write_intw(io, 0);
     lib3ds_io_write_intw(io, viewport->layout.swap_prior);
     lib3ds_io_write_intw(io, viewport->layout.swap_view);
-    
+
     {
       Lib3dsChunk c;
       c.chunk=LIB3DS_VIEWPORT_SIZE;

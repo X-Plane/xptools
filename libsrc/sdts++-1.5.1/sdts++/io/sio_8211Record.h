@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -73,7 +73,7 @@ class sio_8211Record
       bool addField(std::string const & tag, sio_8211Field const& field);
 
       ///
-      bool addField(std::string const & tag, sio_Buffer const& field_data); 
+      bool addField(std::string const & tag, sio_Buffer const& field_data);
 
       friend std::istream& operator>>(std::istream& istr, sio_8211Record& record);
       friend std::ostream& operator<<(std::ostream& ostr, sio_8211Record const & record);
@@ -97,7 +97,7 @@ class sio_8211Record
 
       /// non-const version for streamExtract()
       sio_8211Directory& getDirectory_();
-                                
+
       ///
       sio_8211FieldArea& getFieldArea_();
 

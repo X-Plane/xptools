@@ -77,7 +77,7 @@ power_testH2( const RT &phx, const RT &phy, const RT &phw, const RT &pwt,
 	ta = thx*thw;
     }
     else
-    {   
+    {
 	pa = phy*phw;
 	qa = qhy*qhw;
 	ta = thy*thw;

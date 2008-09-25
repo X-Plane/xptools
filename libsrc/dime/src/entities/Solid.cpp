@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Solid.cpp
  *
  *  This source file is part of DIME.
@@ -46,7 +46,7 @@ static char entityName[] = "SOLID";
   Constructor.
 */
 
-dimeSolid::dimeSolid() 
+dimeSolid::dimeSolid()
   : extrusionDir( 0, 0, 1 ), thickness( 0 )
 {
 }
@@ -58,11 +58,11 @@ dimeSolid::copy(dimeModel * const model) const
 {
   dimeSolid *f = new(model->getMemHandler())dimeSolid;
   if (!f) return NULL;
-  
+
   f->copyCoords(this);
   f->thickness = this->thickness;
   f->extrusionDir = this->extrusionDir;
-  
+
   if (!this->copyRecords(f, model)) {
     // check if allocated on heap.
     if (!model->getMemHandler()) delete f;
@@ -72,10 +72,10 @@ dimeSolid::copy(dimeModel * const model) const
 }
 
 /*!
-  Writes a SOLID entity.  
+  Writes a SOLID entity.
 */
 
-bool 
+bool
 dimeSolid::write(dimeOutput * const file)
 {
   bool ret = true;
@@ -102,8 +102,8 @@ dimeSolid::write(dimeOutput * const file)
 
 //!
 
-bool 
-dimeSolid::handleRecord(const int groupcode, 
+bool
+dimeSolid::handleRecord(const int groupcode,
 		       const dimeParam &param,
 		       dimeMemHandler * const memhandler)
 {
@@ -130,7 +130,7 @@ dimeSolid::getEntityName() const
 
 //!
 
-bool 
+bool
 dimeSolid::getRecord(const int groupcode,
 		    dimeParam &param,
 		    const int index) const
@@ -150,7 +150,7 @@ dimeSolid::getRecord(const int groupcode,
 
 //!
 
-int 
+int
 dimeSolid::typeId() const
 {
   return dimeBase::dimeSolidType;
@@ -158,7 +158,7 @@ dimeSolid::typeId() const
 
 //!
 
-dxfdouble 
+dxfdouble
 dimeSolid::getThickness() const
 {
   return this->thickness;
@@ -166,7 +166,7 @@ dimeSolid::getThickness() const
 
 //!
 
-void 
+void
 dimeSolid::getExtrusionDir(dimeVec3f &ed) const
 {
   ed = this->extrusionDir;
@@ -174,7 +174,7 @@ dimeSolid::getExtrusionDir(dimeVec3f &ed) const
 
 //!
 
-bool 
+bool
 dimeSolid::swapQuadCoords() const
 {
   return true;
@@ -182,7 +182,7 @@ dimeSolid::swapQuadCoords() const
 
 //!
 
-void 
+void
 dimeSolid::setThickness(const dxfdouble &thickness)
 {
   this->thickness = thickness;
@@ -190,7 +190,7 @@ dimeSolid::setThickness(const dxfdouble &thickness)
 
 //!
 
-void 
+void
 dimeSolid::setExtrusionDir(const dimeVec3f &ed)
 {
   this->extrusionDir = ed;
@@ -198,14 +198,14 @@ dimeSolid::setExtrusionDir(const dimeVec3f &ed)
 
 //!
 
-int 
+int
 dimeSolid::countRecords() const
 {
   int cnt = 0;
   if (!this->isDeleted()) {
     cnt++; // header
     if (this->thickness != 0.0) cnt++;
-    if (this->extrusionDir != dimeVec3f(0,0,1)) cnt += 3; 
+    if (this->extrusionDir != dimeVec3f(0,0,1)) cnt += 3;
     cnt += dimeFaceEntity::countRecords();
   }
   return cnt;

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: HeaderSection.h
  *
  *  This source file is part of DIME.
@@ -43,7 +43,7 @@ public:
 		  int * const groupcodes,
 		  dimeParam * const params,
 		  const int maxparams) const;
-  
+
   int setVariable(const char * const variableName,
 		  const int * const groupcodes,
 		  const dimeParam * const params,
@@ -57,7 +57,7 @@ public:
   virtual bool write(dimeOutput * const file);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
 private:
   int findVariable(const char * const name) const;
 

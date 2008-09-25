@@ -10,49 +10,49 @@
 
 #include "SFString.h"
 
-SFString::SFString() 
+SFString::SFString()
 {
 	setType(fieldTypeSFString);
 	setValue((char *)NULL);
 	InitializeJavaIDs();
 }
 
-SFString::SFString(char *value) 
+SFString::SFString(char *value)
 {
 	setType(fieldTypeSFString);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-SFString::SFString(SFString *value) 
+SFString::SFString(SFString *value)
 {
 	setType(fieldTypeSFString);
 	setValue(value);
 	InitializeJavaIDs();
 }
 
-void SFString::InitializeJavaIDs() 
+void SFString::InitializeJavaIDs()
 {
 #ifdef SUPPORT_JSAI
 	setJavaIDs();
 #endif
 }
 
-SFString::~SFString() 
+SFString::~SFString()
 {
 }
 
-void SFString::setValue(char *value) 
+void SFString::setValue(char *value)
 {
 	mValue.setValue(value);
 }
 
-void SFString::setValue(SFString *value) 
+void SFString::setValue(SFString *value)
 {
 	mValue.setValue(value->getValue());
 }
 
-char *SFString::getValue() 
+char *SFString::getValue()
 {
 	return mValue.getValue();
 }
@@ -61,7 +61,7 @@ char *SFString::getValue()
 //	Output
 ////////////////////////////////////////////////
 
-ostream& operator<<(ostream &s, SFString &string) 
+ostream& operator<<(ostream &s, SFString &string)
 {
 	if (string.getValue())
 		return s << "\"" << string.getValue() << "\"";
@@ -69,7 +69,7 @@ ostream& operator<<(ostream &s, SFString &string)
 		return s << "\"" << "\"";
 }
 
-ostream& operator<<(ostream &s, SFString *string) 
+ostream& operator<<(ostream &s, SFString *string)
 {
 	if (string->getValue())
 		return s << "\"" << string->getValue() << "\"";
@@ -81,7 +81,7 @@ ostream& operator<<(ostream &s, SFString *string)
 //	String
 ////////////////////////////////////////////////
 
-char *SFString::getValue(char *buffer, int bufferLen) 
+char *SFString::getValue(char *buffer, int bufferLen)
 {
 	sprintf(buffer, "%s", getValue());
 	return buffer;
@@ -91,7 +91,7 @@ char *SFString::getValue(char *buffer, int bufferLen)
 //	Compare
 ////////////////////////////////////////////////
 
-bool SFString::equals(Field *field) 
+bool SFString::equals(Field *field)
 {
 	SFString *stringField = (SFString *)field;
 	if (!getValue() && !stringField->getValue())
@@ -173,7 +173,7 @@ jobject SFString::toJavaObject(int bConstField) {
 	jmethodID	initMethod		= bConstField ? getConstInitMethodID() : getInitMethodID();
 	jstring		value			= NULL;
 	char		*string			= getValue();
-		
+
 	if (string && strlen(string))
 		value = jniEnv->NewStringUTF(string);
 	jobject		eventField		= jniEnv->NewObject(classid, initMethod, value);
@@ -188,7 +188,7 @@ jobject SFString::toJavaObject(int bConstField) {
 	jniEnv->CallVoidMethod(eventField, setNameMethod, jfieldName);
 	if (jfieldName)
 		jniEnv->DeleteLocalRef(jfieldName);
-		
+
 	return eventField;
 }
 

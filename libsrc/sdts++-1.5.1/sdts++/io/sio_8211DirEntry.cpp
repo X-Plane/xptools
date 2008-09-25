@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -169,15 +169,15 @@ sio_8211DirEntry::setLeader(sio_8211Leader * leader)
 
 
 
-istream& 
+istream&
 operator>>(istream& istr, sio_8211DirEntry& dirEntry)
 {
    // Assumes that istr is positioned on byte 0 of an ISO8211 record directory entry.
    // Reads the directory entry, leaving the stream pointer positioned on the byte
    // after the last byte in the entry.
 
-   long totalLength = dirEntry.getLeader()->getSizeOfFieldLengthField()+ 
-                      dirEntry.getLeader()->getSizeOfFieldPosField()+ 
+   long totalLength = dirEntry.getLeader()->getSizeOfFieldLengthField()+
+                      dirEntry.getLeader()->getSizeOfFieldPosField()+
                       dirEntry.getLeader()->getSizeOfFieldTagField();
 
    char* entryBuffer = new char[totalLength]; // XXX check that we actually got it
@@ -205,11 +205,11 @@ operator>>(istream& istr, sio_8211DirEntry& dirEntry)
 
 
 
-ostream& 
+ostream&
 sio_8211DirEntry::streamInsert(ostream& ostr) const
 {
    // Stuff the directory entry out to the ostream.
-   // XXX - The xxxxSize_ fields really should be set somewhere, as well as 
+   // XXX - The xxxxSize_ fields really should be set somewhere, as well as
    // sanity checked.
    ostr << setw(getLeader()->getSizeOfFieldTagField())      << fieldTag_;
    ostr << setw(getLeader()->getSizeOfFieldLengthField())   << fieldLength_;

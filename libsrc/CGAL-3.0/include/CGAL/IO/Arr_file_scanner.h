@@ -55,7 +55,7 @@ public:
   typedef typename Arrangement::Curve_node                Curve_node;
   typedef typename Arrangement::Subcurve_node             Subcurve_node;
   typedef typename Arrangement::Edge_node                 Edge_node;
-  
+
   typedef typename Arrangement::Traits                   Traits;
   typedef typename Traits::Point                         Point;
   typedef typename Traits::X_curve                       X_curve;
@@ -63,7 +63,7 @@ public:
 
   Arr_file_scanner(std::istream& in) : Pm_file_scanner<Arrangement>(in) {}
 
-  Arr_file_scanner(std::istream& in, const File_header& h) : 
+  Arr_file_scanner(std::istream& in, const File_header& h) :
     Pm_file_scanner<Arrangement>(in, h) {}
 
   void scan_Curve_node(Curve_node* cn){
@@ -76,26 +76,26 @@ public:
 
     cn->set_curve(curve);
   }
-  
+
   void scan_Subcurve_node(Subcurve_node* scn){
-    
+
     skip_comment();
 
     // providing default reading function.
     X_curve curve;
     in() >> curve;
-    
+
     scn->set_x_monotone_curve(curve);
   }
-    
+
   void scan_Edge_node(Edge_node* en){
-    
+
     skip_comment();
 
     // providing default reading function.
     X_curve curve;
     in() >> curve;
-    
+
     en->set_x_monotone_curve(curve);
   }
 

@@ -1,7 +1,7 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: LinearAlgebra.h
  * Synopsis:
  *      Linear Algebra Extension of Core Library introducing
@@ -68,7 +68,7 @@ public:
    double infnorm() const;
    double dimension() const {return dim;}
    bool isZero() const;
-   Vector cross(const Vector &v) const; 
+   Vector cross(const Vector &v) const;
    static Vector crossProduct(int, ...);
 
    friend Vector operator+(const Vector&, const Vector&);
@@ -146,7 +146,7 @@ public:
    friend double det(const double a, const double b,
                 const double c, const double d);
    friend double det(const Vector u, const Vector & v);  // u,v are 2d vectors
-   
+
    friend std::istream& operator>>(std::istream&, Matrix&);
    friend std::ostream& operator<<(std::ostream&, const Matrix&);
 

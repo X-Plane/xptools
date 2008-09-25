@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -60,7 +60,7 @@ OE_TexEdWindow::OE_TexEdWindow(
 	mScroller->SetContents(mPane);
 }
 
-	
+
 OE_TexEdWindow::~OE_TexEdWindow()
 {
 	delete mPane;
@@ -76,15 +76,15 @@ OE_TexEdPane::OE_TexEdPane(
 	: OE_Pane(inLeft, inTop, inRight, inBottom, 1, "TexPreview",
 			inParent),//, xpWidgetClass_MainWindow)
 	mScale(1.0)
-	
+
 {
 	XPSetWidgetProperty(mWidget,xpProperty_Clip,1);
-}				
+}
 
 OE_TexEdPane::~OE_TexEdPane()
 {
 }
-	
+
 void		OE_TexEdPane::DrawSelf(void)
 {
 	int	l, r, t, b;
@@ -94,15 +94,15 @@ void		OE_TexEdPane::DrawSelf(void)
 
 
 
-	if ((l == r) || (t == b)) 
+	if ((l == r) || (t == b))
 		return;
-	
-//	XPDrawWindow(l, b, r, t, xpWindow_Screen);	
+
+//	XPDrawWindow(l, b, r, t, xpWindow_Screen);
 
 	if (gObjects.empty())	return;
-	
+
 	string	texName= gObjects[gLevelOfDetail].texture;
-	
+
 	GLenum	texNum = FindTexture(texName, false, NULL, NULL);
 	if (texNum)
 	{
@@ -123,7 +123,7 @@ int			OE_TexEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int button
 	if (button == 0)
 		return 0;
 	static	int	mouseX, mouseY;
-	
+
 	int l,t,r,b;
 	if (status == xplm_MouseDown)
 	{
@@ -138,7 +138,7 @@ int			OE_TexEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int button
 		{
 			XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
 			XPSetWidgetGeometry(mWidget,l+hDelta,t+vDelta,r+hDelta,b+vDelta);
-		}		
+		}
 	}
 	return 1;
 }
@@ -176,19 +176,19 @@ int		OE_TexEdPane::HandleMouseWheel(int x, int y, int direction)
 		RecalcSize();
 		float newX = SCoordToX(mouseS);
 		float newY = TCoordToY(mouseT);
-		
+
 		int	deltaX = newX - x;
 		int deltaY = newY - y;
-		
+
 		int	l,b,r,t;
 		XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
 		XPSetWidgetGeometry(mWidget,
-			l-deltaX, 
+			l-deltaX,
 			t-deltaY,
 			r-deltaX,
 			b-deltaY);
 		RecalcSize();
-	}	
+	}
 	return 1;
 }
 
@@ -220,14 +220,14 @@ float		OE_TexEdPane::SCoordToX(float inX)
 {
 	int	l,b,t,r;
 	XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
-	return l + kMargin + inX * (float) (r - l - kMargin - kMargin);	
+	return l + kMargin + inX * (float) (r - l - kMargin - kMargin);
 }
 
 float		OE_TexEdPane::TCoordToY(float inY)
 {
 	int	l,b,t,r;
 	XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
-	return b + kMargin + inY * (float) (t - b - kMargin - kMargin);	
+	return b + kMargin + inY * (float) (t - b - kMargin - kMargin);
 }
 
 
@@ -254,7 +254,7 @@ void OE_TexEdPane::HandleNotification(int catagory, int message, void * param)
 void	OE_TexEdPane::RecalcSize(void)
 {
 	if (gObjects.empty())	return;
-	
+
 	string	texName= gObjects[gLevelOfDetail].texture;
 	int	width,height;
 	GLenum	texNum = FindTexture(texName, false, &width, &height);
@@ -281,7 +281,7 @@ OE_DirectEdPane::OE_DirectEdPane(
 	OE_TexEdPane(inLeft, inTop, inRight, inBottom, inParent),
 	mDragCmd(-1)
 {
-}	
+}
 
 OE_DirectEdPane::~OE_DirectEdPane()
 {
@@ -292,16 +292,16 @@ void		OE_DirectEdPane::DrawSelf(void)
 	OE_TexEdPane::DrawSelf();
 	if (gObjects.empty())
 		return;
-	
+
 	XPLMSetGraphicsState(0,0,0,  0,0, 0,0);
 	glColor3f(1.0, 1.0, 0.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
+
 	int	l,t,r,b;
 	XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
-	
+
 	vector<float>	ptsx, ptsy;
-	
+
 	int n = 0;
 	for (vector<XObjCmd>::iterator cmd = gObjects[gLevelOfDetail].cmds.begin();
 		cmd != gObjects[gLevelOfDetail].cmds.end(); ++cmd, ++n)
@@ -342,7 +342,7 @@ void		OE_DirectEdPane::DrawSelf(void)
 					glBegin(GL_TRIANGLE_FAN);
 					break;
 				}
-				
+
 				for (vector<vec_tex>::const_iterator piter = cmd->st.begin();
 					piter != cmd->st.end(); ++piter)
 				{
@@ -355,14 +355,14 @@ void		OE_DirectEdPane::DrawSelf(void)
 			}
 		}
 	}
-	
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPointSize(GetHandleRadius(false) * 2);
 	glColor3f(1.0, 0.8, 0.8);
 	glBegin(GL_POINTS);
 	for (int n = 0; n <ptsx.size(); ++n)
 	{
-		glVertex2f(ptsx[n],ptsy[n]);		
+		glVertex2f(ptsx[n],ptsy[n]);
 	}
 	glEnd();
 	glPointSize(1);
@@ -390,12 +390,12 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 	XPGetWidgetGeometry(mWidget,&l,&t,&r,&b);
 	if (l == r || t == b) return 0;
 	if (gObjects.empty()) return 0;
-	
+
 	if (status != xplm_MouseDown && (XPLMGetModifiers() & xplm_ShiftFlag))
 	{
 		OE_ConstrainDrag(mMouseX, mMouseY, x, y);
 	}
-	
+
 	if (status == xplm_MouseDown)
 	{
 		if (gRebuildStep >= 0 && !gObjects.empty())
@@ -403,7 +403,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 			int	counter = gRebuildStep;
 			mDragCmd = -1;
 			// Go through the selection and calc our drag cmd and vertex.
-			for (set<int>::iterator s = gSelection.begin(); s != gSelection.end(); ++s)			
+			for (set<int>::iterator s = gSelection.begin(); s != gSelection.end(); ++s)
 			{
 				for (int v = 0; v < gObjects[gLevelOfDetail].cmds[*s].st.size(); ++v)
 				{
@@ -415,7 +415,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 					} else
 						--counter;
 				}
-				if (mDragCmd != -1) 
+				if (mDragCmd != -1)
 					break;
 			}
 			if (mDragCmd != -1)
@@ -430,7 +430,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 			} else
 				gRebuildStep = -1;
 		}
-		
+
 		int n = 0;
 		mOriginal = gObjects[gLevelOfDetail];
 		mDragCmd = -1;
@@ -463,7 +463,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 		}
 		OE_BeginCommand("Edit Texture Coordinates");
 		return 1;
-	
+
 	} else {
 		if (gRebuildStep > 0)
 		{
@@ -472,7 +472,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 			if (status == xplm_MouseUp)
 			{
 				mDragCmd = -1;
-				
+
 				int	count = 0;
 				for (set<int>::iterator s = gSelection.begin(); s != gSelection.end(); ++s)
 				{
@@ -485,7 +485,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 			}
 			return 0;
 		}
-			
+
 		float	deltaH = XCoordToS(x) - XCoordToS(mMouseX);
 		float	deltaV = YCoordToT(y) - YCoordToT(mMouseY);
 
@@ -503,7 +503,7 @@ int			OE_DirectEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int but
 			gObjects[gLevelOfDetail].cmds[mDragCmd].st[mDragVertex].st[0] = mOriginal.cmds[mDragCmd].st[mDragVertex].st[0] + deltaH;
 			gObjects[gLevelOfDetail].cmds[mDragCmd].st[mDragVertex].st[1] = mOriginal.cmds[mDragCmd].st[mDragVertex].st[1] + deltaV;
 		}
-				
+
 		if (status == xplm_MouseUp)
 		{
 			mDragCmd = -1;
@@ -539,7 +539,7 @@ const float	kHandlePosFractions[8][4] = {
 	{  1.0, 0.0, 0.5, 0.5 } };	// Left
 
 static	void	CalcHandlePositions(
-			float s1, float s2, float t1, float t2, 
+			float s1, float s2, float t1, float t2,
 			float handles[8][2])
 {
 	for (int n = 0; n < 8; ++n)
@@ -565,11 +565,11 @@ OE_PatchEdPane::OE_PatchEdPane(
 			int			inRight,
 			int			inBottom,
 			OE_Pane *	inParent,
-			bool		inProjection)  
+			bool		inProjection)
 	: OE_TexEdPane(inLeft, inTop, inRight, inBottom, inParent),
 	mProjection(inProjection)
 {
-}	
+}
 
 OE_PatchEdPane::~OE_PatchEdPane()
 {
@@ -579,7 +579,7 @@ void		OE_PatchEdPane::DrawSelf(void)
 {
 	OE_TexEdPane::DrawSelf();
 	if (!HasTexture()) return;
-	
+
 	float	handles[8][2];
 	CalcHandlePositions(
 			GetTexture().s1,
@@ -587,14 +587,14 @@ void		OE_PatchEdPane::DrawSelf(void)
 			GetTexture().t1,
 			GetTexture().t2,
 			handles);
-			
+
 	XPLMSetGraphicsState(0,0,0,  0,0, 0,0);
 	glColor3f(1.0, 1.0, 0.0);	// Yellow
 	glBegin(GL_LINE_LOOP);
 	for (int n = 0; n < 8; ++n)
 		glVertex2f(SCoordToX(handles[n][0]), TCoordToY(handles[n][1]));
 	glEnd();
-	
+
 	glBegin(GL_QUADS);
 	for (int n = 0; n < 8; ++n)
 		DrawQuad(SCoordToX(handles[n][0]), TCoordToY(handles[n][1]), GetHandleRadius(false));
@@ -618,11 +618,11 @@ int			OE_PatchEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int butt
 				mDragT1 = GetTexture().t1,
 				mDragT2 = GetTexture().t2,
 				handles);
-				
+
 		mMouseX = x;
-		mMouseY = y;		
+		mMouseY = y;
 		mHandle = 8;
-		
+
 		for (int n = 0; n < 8; ++n)
 		{
 			int px = SCoordToX(handles[n][0]);
@@ -632,21 +632,21 @@ int			OE_PatchEdPane::HandleClick(XPLMMouseStatus status, int x, int y, int butt
 				mHandle = n;
 			}
 		}
-		
+
 	} else {
-	
+
 		float	deltaH = XCoordToS(x) - XCoordToS(mMouseX);
 		float	deltaV = YCoordToT(y) - YCoordToT(mMouseY);
-		
+
 		if (kHandleWriteFlags[mHandle][0])		GetTexture().s1 = mDragS1 + deltaH;
 		if (kHandleWriteFlags[mHandle][1])		GetTexture().s2 = mDragS2 + deltaH;
 		if (kHandleWriteFlags[mHandle][2])		GetTexture().t1 = mDragT1 + deltaV;
-		if (kHandleWriteFlags[mHandle][3])		GetTexture().t2 = mDragT2 + deltaV;	
-		
-		if (mProjection)	
+		if (kHandleWriteFlags[mHandle][3])		GetTexture().t2 = mDragT2 + deltaV;
+
+		if (mProjection)
 			OE_Notifiable::Notify(catagory_Projection, msg_ProjectionTexChanged, NULL);
 	}
-	
+
 	return 1;
 }
 

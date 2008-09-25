@@ -48,7 +48,7 @@ class Direction_d : public pR::Direction_d_base
 
   Direction_d(const Direction_d<R> &d) : Base(d) {}
   Direction_d(const Vector_d<R> &v) : Base(v) {}
-  Direction_d(int d, Base_direction, int i) : 
+  Direction_d(int d, Base_direction, int i) :
     Base(d,Base_direction(),i) {}
   Direction_d(const Base& p) : Base(p) {}
 

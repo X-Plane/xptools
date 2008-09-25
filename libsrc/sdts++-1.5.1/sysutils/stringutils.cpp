@@ -35,7 +35,7 @@ stringutils::chomp( string & s )
    else
    {
       s.resize( last_pos + 1 ); // resize to chop out white space
-   } 
+   }
 
    return size - s.size();
 

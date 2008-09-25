@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,7 +32,7 @@
  * for the PC.
  *
  */
- 
+
 /* The directory separator is a macro and should be cased by some kind of compiler
    #define or something. */
 
@@ -47,7 +47,7 @@
 		#define DIR_STR		":"
 #else
 	#error PLATFORM NOT DEFINED
-#endif	
+#endif
 
 /*
  * These routines convert between little endian and native endian.  This means they
@@ -55,7 +55,7 @@
  * PC File structures, but EndianUtils.h contains more powerful stuff.
  *
  */
- 
+
 void	EndianFlipShort(short * ioShort);
 void	EndianFlipLong(long * ioLong);
 
@@ -74,10 +74,10 @@ enum {
 	getFile_Open,
 	getFile_Save,
 	getFile_PickFolder
-}; 
+};
 int		GetFilePathFromUser(
 					int					inType,
-					const char * 		inPrompt, 
+					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID,
 					char * 				outFileName,
@@ -86,7 +86,7 @@ int		GetFilePathFromUser(
 /*
  * DoUserAlert puts up an alert dialog box with the message and an OK button.
  *
- */	
+ */
 void	DoUserAlert(const char * inMsg);
 
 /*
@@ -100,7 +100,7 @@ void	ShowProgressMessage(const char * inMsg, float * progress);
  * ConfirmMessage puts up a dialog box with a message and two buttons.  The proceed
  * button is the default one.  Pass in the message and the text of the two buttons.
  * Returns 1 if the user clicks the proceed button, 0 if the user cancels.
- * 
+ *
  */
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn);
 
@@ -110,7 +110,7 @@ enum {
 	close_Cancel
 };
 /*
- * 
+ *
  *
  */
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);

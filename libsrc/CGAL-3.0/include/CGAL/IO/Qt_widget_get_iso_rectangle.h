@@ -93,7 +93,7 @@ protected:
           else {ymin = yfirst2; ymax = y;};
 
           widget->new_object(
-                     make_object(Iso_rectangle_2(xmin, ymin, 
+                     make_object(Iso_rectangle_2(xmin, ymin,
                                                  xmax, ymax)));
           on_first = false;
           widgetrepainted = true;
@@ -116,7 +116,7 @@ protected:
       widget->lock();
       widget->setColor(Qt::green);
       if(!widgetrepainted)
-        widget->get_painter().drawRect(first_x, first_y, 
+        widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
       widget->get_painter().drawRect(first_x, first_y, x - first_x,
                                      y - first_y);
@@ -144,7 +144,7 @@ protected:
            widget->setRasterOp(XorROP);
            *widget << CGAL::GREEN;
            if(!widgetrepainted)
-             widget->get_painter().drawRect(first_x, first_y, 
+             widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
            widget->setColor(old_color);
            widget->setRasterOp(old);
@@ -168,7 +168,7 @@ protected:
       widget->setRasterOp(XorROP);
       *widget << CGAL::GREEN;
       if(!widgetrepainted)
-        widget->get_painter().drawRect(first_x, first_y, 
+        widget->get_painter().drawRect(first_x, first_y,
                                        x2 - first_x, y2 - first_y);
       widget->setColor(old_color);
       widget->setRasterOp(old);
@@ -193,7 +193,7 @@ protected:
     widget->setFocusPolicy(oldpolicy);
     on_first = false;
   };
-};//end class 
+};//end class
 
 } // namespace CGAL
 

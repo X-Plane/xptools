@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ GISClass_t		WED_GISComposite::GetGISClass		(void				 ) const
 }
 
 const char *	WED_GISComposite::GetGISSubtype	(void				 ) const
-{	
+{
 	return GetClass();
 }
 
@@ -52,7 +52,7 @@ void			WED_GISComposite::GetBounds		(	   Bbox2&  bounds) const
 bool			WED_GISComposite::IntersectsBox	(const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);	
+	GetBounds(me);
 	if (!bounds.overlap(me)) return false;
 
 	int n = GetNumEntities();
@@ -64,7 +64,7 @@ bool			WED_GISComposite::IntersectsBox	(const Bbox2&  bounds) const
 bool			WED_GISComposite::WithinBox		(const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);	
+	GetBounds(me);
 	if (bounds.contains(me)) return true;
 
 	int n = GetNumEntities();
@@ -76,7 +76,7 @@ bool			WED_GISComposite::WithinBox		(const Bbox2&  bounds) const
 bool			WED_GISComposite::PtWithin		(const Point2& p	 ) const
 {
 	Bbox2	me;
-	GetBounds(me);	
+	GetBounds(me);
 	if (!me.contains(p)) return false;
 
 	int n = GetNumEntities();
@@ -88,7 +88,7 @@ bool			WED_GISComposite::PtWithin		(const Point2& p	 ) const
 bool			WED_GISComposite::PtOnFrame		(const Point2& p, double d) const
 {
 	Bbox2	me;
-	GetBounds(me);	
+	GetBounds(me);
 	me.p1 -= Vector2(d,d);
 	me.p2 += Vector2(d,d);
 	if (!me.contains(p)) return false;
@@ -141,6 +141,6 @@ void	WED_GISComposite::RebuildCache(void) const
 			ent->GetBounds(child);
 			mCacheBounds += child;
 			mEntities.push_back(ent);
-		}	
+		}
 	}
 }

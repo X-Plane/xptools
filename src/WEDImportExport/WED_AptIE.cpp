@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -70,7 +70,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 	int l = n-1;
 	bool closed = chain->IsClosed();
 	set<int>	no_attrs;
-	
+
 	Point2	pt, hi, lo;
 	for (int i = 0; i < n; ++i)
 	{
@@ -95,14 +95,14 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 				node->GetAttributes(enums);
 				for (set<int>::iterator e = enums.begin(); e != enums.end(); ++e)
 					attrs.insert(ENUM_Export(*e));
-				
+
 				if (first && !closed) is_split = false;	// optimization - even if user split the first point, who cares - hi control is all that used, so we do not
 				// need to separately export the low one!
-				
+
 				if (is_split)
 				{
 					// Note that we have to know which is the last of the three we write and write the ring if needed.
-					
+
 					if (has_lo)	accum(poly,									  apt_lin_crv, pt, recip(pt, lo)	,		  no_attrs		   );
 								accum(poly, (!has_hi && last) ? apt_rng_seg : apt_lin_seg, pt, pt				, has_hi ? no_attrs : attrs);
 					if (has_hi) accum(poly,             last  ? apt_rng_crv : apt_lin_crv, pt, hi				,					  attrs);
@@ -116,7 +116,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 
 			}
 		}
-		
+
 	}
 }
 
@@ -139,11 +139,11 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 
 	int holes, h;
 
-	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to 
+	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to
 	 * build the interior ring of an overlay image.  If we recurse through the overlay image we  get
 	 * a bogus export. */
 	if(dynamic_cast<WED_OverlayImage *>(what)) return;
-	
+
 	if (apt = dynamic_cast<WED_Airport *>(what))
 	{
 		apts.push_back(AptInfo_t());
@@ -155,7 +155,7 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	}
 	else if (bou = dynamic_cast<WED_AirportBoundary *>(what))
 	{
-		apts.back().boundaries.push_back(AptBoundary_t());		
+		apts.back().boundaries.push_back(AptBoundary_t());
 		bou->Export(apts.back().boundaries.back());
 		cha = dynamic_cast<WED_AirportChain*>(bou->GetOuterRing());
 		if (cha) ExportLinearPath(cha, apts.back().boundaries.back().area);
@@ -163,14 +163,14 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		for (h = 0; h < holes; ++h)
 		{
 			cha = dynamic_cast<WED_AirportChain *>(bou->GetNthHole(h));
-			if (cha) ExportLinearPath(cha, apts.back().boundaries.back().area);			
+			if (cha) ExportLinearPath(cha, apts.back().boundaries.back().area);
 		}
 		return;	// bail out - we already got the children.
-	
+
 	}
 	else if (cha = dynamic_cast<WED_AirportChain *>(what))
 	{
-		apts.back().lines.push_back(AptMarking_t());		
+		apts.back().lines.push_back(AptMarking_t());
 		cha->Export(apts.back().lines.back());
 		ExportLinearPath(cha, apts.back().lines.back().area);
 		return;	// don't waste time with nodes - for speed
@@ -209,14 +209,14 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	{
 		apts.back().taxiways.push_back(AptTaxiway_t());
 		tax->Export(apts.back().taxiways.back());
-		
+
 		cha = dynamic_cast<WED_AirportChain*>(tax->GetOuterRing());
 		if (cha) ExportLinearPath(cha, apts.back().taxiways.back().area);
 		holes = tax->GetNumHoles();
 		for (h = 0; h < holes; ++h)
 		{
 			cha = dynamic_cast<WED_AirportChain *>(tax->GetNthHole(h));
-			if (cha) ExportLinearPath(cha, apts.back().taxiways.back().area);			
+			if (cha) ExportLinearPath(cha, apts.back().taxiways.back().area);
 		}
 		return; // bail out - we already got the children
 	}
@@ -228,14 +228,14 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	{
 		apts.back().windsocks.push_back(AptWindsock_t());
 		win->Export(apts.back().windsocks.back());
-	} 
+	}
 	else if (atc = dynamic_cast<WED_ATCFrequency *>(what))
 	{
 		apts.back().atc.push_back(AptATCFreq_t());
 		atc->Export(apts.back().atc.back());
 	}
-	
-	
+
+
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
 		AptExportRecursive(what->GetNthChild(i), apts);
@@ -247,7 +247,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFile(file_path,apts);	
+	WriteAptFile(file_path,apts);
 }
 
 int		WED_CanExportApt(IResolver * resolver)
@@ -259,7 +259,7 @@ int		WED_CanExportApt(IResolver * resolver)
 void	WED_DoExportApt(IResolver * resolver)
 {
 	if (!WED_ValidateApt(resolver)) return;
-	
+
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];
 	strcpy(path,"apt.dat");
@@ -295,7 +295,7 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		// 2. We scan forward for as many colocated points as possible that form zero-length segments (which we skip).  BUT: two control points on two different points DO
 		//    make a loop even if the points are colocated.
 		// 3. The final point is used for the "high-side" control point.
-				
+
 		// 1. Low side control point
 		bool has_lo = is_curved(cur->code);
 		Point2	lo_pt;
@@ -314,16 +314,16 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 			++next;
 		}
 //		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
-		--next;			
+		--next;
 		cur = next;
 //		printf("hi-end pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
 
-		
+
 		// 3. High side control point.
 		bool has_hi = is_curved(cur->code);
 		Point2 hi_pt;
 		if (has_hi) hi_pt = cur->ctrl;
-		
+
 		// Convert attributes
 		set<int>	attrs;
 		for (set<int>::const_iterator e = cur->attributes.begin(); e != cur->attributes.end(); ++e)
@@ -340,17 +340,17 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		n->SetSplit(has_lo != has_hi || orig != cur);
 		if (has_lo) n->SetControlHandleLo(lo_pt);
 		if (has_hi) n->SetControlHandleHi(hi_pt);
-		
+
 		n->SetAttributes(attrs);
-		
+
 		if (cur->code == apt_end_seg || cur->code == apt_end_crv)
 		{
 			chain = NULL;
 		}
 		else if (cur->code == apt_rng_seg || cur->code == apt_rng_crv)
-		{	
-			chain->SetClosed(true); 
-			chain = NULL; 
+		{
+			chain->SetClosed(true);
+			chain = NULL;
 		}
 	}
 	return ret;
@@ -386,13 +386,13 @@ void	WED_AptImport(
 	char path[1024];
 	strcpy(path,file_path);
 	strcat(path,".log");
-	
+
 	LazyLog_t log = { path, NULL };
-	
+
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
 		ConvertForward(*apt);
-		
+
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt, LazyPrintf, &log);
@@ -431,7 +431,7 @@ void	WED_AptImport(
 			WED_Taxiway * new_tax = WED_Taxiway::CreateTyped(archive);
 			new_tax->SetParent(new_apt,new_apt->CountChildren());
 			new_tax->Import(*tax, LazyPrintf, &log);
-			
+
 			if (!ImportLinearPath(tax->area, archive, new_tax, NULL, LazyPrintf, &log))
 			{
 				new_tax->SetParent(NULL,0);
@@ -444,7 +444,7 @@ void	WED_AptImport(
 			WED_AirportBoundary * new_bou = WED_AirportBoundary::CreateTyped(archive);
 			new_bou->SetParent(new_apt,new_apt->CountChildren());
 			new_bou->Import(*bou, LazyPrintf, &log);
-			
+
 			if (!ImportLinearPath(bou->area, archive, new_bou, NULL, LazyPrintf, &log))
 			{
 				new_bou->SetParent(NULL,0);
@@ -453,7 +453,7 @@ void	WED_AptImport(
 		}
 
 		for (AptMarkingVector::iterator lin = apt->lines.begin(); lin != apt->lines.end(); ++lin)
-		{			
+		{
 			vector<WED_AirportChain *> new_lin;
 			ImportLinearPath(lin->area, archive, new_apt, &new_lin, LazyPrintf, &log);
 			for (vector<WED_AirportChain *>::iterator li = new_lin.begin(); li != new_lin.end(); ++li)
@@ -466,7 +466,7 @@ void	WED_AptImport(
 			new_lit->SetParent(new_apt,new_apt->CountChildren());
 			new_lit->Import(*lit, LazyPrintf, &log);
 		}
-		
+
 		for (AptSignVector::iterator sin = apt->signs.begin(); sin != apt->signs.end(); ++sin)
 		{
 			WED_AirportSign * new_sin = WED_AirportSign::CreateTyped(archive);
@@ -480,21 +480,21 @@ void	WED_AptImport(
 			new_gat->SetParent(new_apt,new_apt->CountChildren());
 			new_gat->Import(*gat, LazyPrintf, &log);
 		}
-		
+
 		if (apt->tower.draw_obj != -1)
 		{
 			WED_TowerViewpoint * new_twr = WED_TowerViewpoint::CreateTyped(archive);
 			new_twr->SetParent(new_apt,new_apt->CountChildren());
 			new_twr->Import(apt->tower, LazyPrintf, &log);
 		}
-		
+
 		if (apt->beacon.color_code != apt_beacon_none)
 		{
 			WED_AirportBeacon * new_bea = WED_AirportBeacon::CreateTyped(archive);
 			new_bea->SetParent(new_apt,new_apt->CountChildren());
 			new_bea->Import(apt->beacon, LazyPrintf, &log);
 		}
-	
+
 		for (AptWindsockVector::iterator win = apt->windsocks.begin(); win != apt->windsocks.end(); ++win)
 		{
 			WED_Windsock * new_win = WED_Windsock::CreateTyped(archive);
@@ -509,7 +509,7 @@ void	WED_AptImport(
 			new_atc->Import(*atc, LazyPrintf, &log);
 		}
 	}
-	
+
 	if (log.fi)
 	{
 		fclose(log.fi);
@@ -519,7 +519,7 @@ void	WED_AptImport(
 
 int		WED_CanImportApt(IResolver * resolver)
 {
-	return 1;	
+	return 1;
 }
 
 void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive)
@@ -533,7 +533,7 @@ void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive)
 		WED_AptImport(archive, wrl, path);
 		WED_SetAnyAirport(resolver);
 		wrl->CommitOperation();
-	}	
+	}
 }
 
 static set<string>	s_used_rwy;
@@ -557,22 +557,22 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 			n2 = name.substr(p+1);
 		} else
 			n1 = name;
-			
+
 		int suf1 = 0, suf2 = 0;
 		int	num1 = -1, num2 = -1;
-		
+
 		if (n1.empty())	msg = "The runway/sealane '" + name + "' has an empty low-end name.";
 		else {
 			int suffix = n1[n1.length()-1];
 			if (suffix < '0' || suffix > '9')
 			{
 				if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf1 = suffix;
-				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";				
-				n1.erase(n1.length()-1);				
+				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";
+				n1.erase(n1.length()-1);
 			}
-			
-			for (i = 0; i < n1.length(); ++i)			
-			if (n1[i] < '0' || n1[i] > '9') 
+
+			for (i = 0; i < n1.length(); ++i)
+			if (n1[i] < '0' || n1[i] > '9')
 			{
 				msg = "The runway/sealane '" + name + "' has an illegal characters in its low-end name.";
 				break;
@@ -587,7 +587,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 				num1 = -1;
 			}
 		}
-		
+
 		if (p != name.npos)
 		{
 			if (n2.empty())	msg = "The runway/sealane '" + name + "' has an empty high-end name.";
@@ -596,12 +596,12 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 				if (suffix < '0' || suffix > '9')
 				{
 					if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf2 = suffix;
-					else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";				
-					n2.erase(n2.length()-1);				
+					else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";
+					n2.erase(n2.length()-1);
 				}
-				
-				for (i = 0; i < n2.length(); ++i)			
-				if (n2[i] < '0' || n2[i] > '9') 
+
+				for (i = 0; i < n2.length(); ++i)
+				if (n2[i] < '0' || n2[i] > '9')
 				{
 					msg = "The runway/sealane '" + name + "' has an illegal characters in its high-end name.";
 					break;
@@ -617,13 +617,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 				}
 			}
 		}
-		
+
 		if (suf1 != 0 && suf2 != 0)
 		{
 			if ((suf1 == 'L' && suf2 != 'R') ||
 				(suf1 == 'R' && suf2 != 'L') ||
 				(suf1 == 'C' && suf2 != 'C'))
-					msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";		
+					msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";
 		}
 		if (num1 != -1 && num2 != -1)
 		{
@@ -632,24 +632,24 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 			else if (num2 != num1 + 18)
 				msg = "The runway/sealane '" + name + "' has mismatched runway numbers - high end is not the reciprocal of the low-end.";
 		}
-		
+
 		if (msg.empty())
 		{
 			WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 			if (lw->GetWidth() < 1.0) msg = "The runway/sealane '" + name + "' must be at least one meter wide.";
-			
+
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 			if (rwy)
-			{			
+			{
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced threshholds.";
-			}	
+			}
 		}
 	}
 	if (who->GetClass() == WED_Helipad::sClass)
 	{
 		if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
 		s_used_hel.insert(name);
-	
+
 		n1 = name;
 		if (n1.empty())	msg = "The selected helipad has no name.";
 		else {
@@ -676,7 +676,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 	if(who->GetClass() == WED_Airport::sClass)
 	{
 		s_used_hel.clear();
-		s_used_rwy.clear();	
+		s_used_rwy.clear();
 	}
 
 	if (!msg.empty())
@@ -695,7 +695,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 }
 
 bool	WED_ValidateApt(IResolver * resolver)
-{	
+{
 	s_used_hel.clear();
 	s_used_rwy.clear();
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -708,5 +708,5 @@ bool	WED_ValidateApt(IResolver * resolver)
 		wrl->CommitOperation();
 		return false;
 	}
-	return true;	
+	return true;
 }

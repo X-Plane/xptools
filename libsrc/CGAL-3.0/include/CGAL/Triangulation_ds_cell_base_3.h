@@ -68,13 +68,13 @@ public:
   {
     CGAL_triangulation_precondition( i >= 0 && i <= 3 );
     return V[i];
-  } 
+  }
 
   bool has_vertex(const Vertex_handle& v) const
   {
     return (V[0] == v) || (V[1] == v) || (V[2]== v) || (V[3]== v);
   }
-    
+
   bool has_vertex(const Vertex_handle& v, int & i) const
     {
       if (v == V[0]) { i = 0; return true; }
@@ -83,7 +83,7 @@ public:
       if (v == V[3]) { i = 3; return true; }
       return false;
     }
-    
+
   int index(const Vertex_handle& v) const
   {
     if (v == V[0]) { return 0; }
@@ -98,12 +98,12 @@ public:
     CGAL_triangulation_precondition( i >= 0 && i <= 3);
     return N[i];
   }
-    
+
   bool has_neighbor(const Cell_handle& n) const
   {
     return (N[0] == n) || (N[1] == n) || (N[2] == n) || (N[3] == n);
   }
-    
+
   bool has_neighbor(const Cell_handle& n, int & i) const
   {
     if(n == N[0]){ i = 0; return true; }
@@ -112,7 +112,7 @@ public:
     if(n == N[3]){ i = 3; return true; }
     return false;
   }
-    
+
   int index(const Cell_handle& n) const
   {
     if (n == N[0]) return 0;
@@ -121,7 +121,7 @@ public:
     CGAL_triangulation_assertion( n == N[3] );
     return 3;
   }
- 
+
   // SETTING
 
   void set_vertex(int i, const Vertex_handle& v)
@@ -129,7 +129,7 @@ public:
     CGAL_triangulation_precondition( i >= 0 && i <= 3);
     V[i] = v;
   }
-    
+
   void set_neighbor(int i, const Cell_handle& n)
   {
     CGAL_triangulation_precondition( i >= 0 && i <= 3);
@@ -140,7 +140,7 @@ public:
   {
     V[0] = V[1] = V[2] = V[3] = NULL;
   }
-    
+
   void set_vertices(const Vertex_handle& v0, const Vertex_handle& v1,
                     const Vertex_handle& v2, const Vertex_handle& v3)
   {
@@ -149,12 +149,12 @@ public:
     V[2] = v2;
     V[3] = v3;
   }
-    
+
   void set_neighbors()
   {
     N[0] = N[1] = N[2] = N[3] = NULL;
   }
-    
+
   void set_neighbors(const Cell_handle& n0, const Cell_handle& n1,
                      const Cell_handle& n2, const Cell_handle& n3)
   {
@@ -167,7 +167,7 @@ public:
   // CHECKING
 
   // the following trivial is_valid allows
-  // the user of derived cell base classes 
+  // the user of derived cell base classes
   // to add their own purpose checking
   bool is_valid(bool, int ) const
     {return true;}

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,20 +49,20 @@
 #include "Hydro.h"
 /*
 //#include <geos_c.h>
-#include <geos/geom/Geometry.h> 
-#include <geos/geom/GeometryCollection.h> 
-#include <geos/geom/Polygon.h> 
-#include <geos/geom/Point.h> 
-#include <geos/geom/MultiPoint.h> 
-#include <geos/geom/MultiLineString.h> 
-#include <geos/geom/MultiPolygon.h> 
-#include <geos/geom/LinearRing.h> 
-#include <geos/geom/LineString.h> 
+#include <geos/geom/Geometry.h>
+#include <geos/geom/GeometryCollection.h>
+#include <geos/geom/Polygon.h>
+#include <geos/geom/Point.h>
+#include <geos/geom/MultiPoint.h>
+#include <geos/geom/MultiLineString.h>
+#include <geos/geom/MultiPolygon.h>
+#include <geos/geom/LinearRing.h>
+#include <geos/geom/LineString.h>
 
-//#include <geos/geom/PrecisionModel.h> 
-#include <geos/geom/GeometryFactory.h> 
-#include <geos/geom/CoordinateSequenceFactory.h> 
-//#include <geos/geom/IntersectionMatrix.h> 
+//#include <geos/geom/PrecisionModel.h>
+#include <geos/geom/GeometryFactory.h>
+#include <geos/geom/CoordinateSequenceFactory.h>
+//#include <geos/geom/IntersectionMatrix.h>
 //#include <geos/io/WKTReader.h>
 //#include <geos/io/WKBReader.h>
 //#include <geos/io/WKBWriter.h>
@@ -73,7 +73,7 @@
 //#include <geos/operation/linemerge/LineMerger.h>
 //#include <geos/operation/overlay/OverlayOp.h>
 //#include <geos/geom/BinaryOp.h>
-//#include <geos/version.h> 
+//#include <geos/version.h>
 */
 #include "BitmapUtils.h"
 #include "TensorRoads.h"
@@ -115,20 +115,20 @@ void dump_geos_recursive(const geos::geom::Geometry * g, GISPolyObjPlacementVect
 			{
 				const geos::geom::CoordinateSequence * s = ls->getCoordinatesRO();
 				GISPolyObjPlacement_t	obj;
-						
+
 						obj.mRepType = NO_VALUE;
 						obj.mDerived = true;
 						obj.mHeight = 1.0;
 
 						obj.mShape.resize(1);
-						
+
 						unsigned int np = s->getSize();;
 					obj.mShape[0].resize(np);
 					for (int n = 0; n < np; ++n)
 					{
 						obj.mShape[0][n] = Point2(s->getOrdinate(n,0),s->getOrdinate(n,1));
 					}
-						
+
 					obj.mLocation = obj.mShape[0].centroid();
 					objs.push_back(obj);
 				}
@@ -166,7 +166,7 @@ void	WED_SelectionTool::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 }
-				
+
 void	WED_SelectionTool::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
@@ -176,7 +176,7 @@ void	WED_SelectionTool::DrawFeedbackOverlay(
 		int yMin = min(mMouseY, mMouseStartY);
 		int xMax = max(mMouseX, mMouseStartX);
 		int yMax = max(mMouseY, mMouseStartY);
-		
+
 		XPLMSetGraphicsState(0, 0, 0,    0, 1,   0, 0);
 		glColor4f(0.0, 0.5, 0.0, 0.3);
 		glBegin(GL_QUADS);
@@ -195,11 +195,11 @@ void	WED_SelectionTool::DrawFeedbackOverlay(
 		glEnd();
 	}
 }
-				
+
 bool	WED_SelectionTool::HandleClick(
 				XPLMMouseStatus		inStatus,
-				int 				inX, 
-				int 				inY, 
+				int 				inX,
+				int 				inY,
 				int 				inButton)
 {
 	if (inButton != 0) return 0;
@@ -279,20 +279,20 @@ bool	WED_SelectionTool::HandleClick(
 			for (set<Pmwx::Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
 			{
 				Point2 p = (*v)->point();
-				(*v)->point() = p + delta;				
+				(*v)->point() = p + delta;
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			mIsMoveVertices = false;
 		}
-		
+
 		return 1;
-	default:	
+	default:
 		return 0;
-	}		
+	}
 }
-		
+
 static int gStopPt = -1;
-				
+
 int		WED_SelectionTool::GetNumProperties(void)
 {
 	return 1;
@@ -312,7 +312,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 {
 	gStopPt = v;
 }
-	
+
 int		WED_SelectionTool::GetNumButtons(void)
 {
 	return 6;
@@ -363,12 +363,12 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				++gStopPt;
 
 				set<GISFace *>	fail;
-			
+
 			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
 //			for (Pmwx::Face_iterator the_face = gMap.faces_begin(); the_face != gMap.faces_end(); ++the_face, ++ctr)
 			{
 				/*
-				GISFace * the_face = *fsel;				
+				GISFace * the_face = *fsel;
 				GISHalfedge * iter, * stop;
 				int ct = 0;
 				iter = stop = the_face->outer_ccb();
@@ -376,7 +376,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					++ct;
 					iter = iter->next();
 				} while (iter != stop);
-				
+
 				geos::geom::CoordinateSequence * s = geos::geom::GeometryFactory::getDefaultInstance()->getCoordinateSequenceFactory()->create(ct+1,2);
 				ct = 0;
 				iter = stop = the_face->outer_ccb();
@@ -388,9 +388,9 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				} while (iter != stop);
 					s->setOrdinate(ct,0,iter->target()->point().x);
 					s->setOrdinate(ct,1,iter->target()->point().y);
-				
+
 				geos::geom::LinearRing * outer_ccb_ring = geos::geom::GeometryFactory::getDefaultInstance()->createLinearRing(s);
-				
+
 				vector<geos::geom::Geometry *>	holes(the_face->holes_count());
 				int i = 0;
 				for (Pmwx::Holes_iterator h = the_face->holes_begin(); h != the_face->holes_end(); ++h, ++i)
@@ -401,7 +401,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 						++ct;
 						iter = iter->next();
 					} while (iter != stop);
-					
+
 					geos::geom::CoordinateSequence * s = geos::geom::GeometryFactory::getDefaultInstance()->getCoordinateSequenceFactory()->create(ct+1,2);
 					ct = 0;
 					iter = stop = *h;
@@ -413,10 +413,10 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					} while (iter != stop);
 					s->setOrdinate(ct,0,iter->target()->point().x);
 					s->setOrdinate(ct,1,iter->target()->point().y);
-					
+
 					holes[i] =  geos::geom::GeometryFactory::getDefaultInstance()->createLinearRing(s);
 				}
-				
+
 				std::vector<geos::geom::Geometry *> *vholes = new std::vector<geos::geom::Geometry *>(holes.begin(), holes.end());
 				geos::geom::Geometry * poly =  geos::geom::GeometryFactory::getDefaultInstance()->createPolygon(outer_ccb_ring, vholes);
 
@@ -428,11 +428,11 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 
 
 				dump_geos_recursive(buf, (the_face)->mPolyObjs);
-				
+
 				delete poly;
 				delete buf;
 				*/
-				
+
 				/*
 				GISFace * the_face = *fsel;
 				if (gStopPt == ctr)
@@ -443,11 +443,11 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				}
 				if (the_face->is_unbounded()) continue;
 				if (the_face->mTerrainType == terrain_Water) continue;
-				
+
 				ComplexPolygon2			orig;
 				ComplexPolygonWeight 	insets;
 				vector<ComplexPolygon2>	inset;
-				
+
 				FaceToComplexPolygon(the_face, orig, &insets, GetInsetForEdgeDegs, NULL);
 
 				try {
@@ -470,16 +470,16 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					(the_face)->mPolyObjs.push_back(obj);
 				}
 				*/
-				
+
 				GISFace * the_face = *fsel;
 				Pmwx	result_map;
-				
+
 				try {
 					InsetPmwx(the_face, result_map,30.0 * MTR_TO_NM * NM_TO_DEG_LAT);
 				} catch(...) {
 					fail.insert(the_face);
 				}
-				
+
 				for (Pmwx::Face_iterator f = result_map.faces_begin(); f != result_map.faces_end(); ++f)
 				if (!f->is_unbounded())
 				if (f->mTerrainType == 1)
@@ -495,7 +495,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				}
 
 			}
-			
+
 			if (!fail.empty())
 			{
 				char buf[256];
@@ -506,7 +506,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				gFaceSelection = fail;
 				gVertexSelection.clear();
 			}
-			
+
 			return;
 		}
 	case 3:
@@ -520,7 +520,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			if(f)CreateNewBitmap(512,512,3,&img);
 			double		bounds[4];
 			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  WED_ProgressFunc, f ? &img : NULL, bounds);
-			if(f){			
+			if(f){
 			gMapView->SetFlowImage(img,bounds);
 			DestroyBitmap(&img);}
 		}
@@ -529,7 +529,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 	gEdgeSelection.clear();
 }
-	
+
 char *	WED_SelectionTool::GetStatusText(void)
 {
 	static char buf[1024];
@@ -541,14 +541,14 @@ char *	WED_SelectionTool::GetStatusText(void)
 		int yMin = min(mMouseY, mMouseStartY);
 		int xMax = max(mMouseX, mMouseStartX);
 		int yMax = max(mMouseY, mMouseStartY);
-		
+
 		double l1 = LonLatDistMeters(GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMin), GetZoomer()->XPixelToLon(xMax), GetZoomer()->YPixelToLat(yMin));
 		double l2 = LonLatDistMeters(GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMin), GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMax));
-		double d = LonLatDistMeters(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY), GetZoomer()->XPixelToLon(mMouseX), GetZoomer()->YPixelToLat(mMouseY));		
+		double d = LonLatDistMeters(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY), GetZoomer()->XPixelToLon(mMouseX), GetZoomer()->YPixelToLat(mMouseY));
 		double a = l1 * l2;
-		
+
 		n += sprintf(buf+n, "%dm %dmx%dm=%d sq m ", (int) d, (int) l1, (int) l2, (int) a);
-		
+
 		if (gDem.count(dem_Elevation) != 0)
 		{
 			double p1 = gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseX), 	 GetZoomer()->YPixelToLat(mMouseY	  ));
@@ -561,7 +561,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 			}
 		}
 	}
-	
+
 	n += sprintf(buf+n, "Vertices: %d Edges: %d Faces: %d Features: %d ",
 		gVertexSelection.size(), gEdgeSelection.size(), gFaceSelection.size(), gPointFeatureSelection.size());
 	if (gFaceSelection.size() == 1)
@@ -572,12 +572,12 @@ char *	WED_SelectionTool::GetStatusText(void)
 		n += sprintf(buf+n, "%d sq m ", (int) area);
 //		if (the_face->mTerrainType != terrain_Natural)
 			n += sprintf(buf+n,"Art.Terrain:%s ", FetchTokenString(the_face->mTerrainType));
-			
+
 		if (the_face->mAreaFeature.mFeatType != NO_VALUE)
 		{
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->mAreaFeature.mFeatType));
 		}
-		
+
 		for(GISParamMap::iterator p = the_face->mParams.begin(); p != the_face->mParams.end(); ++p)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
@@ -586,7 +586,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 		double t = 0;
 		for(set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
 		t += GetMapEdgeLengthMeters(*e);
-		n += sprintf(buf+n, "%.1f m ", t);		
+		n += sprintf(buf+n, "%.1f m ", t);
 	}
 
 	if (gEdgeSelection.size() == 1)
@@ -598,8 +598,8 @@ char *	WED_SelectionTool::GetStatusText(void)
 			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
 		}
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->mParams.begin(); p != (*gEdgeSelection.begin())->mParams.end(); ++p)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
-			
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
+
 		if ((*gEdgeSelection.begin())->mTransition != 0)
 		{
 			n += sprintf(buf+n,"Beach=%d ", (*gEdgeSelection.begin())->mTransition);
@@ -618,7 +618,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 		GISPointFeature_t * f = &gPointFeatureSelection.begin()->first->mPointFeatures[gPointFeatureSelection.begin()->second];
 		n += sprintf(buf+n, "%s ", FetchTokenString(f->mFeatType));
 		for(GISParamMap::iterator p = f->mParams.begin(); p != f->mParams.end(); ++p)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
 	if (gVertexSelection.size() == 1 && (*(gVertexSelection.begin()))->mTunnelPortal)
 	{
@@ -629,7 +629,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 	{
 		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ", (*(gVertexSelection.begin()))->point().x,(*(gVertexSelection.begin()))->point().y,(*(gVertexSelection.begin()))->point().x,(*(gVertexSelection.begin()))->point().y);
 	}
-	
+
 	{
 		int mx, my;
 		XPLMGetMouseLocation(&mx, &my);
@@ -638,7 +638,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 		FindAirports(vis_area, gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
 		{
-			int k = *e;			
+			int k = *e;
 			if (vis_area.overlap(gApts[k].bounds))
 			{
 				n += sprintf(buf+n, "%s %s ", gApts[k].icao.c_str(), gApts[k].name.c_str());
@@ -646,9 +646,9 @@ char *	WED_SelectionTool::GetStatusText(void)
 		}
 	}
 
-	
 
-	
+
+
 	return buf;
 }
 
@@ -741,7 +741,7 @@ static void	MakeEdgeClosestMaybe(Pmwx::Halfedge_handle v, NearestEdgeToPt_t * s)
 	Segment2	seg(v->source()->point(), v->target()->point());
 	Point2 proj = seg.projection(p);
 	if (!seg.collinear_has_on(proj)) return;
-	
+
 	double dist = CGAL::to_double(Segment2(p, proj).squared_length());
 	if (!s->found || dist < s->dist)
 	{
@@ -808,14 +808,14 @@ void	WED_SelectionTool::DoSelectionPreview()
 			{
 				gMap.FindHalfedgeFullyInRect(
 							Point2(bounds[0], bounds[1]),
-							Point2(bounds[2], bounds[3]), 
+							Point2(bounds[2], bounds[3]),
 							halfedgeitems);
 				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(), (mModifiers & xplm_ControlFlag) ? InsertEdgeInSet : ToggleEdgeInSet, &gEdgeSelection);
 			} else {
 				NearestEdgeToPt_t t;
 				t.found = false;
 				t.lon = bounds[0];
-				t.lat = bounds[1];			
+				t.lat = bounds[1];
 				gMap.FindHalfedgeTouchesRectFast(
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), halfedgeitems);
@@ -828,7 +828,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 						InsertEdgeInSet(t.e, &gEdgeSelection);
 					else
 						ToggleEdgeInSet(t.e, &gEdgeSelection);
-				}							
+				}
 			}
 		}
 		break;
@@ -865,7 +865,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				}
 			}
 		}
-		break;	
+		break;
 	case wed_Select_PointFeatures:
 		{
 			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
@@ -906,7 +906,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				{
 					for (int j = 0; j  < (*i)->mPointFeatures.size(); ++j)
 					{
-						PointFeatureSelection pfs(*i, j);					
+						PointFeatureSelection pfs(*i, j);
 							MakePFSClosestMaybe(pfs,&t);
 					}
 				}
@@ -918,6 +918,6 @@ void	WED_SelectionTool::DoSelectionPreview()
 						gPointFeatureSelection.erase(t.v);
 				}
 			}
-		}					
+		}
 	}
 }

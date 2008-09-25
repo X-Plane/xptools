@@ -3881,7 +3881,7 @@ typedef void (* glGetProgramEnvParameterfvARBProcPtr) (GLenum target, GLuint ind
 typedef void (* glGetProgramLocalParameterdvARBProcPtr) (GLenum target, GLuint index, GLdouble *params);
 typedef void (* glGetProgramLocalParameterfvARBProcPtr) (GLenum target, GLuint index, GLfloat *params);
 
-typedef void (* glProgramStringARBProcPtr) (GLenum target, GLenum format, GLsizei len, const GLvoid *string); 
+typedef void (* glProgramStringARBProcPtr) (GLenum target, GLenum format, GLsizei len, const GLvoid *string);
 typedef void (* glGetProgramStringARBProcPtr) (GLenum target, GLenum pname, GLvoid *string);
 
 typedef void (* glGetProgramivARBProcPtr) (GLenum target, GLenum pname, GLint *params);
@@ -3952,7 +3952,7 @@ extern void glGetProgramEnvParameterfvARB(GLenum target, GLuint index, GLfloat *
 extern void glGetProgramLocalParameterdvARB(GLenum target, GLuint index, GLdouble *params);
 extern void glGetProgramLocalParameterfvARB(GLenum target, GLuint index, GLfloat *params);
 
-extern void glProgramStringARB(GLenum target, GLenum format, GLsizei len, const GLvoid *string); 
+extern void glProgramStringARB(GLenum target, GLenum format, GLsizei len, const GLvoid *string);
 extern void glGetProgramStringARB(GLenum target, GLenum pname, GLvoid *string);
 
 extern void glGetProgramivARB(GLenum target, GLenum pname, GLint *params);

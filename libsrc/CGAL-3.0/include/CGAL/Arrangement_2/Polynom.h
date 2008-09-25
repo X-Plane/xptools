@@ -112,7 +112,7 @@ class Polynom
 
     // Start with a copy of the polynomial of the higher degree.
     Polynom<NT>        res (*hdeg_P);
-    
+
     // Add the coefficients of the other polynomial.
     for (int j = 0; j <= ldeg_P->degree; j++)
     {
@@ -193,7 +193,7 @@ class Polynom
 
     for (i = 0; i <= sum_deg; i++)
       res.coeffs[i] = _zero;
-    
+
     // Perform the convolution.
     for (i = 0; i <= degree; i++)
       for (j = 0; j <= p.degree; j++)
@@ -320,7 +320,7 @@ class Polynom
     int         deg_diff;
     NT          factor;
     int         r_deg = degree;
-    
+
     while (r_deg >= p.degree)
     {
       deg_diff = r_deg - p.degree;
@@ -330,16 +330,16 @@ class Polynom
 
       work2_P->coeffs.resize(r_deg);
       for (i = p.degree - 1; i >= 0; i--)
-	work2_P->coeffs[i + deg_diff] = work1_P->coeffs[i + deg_diff] - 
+	work2_P->coeffs[i + deg_diff] = work1_P->coeffs[i + deg_diff] -
 	                                (factor * p.coeffs[i]);
       for (i = 0; i < deg_diff; i++)
 	work2_P->coeffs[i] = work1_P->coeffs[i];
-      
+
       do
       {
 	r_deg--;
       } while (r_deg >= 0 && work2_P->coeffs[r_deg] == _zero);
-      
+
       swap_P = work1_P;
       work1_P = work2_P;
       work2_P = swap_P;
@@ -391,7 +391,7 @@ std::ostream& operator<< (std::ostream& os, const Polynom<NT>& p)
     if (c == 0)
       continue;
       os << " + (" << c << ')';
-    
+
     if (i == 1)
       os << "*x";
     else if (i > 1)
@@ -408,25 +408,25 @@ Polynom<NT> polynom_gcd (const Polynom<NT>& f, const Polynom<NT>& g)
   // Let p0(x) be the polynomial with the higher degree, and p1(x)
   // be the polynomial with a lower degree.
   Polynom<NT> p0, p1;
-  
+
   if (f.deg() > g.deg())
   {
     p0 = f;
-    p1 = g; 
+    p1 = g;
   }
   else
   {
     p0 = g;
     p1 = f;
   }
-    
+
   // Use Euclid's algorithm.
   Polynom<NT>       r;
 
   do
   {
     r = p0 % p1;
-      
+
     p0 = p1;
     p1 = r;
   } while (r.deg() > 0);

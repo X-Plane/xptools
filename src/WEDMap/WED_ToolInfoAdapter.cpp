@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,8 +49,8 @@ void	WED_ToolInfoAdapter::SetTool(WED_MapToolNew * tool)
 }
 
 void	WED_ToolInfoAdapter::GetCellContent(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			GUI_CellContent&			the_content)
 {
 	PropertyInfo_t	inf;
@@ -67,27 +67,27 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	the_content.bool_val = gui_Bool_Check;
 	the_content.bool_partial = 0;
 	if (!mTool) return;
-	
+
 	if (cell_x == mTool->CountProperties() * 2) return;
-	
+
 	if (cell_x % 2)
 	{
 		char buf[100], fmt[10];
-		
+
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 		mTool->GetNthProperty(cell_x / 2, val);
-		
+
 		switch(inf.prop_kind) {
-		case prop_Int:		
-			the_content.content_type = gui_Cell_Integer;		
-			the_content.int_val = val.int_val;			
+		case prop_Int:
+			the_content.content_type = gui_Cell_Integer;
+			the_content.int_val = val.int_val;
 			sprintf(fmt,"%%%dd", inf.digits);
 			sprintf(buf,fmt,val.int_val);
 			the_content.text_val = buf;
 			break;
-		case prop_Double:	
-			the_content.content_type = gui_Cell_Double;			
-			the_content.double_val = val.double_val;	
+		case prop_Double:
+			the_content.content_type = gui_Cell_Double;
+			the_content.double_val = val.double_val;
 			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
 			sprintf(buf,fmt,val.double_val);
 			the_content.text_val = buf;
@@ -99,7 +99,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
 		}
 		the_content.can_edit = inf.can_edit;
-		
+
 		if (inf.prop_kind == prop_Enum)
 			mTool->GetNthPropertyDictItem(cell_x / 2, val.int_val,the_content.text_val);
 
@@ -130,23 +130,23 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 		the_content.content_type = gui_Cell_EditText;
 		the_content.can_edit = 0;
-		the_content.text_val = inf.prop_name;		
-		the_content.indent_level = 1;		
+		the_content.text_val = inf.prop_name;
+		the_content.indent_level = 1;
 	}
 }
 
 void	WED_ToolInfoAdapter::GetEnumDictionary(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			map<int, string>&			out_dictionary)
 {
 	out_dictionary.clear();
-	
+
 	if (mTool)
 		mTool->GetNthPropertyDict(cell_x / 2, out_dictionary);
 	if(gExclusion)
 		out_dictionary.insert(map<int,string>::value_type(0,"None"));
-}			
+}
 void	WED_ToolInfoAdapter::AcceptEdit(
 			int							cell_x,
 			int							cell_y,
@@ -156,7 +156,7 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 	if (mTool == NULL) return;
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
-	mTool->GetNthPropertyInfo(cell_x / 2,inf);	
+	mTool->GetNthPropertyInfo(cell_x / 2,inf);
 	switch(inf.prop_kind) {
 	case prop_Int:
 		val.prop_kind = prop_Int;
@@ -182,7 +182,7 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		val.prop_kind = prop_Enum;
 		val.int_val = the_content.int_val;
 		break;
-	case prop_EnumSet:	
+	case prop_EnumSet:
 		val.prop_kind = prop_EnumSet;
 		if (gExclusion)
 		{
@@ -191,7 +191,7 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 				val.set_val.insert(the_content.int_val);
 		} else
 			val.set_val = the_content.int_set_val;
-		break;			
+		break;
 	}
 	mTool->SetNthProperty(cell_x / 2, val);
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
@@ -311,15 +311,15 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 
 	if (!inf.prop_name.empty() && inf.prop_name[0] == '.') return 1;
 
-	if (n % 2) 
+	if (n % 2)
 	switch(inf.prop_kind) {
-	case prop_Int:			
+	case prop_Int:
 	case prop_Double:		return inf.digits * GUI_MeasureRange(OUR_FONT, zero,zero+1) + 10;
 	case prop_String:		return 100;
 	case prop_FilePath:		return 150;
 	case prop_Bool:			return 30;
-	case prop_Enum:			
-	case prop_EnumSet:		
+	case prop_Enum:
+	case prop_EnumSet:
 		mTool->GetNthPropertyDict(n / 2, dict);
 		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
 			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
@@ -363,12 +363,12 @@ int			WED_ToolInfoAdapter::RowForY(int n)
 	return n / mRowHeight;
 }
 
-bool		WED_ToolInfoAdapter::CanSetCellWidth(void) const 
+bool		WED_ToolInfoAdapter::CanSetCellWidth(void) const
 {
 	return false;
 }
 
-bool		WED_ToolInfoAdapter::CanSetCellHeight(void) const 
+bool		WED_ToolInfoAdapter::CanSetCellHeight(void) const
 {
 	return false;
 }

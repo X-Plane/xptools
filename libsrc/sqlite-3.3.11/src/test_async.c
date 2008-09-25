@@ -10,7 +10,7 @@
 **
 *************************************************************************
 **
-** This file contains an example implementation of an asynchronous IO 
+** This file contains an example implementation of an asynchronous IO
 ** backend for SQLite.
 **
 ** WHAT IS ASYNCHRONOUS I/O?
@@ -90,7 +90,7 @@
 
 /*
 ** This demo uses pthreads.  If you do not have a pthreads implementation
-** for your operating system, you will need to recode the threading 
+** for your operating system, you will need to recode the threading
 ** logic.
 */
 #include <pthread.h>
@@ -122,10 +122,10 @@ static void asyncTrace(const char *zFormat, ...){
 **
 ** Basic rules:
 **
-**     * Both read and write access to the global write-op queue must be 
+**     * Both read and write access to the global write-op queue must be
 **       protected by the async.queueMutex.
 **
-**     * The file handles from the underlying system are assumed not to 
+**     * The file handles from the underlying system are assumed not to
 **       be thread safe.
 **
 **     * See the last two paragraphs under "The Writer Thread" for
@@ -140,27 +140,27 @@ static void asyncTrace(const char *zFormat, ...){
 **
 ** File handle operations (invoked by SQLite thread):
 **
-**         asyncWrite, asyncClose, asyncTruncate, asyncSync, 
+**         asyncWrite, asyncClose, asyncTruncate, asyncSync,
 **         asyncSetFullSync, asyncOpenDirectory.
-**    
+**
 **     The operations above add an entry to the global write-op list. They
 **     prepare the entry, acquire the async.queueMutex momentarily while
 **     list pointers are  manipulated to insert the new entry, then release
 **     the mutex and signal the writer thread to wake up in case it happens
 **     to be asleep.
 **
-**    
+**
 **         asyncRead, asyncFileSize.
 **
 **     Read operations. Both of these read from both the underlying file
-**     first then adjust their result based on pending writes in the 
+**     first then adjust their result based on pending writes in the
 **     write-op queue.   So async.queueMutex is held for the duration
 **     of these operations to prevent other threads from changing the
 **     queue in mid operation.
-**    
+**
 **
 **         asyncLock, asyncUnlock, asyncLockState, asyncCheckReservedLock
-**    
+**
 **     These primitives implement in-process locking using a hash table
 **     on the file name.  Files are locked correctly for connections coming
 **     from the same process.  But other processes cannot see these locks
@@ -168,20 +168,20 @@ static void asyncTrace(const char *zFormat, ...){
 **
 **
 **         asyncFileHandle.
-**    
-**     The sqlite3OsFileHandle() function is currently only used when 
+**
+**     The sqlite3OsFileHandle() function is currently only used when
 **     debugging the pager module. Unless sqlite3OsClose() is called on the
-**     file (shouldn't be possible for other reasons), the underlying 
+**     file (shouldn't be possible for other reasons), the underlying
 **     implementations are safe to call without grabbing any mutex. So we just
 **     go ahead and call it no matter what any other threads are doing.
 **
-**    
+**
 **         asyncSeek.
 **
-**     Calling this method just manipulates the AsyncFile.iOffset variable. 
+**     Calling this method just manipulates the AsyncFile.iOffset variable.
 **     Since this variable is never accessed by writer thread, this
-**     function does not require the mutex.  Actual calls to OsSeek() take 
-**     place just before OsWrite() or OsRead(), which are always protected by 
+**     function does not require the mutex.  Actual calls to OsSeek() take
+**     place just before OsWrite() or OsRead(), which are always protected by
 **     the mutex.
 **
 ** The writer thread:
@@ -196,7 +196,7 @@ static void asyncTrace(const char *zFormat, ...){
 **             Remove entry from head of write-op list
 **         END WHILE
 **
-**     The async.queueMutex is always held during the <write-op list is 
+**     The async.queueMutex is always held during the <write-op list is
 **     not empty> test, and when the entry is removed from the head
 **     of the write-op list. Sometimes it is held for the interim
 **     period (while the IO is performed), and sometimes it is
@@ -205,17 +205,17 @@ static void asyncTrace(const char *zFormat, ...){
 **     the underlying systems handles were opened on the same
 **     file-system entry.
 **
-**     If condition (b) above is true, then one file-handle 
+**     If condition (b) above is true, then one file-handle
 **     (AsyncFile.pBaseRead) is used exclusively by sqlite threads to read the
-**     file, the other (AsyncFile.pBaseWrite) by sqlite3_async_flush() 
-**     threads to perform write() operations. This means that read 
-**     operations are not blocked by asynchronous writes (although 
+**     file, the other (AsyncFile.pBaseWrite) by sqlite3_async_flush()
+**     threads to perform write() operations. This means that read
+**     operations are not blocked by asynchronous writes (although
 **     asynchronous writes may still be blocked by reads).
 **
 **     This assumes that the OS keeps two handles open on the same file
 **     properly in sync. That is, any read operation that starts after a
 **     write operation on the same file system entry has completed returns
-**     data consistent with the write. We also assume that if one thread 
+**     data consistent with the write. We also assume that if one thread
 **     reads a file while another is writing it all bytes other than the
 **     ones actually being written contain valid data.
 **
@@ -278,7 +278,7 @@ static const char *azOpcodeName[] = {
 ** Entries on the write-op queue are instances of the AsyncWrite
 ** structure, defined here.
 **
-** The interpretation of the iOffset and nByte variables varies depending 
+** The interpretation of the iOffset and nByte variables varies depending
 ** on the value of AsyncWrite.op:
 **
 ** ASYNC_WRITE:
@@ -315,9 +315,9 @@ static const char *azOpcodeName[] = {
 **     nByte   -> Number of bytes of zBuf points to (file name).
 **
 **
-** For an ASYNC_WRITE operation, zBuf points to the data to write to the file. 
+** For an ASYNC_WRITE operation, zBuf points to the data to write to the file.
 ** This space is sqliteMalloc()d along with the AsyncWrite structure in a
-** single blob, so is deleted when sqliteFree() is called on the parent 
+** single blob, so is deleted when sqliteFree() is called on the parent
 ** structure.
 */
 struct AsyncWrite {
@@ -329,7 +329,7 @@ struct AsyncWrite {
   AsyncWrite *pNext;  /* Next write operation (to any file) */
 };
 
-/* 
+/*
 ** The AsyncFile structure is a subclass of OsFile used for asynchronous IO.
 */
 struct AsyncFile {
@@ -342,14 +342,14 @@ struct AsyncFile {
 };
 
 /*
-** Add an entry to the end of the global write-op list. pWrite should point 
+** Add an entry to the end of the global write-op list. pWrite should point
 ** to an AsyncWrite structure allocated using sqlite3OsMalloc().  The writer
 ** thread will call sqlite3OsFree() to free the structure after the specified
 ** operation has been completed.
 **
 ** Once an AsyncWrite structure has been added to the list, it becomes the
 ** property of the writer thread and must not be read or modified by the
-** caller.  
+** caller.
 */
 static void addAsyncWrite(AsyncWrite *pWrite){
   /* We must hold the queue mutex in order to modify the queue pointers */
@@ -400,9 +400,9 @@ static void incrOpenFileCount(){
 ** structure and insert it (via addAsyncWrite() ) into the global list.
 */
 static int addNewAsyncWrite(
-  AsyncFile *pFile, 
-  int op, 
-  i64 iOffset, 
+  AsyncFile *pFile,
+  int op,
+  i64 iOffset,
   int nByte,
   const char *zByte
 ){
@@ -438,7 +438,7 @@ static int asyncClose(OsFile **pId){
 }
 
 /*
-** Implementation of sqlite3OsWrite() for asynchronous files. Instead of 
+** Implementation of sqlite3OsWrite() for asynchronous files. Instead of
 ** writing to the underlying file, this function adds an entry to the end of
 ** the global AsyncWrite list. Either SQLITE_OK or SQLITE_NOMEM may be
 ** returned.
@@ -451,7 +451,7 @@ static int asyncWrite(OsFile *id, const void *pBuf, int amt){
 }
 
 /*
-** Truncate the file to nByte bytes in length. This just adds an entry to 
+** Truncate the file to nByte bytes in length. This just adds an entry to
 ** the write-op list, no IO actually takes place.
 */
 static int asyncTruncate(OsFile *id, i64 nByte){
@@ -459,8 +459,8 @@ static int asyncTruncate(OsFile *id, i64 nByte){
 }
 
 /*
-** Open the directory identified by zName and associate it with the 
-** specified file. This just adds an entry to the write-op list, the 
+** Open the directory identified by zName and associate it with the
+** specified file. This just adds an entry to the write-op list, the
 ** directory is opened later by sqlite3_async_flush().
 */
 static int asyncOpenDirectory(OsFile *id, const char *zName){
@@ -469,7 +469,7 @@ static int asyncOpenDirectory(OsFile *id, const char *zName){
 }
 
 /*
-** Sync the file. This just adds an entry to the write-op list, the 
+** Sync the file. This just adds an entry to the write-op list, the
 ** sync() is done later by sqlite3_async_flush().
 */
 static int asyncSync(OsFile *id, int fullsync){
@@ -485,8 +485,8 @@ static void asyncSetFullSync(OsFile *id, int value){
 }
 
 /*
-** Read data from the file. First we read from the filesystem, then adjust 
-** the contents of the buffer based on ASYNC_WRITE operations in the 
+** Read data from the file. First we read from the filesystem, then adjust
+** the contents of the buffer based on ASYNC_WRITE operations in the
 ** write-op queue.
 **
 ** This method holds the mutex from start to finish.
@@ -554,9 +554,9 @@ asyncread_out:
 }
 
 /*
-** Seek to the specified offset. This just adjusts the AsyncFile.iOffset 
-** variable - calling seek() on the underlying file is defered until the 
-** next read() or write() operation. 
+** Seek to the specified offset. This just adjusts the AsyncFile.iOffset
+** variable - calling seek() on the underlying file is defered until the
+** next read() or write() operation.
 */
 static int asyncSeek(OsFile *id, i64 offset){
   AsyncFile *pFile = (AsyncFile *)id;
@@ -565,9 +565,9 @@ static int asyncSeek(OsFile *id, i64 offset){
 }
 
 /*
-** Read the size of the file. First we read the size of the file system 
-** entry, then adjust for any ASYNC_WRITE or ASYNC_TRUNCATE operations 
-** currently in the write-op list. 
+** Read the size of the file. First we read the size of the file system
+** entry, then adjust for any ASYNC_WRITE or ASYNC_TRUNCATE operations
+** currently in the write-op list.
 **
 ** This method holds the mutex from start to finish.
 */
@@ -579,7 +579,7 @@ int asyncFileSize(OsFile *id, i64 *pSize){
   pthread_mutex_lock(&async.queueMutex);
 
   /* Read the filesystem size from the base file. If pBaseRead is NULL, this
-  ** means the file hasn't been opened yet. In this case all relevant data 
+  ** means the file hasn't been opened yet. In this case all relevant data
   ** must be in the write-op queue anyway, so we can omit reading from the
   ** file-system.
   */
@@ -609,7 +609,7 @@ int asyncFileSize(OsFile *id, i64 *pSize){
 }
 
 /*
-** Return the operating system file handle. This is only used for debugging 
+** Return the operating system file handle. This is only used for debugging
 ** at the moment anyway.
 */
 static int asyncFileHandle(OsFile *id){
@@ -619,7 +619,7 @@ static int asyncFileHandle(OsFile *id){
 /*
 ** No disk locking is performed.  We keep track of locks locally in
 ** the async.aLock hash table.  Locking should appear to work the same
-** as with standard (unmodified) SQLite as long as all connections 
+** as with standard (unmodified) SQLite as long as all connections
 ** come from this one process.  Connections from external processes
 ** cannot see our internal hash table (obviously) and will thus not
 ** honor our locks.
@@ -650,7 +650,7 @@ static int asyncCheckReservedLock(OsFile *id){
   return rc>SHARED_LOCK;
 }
 
-/* 
+/*
 ** This is broken. But sqlite3OsLockState() is only used for testing anyway.
 */
 static int asyncLockState(OsFile *id){
@@ -722,7 +722,7 @@ static int asyncOpenFile(
   p->pMethod = &iomethod;
   p->pBaseRead = pBaseRead;
   p->pBaseWrite = pBaseWrite;
-  
+
   *pFile = (OsFile *)p;
   return SQLITE_OK;
 
@@ -736,7 +736,7 @@ error_out:
 
 /*
 ** The async-IO backends implementation of the three functions used to open
-** a file (xOpenExclusive, xOpenReadWrite and xOpenReadOnly). Most of the 
+** a file (xOpenExclusive, xOpenReadWrite and xOpenReadOnly). Most of the
 ** work is done in function asyncOpenFile() - see above.
 */
 static int asyncOpenExclusive(const char *z, OsFile **ppFile, int delFlag){
@@ -780,7 +780,7 @@ static int asyncOpenReadWrite(const char *z, OsFile **ppFile, int *pReadOnly){
 }
 
 /*
-** Implementation of sqlite3OsDelete. Add an entry to the end of the 
+** Implementation of sqlite3OsDelete. Add an entry to the end of the
 ** write-op queue to perform the delete.
 */
 static int asyncDelete(const char *z){
@@ -788,7 +788,7 @@ static int asyncDelete(const char *z){
 }
 
 /*
-** Implementation of sqlite3OsSyncDirectory. Add an entry to the end of the 
+** Implementation of sqlite3OsSyncDirectory. Add an entry to the end of the
 ** write-op queue to perform the directory sync.
 */
 static int asyncSyncDirectory(const char *z){
@@ -797,7 +797,7 @@ static int asyncSyncDirectory(const char *z){
 
 /*
 ** Implementation of sqlite3OsFileExists. Return true if file 'z' exists
-** in the file system. 
+** in the file system.
 **
 ** This method holds the mutex from start to finish.
 */
@@ -809,7 +809,7 @@ static int asyncFileExists(const char *z){
 
   /* See if the real file system contains the specified file.  */
   ret = xOrigFileExists(z);
-  
+
   for(p=async.pQueueFirst; p; p = p->pNext){
     if( p->op==ASYNC_DELETE && 0==strcmp(p->zBuf, z) ){
       ret = 0;
@@ -825,7 +825,7 @@ static int asyncFileExists(const char *z){
 
 /*
 ** Call this routine to enable or disable the
-** asynchronous IO features implemented in this file. 
+** asynchronous IO features implemented in this file.
 **
 ** This routine is not even remotely threadsafe.  Do not call
 ** this routine while any SQLite database connections are open.
@@ -869,9 +869,9 @@ static void asyncEnable(int enable){
   }
 }
 
-/* 
+/*
 ** This procedure runs in a separate thread, reading messages off of the
-** write queue and processing them one by one.  
+** write queue and processing them one by one.
 **
 ** If async.writerHaltNow is true, then this procedure exits
 ** after processing a single message.
@@ -919,7 +919,7 @@ static void *asyncWriterThread(void *NotUsed){
     /* Right now this thread is holding the mutex on the write-op queue.
     ** Variable 'p' points to the first entry in the write-op queue. In
     ** the general case, we hold on to the mutex for the entire body of
-    ** the loop. 
+    ** the loop.
     **
     ** However in the cases enumerated below, we relinquish the mutex,
     ** perform the IO, and then re-request the mutex before removing 'p' from
@@ -927,11 +927,11 @@ static void *asyncWriterThread(void *NotUsed){
     ** sqlite threads.
     **
     **     * An ASYNC_CLOSE operation.
-    **     * An ASYNC_OPENEXCLUSIVE operation. For this one, we relinquish 
+    **     * An ASYNC_OPENEXCLUSIVE operation. For this one, we relinquish
     **       the mutex, call the underlying xOpenExclusive() function, then
-    **       re-aquire the mutex before seting the AsyncFile.pBaseRead 
+    **       re-aquire the mutex before seting the AsyncFile.pBaseRead
     **       variable.
-    **     * ASYNC_SYNC and ASYNC_WRITE operations, if 
+    **     * ASYNC_SYNC and ASYNC_WRITE operations, if
     **       SQLITE_ASYNC_TWO_FILEHANDLES was set at compile time and two
     **       file-handles are open for the particular file being "synced".
     */
@@ -940,10 +940,10 @@ static void *asyncWriterThread(void *NotUsed){
     }
     if( p->pFile ){
       pBase = p->pFile->pBaseWrite;
-      if( 
-        p->op==ASYNC_CLOSE || 
+      if(
+        p->op==ASYNC_CLOSE ||
         p->op==ASYNC_OPENEXCLUSIVE ||
-        (pBase && (p->op==ASYNC_SYNC || p->op==ASYNC_WRITE) ) 
+        (pBase && (p->op==ASYNC_SYNC || p->op==ASYNC_WRITE) )
       ){
         pthread_mutex_unlock(&async.queueMutex);
         holdingMutex = 0;
@@ -1028,7 +1028,7 @@ static void *asyncWriterThread(void *NotUsed){
     }
 
     /* If we didn't hang on to the mutex during the IO op, obtain it now
-    ** so that the AsyncWrite structure can be safely removed from the 
+    ** so that the AsyncWrite structure can be safely removed from the
     ** global write-op queue.
     */
     if( !holdingMutex ){
@@ -1044,21 +1044,21 @@ static void *asyncWriterThread(void *NotUsed){
     assert( holdingMutex );
 
     /* An IO error has occured. We cannot report the error back to the
-    ** connection that requested the I/O since the error happened 
-    ** asynchronously.  The connection has already moved on.  There 
+    ** connection that requested the I/O since the error happened
+    ** asynchronously.  The connection has already moved on.  There
     ** really is nobody to report the error to.
     **
     ** The file for which the error occured may have been a database or
     ** journal file. Regardless, none of the currently queued operations
     ** associated with the same database should now be performed. Nor should
-    ** any subsequently requested IO on either a database or journal file 
+    ** any subsequently requested IO on either a database or journal file
     ** handle for the same database be accepted until the main database
     ** file handle has been closed and reopened.
     **
     ** Furthermore, no further IO should be queued or performed on any file
-    ** handle associated with a database that may have been part of a 
-    ** multi-file transaction that included the database associated with 
-    ** the IO error (i.e. a database ATTACHed to the same handle at some 
+    ** handle associated with a database that may have been part of a
+    ** multi-file transaction that included the database associated with
+    ** the IO error (i.e. a database ATTACHed to the same handle at some
     ** point in time).
     */
     if( rc!=SQLITE_OK ){
@@ -1079,7 +1079,7 @@ static void *asyncWriterThread(void *NotUsed){
       }
     }
   }
-  
+
   pthread_mutex_unlock(&async.writerMutex);
   return 0;
 }
@@ -1147,7 +1147,7 @@ static int testAsyncHalt(
     async.writerHaltWhenIdle = 0;
     async.writerHaltNow = 0;
   }else{
-    Tcl_AppendResult(interp, 
+    Tcl_AppendResult(interp,
       "should be one of: \"now\", \"idle\", or \"never\"", (char*)0);
     return TCL_ERROR;
   }
@@ -1209,7 +1209,7 @@ static int testAsyncStart(
 ** Wait for the current writer thread to terminate.
 **
 ** If the current writer thread is set to run forever then this
-** command would block forever.  To prevent that, an error is returned. 
+** command would block forever.  To prevent that, an error is returned.
 */
 static int testAsyncWait(
   void * clientData,

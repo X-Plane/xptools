@@ -135,18 +135,18 @@ compare_lexicographically_xy(const PointC3<K> &p, const PointC3<K> &q)
 template < class K >
 inline
 bool
-lexicographically_xy_smaller_or_equal(const PointC3<K> &p, 
+lexicographically_xy_smaller_or_equal(const PointC3<K> &p,
 				      const PointC3<K> &q)
-{ 
+{
   return compare_lexicographically_xy(p, q) != LARGER;
 }
 
 template < class K >
 inline
 bool
-lexicographically_xy_smaller(const PointC3<K> &p, 
+lexicographically_xy_smaller(const PointC3<K> &p,
 			     const PointC3<K> &q)
-{ 
+{
   return K().less_xy_3_object()(p, q);
 }
 

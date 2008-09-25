@@ -18,7 +18,7 @@
 #include "ElevationGridNode.h"
 #include "MathUtil.h"
 
-ElevationGridNode::ElevationGridNode() 
+ElevationGridNode::ElevationGridNode()
 {
 	setHeaderFlag(false);
 	setType(elevationGridNodeString);
@@ -77,7 +77,7 @@ ElevationGridNode::ElevationGridNode()
 	addEventIn(heightFieldString, setHeightField);
 }
 
-ElevationGridNode::~ElevationGridNode() 
+ElevationGridNode::~ElevationGridNode()
 {
 }
 
@@ -92,12 +92,12 @@ SFFloat *ElevationGridNode::getXSpacingField()
 	return (SFFloat *)getField(xSpacingFieldString);
 }
 
-void ElevationGridNode::setXSpacing(float value) 
+void ElevationGridNode::setXSpacing(float value)
 {
 	getXSpacingField()->setValue(value);
 }
 
-float ElevationGridNode::getXSpacing() 
+float ElevationGridNode::getXSpacing()
 {
 	return getXSpacingField()->getValue();
 }
@@ -113,12 +113,12 @@ SFFloat *ElevationGridNode::getZSpacingField()
 	return (SFFloat *)getField(zSpacingFieldString);
 }
 
-void ElevationGridNode::setZSpacing(float value) 
+void ElevationGridNode::setZSpacing(float value)
 {
 	getZSpacingField()->setValue(value);
 }
 
-float ElevationGridNode::getZSpacing() 
+float ElevationGridNode::getZSpacing()
 {
 	return getZSpacingField()->getValue();
 }
@@ -134,12 +134,12 @@ SFInt32 *ElevationGridNode::getXDimensionField()
 	return (SFInt32 *)getField(xDimensionFieldString);
 }
 
-void ElevationGridNode::setXDimension(int value) 
+void ElevationGridNode::setXDimension(int value)
 {
 	getXDimensionField()->setValue(value);
 }
 
-int ElevationGridNode::getXDimension() 
+int ElevationGridNode::getXDimension()
 {
 	return getXDimensionField()->getValue();
 }
@@ -155,12 +155,12 @@ SFInt32 *ElevationGridNode::getZDimensionField()
 	return (SFInt32 *)getField(zDimensionFieldString);
 }
 
-void ElevationGridNode::setZDimension(int value) 
+void ElevationGridNode::setZDimension(int value)
 {
 	getZDimensionField()->setValue(value);
 }
 
-int ElevationGridNode::getZDimension() 
+int ElevationGridNode::getZDimension()
 {
 	return getZDimensionField()->getValue();
 }
@@ -176,44 +176,44 @@ SFBool *ElevationGridNode::getColorPerVertexField()
 	return (SFBool *)getField(colorPerVertexFieldString);
 }
 
-void ElevationGridNode::setColorPerVertex(bool  value) 
+void ElevationGridNode::setColorPerVertex(bool  value)
 {
 	getColorPerVertexField()->setValue(value);
 }
 
 
-void ElevationGridNode::setColorPerVertex(int value) 
+void ElevationGridNode::setColorPerVertex(int value)
 {
 	setColorPerVertex(value ? true : false);
 }
 
-bool ElevationGridNode::getColorPerVertex() 
+bool ElevationGridNode::getColorPerVertex()
 {
 	return getColorPerVertexField()->getValue();
 }
-	
+
 ////////////////////////////////////////////////
 //	NormalPerVertex
 ////////////////////////////////////////////////
 
-SFBool *ElevationGridNode::getNormalPerVertexField() 
+SFBool *ElevationGridNode::getNormalPerVertexField()
 {
 	if (isInstanceNode() == false)
 		return normalPerVertexField;
 	return (SFBool *)getField(normalPerVertexFieldString);
 }
-	
-void ElevationGridNode::setNormalPerVertex(bool  value) 
+
+void ElevationGridNode::setNormalPerVertex(bool  value)
 {
 	getNormalPerVertexField()->setValue(value);
 }
 
-void ElevationGridNode::setNormalPerVertex(int value) 
+void ElevationGridNode::setNormalPerVertex(int value)
 {
 	setNormalPerVertex(value ? true : false);
 }
 
-bool ElevationGridNode::getNormalPerVertex() 
+bool ElevationGridNode::getNormalPerVertex()
 {
 	return getNormalPerVertexField()->getValue();
 }
@@ -228,18 +228,18 @@ SFBool *ElevationGridNode::getCCWField()
 		return ccwField;
 	return (SFBool *)getField(ccwFieldString);
 }
-	
-void ElevationGridNode::setCCW(bool  value) 
+
+void ElevationGridNode::setCCW(bool  value)
 {
 	getCCWField()->setValue(value);
 }
 
-void ElevationGridNode::setCCW(int value) 
+void ElevationGridNode::setCCW(int value)
 {
 	setCCW(value ? true : false);
 }
 
-bool  ElevationGridNode::getCCW() 
+bool  ElevationGridNode::getCCW()
 {
 	return getCCWField()->getValue();
 }
@@ -254,18 +254,18 @@ SFBool *ElevationGridNode::getSolidField()
 		return solidField;
 	return (SFBool *)getField(solidFieldString);
 }
-	
-void ElevationGridNode::setSolid(bool  value) 
+
+void ElevationGridNode::setSolid(bool  value)
 {
 	getSolidField()->setValue(value);
 }
 
-void ElevationGridNode::setSolid(int value) 
+void ElevationGridNode::setSolid(int value)
 {
 	setSolid(value ? true : false);
 }
 
-bool ElevationGridNode::getSolid() 
+bool ElevationGridNode::getSolid()
 {
 	return getSolidField()->getValue();
 }
@@ -280,13 +280,13 @@ SFFloat *ElevationGridNode::getCreaseAngleField()
 		return creaseAngleField;
 	return (SFFloat *)getField(creaseAngleFieldString);
 }
-	
-void ElevationGridNode::setCreaseAngle(float value) 
+
+void ElevationGridNode::setCreaseAngle(float value)
 {
 	getCreaseAngleField()->setValue(value);
 }
 
-float ElevationGridNode::getCreaseAngle() 
+float ElevationGridNode::getCreaseAngle()
 {
 	return getCreaseAngleField()->getValue();
 }
@@ -302,17 +302,17 @@ MFFloat *ElevationGridNode::getHeightField()
 	return (MFFloat *)getField(heightFieldString);
 }
 
-void ElevationGridNode::addHeight(float value) 
+void ElevationGridNode::addHeight(float value)
 {
 	getHeightField()->addValue(value);
 }
 
-int ElevationGridNode::getNHeights() 
+int ElevationGridNode::getNHeights()
 {
 	return getHeightField()->getSize();
 }
 
-float ElevationGridNode::getHeight(int index) 
+float ElevationGridNode::getHeight(int index)
 {
 	return getHeightField()->get1Value(index);
 }
@@ -321,12 +321,12 @@ float ElevationGridNode::getHeight(int index)
 //	List
 ////////////////////////////////////////////////
 
-ElevationGridNode *ElevationGridNode::next() 
+ElevationGridNode *ElevationGridNode::next()
 {
 	return (ElevationGridNode *)Node::next(getType());
 }
 
-ElevationGridNode *ElevationGridNode::nextTraversal() 
+ElevationGridNode *ElevationGridNode::nextTraversal()
 {
 	return (ElevationGridNode *)Node::nextTraversalByType(getType());
 }
@@ -334,7 +334,7 @@ ElevationGridNode *ElevationGridNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool ElevationGridNode::isChildNodeType(Node *node)
 {
 	if (node->isColorNode() || node->isNormalNode() || node->isTextureCoordinateNode())
@@ -343,11 +343,11 @@ bool ElevationGridNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void ElevationGridNode::uninitialize() 
+void ElevationGridNode::uninitialize()
 {
 }
 
-void ElevationGridNode::update() 
+void ElevationGridNode::update()
 {
 }
 
@@ -355,7 +355,7 @@ void ElevationGridNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void ElevationGridNode::outputContext(ostream &printStream, char *indentString) 
+void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *ccw = getCCWField();
 	SFBool *solid = getSolidField();
@@ -379,7 +379,7 @@ void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 	printStream << indentString << "\t" << "ccw " << ccw << endl;
 	printStream << indentString << "\t" << "solid " << solid << endl;
 	printStream << indentString << "\t" << "creaseAngle " << getCreaseAngle() << endl;
-		
+
 	NormalNode *normal = getNormalNodes();
 	if (normal != NULL) {
 		if (normal->isInstanceNode() == false) {
@@ -390,7 +390,7 @@ void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 			normal->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "normal USE " << normal->getName() << endl;
 	}
 
@@ -404,7 +404,7 @@ void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 			color->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "color USE " << color->getName() << endl;
 	}
 
@@ -418,7 +418,7 @@ void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 			texCoord->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "texCoord USE " << texCoord->getName() << endl;
 	}
 }
@@ -427,7 +427,7 @@ void ElevationGridNode::outputContext(ostream &printStream, char *indentString)
 //	GroupingNode::recomputeBoundingBox
 ////////////////////////////////////////////////
 
-void ElevationGridNode::initialize() 
+void ElevationGridNode::initialize()
 {
 	if (!isInitialized()) {
 #ifdef SUPPORT_OPENGL
@@ -478,7 +478,7 @@ static void DrawElevationGrid(ElevationGridNode *eg)
 			point[x + z*xDimension].setValue(xpos, ypos, zpos);
 		}
 	}
-	
+
 	ColorNode				*color		= eg->getColorNodes();
 	NormalNode				*normal		= eg->getNormalNodes();
 	TextureCoordinateNode	*texCoord	= eg->getTextureCoordinateNodes();
@@ -516,15 +516,15 @@ static void DrawElevationGrid(ElevationGridNode *eg)
 				glNormal3fv(egNormal);
 			}
 
-			float	egPoint[4][3]; 
-			float	egColor[4][4]; 
+			float	egPoint[4][3];
+			float	egColor[4][4];
 			float	egNormal[4][3];
 			float	egTexCoord[4][2];
 
 			egColor[0][3] = egColor[1][3] = egColor[2][3] = egColor[3][3] = 1.0f;
 
 			for (n=0; n<4; n++) {
-				
+
 				int xIndex = x + ((n < 2) ? 0 : 1);
 				int zIndex = z + (n%2);
 				int index = xIndex + zIndex*xDimension;
@@ -544,7 +544,7 @@ static void DrawElevationGrid(ElevationGridNode *eg)
 
 				point[index].getValue(egPoint[n]);
 			}
-	
+
 			glBegin(GL_POLYGON);
 			for (n=0; n<3; n++) {
 				if (bColorPerVertex == true && color) {

@@ -28,18 +28,18 @@ CGAL_BEGIN_NAMESPACE
 /*! @class Pmwx_sweep_line_event
  *
  * Stores the data associated with an event.
- * In addition to the information stored in Sweep_line_event, when 
- * constructing a * planar map, additional information is kept, in 
+ * In addition to the information stored in Sweep_line_event, when
+ * constructing a * planar map, additional information is kept, in
  * order to speed insertion of curves into the planar map.
  *
  * The additional infomation contains the following:
- * - among the left curves of the event, we keep the highest halfedge that 
+ * - among the left curves of the event, we keep the highest halfedge that
  *   was inserted into the planar map at any given time.
- * - an array of booleans that indicates for each curve to the right of 
- *   the event, whether it is already in the planar map or not. This is 
+ * - an array of booleans that indicates for each curve to the right of
+ *   the event, whether it is already in the planar map or not. This is
  *   used to speed insertions of curves into the planar map.
- * - an array of events that occur on the vertical curves that go through 
- *   this event. This is used instead of the array of points that is kept 
+ * - an array of events that occur on the vertical curves that go through
+ *   this event. This is used instead of the array of points that is kept
  *   in the base class.
  *
  * Inherits from Sweep_line_event.
@@ -47,7 +47,7 @@ CGAL_BEGIN_NAMESPACE
  */
 
 template<class SweepLineTraits_2, class CurveWrap>
-class Pmwx_sweep_line_event : 
+class Pmwx_sweep_line_event :
   public Sweep_line_event<SweepLineTraits_2, CurveWrap>
 {
 public:
@@ -65,7 +65,7 @@ public:
   typedef typename CurveWrap::PmwxInsertInfo PmwxInsertInfo;
 
   typedef std::list<Self *> VerticalXEventList;
-  typedef typename VerticalXEventList::iterator VerticalXEventListIter; 
+  typedef typename VerticalXEventList::iterator VerticalXEventListIter;
 
   typedef typename PmwxInsertInfo::Halfedge_handle Halfedge_handle;
 
@@ -80,9 +80,9 @@ public:
 
   /*! Insert a new intersection point on any of the vertical curves.
    *  The list of points is sorted by their y values.
-   *  If the requireSort flag is true, the appripriate place in the list 
-   *  is searched for. If not, the point is assumed to have the largest y 
-   *  value, and is inserted at the end of the list. 
+   *  If the requireSort flag is true, the appripriate place in the list
+   *  is searched for. If not, the point is assumed to have the largest y
+   *  value, and is inserted at the end of the list.
    *  If the pioint already exists, the point is nott inserted again.
    *
    *  @param p a reference to the point
@@ -91,15 +91,15 @@ public:
    *
    *  TODO - change the data structure of the vertical events to a set
    */
-  void add_vertical_curve_x_event(Self *e, bool requireSort=false) 
+  void add_vertical_curve_x_event(Self *e, bool requireSort=false)
   {
-    if ( m_verticalCurveXEvents.empty() ) 
+    if ( m_verticalCurveXEvents.empty() )
     {
-      m_verticalCurveXEvents.push_back(e); 
+      m_verticalCurveXEvents.push_back(e);
       return;
     }
-    
-    if ( !requireSort ) 
+
+    if ( !requireSort )
     {
       if ( m_verticalCurveXEvents.back() != e ) {
 	m_verticalCurveXEvents.push_back(e);
@@ -109,9 +109,9 @@ public:
       VerticalXEventListIter iter = m_verticalCurveXEvents.begin();
       while ( iter != m_verticalCurveXEvents.end() )
       {
-	if ( m_traits->compare_xy((*iter)->get_point(), e->get_point()) 
+	if ( m_traits->compare_xy((*iter)->get_point(), e->get_point())
 	     == SMALLER ) {
-	  ++iter; 
+	  ++iter;
 	}
 	else
 	  break;
@@ -137,13 +137,13 @@ public:
     for ( int i = 0 ; i < get_num_right_curves() ; i++ )
       m_isCurveInPm[i] = false;
   }
-  
+
   /*! Caculates the number of halfedges in the planar map between the highest
-   *  halfedge to the left of the event (which is stored in the insertInfo 
-   *  member) and the position of the the specified curve around the vertex 
+   *  halfedge to the left of the event (which is stored in the insertInfo
+   *  member) and the position of the the specified curve around the vertex
    *  in the planar map.
    *
-   * @param curve a pointer to a curve that is going to be inserted 
+   * @param curve a pointer to a curve that is going to be inserted
    * @return the number of halfedges to skip before inserting the curve
    */
   int get_halfedge_jump_count(CurveWrap *curve)
@@ -153,7 +153,7 @@ public:
     SubCurveIter iter = m_rightCurves->end();
     --iter;
     for ( ; iter != m_rightCurves->begin() ; --iter ) {
-      
+
       if ( curve->getId() == (*iter)->getId() ) {
 	m_isCurveInPm[counter] = true;
 	if ( get_num_left_curves() == 0 )
@@ -164,7 +164,7 @@ public:
 	i++;
       counter++;
     }
-    
+
     CGAL_assertion(curve->getId() == (*iter)->getId());
 
     if ( get_num_left_curves() == 0 )
@@ -172,7 +172,7 @@ public:
     return i;
   }
 
-  /*! Returns true if the curve is the highest one among the right curves 
+  /*! Returns true if the curve is the highest one among the right curves
    *  that were already inserted into the planar map.
    */
   bool is_curve_largest(CurveWrap *curve)

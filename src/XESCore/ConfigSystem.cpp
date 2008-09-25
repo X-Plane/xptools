@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -47,21 +47,21 @@ void	TokenizeOneLine(const char * begin, const char * end, vector<string>& outTo
 	while (begin < end)
 	{
 		// First skip any white space leading this token.
-		while (begin < end && (*begin == ' ' || 
+		while (begin < end && (*begin == ' ' ||
 							   *begin == '\t'))
 			++begin;
 		// If the token starts with a # or we hit the newline, we're done, bail.
-		if (*begin == '#' || 
-			*begin == '\r' || 
+		if (*begin == '#' ||
+			*begin == '\r' ||
 			*begin == '\n') return;
-		
+
 		// Mark the token start.
 		const char * tokenStart = begin;
 		// Scan to the next white space or # symbol.  This is the whole token.
-		while (begin < end && (*begin != ' '  && 
-							  *begin != '\t' && 
-							  *begin != '\r' && 
-							  *begin != '\n' && 
+		while (begin < end && (*begin != ' '  &&
+							  *begin != '\t' &&
+							  *begin != '\r' &&
+							  *begin != '\n' &&
 							  *begin != '#'))
 			++begin;
 		outTokens.push_back(string(tokenStart, begin));
@@ -79,16 +79,16 @@ bool TokenizeFunc(const char * s, const char * e, void * ref)
 static bool HandleInclude(const vector<string>& args, void * ref)
 {
 	if (args.size() < 2) return false;
-	
-	Assert(!sPathStack.empty());	
-	string full = sPathStack.back() + args[1];	
+
+	Assert(!sPathStack.empty());
+	string full = sPathStack.back() + args[1];
 	return LoadConfigFileFullPath(full.c_str());
 }
 
 
 bool	RegisterLineHandler(
-					const char * 			inToken, 
-					ProcessConfigString_f 	inHandler, 
+					const char * 			inToken,
+					ProcessConfigString_f 	inHandler,
 					void * 					inRef)
 {
 	if (sHandlerTable.empty())
@@ -113,10 +113,10 @@ string	FindConfigFile(const char * inFilename)
 	partial_path = appP + partial_path;
 	if (!strncmp(inFilename, appP.c_str(), appP.size()))
 		partial_path = inFilename;
-#endif	
+#endif
 	return partial_path;
 }
-					
+
 bool	LoadConfigFile(const char * inFilename)
 {
 	string partial_path = FindConfigFile(inFilename);
@@ -133,11 +133,11 @@ bool	LoadConfigFileFullPath(const char * inFilename)
 		printf("Unable to load config file %s\n", inFilename);
 		return ok;
 	}
-	
+
 	string	dir(inFilename);
-	dir.erase(dir.find_last_of("\\/:")+1);	
+	dir.erase(dir.find_last_of("\\/:")+1);
 	sPathStack.push_back(dir);
-	
+
 	MFTextScanner * scanner = TextScanner_Open(f);
 	if (scanner)
 	{
@@ -164,11 +164,11 @@ bool	LoadConfigFileFullPath(const char * inFilename)
 			TextScanner_Next(scanner);
 		}
 		ok = true;
-bail:	
+bail:
 		TextScanner_Close(scanner);
 	}
 	MemFile_Close(f);
-	sPathStack.pop_back();	
+	sPathStack.pop_back();
 	return ok;
 }
 
@@ -179,9 +179,9 @@ bool	LoadConfigFileOnce(const char * inFilename)
 	string	fname(inFilename);
 	if (sLoadedFiles.find(fname) != sLoadedFiles.end())
 		return true;
-	
+
 	bool	ok = LoadConfigFile(inFilename);
-	if (ok) 
+	if (ok)
 		sLoadedFiles.insert(fname);
 	return ok;
 }
@@ -200,7 +200,7 @@ float				TokenizeFloat(const string& s)
 
 inline  bool is_hex(char c)
 {
-	return ((c >= '0' && c <= '9') || 
+	return ((c >= '0' && c <= '9') ||
 			(c >= 'A' && c <= 'F') ||
 			(c >= 'a' && c <= 'f'));
 }
@@ -290,7 +290,7 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 			break;
 		case 's':
 			sp = va_arg(args, string *);
-			*sp = tokens[n];			
+			*sp = tokens[n];
 			break;
 		case 't':
 			tp = va_arg(args, char **);

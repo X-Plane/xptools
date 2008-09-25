@@ -70,7 +70,7 @@ class FileGIF89a : public FileImage {
 	unsigned int		lzwBufferOffset;
 	unsigned int		lzwBufferSize;
 	unsigned int		lzwTableIndex;
-	
+
 public:
 
 	FileGIF89a(char *fname);
@@ -126,12 +126,12 @@ public:
 		return &image[n].info;
 	}
 
-	RGBColor24 *getImageBuffer(int n) { 
-		return image[n].buffer; 
+	RGBColor24 *getImageBuffer(int n) {
+		return image[n].buffer;
 	}
 
-	int getImageBufferSize(int n) { 
-		return image[n].bufferSize; 
+	int getImageBufferSize(int n) {
+		return image[n].bufferSize;
 	}
 
 	unsigned int getImageLeftPosition(int n)	{
@@ -268,7 +268,7 @@ public:
 	int getHeight() {
 		return (0 < nImage) ? getImageHeight(0) : 0;
 	}
-	
+
 	RGBColor24 *getImage() {
 		return (0 < nImage) ? getImageBuffer(0) : 0;
 	}
@@ -285,7 +285,7 @@ public:
 	/////////////////////////////////////
 	//	Output infomations
 	/////////////////////////////////////
-	
+
 	void	printHeaderInfo();
 	void	printImageInfo(int n);
 };

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,15 +30,15 @@ public:
 	Bezier_Seq_Iterator(IGISPointSequence * seq, int n);
 	Bezier_Seq_Iterator(const Bezier_Seq_Iterator& rhs);
 	Bezier_Seq_Iterator& operator=(const Bezier_Seq_Iterator& rhs);
-	
+
 	bool operator==(const Bezier_Seq_Iterator& rhs) const;
 	bool operator!=(const Bezier_Seq_Iterator& rhs) const;
-	
+
 	Bezier_Seq_Iterator& operator++(void);
 	Bezier_Seq_Iterator operator++(int);
-	
+
 	Bezier2 operator*(void) const;
-	
+
 private:
 
 	IGISPointSequence *	mSeq;
@@ -49,7 +49,7 @@ private:
 
 TRIVIAL_COPY(WED_GISPolygon, WED_Entity)
 
-WED_GISPolygon::WED_GISPolygon(WED_Archive * archive, int id) : 
+WED_GISPolygon::WED_GISPolygon(WED_Archive * archive, int id) :
 	WED_Entity(archive, id)
 {
 }
@@ -64,7 +64,7 @@ GISClass_t		WED_GISPolygon::GetGISClass		(void				 ) const
 }
 
 const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
-{	
+{
 	return GetClass();
 }
 
@@ -78,12 +78,12 @@ void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
 bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	
+
 	// Quick check: if there is no union between our bbox and the bounds
 	// no possible intersection - fast exit.
 	GetBounds(me);
 	if (!bounds.overlap(me)) return false;
-	
+
 	// We have a slight problem: rings don't have area.  So we will do TWO possible
 	// tests:
 	// 1. If any ring intersects the box, that means we have a border crossing...
@@ -92,18 +92,18 @@ bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
 	// 2. If there are NO intersections then each ring of the polygon is either
 	//    entirely inside or outside the bbox.  Therefore the bbox is either entirely
 	//    inside or outside the polygon.  Test one corner.
-	
+
 	// For now we'll try case 2 first.  At least I am sure we can fast-exit
 	// the "pt inside ring" case using a bbox test.  I don't know how well
 	// our ring-box intersection code can fast-exit.
-	
+
 	if (PtWithin(bounds.p1)) return true;
-	
+
 	// Okay at least one point of the box is outside - if there is an interesection
 	// there must be an edge crossing, um, somewhere.
-	
+
 	if (GetOuterRing()->IntersectsBox(bounds)) return true;
-	
+
 	int hh = GetNumHoles();
 	for (int h = 0; h < hh; ++h)
 	{
@@ -120,7 +120,7 @@ bool				WED_GISPolygon::WithinBox		(const Bbox2&  bounds) const
 
 bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 {
-	// WARNING: rings do not contain the area inside them!  So PtWithin 
+	// WARNING: rings do not contain the area inside them!  So PtWithin
 	// returns false for our sub-parts.  That's why we're using inside_polygon_bez.
 	// If we want to fast-track exit this, we must do the bbox check ourselves!
 	Bbox2	bounds;
@@ -130,18 +130,18 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 	// go home happy fast.
 	outer_ring->GetBounds(bounds);
 	if (!bounds.contains(p)) return false;
-	
+
 	if (!inside_polygon_bez(
 			Bezier_Seq_Iterator(outer_ring,0),
 			Bezier_Seq_Iterator(outer_ring,outer_ring->GetNumPoints()),
 			p))
 		return false;
-		
+
 	int h = GetNumHoles();
 	for (int n = 0; n < h; ++n)
 	{
 		IGISPointSequence * sq = GetNthHole(n);
-		
+
 		// Fast skip: if p is outside the bbox don't bother with a full
 		// polygon check, which is rather expensive.
 		sq->GetBounds(bounds);
@@ -159,15 +159,15 @@ bool				WED_GISPolygon::PtOnFrame		(const Point2& p, double d) const
 {
 	// Fast case: normally we must check all inner holes if we "miss" the outer hole.
 	// BUT: if we are OUTSIDE the outer hole, we can early exit and not test a damned
-	// thing. 
+	// thing.
 	Bbox2	me;
 	GetBounds(me);
 	me.p1 -= Vector2(d,d);
-	me.p2 += Vector2(d,d);	
+	me.p2 += Vector2(d,d);
 	if (!me.contains(p)) return false;
-	
+
 	if (GetOuterRing()->PtOnFrame(p,d)) return true;
-	
+
 	int h = GetNumHoles();
 	for (int n = 0; n < h; ++n)
 	{
@@ -227,7 +227,7 @@ void				WED_GISPolygon::DeleteHole  (int n)
 void				WED_GISPolygon::AddHole		(IGISPointSequence * r)
 {
 	WED_Thing * t = SAFE_CAST(WED_Thing, r);
-	DebugAssert(t != NULL);	
+	DebugAssert(t != NULL);
 	DebugAssert(r->GetGISClass() == gis_Ring);
 	t->SetParent(this,CountChildren());
 }
@@ -237,7 +237,7 @@ void WED_GISPolygon::Reverse(void)
 	GetOuterRing()->Reverse();
 	int hh = GetNumHoles();
 	for (int h = 0; h < hh; ++h)
-	{	
+	{
 		GetNthHole(h)->Reverse();
 	}
 }

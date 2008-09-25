@@ -11,13 +11,13 @@
 #include <string.h>
 #include "FontStyleNode.h"
 
-FontStyleNode::FontStyleNode() 
+FontStyleNode::FontStyleNode()
 {
 	setHeaderFlag(false);
 	setType(fontStyleNodeString);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	// family field
@@ -57,7 +57,7 @@ FontStyleNode::FontStyleNode()
 	addField(topToBottomFieldString, topToBottomField);
 }
 
-FontStyleNode::~FontStyleNode() 
+FontStyleNode::~FontStyleNode()
 {
 }
 
@@ -72,12 +72,12 @@ SFFloat *FontStyleNode::getSizeField()
 	return (SFFloat *)getField(sizeFieldString);
 }
 
-void FontStyleNode::setSize(float value) 
+void FontStyleNode::setSize(float value)
 {
 	getSizeField()->setValue(value);
 }
 
-float FontStyleNode::getSize() 
+float FontStyleNode::getSize()
 {
 	return getSizeField()->getValue();
 }
@@ -92,13 +92,13 @@ SFString *FontStyleNode::getFamilyField()
 		return familyField;
 	return (SFString *)getField(familyFieldString);
 }
-	
-void FontStyleNode::setFamily(char *value) 
+
+void FontStyleNode::setFamily(char *value)
 {
 	getFamilyField()->setValue(value);
 }
 
-char *FontStyleNode::getFamily() 
+char *FontStyleNode::getFamily()
 {
 	return getFamilyField()->getValue();
 }
@@ -113,13 +113,13 @@ SFString *FontStyleNode::getStyleField()
 		return styleField;
 	return (SFString *)getField(styleFieldString);
 }
-	
-void FontStyleNode::setStyle(char *value) 
+
+void FontStyleNode::setStyle(char *value)
 {
 	getStyleField()->setValue(value);
 }
 
-char *FontStyleNode::getStyle() 
+char *FontStyleNode::getStyle()
 {
 	return getStyleField()->getValue();
 }
@@ -134,13 +134,13 @@ SFString *FontStyleNode::getLanguageField()
 		return languageField;
 	return (SFString *)getField(languageFieldString);
 }
-	
-void FontStyleNode::setLanguage(char *value) 
+
+void FontStyleNode::setLanguage(char *value)
 {
 	getLanguageField()->setValue(value);
 }
 
-char *FontStyleNode::getLanguage() 
+char *FontStyleNode::getLanguage()
 {
 	return getLanguageField()->getValue();
 }
@@ -155,18 +155,18 @@ SFBool *FontStyleNode::getHorizontalField()
 		return horizontalField;
 	return (SFBool *)getField(horizontalFieldString);
 }
-	
-void FontStyleNode::setHorizontal(bool value) 
+
+void FontStyleNode::setHorizontal(bool value)
 {
 	getHorizontalField()->setValue(value);
 }
 
-void FontStyleNode::setHorizontal(int value) 
+void FontStyleNode::setHorizontal(int value)
 {
 	setHorizontal(value ? true : false);
 }
 
-bool FontStyleNode::getHorizontal() 
+bool FontStyleNode::getHorizontal()
 {
 	return getHorizontalField()->getValue();
 }
@@ -181,18 +181,18 @@ SFBool *FontStyleNode::getLeftToRightField()
 		return leftToRightField;
 	return (SFBool *)getField(leftToRightFieldString);
 }
-	
-void FontStyleNode::setLeftToRight(bool value) 
+
+void FontStyleNode::setLeftToRight(bool value)
 {
 	getLeftToRightField()->setValue(value);
 }
 
-void FontStyleNode::setLeftToRight(int value) 
+void FontStyleNode::setLeftToRight(int value)
 {
 	setLeftToRight(value ? true : false);
 }
 
-bool FontStyleNode::getLeftToRight() 
+bool FontStyleNode::getLeftToRight()
 {
 	return getLeftToRightField()->getValue();
 }
@@ -207,18 +207,18 @@ SFBool *FontStyleNode::getTopToBottomField()
 		return topToBottomField;
 	return (SFBool *)getField(topToBottomFieldString);
 }
-	
-void FontStyleNode::setTopToBottom(bool value) 
+
+void FontStyleNode::setTopToBottom(bool value)
 {
 	getTopToBottomField()->setValue(value);
 }
 
-void FontStyleNode::setTopToBottom(int value) 
+void FontStyleNode::setTopToBottom(int value)
 {
 	setTopToBottom(value ? true : false);
 }
 
-bool FontStyleNode::getTopToBottom() 
+bool FontStyleNode::getTopToBottom()
 {
 	return getTopToBottomField()->getValue();
 }
@@ -234,17 +234,17 @@ MFString *FontStyleNode::getJustifyField()
 	return (MFString *)getField(justifyFieldString);
 }
 
-void FontStyleNode::addJustify(char *value) 
+void FontStyleNode::addJustify(char *value)
 {
 	getJustifyField()->addValue(value);
 }
 
-int FontStyleNode::getNJustifys() 
+int FontStyleNode::getNJustifys()
 {
 	return getJustifyField()->getSize();
 }
 
-char *FontStyleNode::getJustify(int index) 
+char *FontStyleNode::getJustify(int index)
 {
 	return getJustifyField()->get1Value(index);
 }
@@ -260,12 +260,12 @@ SFFloat *FontStyleNode::getSpacingField()
 	return (SFFloat *)getField(spacingFieldString);
 }
 
-void FontStyleNode::setSpacing(float value) 
+void FontStyleNode::setSpacing(float value)
 {
 	getSpacingField()->setValue(value);
 }
 
-float FontStyleNode::getSpacing() 
+float FontStyleNode::getSpacing()
 {
 	return getSpacingField()->getValue();
 }
@@ -274,12 +274,12 @@ float FontStyleNode::getSpacing()
 //	List
 ////////////////////////////////////////////////
 
-FontStyleNode *FontStyleNode::next() 
+FontStyleNode *FontStyleNode::next()
 {
 	return (FontStyleNode *)Node::next(getType());
 }
 
-FontStyleNode *FontStyleNode::nextTraversal() 
+FontStyleNode *FontStyleNode::nextTraversal()
 {
 	return (FontStyleNode *)Node::nextTraversalByType(getType());
 }
@@ -287,13 +287,13 @@ FontStyleNode *FontStyleNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool FontStyleNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void FontStyleNode::initialize() 
+void FontStyleNode::initialize()
 {
 	Node *parentNode = getParentNode();
 	if (parentNode != NULL) {
@@ -302,11 +302,11 @@ void FontStyleNode::initialize()
 	}
 }
 
-void FontStyleNode::uninitialize() 
+void FontStyleNode::uninitialize()
 {
 }
 
-void FontStyleNode::update() 
+void FontStyleNode::update()
 {
 }
 
@@ -314,7 +314,7 @@ void FontStyleNode::update()
 //	Justifymation
 ////////////////////////////////////////////////
 
-void FontStyleNode::outputContext(ostream &printStream, char *indentString) 
+void FontStyleNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFString *family = getFamilyField();
 	SFBool *horizontal = getHorizontalField();
@@ -332,7 +332,7 @@ void FontStyleNode::outputContext(ostream &printStream, char *indentString)
 	printStream << indentString << "\t" << "language " << language << endl;
 	printStream << indentString << "\t" << "spacing " << getSpacing() << endl;
 
-	if (0 < getNJustifys()) { 
+	if (0 < getNJustifys()) {
 		MFString *justify = (MFString *)getField(justifyFieldString);
 		printStream << indentString << "\t" << "justify [" << endl;
 		justify->MField::outputContext(printStream, indentString, "\t\t");

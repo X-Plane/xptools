@@ -39,7 +39,7 @@ struct Td_active_trapezoid : public std::unary_function<X_trapezoid,bool>
 	}
 };
 template <class X_trapezoid,class Traits>
-struct Td_active_non_degenerate_trapezoid : 
+struct Td_active_non_degenerate_trapezoid :
 public std::unary_function<X_trapezoid,bool>
 {
 	Td_active_non_degenerate_trapezoid(Traits& t) : traits(t) {}
@@ -57,7 +57,7 @@ public std::unary_function<X_trapezoid,bool>
 	Td_active_right_degenerate_curve_trapezoid(Traits& t) : traits(t) {}
 	bool operator()(const X_trapezoid& tr) const
 	{
-		return tr.is_active() && traits.is_degenerate_curve(tr) && 
+		return tr.is_active() && traits.is_degenerate_curve(tr) &&
 			!tr.right_bottom_neighbour();
 	}
 	protected:

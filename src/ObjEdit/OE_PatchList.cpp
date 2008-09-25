@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -43,13 +43,13 @@ const int	kColRights[] = {
 	32, 150, 180, 210, 240, 270 };
 
 OE_PatchTable::OE_PatchTable(
-                                   int                  inLeft,    
-                                   int                  inTop,    
+                                   int                  inLeft,
+                                   int                  inTop,
 	                               OE_Pane *			inSuper) :
 	OE_TablePane(inLeft, inTop, inLeft + kColRights[col_Count - 1],inTop - kRowHeight, 1, inSuper)
 {
 }
-	
+
 OE_PatchTable::~OE_PatchTable()
 {
 }
@@ -57,15 +57,15 @@ OE_PatchTable::~OE_PatchTable()
 void	OE_PatchTable::DrawCell(int row, int col, int l, int t, int r, int b)
 {
 	static	GLfloat	black[3] = { 0.0, 0.0, 0.0 };
-	
+
 	if (row < 0 || row >= gTextures.size())	return;
 	if (col < 0 || col >= col_Count) return;
-	
+
 	XPLMSetGraphicsState(0, 0, 0,    0, 0,  0, 0);
 	if (row == gCurTexture)
 		glColor3f(1.0, 1.0, 0.0);
 	else
-		glColor3f(1.0, 1.0, 1.0);	
+		glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_QUADS);
 	glVertex2i(l,t);
 	glVertex2i(r,t);
@@ -79,7 +79,7 @@ void	OE_PatchTable::DrawCell(int row, int col, int l, int t, int r, int b)
 	glVertex2i(r,b);
 	glVertex2i(l,b);
 	glEnd();
-	
+
 	if (col == col_Pic)
 	{
 		if (!gObjects.empty())
@@ -93,7 +93,7 @@ void	OE_PatchTable::DrawCell(int row, int col, int l, int t, int r, int b)
 					XPLMBindTexture2d(texid, 0);
 					XPLMSetGraphicsState(0, 1, 0,  1, 1, 0, 0);
 					glColor3f(1.0, 1.0, 1.0);
-					
+
 					glBegin(GL_QUADS);
 					glTexCoord2f(gTextures[row].s1, gTextures[row].t2);
 					glVertex2i(l+1,t-1);
@@ -103,12 +103,12 @@ void	OE_PatchTable::DrawCell(int row, int col, int l, int t, int r, int b)
 					glVertex2i(r-1,b+1);
 					glTexCoord2f(gTextures[row].s1, gTextures[row].t1);
 					glVertex2i(l+1,b+1);
-					glEnd();					
-				}					
+					glEnd();
+				}
 			}
 		}
 
-		
+
 	} else {
 		char	buf[256];
 		switch(col) {
@@ -128,7 +128,7 @@ void	OE_PatchTable::DrawCell(int row, int col, int l, int t, int r, int b)
 			sprintf(buf,"%f", gTextures[row].t2);
 			break;
 		}
-		
+
 		XPLMDrawString(black, l + 3, b + 5, buf, NULL, xplmFont_Basic);
 	}
 }
@@ -176,9 +176,9 @@ int		OE_PatchTable::GetRowBottom(int col)
 #pragma mark -
 
 OE_PatchList::OE_PatchList(
-                                   	int                  inLeft,    
-                                   	int                  inTop,    
-                                   	int                  inRight,    
+                                   	int                  inLeft,
+                                   	int                  inTop,
+                                   	int                  inRight,
                                    	int                  inBottom) :
 	OE_Pane(inLeft,inTop, inRight,inBottom, 1, "TexWindow", NULL)
 {
@@ -191,7 +191,7 @@ OE_PatchList::OE_PatchList(
 	mPane->SnapToCols();
 }
 
-	
+
 OE_PatchList::~OE_PatchList()
 {
 	delete mPane;

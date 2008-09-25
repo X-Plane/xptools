@@ -17,7 +17,7 @@
 //
 // Author(s)     : Tran Kai Frank DA <Frank.Da@sophia.inria.fr>
 
-#ifndef CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALSPHERE_FTC3_H 
+#ifndef CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALSPHERE_FTC3_H
 #define CGAL_SQUARED_RADIUS_SMALLEST_ORTHOGONALSPHERE_FTC3_H
 
 #include <CGAL/determinant.h>
@@ -54,7 +54,7 @@ squared_radius_orthogonalsphereC3(
            -rw+sw;
 
   FT det0 = det3x3_by_formula(dpx,dpy,dpz,dqx,dqy,dqz,drx,dry,drz);
-  
+
   FT det1 = det3x3_by_formula(dpp,dpy,dpz,dqq,dqy,dqz,drr,dry,drz);
   FT det2 = det3x3_by_formula(dpx,dpp,dpz,dqx,dqq,dqz,drx,drr,drz);
   FT det3 = det3x3_by_formula(dpx,dpy,dpp,dqx,dqy,dqq,drx,dry,drr);
@@ -104,7 +104,7 @@ FT
 squared_radius_smallest_orthogonalsphereC3(
   const FT &px, const FT &py, const FT &pz, const FT  &pw,
   const FT &qx, const FT &qy, const FT &qz, const FT  &qw)
-{ 
+{
   FT FT4(4);
   FT dp = CGAL_NTS square(px-qx)+CGAL_NTS square(py-qy)+CGAL_NTS square(pz-qz);
 

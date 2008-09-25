@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: BlocksSection.cpp
  *
  *  This source file is part of DIME.
@@ -78,9 +78,9 @@ dimeBlocksSection::copy(dimeModel * const model) const
 
 /*!
   This method reads a DXF BLOCKS section.
-*/  
+*/
 
-bool 
+bool
 dimeBlocksSection::read(dimeInput * const file)
 {
   int32 groupcode;
@@ -122,7 +122,7 @@ dimeBlocksSection::read(dimeInput * const file)
   This method writes a DXF BLOCKS section.
 */
 
-bool 
+bool
 dimeBlocksSection::write(dimeOutput * const file)
 {
   if (file->writeGroupCode(2) && file->writeString(sectionName)) {
@@ -139,7 +139,7 @@ dimeBlocksSection::write(dimeOutput * const file)
 
 //!
 
-int 
+int
 dimeBlocksSection::typeId() const
 {
   return dimeBase::dimeBlocksSectionType;
@@ -168,7 +168,7 @@ dimeBlocksSection::countRecords() const
   int i, n = this->blocks.count();
   for (i = 0; i < n; i++)
     cnt += this->blocks[i]->countRecords();
-  return cnt + 2; // two records are written in write() 
+  return cnt + 2; // two records are written in write()
 }
 
 //!
@@ -180,10 +180,10 @@ dimeBlocksSection::getSectionName() const
 }
 
 /*!
-  Returns the number of blocks in this section. 
+  Returns the number of blocks in this section.
 */
 
-int 
+int
 dimeBlocksSection::getNumBlocks() const
 {
   return this->blocks.count();
@@ -204,7 +204,7 @@ dimeBlocksSection::getBlock(const int idx)
   Removes (and deletes if no memhandler is used) the block at index \a idx.
 */
 
-void 
+void
 dimeBlocksSection::removeBlock(const int idx)
 {
   assert(idx >= 0 && idx < this->blocks.count());
@@ -217,7 +217,7 @@ dimeBlocksSection::removeBlock(const int idx)
   block will be inserted at the end of the list of blocks.
 */
 
-void 
+void
 dimeBlocksSection::insertBlock(dimeBlock * const block, const int idx)
 {
   if (idx < 0) this->blocks.append(block);

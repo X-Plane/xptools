@@ -21,7 +21,7 @@
 #ifndef CGAL_TRIANGULATION_UTILS_2_H
 #define CGAL_TRIANGULATION_UTILS_2_H
 
-CGAL_BEGIN_NAMESPACE 
+CGAL_BEGIN_NAMESPACE
 template < class T = void >
 struct Triangulation_cw_ccw_static_2 {
 
@@ -34,11 +34,11 @@ const int Triangulation_cw_ccw_static_2<T>::ccw_map[3] = {1, 2, 0};
 template < class T >
 const int Triangulation_cw_ccw_static_2<T>::cw_map[3] = {2, 0, 1};
 
-class Triangulation_cw_ccw_2 
+class Triangulation_cw_ccw_2
   : public  Triangulation_cw_ccw_static_2<>
 {
 public:
-  static int ccw(const int i) 
+  static int ccw(const int i)
     {
       CGAL_triangulation_precondition( i >= 0 && i < 3);
       return ccw_map[i];

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: HexRecord.h
  *
  *  This source file is part of DIME.
@@ -39,7 +39,7 @@ public:
 
 public:
   int typeId() const;
-  
+
 }; // class dimeHexRecord
 
 #endif // ! DIME_HEXRECORD_H

@@ -12,13 +12,13 @@
 #include "AudioClipNode.h"
 #include "MovieTextureNode.h"
 
-SoundNode::SoundNode() 
+SoundNode::SoundNode()
 {
 	setHeaderFlag(false);
 	setType(soundNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// minFront exposed field
@@ -54,7 +54,7 @@ SoundNode::SoundNode()
 	addExposedField(locationFieldString, locationField);
 
 	///////////////////////////
-	// Field 
+	// Field
 	///////////////////////////
 
 	// spatialize exposed field
@@ -62,7 +62,7 @@ SoundNode::SoundNode()
 	addField(spatializeFieldString, spatializeField);
 }
 
-SoundNode::~SoundNode() 
+SoundNode::~SoundNode()
 {
 }
 
@@ -77,17 +77,17 @@ SFVec3f *SoundNode::getDirectionField()
 	return (SFVec3f *)getExposedField(directionFieldString);
 }
 
-void SoundNode::setDirection(float value[]) 
+void SoundNode::setDirection(float value[])
 {
 	getDirectionField()->setValue(value);
 }
 
-void SoundNode::setDirection(float x, float y, float z) 
+void SoundNode::setDirection(float x, float y, float z)
 {
 	getDirectionField()->setValue(x, y, z);
 }
 
-void SoundNode::getDirection(float value[]) 
+void SoundNode::getDirection(float value[])
 {
 	getDirectionField()->getValue(value);
 }
@@ -103,17 +103,17 @@ SFVec3f *SoundNode::getLocationField()
 	return (SFVec3f *)getExposedField(locationFieldString);
 }
 
-void SoundNode::setLocation(float value[]) 
+void SoundNode::setLocation(float value[])
 {
 	getLocationField()->setValue(value);
 }
 
-void SoundNode::setLocation(float x, float y, float z) 
+void SoundNode::setLocation(float x, float y, float z)
 {
 	getLocationField()->setValue(x, y, z);
 }
 
-void SoundNode::getLocation(float value[]) 
+void SoundNode::getLocation(float value[])
 {
 	getLocationField()->getValue(value);
 }
@@ -128,13 +128,13 @@ SFFloat *SoundNode::getMinFrontField()
 		return minFrontField;
 	return (SFFloat *)getExposedField(minFrontFieldString);
 }
-	
-void SoundNode::setMinFront(float value) 
+
+void SoundNode::setMinFront(float value)
 {
 	getMinFrontField()->setValue(value);
 }
 
-float SoundNode::getMinFront() 
+float SoundNode::getMinFront()
 {
 	return getMinFrontField()->getValue();
 }
@@ -149,13 +149,13 @@ SFFloat *SoundNode::getMaxFrontField()
 		return maxFrontField;
 	return (SFFloat *)getExposedField(maxFrontFieldString);
 }
-	
-void SoundNode::setMaxFront(float value) 
+
+void SoundNode::setMaxFront(float value)
 {
 	getMaxFrontField()->setValue(value);
 }
 
-float SoundNode::getMaxFront() 
+float SoundNode::getMaxFront()
 {
 	return getMaxFrontField()->getValue();
 }
@@ -170,13 +170,13 @@ SFFloat *SoundNode::getMinBackField()
 		return minBackField;
 	return (SFFloat *)getExposedField(minBackFieldString);
 }
-	
-void SoundNode::setMinBack(float value) 
+
+void SoundNode::setMinBack(float value)
 {
 	getMinBackField()->setValue(value);
 }
 
-float SoundNode::getMinBack() 
+float SoundNode::getMinBack()
 {
 	return getMinBackField()->getValue();
 }
@@ -191,13 +191,13 @@ SFFloat *SoundNode::getMaxBackField()
 		return maxBackField;
 	return (SFFloat *)getExposedField(maxBackFieldString);
 }
-	
-void SoundNode::setMaxBack(float value) 
+
+void SoundNode::setMaxBack(float value)
 {
 	getMaxBackField()->setValue(value);
 }
 
-float SoundNode::getMaxBack() 
+float SoundNode::getMaxBack()
 {
 	return getMaxBackField()->getValue();
 }
@@ -212,13 +212,13 @@ SFFloat *SoundNode::getIntensityField()
 		return intensityField;
 	return (SFFloat *)getExposedField(intensityFieldString);
 }
-	
-void SoundNode::setIntensity(float value) 
+
+void SoundNode::setIntensity(float value)
 {
 	getIntensityField()->setValue(value);
 }
 
-float SoundNode::getIntensity() 
+float SoundNode::getIntensity()
 {
 	return getIntensityField()->getValue();
 }
@@ -233,13 +233,13 @@ SFFloat *SoundNode::getPriorityField()
 		return priorityField;
 	return (SFFloat *)getExposedField(priorityFieldString);
 }
-	
-void SoundNode::setPriority(float value) 
+
+void SoundNode::setPriority(float value)
 {
 	getPriorityField()->setValue(value);
 }
 
-float SoundNode::getPriority() 
+float SoundNode::getPriority()
 {
 	return getPriorityField()->getValue();
 }
@@ -254,18 +254,18 @@ SFBool *SoundNode::getSpatializeField()
 		return spatializeField;
 	return (SFBool *)getField(spatializeFieldString);
 }
-	
-void SoundNode::setSpatialize(bool value) 
+
+void SoundNode::setSpatialize(bool value)
 {
 	getSpatializeField()->setValue(value);
 }
 
-void SoundNode::setSpatialize(int value) 
+void SoundNode::setSpatialize(int value)
 {
 	setSpatialize(value ? true : false);
 }
 
-bool SoundNode::getSpatialize() 
+bool SoundNode::getSpatialize()
 {
 	return getSpatializeField()->getValue();
 }
@@ -274,12 +274,12 @@ bool SoundNode::getSpatialize()
 //	List
 ////////////////////////////////////////////////
 
-SoundNode *SoundNode::next() 
+SoundNode *SoundNode::next()
 {
 	return (SoundNode *)Node::next(getType());
 }
 
-SoundNode *SoundNode::nextTraversal() 
+SoundNode *SoundNode::nextTraversal()
 {
 	return (SoundNode *)Node::nextTraversalByType(getType());
 }
@@ -287,7 +287,7 @@ SoundNode *SoundNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool SoundNode::isChildNodeType(Node *node){
 	if (node->isAudioClipNode() || node->isMovieTextureNode())
 		return true;
@@ -308,7 +308,7 @@ void SoundNode::update() {
 //	Infomation
 ////////////////////////////////////////////////
 
-void SoundNode::outputContext(ostream &printStream, char *indentString) 
+void SoundNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *spatialize = getSpatializeField();
 	SFVec3f *direction = getDirectionField();
@@ -334,7 +334,7 @@ void SoundNode::outputContext(ostream &printStream, char *indentString)
 			aclip->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "source USE " << aclip->getName() << endl;
 	}
 
@@ -348,7 +348,7 @@ void SoundNode::outputContext(ostream &printStream, char *indentString)
 			mtexture->Node::outputContext(printStream, indentString, "\t");
 			printStream << indentString << "\t" << "}" << endl;
 		}
-		else 
+		else
 			printStream << indentString << "\t" << "source USE " << mtexture->getName() << endl;
 	}
 }

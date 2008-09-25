@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -75,8 +75,8 @@ void	WED_UndoMgr::CommitCommand(void)
 	PurgeRedo();
 	mUndo.push_back(mCommand);
 	int change_mask = mCommand->GetChangeMask();
-	mCommand = NULL;	
-	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);	
+	mCommand = NULL;
+	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
 }
 
 void	WED_UndoMgr::AbortCommand(void)
@@ -125,7 +125,7 @@ void	WED_UndoMgr::Undo(void)
 	delete undo;
 	mUndo.pop_back();
 	mArchive->mOpCount--;
-	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);		
+	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
 }
 
 void	WED_UndoMgr::Redo(void)
@@ -136,7 +136,7 @@ void	WED_UndoMgr::Redo(void)
 	mArchive->SetUndo(undo);
 	int change_mask = redo->GetChangeMask();
 	redo->Execute();
-	mArchive->SetUndo(NULL);	
+	mArchive->SetUndo(NULL);
 	mUndo.push_back(undo);
 	delete redo;
 	mRedo.pop_front();
@@ -167,9 +167,9 @@ bool	WED_UndoMgr::ReleaseMemory(void)
 		mUndo.pop_front();
 		return true;
 	}
-	
+
 //	if(!ConfirmMessage("WED is low on memory.  May I purge the undo list to free up memory?", "Purge", "Cancel")) return false;
-	
+
 	if (!mRedo.empty())
 	{
 		PurgeRedo();
@@ -179,5 +179,5 @@ bool	WED_UndoMgr::ReleaseMemory(void)
 	delete mUndo.front();
 	mUndo.pop_front();
 	return true;
-	
+
 }

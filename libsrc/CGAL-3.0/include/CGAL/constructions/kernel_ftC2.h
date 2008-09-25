@@ -108,7 +108,7 @@ inline
 void
 line_from_pointsC2(const FT &px, const FT &py,
                    const FT &qx, const FT &qy,
-                   FT &a, FT &b, FT &c) 
+                   FT &a, FT &b, FT &c)
 {
   a = py - qy;
   b = qx - px;
@@ -122,7 +122,7 @@ inline
 void
 line_from_point_directionC2(const FT &px, const FT &py,
                             const FT &dx, const FT &dy,
-                            FT &a, FT &b, FT &c) 
+                            FT &a, FT &b, FT &c)
 {
   a = - dy;
   b = dx;
@@ -150,7 +150,7 @@ line_y_at_xC2(const FT &a, const FT &b, const FT &c, const FT &x)
   return (-a*x-c) / b;
 }
 
-template < class FT > 
+template < class FT >
 inline
 void
 line_get_pointC2(const FT &a, const FT &b, const FT &c, int i,
@@ -168,7 +168,7 @@ line_get_pointC2(const FT &a, const FT &b, const FT &c, int i,
     }
 }
 
-template < class FT > 
+template < class FT >
 inline
 void
 perpendicular_through_pointC2(const FT &la, const FT &lb,

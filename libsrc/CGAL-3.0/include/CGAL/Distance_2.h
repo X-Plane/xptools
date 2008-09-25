@@ -39,7 +39,7 @@ struct Distance_2
   Distance_2(const Point& p0, const Point& p1, const I* = NULL)
   { p[0]=p0; p[1]=p1; }
 
-  Distance_2(const Point& p0, const Point& p1, const Point& p2, 
+  Distance_2(const Point& p0, const Point& p1, const Point& p2,
 	     const I* = NULL)
   { p[0]=p0; p[1]=p1; p[2]=p2; }
 
@@ -65,7 +65,7 @@ private:
 };
 
 template <class Traits>
-struct Distance_xy_3  : public Distance_2<Traits> 
+struct Distance_xy_3  : public Distance_2<Traits>
 {
   typedef typename Distance_2<Traits>::Point Point;
 
@@ -73,19 +73,19 @@ public:
   Distance_xy_3(const Point& p0,
 	   const Traits* traits = NULL)
     : Distance_2<Traits>(p0, traits) { }
-    
-    
+
+
   Distance_xy_3(const Point& p0,
 	   const Point& p1,
 	   const Traits* traits = NULL)
     : Distance_2<Traits>(p0,p1,traits) { }
-    
+
   Distance_xy_3(const Point& p0,
 	   const Point& p1,
 	   const Point& p2,
 	   const Traits* traits = NULL)
     : Distance_2<Traits>(p0,p1,p2,traits) { }
-    
+
   Comparison_result
   compare() const
     {

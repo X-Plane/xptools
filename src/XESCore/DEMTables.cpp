@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -28,7 +28,7 @@
 
 EnumColorTable				gEnumColors;
 ColorBandTable				gColorBands;
-set<int>					gEnumDEMs;	
+set<int>					gEnumDEMs;
 
 
 
@@ -101,9 +101,9 @@ bool	ReadEnumColor(const vector<string>& tokens, void * ref)
 		printf("Parse error for enum colors.\n");
 		return false;
 	}
-	
+
 	int token;
-	if (!TokenizeEnum(tokens[1],token, "Unknown token %s\n")) return false;	
+	if (!TokenizeEnum(tokens[1],token, "Unknown token %s\n")) return false;
 	if (gEnumColors.find(token) != gEnumColors.end())
 		printf("WARNING: duplicate token %s\n", tokens[1].c_str());
 	gEnumColors.insert(EnumColorTable::value_type(token, col));
@@ -115,7 +115,7 @@ bool	ReadEnumBand(const vector<string>& tokens, void * ref)
 	int				dem_key;
 	float 			band_key;
 	DEMColorBand_t	band;
-	
+
 	if (TokenizeLine(tokens, " effcc",
 		&dem_key, &band.lo_value, &band.hi_value,
 		&band.lo_color, &band.hi_color) != 6) return false;
@@ -127,7 +127,7 @@ bool	ReadEnumBand(const vector<string>& tokens, void * ref)
 		printf("WARNING: duplicate color band: %s/%f %f to %f\n",
 			FetchTokenString(dem_key), band_key, band.lo_value, band.hi_value);
 	table.insert(ColorBandMap::value_type(band_key, band));
-	return true;	
+	return true;
 
 }
 
@@ -142,8 +142,8 @@ bool	ReadEnumDEM(const vector<string>& tokens, void * ref)
 bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
-		
-	if (TokenizeLine(tokens, " fffffffffffffifiii", 
+
+	if (TokenizeLine(tokens, " fffffffffffffifiii",
 				&info.min_rain,
 				&info.max_rain,
 				&info.min_temp,
@@ -167,7 +167,7 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 	info.max_turn_concave = cosdeg(info.max_turn_concave);
 
 	info.min_slope=cosdeg(info.min_slope);
-	info.max_slope=cosdeg(info.max_slope);			// NOTE: because we are storing cosigns, a flat beach is 1.0, so we are reversing the 
+	info.max_slope=cosdeg(info.max_slope);			// NOTE: because we are storing cosigns, a flat beach is 1.0, so we are reversing the
 	swap(info.min_slope,info.max_slope);			// ordering here.
 	DebugAssert(gBeachIndex.count(info.x_beach_type) == 0);
 	gBeachIndex[info.x_beach_type] = gBeachInfoTable.size();
@@ -179,10 +179,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	NaturalTerrainInfo_t	info;
 	string					ter_name, tex_name, proj;
-	
-	int						has_lit = 0;;	
+
+	int						has_lit = 0;;
 	int						auto_vary;
-	
+
 	info.climate = NO_VALUE;
 	info.urban_density_min = info.urban_density_max = 0.0;
 	info.urban_radial_min = info.urban_radial_max = 0.0;
@@ -191,12 +191,12 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.map_rgb[0] = info.map_rgb[1] = info.map_rgb[2] = 0.5;
 	info.temp_rng_min = info.temp_rng_max = 0.0;
 	info.custom_ter = tex_not_custom;
-	
+
 	if (tokens[0] == "STERRAIN")
 	{
 		if (TokenizeLine(tokens, " eeffffffffiffffffffffisifsfssefff",
 			&info.terrain,
-			&info.landuse,			
+			&info.landuse,
 			&info.elev_min,
 			&info.elev_max,
 			&info.slope_min,
@@ -207,7 +207,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.rain_min,
 			&info.rain_max,
 			&info.near_water,
-			
+
 			&info.slope_heading_min,
 			&info.slope_heading_max,
 			&info.rel_elev_min,
@@ -232,11 +232,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[0],
 			&info.map_rgb[1],
 			&info.map_rgb[2]
-			) < 31) return false;	
+			) < 31) return false;
 		info.xon_hack = true;
 	} else 	if (tokens[0] == "MTERRAIN") {
 
-		
+
 		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsifssefff",
 			&info.terrain,
 			&info.landuse,
@@ -291,9 +291,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[2]
 			) != 41) return false;
 		info.xon_hack = false;
-	
+
 	} else {
-		
+
 		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsfssefff",
 			&info.terrain,
 			&info.landuse,
@@ -347,8 +347,8 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[2]
 			) != 42) return false;
 		info.xon_hack = false;
-			
-	}	
+
+	}
 	if (info.elev_min > info.elev_max)	return false;
 	if (info.slope_min > info.slope_max)	return false;
 	if (info.temp_min > info.temp_max)	return false;
@@ -363,11 +363,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.urban_square < 0 || info.urban_square > 2)	return false;
 	if (info.lat_min > info.lat_max)					return false;
 	if (auto_vary != 0 && auto_vary != 1 && auto_vary != 2) 	return false;
-	
+
 	info.map_rgb[0] /= 255.0;
 	info.map_rgb[1] /= 255.0;
 	info.map_rgb[2] /= 255.0;
-	
+
 	int orig_forest = info.forest_type;
 	if (info.forest_type != NO_VALUE)	info.forest_type = LookupTokenCreate(ter_name.c_str());
 	if (info.forest_type != NO_VALUE)
@@ -375,12 +375,12 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		if(sForests.count(info.forest_type) > 0)	Assert(sForests[info.forest_type] == orig_forest);
 		sForests[info.forest_type] = orig_forest;
 	}
-		
+
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
 	if (proj == "HDG")	auto_vary = 3;
-		
+
 	string::size_type nstart = tex_name.find_last_of("\\/:");
 	if (nstart == tex_name.npos)	nstart = 0; else nstart++;
 	if (tex_name.size()-nstart > 31)
@@ -407,10 +407,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		info.slope_heading_min == 45.0 && info.slope_heading_max == 135.0))
 		printf("WARNING: base tex %s is projected east-west but has bad headings.\n",ter_name.c_str());
 
-	// We use 1-cos notation, which keeps our order constant.	
+	// We use 1-cos notation, which keeps our order constant.
 	info.slope_min = 1.0 - cosdeg(info.slope_min);
 	info.slope_max = 1.0 - cosdeg(info.slope_max);
-	
+
 	// Slope heading - uses 1 for north and -1 for south internally.
 	// So that's just cosign, but that does mean that Sergio's order (0-180)
 	// is going to get reversed.
@@ -418,18 +418,18 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
 
-	// Ben says: this used to be the non-auto-vary case!	
+	// Ben says: this used to be the non-auto-vary case!
 	if (auto_vary < 3)
 	{
-		
+
 		info.variant = 0;
 		info.related = -1;
-		
+
 		string rep_name = ter_name;
 		if(auto_vary > 0) rep_name += "_av";
-		
+
 		LowerCheckName(rep_name);
-		info.name = LookupTokenCreate(rep_name.c_str());	
+		info.name = LookupTokenCreate(rep_name.c_str());
 		info.base_tex = tex_name;
 		if(auto_vary == 2)
 		{
@@ -449,7 +449,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		if(!info.vary_tex.empty())
 		MakeRVariant(info.vary_tex);
 		#endif
-		
+
 		int rn = gNaturalTerrainTable.size();
 		gNaturalTerrainTable.push_back(info);
 
@@ -480,8 +480,8 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			string rep_name = ter_name;
 			rep_name += ('0' + rep);
 			LowerCheckName(rep_name);
-			info.name = LookupTokenCreate(rep_name.c_str());	
-			
+			info.name = LookupTokenCreate(rep_name.c_str());
+
 			string tex_vari = tex_name;
 			tex_vari.erase(tex_vari.size()-4);
 			if (auto_vary == 2 && (rep == 2 || rep == 3))
@@ -493,11 +493,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 				info.lit_tex = MakeLit(info.base_tex);
 			else
 				info.lit_tex.clear();
-			
+
 			#if R_VARY
 			MakeRVariant(info.base_tex);
 			#endif
-			
+
 			int rn = gNaturalTerrainTable.size();
 			gNaturalTerrainTable.push_back(info);
 
@@ -506,8 +506,8 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 				gNaturalTerrainIndex[info.name] = rn;
 		}
 	}
-	
-	return true;	
+
+	return true;
 }
 
 static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
@@ -528,7 +528,7 @@ bool	ReadPromoteTerrainInfo(const vector<string>& tokens, void * ref)
 	int			   value;
 	if (TokenizeLine(tokens, " eee", &key.first, &key.second, &value) != 4)
 		return false;
-	
+
 	if (gTerrainPromoteTable.count(key) != 0)
 		printf("Warning: duplicate land use promotion key %s,%s\n",
 			FetchTokenString(key.first),FetchTokenString(key.second));
@@ -555,11 +555,11 @@ bool	ReadManTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.base_tex == "-")	info.base_tex.clear();
 	if (info.comp_tex == "-")	info.comp_tex.clear();
 	if (info.lit_tex  == "-")	info.lit_tex.clear();
-	
+
 	gManTerrainTable[key] = info;
 	return true;
 }*/
-	
+
 
 void	LoadDEMTables(void)
 {
@@ -574,7 +574,7 @@ void	LoadDEMTables(void)
 	gBeachIndex.clear();
 	sForests.clear();
 	gLandUseTransTable.clear();
-	
+
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
 	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
@@ -592,30 +592,30 @@ void	LoadDEMTables(void)
 
 	LoadConfigFile("enum_colors.txt");
 	LoadConfigFile("beach_terrain.txt");
-	
+
 	ValidateNaturalTerrain();
-	
+
 	sAirports.clear();
 	for(int n = 0; n < gNaturalTerrainTable.size(); ++n)
 	if(gNaturalTerrainTable[n].terrain == terrain_Airport)
 		sAirports.insert(gNaturalTerrainTable[n].name);
-	
+
 	/*
 	printf("---forests---\n");
 	for (set<int>::iterator f = sForests.begin(); f != sForests.end(); ++f)
 	{
 		printf("%s\n", FetchTokenString(*f));
 	}*/
-	
+
 }
 
 #pragma mark -
 
 int	FindNaturalTerrain(
 				int		terrain,
-				int 	landuse, 
-				int 	climate, 
-				float 	elevation, 
+				int 	landuse,
+				int 	climate,
+				float 	elevation,
 				float 	slope,
 				float 	slope_tri,
 				float	temp,
@@ -634,14 +634,14 @@ int	FindNaturalTerrain(
 				int		variant_head)
 {
 	// OPTIMIZE - figure out what the major keys should be.
-	
+
 //	pair<NaturalTerrainLandUseIndex::iterator,NaturalTerrainLandUseIndex::iterator>	range;
 //	range = gNaturalTerrainLandUseIndex.equal_range(landuse);
-	
+
 	for (int rec_num = 0; rec_num < gNaturalTerrainTable.size(); ++rec_num)
 	{
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
-		
+
 		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 //		float slope_to_use = slope_tri;
 
@@ -656,7 +656,7 @@ int	FindNaturalTerrain(
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == DEM_NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
 		if (rec.elev_range_min == rec.elev_range_max || elevrange == DEM_NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
 		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
-		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == DEM_NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
+		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == DEM_NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
 		if (rec.urban_square == 0 || urban_square == DEM_NO_DATA || rec.urban_square == urban_square)
 		if (rec.lat_min == rec.lat_max || lat == DEM_NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (!rec.near_water || water)
@@ -683,7 +683,7 @@ void ValidateNaturalTerrain(void)
 		if (canonical.count(gNaturalTerrainTable[n].name) == 0)
 			canonical[gNaturalTerrainTable[n].name] = n;
 	}
-	
+
 	for (n = 0; n < gNaturalTerrainTable.size(); ++n)
 	{
 		ref = canonical[gNaturalTerrainTable[n].name];
@@ -694,7 +694,7 @@ void ValidateNaturalTerrain(void)
 			if (gNaturalTerrainTable[n].base_tex    	  != gNaturalTerrainTable[ref].base_tex    	 	)	printf("ERROR: land use lines %d and %d - terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_tex.c_str(),gNaturalTerrainTable[ref].base_tex.c_str());
 			if (gNaturalTerrainTable[n].base_res		  != gNaturalTerrainTable[ref].base_res		 	)	printf("ERROR: land use lines %d and %d - terrain 'base_res' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_res,gNaturalTerrainTable[ref].base_res);
 		}
-	}	
+	}
 }
 
 struct float_between_iterator {
@@ -703,21 +703,21 @@ struct float_between_iterator {
 	iter_type		i_;
 	bool			h_;
 	const set_type&	s_;
-	
-	float_between_iterator(const set_type& s) : s_(s), i_(s.begin()), h_(false) 
-	{ 
+
+	float_between_iterator(const set_type& s) : s_(s), i_(s.begin()), h_(false)
+	{
 	}
-	
-	bool operator()(void) const { 
-		return i_ != s_.end(); 
+
+	bool operator()(void) const {
+		return i_ != s_.end();
 	}
-	
-	float_between_iterator& operator++(void) { 
-		if (h_) { 
-			h_ = false; 
-			++i_; } 
+
+	float_between_iterator& operator++(void) {
+		if (h_) {
+			h_ = false;
+			++i_; }
 		else {
-			h_ = true; 
+			h_ = true;
 			iter_type j = i_;
 			++j;
 			if (j == s_.end())
@@ -725,8 +725,8 @@ struct float_between_iterator {
 		}
 		return *this;
 	}
-	
-	float operator * (void) const { 
+
+	float operator * (void) const {
 		if (h_)
 		{
 			iter_type j = i_;
@@ -736,7 +736,7 @@ struct float_between_iterator {
 		} else
 			return *i_;
 		}
-	
+
 };
 
 
@@ -758,20 +758,20 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	cov.AddAxisEnum(0, terrain_Airport, "terrain_Airport");
 	cov.AddAxisEnum(1, lu_usgs_URBAN_SQUARE, "lu_usgs_URBAN_SQUARE");
 	cov.AddAxisEnum(1, lu_usgs_URBAN_IRREGULAR, "lu_usgs_URBAN_IRREGULAR");
-	cov.AddAxisEnum(2, climate_TropicalRainForest, "climate_TropicalRainForest");	
-	cov.AddAxisEnum(2, climate_TropicalMonsoon, "climate_TropicalMonsoon");		
-	cov.AddAxisEnum(2, climate_TropicalDry, "climate_TropicalDry");			
-	cov.AddAxisEnum(2, climate_DrySteppe, "climate_DrySteppe");			
-	cov.AddAxisEnum(2, climate_DryDesert, "climate_DryDesert");			
-	cov.AddAxisEnum(2, climate_TemperateAny, "climate_TemperateAny");			
-	cov.AddAxisEnum(2, climate_TemperateSummerDry, "climate_TemperateSummerDry");	
-	cov.AddAxisEnum(2, climate_TemperateWinterDry, "climate_TemperateWinterDry");	
-	cov.AddAxisEnum(2, climate_TemperateWet, "climate_TemperateWet");			
-	cov.AddAxisEnum(2, climate_ColdAny, "climate_ColdAny");				
-	cov.AddAxisEnum(2, climate_ColdSummerDry, "climate_ColdSummerDry");		
-	cov.AddAxisEnum(2, climate_ColdWinterDry, "climate_ColdWinterDry");		
-	cov.AddAxisEnum(2, climate_PolarTundra, "climate_PolarTundra");			
-	cov.AddAxisEnum(2, climate_PolarFrozen, "climate_PolarFrozen");			
+	cov.AddAxisEnum(2, climate_TropicalRainForest, "climate_TropicalRainForest");
+	cov.AddAxisEnum(2, climate_TropicalMonsoon, "climate_TropicalMonsoon");
+	cov.AddAxisEnum(2, climate_TropicalDry, "climate_TropicalDry");
+	cov.AddAxisEnum(2, climate_DrySteppe, "climate_DrySteppe");
+	cov.AddAxisEnum(2, climate_DryDesert, "climate_DryDesert");
+	cov.AddAxisEnum(2, climate_TemperateAny, "climate_TemperateAny");
+	cov.AddAxisEnum(2, climate_TemperateSummerDry, "climate_TemperateSummerDry");
+	cov.AddAxisEnum(2, climate_TemperateWinterDry, "climate_TemperateWinterDry");
+	cov.AddAxisEnum(2, climate_TemperateWet, "climate_TemperateWet");
+	cov.AddAxisEnum(2, climate_ColdAny, "climate_ColdAny");
+	cov.AddAxisEnum(2, climate_ColdSummerDry, "climate_ColdSummerDry");
+	cov.AddAxisEnum(2, climate_ColdWinterDry, "climate_ColdWinterDry");
+	cov.AddAxisEnum(2, climate_PolarTundra, "climate_PolarTundra");
+	cov.AddAxisEnum(2, climate_PolarFrozen, "climate_PolarFrozen");
 	cov.AddAxisRange(3, 0.0, 1000.0);
 	cov.AddAxisRange(4, 0.0, 1.0);
 	cov.AddAxisRange(5, 0.0, 10.0);
@@ -780,7 +780,7 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	cov.AddAxisRange(7, -1.0, 1.0);
 	cov.AddAxisRange(8, 0, 1.0);
 	cov.AddAxisRange(9, 0, 300);
-	
+
 	int i;
 	for (i = 0; i < gNaturalTerrainTable.size(); ++i)
 	{
@@ -795,9 +795,9 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 		if (r.rel_elev_min != r.rel_elev_max)				cov.AddAxisRange(8, r.rel_elev_min, r.rel_elev_max);
 		if (r.elev_range_min != r.elev_range_max)			cov.AddAxisRange(9, r.elev_range_min, r.elev_range_max);
 	}
-	
+
 	cov.FinishAxes();
-	
+
 	for (i = 0; i < gNaturalTerrainTable.size(); ++i)
 	{
 		bool	has = false;
@@ -816,15 +816,15 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 		cov.EndRule(has);
 	}
 
-	cov.OutputGaps();		
+	cov.OutputGaps();
 */
 
 	set<int>		terrain, landuse, urban_square, near_water;
 	set<float>		elev, slope, temp, temp_rng, rain, slope_head, rel_elev, elev_range, urban_density, urban_radial, urban_trans, lat;
-	
+
 	terrain.insert(NO_VALUE);
 	landuse.insert(NO_VALUE);
-	
+
 	for (int n = 0; n < gNaturalTerrainTable.size(); ++n)
 	{
 		NaturalTerrainInfo_t& rec(gNaturalTerrainTable[n]);
@@ -859,9 +859,9 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	}
 
 	int any_rule = gNaturalTerrainTable.back().name;
-	
-	printf("Landuse: %d states.\n",landuse.size()); 
-	printf("Terrain: %d states.\n",terrain.size()); 
+
+	printf("Landuse: %d states.\n",landuse.size());
+	printf("Terrain: %d states.\n",terrain.size());
 	printf("Elev: %d states.\n",elev.size() );
 	printf("Slope: %d states.\n",slope.size() );
 	printf("Temp: %d states.\n",temp.size() );
@@ -875,9 +875,9 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	printf("Urban Trans: %d states.\n",urban_trans.size() );
 	printf("Urban Square: %d states.\n",urban_square.size());
 	printf("Latitude: %d states.\n",lat.size());
-	
-	int total = landuse.size() * 
-				terrain.size() * 
+
+	int total = landuse.size() *
+				terrain.size() *
 				(elev.size() * 2 - 1) *
 				(slope.size() * 2 - 1) *
 				(temp.size() * 2 - 1) *
@@ -896,11 +896,11 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	int step = total / 200;
 
 	PROGRESS_START(func, 0, 1, "Checking tables");
-	
+
 	int ctr = 0;
-	
+
 	for (set<int>::iterator lu = landuse.begin(); lu != landuse.end(); ++lu)
-	for (set<int>::iterator ter = terrain.begin(); ter != terrain.end(); ++ter)	
+	for (set<int>::iterator ter = terrain.begin(); ter != terrain.end(); ++ter)
 	for (float_between_iterator el(elev); el(); ++el)
 	for (float_between_iterator sd(slope); sd(); ++sd)
 	for (float_between_iterator st(slope); st(); ++st)
@@ -914,24 +914,24 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	for (float_between_iterator ud(urban_density); ud(); ++ud)
 	for (float_between_iterator ur(urban_radial); ur(); ++ur)
 	for (float_between_iterator ut(urban_trans); ut(); ++ut)
-	for (set<int>::iterator us = urban_square.begin(); us != urban_square.end(); ++us)	
+	for (set<int>::iterator us = urban_square.begin(); us != urban_square.end(); ++us)
 	for (float_between_iterator l(lat); l(); ++l)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Checking tables", ctr, total, step);
-		
-		int found = FindNaturalTerrain(*ter, *lu, NO_VALUE, *el, *sd, *st, 
+
+		int found = FindNaturalTerrain(*ter, *lu, NO_VALUE, *el, *sd, *st,
 			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l, 1, 5);
 
 		if (found == any_rule)
 		printf("Found %s rule on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
-			FetchTokenString(found),	
-			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st, 
+			FetchTokenString(found),
+			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st,
 			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l);
 		if (found == -1)
 		printf("Found hole on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
-			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st, 
+			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st,
 			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l);
-		
+
 		++ctr;
 	}
 	PROGRESS_DONE(func, 0, 1, "Checking tables");

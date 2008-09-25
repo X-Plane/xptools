@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -85,10 +85,10 @@ void		WED_TerraserverLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphSta
 	int	total_now		=  0;
 	int total_err		=  0;
 	int total_loaded	=  0;
-	
+
 	static int our_gen = 0;
 	++our_gen;
-	
+
 	for(int z = (NUM_LEVELS-1); z >= 0; --z)
 	{
 		total_loaded += mImages[z].size();
@@ -107,11 +107,11 @@ void		WED_TerraserverLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphSta
 					{
 						mImages[z][h] = new AsyncImage(mPool,ResString(z), mData.c_str(), mDomain[z], x, y);
 					}
-					
+
 					AsyncImage * i = mImages[z][h];
-					
+
 					i->SetGen(our_gen);
-					
+
 					if (i->HasErr())
 						++total_err;
 					else
@@ -134,29 +134,29 @@ void		WED_TerraserverLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphSta
 					}
 				}
 			}
-		} else 
+		} else
 			mHas[z] = 0;
 	}
-	
-	
+
+
 	char buf[1024];
 	sprintf(buf,"%d of %d (%f%% done, %d errors).  %d ppm Mem use: %d %s",total_now,total_vis,total_vis ? (100.0 * (float) total_now / (float) total_vis) : 100.0, total_err, top_res == -1 ? 0 : (1 << top_res), total_loaded, mStatus.c_str());
 	float clr[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, buf);
-	
+
 	if (total_loaded > 2000)
 	{
 		multimap<int, pair<int, long long> > kill_list;
-	
+
 		for (int z = 0; z < NUM_LEVELS; ++z)
 		{
 			for (map<long long, AsyncImage *>::iterator i = mImages[z].begin(); i != mImages[z].end(); ++i)
 			if (i->second->GetGen() != our_gen)
 				kill_list.insert(map<int, pair<int, long long> >::value_type(i->second->GetGen(),pair<int, long long>(z,i->first)));
 		}
-		
+
 		while(!kill_list.empty() && total_loaded > 2000)
-		{			
+		{
 			delete mImages[kill_list.begin()->second.first][kill_list.begin()->second.second];
 			mImages[kill_list.begin()->second.first].erase(kill_list.begin()->second.second);
 			--total_loaded;

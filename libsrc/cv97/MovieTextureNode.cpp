@@ -10,13 +10,13 @@
 
 #include "MovieTextureNode.h"
 
-MovieTextureNode::MovieTextureNode() 
+MovieTextureNode::MovieTextureNode()
 {
 	setHeaderFlag(false);
 	setType(movieTextureNodeString);
 
 	///////////////////////////
-	// Exposed Field 
+	// Exposed Field
 	///////////////////////////
 
 	// url field
@@ -52,7 +52,7 @@ MovieTextureNode::MovieTextureNode()
 	addEventOut(durationFieldString, durationChangedField);
 }
 
-MovieTextureNode::~MovieTextureNode() 
+MovieTextureNode::~MovieTextureNode()
 {
 }
 
@@ -67,22 +67,22 @@ MFString *MovieTextureNode::getUrlField()
 	return (MFString *)getExposedField(urlFieldString);
 }
 
-void MovieTextureNode::addUrl(char *value) 
+void MovieTextureNode::addUrl(char *value)
 {
 	getUrlField()->addValue(value);
 }
 
-int MovieTextureNode::getNUrls() 
+int MovieTextureNode::getNUrls()
 {
 	return getUrlField()->getSize();
 }
 
-char *MovieTextureNode::getUrl(int index) 
+char *MovieTextureNode::getUrl(int index)
 {
 	return getUrlField()->get1Value(index);
 }
 
-void MovieTextureNode::setUrl(int index, char *urlString) 
+void MovieTextureNode::setUrl(int index, char *urlString)
 {
 	getUrlField()->set1Value(index, urlString);
 }
@@ -97,23 +97,23 @@ SFBool *MovieTextureNode::getLoopField()
 		return loopField;
 	return (SFBool *)getExposedField(loopFieldString);
 }
-	
-void MovieTextureNode::setLoop(bool value) 
+
+void MovieTextureNode::setLoop(bool value)
 {
 	getLoopField()->setValue(value);
 }
 
-void MovieTextureNode::setLoop(int value) 
+void MovieTextureNode::setLoop(int value)
 {
 	setLoop(value ? true : false);
 }
 
-bool MovieTextureNode::getLoop() 
+bool MovieTextureNode::getLoop()
 {
 	return getLoopField()->getValue();
 }
 
-bool MovieTextureNode::isLoop() 
+bool MovieTextureNode::isLoop()
 {
 	return getLoop();
 }
@@ -128,13 +128,13 @@ SFFloat *MovieTextureNode::getSpeedField()
 		return speedField;
 	return (SFFloat *)getExposedField(speedTimeFieldString);
 }
-	
-void MovieTextureNode::setSpeed(float value) 
+
+void MovieTextureNode::setSpeed(float value)
 {
 	getSpeedField()->setValue(value);
 }
 
-float MovieTextureNode::getSpeed() 
+float MovieTextureNode::getSpeed()
 {
 	return getSpeedField()->getValue();
 }
@@ -149,13 +149,13 @@ SFTime *MovieTextureNode::getStartTimeField()
 		return startTimeField;
 	return (SFTime *)getExposedField(startTimeFieldString);
 }
-	
-void MovieTextureNode::setStartTime(double value) 
+
+void MovieTextureNode::setStartTime(double value)
 {
 	getStartTimeField()->setValue(value);
 }
 
-double MovieTextureNode::getStartTime() 
+double MovieTextureNode::getStartTime()
 {
 	return getStartTimeField()->getValue();
 }
@@ -170,13 +170,13 @@ SFTime *MovieTextureNode::getStopTimeField()
 		return stopTimeField;
 	return (SFTime *)getExposedField(stopTimeFieldString);
 }
-	
-void MovieTextureNode::setStopTime(double value) 
+
+void MovieTextureNode::setStopTime(double value)
 {
 	getStopTimeField()->setValue(value);
 }
 
-double MovieTextureNode::getStopTime() 
+double MovieTextureNode::getStopTime()
 {
 	return getStopTimeField()->getValue();
 }
@@ -191,18 +191,18 @@ SFBool *MovieTextureNode::getIsActiveField()
 		return isActiveField;
 	return (SFBool *)getEventOut(isActiveFieldString);
 }
-	
-void MovieTextureNode::setIsActive(bool value) 
+
+void MovieTextureNode::setIsActive(bool value)
 {
 	getIsActiveField()->setValue(value);
 }
 
-bool MovieTextureNode::getIsActive() 
+bool MovieTextureNode::getIsActive()
 {
 	return getIsActiveField()->getValue();
 }
 
-bool MovieTextureNode::isActive() 
+bool MovieTextureNode::isActive()
 {
 	return getIsActiveField()->getValue();
 }
@@ -217,13 +217,13 @@ SFTime *MovieTextureNode::getDurationChangedField()
 		return durationChangedField;
 	return (SFTime *)getEventOut(durationFieldString);
 }
-	
-void MovieTextureNode::setDurationChanged(double value) 
+
+void MovieTextureNode::setDurationChanged(double value)
 {
 	getDurationChangedField()->setValue(value);
 }
 
-double MovieTextureNode::getDurationChanged() 
+double MovieTextureNode::getDurationChanged()
 {
 	return getDurationChangedField()->getValue();
 }
@@ -232,12 +232,12 @@ double MovieTextureNode::getDurationChanged()
 //	List
 ////////////////////////////////////////////////
 
-MovieTextureNode *MovieTextureNode::next() 
+MovieTextureNode *MovieTextureNode::next()
 {
 	return (MovieTextureNode *)Node::next(getType());
 }
 
-MovieTextureNode *MovieTextureNode::nextTraversal() 
+MovieTextureNode *MovieTextureNode::nextTraversal()
 {
 	return (MovieTextureNode *)Node::nextTraversalByType(getType());
 }
@@ -245,21 +245,21 @@ MovieTextureNode *MovieTextureNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool MovieTextureNode::isChildNodeType(Node *node)
 {
 	return false;
 }
 
-void MovieTextureNode::initialize() 
+void MovieTextureNode::initialize()
 {
 }
 
-void MovieTextureNode::uninitialize() 
+void MovieTextureNode::uninitialize()
 {
 }
 
-void MovieTextureNode::update() 
+void MovieTextureNode::update()
 {
 }
 
@@ -267,7 +267,7 @@ void MovieTextureNode::update()
 //	infomation
 ////////////////////////////////////////////////
 
-void MovieTextureNode::outputContext(ostream &printStream, char *indentString) 
+void MovieTextureNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFBool *loop = getLoopField();
 	SFBool *repeatS = getRepeatSField();

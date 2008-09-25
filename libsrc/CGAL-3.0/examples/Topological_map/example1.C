@@ -11,7 +11,7 @@
 
 typedef CGAL::Pm_dcel<CGAL::Tpm_vertex_base,
                       CGAL::Tpm_halfedge_base,
-                      CGAL::Tpm_face_base> Dcel;  
+                      CGAL::Tpm_face_base> Dcel;
 
 typedef CGAL::Topological_map<Dcel> Tpm;
 

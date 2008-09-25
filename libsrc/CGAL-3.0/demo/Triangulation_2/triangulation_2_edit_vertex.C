@@ -5,14 +5,14 @@
 // This software and related documentation is part of an INTERNAL release
 // of the Computational Geometry Algorithms Library (CGAL). It is not
 // intended for general use.
-//	
+//
 // ----------------------------------------------------------------------------
 //
 // file          : triangulation_2_edit_vertex.C
 // package       : Qt_widget
 // author(s)     : Laurent Rineau
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -23,7 +23,7 @@
 #include "triangulation_2_edit_vertex.h"
 
 void triangulation_2_edit_vertex_helper::delete_vertex()
-{ 
+{
   delete_vertexi();
   emit(triangulation_changed());
 };

@@ -24,7 +24,7 @@
 #include "VRMLString.h"
 
 class	SceneGraph;
-	
+
 class	AnchorNode;
 class	AppearanceNode;
 class	AudioClipNode;
@@ -121,9 +121,9 @@ private:
 public:
 
 	Node();
-	
+
 	Node(char * nodeType, char * nodeName);
-	
+
 	virtual ~Node();
 
 	void initializeMember();
@@ -262,9 +262,9 @@ public:
 	Node *getChildNodes();
 	Node *getChildNode(char *typeString);
 	Node *getChildNode(int n);
-	
+
 	int getNChildNodes();
-	
+
 	virtual bool isChildNodeType(Node *node) = 0;
 
 	void addChildNode(Node *node, bool initialize = true);
@@ -924,11 +924,11 @@ public:
 	void setReferenceNodeMembers(Node *node);
 
 	void setOriginalMembers();
-	
+
 	void setReferenceNode(Node *node) {
 		mReferenceNode = node;
 	}
-	
+
 	Node *getReferenceNode() {
 		return mReferenceNode;
 	}
@@ -937,7 +937,7 @@ public:
 		setReferenceNode(node);
 		setReferenceNodeMembers(node);
 	}
-	
+
 	Node *createInstanceNode();
 
 	////////////////////////////////////////////////

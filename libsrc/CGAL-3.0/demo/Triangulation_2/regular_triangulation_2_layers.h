@@ -11,8 +11,8 @@
 // file          : demo/Qt_widget/Triangulation_2/triangulation_2_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -36,12 +36,12 @@ public:
   Qt_layer_show_triangulation(T &t) : tr(t){};
   void draw()
   {
-    *widget << CGAL::BLUE; 
+    *widget << CGAL::BLUE;
     *widget << tr;
   };
 private:
   T &tr;
-};//end class 
+};//end class
 
 template <class T>
 class Qt_layer_show_voronoi : public CGAL::Qt_widget_layer
@@ -55,24 +55,24 @@ public:
   };
 private:
   T	&tr;
-};//end class 
+};//end class
 
 template <class T>
 class Qt_layer_show_points : public CGAL::Qt_widget_layer {
 public:
-  typedef typename T::Point           Point;  
+  typedef typename T::Point           Point;
   typedef typename T::Segment         Segment;
   typedef typename T::Vertex          Vertex;
   typedef typename T::Vertex_iterator	Vertex_iterator;
 
   Qt_layer_show_points(T &t) : rt(t){};
   void draw()
-  {  
-    Vertex_iterator it = rt.vertices_begin(), 
+  {
+    Vertex_iterator it = rt.vertices_begin(),
                     beyond = rt.vertices_end();
-    *widget << CGAL::GREEN << CGAL::PointSize (3) 
-		<< CGAL::PointStyle (CGAL::DISC);    
-    while(it != beyond) {      
+    *widget << CGAL::GREEN << CGAL::PointSize (3)
+		<< CGAL::PointStyle (CGAL::DISC);
+    while(it != beyond) {
       *widget << (*it).point();
       *widget << Circle((*it).point().point(), (*it).point().weight());
       ++it;
@@ -80,7 +80,7 @@ public:
   };
 private:
   T	&rt;
-};//end class 
+};//end class
 
 
 #endif

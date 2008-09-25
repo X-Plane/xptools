@@ -7,10 +7,10 @@
 // intended for general use.
 //
 // ----------------------------------------------------------------------------
-// 
+//
 // release       :
 // release_date  :
-// 
+//
 // file          : demo/Window_stream/window_input.C
 // revision      : $Revision: 1.4 $
 // revision_date : $Date: 2003/09/22 11:35:31 $
@@ -19,7 +19,7 @@
 //
 // coordinator   : MPI, Saarbruecken  (<Stefan.Schirra@mpi-sb.mpg.de>)
 // ============================================================================
- 
+
 #ifndef CGAL_USE_LEDA
 #include <iostream>
 int main() {
@@ -48,7 +48,7 @@ typedef CGAL::Triangle_2<RepCls>              Triangle;
 typedef CGAL::Circle_2<RepCls>                Circle;
 
 
-#if defined(CGAL_USE_CGAL_WINDOW) 
+#if defined(CGAL_USE_CGAL_WINDOW)
 #define leda_red     CGAL::red
 #define leda_yellow  CGAL::yellow
 #endif

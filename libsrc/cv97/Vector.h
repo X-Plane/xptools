@@ -30,7 +30,7 @@ public:
 		setObject(obj);
 		setObjectDeleteFlag(delObjFlag);
 	}
-	~VectorElement() { 
+	~VectorElement() {
 		if (mbDelObj)
 			delete mObj;
 	}
@@ -58,7 +58,7 @@ public:
 		clear();
 	}
 
-	void addElement(T *obj, bool delObjFlag = true) 
+	void addElement(T *obj, bool delObjFlag = true)
 	{
 		VectorElement<T> *elem = new VectorElement<T>(obj, delObjFlag);
 		push_back(elem);
@@ -70,7 +70,7 @@ public:
 		insert(begin() + index, elem);
 	}
 
-	T *elementAt(int index) 
+	T *elementAt(int index)
 	{
 		if (index < 0)
 			return (T *)NULL;
@@ -106,7 +106,7 @@ public:
 		removeElementAt(indexOf(obj));
 	}
 
-	void removeElementAt(int index) 
+	void removeElementAt(int index)
 	{
 		if (index < 0)
 			return;
@@ -117,7 +117,7 @@ public:
 		erase(begin() + index);
 	}
 
-	void removeAllElements() 
+	void removeAllElements()
 	{
 		int cnt = size();
 		for (int n=0; n<cnt; n++) {
@@ -127,12 +127,12 @@ public:
 		clear();
 	}
 
-	bool isEmpty() 
+	bool isEmpty()
 	{
 		return (size() == 0) ? false : true;
 	}
 
-	T *firstElement() 
+	T *firstElement()
 	{
 		return elementAt(0);
 	}
@@ -158,7 +158,7 @@ public:
 		setObject(obj);
 		setObjectDeleteFlag(delObjFlag);
 	}
-	~VectorElement() { 
+	~VectorElement() {
 		remove();
 		if (mbDelObj)
 			delete mObj;
@@ -179,7 +179,7 @@ template <class T>
 class Vector {
 	LinkedList<T>	 mElementList;
 public:
-	
+
 	Vector() {
 	}
 
@@ -260,7 +260,7 @@ public:
 
 	void setElementAt(T *obj, int index) {
 		VectorElement<T> *element = (VectorElement<T> *)mElementList.getNode(index);
-		if (element)  
+		if (element)
 			element->setObject(obj);
 	}
 
@@ -271,4 +271,4 @@ public:
 
 #endif // SUPPORT_STL
 
-#endif 
+#endif

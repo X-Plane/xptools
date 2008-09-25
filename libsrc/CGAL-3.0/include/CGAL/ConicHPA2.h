@@ -55,8 +55,8 @@ class ConicHPA2
     Conic_type          type;
     CGAL::Orientation   o;
     bool                empty, trivial, degenerate;
-    
-    
+
+
     void
     set_linear_combination (const RT& a1, const ConicHPA2<PT,DA>& c1,
                             const RT& a2, const ConicHPA2<PT,DA>& c2)
@@ -68,7 +68,7 @@ class ConicHPA2
         _v = a1 * c1.v() + a2 * c2.v();
         _w = a1 * c1.w() + a2 * c2.w();
     }
-    
+
     static void set_two_linepairs (const PT& p1,
                                    const PT& p2,
                                    const PT& p3,
@@ -82,7 +82,7 @@ class ConicHPA2
         da.get (p2, x2, y2, h2);
         da.get (p3, x3, y3, h3);
         da.get (p4, x4, y4, h4);
-    
+
         CGAL::Orientation side1_24 = (CGAL::Orientation)(CGAL_NTS sign
                                        (-h2*x1*y4+h1*x2*y4
                                         +h2*x4*y1-h4*x2*y1
@@ -111,7 +111,7 @@ class ConicHPA2
             }
         }
     }
-    
+
     void set_ellipse (const ConicHPA2<PT,DA>& pair1,
                       const ConicHPA2<PT,DA>& pair2)
     {
@@ -120,14 +120,14 @@ class ConicHPA2
         set_linear_combination (pair2.det()-b, pair1,
                                 pair1.det()-b, pair2);
     }
-    
+
     void set (const ConicHPA2<PT,DA>& c1,
               const ConicHPA2<PT,DA>& c2,
               const PT& p)
     {
         set_linear_combination (c2.evaluate(p), c1, -c1.evaluate(p), c2);
     }
-    
+
     CGAL::Sign vol_derivative (RT dr, RT ds, RT dt,
                               RT du, RT dv, RT dw) const
     {
@@ -140,10 +140,10 @@ class ConicHPA2
            b0 = (RT(4)*r()*s()-t()*t())*w()
                 -u()*u()*s()-v()*v()*r()+u()*v()*t(),
            c0 = -RT(2)*a0*b1 + RT(3)*a1*b0;
-    
+
         return CGAL::Sign (-CGAL_NTS sign (c0)*o);
     }
-    
+
     double vol_minimum (RT dr, RT ds, RT dt, RT du, RT dv, RT dw) const
     {
         RT a2 = RT(4)*dr*ds-dt*dt,
@@ -163,9 +163,9 @@ class ConicHPA2
            c2 = -RT(6)*a0*b3 - a1*b2 + RT(4)*a2*b1,
            c1 = -RT(4)*a0*b2 + a1*b1 + RT(6)*a2*b0,
            c0 = -RT(2)*a0*b1 + RT(3)*a1*b0;
-    
+
            if ( CGAL_NTS is_zero( c0)) return 0;// E(0) is the smallest ellipse
-    
+
            double roots[3];
            int nr_roots = solve_cubic
                                 (CGAL::to_double(c3), CGAL::to_double(c2),
@@ -178,15 +178,15 @@ class ConicHPA2
                                  CGAL::to_double(b2), CGAL::to_double(b1),
                                  CGAL::to_double(b0));
     }
-    
-    
+
+
 
   protected:
     RT det () const
     {
         return RT(4)*s()*r() - t()*t();
     }
-    
+
     void analyse( )
     {
         RT d = det();
@@ -198,8 +198,8 @@ class ConicHPA2
                 RT z_prime = d*w() - u()*u()*s() - v()*v()*r() + u()*v()*t();
                 o = (CGAL::Orientation)(CGAL_NTS sign (z_prime));
                 degenerate = (o == CGAL::ZERO);
-                
-                
+
+
             }
             break;
         case PARABOLA:
@@ -265,8 +265,8 @@ class ConicHPA2
                     else
                         o = CGAL::ZERO;
                 }
-                
-                
+
+
             }
             break;
         case ELLIPSE:
@@ -281,43 +281,43 @@ class ConicHPA2
                     empty ? o = CGAL::NEGATIVE : o = CGAL::POSITIVE;
                 }
                 degenerate = empty || CGAL_NTS is_zero (z_prime);
-                
-                
+
+
             }
             break;
         }
     }
-    
+
     RT evaluate (const PT& p) const
     {
         RT x, y, h;
         dao.get (p, x, y, h);
         return  r()*x*x + s()*y*y + t()*x*y + u()*x*h + v()*y*h + w()*h*h;
     }
-    
-    
+
+
 
   public:
     ConicHPA2 ( const DA& da = DA()) : dao( da) { }
-    
+
     ConicHPA2 (RT r, RT s, RT t, RT u, RT v, RT w, const DA& da = DA())
         : dao( da), _r(r), _s(s), _t(t), _u(u), _v(v), _w(w)
     {
         analyse();
     }
-    
+
     const DA&  da() const
     {
         return dao;
     }
-    
+
     RT r() const { return _r;}
     RT s() const { return _s;}
     RT t() const { return _t;}
     RT u() const { return _u;}
     RT v() const { return _v;}
     RT w() const { return _w;}
-    
+
     PT center () const
     {
         CGAL_optimisation_precondition (type != PARABOLA);
@@ -326,72 +326,72 @@ class ConicHPA2
         dao.set( p, two*s()*u() - t()*v(), two*r()*v() - t()*u(), -det());
         return p;
     }
-    
+
     Conic_type conic_type () const
     {
         return type;
     }
-    
+
     bool is_hyperbola () const
     {
         return (type == HYPERBOLA);
     }
-    
+
     bool is_parabola () const
     {
         return (type == PARABOLA);
     }
-    
+
     bool is_ellipse () const
     {
         return (type == ELLIPSE);
     }
-    
+
     bool is_empty () const
     {
         return empty;
     }
-    
+
     bool is_trivial () const
     {
         return trivial;
     }
-    
+
     bool is_degenerate () const
     {
         return degenerate;
     }
-    
+
     CGAL::Orientation orientation () const
     {
         return o;
     }
-    
+
     CGAL::Oriented_side oriented_side (const PT& p) const
     {
         return (CGAL::Oriented_side)(CGAL_NTS sign (evaluate (p)));
     }
-    
+
     bool has_on_positive_side (const PT& p) const
     {
         return (CGAL_NTS is_positive (evaluate(p)));
     }
-    
+
     bool has_on_negative_side (const PT& p) const
     {
         return (CGAL_NTS is_negative (evaluate(p)));
     }
-    
+
     bool has_on_boundary (const PT& p) const
     {
        return (CGAL_NTS is_zero (evaluate(p)));
     }
-    
+
     bool has_on (const PT& p) const
     {
        return (CGAL_NTS is_zero (evaluate(p)));
     }
-    
+
     Convex_side convex_side (const PT& p) const
     {
         switch (o) {
@@ -405,17 +405,17 @@ class ConicHPA2
         // keeps g++ happy
         return( Convex_side( 0));
     }
-    
+
     bool has_on_convex_side (const PT& p) const
     {
         return (convex_side (p) == ON_CONVEX_SIDE);
     }
-    
+
     bool has_on_nonconvex_side (const PT& p) const
     {
         return (convex_side (p) == ON_NONCONVEX_SIDE);
     }
-    
+
     bool operator == ( const ConicHPA2<_PT,_DA>& c) const
     {
         // find coefficient != 0
@@ -427,7 +427,7 @@ class ConicHPA2
         if ( ! CGAL_NTS is_zero( v())) factor1 = v(); else
         if ( ! CGAL_NTS is_zero( w())) factor1 = w(); else
         CGAL_optimisation_assertion_msg( false, "all coefficients zero");
-    
+
         // find coefficient != 0
         RT  factor2;
         if ( ! CGAL_NTS is_zero( c.r())) factor2 = c.r(); else
@@ -437,7 +437,7 @@ class ConicHPA2
         if ( ! CGAL_NTS is_zero( c.v())) factor2 = c.v(); else
         if ( ! CGAL_NTS is_zero( c.w())) factor2 = c.w(); else
         CGAL_optimisation_assertion_msg( false, "all coefficients zero");
-    
+
         return(    ( r()*factor2 == c.r()*factor1)
                 && ( s()*factor2 == c.s()*factor1)
                 && ( t()*factor2 == c.t()*factor1)
@@ -445,19 +445,19 @@ class ConicHPA2
                 && ( v()*factor2 == c.v()*factor1)
                 && ( w()*factor2 == c.w()*factor1));
     }
-    
+
     void set (RT r_, RT s_, RT t_, RT u_, RT v_, RT w_)
     {
         _r = r_; _s = s_; _t = t_; _u = u_; _v = v_; _w = w_;
         analyse();
      }
-    
+
     void set_opposite ()
     {
         _r = -r(); _s = -s(); _t = -t(); _u = -u(); _v = -v(); _w = -w();
         o = CGAL::opposite(orientation());
     }
-    
+
     void set_linepair (const PT& p1, const PT& p2, const PT& p3,
                        const PT& p4, const DA& da = DA())
     {
@@ -466,40 +466,40 @@ class ConicHPA2
         da.get (p2, x2, y2, h2);
         da.get (p3, x3, y3, h3);
         da.get (p4, x4, y4, h4);
-    
+
         // precondition: p1 != p2, p3 != p4
         CGAL_optimisation_precondition
             ( ((x1*h2 != x2*h1) || (y1*h2 != y2*h1)) &&
               ((x3*h4 != x4*h3) || (y3*h4 != y4*h3)) );
-    
+
         RT h1x2_x1h2 = h1*x2-x1*h2;
         RT h3x4_x3h4 = h3*x4-x3*h4;
         RT y1h2_h1y2 = y1*h2-h1*y2;
         RT y3h4_h3y4 = y3*h4-h3*y4;
         RT x1y2_y1x2 = x1*y2-y1*x2;
         RT x3y4_y3x4 = x3*y4-y3*x4;
-    
+
         _r = y1h2_h1y2 * y3h4_h3y4;
         _s = h1x2_x1h2 * h3x4_x3h4;
         _t = h1x2_x1h2 * y3h4_h3y4 + y1h2_h1y2 * h3x4_x3h4;
         _u = x1y2_y1x2 * y3h4_h3y4 + y1h2_h1y2 * x3y4_y3x4;
         _v = x1y2_y1x2 * h3x4_x3h4 + h1x2_x1h2 * x3y4_y3x4;
         _w = x1y2_y1x2 * x3y4_y3x4;
-    
+
         analyse();
     }
-    
+
     void set_ellipse (const PT& p1, const PT& p2, const PT& p3)
     {
         RT x1, y1, h1, x2, y2, h2, x3, y3, h3;
         dao.get (p1, x1, y1, h1);
         dao.get (p2, x2, y2, h2);
         dao.get (p3, x3, y3, h3);
-    
+
         // precondition: p1, p2, p3 not collinear
         RT det = -h1*x3*y2+h3*x1*y2+h1*x2*y3-h2*x1*y3+h2*x3*y1-h3*x2*y1;
         CGAL_optimisation_precondition (!CGAL_NTS is_zero (det));
-    
+
         RT x1x1 = x1*x1, y1y1 = y1*y1,
            x2x2 = x2*x2, y2y2 = y2*y2,
            x3x3 = x3*x3, y3y3 = y3*y3,  // x_i^2, y_i^2
@@ -510,39 +510,39 @@ class ConicHPA2
            h2h2 = h2*h2,
            h3h3 = h3*h3,                // h_i^2
            two = RT(2);                 // 2
-    
+
         _r = y1y1*h2h2*h3h3 - y1h1*y2h2*h3h3 - y1h1*h2h2*y3h3 +
              h1h1*y2y2*h3h3 - h1h1*y2h2*y3h3 + h1h1*h2h2*y3y3;
-    
+
         _s = x1x1*h2h2*h3h3 - x1h1*x2h2*h3h3 - x1h1*h2h2*x3h3 +
              h1h1*x2x2*h3h3 - h1h1*x2h2*x3h3 + h1h1*h2h2*x3x3;
-    
+
         _t = -two*x1*y1*h2h2*h3h3 + x1h1*y2h2*h3h3 + x1h1*h2h2*y3h3 +
                  y1h1*x2h2*h3h3 -two*h1h1*x2*y2*h3h3 + h1h1*x2h2*y3h3 +
                  y1h1*h2h2*x3h3 + h1h1*y2h2*x3h3 -two*h1h1*h2h2*x3*y3;
-    
+
         _u = -(h1h1*y2y2*x3h3 - h1h1*x2*y2*y3h3 - h1h1*y2h2*x3*y3 +
                    x1h1*h2h2*y3y3 + h1h1*x2h2*y3y3 +y1y1*x2h2*h3h3 +
                    y1y1*h2h2*x3h3 - x1*y1*y2h2*h3h3 - y1h1*x2*y2*h3h3 -
                    x1*y1*h2h2*y3h3 - y1h1*h2h2*x3*y3 + x1h1*y2y2*h3h3);
-    
+
         _v = -(h1h1*x2x2*y3h3 - h1h1*x2*y2*x3h3 - h1h1*x2h2*x3*y3 +
                    y1h1*h2h2*x3x3 + h1h1*y2h2*x3x3 +x1x1*y2h2*h3h3 +
                    x1x1*h2h2*y3h3 - x1*y1*x2h2*h3h3 - x1h1*x2*y2*h3h3 -
                    x1*y1*h2h2*x3h3 - x1h1*h2h2*x3*y3 + y1h1*x2x2*h3h3);
-    
+
         _w = y1y1*x2h2*x3h3 - x1*y1*y2h2*x3h3 - y1h1*x2*y2*x3h3 +
              y1h1*y2h2*x3x3 - x1*y1*x2h2*y3h3 + y1h1*x2x2*y3h3 -
              y1h1*x2h2*x3*y3 + x1h1*y2y2*x3h3 + x1x1*y2h2*y3h3 -
              x1h1*x2*y2*y3h3 - x1h1*y2h2*x3*y3 + x1h1*x2h2*y3y3;
-    
+
         type = ELLIPSE;
         degenerate = trivial = empty = false;
         o = CGAL::NEGATIVE;
         if (CGAL_NTS is_positive (det)) set_opposite ();
-    
+
     }
-    
+
     void set_ellipse (const PT& p1, const PT& p2,
                       const PT& p3, const PT& p4,
                       CGAL::Orientation _o = POSITIVE)
@@ -553,7 +553,7 @@ class ConicHPA2
         analyse();
         if (o != _o) set_opposite();
     }
-    
+
     void set (const PT& p1, const PT& p2, const PT& p3, const PT& p4,
               const PT& p5, CGAL::Orientation _o = POSITIVE)
     {
@@ -566,8 +566,8 @@ class ConicHPA2
         CGAL_optimisation_precondition (!is_trivial());
         if (o != _o) set_opposite();
     }
-    
-    
+
+
 };
 
 #ifndef CGAL_NO_OSTREAM_INSERT_CONICHPA2

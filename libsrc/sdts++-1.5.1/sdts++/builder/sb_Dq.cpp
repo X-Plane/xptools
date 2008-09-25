@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -71,7 +71,7 @@ struct sb_Dq_Imp
 
 
   sb_Dq_Imp()
-    : 
+    :
     Comment_( UNVALUED_STRING )
   {}
 
@@ -112,8 +112,8 @@ static sio_8211Schema dqcg__schema;
 
 static
 void
-build_schema_( sio_8211Schema& schema, 
-	       string const& name, 
+build_schema_( sio_8211Schema& schema,
+	       string const& name,
 	       string const& mnemonic )
 {
   schema.push_back( sio_8211FieldFormat() );

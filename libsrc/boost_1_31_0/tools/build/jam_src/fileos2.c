@@ -47,7 +47,7 @@
  */
 
 void
-file_dirscan( 
+file_dirscan(
 	char *dir,
 	scanback func,
 	void	*closure )
@@ -94,7 +94,7 @@ file_dirscan(
         string_new( filename );
         do
         {
-            
+
             f.f_base.ptr = finfo->name;
             f.f_base.len = strlen( finfo->name );
 

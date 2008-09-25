@@ -11,8 +11,8 @@
 // file          : delaunay_triangulation_2_toolbar.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -53,7 +53,7 @@ private slots:
   void               triangulation_changed(){emit(changed());}
 signals:
   void               changed();
-private:	
+private:
   CGAL::Qt_widget_get_line<Rep>         input_line_layer;
   CGAL::Qt_widget_get_point<Rep>        input_point_layer;
   triangulation_2_edit_vertex<Delaunay> edit_vertex_layer;

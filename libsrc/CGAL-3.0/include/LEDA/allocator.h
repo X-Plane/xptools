@@ -81,7 +81,7 @@ public:
   leda_allocator() {}
   /*{\Mcreate introduces a variable |\Mvar| of type |\Mname|. }*/
 
-  template <class TO> 
+  template <class TO>
   leda_allocator(const leda_allocator<TO>&) {}
   ~leda_allocator() {}
 
@@ -90,7 +90,7 @@ public:
 pointer allocate(size_type n, const_pointer = 0)
 /*{\Mop returns a pointer to a newly allocated memory range of size
         |n * sizeof(T)|.}*/
-{ return 0 == n ? 0 : 
+{ return 0 == n ? 0 :
         (T*) CGAL_LEDA_SCOPE::std_memory_mgr.allocate_bytes( n * sizeof(T) ); }
 
 void deallocate(pointer p, size_type n)
@@ -115,7 +115,7 @@ void destroy(pointer p)
 { p->~T(); }
 
 size_type max_size() const
-/*{\Mop the largest value |n| for which the call |allocate(n,0)| 
+/*{\Mop the largest value |n| for which the call |allocate(n,0)|
     might succeed.}*/
 { return CGAL_LEDA_SCOPE::std_memory_mgr.max_size(); }
 

@@ -22,7 +22,7 @@ seraz0(double lam, double mult, PJ *P) {
     s = P->p22 * P->sa * cos(lam) * sqrt((1. + P->t * sdsq) / ((
 	    1. + P->w * sdsq) * (1. + P->q * sdsq)));
     d__1 = 1. + P->q * sdsq;
-    h = sqrt((1. + P->q * sdsq) / (1. + P->w * sdsq)) * ((1. + 
+    h = sqrt((1. + P->q * sdsq) / (1. + P->w * sdsq)) * ((1. +
 	    P->w * sdsq) / (d__1 * d__1) - P->p22 * P->ca);
     sq = sqrt(P->xj * P->xj + s * s);
     P->b += fc = mult * (h * P->xj - s * s) / sq;
@@ -69,7 +69,7 @@ FORWARD(e_forward); /* ellipsoid */
 	}
 	if (l) {
 		sp = sin(lp.phi);
-		phidp = aasin((P->one_es * P->ca * sp - P->sa * cos(lp.phi) * 
+		phidp = aasin((P->one_es * P->ca * sp - P->sa * cos(lp.phi) *
 			sin(lamt)) / sqrt(1. - P->es * sp * sp));
 		tanph = log(tan(FORTPI + .5 * phidp));
 		sd = sin(lamdp);
@@ -102,7 +102,7 @@ INVERSE(e_inverse); /* ellipsoid */
 		lamdp /= P->b;
 	} while (fabs(lamdp - sav) >= TOL && --nn);
 	sl = sin(lamdp);
-	fac = exp(sqrt(1. + s * s / P->xj / P->xj) * (xy.y - 
+	fac = exp(sqrt(1. + s * s / P->xj / P->xj) * (xy.y -
 		P->c1 * sl - P->c3 * sin(lamdp * 3.)));
 	phidp = 2. * (atan(fac) - FORTPI);
 	dd = sl * sl;
@@ -110,9 +110,9 @@ INVERSE(e_inverse); /* ellipsoid */
 	    lamdp -= TOL;
 	spp = sin(phidp);
 	sppsq = spp * spp;
-	lamt = atan(((1. - sppsq * P->rone_es) * tan(lamdp) * 
+	lamt = atan(((1. - sppsq * P->rone_es) * tan(lamdp) *
 		P->ca - spp * P->sa * sqrt((1. + P->q * dd) * (
-		1. - sppsq) - sppsq * P->u) / cos(lamdp)) / (1. - sppsq 
+		1. - sppsq) - sppsq * P->u) / cos(lamdp)) / (1. - sppsq
 		* (1. + P->u)));
 	sl = lamt >= 0. ? 1. : -1.;
 	scl = cos(lamdp) >= 0. ? 1. : -1;

@@ -6,6 +6,6 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 //
 //  http://www.boost.org
-// 
+//
 
 #include "b.h"

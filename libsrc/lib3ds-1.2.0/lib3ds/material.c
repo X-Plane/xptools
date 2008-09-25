@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -85,7 +85,7 @@ lib3ds_material_new()
   initialize_texture_map(&mat->self_illum_mask);
   initialize_texture_map(&mat->reflection_map);
   initialize_texture_map(&mat->reflection_mask);
-  
+
   return(mat);
 }
 
@@ -139,7 +139,7 @@ color_read(Lib3dsRgba rgb, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -167,7 +167,7 @@ int_percentage_read(Lib3dsFloat *p, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -272,7 +272,7 @@ texture_map_read(Lib3dsTextureMap *map, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -708,7 +708,7 @@ texture_map_write(Lib3dsWord chunk, Lib3dsTextureMap *map, Lib3dsIo *io)
   if (!lib3ds_chunk_write_start(&c,io)) {
     return(LIB3DS_FALSE);
   }
-  
+
   int_percentage_write(map->percent,io);
 
   { /*---- LIB3DS_MAT_MAPNAME ----*/
@@ -726,7 +726,7 @@ texture_map_write(Lib3dsWord chunk, Lib3dsTextureMap *map, Lib3dsIo *io)
     lib3ds_chunk_write(&c,io);
     lib3ds_io_write_word(io, (Lib3dsWord)map->flags);
   }
-  
+
   { /*---- LIB3DS_MAT_MAP_TEXBLUR ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_MAT_MAP_TEXBLUR;
@@ -794,7 +794,7 @@ texture_map_write(Lib3dsWord chunk, Lib3dsTextureMap *map, Lib3dsIo *io)
     lib3ds_io_write_byte(io, (Lib3dsByte)floor(255.0*map->tint_2[1]+0.5));
     lib3ds_io_write_byte(io, (Lib3dsByte)floor(255.0*map->tint_2[2]+0.5));
   }
-  
+
   { /*---- LIB3DS_MAT_MAP_RCOL ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_MAT_MAP_RCOL;
@@ -814,7 +814,7 @@ texture_map_write(Lib3dsWord chunk, Lib3dsTextureMap *map, Lib3dsIo *io)
     lib3ds_io_write_byte(io, (Lib3dsByte)floor(255.0*map->tint_g[1]+0.5));
     lib3ds_io_write_byte(io, (Lib3dsByte)floor(255.0*map->tint_g[2]+0.5));
   }
-  
+
   { /*---- LIB3DS_MAT_MAP_BCOL ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_MAT_MAP_BCOL;
@@ -952,7 +952,7 @@ lib3ds_material_write(Lib3dsMaterial *material, Lib3dsIo *io)
     c.size=6;
     lib3ds_chunk_write(&c,io);
   }
-  
+
   if (material->map_decal) { /*---- LIB3DS_MAT_DECAL ----*/
     Lib3dsChunk c;
     c.chunk=LIB3DS_MAT_DECAL;

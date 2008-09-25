@@ -15,7 +15,7 @@
 //	BillboardNode
 ////////////////////////////////////////////////
 
-BillboardNode::BillboardNode() 
+BillboardNode::BillboardNode()
 {
 	setHeaderFlag(false);
 	setType(billboardNodeString);
@@ -25,7 +25,7 @@ BillboardNode::BillboardNode()
 	addExposedField(axisOfRotationFieldString, axisOfRotationField);
 }
 
-BillboardNode::~BillboardNode() 
+BillboardNode::~BillboardNode()
 {
 }
 
@@ -40,17 +40,17 @@ SFVec3f *BillboardNode::getAxisOfRotationField()
 	return (SFVec3f *)getExposedField(axisOfRotationFieldString);
 }
 
-void BillboardNode::setAxisOfRotation(float value[]) 
+void BillboardNode::setAxisOfRotation(float value[])
 {
 	getAxisOfRotationField()->setValue(value);
 }
 
-void BillboardNode::setAxisOfRotation(float x, float y, float z) 
+void BillboardNode::setAxisOfRotation(float x, float y, float z)
 {
 	getAxisOfRotationField()->setValue(x, y, z);
 }
 
-void BillboardNode::getAxisOfRotation(float value[]) 
+void BillboardNode::getAxisOfRotation(float value[])
 {
 	getAxisOfRotationField()->getValue(value);
 }
@@ -59,12 +59,12 @@ void BillboardNode::getAxisOfRotation(float value[])
 //	List
 ////////////////////////////////////////////////
 
-BillboardNode *BillboardNode::next() 
+BillboardNode *BillboardNode::next()
 {
 	return (BillboardNode *)Node::next(getType());
 }
 
-BillboardNode *BillboardNode::nextTraversal() 
+BillboardNode *BillboardNode::nextTraversal()
 {
 	return (BillboardNode *)Node::nextTraversalByType(getType());
 }
@@ -72,7 +72,7 @@ BillboardNode *BillboardNode::nextTraversal()
 ////////////////////////////////////////////////
 //	functions
 ////////////////////////////////////////////////
-	
+
 bool BillboardNode::isChildNodeType(Node *node)
 {
 	if (node->isCommonNode() || node->isBindableNode() ||node->isInterpolatorNode() || node->isSensorNode() || node->isGroupingNode() || node->isSpecialGroupNode())
@@ -81,16 +81,16 @@ bool BillboardNode::isChildNodeType(Node *node)
 		return false;
 }
 
-void BillboardNode::initialize() 
+void BillboardNode::initialize()
 {
 	recomputeBoundingBox();
 }
 
-void BillboardNode::uninitialize() 
+void BillboardNode::uninitialize()
 {
 }
 
-void BillboardNode::update() 
+void BillboardNode::update()
 {
 }
 
@@ -98,7 +98,7 @@ void BillboardNode::update()
 //	Infomation
 ////////////////////////////////////////////////
 
-void BillboardNode::outputContext(ostream &printStream, char *indentString) 
+void BillboardNode::outputContext(ostream &printStream, char *indentString)
 {
 	SFVec3f *axisOfRotation = getAxisOfRotationField();
 	printStream << indentString << "\t" << "axisOfRotation " << axisOfRotation << endl;
@@ -119,7 +119,7 @@ void BillboardNode::getViewerToBillboardVector(float vector[3])
 	view->getPosition(viewPos);
 
 	float bboardPos[] = {0.0f, 0.0f, 0.0f};
-	
+
 	Node *parentNode = getParentNode();
 	if (parentNode != NULL) {
 		SFMatrix	mx;
@@ -155,7 +155,7 @@ void BillboardNode::getPlaneVectorOfAxisOfRotationAndBillboardToViewer(float pla
 
 	getAxisOfRotation(axisOfRotation);
 	getBillboardToViewerVector(bboardToViewerVector);
-	
+
 	GetPlaneVectorFromTwoVectors(axisOfRotation, bboardToViewerVector, planeVector);
 }
 
@@ -188,10 +188,10 @@ float BillboardNode::getRotationAngleOfZAxis()
 
 	getAxisOfRotation(axisOfRotation);
 	getViewerToBillboardVector(viewer2bboardVector);
-	
+
 	GetPlaneVectorFromTwoVectors(axisOfRotation, viewer2bboardVector, planeVector);
 	GetPlaneVectorFromTwoVectors(axisOfRotation, planeVector, zAxisVectorOnPlane);
-	
+
 	return VectorGetAngle(zAxisVector, zAxisVectorOnPlane);
 }
 
@@ -212,7 +212,7 @@ void BillboardNode::getRotationZAxisRotation(float roationValue[4])
 
 	GetPlaneVectorFromTwoVectors(bboardZAxisVector, bboard2viewerVector, planeVector);
 	bboardZAxisRotationAngle = VectorGetAngle(bboardZAxisVector, bboard2viewerVector);
-	
+
 	SFRotation	zAxisRotation;
 	zAxisRotation.setValue(planeVector, bboardZAxisRotationAngle);
 	zAxisRotation.multi(bboardYAxisVector);
@@ -251,7 +251,7 @@ void BillboardNode::getRotationZAxisRotation(float roationValue[4])
 
 	SFMatrix mxBillboard;
 	Node *parentNode = getParentNode();
-	if (parentNode != NULL) 
+	if (parentNode != NULL)
 		parentNode->getTransformMatrix(&mxBillboard);
 
 	mxBillboard.invert();

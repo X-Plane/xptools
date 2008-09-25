@@ -22,16 +22,16 @@ typedef CGAL::Arr_2_default_dcel<Traits>                Dcel;
 typedef CGAL::Arrangement_2<Dcel,Traits>                Arr_2;
 
 // A base class for split functors
-struct Split_base 
+struct Split_base
 {
   virtual void operator()(const Curve& cv, std::list<Curve>& l)=0;
 };
 
 // A user-defined insertion functor
-struct Split_func : public Split_base 
+struct Split_func : public Split_base
 {
   Split_func(double ratio) : r(ratio) {}
-  void operator()(const Curve & cv, std::list<Curve> & l) 
+  void operator()(const Curve & cv, std::list<Curve> & l)
   {
      Point s=cv.source(); // Uses the knowledge of the curve functions
      Point t=cv.target();
@@ -39,16 +39,16 @@ struct Split_func : public Split_base
      l.push_back(Curve(s, m1));
      l.push_back(Curve(m1, t));
 
-   }     
+   }
 
   virtual ~Split_func(){};
 private:
   NT r;
 };
 
-int main() 
+int main()
 {
-  // Prepare a vector of pointers to the functor base class 
+  // Prepare a vector of pointers to the functor base class
   std::vector<Split_base*> func_vec;
 
   // Create 2 functors

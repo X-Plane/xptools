@@ -19,17 +19,17 @@ typedef CGAL::Planar_map_2<Dcel,Traits>                     Planar_map_2;
 typedef CGAL::Planar_map_with_intersections_2<Planar_map_2> Pmwx;
 
 int main() {
-  
+
   Pmwx pm;
   X_monotone_curve_2 cv1(Point_2(0, 0), Point_2(1, 1));
-  X_monotone_curve_2 cv2(Point_2(0, 1), Point_2(1, 0)); 
+  X_monotone_curve_2 cv2(Point_2(0, 1), Point_2(1, 0));
 
   //insertion of the curves
   std::cout << "Inserting the segments:" << std::endl << cv1 << std::endl;
   pm.insert(cv1);
   std::cout << cv2 << std::endl << std::endl;
   pm.insert(cv2);
-  
+
   //traversal of the curves
   std::cout << "Edges of the planar map:" << std::endl;
 

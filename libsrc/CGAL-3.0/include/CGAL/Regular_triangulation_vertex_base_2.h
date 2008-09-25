@@ -27,11 +27,11 @@ CGAL_BEGIN_NAMESPACE
 
 template < class GT,
            class Vbb = Triangulation_vertex_base_2<GT> >
-class Regular_triangulation_vertex_base_2 
+class Regular_triangulation_vertex_base_2
   :   public Vbb
 {
   typedef typename Vbb::Triangulation_data_structure     TDS;
-  typedef Vbb                                            Base; 
+  typedef Vbb                                            Base;
 public:
   typedef typename Base::Point                Point;
   typedef TDS                                 Triangulation_data_structure;
@@ -46,8 +46,8 @@ public:
 
   Regular_triangulation_vertex_base_2 ()
     : Base(), _hidden(false)     {}
-    
-  Regular_triangulation_vertex_base_2(const Point & p) 
+
+  Regular_triangulation_vertex_base_2(const Point & p)
     : Base(p), _hidden(false)   {}
 
   Regular_triangulation_vertex_base_2(const Point & p, Face_handle)
@@ -55,7 +55,7 @@ public:
 
   void set_hidden(bool b) { _hidden = b; }
   bool is_hidden() { return _hidden ;}
- 
+
 private:
   bool _hidden;
 

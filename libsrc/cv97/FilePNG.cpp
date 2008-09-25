@@ -26,16 +26,16 @@ RGBColor24 color2)
 }
 
 FilePNG::FilePNG(char *filename)
-{	
+{
 	mImgBuffer = NULL;
 	mWidth = mHeight = 0;
 	mHasTransparencyColor = false;
-	
+
 	load(filename);
 }
 
 bool FilePNG::load(char *filename)
-{	
+{
 	FILE	*fp;
 	int		n, i, j;
 
@@ -43,7 +43,7 @@ bool FilePNG::load(char *filename)
 		return false;
 
 	png_struct *pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	
+
 	if (pngRead == NULL)
 		return false;
 
@@ -72,10 +72,10 @@ bool FilePNG::load(char *filename)
 	png_color	*pngPalette	= NULL;
 	int			numPalette	= 0;
 
-	if (colorType & PNG_COLOR_MASK_PALETTE) 
+	if (colorType & PNG_COLOR_MASK_PALETTE)
 		png_get_PLTE(pngRead, pngInfo, &pngPalette, & numPalette);
 */
-    if (colorType == PNG_COLOR_TYPE_PALETTE && bitDepth <= 8) 
+    if (colorType == PNG_COLOR_TYPE_PALETTE && bitDepth <= 8)
 		png_set_expand(pngRead);
 
     if (png_get_valid(pngRead, pngInfo, PNG_INFO_tRNS))
@@ -86,7 +86,7 @@ bool FilePNG::load(char *filename)
 	int	pixelByte = 0;
 	if (colorType & PNG_COLOR_TYPE_RGB_ALPHA)
 		pixelByte = bitDepth * 4;
-	else 
+	else
 		pixelByte = bitDepth * 3;
 
 
@@ -96,10 +96,10 @@ bool FilePNG::load(char *filename)
 	for (n=0; n<(int)height; n++)
 		imgData[n] = new unsigned char[pixelByte * width];
 
-	png_read_image(pngRead, imgData); 
+	png_read_image(pngRead, imgData);
 
 	mImgBuffer = new RGBColor24[width*height];
-	
+
 	int offset;
 	for (i=0; i<(int)width; i++) {
 		for (j=0; j<(int)height; j++) {
@@ -147,14 +147,14 @@ FilePNG::~FilePNG()
 		delete []mImgBuffer;
 }
 
-void FilePNG::setTransparencyColor(RGBColor24 color) 
+void FilePNG::setTransparencyColor(RGBColor24 color)
 {
 	mTransparencyColor[0] = color[0];
 	mTransparencyColor[1] = color[1];
 	mTransparencyColor[2] = color[2];
 }
 
-void FilePNG::getTransparencyColor(RGBColor24 color) 
+void FilePNG::getTransparencyColor(RGBColor24 color)
 {
 	color[0] = mTransparencyColor[0];
 	color[1] = mTransparencyColor[1];

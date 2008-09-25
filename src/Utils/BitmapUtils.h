@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -28,7 +28,7 @@
 	structures to be happy!!!
 */
 
-/* 
+/*
 	These headers match the Microsoft bitmap file and image headers more or less
 	and are read right out of the file.
 */
@@ -82,7 +82,7 @@ struct	BMPImageDesc {
 
 // DD Pixel format flags
 #define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
-#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed 
+#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
 #define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
 
 // DD surface caps
@@ -93,7 +93,7 @@ struct	BMPImageDesc {
 #if APL || LIN
 	#define DWORD unsigned int
 #endif
-	
+
 struct TEX_dds_caps2 {
     DWORD       dwCaps;         // capabilities of surface wanted
     DWORD       dwCaps2;
@@ -104,7 +104,7 @@ struct TEX_dds_caps2 {
 struct TEX_dds_pixelformat {
     DWORD       dwSize;                 // size of structure (must be 32)
     DWORD       dwFlags;                // pixel format flags
-    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.  
+    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
 	DWORD		dwRGBBitCount;          // how many bits per pixel
 	DWORD		dwRBitMask;             // mask for red bit
 	DWORD		dwGBitMask;             // mask for green bits
@@ -122,10 +122,10 @@ struct TEX_dds_desc {
 	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
     DWORD               dwDepth;				// Vol texes-depth.
 	DWORD				dwMipMapCount;          // number of mip-map levels requestde
-	DWORD               dwReserved1[11];        // 
+	DWORD               dwReserved1[11];        //
 	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
     TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
-    DWORD               dwReserved2;			// 
+    DWORD               dwReserved2;			//
 };
 
 
@@ -140,7 +140,7 @@ struct TEX_dds_desc {
 	to an array of bytes large enough to hold the image.  We always
 	use 24-bit RGB or 32-bit ARGB.  The lower left corner of the BMP
 	file is in the first byte of data.
-	
+
 	Pad is how many bytes we skip at the end of each scanline.  Each
 	scanline must start on a 4-byte boundary!
 */
@@ -151,7 +151,7 @@ struct	ImageInfo {
 	long			height;
 	long			pad;
 	short			channels;
-};	
+};
 
 /* Given a file path and an uninitialized imageInfo structure, this routine fills
  * in the imageInfo structure by loading the bitmap. */
@@ -179,7 +179,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 
 #endif
 
-/* Given an imageInfo structure, this routine writes it to disk as a .bmp file. 
+/* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
  * Note that only 3-channel bitmaps may be written as .bmp files!! */
 int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath);
 
@@ -196,11 +196,11 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 void	FillBitmap(const struct ImageInfo * inImageInfo, char c);
 
 /* This routine deallocates a bitmap that was created with CreateBitmapFromFile or
- * CreateNewBitmap. */ 
+ * CreateNewBitmap. */
 void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
-/* Given two bitmaps, this routine copies a section from one bitmap to another.  
- * This routine will use bicubic and bilinear interpolation to copy the bitmap 
+/* Given two bitmaps, this routine copies a section from one bitmap to another.
+ * This routine will use bicubic and bilinear interpolation to copy the bitmap
  * as cleanly as possible.  However, if the bitmap contains alpha, the copy routine
  * will create a jagged edge to keep from smearing the alpha channel. */
 void	CopyBitmapSection(
@@ -214,7 +214,7 @@ void	CopyBitmapSection(
 			long				inDstTop,
 			long				inDstRight,
 			long				inDstBottom);
-			
+
 void	CopyBitmapSectionWarped(
 			const struct ImageInfo *	inSrc,
 			const struct ImageInfo *	inDst,
@@ -230,7 +230,7 @@ void	CopyBitmapSectionWarped(
 			long				inDstTop,
 			long				inDstRight,
 			long				inDstBottom);
-			
+
 void	CopyBitmapSectionDirect(
 			const struct ImageInfo&		inSrc,
 			const struct ImageInfo&		inDst,
@@ -242,7 +242,7 @@ void	CopyBitmapSectionDirect(
 			long						inHeight);
 
 void	FlipImageY(struct ImageInfo&	io_image);
-			
+
 /* This routine rotates a bitmap counterclockwise 90 degrees, exchanging its width
  * and height. */
 void	RotateBitmapCCW(
@@ -253,7 +253,7 @@ void	RotateBitmapCCW(
 int	ConvertBitmapToAlpha(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha);
-			
+
 /* This routine converts a 4-channel bitmap to a 3-channel bitmap by converting
  * alpha back to magenta. */
 int	ConvertAlphaToBitmap(
@@ -262,10 +262,10 @@ int	ConvertAlphaToBitmap(
 
 /* Create a 4-channel image from a DDS file. */
 int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);
-			
+
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name);
 
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name);
-			
+
 #endif

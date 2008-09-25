@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -88,7 +88,7 @@ typedef	struct {
 	long	texture;
 } Vertex606;
 
-/* New style vertex; each vertex is a 10 byte group.  
+/* New style vertex; each vertex is a 10 byte group.
  * latLonCode is the delta of this vertices lat/lon from the lat/lon of the lower left of the file (e.g. the lat/lon
  * the .env file is named after), multiplied by 9999.0, with the lat * 10000, then added together.
  *
@@ -103,17 +103,17 @@ typedef	struct {
 } Vertex610;
 
 /*
- * A custom object.  
+ * A custom object.
  *
  * Type is one of:
- *   1 = control tower, 2 = skyscraper, 3 = radio tower, 4 = power tower, 5 = cooling tower, 
+ *   1 = control tower, 2 = skyscraper, 3 = radio tower, 4 = power tower, 5 = cooling tower,
  *	6 = smokestacks, 8 = custom, 99 = no more objects
  *
  * the heading is the height in meters of the object for standard objects, or the rotation of the object in degrees
- * for custom ones.  
+ * for custom ones.
  *
  */
- 
+
 typedef	struct {
 	long	type;
 	float	lat;

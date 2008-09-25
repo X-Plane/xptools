@@ -21,7 +21,7 @@
 //
 // Author(s)     : Andreas Fabri
 //                 Stefan Schirra
- 
+
 
 #ifndef CGAL_MISC_H
 #define CGAL_MISC_H

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -181,7 +181,7 @@ sio_8211FieldFormat::operator!=( string const & rhs ) const
 
 
 
-sio_8211FieldFormat::data_struct_code 
+sio_8211FieldFormat::data_struct_code
 sio_8211FieldFormat::getDataStructCode( ) const
 {
     return imp_->data__struct_code;
@@ -189,7 +189,7 @@ sio_8211FieldFormat::getDataStructCode( ) const
 
 
 
-sio_8211FieldFormat::data_type_code 
+sio_8211FieldFormat::data_type_code
 sio_8211FieldFormat::getDataTypeCode( ) const
 {
     return imp_->data__type_code;
@@ -197,7 +197,7 @@ sio_8211FieldFormat::getDataTypeCode( ) const
 
 
 
-string const& 
+string const&
 sio_8211FieldFormat::getTag( ) const
 {
     return imp_->tag_;
@@ -205,7 +205,7 @@ sio_8211FieldFormat::getTag( ) const
 
 
 
-string const& 
+string const&
 sio_8211FieldFormat::getName( ) const
 {
     return imp_->name_;
@@ -213,7 +213,7 @@ sio_8211FieldFormat::getName( ) const
 
 
 
-char 
+char
 sio_8211FieldFormat::getFieldTerm( ) const
 {
     return imp_->field__term;
@@ -221,14 +221,14 @@ sio_8211FieldFormat::getFieldTerm( ) const
 
 
 
-char 
+char
 sio_8211FieldFormat::getUnitTerm( ) const
 {
     return imp_->unit__term;
 } // sio_8211FieldFormat::getUnitTerm
 
 
-bool 
+bool
 sio_8211FieldFormat::isRepeating( ) const
 {
     return imp_->isRepeating_;
@@ -237,7 +237,7 @@ sio_8211FieldFormat::isRepeating( ) const
 
 
 
-void 
+void
 sio_8211FieldFormat::setDataStructCode( data_struct_code dsc )
 {
     imp_->data__struct_code = dsc;
@@ -245,7 +245,7 @@ sio_8211FieldFormat::setDataStructCode( data_struct_code dsc )
 
 
 
-void 
+void
 sio_8211FieldFormat::setDataTypeCode( data_type_code dtc )
 {
     imp_->data__type_code = dtc;
@@ -253,7 +253,7 @@ sio_8211FieldFormat::setDataTypeCode( data_type_code dtc )
 
 
 
-void 
+void
 sio_8211FieldFormat::setTag( string const & tag )
 {
     imp_->tag_ = tag;
@@ -261,7 +261,7 @@ sio_8211FieldFormat::setTag( string const & tag )
 
 
 
-void 
+void
 sio_8211FieldFormat::setName( string const & name )
 {
     imp_->name_ = name;
@@ -269,7 +269,7 @@ sio_8211FieldFormat::setName( string const & name )
 
 
 
-void 
+void
 sio_8211FieldFormat::setFieldTerm( char ft )
 {
     imp_->field__term = ft;
@@ -277,7 +277,7 @@ sio_8211FieldFormat::setFieldTerm( char ft )
 
 
 
-void 
+void
 sio_8211FieldFormat::setUnitTerm( char ut )
 {
     imp_->unit__term = ut;
@@ -286,7 +286,7 @@ sio_8211FieldFormat::setUnitTerm( char ut )
 
 
 
-void 
+void
 sio_8211FieldFormat::setIsRepeating( bool repeating )
 {
     imp_->isRepeating_ = repeating;
@@ -330,7 +330,7 @@ static
 void
 _dumpConverterMap( sio_8211_converter_dictionary const* c_map )
 {
-    if ( ! c_map ) 
+    if ( ! c_map )
     {
         cerr << __FILE__ << " no map\n";
         return;
@@ -348,12 +348,12 @@ _dumpConverterMap( sio_8211_converter_dictionary const* c_map )
 
 
 
-bool 
+bool
 sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
 			 sio_8211DDRField const &	ddr_field,
 			 string const &			field_tag,
 			 sio_8211_converter_dictionary const* binary_converter_hints )
- 
+
 {
     // dumpConverterMap_( binary_converter_hints );
 
@@ -419,8 +419,8 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
     {
                                 // grab the next '!' delimited subfield label
 
-        while( i < array_descriptor.length() && 
-               array_descriptor[i] != '!' ) 
+        while( i < array_descriptor.length() &&
+               array_descriptor[i] != '!' )
         {
             temp_label += array_descriptor[i++];
         }
@@ -432,7 +432,7 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
 
         if ( 0 == temp_label.length() ) break;
 
-        ff.push_back( sio_8211SubfieldFormat() ); // add a new subfield format 
+        ff.push_back( sio_8211SubfieldFormat() ); // add a new subfield format
                                                   // and set
         ff.back().setLabel( temp_label );         // its label
 
@@ -446,8 +446,8 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
                                 // now parse the format string and set the type
                                 // for each subfield format that was created
 
-    // Set an iterator to the first subfield format, then have a parser grind 
-    // its way through the format string, setting each subfield format to 
+    // Set an iterator to the first subfield format, then have a parser grind
+    // its way through the format string, setting each subfield format to
     // reasonable values along the way.
 
                                 // set the string buffer pointer to the start of
@@ -456,7 +456,7 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
     sio_8211_subfield_format_buffer = ddr_field.getFormatControls().c_str();
 
                                 // set the global hints for the parser
-	
+
     sio_8211_binary_converter_hints = binary_converter_hints;
 
                                 // set the global subfield format
@@ -466,7 +466,7 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
     current_sio_8211Subfield = ff.begin();
 
     yy_buffer_state* bf;
-    bf = sio_8211_yy_scan_bytes( sio_8211_subfield_format_buffer, 
+    bf = sio_8211_yy_scan_bytes( sio_8211_subfield_format_buffer,
                                  ddr_field.getFormatControls().length() );
 
     sio_8211_yyparse();
@@ -483,7 +483,7 @@ sio_8211MakeFieldFormat( sio_8211FieldFormat &		ff,
 ostream&
 operator<<( ostream& os, sio_8211FieldFormat const& ff )
 {
-    os << ff.getTag() << " : " << ff.getName() 
+    os << ff.getTag() << " : " << ff.getName()
        << (  ( ff.isRepeating() ) ? "\t(repeating)" : "" )  << "\n\t";
 
     switch ( ff.getDataStructCode() )

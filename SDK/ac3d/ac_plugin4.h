@@ -150,13 +150,13 @@ int dummy;
 
 
 
-/** object types used in new_object(type) **/ 
+/** object types used in new_object(type) **/
 
 #define OBJECT_NORMAL 0  /** polygon based object **/
 
 #define OBJECT_GROUP 1
 
-#define OBJECT_LIGHT 2 
+#define OBJECT_LIGHT 2
 
 #define OBJECT_WORLD 999  /** toplevel world object type **/
 
@@ -240,7 +240,7 @@ typedef struct svertex_t
 
 	// extra private stuff is here
 
-} SVertex;  
+} SVertex;
 
 
 
@@ -342,7 +342,7 @@ typedef struct ACImageStruct
 
 	unsigned short depth;    // e.g. 3 = RGB, 4 = RGBA
 
-    void *data; 
+    void *data;
 
     int index;
 
@@ -552,7 +552,7 @@ typedef struct ACSurfaceFilter_t
 
     ac_surface_filter_func func; /** ptr to the function that's called with each surface **/
 
-    int flags; 
+    int flags;
 
     char *internal_name; /** auto generated name used in the TCL command to refer to this filter **/
 
@@ -834,9 +834,9 @@ Prototype void surface_set_shading(Surface *s, Boolean g);
 
 Prototype int surface_replace_vertex_all(Surface *s, Vertex *search, Vertex *replace);
 
-Prototype Boolean surface_delete_svertex(Surface *s, SVertex *sv); /** remove vertex references from a surface - doesnt free vertex **/ 
+Prototype Boolean surface_delete_svertex(Surface *s, SVertex *sv); /** remove vertex references from a surface - doesnt free vertex **/
 
-Prototype int surface_remove_vertex(Surface *s, Vertex *v); /** remove vertex references from a surface - doesnt free vertex **/ 
+Prototype int surface_remove_vertex(Surface *s, Vertex *v); /** remove vertex references from a surface - doesnt free vertex **/
 
 Prototype void surface_copy_properties(Surface *from, Surface *to);
 
@@ -970,7 +970,7 @@ Prototype void ac_edge_add_surface(ACEdge *e, Surface *s);
 
 #define SELECT_TREE 0 /** the group button used to be 'tree' **/
 
-#define SELECT_GROUP 0 
+#define SELECT_GROUP 0
 
 #define SELECT_OBJECT 1
 
@@ -1036,7 +1036,7 @@ Prototype ACObject *get_current_object(); // NULL if no object or > 1 selected
 
 
 
-typedef void *ACSelection; // private data 
+typedef void *ACSelection; // private data
 
 Prototype ACSelection *ac_selection_get_snapshot();
 
@@ -1440,13 +1440,13 @@ Prototype void add_undoable_object_centres(char *name, List *oblist);
 
 #define MULTIPLYPOINT(a, f) {(a)->x*=f ; (a)->y*=f ; (a)->z*=f; }
 
-#define AVERAGEPOINTS(a, b) {(b)->x = ((a)->x + (b)->x)/2.0; (b)->y = ((a)->y + (b)->y)/2.0; (b)->z = ((a)->z + (b)->z)/2.0;} 
+#define AVERAGEPOINTS(a, b) {(b)->x = ((a)->x + (b)->x)/2.0; (b)->y = ((a)->y + (b)->y)/2.0; (b)->z = ((a)->z + (b)->z)/2.0;}
 
 
 
 
 
-#define MIDPOINT(a, b, c) {(c)->x = ((a)->x + (b)->x)/2.0; (c)->y = ((a)->y + (b)->y)/2.0; (c)->z = ((a)->z + (b)->z)/2.0;} 
+#define MIDPOINT(a, b, c) {(c)->x = ((a)->x + (b)->x)/2.0; (c)->y = ((a)->y + (b)->y)/2.0; (c)->z = ((a)->z + (b)->z)/2.0;}
 
 
 
@@ -1456,7 +1456,7 @@ Prototype void add_undoable_object_centres(char *name, List *oblist);
 
 #define INVERTPOINT(p) { (p)->x = -(p)->x; (p)->y = -(p)->y; (p)->z = -(p)->z; }
 
-#define ZEROPOINT(p) { (p)->x = 0; (p)->y = 0; (p)->z = 0; } 
+#define ZEROPOINT(p) { (p)->x = 0; (p)->y = 0; (p)->z = 0; }
 
 
 
@@ -1472,7 +1472,7 @@ Prototype void add_undoable_object_centres(char *name, List *oblist);
 
 #define SETPOINT(p,a,b,c) {(p)->x=(float)(a); (p)->y=(float)(b); (p)->z=(float)(c);}
 
-#define POINTCOPY(b, a) {(a)->x = (b)->x; (a)->y = (b)->y; (a)->z = (b)->z;} 
+#define POINTCOPY(b, a) {(a)->x = (b)->x; (a)->y = (b)->y; (a)->z = (b)->z;}
 
 #define sqr(x) ((x)*(x))
 

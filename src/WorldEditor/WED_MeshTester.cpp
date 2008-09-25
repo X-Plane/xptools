@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -56,7 +56,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 {
 	int mx, my;
 	XPLMGetMouseLocation(&mx, &my);
-	
+
 	vector<Point2>		fps;
 	if (inCurrent && mRayShoot)
 	{
@@ -67,7 +67,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 		double	x2 = gDem[dem_Elevation].mEast;
 		double	y1 = gDem[dem_Elevation].mSouth;
 		double	y2 = gDem[dem_Elevation].mNorth;
-		
+
 		if (mTarget.x < x1) mTarget.x = x1;
 		if (mTarget.x > x2) mTarget.x = x2;
 		if (mAnchor.x < x1) mAnchor.x = x1;
@@ -77,7 +77,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 		if (mTarget.y > y2) mTarget.y = y2;
 		if (mAnchor.y < y1) mAnchor.y = y1;
 		if (mAnchor.y > y2) mAnchor.y = y2;
-		
+
 		Vector2	dist(mAnchor, mTarget);
 		if (XPLMGetModifiers() & xplm_ShiftFlag)
 		{
@@ -92,7 +92,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 			vector<Point3>	found;
 
 			static CDT_MarchOverTerrain_t march_info;
-			
+
 			MarchHeightStart(gTriangulationHi, CDT::Point(mAnchor.x, mAnchor.y), march_info);
 			try {
 				MarchHeightGo(gTriangulationHi, CDT::Point(mTarget.x, mTarget.y), march_info, found);
@@ -109,7 +109,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 				glVertex2f( GetZoomer()->LonToXPixel(found[n].x),
 							GetZoomer()->LatToYPixel(found[n].y));
 			glEnd();
-		
+
 			glPointSize(3);
 
 			glColor4f(1.0, 1.0, 0.0, 0.8);
@@ -126,21 +126,21 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 
 bool	WED_MeshTester::HandleClick(
 				XPLMMouseStatus		inStatus,
-				int 				inX, 
-				int 				inY, 
+				int 				inX,
+				int 				inY,
 				int 				inButton)
 {
 	if (inButton > 0) return false;
 	switch(inStatus) {
-	case xplm_MouseDown: 
+	case xplm_MouseDown:
 		{
 			mAnchor.x = GetZoomer()->XPixelToLon(inX);
-			mAnchor.y = GetZoomer()->YPixelToLat(inY);		
+			mAnchor.y = GetZoomer()->YPixelToLat(inY);
 		}
-		mRayShoot = true;  
+		mRayShoot = true;
 		break;
-	case xplm_MouseUp:   
-		mRayShoot = false; 
+	case xplm_MouseUp:
+		mRayShoot = false;
 		break;
 	}
 	return 1;

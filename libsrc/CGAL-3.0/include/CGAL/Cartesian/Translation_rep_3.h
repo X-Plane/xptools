@@ -76,14 +76,14 @@ public:
 				t.t11 * translationvector_.x()
 				+ t.t12 * translationvector_.y()
 				+ t.t13 * translationvector_.z() + t.t14,
-				
+
 				t.t21,
                                 t.t22,
 				t.t23,
 				t.t21 * translationvector_.x()
 				+ t.t22 * translationvector_.y()
 				+ t.t23 * translationvector_.z() + t.t24,
-				
+
 				t.t31,
                                 t.t32,
 				t.t33,
@@ -105,12 +105,12 @@ public:
                                 ft0,
 				ft0,
 				t.scalefactor_ * translationvector_.x(),
-				
+
 				ft0,
                                 t.scalefactor_,
 				ft0,
 				t.scalefactor_ * translationvector_.y(),
-				
+
 				ft0,
                                 ft0,
 				t.scalefactor_,
@@ -126,7 +126,7 @@ public:
   {
     return Aff_transformation_3(TRANSLATION, translationvector_);
   }
-  
+
   virtual bool is_even() const
   {
     return true;

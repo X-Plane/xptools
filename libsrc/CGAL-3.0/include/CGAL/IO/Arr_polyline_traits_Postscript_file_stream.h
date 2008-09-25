@@ -18,10 +18,10 @@
 // Author(s)     : Ron Wein <wein@post.tau.ac.il>
 
 #ifdef CGAL_ARR_POLYLINE_TRAITS_H
-#ifndef CGAL_ARR_POLYLINE_TRAITS_POSTSCRIPT_FILE_STREAM_H   
-#define CGAL_ARR_POLYLINE_TRAITS_POSTSCRIPT_FILE_STREAM_H  
+#ifndef CGAL_ARR_POLYLINE_TRAITS_POSTSCRIPT_FILE_STREAM_H
+#define CGAL_ARR_POLYLINE_TRAITS_POSTSCRIPT_FILE_STREAM_H
 
-#include <CGAL/Segment_2.h> 
+#include <CGAL/Segment_2.h>
 #include <CGAL/IO/Postscript_file_stream.h>
 
 CGAL_BEGIN_NAMESPACE
@@ -48,7 +48,7 @@ Postscript_file_stream& operator<< (Postscript_file_stream& ps,
   itt++;
 
   while (itt != pl.end())
-  {  
+  {
     ps << Segment_2(*its, *itt);
     its++; itt++;
   }

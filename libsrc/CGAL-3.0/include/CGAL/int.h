@@ -20,7 +20,7 @@
 // $Name: current_submission $
 //
 // Author(s)     : Stefan Schirra
- 
+
 
 #ifndef CGAL_INT_H
 #define CGAL_INT_H
@@ -47,7 +47,7 @@ double
 to_double(int i)
 { return static_cast<double>(i); }
 
-inline 
+inline
 std::pair<double,double>
 to_interval(int i)
 {
@@ -106,12 +106,12 @@ inline
 unsigned int
 is_negative(unsigned int)
 { return false; }
-  
+
 inline
 Sign
-sign(unsigned int i) 
+sign(unsigned int i)
 { return is_positive(i) ? POSITIVE : ZERO; }
-  
+
 inline
 unsigned int
 is_positive(unsigned int i)
@@ -190,14 +190,14 @@ io_tag(unsigned long int)
 
 inline
 unsigned long int
-is_negative(unsigned long int) 
+is_negative(unsigned long int)
 { return false; }
-  
+
 inline
 Sign
-sign(unsigned long int i) 
+sign(unsigned long int i)
 { return is_positive(i) ? POSITIVE : ZERO; }
-  
+
 inline
 unsigned long int
 is_positive(unsigned long int i)
@@ -226,7 +226,7 @@ double
 to_double(short int i)
 { return static_cast<double>(i); }
 
-inline 
+inline
 std::pair<double,double>
 to_interval(short int i)
 {
@@ -283,14 +283,14 @@ io_tag(unsigned short int)
 
 inline
 unsigned short int
-is_negative(unsigned short int) 
+is_negative(unsigned short int)
 { return false; }
-  
+
 inline
 Sign
-sign(unsigned short int i) 
+sign(unsigned short int i)
 { return is_positive(i) ? POSITIVE : ZERO; }
-  
+
 inline
 unsigned short int
 is_positive(unsigned short int i)

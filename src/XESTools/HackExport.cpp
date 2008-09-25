@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -52,7 +52,7 @@ Pmwx::Halfedge_handle	prev_he_of_type(Pmwx::Halfedge_handle e, int type)
 	Pmwx::Halfedge_handle	n = e;
 	while (n->next_halfedge() != e)
 		n = n->next_halfedge();
-	
+
 	if (GetRoadType(n) != type)
 		return Pmwx::Halfedge_handle();
 	return n;
@@ -74,14 +74,14 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 	gLines.clear();
 	gTaxiways.clear();
 	gRiverVectors.clear();
-	
-	
+
+
 	for (Pmwx::Halfedge_iterator e = ioMap.halfedges_begin();
 		e != ioMap.halfedges_end(); ++e)
 	{
 		e->mMark = false;
 	}
-	
+
 	for (Pmwx::Halfedge_iterator e = ioMap.halfedges_begin();
 		e != ioMap.halfedges_end(); ++e)
 	{
@@ -107,12 +107,12 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 				{
 					lst = foo;
 					lst->mMark = true;
-					foo = next_he_of_type(lst, tp);				
+					foo = next_he_of_type(lst, tp);
 				}
 				PathInfo	p;
 				p.term = 0;
 				p.latitude = CGAL::to_double(fst->source()->point().y());
-				p.longitude = CGAL::to_double(fst->source()->point().x());				
+				p.longitude = CGAL::to_double(fst->source()->point().x());
 				if (Road_IsHighway(tp))
 					gRoads.push_back(p);
 				else
@@ -121,30 +121,30 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 				for (foo = fst; foo != lst; foo = foo->next_halfedge())
 				{
 					p.latitude = CGAL::to_double(foo->target()->point().y());
-					p.longitude = CGAL::to_double(foo->target()->point().x());				
+					p.longitude = CGAL::to_double(foo->target()->point().x());
 					if (Road_IsHighway(tp))
 						gRoads.push_back(p);
 					else
-						gTrains.push_back(p);						
+						gTrains.push_back(p);
 				}
 
 				p.latitude = CGAL::to_double(lst->target()->point().y());
-				p.longitude = CGAL::to_double(lst->target()->point().x());				
+				p.longitude = CGAL::to_double(lst->target()->point().x());
 				p.term = 1;
 				if (Road_IsHighway(tp))
 					gRoads.push_back(p);
 				else
-					gTrains.push_back(p);										
+					gTrains.push_back(p);
 		   }
 		}
-	}	
-	
+	}
+
 	for (int n = 0; n < (201 * 151); ++n)
 	{
 		if (gVertices[n].landUse == 1)
 			gVertices[n].landUse = 2;
 	}
-	
+
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	{
 		if (!f->IsWater())
@@ -158,13 +158,13 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 				insets.push_back(1.0);
 				++cur;
 			} while (cur != last);
-			
+
 			ObjectInfo	obj;
 			obj.kind = 8;
-			obj.name = "building";		
-			
+			obj.name = "building";
+
 			InsetPolygon(p, insets, kINSET, true, p_inset);
-			
+
 			for (Polygon_2::Edge_const_iterator e = p_inset.edges_begin();
 				e != p_inset.edges_end(); ++e)
 			{
@@ -172,9 +172,9 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 				obj.elevation = -atan2(CGAL::to_double(dir.dy()), CGAL::to_double(dir.dx())) *
 				180.0 / 3.14159265;
 				Vector_2	vec(*e);
-				
+
 				double	len = sqrt(CGAL::to_double(e->squared_length()));
-				
+
 				double	steps = floor(len / kSPACING);
 				double	step = 1.0 / steps;
 				for (double t = 0; t < 1.0; t += step)
@@ -182,18 +182,18 @@ void	HackExport(Pmwx& ioMap, const char * inFileName)
 					Point_2	objLoc = e->source() + vec * t;
 					obj.latitude = CGAL::to_double(objLoc.y());
 					obj.longitude = CGAL::to_double(objLoc.x());
-					
+
 					if (obj.latitude < 38.0 &&
 						obj.latitude > 37.0 &&
 						obj.longitude < -122.0 &&
 						obj.longitude > -123.0)
-					
+
 					gObjects.push_back(obj);
-				}				
-			} 
+				}
+			}
 		}
 	}
-		
+
 	if (EnvWrite(inFileName) != 0)
-		printf("Error writing file.\n");	
+		printf("Error writing file.\n");
 }

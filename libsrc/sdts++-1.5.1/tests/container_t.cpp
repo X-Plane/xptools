@@ -36,7 +36,7 @@ main(int argc, char *argv[])
   int inc = 0;
 
   for ( i = field.begin();
-	i != field.end(); 
+	i != field.end();
 	i++ )
   {
 //    cout << "Subfield Mnemonic: " << (*i).getMnemonic() << '\n';
@@ -54,8 +54,8 @@ main(int argc, char *argv[])
 
   unsigned long val;
   inc = 0;
-  for ( i = field.begin(); 
-	i != field.end(); 
+  for ( i = field.begin();
+	i != field.end();
 	i++ )
   {
 //  Check to make sure that the data is there.
@@ -64,7 +64,7 @@ main(int argc, char *argv[])
     assert( (val / 123) == inc );
     inc++;
   }
-  
+
 //  Check to make sure that some information is being returned.
   tempstring = field.getMnemonic();
   assert( tempstring == "PNT" );

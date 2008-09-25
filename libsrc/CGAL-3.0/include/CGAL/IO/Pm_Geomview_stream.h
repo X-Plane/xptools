@@ -42,15 +42,15 @@
 CGAL_BEGIN_NAMESPACE
 
 template <class Dcel,class Traits>
-Geomview_stream& operator<< (Geomview_stream                 & os, 
+Geomview_stream& operator<< (Geomview_stream                 & os,
                              const Planar_map_2<Dcel,Traits> & pm)
 {
   Pm_drawer< Planar_map_2<Dcel,Traits>, Geomview_stream>  drawer(os);
-  
+
   draw_pm(pm, drawer, os);
 
   return os;
-}  
+}
 
 CGAL_END_NAMESPACE
 

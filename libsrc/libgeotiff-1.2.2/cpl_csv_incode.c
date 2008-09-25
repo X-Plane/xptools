@@ -147,7 +147,7 @@ static int __CSVGetFileId( const char * pszFilename)
 
 char **CSVScanFileByName( const char * pszFilename,
                           const char * pszKeyFieldName,
-                          const char * pszValue, 
+                          const char * pszValue,
                           CSVCompareCriteria eCriteria )
 {
   datafile_t *csvfile;
@@ -173,7 +173,7 @@ int CSVGetFileFieldId( const char * pszFilename, const char * pszFieldName)
     csvfile = (datafile_t *)&files[__CSVGetFileId(pszFilename)];
     if (!strncmp(csvfile->name,pszFilename,(strlen(pszFilename)-4)))
     {
-        for (i = 0; csvfile->rows[0][i]; i++) 
+        for (i = 0; csvfile->rows[0][i]; i++)
             if (EQUAL(pszFieldName, csvfile->rows[0][i]))
                 return i;
     }

@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Insert.h
  *
  *  This source file is part of DIME.
@@ -64,18 +64,18 @@ public:
 
   void setScale(const dimeVec3f &v);
   const dimeVec3f & getScale() const;
-  
+
   void setRotAngle(dxfdouble angle);
   dxfdouble getRotAngle() const;
 
   // FIXME: more set and get methods
-  
+
 protected:
   virtual void fixReferences(dimeModel * const model);
-  virtual bool handleRecord(const int groupcode, 
+  virtual bool handleRecord(const int groupcode,
 			    const dimeParam &param,
 			    dimeMemHandler * const memhandler);
-  virtual bool traverse(const dimeState * const state, 
+  virtual bool traverse(const dimeState * const state,
                         dimeCallback callback,
                         void *userdata);
 
@@ -105,7 +105,7 @@ private:
 
 
 
-inline void 
+inline void
 dimeInsert::setInsertionPoint(const dimeVec3f &v)
 {
   this->insertionPoint = v;
@@ -123,7 +123,7 @@ dimeInsert::getBlock() const
   return this->block;
 }
 
-inline void 
+inline void
 dimeInsert::setScale(const dimeVec3f &v)
 {
   this->scale = v;
@@ -135,7 +135,7 @@ dimeInsert::getScale() const
   return this->scale;
 }
 
-inline void 
+inline void
 dimeInsert::setRotAngle(dxfdouble angle)
 {
   this->rotAngle = angle;

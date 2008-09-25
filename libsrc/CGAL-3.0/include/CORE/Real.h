@@ -1,19 +1,19 @@
 /******************************************************************
  * Core Library Version 1.6, June 2003
  * Copyright (c) 1995-2002 Exact Computation Project
- * 
+ *
  * File: Real.h
  *
- * Synopsis: The Real class is a superclass for all the number 
+ * Synopsis: The Real class is a superclass for all the number
  *           systems in the Core Library (int, long, float, double,
  *           BigInt, BigRat, BigFloat, etc)
  *
- * Written by 
+ * Written by
  *       Koji Ouchi <ouchi@simulation.nyu.edu>
  *       Chee Yap <yap@cs.nyu.edu>
  *       Chen Li <chenli@cs.nyu.edu>
  *       Zilin Du <zilin@cs.nyu.edu>
- *       Sylvain Pion <pion@cs.nyu.edu> 
+ *       Sylvain Pion <pion@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
@@ -29,7 +29,7 @@
 CORE_BEGIN_NAMESPACE
 
 /// \class Real Real.h
-/// \brief Real is a superclass for all the number systems 
+/// \brief Real is a superclass for all the number systems
 
 class Real
 {
@@ -42,7 +42,7 @@ public:
   Real() { rep = new RealLong(0); }
   /// copy constructor
   Real(const Real& x) { rep = x.rep; rep->refCount++; }
-  
+
   /// constructor for <tt>int</tt>
   Real(int i) { rep = new RealLong(i); }
   /// constructor for <tt>unsigned int</tt>
@@ -52,7 +52,7 @@ public:
     else // use BigInt since machine double has only 53-bit mantissa
       rep = new RealBigInt(ui);
   }
-  
+
   /// constructor for <tt>long</tt>
   Real(long l) { rep = new RealLong(l); }
   /// constructor for <tt>unsigned long</tt>
@@ -62,12 +62,12 @@ public:
     else // use BigInt since machine double has only 53-bit mantissa
       rep = new RealBigInt(ul);
   }
-  
+
   /// constructor for <tt>float</tt>
   Real(float f) { rep = new RealDouble(f); }
   /// constructor for <tt>double</tt>
   Real(double d) { rep = new RealDouble(d); }
-  
+
   /// constructor for <tt>BigInt</tt>
   Real(const BigInt& I) { rep = new RealBigInt(I); }
   /// constructor for <tt>BigRat</tt>
@@ -76,7 +76,7 @@ public:
   Real(const BigFloat& B) { rep = new RealBigFloat(B); }
 
   /// constructor for <tt>const char *</tt>
-  /** construct Real from a string representation \a s 
+  /** construct Real from a string representation \a s
    * with precision \a prec */
   Real(const char *str, const extLong& prec = defInputDigits) : rep(NULL)
   { constructFromString(str, prec); }
@@ -89,40 +89,40 @@ public:
   //@}
 
   /// \name Assignment Operators
-  //@{ 
+  //@{
   /// assignment operator
   Real& operator=(const Real& x) {
-  	if (this == &x)  return (*this); 
+  	if (this == &x)  return (*this);
     if (--rep->refCount == 0) delete rep;
     rep = x.rep; rep->refCount++;
     return (*this);
   }
   //@}
-  
+
   /// \name Compound Assignment Operators
-  //@{ 
-  /// operator+= 
+  //@{
+  /// operator+=
   Real& operator+=(const Real& x) {
     Real t = *rep + x;
     if (--rep->refCount == 0) delete rep;
     rep = t.rep; rep->refCount++;
     return *this;
   }
-  /// operator-= 
+  /// operator-=
   Real& operator-=(const Real& x) {
     Real t = *rep - x;
     if (--rep->refCount == 0) delete rep;
     rep = t.rep; rep->refCount++;
     return *this;
   }
-  /// operator*= 
+  /// operator*=
   Real& operator*=(const Real& x) {
     Real t = *rep * x;
     if (--rep->refCount == 0) delete rep;
     rep = t.rep; rep->refCount++;
     return *this;
   }
-  /// operator/= 
+  /// operator/=
   Real& operator/=(const Real& x) {
   	Real t = rep->div(x, defRelPrec);
     if (--rep->refCount == 0) delete rep;
@@ -153,7 +153,7 @@ public:
   /// convert to <tt>std::string</tt>
   /** give decimal string representation */
   std::string toString(long prec=defOutputDigits, bool sci=false) const
-  { return rep->toString(prec, sci); }		  
+  { return rep->toString(prec, sci); }
   //@}
 
   /// \name Conversion Functions
@@ -171,7 +171,7 @@ public:
   /// convert to \c BigRat
   BigRat BigRatValue() const { return rep->BigRatValue(); }
   /// convert to \c BigFloat (approximate it first!)
-  BigFloat BigFloatValue() const { return rep->BigFloatValue(); }    	
+  BigFloat BigFloatValue() const { return rep->BigFloatValue(); }
   //@}
 
   /// \name Aprroximation Function
@@ -183,7 +183,7 @@ public:
   //@}
 
   /// \name Helper Functions
-  //@{ 
+  //@{
   /// sign function
   int sign() const { return rep->sgn(); }
   /// isZero function
@@ -199,16 +199,16 @@ public:
   /// get mantissa of current approximate value
   BigInt getMantissa() const { return BigFloatValue().m(); }
   /// get exponent of current approximate value
-  long getExponent() const { return BigFloatValue().exp(); }   
+  long getExponent() const { return BigFloatValue().exp(); }
   /// return rep pointer:
   RealRep* getRep() const { return rep; }
-  
-  /// return true if error free otherwise return false; 
+
+  /// return true if error free otherwise return false;
   bool  isExact() const { return rep->isExact(); }
-  
+
   /// low bound of MSB
   extLong lMSB() const {
-  	if (isExact()) { 
+  	if (isExact()) {
       return rep->mostSignificantBit;
     } else { // May 30, 2003:  Dirty Cast Bug Fix by Joaquin Grech
       //  -- this was causing crashes when called in Expr::withinKnownPrecision
@@ -228,25 +228,25 @@ public:
   }
   /// MSB - Most Significant Bit
   extLong MSB() const { return rep->mostSignificantBit; }
-  
+
   /// floor of log_2 of Error
   extLong flrLgErr() const { return rep->flrLgErr(); }
   /// ceil of log_2 of Error
   extLong clLgErr() const { return rep->clLgErr(); }
-  
+
   /// division with desired precision
   Real div(const Real& x, const extLong& r) const { return rep->div(x, r); }
   /// squareroot
   Real sqrt(const extLong& x) const { return rep->sqrt(x); }
   /// squareroot with initial approximation
-  Real sqrt(const extLong& x, const BigFloat& A) const 
+  Real sqrt(const extLong& x, const BigFloat& A) const
   { return rep->sqrt(x, A); }
-  
+
   /// correspond to the variables "u25, l25, v2p, v2m, v5p, v5m" in Expr
   void ULV_E(extLong &up, extLong &lp, extLong &v2p, extLong &v2m,
 	     extLong &v5p, extLong &v5m) const
-  { rep->ULV_E(up, lp, v2p, v2m, v5p, v5m); }	     
-  
+  { rep->ULV_E(up, lp, v2p, v2m, v5p, v5m); }
+
   /// degree of polynomial P(x)
   unsigned long degree() const { return rep->degree(); }
   /// \f$ lg(|| P(X) ||_2) \f$
@@ -257,7 +257,7 @@ public:
 
   /// return Real(0)
   static const Real& getZero();
-  
+
 private:
   void constructFromString(const char *str, const extLong& prec);
 };//Class Real

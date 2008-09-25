@@ -41,7 +41,7 @@ public:
   typedef typename Polygon::Vertex_iterator
                                         VI;
   typedef typename Polygon::FT          FT;
-  
+
   Qt_widget_get_polygon(const QCursor c=QCursor(Qt::crossCursor),
 			QObject* parent = 0, const char* name = 0)
     : Qt_widget_layer(parent, name), active(false),
@@ -88,12 +88,12 @@ protected:
       {
         active=true;
         last_of_poly = Point_2(x, y);
-        poly.push_back(Point_2(x, y));	
+        poly.push_back(Point_2(x, y));
       } else{
         if (last_of_poly == Point_2(x,y)) return;
         rubber_old = Point_2(x, y);
         if(is_simple()){
-          poly.push_back(Point_2(x,y));	
+          poly.push_back(Point_2(x,y));
           //show the last rubber as edge of the polygon
           widget->lock();
             RasterOp old_rasterop=widget->rasterOp();
@@ -144,7 +144,7 @@ protected:
               *widget << Segment_2(rubber, *before_last_of_poly_it);
               widget->setRasterOp(old_rasterop);
             widget->unlock();
-            last_of_poly = *before_last_of_poly_it; 
+            last_of_poly = *before_last_of_poly_it;
             poly.erase(last_of_poly_it);
           }
           break;
@@ -163,7 +163,7 @@ protected:
       widget->lock();
         RasterOp old_rasterop=widget->rasterOp();
         widget->get_painter().setRasterOp(XorROP);
-        *widget << CGAL::WHITE;      	
+        *widget << CGAL::WHITE;
         if(!first_time)
           *widget << Segment_2(rubber_old, last_of_poly);
         *widget << Segment_2(rubber, last_of_poly);
@@ -180,7 +180,7 @@ protected:
     oldpolicy = widget->focusPolicy();
     widget->setFocusPolicy(QWidget::StrongFocus);
   };
-  
+
   void deactivating()
   {
     poly.erase(poly.vertices_begin(), poly.vertices_end());
@@ -209,10 +209,10 @@ private:
   {
     return true;
   }
-  
+
 protected:
   bool	active,     //true if the first point was inserted
-        first_time; //true if it is the first time when 
+        first_time; //true if it is the first time when
                     //draw the rubber band
   Point_2 rubber,   //the new point of the rubber band
           last_of_poly, //the last point of the polygon

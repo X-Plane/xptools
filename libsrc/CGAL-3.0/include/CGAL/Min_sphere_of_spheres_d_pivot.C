@@ -29,23 +29,23 @@ namespace CGAL_MINIBALL_NAMESPACE {
   bool is_better(const FT& old,const FT& now,const Tag_false is_exact) {
     return now > old;
   }
-  
+
   template<typename FT>
   bool is_better(const FT&,const FT&,const Tag_true is_exact) {
     return true;
   }
-  
+
   template<class Traits>
   bool Min_sphere_of_spheres_d<Traits>::pivot(const int d) {
     using namespace Min_sphere_of_spheres_d_impl;
-  
+
     // remember old radius:
     const Result old = ss.radius();
-  
+
     // reset basis to {d}:
     ss.reset();
     ss.push(*l[d]);
-  
+
     // try all subsets:
     std::bitset<Traits::D+1> T;
     int pos = e;
@@ -61,7 +61,7 @@ namespace CGAL_MINIBALL_NAMESPACE {
               isEnclosingSupporting = false;
               break;
             }
-        
+
         if (isEnclosingSupporting) {
           // rearrange balls:
           int next = 0;
@@ -72,7 +72,7 @@ namespace CGAL_MINIBALL_NAMESPACE {
           e = next;
           return is_better(old,ss.radius(),Is_exact());
         }
-        
+
         --pos;
         up = false;
       } else if (!T.test(pos)) {
@@ -92,23 +92,23 @@ namespace CGAL_MINIBALL_NAMESPACE {
         up = false;
       }
     }
-  
+
     // Here, no basis has been found (this only happens because
     // of rounding errors):
     #ifdef CGAL_MINIBALL_WARNINGS
     std::cerr << '!';
     #endif
-    
+
     // revert basis:
     ss.reset();
     for (int i=0; i<e; ++i)
       ss.push(*l[i]);
     ss.is_spanning();
-    
+
     // signal that we failed:
     return false;
   }
-  
+
 } // namespace CGAL_MINIBALL_NAMESPACE
 
 #endif // CGAL_MINIBALL_PIVOT_CC

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -37,7 +37,7 @@
 
 
 //
-// TODO: rescale, remapping, geotiff, ida+usgs 
+// TODO: rescale, remapping, geotiff, ida+usgs
 //
 
 static XPWidgetID		sImport = NULL;
@@ -96,7 +96,7 @@ enum {
 	import_Raw32BE,
 	import_RawFloatBE
 };
-static const char * kTitles = 
+static const char * kTitles =
 	"PNG;BMP;TIFF;"
 	"-;USGS Natural DEM;IDA;GeoTiff;DTED;"
 	"-;8-Bit Raw;16-Bit Raw (IBM);32-Bit Raw (IBM);Floating Point Raw(IBM);16-Bit Raw (Mac);32-Bit Raw (Mac);Floating Point Raw(Mac)";
@@ -107,29 +107,29 @@ static	int	kImportLayers[] = {
 	dem_TemperatureSeaLevel,
 	dem_TemperatureRange,
 	dem_Rainfall,
-	dem_Biomass,				
-	dem_Slope,				
+	dem_Biomass,
+	dem_Slope,
 	dem_SlopeHeading,
-	dem_UrbanDensity,			
+	dem_UrbanDensity,
 	dem_UrbanPropertyValue,
 	dem_LandUse,
-	dem_Climate				
+	dem_Climate
 //	dem_NudeColor,
 //	dem_VegetationDensity
 };
-static	const char * kImportLayerTitles = 
+static	const char * kImportLayerTitles =
 	"dem_Elevation;"
 	"dem_Temperature;"
 	"dem_TemperatureSeaLevel;"
 	"dem_TemperatureRange;"
 	"dem_Rainfall;"
-	"dem_Biomass;"				
-	"dem_Slope;"				
+	"dem_Biomass;"
+	"dem_Slope;"
 	"dem_SlopeHeading;"
-	"dem_UrbanDensity;"			
+	"dem_UrbanDensity;"
 	"dem_UrbanPropertyValue;"
 	"dem_LandUse;"
-	"dem_Climate;"				
+	"dem_Climate;"
 //	"dem_NudeColor;"
 	"dem_VegetationDensity";
 
@@ -161,41 +161,41 @@ void	WED_ShowImportDialog(void)
 		sImport = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "IMPORT", XP_DIALOG_CLOSEBOX, 1, 0, DoImport,
 				XP_COLUMN,
-					XP_ROW, 
-						XP_CAPTION, "Raster Layer:", 
-						XP_POPUP_MENU, kImportLayerTitles, &sImportState.dem, 
+					XP_ROW,
+						XP_CAPTION, "Raster Layer:",
+						XP_POPUP_MENU, kImportLayerTitles, &sImportState.dem,
 					XP_END,
-					XP_ROW, 
-						XP_CAPTION, "Format:", 
+					XP_ROW,
+						XP_CAPTION, "Format:",
 						XP_POPUP_MENU, kTitles, &sImportState.format, XP_TAG, WED_IMPORT_FORMAT, XP_NOTIFY, ImportEnable,
 					XP_END,
-					XP_ROW, 
-						XP_BUTTON_ACTION, "Load Translation", LoadCLUT, 
+					XP_ROW,
+						XP_BUTTON_ACTION, "Load Translation", LoadCLUT,
 						XP_CAPTION, "(no translation)", XP_TAG, WED_IMPORT_TRANSLATION,
-					XP_END,					
-					XP_ROW,	
+					XP_END,
+					XP_ROW,
 						XP_CHECKBOX, "Rescale", &sImportState.rescale, XP_NOTIFY, ImportEnable, XP_TAG, WED_IMPORT_RESCALE,
 						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.offset, XP_TAG, WED_IMPORT_OFFSET,
 						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.scale, XP_TAG, WED_IMPORT_SCALE,
 					XP_END,
-					XP_ROW, 
-						XP_CHECKBOX, "Flip X", &sImportState.flip_x, 
+					XP_ROW,
+						XP_CHECKBOX, "Flip X", &sImportState.flip_x,
 						XP_CHECKBOX, "Flip Y", &sImportState.flip_y,
 						XP_CHECKBOX, "Swap XY", &sImportState.swap_xy,
 					XP_END,
 					XP_ROW,
-						XP_CAPTION, "Byte Offset:", 
+						XP_CAPTION, "Byte Offset:",
 						XP_EDIT_INT, 15, 6, &sImportState.byte_off, XP_TAG, WED_IMPORT_BYTE_OFFSET,
-						XP_CAPTION, "Byte Width:", 
+						XP_CAPTION, "Byte Width:",
 						XP_EDIT_INT, 15, 6, &sImportState.byte_width, XP_TAG, WED_IMPORT_BYTE_WIDTH,
-						XP_CAPTION, "Byte Height:", 
+						XP_CAPTION, "Byte Height:",
 						XP_EDIT_INT, 15, 6, &sImportState.byte_height, XP_TAG, WED_IMPORT_BYTE_HEIGHT,
 					XP_END,
 					XP_ROW,
 						XP_CAPTION, "West:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.west, XP_TAG, WED_IMPORT_WEST,
 						XP_CAPTION, "South:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.south, XP_TAG, WED_IMPORT_SOUTH,
 					XP_END,
-					XP_ROW,						
+					XP_ROW,
 						XP_CAPTION, "East:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.east, XP_TAG, WED_IMPORT_EAST,
 						XP_CAPTION, "North:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.north, XP_TAG, WED_IMPORT_NORTH,
 						XP_BUTTON_ACTION, "Map", DimsFromMap, XP_TAG, WED_IMPORT_MAP,
@@ -233,7 +233,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			}
 			theDem = &gDem[target_layer];
 			theDem->resize(info.width, info.height);
-			
+
 			for (int x = 0; x < info.width; ++x)
 			for (int y = 0; y < info.height; ++y)
 			{
@@ -246,23 +246,23 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				if (info.channels == 4 && p[3] == 0)
 					(*theDem)(ix, iy) = DEM_NO_DATA;
 				else
-					(*theDem)(ix, iy) = p[0];					
+					(*theDem)(ix, iy) = p[0];
 			}
 		}
-		
+
 		if (sImportState.format == import_USGSNatural)
 		{
-			theDem = &gDem[target_layer];		
+			theDem = &gDem[target_layer];
 			if (!ExtractUSGSNaturalFile(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read USGS Natural file.");
 				return;
 			}
 		}
-		
+
 		if (sImportState.format == import_IDA)
 		{
-			theDem = &gDem[target_layer];		
+			theDem = &gDem[target_layer];
 			if (!ExtractIDAFile(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read IDA file.");
@@ -272,24 +272,24 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 
 		if (sImportState.format == import_GeoTIFF)
 		{
-			theDem = &gDem[target_layer];		
+			theDem = &gDem[target_layer];
 			if (!ExtractGeoTiff(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read GeoTIFF file.");
 				return;
 			}
 		}
-		
+
 		if (sImportState.format == import_DTED)
 		{
-			theDem = &gDem[target_layer];		
+			theDem = &gDem[target_layer];
 			if (!ExtractDTED(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read DTED file.");
 				return;
 			}
 		}
-		
+
 		if (sImportState.format == import_Raw8 ||
 			sImportState.format == import_Raw16LE || sImportState.format == import_Raw16BE ||
 			sImportState.format == import_Raw32LE || sImportState.format == import_Raw32BE ||
@@ -304,10 +304,10 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				DoUserAlert("Unable to open file.");
 				return;
 			}
-	
+
 			MemFileReader	reader(MemFile_GetBegin(file), MemFile_GetEnd(file),
-						(sImportState.format == import_Raw16LE || 
-						sImportState.format == import_Raw32LE || 
+						(sImportState.format == import_Raw16LE ||
+						sImportState.format == import_Raw32LE ||
 						sImportState.format == import_RawFloatLE) ? platform_LittleEndian : platform_BigEndian);
 			{
 				for (int n = 0; n < sImportState.byte_off; ++n)
@@ -315,7 +315,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 					char k;
 					reader.ReadBulk(&k, 1, false);
 				}
-				
+
 				for (int y = 0; y < theDem->mHeight; ++y)
 				for (int x = 0; x < theDem->mWidth; ++x)
 				{
@@ -328,7 +328,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 					short		sh;
 					int			in;
 					float		e;
-					
+
 					switch(sImportState.format) {
 					case import_Raw8:
 						reader.ReadBulk((char *) &us, 1, false);
@@ -352,10 +352,10 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 					(*theDem)(ix,iy) = e;
 				}
 			}
-			
+
 			MemFile_Close(file);
 		}
-		
+
 		if (sImportState.rescale)
 		{
 			float new_offset = 0.0;
@@ -365,7 +365,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				new_offset = -sImportState.offset / sImportState.scale;
 				new_scale = 1.0 / sImportState.scale;
 			}
-		
+
 			for (int x = 0; x < theDem->mWidth; ++x)
 			for (int y = 0; y < theDem->mHeight; ++y)
 			{
@@ -378,8 +378,8 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			}
 		}
 		if (!sImportForwardMap.empty())
-			TranslateDEMForward(*theDem, sImportForwardMap);	
-		
+			TranslateDEMForward(*theDem, sImportForwardMap);
+
 		if (sImportState.format != import_DTED && sImportState.format != import_USGSNatural && sImportState.format != import_GeoTIFF)
 		{
 			theDem->mWest = sImportState.west;
@@ -427,8 +427,8 @@ static	void	LoadCLUT(XPWidgetID inID)
 		char fileBuf[2048];
 		fileBuf[0] = 0;
 		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf, sizeof(fileBuf)))
-		{			
-		
+		{
+
 			if (LoadTranslationFile(fileBuf, sImportForwardMap, &sImportReverseMap, &sImportCLUT))
 			{
 				char * s = fileBuf + strlen(fileBuf) - 1;
@@ -441,13 +441,13 @@ static	void	LoadCLUT(XPWidgetID inID)
 				sImportReverseMap.clear();
 				sImportCLUT.clear();
 				XPSetWidgetDescriptor(caption, "(no translation)");
-			}			
+			}
 		}
 	} else {
 		sImportForwardMap.clear();
 		sImportReverseMap.clear();
 		sImportCLUT.clear();
-		XPSetWidgetDescriptor(caption, "(no translation)");		
+		XPSetWidgetDescriptor(caption, "(no translation)");
 		XPSetWidgetDescriptor(inID, "Load Translation");
 	}
 }
@@ -461,7 +461,7 @@ void	DimsFromMap(XPWidgetID)
 		sImportState.south = -90.0;
 		sImportState.north =  90.0;
 	} else {
-			
+
 		Point2	sw(180.0, 90.0), ne(-180.0,-90.0);
 		CalcBoundingBox(gMap, sw, ne);
 		sImportState.west = sw.x;
@@ -475,7 +475,7 @@ void	DimsFromMap(XPWidgetID)
 			sImportState.east = min(sImportState.east, (float) i->second.mEast);
 			sImportState.north = min(sImportState.north, (float) i->second.mNorth);
 		}
-	}	
+	}
 	XPDataToItem(sImport, WED_IMPORT_SOUTH);
 	XPDataToItem(sImport, WED_IMPORT_NORTH);
 	XPDataToItem(sImport, WED_IMPORT_EAST );

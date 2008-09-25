@@ -19,7 +19,7 @@
 // $Revision: 1.11 $ $Date: 2003/10/21 12:24:12 $
 // $Name: current_submission $
 //
-// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>  
+// Author(s)     : Lutz Kettner  <kettner@inf.ethz.ch>
 //                 Matthias Baesken <baesken@informatik.uni-halle.de>
 
 #ifndef CGAL_REAL_TIMER_H
@@ -33,9 +33,9 @@ CGAL_BEGIN_NAMESPACE
 
 // SECTION: A Timer Measuring Real-Time
 // ========================================================================
-// 
+//
 // DEFINITION
-// 
+//
 // A timer `t' of type Real_timer is an object with a state. It is either
 // running or it is stopped. The state is controlled with `t.start()'
 // and `t.stop()'. The timer counts the time elapsed since its creation
@@ -66,7 +66,7 @@ public:
     double   precision()  const;
     // Returns timer precison. Computes it dynamically at first call.
     // Returns -1.0 if timer system call fails, which, for a proper coded
-    // test towards precision leads to an immediate stop of an otherwise 
+    // test towards precision leads to an immediate stop of an otherwise
     // infinite loop (fixed tolerance * total time >= precision).
     double   max()        const { return DBL_MAX; }
 };

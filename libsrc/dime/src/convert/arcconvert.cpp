@@ -37,24 +37,24 @@
 // and return the number of circle subdivisions necessary
 // to respect the maxerr parameter.
 //
-static int 
+static int
 calc_num_sub(dxfdouble maxerr, dxfdouble radius)
 {
   radius = fabs(radius);
-  
+
   if (maxerr >= radius || maxerr <= 0.0) maxerr = radius/40.0f;
 
   dxfdouble x = radius - maxerr;
   dxfdouble y = sqrt(radius*radius - x*x);
-  
+
   dxfdouble rad = atan(y/x);
 
   return int(M_PI/fabs(rad)) + 1;
 }
 
 
-void 
-convert_arc(const dimeEntity *entity, const dimeState *state, 
+void
+convert_arc(const dimeEntity *entity, const dimeState *state,
 	    dxfLayerData *layerData, dxfConverter *converter)
 {
   dimeArc *arc = (dimeArc*) entity;
@@ -79,9 +79,9 @@ convert_arc(const dimeEntity *entity, const dimeState *state,
   if (arc->getRecord(38, param)) {
     center[2] = param.double_data;
   }
-  
+
   dxfdouble radius = arc->getRadius();
-  
+
   double end = arc->getEndAngle();
 
   while (end < arc->getStartAngle()) {
@@ -97,7 +97,7 @@ convert_arc(const dimeEntity *entity, const dimeState *state,
     end += 2*M_PI;
     delta = DXFDEG2RAD(end - arc->getStartAngle());
   }
-  
+
   int ARC_NUMPTS = converter->getNumSub();
   if (ARC_NUMPTS <= 0) { // use maxerr
     ARC_NUMPTS = calc_num_sub(converter->getMaxerr(), radius);
@@ -105,12 +105,12 @@ convert_arc(const dimeEntity *entity, const dimeState *state,
 
   // find the number of this ARC that fits inside 2PI
   int parts = (int) DXFABS((2*M_PI) / delta);
-  
+
   // find # pts to use for arc
   // add one to avoid arcs with 0 line segments
   int numpts = ARC_NUMPTS / parts + 1;
   if (numpts > ARC_NUMPTS) numpts = ARC_NUMPTS;
-  
+
   double inc = delta / numpts;
   double rad = DXFDEG2RAD(arc->getStartAngle());
   int i;
@@ -120,7 +120,7 @@ convert_arc(const dimeEntity *entity, const dimeState *state,
 		 center[1] + radius * sin(rad),
 		 center[2]);
   rad += inc;
-  
+
   for (i = 1; i < numpts; i++) {
     v = dimeVec3f(center[0] + radius * cos(rad),
 		  center[1] + radius * sin(rad),

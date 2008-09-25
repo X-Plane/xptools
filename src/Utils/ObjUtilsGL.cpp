@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -32,7 +32,7 @@
 static	void	EmitNorm(const vector<vec_tex>& coords, int a, int b, int c)
 {
 	double	v1[3], v2[3], n[3];
-	
+
 	v1[0] = coords[b].v[0] - coords[a].v[0];
 	v1[1] = coords[b].v[1] - coords[a].v[1];
 	v1[2] = coords[b].v[2] - coords[a].v[2];
@@ -40,11 +40,11 @@ static	void	EmitNorm(const vector<vec_tex>& coords, int a, int b, int c)
 	v2[0] = coords[b].v[0] - coords[c].v[0];
 	v2[1] = coords[b].v[1] - coords[c].v[1];
 	v2[2] = coords[b].v[2] - coords[c].v[2];
-	
+
 	vec3_cross(n, v1, v2);
 	vec3_normalize(n);
-	
-	glNormal3dv(n);	
+
+	glNormal3dv(n);
 }
 
 #if __POWERPC__
@@ -54,12 +54,12 @@ static	void	EmitNorm(const vector<vec_tex>& coords, int a, int b, int c)
 void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool build, PFNGLMULTITEXCOORD2FARBPROC multitexproc)
 {
 	bool	tex_on = true;
-	int		last_cmd = -1, this_cmd;	
+	int		last_cmd = -1, this_cmd;
 	if (build)
 		glNewList(inList, GL_COMPILE);
-	
+
 	bool	enabled = true;
-	
+
 	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); cmd != inObj.cmds.end(); ++cmd)
 	{
 		switch(cmd->cmdType) {
@@ -76,7 +76,7 @@ void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool b
 				switch(cmd->cmdID) {
 				case obj_Line:	this_cmd = GL_LINES;		break;
 				case obj_Light:	this_cmd = GL_POINTS;		break;
-				}			
+				}
 				if (this_cmd != last_cmd)
 				{
 					if (last_cmd != -1) glEnd();
@@ -91,7 +91,7 @@ void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool b
 			}
 			break;
 
-			
+
 		case type_Poly:
 			if (enabled)
 			{
@@ -103,7 +103,7 @@ void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool b
 					tex_on = true;
 					glColor3f(1.0, 1.0, 1.0);
 				}
-				switch(cmd->cmdID) {	
+				switch(cmd->cmdID) {
 				case obj_Tri:				this_cmd = GL_TRIANGLES;		break;
 				case obj_Quad:				this_cmd = GL_QUADS;			break;
 				case obj_Quad_Hard:			this_cmd = GL_QUADS;			break;
@@ -141,7 +141,7 @@ void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool b
 							if (i % 2)
 								EmitNorm(cmd->st, i-1, i-2, i);
 							else
-								EmitNorm(cmd->st, i-2, i-1, i);							
+								EmitNorm(cmd->st, i-2, i-1, i);
 						}
 						break;
 					case obj_Tri_Fan:
@@ -180,12 +180,12 @@ void	ObjectToDL(int inList, const XObj& inObj, int texNum, double inDist, bool b
 				glDisable(GL_CULL_FACE);
 				break;
 			}
-			
+
 			break;
 		}
 
 	}	// For loop
-	
+
 	if (last_cmd != -1)
 		glEnd();
 	if (build)

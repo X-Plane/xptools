@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: Int32Record.cpp
  *
  *  This source file is part of DIME.
@@ -58,7 +58,7 @@ dimeInt32Record::copy(dimeMemHandler * const mh) const
   Sets the int32 value to \a val.
 */
 
-void 
+void
 dimeInt32Record::setValue(const int32 val)
 {
   this->value = val;
@@ -76,7 +76,7 @@ dimeInt32Record::getValue() const
 
 //!
 
-int 
+int
 dimeInt32Record::typeId() const
 {
   return dimeBase::dimeInt32RecordType;
@@ -84,7 +84,7 @@ dimeInt32Record::typeId() const
 
 //!
 
-bool 
+bool
 dimeInt32Record::read(dimeInput * const in)
 {
   return in->readInt32(this->value);
@@ -92,7 +92,7 @@ dimeInt32Record::read(dimeInput * const in)
 
 //!
 
-bool 
+bool
 dimeInt32Record::write(dimeOutput * const out)
 {
   if (dimeRecord::write(out)) {
@@ -103,7 +103,7 @@ dimeInt32Record::write(dimeOutput * const out)
 
 //!
 
-void 
+void
 dimeInt32Record::setValue(const dimeParam &param, dimeMemHandler * const )
 {
   this->value = param.int32_data;
@@ -111,7 +111,7 @@ dimeInt32Record::setValue(const dimeParam &param, dimeMemHandler * const )
 
 //!
 
-void 
+void
 dimeInt32Record::getValue(dimeParam &param) const
 {
   param.int32_data = this->value;

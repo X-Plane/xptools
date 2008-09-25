@@ -46,12 +46,12 @@ static void convert_mesh(dimePolyline *pline, const dimeState *state,
 static void convert_face(dimePolyline *pline, const dimeState *state,
 			 dxfLayerData *layerData, dxfConverter *);
 
-void 
-convert_polyline(const dimeEntity *entity, const dimeState *state, 
+void
+convert_polyline(const dimeEntity *entity, const dimeState *state,
 		 dxfLayerData *layerData, dxfConverter *converter)
 {
   dimePolyline *pline = (dimePolyline*) entity;
-  
+
   if (pline->getFlags() & 16)
     convert_mesh(pline, state, layerData, converter);
   else if (pline->getFlags() & 64)
@@ -73,7 +73,7 @@ set_segment_data(dxfLineSegment* segment,
   if (v->getRecord(40, param)) w0 = param.double_data;
   else if (pline->getRecord(40, param)) w0 = param.double_data;
   else w0 = 0.0;
-  
+
   if (v->getRecord(41, param)) w1 = param.double_data;
   else if (pline->getRecord(41, param)) w1 = param.double_data;
   else w1 = 0.0;
@@ -85,13 +85,13 @@ set_segment_data(dxfLineSegment* segment,
 
   v0[2] = pline->getElevation()[2];
   v1[2] = pline->getElevation()[2];
-  
-  segment->set(v0, v1, w0, w1, 
+
+  segment->set(v0, v1, w0, w1,
 	       pline->getThickness());
 }
 
 
-static void 
+static void
 convert_line(dimePolyline *pline, const dimeState *state,
 	     dxfLayerData *layerData, dxfConverter *converter)
 {
@@ -106,7 +106,7 @@ convert_line(dimePolyline *pline, const dimeState *state,
 
   dimeVec3f e = pline->getExtrusionDir();
   dxfdouble thickness = pline->getThickness();
-  
+
   if (e != dimeVec3f(0,0,1)) {
     dimeMatrix m;
     dimeEntity::generateUCS(e, m);
@@ -115,34 +115,34 @@ convert_line(dimePolyline *pline, const dimeState *state,
   e = dimeVec3f(0,0,1) * thickness;
 
   float elev = pline->getElevation()[2];
-  
+
   dxfLineSegment prevseg, nextseg, segment;
 
   dimeVertex *v = NULL;
   dimeVertex *next = NULL;
   dimeVec3f v0, v1;
-  
+
   bool closed = pline->getFlags() & 1;
   if (n <= 2) closed = false;
   int stop = closed ? n : n-1;
-  
+
   for (i = 0; i < stop; i++) {
     v = pline->getCoordVertex(i);
 
     next = pline->getCoordVertex((i+1)%n);
-    
+
     if (i == 0) {
       set_segment_data(&segment, v, next, pline);
       if (closed) {
-	set_segment_data(&prevseg, 
+	set_segment_data(&prevseg,
 			 pline->getCoordVertex(n-1),
 			 v,
 			 pline);
       }
     }
-    
+
     dimeVertex *next2 = pline->getCoordVertex((i+2)%n);
-    set_segment_data(&nextseg, next, next2, pline); 
+    set_segment_data(&nextseg, next, next2, pline);
 
     dimeParam param;
 
@@ -159,8 +159,8 @@ convert_line(dimePolyline *pline, const dimeState *state,
       dir.normalize();
       dxfdouble H = A*L/2.0;
       dxfdouble R = L / (2.0*sin(alpha/2.0));
-      
-      dimeVec3f rdir = A > 0.0 ? dir.cross(dimeVec3f(0,0,1)) : 
+
+      dimeVec3f rdir = A > 0.0 ? dir.cross(dimeVec3f(0,0,1)) :
 	dir.cross(dimeVec3f(0,0,-1));
       rdir.normalize();
       dimeVec3f center = v->getCoords() + dir*(L/2.0) - rdir*(R-H);
@@ -172,7 +172,7 @@ convert_line(dimePolyline *pline, const dimeState *state,
 #if 0
       fprintf(stderr,"dir: %g %g %g, rdir: %g %g %g\n",
 	      dir[0], dir[1], dir[2], rdir[0], rdir[1], rdir[2]);
-#endif 
+#endif
 
       dimeVec3f t = v->getCoords() - center;
       t.normalize();
@@ -192,7 +192,7 @@ convert_line(dimePolyline *pline, const dimeState *state,
       arc.setRadius(R);
       arc.setStartAngle(DXFRAD2DEG(a0));
       arc.setEndAngle(DXFRAD2DEG(a1));
-      
+
 //        if (elev != 0.0f) {
 //          dimeParam param;
 //          param.double_data = elev;
@@ -202,8 +202,8 @@ convert_line(dimePolyline *pline, const dimeState *state,
       convert_arc(&arc, state, converter->getLayerData(v), converter);
     }
     else {
-      segment.convert(i > 0 || closed ? &prevseg : NULL, 
-		      i < (stop-1) ? &nextseg : NULL, 
+      segment.convert(i > 0 || closed ? &prevseg : NULL,
+		      i < (stop-1) ? &nextseg : NULL,
 		      converter->getLayerData(v), &matrix);
     }
     // prepare for next iteration
@@ -212,7 +212,7 @@ convert_line(dimePolyline *pline, const dimeState *state,
   }
 }
 
-static void 
+static void
 convert_line_3d(dimePolyline *pline, const dimeState *state,
 		dxfLayerData *layerData, dxfConverter *converter)
 {
@@ -221,7 +221,7 @@ convert_line_3d(dimePolyline *pline, const dimeState *state,
 
   dimeMatrix matrix;
   state->getMatrix(matrix);
-  
+
   dimeVertex *v = NULL;
   dimeVertex *next = NULL;
   dimeVec3f v0, v1;
@@ -239,7 +239,7 @@ convert_line_3d(dimePolyline *pline, const dimeState *state,
   }
 }
 
-static void 
+static void
 convert_mesh(dimePolyline *pline, const dimeState *state,
 		dxfLayerData *layerData, dxfConverter *)
 {
@@ -252,12 +252,12 @@ convert_mesh(dimePolyline *pline, const dimeState *state,
 
   int coordCnt = pline->getNumCoordVertices();
 
-  if (pline->getSurfaceType() && pline->getSmoothSurfaceMdensity() && 
+  if (pline->getSurfaceType() && pline->getSmoothSurfaceMdensity() &&
       pline->getSmoothSurfaceNdensity()) {
       m2 = pline->getSmoothSurfaceMdensity();
       n2 = pline->getSmoothSurfaceNdensity();
   }
-    
+
   if (m*n + m2*n2 != coordCnt) {
     // FIXME: quick bugfix for stehlen.dxf... file is probably invalid...
     if ((m-1)*n + m2*n2 == coordCnt) m--;
@@ -275,7 +275,7 @@ convert_mesh(dimePolyline *pline, const dimeState *state,
     }
   }
 
-  
+
   int idx;
   int idxadd = m2*n2;
   int nexti, nextj;
@@ -291,7 +291,7 @@ convert_mesh(dimePolyline *pline, const dimeState *state,
     for (int j = 0; j < endn; j++) {
       nextj = j+1;
       if (nextj == n) nextj = 0;
-      
+
       layerData->addQuad(pline->getCoordVertex(idxadd+i*n+j)->getCoords(),
 			 pline->getCoordVertex(idxadd+i*n+nextj)->getCoords(),
 			 pline->getCoordVertex(idxadd+nexti*n+nextj)->getCoords(),
@@ -307,7 +307,7 @@ convert_mesh(dimePolyline *pline, const dimeState *state,
   n = n2;
   endm = (pline->getFlags() & 1) ? m : m-1;
   endn = (pline->getFlags() & 32) ? n : n-1;
-  
+
   for (i = 0; i < endm; i++) {
     nexti = i+1;
     if (nexti == m) nexti = 0;
@@ -324,7 +324,7 @@ convert_mesh(dimePolyline *pline, const dimeState *state,
   }
 }
 
-static void 
+static void
 convert_face(dimePolyline *pline, const dimeState *state,
 	     dxfLayerData *layerData, dxfConverter *converter)
 {

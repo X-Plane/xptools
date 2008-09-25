@@ -21,8 +21,8 @@ public:
 
 	ParserNode(Node *node, int type);
 	~ParserNode();
-	
-	Node *getNode(); 
+
+	Node *getNode();
 	int getType();
 };
 

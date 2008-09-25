@@ -4,13 +4,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -57,7 +57,7 @@ lib3ds_light_new(const char *name)
 
   ASSERT(name);
   ASSERT(strlen(name)<64);
-  
+
   light=(Lib3dsLight*)calloc(sizeof(Lib3dsLight), 1);
   if (!light) {
     return(0);
@@ -88,11 +88,11 @@ lib3ds_light_dump(Lib3dsLight *light)
   printf("  name:             %s\n", light->name);
   printf("  spot_light:       %s\n", light->spot_light ? "yes" : "no");
   printf("  see_cone:         %s\n", light->see_cone ? "yes" : "no");
-  printf("  color:            (%f, %f, %f)\n", 
+  printf("  color:            (%f, %f, %f)\n",
     light->color[0], light->color[1], light->color[2]);
-  printf("  position          (%f, %f, %f)\n", 
+  printf("  position          (%f, %f, %f)\n",
     light->position[0], light->position[1], light->position[2]);
-  printf("  spot              (%f, %f, %f)\n", 
+  printf("  spot              (%f, %f, %f)\n",
     light->spot[0], light->spot[1], light->spot[2]);
   printf("  roll:             %f\n", light->roll);
   printf("  off:              %s\n", light->off ? "yes" : "no");
@@ -137,7 +137,7 @@ spotlight_read(Lib3dsLight *light, Lib3dsIo *io)
   light->hot_spot = lib3ds_io_read_float(io);
   light->fall_off = lib3ds_io_read_float(io);
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_DL_SPOT_ROLL:
@@ -198,7 +198,7 @@ spotlight_read(Lib3dsLight *light, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -223,7 +223,7 @@ lib3ds_light_read(Lib3dsLight *light, Lib3dsIo *io)
     }
   }
   lib3ds_chunk_read_tell(&c, io);
-  
+
   while ((chunk=lib3ds_chunk_read_next(&c, io))!=0) {
     switch (chunk) {
       case LIB3DS_COLOR_F:
@@ -276,7 +276,7 @@ lib3ds_light_read(Lib3dsLight *light, Lib3dsIo *io)
         lib3ds_chunk_unknown(chunk);
     }
   }
-  
+
   lib3ds_chunk_read_end(&c, io);
   return(LIB3DS_TRUE);
 }
@@ -346,7 +346,7 @@ lib3ds_light_write(Lib3dsLight *light, Lib3dsIo *io)
     lib3ds_io_write_vector(io, light->spot);
     lib3ds_io_write_float(io, light->hot_spot);
     lib3ds_io_write_float(io, light->fall_off);
-    
+
     { /*---- LIB3DS_DL_SPOT_ROLL ----*/
       Lib3dsChunk c;
       c.chunk=LIB3DS_DL_SPOT_ROLL;

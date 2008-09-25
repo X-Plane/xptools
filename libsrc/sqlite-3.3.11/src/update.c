@@ -31,10 +31,10 @@ static void updateVirtualTable(
 
 /*
 ** The most recently coded instruction was an OP_Column to retrieve the
-** i-th column of table pTab. This routine sets the P3 parameter of the 
+** i-th column of table pTab. This routine sets the P3 parameter of the
 ** OP_Column to the default value, if any.
 **
-** The default value of a column is specified by a DEFAULT clause in the 
+** The default value of a column is specified by a DEFAULT clause in the
 ** column definition. This was either supplied by the user when the table
 ** was created, or added later to the table definition by an ALTER TABLE
 ** command. If the latter, then the row-records in the table btree on disk
@@ -43,9 +43,9 @@ static void updateVirtualTable(
 ** If the former, then all row-records are guaranteed to include a value
 ** for the column and the P3 value is not required.
 **
-** Column definitions created by an ALTER TABLE command may only have 
+** Column definitions created by an ALTER TABLE command may only have
 ** literal default values specified: a number, null or a string. (If a more
-** complicated default expression value was provided, it is evaluated 
+** complicated default expression value was provided, it is evaluated
 ** when the ALTER TABLE is executed and one of the literal values written
 ** into the sqlite_master table.)
 **
@@ -119,7 +119,7 @@ void sqlite3Update(
   db = pParse->db;
   assert( pTabList->nSrc==1 );
 
-  /* Locate the table which we want to update. 
+  /* Locate the table which we want to update.
   */
   pTab = sqlite3SrcListLookup(pParse, pTabList);
   if( pTab==0 ) goto update_cleanup;
@@ -381,13 +381,13 @@ void sqlite3Update(
   }
 
   if( !isView && !IsVirtual(pTab) ){
-    /* 
+    /*
     ** Open every index that needs updating.  Note that if any
-    ** index could potentially invoke a REPLACE conflict resolution 
+    ** index could potentially invoke a REPLACE conflict resolution
     ** action, then we need to open all indices because we might need
     ** to be deleting some records.
     */
-    sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenWrite); 
+    sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenWrite);
     if( onError==OE_Replace ){
       openAll = 1;
     }else{
@@ -430,7 +430,7 @@ void sqlite3Update(
       sqlite3VdbeAddOp(v, OP_MustBeInt, 0, 0);
     }
 
-    /* Compute new data for this record.  
+    /* Compute new data for this record.
     */
     for(i=0; i<pTab->nCol; i++){
       if( i==pTab->iPKey ){
@@ -466,7 +466,7 @@ void sqlite3Update(
     sqlite3CompleteInsertion(pParse, pTab, iCur, aIdxUsed, chngRowid, 1, -1);
   }
 
-  /* Increment the row counter 
+  /* Increment the row counter
   */
   if( db->flags & SQLITE_CountRows && !pParse->trigStack){
     sqlite3VdbeAddOp(v, OP_AddImm, 1, 0);
@@ -483,7 +483,7 @@ void sqlite3Update(
       }
       sqlite3VdbeAddOp(v, OP_Close, iCur, 0);
     }
-    if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_AFTER, pTab, 
+    if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_AFTER, pTab,
           newIdx, oldIdx, onError, addr) ){
       goto update_cleanup;
     }
@@ -509,7 +509,7 @@ void sqlite3Update(
   }
 
   /*
-  ** Return the number of rows that were changed. If this routine is 
+  ** Return the number of rows that were changed. If this routine is
   ** generating code because of a call to sqlite3NestedParse(), do not
   ** invoke the callback function.
   */
@@ -567,7 +567,7 @@ static void updateVirtualTable(
   int addr;                 /* Address of top of loop */
 
   /* Construct the SELECT statement that will find the new values for
-  ** all updated rows. 
+  ** all updated rows.
   */
   pEList = sqlite3ExprListAppend(0, sqlite3CreateIdExpr("_rowid_"), 0);
   if( pRowid ){
@@ -583,7 +583,7 @@ static void updateVirtualTable(
     pEList = sqlite3ExprListAppend(pEList, pExpr, 0);
   }
   pSelect = sqlite3SelectNew(pEList, pSrc, pWhere, 0, 0, 0, 0, 0, 0);
-  
+
   /* Create the ephemeral table into which the update results will
   ** be stored.
   */
@@ -591,7 +591,7 @@ static void updateVirtualTable(
   ephemTab = pParse->nTab++;
   sqlite3VdbeAddOp(v, OP_OpenEphemeral, ephemTab, pTab->nCol+1+(pRowid!=0));
 
-  /* fill the ephemeral table 
+  /* fill the ephemeral table
   */
   sqlite3Select(pParse, pSelect, SRT_Table, ephemTab, 0, 0, 0, 0);
 
@@ -611,12 +611,12 @@ static void updateVirtualTable(
     sqlite3VdbeAddOp(v, OP_Column, ephemTab, i+1+(pRowid!=0));
   }
   pParse->pVirtualLock = pTab;
-  sqlite3VdbeOp3(v, OP_VUpdate, 0, pTab->nCol+2, 
+  sqlite3VdbeOp3(v, OP_VUpdate, 0, pTab->nCol+2,
                      (const char*)pTab->pVtab, P3_VTAB);
   sqlite3VdbeAddOp(v, OP_Next, ephemTab, addr);
   sqlite3VdbeAddOp(v, OP_Close, ephemTab, 0);
 
   /* Cleanup */
-  sqlite3SelectDelete(pSelect);  
+  sqlite3SelectDelete(pSelect);
 }
 #endif /* SQLITE_OMIT_VIRTUALTABLE */

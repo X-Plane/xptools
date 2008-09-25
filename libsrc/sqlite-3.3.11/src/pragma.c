@@ -28,7 +28,7 @@
 
 /*
 ** Interpret the given string as a safety level.  Return 0 for OFF,
-** 1 for ON or NORMAL and 2 for FULL.  Return 1 for an empty or 
+** 1 for ON or NORMAL and 2 for FULL.  Return 1 for an empty or
 ** unrecognized string argument.
 **
 ** Note that the values returned are one less that the values that
@@ -190,7 +190,7 @@ static int flagPragma(Parse *pParse, const char *zLeft, const char *zRight){
 #endif /* SQLITE_OMIT_FLAG_PRAGMAS */
 
 /*
-** Process a pragma statement.  
+** Process a pragma statement.
 **
 ** Pragmas are of this form:
 **
@@ -205,7 +205,7 @@ static int flagPragma(Parse *pParse, const char *zLeft, const char *zRight){
 ** id and pId2 is any empty string.
 */
 void sqlite3Pragma(
-  Parse *pParse, 
+  Parse *pParse,
   Token *pId1,        /* First part of [database.]id field */
   Token *pId2,        /* Second part of [database.]id field, or NULL */
   Token *pValue,      /* Token for <value>, or NULL */
@@ -227,8 +227,8 @@ void sqlite3Pragma(
   if( iDb<0 ) return;
   pDb = &db->aDb[iDb];
 
-  /* If the temp database has been explicitly named as part of the 
-  ** pragma, make sure it is open. 
+  /* If the temp database has been explicitly named as part of the
+  ** pragma, make sure it is open.
   */
   if( iDb==1 && sqlite3OpenTempDatabase(pParse) ){
     return;
@@ -246,7 +246,7 @@ void sqlite3Pragma(
   if( sqlite3AuthCheck(pParse, SQLITE_PRAGMA, zLeft, zRight, zDb) ){
     goto pragma_out;
   }
- 
+
 #ifndef SQLITE_OMIT_PAGER_PRAGMAS
   /*
   **  PRAGMA [database.]default_cache_size
@@ -327,7 +327,7 @@ void sqlite3Pragma(
   if( sqlite3StrICmp(zLeft,"auto_vacuum")==0 ){
     Btree *pBt = pDb->pBt;
     if( !zRight ){
-      int auto_vacuum = 
+      int auto_vacuum =
           pBt ? sqlite3BtreeGetAutoVacuum(pBt) : SQLITE_DEFAULT_AUTOVACUUM;
       returnSingleInt(pParse, "auto_vacuum", auto_vacuum);
     }else{
@@ -396,7 +396,7 @@ void sqlite3Pragma(
     if( !zRight ){
       if( sqlite3_temp_directory ){
         sqlite3VdbeSetNumCols(v, 1);
-        sqlite3VdbeSetColName(v, 0, COLNAME_NAME, 
+        sqlite3VdbeSetColName(v, 0, COLNAME_NAME,
             "temp_store_directory", P3_STATIC);
         sqlite3VdbeOp3(v, OP_String8, 0, 0, sqlite3_temp_directory, 0);
         sqlite3VdbeAddOp(v, OP_Callback, 1, 0);
@@ -437,7 +437,7 @@ void sqlite3Pragma(
       returnSingleInt(pParse, "synchronous", pDb->safety_level-1);
     }else{
       if( !db->autoCommit ){
-        sqlite3ErrorMsg(pParse, 
+        sqlite3ErrorMsg(pParse,
             "Safety level may not be changed inside a transaction");
       }else{
         pDb->safety_level = getSafetyLevel(zRight)+1;
@@ -531,7 +531,7 @@ void sqlite3Pragma(
       v = sqlite3GetVdbe(pParse);
       pIdx = pTab->pIndex;
       if( pIdx ){
-        int i = 0; 
+        int i = 0;
         sqlite3VdbeSetNumCols(v, 3);
         sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "seq", P3_STATIC);
         sqlite3VdbeSetColName(v, 1, COLNAME_NAME, "name", P3_STATIC);
@@ -591,7 +591,7 @@ void sqlite3Pragma(
       v = sqlite3GetVdbe(pParse);
       pFK = pTab->pFKey;
       if( pFK ){
-        int i = 0; 
+        int i = 0;
         sqlite3VdbeSetNumCols(v, 5);
         sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "id", P3_STATIC);
         sqlite3VdbeSetColName(v, 1, COLNAME_NAME, "seq", P3_STATIC);
@@ -754,7 +754,7 @@ void sqlite3Pragma(
           sqlite3VdbeJumpHere(v, addr+6);
           sqlite3VdbeChangeP3(v, addr+9, pIdx->zName, P3_STATIC);
         }
-      } 
+      }
     }
     addr = sqlite3VdbeAddOpList(v, ArraySize(endCode), endCode);
     sqlite3VdbeJumpHere(v, addr+2);
@@ -774,7 +774,7 @@ void sqlite3Pragma(
   ** encoding that will be used for the main database file if a new file
   ** is created. If an existing main database file is opened, then the
   ** default text encoding for the existing database is used.
-  ** 
+  **
   ** In all cases new databases created using the ATTACH command are
   ** created to use the same default text encoding as the main database. If
   ** the main database has not been initialized and/or created when ATTACH
@@ -818,9 +818,9 @@ void sqlite3Pragma(
       ** will be overwritten when the schema is next loaded. If it does not
       ** already exists, it will be created to use the new encoding value.
       */
-      if( 
-        !(DbHasProperty(db, 0, DB_SchemaLoaded)) || 
-        DbHasProperty(db, 0, DB_Empty) 
+      if(
+        !(DbHasProperty(db, 0, DB_SchemaLoaded)) ||
+        DbHasProperty(db, 0, DB_Empty)
       ){
         for(pEnc=&encnames[0]; pEnc->zName; pEnc++){
           if( 0==sqlite3StrICmp(zRight, pEnc->zName) ){
@@ -922,7 +922,7 @@ void sqlite3Pragma(
         sqlite3VdbeOp3(v, OP_String8, 0, 0, "closed", P3_STATIC);
       }else{
         int j = sqlite3pager_lockstate(pPager);
-        sqlite3VdbeOp3(v, OP_String8, 0, 0, 
+        sqlite3VdbeOp3(v, OP_String8, 0, 0,
             (j>=0 && j<=4) ? azLockName[j] : "unknown", P3_STATIC);
       }
       sqlite3VdbeAddOp(v, OP_Callback, 2, 0);

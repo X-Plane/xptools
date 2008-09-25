@@ -22,7 +22,7 @@ typedef CGAL::Arr_2_default_dcel<Traits>                Dcel;
 typedef CGAL::Arrangement_2<Dcel,Traits>                Arr_2;
 
 // A simple function that splits a segment into 2
-void my_split_f(const Curve_2 & cv, std::list<Curve_2> & l) 
+void my_split_f(const Curve_2 & cv, std::list<Curve_2> & l)
 {
   Point_2 s = cv.source(); // Uses the knowledge of the curve functions
   Point_2 t = cv.target();
@@ -33,27 +33,27 @@ void my_split_f(const Curve_2 & cv, std::list<Curve_2> & l)
 
 typedef void (*SPLIT_FUNC)(const Curve_2 & cv, std::list<Curve_2> & l);
 
-int main() 
+int main()
 {
   std::vector<SPLIT_FUNC> func_vec;
   func_vec.push_back(&my_split_f);
   Arr_2 arr;
-   
+
   // Insertion with user-defined function
   Arr_2::Curve_iterator cit = arr.insert(Curve_2(Point_2(0, 0),Point_2(6, 6)),
                                          func_vec.begin(), func_vec.end());
-   
-  // Regular insertion                                  
-  cit = arr.insert(Curve_2(Point_2(0, 4), Point_2(6, 4))); 
-   
+
+  // Regular insertion
+  cit = arr.insert(Curve_2(Point_2(0, 4), Point_2(6, 4)));
+
   // Traversal of the curves
   Arr_2::Edge_iterator eit;
-  for (cit = arr.curve_node_begin(); cit != arr.curve_node_end(); ++cit) 
+  for (cit = arr.curve_node_begin(); cit != arr.curve_node_end(); ++cit)
   {
     std::cout << std::endl << "Curve level:" << std::endl << cit->curve()
               << std::endl ;
     std::cout << "Edge level:" << std::endl;
-    for (eit = cit->edges_begin(); eit != cit->edges_end(); ++eit) 
+    for (eit = cit->edges_begin(); eit != cit->edges_end(); ++eit)
     {
       std::cout << eit->x_curve() << std::endl ;
     }

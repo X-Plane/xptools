@@ -20,11 +20,11 @@
 // $Name: current_submission $
 //
 // Author(s)     : Sylvain Pion
- 
+
 #ifndef CGAL_NEW_DELETE_ALLOCATOR_H
 #define CGAL_NEW_DELETE_ALLOCATOR_H
 
-#include <cstddef> 
+#include <cstddef>
 
 CGAL_BEGIN_NAMESPACE
 

@@ -144,12 +144,12 @@ void JScript::initialize()
 void JScript::processEvent(Event *event) {
 	if (isOK()) {
 		jobject eventObject = NULL;
-		
+
 		if (event)
 			eventObject = event->toJavaObject();
-		
+
 		getJniEnv()->CallVoidMethod(getNodeObject(), getProcessEventMethodID(), eventObject);
-		
+
 		if (eventObject)
 			getJniEnv()->DeleteLocalRef(eventObject);
 	}

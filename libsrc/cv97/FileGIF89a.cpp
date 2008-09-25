@@ -31,7 +31,7 @@ FileGIF89a::~FileGIF89a()
 	if (globalColorTable)
 		delete	[]globalColorTable;
 
-	for (int n=0; n<nImage; n++) { 
+	for (int n=0; n<nImage; n++) {
 		if (image[n].buffer)
 			delete []image[n].buffer;
 		if (image[n].localColorTable)
@@ -68,7 +68,7 @@ bool FileGIF89a::load(char *fname)
 	FILE *fp = fopen(fname, "rb");
 	if (!fp)
 		return false;
-	
+
 	if (!GetGIF89aHeaderInfo(fp, &headerInfo)) {
 		fclose(fp);
 		return false;
@@ -91,7 +91,7 @@ bool FileGIF89a::load(char *fname)
 
 		if (id == 0x21) {
 			int commentlabel = fgetc(fp);
-			switch (commentlabel) { 
+			switch (commentlabel) {
 			case 0xf9:
 				{
 					transparencyFlag = true;
@@ -127,7 +127,7 @@ bool FileGIF89a::load(char *fname)
 			continue;
 		}
 
-		image = (GIF89aImage *)realloc(image, sizeof(GIF89aImage)*(nImage+1)); 
+		image = (GIF89aImage *)realloc(image, sizeof(GIF89aImage)*(nImage+1));
 		image[nImage].localColorTable = NULL;
 		image[nImage].buffer = NULL;
 		image[nImage].bufferSize = 0;
@@ -138,7 +138,7 @@ bool FileGIF89a::load(char *fname)
 			fclose(fp);
 			return false;
 		}
-	
+
 		if (getImageLocalColorTableFlag(nImage)) {
 			unsigned int localTableSize = 1 << (getImageSizeOfLocalTable(nImage) + 1);
 			image[nImage].localColorTable = new RGBColor24[localTableSize];
@@ -157,14 +157,14 @@ bool FileGIF89a::load(char *fname)
 		unsigned char	*dataByte = NULL;
 		unsigned char	blockSize;
 		unsigned int	dataSize;
-	
+
 		if (fread(&blockSize, sizeof(unsigned char), 1, fp) != 1) {
 			fclose(fp);
 			return false;
 		}
 		dataSize = 0;
 		while (blockSize) {
-			dataByte = (unsigned char *)realloc(dataByte, dataSize + blockSize); 
+			dataByte = (unsigned char *)realloc(dataByte, dataSize + blockSize);
 			if (fread(&dataByte[dataSize], blockSize, 1, fp) != 1) {
 				fclose(fp);
 				return false;
@@ -238,7 +238,7 @@ void FileGIF89a::convertInterlacedImage(int nImage)
 		return;
 
 	int width	= getImageWidth(nImage);
-	int height	= getImageHeight(nImage);	
+	int height	= getImageHeight(nImage);
 
 	RGBColor24 *newImage		= new RGBColor24[sizeof(RGBColor24)*width*height];
 
@@ -319,7 +319,7 @@ void FileGIF89a::getColor(int n, unsigned int index, RGBColor24 color)
 	}
 }
 
-unsigned char SwapBit(unsigned char c) 
+unsigned char SwapBit(unsigned char c)
 {
 	unsigned char ret = 0;
 	for (int n=0; n<8; n++) {
@@ -342,7 +342,7 @@ unsigned int FileGIF89a::getNextCode(unsigned int codeSize)
 	return nextCode;
 }
 
-void FileGIF89a::terminateLzwTable() 
+void FileGIF89a::terminateLzwTable()
 {
 	for (unsigned int n=0; n<getLzwTableIndex(); n++)
 		delete 	lzwTable[n].data;
@@ -365,7 +365,7 @@ unsigned int FileGIF89a::addLzwTable(unsigned int sindex, unsigned int cindex, u
 
 	lzwTable[index].n = nData;
 	lzwTable[index].data = new unsigned int[nData];
-	
+
 	for (unsigned int n=0; n<lzwTable[sindex].n; n++)
 		lzwTable[index].data[n] = lzwTable[sindex].data[n];
 
@@ -414,7 +414,7 @@ void FileGIF89a::outputData(int nImage, unsigned int sindex, unsigned int cindex
 }
 
 ///////////////////////////////////////////////////////////////////
-//	Output	
+//	Output
 ///////////////////////////////////////////////////////////////////
 
 void FileGIF89a::printHeaderInfo()

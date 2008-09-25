@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -41,15 +41,15 @@ static char * my_fgets(char * s, int n, FILE * file)
 {
 	char *	p = s;
 	int			c;
-	
+
 	if (--n < 0)
 		return(NULL);
-	
+
 	if (n)
 		do
 		{
 			c = fgetc(file);
-			
+
 			if (c == EOF)
 				if (/*feof(file) &&*/ p != s)
 					break;
@@ -57,13 +57,13 @@ static char * my_fgets(char * s, int n, FILE * file)
 				{
 					return(NULL);
 				}
-			
+
 			*p++ = c;
 		}
 		while (c != '\n' && c != '\r' && --n);
-	
+
 	*p = 0;
-	
+
 	return(s);
 }
 
@@ -75,7 +75,7 @@ StTextFileScanner::StTextFileScanner(const char * file, bool skip) :
 	mSkipBlanks(skip)
 {
 	read_next();
-}	
+}
 
 StTextFileScanner::~StTextFileScanner()
 {
@@ -113,12 +113,12 @@ void	StTextFileScanner::read_next(void)
 			buf[len-1] = 0;
 			--len;
 		}
-		
+
 		if (buf[0] == '\r' || buf[0] == '\n')
 			mBuf = buf+1;
 		else
 			mBuf = buf;
-			
+
 		if (!mBuf.empty() || !mSkipBlanks)
 		{
 			mDone = false;
@@ -136,20 +136,20 @@ void	BreakString(const string& line, vector<string>& words)
 		string::const_iterator s = i;
 		while (s < line.end() && isspace(*s))
 			++s;
-		
+
 		string::const_iterator e = s;
 		while (e < line.end() && !isspace(*e))
 			++e;
-			
+
 		if (s < e)
 			words.push_back(string(s,e));
-		
+
 		i = e;
 	}
 }
 
 void	StringToUpper(string& s)
-{	
+{
 	for (string::iterator i = s.begin(); i != s.end(); ++i)
 		*i = toupper(*i);
 }
@@ -160,8 +160,8 @@ bool	HasExtNoCase(const string& inStr, const char * inExt)
 	string e(inExt);
 	StringToUpper(s);
 	StringToUpper(e);
-	
-	
+
+
 	if (s.rfind(e) == (s.length() - e.length()))
 		return true;
 	return false;
@@ -175,7 +175,7 @@ bool	GetNextNoComments(StTextFileScanner& f, string& s)
 		s = f.get();
 		f.next();
 		if (s.empty() || s[0] != '#')
-			return true;		
+			return true;
 	}
 	return false;
 }
@@ -184,7 +184,7 @@ bool	GetNextNoComments(StTextFileScanner& f, string& s)
 int		PickRandom(vector<double>& chances)
 {
 	double	v = (double) (rand() % RAND_MAX) / (double) RAND_MAX;
-	
+
 	for (int n = 0; n < chances.size(); ++n)
 	{
 		if (v < chances[n])
@@ -208,7 +208,7 @@ double	RandRange(double mmin, double mmax)
 		return mmin;
 	double	v = (double) rand() / (double) RAND_MAX;
 	return mmin + ((mmax - mmin) * v);
-}		
+}
 
 double	RandRangeBias(double mmin, double mmax, double biasRatio, double randomAmount)
 {
@@ -262,17 +262,17 @@ OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder)
 {
 		CInfoPBRec	paramBlock;
 		OSErr		err;
-		
+
 	paramBlock.dirInfo.ioCompletion = 	NULL;
 	paramBlock.dirInfo.ioNamePtr =		(StringPtr) (&(outFolder.name));
 	paramBlock.dirInfo.ioVRefNum = 		inItem.vRefNum;
 	paramBlock.dirInfo.ioFDirIndex = 	-1;
 	paramBlock.dirInfo.ioDrDirID = 		inItem.parID;
-	
+
 	err = ::PBGetCatInfoSync(&paramBlock);
 	if (err != noErr)
 		return err;
-		
+
 	outFolder.vRefNum = paramBlock.dirInfo.ioVRefNum;
 	outFolder.parID= paramBlock.dirInfo.ioDrParID;
 	return noErr;
@@ -297,7 +297,7 @@ void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
 #if defined(__MACH__)
 
 		FSRef	fsref;
-	if (FSpMakeFSRef(&inSpec, &fsref) == noErr)	
+	if (FSpMakeFSRef(&inSpec, &fsref) == noErr)
 	{
 		char	path[1024];
 		if (FSRefMakePath(&fsref, (UInt8*) path, sizeof(path))==noErr)
@@ -306,10 +306,10 @@ void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
 		}
 	}
 
-#else	
+#else
 	FSSpec	foo(inSpec);
 	FSSpec	foo2;
-	
+
 	while (1)
 	{
 		if (outString.empty())
@@ -326,7 +326,7 @@ void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
 #endif
 #endif
 
-void	ExtractFixedRecordString(	
+void	ExtractFixedRecordString(
 				const string&		inLine,
 				int					inBegin,
 				int					inEnd,
@@ -336,16 +336,16 @@ void	ExtractFixedRecordString(
 	int ep = inEnd;
 	if (ep > inLine.length()) ep = inLine.length();
 	if (sp > inLine.length()) sp = inLine.length();
-	
+
 	while ((sp < ep) && (inLine[sp] == ' '))
 		++sp;
-	
+
 	while ((ep > sp) && (inLine[ep-1] == ' '))
 		--ep;
-		
+
 	outString = inLine.substr(sp, ep - sp);
-}				
-				
+}
+
 bool	ExtractFixedRecordLong(
 				const string&		inLine,
 				int					inBegin,
@@ -357,8 +357,8 @@ bool	ExtractFixedRecordLong(
 	if (foo.empty())	return false;
 	outLong = strtol(foo.c_str(), NULL, 10);
 	return true;
-}				
-				
+}
+
 bool	ExtractFixedRecordUnsignedLong(
 				const string&		inLine,
 				int					inBegin,
@@ -370,7 +370,7 @@ bool	ExtractFixedRecordUnsignedLong(
 	if (foo.empty())	return false;
 	outUnsignedLong = strtoul(foo.c_str(), NULL, 10);
 	return true;
-}				
+}
 
 #pragma mark -
 
@@ -383,17 +383,17 @@ struct	XPointPool::XPointPoolImp {
 	vector<p_info>			pts;
 	map<string, int>	index;
 
-	void	clear() 
+	void	clear()
 	{
 		pts.clear();
 		index.clear();
 	}
-	
+
 	int		count(void)
 	{
 		return pts.size();
 	}
-	
+
 	int		accumulate(const float xyz[3], const float st[2])
 	{
 		static	char	buf[256];
@@ -405,7 +405,7 @@ struct	XPointPool::XPointPoolImp {
 			*(reinterpret_cast<const int*>(st +1)));
 		string	key(buf);
 		map<string, int>::iterator i = index.find(key);
-		if (i != index.end()) return i->second;			
+		if (i != index.end()) return i->second;
 		p_info	p;
 		memcpy(p.xyz, xyz, sizeof(p.xyz));
 		memcpy(p.st, st, sizeof(p.st));
@@ -414,7 +414,7 @@ struct	XPointPool::XPointPoolImp {
 		pts.push_back(p);
 		return pts.size()-1;
 	}
-	
+
 	void	get(int i, float xyz[3], float st[2])
 	{
 		p_info& p = pts[i];
@@ -432,7 +432,7 @@ XPointPool::~XPointPool()
 {
 	delete mImp;
 }
-		
+
 void	XPointPool::clear()
 {
 	mImp->clear();

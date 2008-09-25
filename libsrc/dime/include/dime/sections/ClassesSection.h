@@ -1,5 +1,5 @@
 /**************************************************************************\
- * 
+ *
  *  FILE: ClassesSection.h
  *
  *  This source file is part of DIME.
@@ -41,18 +41,18 @@ public:
   dimeClassesSection(dimeMemHandler * const memhandler = NULL);
   virtual ~dimeClassesSection();
 
-  virtual const char *getSectionName() const; 
+  virtual const char *getSectionName() const;
   virtual dimeSection *copy(dimeModel * const model) const;
-  
+
   virtual bool read(dimeInput * const file);
   virtual bool write(dimeOutput * const file);
   virtual int typeId() const;
   virtual int countRecords() const;
-  
+
   int getNumClasses() const;
   class dimeClass *getClass(const int idx);
   void removeClass(const int idx);
-  void insertClass(dimeClass * const myclass, const int idx = -1); 
+  void insertClass(dimeClass * const myclass, const int idx = -1);
 
 private:
   dimeArray <dimeClass*> classes;

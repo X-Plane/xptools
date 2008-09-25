@@ -75,7 +75,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getColorPerVertexField();
-	
+
 	void setColorPerVertex(bool  value);
 	void setColorPerVertex(int value);
 	bool  getColorPerVertex();
@@ -85,7 +85,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getNormalPerVertexField();
-	
+
 	void setNormalPerVertex(bool  value);
 	void setNormalPerVertex(int value);
 	bool  getNormalPerVertex();
@@ -95,7 +95,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getCCWField();
-	
+
 	void setCCW(bool  value);
 	void setCCW(int value);
 	bool  getCCW();
@@ -105,7 +105,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFBool *getSolidField();
-	
+
 	void setSolid(bool  value);
 	void setSolid(int value);
 	bool  getSolid();
@@ -115,7 +115,7 @@ public:
 	////////////////////////////////////////////////
 
 	SFFloat *getCreaseAngleField();
-	
+
 	void setCreaseAngle(float value);
 	float getCreaseAngle();
 
@@ -139,7 +139,7 @@ public:
 	////////////////////////////////////////////////
 	//	functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

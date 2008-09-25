@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -43,7 +43,7 @@ int	CountCirculator(Pmwx::Ccb_halfedge_const_circulator circ)
 	Pmwx::Ccb_halfedge_const_circulator stop = circ;
 	int n = 0;
 	do {
-		++n;	
+		++n;
 		if (circ->face() != stop->face())
 			printf("Strange circulator error.\n");
 		++circ;
@@ -263,59 +263,59 @@ void ReadAreaFeature(IOReader& inReader, GISAreaFeature_t& obj, const TokenConve
 }
 
 #pragma mark -
-			
+
 void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 {
 	Pmwx::Face_const_iterator f;
-	
+
 	StAtomWriter	mapAtom(fi, atomID);
 
 	if (inProgress)	inProgress(0, 1, "Writing", 0.0);
-	
+
 	double	total = (inMap.number_of_faces() + inMap.number_of_halfedges() + inMap.number_of_vertices()) * 2.0;
 	int	ctr = 0;
-	
+
 	{
 			StAtomWriter 	mainMap(fi, kMainMapID);
 			FileWriter		writer(fi);
 
 		V_Index	v_index(inMap.vertices_begin(), inMap.vertices_end());
 		H_Index	h_index(inMap.halfedges_begin(), inMap.halfedges_end());
-			
+
 		writer.WriteInt(inMap.number_of_vertices());
 		writer.WriteInt(inMap.number_of_halfedges());
 		writer.WriteInt(inMap.number_of_faces());
-		
+
 		for (Pmwx::Vertex_const_iterator v = inMap.vertices_begin();
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-		
+
 			writer.WriteDouble(CGAL::to_double(v->point().x));
 			writer.WriteDouble(CGAL::to_double(v->point().y));
 		}
-		
+
 		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
 			he != inMap.halfedges_end(); ++he, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-		
+
 			writer.WriteInt(v_index[he->target()]);
 			writer.WriteDouble(CGAL::to_double(he->source()->point().x));
 			writer.WriteDouble(CGAL::to_double(he->source()->point().y));
 			writer.WriteDouble(CGAL::to_double(he->target()->point().x));
 			writer.WriteDouble(CGAL::to_double(he->target()->point().y));
-			
+
 			writer.WriteInt(he->mDominant);
 			writer.WriteInt(he->mTransition);
-			writer.WriteDouble(he->mInset);		
+			writer.WriteDouble(he->mInset);
 		}
-		
+
 		for (f = inMap.faces_begin();
 			f != inMap.faces_end(); ++f, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-		
+
 			if (f->is_unbounded())
 				writer.WriteInt(0);
 			else {
@@ -330,7 +330,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 					++edge;
 				} while (last != edge);
 			}
-			
+
 			writer.WriteInt(distance(f->holes_begin(), f->holes_end()));
 			for (Pmwx::Holes_const_iterator hole = f->holes_begin();
 				hole != f->holes_end(); ++hole)
@@ -343,14 +343,14 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 					++edge;
 				} while (last != edge);
 			}
-			
+
 			int dummy = f->IsWater();
 			writer.WriteInt(dummy);
 //			writer.WriteInt(f->mIsWater);
 			writer.WriteInt(f->mTerrainType);
 		}
 	}
-	
+
 	{
 		StAtomWriter	edges1(fi, kEdgeData1);
 		FileWriter		writer(fi);
@@ -358,12 +358,12 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			he != inMap.halfedges_end(); ++he, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-		
+
 			WriteVector(writer, he->mSegments, WriteNetworkSegment);
-			WriteParamMap(writer, he->mParams);		
+			WriteParamMap(writer, he->mParams);
 		}
 	}
-	
+
 	{
 		StAtomWriter	faces1(fi, kFaceData1);
 		FileWriter		writer(fi);
@@ -371,7 +371,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			f != inMap.faces_end(); ++f, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-		
+
 			WriteParamMap(writer, f->mParams);
 			WriteVector(writer, f->mObjs, WriteObjPlacement);
 			WriteVector(writer, f->mPolyObjs, WritePolyObjPlacement);
@@ -380,7 +380,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			vector<GISAreaFeature_t>	fakeVector;
 			fakeVector.push_back(f->mAreaFeature);
 			WriteVector(writer, fakeVector, WriteAreaFeature);
-		}				
+		}
 	}
 	{
 		StAtomWriter	vertices1(fi, kVertData1);
@@ -389,7 +389,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-			
+
 			writer.WriteBulk(&v->mTunnelPortal, 1, false);
 		}
 	}
@@ -418,9 +418,9 @@ public:
 		mVertices(0), mFaces(0), mHalfedges(0), mProgress(func), mTotal(0), mCount(0), mLegacy(false)
 	{
 		if (mProgress) mProgress(0, 1, "Reading", 0.0);
-	
+
 	}
-	
+
 	~MapScanner()
 	{
 		if (mProgress) mProgress(0, 1, "Reading", 1.0);
@@ -438,12 +438,12 @@ public:
 		mReader->ReadInt(mFaces);
 		mTotal = mVertices + mHalfedges + mFaces;
 	}
-	
+
 	GISVertex * scan_vertex (Pmwx& the_map)
-	{	
+	{
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-	
+
 		double	x, y;
 		mReader->ReadDouble(x);
 		mReader->ReadDouble(y);
@@ -459,7 +459,7 @@ public:
 	{
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-	
+
 		double	x1, y1, x2, y2;
 //		X_curve cv;
 		mReader->ReadDouble(x1);
@@ -468,22 +468,22 @@ public:
 		mReader->ReadDouble(y2);
 //		cv = X_curve(Point2(x1, y1), Point2(x2, y2));
 
-		int	dominant;		
+		int	dominant;
 		mReader->ReadInt(dominant);
 		h->mDominant = (dominant != 0);
 		mReader->ReadInt(h->mTransition);
-		mReader->ReadDouble(h->mInset);		
+		mReader->ReadDouble(h->mInset);
 
 //		h->set_curve(cv);
 		mHalfedgesVec.push_back(h);
 //		return cv;
 	}
 
-	void scan_face(GISFace* f) 
+	void scan_face(GISFace* f)
 	{
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-	
+
 		int  num_of_holes, num_halfedges_on_outer_ccb, i = 0;
 
 		mReader->ReadInt(num_halfedges_on_outer_ccb);
@@ -491,12 +491,12 @@ public:
 		if (num_halfedges_on_outer_ccb > 0)
 		{
 			int  index, prev_index = 0, first_index;
-			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++) 
+			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++)
 			{
 				mReader->ReadInt(index);
 				GISHalfedge* nh = mHalfedgesVec[index];
 
-				if (j > 0) 
+				if (j > 0)
 				{
 					GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
 					prev_nh->set_next(nh);
@@ -504,7 +504,7 @@ public:
 					f->set_outer_ccb(nh);
 					first_index = index;
 				}
-				nh->set_face(f); 
+				nh->set_face(f);
 				prev_index = index;
 			}
 
@@ -521,12 +521,12 @@ public:
 			mReader->ReadInt(num_halfedges_on_inner_ccb);
 
 			int  index, prev_index, first_index;
-			for (unsigned int j = 0; j < num_halfedges_on_inner_ccb; j++) 
+			for (unsigned int j = 0; j < num_halfedges_on_inner_ccb; j++)
 			{
 				mReader->ReadInt(index);
 
 				GISHalfedge* nh = mHalfedgesVec[index];
-				if (j > 0) 
+				if (j > 0)
 				{
 					GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
 					prev_nh->set_next(nh);
@@ -535,7 +535,7 @@ public:
 					first_index = index;
 				}
 
-				nh->set_face(f); 
+				nh->set_face(f);
 				prev_index = index;
 			}
 
@@ -544,13 +544,13 @@ public:
 			GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
 			prev_nh->set_next(nh);
 		}
-		
+
 		// Other params
 		int dummy;
 //		mReader->ReadInt(f->mIsWater);
 		mReader->ReadInt(dummy);
 		mReader->ReadInt(f->mTerrainType);
-		if (f->mTerrainType == NO_VALUE) 
+		if (f->mTerrainType == NO_VALUE)
 		{
 			if (dummy) mLegacy = true;
 			f->mTerrainType = dummy ? terrain_Water : terrain_Natural;
@@ -564,16 +564,16 @@ public:
 		mReader->ReadInt(n);
 		index = n;
 	}
-	
+
 	void read(Pmwx& the_map)
 	{
-		std::vector<GISHalfedge* >  halfedges_vec;  
-		std::vector<GISVertex* >    vertices_vec; 
+		std::vector<GISHalfedge* >  halfedges_vec;
+		std::vector<GISVertex* >    vertices_vec;
 
 		scan_pm_vhf_sizes();
 
 		unsigned int  i;
-		for (i = 0; i < number_of_vertices(); i++) 			
+		for (i = 0; i < number_of_vertices(); i++)
 		{
 			GISVertex * nv = scan_vertex (the_map);
 			nv->set_halfedge((GISHalfedge *) 0x0BADF00D);
@@ -593,18 +593,18 @@ public:
 			scan_halfedge(nh->twin());
 
 			nv1 = vertices_vec[index1];
-			nv1->set_halfedge(nh); 
+			nv1->set_halfedge(nh);
 			nh->set_target(nv1);
 
 			nv2 = vertices_vec[index2];
-			nv2->set_halfedge(nh->twin()); 
+			nv2->set_halfedge(nh->twin());
 			nh->twin()->set_target(nv2);
 
 			halfedges_vec.push_back(nh);
 			halfedges_vec.push_back(nh->twin());
 		}
 
-		for (i = 0; i < number_of_faces(); i++) 
+		for (i = 0; i < number_of_faces(); i++)
 		{
 			GISFace* nf = the_map.unbounded_face(); //this is the unbounded face.
 			if (i > 0)  // else - allocate the bounded face.
@@ -615,7 +615,7 @@ public:
 	}
 
 
-	
+
 
 };
 
@@ -623,16 +623,16 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 {
 	XAtom			meAtom, mapAtom, faceAtom, edgeAtom, vertAtom;
 	XAtomContainer	meContainer, mapContainer, faceContainer, edgeContainer, vertContainer;
-	
+
 	if (!container.GetNthAtomOfID(atomID, 0, meAtom)) return;
 	meAtom.GetContents(meContainer);
-	
+
 	if (!meContainer.GetNthAtomOfID(kMainMapID, 0, mapAtom)) return;
 	mapAtom.GetContents(mapContainer);
 	MemFileReader	readMainMap(mapContainer.begin, mapContainer.end);
 	MapScanner	scanner(&readMainMap, inProgress);
 	scanner.read(inMap);
-	
+
 	if (meContainer.GetNthAtomOfID(kFaceData1, 0, faceAtom))
 	{
 		faceAtom.GetContents(faceContainer);
@@ -649,12 +649,12 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 			if (!fakeVector.empty())
 				(*f)->mAreaFeature = fakeVector[0];
 			else
-				(*f)->mAreaFeature.mFeatType = NO_VALUE;		
-			if (!scanner.mLegacy)		
+				(*f)->mAreaFeature.mFeatType = NO_VALUE;
+			if (!scanner.mLegacy)
 				(*f)->mTerrainType = c[(*f)->mTerrainType];
 		}
 	}
-	
+
 	if (meContainer.GetNthAtomOfID(kEdgeData1, 0, edgeAtom))
 	{
 		edgeAtom.GetContents(edgeContainer);
@@ -665,7 +665,7 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 			ReadParamMap(readEdgeData, (*h)->mParams, c);
 		}
 	}
-	
+
 	if (meContainer.GetNthAtomOfID(kVertData1, 0, vertAtom))
 	{
 		vertAtom.GetContents(vertContainer);
@@ -675,5 +675,5 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 			readVertData.ReadBulk(&(*v)->mTunnelPortal, 1, false);
 		}
 	}
-}	
+}
 

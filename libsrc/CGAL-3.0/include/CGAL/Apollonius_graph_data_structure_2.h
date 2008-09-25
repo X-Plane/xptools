@@ -56,7 +56,7 @@ public:
     int ni = n->index( f->mirror_vertex(i) );
     // old code is here
     //  int ni = n->index(f);
-    
+
     Vertex_handle  v_cw = f->vertex(cw(i));
     Vertex_handle  v_ccw = f->vertex(ccw(i));
 
@@ -71,30 +71,30 @@ public:
     // old code is here
     //  bli = bl->index(n);
     //  tri = tr->index(f);
-    
+
     f->set_vertex(cw(i), n->vertex(ni));
     n->set_vertex(cw(ni), f->vertex(i));
-    
+
     // update the neighborhood relations
     f->set_neighbor(i, bl);
     bl->set_neighbor(bli, f);
 
     f->set_neighbor(ccw(i), n);
     n->set_neighbor(ccw(ni), f);
-    
+
     n->set_neighbor(ni, tr);
     tr->set_neighbor(tri, n);
-    
+
     if(v_cw->face() == f) {
       v_cw->set_face(n);
     }
-    
+
     if(v_ccw->face() == n) {
       v_ccw->set_face(f);
     }
   }
 #endif
-  
+
   typename Tds::Vertex_handle
   insert_degree_2(typename Tds::Face_handle f, int i)
   {
@@ -166,7 +166,7 @@ public:
     Vertex_handle v0 = f->vertex(0);
     Vertex_handle v2 = f->vertex(2);
     Vertex_handle v1 = f->vertex(1);
-    
+
     Face_handle n1 = f->neighbor(1);
     Face_handle n2 = f->neighbor(2);
 
@@ -247,7 +247,7 @@ public:
   join_vertices(Face* f, int i, Vertex* v)
   {
     // this methods does the "join"-operation and preserves
-    // the vertex v among the two vertices that define the edge (f, i) 
+    // the vertex v among the two vertices that define the edge (f, i)
 
     CGAL_precondition( is_valid() );
 
@@ -293,7 +293,7 @@ public:
     //        /       \ /       \
     //       *---------*---------*
     //      ibl       j=v4      ibr
-    //                                                           
+    //
     // The situation after the "join"-operation is as follows:
     //
     //                 i
@@ -332,7 +332,7 @@ public:
     int ibr = g->mirror_index(  cw(j) );
 
     // we need to store the faces adjacent to v2 as well as the
-    // indices of v2 w.r.t. these faces, so that afterwards we can set 
+    // indices of v2 w.r.t. these faces, so that afterwards we can set
     // v1 to be the vertex for these faces
     std::vector<Face*> star_faces_of_v2;
     std::vector<int> star_indices_of_v2;
@@ -369,7 +369,7 @@ public:
       star_faces_of_v2[k]->set_vertex( id, v1 );
     }
 
-    // then make sure that all the vertices have correct pointers to 
+    // then make sure that all the vertices have correct pointers to
     // faces
     Vertex* v3 = f->vertex(i);
     Vertex* v4 = g->vertex(j);

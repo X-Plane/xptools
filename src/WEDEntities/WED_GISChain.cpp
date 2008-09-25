@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,7 +40,7 @@ GISClass_t		WED_GISChain::GetGISClass		(void				 ) const
 }
 
 const char *	WED_GISChain::GetGISSubtype	(void				 ) const
-{	
+{
 	return GetClass();
 }
 
@@ -63,7 +63,7 @@ bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
 }
 
 bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
-{	
+{
 	Bbox2	me;
 	GetBounds(me);
 	if (bounds.contains(me)) return true;
@@ -84,7 +84,7 @@ bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 		} else {
 			if (!bounds.contains(s.p1)) return false;
 			if (!bounds.contains(s.p2)) return false;
-		}		
+		}
 	}
 	return true;
 }
@@ -110,10 +110,10 @@ bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
 		Bezier2 b;
 		if (GetSide(n,s,b))
 		{
-			if (b.is_near(p,d)) return true;		
+			if (b.is_near(p,d)) return true;
 		} else {
 			if (s.is_near(p,d)) return true;
-		}		
+		}
 	}
 	return false;
 }
@@ -174,7 +174,7 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 
 	int n1 = n;
 	int n2 = (n + 1) % mCachePts.size();
-	
+
 	IGISPoint * p1 = mCachePts[n1];
 	IGISPoint * p2 = mCachePts[n2];
 	IGISPoint_Bezier * c1 = mCachePtsBezier[n1];
@@ -184,12 +184,12 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	p2->GetLocation(b.p2);
 	b.c1 = b.p1;		// Mirror end-points to controls so that if we are a half-bezier,
 	b.c2 = b.p2;		// we don't have junk in our bezier.
-	
+
 	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
 	// if the bezier handle doesn't exist -- this is a flag to us!
 	if (c1) if (!c1->GetControlHandleHi(b.c1)) c1 = NULL;
 	if (c2) if (!c2->GetControlHandleLo(b.c2)) c2 = NULL;
-	
+
 	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
 	// Simpify down to a segment and return it -- some code may use this 'fast case'.
 	if (!c1 && !c2)
@@ -205,11 +205,11 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 void WED_GISChain::RebuildCache(void) const
 {
 	mCachePts.clear();
-	mCachePtsBezier.clear();	
+	mCachePtsBezier.clear();
 	int nc = CountChildren();
 	mCachePts.reserve(nc);
 	mCachePtsBezier.reserve(nc);
-	
+
 	int n;
 	for (n = 0; n < nc; ++n)
 	{
@@ -223,10 +223,10 @@ void WED_GISChain::RebuildCache(void) const
 			mCachePtsBezier.push_back(b);
 		}
 	}
-	
+
 	n = GetNumSides();
 	mCacheBounds = Bbox2();
-	
+
 	for (int i = 0; i < n; ++i)
 	{
 		Segment2 s;
@@ -239,7 +239,7 @@ void WED_GISChain::RebuildCache(void) const
 		} else {
 			mCacheBounds += s.p1;
 			mCacheBounds += s.p2;
-		}		
+		}
 	}
 }
 
@@ -261,7 +261,7 @@ void WED_GISChain::Reverse(void)
 		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(p_h[n]);
 		split[n] = mCachePtsBezier[n]->IsSplit();
 	}
-	
+
 	for(n = 0; n < np; ++n)
 	{
 		t = np - n - 1;
@@ -272,6 +272,6 @@ void WED_GISChain::Reverse(void)
 		else			mCachePtsBezier[t]->DeleteHandleHi();
 
 		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(p_h[n]);
-		else			mCachePtsBezier[t]->DeleteHandleLo();			
+		else			mCachePtsBezier[t]->DeleteHandleLo();
 	}
 }

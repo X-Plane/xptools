@@ -26,17 +26,17 @@
 
 class Circle2d : public GeomObj {
 
-   /* An instance C of the data type circle is an oriented circle 
-      in the plane passing through three points p1, p2, p3. The 
+   /* An instance C of the data type circle is an oriented circle
+      in the plane passing through three points p1, p2, p3. The
       orientation of C is equal to the orientation of the three defining
       points. i.e. orientation(p1, p2, p3).
       If \Labs{\{p1, p2, p3\}} = 1, C is the empty circle with center p1.
       If p1, p2 and p3 are collinear, C is a straight line passing through
-      p1, p2 and p3 in this order and the center of C is undefined.    
+      p1, p2 and p3 in this order and the center of C is undefined.
     */
 
 private:
- 
+
    Point2d p1;  // the 3 points defining the circle
    Point2d p2;
    Point2d p3;
@@ -49,11 +49,11 @@ private:
 public:
 
    Circle2d( const Point2d& p1, const Point2d& p2,  const Point2d& p3);
-   //initialized to the oriented circle through points p1, p2, p3 
+   //initialized to the oriented circle through points p1, p2, p3
 
    Circle2d(const Point2d& a, const Point2d& b0);
-   //initialized to the counter-clockwise oriented circle with center a 
-   //passing through b0 
+   //initialized to the counter-clockwise oriented circle with center a
+   //passing through b0
 
    Circle2d(const Point2d& p);
    //initialized to the trivial circle with center p
@@ -66,9 +66,9 @@ public:
    //(i.e. counter-clockwise) orientation
 
    Circle2d(const Circle2d& c);
-   //copy constructor 
+   //copy constructor
 
-   virtual ~Circle2d(); 
+   virtual ~Circle2d();
 
    Circle2d& operator=(const Circle2d& C);
 
@@ -78,7 +78,7 @@ public:
    //return the center of the circle
 
    double radius();
-   //returns the radius. 
+   //returns the radius.
    //precond: the orientation of the circle is not 0
 
    Point2d point1() const { return p1; }
@@ -96,15 +96,15 @@ public:
 
    int orientation() const { return orient; }
 
-   int side_of(const Point2d& p) const; 
+   int side_of(const Point2d& p) const;
    // returns -1, +1 or 0 if p lies right of, left of or on the circle
    // respectively
 
    bool inside(const Point2d& p);
    //returns true if p lies inside of the circle
 
-   bool outside(const Point2d& p); 
-   
+   bool outside(const Point2d& p);
+
    bool contains(const Point2d& p) const ;
    //returns true if p lies on the circle, false otherwise
 
@@ -120,7 +120,7 @@ public:
    //distance between two centers minus two radius
 
    bool operator==(const Circle2d& D) const ;
-   bool operator!=(const Circle2d& D) const 
+   bool operator!=(const Circle2d& D) const
 	{ return !operator==(D); }
 
    friend std::ostream& operator<<(std::ostream& out, Circle2d& c);

@@ -2013,7 +2013,7 @@
 
     if ( error )
       goto Exit;
- 
+
     /* if it is a CID font, we stop there */
     if ( top->cid_registry != 0xFFFFU )
       goto Exit;

@@ -2,7 +2,7 @@
 // This file is part of the SDTS++ toolkit, written by the U.S.
 // Geological Survey.  It is experimental software, written to support
 // USGS research and cartographic data production.
-// 
+//
 // SDTS++ is public domain software.  It may be freely copied,
 // distributed, and modified.  The USGS welcomes user feedback, but makes
 // no committment to any level of support for this code.  See the SDTS
@@ -61,14 +61,14 @@ static const long TwoToTheTwentyFourth = 16777216;
 using namespace std;
 
 
-// Notes: makeSubfield(...) and makeFixedSubfield(...) take 
-// information from an array of characters ("data"), and stores the 
-// appropriate value in the subfield. addSubfield(...) gets the value 
-// from the subfield, and adds it to a buffer, where the subfield 
-// gets built. 
+// Notes: makeSubfield(...) and makeFixedSubfield(...) take
+// information from an array of characters ("data"), and stores the
+// appropriate value in the subfield. addSubfield(...) gets the value
+// from the subfield, and adds it to a buffer, where the subfield
+// gets built.
 
-// If you just want to access the datum stored in a subfield, use the 
-// subfield accessor methods, like getBI24(...) and setBFP32(...). See 
+// If you just want to access the datum stored in a subfield, use the
+// subfield accessor methods, like getBI24(...) and setBFP32(...). See
 // container/sc_Subfield.h for the specifics.
 
 sio_8211Converter::~sio_8211Converter()
@@ -114,7 +114,7 @@ sio_8211Converter::findVariableSubfieldLength(char const* data,
                                               char delimiter) const
 {
   // This is useful for any field where the data is stored as an
-  // ASCII (or ISO8859-1, or whatever) string, such as types A, I, 
+  // ASCII (or ISO8859-1, or whatever) string, such as types A, I,
   // R, and S.
   // The length returned does not include the delimiter that follows
   // the field.
@@ -148,7 +148,7 @@ sio_8211Converter_A::makeFixedSubfield(sc_Subfield& subfield,
     char* tmpBuf = new char[length + 1];
     memcpy(tmpBuf,data,length);
     tmpBuf[length] = '\0';
-    
+
     subfield.setA(tmpBuf);
     delete [] tmpBuf;
   }
@@ -168,7 +168,7 @@ sio_8211Converter_A::addSubfield(sc_Subfield const& subfield,
   string val;
 
   if ( ! subfield.getA(val) ) { return 0; } // is null
-  buffer.addData( val.c_str(), val.length() ); 
+  buffer.addData( val.c_str(), val.length() );
   return 0;
 }
 
@@ -180,7 +180,7 @@ sio_8211Converter_A::addFixedSubfield(sc_Subfield const& subfield,
   string val;
   subfield.getA(val);
 
-  buffer.addData( val.c_str(), min( length, static_cast<long>(val.length()) ) ); 
+  buffer.addData( val.c_str(), min( length, static_cast<long>(val.length()) ) );
 
   return 0;
 }
@@ -205,7 +205,7 @@ sio_8211Converter_I::makeFixedSubfield(sc_Subfield& subfield,
     tmpBuf[length] = '\0';
     ss << tmpBuf;
     ss >> foo;
-   
+
     subfield.setI(foo);
     delete [] tmpBuf;
   }
@@ -215,7 +215,7 @@ sio_8211Converter_I::makeFixedSubfield(sc_Subfield& subfield,
     subfield.setUnvalued();    // show that it has no value
 
   }
-  
+
 return length;
 
 }
@@ -234,7 +234,7 @@ sio_8211Converter_I::addSubfield(sc_Subfield const& subfield,
   val << tempint;
   val >> foo;
 
-  buffer.addData(foo.c_str(), foo.length()); 
+  buffer.addData(foo.c_str(), foo.length());
 
   return 0;
 }
@@ -257,13 +257,13 @@ sio_8211Converter_I::addFixedSubfield(sc_Subfield const& subfield,
 
   getline( val, tmp_str );
 
-  buffer.addData( tmp_str.c_str(), length ); 
+  buffer.addData( tmp_str.c_str(), length );
 
   return 0;
 }
 
 // sio_Converter_R
-// Type "R" data is character representation of unscaled floating 
+// Type "R" data is character representation of unscaled floating
 // point data. (Such as "123.456")
 
 long
@@ -305,13 +305,13 @@ sio_8211Converter_R::addSubfield(sc_Subfield const& subfield,
 
   if ( ! subfield.getR(tempdouble) ) { return 0; } // could be null
 
-  val.setf( ios::fixed ); 
+  val.setf( ios::fixed );
   val.precision(8);
 
   val << tempdouble;
   val >> foo;
 
-  buffer.addData(foo.c_str(), foo.length()); 
+  buffer.addData(foo.c_str(), foo.length());
   return 0;
 }
 
@@ -332,7 +332,7 @@ sio_8211Converter_R::addFixedSubfield(sc_Subfield const& subfield,
   val.fill('0');               // XXX for S types
   val << setw(length) << tempdouble;
 
-  buffer.addData(val.str(), length); 
+  buffer.addData(val.str(), length);
 
   val.freeze(0);               // make sure that we free up memory
 
@@ -359,7 +359,7 @@ sio_8211Converter_S::makeFixedSubfield(sc_Subfield& subfield,
     tmpBuf[length] = '\0';
     ss << tmpBuf;
     ss >> foo;
-    
+
     subfield.setS(foo);
     delete [] tmpBuf;
   }
@@ -384,7 +384,7 @@ sio_8211Converter_S::addSubfield(sc_Subfield const& subfield,
   val.flags(ios::scientific | ios::uppercase);
   val << tempdouble;
   val >> foo;
-  buffer.addData(foo.c_str(), foo.length()); 
+  buffer.addData(foo.c_str(), foo.length());
   return 0;
 }
 
@@ -404,7 +404,7 @@ sio_8211Converter_S::addFixedSubfield(sc_Subfield const& subfield,
   val.flags(ios::scientific | ios::uppercase);
   val << setw(length) << tempdouble;
 
-  buffer.addData(val.str(), length); 
+  buffer.addData(val.str(), length);
 
   val.freeze(0);
 
@@ -430,7 +430,7 @@ sio_8211Converter_C::makeFixedSubfield(sc_Subfield& subfield,
     char* tmpBuf = new char[length + 1];
     memcpy(tmpBuf,data,length);
     tmpBuf[length] = '\0';
-    
+
     subfield.setA(tmpBuf);
     delete [] tmpBuf;
   }
@@ -450,7 +450,7 @@ sio_8211Converter_C::addSubfield(sc_Subfield const& subfield,
   string val;
 
   if ( ! subfield.getA(val) ) { return 0; } // could be null
-  buffer.addData( val.c_str(), val.length() ); 
+  buffer.addData( val.c_str(), val.length() );
   return 0;
 }
 
@@ -463,7 +463,7 @@ sio_8211Converter_C::addFixedSubfield(sc_Subfield const& subfield,
   if ( ! subfield.getA(val) ) { return -1; } // could be null, but fixed so
                                 // this is an error
 
-  buffer.addData( val.c_str(), min( length, static_cast<long>(val.length()) ) ); 
+  buffer.addData( val.c_str(), min( length, static_cast<long>(val.length()) ) );
 
   return 0;
 }
@@ -482,7 +482,7 @@ sio_8211Converter_BI8::makeFixedSubfield(sc_Subfield& subfield,
   long length = bitLength / 8; // bitLength in bit units, not bytes
   if (length < 1)
     return 0;
-  
+
   long val = static_cast<long>(data[0]);
   subfield.setBI8(val);
 
@@ -495,7 +495,7 @@ sio_8211Converter_BI8::addSubfield(sc_Subfield const& subfield,
 {
   long val;
   char charval[1];
-   
+
   // Get the value...
   subfield.getBI8(val);
 
@@ -507,7 +507,7 @@ sio_8211Converter_BI8::addSubfield(sc_Subfield const& subfield,
 }
 
 // sio_8211Converter_BUIx
-// Type "BUIx" (where x is a number) is unsigned integer binary data 
+// Type "BUIx" (where x is a number) is unsigned integer binary data
 // stored in x bits.
 
 long
@@ -518,7 +518,7 @@ sio_8211Converter_BUI8::makeFixedSubfield(sc_Subfield& subfield,
   long length = bitLength / 8; // bitLength in bit units, not bytes
   if (length < 1)
     return 0;
-  
+
   unsigned long val = static_cast<unsigned long>(data[0]);
   subfield.setBUI8(val);
 
@@ -535,7 +535,7 @@ sio_8211Converter_BUI8::addSubfield(sc_Subfield const& subfield,
   subfield.getBUI8(val);
   charval[0] = val & 0xFF;
   val = buffer.addData(charval, 1);
-   
+
   return val;
 }
 
@@ -638,18 +638,18 @@ sio_8211Converter_BI24::makeFixedSubfield(sc_Subfield& subfield,
   long length = bitLength / 8; // bitLength in bit units, not bytes
   if (length < 3)
     return 0;
-   
+
   signed char MSB = static_cast<signed char>(data[0]);
   unsigned char LSB = static_cast<unsigned char>(data[2]);
   unsigned char OSB = static_cast<unsigned char>(data[1]);
 
-  long val = static_cast<long>((MSB * TwoToTheSixteenth) + 
+  long val = static_cast<long>((MSB * TwoToTheSixteenth) +
 			       (OSB * TwoToTheEigth) +
 			       LSB);
   subfield.setBI24(val);
-   
+
   return length;
-}                                                                            
+}
 
 long
 sio_8211Converter_BI24::addSubfield(sc_Subfield const& subfield,
@@ -668,7 +668,7 @@ sio_8211Converter_BI24::addSubfield(sc_Subfield const& subfield,
   sigbytes[1] = ((val / TwoToTheEigth) & 0xFF);
   sigbytes[2] = (val & 0xFF);
   val = buffer.addData(sigbytes, 3);
-   
+
   return val;
 }
 
@@ -680,23 +680,23 @@ sio_8211Converter_BUI24::makeFixedSubfield(sc_Subfield& subfield,
   long length = bitLength / 8; // bitLength in bit units, not bytes
   if (length < 3)
     return 0;
-   
+
   unsigned char MSB = static_cast<unsigned char>(data[0]);
   unsigned char LSB = static_cast<unsigned char>(data[2]);
   unsigned char OSB = static_cast<unsigned char>(data[1]);
 
-  unsigned long val = static_cast<unsigned long>((MSB * TwoToTheSixteenth) + 
+  unsigned long val = static_cast<unsigned long>((MSB * TwoToTheSixteenth) +
 						 (OSB * TwoToTheEigth) +
 						 LSB);
   subfield.setBUI24(val);
-   
+
   return length;
 }
 
 long
 sio_8211Converter_BUI24::addSubfield(sc_Subfield const& subfield,
 				     sio_Buffer& buffer) const
-{   
+{
   unsigned long val;
   char sigbytes[3];
 
@@ -706,7 +706,7 @@ sio_8211Converter_BUI24::addSubfield(sc_Subfield const& subfield,
   sigbytes[1] = ((val / TwoToTheEigth) & 0xFF);
   sigbytes[2] = (val & 0xFF);
   val = buffer.addData(sigbytes, 3);
-   
+
   return val;
 }
 
@@ -847,7 +847,7 @@ long
 sio_8211Converter_BFP64::makeFixedSubfield(sc_Subfield& subfield,
 					   char const* data,
 					   long bitLength) const
-{  
+{
   long length = bitLength/8;
 
   if (length < 8)
@@ -876,7 +876,7 @@ sio_8211Converter_BFP64::makeFixedSubfield(sc_Subfield& subfield,
     val.char_val[0] = data[7];
   }
 
-  subfield.setBFP32(val.fpval);  
+  subfield.setBFP32(val.fpval);
   return length;
 }
 
@@ -891,13 +891,13 @@ sio_8211Converter_BFP64::addSubfield(sc_Subfield const& subfield,
     char   char_val[8];
   } val;
 
-  subfield.getBFP64(val.fpval);  
-  // Do we need to change byte ordering? 
+  subfield.getBFP64(val.fpval);
+  // Do we need to change byte ordering?
   // 4 is an arbitrary number, BTW.
   if( 4 == htonl(4))
   {
     memcpy(data, val.char_val, 8);
-  }   
+  }
   else
   {
     data[0] = val.char_val[7];

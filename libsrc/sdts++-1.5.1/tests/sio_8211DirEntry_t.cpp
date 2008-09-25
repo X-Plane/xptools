@@ -1,5 +1,5 @@
 //
-//		sio_8211DirEntry_t 
+//		sio_8211DirEntry_t
 //
 
 

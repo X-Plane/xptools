@@ -7,13 +7,13 @@
  * All rights reserved.
  *
  * This program is  free  software;  you can redistribute it and/or modify it
- * under the terms of the  GNU Lesser General Public License  as published by 
- * the  Free Software Foundation;  either version 2.1 of the License,  or (at 
+ * under the terms of the  GNU Lesser General Public License  as published by
+ * the  Free Software Foundation;  either version 2.1 of the License,  or (at
  * your option) any later version.
  *
  * This  program  is  distributed in  the  hope that it will  be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public  
+ * or  FITNESS FOR A  PARTICULAR PURPOSE.  See the  GNU Lesser General Public
  * License for more details.
  *
  * You should  have received  a copy of the GNU Lesser General Public License
@@ -29,9 +29,9 @@ extern "C" {
 #if defined (_LIB3DS_DLL) && defined(_WIN32) && (!defined(__GNUC__))
 #ifdef LIB3DS_EXPORT
 #define LIB3DSAPI __declspec(dllexport)
-#else               
+#else
 #define LIB3DSAPI __declspec(dllimport)
-#endif           
+#endif
 #else
 #define LIB3DSAPI
 #endif
@@ -62,7 +62,7 @@ typedef float Lib3dsRgba[4];
 #define LIB3DS_HALFPI (LIB3DS_PI/2.0)
 #define LIB3DS_DEG(x) ((180.0/LIB3DS_PI)*(x))
 #define LIB3DS_RAD(x) ((LIB3DS_PI/180.0)*(x))
-  
+
 #ifndef INCLUDED_STDIO_H
 #define INCLUDED_STDIO_H
 #include <stdio.h>
@@ -75,7 +75,7 @@ typedef float Lib3dsRgba[4];
   #endif
   #define LIB3DS_ERROR_LOG \
     {printf("\t***LIB3DS_ERROR_LOG*** %s : %d\n", __FILE__, __LINE__);}
-#else 
+#else
   #ifndef ASSERT
   #define ASSERT(__expr)
   #endif
@@ -89,9 +89,9 @@ typedef struct _Lib3dsAtmosphere Lib3dsAtmosphere;
 typedef struct _Lib3dsShadow Lib3dsShadow;
 typedef struct _Lib3dsViewport Lib3dsViewport;
 typedef struct _Lib3dsMaterial Lib3dsMaterial;
-typedef struct _Lib3dsFace Lib3dsFace; 
-typedef struct _Lib3dsBoxMap Lib3dsBoxMap; 
-typedef struct _Lib3dsMapData Lib3dsMapData; 
+typedef struct _Lib3dsFace Lib3dsFace;
+typedef struct _Lib3dsBoxMap Lib3dsBoxMap;
+typedef struct _Lib3dsMapData Lib3dsMapData;
 typedef struct _Lib3dsMesh Lib3dsMesh;
 typedef struct _Lib3dsCamera Lib3dsCamera;
 typedef struct _Lib3dsLight Lib3dsLight;

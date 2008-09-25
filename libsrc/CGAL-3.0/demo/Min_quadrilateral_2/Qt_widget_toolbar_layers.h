@@ -11,8 +11,8 @@
 // file          : Qt_widget_toolbar_layers.h
 // package       : Qt_widget
 // author(s)     : Radu Ursu
-// release       : 
-// release_date  : 
+// release       :
+// release_date  :
 //
 // coordinator   : Laurent Rineau <rineau@clipper.ens.fr>
 //
@@ -51,14 +51,14 @@ public:
     delete showLS;
     delete showR;
   };
-  
+
 private:
   QToolButton     *but[10];
   CGAL::Qt_widget *widget;
   QMainWindow     *window;
   QButtonGroup    *button_group;
   int             nr_of_buttons;
-	
+
   Qt_layer_show_points<Rp>          *showP;
   Qt_layer_show_parallelogram<Rp>   *showPL;
   Qt_layer_show_strip<Rp>           *showLS;

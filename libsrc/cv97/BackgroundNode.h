@@ -25,7 +25,7 @@ class BackgroundNode : public BindableNode {
 	MFString *rightUrlField;
 	MFString *topUrlField;
 	MFString *bottomUrlField;
-	
+
 public:
 
 	BackgroundNode();
@@ -141,7 +141,7 @@ public:
 	////////////////////////////////////////////////
 	//	Virtual functions
 	////////////////////////////////////////////////
-	
+
 	bool isChildNodeType(Node *node);
 	void initialize();
 	void uninitialize();

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -46,7 +46,7 @@ inline CDT::Face_handle CDT_Recover_Handle(CDT::Face *the_face)
 	int mirror_i = n->index(c);
 	CDT::Face_handle self = n->neighbor(CDT::cw(mirror_i));
 	DebugAssert(&*self == the_face);
-	return self;	
+	return self;
 }
 
 
@@ -64,21 +64,21 @@ bool	InitOneTri(CDT::Face_handle face)
 		Point3	p3(sCurrentDEM->lon_to_x(face->vertex(2)->point().x()),
 				   sCurrentDEM->lat_to_y(face->vertex(2)->point().y()),
 				   face->vertex(2)->info().height);
-				   
+
 		Vector3	v1(p1, p2);
 		Vector3	v2(p1, p3);
 		Plane3	plane(p1, v1.cross(v2));
-		
+
 		face->info().plane_a = -plane.n.dx / plane.n.dz;
 		face->info().plane_b = -plane.n.dy / plane.n.dz;
 		face->info().plane_c = plane.ndotp / plane.n.dz;
 	}
-		
+
 	bool	first_time = !face->info().flag;
 	if (first_time)
 		face->info().self = sBestChoices.end();
 	face->info().flag = true;
-	return first_time;	
+	return first_time;
 }
 
 inline float ScanlineMaxError(
@@ -97,15 +97,15 @@ inline float ScanlineMaxError(
 //	DebugAssert(x1 < x2);
 	DebugAssert(y >= 0);
 	DebugAssert(y < inDEM->mHeight);
-	
+
 	int ix1 = ceil(min(x1,x2));
 	int ix2 = floor(max(x1,x2));
 	DebugAssert(ix1 >= 0);
 	DebugAssert(ix2 < inDEM->mWidth);
-	
+
 	row += ix1;
 	float partial = b * y + c;
-	
+
 	for (int x = ix1; x <= ix2; ++x, ++row)
 	{
 //		gMeshPoints.push_back(pair<Point2, Point3>(Point2(inDEM->x_to_lon(x), inDEM->y_to_lat(y)), Point3(0, 1, 0.5)));
@@ -117,7 +117,7 @@ inline float ScanlineMaxError(
 			if (diff < 0.0) diff = -diff;
 			if (diff > worst)
 			{
-				worst = diff;		
+				worst = diff;
 				*worst_x = x;
 				*worst_y = y;
 			}
@@ -125,7 +125,7 @@ inline float ScanlineMaxError(
 	}
 	return worst;
 }
-					
+
 
 // Find err of one tri
 void	CalcOneTriError(CDT::Face_handle face, double size_lim)
@@ -144,38 +144,38 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 			   sCurrentDEM->lat_to_y(face->vertex(1)->point().y()));
 	Point2	p2(sCurrentDEM->lon_to_x(face->vertex(2)->point().x()),
 			   sCurrentDEM->lat_to_y(face->vertex(2)->point().y()));
-			   
+
 	if (size_lim != 0.0)
 	{
 		double xmin = min(min(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
 		double xmax = max(max(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
 		double ymin = min(min(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
 		double ymax = max(max(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
-		
+
 		double xs = xmax - xmin;
 		double ys = ymax - ymin;
-		
+
 		if (xs < size_lim && ys < size_lim)
 		{
 			face->info().insert_err = 0.0;
-			return;			
+			return;
 		}
 	}
-	
+
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(0)->point().x(),face->vertex(0)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(1)->point().x(),face->vertex(1)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(1)->point().x(),face->vertex(1)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(2)->point().x(),face->vertex(2)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(2)->point().x(),face->vertex(2)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(0)->point().x(),face->vertex(0)->point().y()), Point3(1,0,0)));
-	
+
 	if (p2.y < p1.y) swap(p1, p2);
 	if (p1.y < p0.y) swap(p1, p0);
 	if (p2.y < p1.y) swap(p1, p2);
 	DebugAssert(p0.y <= p1.y && p1.y <= p2.y);
 
 	float err = 0;
-	
+
 	double	p0yc = ceil(p0.y);
 	double	p1yc = ceil(p1.y);
 	double	p2yc = ceil(p2.y);
@@ -183,9 +183,9 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	int y1 = p1yc;
 	int y2 = p2yc;
 	int y;
-	
+
 	double dx1, dx2, x1, x2;
-	
+
 	double a = face->info().plane_a;
 	double b = face->info().plane_b;
 	double c = face->info().plane_c;
@@ -195,7 +195,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	DebugAssert(p0.y != p2.y);
 
 	if (p0.y != p2.y)
-		dx2 = (p2.x - p0.x) / (p2.y - p0.y);		
+		dx2 = (p2.x - p0.x) / (p2.y - p0.y);
 
 	int 	worst_x = 0, worst_y = 0;
 
@@ -220,14 +220,14 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 			x2 += dx2;
 		}
 	}
-	
+
 	if (p1.y != p2.y)
 	{
 		dx1 = (p2.x - p1.x) / (p2.y - p1.y);
 		x1 = p1.x;
 		partial = p1yc-p1.y;
 		x1 += dx1 * partial;
-		
+
 		for (y = y1; y < y2; ++y)
 		{
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
@@ -237,7 +237,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 			x2 += dx2;
 		}
 	}
-	
+
 	face->info().insert_err = err;
 	if (err > 0)
 	{
@@ -247,7 +247,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 //		double lon = sCurrentDEM->x_to_lon(worst_x);
 //		double lat = sCurrentDEM->y_to_lat(worst_y);
 //		Point2 t(lon, lat);
-//		gMeshPoints.push_back(pair<Point2,Point3>(t, Point3(1, 0, 0))); 
+//		gMeshPoints.push_back(pair<Point2,Point3>(t, Point3(1, 0, 0)));
 /*
 		Point2 t0(face->vertex(0)->point().x(),face->vertex(0)->point().y());
 		Point2 t1(face->vertex(1)->point().x(),face->vertex(1)->point().y());
@@ -266,7 +266,7 @@ void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff, double size_lim)
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
 	sCurrentMesh = &inCDT;
-	
+
 	for (CDT::Face_iterator face = inCDT.faces_begin(); face != inCDT.faces_end(); ++face)
 	{
 		face->info().flag = 0;
@@ -294,22 +294,22 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
-		
+
 	for (int n = 0; n < max_num; ++n)
 	{
 		if (sBestChoices.empty()) break;
 		PROGRESS_CHECK(func, 0, 1, "Building mesh", n, max_num, max_num / 200)
 		++cnt_insert;
 		CDT::Face * the_face = (CDT::Face *) sBestChoices.begin()->second;
-		
-		
+
+
 		CDT::Face_handle	face_handle(CDT_Recover_Handle(the_face));
-		
+
 		DebugAssert(!inCDT.is_infinite(face_handle));
-		
+
 		CDT::Point p(inAvail.x_to_lon(the_face->info().insert_x),
 					  inAvail.y_to_lat(the_face->info().insert_y));
-					  
+
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
@@ -317,7 +317,7 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(2)->point().x(),the_face->vertex(2)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(), p.y()), Point3(1,1,1)));
-					  
+
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
 		DebugAssert(h != DEM_NO_DATA);
@@ -329,7 +329,7 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 		int li;
 		CDT::Face_handle test = inCDT.locate(p, lt, li, the_face);
 		printf("  LOCATE TYPE = %d\n", lt);
-		if (lt == CDT::FACE)		
+		if (lt == CDT::FACE)
 		{
 			DebugAssert(test == the_face);
 		} else if (lt == CDT::EDGE) {
@@ -342,7 +342,7 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 */
 		CDT::Vertex_handle new_v = inCDT.safe_insert(p, face_handle);
 		new_v->info().height = h;
-		
+
 		CDT::Face_circulator circ, stop;
 		circ = stop = inCDT.incident_faces(new_v);
 		do {
@@ -363,12 +363,12 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 			}
 			++the_face;
 			++circ;
-		} while (circ != stop);	
-		
+		} while (circ != stop);
+
 	}
-	
+
 	DoneMesh();
-	PROGRESS_DONE(func, 0, 1, "Building Mesh")	
-	
+	PROGRESS_DONE(func, 0, 1, "Building Mesh")
+
 	printf("Greedy insert: %d pts, %d recalcs, %d new faces\n", cnt_insert, cnt_recalc, cnt_new);
 }

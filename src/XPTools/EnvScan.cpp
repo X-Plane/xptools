@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,10 +27,10 @@
 #include "XGrinderApp.h"
 
 bool	ScanEnv(const char * inPath, const char * inFileName)
-{	
+{
 	AcceptDimensions(151, 201);
 	ClearEnvData();
-	
+
 	bool	err = false;
 	int		count;
 	string	str;
@@ -38,10 +38,10 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 	ObjectInfo	o;
 	PathInfo	p;
 	char	objName[1024];
-			
+
 	StTextFileScanner	sc(inPath, false);
 	if (sc.done()) return false;
-	
+
 	count = 201 * 151;
 	while (count--)
 	{
@@ -53,7 +53,7 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 		}
 		if (sscanf(str.c_str(), "%lf,%lf,%lf,%hd,%d,%hd,%hd,%hd,%hd,%hd",
 				&v.latitude, 	&v.longitude,	&v.elevation,
-				&v.landUse, 	&v.custom, 
+				&v.landUse, 	&v.custom,
 				&v.rotation, 	&v.scale,
 				&v.xOff, 		&v.yOff, 		&v.bodyID) != 10)
 		{
@@ -63,13 +63,13 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 		} else
 			gVertices.push_back(v);
 	}
-	
+
 	while (1)
 	{
 		if (!GetNextNoComments(sc,str))
 		{
 			XGrinder_ShowMessage("Hit end of file while reading objects.");
-			err = true; 
+			err = true;
 			break;
 		}
 		if(str=="END")
@@ -84,9 +84,9 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 		} else {
 			o.name = objName;
 			gObjects.push_back(o);
-		}				
+		}
 	}
-	
+
 	const char * net_type;
 	for (int n = 0; n < 6; ++n)
 	{
@@ -99,7 +99,7 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 		case 4: 	a = &gTaxiways; 	net_type = "taxiway";break;
 		case 5: 	a = &gRiverVectors; net_type = "river";	break;
 		}
-		
+
 		while(1)
 		{
 			if (!GetNextNoComments(sc,str))
@@ -120,7 +120,7 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 			}
 		}
 	}
-	
+
 	while(1)
 	{
 		if (!GetNextNoComments(sc,str))
@@ -133,7 +133,7 @@ bool	ScanEnv(const char * inPath, const char * inFileName)
 			break;
 		gTextures.push_back(str);
 	}
-	
+
 	return !err;
 }
-	
+

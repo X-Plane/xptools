@@ -64,7 +64,7 @@ void print_source_line( PARSE* p );
 RULE* bind_builtin( char* name, LIST*(*f)(PARSE*, FRAME*), int flags, char** args )
 {
     argument_list* arg_list = 0;
-    
+
     if ( args )
     {
         arg_list = args_new();
@@ -149,7 +149,7 @@ load_builtins()
                     builtin_flags, T_FLAG_FAIL_EXPECTED, 0 );
 
       bind_builtin( "RMOLD" , builtin_flags, T_FLAG_RMOLD, 0 );
-      
+
       {
           char * args[] = { "targets", "*", 0 };
           bind_builtin( "UPDATE", builtin_update, 0, args );
@@ -336,8 +336,8 @@ builtin_calc(
 /*
  * builtin_depends() - DEPENDS/INCLUDES rule
  *
- * The DEPENDS builtin rule appends each of the listed sources on the 
- * dependency list of each of the listed targets.  It binds both the 
+ * The DEPENDS builtin rule appends each of the listed sources on the
+ * dependency list of each of the listed targets.  It binds both the
  * targets and sources as TARGETs.
  */
 
@@ -377,7 +377,7 @@ builtin_depends(
 /*
  * builtin_echo() - ECHO rule
  *
- * The ECHO builtin rule echoes the targets to the user.  No other 
+ * The ECHO builtin rule echoes the targets to the user.  No other
  * actions are taken.
  */
 
@@ -446,7 +446,7 @@ static void downcase_inplace( char* p )
         *p = tolower(*p);
     }
 }
-    
+
 static void
 builtin_glob_back(
     void    *closure,
@@ -478,17 +478,17 @@ builtin_glob_back(
             break;
         }
     }
-    
+
     string_free( buf );
 }
 
 static LIST* downcase_list( LIST *in )
 {
     LIST* result = 0;
-    
+
     string s[1];
     string_new( s );
-        
+
     while (in)
     {
         string_copy( s, in->string );
@@ -496,7 +496,7 @@ static LIST* downcase_list( LIST *in )
         result = list_append( result, list_new( 0, newstr( s->value ) ) );
         in = in->next;
     }
-    
+
     string_free( s );
     return result;
 }
@@ -508,16 +508,16 @@ builtin_glob(
 {
     LIST *l = lol_get( frame->args, 0 );
     LIST *r = lol_get( frame->args, 1 );
-    
+
     struct globbing globbing;
 
     globbing.results = L0;
     globbing.patterns = r;
-    
+
     globbing.case_insensitive
 # if defined( OS_NT ) || defined( OS_CYGWIN )
        = l;  /* always case-insensitive if any files can be found */
-# else 
+# else
        = lol_get( frame->args, 2 );
 # endif
 
@@ -525,7 +525,7 @@ builtin_glob(
     {
         globbing.patterns = downcase_list( r );
     }
-    
+
     for( ; l; l = list_next( l ) )
         file_dirscan( l->string, builtin_glob_back, &globbing );
 
@@ -547,7 +547,7 @@ builtin_match(
 {
 	LIST *l, *r;
 	LIST *result = 0;
-        
+
         string buf[1];
         string_new(buf);
 
@@ -594,19 +594,19 @@ builtin_hdrmacro(
     FRAME *frame )
 {
   LIST*  l = lol_get( frame->args, 0 );
-  
+
   for ( ; l; l = list_next(l) )
   {
     TARGET*  t = bindtarget( l->string );
 
-    /* scan file for header filename macro definitions */    
+    /* scan file for header filename macro definitions */
     if ( DEBUG_HEADER )
       printf( "scanning '%s' for header file macro definitions\n",
               l->string );
 
     macro_headers( t );
   }
-  
+
   return L0;
 }
 
@@ -696,7 +696,7 @@ static void unknown_rule( FRAME *frame, char* key, char *module_name, char *rule
     printf( "%s error: rule \"%s\" unknown in module \"%s\"\n", key, rule_name, module_name );
     backtrace( frame->prev );
     exit(1);
-    
+
 }
 
 /*
@@ -727,9 +727,9 @@ builtin_import(
 
     module_t* target_module = bindmodule( target_module_list ? target_module_list->string : 0 );
     module_t* source_module = bindmodule( source_module_list ? source_module_list->string : 0 );
-    
+
     LIST *source_name, *target_name;
-            
+
     for ( source_name = source_rules, target_name = target_rules;
           source_name && target_name;
           source_name = list_next( source_name )
@@ -737,20 +737,20 @@ builtin_import(
     {
         RULE r_, *r = &r_, *imported;
         r_.name = source_name->string;
-                
+
         if ( !source_module->rules
              || !hashcheck( source_module->rules, (HASHDATA**)&r )
             )
         {
             unknown_rule( frame, "IMPORT", source_module->name, r_.name );
         }
-        
+
         imported = import_rule( r, target_module, target_name->string );
         if ( localize )
             imported->module = target_module;
         imported->exported = 0; /* this rule is really part of some other module; just refer to it here, but don't let it out */
     }
-    
+
     if ( source_name || target_name )
     {
         backtrace_line( frame->prev );
@@ -784,16 +784,16 @@ builtin_export(
     LIST *rules = lol_get( frame->args, 1 );
 
     module_t* m = bindmodule( module_list ? module_list->string : 0 );
-    
-            
+
+
     for ( ; rules; rules = list_next( rules ) )
     {
         RULE r_, *r = &r_;
         r_.name = rules->string;
-                
+
         if ( !m->rules || !hashcheck( m->rules, (HASHDATA**)&r ) )
             unknown_rule( frame, "EXPORT", m->name, r_.name );
-        
+
         r->exported = 1;
     }
     return L0;
@@ -914,15 +914,15 @@ LIST *builtin_caller_module( PARSE *parse, FRAME *frame )
     else
     {
         LIST* result;
-        
+
         string name;
         string_copy( &name, frame->module->name );
         string_pop_back( &name );
 
         result = list_new( L0, newstr(name.value) );
-        
+
         string_free( &name );
-        
+
         return result;
     }
 }
@@ -941,7 +941,7 @@ builtin_pwd( PARSE *parse, FRAME *frame )
 /*
  * Adds targets to the list of target that jam will attempt to update.
  */
-LIST* 
+LIST*
 builtin_update( PARSE *parse, FRAME *frame)
 {
     LIST* result = list_copy( L0, targets_to_update() );
@@ -1013,10 +1013,10 @@ LIST *builtin_normalize_path( PARSE *parse, FRAME *frame )
        The removal is done by putting '\1' in the string. After all the string
        is processed, we do a second pass, removing '\1' characters.
     */
-    
+
     string in[1], out[1], tmp[1];
     char* end;      /* Last character of the part of string still to be processed. */
-    char* current;  /* Working pointer. */  
+    char* current;  /* Working pointer. */
     int dotdots = 0; /* Number of '..' elements seen and not processed yet. */
     int rooted = arg1->string[0] == '/';
     char* result;
@@ -1026,16 +1026,16 @@ LIST *builtin_normalize_path( PARSE *parse, FRAME *frame )
     if (!rooted)
         string_push_back(in, '/');
     string_append(in, arg1->string);
-    
+
 
     end = in->value + in->size - 1;
     current = end;
-    
+
     for(;end >= in->value;) {
         /* Set 'current' to the next occurence of '/', which always exists. */
         for(current = end; *current != '/'; --current)
             ;
-        
+
         if (current == end && current != in->value) {
             /* Found a trailing slash. Remove it. */
             *current = '\1';
@@ -1045,18 +1045,18 @@ LIST *builtin_normalize_path( PARSE *parse, FRAME *frame )
         } else if (end - current == 1 && strncmp(current, "/.", 2) == 0) {
             /* Found '/.'. Drop them all. */
             *current = '\1';
-            *(current+1) = '\1';                   
+            *(current+1) = '\1';
         } else if (end - current == 2 && strncmp(current, "/..", 3) == 0) {
-            /* Found '/..' */                
+            /* Found '/..' */
             *current = '\1';
-            *(current+1) = '\1';                   
-            *(current+2) = '\1';                   
+            *(current+1) = '\1';
+            *(current+2) = '\1';
             ++dotdots;
         } else if (dotdots) {
             char* p = current;
             memset(current, '\1', end-current+1);
             --dotdots;
-        }                 
+        }
         end = current-1;
     }
 
@@ -1067,24 +1067,24 @@ LIST *builtin_normalize_path( PARSE *parse, FRAME *frame )
     string_append(tmp, in->value);
     string_copy(in, tmp->value);
     string_free(tmp);
-        
-       
+
+
     string_new(out);
     /* The resulting path is either empty or has '/' as the first significant
-       element. If the original path was not rooted, we need to drop first '/'. 
+       element. If the original path was not rooted, we need to drop first '/'.
        If the original path was rooted, and we've got empty path, need to add '/'
     */
     if (!rooted) {
         current = strchr(in->value, '/');
         if (current)
             *current = '\1';
-    } 
-       
+    }
+
     for (current = in->value; *current; ++current)
         if (*current != '\1')
             string_push_back(out, *current);
 
-    
+
     result = newstr(out->size ? out->value : (rooted ? "/" : "."));
     string_free(in);
     string_free(out);
@@ -1095,8 +1095,8 @@ LIST *builtin_normalize_path( PARSE *parse, FRAME *frame )
 
 LIST *builtin_native_rule( PARSE *parse, FRAME *frame )
 {
-    LIST* module_name = lol_get( frame->args, 0 );    
-    LIST* rule_name = lol_get( frame->args, 1 );    
+    LIST* module_name = lol_get( frame->args, 0 );
+    LIST* rule_name = lol_get( frame->args, 1 );
 
     module_t* module = bindmodule(module_name->string);
 
@@ -1109,12 +1109,12 @@ LIST *builtin_native_rule( PARSE *parse, FRAME *frame )
     else
     {
         backtrace_line( frame->prev );
-        printf( "error: no native rule \"%s\" defined in module \"%s\"\n", 
+        printf( "error: no native rule \"%s\" defined in module \"%s\"\n",
                 n.name, module->name);
         backtrace( frame->prev );
         exit(1);
     }
-    return L0;    
+    return L0;
 }
 
 
@@ -1122,7 +1122,7 @@ void lol_build( LOL* lol, char** elements )
 {
     LIST* l = L0;
     lol_init( lol );
-    
+
     while ( elements && *elements )
     {
         if ( !strcmp( *elements, ":" ) )
@@ -1136,7 +1136,7 @@ void lol_build( LOL* lol, char** elements )
         }
         ++elements;
     }
-    
+
     if ( l != L0 )
         lol_add( lol, l );
 }

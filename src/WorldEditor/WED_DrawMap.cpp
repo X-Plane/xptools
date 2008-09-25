@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -69,10 +69,10 @@ void PRECALC_Vertex2fv (const GLfloat *v)
 	if (gMode == GL_TRIANGLE_FAN)
 	{
 		if (gCount == 0) 	{ 	gFirst[0] = v[0];  gFirst[1] = v[1]; }
-		if (gCount > 1)		{ 	gAccum->insert(gAccum->end(), gFirst, gFirst+2); 
+		if (gCount > 1)		{ 	gAccum->insert(gAccum->end(), gFirst, gFirst+2);
 								gAccum->insert(gAccum->end(), gPrev, gPrev+2);
 								gAccum->insert(gAccum->end(), v, v+2); }
-		gPrev[0] = v[0]; gPrev[1] = v[1];		
+		gPrev[0] = v[0]; gPrev[1] = v[1];
 	}
 	if (gMode == GL_TRIANGLE_STRIP)
 	{
@@ -83,8 +83,8 @@ void PRECALC_Vertex2fv (const GLfloat *v)
 												gAccum->insert(gAccum->end(), gPrev, gPrev+2);
 												gAccum->insert(gAccum->end(), v, v+2); }
 		gPrevPrev[0] = gPrev[0]; gPrevPrev[1] = gPrev[1];
-		gPrev[0] = v[0]; gPrev[1] = v[1];		
-												
+		gPrev[0] = v[0]; gPrev[1] = v[1];
+
 	}
 	++gCount;
 }
@@ -104,11 +104,11 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 	int	border = i->face()->is_unbounded() || i->twin()->face()->is_unbounded();
 	int river = i->mParams.find(he_IsRiver) != i->mParams.end();
 	int dryriver = i->mParams.find(he_IsDryRiver) != i->mParams.end();
-	
+
 	int	wet = i->face()->IsWater() || i->twin()->face()->IsWater();
-	
+
 //	bool beach = i->mTransition != 0;
-	
+
 	if (border)
 		SetColor(color,1.0, 0.0, 1.0);
 	if (!i->mSegments.empty())
@@ -123,7 +123,7 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 		if (Road_IsAccess  (tp))	SetColor(color,0.6, 0.6, 0.6);
 		if (Road_IsWalkway (tp))	SetColor(color,0.4, 0.2, 0.1);
 		if (Road_IsDam	   (tp))	SetColor(color,1.0, 1.0, 1.0);
-		
+
 	} else {
 //		if (beach)
 //			SetColor(color,0.8, 0.6, 0.2);
@@ -136,7 +136,7 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 		else if (dryriver)
 			SetColor(color, 0.6, 0.6, 0.3);
 		else
-			SetColor(color,0.3, 0.3, 0.3);		
+			SetColor(color,0.3, 0.3, 0.3);
 	}
 }
 
@@ -156,20 +156,20 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 	case NO_VALUE:							red = 1.0;  green = 0.0;	blue = 1.0; break;
 	case terrain_Natural:					red = 0.0;	green = 0.0;	blue = 0.0;	break;
 	case terrain_Water:						red = 0.0;	green = 0.0;	blue = 0.5;	break;
-	
-	case terrain_OutlayResidential:	
+
+	case terrain_OutlayResidential:
 	case terrain_OutlayResidentialHill:		red = 0.2;	green = 0.2;	blue = 0.2;
-	case terrain_OutlayHighrise:		
+	case terrain_OutlayHighrise:
 	case terrain_OutlayHighriseHill:		red = 0.0;	green = 0.4;	blue = 0.4; break;
-	case terrain_Residential:			
+	case terrain_Residential:
 	case terrain_ResidentialHill:			red = 0.6;	green = 0.6;	blue = 0.0; break;
-	case terrain_CommercialSprawl:		
+	case terrain_CommercialSprawl:
 	case terrain_CommercialSprawlHill:		red = 0.0;	green = 0.6;	blue = 0.6; break;
-	case terrain_Urban:				
+	case terrain_Urban:
 	case terrain_UrbanHill:					red = 0.8;	green = 0.8;	blue = 0.0; break;
-	case terrain_Industrial:			
+	case terrain_Industrial:
 	case terrain_IndustrialHill:			red = 0.8;	green = 0.5;	blue = 0.0;	break;
-	case terrain_Downtown:				
+	case terrain_Downtown:
 	case terrain_DowntownHill:				red = 1.0;	green = 1.0;	blue = 0.0;	break;
 
 	case terrain_FarmTown:
@@ -190,12 +190,12 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 	case terrain_AirportOuter:				red = 0.3;	green = 0.3;	blue = 0.2;	break;
 	case terrain_Park:						red = 0.2;	green = 0.5;	blue = 0.0;	break;
 	case terrain_ForestPark:				red = 0.2;	green = 0.4;	blue = 0.0;	break;
-	}	
-#endif	
+	}
+#endif
 	if (red == 0.0 && green == 0.0 && blue == 0.0)
 	if (f->mAreaFeature.mFeatType != NO_VALUE)
 		green = 0.5;
-	
+
 	if (red == 0.0 && green == 0.0 && blue == 0.0) outColor[3] = 0.0; else outColor[3] = 0.5;
 	outColor[0] = red;
 	outColor[1] = green;
@@ -215,7 +215,7 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		v->mGL[0] = v->point().x;
 		v->mGL[1] = v->point().y;
 	}
-	
+
 	for (Pmwx::Halfedge_iterator h = ioMap.halfedges_begin(); h != ioMap.halfedges_end(); ++h, ++ctr)
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
@@ -224,28 +224,28 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		h->mGL[2] = h->target()->point().x;
 		h->mGL[3] = h->target()->point().y;
 	}
-	
+
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
 	if (!f->is_unbounded())
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
-	
+
 		f->mGLTris.clear();
 		gAccum = &f->mGLTris;
-		
+
 		GLUtriangulatorObj *tobj;   /* tessellation object */
 		GLdouble v[3];              /* passed to gluTessVertex, prototype used 3d */
 
 		vector<float>	storage;
 		int needed = 0;
-		
+
 		Pmwx::Ccb_halfedge_circulator	i, stop;
 		Pmwx::Holes_iterator holes;
 		i = stop = f->outer_ccb();
 		do {
 			++i, ++needed;
 		} while (i != stop);
-		Pmwx::Holes_iterator hole;		
+		Pmwx::Holes_iterator hole;
 		for (hole = f->holes_begin(); hole != f->holes_end(); ++hole)
 		{
 			i = stop = *hole;
@@ -253,7 +253,7 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 				++i, ++needed;
 			} while (i != stop);
 		}
-		
+
 		storage.resize(needed * 2);
 		float * vv = &*storage.begin();
 
@@ -270,30 +270,30 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 			vv[ctr*2  ] = v[0] = i->source()->point().x;
 			vv[ctr*2+1] = v[1] = i->source()->point().y;
 						  v[2] = 0.0;
-			gluTessVertex(tobj, v, &vv[ctr*2]);						  
+			gluTessVertex(tobj, v, &vv[ctr*2]);
 			++i, ++ctr;
 		} while (i != stop);
 		for (hole = f->holes_begin(); hole != f->holes_end(); ++hole)
 		{
-			gluNextContour(tobj, GLU_INTERIOR);		
+			gluNextContour(tobj, GLU_INTERIOR);
 			i = stop = *hole;
 			do {
 				vv[ctr*2  ] = v[0] = i->source()->point().x;
 				vv[ctr*2+1] = v[1] = i->source()->point().y;
 							  v[2] = 0.0;
-				gluTessVertex(tobj, v, &vv[ctr*2]);						  
+				gluTessVertex(tobj, v, &vv[ctr*2]);
 				++i, ++ctr;
 			} while (i != stop);
 		}
-		if (ctr != needed)	
+		if (ctr != needed)
 			printf("ERROR!\n");
 		gluEndPolygon(tobj);
-		gluDeleteTess(tobj);		
-			
+		gluDeleteTess(tobj);
+
 	}
-	
+
 	PROGRESS_DONE(inFunc, 0, 1, "Building preview of vector map...")
-	
+
 	RecalcOGLColors(ioMap, inFunc);
 }
 
@@ -308,15 +308,15 @@ void	RecalcOGLColors(Pmwx& ioMap, ProgressFunc inFunc)
 		PROGRESS_CHECK(inFunc, 0, 1, "Setting colors for vector map...", ctr, total, 1000)
 		SetColorForHalfedge(h, h->mGLColor);
 	}
-	
+
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
 	if (!f->is_unbounded())
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Setting colors for vector map...", ctr, total, 1000)
-		SetColorForFace(f, f->mGLColor);					
+		SetColorForFace(f, f->mGLColor);
 	}
 	PROGRESS_DONE(inFunc, 0, 1, "Setting colors for vector map...")
-	
+
 }
 
 
@@ -395,7 +395,7 @@ static void	MapMouseToCoord(
 	outLat = mapSouth + (inY - screenBottom) * mapHeight / screenHeight;
 }
 
-void	RemapPolygonCoords(Polygon2& p, 
+void	RemapPolygonCoords(Polygon2& p,
 				double			mapWest,
 				double			mapSouth,
 				double			mapEast,
@@ -432,7 +432,7 @@ void	FaceToScaledPoly(Pmwx::Face_const_handle	f, Polygon2& p, vector<Polygon2>& 
 				double			screenBottom,
 				double			screenRight,
 				double			screenTop)
-{	
+{
 	if (f->is_unbounded()) return;
 	pp.clear();
 	CirculatorToPoly(f->outer_ccb(), p);
@@ -447,11 +447,11 @@ void	FaceToScaledPoly(Pmwx::Face_const_handle	f, Polygon2& p, vector<Polygon2>& 
 	{
 		RemapPolygonCoords(*iter, mapWest, mapSouth, mapEast, mapNorth, screenLeft, screenBottom, screenRight, screenTop);
 	}
-}				
-			
+}
+
 
 void	DrawMapBucketed(
-				Pmwx& 	inMap, 
+				Pmwx& 	inMap,
 				double			mapWest,
 				double			mapSouth,
 				double			mapEast,
@@ -463,7 +463,7 @@ void	DrawMapBucketed(
 				const set<Pmwx::Vertex_handle>&		vertexSel,
 				const set<Pmwx::Halfedge_handle>&	edgeSel,
 				const set<Pmwx::Face_handle>&		faceSel,
-				const set<PointFeatureSelection>&	pointFeatureSel)				
+				const set<PointFeatureSelection>&	pointFeatureSel)
 {
 	XPLMSetGraphicsState(0, 0, 0,   0, 1,   0, 0);
 
@@ -471,7 +471,7 @@ void	DrawMapBucketed(
 	double	mapHeight = mapNorth - mapSouth;
 //	double	screenWidth = screenRight - screenLeft;
 //	double	screenHeight = screenTop - screenBottom;
-	
+
 	vector<Pmwx::Face_handle>		faces;
 	vector<Pmwx::Halfedge_handle>	halfedges;
 	vector<Pmwx::Vertex_handle>		vertices;
@@ -482,21 +482,21 @@ void	DrawMapBucketed(
 //	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f) faces.push_back(f);
 //	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e) halfedges.push_back(e);
 //	for (Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v) vertices.push_back(v);
-	
+
 //	glMatrixMode(GL_MODELVIEW);
 //	glPushMatrix();
 //	glTranslated(screenLeft, screenBottom, 0.0);
 //	glScaled(screenWidth / mapWidth, screenHeight / mapHeight, 1.0);
 //	glTranslated(-mapWest, -mapSouth, 0.0);
-	
+
 	/******************************************************************************************
 	 * DRAW FACES - SELECTED AND CONTAINING ZONING INFO
-	 ******************************************************************************************/		
+	 ******************************************************************************************/
 
-#if DRAW_FACES	
+#if DRAW_FACES
 	glDisable(GL_CULL_FACE);
 	glBegin(GL_TRIANGLES);
-				
+
 	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 	{
 		Pmwx::Face_handle f = *fi;
@@ -504,18 +504,18 @@ void	DrawMapBucketed(
 		{
 			bool	sel = faceSel.count(f) > 0;
 			bool	draw = sel || f->mGLColor[3] != 0.0;
-			
+
 			if (draw)
 			{
 				if (sel)
 					glColor4f(f->mGLColor[0] * 0.5 + 0.5, f->mGLColor[1] * 0.5, f->mGLColor[2] * 0.5, 0.8);
 				else
 					glColor4fv(f->mGLColor);
-			
+
 				float * vs, * ve;
 				vs = &*f->mGLTris.begin();
 				ve = &*f->mGLTris.end();
-				
+
 				for (float * vv = vs; vv != ve; vv +=2)
 				{
 					glVertex2fv(vv);
@@ -528,7 +528,7 @@ void	DrawMapBucketed(
 
 	/******************************************************************************************
 	 * DRAW HALFEDGES - SELECTED AND ONES WITH TRANSPORTATION
-	 ******************************************************************************************/	
+	 ******************************************************************************************/
 
 #if DRAW_EDGES
 	glBegin(GL_LINES);
@@ -547,12 +547,12 @@ void	DrawMapBucketed(
 				width = wantWidth;
 				glBegin(GL_LINES);
 			}
-			
+
 			double	x1 =e->source()->point().x;
 			double	y1 = e->source()->point().y;
 			double	x2 = e->target()->point().x;
 			double	y2 = e->target()->point().y;
-			
+
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			x2 = screenLeft + ((x2 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
@@ -562,13 +562,13 @@ void	DrawMapBucketed(
 			glVertex2fv(e->mGL+2);
 		}
 	}
-	glEnd();	
+	glEnd();
 	glLineWidth(1);
 #endif
 
 	/******************************************************************************************
 	 * DRAW POLYGON AND POINT OBJECTS INSIDE FACES
-	 ******************************************************************************************/		
+	 ******************************************************************************************/
 #if DRAW_FEATURES
 	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 	{
@@ -576,7 +576,7 @@ void	DrawMapBucketed(
 		if (!f->is_unbounded())
 		{
 			bool	draw = faceSel.count(f);
-			
+
 			if (draw)
 			{
 				// THIS CODE DRAWS PT OBJECTS IN CYAN INSIDE ALL FACES
@@ -588,30 +588,30 @@ void	DrawMapBucketed(
 					double	y1 = obj->mLocation.y;
 //					x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //					y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-					glVertex2f(x1, y1);					
+					glVertex2f(x1, y1);
 				}
 				glEnd();
-				glPointSize(1);			
-			}					
+				glPointSize(1);
+			}
 		}
 	}
-#endif	
+#endif
 
 	/******************************************************************************************
 	 * DRAW VERTICES
 	 ******************************************************************************************/
 
-#if DRAW_VERTICES	
+#if DRAW_VERTICES
 	if (!vertices.empty())
 	{
 		glPointSize(3);
 		glColor3f(1.0, 1.0, 0.0);
-		glBegin(GL_POINTS);		
+		glBegin(GL_POINTS);
 		for (vector<Pmwx::Vertex_handle>::iterator v = vertices.begin(); v != vertices.end(); ++v)
-		{	
+		{
 			if (vertexSel.find(*v) == vertexSel.end())
 				continue;
-		
+
 			double	x1 = (*v)->point().x;
 			double	y1 = (*v)->point().y;
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
@@ -620,7 +620,7 @@ void	DrawMapBucketed(
 		}
 		glEnd();
 		glPointSize(1);
-	}	
+	}
 #endif
 
 	/******************************************************************************************
@@ -639,34 +639,34 @@ void	DrawMapBucketed(
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
 			glColor4f(shade, shade, (*fi)->mObjs[j].mDerived ? 1.0 : 0.0, 1.0);
-		
+
 			double	x1 = (*fi)->mObjs[j].mLocation.x;
 			double	y1 = (*fi)->mObjs[j].mLocation.y;
 			double r = (*fi)->mObjs[j].mHeading;
-			
+
 			double	w = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].width_min;
 			double	h = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].depth_min;
 
 			float x_scale = /*(screenWidth / mapWidth) */ 1.0 /  (DEG_TO_MTR_LAT * cos (y1 * DEG_TO_RAD));
 			float y_scale = /*(screenHeight / mapHeight) */ 1.0 /  (DEG_TO_MTR_LAT   );
-			
+
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-			
+
 			glPushMatrix();
 			glTranslatef(x1, y1, 0.0);
 			glScalef(x_scale, y_scale, 1.0);
 			glRotatef(r, 0, 0, -1);
-			
+
 			glBegin(GL_QUADS);
 			glVertex2f(-w, -h);
 			glVertex2f(-w,  h);
 			glVertex2f( w,  h);
 			glVertex2f( w, -h);
 			glEnd();
-			glPopMatrix();			
+			glPopMatrix();
 		}
-		
+
 		for (int j = 0; j < (*fi)->mPolyObjs.size(); ++j)
 		{
 			float shade = (float) (n % 10) / 20.0 + 0.1;
@@ -679,14 +679,14 @@ void	DrawMapBucketed(
 				for (int l = 0; l < (*fi)->mPolyObjs[j].mShape[k].size(); ++l)
 				{
 					double	x1 = (*fi)->mPolyObjs[j].mShape[k][l].x;
-					double	y1 = (*fi)->mPolyObjs[j].mShape[k][l].y;				
+					double	y1 = (*fi)->mPolyObjs[j].mShape[k][l].y;
 	//				x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 	//				y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-					glVertex2f(x1, y1);			
+					glVertex2f(x1, y1);
 				}
 				glEnd();
 			}
-		}		
+		}
 	}
 #endif
 
@@ -694,7 +694,7 @@ void	DrawMapBucketed(
 	 * DRAW POINT FEATURES ON SELECTED FACES AS WELL AS INDIVIDUAL SELECTED FEATURES
 	 ******************************************************************************************/
 
-#if DRAW_FEATURES	
+#if DRAW_FEATURES
 	glPointSize(3);
 	glColor4f(0.0, 1.0, 1.0, 1.0);
 	glBegin(GL_POINTS);
@@ -705,23 +705,23 @@ void	DrawMapBucketed(
 		for (int j = 0; j < (*fi)->mPointFeatures.size(); ++j)
 		{
 			bool	isel = pointFeatureSel.find(PointFeatureSelection(*fi, j)) != pointFeatureSel.end();
-			if (isel || fsel) 
+			if (isel || fsel)
 				glColor4f(1.0, 1.0, 1.0, 1.0);
 			else
 				glColor4f(0.0, 0.6, 0.6, 1.0);
-		
+
 			if (isel)
 			{
 				glEnd();
 				glPointSize(4);
 				glBegin(GL_POINTS);
 			}
-		
+
 			double	x1 = (*fi)->mPointFeatures[j].mLocation.x;
 			double	y1 = (*fi)->mPointFeatures[j].mLocation.y;
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-			glVertex2f(x1, y1);			
+			glVertex2f(x1, y1);
 			if (isel)
 			{
 				glEnd();
@@ -736,7 +736,7 @@ void	DrawMapBucketed(
 
 //	glPopMatrix();
 
-}				
+}
 
 
 
@@ -749,42 +749,42 @@ void	DrawMapBucketed(
 
 
 
-#if 0		
+#if 0
 			THIS CODE DRAWS THE SELECTED POLYGONS CCB IN CYAN AND HOLES IN GREEN, ALLOWING FOR TOPOLOGY DIAGNOSTICS!!
-			
-			glColor3f(0.0, 1.0, 1.0);			
+
+			glColor3f(0.0, 1.0, 1.0);
 //			for (GISPolyObjPlacementVector::const_iterator poly = f->mPolyObjs.begin(); poly != f->mPolyObjs.end(); ++poly)
 			if (faceSel.find(f) != faceSel.end())	// HACK
 			{
 				glLineWidth(3);	// HACK
-//				p = poly->where;				
+//				p = poly->where;
 //				RemapPolygonCoords(p, screenLeft, screenBottom, screenRight, screenTop, mapWest, mapSouth, mapEast, mapNorth);
 				glBegin(GL_LINE_LOOP);
 				for (Polygon2::Vertex_iterator v = p.begin(); v != p.end(); ++v)
-				{				
+				{
 					glVertex2f(v->x), v->y));
 				}
 				glEnd();
 				glLineWidth(1);	// HACK
 			}
-			
-// COPY OF HACK			
-			
-			glColor3f(0.0, 1.0, 0.3);			
+
+// COPY OF HACK
+
+			glColor3f(0.0, 1.0, 0.3);
 //			for (GISPolyObjPlacementVector::const_iterator poly = f->mPolyObjs.begin(); poly != f->mPolyObjs.end(); ++poly)
 			for (vector<Polygon2>::iterator iter = pp.begin(); iter != pp.end(); ++iter)
 			if (faceSel.find(f) != faceSel.end())	// HACK
 			{
 				glLineWidth(5);	// HACK
 				p = *iter;
-//				p = poly->where;				
+//				p = poly->where;
 //				RemapPolygonCoords(p, screenLeft, screenBottom, screenRight, screenTop, mapWest, mapSouth, mapEast, mapNorth);
 				glBegin(GL_LINE_LOOP);
 				for (Polygon2::Vertex_iterator v = p.begin(); v != p.end(); ++v)
-				{				
+				{
 					glVertex2f(v->x), v->y));
 				}
 				glEnd();
 				glLineWidth(1);	// HACK
-			}			
-#endif	
+			}
+#endif
