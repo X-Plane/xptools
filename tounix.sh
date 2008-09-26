@@ -24,6 +24,6 @@ do
   dos2unix -q "$sourcefile"
 
  # normalize file mode. ben says CVS doesn't care, janos says git cares :-)
-  chmod 0644 "$sourcefile"
+  chmod 0664 "$sourcefile"
 done
 
