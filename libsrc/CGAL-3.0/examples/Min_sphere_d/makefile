@@ -38,13 +38,13 @@ LDFLAGS = \
 #---------------------------------------------------------------------#
 
 all:            \
-                min_sphere_d_example$(EXE_EXT) 
+                min_sphere_d_example$(EXE_EXT)
 
 min_sphere_d_example$(EXE_EXT): min_sphere_d_example$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)min_sphere_d_example min_sphere_d_example$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-                   min_sphere_d_example.clean 
+                   min_sphere_d_example.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

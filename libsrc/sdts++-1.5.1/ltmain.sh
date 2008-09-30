@@ -140,7 +140,7 @@ win32_libid () {
       fi
     fi
     ;;
-  *DLL*) 
+  *DLL*)
     win32_libid_type="x86 DLL"
     ;;
   *executable*) # but shell scripts are "executable" too...
@@ -2031,7 +2031,7 @@ EOF
 	  continue
 	fi # $pass = conv
 
-    
+
 	# Get the name of the library we link against.
 	linklib=
 	for l in $old_library $library_names; do
@@ -2124,7 +2124,7 @@ EOF
 	  continue
 	fi
 
-    
+
 	if test "$linkmode" = prog && test "$pass" != link; then
 	  newlib_search_path="$newlib_search_path $ladir"
 	  deplibs="$lib $deplibs"
@@ -2211,7 +2211,7 @@ EOF
 	    need_relink=yes
 	  fi
 	  # This is a shared library
-	
+
       # Warn about portability, can't link against -module's on some systems (darwin)
       if test "$shouldnotlink" = yes && test "$pass" = link ; then
 	    $echo
@@ -2220,8 +2220,8 @@ EOF
 	    else
 	      $echo "*** Warning: Linking the shared library $output against the loadable module"
 	    fi
-	    $echo "*** $linklib is not portable!"    
-      fi	  
+	    $echo "*** $linklib is not portable!"
+      fi
 	  if test "$linkmode" = lib &&
 	     test "$hardcode_into_libs" = yes; then
 	    # Hardcode the library path.
@@ -2327,7 +2327,7 @@ EOF
 		        $echo "** The link will probably fail, sorry"
 		      else
 		        add="$dir/$old_library"
-		      fi 
+		      fi
 		    fi
 		esac
 	      elif test "$hardcode_minus_L" = no; then
@@ -2575,8 +2575,8 @@ EOF
 		*)
 		path="-L$path"
 		;;
-		esac 
-		
+		esac
+
 		;;
 		  -l*)
 		case $host in
@@ -2587,19 +2587,19 @@ EOF
 		     if test -f "$tmp/lib$tmp_libs.dylib" ; then
 		       eval depdepl="$tmp/lib$tmp_libs.dylib"
 		       break
-		     fi  
+		     fi
          done
          path=""
 		  ;;
 		*) continue ;;
-		esac  		  
+		esac
 		;;
 	      *) continue ;;
 	      esac
 	      case " $deplibs " in
 	      *" $depdepl "*) ;;
 	      *) deplibs="$deplibs $depdepl" ;;
-	      esac	      
+	      esac
 	      case " $deplibs " in
 	      *" $path "*) ;;
 	      *) deplibs="$deplibs $path" ;;
@@ -2826,7 +2826,7 @@ EOF
 	# convert absolute version numbers to libtool ages
 	# this retains compatibility with .la files and attempts
 	# to make the code below a bit more comprehensible
-	
+
 	case $vinfo_number in
 	yes)
 	  number_major="$2"
@@ -3580,12 +3580,12 @@ EOF
 	for test_deplib in $deplibs; do
 		case " $convenience " in
 		*" $test_deplib "*) ;;
-		*) 
+		*)
 			tmp_deplibs="$tmp_deplibs $test_deplib"
 			;;
 		esac
 	done
-	deplibs="$tmp_deplibs" 
+	deplibs="$tmp_deplibs"
 
 	if test -n "$convenience"; then
 	  if test -n "$whole_archive_flag_spec"; then
@@ -4493,7 +4493,7 @@ static const void *lt_preloaded_setup() {
 
    The $output program cannot be directly executed until all the libtool
    libraries that it depends on are installed.
-   
+
    This wrapper executable should never be moved out of the build directory.
    If it is, it will not operate correctly.
 
@@ -4525,7 +4525,7 @@ EOF
 #if defined (_WIN32) || defined (__MSDOS__) || defined (__DJGPP__) || \
   defined (__OS2__)
 #define HAVE_DOS_BASED_FILE_SYSTEM
-#ifndef DIR_SEPARATOR_2 
+#ifndef DIR_SEPARATOR_2
 #define DIR_SEPARATOR_2 '\\'
 #endif
 #endif
@@ -4556,7 +4556,7 @@ main (int argc, char *argv[])
 {
   char **newargz;
   int i;
-  
+
   program_name = (char *) xstrdup ((char *) basename (argv[0]));
   newargz = XMALLOC(char *, argc+2);
 EOF
@@ -4569,7 +4569,7 @@ EOF
   newargz[1] = fnqualify(argv[0]);
   /* we know the script has the same name, without the .exe */
   /* so make sure newargz[1] doesn't end in .exe */
-  strendzap(newargz[1],".exe"); 
+  strendzap(newargz[1],".exe");
   for (i = 1; i < argc; i++)
     newargz[i+1] = xstrdup(argv[i]);
   newargz[argc+1] = NULL;
@@ -4592,7 +4592,7 @@ xmalloc (size_t num)
   return p;
 }
 
-char * 
+char *
 xstrdup (const char *string)
 {
   return string ? strcpy ((char *) xmalloc (strlen (string) + 1), string) : NULL
@@ -4606,7 +4606,7 @@ basename (const char *name)
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Skip over the disk name in MSDOS pathnames. */
-  if (isalpha (name[0]) && name[1] == ':') 
+  if (isalpha (name[0]) && name[1] == ':')
     name += 2;
 #endif
 
@@ -4616,7 +4616,7 @@ basename (const char *name)
   return (char *) base;
 }
 
-char * 
+char *
 fnqualify(const char *path)
 {
   size_t size;
@@ -4644,7 +4644,7 @@ fnqualify(const char *path)
 }
 
 char *
-strendzap(char *str, const char *pat) 
+strendzap(char *str, const char *pat)
 {
   size_t len, patlen;
 
@@ -4664,7 +4664,7 @@ strendzap(char *str, const char *pat)
 }
 
 static void
-lt_error_core (int exit_status, const char * mode, 
+lt_error_core (int exit_status, const char * mode,
           const char * message, va_list ap)
 {
   fprintf (stderr, "%s: %s: ", program_name, mode);
@@ -4987,7 +4987,7 @@ fi\
 	  for obj in $save_oldobjs
 	  do
 	    last_oldobj=$obj
-	  done  
+	  done
 	  for obj in $save_oldobjs
 	  do
 	    oldobjs="$objlist $obj"
@@ -5001,7 +5001,7 @@ fi\
 	      oldobjs=$objlist
 	      if test "$obj" = "$last_oldobj" ; then
 	        RANLIB=$save_RANLIB
-	      fi  
+	      fi
 	      test -z "$concat_cmds" || concat_cmds=$concat_cmds~
 	      eval concat_cmds=\"\${concat_cmds}$old_archive_cmds\"
 	      objlist=
@@ -6008,7 +6008,7 @@ relink_command=\"$relink_command\""
 	if test "$mode" = clean ; then
 	  noexename=$name
 	  case $file in
-	  *.exe) 
+	  *.exe)
 	    file=`$echo $file|${SED} 's,.exe$,,'`
 	    noexename=`$echo $name|${SED} 's,.exe$,,'`
 	    # $file with .exe has already been added to rmfiles,

@@ -49,7 +49,7 @@ demo1.moc: demo1.C
 	${QT_MOC} -o demo1.moc demo1.C
 
 demo1$(EXE_EXT): demo1$(OBJ_EXT) \
-			Qt_widget_toolbar1$(OBJ_EXT) 
+			Qt_widget_toolbar1$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)demo1 \
 	demo1$(OBJ_EXT) \
 	 Qt_widget_toolbar1$(OBJ_EXT) \
@@ -68,7 +68,7 @@ demo2.moc: demo2.C
 	${QT_MOC} -o demo2.moc demo2.C
 
 demo2$(EXE_EXT): demo2$(OBJ_EXT) \
-			Qt_widget_toolbar2$(OBJ_EXT) 
+			Qt_widget_toolbar2$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)demo2 \
 	demo2$(OBJ_EXT) \
 	 Qt_widget_toolbar2$(OBJ_EXT) \
@@ -87,7 +87,7 @@ demo3.moc: demo3.C
 	${QT_MOC} -o demo3.moc demo3.C
 
 demo3$(EXE_EXT): demo3$(OBJ_EXT) \
-			Qt_widget_toolbar3$(OBJ_EXT) 
+			Qt_widget_toolbar3$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)demo3 \
 	demo3$(OBJ_EXT) \
 	 Qt_widget_toolbar3$(OBJ_EXT) \

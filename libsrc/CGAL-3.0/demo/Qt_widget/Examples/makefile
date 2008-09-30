@@ -27,7 +27,7 @@ LIBPATH = \
 
 LDFLAGS = \
           $(LONG_NAME_PROBLEM_LDFLAGS) \
-          $(CGAL_QT_LDFLAGS) 
+          $(CGAL_QT_LDFLAGS)
 
 #---------------------------------------------------------------------#
 #                    target entries
@@ -37,7 +37,7 @@ all:            \
                 hellosegment$(EXE_EXT) \
 		tutorial2$(EXE_EXT) \
                 standard_toolbar$(EXE_EXT) \
-                layer$(EXE_EXT) 
+                layer$(EXE_EXT)
 
 hellosegment$(EXE_EXT): hellosegment$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)hellosegment hellosegment$(OBJ_EXT) $(LDFLAGS)
@@ -68,7 +68,7 @@ clean: \
                    hellosegment.clean \
 		   tutorial2.clean \
                    standard_toolbar.clean \
-                   layer.clean 
+                   layer.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

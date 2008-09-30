@@ -37,7 +37,7 @@ LDFLAGS = \
 
 all:            \
                 geomview_demo \
-                viewpoint2off 
+                viewpoint2off
 
 geomview_demo$(EXE_EXT): geomview_demo$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)geomview_demo geomview_demo$(OBJ_EXT) $(LDFLAGS)
@@ -47,7 +47,7 @@ viewpoint2off$(EXE_EXT): viewpoint2off$(OBJ_EXT)
 
 clean: \
                    geomview_demo.clean \
-                   viewpoint2off.clean 
+                   viewpoint2off.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

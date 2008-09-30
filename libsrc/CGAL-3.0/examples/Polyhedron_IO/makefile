@@ -44,7 +44,7 @@ all:            \
                 off_glue$(EXE_EXT) \
                 off_transform$(EXE_EXT) \
                 polyhedron_copy$(EXE_EXT) \
-                terr_trian$(EXE_EXT) 
+                terr_trian$(EXE_EXT)
 
 iv2off$(EXE_EXT): iv2off$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)iv2off iv2off$(OBJ_EXT) $(LDFLAGS)
@@ -90,7 +90,7 @@ clean: \
                    off_glue.clean \
                    off_transform.clean \
                    polyhedron_copy.clean \
-                   terr_trian.clean 
+                   terr_trian.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -32,20 +32,20 @@ LIBPATH = \
 LDFLAGS = \
           $(TESTSUITE_LDFLAGS) \
           $(LONG_NAME_PROBLEM_LDFLAGS) \
-          $(CGAL_LDFLAGS) 
+          $(CGAL_LDFLAGS)
 
 #---------------------------------------------------------------------#
 #                    target entries
 #---------------------------------------------------------------------#
 
 all:            \
-                delaunay$(EXE_EXT) 
+                delaunay$(EXE_EXT)
 
 delaunay$(EXE_EXT): delaunay$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)delaunay delaunay$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-                   delaunay.clean 
+                   delaunay.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

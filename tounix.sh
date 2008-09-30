@@ -8,12 +8,12 @@
 # only. it won't process files which names contain colons or backslashes
 # (quotes and spaces in file or directory names will work)
 
-find $1 -wholename "*.git*" -prune  -o -type f \( -iname "*.cpp" -o -iname "*.cp" -o -iname "*.c" -o -iname "*.h" \) -print0 | xargs -0 file | grep -Z -i text | awk -F ':' '{printf "%s\n",$1}' |
+find $1 -wholename "*.git*" -prune  -o -type f \( -iname "Makefile" -o -iname "*.cpp" -o -iname "*.sh" -o -iname "*.c" -o -iname "*.h" \) -print0 | xargs -0 file | grep -Z -i text | awk -F ':' '{printf "%s\n",$1}' |
 while read sourcefile
 do
   fn=$(basename "$sourcefile")
   echo "processing: $fn"
- 
+
  # format sorce code to ansi style. ben doesn't like ansi style :-(
   #astyle --style=ansi -V -n "$sourcefile"
 

@@ -34,13 +34,13 @@ LDFLAGS = \
 #---------------------------------------------------------------------#
 
 all:            \
-                example_Min_circle_2$(EXE_EXT) 
+                example_Min_circle_2$(EXE_EXT)
 
 example_Min_circle_2$(EXE_EXT): example_Min_circle_2$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)example_Min_circle_2 example_Min_circle_2$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-                   example_Min_circle_2.clean 
+                   example_Min_circle_2.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -38,7 +38,7 @@ all:            \
                 example2$(EXE_EXT) \
                 example3$(EXE_EXT) \
                 example4$(EXE_EXT) \
-                example7$(EXE_EXT) 
+                example7$(EXE_EXT)
 
 example1$(EXE_EXT): example1$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)example1 example1$(OBJ_EXT) $(LDFLAGS)
@@ -60,7 +60,7 @@ clean: \
                    example2.clean \
                    example3.clean \
                    example4.clean \
-                   example7.clean 
+                   example7.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

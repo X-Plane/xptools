@@ -40,7 +40,7 @@ LDFLAGS = \
 all:            \
                 in_place_list_prog$(EXE_EXT) \
                 min_element_if_example_noheader$(EXE_EXT) \
-                min_max_element_example_noheader$(EXE_EXT) 
+                min_max_element_example_noheader$(EXE_EXT)
 
 in_place_list_prog$(EXE_EXT): in_place_list_prog$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)in_place_list_prog in_place_list_prog$(OBJ_EXT) $(LDFLAGS)
@@ -54,7 +54,7 @@ min_max_element_example_noheader$(EXE_EXT): min_max_element_example_noheader$(OB
 clean: \
                    in_place_list_prog.clean \
                    min_element_if_example_noheader.clean \
-                   min_max_element_example_noheader.clean 
+                   min_max_element_example_noheader.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

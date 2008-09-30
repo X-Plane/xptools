@@ -36,7 +36,7 @@ LDFLAGS = \
 all:            \
                 Example$(EXE_EXT) \
                 Polygon$(EXE_EXT) \
-                polygon_algorithms$(EXE_EXT) 
+                polygon_algorithms$(EXE_EXT)
 
 Example$(EXE_EXT): Example$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)Example Example$(OBJ_EXT) $(LDFLAGS)
@@ -50,7 +50,7 @@ polygon_algorithms$(EXE_EXT): polygon_algorithms$(OBJ_EXT)
 clean: \
                    Example.clean \
                    Polygon.clean \
-                   polygon_algorithms.clean 
+                   polygon_algorithms.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

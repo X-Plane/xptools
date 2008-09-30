@@ -59,10 +59,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = 
+host_alias =
 host_triplet = powerpc-apple-darwin7.4.0
 
-EXEEXT = 
+EXEEXT =
 OBJEXT = o
 PATH_SEPARATOR = :
 AMTAR = ${SHELL} /code/XPTools/libsrc/proj-4.4.8/missing --run tar
@@ -81,7 +81,7 @@ RANLIB = ranlib
 STRIP = strip
 VERSION = 4.4.8
 am__include = include
-am__quote = 
+am__quote =
 install_sh = /code/XPTools/libsrc/proj-4.4.8/install-sh
 pkgdata_DATA = GL27 nad.lst nad27 nad83 proj_def.dat world epsg esri
 
@@ -254,7 +254,7 @@ install-data-local:
 	  done; \
 	else \
 	  echo "nad2nad NADCON source files not present"; \
-	fi 
+	fi
 	@if [ -f ntv1_can.dat ] ; then \
 	  echo $(INSTALL_DATA) ntv1_can.dat $(DESTDIR)$(pkgdatadir)/ntv1_can.dat; \
 	  $(INSTALL_DATA) ntv1_can.dat $(DESTDIR)$(pkgdatadir)/ntv1_can.dat; \

@@ -10,7 +10,7 @@ fi
 VERSION=$1
 COMPRESSED_VERSION=`echo $VERSION | tr -d .`
 
-rm -rf dist_wrk  
+rm -rf dist_wrk
 mkdir dist_wrk
 cd dist_wrk
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd tests 
+cd tests
 
 rm test*
 shpcreate test point

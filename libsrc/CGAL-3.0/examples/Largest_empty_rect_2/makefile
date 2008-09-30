@@ -34,13 +34,13 @@ LDFLAGS = \
 #---------------------------------------------------------------------#
 
 all:            \
-                example$(EXE_EXT) 
+                example$(EXE_EXT)
 
 example$(EXE_EXT): example$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)example example$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-                   example.clean 
+                   example.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

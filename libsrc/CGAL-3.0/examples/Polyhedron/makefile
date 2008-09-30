@@ -45,7 +45,7 @@ all:            \
                 polyhedron_prog_subdiv_with_boundary$(EXE_EXT) \
                 polyhedron_prog_tetra$(EXE_EXT) \
                 polyhedron_prog_traits$(EXE_EXT) \
-                polyhedron_prog_vector$(EXE_EXT) 
+                polyhedron_prog_vector$(EXE_EXT)
 
 polyhedron_prog_color$(EXE_EXT): polyhedron_prog_color$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)polyhedron_prog_color polyhedron_prog_color$(OBJ_EXT) $(LDFLAGS)
@@ -95,7 +95,7 @@ clean: \
                    polyhedron_prog_subdiv_with_boundary.clean \
                    polyhedron_prog_tetra.clean \
                    polyhedron_prog_traits.clean \
-                   polyhedron_prog_vector.clean 
+                   polyhedron_prog_vector.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

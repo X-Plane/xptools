@@ -41,7 +41,7 @@ all:            \
                 example_linking_2d_and_3d$(EXE_EXT) \
                 example_regular$(EXE_EXT) \
                 example_simple$(EXE_EXT) \
-                example_tds$(EXE_EXT) 
+                example_tds$(EXE_EXT)
 
 example_adding_handles$(EXE_EXT): example_adding_handles$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)example_adding_handles example_adding_handles$(OBJ_EXT) $(LDFLAGS)
@@ -75,7 +75,7 @@ clean: \
                    example_linking_2d_and_3d.clean \
                    example_regular.clean \
                    example_simple.clean \
-                   example_tds.clean 
+                   example_tds.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -35,7 +35,7 @@ LDFLAGS = \
 
 all:            \
                 intervals$(EXE_EXT) \
-                terrain$(EXE_EXT) 
+                terrain$(EXE_EXT)
 
 intervals$(EXE_EXT): intervals$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)intervals intervals$(OBJ_EXT) $(LDFLAGS)
@@ -45,7 +45,7 @@ terrain$(EXE_EXT): terrain$(OBJ_EXT)
 
 clean: \
                    intervals.clean \
-                   terrain.clean 
+                   terrain.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

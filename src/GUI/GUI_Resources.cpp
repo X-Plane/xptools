@@ -71,11 +71,11 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 	const char* sym_end = 0;
 	char* test;
 	char* test2;
-	
+
 	if (!gModuleHandle) return false;
-	if (!begin) return false;	
+	if (!begin) return false;
 	if (!end) return false;
-	
+
 	*begin = 0;
 	*end = 0;
 
@@ -83,12 +83,12 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 	if (!sym_start) goto cleanup;
 	sym_end = mangle_name(res_name.c_str(), "end");
 	if (!sym_end) goto cleanup;
-	
+
 	printf("loaded resource: %s\n", sym_start);
 
 	test = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_start);
 	test2 = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_end);
-	
+
 	printf("got symbols %p, %p\n", test, test2);
 
 cleanup:
@@ -254,10 +254,10 @@ GUI_Resource	GUI_LoadResource(const char* in_resource)
 	string path(in_resource);
 	res_map::iterator i = sResMap.find(path);
 	if (i != sResMap.end()) return &(i->second);
-	
+
 	char* b = 0;
 	char* e = 0;
-	
+
 	if (!resource_get_memory(path, &b, &e)) return 0;
 
 	res_struct info = { (const char *) b, (const char *) e };

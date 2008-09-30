@@ -1,6 +1,6 @@
 # Makefile for zlib
 # Copyright (C) 1995-2002 Jean-loup Gailly.
-# For conditions of distribution and use, see copyright notice in zlib.h 
+# For conditions of distribution and use, see copyright notice in zlib.h
 
 # To compile and test, type:
 #   ./configure; make test
@@ -147,7 +147,7 @@ dist:
 	if test ! -d $$d; then rm -f $$d; fi
 	mv Makefile~ Makefile
 
-tags:	
+tags:
 	etags *.[ch]
 
 depend:
@@ -169,7 +169,7 @@ inffast.o: infblock.h infcodes.h infutil.h inffast.h
 inflate.o: zutil.h zlib.h zconf.h infblock.h
 inftrees.o: zutil.h zlib.h zconf.h inftrees.h
 infutil.o: zutil.h zlib.h zconf.h infblock.h inftrees.h infcodes.h infutil.h
-minigzip.o:  zlib.h zconf.h 
+minigzip.o:  zlib.h zconf.h
 trees.o: deflate.h zutil.h zlib.h zconf.h trees.h
 uncompr.o: zlib.h zconf.h
-zutil.o: zutil.h zlib.h zconf.h  
+zutil.o: zutil.h zlib.h zconf.h

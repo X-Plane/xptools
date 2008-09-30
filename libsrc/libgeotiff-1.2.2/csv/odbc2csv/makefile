@@ -1,6 +1,6 @@
 
 main.exe:      odbc2csv.obj sqldirect.obj sqlcolumn.obj
-	cl odbc2csv.obj sqldirect.obj sqlcolumn.obj odbc32.lib 
+	cl odbc2csv.obj sqldirect.obj sqlcolumn.obj odbc32.lib
 
 sqldirect.obj:	sqldirect.cpp
 	cl /c sqldirect.cpp

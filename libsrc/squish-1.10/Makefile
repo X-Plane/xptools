@@ -10,7 +10,7 @@ LIB = libsquish.a
 all : $(LIB)
 
 install : $(LIB)
-	install squish.h $(INSTALL_DIR)/include 
+	install squish.h $(INSTALL_DIR)/include
 	install libsquish.a $(INSTALL_DIR)/lib
 
 uninstall:

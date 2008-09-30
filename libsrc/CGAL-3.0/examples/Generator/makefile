@@ -40,7 +40,7 @@ all:            \
                 generators_example2$(EXE_EXT) \
                 random_poly_example$(EXE_EXT) \
                 random_polygon_ex$(EXE_EXT) \
-                rcs_example$(EXE_EXT) 
+                rcs_example$(EXE_EXT)
 
 Segment_generator_example1$(EXE_EXT): Segment_generator_example1$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)Segment_generator_example1 Segment_generator_example1$(OBJ_EXT) $(LDFLAGS)
@@ -70,7 +70,7 @@ clean: \
                    generators_example2.clean \
                    random_poly_example.clean \
                    random_polygon_ex.clean \
-                   rcs_example.clean 
+                   rcs_example.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

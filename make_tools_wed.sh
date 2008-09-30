@@ -10,7 +10,7 @@ mv WED.app WED_native.app
 cp -R WED_native.app WED.app
 unzip -p WEDi386.zip > WED_i386
 unzip -p WEDppc.zip > WED_ppc
-lipo -create WED_i386 WED_ppc -output WED.app/Contents/MacOS/WED 
+lipo -create WED_i386 WED_ppc -output WED.app/Contents/MacOS/WED
 chmod a+x WED.app/Contents/MacOS/WED
 
 zip -r ../../../XPWebSite/scenery/tools/wed_mac_$1.zip WED.app

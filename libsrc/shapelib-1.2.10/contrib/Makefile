@@ -5,9 +5,9 @@
 # Endian: define either _LITTLE_ENDIAN or _BIG_ENDIAN
 ENDIAN	=	-D_LITTLE_ENDIAN
 
-CFLAGS	=	-g -I.. -DPROJ4 $(ENDIAN) -DDEBUG -DDEBUG2 
+CFLAGS	=	-g -I.. -DPROJ4 $(ENDIAN) -DDEBUG -DDEBUG2
 
-SHPOBJ	=	../shpopen.o ../dbfopen.o 
+SHPOBJ	=	../shpopen.o ../dbfopen.o
 
 SHPGOBJ =	../shpopen.o ../dbfopen.o shpgeo.o
 
@@ -17,7 +17,7 @@ default:	all
 
 all:	shpdxf shpproj dbfinfo shpcentrd shpdata shpwkb dbfinfo dbfcat shpinfo shpfix shpcat
 
-clean:  
+clean:
 	rm -f shpdxf shpproj dbfinfo shpcentrd shpdata shpwkb dbfcat dbfinfo shpinfo shpfix shpcat *.o
 
 shpgeo.o:	shpgeo.c shpgeo.h
@@ -55,5 +55,5 @@ dbfcat:		dbfcat.c $(SHPOBJ)
 
 check:	testproj
 
-testproj: 
+testproj:
 	tests/shpproj.sh

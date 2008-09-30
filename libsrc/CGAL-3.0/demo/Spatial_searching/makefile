@@ -49,7 +49,7 @@ Qt_widget_move_list_point$(OBJ_EXT): Qt_widget_move_list_point.moc \
 Qt_widget_move_list_point.moc: Qt_widget_move_list_point.h
 	$(QT_MOC) -o Qt_widget_move_list_point.moc Qt_widget_move_list_point.h
 
-spatial_searching.moc: spatial_searching.C spatial_searching_toolbar$(OBJ_EXT) 
+spatial_searching.moc: spatial_searching.C spatial_searching_toolbar$(OBJ_EXT)
 	${QT_MOC} -o spatial_searching.moc spatial_searching.C
 
 spatial_searching$(OBJ_EXT): spatial_searching.C spatial_searching.moc

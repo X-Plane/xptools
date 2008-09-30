@@ -43,7 +43,7 @@ all:            \
                 regular$(EXE_EXT) \
                 terrain$(EXE_EXT) \
                 triangulation_prog1$(EXE_EXT) \
-                voronoi$(EXE_EXT) 
+                voronoi$(EXE_EXT)
 
 adding_handles$(EXE_EXT): adding_handles$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)adding_handles adding_handles$(OBJ_EXT) $(LDFLAGS)
@@ -85,7 +85,7 @@ clean: \
                    regular.clean \
                    terrain.clean \
                    triangulation_prog1.clean \
-                   voronoi.clean 
+                   voronoi.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

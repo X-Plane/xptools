@@ -48,7 +48,7 @@ Qt_widget_move_list_point$(OBJ_EXT): Qt_widget_move_list_point.moc \
 Qt_widget_move_list_point.moc: Qt_widget_move_list_point.h
 	$(QT_MOC) -o Qt_widget_move_list_point.moc Qt_widget_move_list_point.h
 
-convex_hull_2.moc: convex_hull_2.C Qt_widget_toolbar$(OBJ_EXT) 
+convex_hull_2.moc: convex_hull_2.C Qt_widget_toolbar$(OBJ_EXT)
 	${QT_MOC} -o convex_hull_2.moc convex_hull_2.C
 
 convex_hull_2$(OBJ_EXT): convex_hull_2.C convex_hull_2.moc

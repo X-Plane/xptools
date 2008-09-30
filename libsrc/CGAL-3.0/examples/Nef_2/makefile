@@ -37,7 +37,7 @@ LDFLAGS = \
 
 all:            \
                 construction \
-                simple_intersection 
+                simple_intersection
 
 construction$(EXE_EXT): construction$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)construction construction$(OBJ_EXT) $(LDFLAGS)
@@ -47,7 +47,7 @@ simple_intersection$(EXE_EXT): simple_intersection$(OBJ_EXT)
 
 clean: \
                    construction.clean \
-                   simple_intersection.clean 
+                   simple_intersection.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

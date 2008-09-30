@@ -118,6 +118,6 @@ $tool \
 	-calcmesh \
 	-assignterrain \
 	-instobjs \
-	-exportdsf "$3" | tee $logdir || echo 
-	
+	-exportdsf "$3" | tee $logdir || echo
+
 #	-forests \

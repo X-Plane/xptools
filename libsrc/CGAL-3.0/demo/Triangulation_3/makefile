@@ -35,7 +35,7 @@ LDFLAGS = \
 #                    target entries
 #---------------------------------------------------------------------#
 
-all: demo demo_color demo_remove demo_voronoi 
+all: demo demo_color demo_remove demo_voronoi
 
 demo$(EXE_EXT): demo$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)demo demo$(OBJ_EXT) $(LDFLAGS)

@@ -113,7 +113,7 @@ lib:
 	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC dbfopen.c -o .libs/dbfopen.lo
 	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c dbfopen.c -o dbfopen.o >/dev/null 2>&1
 	mv -f .libs/dbfopen.lo dbfopen.lo
-	/bin/sh ./libtool --mode=link gcc  -g -O2  -o libshp.la -rpath /usr/local/lib -version-info 1:1:0 shpopen.lo shptree.lo dbfopen.lo  
+	/bin/sh ./libtool --mode=link gcc  -g -O2  -o libshp.la -rpath /usr/local/lib -version-info 1:1:0 shpopen.lo shptree.lo dbfopen.lo
 	rm -fr .libs/libshp.la .libs/libshp.* .libs/libshp.*
 	rm -fr .libs/libshp.lax
 	mkdir .libs/libshp.lax
@@ -121,7 +121,7 @@ lib:
 
 	(cd .libs && rm -f libshp.so.1 && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so.1)
 	(cd .libs && rm -f libshp.so && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so)
-	ar cru .libs/libshp.a  shpopen.o shptree.o dbfopen.o 
+	ar cru .libs/libshp.a  shpopen.o shptree.o dbfopen.o
 	ranlib .libs/libshp.a
 	rm -fr .libs/libshp.lax
 	(cd .libs && rm -f libshp.la && ln -s ../libshp.la libshp.la)

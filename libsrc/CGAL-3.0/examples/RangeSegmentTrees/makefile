@@ -47,7 +47,7 @@ all:            \
                 segment_tree_4$(EXE_EXT) \
                 segment_tree_map_2$(EXE_EXT) \
                 segment_tree_set_2$(EXE_EXT) \
-                segment_tree_set_3$(EXE_EXT) 
+                segment_tree_set_3$(EXE_EXT)
 
 range_tree_1$(EXE_EXT): range_tree_1$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)range_tree_1 range_tree_1$(OBJ_EXT) $(LDFLAGS)
@@ -101,7 +101,7 @@ clean: \
                    segment_tree_4.clean \
                    segment_tree_map_2.clean \
                    segment_tree_set_2.clean \
-                   segment_tree_set_3.clean 
+                   segment_tree_set_3.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

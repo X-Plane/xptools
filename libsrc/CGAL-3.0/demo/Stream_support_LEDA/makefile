@@ -35,7 +35,7 @@ LDFLAGS = \
 
 all:            \
                 Istream_iterator$(EXE_EXT) \
-                stream_iterator$(EXE_EXT) 
+                stream_iterator$(EXE_EXT)
 
 Istream_iterator$(EXE_EXT): Istream_iterator$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)Istream_iterator Istream_iterator$(OBJ_EXT) $(LDFLAGS)
@@ -45,7 +45,7 @@ stream_iterator$(EXE_EXT): stream_iterator$(OBJ_EXT)
 
 clean: \
                    Istream_iterator.clean \
-                   stream_iterator.clean 
+                   stream_iterator.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

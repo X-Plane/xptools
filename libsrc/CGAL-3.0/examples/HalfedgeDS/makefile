@@ -44,7 +44,7 @@ all:            \
                 hds_prog_graph \
                 hds_prog_graph2 \
                 hds_prog_halfedge_iterator \
-                hds_prog_vector 
+                hds_prog_vector
 
 hds_prog_color$(EXE_EXT): hds_prog_color$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)hds_prog_color hds_prog_color$(OBJ_EXT) $(LDFLAGS)
@@ -82,7 +82,7 @@ clean: \
                    hds_prog_graph.clean \
                    hds_prog_graph2.clean \
                    hds_prog_halfedge_iterator.clean \
-                   hds_prog_vector.clean 
+                   hds_prog_vector.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

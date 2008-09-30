@@ -52,7 +52,7 @@ max_k-gon.moc: max_k-gon.C
 	${QT_MOC} -o max_k-gon.moc max_k-gon.C
 
 max_k-gon$(EXE_EXT): max_k-gon$(OBJ_EXT) Qt_widget_move_list_point$(OBJ_EXT) \
-			Qt_widget_toolbar$(OBJ_EXT) 
+			Qt_widget_toolbar$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)max_k-gon max_k-gon$(OBJ_EXT) \
 	 Qt_widget_toolbar$(OBJ_EXT) Qt_widget_move_list_point$(OBJ_EXT) \
 	$(LDFLAGS)
@@ -65,7 +65,7 @@ rectangular_p_center_2.moc: rectangular_p_center_2.C
 
 rectangular_p_center_2$(EXE_EXT): rectangular_p_center_2$(OBJ_EXT) \
 			Qt_widget_move_list_point$(OBJ_EXT) \
-			Qt_widget_toolbar$(OBJ_EXT) 
+			Qt_widget_toolbar$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)rectangular_p_center_2 rectangular_p_center_2$(OBJ_EXT) \
 	 Qt_widget_toolbar$(OBJ_EXT) Qt_widget_move_list_point$(OBJ_EXT) \
 	$(LDFLAGS)
@@ -73,7 +73,7 @@ rectangular_p_center_2$(EXE_EXT): rectangular_p_center_2$(OBJ_EXT) \
 clean: max_k-gon.clean \
 	rectangular_p_center_2.clean \
        Qt_widget_toolbar.clean \
-       Qt_widget_move_list_point.clean 
+       Qt_widget_move_list_point.clean
 #---------------------------------------------------------------------#
 #                    suffix rules
 #---------------------------------------------------------------------#

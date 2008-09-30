@@ -37,7 +37,7 @@ all:            \
                 MyKernel$(EXE_EXT) \
                 test_delaunay_2$(EXE_EXT) \
                 test_polyhedron_prog_incr_builder$(EXE_EXT) \
-                test_polyhedron_prog_incr_builder_own_archetype$(EXE_EXT) 
+                test_polyhedron_prog_incr_builder_own_archetype$(EXE_EXT)
 
 MyKernel$(EXE_EXT): MyKernel$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)MyKernel MyKernel$(OBJ_EXT) $(LDFLAGS)
@@ -55,7 +55,7 @@ clean: \
                    MyKernel.clean \
                    test_delaunay_2.clean \
                    test_polyhedron_prog_incr_builder.clean \
-                   test_polyhedron_prog_incr_builder_own_archetype.clean 
+                   test_polyhedron_prog_incr_builder_own_archetype.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

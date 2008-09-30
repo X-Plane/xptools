@@ -42,7 +42,7 @@ POST_UNINSTALL = :
 host_triplet = i586-pc-linux-gnu
 ACLOCAL = ${SHELL} /home/mcoletti/usgs/libsdts++/missing --run aclocal-1.7
 AMDEP_FALSE = #
-AMDEP_TRUE = 
+AMDEP_TRUE =
 AMTAR = ${SHELL} /home/mcoletti/usgs/libsdts++/missing --run tar
 AR = ar
 AUTOCONF = ${SHELL} /home/mcoletti/usgs/libsdts++/missing --run autoconf
@@ -54,49 +54,49 @@ CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
 CPP = gcc -E
-CPPFLAGS = 
+CPPFLAGS =
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"sdts++\" -DVERSION=\"1.5.1\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DVECTOR_ITERATOR_POINTER_NOT_EQUIVALENT=1 -DHAVE_UNISTD_H=1 -DHAVE_FLOAT_H=1 -DHAVE_BOOST_SMART_PTR_HPP=1 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"sdts++\" -DVERSION=\"1.5.1\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DVECTOR_ITERATOR_POINTER_NOT_EQUIVALENT=1 -DHAVE_UNISTD_H=1 -DHAVE_FLOAT_H=1 -DHAVE_BOOST_SMART_PTR_HPP=1
 DEPDIR = .deps
 ECHO = echo
-ECHO_C = 
+ECHO_C =
 ECHO_N = -n
-ECHO_T = 
+ECHO_T =
 EGREP = grep -E
-EXEEXT = 
+EXEEXT =
 F77 = g77
 FFLAGS = -g -O2
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-LDFLAGS = 
+LDFLAGS =
 LEX = flex
 LEXLIB = -lfl
 LEX_OUTPUT_ROOT = lex.yy
-LIBOBJS = 
-LIBS = 
+LIBOBJS =
+LIBS =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
-LTLIBOBJS = 
-MAINT = 
+LTLIBOBJS =
+MAINT =
 MAINTAINER_MODE_FALSE = #
-MAINTAINER_MODE_TRUE = 
+MAINTAINER_MODE_TRUE =
 MAKEINFO = ${SHELL} /home/mcoletti/usgs/libsdts++/missing --run makeinfo
 OBJEXT = o
 PACKAGE = sdts++
-PACKAGE_BUGREPORT = 
-PACKAGE_NAME = 
-PACKAGE_STRING = 
-PACKAGE_TARNAME = 
-PACKAGE_VERSION = 
+PACKAGE_BUGREPORT =
+PACKAGE_NAME =
+PACKAGE_STRING =
+PACKAGE_TARNAME =
+PACKAGE_VERSION =
 PATH_SEPARATOR = :
 RANLIB = ranlib
-SET_MAKE = 
+SET_MAKE =
 SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.5.1
@@ -107,24 +107,24 @@ ac_ct_CXX = g++
 ac_ct_F77 = g77
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
-ac_prefix_program = 
+ac_prefix_program =
 am__fastdepCC_FALSE = #
-am__fastdepCC_TRUE = 
+am__fastdepCC_TRUE =
 am__fastdepCXX_FALSE = #
-am__fastdepCXX_TRUE = 
+am__fastdepCXX_TRUE =
 am__include = include
 am__leading_dot = .
-am__quote = 
+am__quote =
 bindir = ${exec_prefix}/bin
 build = i586-pc-linux-gnu
-build_alias = 
+build_alias =
 build_cpu = i586
 build_os = linux-gnu
 build_vendor = pc
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
 host = i586-pc-linux-gnu
-host_alias = 
+host_alias =
 host_cpu = i586
 host_os = linux-gnu
 host_vendor = pc
@@ -142,7 +142,7 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 subdirs =  sysutils
 sysconfdir = ${prefix}/etc
-target_alias = 
+target_alias =
 
 INCLUDES = -I$(top_srcdir) -I$(includedir) -I$(BOOST_HEADER)
 
@@ -714,145 +714,145 @@ clean-noinstPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-container_t$(EXEEXT): $(container_t_OBJECTS) $(container_t_DEPENDENCIES) 
+container_t$(EXEEXT): $(container_t_OBJECTS) $(container_t_DEPENDENCIES)
 	@rm -f container_t$(EXEEXT)
 	$(CXXLINK) $(container_t_LDFLAGS) $(container_t_OBJECTS) $(container_t_LDADD) $(LIBS)
-sb_Directory_t$(EXEEXT): $(sb_Directory_t_OBJECTS) $(sb_Directory_t_DEPENDENCIES) 
+sb_Directory_t$(EXEEXT): $(sb_Directory_t_OBJECTS) $(sb_Directory_t_DEPENDENCIES)
 	@rm -f sb_Directory_t$(EXEEXT)
 	$(CXXLINK) $(sb_Directory_t_LDFLAGS) $(sb_Directory_t_OBJECTS) $(sb_Directory_t_LDADD) $(LIBS)
-sb_ForeignID_t$(EXEEXT): $(sb_ForeignID_t_OBJECTS) $(sb_ForeignID_t_DEPENDENCIES) 
+sb_ForeignID_t$(EXEEXT): $(sb_ForeignID_t_OBJECTS) $(sb_ForeignID_t_DEPENDENCIES)
 	@rm -f sb_ForeignID_t$(EXEEXT)
 	$(CXXLINK) $(sb_ForeignID_t_LDFLAGS) $(sb_ForeignID_t_OBJECTS) $(sb_ForeignID_t_LDADD) $(LIBS)
-sb_Spatial_t$(EXEEXT): $(sb_Spatial_t_OBJECTS) $(sb_Spatial_t_DEPENDENCIES) 
+sb_Spatial_t$(EXEEXT): $(sb_Spatial_t_OBJECTS) $(sb_Spatial_t_DEPENDENCIES)
 	@rm -f sb_Spatial_t$(EXEEXT)
 	$(CXXLINK) $(sb_Spatial_t_LDFLAGS) $(sb_Spatial_t_OBJECTS) $(sb_Spatial_t_LDADD) $(LIBS)
-sb_accessor_t$(EXEEXT): $(sb_accessor_t_OBJECTS) $(sb_accessor_t_DEPENDENCIES) 
+sb_accessor_t$(EXEEXT): $(sb_accessor_t_OBJECTS) $(sb_accessor_t_DEPENDENCIES)
 	@rm -f sb_accessor_t$(EXEEXT)
 	$(CXXLINK) $(sb_accessor_t_LDFLAGS) $(sb_accessor_t_OBJECTS) $(sb_accessor_t_LDADD) $(LIBS)
-sb_catd_t$(EXEEXT): $(sb_catd_t_OBJECTS) $(sb_catd_t_DEPENDENCIES) 
+sb_catd_t$(EXEEXT): $(sb_catd_t_OBJECTS) $(sb_catd_t_DEPENDENCIES)
 	@rm -f sb_catd_t$(EXEEXT)
 	$(CXXLINK) $(sb_catd_t_LDFLAGS) $(sb_catd_t_OBJECTS) $(sb_catd_t_LDADD) $(LIBS)
-sb_cats_t$(EXEEXT): $(sb_cats_t_OBJECTS) $(sb_cats_t_DEPENDENCIES) 
+sb_cats_t$(EXEEXT): $(sb_cats_t_OBJECTS) $(sb_cats_t_DEPENDENCIES)
 	@rm -f sb_cats_t$(EXEEXT)
 	$(CXXLINK) $(sb_cats_t_LDFLAGS) $(sb_cats_t_OBJECTS) $(sb_cats_t_LDADD) $(LIBS)
-sb_cell_t$(EXEEXT): $(sb_cell_t_OBJECTS) $(sb_cell_t_DEPENDENCIES) 
+sb_cell_t$(EXEEXT): $(sb_cell_t_OBJECTS) $(sb_cell_t_DEPENDENCIES)
 	@rm -f sb_cell_t$(EXEEXT)
 	$(CXXLINK) $(sb_cell_t_LDFLAGS) $(sb_cell_t_OBJECTS) $(sb_cell_t_LDADD) $(LIBS)
-sb_comp_t$(EXEEXT): $(sb_comp_t_OBJECTS) $(sb_comp_t_DEPENDENCIES) 
+sb_comp_t$(EXEEXT): $(sb_comp_t_OBJECTS) $(sb_comp_t_DEPENDENCIES)
 	@rm -f sb_comp_t$(EXEEXT)
 	$(CXXLINK) $(sb_comp_t_LDFLAGS) $(sb_comp_t_OBJECTS) $(sb_comp_t_LDADD) $(LIBS)
-sb_dddf_t$(EXEEXT): $(sb_dddf_t_OBJECTS) $(sb_dddf_t_DEPENDENCIES) 
+sb_dddf_t$(EXEEXT): $(sb_dddf_t_OBJECTS) $(sb_dddf_t_DEPENDENCIES)
 	@rm -f sb_dddf_t$(EXEEXT)
 	$(CXXLINK) $(sb_dddf_t_LDFLAGS) $(sb_dddf_t_OBJECTS) $(sb_dddf_t_LDADD) $(LIBS)
-sb_ddom_t$(EXEEXT): $(sb_ddom_t_OBJECTS) $(sb_ddom_t_DEPENDENCIES) 
+sb_ddom_t$(EXEEXT): $(sb_ddom_t_OBJECTS) $(sb_ddom_t_DEPENDENCIES)
 	@rm -f sb_ddom_t$(EXEEXT)
 	$(CXXLINK) $(sb_ddom_t_LDFLAGS) $(sb_ddom_t_OBJECTS) $(sb_ddom_t_LDADD) $(LIBS)
-sb_ddsh_t$(EXEEXT): $(sb_ddsh_t_OBJECTS) $(sb_ddsh_t_DEPENDENCIES) 
+sb_ddsh_t$(EXEEXT): $(sb_ddsh_t_OBJECTS) $(sb_ddsh_t_DEPENDENCIES)
 	@rm -f sb_ddsh_t$(EXEEXT)
 	$(CXXLINK) $(sb_ddsh_t_LDFLAGS) $(sb_ddsh_t_OBJECTS) $(sb_ddsh_t_LDADD) $(LIBS)
-sb_iden_t$(EXEEXT): $(sb_iden_t_OBJECTS) $(sb_iden_t_DEPENDENCIES) 
+sb_iden_t$(EXEEXT): $(sb_iden_t_OBJECTS) $(sb_iden_t_DEPENDENCIES)
 	@rm -f sb_iden_t$(EXEEXT)
 	$(CXXLINK) $(sb_iden_t_LDFLAGS) $(sb_iden_t_OBJECTS) $(sb_iden_t_LDADD) $(LIBS)
-sb_iref_t$(EXEEXT): $(sb_iref_t_OBJECTS) $(sb_iref_t_DEPENDENCIES) 
+sb_iref_t$(EXEEXT): $(sb_iref_t_OBJECTS) $(sb_iref_t_DEPENDENCIES)
 	@rm -f sb_iref_t$(EXEEXT)
 	$(CXXLINK) $(sb_iref_t_LDFLAGS) $(sb_iref_t_OBJECTS) $(sb_iref_t_LDADD) $(LIBS)
-sb_line_t$(EXEEXT): $(sb_line_t_OBJECTS) $(sb_line_t_DEPENDENCIES) 
+sb_line_t$(EXEEXT): $(sb_line_t_OBJECTS) $(sb_line_t_DEPENDENCIES)
 	@rm -f sb_line_t$(EXEEXT)
 	$(CXXLINK) $(sb_line_t_LDFLAGS) $(sb_line_t_OBJECTS) $(sb_line_t_LDADD) $(LIBS)
-sb_pnts_t$(EXEEXT): $(sb_pnts_t_OBJECTS) $(sb_pnts_t_DEPENDENCIES) 
+sb_pnts_t$(EXEEXT): $(sb_pnts_t_OBJECTS) $(sb_pnts_t_DEPENDENCIES)
 	@rm -f sb_pnts_t$(EXEEXT)
 	$(CXXLINK) $(sb_pnts_t_LDFLAGS) $(sb_pnts_t_OBJECTS) $(sb_pnts_t_LDADD) $(LIBS)
-sb_poly_t$(EXEEXT): $(sb_poly_t_OBJECTS) $(sb_poly_t_DEPENDENCIES) 
+sb_poly_t$(EXEEXT): $(sb_poly_t_OBJECTS) $(sb_poly_t_DEPENDENCIES)
 	@rm -f sb_poly_t$(EXEEXT)
 	$(CXXLINK) $(sb_poly_t_LDFLAGS) $(sb_poly_t_OBJECTS) $(sb_poly_t_LDADD) $(LIBS)
-sb_ring_t$(EXEEXT): $(sb_ring_t_OBJECTS) $(sb_ring_t_DEPENDENCIES) 
+sb_ring_t$(EXEEXT): $(sb_ring_t_OBJECTS) $(sb_ring_t_DEPENDENCIES)
 	@rm -f sb_ring_t$(EXEEXT)
 	$(CXXLINK) $(sb_ring_t_LDFLAGS) $(sb_ring_t_OBJECTS) $(sb_ring_t_LDADD) $(LIBS)
-sb_spdm_t$(EXEEXT): $(sb_spdm_t_OBJECTS) $(sb_spdm_t_DEPENDENCIES) 
+sb_spdm_t$(EXEEXT): $(sb_spdm_t_OBJECTS) $(sb_spdm_t_DEPENDENCIES)
 	@rm -f sb_spdm_t$(EXEEXT)
 	$(CXXLINK) $(sb_spdm_t_LDFLAGS) $(sb_spdm_t_OBJECTS) $(sb_spdm_t_LDADD) $(LIBS)
-sb_utils_t$(EXEEXT): $(sb_utils_t_OBJECTS) $(sb_utils_t_DEPENDENCIES) 
+sb_utils_t$(EXEEXT): $(sb_utils_t_OBJECTS) $(sb_utils_t_DEPENDENCIES)
 	@rm -f sb_utils_t$(EXEEXT)
 	$(CXXLINK) $(sb_utils_t_LDFLAGS) $(sb_utils_t_OBJECTS) $(sb_utils_t_LDADD) $(LIBS)
-sb_xref_t$(EXEEXT): $(sb_xref_t_OBJECTS) $(sb_xref_t_DEPENDENCIES) 
+sb_xref_t$(EXEEXT): $(sb_xref_t_OBJECTS) $(sb_xref_t_DEPENDENCIES)
 	@rm -f sb_xref_t$(EXEEXT)
 	$(CXXLINK) $(sb_xref_t_LDFLAGS) $(sb_xref_t_OBJECTS) $(sb_xref_t_LDADD) $(LIBS)
-sc_Field_t$(EXEEXT): $(sc_Field_t_OBJECTS) $(sc_Field_t_DEPENDENCIES) 
+sc_Field_t$(EXEEXT): $(sc_Field_t_OBJECTS) $(sc_Field_t_DEPENDENCIES)
 	@rm -f sc_Field_t$(EXEEXT)
 	$(CXXLINK) $(sc_Field_t_LDFLAGS) $(sc_Field_t_OBJECTS) $(sc_Field_t_LDADD) $(LIBS)
-sc_MultiTypeValue_t$(EXEEXT): $(sc_MultiTypeValue_t_OBJECTS) $(sc_MultiTypeValue_t_DEPENDENCIES) 
+sc_MultiTypeValue_t$(EXEEXT): $(sc_MultiTypeValue_t_OBJECTS) $(sc_MultiTypeValue_t_DEPENDENCIES)
 	@rm -f sc_MultiTypeValue_t$(EXEEXT)
 	$(CXXLINK) $(sc_MultiTypeValue_t_LDFLAGS) $(sc_MultiTypeValue_t_OBJECTS) $(sc_MultiTypeValue_t_LDADD) $(LIBS)
-sc_Subfield_t$(EXEEXT): $(sc_Subfield_t_OBJECTS) $(sc_Subfield_t_DEPENDENCIES) 
+sc_Subfield_t$(EXEEXT): $(sc_Subfield_t_OBJECTS) $(sc_Subfield_t_DEPENDENCIES)
 	@rm -f sc_Subfield_t$(EXEEXT)
 	$(CXXLINK) $(sc_Subfield_t_LDFLAGS) $(sc_Subfield_t_OBJECTS) $(sc_Subfield_t_LDADD) $(LIBS)
-sio_8211Converter_t$(EXEEXT): $(sio_8211Converter_t_OBJECTS) $(sio_8211Converter_t_DEPENDENCIES) 
+sio_8211Converter_t$(EXEEXT): $(sio_8211Converter_t_OBJECTS) $(sio_8211Converter_t_DEPENDENCIES)
 	@rm -f sio_8211Converter_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211Converter_t_LDFLAGS) $(sio_8211Converter_t_OBJECTS) $(sio_8211Converter_t_LDADD) $(LIBS)
-sio_8211DDRField_t$(EXEEXT): $(sio_8211DDRField_t_OBJECTS) $(sio_8211DDRField_t_DEPENDENCIES) 
+sio_8211DDRField_t$(EXEEXT): $(sio_8211DDRField_t_OBJECTS) $(sio_8211DDRField_t_DEPENDENCIES)
 	@rm -f sio_8211DDRField_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DDRField_t_LDFLAGS) $(sio_8211DDRField_t_OBJECTS) $(sio_8211DDRField_t_LDADD) $(LIBS)
-sio_8211DDRLeader_t$(EXEEXT): $(sio_8211DDRLeader_t_OBJECTS) $(sio_8211DDRLeader_t_DEPENDENCIES) 
+sio_8211DDRLeader_t$(EXEEXT): $(sio_8211DDRLeader_t_OBJECTS) $(sio_8211DDRLeader_t_DEPENDENCIES)
 	@rm -f sio_8211DDRLeader_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DDRLeader_t_LDFLAGS) $(sio_8211DDRLeader_t_OBJECTS) $(sio_8211DDRLeader_t_LDADD) $(LIBS)
-sio_8211DDR_t$(EXEEXT): $(sio_8211DDR_t_OBJECTS) $(sio_8211DDR_t_DEPENDENCIES) 
+sio_8211DDR_t$(EXEEXT): $(sio_8211DDR_t_OBJECTS) $(sio_8211DDR_t_DEPENDENCIES)
 	@rm -f sio_8211DDR_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DDR_t_LDFLAGS) $(sio_8211DDR_t_OBJECTS) $(sio_8211DDR_t_LDADD) $(LIBS)
-sio_8211DRLeader_t$(EXEEXT): $(sio_8211DRLeader_t_OBJECTS) $(sio_8211DRLeader_t_DEPENDENCIES) 
+sio_8211DRLeader_t$(EXEEXT): $(sio_8211DRLeader_t_OBJECTS) $(sio_8211DRLeader_t_DEPENDENCIES)
 	@rm -f sio_8211DRLeader_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DRLeader_t_LDFLAGS) $(sio_8211DRLeader_t_OBJECTS) $(sio_8211DRLeader_t_LDADD) $(LIBS)
-sio_8211DR_t$(EXEEXT): $(sio_8211DR_t_OBJECTS) $(sio_8211DR_t_DEPENDENCIES) 
+sio_8211DR_t$(EXEEXT): $(sio_8211DR_t_OBJECTS) $(sio_8211DR_t_DEPENDENCIES)
 	@rm -f sio_8211DR_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DR_t_LDFLAGS) $(sio_8211DR_t_OBJECTS) $(sio_8211DR_t_LDADD) $(LIBS)
-sio_8211DirEntry_t$(EXEEXT): $(sio_8211DirEntry_t_OBJECTS) $(sio_8211DirEntry_t_DEPENDENCIES) 
+sio_8211DirEntry_t$(EXEEXT): $(sio_8211DirEntry_t_OBJECTS) $(sio_8211DirEntry_t_DEPENDENCIES)
 	@rm -f sio_8211DirEntry_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211DirEntry_t_LDFLAGS) $(sio_8211DirEntry_t_OBJECTS) $(sio_8211DirEntry_t_LDADD) $(LIBS)
-sio_8211FieldFormat_t$(EXEEXT): $(sio_8211FieldFormat_t_OBJECTS) $(sio_8211FieldFormat_t_DEPENDENCIES) 
+sio_8211FieldFormat_t$(EXEEXT): $(sio_8211FieldFormat_t_OBJECTS) $(sio_8211FieldFormat_t_DEPENDENCIES)
 	@rm -f sio_8211FieldFormat_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211FieldFormat_t_LDFLAGS) $(sio_8211FieldFormat_t_OBJECTS) $(sio_8211FieldFormat_t_LDADD) $(LIBS)
-sio_8211Field_t$(EXEEXT): $(sio_8211Field_t_OBJECTS) $(sio_8211Field_t_DEPENDENCIES) 
+sio_8211Field_t$(EXEEXT): $(sio_8211Field_t_OBJECTS) $(sio_8211Field_t_DEPENDENCIES)
 	@rm -f sio_8211Field_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211Field_t_LDFLAGS) $(sio_8211Field_t_OBJECTS) $(sio_8211Field_t_LDADD) $(LIBS)
-sio_8211SubfieldFormat_t$(EXEEXT): $(sio_8211SubfieldFormat_t_OBJECTS) $(sio_8211SubfieldFormat_t_DEPENDENCIES) 
+sio_8211SubfieldFormat_t$(EXEEXT): $(sio_8211SubfieldFormat_t_OBJECTS) $(sio_8211SubfieldFormat_t_DEPENDENCIES)
 	@rm -f sio_8211SubfieldFormat_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211SubfieldFormat_t_LDFLAGS) $(sio_8211SubfieldFormat_t_OBJECTS) $(sio_8211SubfieldFormat_t_LDADD) $(LIBS)
-sio_8211_t$(EXEEXT): $(sio_8211_t_OBJECTS) $(sio_8211_t_DEPENDENCIES) 
+sio_8211_t$(EXEEXT): $(sio_8211_t_OBJECTS) $(sio_8211_t_DEPENDENCIES)
 	@rm -f sio_8211_t$(EXEEXT)
 	$(CXXLINK) $(sio_8211_t_LDFLAGS) $(sio_8211_t_OBJECTS) $(sio_8211_t_LDADD) $(LIBS)
-sio_Buffer_t$(EXEEXT): $(sio_Buffer_t_OBJECTS) $(sio_Buffer_t_DEPENDENCIES) 
+sio_Buffer_t$(EXEEXT): $(sio_Buffer_t_OBJECTS) $(sio_Buffer_t_DEPENDENCIES)
 	@rm -f sio_Buffer_t$(EXEEXT)
 	$(CXXLINK) $(sio_Buffer_t_LDFLAGS) $(sio_Buffer_t_OBJECTS) $(sio_Buffer_t_LDADD) $(LIBS)
-sio_ConverterFactory_t$(EXEEXT): $(sio_ConverterFactory_t_OBJECTS) $(sio_ConverterFactory_t_DEPENDENCIES) 
+sio_ConverterFactory_t$(EXEEXT): $(sio_ConverterFactory_t_OBJECTS) $(sio_ConverterFactory_t_DEPENDENCIES)
 	@rm -f sio_ConverterFactory_t$(EXEEXT)
 	$(CXXLINK) $(sio_ConverterFactory_t_LDFLAGS) $(sio_ConverterFactory_t_OBJECTS) $(sio_ConverterFactory_t_LDADD) $(LIBS)
-sio_Error_t$(EXEEXT): $(sio_Error_t_OBJECTS) $(sio_Error_t_DEPENDENCIES) 
+sio_Error_t$(EXEEXT): $(sio_Error_t_OBJECTS) $(sio_Error_t_DEPENDENCIES)
 	@rm -f sio_Error_t$(EXEEXT)
 	$(CXXLINK) $(sio_Error_t_LDFLAGS) $(sio_Error_t_OBJECTS) $(sio_Error_t_LDADD) $(LIBS)
-sio_ReadWrite_t$(EXEEXT): $(sio_ReadWrite_t_OBJECTS) $(sio_ReadWrite_t_DEPENDENCIES) 
+sio_ReadWrite_t$(EXEEXT): $(sio_ReadWrite_t_OBJECTS) $(sio_ReadWrite_t_DEPENDENCIES)
 	@rm -f sio_ReadWrite_t$(EXEEXT)
 	$(CXXLINK) $(sio_ReadWrite_t_LDFLAGS) $(sio_ReadWrite_t_OBJECTS) $(sio_ReadWrite_t_LDADD) $(LIBS)
-sio_Reader_t$(EXEEXT): $(sio_Reader_t_OBJECTS) $(sio_Reader_t_DEPENDENCIES) 
+sio_Reader_t$(EXEEXT): $(sio_Reader_t_OBJECTS) $(sio_Reader_t_DEPENDENCIES)
 	@rm -f sio_Reader_t$(EXEEXT)
 	$(CXXLINK) $(sio_Reader_t_LDFLAGS) $(sio_Reader_t_OBJECTS) $(sio_Reader_t_LDADD) $(LIBS)
-sio_Writer_t$(EXEEXT): $(sio_Writer_t_OBJECTS) $(sio_Writer_t_DEPENDENCIES) 
+sio_Writer_t$(EXEEXT): $(sio_Writer_t_OBJECTS) $(sio_Writer_t_DEPENDENCIES)
 	@rm -f sio_Writer_t$(EXEEXT)
 	$(CXXLINK) $(sio_Writer_t_LDFLAGS) $(sio_Writer_t_OBJECTS) $(sio_Writer_t_LDADD) $(LIBS)
-sl_Chain_t$(EXEEXT): $(sl_Chain_t_OBJECTS) $(sl_Chain_t_DEPENDENCIES) 
+sl_Chain_t$(EXEEXT): $(sl_Chain_t_OBJECTS) $(sl_Chain_t_DEPENDENCIES)
 	@rm -f sl_Chain_t$(EXEEXT)
 	$(CXXLINK) $(sl_Chain_t_LDFLAGS) $(sl_Chain_t_OBJECTS) $(sl_Chain_t_LDADD) $(LIBS)
-sl_Node_t$(EXEEXT): $(sl_Node_t_OBJECTS) $(sl_Node_t_DEPENDENCIES) 
+sl_Node_t$(EXEEXT): $(sl_Node_t_OBJECTS) $(sl_Node_t_DEPENDENCIES)
 	@rm -f sl_Node_t$(EXEEXT)
 	$(CXXLINK) $(sl_Node_t_LDFLAGS) $(sl_Node_t_OBJECTS) $(sl_Node_t_LDADD) $(LIBS)
-sl_Point_t$(EXEEXT): $(sl_Point_t_OBJECTS) $(sl_Point_t_DEPENDENCIES) 
+sl_Point_t$(EXEEXT): $(sl_Point_t_OBJECTS) $(sl_Point_t_DEPENDENCIES)
 	@rm -f sl_Point_t$(EXEEXT)
 	$(CXXLINK) $(sl_Point_t_LDFLAGS) $(sl_Point_t_OBJECTS) $(sl_Point_t_LDADD) $(LIBS)
-sl_Polygon_t$(EXEEXT): $(sl_Polygon_t_OBJECTS) $(sl_Polygon_t_DEPENDENCIES) 
+sl_Polygon_t$(EXEEXT): $(sl_Polygon_t_OBJECTS) $(sl_Polygon_t_DEPENDENCIES)
 	@rm -f sl_Polygon_t$(EXEEXT)
 	$(CXXLINK) $(sl_Polygon_t_LDFLAGS) $(sl_Polygon_t_OBJECTS) $(sl_Polygon_t_LDADD) $(LIBS)
-sl_Ring_t$(EXEEXT): $(sl_Ring_t_OBJECTS) $(sl_Ring_t_DEPENDENCIES) 
+sl_Ring_t$(EXEEXT): $(sl_Ring_t_OBJECTS) $(sl_Ring_t_DEPENDENCIES)
 	@rm -f sl_Ring_t$(EXEEXT)
 	$(CXXLINK) $(sl_Ring_t_LDFLAGS) $(sl_Ring_t_OBJECTS) $(sl_Ring_t_LDADD) $(LIBS)
-sl_String_t$(EXEEXT): $(sl_String_t_OBJECTS) $(sl_String_t_DEPENDENCIES) 
+sl_String_t$(EXEEXT): $(sl_String_t_OBJECTS) $(sl_String_t_DEPENDENCIES)
 	@rm -f sl_String_t$(EXEEXT)
 	$(CXXLINK) $(sl_String_t_LDFLAGS) $(sl_String_t_OBJECTS) $(sl_String_t_LDADD) $(LIBS)
 

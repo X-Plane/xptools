@@ -37,7 +37,7 @@ all:            \
                 benchmark$(EXE_EXT) \
                 min_sphere_of_spheres_d_example_2$(EXE_EXT) \
                 min_sphere_of_spheres_d_example_3$(EXE_EXT) \
-                min_sphere_of_spheres_d_example_d$(EXE_EXT) 
+                min_sphere_of_spheres_d_example_d$(EXE_EXT)
 
 benchmark$(EXE_EXT): benchmark$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)benchmark benchmark$(OBJ_EXT) $(LDFLAGS)
@@ -55,7 +55,7 @@ clean: \
                    benchmark.clean \
                    min_sphere_of_spheres_d_example_2.clean \
                    min_sphere_of_spheres_d_example_3.clean \
-                   min_sphere_of_spheres_d_example_d.clean 
+                   min_sphere_of_spheres_d_example_d.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

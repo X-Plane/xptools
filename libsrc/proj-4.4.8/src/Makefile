@@ -59,10 +59,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = 
+host_alias =
 host_triplet = powerpc-apple-darwin7.4.0
 
-EXEEXT = 
+EXEEXT =
 OBJEXT = o
 PATH_SEPARATOR = :
 AMTAR = ${SHELL} /code/XPTools/libsrc/proj-4.4.8/missing --run tar
@@ -81,7 +81,7 @@ RANLIB = ranlib
 STRIP = strip
 VERSION = 4.4.8
 am__include = include
-am__quote = 
+am__quote =
 install_sh = /code/XPTools/libsrc/proj-4.4.8/install-sh
 bin_PROGRAMS = proj nad2nad nad2bin geod cs2cs
 
@@ -93,7 +93,7 @@ EXTRA_DIST = makefile.vc proj.def
 
 proj_SOURCES = proj.c gen_cheb.c p_series.c
 cs2cs_SOURCES = cs2cs.c gen_cheb.c p_series.c
-nad2nad_SOURCES = nad2nad.c 
+nad2nad_SOURCES = nad2nad.c
 nad2bin_SOURCES = nad2bin.c
 geod_SOURCES = geod.c geod_set.c geod_for.c geod_inv.c geodesic.h
 
@@ -209,9 +209,9 @@ proj_LDFLAGS =
 
 DEFS = -DHAVE_CONFIG_H
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
-CPPFLAGS = 
-LDFLAGS = 
-LIBS = -lm 
+CPPFLAGS =
+LDFLAGS =
+LIBS = -lm
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 DEP_FILES = ./$(DEPDIR)/PJ_aea.Plo ./$(DEPDIR)/PJ_aeqd.Plo \
@@ -327,7 +327,7 @@ stamp-h1: $(srcdir)/proj_config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status src/proj_config.h
 
-$(srcdir)/proj_config.h.in:  $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/proj_config.h.in:  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && $(AUTOHEADER)
 	touch $(srcdir)/proj_config.h.in
 
@@ -361,7 +361,7 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libproj.la: $(libproj_la_OBJECTS) $(libproj_la_DEPENDENCIES) 
+libproj.la: $(libproj_la_OBJECTS) $(libproj_la_DEPENDENCIES)
 	$(LINK) -rpath $(libdir) $(libproj_la_LDFLAGS) $(libproj_la_OBJECTS) $(libproj_la_LIBADD) $(LIBS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 install-binPROGRAMS: $(bin_PROGRAMS)
@@ -392,19 +392,19 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-cs2cs$(EXEEXT): $(cs2cs_OBJECTS) $(cs2cs_DEPENDENCIES) 
+cs2cs$(EXEEXT): $(cs2cs_OBJECTS) $(cs2cs_DEPENDENCIES)
 	@rm -f cs2cs$(EXEEXT)
 	$(LINK) $(cs2cs_LDFLAGS) $(cs2cs_OBJECTS) $(cs2cs_LDADD) $(LIBS)
-geod$(EXEEXT): $(geod_OBJECTS) $(geod_DEPENDENCIES) 
+geod$(EXEEXT): $(geod_OBJECTS) $(geod_DEPENDENCIES)
 	@rm -f geod$(EXEEXT)
 	$(LINK) $(geod_LDFLAGS) $(geod_OBJECTS) $(geod_LDADD) $(LIBS)
-nad2bin$(EXEEXT): $(nad2bin_OBJECTS) $(nad2bin_DEPENDENCIES) 
+nad2bin$(EXEEXT): $(nad2bin_OBJECTS) $(nad2bin_DEPENDENCIES)
 	@rm -f nad2bin$(EXEEXT)
 	$(LINK) $(nad2bin_LDFLAGS) $(nad2bin_OBJECTS) $(nad2bin_LDADD) $(LIBS)
-nad2nad$(EXEEXT): $(nad2nad_OBJECTS) $(nad2nad_DEPENDENCIES) 
+nad2nad$(EXEEXT): $(nad2nad_OBJECTS) $(nad2nad_DEPENDENCIES)
 	@rm -f nad2nad$(EXEEXT)
 	$(LINK) $(nad2nad_LDFLAGS) $(nad2nad_OBJECTS) $(nad2nad_LDADD) $(LIBS)
-proj$(EXEEXT): $(proj_OBJECTS) $(proj_DEPENDENCIES) 
+proj$(EXEEXT): $(proj_OBJECTS) $(proj_DEPENDENCIES)
 	@rm -f proj$(EXEEXT)
 	$(LINK) $(proj_LDFLAGS) $(proj_OBJECTS) $(proj_LDADD) $(LIBS)
 

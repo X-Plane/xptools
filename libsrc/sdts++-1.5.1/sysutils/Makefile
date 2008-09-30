@@ -37,7 +37,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 ACLOCAL = ${SHELL} /code/XPTools/libsrc/sdts++-1.5.1/sysutils/missing --run aclocal-1.7
 AMDEP_FALSE = #
-AMDEP_TRUE = 
+AMDEP_TRUE =
 AMTAR = ${SHELL} /code/XPTools/libsrc/sdts++-1.5.1/sysutils/missing --run tar
 AUTOCONF = ${SHELL} /code/XPTools/libsrc/sdts++-1.5.1/sysutils/missing --run autoconf
 AUTOHEADER = ${SHELL} /code/XPTools/libsrc/sdts++-1.5.1/sysutils/missing --run autoheader
@@ -46,56 +46,56 @@ AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPPFLAGS = 
+CPPFLAGS =
 CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"sysutils\" -DVERSION=\"0.0\" 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"sysutils\" -DVERSION=\"0.0\"
 DEPDIR = .deps
-ECHO_C = 
+ECHO_C =
 ECHO_N = -n
-ECHO_T = 
-EXEEXT = 
+ECHO_T =
+EXEEXT =
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-LDFLAGS = 
-LIBOBJS = 
-LIBS = 
-LTLIBOBJS = 
+LDFLAGS =
+LIBOBJS =
+LIBS =
+LTLIBOBJS =
 MAKEINFO = ${SHELL} /code/XPTools/libsrc/sdts++-1.5.1/sysutils/missing --run makeinfo
 OBJEXT = o
 PACKAGE = sysutils
-PACKAGE_BUGREPORT = 
-PACKAGE_NAME = 
-PACKAGE_STRING = 
-PACKAGE_TARNAME = 
-PACKAGE_VERSION = 
+PACKAGE_BUGREPORT =
+PACKAGE_NAME =
+PACKAGE_STRING =
+PACKAGE_TARNAME =
+PACKAGE_VERSION =
 PATH_SEPARATOR = :
 RANLIB = ranlib
-SET_MAKE = 
+SET_MAKE =
 SHELL = /bin/sh
-STRIP = 
+STRIP =
 VERSION = 0.0
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 ac_ct_RANLIB = ranlib
-ac_ct_STRIP = 
+ac_ct_STRIP =
 ac_prefix_program = /usr/bin/gcc
 am__fastdepCC_FALSE = #
-am__fastdepCC_TRUE = 
+am__fastdepCC_TRUE =
 am__fastdepCXX_FALSE = #
-am__fastdepCXX_TRUE = 
+am__fastdepCXX_TRUE =
 am__include = include
 am__leading_dot = .
-am__quote = 
+am__quote =
 bindir = ${exec_prefix}/bin
-build_alias = 
+build_alias =
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
-host_alias = 
+host_alias =
 includedir = ${prefix}/include
 infodir = ${prefix}/info
 install_sh = /code/XPTools/libsrc/sdts++-1.5.1/sysutils/install-sh
@@ -109,7 +109,7 @@ program_transform_name = s,x,x,
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 sysconfdir = ${prefix}/etc
-target_alias = 
+target_alias =
 
 lib_LIBRARIES = libsysutils.a
 
@@ -197,7 +197,7 @@ $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4):  configure.in 
+$(ACLOCAL_M4):  configure.in
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 AR = ar
@@ -231,20 +231,20 @@ uninstall-libLIBRARIES:
 
 clean-libLIBRARIES:
 	-test -z "$(lib_LIBRARIES)" || rm -f $(lib_LIBRARIES)
-libsysutils.a: $(libsysutils_a_OBJECTS) $(libsysutils_a_DEPENDENCIES) 
+libsysutils.a: $(libsysutils_a_OBJECTS) $(libsysutils_a_DEPENDENCIES)
 	-rm -f libsysutils.a
 	$(libsysutils_a_AR) libsysutils.a $(libsysutils_a_OBJECTS) $(libsysutils_a_LIBADD)
 	$(RANLIB) libsysutils.a
 
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
-t_basename$(EXEEXT): $(t_basename_OBJECTS) $(t_basename_DEPENDENCIES) 
+t_basename$(EXEEXT): $(t_basename_OBJECTS) $(t_basename_DEPENDENCIES)
 	@rm -f t_basename$(EXEEXT)
 	$(CXXLINK) $(t_basename_LDFLAGS) $(t_basename_OBJECTS) $(t_basename_LDADD) $(LIBS)
-t_dirname$(EXEEXT): $(t_dirname_OBJECTS) $(t_dirname_DEPENDENCIES) 
+t_dirname$(EXEEXT): $(t_dirname_OBJECTS) $(t_dirname_DEPENDENCIES)
 	@rm -f t_dirname$(EXEEXT)
 	$(CXXLINK) $(t_dirname_LDFLAGS) $(t_dirname_OBJECTS) $(t_dirname_LDADD) $(LIBS)
-t_stringutils$(EXEEXT): $(t_stringutils_OBJECTS) $(t_stringutils_DEPENDENCIES) 
+t_stringutils$(EXEEXT): $(t_stringutils_OBJECTS) $(t_stringutils_DEPENDENCIES)
 	@rm -f t_stringutils$(EXEEXT)
 	$(CXXLINK) $(t_stringutils_LDFLAGS) $(t_stringutils_OBJECTS) $(t_stringutils_LDADD) $(LIBS)
 

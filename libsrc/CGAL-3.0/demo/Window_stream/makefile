@@ -32,13 +32,13 @@ LDFLAGS = \
 #---------------------------------------------------------------------#
 
 all:            \
-                window_input 
+                window_input
 
 window_input$(EXE_EXT): window_input$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)window_input window_input$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-                   window_input.clean 
+                   window_input.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -35,7 +35,7 @@ LDFLAGS = \
 
 all:            \
                 example_alpha$(EXE_EXT) \
-                example_weight$(EXE_EXT) 
+                example_weight$(EXE_EXT)
 
 example_alpha$(EXE_EXT): example_alpha$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)example_alpha example_alpha$(OBJ_EXT) $(LDFLAGS)
@@ -45,7 +45,7 @@ example_weight$(EXE_EXT): example_weight$(OBJ_EXT)
 
 clean: \
                    example_alpha.clean \
-                   example_weight.clean 
+                   example_weight.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

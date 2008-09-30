@@ -71,7 +71,7 @@ clean:  \
 	chull_dd-geomview-demo.clean \
 	chull_dd-runtime.clean \
 	delaunay_3d-windows-demo.clean \
-	delaunay_dd-runtime.clean 
+	delaunay_dd-runtime.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

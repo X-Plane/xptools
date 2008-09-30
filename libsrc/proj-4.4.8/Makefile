@@ -59,10 +59,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = 
+host_alias =
 host_triplet = powerpc-apple-darwin7.4.0
 
-EXEEXT = 
+EXEEXT =
 OBJEXT = o
 PATH_SEPARATOR = :
 AMTAR = ${SHELL} /code/XPTools/libsrc/proj-4.4.8/missing --run tar
@@ -81,7 +81,7 @@ RANLIB = ranlib
 STRIP = strip
 VERSION = 4.4.8
 am__include = include
-am__quote = 
+am__quote =
 install_sh = /code/XPTools/libsrc/proj-4.4.8/install-sh
 SUBDIRS = src man nad
 
@@ -119,7 +119,7 @@ $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4):  configure.in 
+$(ACLOCAL_M4):  configure.in
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 mostlyclean-libtool:

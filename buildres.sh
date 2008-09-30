@@ -47,7 +47,7 @@ fi
 if [ "$3" = "x86_64" ]
 then
   echo "linking: $1/$2 (x86_64)"
-  find $1 -wholename "*.git*" -prune -o -type f \( -iname "*.intr" \) -print | awk -F '\n' '{printf "\"%s\" ",$1}' | xargs ld -melf_x86_64 -z nostdlib -r -o $2 
+  find $1 -wholename "*.git*" -prune -o -type f \( -iname "*.intr" \) -print | awk -F '\n' '{printf "\"%s\" ",$1}' | xargs ld -melf_x86_64 -z nostdlib -r -o $2
 fi
 
 echo "removing intermediate files"

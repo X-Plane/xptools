@@ -44,7 +44,7 @@ all:            \
                 Searching_with_circular_query$(EXE_EXT) \
                 User_defined_point_and_distance$(EXE_EXT) \
                 Using_fair_splitting_rule$(EXE_EXT) \
-                Weighted_Minkowski_distance$(EXE_EXT) 
+                Weighted_Minkowski_distance$(EXE_EXT)
 
 Circular_query$(EXE_EXT): Circular_query$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)Circular_query Circular_query$(OBJ_EXT) $(LDFLAGS)
@@ -90,7 +90,7 @@ clean: \
                    Searching_with_circular_query.clean \
                    User_defined_point_and_distance.clean \
                    Using_fair_splitting_rule.clean \
-                   Weighted_Minkowski_distance.clean 
+                   Weighted_Minkowski_distance.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -37,7 +37,7 @@ all:            \
                 approx_convex_ex$(EXE_EXT) \
                 greene_approx_convex_ex$(EXE_EXT) \
                 optimal_convex_ex$(EXE_EXT) \
-                y_monotone_ex$(EXE_EXT) 
+                y_monotone_ex$(EXE_EXT)
 
 approx_convex_ex$(EXE_EXT): approx_convex_ex$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)approx_convex_ex approx_convex_ex$(OBJ_EXT) $(LDFLAGS)
@@ -55,7 +55,7 @@ clean: \
                    approx_convex_ex.clean \
                    greene_approx_convex_ex.clean \
                    optimal_convex_ex.clean \
-                   y_monotone_ex.clean 
+                   y_monotone_ex.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

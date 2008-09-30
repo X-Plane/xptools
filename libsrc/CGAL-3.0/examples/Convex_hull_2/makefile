@@ -37,7 +37,7 @@ LDFLAGS = \
 all:            \
                 ch_example_from_cin_to_cout$(EXE_EXT) \
                 ch_example_timing$(EXE_EXT) \
-                ch_graham_anderson$(EXE_EXT) 
+                ch_graham_anderson$(EXE_EXT)
 
 ch_example_from_cin_to_cout$(EXE_EXT): ch_example_from_cin_to_cout$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)ch_example_from_cin_to_cout ch_example_from_cin_to_cout$(OBJ_EXT) $(LDFLAGS)
@@ -51,7 +51,7 @@ ch_graham_anderson$(EXE_EXT): ch_graham_anderson$(OBJ_EXT)
 clean: \
                    ch_example_from_cin_to_cout.clean \
                    ch_example_timing.clean \
-                   ch_graham_anderson.clean 
+                   ch_graham_anderson.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

@@ -41,7 +41,7 @@ all:            \
                 all_furthest_neighbors_2_example$(EXE_EXT) \
                 extremal_polygon_2_example$(EXE_EXT) \
                 rectangular_p_center_2_example$(EXE_EXT) \
-                sorted_matrix_search_example$(EXE_EXT) 
+                sorted_matrix_search_example$(EXE_EXT)
 
 all_furthest_neighbors_2_example$(EXE_EXT): all_furthest_neighbors_2_example$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)all_furthest_neighbors_2_example all_furthest_neighbors_2_example$(OBJ_EXT) $(LDFLAGS)
@@ -59,7 +59,7 @@ clean: \
                    all_furthest_neighbors_2_example.clean \
                    extremal_polygon_2_example.clean \
                    rectangular_p_center_2_example.clean \
-                   sorted_matrix_search_example.clean 
+                   sorted_matrix_search_example.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

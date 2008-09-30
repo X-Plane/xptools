@@ -14,7 +14,7 @@ include $(CGAL_MAKEFILE)
 #---------------------------------------------------------------------#
 #                    compiler flags
 #---------------------------------------------------------------------#
-# the following directory is needed with CGAL 2.4 (public version) 
+# the following directory is needed with CGAL 2.4 (public version)
 # because some patches where needed in that version to make the demo work
 #
 # CGAL 2.5 has the needed functionality and so the following directory is not
@@ -34,13 +34,13 @@ LIBPATH = \
 
 LDFLAGS = \
           $(LONG_NAME_PROBLEM_LDFLAGS) \
-          $(CGAL_QT_LDFLAGS) 
+          $(CGAL_QT_LDFLAGS)
 
 #---------------------------------------------------------------------#
 #                    target entries
 #---------------------------------------------------------------------#
 
-all: apollonius_graph_2$(EXE_EXT) 
+all: apollonius_graph_2$(EXE_EXT)
 
 apollonius_graph_2.moc:  apollonius_graph_2.C
 	$(QT_MOC) -o apollonius_graph_2.moc apollonius_graph_2.C
@@ -63,7 +63,7 @@ apollonius_graph_2$(EXE_EXT): apollonius_graph_2$(OBJ_EXT)
 	apollonius_graph_2$(OBJ_EXT) $(LDFLAGS)
 
 clean: \
-	apollonius_graph_2.clean ; rm -f *.moc 
+	apollonius_graph_2.clean ; rm -f *.moc
 
 #---------------------------------------------------------------------#
 #                    suffix rules

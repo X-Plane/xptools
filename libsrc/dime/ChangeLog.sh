@@ -14,7 +14,7 @@ ChangeLog
 =========
 
 This is the ChangeLog file for the $module module.  This file is automatically
-generated every night.  Entries are in reversed chronological order.  
+generated every night.  Entries are in reversed chronological order.
 
 See http://www.red-bean.com/~kfogel/cvs2cl.shtml for information about the
 cvs2cl script used to generate this file.

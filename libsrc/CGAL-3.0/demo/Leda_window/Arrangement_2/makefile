@@ -77,7 +77,7 @@ clean: \
                    Conics_arr_from_file.clean \
                    Polygon_intersection.clean \
                    Segment_arr_from_mouse.clean \
-                   Polygon_intersection_demo.clean 
+                   Polygon_intersection_demo.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

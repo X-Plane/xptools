@@ -38,7 +38,7 @@ LDFLAGS = \
 all:            \
                 circulator_prog1 \
                 circulator_prog2 \
-                circulator_prog3 
+                circulator_prog3
 
 circulator_prog1$(EXE_EXT): circulator_prog1$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)circulator_prog1 circulator_prog1$(OBJ_EXT) $(LDFLAGS)
@@ -52,7 +52,7 @@ circulator_prog3$(EXE_EXT): circulator_prog3$(OBJ_EXT)
 clean: \
                    circulator_prog1.clean \
                    circulator_prog2.clean \
-                   circulator_prog3.clean 
+                   circulator_prog3.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules

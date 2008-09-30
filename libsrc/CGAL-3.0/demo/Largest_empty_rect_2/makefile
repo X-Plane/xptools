@@ -56,7 +56,7 @@ largest_empty_rect_2.moc: largest_empty_rect_2.C
 
 largest_empty_rect_2$(EXE_EXT): largest_empty_rect_2$(OBJ_EXT) \
 			Qt_widget_move_list_point$(OBJ_EXT) \
-			Qt_widget_toolbar$(OBJ_EXT) 
+			Qt_widget_toolbar$(OBJ_EXT)
 	$(CGAL_CXX) $(EXE_OPT)largest_empty_rect_2 \
 	largest_empty_rect_2$(OBJ_EXT) \
 	 Qt_widget_toolbar$(OBJ_EXT) Qt_widget_move_list_point$(OBJ_EXT) \
@@ -64,7 +64,7 @@ largest_empty_rect_2$(EXE_EXT): largest_empty_rect_2$(OBJ_EXT) \
 
 clean: largest_empty_rect_2.clean \
        Qt_widget_toolbar.clean \
-       Qt_widget_move_list_point.clean 
+       Qt_widget_move_list_point.clean
 #---------------------------------------------------------------------#
 #                    suffix rules
 #---------------------------------------------------------------------#

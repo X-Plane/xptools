@@ -35,7 +35,7 @@ LDFLAGS = \
 
 all:            \
                 incremental_hull_3_demo$(EXE_EXT) \
-                quickhull_3_demo$(EXE_EXT) 
+                quickhull_3_demo$(EXE_EXT)
 
 incremental_hull_3_demo$(EXE_EXT): incremental_hull_3_demo$(OBJ_EXT)
 	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)incremental_hull_3_demo incremental_hull_3_demo$(OBJ_EXT) $(LDFLAGS)
@@ -45,7 +45,7 @@ quickhull_3_demo$(EXE_EXT): quickhull_3_demo$(OBJ_EXT)
 
 clean: \
                    incremental_hull_3_demo.clean \
-                   quickhull_3_demo.clean 
+                   quickhull_3_demo.clean
 
 #---------------------------------------------------------------------#
 #                    suffix rules
