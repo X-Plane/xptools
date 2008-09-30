@@ -17,9 +17,24 @@ CPP=g++
 LINK=g++
 DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 
+# debug
+CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CPPFLAGS=$(CFLAGS)
+LDFLAGS= -nodefaultlibs -static-libgcc
+
+# release profiling
+#CFLAGS=$(DEFINES) $(INCLUDES) -O2 -pg -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CPPFLAGS=$(CFLAGS)
+#LDFLAGS= -nodefaultlibs -static-libgcc -pg
+
+# release
+#CFLAGS=$(DEFINES) $(INCLUDES) -O2 -fomit-frame-pointer -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CPPFLAGS=$(CFLAGS)
+#LDFLAGS=-nodefaultlibs -static-libgcc -s
+
 # either use exactly this order, or enclose the libs in --start-group/--end-group commandline options.
-# as we're using the dynamic loader (for using at least libGL) we need to link to libc dynamical,
-# due to that libdl and libpthread are dynamical linked in automatically if needed
+# as we're using the dynamic loader (for using at least libGL) we need to link to libc dynamically,
+# due to that libdl and libpthread are dynamically linked in automatically if needed
 # note: compiler directories are platform and distibution dependent of course
 STDLIBS64= /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libstdc++.a /usr/lib64/libm.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc_eh.a /usr/lib64/libc.so /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc_eh.a
 STDLIBS32= /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libstdc++.a /usr/lib/libm.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc_eh.a /usr/lib/libc.so /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc_eh.a
@@ -59,21 +74,6 @@ INCLUDES=\
 	-I/usr/include/freetype2 \
     -I/usr/include/libshp \
     -I/usr/include/libgeotiff
-
-# debug
-#CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-#CPPFLAGS=$(CFLAGS)
-
-# release profiling
-#CFLAGS=$(DEFINES) $(INCLUDES) -O2 -pg -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-#CPPFLAGS=$(CFLAGS)
-#LDFLAGS= -pg
-
-# release
-CFLAGS=$(DEFINES) $(INCLUDES) -O2 -fomit-frame-pointer -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-CPPFLAGS=$(CFLAGS)
-LDFLAGS=-nodefaultlibs -static-libgcc -s
-
 
 SRC_squish=\
 libsrc/squish-1.10/alpha.o \
@@ -360,6 +360,7 @@ src/MeshTool/MeshTool.o
 
 SRC_WEDRESOURCES=\
 src/WEDResources/resources.ro \
+src/WEDCore/resources.sqlro \
 
 .SILENT:
 
@@ -374,7 +375,10 @@ all:	wed objview ddstool dsftool ddstool objconverter fonttool
 	$(CPP) $(CPPFLAGS) -c $< -o $@ || $(print_error)
 
 %.ro:
-	./buildres.sh src/WEDResources $@ x86_64 || $(print_error)
+	./buildres.sh src/WEDResources $@ x86_64 "*" || $(print_error)
+
+%.sqlro:
+	./buildres.sh src/WEDCore $@ x86_64 "*.sql" || $(print_error)
 
 objview: $(SRC_ObjView)
 	$(print_link) $@
@@ -398,7 +402,7 @@ meshtool: $(SRC_MeshTool)
 
 wed: $(SRC_WED) $(SRC_WEDRESOURCES)
 	$(print_link) $@
-	$(LINK) $(LDFLAGS) -o WED $(SRC_WED) $(SRC_WEDRESOURCES) $(STDLIBS64) -Wl,-Bstatic -lpng -ltiff -ljpeg -lz -Wl,-Bdynamic -lGLU -lfreetype -lsqlite3 -lCGAL -lgeotiff -lproj -lshp || $(print_error)
+	$(LINK) $(LDFLAGS) -rdynamic -o WED $(SRC_WED) $(SRC_WEDRESOURCES) $(STDLIBS64) -Wl,-Bstatic -lpng -ltiff -ljpeg -lz -Wl,-Bdynamic -lGLU -lfreetype -lsqlite3 -lCGAL -lgeotiff -lproj -lshp || $(print_error)
 
 fonttool: $(SRC_FONTTOOL)
 	$(print_link) $@

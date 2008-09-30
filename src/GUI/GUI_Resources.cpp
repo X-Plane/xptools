@@ -40,7 +40,7 @@
 #include <dlfcn.h>
 #include "safe-ctype.h"
 
-static void* gModuleHandle = 0;
+static void* volatile gModuleHandle = 0;
 
 /*
 ** slightly modified version from binutils (binary.c)
@@ -52,7 +52,7 @@ static char* mangle_name (const char* filename, const char* suffix)
 	char *buf;
 	char *p;
 
-	size = (strlen (filename) + strlen (suffix) + sizeof "_binary__");
+	size = (strlen(filename) + strlen(suffix) + sizeof("_binary__"));
 
 	buf = new char[size];
 	if (buf == 0) return 0;
@@ -60,8 +60,7 @@ static char* mangle_name (const char* filename, const char* suffix)
 	sprintf(buf, "_binary_%s_%s", filename, suffix);
 
 	for (p = buf; *p; p++)
-	if (! ISALNUM (*p))
-		*p = '_';
+	if (!ISALNUM(*p)) *p = '_';
 	return buf;
 }
 
@@ -69,8 +68,11 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 {
 	const char* sym_start = 0;
 	const char* sym_end = 0;
+<<<<<<< HEAD:src/GUI/GUI_Resources.cpp
+=======
 	char* test;
 	char* test2;
+>>>>>>> 385dd07d2b1b1f7171f4a74a76dd177c6c5f0f57:src/GUI/GUI_Resources.cpp
 
 	if (!gModuleHandle) return false;
 	if (!begin) return false;
@@ -83,6 +85,8 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 	if (!sym_start) goto cleanup;
 	sym_end = mangle_name(res_name.c_str(), "end");
 	if (!sym_end) goto cleanup;
+<<<<<<< HEAD:src/GUI/GUI_Resources.cpp
+=======
 
 	printf("loaded resource: %s\n", sym_start);
 
@@ -90,7 +94,10 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 	test2 = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_end);
 
 	printf("got symbols %p, %p\n", test, test2);
+>>>>>>> 385dd07d2b1b1f7171f4a74a76dd177c6c5f0f57:src/GUI/GUI_Resources.cpp
 
+	*begin = (char*)dlsym(gModuleHandle, sym_start);
+	*end = (char*)dlsym(gModuleHandle, sym_end);
 cleanup:
 	if (sym_start) delete[] sym_start;
 	if (sym_end) delete[] sym_end;
@@ -234,7 +241,6 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 
 
 #elif LIN
-#warning implement linux resource handling here
 struct res_struct {
 	const char * start_p;
 	const char * end_p;
@@ -245,7 +251,7 @@ static res_map sResMap;
 
 GUI_Resource	GUI_LoadResource(const char* in_resource)
 {
-	if (sResMap.empty()) gModuleHandle = dlopen(0, RTLD_NOW);
+	if (sResMap.empty()) gModuleHandle = dlopen(0, RTLD_NOW | RTLD_GLOBAL);
 	if (!gModuleHandle)
 	{
 		printf("error opening module\n");
@@ -261,7 +267,7 @@ GUI_Resource	GUI_LoadResource(const char* in_resource)
 	if (!resource_get_memory(path, &b, &e)) return 0;
 
 	res_struct info = { (const char *) b, (const char *) e };
-	printf("inserting %p, %p\n", b, e);
+
 	pair<res_map::iterator,bool> ins = sResMap.insert(res_map::value_type(path,info));
 	return &ins.first->second;
 }
@@ -301,12 +307,10 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 	}
 
 	int r = write(fd, sp, ep - sp);
-	printf("wrote %d bytes to %s\n", r, tmpfilename);
-	//close(fd);
+	close(fd);
 
 	GUI_UnloadResource(res);
 	out_path = tmpfilename;
-	free(tmpfilename);
     return true;
 }
 
