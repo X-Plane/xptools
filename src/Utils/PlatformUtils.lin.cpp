@@ -22,8 +22,8 @@
  */
 #include "PlatformUtils.h"
 #include <stdio.h>
-#include <QFileDialog>
-#include <QMessageBox>
+//#include <QFileDialog>
+//#include <QMessageBox>
 
 // janos says: using Qt's dialogs for now until i wrote opengl based implementations
 

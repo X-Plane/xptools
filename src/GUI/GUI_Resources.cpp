@@ -36,6 +36,70 @@
 	#include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#if LIN
+#include <dlfcn.h>
+#include "safe-ctype.h"
+
+static void* gModuleHandle = 0;
+
+/*
+** slightly modified version from binutils (binary.c)
+** to ensure the same name mangling as objcopy does
+*/
+static char* mangle_name (const char* filename, const char* suffix)
+{
+	size_t size;
+	char *buf;
+	char *p;
+
+	size = (strlen (filename) + strlen (suffix) + sizeof "_binary__");
+
+	buf = new char[size];
+	if (buf == 0) return 0;
+	memset(buf, 0, size);
+	sprintf(buf, "_binary_%s_%s", filename, suffix);
+
+	for (p = buf; *p; p++)
+	if (! ISALNUM (*p))
+		*p = '_';
+	return buf;
+}
+
+static bool resource_get_memory(const string& res_name, char** begin, char** end)
+{
+	const char* sym_start = 0;
+	const char* sym_end = 0;
+	char* test;
+	char* test2;
+	
+	if (!gModuleHandle) return false;
+	if (!begin) return false;	
+	if (!end) return false;
+	
+	*begin = 0;
+	*end = 0;
+
+	sym_start = mangle_name(res_name.c_str(), "start");
+	if (!sym_start) goto cleanup;
+	sym_end = mangle_name(res_name.c_str(), "end");
+	if (!sym_end) goto cleanup;
+	
+	printf("loaded resource: %s\n", sym_start);
+
+	test = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_start);
+	test2 = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_end);
+	
+	printf("got symbols %p, %p\n", test, test2);
+
+cleanup:
+	if (sym_start) delete[] sym_start;
+	if (sym_end) delete[] sym_end;
+	if (*begin && *end)	return true;
+	return false;
+}
+
+#endif
+
 #if APL
 static int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
 {
@@ -171,7 +235,6 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 
 #elif LIN
 #warning implement linux resource handling here
-
 struct res_struct {
 	const char * start_p;
 	const char * end_p;
@@ -179,32 +242,71 @@ struct res_struct {
 typedef map<string, res_struct>	res_map;
 static res_map sResMap;
 
-GUI_Resource	GUI_LoadResource(const char * in_resource)
+
+GUI_Resource	GUI_LoadResource(const char* in_resource)
 {
-    string path;
-	if (!GUI_GetTempResourcePath(in_resource, path)) return NULL;
-	return MemFile_Open(path.c_str());
+	if (sResMap.empty()) gModuleHandle = dlopen(0, RTLD_NOW);
+	if (!gModuleHandle)
+	{
+		printf("error opening module\n");
+		return 0;
+	}
+	string path(in_resource);
+	res_map::iterator i = sResMap.find(path);
+	if (i != sResMap.end()) return &(i->second);
+	
+	char* b = 0;
+	char* e = 0;
+	
+	if (!resource_get_memory(path, &b, &e)) return 0;
+
+	res_struct info = { (const char *) b, (const char *) e };
+	printf("inserting %p, %p\n", b, e);
+	pair<res_map::iterator,bool> ins = sResMap.insert(res_map::value_type(path,info));
+	return &ins.first->second;
 }
 
 void			GUI_UnloadResource(GUI_Resource res)
 {
-    MemFile_Close((MFMemFile *) res);
+	// TODO: remove specific resource from sResMap here
+	if (sResMap.empty())
+	{
+		dlclose(gModuleHandle);
+		gModuleHandle = 0;
+	}
 }
 
 const char *	GUI_GetResourceBegin(GUI_Resource res)
 {
-	return 	MemFile_GetBegin((MFMemFile *) res);
+	return ((res_struct*)res)->start_p;
 }
 
 const char *	GUI_GetResourceEnd(GUI_Resource res)
 {
-	return 	MemFile_GetEnd((MFMemFile *) res);
+	return ((res_struct*)res)->end_p;
 }
 
 bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 {
-    string t(in_resource);
-    out_path = "/usr/share/WEDResources/" + t;
+	GUI_Resource res = GUI_LoadResource(in_resource);
+	if (!res) return false;
+	const char * sp = GUI_GetResourceBegin(res);
+	const char * ep = GUI_GetResourceEnd(res);
+	char tmpfilename[255] = "/tmp/wed_XXXXXX";
+	int fd = mkstemp(tmpfilename);
+	if (fd == -1)
+	{
+		printf("error opening temporary resource file %s\n", tmpfilename);
+		GUI_UnloadResource(res); return false;
+	}
+
+	int r = write(fd, sp, ep - sp);
+	printf("wrote %d bytes to %s\n", r, tmpfilename);
+	//close(fd);
+
+	GUI_UnloadResource(res);
+	out_path = tmpfilename;
+	free(tmpfilename);
     return true;
 }
 

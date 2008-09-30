@@ -1,7 +1,29 @@
+###########################################################
+
+clearscreen = echo -e "\033[2J\033[H"
+
+print_clean = echo -e "\033[0;31mcleaning all\033[0m"
+
+print_link = echo -n -e "\033[0;34m[ linking     ]\033[0m: " && basename
+print_comp = echo -n -e "\033[0;32m[ compiling   ]\033[0m: " && basename
+print_arch = echo -n -e "\033[0;34m[ archiving   ]\033[0m: " && basename
+
+print_error = (echo -e "\033[0;31m[ FAILED ]\033[0m" && false)
+
+###########################################################
+
 CC=gcc
 CPP=g++
 LINK=g++
 DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
+
+# either use exactly this order, or enclose the libs in --start-group/--end-group commandline options.
+# as we're using the dynamic loader (for using at least libGL) we need to link to libc dynamical,
+# due to that libdl and libpthread are dynamical linked in automatically if needed
+# note: compiler directories are platform and distibution dependent of course
+STDLIBS64= /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libstdc++.a /usr/lib64/libm.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc_eh.a /usr/lib64/libc.so /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/libgcc_eh.a
+STDLIBS32= /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libstdc++.a /usr/lib/libm.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc_eh.a /usr/lib/libc.so /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc.a /usr/lib/gcc/x86_64-redhat-linux/4.3.0/32/libgcc_eh.a
+
 INCLUDES=\
     -Ilibsrc/mesa-7.1/include \
 	-Ilibsrc/squish-1.10 \
@@ -36,10 +58,7 @@ INCLUDES=\
 	-ISDK/PVR \
 	-I/usr/include/freetype2 \
     -I/usr/include/libshp \
-    -I/usr/include/libgeotiff \
-	-I/usr/include/Qt \
-	-I/usr/include/QtCore \
-	-I/usr/include/QtGui
+    -I/usr/include/libgeotiff
 
 # debug
 #CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
@@ -51,9 +70,10 @@ INCLUDES=\
 #LDFLAGS= -pg
 
 # release
-CFLAGS=$(DEFINES) $(INCLUDES) -O2 -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CFLAGS=$(DEFINES) $(INCLUDES) -O2 -fomit-frame-pointer -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
 CPPFLAGS=$(CFLAGS)
-LDFLAGS= -s
+LDFLAGS=-nodefaultlibs -static-libgcc -s
+
 
 SRC_squish=\
 libsrc/squish-1.10/alpha.o \
@@ -268,6 +288,7 @@ src/Utils/XFileTwiddle.unix.o \
 src/Utils/Skeleton.o \
 src/Utils/perlin.o \
 src/Utils/MatrixUtils.o \
+src/Utils/safe-ctype.o \
 src/Installer/ErrMsg.o \
 src/Obj/ObjPointPool.o \
 src/Obj/XObjDefs.o \
@@ -327,10 +348,8 @@ src/XESCore/XESIO.o \
 src/XESCore/Zoning.o \
 src/XPWidgets/XPLMGraphics.o
 
-
 SRC_FONTTOOL=\
 src/fonttool/fonttool.o
-
 
 SRC_ObjView+=$(SRC_squish)
 SRC_DDSTool+=$(SRC_squish)
@@ -339,39 +358,55 @@ SRC_WED+=$(SRC_squish)
 SRC_MeshTool=\
 src/MeshTool/MeshTool.o
 
-#.SILENT:
+SRC_WEDRESOURCES=\
+src/WEDResources/resources.ro \
 
-all:	objview dsftool ddstool objconverter
+.SILENT:
+
+all:	wed objview ddstool dsftool ddstool objconverter fonttool
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@	
+	$(print_comp) $@
+	$(CC) $(CFLAGS) -c $< -o $@	|| $(print_error)
 
 %.o: %.cpp
-	$(CPP) $(CPPFLAGS) -c $< -o $@
+	$(print_comp) $@
+	$(CPP) $(CPPFLAGS) -c $< -o $@ || $(print_error)
+
+%.ro:
+	./buildres.sh src/WEDResources $@ x86_64 || $(print_error)
 
 objview: $(SRC_ObjView)
-	$(LINK) $(LDFLAGS) -o ObjView -lGL -lGLU -lpng -ljpeg -ltiff $(SRC_ObjView)
+	$(print_link) $@
+	$(LINK) $(LDFLAGS) -o ObjView $(SRC_ObjView) $(STDLIBS64) -Wl,-Bstatic -lpng -ltiff -ljpeg -lz -Wl,-Bdynamic -lGLU || $(print_error)
 
 dsftool: $(SRC_DSFTool)
-	$(LINK) $(LDFLAGS) -o DSFTool $(SRC_DSFTool)
+	$(print_link) $@
+	$(LINK) -static -static-libgcc -o DSFTool $(SRC_DSFTool) || $(print_error)
 
 ddstool: $(SRC_DDSTool)
-	$(LINK) $(LDFLAGS) -o DDSTool -lpng -ljpeg -ltiff $(SRC_DDSTool)
+	$(print_link) $@
+	$(LINK) -static -static-libgcc -o DDSTool $(SRC_DDSTool) -lpng -ltiff -ljpeg -lz || $(print_error)
 
 objconverter: $(SRC_ObjConverter)
-	$(LINK) $(LDFLAGS) -o ObjConverter -l3ds -ldime $(SRC_ObjConverter)
+	$(print_link) $@
+	$(LINK) $(LDFLAGS) -o ObjConverter $(SRC_ObjConverter) $(STDLIBS64) -Wl,-Bdynamic -l3ds -ldime || $(print_error)
 
 meshtool: $(SRC_MeshTool)
-	$(LINK) $(LDFLAGS) -o MeshTool $(SRC_MeshTool)
+	$(print_link) $@
+#	$(LINK) $(LDFLAGS) -o MeshTool $(SRC_MeshTool) $(STDLIBS64)
 
-wed: $(SRC_WED)
-	$(LINK) $(LDFLAGS) -o WED -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED) # -lQtCore -lQtGui
+wed: $(SRC_WED) $(SRC_WEDRESOURCES)
+	$(print_link) $@
+	$(LINK) $(LDFLAGS) -o WED $(SRC_WED) $(SRC_WEDRESOURCES) $(STDLIBS64) -Wl,-Bstatic -lpng -ltiff -ljpeg -lz -Wl,-Bdynamic -lGLU -lfreetype -lsqlite3 -lCGAL -lgeotiff -lproj -lshp || $(print_error)
 
 fonttool: $(SRC_FONTTOOL)
-	$(LINK) $(LDFLAGS) -o fonttool -lfreetype -lz -lpng $(SRC_FONTTOOL)
+	$(print_link) $@
+	$(LINK) $(LDFLAGS) -o fonttool $(SRC_FONTTOOL) $(STDLIBS64) -Wl,-Bstatic -lpng -lz -Wl,-Bdynamic -lfreetype || $(print_error)
 
 clean:
-	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED) $(SRC_FONTTOOL)
+	$(print_clean)
+	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED) $(SRC_FONTTOOL) $(SRC_WEDRESOURCES)
 
 distclean:	clean
 	-rm -f ObjView

@@ -25,7 +25,9 @@
 #define GUI_RESOURCES_H
 
 #include <string>
+#include <map>
 using std::string;
+using std::map;
 struct		ImageInfo;
 
 typedef void *	GUI_Resource;
