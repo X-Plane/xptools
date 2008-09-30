@@ -40,7 +40,7 @@
 #include <dlfcn.h>
 #include "safe-ctype.h"
 
-static void* volatile gModuleHandle = 0;
+static void* gModuleHandle = 0;
 
 /*
 ** slightly modified version from binutils (binary.c)
@@ -68,11 +68,6 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 {
 	const char* sym_start = 0;
 	const char* sym_end = 0;
-<<<<<<< HEAD:src/GUI/GUI_Resources.cpp
-=======
-	char* test;
-	char* test2;
->>>>>>> 385dd07d2b1b1f7171f4a74a76dd177c6c5f0f57:src/GUI/GUI_Resources.cpp
 
 	if (!gModuleHandle) return false;
 	if (!begin) return false;
@@ -85,16 +80,6 @@ static bool resource_get_memory(const string& res_name, char** begin, char** end
 	if (!sym_start) goto cleanup;
 	sym_end = mangle_name(res_name.c_str(), "end");
 	if (!sym_end) goto cleanup;
-<<<<<<< HEAD:src/GUI/GUI_Resources.cpp
-=======
-
-	printf("loaded resource: %s\n", sym_start);
-
-	test = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_start);
-	test2 = (char*)dlsym(dlopen(0, RTLD_NOW | RTLD_GLOBAL), sym_end);
-
-	printf("got symbols %p, %p\n", test, test2);
->>>>>>> 385dd07d2b1b1f7171f4a74a76dd177c6c5f0f57:src/GUI/GUI_Resources.cpp
 
 	*begin = (char*)dlsym(gModuleHandle, sym_start);
 	*end = (char*)dlsym(gModuleHandle, sym_end);

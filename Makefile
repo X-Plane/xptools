@@ -18,9 +18,9 @@ LINK=g++
 DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 
 # debug
-CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-CPPFLAGS=$(CFLAGS)
-LDFLAGS= -nodefaultlibs -static-libgcc
+#CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CPPFLAGS=$(CFLAGS)
+#LDFLAGS= -nodefaultlibs -static-libgcc
 
 # release profiling
 #CFLAGS=$(DEFINES) $(INCLUDES) -O2 -pg -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
@@ -28,9 +28,9 @@ LDFLAGS= -nodefaultlibs -static-libgcc
 #LDFLAGS= -nodefaultlibs -static-libgcc -pg
 
 # release
-#CFLAGS=$(DEFINES) $(INCLUDES) -O2 -fomit-frame-pointer -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-#CPPFLAGS=$(CFLAGS)
-#LDFLAGS=-nodefaultlibs -static-libgcc -s
+CFLAGS=$(DEFINES) $(INCLUDES) -O2 -fomit-frame-pointer -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CPPFLAGS=$(CFLAGS)
+LDFLAGS=-nodefaultlibs -static-libgcc -s
 
 # either use exactly this order, or enclose the libs in --start-group/--end-group commandline options.
 # as we're using the dynamic loader (for using at least libGL) we need to link to libc dynamically,
