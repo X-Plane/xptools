@@ -59,13 +59,18 @@
 #define TIMER(x)
 #endif
 
-MeshPrefs_t gMeshPrefs = {
+MeshPrefs_t gMeshPrefs = { 
+#if PHONE
+				35000,	// 65000, 
+				10.0,	// 7.5,
+#else
 				78000,	// 65000,
 				6.25,	// 7.5,
+#endif
 				1,
 				1,
-				1500.0,
-				2640.0
+				3500.0,
+				50000.0
 };
 
 /* Conststraint markers - here's the deal: the way we set the water body
@@ -1779,7 +1784,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs(center_y), variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
-
 					tri->info().debug_slope_dem = sl;
 					tri->info().debug_slope_tri = sl_tri;
 					tri->info().debug_temp = tm;
