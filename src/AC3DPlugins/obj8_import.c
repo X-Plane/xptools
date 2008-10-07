@@ -156,11 +156,13 @@ ACObject *	do_obj8_load(char *filename)
 	string texPath;
 	if(p2 != obj8.texture.npos) texPath = obj8.texture.substr(0,p2+1);
     string texNameBmp = texName + ".bmp";
-    string texNamePng = texName + ".png";
-    string texNameDds = texName + ".dds";
-	string texPathBmp = texPath + texNameBmp;
-	string texPathPng = texPath + texNamePng;
-	string texPathDds = texPath + texNameDds;
+    string texNamePng = texName + ".png";    
+    string texNameDds = texName + ".dds";   
+    string texNamePvr = texName + ".pvr";   
+	string texPathBmp = texPath + texNameBmp; 
+	string texPathPng = texPath + texNamePng; 
+	string texPathDds = texPath + texNameDds; 
+	string texPathPvr = texPath + texNamePvr; 
     string panelNamePng = "cockpit/-PANELS-/panel.png";
     string panelNameBmp = "cockpit/-PANELS-/panel.bmp";
 
@@ -176,6 +178,8 @@ ACObject *	do_obj8_load(char *filename)
 
     if (!texName.empty())
     {
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNamePvr.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNamePng.c_str());
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNameBmp.c_str());
@@ -183,6 +187,8 @@ ACObject *	do_obj8_load(char *filename)
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNameDds.c_str());
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathPvr.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathPng.c_str());
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathBmp.c_str());
@@ -233,6 +239,8 @@ ACObject *	do_obj8_load(char *filename)
 		int		deck = 0;
     	float	offset = 0;
 
+		map<int, Vertex *>	vmap;
+    	
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
@@ -241,6 +249,7 @@ ACObject *	do_obj8_load(char *filename)
 				if (stuff_obj == NULL)
 				{
 					stuff_obj = new_object(OBJECT_NORMAL);
+					vmap.clear();
 					if (panel_tex != -1)object_texture_set(stuff_obj, panel_tex);
 
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), stuff_obj);
@@ -255,14 +264,25 @@ ACObject *	do_obj8_load(char *filename)
 
 				if (cmd->cmd == obj8_Tris)
 				{
+					int total_verts = 0;
 					vector<Vertex *> verts;
 					for (i = 0; i < cmd->idx_count; ++i)
 					{
-						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);
-						p3.x = dat[0];
-						p3.y = dat[1];
-						p3.z = dat[2];
-						verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
+						map<int,Vertex *>::iterator idx_iter = vmap.find(obj8.indices[cmd->idx_offset + i]);
+						if(idx_iter != vmap.end())
+						{
+							verts.push_back(idx_iter->second);
+						}
+						else
+						{
+							++total_verts;
+							float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);
+							p3.x = dat[0];
+							p3.y = dat[1];
+							p3.z = dat[2];
+							verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));							
+							vmap.insert(map<int,Vertex*>::value_type(obj8.indices[cmd->idx_offset + i],verts.back()));
+						}
 					}
 
 			        Surface * s = NULL;

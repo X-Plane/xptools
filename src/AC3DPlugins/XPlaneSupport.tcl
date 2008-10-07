@@ -34,7 +34,7 @@ set SUBPANEL_DIM 4
 set USE_KEYFRAMES 1
 set USE_PANEL_EDIT 1
 
-set IPHONE 1
+set IPHONE 0
 
 
 ##########################################################################################################################################################
@@ -835,7 +835,14 @@ proc xplane_inspector_update { name1 name2 op } {
 }
 
 if {$IPHONE} {
-	set xplane_light_options [list none rwy_ww rwy_wy rwy_yw rwy_yy airplane_landing airplane_nav_l airplane_nav_r airplane_strobe airplane_beacon ]
+	set xplane_light_options [list none \
+		rwy_ww rwy_wy rwy_yw rwy_yy \
+		rwy_gr rwy_rg \
+		rwy_xr rwy_rx \
+		rwy_xw rwy_wx \
+		rwy_papi_1 rwy_papi_2 rwy_papi_3 rwy_papi_4 \
+		rwy_papi_rev_1 rwy_papi_rev_2 rwy_papi_rev_3 rwy_papi_rev_4 \
+		airplane_landing airplane_nav_l airplane_nav_r airplane_nav_t airplane_strobe airplane_beacon ]
 
 } else {
 	set xplane_light_options [list none "black smoke" "white smoke" rgb custom \

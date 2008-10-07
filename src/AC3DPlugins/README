@@ -11,6 +11,9 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
+	
+UNRELEASED
+	- Bug fix: importer produces less vertices.		
 Version 3.1r1
 	- Support for ATTR_hard_deck
 	- Bug fix in importing hard surfaces!

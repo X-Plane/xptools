@@ -32,4 +32,6 @@ int 		do_obj8_save_ex(char * fname, ACObject * obj, int do_prefix, int tex_id, i
 
 int 		do_obj7_save_convert(char * fname, ACObject * obj);
 
+int 		do_obje_save(char * fname, ACObject * obj);
+
 #endif

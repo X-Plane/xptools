@@ -65,6 +65,7 @@ attributes.
 
 #include "XObjDefs.h"
 #include "XObjReadWrite.h"
+#include "XObjWriteEmbedded.h"
 #include "ObjConvert.h"
 #include "XObjBuilder.h"
 #include "prefs.h"
@@ -105,7 +106,14 @@ static void obj8_output_polygon(XObjBuilder * builder, Surface *s);
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj);
 static void obj8_output_object(XObjBuilder * builder, ACObject *obj, ACObject * root, int tex_id, int do_misc);
 
-static int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefix, int tex_id, int do_misc);
+enum convert_choice {
+	convert_none,
+	convert_7,
+	convert_e
+};
+
+
+static int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, int do_prefix, int tex_id, int do_misc);
 
 
 /***************************************************************************************************
@@ -475,7 +483,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 }
 
 
-int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefix, int tex_id, int do_misc)
+
+int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, int do_prefix, int tex_id, int do_misc)
 {
 	XObj8	obj8;
 
@@ -553,11 +562,20 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	}
 	builder.Finish();
 
-	if (convert)
+	if (convert == convert_7)
 	{
 		XObj	obj7;
 		Obj8ToObj7(obj8, obj7);
 		if (!XObjWrite(export_path.c_str(), obj7))
+	    {
+	        message_dialog("can't open file '%s' for writing", export_path.c_str());
+	        return 0;
+	    }
+	
+	} else if (convert == convert_e)
+	{
+		Obj8_Optimize(obj8);
+		if (!XObjWriteEmbedded(export_path.c_str(), obj8, true))	// 16 bit!
 	    {
 	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
@@ -575,14 +593,14 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
     if (gErrDoubleTex)
     	message_dialog("This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
 
-   if (gErrBadCockpit && convert)
+   if (gErrBadCockpit && convert == convert_7)
     	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");
-   if (gErrBadHard && convert)
+   if (gErrBadHard && convert == convert_7)
     	message_dialog("This model has non-quad surfaces that rae marked as hard.  Only quad surfaces may be hard in OBJ7.");
 
    if (gBadSurfaces)
     {
-    	if (convert) {
+    	if (convert == convert_7) {    	
 			clear_selection();
 			ac_selection_select_surfacelist(gBadSurfaces);
 			redraw_all();
@@ -604,15 +622,21 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 
 int 		do_obj8_save(char * fname, ACObject * obj)
 {
-	return do_obj8_save_common(fname, obj, false, false, -1, true);
+	return do_obj8_save_common(fname, obj, convert_none, false, -1, true);
 }
+
+int 		do_obje_save(char * fname, ACObject * obj)
+{
+	return do_obj8_save_common(fname, obj, convert_e, false, -1, true);
+}
+
 
 int 		do_obj8_save_ex(char * fname, ACObject * obj, int do_prefix, int tex_id, int do_misc)
 {
-	return do_obj8_save_common(fname, obj, false, do_prefix, tex_id, do_misc);
+	return do_obj8_save_common(fname, obj, convert_none, do_prefix, tex_id, do_misc);
 }
 
 int 		do_obj7_save_convert(char * fname, ACObject * obj)
 {
-	return do_obj8_save_common(fname, obj, true, false, -1, true);
+	return do_obj8_save_common(fname, obj, convert_7, false, -1, true);
 }
