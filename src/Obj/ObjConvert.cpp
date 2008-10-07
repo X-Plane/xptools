@@ -23,8 +23,10 @@
 #include "ObjConvert.h"
 #include "XObjDefs.h"
 #include <math.h>
+#if PHONE
 #include "PVRTGeometry.h"
 #include "PVRTTriStrip.h"
+#endif
 
 static bool operator==(const vec_tex& lhs, const vec_tex& rhs);
 bool operator==(const vec_tex& lhs, const vec_tex& rhs)
@@ -536,6 +538,7 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 }
 
 
+#if PHONE
 bool	Obj8_Optimize(XObj8& obj8)
 {
 	typedef	pair<int, int>		idx_range;
@@ -609,3 +612,4 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 	return true;
 }
+#endif

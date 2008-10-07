@@ -24,6 +24,7 @@
 #include "XObjBuilder.h"
 #include "XObjDefs.h"
 #include <algorithm>
+#include <math.h>
 
 XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 {
@@ -144,16 +145,26 @@ void	XObjBuilder::SetAttribute3(int attr, float v[3])
 
 void	XObjBuilder::AccumTri(float inTri[24])
 {
-	inTri[6 ] = inTri[6 ] * tex_repeat_s + tex_offset_s;
-	inTri[7 ] = inTri[7 ] * tex_repeat_t + tex_offset_t;
-	inTri[14] = inTri[14] * tex_repeat_s + tex_offset_s;
-	inTri[15] = inTri[15] * tex_repeat_t + tex_offset_t;
-	inTri[22] = inTri[22] * tex_repeat_s + tex_offset_s;
-	inTri[23] = inTri[23] * tex_repeat_t + tex_offset_t;
+	float tri[24];
+	for(int n = 0; n < 24; ++n)
+	{
+		tri[n] = inTri[n];
+	}	
+	tri[6 ] = tri[6 ] * tex_repeat_s + tex_offset_s;
+	tri[7 ] = tri[7 ] * tex_repeat_t + tex_offset_t;
+	tri[14] = tri[14] * tex_repeat_s + tex_offset_s;
+	tri[15] = tri[15] * tex_repeat_t + tex_offset_t;
+	tri[22] = tri[22] * tex_repeat_s + tex_offset_s;
+	tri[23] = tri[23] * tex_repeat_t + tex_offset_t;
 
-	int		idx1 = obj->geo_tri.accumulate(inTri   );
-	int		idx2 = obj->geo_tri.accumulate(inTri+8 );
-	int		idx3 = obj->geo_tri.accumulate(inTri+16);
+	for(int n = 0; n < 24; ++n)
+	{
+		tri[n] = roundf(tri[n] * 65536.0) / 65536.0;
+	}	
+
+	int		idx1 = obj->geo_tri.accumulate(tri   );
+	int		idx2 = obj->geo_tri.accumulate(tri+8 );
+	int		idx3 = obj->geo_tri.accumulate(tri+16);
 
 	int		start_i = obj->indices.size();
 

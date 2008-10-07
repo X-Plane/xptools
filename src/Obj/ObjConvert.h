@@ -37,7 +37,8 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7);
 void	Obj8_ConsolidateIndexCommands(XObj8& obj8);
 // This calculates OBJ8 normals frmo tris, editing the point pool.
 void	Obj8_CalcNormals(XObj8& obj8);
-
+#if PHONE
 bool	Obj8_Optimize(XObj8& obj8);
+#endif
 
 #endif

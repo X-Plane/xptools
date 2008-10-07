@@ -911,6 +911,16 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
  ****************************************************************************************/
 bool	XObj8Write(const char * inFile, const XObj8& outObj)
 {
+	for(int h = 0; h < outObj.geo_tri.count(); ++h)
+	{
+		const float * p = outObj.geo_tri.get(h);
+		const int * q = (const int *) p;
+		printf("%d: %f %f %f %f %f %f %f %f    0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n",
+			h,
+			p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], 
+			q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7]);
+	}
+	
 	int n;
 
 	FILE * fi = fopen(inFile, "w");

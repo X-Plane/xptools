@@ -150,13 +150,30 @@ static named_light_info_t k_light_info[] = {
 	"airplane_landing",			1,		"sim/graphics/animation/lights/airplane_landing_light",
 	"airplane_nav_l",			1,		"sim/graphics/animation/lights/airplane_nav_light_l",
 	"airplane_nav_r",			1,		"sim/graphics/animation/lights/airplane_nav_light_r",
+	"airplane_nav_t",			1,		"sim/graphics/animation/lights/airplane_nav_light_t",
 	"airplane_strobe",			1,		"sim/graphics/animation/lights/airplane_strobe_light",
 	"airplane_beacon",			1,		"sim/graphics/animation/lights/airplane_beacon_light",
+
+	"rwy_papi_1",				1,		"sim/graphics/animation/lights/rwy_papi_1",
+	"rwy_papi_2",				1,		"sim/graphics/animation/lights/rwy_papi_2",
+	"rwy_papi_3",				1,		"sim/graphics/animation/lights/rwy_papi_3",
+	"rwy_papi_4",				1,		"sim/graphics/animation/lights/rwy_papi_4",
+
+	"rwy_papi_rev_1",			1,		"sim/graphics/animation/lights/rwy_papi_rev_1",
+	"rwy_papi_rev_2",			1,		"sim/graphics/animation/lights/rwy_papi_rev_2",
+	"rwy_papi_rev_3",			1,		"sim/graphics/animation/lights/rwy_papi_rev_3",
+	"rwy_papi_rev_4",			1,		"sim/graphics/animation/lights/rwy_papi_rev_4",
 
 	"rwy_ww",					0,		"sim/graphics/animation/lights/runway_ww",
 	"rwy_wy",					0,		"sim/graphics/animation/lights/runway_wy",
 	"rwy_yw",					0,		"sim/graphics/animation/lights/runway_yw",
 	"rwy_yy",					0,		"sim/graphics/animation/lights/runway_yy",
+	"rwy_gr",					0,		"sim/graphics/animation/lights/runway_gr",
+	"rwy_rg",					0,		"sim/graphics/animation/lights/runway_rg",
+	"rwy_xw",					0,		"sim/graphics/animation/lights/runway_xw",
+	"rwy_xr",					0,		"sim/graphics/animation/lights/runway_xr",
+	"rwy_wx",					0,		"sim/graphics/animation/lights/runway_wx",
+	"rwy_rx",					0,		"sim/graphics/animation/lights/runway_rx",
 	0,0,0
 };
 
