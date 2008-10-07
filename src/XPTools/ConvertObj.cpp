@@ -64,7 +64,9 @@ static	int	gAxis = axis_Z;
 static	int	gSave = save_OBJ8;
 static	int	gBitSize = size_16;
 
+#if PHONE
 static int	gOptimize = 0;
+#endif
 
 void	PostProcessVertex(float v[3], bool inReverse)
 {
@@ -156,9 +158,10 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 				 if (XObjRead(inSrcFile, obj))					Obj7ToObj8(obj,obj8);
 			else if (!XObj8Read(inSrcFile, obj8))				{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
 
+#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-
+#endif
 			if (!XObj8Write(inDstFile, obj8))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -169,6 +172,7 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 	}
+#if PHONE
 	if(strcmp(inConvertFlag,"--obj2obe")==0)
 	{
 			 if (XObjRead(inSrcFile, obj))					Obj7ToObj8(obj,obj8);
@@ -176,9 +180,10 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 		if(gOptimize)
 			Obj8_Optimize(obj8);
-		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-	}
-
+		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }	
+	}	
+#endif
+	
 	if(strcmp(inConvertFlag,"--3ds2obj")==0)
 	{
 		if (!ReadObj3DS(inSrcFile, obj, gPoly == poly_CCW))	{ printf("Error: unable to read DXF file %s\n", inSrcFile); exit(1); }
@@ -188,9 +193,11 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		{
 			Obj7ToObj8(obj,obj8);
 
+#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-
+#endif
+			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -207,10 +214,12 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		if (gSave == save_OBJ8)
 		{
 			Obj7ToObj8(obj,obj8);
-
+			
+#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-
+#endif
+			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -234,7 +243,9 @@ int main(int argc, const char * argv[])
 		printf("CMD .obj .3ds \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj .dxf \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+#if PHONE
 		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
+#endif		
 		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");
@@ -243,7 +254,9 @@ int main(int argc, const char * argv[])
 		printf("RADIO CO_UNITS 1 --meters Meters\n");
 		printf("DIV\n");
 		printf("CHECK CO_CENTER 0 --center Center Object Horizontally\n");
-		printf("CHECK CO_OPTIMIZE 0 --optimize Optimize Vertices and Indices\n");
+#if PHONE
+		printf("CHECK CO_OPTIMIZE 1 --optimize Optimize Vertices and Indices\n");
+#endif		
 		printf("DIV\n");
 		printf("CHECK CO_FLIPX 0 --flip_x Flip X\n");
 		printf("CHECK CO_FLIPY 0 --flip_y Flip Y\n");
@@ -271,8 +284,9 @@ int main(int argc, const char * argv[])
 		else if (!strcmp(argv[a],"--meters"))		gUnits = unit_Meters;
 
 		else if (!strcmp(argv[a],"--center"))		gCenterH = 1;
+#if PHONE
 		else if (!strcmp(argv[a],"--optimize"))		gOptimize = 1;
-
+#endif
 		else if (!strcmp(argv[a],"--flip_x"))		gFlipX = 1;
 		else if (!strcmp(argv[a],"--flip_y"))		gFlipY = 1;
 		else if (!strcmp(argv[a],"--flip_z"))		gFlipZ = 1;
