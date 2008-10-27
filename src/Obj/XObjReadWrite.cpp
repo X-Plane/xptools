@@ -441,7 +441,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 
 bool	XObjWrite(const char * inFile, const XObj& inObj)
 {
-	FILE * fi = fopen(inFile, "w");
+	FILE * fi = fopen(inFile, "wb");
 	if (!fi) return false;
 
 	fprintf(fi,"%c" CRLF, APL ? 'A' : 'I');
@@ -923,7 +923,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	
 	int n;
 
-	FILE * fi = fopen(inFile, "w");
+	FILE * fi = fopen(inFile, "wb");
 	if (fi == NULL) return false;
 	const float * v;
 
