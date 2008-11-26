@@ -23,7 +23,9 @@
 #include "DSFPointPool.h"
 #include "XChunkyFileUtils.h"
 #include "DSFLib.h"
+#if PHONE
 #include "PVRTTriStrip.h"
+#endif
 
 #include <utility>
 using std::pair;
@@ -496,7 +498,6 @@ static unsigned short * strip_break(unsigned short * idx_start, unsigned short *
 	return idx_start;
 }
 
-
 void DSFOptimizePrimitives(
 					vector<DSFPrimitive>& io_primitives)
 {
@@ -527,10 +528,11 @@ void DSFOptimizePrimitives(
 	else
 		out_prims.push_back(*p);
 
+#if PHONE
 	PVRTTriStripList(
 		&*indices.begin(),
 		indices.size() / 3);
-
+#endif
 
 	vector<unsigned short> pure_tris;
 	
