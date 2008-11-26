@@ -1223,7 +1223,30 @@ void	DSFFileWriterImp::EndPatch(
 	if (REF(inRef)->accum_patch->primitives.empty())
 	{
 		Assert(!"WARNING: Empty patch.\n");
-		REF(inRef)->patches.pop_back();
+		REF(inRef)->patches.pop_back();		
+	}
+	else
+	{
+		vector<DSFPrimitive>	prims;
+		
+		PatchSpec * me = REF(inRef)->accum_patch;
+		
+		for(TriPrimitiveVector::iterator p = me->primitives.begin(); p != me->primitives.end(); ++p)
+		{
+			prims.push_back(DSFPrimitive());
+			prims.back().kind = p->type;
+			swap(prims.back().vertices,p->vertices);
+		}
+		
+		me->primitives.clear();
+		DSFOptimizePrimitives(prims);
+
+		for(vector<DSFPrimitive>::iterator pp = prims.begin(); pp != prims.end(); ++pp)
+		{
+			me->primitives.push_back(TriPrimitive());
+			me->primitives.back().type = pp->kind;
+			swap(me->primitives.back().vertices,pp->vertices);
+		}
 	}
 }
 

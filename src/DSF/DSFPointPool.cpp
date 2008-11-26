@@ -22,6 +22,9 @@
  */
 #include "DSFPointPool.h"
 #include "XChunkyFileUtils.h"
+#include "DSFLib.h"
+#include "PVRTTriStrip.h"
+
 #include <utility>
 using std::pair;
 
@@ -462,5 +465,117 @@ int				DSF32BitPointPool::WriteScaleAtoms(FILE * fi, int id)
 		WriteFloat32(fi, mOffset[d]);
 	}
 	return 1;
+}
+
+bool is_strip(unsigned short * idx, int n)
+{
+	if (n % 2)
+	{	//				   0 1 2    3 4 5
+		// second tri, so: 2 1 3	2 3 4
+		return idx[0] == idx[3] &&
+			   idx[2] == idx[4];
+	} 
+	else
+	{	//				  0 1 2     3 4 5
+		// first tri, so: 0 1 2		2 1 3
+		return idx[1] == idx[4] &&
+			   idx[2] == idx[3];
+	}
+	
+}
+
+static unsigned short * strip_break(unsigned short * idx_start, unsigned short * idx_end)
+{
+	int ct = 0;
+	idx_start += 3;
+	while(idx_start < idx_end && is_strip(idx_start-3, ct))
+	{
+		idx_start += 3;
+		++ct;
+	}
+	return idx_start;
+}
+
+
+void DSFOptimizePrimitives(
+					vector<DSFPrimitive>& io_primitives)
+{
+	typedef	hash_map<DSFTuple, int>		idx_t;
+	vector<DSFPrimitive>				out_prims;
+	idx_t								point_index;
+	vector<DSFTuple>					vertices;
+	vector<unsigned short>				indices;
+	
+	for(vector<DSFPrimitive>::iterator p = io_primitives.begin(); p != io_primitives.end(); ++p)
+	if(p->kind == dsf_Tri)
+	{
+		for(DSFTupleVector::iterator v = p->vertices.begin(); v != p->vertices.end(); ++v)
+		{
+			idx_t::iterator idx_ref = point_index.find(*v);
+			if(idx_ref == point_index.end())
+			{
+				indices.push_back(vertices.size());
+				vertices.push_back(*v);
+				point_index.insert(idx_t::value_type(*v,vertices.size()-1));
+			}
+			else
+			{
+				indices.push_back(idx_ref->second);
+			}
+		}
+	}
+	else
+		out_prims.push_back(*p);
+
+	PVRTTriStripList(
+		&*indices.begin(),
+		indices.size() / 3);
+
+
+	vector<unsigned short> pure_tris;
+	
+	unsigned short * s = &*indices.begin(), * e = &*indices.end();
+	while(s != e)
+	{
+		unsigned short * b = strip_break(s,e);
+		if((b - s) > 3)
+		{
+			
+			out_prims.push_back(DSFPrimitive());
+			out_prims.back().kind = dsf_TriStrip;
+			out_prims.back().vertices.push_back(vertices[s[0]]);
+			out_prims.back().vertices.push_back(vertices[s[1]]);
+			out_prims.back().vertices.push_back(vertices[s[2]]);
+			s += 3;
+			bool odd = true;
+			while(s != b)
+			{
+				if(odd)		out_prims.back().vertices.push_back(vertices[s[2]]);
+				else		out_prims.back().vertices.push_back(vertices[s[2]]);
+				odd = !odd;
+				
+				s += 3;
+			}
+		}
+		else
+		{
+			pure_tris.insert(pure_tris.end(),s,b);
+		}
+		s=b;
+	}
+	
+	while(!pure_tris.empty())
+	{
+		int n = min(pure_tris.size(),255UL);
+		out_prims.push_back(DSFPrimitive());
+		out_prims.back().kind = dsf_Tri;
+		for(int i = 0; i < n; ++i)
+		{
+			out_prims.back().vertices.push_back(vertices[pure_tris[i]]);
+		}
+		pure_tris.erase(pure_tris.begin(),pure_tris.begin()+n);
+	}
+	
+	swap(io_primitives,out_prims);
 }
 
