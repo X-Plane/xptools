@@ -678,8 +678,6 @@
 		D6E064820BDD32010070E31C /* map_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E064810BDD32010070E31C /* map_tools.png */; };
 		D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */; };
 		D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */; };
-		D6EAD1BC0E6DBA8A00FC011A /* PVRTGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */; };
-		D6EAD5520E6DFC3600FC011A /* PVRTTriStrip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
 		D6ED369F0B67964D00D5484E /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -1380,7 +1378,6 @@
 		D6BC37370AB22C85003949C5 /* FAA_Obs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FAA_Obs.h; sourceTree = "<group>"; };
 		D6BC37380AB22C85003949C5 /* gshhs.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = gshhs.c; sourceTree = "<group>"; };
 		D6BC37390AB22C85003949C5 /* gshhs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = gshhs.h; sourceTree = "<group>"; };
-		D6BC373A0AB22C85003949C5 /* ROADMAP.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ROADMAP.txt; sourceTree = "<group>"; };
 		D6BC373D0AB22C85003949C5 /* SDTSRead.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SDTSRead.cpp; sourceTree = "<group>"; };
 		D6BC373E0AB22C85003949C5 /* SDTSRead.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SDTSRead.h; sourceTree = "<group>"; };
 		D6BC373F0AB22C85003949C5 /* SDTSReadTVP.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SDTSReadTVP.cpp; sourceTree = "<group>"; };
@@ -1787,8 +1784,6 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
-		D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTGeometry.cpp; sourceTree = "<group>"; };
-		D6EAD1B80E6DBA8A00FC011A /* PVRTGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGeometry.h; sourceTree = "<group>"; };
 		D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGlobal.h; sourceTree = "<group>"; };
 		D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTTriStrip.cpp; sourceTree = "<group>"; };
 		D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTTriStrip.h; sourceTree = "<group>"; };
@@ -2280,7 +2275,6 @@
 				D6BC36F40AB22C84003949C5 /* ObjEdit */,
 				D6BC37270AB22C84003949C5 /* OGLE */,
 				D6BC37320AB22C85003949C5 /* RawImport */,
-				D6BC373A0AB22C85003949C5 /* ROADMAP.txt */,
 				D6BC373B0AB22C85003949C5 /* SDTS */,
 				D6BC37460AB22C85003949C5 /* Tiger */,
 				D6BC37560AB22C85003949C5 /* UI */,
@@ -3194,8 +3188,6 @@
 				D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */,
 				D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */,
 				D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */,
-				D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */,
-				D6EAD1B80E6DBA8A00FC011A /* PVRTGeometry.h */,
 			);
 			path = PVR;
 			sourceTree = "<group>";
@@ -4149,8 +4141,6 @@
 				D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */,
 				D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */,
 				D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */,
-				D6EAD1BC0E6DBA8A00FC011A /* PVRTGeometry.cpp in Sources */,
-				D6EAD5520E6DFC3600FC011A /* PVRTTriStrip.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4662,6 +4652,217 @@
 				ZERO_LINK = NO;
 			};
 			name = Release;
+		};
+		D60E98EE0EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEV=1",
+					"APL=1",
+					"PHONE=1",
+				);
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				HEADER_SEARCH_PATHS = (
+					"libsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1",
+					"libsrc/shapelib-1.2.10",
+					"libsrc/CGAL-3.0/include",
+					"libsrc/zlib-1.1.4/contrib/minizip",
+					/usr/local/include/freetype2,
+					"/usr/include/c++/4.0.0",
+					/usr/local/include,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(inherited)",
+				);
+				OTHER_LDFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
+			};
+			name = Phone;
+		};
+		D60E98EF0EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = src/XPTools/ObjView.plist;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+			};
+			name = Phone;
+		};
+		D60E98F00EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/libdime.a,
+					/usr/local/lib/lib3ds.a,
+				);
+			};
+			name = Phone;
+		};
+		D60E98F10EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"USE_JPEG=1",
+					"OPENGL_MAP=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+			};
+			name = Phone;
+		};
+		D60E98F20EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
+			};
+			name = Phone;
+		};
+		D60E98F30EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"USE_JPEG=1",
+					"OPENGL_MAP=1",
+					"WED=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
+				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
+				INFOPLIST_PREPROCESS = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libtiffxx.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libsqlite3.a,
+				);
+			};
+			name = Phone;
+		};
+		D60E98F40EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				PRODUCT_NAME = DSFTool;
+			};
+			name = Phone;
+		};
+		D60E98F50EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"$(inherited)",
+				);
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_CFLAGS = "-fpermissive";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PRODUCT_NAME = RenderFarm;
+			};
+			name = Phone;
+		};
+		D60E98F60EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/lib3ds.a,
+					/usr/local/lib/libdime.a,
+				);
+			};
+			name = Phone;
+		};
+		D60E98F70EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				PRODUCT_NAME = DDSTool;
+			};
+			name = Phone;
+		};
+		D60E98F80EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PRODUCT_NAME = MeshTool;
+			};
+			name = Phone;
+		};
+		D60E98F90EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = Untitled;
+			};
+			name = Phone;
+		};
+		D60E98FA0EDDDEEA0096DE0E /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build All";
+			};
+			name = Phone;
 		};
 		D61C26F60B6155B70092E098 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5182,6 +5383,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0E91AC608A95435008D54AB /* Debug */,
+				D60E98EF0EDDDEEA0096DE0E /* Phone */,
 				D6F01D700CDABA8D00A3F1B0 /* DebugOpt */,
 				C0E91AC708A95435008D54AB /* Release */,
 			);
@@ -5192,6 +5394,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0E91ACA08A95435008D54AB /* Debug */,
+				D60E98EE0EDDDEEA0096DE0E /* Phone */,
 				D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */,
 				C0E91ACB08A95435008D54AB /* Release */,
 			);
@@ -5202,6 +5405,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D60734290D197A1100E08F61 /* Debug */,
+				D60E98F80EDDDEEA0096DE0E /* Phone */,
 				D607342A0D197A1100E08F61 /* DebugOpt */,
 				D607342B0D197A1100E08F61 /* Release */,
 			);
@@ -5212,6 +5416,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D61C26F60B6155B70092E098 /* Debug */,
+				D60E98F90EDDDEEA0096DE0E /* Phone */,
 				D6F01D790CDABA8D00A3F1B0 /* DebugOpt */,
 				D61C26F70B6155B70092E098 /* Release */,
 			);
@@ -5222,6 +5427,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D62435420AE401EF004F00E3 /* Debug */,
+				D60E98F10EDDDEEA0096DE0E /* Phone */,
 				D6F01D720CDABA8D00A3F1B0 /* DebugOpt */,
 				D62435430AE401EF004F00E3 /* Release */,
 			);
@@ -5232,6 +5438,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D65E4B380B65427C004D7887 /* Debug */,
+				D60E98F50EDDDEEA0096DE0E /* Phone */,
 				D6F01D780CDABA8D00A3F1B0 /* DebugOpt */,
 				D65E4B390B65427C004D7887 /* Release */,
 			);
@@ -5242,6 +5449,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF5080B5CF9F400D9190C /* Debug */,
+				D60E98F20EDDDEEA0096DE0E /* Phone */,
 				D6F01D760CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF5090B5CF9F400D9190C /* Release */,
 			);
@@ -5252,6 +5460,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF84E0B5E5CA800D9190C /* Debug */,
+				D60E98F40EDDDEEA0096DE0E /* Phone */,
 				D6F01D730CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF84F0B5E5CA800D9190C /* Release */,
 			);
@@ -5262,6 +5471,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF9870B6135F400D9190C /* Debug */,
+				D60E98F60EDDDEEA0096DE0E /* Phone */,
 				D6F01D750CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF9880B6135F400D9190C /* Release */,
 			);
@@ -5272,6 +5482,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6BC3CC80AB2330E003949C5 /* Debug */,
+				D60E98F00EDDDEEA0096DE0E /* Phone */,
 				D6F01D710CDABA8D00A3F1B0 /* DebugOpt */,
 				D6BC3CC90AB2330E003949C5 /* Release */,
 			);
@@ -5282,6 +5493,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6C579D40C7E3C7B00FCB4C1 /* Debug */,
+				D60E98F70EDDDEEA0096DE0E /* Phone */,
 				D6F01D740CDABA8D00A3F1B0 /* DebugOpt */,
 				D6C579D50C7E3C7B00FCB4C1 /* Release */,
 			);
@@ -5292,6 +5504,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6C68DF00BEFB3DB00C9F880 /* Debug */,
+				D60E98FA0EDDDEEA0096DE0E /* Phone */,
 				D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */,
 				D6C68DF10BEFB3DB00C9F880 /* Release */,
 			);
@@ -5302,6 +5515,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6ED37470B67964D00D5484E /* Debug */,
+				D60E98F30EDDDEEA0096DE0E /* Phone */,
 				D6F01D770CDABA8D00A3F1B0 /* DebugOpt */,
 				D6ED37480B67964D00D5484E /* Release */,
 			);
