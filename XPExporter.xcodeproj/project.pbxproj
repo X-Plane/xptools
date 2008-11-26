@@ -25,6 +25,8 @@
 		D6B332890B00D45C001D7CCD /* obj_editor.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B332870B00D45C001D7CCD /* obj_editor.h */; };
 		D6B3328A0B00D45C001D7CCD /* obj_editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B332880B00D45C001D7CCD /* obj_editor.cpp */; };
 		D6B334C20B00E203001D7CCD /* Tcl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6B334C10B00E203001D7CCD /* Tcl.framework */; };
+		D6BA8F1D0E7F25C100D92779 /* PVRTGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */; };
+		D6BA8F1E0E7F25C100D92779 /* PVRTTriStrip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */; };
 		D6CD2501098F95D900B525DA /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */; };
 		D6CD2502098F95D900B525DA /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */; };
 		D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */; };
@@ -123,8 +125,18 @@
 		D6B332870B00D45C001D7CCD /* obj_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_editor.h; sourceTree = "<group>"; };
 		D6B332880B00D45C001D7CCD /* obj_editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_editor.cpp; sourceTree = "<group>"; };
 		D6B334C10B00E203001D7CCD /* Tcl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tcl.framework; path = /System/Library/Frameworks/Tcl.framework; sourceTree = "<absolute>"; };
+		D6BA8EF00E7F25C100D92779 /* ac_plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac_plugin.h; sourceTree = "<group>"; };
+		D6BA8EF30E7F25C100D92779 /* ac_undo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac_undo.h; sourceTree = "<group>"; };
+		D6BA8EF50E7F25C100D92779 /* mod_ac_plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mod_ac_plugin.h; sourceTree = "<group>"; };
+		D6BA8F100E7F25C100D92779 /* Undoable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Undoable.h; sourceTree = "<group>"; };
+		D6BA8F110E7F25C100D92779 /* Undoables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Undoables.h; sourceTree = "<group>"; };
+		D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTGeometry.cpp; sourceTree = "<group>"; };
+		D6BA8F160E7F25C100D92779 /* PVRTGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGeometry.h; sourceTree = "<group>"; };
+		D6BA8F170E7F25C100D92779 /* PVRTGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGlobal.h; sourceTree = "<group>"; };
+		D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTTriStrip.cpp; sourceTree = "<group>"; };
+		D6BA8F190E7F25C100D92779 /* PVRTTriStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTTriStrip.h; sourceTree = "<group>"; };
 		D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XPlaneSupportMac.p.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
+		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
 		D6DEA775098E92980061BE4C /* ac_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ac_utils.c; sourceTree = "<group>"; };
 		D6DEA776098E92980061BE4C /* bitmap_match.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = bitmap_match.c; sourceTree = "<group>"; };
 		D6DEA777098E92980061BE4C /* obj_radius.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_radius.c; sourceTree = "<group>"; };
@@ -182,6 +194,7 @@
 		08FB7794FE84155DC02AAC07 /* XPExporter */ = {
 			isa = PBXGroup;
 			children = (
+				D6BA8EED0E7F25C100D92779 /* SDK */,
 				D6F2F1800BC1AA570051E526 /* Frameworks */,
 				08FB7795FE84155DC02AAC07 /* src */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
@@ -207,6 +220,39 @@
 				D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D6BA8EED0E7F25C100D92779 /* SDK */ = {
+			isa = PBXGroup;
+			children = (
+				D6BA8EEE0E7F25C100D92779 /* ac3d */,
+				D6BA8F130E7F25C100D92779 /* PVR */,
+			);
+			path = SDK;
+			sourceTree = "<group>";
+		};
+		D6BA8EEE0E7F25C100D92779 /* ac3d */ = {
+			isa = PBXGroup;
+			children = (
+				D6BA8EF00E7F25C100D92779 /* ac_plugin.h */,
+				D6BA8EF30E7F25C100D92779 /* ac_undo.h */,
+				D6BA8EF50E7F25C100D92779 /* mod_ac_plugin.h */,
+				D6BA8F100E7F25C100D92779 /* Undoable.h */,
+				D6BA8F110E7F25C100D92779 /* Undoables.h */,
+			);
+			path = ac3d;
+			sourceTree = "<group>";
+		};
+		D6BA8F130E7F25C100D92779 /* PVR */ = {
+			isa = PBXGroup;
+			children = (
+				D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */,
+				D6BA8F160E7F25C100D92779 /* PVRTGeometry.h */,
+				D6BA8F170E7F25C100D92779 /* PVRTGlobal.h */,
+				D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */,
+				D6BA8F190E7F25C100D92779 /* PVRTTriStrip.h */,
+			);
+			path = PVR;
 			sourceTree = "<group>";
 		};
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
@@ -328,9 +374,11 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB914E08733D8E0010E9CD /* Build configuration list for PBXProject "XPExporter" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 08FB7794FE84155DC02AAC07 /* XPExporter */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				D6CD245E098EB16400B525DA /* XPlaneSupportMac */,
 			);
@@ -387,6 +435,8 @@
 				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
 				D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */,
 				D60E91290D5A448C0065D79F /* TclStubs.cpp in Sources */,
+				D6BA8F1D0E7F25C100D92779 /* PVRTGeometry.cpp in Sources */,
+				D6BA8F1E0E7F25C100D92779 /* PVRTTriStrip.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -447,12 +497,22 @@
 		D6CD2462098EB16400B525DA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 			};
 			name = Debug;
 		};
 		D6CD2463098EB16400B525DA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 			};
 			name = Release;
 		};
