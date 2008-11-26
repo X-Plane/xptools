@@ -61,16 +61,21 @@
 
 MeshPrefs_t gMeshPrefs = { 
 #if PHONE
-				35000,	// 65000, 
-				10.0,	// 7.5,
+				30000,	// 35000,	// 65000, 
+				12.0,	// 10.0,	// 7.5,
 #else
 				78000,	// 65000,
 				6.25,	// 7.5,
 #endif
 				1,
 				1,
+#if PHONE
+				5000.0,	// 3500.0,	// 3500.0,
+				50000.0
+#else
 				3500.0,
 				50000.0
+#endif
 };
 
 /* Conststraint markers - here's the deal: the way we set the water body
