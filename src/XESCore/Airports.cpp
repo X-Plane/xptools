@@ -646,11 +646,19 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 			if (ClipDEMToFaceSet(simple_faces, elevation, working, x1, y1, x2, y2))
 			{
 				working.copy_geo_from(elevation);
-				--x1;
-				--y1;
-				++x2;
-				++y2;
-				SpreadDEMValues(working, 1, x1, y1, x2, y2);
+				#if PHONE
+					x1-=2;
+					y1-=2;
+					x2+=2;
+					y2+=2;
+					SpreadDEMValues(working, 2, x1, y1, x2, y2);
+				#else
+					--x1;
+					--0y1;
+					++x2;
+					++y2;
+					SpreadDEMValues(working, 1, x1, y1, x2, y2);
+				#endif
 				DEMGeo		airport_area;
 				working.subset(airport_area, x1, y1, x2-1,y2-1);
 				vector<DEMGeo>	fft;
@@ -658,7 +666,24 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 				if (fft.size() > 1)		fft[0] *= 0.0;
 				if (fft.size() > 2)		fft[1] *= 0.0;
 				if (fft.size() > 3)		fft[2] *= 0.0;
+				#if PHONE
+				if (fft.size() > 4)		fft[3] *= 0.0;
+				if (fft.size() > 5)		fft[4] *= 0.0;
+				if (fft.size() > 6)		fft[5] *= 0.0;
+				if (fft.size() > 7)		fft[6] *= 0.0;
+				if (fft.size() > 8)		fft[7] *= 0.0;
+				if (fft.size() > 9)		fft[8] *= 0.0;
+				if (fft.size() > 10)	fft[9] *= 0.0;
+				if (fft.size() > 11)	fft[10] *= 0.0;
+				if (fft.size() > 12)	fft[11] *= 0.0;
+				#endif
 				FFTMakeDEM(fft,airport_area);
+				#if PHONE
+				for(y = 0; y < airport_area.mHeight; ++y)
+				for(x = 0; x < airport_area.mWidth ; ++x)
+					if(airport_area.get(x,y) != DEM_NO_DATA)
+						airport_area(x,y) = (float) apts[n].elevation_ft * FT_TO_MTR;
+				#endif
 				for (y = y1; y < y2; ++y)
 				for (x = x1; x < x2; ++x)
 				{
