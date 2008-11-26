@@ -31,6 +31,52 @@ TriFanBuilder::~TriFanBuilder()
 {
 }
 
+int			TriFanBuilder::GetNextPrimitive(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+	GetNextTriFan(out_handles);
+	if(!out_handles.empty())	return dsf_TriFan;
+	
+	GetRemainingTriangles(out_handles);
+								return dsf_Tri;
+}
+
+
+
+#if STUB_FANS
+
+void		TriFanBuilder::AddTriToFanPool(CDT::Face_handle inFace)
+{
+	faces.push_back(inFace);
+}
+
+void		TriFanBuilder::CalcFans(void)
+{
+}
+
+void		TriFanBuilder::GetNextTriFan(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+}
+
+void		TriFanBuilder::GetRemainingTriangles(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+	for(vector<CDT::Face_handle>::iterator f = faces.begin(); f != faces.end(); ++f)
+	for(int v = 2; v >= 0; --v)
+	{
+		out_handles.push_back((*f)->vertex(v));	
+	}
+	faces.clear();
+}
+
+void		TriFanBuilder::Validate(void)
+{
+}
+
+#else
+
+
 void		TriFanBuilder::AddTriToFanPool(CDT::Face_handle inFace)
 {
 //	if (inFace->info().flag)
@@ -299,3 +345,5 @@ void				TriFanBuilder::Validate(void)
 		}
 	}
 }
+
+#endif /* STUB_FANS */

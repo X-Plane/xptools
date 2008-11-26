@@ -28,6 +28,8 @@ using std::list;
 
 #include "MeshDefs.h"
 
+#define STUB_FANS 1
+
 struct	TriFan_t;
 
 typedef multimap<int, TriFan_t *>				TriFanQueue;		// Tri fans sorted by number of tris, best are last
@@ -62,6 +64,10 @@ public:
 
 private:
 
+#if STUB_FANS
+	vector<CDT::Face_handle>		faces;
+#else
+
 	TriFan_t *			GetNextFan(void);
 	void				DoneWithFan(TriFan_t * inFan);
 	CDT::Face_handle	GetNextRemainingTriangle(void);
@@ -71,9 +77,9 @@ private:
 
 	TriFanQueue					queue;				// Our tri fans in priority order
 	TriFanTable					index;				// Index of who is using what tri fans
-	CDT *						mesh;				// Our mesh
 	set<CDT::Vertex_handle>		vertices;			// Vertices that we need to tri fan for building up the struct
-//	set<CDT::Face_handle>		faces;
+#endif	
+	CDT *						mesh;				// Our mesh
 };
 
 #endif
