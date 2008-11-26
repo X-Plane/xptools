@@ -1,0 +1,5 @@
+error.out
+build
+libsrc/linux-specific/include
+libsrc/linux-specific/lib
+libsrc/linux-specific/.3rdparty_libs

@@ -1,0 +1,15 @@
+CFLAGS		:= -O2 -g
+CXXFLAGS	:= -O2 -g
+LDFLAGS		:= -static -static-libgcc
+STDLIBS		:=
+LIBS		:= -Wl,-Bstatic -lfreetype -ltiff -ljpeg -lpng12 -lz
+DEFINES		:= -DSOTHIS_TEST=0
+
+SOURCES :=\
+src/fonttool/fonttool.cpp
+
+INCLUDEPATHS :=\
+-Ilibsrc/linux-specific/include
+
+LIBPATHS :=\
+-Llibsrc/linux-specific/lib

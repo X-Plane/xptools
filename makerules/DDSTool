@@ -1,0 +1,53 @@
+CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
+CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
+LDFLAGS		:= -nodefaultlibs -static-libgcc
+STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
+LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lsquish -ltiff -ljpeg -lpng12 -lz
+DEFINES		:= -DSOTHIS_TEST=0
+
+SOURCES :=\
+src/Utils/AssertUtils.cpp \
+src/Utils/safe-ctype.c \
+src/GUI/GUI_Resources.cpp \
+src/GUI/GUI_Laftfont.cpp \
+src/Utils/TexUtils.cpp \
+src/XPTools/DDSTool.cpp \
+src/Utils/BitmapUtils.cpp \
+src/UI/XMessagebox.cpp \
+src/Utils/PlatformUtils.lin.cpp
+
+INCLUDEPATHS :=\
+-Ilibsrc/linux-specific/include \
+-Ilibsrc/mesa-7.1/include \
+-Ilibsrc/expat/xmlparse \
+-Ilibsrc/expat/xmltok \
+-Isrc/Env \
+-Isrc/DSF \
+-Isrc/GUI \
+-Isrc/GUI/mmenu \
+-Isrc/Interfaces \
+-Isrc/Obj \
+-Isrc/ObjEdit \
+-Isrc/OGLE \
+-Isrc/UI \
+-Isrc/WEDCore \
+-Isrc/WEDDocs \
+-Isrc/WEDEntities \
+-Isrc/WEDImportExport \
+-Isrc/WEDLayers \
+-Isrc/WEDMap \
+-Isrc/WEDProperties \
+-Isrc/WEDResources \
+-Isrc/WEDWindows \
+-Isrc/WorldEditor \
+-Isrc/XPCompat \
+-Isrc/XPWidgets \
+-Isrc/Utils \
+-Isrc/XESCore \
+-Isrc/XESTools \
+-Isrc/Installer \
+-Isrc/Network \
+-ISDK/PVR
+
+LIBPATHS :=\
+-Llibsrc/linux-specific/lib

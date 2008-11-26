@@ -1,0 +1,72 @@
+CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
+CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
+LDFLAGS		:= -rdynamic -nodefaultlibs -static-libgcc
+STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
+LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
+DEFINES		:= -DSOTHIS_TEST=1
+
+include makerules/ObjView_resources
+
+SOURCES :=\
+src/Obj/ObjPointPool.cpp \
+src/Obj/XObjDefs.cpp \
+src/Obj/XObjReadWrite.cpp \
+src/Obj/ObjDraw.cpp \
+src/ObjEdit/OE_Zoomer3d.cpp \
+src/Utils/ObjUtils.cpp \
+src/Utils/BitmapUtils.cpp \
+src/Utils/TexUtils.cpp \
+src/Utils/trackball.c \
+src/Utils/XUtils.cpp \
+src/Utils/GeoUtils.cpp \
+src/Utils/MatrixUtils.cpp \
+src/Utils/PlatformUtils.lin.cpp \
+src/UI/XWin.lin.cpp \
+src/UI/XWinGL.lin.cpp \
+src/UI/xdnd.cpp \
+src/UI/XGUIApp.cpp \
+src/UI/XPopup.cpp \
+src/UI/XMessagebox.cpp \
+src/XPTools/ViewObj.cpp \
+src/Utils/AssertUtils.cpp \
+src/Utils/safe-ctype.c \
+src/Utils/backtrace.c \
+src/GUI/GUI_Timer.cpp \
+src/GUI/GUI_Resources.cpp \
+src/GUI/GUI_Laftfont.cpp
+
+INCLUDEPATHS :=\
+-Ilibsrc/linux-specific/include \
+-Ilibsrc/mesa-7.1/include \
+-Ilibsrc/expat/xmlparse \
+-Ilibsrc/expat/xmltok \
+-Isrc/Env \
+-Isrc/DSF \
+-Isrc/GUI \
+-Isrc/GUI/mmenu \
+-Isrc/Interfaces \
+-Isrc/Obj \
+-Isrc/ObjEdit \
+-Isrc/OGLE \
+-Isrc/UI \
+-Isrc/WEDCore \
+-Isrc/WEDDocs \
+-Isrc/WEDEntities \
+-Isrc/WEDImportExport \
+-Isrc/WEDLayers \
+-Isrc/WEDMap \
+-Isrc/WEDProperties \
+-Isrc/WEDResources \
+-Isrc/WEDWindows \
+-Isrc/WorldEditor \
+-Isrc/XPCompat \
+-Isrc/XPWidgets \
+-Isrc/Utils \
+-Isrc/XESCore \
+-Isrc/XESTools \
+-Isrc/Installer \
+-Isrc/Network \
+-ISDK/PVR
+
+LIBPATHS :=\
+-Llibsrc/linux-specific/lib

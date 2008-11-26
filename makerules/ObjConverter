@@ -1,0 +1,58 @@
+CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
+CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
+LDFLAGS		:= -static -static-libgcc
+STDLIBS		:=
+LIBS		:= -Wl,-Bstatic -ldime -l3ds
+DEFINES		:= -DSOTHIS_TEST=0
+
+SOURCES :=\
+src/Obj/ObjConvert.cpp \
+src/Obj/ObjPointPool.cpp \
+src/Obj/XObjBuilder.cpp \
+src/Obj/XObjDefs.cpp \
+src/Obj/XObjReadWrite.cpp \
+src/Obj/XObjWriteEmbedded.cpp \
+src/Utils/ObjUtils.cpp \
+src/Utils/AssertUtils.cpp \
+src/Utils/MatrixUtils.cpp \
+src/XPTools/ConvertObj3DS.cpp \
+src/XPTools/ConvertObj.cpp \
+src/XPTools/ConvertObjDXF.cpp \
+SDK/PVR/PVRTTriStrip.cpp \
+SDK/PVR/PVRTGeometry.cpp
+
+INCLUDEPATHS :=\
+-Ilibsrc/linux-specific/include \
+-Ilibsrc/mesa-7.1/include \
+-Ilibsrc/expat/xmlparse \
+-Ilibsrc/expat/xmltok \
+-Isrc/Env \
+-Isrc/DSF \
+-Isrc/GUI \
+-Isrc/GUI/mmenu \
+-Isrc/Interfaces \
+-Isrc/Obj \
+-Isrc/ObjEdit \
+-Isrc/OGLE \
+-Isrc/UI \
+-Isrc/WEDCore \
+-Isrc/WEDDocs \
+-Isrc/WEDEntities \
+-Isrc/WEDImportExport \
+-Isrc/WEDLayers \
+-Isrc/WEDMap \
+-Isrc/WEDProperties \
+-Isrc/WEDResources \
+-Isrc/WEDWindows \
+-Isrc/WorldEditor \
+-Isrc/XPCompat \
+-Isrc/XPWidgets \
+-Isrc/Utils \
+-Isrc/XESCore \
+-Isrc/XESTools \
+-Isrc/Installer \
+-Isrc/Network \
+-ISDK/PVR
+
+LIBPATHS :=\
+-Llibsrc/linux-specific/lib
