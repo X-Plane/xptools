@@ -47,14 +47,9 @@ GUI_Destroyable::~GUI_Destroyable()
 
 void GUI_Destroyable::AsyncDestroy(void)
 {
-#if !LIN
 	if (mDeadTask == NULL) mDeadTask = new GUI_DestroyableTask;
 	mDeadList.insert(this);
 	mDeadTask->Start(0.0f);
-#endif
-#if LIN
-
-#endif
 }
 
 GUI_DestroyableTask::GUI_DestroyableTask()

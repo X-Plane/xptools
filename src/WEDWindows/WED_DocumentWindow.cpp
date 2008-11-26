@@ -351,11 +351,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 bool	WED_DocumentWindow::Closed(void)
 {
-#if LIN
-	Hide();
-#else
 	mDocument->TryClose();
-#endif
 	return false;
 }
 

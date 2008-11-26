@@ -31,6 +31,12 @@ enum {
 };
 static int exp_mode = pvr_2;
 
+#if LIN
+// for message box
+#include <X11/Xlib.h>
+Display* mDisplay = 0;
+#endif
+
 typedef struct PVR_Header_Texture_TAG
 {
         unsigned int dwHeaderSize;                      /*!< size of the structure */
@@ -90,7 +96,7 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 	if(!s_raw_16_bit)
 		dbp = sbp;
 	unsigned char * storage = (unsigned char *) malloc(h.dwTextureDataSize);
-	
+
 	for(int y = 0; y < info.height; ++y)
 	for(int x = 0; x < info.width; ++x)
 	{
@@ -103,19 +109,19 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 		else if (info.channels == 3)
 		{
 			if(s_raw_16_bit)
-			*((unsigned short *) dstb) = 
+			*((unsigned short *) dstb) =
 			((srcb[2] & 0xF8) << 8) |
 			((srcb[1] & 0xFC) << 3) |
-			((srcb[0] & 0xF8) >> 3);	
+			((srcb[0] & 0xF8) >> 3);
 			else
 				dstb[0]=srcb[2],
 				dstb[1]=srcb[1],
-				dstb[2]=srcb[0];							
+				dstb[2]=srcb[0];
 		}
 		else if (info.channels == 4)
 		{
 			if(s_raw_16_bit)
-			*((unsigned short *) dstb) = 
+			*((unsigned short *) dstb) =
 			((srcb[2] & 0xF0) << 8) |
 			((srcb[1] & 0xF0) << 4) |
 			((srcb[0] & 0xF0) << 0) |
@@ -152,7 +158,7 @@ int main(int argc, const char * argv[])
 		++p;
 	}
 	last_slash[1] = 0;
-		
+
 	// DDSTool --png2dds <infile> <outfile>
 
 	if (argc == 2 && strcmp(argv[1],"--version")==0)
@@ -173,7 +179,7 @@ int main(int argc, const char * argv[])
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvrtc4 4-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw16 PVR uses 16-bit color\n");
-		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");		
+		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");
 		printf("CMD .png .pvr \"%s\" PVR_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		return 0;
 	}
@@ -183,7 +189,7 @@ int main(int argc, const char * argv[])
 		printf("       %s --version\n",argv[0]);
 		exit(1);
 	}
-	
+
 	if(strcmp(argv[1],"--png2pvrtc2")==0 ||
 	   strcmp(argv[1],"--png2pvrtc4")==0)
 	{
@@ -192,7 +198,7 @@ int main(int argc, const char * argv[])
 		if(strcmp(argv[1],"--png2pvrtc4")==0)	pvr_mode = "--bits-per-pixel-4";
 
 		sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s -m -c PVR -o \"%s\" -p \"%s.png\" \"%s\"", my_dir, pvr_mode, argv[3], argv[3], argv[2]);
-		
+
 		printf("Cmd: %s\n", cmd_buf);
 		system(cmd_buf);
 	}
@@ -220,7 +226,7 @@ int main(int argc, const char * argv[])
 			printf("Unable to write raw PVR file %s\n", argv[3]);
 			return 1;
 		}
-		return 0;				
+		return 0;
 	}
 	else if(strcmp(argv[1],"--png2dxt")==0 ||
 	   strcmp(argv[1],"--png2dxt1")==0 ||
@@ -243,10 +249,10 @@ int main(int argc, const char * argv[])
 			strcat(buf,".dds");
 			outf=buf;
 		}
-		
+
 		if(info.channels == 1)
 		{
-			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[2]);			
+			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[2]);
 		}
 		int dxt_type = argv[1][9]-'0';
 		if(argv[1][9]==0)
@@ -254,14 +260,14 @@ int main(int argc, const char * argv[])
 			if(info.channels == 3)  dxt_type=1;
 			else					dxt_type=5;
 		}
-		
+
 		if (WriteBitmapToDDS(info, dxt_type,outf)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[3]);
 			return 1;
 		}
 		return 0;
-	} 
+	}
 	else if(strcmp(argv[1],"--png2rgb")==0)
 	{
 		ImageInfo	info;

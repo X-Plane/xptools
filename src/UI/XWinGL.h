@@ -40,16 +40,8 @@
 #endif
 
 #if LIN
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
+extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
 #endif
-
 
 #if IBM
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);

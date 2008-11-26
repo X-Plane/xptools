@@ -178,4 +178,5 @@ void WED_MakeMenus(GUI_Application * inApp)
 #else
 	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 #endif
+
 }

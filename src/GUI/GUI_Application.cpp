@@ -30,7 +30,6 @@
 
 GUI_Application *	gApplication = NULL;
 
-
 #if APL || LIN
 static void	NukeAmpersand(string& ioString)
 {
@@ -245,7 +244,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
     Visual*  a_defVisual = 0;
     int a_defDepth = 0;
     int a_screenNumber = 0;
-	mMenubar = 0;
+//	mMenubar = 0;
 
 	XInitThreads();
 
@@ -259,12 +258,13 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
         throw "invalid visual.";
     a_defDepth  = DefaultDepth(display, a_screenNumber);
     XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
+/*
     mMenubar = new mmenu(display);
     if (!mMenubar)
         throw "could not create menubar";
     mMenubar->registerApp(this);
     mMenubar->registerCB(MenuCommandHandler);
-
+*/
 #endif
 
 }
@@ -273,7 +273,6 @@ GUI_Application::~GUI_Application()
 {
 	DebugAssert(gApplication == this);
 	gApplication = NULL;
-
 }
 
 void			GUI_Application::Run(void)
@@ -298,14 +297,12 @@ void			GUI_Application::Run(void)
 #if LIN
     XEvent xevent;
     Atom a_menuAtom = XInternAtom(display, "_MMENU_EVENT", False);
-    Atom a_protAtom = XInternAtom(display, "WM_PROTOCOLS", False);
-    Atom a_delAtom = XInternAtom(display, "WM_DELETE_WINDOW", False);
     int haveVisual = 1;
 
     while (haveVisual && !mDone)
     {
         XNextEvent(display, &xevent);
-		if (mMenubar) mMenubar->enter_eventloop(&xevent);
+//		if (mMenubar) mMenubar->enter_eventloop(&xevent);
 		if (xevent.xclient.message_type == a_menuAtom)
         {
 			int i = 0;
@@ -313,12 +310,10 @@ void			GUI_Application::Run(void)
 			if(GUI_Commander::GetCommanderRoot()->DispatchCanHandleCommand(xevent.xclient.data.l[0], t, i))
 				DispatchHandleCommand(xevent.xclient.data.l[0]);
         }
-//		if ((xevent.xclient.message_type == a_protAtom) && ((Atom)xevent.xclient.data.l[0] == a_delAtom))
-//			continue;
-        XWin::WinEventHandler((XAnyEvent*)&xevent, &haveVisual);
+        XWin::WinEventHandler(&xevent, &haveVisual);
         if (!haveVisual) break;
     }
-    XCloseDisplay(display);
+//   	if (mMenubar) delete mMenubar;
 #endif
 }
 
@@ -326,7 +321,6 @@ void			GUI_Application::Run(void)
 void GUI_Application::MenuCommandHandler(int cmd, void* arg)
 {
     GUI_Application* tmp = reinterpret_cast<GUI_Application*>(arg);
-    // printf("got command: (id: 0x%.2X)\n", cmd);
     tmp->DispatchHandleCommand(cmd);
 }
 #endif
@@ -352,7 +346,8 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 		::SetMenu(hwnd, mbar);
 		return mbar;
 	#else
-		return mMenubar;
+//		return mMenubar;
+		return 0;
 	#endif
 }
 
@@ -425,13 +420,15 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	}
 #endif
 #if LIN
-    mmenu* new_menu = 0;
+/*    mmenu* new_menu = 0;
 	if (!mMenubar) return 0;
     std::string itemname(inTitle);
     NukeAmpersand(itemname);
     mMenubar->addItem(gIDs++, itemname);
 	mMenubar->currItemName = itemname;
-    new_menu = mMenubar;
+    new_menu = mMenubar;*/
+	void* new_menu = 0;
+
 #endif
 
 	RebuildMenu(new_menu, items);
@@ -523,7 +520,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			++n;
 		}
 	#elif LIN
-		if (!mMenubar) return;
+/*		if (!mMenubar) return;
 		mMenubar->clear();
     	int n = 0;
     	while (items[n].name)
@@ -534,6 +531,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 	    	mMenubar->addItem(items[n].cmd, i, mMenubar->currItemName);
 	    	++n;
 		}
+*/
 	#endif
 }
 

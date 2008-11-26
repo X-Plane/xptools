@@ -316,7 +316,7 @@ int GUI_GetImageResource(
     #if USE_JPEG
 		ret = CreateBitmapFromJPEGData((void *) GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image);
     #else
-        ret = 0;
+        ret = 1;
     #endif
 	else
 		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);

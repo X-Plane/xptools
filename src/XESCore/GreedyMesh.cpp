@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  *
  */
+ 
+#include <limits.h>
 
 #include "GreedyMesh.h"
 #include "MeshDefs.h"

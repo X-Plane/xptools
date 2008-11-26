@@ -21,10 +21,6 @@
  *
  */
 
-#if LIN
-//	#include <QApplication>
-#endif
-
  #define __DEBUGGING__
 
 // Stuff we need to init
@@ -47,6 +43,7 @@
 #include "GUI_Fonts.h"
 #include "GUI_Window.h"
 #include "GUI_Prefs.h"
+//#include "GUI_GlDialogs.h"
 
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
@@ -104,13 +101,13 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
+const char* program_name;
 int main(int argc, const char * argv[])
 #endif
 {
 #if LIN
-	// for messageboxes and file chooser dialogs
-	//int i = 0;
-	//QApplication qapp(i, (char**)0);
+	XInitThreads();
+	program_name = argv[0];
 #endif
 #if IBM
 	gInstance = hInstance;

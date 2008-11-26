@@ -31,7 +31,7 @@
 
 #if LIN
     #include <X11/Xlib.h>
-    #include "mmenu.h"
+    //#include "mmenu.h"
 #endif
 
 #include "GUI_Commander.h"
@@ -98,7 +98,7 @@ private:
 #if LIN
     static void MenuCommandHandler(int cmd, void* arg);
     Display* display;
-    mmenu*   mMenubar;
+//    mmenu*   mMenubar;
 #endif
 };
 

@@ -35,6 +35,11 @@ static TimerMap						sTimerMap;
 
 #if LIN
 
+#include <X11/Xlib.h>
+#include <XWin.h>
+extern Display*  mDisplay;
+extern std::map<Window, XWin*> sWindows;
+
 void* GUI_Timer::teh_threadroutine(void* args)
 {
 	teh_args_t* arg = reinterpret_cast<teh_args_t*>(args);
@@ -42,12 +47,34 @@ void* GUI_Timer::teh_threadroutine(void* args)
 	long us = arg->sec * 1000000;
 	ts.tv_sec = us/1000000;
     ts.tv_nsec = (us % 1000000) * 1000;
-	arg->callme->is_running = true;
+	XEvent xevent;
+	// this pointer stuff is really ugly, any other ideas?
+	intptr_t t = reinterpret_cast<intptr_t>(arg->callme);
+	int tlow = t & 0xFFFFFFFF;
+	int thigh = (t >> 32) & 0xFFFFFFFF;
+	Display* tDisplay = XOpenDisplay(0);
 	while (arg->callme->is_running)
 	{
-		arg->callme->TimerCB(arg->callme);
+		if (!sWindows.empty())
+		{
+			xevent.xclient.type			= ClientMessage;
+			xevent.xclient.send_event	= True;
+			xevent.xclient.window		= sWindows.begin()->first;
+			xevent.xclient.display		= tDisplay;
+			xevent.xclient.message_type	= XInternAtom(mDisplay, "_WED_TIMER", False);
+			xevent.xclient.data.l[0]	= tlow;
+			xevent.xclient.data.l[1]	= thigh;
+			xevent.xclient.format		= 32;
+			xevent.xclient.serial		= 0;
+			XSendEvent(tDisplay, sWindows.begin()->first, False, 0, &xevent);
+			XFlush(tDisplay);
+		}
+		// one shot
+		if (ts.tv_sec == 0 && ts.tv_nsec == 0)
+			break;
 		nanosleep(&ts, NULL);
 	}
+	XCloseDisplay(tDisplay);
 	pthread_exit(0);
 }
 
@@ -120,9 +147,15 @@ void GUI_Timer::Start(float seconds)
 	{
 		is_running = false;
 		pthread_join(*teh_thread, 0);
+		delete teh_thread;
+		teh_thread = 0;
+		//flushing all remaining timer messages
+		Display* tDisplay = XOpenDisplay(0);
+		XSync(tDisplay, False);
+		XCloseDisplay(tDisplay);
 	}
-	else
-		teh_thread = new pthread_t;
+	teh_thread = new pthread_t;
+	is_running = true;
 	pthread_create(teh_thread, NULL, teh_threadroutine, &targ);
 #endif
 }
@@ -151,6 +184,11 @@ void GUI_Timer::Stop(void)
 		pthread_join(*teh_thread, 0);
 		delete teh_thread;
 		teh_thread = 0;
+		//flushing all remaining timer messages
+		Display* tDisplay = XOpenDisplay(0);
+		XSync(tDisplay, False);
+		XCloseDisplay(tDisplay);
+		
 	}
 	#endif
 }

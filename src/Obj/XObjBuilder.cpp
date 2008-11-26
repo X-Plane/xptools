@@ -26,6 +26,77 @@
 #include <algorithm>
 #include <math.h>
 
+// janos says: msvc doesn't know any of the new (lol) c99 functions, we're using
+// the glibc implementation here
+
+#if IBM
+static const float huge = 1.0e30;
+typedef union
+{
+	float value;
+	unsigned int word;
+} ieee_float_shape_type;
+
+#define GET_FLOAT_WORD(i,d)			\
+do {								\
+  ieee_float_shape_type gf_u;		\
+  gf_u.value = (d);					\
+  (i) = gf_u.word;					\
+} while (0)
+
+#define SET_FLOAT_WORD(d,i)			\
+do {								\
+  ieee_float_shape_type sf_u;		\
+  sf_u.word = (i);					\
+  (d) = sf_u.value;					\
+} while (0)
+
+float roundf (float x)
+{
+  int i0, j0;
+
+  GET_FLOAT_WORD (i0, x);
+  j0 = ((i0 >> 23) & 0xff) - 0x7f;
+  if (j0 < 23)
+    {
+      if (j0 < 0)
+	{
+	  if (huge + x > 0.0F)
+	    {
+	      i0 &= 0x80000000;
+	      if (j0 == -1)
+		i0 |= 0x3f800000;
+	    }
+	}
+      else
+	{
+	  unsigned int i = 0x007fffff >> j0;
+	  if ((i0 & i) == 0)
+	    /* X is integral.  */
+	    return x;
+	  if (huge + x > 0.0F)
+	    {
+	      /* Raise inexact if x != 0.  */
+	      i0 += 0x00400000 >> j0;
+	      i0 &= ~i;
+	    }
+	}
+    }
+  else
+    {
+      if (j0 == 0x80)
+	/* Inf or NaN.  */
+	return x + x;
+      else
+	return x;
+    }
+
+  SET_FLOAT_WORD (x, i0);
+  return x;
+}
+
+#endif // IBM
+
 XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 {
 	tex_repeat_s = 1.0;
@@ -149,7 +220,7 @@ void	XObjBuilder::AccumTri(float inTri[24])
 	for(int n = 0; n < 24; ++n)
 	{
 		tri[n] = inTri[n];
-	}	
+	}
 	tri[6 ] = tri[6 ] * tex_repeat_s + tex_offset_s;
 	tri[7 ] = tri[7 ] * tex_repeat_t + tex_offset_t;
 	tri[14] = tri[14] * tex_repeat_s + tex_offset_s;
@@ -160,7 +231,7 @@ void	XObjBuilder::AccumTri(float inTri[24])
 	for(int n = 0; n < 24; ++n)
 	{
 		tri[n] = roundf(tri[n] * 65536.0) / 65536.0;
-	}	
+	}
 
 	int		idx1 = obj->geo_tri.accumulate(tri   );
 	int		idx2 = obj->geo_tri.accumulate(tri+8 );

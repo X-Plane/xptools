@@ -21,7 +21,7 @@
  *
  */
 #include "XFileTwiddle.h"
-#include "MD5.h"
+#include "md5.h"
 #if APL
 #if defined(__MWERKS__)
 #include <Files.h>

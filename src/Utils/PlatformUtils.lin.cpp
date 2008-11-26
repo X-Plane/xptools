@@ -21,11 +21,8 @@
  *
  */
 #include "PlatformUtils.h"
+#include "XMessagebox.h"
 #include <stdio.h>
-//#include <QFileDialog>
-//#include <QMessageBox>
-
-// janos says: using Qt's dialogs for now until i wrote opengl based implementations
 
 void	EndianFlipShort(short * ioShort)
 {
@@ -70,9 +67,14 @@ int		GetFilePathFromUser(
 	}
 }
 
+void	DoUserAlert(Window parent, const char * inMsg)
+{
+	XMessagebox(0, "Warning", inMsg, GLDLG_OK, GLDLG_OK);
+}
+
 void	DoUserAlert(const char * inMsg)
 {
-	fprintf(stderr,"%s\n",inMsg);
+	XMessagebox(0, "Warning", inMsg, GLDLG_OK, GLDLG_OK);
 }
 
 void	ShowProgressMessage(const char * inMsg, float * inProgress)
@@ -89,13 +91,12 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-	return close_Discard;
-/* 	int result = QMessageBox::warning(NULL, inMessage1, inMessage2, QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
+/* 	int result = gld_messagebox(inMessage1, inMessage2, GLDLG_SAVE | GLDLG_DISCARD | GLDLG_CANCEL, GLDLG_CANCEL);
 	switch(result) {
-	case QMessageBox::Cancel:	return close_Cancel;
-	case QMessageBox::Save:		return close_Save;
-	case QMessageBox::Discard:	return close_Discard;
-	default:					return close_Cancel;
-	}
-	return close_Discard;*/
+	case GLDLG_CANCEL:		return close_Cancel;
+	case GLDLG_SAVE:		return close_Save;
+	case GLDLG_DISCARD:		return close_Discard;
+	default:				return close_Cancel;
+	}*/
+	return close_Discard;
 }

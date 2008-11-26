@@ -17,9 +17,11 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
     if (FbConfig == NULL)
         throw "invalid framebuffer config";
     mContext = glXCreateNewContext(_mDisplay, *FbConfig, GLX_RGBA_TYPE, inShare ? inShare->mContext :NULL, 1);
-    glXMakeCurrent(_mDisplay, mWindow, mContext);
+    glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     SetTitle("XWinGL Window");
 	XFree(FbConfig);
+// doesn't work
+//	glXSwapIntervalSGI(1);
     SetVisible(true);
 }
 
@@ -40,9 +42,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
     GLXFBConfig * FbConfig = glXChooseFBConfig(_mDisplay, DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
     if (FbConfig == NULL)
         throw "invalid framebuffer config";
-
     mContext = glXCreateNewContext(_mDisplay, *FbConfig, GLX_RGBA_TYPE, inShare ? inShare->mContext : NULL, 1);
-	glXMakeCurrent(_mDisplay,mWindow,mContext);
+	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     SetTitle(inTitle);
     MoveTo(inX, inY);
     Resize(inWidth, inHeight);
@@ -53,30 +54,30 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
-	glXMakeCurrent(_mDisplay,mWindow,mContext);
+	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
 	glXDestroyContext(_mDisplay,mContext);
 }
 
 void                    XWinGL::SetGLContext(void)
 {
-	glXMakeCurrent(_mDisplay,mWindow,mContext);
+	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
 }
 
 void                    XWinGL::SwapBuffer(void)
 {
-		glXSwapBuffers(_mDisplay, mWindow);
+	glFinish();
+	glXSwapBuffers(_mDisplay, mWindow);
 }
 
 void                    XWinGL::Resized(int inWidth, int inHeight)
 {
-	glXMakeCurrent(_mDisplay,mWindow,mContext);
+	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     glViewport(0, 0, inWidth, inHeight);
     this->GLReshaped(inWidth, inHeight);
 }
 
 void                    XWinGL::Update(XContext ctx)
 {
-	glXMakeCurrent(_mDisplay,mWindow,mContext);
     this->GLDraw();
 	glXSwapBuffers(_mDisplay,mWindow);
 }

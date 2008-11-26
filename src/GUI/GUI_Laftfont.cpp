@@ -24,7 +24,7 @@ GUI_Laftfont::GUI_Laftfont(unsigned short maxCodePoints)
 GUI_Laftfont::~GUI_Laftfont(void)
 {
 //	caused segfault on linux (fc8 x86_64 with mesa software renderer)
-//	glDeleteLists(listsFont, maxCP);
+	glDeleteLists(listsFont, maxCP);
 	if (glyph_m) delete[] glyph_m;
 	return;
 }

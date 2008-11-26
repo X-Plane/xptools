@@ -36,6 +36,8 @@
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
 
+#undef KeyPress
+
 class	GUI_GraphState;
 
 class	GUI_TextField : public GUI_Pane,

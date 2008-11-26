@@ -47,6 +47,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glx.h>
 #include "xdnd.h"
 
@@ -190,6 +192,7 @@ public:
         GC                      defGC;
         unsigned long           defGCmask;
         bool                    visible;
+        bool					active;
 	    XGCValues               defGCvalues;
         XTextProperty           title;
         POINT			        mMouse;
@@ -198,13 +201,13 @@ public:
 		int						width;
 		int						height;
 		int						refresh_requests;
-
 public:
-        static void WinEventHandler(XAnyEvent* xevent, int* visualstate);
+        static void WinEventHandler(XEvent* xevent, int* visualstate);
         static void RegisterClass(Display* display, int screen, int depth, Visual* visual);
         virtual	void ReceiveFilesFromDrag(const vector<string>& inFiles);
 
         Window                  mWindow;
+        bool					isResizing;
 #endif
 
 };

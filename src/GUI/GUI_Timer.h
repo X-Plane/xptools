@@ -68,10 +68,12 @@ private:
 		UINT_PTR	mID;
 
 	#elif LIN
+	public:
         static void TimerCB(void *args);
+        bool is_running;
+    private:
 		static void* teh_threadroutine(void* args);
 		pthread_t* teh_thread;
-		bool is_running;
 		teh_args_t targ;
 	#endif
 

@@ -33,14 +33,24 @@
 #endif
 
 static const char * kFontNames[font_Max] = {
+#if LIN
+	"sans.ttf",
+	"sans.ttf"
+#else
 	"Vera.ttf",
 	"Vera.ttf"
+#endif
 //	"Arial"
 };
 
 static const int	kFontSizes[font_Max] = {
+#if LIN
+	9,
+	8
+#else
 	10,
 	8,
+#endif
 };
 
 static FontHandle	sFonts[font_Max] = { 0 };

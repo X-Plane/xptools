@@ -55,6 +55,10 @@
 
 //#include <glut.h>
 
+#if SOTHIS_TEST
+// XPopup testpopup;
+#endif
+
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 
@@ -214,6 +218,9 @@ XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : 
 	50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
 	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false),mLOD(1)
 {
+	#if SOTHIS_TEST
+	// testpopup.register_target(_mDisplay, mWindow);
+	#endif
 	mPts.push_back(Point2(-10.0,  10.0));
 	mPts.push_back(Point2( 10.0,  10.0));
 	mPts.push_back(Point2( 15.0,   0.0));
@@ -362,6 +369,11 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 	SetGLContext();
 	mLastX = inX;
 	mLastY = inY;
+
+	#if SOTHIS_TEST
+	// if (inButton == 1) testpopup.show_at_pointer();
+	if (inButton == 1) DoUserAlert(mWindow, "Hello here");
+	#endif
 
 	int	h;
 	GetBounds(NULL, &h);
@@ -579,7 +591,11 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
 			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
+			#if LIN
+			DoUserAlert(mWindow, buf);
+			#else
 			DoUserAlert(buf);
+			#endif
 		}
 		break;
 	case '[':
@@ -746,7 +762,11 @@ void	XGrindInit(void)
 
 	if (!gHasMultitexture)
 	{
+		#if LIN
+		DoUserAlert(0, "Your OpenGL drivers are not new enough to run ObjView.");
+		#else
 		DoUserAlert("Your OpenGL drivers are not new enough to run ObjView.");
+		#endif
 		exit(1);
 	}
 }

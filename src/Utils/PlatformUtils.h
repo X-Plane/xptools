@@ -49,6 +49,10 @@
 	#error PLATFORM NOT DEFINED
 #endif
 
+#if LIN
+	#include <X11/Xlib.h>
+#endif
+
 /*
  * These routines convert between little endian and native endian.  This means they
  * swap byte order on the Mac and do nothing on the PC.  These are good for reading
@@ -88,6 +92,11 @@ int		GetFilePathFromUser(
  *
  */
 void	DoUserAlert(const char * inMsg);
+#if LIN
+#ifdef __cplusplus
+void	DoUserAlert(Window parent, const char * inMsg);
+#endif
+#endif
 
 /*
  * ShowProgressMessage puts up a dialog box with a progress message.  Calling it

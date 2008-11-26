@@ -3,12 +3,14 @@
 // this will only work with one diplay and visual, so no native multiscreen support
 // (Xinerama and such will work anyway), but makes life much easier
 
-static Display*        mDisplay = 0;
-static Visual*         mXVisual = 0;
-static int             a_defDepth = 0;
-static int             a_screenNumber = 0;
-static bool            sIniting = false;
-static std::map<Window, XWin*> sWindows;
+Display*		mDisplay = 0;
+static Visual*	mXVisual = 0;
+static int		a_defDepth = 0;
+static int		a_screenNumber = 0;
+static bool		sIniting = false;
+std::map<Window, XWin*> sWindows;
+
+#include "GUI_Timer.h"
 
 static int i = 0;
 
@@ -86,14 +88,20 @@ void XWin::RegisterClass(Display* display, int screen, int depth, Visual* visual
     return;
 }
 
-void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
+void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 {
-    if (sWindows.find(xevent->window) == sWindows.end())
+	XEvent e = *xevent;
+	XWin* obj;
+    if (sWindows.find(xevent->xany.window) == sWindows.end())
+    {
         return;
-    XWin* obj = sWindows[xevent->window];
-    XEvent e = *(XEvent*)xevent;
+    }
+    else
+    	obj = sWindows[xevent->xany.window];
+
     Atom _wmp = XInternAtom(mDisplay, "WM_PROTOCOLS", False);
     Atom _wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
+    Atom atom_timer = XInternAtom(mDisplay, "_WED_TIMER", False);
 
     switch (e.type)
     {
@@ -104,13 +112,14 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
         if ( ((Atom)e.xclient.message_type == _wmp) && ((Atom)e.xclient.data.l[0] == _wdw) )
         {
             if (!obj->Closed()) break;
-            sWindows.erase(xevent->window);
+            XUnmapWindow(mDisplay, xevent->xany.window);
+            XDestroyWindow(mDisplay, xevent->xany.window);
+			XSync(mDisplay, False);
+            sWindows.erase(xevent->xany.window);
             if (sWindows.empty())
             {
                 *visualstate = 0;
             }
-            XUnmapWindow(mDisplay, xevent->window);
-            XDestroyWindow(mDisplay, xevent->window);
             return;
         }
         if (e.xclient.message_type == obj->dnd.XdndEnter)
@@ -142,28 +151,30 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
                 } while(remain != 0);
                 if (data)
                 {
-                    long offset = 0;
-                    while (offset < len)
-                    {
-                        long elem_end;
-                        for (elem_end = offset; (elem_end < len) && (data[elem_end] != '\r'); elem_end++) {}
-                        if ((offset + 7 <= len) && !strncmp(data + offset, "file://", 7))
-                        {
-                            long i = offset + 7;
-                            while ((i < elem_end) && (data[i] != '/')) i++;
-                            if (i < elem_end)
-                            {
-                                data2 = new char[elem_end - i + 1];
-                                memcpy(data2, data + i, elem_end - i);
-                                data2[elem_end - i] = 0;
-                                decode_percent_escapes(data2);
-                                f.assign(data2);
-                                inFiles.push_back(f);
-                                delete[] data2;
-                            }
-                        }
-                        offset = elem_end + 2; /* assume CRLF */
-	                }
+					char* token = strtok(data, "\n");
+					while (token)
+					{
+						char* temp;
+						temp = token;
+						if (strstr(token, "file://"))
+							temp+=7;
+						else continue;
+						data2 = new char[strlen(temp) + 1];
+						memset(data2, 0, strlen(temp) + 1);
+						memcpy(data2, temp, strlen(temp));
+						// this one is needed for gnome only
+						decode_percent_escapes(data2);
+						f.assign(data2);
+						// remove remaining junk (gnome uses /r/n while kde uses only /n as delimiter)
+						size_t p = std::string::npos;
+						while ((p = f.find('\r')) != std::string::npos)
+						{
+							f.erase(p, 1);
+						}
+						inFiles.push_back(f);
+						delete[] data2;
+						token = strtok(0, "\n");
+					}
 	                XFree(data);
 	                obj->ReceiveFilesFromDrag(inFiles);
                 }
@@ -174,6 +185,14 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
         {
             xdnd_send_finished(&obj->dnd, XDND_LEAVE_SOURCE_WIN(&e), e.xclient.window, 0);
         }
+        if (e.xclient.message_type == atom_timer)
+    	{
+	    	intptr_t t = (int)e.xclient.data.l[1] & 0xFFFFFFFF;
+	    	t = (t << 32) | ((int)e.xclient.data.l[0] & 0xFFFFFFFF);
+			GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
+		}
+		if (e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
+			printf("got popup action\n");
     }
     break;
     }
@@ -201,83 +220,56 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
         break;
     }
     case ButtonPress:
-    {
+	{
+		if (!obj) return;
         int btn = 0;
-        if (obj)
-		{
-            obj->mMouse.x = e.xbutton.x;
-		    obj->mMouse.y = e.xbutton.y;
-            switch (e.xbutton.button)
-            {
-            case Button1: // left
-                btn = 0;
-                break;
-            case Button2: // middle
-                btn = 2;
-                break;
-            case Button3: // right
-                btn = 1;
-                break;
-            }
-    		if(obj->mDragging[btn]==0)
-            {
-		    		obj->mDragging[btn]=1;
-			    	obj->ClickDown(obj->mMouse.x, obj->mMouse.y, btn);
-            }
-            // mouse capturing is on per default
-		}
-        break;
-    }
+        obj->mMouse.x = e.xbutton.x;
+	    obj->mMouse.y = e.xbutton.y;
+		obj->isResizing = false;
+	    if ((e.xbutton.button == Button4) || (e.xbutton.button == Button5))
+        	return;
+        if (e.xbutton.button == Button1)
+			btn = 0;
+        if (e.xbutton.button == Button2)
+			btn = 2;
+        if (e.xbutton.button == Button3)
+			btn = 1;
+		obj->mDragging[btn]=1;
+		obj->ClickDown(e.xbutton.x, e.xbutton.y, btn);
+		break;
+	}
     case ButtonRelease:
     {
         int btn = 0;
-        if (obj)
+        if (!obj) return;
+        obj->mMouse.x = e.xbutton.x;
+		obj->mMouse.y = e.xbutton.y;
+		obj->isResizing = false;
+        if (e.xbutton.button == Button1)
+			btn = 0;
+        if (e.xbutton.button == Button2)
+			btn = 2;
+        if (e.xbutton.button == Button3)
+			btn = 1;
+		obj->mDragging[btn]=0;
+        if (e.xbutton.button == Button4)
 		{
-		    obj->mMouse.x = e.xbutton.x;
-		    obj->mMouse.y = e.xbutton.y;
-            switch (e.xbutton.button)
-            {
-            case Button1: // left
-                btn = 0;
-                break;
-            case Button2: // middle
-                btn = 2;
-                break;
-            case Button3: // right
-                btn = 1;
-                break;
-            }
-    		if(obj->mDragging[btn])
-			    obj->ClickUp(obj->mMouse.x, obj->mMouse.y, btn);
-			obj->mDragging[btn]=0;
+			obj->MouseWheel(e.xbutton.x, e.xbutton.y, 1, 0);
+			return;
 		}
-		switch (e.xbutton.button)
-        {
-            case Button4: // wheel up
-               if (obj)
-		        {
-			        POINT	p;
-                    p.x = e.xbutton.x;
-			        p.y = e.xbutton.y;
-			        obj->MouseWheel(p.x, p.y, 1, 0);
-		        }
-		        break;
-            case Button5: // wheel down
-                if (obj)
-		        {
-			        POINT	p;
-			        p.x = e.xbutton.x;
-			        p.y = e.xbutton.y;
-			        obj->MouseWheel(p.x, p.y, -1, 0);
-		        }
-                break;
-        }
-        break;
+        if (e.xbutton.button == Button5)
+		{
+			obj->MouseWheel(e.xbutton.x, e.xbutton.y, -1, 0);
+			return;
+		}
+		obj->ClickUp(e.xbutton.x, e.xbutton.y, btn);
+		break;
     }
     case MotionNotify: // mouse move
     {
         if (obj)
 		{
+			obj->isResizing = false;
             obj->mMouse.x = e.xmotion.x;
 		    obj->mMouse.y = e.xmotion.y;
 			int bc=0;
@@ -296,31 +288,54 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
     {
         if (obj && !sIniting)
 		{
-            obj->Resized(e.xconfigure.width, e.xconfigure.height);
+			obj->isResizing = true;
 			obj->width = e.xconfigure.width;
 			obj->height = e.xconfigure.height;
+			obj->Resized(e.xconfigure.width, e.xconfigure.height);
 		}
         break;
     }
     case UnmapNotify:
     {
-        // minimized or invisible
+		if (obj) obj->visible = false;
         break;
     }
     case MapNotify:
     {
-        // restored or visible
+        if (obj) obj->visible = true;
         break;
     }
     case Expose: // client area destroyed due to overlapped window or something
     {
-        if (obj && !sIniting && !e.xexpose.count)
+        if (obj && !sIniting)
 		{
-            obj->Update(xevent->window);
-			obj->refresh_requests = 0;
+   			obj->isResizing = false;
+            obj->Update(xevent->xany.window);
+   			if (e.xexpose.send_event)
+				obj->refresh_requests = 0;
 		}
         break;
     }
+    case FocusIn:
+    	if (obj)
+    	{
+	    	obj->active = true;
+    		obj->Activate(1);
+    	}
+    	break;
+    case FocusOut:
+    	if (obj)
+    	{
+	    	obj->active = false;
+    		obj->Activate(0);
+    	}
+	    break;
+	case SelectionNotify: // we want data from another application
+		break;
+	case SelectionRequest: // another application wants our data
+		break;
+	case SelectionClear: // data was selected in another application
+		break;
     default:
         break;
     }
@@ -337,9 +352,10 @@ XWin::XWin(int default_dnd)
 
     _mDisplay = mDisplay;
 
-    windowAttr.border_pixel = 0;
+
+    windowAttr.border_pixel = 1;
     windowAttr.event_mask = StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
-                            KeyPressMask | KeyReleaseMask | PointerMotionMask | ExposureMask;
+                            KeyPressMask | KeyReleaseMask | PointerMotionMask | ExposureMask | FocusChangeMask;
     windowAttr.colormap = XCreateColormap(mDisplay, RootWindow(mDisplay, a_screenNumber), mXVisual, AllocNone);
     attrMask = CWBorderPixel | CWEventMask | CWColormap;
 
@@ -378,9 +394,10 @@ XWin::XWin(int default_dnd)
 
     if (!mWindow)
         throw mWindow;
-    visible = 0;
+    visible = false;
+    active = false;
     sWindows[mWindow] = this;
-    memset(mDragging,0,sizeof(mDragging));
+    memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
 	mMouse.y = 0;
     sIniting = false;
@@ -390,19 +407,10 @@ XWin::XWin(int default_dnd)
 
 XWin::~XWin()
 {
-/*    XEvent xevent;
-    Atom _wmp = XInternAtom(mDisplay, "WM_PROTOCOLS", False);
-    Atom _wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
-    xevent.xclient.type                 = ClientMessage;
-    xevent.xclient.send_event       = True;
-    xevent.xclient.window           = mWindow;
-    xevent.xclient.message_type     = _wmp;
-    xevent.xclient.data.l[0]        = _wdw;
-    xevent.xclient.format           = 32;
-    xevent.xclient.serial           = 0;
-    XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-	XSync(mDisplay, False);*/
-
+	XUnmapWindow(mDisplay, mWindow);
+    XDestroyWindow(mDisplay, mWindow);
+	XSync(mDisplay, False);
+	sWindows.erase(mWindow);
     return;
 }
 
@@ -414,23 +422,23 @@ void                    XWin::SetTitle(const char * inTitle)
     title.format   = 8;
     title.nitems   = strlen((char*)title.value);
     XSetWMName(mDisplay, mWindow, &title);
-//	XFlush(mDisplay);
+	XFlush(mDisplay);
     return;
 }
 
 void                    XWin::MoveTo(int inX, int inY)
 {
     XMoveWindow(mDisplay, mWindow, inX, inY);
-//	XFlush(mDisplay);
+	XFlush(mDisplay);
     return;
 }
 
 void                    XWin::Resize(int inWidth, int inHeight)
 {
-    XResizeWindow(mDisplay, mWindow, inWidth, inHeight);
-//	XFlush(mDisplay);
 	width = inWidth;
 	height = inHeight;
+    XResizeWindow(mDisplay, mWindow, inWidth, inHeight);
+	XFlush(mDisplay);
     return;
 }
 
@@ -442,22 +450,24 @@ void                    XWin::ForceRefresh(void)
     xevent.xexpose.window           = mWindow;
     xevent.xexpose.serial           = 0;
 	xevent.xexpose.count			= 0;
+	// only refresh on first request of every loop
+	// since this technique can cause a real bad bottleneck
+	// as there currently is a bad recursion issue in the GUI_Pane
+	// and GUI_Window class (not a bug, more a design issue, which
+	// only affects the X11 way of doing things)
 	if (!refresh_requests)
 	{
-		XLockDisplay(mDisplay);
     	XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-		//XFlush(mDisplay);
-		XSync(mDisplay, False);
-		XUnlockDisplay(mDisplay);
 	}
 	refresh_requests++;
     return;
 }
 
-void                    XWin::Update(XContext ctx)
-{
-    return;
-}
+// prevent pure virtual function call
+//void                    XWin::Update(XContext ctx)
+//{
+//    return;
+//}
 
 void                    XWin::UpdateNow(void)
 {
@@ -467,9 +477,8 @@ void                    XWin::UpdateNow(void)
 
 void                    XWin::SetVisible(bool visible)
 {
-    visible?XMapWindow(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
-    visible ^= 1;
-//    XFlush(mDisplay);
+    visible?XMapRaised(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
+    XFlush(mDisplay);
     return;
 }
 
@@ -480,7 +489,7 @@ bool XWin::GetVisible(void) const
 
 bool XWin::GetActive(void) const
 {
-    return true;
+	return active;
 }
 
 
@@ -495,12 +504,13 @@ void XWin::GetBounds(int * outX, int * outY)
 	int x_return, y_return;
 	unsigned int width_return, height_return, border_width_return, depth_return;
 
-	XGetGeometry(mDisplay, mWindow, &rw, &x_return, &y_return, &width_return,
-				&height_return, &border_width_return, &depth_return);
+	//XLockDisplay(mDisplay);
+	//XGetGeometry(mDisplay, mWindow, &rw, &x_return, &y_return, &width_return,
+	//			&height_return, &border_width_return, &depth_return);
+	//XUnlockDisplay(mDisplay);
 
     if (outX) *outX = width;
     if (outY) *outY = height;
-
     return;
 }
 
@@ -516,7 +526,6 @@ void	XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
 	ReceiveFiles(inFiles, 0, 0);
 	return;
 }
-
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {

@@ -128,6 +128,8 @@ puke:
 }
 #endif
 #if LIN
+// needed for backtrace.c
+const char* program_name;
 int main(int argc, char* argv[])
 {
     Display* display = 0;
@@ -137,7 +139,11 @@ int main(int argc, char* argv[])
     int haveVisual = 1;
     XEvent xevent;
 
-    display = XOpenDisplay(NULL);
+	XInitThreads();
+
+	program_name = argv[0];
+
+    display = XOpenDisplay(0);
     if (!display)
     {
         fprintf(stderr, "failed to open the default display (:0).\n");
@@ -156,10 +162,9 @@ int main(int argc, char* argv[])
     while (haveVisual)
     {
         XNextEvent(display, &xevent);
-        XWin::WinEventHandler((XAnyEvent*)&xevent, &haveVisual);
+        XWin::WinEventHandler(&xevent, &haveVisual);
         if (!haveVisual) break;
     }
-    XCloseDisplay(display);
     return 0;
 }
 #endif
