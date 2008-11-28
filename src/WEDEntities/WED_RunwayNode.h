@@ -26,6 +26,8 @@
 
 #include "WED_GISPoint.h"
 
+// A trivial node with no properties, used to form the end-points of runway-type chains.
+
 class WED_RunwayNode : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_RunwayNode)

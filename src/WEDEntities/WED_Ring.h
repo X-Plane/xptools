@@ -24,6 +24,16 @@
 #ifndef WED_Ring_H
 #define WED_Ring_H
 
+/*
+
+	WED_Ring - THEORY OF OPERATION
+	
+	WED_Ring is an internal implementation class...a polygon has multiple rings - this provides a "dummy" ring - it's only 
+	purpose is to be closed (always) and contain other points.  We can use this any time we need to implement a polygon;
+	the ring has no semantics about what it is contained in.
+
+*/
+
 #include "WED_GISChain.h"
 
 class WED_Ring  : public WED_GISChain {

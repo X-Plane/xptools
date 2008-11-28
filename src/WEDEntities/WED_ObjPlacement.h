@@ -33,14 +33,12 @@ DECLARE_PERSISTENT(WED_ObjPlacement)
 
 public:
 
-	virtual	void 			ReadFrom(IOReader * reader);
-	virtual	void 			WriteTo(IOWriter * writer);
-	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	virtual void			ToDB(sqlite3 * db);
+			void		GetResource(	  string& r) const;
+			void		SetResource(const string& r);
 
 private:
 
-	int			model_id;
+	WED_PropStringText		resource;
 
 };
 

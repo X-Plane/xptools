@@ -22,62 +22,25 @@
  */
 
 #include "WED_ObjPlacement.h"
-#include "IODefs.h"
-#include "SQLUtils.h"
-#include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
+TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
-WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int id) : WED_GISPoint_Heading(a,id)
+WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
+	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
 {
-	model_id = 0;
 }
 
 WED_ObjPlacement::~WED_ObjPlacement()
 {
 }
 
-void WED_ObjPlacement::CopyFrom(const WED_ObjPlacement * rhs)
+void		WED_ObjPlacement::GetResource(	  string& r) const
 {
-	WED_GISPoint_Heading::CopyFrom(rhs);
-	StateChanged();
-	model_id = rhs->model_id;
+	r = resource.value;
 }
 
-void 			WED_ObjPlacement::ReadFrom(IOReader * reader)
+void		WED_ObjPlacement::SetResource(const string& r)
 {
-	WED_GISPoint_Heading::ReadFrom(reader);
-	reader->ReadInt(model_id);
-}
-
-void 			WED_ObjPlacement::WriteTo(IOWriter * writer)
-{
-	WED_GISPoint_Heading::WriteTo(writer);
-	writer->WriteInt(model_id);
-}
-
-void			WED_ObjPlacement::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	WED_GISPoint_Heading::FromDB(db, mapping);
-	sql_command	cmd(db,"SELECT model_id FROM WED_objects WHERE id=@i;","@i");
-
-	sql_row1<int>						key(GetID());
-	sql_row1<int>						me;
-
-	int err = cmd.simple_exec(key, me);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	model_id = me.a;
-
-}
-
-void			WED_ObjPlacement::ToDB(sqlite3 * db)
-{
-	WED_GISPoint_Heading::ToDB(db);
-	int err;
-	sql_command	write_me(db,"INSERT OR REPLACE INTO WED_objects VALUES(@id,@m);",
-								"@id,@m");
-	sql_row2 <int,int>bindings(GetID(),model_id);
-	err = write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+	resource = r;
 }

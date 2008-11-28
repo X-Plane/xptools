@@ -38,15 +38,15 @@ WED_TextureNode::~WED_TextureNode()
 
 void		WED_TextureNode::SetTextCoord(const Point2& st)
 {
-	if (st.x != mS.value || st.y != mT.value)
+	if (st.x() != mS.value || st.y() != mT.value)
 	{
-		mS = st.x;
-		mT = st.y;
+		mS = st.x();
+		mT = st.y();
 	}
 }
 
 void		WED_TextureNode::GetTexCoord(	   Point2& st) const
 {
-	st.x = mS.value;
-	st.y = mT.value;
+	st.x_ = mS.value;
+	st.y_ = mT.value;
 }

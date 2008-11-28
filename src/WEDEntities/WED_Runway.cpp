@@ -74,7 +74,7 @@ bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
-	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
 
 	double frac = blas1.value / my_len;
@@ -100,7 +100,7 @@ bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
-	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
 
 	double frac = blas2.value / my_len;
@@ -126,7 +126,7 @@ bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
-	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
 
 	double frac = disp1.value / my_len;
@@ -152,7 +152,7 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
-	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
 
 	double frac = disp2.value / my_len;
@@ -177,7 +177,7 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
 
-	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
 
 	if (blas1.value != 0.0)

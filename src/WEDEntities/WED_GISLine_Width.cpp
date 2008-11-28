@@ -130,12 +130,12 @@ void		WED_GISLine_Width::GetNthProperty(int n, PropertyVal_t& val) const
 	switch(n) {
 	case rwy_prop_length:	val.double_val = l;			break;
 	case rwy_prop_heading:	val.double_val = h;			break;
-	case rwy_prop_lat1:		val.double_val = ends[0].y;	break;
-	case rwy_prop_lon1:		val.double_val = ends[0].x;	break;
-	case rwy_prop_latc:		val.double_val = ctr.y;		break;
-	case rwy_prop_lonc:		val.double_val = ctr.x;		break;
-	case rwy_prop_lat2:		val.double_val = ends[1].y;	break;
-	case rwy_prop_lon2:		val.double_val = ends[1].x;	break;
+	case rwy_prop_lat1:		val.double_val = ends[0].y();	break;
+	case rwy_prop_lon1:		val.double_val = ends[0].x();	break;
+	case rwy_prop_latc:		val.double_val = ctr.y();		break;
+	case rwy_prop_lonc:		val.double_val = ctr.x();		break;
+	case rwy_prop_lat2:		val.double_val = ends[1].y();	break;
+	case rwy_prop_lon2:		val.double_val = ends[1].x();	break;
 	default: WED_GISLine::GetNthProperty(n-rwy_prop_count, val);
 	}
 }
@@ -165,35 +165,35 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
 		break;
-
-	case rwy_prop_lat1:
-		ends[0].y = val.double_val;
+			
+	case rwy_prop_lat1:		
+		ends[0].y_ = val.double_val;
 		GetSource()->SetLocation(ends[0]);
 		break;
 	case rwy_prop_lon1:
-		ends[0].x = val.double_val;
+		ends[0].x_ = val.double_val;
 		GetSource()->SetLocation(ends[0]);
 		break;
 
 	case rwy_prop_latc:
-		ctr.y = val.double_val;
+		ctr.y_ = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
 		break;
 	case rwy_prop_lonc:
-		ctr.x = val.double_val;
+		ctr.x_ = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
 		break;
 
 	case rwy_prop_lat2:
-		ends[1].y = val.double_val;
+		ends[1].y_ = val.double_val;
 		GetTarget()->SetLocation(ends[1]);
 		break;
 	case rwy_prop_lon2:
-		ends[1].x = val.double_val;
+		ends[1].x_ = val.double_val;
 		GetTarget()->SetLocation(ends[1]);
 		break;
 
@@ -266,8 +266,8 @@ void			WED_GISLine_Width::Rescale(
 	GetCorners(corners);
 	for(int n = 0; n < 4; ++n)
 	{
-		corners[n].x = old_bounds.rescale_to_x(new_bounds,corners[n].x);
-		corners[n].y = old_bounds.rescale_to_y(new_bounds,corners[n].y);
+		corners[n].x_ = old_bounds.rescale_to_x(new_bounds,corners[n].x());
+		corners[n].y_ = old_bounds.rescale_to_y(new_bounds,corners[n].y());
 	}
 
 	Point2	 ends[2];

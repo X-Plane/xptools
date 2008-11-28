@@ -83,9 +83,9 @@ void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symet
 	Point2	corners[4], orig[4];
 	GetCorners(corners);
 	Point2 ctr;
-	ctr.x = (corners[0].x + corners[1].x + corners[2].x + corners[3].x) * 0.25;
-	ctr.y = (corners[0].y + corners[1].y + corners[2].y + corners[3].y) * 0.25;
-
+	ctr.x_ = (corners[0].x() + corners[1].x() + corners[2].x() + corners[3].x()) * 0.25;
+	ctr.y_ = (corners[0].y() + corners[1].y() + corners[2].y() + corners[3].y()) * 0.25;
+	
 	Vector2	oldv(ctr,corners[corner]);
 	Vector2 newv(oldv+delta * (symetric ? 1.0 : 0.5));
 

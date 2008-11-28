@@ -94,17 +94,17 @@ void	WED_GISPoint::GetLocation(      Point2& p) const
 	// start a cache-inval cascade.)
 	CacheBuild();
 
-	p.x = longitude.value;
-	p.y = latitude.value;
+	p.x_ = longitude.value;
+	p.y_ = latitude.value;
 }
 
 void	WED_GISPoint::SetLocation(const Point2& p)
 {
-	if (p.x != longitude.value || p.y != latitude.value)
+	if (p.x() != longitude.value || p.y() != latitude.value)
 	{
 		StateChanged();
-		longitude.value = p.x;
-		latitude.value = p.y;
+		longitude.value = p.x();
+		latitude.value = p.y();
 		CacheInval();
 		CacheBuild();
 	}
@@ -127,10 +127,10 @@ void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
 		v_new *= old_len;
 
 		v_new = VectorMetersToLL(ctr,v_new);
-
-		longitude.value = ctr.x + v_new.dx;
-		latitude.value = ctr.y + v_new.dy;
-
+		
+		longitude.value = ctr.x() + v_new.dx;
+		latitude.value = ctr.y() + v_new.dy;
+		
 		CacheInval();
 		CacheBuild();
 	}
