@@ -57,16 +57,16 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 	vector<Point2>		fps;
 	if (inCurrent && mRayShoot)
 	{
-		mTarget.x = GetZoomer()->XPixelToLon(mx);
-		mTarget.y = GetZoomer()->YPixelToLat(my);
-
+		mTarget.x_ = GetZoomer()->XPixelToLon(mx);
+		mTarget.y_ = GetZoomer()->YPixelToLat(my);
+		
 		Vector2	dist(mAnchor, mTarget);
 		if (XPLMGetModifiers() & xplm_ShiftFlag)
 		{
 			if (abs(dist.dx) < abs(dist.dy))
-				mTarget.x = mAnchor.x;
+				mTarget.x_ = mAnchor.x();
 			else
-				mTarget.y = mAnchor.y;
+				mTarget.y_ = mAnchor.y();
 		}
 
 		gVertexSelection.clear();
@@ -74,7 +74,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		gEdgeSelection.clear();
 
 		Point2				st_p = mAnchor;
-		GISHalfedge *		st_h = mAnchorHint;
+		Halfedge_handle		st_h = mAnchorHint;
 		Pmwx::Locate_type	st_l = mAnchorLoc;
 
 		fps.push_back(mAnchor);

@@ -207,7 +207,7 @@ char *	WED_TerraTool::GetStatusText(void)
 		sprintf(buf, "No area established.");
 	return buf;
 }
-
+                  
 const char *	WED_TerraTool::ResString(void)
 {
 	static char	resbuf[256];

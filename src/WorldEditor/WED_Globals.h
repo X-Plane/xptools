@@ -25,8 +25,8 @@
 
 #include "MapDefs.h"
 //#include "MapBuckets.h"
-#include "DEMDefs.h"
-#include "MeshDefs.h"
+//#include "DEMDefs.h"
+//#include "MeshDefs.h"
 #include "AptDefs.h"
 #include "CompGeomDefs3.h"
 

@@ -313,8 +313,9 @@ void	WED_FileNew(void)
 	float mapSouth = -90.0;
 	float mapEast = 180.0;
 	float mapNorth = 90.0;
+	
 
-	gMap.Index();
+//	gMap.Index();
 
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
 }
@@ -343,15 +344,64 @@ bool	WED_FileOpen(const string& inPath)
 	} else
 		return false;
 
-	Point2	sw, ne;
+	Point_2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
-	double mapNorth = (ne.y);
-	double mapSouth = (sw.y);
-	double mapEast = (ne.x);
-	double mapWest = (sw.x);
+	double mapNorth = CGAL::to_double(ne.y());
+	double mapSouth = CGAL::to_double(sw.y());
+	double mapEast = CGAL::to_double(ne.x());
+	double mapWest = CGAL::to_double(sw.x());
 
 //	ReduceToWaterBodies(gMap);
+/*
+	for (Pmwx::Vertex_iterator vit = gMap.vertices_begin(); vit != gMap.vertices_end(); ++vit)
+	{
+		printf("Vertex at: %lf,%lf\n", CGAL::to_double(vit->point().x()),CGAL::to_double(vit->point().y()));
+		Pmwx::Halfedge_around_vertex_const_circulator circ = vit->incident_halfedges();
+		Pmwx::Halfedge_around_vertex_const_circulator start = circ;
+		Pmwx::Halfedge_around_vertex_const_circulator prev, next;
+		bool                                    eq1, eq2;
 
+
+			CGAL::Arr_traits_basic_adaptor_2<Traits_2>	traits;
+			CGAL::Arr_traits_basic_adaptor_2<Traits_2>::Is_between_cw_2  is_between_cw = traits.is_between_cw_2_object();
+
+		do
+		{
+			prev = circ; --prev;
+			next = circ; ++next;
+
+			printf("Testing these 3 curves:\n"
+					"%lf,%lf->%lf,%lf\n"
+					"%lf,%lf->%lf,%lf\n"
+					"%lf,%lf->%lf,%lf\n",
+						CGAL::to_double(prev->source()->point().x()),CGAL::to_double(prev->source()->point().y()),
+						CGAL::to_double(prev->target()->point().x()),CGAL::to_double(prev->target()->point().y()),
+
+						CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->source()->point().y()),
+						CGAL::to_double(circ->target()->point().x()),CGAL::to_double(circ->target()->point().y()),
+
+						CGAL::to_double(next->source()->point().x()),CGAL::to_double(next->source()->point().y()),
+						CGAL::to_double(next->target()->point().x()),CGAL::to_double(next->target()->point().y()));
+
+			if(prev != next)
+			if (!is_between_cw (circ->curve(), (circ->direction() == CGAL::LARGER),
+								prev->curve(), (prev->direction() == CGAL::LARGER),
+								next->curve(), (next->direction() == CGAL::LARGER),
+								vit->point(), eq1, eq2))
+
+			{
+				printf("Failed test...eq: %s. eq2: %s\n", eq1 ? "yes" : "no", eq2 ? "yes" : "no");
+			}
+
+				++circ;
+				
+			
+		} while (circ != start);
+		
+		if (!gMap._is_valid (vit))
+			Assert(!"Problem!");
+	}
+*/
 	if (!gMap.is_valid())
 	{
 		gMap.clear();

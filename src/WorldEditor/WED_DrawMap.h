@@ -47,5 +47,15 @@ void	DrawMapBucketed(
 
 
 
+void		FindFaceTouchesPt(Pmwx& inMap, const Point2&, vector<Face_handle>& outIDs);									// Fully checks for pt containment
+void		FindFaceTouchesRectFast(Pmwx& inMap, const Point2&, const Point2&, vector<Face_handle>& outIDs);				// Intersects with face bbox, not face
+void		FindFaceFullyInRect(Pmwx& inMap, const Point2&, const Point2&, vector<Face_handle>& outIDs);					// Full containment
+
+void		FindHalfedgeTouchesRectFast(Pmwx& inMap, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);		// Intersects with half-edge bbox, not half-edge
+void		FindHalfedgeFullyInRect(Pmwx& inMap, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);			// Full containment
+
+void		FindVerticesTouchesPt(Pmwx& inMap, const Point2&, vector<Vertex_handle>& outIDs);								// Perfect equalty.
+void		FindVerticesTouchesRect(Pmwx& inMap, const Point2&, const Point2&, vector<Vertex_handle>& outIDs);				// Full containment (any containment is full for pts)
+
 
 #endif

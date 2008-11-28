@@ -28,6 +28,9 @@
 #include "WED_Globals.h"
 #include "WED_Selection.h"
 #include "WED_Progress.h"
+#include "MapTopology.h"
+#include "MapPolygon.h"
+#include "MapBuffer.h"
 
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
@@ -241,13 +244,13 @@ bool	WED_SelectionTool::HandleClick(
 		{
 			double	lonNow = GetZoomer()->XPixelToLon(inX);
 			double	latNow = GetZoomer()->YPixelToLat(inY);
-			Vector2	delta(lonNow - mMoveLon, latNow - mMoveLat);
+			Vector_2	delta(lonNow - mMoveLon, latNow - mMoveLat);
 			mMoveLon = lonNow;
 			mMoveLat = latNow;
 			for (set<Pmwx::Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
 			{
-				Point2 p = (*v)->point();
-				(*v)->point() = p + delta;
+				Point_2 p = (*v)->point();
+//				(*v)->point() = p + delta;
 			}
 		}
 		return 1;
@@ -273,13 +276,13 @@ bool	WED_SelectionTool::HandleClick(
 		{
 			double	lonNow = GetZoomer()->XPixelToLon(inX);
 			double	latNow = GetZoomer()->YPixelToLat(inY);
-			Vector2	delta(lonNow - mMoveLon, latNow - mMoveLat);
+			Vector_2	delta(lonNow - mMoveLon, latNow - mMoveLat);
 			mMoveLon = lonNow;
 			mMoveLat = latNow;
 			for (set<Pmwx::Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
 			{
-				Point2 p = (*v)->point();
-				(*v)->point() = p + delta;
+				Point_2 p = (*v)->point();
+//				(*v)->set_point(p + delta);				
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			mIsMoveVertices = false;
@@ -337,13 +340,13 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 	switch(n) {
 	case 0:
 		{
-			set<GISHalfedge *>	nuke;
-			for (set<GISHalfedge *>::iterator sel = gEdgeSelection.begin(); sel != gEdgeSelection.end(); ++sel)
-				if ((*sel)->mDominant)
+			set<Halfedge_handle>	nuke;
+			for (set<Halfedge_handle>::iterator sel = gEdgeSelection.begin(); sel != gEdgeSelection.end(); ++sel)
+				if ((*sel)->data().mDominant)
 					nuke.insert(*sel);
 				else
 					nuke.insert((*sel)->twin());
-			for (set<GISHalfedge *>::iterator nukeme = nuke.begin(); nukeme != nuke.end(); ++nukeme)
+			for (set<Halfedge_handle>::iterator nukeme = nuke.begin(); nukeme != nuke.end(); ++nukeme)
 			{
 				gMap.remove_edge(*nukeme);
 				DebugAssert(gMap.is_valid());
@@ -351,7 +354,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		}
 		break;
 	case 1:
-		for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
+		for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 		{
 			CleanFace(gMap, *fsel);
 		}
@@ -362,140 +365,53 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			if (n == 4)
 				++gStopPt;
 
-				set<GISFace *>	fail;
-
-			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
-//			for (Pmwx::Face_iterator the_face = gMap.faces_begin(); the_face != gMap.faces_end(); ++the_face, ++ctr)
+				set<Face_handle>	fail;
+			
+			gMeshLines.clear();
+			gMeshPoints.clear();
+			bool was_empty = gFaceSelection.empty();
+			if(was_empty)
 			{
-				/*
-				GISFace * the_face = *fsel;
-				GISHalfedge * iter, * stop;
-				int ct = 0;
-				iter = stop = the_face->outer_ccb();
-				do {
-					++ct;
-					iter = iter->next();
-				} while (iter != stop);
-
-				geos::geom::CoordinateSequence * s = geos::geom::GeometryFactory::getDefaultInstance()->getCoordinateSequenceFactory()->create(ct+1,2);
-				ct = 0;
-				iter = stop = the_face->outer_ccb();
-				do {
-					s->setOrdinate(ct,0,iter->target()->point().x);
-					s->setOrdinate(ct,1,iter->target()->point().y);
-					++ct;
-					iter = iter->next();
-				} while (iter != stop);
-					s->setOrdinate(ct,0,iter->target()->point().x);
-					s->setOrdinate(ct,1,iter->target()->point().y);
-
-				geos::geom::LinearRing * outer_ccb_ring = geos::geom::GeometryFactory::getDefaultInstance()->createLinearRing(s);
-
-				vector<geos::geom::Geometry *>	holes(the_face->holes_count());
-				int i = 0;
-				for (Pmwx::Holes_iterator h = the_face->holes_begin(); h != the_face->holes_end(); ++h, ++i)
-				{
-					ct = 0;
-					iter = stop = *h;
-					do {
-						++ct;
-						iter = iter->next();
-					} while (iter != stop);
-
-					geos::geom::CoordinateSequence * s = geos::geom::GeometryFactory::getDefaultInstance()->getCoordinateSequenceFactory()->create(ct+1,2);
-					ct = 0;
-					iter = stop = *h;
-					do {
-						s->setOrdinate(ct,0,iter->target()->point().x);
-						s->setOrdinate(ct,1,iter->target()->point().y);
-						++ct;
-						iter = iter->next();
-					} while (iter != stop);
-					s->setOrdinate(ct,0,iter->target()->point().x);
-					s->setOrdinate(ct,1,iter->target()->point().y);
-
-					holes[i] =  geos::geom::GeometryFactory::getDefaultInstance()->createLinearRing(s);
-				}
-
-				std::vector<geos::geom::Geometry *> *vholes = new std::vector<geos::geom::Geometry *>(holes.begin(), holes.end());
-				geos::geom::Geometry * poly =  geos::geom::GeometryFactory::getDefaultInstance()->createPolygon(outer_ccb_ring, vholes);
-
-//				geos::geom::Geometry * buf = geos::operation::buffer::BufferOp::bufferOp(poly, -30.0 * MTR_TO_NM * NM_TO_DEG_LAT , 8, geos::operation::buffer::BufferOp::CAP_SQUARE);
-				geos::operation::buffer::BufferOp bufOp(poly);
-				bufOp.setQuadrantSegments(1);
-				bufOp.setEndCapStyle(geos::operation::buffer::BufferOp::CAP_SQUARE);
-				geos::geom::Geometry * buf = bufOp.getResultGeometry(-30.0 * MTR_TO_NM * NM_TO_DEG_LAT);
-
-
-				dump_geos_recursive(buf, (the_face)->mPolyObjs);
-
-				delete poly;
-				delete buf;
-				*/
-
-				/*
-				GISFace * the_face = *fsel;
-				if (gStopPt == ctr)
-				{
-					gFaceSelection.clear();
-					gFaceSelection.insert(the_face);
-					return;
-				}
-				if (the_face->is_unbounded()) continue;
-				if (the_face->mTerrainType == terrain_Water) continue;
-
-				ComplexPolygon2			orig;
-				ComplexPolygonWeight 	insets;
-				vector<ComplexPolygon2>	inset;
-
-				FaceToComplexPolygon(the_face, orig, &insets, GetInsetForEdgeDegs, NULL);
-
-				try {
-					int result = SK_InsetPolygon(orig, insets, inset, gStopPt);
-					if (result != skeleton_OK)
-						fail.insert(the_face);
-				} catch(...) {
-					fail.insert(the_face);
-				}
-
-				for (vector<ComplexPolygon2>::iterator inner = inset.begin(); inner != inset.end(); ++inner)
-				{
-					GISPolyObjPlacement_t	obj;
-					obj.mRepType = NO_VALUE;
-					obj.mDerived = true;
-					obj.mHeight = 1.0;
-
-					obj.mShape = *inner;
-					obj.mLocation = obj.mShape[0].centroid();
-					(the_face)->mPolyObjs.push_back(obj);
-				}
-				*/
-
-				GISFace * the_face = *fsel;
-				Pmwx	result_map;
-
-				try {
-					InsetPmwx(the_face, result_map,30.0 * MTR_TO_NM * NM_TO_DEG_LAT);
-				} catch(...) {
-					fail.insert(the_face);
-				}
-
-				for (Pmwx::Face_iterator f = result_map.faces_begin(); f != result_map.faces_end(); ++f)
-				if (!f->is_unbounded())
-				if (f->mTerrainType == 1)
-				{
-					GISPolyObjPlacement_t	obj;
-					FaceToComplexPolygon(f,obj.mShape,NULL, NULL, NULL);
-					obj.mRepType = NO_VALUE;
-					obj.mDerived = true;
-					obj.mHeight = 1.0;
-
-					obj.mLocation = obj.mShape[0].centroid();
-					(the_face)->mPolyObjs.push_back(obj);
-				}
-
+				for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+				if(!f->is_unbounded())
+					gFaceSelection.insert(f);
 			}
+				Locator						loc(gMap);
 
+			PROGRESS_START(WED_ProgressFunc,0,1,"Insetting")
+			for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
+			{
+				PROGRESS_SHOW(WED_ProgressFunc,0,1,"Insetting",ctr,gFaceSelection.size())
+				Polygon_with_holes_2		bounds;
+				PolyInset_t					lims;
+				PolygonFromFace(*fsel, bounds, &lims, GetInsetForEdgeDegs, NULL);
+				Polygon_set_2				bs;
+				
+				try {
+				
+					BufferPolygonWithHoles(bounds, &lims, 1.0 , bs);
+					
+					ValidateBuffer(gMap,*fsel, loc, bs);
+				} catch (...) {
+					fail.insert(*fsel);
+					debug_mesh_point(cgal2ben((*fsel)->outer_ccb()->source()->point()),1,1,0);
+				}			
+				
+				vector<Polygon_with_holes_2>	all;
+				
+				bs.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(all));
+				
+				for(vector<Polygon_with_holes_2>::iterator a = all.begin(); a != all.end(); ++a)
+				{
+					GISPolyObjPlacement_t	res;
+					res.mShape = *a;
+					res.mRepType = 1;
+					res.mHeight = 20;
+					res.mDerived = true;
+					(*fsel)->data().mPolyObjs.push_back(res);
+				}
+			}
+			PROGRESS_DONE(WED_ProgressFunc,0,1,"Insetting")
 			if (!fail.empty())
 			{
 				char buf[256];
@@ -506,21 +422,22 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				gFaceSelection = fail;
 				gVertexSelection.clear();
 			}
-
+			else if(was_empty)
+				gFaceSelection.clear();
 			return;
 		}
 	case 3:
-		for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
-			(*fsel)->mPolyObjs.clear();
+		for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
+			(*fsel)->data().mPolyObjs.clear();
 		return;
 	case 5:
 		{
 			ImageInfo	img;
-			GISFace * f = gFaceSelection.empty() ? NULL : *gFaceSelection.begin();
-			if(f)CreateNewBitmap(512,512,3,&img);
+			Face_handle f = gFaceSelection.empty() ? Face_handle() : *gFaceSelection.begin();
+			if(f != Face_handle())CreateNewBitmap(512,512,3,&img);
 			double		bounds[4];
-			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  WED_ProgressFunc, f ? &img : NULL, bounds);
-			if(f){
+			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  WED_ProgressFunc, f != Face_handle() ? &img : NULL, bounds);
+			if(f != Face_handle()){			
 			gMapView->SetFlowImage(img,bounds);
 			DestroyBitmap(&img);}
 		}
@@ -570,21 +487,21 @@ char *	WED_SelectionTool::GetStatusText(void)
 
 		double area = GetMapFaceAreaMeters(the_face);
 		n += sprintf(buf+n, "%d sq m ", (int) area);
-//		if (the_face->mTerrainType != terrain_Natural)
-			n += sprintf(buf+n,"Art.Terrain:%s ", FetchTokenString(the_face->mTerrainType));
-
-		if (the_face->mAreaFeature.mFeatType != NO_VALUE)
+//		if (the_face->data().mTerrainType != terrain_Natural)
+			n += sprintf(buf+n,"Art.Terrain:%s ", FetchTokenString(the_face->data().mTerrainType));
+			
+		if (the_face->data().mAreaFeature.mFeatType != NO_VALUE)
 		{
-			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->mAreaFeature.mFeatType));
+			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->data().mAreaFeature.mFeatType));
 		}
-
-		for(GISParamMap::iterator p = the_face->mParams.begin(); p != the_face->mParams.end(); ++p)
+		
+		for(GISParamMap::iterator p = the_face->data().mParams.begin(); p != the_face->data().mParams.end(); ++p)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
 	if (gEdgeSelection.size() > 1)
 	{
 		double t = 0;
-		for(set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+		for(set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
 		t += GetMapEdgeLengthMeters(*e);
 		n += sprintf(buf+n, "%.1f m ", t);
 	}
@@ -593,41 +510,45 @@ char *	WED_SelectionTool::GetStatusText(void)
 	{
 		double len = GetMapEdgeLengthMeters(*gEdgeSelection.begin());
 		n += sprintf(buf+n, "%.1f m ", len);
-		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->mSegments.begin(); seg != (*gEdgeSelection.begin())->mSegments.end(); ++seg)
+		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->data().mSegments.end(); ++seg)
 		{
 			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
 		}
-		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->mParams.begin(); p != (*gEdgeSelection.begin())->mParams.end(); ++p)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
-
-		if ((*gEdgeSelection.begin())->mTransition != 0)
+		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->data().mParams.begin(); p != (*gEdgeSelection.begin())->data().mParams.end(); ++p)
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
+			
+		if ((*gEdgeSelection.begin())->data().mTransition != 0)
 		{
-			n += sprintf(buf+n,"Beach=%d ", (*gEdgeSelection.begin())->mTransition);
+			n += sprintf(buf+n,"Beach=%d ", (*gEdgeSelection.begin())->data().mTransition);
 		}
-		if ((*gEdgeSelection.begin())->mMark != 0)
+		if ((*gEdgeSelection.begin())->data().mMark != 0)
 		{
 			n += sprintf(buf+n,"Marked ");
 		}
-		if ((*gEdgeSelection.begin())->twin()->mMark != 0)
+		if ((*gEdgeSelection.begin())->twin()->data().mMark != 0)
 		{
 			n += sprintf(buf+n,"TwinMarked ");
 		}
 	}
 	if (gPointFeatureSelection.size() == 1)
 	{
-		GISPointFeature_t * f = &gPointFeatureSelection.begin()->first->mPointFeatures[gPointFeatureSelection.begin()->second];
+		GISPointFeature_t * f = &gPointFeatureSelection.begin()->first->data().mPointFeatures[gPointFeatureSelection.begin()->second];
 		n += sprintf(buf+n, "%s ", FetchTokenString(f->mFeatType));
 		for(GISParamMap::iterator p = f->mParams.begin(); p != f->mParams.end(); ++p)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
-	if (gVertexSelection.size() == 1 && (*(gVertexSelection.begin()))->mTunnelPortal)
+	if (gVertexSelection.size() == 1 && (*(gVertexSelection.begin()))->data().mTunnelPortal)
 	{
 		n += sprintf(buf+n, " (tunnel portal)");
 	}
 
 	if (gVertexSelection.size() == 1)
 	{
-		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ", (*(gVertexSelection.begin()))->point().x,(*(gVertexSelection.begin()))->point().y,(*(gVertexSelection.begin()))->point().x,(*(gVertexSelection.begin()))->point().y);
+		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ", 
+			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
+			CGAL::to_double((*(gVertexSelection.begin()))->point().y()),
+			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
+			CGAL::to_double((*(gVertexSelection.begin()))->point().y()));
 	}
 
 	{
@@ -716,8 +637,8 @@ struct	NearestVertexToPt_t {
 
 static void	MakeVertexClosestMaybe(Pmwx::Vertex_handle v, NearestVertexToPt_t * s)
 {
-	double dx = s->lon - v->point().x;
-	double dy = s->lat - v->point().y;
+	double dx = s->lon - CGAL::to_double(v->point().x());
+	double dy = s->lat - CGAL::to_double(v->point().y());
 	double dist = dx * dx + dy * dy;
 	if (!s->found || dist < s->dist)
 	{
@@ -738,7 +659,7 @@ struct	NearestEdgeToPt_t {
 static void	MakeEdgeClosestMaybe(Pmwx::Halfedge_handle v, NearestEdgeToPt_t * s)
 {
 	Point2	p = Point2(s->lon, s->lat);
-	Segment2	seg(v->source()->point(), v->target()->point());
+	Segment2	seg(cgal2ben(v->source()->point()), cgal2ben(v->target()->point()));
 	Point2 proj = seg.projection(p);
 	if (!seg.collinear_has_on(proj)) return;
 
@@ -761,8 +682,8 @@ struct	NearestPFSToPt_t {
 
 static void	MakePFSClosestMaybe(PointFeatureSelection& v, NearestPFSToPt_t * s)
 {
-	double dx = s->lon - (v.first->mPointFeatures[v.second].mLocation.x);
-	double dy = s->lat - (v.first->mPointFeatures[v.second].mLocation.y);
+	double dx = s->lon - CGAL::to_double(v.first->data().mPointFeatures[v.second].mLocation.x());
+	double dy = s->lat - CGAL::to_double(v.first->data().mPointFeatures[v.second].mLocation.y());
 	double dist = dx * dx + dy * dy;
 	if (!s->found || dist < s->dist)
 	{
@@ -775,9 +696,9 @@ static void	MakePFSClosestMaybe(PointFeatureSelection& v, NearestPFSToPt_t * s)
 
 void	WED_SelectionTool::DoSelectionPreview()
 {
-		vector<GISFace *> 		faceitems;
-		vector<GISHalfedge *> 	halfedgeitems;
-		vector<GISVertex *> 	vertexitems;
+		vector<Face_handle> 		faceitems;
+		vector<Halfedge_handle> 	halfedgeitems;
+		vector<Vertex_handle>		vertexitems;
 
 	switch(gSelectionMode) {
 	case wed_Select_Face:
@@ -787,13 +708,13 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindFaceFullyInRect(
+				FindFaceFullyInRect(gMap,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			} else {
-				gMap.FindFaceTouchesPt(
+				FindFaceTouchesPt(gMap,
 							Point2(bounds[0], bounds[1]), faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			}
@@ -806,7 +727,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindHalfedgeFullyInRect(
+				FindHalfedgeFullyInRect(gMap,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							halfedgeitems);
@@ -815,8 +736,8 @@ void	WED_SelectionTool::DoSelectionPreview()
 				NearestEdgeToPt_t t;
 				t.found = false;
 				t.lon = bounds[0];
-				t.lat = bounds[1];
-				gMap.FindHalfedgeTouchesRectFast(
+				t.lat = bounds[1];			
+				FindHalfedgeTouchesRectFast(gMap,
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), halfedgeitems);
 				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(),
@@ -839,7 +760,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindVerticesTouchesRect(
+				FindVerticesTouchesRect(gMap,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -850,7 +771,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				t.found = false;
 				t.lon = bounds[0];
 				t.lat = bounds[1];
-				gMap.FindVerticesTouchesRect(
+				FindVerticesTouchesRect(gMap,
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -874,15 +795,15 @@ void	WED_SelectionTool::DoSelectionPreview()
 			if (GetRectMapCoords(bounds))
 			{
 				vector<Pmwx::Face_handle>	faces;
-				gMap.FindFaceTouchesRectFast(
+				FindFaceTouchesRectFast(gMap,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)
 				{
-					for (int j = 0; j  < (*i)->mPointFeatures.size(); ++j)
+					for (int j = 0; j  < (*i)->data().mPointFeatures.size(); ++j)
 					{
-						double dx = ((*i)->mPointFeatures[j].mLocation.x);
-						double dy = ((*i)->mPointFeatures[j].mLocation.y);
+						double dx = CGAL::to_double((*i)->data().mPointFeatures[j].mLocation.x());
+						double dy = CGAL::to_double((*i)->data().mPointFeatures[j].mLocation.y());
 						if (bounds[0] <= dx && bounds[1] <= dy && bounds[2] > dx && bounds[3] > dy)
 						{
 							PointFeatureSelection pfs(*i, j);
@@ -899,12 +820,12 @@ void	WED_SelectionTool::DoSelectionPreview()
 				t.lon = bounds[0];
 				t.lat = bounds[1];
 				vector<Pmwx::Face_handle>	faces;
-				gMap.FindFaceTouchesRectFast(
+				FindFaceTouchesRectFast(gMap,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)
 				{
-					for (int j = 0; j  < (*i)->mPointFeatures.size(); ++j)
+					for (int j = 0; j  < (*i)->data().mPointFeatures.size(); ++j)
 					{
 						PointFeatureSelection pfs(*i, j);
 							MakePFSClosestMaybe(pfs,&t);

@@ -495,7 +495,7 @@ int	DEMToBitmap(
 			for (int n = -DDA_STEPS; n <= DDA_STEPS; ++n)
 			{
 				Point2 s(p + e * n);
-				v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
+				v += interp_noise_2d(s.x() * DDA_FACTOR,s.y() * DDA_FACTOR,0);
 			}
 			v /= (DDA_STEPS*2.0f+1.0f);
 //			v = e.dy * 0.5 + 0.5;
@@ -567,7 +567,7 @@ void TensorDDA(
 		for (int n = -DDA_STEPS; n <= DDA_STEPS; ++n)
 		{
 			Point2 s(pi + e * n);
-			v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
+			v += interp_noise_2d(s.x() * DDA_FACTOR,s.y() * DDA_FACTOR,0);
 		}
 		v /= (DDA_STEPS*2.0f+1.0f);
 		for(int c = 0; c < ioImage.channels; ++c)

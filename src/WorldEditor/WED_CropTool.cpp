@@ -29,6 +29,7 @@
 #include "WED_Globals.h"
 #include "WED_Progress.h"
 #include "MapAlgs.h"
+#include "MapTopology.h"
 #include "UIUtils.h"
 #include "AssertUtils.h"
 #include "WED_DrawMap.h"

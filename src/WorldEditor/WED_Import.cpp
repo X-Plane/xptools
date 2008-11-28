@@ -454,20 +454,20 @@ static	void	LoadCLUT(XPWidgetID inID)
 
 void	DimsFromMap(XPWidgetID)
 {
-	if (gMap.empty() && gDem.empty())
+	if (gMap.is_empty() && gDem.empty())
 	{
 		sImportState.west = -180.0;
 		sImportState.east =  180.0;
 		sImportState.south = -90.0;
 		sImportState.north =  90.0;
 	} else {
-
-		Point2	sw(180.0, 90.0), ne(-180.0,-90.0);
+			
+		Point_2	sw(180.0, 90.0), ne(-180.0,-90.0);
 		CalcBoundingBox(gMap, sw, ne);
-		sImportState.west = sw.x;
-		sImportState.east = ne.x;
-		sImportState.south = sw.y;
-		sImportState.north = ne.y;
+		sImportState.west = CGAL::to_double(sw.x());
+		sImportState.east = CGAL::to_double(ne.x());
+		sImportState.south = CGAL::to_double(sw.y());
+		sImportState.north = CGAL::to_double(ne.y());
 		for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 		{
 			sImportState.west = min(sImportState.west, (float) i->second.mWest);

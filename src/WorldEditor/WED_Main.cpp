@@ -24,6 +24,7 @@
 // Stuff we need to init
 #include "XWidgetApp.h"
 #include "XESInit.h"
+#include "DEMDefs.h"
 #include "WED_ProcessingCmds.h"
 #include "WED_FileCommands.h"
 #include "WED_EditCommands.h"
@@ -79,6 +80,10 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 	if (gFailure)
 		(*gFailure)(a, b, c, d, e);
 	throw a;
+}
+void	cgal_warning(const char* a, const char* b, const char* c, int d, const char* e)
+{
+	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
 }
 
 
@@ -227,7 +232,7 @@ float CheckFifo(
 			data[n] = 0;
 			vector<const char*>	args;
 			char * str = &*data.begin();
-			char * sep = "\r\n \t";
+			const char * sep = "\r\n \t";
 			while(1)
 			{
 				char * tok = strtok(str,sep);
@@ -255,6 +260,41 @@ float CheckFifo(
 	return -1;
 }
 
+void dump(Pmwx& m)
+{
+	printf("---\n");
+	int n = 0;
+	for(Pmwx::Halfedge_iterator eit = m.halfedges_begin(); eit != m.halfedges_end(); ++eit, ++n)
+	{
+		printf("HE-curve %d:\n",n);
+		printf("   Source: %f,%f\n",CGAL::to_double(eit->source()->point().x()),
+									CGAL::to_double(eit->source()->point().y()));
+		printf("   Target: %f,%f\n",CGAL::to_double(eit->target()->point().x()),
+									CGAL::to_double(eit->target()->point().y()));
+									
+		printf("	Left: %f,%f\n", CGAL::to_double(eit->curve().left().x()),
+									CGAL::to_double(eit->curve().left().y()));
+		printf("	Right: %f,%f\n",CGAL::to_double(eit->curve().right().x()),
+									CGAL::to_double(eit->curve().right().y()));
+		printf("	Csrc: %f,%f\n", CGAL::to_double(eit->curve().source().x()),
+									CGAL::to_double(eit->curve().source().y()));
+		printf("	Ctrg: %f,%f\n", CGAL::to_double(eit->curve().target().x()),
+									CGAL::to_double(eit->curve().target().y()));
+
+		for(Arr_seg_traits_::Data_iterator i  = eit->curve().data().begin();
+						  i != eit->curve().data().end(); ++i)		
+		printf("	Key: %d\n",		*i);
+		
+		printf("	This curve goes right? %s\n",
+			eit->curve().is_directed_right()? "yes" : "no");
+		
+		printf("	This edge owns the curve? %s\n",
+			eit->curve().is_directed_right() == (eit->direction() == CGAL::SMALLER) ? "yes" : "no");
+                                                                
+		
+	}
+}
+
 
 
 void	XGrindInit(string& outName)
@@ -279,6 +319,9 @@ void	XGrindInit(string& outName)
 	SIOUXSettings.asktosaveonclose = false;
 #endif
 	gFailure = CGAL::set_error_handler(cgal_failure);
+#if DEV
+	CGAL::set_warning_handler(cgal_warning);
+#endif	
 	XESInit();
 
 	WED_LoadPrefs();
@@ -402,6 +445,21 @@ void	XGrindInit(string& outName)
 		RegisterObsCmds();
 		RegisterMiscCmds();
 
+/*		
+	Pmwx a,b,c;
+	Curve_2		top2(Segment_2(Point_2(3,0),Point_2(0,0)),2);
+	CGAL::insert_curve(a, top2);	
+	dump(a);
+	for(Pmwx::Edge_iterator eit = a.edges_begin(); eit != a.edges_end(); ++eit)
+		eit->curve().data().clear();
+
+	Curve_2		top(Segment_2(Point_2(1,0),Point_2(2,0)),1);
+	CGAL::insert_curve(a, top);	
+	dump(a);
+*/	
+//	Overlay_traits t;
+//	CGAL::overlay(a,b,c, t);
+//	dump(c);
 
 }
 

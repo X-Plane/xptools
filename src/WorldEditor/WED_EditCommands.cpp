@@ -27,6 +27,7 @@
 #include "PlatformUtils.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
+#include "MapTopology.h"
 #include "WED_Globals.h"
 #include "WED_Selection.h"
 #include "WED_Assert.h"
@@ -80,7 +81,7 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 		int cmd = (int) i;
 		switch(cmd) {
 //		case editCmd_SimplifyWater:
-//			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
+//			for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 //			{
 //				SimplifyCoastlineFace(gMap, *fsel);
 //			}
@@ -95,12 +96,12 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 			break;
 		case editCmd_ClearArea:
 			{
-				set<GISFace *> kill_f;
+				set<Face_handle> kill_f;
 				int ctr;
 
 				PROGRESS_START(WED_ProgressFunc, 0, 3, "Accumulating Faces")
 				ctr = 0;
-				for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
+				for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
 				{
 					PROGRESS_CHECK(WED_ProgressFunc, 0, 3, "Accumulating Faces", ctr, gFaceSelection.size(), gFaceSelection.size() / 200)
 					kill_f.insert(*fsel);
@@ -108,10 +109,10 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 				PROGRESS_DONE(WED_ProgressFunc, 0, 3, "Accumulating Faces")
 
 				PROGRESS_START(WED_ProgressFunc, 1, 3, "Accumulating Edges")
-				set<GISHalfedge *> kill_e;
+				set<Halfedge_handle> kill_e;			
 				ctr = 0;
 				for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
-				if (e->mDominant)
+				if (e->data().mDominant)
 				{
 					PROGRESS_CHECK(WED_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gMap.number_of_halfedges(), gMap.number_of_halfedges() / 200)
 					if (kill_f.count(e->face()) &&
@@ -122,7 +123,7 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 
 				ctr = 0;
 				PROGRESS_START(WED_ProgressFunc, 2, 3, "Deleting Edges")
-				for (set<GISHalfedge *>::iterator kill = kill_e.begin(); kill != kill_e.end(); ++kill, ++ctr)
+				for (set<Halfedge_handle>::iterator kill = kill_e.begin(); kill != kill_e.end(); ++kill, ++ctr)
 				{
 					PROGRESS_CHECK(WED_ProgressFunc, 2, 3, "Deleting Edges", ctr, kill_e.size(), kill_e.size() / 200)
 					gMap.remove_edge(*kill);
@@ -136,6 +137,7 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 			break;
 		case editCmd_InsertMap:
 			{
+/*			
 				char	path[1024];
 				path[0] = 0;
 				if (gFaceSelection.size() == 1)
@@ -168,21 +170,22 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 						MemFile_Close(fi);
 					}
 				}
-			}
+*/				
+			}			
 			gEdgeSelection.clear();
 			gFaceSelection.clear();
 			gVertexSelection.clear();
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			break;
 		case editCmd_MakeWet:
-			for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+			for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
 			{
-				(*f)->mTerrainType = terrain_Water;
+				(*f)->data().mTerrainType = terrain_Water;
 	//			(*f)->mAreaFeature.mFeatType = feat_Park;
 			}
-			for (set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+			for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
 			{
-				(*e)->mSegments.clear();
+				(*e)->data().mSegments.clear();
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			break;

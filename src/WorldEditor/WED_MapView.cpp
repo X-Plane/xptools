@@ -37,11 +37,11 @@
 #include "WED_Progress.h"
 #include "WED_SelectionTool.h"
 #include "WED_CropTool.h"
-#include "WED_BezierTestTool.h"
+//#include "WED_BezierTestTool.h"
 #include "WED_ImageTool.h"
 #include "WED_TerraTool.h"
-#include "WED_TopoTester.h"
-#include "WED_MeshTester.h"
+//#include "WED_TopoTester.h"
+//#include "WED_MeshTester.h"
 #include "WED_Selection.h"
 #include "WED_Globals.h"
 //#include "WED_TriTestTool.h"
@@ -92,7 +92,7 @@ WED_MapView *		gMapView = NULL;
 const int 	kInfoStripHeight = 18;
 
 const char *	kSelButtonLabels[] = { "V", "E", "F", "P", 0 };
-const char *	kToolButtonLabels[] = { "Select", "Crop", "Bezier", "Image", "Terra", "TTEST", "MTEST", 0 };
+const char *	kToolButtonLabels[] = { "Select", "Crop", "Image", "Terra", 0 };
 
 struct	DEMViewInfo_t {
 	int				dem;
@@ -146,8 +146,8 @@ enum {
 	viewCmd_Break2,
 	viewCmd_VecMap,
 	viewCmd_Airports,
-//	viewCmd_MeshPoints,
-//	viewCmd_MeshLines,
+	viewCmd_MeshPoints,
+	viewCmd_MeshLines,
 //	viewCmd_MeshTrisLo,
 	viewCmd_MeshTrisHi,
 	viewCmd_MeshTerrains,
@@ -169,8 +169,8 @@ const char *	kCmdNames [] = {
 	"-",
 	"Vector Map",
 	"Airports",
-//	"Mesh Points",
-//	"Mesh Lines",
+	"Mesh Points",
+	"Mesh Lines",
 //	"Mesh (Lores)",
 	"Mesh (Hires)",
 	"Mesh Terrains (Hires)",
@@ -257,9 +257,9 @@ void	SetupNormalShading(void)
 
 inline	int GetBucketForFace(Bbox2 * buckets, int bucket_count, CDT::Face_handle f)
 {
-	Point2 p1(f->vertex(0)->point().x(), f->vertex(0)->point().y());
-	Point2 p2(f->vertex(1)->point().x(), f->vertex(1)->point().y());
-	Point2 p3(f->vertex(2)->point().x(), f->vertex(2)->point().y());
+	Point2 p1(cgal2ben(f->vertex(0)->point()));
+	Point2 p2(cgal2ben(f->vertex(1)->point()));
+	Point2 p3(cgal2ben(f->vertex(2)->point()));
 	for (int n = 0; n < bucket_count; ++n)
 	{
 		if (buckets[n].contains(p1) &&
@@ -275,8 +275,8 @@ inline	int GetBucketForEdge(Bbox2 * buckets, int bucket_count, CDT::Finite_edges
 	CDT::Vertex_handle	a = eit->first->vertex(eit->first->ccw(eit->second));
 	CDT::Vertex_handle	b = eit->first->vertex(eit->first->cw(eit->second));
 
-	Point2 p1(a->point().x(),a->point().y());
-	Point2 p2(b->point().x(),b->point().y());
+	Point2 p1(cgal2ben(a->point()));
+	Point2 p2(cgal2ben(b->point()));
 	for (int n = 0; n < bucket_count; ++n)
 	{
 		if (buckets[n].contains(p1) &&
@@ -373,14 +373,14 @@ WED_MapView::WED_MapView(
 	}
 	mToolBtnsOffset += 10;
 
-	mTools.push_back(new WED_SelectionTool(mZoomer));
-	mTools.push_back(new WED_CropTool(mZoomer));
-	mTools.push_back(new WED_BezierTestTool(mZoomer));
-	mTools.push_back(new WED_ImageTool(mZoomer));
-	mTools.push_back(new WED_TerraTool(mZoomer));
-	mTools.push_back(new WED_TopoTester(mZoomer));
-	mTools.push_back(new WED_MeshTester(mZoomer));
-
+	mTools.push_back(new WED_SelectionTool(mZoomer));	
+	mTools.push_back(new WED_CropTool(mZoomer));	
+//	mTools.push_back(new WED_BezierTestTool(mZoomer));		
+	mTools.push_back(new WED_ImageTool(mZoomer));	
+	mTools.push_back(new WED_TerraTool(mZoomer));	
+//	mTools.push_back(new WED_TopoTester(mZoomer));	
+//	mTools.push_back(new WED_MeshTester(mZoomer));	
+	
 	SetupForTool();
 
 //	XPCreateTab(50, 150, 300, 100, 1, "Tab A;Tab B;Tab C;Tab D", GetWidget());
@@ -454,7 +454,7 @@ void	WED_MapView::DrawSelf(void)
 		if (mNeedRecalcMapFull)
 		{
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
-			gMap.Index();
+//			gMap.Index();
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
 			PrecalcOGL(gMap,WED_ProgressFunc);
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
@@ -506,9 +506,9 @@ void	WED_MapView::DrawSelf(void)
 					CDT::Point p2 = b->point();
 
 					glColor4fv(color);
-					glVertex2f(p1.x(), p1.y());
+					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 					glColor4fv(color);
-					glVertex2f(p2.x(), p2.y());
+					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
 				}
 
 				glEnd();
@@ -570,10 +570,10 @@ void	WED_MapView::DrawSelf(void)
 								col[0] = 1.0; col[1] = 0.0; col[2] = 0.0;
 							}
 						}
-
-						glColor4fv(col);					glVertex2f(p1.x(), p1.y());
-						glColor4fv(col);					glVertex2f(p2.x(), p2.y());
-						glColor4fv(col);					glVertex2f(p3.x(), p3.y());
+						
+						glColor4fv(col);					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
+						glColor4fv(col);					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
+						glColor4fv(col);					glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 
 #if DRAW_MESH_BORDERS
 						for (set<int>::iterator i = fit->info().terrain_border.begin(); i != fit->info().terrain_border.end(); ++i)
@@ -581,16 +581,16 @@ void	WED_MapView::DrawSelf(void)
 							GetNaturalTerrainColor(*i, col);
 
 							col[3] = 0.5 * fit->vertex(2)->info().border_blend[*i];
-							glColor4fv(col);
-							glVertex2f(p1.x(), p1.y());
+							glColor4fv(col);	
+							glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 
 							col[3] = 0.5 * fit->vertex(1)->info().border_blend[*i];
-							glColor4fv(col);
-							glVertex2f(p2.x(), p2.y());
+							glColor4fv(col);	
+							glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
 
 							col[3] = 0.5 * fit->vertex(0)->info().border_blend[*i];
-							glColor4fv(col);
-							glVertex2f(p3.x(), p3.y());
+							glColor4fv(col);	
+							glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 						}
 #endif
 					}
@@ -705,8 +705,8 @@ void	WED_MapView::DrawSelf(void)
 		for (vector<pair<Point2, Point3> >::iterator i = gMeshPoints.begin(); i != gMeshPoints.end(); ++i)
 		{
 			glColor3f(i->second.x, i->second.y, i->second.z);
-			glVertex2f((i->first.x),
-					   (i->first.y));
+			glVertex2f((i->first.x()),
+					   (i->first.y()));		
 		}
 		glEnd();
 		glPointSize(1);
@@ -719,8 +719,8 @@ void	WED_MapView::DrawSelf(void)
 		for (vector<pair<Point2, Point3> >::iterator i = gMeshLines.begin(); i != gMeshLines.end(); ++i)
 		{
 			glColor4f(i->second.x, i->second.y, i->second.z, 0.5);
-			glVertex2f((i->first.x),
-					   (i->first.y));
+			glVertex2f((i->first.x()),
+					   (i->first.y()));		
 		}
 		glEnd();
 		glLineWidth(1);
@@ -785,7 +785,7 @@ void	WED_MapView::DrawSelf(void)
 					glColor3fv(ogl->rgb);
 					glBegin(GL_LINE_LOOP);
 					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
-						glVertex2d(pt->x,pt->y);
+						glVertex2d(pt->x(),pt->y());
 					glEnd();
 				}
 				glPointSize(3);
@@ -794,7 +794,7 @@ void	WED_MapView::DrawSelf(void)
 				{
 					glColor3fv(ogl->rgb);
 					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
-						glVertex2d(pt->x,pt->y);
+						glVertex2d(pt->x(),pt->y());
 				}
 				glEnd();
 				glPointSize(1);
@@ -1124,14 +1124,16 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 				Bbox2		full;
 				if (gDem.empty())
 				{
-					Point2 sw, ne;
-					CalcBoundingBox(gMap, full.p1, full.p2);
+					Point_2 sw, ne;
+					CalcBoundingBox(gMap, sw, ne);
+					full.p1 = cgal2ben(sw);
+					full.p2 = cgal2ben(ne);
 					mZoomer->SetMapLogicalBounds(
-								full.p1.x,
-								full.p1.y,
-								full.p2.x,
-								full.p2.y);
-					mZoomer->SetAspectRatio(1.0 / cos((full.p1.y + full.p2.y) * 0.5 * PI / 180.0));
+								(full.p1.x()),
+								(full.p1.y()),
+								(full.p2.x()),
+								(full.p2.y()));
+					mZoomer->SetAspectRatio(1.0 / cos((CGAL::to_double(full.p1.y()) + CGAL::to_double(full.p2.y())) * 0.5 * PI / 180.0));
 				} else {
 					int e = gDem.begin()->first;
 					mZoomer->SetMapLogicalBounds(
@@ -1147,10 +1149,10 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 				for (int y = 0; y < MESH_BUCKET_SIZE; ++y)
 				for (int x = 0; x < MESH_BUCKET_SIZE; ++x)
 				{
-					mDLBuckets[x + y * MESH_BUCKET_SIZE].p1.x = full.p1.x + (full.p2.x - full.p1.x) * (float) (x  ) / (float) MESH_BUCKET_SIZE;
-					mDLBuckets[x + y * MESH_BUCKET_SIZE].p1.y = full.p1.y + (full.p2.y - full.p1.y) * (float) (y  ) / (float) MESH_BUCKET_SIZE;
-					mDLBuckets[x + y * MESH_BUCKET_SIZE].p2.x = full.p1.x + (full.p2.x - full.p1.x) * (float) (x+1) / (float) MESH_BUCKET_SIZE;
-					mDLBuckets[x + y * MESH_BUCKET_SIZE].p2.y = full.p1.y + (full.p2.y - full.p1.y) * (float) (y+1) / (float) MESH_BUCKET_SIZE;
+					mDLBuckets[x + y * MESH_BUCKET_SIZE].p1.x_ = full.p1.x() + (full.p2.x() - full.p1.x()) * (float) (x  ) / (float) MESH_BUCKET_SIZE;
+					mDLBuckets[x + y * MESH_BUCKET_SIZE].p1.y_ = full.p1.y() + (full.p2.y() - full.p1.y()) * (float) (y  ) / (float) MESH_BUCKET_SIZE;
+					mDLBuckets[x + y * MESH_BUCKET_SIZE].p2.x_ = full.p1.x() + (full.p2.x() - full.p1.x()) * (float) (x+1) / (float) MESH_BUCKET_SIZE;
+					mDLBuckets[x + y * MESH_BUCKET_SIZE].p2.y_ = full.p1.y() + (full.p2.y() - full.p1.y()) * (float) (y+1) / (float) MESH_BUCKET_SIZE;
 				}
 			}
 			break;
@@ -1440,8 +1442,8 @@ void	WED_MapView_HandleMenuCommand(void * r, void * i)
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		break;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		break;
 	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		break;
-//	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	break;
-//	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	break;
+	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	break;
+	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	break;
 //	case viewCmd_MeshTrisLo:	sShowMeshTrisLo = !sShowMeshTrisLo;	break;
 	case viewCmd_MeshTrisHi:	sShowMeshTrisHi = !sShowMeshTrisHi;	break;
 	case viewCmd_MeshTerrains:	sShowMeshAlphas = !sShowMeshAlphas;	break;
@@ -1450,35 +1452,35 @@ void	WED_MapView_HandleMenuCommand(void * r, void * i)
 		{
 			Bbox2	bounds;
 			bool	has = false;
-			for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+			for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
 			if (!(*f)->is_unbounded())
 			{
-				if (has)	bounds += (*f)->outer_ccb()->target()->point();
-				else		bounds  = (*f)->outer_ccb()->target()->point();
+				if (has)	bounds += cgal2ben((*f)->outer_ccb()->target()->point());
+				else		bounds  = cgal2ben((*f)->outer_ccb()->target()->point());
 				Pmwx::Ccb_halfedge_circulator iter, stop;
 				iter = stop = (*f)->outer_ccb();
 				do {
-					bounds += iter->target()->point();
+					bounds += cgal2ben(iter->target()->point());
 					++iter;
 				} while (iter != stop);
 				has = true;
 			}
-			for (set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+			for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
 			{
-				if (has)	bounds += (*e)->target()->point();
-				else		bounds  = (*e)->target()->point();
-				bounds += (*e)->source()->point();
+				if (has)	bounds += cgal2ben((*e)->target()->point());
+				else		bounds  = cgal2ben((*e)->target()->point());
+				bounds += cgal2ben((*e)->source()->point());
 				has = true;
 			}
-			for (set<GISVertex *>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
+			for (set<Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
 			{
-				if (has)	bounds += (*v)->point();
-				else		bounds  = (*v)->point();
+				if (has)	bounds += cgal2ben((*v)->point());
+				else		bounds  = cgal2ben((*v)->point());
 				has = true;
 			}
 			if (has)
 			{
-				me->mZoomer->ScrollReveal(bounds.p1.x, bounds.p1.y, bounds.p2.x, bounds.p2.y);
+				me->mZoomer->ScrollReveal(bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
 			}
 		}
 		break;
@@ -1492,8 +1494,8 @@ void	WED_MapView_UpdateCommandStatus(void)
 	XPLMCheckMenuItem(sViewMenu, viewCmd_Airports	 ,sShowAirports ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowShading ,sShowShading  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowTensor  ,sShowTensors  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-//	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshPoints  ,sShowMeshPoints ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-//	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshLines   ,sShowMeshLines  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshPoints  ,sShowMeshPoints ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshLines   ,sShowMeshLines  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 //	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisLo  ,sShowMeshTrisLo ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisHi  ,sShowMeshTrisHi ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTerrains,sShowMeshAlphas ? xplm_Menu_Checked : xplm_Menu_Unchecked);

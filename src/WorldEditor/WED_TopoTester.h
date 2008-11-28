@@ -58,7 +58,7 @@ private:
 
 		Point2					mAnchor;
 		Point2					mTarget;
-		GISHalfedge *			mAnchorHint;
+		Halfedge_handle			mAnchorHint;
 		Pmwx::Locate_type		mAnchorLoc;
 
 		Point2					mFound;

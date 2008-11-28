@@ -27,6 +27,7 @@
 #include "WED_Globals.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
+#include "DEMDefs.h"
 
 static	XPWidgetID		sWizard = NULL;
 
