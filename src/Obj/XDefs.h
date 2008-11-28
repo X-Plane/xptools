@@ -176,4 +176,11 @@ using namespace std;
 #endif
 
 
+#define CGAL2DOUBLE(x)		(x)
+#define POINT2				Point2
+#define SEGMENT2			Segment2
+#define VECTOR2				Vector2
+#define CGAL_midpoint(a,b)	Segment2(a,b).midpoint()
+
+
 #endif
