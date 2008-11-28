@@ -847,7 +847,7 @@ if {$IPHONE} {
 } else {
 	set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
 		headlight taillight \
-		airplane_landing airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
+		airplane_landing airplane_taxi airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
 		ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
 		carrier_datum carrier_waveoff carrier_meatball1 carrier_meatball2 carrier_meatball3	carrier_meatball4 carrier_meatball5	carrier_mast_strobe	carrier_deck_blue_s	carrier_deck_blue_w \
 		carrier_deck_blue_n	carrier_deck_blue_e	carrier_pitch_lights carrier_foul_line_red carrier_foul_line_white carrier_center_white	carrier_edge_white carrier_thresh_white \
