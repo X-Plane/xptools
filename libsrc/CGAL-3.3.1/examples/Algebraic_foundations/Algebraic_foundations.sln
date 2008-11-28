@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "algebraic_structure_dispatch", "VC/algebraic_structure_dispatch.vcproj", "{00000000-0000-0000-0000-000000026599}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fraction_traits", "VC/fraction_traits.vcproj", "{00000000-0000-0000-0000-000000022482}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "implicit_interoperable_dispatch", "VC/implicit_interoperable_dispatch.vcproj", "{00000000-0000-0000-0000-000000018364}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "integralize", "VC/integralize.vcproj", "{00000000-0000-0000-0000-000000014246}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interoperable", "VC/interoperable.vcproj", "{00000000-0000-0000-0000-000000010128}"
+
+EndProject
+

@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_convex_hull", "VC/ex_convex_hull.vcproj", "{00000000-0000-0000-0000-000000029849}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_envelope_circles", "VC/ex_envelope_circles.vcproj", "{00000000-0000-0000-0000-000000025731}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_envelope_segments", "VC/ex_envelope_segments.vcproj", "{00000000-0000-0000-0000-000000021614}"
+
+EndProject
+

@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circulator_prog1", "VC/circulator_prog1.vcproj", "{00000000-0000-0000-0000-000000027355}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circulator_prog2", "VC/circulator_prog2.vcproj", "{00000000-0000-0000-0000-000000023237}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circulator_prog3", "VC/circulator_prog3.vcproj", "{00000000-0000-0000-0000-000000019120}"
+
+EndProject
+

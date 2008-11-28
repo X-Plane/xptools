@@ -1,0 +1,20 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conforming", "VC/conforming.vcproj", "{00000000-0000-0000-0000-000000021789}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mesh_class", "VC/mesh_class.vcproj", "{00000000-0000-0000-0000-000000017671}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mesh_global", "VC/mesh_global.vcproj", "{00000000-0000-0000-0000-000000013553}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mesh_with_seeds", "VC/mesh_with_seeds.vcproj", "{00000000-0000-0000-0000-000000009436}"
+
+EndProject
+

@@ -1,0 +1,52 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iv2off", "VC/iv2off.vcproj", "{00000000-0000-0000-0000-000000000602}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off2iv", "VC/off2iv.vcproj", "{00000000-0000-0000-0000-000000029252}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off2off", "VC/off2off.vcproj", "{00000000-0000-0000-0000-000000025135}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off2stl", "VC/off2stl.vcproj", "{00000000-0000-0000-0000-000000021017}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off2vrml", "VC/off2vrml.vcproj", "{00000000-0000-0000-0000-000000016899}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off2wav", "VC/off2wav.vcproj", "{00000000-0000-0000-0000-000000012782}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off_bbox", "VC/off_bbox.vcproj", "{00000000-0000-0000-0000-000000008664}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off_glue", "VC/off_glue.vcproj", "{00000000-0000-0000-0000-000000004546}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "off_transform", "VC/off_transform.vcproj", "{00000000-0000-0000-0000-000000000428}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polyhedron2vrml", "VC/polyhedron2vrml.vcproj", "{00000000-0000-0000-0000-000000029079}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polyhedron_copy", "VC/polyhedron_copy.vcproj", "{00000000-0000-0000-0000-000000024961}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "terr_trian", "VC/terr_trian.vcproj", "{00000000-0000-0000-0000-000000020843}"
+
+EndProject
+

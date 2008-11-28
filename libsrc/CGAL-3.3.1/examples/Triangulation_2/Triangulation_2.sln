@@ -1,0 +1,44 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adding_handles", "VC/adding_handles.vcproj", "{00000000-0000-0000-0000-000000028443}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "colored_face", "VC/colored_face.vcproj", "{00000000-0000-0000-0000-000000024325}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "constrained", "VC/constrained.vcproj", "{00000000-0000-0000-0000-000000020207}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "constrained_hierarchy_plus", "VC/constrained_hierarchy_plus.vcproj", "{00000000-0000-0000-0000-000000016089}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "constrained_plus", "VC/constrained_plus.vcproj", "{00000000-0000-0000-0000-000000011972}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hierarchy", "VC/hierarchy.vcproj", "{00000000-0000-0000-0000-000000007854}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regular", "VC/regular.vcproj", "{00000000-0000-0000-0000-000000003736}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "terrain", "VC/terrain.vcproj", "{00000000-0000-0000-0000-000000032386}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangulation_prog1", "VC/triangulation_prog1.vcproj", "{00000000-0000-0000-0000-000000028269}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "voronoi", "VC/voronoi.vcproj", "{00000000-0000-0000-0000-000000024151}"
+
+EndProject
+

@@ -1,0 +1,12 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stl_regular_field", "VC/stl_regular_field.vcproj", "{00000000-0000-0000-0000-000000023223}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stl_triangular_field", "VC/stl_triangular_field.vcproj", "{00000000-0000-0000-0000-000000019105}"
+
+EndProject
+

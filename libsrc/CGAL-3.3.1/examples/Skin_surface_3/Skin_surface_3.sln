@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "skin_surface_pdb_reader", "VC/skin_surface_pdb_reader.vcproj", "{00000000-0000-0000-0000-000000007389}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "skin_surface_simple", "VC/skin_surface_simple.vcproj", "{00000000-0000-0000-0000-000000003271}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "skin_surface_subdiv", "VC/skin_surface_subdiv.vcproj", "{00000000-0000-0000-0000-000000031922}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "skin_surface_subdiv_with_normals", "VC/skin_surface_subdiv_with_normals.vcproj", "{00000000-0000-0000-0000-000000027804}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "union_of_balls_simple", "VC/union_of_balls_simple.vcproj", "{00000000-0000-0000-0000-000000023686}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "union_of_balls_subdiv", "VC/union_of_balls_subdiv.vcproj", "{00000000-0000-0000-0000-000000019568}"
+
+EndProject
+

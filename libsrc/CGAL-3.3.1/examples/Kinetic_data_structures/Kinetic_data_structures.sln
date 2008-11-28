@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Delaunay_triangulation_2", "VC/Delaunay_triangulation_2.vcproj", "{00000000-0000-0000-0000-000000002630}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Delaunay_triangulation_3", "VC/Delaunay_triangulation_3.vcproj", "{00000000-0000-0000-0000-000000031280}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "insert_event", "VC/insert_event.vcproj", "{00000000-0000-0000-0000-000000027163}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regular_triangulation_3", "VC/regular_triangulation_3.vcproj", "{00000000-0000-0000-0000-000000023045}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sort", "VC/sort.vcproj", "{00000000-0000-0000-0000-000000018927}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sweepline", "VC/sweepline.vcproj", "{00000000-0000-0000-0000-000000014810}"
+
+EndProject
+

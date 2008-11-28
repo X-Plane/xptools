@@ -1,0 +1,16 @@
+# GNU Multiple Precision Arithmetic Library (http://gmplib.org/)
+
+DESCRIPTION = 
+PROVIDES = GMP
+CXXFLAGS = 
+LDFLAGS = 
+LIBS = gmp
+REQUIRES =
+INCOMPATIBLE = 
+STDINCLDIRS = /sw/include/\*
+INCLTHING = 
+STDLIBDIRS = /sw/lib
+LIBTHING = 
+COMPILETESTFLAGS = 
+
+# EOF

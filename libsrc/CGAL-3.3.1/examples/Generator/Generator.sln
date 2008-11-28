@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_convex_set", "VC/random_convex_set.vcproj", "{00000000-0000-0000-0000-000000009203}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_degenerate_point_set", "VC/random_degenerate_point_set.vcproj", "{00000000-0000-0000-0000-000000005085}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_grid", "VC/random_grid.vcproj", "{00000000-0000-0000-0000-000000000967}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_polygon", "VC/random_polygon.vcproj", "{00000000-0000-0000-0000-000000029617}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_polygon2", "VC/random_polygon2.vcproj", "{00000000-0000-0000-0000-000000025500}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_segments1", "VC/random_segments1.vcproj", "{00000000-0000-0000-0000-000000021382}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "random_segments2", "VC/random_segments2.vcproj", "{00000000-0000-0000-0000-000000001334}"
+
+EndProject
+

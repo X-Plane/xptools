@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dijkstra", "VC/dijkstra.vcproj", "{00000000-0000-0000-0000-000000008370}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dijkstra_with_internal_properties", "VC/dijkstra_with_internal_properties.vcproj", "{00000000-0000-0000-0000-000000004253}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emst", "VC/emst.vcproj", "{00000000-0000-0000-0000-000000000135}"
+
+EndProject
+

@@ -1,0 +1,20 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark", "VC/benchmark.vcproj", "{00000000-0000-0000-0000-000000021499}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "min_sphere_of_spheres_d_2", "VC/min_sphere_of_spheres_d_2.vcproj", "{00000000-0000-0000-0000-000000017381}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "min_sphere_of_spheres_d_3", "VC/min_sphere_of_spheres_d_3.vcproj", "{00000000-0000-0000-0000-000000013264}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "min_sphere_of_spheres_d_d", "VC/min_sphere_of_spheres_d_d.vcproj", "{00000000-0000-0000-0000-000000009146}"
+
+EndProject
+

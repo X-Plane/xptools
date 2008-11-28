@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "construction", "VC/construction.vcproj", "{00000000-0000-0000-0000-000000022659}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polylines", "VC/polylines.vcproj", "{00000000-0000-0000-0000-000000018541}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple_intersection", "VC/simple_intersection.vcproj", "{00000000-0000-0000-0000-000000014424}"
+
+EndProject
+

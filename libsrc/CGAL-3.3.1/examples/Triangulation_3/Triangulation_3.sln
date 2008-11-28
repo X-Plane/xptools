@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adding_handles", "VC/adding_handles.vcproj", "{00000000-0000-0000-0000-000000022759}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "color", "VC/color.vcproj", "{00000000-0000-0000-0000-000000018641}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "find_conflicts", "VC/find_conflicts.vcproj", "{00000000-0000-0000-0000-000000014524}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hierarchy", "VC/hierarchy.vcproj", "{00000000-0000-0000-0000-000000010406}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "linking_2d_and_3d", "VC/linking_2d_and_3d.vcproj", "{00000000-0000-0000-0000-000000023126}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regular", "VC/regular.vcproj", "{00000000-0000-0000-0000-000000019009}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple", "VC/simple.vcproj", "{00000000-0000-0000-0000-000000031729}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simplex", "VC/simplex.vcproj", "{00000000-0000-0000-0000-000000027612}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tds", "VC/tds.vcproj", "{00000000-0000-0000-0000-000000023494}"
+
+EndProject
+

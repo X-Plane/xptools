@@ -1,0 +1,44 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circular_query", "VC/circular_query.vcproj", "{00000000-0000-0000-0000-000000012667}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "distance_browsing", "VC/distance_browsing.vcproj", "{00000000-0000-0000-0000-000000008549}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fuzzy_range_query", "VC/fuzzy_range_query.vcproj", "{00000000-0000-0000-0000-000000004431}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "general_neighbor_searching", "VC/general_neighbor_searching.vcproj", "{00000000-0000-0000-0000-000000000314}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iso_rectangle_2_query", "VC/iso_rectangle_2_query.vcproj", "{00000000-0000-0000-0000-000000028964}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nearest_neighbor_searching", "VC/nearest_neighbor_searching.vcproj", "{00000000-0000-0000-0000-000000024846}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "searching_with_circular_query", "VC/searching_with_circular_query.vcproj", "{00000000-0000-0000-0000-000000020729}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "user_defined_point_and_distance", "VC/user_defined_point_and_distance.vcproj", "{00000000-0000-0000-0000-000000016611}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "using_fair_splitting_rule", "VC/using_fair_splitting_rule.vcproj", "{00000000-0000-0000-0000-000000012493}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "weighted_Minkowski_distance", "VC/weighted_Minkowski_distance.vcproj", "{00000000-0000-0000-0000-000000008375}"
+
+EndProject
+

@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "in_place_list_prog", "VC/in_place_list_prog.vcproj", "{00000000-0000-0000-0000-000000001474}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "min_element_if_example_noheader", "VC/min_element_if_example_noheader.vcproj", "{00000000-0000-0000-0000-000000030124}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "min_max_element_example_noheader", "VC/min_max_element_example_noheader.vcproj", "{00000000-0000-0000-0000-000000026006}"
+
+EndProject
+

@@ -1,0 +1,172 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bezier_curves", "VC/Bezier_curves.vcproj", "{00000000-0000-0000-0000-000000023951}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aggregated_insertion", "VC/aggregated_insertion.vcproj", "{00000000-0000-0000-0000-000000019833}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "batched_point_location", "VC/batched_point_location.vcproj", "{00000000-0000-0000-0000-000000015716}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bgl_dual_adapter", "VC/bgl_dual_adapter.vcproj", "{00000000-0000-0000-0000-000000011598}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bgl_primal_adapter", "VC/bgl_primal_adapter.vcproj", "{00000000-0000-0000-0000-000000007480}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circles", "VC/circles.vcproj", "{00000000-0000-0000-0000-000000003362}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circular_arcs", "VC/circular_arcs.vcproj", "{00000000-0000-0000-0000-000000032013}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circular_line_arcs", "VC/circular_line_arcs.vcproj", "{00000000-0000-0000-0000-000000027895}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conic_multiplicities", "VC/conic_multiplicities.vcproj", "{00000000-0000-0000-0000-000000023777}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conics", "VC/conics.vcproj", "{00000000-0000-0000-0000-000000019660}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "consolidated_curve_data", "VC/consolidated_curve_data.vcproj", "{00000000-0000-0000-0000-000000015542}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "curve_history", "VC/curve_history.vcproj", "{00000000-0000-0000-0000-000000011424}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dcel_extension", "VC/dcel_extension.vcproj", "{00000000-0000-0000-0000-000000007306}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dcel_extension_io", "VC/dcel_extension_io.vcproj", "{00000000-0000-0000-0000-000000003189}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dual_lines", "VC/dual_lines.vcproj", "{00000000-0000-0000-0000-000000031839}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dual_with_data", "VC/dual_with_data.vcproj", "{00000000-0000-0000-0000-000000027721}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "edge_insertion", "VC/edge_insertion.vcproj", "{00000000-0000-0000-0000-000000023603}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "edge_manipulation", "VC/edge_manipulation.vcproj", "{00000000-0000-0000-0000-000000019486}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "edge_manipulation_curve_history", "VC/edge_manipulation_curve_history.vcproj", "{00000000-0000-0000-0000-000000032206}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "face_extension", "VC/face_extension.vcproj", "{00000000-0000-0000-0000-000000028997}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "face_extension_overlay", "VC/face_extension_overlay.vcproj", "{00000000-0000-0000-0000-000000024879}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "generic_curve_data", "VC/generic_curve_data.vcproj", "{00000000-0000-0000-0000-000000020762}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "global_insertion", "VC/global_insertion.vcproj", "{00000000-0000-0000-0000-000000016644}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "global_removal", "VC/global_removal.vcproj", "{00000000-0000-0000-0000-000000012526}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "incremental_insertion", "VC/incremental_insertion.vcproj", "{00000000-0000-0000-0000-000000008409}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "io", "VC/io.vcproj", "{00000000-0000-0000-0000-000000004291}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "io_curve_history", "VC/io_curve_history.vcproj", "{00000000-0000-0000-0000-000000000173}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "isolated_vertices", "VC/isolated_vertices.vcproj", "{00000000-0000-0000-0000-000000028823}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "observer", "VC/observer.vcproj", "{00000000-0000-0000-0000-000000024706}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "overlay", "VC/overlay.vcproj", "{00000000-0000-0000-0000-000000004658}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "overlay_unbounded", "VC/overlay_unbounded.vcproj", "{00000000-0000-0000-0000-000000000540}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "point_location", "VC/point_location.vcproj", "{00000000-0000-0000-0000-000000029191}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polylines", "VC/polylines.vcproj", "{00000000-0000-0000-0000-000000025073}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "predefined_kernel", "VC/predefined_kernel.vcproj", "{00000000-0000-0000-0000-000000020955}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "predefined_kernel_non_intersecting", "VC/predefined_kernel_non_intersecting.vcproj", "{00000000-0000-0000-0000-000000016838}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rational_functions", "VC/rational_functions.vcproj", "{00000000-0000-0000-0000-000000012720}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "special_edge_insertion", "VC/special_edge_insertion.vcproj", "{00000000-0000-0000-0000-000000008602}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sweep_line", "VC/sweep_line.vcproj", "{00000000-0000-0000-0000-000000004484}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unbounded_non_intersecting", "VC/unbounded_non_intersecting.vcproj", "{00000000-0000-0000-0000-000000000367}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unbounded_rational_functions", "VC/unbounded_rational_functions.vcproj", "{00000000-0000-0000-0000-000000029017}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vertical_decomposition", "VC/vertical_decomposition.vcproj", "{00000000-0000-0000-0000-000000024899}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vertical_ray_shooting", "VC/vertical_ray_shooting.vcproj", "{00000000-0000-0000-0000-000000020781}"
+
+EndProject
+

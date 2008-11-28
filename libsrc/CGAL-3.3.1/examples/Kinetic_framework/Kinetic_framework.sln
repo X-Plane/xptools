@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adding_a_certificate", "VC/adding_a_certificate.vcproj", "{00000000-0000-0000-0000-000000013418}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "defining_a_simulation_traits", "VC/defining_a_simulation_traits.vcproj", "{00000000-0000-0000-0000-000000009300}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "listener", "VC/listener.vcproj", "{00000000-0000-0000-0000-000000005182}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pointer_queue", "VC/pointer_queue.vcproj", "{00000000-0000-0000-0000-000000001064}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ref_counted", "VC/ref_counted.vcproj", "{00000000-0000-0000-0000-000000029715}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trivial_kds", "VC/trivial_kds.vcproj", "{00000000-0000-0000-0000-000000009667}"
+
+EndProject
+

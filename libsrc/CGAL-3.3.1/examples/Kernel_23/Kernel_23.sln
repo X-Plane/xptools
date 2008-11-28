@@ -1,0 +1,20 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyKernel", "VC/MyKernel.vcproj", "{00000000-0000-0000-0000-000000016375}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_delaunay_2", "VC/test_delaunay_2.vcproj", "{00000000-0000-0000-0000-000000012258}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_polyhedron_prog_incr_builder", "VC/test_polyhedron_prog_incr_builder.vcproj", "{00000000-0000-0000-0000-000000008140}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_polyhedron_prog_incr_builder_own_archetype", "VC/test_polyhedron_prog_incr_builder_own_archetype.vcproj", "{00000000-0000-0000-0000-000000004022}"
+
+EndProject
+

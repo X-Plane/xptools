@@ -1,0 +1,12 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+
+# Visual Studio 2003
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "alpha_shapes_2", "VC/alpha_shapes_2.vcproj", "{00000000-0000-0000-0000-000000008736}"
+
+EndProject
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "weighted_alpha_shapes_2", "VC/weighted_alpha_shapes_2.vcproj", "{00000000-0000-0000-0000-000000004619}"
+
+EndProject
+
