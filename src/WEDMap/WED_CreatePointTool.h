@@ -33,7 +33,8 @@ enum CreatePoint_t {
 	create_Lights,
 	create_RampStart,
 	create_TowerViewpoint,
-	create_Windsock
+	create_Windsock,
+	create_Object
 };
 
 class WED_CreatePointTool : public WED_CreateToolBase {
@@ -47,6 +48,8 @@ public:
 									WED_Archive *		archive,
 									CreatePoint_t		tool_type);
 	virtual				~WED_CreatePointTool();
+
+			void				SetResource(const string& r);
 
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
@@ -66,7 +69,8 @@ protected:
 		WED_PropIntEnum			light_kind;
 		WED_PropDoubleText		light_angle;
 		WED_PropDoubleText		tower_height;
-		WED_PropBoolText		windsock_lit;
+		WED_PropBoolText		windsock_lit;		
+		WED_PropStringText		resource;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

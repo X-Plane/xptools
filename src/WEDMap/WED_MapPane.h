@@ -41,11 +41,13 @@ class	WED_StructureLayer;
 class	WED_WorldMapLayer;
 //class	WED_TileServerLayer;
 
+class	WED_CreatePointTool;
+class	WED_CreatePolygonTool;
 class	IResolver;
 class	IDocPrefs;
 class	WED_Archive;
 class	GUI_Commander;
-
+class	WED_LibraryListAdapter;
 /*
 
 	Note: the map pane is _not_ a commander.  Commanders participate in focus in a direct chain -- that is, two commanders can't "share" focus.  But
@@ -57,12 +59,14 @@ class	GUI_Commander;
 
 class	WED_MapPane : public GUI_Packer, GUI_Listener {
 public:
-
-						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive);
+		
+						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library);
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
-
+			
+			void		SetResource(const string& r, int res_type);
+			
 			GUI_Pane *	GetTopBar(void);
 
 			int				Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
@@ -96,7 +100,14 @@ private:
 	WED_ToolInfoAdapter *			mInfoAdapter;
 
 	IResolver *				mResolver;
-
+	
+	WED_CreatePointTool *	mObjTool;
+	WED_CreatePolygonTool *	mFacTool;
+	WED_CreatePolygonTool * mFstTool;
+	WED_CreatePolygonTool * mStrTool;
+	WED_CreatePolygonTool * mLinTool;
+	WED_CreatePolygonTool * mPolTool;
+	
 };
 
 

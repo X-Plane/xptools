@@ -141,14 +141,14 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * ac
 
 			if (mCacheBounds.is_point()) n = 8;
 
-			p->x = mCacheBounds.p1.x * kControlsX1[n] + mCacheBounds.p2.x * kControlsX2[n];
-			p->y = mCacheBounds.p1.y * kControlsY1[n] + mCacheBounds.p2.y * kControlsY2[n];
+			p->x_ = mCacheBounds.p1.x() * kControlsX1[n] + mCacheBounds.p2.x() * kControlsX2[n];
+			p->y_ = mCacheBounds.p1.y() * kControlsY1[n] + mCacheBounds.p2.y() * kControlsY2[n];
 		}
 		if (p && direction && could_rotate)
 		{
 			Point2 ctr;
-			ctr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
-			ctr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];
+			ctr.x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
+			ctr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];
 			*direction = Vector2(ctr,*p);
 		}
 	}
@@ -225,8 +225,8 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& 
 
 		if (mIsRotate)
 		{
-			mRotateCtr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
-			mRotateCtr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];
+			mRotateCtr.x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
+			mRotateCtr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];		
 //			mRotatePt.x = mCacheBounds.p1.x * kControlsX1[c] + mCacheBounds.p2.x * kControlsX2[c];
 //			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];
 		}
@@ -256,11 +256,11 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& 
 		new_b = mCacheBounds;
 
 		if (mCacheBounds.is_point()) c = 8;
-
-		new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
-		new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
-		new_b.p1.y += (delta.dy * kApplyCtrlY1[c]);
-		new_b.p2.y += (delta.dy * kApplyCtrlY2[c]);
+		
+		new_b.p1.x_ += (delta.dx * kApplyCtrlX1[c]);
+		new_b.p2.x_ += (delta.dx * kApplyCtrlX2[c]);
+		new_b.p1.y_ += (delta.dy * kApplyCtrlY1[c]);
+		new_b.p2.y_ += (delta.dy * kApplyCtrlY2[c]);
 
 		ApplyRescale(mCacheBounds,new_b);
 	}
@@ -271,11 +271,11 @@ void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& 
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
 	new_b = mCacheBounds;
-
-	new_b.p1.x += (delta.dx * kApplyLinkX1[c]);
-	new_b.p2.x += (delta.dx * kApplyLinkX2[c]);
-	new_b.p1.y += (delta.dy * kApplyLinkY1[c]);
-	new_b.p2.y += (delta.dy * kApplyLinkY2[c]);
+	
+	new_b.p1.x_ += (delta.dx * kApplyLinkX1[c]);
+	new_b.p2.x_ += (delta.dx * kApplyLinkX2[c]);
+	new_b.p1.y_ += (delta.dy * kApplyLinkY1[c]);
+	new_b.p2.y_ += (delta.dy * kApplyLinkY2[c]);
 
 	ApplyRescale(mCacheBounds,new_b);
 }

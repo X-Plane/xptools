@@ -125,10 +125,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	WED_MapLayer * cur = mTool;
 
 	Bbox2 bounds;
-
+	
 	intptr_t draw_ent_v, draw_ent_s, wants_sel;
-
-	GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
+	
+	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
 
@@ -206,14 +206,14 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (!has_a1 && !has_a2 && !has_d && !has_h)
 	{
 		Point2 o,n;
-		o.x = XPixelToLon(mX_Orig);
-		o.y = YPixelToLat(mY_Orig);
-		n.x = XPixelToLon(x);
-		n.y = YPixelToLat(y);
+		o.x_ = XPixelToLon(mX_Orig);
+		o.y_ = YPixelToLat(mY_Orig);
+		n.x_ = XPixelToLon(x);
+		n.y_ = YPixelToLat(y);
 
 		if (mIsDownExtraCount)
 		{
-			has_d = 1;	dist = LonLatDistMeters(o.x,o.y,n.x,n.y);
+			has_d = 1;	dist = LonLatDistMeters(o.x(),o.y(),n.x(),n.y());
 			has_h = 1;	head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
 			has_a1 = 1; anchor1 = o;
 			has_a2 = 1; anchor2 = n;
@@ -229,17 +229,17 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	#define GET_DEGS(x) ((int) floor(fabs(x)))
 	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
 	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
-
-	if (has_a1 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y,anchor1.x);
-	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
-												GET_NS(anchor1.y),GET_DEGS(anchor1.y),GET_MINS(anchor1.y),GET_SECS(anchor1.y),
-												GET_EW(anchor1.x),GET_DEGS(anchor1.x),GET_MINS(anchor1.x),GET_SECS(anchor1.x));
+	
+	if (has_a1 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
+	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
 	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y,anchor2.x);
-	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
-												GET_NS(anchor1.y),GET_DEGS(anchor1.y),GET_MINS(anchor1.y),GET_SECS(anchor1.y),
-												GET_EW(anchor1.x),GET_DEGS(anchor1.x),GET_MINS(anchor1.x),GET_SECS(anchor1.x));
-
+	if (has_a2 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
+	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+	
 
 	#undef GET_DEGS
 	#undef GET_MINS

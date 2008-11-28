@@ -74,12 +74,12 @@ double	WED_MapZoomerNew::LatToYPixel(double lat)
 
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p)
 {
-	return Point2(XPixelToLon(p.x), YPixelToLat(p.y));
+	return Point2(XPixelToLon(p.x()), YPixelToLat(p.y()));
 }
 
 Point2	WED_MapZoomerNew::LLToPixel(const Point2& p)
 {
-	return Point2(LonToXPixel(p.x), LatToYPixel(p.y));
+	return Point2(LonToXPixel(p.x()), LatToYPixel(p.y()));
 }
 
 void	WED_MapZoomerNew::PixelToLLv(Point2 * dst, const Point2 * src, int n)

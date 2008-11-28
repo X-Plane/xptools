@@ -32,10 +32,20 @@
 #include "WED_EnumSystem.h"
 #include "WED_AirportBoundary.h"
 #include "WED_Airport.h"
+#include "WED_Ring.h"
+#include "WED_FacadePlacement.h"
+#include "WED_ForestPlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_LinePlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_SimpleBoundaryNode.h"
 
-const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole" };
+const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
 
-
+const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
+const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
+const int kAllowCurved[] = { 1, 1, 1, 1,    0, 0,  1, 1, 1 };
 
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,
@@ -45,19 +55,24 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 									WED_Archive *		archive,
 									CreateTool_t		tool) :
 	WED_CreateToolBase(tool_name,host, zoomer, resolver,archive,
-	tool == create_Marks ? 2 : 3,// min pts
-	99999999,		// max pts
-	1,				// curve allowed
-	0,				// curve required?
-	1,				// close allowed
-	tool != create_Marks),		// close required?
+	kRequireClosed[tool] ? 3 : 2,	// min pts
+	99999999,						// max pts
+	kAllowCurved[tool],			// curve allowed
+	0,							// curve required?
+	1,							// close allowed
+	kRequireClosed[tool]),		// close required?
 	mType(tool),
 		mPavement(tool == create_Taxi ? this : NULL,"Pavement","","",Surface_Type,surf_Concrete),
 		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25,4,2),
-		mHeading(tool == create_Taxi ? this : NULL,"Heading","","",0,5,2),
-		mMarkings(this,".Markings", "", "", LinearFeature),
-		mMarkingsLines(this,"Markings", "", "", ".Markings",line_SolidYellow,line_BWideBrokenDouble),
-		mMarkingsLights(this,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge)
+		mHeading(tool == create_Taxi || tool == create_Polygon ? this : NULL,"Heading","","",0,5,2),
+		mMarkings(tool <= create_Hole ? this : NULL,".Markings", "", "", LinearFeature),
+		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", "", "", ".Markings",line_SolidYellow,line_BWideBrokenDouble),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge),
+
+		mResource(tool > create_Hole ? this : NULL, "Resource", "", "", ""),
+		mHeight(tool == create_Facade ? this : NULL, "Height", "", "", 10.0, 4, 2),
+		mDensity(tool == create_Forest ? this : NULL, "Density", "", "", 1.0, 3, 2),
+		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -80,20 +95,34 @@ void	WED_CreatePolygonTool::AcceptPath(
 	WED_Thing * host = GetHost(idx);
 	if (host == NULL) return;
 
-	switch(mType) {
-	case create_Taxi:		GetArchive()->StartCommand("Create Taxiway");	break;
-	case create_Boundary:	GetArchive()->StartCommand("Create Airport Boundary");	break;
-	case create_Marks:		GetArchive()->StartCommand("Create Markings");	break;
-	case create_Hole:		GetArchive()->StartCommand("Create Hole");	break;
-	}
+	string cname = string("Create ") + kCreateCmds[mType];
+	
+	GetArchive()->StartCommand(cname.c_str());
 
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	if (mType != create_Hole)
 	sel->Clear();
-
-	WED_AirportChain *	outer_ring = WED_AirportChain::CreateTyped(GetArchive());
-
-
+	
+	int is_bezier = mType != create_Facade && mType != create_Forest;
+	int is_apt = mType <= create_Hole;
+	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
+	
+	if(mType == create_Hole)
+	{
+		DebugAssert(host->CountChildren() > 0);
+		WED_Thing * old_outer_ring = host->GetNthChild(0);
+		DebugAssert(old_outer_ring->CountChildren() > 0);
+		is_apt = dynamic_cast<WED_AirportChain*>(old_outer_ring) != NULL;
+		is_bezier = dynamic_cast<IGISPoint_Bezier*>(old_outer_ring->GetNthChild(0)) != NULL;
+		is_poly = true;
+	}
+	
+	WED_AirportChain *	apt_ring=NULL;
+	WED_Thing *			outer_ring;	 
+	
+		 if(is_apt)				outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
+	else if(is_poly)			outer_ring			  = WED_Ring::CreateTyped(GetArchive());
+	
 	static int n = 0;
 	++n;
 
@@ -154,34 +183,114 @@ void	WED_CreatePolygonTool::AcceptPath(
 				sel->Select(outer_ring);
 		}
 		break;
+	case create_Facade:
+		{
+			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(GetArchive());
+			outer_ring->SetParent(fac,0);
+			fac->SetParent(host,idx);
+			sprintf(buf,"Facade %d",n);
+			fac->SetName(buf);
+			sprintf(buf,"Facade %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(fac);
+			fac->SetResource(mResource.value);
+			fac->SetHeight(mHeight.value);
+		}
+		break;
+	case create_Forest:
+		{
+			WED_ForestPlacement * fst = WED_ForestPlacement::CreateTyped(GetArchive());
+			outer_ring->SetParent(fst,0);
+			fst->SetParent(host,idx);
+			sprintf(buf,"Forest %d",n);
+			fst->SetName(buf);
+			sprintf(buf,"Forest %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(fst);
+			fst->SetResource(mResource.value);
+			fst->SetDensity(mDensity.value);
+		}
+		break;
+	case create_String:
+		{
+			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
+			outer_ring = str;
+			str->SetParent(host,idx);
+			sprintf(buf,"String %d",n);
+			str->SetName(buf);
+			sel->Select(str);
+			str->SetClosed(closed);			
+			str->SetResource(mResource.value);
+			str->SetSpacing(mSpacing.value);
+		}
+		break;
+	case create_Line:
+		{
+			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(GetArchive());
+			outer_ring = lin;
+			lin->SetParent(host,idx);
+			sprintf(buf,"Line %d",n);
+			lin->SetName(buf);
+			sel->Select(lin);
+			lin->SetClosed(closed);
+			lin->SetResource(mResource.value);
+		}
+		break;
+	case create_Polygon:
+		{
+			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
+			outer_ring->SetParent(pol,0);
+			pol->SetParent(host,idx);
+			sprintf(buf,"Polygon %d",n);
+			pol->SetName(buf);
+			sprintf(buf,"Polygon %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(pol);
+			pol->SetResource(mResource.value);
+			pol->SetDirection(mHeading.value);			
+		}
+		break;
 	}
 
-	outer_ring->SetClosed(closed);
-
+	if(apt_ring)
+		apt_ring->SetClosed(closed);
+	
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		int idx = is_ccw ? n : pts.size()-n-1;
-		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
+
+		WED_AirportNode *		anode=NULL;
+		WED_GISPoint_Bezier *	bnode=NULL;
+		WED_GISPoint *			node=NULL;
+		
+		if(is_apt)				node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
+		else if (is_bezier)		node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+		else					node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+		 
 		node->SetLocation(pts[idx]);
-		if (!has_dirs[idx])
+		if(bnode)
 		{
-			node->DeleteHandleHi();
-			node->DeleteHandleLo();
-		}
-		else
-		{
-			node->SetSplit(has_split[idx]);
-			if (is_ccw)
+			if (!has_dirs[idx])
 			{
-				node->SetControlHandleHi(dirs_hi[idx]);
-				node->SetControlHandleLo(dirs_lo[idx]);
-			} else {
-				node->SetControlHandleHi(dirs_lo[idx]);
-				node->SetControlHandleLo(dirs_hi[idx]);
+				bnode->DeleteHandleHi();
+				bnode->DeleteHandleLo();
+			}
+			else
+			{
+				bnode->SetSplit(has_split[idx]);
+				if (is_ccw) 
+				{
+					bnode->SetControlHandleHi(dirs_hi[idx]);
+					bnode->SetControlHandleLo(dirs_lo[idx]);
+				} else {
+					bnode->SetControlHandleHi(dirs_lo[idx]);
+					bnode->SetControlHandleLo(dirs_hi[idx]);
+				}
 			}
 		}
 		node->SetParent(outer_ring, n);
-		node->SetAttributes(mMarkings.value);
+		if(anode)
+			anode->SetAttributes(mMarkings.value);
 		sprintf(buf,"Node %d",n+1);
 		node->SetName(buf);
 	}
@@ -219,6 +328,13 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 		if (sel->GetSelectionCount() != 1) return NULL;
 		return dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 	} else
-		return WED_GetCreateHost(GetResolver(), true, idx);
+		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
 }
+
+
+void		WED_CreatePolygonTool::SetResource(const string& r)
+{
+	mResource.value = r;
+}
+
 

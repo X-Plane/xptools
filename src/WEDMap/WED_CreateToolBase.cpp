@@ -47,8 +47,8 @@ static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
 	if (b.p1 == b.c1 && b.p2 == b.c2)
 	{
 		glBegin(GL_LINE_STRIP);
-		glVertex2f(z->LonToXPixel(b.p1.x),z->LatToYPixel(b.p1.y));
-		glVertex2f(z->LonToXPixel(b.p2.x),z->LatToYPixel(b.p2.y));
+		glVertex2f(z->LonToXPixel(b.p1.x()),z->LatToYPixel(b.p1.y()));
+		glVertex2f(z->LonToXPixel(b.p2.x()),z->LatToYPixel(b.p2.y()));
 		glEnd();
 	}
 	else
@@ -58,7 +58,7 @@ static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
 		{
 			float r = (float) t / (float) BEZ_STEPS;
 			Point2 m = b.midpoint(r);
-			glVertex2f(z->LonToXPixel(m.x),z->LatToYPixel(m.y));
+			glVertex2f(z->LonToXPixel(m.x()),z->LatToYPixel(m.y()));
 		}
 		glEnd();
 	}
@@ -481,7 +481,7 @@ void		WED_CreateToolBase::RecalcHeadings(void)
 	{
 		SetAnchor1(mPts[mPts.size()-2]);
 		SetAnchor2(mPts[mPts.size()-1]);
-		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x,mPts[mPts.size()-2].y,mPts[mPts.size()-1].x,mPts[mPts.size()-1].y));
+		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x(),mPts[mPts.size()-2].y(),mPts[mPts.size()-1].x(),mPts[mPts.size()-1].y()));
 		SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-2],mPts[mPts.size()-2],Vector2(mPts[mPts.size()-2],mPts[mPts.size()-1])));
 	}
 	else if (mPts.size() > 0)

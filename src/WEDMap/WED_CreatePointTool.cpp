@@ -33,12 +33,14 @@
 #include "WED_TowerViewpoint.h"
 #include "WED_ToolUtils.h"
 #include "WED_Windsock.h"
+#include "WED_ObjPlacement.h"
 #include "ISelection.h"
 #include "GISUtils.h"
 #include "WED_ToolUtils.h"
 #include "IResolver.h"
 
-static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0 };
+static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0, 1 };
+static int kIsAirport[]			= { 1, 1, 1, 1, 1, 1, 1, 0 };
 static const char * kCreateCmds[] = {
 	"Airport Beacon",
 	"Taxiway Sign",
@@ -46,7 +48,8 @@ static const char * kCreateCmds[] = {
 	"Light Fixture",
 	"Ramp Start",
 	"Tower Viewpoint",
-	"Windsock"
+	"Windsock",
+	"Object"
 };
 
 WED_CreatePointTool::WED_CreatePointTool(
@@ -76,7 +79,8 @@ WED_CreatePointTool::WED_CreatePointTool(
 		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	"","",Light_Fixt,light_VASI),
 		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),
 		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0,5,1),
-		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0)
+		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0),
+		resource		(tool==create_Object		?this:NULL,"Object",		"","","")
 {
 }
 
@@ -99,7 +103,7 @@ void	WED_CreatePointTool::AcceptPath(
 	GetArchive()->StartCommand(buf);
 
 	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
 
 	WED_GISPoint * new_pt_obj = NULL;
 	WED_GISPoint_Heading * new_pt_h = NULL;
@@ -111,6 +115,7 @@ void	WED_CreatePointTool::AcceptPath(
 	WED_RampPosition * ramp;
 	WED_TowerViewpoint * tower;
 	WED_Windsock * sock;
+	WED_ObjPlacement * obj;
 
 	switch(mType) {
 	case create_Beacon:
@@ -149,6 +154,10 @@ void	WED_CreatePointTool::AcceptPath(
 		new_pt_obj = sock = WED_Windsock::CreateTyped(GetArchive());
 		sock->SetLit(windsock_lit.value);
 		break;
+	case create_Object:
+		new_pt_obj = new_pt_h = obj = WED_ObjPlacement::CreateTyped(GetArchive());
+		obj->SetResource(resource.value);
+		break;
 	}
 
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
@@ -177,7 +186,7 @@ void	WED_CreatePointTool::AcceptPath(
 const char *	WED_CreatePointTool::GetStatusText(void)
 {
 	static char buf[256];
-	if (WED_GetCurrentAirport(GetResolver()) == NULL)
+	if (WED_GetCurrentAirport(GetResolver()) == NULL && kIsAirport[mType])
 	{
 		sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -187,7 +196,12 @@ const char *	WED_CreatePointTool::GetStatusText(void)
 
 bool		WED_CreatePointTool::CanCreateNow(void)
 {
-	return WED_GetCurrentAirport(GetResolver()) != NULL;
+	return WED_GetCurrentAirport(GetResolver()) != NULL || !kIsAirport[mType];
+}
+
+void		WED_CreatePointTool::SetResource(const string& r)
+{
+	resource.value = r;
 }
 
 

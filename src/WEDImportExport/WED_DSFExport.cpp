@@ -30,15 +30,34 @@
 #include "CompGeomDefs2.h"
 #include "WED_Group.h"
 #include "WED_Version.h"
-#include "WED_OverlayImage.h"
+//#include "WED_OverlayImage.h"
 #include "WED_ToolUtils.h"
 #include "WED_TextureNode.h"
 #include "ILibrarian.h"
+#include "WED_ObjPlacement.h"
+#include "WED_FacadePlacement.h"
+#include "WED_ForestPlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+
 
 struct	DSF_ResourceTable {
+	vector<string>		obj_defs;
+	map<string, int>	obj_defs_idx;
+
 	vector<string>		polygon_defs;
 	map<string, int>	polygon_defs_idx;
 
+	int accum_obj(const string& f)
+	{
+		map<string,int>::iterator i = obj_defs_idx.find(f);
+		if (i != obj_defs_idx.end()) return i->second;
+		obj_defs.push_back(f);
+		obj_defs_idx[f] = obj_defs.size()-1;
+		return			  obj_defs.size()-1;
+	}
+	
 	int accum_pol(const string& f)
 	{
 		map<string,int>::iterator i = polygon_defs_idx.find(f);
@@ -62,15 +81,144 @@ static void strip_path(string& f)
 	if (p != f.npos) f.erase(0,p+1);
 }
 
+static int DSF_HasBezierSeq(IGISPointSequence * ring)
+{
+	int np = ring->GetNumPoints();
+	for(int n = 0; n < np; ++n)
+	if(ring->GetNthPoint(n)->GetGISClass() == gis_Point_Bezier)
+		return 1;
+	return 0;
+}
+
+static int DSF_HasBezierPol(IGISPolygon * pol)
+{
+	if(DSF_HasBezierSeq(pol->GetOuterRing())) return 1;
+	int hc = pol->GetNumHoles();
+	for(int h = 0; h < hc; ++h)
+	if(DSF_HasBezierSeq(pol->GetNthHole(h))) return 1;
+	return 0;
+}
+
+
+static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int double_end)
+{
+	cbs->BeginPolygonWinding_f(writer);
+	Point2	p,	cl,ch;
+	Point2	st,	stcl,	stch;
+	int np = ring->GetNumPoints();
+	for (int n = 0; n < (np + double_end); ++n)
+	{
+		IGISPoint * pt = ring->GetNthPoint(n % np);
+		IGISPoint_Bezier * pth = bezier ? dynamic_cast<IGISPoint_Bezier *>(pt) : NULL;
+		
+		pt->GetLocation(p);
+		ch = p;
+		if(pth) pth->GetControlHandleHi(ch);
+
+		double c[8] = { p.x(), p.y(), 0, 0,  0, 0,  0, 0 };
+
+		if(bezier)
+		{
+			c[2] = ch.x();
+			c[3] = ch.y();
+		}
+		if(!bezier && tex_coord)
+		{
+			c[2] = st.x();
+			c[3] = st.y();
+		}
+		if(bezier && tex_coord)
+		{
+			c[4] = st.x();
+			c[5] = st.y();
+			c[6] = stch.x();
+			c[7] = stch.y();			
+		}
+		cbs->AddPolygonPoint_f(c,writer);
+	}
+	cbs->EndPolygonWinding_f(writer);
+	
+}
+
+static void DSF_AccumWindings(IGISPolygon * pol, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int holes)
+{	
+	DSF_AccumPts(pol->GetOuterRing(), cbs,writer,bezier,tex_coord, 0);	// don't dupe first point
+	int hc = holes ? pol->GetNumHoles() : 0;
+	for(int h = 0; h < hc; ++h)
+		DSF_AccumPts(pol->GetNthHole(h),cbs,writer,bezier,tex_coord, 0); // don't dupe first point
+}
+
 static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bbox2& bounds, set<string>& io_resources, DSF_ResourceTable& io_table, const DSFCallbacks_t * cbs, void * writer)
 {
-	WED_OverlayImage * img;
+	WED_ObjPlacement * obj;
+	WED_FacadePlacement * fac;
+	WED_ForestPlacement * fst;
+	WED_StringPlacement * str;
+	WED_LinePlacement * lin;
+	WED_PolygonPlacement * pol;
+
+	int idx;
+	string r;
+	Point2	p;
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (!ent) return;
 	if (ent->GetHidden()) return;
 
-
-	if ((img = dynamic_cast<WED_OverlayImage *>(what)) != NULL)
+	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
+	{
+		obj->GetResource(r);
+		idx = io_table.accum_obj(r);
+		obj->GetLocation(p);
+		double xy[2] = { p.x(), p.y() };
+		cbs->AddObject_f(idx, xy, obj->GetHeading(), writer);
+	}
+	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
+	{
+		fac->GetResource(r);
+		idx = io_table.accum_pol(r);
+		cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
+		DSF_AccumWindings(fac,cbs,writer,0,0,0);	// no curves, no tex, no holes
+		cbs->EndPolygon_f(writer);
+	}
+	if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
+	{
+		fst->GetResource(r);
+		idx = io_table.accum_pol(r);
+		cbs->BeginPolygon_f(idx,fst->GetDensity() * 255.0,2,writer);
+		DSF_AccumWindings(fst,cbs,writer,0,0,1);	// no curves, no tex, yes holes
+		cbs->EndPolygon_f(writer);
+	}
+	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
+	{
+		str->GetResource(r);
+		idx = io_table.accum_pol(r);
+		bool bez = DSF_HasBezierSeq(str);
+		cbs->BeginPolygon_f(idx,str->GetSpacing(),bez ? 4 : 2,writer);
+		DSF_AccumPts(str,cbs,writer,bez,0, str->IsClosed());	// yes curves, no tex holes, dupe end pt if closed
+		cbs->EndPolygon_f(writer);
+	}
+	if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
+	{
+		lin->GetResource(r);
+		idx = io_table.accum_pol(r);
+		bool bez = DSF_HasBezierSeq(lin);
+		cbs->BeginPolygon_f(idx,lin->IsClosed(),bez ? 4 : 2,writer);
+		DSF_AccumPts(lin,cbs,writer,bez,0, 0);	// yes curves, no tex holes, don't dupe end pt
+		cbs->EndPolygon_f(writer);
+	}
+	if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
+	{
+		pol->GetResource(r);
+		idx = io_table.accum_pol(r);
+		bool bez = DSF_HasBezierPol(pol);
+		cbs->BeginPolygon_f(idx,pol->GetDirection(),bez ? 4 : 2,writer);
+		DSF_AccumWindings(pol,cbs,writer,bez,0,1);	// yes curves, no tex, yes holes
+		cbs->EndPolygon_f(writer);
+	}
+	
+	
+	
+/*	if ((img = dynamic_cast<WED_OverlayImage *>(what)) != NULL)
 	{
 		string img_file, pol_file;
 		img->GetImage(img_file);
@@ -93,7 +241,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 				Point2 st, v;
 				tn->GetTexCoord(st);
 				tn->GetLocation(v);
-				double c[4] = { v.x, v.y, st.x, st.y };
+				double c[4] = { v.x(), v.y(), st.x(), st.y() };
 				cbs->AddPolygonPoint_f(c, writer);
 			}
 		}
@@ -127,7 +275,8 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 			}
 		}
 	}
-
+*/	
+	
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 		DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_resources, io_table, cbs, writer);
@@ -156,6 +305,9 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	Bbox2	clip_bounds(x,y,x+1,y+1);
 	DSF_ExportTileRecursive(base, pkg, clip_bounds, io_resources, rsrc, &cbs, writer);
 
+	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
+		cbs.AcceptObjectDef_f(s->c_str(), writer);
+	
 	for(vector<string>::iterator s = rsrc.polygon_defs.begin(); s != rsrc.polygon_defs.end(); ++s)
 		cbs.AcceptPolygonDef_f(s->c_str(), writer);
 
@@ -177,11 +329,11 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 {
 	Bbox2	wrl_bounds;
 	base->GetBounds(wrl_bounds);
-	int tile_west  = floor(wrl_bounds.p1.x);
-	int tile_east  = ceil (wrl_bounds.p2.x);
-	int tile_south = floor(wrl_bounds.p1.y);
-	int tile_north = ceil (wrl_bounds.p2.y);
-
+	int tile_west  = floor(wrl_bounds.p1.x());
+	int tile_east  = ceil (wrl_bounds.p2.x());
+	int tile_south = floor(wrl_bounds.p1.y());
+	int tile_north = ceil (wrl_bounds.p2.y());
+	
 	set<string>	generated_resources;
 
 	for (int y = tile_south; y < tile_north; ++y)

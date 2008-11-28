@@ -174,9 +174,12 @@ ITexMgr *		WED_GetTexMgr(IResolver * resolver)
 WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
 {
 	ISelection * sel = WED_GetSelect(resolver);
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	
 	if (sel->GetSelectionCount() == 1)
 	{
 		WED_Thing * obj = SAFE_CAST(WED_Thing, sel->GetNthSelection(0));
+		if (obj != wrl)
 		if (obj->GetParent())
 		if (!Iterate_IsPartOfStructuredObject(obj,NULL))
 		if (!require_airport || Iterate_IsOrParentAirport(obj->GetParent(), NULL))
@@ -200,8 +203,10 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 		if (require_airport)
 			parent_of_sel = WED_GetCurrentAirport(resolver);
 		else
-			parent_of_sel = WED_GetWorld(resolver);
+			parent_of_sel = wrl;
 	}
+	
+	if(parent_of_sel == wrl->GetParent()) parent_of_sel = wrl;
 	return parent_of_sel;
 }
 

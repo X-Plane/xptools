@@ -71,10 +71,10 @@ static bool	ControlLinkToCurve(
 
 		if (z)
 		{
-		s.p1.x = z->LonToXPixel(s.p1.x);
-		s.p2.x = z->LonToXPixel(s.p2.x);
-		s.p1.y = z->LatToYPixel(s.p1.y);
-		s.p2.y = z->LatToYPixel(s.p2.y);
+		s.p1.x_ = z->LonToXPixel(s.p1.x());
+		s.p2.x_ = z->LonToXPixel(s.p2.x());
+		s.p1.y_ = z->LatToYPixel(s.p1.y());
+		s.p2.y_ = z->LatToYPixel(s.p2.y());
 		}
 		return false;
 	}
@@ -88,14 +88,14 @@ static bool	ControlLinkToCurve(
 		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL, NULL);
 
 		if (z) {
-		b.p1.x = z->LonToXPixel(b.p1.x);
-		b.c1.x = z->LonToXPixel(b.c1.x);
-		b.p2.x = z->LonToXPixel(b.p2.x);
-		b.c2.x = z->LonToXPixel(b.c2.x);
-		b.p1.y = z->LatToYPixel(b.p1.y);
-		b.c1.y = z->LatToYPixel(b.c1.y);
-		b.p2.y = z->LatToYPixel(b.p2.y);
-		b.c2.y = z->LatToYPixel(b.c2.y);
+		b.p1.x_ = z->LonToXPixel(b.p1.x());
+		b.c1.x_ = z->LonToXPixel(b.c1.x());
+		b.p2.x_ = z->LonToXPixel(b.p2.x());
+		b.c2.x_ = z->LonToXPixel(b.c2.x());
+		b.p1.y_ = z->LatToYPixel(b.p1.y());
+		b.c1.y_ = z->LatToYPixel(b.c1.y());
+		b.p2.y_ = z->LatToYPixel(b.p2.y());
+		b.c2.y_ = z->LatToYPixel(b.c2.y());
 		}
 		return true;
 	}
@@ -685,14 +685,14 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 							float t2 = (float) (n+1) / (float) point_count;
 							Point2	p1 = b.midpoint(t1);
 							Point2	p2 = b.midpoint(t2);
-							glVertex2d(p1.x,p1.y);
-							glVertex2d(p2.x,p2.y);
+							glVertex2d(p1.x(),p1.y());
+							glVertex2d(p2.x(),p2.y());
 						}
 					}
 					else
 					{
-						glVertex2d(s.p1.x,s.p1.y);
-						glVertex2d(s.p2.x,s.p2.y);
+						glVertex2d(s.p1.x(),s.p1.y());
+						glVertex2d(s.p2.x(),s.p2.y());									
 					}
 				}
 			}
@@ -720,26 +720,26 @@ void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * 
 					{
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
-						glVertex2d(bscrp.x, bscrp.y);
-						glVertex2d(scrpt.x, scrpt.y);
+						glVertex2d(bscrp.x(), bscrp.y());
+						glVertex2d(scrpt.x(), scrpt.y());						
 						glEnd();
 					}
 					orient = Vector2(bscrp,scrpt);
 				}
 
 				switch(ht) {
-				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0,1.0);		break;
-				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0,1.0);break;
-				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x,scrpt.y,0,1.0);break;
-				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0,1.0);	break;
-				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0,1.0);		break;
-				case handle_ArrowHead:
-				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				case handle_RotateHead:
-				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				}
-			}
+				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x(),scrpt.y(),0,1.0);		break;
+				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x(),scrpt.y(),0,1.0);break;
+				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x(),scrpt.y(),0,1.0);break;
+				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x(),scrpt.y(),0,1.0);	break;
+				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x(),scrpt.y(),0,1.0);		break;
+				case handle_ArrowHead:		
+				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+				case handle_RotateHead:		
+				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+				}							
+			}						
 		}
 	}
 	if (mDragType == drag_Sel)

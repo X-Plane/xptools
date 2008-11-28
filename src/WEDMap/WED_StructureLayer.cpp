@@ -74,10 +74,10 @@ WED_StructureLayer::~WED_StructureLayer()
 {
 }
 
-inline void glVertex2(const Point2& p) { glVertex2d(p.x,p.y); }
-inline void glTexCoord2(const Point2& p) { glTexCoord2d(p.x,p.y); }
+inline void glVertex2(const Point2& p) { glVertex2d(p.x(),p.y()); }
+inline void glTexCoord2(const Point2& p) { glTexCoord2d(p.x(),p.y()); }
 
-inline void	glVertex2v(const Point2 * p, int n) { while(n--) { glVertex2d(p->x,p->y); ++p; } }
+inline void	glVertex2v(const Point2 * p, int n) { while(n--) { glVertex2d(p->x(),p->y()); ++p; } }
 inline void glShape2v(GLenum mode,  const Point2 * p, int n) { glBegin(mode); glVertex2v(p,n); glEnd(); }
 
 inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offset)
@@ -92,9 +92,9 @@ inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offs
 		dir = dir.perpendicular_ccw();
 		dir.normalize();
 		dir *= offset;
-		glVertex2d(pts[i].x + dir.dx, pts[i].y + dir.dy);
-	}
-	glEnd();
+		glVertex2d(pts[i].x() + dir.dx, pts[i].y() + dir.dy);		
+	}	
+	glEnd(); 
 }
 
 
@@ -148,9 +148,9 @@ static void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, 
 #define CALLBACK
 #endif
 
-static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);		 }
-static void CALLBACK TessEnd(void)				{ glEnd();				 }
-static void CALLBACK TessVertex(const Point2 * p){ glVertex2d(p->x,p->y); }
+static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);				}
+static void CALLBACK TessEnd(void)				{ glEnd();						}
+static void CALLBACK TessVertex(const Point2 * p){ glVertex2d(p->x(),p->y());	}
 
 static void glPolygon2(const Point2 * pts, const int * contours, int n)
 {
@@ -165,8 +165,8 @@ static void glPolygon2(const Point2 * pts, const int * contours, int n)
 	while(n--)
 	{
 		if (contours && *contours++)	gluNextContour(tess, GLU_INTERIOR);
-
-		double	xyz[3] = { pts->x, pts->y, 0 };
+	
+		double	xyz[3] = { pts->x(), pts->y(), 0 };
 		gluTessVertex(tess, xyz, (void*) pts++);
 	}
 
@@ -551,8 +551,8 @@ bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid
 	z->GetPixelBounds(l,b,r,t);
 
 	applyRotation(m1, heading, 0, 0, 1);
-
-	applyTranslation(m1, l-centroid.x,b-centroid.y,0);
+	
+	applyTranslation(m1, l-centroid.x(),b-centroid.y(),0);
 
 	double	proj_tex_s[4], proj_tex_t[4];
 
@@ -638,9 +638,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 			float * f2 = f1 + 4;
 			Point2 loc = Segment2(bounds.p1,bounds.p2).midpoint();
 			switch(airport->GetAirportType()) {
-			case type_Airport:		mAirportIconsX.push_back(loc.x);	mAirportIconsY.push_back(loc.y);	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);		break;
-			case type_Seaport:		mSeaportIconsX.push_back(loc.x);	mSeaportIconsY.push_back(loc.y);	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);		break;
-			case type_Heliport:		mHeliportIconsX.push_back(loc.x);	mHeliportIconsY.push_back(loc.y);	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);	break;
+			case type_Airport:		mAirportIconsX.push_back(loc.x());	mAirportIconsY.push_back(loc.y());	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);		break;
+			case type_Seaport:		mSeaportIconsX.push_back(loc.x());	mSeaportIconsY.push_back(loc.y());	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);		break;
+			case type_Heliport:		mHeliportIconsX.push_back(loc.x());	mHeliportIconsY.push_back(loc.y());	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);	break;
 			}
 			return false;
 		}
@@ -722,13 +722,13 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 			{
 				pt->GetLocation(l);
 				l = GetZoomer()->LLToPixel(l);
-				if (icon) GUI_PlotIcon(g,icon, l.x,l.y,0,icon_scale);
+				if (icon) GUI_PlotIcon(g,icon, l.x(),l.y(),0,icon_scale);
 				else {
 					glBegin(GL_LINES);
-					glVertex2f(l.x, l.y - 3);
-					glVertex2f(l.x, l.y + 3);
-					glVertex2f(l.x - 3, l.y);
-					glVertex2f(l.x + 3, l.y);
+					glVertex2f(l.x(), l.y() - 3);
+					glVertex2f(l.x(), l.y() + 3);
+					glVertex2f(l.x() - 3, l.y());
+					glVertex2f(l.x() + 3, l.y());
 					glEnd();
 				}
 			}
@@ -753,7 +753,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 				NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
 				Vector2 r(dir.perpendicular_cw());
 				l = GetZoomer()->LLToPixel(l);
-				if (icon)	GUI_PlotIcon(g,icon, l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
+				if (icon)	GUI_PlotIcon(g,icon, l.x(),l.y(),atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
 				else {
 					glBegin(GL_LINES);
 					glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
@@ -798,7 +798,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 					Point2	p;
 					helipad->GetLocation(p);
 					p = GetZoomer()->LLToPixel(p);
-					GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, ptwl->GetHeading(),icon_scale);
+					GUI_PlotIcon(g, "map_helipad.png", p.x(), p.y(), ptwl->GetHeading(),icon_scale);
 				}
 			}
 		}
@@ -943,10 +943,10 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 				mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
 				double sx = (double) vis_x / (double) tot_x;
 				double sy = (double) vis_y / (double) tot_y;
-				st1.x *= sx; st1.y *= sy;
-				st2.x *= sx; st2.y *= sy;
-				st3.x *= sx; st3.y *= sy;
-				st4.x *= sx; st4.y *= sy;
+				st1.x_ *= sx; st1.y_ *= sy;
+				st2.x_ *= sx; st2.y_ *= sy;
+				st3.x_ *= sx; st3.y_ *= sy;
+				st4.x_ *= sx; st4.y_ *= sy;
 				}
 				glDisable(GL_CULL_FACE);
 				glColor3f(1,1,1);
@@ -978,12 +978,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 					Point2 centroid(0,0);
 					for (int i = 0; i < pts.size(); ++i)
 					{
-						centroid.x += pts[i].x;
-						centroid.y += pts[i].y;
+						centroid.x_ += pts[i].x();
+						centroid.y_ += pts[i].y();
 					}
-					centroid.x /= (double) pts.size();
-					centroid.y /= (double) pts.size();
-
+					centroid.x_ /= (double) pts.size();
+					centroid.y_ /= (double) pts.size();
+				
 //					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
 					if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, GetZoomer(), mPavementAlpha))
 					{

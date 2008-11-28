@@ -49,8 +49,11 @@
 #include "WED_ToolInfoAdapter.h"
 #include "WED_UIMeasurements.h"
 #include "WED_GroupCommands.h"
+#include "WED_LibraryListAdapter.h"
+#include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
-char	kToolKeys[] = {
+char	kToolKeys[] = { 
+	0,0,0,		0,0,0,
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
 	'k', 't', 'h', 's',
@@ -86,7 +89,7 @@ static void GetExtentSel(Bbox2& box, IResolver * resolver)
 }
 
 
-WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive) : mResolver(resolver)
+WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library) : mResolver(resolver)
 {
 	mMap = new WED_Map(resolver);
 
@@ -98,6 +101,13 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 
 	// TOOLS
+	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
+	mTools.push_back(mLinTool=			new WED_CreatePolygonTool("Lines",mMap, mMap, resolver, archive, create_Line));
+	mTools.push_back(mStrTool=			new WED_CreatePolygonTool("Strings",mMap, mMap, resolver, archive, create_String));
+	mTools.push_back(mFstTool=			new WED_CreatePolygonTool("Forests",mMap, mMap, resolver, archive, create_Forest));
+	mTools.push_back(mFacTool=			new WED_CreatePolygonTool("Facades",mMap, mMap, resolver, archive, create_Facade));
+	mTools.push_back(mObjTool=			new WED_CreatePointTool("Objects",mMap, mMap, resolver, archive, create_Object));
+	
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
 	mTools.push_back(					new WED_CreatePointTool("Airport Beacon", mMap, mMap, resolver, archive, create_Beacon));
@@ -143,7 +153,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(1,15,"map_tools.png");
+	mToolbar = new GUI_ToolBar(1,15+6,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
@@ -218,6 +228,18 @@ WED_MapPane::~WED_MapPane()
 
 }
 
+void WED_MapPane::SetResource(const string& r, int res_type)
+{
+	switch(res_type) { 
+	case res_Object:	mObjTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mObjTool)));	break;
+	case res_Facade:	mFacTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFacTool)));	break;
+	case res_Forest:	mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;
+	case res_String:	mStrTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mStrTool)));	break;
+	case res_Line:		mLinTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mLinTool)));	break;
+	case res_Polygon:	mPolTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mPolTool)));	break;
+	}
+}
+
 
 
 void	WED_MapPane::ZoomShowAll(void)
@@ -260,8 +282,8 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_ToggleVertices:mStructureLayer->SetVerticesShowing(!mStructureLayer->GetVerticesShowing());				return 1;
 
 	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	mMap->Refresh(); return 1;
-	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	mMap->Refresh(); return 1;
-	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	mMap->Refresh(); return 1;
+	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
+	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
 
 	default:		return 0;
 	}
