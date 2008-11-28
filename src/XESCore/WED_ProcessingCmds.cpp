@@ -201,21 +201,21 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_HydroCorrect:
 			{
-				char	f1[1024];
-				f1[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
-
-				HydroReconstruct(gMap,  gDem,f1,"../rendering_data/OUTPUT-hydro",WED_ProgressFunc);
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+//				char	f1[1024];
+//				f1[0] = 0;
+//				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
+//						
+//				HydroReconstruct(gMap,  gDem,f1,"../rendering_data/OUTPUT-hydro",WED_ProgressFunc);
+//				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+//				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			}
 			break;
 		case procCmd_HydroSimplfiy:
 			{
-				Bbox2	bounds;
-				CalcBoundingBox(gMap, bounds.p1, bounds.p2);
-				SimplifyCoastlines(gMap, bounds, WED_ProgressFunc);
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+//				Bbox2	bounds;
+//				CalcBoundingBox(gMap, bounds.p1, bounds.p2);
+//				SimplifyCoastlines(gMap, bounds, WED_ProgressFunc);
+//				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			}
 			break;
 		case procCmd_DeriveDEMs:
@@ -256,7 +256,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 					}
 				}
 */
-			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  WED_ProgressFunc, NULL, NULL);
+			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], Face_handle(),  WED_ProgressFunc, NULL, NULL);
 			}
 			break;
 		case procCmd_RemoveDupes:
@@ -265,7 +265,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 					RemoveDuplicatesAll(gMap, WED_ProgressFunc);
 				else {
 					for (set<Pmwx::Face_handle>::iterator i = gFaceSelection.begin(); i != gFaceSelection.end(); ++i)
-					if (!(*i)->IsWater())
+					if (!(*i)->data().IsWater())
 					if (!(*i)->is_unbounded())
 						RemoveDuplicates(*i);
 				}
@@ -293,20 +293,20 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_InstantiateFor:
 			{
-				StElapsedTime	timer("Total forest time.\n");
-
-				vector<PreinsetFace>	insets;
-				set<int>				the_types;
-				GetAllForestLUs(the_types);
-				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-				if (gFaceSelection.empty())
-				{
-					GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, WED_ProgressFunc);
-				} else {
-					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
-				}
-
-				GenerateForests(gMap, insets, gTriangulationHi, WED_ProgressFunc);
+//				StElapsedTime	timer("Total forest time.\n");
+//				
+//				vector<PreinsetFace>	insets;
+//				set<int>				the_types;
+//				GetAllForestLUs(the_types);
+//				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+//				if (gFaceSelection.empty())
+//				{
+//					GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, WED_ProgressFunc);
+//				} else {
+//					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
+//				}
+//
+//				GenerateForests(gMap, insets, gTriangulationHi, WED_ProgressFunc);
 			}
 			break;
 		case procCmd_BuildRoads:
@@ -394,9 +394,9 @@ void WED_UpdateProcCmds(void)
 	}
 	for (Pmwx::Halfedge_const_iterator e(gMap.halfedges_begin()); e != gMap.halfedges_end(); ++e)
 	{
-		if (!e->mSegments.empty())
+		if (!e->data().mSegments.empty())
 		{
-			has_roads = (e->mSegments.front().mRepType != NO_VALUE);
+			has_roads = (e->data().mSegments.front().mRepType != NO_VALUE);
 			break;
 		}
 	}

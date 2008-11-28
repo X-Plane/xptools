@@ -57,8 +57,8 @@
 
 
  */
-
-#include "MapDefs.h"
+ 
+#include "MapDefsCGAL.h"
 #include "ParamDefs.h"
 #include "AssertUtils.h"
 #include "CompGeomUtils.h"
@@ -67,7 +67,7 @@
 // This causes validate to check for dupe vertices.  Makes validate real slow.
 #define VALIDATE_CHECK_NO_DUPE_VERTICES 0
 // This causes add-vertex to check for new vertices.  This makes adding vertices real slow.
-#define CHECK_NEW_VERTICES_FOR_DUPES 1
+#define CHECK_NEW_VERTICES_FOR_DUPES 0
 // This causese deleting a halfedge to check that it is not used anywhere.  This makes deleting
 // halfedges real slow.
 #define CHECK_DELETE_USED_HALFEDGE 0
@@ -1638,6 +1638,13 @@ GISHalfedge *			Pmwx::split_edge(GISHalfedge * inEdge, const Point2& split)
 {
 	DebugAssert(split != inEdge->source()->point());
 	DebugAssert(split != inEdge->target()->point());
+	// if the split point is already part of this edge, do nothing.
+	//if ((split == inEdge->source()->point()) || (mVertexIndex.count(split) != 0) || (split != inEdge->target()->point())) {
+	//	printf("split_edge wierdness \n");
+	//	return inEdge;
+	//}
+	
+	// this assert implies that split must not already be in the map; if it is, and we get here, TopoIntegrateMaps messed up.
 	DebugAssert(mVertexIndex.count(split) == 0);
 	// Edge split.  The following items are affected:
 	// There are 4 halfedges around this point.  Each of them may be affected.
@@ -2017,7 +2024,10 @@ GISHalfedge *		Pmwx::insert_edge(const Point2& p1, const Point2& p2,
 
 	cur = p1;
 	cur_he = locate_point(cur, cur_loc);
-
+	
+	// may as well return in this case
+	//if (p1 == p2)
+	//	return cur_he;
 	return insert_edge(p1, p2, cur_he, cur_loc, notifier, ref);
 }
 

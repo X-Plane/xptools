@@ -26,21 +26,10 @@
 
 #include "AptDefs.h"
 #include "ProgressUtils.h"
-class	Pmwx;
+#include "MapDefsCGAL.h"
+//class	Pmwx;
 struct	DEMGeo;
 
-void	GenBoundary(
-				AptInfo_t * 	ioAirport);
-
-
-void	AptPolygonToBezier(
-				const AptPolygon_t&			inPoly,
-				vector<vector<Bezier2> >&	outPoly);
-
-void	BezierToSegments(
-				const vector<Bezier2>&		inWinding,
-				Polygon2&					outWinding,
-				float						inSimplify);
 
 void BurnInAirport(
 				const AptInfo_t * 	inAirport,
@@ -58,4 +47,18 @@ void ProcessAirports(
 				bool				kill_rivers,
 				ProgressFunc		inProgress);
 
+void	GenBoundary(
+				AptInfo_t * 	ioAirport);
+				
+
+void	AptPolygonToBezier(
+				const AptPolygon_t&			inPoly,
+				vector<vector<Bezier2> >&	outPoly);
+
+void	BezierToSegments(
+				const vector<Bezier2>&		inWinding,
+				Polygon_2&					outWinding,
+				float						inSimplify);
+
+				
 #endif /* AIRPORTS_H */

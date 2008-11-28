@@ -86,20 +86,28 @@ void CDT::clear(void)
 inline int sign_of(double x) { return x > 0.0 ? 1 : (x < 0.0 ? -1 : 0); }
 
 
-#if DEV
+#if 1
 CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 {
 	int			li;
 	Locate_type	lt;
 	Face_handle	who = locate(p, lt, li, hint);
+	
+	if (lt < 3) { // i.e. not OUTSIDE_CONVEX_HULL or OUTSIDE_AFFINE_HULL, because if we're outside the hull of the triangulation, just punt and insert anyway
+		
+		Point	p0(who->vertex(0)->point());
+		Point	p1(who->vertex(1)->point());
+		Point	p2(who->vertex(2)->point());
+		//printf("safe_insert %lf, %lf found %lf, %lf %lf, %lf %lf, %lf\n", p.x(), p.y(), p0.x(), p0.y(), p1.x(), p1.y(), p2.x(), p2.y());
+		
 	if (lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
 	{
 		if(lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
 		{
 
-			Point	p0(who->vertex(0)->point());
-			Point	p1(who->vertex(1)->point());
-			Point	p2(who->vertex(2)->point());
+				//Point	p0(who->vertex(0)->point());
+				//Point	p1(who->vertex(1)->point());
+				//Point	p2(who->vertex(2)->point());
 
 			CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
 
@@ -157,13 +165,18 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 				Point	p1_(who->vertex(1)->point());
 				Point	p2_(who->vertex(2)->point());
 
-				CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
-
-
-				CGAL::Orientation 	_o2 = orientation(p0_, p1_, p),
-									_o0 = orientation(p1_, p2_, p),
-									_o1 = orientation(p2_, p0_, p);
-/*
+					//CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
+					if ( orientation(p0, p1, p2) != CGAL::COLLINEAR)					
+						return CDTBase::insert_in_face(p, who);
+					
+					// otherwise punt and try plain unhinted insert
+					
+					return CDTBase::insert(p);
+					
+					//CGAL::Orientation 	_o2 = orientation(p0_, p1_, p),
+					//_o0 = orientation(p1_, p2_, p),
+					//_o1 = orientation(p2_, p0_, p);
+/*			
 				gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(),p.y()),Point3(1,1,1)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0.x(),p0.y()),Point3(0,1,1)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1.x(),p1.y()),Point3(0,1,1)));
@@ -179,7 +192,8 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2_.x(),p2_.y()),Point3(0,1,0)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0_.x(),p0_.y()),Point3(0,1,0)));
 */
-				AssertPrintf("Unable to resolve bad locate.");
+					//AssertPrintf("Unable to resolve bad locate.");
+				}
 			}
 		}
 	}

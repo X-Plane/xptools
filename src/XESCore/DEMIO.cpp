@@ -347,7 +347,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	const unsigned char * bp = (const unsigned char *) MemFile_GetBegin(fi);
 	const unsigned char * ep = (const unsigned char *) MemFile_GetEnd(fi);
 	if ((ep - bp) < 512) goto bail;
-{
+	{
 	// More info is available in said file:
 	// http://www.fao.org/giews/english/windisp/manuals/WD35EN25.htm
 	// 30-32	height					integer (2 bytes)
@@ -377,8 +377,8 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 			inMap(x,y) = m * (double) v + b;
 	}
 	ok = true;
-}
-bail:
+	}
+bail:	
 	MemFile_Close(fi);
 	return ok;
 }
@@ -431,17 +431,17 @@ double	parse_field_float(const char ** s, const char * e)
 		++digits;
 	}
 	if (p >= e || (*p != 'D' && *p != 'd' && *p != 'e' && *p != 'E')) goto bail;
-{
     ++p;
 	exponent = parse_field_int(&p, e);
 	*s = p;
+	{
 	int	rshift = digits - exponent;
 	if (rshift > 0)
 		return sign * (mantissa / pow(10.0f, rshift));
 	else
 		return sign * (mantissa * pow(10.0f, rshift));
-}
-bail:
+	}
+bail:	
 	*s = p;
 	return 0;
 
@@ -490,12 +490,11 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	printf("Bounds: %lf %lf -> %lf %lf\n", west, south, east, north);
 
 	if (k != 1) { printf("ERROR: expect 1 count of profiles.\n");	goto bail; }
-{
 	inMap.mWest = west;
 	inMap.mEast = east;
 	inMap.mNorth = north;
 	inMap.mSouth = south;
-
+	{
 	const char * p = b + 1024;
 	n = 0;
 	int total_profiles = profiles;
@@ -545,7 +544,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	printf("Read %d records.\n", n);
 	MemFile_Close(fi);
 	return true;
-}
+	}
 bail:
 	MemFile_Close(fi);
 	return false;
@@ -650,13 +649,14 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 {
 	int result = -1;
 	double	corners[8];
+	TIFF * tif;
 	TIFFErrorHandler	warnH = TIFFSetWarningHandler(IgnoreTiffWarnings);
 	TIFFErrorHandler	errH = TIFFSetErrorHandler(IgnoreTiffErrs);
 	StTiffMemFile	tiffMem(inFileName);
 	if (tiffMem.file == NULL) goto bail;
-{
+
 	printf("Trying file: %s\n", inFileName);
-	TIFF * tif = XTIFFClientOpen(inFileName, "r", &tiffMem,
+	tif = XTIFFClientOpen(inFileName, "r", &tiffMem,
 	    MemTIFFReadWriteProc, MemTIFFReadWriteProc,
 	    MemTIFFSeekProc, MemTIFFCloseProc,
 	    MemTIFFSizeProc,
@@ -694,7 +694,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	printf("Image is: %dx%d, samples: %d, depth: %d\n", w, h, cc, d);
 
 	inMap.resize(w+1,h+1);
-
+	{
 	tsize_t line_size = TIFFScanlineSize(tif);
 	tdata_t aline = _TIFFmalloc(line_size);
 
@@ -750,7 +750,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	TIFFSetWarningHandler(warnH);
 	TIFFSetErrorHandler(errH);
     return result != -1;
-}
+	}
 bail:
 	TIFFSetWarningHandler(warnH);
 	TIFFSetErrorHandler(errH);
@@ -832,7 +832,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 
 	if (uhl->cookie[0] != 'U' || uhl->cookie[1] != 'H' || uhl->cookie[2] != 'L') goto bail;
 	if (uhl->version != '1') goto bail;
-{
+
 	inMap.mSouth =
 		(uhl->latitude[0]-'0') * 1000000 +
 		(uhl->latitude[1]-'0') * 100000 +
@@ -859,10 +859,10 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 
 	inMap.mNorth = inMap.mSouth + 1.0;
 	inMap.mEast = inMap.mWest + 1.0;
-
-	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 +
-				 (uhl->num_lines_lon[1]-'0') * 100 +
-				 (uhl->num_lines_lon[2]-'0') * 10 +
+	{
+	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 + 
+				 (uhl->num_lines_lon[1]-'0') * 100 + 
+				 (uhl->num_lines_lon[2]-'0') * 10 + 
 				 (uhl->num_lines_lon[3]-'0') * 1;
 	int y_size = (uhl->num_lines_lat[0]-'0') * 1000 +
 				 (uhl->num_lines_lat[1]-'0') * 100 +
@@ -896,7 +896,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 
 	MemFile_Close(fi);
 	return true;
-}
+	}
 bail:
 	if (fi) MemFile_Close(fi);
 	return false;

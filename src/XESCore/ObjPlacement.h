@@ -23,32 +23,29 @@
 #ifndef OBJPLACEMENT_H
 #define OBJPLACEMENT_H
 
-class	GISFace;
-class	DEMGeoMap;
-class	CDT;
-class	Pmwx;
-class	GISHalfedge;
-class	Bbox2;
+#include "MapDefsCGAL.h"
+#include "DEMDefs.h"
+#include "MeshDefs.h"
 #include "ProgressUtils.h"
 #include "Skeleton.h"
 
-typedef pair<GISFace *, ComplexPolygonVector>	PreinsetFace;
+typedef pair<Face_handle, Polygon_set_2>	PreinsetFace;
 
 
-double	GetInsetForEdgeMeters(const GISHalfedge * inEdge);
-double	GetInsetForEdgeDegs(const GISHalfedge * inEdge);
+double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge);
+double	GetInsetForEdgeDegs(Halfedge_const_handle inEdge);
 
 void	RemoveDuplicates(
-							GISFace * 			inFace);
+							Face_handle					inFace);
 void	RemoveDuplicatesAll(
-							Pmwx&				ioMap,
-							ProgressFunc		inProg);
+							Pmwx&						ioMap,
+							ProgressFunc				inProg);
 
 void	InstantiateGTPolygon(
-							GISFace *				inFace,
-							const ComplexPolygon2&	inBounds,
-							const DEMGeoMap& 		inDEMs,
-							const CDT&				inMesh);
+							Face_handle					inFace,
+							const Polygon_with_holes_2&	inBounds,
+							const DEMGeoMap&			inDEMs,
+							const CDT&					inMesh);
 
 void	InstantiateGTPolygonAll(
 							const vector<PreinsetFace>&	inFaces,
@@ -66,7 +63,7 @@ void	GenerateInsets(
 					ProgressFunc			func);
 
 void	GenerateInsets(
-					const set<GISFace *>&	inFaces,
+					const set<Face_handle>&	inFaces,
 					vector<PreinsetFace>&	outInsets,
 					ProgressFunc			func);
 

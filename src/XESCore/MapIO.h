@@ -24,7 +24,7 @@
 #define MAPIO_H
 
 #include "IODefs.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
 #include "EnumSystem.h"
 
@@ -58,4 +58,3 @@ void	WriteMap(FILE * fi, const 	Pmwx& inMap, ProgressFunc inProgress, int atomID
 void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, int atomID, const TokenConversionMap& c);
 
 #endif
-

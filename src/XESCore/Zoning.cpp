@@ -21,8 +21,8 @@
  *
  */
 
+#include "MapDefsCGAL.h"
 #include "Zoning.h"
-#include "MapDefs.h"
 #include "MapAlgs.h"
 #include "DEMDefs.h"
 #include "DEMTables.h"
@@ -64,7 +64,7 @@ void	ZoneManMadeAreas(
 		double	max_height = 0.0;
 
 		if (mfam < MAX_OBJ_SPREAD)
-		for (GISPointFeatureVector::iterator feat = face->mPointFeatures.begin(); feat != face->mPointFeatures.end(); ++feat)
+		for (GISPointFeatureVector::iterator feat = face->data().mPointFeatures.begin(); feat != face->data().mPointFeatures.end(); ++feat)
 		{
 			if (feat->mFeatType == feat_Building)
 			if (feat->mParams.count(pf_Height))
@@ -72,17 +72,35 @@ void	ZoneManMadeAreas(
 				max_height = max(max_height, feat->mParams[pf_Height]);
 			}
 		}
-		face->mParams[af_HeightObjs] = max_height;
+		face->data().mParams[af_HeightObjs] = max_height;
 
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
-		face->mTemp1 = NO_VALUE;
-		face->mTemp2 = 0;
+		face->data().mTemp1 = NO_VALUE;
+		face->data().mTemp2 = 0;
 
 		// Quick bail - if we're assigned, we're done. - Moving this to first place because...
 		// airports take the cake/
-		if (face->mTerrainType != terrain_Natural) continue;
 
-		switch(face->mAreaFeature.mFeatType) {
+		if (face->data().mTerrainType != terrain_Natural) continue;
+	
+//		switch(face->data().mAreaFeature[0].mFeatType) {
+////		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
+////		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
+////		case feat_Campground:	face->mTerrainType = terrain_Campground;	break;
+////		case feat_Marina:		face->mTerrainType = terrain_Marina;		break;
+//		case feat_GolfCourse:	face->data().mTerrainType = terrain_GolfCourse;	break;
+//		case feat_Cemetary:		face->data().mTerrainType = terrain_Cemetary;		break;
+////		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;		
+//		case feat_Park:			face->data().mTerrainType = terrain_Park;			break;
+//		case feat_ForestPark:	face->data().mTerrainType = terrain_ForestPark;	break;
+//		}
+
+#if !DEV
+	review this
+#endif
+
+/*
+		switch(face->data().mAreaFeature.mFeatType) {
 //		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
 //		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
 //		case feat_Campground:	face->mTerrainType = terrain_Campground;	break;
@@ -93,57 +111,66 @@ void	ZoneManMadeAreas(
 		case feat_Park:			face->mTerrainType = terrain_Park;			break;
 		case feat_ForestPark:	face->mTerrainType = terrain_ForestPark;	break;
 		}
-
+*/
 	}
 
 	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
+#if 0
 	PROGRESS_START(inProg, 1, 3, "Checking approach paths...")
 
 	ctr = 0;
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
-	if (face->mTerrainType != terrain_Airport)
-	if (!face->IsWater())
+	if (face->data().mTerrainType != terrain_Airport)
+	if (!face->data().IsWater())
 	{
 		PROGRESS_CHECK(inProg, 1, 3, "Checking approach paths...", ctr, total, check)
-		set<GISFace *>	neighbors;
-		FindAdjacentFaces(face, neighbors);
-		Polygon2 me;
+		set<Face_handle>	neighbors;
+		//FindAdjacentFaces(face, neighbors);
+		{
+			neighbors.clear();
+			set<Halfedge_handle> e;
+			FindEdgesForFace(face, e);
+			for (set<Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
+				if ((*he)->twin()->face() != face)
+					neighbors.insert((*he)->twin()->face());
+		}
+		Polygon_2 me;
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		circ = stop = face->outer_ccb();
 		do {
 			me.push_back(circ->target()->point());
 			++circ;
 		} while (circ != stop);
-
-		Point2	myloc = me.centroid();
-
-		double	my_agl = face->mParams[af_HeightObjs];
+		
+		Point_2	myloc = centroid(me);
+		
+		double	my_agl = face->data().mParams[af_HeightObjs];
 		double	max_agl = my_agl;
-
-		for (set<GISFace *>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
+		
+		for (set<Face_handle>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
 		{
-			max_agl = max(max_agl, (*niter)->mParams[af_HeightObjs] * 0.5);
+			max_agl = max(max_agl, (*niter)->data().mParams[af_HeightObjs] * 0.5);
 		}
 
 		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
 		if (apt->kind_code == apt_airport)
 		if (!apt->pavements.empty())
 		{
-			Point2 midp = apt->pavements.front().ends.midpoint();
-			double dist = LonLatDistMeters(midp.x, midp.y, myloc.x, myloc.y);
+			Point_2 midp = CGAL::midpoint(apt->pavements.front().ends.source(),apt->pavements.front().ends.target());
+			double dist = LonLatDistMeters(midp.x(), midp.y(), myloc.x(), myloc.y());
 			if (dist < 15000.0)
 			for (AptPavementVector::const_iterator rwy = apt->pavements.begin(); rwy != apt->pavements.end(); ++rwy)
 			if (rwy->name != "xxx")
 			{
-				midp = rwy->ends.midpoint();
-				dist = LonLatDistMeters(midp.x, midp.y, myloc.x, myloc.y);
-
-				Vector2	azi_rwy = Vector2(rwy->ends.p1, rwy->ends.p2);	azi_rwy.normalize();
-				Vector2 azi_me = Vector2(midp, myloc);					azi_me.normalize();
-
-				double dot = azi_rwy.dot(azi_me);
-
+				midp = CGAL::midpoint(rwy->ends.source(), rwy->ends.target());
+				dist = LonLatDistMeters(midp.x(), midp.y(), myloc.x(), myloc.y());
+				
+				Vector_2	azi_rwy = normalize(Vector_2(rwy->ends.source(), rwy->ends.target()));
+				Vector_2 azi_me = normalize(Vector_2(midp, myloc));
+				
+				double dot = azi_rwy * azi_me;
+				
 				double gs_elev = dist / 18.0;
 				if (dot > 0.8 && dist < 700.0)
 					max_agl = min(max_agl, gs_elev);
@@ -151,15 +178,15 @@ void	ZoneManMadeAreas(
 		}
 
 		my_agl = max(my_agl, max_agl);
-		face->mParams[af_Height] = max_agl;
+		face->data().mParams[af_Height] = max_agl;
 	}
 	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
-
+#endif
 	PROGRESS_START(inProg, 2, 3, "Checking Water")
 	ctr = 0;
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
-	if (face->IsWater())
+	if (face->data().IsWater())
 	{
 		bool is_open = false;
 		PROGRESS_CHECK(inProg, 2, 3, "Checking Water", ctr, total, check)
@@ -173,10 +200,10 @@ void	ZoneManMadeAreas(
 			}
 			++circ;
 		} while (circ != stop);
-
-		face->mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;
-		face->mParams[af_WaterArea] = GetMapFaceAreaMeters(face);
-
+		
+		face->data().mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;		
+		face->data().mParams[af_WaterArea] = GetMapFaceAreaMeters(face);
+		
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
 }

@@ -162,11 +162,11 @@ WTPM_DirectedLinePtr			WTPM_FindLeftMostEdgeInSet(const set<WTPM_DirectedLinePtr
 	{
 		for (int i = 0; i < iter->first->shape.size(); ++i)
 		{
-			if (!has || iter->first->shape[i].x < bestX)
-			{
+			if (!has || iter->first->shape[i].x() < bestX)
+			{	
 				has = true;
 				bestKey = *iter;
-				bestX = iter->first->shape[i].x;
+				bestX = iter->first->shape[i].x();
 			}
 		}
 	}
@@ -275,10 +275,11 @@ void	WTPM_ExportToMap(
 					Pmwx& 					pmwx)
 {
 	pmwx.clear();
-
-	GISVertex * 		new_v;
+	Arr_accessor	dcel(pmwx);
+	
+	DVertex *			new_v;
 	int					n, hole_counter = 0;
-	GISHalfedge *		myHalfedge;
+	DHalfedge *			myHalfedge;
 	WTPM_NodeVector::const_iterator node;
 	WTPM_LineVector::const_iterator line;
 	WTPM_FaceVector::const_iterator face;
@@ -289,7 +290,7 @@ void	WTPM_ExportToMap(
 
 	for (node = inNodes.begin(); node != inNodes.end(); ++node)
 	{
-		new_v = pmwx.new_vertex((*node)->location);
+		new_v = dcel.new_vertex(ben2cgal((*node)->location));
 		if ((*node)->location == Point2())
 			printf ("Null pt.\n");
 		(*node)->pm_vertex = new_v;
@@ -306,13 +307,13 @@ void	WTPM_ExportToMap(
 		// foreign key ID so we share them with other lines.  Shape points
 		// are never shared, so we just blast through them.
 
-			vector<GISVertex*>	vertices;
-
-		vertices.push_back((*line)->startNode->pm_vertex);
+			vector<DVertex *>	vertices;
+	
+		vertices.push_back((*line)->startNode->pm_vertex);	
 
 		for (n = 1; n < ((*line)->shape.size() - 1); ++n)
 		{
-			new_v = pmwx.new_vertex((*line)->shape[n]);
+			new_v = dcel.new_vertex(ben2cgal((*line)->shape[n]));
 		if ((*line)->shape[n] == Point2())
 			printf ("Null pt.\n");
 			vertices.push_back(new_v);
@@ -333,19 +334,20 @@ void	WTPM_ExportToMap(
 #if DEV
 				for (int d = 0; d < (*line)->shape.size(); ++d)
 				{
-					printf("   pt: %lf,%lf \n", (*line)->shape[d].x,(*line)->shape[d].y);
+					printf("   pt: %lf,%lf \n", (*line)->shape[d].x(),(*line)->shape[d].y());
 				}
 #endif
 			}
 //			PM_Curve_2	seg1(vertices[n-1]->point(), vertices[n]->point());
 //			PM_Curve_2	seg2(vertices[n]->point(), vertices[n-1]->point());
-			GISHalfedge *e1, *e2;
-			e1 = pmwx.new_edge();
-			e2 = e1->twin();
-			e1->set_twin(e2);
-			e2->set_twin(e1);
-			e1->set_target(vertices[n]);
-			e2->set_target(vertices[n-1]);
+			Curve_2		curve(Segment_2(vertices[n-1]->point(), vertices[n]->point()));
+			DHalfedge * e1, *e2;
+			e1 = dcel.new_edge(curve);
+			e2 = e1->opposite();
+			e1->set_opposite(e2);
+			e2->set_opposite(e1);
+			e1->set_vertex(vertices[n]);
+			e2->set_vertex(vertices[n-1]);
 			vertices[n]->set_halfedge(e1);
 			vertices[n-1]->set_halfedge(e2);
 //			e1->set_curve(seg1);
@@ -387,9 +389,9 @@ void	WTPM_ExportToMap(
 	for (face = inFaces.begin(); face != inFaces.end(); ++face)
 	{
 		// First create the face (or use the world face) and index it.
-		GISFace* new_face = &*pmwx.unbounded_face();
+		DFace * new_face = &*pmwx.unbounded_face();
 		if (!(*face)->isWorld)
-			new_face = pmwx.new_face();
+			new_face = dcel.new_face();			
 		(*face)->pm_face = new_face;
 
 		// For non-world polygons we need to set our outer CCB.
@@ -416,7 +418,7 @@ void	WTPM_ExportToMap(
 		if ((*face)->isWorld)
 			new_face->add_hole(myHalfedge);
 		else
-			new_face->set_outer_ccb(myHalfedge);
+			new_face->set_halfedge(myHalfedge);
 
 		// Now go through each hole and do the same test.
 		for (hole = (*face)->innerRings.begin();
@@ -437,8 +439,8 @@ void	WTPM_ExportToMap(
 
 	for (line = inLines.begin(); line != inLines.end(); ++line)
 	{
-		GISFace* face = (*line)->leftFace->pm_face;
-
+		DFace* face = (*line)->leftFace->pm_face;
+		
 		for (e = (*line)->pm_edges.first.begin(); e != (*line)->pm_edges.first.end(); ++e)
 			(*e)->set_face(face);
 

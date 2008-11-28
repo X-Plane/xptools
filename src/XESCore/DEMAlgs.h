@@ -23,9 +23,11 @@
 #ifndef DEMALGS_H
 #define DEMALGS_H
 
+#include "MapDefsCGAL.h"
+
 struct	DEMGeo;
 class	DEMGeoMap;
-class	Pmwx;
+//class	Pmwx;
 
 #include "AptDefs.h"
 #include "ProgressUtils.h"

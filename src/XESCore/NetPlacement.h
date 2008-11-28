@@ -28,7 +28,7 @@
 #include "ProgressUtils.h"
 
 class	CDT;
-class	Pmwx;
+//class	Pmwx;
 struct	DEMGeo;
 
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, ProgressFunc inProg);

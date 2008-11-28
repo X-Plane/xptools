@@ -57,14 +57,14 @@ bool	InitOneTri(CDT::Face_handle face)
 {
 	if (!sCurrentMesh->is_infinite(face))
 	{
-		Point3	p1(sCurrentDEM->lon_to_x(face->vertex(0)->point().x()),
-				   sCurrentDEM->lat_to_y(face->vertex(0)->point().y()),
+		Point3	p1(sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(0)->point().x())),
+				   sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(0)->point().y())),
 				   face->vertex(0)->info().height);
-		Point3	p2(sCurrentDEM->lon_to_x(face->vertex(1)->point().x()),
-				   sCurrentDEM->lat_to_y(face->vertex(1)->point().y()),
+		Point3	p2(sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(1)->point().x())),
+				   sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(1)->point().y())),
 				   face->vertex(1)->info().height);
-		Point3	p3(sCurrentDEM->lon_to_x(face->vertex(2)->point().x()),
-				   sCurrentDEM->lat_to_y(face->vertex(2)->point().y()),
+		Point3	p3(sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(2)->point().x())),
+				   sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(2)->point().y())),
 				   face->vertex(2)->info().height);
 
 		Vector3	v1(p1, p2);
@@ -139,21 +139,42 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	}
 //	gMeshLines.clear();
 //	gMeshPoints.clear();
+	//fprintf(stderr, "%lf %lf, %lf %lf, %lf %lf\n", 
+	//		face->vertex(0)->point().x(), face->vertex(0)->point().y(), 
+	//		face->vertex(1)->point().x(), face->vertex(1)->point().y(), 
+	//		face->vertex(2)->point().x(), face->vertex(2)->point().y());
+	
+	Point2	p0( sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(0)->point().x())),
+			    sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(0)->point().y())));
+	Point2	p1( sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(1)->point().x())),
+			    sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(1)->point().y())));
+	Point2	p2( sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(2)->point().x())),
+			    sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(2)->point().y())));
 
-	Point2	p0(sCurrentDEM->lon_to_x(face->vertex(0)->point().x()),
-			   sCurrentDEM->lat_to_y(face->vertex(0)->point().y()));
-	Point2	p1(sCurrentDEM->lon_to_x(face->vertex(1)->point().x()),
-			   sCurrentDEM->lat_to_y(face->vertex(1)->point().y()));
-	Point2	p2(sCurrentDEM->lon_to_x(face->vertex(2)->point().x()),
-			   sCurrentDEM->lat_to_y(face->vertex(2)->point().y()));
-
+	if (p0.x() < 0 || p0.x() > sCurrentDEM->mWidth ||
+		p0.y() < 0 || p0.y() > sCurrentDEM->mHeight ||
+		p1.x() < 0 || p1.x() > sCurrentDEM->mWidth ||
+		p1.y() < 0 || p1.y() > sCurrentDEM->mHeight ||
+		p2.x() < 0 || p2.x() > sCurrentDEM->mWidth ||
+		p2.y() < 0 || p2.y() > sCurrentDEM->mHeight)
+	{
+		fprintf(stderr, "%lf %lf, %lf %lf, %lf %lf\n", 
+				CGAL::to_double(face->vertex(0)->point().x()), CGAL::to_double(face->vertex(0)->point().y()), 
+				CGAL::to_double(face->vertex(1)->point().x()), CGAL::to_double(face->vertex(1)->point().y()), 
+				CGAL::to_double(face->vertex(2)->point().x()), CGAL::to_double(face->vertex(2)->point().y()));
+		face->info().insert_err = 0.0;
+		return;
+	}
+	
+	
+			   
 	if (size_lim != 0.0)
 	{
-		double xmin = min(min(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
-		double xmax = max(max(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
-		double ymin = min(min(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
-		double ymax = max(max(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
-
+		double xmin = min(min(CGAL::to_double(face->vertex(0)->point().x()),CGAL::to_double(face->vertex(1)->point().x())),CGAL::to_double(face->vertex(2)->point().x()));
+		double xmax = max(max(CGAL::to_double(face->vertex(0)->point().x()),CGAL::to_double(face->vertex(1)->point().x())),CGAL::to_double(face->vertex(2)->point().x()));
+		double ymin = min(min(CGAL::to_double(face->vertex(0)->point().y()),CGAL::to_double(face->vertex(1)->point().y())),CGAL::to_double(face->vertex(2)->point().y()));
+		double ymax = max(max(CGAL::to_double(face->vertex(0)->point().y()),CGAL::to_double(face->vertex(1)->point().y())),CGAL::to_double(face->vertex(2)->point().y()));
+		
 		double xs = xmax - xmin;
 		double ys = ymax - ymin;
 
@@ -170,17 +191,17 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(2)->point().x(),face->vertex(2)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(2)->point().x(),face->vertex(2)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(0)->point().x(),face->vertex(0)->point().y()), Point3(1,0,0)));
-
-	if (p2.y < p1.y) swap(p1, p2);
-	if (p1.y < p0.y) swap(p1, p0);
-	if (p2.y < p1.y) swap(p1, p2);
-	DebugAssert(p0.y <= p1.y && p1.y <= p2.y);
+	
+	if (p2.y() < p1.y()) swap(p1, p2);
+	if (p1.y() < p0.y()) swap(p1, p0);
+	if (p2.y() < p1.y()) swap(p1, p2);
+	DebugAssert(p0.y() <= p1.y() && p1.y() <= p2.y());
 
 	float err = 0;
-
-	double	p0yc = ceil(p0.y);
-	double	p1yc = ceil(p1.y);
-	double	p2yc = ceil(p2.y);
+	
+	double	p0yc = ceil(p0.y());
+	double	p1yc = ceil(p1.y());
+	double	p2yc = ceil(p2.y());
 	int y0 = p0yc;
 	int y1 = p1yc;
 	int y2 = p2yc;
@@ -192,26 +213,26 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	double b = face->info().plane_b;
 	double c = face->info().plane_c;
 
-	x1 = x2 = p0.x;
+	x1 = x2 = p0.x();
 
-	DebugAssert(p0.y != p2.y);
+	DebugAssert(p0.y() != p2.y());
 
-	if (p0.y != p2.y)
-		dx2 = (p2.x - p0.x) / (p2.y - p0.y);
+	if (p0.y() != p2.y())
+		dx2 = (p2.x() - p0.x()) / (p2.y() - p0.y());		
 
 	int 	worst_x = 0, worst_y = 0;
 
-	double partial = p0yc-p0.y;
+	double partial = p0yc-p0.y();
 	x2 += dx2 * partial;
 
 	// SPECIAL CASE: if p1 and p2 are horizontal, there is no section 2 of the tri - it has a flat top.  Do NOT miss that top scanline!
 	// Basically use floor + 1 to INCLDE the top scanline if we have a perfect match.
-	if (p1.y == p2.y)
-		y1 = floor(p1.y)+1;
+	if (p1.y() == p2.y())
+		y1 = floor(p1.y())+1;
 
-	if (p0.y != p1.y)
+	if (p0.y() != p1.y())
 	{
-		dx1 = (p1.x - p0.x) / (p1.y - p0.y);
+		dx1 = (p1.x() - p0.x()) / (p1.y() - p0.y());
 		x1 += dx1 * partial;
 		for (y = y0; y < y1; ++y)
 		{
@@ -222,12 +243,12 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 			x2 += dx2;
 		}
 	}
-
-	if (p1.y != p2.y)
+	
+	if (p1.y() != p2.y())
 	{
-		dx1 = (p2.x - p1.x) / (p2.y - p1.y);
-		x1 = p1.x;
-		partial = p1yc-p1.y;
+		dx1 = (p2.x() - p1.x()) / (p2.y() - p1.y());
+		x1 = p1.x();
+		partial = p1yc-p1.y();
 		x1 += dx1 * partial;
 
 		for (y = y1; y < y2; ++y)
@@ -268,15 +289,17 @@ void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff, double size_lim)
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
 	sCurrentMesh = &inCDT;
-
-	for (CDT::Face_iterator face = inCDT.faces_begin(); face != inCDT.faces_end(); ++face)
+	
+	for (CDT::All_faces_iterator face = inCDT.all_faces_begin(); face != inCDT.all_faces_end(); ++face)
 	{
+		if (!sCurrentMesh->is_infinite(face)) {
 		face->info().flag = 0;
 		InitOneTri(face);
 		CalcOneTriError(face, size_lim);
 		if (face->info().insert_err > err_cutoff)
 		{
 			face->info().self = sBestChoices.insert(FaceQueue::value_type(face->info().insert_err, &*face));
+			}
 		}
 	}
 }
@@ -291,6 +314,7 @@ void	DoneMesh(void)
 
 void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
+	fprintf(stderr,"Building Mesh %lf %lf\n", err_lim, size_lim);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
 	InitMesh(inCDT, inAvail, err_lim, size_lim);
 
@@ -308,10 +332,10 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 		CDT::Face_handle	face_handle(CDT_Recover_Handle(the_face));
 
 		DebugAssert(!inCDT.is_infinite(face_handle));
-
-		CDT::Point p(inAvail.x_to_lon(the_face->info().insert_x),
-					  inAvail.y_to_lat(the_face->info().insert_y));
-
+		
+		CDT::Point p((double) inAvail.x_to_lon(the_face->info().insert_x),
+					  (double) inAvail.y_to_lat(the_face->info().insert_y));
+					  
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));

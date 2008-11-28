@@ -24,7 +24,7 @@
 #define DSFBUILDER_H
 
 #include "MeshDefs.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "DEMDefs.h"
 #include "ProgressUtils.h"
 

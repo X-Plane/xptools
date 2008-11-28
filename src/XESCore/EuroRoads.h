@@ -23,10 +23,10 @@
 
 #ifndef EUROROADS_H
 #define EUROROADS_H
-
+#include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
 
-class	Pmwx;
+//class	Pmwx;
 struct	DEMGeo;
 
 void	AddEuroRoads(

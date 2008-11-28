@@ -27,9 +27,9 @@
 #include "ProgressUtils.h"
 #include "Skeleton.h"
 #include "ObjPlacement.h"
-class 	Pmwx;
+#include "MapDefsCGAL.h"
 class 	CDT;
-class	GISFace;
+//class	GISFace;
 
 void GenerateForests(
 				Pmwx&					ioMap,

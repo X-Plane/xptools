@@ -600,20 +600,20 @@ static	float	GetSnowLine(float lat, float moisture)
 static float	GetRoadDensity(Pmwx::Halfedge_const_handle	he)
 {
 	float best = 0;
-	for (GISNetworkSegmentVector::const_iterator i = he->mSegments.begin(); i != he->mSegments.end(); ++i)
+	for (GISNetworkSegmentVector::const_iterator i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
 	{
 		best = max(best,gNetFeatures[i->mFeatType].density_factor);
 	}
 	return best;
 }
 
-static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point2& where)
+static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point_2& where)
 {
 	if (gFeatures.find(feature) == gFeatures.end()) return;
 	float p = gFeatures[feature].property_value;
 
 	int x, y;
-	float h = ioValues.xy_nearest(where.x,where.y,x,y);
+	float h = ioValues.xy_nearest(CGAL::to_double(where.x()),CGAL::to_double(where.y()),x,y);
 	if (h != DEM_NO_DATA)
 //		ioValues(x,y) = p;
 //	else
@@ -652,6 +652,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	int xp, yp;
 	float	max_road_density_vecs = 0.0;
 
+	fprintf(stderr, "BuildRoadDensityDEM");
 	for (yp = 0; yp < ioTransport.mHeight; ++yp)
 	for (xp = 0; xp < ioTransport.mWidth ; ++xp)
 		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_usgs_INLAND_WATER || ioTransport(xp, yp) == lu_usgs_SEA_WATER) ? 1.0 : 0.0;
@@ -679,13 +680,13 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	for (Pmwx::Halfedge_const_iterator iter = inMap.halfedges_begin();
 		iter != inMap.halfedges_end(); ++iter)
 	{
-		if (iter->mDominant && !iter->mSegments.empty())
+		if (iter->data().mDominant && !iter->data().mSegments.empty())
 		{
 			int tsx, tsy, tdx, tdy;
-			ioTransport.xy_nearest(iter->source()->point().x,iter->source()->point().y, tsx, tsy);
-			ioTransport.xy_nearest(iter->target()->point().x,iter->target()->point().y, tdx, tdy);
-
-			for (GISNetworkSegmentVector::const_iterator seg = iter->mSegments.begin(); seg != iter->mSegments.end(); ++seg)
+			ioTransport.xy_nearest(CGAL::to_double(iter->source()->point().x()),CGAL::to_double(iter->source()->point().y()), tsx, tsy);
+			ioTransport.xy_nearest(CGAL::to_double(iter->target()->point().x()),CGAL::to_double(iter->target()->point().y()), tdx, tdy);
+			
+			for (GISNetworkSegmentVector::const_iterator seg = iter->data().mSegments.begin(); seg != iter->data().mSegments.end(); ++seg)
 			{
 
 				switch(seg->mFeatType) {
@@ -715,6 +716,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 // Input: the land uses - output property values, normalized of course
 static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx& ioMap)
 {
+	fprintf(stderr, "\nCalcPropertyValues ");
 	int x, y;
 	for(x = 0; x < ioDem.mWidth ; ++x)
 	for(y = 0; y < ioDem.mHeight;++y)
@@ -730,32 +732,40 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 	CalculateFilter(7, filter, demFilter_Spread, true);		// Take basic prop values and splat them all over the place
 	CalculateFilter(3, filter2, demFilter_Spread, true);	// slight diffusion of feature values just for niceness.
 
+	
 	ioDem.filter_self(7, filter);
 
 	for (Pmwx::Face_const_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
 	{
 		if (face->is_unbounded()) continue;
-		for (GISPointFeatureVector::const_iterator f = face->mPointFeatures.begin(); f != face->mPointFeatures.end(); ++f)
+
+		for (GISPointFeatureVector::const_iterator f = face->data().mPointFeatures.begin(); f != face->data().mPointFeatures.end(); ++f)
 			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mLocation);
-		for (GISPolygonFeatureVector::const_iterator f = face->mPolygonFeatures.begin(); f != face->mPolygonFeatures.end(); ++f)
+
+
+		for (GISPolygonFeatureVector::const_iterator f = face->data().mPolygonFeatures.begin(); f != face->data().mPolygonFeatures.end(); ++f)
 		{
-			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());
+			//ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());			
 		}
-		if (face->mAreaFeature.mFeatType != NO_VALUE)
+
+		/*
+		if (face->data().mAreaFeature.begin()->mFeatType != NO_VALUE)
 		{
 			Pmwx::Ccb_halfedge_const_circulator i, s;
 			i = s = face->outer_ccb();
 			do {
-				ApplyFeatureAtPoint(ioDem, face->mAreaFeature.mFeatType, i->source()->point());
+				ApplyFeatureAtPoint(ioDem, face->data().mAreaFeature.begin()->mFeatType, i->source()->point());
 				++i;
 			} while (i != s);
-		}
+		}		
+		 */
 	}
 
 	ioDem.filter_self(3, filter2);
 
 }
 
+#if 0
 /*
  * RasterizePolyGreen
  *
@@ -766,10 +776,10 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 	Pmwx::Ccb_halfedge_const_circulator	iter, stop;
 	iter = stop = face->outer_ccb();
 	do {
-		double x1 = landuse.lon_to_x(iter->source()->point().x);
-		double y1 = landuse.lat_to_y(iter->source()->point().y);
-		double x2 = landuse.lon_to_x(iter->target()->point().x);
-		double y2 = landuse.lat_to_y(iter->target()->point().y);
+		double x1 = landuse.lon_to_x(iter->source()->point().x());
+		double y1 = landuse.lat_to_y(iter->source()->point().y());
+		double x2 = landuse.lon_to_x(iter->target()->point().x());
+		double y2 = landuse.lat_to_y(iter->target()->point().y());
 
 		if (y1 != y2)
 		{
@@ -785,10 +795,10 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 	{
 		iter = stop = *hole;
 		do {
-			double x1 = landuse.lon_to_x(iter->source()->point().x);
-			double y1 = landuse.lat_to_y(iter->source()->point().y);
-			double x2 = landuse.lon_to_x(iter->target()->point().x);
-			double y2 = landuse.lat_to_y(iter->target()->point().y);
+			double x1 = landuse.lon_to_x(iter->source()->point().x());
+			double y1 = landuse.lat_to_y(iter->source()->point().y());
+			double x2 = landuse.lon_to_x(iter->target()->point().x());
+			double y2 = landuse.lat_to_y(iter->target()->point().y());
 
 			if (y1 != y2)
 			{
@@ -823,6 +833,7 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
 	}
 
 }
+#endif
 
 #pragma mark -
 
@@ -1151,8 +1162,8 @@ void	DeriveDEMs(
 	for (AptPavementVector::iterator rwy = ioApts[*apt].pavements.begin(); rwy != ioApts[*apt].pavements.end(); ++rwy)
 	if (rwy->surf_code == apt_surf_asphalt || rwy->surf_code == apt_surf_concrete)
 	{
-		Point2 p = rwy->ends.midpoint();
-		float e = urbanTrans.xy_nearest(p.x, p.y, x, y);
+		POINT2 p = CGAL_midpoint(rwy->ends.source(), rwy->ends.target());
+		float e = urbanTrans.xy_nearest(CGAL2DOUBLE(p.x()), CGAL2DOUBLE(p.y()), x, y);
 		if (e != DEM_NO_DATA)
 			urbanTrans(x,y) = 1.0;
 

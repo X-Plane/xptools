@@ -23,18 +23,33 @@
 #ifndef MESHDEFS_H
 #define MESHDEFS_H
 
+#define CGAL_NO_PRECONDITIONS
+#ifndef NDEBUG
+#define NDEBUG
+#endif
+
 #include "ParamDefs.h"
 #include "DEMDefs.h"
 
-class GISFace;
+//class GISFace;
 
 #include <CGAL/Simple_cartesian.h>
+#include <CGAL/Filtered_kernel.h>
+
+// make sure our kernel types match
+
+#include "MapDefsCGAL.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
+#include <CGAL/assertions.h>
+#include <CGAL/intersections.h>
 
-typedef	CGAL::Simple_cartesian<double>						FastKernel;
+
+//typedef	CGAL::Simple_cartesian<double>	                BaseKernel;
+
+//typedef CGAL::Filtered_kernel<BaseKernel> 					FastKernel;
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 
@@ -97,7 +112,7 @@ struct	MeshFaceInfo {
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
 
-	const GISFace *	orig_face;				// If a face caused us to get the terrain we did, this is who!
+	Face_handle		orig_face;				// If a face caused us to get the terrain we did, this is who!
 
 	FaceQueue::iterator	self;					// Queue ref to self!
 
@@ -110,14 +125,15 @@ struct	MeshFaceInfo {
 	float			debug_heading;
 };
 
-typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, FastKernel>		Vb;
-typedef CGAL::Triangulation_face_base_with_info_2<MeshFaceInfo, FastKernel>			Fbi;
+typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, Traits_2>		Vb;
+typedef CGAL::Triangulation_face_base_with_info_2<MeshFaceInfo, Traits_2>			Fbi;
 
 
-typedef	CGAL::Constrained_triangulation_face_base_2<FastKernel, Fbi>				Fb;
+typedef	CGAL::Constrained_triangulation_face_base_2<Traits_2, Fbi>				Fb;
 typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>								TDS;
 
-typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
+//typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
+typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::Exact_predicates_tag>	CDTBase;
 
 class CDT : public CDTBase {
 public:
@@ -137,7 +153,7 @@ public:
 	// We do the locate, check for this case, and try to manually find an edge
 	// we're on.  If we do, we fix up the locate info and procede safely.  If not
 	// we assert - we would have done that anyway.
-#if DEV
+#if 1
 	Vertex_handle	safe_insert(const Point& p, Face_handle hint);
 #else
 	Vertex_handle	safe_insert(const Point& p, Face_handle hint)
@@ -191,7 +207,7 @@ private:
 
 };
 
-#define CONVERT_POINT(__X)	(CDT::Point((__X).x,(__X).y))
+#define CONVERT_POINT(__X)	(CDT::Point((__X).x(),(__X).y()))
 
 #endif
 

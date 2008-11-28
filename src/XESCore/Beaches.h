@@ -24,7 +24,7 @@
 #ifndef BEACHES_H
 #define BEACHES_H
 
-class	Pmwx;
+//class	Pmwx;
 
 void	CreateBeaches(Pmwx& ioMap);
 

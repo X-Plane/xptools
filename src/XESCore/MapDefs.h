@@ -20,6 +20,14 @@
  * THE SOFTWARE.
  *
  */
+
+#include "MapDefsCGAL.h"
+
+
+// be a bit brutal here
+#define MAPDEFS_H
+
+
 #ifndef MAPDEFS_H
 #define MAPDEFS_H
 

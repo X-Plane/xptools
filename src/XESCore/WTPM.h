@@ -70,7 +70,7 @@
 
 #include <vector>
 #include "CompGeomDefs2.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 
 extern	int gWTPMErrors;
 
@@ -94,8 +94,8 @@ struct	WTPM_Node {
 // Calculated by WTPMCreateBackLinks, sorted by WTPM_RestoreTopology
 	WTPM_DirectedLineVector	lines;
 // Added by WTPM_ExportToMap
-	GISVertex *				pm_vertex;
-
+	DVertex *				pm_vertex;
+	
 };
 
 struct	WTPM_Line {
@@ -111,7 +111,7 @@ struct	WTPM_Line {
 //	WTPM_DirectedLinePtr	prevLeft;
 //	WTPM_DirectedLinePtr	prevRight;
 // Added by WTPM_ExportToMap
-	typedef vector<GISHalfedge *>					HalfedgeVector;
+	typedef vector<DHalfedge *>						HalfedgeVector;
 	typedef	pair<HalfedgeVector, HalfedgeVector>	EdgePair;
 	EdgePair				pm_edges;
 };
@@ -126,7 +126,7 @@ struct WTPM_Face {
 	WTPM_LinePtr			outerRing;
 	WTPM_LineVector			innerRings;
 // Added by WTPM_ExportToMap
-	GISFace *				pm_face;
+	DFace *					pm_face;
 };
 
 typedef	vector<WTPM_Node *>		WTPM_NodeVector;

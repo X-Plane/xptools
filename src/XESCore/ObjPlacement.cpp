@@ -22,9 +22,10 @@
  */
 #include "ObjPlacement.h"
 #include "MeshDefs.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "AssertUtils.h"
 #include "ParamDefs.h"
+#include <CGAL/centroid.h>
 #include "MapAlgs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
@@ -36,14 +37,10 @@
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XESConstants.h"
+#include "MapAlgsCGAL.h"
+#include "MapPolygon.h"
+#include "MapBuffer.h"
 
-#define SKELETON_ITERATIONS 1000
-
-#define DEBUG_PLACEMENT 0
-
-#if DEBUG_PLACEMENT
-#include "WED_Selection.h"
-#endif
 
 #if BENTODO
 	um, we should have a better tool than OPENGL_MAP
@@ -211,9 +208,9 @@ static	void	RotateAndOffset(Polygon2& ioPolygon, const Vector2& offset, float he
 	for (Polygon2::iterator i = ioPolygon.begin(); i != ioPolygon.end(); ++i)
 	{
 		Point2	p;
-
-		p.y = i->y * cosv - i->x * sinv;
-		p.x = i->x * cosv + i->y * sinv;
+		
+		p.y_ = i->y() * cosv - i->x() * sinv;
+		p.x_ = i->x() * cosv + i->y() * sinv;
 		p += offset;
 		(*i) = p;
 	}
@@ -222,7 +219,8 @@ static	void	RotateAndOffset(Polygon2& ioPolygon, const Vector2& offset, float he
 // Given a poly obj, try to detect that it's gone wrong.
 static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 {
-	vector<Polygon2>	poly(inPlacement.mShape);
+#if 0
+	vector<Polygon_with_holes_2>	poly(inPlacement.mShape);
 	CoordTranslator		trans;
 	CreateTranslatorForPolygon(poly[0], trans);
 	for (int n = 0; n < poly[0].size(); ++n)
@@ -246,7 +244,7 @@ static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 		printf("Rejecting polygon - side longer than 1 km.\n");
 		return false;
 	}
-
+#endif
 	return true;
 }
 
@@ -295,17 +293,17 @@ static int	WidestRoadTypeForSegment(const GISNetworkSegmentVector& v)
 
 // This primitive tells us if a given two edges are effectively one edge - basically
 // we're trying to ignore near-colllinear edges for subdivision
-static bool	CanSkipSegment(GISHalfedge * prev, GISHalfedge * edge)
+static bool	CanSkipSegment(Halfedge_handle prev, Halfedge_handle edge)
 {
-	GISHalfedge * edge_d = edge->mDominant ? edge : edge->twin();
-	GISHalfedge * prev_d = prev->mDominant ? prev : prev->twin();
-	if (WidestRoadTypeForSegment(edge_d->mSegments) != WidestRoadTypeForSegment(prev_d->mSegments))
+	Halfedge_handle edge_d;
+	Halfedge_handle prev_d;
+	if (edge->data().mDominant) edge_d = edge; else edge_d = edge->twin();
+	if (edge->data().mDominant) prev_d = prev; else prev_d = prev->twin();
+	if (WidestRoadTypeForSegment(edge_d->data().mSegments) != WidestRoadTypeForSegment(prev_d->data().mSegments))
 		return false;
-	Vector2	v1(edge->source()->point(), edge->target()->point());
-	Vector2	v2(prev->source()->point(), prev->target()->point());
-	v1.normalize();
-	v2.normalize();
-	return (v1.dot(v2) > 0.99);
+	Vector_2	v1(edge->source()->point(), edge->target()->point());
+	Vector_2	v2(prev->source()->point(), prev->target()->point());
+	return (normalize(v1) * normalize(v2) > 0.99);
 }
 
 // Given an objct type, build a polygon for it.
@@ -323,41 +321,48 @@ static bool FetchObjectBoundaryByRep(int tp, Polygon2 * outPoly, float scale, fl
 	width *= 0.5;
 	depth *= 0.5;
 	outPoly->resize(4);
-	(*outPoly)[0].x = -width;	(*outPoly)[0].y = -depth;
-	(*outPoly)[1].x = -width;	(*outPoly)[1].y =  depth;
-	(*outPoly)[2].x =  width;	(*outPoly)[2].y =  depth;
-	(*outPoly)[3].x =  width;	(*outPoly)[3].y = -depth;
+	(*outPoly)[0].x_ = -width;	(*outPoly)[0].y_ = -depth;
+	(*outPoly)[1].x_ = -width;	(*outPoly)[1].y_ =  depth;
+	(*outPoly)[2].x_ =  width;	(*outPoly)[2].y_ =  depth;
+	(*outPoly)[3].x_ =  width;	(*outPoly)[3].y_ = -depth;
 	return true;
 }
 
 // Given an arbitrary quad, determine the largest rectangular lot fitted to the front face.
-static void	GetLotDimensions(const Point2& p0, const Point2& p1, const Point2& p2, const Point2& p3, float * outWidth, float * outDepth)
+static void	GetLotDimensions(const Point_2& p0, const Point_2& p1, const Point_2& p2, const Point_2& p3, float * outWidth, float * outDepth)
 {
 	// Form vectors along the front (in both dirs) and sides.
-	Vector2	v01(p0, p1);
-	Vector2	v10(p1, p0);
-	Vector2	v12(p1, p2);
-	Vector2	v03(p0, p3);
-
+	Vector_2	v01(p0, p1);
+	Vector_2	v10(p1, p0);
+	Vector_2	v12(p1, p2);
+	Vector_2	v03(p0, p3);
+	
 	// If the quad opens away from us, the front side limits our side.
-	Point2	lim0 = p0;
-	Point2	lim1 = p1;
+	Point_2	lim0 = p0;
+	Point_2	lim1 = p1;
 	// But if the sides move in, we project our back onto the front to figure out how 'squeezed' we are due to the back.,
 	// NOTE this is not perfect - the farthest back corner doesn't totally pinch us.
-	if (v01.dot(v03) > 0.0)		lim0 = p0 + v01.projection(v03);
-	if (v10.dot(v12) > 0.0)		lim1 = p1 + v10.projection(v12);
-
-	*outWidth = sqrt(Segment2(lim0, lim1).squared_length());
-
+	if (CGAL::to_double(v01 * v03) > 0.0) lim0 = Line_2(p0, v01).projection(p3);
+	if (CGAL::to_double(v10 * v12) > 0.0) lim0 = Line_2(p1, v10).projection(p2);
+				
+	//if (CGAL::to_double(v01 * v03) > 0.0)		lim0 = p0 + v01.projection(v03);
+	//if (CGAL::to_double(v10 * v12) > 0.0)		lim1 = p1 + v10.projection(v12);
+	
+	*outWidth = sqrt(CGAL::to_double(Segment_2(lim0, lim1).squared_length()));
+	
 	// Also project sides onto a vector towards the back...the closer one limits us.
-	Vector2	perp = v01.perpendicular_cw();
-
-	Point2	lim2 = p1 + perp.projection(v12);
-	Point2	lim3 = p0 + perp.projection(v03);
-
-	float d1 = Segment2(p0, lim3).squared_length();
-	float d2 = Segment2(p1, lim2).squared_length();
-	*outDepth = sqrt(min(d1, d2));
+	Vector_2	perp = v01.perpendicular(CGAL::CLOCKWISE);
+	
+	// Is this right?
+	// lim2 is the projection of p2 on the line perpendicular to (p0, p1) through p1
+	Point_2 lim2 = Line_2(p1, perp).projection(p2);
+	Point_2 lim3 = Line_2(p0, perp).projection(p3);
+	//Point_2	lim2 = p1 + perp.projection(v12);
+	//Point_2	lim3 = p0 + perp.projection(v03);
+	
+	double d1 = CGAL::to_double(Segment_2(p0, lim3).squared_length());
+	double d2 = CGAL::to_double(Segment_2(p1, lim2).squared_length());
+	*outDepth = sqrt(min(d1, d2));	
 }
 
 void FindSlopeLimits(float normal[3], double heading_dx, double heading_dy, double max_err_up, double max_err_down, double& max_width_slope, double& max_depth_slope)
@@ -377,17 +382,17 @@ void FindSlopeLimits(float normal[3], double heading_dx, double heading_dy, doub
 
 }
 
-bool VerticalOkay(vector<Polygon2>& bounds, const Point2& p, CoordTranslator& trans, const DEMGeo& ele)
+bool VerticalOkay(vector<Polygon2>& bounds, const Point2& p, CoordTranslator2& trans, const DEMGeo& ele)
 {
-	float mstr = ele.value_linear(p.x, p.y);
+	float mstr = ele.value_linear(p.x(), p.y());
 	Point2 p1 = trans.Reverse(bounds[0][0]);
 	Point2 p2 = trans.Reverse(bounds[0][1]);
 	Point2 p3 = trans.Reverse(bounds[0][2]);
 	Point2 p4 = trans.Reverse(bounds[0][3]);
-	float e1 = ele.value_linear(p1.x,p1.y);
-	float e2 = ele.value_linear(p2.x,p2.y);
-	float e3 = ele.value_linear(p3.x,p3.y);
-	float e4 = ele.value_linear(p4.x,p4.y);
+	float e1 = ele.value_linear(p1.x(),p1.y());
+	float e2 = ele.value_linear(p2.x(),p2.y());
+	float e3 = ele.value_linear(p3.x(),p3.y());
+	float e4 = ele.value_linear(p4.x(),p4.y());
 	float mi = min(min(e1,e2),min(e3,e4));
 	float ma = max(max(e1,e2),max(e3,e4));
 	mi = min(mi, mstr);
@@ -428,26 +433,26 @@ int highest_prio_tri(const CDT::Face_handle& tri)
  * size of the lot.
  *
  */
-bool	CanUseSubdivision(GISFace * inFace)
+bool	CanUseSubdivision(Face_handle inFace)
 {
 	if (inFace->is_unbounded()) return false;
 	if (inFace->holes_begin() != inFace->holes_end()) return false;
-	if (!inFace->mObjs.empty()) return false;
-	if (!inFace->mPolyObjs.empty()) return false;
-
-
-	/* Check for 4 sides. */
+	if (!inFace->data().mObjs.empty()) return false;
+	if (!inFace->data().mPolyObjs.empty()) return false;
+	
+	
+	/* Check for 4 sides. */	
 	Pmwx::Ccb_halfedge_circulator prev, stop, iter;
 	stop = iter = inFace->outer_ccb();
 	int count = 0;
-	Polygon2	outer(4);
+	Polygon_2	outer;
 	do {
 		prev = iter;
 		++iter;
 		if (!CanSkipSegment(prev, iter))
 		{
 			if (count >= 4) return false;
-			outer[count] = iter->source()->point();
+			outer.push_back(iter->source()->point());
 			++count;
 		}
 	} while (stop != iter);
@@ -455,15 +460,15 @@ bool	CanUseSubdivision(GISFace * inFace)
 
 	/* Calculate side dimensions. */
 	double lens[4];
-	double	LON_FACTOR = cos(iter->source()->point().y * DEG_TO_RAD);
+	double	LON_FACTOR = cos(CGAL::to_double(iter->source()->point().y()) * DEG_TO_RAD);
 	double	DEG_TO_MTR_LON = DEG_TO_MTR_LAT * LON_FACTOR ;
 	for (int n = 0; n < 4; ++n)
 	{
-		double	x1 = outer[n].x;
-		double	y1 = outer[n].y;
-		double	x2 = outer[(n+1)%4].x;
-		double	y2 = outer[(n+1)%4].y;
-
+		double	x1 = CGAL::to_double(outer[n].x());
+		double	y1 = CGAL::to_double(outer[n].y());
+		double	x2 = CGAL::to_double(outer[(n+1)%4].x());
+		double	y2 = CGAL::to_double(outer[(n+1)%4].y());
+		
 		lens[n] = (LonLatDistMetersWithScale(x1, y1, x2, y2, DEG_TO_MTR_LON, DEG_TO_MTR_LAT));
 	}
 
@@ -485,7 +490,7 @@ bool	CanUseSubdivision(GISFace * inFace)
 		lens[p3] > MINOR_LEN_MAX) return false;
 
 	/* Check shape */
-	if (!outer.convex()) return false;
+	if (!outer.is_convex()) return false;
 //	if (outer.area() < MIN_LOT_SIZE) return false;	// AREA IS NOT IN LOCAL COORDINATES?!?!!
 
 	/* Make sure we can encode every  feature as a facade (we need to fix this). */
@@ -502,10 +507,10 @@ bool	CanUseSubdivision(GISFace * inFace)
  * Given a lot attempet to stick something on it, return true if we populate it.
  *
  */
-bool	ProcessOneLot(
-					GISFace *		 		owner, 			// The owner of this lot
-					CoordTranslator& 		coords,			// A coord translator frmo lat/lon to meters
-					const Polygon2&			lot,			// The lot, four-sided
+bool	ProcessOneLot(	
+					Face_handle		 		owner, 			// The owner of this lot
+					CoordTranslator_2& 		coords,			// A coord translator frmo lat/lon to meters
+					const Polygon_2&			lot,			// The lot, four-sided
 					const float *			densities,		// density of each side
 					bool					leaf,			// Is this beyond the subdivision point?
 					const DEMGeoMap& 		dems,
@@ -524,7 +529,7 @@ bool	ProcessOneLot(
 
 	/* Fetch all parameters needed to do the population operation. */
 	for (i = 0; i < 4; ++i)
-		sidelens[i] = sqrt(lot.side(i).squared_length());
+		sidelens[i] = sqrt(CGAL::to_double(lot.edge(i).squared_length()));
 	min_side = max_side = sidelens[0];
 
 	for (i = 1; i < 4; ++i)
@@ -533,15 +538,15 @@ bool	ProcessOneLot(
 		min_side = min(min_side, sidelens[i]);
 		max_side = max(max_side, sidelens[i]);
 	}
-
-	Point2	centroid = coords.Reverse(lot.centroid());
+	
+	Point_2	cent = coords.Reverse(CGAL::centroid(lot.vertices_begin(), lot.vertices_end()));
 
 	int	terrain = NO_VALUE;
 
 	static int hint_id = CDT::gen_cache_key();
 	CDT::Locate_type lt;
 	CDT::Face_handle recent = NULL;
-	recent = mesh.locate_cache(CDT::Point(centroid.x,centroid.y), lt, i, hint_id);
+	recent = mesh.locate_cache(cent, lt, i, hint_id);
 	if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 	{
 		terrain = highest_prio_tri(recent);
@@ -571,11 +576,11 @@ bool	ProcessOneLot(
 	/* Look for any features that might be in the area.  We need this to populate features! */
 	int	features_in_area = 0;
 	GISPointFeature_t * the_feature = NULL;
-	for (GISPointFeatureVector::iterator feat = owner->mPointFeatures.begin(); feat != owner->mPointFeatures.end(); ++feat)
+	for (GISPointFeatureVector::iterator feat = owner->data().mPointFeatures.begin(); feat != owner->data().mPointFeatures.end(); ++feat)
 	if (IsWellKnownFeature(feat->mFeatType))
 	{
-		Point2	local = coords.Forward(feat->mLocation);
-		if (lot.inside(local))
+		Point_2	local = coords.Forward(feat->mLocation);
+		if (lot.bounded_side(local) != CGAL::ON_UNBOUNDED_SIDE) 
 		{
 			++features_in_area;
 			the_feature = &*feat;
@@ -597,8 +602,8 @@ bool	ProcessOneLot(
 	if (required_agl != -1)
 		height_max = required_agl;
 	else {
-		if (owner->mParams.count(af_Height))
-			height_max = owner->mParams[af_Height];
+		if (owner->data().mParams.count(af_Height))
+			height_max = owner->data().mParams[af_Height];
 		else
 			height_max = 0.0;
 	}
@@ -619,21 +624,20 @@ bool	ProcessOneLot(
 								&query, 1);
 
 		if (choices)
-		{
-			Polygon2	facade;
-			InsetPolygon2(lot, NULL, RandRange(2.0,4.0), true, facade, NULL, NULL);
+		{			
+			Polygon_2	facade;
+			InsetPolygon_2(lot, NULL, RandRange(2.0,4.0), true, facade, NULL, NULL);
 			GISPolyObjPlacement_t	place;
-			place.mShape.push_back(Polygon2());
 			for (i = 0; i < facade.size(); ++i)
 			{
-				place.mShape.back().push_back(coords.Reverse(facade[i]));
+				place.mShape.outer_boundary().push_back(coords.Reverse(facade[i]));
 			}
 			place.mRepType = gRepTable[query].obj_name;
-			place.mLocation = place.mShape[0].centroid();
+			place.mLocation = CGAL::centroid(place.mShape.outer_boundary().vertices_begin(),place.mShape.outer_boundary().vertices_end());
 			place.mHeight = (required_agl == -1) ? RandRange(gRepTable[query].height_min, gRepTable[query].height_max) : required_agl;
 			place.mDerived = require_feat != NO_VALUE;
 			if (SanityCheck(place))
-				owner->mPolyObjs.push_back(place);
+				owner->data().mPolyObjs.push_back(place);
 
 			IncrementRepUsage(gRepTable[query].obj_name);
 			return true;
@@ -653,9 +657,9 @@ bool	ProcessOneLot(
 				lot[(s+2)%4],
 				lot[(s+3)%4],
 				&width, &depth);
-
-		float area = lot.area();
-
+		
+		double area = CGAL::to_double(lot.area());
+		
 		choices = QueryUsableObjsBySize(			// This is object placement for subdivision
 								require_feat,		// whether we have a feature or not.
 								terrain,
@@ -671,13 +675,13 @@ bool	ProcessOneLot(
 			{
 				GISObjPlacement_t	obj;
 				obj.mRepType = gRepTable[query].obj_name;
-				obj.mLocation = centroid;
-				Vector2	facing(lot[s],lot[(s+1)%4]);
-				facing.normalize();
-				facing = facing.perpendicular_cw();
-				obj.mHeading = atan2(facing.dx, facing.dy) * RAD_TO_DEG;
+				obj.mLocation = cent;
+				Vector_2	facing(lot[s],lot[(s+1)%4]);
+				facing = normalize(facing);
+				facing = facing.perpendicular(CGAL::CLOCKWISE);
+				obj.mHeading = atan2(CGAL::to_double(facing.x()), CGAL::to_double(facing.y())) * RAD_TO_DEG;
 				obj.mDerived = require_feat != NO_VALUE;
-				owner->mObjs.push_back(obj);
+				owner->data().mObjs.push_back(obj);
 				IncrementRepUsage(gRepTable[query].obj_name);
 				return true;
 			}
@@ -707,14 +711,14 @@ bool	ProcessOneLot(
  *
  */
 bool	ProcessLotRecursive(
-					GISFace *		 		owner, 			// The owner of this lot
-					CoordTranslator& 		coords,			// A coord translator frmo lat/lon to meters
-					const Polygon2&			lot,			// The lot, four-sided
+					Face_handle		 		owner, 			// The owner of this lot
+					CoordTranslator_2& 		coords,			// A coord translator frmo lat/lon to meters
+					const Polygon_2&			lot,			// The lot, four-sided
 					const float *			densities,
 					const DEMGeoMap&		dems,
 					const CDT&				mesh)
 {
-	double	lot_size = lot.area();
+	double	lot_size = CGAL::to_double(lot.area());
 	bool	is_leaf = lot_size < MIN_LOT_SIZE;
 	if (ProcessOneLot(owner,coords,lot,densities,is_leaf, dems, mesh))
 		return true;
@@ -722,7 +726,15 @@ bool	ProcessLotRecursive(
 	if (!is_leaf)
 	{
 		// Create a numbering system where the longest side starts at "p0".
-		int p0 = lot.longest_side();
+		int p0, i;
+		FastKernel::FT m(0.0), l(0.0);
+		for (i = 0; i < 4; i++) {
+			l = lot.edge(p0).squared_length();
+			if (l>m) {
+				m=l;
+				p0=i;
+			}
+		}
 		int p1 = (p0 + 1) % 4;
 		int p2 = (p0 + 2) % 4;
 		int p3 = (p0 + 3) % 4;
@@ -730,19 +742,19 @@ bool	ProcessLotRecursive(
 		// We are going to form two quads.  The first one will start just after the cut point on
 		// the longest side.  the second will start just after the cut on the side opposite the
 		// longest side.
-		Polygon2		sub1(4), sub2(4);
+		Polygon_2		sub1, sub2;
 		float			dense1[4], dense2[4];
-		Point2 cut1 = lot.side(p0).midpoint();
-		Point2 cut2 = lot.side(p2).midpoint();
-		sub1[0] = cut1;			dense1[0] = densities[p0];
-		sub1[1] = lot[p1];		dense1[1] = densities[p1];
-		sub1[2] = lot[p2];		dense1[2] = densities[p2];
-		sub1[3] = cut2;			dense1[3] = 0.0;
-		sub2[0] = cut2;			dense2[0] = densities[p2];
-		sub2[1] = lot[p3];		dense2[1] = densities[p3];
-		sub2[2] = lot[p0];		dense2[2] = densities[p0];
-		sub2[3] = cut1;			dense2[3] = 0.0;
-
+		Point_2 cut1 = CGAL::midpoint(lot.edge(p0).source(),lot.edge(p0).target());
+		Point_2 cut2 = CGAL::midpoint(lot.edge(p2).source(),lot.edge(p2).target());
+		sub1.push_back(cut1);			dense1[0] = densities[p0];
+		sub1.push_back(lot[p1]);		dense1[1] = densities[p1];
+		sub1.push_back(lot[p2]);		dense1[2] = densities[p2];
+		sub1.push_back(cut2);			dense1[3] = 0.0;
+		sub2.push_back(cut2);			dense2[0] = densities[p2];
+		sub2.push_back(lot[p3]);		dense2[1] = densities[p3];
+		sub2.push_back(lot[p0]);		dense2[2] = densities[p0];
+		sub2.push_back(cut1);			dense2[3] = 0.0;
+		
 		bool ok1 = ProcessLotRecursive(owner, coords, sub1, dense1, dems, mesh);
 		bool ok2 = ProcessLotRecursive(owner, coords, sub2, dense2, dems, mesh);
 		return ok1 && ok2;
@@ -759,24 +771,22 @@ bool	ProcessLotRecursive(
  *
  */
 bool	SubdivideFace(
-							GISFace *		 	inFace,
+							Face_handle		 	inFace, 
 							const DEMGeoMap& 	inDEMs,
 							const CDT&			inMesh)
 {
-		Polygon2 						perimeter(4);
-		Polygon2 						perimeter_inset;
-		CoordTranslator					translator;
+		Polygon_2 						perimeter;
+		Polygon_2 						perimeter_inset;
+		CoordTranslator_2					translator;
 		int								road_types[4];
 		double							road_widths[4];
 		float							road_densities[4];
 		Pmwx::Ccb_halfedge_circulator	prev, iter, stop;
 
-	// First we need to work out the extent of our face and set up coordinates
-	translator.mSrcMin.x =  180.0;
-	translator.mSrcMin.y =   90.0;
-	translator.mSrcMax.x = -180.0;
-	translator.mSrcMax.y =  -90.0;
-
+	// First we need to work out the extent of our face and set up coordinates	
+	translator.mSrcMin =  Point_2(180.0, 90.0);
+	translator.mSrcMax = Point_2(-180.0, -90.0);
+	
 	iter = stop = inFace->outer_ccb();
 	int n = 0;
 	do {
@@ -785,38 +795,36 @@ bool	SubdivideFace(
 		if (!CanSkipSegment(prev, iter))
 		{
 			DebugAssert(n < 4);
-			perimeter[n].x = iter->source()->point().x;
-			perimeter[n].y = iter->source()->point().y;
-			translator.mSrcMin.x = min(translator.mSrcMin.x, perimeter[n].x);
-			translator.mSrcMax.x = max(translator.mSrcMax.x, perimeter[n].x);
-			translator.mSrcMin.y = min(translator.mSrcMin.y, perimeter[n].y);
-			translator.mSrcMax.y = max(translator.mSrcMax.y, perimeter[n].y);
+			perimeter.push_back(iter->source()->point());
+			translator.mSrcMin = Point_2(min(CGAL::to_double(translator.mSrcMin.x()), CGAL::to_double(perimeter[n].x())), min(CGAL::to_double(translator.mSrcMin.y()), CGAL::to_double(perimeter[n].y())));
+			translator.mSrcMax = Point_2(max(CGAL::to_double(translator.mSrcMax.x()), CGAL::to_double(perimeter[n].x())), max(CGAL::to_double(translator.mSrcMax.y()), CGAL::to_double(perimeter[n].y())));
 			Pmwx::Halfedge_handle he = iter;
-			if (!he->mDominant) he = he->twin();
-			road_types[n] = WidestRoadTypeForSegment(he->mSegments);
+			if (!he->data().mDominant) he = he->twin();
+			road_types[n] = WidestRoadTypeForSegment(he->data().mSegments);
 			++n;
 		}
 	} while (iter != stop);
 
-	translator.mDstMin.x = 0;
-	translator.mDstMin.y = 0;
-	translator.mDstMax.x = (translator.mSrcMax.x - translator.mSrcMin.x) * DEG_TO_MTR_LAT * cos((translator.mSrcMin.y + translator.mSrcMax.y) * 0.5 * DEG_TO_RAD);
-	translator.mDstMax.y = (translator.mSrcMax.y - translator.mSrcMin.y) * DEG_TO_MTR_LAT;
-
+	translator.mDstMin = Point_2(0, 0);
+	translator.mDstMax = Point_2(CGAL::to_double(translator.mSrcMax.x() - translator.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(CGAL::to_double(translator.mSrcMin.y() + translator.mSrcMax.y()) * 0.5 * DEG_TO_RAD), 
+								 CGAL::to_double(translator.mSrcMax.y() - translator.mSrcMin.y()) * DEG_TO_MTR_LAT);
+	
 	// Translate the face and work out densities.
+	for(Polygon_2::Vertex_iterator v = perimeter.vertices_begin(); v != perimeter.vertices_end(); ++v)
+//	for (n = 0; n < 4; ++n)
+//	{
+	*v = translator.Forward(*v);
+//		perimeter[n] = translator.Forward(perimeter[n]);
+//	}
 	for (n = 0; n < 4; ++n)
 	{
-		perimeter[n] = translator.Forward(perimeter[n]);
-	}
-	for (n = 0; n < 4; ++n)
-	{
-		Point2	middle = translator.Reverse(perimeter.side(n).midpoint());
+		Point_2	middle = translator.Reverse(CGAL::midpoint(perimeter.edge(n).source(), perimeter.edge(n).target()));
 		road_widths[n] = (gNetEntities[road_types[n]].width)+2.0 + (gNetEntities[road_types[n]].pad);
 		road_densities[n] = gNetEntities[road_types[n]].building_percent;
 	}
 
 	// Inset by the road width.
-	InsetPolygon2(perimeter, road_widths, 0.5, true, perimeter_inset, NULL, NULL);
+	InsetPolygon_2(perimeter, road_widths, 0.5, true, perimeter_inset, NULL, NULL);
 	if (perimeter_inset.size() != 4) return false;
 
 	ProcessLotRecursive(inFace, translator, perimeter_inset, road_densities, inDEMs, inMesh);
@@ -839,12 +847,12 @@ bool	SubdivideFace(
 #pragma mark -
 
 void	InstantiateGTPolygon(
-							GISFace *				inFace,
-							const ComplexPolygon2&	inBounds,
-							const DEMGeoMap& 		dems,
-							const CDT&				mesh)
+							Face_handle					inFace,
+							const Polygon_with_holes_2&	inBounds,
+							const DEMGeoMap&			dems,
+							const CDT&					mesh)
 {
-	if (inBounds.empty())	return;
+	if (inBounds.outer_boundary().is_empty())	return;
 	/******************************************************************************************************************
 	 * ATTEMPT SUBDIVISION
 	 ******************************************************************************************************************/
@@ -860,8 +868,10 @@ void	InstantiateGTPolygon(
 	 * SETUP
 	 ******************************************************************************************************************/
 
-		ComplexPolygon2			local(inBounds), inner;
-
+		vector<Polygon2>				local;
+		vector<Polygon2>				inner;
+		cgal2ben(inBounds, local);
+		
 //		Polygon2				border;						// Our border in geo
 //		vector<Polygon2>		shape, local, inner;		// Our rings in geo, local, local w/roads
 //		vector<vector<int> >	roadTypes;					// road types for each ring
@@ -869,7 +879,7 @@ void	InstantiateGTPolygon(
 //		vector<vector<double> >	roadDensities;				// urban density per side
 		int						i, j;
 //		bool					no_road_placement = false;									// Repress road placement of objects
-		bool					no_poly_gen = inBounds.size() > 1;
+		bool					no_poly_gen = inBounds.number_of_holes() > 0;
 		float					shortest_seg = 9e9;
 		float					longest_seg = 0.0;
 		static int				hint_id = CDT::gen_cache_key();
@@ -881,89 +891,89 @@ void	InstantiateGTPolygon(
 		const DEMGeo&	radial_dem(dems[dem_UrbanRadial]);
 	// TODO - fix this
 	float poly_area = GetMapFaceAreaMeters(inFace);
-	Point2	centroid = inBounds[0].centroid();
+	Point2	centroid = cgal2ben(CGAL::centroid(inBounds.outer_boundary().vertices_begin(),inBounds.outer_boundary().vertices_end()));
 	float master_heading = RandRange(0, 360);
 
 	// First, compute our outer boundary and general area.
-
 	Bbox2			uber_bounds(dems[dem_Elevation].mWest,dems[dem_Elevation].mSouth,dems[dem_Elevation].mEast,dems[dem_Elevation].mNorth);
-	Bbox2			geo_bounds(inBounds.front().bounds());
-	CoordTranslator	mapping;
-	mapping.mSrcMin = geo_bounds.p1;
-	mapping.mSrcMax = geo_bounds.p2;
-
-	if (geo_bounds.p1.x == geo_bounds.p2.x ||
-		geo_bounds.p1.y == geo_bounds.p2.y) return;
-
-
+	Bbox2			geo_bounds(local.front().bounds());
+	CoordTranslator2	mapping;
+	mapping.mSrcMin = Point2(geo_bounds.xmin(),geo_bounds.ymin());
+	mapping.mSrcMax = Point2(geo_bounds.xmax(),geo_bounds.ymax());
+		
+	if (geo_bounds.xmin() == geo_bounds.xmax() ||
+		geo_bounds.ymin() == geo_bounds.ymax()) return;
+		
+		
 	float	scale = IDEAL_SCALE;	// Meters per pixel, bigger means courser
 	double LON_FACTOR;
 	double DEG_TO_MTR_LON;
-	// Calculate our extent and work out local system in meters.
+	// Calculate our extent and work out local system in meters.	
+
 	{
-		float w = mapping.mSrcMax.x - mapping.mSrcMin.x;
-		float h = mapping.mSrcMax.y - mapping.mSrcMin.y;
-		mapping.mSrcMin.x -= (w / 10.0);
-		mapping.mSrcMin.y -= (h / 10.0);
-		mapping.mSrcMax.x += (w / 10.0);
-		mapping.mSrcMax.y += (h / 10.0);
-		double	error = cos(mapping.mSrcMin.y * DEG_TO_RAD) - cos(mapping.mSrcMax.y * DEG_TO_RAD);
+		double w = mapping.mSrcMax.x() - mapping.mSrcMin.x();
+		double h = mapping.mSrcMax.y() - mapping.mSrcMin.y();
+		mapping.mSrcMin = Point2(mapping.mSrcMin.x() - w / 10.0, mapping.mSrcMin.y() - h / 10.0);
+		mapping.mSrcMax = Point2(mapping.mSrcMax.x() + w / 10.0, mapping.mSrcMax.y() + h / 10.0);
+		double	error = cos(CGAL::to_double(mapping.mSrcMin.y()) * DEG_TO_RAD) - cos(CGAL::to_double(mapping.mSrcMax.y()) * DEG_TO_RAD);
 		error *= DEG_TO_MTR_LAT;
-		w = mapping.mSrcMax.x - mapping.mSrcMin.x;
-		h = mapping.mSrcMax.y - mapping.mSrcMin.y;
-		LON_FACTOR = cos(mapping.mSrcMin.y * DEG_TO_RAD);
+		w = mapping.mSrcMax.x() - mapping.mSrcMin.x();
+		h = mapping.mSrcMax.y() - mapping.mSrcMin.y();
+		LON_FACTOR = cos(CGAL::to_double(mapping.mSrcMin.y()) * DEG_TO_RAD);
 		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * LON_FACTOR;
 		h *= DEG_TO_MTR_LAT;
 		w *= DEG_TO_MTR_LON;
-
-		if ((w / scale) > MAX_WIDTH )	scale = ceil(w / MAX_WIDTH  );
-		if ((h / scale) > MAX_HEIGHT)	scale = ceil(h / MAX_HEIGHT );
-
+		
+		if ((CGAL::to_double(w) / scale) > MAX_WIDTH )	scale = ceil(CGAL::to_double(w) / MAX_WIDTH  );
+		if ((CGAL::to_double(h) / scale) > MAX_HEIGHT)	scale = ceil(CGAL::to_double(h) / MAX_HEIGHT );
+		
 		w /= scale;
 		h /= scale;
-		if (ceil(w) > MAX_WIDTH || ceil(h) > MAX_HEIGHT)
+		if (ceil(CGAL::to_double(w)) > MAX_WIDTH || ceil(CGAL::to_double(h)) > MAX_HEIGHT)
 			AssertPrintf("ERROR: overflow on rasterizing poly!\n");
 
 		mapping.mDstMin = Point2(0,0);
 		mapping.mDstMax = Point2(w, h);
-		int	width = ceil(mapping.mDstMax.x);
+		int	width = ceil(CGAL::to_double(mapping.mDstMax.x()));
 		width = ((width + 31) / 32) * 32;
-		DebugAssert(mapping.mDstMax.x <= width);		// IMPORTANT - DO NOT WRITE BACK OUR 32-BIT ALIGNED WIDTH TO THE MAPPER!  THIS WOULD BE BAD!
-//		mapping.mDstMax.x = width;						// LOTS OF CODE ASSUMES A REAL RELATIONSHIP TO METERS!  IT'S OKAY TO HAVE EXTRA SLOP ON THE RIGHT
-
-		gImage.ClearBand(0,ceil(h));
-		gImage.mXLimit = ceil(mapping.mDstMax.x);
-		gImage.mYLimit = ceil(mapping.mDstMax.y);
-	}
+		DebugAssert(mapping.mDstMax.x() <= width);		// IMPORTANT - DO NOT WRITE BACK OUR 32-BIT ALIGNED WIDTH TO THE MAPPER!  THIS WOULD BE BAD!
+//		mapping.mDstMax.x() = width;						// LOTS OF CODE ASSUMES A REAL RELATIONSHIP TO METERS!  IT'S OKAY TO HAVE EXTRA SLOP ON THE RIGHT
+		
+		gImage.ClearBand(0,ceil(CGAL::to_double(h)));
+		gImage.mXLimit = ceil(CGAL::to_double(mapping.mDstMax.x()));
+		gImage.mYLimit = ceil(CGAL::to_double(mapping.mDstMax.y()));
+	}	
+	
 
 	// Translate shape to local coords.
-	for (i = 0; i < local.size(); ++i)
-	for (j = 0; j < local[i].size(); ++j)
+	for(int i = 0; i < local.size(); ++i)
+	for(int j = 0; j < local[i].size(); ++j)
 		local[i][j] = mapping.Forward(local[i][j]);
 
 	if (!no_poly_gen)
-	for (i = 0; i < local.size(); ++i)
-	for (j = 0; j < local[i].size(); ++j)
+	for (j = 0; j < local.front().size(); ++j)
 	{
-		float len = sqrt(local[i].side(j).squared_length());
+		float len = sqrt(local.front().side(j).squared_length());
 		shortest_seg = min(shortest_seg, len);
 		longest_seg = max(longest_seg, len);
 	}
-
-	Segment2 longest_local(local[0].side(0));
-	for (i = 1; i < local[0].size(); ++i)
+	
+	Segment2 longest_local((local.front().side(0)));
+	for (i = 1; i < local.front().size(); ++i)
 	{
-		if (longest_local.squared_length() < local[0].side(i).squared_length())
-			longest_local = local[0].side(i);
+		if (longest_local.squared_length() < local.front().side(i).squared_length())
+			longest_local = (local.front().side(i));
 	}
-
-	// Rasterize our non-area to protect it.
+	
+	
+	// Rasterize our non-area to protect it.	
 	inner = local;
+	
 	inner.push_back(Polygon2());
-	inner.back().push_back(Point2(mapping.mDstMin.x,mapping.mDstMin.y));
-	inner.back().push_back(Point2(mapping.mDstMin.x,mapping.mDstMax.y));
-	inner.back().push_back(Point2(mapping.mDstMax.x,mapping.mDstMax.y));
-	inner.back().push_back(Point2(mapping.mDstMax.x,mapping.mDstMin.y));
+	inner.back().push_back(cgal2ben(Point_2(mapping.mDstMin.x(),mapping.mDstMin.y())));
+	inner.back().push_back(cgal2ben(Point_2(mapping.mDstMin.x(),mapping.mDstMax.y())));
+	inner.back().push_back(cgal2ben(Point_2(mapping.mDstMax.x(),mapping.mDstMax.y())));
+	inner.back().push_back(cgal2ben(Point_2(mapping.mDstMax.x(),mapping.mDstMin.y())));
 	gImage.RasterizeLocal(inner);
 	inner.pop_back();
 
@@ -979,15 +989,15 @@ void	InstantiateGTPolygon(
 	/************ INSERT POLYGONAL OBJECTS **********/
 
 		vector<Polygon2>	polyObjLocalV(1);
-
-	for (GISPolyObjPlacementVector::iterator polyObj = inFace->mPolyObjs.begin();
-		polyObj != inFace->mPolyObjs.end(); ++polyObj)
+		
+	for (GISPolyObjPlacementVector::iterator polyObj = inFace->data().mPolyObjs.begin();
+		polyObj != inFace->data().mPolyObjs.end(); ++polyObj)
 	{
 		polyObjLocalV[0].clear();
 
-		for (Polygon2::iterator vert = polyObj->mShape[0].begin(); vert != polyObj->mShape[0].end(); ++vert)
+		for (Polygon_2::iterator vert = polyObj->mShape.outer_boundary().vertices_begin(); vert != polyObj->mShape.outer_boundary().vertices_end(); ++vert)
 		{
-			polyObjLocalV[0].push_back(mapping.Forward(*vert));
+			polyObjLocalV[0].push_back((mapping.Forward(cgal2ben(*vert))));
 		}
 		gImage.RasterizeLocal(polyObjLocalV);
 	}
@@ -996,12 +1006,12 @@ void	InstantiateGTPolygon(
 	 * INSERT EXISTING POINT OBJECTS
 	 ******************************************************************************************************************/
 
-	for (GISObjPlacementVector::iterator obj = inFace->mObjs.begin();
-		obj != inFace->mObjs.end(); ++obj)
+	for (GISObjPlacementVector::iterator obj = inFace->data().mObjs.begin();
+		obj != inFace->data().mObjs.end(); ++obj)
 	{
 		polyObjLocalV.resize(1);
 
-		Point2	center = mapping.Forward(obj->mLocation);
+		Point2	center = (mapping.Forward(cgal2ben(obj->mLocation)));
 
 		if (FetchObjectBoundaryByRep(obj->mRepType, &polyObjLocalV[0], 1.0 / scale, NULL, NULL))
 		{
@@ -1065,7 +1075,7 @@ void	InstantiateGTPolygon(
 	 ******************************************************************************************************************/
 
 	// NOTE: polygon featuers are not yet imported, so we don't support encoding them yet.
-	if (!inFace->mPolygonFeatures.empty())
+	if (!inFace->data().mPolygonFeatures.empty())
 		fprintf(stderr, "WARNING: Polygon features ARE present.\n");
 
 	/******************************************************************************************************************
@@ -1074,7 +1084,7 @@ void	InstantiateGTPolygon(
 
 		Point2	trial, l;
 
-	for (GISPointFeatureVector::iterator iter = inFace->mPointFeatures.begin(); iter != inFace->mPointFeatures.end(); ++iter)
+	for (GISPointFeatureVector::iterator iter = inFace->data().mPointFeatures.begin(); iter != inFace->data().mPointFeatures.end(); ++iter)
 	if (IsWellKnownFeature(iter->mFeatType))
 	{
 
@@ -1083,7 +1093,7 @@ void	InstantiateGTPolygon(
 		CDT::Locate_type lt;
 		int side;
 		CDT::Face_handle recent = NULL;
-		recent = mesh.locate_cache(CDT::Point(iter->mLocation.x,iter->mLocation.y), lt, side, hint_id);
+		recent = mesh.locate(CDT::Point(iter->mLocation.x(),iter->mLocation.y()), lt, side);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
 			terrain = highest_prio_tri(recent);
@@ -1094,7 +1104,7 @@ void	InstantiateGTPolygon(
 		int		require_feat = iter->mFeatType;
 		int		height_max = 0.0;
 			 if (iter->mParams.count(pf_Height))		height_max = iter->mParams[pf_Height];
-		else if (inFace->mParams.count(af_Height))	height_max = inFace->mParams[af_Height];
+		else if (inFace->data().mParams.count(af_Height))	height_max = inFace->data().mParams[af_Height];
 
 		result = no_poly_gen ? 0 : QueryUsableFacsBySize(					// This is facade placement for specific point features in the
 											require_feat, 					// non-subdivision case.
@@ -1110,32 +1120,44 @@ void	InstantiateGTPolygon(
 			RepInfo_t& info = gRepTable[query[ri]];
 			{
 				polyObjLocalV.resize(1);
-				InsetPolygon2(inner[0], NULL, 1.0 / scale, true, polyObjLocalV[0], NULL, NULL);
-				++feat_raster_try;
-				if (!gImage.RasterizeLocalStopConflicts(polyObjLocalV))
+//				InsetPolygon2(inner[0], NULL, 1.0 / scale, true, polyObjLocalV[0], NULL, NULL);
+				Polygon_2	i;
+				Polygon_set_2 polv;
+				ben2cgal(inner[0], i);
+				BufferPolygon(i,NULL,1.0 / scale, polv);
+				vector<Polygon_with_holes_2>	p;
+				polv.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(p));
+				if(!p.empty())
 				{
-					++feat_raster_ok;
-					GISPolyObjPlacement_t	rep;
-					rep.mShape.push_back(Polygon2());
-					rep.mRepType = info.obj_name;
-					for (int n = 0; n < polyObjLocalV[0].size(); ++n)
+					cgal2ben(p[0].outer_boundary(),polyObjLocalV[0]);
+					++feat_raster_try;
+					if (!gImage.RasterizeLocalStopConflicts(polyObjLocalV))
 					{
-						rep.mShape.back().push_back(mapping.Reverse(polyObjLocalV[0][n]));
+						++feat_raster_ok;
+						GISPolyObjPlacement_t	rep;
+	//					rep.mShape.push_back(Polygon_with_holes_2());
+						rep.mRepType = info.obj_name;
+						for (int n = 0; n < polyObjLocalV[0].size(); ++n)
+						{
+							Point_2 m = ben2cgal(mapping.Reverse(polyObjLocalV[0][n]));
+							rep.mShape.outer_boundary().push_back(m);
+						}
+						if (iter->mParams.find(pf_Height) != iter->mParams.end())						
+							rep.mHeight = iter->mParams[pf_Height];
+						else
+							rep.mHeight = RandRange(info.height_min,info.height_max);
+						rep.mDerived = true;
+						if (SanityCheck(rep))
+							inFace->data().mPolyObjs.push_back(rep);
+						IncrementRepUsage(rep.mRepType);
+						got_it = true;
+						break;
 					}
-					if (iter->mParams.find(pf_Height) != iter->mParams.end())
-						rep.mHeight = iter->mParams[pf_Height];
-					else
-						rep.mHeight = RandRange(info.height_min,info.height_max);
-					rep.mDerived = true;
-					if (SanityCheck(rep))
-						inFace->mPolyObjs.push_back(rep);
-					IncrementRepUsage(rep.mRepType);
-					got_it = true;
-					break;
 				}
 			}
 
 		}
+
 
 //		if we can place polys and we have a rep type that allows for facades and the area matches up, plop down a facade
 //		otherwise try to put the rep down on the nearest road.
@@ -1160,14 +1182,13 @@ void	InstantiateGTPolygon(
 
 			polyObjLocalV.resize(1);
 			polyObjLocalV[0].resize(4);
-			polyObjLocalV[0][0].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][0].y = -info.depth_min * 0.5 / scale;
-			polyObjLocalV[0][1].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][1].y =  info.depth_min * 0.5 / scale;
-			polyObjLocalV[0][2].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][2].y =  info.depth_min * 0.5 / scale;
-			polyObjLocalV[0][3].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y = -info.depth_min * 0.5 / scale;
-
+			polyObjLocalV[0][0].x_ = -info.width_min * 0.5 / scale;		polyObjLocalV[0][0].y_ = -info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][1].x_ = -info.width_min * 0.5 / scale;		polyObjLocalV[0][1].y_ =  info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][2].x_ =  info.width_min * 0.5 / scale;		polyObjLocalV[0][2].y_ =  info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][3].x_ =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y_ = -info.depth_min * 0.5 / scale;
+				
 			++feat_raster_try;
-			trial = iter->mLocation;
-			trial = mapping.Forward(trial);
+			trial = mapping.Forward(cgal2ben(iter->mLocation));
 			Vector2 facing(longest_local.p1, longest_local.p2);
 			facing.normalize();
 			facing = facing.perpendicular_cw();
@@ -1181,8 +1202,8 @@ void	InstantiateGTPolygon(
 				rep.mLocation = iter->mLocation;
 				rep.mHeading = heading;
 				rep.mDerived = true;
-				inFace->mObjs.push_back(rep);
-				DebugAssert(uber_bounds.contains(rep.mLocation));
+				inFace->data().mObjs.push_back(rep);
+				//DebugAssert(uber_bounds.contains(rep.mLocation));
 				IncrementRepUsage(rep.mRepType);
 				got_it = true;
 				break;
@@ -1191,14 +1212,14 @@ void	InstantiateGTPolygon(
 
 		if (!got_it)
 		{
-			trial = mapping.Forward(iter->mLocation);
-
+			trial = mapping.Forward(cgal2ben(iter->mLocation));
+			
 			Vector2 move_it(trial, mapping.Forward(centroid));
-			double to_centroid = sqrt(move_it.squared_length());
+			double to_centroid = sqrt(CGAL::to_double(move_it.squared_length()));
 			to_centroid = min(to_centroid, MAX_MOVE_FEATURE);
 			move_it.normalize();
-			move_it *= to_centroid;
-			trial += move_it;
+			move_it = move_it * to_centroid;
+			trial = trial + move_it;
 
 
 			for (int ri = 0; ri < result; ++ri)
@@ -1207,11 +1228,11 @@ void	InstantiateGTPolygon(
 
 				polyObjLocalV.resize(1);
 				polyObjLocalV[0].resize(4);
-				polyObjLocalV[0][0].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][0].y = -info.depth_min * 0.5 / scale;
-				polyObjLocalV[0][1].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][1].y =  info.depth_min * 0.5 / scale;
-				polyObjLocalV[0][2].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][2].y =  info.depth_min * 0.5 / scale;
-				polyObjLocalV[0][3].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y = -info.depth_min * 0.5 / scale;
-
+				polyObjLocalV[0][0].x_ = -info.width_min * 0.5 / scale;		polyObjLocalV[0][0].y_ = -info.depth_min * 0.5 / scale;
+				polyObjLocalV[0][1].x_ = -info.width_min * 0.5 / scale;		polyObjLocalV[0][1].y_ =  info.depth_min * 0.5 / scale;
+				polyObjLocalV[0][2].x_ =  info.width_min * 0.5 / scale;		polyObjLocalV[0][2].y_ =  info.depth_min * 0.5 / scale;
+				polyObjLocalV[0][3].x_ =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y_ = -info.depth_min * 0.5 / scale;
+					
 				++feat_raster_try;
 				Vector2 facing(longest_local.p1, longest_local.p2);
 				facing.normalize();
@@ -1223,11 +1244,12 @@ void	InstantiateGTPolygon(
 					++feat_raster_ok;
 					GISObjPlacement_t	rep;
 					rep.mRepType = info.obj_name;
-					rep.mLocation = mapping.Reverse(trial);
-					DebugAssert(uber_bounds.contains(rep.mLocation));
+					Point_2 m = ben2cgal(mapping.Reverse(trial));
+					rep.mLocation = m;
+					//DebugAssert(uber_bounds.contains(rep.mLocation));
 					rep.mHeading = heading;
 					rep.mDerived = true;
-					inFace->mObjs.push_back(rep);
+					inFace->data().mObjs.push_back(rep);
 					IncrementRepUsage(rep.mRepType);
 					got_it = true;
 					break;
@@ -1272,7 +1294,7 @@ void	InstantiateGTPolygon(
 
 //	if (!no_road_placement)
 	{
-		height_lim = inFace->mParams.count(af_Height) ? inFace->mParams[af_Height] : 0;
+		height_lim = inFace->data().mParams.count(af_Height) ? inFace->data().mParams[af_Height] : 0;
 		polyObjLocalV.resize(1);
 		polyObjLocalV[0].resize(4);
 
@@ -1315,9 +1337,10 @@ void	InstantiateGTPolygon(
 
 						if (geo_bounds.contains(l))
 						{
+
 							terrain = NO_VALUE;
 							recent = CDT::Face_handle();
-							recent = mesh.locate_cache(CDT::Point(l.x,l.y), lt, side, hint_id);
+							recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side);
 							if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 							{
 								terrain = highest_prio_tri(recent);
@@ -1330,7 +1353,7 @@ void	InstantiateGTPolygon(
 							max_depth_slope = -1;
 
 
-							density = density_dem.value_linear(l.x,l.y);
+							density = density_dem.value_linear(l.x(),l.y());
 							density = 0.5 + 0.5 * (min(1.0f, max(0.0f, density)));
 							spacing =  10.0 * 2.0 * (pow(0.2f, density));	//	was 1.5 insteaed of 10 - way too dense!  and slow!
 							if (RollDice(density))
@@ -1359,10 +1382,10 @@ void	InstantiateGTPolygon(
 									// Fast bail fail case - skip any object bigger than our smallest failure.
 
 									// Generate the actual footprint anad try to rasterize it.
-									polyObjLocalV[0][0].x = -widths[on] * 0.5 / scale;		polyObjLocalV[0][0].y = -depths[on] * 0.5 / scale;
-									polyObjLocalV[0][1].x = -widths[on] * 0.5 / scale;		polyObjLocalV[0][1].y =  depths[on] * 0.5 / scale;
-									polyObjLocalV[0][2].x =  widths[on] * 0.5 / scale;		polyObjLocalV[0][2].y =  depths[on] * 0.5 / scale;
-									polyObjLocalV[0][3].x =  widths[on] * 0.5 / scale;		polyObjLocalV[0][3].y = -depths[on] * 0.5 / scale;
+									polyObjLocalV[0][0].x_ = -widths[on] * 0.5 / scale;		polyObjLocalV[0][0].y_ = -depths[on] * 0.5 / scale;
+									polyObjLocalV[0][1].x_ = -widths[on] * 0.5 / scale;		polyObjLocalV[0][1].y_ =  depths[on] * 0.5 / scale;
+									polyObjLocalV[0][2].x_ =  widths[on] * 0.5 / scale;		polyObjLocalV[0][2].y_ =  depths[on] * 0.5 / scale;
+									polyObjLocalV[0][3].x_ =  widths[on] * 0.5 / scale;		polyObjLocalV[0][3].y_ = -depths[on] * 0.5 / scale;
 
 									trial = seg.midpoint(remap_tval(t)) + along*(widths[on]*0.5 / scale) + inset*(depths[on]*0.5 / scale + 1);	// Offset fudge factor
 									l = mapping.Reverse(trial);
@@ -1385,11 +1408,11 @@ void	InstantiateGTPolygon(
 									++fill_raster_ok;
 									GISObjPlacement_t	obj;
 									obj.mRepType = types[ok];
-									obj.mLocation = l;
+									obj.mLocation = Point_2(l.x(), l.y());
 									obj.mHeading = heading;
 									obj.mDerived = false;
-									inFace->mObjs.push_back(obj);
-									DebugAssert(uber_bounds.contains(obj.mLocation));
+									inFace->data().mObjs.push_back(obj);
+									//DebugAssert(uber_bounds.contains(obj.mLocation));
 									IncrementRepUsage(obj.mRepType);
 									// If we succeeded, skip past our object, fer cryin' out loud
 									if (spacing < (widths[ok]/scale+1))
@@ -1416,22 +1439,22 @@ void	InstantiateGTPolygon(
 	 * VEGETATION AND INTERIOR RANDOM OBJECTS
 	 ******************************************************************************************************************/
 
-	density = max(min(1.0f, density_dem.value_linear(centroid.x,centroid.y)), 0.0f);
-	double radial = max(min(1.0f, radial_dem.value_linear(centroid.x,centroid.y)), 0.0f);
+	density = max(min(1.0f, density_dem.value_linear(centroid.x(),centroid.y())), 0.0f);
+	double radial = max(min(1.0f, radial_dem.value_linear(centroid.x(),centroid.y())), 0.0f);
 	int max_tries = (0.5 + 0.5 * density * radial) * 16 * (min(MAX_AREA_FOR_RANDOM,poly_area)) / 62500 ;
 	int stop_huge = max_tries / 3;
 
 	for (int tries = 0; tries < max_tries; ++tries)
 	{
-		height_lim = inFace->mParams.count(af_Height) ? inFace->mParams[af_Height] : 0;
+		height_lim = inFace->data().mParams.count(af_Height) ? inFace->data().mParams[af_Height] : 0;
 		polyObjLocalV.resize(1);
 		polyObjLocalV[0].resize(4);
 
 		terrain = NO_VALUE;
 		 recent = CDT::Face_handle();
 
-		trial = Point2(RandRange(mapping.mDstMin.x, mapping.mDstMax.x),
-					  RandRange(mapping.mDstMin.y, mapping.mDstMax.y));
+		trial = Point2(RandRange(mapping.mDstMin.x(), mapping.mDstMax.x()),
+					  RandRange(mapping.mDstMin.y(), mapping.mDstMax.y()));		
 		l = mapping.Reverse(trial);
 
 		if (!local.front().inside(trial))
@@ -1440,7 +1463,7 @@ void	InstantiateGTPolygon(
 		if (!geo_bounds.contains(l))
 			continue;
 
-		recent = mesh.locate_cache(CDT::Point(l.x,l.y), lt, side, hint_id);
+		recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
 			terrain = highest_prio_tri(recent);
@@ -1506,10 +1529,10 @@ void	InstantiateGTPolygon(
 				types [on] = gRepTable[query[on]].obj_name;
 
 				// Generate the actual footprint anad try to rasterize it.
-				polyObjLocalV[0][0].x = -widths[on] * 0.5 / scale;		polyObjLocalV[0][0].y = -depths[on] * 0.5 / scale;
-				polyObjLocalV[0][1].x = -widths[on] * 0.5 / scale;		polyObjLocalV[0][1].y =  depths[on] * 0.5 / scale;
-				polyObjLocalV[0][2].x =  widths[on] * 0.5 / scale;		polyObjLocalV[0][2].y =  depths[on] * 0.5 / scale;
-				polyObjLocalV[0][3].x =  widths[on] * 0.5 / scale;		polyObjLocalV[0][3].y = -depths[on] * 0.5 / scale;
+				polyObjLocalV[0][0].x_ = -widths[on] * 0.5 / scale;		polyObjLocalV[0][0].y_ = -depths[on] * 0.5 / scale;
+				polyObjLocalV[0][1].x_ = -widths[on] * 0.5 / scale;		polyObjLocalV[0][1].y_ =  depths[on] * 0.5 / scale;
+				polyObjLocalV[0][2].x_ =  widths[on] * 0.5 / scale;		polyObjLocalV[0][2].y_ =  depths[on] * 0.5 / scale;
+				polyObjLocalV[0][3].x_ =  widths[on] * 0.5 / scale;		polyObjLocalV[0][3].y_ = -depths[on] * 0.5 / scale;
 
 				l = mapping.Reverse(trial);
 				RotateAndOffset(polyObjLocalV[0], Vector2(trial), heading);
@@ -1522,11 +1545,11 @@ void	InstantiateGTPolygon(
 					++fill_raster_ok;
 					GISObjPlacement_t	obj;
 					obj.mRepType = types[on];
-					obj.mLocation = l;
+					obj.mLocation = Point_2(l.x(), l.y());
 					obj.mHeading = heading;
 					obj.mDerived = false;
-					inFace->mObjs.push_back(obj);
-					DebugAssert(uber_bounds.contains(obj.mLocation));
+					inFace->data().mObjs.push_back(obj);
+					//DebugAssert(uber_bounds.contains(obj.mLocation));
 					IncrementRepUsage(obj.mRepType);
 					break;
 
@@ -1585,24 +1608,24 @@ void	DumpPlacementCounts(void)
 //	fclose(fi);
 }
 
-void	RemoveDuplicates(GISFace * inFace)
+void	RemoveDuplicates(Pmwx::Face_iterator inFace)
 {
 	int i, j;
-	for (i = 0; i < inFace->mPointFeatures.size(); ++i)
+	for (i = 0; i < inFace->data().mPointFeatures.size(); ++i)
 	{
-		for (j = i + 1; j < inFace->mPointFeatures.size(); ++j)
+		for (j = i + 1; j < inFace->data().mPointFeatures.size(); ++j)
 		{
 			double dist = LonLatDistMeters(
-							inFace->mPointFeatures[i].mLocation.x,
-							inFace->mPointFeatures[i].mLocation.y,
-							inFace->mPointFeatures[j].mLocation.x,
-							inFace->mPointFeatures[j].mLocation.y);
+						    CGAL::to_double(inFace->data().mPointFeatures[i].mLocation.x()),
+							CGAL::to_double(inFace->data().mPointFeatures[i].mLocation.y()),
+							CGAL::to_double(inFace->data().mPointFeatures[j].mLocation.x()),
+							CGAL::to_double(inFace->data().mPointFeatures[j].mLocation.y()));
 			if (dist < OVERLAP_MIN)
 			{
 #if LOG_REMOVE_FEATURES
 				FILE * f = fopen("removed_features.txt", "a");
-#endif
-				if (LowerPriorityFeature(inFace->mPointFeatures[i],inFace->mPointFeatures[j]))
+#endif				
+				if (LowerPriorityFeature(inFace->data().mPointFeatures[i],inFace->data().mPointFeatures[j]))
 				{
 #if LOG_REMOVE_FEATURES
 					if(f) fprintf(f, "Removing %d:%s (%d) for %d:%s (%d) - dist was %lf\n",
@@ -1610,8 +1633,8 @@ void	RemoveDuplicates(GISFace * inFace)
 											GetPossibleFeatureHeight(inFace->mPointFeatures[i]),
 											j,FetchTokenString(inFace->mPointFeatures[j].mFeatType),
 											GetPossibleFeatureHeight(inFace->mPointFeatures[j]), dist);
-#endif
-					inFace->mPointFeatures.erase(inFace->mPointFeatures.begin()+i);
+#endif				
+					inFace->data().mPointFeatures.erase(inFace->data().mPointFeatures.begin()+i);
 					// Start this row over again because index i is now differnet.
 					// j will be i+1
 					j = i;
@@ -1622,8 +1645,8 @@ void	RemoveDuplicates(GISFace * inFace)
 											GetPossibleFeatureHeight(inFace->mPointFeatures[j]),
 											j,FetchTokenString(inFace->mPointFeatures[i].mFeatType),
 											GetPossibleFeatureHeight(inFace->mPointFeatures[i]), dist);
-#endif
-					inFace->mPointFeatures.erase(inFace->mPointFeatures.begin()+j);
+#endif				
+					inFace->data().mPointFeatures.erase(inFace->data().mPointFeatures.begin()+j);
 					--j;
 				}
 #if LOG_REMOVE_FEATURES
@@ -1641,7 +1664,7 @@ void	RemoveDuplicatesAll(
 	int ctr = 0;
 	PROGRESS_START(inProg, 0, 1, "Removing duplicate objects...")
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
-	if (!f->IsWater() && !f->is_unbounded())
+	if (!f->data().IsWater() && !f->is_unbounded())
 	{
 		PROGRESS_CHECK(inProg, 0, 1, "Removing duplicate objects...", ctr, ioMap.number_of_faces(), 1000)
 		RemoveDuplicates(f);
@@ -1659,39 +1682,35 @@ void	InstantiateGTPolygonAll(
 	int ctr = 0;
 	PROGRESS_START(inProg, 0, 1, "Instantiating Face Objects...")
 	for (vector<PreinsetFace>::const_iterator face = inFaces.begin(); face != inFaces.end(); ++face, ++ctr)
-	for (ComplexPolygonVector::const_iterator subarea = face->second.begin(); subarea != face->second.end(); ++subarea)
 	{
-		PROGRESS_CHECK(inProg, 0, 1, "Instantiating Face Objects...", ctr, inFaces.size(), 500)
-#if DEBUG_PLACEMENT
-try {
-#endif
-		InstantiateGTPolygon(face->first, *subarea, inDEMs, inMesh);
-#if DEBUG_PLACEMENT
-} catch (...) {
-		gFaceSelection.clear();
-		gFaceSelection.insert(face->first);
-		throw;
-}
-#endif
+		vector<Polygon_with_holes_2>	all_areas;
+		face->second.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(all_areas));
+		for (vector<Polygon_with_holes_2>::const_iterator subarea = all_areas.begin(); subarea != all_areas.end(); ++subarea)
+		{
+			PROGRESS_CHECK(inProg, 0, 1, "Instantiating Face Objects...", ctr, inFaces.size(), 500)
+			InstantiateGTPolygon(face->first, *subarea, inDEMs, inMesh);
+		}
 	}
 	PROGRESS_DONE(inProg, 0, 1, "Instantiating Face Objects...")
 	printf("Processed %d faces.\n", inFaces.size());
 }
 
-double	GetInsetForEdgeMeters(const GISHalfedge * inEdge)
+double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge)
 {
 	bool is_edge_of_map = inEdge->face()->is_unbounded() || inEdge->twin()->face()->is_unbounded();
-	bool is_coast = inEdge->face()->IsWater() != inEdge->twin()->face()->IsWater();
-	const GISHalfedge * dom = inEdge->mDominant ? inEdge : inEdge->twin();
-	int best_road = WidestRoadTypeForSegment(dom->mSegments);
-
+	bool is_coast = inEdge->face()->data().IsWater() != inEdge->twin()->face()->data().IsWater();
+	Halfedge_const_handle dom;
+	if (inEdge->data().mDominant) 
+		dom = inEdge; else dom = inEdge->twin();
+	int best_road = WidestRoadTypeForSegment(dom->data().mSegments);
+	
 	double width = (is_coast && !is_edge_of_map) ? 30.0 : 5.0;
 	if (best_road != NO_VALUE)
 		width = max(width, (double) gNetEntities[best_road].width + gNetEntities[best_road].pad);
 	return width;
 }
 
-double	GetInsetForEdgeDegs(const GISHalfedge * inEdge)
+double	GetInsetForEdgeDegs(Halfedge_const_handle inEdge)
 {
 	return GetInsetForEdgeMeters(inEdge) * MTR_TO_NM * NM_TO_DEG_LAT;
 }
@@ -1723,7 +1742,7 @@ void	GenerateInsets(
 					ProgressFunc			func)
 {
 	outInsets.clear();
-	outInsets.reserve(ioMap.number_of_faces() / 2);
+	outInsets.reserve(ioMap.number_of_faces());	// Ben says - we REALLY do not want to reallocate the maps of pre-inset faces - that would be @#$@#ing slow!
 	int ctr = 0;
 	int total = ioMap.number_of_faces();
 	int step = total / 200;
@@ -1735,36 +1754,39 @@ void	GenerateInsets(
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
 	if (inTypes.count(ffi->info().terrain) > 0)
 	{
-		Bbox2	me(Point2(ffi->vertex(0)->point().x(),ffi->vertex(0)->point().y()));
-		me +=Point2(ffi->vertex(1)->point().x(),ffi->vertex(1)->point().y());
-		me +=Point2(ffi->vertex(2)->point().x(),ffi->vertex(2)->point().y());
-
-		SubBucket(inBounds.p1.x, inBounds.p2.x, me.p1.x, me.p2.x, TERRAIN_GRID, ix1, ix2);
-		SubBucket(inBounds.p1.y, inBounds.p2.y, me.p1.y, me.p2.y, TERRAIN_GRID, iy1, iy2);
+		Bbox_2	me = ffi->vertex(0)->point().bbox();
+		me = me + Point_2(ffi->vertex(1)->point()).bbox();
+		me = me + Point_2(ffi->vertex(2)->point()).bbox();
+		
+		SubBucket(inBounds.xmin(), inBounds.xmax(), me.xmin(), me.xmax(), TERRAIN_GRID, ix1, ix2);
+		SubBucket(inBounds.ymin(), inBounds.ymax(), me.ymin(), me.ymax(), TERRAIN_GRID, iy1, iy2);
+		//printf(" (%d %d %d %d) ", ix1, ix2, iy1, iy2);
 		for (y = iy1; y < iy2; ++y)
-		for (x = ix1; x < ix2; ++x)
-			used_types[x][y] = 1;
+			for (x = ix1; x < ix2; ++x) {
+			used_types[x][y] = 1;			
 	}
+	} //else
+		//printf(" no %s ", FetchTokenString(ffi->info().terrain));
 
 
 	PROGRESS_START(func, 0, 1, "Generating usable areas")
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
 	if (!f->is_unbounded())
-	if (f->mTerrainType != terrain_Water)
+	if (f->data().mTerrainType != terrain_Water)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Generating usable areas", ctr, total, step)
-		ComplexPolygon2				bounds;
-		vector<vector<double> >		lims;
-		Bbox2						fextent;
-		FaceToComplexPolygon(f, bounds, &lims, GetInsetForEdgeDegs, &fextent);
-
+		Polygon_with_holes_2		bounds;
+		PolyInset_t					lims;
+		Bbox_2						fextent;
+		PolygonFromFace(f, bounds, &lims, GetInsetForEdgeDegs, &fextent);
+		
 		bool	want_it = false;
-		SubBucket(inBounds.p1.x, inBounds.p2.x, fextent.p1.x, fextent.p2.x, TERRAIN_GRID, ix1, ix2);
-		SubBucket(inBounds.p1.y, inBounds.p2.y, fextent.p1.y, fextent.p2.y, TERRAIN_GRID, iy1, iy2);
-
-		if(inWantFeatures && !f->mPointFeatures.empty()) want_it = true;
-
+		SubBucket(inBounds.xmin(), inBounds.xmax(), fextent.xmin(), fextent.xmax(), TERRAIN_GRID, ix1, ix2);
+		SubBucket(inBounds.ymin(), inBounds.ymax(), fextent.ymin(), fextent.ymax(), TERRAIN_GRID, iy1, iy2);
+		
+		if(inWantFeatures && !f->data().mPointFeatures.empty()) want_it = true;
+		
 		if (!want_it)
 		for (y = iy1; y < iy2; ++y)
 		for (x = ix1; x < ix2; ++x)
@@ -1776,20 +1798,16 @@ void	GenerateInsets(
 
 		if (want_it)
 		{
-			ComplexPolygonVector		region;
+			//printf("<");
+			Polygon_set_2		region;
+	
+			BufferPolygonWithHoles(bounds,&lims,1.0,region);
+			outInsets.push_back(PreinsetFace(f, region));
+			++good_poly;			
 
-			int	result = SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS);
-			if (result == skeleton_OK)
-			{
-				outInsets.push_back(PreinsetFace(f, region));
-				++good_poly;
-			} else {
-				if (result == skeleton_OutOfSteps)		++complex_poly;
-				else									++bad_poly;
-			}
 		} else
 			++skip_poly;
-
+		//printf("o");
 	}
 	PROGRESS_DONE(func, 0, 1, "Generating usable areas")
 	printf("Good polys: %d bad polys: %d, complex polys: %d, ignored polys: %d\n", good_poly, bad_poly, complex_poly, skip_poly);
@@ -1797,7 +1815,7 @@ void	GenerateInsets(
 
 
 void	GenerateInsets(
-					const set<GISFace *>&	inFaces,
+					const set<Face_handle>&	inFaces,
 					vector<PreinsetFace>&	outInsets,
 					ProgressFunc			func)
 {
@@ -1810,23 +1828,21 @@ void	GenerateInsets(
 	int good_poly = 0, bad_poly = 0;
 
 	PROGRESS_START(func, 0, 1, "Generating usable areas")
-
-	for (set<GISFace *>::const_iterator f = inFaces.begin(); f != inFaces.end(); ++f)
+	
+	for (set<Face_handle>::const_iterator f = inFaces.begin(); f != inFaces.end(); ++f)
 	if (!(*f)->is_unbounded())
-	if ((*f)->mTerrainType != terrain_Water)
+	if ((*f)->data().mTerrainType != terrain_Water)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Generating usable areas", ctr, total, step)
-		ComplexPolygon2				bounds;
-		vector<vector<double> >		lims;
-		FaceToComplexPolygon(*f, bounds, &lims, GetInsetForEdgeDegs, NULL);
-		ComplexPolygonVector		region;
+		Polygon_with_holes_2		bounds;
+		PolyInset_t					lims;
+		PolygonFromFace(*f, bounds, &lims, GetInsetForEdgeDegs, NULL);
+		
+		Polygon_set_2				region;
 
-		if (SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS) == skeleton_OK)
-		{
-			++good_poly;
-			outInsets.push_back(PreinsetFace(*f, region));
-		} else
-			++bad_poly;
+		BufferPolygonWithHoles(bounds,&lims,1.0,region);
+		++good_poly;
+		outInsets.push_back(PreinsetFace(*f, region));
 	}
 	PROGRESS_DONE(func, 0, 1, "Generating usable areas")
 	printf("Good polys: %d bad polys: %d\n", good_poly, bad_poly);

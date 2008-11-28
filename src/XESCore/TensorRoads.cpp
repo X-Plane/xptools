@@ -26,12 +26,15 @@
 #include "WED_DEMGraphics.h"
 #include "DEMDefs.h"
 #include "MapAlgs.h"
+#include "MapOverlay.h"
+#include "MapTopology.h"
 #include "PolyRasterUtils.h"
 #include "TensorUtils.h"
 #include "MathUtils.h"
 #include "ParamDefs.h"
 #include "GISTool_Globals.h"
 #include "PerfUtils.h"
+#include "MapCreate.h"
 #define XUTILS_EXCLUDE_MAC_CRAP
 #include "XUtils.h"
 
@@ -45,15 +48,29 @@
 #define TIMER(x)
 #endif
 
+// SEt this to 1 to see the road restriction DEM - can explain why no roads showed up in a location.
+#define SHOW_ROAD_RESTRICT 0
+
+// Make roads EVEN if origin code says not to.  Useful for testing maybe.
+#define IGNORE_ORIGIN_CODES 0
+
+// Show roads as debug mesh lines
+#define SHOW_GENERATED_ROADS 0
+
+// Ignore urban density - useful for debugging
+#define IGNORE_DENSITY 1
 /************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************/
 
-inline bool RoadsForThisFace(GISFace * f)
+inline bool RoadsForThisFace(Face_handle f)
 {
-	return !f->IsWater() && f->mTerrainType != terrain_Airport &&
-		f->mParams.count(af_OriginCode) &&
-		f->mParams[af_OriginCode] == 2.0;
+	return !f->data().IsWater() && f->data().mTerrainType != terrain_Airport
+	#if !IGNORE_ORIGIN_CODES
+	 && f->data().mParams.count(af_OriginCode)
+	 &&	f->data().mParams[af_OriginCode] == 2.0
+	#endif	
+	;
 }
 
 bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
@@ -63,11 +80,11 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 	   s1.p2 == s2.p1 ||
 	   s1.p2 == s2.p2)			return false;
 	if(!s1.could_intersect(s2))	return false;
-
-	if(s1.p1.y == s2.p1.y)
+	
+	if(s1.p1.y() == s2.p1.y())
 	{
-		DebugAssert(s1.p1.x != s2.p2.x);
-		if (s1.p1.x < s2.p1.x)
+		DebugAssert(s1.p1.x() != s2.p2.x());
+		if (s1.p1.x() < s2.p1.x())
 		{
 			if (s1.intersect(s2,p) && p != s1.p1 && p != s1.p2)
 			{
@@ -90,7 +107,7 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 	}
 	else
 	{
-		if (s1.p1.y < s2.p1.y)
+		if (s1.p1.y() < s2.p1.y())
 		{
 			if (s1.intersect(s2,p))
 			{
@@ -113,26 +130,40 @@ bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 	}
 }
 
-GISHalfedge * InsertOneEdge(const Point2& p1, const Point2& p2, Pmwx& io_map)
-{
+Halfedge_handle InsertOneEdge(const Point_2& p1, const Point_2& p2, Pmwx& io_map, Locator& io_locator)
+{	
 	DebugAssert(p1 != p2);
-	GISVertex * v1 = io_map.locate_vertex(p1);
-	GISVertex * v2 = io_map.locate_vertex(p2);
+	Vertex_handle	v1, v2;
+	Face_handle		f;
+	CGAL::Object	obj1 = io_locator.locate(p1);
+	CGAL::Object	obj2 = io_locator.locate(p2);
 
-	if(v1 && v2)		return io_map.nox_insert_edge_between_vertices(v1,v2);
-	else if (v1)		return io_map.nox_insert_edge_from_vertex(v1,p2);
-	else if (v2)		return io_map.nox_insert_edge_from_vertex(v2,p1);
-	else				return io_map.nox_insert_edge_in_hole(p1,p2);
+	bool has_v1 = CGAL::assign(v1, obj1);
+	bool has_v2 = CGAL::assign(v2, obj2);
+
+	Curve_2 s(Segment_2(p1,p2));
+
+	if(has_v1 && has_v2)		return io_map.insert_at_vertices(s, v1,v2);
+	else if (has_v1)			return io_map.insert_from_left_vertex(s, v1);
+	else if (has_v2)			return io_map.insert_from_right_vertex(s, v2);
+	else if(CGAL::assign(f,obj1))	return io_map.insert_in_face_interior(s,f);
+	else {			
+	//return CGAL::insert_curve(io_map,s);
+		DebugAssert(!"Not disjoint!!");
+		return Halfedge_handle();
+	}
 }
-
-void	SetRoadProps(GISHalfedge * e)
+		
+/*		
+void	SetRoadProps(Halfedge_handle e)
 {
-	if (!e->mDominant) e = e->twin();
-	e->mSegments.push_back(GISNetworkSegment_t());
-	e->mSegments.back().mFeatType = road_LocalUnsep;
+	if (!e->data().mDominant) e = e->twin();
+	e->data().mSegments.push_back(GISNetworkSegment_t());
+	e->data().mSegments.back().mFeatType = road_LocalUnsep;
 }
+*/
 
-inline bool LessEdgesThan(GISFace * f, int c)
+inline bool LessEdgesThan(Face_handle f, int c)
 {
 	if(f->is_unbounded()) return false;
 
@@ -142,8 +173,8 @@ inline bool LessEdgesThan(GISFace * f, int c)
 		if(c-- <= 0) return false;
 		++circ;
 	} while(circ != stop);
-
-	for(Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+	
+	for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 	{
 		circ = stop = *h;
 		do {
@@ -157,9 +188,8 @@ inline bool LessEdgesThan(GISFace * f, int c)
 void BulkZapRoads(const DEMGeo& inUrbanDensity, Pmwx& io_map)
 {
 	printf("BEFORE ZAP: %d generated roads.\n",io_map.number_of_halfedges() / 2);
-	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); )
-	if(e->mDominant)
-	{
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); )
+	{		
 		if((e->source()->degree() > 2 && e->target()->degree() > 2 &&		// If we have a real intersection on both sides AND
 		   e->face() != e->twin()->face() &&								// We divide two DIFFERENT faces (so we don't make an island) AND
 		   LessEdgesThan(e->face(), 6) &&									// The faces aren't too complex
@@ -168,93 +198,40 @@ void BulkZapRoads(const DEMGeo& inUrbanDensity, Pmwx& io_map)
 		   (e->source()->degree() == 1 || e->target()->degree() == 1)		// Or if we're an antenna
 			)
 		{
-			Point2 mp(Segment2(e->source()->point(),e->target()->point()).midpoint(0.5));
-			double d = inUrbanDensity.get(inUrbanDensity.lon_to_x(mp.x),inUrbanDensity.lat_to_y(mp.y));
+			Point_2	mp(CGAL::midpoint(e->source()->point(),e->target()->point()));
+			double d = inUrbanDensity.get(inUrbanDensity.lon_to_x(CGAL::to_double(mp.x())),inUrbanDensity.lat_to_y(CGAL::to_double(mp.y())));
 			if(e->source()->degree() == 1 || e->target()->degree() == 1)
 				d = min(d,0.5);		// always think of nuking antennas
+			#if IGNORE_DENSITY
+				d =1.0;
+			#endif	
 			if(!RollDice(d))
 			{
-				GISHalfedge * k = e;
-									++e;
-				if(e == k->twin())	++e;
+				Halfedge_handle k = e;
+				++e;
 				io_map.remove_edge(k);
 			}
-			else ++e;
+			else 
+				++e;
 		} else
 			++e;
-	} else
-		++e;
+	} 
 	printf("AFTER ZAP: %d generated roads.\n",io_map.number_of_halfedges() / 2);
 }
 
 void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 {
-	typedef multimap<double, Segment2>	RoadIndex;
-	typedef	map<double, Point2>			CrossIndex;
+	GIS_halfedge_data	hed;
+	hed.mSegments.push_back(GISNetworkSegment_t());
+	hed.mSegments.back().mFeatType = road_LocalUnsep;
 
-	int n;
-	double		y_max = 0;
-	RoadIndex	road_idx;
+	vector<Segment_2>			road_vec(roads.size());
+	vector<GIS_halfedge_data>	data_vec(roads.size(),hed);
 
-	for(n = 0; n < roads.size(); ++n)
-	{
-		Segment2	r(roads[n]);
-		if(r.p1.y == r.p2.y && r.p1.x > r.p2.x) swap(r.p1,r.p2);
-		if(r.p1.y >  r.p2.y					  ) swap(r.p1,r.p2);
-		y_max = max(y_max,r.p2.y - r.p1.y);
-		road_idx.insert(RoadIndex::value_type(r.p1.y,r));
-	}
+	for(int n = 0; n < roads.size(); ++n)
+		road_vec[n] = Segment_2(ben2cgal(roads[n].p1),ben2cgal(roads[n].p2));
 
-	for(RoadIndex::iterator i = road_idx.begin(); i != road_idx.end(); ++i)
-	{
-		RoadIndex::iterator j1(i), j2(i);
-
-		CrossIndex	c;
-		Point2		p;
-		if(j1 != road_idx.begin())
-		{
-			do {
-				--j1;
-
-				if ((j1->first + y_max) < i->second.p1.y)	break;
-
-				if (CrossCheck(i->second, j1->second, p))
-					c.insert(CrossIndex::value_type(Vector2(i->second.p1,p).squared_length(),p));
-
-			} while(j1 != road_idx.begin());
-		}
-
-		++j2;
-		while(j2 != road_idx.end())
-		{
-			if(j2->first > i->second.p2.y)	break;
-
-				if (CrossCheck(i->second, j2->second, p))
-					c.insert(CrossIndex::value_type(Vector2(i->second.p1,p).squared_length(),p));
-			++j2;
-		}
-
-//		for (CrossIndex::iterator cc = c.begin(); cc != c.end(); ++cc)
-//		{
-//			gMeshPoints.push_back(pair<Point2,Point3>(cc->second, Point3(0,1,1)));
-//		}
-
-		if(c.empty())
-			SetRoadProps(InsertOneEdge(i->second.p1, i->second.p2, io_map));
-		else {
-			CrossIndex::iterator cc = c.begin();
-			SetRoadProps(InsertOneEdge(i->second.p1,cc->second, io_map));
-			++cc;
-			for(; cc != c.end(); ++cc)
-			{
-				CrossIndex::iterator prev(cc);
-				--prev;
-				SetRoadProps(InsertOneEdge(prev->second, cc->second, io_map));
-			}
-			--cc;
-			SetRoadProps(InsertOneEdge(cc->second,i->second.p2, io_map));
-		}
-	}
+	Map_CreateWithLineData(io_map, road_vec, data_vec);
 }
 
 int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)
@@ -351,10 +328,10 @@ inline int	dem_get(const DEMGeo& d, int x, int y)
 static Vector2	Tensor_Func(const Point2& p, void * ref)
 {
 	Tensor_info * i = (Tensor_info *) ref;
-
-	double lon = interp(0,i->bounds.p1.x,1,i->bounds.p2.x,p.x);
-	double lat = interp(0,i->bounds.p1.y,1,i->bounds.p2.y,p.y);
-
+	
+	double lon = interp(0,i->bounds.p1.x(),1,i->bounds.p2.x(),p.x());
+	double lat = interp(0,i->bounds.p1.y(),1,i->bounds.p2.y(),p.y());
+		
 	double xe = i->elev->lon_to_x(lon);
 	double ye = i->elev->lat_to_y(lat);
 	double xr = i->urad->lon_to_x(lon);
@@ -405,8 +382,8 @@ void	QueueSeed(
 	TensorSeed	s;
 	s.p = p;
 	s.major = major;
-	s.x = dem.lon_to_x(p.x);
-	s.y = dem.lat_to_y(p.y);
+	s.x = dem.lon_to_x(p.x());
+	s.y = dem.lat_to_y(p.y());
 
 	int old = dem_get(dem,s.x,s.y);
 	if(old==DEM_NO_DATA)return;
@@ -422,15 +399,15 @@ void	QueueSeed(
 bool CheckStats(const Point2& p, const Point2& p_old, const DEMGeo& elev, const DEMGeo& slope, const DEMGeo& density, float amp)
 {
 //	return true;
-	float d = density.get(density.lon_to_x(p.x),density.lat_to_y(p.y));
-	float s = slope.get(slope.lon_to_x(p.x),slope.lat_to_y(p.y));
-	if(d == DEM_NO_DATA) return false;
+	float d = density.get(density.lon_to_x(p.x()),density.lat_to_y(p.y()));
+	float s = slope.get(slope.lon_to_x(p.x()),slope.lat_to_y(p.y()));
+	if(d == DEM_NO_DATA) return false;	
 	d += amp;
 	if (!RollDice(d)) return false;
 //	if (!RollDice((d*gRoadPrefs.density_amp))) return false;
-	float ss = fabs(elev.value_linear(p.x,p.y)-elev.value_linear(p_old.x,p_old.y));
-	float rr = pythag(elev.x_dist_to_m(elev.lon_to_x(p.x)-elev.lon_to_x(p_old.x)),
-					 elev.y_dist_to_m(elev.lat_to_y(p.y)-elev.lat_to_y(p_old.y)));
+	float ss = fabs(elev.value_linear(p.x(),p.y())-elev.value_linear(p_old.x(),p_old.y()));
+	float rr = pythag(elev.x_dist_to_m(elev.lon_to_x(p.x())-elev.lon_to_x(p_old.x())),
+					 elev.y_dist_to_m(elev.lat_to_y(p.y())-elev.lat_to_y(p_old.y())));
 	if(rr==0.0) return true;
 	if(RollDice(ss / rr)*gRoadPrefs.slope_amp)return false;
 //	if(RollDice(s * gRoadPrefs.slope_amp)) return false;
@@ -445,9 +422,9 @@ bool CheckAndRegister(
 			int&				ctr,
 			bool				major)
 {
-	int x = intlim(dem.lon_to_x(p.x),0,dem.mWidth -1);
-	int y = intlim(dem.lat_to_y(p.y),0,dem.mHeight-1);
-	if(x == ox && y == oy)
+	int x = intlim(dem.lon_to_x(p.x()),0,dem.mWidth -1);
+	int y = intlim(dem.lat_to_y(p.y()),0,dem.mHeight-1);
+	if(x == ox && y == oy) 
 		return (ctr-- > 0);
 	ox =x;
 	oy =y;
@@ -480,24 +457,24 @@ void	TensorForFace(
 	t.uden = &inUrbanDensity;
 	t.grdx = &inGridX;
 	t.grdy = &inGridY;
-	t.bounds.p1.x = inElevation.mWest ;
-	t.bounds.p1.y = inElevation.mSouth;
-	t.bounds.p2.x = inElevation.mEast ;
-	t.bounds.p2.y = inElevation.mNorth;
+	t.bounds.p1.x_ = inElevation.mWest ; 
+	t.bounds.p1.y_ = inElevation.mSouth;
+	t.bounds.p2.x_ = inElevation.mEast ;
+	t.bounds.p2.y_ = inElevation.mNorth;
 }
 
 void	RasterEdge(
-					GISHalfedge *	e,
-					DEMGeo&			dem,
-					Vector2 (*		tensorFunc)(const Point2& p, void * ref),
-					void *			tensorRef)
+					Halfedge_handle		e,
+					DEMGeo&				dem,
+					Vector2 (*			tensorFunc)(const Point2& p, void * ref),
+					void *				tensorRef)
 {
-	int x1 = intlim(dem.lon_to_x(e->source()->point().x),0,dem.mWidth-1);
-	int x2 = intlim(dem.lon_to_x(e->target()->point().x),0,dem.mWidth-1);
-	int y1 = intlim(dem.lat_to_y(e->source()->point().y),0,dem.mHeight-1);
-	int y2 = intlim(dem.lat_to_y(e->target()->point().y),0,dem.mHeight-1);
-
-	Vector2	road_dir(e->source()->point(),e->target()->point());
+	int x1 = intlim(dem.lon_to_x(CGAL::to_double(e->source()->point().x())),0,dem.mWidth-1);
+	int x2 = intlim(dem.lon_to_x(CGAL::to_double(e->target()->point().x())),0,dem.mWidth-1);
+	int y1 = intlim(dem.lat_to_y(CGAL::to_double(e->source()->point().y())),0,dem.mHeight-1);
+	int y2 = intlim(dem.lat_to_y(CGAL::to_double(e->target()->point().y())),0,dem.mHeight-1);
+	
+	Vector2	road_dir(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
 	road_dir.normalize();
 
 	if(abs(x2-x1) > abs(y2-y1))
@@ -556,8 +533,8 @@ void	BuildRoadsForFace(
 					const DEMGeo&	inSlope,
 					const DEMGeo&	inUrbanDensity,
 					const DEMGeo&	inUrbanRadial,
-					const DEMGeo&	inUrbanSquare,
-					GISFace *		inFace,
+					const DEMGeo&	inUrbanSquare,					
+					Face_handle		inFace,
 					ProgressFunc	inProg,
 					ImageInfo *		ioTensorImage,
 					double			outTensorBounds[4])
@@ -583,10 +560,10 @@ void	BuildRoadsForFace(
 	// Best to zap out a lot here since more possiblep points means more time in the alg.
 	{
 		TIMER(burn_water)
-
-		set<GISFace *>			no_road_faces;
-		set<GISHalfedge *>		bounds;
-		PolyRasterizer			raster;
+		
+		set<Face_handle>			no_road_faces;
+		set<Halfedge_handle>		bounds;
+		PolyRasterizer				raster;
 		for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 		if (!f->is_unbounded())
 		if(!RoadsForThisFace(f))
@@ -640,7 +617,7 @@ void	BuildRoadsForFace(
 				t);
 
 		for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-		if (e->mDominant)
+		if (e->data().mDominant)
 			RasterEdge(e, road_restrict, Tensor_Func, &t);
 	}
 
@@ -670,13 +647,13 @@ void	BuildRoadsForFace(
 
 
 			Pmwx::Ccb_halfedge_circulator	circ = f->outer_ccb();
-			Pmwx::Ccb_halfedge_circulator	start = circ;
-			Bbox2	bounds(circ->source()->point());
+			Pmwx::Ccb_halfedge_circulator	start = circ;		
+			Bbox2	bounds(cgal2ben(circ->source()->point()));	
 			do {
-				poly.push_back(circ->target()->point());
-				bounds += circ->target()->point();
-				Vector2 prev(	circ->source()->point(),circ->target()->point());
-				Vector2 next(	circ->next()->source()->point(),circ->next()->target()->point());
+				poly.push_back(cgal2ben(circ->target()->point()));
+				bounds += cgal2ben(circ->target()->point());
+				Vector2 prev(	cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point()));
+				Vector2 next(	cgal2ben(circ->next()->source()->point()),cgal2ben(circ->next()->target()->point()));
 				prev.normalize();
 				next.normalize();
 				Vector2 v(prev+next);
@@ -684,15 +661,15 @@ void	BuildRoadsForFace(
 				tensors.push_back(/*Eigen2Tensor*/(v));
 				++circ;
 			} while (circ != start);
-
-			for(Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+			
+			for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 			{
 				Pmwx::Ccb_halfedge_circulator	circ(*h);
 				Pmwx::Ccb_halfedge_circulator	start = circ;
 				do {
-					poly.push_back(circ->target()->point());
-					Vector2 prev(	circ->source()->point(),circ->target()->point());
-					Vector2 next(	circ->next()->source()->point(),circ->next()->target()->point());
+					poly.push_back(cgal2ben(circ->target()->point()));
+					Vector2 prev(	cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point()));
+					Vector2 next(	cgal2ben(circ->next()->source()->point()),cgal2ben(circ->next()->target()->point()));
 					prev.normalize();
 					next.normalize();
 					Vector2 v(prev+next);
@@ -702,8 +679,8 @@ void	BuildRoadsForFace(
 				} while(circ != start);
 			}
 
-			// Now rasterize into the polygon...
-			double sz = (bounds.p2.y - bounds.p1.y) * (bounds.p2.x - bounds.p1.x);
+			// Now rasterize into the polygon...		
+			double sz = (bounds.p2.y() - bounds.p1.y()) * (bounds.p2.x() - bounds.p1.x());		
 			y = SetupRasterizerForDEM(f, road_restrict, raster);
 			raster.StartScanline(y);
 			while (!raster.DoneScan())
@@ -756,8 +733,8 @@ void	BuildRoadsForFace(
 			Pmwx::Halfedge_around_vertex_circulator circ(v->incident_halfedges());
 			Pmwx::Halfedge_around_vertex_circulator stop(circ);
 			do {
-				if (!circ->mSegments.empty() ||
-					!circ->twin()->mSegments.empty())
+				if (!circ->data().mSegments.empty() ||
+					!circ->twin()->data().mSegments.empty())
 				{
 					has_road = true;
 					break;
@@ -766,7 +743,7 @@ void	BuildRoadsForFace(
 			} while (circ != stop);
 			if(has_road)
 			{
-				QueueSeed(v->point(),false,road_restrict,seedQ);
+				QueueSeed(cgal2ben(v->point()),false,road_restrict,seedQ);
 			}
 		}
 
@@ -803,8 +780,8 @@ void	BuildRoadsForFace(
 					if (front_alive)
 					{
 						Vector2	e = Tensor2Eigen(Tensor_Func(
-											Point2(interp(road_restrict.mWest , 0, road_restrict.mEast ,1,fp.x),
-												   interp(road_restrict.mSouth, 0, road_restrict.mNorth,1,fp.y)),&t));
+											Point2(interp(road_restrict.mWest , 0, road_restrict.mEast ,1,fp.x()),
+												   interp(road_restrict.mSouth, 0, road_restrict.mNorth,1,fp.y())),&t));
 						if (!seedQ.front().major) e = e.perpendicular_ccw();
 						if(e.dot(fe) < 0) e = -e;
 						fe = e;
@@ -822,9 +799,9 @@ void	BuildRoadsForFace(
 					if (back_alive)
 					{
 						Vector2	e = -Tensor2Eigen(Tensor_Func(
-											Point2(interp(road_restrict.mWest , 0, road_restrict.mEast ,1,bp.x),
-												   interp(road_restrict.mSouth, 0, road_restrict.mNorth,1,bp.y)),&t));
-						if (!seedQ.front().major) e = e.perpendicular_ccw();
+											Point2(interp(road_restrict.mWest , 0, road_restrict.mEast ,1,bp.x()),
+												   interp(road_restrict.mSouth, 0, road_restrict.mNorth,1,bp.y())),&t));
+						if (!seedQ.front().major) e = e.perpendicular_ccw();					
 						if (e.dot(be) < 0) e = -e;
 						be = e;
 						e *= ADVANCE_RATIO;
@@ -868,40 +845,50 @@ void	BuildRoadsForFace(
 	{
 		TIMER(build_real_roads)
 		Pmwx	sub;
-		sub.unbounded_face()->mTerrainType = terrain_Natural;
+		sub.unbounded_face()->data().mTerrainType = terrain_Natural;
 		BulkInsertRoads(roads, sub);
 		BulkZapRoads(inUrbanDensity, sub);
 		DebugAssert(sub.is_valid());
-		TopoIntegrateMaps(&ioMap, &sub);
+//		TopoIntegrateMaps(&ioMap, &sub);
 	//	for(Pmwx::Face_iterator sf = sub.faces-begin(); sf != sub.faces_end(); ++sf)
 	//		sf->mTerrainType = terrain_Natural;
 		DebugAssert(ioMap.is_valid());
 		DebugAssert(sub.is_valid());
-
-		MergeMaps(ioMap, sub, false, NULL, true, inProg);
+		
+		#if SHOW_GENERATED_ROADS
+		for(Pmwx::Edge_iterator eit = sub.edges_begin(); eit != sub.edges_end(); ++eit)		
+			debug_mesh_line(cgal2ben(eit->source()->point()),cgal2ben(eit->target()->point()),1,0,0, 0,1,0);
+		#endif
+		
+		if(!sub.is_empty())
+			MergeMaps(ioMap, sub, false, NULL, true, inProg);
 	}
 
 	/**********************************************************************************************************************************
 	 * DEBUG OUTPUT
 	**********************************************************************************************************************************/
 
-#if OPENGL_MAP
-	if(inFace && ioTensorImage)
+#if OPENGL_MAP	
+	if(inFace != Face_handle() && ioTensorImage)
 	{
 		Pmwx::Ccb_halfedge_circulator	circ = inFace->outer_ccb();
 		Pmwx::Ccb_halfedge_circulator	start = circ;
-		t.bounds = Bbox2(circ->source()->point());
+		t.bounds = Bbox2(cgal2ben(circ->source()->point()));
 		do {
-			t.bounds += circ->source()->point();
+			t.bounds += cgal2ben(circ->source()->point());
 			++circ;
 		} while (circ != start);
 
 
 		TensorDDA(*ioTensorImage,Tensor_Func,&t);
-		outTensorBounds[0] = t.bounds.p1.x;
-		outTensorBounds[1] = t.bounds.p1.y;
-		outTensorBounds[2] = t.bounds.p2.x;
-		outTensorBounds[3] = t.bounds.p2.y;
+		outTensorBounds[0] = t.bounds.p1.x();
+		outTensorBounds[1] = t.bounds.p1.y();
+		outTensorBounds[2] = t.bounds.p2.x();
+		outTensorBounds[3] = t.bounds.p2.y();
 	}
 #endif
+#if SHOW_ROAD_RESTRICT
+	gDem[dem_Wizard] = road_restrict;
+#endif	
+
 }

@@ -25,7 +25,7 @@
 #define ZONING_H
 
 #include "AptDefs.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
 
 struct	DEMGeo;
@@ -45,4 +45,3 @@ void	ZoneManMadeAreas(
 				ProgressFunc		inProg);
 
 #endif /* ZONING_H */
-

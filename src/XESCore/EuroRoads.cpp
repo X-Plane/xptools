@@ -22,7 +22,7 @@
  */
 
 #include "EuroRoads.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "DEMDefs.h"
 #include "DEMToVector.h"
 #include "DEMAlgs.h"
@@ -91,7 +91,7 @@ void	AddEuroRoads(
 
 	DemToVector(matches, road_area, false, terrain_Marker_Features, inFunc);
 
-	set<GISFace *>	faces;
+	set<Face_handle>	faces;
 
 	TopoIntegrateMaps(&ioBase, &road_area);
 	MergeMaps(ioBase, road_area,
@@ -101,12 +101,12 @@ void	AddEuroRoads(
 			inFunc);		// pre integrated
 
 
-	for (set<GISFace *>::iterator face = faces.begin(); face != faces.end(); ++face)
+	for (set<Face_handle>::iterator face = faces.begin(); face != faces.end(); ++face)
 	{
-		if ((*face)->mTerrainType == terrain_Marker_Features)
+		if ((*face)->data().mTerrainType == terrain_Marker_Features)
 		{
-#if !DEBUG_SHOW_AREAS
-			(*face)->mTerrainType = terrain_Natural;
+#if !DEBUG_SHOW_AREAS		
+			(*face)->data().mTerrainType = terrain_Natural;
 
 // BEN SAYS:
 ///	This was an attempt to copy a small section and reuse it.  It does NOT work becaus ethe copy cost is way more expensive than other factors in this alg.

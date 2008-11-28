@@ -26,6 +26,16 @@
 #include "XChunkyFileUtils.h"
 #include "SimpleIO.h"
 #include "AssertUtils.h"
+#include "MapAlgs.h"
+
+#include <CGAL/Arr_accessor.h>
+
+// CGAL 3.3.1 has a data structure for a hole...I am trying to figure out if we need it...had code that APPEARED
+// to work without it...this controls whether half-edges link to hole structures.
+#define USE_HOLES 1
+
+// Rebuidl map
+#define REBUILD_MAP 0
 
 // Ratio of operations to an update of the progress bar.
 #define	PROGRESS_RATIO	5000
@@ -52,9 +62,9 @@ int	CountCirculator(Pmwx::Ccb_halfedge_const_circulator circ)
 }
 
 
-int	CountCirculator(GISHalfedge * circ)
+int	CountCirculator(Halfedge_handle circ)
 {
-	GISHalfedge * stop = circ;
+	Halfedge_handle stop = circ;
 	int n = 0;
 	do {
 		++n;
@@ -138,8 +148,8 @@ void ReadParamMap				(IOReader& inReader, GISParamMap& m, const TokenConversionM
 void	WriteObjPlacement(IOWriter& inWriter, const GISObjPlacement_t& i)
 {
 	inWriter.WriteInt(i.mRepType);
-	inWriter.WriteDouble(CGAL::to_double(i.mLocation.x));
-	inWriter.WriteDouble(CGAL::to_double(i.mLocation.y));
+	inWriter.WriteDouble(CGAL::to_double(i.mLocation.x()));
+	inWriter.WriteDouble(CGAL::to_double(i.mLocation.y()));
 	inWriter.WriteDouble(i.mHeading);
 	inWriter.WriteInt(i.mDerived ? 1 : 0);
 }
@@ -151,7 +161,7 @@ void ReadObjPlacement(IOReader& inReader, GISObjPlacement_t& p, const TokenConve
 	p.mRepType = c[p.mRepType];
 	inReader.ReadDouble(x);
 	inReader.ReadDouble(y);
-	p.mLocation = Point2(x, y);
+	p.mLocation = Point_2(x, y);
 	inReader.ReadDouble(p.mHeading);
 	int derived;
 	inReader.ReadInt(derived);
@@ -161,16 +171,25 @@ void ReadObjPlacement(IOReader& inReader, GISObjPlacement_t& p, const TokenConve
 void WritePolyObjPlacement(IOWriter& inWriter, const GISPolyObjPlacement_t& i)
 {
 	inWriter.WriteInt(i.mRepType);
-	inWriter.WriteInt(i.mShape.size());
-	for (vector<Polygon2>::const_iterator pr = i.mShape.begin(); pr != i.mShape.end(); ++pr)
+	inWriter.WriteInt(1 + distance(i.mShape.holes_begin(),i.mShape.holes_end()));
+
+	inWriter.WriteInt(i.mShape.outer_boundary().size());
+	for (Polygon_2::Vertex_iterator vv = i.mShape.outer_boundary().vertices_begin(); vv != i.mShape.outer_boundary().vertices_end(); ++vv)
 	{
-		inWriter.WriteInt(pr->size());
-		for (Polygon2::const_iterator vv = pr->begin(); vv != pr->end(); ++vv)
+		inWriter.WriteDouble(CGAL::to_double(vv->x()));
+		inWriter.WriteDouble(CGAL::to_double(vv->y()));
+	}
+
+	for(Polygon_with_holes_2::Hole_const_iterator h = i.mShape.holes_begin(); h != i.mShape.holes_end(); ++h)
+	{
+		inWriter.WriteInt(h->size());
+		for (Polygon_2::Vertex_iterator vv = h->vertices_begin(); vv != h->vertices_end(); ++vv)
 		{
-			inWriter.WriteDouble(CGAL::to_double(vv->x));
-			inWriter.WriteDouble(CGAL::to_double(vv->y));
+			inWriter.WriteDouble(CGAL::to_double(vv->x()));
+			inWriter.WriteDouble(CGAL::to_double(vv->y()));
 		}
 	}
+	
 	inWriter.WriteDouble(i.mHeight);
 	inWriter.WriteInt(i.mDerived ? 1 : 0);
 }
@@ -181,18 +200,37 @@ void ReadPolyObjPlacement(IOReader& inReader, GISPolyObjPlacement_t& obj, const 
 	obj.mRepType = c[obj.mRepType];
 	int	ptcount, rcount;
 	inReader.ReadInt(rcount);
+	DebugAssert(rcount >= 1);
+	--rcount;
+	
+	Polygon_2	ring;
+
+	inReader.ReadInt(ptcount);
+	while(ptcount--)
+	{
+		double	x,y;
+		inReader.ReadDouble(x);
+		inReader.ReadDouble(y);
+		ring.push_back(Point_2((x), (y)));
+	}
+	
+	vector<Polygon_2>	holes;
+
 	while(rcount--)
 	{
-		obj.mShape.push_back(Polygon2());
+		holes.push_back(Polygon_2());
 		inReader.ReadInt(ptcount);
 		while(ptcount--)
 		{
 			double	x,y;
 			inReader.ReadDouble(x);
 			inReader.ReadDouble(y);
-			obj.mShape.back().push_back(Point2(x,y));
+			holes.back().push_back(Point_2((x), (y)));
 		}
 	}
+	
+	obj.mShape = Polygon_with_holes_2(ring,holes.begin(),holes.end());
+
 	inReader.ReadDouble(obj.mHeight);
 	int derived;
 	inReader.ReadInt(derived);
@@ -203,8 +241,8 @@ void WritePointFeature(IOWriter& inWriter, const GISPointFeature_t& i)
 {
 	inWriter.WriteInt(i.mFeatType);
 	WriteParamMap(inWriter, i.mParams);
-	inWriter.WriteDouble(CGAL::to_double(i.mLocation.x));
-	inWriter.WriteDouble(CGAL::to_double(i.mLocation.y));
+	inWriter.WriteDouble(CGAL::to_double(i.mLocation.x()));
+	inWriter.WriteDouble(CGAL::to_double(i.mLocation.y()));
 }
 
 void ReadPointFeature(IOReader& inReader, GISPointFeature_t& feature, const TokenConversionMap& c)
@@ -215,7 +253,7 @@ void ReadPointFeature(IOReader& inReader, GISPointFeature_t& feature, const Toke
 	double x, y;
 	inReader.ReadDouble(x);
 	inReader.ReadDouble(y);
-	feature.mLocation = Point2(x,y);
+	feature.mLocation = Point_2(x,y);
 	feature.mInstantiated = false;
 }
 
@@ -223,12 +261,12 @@ void WritePolygonFeature(IOWriter& inWriter, const GISPolygonFeature_t& i)
 {
 	inWriter.WriteInt(i.mFeatType);
 	WriteParamMap(inWriter, i.mParams);
-	inWriter.WriteInt(i.mShape.size());
-	for (Polygon2::const_iterator vv = i.mShape.begin();
-		vv != i.mShape.end(); ++vv)
+	inWriter.WriteInt(i.mShape.outer_boundary().size());
+	for (Polygon_2::const_iterator vv = i.mShape.outer_boundary().vertices_begin();
+		vv != i.mShape.outer_boundary().vertices_end(); ++vv)
 	{
-		inWriter.WriteDouble(CGAL::to_double(vv->x));
-		inWriter.WriteDouble(CGAL::to_double(vv->y));
+		inWriter.WriteDouble(CGAL::to_double(vv->x()));
+		inWriter.WriteDouble(CGAL::to_double(vv->y()));
 	}
 }
 
@@ -244,7 +282,7 @@ void ReadPolygonFeature(IOReader& inReader, GISPolygonFeature_t& obj, const Toke
 		double	x,y;
 		inReader.ReadDouble(x);
 		inReader.ReadDouble(y);
-		obj.mShape.push_back(Point2(x,y));
+		obj.mShape.outer_boundary().push_back(Point_2((x),(y)));
 		obj.mInstantiated = false;
 	}
 }
@@ -290,9 +328,9 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			writer.WriteDouble(CGAL::to_double(v->point().x));
-			writer.WriteDouble(CGAL::to_double(v->point().y));
+		
+			writer.WriteDouble(CGAL::to_double(v->point().x()));
+			writer.WriteDouble(CGAL::to_double(v->point().y()));
 		}
 
 		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
@@ -301,14 +339,14 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 
 			writer.WriteInt(v_index[he->target()]);
-			writer.WriteDouble(CGAL::to_double(he->source()->point().x));
-			writer.WriteDouble(CGAL::to_double(he->source()->point().y));
-			writer.WriteDouble(CGAL::to_double(he->target()->point().x));
-			writer.WriteDouble(CGAL::to_double(he->target()->point().y));
-
-			writer.WriteInt(he->mDominant);
-			writer.WriteInt(he->mTransition);
-			writer.WriteDouble(he->mInset);
+			writer.WriteDouble(CGAL::to_double(he->source()->point().x()));
+			writer.WriteDouble(CGAL::to_double(he->source()->point().y()));
+			writer.WriteDouble(CGAL::to_double(he->target()->point().x()));
+			writer.WriteDouble(CGAL::to_double(he->target()->point().y()));
+			
+			writer.WriteInt(he->data().mDominant);
+			writer.WriteInt(he->data().mTransition);
+			writer.WriteDouble(he->data().mInset);		
 		}
 
 		for (f = inMap.faces_begin();
@@ -332,7 +370,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			}
 
 			writer.WriteInt(distance(f->holes_begin(), f->holes_end()));
-			for (Pmwx::Holes_const_iterator hole = f->holes_begin();
+			for (Pmwx::Hole_const_iterator hole = f->holes_begin();
 				hole != f->holes_end(); ++hole)
 			{
 				writer.WriteInt(CountCirculator(*hole));
@@ -343,11 +381,11 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 					++edge;
 				} while (last != edge);
 			}
-
-			int dummy = f->IsWater();
+			
+			int dummy = f->data().IsWater();
 			writer.WriteInt(dummy);
 //			writer.WriteInt(f->mIsWater);
-			writer.WriteInt(f->mTerrainType);
+			writer.WriteInt(f->data().mTerrainType);
 		}
 	}
 
@@ -358,9 +396,9 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			he != inMap.halfedges_end(); ++he, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			WriteVector(writer, he->mSegments, WriteNetworkSegment);
-			WriteParamMap(writer, he->mParams);
+		
+			WriteVector(writer, he->data().mSegments, WriteNetworkSegment);
+			WriteParamMap(writer, he->data().mParams);		
 		}
 	}
 
@@ -371,14 +409,14 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			f != inMap.faces_end(); ++f, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			WriteParamMap(writer, f->mParams);
-			WriteVector(writer, f->mObjs, WriteObjPlacement);
-			WriteVector(writer, f->mPolyObjs, WritePolyObjPlacement);
-			WriteVector(writer, f->mPointFeatures, WritePointFeature);
-			WriteVector(writer, f->mPolygonFeatures, WritePolygonFeature);
+		
+			WriteParamMap(writer, f->data().mParams);
+			WriteVector(writer, f->data().mObjs, WriteObjPlacement);
+			WriteVector(writer, f->data().mPolyObjs, WritePolyObjPlacement);
+			WriteVector(writer, f->data().mPointFeatures, WritePointFeature);
+			WriteVector(writer, f->data().mPolygonFeatures, WritePolygonFeature);
 			vector<GISAreaFeature_t>	fakeVector;
-			fakeVector.push_back(f->mAreaFeature);
+			//fakeVector.push_back(f->data().mAreaFeature[0]);
 			WriteVector(writer, fakeVector, WriteAreaFeature);
 		}
 	}
@@ -389,8 +427,8 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
 			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			writer.WriteBulk(&v->mTunnelPortal, 1, false);
+			
+			writer.WriteBulk((char *) &v->data().mTunnelPortal, 1, false);
 		}
 	}
 
@@ -408,14 +446,18 @@ public:
 	int			mTotal;
 	int			mCount;
 	IOReader *	mReader;
-	vector<GISFace*>		mFacesVec;
-	vector<GISHalfedge*>	mHalfedgesVec;
-	vector<GISVertex*>	mVerticesVec;
+	// yes really, pointers not handles
+	Arrangement_2&           m_arr;
+	Arr_accessor             m_arr_access;
+	vector<DFace*>		mFacesVec;
+	vector<DHalfedge*>	mHalfedgesVec;
+	vector<DVertex*>	mVerticesVec;
 	ProgressFunc 	mProgress;
 	bool			mLegacy;
 
-	MapScanner(IOReader * inReader, ProgressFunc func) : mReader(inReader),
-		mVertices(0), mFaces(0), mHalfedges(0), mProgress(func), mTotal(0), mCount(0), mLegacy(false)
+	MapScanner(IOReader * inReader, Pmwx & the_map, ProgressFunc func) : mReader(inReader),
+		mVertices(0), mFaces(0), mHalfedges(0), mProgress(func), mTotal(0), mCount(0), mLegacy(false),
+	    m_arr (the_map), m_arr_access (m_arr)
 	{
 		if (mProgress) mProgress(0, 1, "Reading", 0.0);
 
@@ -438,48 +480,62 @@ public:
 		mReader->ReadInt(mFaces);
 		mTotal = mVertices + mHalfedges + mFaces;
 	}
-
-	GISVertex * scan_vertex (Pmwx& the_map)
-	{
+	
+	DVertex* scan_vertex (Pmwx& the_map)
+	{	
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
 
 		double	x, y;
 		mReader->ReadDouble(x);
 		mReader->ReadDouble(y);
-		Point2	p(x,y);
-//		if (p == Point2(0.0, 0.0))
+		
+//		if (p == Point_2(0.0, 0.0))
 //			printf("WARNING: got null pt.\n");
-		GISVertex * v = the_map.new_vertex(p);
+//		DVertex* v = &*CGAL::insert_point(the_map, Point_2((x),(y)));
+		DVertex * v = m_arr_access.new_vertex(Point_2(x,y));
 		mVerticesVec.push_back(v);
 		return v;
 	}
 
-	void scan_halfedge (GISHalfedge* h)
+	DHalfedge* scan_halfedge (DHalfedge * me)
 	{
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
 
 		double	x1, y1, x2, y2;
-//		X_curve cv;
+		X_monotone_curve_2 cv;
 		mReader->ReadDouble(x1);
 		mReader->ReadDouble(y1);
 		mReader->ReadDouble(x2);
 		mReader->ReadDouble(y2);
-//		cv = X_curve(Point2(x1, y1), Point2(x2, y2));
 
-		int	dominant;
+//					FastKernel kernel;
+  //      FastKernel::Compare_xy_2 compare_xy = 
+    //                                              kernel.compare_xy_2_object();
+		
+		
+		bool larger = ((x1 == x2 && y2 < y1) || (x2 < x1));
+		cv = X_monotone_curve_2(Segment_2(Point_2(x1, y1), Point_2(x2, y2)));
+		DHalfedge* h = me ? me : m_arr_access.new_edge(cv);
+//		CGAL::Comparison_result r;
+//		h->set_direction(r = compare_xy(cv.source(),cv.target()));
+		h->set_direction(larger ? CGAL::LARGER : CGAL::SMALLER);
+//		if(r == CGAL::LARGER) DebugAssert(!larger);
+//		if(r == CGAL::SMALLER) DebugAssert(larger);
+		
+		int	dominant;		
 		mReader->ReadInt(dominant);
-		h->mDominant = (dominant != 0);
-		mReader->ReadInt(h->mTransition);
-		mReader->ReadDouble(h->mInset);
+		h->data().mDominant = (dominant != 0);
+		mReader->ReadInt(h->data().mTransition);
+		mReader->ReadDouble(h->data().mInset);		
 
-//		h->set_curve(cv);
+
 		mHalfedgesVec.push_back(h);
-//		return cv;
+		return h;
 	}
 
-	void scan_face(GISFace* f)
+	void scan_face(DFace* f) 
 	{
 		++mCount;
 		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
@@ -491,17 +547,19 @@ public:
 		if (num_halfedges_on_outer_ccb > 0)
 		{
 			int  index, prev_index = 0, first_index;
-			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++)
+			
+			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++) 
 			{
 				mReader->ReadInt(index);
-				GISHalfedge* nh = mHalfedgesVec[index];
+				DHalfedge* nh = mHalfedgesVec[index];
 
 				if (j > 0)
 				{
-					GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
+					DHalfedge* prev_nh = mHalfedgesVec[prev_index];
 					prev_nh->set_next(nh);
+					nh->set_prev(prev_nh);
 				} else {
-					f->set_outer_ccb(nh);
+					f->set_halfedge(nh);
 					first_index = index;
 				}
 				nh->set_face(f);
@@ -509,14 +567,19 @@ public:
 			}
 
 			// making the last halfedge point to the first one (cyclic order).
-			GISHalfedge* nh = mHalfedgesVec[first_index];
-			GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
+			DHalfedge* nh = mHalfedgesVec[first_index];
+			DHalfedge* prev_nh = mHalfedgesVec[prev_index];
 			prev_nh->set_next(nh);
+			nh->set_prev(prev_nh);
 		}
 
 		mReader->ReadInt(num_of_holes);
 		for (unsigned int k = 0; k < num_of_holes; k++)
 		{
+		#if USE_HOLES
+			DHole * new_hole = m_arr_access.new_hole();
+			new_hole->set_face(f);
+		#endif
 			int  num_halfedges_on_inner_ccb;
 			mReader->ReadInt(num_halfedges_on_inner_ccb);
 
@@ -525,35 +588,46 @@ public:
 			{
 				mReader->ReadInt(index);
 
-				GISHalfedge* nh = mHalfedgesVec[index];
-				if (j > 0)
+				DHalfedge* nh = mHalfedgesVec[index];
+				if (j > 0) 
 				{
-					GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
+					DHalfedge* prev_nh = mHalfedgesVec[prev_index];
 					prev_nh->set_next(nh);
+					nh->set_prev(prev_nh);
 				} else {
+#if  USE_HOLES
+					new_hole->set_iterator(f->add_hole(nh));
+#else
 					f->add_hole(nh);
+#endif					
 					first_index = index;
 				}
 
+
+#if USE_HOLES
+				nh->set_hole(new_hole);
+#else
 				nh->set_face(f);
+#endif
 				prev_index = index;
 			}
 
 			// making the last halfedge point to the first one (cyclic order).
-			GISHalfedge* nh = mHalfedgesVec[first_index];
-			GISHalfedge* prev_nh = mHalfedgesVec[prev_index];
+			DHalfedge* nh = mHalfedgesVec[first_index];
+			DHalfedge* prev_nh = mHalfedgesVec[prev_index];
 			prev_nh->set_next(nh);
+			nh->set_prev(prev_nh);
 		}
 
 		// Other params
 		int dummy;
 //		mReader->ReadInt(f->mIsWater);
 		mReader->ReadInt(dummy);
-		mReader->ReadInt(f->mTerrainType);
-		if (f->mTerrainType == NO_VALUE)
+		mReader->ReadInt(f->data().mTerrainType);
+		if (f->data().mTerrainType == NO_VALUE) 
 		{
 			if (dummy) mLegacy = true;
-			f->mTerrainType = dummy ? terrain_Water : terrain_Natural;
+			f->data().mTerrainType = dummy ? terrain_Water : terrain_Natural;
 		}
 		mFacesVec.push_back(f);
 	}
@@ -567,55 +641,68 @@ public:
 
 	void read(Pmwx& the_map)
 	{
-		std::vector<GISHalfedge* >  halfedges_vec;
-		std::vector<GISVertex* >    vertices_vec;
+		std::vector<DHalfedge* >  halfedges_vec;  
+		std::vector<DVertex* >    vertices_vec; 
 
 		scan_pm_vhf_sizes();
 
 		unsigned int  i;
 		for (i = 0; i < number_of_vertices(); i++)
 		{
-			GISVertex * nv = scan_vertex (the_map);
-			nv->set_halfedge((GISHalfedge *) 0x0BADF00D);
+			DVertex * nv = scan_vertex (the_map);
+			nv->set_halfedge((DHalfedge *) 0x0BADF00D);
 			vertices_vec.push_back(nv);
 		}
 
 		for (i = 0; i < number_of_halfedges(); i++, i++)
 		{
-			GISHalfedge *nh = NULL;
-			GISVertex *nv1, *nv2;
+			DHalfedge * nh, * no;
+			DVertex * nv1, * nv2;
 			std::size_t index1, index2;
 
-			nh = the_map.new_edge();
+			//nh = m_arr_access.new_edge();
 			scan_index(index1);
-			scan_halfedge(nh);
+			nh = scan_halfedge(NULL);
 			scan_index (index2);
-			scan_halfedge(nh->twin());
+			no = scan_halfedge(nh->opposite());
 
 			nv1 = vertices_vec[index1];
-			nv1->set_halfedge(nh);
-			nh->set_target(nv1);
+			nv1->set_halfedge(nh); 
+			nh->set_vertex(nv1);
 
 			nv2 = vertices_vec[index2];
-			nv2->set_halfedge(nh->twin());
-			nh->twin()->set_target(nv2);
+			nv2->set_halfedge(no); 
+			no->set_vertex(nv2);
 
 			halfedges_vec.push_back(nh);
-			halfedges_vec.push_back(nh->twin());
+			halfedges_vec.push_back(no);
 		}
 
 		for (i = 0; i < number_of_faces(); i++)
 		{
-			GISFace* nf = the_map.unbounded_face(); //this is the unbounded face.
-			if (i > 0)  // else - allocate the bounded face.
-			nf = the_map.new_face();
+			DFace * nf =  m_arr_access.un_face();
+			if(i == 0)
+			{
+				DHalfedge * h = *nf->holes_begin();
+				nf = h->opposite()->face();
+			}
+			
+			if(i != 0) nf = m_arr_access.new_face() ;
+
+			// BEN SAYS: back in the day, if i == 0 (unbounded face) we would set its half edge to NULL.
+			// NOT ANY MORE!  In the new CGAL 3.3.1 the unbounded face(s) are bounded by ficticious edges that make up a single hole
+			// in the "ficticious face".  Now..this is ALREADY set up for us - in an EMPTY dcel we have two faces:
+			// - the ficticious face, and the unbounded face (inside it).  A rectangle around infinity separates them.
+			// So we LEAVE THIS THE HELL ALONE.  Nuking the half-edge around the unbounded face is, like, bad and drives CGAL insane.
+			// Only the ficticious face can really be unbounded.
+//			if (i == 0) //this is the unbounded face.
+//				nf->set_halfedge (NULL);
 
 			scan_face(nf);
 		}
 	}
 
-
-
+	
 
 };
 
@@ -630,28 +717,34 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 	if (!meContainer.GetNthAtomOfID(kMainMapID, 0, mapAtom)) return;
 	mapAtom.GetContents(mapContainer);
 	MemFileReader	readMainMap(mapContainer.begin, mapContainer.end);
-	MapScanner	scanner(&readMainMap, inProgress);
-	scanner.read(inMap);
+#if REBUILD_MAP	
+	Pmwx	tempMap;
+#else
+	#define tempMap inMap
+#endif	
+	MapScanner	scanner(&readMainMap, tempMap, inProgress);
+	scanner.read(tempMap);
 
 	if (meContainer.GetNthAtomOfID(kFaceData1, 0, faceAtom))
 	{
 		faceAtom.GetContents(faceContainer);
 		MemFileReader	readFaceData(faceContainer.begin, faceContainer.end);
-		for (vector<GISFace*>::iterator f = scanner.mFacesVec.begin(); f != scanner.mFacesVec.end(); ++f)
+		for (vector<DFace*>::iterator f = scanner.mFacesVec.begin(); f != scanner.mFacesVec.end(); ++f)
 		{
-			ReadParamMap(readFaceData, (*f)->mParams, c);
-			ReadVector(readFaceData, (*f)->mObjs, ReadObjPlacement, c);
-			ReadVector(readFaceData, (*f)->mPolyObjs, ReadPolyObjPlacement, c);
-			ReadVector(readFaceData, (*f)->mPointFeatures, ReadPointFeature, c);
-			ReadVector(readFaceData, (*f)->mPolygonFeatures, ReadPolygonFeature, c);
+			ReadParamMap(readFaceData, (*f)->data().mParams, c);
+			ReadVector(readFaceData, (*f)->data().mObjs, ReadObjPlacement, c);
+			ReadVector(readFaceData, (*f)->data().mPolyObjs, ReadPolyObjPlacement, c);
+			ReadVector(readFaceData, (*f)->data().mPointFeatures, ReadPointFeature, c);
+			ReadVector(readFaceData, (*f)->data().mPolygonFeatures, ReadPolygonFeature, c);
 			vector<GISAreaFeature_t>	fakeVector;
 			ReadVector(readFaceData, fakeVector, ReadAreaFeature, c);
-			if (!fakeVector.empty())
-				(*f)->mAreaFeature = fakeVector[0];
-			else
-				(*f)->mAreaFeature.mFeatType = NO_VALUE;
-			if (!scanner.mLegacy)
-				(*f)->mTerrainType = c[(*f)->mTerrainType];
+			if (!fakeVector.empty()) {
+				(*f)->data().mAreaFeature = fakeVector[0];
+			} else {
+				(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		
+			}
+			if (!scanner.mLegacy)		
+				(*f)->data().mTerrainType = c[(*f)->data().mTerrainType];
 		}
 	}
 
@@ -659,21 +752,23 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 	{
 		edgeAtom.GetContents(edgeContainer);
 		MemFileReader	readEdgeData(edgeContainer.begin, edgeContainer.end);
-		for (vector<GISHalfedge*>::iterator h = scanner.mHalfedgesVec.begin(); h != scanner.mHalfedgesVec.end(); ++h)
+		for (vector<DHalfedge*>::iterator h = scanner.mHalfedgesVec.begin(); h != scanner.mHalfedgesVec.end(); ++h)
 		{
-			ReadVector(readEdgeData, (*h)->mSegments, ReadNetworkSegment, c);
-			ReadParamMap(readEdgeData, (*h)->mParams, c);
+			ReadVector(readEdgeData, (*h)->data().mSegments, ReadNetworkSegment, c);
+			ReadParamMap(readEdgeData, (*h)->data().mParams, c);
 		}
 	}
-
 	if (meContainer.GetNthAtomOfID(kVertData1, 0, vertAtom))
 	{
 		vertAtom.GetContents(vertContainer);
 		MemFileReader	readVertData(vertContainer.begin, vertContainer.end);
-		for (vector<GISVertex*>::iterator v = scanner.mVerticesVec.begin(); v != scanner.mVerticesVec.end(); ++v)
+		for (vector<DVertex*>::iterator v = scanner.mVerticesVec.begin(); v != scanner.mVerticesVec.end(); ++v)
 		{
-			readVertData.ReadBulk(&(*v)->mTunnelPortal, 1, false);
+			readVertData.ReadBulk((char *) &(*v)->data().mTunnelPortal, 1, false);
 		}
 	}
-}
+#if REBUILD_MAP	
+	RebuildMap(tempMap, inMap);
+#endif
+}	
 

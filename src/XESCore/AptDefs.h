@@ -26,6 +26,7 @@
 
 #include <vector>
 #include "CompGeomDefs2.h"
+//#include "MapDefsCGAL.h"
 
 enum {
 	// File format record codes

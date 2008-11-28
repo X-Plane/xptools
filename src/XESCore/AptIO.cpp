@@ -25,15 +25,18 @@
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
 #if OPENGL_MAP
-#include "Airports.h"
+//#include "Airports.h"
 #endif
 #include "XESConstants.h"
 #include "GISUtils.h"
 #include "AssertUtils.h"
+#include "CompGeomUtils.h"
 
 #if OPENGL_MAP
+#include "Airports.h"
 void	GenerateOGL(AptInfo_t * a);
 #endif
+
 inline int hash_ll(int lon, int lat) {	return (lon+180) + 360 * (lat+90); }
 
 inline int recip_num(int n)
@@ -75,9 +78,9 @@ static void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
 {
 	for (AptPolygon_t::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
-		fprintf(fi,"%d % 012.8lf % 013.8lf", s->code,s->pt.y,s->pt.x);
+		fprintf(fi,"%d % 012.8lf % 013.8lf", s->code,CGAL2DOUBLE(s->pt.y()),CGAL2DOUBLE(s->pt.x()));
 		if (s->code == apt_lin_crv || s->code == apt_rng_crv || s-> code == apt_end_crv)
-		fprintf(fi," % 012.8lf % 013.8lf", s->ctrl.y,s->ctrl.x);
+		fprintf(fi," % 012.8lf % 013.8lf", CGAL2DOUBLE(s->ctrl.y()),CGAL2DOUBLE(s->ctrl.x()));
 		if (s->code != apt_end_seg && s->code != apt_end_crv)
 		for (set<int>::const_iterator a = s->attributes.begin(); a != s->attributes.end(); ++a)
 			fprintf(fi," %d",*a);
@@ -85,7 +88,7 @@ static void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
 	}
 }
 
-static void CenterToEnds(Point2 location, double heading, double len, Segment2& ends)
+static void CenterToEnds(POINT2 location, double heading, double len, SEGMENT2& ends)
 {
 	// NOTE: if we were using some kind of cartesian projection scheme wedd have to add
 	// (lon_ref - lon rwy) * sin(lat runway) to this degrees, rotating runways to the right
@@ -96,8 +99,8 @@ static void CenterToEnds(Point2 location, double heading, double len, Segment2& 
 	Vector2	delta;
 	delta.dx = len * sin(heading_corrected);
 	delta.dy = len * cos(heading_corrected);
-
-	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / cos(location.y * DEG_TO_RAD);
+	
+	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / cos(location.y() * DEG_TO_RAD);
 	delta.dx *= MTR_TO_DEG_LON;
 	delta.dy *= MTR_TO_DEG_LAT;
 	ends.p1 = location - delta;
@@ -109,7 +112,7 @@ static void EndsToCenter(const Segment2& ends, Point2& center, double& len, doub
 	center = ends.midpoint();
 	Vector2	dir(ends.p1, ends.p2);
 
-	double	aspect = cos(center.y * DEG_TO_RAD);
+	double	aspect = cos(center.y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
 	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
 
@@ -137,8 +140,8 @@ static void CenterToCorners(Point2 location, double heading, double len, double 
 	Vector2	lateral;
 	lateral.dx = width *  cos(heading_corrected);
 	lateral.dy = width * -sin(heading_corrected);
-
-	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / cos(location.y * DEG_TO_RAD);
+	
+	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / cos(location.y() * DEG_TO_RAD);
 	delta.dx *= MTR_TO_DEG_LON;
 	delta.dy *= MTR_TO_DEG_LAT;
 	lateral.dx *= MTR_TO_DEG_LON;
@@ -210,10 +213,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		int		rec_code;
 		string	dis, blas, vasi;
 		int		len_code, liting_code;
-		Point2	center_loc;
+		POINT2	center_loc;
 		float	rwy_heading;
 		AptPavement_t * rwy;
-
+		double p1x, p1y, p2x, p2y;
+		
 		if (TextScanner_FormatScan(s, "i", &rec_code) != 1)
 		{
 			TextScanner_Next(s);
@@ -265,8 +269,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			}
 			if (TextScanner_FormatScan(s, "iddTfiTTfiiiifiT",
 					&rec_code,
-					&center_loc.y,
-					&center_loc.x,
+					&p1y,
+					&p1x,
 					&rwy->name,
 					&rwy_heading,
 					&len_code,
@@ -281,6 +285,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&rwy->distance_markings,
 					&vasi) < 15)
 				ok = "Illegal old runway";
+				center_loc = POINT2(p1x, p1y);
 			if (sscanf(dis.c_str(),"%d.%d", &rwy->disp1_ft,&rwy->disp2_ft) != 2)
 				ok = string("Illegal displaced threshholds in old runway") + dis;
 			if (sscanf(blas.c_str(),"%d.%d", &rwy->blast1_ft,&rwy->blast2_ft) != 2)
@@ -307,68 +312,74 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		case apt_tower_loc:
 			if (TextScanner_FormatScan(s, "iddfiT|",
 				&rec_code,
-				&outApts.back().tower.location.y,
-				&outApts.back().tower.location.x,
+				&p1y,
+				&p1x,
 				&outApts.back().tower.height_ft,
 				&outApts.back().tower.draw_obj,
 				&outApts.back().tower.name) < (vers >= 715 ? 5 : 4))
 			ok = "Illegal tower loc";
+				outApts.back().tower.location = POINT2(p1x, p1y);
 			if(vers < 715) outApts.back().tower.draw_obj = 1;
 			break;
 		case apt_startup_loc:
 			outApts.back().gates.push_back(AptGate_t());
-			if (TextScanner_FormatScan(s, "iddfT|",
-				&rec_code,
-				&outApts.back().gates.back().location.y,
-				&outApts.back().gates.back().location.x,
+			if (TextScanner_FormatScan(s, "iddfT|", 
+				&rec_code, 
+				&p1y,
+				&p1x,
 				&outApts.back().gates.back().heading,
 				&outApts.back().gates.back().name) < 4)
 			ok = "Illegal startup loc";
+				outApts.back().gates.back().location = POINT2(p1x, p1y);
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
 				&rec_code,
-				&outApts.back().beacon.location.y,
-				&outApts.back().beacon.location.x,
+				&p1y,
+				&p1x,
 				&outApts.back().beacon.color_code,
 				&outApts.back().beacon.name) < 4)
 			ok = "Illegal apt beacon";
+				outApts.back().beacon.location = POINT2(p1x, p1y);
 			break;
 		case apt_windsock:
 			outApts.back().windsocks.push_back(AptWindsock_t());
 			if (TextScanner_FormatScan(s, "iddiT|",
 				&rec_code,
-				&outApts.back().windsocks.back().location.y,
-				&outApts.back().windsocks.back().location.x,
+				&p1y,
+				&p1x,
 				&outApts.back().windsocks.back().lit,
 				&outApts.back().windsocks.back().name) < 4)
 			ok = "Illegal windsock";
+				outApts.back().windsocks.back().location = POINT2(p1x, p1y);
 			break;
 		case apt_sign:
 			if (vers < 850) ok = "Error: apt signs not allowed before 850";
 			outApts.back().signs.push_back(AptSign_t());
 			if (TextScanner_FormatScan(s,"iddfiiT|",
 					&rec_code,
-					&outApts.back().signs.back().location.y,
-					&outApts.back().signs.back().location.x,
+					&p1y,
+					&p1x,
 					&outApts.back().signs.back().heading,
 					&outApts.back().signs.back().style_code,
 					&outApts.back().signs.back().size_code,
 					&outApts.back().signs.back().text) != 7)
 			ok = "Illegal apt sign";
+				outApts.back().signs.back().location = POINT2(p1x, p1y);
 			break;
 		case apt_papi:
 			if (vers < 850) ok = "Error: stand-alone light fixtures not allowed before 850";
 			outApts.back().lights.push_back(AptLight_t());
 			if (TextScanner_FormatScan(s, "iddiffT|",
 					&rec_code,
-					&outApts.back().lights.back().location.y,
-					&outApts.back().lights.back().location.x,
+					&p1y,
+					&p1x,
 					&outApts.back().lights.back().light_code,
 					&outApts.back().lights.back().heading,
 					&outApts.back().lights.back().angle,
 					&outApts.back().lights.back().name) < 6)
 			ok = "Illegal PAPI";
+				outApts.back().lights.back().location = POINT2(p1x, p1y);
 			break;
 		case apt_rwy_new:
 			if (vers < 850) ok = "Error: new runways not allowed before 850";
@@ -405,8 +416,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().has_distance_remaining,
 
 				&outApts.back().runways.back().id[0],
-				&outApts.back().runways.back().ends.p1.y,
-				&outApts.back().runways.back().ends.p1.x,
+				&p1y,
+				&p1x,
 				&outApts.back().runways.back().disp_mtr[0],
 				&outApts.back().runways.back().blas_mtr[0],
 				&outApts.back().runways.back().marking_code[0],
@@ -415,8 +426,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().reil_code[0],
 
 				&outApts.back().runways.back().id[1],
-				&outApts.back().runways.back().ends.p2.y,
-				&outApts.back().runways.back().ends.p2.x,
+				&p2y,
+				&p2x,
 				&outApts.back().runways.back().disp_mtr[1],
 				&outApts.back().runways.back().blas_mtr[1],
 				&outApts.back().runways.back().marking_code[1],
@@ -424,6 +435,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().has_tdzl[1],
 				&outApts.back().runways.back().reil_code[1]) != 26)
 			ok = "Illegal new runway";
+			outApts.back().runways.back().ends = SEGMENT2(POINT2(p1x, p1y), POINT2(p2x, p2y));
 			break;
 		case apt_sea_new:
 			if (vers < 850) ok = "Error: new sealanes not allowed before 850";
@@ -433,12 +445,13 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().sealanes.back().width_mtr,
 				&outApts.back().sealanes.back().has_buoys,
 				&outApts.back().sealanes.back().id[0],
-				&outApts.back().sealanes.back().ends.p1.y,
-				&outApts.back().sealanes.back().ends.p1.x,
+				&p1y,
+				&p1x,
 				&outApts.back().sealanes.back().id[1],
-				&outApts.back().sealanes.back().ends.p2.y,
-				&outApts.back().sealanes.back().ends.p2.x) != 9)
+				&p2y,
+				&p2x) != 9)
 			ok = "Illegal new seaway";
+			outApts.back().sealanes.back().ends = SEGMENT2(POINT2(p1x, p1y), POINT2(p2x, p2y));
 			break;
 		case apt_heli_new:
 			if (vers < 850) ok = "Error: new helipads not allowed before 850";
@@ -446,8 +459,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			if (TextScanner_FormatScan(s,"iTddfffiiifi",
 				&rec_code,
 				&outApts.back().helipads.back().id,
-				&outApts.back().helipads.back().location.y,
-				&outApts.back().helipads.back().location.x,
+				&p1y,
+				&p1x,
 				&outApts.back().helipads.back().heading,
 				&outApts.back().helipads.back().length_mtr,
 				&outApts.back().helipads.back().width_mtr,
@@ -457,7 +470,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().helipads.back().roughness_ratio,
 				&outApts.back().helipads.back().edge_light_code) != 12)
 			ok = "Illegal new helipad";
-			break;
+			outApts.back().helipads.back().location = POINT2(p1x, p1y);
+			break;		
 		case apt_taxi_new:
 			if (vers < 850) ok = "Error: new taxiways not allowed before 850";
 			outApts.back().taxiways.push_back(AptTaxiway_t());
@@ -491,9 +505,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->push_back(AptLinearSegment_t());
 			if (TextScanner_FormatScan(s,"iddT|",
 				&open_poly->back().code,
-				&open_poly->back().pt.y,
-				&open_poly->back().pt.x,
+				&p1y,
+				&p1x,
 				&codez) < 3) ok = "Illegal straight segment";
+				open_poly->back().pt = POINT2(p1x, p1y);
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_lin_crv:
@@ -503,11 +518,13 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->push_back(AptLinearSegment_t());
 			if (TextScanner_FormatScan(s,"iddddT|",
 				&open_poly->back().code,
-				&open_poly->back().pt.y,
-				&open_poly->back().pt.x,
-				&open_poly->back().ctrl.y,
-				&open_poly->back().ctrl.x,
+				&p1y,
+				&p1x,
+				&p2y,
+				&p2x,
 				&codez) < 5) ok = "Illegal curved segment";
+				open_poly->back().pt = POINT2(p1x, p1y);
+				open_poly->back().ctrl = POINT2(p2x, p2y);
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_end_seg:
@@ -515,8 +532,9 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->push_back(AptLinearSegment_t());
 			if (TextScanner_FormatScan(s,"idd",
 				&open_poly->back().code,
-				&open_poly->back().pt.y,
-				&open_poly->back().pt.x) != 3) ok = "Illegal straight end.";
+				&p1y,
+				&p1x) != 3) ok = "Illegal straight end.";
+				open_poly->back().pt = POINT2(p1x, p1y);
 			break;
 		case apt_end_crv:
 			if (vers < 850) ok = "Error: new end curves allowed before 850";
@@ -524,10 +542,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->push_back(AptLinearSegment_t());
 			if (TextScanner_FormatScan(s,"idddd",
 				&open_poly->back().code,
-				&open_poly->back().pt.y,
-				&open_poly->back().pt.x,
-				&open_poly->back().ctrl.y,
-				&open_poly->back().ctrl.x) != 5) ok = "Illegal curved end";
+				&p1y,
+				&p1x,
+				&p2y,
+				&p2x) != 5) ok = "Illegal curved end";
+			open_poly->back().pt = POINT2(p1x, p1y);
+			open_poly->back().ctrl = POINT2(p2x, p2y);
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_done:
@@ -560,50 +580,49 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 	for (AptVector::iterator a = outApts.begin(); a != outApts.end(); ++a)
 	{
-		a->bounds = Bbox2();
-
-//		a->bounds = Bbox2(a->tower.location);
-//		a->bounds += a->beacon.location;
-//		for (int w = 0; w < a->windsocks.size(); ++w)
-//			a->bounds += a->windsocks[w].location;
-//		for (int r = 0; r < a->gates.size(); ++r)
-//			a->bounds += a->gates[r].location;
+		if (a->tower.draw_obj != -1)		
+			a->bounds = Bbox2(a->tower.location);
+		a->bounds += a->beacon.location;
+		for (int w = 0; w < a->windsocks.size(); ++w)
+			a->bounds += a->windsocks[w].location;
+		for (int r = 0; r < a->gates.size(); ++r)
+			a->bounds += a->gates[r].location;
 		for (AptPavementVector::iterator p = a->pavements.begin(); p != a->pavements.end(); ++p)
 		{
-			a->bounds += p->ends.p1;
-			a->bounds += p->ends.p2;
+			a->bounds +=  p->ends.source();
+			a->bounds +=  p->ends.target();
 		}
 		for (AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
 		{
-			a->bounds += r->ends.p1;
-			a->bounds += r->ends.p2;
+			a->bounds +=  r->ends.source();
+			a->bounds +=  r->ends.target();
 		}
 		for(AptSealaneVector::iterator s = a->sealanes.begin(); s != a->sealanes.end(); ++s)
 		{
-			a->bounds += s->ends.p1;
-			a->bounds += s->ends.p2;
+			a->bounds +=  s->ends.source();
+			a->bounds +=  s->ends.target();
 		}
 		for(AptHelipadVector::iterator h = a->helipads.begin(); h != a->helipads.end(); ++h)
-			a->bounds += h->location;
-
+			a->bounds +=  h->location;
+			
 		for(AptTaxiwayVector::iterator t = a->taxiways.begin(); t != a->taxiways.end(); ++t)
 		for(AptPolygon_t::iterator pt = t->area.begin(); pt != t->area.end(); ++pt)
 		{
-			a->bounds += pt->pt;
+			a->bounds +=  pt->pt;
 			if(pt->code == apt_lin_crv || pt->code == apt_rng_crv || pt-> code == apt_end_crv)
-				a->bounds += pt->ctrl;
+				a->bounds +=  pt->ctrl;
 		}
 
 		for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
 		for(AptPolygon_t::iterator pt = b->area.begin(); pt != b->area.end(); ++pt)
 		{
-			a->bounds += pt->pt;
+			a->bounds +=  pt->pt;
 			if(pt->code == apt_lin_crv || pt->code == apt_rng_crv || pt-> code == apt_end_crv)
-				a->bounds += pt->ctrl;
+				a->bounds +=  pt->ctrl;
 		}
-
-		a->bounds.expand(0.001);
-
+		
+		//a->bounds.expand(0.001);
+		
 		#if OPENGL_MAP
 			GenerateOGL(&*a);
 		#endif
@@ -616,13 +635,14 @@ void	IndexAirports(const AptVector& apts, AptIndex& index)
 	index.clear();
 	for (int a = 0; a < apts.size(); ++ a)
 	{
-		Point2 ctr(
+		POINT2 ctr(
 			(apts[a].bounds.xmin()+apts[a].bounds.xmax())*0.5,
 			(apts[a].bounds.ymin()+apts[a].bounds.ymax())*0.5);
-
-		int lon = ctr.x;
-		int lat = ctr.y;
+		
+		int lon = floor(CGAL2DOUBLE(ctr.x()));
+		int lat = floor(CGAL2DOUBLE(ctr.y()));
 		index.insert(AptIndex::value_type(hash_ll(lon, lat), a));
+//		printf("LL hash for %s is %d,%d\n", apts[a].icao.c_str(), lon, lat);
 	}
 }
 
@@ -673,27 +693,27 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d "
 						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr, rwy->surf_code, rwy->shoulder_code, rwy->roughness_ratio, rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
-						rwy->id[0].c_str(),rwy->ends.p1.y,rwy->ends.p1.x, rwy->disp_mtr[0],rwy->blas_mtr[0], rwy->marking_code[0],rwy->app_light_code[0], rwy->has_tdzl[0], rwy->reil_code[0],
-						rwy->id[1].c_str(),rwy->ends.p2.y,rwy->ends.p2.x, rwy->disp_mtr[1],rwy->blas_mtr[1], rwy->marking_code[1],rwy->app_light_code[1], rwy->has_tdzl[1], rwy->reil_code[1]);
+						rwy->id[0].c_str(),CGAL2DOUBLE(rwy->ends.source().y()),CGAL2DOUBLE(rwy->ends.source().x()), rwy->disp_mtr[0],rwy->blas_mtr[0], rwy->marking_code[0],rwy->app_light_code[0], rwy->has_tdzl[0], rwy->reil_code[0],
+						rwy->id[1].c_str(),CGAL2DOUBLE(rwy->ends.target().y()),CGAL2DOUBLE(rwy->ends.target().x()), rwy->disp_mtr[1],rwy->blas_mtr[1], rwy->marking_code[1],rwy->app_light_code[1], rwy->has_tdzl[1], rwy->reil_code[1]);
 		}
 
 		for(AptSealaneVector::const_iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
 		{
 			fprintf(fi,"%d %4.0f %d %s % 012.8lf % 013.8lf %s % 012.8lf % 013.8lf" CRLF,
 					apt_sea_new, sea->width_mtr, sea->has_buoys,
-					sea->id[0].c_str(), sea->ends.p1.y, sea->ends.p1.x,
-					sea->id[1].c_str(), sea->ends.p2.y, sea->ends.p2.x);
+					sea->id[0].c_str(), CGAL2DOUBLE(sea->ends.source().y()), CGAL2DOUBLE(sea->ends.source().x()),
+					sea->id[1].c_str(), CGAL2DOUBLE(sea->ends.target().y()), CGAL2DOUBLE(sea->ends.target().x()));
 		}
 
 		for (AptPavementVector::const_iterator pav = apt->pavements.begin(); pav != apt->pavements.end(); ++pav)
 		{
 			double heading, len;
-			Point2	center;
+			POINT2	center;
 			EndsToCenter(pav->ends, center, len, heading);
 			fprintf(fi,"%2d % 012.8lf % 013.8lf %s %6.2lf %6.0lf %4d.%04d %4d.%04d %4.0f "
 					   "%d%d%d%d%d%d %02d %d %d %3.2f %d %3d.%03d" CRLF, apt_rwy_old,
-				center.y, center.x, pav->name.c_str(), heading, len * MTR_TO_FT,
-				pav->disp1_ft, pav->disp2_ft, pav->blast1_ft, pav->blast2_ft, pav->width_ft,
+				CGAL2DOUBLE(center.y()), CGAL2DOUBLE(center.x()), pav->name.c_str(), heading, len * MTR_TO_FT,
+				pav->disp1_ft, pav->disp2_ft, pav->blast1_ft, pav->blast2_ft, pav->width_ft, 
 				pav->vap_lites_code1,
 				pav->edge_lites_code1,
 				pav->app_lites_code1,
@@ -710,8 +730,8 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 		for(AptHelipadVector::const_iterator heli = apt->helipads.begin(); heli != apt->helipads.end(); ++heli)
 		{
 			fprintf(fi,"%d %s % 012.8lf % 013.8lf %6.2lf %4.0f %4.0f %d %d %d %.2f %d" CRLF,
-				apt_heli_new, heli->id.c_str(), heli->location.y, heli->location.x, heli->heading, heli->length_mtr, heli->width_mtr,
-						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);
+				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
+						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);		
 		}
 
 		for (AptTaxiwayVector::const_iterator taxi = apt->taxiways.begin(); taxi != apt->taxiways.end(); ++taxi)
@@ -735,36 +755,36 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
 			fprintf(fi,"%d % 012.8lf % 013.8lf %d %6.4lf %3.1f %s" CRLF,
-					apt_papi, light->location.y, light->location.x, light->light_code,
+					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), light->light_code,
 					light->heading, light->angle, light->name.c_str());
 		}
 
 		for (AptSignVector::const_iterator sign = apt->signs.begin(); sign != apt->signs.end(); ++sign)
 		{
 			fprintf(fi,"%d % 012.8lf % 013.8lf %6.4lf %d %d %s" CRLF,
-					apt_sign, sign->location.y, sign->location.x, sign->heading,
+					apt_sign, CGAL2DOUBLE(sign->location.y()), CGAL2DOUBLE(sign->location.x()), sign->heading,
 					sign->style_code, sign->size_code, sign->text.c_str());
 		}
 
 
 		if (apt->tower.draw_obj != -1)
 			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %d %s" CRLF, apt_tower_loc,
-				apt->tower.location.y, apt->tower.location.x, apt->tower.height_ft,
+				CGAL2DOUBLE(apt->tower.location.y()), CGAL2DOUBLE(apt->tower.location.x()), apt->tower.height_ft,
 				apt->tower.draw_obj, apt->tower.name.c_str());
 
 		for (AptGateVector::const_iterator gate = apt->gates.begin(); gate != apt->gates.end(); ++gate)
 		{
 			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
-				gate->location.y, gate->location.x, gate->heading, gate->name.c_str());
-		}
-
+				CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, gate->name.c_str());
+		}	
+		
 		if (apt->beacon.color_code != apt_beacon_none)
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_beacon, apt->beacon.location.y,
-				apt->beacon.location.x, apt->beacon.color_code, apt->beacon.name.c_str());
-
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_beacon,CGAL2DOUBLE( apt->beacon.location.y()),
+				CGAL2DOUBLE(apt->beacon.location.x()), apt->beacon.color_code, apt->beacon.name.c_str());
+		
 		for (AptWindsockVector::const_iterator sock = apt->windsocks.begin(); sock != apt->windsocks.end(); ++sock)
 		{
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_windsock, sock->location.y, sock->location.x,
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_windsock, CGAL2DOUBLE(sock->location.y()), CGAL2DOUBLE(sock->location.x()),
 				sock->lit, sock->name.c_str());
 		}
 
@@ -812,7 +832,7 @@ void	ConvertForward(AptInfo_t& io_apt)
 	for (AptPavementVector::iterator pav = io_apt.pavements.begin(); pav != io_apt.pavements.end(); ++pav)
 	{
 				double heading, len;
-				Point2	center;
+				POINT2	center;
 			EndsToCenter(pav->ends, center, len, heading);
 
 		if (pav->name.empty() || pav->name[0] == 'x')
@@ -827,7 +847,7 @@ void	ConvertForward(AptInfo_t& io_apt)
 			taxi.area[1].code = apt_lin_seg;
 			taxi.area[2].code = apt_lin_seg;
 			taxi.area[3].code = apt_rng_seg;
-			Point2 corners[4];
+			POINT2 corners[4];
 			CenterToCorners(center, heading, len, pav->width_ft * FT_TO_MTR, corners);
 			taxi.area[0].pt = corners[3];
 			taxi.area[1].pt = corners[2];
@@ -902,7 +922,7 @@ void	ConvertForward(AptInfo_t& io_apt)
 
 #if OPENGL_MAP
 
-static void OGL_push_quad(AptInfo_t *		io_airport, float r, float g, float b, const Point2 p[4])
+static void OGL_push_quad(AptInfo_t *		io_airport, float r, float g, float b, const POINT2 p[4])
 {
 	io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
 	io_airport->ogl.back().rgb[0] = r;
@@ -920,9 +940,12 @@ static void CalcPavementBezier(AptInfo_t * io_airport, AptPolygon_t * poly, floa
 	{
 		io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
 		AptInfo_t::AptLineLoop_t * l = &io_airport->ogl.back();
-		l->rgb[0] = r; l->rgb[1] = g; l->rgb[2] = b;
-		BezierToSegments(*w, l->pts,simp);
-
+		l->rgb[0] = r; l->rgb[1] = g; l->rgb[2] = b;		
+		Polygon_2 temp;
+		BezierToSegments(*w, temp,simp);
+		for(Polygon_2::Vertex_iterator v = temp.vertices_begin(); v != temp.vertices_end(); ++v)
+			l->pts.push_back(cgal2ben(*v));
+		
 //		io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
 //		l = &io_airport->ogl.back();
 //		l->rgb[0] = b; l->rgb[1] = g; l->rgb[2] = r;
@@ -932,26 +955,26 @@ static void CalcPavementBezier(AptInfo_t * io_airport, AptPolygon_t * poly, floa
 
 static void CalcPavementOGL(
 					AptInfo_t *		io_airport,
-					const Segment2&	ends,
+					const SEGMENT2&	ends,
 					float			width_mtr,
 					float			blas1_mtr,
 					float			blas2_mtr,
 					float			disp1_mtr,
 					float			disp2_mtr)
 {
-	double	aspect = cos(ends.midpoint().y * DEG_TO_RAD);
+	double	aspect = cos(ends.midpoint().y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
 	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
-
-	double rwy_len = LonLatDistMetersWithScale(ends.p1.x, ends.p1.y, ends.p2.x, ends.p2.y, DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
-	Vector2	rwy_dir(ends.p1,  ends.p2);
+	
+	double rwy_len = LonLatDistMetersWithScale(ends.p1.x_, ends.p1.y_, ends.p2.x_, ends.p2.y_, DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
+	VECTOR2	rwy_dir(ends.p1,  ends.p2);
 	rwy_dir.dx *= DEG_TO_MTR_LON;
 	rwy_dir.dy *= DEG_TO_MTR_LAT;
 
 	rwy_dir.normalize();
-
-	Vector2	rwy_right = rwy_dir.perpendicular_cw();
-	Vector2	rwy_left = rwy_dir.perpendicular_ccw();
+	
+	VECTOR2	rwy_right = rwy_dir.perpendicular_cw();
+	VECTOR2	rwy_left = rwy_dir.perpendicular_ccw();
 	rwy_right *= (width_mtr * 0.5);
 	rwy_left *= (width_mtr * 0.5);
 
@@ -959,9 +982,9 @@ static void CalcPavementOGL(
 	rwy_left.dy *= MTR_TO_DEG_LAT;
 	rwy_right.dx *= MTR_TO_DEG_LON;
 	rwy_right.dy *= MTR_TO_DEG_LAT;
-
-	Point2	pts[4];
-
+	
+	POINT2	pts[4];
+	
 	pts[0] = ends.p1 + rwy_left;
 	pts[1] = ends.p2 + rwy_left;
 	pts[2] = ends.p2 + rwy_right;
@@ -1005,13 +1028,12 @@ static void CalcPavementOGL(
 	}
 }
 
-static void CalcPavementHelipad(AptInfo_t * io_airport, const Point2& c, float h, float w, float rwy_len)
+static void CalcPavementHelipad(AptInfo_t * io_airport, const POINT2& c, float h, float w, float rwy_len)
 {
-	Segment2	e;
+	SEGMENT2	e;
 	CenterToEnds(c,h,rwy_len,e);
 	CalcPavementOGL(io_airport,e,w,0,0,0,0);
 }
-
 
 
 void	GenerateOGL(AptInfo_t * a)
@@ -1051,3 +1073,4 @@ void	GenerateOGL(AptInfo_t * a)
 
 }
 #endif
+

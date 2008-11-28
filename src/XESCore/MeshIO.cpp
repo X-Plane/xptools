@@ -122,8 +122,8 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 
-			writer2.WriteDouble(VT[j]->point().x());
-			writer2.WriteDouble(VT[j]->point().y());
+			writer2.WriteDouble(CGAL::to_double(VT[j]->point().x()));
+			writer2.WriteDouble(CGAL::to_double(VT[j]->point().y()));
 			writer2.WriteDouble(VT[j]->info().height);
 			writer2.WriteDouble(VT[j]->info().wave_height);
 			writer2.WriteFloat(VT[j]->info().normal[0]);

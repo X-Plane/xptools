@@ -24,9 +24,8 @@
 #ifndef TensorRoads_H
 #define TensorRoads_H
 
-class	Pmwx;
+#include "MapDefsCGAL.h"
 struct	DEMGeo;
-class	GISFace;
 struct	ImageInfo;
 
 #include "ProgressUtils.h"
@@ -47,7 +46,7 @@ void	BuildRoadsForFace(
 					const DEMGeo&	inUrbanDensity,
 					const DEMGeo&	inUrbanRadial,
 					const DEMGeo&	inUrbanSquare,
-					GISFace *		inFace,
+					Face_handle 	inFace,
 					ProgressFunc	inProg,
 					ImageInfo *		ioTensorImage,
 					double			outTensorBounds[4]);

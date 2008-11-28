@@ -25,7 +25,7 @@
 #define DEMTOVECTOR_H
 
 struct	DEMGeo;
-class	Pmwx;
+//class	Pmwx;
 #include "ProgressUtils.h"
 
 void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrain, ProgressFunc inFunc);

@@ -21,8 +21,9 @@
  *
  */
 
+#include "MapDefsCGAL.h"
+
 #include "DEMToVector.h"
-#include "MapDefs.h"
 #include "DEMDefs.h"
 #include "ParamDefs.h"
 #include "XESConstants.h"
@@ -34,7 +35,7 @@ static int	dir_y[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 void BuildSmoothedPts(const Polygon2& pts, Polygon2& op, bool smooth)
 {
 	int sz;
-	double scaling = cos(pts[0].y * DEG_TO_RAD);
+	double scaling = cos(pts[0].y() * DEG_TO_RAD);
 	vector<Point2>	huge(pts);
 	/*
 	sz = pts.size();
@@ -68,11 +69,11 @@ void BuildSmoothedPts(const Polygon2& pts, Polygon2& op, bool smooth)
 
 //	MidpointSimplifyPolygon(op);
 
-	if (smooth)
-	{
-		SimplifyPolygonMaxMove(op, 0.000416666666, true, true);
-		SmoothPolygon(op, 0.000277777778, 30);
-	}
+	//if (smooth)
+	//{
+	//	SimplifyPolygonMaxMove(op, 0.000416666666, true, true);
+//		SmoothPolygon(op, 0.000277777778, 30);
+//	}
 }
 
 int	FindNextCCW(const DEMGeo& dem, int x, int y, int last_dir)
@@ -133,7 +134,8 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 	int ctr = 0;
 
 	int raw_pts = 0, smooth_pts = 0;
-
+	CGAL_precondition(false);
+	/*
 	while(FindHighestLeft(ioDEM, idx, x, y, y_start))
 	{
 		Polygon2	pts;
@@ -179,6 +181,7 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 		else if (face->mTerrainType != inPositiveTerrain)
 			newf->mTerrainType  = inPositiveTerrain;
 	}
-	PROGRESS_DONE(func, 0, 1, "Building vectors...")
+	 */
+	PROGRESS_DONE(func, 0, 1, "Building vectors...")	
 	printf("Ratio: %lf\n", raw_pts ? ((double) smooth_pts / (double) raw_pts) : 0.0);
 }

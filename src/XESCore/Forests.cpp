@@ -30,7 +30,7 @@
 #include "CompGeomUtils.h"
 #include "Skeleton.h"
 #include "ObjPlacement.h"
-
+#include <CGAL/centroid.h>
 #define DEBUG_SELECT_BAD_FACE 0
 #define DEBUG_FOREST_TREE_MAPS_CTR 0
 
@@ -79,14 +79,14 @@ struct	tri_hash_t {
 
 	inline int hash_x(double x_c)
 	{
-		int x = ((x_c - bounds.p1.x) * (float) dims / (bounds.p2.x - bounds.p1.x));
+		int x = ((x_c - bounds.p1.x()) * (float) dims / (bounds.p2.x() - bounds.p1.x()));
 		if (x < 0) x = 0;
 		if (x >= dims) x = dims-1;
 		return x;
 	}
 	inline int hash_y(double y_c)
 	{
-		int y = ((y_c - bounds.p1.y) * (float) dims / (bounds.p2.y - bounds.p1.y));
+		int y = ((y_c - bounds.p1.y()) * (float) dims / (bounds.p2.y() - bounds.p1.y()));
 		if (y < 0) y = 0;
 		if (y >= dims) y = dims-1;
 		return y;
@@ -105,12 +105,12 @@ struct	tri_hash_t {
 int	tri_hash_t::accum_tri(CDT::Face_handle f)
 {
 	int c = 0;
-	int x1 = hash_x(f->vertex(0)->point().x());
-	int x2 = hash_x(f->vertex(2)->point().x());
-	int x3 = hash_x(f->vertex(1)->point().x());
-	int y1 = hash_y(f->vertex(0)->point().y());
-	int y2 = hash_y(f->vertex(2)->point().y());
-	int y3 = hash_y(f->vertex(1)->point().y());
+	int x1 = hash_x(CGAL::to_double(f->vertex(0)->point().x()));
+	int x2 = hash_x(CGAL::to_double(f->vertex(2)->point().x()));
+	int x3 = hash_x(CGAL::to_double(f->vertex(1)->point().x()));
+	int y1 = hash_y(CGAL::to_double(f->vertex(0)->point().y()));
+	int y2 = hash_y(CGAL::to_double(f->vertex(2)->point().y()));
+	int y3 = hash_y(CGAL::to_double(f->vertex(1)->point().y()));
 	int x_min = min(x1, min(x2, x3));
 	int y_min = min(y1, min(y2, y3));
 	int x_max = max(x1, max(x2, x3));
@@ -131,10 +131,10 @@ int tri_hash_t::fetch_tris(const Bbox2& bounds, set<CDT::Face_handle>& outTris, 
 	outTris.clear();
 	outTypes.clear();
 	int ctr = 0;
-	int x1 = hash_x(bounds.p1.x);
-	int x2 = hash_x(bounds.p2.x);
-	int y1 = hash_y(bounds.p1.y);
-	int y2 = hash_y(bounds.p2.y);
+	int x1 = hash_x(bounds.p1.x());
+	int x2 = hash_x(bounds.p2.x());
+	int y1 = hash_y(bounds.p1.y());
+	int y2 = hash_y(bounds.p2.y());
 	for (int x = x1; x <= x2; ++x)
 	for (int y = y1; y <= y2; ++y)
 	{
@@ -173,6 +173,8 @@ void GenerateForests(
 	float	total;
 	int		ctr;
 
+
+
 	if (inProg && inProg(0, 2, "Indexing mesh", 0.0)) return;
 
 		Pmwx::Ccb_halfedge_circulator	iter, stop;
@@ -188,7 +190,9 @@ void GenerateForests(
 		tri_hash_t			tri_hash;
 
 	tri_hash.dims = 200;
-	CalcBoundingBox(ioMap, tri_hash.bounds.p1, tri_hash.bounds.p2);
+	Point_2	sw,ne;
+	CalcBoundingBox(ioMap, sw,ne);
+	tri_hash.bounds=Bbox2(cgal2ben(sw),cgal2ben(ne));
 	ctr = 0;
 	total = ioMesh.number_of_faces();
 
@@ -220,9 +224,9 @@ void GenerateForests(
 
 	for (vector<PreinsetFace>::iterator fp = inFaces.begin(); fp != inFaces.end(); ++fp, ++ctr)
 	{
-		GISFace * face = fp->first;
+		Face_handle face = fp->first;
 		DebugAssert(!face->is_unbounded());
-		DebugAssert(face->mTerrainType != terrain_Water);
+		DebugAssert(face->data().mTerrainType != terrain_Water);
 
 		if (total && gap && (ctr % gap) == 0 && inProg && inProg(1, 2, "Processing faces", (float) ctr / total)) return;
 
@@ -235,9 +239,9 @@ void GenerateForests(
 		iter = stop = face->outer_ccb();
 		do {
 			if (iter == stop)
-				face_bounds = iter->target()->point();
+				face_bounds = cgal2ben(iter->target()->point());
 			else
-				face_bounds += iter->target()->point();
+				face_bounds += cgal2ben(iter->target()->point());
 			++iter;
 		} while (iter != stop);
 
@@ -250,121 +254,50 @@ void GenerateForests(
 		Assert(forest_types.count(NO_VALUE) == 0);
 		if (!forest_types.empty())
 		{
-			// Generate the "GT polygon base map".
-			Pmwx				baseMap;
-
-			for (vector<ComplexPolygon2>::iterator poly = fp->second.begin(); poly != fp->second.end(); ++poly)
-			{
-				ComplexPolygonToPmwx(*poly, baseMap, terrain_ForestPark, terrain_Water);
-			}
-
-			DebugAssert(baseMap.is_valid());
-
+//			// Generate the "GT polygon base map".
+//			Pmwx				baseMap;
+			
+//			for (vector<ComplexPolygon2>::iterator poly = fp->second.begin(); poly != fp->second.end(); ++poly)
+//			{
+//				ComplexPolygonToPmwx(*poly, baseMap, terrain_ForestPark, terrain_Water);
+//			}
+		
+//			DebugAssert(baseMap.is_valid());
+			
 			int forest_type_ctr = 0;
 			for (set<int>::iterator fiter = forest_types.begin(); fiter != forest_types.end(); ++fiter, ++forest_type_ctr)
-			{
-				AssertHandler_f dbg = InstallDebugAssertHandler(AssertThrowQuiet);
-				AssertHandler_f rel = InstallAssertHandler(AssertThrowQuiet);
-
-				try {
-					/************************************************************************************
-					 * BURN IN ONE FOREST TYPE
-					 ************************************************************************************/
-					// Burn in triangles that match this forest type.
-
-						Pmwx					forestMap;
-						set<GISHalfedge *>		inForest;
-						map<Point2, GISVertex *, lesser_y_then_x> 			pt_index;
-						map<Point2, GISVertex *, lesser_y_then_x>::iterator i1, i2;
-
-					int ctr = 0;
-					int num_total = 0;
-					int num_slow = 0;
-
-					multimap<double, pair<Point2, Point2> >	sides;
-
-					for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
-					if (tri_forest_type(*tri) == *fiter)
-					for (int s = 0; s < 3; ++s)
-					{
-						if (tri_forest_type((*tri)->neighbor(s)) != *fiter ||
-							forest_tris.count((*tri)->neighbor(s)) == 0)
-						{
-							FastKernel::Point_2 dp1 = (*tri)->vertex(CDT::ccw(s))->point();
-							FastKernel::Point_2 dp2 = (*tri)->vertex(CDT:: cw(s))->point();
-							Point2 p1(dp1.x(), dp1.y());
-							Point2 p2(dp2.x(), dp2.y());
-							sides.insert(multimap<double, pair<Point2, Point2> >::value_type(min(p1.x,p2.x), pair<Point2, Point2>(p1, p2)));
-						}
-					}
-
-					for (multimap<double, pair<Point2, Point2> >::iterator s = sides.begin(); s != sides.end(); ++s)
-					{
-						Point2 p1 = s->second.first;
-						Point2 p2 = s->second.second;
-
-						GISVertex * v1 = forestMap.locate_vertex(p1);
-						GISVertex * v2 = forestMap.locate_vertex(p2);
-
-						GISHalfedge * nh;
-
-						if (v1 != NULL)
-						{
-							if (v2 != NULL)
-								nh = forestMap.nox_insert_edge_between_vertices(v1, v2);
-							else
-								nh = forestMap.nox_insert_edge_from_vertex(v1, p2);
-						} else {
-							if (v2 != NULL)
-								nh = forestMap.nox_insert_edge_from_vertex(v2, p1)->twin();
-							else
-								nh = forestMap.nox_insert_edge_in_hole(p1, p2);
-						}
-						inForest.insert(nh);
-					}
-					DebugAssert(forestMap.is_valid());
-
-					for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
-					{
-						f->mTerrainType = terrain_Natural;
-						f->mAreaFeature.mFeatType = NO_VALUE;
-					}
-
-					for (set<GISHalfedge *>::iterator e = inForest.begin(); e != inForest.end(); ++e)
-					{
-						DebugAssert(!(*e)->face()->is_unbounded());
-						(*e)->face()->mAreaFeature.mFeatType = terrain_ForestPark;
-						(*e)->face()->mTerrainType = terrain_Natural;
-					}
-
-					Pmwx	baseClone(baseMap);
-
-					TopoIntegrateMaps(&forestMap, &baseClone);
-					MergeMaps(forestMap, baseClone, true, NULL, true, NULL);
-					SimplifyMap(forestMap, false, NULL);
-
-					for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
-					if (f->mTerrainType == terrain_ForestPark)
-					if (f->mAreaFeature.mFeatType == terrain_ForestPark)
-					if (!f->is_unbounded())
-					{
-						GISPolyObjPlacement_t	placement;
-						placement.mRepType = *fiter;
-						FaceToComplexPolygon(f, placement.mShape, NULL, NULL, NULL);
-
-						placement.mLocation = placement.mShape[0].centroid();
-						placement.mHeight = 255.0;
-						placement.mDerived = false;
-						face->mPolyObjs.push_back(placement);
-						forest_poly_count++;
-					}
-				} catch (...) {
-					++poly_fail;
+			{	
+				Polygon_set_2	forest_area;
+				vector<Polygon_2>	tris;
+				for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
+				if (tri_forest_type(*tri) == *fiter)
+				{
+					Polygon_2	tri_poly;
+					tri_poly.push_back((*tri)->vertex(0)->point());
+					tri_poly.push_back((*tri)->vertex(1)->point());
+					tri_poly.push_back((*tri)->vertex(2)->point());					
+					DebugAssert(tri_poly.is_counterclockwise_oriented());
+					tris.push_back(tri_poly);
 				}
-
-				InstallDebugAssertHandler(dbg);
-				InstallAssertHandler(rel);
-
+				forest_area.join(tris.begin(), tris.end());
+				
+				forest_area.intersection(fp->second);
+				
+				vector<Polygon_with_holes_2>	forests;
+				forest_area.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(forests));
+				
+				for(vector<Polygon_with_holes_2>::iterator f = forests.begin(); f != forests.end(); ++f)
+				{
+					GISPolyObjPlacement_t	placement;
+					placement.mRepType = *fiter;
+					placement.mShape = *f;					
+					DebugAssert(!placement.mShape.is_unbounded());
+					placement.mLocation = CGAL::centroid(f->outer_boundary().vertices_begin(),f->outer_boundary().vertices_end());
+					placement.mHeight = 255.0;
+					placement.mDerived = false;
+					face->data().mPolyObjs.push_back(placement);
+					forest_poly_count++;
+				}
 			}
 		}
 	}

@@ -26,80 +26,17 @@
 #include "XESConstants.h"
 #define kOverscale 1.0
 
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
+
+#include "MeshDefs.h"
 
 struct	PolyRasterizer;
 struct	DEMGeo;
 
-/************************************************************************************************
- * FACE SETS AND EDGE SETS
- ************************************************************************************************
- *
- * It is often useful to treat a group of faces or a group of edges as a unit...two examples:
- *
- * - A body of water might be made up of multiple faces becaue bridges split the body of water.
- *   So we use a face set to represent the entire body of water.
- *
- * - When merging or copying from one map to another, a single face or single edge in one map
- *   may be represented by many edges or faces in the new one!
- *
- * Generally when we have an edge set we mean a set of halfedges that form one or more rings.
- * (But the edge set is not ordered!)  When we have a face set, the area of the faces is not
- * necessarily continuous and may contain holes, islands, or whatever!
- *
- */
 
-/*
- * FindEdgesForFace
- *
- * Given a face, return all halfedges that have the face on its left.
- * THIS DOES NOT CLEAR THE SET, FOR YOUR CONVENIENCE!!
- *
- */
-void	FindEdgesForFace(GISFace * face, set<GISHalfedge *>& outEdges);
 
-/*
- * FindFacesForEdgeSet
- *
- * Given a bounded edge set, return all faces within that edge set.
- * THIS DOES CLEAR THE FACE SET!
- *
- */
-void	FindFacesForEdgeSet(const set<GISHalfedge *>& inEdges, set<GISFace *>& outFaces);
-
-/*
- * FindEdgesForFaceSet
- *
- * Given a set of faces, finds the halfedges that bound the set of faces.
- *
- */
-void	FindEdgesForFaceSet(const set<GISFace *>& inFaces, set<GISHalfedge *>& outEdges);
-
-/*
- * FindAdjacentFaces
- *
- * Given a face, returns all faces that are touching this face.
- *
- */
-void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces);
-
-/*
- * FindAdjacentWetFaces
- *
- * Given a face, returns all faces that are touching this face.
- *
- */
-void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
-
-/*
- * FindConnectedWetFaces
- *
- * Given a water face, return all connected waterways.  This gives you a truly enclosed water
- * body, taking into account things like bridges.
- *
- */
-void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
+//these need to go
 
 /*
  * CCBToPolygon
@@ -108,7 +45,7 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
  * of per-side weights (0th weight is the CCB edge passed in) are also built up.
  *
  */
-void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds);
+//void		CCBToPolygon(Halfedge_const_handle ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(Halfedge_const_handle edge), Bbox2 * outBounds);
 
 /*
  * FaceToComplexPolygon
@@ -117,8 +54,7 @@ void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double>
  * Like above a weighting function is used.
  *
  */
-void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds);
-
+//void	FaceToComplexPolygon(Face_const_handle face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(Halfedge_const_handle edge), Bbox2 * outBounds);
 /*
  * ComplexPolygonToPmwx
  *
@@ -126,7 +62,7 @@ void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, v
  * in the PMWX inside and outside the complex polygon.
  *
  */
-GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx, int inTerrain, int outTerain);
+//Face_handle	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx, int inTerrain, int outTerain);
 
 /************************************************************************************************
  * MAP EDITING
@@ -154,6 +90,13 @@ GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx
  *
  */
 
+#if DEV
+void	RebuildMap(
+			Pmwx&			in_map,
+			Pmwx&			out_map);
+#endif
+
+// keep - but...Point_2 based?  
 /*
  * CropMap
  *
@@ -175,6 +118,14 @@ void	CropMap(
 			bool			inKeepOutside,	// If true, keep outside crop zone (cut a hole), otherwise keep only inside (normal crop)
 			ProgressFunc	inProgress);
 
+// Keep
+//void	CutInside(
+//			Pmwx&				ioMap,
+//			const Polygon_2&	inBoundary,
+//			bool				inWantOutside,
+//			ProgressFunc		inProgress);
+
+// Lose - can't do quick
 /*
  * CropMap - advanced form.
  *
@@ -188,178 +139,30 @@ void	CropMap(
 void	CropMap(
 			Pmwx&					ioMap,
 			Pmwx&					outCutout,
-			const vector<Point2>&	inRingCCW,
+			const vector<Point_2>&	inRingCCW,
 			ProgressFunc			inProgress);
 
-/*
- * SwapFace
- *
- * Given two maps, replace the face in the master map with the contents of the submap.
- * This routine destroys interior antennas - halfedges connected to the outer CCB that have
- * the face on both sides.  This allows for a clean cut.
- *
- * The remaining contents of the master face are swapped with the target face, which is chopped
- * to make the cut possible.
- *
- * The holes of the master face are then swapped back.
- *
- * (This is a convenient high level swap.)
- *
- */
-void	SwapFace(
-			Pmwx&			inMaster,
-			Pmwx&			inSlave,
-			GISFace *		inFace,
-			ProgressFunc	inFunc);
+//void	SwapFace(
+//			Pmwx&			inMaster,
+//			Pmwx&			inSlave,
+//			Face_handle		inFace,
+//			ProgressFunc	inFunc);
 
 
-/*
- * CleanFace
- *
- * Given a face on a map, this routine 'cleans' its interior, removing any
- * antennas, holes, or anything else in its interior.
- *
- * (This is a convenient high level swap.)
- *
- */
-void	CleanFace(
-			Pmwx&				inMap,
-			Pmwx::Face_handle	inFace);
+//void	SwapMaps(	Pmwx& 							ioMapA, 
+//					Pmwx& 							ioMapB, 
+//					const vector<Halfedge_handle>&	inBoundsA,
+//					const vector<Halfedge_handle>&	inBoundsB);
 
-/*
- * OverlayMap
- *
- * Inserts all part of inSrc into inDst.  inSrc must not have antennas outside of the holes in
- * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was,
- * inDst has contents overwritten.
- *
- */
-void OverlayMap(
-			Pmwx& 	inDst,
-			Pmwx& 	inSrc);
+//void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
 
-/*
- * ReduceToWaterBodies
- *
- * This routine removes edges until the map consists only of faces that represent contiguous
- * water bodies, and the infinite face.  Please note that implicit in this is that edges
- * be constructed to form discrete water bodies up to the edge of the map's useful area.
- *
- * Performance: O(N*M) where N = number of removed halfedges, and M = average number
- * of halfedges in a CCB.
- *
- */
-void ReduceToWaterBodies(Pmwx& ioMap);
-
-
-/*
- * SimplifyMap
- *
- * SimplifyMap removes all edges that do not separate distinct land uses, form the outer
- * CCB, or contain rivers/transportation.  This can include lines from unused data, like
- * geopolitical boundaries, or lines that are artifacts of the import.
- *
- * Performance: O(N*M) where N = number of removed halfedges, and M = average number
- * of halfedges in a CCB.
- *
- */
-int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
-
-/*
- * TODO - DOC THIS
- *
- */
-void UnmangleBorder(Pmwx& ioMap);
-
-/*
- * RemoveUnboundedWater
- *
- * Similar to the routines above, this routine removes all vectors with water on both sides
- * and no transportation links.  The result is (among other things) a removal of unbounded water
- * from a map.  This can be useful for reducing a map to dry land and embedded lakes.
- *
- * This also removes antennas into the unbounded face.
- *
- * Performance: O(N*M) where N = number of removed halfedges, and M = average number
- * of halfedges in a CCB.
- *
- */
-int RemoveUnboundedWater(Pmwx& ioMap);
-
-
-/*
- * MergeMaps
- *
- * This routine copies the contents of ioSrcMap into ioDstMap.
- *
- * Performance: O((N+F)*M) where N is the number of halfedges inserted into the
- * dest map and M is the average number of halfedges in a CCB in the dest map, and
- * F is the number of faces in the source map that have important data that must be copied.
- *
- * For optimal performance, ioDstMap should have faces with small numbers of bounds
- * and ioSrcMap should have fewer or shorter halfedges, and fewer faces that have
- * data that need to be copied.
- *
- * If inForceProps is true, when there is a property conflict for terrain type or area property
- * on a face, the srcMap will win; otherwise the dstMap will win.  A merge takes place where
- * there is no conflicts.
- *
- * If outFaces is not NULL, then the handle of every face in the dst map that had a property
- * in the source map is returned.  Two warnings: "empty" faces (terrain natural, no area
- * feature) are not included, and faces that are non-empty are copied even if the dest-map has
- * a property and inForceProps is false (in which case the face in outFaces did not receive a
- * property from the source.  (A typical use might be to put a bogus mark or terrain on all
- * source faces and thus receive an idea of where in the destination map your source map
- * ended up, without having to do a bunch of fac-relocates from edge bounds.
- *
- */
-void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *> * outFaces, bool pre_integrated, ProgressFunc func);
-
-/*
- * SwapAreas
- *
- * This routine does an optimized exchange of an area contained by a CCB.
- *
- * You pass in: two "rings" of halfedges that form an outer CCB around a finite area.
- * Requirement: the two rings must correlate 1:1 - each halfedge must have the same start/end
- * as its friend.
- * Requirement: the rings must be closed.
- *
- * This routine then swaps the contents of the rings using an optimized swap.
- *
- */
-void	SwapMaps(	Pmwx& 							ioMapA,
-					Pmwx& 							ioMapB,
-					const vector<GISHalfedge *>&	inBoundsA,
-					const vector<GISHalfedge *>&	inBoundsB);
-
-/*
- * TopoIntegrateMaps
- *
- * Given two maps, guarantees that each map could only cross each other at vertices, and that
- * these vertices have the same numeric values.
- *
- */
-void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
-
-/*
- * SafeInsertRing
- *
- * This alternative to insert_ring fixes a few limitations of the low-level insertion routine:
- * 1. It can insert rings with antennas on them.
- * 2. It can insert rings that share vertices with the existing mesh.
- * It does an insert_ring if possible, otherwise it does a slow edge insert.  Please note that
- * this routine does NOT handle non-simple polygons (except for antennas), nor does it handle
- * rings that intersect the existing mesh, so you do need to ensure some topological integration
- * of yoour input data.
- *
- */
-GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& inPoints);
+//Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point2>& inPoints);
 
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/
 
+// Lose??
 /*
  * ValidateMapDominance
  *
@@ -370,7 +173,7 @@ GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& 
  */
 bool	ValidateMapDominance(const Pmwx& inMap);
 
-
+// Keep
 /*
  * CalcBoundingBox
  *
@@ -379,8 +182,10 @@ bool	ValidateMapDominance(const Pmwx& inMap);
  */
 void	CalcBoundingBox(
 			const Pmwx&		inMap,
-			Point2&		sw,
-			Point2&		ne);
+			Point_2&		sw,
+			Point_2&		ne);
+
+// These next routines, move elsewhere to just GIS-related as opposed to comp-geom related
 
 /*
  * GetMapFaceAreaMeters
@@ -388,7 +193,7 @@ void	CalcBoundingBox(
  * Given a map in lat/lon and a face, return its area in meters.
  *
  */
-double	GetMapFaceAreaMeters(const Pmwx::Face_handle f);
+double	GetMapFaceAreaMeters(const Face_handle f);
 
 /*
  * GetMapEdgeLengthMeters
@@ -396,7 +201,7 @@ double	GetMapFaceAreaMeters(const Pmwx::Face_handle f);
  * Given an edge in lat/lon, return is length in meters.
  *
  */
-double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e);
+double	GetMapEdgeLengthMeters(const Halfedge_handle e);
 
 /*
  * GetParamAverage
@@ -407,9 +212,11 @@ double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e);
  * Please note that the histogram is NOT initialized; so that you can run it on multiple faces.
  *
  */
-float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outMin, float * outMax);
-int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram);
+float	GetParamAverage(const Face_handle f, const DEMGeo& dem, float * outMin, float * outMax);
+int		GetParamHistogram(const Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram);
 
+
+// Move these to some kind of DEM-map interaction file
 /*
  * ClipDEMToFaceSet
  *
@@ -418,7 +225,7 @@ int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, 
  * were copied, otherwise the Xa and Y params may nto be valid.
  *
  */
-bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEMGeo& inDstDEM, int& outX1, int& outY1, int& outX2, int& outY2);
+bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, DEMGeo& inDstDEM, int& outX1, int& outY1, int& outX2, int& outY2);
 
 /*
  * SetupRasterizerForDEM
@@ -431,12 +238,13 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
  * the rasterize outer loop.
  *
  */
-int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer);
-int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem, PolyRasterizer& rasterizer);
+int		SetupRasterizerForDEM(const Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer);
+int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer& rasterizer);
 
 /************************************************************************************************
  * POLYGON TRUNCATING AND EDITING
  ************************************************************************************************/
+// LOSE
 
 /*
  * InsetPmwx
@@ -467,7 +275,8 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
  * the map gets pretty badly beaten up.
  *
  */
-void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist);
+// Ben says: to be replaced with constructive inseting of polygon sets using boolean ops
+//void	InsetPmwx(Face_handle inFace, Pmwx& outMap, double dist);
 
 /************************************************************************************************
  * INLINE STUFF
@@ -476,16 +285,16 @@ void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist);
 /*
 
 template <typename InputIterator>
-Point2	FindRefPoint(InputIterator begin, InputIterator end)
+Point_2	FindRefPoint(InputIterator begin, InputIterator end)
 {
 	if (begin == end) return CGAL::ORIGIN;
-	Point2	best = *begin;
+	Point_2	best = *begin;
 	for (InputIterator i = begin; i != end; ++i)
 	{
 		if ((*i).x < best.x)
-			best = Point2((*i).x, best.y);
+			best = Point_2((*i).x, best.y);
 		if ((*i).y < best.y)
-			best = Point2(best.x, (*i).y);
+			best = Point_2(best.x, (*i).y);
 	}
 
 	return best;
@@ -495,32 +304,35 @@ Point2	FindRefPoint(InputIterator begin, InputIterator end)
 
 /*
 template <typename ForwardIterator>
-void LatLonToLocalMeters(ForwardIterator begin, ForwardIterator end, const Point2& ref)
+void LatLonToLocalMeters(ForwardIterator begin, ForwardIterator end, const Point_2& ref)
 {
-	Vector_2	offset(ref);
+	Vector__2	offset(ref);
 	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(ref.y) * DEG_TO_RAD);
 	for (ForwardIterator i = begin; i != end; ++i)
 	{
-		Point2 p = *i - offset;
-		Point2	p2(p.x * DEG_TO_MTR_LON / kOverscale,
+		Point_2 p = *i - offset;
+		Point_2	p2(p.x * DEG_TO_MTR_LON / kOverscale,
 				   p.y * DEG_TO_MTR_LAT / kOverscale);
 		*i = p2;
 	}
 }
 
 template <typename ForwardIterator>
-void LocalMetersToLatLon(ForwardIterator begin, ForwardIterator end, const Point2& ref)
+void LocalMetersToLatLon(ForwardIterator begin, ForwardIterator end, const Point_2& ref)
 {
 	Vector_2	offset(ref);
 	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(ref.y) * DEG_TO_RAD);
 	for (ForwardIterator i = begin; i != end; ++i)
 	{
-		Point2	p ((*i).x * kOverscale / DEG_TO_MTR_LON,
+		Point_2	p ((*i).x * kOverscale / DEG_TO_MTR_LON,
 				   (*i).y * kOverscale / DEG_TO_MTR_LAT);
-		Point2 p2 = p + offset;
+		Point_2 p2 = p + offset;
 		*i = p2;
 	}
 }
 */
+
+// Stubs?  or move to map draw?
+
 
 #endif

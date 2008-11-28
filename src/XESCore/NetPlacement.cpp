@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+#include "MapDefsCGAL.h"
 #include "NetPlacement.h"
 #include "NetTables.h"
 #include "GISUtils.h"
@@ -27,15 +28,15 @@
 #include "XESConstants.h"
 #include "CompGeomDefs3.h"
 #include "MeshAlgs.h"
-#include "MapDefs.h"
+
 
 // Move a bridge N meters to simlify it
 #define	BRIDGE_TURN_SIMPLIFY	20
 
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 {
-	if (!he->mDominant) he = he->twin();
-	for (GISNetworkSegmentVector::iterator seg = he->mSegments.begin(); seg != he->mSegments.end(); ++seg)
+	if (!he->data().mDominant) he = he->twin();
+	for (GISNetworkSegmentVector::iterator seg = he->data().mSegments.begin(); seg != he->data().mSegments.end(); ++seg)
 	{
 		if (IsSeparatedHighway(seg->mFeatType)) return true;
 	}
@@ -44,8 +45,8 @@ bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 
 void	MakeHalfedgeOneway(Pmwx::Halfedge_handle he)
 {
-	if (!he->mDominant) he = he->twin();
-	for (GISNetworkSegmentVector::iterator seg = he->mSegments.begin(); seg != he->mSegments.end(); ++seg)
+	if (!he->data().mDominant) he = he->twin();
+	for (GISNetworkSegmentVector::iterator seg = he->data().mSegments.begin(); seg != he->data().mSegments.end(); ++seg)
 	{
 		seg->mFeatType = SeparatedToOneway(seg->mFeatType);
 	}
@@ -59,7 +60,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 
 	for (Pmwx::Face_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
-	if (!face->IsWater())
+	if (!face->data().IsWater())
 	{
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
 
@@ -83,8 +84,8 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		} while (iter != stop);
 		if (xons >= 4) needs_processing = true;
 		if (xons > 0) has_unsep++;
-
-		for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+		
+		for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			if (needs_processing) break;
 			last = iter = stop = *hole;
@@ -107,7 +108,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 				MakeHalfedgeOneway(iter);
 				++iter;
 			} while (iter != stop);
-			for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+			for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 			{
 				iter = stop = *hole;
 				do {
@@ -120,14 +121,14 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	}
 
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
-	if (edge->mDominant)
+	if (edge->data().mDominant)
 	{
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
-
-		double	x1 =edge->source()->point().x;
-		double	y1 =edge->source()->point().y;
-		double	x2 =edge->target()->point().x;
-		double	y2 =edge->target()->point().y;
+	
+		double	x1 = CGAL::to_double(edge->source()->point().x());
+		double	y1 = CGAL::to_double(edge->source()->point().y());
+		double	x2 = CGAL::to_double(edge->target()->point().x());
+		double	y2 = CGAL::to_double(edge->target()->point().y());
 		double	startE = inElevation.value_linear(x1,y1);
 		double	endE = inElevation.value_linear(x2, y2);
 		double	urbanS = inUrbanDensity.value_linear(x1, y1);
@@ -138,8 +139,8 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 
 		double gradient = fabs(startE - endE) / dist;
 		double urban = (urbanS + urbanE) * 0.5;
-
-		for (GISNetworkSegmentVector::iterator seg = edge->mSegments.begin(); seg != edge->mSegments.end(); ++seg)
+		
+		for (GISNetworkSegmentVector::iterator seg = edge->data().mSegments.begin(); seg != edge->data().mSegments.end(); ++seg)
 		{
 			// GRADIENT BRIDGES ARE TURNED OFF!!  We do NOT have the calculations
 			// to do these right. :-(
@@ -428,12 +429,13 @@ int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
 	return reduces;
 }
 
+#if 1
 void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
 	outJunctions.clear();
 	outChains.clear();
 
-	typedef	map<Pmwx::Vertex_handle, Net_JunctionInfo_t*>		JunctionTableType;
+	typedef	map<Pmwx::Vertex *, Net_JunctionInfo_t*>		JunctionTableType;
 	typedef	map<Pmwx::Halfedge_handle, Net_ChainInfo_t*>		ChainTableType;
 	JunctionTableType												junctionTable;
 
@@ -442,33 +444,35 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 	{
 		Net_JunctionInfo_t * junc = new Net_JunctionInfo_t;
 		junc->vertical_locked = false;
-		junc->location.x = v->point().x;
-		junc->location.y = v->point().y;
+		junc->location.x = CGAL::to_double(v->point().x());
+		junc->location.y = CGAL::to_double(v->point().y());
 		junc->location.z = 0.0;
 		junc->power_crossing = false;
-		junctionTable.insert(JunctionTableType::value_type(v,junc));
+		junctionTable.insert(JunctionTableType::value_type(&*v,junc));
 		outJunctions.insert(junc);
+		//printf("+");
 	}
 	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
-	if (e->mDominant)
-	for (GISNetworkSegmentVector::iterator seg = e->mSegments.begin(); seg != e->mSegments.end(); ++seg)
+	if (e->data().mDominant)
+	for (GISNetworkSegmentVector::iterator seg = e->data().mSegments.begin(); seg != e->data().mSegments.end(); ++seg)
 	if (seg->mRepType != NO_VALUE)
 	{
 		Net_ChainInfo_t *	chain = new Net_ChainInfo_t;
 		chain->entity_type = seg->mRepType;
 		chain->export_type = NO_VALUE;
-		chain->over_water = e->face()->IsWater() && e->twin()->face()->IsWater();
-		chain->start_junction = junctionTable[e->source()];
-		chain->end_junction = junctionTable[e->target()];
+		chain->over_water = e->face()->data().IsWater() && e->twin()->face()->data().IsWater();
+		chain->start_junction = junctionTable[&*e->source()];
+		chain->end_junction = junctionTable[&*e->target()];
 		chain->start_junction->chains.insert(chain);
 		chain->end_junction->chains.insert(chain);
 		outChains.insert(chain);
+		//printf("|");
 	}
 
 	// Do one initial compaction - odds are we have a lot of chains that need to be built up!
 
-	OptimizeNetwork(outJunctions, outChains, true);
-
+	//OptimizeNetwork(outJunctions, outChains, true);
+	
 	CountNetwork(outJunctions, outChains);
 	int nukes = NukeStraightShapePoints(outChains);
 	CountNetwork(outJunctions, outChains);
@@ -477,6 +481,7 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 	// Now we need to start sorting out the big mess we have - we have a flat topology and in reality
 	// highways don't work that way!
 }
+#endif
 
 void	CleanupNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
@@ -525,8 +530,8 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 {
 	int total = 0;
 	int added = 0;
-	vector<Point3>	all_pts, these_pts;
-
+	vector<Point3>	all_pts,	these_pts;
+		
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
 	{
 		all_pts.clear();
@@ -541,12 +546,15 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 			Point3 pt(chain->nth_pt(n));
 			if (n == 0)
 			{
-				MarchHeightStart(inMesh, CDT::Point(pt.x, pt.y), info);
+				MarchHeightStart(inMesh, CDT::Point(CGAL::to_double(pt.x), CGAL::to_double(pt.y)), info);
 			}
 			else
 			{
-				MarchHeightGo(inMesh, CDT::Point(pt.x, pt.y), info, these_pts);
-				#if DEV
+				MarchHeightGo(inMesh, CDT::Point(CGAL::to_double(pt.x), CGAL::to_double(pt.y)), info, these_pts);
+				#if !DEV
+					msutfigure out why this blows up
+				#endif
+				#if 0 && DEV				
 					Point3 prev(chain->nth_pt(n-1));
 					Bbox2	lim(prev.x,prev.y,pt.x,pt.y);
 					for(int i = 0; i < these_pts.size(); ++i)
@@ -750,7 +758,10 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			case use_Ramp:		ramps.push_back(*chain); 													break;
 			case use_Rail:		trains.push_back(*chain); if ((*chain)->over_water) train_bridge = true; 	break;
 			case use_Power:																					break;
-			default: AssertPrintf("Unknown use!");															break;
+			default: 
+					streets.push_back(*chain); if ((*chain)->over_water) street_bridge = true;
+					printf("Unknown use!\n");															
+					break;
 			}
 
 			if (gNetEntities[(*chain)->entity_type].use_mode == use_Power)
@@ -1006,9 +1017,9 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 			Point3	p3 = (*chain)->nth_pt(i+2);
 
 			Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
-
-			double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x, p_mid.y);
-
+			
+			double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x(), p_mid.y());
+			
 			if (displacement < BRIDGE_TURN_SIMPLIFY)
 			{
 				(*chain)->shape.erase((*chain)->shape.begin()+i);
@@ -1287,7 +1298,7 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 
 					min_msl = max(min_msl, other->location.z - var);
 					max_msl = min(max_msl, other->location.z + var);
-					max_agl = max(max_agl, other->agl);
+					max_agl = max(max_agl,  other->agl);
 				} else {
 					double len = current_lock_dist + (*chain)->meter_length(0, (*chain)->seg_count());
 					to_process.insert(q_type::value_type(len, other));
@@ -1428,9 +1439,9 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 				double	mid_msl = msl1 * (1.0 - rat) + msl2 * rat;
 
 				Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
-
-				double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x, p_mid.y);
-
+				
+				double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x(), p_mid.y());
+				
 				if ((len1 + len2) < ideal_dist_m &&		// We're short enough that we can wipe the middle and
 					(mid_msl + max_dip) > msl &&		// removing this wouldn't cause the segment to dip too deep and
 					(msl <= msl1 || msl <= msl2) &&		// This isn't a local high-point

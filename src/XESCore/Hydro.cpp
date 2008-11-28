@@ -44,6 +44,8 @@
 #include "XUtils.h"
 #endif
 
+inline Halfedge_handle	dominant(Halfedge_handle e) { return e->data().mDominant ? e : e->twin(); }
+
 // This is how high we can raise the waterlevel of a river (turning it into a lake) before we give up
 // and say 'heck, we have no idea what's going on'.  This prevents water from flowing massively uphill
 // out of a pit in the DEM.
@@ -412,11 +414,11 @@ inline int HydroFlowToPt(int x, int y, DEMGeo * elev, DEMGeo * dirs, DEMGeo * fl
 
 static void BurnRiver(DEMGeo& dem, const Point2& p1, const Point2& p2, float v)
 {
-	double	x1 = dem.lon_to_x(p1.x);
-	double	x2 = dem.lon_to_x(p2.x);
-	double	y1 = dem.lat_to_y(p1.y);
-	double	y2 = dem.lat_to_y(p2.y);
-
+	double	x1 = dem.lon_to_x(p1.x());
+	double	x2 = dem.lon_to_x(p2.x());
+	double	y1 = dem.lat_to_y(p1.y());
+	double	y2 = dem.lat_to_y(p2.y());
+	
 	Segment2	seg(Point2(x1, y1), Point2(x2, y2));
 	double len = sqrt(seg.squared_length());
 	if (len == 0.0) len = 1.0;
@@ -425,8 +427,8 @@ static void BurnRiver(DEMGeo& dem, const Point2& p1, const Point2& p2, float v)
 	for (double t = 0.0; t <= 1.0; t += len)
 	{
 		Point2 p = seg.midpoint(t);
-		int ix = round(p.x);
-		int iy = round(p.y);
+		int ix = round(p.x());
+		int iy = round(p.y());
 		dem.set(ix-1,iy-1,v);
 		dem.set(ix  ,iy-1,v);
 		dem.set(ix+1,iy-1,v);
@@ -566,10 +568,10 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 
 	// Burn each river from VMAP0 into the "is river" low-res DEM
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
-	if (he->mDominant)
-	if (he->mParams.count(he_IsRiver))
+	if (he->data().mDominant)
+	if (he->data().mParams.count(he_IsRiver))
 	{
-		BurnRiver(is_river, he->source()->point(), he->target()->point(), 1);
+		BurnRiver(is_river, cgal2ben(he->source()->point()), cgal2ben(he->target()->point()), 1);
 	}
 
 	if (inProg) inProg(0, 4, "Preparing elevation maps", 1.0);
@@ -595,24 +597,24 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		hydro_dir(x,y) = sink_Known;
 
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
-	if (he->mDominant)
-	if (he->mParams.count(he_IsRiver) > 0)
+	if (he->data().mDominant)	
+	if (he->data().mParams.count(he_IsRiver) > 0)
 	{
-		Point2	sp = he->source()->point();
-		if (sp.x == hydro_elev.mWest ||
-			sp.x == hydro_elev.mEast ||
-			sp.y == hydro_elev.mSouth ||
-			sp.y == hydro_elev.mNorth)
+		Point2	sp = cgal2ben(he->source()->point());
+		if (sp.x() == hydro_elev.mWest ||
+			sp.x() == hydro_elev.mEast ||
+			sp.y() == hydro_elev.mSouth ||
+			sp.y() == hydro_elev.mNorth)
 		{
-			BurnLowestNearDrainPt(elev, hydro_dir, sp.x, sp.y);
+			BurnLowestNearDrainPt(elev, hydro_dir, sp.x(), sp.y());
 		}
-		Point2	tp = he->target()->point();
-		if (tp.x == hydro_elev.mWest ||
-			tp.x == hydro_elev.mEast ||
-			tp.y == hydro_elev.mSouth ||
-			tp.y == hydro_elev.mNorth)
+		Point2	tp = cgal2ben(he->target()->point());
+		if (tp.x() == hydro_elev.mWest ||
+			tp.x() == hydro_elev.mEast ||
+			tp.y() == hydro_elev.mSouth ||
+			tp.y() == hydro_elev.mNorth)
 		{
-			BurnLowestNearDrainPt(elev, hydro_dir, tp.x, tp.y);
+			BurnLowestNearDrainPt(elev, hydro_dir, tp.x(), tp.y());
 		}
 	}
 
@@ -752,11 +754,11 @@ inline bool	IsCoastal(const DEMGeo& dem, int x, int y)
  * wetFaces - a set of all of the connected wet faces to analyze.
  *
  */
-void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<GISFace *> wetFaces)
+void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<Face_handle>& wetFaces)
 {
 	DEMGeo					workingElev(origElev.mWidth, origElev.mHeight);
 	PolyRasterizer			raster;
-	set<GISHalfedge *>		bounds;
+	set<Halfedge_handle>	bounds;
 	int						x1, x2, y1, y2;	// This is the working bounds of the water body for faster future DEM processing.
 	int						rx1, rx2, x, y;
 	int						count = 0;
@@ -886,10 +888,10 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 
 void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 {
-	set<GISFace *>	water;
+	set<Face_handle>	water;
 	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
 	if (!f->is_unbounded())
-	if (f->IsWater())
+	if (f->data().IsWater())
 		water.insert(f);
 
 	const DEMGeo& elev(dems[dem_Elevation]);
@@ -907,11 +909,11 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 	while (!water.empty())
 	{
 		PROGRESS_SHOW(inProg, 0, 1, "Editing Coastlines...", (total - water.size()), total)
-		set<GISFace *> group;
+		set<Face_handle> group;
 		FindConnectedWetFaces(*water.begin(), group);
 		++ctr;
 		BuildCorrectedWaterBody(elev, new_wet, group);
-		for (set<GISFace *>::iterator g = group.begin(); g != group.end(); ++g)
+		for (set<Face_handle>::iterator g = group.begin(); g != group.end(); ++g)
 			water.erase(*g);
 	}
 
@@ -964,18 +966,18 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 	 ************************************************************************************/
 
 
-	set<GISFace *>	water;
+	set<Face_handle>	water;
 	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
 	if (!f->is_unbounded())
-	if (f->IsWater())
+	if (f->data().IsWater())
 		water.insert(f);
 
 	while (!water.empty())
 	{
-		set<GISFace *> group;
+		set<Face_handle> group;
 		FindConnectedWetFaces(*water.begin(), group);
 		BuildCorrectedWaterBody(elev, old_wet, group);
-		for (set<GISFace *>::iterator g = group.begin(); g != group.end(); ++g)
+		for (set<Face_handle>::iterator g = group.begin(); g != group.end(); ++g)
 			water.erase(*g);
 	}
 
@@ -1073,14 +1075,14 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 void TagOriginalBridges(Pmwx& io_map)
 {
 	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); ++e)
-	if(e->mDominant)
-	if(!e->mSegments.empty())
+	if(e->data().mDominant)
+	if(!e->data().mSegments.empty())	
 	{
-		e->mParams[he_Bridge] = (
+		e->data().mParams[he_Bridge] = (
 			!e->face()->is_unbounded() &&
 			!e->twin()->face()->is_unbounded() &&
-			e->face()->IsWater() &&
-			e->twin()->face()->IsWater()) ? 1.0 : 0.0;
+			e->face()->data().IsWater() &&
+			e->twin()->face()->data().IsWater()) ? 1.0 : 0.0;		
 	}
 }
 
@@ -1089,29 +1091,29 @@ enum {
 	is_water,
 	is_coast,
 	is_border };
+	
+typedef list<Halfedge_handle>	LongStrand;
 
-typedef list<GISHalfedge *>	LongStrand;
-
-int CategorizeHalfedge(GISHalfedge * e)
+int CategorizeHalfedge(Halfedge_handle e)
 {
 	if (e->face()->is_unbounded() || e->twin()->face()->is_unbounded()) return is_border;
-	if(e->face()->IsWater() != e->twin()->face()->IsWater()) return is_coast;
-	return (e->face()->IsWater() ? is_water : is_land);
+	if(e->face()->data().IsWater() != e->twin()->face()->data().IsWater()) return is_coast;
+	return (e->face()->data().IsWater() ? is_water : is_land);
 }
 
-bool IsBridge(GISHalfedge * e)
+bool IsBridge(Halfedge_handle e)
 {
-	e = e->dominant();
-	if(e->mSegments.empty()) return false;
-	GISParamMap::iterator i = e->mParams.find(he_Bridge);
-	if (i == e->mParams.end()) return false;
+	e = e->data().mDominant ? e : e->twin();
+	if(e->data().mSegments.empty()) return false;
+	GISParamMap::iterator i = e->data().mParams.find(he_Bridge);
+	if (i == e->data().mParams.end()) return false;
 	return i->second == 1.0;
 }
 
-bool	BuildBypass(GISHalfedge * b, GISHalfedge * e, LongStrand& s)
+bool	BuildBypass(Halfedge_handle b, Halfedge_handle e, LongStrand& s)
 {
 	s.clear();
-	GISHalfedge * i = b->next();
+	Halfedge_handle i = b->next();
 //	GISFace * r = i->face();
 //	if(e->face() != b->face()) return false;
 	while (i != b && i != e)
@@ -1125,7 +1127,7 @@ bool	BuildBypass(GISHalfedge * b, GISHalfedge * e, LongStrand& s)
 }
 
 
-int CategorizeVertex(GISVertex * v)
+int CategorizeVertex(Vertex_handle v)
 {
 	int n = is_land;
 	Pmwx::Halfedge_around_vertex_circulator circ,stop;
@@ -1137,73 +1139,78 @@ int CategorizeVertex(GISVertex * v)
 	return n;
 }
 
-bool HasRoad(GISHalfedge * e)
+bool HasRoad(Halfedge_handle e)
 {
-	return !e->dominant()->mSegments.empty();
+	if(!e->data().mDominant) e = e->twin();
+	return !e->data().mSegments.empty();
 }
 
-GISHalfedge * NextOneRoad(GISHalfedge * r, bool allow_bridge)
+Halfedge_handle NextOneRoad(Halfedge_handle r, bool allow_bridge)
 {
-	GISHalfedge * ret = NULL;
+	Halfedge_handle ret = Halfedge_handle();
 	int n = 0;
 	Pmwx::Halfedge_around_vertex_circulator circ,stop;
 	circ=stop=r->target()->incident_halfedges();
 	do {
 		++circ;
-		if(r != &*circ && HasRoad(circ))
+		if(r != circ && HasRoad(circ))
 		if(allow_bridge || !IsBridge(circ))
 		  { ++n; ret = circ; }
 	} while(circ != stop);
-	return (n == 1) ? ret->twin() : NULL;
+	return (n == 1) ? ret->twin() : Halfedge_handle();
 }
 
-GISHalfedge * PrevOneRoad(GISHalfedge * r, bool allow_bridge)
+Halfedge_handle PrevOneRoad(Halfedge_handle r, bool allow_bridge)
 {
-	GISHalfedge * ret = NULL;
+	Halfedge_handle ret = Halfedge_handle();
 	int n = 0;
 	Pmwx::Halfedge_around_vertex_circulator circ,stop;
 	circ=stop=r->source()->incident_halfedges();
 	do {
 		++circ;
-		if(r->twin() != &*circ && HasRoad(circ))
+		if(r->twin() != circ && HasRoad(circ)) 
 		if(allow_bridge || !IsBridge(circ))
 			{ ++n; ret = circ; }
 	} while(circ != stop);
-	return (n == 1) ? ret : NULL;
+	return (n == 1) ? ret : Halfedge_handle();
 }
 
-void	BuildLongStrand(GISHalfedge * seed, LongStrand& out_s)
+void	BuildLongStrand(Halfedge_handle seed, LongStrand& out_s)
 {
 	out_s.push_back(seed);
-	GISHalfedge * i = seed;
+	Halfedge_handle i = seed;
 	while (1)
 	{
 		i = PrevOneRoad(i,false);
-		if(!i) break;
-		if(i->dominant()->mMark) break;
+		if(i == Halfedge_handle()) break;
+		if(i->data().mDominant  && i->data().mMark		   )	break;
+		if(!i->data().mDominant && i->twin()->data().mMark)	break;
 		if(CategorizeHalfedge(i) != is_water) break;
 		out_s.push_front(i);
-		i->mMark = 1;
-	}
+		i->data().mMark = 1;
+		i->twin()->data().mMark = 1;
+	}	
 	i = seed;
 	while (1)
 	{
 		i = NextOneRoad(i,false);
-		if(!i) break;
-		if(i->dominant()->mMark) break;
+		if(i == Halfedge_handle()) break;
+		if(i->data().mDominant  && i->data().mMark		   )	break;
+		if(!i->data().mDominant && i->twin()->data().mMark)	break;
 		if(CategorizeHalfedge(i) != is_water) break;
 		out_s.push_back(i);
-		i->mMark = 1;
-	}
+		i->data().mMark = 1;
+		i->twin()->data().mMark = 1;
+	}	
 }
 
 bool AllSameType(const LongStrand& s)
 {
 	DebugAssert(!s.empty());
-	DebugAssert(!s.front()->dominant()->mSegments.empty());
-	int rt = s.front()->dominant()->mSegments.front().mFeatType;
+	DebugAssert(!dominant(s.front())->data().mSegments.empty());
+	int rt = dominant(s.front())->data().mSegments.front().mFeatType;
 	for(LongStrand::const_iterator e = s.begin(); e != s.end(); ++e)
-	for(GISNetworkSegmentVector::iterator g = (*e)->dominant()->mSegments.begin(); g != (*e)->dominant()->mSegments.end(); ++g)
+	for(GISNetworkSegmentVector::iterator g = dominant(*e)->data().mSegments.begin(); g != dominant(*e)->data().mSegments.end(); ++g)
 	if(g->mFeatType != rt) return false;
 	return true;
 }
@@ -1213,10 +1220,10 @@ double StrandLength(const LongStrand& s)
 	double t = 0.0;
 	for(LongStrand::const_iterator e = s.begin(); e != s.end(); ++e)
 	t += LonLatDistMeters(
-		(*e)->source()->point().x,
-		(*e)->source()->point().y,
-		(*e)->target()->point().x,
-		(*e)->target()->point().y);
+		CGAL::to_double((*e)->source()->point().x()),
+		CGAL::to_double((*e)->source()->point().y()),
+		CGAL::to_double((*e)->target()->point().x()),
+		CGAL::to_double((*e)->target()->point().y()));
 	return t;
 }
 
@@ -1224,30 +1231,30 @@ double StrandLength(const LongStrand& s)
 void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 {
 	Pmwx::Halfedge_iterator		e;
-	list<GISHalfedge *>	bridge_segs;
+	list<Halfedge_handle>	bridge_segs;
 	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-	if(e->mDominant)
+	if(e->data().mDominant)
 	{
-		e->mMark = 0;
+		e->data().mMark = 0;
 		if (IsBridge(e))
 			bridge_segs.push_back(e);
 	}
 	while(!bridge_segs.empty())
 	{
-		GISHalfedge * w = bridge_segs.front();
+		Halfedge_handle w = bridge_segs.front();
 		bridge_segs.pop_front();
-		GISHalfedge * nr = NextOneRoad(w,true);
-		GISHalfedge * pr = PrevOneRoad(w,true);
-		if(nr) nr = nr->dominant();
-		if(pr) pr = pr->dominant();
-		if (nr && !IsBridge(nr) && CategorizeHalfedge(nr) == is_water)
+		Halfedge_handle nr = NextOneRoad(w,true);
+		Halfedge_handle pr = PrevOneRoad(w,true);
+		if(nr != Halfedge_handle()) nr = dominant(nr);
+		if(pr != Halfedge_handle()) pr = dominant(pr);
+		if (nr != Halfedge_handle() && !IsBridge(nr) && CategorizeHalfedge(nr) == is_water)
 		{
-			nr->mParams[he_Bridge] = 1.0;
+			nr->data().mParams[he_Bridge] = 1.0;
 			bridge_segs.push_back(nr);
 		}
-		if (pr && !IsBridge(pr) && CategorizeHalfedge(pr) == is_water)
+		if (pr != Halfedge_handle()&& !IsBridge(pr) && CategorizeHalfedge(pr) == is_water)
 		{
-			pr->mParams[he_Bridge] = 1.0;
+			pr->data().mParams[he_Bridge] = 1.0;
 			bridge_segs.push_back(pr);
 		}
 	}
@@ -1255,13 +1262,13 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 	list<LongStrand>	strands;
 
 	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-	if(e->mDominant)
-	if(!e->mMark)
+	if(e->data().mDominant)
+	if(!e->data().mMark)
 	if(!IsBridge(e))
 	if(HasRoad(e))
 	if(CategorizeHalfedge(e) == is_water)
 	{
-		e->mMark = 1;
+		e->data().mMark = 1;
 		strands.push_back(LongStrand());
 		BuildLongStrand(e,strands.back());
 	}
@@ -1307,24 +1314,24 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 		if(bridge_len < 500.0 && bridge_len < (ll / 1.2) && s->size() == 1)
 		{
 			for(LongStrand::iterator ss = s->begin(); ss != s->end(); ++ss)
-				(*ss)->dominant()->mParams[he_Bridge] = 1.0;
+				dominant(*ss)->data().mParams[he_Bridge] = 1.0;
 		} else {
 			if(ll < (strand_len * 2.0))
 			{
 				for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
 				{
-					(*ss)->dominant()->mSegments = s->front()->dominant()->mSegments;
+					dominant(*ss)->data().mSegments = dominant(s->front())->data().mSegments;				
 				}
 			}
 		}
 	}
 
 	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-	if(e->mDominant)
+	if(e->data().mDominant)	
 	if(!IsBridge(e))
 	if(HasRoad(e))
 	if(CategorizeHalfedge(e) == is_water)
-		e->mSegments.clear();
+		e->data().mSegments.clear();
 }
 
 
@@ -1453,28 +1460,28 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	ReduceToBorder(bar, foo);
 
 	Pmwx	water;
-	water.unbounded_face()->mTerrainType = terrain_Natural;
+	water.unbounded_face()->data().mTerrainType = terrain_Natural;
 	DemToVector(foo, water, false, terrain_Water, inFunc);
-
-	water.insert_edge(Point2(foo.mWest, foo.mSouth), Point2(foo.mEast, foo.mSouth), NULL, NULL);
-	water.insert_edge(Point2(foo.mWest, foo.mNorth), Point2(foo.mEast, foo.mNorth), NULL, NULL);
-	water.insert_edge(Point2(foo.mWest, foo.mSouth), Point2(foo.mWest, foo.mNorth), NULL, NULL);
-	water.insert_edge(Point2(foo.mEast, foo.mSouth), Point2(foo.mEast, foo.mNorth), NULL, NULL);
-	water.unbounded_face()->mTerrainType = terrain_Natural;
+	
+	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mSouth), Point_2(foo.mEast, foo.mSouth)));
+	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mNorth), Point_2(foo.mEast, foo.mNorth)));
+	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mSouth), Point_2(foo.mWest, foo.mNorth)));
+	CGAL::insert_curve(water,Segment_2(Point_2(foo.mEast, foo.mSouth), Point_2(foo.mEast, foo.mNorth)));
+	water.unbounded_face()->data().mTerrainType = terrain_Natural;
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())
-	if (f->IsWater())
+	if (f->data().IsWater())
 	{
-		f->mTerrainType = terrain_Natural;
+		f->data().mTerrainType = terrain_Natural;
 	}
 
 	SimplifyMap(ioMap, true, inFunc);
 	TopoIntegrateMaps(&ioMap, &water);
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
-	ioMap.swap(water);
-
-	ConformWater(ioDem, hydro_dir, true, NULL);
+	ioMap = water;
+	
+	ConformWater(ioDem, hydro_dir, true, NULL);	
 }
 
 /******************************************************************************************************************************
@@ -1483,12 +1490,13 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 
 #pragma mark -
 
+#if 0
 #define SLIVER_PROTECTION	0.984807753012
 
 // UTILITY:
 // Returns true if there is no edge adjacent to (and pointing to) V that
 // is nearly incident with vec (vec is revsersed by the bool param).
-inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
+inline bool NoHalfedgeInDir(Vertex_handle v, const Vector2& vec, bool reverse)
 {
 	double mul = reverse ? -1.0 : 1.0;
 	Pmwx::Halfedge_around_vertex_circulator stop, iter;
@@ -1504,9 +1512,9 @@ inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
 
 
 // Utility - tracks the edge we added.
-void insert_add_one(GISHalfedge * oh, GISHalfedge * nh, void * ref)
+void insert_add_one(Halfedge_handle oh, Halfedge_handle nh, void * ref)
 {
-	GISHalfedge ** p = (GISHalfedge **) ref;
+	Halfedge_handle* p = (Halfedge_handle*) ref;
 	DebugAssert(nh == NULL || oh == NULL);
 	DebugAssert(*p == NULL);
 	if (nh != NULL)
@@ -1522,7 +1530,7 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 {
 	SimplifyMap(ioMap, false, func);
 	Pmwx::Halfedge_iterator he;
-	GISHalfedge * next;
+	Halfedge_handle next;
 	bool	did_work;
 	int nuke = 0;
 	int total = ioMap.number_of_halfedges();
@@ -1536,9 +1544,9 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 
 	do {
 		// One cycle through: try to identify and cut off unneeded points.
-
-		set <GISHalfedge *>	nuke_he;
-		did_work = false;
+	
+		set <Halfedge_handle>	nuke_he;
+		did_work = false;	
 		int ctr = 0;
 
 		// Start by finding any halfedge that's water on the left, land on the right, not border.
@@ -1575,12 +1583,12 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 							// Ray test - if we can't fire a ray, this isn't a clear curve to cut off!
 							Pmwx::Locate_type	loc;
 							Point2				pt;
-							GISHalfedge * rs = ioMap.ray_shoot(he->source()->point(), Pmwx::locate_Vertex, he->twin(), next->target()->point(), pt, loc);
+							Halfedge_handle rs = ioMap.ray_shoot(he->source()->point(), Pmwx::locate_Vertex, he->twin(), next->target()->point(), pt, loc);
 							if (loc == Pmwx::locate_Vertex && rs->target() == next->target())
 							{
 								// Do the actual insertion and see if there wasn't an edge there
 								DebugAssert(pt == next->target()->point());
-								GISHalfedge * ne = NULL;
+								Halfedge_handle ne = NULL;
 								ioMap.insert_edge(he->source()->point(), next->target()->point(), he->twin(), Pmwx::locate_Vertex, insert_add_one, &ne);
 								if (ne != NULL)
 								{
@@ -1611,9 +1619,9 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 				}
 			}
 		}
-
-		// Now nuke anyone we got rid of and recalc face sizes.
-		for (set<GISHalfedge *>::iterator nuke_e = nuke_he.begin(); nuke_e != nuke_he.end(); ++nuke_e)
+		
+		// Now nuke anyone we got rid of and recalc face sizes.		
+		for (set<Halfedge_handle>::iterator nuke_e = nuke_he.begin(); nuke_e != nuke_he.end(); ++nuke_e)
 		{
 //			gMeshLines.push_back((*nuke_e)->source()->point());
 //			gMeshLines.push_back((*nuke_e)->target()->point());
@@ -1636,20 +1644,22 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 	printf("End result: %d simplifies, %d before, %d after.\n", nuke, total, ioMap.number_of_halfedges());
 }
 
+#endif
+
 inline void SubBox(const Bbox2& src, float x1, float y1, float x2, float y2, Bbox2& dst)
 {
 	Vector2 sz(src.p1,src.p2);
-	dst.p1.x = src.p1.x + sz.dx * x1;
-	dst.p1.y = src.p1.y + sz.dy * y1;
-	dst.p2.x = src.p1.x + sz.dx * x2;
-	dst.p2.y = src.p1.y + sz.dy * y2;
+	dst.p1.x_ = src.p1.x() + sz.dx * x1;
+	dst.p1.y_ = src.p1.y() + sz.dy * y1;
+	dst.p2.x_ = src.p1.x() + sz.dx * x2;
+	dst.p2.y_ = src.p1.y() + sz.dy * y2;
 }
 
 inline int SubBoxIdx(const Bbox2& lim, const Point2& p, int div)
 {
-	float dx = (p.x - lim.p1.x) / (lim.p2.x - lim.p1.x);
-	float dy = (p.y - lim.p1.y) / (lim.p2.y - lim.p1.y);
-
+	float dx = (p.x() - lim.p1.x()) / (lim.p2.x() - lim.p1.x());
+	float dy = (p.y() - lim.p1.y()) / (lim.p2.y() - lim.p1.y());
+	
 	dx *= (float) div;
 	dy *= (float) div;
 
@@ -1699,19 +1709,19 @@ static void BuildPtCache(Pmwx& inMap, const Bbox2& lim, int divs, vector<pair<Bb
 }
 
 
-static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<Bbox2, vector<Point2> > >& cache)
+static bool	AnyPtInEdgeSpaceCCB(Halfedge_handle e1, Halfedge_handle e2, vector<pair<Bbox2, vector<Point2> > >& cache)
 {
 	DebugAssert(e1->next() == e2);
 	if (e2->next() == e1) return true;
+	
+	Bbox2	lim(cgal2ben(e1->source()->point()));
+	lim += cgal2ben(e1->target()->point());
+	lim += cgal2ben(e2->target()->point());
 
-	Bbox2	lim(e1->source()->point());
-	lim += e1->target()->point();
-	lim += e2->target()->point();
-
-	Segment2	s1(e1->source()->point(), e1->target()->point());
-	Segment2	s2(e2->source()->point(), e2->target()->point());
-	Segment2	s3(e2->target()->point(), e1->source()->point());
-
+	Segment2	s1(cgal2ben(e1->source()->point()), cgal2ben(e1->target()->point()));
+	Segment2	s2(cgal2ben(e2->source()->point()), cgal2ben(e2->target()->point()));
+	Segment2	s3(cgal2ben(e2->target()->point()), cgal2ben(e1->source()->point()));
+	
 	DebugAssert(Vector2(s1.p1,s1.p2).signed_area(Vector2(s2.p1,s2.p2)) > 0.0);
 
 	Pmwx::Ccb_halfedge_circulator circ, stop;
@@ -1737,22 +1747,22 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<
 }
 
 
-void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector<Point2> > >&		cache)
+void	SimplifyWaterCCB(Pmwx& ioMap, Halfedge_handle edge, vector<pair<Bbox2, vector<Point2> > >&		cache)
 {
 	bool	is_split = false;
 	bool	first_split = false;
-	GISHalfedge * stop = edge;
+	Halfedge_handle stop = edge;	
 	bool	first_loop = true;
 	bool	last_loop = false;
 	do {
-
-		DebugAssert(edge->face()->IsWater());
+	
+		DebugAssert(edge->face()->data().IsWater());
 		DebugAssert(!edge->face()->is_unbounded());
 
 		if (edge->twin()->face()->is_unbounded() ||
 			edge->next()->twin()->face()->is_unbounded() ||
 			edge->next()->twin()->next()->twin() != edge ||
-			edge->twin()->face()->IsWater())
+			edge->twin()->face()->data().IsWater())
 		{
 			edge = edge->next();
 			is_split = false;
@@ -1761,7 +1771,8 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 			// We want to make sure E is the edge after the split from the first edge.
 			if (!is_split)
 			{
-				edge = ioMap.split_edge(edge, Segment2(edge->source()->point(),edge->target()->point()).midpoint())->next();
+				Point_2 mp(CGAL::midpoint(edge->source()->point(),edge->target()->point()));
+				edge = ioMap.split_edge(edge, Segment_2(edge->source()->point(),mp), Segment_2(mp,edge->target()->point())->next();
 			}
 
 			if (edge->next() == stop) last_loop = true;
@@ -1772,8 +1783,8 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 //			Point2				cross_pt;
 //			Pmwx::Locate_type	cross_type;
 
-			GISVertex * src_split = edge->source();
-			GISVertex * dst_split = edge->next()->target();
+			Vertex_handle src_split = edge->source();
+			Vertex_handle dst_split = edge->next()->target();
 
 			Point2	pt_a = src_split->point();
 			Point2	pt_b = edge->target()->point();
@@ -1801,8 +1812,8 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 					int terrain_new = is_left ? edge->twin()->face()->mTerrainType : edge->face()->mTerrainType;
 
 					DebugAssert(cross_pt == pt_c);
-
-					GISHalfedge * new_edge;
+					
+					Halfedge_handle new_edge;
 					if (is_left)
 						new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
 					else
@@ -1854,7 +1865,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 	} while (edge != stop && !last_loop);
 }
 
-void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face, vector<pair<Bbox2, vector<Point2> > >& cache)
+void	SimplifyCoastlineFace(Pmwx& ioMap, Face_handle face, vector<pair<Bbox2, vector<Point2> > >& cache)
 {
 	Bbox2	lim;
 
@@ -1868,11 +1879,11 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face, vector<pair<Bbox2, vecto
 
 	SimplifyWaterCCB(ioMap,face->outer_ccb(), cache);
 
-	set<GISHalfedge *> ee;
+	set<Halfedge_handle> ee;
 
-	face->copy_holes(ee);
-
-	for (set<GISHalfedge *>::iterator e = ee.begin(); e != ee.end(); ++e)
+	face->copy_holes(ee);			
+	
+	for (set<Halfedge_handle>::iterator e = ee.begin(); e != ee.end(); ++e)
 	{
 		SimplifyWaterCCB(ioMap,*e, cache);
 	}
@@ -1881,7 +1892,7 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face, vector<pair<Bbox2, vecto
 
 void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 {
-	set<GISFace *>	water;
+	set<Face_handle>	water;
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())
 	if (f->IsWater())
@@ -1892,8 +1903,8 @@ void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 
 	PROGRESS_START(func, 0, 1, "Smoothing coastlines");
 	int ctr = 0;
-
-	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
+	
+	for (set<Face_handle>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
 		SimplifyCoastlineFace(ioMap, *i, cache);
@@ -1949,10 +1960,10 @@ bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
 				for (int i = 0; i < pts.size(); ++i)
 				{
 					int j = (i + 1) % pts.size();
-					double x1 = elev.lon_to_x(pts[i].x);
-					double y1 = elev.lat_to_y(pts[i].y);
-					double x2 = elev.lon_to_x(pts[j].x);
-					double y2 = elev.lat_to_y(pts[j].y);
+					double x1 = elev.lon_to_x(pts[i].x());
+					double y1 = elev.lat_to_y(pts[i].y());
+					double x2 = elev.lon_to_x(pts[j].x());
+					double y2 = elev.lat_to_y(pts[j].y());
 
 					if (y1 != y2)
 					{
