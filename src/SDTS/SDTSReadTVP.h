@@ -23,7 +23,8 @@
 #ifndef SDTSREADTVP_H
 #define SDTSREADTVP_H
 
-class	Pmwx;
+#include "MapDefsCGAL.h"
+
 class	sb_ForeignID;
 class	sc_Record;
 class	sb_Spatial;
