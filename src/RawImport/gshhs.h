@@ -1,4 +1,4 @@
-/*
+/*	$Id$
 
  *
 
@@ -52,9 +52,10 @@
 
 #define _POSIX_SOURCE 1		/* GSHHS code is POSIX compliant */
 
+#include "MapDefsCGAL.h"
 
 
-class	Pmwx;
+//class	Pmwx;
 
 
 

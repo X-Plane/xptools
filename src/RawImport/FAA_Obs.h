@@ -25,7 +25,8 @@
 
 #include <math.h>
 
-class	Pmwx;
+#include "MapDefsCGAL.h"
+//class	Pmwx;
 
 struct	FAAObs_t {
 	string		kind_str;

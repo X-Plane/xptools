@@ -25,7 +25,7 @@
 #include "ParamDefs.h"
 #include "SimpleIO.h"
 #include "DEMDefs.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "MapAlgs.h"
 #include "GISTool_Globals.h"
 
@@ -500,44 +500,41 @@ bool	LoadLegacyObjectArchive(const char * inFile)
 void ApplyObjects(Pmwx& ioMap)
 {
 	if (gFAAObs.empty()) return;
-
-	Point2	sw, ne;
+	
+	Point_2	sw, ne;
 	CalcBoundingBox(ioMap, sw, ne);
- 	ioMap.Index();
+// 	ioMap.Index();
 
 	int	placed = 0;
+	
+	CGAL::Arr_landmarks_point_location<Arrangement_2>	locator(gMap);
 
 	for (FAAObsTable::iterator i = gFAAObs.begin(); i != gFAAObs.end(); ++i)
 	{
 		if (i->second.kind != NO_VALUE)
 		{
-			Point2 loc = Point2(i->second.lon, i->second.lat);
-			vector<Pmwx::Face_handle>	v;
-			ioMap.FindFaceTouchesPt(loc, v);
-			for (int n = 0; n < v.size();)
+			Point_2 loc = Point_2(i->second.lon, i->second.lat);
+			
+			CGAL::Object obj = locator.locate(loc);
+			Face_const_handle ff;
+			if(CGAL::assign(ff,obj))
 			{
-				if (v[n]->IsWater())
-					v.erase(v.begin()+n);
-				else
-					++n;
-			}
-
-			if (v.size() > 0)
-			{
+				Face_handle f = ioMap.non_const_handle(ff);
 				GISPointFeature_t	feat;
-				feat.mFeatType = i->second.kind;
-				feat.mLocation = loc;
-				if (i->second.agl != DEM_NO_DATA)
-					feat.mParams[pf_Height] = i->second.agl;
-				feat.mInstantiated = false;
-				v[0]->mPointFeatures.push_back(feat);
-				++placed;
-#if 0
-				printf("Placed %s at %lf, %lf\n",
-					FetchTokenString(i->second.kind), i->second.lon, i->second.lat);
-#endif
-			if (v.size() > 1)
-				fprintf(stderr,"WARNING (%d,%d): Point feature %lf, %lf matches multiple areas.\n",gMapWest, gMapSouth, loc.x, loc.y);
+					feat.mFeatType = i->second.kind;
+					feat.mLocation = loc;
+					if (i->second.agl != DEM_NO_DATA)
+						feat.mParams[pf_Height] = i->second.agl;				
+					feat.mInstantiated = false;			
+					f->data().mPointFeatures.push_back(feat);		
+					++placed;
+	#if 0
+					printf("Placed %s at %lf, %lf\n",
+						FetchTokenString(i->second.kind), i->second.lon, i->second.lat);
+	#endif		
+//				if (v.size() > 1)
+//					fprintf(stderr,"WARNING (%d,%d): Point feature %lf, %lf matches multiple areas.\n",gMapWest, gMapSouth, CGAL::to_double(loc.x()), CGAL::to_double(loc.y()));
+			
 			}
 		}
 	}
