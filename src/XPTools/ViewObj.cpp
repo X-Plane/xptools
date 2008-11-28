@@ -452,8 +452,8 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 
 		if (mZoomer.FindPointOnPlane(i, plane, inX, inY, clickPt))
 		{
-			mPts[mEditNum].x = clickPt[0];
-			mPts[mEditNum].y = clickPt[2];
+			mPts[mEditNum].x_ = clickPt[0];
+			mPts[mEditNum].y_ = clickPt[2];
 #if FACADES
 			if (mIsFacade)
 			{
