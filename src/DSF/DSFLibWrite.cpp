@@ -1452,7 +1452,10 @@ void 	DSFFileWriterImp::AddPolygonPoint(
 {
 	DSFTupleVector * cw = &REF(inRef)->accum_poly_winding.back();
 	cw->push_back(DSFTuple(inCoordinates, REF(inRef)->accum_poly->depth));
-#if DEV
+#if !DEV
+		hello1?!
+#endif
+#if DEV && 0
 	int sz = cw->size();
 	if (sz > 1)
 	if (cw->at(sz-1)[0] == cw->at(sz-2)[0])
