@@ -304,7 +304,7 @@ int			WED_StartWindow::HandleCommand(int command)
 		return 1;
 	case wed_NewPackage:
 		if (!gPackageMgr->HasSystemFolder()) return 1;					// Ben says: buttons do NOT check whether we are command-enabled, so recheck!
-		mPackageList->SelectPackage(gPackageMgr->CreateNewPackage());
+		mPackageList->SelectPackage(gPackageMgr->CreateNewCustomPackage());
 		mTable->RevealRow(0);
 		return 1;
 	case wed_OpenPackage:

@@ -73,7 +73,7 @@ void	WED_PackageListAdapter::AcceptEdit(
 			const GUI_CellContent&		the_content,
 			int							apply_all)
 {
-	gPackageMgr->RenamePackage(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);
+	gPackageMgr->RenameCustomPackage(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);
 }
 
 void	WED_PackageListAdapter::ToggleDisclose(

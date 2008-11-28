@@ -23,9 +23,9 @@
 
 #include "WED_Document.h"
 #include "WED_Progress.h"
-#include "XESIO.h"
+//#include "XESIO.h"
 #include "AptIO.h"
-#include "MapAlgs.h"
+//#include "MapAlgs.h"
 #include "WED_Messages.h"
 #include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
@@ -43,6 +43,7 @@
 #include "WED_GroupCommands.h"
 #include "WED_DSFExport.h"
 #include "WED_PropertyHelper.h"
+#include "WED_LibraryPane.h"
 
 int kDefaultDocSize[4] = { 0, 0, 512,384 };
 
@@ -74,8 +75,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 * MAP VIEW
 	****************************************************************************************************************************************************************/
 
-//	int		splitter_b[4];
-	mMainSplitter = new GUI_Splitter(gui_Split_Horizontal);
+//	int		splitter_b[4];	
+	mMainSplitter  = new GUI_Splitter(gui_Split_Horizontal);
+	mMainSplitter2 = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
 	else											mMainSplitter->SetImage1("gradient.png");
 	mMainSplitter->SetParent(packer);
@@ -84,10 +86,20 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	mMainSplitter->SetBounds(splitter_b);
 	mMainSplitter->SetSticky(1,1,1,1);
 
+	WED_LibraryPane * lib = new WED_LibraryPane(this, inDocument->GetLibrary());
+	lib->SetParent(mMainSplitter);
+	lib->Show();
+	lib->SetSticky(1,1,0,1);
+
+	mMainSplitter2->SetParent(mMainSplitter);
+	mMainSplitter2->Show();
+	mMainSplitter2->SetSticky(1,1,1,1);
+		
 	double	lb[4];
 	mDocument->GetBounds(lb);
-	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive());
-	mMapPane->SetParent(mMainSplitter);
+	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive(),lib->GetAdapter());
+	lib->GetAdapter()->SetMap(mMapPane);
+	mMapPane->SetParent(mMainSplitter2);
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,0.5,1);
 
@@ -110,7 +122,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 		mPropSplitter->SetImage1("gradient.png");
 		mPropSplitter->SetImage2("gradient.png");
 	}
-	mPropSplitter->SetParent(mMainSplitter);
+	mPropSplitter->SetParent(mMainSplitter2);
 	mPropSplitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
 	mPropSplitter->SetBounds(splitter_b);
@@ -197,13 +209,14 @@ WED_DocumentWindow::WED_DocumentWindow(
 	int zw[2];
 	XWin::GetBounds(zw,zw+1);
 
-	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
+//	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
-
-	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
+	
+//	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
 	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
 
-	mMainSplitter->AlignContentsAt(main_split);
+	mMainSplitter->AlignContentsAt(300);
+	mMainSplitter2->AlignContentsAt(600);
 	mPropSplitter->AlignContentsAt(prop_split);
 	mMapPane->ZoomShowAll();
 

@@ -204,14 +204,14 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			if (FetchTIFFCorners(buf, c))
 			{
 			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-			coords[3].x = c[0];
-			coords[3].y = c[1];
-			coords[0].x = c[2];
-			coords[0].y = c[3];
-			coords[2].x = c[4];
-			coords[2].y = c[5];
-			coords[1].x = c[6];
-			coords[1].y = c[7];
+			coords[3].x_ = c[0];
+			coords[3].y_ = c[1];
+			coords[0].x_ = c[2];
+			coords[0].y_ = c[3];
+			coords[2].x_ = c[4];
+			coords[2].y_ = c[5];
+			coords[1].x_ = c[6];
+			coords[1].y_ = c[7];
 			}
 
 			WED_Thing * wrl = WED_GetWorld(inResolver);
