@@ -1384,3 +1384,48 @@ double	MFS_double(MFScanner * s)
 	}
 	return ret_val/pow((double)10,(double)decimals)*sign_mult;
 }
+
+// X-Plane uses standard headers for most of its files...the format is:
+//
+// A|I
+// <version number> [copy right string]
+// [identifier]
+//
+// This routine returns the version number of the file, or 0 if the header doesn't match.
+
+int		MFS_xplane_header(MFScanner * s, int * versions, const char * identifier, string * copyright)
+{
+	// Sanity checks!
+	if(s->begin==NULL) return 0;
+	if(s->end == s->begin) return 0;
+
+	// Skip UTF8 BOM character if we have one.
+	if((s->end-s->begin) > 3 && (unsigned char) s->begin[0] == 0xEF && (unsigned char) s->begin[1] == 0xBB && (unsigned char) s->begin[2] == 0xBF)
+		s->cur += 3;
+
+	// First line: MUST be a single A or I, and that's it.
+	char scan_frst_chr=(s->cur < s->end) ? *s->cur++ : 0;
+	MFS_string_eol(s,NULL);
+	if(scan_frst_chr!='A' && scan_frst_chr!='I')return 0;
+
+	// Second line: version.  Copyright string might optionally be after.
+	int scan_vers_int=MFS_int(s);
+	MFS_string_eol(s,copyright);
+	int n=0;
+	while(versions[n]!=0)
+	{
+		if(scan_vers_int==versions[n])break;
+		n++;
+	}
+	if(versions[n]==0)return 0;
+
+	// Optional third line - a must-match ID
+	if(identifier!=NULL)
+	{
+		if(!MFS_string_match(s,identifier,true))return 0;
+		MFS_string_eol(s,NULL);
+	}
+
+	return versions[n];	
+}
+

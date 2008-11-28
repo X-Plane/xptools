@@ -22,15 +22,21 @@
  */
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
-#include "MapDefs.h"
+#include "GISTool_Globals.h"
+#include "MapDefsCGAL.h"
 #include "AssertUtils.h"
+#include "STLUtils.h"
 #include "XESConstants.h"
 #if DEV
 #  include <stdio.h>
 #endif
 #include <algorithm>
+
+#include <CGAL/convex_hull_2.h>
+
 using namespace std;
 
+/*
 Point2	CoordTranslator::Forward(const Point2& input)
 {
 	return Point2(
@@ -43,7 +49,9 @@ Point2	CoordTranslator::Reverse(const Point2& input)
 			mSrcMin.x + (input.x - mDstMin.x) * (mSrcMax.x - mSrcMin.x) / (mDstMax.x - mDstMin.x),
 			mSrcMin.y + (input.y - mDstMin.y) * (mSrcMax.y - mSrcMin.y) / (mDstMax.y - mDstMin.y));
 }
+*/
 
+#if 0
 
 inline double	cot(double theta) { return cos(theta) / sin(theta); }
 inline double	csc(double theta) { return 1.0        / sin(theta); }
@@ -337,6 +345,8 @@ double	CalcMaxInset(
 	}
 	return best_f;
 }
+
+#endif
 
 #pragma mark -
 
@@ -963,18 +973,20 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 }
 #endif
 
+#if 0
+
 // HACK UTILIITY: is this point an edge of a DSF
 inline bool IsIntegral(const Point2& p)
 {
-	return (p.x == (double) (int) p.x ||
-			p.y == (double) (int) p.y);
+	return (p.x() == (double) (int) p.x() ||
+			p.y() == (double) (int) p.y()); 
 }
 
 // HACK UTILIITY: is this point a corner of a DSF
 inline bool IsCorner(const Point2& p)
 {
-	return (p.x == (double) (int) p.x &&
-			p.y == (double) (int) p.y);
+	return (p.x() == (double) (int) p.x() &&
+			p.y() == (double) (int) p.y()); 
 }
 
 // UTILITY: give na span of points in a polygon defined by P and deltas from
@@ -1193,6 +1205,14 @@ inline bool	IsBetterHullPt(const Point2& anchor, const Point2& best_so_far, cons
 	return Vector2(newer, best_so_far).dot(Vector2(newer, anchor)) < 0.0;
 }
 
+void	MakePolygonConvex(Polygon_2& ioPolygon)
+{
+	Polygon_2	newp;
+	CGAL::convex_hull_2(ioPolygon.vertices_begin(), ioPolygon.vertices_end(),
+						back_insert_iterator<Polygon_2>(newp));
+	ioPolygon = newp;
+}
+
 void	MakePolygonConvex(Polygon2& ioPolygon)
 {
 	DebugAssert(ioPolygon.area() > 0);
@@ -1217,7 +1237,7 @@ void	MakePolygonConvex(Polygon2& ioPolygon)
 	int				i;
 
 	for (i = 1; i < ioPolygon.size(); ++i)
-	if (ioPolygon[i].y > ioPolygon[start_pt].y)
+	if (ioPolygon[i].y() > ioPolygon[start_pt].y())
 		start_pt = i;
 
 	now_pt = start_pt;
@@ -1240,6 +1260,7 @@ void	MakePolygonConvex(Polygon2& ioPolygon)
 
 }
 
+/*
 // UTILITY:
 // Counts the number of added edges and makes sure we're not introducing splits.
 void	CheckSplit(GISHalfedge * a, GISHalfedge * b, void * ref)
@@ -1261,7 +1282,7 @@ inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
 	Pmwx::Halfedge_around_vertex_circulator stop, iter;
 	iter = stop = v->incident_halfedges();
 	do {
-		Vector2		iv(iter->source()->point(), iter->target()->point());
+		Vector_2		iv(iter->source()->point(), iter->target()->point());
 		iv.normalize();
 		if ((mul * vec.dot(iv)) > SLIVER_PROTECTION) return false;
 		++iter;
@@ -1270,11 +1291,11 @@ inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
 }
 
 // Convert a polygon to a one-face pmwx.  Polygon must have no antennas and be simple.
-static GISFace* PolyToPmwx(const Polygon2& inPoly, Pmwx& outMap, vector<GISVertex*> * outVertices)
+static GISFace* PolyToPmwx(const Polygon2& inPoly, Pmwx& outMap, vector<Vertex_handle> * outVertices)
 {
-	DebugAssert(outMap.empty());
-	GISFace * face = outMap.insert_ring(outMap.unbounded_face(), inPoly);
-	if (outVertices)
+//	DebugAssert(outMap.empty()); 
+	Face_handle face = outMap.insert_ring(outMap.unbounded_face(), inPoly);
+	if (outVertices) 
 	{
 		outVertices->resize(inPoly.size());
 		int i;
@@ -1317,168 +1338,21 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 	} while (circ != stop);
 }
 
-// Polygon Gap coverage
-//
-// For a given polygon, try to fill in small "leaks" by connecting any external
-// points that are visible to each other and smaller than 'dist'.
-void	FillPolygonGaps(Polygon2& ioPolygon, double dist)
-{
-	vector<GISVertex *>	verts;
-	Pmwx	pmwx;
-	int i, j;
-	Pmwx::Ccb_halfedge_circulator circ, stop;
-	double dsqr = dist * dist;
+*/
 
-	PolyToPmwx(ioPolygon, pmwx,&verts);
-
-	// This isn't exactly intuitive.  We want to try every combination of vertices to see if we can make
-	// a line out of them.  But...here's the rub: if we just try in random order, we'll make somes long
-	// segments that go right past a nearby vertex.  This colocation problem is similar to slivering...
-	// the map won't do the right thing and split the edge.  So...always build from shortest to longest.
-	// Possibles is a queue of segments that meet the length requirement sorted by length.
-//	multimap<double, pair<int, int> > 	possibles;
-
-	for (i = 0; i < ioPolygon.size(); ++i)
-	for (j = i+1; j < ioPolygon.size(); ++j)
-	{
-		Segment2	seg(ioPolygon.at(i), ioPolygon.at(j));
-		Vector2		dir(seg.p1, seg.p2);
-		dir.normalize();
-		DebugAssert(seg.p1 != seg.p2);
-		double len = seg.squared_length();
-		if (len < dsqr)
-		if (NoHalfedgeInDir(verts[i], dir, true))
-		if (NoHalfedgeInDir(verts[j], dir, false))
-		{
-			Pmwx::Locate_type le, l2;
-			GISHalfedge * h = verts[i]->halfedge();
-			DebugAssert(h->target()->point() == seg.p1);
-			le = Pmwx::locate_Vertex;
-//			GISHalfedge * h = pmwx.locate_point(seg.p1, le);
-//			Assert(le == Pmwx::locate_Vertex);
-			Point2 pc;
-			pmwx.ray_shoot(seg.p1, le, h, seg.p2, pc, l2);
-			int sn = 0;
-			if (pc == seg.p2 && l2 == Pmwx::locate_Vertex)
-			{
-#if DEV
-				pmwx.insert_edge(seg.p1, seg.p2, h, le, CheckSplit, &sn);
-				DebugAssert(sn == 1);
-#else
-				pmwx.insert_edge(seg.p1, seg.p2, h, le, NULL, NULL);
 #endif
 
-#if 0
-				for (k = 0; k < ioPolygon.size(); ++k)
-				{
-					Pmwx::Locate_type t;
-					pmwx.locate_point(ioPolygon[k], t);
-					DebugAssert(t == Pmwx::locate_Vertex);
-				}
-#endif
-			}
-		}
-	}
-
-	PmwxToPoly(pmwx, ioPolygon);
-}
-
-
-// Make a polygon more convex.  Basically go around the
-// edge and if we can safely insert a ray that cuts off the
-// concave edge, do so.  Keep doing this until we're stuck.
-// Don't insert an edge that adds more than max_area.
-// This is N^2, but for small polygons that may be okay.
-void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
+Point2	CoordTranslator2::Forward(const Point2& input)
 {
-	Pmwx	pmwx;
-
-	PolyToPmwx(ioPolygon, pmwx, NULL);
-
-	bool did_work;
-	do {
-		did_work = false;
-
-		Pmwx::Ccb_halfedge_circulator stop, iter, next;
-		stop = iter = *(pmwx.unbounded_face()->holes_begin());
-		do {
-			next = iter;
-			++next;
-			DebugAssert(iter != next);
-			Vector2	v1(iter->source()->point(), iter->target()->point());
-			Vector2	v2(next->source()->point(), next->target()->point());
-			double area = v1.signed_area(v2);
-			if (area > 0 && area < max_area)
-			{
-				Segment2	seg(iter->source()->point(),next->target()->point());
-				Vector2		dir(seg.p1, seg.p2);
-				dir.normalize();
-				if (NoHalfedgeInDir(iter->source(), dir, true))
-				if (NoHalfedgeInDir(next->target(), dir, false))
-				{
-					Pmwx::Locate_type l2, le = Pmwx::locate_Vertex;
-					GISHalfedge * h = iter->twin();
-					DebugAssert(h->target()->point() == seg.p1);
-					Point2 pc;
-					pmwx.ray_shoot(seg.p1, le, h, seg.p2, pc, l2);
-					int sn = 0;
-					if (pc == seg.p2 && l2 == Pmwx::locate_Vertex)
-					{
-		#if DEV
-						pmwx.insert_edge(seg.p1, seg.p2, h, le, CheckSplit, &sn);
-						DebugAssert(sn == 1);
-		#else
-						pmwx.insert_edge(seg.p1, seg.p2, h, le, NULL, NULL);
-		#endif
-						did_work = true;
-						break;
-					}
-				}
-			}
-			++iter;
-		} while (iter != stop);
-	} while (did_work);
-
-	PmwxToPoly(pmwx, ioPolygon);
+	return Point2(
+				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
+				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
 }
-
-struct sort_by_ymin {
-	bool operator()(const Bbox2& lhs, const Bbox2& rhs) const { return lhs.ymin() < rhs.ymin(); }
-};
-
-// Simple self-intersection check.
-// We build up a sorted map of our sides by their lower Y coordinate.
-// Then for each side, check all sides above us until the sides are starting
-// clearly above us.  (Why no need to check below?  Well, that's handled
-// when the other side is the 'i' - in other words, given two polys X and Y
-// where X is below Y, we check XY, not YX).
-bool	ValidatePolygonSimply(const Polygon2& ioPolygon)
+Point2	CoordTranslator2::Reverse(const Point2& input)
 {
-		Point2	p;
-
-	typedef multimap<Bbox2, Segment2, sort_by_ymin>	sort_map;
-	sort_map	sides;
-	for (int n = 0; n < ioPolygon.size(); ++n)
-	{
-		Segment2 side = ioPolygon.side(n);
-		sides.insert(sort_map::value_type(Bbox2(side.p1, side.p2), side));
-	}
-
-	for (sort_map::iterator i = sides.begin(); i != sides.end(); ++i)
-	{
-		sort_map::iterator j = i;
-		++j;
-		for (; j != sides.end(); ++j)
-		{
-			if (i->first.overlap(j->first))
-			if (i->second.intersect(j->second, p))
-			if (p != i->second.p1 && p != i->second.p2 && p != i->first.p1 && p != i->first.p2)
-				return false;
-
-			// Quiick exit - if this poly starts above our top, we've gone through any possible overlaps.
-			if (j->first.ymin() > i->first.ymax())
-				break;
-		}
-	}
-	return true;
+	return Point2(
+				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
+				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
 }
+
+

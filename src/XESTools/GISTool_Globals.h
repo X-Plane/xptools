@@ -24,12 +24,13 @@
 #ifndef GISTOOL_GLOBALS_H
 #define GISTOOL_GLOBALS_H
 
+#include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
 #include "AptDefs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 
-class Pmwx;
+//class Pmwx;
 class CDT;
 class DEMGeoMap;
 
@@ -52,5 +53,10 @@ extern AptIndex				gAptIndex;
 
 extern vector<pair<Point2,Point3> >		gMeshPoints;
 extern vector<pair<Point2,Point3> >		gMeshLines;
+
+#if DEV
+void	debug_mesh_line(const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2);
+void	debug_mesh_point(const Point2& p1, float r1, float g1, float b1);
+#endif
 
 #endif

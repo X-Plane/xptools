@@ -25,8 +25,10 @@
 
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
+#include "MapDefsCGAL.h"
 
-struct	CoordTranslator {
+
+struct	CoordTranslator2 {
 	Point2	mSrcMin;
 	Point2	mSrcMax;
 	Point2	mDstMin;
@@ -37,7 +39,12 @@ struct	CoordTranslator {
 };
 
 
-/*
+// BEN SAYS: part of the goal here is to start REMOVING code that was based on UNSTABLE math and have
+// ONE set of master algorithms, based on robust CGAL foundations.  So..just about all of the polygon code
+// running on non-CGAL is being removed.
+
+#if 0
+/* 
  * InsetPolygon
  *
  * Given a CCW polygon (or a segment chain), this routine insets
@@ -106,7 +113,7 @@ double	CalcMaxInset(
 				const Polygon2&				inChain,
 				const double *				inRatios,
 				bool						inIsRing);
-
+#endif
 /*
  * ExtendBoundingSphereToPt
  *
@@ -269,8 +276,9 @@ bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2);
 // rotated counterclockwise from 1, would you hit 2 and then 3?
 bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3);
 
+#if 0
 // Given a polygon, try to reduce the number of sides based on some tollerance.
-// void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double min_len, double cut_len);
+// void	ReducePolygon(Polygon_2& ioPolygon, double tolerance, double angle, double min_len, double cut_len);
 
 // Given a polygon, simplify its boundary.  The new polygon will not have
 // a corresponding segment farther than "max_err" from an original point.
@@ -295,21 +303,8 @@ void	SmoothPolygon(Polygon2& ioPolygon, double smooth_radius, double max_turn_de
 // NOTE: needs to be rewritten! - BAS
 //			Why?!? - BAS
 void	MakePolygonConvex(Polygon2& ioPolygon);
+#endif
 
-// Fill in bridges outside the polygon where two points are less than 'dist' units
-// apart.  (WARNING: O(N^2) right now!)
-// (For example, this is used to bridge across "inlets" in an airport.)
-void	FillPolygonGaps(Polygon2& ioPolygon, double dist);
-
-// Given a polygon, changes its bounds to make it "more convex" (e.g. each step increases area and
-// decreases inset angles), with no addition being greater than max_area.  Runs until no more adds
-// can be made or the convex hull is reached.
-// (For example, this is used to simplify an airport by annexing surrounding land.)
-void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area);
-
-
-// Return true if a polygon really is simple by checking for self-intersections.
-bool	ValidatePolygonSimply(const Polygon2& ioPolygon);
 
 
 #endif

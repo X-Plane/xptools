@@ -25,9 +25,8 @@
 #define SKELETON_H
 
 #include <vector>
-
-class	GISFace;
-struct	Polygon2;
+#include "MapDefsCGAL.h"
+//struct	Polygon2;
 
 typedef	vector<Polygon2>		ComplexPolygon2;
 typedef vector<double>			PolygonWeight;

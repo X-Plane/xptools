@@ -32,6 +32,7 @@
 #include <cpl_serv.h>
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
+#include "MapAlgsCGAL.h"
 
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {
@@ -161,49 +162,49 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 void	CreateTranslatorForPolygon(
 					const Polygon2&		poly,
-					CoordTranslator&	trans)
+					CoordTranslator2&	trans)
 {
 	if (poly.empty()) return;
 	trans.mSrcMin = poly[0];
 	trans.mSrcMax = poly[0];
 	for (int n = 1; n < poly.size(); ++n)
 	{
-		trans.mSrcMin.x = min(trans.mSrcMin.x, poly[n].x);
-		trans.mSrcMin.y = min(trans.mSrcMin.y, poly[n].y);
-		trans.mSrcMax.x = max(trans.mSrcMax.x, poly[n].x);
-		trans.mSrcMax.y = max(trans.mSrcMax.y, poly[n].y);
+		trans.mSrcMin.x_ = min(trans.mSrcMin.x(), poly[n].x());
+		trans.mSrcMin.y_ = min(trans.mSrcMin.y(), poly[n].y());
+		trans.mSrcMax.x_ = max(trans.mSrcMax.x(), poly[n].x());
+		trans.mSrcMax.y_ = max(trans.mSrcMax.y(), poly[n].y());
 	}
-
-	trans.mDstMin.x = 0.0;
-	trans.mDstMax.x = 0.0;
-	trans.mDstMax.x = (trans.mSrcMax.x - trans.mSrcMin.x) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y + trans.mSrcMax.y) * 0.5 * DEG_TO_RAD);
-	trans.mDstMax.y = (trans.mSrcMax.y - trans.mSrcMin.y) * DEG_TO_MTR_LAT;
-}
+	
+	trans.mDstMin.x_ = 0.0;
+	trans.mDstMax.y_ = 0.0;
+	trans.mDstMax.x_ = (trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y() + trans.mSrcMax.y()) * 0.5 * DEG_TO_RAD);
+	trans.mDstMax.y_ = (trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT;
+}					
 
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
-	double lon_delta = p.x - ref.x;
-	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
-
+	double lon_delta = p.x() - ref.x();
+	double real_heading = heading - lon_delta * sin(p.y() * DEG_TO_RAD);
+	
 	dir.dx = sin(real_heading * DEG_TO_RAD);
 	dir.dy = cos(real_heading * DEG_TO_RAD);
 }
 
 double VectorDegs2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir)
 {
-	double dx = dir.dx * cos (ref.y * DEG_TO_RAD);
+	double dx = dir.dx * cos (ref.y() * DEG_TO_RAD);
 	double h = atan2(dx, dir.dy) * RAD_TO_DEG;
 	if (h < 0.0) h += 360.0;
-	double lon_delta = p.x - ref.x;
-	return h + lon_delta * sin(p.y * DEG_TO_RAD);
+	double lon_delta = p.x() - ref.x();
+	return h + lon_delta * sin(p.y() * DEG_TO_RAD);	
 }
 
 void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
-	double lon_delta = p.x - ref.x;
-	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
-
-	dir.dx = sin(real_heading * DEG_TO_RAD) / cos (ref.y * DEG_TO_RAD);
+	double lon_delta = p.x() - ref.x();
+	double real_heading = heading - lon_delta * sin(p.y() * DEG_TO_RAD);
+	
+	dir.dx = sin(real_heading * DEG_TO_RAD) / cos (ref.y() * DEG_TO_RAD);
 	dir.dy = cos(real_heading * DEG_TO_RAD);
 }
 
@@ -211,8 +212,8 @@ double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vecto
 {
 	double h = atan2(dir.dx, dir.dy) * RAD_TO_DEG;
 	if (h < 0.0) h += 360.0;
-	double lon_delta = p.x - ref.x;
-	return h + lon_delta * sin(p.y * DEG_TO_RAD);
+	double lon_delta = p.x() - ref.x();
+	return h + lon_delta * sin(p.y() * DEG_TO_RAD);	
 }
 
 
@@ -220,9 +221,9 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts)
 {
 	while(count--)
 	{
-		pts->y = ref.y + pts->y * MTR_TO_DEG_LAT;
-		pts->x = ref.x + pts->x * MTR_TO_DEG_LAT / cos(pts->y * DEG_TO_RAD);
-
+		pts->y_ = ref.y() + pts->y() * MTR_TO_DEG_LAT;
+		pts->x_ = ref.x() + pts->x() * MTR_TO_DEG_LAT / cos(pts->y() * DEG_TO_RAD);
+		
 		++pts;
 	}
 }
@@ -240,7 +241,7 @@ double VectorLengthMeters(const Point2& ref, const Vector2& vec)
 Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v)
 {
 	Vector2	ret(v);
-	ret.dx *= (DEG_TO_MTR_LAT * cos(ref.y * DEG_TO_RAD) );
+	ret.dx *= (DEG_TO_MTR_LAT * cos(ref.y() * DEG_TO_RAD) );
 	ret.dy *= (DEG_TO_MTR_LAT							);
 	return ret;
 }
@@ -249,7 +250,7 @@ Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v)
 Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v)
 {
 	Vector2	ret(v);
-	ret.dx /= (DEG_TO_MTR_LAT * cos(ref.y * DEG_TO_RAD) );
+	ret.dx /= (DEG_TO_MTR_LAT * cos(ref.y() * DEG_TO_RAD) );
 	ret.dy /= (DEG_TO_MTR_LAT							);
 	return ret;
 }
@@ -260,7 +261,7 @@ Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v)
 void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4])
 {
 	Vector2	dir(ends[0],ends[1]);
-	dir.dx *= cos((ends[0].y + ends[1].y) * 0.5 * DEG_TO_RAD);
+	dir.dx *= cos((ends[0].y() + ends[1].y()) * 0.5 * DEG_TO_RAD);
 	dir.normalize();
 	Vector2 right(dir.perpendicular_cw());
 	Point2 zero;
@@ -311,9 +312,9 @@ void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& le
 	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
 	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
 
-	ctr.x = (corners[0].x  + corners[1].x  + corners[2].x + corners[3].x) * 0.25;
-	ctr.y = (corners[0].y  + corners[1].y  + corners[2].y + corners[3].y) * 0.25;
-
+	ctr.x_ = (corners[0].x()  + corners[1].x()  + corners[2].x() + corners[3].x()) * 0.25;
+	ctr.y_ = (corners[0].y()  + corners[1].y()  + corners[2].y() + corners[3].y()) * 0.25;
+	
 	heading = VectorDegs2NorthHeading(ctr,ends1,Vector2(ends1,ends2));
 	width_mtr = sqrt(VectorLLToMeters(ctr,Vector2(side1, side2)).squared_length());
 	len_mtr = sqrt(VectorLLToMeters(ctr,Vector2(ends1, ends2)).squared_length());
@@ -324,8 +325,8 @@ void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_m
 {
 	heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
 	len_mtr = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
-	ctr.x = (ends[0].x + ends[1].x) * 0.5;
-	ctr.y = (ends[0].y + ends[1].y) * 0.5;
+	ctr.x_ = (ends[0].x() + ends[1].x()) * 0.5;
+	ctr.y_ = (ends[0].y() + ends[1].y()) * 0.5;
 }
 
 void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2])
@@ -355,9 +356,9 @@ void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& h
 		heading = diag_heading + offset;
 	else
 		heading = diag_heading - offset;
-
-	ctr.x = (ends[0].x + ends[1].x) * 0.5;
-	ctr.y = (ends[0].y + ends[1].y) * 0.5;
+	
+	ctr.x_ = (ends[0].x() + ends[1].x()) * 0.5;
+	ctr.y_ = (ends[0].y() + ends[1].y()) * 0.5;
 }
 
 void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& delta)

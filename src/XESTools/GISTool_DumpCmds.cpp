@@ -31,7 +31,7 @@
 #include "GISTool_Globals.h"
 #include <shapefil.h>
 #include "VPFTable.h"
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
 #include "DSFLib.h"
@@ -233,9 +233,9 @@ static int DoDumpShapeFile(const vector<const char *>& args)
 	return dump_shape_file(args[0]);
 }
 
-static void print_ccb(GISHalfedge * e)
+static void print_ccb(Halfedge_handle e)
 {
-	GISHalfedge * circ = e, * stop = e;
+	Halfedge_handle circ = e, stop = e;
 	int ctr = 0;
 	do {
 		++ctr;
@@ -244,7 +244,7 @@ static void print_ccb(GISHalfedge * e)
 	circ = e, stop = e;
 	printf("%d\n", ctr);
 	do {
-		printf("%lf %lf\n", circ->target()->point().x, circ->target()->point().y);
+		printf("%lf %lf\n", CGAL::to_double(circ->target()->point().x()), CGAL::to_double(circ->target()->point().y()));
 		circ = circ->next();
 	} while (circ != stop);
 }
@@ -253,12 +253,12 @@ static int DoDumpMap(const vector<const char *>& args)
 {
 	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
-		printf("%d\n", f->holes_count() + 1);
+		printf("%d\n", distance(f->holes_begin(),f->holes_end()) + 1);
 		if (f->is_unbounded())
 			printf("0\n");
 		else
 			print_ccb(f->outer_ccb());
-		for (Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+		for (Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 			print_ccb(*h);
 	}
 	return 0;

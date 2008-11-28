@@ -92,8 +92,9 @@ bool		PolyRasterizer::GetRange(int& x1, int& x2)
 #endif
 	while (1)
 	{
-		if (current_active_index >= actives.size()) return false;
+		if (current_active_index >= actives.size() || actives[current_active_index] >= masters.size()) return false;
 		double	x1f = masters[actives[current_active_index++]].cur_x;
+		if (current_active_index >= actives.size() || actives[current_active_index] >= masters.size()) return false;
 		double	x2f = masters[actives[current_active_index++]].cur_x;
 
 		// BEN SEZ: oops - we need to use ceil here, not count on the
@@ -179,7 +180,7 @@ void	PolyRasterizer::Validate(void)
 		printf("At pos %f:\n", current_scan_y);
 		for (int i = 0; i < actives.size(); ++i)
 		{
-			printf("%d) %f,%f -> %f, %f,   NOW %f\n",
+			printf("%d) %f,%f -> %f, %f,   NOW %f\n", i,
 				masters[actives[i]].x1,
 				masters[actives[i]].y1,
 				masters[actives[i]].x2,

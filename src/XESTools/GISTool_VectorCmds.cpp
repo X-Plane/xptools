@@ -25,8 +25,9 @@
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
 #include "PerfUtils.h"
+#include "MapOverlay.h"
 #include "AssertUtils.h"
-#include <ShapeFil.h>
+#include "ShapeIO.h"
 #include "MapAlgs.h"
 //#include "SDTSReadTVP.h"
 #include "GISUtils.h"
@@ -41,6 +42,11 @@
 #include "CompGeomUtils.h"
 #include "ConfigSystem.h"
 #include <ctype.h>
+
+#if OPENGL_MAP
+	#include "WED_Msgs.h"
+	#include "WED_Notify.h"
+#endif	
 
 const double	kShapeFileEpsi = 0.1 / (DEG_TO_NM_LAT * NM_TO_MTR);
 
@@ -175,10 +181,10 @@ static int DoMakeTigerIndex(const vector<const char *>& args)
 		{
 			for (vector<Point2>::iterator l = i->second.shape.begin(); l != i->second.shape.end(); ++l)
 			{
-				latMin = min(latMin, l->y);
-				latMax = max(latMax, l->y);
-				lonMin = min(lonMin, l->x);
-				lonMax = max(lonMax, l->x);
+				latMin = min(latMin, l->y());
+				latMax = max(latMax, l->y());
+				lonMin = min(lonMin, l->x());
+				lonMax = max(lonMax, l->x());
 			}
 		}
 
@@ -393,7 +399,7 @@ static int DoVPFImport(const vector<const char *>& args)
 	char	coverages[512];
 	char *	cov = coverages, * found;
 	strcpy(coverages,cov_list);
-	bool	first = gMap.empty();
+	bool	first = gMap.is_empty();
 	bool	ok;
 	bool	ok_any=false;
 	while ((found = strtok(cov, ",")) != NULL)
@@ -418,19 +424,19 @@ static int DoVPFImport(const vector<const char *>& args)
 
 			if (ok && first)
 			{
-				Point2	sw, ne;
+				Point_2	sw, ne;
 				CalcBoundingBox(gMap, sw, ne);
-				for (int x = sw.x + 1; x < ne.x; ++x)
+				for (int x = CGAL::to_double(sw.x()) + 1; x < CGAL::to_double(ne.x()); ++x)
 				{
-					gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);
+					CGAL::insert_curve(gMap, Curve_2(Segment_2(Point_2(x,sw.y()),Point_2(x,ne.y()))));
 				}
-				for (int y = sw.y + 1; y < ne.y; ++y)
+				for (int y = CGAL::to_double(sw.y()) + 1; y < CGAL::to_double(ne.y()); ++y)
 				{
-					gMap.insert_edge(Point2(sw.x,y),Point2(ne.x,y), NULL, NULL);
+					CGAL::insert_curve(gMap, Curve_2(Segment_2(Point_2(sw.x(),y),Point_2(ne.x(),y))));
 				}
 			}
-
-			UnmangleBorder(gMap);
+			
+//			UnmangleBorder(gMap);
 		} else {
 			Pmwx	overlay;
 			ok = VPFImportTopo3(coverage, tile, overlay,
@@ -443,10 +449,10 @@ static int DoVPFImport(const vector<const char *>& args)
 			if (sVPFRules[found].topology < 3)
 			{
 				for (Pmwx::Face_iterator ff = overlay.faces_begin(); ff != overlay.faces_end(); ++ff)
-					ff->mTerrainType = terrain_Natural;
+					ff->data().mTerrainType = terrain_Natural;
 			}
-
-			TopoIntegrateMaps(&gMap, &overlay);
+			
+//			TopoIntegrateMaps(&gMap, &overlay);
 			MergeMaps(gMap, overlay, true, NULL, true, gProgress);
 		}
 
@@ -540,179 +546,25 @@ static int DoTigerBounds(const vector<const char *>& args)
 
 static int DoShapeImport(const vector<const char *>& args)
 {
-	// NOTES ON SRTM SHAPE FILES:
-	//
-	// 1. They are made entirely of 3-dpolygon primitives.
-	// 2. For each primitive, the first ring is the polygon, and all additional rings are holes.
-	// 3. All polygons represent water; holes and unfilled space is land.
-	// 4. Polygons are NOT in topological order - we need to make sure we insert outermost polygons first by sorting.  Rings do appear
-	//    to be in order in that they are CCB + hoels - this is legal since shape files have no topology.
-	// 5. Some polys have backward CW/CCW orientation; it is unclear why this is.
-	// 6. Some polygons touch each other on edges - this is legal since shape files have no topology.
-
-
-	gMap.clear();
-
-	SHPHandle file = SHPOpen(args[0], "rb");
-	if (file == NULL)
-	{
-		fprintf(stderr, "Could not open shape file %s\n", args[0]);
+	double b[4];
+	if(!ReadShapeFile(args[0], gMap, b))
 		return 1;
-	}
-
-	// BEN SEZ: there is NO NEED for the DBF file right now - we are using
-	// STRM Shapefiles - ALL attributes are water (and all islands are neg space
-	// in water.
-//	char	dbf_name[1024];
-//	strcpy(dbf_name, args[0]);
-//	strcpy(dbf_name + strlen(dbf_name) - 3, "dbf");
-
-//	DBFHandle	dbf = DBFOpen(dbf_name, "rb");
-//	if (dbf == NULL)
-//	{
-//		fprintf(stderr, "Could not open dbf file %s\n", dbf_name);
-//		SHPClose(file);
-//		return 1;
-//	}
-
-//	int fc = DBFGetFieldCount(dbf);
-//	int rc = DBFGetRecordCount(dbf);
-//	int facc_field = DBFGetFieldIndex(dbf,"FACC_code");
-
-	int	entityCount, shapeType;
-	double	bounds_lo[4], bounds_hi[4];
-
-	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-
-	multimap<double, pair<vector<Polygon2>, int> >	ringMap;	// Map from leftmost to a pair of rings + type - YIKES!
-
-	double	biggest_err_sq = 0.0;
-
-	double	lon_factor = cos(DEG_TO_RAD * gMapSouth);
-
-	for (int n = 0; n < entityCount; ++n)
-	{
-		SHPObject * obj = SHPReadObject(file, n);
-
-		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
-		{
-			vector<Polygon2>	rings;
-			double				left_most = 9.9e9;
-
-//			const char * our_facc = DBFReadStringAttribute(dbf, obj->nShapeId, facc_field);
-			for (int part = 0; part < obj->nParts; ++part)
-			{
-				Polygon2 pts;
-				int start_idx = obj->panPartStart[part];
-				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-				for (int index = start_idx; index < stop_idx; ++index)
-				{
-					// SHAPE FILE QUIRK: they use CW polygons.  So part 0 (usually the outer bounds
-					// of a polygon) is CW.
-					left_most = min(obj->padfX[index], left_most);
-					if (part == 0)
-						pts.insert(pts.begin(), Point2(obj->padfX[index],obj->padfY[index]));
-					else
-						pts.insert(pts.end(), Point2(obj->padfX[index],obj->padfY[index]));
-				}
-				DebugAssert(pts.front() == pts.back());
-				pts.pop_back();
-
-				for (int m = 0; m < pts.size(); ++m)
-				{
-					EpsiClamp(pts[m].x, gMapWest, kShapeFileEpsi);
-					EpsiClamp(pts[m].x, gMapEast, kShapeFileEpsi);
-					EpsiClamp(pts[m].y, gMapNorth, kShapeFileEpsi);
-					EpsiClamp(pts[m].y, gMapSouth, kShapeFileEpsi);
-//					double err_x, err_y;
-//					ClampCoord(pts[m].x, gMapWest, gMapEast, 3600, err_x, kShapeFileEpsi);
-//					ClampCoord(pts[m].y, gMapSouth, gMapNorth, 3600, err_y, kShapeFileEpsi * lon_factor);
-//					double err_local_sq = err_x * err_x + err_y * err_y;
-//					if (err_local_sq > biggest_err_sq) biggest_err_sq = err_local_sq;
-				}
-
-				for (Polygon2::iterator i = pts.begin(); i != pts.end(); )
-				{
-					Polygon2::iterator j = i;
-					++j;
-					if (j == pts.end()) j = pts.begin();
-					if (i != j)
-					{
-						if (*j == *i)
-						i = pts.erase(i);
-						else ++i;
-					} else
-						++i;
-				}
-
-				if (pts.size() < 3)
-					printf("Hrm - ring of size %d\n", pts.size());
-				else
-				{
-	//				SimplifyPolygonMaxMove(pts, cos(pts[0].y * DEG_TO_RAD) * NM_TO_DEG_LAT * MTR_TO_NM * 30.0, true, true);
-	//				MidpointSimplifyPolygon(pts);
-
-					if (pts.area() < 0.0)
-					{
-	//					printf("REVERSING poly %d, part %d.\n", n, part);
-	//					Bbox2	b = pts.bounds();
-	//					printf("Rect: %lf,%lf -> %lf,%lf\n", b.xmin(), b.ymin(), b.xmax(), b.ymax());
-						std::reverse(pts.begin(), pts.end());
-					}
-
-					rings.push_back(Polygon2());
-					pts.swap(rings.back());
-				}
-
-			}
-
-			ringMap.insert(map<double, pair<vector<Polygon2>, int> >::value_type(left_most, pair<vector<Polygon2>, int>(rings, terrain_Water)));
-		}
-
-		SHPDestroyObject(obj);
-	}
-	SHPClose(file);
-//	DBFClose(dbf);
-
-	printf("Leftmost = %lf, hex = %016llx\n", ringMap.begin()->first, ringMap.begin()->first);
-
-	gMap.unbounded_face()->mTerrainType = terrain_Natural;
-
-	for (multimap<double, pair<vector<Polygon2>, int> >::iterator poly = ringMap.begin(); poly != ringMap.end(); ++poly)
-	{
-		for (vector<Polygon2>::iterator ring = poly->second.first.begin(); ring != poly->second.first.end(); ++ring)
-		{
-			DebugAssert(ring->area() > 0.0);
-
-			Pmwx::Locate_type loc;
-			GISHalfedge * parent = gMap.locate_point((*ring)[0], loc);
-			DebugAssert(loc == Pmwx::locate_Face);
-			GISFace * face = (parent == NULL) ? gMap.unbounded_face() : parent->face();
-			GISFace * new_face = SafeInsertRing(&gMap,face, (*ring));
-			// All polygons denote water - so first ring is water, others are non-water.  I think.
-			if (ring == poly->second.first.begin())	new_face->mTerrainType = terrain_Water;
-			else 									new_face->mTerrainType = terrain_Natural;
-		}
-	}
-
-	gMap.insert_edge(Point2(gMapWest, gMapSouth), Point2(gMapWest, gMapNorth), NULL, NULL);	//Left
-	gMap.insert_edge(Point2(gMapEast, gMapSouth), Point2(gMapEast, gMapNorth), NULL, NULL);	// Right
-	gMap.insert_edge(Point2(gMapWest, gMapSouth), Point2(gMapEast, gMapSouth), NULL, NULL);	// Bottom
-	gMap.insert_edge(Point2(gMapWest, gMapNorth), Point2(gMapEast, gMapNorth), NULL, NULL);	// Top
-
-	gMap.unbounded_face()->mTerrainType = terrain_Water;
-
-	double err_m = sqrt(biggest_err_sq) * DEG_TO_NM_LAT * NM_TO_MTR;
-	printf("biggest grid shift is: %lf meters\n", err_m);
-
+		
+		
+#if OPENGL_MAP
+	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+#endif						
 	return 0;
 }
 
+
+/*
 int DoWetMask(const vector<const char *>& args)
 {
 	MakeWetMask(args[0], gMapWest, gMapSouth, args[1]);
 	return 0;
 }
+*/
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
@@ -723,7 +575,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	1, 1, 	DoShapeImport, 			"Import ESRI Shape File.", "" },
-{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
+//{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 

@@ -26,7 +26,7 @@
 struct	Polygon2;
 struct	Vector2;
 struct	Point2;
-struct	CoordTranslator;
+struct	CoordTranslator2;
 typedef	struct tiff TIFF;
 
 // This routine returns the corners of a GeoTIFF file in the order:
@@ -47,7 +47,7 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 
 void	CreateTranslatorForPolygon(
 					const Polygon2&		inPolygon,
-					CoordTranslator&	outTranslator);
+					CoordTranslator2&	outTranslator);
 
 inline int	latlon_bucket(int p)
 {

@@ -23,7 +23,7 @@
 
 #include "GISTool_Globals.h"
 
-#include "MapDefs.h"
+#include "MapDefsCGAL.h"
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 
@@ -49,3 +49,16 @@ int					gMapNorth =  90;
 
 AptVector			gApts;
 AptIndex				gAptIndex;
+
+#if DEV
+void	debug_mesh_line(const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	gMeshLines.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));
+	gMeshLines.push_back(pair<Point2,Point3>(p2,Point3(r2,g2,b2)));
+}
+
+void	debug_mesh_point(const Point2& p1, float r1, float g1, float b1)
+{
+	gMeshPoints.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));
+}
+#endif

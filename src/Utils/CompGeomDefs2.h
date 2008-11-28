@@ -76,23 +76,25 @@ bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint)
  ****************************************************************************************************/
 
 struct Point2 {
-	Point2() : x(0.0), y(0.0) { }
-	Point2(double ix, double iy) : x(ix), y(iy) { }
-	Point2(const Point2& rhs) : x(rhs.x), y(rhs.y) { }
+	Point2() : x_(0.0), y_(0.0) { }
+	Point2(double ix, double iy) : x_(ix), y_(iy) { }
+	Point2(const Point2& rhs) : x_(rhs.x_), y_(rhs.y_) { }
 
-	Point2& operator=(const Point2& rhs) { x = rhs.x; y = rhs.y; return *this; }
-	bool operator==(const Point2& rhs) const { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const Point2& rhs) const { return x != rhs.x || y != rhs.y; }
-
+	Point2& operator=(const Point2& rhs) { x_ = rhs.x_; y_ = rhs.y_; return *this; }
+	bool operator==(const Point2& rhs) const { return x_ == rhs.x_ && y_ == rhs.y_; }
+	bool operator!=(const Point2& rhs) const { return x_ != rhs.x_ || y_ != rhs.y_; }
+	
 	Point2& operator += (const Vector2& v);
 	Point2& operator -= (const Vector2& v);
 	Point2 operator+(const Vector2& v) const;
 	Point2 operator-(const Vector2& v) const;
-
-	inline double squared_distance(const Point2& p) const { return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y); }
-
-	double	x;
-	double	y;
+	
+	inline double squared_distance(const Point2& p) const { return (p.x_ - x_) * (p.x_ - x_) + (p.y_ - y_) * (p.y_ - y_); }
+	
+	inline double x() const { return x_; }
+	inline double y() const { return y_; }
+	double	x_;	
+	double	y_;	
 };
 
 /****************************************************************************************************
@@ -103,9 +105,9 @@ struct	Vector2 {
 	Vector2() : dx(0.0), dy(0.0) { }
 	Vector2(double ix, double iy) : dx(ix), dy(iy) { }
 	Vector2(const Vector2& rhs) : dx(rhs.dx), dy(rhs.dy) { }
-	explicit Vector2(const Point2& rhs) : dx(rhs.x), dy(rhs.y) { }
-	Vector2(const Point2& p1, const Point2& p2) : dx(p2.x - p1.x), dy(p2.y - p1.y) { }
-
+	explicit Vector2(const Point2& rhs) : dx(rhs.x_), dy(rhs.y_) { }
+	Vector2(const Point2& p1, const Point2& p2) : dx(p2.x_ - p1.x_), dy(p2.y_ - p1.y_) { }
+	
 	Vector2& operator=(const Vector2& rhs) { dx = rhs.dx; dy = rhs.dy; return *this; }
 	bool operator==(const Vector2& rhs) const { return dx == rhs.dx && dy == rhs.dy; }
 	bool operator!=(const Vector2& rhs) const { return dx != rhs.dx || dy != rhs.dy; }
@@ -146,6 +148,8 @@ struct	Vector2 {
 	// Vector projection of other onto US!
 	Vector2	projection(const Vector2& other) const;
 
+	inline double x() const { return dx; } 
+	inline double y() const { return dy; } 
 	double	dx;
 	double	dy;
 };
@@ -157,7 +161,7 @@ struct	Vector2 {
 struct	Segment2 {
 	Segment2() : p1(), p2() { }
 	Segment2(const Point2& ip1, const Point2& ip2) : p1(ip1), p2(ip2) { }
-	Segment2(const Point2& p, const Vector2& v) : p1(p), p2(p.x + v.dx, p.y + v.dy) { }
+	Segment2(const Point2& p, const Vector2& v) : p1(p), p2(p.x_ + v.dx, p.y_ + v.dy) { }
 	Segment2(const Segment2& rhs) : p1(rhs.p1), p2(rhs.p2) { }
 
 	Segment2& operator=(const Segment2& rhs) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
@@ -166,10 +170,10 @@ struct	Segment2 {
 
 	Segment2& operator+=(const Vector2& rhs) { p1 += rhs; p2 += rhs; return *this; }
 
-	double	squared_length(void) const { return (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y); }
+	double	squared_length(void) const { return (p2.x_ - p1.x_) * (p2.x_ - p1.x_) + (p2.y_ - p1.y_) * (p2.y_ - p1.y_); }
 	Point2	midpoint(double s=0.5) const { if (s==0.0) return p1; if (s==1.0) return p2; double ms = 1.0 - s; return Point2(
-													p1.x == p2.x ? p1.x : p1.x * ms + p2.x * s,
-													p1.y == p2.y ? p1.y : p1.y * ms + p2.y * s); }
+													p1.x_ == p2.x_ ? p1.x_ : p1.x_ * ms + p2.x_ * s,
+													p1.y_ == p2.y_ ? p1.y_ : p1.y_ * ms + p2.y_ * s); }
 	Point2	projection(const Point2& pt) const;
 //	double	squared_distance(const Point2& p) const;
 	bool	collinear_has_on(const Point2& p) const;
@@ -182,21 +186,22 @@ struct	Segment2 {
 	bool	intersect(const Segment2& rhs, Point2& p) const;
 
 	bool	is_near(const Point2& p, double distance) const;
-
-	double	y_at_x(double x) const { 	if (p1.x == p2.x) 	return p1.y;
-										if (x == p1.x) 		return p1.y;
-										if (x == p2.x) 		return p2.y;
-										return p1.y + (p2.y - p1.y) * (x - p1.x) / (p2.x - p1.x); }
-	double	x_at_y(double y) const { 	if (p1.y == p2.y) 	return p1.x;
-										if (y == p1.y) 		return p1.x;
-										if (y == p2.y) 		return p2.x;
-										return p1.x + (p2.x - p1.x) * (y - p1.y) / (p2.y - p1.y); }
-
-	bool	is_vertical(void) const { return p1.x == p2.x; }
-	bool	is_horizontal(void) const { return p1.y == p2.y; }
+	
+	double	y_at_x(double x) const { 	if (p1.x_ == p2.x_) 	return p1.y_; 
+										if (x == p1.x_) 		return p1.y_; 
+										if (x == p2.x_) 		return p2.y_; 
+										return p1.y_ + (p2.y_ - p1.y_) * (x - p1.x_) / (p2.x_ - p1.x_); }
+	double	x_at_y(double y) const { 	if (p1.y_ == p2.y_) 	return p1.x_; 
+										if (y == p1.y_) 		return p1.x_; 
+										if (y == p2.y_) 		return p2.x_; 
+										return p1.x_ + (p2.x_ - p1.x_) * (y - p1.y_) / (p2.y_ - p1.y_); }
+										
+	bool	is_vertical(void) const { return p1.x_ == p2.x_; }
+	bool	is_horizontal(void) const { return p1.y_ == p2.y_; }
 	bool	is_empty(void) const { return p1 == p2; }
 
-
+	inline	Point2	source() const { return p1; }
+	inline	Point2	target() const { return p2; }
 	Point2	p1;
 	Point2	p2;
 };
@@ -219,12 +224,12 @@ struct	Segment2 {
  */
 struct	Line2 {
 	Line2() : a(0.0), b(1.0), c(0.) { }
-	Line2(const Point2& p1, const Point2& p2) : a(p1.y - p2.y), b(p2.x - p1.x), c((p2.y - p1.y) * p1.x - (p2.x - p1.x) * p1.y) { }
-	Line2(const Point2& p, const Vector2& v) : a(-v.dy), b(v.dx), c(v.dy * p.x - v.dx * p.y) { }
+	Line2(const Point2& p1, const Point2& p2) : a(p1.y_ - p2.y_), b(p2.x_ - p1.x_), c((p2.y_ - p1.y_) * p1.x_ - (p2.x_ - p1.x_) * p1.y_) { }
+	Line2(const Point2& p, const Vector2& v) : a(-v.dy), b(v.dx), c(v.dy * p.x_ - v.dx * p.y_) { }
 	Line2(const Line2& l) : a(l.a), b(l.b), c(l.c) { }
 	Line2(double ia, double ib, double ic) : a(ia), b(ib), c(ic) { }
-	explicit Line2(const Segment2& s) : a(s.p1.y - s.p2.y), b(s.p2.x - s.p1.x), c((s.p2.y - s.p1.y) * s.p1.x - (s.p2.x - s.p1.x) * s.p1.y) { }
-
+	explicit Line2(const Segment2& s) : a(s.p1.y_ - s.p2.y_), b(s.p2.x_ - s.p1.x_), c((s.p2.y_ - s.p1.y_) * s.p1.x_ - (s.p2.x_ - s.p1.x_) * s.p1.y_) { }
+	
 	Line2& operator=(const Line2& rhs) { a = rhs.a; b = rhs.b; c = rhs.c; return *this; }
 	bool operator==(const Line2& rhs) const { return (a * rhs.b == rhs.a * b) && (a * rhs.c == rhs.a * c) && (b * rhs.c == rhs.b * c); }
 	bool operator!=(const Line2& rhs) const { return (a * rhs.b != rhs.a * b) || (a * rhs.c != rhs.a * c) || (b * rhs.c != rhs.b * c); }
@@ -232,13 +237,13 @@ struct	Line2 {
 	bool intersect(const Line2& l, Point2& p) const;
 	double squared_distance(const Point2& p) const;
 	double distance_denormaled(const Point2& p) const;
-	void normalize();
-
-	bool	on_left_side(const Point2& p) const { return (a * p.x + b * p.y + c) > 0; }
-	bool	on_right_side(const Point2& p) const { return (a * p.x + b * p.y + c) < 0; }
-	bool	collinear(const Point2& p) const { return (a * p.x + b * p.y + c) == 0; }
-	int		side_of_line(const Point2& p) const { double v = (a * p.x + b * p.y + c); if (v > 0.0) return LEFT_TURN; if (v < 0.0) return RIGHT_TURN; return COLLINEAR; }
-
+	void normalize();	
+	
+	bool	on_left_side(const Point2& p) const { return (a * p.x_ + b * p.y_ + c) > 0; }
+	bool	on_right_side(const Point2& p) const { return (a * p.x_ + b * p.y_ + c) < 0; }
+	bool	collinear(const Point2& p) const { return (a * p.x_ + b * p.y_ + c) == 0; }
+	int		side_of_line(const Point2& p) const { double v = (a * p.x_ + b * p.y_ + c); if (v > 0.0) return LEFT_TURN; if (v < 0.0) return RIGHT_TURN; return COLLINEAR; }
+	
 	double	a;
 	double	b;
 	double	c;
@@ -265,10 +270,10 @@ struct	Line2 {
 
 struct	Bbox2 {
 				Bbox2() : p1(0,0), p2(-1, -1) { }
-				Bbox2(double x1, double y1, double x2, double y2) : p1(x1, y1), p2(x2, y2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
-				Bbox2(const Point2& in_p1, const Point2& in_p2) : p1(in_p1), p2(in_p2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
+				Bbox2(double x1, double y1, double x2, double y2) : p1(x1, y1), p2(x2, y2) { if (p1.x_ > p2.x_) swap(p1.x_, p2.x_); if (p1.y_ > p2.y_) swap(p1.y_, p2.y_); }
+				Bbox2(const Point2& in_p1, const Point2& in_p2) : p1(in_p1), p2(in_p2) { if (p1.x_ > p2.x_) swap(p1.x_, p2.x_); if (p1.y_ > p2.y_) swap(p1.y_, p2.y_); }
 				Bbox2(const Point2& inp) : p1(inp), p2(inp) { }
-				Bbox2(const Segment2& s) : p1(s.p1), p2(s.p2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
+				Bbox2(const Segment2& s) : p1(s.p1), p2(s.p2) { if (p1.x_ > p2.x_) swap(p1.x_, p2.x_); if (p1.y_ > p2.y_) swap(p1.y_, p2.y_); }
 				Bbox2(const Bbox2& rhs) : p1(rhs.p1), p2(rhs.p2) { }
 	Bbox2&		operator=(const Bbox2& rhs) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
 	Bbox2&		operator=(const Point2& rhs) { p1 = rhs; p2 = rhs; return *this; }
@@ -278,17 +283,17 @@ struct	Bbox2 {
 	Bbox2&		operator+=(const Point2& p);
 	Bbox2&		operator+=(const Bbox2& o);
 
-	double		xmin() const { return p1.x; }
-	double		ymin() const { return p1.y; }
-	double		xmax() const { return p2.x; }
-	double		ymax() const { return p2.y; }
-	double		xspan() const { return p2.x - p1.x; }
-	double		yspan() const { return p2.y - p1.y; }
+	double		xmin() const { return p1.x_; }
+	double		ymin() const { return p1.y_; }
+	double		xmax() const { return p2.x_; }
+	double		ymax() const { return p2.y_; }
+	double		xspan() const { return p2.x_ - p1.x_; }
+	double		yspan() const { return p2.y_ - p1.y_; }
 
-	bool		is_empty() const { return p1.x == p2.x || p1.y == p2.y; }
+	bool		is_empty() const { return p1.x_ == p2.x_ || p1.y_ == p2.y_; }
 	bool		is_point() const { return p1 == p2; }
-	bool		is_null() const { return p1.x > p2.x || p1.y > p2.y; }
-
+	bool		is_null() const { return p1.x_ > p2.x_ || p1.y_ > p2.y_; }
+	
 	bool		overlap(const Bbox2& rhs) const;
 	bool		interior_overlap(const Bbox2& rhs) const;
 	bool		contains(const Bbox2& rhs) const;
@@ -296,8 +301,8 @@ struct	Bbox2 {
 	bool		contains(const Point2& p) const;
 	bool		contains(const Segment2& p) const;
 
-	void		expand(double v) { p1.x -= v; p1.y -= v; p2.x += v; p2.y += v; }
-	Point2		centroid(void) const { return Point2((p1.x + p2.x) * 0.5,(p1.y+p2.y) * 0.5); }
+	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }	
+	Point2		centroid(void) const { return Point2((p1.x_ + p2.x_) * 0.5,(p1.y_+p2.y_) * 0.5); }
 
 	double		rescale_to_x (const Bbox2& new_box, double x) const;
 	double		rescale_to_y (const Bbox2& new_box, double y) const;
@@ -417,25 +422,25 @@ inline int	turn_direction(const Point2& p1, const Point2& p2, const Point2& p3)
 
 struct lesser_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
-		return (lhs.y == rhs.y) ? (lhs.x < rhs.x) : (lhs.y < rhs.y);
+		return (lhs.y_ == rhs.y_) ? (lhs.x_ < rhs.x_) : (lhs.y_ < rhs.y_);
 	}
 };
 
 struct greater_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
-		return (lhs.y == rhs.y) ? (lhs.x > rhs.x) : (lhs.y > rhs.y);
+		return (lhs.y_ == rhs.y_) ? (lhs.x_ > rhs.x_) : (lhs.y_ > rhs.y_);
 	}
 };
 
 struct lesser_x_then_y {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
-		return (lhs.x == rhs.x) ? (lhs.y < rhs.y) : (lhs.x < rhs.x);
+		return (lhs.x_ == rhs.x_) ? (lhs.y_ < rhs.y_) : (lhs.x_ < rhs.x_);
 	}
 };
 
 struct greater_x_then_y {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
-		return (lhs.x == rhs.x) ? (lhs.y > rhs.y) : (lhs.x > rhs.x);
+		return (lhs.x_ == rhs.x_) ? (lhs.y_ > rhs.y_) : (lhs.x_ > rhs.x_);
 	}
 };
 
@@ -444,10 +449,10 @@ struct greater_x_then_y {
  ****************************************************************************************************/
 
 // These must be defined below because Point2 is declared before Vector2.
-inline Point2& Point2::operator += (const Vector2& v) { x += v.dx; y += v.dy; return *this; }
-inline Point2& Point2::operator -= (const Vector2& v) { x -= v.dx; y -= v.dy; return *this; }
-inline Point2 Point2::operator+(const Vector2& v) const { return Point2(x + v.dx, y + v.dy); }
-inline Point2 Point2::operator-(const Vector2& v) const { return Point2(x - v.dx, y - v.dy); }
+inline Point2& Point2::operator += (const Vector2& v) { x_ += v.dx; y_ += v.dy; return *this; }
+inline Point2& Point2::operator -= (const Vector2& v) { x_ -= v.dx; y_ -= v.dy; return *this; }
+inline Point2 Point2::operator+(const Vector2& v) const { return Point2(x_ + v.dx, y_ + v.dy); }
+inline Point2 Point2::operator-(const Vector2& v) const { return Point2(x_ - v.dx, y_ - v.dy); }
 
 inline Vector2	Vector2::projection(const Vector2& rhs) const
 {
@@ -489,8 +494,8 @@ inline double	Segment2::squared_distance(const Point2& p) const
 // within both of two half planes, normal to our segment's end points.
 inline bool	Segment2::collinear_has_on(const Point2& p) const
 {
-	if (is_horizontal()) return (p.x >= p1.x && p.x <= p2.x) || (p.x >= p2.x && p.x <= p1.x);
-	if (is_vertical())   return (p.y >= p1.y && p.y <= p2.y) || (p.y >= p2.y && p.y <= p1.y);
+	if (is_horizontal()) return (p.x_ >= p1.x_ && p.x_ <= p2.x_) || (p.x_ >= p2.x_ && p.x_ <= p1.x_);
+	if (is_vertical())   return (p.y_ >= p1.y_ && p.y_ <= p2.y_) || (p.y_ >= p2.y_ && p.y_ <= p1.y_);
 	if (Vector2(p1, p2).dot(Vector2(p1, p)) < 0.0) return false;
 	if (Vector2(p2, p1).dot(Vector2(p2, p)) < 0.0) return false;
 	return true;
@@ -499,16 +504,16 @@ inline bool	Segment2::collinear_has_on(const Point2& p) const
 inline bool Segment2::could_intersect(const Segment2& rhs) const
 {
 	// This is basically a bounding-box quick check for segment-intersection.
-	register double	xmin1 = (p1.x < p2.x) ? p1.x : p2.x;
-	register double	xmax1 = (p1.x > p2.x) ? p1.x : p2.x;
-	register double	ymin1 = (p1.y < p2.y) ? p1.y : p2.y;
-	register double	ymax1 = (p1.y > p2.y) ? p1.y : p2.y;
+	register double	xmin1 = (p1.x_ < p2.x_) ? p1.x_ : p2.x_;
+	register double	xmax1 = (p1.x_ > p2.x_) ? p1.x_ : p2.x_;
+	register double	ymin1 = (p1.y_ < p2.y_) ? p1.y_ : p2.y_;
+	register double	ymax1 = (p1.y_ > p2.y_) ? p1.y_ : p2.y_;
 
-	register double	xmin2 = (rhs.p1.x < rhs.p2.x) ? rhs.p1.x : rhs.p2.x;
-	register double	xmax2 = (rhs.p1.x > rhs.p2.x) ? rhs.p1.x : rhs.p2.x;
-	register double	ymin2 = (rhs.p1.y < rhs.p2.y) ? rhs.p1.y : rhs.p2.y;
-	register double	ymax2 = (rhs.p1.y > rhs.p2.y) ? rhs.p1.y : rhs.p2.y;
-
+	register double	xmin2 = (rhs.p1.x_ < rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	register double	xmax2 = (rhs.p1.x_ > rhs.p2.x_) ? rhs.p1.x_ : rhs.p2.x_;
+	register double	ymin2 = (rhs.p1.y_ < rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	register double	ymax2 = (rhs.p1.y_ > rhs.p2.y_) ? rhs.p1.y_ : rhs.p2.y_;
+	
 	return (xmax1 >= xmin2 &&
 			xmax2 >= xmin1 &&
 			ymax1 >= ymin2 &&
@@ -533,45 +538,45 @@ inline bool	Segment2::intersect(const Segment2& rhs, Point2& p) const
 		}
 		else if (rhs.is_vertical())
 		{
-			p.x = rhs.p1.x;
-			p.y = p1.y;
-		}
-		else
+			p.x_ = rhs.p1.x_;
+			p.y_ = p1.y_;
+		} 
+		else 
 		{
-			p.x = rhs.x_at_y(p1.y);
-			p.y = p1.y;
+			p.x_ = rhs.x_at_y(p1.y_);
+			p.y_ = p1.y_;
 		}
 	}
 	else if (is_vertical())
 	{
 		if (rhs.is_horizontal())
 		{
-			p.x = p1.x;
-			p.y = rhs.p1.y;
-		}
+			p.x_ = p1.x_;
+			p.y_ = rhs.p1.y_;
+		} 
 		else if (rhs.is_vertical())
 		{
 			return false;
 		}
 		else
 		{
-			p.x = p1.x;
-			p.y = rhs.y_at_x(p1.x);
+			p.x_ = p1.x_;
+			p.y_ = rhs.y_at_x(p1.x_);
 		}
 	}
 	else
 	{
 		if (rhs.is_horizontal())
 		{
-			p.x = x_at_y(rhs.p1.y);
-			p.y = rhs.p1.y;
-		}
+			p.x_ = x_at_y(rhs.p1.y_);
+			p.y_ = rhs.p1.y_;
+		} 
 		else if (rhs.is_vertical())
 		{
-			p.x = rhs.p1.x;
-			p.y = y_at_x(rhs.p1.x);
-		}
-		else
+			p.x_ = rhs.p1.x_;
+			p.y_ = y_at_x(rhs.p1.x_);
+		} 
+		else 
 		{
 			if (!Line2(*this).intersect(Line2(rhs), p)) return false;
 		}
@@ -599,8 +604,8 @@ inline bool Line2::intersect(const Line2& l, Point2& p) const
 	// This does not tell us intervals though.
 
 	if ((a * l.b) == (b * l.a))	return false;	// This means the lines are parallel.
-	p.x = (b * l.c - l.b * c) / (l.b * a - b * l.a);
-	p.y = (a * l.c - l.a * c) / (l.a * b - a * l.b);
+	p.x_ = (b * l.c - l.b * c) / (l.b * a - b * l.a);
+	p.y_ = (a * l.c - l.a * c) / (l.a * b - a * l.b);
 	return true;
 }
 
@@ -615,7 +620,7 @@ inline 	double Line2::squared_distance(const Point2& p) const
 	// distance of a point P from the line in "units" of the normal vector len.
 	// (This is why the line eq sets this to 0, or "on the line", and if a and b
 	// are normalized, sqrt(a^2+b^2) == 1).
-	double num = a * p.x + b * p.y + c;
+	double num = a * p.x_ + b * p.y_ + c;
 	return num * num / (a * a + b * b);
 }
 
@@ -623,7 +628,7 @@ inline 	double Line2::squared_distance(const Point2& p) const
 // is positive, the other is negative, and the units are funny unless a^2 + b^2 == 1.0.
 inline double Line2::distance_denormaled(const Point2& p) const
 {
-	return a * p.x + b * p.y + c;
+	return a * p.x_ + b * p.y_ + c;
 }
 
 inline void Line2::normalize()
@@ -645,10 +650,10 @@ inline Bbox2& Bbox2::operator+=(const Point2& rhs)
 {
 	if (is_null())	p1 = p2 = rhs;
 	else {
-		p1.x = min(p1.x,rhs.x);
-		p1.y = min(p1.y,rhs.y);
-		p2.x = max(p2.x,rhs.x);
-		p2.y = max(p2.y,rhs.y);
+		p1.x_ = min(p1.x_,rhs.x_);
+		p1.y_ = min(p1.y_,rhs.y_);
+		p2.x_ = max(p2.x_,rhs.x_);
+		p2.y_ = max(p2.y_,rhs.y_);
 	}
 	return *this;
 }
@@ -658,10 +663,10 @@ inline Bbox2& Bbox2::operator+=(const Bbox2& rhs)
 	if (rhs.is_null()) 	return *this;
 	if (is_null()) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
 	else {
-		p1.x = min(p1.x,rhs.p1.x);
-		p1.y = min(p1.y,rhs.p1.y);
-		p2.x = max(p2.x,rhs.p2.x);
-		p2.y = max(p2.y,rhs.p2.y);
+		p1.x_ = min(p1.x_,rhs.p1.x_);
+		p1.y_ = min(p1.y_,rhs.p1.y_);
+		p2.x_ = max(p2.x_,rhs.p2.x_);
+		p2.y_ = max(p2.y_,rhs.p2.y_);
 		return *this;
 	}
 }
@@ -693,8 +698,8 @@ inline	bool		Bbox2::contains(const Bbox2& rhs) const
 inline	bool		Bbox2::contains(const Point2& p) const
 {
 	if (is_null()) return false;
-	return (xmin() <= p.x && p.x <= xmax() &&
-			ymin() <= p.y && p.y <= ymax());
+	return (xmin() <= p.x_ && p.x_ <= xmax() &&
+			ymin() <= p.y_ && p.y_ <= ymax()); 
 }
 
 inline	bool		Bbox2::contains(const Segment2& s) const
@@ -704,31 +709,31 @@ inline	bool		Bbox2::contains(const Segment2& s) const
 
 inline double		Bbox2::rescale_to_x(const Bbox2& new_box, double x) const
 {
-	if (p2.x == p1.x) return (new_box.p1.x + new_box.p2.x) * 0.5;
-	return new_box.p1.x + (x - p1.x) * (new_box.p2.x - new_box.p1.x) / (p2.x - p1.x);
+	if (p2.x_ == p1.x_) return (new_box.p1.x_ + new_box.p2.x_) * 0.5;
+	return new_box.p1.x_ + (x - p1.x_) * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_);
 }
 
 inline double		Bbox2::rescale_to_y(const Bbox2& new_box, double y) const
 {
-	if (p2.y == p1.y) return (new_box.p1.y + new_box.p2.y) * 0.5;
-	return new_box.p1.y + (y - p1.y) * (new_box.p2.y - new_box.p1.y) / (p2.y - p1.y);
+	if (p2.y_ == p1.y_) return (new_box.p1.y_ + new_box.p2.y_) * 0.5;
+	return new_box.p1.y_ + (y - p1.y_) * (new_box.p2.y_ - new_box.p1.y_) / (p2.y_ - p1.y_);
 }
 
 inline double		Bbox2::rescale_to_xv(const Bbox2& new_box, double x) const
 {
-	if (p2.x == p1.x) return x;
-	return x * (new_box.p2.x - new_box.p1.x) / (p2.x - p1.x);
+	if (p2.x_ == p1.x_) return x;
+	return x * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_);
 }
 
 inline double		Bbox2::rescale_to_yv(const Bbox2& new_box, double y) const
 {
-	if (p2.y == p1.y) return y;
-	return y * (new_box.p2.y - new_box.p1.y) / (p2.y - p1.y);
+	if (p2.y_ == p1.y_) return y;
+	return y * (new_box.p2.y_ - new_box.p1.y_) / (p2.y_ - p1.y_);
 }
 
 
 
-inline	Point2	Midpoint2(const Point2& p1, const Point2& p2)	{ return Point2((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5); }
+inline	Point2	Midpoint2(const Point2& p1, const Point2& p2)	{ return Point2((p1.x_ + p2.x_) * 0.5, (p1.y_ + p2.y_) * 0.5); }
 
 inline	double	Polygon2::area(void) const
 {
@@ -778,8 +783,8 @@ inline Point2		Polygon2::centroid(void) const
 	double	x = 0.0, y = 0.0;
 	for (int n = 0; n < size(); ++n)
 	{
-		x += at(n).x;
-		y += at(n).y;
+		x += at(n).x_;
+		y += at(n).y_;
 	}
 	return Point2(x / (float) size(), y / (float) size());
 }
@@ -847,20 +852,20 @@ inline	Point2	Bezier2::midpoint(double t) const
 	double w1 = 3.0 * nt * nt * t;
 	double w2 = 3.0 * nt * t * t;
 	double w3 = t * t * t;
-	return Point2(w0 * p1.x + w1 * c1.x + w2 * c2.x + w3 * p2.x,
-				  w0 * p1.y + w1 * c1.y + w2 * c2.y + w3 * p2.y);
+	return Point2(w0 * p1.x_ + w1 * c1.x_ + w2 * c2.x_ + w3 * p2.x_,
+				  w0 * p1.y_ + w1 * c1.y_ + w2 * c2.y_ + w3 * p2.y_);
 }
 
 inline Vector2 Bezier2::derivative(double t) const
 {
 	// Derivative taking by putting the formula in Ax^3+Bx^2+Cx+D form and taking 1st derivative.
 	return Vector2(
-		3.0 * t * t * (       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x) +
-		2.0 * t     * ( -3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x		) +
-					  ( -3.0 * p1.x + 3.0 * c1.x					),
-		3.0 * t * t * (       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y) +
-		2.0 * t     * ( -3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y		) +
-					  ( -3.0 * p1.y + 3.0 * c1.y					)
+		3.0 * t * t * (       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_) +
+		2.0 * t     * ( -3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_		) +
+					  ( -3.0 * p1.x_ + 3.0 * c1.x_						),
+		3.0 * t * t * (       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_) +
+		2.0 * t     * ( -3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_		) +
+					  ( -3.0 * p1.y_ + 3.0 * c1.y_						)
 	);
 }
 
@@ -897,18 +902,18 @@ inline void Bezier2::bounds_fast(Bbox2& bounds) const
 	bounds = Bbox2(p1,p2);
 	if (!x_monotone())
 	{
-		bounds.p1.x = min(bounds.p1.x,c1.x);
-		bounds.p1.x = min(bounds.p1.x,c2.x);
-		bounds.p2.x = max(bounds.p2.x,c1.x);
-		bounds.p2.x = max(bounds.p2.x,c2.x);
+		bounds.p1.x_ = min(bounds.p1.x_,c1.x_);
+		bounds.p1.x_ = min(bounds.p1.x_,c2.x_);
+		bounds.p2.x_ = max(bounds.p2.x_,c1.x_);
+		bounds.p2.x_ = max(bounds.p2.x_,c2.x_);
 	}
 	if (!y_monotone())
 	{
-		bounds.p1.y = min(bounds.p1.y,c1.y);
-		bounds.p1.y = min(bounds.p1.y,c2.y);
-		bounds.p2.y = max(bounds.p2.y,c1.y);
-		bounds.p2.y = max(bounds.p2.y,c2.y);
-	}
+		bounds.p1.y_ = min(bounds.p1.y_,c1.y_);
+		bounds.p1.y_ = min(bounds.p1.y_,c2.y_);
+		bounds.p2.y_ = max(bounds.p2.y_,c1.y_);
+		bounds.p2.y_ = max(bounds.p2.y_,c2.y_);
+	}	
 }
 
 
@@ -916,11 +921,11 @@ inline int		Bezier2::x_monotone(void) const
 {
 	// The weighting of the control points is for (1-t) and t...
 	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
-	double A =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
-	double B =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
-	double C = -3.0 * p1.x + 3.0 * c1.x;
-	double D =		  p1.x;
-
+	double A =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double B =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double C = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double D =		  p1.x_;
+	
 	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
 	double a = 3.0 * A;
 	double b = 2.0 * B;
@@ -937,11 +942,11 @@ inline int		Bezier2::y_monotone(void) const
 {
 	// The weighting of the control points is for (1-t) and t...
 	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
-	double A =     -p1.y + 3 * c1.y - 3 * c2.y + p2.y;
-	double B =  3 * p1.y - 6 * c1.y + 3 * c2.y;
-	double C = -3 * p1.y + 3 * c1.y;
-	double D =		p1.y;
-
+	double A =     -p1.y_ + 3 * c1.y_ - 3 * c2.y_ + p2.y_;
+	double B =  3 * p1.y_ - 6 * c1.y_ + 3 * c2.y_;
+	double C = -3 * p1.y_ + 3 * c1.y_;
+	double D =		p1.y_;
+	
 	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
 	double a = 3 * A;
 	double b = 2 * B;
@@ -1045,19 +1050,19 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 	// These are quadratic and have up to 2 roots each.  This gives us any
 	// point the curve changes directions.
 	int ret = 0;
-
-	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
-	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
-	double Cx = -3.0 * p1.x + 3.0 * c1.x;
-	double Dx =		   p1.x;
+	
+	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double Dx =		   p1.x_;
 	double ax = 3.0 * Ax;
 	double bx = 2.0 * Bx;
 	double cx =		  Cx;
 
-	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
-	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
-	double Cy = -3.0 * p1.y + 3.0 * c1.y;
-	double Dy =		   p1.y;
+	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
+	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
+	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
+	double Dy =		   p1.y_;
 	double ay = 3.0 * Ay;
 	double by = 2.0 * By;
 	double cy =		  Cy;
@@ -1079,11 +1084,11 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 inline int		Bezier2::x_monotone_regions(double times[2]) const
 {
 	int ret = 0;
-
-	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
-	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
-	double Cx = -3.0 * p1.x + 3.0 * c1.x;
-	double Dx =		   p1.x;
+	
+	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double Dx =		   p1.x_;
 	double ax = 3.0 * Ax;
 	double bx = 2.0 * Bx;
 	double cx =		  Cx;
@@ -1099,11 +1104,11 @@ inline int		Bezier2::x_monotone_regions(double times[2]) const
 inline int Bezier2::y_monotone_regions(double times[2]) const
 {
 	int ret = 0;
-
-	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
-	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
-	double Cy = -3.0 * p1.y + 3.0 * c1.y;
-	double Dy =		   p1.y;
+	
+	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
+	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
+	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
+	double Dy =		   p1.y_;
 	double ay = 3.0 * Ay;
 	double by = 2.0 * By;
 	double cy =		  Cy;
@@ -1129,27 +1134,27 @@ inline void	Bezier2::bounds(Bbox2& bounds) const
 
 inline double	Bezier2::y_at_x(double x) const
 {
-	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
-	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
-	double Cx = -3.0 * p1.x + 3.0 * c1.x;
-	double Dx =		   p1.x;
+	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double Dx =		   p1.x_;
 
-	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
-	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
-	double Cy = -3.0 * p1.y + 3.0 * c1.y;
-	double Dy =		   p1.y;
-
+	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
+	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
+	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
+	double Dy =		   p1.y_;
+	
 	Dx -= x;
 
 	double roots[3];
 	int num_roots = cubic_formula(Ax,Bx,Cx,Dx, roots);
-
-	if (num_roots < 1) return p1.y;
-
+	
+	if (num_roots < 1) return p1.y_;
+	
 	for (int n = 0; n < num_roots; ++n)
 	if (roots[n] >= 0.0 && roots[n] <= 1.0)
 		return Ay * roots[n] * roots[n] * roots[n] + By * roots[n] * roots[n] + Cy * roots[n] + Dy;
-	return p1.y;
+	return p1.y_;
 }
 
 inline double	Bezier2::x_at_y(double y) const
@@ -1158,27 +1163,27 @@ inline double	Bezier2::x_at_y(double y) const
 	// x = At^3 + Bt^2 + C^t + D.
 	// In other words, we've taken the control points and merged them into coefficients so we can use
 	// "standard" analysis formula.
-	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
-	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
-	double Cx = -3.0 * p1.x + 3.0 * c1.x;
-	double Dx =		   p1.x;
+	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double Dx =		   p1.x_;
 
-	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
-	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
-	double Cy = -3.0 * p1.y + 3.0 * c1.y;
-	double Dy =		   p1.y;
-
+	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
+	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
+	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
+	double Dy =		   p1.y_;
+	
 	Dy -= y;
 
 	double roots[3];
 	int num_roots = cubic_formula(Ay,By,Cy,Dy, roots);
-
-	if (num_roots < 1) return p1.x;
-
+	
+	if (num_roots < 1) return p1.x_;
+	
 	for (int n = 0; n < num_roots; ++n)
 	if (roots[n] >= 0.0 && roots[n] <= 1.0)
 		return Ax * roots[n] * roots[n] * roots[n] + Bx * roots[n] * roots[n] + Cx * roots[n] + Dx;
-	return p1.x;
+	return p1.x_;
 }
 
 
@@ -1266,18 +1271,18 @@ bool inside_polygon_pt(__Iterator begin, __Iterator end, const Point2& inPoint)
 	while (begin != end)
 	{
 		s.p2 = *begin;
-		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
-			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
-		if (inPoint.y > s.y_at_x(inPoint.x))
+		if ((s.p1.x_ < inPoint.x_ && inPoint.x_ <= s.p2.x_) ||
+			(s.p2.x_ < inPoint.x_ && inPoint.x_ <= s.p1.x_))
+		if (inPoint.y_ > s.y_at_x(inPoint.x_))
 			++cross_counter;
 
 		s.p1 = s.p2;
 		++begin;
 	}
 	s.p2 = first_p;
-	if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
-		(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
-	if (inPoint.y > s.y_at_x(inPoint.x))
+	if ((s.p1.x_ < inPoint.x_ && inPoint.x_ <= s.p2.x_) ||
+		(s.p2.x_ < inPoint.x_ && inPoint.x_ <= s.p1.x_))
+	if (inPoint.y_ > s.y_at_x(inPoint.x_))
 		++cross_counter;
 	return (cross_counter % 2) == 1;
 }
@@ -1301,9 +1306,9 @@ bool inside_polygon_seg(__Iterator begin, __Iterator end, const Point2& inPoint)
 		// The code only has the equal case because the BASIC case ("span") is the "or to the right)
 
 		Segment2 s(*begin);
-		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
-			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
-		if (inPoint.y > s.y_at_x(inPoint.x))
+		if ((s.p1.x_ < inPoint.x_ && inPoint.x_ <= s.p2.x_) ||
+			(s.p2.x_ < inPoint.x_ && inPoint.x_ <= s.p1.x_))
+		if (inPoint.y_ > s.y_at_x(inPoint.x_))
 			++cross_counter;
 		++begin;
 	}
@@ -1336,21 +1341,21 @@ bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint)
 			bp.partition(b2,b3,(t[1]-t[0]) / (1.0-t[0]));
 		}
 
-		if ((b1.p1.x < inPoint.x && inPoint.x <= b1.p2.x) ||
-			(b1.p2.x < inPoint.x && inPoint.x <= b1.p1.x))
-		if (inPoint.y > b1.y_at_x(inPoint.x))
+		if ((b1.p1.x_ < inPoint.x_ && inPoint.x_ <= b1.p2.x_) ||
+			(b1.p2.x_ < inPoint.x_ && inPoint.x_ <= b1.p1.x_))
+		if (inPoint.y_ > b1.y_at_x(inPoint.x_))
 			++cross_counter;
 
 		if (r > 0)
-		if ((b2.p1.x < inPoint.x && inPoint.x <= b2.p2.x) ||
-			(b2.p2.x < inPoint.x && inPoint.x <= b2.p1.x))
-		if (inPoint.y > b2.y_at_x(inPoint.x))
+		if ((b2.p1.x_ < inPoint.x_ && inPoint.x_ <= b2.p2.x_) ||
+			(b2.p2.x_ < inPoint.x_ && inPoint.x_ <= b2.p1.x_))
+		if (inPoint.y_ > b2.y_at_x(inPoint.x_))
 			++cross_counter;
 
 		if (r > 1)
-		if ((b3.p1.x < inPoint.x && inPoint.x <= b3.p2.x) ||
-			(b3.p2.x < inPoint.x && inPoint.x <= b3.p1.x))
-		if (inPoint.y > b3.y_at_x(inPoint.x))
+		if ((b3.p1.x_ < inPoint.x_ && inPoint.x_ <= b3.p2.x_) ||
+			(b3.p2.x_ < inPoint.x_ && inPoint.x_ <= b3.p1.x_))
+		if (inPoint.y_ > b3.y_at_x(inPoint.x_))
 			++cross_counter;
 
 		++begin;
@@ -1375,9 +1380,9 @@ bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
 	Point2	prev	(second);
 
 	lesser_x_then_y	better;
-
-	Point2	best(first.x + 1, first.y);
-
+	
+	Point2	best(first.x_ + 1, first.y_);
+	
 	bool	is_ccw = false;
 
 	while(begin != end)

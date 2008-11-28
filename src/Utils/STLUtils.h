@@ -24,6 +24,7 @@
 #ifndef STLUtils_H
 #define STLUtils_H
 
+#include "AssertUtils.h"
 #include <iterator>
 
 template <class Container>
@@ -71,6 +72,91 @@ public:
 
 template <class Container>
 inline set_erase_iterator<Container> set_eraser(Container& x) { return set_erase_iterator<Container>(x); }
+
+template <typename Priority, typename Value>
+class pqueue {
+public:
+	typedef Priority								priority_type;
+	typedef Value									value_type;
+	typedef	multimap<priority_type,value_type>		map_type;
+	typedef typename map_type::iterator				map_iterator;
+	typedef typename map_type::value_type			map_value_type;
+	typedef map<value_type, map_iterator>			back_link_type;
+	typedef typename back_link_type::iterator		back_link_iterator;
+	typedef typename back_link_type::value_type		back_link_value_type;
+
+	pqueue() { }
+	pqueue(const pqueue& rhs) : items_(rhs.items_) { rebuild_links(); }
+	pqueue& operator=(pqueue& rhs) { items_ = rhs.items_; back_links_.clear(); rebuild_links(); }
+	
+	map_iterator	insert(const priority_type& p, const value_type& v)
+	{
+		erase(v);
+		map_iterator i = items_.insert(map_value_type(p,v));
+		back_links_.insert(back_link_value_type(v,i));
+		return i;
+	}
+	
+	bool			erase(const value_type& v)
+	{
+		back_link_iterator bi = back_links_.find(v);
+		if(bi != back_links_.end())
+		{
+			items_.erase(bi->second);
+			back_links_.erase(bi);
+			return true;
+		}
+		return false;
+	}
+
+	void			pop_front()
+	{
+		DebugAssert(!items_.empty());
+		DebugAssert(back_links_.count(items_.begin()->second));
+		back_links_.erase(items_.begin()->second);
+		items_.erase(items_.begin());
+	}
+				
+	priority_type		front_priority() const
+	{
+		DebugAssert(!items_.empty());
+		return items_.begin()->first;
+	}
+
+	value_type			front_value() const
+	{
+		DebugAssert(!items_.empty());
+		return items_.begin()->second;
+	}
+	
+	int				count(const value_type& v) const
+	{
+		return back_links_.count(v);
+	}
+	
+	bool			empty(void) const
+	{
+		return items_.empty();
+	}
+
+	size_t			size(void) const 
+	{
+		return items_.size();
+	}
+
+private:
+	void rebuild_links()
+	{
+		DebugAssert(back_links_.empty());
+		for(map_iterator i = items_.begin(); i != items_.end(); ++i)
+			back_links_.insert(back_link_value_type(i->second,i));
+	}
+
+	map_type		items_;
+	back_link_type	back_links_;
+
+
+};
 
 
 

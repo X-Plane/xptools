@@ -40,22 +40,21 @@ static double calc_water_area(void)
 	double total = 0.0;
 	for (Pmwx::Face_iterator face = gMap.faces_begin(); face != gMap.faces_end(); ++face)
 	if (!face->is_unbounded())
-	if (face->IsWater())
+	if (face->data().IsWater())
 	{
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		circ = stop = face->outer_ccb();
 		do {
-			total += (Vector2(stop->source()->point(), circ->source()->point()).signed_area(
-					  Vector2(stop->source()->point(), circ->target()->point())));
+			total += CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
+									 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::COUNTERCLOCKWISE));
 			++circ;
 		} while (circ != stop);
-
-		for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+		for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			circ = stop = *hole;
 			do {
-				total += (Vector2(stop->source()->point(), circ->source()->point()).signed_area(
-						  Vector2(stop->source()->point(), circ->target()->point())));
+				total += CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
+										 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::COUNTERCLOCKWISE));
 				++circ;
 			} while (circ != stop);
 		}

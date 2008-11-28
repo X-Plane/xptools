@@ -186,9 +186,9 @@ static int DoAptInfo(const vector<const char *>& args)
 		for (set<int>::iterator bd = vec.begin(); bd != vec.end(); ++bd) { \
 			printf("   '%s' %s (%.6lf,%.06lf\n", \
 				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(), \
-				gApts[*bd].bounds.p1.x, \
-				gApts[*bd].bounds.p1.y); }
-
+				gApts[*bd].bounds.p1.x(), \
+				gApts[*bd].bounds.p1.y()); }
+	
 	PRINT_LIST(new_bounded,"New airports with boundaries.\n");
 	PRINT_LIST(new_unbounded,"New airports with no boundaries.\n");
 	PRINT_LIST(empty_bounded,"Boundary-only airports.\n");
@@ -339,8 +339,8 @@ static int DoAptTest(const vector<const char *>& args)
 		{
 			printf("There was a problem with the airport '%s' %s (%.6lf,%.06lf\n",
 				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(),
-				gApts[*bd].bounds.p1.x,
-				gApts[*bd].bounds.p1.y);
+				gApts[*bd].bounds.p1.x(),
+				gApts[*bd].bounds.p1.y());
 		}
 	}
 

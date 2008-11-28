@@ -57,7 +57,7 @@ static int DoSpreadsheet(const vector<const char *>& args)
 
 static int DoRoads(const vector<const char *>& args)
 {
-	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  gProgress, NULL, NULL);
+	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], Face_handle(),  gProgress, NULL, NULL);
 	return 0;
 }
 
@@ -98,29 +98,37 @@ static int DoZoning(const vector<const char *>& args)
 	return 0;
 }
 
+/*
 static int DoHydroReconstruct(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Rebuilding vectors from elevation...\n");
 	HydroReconstruct(gMap,  gDem,(args.size() <= 1)? NULL : args[1], args[0], gProgress);
 	return 0;
 }
+*/
 
+/*
 static int DoHydroSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Simplifying coastlines...\n");
 	Bbox2	bounds;
-
-	CalcBoundingBox(gMap, bounds.p1, bounds.p2);
+	
+	Point_2	sw, ne;
+	CalcBoundingBox(gMap, sw,ne);
+	bounds.p1 = cgal2ben(sw);
+	bounds.p2 = cgal2ben(ne);
 	SimplifyCoastlines(gMap, bounds, gProgress);
 	return 0;
 }
-
+*/
+/*
 static int DoBridgeRebuild(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Rebuilding roads and bridgse near coastlines...\n");
 	BridgeRebuild(gMap, gProgress);
 	return 0;
 }
+*/
 
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
@@ -202,9 +210,9 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
-{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
-{ "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
-{ "-hydrobridge",	0, 0, DoBridgeRebuild,	"Rebuild bridgse after hydro.",		  "" },
+//{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
+//{ "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
+//{ "-hydrobridge",	0, 0, DoBridgeRebuild,	"Rebuild bridgse after hydro.",		  "" },
 { "-derivedems", 	0, 0, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
