@@ -30,7 +30,9 @@
 #include "WED_Messages.h"
 #include "FileUtils.h"
 
-#define CUSTOM_PACKAGE_PATH	"Custom Scenery"
+#define CUSTOM_PACKAGE_PATH	"Custom Scenery" 
+#define GLOBAL_PACKAGE_PATH	"Global Scenery" 
+#define DEFAULT_PACKAGE_PATH "Resources" DIR_STR "default scenery" 
 
 WED_PackageMgr * gPackageMgr = NULL;
 
@@ -87,7 +89,37 @@ void		WED_PackageMgr::GetNthCustomPackagePath(int n, string& package) const
 	package = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + custom_package_names[n];
 }
 
-void		WED_PackageMgr::RenamePackage(int n, const string& new_name)
+int			WED_PackageMgr::CountPackages(void) const
+{
+	return custom_package_names.size() +
+		   global_package_names.size() +
+		   default_package_names.size();
+}
+
+void		WED_PackageMgr::GetNthPackageName(int n, string& package) const
+{
+	if (n < custom_package_names.size())	{ package = custom_package_names[n]; return; }
+	n -= custom_package_names.size();
+
+	if (n < global_package_names.size())	{ package = global_package_names[n]; return; }
+	n -= global_package_names.size();
+
+	package = default_package_names[n];	
+}
+
+void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
+{
+	if (n < custom_package_names.size())	{ package = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR +  custom_package_names[n]; return; }
+	n -= custom_package_names.size();
+
+	if (n < global_package_names.size())	{ package = system_path + DIR_STR GLOBAL_PACKAGE_PATH DIR_STR + global_package_names[n]; return; }
+	n -= global_package_names.size();
+
+	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_package_names[n];	
+}
+
+
+void		WED_PackageMgr::RenameCustomPackage(int n, const string& new_name)
 {
 	string oldn = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + custom_package_names[n];
 	string newn = system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + new_name;
@@ -102,7 +134,7 @@ void		WED_PackageMgr::RenamePackage(int n, const string& new_name)
 	BroadcastMessage(msg_SystemFolderUpdated,0);
 }
 
-int WED_PackageMgr::CreateNewPackage(void)
+int WED_PackageMgr::CreateNewCustomPackage(void)
 {
 	int n = 0;
 	string name;
@@ -143,6 +175,8 @@ int WED_PackageMgr::CreateNewPackage(void)
 void		WED_PackageMgr::Rescan(void)
 {
 	custom_package_names.clear();
+	global_package_names.clear();
+	default_package_names.clear();
 	system_exists=false;
 	if (MF_GetFileType(system_path.c_str(),mf_CheckType) == mf_Directory)
 	{
@@ -151,6 +185,20 @@ void		WED_PackageMgr::Rescan(void)
 		{
 			system_exists=true;
 			MF_IterateDirectory(cus_dir.c_str(), package_scan_func, &custom_package_names);
+		}
+
+		string glb_dir = system_path + DIR_STR GLOBAL_PACKAGE_PATH;
+		if (MF_GetFileType(glb_dir.c_str(),mf_CheckType) == mf_Directory)
+		{
+			system_exists=true;
+			MF_IterateDirectory(glb_dir.c_str(), package_scan_func, &global_package_names);			
+		}
+
+		string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
+		if (MF_GetFileType(def_dir.c_str(),mf_CheckType) == mf_Directory)
+		{
+			system_exists=true;
+			MF_IterateDirectory(def_dir.c_str(), package_scan_func, &default_package_names);			
 		}
 	}
 	BroadcastMessage(msg_SystemFolderChanged,0);

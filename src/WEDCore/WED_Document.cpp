@@ -26,9 +26,9 @@
 #include "GUI_Resources.h"
 #include "WED_PackageMgr.h"
 #include "FileUtils.h"
-#include "XESIO.h"
+//#include "XESIO.h"
 #include "AptIO.h"
-#include "MapAlgs.h"
+//#include "MapAlgs.h"
 #include "WED_Thing.h"
 #include "WED_Messages.h"
 #include "WED_EnumSystem.h"
@@ -38,7 +38,8 @@
 #include "GUI_Prefs.h"
 #include "PlatformUtils.h"
 #include "WED_TexMgr.h"
-// TODO:
+#include "WED_LibraryMgr.h"
+// TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
 
@@ -58,6 +59,7 @@ WED_Document::WED_Document(
 	mUndo(&mArchive)
 {
 	mTexMgr = new WED_TexMgr(package);
+	mLibraryMgr = new WED_LibraryMgr(package);
 	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
 
@@ -84,6 +86,7 @@ WED_Document::WED_Document(
 WED_Document::~WED_Document()
 {
 	delete mTexMgr;
+	delete mLibraryMgr;
 	sDocuments.erase(this);
 	BroadcastMessage(msg_DocumentDestroyed, 0);
 }

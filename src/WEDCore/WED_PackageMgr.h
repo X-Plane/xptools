@@ -41,9 +41,13 @@ public:
 	void		GetNthCustomPackageName(int n, string& package) const;
 	void		GetNthCustomPackagePath(int n, string& package) const;
 
-	void		RenamePackage(int n, const string& new_name);
+	int			CountPackages(void) const;
+	void		GetNthPackageName(int n, string& package) const;
+	void		GetNthPackagePath(int n, string& package) const;
 
-	int			CreateNewPackage(void);
+	void		RenameCustomPackage(int n, const string& new_name);
+	
+	int			CreateNewCustomPackage(void);
 	void		Rescan(void);
 
 	string		ComputePath(const string& package, const string& rel_file) const;
@@ -54,6 +58,8 @@ private:
 	string			system_path;
 	bool			system_exists;
 	vector<string>	custom_package_names;
+	vector<string>	global_package_names;
+	vector<string>	default_package_names;
 
 };
 

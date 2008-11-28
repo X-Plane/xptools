@@ -43,7 +43,9 @@ enum {
 	msg_DocLoaded,
 
 	msg_SystemFolderChanged,
-	msg_SystemFolderUpdated
+	msg_SystemFolderUpdated	,
+	
+	msg_LibraryChanged
 
 };
 

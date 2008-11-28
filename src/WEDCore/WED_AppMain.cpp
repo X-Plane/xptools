@@ -24,15 +24,15 @@
  #define __DEBUGGING__
 
 // Stuff we need to init
-#include "XESInit.h"
+//#include "XESInit.h"
 #include "WED_Document.h"
 #include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
-#include "DEMTables.h"
+//#include "DEMTables.h"
 #include "WED_AboutBox.h"
 #include "WED_StartWindow.h"
-#include "ObjTables.h"
-#include <CGAL/assertions.h>
+//#include "ObjTables.h"
+//#include <CGAL/assertions.h>
 #include "GUI_Clipboard.h"
 #include "WED_Package.h"
 #include "GUI_Resources.h"
@@ -78,7 +78,16 @@
 	_R(WED_Windsock) \
 	_R(WED_ATCFrequency) \
 	_R(WED_TextureNode) \
-	_R(WED_OverlayImage)
+	_R(WED_OverlayImage) \
+	_R(WED_SimpleBoundaryNode) \
+	_R(WED_SimpleBezierBoundaryNode) \
+	_R(WED_LinePlacement) \
+	_R(WED_StringPlacement) \
+	_R(WED_ForestPlacement) \
+	_R(WED_FacadePlacement) \
+	_R(WED_PolygonPlacement) \
+	_R(WED_DrapedOrthophoto) \
+	_R(WED_DrapedOrthophotoBoundary)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
@@ -90,6 +99,7 @@ REGISTER_LIST
 HINSTANCE gInstance = NULL;
 #endif
 
+/*
 CGAL::Failure_function	gFailure = NULL;
 void	cgal_failure(const char* a, const char* b, const char* c, int d, const char* e)
 {
@@ -97,6 +107,7 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 		(*gFailure)(a, b, c, d, e);
 	throw a;
 }
+*/
 
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -130,23 +141,24 @@ int main(int argc, const char * argv[])
 
 	start->Show();
 
-	gFailure = CGAL::set_error_handler(cgal_failure);
-
+	
+//	gFailure = CGAL::set_error_handler(cgal_failure);
+	
 	start->ShowMessage("Initializing...");
-	XESInit();
-
+//	XESInit();
+	
 	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
-
-	start->ShowMessage("Loading DEM tables...");
-	LoadDEMTables();
-	start->ShowMessage("Loading OBJ tables...");
-	LoadObjTables();
-
+	
+//	start->ShowMessage("Loading DEM tables...");
+//	LoadDEMTables();
+//	start->ShowMessage("Loading OBJ tables...");
+//	LoadObjTables();
+	
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
 	ENUM_Init();

@@ -30,15 +30,17 @@
 #include "AptDefs.h"
 #include "ILibrarian.h"
 #include "IDocPrefs.h"
-#include "MapDefs.h"
+//#include "MapDefs.h"
 //#include "DEMDefs.h"
 //#include "WED_Properties.h"
 #include "SQLUtils.h"
 #include "WED_Archive.h"
 #include "WED_UndoMgr.h"
 
+
 class	WED_Thing;
 class	WED_TexMgr;
+class	WED_LibraryMgr;
 
 typedef struct sqlite3 sqlite3;
 
@@ -91,7 +93,8 @@ public:
 	virtual	void		WriteDoublePref(const char * in_key, double in_value);
 	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
 	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
-
+	
+	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
 
 	bool				TryClose(void);
 	void				Save(void);
@@ -99,7 +102,7 @@ public:
 	bool				IsDirty(void);
 
 	// LEGACY STUFF
-
+	
 //	Pmwx				gMap;
 //	DEMGeoMap			gDem;
 //	CDT					gTriangulationHi;
@@ -120,7 +123,7 @@ private:
 	WED_UndoMgr			mUndo;
 
 	WED_TexMgr *		mTexMgr;
-
+	WED_LibraryMgr *	mLibraryMgr;
 //	WED_Properties	mProperties;
 
 	WED_Document();

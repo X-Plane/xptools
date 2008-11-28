@@ -98,12 +98,7 @@ CREATE TABLE IF NOT EXISTS GIS_lines_heading(
 	width				double		NOT NULL
 );
 
--- Specific Types
-
-CREATE TABLE IF NOT EXISTS WED_objects(
-	id				integer			PRIMARY KEY	,
-	model_id		integer			REFERENCES WED_models(id)
-);
+-- Specific Types For Airports
 
 CREATE TABLE IF NOT EXISTS WED_beacons(
 	id				integer		PRIMARY KEY,
@@ -200,6 +195,8 @@ CREATE TABLE IF NOT EXISTS WED_airportnode(
 	PRIMARY KEY(id,attributes)	
 );
 
+-- Specific types for orthophotos
+
 CREATE TABLE IF NOT EXISTS WED_texturenode(
 	id				integer		PRIMARY KEY,
 	s				double		NOT NULL,
@@ -210,6 +207,23 @@ CREATE TABLE IF NOT EXISTS WED_overlayimage(
 	id				integer		PRIMARY KEY,
 	file			string		NOT NULL
 );
+
+-- Specific types for DSF overlays
+
+CREATE TABLE IF NOT EXISTS WED_dsf_overlay(
+	id				integer		PRIMARY KEY,
+	resource		string		NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS WED_dsf_polygon(
+	id				integer		PRIMARY KEY,
+	param			double,
+	closed			integer
+);
+
+-- Other Book Keeping
+
+
 
 CREATE TABLE IF NOT EXISTS WED_enum_system(
 	value			integer		PRIMARY KEY,
