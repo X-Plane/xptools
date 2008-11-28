@@ -24,7 +24,6 @@
 #include "AssertUtils.h"
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
-#include "MapDefs.h"
 #include "MemFileUtils.h"
 #include "TigerImport.h"
 #include "CompGeomUtils.h"
@@ -377,11 +376,11 @@ void	TIGER_LoadRT8(MFFileSet * inSet, int inFileNumber)
 bool	SegmentOutOfBounds(const Point2& start, const Point2& end,
 						double inWest, double inSouth, double inEast, double inNorth)
 {
-	double	slon = start.x;
-	double	slat = start.y;
-	double	elon = end.x;
-	double	elat = end.y;
-
+	double	slon = start.x();
+	double	slat = start.y();
+	double	elon = end.x();
+	double	elat = end.y();
+	
 	if (slon < inWest && elon < inWest) return true;
 	if (slon > inEast && elon > inEast) return true;
 	if (slat < inSouth && elat < inSouth) return true;

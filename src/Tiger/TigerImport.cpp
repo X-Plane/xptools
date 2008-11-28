@@ -195,8 +195,8 @@ void	TIGERImport(
 		{
 			if (net_cfcc->tunnel)
 			{
-				chainIter->second.startNode->pm_vertex->mTunnelPortal = true;
-				chainIter->second.endNode->pm_vertex->mTunnelPortal = true;
+				chainIter->second.startNode->pm_vertex->data().mTunnelPortal = true;
+				chainIter->second.endNode->pm_vertex->data().mTunnelPortal = true;
 			} else {
 				GISNetworkSegment_t nl;
 				nl.mFeatType = net_cfcc->network_type;
@@ -208,8 +208,8 @@ void	TIGERImport(
 				for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.first.begin();
 					he != chainIter->second.pm_edges.first.end(); ++he)
 				{
-					(*he)->mSegments.push_back(nl);
-					(*he)->mParams[he_IsUnderpassing] = net_cfcc->underpassing;
+					(*he)->data().mSegments.push_back(nl);
+					(*he)->data().mParams[he_IsUnderpassing] = net_cfcc->underpassing;
 				}
 			}
 		}
@@ -219,28 +219,31 @@ void	TIGERImport(
 			for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.first.begin();
 				he != chainIter->second.pm_edges.first.end(); ++he)
 			{
-				(*he)->mParams[he_IsRiver] = 1;
+				(*he)->data().mParams[he_IsRiver] = 1;
 			}
 		}
 
 		for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.first.begin(); he != chainIter->second.pm_edges.first.end(); ++he)
-			(*he)->mParams[he_TIGER_TLID] = chainIter->first;
-
+			(*he)->data().mParams[he_TIGER_TLID] = chainIter->first;
+	
 		for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.second.begin(); he != chainIter->second.pm_edges.second.end(); ++he)
-			(*he)->mParams[he_TIGER_TLID] = chainIter->first;
+			(*he)->data().mParams[he_TIGER_TLID] = chainIter->first;
 	}
 
 	for (PolygonInfoMap::const_iterator polyIter = polygons.begin(); polyIter != polygons.end(); ++polyIter)
 	{
 		if (polyIter->second.water)
-			polyIter->second.pm_face->mTerrainType = terrain_Water;
+			polyIter->second.pm_face->data().mTerrainType = terrain_Water;
 	}
-
-	Point2	sw, ne;
+	
+	Point_2	sw, ne;
 	CalcBoundingBox(ioMap, sw, ne);
- 	ioMap.Index();
+// 	ioMap.Index();
 	int skip = 0;
 	int	nolo = 0;
+	
+	CGAL::Arr_landmarks_point_location<Arrangement_2>	locator(ioMap);
+	
 	for (LandmarkInfoMap::const_iterator landIter = landmarks.begin(); landIter != landmarks.end(); ++landIter)
 	{
 		FeatureInfo_t * land_cfcc = LookupFeatureCFCC(landIter->second.cfcc.c_str());
@@ -258,16 +261,16 @@ void	TIGERImport(
 					PolygonInfoMap::const_iterator thePoly = polygons.find(*i);
 					if (thePoly != polygons.end())
 					{
-						bool wet = thePoly->second.pm_face->IsWater();
+						bool wet = thePoly->second.pm_face->data().IsWater();
 						GISAreaFeature_t	feat;
 						feat.mFeatType = land_cfcc->feature_type;
 						if ((wet || !land_cfcc->water_required) && (!wet || land_cfcc->water_ok))
 						{
-							if (thePoly->second.pm_face->mAreaFeature.mFeatType != NO_VALUE)
-								printf("WARNING: double feature, %s and %s\n",
-									FetchTokenString(thePoly->second.pm_face->mAreaFeature.mFeatType),
+							if (thePoly->second.pm_face->data().mAreaFeature.mFeatType != NO_VALUE)
+								printf("WARNING: double feature, %s and %s\n", 
+									FetchTokenString(thePoly->second.pm_face->data().mAreaFeature.mFeatType),
 									FetchTokenString(feat.mFeatType));
-							thePoly->second.pm_face->mAreaFeature = feat;
+							thePoly->second.pm_face->data().mAreaFeature = feat;
 						} else
 							++skip;	//printf("Skipped: wet = %d, feat = %s\n", wet, kFeatureCodes[cfcc].name);
 					}
@@ -280,13 +283,13 @@ void	TIGERImport(
 					PolygonInfoMap::const_iterator thePoly = polygons.find(*i);
 					if (thePoly != polygons.end())
 					{
-						bool wet = thePoly->second.pm_face->IsWater();
+						bool wet = thePoly->second.pm_face->data().IsWater();
 						GISPointFeature_t	feat;
 						feat.mFeatType = land_cfcc->feature_type;
 						feat.mInstantiated = false;
-						feat.mLocation = thePoly->second.location;
+						feat.mLocation = Point_2(thePoly->second.location.x(),thePoly->second.location.y());
 						if ((wet || !land_cfcc->water_required) && (!wet || land_cfcc->water_ok))
-							thePoly->second.pm_face->mPointFeatures.push_back(feat);
+							thePoly->second.pm_face->data().mPointFeatures.push_back(feat);
 						else
 							++skip;	//printf("Skipped: wet = %d, feat = %s\n", wet, kFeatureCodes[cfcc].name);
 					}
@@ -294,20 +297,20 @@ void	TIGERImport(
 			} else {
 //				printf("Importing point feature for point %s %s\n", kFeatureCodes[cfcc].cfcc, kFeatureCodes[cfcc].name);
 				// Point feature from point landmark
-				vector<Pmwx::Face_handle>	v;
-				ioMap.FindFaceTouchesPt(landIter->second.location, v);
-				if (v.size() == 1)
+				Face_handle		f;
+				CGAL::Object	obj;
+				obj = locator.locate(Point_2(landIter->second.location.x(),landIter->second.location.y()));
+				if(CGAL::assign(f,obj))
 				{
-					bool wet = v[0]->IsWater();
+					bool wet = f->data().IsWater();
 					GISPointFeature_t	feat;
 					feat.mFeatType = land_cfcc->feature_type;
-					feat.mLocation = landIter->second.location;
+					feat.mLocation = Point_2(landIter->second.location.x(),landIter->second.location.y());
 					if ((wet || !land_cfcc->water_required) && (!wet || land_cfcc->water_ok))
-						v[0]->mPointFeatures.push_back(feat);
-					else
+						f->data().mPointFeatures.push_back(feat);					
+					else 
 						++skip;	//printf("Skipped: wet = %d, feat = %s\n", wet, kFeatureCodes[cfcc].name);
-				} else if (v.size() > 1)
-					fprintf(stderr,"ERROR: Point feature matches multiple areas.\n");
+				} 
 				else
 					nolo++;
 			}

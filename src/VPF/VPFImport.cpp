@@ -112,13 +112,28 @@ static void NukeDupePts(vector<Point2>& pts)
 	}
 }
 
-static void RememberHalfedge(GISHalfedge * old_he, GISHalfedge * new_he, void * ref)
+class	RememberHalfedge : public CGAL::Arr_observer<Arrangement_2> {
+public:
+	WTPM_Line::EdgePair* slot;
+	void set_slot(WTPM_Line::EdgePair * islot) { slot = islot; }
+	virtual void after_create_edge(Halfedge_handle he)
+	{
+		
+	}
+	virtual void after_split_edge(Halfedge_handle e1, Halfedge_handle e2)
+	{	
+		// If we got here, the data is probably not network topology - that is, there are non-disjoint line segments.
+		DebugAssert(!"Should not be here!");	
+	}
+};
+
+/*static void RememberHalfedge(Halfedge_handle old_he, Halfedge_handle new_he, void * ref)
 {
 	WTPM_Line::EdgePair * slot = (WTPM_Line::EdgePair *) ref;
-	GISHalfedge * he = (new_he ? new_he : old_he);
+	Halfedge_handle he = (new_he ? new_he : old_he);
 	slot->first.push_back(he);
 	slot->second.push_back(he->twin());
-}
+}*/
 
 static bool FindColumn(const VPF_TableDef& header, const char * column, int& index, int validate, const char * file)
 {
@@ -627,6 +642,9 @@ bool	VPFImportTopo3(
 			lines[i].endNode->location = lines[i].end_node_pt;
 		}
 
+		RememberHalfedge	observer;
+		observer.attach(ioMap);
+
 		printf("Inserting lines...\n");
 		for (i = 0; i < lines.size(); ++i)
 		{
@@ -637,26 +655,18 @@ bool	VPFImportTopo3(
 
 			for (int  j = 1; j < lines[i].shape.size(); ++j)
 			{
-				if (j == 1) {
-					if (lines[i].startNode->pm_vertex)
-					{
-						ioMap.insert_edge(lines[i].shape[j-1],lines[i].shape[j], lines[i].startNode->pm_vertex->halfedge(), Pmwx::locate_Vertex, RememberHalfedge, &lines[i].pm_edges);
-						++fast;
-					} else {
-						ioMap.insert_edge(lines[i].shape[j-1],lines[i].shape[j], RememberHalfedge, &lines[i].pm_edges);
-						++slow;
-					}
-				} else {
-					ioMap.insert_edge(lines[i].shape[j-1],lines[i].shape[j], lines[i].pm_edges.first.back(), Pmwx::locate_Vertex, RememberHalfedge, &lines[i].pm_edges);
-					++fast;
-				}
+				observer.set_slot(&lines[i].pm_edges);
+				CGAL::insert_curve(ioMap, Curve_2(Segment_2(
+									Point_2(lines[i].shape[j-1].x(),lines[i].shape[j-1].y()),
+									Point_2(lines[i].shape[j].x(),lines[i].shape[j].y()))));
 			}
 
 			if (lines[i].startNode->pm_vertex == NULL)
-				lines[i].startNode->pm_vertex = lines[i].pm_edges.first.front()->twin()->target();
+				lines[i].startNode->pm_vertex = lines[i].pm_edges.first.front()->opposite()->vertex();
 			if (lines[i].endNode->pm_vertex == NULL)
-				lines[i].endNode->pm_vertex = lines[i].pm_edges.first.back()->target();
+				lines[i].endNode->pm_vertex = lines[i].pm_edges.first.back()->vertex();
 		}
+		observer.detach();
 		printf("Added %d slow segs, %d fast segs.\n", slow, fast);
 	}
 
@@ -668,9 +678,9 @@ bool	VPFImportTopo3(
 	for (i = 0; i < faces.size(); ++i)
 	{
 		if (faces[i].terrain_type != terrain_Natural)
-			faces[i].pm_face->mTerrainType = faces[i].terrain_type;
+			faces[i].pm_face->data().mTerrainType = faces[i].terrain_type;
 		if (!faces[i].area_features.empty())
-			faces[i].pm_face->mAreaFeature.mFeatType = *faces[i].area_features.begin();
+			faces[i].pm_face->data().mAreaFeature.mFeatType = *faces[i].area_features.begin();
 	}
 
 	for (i = 0; i < lines.size(); ++i)
@@ -681,12 +691,12 @@ bool	VPFImportTopo3(
 		{
 			DebugAssert(lines[i].he_param >= 0 && lines[i].he_param < gTokens.size());
 			for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
-			if ((*he)->mDominant)
-				(*he)->mParams[lines[i].he_param] = 0.0;
+			if ((*he)->data().mDominant)
+				(*he)->data().mParams[lines[i].he_param] = 0.0;
 			for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
-			if ((*he)->mDominant)
-				(*he)->mParams[lines[i].he_param] = 0.0;
-		}
+			if ((*he)->data().mDominant)
+				(*he)->data().mParams[lines[i].he_param] = 0.0;
+		}		
 
 		if (inTransTable && lines[i].he_trans_flags)
 		{
@@ -702,11 +712,11 @@ bool	VPFImportTopo3(
 					seg.mSourceHeight = seg.mTargetHeight = 0.0;
 					seg.mFeatType = the_val;
 					for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
-					if ((*he)->mDominant)
-						(*he)->mSegments.push_back(seg);
+					if ((*he)->data().mDominant)
+						(*he)->data().mSegments.push_back(seg);
 					for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
-					if ((*he)->mDominant)
-						(*he)->mSegments.push_back(seg);
+					if ((*he)->data().mDominant)
+						(*he)->data().mSegments.push_back(seg);
 				}
 			}
 		}
