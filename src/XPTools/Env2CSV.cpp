@@ -25,7 +25,7 @@
 #include "EnvWrite.h"
 #include "XGrinderApp.h"
 #include "EnvParser.h"
-#include "PlatformUtils.h"
+#include "EndianUtils.h"
 #include "XUtils.h"
 #include "Persistence.h"
 #include "EnvPrint.h"

@@ -21,7 +21,6 @@
  *
  */
 
-//#include "PlatformUtils.h"
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"
