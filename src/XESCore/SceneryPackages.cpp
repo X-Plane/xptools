@@ -269,9 +269,9 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		DestroyBitmap(&image_data);
 		DestroyBitmap(&border);
 
-		char buf[1024];
-		sprintf(buf,"Made %d images and %d borders that were missing.", image_ctr, border_ctr);
-		DoUserAlert(buf);
+//		char buf[1024];
+		printf("Made %d images and %d borders that were missing.", image_ctr, border_ctr);
+//		DoUserAlert(buf);
 	}
 }
 
