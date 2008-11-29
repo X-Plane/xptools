@@ -22,7 +22,7 @@
  */
 
 #include "ShapeIO.h"
-#include <Shapefil.h>
+#include <shapefil.h>
 
 bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
 {
