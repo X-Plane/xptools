@@ -37,21 +37,6 @@
 static	OSErr		FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname, int in_buf_size);
 static	OSErr		FSRefToPathName(const FSRef * inFileSpec, char * outPathname, int in_buf_size);
 
-/* Endian routines for the Mac use Apple's Endian macros. */
-
-void	EndianFlipShort(short * ioShort)
-{
-	#if BIG
-		*ioShort = Endian16_Swap(*ioShort);
-	#endif
-}
-
-void	EndianFlipLong(long * ioLong)
-{
-	#if BIG
-		*ioLong = Endian32_Swap(*ioLong);
-	#endif
-}
 
 /* Get FilePathFromUser puts up a nav services dialog box and converts the results
    to a C string path. */

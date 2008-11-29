@@ -24,16 +24,6 @@
 #include "XMessagebox.h"
 #include <stdio.h>
 
-void	EndianFlipShort(short * ioShort)
-{
-	// Not necessary on WINTEL machines.
-}
-
-void	EndianFlipLong(long * ioLong)
-{
-	// Not necessary on WINTEL machines.
-}
-
 const char * GetApplicationPath(char * pathBuf, int sz)
 {
 	return ".";

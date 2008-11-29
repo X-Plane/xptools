@@ -21,7 +21,7 @@
  *
  */
 #include "BitmapUtils.h"
-#include "PlatformUtils.h"
+#include "EndianUtils.h"
 #include <stdio.h>
 #include <errno.h>
 //#include <setjmp.h>

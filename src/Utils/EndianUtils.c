@@ -152,3 +152,18 @@ void	EndianSwapArray(
 	}
 }
 
+/* Endian routines for the Mac use Apple's Endian macros. */
+
+void	EndianFlipShort(short * ioShort)
+{
+	#if BIG
+		*ioShort = Endian16_Swap(*ioShort);
+	#endif
+}
+
+void	EndianFlipLong(long * ioLong)
+{
+	#if BIG
+		*ioLong = Endian32_Swap(*ioLong);
+	#endif
+}

@@ -54,16 +54,6 @@
 #endif
 
 /*
- * These routines convert between little endian and native endian.  This means they
- * swap byte order on the Mac and do nothing on the PC.  These are good for reading
- * PC File structures, but EndianUtils.h contains more powerful stuff.
- *
- */
-
-void	EndianFlipShort(short * ioShort);
-void	EndianFlipLong(long * ioLong);
-
-/*
  * This routine returns a fully qualified path to the application.
  *
  */
