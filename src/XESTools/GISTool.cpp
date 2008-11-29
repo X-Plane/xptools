@@ -28,7 +28,7 @@
 #include "GISTool_Globals.h"
 #include "CompGeomDefs2.h"
 #include "GISTool_Utils.h"
-#include "GISTooL_ObsCmds.h"
+#include "GISTool_ObsCmds.h"
 #include "GISTool_DemCmds.h"
 #include "GISTool_CoreCmds.h"
 #include "GISTool_DumpCmds.h"
