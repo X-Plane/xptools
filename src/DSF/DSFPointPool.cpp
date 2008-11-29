@@ -568,7 +568,7 @@ void DSFOptimizePrimitives(
 	
 	while(!pure_tris.empty())
 	{
-		int n = min(pure_tris.size(),255UL);
+		int n = min(pure_tris.size(),255U);
 		out_prims.push_back(DSFPrimitive());
 		out_prims.back().kind = dsf_Tri;
 		for(int i = 0; i < n; ++i)
