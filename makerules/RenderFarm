@@ -6,7 +6,6 @@ LIBS		:= -Wl,-Bstatic -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
 DEFINES		:=
 
 SOURCES :=\
-src/MeshTool/MeshTool.cpp \
 src/Obj/ObjPointPool.cpp \
 src/Obj/XObjBuilder.cpp \
 src/Obj/XObjDefs.cpp \
@@ -14,10 +13,21 @@ src/Obj/XObjReadWrite.cpp \
 src/DSF/DSFLib.cpp \
 src/DSF/DSFLibWrite.cpp \
 src/DSF/DSFPointPool.cpp \
+src/DSF/DSFLib_Print.cpp \
 src/Installer/ErrMsg.cpp \
+src/RawImport/AptElev.cpp \
+src/RawImport/FAA_Obs.cpp \
+src/RawImport/ShapeIO.cpp \
+src/RawImport/gshhs.cpp \
+src/Tiger/TIGERProcess.cpp \
+src/Tiger/TIGERRead.cpp \
+src/Tiger/TigerImport.cpp \
+src/VPF/VPFImport.cpp \
+src/VPF/VPFTable.cpp \
 src/XESCore/XESInit.cpp \
 src/XESCore/DEMTables.cpp \
 src/XESCore/AptIO.cpp \
+src/XESCore/Airports.cpp \
 src/XESCore/Beaches.cpp \
 src/XESCore/ConfigSystem.cpp \
 src/XESCore/DEMAlgs.cpp \
@@ -26,6 +36,7 @@ src/XESCore/DEMToVector.cpp \
 src/XESCore/DEMIO.cpp \
 src/XESCore/DSFBuilder.cpp \
 src/XESCore/EnumSystem.cpp \
+src/XESCore/Forests.cpp \
 src/XESCore/GreedyMesh.cpp \
 src/XESCore/MapAlgsCGAL.cpp \
 src/XESCore/MapAlgs.cpp \
@@ -48,6 +59,7 @@ src/XESCore/SimpleIO.cpp \
 src/XESCore/TensorRoads.cpp \
 src/XESCore/TriFan.cpp \
 src/XESCore/XESIO.cpp \
+src/XESCore/WTPM.cpp \
 src/XESCore/Zoning.cpp \
 src/Utils/AssertUtils.cpp \
 src/Utils/MemFileUtils.cpp \
@@ -71,7 +83,19 @@ src/Utils/perlin.cpp \
 src/Utils/MatrixUtils.cpp \
 src/Utils/ProgressUtils.cpp \
 src/Utils/safe-ctype.c \
-src/XESTools/GISTool_Globals.cpp
+src/XESTools/GISTool_Globals.cpp \
+src/XESTools/GISTool_CoreCmds.cpp \
+src/XESTools/GISTool.cpp \
+src/XESTools/GISTool_DemCmds.cpp \
+src/XESTools/GISTool_DumpCmds.cpp \
+src/XESTools/GISTool_MiscCmds.cpp \
+src/XESTools/GISTool_ObsCmds.cpp \
+src/XESTools/GISTool_ProcessingCmds.cpp \
+src/XESTools/GISTool_Utils.cpp \
+src/XESTools/GISTool_VectorCmds.cpp \
+src/XESTools/MiscFuncs.cpp \
+src/XESTools/SelfTest.cpp
+
 
 #src/GUI/GUI_Resources.cpp \
 #src/GUI/GUI_Laftfont.cpp \
@@ -100,7 +124,11 @@ INCLUDEPATHS :=\
 -Isrc/Obj \
 -Isrc/ObjEdit \
 -Isrc/OGLE \
+-Isrc/RawImport \
+-Isrc/SDTS \
+-Isrc/Tiger \
 -Isrc/UI \
+-Isrc/VPF \
 -Isrc/WEDCore \
 -Isrc/WEDDocs \
 -Isrc/WEDEntities \

@@ -24,35 +24,42 @@ src/WEDCore/WED_Document.cpp \
 src/WEDCore/WED_EnumSystem.cpp \
 src/WEDCore/WED_Errors.cpp \
 src/WEDCore/WED_FastBuffer.cpp \
+src/WEDCore/WED_LibraryMgr.cpp \
 src/WEDCore/WED_Persistent.cpp \
 src/WEDCore/WED_Properties.cpp \
 src/WEDCore/WED_PropertyHelper.cpp \
 src/WEDCore/WED_TexMgr.cpp \
 src/WEDCore/WED_UndoLayer.cpp \
 src/WEDCore/WED_UndoMgr.cpp \
-src/WEDEntities/WED_Airport.cpp \
 src/WEDEntities/WED_AirportBeacon.cpp \
 src/WEDEntities/WED_AirportBoundary.cpp \
 src/WEDEntities/WED_AirportChain.cpp \
+src/WEDEntities/WED_Airport.cpp \
 src/WEDEntities/WED_AirportNode.cpp \
 src/WEDEntities/WED_AirportSign.cpp \
 src/WEDEntities/WED_ATCFrequency.cpp \
+src/WEDEntities/WED_DrapedOrthophotoBoundary.cpp \
+src/WEDEntities/WED_DrapedOrthophoto.cpp \
 src/WEDEntities/WED_Entity.cpp \
+src/WEDEntities/WED_FacadePlacement.cpp \
+src/WEDEntities/WED_ForestPlacement.cpp \
 src/WEDEntities/WED_GISChain.cpp \
 src/WEDEntities/WED_GISComposite.cpp \
 src/WEDEntities/WED_GISLine.cpp \
-src/WEDEntities/WED_GISLine_Width.cpp \
-src/WEDEntities/WED_GISPoint.cpp \
+src/WEDEntities/WED_GISLine_Width.cpp\
 src/WEDEntities/WED_GISPoint_Bezier.cpp \
-src/WEDEntities/WED_GISPoint_Heading.cpp \
+src/WEDEntities/WED_GISPoint.cpp \
+src/WEDEntities/WED_GISPoint_Heading.cpp\
 src/WEDEntities/WED_GISPoint_HeadingWidthLength.cpp \
 src/WEDEntities/WED_GISPolygon.cpp \
 src/WEDEntities/WED_Group.cpp \
 src/WEDEntities/WED_Helipad.cpp \
 src/WEDEntities/WED_KeyObjects.cpp \
 src/WEDEntities/WED_LightFixture.cpp \
+src/WEDEntities/WED_LinePlacement.cpp \
 src/WEDEntities/WED_ObjPlacement.cpp \
 src/WEDEntities/WED_OverlayImage.cpp \
+src/WEDEntities/WED_PolygonPlacement.cpp \
 src/WEDEntities/WED_RampPosition.cpp \
 src/WEDEntities/WED_Ring.cpp \
 src/WEDEntities/WED_Root.cpp \
@@ -60,6 +67,9 @@ src/WEDEntities/WED_Runway.cpp \
 src/WEDEntities/WED_RunwayNode.cpp \
 src/WEDEntities/WED_Sealane.cpp \
 src/WEDEntities/WED_Select.cpp \
+src/WEDEntities/WED_SimpleBezierBoundaryNode.cpp \
+src/WEDEntities/WED_SimpleBoundaryNode.cpp \
+src/WEDEntities/WED_StringPlacement.cpp \
 src/WEDEntities/WED_Taxiway.cpp \
 src/WEDEntities/WED_TextureNode.cpp \
 src/WEDEntities/WED_Thing.cpp \
@@ -67,6 +77,8 @@ src/WEDEntities/WED_TowerViewpoint.cpp \
 src/WEDEntities/WED_Windsock.cpp \
 src/WEDImportExport/WED_AptIE.cpp \
 src/WEDImportExport/WED_DSFExport.cpp \
+src/WEDLibrary/WED_LibraryListAdapter.cpp \
+src/WEDLibrary/WED_LibraryPane.cpp \
 src/WEDMap/WED_Colors.cpp \
 src/WEDMap/WED_CreateLineTool.cpp \
 src/WEDMap/WED_CreatePointTool.cpp \
@@ -172,16 +184,19 @@ src/DSF/DSFPointPool.cpp \
 src/DSFTools/DSF2Text.cpp \
 src/DSFTools/ENV2Overlay.cpp \
 src/OGLE/ogle.cpp \
+src/XESCore/AptIO.cpp \
 libsrc/expat/xmlparse/xmlparse.c \
 libsrc/expat/xmltok/xmlrole.c \
 libsrc/expat/xmltok/xmltok.c \
 src/Env/EnvParser.c \
 src/Env/Persistence.cpp \
 src/WorldEditor/WED_Assert.cpp \
+src/XPWidgets/XPLMGraphics.cpp
+
+UNUSED_XES :=\
 src/XESCore/XESInit.cpp \
 src/XESCore/DEMTables.cpp \
 src/XESCore/Airports.cpp \
-src/XESCore/AptIO.cpp \
 src/XESCore/Beaches.cpp \
 src/XESCore/ConfigSystem.cpp \
 src/XESCore/DEMAlgs.cpp \
@@ -190,12 +205,9 @@ src/XESCore/DEMToVector.cpp \
 src/XESCore/DEMIO.cpp \
 src/XESCore/DSFBuilder.cpp \
 src/XESCore/EnumSystem.cpp \
-src/XESCore/EuroRoads.cpp \
 src/XESCore/Forests.cpp \
 src/XESCore/GreedyMesh.cpp \
-src/XESCore/Hydro.cpp \
 src/XESCore/MapAlgs.cpp \
-src/XESCore/MapDefs.cpp \
 src/XESCore/MapIO.cpp \
 src/XESCore/MeshAlgs.cpp \
 src/XESCore/MeshDefs.cpp \
@@ -211,8 +223,8 @@ src/XESCore/TensorRoads.cpp \
 src/XESCore/TriFan.cpp \
 src/XESCore/WTPM.cpp \
 src/XESCore/XESIO.cpp \
-src/XESCore/Zoning.cpp \
-src/XPWidgets/XPLMGraphics.cpp
+src/XESCore/Zoning.cpp
+
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
@@ -233,6 +245,7 @@ INCLUDEPATHS :=\
 -Isrc/WEDEntities \
 -Isrc/WEDImportExport \
 -Isrc/WEDLayers \
+-Isrc/WEDLibrary \
 -Isrc/WEDMap \
 -Isrc/WEDProperties \
 -Isrc/WEDResources \
