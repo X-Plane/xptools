@@ -25,7 +25,7 @@
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "MemFileUtils.h"
-#include "TigerImport.h"
+#include "TIGERImport.h"
 #include "CompGeomUtils.h"
 
 const double PI = 3.14159265358979323846;

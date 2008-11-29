@@ -23,7 +23,7 @@
 #ifndef TIGERIMPORT_H
 #define TIGERIMPORT_H
 
-#include "TigerTypes.h"
+#include "TIGERTypes.h"
 #include "MapDefsCGAL.h"
 #include "ProgressUtils.h"
 

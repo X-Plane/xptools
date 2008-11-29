@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include "TigerImport.h"
+#include "TIGERImport.h"
 #include "ParamDefs.h"
 #include "PerfUtils.h"
 #include "ConfigSystem.h"
