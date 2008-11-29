@@ -12,6 +12,7 @@ LIBRARIES	:= libsrc/linux-specific/.3rdparty_libs
 .PHONY: DDSTool
 .PHONY: ObjConverter
 .PHONY: MeshTool
+.PHONY: RenderFarm
 .PHONY: fonttool
 
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter fonttool
@@ -35,6 +36,9 @@ ObjConverter: $(LIBRARIES)
 	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
 
 MeshTool: $(LIBRARIES)
+	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+
+RenderFarm: $(LIBRARIES)
 	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
 
 fonttool: $(LIBRARIES)
