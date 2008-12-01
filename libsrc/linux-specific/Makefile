@@ -44,7 +44,7 @@ lib/libproj.a:
 lib/libgeotiff.a: lib/libz.a lib/libproj.a lib/libtiff.a lib/libproj.a
 	-mkdir "include"
 	-mkdir "lib"
-	tar -xzf "archives/libgeotiff-$(VER_GEOTIFF).tar.gz" && cd "libgeotiff-$(VER_GEOTIFF)" && chmod +x configure && ./configure CFLAGS="-fno-stack-protector" --without-ld-shared
+	tar -xzf "archives/libgeotiff-$(VER_GEOTIFF).tar.gz" && cd "libgeotiff-$(VER_GEOTIFF)" && chmod +x configure && ./configure --without-ld-shared --with-libtiff=`pwd`/.. --with-proj=`pwd`/..
 	$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)"
 	cp -Lp libgeotiff-$(VER_GEOTIFF)/*.h ./include
 	cp -Lp libgeotiff-$(VER_GEOTIFF)/*.inc ./include
