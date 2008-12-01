@@ -476,14 +476,14 @@ bool is_strip(unsigned short * idx, int n)
 		// second tri, so: 2 1 3	2 3 4
 		return idx[0] == idx[3] &&
 			   idx[2] == idx[4];
-	} 
+	}
 	else
 	{	//				  0 1 2     3 4 5
 		// first tri, so: 0 1 2		2 1 3
 		return idx[1] == idx[4] &&
 			   idx[2] == idx[3];
 	}
-	
+
 }
 
 static unsigned short * strip_break(unsigned short * idx_start, unsigned short * idx_end)
@@ -506,7 +506,7 @@ void DSFOptimizePrimitives(
 	idx_t								point_index;
 	vector<DSFTuple>					vertices;
 	vector<unsigned short>				indices;
-	
+
 	for(vector<DSFPrimitive>::iterator p = io_primitives.begin(); p != io_primitives.end(); ++p)
 	if(p->kind == dsf_Tri)
 	{
@@ -535,14 +535,14 @@ void DSFOptimizePrimitives(
 #endif
 
 	vector<unsigned short> pure_tris;
-	
+
 	unsigned short * s = &*indices.begin(), * e = &*indices.end();
 	while(s != e)
 	{
 		unsigned short * b = strip_break(s,e);
 		if((b - s) > 3)
 		{
-			
+
 			out_prims.push_back(DSFPrimitive());
 			out_prims.back().kind = dsf_TriStrip;
 			out_prims.back().vertices.push_back(vertices[s[0]]);
@@ -555,7 +555,7 @@ void DSFOptimizePrimitives(
 				if(odd)		out_prims.back().vertices.push_back(vertices[s[2]]);
 				else		out_prims.back().vertices.push_back(vertices[s[2]]);
 				odd = !odd;
-				
+
 				s += 3;
 			}
 		}
@@ -565,10 +565,10 @@ void DSFOptimizePrimitives(
 		}
 		s=b;
 	}
-	
+
 	while(!pure_tris.empty())
 	{
-		int n = min(pure_tris.size(),255U);
+		int n = std::min(pure_tris.size(),(size_t)255);
 		out_prims.push_back(DSFPrimitive());
 		out_prims.back().kind = dsf_Tri;
 		for(int i = 0; i < n; ++i)
@@ -577,7 +577,7 @@ void DSFOptimizePrimitives(
 		}
 		pure_tris.erase(pure_tris.begin(),pure_tris.begin()+n);
 	}
-	
+
 	swap(io_primitives,out_prims);
 }
 

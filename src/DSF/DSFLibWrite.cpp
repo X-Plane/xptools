@@ -1223,21 +1223,21 @@ void	DSFFileWriterImp::EndPatch(
 	if (REF(inRef)->accum_patch->primitives.empty())
 	{
 		Assert(!"WARNING: Empty patch.\n");
-		REF(inRef)->patches.pop_back();		
+		REF(inRef)->patches.pop_back();
 	}
 	else
 	{
 		vector<DSFPrimitive>	prims;
-		
+
 		PatchSpec * me = REF(inRef)->accum_patch;
-		
+
 		for(TriPrimitiveVector::iterator p = me->primitives.begin(); p != me->primitives.end(); ++p)
 		{
 			prims.push_back(DSFPrimitive());
 			prims.back().kind = p->type;
 			swap(prims.back().vertices,p->vertices);
 		}
-		
+
 		me->primitives.clear();
 		DSFOptimizePrimitives(prims);
 
@@ -1453,7 +1453,7 @@ void 	DSFFileWriterImp::AddPolygonPoint(
 	DSFTupleVector * cw = &REF(inRef)->accum_poly_winding.back();
 	cw->push_back(DSFTuple(inCoordinates, REF(inRef)->accum_poly->depth));
 #if !DEV
-		hello1?!
+		#warning hello1?!
 #endif
 #if DEV && 0
 	int sz = cw->size();

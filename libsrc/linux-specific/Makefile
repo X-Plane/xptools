@@ -35,7 +35,9 @@ lib/libproj.a: lib include
 	cp proj-$(VER_LIBPROJ)/src/.libs/libproj.a ./lib
 	-rm -rdf proj-$(VER_LIBPROJ)
 lib/libgeotiff.a: lib/libtiff.a lib/libproj.a
-	tar -xzf "archives/libgeotiff-$(VER_GEOTIFF).tar.gz" && cd "libgeotiff-$(VER_GEOTIFF)" && chmod +x configure && ./configure CFLAGS="-g -O2 -Wall -fPIC -fno-stack-protector" --with-libtiff=`pwd`/.. --with-proj=`pwd`/.. 
+	tar -xzf "archives/libgeotiff-$(VER_GEOTIFF).tar.gz" && cd "libgeotiff-$(VER_GEOTIFF)" && chmod +x configure && ./configure
+	# todo: fix libgeotiff configure not to build shared libraries and making stack protection work
+	# CFLAGS="-g -O2 -Wall -fPIC -fno-stack-protector" --with-libtiff=`pwd`/.. --with-proj=`pwd`/..
 	$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)"
 	cp -Lpi libgeotiff-$(VER_GEOTIFF)/*.h ./include
 	cp -Lpi libgeotiff-$(VER_GEOTIFF)/*.inc ./include
