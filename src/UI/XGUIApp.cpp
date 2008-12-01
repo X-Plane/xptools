@@ -23,6 +23,7 @@
 #include "XGUIApp.h"
 #include "XWin.h"
 #include "XUtils.h"
+#include "PlatformUtils.h"
 
 class	XGrinderWin;
 
@@ -140,6 +141,10 @@ int main(int argc, char* argv[])
     XEvent xevent;
 
 	XInitThreads();
+	if (!__init_minimalist_gtk(&argc, &argv))
+	{
+		return 1;
+	}
 
 	program_name = argv[0];
 
@@ -149,7 +154,8 @@ int main(int argc, char* argv[])
         fprintf(stderr, "failed to open the default display (:0).\n");
         return 1;
     }
-    a_screenNumber = DefaultScreen(display);
+
+	a_screenNumber = DefaultScreen(display);
     a_defVisual = DefaultVisual(display, a_screenNumber);
     if (!a_defVisual)
     {

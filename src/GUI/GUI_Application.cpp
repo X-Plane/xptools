@@ -246,8 +246,6 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
     int a_screenNumber = 0;
 //	mMenubar = 0;
 
-	XInitThreads();
-
     display = XOpenDisplay(NULL);
     if (!display)
         throw "failed to open the default display (:0).";

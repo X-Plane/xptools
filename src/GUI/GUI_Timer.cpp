@@ -66,8 +66,10 @@ void* GUI_Timer::teh_threadroutine(void* args)
 			xevent.xclient.data.l[1]	= thigh;
 			xevent.xclient.format		= 32;
 			xevent.xclient.serial		= 0;
+			XLockDisplay(tDisplay);
 			XSendEvent(tDisplay, sWindows.begin()->first, False, 0, &xevent);
 			XFlush(tDisplay);
+			XUnlockDisplay(tDisplay);
 		}
 		// one shot
 		if (ts.tv_sec == 0 && ts.tv_nsec == 0)
@@ -81,7 +83,7 @@ void* GUI_Timer::teh_threadroutine(void* args)
 void GUI_Timer::TimerCB(void *args)
 {
 	GUI_Timer * me = reinterpret_cast<GUI_Timer *>(args);
-	me->TimerFired();
+	if(me) me->TimerFired();
 }
 
 #endif
@@ -188,7 +190,7 @@ void GUI_Timer::Stop(void)
 		Display* tDisplay = XOpenDisplay(0);
 		XSync(tDisplay, False);
 		XCloseDisplay(tDisplay);
-		
+
 	}
 	#endif
 }

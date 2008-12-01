@@ -43,7 +43,10 @@
 #include "GUI_Fonts.h"
 #include "GUI_Window.h"
 #include "GUI_Prefs.h"
-//#include "GUI_GlDialogs.h"
+
+#if LIN
+#include "PlatformUtils.h"
+#endif
 
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
@@ -113,11 +116,17 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
 const char* program_name;
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 #endif
 {
 #if LIN
+// important: call XInitThreads() before g_thread_init()
+// and gdk_threads_init()
 	XInitThreads();
+	if (!__init_minimalist_gtk(&argc, &argv))
+	{
+		return 1;
+	}
 	program_name = argv[0];
 #endif
 #if IBM
@@ -141,24 +150,24 @@ int main(int argc, const char * argv[])
 
 	start->Show();
 
-	
+
 //	gFailure = CGAL::set_error_handler(cgal_failure);
-	
+
 	start->ShowMessage("Initializing...");
 //	XESInit();
-	
+
 	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
 
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
-	
+
 //	start->ShowMessage("Loading DEM tables...");
 //	LoadDEMTables();
 //	start->ShowMessage("Loading OBJ tables...");
 //	LoadObjTables();
-	
+
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
 	ENUM_Init();

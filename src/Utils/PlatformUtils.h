@@ -83,9 +83,7 @@ int		GetFilePathFromUser(
  */
 void	DoUserAlert(const char * inMsg);
 #if LIN
-#ifdef __cplusplus
-void	DoUserAlert(Window parent, const char * inMsg);
-#endif
+int __init_minimalist_gtk(int* argc, char*** argv);
 #endif
 
 /*

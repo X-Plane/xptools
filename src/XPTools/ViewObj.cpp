@@ -591,11 +591,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
 			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
-			#if LIN
-			DoUserAlert(mWindow, buf);
-			#else
 			DoUserAlert(buf);
-			#endif
 		}
 		break;
 	case '[':
@@ -762,11 +758,7 @@ void	XGrindInit(void)
 
 	if (!gHasMultitexture)
 	{
-		#if LIN
-		DoUserAlert(0, "Your OpenGL drivers are not new enough to run ObjView.");
-		#else
 		DoUserAlert("Your OpenGL drivers are not new enough to run ObjView.");
-		#endif
 		exit(1);
 	}
 }

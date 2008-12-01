@@ -114,8 +114,8 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
             if (!obj->Closed()) break;
             XUnmapWindow(mDisplay, xevent->xany.window);
             XDestroyWindow(mDisplay, xevent->xany.window);
-			XSync(mDisplay, False);
             sWindows.erase(xevent->xany.window);
+			XSync(mDisplay, False);
             if (sWindows.empty())
             {
                 *visualstate = 0;
@@ -463,11 +463,12 @@ void                    XWin::ForceRefresh(void)
     return;
 }
 
-// prevent pure virtual function call
-//void                    XWin::Update(XContext ctx)
-//{
-//    return;
-//}
+// dirty h4x!: prevent pure virtual function call
+// need to track down where this happens
+void                    XWin::Update(XContext ctx)
+{
+    return;
+}
 
 void                    XWin::UpdateNow(void)
 {
