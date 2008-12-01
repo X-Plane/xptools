@@ -74,13 +74,28 @@ endif
 -include $(CCDEPS) $(CXXDEPS)
 
 $(TARGET):  $(CCOBJECTS) $(CXXOBJECTS) $(CCDEPS) $(CXXDEPS) $(RESOURCEOBJ)
-	$(print_link) $@
 	-mkdir -p $(dir $(@))
+ifeq ($(TYPE), LIBSTATIC)
+	$(print_arch) $@
+	$(AR) $(ARFLAGS) $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) || $(print_error)
+else ifeq ($(TYPE), LIBDYNAMIC)
+	$(print_so) $@
+	$(LD) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+else ifeq ($(TYPE), EXECUTABLE)
+	$(print_link) $@
 	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+else
+	echo "no target type specified"
+	exit 1
+endif
+ifneq ($(TYPE), LIBSTATIC)
+ifeq ($(PLATFORM), Linux)
 	objcopy --only-keep-debug $@ $(@).debug
 	strip -s -x $@
 	cd  $(dir $(@)) && objcopy --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
 	chmod 0644 $(@).debug
+endif
+endif
 	$(print_finished)
 
 $(RESOURCEOBJ): $(BUILDDIR)/%.ro : %

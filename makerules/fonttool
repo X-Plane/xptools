@@ -1,3 +1,4 @@
+TYPE		:= EXECUTABLE
 CFLAGS		:= -O2 -g
 CXXFLAGS	:= -O2 -g
 LDFLAGS		:= -static -static-libgcc

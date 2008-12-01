@@ -1,3 +1,4 @@
+TYPE		:= EXECUTABLE
 CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
 CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -nodefaultlibs -static-libgcc
@@ -12,10 +13,11 @@ src/XPTools/DDSTool.cpp \
 src/Utils/EndianUtils.c \
 src/Utils/BitmapUtils.cpp \
 #Ben says: should not need UI in this guy!
+#Janos says: that's not my fault! :P
 #src/UI/XMessagebox.cpp \
 #src/GUI/GUI_Resources.cpp \
-#src/GUI/GUI_Laftfont.cpp 
-#src/Utils/TexUtils.cpp 
+#src/GUI/GUI_Laftfont.cpp
+#src/Utils/TexUtils.cpp
 #src/Utils/PlatformUtils.lin.cpp
 
 INCLUDEPATHS :=\

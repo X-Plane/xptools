@@ -15,7 +15,7 @@ LIBRARIES	:= libsrc/linux-specific/.3rdparty_libs
 .PHONY: RenderFarm
 .PHONY: fonttool
 
-all: WED MeshTool ObjView DSFTool DDSTool ObjConverter fonttool
+all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm fonttool
 
 $(LIBRARIES):
 	$(MAKE) -C "libsrc/linux-specific"

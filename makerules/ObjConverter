@@ -1,3 +1,4 @@
+TYPE		:= EXECUTABLE
 CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
 CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
