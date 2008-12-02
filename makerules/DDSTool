@@ -11,14 +11,7 @@ src/Utils/AssertUtils.cpp \
 src/Utils/safe-ctype.c \
 src/XPTools/DDSTool.cpp \
 src/Utils/EndianUtils.c \
-src/Utils/BitmapUtils.cpp \
-#Ben says: should not need UI in this guy!
-#Janos says: that's not my fault! :P
-#src/UI/XMessagebox.cpp \
-#src/GUI/GUI_Resources.cpp \
-#src/GUI/GUI_Laftfont.cpp
-#src/Utils/TexUtils.cpp
-#src/Utils/PlatformUtils.lin.cpp
+src/Utils/BitmapUtils.cpp
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \

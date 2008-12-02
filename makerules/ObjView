@@ -6,8 +6,6 @@ STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthrea
 LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DSOTHIS_TEST=0
 
-include makerules/ObjView_resources
-
 SOURCES :=\
 src/Obj/ObjPointPool.cpp \
 src/Obj/XObjDefs.cpp \
@@ -27,15 +25,11 @@ src/UI/XWin.lin.cpp \
 src/UI/XWinGL.lin.cpp \
 src/UI/xdnd.cpp \
 src/UI/XGUIApp.cpp \
-src/UI/XPopup.cpp \
-src/UI/XMessagebox.cpp \
+src/GUI/GUI_Timer.cpp \
 src/XPTools/ViewObj.cpp \
 src/Utils/AssertUtils.cpp \
 src/Utils/safe-ctype.c \
-src/Utils/backtrace.c \
-src/GUI/GUI_Timer.cpp \
-src/GUI/GUI_Resources.cpp \
-src/GUI/GUI_Laftfont.cpp
+src/Utils/backtrace.c
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \

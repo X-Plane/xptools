@@ -97,21 +97,6 @@ src/XESTools/GISTool_VectorCmds.cpp \
 src/XESTools/MiscFuncs.cpp \
 src/XESTools/SelfTest.cpp
 
-
-#src/GUI/GUI_Resources.cpp \
-#src/GUI/GUI_Laftfont.cpp \
-#src/UI/XMessagebox.cpp
-#src/XESCore/WTPM.cpp \
-#src/XESCore/EuroRoads.cpp \
-#src/XESCore/Hydro.cpp \
-#src/XESCore/MapDefs.cpp \
-#src/XESCore/Airports.cpp \
-#src/XESCore/Forests.cpp \
-#src/XESCore/WTPM.cpp \
-#src/Utils/TexUtils.cpp \
-#src/Utils/PlatformUtils.lin.cpp \
-
-
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
 -Ilibsrc/mesa-7.1/include \

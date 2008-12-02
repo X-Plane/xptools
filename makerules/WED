@@ -13,8 +13,6 @@ src/UI/FontMgr.cpp \
 src/UI/XWin.lin.cpp \
 src/UI/XWinGL.lin.cpp \
 src/UI/xdnd.cpp \
-src/UI/XPopup.cpp \
-src/UI/XMessagebox.cpp \
 src/WEDCore/WED_AppMain.cpp \
 src/WEDCore/WED_Application.cpp \
 src/WEDCore/WED_PackageMgr.cpp \

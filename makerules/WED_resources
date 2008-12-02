@@ -92,10 +92,4 @@ src/WEDResources/line_types/line_BWideBrokenSingle.png\
 src/WEDResources/line_types/line_BILSCriticalCenter.png\
 src/WEDResources/WEDManual.pdf\
 src/WEDResources/laftfonts/sans8_8.laft\
-src/WEDCore/WED_DataModel.sql\
-src/WEDResources/ui/button_l.png\
-src/WEDResources/ui/button_m.png\
-src/WEDResources/ui/button_r.png\
-src/WEDResources/ui/button_pr_l.png\
-src/WEDResources/ui/button_pr_m.png\
-src/WEDResources/ui/button_pr_r.png
+src/WEDCore/WED_DataModel.sql
