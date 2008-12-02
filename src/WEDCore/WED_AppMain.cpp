@@ -45,7 +45,7 @@
 #include "GUI_Prefs.h"
 
 #if LIN
-#include "PlatformUtils.h"
+#include "initializer.h"
 #endif
 
 #include "XPWidgets.h"
@@ -115,19 +115,21 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
-const char* program_name;
 int main(int argc, char * argv[])
 #endif
 {
 #if LIN
-// important: call XInitThreads() before g_thread_init()
-// and gdk_threads_init()
-	XInitThreads();
-	if (!__init_minimalist_gtk(&argc, &argv))
+	try
 	{
-		return 1;
+		// initialize minigtk and setup
+		// signal handlers
+		Initializer initializer(&argc, &argv);
 	}
-	program_name = argv[0];
+	catch (const char* reason)
+	{
+		printf("caught exception: %s\n", reason);
+		exit(1);
+	}
 #endif
 #if IBM
 	gInstance = hInstance;

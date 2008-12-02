@@ -8,7 +8,6 @@ DEFINES		:= -DSOTHIS_TEST=0
 
 SOURCES :=\
 src/Utils/AssertUtils.cpp \
-src/Utils/safe-ctype.c \
 src/XPTools/DDSTool.cpp \
 src/Utils/EndianUtils.c \
 src/Utils/BitmapUtils.cpp

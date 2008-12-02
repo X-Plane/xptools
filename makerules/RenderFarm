@@ -83,7 +83,6 @@ src/Utils/Skeleton.cpp \
 src/Utils/perlin.cpp \
 src/Utils/MatrixUtils.cpp \
 src/Utils/ProgressUtils.cpp \
-src/Utils/safe-ctype.c \
 src/XESTools/GISTool_Globals.cpp \
 src/XESTools/GISTool_CoreCmds.cpp \
 src/XESTools/GISTool.cpp \

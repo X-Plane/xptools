@@ -9,6 +9,8 @@ DEFINES		:= -DSOTHIS_TEST=0
 include makerules/WED_resources
 
 SOURCES :=\
+src/linuxinit/initializer.cpp \
+src/linuxinit/minigtk.cpp \
 src/UI/FontMgr.cpp \
 src/UI/XWin.lin.cpp \
 src/UI/XWinGL.lin.cpp \
@@ -164,8 +166,6 @@ src/Utils/XFileTwiddle.unix.cpp \
 src/Utils/Skeleton.cpp \
 src/Utils/perlin.cpp \
 src/Utils/MatrixUtils.cpp \
-src/Utils/safe-ctype.c \
-src/Utils/backtrace.c \
 src/Installer/ErrMsg.cpp \
 src/Obj/ObjPointPool.cpp \
 src/Obj/XObjDefs.cpp \
@@ -230,6 +230,7 @@ INCLUDEPATHS :=\
 -Ilibsrc/mesa-7.1/include \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
+-Isrc/linuxinit \
 -Isrc/Env \
 -Isrc/DSF \
 -Isrc/GUI \

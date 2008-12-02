@@ -128,9 +128,10 @@ puke:
 	return noErr;
 }
 #endif
+
 #if LIN
-// needed for backtrace.c
-const char* program_name;
+#include "initializer.h"
+
 int main(int argc, char* argv[])
 {
     Display* display = 0;
@@ -139,15 +140,17 @@ int main(int argc, char* argv[])
     int a_screenNumber = 0;
     int haveVisual = 1;
     XEvent xevent;
-
-	XInitThreads();
-	if (!__init_minimalist_gtk(&argc, &argv))
+	try
 	{
-		return 1;
+		// initialize minigtk and setup
+		// signal handlers
+		Initializer initializer(&argc, &argv);
 	}
-
-	program_name = argv[0];
-
+	catch (const char* reason)
+	{
+		printf("caught exception: %s\n", reason);
+		exit(1);
+	}
     display = XOpenDisplay(0);
     if (!display)
     {

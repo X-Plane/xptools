@@ -7,6 +7,8 @@ LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -ltiff -ljpeg 
 DEFINES		:= -DSOTHIS_TEST=0
 
 SOURCES :=\
+src/linuxinit/initializer.cpp \
+src/linuxinit/minigtk.cpp \
 src/Obj/ObjPointPool.cpp \
 src/Obj/XObjDefs.cpp \
 src/Obj/XObjReadWrite.cpp \
@@ -27,15 +29,14 @@ src/UI/xdnd.cpp \
 src/UI/XGUIApp.cpp \
 src/GUI/GUI_Timer.cpp \
 src/XPTools/ViewObj.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/safe-ctype.c \
-src/Utils/backtrace.c
+src/Utils/AssertUtils.cpp
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
 -Ilibsrc/mesa-7.1/include \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
+-Isrc/linuxinit \
 -Isrc/Env \
 -Isrc/DSF \
 -Isrc/GUI \

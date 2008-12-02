@@ -38,7 +38,7 @@
 
 #if LIN
 #include <dlfcn.h>
-#include "safe-ctype.h"
+#include <ctype.h>
 
 static void* gModuleHandle = 0;
 
@@ -60,7 +60,7 @@ static char* mangle_name (const char* filename, const char* suffix)
 	sprintf(buf, "_binary_%s_%s", filename, suffix);
 
 	for (p = buf; *p; p++)
-	if (!ISALNUM(*p)) *p = '_';
+	if (!isalnum(*p)) *p = '_';
 	return buf;
 }
 
