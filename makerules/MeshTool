@@ -1,9 +1,9 @@
 TYPE		:= EXECUTABLE
 CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
 CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
-LDFLAGS		:= -rdynamic -nodefaultlibs -static-libgcc
-STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
-LIBS		:= -Wl,-Bstatic -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
+LDFLAGS		:= -static -static-libgcc
+STDLIBS		:=
+LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
 DEFINES		:=
 
 SOURCES :=\

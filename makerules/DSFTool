@@ -4,7 +4,7 @@ CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
 STDLIBS		:=
 LIBS		:=
-DEFINES		:= -DSOTHIS_TEST=0
+DEFINES		:=
 
 SOURCES :=\
 src/DSF/DSFLib.cpp \

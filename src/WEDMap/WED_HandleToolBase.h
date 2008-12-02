@@ -111,7 +111,7 @@ private:
 		int						mSelX;
 		int						mSelY;
 
-		int						mHandleEntity;		// Which entity do we drag
+		intptr_t				mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
 		Point2					mTrackPoint;
 

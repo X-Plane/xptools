@@ -3,8 +3,8 @@ CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
 CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
 STDLIBS		:=
-LIBS		:= -Wl,-Bstatic -ldime -l3ds
-DEFINES		:= -DSOTHIS_TEST=0
+LIBS		:= -ldime -l3ds
+DEFINES		:=
 
 SOURCES :=\
 src/Obj/ObjConvert.cpp \
