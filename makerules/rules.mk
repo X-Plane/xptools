@@ -137,7 +137,7 @@ else
 endif
 ifneq ($(TYPE), LIBSTATIC)
 ifeq ($(PLATFORM), Linux)
-ifneq ($(conf), debug)
+ifeq ($(conf), release_opt)
 	objcopy --only-keep-debug $@ $(@).debug
 	strip -s -x $@
 	cd  $(dir $(@)) && objcopy --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
