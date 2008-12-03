@@ -35,7 +35,11 @@ Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 
 Initializer::~Initializer()
 {
-	MiniGtk::_cleanup();
+	// doh! we're using Initializer in a try block
+	// as local variable, so it will get destroyed
+	// after successful initialization
+
+	//MiniGtk::_cleanup();
 }
 
 void Initializer::setup_signalhandlers()

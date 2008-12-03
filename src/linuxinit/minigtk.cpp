@@ -65,13 +65,21 @@ void MiniGtk::_flush_gdk()
 
 void MiniGtk::_init(int* argc, char** argv[])
 {
-	hGtkLib = dlopen(GTK_LIBRARY, RTLD_NOW | RTLD_GLOBAL);
+	hGtkLib = dlopen(GTK_LIBRARY, RTLD_NOW | RTLD_LOCAL);
+	if (!hGtkLib)
+		hGtkLib = dlopen(GTK_LIBRARY".0", RTLD_NOW | RTLD_LOCAL);
 	if (!hGtkLib)
 		throw "'"GTK_LIBRARY "' not found. install GTK+ 2.x";
-	hGdkLib = dlopen(GDK_LIBRARY, RTLD_NOW | RTLD_GLOBAL);
+
+	hGdkLib = dlopen(GDK_LIBRARY, RTLD_NOW | RTLD_LOCAL);
+	if (!hGdkLib)
+		hGdkLib = dlopen(GDK_LIBRARY".0", RTLD_NOW | RTLD_LOCAL);
 	if (!hGdkLib)
 		throw "'"GDK_LIBRARY "' not found. install GTK+ 2.x";
-	hGThreadLib = dlopen(GTHREAD_LIBRARY, RTLD_NOW | RTLD_GLOBAL);
+
+	hGThreadLib = dlopen(GTHREAD_LIBRARY, RTLD_NOW | RTLD_LOCAL);
+	if (!hGThreadLib)
+		hGThreadLib = dlopen(GTHREAD_LIBRARY".0", RTLD_NOW | RTLD_LOCAL);
 	if (!hGThreadLib)
 		throw "'"GTHREAD_LIBRARY "' not found. install GTK+ 2.x";
 
