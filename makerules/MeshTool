@@ -1,10 +1,9 @@
 TYPE		:= EXECUTABLE
-CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
-CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
+CFLAGS		:= -include src/Obj/XDefs.h
+CXXFLAGS	:= -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
-STDLIBS		:=
 LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
-DEFINES		:=
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 
 SOURCES :=\
 src/MeshTool/MeshTool.cpp \

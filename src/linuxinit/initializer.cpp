@@ -24,22 +24,40 @@ volatile int Initializer::m_found = 0;
 Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 {
 	if (!argc || !argv)
-		throw "passed null pointer to Initializer class constructor.";
+	{
+		::fprintf(::stderr, "invalid startup parameters supplied\n");
+		::exit(1);
+	}
 	if (m_init)
-		throw "only one instance of Initializer class allowed";
+	{
+		::fprintf(::stderr, "only one instance of class Initializer allowed\n");
+		::exit(1);
+	}
 	m_init = true;
 	m_programname = *argv[0];
 	setup_signalhandlers();
-	if (loadgtk) MiniGtk::_init(argc, argv);
+	if (loadgtk)
+	{
+		try
+		{
+			MiniGtk::_init(argc, argv);
+		}
+		catch (const char* reason)
+		{
+			::fprintf(::stderr, "Gtk init failed: %s\n", reason);
+			::exit(1);
+		}
+	}
 }
 
 Initializer::~Initializer()
 {
-	// doh! we're using Initializer in a try block
-	// as local variable, so it will get destroyed
-	// after successful initialization
+	MiniGtk::_cleanup();
+}
 
-	//MiniGtk::_cleanup();
+const char* const Initializer::programname()
+{
+	return const_cast<const char* const>(m_programname);
 }
 
 void Initializer::setup_signalhandlers()
@@ -49,12 +67,12 @@ void Initializer::setup_signalhandlers()
 
 	// block signals during stack trace to prevent
 	// further memory corruption
-	::sigemptyset (&to_block);
-	::sigaddset (&to_block, SIGINT);
-	::sigaddset (&to_block, SIGQUIT);
-	::sigaddset (&to_block, SIGKILL);
-	::sigaddset (&to_block, SIGSTOP);
-	::sigaddset (&to_block, SIGTERM);
+	::sigemptyset(&to_block);
+	::sigaddset(&to_block, SIGINT);
+	::sigaddset(&to_block, SIGQUIT);
+	::sigaddset(&to_block, SIGKILL);
+	::sigaddset(&to_block, SIGSTOP);
+	::sigaddset(&to_block, SIGTERM);
 	// SIGINT
 	::memset(&action, 0, sizeof(action));
 	::sigemptyset(&action.sa_mask);
@@ -97,7 +115,7 @@ void Initializer::stack_trace(void)
 	::fprintf(::stderr, "--stack trace start--\n\n");
 	m_nsymbols = ::backtrace((void**)m_symbol_addresses, tracedepth);
 
-	// GPL variant (using libbfd), TODO: write malloc-less variant, looking
+	// GPL variant (using libbfd), TODO: write malloc-free variant, looking
 	// up bfd symbols via weak symbol mechanism and fall back to libc's
 	// backtrace if libbfd isn't available
 	m_symbol_names = (volatile char**)backtrace_symbols_bfd((void* const*)m_symbol_addresses, m_nsymbols);

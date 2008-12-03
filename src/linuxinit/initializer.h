@@ -49,6 +49,9 @@ class Initializer
 ** manual call or recursion of main(). we use a static bool
 ** variable and throw an exception to avoid that.
 **/
+public:
+	// the only public member
+	static const char* const programname();
 private:
 	// intentionally left undefined
 	Initializer();

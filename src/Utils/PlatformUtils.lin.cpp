@@ -21,12 +21,49 @@
  *
  */
 #include "PlatformUtils.h"
+#include "initializer.h"
 #include "minigtk.h"
 #include <stdio.h>
+#include <cstring>
+#include <string>
 
-const char * GetApplicationPath(char * pathBuf, int sz)
+const char* GetApplicationPath(char* pathBuf, int sz)
 {
-	return ".";
+	if (!sz) return 0;
+	::memset(pathBuf, 0, sz);
+	// when lauched from a desktop environment we always
+	// get the absolute path in argv[0]. in a shell we get
+	// the exact invokation line the user (or the script) entered
+	size_t len = 0;
+	// locate the last slash
+	char* last_slash = ::strrchr(Initializer::programname(), '/');
+	// not found? ok, we have a problem here :-), we are in PATH
+	// and need to locate ourself
+	if (!last_slash)
+	{
+		// TODO: do unusual stuff
+		return ".";
+	}
+	len = last_slash - Initializer::programname();
+	// huh? we live in '/', fair enough
+	if (!len) return "/";
+	std::string pname;
+	pname.assign(Initializer::programname(), len);
+	if ((pname.at(0) == '/') || (pname.at(0) == '.'))
+	{
+		// we already have a properly formed path string
+		// and leave it that way
+		::strncpy(pathBuf, pname.c_str(), sz);
+		return pathBuf;
+	}
+	else
+	{
+		// else make a correct relative path
+		std::string pname_rel("./");
+		pname_rel.append(pname);
+		::strncpy(pathBuf, pname_rel.c_str(), sz);
+		return pathBuf;
+	}
 }
 
 int		GetFilePathFromUser(

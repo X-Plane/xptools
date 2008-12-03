@@ -119,17 +119,9 @@ int main(int argc, char * argv[])
 #endif
 {
 #if LIN
-	try
-	{
-		// initialize minigtk and setup
-		// signal handlers
-		Initializer initializer(&argc, &argv);
-	}
-	catch (const char* reason)
-	{
-		printf("caught exception: %s\n", reason);
-		exit(1);
-	}
+	// initialize minigtk and setup
+	// signal handlers
+	Initializer initializer(&argc, &argv);
 #endif
 #if IBM
 	gInstance = hInstance;

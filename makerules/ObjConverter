@@ -1,10 +1,8 @@
 TYPE		:= EXECUTABLE
-CFLAGS		:= -O2 -g -include src/Obj/XDefs.h
-CXXFLAGS	:= -O2 -g -Wno-deprecated -include src/Obj/XDefs.h
+CFLAGS		:= -include src/Obj/XDefs.h
+CXXFLAGS	:= -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
-STDLIBS		:=
-LIBS		:= -ldime -l3ds
-DEFINES		:=
+LIBS		:= -lCGAL -ldime -l3ds
 
 SOURCES :=\
 src/Obj/ObjConvert.cpp \

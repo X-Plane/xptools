@@ -140,17 +140,10 @@ int main(int argc, char* argv[])
     int a_screenNumber = 0;
     int haveVisual = 1;
     XEvent xevent;
-	try
-	{
-		// initialize minigtk and setup
-		// signal handlers
-		Initializer initializer(&argc, &argv);
-	}
-	catch (const char* reason)
-	{
-		printf("caught exception: %s\n", reason);
-		exit(1);
-	}
+
+	// initialize minigtk and setup
+	// signal handlers
+	Initializer initializer(&argc, &argv);
     display = XOpenDisplay(0);
     if (!display)
     {

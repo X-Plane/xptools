@@ -1,5 +1,10 @@
 BUILDDIR	:= build
 LIBRARIES	:= libsrc/linux-specific/.3rdparty_libs
+# default to public debug_opt configuration
+ifndef conf
+conf		:= debug_opt
+endif
+TARGETDIR	:= $(BUILDDIR)/$(conf)
 
 .SILENT:
 .PHONY: all
@@ -21,28 +26,28 @@ $(LIBRARIES):
 	$(MAKE) -C "libsrc/linux-specific"
 
 ObjView: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 WED: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 DSFTool: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 DDSTool: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 ObjConverter: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 MeshTool: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 RenderFarm: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 fonttool: $(LIBRARIES)
-	$(MAKE) BUILDDIR=$(BUILDDIR) TARGET=$(BUILDDIR)/$@ -f makerules/rules.mk all
+	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 clean:
 	-rm -rf $(BUILDDIR)

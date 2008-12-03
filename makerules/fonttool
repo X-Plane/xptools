@@ -1,10 +1,6 @@
 TYPE		:= EXECUTABLE
-CFLAGS		:= -O2 -g
-CXXFLAGS	:= -O2 -g
 LDFLAGS		:= -static -static-libgcc
-STDLIBS		:=
 LIBS		:= -lfreetype -ltiff -ljpeg -lpng12 -lz
-DEFINES		:=
 
 SOURCES :=\
 src/fonttool/fonttool.cpp
