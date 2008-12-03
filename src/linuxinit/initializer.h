@@ -58,7 +58,7 @@ private:
 	~Initializer();
 	friend int main(int argc, char* argv[]);
 	Initializer(int* argc, char** argv[], bool loadgtk = true);
-	Initializer(const Initializer&);
+	Initializer(const Initializer& other);
 	Initializer& operator =(const Initializer& other);
 
 	void setup_signalhandlers();

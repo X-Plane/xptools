@@ -236,7 +236,7 @@ static res_map sResMap;
 
 GUI_Resource	GUI_LoadResource(const char* in_resource)
 {
-	if (sResMap.empty()) gModuleHandle = dlopen(0, RTLD_NOW | RTLD_GLOBAL);
+	if (sResMap.empty()) gModuleHandle = dlopen(0, RTLD_NOW | RTLD_LOCAL);
 	if (!gModuleHandle)
 	{
 		printf("error opening module\n");
