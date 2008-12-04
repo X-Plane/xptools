@@ -36,14 +36,14 @@ private:
 	**/
 		MiniGtk::_flush_gdk();
 		XSync(dspl, False);
-	//	XUnlockDisplay(dspl);
+		XUnlockDisplay(dspl);
 	}
 	GdkLocker(Display* gdk_display)
 	{
 		dspl = gdk_display;
 		if (!dspl)
 			throw "invalid GDK display";
-	//	XLockDisplay(dspl);
+		XLockDisplay(dspl);
 	}
 	GdkLocker(const GdkLocker&);
 	GdkLocker& operator =(const GdkLocker& other);
@@ -109,9 +109,9 @@ void MiniGtk::_init(int* argc, char** argv[])
 		gtk_window_set_keep_above &&
 		gtk_window_set_position)
 	{
-		//XInitThreads();
-		//g_thread_init(0);
-		//gdk_threads_init();
+		XInitThreads();
+		g_thread_init(0);
+		gdk_threads_init();
 		gtk_init(argc, argv);
 		gdk_display = *(Display**)pDisplay;
 		m_inited = true;
