@@ -66,6 +66,7 @@ enum {
 	specCmd_FaceHeight,
 	specCmd_ObjHeight,
 	specCmd_MeshErr,
+	specCmd_MeshLU,
 	specCmd_PreviewSHP,
 	specCmd_KillObjs,
 	specCmd_CheckEnums,
@@ -89,6 +90,7 @@ const char *	kSpecCmdNames [] = {
 	"Show Height of Selected Faces...",
 	"Show Height of Objs in Selected Faces...",
 	"Measure Error in Triangulation...",
+	"Print Terrain Histogram...",
 	"Preview Shape File",
 	"Kill Features Without Heights in Selected Faces",
 	"Self-Check Enums",
@@ -317,6 +319,17 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 
 				sprintf(buf, "mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 				DoUserAlert(buf);
+			}
+			break;
+		case specCmd_MeshLU:
+			{
+				map<int, int> lus;
+				int t = CalcMeshTextures(gTriangulationHi,lus);
+				multimap<int,int> sorted;
+				for(map<int,int>::iterator l = lus.begin(); l != lus.end(); ++l)
+					sorted.insert(multimap<int,int>::value_type(l->second,l->first));
+				for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
+					printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
 			}
 			break;
 		case specCmd_PreviewSHP:
