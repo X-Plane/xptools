@@ -70,7 +70,7 @@ MeshPrefs_t gMeshPrefs = {
 				1,
 				1,
 #if PHONE
-				5000.0,	// 3500.0,	// 3500.0,
+				6000.0,	// 3500.0,	// 3500.0,
 				50000.0
 #else
 				3500.0,
@@ -2518,6 +2518,21 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, map<float, int>& err, ProgressFunc in
 	}
 	if (inFunc) inFunc(0, 1, "Calculating Error", 1.0);
 	return ctr;
+}
+
+int	CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus)
+{
+	out_lus.clear();
+	int total = 0;
+	for(CDT::Face_iterator  f = inMesh.finite_faces_begin(); f != inMesh.finite_faces_end(); ++f)
+	{
+		out_lus[f->info().feature]++;
+		for(set<int>::iterator b =  f->info().terrain_border.begin();
+							   b != f->info().terrain_border.end(); ++b)
+			out_lus[*b]++;
+		total += (1 + f->info().terrain_border.size());
+	}
+	return total;
 }
 
 static bool RayInTri(CDT::Face_handle tri, CDT::Vertex_handle v, const CDT::Point& goal)

@@ -54,6 +54,7 @@ double	HeightWithinTri(CDT& inMesh, CDT::Face_handle tri, CDT::Point in);
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id);
 void	Calc2ndDerivative(DEMGeo& ioDEM);
 int		CalcMeshError(CDT& inMesh, DEMGeo& inElevation, map<float, int>& outError, ProgressFunc inFunc);
+int		CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus);
 
 // MESH MARCH - Walk from one lat/lon to another in the mesh, returning the heights at the start and end
 // points as well as all points that cross a mesh boundary.
