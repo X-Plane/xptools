@@ -28,6 +28,10 @@
 #include "GUI_Window.h"
 #define __DEBUGGING__
 
+#if LIN
+// extern void _do_timercallbacks(void);
+#endif
+
 GUI_Application *	gApplication = NULL;
 
 #if APL || LIN
@@ -300,6 +304,7 @@ void			GUI_Application::Run(void)
     while (haveVisual && !mDone)
     {
         XNextEvent(display, &xevent);
+//		_do_timercallbacks();
 //		if (mMenubar) mMenubar->enter_eventloop(&xevent);
 		if (xevent.xclient.message_type == a_menuAtom)
         {

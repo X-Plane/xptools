@@ -9,8 +9,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
                     GLX_RGBA_BIT,
                     GLX_DOUBLEBUFFER,
                     True,
-//                  GLX_STENCIL_SIZE, 8,
-//                  GLX_DEPTH_SIZE, 16,
+					GLX_STENCIL_SIZE, 8,
+					GLX_DEPTH_SIZE, 16,
                     None
                    };
     GLXFBConfig * FbConfig = glXChooseFBConfig(_mDisplay, DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
@@ -25,7 +25,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
     SetVisible(true);
 }
 
-XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd)
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
 {
     int nfbConfig = 0;
 
@@ -35,8 +35,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
                     GLX_RGBA_BIT,
                     GLX_DOUBLEBUFFER,
                     True,
- //                 GLX_STENCIL_SIZE, 8,
- //                 GLX_DEPTH_SIZE, 16,
+					GLX_STENCIL_SIZE, 8,
+					GLX_DEPTH_SIZE, 16,
                     None
                    };
     GLXFBConfig * FbConfig = glXChooseFBConfig(_mDisplay, DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
@@ -44,11 +44,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
         throw "invalid framebuffer config";
     mContext = glXCreateNewContext(_mDisplay, *FbConfig, GLX_RGBA_TYPE, inShare ? inShare->mContext : NULL, 1);
 	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
-    SetTitle(inTitle);
-    MoveTo(inX, inY);
-    Resize(inWidth, inHeight);
 	XFree(FbConfig);
-    if (inAttributes & xwin_style_visible)
+	if (inAttributes & xwin_style_visible)
         SetVisible(true);
 }
 
@@ -65,19 +62,20 @@ void                    XWinGL::SetGLContext(void)
 
 void                    XWinGL::SwapBuffer(void)
 {
-	glFinish();
+	//glFinish();
 	glXSwapBuffers(_mDisplay, mWindow);
 }
 
 void                    XWinGL::Resized(int inWidth, int inHeight)
 {
-	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
+	//glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     glViewport(0, 0, inWidth, inHeight);
     this->GLReshaped(inWidth, inHeight);
 }
 
 void                    XWinGL::Update(XContext ctx)
 {
+	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     this->GLDraw();
 	glXSwapBuffers(_mDisplay,mWindow);
 }

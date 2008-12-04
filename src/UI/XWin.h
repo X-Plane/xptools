@@ -205,9 +205,11 @@ public:
         static void WinEventHandler(XEvent* xevent, int* visualstate);
         static void RegisterClass(Display* display, int screen, int depth, Visual* visual);
         virtual	void ReceiveFilesFromDrag(const vector<string>& inFiles);
+		void toggleFullscreen();
 
         Window                  mWindow;
         bool					isResizing;
+		bool					fsState;
 #endif
 
 };

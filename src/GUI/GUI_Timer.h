@@ -34,7 +34,11 @@
 #if LIN
 
 #include <pthread.h>
-
+/*
+#include <signal.h>
+#include <time.h>
+#include <unistd.h>
+*/
 class GUI_Timer;
 
 typedef struct teh_args_t
@@ -71,10 +75,19 @@ private:
 	public:
         static void TimerCB(void *args);
         bool is_running;
+/*
+		timer_t mTimer;
+*/
     private:
 		static void* teh_threadroutine(void* args);
 		pthread_t* teh_thread;
 		teh_args_t targ;
+/*
+		struct sigaction action;
+		struct timespec tsres;
+		struct itimerspec its;
+		struct sigevent ev;
+*/
 	#endif
 
 };

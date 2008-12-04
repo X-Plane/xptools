@@ -2,7 +2,7 @@ TYPE		:= EXECUTABLE
 CFLAGS		:= -fvisibility=hidden -include src/Obj/XDefs.h
 CXXFLAGS	:= -fvisibility=hidden -Wno-deprecated -include src/Obj/XDefs.h
 LDFLAGS		:= -rdynamic -nodefaultlibs -static-libgcc
-STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
+STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -lrt -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
 LIBS		:= -Wl,-Bdynamic -lGL -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 

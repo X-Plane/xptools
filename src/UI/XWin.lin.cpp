@@ -115,7 +115,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
             XUnmapWindow(mDisplay, xevent->xany.window);
             XDestroyWindow(mDisplay, xevent->xany.window);
             sWindows.erase(xevent->xany.window);
-			XSync(mDisplay, False);
             if (sWindows.empty())
             {
                 *visualstate = 0;
@@ -185,14 +184,16 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
         {
             xdnd_send_finished(&obj->dnd, XDND_LEAVE_SOURCE_WIN(&e), e.xclient.window, 0);
         }
+
         if (e.xclient.message_type == atom_timer)
     	{
-	    	intptr_t t = (int)e.xclient.data.l[1] & 0xFFFFFFFF;
-	    	t = (t << 32) | ((int)e.xclient.data.l[0] & 0xFFFFFFFF);
+	    	intptr_t t = (int32_t)e.xclient.data.l[1] & 0xFFFFFFFF;
+	    	t = (t << 32) | ((int32_t)e.xclient.data.l[0] & 0xFFFFFFFF);
 			GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
 		}
 		if (e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
 			printf("got popup action\n");
+
     }
     break;
     }
@@ -217,6 +218,10 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
     }
     case KeyRelease:
     {
+		if (XLookupKeysym(&e.xkey, 0) == XK_F12)
+		{
+			obj->toggleFullscreen();
+		}
         break;
     }
     case ButtonPress:
@@ -310,7 +315,8 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
         if (obj && !sIniting)
 		{
    			obj->isResizing = false;
-            obj->Update(xevent->xany.window);
+			if (!e.xexpose.count)
+				obj->Update(xevent->xany.window);
    			if (e.xexpose.send_event)
 				obj->refresh_requests = 0;
 		}
@@ -343,12 +349,90 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 }
 
 
+XWin::XWin(
+	int				default_dnd,
+	const char * 	inTitle,
+	int				inAttributes,
+	int				inX,
+	int				inY,
+	int				inWidth,
+	int				inHeight)
+{
+    XEvent xevent;
+    XSizeHints  sizehints;
+    sIniting = true;
+    visible = false;
+
+    _mDisplay = mDisplay;
+
+    windowAttr.border_pixel = 1;
+    windowAttr.event_mask = StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
+                            KeyPressMask | KeyReleaseMask | PointerMotionMask | ExposureMask | FocusChangeMask;
+    windowAttr.colormap = XCreateColormap(mDisplay, RootWindow(mDisplay, a_screenNumber), mXVisual, AllocNone);
+    attrMask = CWBorderPixel | CWEventMask | CWColormap;
+
+    mWindow = XCreateWindow(mDisplay, RootWindow(mDisplay, a_screenNumber), 10, 10, 200,
+                            100, 0, a_defDepth, InputOutput, mXVisual, attrMask, &windowAttr);
+    Atom wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(mDisplay, mWindow, &wdw, 1);
+    title.value    = (unsigned char*)"XWin Window";
+    title.encoding = XA_STRING;
+    title.format   = 8;
+    title.nitems   = strlen((char*)title.value);
+    XSetWMName(mDisplay, mWindow, &title);
+    sizehints.flags = PMaxSize|PMinSize;
+    sizehints.min_width = 200;
+    sizehints.min_height = 100;
+    // should be enough, except someone has Xinerama with 64 screens :P
+    sizehints.max_width = 65535;
+    sizehints.max_height = 65535;
+    XSetWMNormalHints(mDisplay, mWindow, &sizehints);
+
+    // support for MIME text/uri-list only atm
+    if (default_dnd)
+    {
+        Atom l[2];
+        l[0] = dnd.text_uri_list;
+        l[1] = 0;
+        xdnd_init(&dnd, mDisplay);
+        xdnd_set_dnd_aware(&dnd, mWindow, l);
+    }
+
+    // just some standard values (black)
+ //   defGCvalues.foreground = 0;
+ //   defGCvalues.background = 0;
+ //   defGCmask = GCForeground | GCBackground;
+ //   defGC = XCreateGC(mDisplay, mWindow, defGCmask, &defGCvalues);
+
+    if (!mWindow)
+        throw mWindow;
+    visible = false;
+    active = false;
+    sWindows[mWindow] = this;
+    memset(mDragging,0,sizeof(int)*BUTTON_DIM);
+	mMouse.x = 0;
+	mMouse.y = 0;
+	SetTitle(inTitle);
+	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
+	int y = (inAttributes & xwin_style_fullscreen) ? 0 : inY;
+	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
+	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
+
+	MoveTo(x, y);
+	Resize(w, h);
+    sIniting = false;
+	refresh_requests = 0;
+	fsState = false;
+    return;
+}
+
 XWin::XWin(int default_dnd)
 {
     XEvent xevent;
     XSizeHints  sizehints;
     sIniting = true;
     visible = false;
+	fsState = false;
 
     _mDisplay = mDisplay;
 
@@ -387,10 +471,10 @@ XWin::XWin(int default_dnd)
     }
 
     // just some standard values (black)
-    defGCvalues.foreground = 0;
-    defGCvalues.background = 0;
-    defGCmask = GCForeground | GCBackground;
-    defGC = XCreateGC(mDisplay, mWindow, defGCmask, &defGCvalues);
+ //   defGCvalues.foreground = 0;
+ //   defGCvalues.background = 0;
+ //   defGCmask = GCForeground | GCBackground;
+ //   defGC = XCreateGC(mDisplay, mWindow, defGCmask, &defGCvalues);
 
     if (!mWindow)
         throw mWindow;
@@ -409,7 +493,6 @@ XWin::~XWin()
 {
 	XUnmapWindow(mDisplay, mWindow);
     XDestroyWindow(mDisplay, mWindow);
-	XSync(mDisplay, False);
 	sWindows.erase(mWindow);
     return;
 }
@@ -438,7 +521,7 @@ void                    XWin::Resize(int inWidth, int inHeight)
 	width = inWidth;
 	height = inHeight;
     XResizeWindow(mDisplay, mWindow, inWidth, inHeight);
-	XFlush(mDisplay);
+	//XFlush(mDisplay);
     return;
 }
 
@@ -456,9 +539,7 @@ void                    XWin::ForceRefresh(void)
 	// and GUI_Window class (not a bug, more a design issue, which
 	// only affects the X11 way of doing things)
 	if (!refresh_requests)
-	{
-    	XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-	}
+		XSendEvent(mDisplay, mWindow, False, 0, &xevent);
 	refresh_requests++;
     return;
 }
@@ -474,6 +555,45 @@ void                    XWin::UpdateNow(void)
 {
 	Update(0);
     return;
+}
+
+void  XWin::toggleFullscreen()
+{
+	XSizeHints	sizehints;
+	XEvent		tmpEv;
+	Atom		wmState;
+	Atom		fscr;
+/*
+	if (fsState)
+	{
+		sizehints.flags = PMinSize | PMaxSize;
+		sizehints.min_width = 0;
+		sizehints.max_width = fsWidth;
+		sizehints.min_height = 0;
+		sizehints.max_height = fsHeight;
+	}
+	else
+	{
+		sizehints.flags = PMinSize | PMaxSize;
+		sizehints.min_width = sizehints.max_width = wmWidth;
+		sizehints.min_height = sizehints.max_height = wmHeight;
+	}*/
+	memset(&tmpEv, 0, sizeof(tmpEv));
+	wmState = XInternAtom(mDisplay, "_NET_WM_STATE", False);
+	fscr = XInternAtom(mDisplay, "_NET_WM_STATE_FULLSCREEN", False);
+	tmpEv.xclient.type		= ClientMessage;
+	tmpEv.xclient.serial		= 0;
+	tmpEv.xclient.send_event	= True;
+	tmpEv.xclient.window		= mWindow;
+	tmpEv.xclient.message_type	= wmState;
+	tmpEv.xclient.format		= 32;
+	tmpEv.xclient.data.l[0] 	= (_NET_WM_STATE_TOGGLE);
+	tmpEv.xclient.data.l[1] 	= fscr;
+	tmpEv.xclient.data.l[2] 	= 0;
+	//XSetWMNormalHints(mDisplay, mWindow, &sizehints);
+	XSendEvent(mDisplay, DefaultRootWindow(mDisplay), False, SubstructureRedirectMask | SubstructureNotifyMask, &tmpEv);
+	fsState ^= 1;
+	return;
 }
 
 void                    XWin::SetVisible(bool visible)
