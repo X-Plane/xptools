@@ -61,7 +61,11 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		TERRAIN_NEAR_LOD			 0.0
 #define		TERRAIN_FAR_LOD				-1.0
 #define		TERRAIN_NEAR_BORDER_LOD 	 0.0
-#define		TERRAIN_FAR_BORDER_LOD		 5000
+#if PHONE
+#define		TERRAIN_FAR_BORDER_LOD		 10000
+#else
+#define		TERRAIN_FAR_BORDER_LOD		 40000
+#endif
 
 #define		ORTHO_NEAR_LOD			100000.0
 #define		ORTHO_FAR_LOD			-1.0
@@ -564,15 +568,21 @@ void FixBeachContinuity(
 string		get_terrain_name(int composite)
 {
 	if (composite == terrain_Water)
-//		return FetchTokenString(composite);
+#if PHONE
 		return "RESOURCE:water.ter";
+#else
+		return FetchTokenString(composite);
+#endif		
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
 		if(IsCustom(composite))
 			return FetchTokenString(composite);
 		else
+#if PHONE		
 			return FetchTokenString(composite);
-//			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
+#else
+			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
+#endif			
 	}
 
 //	DebugAssert(!"bad terrain.");
