@@ -1325,19 +1325,44 @@ void	AddBulkPointsToMesh(
  */
 void CalculateMeshNormals(CDT& ioMesh)
 {
+// BEN SAYS:
+// PRESERVED here is Andrew McGreggor's port to CGAL - but see below.
+
 	for (CDT::Finite_vertices_iterator i = ioMesh.finite_vertices_begin(); i != ioMesh.finite_vertices_end(); ++i)
 	{		
-		FastKernel::Vector_3	total(0.0, 0.0, 0.0);
+		Vector3	total(0.0, 0.0, 0.0);
+//		FastKernel::Vector_3	total(0.0, 0.0, 0.0);
 		CDT::Vertex_circulator last = ioMesh.incident_vertices(i);
 		CDT::Vertex_circulator nowi = last, stop = last;
-		FastKernel::Point_3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
+		Point3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
+
+//		FastKernel::Point_3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
 		do {
 			last = nowi;
 			++nowi;
 			if(!ioMesh.is_infinite(last) && !ioMesh.is_infinite(nowi))
 			{
+			
+                Point3  lastP(CGAL::to_double(last->point().x()), CGAL::to_double(last->point().y()), last->info().height);
+                Point3  nowiP(CGAL::to_double(nowi->point().x()), CGAL::to_double(nowi->point().y()), nowi->info().height);
+                Vector3 v1(selfP, lastP);
+                Vector3 v2(selfP, nowiP);
+                v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+                v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+                v1.dy *= (DEG_TO_MTR_LAT);
+                v2.dy *= (DEG_TO_MTR_LAT);
+                DebugAssert(v1.dx != 0.0 || v1.dy != 0.0 || v1.dz != 0.0);
+                DebugAssert(v2.dx != 0.0 || v2.dy != 0.0 || v2.dz != 0.0);
+                v1.normalize();
+                v2.normalize();
+                Vector3 normal(v1.cross(v2));
+                DebugAssert(normal.dx != 0.0 || normal.dy != 0.0 || normal.dz != 0.0);
+                DebugAssert(normal.dz > 0.0);
+                normal.normalize();
+ /*			
 				FastKernel::Point_3	lastP(last->point().x(), last->point().y(), last->info().height);
 				FastKernel::Point_3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
+				BEN SAYS:	note that application of degrees->meters is WRONG here - scaling must be done to the VECTOR, not just ONE point.
 				FastKernel::Vector_3	v1(selfP, FastKernel::Point_3(lastP.x()*(DEG_TO_MTR_LAT * cos(CGAL::to_double(selfP.y()) * DEG_TO_RAD)), 
 													   lastP.y()*(DEG_TO_MTR_LAT),
 													   last->info().height));
@@ -1359,22 +1384,37 @@ void CalculateMeshNormals(CDT& ioMesh)
 				//		CGAL::to_double(v1.x()), CGAL::to_double(v1.y()), CGAL::to_double(v1.z()), 
 				//		CGAL::to_double(v2.x()), CGAL::to_double(v2.y()), CGAL::to_double(v2.z()), 
 				//		CGAL::to_double(normal.x()), CGAL::to_double(normal.y()), CGAL::to_double(normal.z()));
+*/				
 				CDT::Face_handle	a_face;
 				if (ioMesh.is_face(i, last, nowi, a_face))
 				{
+                    a_face->info().normal[0] = normal.dx;
+                    a_face->info().normal[1] = normal.dy;
+                    a_face->info().normal[2] = normal.dz;
+ /*
 					a_face->info().normal[0] = CGAL::to_double(normal.x());
 					a_face->info().normal[1] = CGAL::to_double(normal.y());
 					a_face->info().normal[2] = CGAL::to_double(normal.z());
+*/
 				}
 				total = total + normal;			
 			}	
 		} while (nowi != stop);
+        DebugAssert(total.dx != 0.0 || total.dy != 0.0 || total.dz != 0.0);
+        DebugAssert(total.dz > 0.0);
+        total.normalize();
+        i->info().normal[0] = total.dx;
+        i->info().normal[1] = total.dy;
+        i->info().normal[2] = total.dz;
+ 
+/*		
 		DebugAssert(total.x() != 0.0 || total.y() != 0.0 || total.z() != 0.0);
 		DebugAssert(total.z() > 0.0);
 		total = normalize(total);
 		i->info().normal[0] = CGAL::to_double(total.x());
 		i->info().normal[1] = CGAL::to_double(total.y());
 		i->info().normal[2] = CGAL::to_double(total.z());
+*/		
 	}
 }
 
@@ -1858,12 +1898,13 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
-					tri->info().debug_slope_dem = sl;
-					tri->info().debug_slope_tri = sl_tri;
-					tri->info().debug_temp = tm;
-					tri->info().debug_temp_range = tmr;
-					tri->info().debug_rain = rn;
-					tri->info().debug_heading = sh_tri;
+
+				tri->info().debug_slope_dem = sl;
+				tri->info().debug_slope_tri = sl_tri;
+				tri->info().debug_temp = tm;
+				tri->info().debug_temp_range = tmr;
+				tri->info().debug_rain = rn;
+				tri->info().debug_heading = sh_tri;
 
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
