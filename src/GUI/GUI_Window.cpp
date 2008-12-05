@@ -53,8 +53,8 @@ inline int GUI_Window::Client2OGL_Y(int y, Window w)
 {
 	int ry;
 	int rx;
-	XWinGL::GetBounds(&rx, &ry);
-	return ry-y;
+	XWin::GetBounds(&rx, &ry);
+	return (ry-y);
 }
 
 inline int GUI_Window::OGL2Client_X(int x, Window w)
@@ -67,8 +67,8 @@ inline int GUI_Window::OGL2Client_Y(int y, Window w)
 	Window t;
 	int ry;
 	int rx;
-	XWinGL::GetBounds(&rx, &ry);
-	return ry-y;
+	XWin::GetBounds(&rx, &ry);
+	return (ry-y);
 }
 #endif
 
@@ -765,7 +765,8 @@ const char	gui_Key_Map [256] = {
 /* 78 */	GUI_VK_F2,			GUI_VK_NEXT,		GUI_VK_F1,			GUI_VK_LEFT,		GUI_VK_RIGHT,		GUI_VK_DOWN,		GUI_VK_UP,			0
 };
 
-#elif IBM
+//#elif IBM
+#else
 
 const char	gui_Key_Map [256] = {
 /*			00					01					02					03					04					05					06					07*/
@@ -803,46 +804,8 @@ const char	gui_Key_Map [256] = {
 /* F8 */	0,					0,					0,					0,					0,					0,					0,					0
 };
 
-#else
-
-const char	gui_Key_Map [256] = {
-/*			00					01					02					03					04					05					06					07*/
-/* 00 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* 08 */	GUI_VK_BACK,		GUI_VK_TAB,		0,					0,					GUI_VK_CLEAR,		GUI_VK_RETURN,		0,					0,
-/* 10 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* 18 */	0,					0,					0,					GUI_VK_ESCAPE,		0,					0,					0,					0,
-/* 20 */	GUI_VK_SPACE,		GUI_VK_PRIOR,		GUI_VK_NEXT,		GUI_VK_END,		GUI_VK_HOME,		GUI_VK_LEFT,		GUI_VK_UP,			GUI_VK_RIGHT,
-/* 28 */	GUI_VK_DOWN,		GUI_VK_SELECT,		GUI_VK_PRINT,		GUI_VK_EXECUTE,	GUI_VK_SNAPSHOT,	GUI_VK_INSERT,		0,		GUI_VK_HELP,
-/* 30 */	GUI_VK_0,			GUI_VK_1,			GUI_VK_2,			GUI_VK_3,			GUI_VK_4,			GUI_VK_5,			GUI_VK_6,			GUI_VK_7,
-/* 38 */	GUI_VK_8,			GUI_VK_9,			0,					0,					0,					0,					0,					0,
-/* 40 */	0,					GUI_VK_A,			GUI_VK_B,			GUI_VK_C,			GUI_VK_D,			GUI_VK_E,			GUI_VK_F,			GUI_VK_G,
-/* 48 */	GUI_VK_H,			GUI_VK_I,			GUI_VK_J,			GUI_VK_K,			GUI_VK_L,			GUI_VK_M,			GUI_VK_N,			GUI_VK_O,
-/* 50 */	GUI_VK_P,			GUI_VK_Q,			GUI_VK_R,			GUI_VK_S,			GUI_VK_T,			GUI_VK_U,			GUI_VK_V,			GUI_VK_W,
-/* 58 */	GUI_VK_X,			GUI_VK_Y,			GUI_VK_Z,			0,					0,					0,					0,					0,
-/* 60 */	GUI_VK_NUMPAD0,	GUI_VK_NUMPAD1,	GUI_VK_NUMPAD2,	GUI_VK_NUMPAD3,	GUI_VK_NUMPAD4,	GUI_VK_NUMPAD5,	GUI_VK_NUMPAD6,	GUI_VK_NUMPAD7,
-/* 68 */	GUI_VK_NUMPAD8,	GUI_VK_NUMPAD9,	GUI_VK_MULTIPLY,	GUI_VK_ADD,		0,					GUI_VK_SUBTRACT,	GUI_VK_DECIMAL,	GUI_VK_DIVIDE,
-/* 70 */	GUI_VK_F1,			GUI_VK_F2,			GUI_VK_F3,			GUI_VK_F4,			GUI_VK_F5,			GUI_VK_F6,			GUI_VK_F7,			GUI_VK_F8,
-/* 78 */	GUI_VK_F9,			GUI_VK_F10,		GUI_VK_F11,		GUI_VK_F12,		GUI_VK_F13,		GUI_VK_F14,		GUI_VK_F15,		GUI_VK_F16,
-/* 80 */	GUI_VK_F17,		GUI_VK_F18,		GUI_VK_F19,		GUI_VK_F20,		GUI_VK_F21,		GUI_VK_F22,		GUI_VK_F23,		GUI_VK_F24,
-/* 88 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* 90 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* 88 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* A0 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* A8 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* B0 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* B8 */	0,					0,					GUI_VK_SEMICOLON,	GUI_VK_EQUAL,		GUI_VK_COMMA,		GUI_VK_MINUS,		GUI_VK_PERIOD,		GUI_VK_SLASH,
-/* C0 */	GUI_VK_BACKQUOTE,	0,					0,					0,					0,					0,					0,					0,
-/* C8 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* D0 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* D8 */	0,					0,					0,					GUI_VK_LBRACE,		GUI_VK_BACKSLASH,	GUI_VK_RBRACE,		GUI_VK_QUOTE,		GUI_VK_BACKQUOTE,
-/* E0 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* E8 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* F0 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* F8 */	0,					0,					0,					0,					0,					0,					0,					GUI_VK_DELETE
-};
-
-
 #endif
+
 
 
 int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam2)
@@ -955,11 +918,11 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		charCode = 0;
 #endif
 
-#if !LIN
+//#if !LIN
 	virtualCode = gui_Key_Map[virtualCode];
-#endif
+//#endif
 
-#if IBM
+//#if IBM
 	switch (virtualCode)
 	{
 		case GUI_VK_RETURN:			charCode = GUI_KEY_RETURN;		break;
@@ -983,7 +946,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		case GUI_VK_NUMPAD9:		charCode = GUI_KEY_9;			break;
 		case GUI_VK_DECIMAL:		charCode = GUI_KEY_DECIMAL;		break;
 	}
-#endif
+//#endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
 		return 1;
@@ -1083,6 +1046,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	#else
 		#warning implement linux mouse drag handler
+		return false;
 	#endif
 }
 
@@ -1179,6 +1143,7 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		return result;
 	#else
 		#warning implement linux drag and drop handler
+		return gui_Drag_None;
 	#endif
 }
 

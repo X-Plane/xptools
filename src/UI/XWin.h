@@ -210,6 +210,7 @@ public:
         Window                  mWindow;
         bool					isResizing;
 		bool					fsState;
+		int						mMenuOffset;
 #endif
 
 };

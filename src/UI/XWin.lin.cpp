@@ -10,6 +10,10 @@ static int		a_screenNumber = 0;
 static bool		sIniting = false;
 std::map<Window, XWin*> sWindows;
 
+int ShiftMod = 0;
+int AltMod = 0;
+int CtrlMod = 0;
+
 #include "GUI_Timer.h"
 
 static int i = 0;
@@ -102,6 +106,13 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
     Atom _wmp = XInternAtom(mDisplay, "WM_PROTOCOLS", False);
     Atom _wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
     Atom atom_timer = XInternAtom(mDisplay, "_WED_TIMER", False);
+    if (e.xclient.message_type == atom_timer)
+    {
+	   	intptr_t t = (int32_t)e.xclient.data.l[1] & 0xFFFFFFFF;
+	   	t = (t << 32) | ((int32_t)e.xclient.data.l[0] & 0xFFFFFFFF);
+		GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
+		return;
+	}
 
     switch (e.type)
     {
@@ -185,12 +196,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
             xdnd_send_finished(&obj->dnd, XDND_LEAVE_SOURCE_WIN(&e), e.xclient.window, 0);
         }
 
-        if (e.xclient.message_type == atom_timer)
-    	{
-	    	intptr_t t = (int32_t)e.xclient.data.l[1] & 0xFFFFFFFF;
-	    	t = (t << 32) | ((int32_t)e.xclient.data.l[0] & 0xFFFFFFFF);
-			GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
-		}
 		if (e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
 			printf("got popup action\n");
 
@@ -199,13 +204,117 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
     }
     case KeyPress:
     {
+		char c;
+		ShiftMod = (e.xkey.state & ShiftMask);
+		CtrlMod = (e.xkey.state & ControlMask);
+		AltMod = (e.xkey.state & Mod5Mask);
         #if SOTHIS_REMARK
         #warning < this is dirty, KeySym is UCS2 afaik, maybe change key callback to \
                    support unicode, at least UTF16, on Windows this would be triggered by WM_CHAR >
         #endif
         if (obj)
         {
-            char c = (char)TkpGetKeySym(mDisplay, &e);
+			switch(XLookupKeysym(&e.xkey, 0))
+			{
+				/* no-ops */
+				case XK_KP_Space:
+				case XK_KP_Home:
+				case XK_KP_Page_Up:
+				case XK_KP_Page_Down:
+				case XK_KP_End:
+				case XK_KP_Insert:
+				case XK_KP_Equal:
+				case XK_KP_Begin:
+				case XK_KP_Multiply:
+				case XK_KP_Add:
+				case XK_KP_Separator:
+				case XK_KP_Subtract:
+				case XK_KP_Decimal:
+				case XK_KP_Divide:
+				case XK_Num_Lock:
+				case XK_Select:
+				case XK_Print:
+				case XK_Execute:
+				case XK_Insert:
+				case XK_Undo:
+				case XK_Redo:
+				case XK_Menu:
+				case XK_Find:
+				case XK_Cancel:
+				case XK_Help:
+				case XK_Break:
+				case XK_Mode_switch:
+				case XK_Home:
+				case XK_Page_Up:
+				case XK_Page_Down:
+				case XK_End:
+				case XK_Begin:
+					return;
+				case XK_KP_Left:
+				case XK_Left:
+					c = 0x25;
+					break;
+				case XK_KP_Right:
+				case XK_Right:
+					c = 0x27;
+					break;
+				case XK_KP_Up:
+				case XK_Up:
+					c = 0x26;
+					break;
+				case XK_KP_Down:
+				case XK_Down:
+					c = 0x28;
+					break;
+				case XK_KP_Delete:
+				case XK_Delete:
+					c = 0x2E;
+					break;
+				case XK_KP_Tab:
+				case XK_Tab:
+					c = 0x09;
+					break;
+				case XK_KP_Enter:
+				case XK_Return:
+					c = 0x0D;
+					break;
+				case XK_BackSpace:
+					c = 0x08;
+					break;
+				case XK_KP_0:
+					c = 0x60;
+					break;
+				case XK_KP_1:
+					c = 0x61;
+					break;
+				case XK_KP_2:
+					c = 0x62;
+					break;
+				case XK_KP_3:
+					c = 0x63;
+					break;
+				case XK_KP_4:
+					c = 0x64;
+					break;
+				case XK_KP_5:
+					c = 0x65;
+					break;
+				case XK_KP_6:
+					c = 0x66;
+					break;
+				case XK_KP_7:
+					c = 0x67;
+					break;
+				case XK_KP_8:
+					c = 0x68;
+					break;
+				case XK_KP_9:
+					c = 0x69;
+					break;
+				default:
+					c = (char)TkpGetKeySym(mDisplay, &e);
+					break;
+			}
             if (!obj->KeyPressed(c, 0, 0, 0))
 		    {
     			if (c == '=')
@@ -218,6 +327,9 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
     }
     case KeyRelease:
     {
+		ShiftMod = (e.xkey.state & ShiftMask);
+		CtrlMod = (e.xkey.state & ControlMask);
+		AltMod = (e.xkey.state & Mod5Mask);
 		if (XLookupKeysym(&e.xkey, 0) == XK_F12)
 		{
 			obj->toggleFullscreen();
@@ -296,7 +408,7 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 			obj->isResizing = true;
 			obj->width = e.xconfigure.width;
 			obj->height = e.xconfigure.height;
-			obj->Resized(e.xconfigure.width, e.xconfigure.height);
+			obj->Resized(e.xconfigure.width, e.xconfigure.height-(obj->mMenuOffset));
 		}
         break;
     }
@@ -423,6 +535,7 @@ XWin::XWin(
     sIniting = false;
 	refresh_requests = 0;
 	fsState = false;
+	mMenuOffset = 0;
     return;
 }
 
@@ -486,6 +599,7 @@ XWin::XWin(int default_dnd)
 	mMouse.y = 0;
     sIniting = false;
 	refresh_requests = 0;
+	mMenuOffset = 0;
     return;
 }
 
@@ -505,14 +619,14 @@ void                    XWin::SetTitle(const char * inTitle)
     title.format   = 8;
     title.nitems   = strlen((char*)title.value);
     XSetWMName(mDisplay, mWindow, &title);
-	XFlush(mDisplay);
+	//XFlush(mDisplay);
     return;
 }
 
 void                    XWin::MoveTo(int inX, int inY)
 {
     XMoveWindow(mDisplay, mWindow, inX, inY);
-	XFlush(mDisplay);
+	//XFlush(mDisplay);
     return;
 }
 
@@ -546,14 +660,15 @@ void                    XWin::ForceRefresh(void)
 
 // dirty h4x!: prevent pure virtual function call
 // need to track down where this happens
+/*
 void                    XWin::Update(XContext ctx)
 {
     return;
 }
-
+*/
 void                    XWin::UpdateNow(void)
 {
-	Update(0);
+	ForceRefresh();
     return;
 }
 
@@ -626,12 +741,13 @@ void XWin::GetBounds(int * outX, int * outY)
 	unsigned int width_return, height_return, border_width_return, depth_return;
 
 	//XLockDisplay(mDisplay);
-	//XGetGeometry(mDisplay, mWindow, &rw, &x_return, &y_return, &width_return,
-	//			&height_return, &border_width_return, &depth_return);
+	XSync(mDisplay, False);
+	XGetGeometry(mDisplay, mWindow, &rw, &x_return, &y_return, &width_return,
+				&height_return, &border_width_return, &depth_return);
 	//XUnlockDisplay(mDisplay);
 
-    if (outX) *outX = width;
-    if (outY) *outY = height;
+    if (outX) *outX = width_return;
+    if (outY) *outY = height_return;
     return;
 }
 

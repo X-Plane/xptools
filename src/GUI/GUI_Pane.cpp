@@ -43,6 +43,13 @@
 #include <algorithm>
 using std::find;
 
+#if LIN
+/* from XWin.lin.cpp */
+extern int ShiftMod;
+extern int AltMod;
+extern int CtrlMod;
+#endif
+
 
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 {
@@ -71,7 +78,14 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 		flags |= gui_OptionAltFlag;
 	return flags;
 #else
-	#warning implement keymodifier getter for linux
+	GUI_KeyFlags	flags = 0;
+	if (ShiftMod)
+		flags |= gui_ShiftFlag;
+	if (CtrlMod)
+		flags |= gui_ControlFlag;
+	if (AltMod)
+		flags |= gui_OptionAltFlag;
+	return flags;
 #endif
 }
 

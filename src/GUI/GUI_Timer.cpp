@@ -40,6 +40,7 @@ static TimerMap						sTimerMap;
 
 extern Display*  mDisplay;
 extern std::map<Window, XWin*> sWindows;
+std::set<GUI_Timer*> timer_objects;
 /*
 sig_atomic_t have_signal = 0;
 sig_atomic_t processing = 0;
@@ -120,8 +121,13 @@ void* GUI_Timer::teh_threadroutine(void* args)
 
 void GUI_Timer::TimerCB(void *args)
 {
-	GUI_Timer * me = reinterpret_cast<GUI_Timer *>(args);
-	if(me) me->TimerFired();
+	// we need to do this since the timer message might be handled when
+	// the object which derived from us doesn't exist anymore
+	if (timer_objects.find(reinterpret_cast<GUI_Timer*>(args)) != timer_objects.end())
+	{
+		GUI_Timer* me = reinterpret_cast<GUI_Timer*>(args);
+		me->TimerFired();
+	}
 }
 
 #endif
@@ -135,6 +141,7 @@ GUI_Timer::GUI_Timer(void)
 		mID = 0;
 	#endif
 	#if LIN
+		timer_objects.insert(this);
 		teh_thread = 0;
 		is_running = false;
 /*
@@ -168,6 +175,7 @@ GUI_Timer::~GUI_Timer(void)
 		}
 #endif
 #if LIN
+	timer_objects.erase(this);
 	//if (mTimer) timer_delete(mTimer);
 #endif
 }

@@ -54,6 +54,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_fullscreen, kDefaultDocSize, inCommander),
 	mDocument(inDocument)
 {
+	#if LIN
+	XWin::mMenuOffset = 20;
+	#endif
 
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
 	mDocument->AddListener(this);
@@ -75,7 +78,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 * MAP VIEW
 	****************************************************************************************************************************************************************/
 
-//	int		splitter_b[4];	
+//	int		splitter_b[4];
 	mMainSplitter  = new GUI_Splitter(gui_Split_Horizontal);
 	mMainSplitter2 = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
@@ -94,7 +97,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMainSplitter2->SetParent(mMainSplitter);
 	mMainSplitter2->Show();
 	mMainSplitter2->SetSticky(1,1,1,1);
-		
+
 	double	lb[4];
 	mDocument->GetBounds(lb);
 	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive(),lib->GetAdapter());
@@ -211,7 +214,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 //	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
-	
+
 //	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
 	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
 
