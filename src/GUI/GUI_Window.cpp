@@ -1006,6 +1006,7 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
 {
+#if !LIN
 	static GUI_Menu	popup_temp = NULL;
 
 	DebugAssert(gApplication);
@@ -1013,6 +1014,10 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 
 	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+#else
+	mPopupMenu.show();
+	return 0;
+#endif
 }
 
 bool				GUI_Window::IsDragClick(int x, int y, int button)

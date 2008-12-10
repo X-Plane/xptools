@@ -50,6 +50,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glx.h>
+#include "XPopup.h"
 #include "xdnd.h"
 
 enum {
@@ -201,6 +202,7 @@ public:
 		int						width;
 		int						height;
 		int						refresh_requests;
+		XPopup					mPopupMenu;
 public:
         static void WinEventHandler(XEvent* xevent, int* visualstate);
         static void RegisterClass(Display* display, int screen, int depth, Visual* visual);

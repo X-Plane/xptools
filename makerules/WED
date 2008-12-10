@@ -14,6 +14,7 @@ src/linuxinit/minigtk.cpp \
 src/UI/FontMgr.cpp \
 src/UI/XWin.lin.cpp \
 src/UI/XWinGL.lin.cpp \
+src/UI/XPopup.lin.cpp \
 src/UI/xdnd.cpp \
 src/WEDCore/WED_AppMain.cpp \
 src/WEDCore/WED_Application.cpp \

@@ -106,12 +106,17 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
     Atom _wmp = XInternAtom(mDisplay, "WM_PROTOCOLS", False);
     Atom _wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
     Atom atom_timer = XInternAtom(mDisplay, "_WED_TIMER", False);
-    if (e.xclient.message_type == atom_timer)
+    if (e.type == ClientMessage && e.xclient.message_type == atom_timer)
     {
 	   	intptr_t t = (int32_t)e.xclient.data.l[1] & 0xFFFFFFFF;
 	   	t = (t << 32) | ((int32_t)e.xclient.data.l[0] & 0xFFFFFFFF);
 		GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
 		return;
+	}
+	
+	if (e.type == ClientMessage && e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
+	{
+			printf("got popup action\n");
 	}
 
     switch (e.type)
@@ -195,10 +200,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
         {
             xdnd_send_finished(&obj->dnd, XDND_LEAVE_SOURCE_WIN(&e), e.xclient.window, 0);
         }
-
-		if (e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
-			printf("got popup action\n");
-
     }
     break;
     }
@@ -530,12 +531,13 @@ XWin::XWin(
 	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
 	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
 
+	mPopupMenu.register_target(mDisplay,mWindow);
 	MoveTo(x, y);
 	Resize(w, h);
-    sIniting = false;
 	refresh_requests = 0;
 	fsState = false;
 	mMenuOffset = 0;
+    sIniting = false;
     return;
 }
 
@@ -593,13 +595,15 @@ XWin::XWin(int default_dnd)
         throw mWindow;
     visible = false;
     active = false;
+    mPopupMenu.register_target(mDisplay,mWindow);
     sWindows[mWindow] = this;
     memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
 	mMouse.y = 0;
-    sIniting = false;
 	refresh_requests = 0;
 	mMenuOffset = 0;
+	fsState = false;
+    sIniting = false;
     return;
 }
 

@@ -25,6 +25,7 @@ src/Utils/PlatformUtils.lin.cpp \
 src/Utils/EndianUtils.c \
 src/UI/XWin.lin.cpp \
 src/UI/XWinGL.lin.cpp \
+src/UI/XPopup.lin.cpp \
 src/UI/xdnd.cpp \
 src/UI/XGUIApp.cpp \
 src/GUI/GUI_Timer.cpp \
