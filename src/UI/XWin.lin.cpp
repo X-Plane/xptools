@@ -330,10 +330,10 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 		ShiftMod = (e.xkey.state & ShiftMask);
 		CtrlMod = (e.xkey.state & ControlMask);
 		AltMod = (e.xkey.state & Mod5Mask);
-		if (XLookupKeysym(&e.xkey, 0) == XK_F12)
+		/*if (XLookupKeysym(&e.xkey, 0) == XK_F12)
 		{
 			obj->toggleFullscreen();
-		}
+		}*/
         break;
     }
     case ButtonPress:
