@@ -210,7 +210,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 		AltMod = (e.xkey.state & Mod5Mask);
         if (obj)
         {
-        	printf("pressed: 0x%.4X\n", XLookupKeysym(&e.xkey, 0));
         // do not handle extended modifiers (until we have unicode support)
         	if (XLookupKeysym(&e.xkey, 0) >= 0xFE00 && XLookupKeysym(&e.xkey, 0) <= 0xFEFF)
         		return;
