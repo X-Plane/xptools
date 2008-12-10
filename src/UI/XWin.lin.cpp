@@ -214,8 +214,27 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
         #endif
         if (obj)
         {
+        // do not handle extended modifiers (until we have unicode support)
+        	if (XLookupKeysym(&e.xkey, 0) >= 0xFE00 && XLookupKeysym(&e.xkey, 0) <= 0xFEFF)
+        		return;
 			switch(XLookupKeysym(&e.xkey, 0))
 			{
+				/*modifiers*/
+				case XK_Shift_L:
+				case XK_Shift_R:
+				case XK_Control_L:
+				case XK_Control_R:
+				case XK_Caps_Lock:
+				case XK_Shift_Lock:
+				case XK_Meta_L:
+				case XK_Meta_R:
+				case XK_Alt_L:
+				case XK_Alt_R:
+				case XK_Super_L:
+				case XK_Super_R:
+				case XK_Hyper_L:
+				case XK_Hyper_R:
+					return;
 				/* no-ops */
 				case XK_KP_Space:
 				case XK_KP_Home:
@@ -229,7 +248,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 				case XK_KP_Add:
 				case XK_KP_Separator:
 				case XK_KP_Subtract:
-				case XK_KP_Decimal:
 				case XK_KP_Divide:
 				case XK_Num_Lock:
 				case XK_Select:
@@ -249,6 +267,16 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 				case XK_Page_Down:
 				case XK_End:
 				case XK_Begin:
+				case XK_KP_0:
+				case XK_KP_1:
+				case XK_KP_2:
+				case XK_KP_3:
+				case XK_KP_4:
+				case XK_KP_5:
+				case XK_KP_6:
+				case XK_KP_7:
+				case XK_KP_8:
+				case XK_KP_9:
 					return;
 				case XK_KP_Left:
 				case XK_Left:
@@ -281,35 +309,11 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 				case XK_BackSpace:
 					c = 0x08;
 					break;
-				case XK_KP_0:
-					c = 0x60;
+				case XK_period:
+					c = 0x6E;
 					break;
-				case XK_KP_1:
-					c = 0x61;
-					break;
-				case XK_KP_2:
-					c = 0x62;
-					break;
-				case XK_KP_3:
-					c = 0x63;
-					break;
-				case XK_KP_4:
-					c = 0x64;
-					break;
-				case XK_KP_5:
-					c = 0x65;
-					break;
-				case XK_KP_6:
-					c = 0x66;
-					break;
-				case XK_KP_7:
-					c = 0x67;
-					break;
-				case XK_KP_8:
-					c = 0x68;
-					break;
-				case XK_KP_9:
-					c = 0x69;
+				case XK_KP_Decimal:
+					c = 0x6E;
 					break;
 				default:
 					c = (char)TkpGetKeySym(mDisplay, &e);

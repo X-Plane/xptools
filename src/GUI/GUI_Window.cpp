@@ -922,7 +922,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	virtualCode = gui_Key_Map[virtualCode];
 //#endif
 
-//#if IBM
+#if IBM || LIN
 	switch (virtualCode)
 	{
 		case GUI_VK_RETURN:			charCode = GUI_KEY_RETURN;		break;
@@ -934,6 +934,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		case GUI_VK_UP:				charCode = GUI_KEY_UP;			break;
 		case GUI_VK_RIGHT:			charCode = GUI_KEY_RIGHT;		break;
 		case GUI_VK_DOWN:			charCode = GUI_KEY_DOWN;		break;
+		#if IBM
 		case GUI_VK_NUMPAD0:		charCode = GUI_KEY_0;			break;
 		case GUI_VK_NUMPAD1:		charCode = GUI_KEY_1;			break;
 		case GUI_VK_NUMPAD2:		charCode = GUI_KEY_2;			break;
@@ -944,9 +945,10 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		case GUI_VK_NUMPAD7:		charCode = GUI_KEY_7;			break;
 		case GUI_VK_NUMPAD8:		charCode = GUI_KEY_8;			break;
 		case GUI_VK_NUMPAD9:		charCode = GUI_KEY_9;			break;
+		#endif
 		case GUI_VK_DECIMAL:		charCode = GUI_KEY_DECIMAL;		break;
 	}
-//#endif
+#endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
 		return 1;
