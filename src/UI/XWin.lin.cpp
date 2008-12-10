@@ -208,12 +208,9 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 		ShiftMod = (e.xkey.state & ShiftMask);
 		CtrlMod = (e.xkey.state & ControlMask);
 		AltMod = (e.xkey.state & Mod5Mask);
-        #if SOTHIS_REMARK
-        #warning < this is dirty, KeySym is UCS2 afaik, maybe change key callback to \
-                   support unicode, at least UTF16, on Windows this would be triggered by WM_CHAR >
-        #endif
         if (obj)
         {
+        	printf("pressed: 0x%.4X\n", XLookupKeysym(&e.xkey, 0));
         // do not handle extended modifiers (until we have unicode support)
         	if (XLookupKeysym(&e.xkey, 0) >= 0xFE00 && XLookupKeysym(&e.xkey, 0) <= 0xFEFF)
         		return;
@@ -310,16 +307,16 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 					c = 0x08;
 					break;
 				case XK_period:
-					c = 0x6E;
+					if (!ShiftMod) c = 0x6E;
+					else c = ':';
 					break;
 				case XK_KP_Decimal:
 					c = 0x6E;
-					break;
 				default:
 					c = (char)TkpGetKeySym(mDisplay, &e);
 					break;
 			}
-            if (!obj->KeyPressed(c, 0, 0, 0))
+            if (!obj->KeyPressed(c, 0, XLookupKeysym(&e.xkey, 0), 0))
 		    {
     			if (c == '=')
 			        obj->MouseWheel(obj->mMouse.x,obj->mMouse.y, 1, 0);

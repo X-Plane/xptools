@@ -918,9 +918,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		charCode = 0;
 #endif
 
-//#if !LIN
 	virtualCode = gui_Key_Map[virtualCode];
-//#endif
 
 #if IBM || LIN
 	switch (virtualCode)
@@ -945,9 +943,15 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		case GUI_VK_NUMPAD7:		charCode = GUI_KEY_7;			break;
 		case GUI_VK_NUMPAD8:		charCode = GUI_KEY_8;			break;
 		case GUI_VK_NUMPAD9:		charCode = GUI_KEY_9;			break;
-		#endif
 		case GUI_VK_DECIMAL:		charCode = GUI_KEY_DECIMAL;		break;
+		#endif
 	}
+#endif
+#if LIN
+// this overlapping is nasty, we'll get rid of this when unicode support
+// is here
+	if (virtualCode == GUI_VK_DECIMAL && inParam1 != XK_n)
+		charCode = GUI_KEY_DECIMAL;
 #endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
