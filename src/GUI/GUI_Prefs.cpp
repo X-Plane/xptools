@@ -90,14 +90,21 @@ bool			GUI_GetPrefsDir(string& path)
 		return true;
 	#endif
 	#if LIN
+		string he = getenv("HOME");
         passwd *pw = getpwuid(getuid());
         if (pw)
         {
             path = pw->pw_dir;
-            return true;
+			if (path == he)
+				return true;
+			else
+			{
+				DoUserAlert("Home directory in /etc/passwd doesn't match $HOME environment variable.\n");
+				return true;
+			}
         }
-        else path = ".";
-        return false;
+        else path = he;
+        return true;
 	#endif
 }
 

@@ -73,6 +73,7 @@ void Initializer::setup_signalhandlers()
 	::sigaddset(&to_block, SIGKILL);
 	::sigaddset(&to_block, SIGSTOP);
 	::sigaddset(&to_block, SIGTERM);
+	::sigaddset(&to_block, SIGABRT);
 	// SIGINT
 	::memset(&action, 0, sizeof(action));
 	::sigemptyset(&action.sa_mask);
@@ -87,6 +88,13 @@ void Initializer::setup_signalhandlers()
 	action.sa_mask = to_block;
 	action.sa_flags = SA_SIGINFO;
 	::sigaction(SIGINT, &action, 0);
+	// SIGABRT, for unhandled c++ exceptions
+	::memset(&action, 0, sizeof(action));
+	::sigemptyset(&action.sa_mask);
+	action.sa_sigaction = _handle_signal;
+	action.sa_mask = to_block;
+	action.sa_flags = SA_SIGINFO;
+	::sigaction(SIGABRT, &action, 0);
 }
 
 void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
@@ -102,6 +110,9 @@ void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
 		case SIGSEGV:
 			::fprintf(::stderr, "\nSegmentation Fault. Stack trace follows.\n");
 			break;
+		case SIGABRT:
+			::fprintf(::stderr, "\nUnhandled exception. Stack trace follows.\n");
+			break;
 		default:
 			::fprintf(::stderr, "\nReceived signal %d. Stack trace follows.\n", signal);
 			break;
@@ -112,7 +123,11 @@ void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
 
 void Initializer::stack_trace(void)
 {
+	string logfile = ::getenv("HOME");
+	logfile += "/.wedtrace";
+	FILE* logf = fopen(logfile.c_str(), "ab");
 	::fprintf(::stderr, "--stack trace start--\n\n");
+	if (logf) fprintf(logf, "--stack trace start--\n\n");
 	m_nsymbols = ::backtrace((void**)m_symbol_addresses, tracedepth);
 
 	// GPL variant (using libbfd), TODO: write malloc-free variant, looking
@@ -120,12 +135,19 @@ void Initializer::stack_trace(void)
 	// backtrace if libbfd isn't available
 	m_symbol_names = (volatile char**)backtrace_symbols_bfd((void* const*)m_symbol_addresses, m_nsymbols);
 	for(m_iterator = 0; m_iterator < m_nsymbols; ++m_iterator)
+	{
 		::fprintf(::stderr, "%s\n", m_symbol_names[m_iterator]);
+		if (logf) ::fprintf(logf, "%s\n", m_symbol_names[m_iterator]);
+	}
 
 	// LGPL variant (using libc)
 	//::backtrace_symbols_fd((void* const*)m_symbol_addresses, m_nsymbols, fileno(::stderr));
 
 	::fprintf(::stderr, "\n--stack trace fini--\n");
+	if (logf) ::fprintf(logf, "\n--stack trace fini--\n\n");
+	if (logf) ::fflush(logf);
+	if (logf) ::fsync(fileno(logf));
+	if (logf) ::fclose(logf);
 	::fflush(::stderr);
 	return;
 }

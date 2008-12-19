@@ -119,7 +119,8 @@ else
 CC			:= gcc
 CXX			:= g++
 LD			:= g++
-AR
+AR			:= ar
+endif
 CFLAGS		:= $(CFLAGS)
 CXXFLAGS	:= $(CXXFLAGS)
 LDFLAGS		:= $(LDFLAGS)
