@@ -256,7 +256,7 @@ src/XESCore/Zoning.cpp
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
--Ilibsrc/mesa-7.1/include \
+-Ilibsrc/linux-specific/mesa/include \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
 -Isrc/linuxinit \
