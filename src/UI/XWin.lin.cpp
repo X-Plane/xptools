@@ -246,7 +246,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
                 } while(remain != 0);
                 if (data)
                 {
-					printf("data:\n[%s]\n", data);
 					char* token = strtok(data, "\n");
 					while (token)
 					{
