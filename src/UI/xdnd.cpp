@@ -302,15 +302,15 @@ xdnd_send_finished(DndClass * dnd, Window window, Window from, int error)
 int
 xdnd_convert_selection(DndClass *dnd, Window window, Window requester, Atom type, Time ts)
 {
-/*  if (window != XGetSelectionOwner (dnd->display, dnd->XdndSelection))
-    {
-      dnd_debug ("xdnd_convert_selection(): XGetSelectionOwner failed");
-      return 1;
-    }*/
+//  if (window != XGetSelectionOwner (dnd->display, dnd->XdndSelection))
+//    {
+//      dnd_debug ("xdnd_convert_selection(): XGetSelectionOwner failed");
+//      return 1;
+//    }
 
-  //XConvertSelection (dnd->display, dnd->XdndSelection, type, dnd->Xdnd_NON_PROTOCOL_ATOM, requester, CurrentTime);
-  XConvertSelection (dnd->display, dnd->XdndSelection, type, dnd->dnd_data, requester, CurrentTime);
-  return 0;
+ // XConvertSelection (dnd->display, dnd->XdndSelection, type, dnd->Xdnd_NON_PROTOCOL_ATOM, requester, CurrentTime);
+	XConvertSelection (dnd->display, dnd->XdndSelection, type, dnd->dnd_data, requester, CurrentTime);
+	return 0;
 }
 
 int

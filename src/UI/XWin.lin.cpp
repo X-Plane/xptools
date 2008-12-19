@@ -16,40 +16,121 @@ int CtrlMod = 0;
 
 #include "GUI_Timer.h"
 
-static int i = 0;
-
-static int ishexdig(char s) {
-  return (((s >= '0') && (s <= '9'))
-	  || ((s >= 'a') && (s <= 'f'))
-	  || ((s >= 'A') && (s <= 'F')));
-}
-
-static int hexval(char s) {
-  return (((s >= '0') && (s <= '9'))
-	  ? s - '0'
-	  : (((s >= 'a') && (s <= 'f'))
-	     ? s - 'a' + 10
-	     : s - 'A' + 10));
-}
-
-static void decode_percent_escapes(char *s)
+const char HEX2DEC[256] =
 {
-  int src = 0, dest = 0;
-  while (s[src]) {
-    if ((s[src] == '%')
-	&& ishexdig(s[src+1])
-	&& ishexdig(s[src+2])) {
-      int v;
-      v = ((hexval(s[src+1]) << 4) + hexval(s[src+2]));
-      s[dest++] = v;
-      src += 3;
-    } else {
-      s[dest++] = s[src++];
-    }
-  }
-  s[dest] = 0;
+    /*       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F */
+    /* 0 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 1 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 2 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 3 */  0, 1, 2, 3,  4, 5, 6, 7,  8, 9,-1,-1, -1,-1,-1,-1,
+
+    /* 4 */ -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 5 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 6 */ -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 7 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+
+    /* 8 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* 9 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* A */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* B */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+
+    /* C */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* D */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* E */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+    /* F */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
+};
+
+std::string UriDecode(const std::string & sSrc)
+{
+    // Note from RFC1630:  "Sequences which start with a percent sign
+    // but are not followed by two hexadecimal characters (0-9, A-F) are reserved
+    // for future extension"
+
+    const unsigned char * pSrc = (const unsigned char *)sSrc.c_str();
+	const int SRC_LEN = sSrc.length();
+    const unsigned char * const SRC_END = pSrc + SRC_LEN;
+    const unsigned char * const SRC_LAST_DEC = SRC_END - 2;   // last decodable '%'
+
+    char * const pStart = new char[SRC_LEN];
+    char * pEnd = pStart;
+
+    while (pSrc < SRC_LAST_DEC)
+	{
+		if (*pSrc == '%')
+        {
+            char dec1, dec2;
+            if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)])
+                && -1 != (dec2 = HEX2DEC[*(pSrc + 2)]))
+            {
+                *pEnd++ = (dec1 << 4) + dec2;
+                pSrc += 3;
+                continue;
+            }
+        }
+
+        *pEnd++ = *pSrc++;
+	}
+
+    // the last 2- chars
+    while (pSrc < SRC_END)
+        *pEnd++ = *pSrc++;
+
+    std::string sResult(pStart, pEnd);
+    delete [] pStart;
+	return sResult;
 }
 
+// Only alphanum is safe.
+const char SAFE[256] =
+{
+    /*      0 1 2 3  4 5 6 7  8 9 A B  C D E F */
+    /* 0 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* 1 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* 2 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* 3 */ 1,1,1,1, 1,1,1,1, 1,1,0,0, 0,0,0,0,
+
+    /* 4 */ 0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
+    /* 5 */ 1,1,1,1, 1,1,1,1, 1,1,1,0, 0,0,0,0,
+    /* 6 */ 0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
+    /* 7 */ 1,1,1,1, 1,1,1,1, 1,1,1,0, 0,0,0,0,
+
+    /* 8 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* 9 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* A */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* B */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+
+    /* C */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* D */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* E */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+    /* F */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0
+};
+
+std::string UriEncode(const std::string & sSrc)
+{
+    const char DEC2HEX[16 + 1] = "0123456789ABCDEF";
+    const unsigned char * pSrc = (const unsigned char *)sSrc.c_str();
+    const int SRC_LEN = sSrc.length();
+    unsigned char * const pStart = new unsigned char[SRC_LEN * 3];
+    unsigned char * pEnd = pStart;
+    const unsigned char * const SRC_END = pSrc + SRC_LEN;
+
+    for (; pSrc < SRC_END; ++pSrc)
+	{
+		if (SAFE[*pSrc])
+            *pEnd++ = *pSrc;
+        else
+        {
+            // escape this char
+            *pEnd++ = '%';
+            *pEnd++ = DEC2HEX[*pSrc >> 4];
+            *pEnd++ = DEC2HEX[*pSrc & 0x0F];
+        }
+	}
+
+    std::string sResult((char *)pStart, (char *)pEnd);
+    delete [] pStart;
+    return sResult;
+}
 
 KeySym TkpGetKeySym(Display* dispPtr, XEvent * eventPtr)
 {
@@ -113,10 +194,10 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
 		GUI_Timer::TimerCB(reinterpret_cast<void*>(t));
 		return;
 	}
-	
+
 	if (e.type == ClientMessage && e.xclient.message_type == XInternAtom(mDisplay, "_POPUP_ACTION", False))
 	{
-			printf("got popup action\n");
+		//printf("got popup action\n");
 	}
 
     switch (e.type)
@@ -142,7 +223,7 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
         else if (e.xclient.message_type == obj->dnd.XdndPosition)
         {
             xdnd_convert_selection(&obj->dnd, XDND_POSITION_SOURCE_WIN(&e), e.xclient.window, obj->dnd.text_uri_list, CurrentTime);
-            xdnd_send_status(&obj->dnd, XDND_POSITION_SOURCE_WIN(&e), e.xclient.window, 1, 0, 0, 0, 100, 100, obj->dnd.XdndActionPrivate);
+            xdnd_send_status(&obj->dnd, XDND_POSITION_SOURCE_WIN(&e), e.xclient.window, 1, 0, 0, 0, 65535, 65535, obj->dnd.XdndActionPrivate);
         }
         else if (e.xclient.message_type == obj->dnd.XdndDrop)
         {
@@ -150,7 +231,6 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
             {
                 unsigned long remain, len = 0;
                 char *data = NULL;
-                char *data2 = NULL;
                 Atom ret_type;
                 int ret_format;
                 vector<string> inFiles;
@@ -160,34 +240,33 @@ void XWin::WinEventHandler(XEvent* xevent, int* visualstate)
                 do
                 {
                     if(data != 0)
-                    XFree(data);
-                    XGetWindowProperty(mDisplay, e.xclient.window, obj->dnd.dnd_data, 0, read_bytes, False, AnyPropertyType, &ret_type, &ret_format, &len, &remain, (unsigned char**)&data);
+						XFree(data);
+                    XGetWindowProperty(mDisplay, e.xclient.window, obj->dnd.dnd_data, 0, read_bytes, True, AnyPropertyType, &ret_type, &ret_format, &len, &remain, (unsigned char**)&data);
                     read_bytes *= 2;
                 } while(remain != 0);
                 if (data)
                 {
+					printf("data:\n[%s]\n", data);
 					char* token = strtok(data, "\n");
 					while (token)
 					{
 						char* temp;
 						temp = token;
-						if (strstr(token, "file://"))
-							temp+=7;
-						else continue;
-						data2 = new char[strlen(temp) + 1];
-						memset(data2, 0, strlen(temp) + 1);
-						memcpy(data2, temp, strlen(temp));
+						if (!strstr(token, "file://"))
+						{
+							token = strtok(0, "\n");
+							continue;
+						}
+						f.assign(temp+7, strlen(temp)-7);
 						// this one is needed for gnome only
-						decode_percent_escapes(data2);
-						f.assign(data2);
-						// remove remaining junk (gnome uses /r/n while kde uses only /n as delimiter)
+						f = UriDecode(f);
 						size_t p = std::string::npos;
+						// remove remaining junk (gnome uses /r/n while kde uses only /n as delimiter)
 						while ((p = f.find('\r')) != std::string::npos)
 						{
 							f.erase(p, 1);
 						}
 						inFiles.push_back(f);
-						delete[] data2;
 						token = strtok(0, "\n");
 					}
 	                XFree(data);
