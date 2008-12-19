@@ -14,6 +14,18 @@ else ifeq ($(PLATFORM), Darwin)
 	ECHOFLAGS	:=
 endif
 
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+print_clean		:= echo $(ECHOFLAGS) "[ deleting all generated files  ]"
+print_link		:= echo $(ECHOFLAGS) "[ linking executable      ]: "
+print_comp_cc	:= echo $(ECHOFLAGS) "[ compiling c object      ]: "
+print_comp_cxx	:= echo $(ECHOFLAGS) "[ compiling cpp object    ]: "
+print_comp_res	:= echo $(ECHOFLAGS) "[ generating resource     ]: "
+print_arch		:= echo $(ECHOFLAGS) "[ creating static library ]: "
+print_so		:= echo $(ECHOFLAGS) "[ creating shared library ]: "
+print_dep		:= echo $(ECHOFLAGS) "[ calculating dependency  ]: "
+print_finished	:= echo $(ECHOFLAGS) " finished \o/"
+print_error		:= (echo $(ECHOFLAGS) "[ --FAILED-- ] :-(" && false)
+else
 clearscreen		:= echo $(ECHOFLAGS) "\033[2J\033[H"
 print_clean		:= echo $(ECHOFLAGS) "\033[0;31m[ deleting all generated files  ]\033[0m"
 print_link		:= echo $(ECHOFLAGS) "\033[0;34m[ linking executable      ]\033[0m: "
@@ -25,6 +37,7 @@ print_so		:= echo $(ECHOFLAGS) "\033[0;34m[ creating shared library ]\033[0m: "
 print_dep		:= echo $(ECHOFLAGS) "\033[0;34m[ calculating dependency  ]\033[0m: "
 print_finished	:= echo $(ECHOFLAGS) "\033[0;32m finished \o/\033[0m"
 print_error		:= (echo $(ECHOFLAGS) "\033[0;31m[ --FAILED-- ] :-(\033[0m" && false)
+endif
 
 
 ##
@@ -37,6 +50,8 @@ include makerules/$(shell basename $(TARGET))
 # architecture specific environment
 ###################################
 
+# what does uname spit out on a ppc and ppc64?
+# need this for setting -DLIL/-DBIG appropriately
 ifeq ($(ARCHITECTURE), i386)
 	OBJFORMAT = elf32-i386
 	BINFORMAT = i386
@@ -56,6 +71,8 @@ ifeq ($(PLATFORM), Linux)
 	DEFINES		:= $(DEFINES) -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 else ifeq ($(PLATFORM), Darwin)
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
+else ifneq (, $(findstring MINGW, $(PLATFORM)))
+	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
 endif
 
 ##
@@ -93,10 +110,16 @@ endif
 # putting environments together
 ###############################
 
+ifeq ($(PLATFORM), Darwin)
+CC			:= gcc-4.2
+CXX			:= g++-4.2
+LD			:= g++-4.2
+AR			:= libtool
+else
 CC			:= gcc
 CXX			:= g++
 LD			:= g++
-AR			:= ar
+AR
 CFLAGS		:= $(CFLAGS)
 CXXFLAGS	:= $(CXXFLAGS)
 LDFLAGS		:= $(LDFLAGS)
@@ -124,13 +147,18 @@ $(TARGET):  $(CCOBJECTS) $(CXXOBJECTS) $(CCDEPS) $(CXXDEPS) $(RESOURCEOBJ)
 	-mkdir -p $(dir $(@))
 ifeq ($(TYPE), LIBSTATIC)
 	$(print_arch) $@
+ifeq ($(PLATFORM), Darwin)
+	$(AR) -static -o $@ $(ARFLAGS) $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) || $(print_error)
+else
 	$(AR) $(ARFLAGS) $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) || $(print_error)
+endif
 else ifeq ($(TYPE), LIBDYNAMIC)
 	$(print_so) $@
-	$(LD) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+# todo: libtool for macos if this doesn't work
+	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 else ifeq ($(TYPE), EXECUTABLE)
 	$(print_link) $@
-	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 else
 	echo "no target type specified"
 	exit 1
@@ -155,12 +183,12 @@ $(RESOURCEOBJ): $(BUILDDIR)/%.ro : %
 $(CCOBJECTS): $(BUILDDIR)/%.o: %.c $(BUILDDIR)/%.dep
 	$(print_comp_cc) $<
 	-mkdir -p $(dir $(@))
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDEPATHS) -c $< -o $@ || $(print_error)
+	$(CC) $(MACARCHS) $(CFLAGS) $(DEFINES) $(INCLUDEPATHS) -c $< -o $@ || $(print_error)
 
 $(CXXOBJECTS): $(BUILDDIR)/%.o: %.cpp $(BUILDDIR)/%.dep
 	$(print_comp_cxx) $<
 	-mkdir -p $(dir $(@))
-	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) -c $< -o $@ || $(print_error)
+	$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) -c $< -o $@ || $(print_error)
 
 $(CCDEPS): $(BUILDDIR)/%.dep: %.c
 	$(print_dep) $<

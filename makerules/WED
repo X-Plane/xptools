@@ -8,6 +8,34 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 
 include makerules/WED_resources
 
+# example for splitting platform dependent sources:
+#COMMON_SRC :=\
+#src/main.c\
+#src/common1.cpp
+
+#POSIX_SRC :=\
+#src/awesome.c\
+#src/efficient.cpp\
+#src/nerdy.cpp
+
+#WIN32_SRC :=
+#src/badcode.c\
+#src/b0rken.cpp\
+#src/mainstream.cpp
+
+#MAC_SRC :=
+#src/elitist.c\
+#src/geeky.cpp\
+#src/IOKitFrameWorkVersion122WhichMightAlsoWorkWithMacOSX103.cpp
+
+#ifeq ($(PLATFORM), Linux)
+#SOURCES := $(COMMON_SRC) $(POSIX_SRC)
+#else ifeq ($(PLATFORM), Darwin)
+#SOURCES := $(COMMON_SRC) $(POSIX_SRC) $(MAC_SRC)
+#else ifneq (, $(findstring MINGW, $(PLATFORM)))
+#SOURCES := $(COMMON_SRC) $(WIN32_SRC)
+#endif
+
 SOURCES :=\
 src/linuxinit/initializer.cpp \
 src/linuxinit/minigtk.cpp \

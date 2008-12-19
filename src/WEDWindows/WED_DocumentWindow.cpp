@@ -45,6 +45,13 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 
+#if LIN
+// temporary, testing stuff here
+#include "GUI_Fonts.h"
+#include "GUI_Resources.h"
+#include "WED_ToolInfoAdapter.h"
+#endif
+
 int kDefaultDocSize[4] = { 0, 0, 512,384 };
 
 WED_DocumentWindow::WED_DocumentWindow(
@@ -55,7 +62,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mDocument(inDocument)
 {
 	#if LIN
-	XWin::mMenuOffset = 20;
+	//XWin::mMenuOffset = 20;
 	#endif
 
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
@@ -106,13 +113,39 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,0.5,1);
 
+#if LIN
+// temporary, testing stuff here
+	WED_ToolInfoAdapter* mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
+	GUI_TextTable* mTextTable = new GUI_TextTable(inCommander,10);
+	GUI_Table* mTable = new GUI_Table(1);
+	mTextTable->SetColors(WED_Color_RGBA(wed_Table_Gridlines),
+						  WED_Color_RGBA(wed_Table_Select),
+						  WED_Color_RGBA(wed_Table_Text),
+						  WED_Color_RGBA(wed_PropertyBar_Text),
+						  WED_Color_RGBA(wed_Table_Drag_Insert),
+						  WED_Color_RGBA(wed_Table_Drag_Into));
+
+	mTextTable->SetFont(font_UI_Small);
+	mTable->SetGeometry(mInfoAdapter);
+	mTable->SetContent(mTextTable);
+	//mTextTable->SetProvider(mInfoAdapter);
+	mTable->SizeShowAll();
+	mTextTable->SetParentTable(mTable);
+	mTextTable->AddListener(mTable);
+	mTextTable->SetImage("property_bar.png", 2);
+	//mInfoAdapter->AddListener(mTable);
+	mTable->SetParent(packer);
+	mTable->Show();
+	packer->PackPane(mTable, gui_Pack_Top);
+	mTable->SetSticky(1,0,1,1);
+#endif
+
 	GUI_Pane * top_bar = mMapPane->GetTopBar();
 	top_bar->SetParent(packer);
 	top_bar->Show();
 	packer->PackPane(top_bar, gui_Pack_Top);
 	top_bar->SetSticky(1,0,1,1);
 	packer->PackPane(mMainSplitter, gui_Pack_Center);
-
 
 	/****************************************************************************************************************************************************************
 	 * PROPERTY-SIDE
