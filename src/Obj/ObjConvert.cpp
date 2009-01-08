@@ -24,7 +24,6 @@
 #include "XObjDefs.h"
 #include <math.h>
 #if PHONE
-#include "PVRTGeometry.h"
 #include "PVRTTriStrip.h"
 #endif
 
@@ -539,6 +538,78 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 
 
 #if PHONE
+
+void split_degen(const vector<unsigned short>& all,
+					   vector<unsigned short>& ok,
+					   vector<unsigned short>& degen)
+{
+	for(int n = 0; n < all.size(); n += 3)
+	{
+		unsigned short p1 = all[n  ];
+		unsigned short p2 = all[n+1];
+		unsigned short p3 = all[n+2];
+		if(p1 == p2 || p1 == p3 || p2 == p3)
+		{
+			degen.push_back(p1);
+			degen.push_back(p2);
+			degen.push_back(p3);
+		}
+		else
+		{
+			ok.push_back(p1);
+			ok.push_back(p2);
+			ok.push_back(p3);
+		}
+	}
+}
+
+bool find_tri_in(int p1, int p2, int p3, const vector<unsigned short>& tl)
+{
+	for(int n = 0; n < tl.size(); n += 3)
+	{
+		if(p1 == tl[n  ] &&
+		   p2 == tl[n+1] &&
+		   p3 == tl[n+2])	return true;
+
+		if(p2 == tl[n  ] &&
+		   p3 == tl[n+1] &&
+		   p1 == tl[n+2])	return true;
+
+		if(p3 == tl[n  ] &&
+		   p1 == tl[n+1] &&
+		   p2 == tl[n+2])	return true;
+	}
+	printf("COULD NOT FIND: %d,%d,%d!\n", p1,p2,p3);	
+	return false;
+}
+
+void dump_vec(const char * bl, const char * al, const vector<unsigned short>& b, const vector<unsigned short>& a)
+{
+	printf("  %s   %s" , bl,al);
+	for(int n = 0; n < b.size(); n += 3)
+	printf("%d       %d,%d,%d      %d,%d,%d\n",
+				n,
+				b[n],b[n+1],b[n+2],
+				a[n],a[n+1],a[n+2]);
+				
+}
+
+void compare_before_after(const vector<unsigned short>& b, const vector<unsigned short>& a)
+{
+	bool ok = true;
+	bool degen = false;
+	for(int n = 0; n < a.size(); n += 3)
+	{
+		if (!find_tri_in(b[n],b[n+1],b[n+2],a)) ok = false;
+		if(b[n] == b[n+1] ||
+		   b[n+1] == b[n+2] ||
+		b[n] == b[n+2]) degen = true;
+	}
+	if (!ok && !degen)
+	{
+		dump_vec("before", "after" ,b, a);
+	}
+}
 bool	Obj8_Optimize(XObj8& obj8)
 {
 	typedef	pair<int, int>		idx_range;
@@ -578,10 +649,20 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 	for(idx_range_vector::iterator r = ranges.begin(); r != ranges.end(); ++r)
 	{
-		PVRTTriStripList(
-			&idx16[r->first],
-			(r->second - r->first) / 3);
+		vector<unsigned short> before(idx16.begin()+r->first, idx16.begin()+r->second);
 
+		vector<unsigned short>	ok, degen;
+		split_degen(before, ok, degen);
+
+		PVRTTriStripList(
+			&*ok.begin(),
+			ok.size() / 3);
+		
+
+		vector<unsigned short> after(ok.begin(), ok.end());
+		after.insert(after.end(),degen.begin(),degen.end());
+
+		compare_before_after(before,after);
 
 /*
 		PVRTGeometrySort(
