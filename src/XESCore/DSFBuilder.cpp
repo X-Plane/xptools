@@ -110,6 +110,16 @@ struct hash_edge {
 #endif
 HASH_MAP_NAMESPACE_END
 
+bool	IsCoastal(const CDT& inMesh, CDT::Vertex_handle v)
+{
+	CDT::Face_circulator circ, stop;
+	circ = stop = inMesh.incident_faces(v);
+	do {
+		if(!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
+			return true;
+	} while (++circ != stop);
+	return false;
+}
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
 static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6], int kind)
@@ -988,7 +998,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			fan_builder.CalcFans();
 
 			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 5 : (pinfo ? 7 : 5), writer1);
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 7 : (pinfo ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
 			list<CDT::Vertex_handle>::iterator		vert;
 			int										primt;
@@ -1013,7 +1023,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[3] = (*vert)->info().normal[0];
 					coords8[4] =-(*vert)->info().normal[1];						
 					if (is_water)
+					{
 						coords8[5] = GetWaterBlend((*vert), waterType);
+						coords8[6] = IsCoastal(inHiresMesh,*vert) ? 0.0 : 1.0;
+					}
 					else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
