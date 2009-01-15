@@ -254,8 +254,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[1]));
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
-			poly_vec.push_back(poly);
-//			ioArea.join(poly);
+			ioArea.join(poly);
+//			poly_vec.push_back(poly);
 		}
 		for (int rwy = 0; rwy < inAirport->runways.size(); ++rwy)
 		if (inAirport->runways[rwy].surf_code != apt_surf_water)
@@ -272,8 +272,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
 
-			poly_vec.push_back(poly);
-//			ioArea.join(poly);
+			ioArea.join(poly);
+//			poly_vec.push_back(poly);
 
 		}
 		for (int rwy = 0; rwy < inAirport->helipads.size(); ++rwy)
@@ -291,8 +291,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
 
-			poly_vec.push_back(poly);
-//			ioArea.join(poly);
+			ioArea.join(poly);
+//			poly_vec.push_back(poly);
 		}
 		for (AptTaxiwayVector::const_iterator b = inAirport->taxiways.begin(); b != inAirport->taxiways.end(); ++b)
 		if(b->surface_code != apt_surf_transparent)
@@ -324,13 +324,23 @@ void BurnInAirport(
 
 			BurnInPolygon(ioMap, windings,faces);
 */
-//			ioArea.join(convex_hull);
-			poly_vec.push_back(convex_hull);
+			ioArea.join(convex_hull);
+//			poly_vec.push_back(convex_hull);
 			
 			
 		}
 		
-		ioArea.join(poly_vec.begin(), poly_vec.end());
+		for(vector<Polygon_2>::iterator p  = poly_vec.begin(); p != poly_vec.end(); ++p)
+		{
+			DebugAssert(ioArea.is_valid());
+//			printf("Polygon contains %d points:\n", p->size());
+//			for(Polygon_2::Vertex_iterator v = p->vertices_begin(); v != p->vertices_end(); ++v)
+//				printf("   %.15lf,%.15lf\n", CGAL::to_double(v->x()),CGAL::to_double(v->y()));
+//			ioArea.join(*p);
+//			printf("--\n");
+			DebugAssert(ioArea.is_valid());
+		}
+//		ioArea.join(poly_vec.begin(), poly_vec.end());
 	}
 	
 	if(inFillWater != fill_dirt2apt)
@@ -667,8 +677,11 @@ void	GenBoundary(
 			p->back().code = (circ == stop ? apt_rng_seg : apt_lin_seg);
 			p->back().pt = cgal2ben(circ->target()->point());
 		} while(circ != stop);
-		
-		DebugAssert(f->holes_begin() == f->holes_end());
+
+#if !DEV
+#error			this used to be a safe assertoin - but not now.  Why?  Ben needs to look.
+#endif
+//		DebugAssert(f->holes_begin() == f->holes_end());
 	}
 }
 
