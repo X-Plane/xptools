@@ -27,8 +27,7 @@
 #include <string>
 using std::string;
 
-struct	XObj8;
-struct	XObjLOD8;
+#include "XObjDefs.h"
 
  class	XObjBuilder {
  public:
@@ -75,12 +74,27 @@ struct	XObjLOD8;
  	void	AccumRotateKey(float v, float a);
 	void	AccumTranslateEnd(void);
 	void	AccumRotateEnd(void);
-
+	
+	void	AccumManip(int attr, const XObjManip8& in_data);
+	
 	// A few status checks
 	inline string	IsHard(void) const		{ return hard;			}
 	inline int		IsCockpit(void) const	{ return cockpit > -2;	}
 
  private:
+ 
+	struct manip_data {
+		manip_data();
+		manip_data(int attr, XObjManip8& rhs);
+		manip_data(const manip_data& rhs);
+		
+		manip_data& operator=(const manip_data& rhs);
+		bool operator==(const manip_data& rhs) const;
+		bool operator!=(const manip_data& rhs) const;
+		
+		int			attr;
+		XObjManip8	data;
+	};	
 
  	void	AssureLOD(void);
  	void	SetDefaultState(void);
@@ -88,7 +102,11 @@ struct	XObjLOD8;
 
  	XObj8 *		obj;
  	XObjLOD8 *	lod;
-
+	
+	manip_data	manip;				manip_data	o_manip;
+	string		light_level;		string	o_light_level;
+	int			draw_disable;		int		o_draw_disable;
+	int			wall;				int		o_wall;
  	string		hard;				string	o_hard;
 	int			deck;				int		o_deck;
  	int			flat;				int		o_flat;

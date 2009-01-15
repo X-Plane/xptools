@@ -77,7 +77,22 @@ cmd_info	gCmds[] = {
 {	anim_Hide,			type_Anim,		"ANIM_hide",		3,0,1},
 {	anim_Show,			type_Anim,		"ANIM_show",		3,0,1},
 
-{	attr_Tex_Cockpit_Subregion,	type_Attr,	"ATTR_cockpit_region",			1,0,1},
+// 900
+{	attr_Tex_Cockpit_Subregion,	type_Attr,	"ATTR_cockpit_region",	1,0,1},
+// 920
+{	attr_Manip_None,		type_Attr,	"ATTR_manip_none",			0,0,1},
+{	attr_Manip_Drag_2d,		type_Attr,	"ATTR_manip_drag_xy",		1,0,1},
+{	attr_Manip_Drag_Axis,	type_Attr,	"ATTR_manip_drag_axis",		1,0,1},
+{	attr_Manip_Command,		type_Attr,	"ATTR_manip_command",		1,0,1},
+{	attr_Manip_Command_Axis,type_Attr,	"ATTR_manip_command_axis",	1,0,1},
+{	attr_Manip_Noop,		type_Attr,	"ATTR_manip_noop",			0,0,1},
+// 930
+{	attr_Light_Level,		type_Attr,	"ATTR_light_level",			1,0,1},
+{	attr_Light_Level_Reset,	type_Attr,	"ATTR_light_level_reset",	0,0,1},
+{	attr_Draw_Disable,		type_Attr,	"ATTR_draw_disable",		0,0,1},
+{	attr_Draw_Enable,		type_Attr,	"ATTR_draw_enable",			0,0,1},
+{	attr_Solid_Wall,		type_Attr,	"ATTR_solid_camera",		0,0,1},
+{	attr_No_Solid_Wall,		type_Attr,	"ATTR_no_solid_camera",		0,0,1},
 
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 

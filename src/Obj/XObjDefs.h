@@ -113,7 +113,20 @@ enum {
 
 	// 900 commands
 	attr_Tex_Cockpit_Subregion,
-
+	// 920 commands
+	attr_Manip_None,
+	attr_Manip_Drag_2d,
+	attr_Manip_Drag_Axis,
+	attr_Manip_Command,
+	attr_Manip_Command_Axis,
+	attr_Manip_Noop,
+	// 930 commands
+	attr_Light_Level,
+	attr_Light_Level_Reset,
+	attr_Draw_Disable,
+	attr_Draw_Enable,
+	attr_Solid_Wall,
+	attr_No_Solid_Wall,
 	attr_Max
 };
 
@@ -181,6 +194,16 @@ struct	XObjAnim8 {
 	vector<XObjKey>			keyframes;
 };
 
+struct XObjManip8 {
+	string					dataref1;				// Commands for, cmd manips!
+	string					dataref2;
+	float					axis[3];
+	float					v1_min, v1_max;
+	float					v2_min, v2_max;
+	string					cursor;
+	string					tooltip;
+};
+
 struct	XObjCmd8 {
 	int						cmd;
 	float					params[12];
@@ -211,6 +234,7 @@ struct	XObj8 {
 	ObjPointPool			geo_lines;
 	ObjPointPool			geo_lights;
 	vector<XObjAnim8>		animation;
+	vector<XObjManip8>		manips;
 	vector<XObjLOD8>		lods;
 };
 

@@ -35,7 +35,7 @@
 	#elif LIN
 		#define CRLF "\n"
 	#elif IBM
-		#define CRLF "\r\n"
+		#define CRLF "\n"
 	#else
 		#error no platform defined
 	#endif
@@ -584,6 +584,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
+		bool ate_eoln = false;
 		// TEXTURE <tex>
 		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE", xfals))
 		{
@@ -881,6 +882,101 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			outObj.regions.back().right  = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 			outObj.regions.back().top    = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 		}
+/******************************************************************************************************************************/
+		// MANIPS (920)
+/******************************************************************************************************************************/
+		// ATTR_manip_none
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_none", true))
+		{
+			cmd.cmd = attr_Manip_None;
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// ATTR_manip_drag_xy <cursor> <dx> <dy> <v1min> <v1max> <v2min> <v2max> <dref1> <dref> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_drag_xy", false))
+		{
+			cmd.cmd = attr_Manip_Drag_2d;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);			
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.axis[1] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref2);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_drag_axis <cursor> <dx> <dy> <dz> <v1> <v2> <dataref> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_drag_axis", false))
+		{
+			cmd.cmd = attr_Manip_Drag_Axis;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);			
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.axis[1] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.axis[2] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_command <currsor> <cmnd> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_command", false))
+		{
+			cmd.cmd = attr_Manip_Command;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);			
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_command_axis <cursor> <dx> <dy> <dz> <positive cmnd> <negative cmnd> <tool tip>
+		else if(TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_command_axis",false))
+		{
+			cmd.cmd = attr_Manip_Command_Axis;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);			
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.axis[1] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.axis[2] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);			
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref2);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_noop
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_noop",true))
+		{
+			cmd.cmd = attr_Manip_Noop;
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+/******************************************************************************************************************************/
+		// LIGHT LEVEL (930)
+/******************************************************************************************************************************/		
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_light_level",false))
+		{
+			cmd.cmd = attr_Light_Level;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+/******************************************************************************************************************************/
+		// DEFAULT
+/******************************************************************************************************************************/		
 		else
 		// Common attribute handling:
 		{
@@ -892,14 +988,15 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 				cmd.cmd = gCmds[cmd_idx].cmd_id;
 				for (n = 0; n < gCmds[cmd_idx].elem_count; ++n)
 				{
-					cmd.params[n] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+					cmd.params[n] = TXT_MAP_flt_scan(cur_ptr, end_ptr, false);
 				}
 				outObj.lods.back().cmds.push_back(cmd);
 			}
 
 		}
 
-		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
+		if(!ate_eoln)
+			TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	} // While loop
 
 	free(mem_buf);
@@ -1085,6 +1182,54 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					fprintf(fi,"ATTR_no_blend" CRLF);
 				else
 					fprintf(fi,"ATTR_no_blend %f" CRLF, cmd->params[0]);
+				break;
+			case attr_Tex_Cockpit_Subregion:
+				fprintf(fi,"ATTR_cockpit_region %d" CRLF, (int) cmd->params[0]);
+				break;
+				
+			case attr_Manip_Drag_2d:
+				fprintf(fi,"ATTR_manip_drag_xy %s %f %f %f %f %f %f %s %s %s" CRLF,
+					outObj.manips[cmd->idx_offset].cursor.c_str(),
+					outObj.manips[cmd->idx_offset].axis[0],
+					outObj.manips[cmd->idx_offset].axis[1],
+					outObj.manips[cmd->idx_offset].v1_min,
+					outObj.manips[cmd->idx_offset].v1_max,
+					outObj.manips[cmd->idx_offset].v2_min,
+					outObj.manips[cmd->idx_offset].v2_max,
+					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					outObj.manips[cmd->idx_offset].dataref2.c_str(),
+					outObj.manips[cmd->idx_offset].tooltip.c_str());
+				break;
+			case attr_Manip_Drag_Axis:
+				fprintf(fi,"ATTR_manip_drag_axis %s %f %f %f %f %f %s %s" CRLF,
+					outObj.manips[cmd->idx_offset].cursor.c_str(),
+					outObj.manips[cmd->idx_offset].axis[0],
+					outObj.manips[cmd->idx_offset].axis[1],
+					outObj.manips[cmd->idx_offset].axis[2],
+					outObj.manips[cmd->idx_offset].v1_min,
+					outObj.manips[cmd->idx_offset].v1_max,
+					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					outObj.manips[cmd->idx_offset].tooltip.c_str());
+				break;
+			case attr_Manip_Command:
+				fprintf(fi,"ATTR_manip_command %s %s %s" CRLF,
+					outObj.manips[cmd->idx_offset].cursor.c_str(),
+					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					outObj.manips[cmd->idx_offset].tooltip.c_str());
+				break;
+			case attr_Manip_Command_Axis:
+				fprintf(fi,"ATTR_manip_command_axis %s %f %f %f %s %s %s" CRLF,
+					outObj.manips[cmd->idx_offset].cursor.c_str(),
+					outObj.manips[cmd->idx_offset].axis[0],
+					outObj.manips[cmd->idx_offset].axis[1],
+					outObj.manips[cmd->idx_offset].axis[2],
+					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					outObj.manips[cmd->idx_offset].dataref2.c_str(),
+					outObj.manips[cmd->idx_offset].tooltip.c_str());
+				break;
+			
+			case attr_Light_Level:
+				fprintf(fi,"ATTR_light_level %s" CRLF, cmd->name.c_str());
 				break;
 			default:
 				{
