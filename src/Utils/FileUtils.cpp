@@ -31,7 +31,8 @@ int FILE_exists(const char * path)
 {
 	struct stat ss;
 	if (stat(path,&ss) < 0) return 0;
-	return (S_ISDIR(ss.st_mode))? 1 : 0;
+	return 1;
+//	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 
 int FILE_delete_file(const char * nuke_path, int is_dir)
