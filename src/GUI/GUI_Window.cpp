@@ -1199,7 +1199,7 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 						Client2OGL_Y(me->mMouse.y,hWnd),
 						me->mTipBounds, tip);
 					if (tip.empty()) di->szText[0] = 0;
-					else			 strcpy(di->szText,tip.c_str());
+					else			 strncpy_s(di->szText,80,tip.c_str(),_TRUNCATE);
 					return 0;
 				default:
 					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
