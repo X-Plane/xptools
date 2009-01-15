@@ -65,7 +65,6 @@
 		D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D607341F0D197A1100E08F61 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
-		D60734200D197A1100E08F61 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D60734210D197A1100E08F61 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D60734220D197A1100E08F61 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D60734230D197A1100E08F61 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
@@ -168,7 +167,6 @@
 		D6226E590E4B81C2005BD1D7 /* WED_LinePlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E580E4B81C2005BD1D7 /* WED_LinePlacement.cpp */; };
 		D6226E5E0E4B826F005BD1D7 /* WED_StringPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E5D0E4B826F005BD1D7 /* WED_StringPlacement.cpp */; };
 		D6226E700E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */; };
-		D6226E830E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E820E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.cpp */; };
 		D6226E890E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226E880E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp */; };
 		D6226EC20E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226EC10E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp */; };
 		D6226F250E4C6A48005BD1D7 /* WED_LibraryMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */; };
@@ -349,7 +347,6 @@
 		D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D65E4B2F0B65427C004D7887 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
-		D65E4B300B65427C004D7887 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D65E4B330B65427C004D7887 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D65E4B350B65427C004D7887 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D65E4B360B65427C004D7887 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -397,7 +394,7 @@
 		D65E4BCC0B6546B3004D7887 /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
 		D65E4BCD0B6546C2004D7887 /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D65E4BD40B6546E7004D7887 /* FAA_Obs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */; };
-		D65E4BD50B6546E8004D7887 /* gshhs.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37380AB22C85003949C5 /* gshhs.c */; };
+		D65E4BD50B6546E8004D7887 /* gshhs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37380AB22C85003949C5 /* gshhs.cpp */; };
 		D65E4BD60B6546E9004D7887 /* AptElev.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37330AB22C85003949C5 /* AptElev.cpp */; };
 		D65E4BDE0B654710004D7887 /* MiscFuncs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38A00AB22C85003949C5 /* MiscFuncs.cpp */; };
 		D65E4BDF0B654711004D7887 /* SelfTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AA0AB22C85003949C5 /* SelfTest.cpp */; };
@@ -422,7 +419,6 @@
 		D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
-		D65E4C390B654908004D7887 /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
 		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
 		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
@@ -466,7 +462,7 @@
 		D676836E0CC67BAE0032B90C /* VPFImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B70AB22C85003949C5 /* VPFImport.cpp */; };
 		D676836F0CC67BAF0032B90C /* VPFTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B90AB22C85003949C5 /* VPFTable.cpp */; };
 		D67683700CC67BB40032B90C /* FAA_Obs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */; };
-		D67683710CC67BB40032B90C /* gshhs.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37380AB22C85003949C5 /* gshhs.c */; };
+		D67683710CC67BB40032B90C /* gshhs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37380AB22C85003949C5 /* gshhs.cpp */; };
 		D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38920AB22C85003949C5 /* GISTool_VectorCmds.cpp */; };
 		D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67684520CC699070032B90C /* WED_EditCommands.cpp */; };
@@ -534,7 +530,6 @@
 		D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
-		D67EF8700B5E5EAD00D9190C /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
@@ -545,7 +540,6 @@
 		D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF97E0B6135F400D9190C /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
-		D67EF97F0B6135F400D9190C /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D67EF9820B6135F400D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D67EF9840B6135F400D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF9850B6135F400D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -567,6 +561,8 @@
 		D682E4170C1627F700BBE1A0 /* property_bar.png in Resources */ = {isa = PBXBuildFile; fileRef = D682E4160C1627F700BBE1A0 /* property_bar.png */; };
 		D682E4840C162C9100BBE1A0 /* arrows.png in Resources */ = {isa = PBXBuildFile; fileRef = D682E4830C162C9100BBE1A0 /* arrows.png */; };
 		D682E97A0C17124A00BBE1A0 /* sider.png in Resources */ = {isa = PBXBuildFile; fileRef = D682E9790C17124A00BBE1A0 /* sider.png */; };
+		D68ABC730F1E51A9002892AD /* WED_TCEToolAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68ABC720F1E51A9002892AD /* WED_TCEToolAdapter.cpp */; };
+		D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */; };
 		D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
 		D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
 		D68E28A00EBF5DB10015648F /* shptree.c in Sources */ = {isa = PBXBuildFile; fileRef = D68E28980EBF5DB10015648F /* shptree.c */; };
@@ -577,6 +573,12 @@
 		D68E2A8D0EBFC8280015648F /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D68E2A8E0EBFC82C0015648F /* MapOverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */; };
 		D68E2A8F0EBFC82D0015648F /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
+		D6951EC20EE18C4200A04BAD /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
+		D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
+		D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */; };
+		D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */; };
+		D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CDA00EE089E5009C5F2E /* WED_CreateBoxTool.cpp */; };
+		D695CE010EE09F19009C5F2E /* WED_TextureBezierNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */; };
 		D69FD7470B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD7480B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D69FD7490B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
@@ -602,6 +604,13 @@
 		D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */; };
 		D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A1860D0BA9A59C00BBCD0C /* tabs.png */; };
 		D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */; };
+		D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143A0F126C930006E096 /* WED_TCE.cpp */; };
+		D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */; };
+		D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */; };
+		D6AC147B0F1271640006E096 /* WED_TCEToolNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC147A0F1271640006E096 /* WED_TCEToolNew.cpp */; };
+		D6AC14D70F1279EB0006E096 /* WED_PreviewLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14D60F1279EB0006E096 /* WED_PreviewLayer.cpp */; };
+		D6AC14E90F127AFE0006E096 /* WED_ResourceMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */; };
+		D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */; };
 		D6B0DCD30E155AF400DDBD89 /* ObjPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */; };
 		D6B0DD080E155D6A00DDBD89 /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D6B0DD0C0E155D8300DDBD89 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
@@ -627,7 +636,6 @@
 		D6BC3B0C0AB231A2003949C5 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D6BC3B0D0AB231A8003949C5 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D6BC3B0E0AB231AE003949C5 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
-		D6BC3B0F0AB231B3003949C5 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D6BC3B100AB231B8003949C5 /* TexUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A10AB22C85003949C5 /* TexUtils.cpp */; };
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
 		D6BC3CB50AB2330E003949C5 /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
@@ -645,6 +653,7 @@
 		D6BC3CCF0AB23C25003949C5 /* XGrinderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375A0AB22C85003949C5 /* XGrinderApp.cpp */; };
 		D6BC3CD20AB23C4D003949C5 /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D6BC3CD50AB23C7F003949C5 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C578AC0C7E33B200FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
 		D6C578AE0C7E33B200FCB4C1 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
@@ -668,7 +677,6 @@
 		D6C579E40C7E3CDE00FCB4C1 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */; };
 		D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
-		D6C57A2A0C7E3EB300FCB4C1 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D6C57F300C831B4A00FCB4C1 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D6C57F310C831B5000FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
 		D6C57F320C831B5000FCB4C1 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
@@ -806,6 +814,7 @@
 		D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */; };
 		D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */; };
 		D6FA51D40E16DFAC001C1035 /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
+		D6FD4D7A0F1EC297005D8C93 /* WED_DSFImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */; };
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
@@ -1056,8 +1065,6 @@
 		D6226E5D0E4B826F005BD1D7 /* WED_StringPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StringPlacement.cpp; sourceTree = "<group>"; };
 		D6226E6E0E4B8C43005BD1D7 /* WED_DrapedOrthophoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DrapedOrthophoto.h; sourceTree = "<group>"; };
 		D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrapedOrthophoto.cpp; sourceTree = "<group>"; };
-		D6226E810E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DrapedOrthophotoBoundary.h; sourceTree = "<group>"; };
-		D6226E820E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrapedOrthophotoBoundary.cpp; sourceTree = "<group>"; };
 		D6226E870E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SimpleBoundaryNode.h; sourceTree = "<group>"; };
 		D6226E880E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SimpleBoundaryNode.cpp; sourceTree = "<group>"; };
 		D6226EC00E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SimpleBezierBoundaryNode.h; sourceTree = "<group>"; };
@@ -1272,10 +1279,22 @@
 		D682E4160C1627F700BBE1A0 /* property_bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = property_bar.png; sourceTree = "<group>"; };
 		D682E4830C162C9100BBE1A0 /* arrows.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrows.png; sourceTree = "<group>"; };
 		D682E9790C17124A00BBE1A0 /* sider.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sider.png; sourceTree = "<group>"; };
+		D68ABC710F1E51A9002892AD /* WED_TCEToolAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEToolAdapter.h; sourceTree = "<group>"; };
+		D68ABC720F1E51A9002892AD /* WED_TCEToolAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEToolAdapter.cpp; sourceTree = "<group>"; };
+		D68ABC820F1E5B5F002892AD /* WED_TCEVertexTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEVertexTool.h; sourceTree = "<group>"; };
+		D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEVertexTool.cpp; sourceTree = "<group>"; };
 		D68E28810EBF5D3A0015648F /* ShapeIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShapeIO.h; sourceTree = "<group>"; };
 		D68E28820EBF5D3A0015648F /* ShapeIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShapeIO.cpp; sourceTree = "<group>"; };
 		D68E28930EBF5DB10015648F /* shapefil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shapefil.h; sourceTree = "<group>"; };
 		D68E28980EBF5DB10015648F /* shptree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = shptree.c; sourceTree = "<group>"; };
+		D695CD6D0EE0862E009C5F2E /* WED_GISBoundingBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISBoundingBox.h; sourceTree = "<group>"; };
+		D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISBoundingBox.cpp; sourceTree = "<group>"; };
+		D695CD7D0EE08808009C5F2E /* WED_ExclusionZone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ExclusionZone.h; sourceTree = "<group>"; };
+		D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ExclusionZone.cpp; sourceTree = "<group>"; };
+		D695CD9F0EE089E5009C5F2E /* WED_CreateBoxTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateBoxTool.h; sourceTree = "<group>"; };
+		D695CDA00EE089E5009C5F2E /* WED_CreateBoxTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreateBoxTool.cpp; sourceTree = "<group>"; };
+		D695CDFF0EE09F19009C5F2E /* WED_TextureBezierNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TextureBezierNode.h; sourceTree = "<group>"; };
+		D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureBezierNode.cpp; sourceTree = "<group>"; };
 		D69FD7430B6CF765008E3AEC /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
 		D69FD7440B6CF765008E3AEC /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
 		D69FD7450B6CF765008E3AEC /* zip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
@@ -1303,6 +1322,20 @@
 		D6A1860D0BA9A59C00BBCD0C /* tabs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tabs.png; sourceTree = "<group>"; };
 		D6A186360BA9B28900BBCD0C /* GUI_TabControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabControl.h; sourceTree = "<group>"; };
 		D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TabControl.cpp; sourceTree = "<group>"; };
+		D6AC143A0F126C930006E096 /* WED_TCE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCE.cpp; sourceTree = "<group>"; };
+		D6AC143B0F126C930006E096 /* WED_TCE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCE.h; sourceTree = "<group>"; };
+		D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEPane.cpp; sourceTree = "<group>"; };
+		D6AC143D0F126C930006E096 /* WED_TCEPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEPane.h; sourceTree = "<group>"; };
+		D6AC144F0F126EC10006E096 /* WED_TCELayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCELayer.h; sourceTree = "<group>"; };
+		D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCELayer.cpp; sourceTree = "<group>"; };
+		D6AC14790F1271640006E096 /* WED_TCEToolNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEToolNew.h; sourceTree = "<group>"; };
+		D6AC147A0F1271640006E096 /* WED_TCEToolNew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEToolNew.cpp; sourceTree = "<group>"; };
+		D6AC14D50F1279EB0006E096 /* WED_PreviewLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_PreviewLayer.h; sourceTree = "<group>"; };
+		D6AC14D60F1279EB0006E096 /* WED_PreviewLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PreviewLayer.cpp; sourceTree = "<group>"; };
+		D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ResourceMgr.cpp; sourceTree = "<group>"; };
+		D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ResourceMgr.h; sourceTree = "<group>"; };
+		D6AC154B0F12866E0006E096 /* WED_DrawUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DrawUtils.h; sourceTree = "<group>"; };
+		D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrawUtils.cpp; sourceTree = "<group>"; };
 		D6BB228E0EC13287006499D7 /* MapTopology.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapTopology.h; sourceTree = "<group>"; };
 		D6BB228F0EC13287006499D7 /* MapTopology.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapTopology.cpp; sourceTree = "<group>"; };
 		D6BC36450AB22C84003949C5 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
@@ -1445,7 +1478,7 @@
 		D6BC37340AB22C85003949C5 /* AptElev.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AptElev.h; sourceTree = "<group>"; };
 		D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FAA_Obs.cpp; sourceTree = "<group>"; };
 		D6BC37370AB22C85003949C5 /* FAA_Obs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FAA_Obs.h; sourceTree = "<group>"; };
-		D6BC37380AB22C85003949C5 /* gshhs.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = gshhs.c; sourceTree = "<group>"; };
+		D6BC37380AB22C85003949C5 /* gshhs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = gshhs.cpp; sourceTree = "<group>"; };
 		D6BC37390AB22C85003949C5 /* gshhs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = gshhs.h; sourceTree = "<group>"; };
 		D6BC373D0AB22C85003949C5 /* SDTSRead.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SDTSRead.cpp; sourceTree = "<group>"; };
 		D6BC373E0AB22C85003949C5 /* SDTSRead.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SDTSRead.h; sourceTree = "<group>"; };
@@ -1895,6 +1928,8 @@
 		D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureNode.cpp; sourceTree = "<group>"; };
 		D6F8E4B80C3C861C007A2EA7 /* WED_TextureNode.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_TextureNode.h; sourceTree = "<group>"; };
 		D6F8E4D20C3D4DB1007A2EA7 /* ILibrarian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ILibrarian.h; sourceTree = "<group>"; };
+		D6FD4D780F1EC297005D8C93 /* WED_DSFImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFImport.h; sourceTree = "<group>"; };
+		D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFImport.cpp; sourceTree = "<group>"; };
 		D6FE97C80D8858D30025D144 /* README_FIRST */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README_FIRST; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
@@ -2118,6 +2153,8 @@
 				D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */,
 				D66864230C4F783C00DB3056 /* WED_DSFExport.h */,
 				D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */,
+				D6FD4D780F1EC297005D8C93 /* WED_DSFImport.h */,
+				D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */,
 			);
 			path = WEDImportExport;
 			sourceTree = "<group>";
@@ -2341,6 +2378,25 @@
 			path = line_types;
 			sourceTree = "<group>";
 		};
+		D6AC14390F126C930006E096 /* WEDTCE */ = {
+			isa = PBXGroup;
+			children = (
+				D6AC143A0F126C930006E096 /* WED_TCE.cpp */,
+				D6AC143B0F126C930006E096 /* WED_TCE.h */,
+				D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */,
+				D6AC143D0F126C930006E096 /* WED_TCEPane.h */,
+				D6AC144F0F126EC10006E096 /* WED_TCELayer.h */,
+				D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */,
+				D6AC14790F1271640006E096 /* WED_TCEToolNew.h */,
+				D6AC147A0F1271640006E096 /* WED_TCEToolNew.cpp */,
+				D68ABC710F1E51A9002892AD /* WED_TCEToolAdapter.h */,
+				D68ABC720F1E51A9002892AD /* WED_TCEToolAdapter.cpp */,
+				D68ABC820F1E5B5F002892AD /* WED_TCEVertexTool.h */,
+				D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */,
+			);
+			path = WEDTCE;
+			sourceTree = "<group>";
+		};
 		D6BC361B0AB22C84003949C5 /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -2368,6 +2424,7 @@
 				D60B0BD00C0658E600AD5EB7 /* WEDImportExport */,
 				D6226FB00E4C8874005BD1D7 /* WEDLibrary */,
 				D6BC37E10AB22C85003949C5 /* WEDMap */,
+				D6AC14390F126C930006E096 /* WEDTCE */,
 				D6BC37E70AB22C85003949C5 /* WEDWindows */,
 				D6BC37F40AB22C85003949C5 /* WorldEditor */,
 				D6BC382D0AB22C85003949C5 /* XESCore */,
@@ -2623,7 +2680,7 @@
 				D6BC37340AB22C85003949C5 /* AptElev.h */,
 				D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */,
 				D6BC37370AB22C85003949C5 /* FAA_Obs.h */,
-				D6BC37380AB22C85003949C5 /* gshhs.c */,
+				D6BC37380AB22C85003949C5 /* gshhs.cpp */,
 				D6BC37390AB22C85003949C5 /* gshhs.h */,
 				D68E28810EBF5D3A0015648F /* ShapeIO.h */,
 				D68E28820EBF5D3A0015648F /* ShapeIO.cpp */,
@@ -2827,6 +2884,8 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */,
+				D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */,
 				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
 				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
 				D6ED40370B6AD47300D5484E /* WED_Archive.cpp */,
@@ -2899,6 +2958,8 @@
 				D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */,
 				D6FEC6ED0BE0F019006A99CC /* WED_CreateLineTool.h */,
 				D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */,
+				D695CD9F0EE089E5009C5F2E /* WED_CreateBoxTool.h */,
+				D695CDA00EE089E5009C5F2E /* WED_CreateBoxTool.cpp */,
 				D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */,
 				D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */,
 				D6A1801E0BA5F73700BBCD0C /* WED_ToolUtils.h */,
@@ -2911,6 +2972,10 @@
 				D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */,
 				D6F25F900C185F8000C26DC4 /* WED_WorldMapLayer.h */,
 				D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */,
+				D6AC14D50F1279EB0006E096 /* WED_PreviewLayer.h */,
+				D6AC14D60F1279EB0006E096 /* WED_PreviewLayer.cpp */,
+				D6AC154B0F12866E0006E096 /* WED_DrawUtils.h */,
+				D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */,
 			);
 			path = WEDMap;
 			sourceTree = "<group>";
@@ -3363,6 +3428,8 @@
 				D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */,
 				D636817F0B8AC67B00091AFC /* WED_GISPoint_Bezier.h */,
 				D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */,
+				D695CDFF0EE09F19009C5F2E /* WED_TextureBezierNode.h */,
+				D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */,
 				D62FCFBA0BD541BF00ED6CF8 /* WED_AirportNode.h */,
 				D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */,
 				D6226EC00E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.h */,
@@ -3400,6 +3467,10 @@
 				D6226E5C0E4B826F005BD1D7 /* WED_StringPlacement.h */,
 				D6226E5D0E4B826F005BD1D7 /* WED_StringPlacement.cpp */,
 				D636819D0B8ACA1500091AFC /* WED_GISPolygon.h */,
+				D695CD6D0EE0862E009C5F2E /* WED_GISBoundingBox.h */,
+				D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */,
+				D695CD7D0EE08808009C5F2E /* WED_ExclusionZone.h */,
+				D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */,
 				D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */,
 				D62FD0B50BD555B800ED6CF8 /* WED_Taxiway.h */,
 				D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */,
@@ -3411,16 +3482,14 @@
 				D6226E510E4B80CF005BD1D7 /* WED_ForestPlacement.cpp */,
 				D6226E540E4B8185005BD1D7 /* WED_PolygonPlacement.h */,
 				D6226E550E4B8185005BD1D7 /* WED_PolygonPlacement.cpp */,
-				D6226E810E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.h */,
-				D6226E820E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.cpp */,
+				D6226E6E0E4B8C43005BD1D7 /* WED_DrapedOrthophoto.h */,
+				D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */,
 				D63681A00B8ACA2600091AFC /* WED_GISComposite.h */,
 				D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */,
 				D62FCF8B0BD53C7F00ED6CF8 /* WED_Airport.h */,
 				D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */,
 				D6FF2B880B6E985200960D5E /* WED_Group.h */,
 				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
-				D6226E6E0E4B8C43005BD1D7 /* WED_DrapedOrthophoto.h */,
-				D6226E6F0E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp */,
 				D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */,
 				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
 			);
@@ -3813,7 +3882,6 @@
 				D6BC3B0C0AB231A2003949C5 /* BitmapUtils.cpp in Sources */,
 				D6BC3B0D0AB231A8003949C5 /* EndianUtils.c in Sources */,
 				D6BC3B0E0AB231AE003949C5 /* MatrixUtils.cpp in Sources */,
-				D6BC3B0F0AB231B3003949C5 /* PlatformUtils.mac.cpp in Sources */,
 				D6BC3B100AB231B8003949C5 /* TexUtils.cpp in Sources */,
 				D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */,
 				D624339E0AE3CDFF004F00E3 /* ObjUtils.cpp in Sources */,
@@ -3833,6 +3901,7 @@
 				D6C57F420C831B7F00FCB4C1 /* zip.c in Sources */,
 				D6C57F430C831B8400FCB4C1 /* ZLIBUtils.cpp in Sources */,
 				D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */,
+				D6951EC20EE18C4200A04BAD /* PlatformUtils.mac.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3851,7 +3920,6 @@
 				D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */,
 				D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */,
 				D607341F0D197A1100E08F61 /* md5.c in Sources */,
-				D60734200D197A1100E08F61 /* PlatformUtils.mac.cpp in Sources */,
 				D60734210D197A1100E08F61 /* EndianUtils.c in Sources */,
 				D60734220D197A1100E08F61 /* unzip.c in Sources */,
 				D60734230D197A1100E08F61 /* zip.c in Sources */,
@@ -4064,7 +4132,7 @@
 				D676836E0CC67BAE0032B90C /* VPFImport.cpp in Sources */,
 				D676836F0CC67BAF0032B90C /* VPFTable.cpp in Sources */,
 				D67683700CC67BB40032B90C /* FAA_Obs.cpp in Sources */,
-				D67683710CC67BB40032B90C /* gshhs.c in Sources */,
+				D67683710CC67BB40032B90C /* gshhs.cpp in Sources */,
 				D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */,
 				D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */,
 				D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */,
@@ -4099,7 +4167,6 @@
 				D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */,
 				D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */,
 				D65E4B2F0B65427C004D7887 /* md5.c in Sources */,
-				D65E4B300B65427C004D7887 /* PlatformUtils.mac.cpp in Sources */,
 				D65E4B330B65427C004D7887 /* EndianUtils.c in Sources */,
 				D65E4B460B65430B004D7887 /* GISTool.cpp in Sources */,
 				D65E4B470B65430C004D7887 /* GISTool_CoreCmds.cpp in Sources */,
@@ -4145,7 +4212,7 @@
 				D65E4BCC0B6546B3004D7887 /* PolyRasterUtils.cpp in Sources */,
 				D65E4BCD0B6546C2004D7887 /* BWImage.cpp in Sources */,
 				D65E4BD40B6546E7004D7887 /* FAA_Obs.cpp in Sources */,
-				D65E4BD50B6546E8004D7887 /* gshhs.c in Sources */,
+				D65E4BD50B6546E8004D7887 /* gshhs.cpp in Sources */,
 				D65E4BD60B6546E9004D7887 /* AptElev.cpp in Sources */,
 				D65E4BDE0B654710004D7887 /* MiscFuncs.cpp in Sources */,
 				D65E4BDF0B654711004D7887 /* SelfTest.cpp in Sources */,
@@ -4170,7 +4237,6 @@
 				D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */,
 				D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */,
 				D65E4C380B654901004D7887 /* perlin.cpp in Sources */,
-				D65E4C390B654908004D7887 /* hl_types.cpp in Sources */,
 				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */,
@@ -4233,7 +4299,6 @@
 				D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */,
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
 				D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */,
-				D67EF8700B5E5EAD00D9190C /* PlatformUtils.mac.cpp in Sources */,
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,
 				D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74C0B6CF765008E3AEC /* zip.c in Sources */,
@@ -4252,7 +4317,6 @@
 				D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */,
 				D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */,
 				D67EF97E0B6135F400D9190C /* md5.c in Sources */,
-				D67EF97F0B6135F400D9190C /* PlatformUtils.mac.cpp in Sources */,
 				D67EF9820B6135F400D9190C /* EndianUtils.c in Sources */,
 				D67EF98B0B61363300D9190C /* ConvertObj3DS.cpp in Sources */,
 				D67EF98C0B61363600D9190C /* ConvertObjDXF.cpp in Sources */,
@@ -4307,7 +4371,7 @@
 				D6C579E40C7E3CDE00FCB4C1 /* squish.cpp in Sources */,
 				D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */,
 				D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */,
-				D6C57A2A0C7E3EB300FCB4C1 /* PlatformUtils.mac.cpp in Sources */,
+				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4499,12 +4563,26 @@
 				D6226E590E4B81C2005BD1D7 /* WED_LinePlacement.cpp in Sources */,
 				D6226E5E0E4B826F005BD1D7 /* WED_StringPlacement.cpp in Sources */,
 				D6226E700E4B8C44005BD1D7 /* WED_DrapedOrthophoto.cpp in Sources */,
-				D6226E830E4B8EDA005BD1D7 /* WED_DrapedOrthophotoBoundary.cpp in Sources */,
 				D6226E890E4B8F6C005BD1D7 /* WED_SimpleBoundaryNode.cpp in Sources */,
 				D6226EC20E4B981E005BD1D7 /* WED_SimpleBezierBoundaryNode.cpp in Sources */,
 				D6226F250E4C6A48005BD1D7 /* WED_LibraryMgr.cpp in Sources */,
 				D6226FB30E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp in Sources */,
 				D6226FB90E4C889F005BD1D7 /* WED_LibraryPane.cpp in Sources */,
+				D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */,
+				D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */,
+				D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */,
+				D695CE010EE09F19009C5F2E /* WED_TextureBezierNode.cpp in Sources */,
+				D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */,
+				D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */,
+				D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */,
+				D6AC147B0F1271640006E096 /* WED_TCEToolNew.cpp in Sources */,
+				D6AC14D70F1279EB0006E096 /* WED_PreviewLayer.cpp in Sources */,
+				D6AC14E90F127AFE0006E096 /* WED_ResourceMgr.cpp in Sources */,
+				D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */,
+				D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */,
+				D68ABC730F1E51A9002892AD /* WED_TCEToolAdapter.cpp in Sources */,
+				D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */,
+				D6FD4D7A0F1EC297005D8C93 /* WED_DSFImport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
