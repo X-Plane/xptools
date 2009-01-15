@@ -203,6 +203,14 @@ CREATE TABLE IF NOT EXISTS WED_texturenode(
 	t				double		NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS WED_texturenode_bezier(
+	id				integer		PRIMARY KEY,
+	sc_hi			double		NOT NULL,
+	tc_hi			double		NOT NULL,
+	sc_lo			double		NOT NULL,
+	tc_lo			double		NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS WED_overlayimage(
 	id				integer		PRIMARY KEY,
 	file			string		NOT NULL
@@ -219,6 +227,12 @@ CREATE TABLE IF NOT EXISTS WED_dsf_polygon(
 	id				integer		PRIMARY KEY,
 	param			double,
 	closed			integer
+);
+
+CREATE TABLE IF NOT EXISTS WED_exclusionzone(
+	id				integer		NOT NULL,
+	exclusions		string		NOT NULL,
+	PRIMARY KEY(id,exclusions)	
 );
 
 -- Other Book Keeping

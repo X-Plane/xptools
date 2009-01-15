@@ -104,25 +104,25 @@ void	WED_CreateToolBase::EndEdit(void)
 {
 }
 
-intptr_t		WED_CreateToolBase::CountEntities(void) const
+int		WED_CreateToolBase::CountEntities(void) const
 {
 	return mPts.empty() ? 0 : 1;
 }
 
-intptr_t	WED_CreateToolBase::GetNthEntityID(intptr_t n) const
+intptr_t	WED_CreateToolBase::GetNthEntityID(int n) const
 {
 	return 0;
 }
 
-intptr_t		WED_CreateToolBase::CountControlHandles(intptr_t id						  ) const
+int		WED_CreateToolBase::CountControlHandles(intptr_t id						  ) const
 {
 	return mPts.size() * 3;
 }
 
-void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
+void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-		intptr_t idx = n / 3;
-		intptr_t kind = n % 3;
+		int idx = n / 3;
+		int kind = n % 3;
 
 	if (active) *active = 0;
 	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -161,18 +161,18 @@ void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t *
 }
 
 
-intptr_t		WED_CreateToolBase::GetLinks		    (intptr_t id) const
+int		WED_CreateToolBase::GetLinks		    (intptr_t id) const
 {
 	return mPts.size() * 3;
 }
 
-void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const
+void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, int n, bool * active, LinkType_t * ltype) const
 {
 	if (active) *active = 0;
 	if (!ltype) return;
 
-	intptr_t idx = n / 3;
-	intptr_t kind = n % 3;
+	int idx = n / 3;
+	int kind = n % 3;
 
 	int m = (idx+1)%mPts.size();
 	switch(kind) {
@@ -191,26 +191,26 @@ void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, intptr_t n, intptr_t * acti
 }
 
 
-intptr_t		WED_CreateToolBase::GetNthLinkSource   (intptr_t id, intptr_t n) const
+int		WED_CreateToolBase::GetNthLinkSource   (intptr_t id, int n) const
 {
-	intptr_t idx = n / 3;
-	intptr_t kind = n % 3;
+	int idx = n / 3;
+	int kind = n % 3;
 	return idx*3;
 }
 
 
-intptr_t		WED_CreateToolBase::GetNthLinkSourceCtl(intptr_t id, intptr_t n) const
+int		WED_CreateToolBase::GetNthLinkSourceCtl(intptr_t id, int n) const
 {
-	intptr_t idx = n / 3;
-	intptr_t kind = n % 3;
+	int idx = n / 3;
+	int kind = n % 3;
 	if (kind != 0) return -1;
 	return idx*3+2;
 }
 
-intptr_t		WED_CreateToolBase::GetNthLinkTarget   (intptr_t id, intptr_t n) const
+int		WED_CreateToolBase::GetNthLinkTarget   (intptr_t id, int n) const
 {
-	intptr_t idx = n / 3;
-	intptr_t kind = n % 3;
+	int idx = n / 3;
+	int kind = n % 3;
 	switch(kind) {
 	case 0:	return ((idx+1)%mPts.size()) * 3;
 	case 1: return idx*3+1;
@@ -219,10 +219,10 @@ intptr_t		WED_CreateToolBase::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 	return 0;
 }
 
-intptr_t		WED_CreateToolBase::GetNthLinkTargetCtl(intptr_t id, intptr_t n) const
+int		WED_CreateToolBase::GetNthLinkTargetCtl(intptr_t id, int n) const
 {
-	intptr_t idx = n / 3;
-	intptr_t kind = n % 3;
+	int idx = n / 3;
+	int kind = n % 3;
 	if (kind != 0) return -1;
 	return ((idx+1)%mPts.size())*3+1;
 }
@@ -232,10 +232,10 @@ bool	WED_CreateToolBase::PointOnStructure(intptr_t id, const Point2& p) const
 	return false;
 }
 
-void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt)
+void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
-	intptr_t idx = c / 3;
-	intptr_t kind = c % 3;
+	int idx = c / 3;
+	int kind = c % 3;
 	if (!mEditStarted)
 	{
 		mEditStarted = 1;
@@ -268,7 +268,7 @@ void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector
 	io_pt += delta;
 }
 
-void	WED_CreateToolBase::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
+void	WED_CreateToolBase::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
 {
 	if (c != mPts.size()-1)
 	{

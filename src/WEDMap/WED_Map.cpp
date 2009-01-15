@@ -76,46 +76,12 @@ void		WED_Map::AddLayer(WED_MapLayer * layer)
 void		WED_Map::SetBounds(int x1, int y1, int x2, int y2)
 {
 	GUI_Pane::SetBounds(x1,y1,x2,y2);
-
-//	double	old_bounds[4], new_bounds[4], log_bounds[4];
-//	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
-//	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
-
-//	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
-//	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
-
-//	new_bounds[0] = x1;
-//	new_bounds[1] = y1;
-//	new_bounds[2] = dobmax2(x1+1.0,x2);
-//	new_bounds[3] = dobmax2(y1+1.0,y2);
-
-//	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
-//	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
-
-//	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
 	SetPixelBounds(x1,y1,x2,y2);
 }
 
 void		WED_Map::SetBounds(int inBounds[4])
 {
 	GUI_Pane::SetBounds(inBounds);
-
-//	double	old_bounds[4], new_bounds[4], log_bounds[4];
-//	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
-//	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
-
-//	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
-//	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
-
-//	new_bounds[0] = inBounds[0];
-//	new_bounds[1] = inBounds[1];
-//	new_bounds[2] = dobmax2(inBounds[0]+1.0,inBounds[2]);
-//	new_bounds[3] = dobmax2(inBounds[1]+1.0,inBounds[3]);
-
-//	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
-//	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
-
-//	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
 	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
 
 }
@@ -126,7 +92,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	Bbox2 bounds;
 	
-	intptr_t draw_ent_v, draw_ent_s, wants_sel;
+	bool draw_ent_v, draw_ent_s, wants_sel;
 	
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
@@ -134,6 +100,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
+	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
@@ -141,6 +108,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	}
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
+	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
 		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
@@ -148,6 +116,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	}
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
+	if((*l)->IsVisible())
 	{
 		(*l)->DrawSelected(cur == *l, state);
 	}

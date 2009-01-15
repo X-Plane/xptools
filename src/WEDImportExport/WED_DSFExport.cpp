@@ -40,7 +40,9 @@
 #include "WED_StringPlacement.h"
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
-
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
+#include "WED_EnumSystem.h"
 
 struct	DSF_ResourceTable {
 	vector<string>		obj_defs;
@@ -84,8 +86,12 @@ static void strip_path(string& f)
 static int DSF_HasBezierSeq(IGISPointSequence * ring)
 {
 	int np = ring->GetNumPoints();
+	IGISPoint_Bezier * b;
+	Point2 d;
 	for(int n = 0; n < np; ++n)
 	if(ring->GetNthPoint(n)->GetGISClass() == gis_Point_Bezier)
+	if((b =dynamic_cast<IGISPoint_Bezier *>(ring->GetNthPoint(n))) != NULL)
+	if(b->GetControlHandleHi(d) || b->GetControlHandleLo(d))
 		return 1;
 	return 0;
 }
@@ -112,8 +118,10 @@ static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, v
 		IGISPoint_Bezier * pth = bezier ? dynamic_cast<IGISPoint_Bezier *>(pt) : NULL;
 		
 		pt->GetLocation(p);
+		if(tex_coord) pt->GetUV(st);
 		ch = p;
 		if(pth) pth->GetControlHandleHi(ch);
+		if(pth && tex_coord) pth->GetUVHi(stch);
 
 		double c[8] = { p.x(), p.y(), 0, 0,  0, 0,  0, 0 };
 
@@ -156,6 +164,8 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 	WED_StringPlacement * str;
 	WED_LinePlacement * lin;
 	WED_PolygonPlacement * pol;
+	WED_DrapedOrthophoto * orth;
+	WED_ExclusionZone * xcl;
 
 	int idx;
 	string r;
@@ -163,6 +173,36 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (!ent) return;
 	if (ent->GetHidden()) return;
+
+	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
+	{
+		set<int> xtypes;
+		xcl->GetExclusions(xtypes);
+		Point2 minp, maxp;
+		xcl->GetMin()->GetLocation(minp);
+		xcl->GetMax()->GetLocation(maxp);
+		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
+		{
+			const char * pname = NULL;		
+			switch(*xt) {
+			case exclude_Obj:	pname = "sim/exclude_obj";	break;
+			case exclude_Fac:	pname = "sim/exclude_fac";	break;
+			case exclude_For:	pname = "sim/exclude_for";	break;
+			case exclude_Bch:	pname = "sim/exclude_bch";	break;
+			case exclude_Net:	pname = "sim/exclude_net";	break;
+
+			case exclude_Lin:	pname = "sim/exclude_lin";	break;
+			case exclude_Pol:	pname = "sim/exclude_pol";	break;
+			case exclude_Str:	pname = "sim/exclude_str";	break;
+			}
+			if(pname)
+			{
+				char valbuf[512];
+				sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
+				cbs->AcceptProperty_f(pname, valbuf, writer);
+			}
+		}
+	}
 
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
@@ -211,11 +251,20 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		pol->GetResource(r);
 		idx = io_table.accum_pol(r);
 		bool bez = DSF_HasBezierPol(pol);
-		cbs->BeginPolygon_f(idx,pol->GetDirection(),bez ? 4 : 2,writer);
+		cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
 		DSF_AccumWindings(pol,cbs,writer,bez,0,1);	// yes curves, no tex, yes holes
 		cbs->EndPolygon_f(writer);
 	}
-	
+	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
+	{
+		orth->GetResource(r);
+		idx = io_table.accum_pol(r);
+		bool bez = DSF_HasBezierPol(orth);
+		cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
+		DSF_AccumWindings(orth,cbs,writer,bez,1,1);	// yes curves, no tex, yes holes
+		cbs->EndPolygon_f(writer);
+	}
+
 	
 	
 /*	if ((img = dynamic_cast<WED_OverlayImage *>(what)) != NULL)
@@ -299,6 +348,8 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
 	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
 	cbs.AcceptProperty_f("sim/overlay", "1", writer);
+	cbs.AcceptProperty_f("sim/require_object", "1/0", writer);
+	cbs.AcceptProperty_f("sim/require_facade", "1/0", writer);
 
 	DSF_ResourceTable	rsrc;
 

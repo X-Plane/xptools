@@ -45,7 +45,6 @@ public:
 
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
-//	virtual void *		QueryInterface(const char * class_id);
 
 protected:
 

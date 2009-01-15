@@ -50,6 +50,11 @@ const char *	WED_GISPoint::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
+bool			WED_GISPoint::HasUV(void) const
+{
+	return false;
+}
+
 void			WED_GISPoint::GetBounds		(	   Bbox2&  bounds) const
 {
 	bounds = Bbox2(Point2(longitude.value,latitude.value));
@@ -96,6 +101,17 @@ void	WED_GISPoint::GetLocation(      Point2& p) const
 
 	p.x_ = longitude.value;
 	p.y_ = latitude.value;
+}
+
+void	WED_GISPoint::GetUV	   (      Point2& p) const
+{
+	DebugAssert(!"Should not be accessing this.");
+	p = Point2(0,0);
+}
+
+void	WED_GISPoint::SetUV	   (const Point2& p)
+{
+	DebugAssert(!"Should not be accessing this.");
 }
 
 void	WED_GISPoint::SetLocation(const Point2& p)

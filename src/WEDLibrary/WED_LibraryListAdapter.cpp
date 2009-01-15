@@ -69,7 +69,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	c.is_selected = r == mSel;
 	int cut = -1;
 	c.indent_level = 0;
-	for(int n = 0; n < r.size(); ++n)
+	for(int n = 1; n < r.size(); ++n)
 		if(r[n] == '/') cut = n, ++c.indent_level;	
 	c.text_val = r.substr(cut+1);
 	c.string_is_resource = false;

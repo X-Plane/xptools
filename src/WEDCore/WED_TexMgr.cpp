@@ -38,12 +38,12 @@ WED_TexMgr::WED_TexMgr(const string& package) : mPackage(package)
 }
 
 
-TexRef		WED_TexMgr::LookupTexture(const char * path)
+TexRef		WED_TexMgr::LookupTexture(const char * path, bool is_absolute, int flags)
 {
 	TexMap::iterator i = mTexes.find(path);
 	if (i == mTexes.end())
 	{
-		return LoadTexture(path);
+		return LoadTexture(path, is_absolute,flags);
 	}
 	return i->second;
 }
@@ -71,11 +71,11 @@ void		WED_TexMgr::GetTexInfo(
 	if (org_y) *org_y = i->org_y;
 }
 
-WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
+WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolute, int flags)
 {
 	string fpath;
 
-	fpath = gPackageMgr->ComputePath(mPackage, path);
+	fpath = is_absolute ? path : gPackageMgr->ComputePath(mPackage, path);
 
 	TexInfo * inf = new TexInfo;
 
@@ -118,7 +118,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 	inf->org_y = im.height;
 
 	float s,t;
-	if (!LoadTextureFromImage(im, tn, 0, &inf->act_x, &inf->act_y, &s,&t))
+	if (!LoadTextureFromImage(im, tn, flags, &inf->act_x, &inf->act_y, &s,&t))
 	{
 		delete inf;
 		if (im.data) free(im.data);

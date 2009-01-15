@@ -40,6 +40,7 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportDSF,
+	wed_ImportDSF,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
@@ -68,6 +69,7 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleTerraserver,
+	wed_TogglePreview,
 	wed_RestorePanes,
 	// Select Menu
 	wed_SelectParent,

@@ -45,6 +45,10 @@ const char *	WED_GISLine::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
+bool			WED_GISLine::HasUV			(void				 ) const
+{
+	return false;
+}
 
 void			WED_GISLine::GetBounds		(	   Bbox2&  bounds) const
 {
@@ -160,6 +164,14 @@ bool				WED_GISLine::GetSide(int n, Segment2& s, Bezier2& b) const
 	GetTarget()->GetLocation(s.p2);
 	return false;
 }
+
+bool				WED_GISLine::GetSideUV(int n, Segment2& s, Bezier2& b) const
+{
+	DebugAssert(!"Should not be here.");
+	s.p1 = s.p2 = Point2(0,0);
+	return false;
+}
+
 
 void WED_GISLine::Reverse(void)
 {

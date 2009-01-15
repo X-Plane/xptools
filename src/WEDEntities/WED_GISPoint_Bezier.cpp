@@ -240,3 +240,25 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 	}
 }
 
+void	WED_GISPoint_Bezier::SetUVLo			   (const Point2& p)
+{
+	DebugAssert(!"Should not be accessing this.");
+}
+
+void	WED_GISPoint_Bezier::SetUVHi			   (const Point2& p)
+{
+	DebugAssert(!"Should not be accessing this.");
+}
+
+void	WED_GISPoint_Bezier::GetUVLo			   (      Point2& p) const
+{
+	DebugAssert(!"Should not be accessing this.");
+	p = Point2(0,0);
+}
+
+void	WED_GISPoint_Bezier::GetUVHi			   (      Point2& p) const
+{
+	DebugAssert(!"Should not be accessing this.");
+	p = Point2(0,0);
+}
+

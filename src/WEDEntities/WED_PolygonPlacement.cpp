@@ -27,7 +27,7 @@ DEFINE_PERSISTENT(WED_PolygonPlacement)
 TRIVIAL_COPY(WED_PolygonPlacement,WED_GISPolygon)
 
 WED_PolygonPlacement::WED_PolygonPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	direction(this,"Direction","WED_dsf_polygon","param",10.0,3,1),
+	heading(this,"Heading","WED_dsf_polygon","param",10.0,3,1),
 	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
 {
 }
@@ -36,14 +36,14 @@ WED_PolygonPlacement::~WED_PolygonPlacement()
 {
 }
 
-double WED_PolygonPlacement::GetDirection(void) const
+double WED_PolygonPlacement::GetHeading(void) const
 {
-	return direction.value;
+	return heading.value;
 }
 
-void WED_PolygonPlacement::SetDirection(double h)
+void WED_PolygonPlacement::SetHeading(double h)
 {
-	direction = h;
+	heading = h;
 }
 
 void		WED_PolygonPlacement::GetResource(	  string& r) const

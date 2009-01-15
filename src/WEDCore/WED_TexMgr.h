@@ -31,7 +31,7 @@ public:
 
 						WED_TexMgr(const string& package);
 
-	virtual	TexRef		LookupTexture(const char * path);
+	virtual	TexRef		LookupTexture(const char * path, bool is_absolute, int flags);
 
 	virtual	int			GetTexID(TexRef ref);
 	virtual	void		GetTexInfo(
@@ -61,7 +61,7 @@ private:
 
 	string	mPackage;
 
-	TexInfo *	LoadTexture(const char * path);
+	TexInfo *	LoadTexture(const char * path, bool is_absolute, int flags);
 
 };
 

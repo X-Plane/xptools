@@ -32,15 +32,15 @@ DECLARE_PERSISTENT(WED_PolygonPlacement)
 
 public:
 
-			double		GetDirection(void) const;
-			void		SetDirection(double h);
+			double		GetHeading(void) const;
+			void		SetHeading(double h);
 
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
 private:
 
-	WED_PropDoubleText		direction;
+	WED_PropDoubleText		heading;
 	WED_PropStringText		resource;
 
 };

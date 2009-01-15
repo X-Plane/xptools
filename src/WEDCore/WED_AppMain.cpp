@@ -81,6 +81,7 @@
 	_R(WED_Windsock) \
 	_R(WED_ATCFrequency) \
 	_R(WED_TextureNode) \
+	_R(WED_TextureBezierNode) \
 	_R(WED_OverlayImage) \
 	_R(WED_SimpleBoundaryNode) \
 	_R(WED_SimpleBezierBoundaryNode) \
@@ -90,7 +91,7 @@
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
-	_R(WED_DrapedOrthophotoBoundary)
+	_R(WED_ExclusionZone)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

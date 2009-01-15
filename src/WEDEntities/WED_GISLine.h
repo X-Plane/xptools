@@ -44,6 +44,7 @@ public:
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 	virtual	const char *	GetGISSubtype	(void				 ) const;
+	virtual	bool			HasUV			(void				 ) const;
 	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
@@ -57,7 +58,8 @@ public:
 //	virtual		  IGISPoint *	SplitSide   (int n)		 ;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual		  IGISPoint *	GetNthPoint (int n) const;
 	virtual	int					GetNumSides(void) const;
-	virtual	bool				GetSide(int n, Segment2& s, Bezier2& b) const;	// true for bezier
+	virtual	bool				GetSide  (int n, Segment2& s, Bezier2& b) const;	// true for bezier
+	virtual	bool				GetSideUV(int n, Segment2& s, Bezier2& b) const;	// true for bezier
 
 	virtual	bool				IsClosed(void) const;
 	//IGISLine

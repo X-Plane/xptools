@@ -59,8 +59,8 @@ public:
 	virtual	void		PreCommandNotification(GUI_Commander * focus_target, int command);
 
 	// WED_Layer
-	virtual	void		DrawStructure			(intptr_t inCurrent, GUI_GraphState * g);
-	virtual	void		GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel);
+	virtual	void		DrawStructure			(bool inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
 
 protected:
 

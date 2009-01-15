@@ -32,10 +32,10 @@ public:
 						 WED_MapBkgnd(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_MapBkgnd();
 
-	virtual	void		DrawVisualization(intptr_t inCurrent, GUI_GraphState * g);
-	virtual	void		DrawStructure	 (intptr_t inCurrent, GUI_GraphState * g);
+	virtual	void		DrawVisualization(bool inCurrent, GUI_GraphState * g);
+	virtual	void		DrawStructure	 (bool inCurrent, GUI_GraphState * g);
 
-	virtual	void		GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
 
 };
 

@@ -31,6 +31,7 @@ struct Vector2;
 class	GUI_Pane;
 class	ISelectable;
 class	ITexMgr;
+class	WED_ResourceMgr;
 class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
@@ -56,6 +57,7 @@ ISelection *	WED_GetSelect(IResolver * resolver);
 WED_Thing	*	WED_GetWorld(IResolver * resolver);
 ILibrarian *	WED_GetLibrarian(IResolver * resolver);
 ITexMgr *		WED_GetTexMgr(IResolver * resolver);
+WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver);
 
 bool			WED_IsIconic(IGISEntity * what);
 
@@ -86,11 +88,14 @@ int	Iterate_IsPartOfStructuredObject(ISelectable * what, void * ref);		// This o
 int	Iterate_IsNotPartOfStructuredObject(ISelectable * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
 int Iterate_IsNotGroup(ISelectable * what, void * ref);					// This object is not a group.
 int	Iterate_IsNonEmptyComposite(ISelectable * what, void * ref);			// We are a composite and we have at least one child.
-int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 // Selection filters
 int Iterate_HasSelectedParent(ISelectable * what, void * ref);				// ref is ISelection.
-int	Iterate_GetSelectThings(ISelectable * what, void * ref);				// ref is ptr to vector<wed_thing>
 
+// Collecting - these 
+int	Iterate_CollectThings(ISelectable * what, void * ref);				// ref is ptr to vector<wed_thing>
+int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
+int Iterate_CollectEntities  (ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>
+int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>  - only take entities with UV maps!
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP
 //---------------------------------------------------------------------------------------------------------------------------------

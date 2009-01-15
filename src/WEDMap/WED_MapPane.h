@@ -38,6 +38,7 @@ class WED_ToolInfoAdapter;
 
 class	WED_TerraserverLayer;
 class	WED_StructureLayer;
+class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
 //class	WED_TileServerLayer;
 
@@ -91,6 +92,7 @@ private:
 	WED_TerraserverLayer *	mTerraserver;
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
+	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
 
 	GUI_ToolBar *			mToolbar;

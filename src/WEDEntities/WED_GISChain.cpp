@@ -44,6 +44,12 @@ const char *	WED_GISChain::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
+bool			WED_GISChain::HasUV			(void				 ) const
+{
+	if(GetNumPoints() == 0) return false;
+	return GetNthPoint(0)->HasUV();
+}
+
 void			WED_GISChain::GetBounds		(	   Bbox2&  bounds) const
 {
 	if (CacheBuild())	RebuildCache();
@@ -201,6 +207,47 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	return true;
 }
 
+bool		WED_GISChain::GetSideUV(int n, Segment2& s, Bezier2& b) const
+{
+	if (CacheBuild())	RebuildCache();
+
+	int n1 = n;
+	int n2 = (n + 1) % mCachePts.size();
+
+	IGISPoint * p1 = mCachePts[n1];
+	IGISPoint * p2 = mCachePts[n2];
+	IGISPoint_Bezier * c1 = mCachePtsBezier[n1];
+	IGISPoint_Bezier * c2 = mCachePtsBezier[n2];
+
+	DebugAssert(p1->HasUV());
+	DebugAssert(p2->HasUV());
+
+	p1->GetUV(b.p1);
+	p2->GetUV(b.p2);
+	b.c1 = b.p1;		// Mirror end-points to controls so that if we are a half-bezier,
+	b.c2 = b.p2;		// we don't have junk in our bezier.
+
+	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
+	// if the bezier handle doesn't exist -- this is a flag to us!
+	Point2 dummy;
+	if (c1) if (!c1->GetControlHandleHi(dummy)) c1 = NULL;
+	if (c2) if (!c2->GetControlHandleLo(dummy)) c2 = NULL;
+	if (c1) DebugAssert(c1->HasUV());
+	if (c2) DebugAssert(c2->HasUV());
+	if (c1) c1->GetUVHi(b.c1);
+	if (c2) c2->GetUVLo(b.c2);
+
+	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
+	// Simpify down to a segment and return it -- some code may use this 'fast case'.
+	if (!c1 && !c2)
+	{
+		s.p1 = b.p1;
+		s.p2 = b.p2;
+		return false;
+	}
+	return true;
+
+}
 
 void WED_GISChain::RebuildCache(void) const
 {

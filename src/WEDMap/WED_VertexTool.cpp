@@ -32,7 +32,9 @@
 #include "WED_RunwayNode.h"
 #include "WED_OverlayImage.h"
 #include "WED_TextureNode.h"
+#include "WED_ExclusionZone.h"
 #include "WED_Taxiway.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -126,22 +128,22 @@ void	WED_VertexTool::EndEdit(void)
 	mIsTaxiSpin = 0;
 }
 
-intptr_t		WED_VertexTool::CountEntities(void) const
+int		WED_VertexTool::CountEntities(void) const
 {
 	GetEntityInternal();
 	return mEntityCache.size();
 }
 
-intptr_t	WED_VertexTool::GetNthEntityID(intptr_t n) const
+intptr_t	WED_VertexTool::GetNthEntityID(int n) const
 {
 	GetEntityInternal();
 	return reinterpret_cast<intptr_t>(mEntityCache[n]);
 }
 
-intptr_t		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
+int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 
 	IGISPoint * pt;
@@ -168,11 +170,11 @@ intptr_t		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
+void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;
@@ -324,11 +326,11 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * act
 }
 
 
-intptr_t		WED_VertexTool::GetLinks		    (intptr_t id) const
+int		WED_VertexTool::GetLinks		    (intptr_t id) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
@@ -349,7 +351,7 @@ intptr_t		WED_VertexTool::GetLinks		    (intptr_t id) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const
+void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkType_t * ltype) const
 {
 	if (active) *active=0;
 	if (ltype) *ltype = link_Solid;
@@ -367,11 +369,11 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active
 }
 
 
-intptr_t		WED_VertexTool::GetNthLinkSource   (intptr_t id, intptr_t n) const
+int		WED_VertexTool::GetNthLinkSource   (intptr_t id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	if (quad) return n;
 	switch(en->GetGISClass()) {
@@ -383,16 +385,16 @@ intptr_t		WED_VertexTool::GetNthLinkSource   (intptr_t id, intptr_t n) const
 	return 0;
 }
 
-intptr_t		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, intptr_t n) const
+int		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, int n) const
 {
 	return -1;
 }
 
-intptr_t		WED_VertexTool::GetNthLinkTarget   (intptr_t id, intptr_t n) const
+int		WED_VertexTool::GetNthLinkTarget   (intptr_t id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	if (quad) return (n+1)%4;
 	switch(en->GetGISClass()) {
@@ -403,7 +405,7 @@ intptr_t		WED_VertexTool::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 	return 0;
 }
 
-intptr_t		WED_VertexTool::GetNthLinkTargetCtl(intptr_t id, intptr_t n) const
+int		WED_VertexTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 {
 	return -1;
 }
@@ -412,10 +414,11 @@ bool	WED_VertexTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
-	if (taxi)
+	WED_PolygonPlacement * poly = (en->GetGISSubtype() == WED_PolygonPlacement::sClass) ? SAFE_CAST(WED_PolygonPlacement, en) : NULL;
+	if (taxi || poly)
 	{
 		if (GetHost()->GetModifiersNow() & gui_ShiftFlag)
-		if (taxi->PtWithin(p))
+		if (en->PtWithin(p))
 		{
 			mRotateCtr = p;
 			mTaxiDest = p;
@@ -429,6 +432,7 @@ void	WED_VertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& i
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
+	WED_PolygonPlacement * poly = (en->GetGISSubtype() == WED_PolygonPlacement::sClass) ? SAFE_CAST(WED_PolygonPlacement, en) : NULL;
 	io_handle += delta;
 	if (taxi)
 	{
@@ -436,13 +440,19 @@ void	WED_VertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& i
 		mIsTaxiSpin = 1;
 		mTaxiDest = io_handle;
 	}
+	if(poly)
+	{
+		poly->SetHeading(VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr,io_handle)));
+		mIsTaxiSpin = 1;
+		mTaxiDest = io_handle;
+	}
 }
 
-void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& delta, Point2& io_pt)
+void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta, Point2& io_pt)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -620,7 +630,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& d
 	return;
 }
 
-void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
+void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
 {
 }
 
@@ -720,6 +730,11 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 				AddEntityRecursive(ps->GetNthPoint(n),vis_area);
 		}
 		break;
+	case gis_BoundingBox:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+		mEntityCache.push_back(e);
+		break;			
 	case gis_Polygon:
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
@@ -729,6 +744,8 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		else if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
 			if (e->GetGISSubtype() == WED_Taxiway::sClass && SAFE_CAST(WED_Taxiway, e))
+				mEntityCache.push_back(e);
+			if (e->GetGISSubtype() == WED_PolygonPlacement::sClass && SAFE_CAST(WED_PolygonPlacement, e))
 				mEntityCache.push_back(e);
 			AddEntityRecursive(poly->GetOuterRing(),vis_area);
 			c = poly->GetNumHoles();
@@ -886,7 +903,7 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 }
 
 
-void		WED_VertexTool::DrawSelected			(intptr_t inCurrent, GUI_GraphState * g)
+void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 {
 	WED_HandleToolBase::DrawSelected(inCurrent, g);
 	if (mIsTaxiSpin)

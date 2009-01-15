@@ -36,10 +36,14 @@
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_LinePlacement.h"
 #include "WED_StringPlacement.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
+#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
+#include "mathutils.h"
 
 const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
 
@@ -72,7 +76,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mResource(tool > create_Hole ? this : NULL, "Resource", "", "", ""),
 		mHeight(tool == create_Facade ? this : NULL, "Height", "", "", 10.0, 4, 2),
 		mDensity(tool == create_Forest ? this : NULL, "Density", "", "", 1.0, 3, 2),
-		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1)
+		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1),
+		mOrthophoto(tool == create_Polygon ? this : NULL, "Orthophoto", "", "",0)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -106,6 +111,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_bezier = mType != create_Facade && mType != create_Forest;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
+	int is_texed = (mType == create_Polygon && mOrthophoto);
 	
 	if(mType == create_Hole)
 	{
@@ -115,6 +121,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		is_apt = dynamic_cast<WED_AirportChain*>(old_outer_ring) != NULL;
 		is_bezier = dynamic_cast<IGISPoint_Bezier*>(old_outer_ring->GetNthChild(0)) != NULL;
 		is_poly = true;
+		is_texed = dynamic_cast<WED_TextureNode*>(old_outer_ring->GetNthChild(0)) != NULL ||
+				   dynamic_cast<WED_TextureBezierNode*>(old_outer_ring->GetNthChild(0)) != NULL;
 	}
 	
 	WED_AirportChain *	apt_ring=NULL;
@@ -237,6 +245,19 @@ void	WED_CreatePolygonTool::AcceptPath(
 		}
 		break;
 	case create_Polygon:
+		if(mOrthophoto)
+		{
+			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
+			outer_ring->SetParent(dpol,0);
+			dpol->SetParent(host,idx);
+			sprintf(buf,"Orthophoto %d",n);
+			dpol->SetName(buf);
+			sprintf(buf,"Polygon %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(dpol);
+			dpol->SetResource(mResource.value);
+		}
+		else
 		{
 			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(pol,0);
@@ -247,13 +268,39 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetName(buf);
 			sel->Select(pol);
 			pol->SetResource(mResource.value);
-			pol->SetDirection(mHeading.value);			
+			pol->SetHeading(mHeading.value);			
 		}
 		break;
 	}
 
 	if(apt_ring)
 		apt_ring->SetClosed(closed);
+	
+	double	lonmax=-9.9e9;
+	double	latmax=-9.9e9;
+	double	lonmin= 9.9e9;
+	double	latmin= 9.9e9;
+
+	for(int n = 0; n < pts.size(); ++n)
+	{
+		lonmax=max(lonmax,pts[n].x());
+		lonmin=min(lonmin,pts[n].x());
+		latmax=max(latmax,pts[n].y());
+		latmin=min(latmin,pts[n].y());
+		if(has_dirs[n])
+		{
+
+			lonmax=max(lonmax,dirs_hi[n].x());
+			lonmin=min(lonmin,dirs_hi[n].x());
+			latmax=max(latmax,dirs_hi[n].y());
+			latmin=min(latmin,dirs_hi[n].y());
+
+			lonmax=max(lonmax,dirs_lo[n].x());
+			lonmin=min(lonmin,dirs_lo[n].x());
+			latmax=max(latmax,dirs_lo[n].y());
+			latmin=min(latmin,dirs_lo[n].y());
+		}
+	}
 	
 	for(int n = 0; n < pts.size(); ++n)
 	{
@@ -262,18 +309,32 @@ void	WED_CreatePolygonTool::AcceptPath(
 		WED_AirportNode *		anode=NULL;
 		WED_GISPoint_Bezier *	bnode=NULL;
 		WED_GISPoint *			node=NULL;
+		WED_TextureNode *		tnode=NULL;
+		WED_TextureBezierNode *	tbnode=NULL;
 		
-		if(is_apt)				node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
-		else if (is_bezier)		node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
-		else					node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+		if(is_apt)							node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
+		else if (is_bezier && is_texed)		node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
+		else if (is_bezier)					node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
+		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());
+		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 		 
-		node->SetLocation(pts[idx]);
+		node->SetLocation(pts[idx]);		
+		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
+							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
+		if(tnode)			tnode->SetUV(st);
+		if(tbnode)			tbnode->SetUV(st);
+
 		if(bnode)
 		{
 			if (!has_dirs[idx])
 			{
 				bnode->DeleteHandleHi();
 				bnode->DeleteHandleLo();
+				if(tbnode)
+				{
+					tbnode->SetUVLo(st);
+					tbnode->SetUVHi(st);
+				}
 			}
 			else
 			{
@@ -282,9 +343,27 @@ void	WED_CreatePolygonTool::AcceptPath(
 				{
 					bnode->SetControlHandleHi(dirs_hi[idx]);
 					bnode->SetControlHandleLo(dirs_lo[idx]);
+					if(tbnode)
+					{
+						tbnode->SetUVHi(Point2(
+							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
+							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
+						tbnode->SetUVLo(Point2(
+							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
+							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
+					}
 				} else {
 					bnode->SetControlHandleHi(dirs_lo[idx]);
 					bnode->SetControlHandleLo(dirs_hi[idx]);
+					if(tbnode)
+					{
+						tbnode->SetUVHi(Point2(
+							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
+							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
+						tbnode->SetUVLo(Point2(
+							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
+							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
+					}
 				}
 			}
 		}

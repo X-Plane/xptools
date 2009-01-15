@@ -24,13 +24,25 @@
 #include "WED_DrapedOrthophoto.h"
 
 DEFINE_PERSISTENT(WED_DrapedOrthophoto)
-TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISComposite)
+TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
-WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISComposite(a,i)
+WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
+	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
+
 {
 }
 
 WED_DrapedOrthophoto::~WED_DrapedOrthophoto()
 {
+}
+
+void		WED_DrapedOrthophoto::GetResource(	  string& r) const
+{
+	r = resource.value;
+}
+
+void		WED_DrapedOrthophoto::SetResource(const string& r)
+{
+	resource = r;
 }
 

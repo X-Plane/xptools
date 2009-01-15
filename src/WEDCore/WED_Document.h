@@ -41,6 +41,7 @@
 class	WED_Thing;
 class	WED_TexMgr;
 class	WED_LibraryMgr;
+class	WED_ResourceMgr;
 
 typedef struct sqlite3 sqlite3;
 
@@ -95,6 +96,7 @@ public:
 	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
 	
 	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
+	WED_ResourceMgr *	GetResourceMgr(void) { return mResourceMgr; }
 
 	bool				TryClose(void);
 	void				Save(void);
@@ -124,6 +126,7 @@ private:
 
 	WED_TexMgr *		mTexMgr;
 	WED_LibraryMgr *	mLibraryMgr;
+	WED_ResourceMgr *	mResourceMgr;
 //	WED_Properties	mProperties;
 
 	WED_Document();

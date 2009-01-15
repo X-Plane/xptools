@@ -32,8 +32,9 @@ DECLARE_PERSISTENT(WED_TextureNode)
 
 public:
 
-				void		SetTextCoord(const Point2& st);
-				void		GetTexCoord(	   Point2& st) const;
+	virtual		bool		HasUV(void) const;
+	virtual		void		GetUV	   (      Point2& p) const;
+	virtual		void		SetUV	   (const Point2& p)      ;
 
 private:
 

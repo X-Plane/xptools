@@ -54,6 +54,7 @@ public:
 	string		GetResourceParent(const string& r);
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
+	string		GetResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -63,12 +64,14 @@ public:
 private:
 
 	void			Rescan();
-	void			AccumResource(const string& path, int package);
+	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
 	struct	res_info_t {
 		int			res_type;
 		set<int>	packages;
+		string		real_path;
+		bool		is_backup;
 	};
 	
 	typedef map<string,res_info_t>	res_map_t;

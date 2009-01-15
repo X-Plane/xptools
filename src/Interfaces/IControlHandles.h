@@ -40,6 +40,19 @@
 	  NOT the same as moving the handles, so the client can decide the rules for dragging links.
 
 	- Entire entities may also be moved, and the interface provides hit testing.
+	
+	AN IMPORTANT NOTE ON PTR SIZE!!!
+	
+	The control handle interface is iterated by index..there is an integer number of entities, and each entity has an
+	integer number of links and nodes, referenced by zero-based array indices.  So any "nth" parameter (e.g. array index)
+	and any count parameter are all of type int.
+	
+	BUT entity IDs are opaque handles - that is, the Nth entity's ID is an opaque handle decided by the implementer.  Since
+	the handle might contain a ptr, intptr_t is used for 64-bit safety.
+	
+	Basically one control handle object might represent an ARRAY of objects in its implementation.  Since entities are 
+	referenced by ID and not by index (E.g. from the index, we get the ID and then use that), it allows the client to 
+	efficiently provide access by ptr.
 
 */
 
@@ -82,22 +95,22 @@ public:
 	virtual		void	EndEdit(void)=0;
 
 	// Entities - many entities perhaps?
-	virtual		intptr_t	CountEntities(void) const=0;
-	virtual		intptr_t	GetNthEntityID(intptr_t id) const=0;
+	virtual		int			CountEntities(void) const=0;
+	virtual		intptr_t	GetNthEntityID(int n) const=0;
 
 	// Control handles - by number - they can be moved around.
-	virtual		intptr_t		CountControlHandles(intptr_t id										) const=0;
-	virtual		void			GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const=0;
+	virtual		int				CountControlHandles(intptr_t id										) const=0;
+	virtual		void			GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const=0;
 
 	// Links are structural lines between the control handles.  We have 0 or more links
 	// and each one has a start and end control handle index number.  This is not editable -
 	// it can only be queried.
-	virtual		intptr_t		GetLinks		    (intptr_t id) const=0;
-	virtual		void			GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const =0;
-	virtual		intptr_t		GetNthLinkSource   (intptr_t id, intptr_t n) const=0;
-	virtual		intptr_t		GetNthLinkSourceCtl(intptr_t id, intptr_t n) const=0;	// -1 if no bezier ctl point!
-	virtual		intptr_t		GetNthLinkTarget   (intptr_t id, intptr_t n) const=0;
-	virtual		intptr_t		GetNthLinkTargetCtl(intptr_t id, intptr_t n) const=0;
+	virtual		int				GetLinks		    (intptr_t id) const=0;
+	virtual		void			GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkType_t * ltype) const =0;
+	virtual		int				GetNthLinkSource   (intptr_t id, int n) const=0;
+	virtual		int				GetNthLinkSourceCtl(intptr_t id, int n) const=0;	// -1 if no bezier ctl point!
+	virtual		int				GetNthLinkTarget   (intptr_t id, int n) const=0;
+	virtual		int				GetNthLinkTargetCtl(intptr_t id, int n) const=0;
 
 	// Generic query as to whether a point is on the structure.  Some control-handle-eable entities
 	// may have "fill" area other than the structural linkeage.
@@ -106,8 +119,8 @@ public:
 	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const=0;
 
 	// Move ALL control handles (that is, the whole entity) by a delta.
-	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_handle)=0;
-	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)=0;
+	virtual		void	ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_handle)=0;
+	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)=0;
 	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_handle)=0;
 
 };

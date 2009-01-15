@@ -36,7 +36,13 @@ WED_TextureNode::~WED_TextureNode()
 {
 }
 
-void		WED_TextureNode::SetTextCoord(const Point2& st)
+bool		WED_TextureNode::HasUV(void) const
+{
+	return true;
+}
+
+
+void		WED_TextureNode::SetUV(const Point2& st)
 {
 	if (st.x() != mS.value || st.y() != mT.value)
 	{
@@ -45,7 +51,7 @@ void		WED_TextureNode::SetTextCoord(const Point2& st)
 	}
 }
 
-void		WED_TextureNode::GetTexCoord(	   Point2& st) const
+void		WED_TextureNode::GetUV(	   Point2& st) const
 {
 	st.x_ = mS.value;
 	st.y_ = mT.value;

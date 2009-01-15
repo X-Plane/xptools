@@ -49,7 +49,7 @@
 #include "WED_Taxiway.h"
 #include "WED_TowerViewpoint.h"
 #include "WED_Windsock.h"
-
+#include "WED_ResourceMgr.h"
 
 using std::list;
 
@@ -169,6 +169,11 @@ ILibrarian *	WED_GetLibrarian(IResolver * resolver)
 ITexMgr *		WED_GetTexMgr(IResolver * resolver)
 {
 	return SAFE_CAST(ITexMgr,resolver->Resolver_Find("texmgr"));
+}
+
+WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver)
+{
+	return SAFE_CAST(WED_ResourceMgr,resolver->Resolver_Find("resmgr"));
 }
 
 WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
@@ -372,20 +377,6 @@ int Iterate_IsNonEmptyComposite(ISelectable * what, void * ref)
 	return comp->GetNumEntities() > 0;
 }
 
-int Iterate_CollectChildPointSequences(ISelectable * what, void * ref)
-{
-	vector<IGISPointSequence *> * container = (vector<IGISPointSequence *> *) ref;
-	IGISPolygon * poly = dynamic_cast<IGISPolygon *>(what);
-	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(what);
-	if (ps) container->push_back(ps);
-	if (poly) {
-		container->push_back(poly->GetOuterRing());
-		int hc = poly->GetNumHoles();
-		for (int h = 0; h < hc; ++h)
-			container->push_back(poly->GetNthHole(h));
-	}
-	return 0;
-}
 
 
 int Iterate_ParentMismatch(ISelectable * what, void * ref)
@@ -438,7 +429,39 @@ int Iterate_HasSelectedParent(ISelectable * what, void * ref)
 	return 0;
 }
 
-int Iterate_GetSelectThings(ISelectable * what, void * ref)
+int Iterate_CollectChildPointSequences(ISelectable * what, void * ref)
+{
+	vector<IGISPointSequence *> * container = (vector<IGISPointSequence *> *) ref;
+	IGISPolygon * poly = dynamic_cast<IGISPolygon *>(what);
+	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(what);
+	if (ps) container->push_back(ps);
+	if (poly) {
+		container->push_back(poly->GetOuterRing());
+		int hc = poly->GetNumHoles();
+		for (int h = 0; h < hc; ++h)
+			container->push_back(poly->GetNthHole(h));
+	}
+	return 0;
+}
+
+
+int Iterate_CollectEntities(ISelectable * what, void * ref)
+{
+	vector<IGISEntity *> * container = (vector<IGISEntity *> *) ref;
+	IGISEntity * who = dynamic_cast<IGISEntity *>(what);
+	if (who) container->push_back(who);
+	return 0;
+}
+
+int Iterate_CollectEntitiesUV(ISelectable * what, void * ref)
+{
+	vector<IGISEntity *> * container = (vector<IGISEntity *> *) ref;
+	IGISEntity * who = dynamic_cast<IGISEntity *>(what);
+	if (who && who->HasUV()) container->push_back(who);
+	return 0;
+}
+
+int Iterate_CollectThings(ISelectable * what, void * ref)
 {
 	vector<WED_Thing *> * container = (vector<WED_Thing *> *) ref;
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);

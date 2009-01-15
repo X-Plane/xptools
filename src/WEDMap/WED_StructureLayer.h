@@ -17,9 +17,10 @@ public:
 			bool		GetVerticesShowing(void) const;
 			void		SetVerticesShowing(bool show);
 
-	virtual	bool		DrawEntityStructure		(intptr_t inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
-	virtual	void		DrawStructure			(intptr_t inCurrent, GUI_GraphState * g);
-	virtual	void		GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel);
+	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
+	virtual	bool		DrawEntityVisualization	(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
+	virtual	void		DrawStructure			(bool inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
 
 private:
 

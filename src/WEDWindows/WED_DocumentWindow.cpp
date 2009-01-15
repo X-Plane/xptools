@@ -31,6 +31,7 @@
 #include "WED_UndoMgr.h"
 #include "WED_DocumentWindow.h"
 #include "WED_MapPane.h"
+#include "WED_TCEPane.h"
 #include "WED_PropertyPane.h"
 #include "WED_AptIE.h"
 #include "GUI_TabPane.h"
@@ -42,6 +43,7 @@
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
 #include "WED_DSFExport.h"
+#include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 
@@ -227,7 +229,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);
 	prop_tabs->AddPane(prop_pane6, "Helipads");
-
+	
+	// ---------------- TCE -------------
+	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
+	prop_tabs->AddPane(mTCEPane, "Texture");
+	
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
@@ -318,6 +324,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
+	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
@@ -366,6 +373,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
+	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_Validate:		return 1;
 
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;

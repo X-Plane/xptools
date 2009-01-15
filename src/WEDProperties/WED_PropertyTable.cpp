@@ -40,7 +40,10 @@
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
-int gExclusion=1;
+#if !DEV
+	this was 1.  What IS this?
+#endif
+int gExclusion=0;
 
 inline bool AnyLocked(WED_Thing * t)
 {
@@ -244,7 +247,7 @@ void	WED_PropertyTable::AcceptEdit(
 	if (apply_all)
 	{
 		ISelection * sel = WED_GetSelect(mResolver);
-		sel->IterateSelection(Iterate_GetSelectThings, &apply_vec);
+		sel->IterateSelection(Iterate_CollectThings, &apply_vec);
 	}
 	else
 	{

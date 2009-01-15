@@ -34,6 +34,7 @@
 
 
 class	WED_MapPane;
+class	WED_TCEPane;
 class	WED_Document;
 class	WED_PropertyTable;
 class	WED_PropertyTableHeader;
@@ -63,6 +64,7 @@ private:
 
 	WED_Document *				mDocument;
 	WED_MapPane *				mMapPane;
+	WED_TCEPane *				mTCEPane;
 
 
 	GUI_Splitter *				mMainSplitter;

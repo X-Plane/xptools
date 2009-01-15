@@ -43,6 +43,12 @@ const char *	WED_GISComposite::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
+bool			WED_GISComposite::HasUV			(void				 ) const
+{
+	return GetClass();
+}
+
+
 void			WED_GISComposite::GetBounds		(	   Bbox2&  bounds) const
 {
 	if (CacheBuild())	RebuildCache();

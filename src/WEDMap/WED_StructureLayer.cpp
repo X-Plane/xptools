@@ -51,7 +51,7 @@
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
-
+#include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 
 #if APL
@@ -72,106 +72,6 @@ WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, 
 
 WED_StructureLayer::~WED_StructureLayer()
 {
-}
-
-inline void glVertex2(const Point2& p) { glVertex2d(p.x(),p.y()); }
-inline void glTexCoord2(const Point2& p) { glTexCoord2d(p.x(),p.y()); }
-
-inline void	glVertex2v(const Point2 * p, int n) { while(n--) { glVertex2d(p->x(),p->y()); ++p; } }
-inline void glShape2v(GLenum mode,  const Point2 * p, int n) { glBegin(mode); glVertex2v(p,n); glEnd(); }
-
-inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offset)
-{
-	glBegin(mode);
-	for (int i = 0; i < n; ++i)
-	{
-		Vector2	dir1,dir2;
-		if (i > 0  ) dir1 = Vector2(pts[i-1],pts[i  ]);
-		if (i < n-1) dir2 = Vector2(pts[i  ],pts[i+1]);
-		Vector2	dir = dir1+dir2;
-		dir = dir.perpendicular_ccw();
-		dir.normalize();
-		dir *= offset;
-		glVertex2d(pts[i].x() + dir.dx, pts[i].y() + dir.dy);		
-	}	
-	glEnd(); 
-}
-
-
-
-static void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, vector<int>& contours, int is_hole)
-{
-	int n = ps->GetNumSides();
-	for (int i = 0; i < n; ++i)
-	{
-		Segment2	s;
-		Bezier2		b;
-		if (ps->GetSide(i,s,b))
-		{
-			b.p1 = z->LLToPixel(b.p1);
-			b.p2 = z->LLToPixel(b.p2);
-			b.c1 = z->LLToPixel(b.c1);
-			b.c2 = z->LLToPixel(b.c2);
-
-			int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
-								sqrt(Vector2(b.c1,b.c2).squared_length()) +
-								sqrt(Vector2(b.c2,b.p2).squared_length());
-			int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
-			pts.reserve(pts.capacity() + point_count);
-			contours.reserve(contours.capacity() + point_count);
-			for (int k = 0; k < point_count; ++k)
-			{
-				pts.push_back(b.midpoint((float) k / (float) point_count));
-				contours.push_back((k == 0 && i == 0) ? is_hole : 0);
-			}
-
-			if (i == n-1 && !ps->IsClosed())
-			{
-				pts.push_back(b.p2);
-				contours.push_back(0);
-			}
-		}
-		else
-		{
-			pts.push_back(z->LLToPixel(s.p1));
-			contours.push_back(i == 0 ? is_hole : 0);
-			if (i == n-1 && !ps->IsClosed())
-			{
-				pts.push_back(s.p2);
-				contours.push_back(0);
-			}
-		}
-	}
-}
-
-#if !IBM
-#define CALLBACK
-#endif
-
-static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);				}
-static void CALLBACK TessEnd(void)				{ glEnd();						}
-static void CALLBACK TessVertex(const Point2 * p){ glVertex2d(p->x(),p->y());	}
-
-static void glPolygon2(const Point2 * pts, const int * contours, int n)
-{
-	GLUtesselator * tess = gluNewTess();
-
-	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))TessBegin);
-	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))TessEnd);
-	gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertex);
-
-	gluBeginPolygon(tess);
-
-	while(n--)
-	{
-		if (contours && *contours++)	gluNextContour(tess, GLU_INTERIOR);
-	
-		double	xyz[3] = { pts->x(), pts->y(), 0 };
-		gluTessVertex(tess, xyz, (void*) pts++);
-	}
-
-	gluEndPolygon (tess);
-	gluDeleteTess(tess);
 }
 
 static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs, WED_Color c)
@@ -511,7 +411,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 	glDisable(GL_LINE_STIPPLE);
 }
 
-bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
+static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
 {
 	if (surface_code==surf_Trans) return false;
 	if (surface_code==shoulder_None) return false;
@@ -570,13 +470,13 @@ bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid
 	return true;
 }
 
-void kill_taxi_texture(void)
+static void kill_taxi_texture(void)
 {
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
 }
 
-bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	g->SetState(false,0,false,   false,true,false,false);
 
@@ -599,6 +499,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 	IGISPointSequence *				ps;
 	IGISLine_Width *				lw;
 	IGISPolygon *					poly;
+	IGISBoundingBox *				box;
 
 	WED_Taxiway *					taxi;
 	WED_OverlayImage *				overlay;
@@ -904,7 +805,140 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 			glEnd();
 		}
 		break;
+		
+	case gis_BoundingBox:
+		/******************************************************************************************************************************************************
+		 * BOUNDING BOXES
+		 ******************************************************************************************************************************************************/
+		box = SAFE_CAST(IGISBoundingBox, entity);
+		if(box)
+		{
+			Point2	pts[2];
+			box->GetMin()->GetLocation(pts[0]);
+			box->GetMax()->GetLocation(pts[1]);
+			GetZoomer()->LLToPixelv(pts,pts,2);
+			glColor4fv(WED_Color_RGBA_Alpha(wed_Link, mPavementAlpha, storage));
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(pts[0].x(), pts[0].y());
+			glVertex2f(pts[0].x(), pts[1].y());
+			glVertex2f(pts[1].x(), pts[1].y());
+			glVertex2f(pts[1].x(), pts[0].y());
+			glEnd();
+		}
+		break;
 
+	case gis_Polygon:
+		/******************************************************************************************************************************************************
+		 * POLYGONS (TAXIWAYAS, ETC.)
+		 ******************************************************************************************************************************************************/
+		taxi = NULL;
+		overlay = NULL;
+		if (sub_class == WED_Taxiway::sClass && (taxi = SAFE_CAST(WED_Taxiway, entity)) != NULL) poly = taxi;
+		else if (sub_class == WED_OverlayImage::sClass && (overlay = SAFE_CAST(WED_OverlayImage, entity)) != NULL) poly = overlay;
+		else								     poly = SAFE_CAST(IGISPolygon,entity);
+
+		if (poly)
+		{
+			if (taxi && mPavementAlpha > 0.0f && taxi->GetSurface() != surf_Trans)
+			{
+				// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
+				// airport can is tiny...most pavement is, while visually insignificant, still sprawling, so a bbox-sizes test is poor.
+				// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
+				// is negligable anyway.
+				vector<Point2>	pts;
+				vector<int>		is_hole_start;
+
+				PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false, is_hole_start, 0);
+				int n = poly->GetNumHoles();
+				for (int i = 0; i < n; ++i)
+					PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false, is_hole_start, 1);
+
+				if (!pts.empty())
+				{
+					Point2 centroid(0,0);
+					for (int i = 0; i < pts.size(); ++i)
+					{
+						centroid.x_ += pts[i].x();
+						centroid.y_ += pts[i].y();
+					}
+					centroid.x_ /= (double) pts.size();
+					centroid.y_ /= (double) pts.size();
+				
+//					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
+					if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, GetZoomer(), mPavementAlpha))
+					{
+//						glDisable(GL_CULL_FACE);
+						glFrontFace(GL_CCW);
+						glPolygon2(&*pts.begin(),false,  &*is_hole_start.begin(), pts.size());
+						glFrontFace(GL_CW);
+//						glEnable(GL_CULL_FACE);
+					}
+					kill_taxi_texture();
+				}
+			}
+
+			this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
+			int n = poly->GetNumHoles();
+			for (int c = 0; c < n; ++c)
+				this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
+		}
+		break;
+	}
+	return true;
+}
+
+bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+{
+	g->SetState(false,0,false,   false,true,false,false);
+
+	int locked = 0;
+	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
+	while(thing)
+	{
+		if (thing->GetLocked()) { locked=1;break;}
+		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+	}
+
+	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
+										(locked ? wed_StructureLocked		 : wed_Structure);
+
+	GISClass_t 		kind		= entity->GetGISClass();
+	const char *	sub_class	= entity->GetGISSubtype();
+	IGISPoint *						pt;
+	IGISPoint_Heading *				pth;
+	IGISPoint_WidthLength *			ptwl;
+	IGISPointSequence *				ps;
+	IGISLine_Width *				lw;
+	IGISPolygon *					poly;
+	IGISBoundingBox *				box;
+
+	WED_Taxiway *					taxi;
+	WED_OverlayImage *				overlay;
+	WED_Sealane *					sea;
+
+	WED_Runway *					rwy;
+	WED_Helipad *					helipad;
+
+	WED_LightFixture *				lfix;
+	WED_AirportSign *				sign;
+	WED_RampPosition *				ramp;
+
+	WED_TowerViewpoint *			tower;
+	WED_Windsock *					sock;
+	WED_AirportBeacon *				beacon;
+
+	WED_Airport *					airport;
+
+	float							storage[4];
+
+	glColor4fv(WED_Color_RGBA(struct_color));
+
+	float icon_scale = GetFurnitureIconScale();
+
+	/******************************************************************************************************************************************************
+	 * RUNWAY DRAWING
+	 ******************************************************************************************************************************************************/
+	switch(kind) {
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
 		 * POLYGONS (TAXIWAYAS, ETC.)
@@ -925,17 +959,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 				WED_TextureNode * tn3 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(2));
 				WED_TextureNode * tn4 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(3));
 				Point2 st1,st2,st3,st4, v1,v2,v3,v4;
-				tn1->GetTexCoord(st1);	tn1->GetLocation(v1);
-				tn2->GetTexCoord(st2);	tn2->GetLocation(v2);
-				tn3->GetTexCoord(st3);	tn3->GetLocation(v3);
-				tn4->GetTexCoord(st4);	tn4->GetLocation(v4);
+				tn1->GetUV(st1);	tn1->GetLocation(v1);
+				tn2->GetUV(st2);	tn2->GetLocation(v2);
+				tn3->GetUV(st3);	tn3->GetLocation(v3);
+				tn4->GetUV(st4);	tn4->GetLocation(v4);
 
 
 				string img_file;
 				overlay->GetImage(img_file);
 
 				ITexMgr * mgr = WED_GetTexMgr(GetResolver());
-				TexRef ref = mgr->LookupTexture(img_file.c_str());
+				TexRef ref = mgr->LookupTexture(img_file.c_str(),false,0);
 				g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
 				if (ref) { g->BindTex(mgr->GetTexID(ref),0);
 
@@ -959,53 +993,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity *
 				glEnable(GL_CULL_FACE);
 
 			}
-			if (taxi && mPavementAlpha > 0.0f && taxi->GetSurface() != surf_Trans)
-			{
-				// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
-				// airport can is tiny...most pavement is, while visually insignificant, still sprawling, so a bbox-sizes test is poor.
-				// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
-				// is negligable anyway.
-				vector<Point2>	pts;
-				vector<int>		is_hole_start;
-
-				PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, is_hole_start, 0);
-				int n = poly->GetNumHoles();
-				for (int i = 0; i < n; ++i)
-					PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, is_hole_start, 1);
-
-				if (!pts.empty())
-				{
-					Point2 centroid(0,0);
-					for (int i = 0; i < pts.size(); ++i)
-					{
-						centroid.x_ += pts[i].x();
-						centroid.y_ += pts[i].y();
-					}
-					centroid.x_ /= (double) pts.size();
-					centroid.y_ /= (double) pts.size();
-				
-//					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
-					if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, GetZoomer(), mPavementAlpha))
-					{
-//						glDisable(GL_CULL_FACE);
-						glFrontFace(GL_CCW);
-						glPolygon2(&*pts.begin(), &*is_hole_start.begin(), pts.size());
-						glFrontFace(GL_CW);
-//						glEnable(GL_CULL_FACE);
-					}
-					kill_taxi_texture();
-				}
-			}
-
-			this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
-			int n = poly->GetNumHoles();
-			for (int c = 0; c < n; ++c)
-				this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
 		}
 		break;
 	}
 	return true;
 }
+
 
 bool		WED_StructureLayer::GetRealLinesShowing(void) const
 {
@@ -1040,14 +1033,14 @@ void		WED_StructureLayer::SetVerticesShowing(bool show)
 	GetHost()->Refresh();
 }
 
-void		WED_StructureLayer::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
+void		WED_StructureLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
 {
-	draw_ent_v = 0;
+	draw_ent_v = 1;
 	draw_ent_s = 1;
 	cares_about_sel = 1;
 }
 
-void		WED_StructureLayer::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
+void		WED_StructureLayer::DrawStructure(bool inCurrent, GUI_GraphState * g)
 {
 	// Drawing each icon during iteration is slow because:
 	// - We have a ton of OGL state thrash.

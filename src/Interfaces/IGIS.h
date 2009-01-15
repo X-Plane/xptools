@@ -71,6 +71,7 @@ enum GISClass_t {
 		gis_Chain,
 	gis_Area,
 		gis_Polygon,
+		gis_BoundingBox,
 	gis_Composite
 };
 
@@ -79,6 +80,8 @@ public:
 
 	virtual	GISClass_t		GetGISClass		(void						 ) const=0;
 	virtual	const char *	GetGISSubtype	(void						 ) const=0;
+	virtual	bool			HasUV			(void						 ) const=0;
+	
 	virtual	void			GetBounds		(	   Bbox2&  bounds		 ) const=0;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds		 ) const=0;
 	virtual	bool			WithinBox		(const Bbox2&  bounds		 ) const=0;
@@ -118,6 +121,9 @@ public:
 	virtual	void	GetLocation(      Point2& p) const=0;
 	virtual	void	SetLocation(const Point2& p)      =0;
 
+	virtual	void	GetUV	   (      Point2& p) const=0;
+	virtual	void	SetUV	   (const Point2& p)      =0;
+
 };
 
 class	IGISPoint_Bezier : public virtual IGISPoint {
@@ -126,9 +132,13 @@ public:
 	virtual	bool	GetControlHandleLo (      Point2& p) const=0;
 	virtual	bool	GetControlHandleHi (      Point2& p) const=0;
 	virtual	bool	IsSplit			   (void		   ) const=0;
+	virtual	void	GetUVLo			   (      Point2& p) const=0;
+	virtual	void	GetUVHi			   (      Point2& p) const=0;
 
 	virtual	void	SetControlHandleLo (const Point2& p)      =0;
 	virtual	void	SetControlHandleHi (const Point2& p)      =0;
+	virtual	void	SetUVLo			   (const Point2& p)	  =0;
+	virtual	void	SetUVHi			   (const Point2& p)	  =0;
 	virtual	void	DeleteHandleLo	   (void		   )	  =0;
 	virtual	void	DeleteHandleHi	   (void		   )	  =0;
 	virtual	void	SetSplit		   (bool is_split  )	  =0;	// WARNING: unsplitting control handles WITHOUT then moving one handle leaves the resolution of split handles AMBIGUOUS!
@@ -172,7 +182,8 @@ public:
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
-	virtual	bool				GetSide(int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
+	virtual	bool				GetSide  (int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
+	virtual	bool				GetSideUV(int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
 
 	virtual	bool				IsClosed(void) const=0;
 
@@ -215,6 +226,14 @@ public:
 
 	virtual			void					Reverse(void)=0;
 
+};
+
+class	IGISBoundingBox : public virtual IGISEntity {
+public:
+
+	virtual			IGISPoint *				GetMin(void) const=0;
+	virtual			IGISPoint *				GetMax(void) const=0;
+	
 };
 
 //------------------------------------------------------------------------------------------------------------

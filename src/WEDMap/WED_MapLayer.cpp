@@ -42,7 +42,7 @@ WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) : 
 	mFurnitureFactor = WED_UIMeasurement("furniture_icon_scale");
 
 	mAirportTransWidth = WED_UIMeasurement("airport_trans_width");
-
+	mVisible = true;
 }
 
 WED_MapLayer::~WED_MapLayer()
@@ -67,5 +67,16 @@ double		WED_MapLayer::GetAirportIconScale(void) const
 double		WED_MapLayer::GetAirportIconRadius(void) const
 {
 	return doblim(GetZoomer()->GetPPM() * mAirportFactor, 0.5,1.0) * mAirportRadius;
+}
+
+bool		WED_MapLayer::IsVisible(void) const
+{
+	return mVisible;
+}
+
+void		WED_MapLayer::ToggleVisible(void)
+{
+	mVisible = !mVisible;
+	GetHost()->Refresh();
 }
 

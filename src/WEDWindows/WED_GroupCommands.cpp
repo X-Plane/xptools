@@ -255,10 +255,10 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
 			img->SetName(n);
 
-			p1->SetTextCoord(Point2(0,0));
-			p2->SetTextCoord(Point2(0,1));
-			p3->SetTextCoord(Point2(1,1));
-			p4->SetTextCoord(Point2(1,0));
+			p1->SetUV(Point2(0,0));
+			p2->SetUV(Point2(0,1));
+			p3->SetUV(Point2(1,1));
+			p4->SetUV(Point2(1,0));
 
 			wrl->CommitOperation();
 
@@ -663,7 +663,7 @@ void	WED_DoSelectParent(IResolver * resolver)
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	sel->IterateSelection(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Parent");
 	sel->Clear();
@@ -687,7 +687,7 @@ void	WED_DoSelectChildren(IResolver * resolver)
 	vector<WED_Thing *>	things;
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	sel->IterateSelection(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Children");
 	sel->Clear();
@@ -745,7 +745,7 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	vector<WED_Thing *>	things;
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	sel->IterateSelection(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Polygon");
 	sel->Clear();

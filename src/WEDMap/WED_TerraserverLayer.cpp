@@ -38,7 +38,6 @@ inline long long hash_xy(int x, int y) { return ((long long) x << 32) + (long lo
 
 WED_TerraserverLayer::WED_TerraserverLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(h, zoomer, resolver)
 {
-	mVis = 0;
 	static bool first_time = true;
 	if (first_time)
 		PCSBSocket::StartupNetworking(true);
@@ -65,12 +64,11 @@ WED_TerraserverLayer::~WED_TerraserverLayer()
 	}
 }
 
-void		WED_TerraserverLayer::ToggleVis(void) { mVis = !mVis; GetHost()->Refresh(); if (mVis) Start(0.1); else Stop(); }
+void		WED_TerraserverLayer::ToggleVisible(void) { WED_MapLayer::ToggleVisible(); if(IsVisible()) Start(0.1); else Stop(); }
 
 
-void		WED_TerraserverLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphState * g)
+void		WED_TerraserverLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
-	if (!mVis) return;
 //	if (!inCurrent && !mHas) return;
 	double	s, n, e, w;
 	GetZoomer()->GetMapVisibleBounds(w, s, e, n);
@@ -178,7 +176,7 @@ void	WED_TerraserverLayer::TimerFired(void)
 	GetHost()->Refresh();
 }
 
-void		WED_TerraserverLayer::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
+void		WED_TerraserverLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
 }

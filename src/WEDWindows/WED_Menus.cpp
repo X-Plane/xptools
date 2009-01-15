@@ -47,6 +47,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	"Export &DSFs",			0,		0,								0,	wed_ExportDSF		},
+{	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
@@ -98,6 +99,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
+{	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 {	"-",						0,	0,										0,	0					},
 {	"&Restore Frames",			0,	0,										0,	wed_RestorePanes	},

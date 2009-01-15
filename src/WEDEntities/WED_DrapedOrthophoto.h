@@ -27,17 +27,32 @@
 /*
 	WED_DrapedOrthophoto - THEORY OF OPERATION
 	
-	WED_DrapedOrthophoto - a composite?  Why?  Well, a draped orthophoto has two parts at the same time: a true polygon with holes and beziers specifying its area,
-	and a rectilinear orthophoto used to compute ST coordinates on export.  We simply contain them both...most of the tools will actually give us a very reasonable interface.
-	The hierarchy won't "open" this, the same way it won't "open" a polygon to reveal its rings.
+	WED_DrapedOrthophoto is just a simple polygon - it represents the polygon component of a draped ortho photo which is essentially:
+	
+		WED_DrapedOrthoPhoto (is a polygon)			this defines its area
+			WED_Ring (is a chain)							this is the outer contour
+				WED_TextureBezierNode (is a bezier point)				these define the coordinates of the polygon boundary and map textures
+				WED_TextureBezierNode (is a bezier point)				these define the coordinates of the polygon boundary and map textures
+			WED_Ring (is a chain)							this is the optional first hole
+				WED_TextureBezierNode (is a bezier point)				these define the coordinates of the polygon boundary and map textures
+				WED_TextureBezierNode (is a bezier point)				these define the coordinates of the polygon boundary and map textures
 
 */
 
-#include "WED_GISComposite.h"
+#include "WED_GISPolygon.h"
 
-class	WED_DrapedOrthophoto : public WED_GISComposite {
+class	WED_DrapedOrthophoto : public WED_GISPolygon {
 
 DECLARE_PERSISTENT(WED_DrapedOrthophoto)
+
+public:
+
+			void		GetResource(	  string& r) const;
+			void		SetResource(const string& r);
+
+private:
+
+	WED_PropStringText		resource;
 
 };
 

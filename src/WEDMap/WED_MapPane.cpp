@@ -33,11 +33,13 @@
 #include "WED_MapBkgnd.h"
 #include "WED_ToolUtils.h"
 #include "WED_MarqueeTool.h"
+#include "WED_CreateBoxTool.h"
 #include "WED_CreatePolygonTool.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
 #include "WED_WorldMapLayer.h"
+#include "WED_PreviewLayer.h"
 #include "WED_VertexTool.h"
 //#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
@@ -53,7 +55,7 @@
 #include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
 char	kToolKeys[] = { 
-	0,0,0,		0,0,0,
+	0, 0,0,0,		0,0,0,
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
 	'k', 't', 'h', 's',
@@ -96,11 +98,14 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// Visualizatoin layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
-	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
+	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
+	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 
 	// TOOLS
+	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
+
 	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
 	mTools.push_back(mLinTool=			new WED_CreatePolygonTool("Lines",mMap, mMap, resolver, archive, create_Line));
 	mTools.push_back(mStrTool=			new WED_CreatePolygonTool("Strings",mMap, mMap, resolver, archive, create_String));
@@ -153,7 +158,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(1,15+6,"map_tools.png");
+	mToolbar = new GUI_ToolBar(1,15+6+1,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
@@ -270,8 +275,9 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
-	case wed_ToggleTerraserver:	mTerraserver->ToggleVis(); return 1;
+	case wed_ToggleTerraserver:	mTerraserver->ToggleVisible(); return 1;
 //	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
+	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
 
 	case wed_Pavement0:		mStructureLayer->SetPavementTransparency(0.0f);		return 1;
 	case wed_Pavement25:	mStructureLayer->SetPavementTransparency(0.25f);	return 1;
@@ -297,8 +303,9 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_PickOverlay:																	return 1;
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
-	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis();							return 1;
+	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();							return 1;
 //	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
+	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
 	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
@@ -331,8 +338,9 @@ void	WED_MapPane::ReceiveMessage(
 
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 {
-	if ((mWorldMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",  mWorldMap->IsVisible() ? 1 : 0))		mWorldMap->ToggleVisible();
-	if ((mTerraserver->IsVis () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVis()  ? 1 : 0))		mTerraserver->ToggleVis();
+	if ((mWorldMap->IsVisible()     ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",  mWorldMap->IsVisible()     ? 1 : 0))		mWorldMap->ToggleVisible();
+	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
+	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
 
 	mStructureLayer->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4) * 0.25f);
 	mStructureLayer->SetRealLinesShowing(	 prefs->ReadIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0) != 0);
@@ -398,7 +406,8 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 {
 	prefs->WriteIntPref("map/world_map_vis",mWorldMap->IsVisible() ? 1 : 0);
-	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVis() ? 1 : 0);
+	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
+	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
 	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);

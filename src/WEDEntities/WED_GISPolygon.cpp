@@ -68,6 +68,13 @@ const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
+bool			WED_GISPolygon::HasUV			(void				 ) const
+{
+	CacheBuild();
+	return GetOuterRing()->HasUV();
+}
+
+
 
 void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
 {

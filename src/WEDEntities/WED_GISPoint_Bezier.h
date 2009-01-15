@@ -44,6 +44,10 @@ public:
 
 	virtual	void	SetControlHandleLo (const Point2& p)      ;
 	virtual	void	SetControlHandleHi (const Point2& p)      ;
+	virtual	void	SetUVLo			   (const Point2& p)	  ;
+	virtual	void	SetUVHi			   (const Point2& p)	  ;
+	virtual	void	GetUVLo			   (      Point2& p) const;
+	virtual	void	GetUVHi			   (      Point2& p) const;
 	virtual	void	DeleteHandleLo	   (void		   )	  ;
 	virtual	void	DeleteHandleHi	   (void		   )	  ;
 	virtual	void	SetSplit		   (bool is_split  )	  ;

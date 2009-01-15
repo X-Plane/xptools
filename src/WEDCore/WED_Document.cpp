@@ -39,6 +39,8 @@
 #include "PlatformUtils.h"
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
+#include "WED_ResourceMgr.h"
+
 // TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
@@ -60,6 +62,7 @@ WED_Document::WED_Document(
 {
 	mTexMgr = new WED_TexMgr(package);
 	mLibraryMgr = new WED_LibraryMgr(package);
+	mResourceMgr = new WED_ResourceMgr(mLibraryMgr);
 	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
 
@@ -86,6 +89,7 @@ WED_Document::WED_Document(
 WED_Document::~WED_Document()
 {
 	delete mTexMgr;
+	delete mResourceMgr;
 	delete mLibraryMgr;
 	sDocuments.erase(this);
 	BroadcastMessage(msg_DocumentDestroyed, 0);
@@ -208,6 +212,7 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 
 	if (strcmp(in_path,"librarian")==0) return (ILibrarian *) this;
 	if (strcmp(in_path,"texmgr")==0) return (ITexMgr *) mTexMgr;
+	if (strcmp(in_path,"resmgr")==0) return (WED_ResourceMgr *) mResourceMgr;
 	if (strcmp(in_path,"docprefs")==0) return (IDocPrefs *) this;
 
 	IBase * who = mArchive.Fetch(1);
