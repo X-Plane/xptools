@@ -94,7 +94,23 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_STR(anim_dataref,get_sel_single_obj,OBJ_set_anim_dataref,OBJ_get_anim_dataref,"","") \
 	SIMPLE_PROPERTY_INT(anim_keyframe_count, get_sel_single_obj,OBJ_set_anim_keyframe_count,OBJ_get_anim_keyframe_count) \
 	SIMPLE_PROPERTY_INT(use_materials,get_sel_single_obj,OBJ_set_use_materials,OBJ_get_use_materials) \
-	SIMPLE_PROPERTY_INT(anim_keyframe_root,get_sel_single_obj,OBJ_set_anim_keyframe_root,OBJ_get_anim_keyframe_root)
+	SIMPLE_PROPERTY_STR(lit_dataref,get_sel_single_obj,OBJ_set_lit_dataref, OBJ_get_lit_dataref,"","") \
+	SIMPLE_PROPERTY_INT(mod_lit,get_sel_single_obj,OBJ_set_mod_lit,OBJ_get_mod_lit) \
+	SIMPLE_PROPERTY_INT(wall,get_sel_single_obj,OBJ_set_wall,OBJ_get_wall) \
+	SIMPLE_PROPERTY_INT(draw_disable,get_sel_single_obj,OBJ_set_draw_disable,OBJ_get_draw_disable) \
+	SIMPLE_PROPERTY_INT(anim_keyframe_root,get_sel_single_obj,OBJ_set_anim_keyframe_root,OBJ_get_anim_keyframe_root) \
+	SIMPLE_PROPERTY_INT(manip_type,get_sel_single_obj,OBJ_set_manip_type,OBJ_get_manip_type) \
+	SIMPLE_PROPERTY_FLT(manip_dx,get_sel_single_obj,OBJ_set_manip_dx,OBJ_get_manip_dx) \
+	SIMPLE_PROPERTY_FLT(manip_dy,get_sel_single_obj,OBJ_set_manip_dy,OBJ_get_manip_dy) \
+	SIMPLE_PROPERTY_FLT(manip_dz,get_sel_single_obj,OBJ_set_manip_dz,OBJ_get_manip_dz) \
+	SIMPLE_PROPERTY_FLT(manip_v1_min,get_sel_single_obj,OBJ_set_manip_v1_min,OBJ_get_manip_v1_min) \
+	SIMPLE_PROPERTY_FLT(manip_v1_max,get_sel_single_obj,OBJ_set_manip_v1_max,OBJ_get_manip_v1_max) \
+	SIMPLE_PROPERTY_FLT(manip_v2_min,get_sel_single_obj,OBJ_set_manip_v2_min,OBJ_get_manip_v2_min) \
+	SIMPLE_PROPERTY_FLT(manip_v2_max,get_sel_single_obj,OBJ_set_manip_v2_max,OBJ_get_manip_v2_max) \
+	SIMPLE_PROPERTY_STR(manip_dref1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
+	SIMPLE_PROPERTY_STR(manip_dref2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
+	SIMPLE_PROPERTY_STR(manip_tooltip,get_sel_single_obj,OBJ_set_manip_tooltip,OBJ_get_manip_tooltip,"", "") \
+	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "")
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \
 //	SIMPLE_PROPERTY_FLT(anim_low_angle,get_sel_single_obj,OBJ_set_anim_low_angle,OBJ_get_anim_low_angle) \
 //	SIMPLE_PROPERTY_FLT(anim_high_value,get_sel_single_obj,OBJ_set_anim_high_value,OBJ_get_anim_high_value) \

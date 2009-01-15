@@ -405,7 +405,10 @@ proc fetch_all_datarefs {} {
 		
 	if {[catch {
 		set fi [open "plugins/datarefs.txt" r]
-	}]} { return }
+	}]} { 
+		set all_datarefs ""	
+		return 
+	}
 
 	gets $fi line	
 	while { [gets $fi line] >= 0 } {
@@ -515,10 +518,15 @@ proc xplane_light_sync_all {} {
 
 
 proc xplane_obj_sync { idx container } {
+	global xplane_manip_types
+
 	global xplane_anim_type$idx
 	global xplane_blend_enable$idx
 	global xplane_hard_surf$idx
 	global xplane_anim_keyframe_count$idx
+	global xplane_mod_lit$idx
+	global xplane_manip_type$idx
+	
 	global MAX_KEYFRAMES
 	pack forget $container.obj.none
 	pack forget $container.obj.trans
@@ -527,6 +535,17 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.show
 	pack forget $container.obj.hide
 	pack forget $container.obj.dref_list
+	pack forget $container.obj.none.manip.xplane_manip_dx$idx
+	pack forget $container.obj.none.manip.xplane_manip_dy$idx
+	pack forget $container.obj.none.manip.xplane_manip_dz$idx
+	pack forget $container.obj.none.manip.xplane_manip_v1_min$idx
+	pack forget $container.obj.none.manip.xplane_manip_v1_max$idx
+	pack forget $container.obj.none.manip.xplane_manip_v2_min$idx
+	pack forget $container.obj.none.manip.xplane_manip_v2_max$idx
+	pack forget $container.obj.none.manip.dref1
+	pack forget $container.obj.none.manip.dref2
+	pack forget $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+	pack forget $container.obj.none.manip.xplane_manip_tooltip$idx
 	
 	if { [set xplane_anim_type$idx] == "no animation"} { pack $container.obj.none }
 	if { [set xplane_anim_type$idx] == "rotate"} { 
@@ -565,6 +584,51 @@ proc xplane_obj_sync { idx container } {
 	if { [set xplane_blend_enable$idx] == 0} { pack $container.obj.none.blend_level }
 	pack forget $container.obj.none.is_deck
 	if { [set xplane_hard_surf$idx] != "none"} { pack $container.obj.none.is_deck -after $container.obj.none.hard_surf_btn }
+	pack forget $container.obj.none.dref_list
+	if { [set xplane_mod_lit$idx] != 0} { pack $container.obj.none.dref_list }
+
+	$container.obj.none.manip.type_btn configure -text [lindex $xplane_manip_types [set xplane_manip_type$idx]]
+
+	# axis
+	if { [set xplane_manip_type$idx] == 2} {
+		pack $container.obj.none.manip.xplane_manip_dx$idx
+		pack $container.obj.none.manip.xplane_manip_dy$idx
+		pack $container.obj.none.manip.xplane_manip_dz$idx
+		pack $container.obj.none.manip.xplane_manip_v1_min$idx
+		pack $container.obj.none.manip.xplane_manip_v1_max$idx
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# axis_2d
+	if { [set xplane_manip_type$idx] == 3} {
+		pack $container.obj.none.manip.xplane_manip_dx$idx
+		pack $container.obj.none.manip.xplane_manip_dy$idx
+		pack $container.obj.none.manip.xplane_manip_v1_min$idx
+		pack $container.obj.none.manip.xplane_manip_v1_max$idx
+		pack $container.obj.none.manip.xplane_manip_v2_min$idx
+		pack $container.obj.none.manip.xplane_manip_v2_max$idx
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command
+	if { [set xplane_manip_type$idx] == 4} {
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-axis
+	if { [set xplane_manip_type$idx] == 5} {
+		pack $container.obj.none.manip.xplane_manip_dx$idx
+		pack $container.obj.none.manip.xplane_manip_dy$idx
+		pack $container.obj.none.manip.xplane_manip_dz$idx
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
 }
 
 
@@ -583,14 +647,16 @@ proc xplane_inspector {} {
 
 	for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 		for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
-			global xplane_anim_value$x$idx
-			global xplane_anim_angle$x$idx
+#			global xplane_anim_value$x$idx
+#			global xplane_anim_angle$x$idx
 		}
 	}
 	
+	global xplane_cursor_options
 	global xplane_hard_surface_options
 	global xplane_light_options
 	global xplane_layer_group_options
+	global xplane_manip_types
 	global USE_KEYFRAMES
 	
 	if ![winfo exists .xp_view] {
@@ -599,24 +665,28 @@ proc xplane_inspector {} {
 		
 		for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 
-			global xplane_anim_type$idx
-			global xplane_poly_os$idx
-			global xplane_blend_enable$idx
-			global xplane_blend_level$idx
-			global xplane_hard_surf$idx
-			global xplane_is_deck$idx
-
-			global xplane_light_type$idx
-			global xplane_light_red$idx
-			global xplane_light_green$idx
-			global xplane_light_blue$idx
-			global xplane_light_alpha$idx
-			global xplane_light_size$idx
-			global xplane_light_s1$idx
-			global xplane_light_s2$idx
-			global xplane_light_t1$idx
-			global xplane_light_t2$idx
-			global xplane_light_dataref$idx
+#			global xplane_anim_type$idx
+#			global xplane_poly_os$idx
+#			global xplane_blend_enable$idx
+#			global xplane_blend_level$idx
+#			global xplane_hard_surf$idx
+#			global xplane_is_deck$idx
+#			global xplane_mod_lit$idx
+#			global xplane_wall$idx
+#			global xplane_draw_disable$idx
+#			global xplane_lit_dataref$idx
+#
+#			global xplane_light_type$idx
+#			global xplane_light_red$idx
+#			global xplane_light_green$idx
+#			global xplane_light_blue$idx
+#			global xplane_light_alpha$idx
+#			global xplane_light_size$idx
+#			global xplane_light_s1$idx
+#			global xplane_light_s2$idx
+#			global xplane_light_t1$idx
+#			global xplane_light_t2$idx
+#			global xplane_light_dataref$idx
 		
 			set container .xp_view.v$idx
 			frame $container
@@ -634,7 +704,7 @@ proc xplane_inspector {} {
 			#-------------------------------------- LIGHTS --------------------------------------
 
 			label $container.light.name_label -text "Name:"
-			global xplane_obj_name$idx
+#			global xplane_obj_name$idx
 			label $container.light.name -textvariable xplane_obj_name$idx
 			pack $container.light.name_label $container.light.name -anchor nw
 
@@ -676,7 +746,7 @@ proc xplane_inspector {} {
 			#-------------------------------------- OBJECTS --------------------------------------
 			
 			label $container.obj.name_label -text "Name:"
-			global xplane_obj_name$idx
+#			global xplane_obj_name$idx
 			entry $container.obj.name -textvariable xplane_obj_name$idx -width 20
 			pack $container.obj.name_label $container.obj.name
 
@@ -710,6 +780,49 @@ proc xplane_inspector {} {
 				frame $container.obj.none.blend_level
 					make_labeled_entry $container.obj.none.blend_level "blend cutoff" xplane_blend_level$idx
 				pack $container.obj.none.blend_level
+				
+				checkbutton $container.obj.none.hard_wall -text "Wall" -variable xplane_wall$idx
+				pack $container.obj.none.hard_wall
+				checkbutton $container.obj.none.draw_disable -text "Disable Drawing" -variable xplane_draw_disable$idx
+				pack $container.obj.none.draw_disable
+				checkbutton $container.obj.none.mod_lit -text "Dynamic LIT" -variable xplane_mod_lit$idx -command "xplane_obj_sync_all"
+				pack $container.obj.none.mod_lit
+				build_listbox $container.obj.none.dref_list $container.obj.none.scroll xplane_lit_dataref$idx
+
+				labelframe $container.obj.none.manip -text "Manipulators:"					
+
+					label $container.obj.none.manip.type_label -text "Kind:"
+					menubutton $container.obj.none.manip.type_btn -menu $container.obj.none.manip.type_btn.menu -direction flush -text "None" -padx 30 -pady 5
+					menu $container.obj.none.manip.type_btn.menu
+					for {set i 0} {$i< [llength $xplane_manip_types] } {incr i} {					
+						$container.obj.none.manip.type_btn.menu add radiobutton -value $i -label [lindex $xplane_manip_types $i] -variable xplane_manip_type$idx -command "xplane_obj_sync_all"
+					}
+					pack $container.obj.none.manip.type_label $container.obj.none.manip.type_btn					
+					
+
+					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx
+					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx
+					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx
+
+					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v1_min$idx
+					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v1_max$idx
+					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v2_min$idx
+					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v2_max$idx
+
+					label $container.obj.none.manip.cursor_label -text "Cursor:"
+					menubutton $container.obj.none.manip.cursor_btn -menu $container.obj.none.manip.cursor_btn.menu -direction flush -textvariable xplane_manip_cursor$idx -padx 30 -pady 5
+					menu $container.obj.none.manip.cursor_btn.menu
+					foreach surf $xplane_cursor_options {
+						$container.obj.none.manip.cursor_btn.menu add radiobutton -label $surf -variable xplane_manip_cursor$idx
+					}
+					pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+
+					build_listbox $container.obj.none.manip.dref1 $container.obj.none.dref1_scroll xplane_manip_dref1$idx
+					build_listbox $container.obj.none.manip.dref2 $container.obj.none.dref2_scroll xplane_manip_dref2$idx
+					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx
+					
+				pack $container.obj.none.manip
+				
 			pack $container.obj.none
 			
 			labelframe $container.obj.rotate -text "Rotation:"
@@ -782,7 +895,7 @@ proc xplane_inspector {} {
 
 			#-------------------------------------- GROUP --------------------------------------
 
-			global xplane_obj_name$idx
+#			global xplane_obj_name$idx
 			label $container.grp.name_label -text "Name:"
 			label $container.grp.name -textvariable xplane_obj_name$idx
 			grid $container.grp.name_label $container.grp.name -sticky nw
@@ -859,6 +972,11 @@ if {$IPHONE} {
 	
 set xplane_hard_surface_options [list none object water concrete asphalt grass dirt gravel lakebed snow shoulder blastpad]
 set xplane_layer_group_options [list none terrain beaches shoulders taxiways runways markings airports roads objects light_objects cars]
+set xplane_cursor_options [list four_arrows hand button rotate_small rotate_small_left rotate_small_right rotate_medium rotate_medium_left rotate_medium_right rotate_large \
+	rotate_large_left rotate_large_right up_down down up left_right right left  arrow]
+
+set xplane_manip_types [list none panel axis axis_2d command command_axis no_op]
+
 
 trace add variable select_info write xplane_inspector_update
 for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
@@ -1001,7 +1119,9 @@ proc sync_dataref { dref name now minv maxv } {
 
 proc xplane_anim_sync {} {
 	global xplane_anim_enable
+	global xplane_anim_invis
 	ac3d xplane_set_anim_enable $xplane_anim_enable
+	ac3d xplane_set_anim_list_invis $xplane_anim_invis
 }
 
 ac3d add_pref window_geom_xplane_anim ""
@@ -1029,15 +1149,17 @@ proc ScrolledVertCanvas_hack { c width height region } {
 
 proc xplane_anim_window {} {
 	global xplane_anim_enable
+	global xplane_anim_invis
 	global ANIM_INNER
 
 	if ![winfo exists .xp_anim] {
 		new_toplevel_tracked .xp_anim "X-Plane Animation" prefs_window_geom_xplane_anim
 
 		checkbutton .xp_anim.enable -text "Show Animation" -variable xplane_anim_enable		
+		checkbutton .xp_anim.invis -text "List Invisible" -variable xplane_anim_invis
 		button	.xp_anim.sync -text "Resync" -command "ac3d xplane_resync_anim"
 		button  .xp_anim.sel_all -text "Select All Animation" -command "ac3d xplane_anim_select_all"
-		grid .xp_anim.enable .xp_anim.sync .xp_anim.sel_all -sticky nw
+		grid .xp_anim.enable .xp_anim.invis .xp_anim.sync .xp_anim.sel_all -sticky nw
 
 #		frame .xp_anim.drefs
 		set ANIM_INNER [ ScrolledVertCanvas_hack .xp_anim.drefs 300 500 { 0 0 300 10000 } ]
@@ -1051,6 +1173,7 @@ proc xplane_anim_window {} {
 
 		 
 		set xplane_anim_enable 1
+		set xplane_anim_invis 0
 		
 		xplane_anim_sync
 		ac3d xplane_resync_anim
@@ -1063,7 +1186,14 @@ proc xplane_anim_update { name1 name2 op } {
 	xplane_anim_sync
 }
 
+set xplane_anim_enable 0
+set xplane_anim_invis 0
+
 trace add variable xplane_anim_enable write xplane_anim_update
+trace add variable xplane_anim_invis write xplane_anim_update
+
+trace add variable unsaved_changes write "ac3d xplane_sync_panel"
+
 
 ##########################################################################################################################################################
 # MENU BAR

@@ -56,6 +56,7 @@ static map<string, dataref_info>	g_datarefs;
 static map<string, string>			g_tcl_mapping;
 static int							g_anim_inited = 0;
 static int							g_anim_enabled = 0;
+static int							g_list_invis = 0;
 
 struct compare_key {
 	bool operator()(const XObjKey& lhs, float rhs) const {
@@ -347,6 +348,7 @@ void	purge_datarefs(void)
 
 void	gather_datarefs(ACObject * obj)
 {
+	if (g_list_invis || ac_object_is_visible(obj))
 	if (OBJ_get_anim_type(obj) != anim_none)
 	{
 		char dref[512];
@@ -363,7 +365,7 @@ void	gather_datarefs(ACObject * obj)
 	}
 	List * p;
 	List * kids = ac_object_get_childrenlist(obj);
-    for (p = kids; p != NULL; p = p->next)
+	for (p = kids; p != NULL; p = p->next)
 		gather_datarefs((ACObject *)p->data);
 }
 
@@ -583,6 +585,11 @@ static void set_anim_enable(float n)
 	if (g_anim_inited)
 		redraw_all();
 }
+
+static void set_list_invis(float n)
+{
+	g_list_invis = n;
+}	
 
 // null dref for all anim!
 static void sel_if_has(ACObject * who, const char *dref)
@@ -992,6 +999,7 @@ void setup_obj_anim(void)
 	ac_set_pre_render_object_callback(anim_pre_func);
 	ac_set_post_render_object_callback(anim_post_func);
 	ac_add_command_full("xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, "f", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
+	ac_add_command_full("xplane_set_anim_list_invis", CAST_CMD(set_list_invis),1,"f", "ac3d xplane_est_anim_list_invis <0 or 1>", "turn on or off anim sliders for invisible objs");
 	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_now <n> <t>", "set dataref n to time t");
 	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");
 	ac_add_command_full("xplane_anim_select_all", CAST_CMD(select_all_anim), 0, NULL, "ac3d xplane_anim_select_all", "select all animated objects");

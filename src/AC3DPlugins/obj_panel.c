@@ -28,6 +28,7 @@
 #include "ac_utils.h"
 #include "tcl_utils.h"
 #include "bitmap_match.h"
+#include "obj_model.h"
 
 #define PANEL_REGION_DIMS		4
 
@@ -38,11 +39,78 @@ TCL_linked_variv * panel_sub_t		=NULL;
 TCL_linked_vari  * panel_sub_count	=NULL;
 TCL_linked_vari  * panel_sub_enable	=NULL;
 
+bool	recursion = false;
+
+static void	p_change_enable_cb(int value, void * ref, TCL_linked_vari * who)
+{
+	recursion=true;
+	OBJ_set_has_panel_regions(ac_get_world(), value);
+	recursion =false;
+}
+static void	p_change_count_cb(int value, void * ref, TCL_linked_vari * who)
+{
+	recursion=true;
+	OBJ_set_num_panel_regions(ac_get_world(), value);
+	recursion=false;
+}
+
+static void p_change_left_cb(int value, int r, void * ref, TCL_linked_variv * who)
+{
+	recursion=true;
+	OBJ_set_panel_left(ac_get_world(),r, value);
+	recursion=false;
+}
+static void p_change_bottom_cb(int value, int r, void * ref, TCL_linked_variv * who)
+{
+	recursion=true;
+	OBJ_set_panel_bottom(ac_get_world(),r, value);
+	recursion=false;
+}
+static void p_change_right_cb(int value, int r, void * ref, TCL_linked_variv * who)
+{
+	recursion=true;
+	OBJ_set_panel_right(ac_get_world(),r, value);
+	recursion=false;
+}
+static void p_change_top_cb(int value, int r, void * ref, TCL_linked_variv * who)
+{
+	recursion=true;
+	OBJ_set_panel_top(ac_get_world(),r, value);
+	recursion=false;
+}
+
+static void obj_panel_change_cb(ACObject * obj)
+{
+	if (!recursion && obj == ac_get_world())
+	{
+		int has_r =OBJ_get_has_panel_regions(ac_get_world());
+		panel_sub_enable->set(has_r);
+		if(has_r)
+		{
+			int num_r = OBJ_get_num_panel_regions(ac_get_world());
+			panel_sub_count->set(num_r);
+			for(int r = 0; r < num_r; ++r)
+			{
+				panel_sub_l->set(r,OBJ_get_panel_left(ac_get_world(),r));
+				panel_sub_b->set(r,OBJ_get_panel_bottom(ac_get_world(),r));
+				panel_sub_r->set(r,OBJ_get_panel_right(ac_get_world(),r));
+				panel_sub_t->set(r,OBJ_get_panel_top(ac_get_world(),r));
+			}
+		}
+	}
+}
+
+static void do_sync_panel(void)
+{
+	obj_panel_change_cb(ac_get_world());
+}
+
 
 int		is_panel_tex(int tex_id)
 {
 	if (panel_sub_enable->get() == 0)
-		return strstrnocase(texture_id_to_name(tex_id), "cockpit/-PANELS-/panel.") != NULL;
+		return strstrnocase(texture_id_to_name(tex_id), "cockpit/-PANELS-/panel") != NULL ||
+			   strstrnocase(texture_id_to_name(tex_id), "cockpit_3d/-PANELS-/panel") != NULL;
 	else
 		return 0;
 }
@@ -57,6 +125,8 @@ int		is_panel_subtex(int tex_id)
 	{
 		char title[50];
 		sprintf(title,"panel%d.sub",n);
+		if (strstrnocase(tname, title) != NULL) return n;
+		sprintf(title,"cockpit_3d/-PANELS-/Panel_preview%d",n);
 		if (strstrnocase(tname, title) != NULL) return n;
 	}
 	return -1;
@@ -101,6 +171,7 @@ void do_make_panel_subtexes_auto(int big_panel_id, int sub_reg_ids[])
 	ACImage * big_panel_bitmap = texture_id_to_image(big_panel_id);
 
 	for (int n = 0; n < panel_sub_count->get(); ++n)
+	if(!sub_reg_ids || sub_reg_ids[n] == -1)
 	{
 		char name[50];
 		sprintf(name,"panel%d.sub",n);
@@ -125,30 +196,41 @@ void	register_panel_vars(void)
 {
 	ac_register_texture_loader(".sub", "hack for x-plane", synthetic_loader);
 
-	panel_sub_l		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_l", PANEL_REGION_DIMS, NULL, NULL, 0);
-	panel_sub_r		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_r", PANEL_REGION_DIMS, NULL, NULL, 0);
-	panel_sub_b		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_b", PANEL_REGION_DIMS, NULL, NULL, 0);
-	panel_sub_t		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_t", PANEL_REGION_DIMS, NULL, NULL, 0);
-	panel_sub_count	= new TCL_linked_vari(ac_get_tcl_interp(), "xplane_panel_sub_count", NULL, NULL, 1);
-	panel_sub_enable	= new TCL_linked_vari(ac_get_tcl_interp(), "xplane_panel_sub_enable", NULL, NULL, 0);
+	panel_sub_l		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_l", PANEL_REGION_DIMS, p_change_left_cb, NULL, 0);
+	panel_sub_r		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_r", PANEL_REGION_DIMS, p_change_right_cb, NULL, 0);
+	panel_sub_b		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_b", PANEL_REGION_DIMS, p_change_bottom_cb, NULL, 0);
+	panel_sub_t		= new TCL_linked_variv(ac_get_tcl_interp(), "xplane_panel_sub_t", PANEL_REGION_DIMS, p_change_top_cb, NULL, 0);
+	panel_sub_count	= new TCL_linked_vari(ac_get_tcl_interp(), "xplane_panel_sub_count", p_change_count_cb, NULL, 1);
+	panel_sub_enable	= new TCL_linked_vari(ac_get_tcl_interp(), "xplane_panel_sub_enable", p_change_enable_cb, NULL, 0);
 
+	ac_add_command_full("xplane_sync_panel", CAST_CMD(do_sync_panel), 0, NULL, "ac3d xplane_sync_panel", "resync panel info");
+
+	OBJ_register_change_cb(obj_panel_change_cb);
 
 }
 
 void	set_std_panel(void)
 {
 	panel_sub_enable->set(0);
+	OBJ_set_has_panel_regions(ac_get_world(), 0);
 }
 
 void	add_sub_panel(int l, int b, int r, int t)
 {
-	if (panel_sub_enable->get() == 0) { panel_sub_enable->set(1); panel_sub_count->set(0); }
+	if (panel_sub_enable->get() == 0)
+	{ 
+		panel_sub_enable->set(1); 
+		OBJ_set_has_panel_regions(ac_get_world(), 1);
+		panel_sub_count->set(0); 
+		OBJ_set_num_panel_regions(ac_get_world(), 0);
+	}
 
-	panel_sub_l->set(panel_sub_count->get(),l);
-	panel_sub_b->set(panel_sub_count->get(),b);
-	panel_sub_r->set(panel_sub_count->get(),r);
-	panel_sub_t->set(panel_sub_count->get(),t);
+	panel_sub_l->set(panel_sub_count->get(),l);			OBJ_set_panel_left(ac_get_world(),panel_sub_count->get(),l);
+	panel_sub_b->set(panel_sub_count->get(),b);			OBJ_set_panel_bottom(ac_get_world(),panel_sub_count->get(),b);
+	panel_sub_r->set(panel_sub_count->get(),r);			OBJ_set_panel_right(ac_get_world(),panel_sub_count->get(),r);
+	panel_sub_t->set(panel_sub_count->get(),t);			OBJ_set_panel_top(ac_get_world(),panel_sub_count->get(),t);
 	panel_sub_count->set(panel_sub_count->get()+1);
+	OBJ_set_num_panel_regions(ac_get_world(),panel_sub_count->get());
 }
 
 int		get_sub_panel_count(void)

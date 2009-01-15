@@ -165,6 +165,13 @@ ACObject *	do_obj8_load(char *filename)
 	string texPathPvr = texPath + texNamePvr; 
     string panelNamePng = "cockpit/-PANELS-/panel.png";
     string panelNameBmp = "cockpit/-PANELS-/panel.bmp";
+	
+	string panelPreview = "cockpit_3d/-PANELS-/Panel_Preview.png";
+	string panelPreviewReg[4];
+		panelPreviewReg[0] = "cockpit_3d/-PANELS-/Panel_Preview0.png";
+		panelPreviewReg[1] = "cockpit_3d/-PANELS-/Panel_Preview1.png";
+		panelPreviewReg[2] = "cockpit_3d/-PANELS-/Panel_Preview2.png";
+		panelPreviewReg[3] = "cockpit_3d/-PANELS-/Panel_Preview3.png";
 
     bool	has_cockpit_cmd = false;
 	bool	has_cockpit_reg = false;
@@ -200,19 +207,31 @@ ACObject *	do_obj8_load(char *filename)
 	if (has_cockpit_cmd || has_cockpit_reg)
 	{
 		printf("Trying cockpit cmds.\n");
+
+		printf("Trying cockpit preview textures.\n");
+		if(panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelPreview.c_str());
+		if(panel_full_name != NULL)	panel_id = add_new_texture_opt(panel_full_name, panel_full_name);
+		
 		printf("panel name = %s\n", panelNamePng.c_str());
 		if (panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelNamePng.c_str());
-		printf("Panel full name %s\n", panel_full_name);
 		if (panel_full_name != NULL)panel_id = add_new_texture_opt(panel_full_name,panel_full_name);
-		printf("tex id = %d\n", panel_id);
 		if (panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelNameBmp.c_str());
 		if (panel_full_name != NULL)panel_id = add_new_texture_opt(panel_full_name,panel_full_name);
+		
+	}
+
+	if (has_cockpit_reg)
+	for(int p = 0; p < 4; ++p)
+	{
+		if(panel_reg_id[p] == -1)	panel_full_name = search_texture(filename, (char *) panelPreviewReg[p].c_str());
+		if(panel_full_name != NULL)	panel_reg_id[p] = add_new_texture_opt(panel_full_name, panel_full_name);
 	}
 
 	if (has_cockpit_reg && panel_id != -1)
 	{
 		do_make_panel_subtexes_auto(panel_id,panel_reg_id);
 	}
+	
 
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
     {
@@ -238,6 +257,18 @@ ACObject *	do_obj8_load(char *filename)
     	string	hard_poly;
 		int		deck = 0;
     	float	offset = 0;
+		
+		string	light_level;
+		int		draw_disable = 0;
+		int		wall = 0;
+
+		int		manip_type = manip_none;
+		string	manip_dref1, manip_dref2, manip_cursor, manip_tooltip;
+		float	manip_drag_axis[3];
+		float	manip_v1_min;
+		float	manip_v1_max;
+		float	manip_v2_min;
+		float	manip_v2_max;
 
 		map<int, Vertex *>	vmap;
     	
@@ -257,6 +288,55 @@ ACObject *	do_obj8_load(char *filename)
 					OBJ_set_blend(stuff_obj, no_blend);
 					OBJ_set_hard(stuff_obj, hard_poly.c_str());
 					OBJ_set_deck(stuff_obj,deck);
+					if(light_level.empty())
+						OBJ_set_mod_lit(stuff_obj,0);
+					else {
+						OBJ_set_mod_lit(stuff_obj,1);
+						OBJ_set_lit_dataref(stuff_obj,light_level.c_str());
+					}
+					OBJ_set_wall(stuff_obj,wall);
+					OBJ_set_draw_disable(stuff_obj,draw_disable);
+					
+					OBJ_set_manip_type(stuff_obj,manip_type);
+					switch(manip_type) {
+					case manip_axis:
+						OBJ_set_manip_v1_min(stuff_obj,manip_v1_min);
+						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
+						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
+						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						OBJ_set_manip_dz(stuff_obj,manip_drag_axis[2]);
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						break;
+					case manip_axis_2d:
+						OBJ_set_manip_v1_min(stuff_obj,manip_v1_min);
+						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
+						OBJ_set_manip_v2_min(stuff_obj,manip_v2_min);
+						OBJ_set_manip_v2_max(stuff_obj,manip_v2_max);
+						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
+						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_dref2(stuff_obj,manip_dref2.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						break;
+					case manip_command:
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						break;
+					case manip_command_axis:
+						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
+						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						OBJ_set_manip_dz(stuff_obj,manip_drag_axis[2]);
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_dref2(stuff_obj,manip_dref2.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						break;
+					}					
+					
 					sprintf(strbuf, "POLY_OS=%d HARD=%s BLEND=%s",
 						(int) offset, hard_poly.c_str(), no_blend >= 0.0 ? "no":"yes");
 					object_set_name(stuff_obj, strbuf);
@@ -340,14 +420,17 @@ ACObject *	do_obj8_load(char *filename)
 			case attr_Tex_Normal:
 				if (panel_tex != tex_id)	stuff_obj = NULL;
 				panel_tex = tex_id;
+				manip_type = manip_none;
 				break;
 			case attr_Tex_Cockpit:
 				if (panel_tex != panel_id)	stuff_obj = NULL;
 				panel_tex = panel_id;
+				manip_type = manip_panel;
 				break;
 			case attr_Tex_Cockpit_Subregion:
 				if (panel_tex != panel_reg_id[(int) cmd->params[0]])	stuff_obj = NULL;
 				panel_tex = panel_reg_id[(int) cmd->params[0]];
+				manip_type = manip_panel;
 				break;
 			case attr_No_Blend:
 				if (!no_blend != cmd->params[0]) stuff_obj = NULL;
@@ -402,12 +485,79 @@ ACObject *	do_obj8_load(char *filename)
 #endif
 				two_side = true;
 				break;
-
+			case attr_Solid_Wall:
+				if(!wall)	stuff_obj = NULL;
+				wall = 1;
+				break;
+			case attr_No_Solid_Wall:
+				if(wall)	stuff_obj = NULL;
+				wall = 0;
+				break;
+			case attr_Draw_Disable:
+				if(!draw_disable)	stuff_obj = NULL;
+				draw_disable = 1;
+				break;
+			case attr_Draw_Enable:
+				if(draw_disable)	stuff_obj = NULL;
+				draw_disable = 0;
+				break;
+			case attr_Light_Level:
+				if(light_level != cmd->name) stuff_obj = NULL;
+				light_level = cmd->name;
+				break;
+			case attr_Light_Level_Reset:
+				if(!light_level.empty()) stuff_obj = NULL;
+				light_level.clear();
+				break;
 			case attr_Layer_Group:
 				OBJ_set_layer_group(group_obj, cmd->name.c_str());
 				OBJ_set_layer_group_offset(group_obj, cmd->params[0]);
+				break;			
+				
+			case attr_Manip_Drag_Axis:
+				stuff_obj = NULL;
+				manip_type = manip_command_axis;
+				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
+				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
+				manip_v1_min = obj8.manips[cmd->idx_offset].v1_min;
+				manip_v1_max = obj8.manips[cmd->idx_offset].v1_max;
+				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
+				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
+				manip_drag_axis[2] = obj8.manips[cmd->idx_offset].axis[2];
 				break;
-
+			case attr_Manip_Drag_2d:
+				stuff_obj = NULL;
+				manip_type = manip_command_axis;
+				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_dref2 = obj8.manips[cmd->idx_offset].dataref2;
+				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
+				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
+				manip_v1_min = obj8.manips[cmd->idx_offset].v1_min;
+				manip_v1_max = obj8.manips[cmd->idx_offset].v1_max;
+				manip_v2_min = obj8.manips[cmd->idx_offset].v2_min;
+				manip_v2_max = obj8.manips[cmd->idx_offset].v2_max;
+				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
+				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
+				break;
+			case attr_Manip_Command:
+				stuff_obj = NULL;
+				manip_type = manip_command_axis;
+				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
+				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
+				break;
+			case attr_Manip_Command_Axis:
+				stuff_obj = NULL;
+				manip_type = manip_command_axis;
+				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_dref2 = obj8.manips[cmd->idx_offset].dataref2;
+				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
+				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
+				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
+				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
+				manip_drag_axis[2] = obj8.manips[cmd->idx_offset].axis[2];
+				break;
 			case anim_Begin:
 				{
 					stuff_obj = NULL;

@@ -81,7 +81,9 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 
 	ac_register_file_exporter("OBJ7Save", ".obj", "X-Plane 7 Object File", do_obj7_save_convert, "X-Plane 7 Object File Export Plugin");
 	ac_register_file_exporter("OBJ8Save", ".obj", "X-Plane 8 Object File", do_obj8_save, "X-Plane 8 Object File Export Plugin");
+#if PHONE
 	ac_register_file_exporter("OBJeSave", ".obe", "X-Plane 8 Embedded Object File", do_obje_save, "X-Plane 8 Embedded Object File Export Plugin");
+#endif	
 	ac_register_file_importer("OBJ8Load", ".obj", "X-Plane 8 Object File", do_obj8_load, "X-Plane 7/8 Object File Import Plugin"); 
 
 //	ac_register_file_exporter("DSFSave", ".dsf", "X-Plane DSF (scenery) File", do_dsf_save, "X-Plane 8 DSF Export Plugin");

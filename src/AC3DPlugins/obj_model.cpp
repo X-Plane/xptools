@@ -235,6 +235,10 @@ INT_PROP(deck,deck)
 FLT_PROP(blend,blend)
 FLT_PROP(poly_os,poly_os)
 INT_PROP(use_materials,use_materials)
+INT_PROP(draw_disable,draw_disable)
+INT_PROP(wall, wall)
+INT_PROP(mod_lit,mod_lit)
+STR_PROP(lit_dataref, lit_dataref)
 
 STR_PROP(light_named,light_name)
 FLT_PROP(light_red,light_red)
@@ -262,6 +266,23 @@ INT_PROP(anim_keyframe_count,anim_keyframe_count)
 INT_PROP(anim_keyframe_root,anim_keyframe_root)
 INT_PROP(anim_type,anim_type)
 
+INT_PROP(manip_type,manip_type)
+FLT_PROP(manip_dx,manip_dx)
+FLT_PROP(manip_dy,manip_dy)
+FLT_PROP(manip_dz,manip_dz)
+FLT_PROP(manip_v1_min,manip_v1_min)
+FLT_PROP(manip_v1_max,manip_v1_max)
+FLT_PROP(manip_v2_min,manip_v2_min)
+FLT_PROP(manip_v2_max,manip_v2_max)
+STR_PROP(manip_dref1,manip_dref1)
+STR_PROP(manip_dref2,manip_dref2)
+STR_PROP(manip_tooltip,manip_tooltip)
+STR_PROP(manip_cursor,manip_cursor)
+
+
+INT_PROP(has_panel_regions,has_panel_regions)
+INT_PROP(num_panel_regions,num_panel_regions)
+
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v)
 {
 	char	tag[25];
@@ -276,6 +297,32 @@ void		OBJ_set_anim_nth_angle(ACObject * obj, int n, float a)
 	OBJ_set_property_flt(obj, tag, a);
 }
 
+void		OBJ_set_panel_left(ACObject * obj, int r, int v)
+{
+	char tag[25];
+	sprintf(tag,"left%d",r);
+	OBJ_set_property_int(obj,tag,v);
+}
+void		OBJ_set_panel_bottom(ACObject * obj, int r, int v)
+{
+	char tag[25];
+	sprintf(tag,"bottom%d",r);
+	OBJ_set_property_int(obj,tag,v);
+}
+void		OBJ_set_panel_right(ACObject * obj, int r, int v)
+{
+	char tag[25];
+	sprintf(tag,"right%d",r);
+	OBJ_set_property_int(obj,tag,v);
+}
+void		OBJ_set_panel_top(ACObject * obj, int r, int v)
+{
+	char tag[25];
+	sprintf(tag,"top%d",r);
+	OBJ_set_property_int(obj,tag,v);
+}
+
+
 float		OBJ_get_anim_nth_value(ACObject * obj, int n)
 {
 	char	tag[25];
@@ -288,4 +335,30 @@ float		OBJ_get_anim_nth_angle(ACObject * obj, int n)
 	char	tag[25];
 	sprintf(tag,"angle%d",n);
 	return OBJ_get_property_flt(obj, tag);
+}
+
+
+int			OBJ_get_panel_left(ACObject * obj, int r)
+{
+	char tag[25];
+	sprintf(tag,"left0",r);
+	return OBJ_get_property_int(obj,tag);
+}
+int			OBJ_get_panel_bottom(ACObject * obj, int r)
+{
+	char tag[25];
+	sprintf(tag,"bottom0",r);
+	return OBJ_get_property_int(obj,tag);
+}
+int			OBJ_get_panel_right(ACObject * obj, int r)
+{
+	char tag[25];
+	sprintf(tag,"right0",r);
+	return OBJ_get_property_int(obj,tag);
+}
+int			OBJ_get_panel_top(ACObject * obj, int r)
+{
+	char tag[25];
+	sprintf(tag,"top0",r);
+	return OBJ_get_property_int(obj,tag);
 }

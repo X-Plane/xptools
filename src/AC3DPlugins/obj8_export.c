@@ -401,6 +401,23 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			else
 				builder->SetAttribute1(attr_No_Blend, now_blend);
 
+			if(OBJ_get_mod_lit(obj))
+			{
+				OBJ_get_lit_dataref(obj, buf);
+				builder->SetAttribute1Named(attr_Light_Level, 0.0f, buf);
+			} else
+				builder->SetAttribute(attr_Light_Level_Reset);
+				
+			if(OBJ_get_draw_disable(obj))
+				builder->SetAttribute(attr_Draw_Disable);
+			else
+				builder->SetAttribute(attr_Draw_Enable);
+			
+			if(OBJ_get_wall(obj))
+				builder->SetAttribute(attr_Solid_Wall);
+			else
+				builder->SetAttribute(attr_No_Solid_Wall);
+				
 			bool bad_obj = false;
 			int panel_reg;
 			int has_real_tex = 0;
@@ -435,7 +452,48 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->SetAttribute(attr_Tex_Normal);
 				gHasTexNow = false;
 			}
-
+			
+			XObjManip8 m;
+			OBJ_get_manip_cursor(obj,buf);
+			m.cursor = buf;
+			OBJ_get_manip_tooltip(obj,buf);
+			m.tooltip = buf;
+			OBJ_get_manip_dref1(obj,buf);
+			m.dataref1 = buf;
+			OBJ_get_manip_dref2(obj,buf);
+			m.dataref2 = buf;
+			m.v1_min = OBJ_get_manip_v1_min(obj);
+			m.v1_max = OBJ_get_manip_v1_max(obj);
+			m.v2_min = OBJ_get_manip_v2_min(obj);
+			m.v2_max = OBJ_get_manip_v2_max(obj);
+			m.axis[0] = OBJ_get_manip_dx(obj);
+			m.axis[1] = OBJ_get_manip_dy(obj);
+			m.axis[2] = OBJ_get_manip_dz(obj);
+			
+			switch(OBJ_get_manip_type(obj)) {
+			case manip_panel:
+				builder->AccumManip(attr_Tex_Cockpit,m);
+				break;
+			case manip_none:
+				builder->AccumManip(attr_Manip_None,m);
+				break;
+			case manip_axis:
+				builder->AccumManip(attr_Manip_Drag_Axis,m);
+				break;
+			case manip_axis_2d:
+				builder->AccumManip(attr_Manip_Drag_2d,m);
+				break;
+			case manip_command:
+				builder->AccumManip(attr_Manip_Command,m);
+				break;
+			case manip_command_axis:
+				builder->AccumManip(attr_Manip_Command_Axis,m);
+				break;
+			case manip_noop:
+				builder->AccumManip(attr_Manip_Noop,m);
+				break;
+			}
+			
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
 
 			builder->SetTexRepeatParams(
@@ -572,7 +630,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	        return 0;
 	    }
 	
-	} else if (convert == convert_e)
+	}
+#if PHONE	
+	else if (convert == convert_e)
 	{
 		Obj8_Optimize(obj8);
 		if (!XObjWriteEmbedded(export_path.c_str(), obj8, true))	// 16 bit!
@@ -581,7 +641,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	        return 0;
 	    }
 
-	} else {
+	} 
+#endif	
+	else {
 		if (!XObj8Write(export_path.c_str(), obj8))
 	    {
 	        message_dialog("can't open file '%s' for writing", export_path.c_str());

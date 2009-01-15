@@ -157,9 +157,9 @@ static void		map_s_on_tri(VertexMap& map, const cgd::Plane3& proj_plane, const c
 		r1 = signed_area_3d(on_p,corners[2],corners[0],proj_plane.n) / area;
 		r2 = signed_area_3d(on_p,corners[0],corners[1],proj_plane.n) / area;
 
-		i->second->new_s =  r0 * sts[0].x +
-							r1 * sts[1].x +
-							r2 * sts[2].x;
+		i->second->new_s =  r0 * sts[0].x_ +
+							r1 * sts[1].x_ +
+							r2 * sts[2].x_;
 	}
 }
 
@@ -493,8 +493,8 @@ static void	find_st_for_tri(const a_tri& tri, const cgd::Point3& p, cgd::Point2&
 	double	r1 = signed_area_3d(p,tri.xyz[2],tri.xyz[0],tri.p.n) / area_total;
 	double	r2 = signed_area_3d(p,tri.xyz[0],tri.xyz[1],tri.p.n) / area_total;
 
-	st.x = r0 * tri.st[0].x + r1 * tri.st[1].x + r2 * tri.st[2].x;
-	st.y = r0 * tri.st[0].y + r1 * tri.st[1].y + r2 * tri.st[2].y;
+	st.x_ = r0 * tri.st[0].x_ + r1 * tri.st[1].x_ + r2 * tri.st[2].x_;
+	st.y_ = r0 * tri.st[0].y_ + r1 * tri.st[1].y_ + r2 * tri.st[2].y_;
 }
 
 static int	better_tri(const a_tri& tri, const cgd::Line3& l, double& best_dist, cgd::Point3& x_pt)
@@ -536,8 +536,8 @@ static int tex_a_surface(Surface * surf, const vector<a_tri>& tris)
 		{
 			cgd::Point2	 st;
 			find_st_for_tri(*best_tri, best_pt, st);
-			sv->tx = st.x;
-			sv->ty = st.y;
+			sv->tx = st.x_;
+			sv->ty = st.y_;
 		} else
 			++missed;
 	}

@@ -11,9 +11,16 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
-	
-UNRELEASED
-	- Bug fix: importer produces less vertices.		
+
+Version 3.2b1	
+	- Panel_preview textures are supported
+	- Animation sliders can be set to only show animation for visible geometry
+	- Support for OBJ syntax from X-Plane 921 and 930
+	- Bug fix: importer produces less vertices.
+	- Bug fix: panel backgrounds are found in the cockpit_3d folder
+	- Bug fix: line endings on Windows fixed
+	- Bug fix: panel region doesn't have decimal at end.
+	- Bug fix: no error message if you pop open dataref menu when datarefs.txt not in plugin folder.
 Version 3.1r1
 	- Support for ATTR_hard_deck
 	- Bug fix in importing hard surfaces!
@@ -168,18 +175,47 @@ when you are ready to package up the object in your custom scenery package.
 COCKPIT OBJECTS AND PANEL TEXTURES
 -------------------------------------------------------------------------------
 
+WARNING FOR EXISTING USERS: version 3.2 of the plugin has manipualtor controls.
+You must set your panel textured objects to be manipulatable or they will not
+respond to the mouse in the sim!  This is a one time change you must make to
+any .ac file when you adopt the new plugin!  See "Manipulators" below.
+
 AC3D will also let you use a panel texture to create a cockpit object with
-instruments that animate.  To do this, make sure that you have a panel bitmap
-called "Panel.png" in a folder path of cockpit/-PANELS- relative to your object
-file.  In other words:
+instruments that animate.  To do this, you texture part of your object with
+either the panel texture from your airplane or a panel preview texture.  Panel
+textures are located in the cockpit/-PANELS- or cockpit_3d/-PANELS- folder.
+(X-Plane will not use an old-style panel file name from the root of your 
+aircraft.  
 
     my object.obj
     cockpit
       -PANELS-
         Panel.png
+        
+With this plugin you can also use a panel preview.  A panel preview is an
+image of the panel textures for your object - not just the background, but
+all of the instruments and moving parts too.
 
-If your object and panel texture follow this convention, Panel.png will
-automatically be used as a panel texture and produce an animated cockpit.
+Panel previews must live in cockpit_3d/-PANELS-/Panel_previewN.png, where N
+is 0, 1, 2, or 3 for panel regions 1-4 or the N is omitted for a panel that
+does not use regions.  You may have to create a cockpit_3d folder to add
+panel previews even if you don't normally use that folder.
+
+X-Plane 930 can export create panel previews for you - the command name is
+sim/operation/make_panel_previews.  You may have to map this to a keyboard
+command to use it.
+
+The advantage of panel previews over the panel backgrounds is that (1) they
+provide a better indication of what your finished panel will look like and
+they provide a cleaner way to create panel regions.
+
+When you import an OBJ, the importer will first look for panel previews,
+then panel backgrounds.
+
+If an OBJ uses panel regions but there are no previews, and there is a 
+panel background, the importer will cut the background into pieces and
+make temporary new textures in ac3d to simulate the panel regions.  I
+recommend using panel previews instead!
 
 PERFORMANCE WARNING: changing between the panel and regular texture in an 
 object hurts framerate; see the section on performance for how to avoid this
@@ -192,10 +228,8 @@ In X-Plane 9 you can use up to 4 "sub-panel" regions.  Pick "X-Plane Panel
 Properties..." and enable the "Enable sub-panels" check box.  You can then
 pick the number of sub-areas of the 2-d panel that you will use in the model
 and their coordinates.  (The position can be anything but the dimensions of
-the sub-panels must be powers of 2.)  Then pick "Make subpanel..." and select
-a reference bitmap.  The plugin will create up to four new textures in the 
-textures sub-menu (called panel0.sub, panel1.sub, etc.) that show what those
-sub-regions contain.  You can then use the panelX.sub textures in your model.
+the sub-panels must be powers of 2.)  You may have to reset these dimensions
+when you reload your model because they are not currently saved.
 
 -------------------------------------------------------------------------------
 ONE-VS-TWO-SIDED GEOMETRY AND FLAT-VS-SMOOTH SHADING
@@ -267,12 +301,13 @@ indicate "multiple objects selected".
 
 
 -------------------------------------------------------------------------------
-OBJECT ATTRIBUTES: HARD POLYGONS, POLYGON OFFSET, MATERIALS, BLENDING CONTROL
+OBJECT ATTRIBUTES: HARD POLYGONS, POLYGON OFFSET, MATERIALS, ETC.
 -------------------------------------------------------------------------------
 
 For objects you can set the following properties.  Please note that object
 properties can affect performance and can be complex - see the performance
 section at the end of this document as well as the X-Plane scenery website.
+For manipulations, see later in this document.
 
 Polygon hardness
 
@@ -303,6 +338,8 @@ Blending
 	When blending is off, a cutoff level is shown - only pixels with more
 	than this percentage opacity will be shown.
 	
+	Author-set blending cutoff levels are supported starting with X-Plane 850.
+	
 Materials
 
 	Normally the X-Plane AC3D plugin does not generate material commands.
@@ -313,10 +350,37 @@ Materials
 	are: the diffuse color, the emissive color, and the specular color (which
 	is treated as gray-scale since X-Plane only supports specular hilighting,
 	not setting the specular color in RGB).
+	
+Disable Drawing
 
-NOTE: X-Plane before 850 does not support specific object surface types or 
-blending cutoff levels.  For objects that work with older versions of X-Plane
-8 always use the "object" hard surface type and a blend cutoff of 0.5.
+	Normally an object is drawn.  By clicking "disable drawing" you can set
+	an object to not be drawn but still be click tested, etc.  USe this to
+	create "physics and mouse" only objects.  Note that unlike hide 
+	animations (which hide an object for physics, drawing and clicking),
+	checking "disable drawing" only affects drawing, but always takes effect!
+
+	Draw Disable is supported in X-Plane 930 and higher.
+
+Hard Walls
+
+	For cockpit objects, check this box to make a triangle impassible to the
+	3-d camera.  You can use this to keep the pilot from walking through the
+	cockpit walls.  We recommend using draw-disable + wall to make a much
+	simpler mesh to define the "constraints" of the cockpit.
+	
+	Hard walls are supported in X-Plane 930 and higher.
+
+Dynamic _LIT Levels
+
+	Normally the LIT texture is drawn at full brightness.  If this is checked,
+	a dataref text field appears; you can enter a numeric dataref that will 
+	set the brightness of the LIT level for this object.  The dataref must 
+	return a value from 0 to 1.
+	
+	Lit level changes are a fairly expensive state change, so try to 
+	consolidate similarly-lit objects whenever possible!
+	
+	Dynamic lit levels are supported in X-Plane 930 and higher.
 
 -------------------------------------------------------------------------------
 LIGHT ATTRIBUTES: LIGHTS AND SMOKE
@@ -466,6 +530,24 @@ Resync
 WARNING: the animation preview will affect where you see your model but
 will NOT affect AC3D editing.  You should turn off animation preview when 
 editing to assure that AC3D's user interface works correctly.
+
+-------------------------------------------------------------------------------
+MANIPULATORS
+-------------------------------------------------------------------------------
+
+You can read about the concept of manipulators here:
+
+http://wiki.x-plane.com/Manipulators
+
+With the ac3d X-Plane plugin, the manipulation is a property of each object
+you create.  Simply pick the manipulation type in X-Plane inspector window.
+Additional fields will appear to let you customize the manipulation, when
+appropriate.
+
+Important: in ac3d, panel clicking and panel texture are not the same - you
+must specifically set the panel manipulation on any panel texture that you want
+to be clickable!  This is new to version 3.2 of the plugin - you will have to
+update your .ac objects.
 
 -------------------------------------------------------------------------------
 UPDATING OLD .AC FILES
