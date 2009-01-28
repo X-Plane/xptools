@@ -62,6 +62,7 @@ src/WEDCore/WED_TexMgr.cpp \
 src/WEDCore/WED_UndoLayer.cpp \
 src/WEDCore/WED_UndoMgr.cpp \
 src/WEDEntities/WED_AirportBeacon.cpp \
+src/WEDCore/WED_ResourceMgr.cpp \
 src/WEDEntities/WED_AirportBoundary.cpp \
 src/WEDEntities/WED_AirportChain.cpp \
 src/WEDEntities/WED_Airport.cpp \
@@ -70,6 +71,9 @@ src/WEDEntities/WED_AirportSign.cpp \
 src/WEDEntities/WED_ATCFrequency.cpp \
 src/WEDEntities/WED_DrapedOrthophotoBoundary.cpp \
 src/WEDEntities/WED_DrapedOrthophoto.cpp \
+src/WEDEntities/WED_ExclusionZone.cpp \
+src/WEDEntities/WED_TextureBezierNode.cpp \
+src/WEDEntities/WED_GISBoundingBox.cpp \
 src/WEDEntities/WED_Entity.cpp \
 src/WEDEntities/WED_FacadePlacement.cpp \
 src/WEDEntities/WED_ForestPlacement.cpp \
@@ -107,6 +111,7 @@ src/WEDEntities/WED_TowerViewpoint.cpp \
 src/WEDEntities/WED_Windsock.cpp \
 src/WEDImportExport/WED_AptIE.cpp \
 src/WEDImportExport/WED_DSFExport.cpp \
+src/WEDImportExport/WED_DSFImport.cpp \
 src/WEDLibrary/WED_LibraryListAdapter.cpp \
 src/WEDLibrary/WED_LibraryPane.cpp \
 src/WEDMap/WED_Colors.cpp \
@@ -114,6 +119,7 @@ src/WEDMap/WED_CreateLineTool.cpp \
 src/WEDMap/WED_CreatePointTool.cpp \
 src/WEDMap/WED_CreatePolygonTool.cpp \
 src/WEDMap/WED_CreateToolBase.cpp \
+src/WEDMap/WED_CreateBoxTool.cpp \
 src/WEDMap/WED_HandleToolBase.cpp \
 src/WEDMap/WED_Map.cpp \
 src/WEDMap/WED_MapBkgnd.cpp \
@@ -129,6 +135,14 @@ src/WEDMap/WED_ToolUtils.cpp \
 src/WEDMap/WED_UIMeasurements.cpp \
 src/WEDMap/WED_VertexTool.cpp \
 src/WEDMap/WED_WorldMapLayer.cpp \
+src/WEDMap/WED_DrawUtils.cpp \
+src/WEDMap/WED_PreviewLayer.cpp \
+src/WEDTCE/WED_TCE.cpp \
+src/WEDTCE/WED_TCELayer.cpp \
+src/WEDTCE/WED_TCEPane.cpp \
+src/WEDTCE/WED_TCEToolAdapter.cpp \
+src/WEDTCE/WED_TCEToolNew.cpp \
+src/WEDTCE/WED_TCEVertexTool.cpp \
 src/WEDProperties/WED_PropertyPane.cpp \
 src/WEDProperties/WED_PropertyTable.cpp \
 src/WEDWindows/WED_AboutBox.cpp \
@@ -219,7 +233,8 @@ libsrc/expat/xmltok/xmltok.c \
 src/Env/EnvParser.c \
 src/Env/Persistence.cpp \
 src/WorldEditor/WED_Assert.cpp \
-src/XPWidgets/XPLMGraphics.cpp
+src/XPWidgets/XPLMGraphics.cpp \
+src/Obj/ObjConvert.cpp
 
 UNUSED_XES :=\
 src/XESCore/XESInit.cpp \
@@ -260,6 +275,7 @@ INCLUDEPATHS :=\
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
 -Isrc/linuxinit \
+-Isrc/WEDTCE \
 -Isrc/Env \
 -Isrc/DSF \
 -Isrc/GUI \

@@ -43,7 +43,7 @@
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
-#include "mathutils.h"
+#include "MathUtils.h"
 
 const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
 
@@ -101,18 +101,18 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (host == NULL) return;
 
 	string cname = string("Create ") + kCreateCmds[mType];
-	
+
 	GetArchive()->StartCommand(cname.c_str());
 
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	if (mType != create_Hole)
 	sel->Clear();
-	
+
 	int is_bezier = mType != create_Facade && mType != create_Forest;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
 	int is_texed = (mType == create_Polygon && mOrthophoto);
-	
+
 	if(mType == create_Hole)
 	{
 		DebugAssert(host->CountChildren() > 0);
@@ -124,13 +124,13 @@ void	WED_CreatePolygonTool::AcceptPath(
 		is_texed = dynamic_cast<WED_TextureNode*>(old_outer_ring->GetNthChild(0)) != NULL ||
 				   dynamic_cast<WED_TextureBezierNode*>(old_outer_ring->GetNthChild(0)) != NULL;
 	}
-	
+
 	WED_AirportChain *	apt_ring=NULL;
-	WED_Thing *			outer_ring;	 
-	
+	WED_Thing *			outer_ring;
+
 		 if(is_apt)				outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
 	else if(is_poly)			outer_ring			  = WED_Ring::CreateTyped(GetArchive());
-	
+
 	static int n = 0;
 	++n;
 
@@ -227,7 +227,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			sprintf(buf,"String %d",n);
 			str->SetName(buf);
 			sel->Select(str);
-			str->SetClosed(closed);			
+			str->SetClosed(closed);
 			str->SetResource(mResource.value);
 			str->SetSpacing(mSpacing.value);
 		}
@@ -268,14 +268,14 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetName(buf);
 			sel->Select(pol);
 			pol->SetResource(mResource.value);
-			pol->SetHeading(mHeading.value);			
+			pol->SetHeading(mHeading.value);
 		}
 		break;
 	}
 
 	if(apt_ring)
 		apt_ring->SetClosed(closed);
-	
+
 	double	lonmax=-9.9e9;
 	double	latmax=-9.9e9;
 	double	lonmin= 9.9e9;
@@ -301,7 +301,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			latmin=min(latmin,dirs_lo[n].y());
 		}
 	}
-	
+
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		int idx = is_ccw ? n : pts.size()-n-1;
@@ -311,14 +311,14 @@ void	WED_CreatePolygonTool::AcceptPath(
 		WED_GISPoint *			node=NULL;
 		WED_TextureNode *		tnode=NULL;
 		WED_TextureBezierNode *	tbnode=NULL;
-		
+
 		if(is_apt)							node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
 		else if (is_bezier && is_texed)		node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
 		else if (is_bezier)					node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());
 		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
-		 
-		node->SetLocation(pts[idx]);		
+
+		node->SetLocation(pts[idx]);
 		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
 							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
 		if(tnode)			tnode->SetUV(st);
@@ -339,7 +339,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			else
 			{
 				bnode->SetSplit(has_split[idx]);
-				if (is_ccw) 
+				if (is_ccw)
 				{
 					bnode->SetControlHandleHi(dirs_hi[idx]);
 					bnode->SetControlHandleLo(dirs_lo[idx]);

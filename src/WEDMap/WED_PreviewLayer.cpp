@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,16 +39,20 @@
 #include "TexUtils.h"
 #include "ObjDraw.h"
 #include "XObjDefs.h"
-#include "mathutils.h"
+#include "MathUtils.h"
 
+#if APL
 #include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z)
 {
 	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? tex_Wrap : 0);
 	if(ref == NULL) return false;
 	int tex_id = tman->GetTexID(ref);
-	
+
 	if (tex_id == 0)
 	{
 		g->SetState(false,0,false,true,true,false,false);
@@ -80,7 +84,7 @@ static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, b
 		z->GetPixelBounds(l,b,r,t);
 
 		applyRotation(m1, heading, 0, 0, 1);
-		
+
 		applyTranslation(m1, l-centroid.x(),b-centroid.y(),0);
 
 		double	proj_tex_s[4], proj_tex_t[4];
@@ -149,7 +153,7 @@ void Obj_TexCoord(const float * st, void * ref)
 
 void Obj_TexCoordPointer(int size, unsigned long type, long stride, const void * pointer, void * ref)
 {
-	glTexCoordPointer(size, type, stride, pointer);	
+	glTexCoordPointer(size, type, stride, pointer);
 }
 
 float Obj_GetAnimParam(const char * string, float v1, float v2, void * ref)
@@ -217,7 +221,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	{
 			vector<Point2>	pts;
 			vector<int>		is_hole_start;
-	
+
 		PointSequenceToVector(gis_poly->GetOuterRing(), GetZoomer(), pts, orth != NULL, is_hole_start, 0);
 		int n = gis_poly->GetNumHoles();
 		for (int i = 0; i < n; ++i)
@@ -235,9 +239,9 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			centroid.y_ /= (double) pts.size();
 
 			// TODO: forest, facade
-			
+
 			if(fac)
-			{	
+			{
 				g->SetState(false,0,false,false, false,false,false);
 				glColor3f(0.7,0.7,0.7);
 			}
@@ -250,7 +254,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 					interp(0,0.1,1,0.0,forst->GetDensity()));
 			}
 
-			if(pol || orth) 
+			if(pol || orth)
 			setup_pol_texture(tman, pol_info, pol ? pol->GetHeading() : 0.0, orth != NULL, centroid, g, GetZoomer());
 
 			glFrontFace(GL_CCW);
@@ -269,7 +273,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		obj->GetResource(vpath);
 		XObj8 * o;
 		if(rmgr->GetObj(vpath,o))
-		{	
+		{
 			TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);
 			g->SetTexUnits(1);
 			if(ref)g->BindTex(tman->GetTexID(ref),0);
@@ -291,5 +295,5 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			glPopMatrix();
 		}
 	}
-	
+
 }
