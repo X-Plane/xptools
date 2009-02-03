@@ -1218,7 +1218,7 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		sec_ovr_e(0);
 	road_end();
 
-	sec_start(1,46, "net_SecondaryRoadPassing");
+	sec_start(0,46, "net_SecondaryRoadPassing");
 		sec_reg_s();
 		sec_sec_p();
 		sec_reg_e();
