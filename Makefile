@@ -4,7 +4,14 @@ LIBRARIES	:= libsrc/linux-specific/.3rdparty_libs
 ifndef conf
 conf		:= debug_opt
 endif
-TARGETDIR	:= $(BUILDDIR)/$(conf)
+PLATFORM	:= $(shell uname)
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+	PLATFORM	:= Mingw
+endif
+ifeq ($(cross), mingw)
+	PLATFORM	:= Mingw
+endif
+TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 
 .SILENT:
 .PHONY: all
@@ -26,28 +33,28 @@ $(LIBRARIES):
 	$(MAKE) -C "libsrc/linux-specific"
 
 ObjView: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 WED: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 DSFTool: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 DDSTool: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 ObjConverter: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 MeshTool: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 RenderFarm: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 fonttool: $(LIBRARIES)
-	$(MAKE) conf=$(conf) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 clean:
 	-rm -rf $(BUILDDIR)

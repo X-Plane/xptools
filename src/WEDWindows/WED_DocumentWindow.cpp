@@ -115,7 +115,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,0.5,1);
 
-#if LIN
+#if 0
 // temporary, testing stuff here
 	WED_ToolInfoAdapter* mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
 	GUI_TextTable* mTextTable = new GUI_TextTable(inCommander,10);
@@ -229,11 +229,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);
 	prop_tabs->AddPane(prop_pane6, "Helipads");
-	
+
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
 	prop_tabs->AddPane(mTCEPane, "Texture");
-	
+
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };

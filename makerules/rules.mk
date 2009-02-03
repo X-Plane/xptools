@@ -7,24 +7,31 @@
 PLATFORM		:= $(shell uname)
 ARCHITECTURE	:= $(shell uname -m)
 WD				:= $(PWD)
-
-ifeq ($(PLATFORM), Linux)
-	ECHOFLAGS	:= -e
-else ifeq ($(PLATFORM), Darwin)
-	ECHOFLAGS	:=
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+	PLATFORM	:= Mingw
+	NATIVEMINGW	:= 1
+endif
+ifeq ($(cross), mingw)
+	PLATFORM	:= Mingw
 endif
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-print_clean		:= echo $(ECHOFLAGS) "[ deleting all generated files  ]"
-print_link		:= echo $(ECHOFLAGS) "[ linking executable      ]: "
-print_comp_cc	:= echo $(ECHOFLAGS) "[ compiling c object      ]: "
-print_comp_cxx	:= echo $(ECHOFLAGS) "[ compiling cpp object    ]: "
-print_comp_res	:= echo $(ECHOFLAGS) "[ generating resource     ]: "
-print_arch		:= echo $(ECHOFLAGS) "[ creating static library ]: "
-print_so		:= echo $(ECHOFLAGS) "[ creating shared library ]: "
-print_dep		:= echo $(ECHOFLAGS) "[ calculating dependency  ]: "
-print_finished	:= echo $(ECHOFLAGS) " finished \o/"
-print_error		:= (echo $(ECHOFLAGS) "[ --FAILED-- ] :-(" && false)
+ifeq ($(PLATFORM), Darwin)
+	ECHOFLAGS	:=
+else
+	ECHOFLAGS	:= -e
+endif
+
+ifdef NATIVEMINGW
+print_clean		:= echo "[ deleting all generated files  ]"
+print_link		:= echo "[ linking executable      ]: "
+print_comp_cc	:= echo "[ compiling c object      ]: "
+print_comp_cxx	:= echo "[ compiling cpp object    ]: "
+print_comp_res	:= echo "[ generating resource     ]: "
+print_arch		:= echo "[ creating static library ]: "
+print_so		:= echo "[ creating shared library ]: "
+print_dep		:= echo "[ calculating dependency  ]: "
+print_finished	:= echo " finished \o/"
+print_error		:= (echo "[ --FAILED-- ] :-(" && false)
 else
 clearscreen		:= echo $(ECHOFLAGS) "\033[2J\033[H"
 print_clean		:= echo $(ECHOFLAGS) "\033[0;31m[ deleting all generated files  ]\033[0m"
@@ -39,7 +46,6 @@ print_finished	:= echo $(ECHOFLAGS) "\033[0;32m finished \o/\033[0m"
 print_error		:= (echo $(ECHOFLAGS) "\033[0;31m[ --FAILED-- ] :-(\033[0m" && false)
 endif
 
-
 ##
 # target specific environment
 #############################
@@ -50,8 +56,8 @@ include makerules/$(shell basename $(TARGET))
 # architecture specific environment
 ###################################
 
-# what does uname spit out on a ppc and ppc64?
-# need this for setting -DLIL/-DBIG appropriately
+#TODO: add mingw formats
+
 ifeq ($(ARCHITECTURE), i386)
 	OBJFORMAT = elf32-i386
 	BINFORMAT = i386
@@ -69,20 +75,33 @@ endif
 
 ifeq ($(PLATFORM), Linux)
 	DEFINES		:= $(DEFINES) -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-else ifeq ($(PLATFORM), Darwin)
-	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
-else ifneq (, $(findstring MINGW, $(PLATFORM)))
+	CXXFLAGS	:= $(CXXFLAGS)
+else ifeq ($(PLATFORM), Darwin) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
+	DEFINES		:= $(DEFINES) -DNOCPP0X
+	CXXFLAGS	:= $(CXXFLAGS) -mmacosx-version-min=10.4
+	CFLAGS		:= $(CFLAGS) -mmacosx-version-min=10.4
+	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4
+else ifeq ($(PLATFORM), Mingw)
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
+	CXXFLAGS	:= $(CXXFLAGS)
+endif
+
+##
+# type specific environment
+###############################
+
+ifeq ($(TYPE), LIBDYNAMIC)
+	DEFINES		:= $(DEFINES) -DPIC
+ifneq ($(PLATFORM), Mingw)
+	CFLAGS		:= $(CFLAGS) -fPIC
+	CXXFLAGS	:= $(CXXFLAGS) -fPIC
+endif
 endif
 
 ##
 # configuration specific environment
 ####################################
 
-# Ben, please check if this is the setup you want. debug information
-# is detached anyway, so a '-g' doesn't make a difference in release builds
-# (especially in beta versions debuginfo should be shipped with the binary,
-# so that the user can submit meaningful stacktrace information)
 ifeq ($(conf), release_opt)
 	CFLAGS		:= $(CFLAGS) -O2 -g
 	CXXFLAGS	:= $(CXXFLAGS) -O2 -g
@@ -115,11 +134,29 @@ CC			:= gcc-4.2
 CXX			:= g++-4.2
 LD			:= g++-4.2
 AR			:= libtool
+else ifeq ($(PLATFORM), Linux)
+CC			:= gcc
+CXX			:= g++
+LD			:= g++
+AR			:= ar
+OBJCOPY		:= objcopy
+STRIP		:= strip
+else ifeq ($(PLATFORM), Mingw)
+ifndef NATIVEMINGW
+CC			:= i686-pc-mingw32-gcc
+CXX			:= i686-pc-mingw32-g++
+LD			:= i686-pc-mingw32-g++
+AR			:= i686-pc-mingw32-ar
+STRIP		:= i686-pc-mingw32-strip
+OBJCOPY		:= i686-pc-mingw32-objcopy
 else
 CC			:= gcc
 CXX			:= g++
 LD			:= g++
 AR			:= ar
+OBJCOPY		:= objcopy
+STRIP		:= strip
+endif
 endif
 CFLAGS		:= $(CFLAGS)
 CXXFLAGS	:= $(CXXFLAGS)
@@ -155,21 +192,26 @@ else
 endif
 else ifeq ($(TYPE), LIBDYNAMIC)
 	$(print_so) $@
-# todo: libtool for macos if this doesn't work
-	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+ifeq ($(PLATFORM), Linux)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+else ifeq ($(PLATFORM), Darwin)
+	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+else ifeq ($(PLATFORM), Mingw)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+endif
 else ifeq ($(TYPE), EXECUTABLE)
 	$(print_link) $@
-	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 else
 	echo "no target type specified"
 	exit 1
 endif
 ifneq ($(TYPE), LIBSTATIC)
-ifeq ($(PLATFORM), Linux)
 ifeq ($(conf), release_opt)
-	objcopy --only-keep-debug $@ $(@).debug
-	strip -s -x $@
-	cd  $(dir $(@)) && objcopy --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
+ifneq ($(PLATFORM), Darwin)
+	$(OBJCOPY) --only-keep-debug $@ $(@).debug
+	$(STRIP) -s -x $@
+	cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
 	chmod 0644 $(@).debug
 endif
 endif
@@ -179,7 +221,7 @@ endif
 $(RESOURCEOBJ): $(BUILDDIR)/%.ro : %
 	$(print_comp_res) $<
 	-mkdir -p $(dir $(@))
-	cd  $(dir $(<)) && objcopy -I binary -O $(OBJFORMAT) -B $(BINFORMAT) $(notdir $(<)) $(WD)/$(@) && cd $(WD)
+	cd  $(dir $(<)) && $(OBJCOPY) -I binary -O $(OBJFORMAT) -B $(BINFORMAT) $(notdir $(<)) $(WD)/$(@) && cd $(WD)
 
 $(CCOBJECTS): $(BUILDDIR)/%.o: %.c $(BUILDDIR)/%.dep
 	$(print_comp_cc) $<
