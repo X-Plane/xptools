@@ -76,8 +76,8 @@ endif
 ifeq ($(PLATFORM), Linux)
 	DEFINES		:= $(DEFINES) -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CXXFLAGS	:= $(CXXFLAGS)
-else ifeq ($(PLATFORM), Darwin) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
-	DEFINES		:= $(DEFINES) -DNOCPP0X
+else ifeq ($(PLATFORM), Darwin)
+	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
 	CXXFLAGS	:= $(CXXFLAGS) -mmacosx-version-min=10.4
 	CFLAGS		:= $(CFLAGS) -mmacosx-version-min=10.4
 	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4

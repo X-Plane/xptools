@@ -6,9 +6,8 @@ STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthrea
 LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 
-SOURCES :=\
-src/linuxinit/initializer.cpp \
-src/linuxinit/minigtk.cpp \
+
+COMMON_SRC := \
 src/Obj/ObjPointPool.cpp \
 src/Obj/XObjDefs.cpp \
 src/Obj/XObjReadWrite.cpp \
@@ -21,16 +20,32 @@ src/Utils/trackball.c \
 src/Utils/XUtils.cpp \
 src/Utils/GeoUtils.cpp \
 src/Utils/MatrixUtils.cpp \
-src/Utils/PlatformUtils.lin.cpp \
 src/Utils/EndianUtils.c \
-src/UI/XWin.lin.cpp \
-src/UI/XWinGL.lin.cpp \
-src/UI/XPopup.lin.cpp \
-src/UI/xdnd.cpp \
 src/UI/XGUIApp.cpp \
 src/GUI/GUI_Timer.cpp \
 src/XPTools/ViewObj.cpp \
 src/Utils/AssertUtils.cpp
+
+WIN32_SRC := \
+src/Utils/PlatformUtils.win.cpp \
+src/UI/XWin.win.cpp \
+src/UI/XWinGL.win.cpp
+
+POSIX_SRC := \
+src/linuxinit/initializer.cpp \
+src/linuxinit/minigtk.cpp \
+src/Utils/PlatformUtils.lin.cpp \
+src/UI/XWin.lin.cpp \
+src/UI/XWinGL.lin.cpp \
+src/UI/XPopup.lin.cpp \
+src/UI/xdnd.cpp
+
+
+ifeq ($(PLATFORM), Linux)
+SOURCES := $(COMMON_SRC) $(POSIX_SRC)
+else ifeq ($(PLATFORM), Mingw)
+SOURCES := $(COMMON_SRC) $(WIN32_SRC)
+endif
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
