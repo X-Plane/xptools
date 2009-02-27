@@ -3,81 +3,93 @@
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
 {
     int nfbConfig = 0;
-    int fbAttr[] = {GLX_DRAWABLE_TYPE,
-                    GLX_WINDOW_BIT,
-                    GLX_RENDER_TYPE,
-                    GLX_RGBA_BIT,
-                    GLX_DOUBLEBUFFER,
-                    True,
-					GLX_STENCIL_SIZE, 8,
-					GLX_DEPTH_SIZE, 16,
-                    None
+	int found_config = 0;
+	GLXFBConfig	fb_config;
+    int fbAttr[] = {GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+					GLX_RENDER_TYPE, GLX_RGBA_BIT,
+					GLX_DOUBLEBUFFER, True,
+					None
                    };
-    GLXFBConfig * FbConfig = glXChooseFBConfig(_mDisplay, DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
-    if (FbConfig == NULL)
-        throw "invalid framebuffer config";
-    mContext = glXCreateNewContext(_mDisplay, *FbConfig, GLX_RGBA_TYPE, inShare ? inShare->mContext :NULL, 1);
-    glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
+    GLXFBConfig* fb_configs = glXChooseFBConfig(_mDisplay,
+		DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
+
+	for (int i = 0; i < nfbConfig; i++)
+	{
+		XVisualInfo* xvisual_info = glXGetVisualFromFBConfig(_mDisplay,
+			fb_configs[i]);
+		if (!xvisual_info)
+			continue;
+		fb_config = fb_configs[i];
+		found_config = 1;
+		break;
+	}
+	if (!found_config)
+		throw "no valid framebuffer configuration found.";
+    mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
+		inShare ? inShare->mContext :NULL, 1);
+	XFree(fb_configs);
     SetTitle("XWinGL Window");
-	XFree(FbConfig);
-// doesn't work
-//	glXSwapIntervalSGI(1);
     SetVisible(true);
 }
 
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
 {
     int nfbConfig = 0;
-
-    int fbAttr[] = {GLX_DRAWABLE_TYPE,
-                    GLX_WINDOW_BIT,
-                    GLX_RENDER_TYPE,
-                    GLX_RGBA_BIT,
-                    GLX_DOUBLEBUFFER,
-                    True,
-					GLX_STENCIL_SIZE, 8,
-					GLX_DEPTH_SIZE, 16,
-                    None
+	int found_config = 0;
+	GLXFBConfig	fb_config;
+    int fbAttr[] = {GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+					GLX_RENDER_TYPE, GLX_RGBA_BIT,
+					GLX_DOUBLEBUFFER, True,
+					None
                    };
-    GLXFBConfig * FbConfig = glXChooseFBConfig(_mDisplay, DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
-    if (FbConfig == NULL)
-        throw "invalid framebuffer config";
-    mContext = glXCreateNewContext(_mDisplay, *FbConfig, GLX_RGBA_TYPE, inShare ? inShare->mContext : NULL, 1);
-	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
-	XFree(FbConfig);
+    GLXFBConfig* fb_configs = glXChooseFBConfig(_mDisplay,
+		DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
+
+	for (int i = 0; i < nfbConfig; i++)
+	{
+		XVisualInfo* xvisual_info = glXGetVisualFromFBConfig(_mDisplay,
+			fb_configs[i]);
+		if (!xvisual_info)
+			continue;
+		fb_config = fb_configs[i];
+		found_config = 1;
+		break;
+	}
+	if (!found_config)
+		throw "no valid framebuffer configuration found.";
+    mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
+		inShare ? inShare->mContext :NULL, 1);
+	XFree(fb_configs);
+    SetTitle("XWinGL Window");
 	if (inAttributes & xwin_style_visible)
         SetVisible(true);
 }
 
 XWinGL::~XWinGL()
 {
-	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
-	glXDestroyContext(_mDisplay,mContext);
+	glXMakeContextCurrent(_mDisplay, None, None, mContext);
+	glXDestroyContext(_mDisplay, mContext);
 }
 
 void                    XWinGL::SetGLContext(void)
 {
-	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
+	glXMakeCurrent(_mDisplay, mWindow, mContext);
 }
 
 void                    XWinGL::SwapBuffer(void)
 {
-	//glFinish();
 	glXSwapBuffers(_mDisplay, mWindow);
 }
 
 void                    XWinGL::Resized(int inWidth, int inHeight)
 {
-	//glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
     glViewport(0, 0, inWidth, inHeight);
     this->GLReshaped(inWidth, inHeight);
 }
 
 void                    XWinGL::Update(XContext ctx)
 {
-	glXMakeContextCurrent(_mDisplay, mWindow, mWindow, mContext);
+	glXMakeCurrent(_mDisplay, mWindow, mContext);
     this->GLDraw();
-	glXSwapBuffers(_mDisplay,mWindow);
+	glXSwapBuffers(_mDisplay, mWindow);
 }
-
-
