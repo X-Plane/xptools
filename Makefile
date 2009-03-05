@@ -8,9 +8,6 @@ PLATFORM	:= $(shell uname)
 ifneq (, $(findstring MINGW, $(PLATFORM)))
 	PLATFORM	:= Mingw
 endif
-ifeq ($(cross), mingw)
-	PLATFORM	:= Mingw
-endif
 TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 
 .SILENT:

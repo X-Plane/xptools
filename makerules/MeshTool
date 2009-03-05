@@ -1,6 +1,6 @@
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -Wno-deprecated -include src/Obj/XDefs.h
+CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
 LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1

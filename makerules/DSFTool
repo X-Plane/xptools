@@ -1,6 +1,6 @@
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -Wno-deprecated -include src/Obj/XDefs.h
+CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
 
 SOURCES :=\
