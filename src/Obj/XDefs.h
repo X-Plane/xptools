@@ -94,7 +94,7 @@ using namespace std;
 //		#define __powerpc__
 //	#endif
 
-	#if APL || LIN
+	#if APL || LIN || MINGW_BUILD
 // TODO: replace this hack with standard conform <unordered_map>, <hash_map> will disappear in the near future
 	#define GCC_VERSION (__GNUC__ * 10000 \
                                + __GNUC_MINOR__ * 100 \

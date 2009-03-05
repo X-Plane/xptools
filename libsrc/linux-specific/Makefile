@@ -9,18 +9,31 @@ VER_LIBSQLITE = 3.6.11
 VER_LIBPNG    = 1.2.35
 VER_ZLIB      = 1.2.3
 VER_LIBTIFF   = 4.0.0beta3
-VER_LIBSHP    = 1.2.10
+VER_LIBSHP    = 1.2.10.1
 VER_LIBSQUISH = 1.10.1
+VER_BOOST     = 1.38.0
+
+PLATFORM	:= $(shell uname)
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+	PLATFORM	:= Mingw
+endif
+
+.PHONY: boost_headers
 
 all: lib/libCGAL.a lib/libfreetype.a lib/libproj.a lib/lib3ds.a lib/libdime.a lib/libjpeg.a lib/libsqlite3.a lib/libpng12.a lib/libz.a lib/libtiff.a lib/libshp.a lib/libsquish.a lib/libgeotiff.a
 	touch .3rdparty_libs
 
-lib/libCGAL.a:
+boost_headers:
+	-mkdir "include"
+	echo "extracting boost headers..."
+	cd include && tar -xzf "../archives/boost-headers-$(VER_BOOST).tar.gz"
+
+lib/libCGAL.a: boost_headers
 	-mkdir "include"
 	-mkdir "lib"
 	tar -xzf "archives/CGAL-$(VER_CGAL).tar.gz"
 	cp cgal_patch "CGAL-$(VER_CGAL)/include" && cd "CGAL-$(VER_CGAL)/include" && patch -p1 < ./cgal_patch
-	cd "CGAL-$(VER_CGAL)" && chmod +x install_cgal && ./install_cgal --prefix=/tmp/cgalbuild --disable-shared
+	cd "CGAL-$(VER_CGAL)" && chmod +x install_cgal && ./install_cgal --CXXFLAGS "-I`pwd`/../include" --BOOST_INCL_DIR "`pwd`/../include" --prefix "/tmp/cgalbuild" --disable-shared
 	cp -Lpr /tmp/cgalbuild/include/* ./include
 	cp -Lpr /tmp/cgalbuild/lib/*.a ./lib
 	-rm -rdf /tmp/cgalbuild
@@ -87,7 +100,12 @@ lib/libsqlite3.a:
 lib/libpng12.a: lib/libz.a
 	-mkdir "include"
 	-mkdir "lib"
+ifeq ($(PLATFORM), Mingw)
+	tar -xzf "archives/libpng-$(VER_LIBPNG).tar.gz" && cd "libpng-$(VER_LIBPNG)" && chmod +x configure && ./configure CFLAGS="-I../include" LDFLAGS="-L../lib"
+endif
+ifeq ($(PLATFORM), Linux)
 	tar -xzf "archives/libpng-$(VER_LIBPNG).tar.gz" && cd "libpng-$(VER_LIBPNG)" && chmod +x configure && ./configure
+endif
 	$(MAKE) -C "libpng-$(VER_LIBPNG)"
 	-rm -rf libpng-$(VER_LIBPNG)/config.h
 	cp -Lpr libpng-$(VER_LIBPNG)/*.h ./include

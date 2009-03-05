@@ -40,6 +40,17 @@ inline int Client2OGL_X(int x, HWND w) { return x; }
 inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
 inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+
+#if MINGW_BUILD
+#define _TRUNCATE 0
+
+static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSource, size_t count)
+{
+	strncpy(strDest, strSource, count);
+	return 0;
+}
+
+#endif
 #endif
 
 #if LIN

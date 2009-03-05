@@ -70,6 +70,9 @@
 
 #if USE_JPEG
 extern "C" {
+	#ifndef __INTEL__
+	#define __INTEL__
+	#endif
 	#include <jpeglib.h>
 	#include <jerror.h>
 }

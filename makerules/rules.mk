@@ -70,6 +70,7 @@ LD			:= $(CROSSPREFIX)g++
 AR			:= $(CROSSPREFIX)ar
 OBJCOPY		:= $(CROSSPREFIX)objcopy
 STRIP		:= $(CROSSPREFIX)strip
+WINDRES		:= $(CROSSPREFIX)windres
 endif
 
 
@@ -129,7 +130,7 @@ endif
 ifeq ($(PLATFORM), Mingw)
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:= $(CFLAGS)
-	CXXFLAGS	:= $(CXXFLAGS)
+	CXXFLAGS	:= $(CXXFLAGS) -Wno-deprecated
 	LDFLAGS		:= $(LDFLAGS)
 endif
 
@@ -186,6 +187,7 @@ CCOBJECTS	:= $(patsubst %.c, $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).
 CXXDEPS		:= $(patsubst %.cpp, $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).dep, $(CXXSOURCES))
 CXXOBJECTS	:= $(patsubst %.cpp, $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).o, $(CXXSOURCES))
 RESOURCEOBJ	:= $(patsubst %, $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).ro, $(RESOURCES))
+WIN_RESOURCEOBJ	:= $(patsubst %.rc, $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).res, $(WIN_RESOURCES))
 
 
 
@@ -197,7 +199,7 @@ all: $(REAL_TARGET)
 
 -include $(CCDEPS) $(CXXDEPS)
 
-$(REAL_TARGET):  $(CCOBJECTS) $(CXXOBJECTS) $(CCDEPS) $(CXXDEPS) $(RESOURCEOBJ)
+$(REAL_TARGET):  $(CCOBJECTS) $(CXXOBJECTS) $(CCDEPS) $(CXXDEPS) $(RESOURCEOBJ) $(WIN_RESOURCEOBJ)
 	-mkdir -p $(dir $(@))
 
 # static library
@@ -205,9 +207,9 @@ $(REAL_TARGET):  $(CCOBJECTS) $(CXXOBJECTS) $(CCDEPS) $(CXXDEPS) $(RESOURCEOBJ)
 ifeq ($(TYPE), LIBSTATIC)
 	$(print_arch) $@
 ifeq ($(PLATFORM), Darwin)
-	$(AR) -static -o $@ $(ARFLAGS) $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) || $(print_error)
+	$(AR) -static -o $@ $(ARFLAGS) $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) || $(print_error)
 else
-	$(AR) $(ARFLAGS) $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) || $(print_error)
+	$(AR) $(ARFLAGS) $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) || $(print_error)
 endif
 endif
 
@@ -216,13 +218,13 @@ endif
 ifeq ($(TYPE), LIBDYNAMIC)
 	$(print_so) $@
 ifeq ($(PLATFORM), Linux)
-	$(LD) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 endif
 ifeq ($(PLATFORM), Darwin)
-	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -rdynamic -shared -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 endif
 ifeq ($(PLATFORM), Mingw)
-	$(LD) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -shared -Wl,-export-dynamic,-soname,$(notdir $(@)) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 endif
 endif
 
@@ -230,13 +232,13 @@ endif
 
 ifeq ($(TYPE), EXECUTABLE)
 	$(print_link) $@
-	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 endif
 
 # debug information
 
 ifneq ($(TYPE), LIBSTATIC)
-ifeq ($(conf), release)
+ifeq ($(conf), release_opt)
 ifeq ($(PLATFORM), Linux)
 	$(OBJCOPY) --only-keep-debug $@ $(@).debug
 	$(STRIP) -s -x $@
@@ -259,6 +261,11 @@ $(RESOURCEOBJ): $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).ro : %
 	$(print_comp_res) $<
 	-mkdir -p $(dir $(@))
 	cd  $(dir $(<)) && $(OBJCOPY) -I binary -O $(OBJFORMAT) -B $(BINFORMAT) $(notdir $(<)) $(WD)/$(@) && cd $(WD)
+
+$(WIN_RESOURCEOBJ): $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).res : %.rc
+	$(print_comp_res) $<
+	-mkdir -p $(dir $(@))
+	$(WINDRES) $< -O coff -o $@
 
 $(CCOBJECTS): $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).o: %.c $(BUILDDIR)/$(MULTI_PREFIX)%$(FORCEREBUILD_SUFFIX).dep
 	$(print_comp_cc) $<

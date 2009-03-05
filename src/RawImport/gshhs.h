@@ -114,8 +114,7 @@ struct GSHHS {	/* Global Self-consistent Hierarchical High-resolution Shorelines
 };
 
 
-
-struct	POINT {	/* Each lon, lat pair is stored in micro-degrees in 4-byte integer format */
+struct	_POINT {	/* Each lon, lat pair is stored in micro-degrees in 4-byte integer format */
 
 	int	x;
 

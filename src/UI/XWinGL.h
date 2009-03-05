@@ -54,7 +54,6 @@ extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
    extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
    extern PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB	;
 
-
 #define GL_TEXTURE0_ARB                   0x84C0
 #define GL_TEXTURE1_ARB                   0x84C1
 #define GL_TEXTURE2_ARB                   0x84C2

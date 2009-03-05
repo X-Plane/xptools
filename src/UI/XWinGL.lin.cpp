@@ -27,6 +27,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
 		throw "no valid framebuffer configuration found.";
     mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
 		inShare ? inShare->mContext :NULL, 1);
+	glXMakeCurrent(_mDisplay, mWindow, mContext);
 	XFree(fb_configs);
     SetTitle("XWinGL Window");
     SetVisible(true);
@@ -59,6 +60,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 		throw "no valid framebuffer configuration found.";
     mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
 		inShare ? inShare->mContext :NULL, 1);
+	glXMakeCurrent(_mDisplay, mWindow, mContext);
 	XFree(fb_configs);
     SetTitle("XWinGL Window");
 	if (inAttributes & xwin_style_visible)

@@ -15,6 +15,7 @@ TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 .PHONY: clean
 .PHONY: distclean
 
+.PHONY: libs
 .PHONY: ObjView
 .PHONY: WED
 .PHONY: DSFTool
@@ -26,31 +27,33 @@ TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm fonttool
 
+libs: $(LIBRARIES)
+
 $(LIBRARIES):
 	$(MAKE) -C "libsrc/linux-specific"
 
-ObjView: $(LIBRARIES)
+ObjView: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-WED: $(LIBRARIES)
+WED: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-DSFTool: $(LIBRARIES)
+DSFTool: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-DDSTool: $(LIBRARIES)
+DDSTool: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-ObjConverter: $(LIBRARIES)
+ObjConverter: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-MeshTool: $(LIBRARIES)
+MeshTool: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-RenderFarm: $(LIBRARIES)
+RenderFarm: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
-fonttool: $(LIBRARIES)
+fonttool: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
 clean:

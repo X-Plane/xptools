@@ -24,7 +24,9 @@
 
 #define 	IDT_TIMER1	0x01
 
-
+#if MINGW_BUILD
+#define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
+#endif
 
 typedef	map<int, pair<xmenu, int> >	MenuMap;
 MenuMap	gMenuMap;

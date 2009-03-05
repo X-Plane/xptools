@@ -112,7 +112,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 	int	k, max_east = 270000000, n_read, flip;
 
-	struct	POINT p;
+	struct	_POINT p;
 
 	struct GSHHS h;
 
@@ -216,7 +216,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 
 
-			if (fread ((void *)&p, (size_t)sizeof(struct POINT), (size_t)1, fp) != 1) {
+			if (fread ((void *)&p, (size_t)sizeof(struct _POINT), (size_t)1, fp) != 1) {
 
 				fprintf (stderr, "gshhs:  Error reading file %s for polygon %d, point %d.\n", inFile, h.id, k);
 

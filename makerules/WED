@@ -1,21 +1,23 @@
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
+ifeq ($(PLATFORM), Linux)
 LDFLAGS		:= -nodefaultlibs -static-libgcc
 STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
 LIBS		:= -Wl,-Bdynamic -lGL -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
-
 include makerules/WED_resources
+endif
+ifeq ($(PLATFORM), Mingw)
+LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -lws2_32 -Wl,-Bstatic -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
+LDFLAGS		:= -Wl,-subsystem,windows
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+WIN_RESOURCES := src/WEDResources/WED.rc
+endif
 
-SOURCES :=\
-src/linuxinit/initializer.cpp \
-src/linuxinit/minigtk.cpp \
+
+COMMON_SRC := \
 src/UI/FontMgr.cpp \
-src/UI/XWin.lin.cpp \
-src/UI/XWinGL.lin.cpp \
-src/UI/XPopup.lin.cpp \
-src/UI/xdnd.cpp \
 src/WEDCore/WED_AppMain.cpp \
 src/WEDCore/WED_Application.cpp \
 src/WEDCore/WED_PackageMgr.cpp \
@@ -157,7 +159,6 @@ src/GUI/GUI_Pane.cpp \
 src/GUI/GUI_Help.cpp \
 src/GUI/GUI_Clipboard.cpp \
 src/GUI/GUI_Application.cpp \
-src/GUI/GUI_Laftfont.cpp \
 src/Utils/SQLUtils.cpp \
 src/Utils/AssertUtils.cpp \
 src/Utils/MemFileUtils.cpp \
@@ -165,7 +166,6 @@ src/Utils/FileUtils.cpp \
 src/Utils/GISUtils.cpp \
 src/Utils/BitmapUtils.cpp \
 src/Utils/TexUtils.cpp \
-src/Utils/PlatformUtils.lin.cpp \
 src/Utils/EndianUtils.c \
 src/Utils/md5.c \
 src/Utils/XChunkyFileUtils.cpp \
@@ -177,7 +177,6 @@ src/Utils/XUtils.cpp \
 src/Utils/BWImage.cpp \
 src/Utils/ObjUtils.cpp \
 src/Utils/XFileTwiddle.cpp \
-src/Utils/XFileTwiddle.unix.cpp \
 src/Utils/Skeleton.cpp \
 src/Utils/perlin.cpp \
 src/Utils/MatrixUtils.cpp \
@@ -188,8 +187,6 @@ src/Obj/XObjReadWrite.cpp \
 src/Obj/ObjDraw.cpp \
 src/Network/Terraserver.cpp \
 src/Network/HTTPClient.cpp \
-src/Network/PCSBSocket.lin.cpp \
-src/Network/PCSBSocketUDP.lin.cpp \
 src/Network/XMLObject.cpp \
 src/Network/b64.c \
 src/DSF/DSFLib.cpp \
@@ -208,42 +205,43 @@ src/WorldEditor/WED_Assert.cpp \
 src/XPWidgets/XPLMGraphics.cpp \
 src/Obj/ObjConvert.cpp
 
-UNUSED_XES :=\
-src/XESCore/XESInit.cpp \
-src/XESCore/DEMTables.cpp \
-src/XESCore/Airports.cpp \
-src/XESCore/Beaches.cpp \
-src/XESCore/ConfigSystem.cpp \
-src/XESCore/DEMAlgs.cpp \
-src/XESCore/DEMDefs.cpp \
-src/XESCore/DEMToVector.cpp \
-src/XESCore/DEMIO.cpp \
-src/XESCore/DSFBuilder.cpp \
-src/XESCore/EnumSystem.cpp \
-src/XESCore/Forests.cpp \
-src/XESCore/GreedyMesh.cpp \
-src/XESCore/MapAlgs.cpp \
-src/XESCore/MapIO.cpp \
-src/XESCore/MeshAlgs.cpp \
-src/XESCore/MeshDefs.cpp \
-src/XESCore/MeshIO.cpp \
-src/XESCore/NetPlacement.cpp \
-src/XESCore/NetTables.cpp \
-src/XESCore/ObjPlacement.cpp \
-src/XESCore/ObjTables.cpp \
-src/XESCore/ParamDefs.cpp \
-src/XESCore/SceneryPackages.cpp \
-src/XESCore/SimpleIO.cpp \
-src/XESCore/TensorRoads.cpp \
-src/XESCore/TriFan.cpp \
-src/XESCore/WTPM.cpp \
-src/XESCore/XESIO.cpp \
-src/XESCore/Zoning.cpp
 
+WIN32_SRC := \
+src/UI/XWin.win.cpp \
+src/UI/XWinGL.win.cpp \
+src/UI/XWin32DND.cpp \
+src/Utils/XFileTwiddle.win.cpp \
+src/Utils/PlatformUtils.win.cpp \
+src/Network/PCSBSocket.win.cpp \
+src/Network/PCSBSocketUDP.win.cpp
+
+POSIX_SRC := \
+src/linuxinit/initializer.cpp \
+src/linuxinit/minigtk.cpp \
+src/UI/XWin.lin.cpp \
+src/UI/XWinGL.lin.cpp \
+src/UI/XPopup.lin.cpp \
+src/UI/xdnd.cpp \
+src/Utils/XFileTwiddle.unix.cpp \
+src/Utils/PlatformUtils.lin.cpp \
+src/GUI/GUI_Laftfont.cpp \
+src/Network/PCSBSocket.lin.cpp \
+src/Network/PCSBSocketUDP.lin.cpp
+
+ifeq ($(PLATFORM), Linux)
+SOURCES := $(COMMON_SRC) $(POSIX_SRC)
+endif
+ifeq ($(PLATFORM), Mingw)
+SOURCES := $(COMMON_SRC) $(WIN32_SRC)
+endif
+
+ifeq ($(PLATFORM), Linux)
+MESA_HEADERS = -Ilibsrc/linux-specific/mesa/include
+endif
 
 INCLUDEPATHS :=\
 -Ilibsrc/linux-specific/include \
--Ilibsrc/linux-specific/mesa/include \
+$(MESA_HEADERS) \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
 -Isrc/linuxinit \

@@ -38,8 +38,9 @@
 #include "ObjTables.h"
 #include "ObjPlacement.h"
 #include <CGAL/assertions.h>
-
+#if !MINGW_BUILD
 #include <execinfo.h>
+#endif
 
 CGAL_BEGIN_NAMESPACE
 /*!
@@ -172,6 +173,7 @@ typedef CGAL::Arr_face_edge_overlay_traits<Pmwx, Pmwx, Pmwx, Overlay_network, Ov
 void	CGALFailure(
         const char* what, const char* expr, const char* file, int line, const char* msg)
 {
+#if !MINGW_BUILD
 	void* callstack[128];
 	int i, frames = backtrace(callstack, 128);
 	char** strs = backtrace_symbols(callstack, frames);
@@ -179,7 +181,9 @@ void	CGALFailure(
 		fprintf(stdout,"%s\n", strs[i]);
 	}
 	free(strs);
-	
+#else
+	fprintf(stderr,"callstack for mingw builds not yet implemented\n");
+#endif	
 	fprintf(stdout,"Terminating due to a CGAL exception.\n");
 	fprintf(stdout,"****************************************************************************\n");
 	fprintf(stdout,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
