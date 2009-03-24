@@ -14,6 +14,7 @@
 		D648322D0D01C9B8003B9824 /* FileUtils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D648322B0D01C9B8003B9824 /* FileUtils.h */; };
 		D6726CD70AEE476700E2668E /* obj_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6726CD60AEE476700E2668E /* obj_model.cpp */; };
 		D6726E780AEE811400E2668E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6726E770AEE811400E2668E /* OpenGL.framework */; };
+		D678AE220F79578800F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678AE200F79578800F72139 /* tri_stripper.cpp */; };
 		D6B331FD0B00CBFC001D7CCD /* ac_utils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F70B00CBFC001D7CCD /* ac_utils.h */; };
 		D6B331FE0B00CBFC001D7CCD /* bitmap_match.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F80B00CBFC001D7CCD /* bitmap_match.h */; };
 		D6B331FF0B00CBFC001D7CCD /* obj_radius.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F90B00CBFC001D7CCD /* obj_radius.h */; };
@@ -25,8 +26,6 @@
 		D6B332890B00D45C001D7CCD /* obj_editor.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B332870B00D45C001D7CCD /* obj_editor.h */; };
 		D6B3328A0B00D45C001D7CCD /* obj_editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B332880B00D45C001D7CCD /* obj_editor.cpp */; };
 		D6B334C20B00E203001D7CCD /* Tcl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6B334C10B00E203001D7CCD /* Tcl.framework */; };
-		D6BA8F1D0E7F25C100D92779 /* PVRTGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */; };
-		D6BA8F1E0E7F25C100D92779 /* PVRTTriStrip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */; };
 		D6CD2501098F95D900B525DA /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */; };
 		D6CD2502098F95D900B525DA /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */; };
 		D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */; };
@@ -114,6 +113,12 @@
 		D6726CD50AEE476700E2668E /* obj_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_model.h; sourceTree = "<group>"; };
 		D6726CD60AEE476700E2668E /* obj_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_model.cpp; sourceTree = "<group>"; };
 		D6726E770AEE811400E2668E /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		D678AE1B0F79578800F72139 /* cache_simulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache_simulator.h; sourceTree = "<group>"; };
+		D678AE1D0F79578800F72139 /* graph_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graph_array.h; sourceTree = "<group>"; };
+		D678AE1E0F79578800F72139 /* heap_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = heap_array.h; sourceTree = "<group>"; };
+		D678AE1F0F79578800F72139 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D678AE200F79578800F72139 /* tri_stripper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tri_stripper.cpp; sourceTree = "<group>"; };
+		D678AE210F79578800F72139 /* tri_stripper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tri_stripper.h; sourceTree = "<group>"; };
 		D6B331F70B00CBFC001D7CCD /* ac_utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ac_utils.h; sourceTree = "<group>"; };
 		D6B331F80B00CBFC001D7CCD /* bitmap_match.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = bitmap_match.h; sourceTree = "<group>"; };
 		D6B331F90B00CBFC001D7CCD /* obj_radius.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj_radius.h; sourceTree = "<group>"; };
@@ -130,11 +135,6 @@
 		D6BA8EF50E7F25C100D92779 /* mod_ac_plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mod_ac_plugin.h; sourceTree = "<group>"; };
 		D6BA8F100E7F25C100D92779 /* Undoable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Undoable.h; sourceTree = "<group>"; };
 		D6BA8F110E7F25C100D92779 /* Undoables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Undoables.h; sourceTree = "<group>"; };
-		D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTGeometry.cpp; sourceTree = "<group>"; };
-		D6BA8F160E7F25C100D92779 /* PVRTGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGeometry.h; sourceTree = "<group>"; };
-		D6BA8F170E7F25C100D92779 /* PVRTGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGlobal.h; sourceTree = "<group>"; };
-		D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTTriStrip.cpp; sourceTree = "<group>"; };
-		D6BA8F190E7F25C100D92779 /* PVRTTriStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTTriStrip.h; sourceTree = "<group>"; };
 		D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XPlaneSupportMac.p.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
 		D6DEA775098E92980061BE4C /* ac_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ac_utils.c; sourceTree = "<group>"; };
@@ -222,11 +222,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D678AE1A0F79578800F72139 /* tri_stripper_101 */ = {
+			isa = PBXGroup;
+			children = (
+				D678AE1B0F79578800F72139 /* cache_simulator.h */,
+				D678AE1C0F79578800F72139 /* CVS.sandboxinfo */,
+				D678AE1D0F79578800F72139 /* graph_array.h */,
+				D678AE1E0F79578800F72139 /* heap_array.h */,
+				D678AE1F0F79578800F72139 /* stdafx.h */,
+				D678AE200F79578800F72139 /* tri_stripper.cpp */,
+				D678AE210F79578800F72139 /* tri_stripper.h */,
+			);
+			path = tri_stripper_101;
+			sourceTree = "<group>";
+		};
+		D678AE1C0F79578800F72139 /* CVS.sandboxinfo */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = CVS.sandboxinfo;
+			sourceTree = "<group>";
+		};
 		D6BA8EED0E7F25C100D92779 /* SDK */ = {
 			isa = PBXGroup;
 			children = (
 				D6BA8EEE0E7F25C100D92779 /* ac3d */,
-				D6BA8F130E7F25C100D92779 /* PVR */,
 			);
 			path = SDK;
 			sourceTree = "<group>";
@@ -241,18 +261,6 @@
 				D6BA8F110E7F25C100D92779 /* Undoables.h */,
 			);
 			path = ac3d;
-			sourceTree = "<group>";
-		};
-		D6BA8F130E7F25C100D92779 /* PVR */ = {
-			isa = PBXGroup;
-			children = (
-				D6BA8F150E7F25C100D92779 /* PVRTGeometry.cpp */,
-				D6BA8F160E7F25C100D92779 /* PVRTGeometry.h */,
-				D6BA8F170E7F25C100D92779 /* PVRTGlobal.h */,
-				D6BA8F180E7F25C100D92779 /* PVRTTriStrip.cpp */,
-				D6BA8F190E7F25C100D92779 /* PVRTTriStrip.h */,
-			);
-			path = PVR;
 			sourceTree = "<group>";
 		};
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
@@ -337,6 +345,7 @@
 		D6F2F7760BC580280051E526 /* DSF */ = {
 			isa = PBXGroup;
 			children = (
+				D678AE1A0F79578800F72139 /* tri_stripper_101 */,
 				D6F2F7780BC580280051E526 /* DSFDefs.h */,
 				D6F2F7790BC580280051E526 /* DSFLib.cpp */,
 				D6F2F77A0BC580280051E526 /* DSFLib.h */,
@@ -435,8 +444,7 @@
 				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
 				D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */,
 				D60E91290D5A448C0065D79F /* TclStubs.cpp in Sources */,
-				D6BA8F1D0E7F25C100D92779 /* PVRTGeometry.cpp in Sources */,
-				D6BA8F1E0E7F25C100D92779 /* PVRTTriStrip.cpp in Sources */,
+				D678AE220F79578800F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
