@@ -95,8 +95,13 @@ static int DoAptImport(const vector<const char *>& args)
 {
 	gApts.clear();
 	gAptIndex.clear();
-	string err = ReadAptFile(args[0], gApts);
-	if (!err.empty()) {fprintf(stderr,"Error importing %s: %s\n", args[0],err.c_str()); return 1;}
+	for(int n = 0; n < args.size(); ++n)
+	{
+		AptVector a;
+		string err = ReadAptFile(args[n], a);
+		gApts.insert(gApts.end(),a.begin(),a.end());
+		if (!err.empty()) {fprintf(stderr,"Error importing %s: %s\n", args[n],err.c_str()); return 1;}
+	}
 	IndexAirports(gApts,gAptIndex);
 	return 0;
 }
@@ -379,7 +384,7 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 			"nav    Imoprt an X-Plane nav.dat and create obstacles out of the navaids.\n"
 			"asr    Import an FAA ASR file from the digital aero chart suplement (DAC) - pull out the asr data from asr.dat.\n"
 			"arsr   Import an FAA ARSR file from the digital aero chart suplement (DAC) - pull out the arsr data from asr.dat.\n" },
-{ "-apt", 			1, 1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
+{ "-apt", 			1, -1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
 { "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.adt file." },
 { "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },

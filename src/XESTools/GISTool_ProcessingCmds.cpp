@@ -55,6 +55,17 @@ static int DoSpreadsheet(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoSetMeshLevel(const vector<const char *>& args)
+{
+	if(gVerbose) printf("Setting mesh level to %s\n", args[0]);
+	int ml = atoi(args[0]);
+	switch(ml) {
+	case 1:		gMeshPrefs.max_points = 30000;		gMeshPrefs.max_error = 12; gMeshPrefs.max_tri_size_m = 3500;	break;
+	case 0:		gMeshPrefs.max_points = 25000;		gMeshPrefs.max_error = 15; gMeshPrefs.max_tri_size_m = 5000;	break;
+	}
+	return 0;
+}
+
 static int DoRoads(const vector<const char *>& args)
 {
 	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], Face_handle(),  gProgress, NULL, NULL);
@@ -186,6 +197,15 @@ static int DoAssignLandUse(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Assigning land use...\n");
 	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
+
+	map<int, int> lus;
+	int t = CalcMeshTextures(gTriangulationHi,lus);
+	multimap<int,int> sorted;
+	for(map<int,int>::iterator l = lus.begin(); l != lus.end(); ++l)
+		sorted.insert(multimap<int,int>::value_type(l->second,l->first));
+	for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
+		printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
+	
 	return 0;
 }
 
@@ -205,6 +225,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-roads",			0, 0, DoRoads,			"Generate Fake Roads.",				  "" },
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
+{ "-mesh_level",	1, 1, DoSetMeshLevel,	"Set mesh complexity.",				  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
 { "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
