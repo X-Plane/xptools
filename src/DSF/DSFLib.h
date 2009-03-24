@@ -79,7 +79,7 @@ enum {
  * error returns that can be shown to the user for diagnostic purposes.
  *
  */
-extern char *	dsfErrorMessages[];
+extern const char *	dsfErrorMessages[];
 
 
 /*

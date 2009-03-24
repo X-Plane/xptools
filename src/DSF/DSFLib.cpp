@@ -40,7 +40,7 @@
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
 
-char *	dsfErrorMessages[] = {
+const char *	dsfErrorMessages[] = {
 	"dsf_ErrOK",
 	"dsf_ErrCouldNotOpenFile",
 	"dsf_ErrOutOfMemory",

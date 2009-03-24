@@ -23,10 +23,16 @@
 #include "DSFPointPool.h"
 #include "XChunkyFileUtils.h"
 #include "DSFLib.h"
-#if PHONE
-#include "PVRTTriStrip.h"
-#endif
 
+#define USE_PVRTC 0
+
+#if USE_PVRTC
+#include "PVRTTriStrip.h"
+#else
+#include "stdafx.h"
+#include "tri_stripper.h"
+using namespace	triangle_stripper;
+#endif
 #include <utility>
 using std::pair;
 
@@ -505,8 +511,11 @@ void DSFOptimizePrimitives(
 	vector<DSFPrimitive>				out_prims;
 	idx_t								point_index;
 	vector<DSFTuple>					vertices;
+	#if USE_PVRTC
 	vector<unsigned short>				indices;
-
+	#else
+	vector<unsigned int>				indices;
+	#endif
 	for(vector<DSFPrimitive>::iterator p = io_primitives.begin(); p != io_primitives.end(); ++p)
 	if(p->kind == dsf_Tri)
 	{
@@ -528,11 +537,48 @@ void DSFOptimizePrimitives(
 	else
 		out_prims.push_back(*p);
 
-#if PHONE
+	printf("input: %d indices.\n", indices.size());
+
+#if !USE_PVRTC
+	tri_stripper stripper_thingie(indices);
+	tri_stripper::primitives_vector	stripped_primitives;
+	stripper_thingie.Strip(&stripped_primitives);
+
+	for(tri_stripper::primitives_vector::iterator new_prim = stripped_primitives.begin(); new_prim != stripped_primitives.end(); ++new_prim)
+	{
+		printf(" output: type=%d, size=%d\n",new_prim->m_Type, new_prim->m_Indices.size());
+		if(new_prim->m_Type == tri_stripper::PT_Triangles)
+		{
+			int offset = 0;
+			while (1)
+			{
+				int num = min(new_prim->m_Indices.size() - offset, 255UL);
+				if(num == 0) 
+					break;
+				out_prims.push_back(DSFPrimitive());
+				out_prims.back().kind = dsf_Tri;
+
+				while(num--)
+				{
+					out_prims.back().vertices.push_back(vertices[new_prim->m_Indices[offset]]);		
+					++offset;
+				}
+			}
+			DebugAssert(offset == new_prim->m_Indices.size());
+		} else {
+			out_prims.push_back(DSFPrimitive());
+			out_prims.back().kind = dsf_TriStrip;
+			// Ben says: make sure we have only 255 points...if we get a tri strip longer than that, the strip alg is REALLY amazing.
+			Assert(new_prim->m_Indices.size() <= 255);
+			for(tri_stripper::indices::iterator idx = new_prim->m_Indices.begin(); idx != new_prim->m_Indices.end(); ++idx)
+				out_prims.back().vertices.push_back(vertices[*idx]);		
+		}
+	}
+
+#else
 	PVRTTriStripList(
 		&*indices.begin(),
 		indices.size() / 3);
-#endif
 
 	vector<unsigned short> pure_tris;
 
@@ -577,7 +623,7 @@ void DSFOptimizePrimitives(
 		}
 		pure_tris.erase(pure_tris.begin(),pure_tris.begin()+n);
 	}
-
+#endif
 	swap(io_primitives,out_prims);
 }
 

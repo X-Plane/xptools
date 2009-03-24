@@ -467,6 +467,26 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	ObjectSpecVector::iterator			objSpec;
 	ChainSpecIndex::iterator			csIndex;
 
+	// Start by outputing some stats on our primitives - useful to test how the optimizer is doing!
+	int num_prim = 0;
+	int num_strip = 0;
+	int num_fan = 0;
+	int num_v = 0;
+	int num_strip_v = 0;
+	int num_fan_v = 0;
+	
+	for(patchSpec = patches.begin(); patchSpec != patches.end(); ++patchSpec)
+	for(primIter = patchSpec->primitives.begin(); primIter != patchSpec->primitives.end(); ++primIter)	
+	{
+											++num_prim;
+		if(primIter->type == dsf_TriStrip)	++num_strip;
+		if(primIter->type == dsf_TriFan  )	++num_fan;
+											num_v += primIter->vertices.size();
+		if(primIter->type == dsf_TriStrip)	num_strip_v += primIter->vertices.size();
+		if(primIter->type == dsf_TriFan  )	num_fan_v += primIter->vertices.size();		
+	}
+	printf("Vertices: total = %d, strip = %d, fan = %d.\n",num_v,num_strip_v, num_fan_v);
+	printf("Primitives: total = %d, strip = %d, fan = %d.\n", num_prim, num_strip, num_fan);
 
 	// Build up a list of all primitives, sorted by depth
 	TPVM	all_primitives;
