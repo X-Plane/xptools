@@ -106,8 +106,8 @@ struct	MeshFaceInfo {
 	double			plane_b;
 	double			plane_c;
 
-	int				terrain;				// General terrain type for this triangle, e.g. terrain_Natural, terrain_Water
-	int				feature;				// Specific terrain type, e.g. natural converted to a real land use. (This is a .ter enum, NOT a table index btw)
+	int				terrain;				// Specific terrain type, e.g. natural converted to a real land use. (This is a .ter enum, NOT a table index btw)
+	int				feature;				// General terrain type for this triangle, e.g. terrain_Natural, terrain_Water
 	int				flag;					// General purpose, useful for..um...algorithms.
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
