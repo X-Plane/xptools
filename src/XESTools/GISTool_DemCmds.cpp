@@ -31,6 +31,52 @@
 #include "XFileTwiddle.h"
 #include "MemFileUtils.h"
 
+#define DoRasterImport_HELP \
+"Usage: raster_import <format> <file> <layer> [<translation>]\n"\
+"Imports a single raster file.  The file must be in geographic projection\n"\
+"and have an axis-aligned bounding box.\n"\
+"Format can be one of: tiff\n"\
+"File is a unix file name.\n"\
+"Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
+"If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
+static int DoRasterImport(const vector<const char *>& args)
+{
+	// format file layer [mapping]
+	int layer = LookupToken(args[2]);
+	if (layer == -1)
+	{
+		fprintf(stderr,"Unknown layer: %s\n", args[2]);
+		return 1;
+	}
+	
+	DEMGeo * dem = &gDem[layer];
+				
+	if(strcmp(args[0],"tiff") == 0)
+	{
+		if(!ExtractGeoTiff(*dem, args[1]))
+		{
+			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[1]);
+			return 1;
+		}
+	}
+	else 
+	{
+		fprintf(stderr,"Unknown importer: %s\n", args[0]);
+		return 1;
+	}
+	if(args.size() == 4)
+	{
+		if(!TranslateDEM(*dem, args[3]))
+		{
+			fprintf(stderr,"Unable to translsate DEM using mapping file: %s\n", args[3]);
+			return 1;
+		}
+	}
+	
+	if(gVerbose) printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
+	return 0;	
+}
+
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
 {
@@ -260,6 +306,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-bulksrtm",		4, 4, DoBulkConvertSRTM,	"Bulk convert SRTM data.", "" },
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },
 { "-readmask",		1, 1, DoMaskRemember,		"Remember the current elevation as overlay.", "" },
+{ "-raster_import",	3, 4, DoRasterImport,		"Import one RASTER DEM file.", DoRasterImport_HELP },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
