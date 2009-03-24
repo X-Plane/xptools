@@ -472,6 +472,7 @@
 		D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D678ADF50F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D678AEA90F796D6900F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D67B1C010C54EC4000A21ABC /* WED_Ring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */; };
 		D67B21480C5536A300A21ABC /* asphalt.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21410C5536A300A21ABC /* asphalt.png */; };
 		D67B21490C5536A300A21ABC /* concrete.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21420C5536A300A21ABC /* concrete.png */; };
@@ -4345,6 +4346,7 @@
 				D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */,
 				D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */,
 				D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */,
+				D678AEA90F796D6900F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4870,10 +4872,11 @@
 				);
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"libsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1",
+					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
 					"libsrc/shapelib-1.2.10",
-					"libsrc/CGAL-3.0/include",
+					"libsrc/CGAL-3.3.1/include",
 					"libsrc/zlib-1.1.4/contrib/minizip",
+					/sw/include,
 					/usr/local/include/freetype2,
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
@@ -4997,6 +5000,9 @@
 					/usr/local/lib/libjpeg.a,
 					/usr/local/lib/libpng.a,
 					/usr/local/lib/libtiff.a,
+					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					/usr/local/lib/libgmp.a,
+					/usr/local/lib/libmpfr.a,
 				);
 				PRODUCT_NAME = RenderFarm;
 			};
