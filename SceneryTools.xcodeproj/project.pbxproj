@@ -467,6 +467,11 @@
 		D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67684520CC699070032B90C /* WED_EditCommands.cpp */; };
 		D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
+		D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D678ADF30F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D678ADF50F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D67B1C010C54EC4000A21ABC /* WED_Ring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */; };
 		D67B21480C5536A300A21ABC /* asphalt.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21410C5536A300A21ABC /* asphalt.png */; };
 		D67B21490C5536A300A21ABC /* concrete.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21420C5536A300A21ABC /* concrete.png */; };
@@ -1224,6 +1229,12 @@
 		D6773CB20E154CF000E56046 /* MapAlgsCGAL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapAlgsCGAL.cpp; sourceTree = "<group>"; };
 		D6773CB30E154CF000E56046 /* MapAlgsCGAL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapAlgsCGAL.h; sourceTree = "<group>"; };
 		D6773CB40E154CF000E56046 /* MapDefsCGAL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapDefsCGAL.h; sourceTree = "<group>"; };
+		D678ADEC0F7952B700F72139 /* cache_simulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache_simulator.h; sourceTree = "<group>"; };
+		D678ADED0F7952B700F72139 /* graph_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graph_array.h; sourceTree = "<group>"; };
+		D678ADEE0F7952B700F72139 /* heap_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = heap_array.h; sourceTree = "<group>"; };
+		D678ADEF0F7952B700F72139 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D678ADF00F7952B700F72139 /* tri_stripper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tri_stripper.cpp; sourceTree = "<group>"; };
+		D678ADF10F7952B700F72139 /* tri_stripper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tri_stripper.h; sourceTree = "<group>"; };
 		D67B1BFF0C54EC4000A21ABC /* WED_Ring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Ring.h; sourceTree = "<group>"; };
 		D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Ring.cpp; sourceTree = "<group>"; };
 		D67B21410C5536A300A21ABC /* asphalt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = asphalt.png; sourceTree = "<group>"; };
@@ -1886,9 +1897,6 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
-		D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGlobal.h; sourceTree = "<group>"; };
-		D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTTriStrip.cpp; sourceTree = "<group>"; };
-		D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTTriStrip.h; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
@@ -2329,6 +2337,19 @@
 			path = world;
 			sourceTree = "<group>";
 		};
+		D678ADEB0F7952B700F72139 /* tri_stripper_101 */ = {
+			isa = PBXGroup;
+			children = (
+				D678ADEC0F7952B700F72139 /* cache_simulator.h */,
+				D678ADED0F7952B700F72139 /* graph_array.h */,
+				D678ADEE0F7952B700F72139 /* heap_array.h */,
+				D678ADEF0F7952B700F72139 /* stdafx.h */,
+				D678ADF00F7952B700F72139 /* tri_stripper.cpp */,
+				D678ADF10F7952B700F72139 /* tri_stripper.h */,
+			);
+			path = tri_stripper_101;
+			sourceTree = "<group>";
+		};
 		D67B21400C5536A300A21ABC /* pavement */ = {
 			isa = PBXGroup;
 			children = (
@@ -2439,6 +2460,7 @@
 		D6BC36430AB22C84003949C5 /* DSF */ = {
 			isa = PBXGroup;
 			children = (
+				D678ADEB0F7952B700F72139 /* tri_stripper_101 */,
 				D6BC36450AB22C84003949C5 /* DSFDefs.h */,
 				D6BC36460AB22C84003949C5 /* DSFLib.cpp */,
 				D6BC36470AB22C84003949C5 /* DSFLib.h */,
@@ -3335,19 +3357,8 @@
 		D6EAD1900E6DBA8900FC011A /* SDK */ = {
 			isa = PBXGroup;
 			children = (
-				D6EAD1B60E6DBA8A00FC011A /* PVR */,
 			);
 			path = SDK;
-			sourceTree = "<group>";
-		};
-		D6EAD1B60E6DBA8A00FC011A /* PVR */ = {
-			isa = PBXGroup;
-			children = (
-				D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */,
-				D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */,
-				D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */,
-			);
-			path = PVR;
 			sourceTree = "<group>";
 		};
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
@@ -3985,6 +3996,7 @@
 				D68E2A8F0EBFC82D0015648F /* MapPolygon.cpp in Sources */,
 				D6BB239C0EC1EAA3006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23B00EC1EBE3006499D7 /* CompGeomUtils.cpp in Sources */,
+				D678ADF50F7952B700F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4149,6 +4161,7 @@
 				D68E2A130EBF9D000015648F /* Forests.cpp in Sources */,
 				D6BB22900EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */,
+				D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4261,6 +4274,7 @@
 				D68E2A890EBFC7F20015648F /* Forests.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
+				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4303,6 +4317,7 @@
 				D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74C0B6CF765008E3AEC /* zip.c in Sources */,
 				D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */,
+				D678ADF30F7952B700F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4583,6 +4598,7 @@
 				D68ABC730F1E51A9002892AD /* WED_TCEToolAdapter.cpp in Sources */,
 				D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */,
 				D6FD4D7A0F1EC297005D8C93 /* WED_DSFImport.cpp in Sources */,
+				D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
