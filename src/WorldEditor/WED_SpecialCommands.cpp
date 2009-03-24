@@ -188,8 +188,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_ObjHeight:
 			{
 				map<int, map<float, int> >	histo;
-				for (set<Pmwx::Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
-				for (GISPointFeatureVector::iterator p = (*f)->mPointFeatures.begin(); p != (*f)->mPointFeatures.end(); ++p)
+				for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+				for (GISPointFeatureVector::iterator p = (*f)->data().mPointFeatures.begin(); p != (*f)->data().mPointFeatures.end(); ++p)
 				if (p->mParams.count(pf_Height))
 				{
 					int h = p->mParams[pf_Height];
@@ -380,9 +380,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_KillObjs:
 			{
-				for (set<Pmwx::Face_handle>::iterator face = gFaceSelection.begin(); face != gFaceSelection.end(); ++face)
+				for (set<Face_handle>::iterator face = gFaceSelection.begin(); face != gFaceSelection.end(); ++face)
 				{
-					(*face)->mPointFeatures.erase(remove_if((*face)->mPointFeatures.begin(), (*face)->mPointFeatures.end(), FeatureHasNoHeight()), (*face)->mPointFeatures.end());
+					(*face)->data().mPointFeatures.erase(remove_if((*face)->data().mPointFeatures.begin(), (*face)->data().mPointFeatures.end(), FeatureHasNoHeight()), (*face)->data().mPointFeatures.end());
 				}				
 			}
 			break;
