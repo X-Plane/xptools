@@ -63,9 +63,7 @@ static	int	gAxis = axis_Z;
 static	int	gSave = save_OBJ8;
 static	int	gBitSize = size_16;
 
-#if PHONE
 static int	gOptimize = 0;
-#endif
 
 void	PostProcessVertex(float v[3], bool inReverse)
 {
@@ -157,10 +155,8 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 				 if (XObjRead(inSrcFile, obj))					Obj7ToObj8(obj,obj8);
 			else if (!XObj8Read(inSrcFile, obj8))				{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
 
-#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-#endif
 			if (!XObj8Write(inDstFile, obj8))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -192,10 +188,8 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		{
 			Obj7ToObj8(obj,obj8);
 
-#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-#endif
 			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
@@ -214,10 +208,8 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		{
 			Obj7ToObj8(obj,obj8);
 			
-#if PHONE
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-#endif
 			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
@@ -253,9 +245,7 @@ int main(int argc, const char * argv[])
 		printf("RADIO CO_UNITS 1 --meters Meters\n");
 		printf("DIV\n");
 		printf("CHECK CO_CENTER 0 --center Center Object Horizontally\n");
-#if PHONE
 		printf("CHECK CO_OPTIMIZE 1 --optimize Optimize Vertices and Indices\n");
-#endif		
 		printf("DIV\n");
 		printf("CHECK CO_FLIPX 0 --flip_x Flip X\n");
 		printf("CHECK CO_FLIPY 0 --flip_y Flip Y\n");
@@ -283,9 +273,7 @@ int main(int argc, const char * argv[])
 		else if (!strcmp(argv[a],"--meters"))		gUnits = unit_Meters;
 
 		else if (!strcmp(argv[a],"--center"))		gCenterH = 1;
-#if PHONE
 		else if (!strcmp(argv[a],"--optimize"))		gOptimize = 1;
-#endif
 		else if (!strcmp(argv[a],"--flip_x"))		gFlipX = 1;
 		else if (!strcmp(argv[a],"--flip_y"))		gFlipY = 1;
 		else if (!strcmp(argv[a],"--flip_z"))		gFlipZ = 1;

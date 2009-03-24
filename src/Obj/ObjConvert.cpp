@@ -23,9 +23,10 @@
 #include "ObjConvert.h"
 #include "XObjDefs.h"
 #include <math.h>
-#if PHONE
-#include "PVRTTriStrip.h"
-#endif
+
+#include "stdafx.h"
+#include "tri_stripper.h"
+using namespace	triangle_stripper;
 
 static bool operator==(const vec_tex& lhs, const vec_tex& rhs);
 bool operator==(const vec_tex& lhs, const vec_tex& rhs)
@@ -537,17 +538,53 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 }
 
 
-#if PHONE
+#define INDEX_T unsigned int
 
-void split_degen(const vector<unsigned short>& all,
-					   vector<unsigned short>& ok,
-					   vector<unsigned short>& degen)
+void make_strip_order(vector<INDEX_T>& indices)
+{
+	tri_stripper stripper_thingie(indices);
+	tri_stripper::primitives_vector	stripped_primitives;
+	stripper_thingie.Strip(&stripped_primitives);
+
+	indices.clear();
+
+	for(tri_stripper::primitives_vector::iterator new_prim = stripped_primitives.begin(); new_prim != stripped_primitives.end(); ++new_prim)
+	{
+		if(new_prim->m_Type == tri_stripper::PT_Triangles)
+		{
+			for(tri_stripper::indices::iterator idx = new_prim->m_Indices.begin(); idx != new_prim->m_Indices.end(); ++idx)
+				indices.push_back(*idx);
+		}
+		else
+		{
+			for(int n = 2; n < new_prim->m_Indices.size(); ++n)
+			{
+				if(n % 2)
+				{
+					indices.push_back(new_prim->m_Indices[n-1]);
+					indices.push_back(new_prim->m_Indices[n-2]);
+					indices.push_back(new_prim->m_Indices[n-0]);
+				}
+				else
+				{
+					indices.push_back(new_prim->m_Indices[n-2]);
+					indices.push_back(new_prim->m_Indices[n-1]);
+					indices.push_back(new_prim->m_Indices[n-0]);
+				}
+			}
+		}
+	}
+}
+
+void split_degen(const vector<INDEX_T>& all,
+					   vector<INDEX_T>& ok,
+					   vector<INDEX_T>& degen)
 {
 	for(int n = 0; n < all.size(); n += 3)
 	{
-		unsigned short p1 = all[n  ];
-		unsigned short p2 = all[n+1];
-		unsigned short p3 = all[n+2];
+		INDEX_T p1 = all[n  ];
+		INDEX_T p2 = all[n+1];
+		INDEX_T p3 = all[n+2];
 		if(p1 == p2 || p1 == p3 || p2 == p3)
 		{
 			degen.push_back(p1);
@@ -563,7 +600,7 @@ void split_degen(const vector<unsigned short>& all,
 	}
 }
 
-bool find_tri_in(int p1, int p2, int p3, const vector<unsigned short>& tl)
+bool find_tri_in(int p1, int p2, int p3, const vector<INDEX_T>& tl)
 {
 	for(int n = 0; n < tl.size(); n += 3)
 	{
@@ -583,7 +620,7 @@ bool find_tri_in(int p1, int p2, int p3, const vector<unsigned short>& tl)
 	return false;
 }
 
-void dump_vec(const char * bl, const char * al, const vector<unsigned short>& b, const vector<unsigned short>& a)
+void dump_vec(const char * bl, const char * al, const vector<INDEX_T>& b, const vector<INDEX_T>& a)
 {
 	printf("  %s   %s" , bl,al);
 	for(int n = 0; n < b.size(); n += 3)
@@ -594,7 +631,7 @@ void dump_vec(const char * bl, const char * al, const vector<unsigned short>& b,
 				
 }
 
-void compare_before_after(const vector<unsigned short>& b, const vector<unsigned short>& a)
+void compare_before_after(const vector<INDEX_T>& b, const vector<INDEX_T>& a)
 {
 	bool ok = true;
 	bool degen = false;
@@ -636,7 +673,7 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 		}
 	}
-	vector<unsigned short>	idx16;
+	vector<INDEX_T>	idx16;
 	for(vector<int>::iterator idx_iter = obj8.indices.begin(); idx_iter != obj8.indices.end(); ++idx_iter)
 	{
 		if (*idx_iter > 65535)
@@ -649,17 +686,21 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 	for(idx_range_vector::iterator r = ranges.begin(); r != ranges.end(); ++r)
 	{
-		vector<unsigned short> before(idx16.begin()+r->first, idx16.begin()+r->second);
+		vector<INDEX_T> before(idx16.begin()+r->first, idx16.begin()+r->second);
 
-		vector<unsigned short>	ok, degen;
+		vector<INDEX_T>	ok, degen;
 		split_degen(before, ok, degen);
 
+		make_strip_order(ok);
+
+/*
 		PVRTTriStripList(
 			&*ok.begin(),
 			ok.size() / 3);
+*/			
 		
 
-		vector<unsigned short> after(ok.begin(), ok.end());
+		vector<INDEX_T> after(ok.begin(), ok.end());
 		after.insert(after.end(),degen.begin(),degen.end());
 
 		compare_before_after(before,after);
@@ -693,4 +734,3 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 	return true;
 }
-#endif
