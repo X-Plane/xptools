@@ -43,7 +43,11 @@
 #endif
 #define PROFILE_PERFORMANCE 1
 
+#if PHONE
+#define LOW_RES_WATER_INTERVAL 50
+#else
 #define LOW_RES_WATER_INTERVAL 40
+#endif
 
 #define NO_BORDER_SHARING 0
 
@@ -61,8 +65,8 @@
 
 MeshPrefs_t gMeshPrefs = { 
 #if PHONE
-				30000,	// 35000,	// 65000, 
-				12.0,	// 10.0,	// 7.5,
+				25000,	// 30000,
+				15,		// 12.0,
 #else
 				78000,	// 65000,
 				6.25,	// 7.5,
@@ -2567,7 +2571,7 @@ int	CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus)
 	int total = 0;
 	for(CDT::Face_iterator  f = inMesh.finite_faces_begin(); f != inMesh.finite_faces_end(); ++f)
 	{
-		out_lus[f->info().feature]++;
+		out_lus[f->info().terrain]++;
 		for(set<int>::iterator b =  f->info().terrain_border.begin();
 							   b != f->info().terrain_border.end(); ++b)
 			out_lus[*b]++;
