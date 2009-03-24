@@ -101,11 +101,9 @@ Simply copy the AC3D plugin file XPlaneSupportWin.p or XPlaneSupportMac.p
 (depending on your operating system) and the file XPlaneSupport.tcl into
 the "plugins" folder for AC3D while it is not running, then start AC3D.
 
-You must also download "datarefs.txt" from the X-Plane SDK website here:
-
-http://www.xsquawkbox.net/xpsdk/docs/DataRefs.txt
-
-Put this into the ac3d plugins folder.
+The plugin also requires two text files: DataRes.txt and Cmnds.txt - these are
+computer-readable lists of X-Plane's current datarefs and commands.  You can 
+get them both from the Resources/plugins folder of X-Plane.
 
 -------------------------------------------------------------------------------
 USING THE PLUGIN

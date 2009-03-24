@@ -109,6 +109,8 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_FLT(manip_v2_max,get_sel_single_obj,OBJ_set_manip_v2_max,OBJ_get_manip_v2_max) \
 	SIMPLE_PROPERTY_STR(manip_dref1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
 	SIMPLE_PROPERTY_STR(manip_dref2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
+	SIMPLE_PROPERTY_STR(manip_cmnd1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
+	SIMPLE_PROPERTY_STR(manip_cmnd2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_tooltip,get_sel_single_obj,OBJ_set_manip_tooltip,OBJ_get_manip_tooltip,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "")
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \

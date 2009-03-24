@@ -50,13 +50,13 @@ proc xplane_dir_eval { cmd_str mask_str } {
 	}
 }
 
-proc make_labeled_entry { path name var } {
+proc make_labeled_entry { path name var width } {
 	set varl [join [list $path "." $var ".l"] "" ]
 	set vare [join [list $path "." $var ".e"] "" ]
 	set varc [join [list $path "." $var ] "" ]
 	frame $varc
 	label $varl -text "$name"
-	entry $vare -textvariable $var -width 10
+	entry $vare -textvariable $var -width $width
 	pack $varl $vare -side left -anchor nw
 	pack $varc -side top -anchor nw
 }
@@ -347,17 +347,12 @@ proc update_listbox_sel { lb tv } {
 	}
 }
 
-proc refilter_listbox { lb tv } {
+proc refilter_listbox_dref { lb tv } {
 	global all_datarefs
 	global $tv
 	set now [set $tv]
 	set drefs [list none]
 	$lb list delete 0 end
-#	foreach x $all_datarefs {
-#		if [string match $now $x] {
-#			lappend drefs $x
-#		}
-#	}
 
 	if {$now == "none"} {
 		set now ""
@@ -380,25 +375,51 @@ proc refilter_listbox { lb tv } {
 	}
 }
 
-proc build_listbox { listbox scrollbar textvar } {
+proc refilter_listbox_cmnd { lb tv } {
+	global all_cmnds
+	global $tv
+	set now [set $tv]
+	set cmnds [list none]
+	$lb list delete 0 end
 
-	global all_datarefs
-#	listbox $listbox -width 50 -height 20 -yscrollcommand "$scrollbar set"
-#	scrollbar $scrollbar -command "$listbox yview"
-#	pack $scrollbar $listbox -side right -fill y -expand yes
-#	bind $listbox <<ListboxSelect>> "update_listbox_sel %W $textvar"
+	if {$now == "none"} {
+		set now ""
+	}
+	
+	if [string length $now] {
+		if { [string first "*" $now] == -1} {
+			set now "*$now*"
+		}
+	} else {
+		set now "*"
+	}
+	
+	set now [string map { [ \\[ ] \\] } $now]
 
+	set cmnds [lsearch -all -inline $all_cmnds $now]
+	$lb list insert end "none"
+	foreach x $cmnds {
+		$lb list insert end $x
+	}
+}
+
+
+proc build_listbox_dref { listbox scrollbar textvar } {
 
 	namespace import combobox::*
-
-	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox $listbox $textvar"
-#	foreach x $all_datarefs {
-#		$listbox list insert end $x
-#	}
-
+	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_dref $listbox $textvar"
 	pack $listbox
 
 }
+
+proc build_listbox_cmnd { listbox scrollbar textvar } {
+
+	namespace import combobox::*
+	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_cmnd $listbox $textvar"
+	pack $listbox
+
+}
+
 
 proc fetch_all_datarefs {} {
 	global all_datarefs
@@ -423,13 +444,9 @@ proc fetch_all_datarefs {} {
 			
 		   if { $array_count > 0 && $array_count <= 100 } {
 				for {set x 0} {$x<$array_count} {incr x} {
-#					$listbox insert end "$dref_fullname\[$x\]"
-#					$listbox list insert end "$dref_fullname\[$x\]"
 					lappend all_datarefs "$dref_fullname\[$x\]"
 				}
 		   } else {
-#				$listbox insert end "$dref_fullname"
-#				$listbox list insert end "$dref_fullname"
 				lappend all_datarefs "$dref_fullname"
 		   }
 		   
@@ -444,6 +461,37 @@ proc fetch_all_datarefs {} {
 	
 	close $fi   
 }
+
+
+proc fetch_all_cmnds {} {
+	global all_cmnds
+		
+	if {[catch {
+		set fi [open "plugins/cmnds.txt" r]
+	}]} { 
+		set all_cmnds ""	
+		return 
+	}
+
+	gets $fi line	
+	while { [gets $fi line] >= 0 } {
+		if [llength $line] {
+		   set cmnd_fullname [lindex $line 0]
+			lappend all_cmnds "$cmnd_fullname"
+		   
+		   lappend cats [string range $cmnd_fullname 0 [string last "/" $cmnd_fullname] ]
+		}
+	}
+	
+	set cats [lsort -unique $cats]
+	foreach x $cats {
+		set all_cmnds [linsert $all_cmnds 0 $x]
+	}
+	
+	close $fi   
+}
+
+
 
 proc xplane_inspector_sync {} {
 	global MAX_SEL
@@ -544,6 +592,8 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.manip.xplane_manip_v2_max$idx
 	pack forget $container.obj.none.manip.dref1
 	pack forget $container.obj.none.manip.dref2
+	pack forget $container.obj.none.manip.cmnd1
+	pack forget $container.obj.none.manip.cmnd2
 	pack forget $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 	pack forget $container.obj.none.manip.xplane_manip_tooltip$idx
 	
@@ -581,11 +631,11 @@ proc xplane_obj_sync { idx container } {
 	}
 	
 	pack forget $container.obj.none.blend_level	
-	if { [set xplane_blend_enable$idx] == 0} { pack $container.obj.none.blend_level }
+	if { [set xplane_blend_enable$idx] == 0} { pack $container.obj.none.blend_level -after $container.obj.none.blend_enable }
 	pack forget $container.obj.none.is_deck
 	if { [set xplane_hard_surf$idx] != "none"} { pack $container.obj.none.is_deck -after $container.obj.none.hard_surf_btn }
 	pack forget $container.obj.none.dref_list
-	if { [set xplane_mod_lit$idx] != 0} { pack $container.obj.none.dref_list }
+	if { [set xplane_mod_lit$idx] != 0} { pack $container.obj.none.dref_list -after $container.obj.none.mod_lit }
 
 	$container.obj.none.manip.type_btn configure -text [lindex $xplane_manip_types [set xplane_manip_type$idx]]
 
@@ -615,7 +665,7 @@ proc xplane_obj_sync { idx container } {
 	}
 	# command
 	if { [set xplane_manip_type$idx] == 4} {
-		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cmnd1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
@@ -624,8 +674,8 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.xplane_manip_dx$idx
 		pack $container.obj.none.manip.xplane_manip_dy$idx
 		pack $container.obj.none.manip.xplane_manip_dz$idx
-		pack $container.obj.none.manip.dref1
-		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cmnd2
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
@@ -716,31 +766,31 @@ proc xplane_inspector {} {
 			pack $container.light.light_type_btn -anchor nw
 
 			labelframe $container.light.rgb -text "RGB:"
-				make_labeled_entry $container.light.rgb "Red:" xplane_light_red$idx
-				make_labeled_entry $container.light.rgb "Green:" xplane_light_green$idx
-				make_labeled_entry $container.light.rgb "Blue:" xplane_light_blue$idx
+				make_labeled_entry $container.light.rgb "Red:" xplane_light_red$idx 10
+				make_labeled_entry $container.light.rgb "Green:" xplane_light_green$idx 10
+				make_labeled_entry $container.light.rgb "Blue:" xplane_light_blue$idx 10
 			pack $container.light.rgb
 
 			labelframe $container.light.dataref -text "Dataref:"
-				make_labeled_entry $container.light.dataref "Red:" xplane_light_red$idx
-				make_labeled_entry $container.light.dataref "Green:" xplane_light_green$idx
-				make_labeled_entry $container.light.dataref "Blue:" xplane_light_blue$idx
-				make_labeled_entry $container.light.dataref "Alpha:" xplane_light_alpha$idx
-				make_labeled_entry $container.light.dataref "Size:" xplane_light_size$idx
-				make_labeled_entry $container.light.dataref "S1:" xplane_light_s1$idx
-				make_labeled_entry $container.light.dataref "T1:" xplane_light_t1$idx
-				make_labeled_entry $container.light.dataref "S2:" xplane_light_s2$idx
-				make_labeled_entry $container.light.dataref "T2:" xplane_light_t2$idx
-				build_listbox $container.light.dataref.dref_list $container.light.dataref.scroll xplane_light_dataref$idx				
+				make_labeled_entry $container.light.dataref "Red:" xplane_light_red$idx 10
+				make_labeled_entry $container.light.dataref "Green:" xplane_light_green$idx 10
+				make_labeled_entry $container.light.dataref "Blue:" xplane_light_blue$idx 10
+				make_labeled_entry $container.light.dataref "Alpha:" xplane_light_alpha$idx 10
+				make_labeled_entry $container.light.dataref "Size:" xplane_light_size$idx 10
+				make_labeled_entry $container.light.dataref "S1:" xplane_light_s1$idx 10
+				make_labeled_entry $container.light.dataref "T1:" xplane_light_t1$idx 10
+				make_labeled_entry $container.light.dataref "S2:" xplane_light_s2$idx 10 
+				make_labeled_entry $container.light.dataref "T2:" xplane_light_t2$idx 10
+				build_listbox_dref $container.light.dataref.dref_list $container.light.dataref.scroll xplane_light_dataref$idx				
 				
 			pack $container.light.dataref
 
 			labelframe $container.light.smoke_black -text "Black Smoke Puff:"
-				make_labeled_entry $container.light.smoke_black "Puff size:" xplane_light_smoke_size$idx
+				make_labeled_entry $container.light.smoke_black "Puff size:" xplane_light_smoke_size$idx 10
 			pack $container.light.smoke_black
 
 			labelframe $container.light.smoke_white -text "White Smoke Puff:"
-				make_labeled_entry $container.light.smoke_white "Puff size:" xplane_light_smoke_size$idx
+				make_labeled_entry $container.light.smoke_white "Puff size:" xplane_light_smoke_size$idx 10
 			pack $container.light.smoke_white
 
 			#-------------------------------------- OBJECTS --------------------------------------
@@ -778,7 +828,7 @@ proc xplane_inspector {} {
 				checkbutton $container.obj.none.blend_enable -text "Blending" -variable xplane_blend_enable$idx -command "xplane_obj_sync_all"
 				pack $container.obj.none.blend_enable
 				frame $container.obj.none.blend_level
-					make_labeled_entry $container.obj.none.blend_level "blend cutoff" xplane_blend_level$idx
+					make_labeled_entry $container.obj.none.blend_level "blend cutoff" xplane_blend_level$idx 10
 				pack $container.obj.none.blend_level
 				
 				checkbutton $container.obj.none.hard_wall -text "Wall" -variable xplane_wall$idx
@@ -787,7 +837,7 @@ proc xplane_inspector {} {
 				pack $container.obj.none.draw_disable
 				checkbutton $container.obj.none.mod_lit -text "Dynamic LIT" -variable xplane_mod_lit$idx -command "xplane_obj_sync_all"
 				pack $container.obj.none.mod_lit
-				build_listbox $container.obj.none.dref_list $container.obj.none.scroll xplane_lit_dataref$idx
+				build_listbox_dref $container.obj.none.dref_list $container.obj.none.scroll xplane_lit_dataref$idx
 
 				labelframe $container.obj.none.manip -text "Manipulators:"					
 
@@ -800,14 +850,14 @@ proc xplane_inspector {} {
 					pack $container.obj.none.manip.type_label $container.obj.none.manip.type_btn					
 					
 
-					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx
-					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx
-					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx
+					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx 10
+					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx 10
+					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx 10
 
-					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v1_min$idx
-					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v1_max$idx
-					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v2_min$idx
-					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v2_max$idx
+					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v1_min$idx 10
+					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v1_max$idx 10
+					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v2_min$idx 10
+					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v2_max$idx 10
 
 					label $container.obj.none.manip.cursor_label -text "Cursor:"
 					menubutton $container.obj.none.manip.cursor_btn -menu $container.obj.none.manip.cursor_btn.menu -direction flush -textvariable xplane_manip_cursor$idx -padx 30 -pady 5
@@ -817,9 +867,11 @@ proc xplane_inspector {} {
 					}
 					pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 
-					build_listbox $container.obj.none.manip.dref1 $container.obj.none.dref1_scroll xplane_manip_dref1$idx
-					build_listbox $container.obj.none.manip.dref2 $container.obj.none.dref2_scroll xplane_manip_dref2$idx
-					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx
+					build_listbox_dref $container.obj.none.manip.dref1 $container.obj.none.dref1_scroll xplane_manip_dref1$idx
+					build_listbox_dref $container.obj.none.manip.dref2 $container.obj.none.dref2_scroll xplane_manip_dref2$idx
+					build_listbox_cmnd $container.obj.none.manip.cmnd1 $container.obj.none.cmnd1_scroll xplane_manip_cmnd1$idx
+					build_listbox_cmnd $container.obj.none.manip.cmnd2 $container.obj.none.cmnd2_scroll xplane_manip_cmnd2$idx
+					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx 50
 					
 				pack $container.obj.none.manip
 				
@@ -840,7 +892,7 @@ proc xplane_inspector {} {
 					}
 				}
 				# This would make a dataref text field instead of popup menu
-#				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx
+#				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx 10
 #				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.rotate.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.rotate.dref_btn
@@ -848,7 +900,7 @@ proc xplane_inspector {} {
 
 			labelframe $container.obj.trans -text "Translation:"
 				for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
-					make_labeled_entry $container.obj.trans "value $x" xplane_anim_value$x$idx
+					make_labeled_entry $container.obj.trans "value $x" xplane_anim_value$x$idx 10
 					if {$USE_KEYFRAMES} {
 						button $container.obj.trans.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
 						button $container.obj.trans.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
@@ -860,7 +912,7 @@ proc xplane_inspector {} {
 						pack $container.obj.trans.xplane_anim_value$x$idx.go -side left -anchor nw
 					}
 				}
-				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx
+				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx 10
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
 #				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
@@ -868,14 +920,14 @@ proc xplane_inspector {} {
 			pack $container.obj.trans
 
 			labelframe $container.obj.static -text "Static Translation:"
-				make_labeled_entry $container.obj.static "low value" xplane_anim_value0$idx
-				make_labeled_entry $container.obj.static "high value" xplane_anim_value1$idx
+				make_labeled_entry $container.obj.static "low value" xplane_anim_value0$idx 10
+				make_labeled_entry $container.obj.static "high value" xplane_anim_value1$idx 10
 #				make_labeled_entry $container.obj.static "dataref" xplane_anim_dataref$idx
 			pack $container.obj.static
 
 			labelframe $container.obj.show -text "Show:"
-				make_labeled_entry $container.obj.show "low value" xplane_anim_value0$idx
-				make_labeled_entry $container.obj.show "high value" xplane_anim_value1$idx
+				make_labeled_entry $container.obj.show "low value" xplane_anim_value0$idx 10
+				make_labeled_entry $container.obj.show "high value" xplane_anim_value1$idx 10
 #				make_labeled_entry $container.obj.show "dataref" xplane_anim_dataref$idx
 #				menubutton $container.obj.show.dref_btn -menu $container.obj.show.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.show.dref_btn xplane_anim_dataref$idx
@@ -883,15 +935,15 @@ proc xplane_inspector {} {
 			pack $container.obj.show
 
 			labelframe $container.obj.hide -text "Hide:"
-				make_labeled_entry $container.obj.hide "low value" xplane_anim_value0$idx
-				make_labeled_entry $container.obj.hide "high value" xplane_anim_value1$idx
-#				make_labeled_entry $container.obj.hide "dataref" xplane_anim_dataref$idx
+				make_labeled_entry $container.obj.hide "low value" xplane_anim_value0$idx 10
+				make_labeled_entry $container.obj.hide "high value" xplane_anim_value1$idx 10
+#				make_labeled_entry $container.obj.hide "dataref" xplane_anim_dataref$idx 10
 #				menubutton $container.obj.hide.dref_btn -menu $container.obj.hide.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.hide.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.hide.dref_btn
 			pack $container.obj.hide
 		
-			build_listbox $container.obj.dref_list $container.obj.dref_scroll xplane_anim_dataref$idx
+			build_listbox_dref $container.obj.dref_list $container.obj.dref_scroll xplane_anim_dataref$idx
 
 			#-------------------------------------- GROUP --------------------------------------
 
@@ -901,8 +953,8 @@ proc xplane_inspector {} {
 			grid $container.grp.name_label $container.grp.name -sticky nw
 
 			labelframe $container.grp.lod -text "LOD:"
-				make_labeled_entry $container.grp.lod "Near LOD:" xplane_lod_near$idx
-				make_labeled_entry $container.grp.lod "Far LOD:" xplane_lod_far$idx
+				make_labeled_entry $container.grp.lod "Near LOD:" xplane_lod_near$idx 10
+				make_labeled_entry $container.grp.lod "Far LOD:" xplane_lod_far$idx 10
 			grid $container.grp.lod -columnspan 2 -sticky nw
 
 			labelframe $container.grp.layer_group -text "Layer Group:"
@@ -913,7 +965,7 @@ proc xplane_inspector {} {
 					$container.grp.layer_group.layer_btn.menu add radiobutton -label $item -variable xplane_layer_group$idx
 				}
 				pack $container.grp.layer_group.layer_btn -anchor nw
-				make_labeled_entry $container.grp.layer_group "Group Offset:" xplane_layer_group_offset$idx
+				make_labeled_entry $container.grp.layer_group "Group Offset:" xplane_layer_group_offset$idx 10
 			grid $container.grp.layer_group -columnspan 2 -sticky nw
 
 			grid columnconfigure $container.grp 0 -weight 0
@@ -1060,10 +1112,10 @@ proc xplane_panel_dialog {} {
 		for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
 			labelframe .xp_panel.region$x -text "Region $x:"
 		
-			make_labeled_entry .xp_panel.region$x "Region $x left" xplane_panel_sub_l$x
-			make_labeled_entry .xp_panel.region$x "Region $x bottom" xplane_panel_sub_b$x
-			make_labeled_entry .xp_panel.region$x "Region $x right" xplane_panel_sub_r$x
-			make_labeled_entry .xp_panel.region$x "Region $x top" xplane_panel_sub_t$x
+			make_labeled_entry .xp_panel.region$x "Region $x left" xplane_panel_sub_l$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x bottom" xplane_panel_sub_b$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x right" xplane_panel_sub_r$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x top" xplane_panel_sub_t$x 10
 			
 			pack .xp_panel.region$x
 		}
@@ -1262,6 +1314,7 @@ if {$USE_KEYFRAMES} {
 
 
 fetch_all_datarefs
+fetch_all_cmnds
 
 ##########################################################################################################################################################
 # DATAREFS
