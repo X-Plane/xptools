@@ -435,9 +435,9 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 
 int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 {
-	// For iphone!!
+#if PHONE
 	return false;
-
+#endif
 	if (!is_coast(inEdge, inMesh))	return false;
 
 	CDT::Face_handle tri = inEdge.edge.first;
@@ -1132,7 +1132,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * BEACH EXPORT
 	 ****************************************************************/
 
-	if(0)
+#if !PHONE
 	if(writer1)
 	{
 		// Beach export - we are going to export polygon rings/chains out of
@@ -1251,6 +1251,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
 	}
+#endif	
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/
@@ -1615,13 +1616,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (writer2 && writer2 != writer1) DSFWriteToFile(inFileName2, writer2);
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 1.0)) return;
 
-	printf("Patches: %d, Free Tris: %d, Tri Fans: %d, Tris in Fans: %d, Border Tris: %d, Avg Per Patch: %f, avg per fan: %f\n",
-		total_patches, total_tris, total_tri_fans, total_tri_fan_pts, border_tris,
-		(float) (total_tri_fan_pts + total_tris) / (float) total_patches,
-		(total_tri_fans == 0) ? 0.0 : ((float) (total_tri_fan_pts) / (float) total_tri_fans));
+//	printf("Patches: %d, Free Tris: %d, Tri Fans: %d, Tris in Fans: %d, Border Tris: %d, Avg Per Patch: %f, avg per fan: %f\n",
+//		total_patches, total_tris, total_tri_fans, total_tri_fan_pts, border_tris,
+//		(float) (total_tri_fan_pts + total_tris) / (float) total_patches,
+//		(total_tri_fans == 0) ? 0.0 : ((float) (total_tri_fan_pts) / (float) total_tri_fans));
 	printf("Objects: %d, Polys: %d\n", total_objs, total_polys);
 	printf("LU: %d, Objdef: %d, PolyDef: %d\n", landuses.size(), objects.size(), facades.size());
 	printf("Chains: %d, Shapes: %d\n", total_chains, total_shapes);
-	printf("Submitted to tri fan builder: %d.  Removed from builder: %d.\n", debug_add_tri_fan, debug_sub_tri_fan);
+//	printf("Submitted to tri fan builder: %d.  Removed from builder: %d.\n", debug_add_tri_fan, debug_sub_tri_fan);
 
 }

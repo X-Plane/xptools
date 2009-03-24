@@ -318,7 +318,7 @@ void				TriFanBuilder::Validate(void)
 		if (q->first < 1)
 			printf("VALIDATION FAILED: empty tri in queue!\n");
 		if (q->first != q->second->faces.size())
-			printf("VALIDATOIN FAILED: element not indexed by its valence!\n");
+			printf("VALIDATION FAILED: element not indexed by its valence!\n");
 		fans.insert(q->second);
 		for (list<CDT::Face_handle>::iterator l = q->second->faces.begin(); l != q->second->faces.end(); ++l)
 			tris.insert(*l);
