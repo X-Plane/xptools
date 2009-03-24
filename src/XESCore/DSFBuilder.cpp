@@ -52,17 +52,20 @@
 DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 
 #if PHONE
-#define		PATCH_DIM_HI	32
-#define		PATCH_DIM_LO	32
+	// Ben syas: 32x32 is definitely a good bucket size - when we go 16x16 our vertex count goes way up and fps tank.
+	// And increasing bucket size does NOT improve stripification al ot.
+	#define		PATCH_DIM_HI	32
+	#define		PATCH_DIM_LO	32
 #else
-#define		PATCH_DIM_HI	16
-#define		PATCH_DIM_LO	16
+	#define		PATCH_DIM_HI	16
+	#define		PATCH_DIM_LO	16
 #endif
+
 #define		TERRAIN_NEAR_LOD			 0.0
 #define		TERRAIN_FAR_LOD				-1.0
 #define		TERRAIN_NEAR_BORDER_LOD 	 0.0
 #if PHONE
-#define		TERRAIN_FAR_BORDER_LOD		 10000
+#define		TERRAIN_FAR_BORDER_LOD		 10000			// Ben says - 5000 was too small - it popped - ugly!
 #else
 #define		TERRAIN_FAR_BORDER_LOD		 40000
 #endif
