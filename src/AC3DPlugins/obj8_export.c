@@ -93,6 +93,7 @@ static string	gTexName;
 static int		gErrMissingTex;
 static int		gHasTexNow;
 static bool		gErrDoubleTex;
+static bool		gSubregionOOBErr;
 static List *	gBadObjects;
 static bool		gErrBadCockpit;
 static bool		gErrBadHard;
@@ -419,21 +420,28 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->SetAttribute(attr_No_Solid_Wall);
 				
 			bool bad_obj = false;
-			int panel_reg;
+			int panel_reg = -1;
 			int has_real_tex = 0;
 
 			if (ac_object_has_texture(obj))
 			{
 				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
 				gHasTexNow = true;
-//				has_panel = strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel.") != NULL;
+
 				if (is_panel_tex(ac_object_get_texture_index(obj)))
 				{
-					builder->SetAttribute(attr_Tex_Cockpit);
-				} else if ((panel_reg = is_panel_subtex(ac_object_get_texture_index(obj))) >= 0)
-				{
-					builder->SetAttribute1(attr_Tex_Cockpit_Subregion,panel_reg);
-				} else {
+					if(get_sub_panel_count())
+					{
+						panel_reg = get_sub_panel_for_mesh(obj);
+						if(panel_reg >= 0)
+							builder->SetAttribute1(attr_Tex_Cockpit_Subregion,panel_reg);
+						else
+							gSubregionOOBErr = true;
+					}
+					else
+						builder->SetAttribute(attr_Tex_Cockpit);
+				} 
+				else {
 					has_real_tex = 1;
 					builder->SetAttribute(attr_Tex_Normal);
 				}
@@ -496,11 +504,18 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
 
-			builder->SetTexRepeatParams(
-				ac_object_get_texture_repeat_x(obj),
-				ac_object_get_texture_repeat_y(obj),
-				ac_object_get_texture_offset_x(obj),
-				ac_object_get_texture_offset_y(obj));
+			if(panel_reg >= 0)
+				builder->SetTexRepeatParams(
+					panel_get_texture_repeat_x(panel_reg,obj),
+					panel_get_texture_repeat_y(panel_reg,obj),
+					panel_get_texture_offset_x(panel_reg,obj),
+					panel_get_texture_offset_y(panel_reg,obj));
+			else			
+				builder->SetTexRepeatParams(
+					ac_object_get_texture_repeat_x(obj),
+					ac_object_get_texture_repeat_y(obj),
+					ac_object_get_texture_offset_x(obj),
+					ac_object_get_texture_offset_y(obj));
 
 			int no_tex_count = gErrMissingTex;
 			for (p = surfaces; p != NULL; p = p->next)
@@ -559,6 +574,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	gErrMissingTex = 0;
 	gHasTexNow = false;
 	gErrDoubleTex = false;
+	gSubregionOOBErr = false;
 	gBadObjects = NULL;
 	gBadSurfaces = NULL;
 	gErrBadCockpit = false;
@@ -654,6 +670,8 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
     	message_dialog("Warning: %d objects did not have textures assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
     	message_dialog("This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
+	if(gSubregionOOBErr)
+		message_dialog("You have used panel sub-regions, but your texture mapping goes out of the bounds of the sub-regions.  Your panel may not have exported right.");
 
    if (gErrBadCockpit && convert == convert_7)
     	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");

@@ -91,7 +91,6 @@ ACObject *	do_obj8_load(char *filename)
 		int			tex_id = -1;
 		char *		panel_full_name = NULL;
 		int			panel_id = -1;
-		int			panel_reg_id[4] = { -1, -1, -1, -1 };
 
 //		char		anim_cmd[1024];
 		string		anim_dat;
@@ -163,16 +162,31 @@ ACObject *	do_obj8_load(char *filename)
 	string texPathPng = texPath + texNamePng; 
 	string texPathDds = texPath + texNameDds; 
 	string texPathPvr = texPath + texNamePvr; 
-    string panelNamePng = "cockpit/-PANELS-/panel.png";
-    string panelNameBmp = "cockpit/-PANELS-/panel.bmp";
 	
-	string panelPreview = "cockpit_3d/-PANELS-/Panel_Preview.png";
-	string panelPreviewReg[4];
-		panelPreviewReg[0] = "cockpit_3d/-PANELS-/Panel_Preview0.png";
-		panelPreviewReg[1] = "cockpit_3d/-PANELS-/Panel_Preview1.png";
-		panelPreviewReg[2] = "cockpit_3d/-PANELS-/Panel_Preview2.png";
-		panelPreviewReg[3] = "cockpit_3d/-PANELS-/Panel_Preview3.png";
+	char *	panel_names[] = {
+		"cockpit_3d/-PANELS-/Panel_Preview.png",
+		"cockpit_3d/-PANELS-/Panel.png",
+		"cockpit_3d/-PANELS-/Panel_Airliner.png",
+		"cockpit_3d/-PANELS-/Panel_Fighter.png",
+		"cockpit_3d/-PANELS-/Panel_Glider.png",
+		"cockpit_3d/-PANELS-/Panel_Helo.png",
+		"cockpit_3d/-PANELS-/Panel_Autogyro.png",
+		"cockpit_3d/-PANELS-/Panel_General_IFR.png",
+		"cockpit_3d/-PANELS-/Panel_Autogyro_Twin.png",
+		"cockpit_3d/-PANELS-/Panel_Fighter_IFR.png",
 
+		"cockpit/-PANELS-/Panel_Preview.png",
+		"cockpit/-PANELS-/Panel.png",
+		"cockpit/-PANELS-/Panel_Airliner.png",
+		"cockpit/-PANELS-/Panel_Fighter.png",
+		"cockpit/-PANELS-/Panel_Glider.png",
+		"cockpit/-PANELS-/Panel_Helo.png",
+		"cockpit/-PANELS-/Panel_Autogyro.png",
+		"cockpit/-PANELS-/Panel_General_IFR.png",
+		"cockpit/-PANELS-/Panel_Autogyro_Twin.png",
+		"cockpit/-PANELS-/Panel_Fighter_IFR.png",
+		0 };
+	
     bool	has_cockpit_cmd = false;
 	bool	has_cockpit_reg = false;
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
@@ -206,31 +220,22 @@ ACObject *	do_obj8_load(char *filename)
 	}
 	if (has_cockpit_cmd || has_cockpit_reg)
 	{
-		printf("Trying cockpit cmds.\n");
-
-		printf("Trying cockpit preview textures.\n");
-		if(panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelPreview.c_str());
-		if(panel_full_name != NULL)	panel_id = add_new_texture_opt(panel_full_name, panel_full_name);
-		
-		printf("panel name = %s\n", panelNamePng.c_str());
-		if (panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelNamePng.c_str());
-		if (panel_full_name != NULL)panel_id = add_new_texture_opt(panel_full_name,panel_full_name);
-		if (panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelNameBmp.c_str());
-		if (panel_full_name != NULL)panel_id = add_new_texture_opt(panel_full_name,panel_full_name);
-		
+		printf("Trying cockpit textures.\n");
+		int n = 0;
+		while(panel_id == -1 && panel_names[n])
+		{
+			panel_full_name = search_texture(filename, panel_names[n]);
+			if(panel_full_name)
+				panel_id = add_new_texture_opt(panel_full_name,panel_names[n]);
+			++n;
+		}
+	
+		if(panel_id == -1 && has_cockpit_reg)
+		{
+			message_dialog("Warning: I was unable to find a panel texture to load, but you are using panel regions.  Your texure coordinates may be incorrect after import.");
+		}
 	}
 
-	if (has_cockpit_reg)
-	for(int p = 0; p < 4; ++p)
-	{
-		if(panel_reg_id[p] == -1)	panel_full_name = search_texture(filename, (char *) panelPreviewReg[p].c_str());
-		if(panel_full_name != NULL)	panel_reg_id[p] = add_new_texture_opt(panel_full_name, panel_full_name);
-	}
-
-	if (has_cockpit_reg && panel_id != -1)
-	{
-		do_make_panel_subtexes_auto(panel_id,panel_reg_id);
-	}
 	
 
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
@@ -252,7 +257,9 @@ ACObject *	do_obj8_load(char *filename)
     	bool	shade_flat = false;
     	bool	two_side = false;
     	int		panel_tex = tex_id;
+		int		last_reg = -1;
 
+		float	s_mul=1.0,t_mul=1.0,s_add=0.0,t_add=0.0;
     	float	no_blend = -1.0;
     	string	hard_poly;
 		int		deck = 0;
@@ -381,8 +388,8 @@ ACObject *	do_obj8_load(char *filename)
 							if (our_material != default_material)
 								OBJ_set_use_materials(stuff_obj, 1);
 						}
-						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);
-				        surface_add_vertex_head(s, verts[i], dat[6], dat[7]);
+						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);						
+				        surface_add_vertex_head(s, verts[i], dat[6] * s_mul + s_add, dat[7] * t_mul + t_add);
 				    }
 
 				} else {
@@ -420,17 +427,24 @@ ACObject *	do_obj8_load(char *filename)
 			case attr_Tex_Normal:
 				if (panel_tex != tex_id)	stuff_obj = NULL;
 				panel_tex = tex_id;
+				last_reg = -1;
+				s_mul=1.0,t_mul=1.0,s_add=0.0,t_add=0.0;
 				manip_type = manip_none;
 				break;
 			case attr_Tex_Cockpit:
 				if (panel_tex != panel_id)	stuff_obj = NULL;
 				panel_tex = panel_id;
+				last_reg = -1;
+				s_mul=1.0,t_mul=1.0,s_add=0.0,t_add=0.0;
 				manip_type = manip_panel;
 				break;
 			case attr_Tex_Cockpit_Subregion:
-				if (panel_tex != panel_reg_id[(int) cmd->params[0]])	stuff_obj = NULL;
-				panel_tex = panel_reg_id[(int) cmd->params[0]];
+				if (panel_tex != panel_id)				stuff_obj = NULL;
+				if(last_reg != (int) cmd->params[0])	stuff_obj = NULL;
+				panel_tex = panel_id;
+				last_reg = (int) cmd->params[0];
 				manip_type = manip_panel;
+				panel_get_import_scaling(panel_id,last_reg,&s_mul,&t_mul,&s_add,&t_add);
 				break;
 			case attr_No_Blend:
 				if (!no_blend != cmd->params[0]) stuff_obj = NULL;

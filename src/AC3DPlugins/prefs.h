@@ -31,10 +31,28 @@
 	DEFINE_PREF_DOUBLE(default_LOD, 0.0f) \
 	DEFINE_PREF_STRING(export_prefix, "") \
 	DEFINE_PREF_STRING(texture_prefix, "") \
+	DEFINE_PREF_INT(enable_regions, 0) \
+	DEFINE_PREF_INT(region_count, 1) \
+	DEFINE_PREF_INT(region_l0, 0) \
+	DEFINE_PREF_INT(region_b0, 0) \
+	DEFINE_PREF_INT(region_r0, 1024) \
+	DEFINE_PREF_INT(region_t0, 1024) \
+	DEFINE_PREF_INT(region_l1, 0) \
+	DEFINE_PREF_INT(region_b1, 0) \
+	DEFINE_PREF_INT(region_r1, 1024) \
+	DEFINE_PREF_INT(region_t1, 1024) \
+	DEFINE_PREF_INT(region_l2, 0) \
+	DEFINE_PREF_INT(region_b2, 0) \
+	DEFINE_PREF_INT(region_r2, 1024) \
+	DEFINE_PREF_INT(region_t2, 1024) \
+	DEFINE_PREF_INT(region_l3, 0) \
+	DEFINE_PREF_INT(region_b3, 0) \
+	DEFINE_PREF_INT(region_r3, 1024) \
+	DEFINE_PREF_INT(region_t3, 1024)
 
 #define DEFINE_PREF_STRING(n,d)		const char *	get_##n(void);
-#define DEFINE_PREF_INT(n,d)		int				get_##n(void);
-#define DEFINE_PREF_DOUBLE(n,d)		double			get_##n(void);
+#define DEFINE_PREF_INT(n,d)		int				get_##n(void);			void	set_##n(int v);
+#define DEFINE_PREF_DOUBLE(n,d)		double			get_##n(void);			void	set_##n(double v);
 
 PREFS_LIST
 

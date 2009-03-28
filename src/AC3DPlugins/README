@@ -11,13 +11,14 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
-
+	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
 Version 3.2b1	
 	- Panel_preview textures are supported
+	- Plugin will find the panel texture in a much wider range of locations,
+	  including the 3-d cockpit.
 	- Animation sliders can be set to only show animation for visible geometry
 	- Support for OBJ syntax from X-Plane 921 and 930
 	- Bug fix: importer produces less vertices.
-	- Bug fix: panel backgrounds are found in the cockpit_3d folder
 	- Bug fix: line endings on Windows fixed
 	- Bug fix: panel region doesn't have decimal at end.
 	- Bug fix: no error message if you pop open dataref menu when datarefs.txt not in plugin folder.
@@ -101,9 +102,9 @@ Simply copy the AC3D plugin file XPlaneSupportWin.p or XPlaneSupportMac.p
 (depending on your operating system) and the file XPlaneSupport.tcl into
 the "plugins" folder for AC3D while it is not running, then start AC3D.
 
-The plugin also requires two text files: DataRes.txt and Cmnds.txt - these are
+The plugin also requires two text files: DataRefs.txt and Commands.txt - these are
 computer-readable lists of X-Plane's current datarefs and commands.  You can 
-get them both from the Resources/plugins folder of X-Plane.
+get them both from the Resources/plugins folder of X-Plane 930 and newer.
 
 -------------------------------------------------------------------------------
 USING THE PLUGIN
@@ -173,17 +174,17 @@ when you are ready to package up the object in your custom scenery package.
 COCKPIT OBJECTS AND PANEL TEXTURES
 -------------------------------------------------------------------------------
 
-WARNING FOR EXISTING USERS: version 3.2 of the plugin has manipualtor controls.
+WARNING FOR EXISTING USERS: version 3.2 of the plugin has manipulator controls.
 You must set your panel textured objects to be manipulatable or they will not
 respond to the mouse in the sim!  This is a one time change you must make to
 any .ac file when you adopt the new plugin!  See "Manipulators" below.
 
-AC3D will also let you use a panel texture to create a cockpit object with
+AC3D will let you use a panel texture to create a cockpit object with
 instruments that animate.  To do this, you texture part of your object with
 either the panel texture from your airplane or a panel preview texture.  Panel
 textures are located in the cockpit/-PANELS- or cockpit_3d/-PANELS- folder.
-(X-Plane will not use an old-style panel file name from the root of your 
-aircraft.  
+(The plugin will not use an old-style panel file name from the root of your 
+aircraft.  It also will not use BMP-based panels.  Don't use BMP!)
 
     my object.obj
     cockpit
@@ -192,28 +193,15 @@ aircraft.
         
 With this plugin you can also use a panel preview.  A panel preview is an
 image of the panel textures for your object - not just the background, but
-all of the instruments and moving parts too.
-
-Panel previews must live in cockpit_3d/-PANELS-/Panel_previewN.png, where N
-is 0, 1, 2, or 3 for panel regions 1-4 or the N is omitted for a panel that
-does not use regions.  You may have to create a cockpit_3d folder to add
-panel previews even if you don't normally use that folder.
-
-X-Plane 930 can export create panel previews for you - the command name is
-sim/operation/make_panel_previews.  You may have to map this to a keyboard
-command to use it.
-
-The advantage of panel previews over the panel backgrounds is that (1) they
-provide a better indication of what your finished panel will look like and
-they provide a cleaner way to create panel regions.
+all of the instruments and moving parts too.  Panel previews have the name
+Panel_Preview.png and live in the cockpit/-PANELS- or cockpit_3d/-PANELS-
+folders.  You can make a panel preview in X-Plane 930 by pressing control-
+option-shift-space with your airplane loaded.  The advantage of panel 
+previews over the panel backgrounds is that they provide a better 
+indication of what your finished panel will look like.
 
 When you import an OBJ, the importer will first look for panel previews,
 then panel backgrounds.
-
-If an OBJ uses panel regions but there are no previews, and there is a 
-panel background, the importer will cut the background into pieces and
-make temporary new textures in ac3d to simulate the panel regions.  I
-recommend using panel previews instead!
 
 PERFORMANCE WARNING: changing between the panel and regular texture in an 
 object hurts framerate; see the section on performance for how to avoid this
@@ -222,12 +210,30 @@ problem.
 WARNING: for OBJ7 objects, you can only place the panel texture on quads.  AC3D
 will warn you if you try to export an OBJ7 object that violates this rule.
 
-In X-Plane 9 you can use up to 4 "sub-panel" regions.  Pick "X-Plane Panel
-Properties..." and enable the "Enable sub-panels" check box.  You can then
-pick the number of sub-areas of the 2-d panel that you will use in the model
-and their coordinates.  (The position can be anything but the dimensions of
-the sub-panels must be powers of 2.)  You may have to reset these dimensions
-when you reload your model because they are not currently saved.
+In X-Plane 9 you can use up to 4 "regions" of your panel.  Using panel regions
+instead of the whole panel switches X-Plane to use modern lighting on the panel
+texture, and can sometimes improve peformance.
+
+To set whether you are using the whole panel or regions, pick "X-Plane Panel
+Properties..." from the X-Plane menu and check "Enable panel regions". You
+can then set the number of regions and their coordinates (in pixels).
+
+When you import an OBJ with a panel (or panel regions), the panel properties
+will be readin from the imported object.  BUT the panel properties are saved
+as a PREFERENCE, not as part of your .ac file (due to a limit in the ac3d
+plugin system).  For this reason, be sure to reset your panel preferences 
+when changing which airlane you work on.
+
+WARNING: if you either have a texture map that goes outside a region or
+a texture map that crosses two regions, the export may look corrupt in
+X-plane.  Be sure that all of your UV maps are limited to only one region.
+
+IMPORTANT: this limitation applies per _object_ in the AC3D hieararchy.
+If you want to use two regions, use two objects in the ac3d hierarchy!!
+
+For more information on panel regions: please see this page:
+
+http://wiki.x-plane.com/Panel_Regions
 
 -------------------------------------------------------------------------------
 ONE-VS-TWO-SIDED GEOMETRY AND FLAT-VS-SMOOTH SHADING
@@ -379,6 +385,9 @@ Dynamic _LIT Levels
 	consolidate similarly-lit objects whenever possible!
 	
 	Dynamic lit levels are supported in X-Plane 930 and higher.
+	
+	WARNING: dynamic light levels do not affect panel-textured or 
+	panel-region-textured triangles.
 
 -------------------------------------------------------------------------------
 LIGHT ATTRIBUTES: LIGHTS AND SMOKE

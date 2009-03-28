@@ -29,7 +29,7 @@
 // janos says: msvc doesn't know any of the new (lol) c99 functions, we're using
 // the glibc implementation here
 
-#if IBM
+#if MSC
 static const float huge = 1.0e30;
 typedef union
 {
@@ -306,7 +306,7 @@ void	XObjBuilder::AccumTri(float inTri[24])
 
 	for(int n = 0; n < 24; ++n)
 	{
-		tri[n] = roundf(tri[n] * 65536.0) / 65536.0;
+		tri[n] = roundf(tri[n] * 65536.0f) / 65536.0f;
 	}
 
 	int		idx1 = obj->geo_tri.accumulate(tri   );

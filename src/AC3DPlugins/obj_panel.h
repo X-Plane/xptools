@@ -25,11 +25,11 @@
 #define obj_panel_H
 
 int		is_panel_tex(int tex_id);		// 1 if true, 0 if false
-int		is_panel_subtex(int tex_id);	// -1 if false, or 0-3 for index number
+//int		is_panel_subtex(int tex_id);	// -1 if false, or 0-3 for index number
 
 void	register_panel_vars(void);
-void	do_make_panel_subtexes(void);
-void	do_make_panel_subtexes_auto(int panel_tex_id, int sub_reg_ids[]);
+//void	do_make_panel_subtexes(void);
+//void	do_make_panel_subtexes_auto(int panel_tex_id, int sub_reg_ids[]);
 
 void	set_std_panel(void);
 void	add_sub_panel(int l, int b, int r, int t);
@@ -40,5 +40,14 @@ int		get_sub_panel_l(int r);
 int		get_sub_panel_b(int r);
 int		get_sub_panel_r(int r);
 int		get_sub_panel_t(int r);
+
+int		get_sub_panel_for_mesh(ACObject * obj);
+
+float	panel_get_texture_repeat_x(int sub, ACObject * obj);
+float	panel_get_texture_repeat_y(int sub, ACObject * obj);
+float	panel_get_texture_offset_x(int sub, ACObject * obj);
+float	panel_get_texture_offset_y(int sub, ACObject * obj);
+
+void	panel_get_import_scaling(int tex_id, int sub, float * s_mul, float * t_mul, float * s_add, float * t_add);
 
 #endif /* obj_panel_H */

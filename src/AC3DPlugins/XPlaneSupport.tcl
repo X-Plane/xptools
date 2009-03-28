@@ -287,37 +287,37 @@ ac3d add_pref window_geom_xplane_prefs_dialog ""
 proc xplane_prefs_dialog {} {
 
 	global xplane_layer_group_options
-#	global prefs_x-plane_default_layer_group
+#	global prefs_xplane_default_layer_group
 	
 	if ![winfo exists .xp_prefs] {
 
-#		if { [set prefs_x-plane_default_layer_group] == "NULL" } {
-#			set prefs_x-plane_default_layer_group "none"
+#		if { [set prefs_xplane_default_layer_group] == "NULL" } {
+#			set prefs_xplane_default_layer_group "none"
 #		}
 
 		new_toplevel_tracked .xp_prefs "X-Plane export prefs" prefs_window_geom_xplane_prefs_dialog
 
 		label		.xp_prefs.layer_btn_label -text "Default Layer Group:"
-		menubutton .xp_prefs.layer_btn -menu .xp_prefs.layer_btn.menu -direction flush -textvariable prefs_x-plane_default_layer_group -padx 30 -pady 5
+		menubutton .xp_prefs.layer_btn -menu .xp_prefs.layer_btn.menu -direction flush -textvariable prefs_xplane_default_layer_group -padx 30 -pady 5
 		menu .xp_prefs.layer_btn.menu
 		foreach item $xplane_layer_group_options {
-			.xp_prefs.layer_btn.menu add radiobutton -label $item -variable prefs_x-plane_default_layer_group
+			.xp_prefs.layer_btn.menu add radiobutton -label $item -variable prefs_xplane_default_layer_group
 		}
 
 		label		.xp_prefs.layer_offset_label -text "Default Offset:"
-		spinbox		.xp_prefs.layer_offset -from -5 -increment 1 -to 5 -textvariable prefs_x-plane_default_layer_offset
+		spinbox		.xp_prefs.layer_offset -from -5 -increment 1 -to 5 -textvariable prefs_xplane_default_layer_offset
 		
-#		checkbutton .xp_prefs.apt_lights		-variable prefs_x-plane_export_airport_lights -text "Export as airport light"
-		checkbutton .xp_prefs.triangles			-variable prefs_x-plane_export_triangles	  -text "Export Geometry"
+#		checkbutton .xp_prefs.apt_lights		-variable prefs_xplane_export_airport_lights -text "Export as airport light"
+		checkbutton .xp_prefs.triangles			-variable prefs_xplane_export_triangles	  -text "Export Geometry"
 		
 		label	.xp_prefs.default_lod_label -text "Default LOD:"
-		spinbox .xp_prefs.default_lod_value -from 0 -increment 100 -to 1000 -textvariable prefs_x-plane_default_LOD
+		spinbox .xp_prefs.default_lod_value -from 0 -increment 100 -to 1000 -textvariable prefs_xplane_default_LOD
 
 		label	.xp_prefs.export_prefix_label -text "Bulk Export Prefix:"
-		entry	.xp_prefs.export_prefix -textvariable prefs_x-plane_export_prefix
+		entry	.xp_prefs.export_prefix -textvariable prefs_xplane_export_prefix
 
 		label	.xp_prefs.texture_prefix_label -text "Texture Export Prefix:"
-		entry	.xp_prefs.texture_prefix -textvariable prefs_x-plane_texture_prefix
+		entry	.xp_prefs.texture_prefix -textvariable prefs_xplane_texture_prefix
 
 
 		grid	.xp_prefs.layer_btn_label .xp_prefs.layer_btn
@@ -425,7 +425,7 @@ proc fetch_all_datarefs {} {
 	global all_datarefs
 		
 	if {[catch {
-		set fi [open "plugins/datarefs.txt" r]
+		set fi [open "plugins/DataRefs.txt" r]
 	}]} { 
 		set all_datarefs ""	
 		return 
@@ -467,7 +467,7 @@ proc fetch_all_cmnds {} {
 	global all_cmnds
 		
 	if {[catch {
-		set fi [open "plugins/cmnds.txt" r]
+		set fi [open "plugins/Commands.txt" r]
 	}]} { 
 		set all_cmnds ""	
 		return 
@@ -1042,86 +1042,92 @@ for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 proc eval_panel_dialog {} {
 	global SUBPANEL_DIM
 	
-	global xplane_panel_sub_count
-	global xplane_panel_sub_enable
+	global prefs_xplane_enable_regions
+	global prefs_xplane_region_count
 	
 	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
-		global xplane_panel_sub_l$x
-		global xplane_panel_sub_r$x
-		global xplane_panel_sub_b$x
-		global xplane_panel_sub_t$x
+		global prefs_xplane_region_l$x
+		global prefs_xplane_region_r$x
+		global prefs_xplane_region_b$x
+		global prefs_xplane_region_t$x
 	}
 	if ![winfo exists .xp_panel] return
 	
 	pack forget .xp_panel.sub_label
 	pack forget .xp_panel.sub_count
-	pack forget .xp_panel.go
+#	pack forget .xp_panel.go
 	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
 		pack forget .xp_panel.region$x
 	}
 	
-	if {$xplane_panel_sub_enable} {
+	if {$prefs_xplane_enable_regions} {
 		pack .xp_panel.sub_label
 		pack .xp_panel.sub_count
-		for {set x 0} {$x < $xplane_panel_sub_count} {incr x} {
+		for {set x 0} {$x < $prefs_xplane_region_count} {incr x} {
 			pack .xp_panel.region$x
 		}			
-		pack .xp_panel.go		
+#		pack .xp_panel.go		
 	}
 }
-
 proc sync_panel_dialog { name1 name2 op } {
 	eval_panel_dialog
 }
 
-	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
-		trace add variable xplane_panel_sub_l$x write sync_panel_dialog
-		trace add variable xplane_panel_sub_r$x write sync_panel_dialog
-		trace add variable xplane_panel_sub_b$x write sync_panel_dialog
-		trace add variable xplane_panel_sub_t$x write sync_panel_dialog
-	}
-
-trace add variable xplane_panel_sub_count write sync_panel_dialog
-trace add variable xplane_panel_sub_enable write sync_panel_dialog
-
 ac3d add_pref window_geom_xplane_panel_dialog ""
+
+set init_panel_prefs 0
 
 proc xplane_panel_dialog {} {
 	global SUBPANEL_DIM
-	
-	global xplane_panel_sub_count
-	global xplane_panel_sub_enable
+	global init_panel_prefs
+	global prefs_xplane_region_count
+	global prefs_xplane_enable_regions
 	
 	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
-		global xplane_panel_sub_l$x
-		global xplane_panel_sub_r$x
-		global xplane_panel_sub_b$x
-		global xplane_panel_sub_t$x
+		global prefs_xplane_region_l$x
+		global prefs_xplane_region_r$x
+		global prefs_xplane_region_b$x
+		global prefs_xplane_region_t$x
 	}
+
+	if {$init_panel_prefs == 0 } {
+		set init_panel_prefs 1
+		for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+			trace add variable prefs_xplane_region_l$x write sync_panel_dialog
+			trace add variable prefs_xplane_region_r$x write sync_panel_dialog
+			trace add variable prefs_xplane_region_b$x write sync_panel_dialog
+			trace add variable prefs_xplane_region_t$x write sync_panel_dialog
+		}
+
+		trace add variable prefs_xplane_enable_regions write sync_panel_dialog
+		trace add variable prefs_xplane_region_count write sync_panel_dialog
+	}
+
+
 	
 	if ![winfo exists .xp_panel] {
 
 		new_toplevel_tracked .xp_panel "X-Plane Panel Prefs" prefs_window_geom_xplane_panel_dialog
 		
-		checkbutton		.xp_panel.enable -variable xplane_panel_sub_enable -text "Enable sub-panels" -command "eval_panel_dialog"	
+		checkbutton		.xp_panel.enable -variable prefs_xplane_enable_regions -text "Enable panel regions" -command "eval_panel_dialog"	
 		pack			.xp_panel.enable
-		label			.xp_panel.sub_label -text "Number of sub-panels:"
+		label			.xp_panel.sub_label -text "Number of panel regions:"
 		pack			.xp_panel.sub_label
-		spinbox			.xp_panel.sub_count -from 1 -increment 1 -to $SUBPANEL_DIM -textvariable xplane_panel_sub_count -command "eval_panel_dialog"	
+		spinbox			.xp_panel.sub_count -from 1 -increment 1 -to $SUBPANEL_DIM -textvariable prefs_xplane_region_count -command "eval_panel_dialog"	
 		pack			.xp_panel.sub_count
 		for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
 			labelframe .xp_panel.region$x -text "Region $x:"
 		
-			make_labeled_entry .xp_panel.region$x "Region $x left" xplane_panel_sub_l$x 10
-			make_labeled_entry .xp_panel.region$x "Region $x bottom" xplane_panel_sub_b$x 10
-			make_labeled_entry .xp_panel.region$x "Region $x right" xplane_panel_sub_r$x 10
-			make_labeled_entry .xp_panel.region$x "Region $x top" xplane_panel_sub_t$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x left" prefs_xplane_region_l$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x bottom" prefs_xplane_region_b$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x right" prefs_xplane_region_r$x 10
+			make_labeled_entry .xp_panel.region$x "Region $x top" prefs_xplane_region_t$x 10
 			
 			pack .xp_panel.region$x
 		}
 
-		button	.xp_panel.go -command "ac3d xplane_make_subpanel" -text "Make Subpanel..."
-		pack	.xp_panel.go
+#		button	.xp_panel.go -command "ac3d xplane_make_subpanel" -text "Make Subpanel..."
+#		pack	.xp_panel.go
 	}
 
 	wm deiconify			.xp_panel
@@ -1244,7 +1250,7 @@ set xplane_anim_invis 0
 trace add variable xplane_anim_enable write xplane_anim_update
 trace add variable xplane_anim_invis write xplane_anim_update
 
-trace add variable unsaved_changes write "ac3d xplane_sync_panel"
+#trace add variable unsaved_changes write "ac3d xplane_sync_panel"
 
 
 ##########################################################################################################################################################

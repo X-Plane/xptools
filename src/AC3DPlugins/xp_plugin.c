@@ -114,7 +114,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 
 	ac_add_command_full("xplane_sel_lights", CAST_CMD(do_sel_lights), 0, NULL, "ac3d xplane_sel_lights", "Select lights.");
 
-	ac_add_command_full("xplane_make_subpanel", CAST_CMD(do_make_panel_subtexes), 0, NULL, "ac3d xplane_make_subpanel", "Make sub-panel texes from main panel.");
+//	ac_add_command_full("xplane_make_subpanel", CAST_CMD(do_make_panel_subtexes), 0, NULL, "ac3d xplane_make_subpanel", "Make sub-panel texes from main panel.");
 
 	ac_add_command_full("xplane_optimize_selection", CAST_CMD(do_optimize_selection), 1, "f", "ac3d xplane_optimize_selection", "Optimize selection for x-plane.");
 

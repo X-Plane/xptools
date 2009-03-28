@@ -25,6 +25,8 @@
 #include <string.h>
 #include <ac_plugin.h>
 
+//extern "C" void ui_update_linked_var(char * addr);
+
 #define DEFINE_PREF_STRING(n,d)	\
 	PrefSpec *	spec_##n;	\
 	char *		def_##n = STRING(d); \
@@ -33,12 +35,17 @@
 #define DEFINE_PREF_INT(n,d)	\
 	PrefSpec *	spec_##n;	\
 	int			def_##n = d; \
-	int get_##n(void) {return *((int *) spec_##n->addr); }
-
+	int get_##n(void) {return *((int *) spec_##n->addr); } \
+	void set_##n(int v){ *((int *) spec_##n->addr) = v; \
+	ui_update_linked_var((char *) spec_##n->addr); }
+	
 #define DEFINE_PREF_DOUBLE(n,d)	\
 	PrefSpec *	spec_##n;	\
 	double			def_##n = d; \
-	double get_##n(void) {return *((double *) spec_##n->addr); }
+	double get_##n(void) {return *((double *) spec_##n->addr); } \
+	void set_##n(double v){ *((double *) spec_##n->addr) = v; \
+	ui_update_linked_var((char *) spec_##n->addr); }
+	
 
 PREFS_LIST
 
@@ -48,9 +55,9 @@ PREFS_LIST
 
 void	prefs_init(void)
 {
-	#define DEFINE_PREF_STRING(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_STRING, &def_##n);
-	#define DEFINE_PREF_INT(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_INT, &def_##n);
-	#define DEFINE_PREF_DOUBLE(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_DOUBLE, &def_##n);
+	#define DEFINE_PREF_STRING(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_STRING, &def_##n);
+	#define DEFINE_PREF_INT(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_INT, &def_##n);
+	#define DEFINE_PREF_DOUBLE(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_DOUBLE, &def_##n);
 
 PREFS_LIST
 

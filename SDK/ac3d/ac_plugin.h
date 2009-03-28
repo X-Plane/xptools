@@ -803,6 +803,10 @@ Prototype char *ac_pref_alloc_string(char *s);
 Prototype void ac_pref_free_string(char *s);
 Prototype PrefSpec *ac_create_and_link_pref(char *name, int type, void *defaultvalue); // best function to use to add a tracked preference
 
+// Added by Ben from ANdy's email:
+Prototype void ui_update_linked_var(char * addr);
+
+
 // undo
 Prototype void add_undoable_all(char *name);
 Prototype void add_undoable_vertex_positions(char *name, List *vertexlist);
