@@ -590,7 +590,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			else
 			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
-			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
+			sprintf(buf, "%f (x) x %f (y) x %f (z) meters", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);
 			DoUserAlert(buf);
 		}
 		break;
