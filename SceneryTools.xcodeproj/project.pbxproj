@@ -32,7 +32,6 @@
 			dependencies = (
 				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
-				D6C68DEB0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -176,7 +175,6 @@
 		D62433A70AE3CE48004F00E3 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D62434200AE3D03E004F00E3 /* trackball.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A30AB22C85003949C5 /* trackball.c */; };
 		D62434950AE3D6D0004F00E3 /* GeoUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377C0AB22C85003949C5 /* GeoUtils.cpp */; };
-		D62435180AE3E004004F00E3 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D62435290AE401EF004F00E3 /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D624352A0AE401EF004F00E3 /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
 		D62435300AE401EF004F00E3 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -519,8 +517,6 @@
 		D67EF5020B5CF9F400D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF5030B5CF9F400D9190C /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D67EF50E0B5CFA2000D9190C /* XGrinderShell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */; };
-		D67EF5120B5CFA4100D9190C /* ConvertObj3DS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B40AB22C85003949C5 /* ConvertObj3DS.cpp */; };
-		D67EF5130B5CFA4200D9190C /* ConvertObjDXF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B60AB22C85003949C5 /* ConvertObjDXF.cpp */; };
 		D67EF5B70B5D34BE00D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF8520B5E5D9F00D9190C /* DSF2Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC365D0AB22C84003949C5 /* DSF2Text.cpp */; };
 		D67EF8530B5E5DA200D9190C /* DSFToolCmdLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC365F0AB22C84003949C5 /* DSFToolCmdLine.cpp */; };
@@ -551,7 +547,6 @@
 		D67EF9850B6135F400D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF98B0B61363300D9190C /* ConvertObj3DS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B40AB22C85003949C5 /* ConvertObj3DS.cpp */; };
 		D67EF98C0B61363600D9190C /* ConvertObjDXF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B60AB22C85003949C5 /* ConvertObjDXF.cpp */; };
-		D67EF9940B61367100D9190C /* ConvertObjUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67EF9930B61367100D9190C /* ConvertObjUI.cpp */; };
 		D67EF9A70B6141E600D9190C /* ConvertObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B30AB22C85003949C5 /* ConvertObj.cpp */; };
 		D67EF9BE0B61423C00D9190C /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D67EF9BF0B61423D00D9190C /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -644,21 +639,6 @@
 		D6BC3B0E0AB231AE003949C5 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
 		D6BC3B100AB231B8003949C5 /* TexUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A10AB22C85003949C5 /* TexUtils.cpp */; };
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
-		D6BC3CB50AB2330E003949C5 /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
-		D6BC3CB60AB2330E003949C5 /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
-		D6BC3CB80AB2330E003949C5 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
-		D6BC3CB90AB2330E003949C5 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
-		D6BC3CBA0AB2330E003949C5 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
-		D6BC3CBB0AB2330E003949C5 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
-		D6BC3CBC0AB2330E003949C5 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
-		D6BC3CBE0AB2330E003949C5 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
-		D6BC3CC40AB2330E003949C5 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D6BC3CC50AB2330E003949C5 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
-		D6BC3CC60AB2330E003949C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
-		D6BC3CCE0AB23C1C003949C5 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
-		D6BC3CCF0AB23C25003949C5 /* XGrinderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375A0AB22C85003949C5 /* XGrinderApp.cpp */; };
-		D6BC3CD20AB23C4D003949C5 /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
-		D6BC3CD50AB23C7F003949C5 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C578AC0C7E33B200FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
@@ -973,13 +953,6 @@
 			remoteGlobalIDString = D62435240AE401EF004F00E3;
 			remoteInfo = RenderFarmUI;
 		};
-		D6C68DEA0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6BC3CAF0AB2330E003949C5;
-			remoteInfo = ObjConverterUI;
-		};
 		D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -1280,7 +1253,6 @@
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9890B6135F400D9190C /* ObjConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjConverter; sourceTree = BUILT_PRODUCTS_DIR; };
-		D67EF9930B61367100D9190C /* ConvertObjUI.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ConvertObjUI.cpp; sourceTree = "<group>"; };
 		D682DB250C0E3A7700BBE1A0 /* Vera.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Vera.ttf; sourceTree = "<group>"; };
 		D682DDEC0C10939C00BBE1A0 /* WED_StartWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StartWindow.h; sourceTree = "<group>"; };
 		D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StartWindow.cpp; sourceTree = "<group>"; };
@@ -1850,7 +1822,6 @@
 		D6BC38F00AB22C85003949C5 /* XSBPopups.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XSBPopups.h; sourceTree = "<group>"; };
 		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
-		D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjConverterUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
 		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
@@ -2031,16 +2002,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D6BC3CC30AB2330E003949C5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D6BC3CC40AB2330E003949C5 /* Carbon.framework in Frameworks */,
-				D6BC3CC50AB2330E003949C5 /* AGL.framework in Frameworks */,
-				D6BC3CC60AB2330E003949C5 /* OpenGL.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D6C579D00C7E3C7B00FCB4C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -2068,7 +2029,6 @@
 			isa = PBXGroup;
 			children = (
 				508344B209E5C41E0093A071 /* ObjView.app */,
-				D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */,
 				D62435440AE401EF004F00E3 /* RenderFarmUI.app */,
 				D67EF50A0B5CF9F400D9190C /* XGrinder.app */,
 				D67EF84B0B5E5C8700D9190C /* DSFTool */,
@@ -3250,7 +3210,6 @@
 				D604189D0D86E22100AF6E16 /* README.XGrinder */,
 				D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */,
 				D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */,
-				D67EF9930B61367100D9190C /* ConvertObjUI.cpp */,
 				D6BC38B20AB22C85003949C5 /* AddObjects.cpp */,
 				D6BC38B30AB22C85003949C5 /* ConvertObj.cpp */,
 				D6BC38B40AB22C85003949C5 /* ConvertObj3DS.cpp */,
@@ -3654,24 +3613,6 @@
 			productReference = D67EF9890B6135F400D9190C /* ObjConverter */;
 			productType = "com.apple.product-type.tool";
 		};
-		D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D6BC3CC70AB2330E003949C5 /* Build configuration list for PBXNativeTarget "ObjConverterUI" */;
-			buildPhases = (
-				D6BC3CB00AB2330E003949C5 /* Resources */,
-				D6BC3CB10AB2330E003949C5 /* Sources */,
-				D6BC3CC30AB2330E003949C5 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = ObjConverterUI;
-			productInstallPath = "$(HOME)/Applications";
-			productName = SceneryTools;
-			productReference = D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */;
-			productType = "com.apple.product-type.application";
-		};
 		D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D6C579D30C7E3C7B00FCB4C1 /* Build configuration list for PBXNativeTarget "DDSTool" */;
@@ -3719,7 +3660,6 @@
 			projectRoot = "";
 			targets = (
 				8D0C4E890486CD37000505A6 /* ObjView */,
-				D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */,
 				D62435240AE401EF004F00E3 /* RenderFarmUI */,
 				D67EF4EE0B5CF9F400D9190C /* XGrinder */,
 				D6ED369A0B67964D00D5484E /* WED */,
@@ -3755,13 +3695,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D6BC3CB00AB2330E003949C5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4350,29 +4283,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D6BC3CB10AB2330E003949C5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D6BC3CB50AB2330E003949C5 /* XWin.mac.cpp in Sources */,
-				D6BC3CB60AB2330E003949C5 /* XWinGL.mac.cpp in Sources */,
-				D6BC3CB80AB2330E003949C5 /* ObjPointPool.cpp in Sources */,
-				D6BC3CB90AB2330E003949C5 /* XObjBuilder.cpp in Sources */,
-				D6BC3CBA0AB2330E003949C5 /* XObjDefs.cpp in Sources */,
-				D6BC3CBB0AB2330E003949C5 /* XObjReadWrite.cpp in Sources */,
-				D6BC3CBC0AB2330E003949C5 /* AssertUtils.cpp in Sources */,
-				D6BC3CBE0AB2330E003949C5 /* EndianUtils.c in Sources */,
-				D6BC3CCE0AB23C1C003949C5 /* PlatformUtils.mac.cpp in Sources */,
-				D6BC3CCF0AB23C25003949C5 /* XGrinderApp.cpp in Sources */,
-				D6BC3CD20AB23C4D003949C5 /* ObjConvert.cpp in Sources */,
-				D6BC3CD50AB23C7F003949C5 /* ObjUtils.cpp in Sources */,
-				D62435180AE3E004004F00E3 /* XUtils.cpp in Sources */,
-				D67EF5120B5CFA4100D9190C /* ConvertObj3DS.cpp in Sources */,
-				D67EF5130B5CFA4200D9190C /* ConvertObjDXF.cpp in Sources */,
-				D67EF9940B61367100D9190C /* ConvertObjUI.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D6C579BD0C7E3C7B00FCB4C1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4677,11 +4587,6 @@
 			target = D62435240AE401EF004F00E3 /* RenderFarmUI */;
 			targetProxy = D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */;
 		};
-		D6C68DEB0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */;
-			targetProxy = D6C68DEA0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
-		};
 		D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8D0C4E890486CD37000505A6 /* ObjView */;
@@ -4901,17 +4806,6 @@
 					/usr/local/lib/libjpeg.a,
 					/usr/local/lib/libpng.a,
 					/usr/local/lib/libtiff.a,
-				);
-			};
-			name = Phone;
-		};
-		D60E98F00EDDDEEA0096DE0E /* Phone */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					/usr/local/lib/libdime.a,
-					/usr/local/lib/lib3ds.a,
 				);
 			};
 			name = Phone;
@@ -5275,29 +5169,6 @@
 			};
 			name = Release;
 		};
-		D6BC3CC80AB2330E003949C5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					/usr/local/lib/libdime.a,
-					/usr/local/lib/lib3ds.a,
-				);
-			};
-			name = Debug;
-		};
-		D6BC3CC90AB2330E003949C5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					/usr/local/lib/libdime.a,
-					/usr/local/lib/lib3ds.a,
-				);
-			};
-			name = Release;
-		};
 		D6C579D40C7E3C7B00FCB4C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5414,17 +5285,6 @@
 					/usr/local/lib/libjpeg.a,
 					/usr/local/lib/libpng.a,
 					/usr/local/lib/libtiff.a,
-				);
-			};
-			name = DebugOpt;
-		};
-		D6F01D710CDABA8D00A3F1B0 /* DebugOpt */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					/usr/local/lib/libdime.a,
-					/usr/local/lib/lib3ds.a,
 				);
 			};
 			name = DebugOpt;
@@ -5709,17 +5569,6 @@
 				D60E98F60EDDDEEA0096DE0E /* Phone */,
 				D6F01D750CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF9880B6135F400D9190C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D6BC3CC70AB2330E003949C5 /* Build configuration list for PBXNativeTarget "ObjConverterUI" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D6BC3CC80AB2330E003949C5 /* Debug */,
-				D60E98F00EDDDEEA0096DE0E /* Phone */,
-				D6F01D710CDABA8D00A3F1B0 /* DebugOpt */,
-				D6BC3CC90AB2330E003949C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
