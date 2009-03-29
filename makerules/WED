@@ -192,6 +192,7 @@ src/Network/b64.c \
 src/DSF/DSFLib.cpp \
 src/DSF/DSFLibWrite.cpp \
 src/DSF/DSFPointPool.cpp \
+src/DSF/tri_stripper_101/tri_stripper.cpp \
 src/DSFTools/DSF2Text.cpp \
 src/DSFTools/ENV2Overlay.cpp \
 src/OGLE/ogle.cpp \
@@ -273,7 +274,7 @@ $(MESA_HEADERS) \
 -Isrc/XESTools \
 -Isrc/Installer \
 -Isrc/Network \
--ISDK/PVR
+-Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
 -Llibsrc/linux-specific/lib

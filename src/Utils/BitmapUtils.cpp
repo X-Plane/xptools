@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  *
  */
+
 #include "BitmapUtils.h"
 #include "EndianUtils.h"
 #include <stdio.h>
 #include <errno.h>
-//#include <setjmp.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -55,12 +55,13 @@
 		- handle 16-bit color
  */
 
-
-
 #if IBM
 	#include <windows.h>
 	#define XMD_H
 	#define HAVE_BOOLEAN
+	#if MINGW_BUILD
+	#define __INTEL__
+	#endif
 #endif
 
 // Note: the std jpeg lib does not have any #ifdef C++ name
@@ -70,9 +71,6 @@
 
 #if USE_JPEG
 extern "C" {
-	#ifndef __INTEL__
-	#define __INTEL__
-	#endif
 	#include <jpeglib.h>
 	#include <jerror.h>
 }
@@ -793,14 +791,14 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 			struct jpeg_decompress_struct cinfo;
 			setjmp_err_mgr		  jerr;
 
-		cinfo.err = jpeg_throw_error(&jerr);
-		jpeg_create_decompress(&cinfo);
-
 		if(setjmp(jerr.buf))
 		{
 			fclose(fi);
 			return 1;
 		}
+
+		cinfo.err = jpeg_throw_error(&jerr);
+		jpeg_create_decompress(&cinfo);
 
 		jpeg_stdio_src(&cinfo, fi);
 
@@ -854,13 +852,12 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 			struct jpeg_decompress_struct cinfo;
 			setjmp_err_mgr		  jerr;
 
-		cinfo.err = jpeg_throw_error(&jerr);
-		jpeg_create_decompress(&cinfo);
-
 		if (setjmp(jerr.buf))
 		{
 			return 1;
 		}
+		cinfo.err = jpeg_throw_error(&jerr);
+		jpeg_create_decompress(&cinfo);
 
 		mem_source_mgr	src;
 

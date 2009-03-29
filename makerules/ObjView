@@ -92,7 +92,7 @@ $(MESA_HEADERS) \
 -Isrc/XESTools \
 -Isrc/Installer \
 -Isrc/Network \
--ISDK/PVR
+-Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
 -Llibsrc/linux-specific/lib

@@ -30,7 +30,7 @@ all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm fonttool
 libs: $(LIBRARIES)
 
 $(LIBRARIES):
-	$(MAKE) -C "libsrc/linux-specific"
+	$(MAKE) -s -C "libsrc/linux-specific"
 
 ObjView: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk

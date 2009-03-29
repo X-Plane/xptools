@@ -16,7 +16,8 @@ src/Utils/AssertUtils.cpp \
 src/Utils/EndianUtils.c \
 src/Utils/FileUtils.cpp \
 src/Utils/md5.c \
-src/Utils/XChunkyFileUtils.cpp
+src/Utils/XChunkyFileUtils.cpp \
+src/DSF/tri_stripper_101/tri_stripper.cpp
 
 ifeq ($(PLATFORM), Linux)
 MESA_HEADERS = -Ilibsrc/linux-specific/mesa/include
@@ -53,4 +54,4 @@ $(MESA_HEADERS) \
 -Isrc/XESTools \
 -Isrc/Installer \
 -Isrc/Network \
--ISDK/PVR
+-Isrc/DSF/tri_stripper_101

@@ -72,7 +72,8 @@ src/Utils/Skeleton.cpp \
 src/Utils/perlin.cpp \
 src/Utils/MatrixUtils.cpp \
 src/Utils/ProgressUtils.cpp \
-src/XESTools/GISTool_Globals.cpp
+src/XESTools/GISTool_Globals.cpp \
+src/DSF/tri_stripper_101/tri_stripper.cpp
 
 WIN32_SRC := \
 src/Utils/XFileTwiddle.win.cpp
@@ -122,7 +123,7 @@ $(MESA_HEADERS) \
 -Isrc/XESTools \
 -Isrc/Installer \
 -Isrc/Network \
--ISDK/PVR
+-Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
 -Llibsrc/linux-specific/lib
