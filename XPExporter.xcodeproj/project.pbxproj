@@ -31,13 +31,13 @@
 		D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */; };
 		D6CD2504098F95D900B525DA /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */; };
 		D6CD2505098F95D900B525DA /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */; };
-		D6CD2508098F95DF00B525DA /* ac_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA775098E92980061BE4C /* ac_utils.c */; };
-		D6CD2509098F95DF00B525DA /* bitmap_match.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA776098E92980061BE4C /* bitmap_match.c */; };
-		D6CD250A098F95DF00B525DA /* obj_radius.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA777098E92980061BE4C /* obj_radius.c */; };
-		D6CD250B098F95DF00B525DA /* obj_tools.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA778098E92980061BE4C /* obj_tools.c */; };
-		D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA779098E92980061BE4C /* obj8_export.c */; };
-		D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77A098E92980061BE4C /* obj8_import.c */; };
-		D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77B098E92980061BE4C /* xp_plugin.c */; };
+		D6CD2508098F95DF00B525DA /* ac_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA775098E92980061BE4C /* ac_utils.cpp */; };
+		D6CD2509098F95DF00B525DA /* bitmap_match.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA776098E92980061BE4C /* bitmap_match.cpp */; };
+		D6CD250A098F95DF00B525DA /* obj_radius.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA777098E92980061BE4C /* obj_radius.cpp */; };
+		D6CD250B098F95DF00B525DA /* obj_tools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA778098E92980061BE4C /* obj_tools.cpp */; };
+		D6CD250C098F95DF00B525DA /* obj8_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA779098E92980061BE4C /* obj8_export.cpp */; };
+		D6CD250D098F95DF00B525DA /* obj8_import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77A098E92980061BE4C /* obj8_import.cpp */; };
+		D6CD250E098F95DF00B525DA /* xp_plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77B098E92980061BE4C /* xp_plugin.cpp */; };
 		D6D287100B3881A100AC9899 /* obj_model.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6726CD50AEE476700E2668E /* obj_model.h */; };
 		D6D287110B3881A300AC9899 /* prefs.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */; };
 		D6ED20B50B0254850010DDDC /* obj_anim.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6ED20B30B0254840010DDDC /* obj_anim.h */; };
@@ -63,7 +63,7 @@
 		D6F2F8120BC586080051E526 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F80E0BC586080051E526 /* md5.c */; };
 		D6F2F8130BC586080051E526 /* md5.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F80F0BC586080051E526 /* md5.h */; };
 		D6FB81300AFF76DD004C1796 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */; };
-		D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */ = {isa = PBXBuildFile; fileRef = D6FF83200C2DBC1900F22A73 /* obj_panel.c */; };
+		D6FF83220C2DBC1900F22A73 /* obj_panel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF83200C2DBC1900F22A73 /* obj_panel.cpp */; };
 		D6FF83230C2DBC1900F22A73 /* obj_panel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FF83210C2DBC1900F22A73 /* obj_panel.h */; };
 /* End PBXBuildFile section */
 
@@ -137,13 +137,13 @@
 		D6BA8F110E7F25C100D92779 /* Undoables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Undoables.h; sourceTree = "<group>"; };
 		D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XPlaneSupportMac.p.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
-		D6DEA775098E92980061BE4C /* ac_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ac_utils.c; sourceTree = "<group>"; };
-		D6DEA776098E92980061BE4C /* bitmap_match.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = bitmap_match.c; sourceTree = "<group>"; };
-		D6DEA777098E92980061BE4C /* obj_radius.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_radius.c; sourceTree = "<group>"; };
-		D6DEA778098E92980061BE4C /* obj_tools.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_tools.c; sourceTree = "<group>"; };
-		D6DEA779098E92980061BE4C /* obj8_export.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj8_export.c; sourceTree = "<group>"; };
-		D6DEA77A098E92980061BE4C /* obj8_import.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj8_import.c; sourceTree = "<group>"; };
-		D6DEA77B098E92980061BE4C /* xp_plugin.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xp_plugin.c; sourceTree = "<group>"; };
+		D6DEA775098E92980061BE4C /* ac_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ac_utils.cpp; sourceTree = "<group>"; };
+		D6DEA776098E92980061BE4C /* bitmap_match.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = bitmap_match.cpp; sourceTree = "<group>"; };
+		D6DEA777098E92980061BE4C /* obj_radius.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = obj_radius.cpp; sourceTree = "<group>"; };
+		D6DEA778098E92980061BE4C /* obj_tools.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = obj_tools.cpp; sourceTree = "<group>"; };
+		D6DEA779098E92980061BE4C /* obj8_export.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = obj8_export.cpp; sourceTree = "<group>"; };
+		D6DEA77A098E92980061BE4C /* obj8_import.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = obj8_import.cpp; sourceTree = "<group>"; };
+		D6DEA77B098E92980061BE4C /* xp_plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = xp_plugin.cpp; sourceTree = "<group>"; };
 		D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ObjConvert.cpp; path = src/Obj/ObjConvert.cpp; sourceTree = SOURCE_ROOT; };
 		D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ObjPointPool.cpp; path = src/Obj/ObjPointPool.cpp; sourceTree = SOURCE_ROOT; };
 		D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjBuilder.cpp; path = src/Obj/XObjBuilder.cpp; sourceTree = SOURCE_ROOT; };
@@ -174,7 +174,7 @@
 		D6F2F80E0BC586080051E526 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = md5.c; sourceTree = "<group>"; };
 		D6F2F80F0BC586080051E526 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
 		D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
-		D6FF83200C2DBC1900F22A73 /* obj_panel.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_panel.c; sourceTree = "<group>"; };
+		D6FF83200C2DBC1900F22A73 /* obj_panel.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = obj_panel.cpp; sourceTree = "<group>"; };
 		D6FF83210C2DBC1900F22A73 /* obj_panel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj_panel.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -268,7 +268,7 @@
 			children = (
 				D60E91270D5A448C0065D79F /* TclStubs.cpp */,
 				D60E91280D5A448C0065D79F /* TclStubs.h */,
-				D6FF83200C2DBC1900F22A73 /* obj_panel.c */,
+				D6FF83200C2DBC1900F22A73 /* obj_panel.cpp */,
 				D6FF83210C2DBC1900F22A73 /* obj_panel.h */,
 				D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */,
 				D6F2F7580BC57FEA0051E526 /* dsf_export.cpp */,
@@ -276,18 +276,18 @@
 				D6F2F0440BC1A7E40051E526 /* uv_mapper.h */,
 				D6F2F0450BC1A7E40051E526 /* uv_mapper.cpp */,
 				D6B331F70B00CBFC001D7CCD /* ac_utils.h */,
-				D6DEA775098E92980061BE4C /* ac_utils.c */,
+				D6DEA775098E92980061BE4C /* ac_utils.cpp */,
 				D6B331F80B00CBFC001D7CCD /* bitmap_match.h */,
-				D6DEA776098E92980061BE4C /* bitmap_match.c */,
+				D6DEA776098E92980061BE4C /* bitmap_match.cpp */,
 				D6B331F90B00CBFC001D7CCD /* obj_radius.h */,
-				D6DEA777098E92980061BE4C /* obj_radius.c */,
+				D6DEA777098E92980061BE4C /* obj_radius.cpp */,
 				D6B331FA0B00CBFC001D7CCD /* obj_tools.h */,
-				D6DEA778098E92980061BE4C /* obj_tools.c */,
+				D6DEA778098E92980061BE4C /* obj_tools.cpp */,
 				D6B331FB0B00CBFC001D7CCD /* obj8_export.h */,
-				D6DEA779098E92980061BE4C /* obj8_export.c */,
+				D6DEA779098E92980061BE4C /* obj8_export.cpp */,
 				D6B331FC0B00CBFC001D7CCD /* obj8_import.h */,
-				D6DEA77A098E92980061BE4C /* obj8_import.c */,
-				D6DEA77B098E92980061BE4C /* xp_plugin.c */,
+				D6DEA77A098E92980061BE4C /* obj8_import.cpp */,
+				D6DEA77B098E92980061BE4C /* xp_plugin.cpp */,
 				D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */,
 				D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */,
 				D6726CD50AEE476700E2668E /* obj_model.h */,
@@ -420,13 +420,13 @@
 				D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */,
 				D6CD2504098F95D900B525DA /* XObjDefs.cpp in Sources */,
 				D6CD2505098F95D900B525DA /* XObjReadWrite.cpp in Sources */,
-				D6CD2508098F95DF00B525DA /* ac_utils.c in Sources */,
-				D6CD2509098F95DF00B525DA /* bitmap_match.c in Sources */,
-				D6CD250A098F95DF00B525DA /* obj_radius.c in Sources */,
-				D6CD250B098F95DF00B525DA /* obj_tools.c in Sources */,
-				D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */,
-				D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */,
-				D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */,
+				D6CD2508098F95DF00B525DA /* ac_utils.cpp in Sources */,
+				D6CD2509098F95DF00B525DA /* bitmap_match.cpp in Sources */,
+				D6CD250A098F95DF00B525DA /* obj_radius.cpp in Sources */,
+				D6CD250B098F95DF00B525DA /* obj_tools.cpp in Sources */,
+				D6CD250C098F95DF00B525DA /* obj8_export.cpp in Sources */,
+				D6CD250D098F95DF00B525DA /* obj8_import.cpp in Sources */,
+				D6CD250E098F95DF00B525DA /* xp_plugin.cpp in Sources */,
 				D622A9960AEA91C700035F64 /* prefs.cpp in Sources */,
 				D6726CD70AEE476700E2668E /* obj_model.cpp in Sources */,
 				D6B332060B00CC0E001D7CCD /* tcl_utils.cpp in Sources */,
@@ -441,7 +441,7 @@
 				D6F2F8060BC585F20051E526 /* XChunkyFileUtils.cpp in Sources */,
 				D6F2F8100BC586080051E526 /* AssertUtils.cpp in Sources */,
 				D6F2F8120BC586080051E526 /* md5.c in Sources */,
-				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
+				D6FF83220C2DBC1900F22A73 /* obj_panel.cpp in Sources */,
 				D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */,
 				D60E91290D5A448C0065D79F /* TclStubs.cpp in Sources */,
 				D678AE220F79578800F72139 /* tri_stripper.cpp in Sources */,
