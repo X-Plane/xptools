@@ -24,13 +24,13 @@
 #include "obj_anim.h"
 #include "obj_model.h"
 #include "obj_editor.h"
-#include "undoable.h"
+#include "Undoable.h"
 #include "ac_plugin.h"
 #include <ac_plugin.h>
 #if APL
 #include <OpenGL/gl.h>
 #else
-#include <gl.h>
+#include <GL/gl.h>
 #endif
 #include <math.h>
 #include <set>

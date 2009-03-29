@@ -123,7 +123,7 @@ TO CHANGE THE ANIMATION VALUES
 */
 
 #include "ac_plugin.h"
-#include "undoable.h"
+#include "Undoable.h"
 
 #ifdef Boolean
 #undef Boolean

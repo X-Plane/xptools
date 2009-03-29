@@ -22,7 +22,7 @@
  */
 
 #include "TclStubs.h"
-#if APL
+#if APL || LIN
 #include <dlfcn.h>
 #endif
 
@@ -36,7 +36,7 @@ const char * TCL_init_stubs(void)
 	if(hmod == NULL) hmod = GetModuleHandle("tcl84");
 	if(hmod == NULL) return "Could not locate tcl84 or tcl85";
 #endif
-#if APL
+#if APL || LIN
 #define TCL_PROC(ret,name,args) \
 	tcl_stubs.name = (ret (*) args) dlsym(RTLD_DEFAULT,#name); \
 	if(tcl_stubs.name == NULL) ++lost;

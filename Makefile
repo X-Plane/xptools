@@ -59,6 +59,9 @@ RenderFarm: libs
 fonttool: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
 
+ac3d: libs
+	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/XPlaneSupportLin.p -f makerules/rules.mk
+	
 clean:
 	-rm -rf $(BUILDDIR)
 

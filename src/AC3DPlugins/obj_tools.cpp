@@ -23,7 +23,7 @@
 
 #include "obj_tools.h"
 #include "ac_utils.h"
-#include "undoable.h"
+#include "Undoable.h"
 #include "bitmap_match.h"
 #include "obj_radius.h"
 #include "XObjDefs.h"

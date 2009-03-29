@@ -8,7 +8,7 @@
 #ifndef AC_PLUGIN
 #define AC_PLUGIN
 
-#include <Tcl/tcl.h>
+#include <tcl/tcl.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -29,9 +29,9 @@ extern "C"
 #else
 
 	#ifdef __cplusplus
-		#define AC3D_PLUGIN_FUNC extern "C"
+		#define AC3D_PLUGIN_FUNC extern "C" __attribute__ ((visibility("default")))
 	#else
-             #define AC3D_PLUGIN_FUNC
+             #define AC3D_PLUGIN_FUNC __attribute__ ((visibility("default")))
 
 	#endif // __cplusplus
 

@@ -51,7 +51,7 @@ attributes.
 
 #include "TclStubs.h"
 #include "ac_plugin.h"
-#include "undoable.h"
+#include "Undoable.h"
 
 #ifdef Boolean
 #undef Boolean

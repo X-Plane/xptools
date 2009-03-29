@@ -36,7 +36,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <GL/gl.h>
 #endif
 #include <string.h>
 #include "prefs.h"
