@@ -1056,6 +1056,7 @@ proc eval_panel_dialog {} {
 	pack forget .xp_panel.sub_label
 	pack forget .xp_panel.sub_count
 #	pack forget .xp_panel.go
+	pack forget .xp_panel.notes
 	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
 		pack forget .xp_panel.region$x
 	}
@@ -1067,6 +1068,7 @@ proc eval_panel_dialog {} {
 			pack .xp_panel.region$x
 		}			
 #		pack .xp_panel.go		
+		pack .xp_panel.notes
 	}
 }
 proc sync_panel_dialog { name1 name2 op } {
@@ -1107,7 +1109,7 @@ proc xplane_panel_dialog {} {
 	
 	if ![winfo exists .xp_panel] {
 
-		new_toplevel_tracked .xp_panel "X-Plane Panel Prefs" prefs_window_geom_xplane_panel_dialog
+		new_toplevel_tracked .xp_panel "X-Plane Panel Properties" prefs_window_geom_xplane_panel_dialog
 		
 		checkbutton		.xp_panel.enable -variable prefs_xplane_enable_regions -text "Enable panel regions" -command "eval_panel_dialog"	
 		pack			.xp_panel.enable
@@ -1125,6 +1127,9 @@ proc xplane_panel_dialog {} {
 			
 			pack .xp_panel.region$x
 		}
+		
+		label			.xp_panel.notes -text "Note: 0 0 is the lower left of the panel texture."
+		pack			.xp_panel.notes
 
 #		button	.xp_panel.go -command "ac3d xplane_make_subpanel" -text "Make Subpanel..."
 #		pack	.xp_panel.go
