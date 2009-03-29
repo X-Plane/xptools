@@ -34,8 +34,8 @@ lib/libCGAL.a: boost_headers
 	tar -xzf "archives/CGAL-$(VER_CGAL).tar.gz"
 	cp cgal_patch "CGAL-$(VER_CGAL)/include" && cd "CGAL-$(VER_CGAL)/include" && patch -p1 < ./cgal_patch
 	cd "CGAL-$(VER_CGAL)" && chmod +x install_cgal && ./install_cgal --CXXFLAGS "-I`pwd`/../include" --BOOST_INCL_DIR "`pwd`/../include" --prefix "/tmp/cgalbuild" --disable-shared
-	cp -Lpr /tmp/cgalbuild/include/* ./include
-	cp -Lpr /tmp/cgalbuild/lib/*.a ./lib
+	cp -LpR /tmp/cgalbuild/include/* ./include
+	cp -LpR /tmp/cgalbuild/lib/*.a ./lib
 	-rm -rf /tmp/cgalbuild
 	-rm -rf CGAL-$(VER_CGAL)
 lib/libfreetype.a: lib/libz.a
@@ -43,7 +43,7 @@ lib/libfreetype.a: lib/libz.a
 	@-mkdir "lib"
 	tar -xzf "archives/freetype-$(VER_FREETYPE).tar.gz" && cd "freetype-$(VER_FREETYPE)" && chmod +x configure && ./configure --enable-shared=no
 	$(MAKE) -C "freetype-$(VER_FREETYPE)"
-	cp -Lpr freetype-$(VER_FREETYPE)/include/* ./include
+	cp -LpR freetype-$(VER_FREETYPE)/include/* ./include
 	cp freetype-$(VER_FREETYPE)/objs/.libs/libfreetype.a ./lib
 	-rm -rf freetype-$(VER_FREETYPE)
 lib/libproj.a:
@@ -77,7 +77,7 @@ lib/libdime.a:
 	@-mkdir "lib"
 	tar -xzf "archives/libdime-$(VER_LIBDIME).tar.gz" && cd "libdime-$(VER_LIBDIME)" && chmod +x configure && ./configure --enable-static
 	$(MAKE) -C "libdime-$(VER_LIBDIME)"
-	cp -Lpr libdime-$(VER_LIBDIME)/include/dime ./include
+	cp -LpR libdime-$(VER_LIBDIME)/include/dime ./include
 	cp libdime-$(VER_LIBDIME)/src/.libs/libdime.a ./lib
 	-rm -rf libdime-$(VER_LIBDIME)
 lib/libjpeg.a:
@@ -102,13 +102,12 @@ lib/libpng12.a: lib/libz.a
 	@-mkdir "lib"
 ifeq ($(PLATFORM), Mingw)
 	tar -xzf "archives/libpng-$(VER_LIBPNG).tar.gz" && cd "libpng-$(VER_LIBPNG)" && chmod +x configure && ./configure CFLAGS="-I../include" LDFLAGS="-L../lib"
-endif
-ifeq ($(PLATFORM), Linux)
+else
 	tar -xzf "archives/libpng-$(VER_LIBPNG).tar.gz" && cd "libpng-$(VER_LIBPNG)" && chmod +x configure && ./configure
 endif
 	$(MAKE) -C "libpng-$(VER_LIBPNG)"
 	-rm -rf libpng-$(VER_LIBPNG)/config.h
-	cp -Lpr libpng-$(VER_LIBPNG)/*.h ./include
+	cp -LpR libpng-$(VER_LIBPNG)/*.h ./include
 	cp -Lp libpng-$(VER_LIBPNG)/.libs/libpng12.a ./lib
 	cp -Lp libpng-$(VER_LIBPNG)/.libs/libpng.a ./lib
 	-rm -rf libpng-$(VER_LIBPNG)
