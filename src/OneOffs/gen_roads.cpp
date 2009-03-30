@@ -4,6 +4,9 @@
 #include <vector>
 #include <algorithm>
 
+// COMPILE:
+// g++ gen_roads.cpp -o gen_roads
+
 using std::max;
 using std::vector;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2008, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,10 +23,89 @@
 
 /*
 	Dependenceis: libz
-
 	Compile: gcc osm_tile.c -lz -o osm_tile
-
 	Use: osm_tile <max open streams> <osm source file>
+	
+	osm_tile is a simple program to split an OSM planet XML file into 1x1 degree tiles.
+	
+	osm_tile does a "rough" tiling:
+	
+	- Any way that intersects or surrounds the tile is included.
+	- Any node that is used in any way that is included is also included.
+	
+	The first limitation is to avoid doing true geometric intersections of each segment with 
+	each tile.  The second limitation is to ensure that each included way is fully 
+	geometrically available (again without processing per segment).
+	
+	The resulting "tile" needs to be cut to true tile boundaries (with way splitting) by
+	another program.
+	
+	The down-side of this is that very large ways (like a coastline) can be included by
+	every tile within the coastline.
+	
+	osm_tile will read an XML or g-zipped files, and outputs gzipped files.  The idea here
+	is to keep total disk space down by never having the XML around as plain-text.
+	
+	ALGORITHM
+	
+	osm_tile works using tile-based bounding boxes, e.g. a bounding box describing the set
+	of tiles a node or way must participate in.
+	
+	osm_tile uses a 5+ pass algorithm.
+	
+	1.	osm_tile scans the entire input file, finding the highest number node and way ID,
+		for table allocation.
+	2.	osm_tile reads all node positoins, building per-tile bounding boxes for each node.
+	3.	osm_tile reads each way.  For each way, the way's boundidng box is taken as the
+		union of the bounding boxes of all nodes.
+	4.	osm_tile then clears each node's bounding box and re-reads the ways.  For each 
+		node in the way, the way's bounding box is added to the nodes.  This step expands
+		the node's bounding box to ensure that it will be included in a tile if it is
+		part of a way included in the tile, even if the node is out-of-tile. 
+		(Clients that want to do geometric cropping need a few nodes outside the tile.)
+	5.	The export pass.  The export pass is actually recursive: it runs through the master
+		file as many times as necessary.  For each pass through, it attempts to export each
+		node or way to all of the participating tiles.
+		
+	The limitation on step 5 is the maximum number of open file descriptors (1024 on my
+	Mac, but maybe higher on Linux); setting the highest possible ulimit will improve export
+	time a lot.  For each pass, for each never-before-exported tile, a new output file is opened
+	until we hit our upper limit.
+	
+	This sorting by tile export is done to avoid opening and closing files all the time - tests
+	of the code with an RLU file descriptor cache showed very poor cache coherency.
+	
+	IMPLEMENTATION
+	
+	The table of bouding boxes is simply a malloced array by node ID.  This means there is wasted
+	space - a hash table or sorted packed array could be use.
+	
+	Bounding boxes are stored as 32-bit ints:
+	
+	- The tile number is stored as: (lon + 181) + (lat + 90) * 362.
+	- The 32-bits contains a lower left tile number and upper right tile number.
+	
+	The extra padding horizontally lets us mark tiles on the international date line
+	that need to wrap around.
+	
+	The file scanner works by simply "windowing" a chunk of the file - when we get near the end, we 
+	move it down.  The ratio of the total window size to the shift point affect efficiency greatly -
+	if they are too similar we spend a ton of CPU time "scrolling".
+	
+	BUGS
+	
+	International date line is not yet fully supported - the bounding boxes contain slop, but the 
+	"extra" is not yet included.	
+	
+	The XML parser is really dreadful - it's not an XML parser at all.
+	
+	POSSIBLE OPTIMIZATIONS
+
+	Replace the parser with expat.  Actually expat is slower right now, probably since it has to do work on things
+	we don't care about.  We should investigate whether expat can be programmed to run faster by giving it short-
+	circuit instructions.
+	
+	It may at some point be necessary to replace the flat node and way tables with sorted tables.
 	
 */
 
@@ -42,6 +121,12 @@
 #define START_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<osm version=\"0.5\" generator=\"JOSM\">\n"
 #define END_STRING "</osm>\n"
 
+// osm_tile will log all actions taken with one node and one way. 
+// this provides a crude way to trace output (e.g. why is this node in my tile or why is this way not in my tile).
+// def to -1 to not use.
+#define CHECK_NODE_ID 200535
+#define CHECK_WAY_ID 46
+
 /********************************************************************************************************************************************
  * BOUNDING BOX
  ********************************************************************************************************************************************/
@@ -51,8 +136,9 @@
 // dateline doesn't wrap/go neg.  When we collect the files we want for the international dateline, we need to check the "wrap buffer"
 // on the other side.
 
-int min(int a,int b) { return a < b ? a : b; }
-int max(int a,int b) { return a > b ? a : b; }
+int int_min(int a,int b) { return a < b ? a : b; }
+int int_max(int a,int b) { return a > b ? a : b; }
+int int_lim(int n, int min, int max) { if(n < min) return min; if (n > max) return max; return n; }
  
 typedef unsigned long		bbox_t;
 
@@ -101,10 +187,10 @@ bbox_t bbox_union(bbox_t b1, bbox_t b2)
 		return b1;
 
 	return make_bbox(
-		min(bounds1[0], bounds2[0]),
-		min(bounds1[1], bounds2[1]),
-		max(bounds1[2], bounds2[2]),
-		max(bounds1[3], bounds2[3]));
+		int_min(bounds1[0], bounds2[0]),
+		int_min(bounds1[1], bounds2[1]),
+		int_max(bounds1[2], bounds2[2]),
+		int_max(bounds1[3], bounds2[3]));
 }
 
 bbox_t bbox_for_ll(double lon, double lat)
@@ -112,10 +198,10 @@ bbox_t bbox_for_ll(double lon, double lat)
 	// pass in 1.5 - bbox should be: 1,1		(ceil-1,floor)	1	2
 	// pass in 2  - bbox should be 1,2			(ceil-1,floor)	1	2
 	return make_bbox(
-					ceil (lon)-1,
-					ceil (lat)-1,
-					floor(lon)  ,
-					floor(lat)  );
+					int_lim(ceil (lon)-1,-181,181),
+					int_lim(ceil (lat)-1, -90, 90),
+					int_lim(floor(lon)  ,-181,181),
+					int_lim(floor(lat)  , -90, 90));
 }
 
 /********************************************************************************************************************************************
@@ -381,7 +467,7 @@ int hash(int x, int y) { return (x + 180) + (y + 90) * 360; }
 
 char * hash_fname(int x, int y, char * buf) { sprintf(buf,"%+03d%+04d.osm.gz",y,x); return buf; }
 											
-void copy_tag_to_bucket(int x, int y, const char * s, const char * e)
+int copy_tag_to_bucket(int x, int y, const char * s, const char * e)
 {
 	char buf[256];
 	if(x < -180) x += 360;
@@ -392,7 +478,9 @@ void copy_tag_to_bucket(int x, int y, const char * s, const char * e)
 		gzprintf(fi,"  ");
 		gzwrite(fi,s,e-s);
 		gzprintf(fi,"\n");
+		return 1;
 	}
+	return 0;
 }
 					
 					
@@ -517,6 +605,16 @@ int main(int argc, const char * argv[])
 			double lat = get_xml_property_d(tag_s,tag_e,"lat");
 			double lon = get_xml_property_d(tag_s,tag_e,"lon");
 			g_nodes[nd] = bbox_for_ll(lon, lat);
+			
+			if(nd == CHECK_NODE_ID)
+			{
+				int bbox[4];
+				printf("    Node ID: %d lon=%lf, lat=%lf, bbox=0x%08x\n", nd,lon,lat,g_nodes[nd]);
+				if(!decode_bbox(g_nodes[nd],bbox))
+					printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
+				else
+					printf("	(bbox is empty.)\n");
+			}
 		}
 
 		p = tag_e;
@@ -541,8 +639,27 @@ int main(int argc, const char * argv[])
 			char * ndr = tag_s;
 			while((ndr = get_xml_next_str(ndr, tag_e, "<nd ref=")) != NULL)
 			{
-				int nd_ref_id = atoi(ndr + 9);				
+				int nd_ref_id = atoi(ndr + 9);
+				if(nd_ref_id < 0 || nd_ref_id > highest_n)
+				{
+					fprintf(stderr,"ERROR: the file contains a way %d that references a node %d that we do not have.\n",
+						nw, nd_ref_id);
+				}
+				
+				if(nw == CHECK_WAY_ID)
+					printf("Adding node %d to way %d.  ", nd_ref_id,nw);
+																
 				g_ways[nw] = bbox_union(g_ways[nw], g_nodes[nd_ref_id]);				
+
+				if(nw == CHECK_WAY_ID)
+				{
+					int bbox[4];
+					if(!decode_bbox(g_ways[nw],bbox))
+						printf("New bbox is: %d,%d -> %d,%d\n", bbox[0],bbox[1],bbox[2],bbox[3]);
+					else
+						printf("Empty.\n");
+				}
+				
 				ndr = ndr+9;
 			}			
 		}
@@ -561,12 +678,12 @@ int main(int argc, const char * argv[])
 	 We care because when we _crop_ a way, we need to have one vertex OUTSIDE the node so that we can have a line to
 	 chop in half. *
 	 
-	 So...reset all node bboxes and then union all ways back INTO the nodes!  Note that the bbox is a _poor_ structure
-	 for this.  If we had two ways, say I-95 and I-80, both crossing the US, then the bbox for their junction in NYC
-	 would have a bbox of the entire united states.  But this is for the "clipper" to clean up later. */
+	 Union all ways back INTO the nodes!  Note that the bbox is a _poor_ structure for this.  If we had two ways, 
+	 say I-95 and I-80, both crossing the US, then the bbox for their junction in NYC would have a bbox of the 
+	 entire united states.  But this is for the "clipper" to clean up later.  We do not zap the node's original box
+	 because we want to include un-way-referenced nodes (e.g. a POI) in their original tile(s). */
 
 	printf("Rebuilding node spatial index.\n");
-	memset(g_nodes,0xFF,(highest_n+1) * sizeof(bbox_t));
 	
 	scanner_reset(&scanner);
 	p = scan_osm_headers(&scanner);
@@ -581,7 +698,21 @@ int main(int argc, const char * argv[])
 			{
 				int nd_ref_id = atoi(ndr + 9);				
 				
-				g_nodes[nd_ref_id] = bbox_union(g_ways[nw], g_nodes[nd_ref_id]);
+				// Ben says: turns out the master OSM database sometimes has corruption - ways that reference deleted nodes.  If the node
+				// doesn't show up, don't panic - but do not try to use it, as we could use junk data or seg fault.  Note that if the node ID
+				// is IN table range but NOT in the file, the bbox is inited to empty, which is fine.
+				if(nd_ref_id >= 0 && nd_ref_id <= highest_n)
+					g_nodes[nd_ref_id] = bbox_union(g_ways[nw], g_nodes[nd_ref_id]);
+
+				if(nd_ref_id == CHECK_NODE_ID || nw == CHECK_WAY_ID)
+				{
+					int bbox[4];
+					printf("    Node ID: %d bbox=0x%08x, way ID: %d bbox=0x%08X\n", nd_ref_id,g_nodes[nd_ref_id], nw, g_ways[nw]);
+					if(!decode_bbox(g_nodes[nd_ref_id],bbox))
+						printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
+					else
+						printf("	(bbox is empty.)\n");
+				}
 
 				ndr = ndr+9;
 			}			
@@ -595,6 +726,12 @@ int main(int argc, const char * argv[])
 	 **************************************************************************************************************
 	 
 	 Now we can finally output all nodes and ways, in a once-over copy pass. */
+
+	if(CHECK_WAY_ID >= 0 && CHECK_WAY_ID <= highest_w)
+		printf("way %d: 0x%08X\n", CHECK_WAY_ID, g_ways[CHECK_WAY_ID]);
+	if(CHECK_NODE_ID >= 0 && CHECK_NODE_ID <= highest_n)
+		printf("node %d: 0x%08X\n", CHECK_NODE_ID, g_nodes[CHECK_NODE_ID]);
+
 
 	while(1)
 	{
@@ -615,7 +752,9 @@ int main(int argc, const char * argv[])
 				{
 					for(y = bbox[1]; y <= bbox[3]; ++y)
 					for(x = bbox[0]; x <= bbox[2]; ++x)
-						copy_tag_to_bucket(x,y,tag_s,tag_e);
+						if(copy_tag_to_bucket(x,y,tag_s,tag_e))
+							if(nd == CHECK_NODE_ID)
+								printf("Wrote node %d to %d,%d, bbox=%d,%d -> %d,%d.\n", nd, x, y, bbox[0], bbox[1],bbox[2],bbox[3]);
 				}			
 			}
 
@@ -627,7 +766,10 @@ int main(int argc, const char * argv[])
 				{
 					for(y = bbox[1]; y <= bbox[3]; ++y)
 					for(x = bbox[0]; x <= bbox[2]; ++x)
-						copy_tag_to_bucket(x,y,tag_s,tag_e);
+						if(copy_tag_to_bucket(x,y,tag_s,tag_e))
+							if(nw == CHECK_WAY_ID)
+								printf("Wrote way %d to %d,%d, bbox=%d,%d -> %d,%d.\n", nw, x, y, bbox[0], bbox[1],bbox[2],bbox[3]);
+						
 				}			
 
 			}

@@ -21,8 +21,12 @@
  *
  */
 
+// Compile:
+// gcc SplitImage.c -o split_image
+
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 int main(int argc, char ** argv)
 {
