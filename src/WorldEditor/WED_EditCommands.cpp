@@ -35,6 +35,7 @@
 #include "MemFileUtils.h"
 #include "Hydro.h"
 #include "XESIO.h"
+#include "GISTool_Globals.h"
 enum {
 //	editCmd_SimplifyWater,
 	editCmd_SimplifyMap,

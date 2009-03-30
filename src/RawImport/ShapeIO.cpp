@@ -23,8 +23,18 @@
 
 #include "ShapeIO.h"
 #include <shapefil.h>
+#include "GISTool_Globals.h"
+#if !DEV
+	factor this out
+#endif
 
-bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
+// Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
+// we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
+// team if they want one.
+#define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
+
+
+bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], ProgressFunc	inFunc)
 {
 		int		entity_count;
 		int		shape_type;
@@ -45,9 +55,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
 
 	Polygon_set_2	poly_set;
 	vector<Curve_2>	curves;
+	
+	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
 
+	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
 	{
+		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 		switch(obj->nSHPType) {
 		case SHPT_POINT:
@@ -64,16 +78,21 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
 					int start_idx = obj->panPartStart[part];
 					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
 					vector<Point_2>	p;
+					vector<Point2>	p_raw;
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point_2 pt(obj->padfX[i],obj->padfY[i]);
 						if(p.empty() || pt != p.back())
+						{
 							p.push_back(pt);
+							p_raw.push_back(Point2(obj->padfX[i],obj->padfY[i]));
+						}
 					}
 //					DebugAssert(p.size() >= 2);
 					for(int i = 1; i < p.size(); ++i)
 					{
-						curves.push_back(Curve_2(Segment_2(p[i-1],p[i]),n));
+						DebugAssert(p[i-1] != p[i]);
+						ADD_PT_PAIR(p[i-1],p[i],p_raw[i-1],p_raw[i],n);
 					}
 				}
 			}
@@ -124,6 +143,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
 		case SHPT_MULTIPATCH:
 			break;
 		}
+		SHPDestroyObject(obj);
 	}
 	switch(shape_type) {
 	case SHPT_POLYGON:
@@ -134,10 +154,43 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4])
 	case SHPT_ARC:
 	case SHPT_ARCZ:
 	case SHPT_ARCM:
+
+#if 1
+		
+		ADD_PT_PAIR(
+							Point_2(gMapWest,gMapSouth),
+							Point_2(gMapEast,gMapSouth),
+							Point2(gMapWest,gMapSouth),
+							Point2(gMapEast,gMapSouth),
+							entity_count);
+
+		ADD_PT_PAIR(
+							Point_2(gMapEast,gMapSouth),
+							Point_2(gMapEast,gMapNorth),
+							Point2(gMapEast,gMapSouth),
+							Point2(gMapEast,gMapNorth),
+							entity_count+1);
+
+		ADD_PT_PAIR(
+							Point_2(gMapEast,gMapNorth),
+							Point_2(gMapWest,gMapNorth),
+							Point2(gMapEast,gMapNorth),
+							Point2(gMapWest,gMapNorth),
+							entity_count+2);
+
+		ADD_PT_PAIR(
+							Point_2(gMapWest,gMapNorth),
+							Point_2(gMapWest,gMapSouth),
+							Point2(gMapWest,gMapNorth),
+							Point2(gMapWest,gMapSouth),
+							entity_count+3);
+#endif	
 		CGAL::insert_curves(out_map, curves.begin(), curves.end());
 		break;
 	}
 	SHPClose(file);
+	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
+
 	return true;
 }
 

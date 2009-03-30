@@ -31,6 +31,12 @@
 #include "XFileTwiddle.h"
 #include "MemFileUtils.h"
 
+#if OPENGL_MAP
+#include "WED_Notify.h"
+#include "WED_Msgs.h"
+#endif
+
+
 #define DoRasterImport_HELP \
 "Usage: raster_import <format> <file> <layer> [<translation>]\n"\
 "Imports a single raster file.  The file must be in geographic projection\n"\
@@ -72,6 +78,10 @@ static int DoRasterImport(const vector<const char *>& args)
 			return 1;
 		}
 	}
+	
+	#if OPENGL_MAP
+	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	#endif
 	
 	if(gVerbose) printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
 	return 0;	

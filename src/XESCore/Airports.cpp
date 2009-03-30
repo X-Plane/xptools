@@ -254,8 +254,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[1]));
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
-			ioArea.join(poly);
-//			poly_vec.push_back(poly);
+//			ioArea.join(poly);
+			poly_vec.push_back(poly);
 		}
 		for (int rwy = 0; rwy < inAirport->runways.size(); ++rwy)
 		if (inAirport->runways[rwy].surf_code != apt_surf_water)
@@ -272,8 +272,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
 
-			ioArea.join(poly);
-//			poly_vec.push_back(poly);
+//			ioArea.join(poly);
+			poly_vec.push_back(poly);
 
 		}
 		for (int rwy = 0; rwy < inAirport->helipads.size(); ++rwy)
@@ -291,8 +291,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal(corners[2]));
 			poly.push_back(ben2cgal(corners[3]));
 
-			ioArea.join(poly);
-//			poly_vec.push_back(poly);
+//			ioArea.join(poly);
+			poly_vec.push_back(poly);
 		}
 		for (AptTaxiwayVector::const_iterator b = inAirport->taxiways.begin(); b != inAirport->taxiways.end(); ++b)
 		if(b->surface_code != apt_surf_transparent)
@@ -324,8 +324,8 @@ void BurnInAirport(
 
 			BurnInPolygon(ioMap, windings,faces);
 */
-			ioArea.join(convex_hull);
-//			poly_vec.push_back(convex_hull);
+//			ioArea.join(convex_hull);
+			poly_vec.push_back(convex_hull);
 			
 			
 		}
@@ -340,7 +340,7 @@ void BurnInAirport(
 //			printf("--\n");
 			DebugAssert(ioArea.is_valid());
 		}
-//		ioArea.join(poly_vec.begin(), poly_vec.end());
+		ioArea.join(poly_vec.begin(), poly_vec.end());
 	}
 	
 	if(inFillWater != fill_dirt2apt)

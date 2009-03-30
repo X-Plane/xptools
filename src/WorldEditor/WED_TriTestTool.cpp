@@ -30,6 +30,8 @@
 #include "WED_Progress.h"
 #include "MeshAlgs.h"
 #include "DEMAlgs.h"
+#include "GISTool_Globals.h"
+
 #if APL
 	#include <OpenGL/gl.h>
 #else

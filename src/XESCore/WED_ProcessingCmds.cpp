@@ -52,6 +52,7 @@
 #include "PlatformUtils.h"
 #include "Forests.h"
 #include "DEMTables.h"
+#include "GISTool_Globals.h"
 
 #include "ObjPlacement.h"
 

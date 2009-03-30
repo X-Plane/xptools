@@ -39,6 +39,7 @@
 #include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
 #include "PlatformUtils.h"
+#include "GISTool_Globals.h"
 
 /****************************************************************************************
  * FILE MENU UI

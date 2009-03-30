@@ -31,6 +31,7 @@
 #include "MapTopology.h"
 #include "MapPolygon.h"
 #include "MapBuffer.h"
+#include "GISTool_Globals.h"
 
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
@@ -394,7 +395,9 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					ValidateBuffer(gMap,*fsel, loc, bs);
 				} catch (...) {
 					fail.insert(*fsel);
-					debug_mesh_point(cgal2ben((*fsel)->outer_ccb()->source()->point()),1,1,0);
+					#if DEV
+						debug_mesh_point(cgal2ben((*fsel)->outer_ccb()->source()->point()),1,1,0);
+					#endif
 				}			
 				
 				vector<Polygon_with_holes_2>	all;

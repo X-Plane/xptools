@@ -96,7 +96,7 @@ void	ZoneManMadeAreas(
 //		}
 
 #if !DEV
-	review this
+	#error review this
 #endif
 
 /*

@@ -34,7 +34,7 @@
 #include "PlatformUtils.h"
 #include "SimpleIO.h"
 #include "MapAlgs.h"
-
+#include "GISTool_Globals.h"
 
 //
 // TODO: rescale, remapping, geotiff, ida+usgs

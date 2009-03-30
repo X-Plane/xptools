@@ -28,6 +28,7 @@
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
 #include "DEMDefs.h"
+#include "GISTool_Globals.h"
 
 static	XPWidgetID		sWizard = NULL;
 

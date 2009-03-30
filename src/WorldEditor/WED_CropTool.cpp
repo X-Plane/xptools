@@ -34,6 +34,7 @@
 #include "AssertUtils.h"
 #include "WED_DrawMap.h"
 #include "XPLMGraphics.h"
+#include "GISTool_Globals.h"
 
 #if APL
 	#include <OpenGL/gl.h>

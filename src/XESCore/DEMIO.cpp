@@ -727,12 +727,15 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 					inMap(x,h) = e;
 			}
 		} else {
-			char * v = (char *) aline;
+			// Ben says: this is the 8-bit case (at least right now).  We were putting in a bunch of filters for out of range data, but
+			// no one in their right mind is EVER going to use an 8-bit TIF to encode elevation data!  So ... for now treat as unsigned
+			// and don't try to catch "bad" values.  In the future, maybe we can read some TIF meta data to figure out what we have here.
+			unsigned char * v = (unsigned char *) aline;
 			for (int x = 0; x < w; ++x, ++v)
 			{
 				float e = *v;
-				if (*v == -1) e = DEM_NO_DATA;		// was 0xFF
-				if (e > 127) e = DEM_NO_DATA;		// SRTM HACK!!!
+//				if (*v == -1) e = DEM_NO_DATA;		// was 0xFF
+//				if (e > 127) e = DEM_NO_DATA;		// SRTM HACK!!!
 				inMap(x,h-y-1) = e;
 				if (y == 0)
 					inMap(x,h) = e;
@@ -994,8 +997,8 @@ bool	TranslateDEMForward(DEMGeo& ioDem, const vector<int>& inForwardMap)
 	{
 		int v = ioDem(x,y);
 
-			 if (v < 0					  ){ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
-		else if (v >= inForwardMap.size()) {ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
+			 if (v < 0					  ){ioDem(x,y)=DEM_NO_DATA;					ret = false;	printf("Out of range: %d\n", v); }
+		else if (v >= inForwardMap.size()) {ioDem(x,y)=DEM_NO_DATA;					ret = false;	printf("Out of range: %d\n", v); }
 		else 							   {ioDem(x,y)=inForwardMap[v];							}
 	}
 	return ret;

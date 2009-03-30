@@ -22,6 +22,7 @@
  */
 #include "WED_SpecialCommands.h"
 #include "BitmapUtils.h"
+#include "GISTool_Globals.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else

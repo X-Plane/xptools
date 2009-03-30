@@ -547,7 +547,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 static int DoShapeImport(const vector<const char *>& args)
 {
 	double b[4];
-	if(!ReadShapeFile(args[0], gMap, b))
+	if(!ReadShapeFile(args[0], gMap, b, gProgress))
 		return 1;
 		
 		

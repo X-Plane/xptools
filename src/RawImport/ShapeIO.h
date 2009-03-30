@@ -25,7 +25,8 @@
 #define ShapeIO_H
 
 #include "MapDefsCGAL.h"
+#include "ProgressUtils.h"
 
-bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4]);
+bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], ProgressFunc	inFunc);
 
 #endif /* ShapeIO_H */

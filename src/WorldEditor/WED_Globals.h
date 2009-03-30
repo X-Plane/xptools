@@ -23,14 +23,14 @@
 #ifndef WED_GLOBALS_H
 #define WED_GLOBALS_H
 
-#include "MapDefs.h"
+//#include "MapDefs.h"
 //#include "MapBuckets.h"
 //#include "DEMDefs.h"
 //#include "MeshDefs.h"
 #include "AptDefs.h"
 #include "CompGeomDefs3.h"
 
-#include "GISTool_Globals.h"
+//#include "GISTool_Globals.h"
 //extern Pmwx					gMap;
 //extern DEMGeoMap			gDem;
 //extern MapFaceBuckets		gFaceBuckets;

@@ -32,6 +32,7 @@
 #include "PlatformUtils.h"
 #include "SimpleIO.h"
 #include "DEMIO.h"
+#include "GISTool_Globals.h"
 
 static XPWidgetID		sExport = NULL;
 

@@ -46,6 +46,7 @@
 #include "WED_Globals.h"
 //#include "WED_TriTestTool.h"
 #include "WED_Msgs.h"
+#include "GISTool_Globals.h"
 
 #include "WED_DEMGraphics.h"
 
