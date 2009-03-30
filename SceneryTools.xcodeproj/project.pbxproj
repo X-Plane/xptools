@@ -811,49 +811,6 @@
 		D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildRule section */
-		D67347950EA919ED0002C4C1 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.4_2;
-			fileType = sourcecode.cpp;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		D67347960EA919ED0002C4C1 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.4_2;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		D67347970EA919ED0002C4C1 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.4_2;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		D6B0DC990E1557E100DDBD89 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.4_2;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		D6B0DD150E155DE100DDBD89 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.4_2;
-			fileType = sourcecode.cpp;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-/* End PBXBuildRule section */
-
 /* Begin PBXContainerItemProxy section */
 		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3515,7 +3472,6 @@
 				D60734250D197A1100E08F61 /* Frameworks */,
 			);
 			buildRules = (
-				D6B0DC990E1557E100DDBD89 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -3533,8 +3489,6 @@
 				D624353B0AE401EF004F00E3 /* Frameworks */,
 			);
 			buildRules = (
-				D67347950EA919ED0002C4C1 /* PBXBuildRule */,
-				D67347960EA919ED0002C4C1 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -3553,8 +3507,6 @@
 				D6ED3D420B6A4C1800D5484E /* Resources */,
 			);
 			buildRules = (
-				D67347970EA919ED0002C4C1 /* PBXBuildRule */,
-				D6B0DD150E155DE100DDBD89 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -4637,6 +4589,7 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
@@ -4653,6 +4606,7 @@
 					/usr/local/lib,
 					"$(inherited)",
 				);
+				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
@@ -4685,6 +4639,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_THREADSAFE_STATICS = NO;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_VERSION = 4.2;
 				HEADER_SEARCH_PATHS = (
 					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
 					"libsrc/shapelib-1.2.10",
@@ -4701,6 +4656,7 @@
 					"$(inherited)",
 				);
 				ONLY_LINK_ESSENTIAL_SYMBOLS = NO;
+				OTHER_CFLAGS = "-frounding-math";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
@@ -4775,6 +4731,7 @@
 					"APL=1",
 					"PHONE=1",
 				);
+				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
@@ -4791,6 +4748,7 @@
 					/usr/local/lib,
 					"$(inherited)",
 				);
+				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
@@ -5448,6 +5406,7 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
@@ -5464,6 +5423,7 @@
 					/usr/local/lib,
 					"$(inherited)",
 				);
+				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
