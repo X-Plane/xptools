@@ -163,6 +163,7 @@ CONF_LIBSHP		:= --prefix=$(DEFAULT_PREFIX)
 ifeq ($(PLATFORM), Darwin)
 	AR_ZLIB			:= "libtool -static -o"
 	CONF_LIBTIFF		+= --with-apple-opengl-framework
+	LDFLAGS_GEOTIFF     	:= "-Z $(LDFLAGS_GEOTIFF)"
 endif
 ifeq ($(PLATFORM), Mingw)
 endif
