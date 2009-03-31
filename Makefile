@@ -206,6 +206,7 @@ mesa_headers: ./local/include/.xpt_mesa
 
 zlib: ./local/lib/.xpt_zlib
 ./local/lib/.xpt_zlib:
+	@echo "building zlib..."
 	@tar -xzf "./archives/$(ARCHIVE_ZLIB)"
 	@cd "zlib-$(VER_ZLIB)" && \
 	chmod +x configure && \
