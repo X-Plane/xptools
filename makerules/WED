@@ -4,12 +4,12 @@ CXXFLAGS	:= -include src/Obj/XDefs.h
 ifeq ($(PLATFORM), Linux)
 LDFLAGS		:= -nodefaultlibs -static-libgcc
 STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
-LIBS		:= -Wl,-Bdynamic -lGL -lGLU -Wl,-Bstatic -lbfd -liberty -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
+LIBS		:= -Wl,-Bdynamic -lGL -lGLU -Wl,-Bstatic -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 include makerules/WED_resources
 endif
 ifeq ($(PLATFORM), Mingw)
-LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -lws2_32 -Wl,-Bstatic -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
+LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -lws2_32 -Wl,-Bstatic -lexpat -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
 LDFLAGS		:= -Wl,-subsystem,windows
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
 WIN_RESOURCES := src/WEDResources/WED.rc
@@ -197,9 +197,6 @@ src/DSFTools/DSF2Text.cpp \
 src/DSFTools/ENV2Overlay.cpp \
 src/OGLE/ogle.cpp \
 src/XESCore/AptIO.cpp \
-libsrc/expat/xmlparse/xmlparse.c \
-libsrc/expat/xmltok/xmlrole.c \
-libsrc/expat/xmltok/xmltok.c \
 src/Env/EnvParser.c \
 src/Env/Persistence.cpp \
 src/WorldEditor/WED_Assert.cpp \
@@ -244,8 +241,6 @@ INCLUDEPATHS :=\
 -Ilibs/local/include \
 -Ilibs/local/include/freetype2 \
 $(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
 -Isrc/linuxinit \
 -Isrc/WEDTCE \
 -Isrc/Env \
