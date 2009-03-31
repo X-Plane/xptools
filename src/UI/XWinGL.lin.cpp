@@ -69,7 +69,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
-	glXMakeContextCurrent(_mDisplay, None, None, mContext);
+	//glXMakeContextCurrent(_mDisplay, None, None, mContext);
 	glXDestroyContext(_mDisplay, mContext);
 }
 
