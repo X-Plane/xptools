@@ -96,7 +96,6 @@ CFLAGS_LIBPROJ		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
 LDFLAGS_LIBPROJ		:= "-L$(DEFAULT_LIBDIR)"
 CONF_LIBPROJ		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBPROJ		+= --enable-shared=no
-CONF_LIBPROJ		+= --enable-maintainer-mode
 CONF_LIBPROJ		+= --disable-dependency-tracking
 CONF_LIBPROJ		+= CCDEPMODE="depmode=none"
 
