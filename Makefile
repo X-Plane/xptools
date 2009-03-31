@@ -217,8 +217,8 @@ zlib: ./local/lib/.xpt_zlib
 	@touch $@
 
 
-libpng: zlib ./local/lib/.xpt_libpng
-./local/lib/.xpt_libpng:
+libpng: ./local/lib/.xpt_libpng
+./local/lib/.xpt_libpng: ./local/lib/.xpt_zlib
 	@echo "building libpng..."
 	@tar -xzf "./archives/$(ARCHIVE_LIBPNG)"
 	@cd "libpng-$(VER_LIBPNG)" && \
@@ -231,8 +231,8 @@ libpng: zlib ./local/lib/.xpt_libpng
 	@touch $@
 
 
-libfreetype: zlib ./local/lib/.xpt_libfreetype
-./local/lib/.xpt_libfreetype:
+libfreetype: ./local/lib/.xpt_libfreetype
+./local/lib/.xpt_libfreetype: ./local/lib/.xpt_zlib
 	@echo "building libfreetype..."
 	@tar -xzf "./archives/$(ARCHIVE_FREETYPE)"
 	@cd "freetype-$(VER_FREETYPE)" && \
@@ -248,6 +248,8 @@ libfreetype: zlib ./local/lib/.xpt_libfreetype
 libjpeg: ./local/lib/.xpt_libjpeg
 ./local/lib/.xpt_libjpeg:
 	@echo "building libjpeg..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBJPEG)"
 	@cd "jpeg-$(VER_LIBJPEG)" && \
 	chmod +x configure && \
@@ -260,9 +262,11 @@ libjpeg: ./local/lib/.xpt_libjpeg
 	@touch $@
 
 
-libtiff: zlib libjpeg ./local/lib/.xpt_libtiff
-./local/lib/.xpt_libtiff:
+libtiff: ./local/lib/.xpt_libtiff
+./local/lib/.xpt_libtiff: ./local/lib/.xpt_zlib ./local/lib/.xpt_libjpeg
 	@echo "building libtiff..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBTIFF)"
 	@cd "tiff-$(VER_LIBTIFF)" && \
 	chmod +x configure && \
@@ -277,6 +281,8 @@ libtiff: zlib libjpeg ./local/lib/.xpt_libtiff
 libproj: ./local/lib/.xpt_libproj
 ./local/lib/.xpt_libproj:
 	@echo "building libproj..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBPROJ)"
 	@cd "proj-$(VER_LIBPROJ)" && \
 	chmod +x configure && \
@@ -288,9 +294,11 @@ libproj: ./local/lib/.xpt_libproj
 	@touch $@
 
 
-libgeotiff: zlib libjpeg libtiff libproj ./local/lib/.xpt_libgeotiff
-./local/lib/.xpt_libgeotiff:
+libgeotiff: ./local/lib/.xpt_libgeotiff
+./local/lib/.xpt_libgeotiff: ./local/lib/.xpt_zlib ./local/lib/.xpt_libjpeg ./local/lib/.xpt_libtiff ./local/lib/.xpt_libproj
 	@echo "building libgeotiff..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_GEOTIFF)"
 	@cd "libgeotiff-$(VER_GEOTIFF)" && \
 	chmod +x configure && \
@@ -306,6 +314,8 @@ libgeotiff: zlib libjpeg libtiff libproj ./local/lib/.xpt_libgeotiff
 libsqlite: ./local/lib/.xpt_libsqlite
 ./local/lib/.xpt_libsqlite:
 	@echo "building libsqlite..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBSQLITE)"
 	@cd "sqlite-$(VER_LIBSQLITE)" && \
 	chmod +x configure && \
@@ -320,6 +330,8 @@ libsqlite: ./local/lib/.xpt_libsqlite
 lib3ds: ./local/lib/.xpt_lib3ds
 ./local/lib/.xpt_lib3ds:
 	@echo "building lib3ds..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIB3DS)"
 	@cd "lib3ds-$(VER_LIB3DS)" && \
 	chmod +x configure && \
@@ -334,6 +346,8 @@ lib3ds: ./local/lib/.xpt_lib3ds
 libsquish: ./local/lib/.xpt_libsquish
 ./local/lib/.xpt_libsquish:
 	@echo "building libsquish..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBSQUISH)"
 	@cd "squish-$(VER_LIBSQUISH)" && \
 	$(MAKE) $(CONF_LIBSQUISH) install $(BE_QUIET)
@@ -341,9 +355,11 @@ libsquish: ./local/lib/.xpt_libsquish
 	@touch $@
 
 
-libcgal: boost_headers zlib ./local/lib/.xpt_libcgal
-./local/lib/.xpt_libcgal:
+libcgal: boost_headers ./local/lib/.xpt_libcgal
+./local/lib/.xpt_libcgal: ./local/lib/.xpt_zlib
 	@echo "building libcgal..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
 	@cp patches/cgal-no-description-0001.patch \
 	"CGAL-$(VER_CGAL)/include" && cd "CGAL-$(VER_CGAL)/include" && \
@@ -359,6 +375,8 @@ libcgal: boost_headers zlib ./local/lib/.xpt_libcgal
 libdime: ./local/lib/.xpt_libdime
 ./local/lib/.xpt_libdime:
 	@echo "building libdime..."
+	@-mkdir -p "./local/include"
+	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBDIME)"
 	@cd "libdime-$(VER_LIBDIME)" && \
 	CFLAGS=$(CFLAGS_LIBDIME) CXXFLAGS=$(CFLAGS_LIBDIME) \
