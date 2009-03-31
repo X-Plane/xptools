@@ -126,6 +126,7 @@ ifeq ($(PLATFORM), Darwin)
 	CXXFLAGS	:= $(CXXFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4
 	CFLAGS		:= $(CFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4
 	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4
+	MACARCHS	:= -arch i386 -arch ppc
 endif
 ifeq ($(PLATFORM), Mingw)
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0

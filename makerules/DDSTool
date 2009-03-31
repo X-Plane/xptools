@@ -13,11 +13,11 @@ src/Utils/EndianUtils.c \
 src/Utils/BitmapUtils.cpp
 
 ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibsrc/linux-specific/mesa/include
+MESA_HEADERS = -Ilibs/local/include/mesa
 endif
 
 INCLUDEPATHS :=\
--Ilibsrc/linux-specific/include \
+-Ilibs/local/include \
 $(MESA_HEADERS) \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
@@ -50,4 +50,4 @@ $(MESA_HEADERS) \
 -Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
--Llibsrc/linux-specific/lib
+-Llibs/local/lib

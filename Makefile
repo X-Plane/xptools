@@ -1,5 +1,5 @@
 BUILDDIR	:= build
-LIBRARIES	:= libsrc/linux-specific/.3rdparty_libs
+LIBRARIES	:= ./libs/local/.xpt_libs
 # default to public debug_opt configuration
 ifndef conf
 conf		:= debug_opt
@@ -25,12 +25,12 @@ TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 .PHONY: RenderFarm
 .PHONY: fonttool
 
-all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm fonttool
+all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm
 
 libs: $(LIBRARIES)
 
 $(LIBRARIES):
-	$(MAKE) -s -C "libsrc/linux-specific"
+	$(MAKE) -C "./libs" all
 
 ObjView: libs
 	$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -f makerules/rules.mk
@@ -66,4 +66,4 @@ clean:
 	-rm -rf $(BUILDDIR)
 
 distclean:	clean
-	$(MAKE) -C "libsrc/linux-specific" clean
+	$(MAKE) -C "./libs" clean

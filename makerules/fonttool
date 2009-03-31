@@ -6,7 +6,8 @@ SOURCES :=\
 src/fonttool/fonttool.cpp
 
 INCLUDEPATHS :=\
--Ilibsrc/linux-specific/include
+-Ilibs/local/include \
+-Ilibs/local/include/freetype2
 
 LIBPATHS :=\
--Llibsrc/linux-specific/lib
+-Llibs/local/lib

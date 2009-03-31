@@ -40,11 +40,12 @@ src/AC3DPlugins/uv_mapper.cpp \
 src/AC3DPlugins/xp_plugin.cpp
 
 ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibsrc/linux-specific/mesa/include
+MESA_HEADERS = -Ilibs/local/include/mesa
 endif
 
 INCLUDEPATHS :=\
--Ilibsrc/linux-specific/include \
+-Ilibs/local/include \
+-Ilibs/local/include/freetype2 \
 $(MESA_HEADERS) \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
@@ -78,4 +79,4 @@ $(MESA_HEADERS) \
 -ISDK/ac3d
 
 LIBPATHS :=\
--Llibsrc/linux-specific/lib
+-Llibs/local/lib

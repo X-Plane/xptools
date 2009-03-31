@@ -46,12 +46,13 @@ SOURCES := $(COMMON_SRC) $(WIN32_SRC)
 endif
 
 ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibsrc/linux-specific/mesa/include
+MESA_HEADERS = -Ilibs/local/include/mesa
 endif
 
 
 INCLUDEPATHS :=\
--Ilibsrc/linux-specific/include \
+-Ilibs/local/include \
+-Ilibs/local/include/freetype2 \
 $(MESA_HEADERS) \
 -Ilibsrc/expat/xmlparse \
 -Ilibsrc/expat/xmltok \
@@ -85,4 +86,4 @@ $(MESA_HEADERS) \
 -Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
--Llibsrc/linux-specific/lib
+-Llibs/local/lib
