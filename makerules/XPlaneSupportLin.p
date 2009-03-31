@@ -2,7 +2,7 @@ TYPE		:= LIBDYNAMIC
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
-LIBS		:= 
+LIBS		:= SDK/ac3d/ac3d.lib -lglu32 -lopengl32
 ifeq ($(PLATFORM), Mingw)
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 endif
