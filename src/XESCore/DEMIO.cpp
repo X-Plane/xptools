@@ -719,9 +719,9 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 			Examine this
 			#endif
 				float e = *v;
-				if (*v == -1) e = DEM_NO_DATA;		// was 0xFFFF
-				if (e > 30000) e = DEM_NO_DATA;		// SRTM HACK!!!
-				if (e < -30000) e = DEM_NO_DATA;		// SRTM HACK!!!
+//				if (*v == -1) e = DEM_NO_DATA;		// was 0xFFFF
+//				if (e > 30000) e = DEM_NO_DATA;		// SRTM HACK!!!
+//				if (e < -30000) e = DEM_NO_DATA;		// SRTM HACK!!!
 				inMap(x,h-y-1) = e;
 				if (y == 0)
 					inMap(x,h) = e;

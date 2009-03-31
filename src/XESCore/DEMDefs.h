@@ -159,8 +159,9 @@ struct	DEMGeo {
 	// Lat/lon access and erasing
 	inline float	value_linear(double lon, double lat) const;					// Get linear interp value of coordinate
 	inline void	zap_linear(double lon, double lat);							// Zap all values that are near the point (up to 2x2)
-	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value, return coordinate used
-	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, return coordinate used
+	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value (nearest non-void)
+	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, (nearest non-void), return coordinate used
+	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
 
 	// These routines convert grid positions to lat/lon
@@ -653,6 +654,39 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 		}
 	}
 }
+
+inline float	DEMGeo::xy_nearest_raw(double lon, double lat) const
+{
+//	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
+	double x_fract = (lon - mWest) / (mEast - mWest);
+	double y_fract = (lat - mSouth) / (mNorth - mSouth);
+
+	x_fract *= (double) (mWidth-1);
+	y_fract *= (double) (mHeight-1);
+	int x = x_fract;
+	int y = y_fract;
+	float e1, e2, e3, e4;
+	e1 = get(x,y);
+	e2 = get(x+1,y);
+	e3 = get(x,y+1);
+	e4 = get(x+1,y+1);
+
+	x_fract -= x;
+	y_fract -= y;
+	if (x_fract > 0.5)
+	{
+		if (y_fract > 0.5)
+			return e4;
+		else
+			return e2;
+	} else {
+		if (y_fract > 0.5)
+			return e3;
+		else
+			return e1;
+	}
+}
+
 
 inline float	DEMGeo::search_nearest(double lon, double lat) const
 {

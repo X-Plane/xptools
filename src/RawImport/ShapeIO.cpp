@@ -23,7 +23,9 @@
 
 #include "ShapeIO.h"
 #include <shapefil.h>
+#include "MapOverlay.h"
 #include "GISTool_Globals.h"
+#include "MapAlgs.h"
 #if !DEV
 	factor this out
 #endif
@@ -33,19 +35,39 @@
 // team if they want one.
 #define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
 
+// Shape to feature 
 
-bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], ProgressFunc	inFunc)
+
+bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], ProgressFunc	inFunc)
 {
 		int		entity_count;
 		int		shape_type;
 		double	bounds_lo[4], bounds_hi[4];
 
-	out_map.clear();
+	int feat = NO_VALUE;
+	if(flags & shp_Mode_Simple)
+		feat = LookupToken(feature_desc);
+
+	if((flags & shp_Overlay) == 0)
+	if(flags & shp_Mode_Road)
+		io_map.clear();
+
+		list<Polygon_2>	boundaries, holes;
+		Polygon_set_2	poly_set;
+		vector<Curve_2>	curves;
 
 	SHPHandle file =  SHPOpen(in_file, "rb");
 	if(!file) return false;
 	
 	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
+
+	switch(shape_type) {
+	case SHPT_ARC:
+	case SHPT_ARCZ:
+	case SHPT_ARCM:
+		for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+			e->curve().set_data(-1);
+	}
 
 	bounds[0] = bounds_lo[0];
 	bounds[1] = bounds_lo[1];
@@ -53,9 +75,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], Progre
 	bounds[2] = bounds_hi[0];
 	bounds[3] = bounds_hi[1];
 
-	Polygon_set_2	poly_set;
-	vector<Curve_2>	curves;
-	
 	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
 
 	int step = entity_count ? (entity_count / 150) : 2;
@@ -92,6 +111,14 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], Progre
 					for(int i = 1; i < p.size(); ++i)
 					{
 						DebugAssert(p[i-1] != p[i]);
+						bool oob = false;
+						if(flags & shp_Use_Crop)
+						if ((p_raw[i-1].x() < gMapWest  && p_raw[i].x() < gMapWest ) ||
+							(p_raw[i-1].x() > gMapEast  && p_raw[i].x() > gMapEast ) ||
+							(p_raw[i-1].y() < gMapSouth && p_raw[i].y() < gMapSouth ) ||
+							(p_raw[i-1].y() > gMapNorth && p_raw[i].y() > gMapNorth ))
+							oob = true;
+						if(!oob)
 						ADD_PT_PAIR(p[i-1],p[i],p_raw[i-1],p_raw[i],n);
 					}
 				}
@@ -102,7 +129,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], Progre
 		case SHPT_POLYGONM:
 			if (obj->nVertices > 0)
 			{
-				list<Polygon_2>	boundaries, holes;
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -131,10 +157,16 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], Progre
 						}
 					}
 				}
-				for(list<Polygon_2>::iterator i = boundaries.begin(); i != boundaries.end(); ++i)
-					poly_set.join(*i);
-				for(list<Polygon_2>::iterator i = holes.begin(); i != holes.end(); ++i)
-					poly_set.difference(*i);				
+				
+				if((flags & shp_Fast) == 0)
+				{				
+					for(list<Polygon_2>::iterator i = boundaries.begin(); i != boundaries.end(); ++i)
+						poly_set.join(*i);
+					for(list<Polygon_2>::iterator i = holes.begin(); i != holes.end(); ++i)
+						poly_set.difference(*i);				
+					boundaries.clear();
+					holes.clear();
+				}
 			}
 			break;
 		case SHPT_MULTIPOINT:
@@ -149,43 +181,157 @@ bool	ReadShapeFile(const char * in_file, Pmwx& out_map, double bounds[4], Progre
 	case SHPT_POLYGON:
 	case SHPT_POLYGONZ:
 	case SHPT_POLYGONM:
-		out_map = poly_set.arrangement();
+		
+		if((flags & shp_Fast))
+		{
+			poly_set.join(boundaries.begin(),boundaries.end(),holes.begin(),holes.end());
+			holes.clear();
+			boundaries.clear();
+		}
+		
+		// Ben says: crop must be done later, EVEN in fast mode...if we try to batch the crop with the
+		// union, it gets "lost" - something about the order of ops of the true bulk cropper.  Ah, well, such is life.		
+		if((flags & shp_Use_Crop) != 0)
+		{
+			Polygon_2	crop_box;
+			if(gMapWest > -180)
+			{
+				crop_box.push_back(Point_2(-180,-90));
+				crop_box.push_back(Point_2(gMapWest,-90));
+				crop_box.push_back(Point_2(gMapWest,90));
+				crop_box.push_back(Point_2(-180,90));
+				poly_set.difference(crop_box);
+				crop_box.clear();
+			}
+
+			if(gMapEast < 180)
+			{
+				crop_box.push_back(Point_2(gMapEast,-90));
+				crop_box.push_back(Point_2(180,-90));
+				crop_box.push_back(Point_2(180,90));
+				crop_box.push_back(Point_2(gMapEast,90));
+				poly_set.difference(crop_box);
+				crop_box.clear();
+			}
+		
+			if(gMapSouth > -90)
+			{
+				crop_box.push_back(Point_2(-180, -90));
+				crop_box.push_back(Point_2(180, -90));
+				crop_box.push_back(Point_2(180, gMapSouth));
+				crop_box.push_back(Point_2(-180, gMapSouth));
+				poly_set.difference(crop_box);
+				crop_box.clear();
+			}
+
+			if(gMapNorth < 90)
+			{
+				crop_box.push_back(Point_2(-180, gMapNorth));
+				crop_box.push_back(Point_2(180, gMapNorth));
+				crop_box.push_back(Point_2(180, 90));
+				crop_box.push_back(Point_2(-180, 90));
+				poly_set.difference(crop_box);
+				crop_box.clear();
+			}
+		}
+		
+		{
+			Pmwx	local;
+			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
+			
+			*targ = poly_set.arrangement();
+
+			if(flags & shp_Mode_Simple)
+			if(flags & shp_Mode_Landuse)
+			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+			if(f->contained())
+				f->data().mTerrainType = feat;
+				
+			if(flags & shp_Overlay)
+			{
+				Pmwx	src(io_map);
+				MapOverlay(src,local,io_map);
+			}
+		}
 		break;
+		
 	case SHPT_ARC:
 	case SHPT_ARCZ:
 	case SHPT_ARCM:
 
-#if 1
-		
-		ADD_PT_PAIR(
-							Point_2(gMapWest,gMapSouth),
-							Point_2(gMapEast,gMapSouth),
-							Point2(gMapWest,gMapSouth),
-							Point2(gMapEast,gMapSouth),
-							entity_count);
+		if((flags & shp_Use_Crop))
+		{		
+			ADD_PT_PAIR(
+								Point_2(gMapWest,gMapSouth),
+								Point_2(gMapEast,gMapSouth),
+								Point2(gMapWest,gMapSouth),
+								Point2(gMapEast,gMapSouth),
+								entity_count);
 
-		ADD_PT_PAIR(
-							Point_2(gMapEast,gMapSouth),
-							Point_2(gMapEast,gMapNorth),
-							Point2(gMapEast,gMapSouth),
-							Point2(gMapEast,gMapNorth),
-							entity_count+1);
+			ADD_PT_PAIR(
+								Point_2(gMapEast,gMapSouth),
+								Point_2(gMapEast,gMapNorth),
+								Point2(gMapEast,gMapSouth),
+								Point2(gMapEast,gMapNorth),
+								entity_count+1);
 
-		ADD_PT_PAIR(
-							Point_2(gMapEast,gMapNorth),
-							Point_2(gMapWest,gMapNorth),
-							Point2(gMapEast,gMapNorth),
-							Point2(gMapWest,gMapNorth),
-							entity_count+2);
+			ADD_PT_PAIR(
+								Point_2(gMapEast,gMapNorth),
+								Point_2(gMapWest,gMapNorth),
+								Point2(gMapEast,gMapNorth),
+								Point2(gMapWest,gMapNorth),
+								entity_count+2);
 
-		ADD_PT_PAIR(
-							Point_2(gMapWest,gMapNorth),
-							Point_2(gMapWest,gMapSouth),
-							Point2(gMapWest,gMapNorth),
-							Point2(gMapWest,gMapSouth),
-							entity_count+3);
-#endif	
-		CGAL::insert_curves(out_map, curves.begin(), curves.end());
+			ADD_PT_PAIR(
+								Point_2(gMapWest,gMapNorth),
+								Point_2(gMapWest,gMapSouth),
+								Point2(gMapWest,gMapNorth),
+								Point2(gMapWest,gMapSouth),
+								entity_count+3);
+		}
+		{
+			Pmwx	local;
+			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
+			
+			CGAL::insert_curves(*targ, curves.begin(), curves.end());
+			ValidateMapDominance(*targ);
+			Point_2 sw(gMapWest,gMapSouth);
+			Point_2 ne(gMapEast,gMapNorth);
+
+			if(flags & shp_Use_Crop)
+			for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end();)
+			{
+				Pmwx::Edge_iterator k(e);
+				++e;
+				
+				if (CGAL::compare_x(k->source()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_x(k->target()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_x(k->source()->point(),ne) == CGAL::LARGER ||
+					CGAL::compare_x(k->target()->point(),ne) == CGAL::LARGER ||					
+					CGAL::compare_y(k->source()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_y(k->target()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_y(k->source()->point(),ne) == CGAL::LARGER ||
+					CGAL::compare_y(k->target()->point(),ne) == CGAL::LARGER)
+				{
+					targ->remove_edge(k);
+				}
+			}
+
+			GISNetworkSegment_t r;
+			r.mFeatType = feat;
+			r.mRepType = NO_VALUE;
+			
+			if(flags & shp_Mode_Simple)
+			if(flags & shp_Mode_Road)
+			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
+				e->data().mSegments.push_back(r);
+			
+			if(flags & shp_Overlay)
+			{
+				Pmwx	src(io_map);
+				MapMerge(src,local,io_map);
+			}
+		}
 		break;
 	}
 	SHPClose(file);

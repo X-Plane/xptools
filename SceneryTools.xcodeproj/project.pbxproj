@@ -576,6 +576,9 @@
 		D68E2A8F0EBFC82D0015648F /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
 		D6951EC20EE18C4200A04BAD /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
+		D6956ECA0F82DBF800F6718E /* MapHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EC80F82DBF800F6718E /* MapHelpers.cpp */; };
+		D6956ECB0F82DBF800F6718E /* MapHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EC80F82DBF800F6718E /* MapHelpers.cpp */; };
+		D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EC80F82DBF800F6718E /* MapHelpers.cpp */; };
 		D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */; };
 		D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */; };
 		D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CDA00EE089E5009C5F2E /* WED_CreateBoxTool.cpp */; };
@@ -1228,6 +1231,8 @@
 		D68E28820EBF5D3A0015648F /* ShapeIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShapeIO.cpp; sourceTree = "<group>"; };
 		D68E28930EBF5DB10015648F /* shapefil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shapefil.h; sourceTree = "<group>"; };
 		D68E28980EBF5DB10015648F /* shptree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = shptree.c; sourceTree = "<group>"; };
+		D6956EC80F82DBF800F6718E /* MapHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapHelpers.cpp; sourceTree = "<group>"; };
+		D6956EC90F82DBF800F6718E /* MapHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapHelpers.h; sourceTree = "<group>"; };
 		D695CD6D0EE0862E009C5F2E /* WED_GISBoundingBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISBoundingBox.h; sourceTree = "<group>"; };
 		D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISBoundingBox.cpp; sourceTree = "<group>"; };
 		D695CD7D0EE08808009C5F2E /* WED_ExclusionZone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ExclusionZone.h; sourceTree = "<group>"; };
@@ -3009,6 +3014,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6956EC80F82DBF800F6718E /* MapHelpers.cpp */,
+				D6956EC90F82DBF800F6718E /* MapHelpers.h */,
 				D6773CB20E154CF000E56046 /* MapAlgsCGAL.cpp */,
 				D6773CB30E154CF000E56046 /* MapAlgsCGAL.h */,
 				D6773CB40E154CF000E56046 /* MapDefsCGAL.h */,
@@ -3883,6 +3890,7 @@
 				D6BB239C0EC1EAA3006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23B00EC1EBE3006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF50F7952B700F72139 /* tri_stripper.cpp in Sources */,
+				D6956ECB0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4048,6 +4056,7 @@
 				D6BB22900EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */,
+				D6956ECA0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4161,6 +4170,7 @@
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
+				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

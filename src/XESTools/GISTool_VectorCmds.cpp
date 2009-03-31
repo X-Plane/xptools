@@ -544,10 +544,28 @@ static int DoTigerBounds(const vector<const char *>& args)
 	return 0;
 }
 
+#define HELP_SHAPE \
+"-shapefile <mode> <feature> <filename>\n" \
+"Import a shape file.  Mode letters (similar to tar syntax are):\n" \
+"c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
+"o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
+"f - attempt fast import.  For some shape files, this will assume correct noding, no overlaps, etc.  Fast, but may fail.\n" \
+"s - simple feature import.  Feature param is applied to all elements.\n" \
+"r - road mode - attempt to import vectors as roads.\n" \
+"l - land use - attempt to import vectors as land use.\n" 
 static int DoShapeImport(const vector<const char *>& args)
 {
+	shp_Flags flags = shp_None;
+	if(strstr(args[0], "c"))	flags |= shp_Use_Crop;
+	if(strstr(args[0], "o"))	flags |= shp_Overlay;
+	if(strstr(args[0], "f"))	flags |= shp_Fast;
+	if(strstr(args[0], "r"))	flags |= shp_Mode_Road;
+	if(strstr(args[0], "l"))	flags |= shp_Mode_Landuse;
+	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
+	
+	
 	double b[4];
-	if(!ReadShapeFile(args[0], gMap, b, gProgress))
+	if(!ReadShapeFile(args[2], gMap, flags, args[1], b, gProgress))
 		return 1;
 		
 		
@@ -574,7 +592,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
 { "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
-{ "-shapefile", 	1, 1, 	DoShapeImport, 			"Import ESRI Shape File.", "" },
+{ "-shapefile", 	3, 3, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

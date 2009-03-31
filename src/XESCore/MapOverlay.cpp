@@ -24,6 +24,7 @@
 #include "MapOverlay.h"
 #include "MapAlgs.h"
 #include "MapTopology.h"
+#include "MapHelpers.h"
 
 /******************************************************************************************************************************************************
  * OVERLAY HELPERS
@@ -240,15 +241,22 @@ struct Overlay_network
 {
 	GIS_halfedge_data operator() (GIS_halfedge_data a, GIS_halfedge_data b) const
 	{
-		DebugAssert(a.mDominant == b.mDominant);
+	#if !DEV
+		#error this is highly LAME
+	#endif
+	
+//		DebugAssert(a.mDominant == b.mDominant);
+//		DebugAssert(a.mDominant || a.mDominant == b.mDominant);
+//		DebugAssert(!b.mDominant || a.mDominant == b.mDominant);
 		GIS_halfedge_data r;
 		r.mDominant = a.mDominant;
 		GISNetworkSegmentVector::iterator i;
 		if (b.mSegments.empty())
 			for (i = a.mSegments.begin(); i != a.mSegments.end(); ++i)
 				r.mSegments.push_back(*i);
-		for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
-			r.mSegments.push_back(*i);
+		if(b.mDominant)
+			for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
+				r.mSegments.push_back(*i);
 		return r;
 	}
 };
@@ -278,65 +286,6 @@ void	MapOverlay(Pmwx& bottom, Pmwx& top, Pmwx& result)
  *
  ************************************************************************************************************************************************/
 
-// Edge collector: this observer notes all incoming half-edges as we insert curves.  There are two cases...
-class edge_collector_t : public CGAL::Arr_observer<Pmwx> {
-public:
-	Curve_2 				input;
-	set<Halfedge_handle>	results;
-	int ctr;
-	
-	// A new edge is created.  CGAL always inserts a sub-curve of the original curve, so the half-edge we 
-	// want is the one going in the same directoin as its underlying cuvre.  This is the "fast" case because
-	// we don't have to do any geometry compares - CGAL caches all the information needed to detect this case
-	// in the DCEL.
-	virtual void after_create_edge (Halfedge_handle e)
-	{
-		results.insert(he_get_same_direction(e));
-		++ctr;
-		DebugAssert(he_is_same_direction_as(he_get_same_direction(e), input));		// Debug validation that we are okay.
-	}
-	
-	// Modify edge.  If the edge overlaps an existing one, we get this message.  In this case, we need to compare our
-	// ideal curve to the one we got - CGAL will not reverse the underlying curve, just modify the tagged data.  So we 
-	// look at the original for orientation - slightly slower, requires a predicate.
-	virtual void after_modify_edge (Halfedge_handle e)
-	{		
-		if(he_is_same_direction_as(e, input))
-			results.insert(e);
-		else
-			results.insert(e->twin());
-		++ctr;
-	}
-
-  virtual void after_split_face (Face_handle f,
-                                 Face_handle new_f,
-                                 bool is_hole)
-	{
-		new_f->set_data(f->data());
-	}
-	
-	virtual void after_split_edge(Halfedge_handle e1, Halfedge_handle e2)
-	{
-		DebugAssert(results.count(e1) == 0);
-		DebugAssert(results.count(e1->twin()) == 0);
-		e2->set_data(e1->data());
-		e2->twin()->set_data(e1->twin()->data());
-		
-		if(e1->source()->point() == input.source() &&
-		   e1->target()->point() == input.target())				{ results.insert(e1); ++ctr; }
-
-		if(e2->source()->point() == input.source() &&
-		   e2->target()->point() == input.target())				{ results.insert(e2); ++ctr; }
-
-		if(e1->target()->point() == input.source() &&
-		   e1->source()->point() == input.target())				{ results.insert(e1->twin()); ++ctr; }
-
-		if(e2->target()->point() == input.source() &&
-		   e2->source()->point() == input.target())				{ results.insert(e2->twin()); ++ctr; }
-	}
-
-	
-};
 
 // Edge collection routines for various shapes...
 void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_2& src, Locator * loc)

@@ -193,6 +193,9 @@ static int DoCrop(const vector<const char *>& args)
 		}
 	}
 
+	for(set<int>::iterator q = nukable.begin(); q != nukable.end(); ++q)
+		gDem.erase(*q);
+
 	if (!gFAAObs.empty())
 	{
 		FAAObsTable::iterator i, n;

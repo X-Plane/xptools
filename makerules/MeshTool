@@ -31,6 +31,7 @@ src/XESCore/DSFBuilder.cpp \
 src/XESCore/EnumSystem.cpp \
 src/XESCore/GreedyMesh.cpp \
 src/XESCore/MapAlgsCGAL.cpp \
+src/XESCore/MapHelpers.cpp \
 src/XESCore/MapAlgs.cpp \
 src/XESCore/MapBuffer.cpp \
 src/XESCore/MapCreate.cpp \

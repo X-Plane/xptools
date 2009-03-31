@@ -989,7 +989,7 @@ put in  color enums?
 			{
 				if (gDem.count(	kDEMs[n].dem ))
 				{
-					float hh = gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
+					float hh = gDem[kDEMs[n].dem].xy_nearest_raw(lon, lat);
 
 					// HACK city - for certain DEMs, do the trig on the fly.
 

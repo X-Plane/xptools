@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2008, Laminar Research.
+ * Copyright (c) 2009, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,24 +21,5 @@
  *
  */
 
-#ifndef ShapeIO_H
-#define ShapeIO_H
+#include "MapHelpers.h"
 
-#include "MapDefsCGAL.h"
-#include "ProgressUtils.h"
-
-enum {
-		shp_None			= 0,
-		shp_Mode_Landuse	= 1,
-		shp_Mode_Road		= 2,
-		shp_Mode_Simple		= 4,			// Use a simple feature desc for import.
-		shp_Use_Crop		= 8,			// Add the crop-box to the import on the fly.
-		shp_Overlay			= 16,			// Do not clear previous data.
-		shp_Fast			= 32			// Assume data is well-formed, use fast path.  Can be dangerous!
-};
-typedef int shp_Flags;
-		
-
-bool	ReadShapeFile(const char * in_file, Pmwx& out_map, shp_Flags mode, const char * feature_desc, double io_bounds[4], ProgressFunc	inFunc);
-
-#endif /* ShapeIO_H */
