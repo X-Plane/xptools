@@ -24,6 +24,7 @@ VER_LIBSQUISH	:= 1.10.1
 VER_BOOST	:= 1.38.0
 # TODO: new release 7.4
 VER_MESA	:= 7.3
+VER_LIBEXPAT	:= 2.0.1
 
 PLATFORM	:= $(shell uname)
 ifneq (, $(findstring MINGW, $(PLATFORM)))
@@ -50,6 +51,13 @@ AR_ZLIB			:= "ar rcs"
 CFLAGS_ZLIB		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
 LDFLAGS_ZLIB		:= "-L$(DEFAULT_LIBDIR)"
 CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
+
+# expat
+ARCHIVE_LIBEXPAT	:= expat-$(VER_LIBEXPAT).tar.gz
+CFLAGS_LIBEXPAT		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
+LDFLAGS_LIBEXPAT	:= "-L$(DEFAULT_LIBDIR)"
+CONF_LIBEXPAT		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBEXPAT		+= --enable-shared=no
 
 # libpng
 ARCHIVE_LIBPNG		:= libpng-$(VER_LIBPNG).tar.gz
@@ -171,14 +179,15 @@ endif
 
 # targets
 .PHONY: all clean boost_headers mesa_headers zlib libpng libfreetype libjpeg \
-libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp
+libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
+libexpat
 
 ifeq ($(PLATFORM), Darwin)
 all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
- libproj libgeotiff libsqlite lib3ds libcgal libsquish
+ libproj libgeotiff libsqlite lib3ds libcgal libsquish libexpat
 else
 all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
- libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp
+ libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp libexpat
 endif
 	@touch ./local/.xpt_libs
 
@@ -216,6 +225,18 @@ zlib: ./local/lib/.xpt_zlib
 	@-rm -rf zlib-$(VER_ZLIB)
 	@touch $@
 
+libexpat: ./local/lib/.xpt_libexpat
+./local/lib/.xpt_libexpat:
+	@echo "building libexpat..."
+	@tar -xzf "./archives/$(ARCHIVE_LIBEXPAT)"
+	@cd "expat-$(VER_LIBEXPAT)" && \
+	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBEXPAT) LDFLAGS=$(LDFLAGS_LIBEXPAT) \
+	./configure $(CONF_LIBEXPAT) $(BE_QUIET)
+	@$(MAKE) -C "expat-$(VER_LIBEXPAT)" $(BE_QUIET)
+	@$(MAKE) -C "expat-$(VER_LIBEXPAT)" install $(BE_QUIET)
+	@-rm -rf expat-$(VER_LIBEXPAT)
+	@touch $@
 
 libpng: ./local/lib/.xpt_libpng
 ./local/lib/.xpt_libpng: ./local/lib/.xpt_zlib
