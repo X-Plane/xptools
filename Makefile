@@ -7,16 +7,15 @@ VER_LIBPROJ	:= 4.6.1
 VER_GEOTIFF	:= 1.2.5
 # TODO. new release 2.0, has API changes
 VER_LIB3DS	:= 1.3.0
-# TODO: new release r175, write Makefile, diff, create patch against r175
-VER_LIBDIME	:= r174
+VER_LIBDIME	:= r175
 # TODO: diff, create patch against 6b
 VER_LIBJPEG	:= 6b.1
 VER_LIBSQLITE	:= 3.6.11
 VER_LIBPNG	:= 1.2.35
 VER_ZLIB	:= 1.2.3
 VER_LIBTIFF	:= 4.0.0beta3
-# TODO: write Makefile, diff, create patch against 1.2.10
-VER_LIBSHP	:= 1.2.10.1
+# TODO: diff, create patch against 1.2.10
+VER_LIBSHP	:= 1.2.10.2
 # TODO: diff, create patch against 1.10
 VER_LIBSQUISH	:= 1.10.1
 VER_BOOST	:= 1.38.0
@@ -150,12 +149,13 @@ CONF_LIBSQUISH		:= INSTALL_DIR=$(DEFAULT_PREFIX)
 CONF_LIBSQUISH		+= CPPFLAGS="$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR)"
 
 # libdime
-ARCHIVE_LIBDIME		:= libdime-$(VER_LIBDIME).tar.gz
+ARCHIVE_LIBDIME		:= dime-$(VER_LIBDIME).tar.gz
 CFLAGS_LIBDIME		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
 LDFLAGS_LIBDIME		:= "-L$(DEFAULT_LIBDIR)"
 CONF_LIBDIME		:= --prefix=$(DEFAULT_PREFIX)
-CONF_LIBDIME		+= --enable-static
+CONF_LIBDIME		+= --enable-static=yes
 CONF_LIBDIME		+= --enable-shared=no
+CONF_LIBDIME		+= --disable-dependency-tracking
 
 # libshp
 ARCHIVE_LIBSHP		:= shapelib-$(VER_LIBSHP).tar.gz
@@ -180,13 +180,8 @@ endif
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
 libexpat
 
-ifeq ($(PLATFORM), Darwin)
-all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
- libproj libgeotiff libsqlite lib3ds libcgal libsquish libexpat
-else
 all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
  libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp libexpat
-endif
 	@touch ./local/.xpt_libs
 
 clean:
@@ -390,20 +385,19 @@ libcgal: boost_headers ./local/lib/.xpt_libcgal
 	@touch $@
 
 
-# TODO: write own Makefiles for these two to make the buildable on MacOS
 libdime: ./local/lib/.xpt_libdime
 ./local/lib/.xpt_libdime:
 	@echo "building libdime..."
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBDIME)"
-	@cd "libdime-$(VER_LIBDIME)" && \
+	@cd "dime-$(VER_LIBDIME)" && \
 	CFLAGS=$(CFLAGS_LIBDIME) CXXFLAGS=$(CFLAGS_LIBDIME) \
 	LDFLAGS=$(LDFLAGS_LIBDIME) \
 	./configure $(CONF_LIBDIME) $(BE_QUIET)
-	@$(MAKE) -C "libdime-$(VER_LIBDIME)" $(BE_QUIET)
-	@$(MAKE) -C "libdime-$(VER_LIBDIME)" install $(BE_QUIET)
-	@-rm -rf libdime-$(VER_LIBDIME)
+	@$(MAKE) -C "dime-$(VER_LIBDIME)" $(BE_QUIET)
+	@$(MAKE) -C "dime-$(VER_LIBDIME)" install $(BE_QUIET)
+	@-rm -rf dime-$(VER_LIBDIME)
 	@touch $@
 
 
