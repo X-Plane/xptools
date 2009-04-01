@@ -132,6 +132,7 @@ $(MESA_HEADERS) \
 -Isrc/ObjEdit \
 -Isrc/OGLE \
 -Isrc/RawImport \
+-Isrc/RenderFarmUI \
 -Isrc/SDTS \
 -Isrc/Tiger \
 -Isrc/UI \

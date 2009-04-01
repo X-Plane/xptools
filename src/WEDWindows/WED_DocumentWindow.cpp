@@ -22,7 +22,7 @@
  */
 
 #include "WED_Document.h"
-#include "WED_Progress.h"
+//#include "WED_Progress.h"
 //#include "XESIO.h"
 #include "AptIO.h"
 //#include "MapAlgs.h"

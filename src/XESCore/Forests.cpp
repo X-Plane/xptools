@@ -38,10 +38,10 @@
 
 #if DEBUG_SHOW_MAP_MERGE_FAIL || DEBUG_SELECT_BAD_FACE || SHOW_MAP_MERGE
 #include "PlatformUtils.h"
-#include "WED_Notify.h"
-#include "WED_Msgs.h"
-#include "WED_Selection.h"
-#include "WED_Globals.h"
+#include "RF_Notify.h"
+#include "RF_Msgs.h"
+#include "RF_Selection.h"
+#include "RF_Globals.h"
 
 #endif
 

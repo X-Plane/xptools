@@ -23,7 +23,7 @@
 
 #include "TensorRoads.h"
 #include "MapDefs.h"
-#include "WED_DEMGraphics.h"
+#include "RF_DEMGraphics.h"
 #include "DEMDefs.h"
 #include "MapAlgs.h"
 #include "MapOverlay.h"

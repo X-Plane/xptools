@@ -22,7 +22,6 @@
  */
 
 #include "WED_Document.h"
-#include "WED_Progress.h"
 #include "GUI_Resources.h"
 #include "WED_PackageMgr.h"
 #include "FileUtils.h"

@@ -26,7 +26,6 @@
 // Stuff we need to init
 //#include "XESInit.h"
 #include "WED_Document.h"
-#include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
 //#include "DEMTables.h"
 #include "WED_AboutBox.h"
