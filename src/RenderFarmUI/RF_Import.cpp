@@ -56,7 +56,7 @@ static	void	InvertRescaling(XPWidgetID);
 static	void	ImportEnable(XPWidgetID);
 static	void	DimsFromMap(XPWidgetID);
 
-struct	WED_ImportState_t {
+struct	RF_ImportState_t {
 	int			dem;
 	int			format;
 	int			rescale;
@@ -75,7 +75,7 @@ struct	WED_ImportState_t {
 	float		north;
 };
 
-static WED_ImportState_t	sImportState = { 0, 0, 0, 0, 1201, 1201, 0.0, 1.0, 0, 0, 0, 0,
+static RF_ImportState_t	sImportState = { 0, 0, 0, 0, 1201, 1201, 0.0, 1.0, 0, 0, 0, 0,
 				-180.0, -90.0, 180.0, 90.0 };
 
 enum {
@@ -133,22 +133,22 @@ static	const char * kImportLayerTitles =
 //	"dem_NudeColor;"
 	"dem_VegetationDensity";
 
-const int WED_IMPORT_FORMAT = 1000;
-const int WED_IMPORT_RESCALE = 1001;
-const int WED_IMPORT_SCALE = 1002;
-const int WED_IMPORT_OFFSET = 1003;
-const int WED_IMPORT_BYTE_OFFSET = 1004;
-const int WED_IMPORT_BYTE_WIDTH = 1005;
-const int WED_IMPORT_BYTE_HEIGHT = 1006;
-const int WED_IMPORT_TRANSLATION = 1007;
+const int RF_IMPORT_FORMAT = 1000;
+const int RF_IMPORT_RESCALE = 1001;
+const int RF_IMPORT_SCALE = 1002;
+const int RF_IMPORT_OFFSET = 1003;
+const int RF_IMPORT_BYTE_OFFSET = 1004;
+const int RF_IMPORT_BYTE_WIDTH = 1005;
+const int RF_IMPORT_BYTE_HEIGHT = 1006;
+const int RF_IMPORT_TRANSLATION = 1007;
 
-const int WED_IMPORT_NORTH = 1008;
-const int WED_IMPORT_SOUTH = 1009;
-const int WED_IMPORT_EAST = 1010;
-const int WED_IMPORT_WEST = 1011;
-const int WED_IMPORT_MAP = 1012;
+const int RF_IMPORT_NORTH = 1008;
+const int RF_IMPORT_SOUTH = 1009;
+const int RF_IMPORT_EAST = 1010;
+const int RF_IMPORT_WEST = 1011;
+const int RF_IMPORT_MAP = 1012;
 
-void	WED_ShowImportDialog(void)
+void	RF_ShowImportDialog(void)
 {
 	if (sImport != NULL)
 	{
@@ -157,7 +157,7 @@ void	WED_ShowImportDialog(void)
 			XPShowWidget(sImport);
 		XPBringRootWidgetToFront(sImport);
 	} else {
-		WED_RegisterNotifyFunc(ImportNotifier);
+		RF_RegisterNotifyFunc(ImportNotifier);
 		sImport = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "IMPORT", XP_DIALOG_CLOSEBOX, 1, 0, DoImport,
 				XP_COLUMN,
@@ -167,16 +167,16 @@ void	WED_ShowImportDialog(void)
 					XP_END,
 					XP_ROW,
 						XP_CAPTION, "Format:",
-						XP_POPUP_MENU, kTitles, &sImportState.format, XP_TAG, WED_IMPORT_FORMAT, XP_NOTIFY, ImportEnable,
+						XP_POPUP_MENU, kTitles, &sImportState.format, XP_TAG, RF_IMPORT_FORMAT, XP_NOTIFY, ImportEnable,
 					XP_END,
 					XP_ROW,
 						XP_BUTTON_ACTION, "Load Translation", LoadCLUT,
-						XP_CAPTION, "(no translation)", XP_TAG, WED_IMPORT_TRANSLATION,
+						XP_CAPTION, "(no translation)", XP_TAG, RF_IMPORT_TRANSLATION,
 					XP_END,
 					XP_ROW,
-						XP_CHECKBOX, "Rescale", &sImportState.rescale, XP_NOTIFY, ImportEnable, XP_TAG, WED_IMPORT_RESCALE,
-						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.offset, XP_TAG, WED_IMPORT_OFFSET,
-						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.scale, XP_TAG, WED_IMPORT_SCALE,
+						XP_CHECKBOX, "Rescale", &sImportState.rescale, XP_NOTIFY, ImportEnable, XP_TAG, RF_IMPORT_RESCALE,
+						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.offset, XP_TAG, RF_IMPORT_OFFSET,
+						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sImportState.scale, XP_TAG, RF_IMPORT_SCALE,
 					XP_END,
 					XP_ROW,
 						XP_CHECKBOX, "Flip X", &sImportState.flip_x,
@@ -185,20 +185,20 @@ void	WED_ShowImportDialog(void)
 					XP_END,
 					XP_ROW,
 						XP_CAPTION, "Byte Offset:",
-						XP_EDIT_INT, 15, 6, &sImportState.byte_off, XP_TAG, WED_IMPORT_BYTE_OFFSET,
+						XP_EDIT_INT, 15, 6, &sImportState.byte_off, XP_TAG, RF_IMPORT_BYTE_OFFSET,
 						XP_CAPTION, "Byte Width:",
-						XP_EDIT_INT, 15, 6, &sImportState.byte_width, XP_TAG, WED_IMPORT_BYTE_WIDTH,
+						XP_EDIT_INT, 15, 6, &sImportState.byte_width, XP_TAG, RF_IMPORT_BYTE_WIDTH,
 						XP_CAPTION, "Byte Height:",
-						XP_EDIT_INT, 15, 6, &sImportState.byte_height, XP_TAG, WED_IMPORT_BYTE_HEIGHT,
+						XP_EDIT_INT, 15, 6, &sImportState.byte_height, XP_TAG, RF_IMPORT_BYTE_HEIGHT,
 					XP_END,
 					XP_ROW,
-						XP_CAPTION, "West:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.west, XP_TAG, WED_IMPORT_WEST,
-						XP_CAPTION, "South:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.south, XP_TAG, WED_IMPORT_SOUTH,
+						XP_CAPTION, "West:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.west, XP_TAG, RF_IMPORT_WEST,
+						XP_CAPTION, "South:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.south, XP_TAG, RF_IMPORT_SOUTH,
 					XP_END,
 					XP_ROW,
-						XP_CAPTION, "East:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.east, XP_TAG, WED_IMPORT_EAST,
-						XP_CAPTION, "North:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.north, XP_TAG, WED_IMPORT_NORTH,
-						XP_BUTTON_ACTION, "Map", DimsFromMap, XP_TAG, WED_IMPORT_MAP,
+						XP_CAPTION, "East:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.east, XP_TAG, RF_IMPORT_EAST,
+						XP_CAPTION, "North:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.north, XP_TAG, RF_IMPORT_NORTH,
+						XP_BUTTON_ACTION, "Map", DimsFromMap, XP_TAG, RF_IMPORT_MAP,
 					XP_END,
 					XP_ROW, XP_BUTTON_OK, "Import", XP_END,
 				XP_END,
@@ -387,7 +387,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			theDem->mSouth = sImportState.south;
 			theDem->mNorth = sImportState.north;
 		}
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange,(void*) target_layer);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange,(void*) target_layer);
 	}
 }
 
@@ -402,26 +402,26 @@ void	ImportNotifier(int catagory, int message, void * param)
 
 void ImportEnable(XPWidgetID)
 {
-	XPDataFromItem(sImport, WED_IMPORT_RESCALE);
-	XPDataFromItem(sImport, WED_IMPORT_FORMAT);
+	XPDataFromItem(sImport, RF_IMPORT_RESCALE);
+	XPDataFromItem(sImport, RF_IMPORT_FORMAT);
 	bool is_raw = sImportState.format >= import_Raw8;
 	bool has_geo = sImportState.format == import_DTED || sImportState.format == import_USGSNatural || sImportState.format == import_GeoTIFF;
-	XPEnableByTag(sImport, WED_IMPORT_SCALE, sImportState.rescale);
-	XPEnableByTag(sImport, WED_IMPORT_OFFSET, sImportState.rescale);
-	XPEnableByTag(sImport, WED_IMPORT_BYTE_OFFSET, is_raw);
-	XPEnableByTag(sImport, WED_IMPORT_BYTE_WIDTH, is_raw);
-	XPEnableByTag(sImport, WED_IMPORT_BYTE_HEIGHT, is_raw);
+	XPEnableByTag(sImport, RF_IMPORT_SCALE, sImportState.rescale);
+	XPEnableByTag(sImport, RF_IMPORT_OFFSET, sImportState.rescale);
+	XPEnableByTag(sImport, RF_IMPORT_BYTE_OFFSET, is_raw);
+	XPEnableByTag(sImport, RF_IMPORT_BYTE_WIDTH, is_raw);
+	XPEnableByTag(sImport, RF_IMPORT_BYTE_HEIGHT, is_raw);
 
-	XPEnableByTag(sImport, WED_IMPORT_NORTH, !has_geo);
-	XPEnableByTag(sImport, WED_IMPORT_SOUTH, !has_geo);
-	XPEnableByTag(sImport, WED_IMPORT_EAST , !has_geo);
-	XPEnableByTag(sImport, WED_IMPORT_WEST , !has_geo);
-	XPEnableByTag(sImport, WED_IMPORT_MAP  , !has_geo);
+	XPEnableByTag(sImport, RF_IMPORT_NORTH, !has_geo);
+	XPEnableByTag(sImport, RF_IMPORT_SOUTH, !has_geo);
+	XPEnableByTag(sImport, RF_IMPORT_EAST , !has_geo);
+	XPEnableByTag(sImport, RF_IMPORT_WEST , !has_geo);
+	XPEnableByTag(sImport, RF_IMPORT_MAP  , !has_geo);
 }
 
 static	void	LoadCLUT(XPWidgetID inID)
 {
-	XPWidgetID caption = XPFindWidgetByTag(sImport, WED_IMPORT_TRANSLATION);
+	XPWidgetID caption = XPFindWidgetByTag(sImport, RF_IMPORT_TRANSLATION);
 	if (sImportForwardMap.empty())
 	{
 		char fileBuf[2048];
@@ -476,8 +476,8 @@ void	DimsFromMap(XPWidgetID)
 			sImportState.north = min(sImportState.north, (float) i->second.mNorth);
 		}
 	}
-	XPDataToItem(sImport, WED_IMPORT_SOUTH);
-	XPDataToItem(sImport, WED_IMPORT_NORTH);
-	XPDataToItem(sImport, WED_IMPORT_EAST );
-	XPDataToItem(sImport, WED_IMPORT_WEST );
+	XPDataToItem(sImport, RF_IMPORT_SOUTH);
+	XPDataToItem(sImport, RF_IMPORT_NORTH);
+	XPDataToItem(sImport, RF_IMPORT_EAST );
+	XPDataToItem(sImport, RF_IMPORT_WEST );
 }

@@ -27,11 +27,11 @@
 #include "RF_MapTool.h"
 #include "UIUtils.h"
 
-class	WED_BezierTestTool : public WED_MapTool, public DragHandleManager {
+class	RF_BezierTestTool : public RF_MapTool, public DragHandleManager {
 public:
 
-					WED_BezierTestTool(WED_MapZoomer * inZoomer);
-	virtual			~WED_BezierTestTool();
+					RF_BezierTestTool(RF_MapZoomer * inZoomer);
+	virtual			~RF_BezierTestTool();
 
 	virtual	void	DrawFeedbackUnderlay(
 							bool				inCurrent);

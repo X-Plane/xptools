@@ -44,8 +44,8 @@
 #include <ctype.h>
 
 #if OPENGL_MAP
-	#include "WED_Msgs.h"
-	#include "WED_Notify.h"
+	#include "RF_Msgs.h"
+	#include "RF_Notify.h"
 #endif	
 
 const double	kShapeFileEpsi = 0.1 / (DEG_TO_NM_LAT * NM_TO_MTR);
@@ -570,7 +570,7 @@ static int DoShapeImport(const vector<const char *>& args)
 		
 		
 #if OPENGL_MAP
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 #endif						
 	return 0;
 }

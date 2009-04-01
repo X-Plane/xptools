@@ -62,24 +62,24 @@ static const	int	kHandleToBoundsY[8] = { 1, 1, 1, 5, 5, 3, 3, 3
 static const char * kFieldNames[] = { "West", "South", "East", "North" };
 static const char * kBtnNames[] = { "All", "Screen", "Clear", "Crop", "Delete", "Remove Oceans" };
 
-WED_CropTool::WED_CropTool(WED_MapZoomer * inZoomer) :
-	WED_MapTool(inZoomer),
+RF_CropTool::RF_CropTool(RF_MapZoomer * inZoomer) :
+	RF_MapTool(inZoomer),
 	mHandles(8, kHandleInfos, 4, this),
 	mCrop(false)
 {
 	mBounds[0] = mBounds[1] = mBounds[2] = mBounds[3] = 0.0;
 }
 
-WED_CropTool::~WED_CropTool()
+RF_CropTool::~RF_CropTool()
 {
 }
 
-void	WED_CropTool::DrawFeedbackUnderlay(
+void	RF_CropTool::DrawFeedbackUnderlay(
 							bool				inCurrent)
 {
 }
 
-void	WED_CropTool::DrawFeedbackOverlay(
+void	RF_CropTool::DrawFeedbackOverlay(
 							bool				inCurrent)
 {
 	if (inCurrent && mCrop)
@@ -99,7 +99,7 @@ void	WED_CropTool::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_CropTool::HandleClick(
+bool	RF_CropTool::HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
@@ -122,39 +122,39 @@ bool	WED_CropTool::HandleClick(
 
 #pragma mark -
 
-int		WED_CropTool::GetNumProperties(void)
+int		RF_CropTool::GetNumProperties(void)
 {
 	return 4;
 }
 
-void	WED_CropTool::GetNthPropertyName(int n, string& s)
+void	RF_CropTool::GetNthPropertyName(int n, string& s)
 {
 	s = kFieldNames[n];
 }
 
-double	WED_CropTool::GetNthPropertyValue(int n)
+double	RF_CropTool::GetNthPropertyValue(int n)
 {
 	return mBounds[n];
 }
 
-void	WED_CropTool::SetNthPropertyValue(int n, double v)
+void	RF_CropTool::SetNthPropertyValue(int n, double v)
 {
 	mBounds[n] = v;
 }
 
 #pragma mark -
 
-int		WED_CropTool::GetNumButtons(void)
+int		RF_CropTool::GetNumButtons(void)
 {
 	return 6;
 }
 
-void	WED_CropTool::GetNthButtonName(int n, string& s)
+void	RF_CropTool::GetNthButtonName(int n, string& s)
 {
 	s = kBtnNames[n];
 }
 
-void	WED_CropTool::NthButtonPressed(int n)
+void	RF_CropTool::NthButtonPressed(int n)
 {
 	switch(n) {
 	case 0: /* ALL */
@@ -169,75 +169,75 @@ void	WED_CropTool::NthButtonPressed(int n)
 		mCrop = false;
 		break;
 	case 3: /* CROP */
-		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], false, WED_ProgressFunc);
+		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], false, RF_ProgressFunc);
 		DebugAssert(gMap.is_valid());
 		DebugAssert(ValidateMapDominance(gMap));
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	case 4: /* DELETE */
-		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], true, WED_ProgressFunc);
+		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], true, RF_ProgressFunc);
 		DebugAssert(gMap.is_valid());
 		DebugAssert(ValidateMapDominance(gMap));
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	case 5: /* REMOVE OCEANS */
 		RemoveUnboundedWater(gMap);
 		DebugAssert(gMap.is_valid());
 		DebugAssert(ValidateMapDominance(gMap));
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	}
 }
 
-char *	WED_CropTool::GetStatusText(void)
+char *	RF_CropTool::GetStatusText(void)
 {
 	return NULL;
 }
 
 #pragma mark -
 
-double		WED_CropTool::UIToLogX(double v) const
+double		RF_CropTool::UIToLogX(double v) const
 {
 	return GetZoomer()->XPixelToLon(v);
 }
 
-double		WED_CropTool::UIToLogY(double v) const
+double		RF_CropTool::UIToLogY(double v) const
 {
 	return GetZoomer()->YPixelToLat(v);
 }
 
-double		WED_CropTool::LogToUIX(double v) const
+double		RF_CropTool::LogToUIX(double v) const
 {
 	return GetZoomer()->LonToXPixel(v);
 }
 
-double		WED_CropTool::LogToUIY(double v) const
+double		RF_CropTool::LogToUIY(double v) const
 {
 	return GetZoomer()->LatToYPixel(v);
 }
 
-double		WED_CropTool::GetHandleX(int inHandle) const
+double		RF_CropTool::GetHandleX(int inHandle) const
 {
 	int	x_ind = kHandleToBoundsX[inHandle];
 	if (x_ind == 4) return 0.5 * (mBounds[0] + mBounds[2]);
 	return mBounds[x_ind];
 }
 
-double		WED_CropTool::GetHandleY(int inHandle) const
+double		RF_CropTool::GetHandleY(int inHandle) const
 {
 	int	y_ind = kHandleToBoundsY[inHandle];
 	if (y_ind == 5) return 0.5 * (mBounds[1] + mBounds[3]);
 	return mBounds[y_ind];
 }
 
-void		WED_CropTool::MoveHandleX(int handle, double deltaX)
+void		RF_CropTool::MoveHandleX(int handle, double deltaX)
 {
 	int	x_ind = kHandleToBoundsX[handle];
 	if (x_ind < 4)
 		mBounds[x_ind] += deltaX;
 }
 
-void		WED_CropTool::MoveHandleY(int handle, double deltaY)
+void		RF_CropTool::MoveHandleY(int handle, double deltaY)
 {
 	int	y_ind = kHandleToBoundsY[handle];
 	if (y_ind < 4)

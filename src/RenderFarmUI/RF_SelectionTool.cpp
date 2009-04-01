@@ -161,17 +161,17 @@ void ApplyRange(__InputIterator begin, __InputIterator end, void (* func)(typena
 		func(*i, ref);
 }
 
-WED_SelectionTool::WED_SelectionTool(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer)
+RF_SelectionTool::RF_SelectionTool(RF_MapZoomer * inZoomer) : RF_MapTool(inZoomer)
 {
 	mIsDrag = false;
 }
 
-void	WED_SelectionTool::DrawFeedbackUnderlay(
+void	RF_SelectionTool::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 }
 
-void	WED_SelectionTool::DrawFeedbackOverlay(
+void	RF_SelectionTool::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 	if (mIsDrag && (mMouseX != mMouseStartX || mMouseY != mMouseStartY))
@@ -200,7 +200,7 @@ void	WED_SelectionTool::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_SelectionTool::HandleClick(
+bool	RF_SelectionTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
@@ -219,7 +219,7 @@ bool	WED_SelectionTool::HandleClick(
 		mVertexSelection = gVertexSelection;
 		mPointFeatureSelection = gPointFeatureSelection;
 		DoSelectionPreview();
-		if (gSelectionMode == wed_Select_Vertex)
+		if (gSelectionMode == rf_Select_Vertex)
 		if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
 		if (!gVertexSelection.empty() && mVertexSelection.find(*gVertexSelection.begin()) != mVertexSelection.end())
 		{
@@ -271,7 +271,7 @@ bool	WED_SelectionTool::HandleClick(
 			mPointFeatureSelection.clear();
 			mIsDrag = false;
 //			if (gFaceSelection.size() == 1)
-//				WED_PlaceBuildings(*gFaceSelection.begin());
+//				RF_PlaceBuildings(*gFaceSelection.begin());
 		}
 		if (mIsMoveVertices && (inX != mMouseX || inY != mMouseY))
 		{
@@ -285,7 +285,7 @@ bool	WED_SelectionTool::HandleClick(
 				Point_2 p = (*v)->point();
 //				(*v)->set_point(p + delta);				
 			}
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 			mIsMoveVertices = false;
 		}
 
@@ -297,32 +297,32 @@ bool	WED_SelectionTool::HandleClick(
 
 static int gStopPt = -1;
 
-int		WED_SelectionTool::GetNumProperties(void)
+int		RF_SelectionTool::GetNumProperties(void)
 {
 	return 1;
 }
 
-void	WED_SelectionTool::GetNthPropertyName(int n, string& s)
+void	RF_SelectionTool::GetNthPropertyName(int n, string& s)
 {
 	s = "Stop:";
 }
 
-double	WED_SelectionTool::GetNthPropertyValue(int n)
+double	RF_SelectionTool::GetNthPropertyValue(int n)
 {
 	return gStopPt;
 }
 
-void	WED_SelectionTool::SetNthPropertyValue(int, double v)
+void	RF_SelectionTool::SetNthPropertyValue(int, double v)
 {
 	gStopPt = v;
 }
 
-int		WED_SelectionTool::GetNumButtons(void)
+int		RF_SelectionTool::GetNumButtons(void)
 {
 	return 6;
 }
 
-void	WED_SelectionTool::GetNthButtonName(int n, string& s)
+void	RF_SelectionTool::GetNthButtonName(int n, string& s)
 {
 	switch(n) {
 	case 0: s = "Delete"; break;
@@ -334,7 +334,7 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	}
 }
 
-void	WED_SelectionTool::NthButtonPressed(int n)
+void	RF_SelectionTool::NthButtonPressed(int n)
 {
 	GISFace * d = NULL;
 	int ctr = 0;
@@ -379,10 +379,10 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			}
 				Locator						loc(gMap);
 
-			PROGRESS_START(WED_ProgressFunc,0,1,"Insetting")
+			PROGRESS_START(RF_ProgressFunc,0,1,"Insetting")
 			for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
 			{
-				PROGRESS_SHOW(WED_ProgressFunc,0,1,"Insetting",ctr,gFaceSelection.size())
+				PROGRESS_SHOW(RF_ProgressFunc,0,1,"Insetting",ctr,gFaceSelection.size())
 				Polygon_with_holes_2		bounds;
 				PolyInset_t					lims;
 				PolygonFromFace(*fsel, bounds, &lims, GetInsetForEdgeDegs, NULL);
@@ -414,13 +414,13 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					(*fsel)->data().mPolyObjs.push_back(res);
 				}
 			}
-			PROGRESS_DONE(WED_ProgressFunc,0,1,"Insetting")
+			PROGRESS_DONE(RF_ProgressFunc,0,1,"Insetting")
 			if (!fail.empty())
 			{
 				char buf[256];
 				sprintf(buf, "%d out of %d failed.\n", fail.size(), gFaceSelection.size());
 				DoUserAlert(buf);
-	//			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+	//			RF_Notifiable::Notify(RF_Cat_File, RF_Msg_VectorChange, NULL);
 				gEdgeSelection.clear();
 				gFaceSelection = fail;
 				gVertexSelection.clear();
@@ -439,18 +439,18 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			Face_handle f = gFaceSelection.empty() ? Face_handle() : *gFaceSelection.begin();
 			if(f != Face_handle())CreateNewBitmap(512,512,3,&img);
 			double		bounds[4];
-			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  WED_ProgressFunc, f != Face_handle() ? &img : NULL, bounds);
+			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  RF_ProgressFunc, f != Face_handle() ? &img : NULL, bounds);
 			if(f != Face_handle()){			
 			gMapView->SetFlowImage(img,bounds);
 			DestroyBitmap(&img);}
 		}
 	}
 	DebugAssert(gMap.is_valid());
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 	gEdgeSelection.clear();
 }
 
-char *	WED_SelectionTool::GetStatusText(void)
+char *	RF_SelectionTool::GetStatusText(void)
 {
 	static char buf[1024];
 	int n = 0;
@@ -576,7 +576,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 	return buf;
 }
 
-bool	WED_SelectionTool::GetRectMapCoords(double coords[4])
+bool	RF_SelectionTool::GetRectMapCoords(double coords[4])
 {
 	double	startLon = GetZoomer()->XPixelToLon(mMouseStartX);
 	double	nowLon = GetZoomer()->XPixelToLon(mMouseX);
@@ -697,14 +697,14 @@ static void	MakePFSClosestMaybe(PointFeatureSelection& v, NearestPFSToPt_t * s)
 }
 
 
-void	WED_SelectionTool::DoSelectionPreview()
+void	RF_SelectionTool::DoSelectionPreview()
 {
 		vector<Face_handle> 		faceitems;
 		vector<Halfedge_handle> 	halfedgeitems;
 		vector<Vertex_handle>		vertexitems;
 
 	switch(gSelectionMode) {
-	case wed_Select_Face:
+	case rf_Select_Face:
 		{
 			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
 				gFaceSelection.clear();
@@ -723,7 +723,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			}
 		}
 		break;
-	case wed_Select_Edge:
+	case rf_Select_Edge:
 		{
 			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
 				gEdgeSelection.clear();
@@ -756,7 +756,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			}
 		}
 		break;
-	case wed_Select_Vertex:
+	case rf_Select_Vertex:
 		{
 			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
 				gVertexSelection.clear();
@@ -790,7 +790,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			}
 		}
 		break;
-	case wed_Select_PointFeatures:
+	case rf_Select_PointFeatures:
 		{
 			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
 				gPointFeatureSelection.clear();

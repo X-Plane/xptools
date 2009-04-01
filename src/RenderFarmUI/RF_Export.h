@@ -24,6 +24,6 @@
 #ifndef RF_EXPORT_H
 #define RF_EXPORT_H
 
-void	WED_ShowExportDialog(void);
+void	RF_ShowExportDialog(void);
 
 #endif

@@ -25,7 +25,7 @@
 
 #include "ProgressUtils.h"
 
-bool	WED_ProgressFunc(
+bool	RF_ProgressFunc(
 						int				inCurrentStage,
 						int				inCurrentStageCount,
 						const char *	inCurrentStageName,

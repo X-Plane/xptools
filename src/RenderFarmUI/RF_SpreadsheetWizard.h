@@ -24,6 +24,6 @@
 #ifndef RF_SPREADSHEETWIZARD_H
 #define RF_SPREADSHEETWIZARD_H
 
-void	WED_ShowSpreadsheetWizard(void);
+void	RF_ShowSpreadsheetWizard(void);
 
 #endif

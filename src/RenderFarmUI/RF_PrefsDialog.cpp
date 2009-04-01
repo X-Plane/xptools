@@ -44,12 +44,12 @@ static	int				sPrefsTab = 0;
 static	int				sTest1 = 0;
 static	int				sTest2 = 0;
 
-WED_Prefs	gWedPrefs = { 0 };
+RF_Prefs	gWedPrefs = { 0 };
 
 #define TAG_COMMAND_PREFS 1004
 
 static void RestoreDefaultProcessing(XPWidgetID);
-void	WED_ShowPrefsDialog(void)
+void	RF_ShowPrefsDialog(void)
 {
 	if (sPrefsDialog == NULL)
 	{
@@ -221,7 +221,7 @@ static void StrToKey(IniSectionMap& inMap, const char * sec, const  char * key, 
 	inMap[sec][key] = v;
 }
 
-void	WED_LoadPrefs(void)
+void	RF_LoadPrefs(void)
 {
 	IniSectionMap	prefs;
 	string path = FindConfigFile(PREFS_FILE);
@@ -237,7 +237,7 @@ void	WED_LoadPrefs(void)
 	}
 }
 
-void	WED_SavePrefs(void)
+void	RF_SavePrefs(void)
 {
 	IniSectionMap	prefs;
 

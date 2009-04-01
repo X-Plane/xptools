@@ -32,7 +32,7 @@
 
 static	XPWidgetID		sWizard = NULL;
 
-struct	WED_WizardParams {
+struct	RF_WizardParams {
 	float	elev_min;	float	elev_max;
 	float	slop_min;	float	slop_max;
 	float	temp_min;	float	temp_max;
@@ -46,11 +46,11 @@ struct	WED_WizardParams {
 	float	utrn_min;	float	utrn_max;
 };
 
-static WED_WizardParams	sWizardParams = { 0 };
+static RF_WizardParams	sWizardParams = { 0 };
 
-void	WED_WizardAction(XPWidgetID);
+void	RF_WizardAction(XPWidgetID);
 
-void	WED_ShowSpreadsheetWizard(void)
+void	RF_ShowSpreadsheetWizard(void)
 {
 	if (sWizard != NULL)
 	{
@@ -78,7 +78,7 @@ void	WED_ShowSpreadsheetWizard(void)
 					XP_ROW, XP_CAPTION, "Urban Centrality Min/Max", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.ucen_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.ucen_max, XP_END,
 					XP_ROW, XP_CAPTION, "Urban Transport Min/Max", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.utrn_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.utrn_max, XP_END,
 
-					XP_ROW, XP_BUTTON_ACTION, "Apply", WED_WizardAction, XP_END,
+					XP_ROW, XP_BUTTON_ACTION, "Apply", RF_WizardAction, XP_END,
 				XP_END,
 			XP_END);
 		XPShowWidget(sWizard);
@@ -110,7 +110,7 @@ inline double cosdeg(double deg)
 	return cos(deg * DEG_TO_RAD);
 }
 
-void	WED_WizardAction(XPWidgetID)
+void	RF_WizardAction(XPWidgetID)
 {
 	XPSendMessageToWidget(sWizard, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);
 
@@ -161,5 +161,5 @@ void	WED_WizardAction(XPWidgetID)
 	sWizardParams.sdir_min = old_sdir_min;
 	sWizardParams.sdir_max = old_sdir_max;
 
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
 }

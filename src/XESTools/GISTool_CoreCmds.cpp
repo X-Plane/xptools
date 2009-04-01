@@ -40,8 +40,8 @@
 #include "GISUtils.h"
 
 #if OPENGL_MAP
-#include "WED_Notify.h"
-#include "WED_Msgs.h"
+#include "RF_Notify.h"
+#include "RF_Msgs.h"
 #endif
 
 static int DoExtent(const vector<const char *>& args)
@@ -258,7 +258,7 @@ static int DoLoad(const vector<const char *>& args)
 				gMap.number_of_vertices());
 
 #if OPENGL_MAP
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 #endif
 	return 0;
 }

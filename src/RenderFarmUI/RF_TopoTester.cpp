@@ -36,19 +36,19 @@
 	#include <gl.h>
 #endif
 
-WED_TopoTester::WED_TopoTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer), mRayShoot(false)
+RF_TopoTester::RF_TopoTester(RF_MapZoomer * inZoomer) : RF_MapTool(inZoomer), mRayShoot(false)
 {
 }
-WED_TopoTester::~WED_TopoTester()
+RF_TopoTester::~RF_TopoTester()
 {
 }
 
-void	WED_TopoTester::DrawFeedbackUnderlay(
+void	RF_TopoTester::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 }
 
-void	WED_TopoTester::DrawFeedbackOverlay(
+void	RF_TopoTester::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 	int mx, my;
@@ -90,15 +90,15 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 			case Pmwx::locate_Face:
 				if (mFoundHint->face() != gMap.unbounded_face())
 					gFaceSelection.insert(mFoundHint->face());
-				gSelectionMode = wed_Select_Face;
+				gSelectionMode = RF_Select_Face;
 				break;
 			case Pmwx::locate_Halfedge:
 				gEdgeSelection.insert(mFoundHint->mDominant ? mFoundHint : mFoundHint->twin());
-				gSelectionMode = wed_Select_Edge;
+				gSelectionMode = RF_Select_Edge;
 				break;
 			case Pmwx::locate_Vertex:
 				gVertexSelection.insert(mFoundHint->target());
-				gSelectionMode = wed_Select_Vertex;
+				gSelectionMode = RF_Select_Vertex;
 				break;
 			}
 			st_p = mFound;
@@ -122,15 +122,15 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		case Pmwx::locate_Face:
 			if (mAnchorHint->face() != gMap.unbounded_face())
 				gFaceSelection.insert(mAnchorHint->face());
-			gSelectionMode = wed_Select_Face;
+			gSelectionMode = RF_Select_Face;
 			break;
 		case Pmwx::locate_Halfedge:
 			gEdgeSelection.insert(mAnchorHint->mDominant ? mAnchorHint : mAnchorHint->twin());
-			gSelectionMode = wed_Select_Edge;
+			gSelectionMode = RF_Select_Edge;
 			break;
 		case Pmwx::locate_Vertex:
 			gVertexSelection.insert(mAnchorHint->target());
-			gSelectionMode = wed_Select_Vertex;
+			gSelectionMode = RF_Select_Vertex;
 			break;
 		}
 
@@ -159,7 +159,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_TopoTester::HandleClick(
+bool	RF_TopoTester::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
@@ -174,7 +174,7 @@ bool	WED_TopoTester::HandleClick(
 		if (XPLMGetModifiers() & xplm_OptionAltFlag)
 		{
 			gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+			RF_Notifiable::Notify(RF_Cat_File, RF_Msg_VectorChange, NULL);
 		}
 		mRayShoot = false;
 		break;
@@ -182,16 +182,16 @@ bool	WED_TopoTester::HandleClick(
 	return 1;
 }
 
-int		WED_TopoTester::GetNumProperties(void) { return 0; }
-void	WED_TopoTester::GetNthPropertyName(int, string&) { }
-double	WED_TopoTester::GetNthPropertyValue(int) { return 0.0; }
-void	WED_TopoTester::SetNthPropertyValue(int, double) { }
+int		RF_TopoTester::GetNumProperties(void) { return 0; }
+void	RF_TopoTester::GetNthPropertyName(int, string&) { }
+double	RF_TopoTester::GetNthPropertyValue(int) { return 0.0; }
+void	RF_TopoTester::SetNthPropertyValue(int, double) { }
 
-int		WED_TopoTester::GetNumButtons(void) { return 0; }
-void	WED_TopoTester::GetNthButtonName(int, string&) { }
-void	WED_TopoTester::NthButtonPressed(int) { }
+int		RF_TopoTester::GetNumButtons(void) { return 0; }
+void	RF_TopoTester::GetNthButtonName(int, string&) { }
+void	RF_TopoTester::NthButtonPressed(int) { }
 
-char *	WED_TopoTester::GetStatusText(void)
+char *	RF_TopoTester::GetStatusText(void)
 {
 	if (mRayShoot)
 	{

@@ -27,9 +27,9 @@
 #include "RF_Selection.h"
 #include "MapDefs.h"
 
-class	WED_SelectionTool : public WED_MapTool {
+class	RF_SelectionTool : public RF_MapTool {
 public:
-					WED_SelectionTool(WED_MapZoomer * inZoomer);
+					RF_SelectionTool(RF_MapZoomer * inZoomer);
 
 	virtual	void	DrawFeedbackUnderlay(
 							bool				inCurrent);

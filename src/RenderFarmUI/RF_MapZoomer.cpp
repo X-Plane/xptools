@@ -27,7 +27,7 @@ inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
 }
 
-WED_MapZoomer::WED_MapZoomer()
+RF_MapZoomer::RF_MapZoomer()
 {
 	mPixels[0] = 0.0;
 	mPixels[1] = 0.0;
@@ -40,27 +40,27 @@ WED_MapZoomer::WED_MapZoomer()
 	mAspectRatio = 1.0;
 }
 
-double	WED_MapZoomer::XPixelToLon(double x)
+double	RF_MapZoomer::XPixelToLon(double x)
 {
 	return rescale(mPixels[0], mPixels[2], mVisibleBounds[0], mVisibleBounds[2], x);
 }
 
-double	WED_MapZoomer::YPixelToLat(double y)
+double	RF_MapZoomer::YPixelToLat(double y)
 {
 	return rescale(mPixels[1], mPixels[3], mVisibleBounds[1], mVisibleBounds[3], y);
 }
 
-double	WED_MapZoomer::LonToXPixel(double lon)
+double	RF_MapZoomer::LonToXPixel(double lon)
 {
 	return rescale(mVisibleBounds[0], mVisibleBounds[2], mPixels[0], mPixels[2], lon);
 }
 
-double	WED_MapZoomer::LatToYPixel(double lat)
+double	RF_MapZoomer::LatToYPixel(double lat)
 {
 	return rescale(mVisibleBounds[1], mVisibleBounds[3], mPixels[1], mPixels[3], lat);
 }
 
-void	WED_MapZoomer::SetPixelBounds(
+void	RF_MapZoomer::SetPixelBounds(
 					double 	inLeft,
 					double	inBottom,
 					double	inRight,
@@ -72,7 +72,7 @@ void	WED_MapZoomer::SetPixelBounds(
 	mPixels[3] = inTop;
 }
 
-void	WED_MapZoomer::SetMapVisibleBounds(
+void	RF_MapZoomer::SetMapVisibleBounds(
 					double	inWest,
 					double	inSouth,
 					double	inEast,
@@ -83,7 +83,7 @@ void	WED_MapZoomer::SetMapVisibleBounds(
 	mVisibleBounds[2] = inEast;
 	mVisibleBounds[3] = inNorth;
 }
-void	WED_MapZoomer::SetMapLogicalBounds(
+void	RF_MapZoomer::SetMapLogicalBounds(
 					double	inWest,
 					double	inSouth,
 					double	inEast,
@@ -96,7 +96,7 @@ void	WED_MapZoomer::SetMapLogicalBounds(
 }
 
 
-void	WED_MapZoomer::GetPixelBounds(
+void	RF_MapZoomer::GetPixelBounds(
 					double& outLeft,
 					double&	outBottom,
 					double&	outRight,
@@ -108,7 +108,7 @@ void	WED_MapZoomer::GetPixelBounds(
 	outTop = mPixels[3];
 }
 
-void	WED_MapZoomer::GetMapVisibleBounds(
+void	RF_MapZoomer::GetMapVisibleBounds(
 					double&	outWest,
 					double&	outSouth,
 					double&	outEast,
@@ -119,7 +119,7 @@ void	WED_MapZoomer::GetMapVisibleBounds(
 	outEast = mVisibleBounds[2];
 	outNorth = mVisibleBounds[3];
 }
-void	WED_MapZoomer::GetMapLogicalBounds(
+void	RF_MapZoomer::GetMapLogicalBounds(
 					double&	outWest,
 					double&	outSouth,
 					double&	outEast,
@@ -132,12 +132,12 @@ void	WED_MapZoomer::GetMapLogicalBounds(
 }
 
 
-void	WED_MapZoomer::SetAspectRatio(double a)
+void	RF_MapZoomer::SetAspectRatio(double a)
 {
 	mAspectRatio = a;
 }
 
-void	WED_MapZoomer::ZoomShowAll(void)
+void	RF_MapZoomer::ZoomShowAll(void)
 {
 	double	mapWidth = mLogicalBounds[2] - mLogicalBounds[0];
 	double	mapHeight = mLogicalBounds[3] - mLogicalBounds[1];
@@ -180,7 +180,7 @@ void	WED_MapZoomer::ZoomShowAll(void)
 	mVisibleBounds[3] = mapCenterY + 0.5 * mapHeight;
 }
 
-void	WED_MapZoomer::PanPixels(
+void	RF_MapZoomer::PanPixels(
 					double	x1,
 					double	y1,
 					double	x2,
@@ -199,7 +199,7 @@ void	WED_MapZoomer::PanPixels(
 	mVisibleBounds[3] -= delta_lat;
 }
 
-void	WED_MapZoomer::ZoomAround(
+void	RF_MapZoomer::ZoomAround(
 					double	zoomFactor,
 					double	centerXPixel,
 					double	centerYPixel)
@@ -222,7 +222,7 @@ void	WED_MapZoomer::ZoomAround(
 	PanPixels(mPixels[0], mPixels[1], centerXPixel, centerYPixel);
 }
 
-void	WED_MapZoomer::ScrollReveal(
+void	RF_MapZoomer::ScrollReveal(
 				double	inLon,
 				double	inLat)
 {
@@ -235,7 +235,7 @@ void	WED_MapZoomer::ScrollReveal(
 
 }
 
-void	WED_MapZoomer::ScrollReveal(
+void	RF_MapZoomer::ScrollReveal(
 				double	inWest,
 				double	inSouth,
 				double	inEast,
@@ -274,7 +274,7 @@ void	WED_MapZoomer::ScrollReveal(
 	}
 }
 
-void	WED_MapZoomer::GetScrollbarValues(
+void	RF_MapZoomer::GetScrollbarValues(
 				double&	hMin,
 				double&	hMax,
 				double& hPos,
@@ -297,14 +297,14 @@ void	WED_MapZoomer::GetScrollbarValues(
 	vPos = mVisibleBounds[1] - mLogicalBounds[1];
 }
 
-void	WED_MapZoomer::ScrollH(double lon)
+void	RF_MapZoomer::ScrollH(double lon)
 {
 	double	width = mVisibleBounds[2] - mVisibleBounds[0];
 	mVisibleBounds[0] = mLogicalBounds[0] + lon;
 	mVisibleBounds[2] = mVisibleBounds[0] + width;
 }
 
-void	WED_MapZoomer::ScrollV(double lat)
+void	RF_MapZoomer::ScrollV(double lat)
 {
 	double	height = mVisibleBounds[3] - mVisibleBounds[1];
 	mVisibleBounds[1] = mLogicalBounds[1] + lat;

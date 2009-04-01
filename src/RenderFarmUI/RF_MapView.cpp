@@ -88,7 +88,7 @@
 #define DEBUG_PRINT_TRI_PARAMS 0
 
 
-WED_MapView *		gMapView = NULL;
+RF_MapView *		gMapView = NULL;
 
 const int 	kInfoStripHeight = 18;
 
@@ -225,10 +225,10 @@ static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0,
 //static	int			sShowMeshBorders = 1;
 //static	int			sShowMeshTrisLo = 1;
 
-void	WED_MapView_HandleMenuCommand(void *, void *);
-void	WED_MapView_HandleDEMMenuCommand(void *, void *);
-void	WED_MapView_HandleDEMDataMenuCommand(void *, void *);
-void	WED_MapView_UpdateCommandStatus(void);
+void	RF_MapView_HandleMenuCommand(void *, void *);
+void	RF_MapView_HandleDEMMenuCommand(void *, void *);
+void	RF_MapView_HandleDEMDataMenuCommand(void *, void *);
+void	RF_MapView_UpdateCommandStatus(void);
 
 inline const char * QuickToFile(const string& s)
 {
@@ -287,14 +287,14 @@ inline	int GetBucketForEdge(Bbox2 * buckets, int bucket_count, CDT::Finite_edges
 	return bucket_count;
 }
 
-WED_MapView::WED_MapView(
+RF_MapView::RF_MapView(
                        int                  inLeft,
                        int                  inTop,
                        int                  inRight,
                        int                  inBottom,
                        int                  inVisible,
-                       WED_Pane *			inSuper) :
-	WED_Pane(inLeft, inTop , inRight, inBottom, inVisible, "Map", inSuper),
+                       RF_Pane *			inSuper) :
+	RF_Pane(inLeft, inTop , inRight, inBottom, inVisible, "Map", inSuper),
 	mNeedRecalcMapFull(true),
 	mNeedRecalcMapMeta(true),
 	mNeedRecalcDEM(true),
@@ -311,7 +311,7 @@ WED_MapView::WED_MapView(
 	mDLMeshFill = 0;
 
 	int n;
-	sViewMenu = XPLMCreateMenu("View", NULL, 0, WED_MapView_HandleMenuCommand, reinterpret_cast<void *>(this));
+	sViewMenu = XPLMCreateMenu("View", NULL, 0, RF_MapView_HandleMenuCommand, reinterpret_cast<void *>(this));
 	n = 0;
 	while (kCmdNames[n])
 	{
@@ -320,8 +320,8 @@ WED_MapView::WED_MapView(
 			XPLMSetMenuItemKey(sViewMenu,n,kCmdKeys[n*2],kCmdKeys[n*2+1]);
 		++n;
 	}
-	sDEMMenu = XPLMCreateMenu("DEMs", sViewMenu, viewCmd_DEMChoice, WED_MapView_HandleDEMMenuCommand, reinterpret_cast<void*>(this));
-	sDEMDataMenu = XPLMCreateMenu("DEM Data", sViewMenu, viewCmd_DEMDataChoice, WED_MapView_HandleDEMDataMenuCommand, reinterpret_cast<void*>(this));
+	sDEMMenu = XPLMCreateMenu("DEMs", sViewMenu, viewCmd_DEMChoice, RF_MapView_HandleDEMMenuCommand, reinterpret_cast<void*>(this));
+	sDEMDataMenu = XPLMCreateMenu("DEM Data", sViewMenu, viewCmd_DEMDataChoice, RF_MapView_HandleDEMDataMenuCommand, reinterpret_cast<void*>(this));
 	for (n = 0; n < DEMChoiceCount; ++n)
 	{
 		XPLMAppendMenuItem(sDEMMenu, kDEMs[n].cmdName, (void *) n, 1);
@@ -332,7 +332,7 @@ WED_MapView::WED_MapView(
 		if (n >= 10 && n <= 19)
 			XPLMSetMenuItemKey(sDEMMenu, n, '0' + n - 10, xplm_ControlFlag + xplm_ShiftFlag);
 	}
-	WED_MapView_UpdateCommandStatus();
+	RF_MapView_UpdateCommandStatus();
 
 	XPLMGenerateTextureNumbers(&mTexID, 1);
 	XPLMGenerateTextureNumbers(&mReliefID, 1);
@@ -342,7 +342,7 @@ WED_MapView::WED_MapView(
 	mHasFlow = false;
 
 	mCurTool = 0;
-	mZoomer = new WED_MapZoomer;
+	mZoomer = new RF_MapZoomer;
 
 	mZoomer->SetPixelBounds(inLeft, inBottom + kInfoStripHeight, inRight, inTop - kInfoStripHeight);
 
@@ -374,20 +374,20 @@ WED_MapView::WED_MapView(
 	}
 	mToolBtnsOffset += 10;
 
-	mTools.push_back(new WED_SelectionTool(mZoomer));	
-	mTools.push_back(new WED_CropTool(mZoomer));	
-//	mTools.push_back(new WED_BezierTestTool(mZoomer));		
-	mTools.push_back(new WED_ImageTool(mZoomer));	
-	mTools.push_back(new WED_TerraTool(mZoomer));	
-//	mTools.push_back(new WED_TopoTester(mZoomer));	
-//	mTools.push_back(new WED_MeshTester(mZoomer));	
+	mTools.push_back(new RF_SelectionTool(mZoomer));	
+	mTools.push_back(new RF_CropTool(mZoomer));	
+//	mTools.push_back(new RF_BezierTestTool(mZoomer));		
+	mTools.push_back(new RF_ImageTool(mZoomer));	
+	mTools.push_back(new RF_TerraTool(mZoomer));	
+//	mTools.push_back(new RF_TopoTester(mZoomer));	
+//	mTools.push_back(new RF_MeshTester(mZoomer));	
 	
 	SetupForTool();
 
 //	XPCreateTab(50, 150, 300, 100, 1, "Tab A;Tab B;Tab C;Tab D", GetWidget());
 }
 
-WED_MapView::~WED_MapView()
+RF_MapView::~RF_MapView()
 {
 	if (mDLMeshLine != 0)	glDeleteLists(mDLMeshLine, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 	if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
@@ -408,7 +408,7 @@ WED_MapView::~WED_MapView()
  * MAP DRAWING
  ***************************************************************************************************************************************/
 
-void	WED_MapView::DrawSelf(void)
+void	RF_MapView::DrawSelf(void)
 {
 	/***************************************************************************************************************************************
 	 * BASE LAYER, UNDERLAY AND DECALS
@@ -416,7 +416,7 @@ void	WED_MapView::DrawSelf(void)
 
 	int	l, t, r, b;
 	XPGetWidgetGeometry(GetWidget(), &l, &t, &r, &b);
-	WED_MapTool * cur = CurTool();
+	RF_MapTool * cur = CurTool();
 	char * status = NULL;;
 	if (cur) status = cur->GetStatusText();
 	char * mon = MonitorCaption();
@@ -454,17 +454,17 @@ void	WED_MapView::DrawSelf(void)
 	{
 		if (mNeedRecalcMapFull)
 		{
-			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
+			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
 //			gMap.Index();
-			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
-			PrecalcOGL(gMap,WED_ProgressFunc);
-			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
+			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
+			PrecalcOGL(gMap,RF_ProgressFunc);
+			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
 		}
 		else if (mNeedRecalcMapMeta)
 		{
-			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
-			RecalcOGLColors(gMap,WED_ProgressFunc);
-			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
+			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
+			RecalcOGLColors(gMap,RF_ProgressFunc);
+			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
 		}
 
 		mNeedRecalcMapMeta = mNeedRecalcMapFull = false;
@@ -475,14 +475,14 @@ void	WED_MapView::DrawSelf(void)
 	{
 		if (mNeedRecalcMeshHi)
 		{
-			WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 0.0);
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 0.0);
 
 			if (mDLMeshLine != 0)	glDeleteLists(mDLMeshLine, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 			mDLMeshLine = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
 			for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
 			{
-				WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
+				RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
 				glNewList(mDLMeshLine + n, GL_COMPILE);
 				glBegin(GL_LINES);
 				mEdges[n] = 0;
@@ -516,7 +516,7 @@ void	WED_MapView::DrawSelf(void)
 				glEndList();
 			}
 			mNeedRecalcMeshHi = false;
-			WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 1.0);
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 1.0);
 
 		}
 	}
@@ -527,14 +527,14 @@ void	WED_MapView::DrawSelf(void)
 
 		if (mNeedRecalcMeshHiAlpha)
 		{
-			WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 0.0);
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 0.0);
 
 			if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 			mDLMeshFill = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
 			for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
 			{
-				WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
+				RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
 
 				glNewList(mDLMeshFill + n, GL_COMPILE);
 				glBegin(GL_TRIANGLES);
@@ -601,7 +601,7 @@ void	WED_MapView::DrawSelf(void)
 				glEndList();
 			}
 			mNeedRecalcMeshHiAlpha = false;
-			WED_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 1.0);
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 1.0);
 		}
 	}
 
@@ -1053,9 +1053,9 @@ put in  color enums?
  * MAP INTERACTION
  ***************************************************************************************************************************************/
 
-int		WED_MapView::HandleClick(XPLMMouseStatus status, int x, int y, int button)
+int		RF_MapView::HandleClick(XPLMMouseStatus status, int x, int y, int button)
 {
-	WED_MapTool * cur = CurTool();
+	RF_MapTool * cur = CurTool();
 	if (cur && cur->HandleClick(status, x, y, button)) { UpdateForTool(); return 1; }
 
 	static	int oldX = x, oldY = y;
@@ -1078,12 +1078,12 @@ int		WED_MapView::HandleClick(XPLMMouseStatus status, int x, int y, int button)
 	return 1;
 }
 
-int		WED_MapView::HandleKey(char key, XPLMKeyFlags flags, char vkey)
+int		RF_MapView::HandleKey(char key, XPLMKeyFlags flags, char vkey)
 {
 	return 0;
 }
 
-int		WED_MapView::HandleMouseWheel(int x, int y, int direction)
+int		RF_MapView::HandleMouseWheel(int x, int y, int direction)
 {
 	double	zoom = 1.0;
 	while (direction > 0)
@@ -1102,19 +1102,19 @@ int		WED_MapView::HandleMouseWheel(int x, int y, int direction)
 	return 1;
 }
 
-WED_MapTool * WED_MapView::CurTool(void)
+RF_MapTool * RF_MapView::CurTool(void)
 {
 	if (mCurTool < 0 || mCurTool >= mTools.size()) return NULL;
 	return mTools[mCurTool];
 }
 
-void	WED_MapView::HandleNotification(int catagory, int message, void * param)
+void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 {
 	int n;
 	switch(catagory) {
-	case wed_Cat_File:
+	case rf_Cat_File:
 		switch(message) {
-		case wed_Msg_FileLoaded:
+		case rf_Msg_FileLoaded:
 			{
 				mNeedRecalcMapFull = true;
 				mNeedRecalcMapMeta = true;
@@ -1157,27 +1157,27 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 				}
 			}
 			break;
-		case wed_Msg_RasterChange:
+		case rf_Msg_RasterChange:
 			mNeedRecalcDEM = true;
 			mNeedRecalcRelief = true;
 			break;
-		case wed_Msg_VectorChange:
+		case rf_Msg_VectorChange:
 			mNeedRecalcMapFull = true;
 			break;
-		case wed_Msg_VectorMetaChange:
+		case rf_Msg_VectorMetaChange:
 			mNeedRecalcMapMeta = true;
 			break;
-		case wed_Msg_TriangleHiChange:
+		case rf_Msg_TriangleHiChange:
 			mNeedRecalcMeshHi = true;
 			mNeedRecalcMeshHiAlpha = true;
 			break;
-		case wed_Msg_AirportsLoaded:
+		case rf_Msg_AirportsLoaded:
 			break;
 		}
 		break;
-	case wed_Cat_Selection:
+	case rf_Cat_Selection:
 		switch(message) {
-		case wed_Msg_SelectionModeChanged:
+		case rf_Msg_SelectionModeChanged:
 			{
 				for (n = 0; n < mSelModeBtns.size(); ++n)
 					XPSetWidgetProperty(mSelModeBtns[n], xpProperty_ButtonState, n == gSelectionMode);
@@ -1186,10 +1186,10 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 		}
 		break;
 	}
-	WED_MapView_UpdateCommandStatus();
+	RF_MapView_UpdateCommandStatus();
 }
 
-void	WED_MapView::SetupForTool(void)
+void	RF_MapView::SetupForTool(void)
 {
 	int n;
 
@@ -1209,7 +1209,7 @@ void	WED_MapView::SetupForTool(void)
 	XPGetWidgetGeometry(GetWidget(), &l, &t, &r, &b);
 	mToolStatusOffset = l + 10;
 
-	WED_MapTool * cur = CurTool();
+	RF_MapTool * cur = CurTool();
 	if (cur)
 	{
 		int	btnLeft = mToolBtnsOffset;
@@ -1249,9 +1249,9 @@ void	WED_MapView::SetupForTool(void)
 	}
 }
 
-void	WED_MapView::UpdateForTool(void)
+void	RF_MapView::UpdateForTool(void)
 {
-	WED_MapTool * cur = CurTool();
+	RF_MapTool * cur = CurTool();
 	if (!cur) return;
 	for (int n = 0; n < cur->GetNumProperties(); ++n)
 	{
@@ -1262,14 +1262,14 @@ void	WED_MapView::UpdateForTool(void)
 	}
 }
 
-int		WED_MapView::MessageFunc(
+int		RF_MapView::MessageFunc(
                                    XPWidgetMessage      inMessage,
                                    long                 inParam1,
                                    long                 inParam2)
 {
 	XPWidgetID	target;
 	int n;
-	WED_MapTool * cur = CurTool();
+	RF_MapTool * cur = CurTool();
 	switch(inMessage) {
 	case xpMsg_KeyPress:
 		if (cur)
@@ -1297,7 +1297,7 @@ int		WED_MapView::MessageFunc(
 				return 1;
 			}
 		}
-		return WED_Pane::MessageFunc(inMessage, inParam1, inParam2);
+		return RF_Pane::MessageFunc(inMessage, inParam1, inParam2);
 	case xpMsg_PushButtonPressed:
 	case xpMsg_ButtonStateChanged:
 		target = (XPWidgetID) inParam1;
@@ -1315,7 +1315,7 @@ int		WED_MapView::MessageFunc(
 		{
 			if (target == mSelModeBtns[n])
 			{
-				WED_SetSelectionMode(n);
+				RF_SetSelectionMode(n);
 				return 1;
 			}
 		}
@@ -1334,12 +1334,12 @@ int		WED_MapView::MessageFunc(
 
 		return 0;
 	default:
-		return WED_Pane::MessageFunc(inMessage, inParam1, inParam2);
+		return RF_Pane::MessageFunc(inMessage, inParam1, inParam2);
 	}
 }
 
 
-bool	WED_MapView::RecalcDEM(bool do_relief)
+bool	RF_MapView::RecalcDEM(bool do_relief)
 {
 	if (sDEMType == 0)
 	{
@@ -1404,26 +1404,26 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	return true;
 }
 
-void	WED_MapView_HandleDEMMenuCommand(void * r, void * i)
+void	RF_MapView_HandleDEMMenuCommand(void * r, void * i)
 {
 	sDEMType = (int) i;
-	WED_MapView * me = (WED_MapView *) r;
+	RF_MapView * me = (RF_MapView *) r;
 	me->mNeedRecalcDEM = true;
-	WED_MapView_UpdateCommandStatus();
+	RF_MapView_UpdateCommandStatus();
 }
 
-void	WED_MapView_HandleDEMDataMenuCommand(void * r, void * i)
+void	RF_MapView_HandleDEMDataMenuCommand(void * r, void * i)
 {
 	int item = (int) i - 1;
 	sShowDEMData[item] = 1 - sShowDEMData[item];
 
-	WED_MapView_UpdateCommandStatus();
+	RF_MapView_UpdateCommandStatus();
 }
 
-void	WED_MapView_HandleMenuCommand(void * r, void * i)
+void	RF_MapView_HandleMenuCommand(void * r, void * i)
 {
 	int cmd = (int) i;
-	WED_MapView * me = (WED_MapView *) r;
+	RF_MapView * me = (RF_MapView *) r;
 	switch(cmd) {
 	case viewCmd_PrevDEM:
 		sDEMType--;
@@ -1486,10 +1486,10 @@ void	WED_MapView_HandleMenuCommand(void * r, void * i)
 		}
 		break;
 	}
-	WED_MapView_UpdateCommandStatus();
+	RF_MapView_UpdateCommandStatus();
 }
 
-void	WED_MapView_UpdateCommandStatus(void)
+void	RF_MapView_UpdateCommandStatus(void)
 {
 	XPLMCheckMenuItem(sViewMenu, viewCmd_VecMap	     ,sShowMap		? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_Airports	 ,sShowAirports ? xplm_Menu_Checked : xplm_Menu_Unchecked);
@@ -1518,7 +1518,7 @@ void	WED_MapView_UpdateCommandStatus(void)
 }
 
 
-char * WED_MapView::MonitorCaption(void)
+char * RF_MapView::MonitorCaption(void)
 {
 	static float then = XPLMGetElapsedTime();
 	static char buf[1024];
@@ -1608,7 +1608,7 @@ char * WED_MapView::MonitorCaption(void)
 }
 
 
-void	WED_MapView::SetFlowImage(
+void	RF_MapView::SetFlowImage(
 							ImageInfo&				image,
 							double					bounds[4])
 {

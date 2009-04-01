@@ -25,13 +25,13 @@
 
 #include "XPLMDisplay.h"
 
-class	WED_MapZoomer;
+class	RF_MapZoomer;
 
-class	WED_MapTool {
+class	RF_MapTool {
 public:
 
-					WED_MapTool(WED_MapZoomer * inZoomer);
-	virtual			~WED_MapTool();
+					RF_MapTool(RF_MapZoomer * inZoomer);
+	virtual			~RF_MapTool();
 
 	// Mouse API - the tool can provide visual indications of what's
 	// going on and also
@@ -59,13 +59,13 @@ public:
 
 protected:
 
-	inline WED_MapZoomer *	GetZoomer(void) const { return mZoomer; }
+	inline RF_MapZoomer *	GetZoomer(void) const { return mZoomer; }
 
 private:
 
-					WED_MapTool();
+					RF_MapTool();
 
-		WED_MapZoomer *		mZoomer;
+		RF_MapZoomer *		mZoomer;
 
 };
 

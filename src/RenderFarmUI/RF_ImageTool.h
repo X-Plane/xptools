@@ -26,11 +26,11 @@
 #include "RF_MapTool.h"
 #include "UIUtils.h"
 
-class	WED_ImageTool : public WED_MapTool, public DragHandleManager {
+class	RF_ImageTool : public RF_MapTool, public DragHandleManager {
 public:
 
-					WED_ImageTool(WED_MapZoomer * inZoomer);
-	virtual			~WED_ImageTool();
+					RF_ImageTool(RF_MapZoomer * inZoomer);
+	virtual			~RF_ImageTool();
 
 	virtual	void	DrawFeedbackUnderlay(
 							bool				inCurrent);

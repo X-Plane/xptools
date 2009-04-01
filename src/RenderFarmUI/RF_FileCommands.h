@@ -26,8 +26,8 @@
 
 void	RegisterFileCommands(void);
 
-void	WED_FileNew(void);
-bool	WED_FileOpen(const string& inPath);
-void	WED_FileSave(void);
+void	RF_FileNew(void);
+bool	RF_FileOpen(const string& inPath);
+void	RF_FileSave(void);
 
 #endif

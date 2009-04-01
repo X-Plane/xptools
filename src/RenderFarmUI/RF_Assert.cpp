@@ -27,7 +27,7 @@
 
 static char gAssertBuf[65536];
 
-void WED_AssertHandler_f(const char * condition, const char * file, int line)
+void RF_AssertHandler_f(const char * condition, const char * file, int line)
 {
 	FILE * efile = fopen("error.out", "a");
 	fprintf(efile ? efile : stderr, "ASSERTION FAILED: %s (%s, %d.)\n", condition, file, line);
@@ -38,11 +38,11 @@ void WED_AssertHandler_f(const char * condition, const char * file, int line)
 
 	DoUserAlert(gAssertBuf);
 
-	throw wed_assert_fail_exception(condition, file, line);
+	throw rf_assert_fail_exception(condition, file, line);
 }
 
-void	WED_AssertInit(void)
+void	RF_AssertInit(void)
 {
-	InstallDebugAssertHandler(WED_AssertHandler_f);
-	InstallAssertHandler(WED_AssertHandler_f);
+	InstallDebugAssertHandler(RF_AssertHandler_f);
+	InstallAssertHandler(RF_AssertHandler_f);
 }

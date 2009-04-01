@@ -27,8 +27,8 @@
 #include "RF_Pane.h"
 #include "RF_Notify.h"
 
-class	WED_MapZoomer;
-class	WED_MapTool;
+class	RF_MapZoomer;
+class	RF_MapTool;
 struct	ImageInfo;
 
 extern	int			sShowMap;
@@ -41,17 +41,17 @@ extern	float		sShadingDecl;
 
 #define	MESH_BUCKET_SIZE 4
 
-class	WED_MapView : public WED_Pane, public WED_Notifiable {
+class	RF_MapView : public RF_Pane, public RF_Notifiable {
 public:
 
-					WED_MapView(
+					RF_MapView(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
-                                   WED_Pane *			inSuper);
-	virtual			~WED_MapView();
+                                   RF_Pane *			inSuper);
+	virtual			~RF_MapView();
 
 	virtual	void	DrawSelf(void);
 	virtual	int		HandleClick(XPLMMouseStatus status, int x, int y, int button);
@@ -75,12 +75,12 @@ private:
 			void	SetupForTool(void);
 			void	UpdateForTool(void);
 
-			WED_MapTool *	CurTool(void);
+			RF_MapTool *	CurTool(void);
 			char *	MonitorCaption(void);
 
-	WED_MapZoomer *			mZoomer;
+	RF_MapZoomer *			mZoomer;
 	int						mCurTool;
-	vector<WED_MapTool *>	mTools;
+	vector<RF_MapTool *>	mTools;
 
 	vector<XPWidgetID>		mToolFuncBtns;		// Buttons that do tool-specific cmds
 	vector<XPWidgetID>		mToolProperties;	// Editing of tool properties
@@ -122,11 +122,11 @@ private:
 
 
 	//TODO: make these private static!
-	friend	void	WED_MapView_HandleMenuCommand(void *, void *);
-	friend	void	WED_MapView_HandleDEMMenuCommand(void *, void *);
-	friend	void	WED_MapView_UpdateCommandStatus(void);
+	friend	void	RF_MapView_HandleMenuCommand(void *, void *);
+	friend	void	RF_MapView_HandleDEMMenuCommand(void *, void *);
+	friend	void	RF_MapView_UpdateCommandStatus(void);
 };
 
-extern	WED_MapView *		gMapView;
+extern	RF_MapView *		gMapView;
 
 #endif

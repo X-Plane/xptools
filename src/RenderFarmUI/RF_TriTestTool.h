@@ -25,11 +25,11 @@
 
 #include "RF_MapTool.h"
 
-class	WED_TriTestTool : public WED_MapTool {
+class	RF_TriTestTool : public RF_MapTool {
 public:
 
-					WED_TriTestTool(WED_MapZoomer * inZoomer);
-	virtual			~WED_TriTestTool();
+					RF_TriTestTool(RF_MapZoomer * inZoomer);
+	virtual			~RF_TriTestTool();
 
 	// Mouse API - the tool can provide visual indications of what's
 	// going on and also

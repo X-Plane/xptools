@@ -27,10 +27,10 @@
 #include "MapDefs.h"
 
 enum {
-	wed_Select_Vertex = 0,
-	wed_Select_Edge,
-	wed_Select_Face,
-	wed_Select_PointFeatures
+	rf_Select_Vertex = 0,
+	rf_Select_Edge,
+	rf_Select_Face,
+	rf_Select_PointFeatures
 };
 
 typedef	pair<Pmwx::Face_handle, int>	PointFeatureSelection;
@@ -56,7 +56,7 @@ extern set<PointFeatureSelection>	gPointFeatureSelection;
 
 // Selection commands
 
-void	WED_SetSelectionMode(int mode);
+void	RF_SetSelectionMode(int mode);
 
 
 #endif

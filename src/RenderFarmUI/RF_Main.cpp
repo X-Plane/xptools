@@ -111,7 +111,7 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 			continue;
 		}
 
-		WED_FileOpen(*i);
+		RF_FileOpen(*i);
 	}
 }
 
@@ -250,10 +250,10 @@ float CheckFifo(
 			n = 0;
 		}
 
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
-		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_AirportsLoaded, NULL);
 
 
 	}
@@ -324,7 +324,7 @@ void	XGrindInit(string& outName)
 #endif	
 	XESInit();
 
-	WED_LoadPrefs();
+	RF_LoadPrefs();
 
 	LoadDEMTables();
 	LoadObjTables();
@@ -333,11 +333,11 @@ void	XGrindInit(string& outName)
 	XPLMGetScreenSize(&w, &h);
 	RegisterFileCommands();
 	RegisterEditCommands();
-	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL);
+	RF_MapView *	map_view = new RF_MapView(20, h - 20, w - 20, 20, 1, NULL);
 	RegisterProcessingCommands();
 	RegisterSpecialCommands();
 
-	WED_AssertInit();
+	RF_AssertInit();
 
 	XPInitDefaultMargins();
 #if 0
@@ -471,7 +471,7 @@ bool	XGrindCanQuit(void)
 
 void	XGrindDone(void)
 {
-	WED_SavePrefs();
+	RF_SavePrefs();
 	if(fifo) close(fifo);
 	unlink("wed_cmds");
 }

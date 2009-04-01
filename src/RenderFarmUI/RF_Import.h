@@ -24,6 +24,6 @@
 #ifndef RF_IMPORT_H
 #define RF_IMPORT_H
 
-void	WED_ShowImportDialog(void);
+void	RF_ShowImportDialog(void);
 
 #endif

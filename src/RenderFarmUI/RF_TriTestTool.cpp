@@ -41,20 +41,20 @@
 
 
 
-WED_TriTestTool::WED_TriTestTool(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer)
+RF_TriTestTool::RF_TriTestTool(RF_MapZoomer * inZoomer) : RF_MapTool(inZoomer)
 {
 }
 
-WED_TriTestTool::~WED_TriTestTool()
+RF_TriTestTool::~RF_TriTestTool()
 {
 }
 
-void	WED_TriTestTool::DrawFeedbackUnderlay(
+void	RF_TriTestTool::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 }
 
-void	WED_TriTestTool::DrawFeedbackOverlay(
+void	RF_TriTestTool::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 	if (inCurrent)
@@ -63,7 +63,7 @@ void	WED_TriTestTool::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_TriTestTool::HandleClick(
+bool	RF_TriTestTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
@@ -72,7 +72,7 @@ bool	WED_TriTestTool::HandleClick(
 	if (inButton) return false;
 	if (inStatus == xplm_MouseDown)
 	{
-		WED_MapZoomer * z = GetZoomer();
+		RF_MapZoomer * z = GetZoomer();
 		Point2 p = Point2(z->XPixelToLon(inX), z->YPixelToLat(inY));
 		gTriangulationHi.insert(CONVERT_POINT(p));
 //		gTriangulationLo.insert(CONVERT_POINT(p));
@@ -81,19 +81,19 @@ bool	WED_TriTestTool::HandleClick(
 }
 
 // Support for some properties that can be edited.
-int		WED_TriTestTool::GetNumProperties(void) { return 0; }
-void	WED_TriTestTool::GetNthPropertyName(int, string&) { }
-double	WED_TriTestTool::GetNthPropertyValue(int) { return 0.0; }
-void	WED_TriTestTool::SetNthPropertyValue(int, double) { }
+int		RF_TriTestTool::GetNumProperties(void) { return 0; }
+void	RF_TriTestTool::GetNthPropertyName(int, string&) { }
+double	RF_TriTestTool::GetNthPropertyValue(int) { return 0.0; }
+void	RF_TriTestTool::SetNthPropertyValue(int, double) { }
 
-int		WED_TriTestTool::GetNumButtons(void) { return 3; }
-void	WED_TriTestTool::GetNthButtonName(int n, string& s) { if (n == 0) s = "Retri hi"; else if (n == 1) s = "Retri lo"; else if (n == 2) s = "Road Density"; }
+int		RF_TriTestTool::GetNumButtons(void) { return 3; }
+void	RF_TriTestTool::GetNthButtonName(int n, string& s) { if (n == 0) s = "Retri hi"; else if (n == 1) s = "Retri lo"; else if (n == 2) s = "Road Density"; }
 
-void	WED_TriTestTool::NthButtonPressed(int n)
+void	RF_TriTestTool::NthButtonPressed(int n)
 {
 }
 
-char *	WED_TriTestTool::GetStatusText(void)
+char *	RF_TriTestTool::GetStatusText(void)
 {
 	static char buf[1024];
 

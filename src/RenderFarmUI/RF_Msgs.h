@@ -25,30 +25,30 @@
 
 enum {
 
-	wed_Cat_File = 0,
-	wed_Cat_Selection
+	rf_Cat_File = 0,
+	rf_Cat_Selection
 
 };
 
-/* wed_Cat_File */
+/* rf_Cat_File */
 
 enum {
 
-	wed_Msg_FileLoaded = 0,		// The whole file was loaded - everything's blown away.
-	wed_Msg_RasterChange,		// At least one raster layer has changed - msg is the DEM layer or 0 for unknown
-	wed_Msg_VectorChange,		// Vector layer has changed, moving stuff spatially or adding/removing objects.
-	wed_Msg_VectorMetaChange,	// Vector map is constant but the meta data per segment may have changed.
-	wed_Msg_TriangleHiChange,	// Triangle Mesh is changed in some way.
-	wed_Msg_AirportsLoaded		// Airport data has changed.
+	rf_Msg_FileLoaded = 0,		// The whole file was loaded - everything's blown away.
+	rf_Msg_RasterChange,		// At least one raster layer has changed - msg is the DEM layer or 0 for unknown
+	rf_Msg_VectorChange,		// Vector layer has changed, moving stuff spatially or adding/removing objects.
+	rf_Msg_VectorMetaChange,	// Vector map is constant but the meta data per segment may have changed.
+	rf_Msg_TriangleHiChange,	// Triangle Mesh is changed in some way.
+	rf_Msg_AirportsLoaded		// Airport data has changed.
 
 };
 
-/* wed_Cat_Selection */
+/* rf_Cat_Selection */
 
 enum {
 
-	wed_Msg_SelectionModeChanged = 0,	// Param is int, true if sel changed too
-	wed_Msg_SelectionChanged
+	rf_Msg_SelectionModeChanged = 0,	// Param is int, true if sel changed too
+	rf_Msg_SelectionChanged
 
 };
 

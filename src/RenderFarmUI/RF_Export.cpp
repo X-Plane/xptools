@@ -48,7 +48,7 @@ hash_map<int,int>	sExportReverseMap;
 vector<char>		sExportCLUT;
 
 
-struct	WED_ExportState_t {
+struct	RF_ExportState_t {
 	int			dem;
 	int			format;
 	int			color;
@@ -61,18 +61,18 @@ struct	WED_ExportState_t {
 	int			alpha;
 };
 
-static WED_ExportState_t	sExportState = { 0, 0, 0, 0, 0.0, 1.0, 0, 0, 0, 0 };
+static RF_ExportState_t	sExportState = { 0, 0, 0, 0, 0.0, 1.0, 0, 0, 0, 0 };
 
-const int WED_EXPORT_FORMAT = 1000;
-const int WED_EXPORT_RASTERS = 1001;
-const int WED_EXPORT_OFFSET = 1002;
-const int WED_EXPORT_SCALE = 1003;
-const int WED_EXPORT_TRANSLATION = 1004;
-const int WED_EXPORT_INVERT = 1005;
-const int WED_EXPORT_ALPHA = 1006;
-const int WED_EXPORT_COLOR = 1007;
-const int WED_EXPORT_RESCALE = 1008;
-const int WED_EXPORT_CALC = 1009;
+const int RF_EXPORT_FORMAT = 1000;
+const int RF_EXPORT_RASTERS = 1001;
+const int RF_EXPORT_OFFSET = 1002;
+const int RF_EXPORT_SCALE = 1003;
+const int RF_EXPORT_TRANSLATION = 1004;
+const int RF_EXPORT_INVERT = 1005;
+const int RF_EXPORT_ALPHA = 1006;
+const int RF_EXPORT_COLOR = 1007;
+const int RF_EXPORT_RESCALE = 1008;
+const int RF_EXPORT_CALC = 1009;
 
 enum {
 	export_PNG=0,
@@ -90,7 +90,7 @@ static const char * kExtensions[] = { ".png", ".bmp", "-", ".raw",".raw",".raw",
 static const char * kTitles = "PNG;BMP;-;8-Bit Raw;16-Bit Raw (IBM);32-Bit Raw (IBM);Floating Point Raw(IBM);16-Bit Raw (Mac);32-Bit Raw (Mac);Floating Point Raw(Mac)";
 
 
-void	WED_ShowExportDialog(void)
+void	RF_ShowExportDialog(void)
 {
 	if (sExport != NULL)
 	{
@@ -99,38 +99,38 @@ void	WED_ShowExportDialog(void)
 			XPShowWidget(sExport);
 		XPBringRootWidgetToFront(sExport);
 	} else {
-		WED_RegisterNotifyFunc(ExportNotifier);
+		RF_RegisterNotifyFunc(ExportNotifier);
 		sExport = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "Export", XP_DIALOG_CLOSEBOX, 1, 0, DoExport,
 				XP_COLUMN,
 					XP_ROW,
 						XP_CAPTION, "Raster Layer:",
-						XP_POPUP_MENU, "DEM A;DEM B;DEM C", &sExportState.dem, XP_TAG, WED_EXPORT_RASTERS,
+						XP_POPUP_MENU, "DEM A;DEM B;DEM C", &sExportState.dem, XP_TAG, RF_EXPORT_RASTERS,
 					XP_END,
 					XP_ROW,
 						XP_CAPTION, "Format:",
-						XP_POPUP_MENU, kTitles, &sExportState.format, XP_TAG, WED_EXPORT_FORMAT, XP_NOTIFY, SetEnables,
+						XP_POPUP_MENU, kTitles, &sExportState.format, XP_TAG, RF_EXPORT_FORMAT, XP_NOTIFY, SetEnables,
 					XP_END,
 					XP_ROW,
-						XP_CHECKBOX, "Colorize", &sExportState.color, XP_TAG, WED_EXPORT_COLOR, XP_NOTIFY, SetEnables,
-						XP_CHECKBOX, "Alpha", &sExportState.alpha, XP_TAG, WED_EXPORT_ALPHA,
+						XP_CHECKBOX, "Colorize", &sExportState.color, XP_TAG, RF_EXPORT_COLOR, XP_NOTIFY, SetEnables,
+						XP_CHECKBOX, "Alpha", &sExportState.alpha, XP_TAG, RF_EXPORT_ALPHA,
 					XP_END,
 					XP_ROW,
 						XP_BUTTON_ACTION, "Load Translation", LoadCLUT,
-						XP_CAPTION, "(no translation)", XP_TAG, WED_EXPORT_TRANSLATION,
+						XP_CAPTION, "(no translation)", XP_TAG, RF_EXPORT_TRANSLATION,
 					XP_END,
 					XP_ROW,
-						XP_CHECKBOX, "Rescale", &sExportState.rescale, XP_TAG, WED_EXPORT_RESCALE, XP_NOTIFY, SetEnables,
-						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.offset, XP_TAG, WED_EXPORT_OFFSET,
-						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.scale, XP_TAG, WED_EXPORT_SCALE,
-						XP_BUTTON_ACTION, "Calculate", CalculateRescaling, XP_TAG, WED_EXPORT_CALC,
+						XP_CHECKBOX, "Rescale", &sExportState.rescale, XP_TAG, RF_EXPORT_RESCALE, XP_NOTIFY, SetEnables,
+						XP_CAPTION, "Offset:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.offset, XP_TAG, RF_EXPORT_OFFSET,
+						XP_CAPTION, "Scale:", XP_EDIT_FLOAT, 15, 6, 2, &sExportState.scale, XP_TAG, RF_EXPORT_SCALE,
+						XP_BUTTON_ACTION, "Calculate", CalculateRescaling, XP_TAG, RF_EXPORT_CALC,
 					XP_END,
 					XP_ROW,
 						XP_CHECKBOX, "Flip X", &sExportState.flip_x,
 						XP_CHECKBOX, "Flip Y", &sExportState.flip_y,
 					XP_END,
 					XP_ROW,
-						XP_CHECKBOX, "Invert", &sExportState.invert, XP_TAG, WED_EXPORT_INVERT,
+						XP_CHECKBOX, "Invert", &sExportState.invert, XP_TAG, RF_EXPORT_INVERT,
 					XP_END,
 					XP_ROW, XP_BUTTON_OK, "Export", XP_END,
 				XP_END,
@@ -263,7 +263,7 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 
 void	ResyncExportDialog(void)
 {
-	XPWidgetID demPopup = XPFindWidgetByTag(sExport, WED_EXPORT_RASTERS);
+	XPWidgetID demPopup = XPFindWidgetByTag(sExport, RF_EXPORT_RASTERS);
 	string	names;
 	for (DEMGeoMap::iterator layer = gDem.begin(); layer != gDem.end(); ++layer)
 	{
@@ -277,14 +277,14 @@ void	ResyncExportDialog(void)
 
 void	ExportNotifier(int catagory, int message, void * param)
 {
-	if (catagory == wed_Cat_File && sExport != NULL && XPIsWidgetVisible(sExport))
+	if (catagory == rf_Cat_File && sExport != NULL && XPIsWidgetVisible(sExport))
 		ResyncExportDialog();
 }
 
 void	CalculateRescaling(XPWidgetID)
 {
 	if (sExport == NULL) return;
-	XPDataFromItem(sExport, WED_EXPORT_RASTERS);
+	XPDataFromItem(sExport, RF_EXPORT_RASTERS);
 
 	DEMGeoMap::iterator layer = gDem.begin();
 	int n = sExportState.dem;
@@ -310,13 +310,13 @@ void	CalculateRescaling(XPWidgetID)
 		}
 	}
 
-	XPDataToItem(sExport, WED_EXPORT_OFFSET);
-	XPDataToItem(sExport, WED_EXPORT_SCALE);
+	XPDataToItem(sExport, RF_EXPORT_OFFSET);
+	XPDataToItem(sExport, RF_EXPORT_SCALE);
 }
 
 static	void	LoadCLUT(XPWidgetID inID)
 {
-	XPWidgetID caption = XPFindWidgetByTag(sExport, WED_EXPORT_TRANSLATION);
+	XPWidgetID caption = XPFindWidgetByTag(sExport, RF_EXPORT_TRANSLATION);
 	if (sExportForwardMap.empty())
 	{
 		char fileBuf[2048];
@@ -349,25 +349,25 @@ static	void	LoadCLUT(XPWidgetID inID)
 
 void SetEnables(XPWidgetID)
 {
-	XPDataFromItem(sExport, WED_EXPORT_FORMAT);
-	XPDataFromItem(sExport, WED_EXPORT_COLOR);
-	XPDataFromItem(sExport, WED_EXPORT_RESCALE);
+	XPDataFromItem(sExport, RF_EXPORT_FORMAT);
+	XPDataFromItem(sExport, RF_EXPORT_COLOR);
+	XPDataFromItem(sExport, RF_EXPORT_RESCALE);
 	bool	is_png = sExportState.format == export_PNG;
 	bool	is_bmp = sExportState.format == export_BMP;
 	bool	is_image = is_png || is_bmp;
 
 	// Rescaling of values - available for all raws and non-color image formats.
-	XPEnableByTag(sExport, WED_EXPORT_RESCALE, 	!is_image || !sExportState.color);
-	XPEnableByTag(sExport, WED_EXPORT_OFFSET, 	(!is_image || !sExportState.color) && sExportState.rescale);
-	XPEnableByTag(sExport, WED_EXPORT_SCALE, 	(!is_image || !sExportState.color) && sExportState.rescale);
-	XPEnableByTag(sExport, WED_EXPORT_CALC, 	(!is_image || !sExportState.color) && sExportState.rescale);
+	XPEnableByTag(sExport, RF_EXPORT_RESCALE, 	!is_image || !sExportState.color);
+	XPEnableByTag(sExport, RF_EXPORT_OFFSET, 	(!is_image || !sExportState.color) && sExportState.rescale);
+	XPEnableByTag(sExport, RF_EXPORT_SCALE, 	(!is_image || !sExportState.color) && sExportState.rescale);
+	XPEnableByTag(sExport, RF_EXPORT_CALC, 	(!is_image || !sExportState.color) && sExportState.rescale);
 
 	// Color inversion - image formats only.
-	XPEnableByTag(sExport, WED_EXPORT_INVERT, is_image);
+	XPEnableByTag(sExport, RF_EXPORT_INVERT, is_image);
 
 	// Alpha mask - only available for colorized PNGs.
-	XPEnableByTag(sExport, WED_EXPORT_ALPHA, is_png && sExportState.color);
+	XPEnableByTag(sExport, RF_EXPORT_ALPHA, is_png && sExportState.color);
 
 	// Colorization - only available for image formats.
-	XPEnableByTag(sExport, WED_EXPORT_COLOR, is_image);
+	XPEnableByTag(sExport, RF_EXPORT_COLOR, is_image);
 }

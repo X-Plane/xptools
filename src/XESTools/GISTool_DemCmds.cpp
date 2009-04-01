@@ -32,8 +32,8 @@
 #include "MemFileUtils.h"
 
 #if OPENGL_MAP
-#include "WED_Notify.h"
-#include "WED_Msgs.h"
+#include "RF_Notify.h"
+#include "RF_Msgs.h"
 #endif
 
 
@@ -80,7 +80,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	}
 	
 	#if OPENGL_MAP
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 	#endif
 	
 	if(gVerbose) printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);

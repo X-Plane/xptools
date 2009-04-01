@@ -29,11 +29,11 @@ class AsyncImage;
 class AsyncImageLocator;
 class AsyncConnectionPool;
 
-class	WED_TerraTool : public WED_MapTool {
+class	RF_TerraTool : public RF_MapTool {
 public:
 
-					WED_TerraTool(WED_MapZoomer * inZoomer);
-	virtual			~WED_TerraTool();
+					RF_TerraTool(RF_MapZoomer * inZoomer);
+	virtual			~RF_TerraTool();
 
 	virtual	void	DrawFeedbackUnderlay(
 							bool				inCurrent);

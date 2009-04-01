@@ -39,19 +39,19 @@
 #endif
 
 
-WED_MeshTester::WED_MeshTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer)
+RF_MeshTester::RF_MeshTester(RF_MapZoomer * inZoomer) : RF_MapTool(inZoomer)
 {
 }
-WED_MeshTester::~WED_MeshTester()
+RF_MeshTester::~RF_MeshTester()
 {
 }
 
-void	WED_MeshTester::DrawFeedbackUnderlay(
+void	RF_MeshTester::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 }
 
-void	WED_MeshTester::DrawFeedbackOverlay(
+void	RF_MeshTester::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 	int mx, my;
@@ -124,7 +124,7 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_MeshTester::HandleClick(
+bool	RF_MeshTester::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
@@ -146,16 +146,16 @@ bool	WED_MeshTester::HandleClick(
 	return 1;
 }
 
-int		WED_MeshTester::GetNumProperties(void) { return 0; }
-void	WED_MeshTester::GetNthPropertyName(int, string&) { }
-double	WED_MeshTester::GetNthPropertyValue(int) { return 0.0; }
-void	WED_MeshTester::SetNthPropertyValue(int, double) { }
+int		RF_MeshTester::GetNumProperties(void) { return 0; }
+void	RF_MeshTester::GetNthPropertyName(int, string&) { }
+double	RF_MeshTester::GetNthPropertyValue(int) { return 0.0; }
+void	RF_MeshTester::SetNthPropertyValue(int, double) { }
 
-int		WED_MeshTester::GetNumButtons(void) { return 0; }
-void	WED_MeshTester::GetNthButtonName(int, string&) { }
-void	WED_MeshTester::NthButtonPressed(int) { }
+int		RF_MeshTester::GetNumButtons(void) { return 0; }
+void	RF_MeshTester::GetNthButtonName(int, string&) { }
+void	RF_MeshTester::NthButtonPressed(int) { }
 
-char *	WED_MeshTester::GetStatusText(void)
+char *	RF_MeshTester::GetStatusText(void)
 {
 	return NULL;
 }

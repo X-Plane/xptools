@@ -23,36 +23,36 @@
 #include "RF_Notify.h"
 
 #include <set>
-static	set<WED_Notifiable *>	sNotifiables;
-static	set<WED_Notify_f>		sNotifyFuncs;
+static	set<RF_Notifiable *>	sNotifiables;
+static	set<RF_Notify_f>		sNotifyFuncs;
 
-WED_Notifiable::WED_Notifiable()
+RF_Notifiable::RF_Notifiable()
 {
 	sNotifiables.insert(this);
 }
-WED_Notifiable::~WED_Notifiable()
+RF_Notifiable::~RF_Notifiable()
 {
 	sNotifiables.erase(this);
 }
 
-void	WED_Notifiable::Notify(int catagory, int message, void * param)
+void	RF_Notifiable::Notify(int catagory, int message, void * param)
 {
-	for (set<WED_Notifiable *>::iterator iter = sNotifiables.begin(); iter != sNotifiables.end(); ++iter)
+	for (set<RF_Notifiable *>::iterator iter = sNotifiables.begin(); iter != sNotifiables.end(); ++iter)
 	{
 		(*iter)->HandleNotification(catagory, message, param);
 	}
-	for (set<WED_Notify_f>::iterator iter = sNotifyFuncs.begin(); iter != sNotifyFuncs.end(); ++iter)
+	for (set<RF_Notify_f>::iterator iter = sNotifyFuncs.begin(); iter != sNotifyFuncs.end(); ++iter)
 	{
 		(*iter)(catagory, message, param);
 	}
 }
 
-void	WED_RegisterNotifyFunc(WED_Notify_f inFunc)
+void	RF_RegisterNotifyFunc(RF_Notify_f inFunc)
 {
 	sNotifyFuncs.insert(inFunc);
 }
 
-void	WED_UnregisterNotifyFunc(WED_Notify_f inFunc)
+void	RF_UnregisterNotifyFunc(RF_Notify_f inFunc)
 {
 	sNotifyFuncs.erase(inFunc);
 }

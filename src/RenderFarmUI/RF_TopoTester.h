@@ -27,11 +27,11 @@
 #include "RF_MapTool.h"
 #include "MapDefs.h"
 
-class	WED_TopoTester : public WED_MapTool {
+class	RF_TopoTester : public RF_MapTool {
 public:
 
-					WED_TopoTester(WED_MapZoomer * inZoomer);
-	virtual			~WED_TopoTester();
+					RF_TopoTester(RF_MapZoomer * inZoomer);
+	virtual			~RF_TopoTester();
 
 	virtual	void	DrawFeedbackUnderlay(
 							bool				inCurrent);

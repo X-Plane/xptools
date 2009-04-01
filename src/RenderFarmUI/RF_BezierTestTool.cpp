@@ -56,24 +56,24 @@ static const DragHandleInfo_t kHandleInfos[8] = {
 
 
 
-WED_BezierTestTool::WED_BezierTestTool(WED_MapZoomer * inZoomer) :
-	WED_MapTool(inZoomer),
+RF_BezierTestTool::RF_BezierTestTool(RF_MapZoomer * inZoomer) :
+	RF_MapTool(inZoomer),
 	mHandles(8,kHandleInfos,4,this),
 	mSegs(200),
 	mSplit(0.5)
 {
 }
 
-WED_BezierTestTool::~WED_BezierTestTool()
+RF_BezierTestTool::~RF_BezierTestTool()
 {
 }
 
-void	WED_BezierTestTool::DrawFeedbackUnderlay(
+void	RF_BezierTestTool::DrawFeedbackUnderlay(
 							bool				inCurrent)
 {
 }
 
-void	WED_BezierTestTool::DrawFeedbackOverlay(
+void	RF_BezierTestTool::DrawFeedbackOverlay(
 							bool				inCurrent)
 {
 	if (inCurrent)
@@ -228,7 +228,7 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_BezierTestTool::HandleClick(
+bool	RF_BezierTestTool::HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
@@ -250,12 +250,12 @@ bool	WED_BezierTestTool::HandleClick(
 
 #pragma mark -
 
-int		WED_BezierTestTool::GetNumProperties(void)
+int		RF_BezierTestTool::GetNumProperties(void)
 {
 	return 2;
 }
 
-void	WED_BezierTestTool::GetNthPropertyName(int n, string& s)
+void	RF_BezierTestTool::GetNthPropertyName(int n, string& s)
 {
 	switch(n) {
 	case 0: s = "Segments:";	break;
@@ -263,7 +263,7 @@ void	WED_BezierTestTool::GetNthPropertyName(int n, string& s)
 	}
 }
 
-double	WED_BezierTestTool::GetNthPropertyValue(int n)
+double	RF_BezierTestTool::GetNthPropertyValue(int n)
 {
 	switch(n) {
 	case 0: return mSegs;
@@ -272,7 +272,7 @@ double	WED_BezierTestTool::GetNthPropertyValue(int n)
 	}
 }
 
-void	WED_BezierTestTool::SetNthPropertyValue(int n, double v)
+void	RF_BezierTestTool::SetNthPropertyValue(int n, double v)
 {
 	switch(n) {
 	case 0: mSegs = v;	break;
@@ -282,19 +282,19 @@ void	WED_BezierTestTool::SetNthPropertyValue(int n, double v)
 
 #pragma mark -
 
-int		WED_BezierTestTool::GetNumButtons(void)
+int		RF_BezierTestTool::GetNumButtons(void)
 {
 	return 1;
 }
 
-void	WED_BezierTestTool::GetNthButtonName(int n, string& s)
+void	RF_BezierTestTool::GetNthButtonName(int n, string& s)
 {
 	switch(n) {
 	case 0: s = "Reset";	break;
 	}
 }
 
-void	WED_BezierTestTool::NthButtonPressed(int n)
+void	RF_BezierTestTool::NthButtonPressed(int n)
 {
 	double bounds[4];
 	switch(n) {
@@ -312,7 +312,7 @@ void	WED_BezierTestTool::NthButtonPressed(int n)
 	}
 }
 
-char *	WED_BezierTestTool::GetStatusText(void)
+char *	RF_BezierTestTool::GetStatusText(void)
 {
 	static char buf[512];
 	double d[4];
@@ -324,27 +324,27 @@ char *	WED_BezierTestTool::GetStatusText(void)
 
 #pragma mark -
 
-double		WED_BezierTestTool::UIToLogX(double v) const
+double		RF_BezierTestTool::UIToLogX(double v) const
 {
 	return GetZoomer()->XPixelToLon(v);
 }
 
-double		WED_BezierTestTool::UIToLogY(double v) const
+double		RF_BezierTestTool::UIToLogY(double v) const
 {
 	return GetZoomer()->YPixelToLat(v);
 }
 
-double		WED_BezierTestTool::LogToUIX(double v) const
+double		RF_BezierTestTool::LogToUIX(double v) const
 {
 	return GetZoomer()->LonToXPixel(v);
 }
 
-double		WED_BezierTestTool::LogToUIY(double v) const
+double		RF_BezierTestTool::LogToUIY(double v) const
 {
 	return GetZoomer()->LatToYPixel(v);
 }
 
-double		WED_BezierTestTool::GetHandleX(int inHandle) const
+double		RF_BezierTestTool::GetHandleX(int inHandle) const
 {
 	switch(inHandle) {
 	case 0:	return mBezier1.p1.x;
@@ -359,7 +359,7 @@ double		WED_BezierTestTool::GetHandleX(int inHandle) const
 	}
 }
 
-double		WED_BezierTestTool::GetHandleY(int inHandle) const
+double		RF_BezierTestTool::GetHandleY(int inHandle) const
 {
 	switch(inHandle) {
 	case 0:	return mBezier1.p1.y;
@@ -374,7 +374,7 @@ double		WED_BezierTestTool::GetHandleY(int inHandle) const
 	}
 }
 
-void		WED_BezierTestTool::MoveHandleX(int handle, double deltaX)
+void		RF_BezierTestTool::MoveHandleX(int handle, double deltaX)
 {
 	switch(handle) {
 	case 0:	mBezier1.p1.x += deltaX; break;
@@ -388,7 +388,7 @@ void		WED_BezierTestTool::MoveHandleX(int handle, double deltaX)
 	}
 }
 
-void		WED_BezierTestTool::MoveHandleY(int handle, double deltaY)
+void		RF_BezierTestTool::MoveHandleY(int handle, double deltaY)
 {
 	switch(handle) {
 	case 0:	mBezier1.p1.y += deltaY; break;

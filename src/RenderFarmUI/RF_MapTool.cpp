@@ -22,11 +22,11 @@
  */
 #include "RF_MapTool.h"
 
-WED_MapTool::WED_MapTool(WED_MapZoomer * inZoomer) : mZoomer(inZoomer)
+RF_MapTool::RF_MapTool(RF_MapZoomer * inZoomer) : mZoomer(inZoomer)
 {
 }
 
-WED_MapTool::~WED_MapTool()
+RF_MapTool::~RF_MapTool()
 {
 }
 

@@ -111,9 +111,9 @@ static	const char	kCmdKeys [] = {
 
 static	XPLMMenuID	sFileMenu = NULL;
 
-static	void	WED_HandleFileMenuCmd(void *, void * i);
-static	void	WED_NotifyFileMenus(int catagory, int message, void * param);
-static	void	WED_RecalcFileMenus(void);
+static	void	RF_HandleFileMenuCmd(void *, void * i);
+static	void	RF_NotifyFileMenus(int catagory, int message, void * param);
+static	void	RF_RecalcFileMenus(void);
 static 	bool	DoSaveIfNeeded(void);
 
 
@@ -128,7 +128,7 @@ FIX THIS!
 void	RegisterFileCommands(void)
 {
 	int n;
-	sFileMenu = XPLMCreateMenu("File", NULL, 0, WED_HandleFileMenuCmd, NULL);
+	sFileMenu = XPLMCreateMenu("File", NULL, 0, RF_HandleFileMenuCmd, NULL);
 	n = 0;
 	while (kFileCmdNames[n])
 	{
@@ -137,18 +137,18 @@ void	RegisterFileCommands(void)
 			XPLMSetMenuItemKey(sFileMenu,n,kCmdKeys[n*2],kCmdKeys[n*2+1]);
 		++n;
 	}
-	WED_RegisterNotifyFunc(WED_NotifyFileMenus);
-	WED_RecalcFileMenus();
+	RF_RegisterNotifyFunc(RF_NotifyFileMenus);
+	RF_RecalcFileMenus();
 }
 
-static	void	WED_HandleFileMenuCmd(void *, void * i)
+static	void	RF_HandleFileMenuCmd(void *, void * i)
 {
 	try {
 		int cmd = (int) i;
 		switch(cmd) {
 		case fileCmd_New:
 			if (!DoSaveIfNeeded())	return;
-			WED_FileNew();
+			RF_FileNew();
 			break;
 		case fileCmd_Open:
 			if (!DoSaveIfNeeded())	return;
@@ -156,7 +156,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open", "Open", 1, buf,sizeof(buf))) return;
-				WED_FileOpen(buf);
+				RF_FileOpen(buf);
 			}
 			break;
 		case fileCmd_OpenApt:
@@ -170,7 +170,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 					DoUserAlert(err.c_str());
 				else
 					IndexAirports(gApts,gAptIndex);
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
+				RF_Notifiable::Notify(rf_Cat_File, rf_Msg_AirportsLoaded, NULL);
 			}
 			break;
 		case fileCmd_OpenSpreadsheet:
@@ -231,7 +231,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 					if (!GetFilePathFromUser(getFile_Save, "Please name your .XES file", "Save", 1, buf,sizeof(buf))) return;
 					gFilePath = buf;
 				}
-				WED_FileSave();
+				RF_FileSave();
 			}
 			break;
 		case fileCmd_SaveAs:
@@ -241,7 +241,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				if (!GetFilePathFromUser(getFile_Save, "Please rename your .XES file", "Save As", 1, buf,sizeof(buf))) return;
 				gFilePath = buf;
 				gDirty = true;
-				WED_FileSave();
+				RF_FileSave();
 			}
 			break;
 		case fileCmd_Revert:
@@ -251,20 +251,20 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				sprintf(buf, "Are you sure you want to revert the file '%s'?  you will lose all changes since you last saved.",
 					gFilePath.c_str());
 				if (ConfirmMessage(buf, "Revert", "Cancel"))
-					WED_FileOpen(gFilePath);
+					RF_FileOpen(gFilePath);
 			}
 			break;
 		case fileCmd_Import:
-			WED_ShowImportDialog();
+			RF_ShowImportDialog();
 			break;
 		case fileCmd_Export:
-			WED_ShowExportDialog();
+			RF_ShowExportDialog();
 			break;
 		case fileCmd_Prefs:
-			WED_ShowPrefsDialog();
+			RF_ShowPrefsDialog();
 			break;
 		}
-	} catch (wed_assert_fail_exception& e) {
+	} catch (rf_assert_fail_exception& e) {
 	} catch (exception& e) {
 		DoUserAlert(e.what());
 	} catch (...) {
@@ -272,16 +272,16 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 	}
 }
 
-void	WED_NotifyFileMenus(int catagory, int message, void * param)
+void	RF_NotifyFileMenus(int catagory, int message, void * param)
 {
 	switch(catagory) {
-	case wed_Cat_File:
-		WED_RecalcFileMenus();
+	case rf_Cat_File:
+		RF_RecalcFileMenus();
 		break;
 	}
 }
 
-void	WED_RecalcFileMenus(void)
+void	RF_RecalcFileMenus(void)
 {
 	XPLMSetMenuItemName(sFileMenu, fileCmd_Save, gFilePath.empty() ? "Save..." : "Save", 1);
 	XPLMEnableMenuItem(sFileMenu,fileCmd_Save,   gDirty);
@@ -294,7 +294,7 @@ void	WED_RecalcFileMenus(void)
 
 #define 	MAP_BUCKET_DEPTH	8
 
-void	WED_FileNew(void)
+void	RF_FileNew(void)
 {
 	gMap.clear();
 	gMap.is_valid();
@@ -318,10 +318,10 @@ void	WED_FileNew(void)
 
 //	gMap.Index();
 
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 }
 
-bool	WED_FileOpen(const string& inPath)
+bool	RF_FileOpen(const string& inPath)
 {
 	MFMemFile *	memFile = MemFile_Open(inPath.c_str());
 	if (memFile)
@@ -339,7 +339,7 @@ bool	WED_FileOpen(const string& inPath)
 		gVertexSelection.clear();
 		gPointFeatureSelection.clear();
 
-		ReadXESFile(memFile, &gMap, &gTriangulationHi, &gDem, &gApts, WED_ProgressFunc);
+		ReadXESFile(memFile, &gMap, &gTriangulationHi, &gDem, &gApts, RF_ProgressFunc);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(memFile);
 	} else
@@ -414,19 +414,19 @@ bool	WED_FileOpen(const string& inPath)
 	gFilePath = inPath;
 	gDirty = false;
 
-	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 	return true;
 }
 
-void	WED_FileSave(void)
+void	RF_FileSave(void)
 {
 	if (gDirty && !gFilePath.empty())
 	{
 #if TODO
 	TODO SAFE FILE SAVE AND SWAP!
 #endif
-		WriteXESFile(gFilePath.c_str(), gMap, gTriangulationHi, gDem, gApts, WED_ProgressFunc);
+		WriteXESFile(gFilePath.c_str(), gMap, gTriangulationHi, gDem, gApts, RF_ProgressFunc);
 		gDirty = false;
-		WED_RecalcFileMenus();
+		RF_RecalcFileMenus();
 	}
 }

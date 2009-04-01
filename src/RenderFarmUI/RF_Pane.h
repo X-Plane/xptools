@@ -27,7 +27,7 @@
 
 	A note on handled messages:
 
-	Drawing is passed on to allow WED_Pane to wrap existing drawing widget code.
+	Drawing is passed on to allow RF_Pane to wrap existing drawing widget code.
 	However, you cannot adorn by drawing the root class, so you cannot composite
 	this way; either draw yourself or let the superclass draw.   (This is a general
 	limitation of widget subclassing that can only be overcome via a child widget.)
@@ -39,42 +39,42 @@
 #include "XPWidgetDefs.h"
 #include "XPLMDisplay.h"
 
-class	WED_Pane {
+class	RF_Pane {
 public:
 
-					WED_Pane(
+					RF_Pane(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
-                                   WED_Pane *			inSuper);
+                                   RF_Pane *			inSuper);
 
-					WED_Pane(
+					RF_Pane(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
-                                   WED_Pane *			inSuper,
+                                   RF_Pane *			inSuper,
                                    XPWidgetClass		inClass);
 
-					WED_Pane(
+					RF_Pane(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
-                                   WED_Pane *			inSuper,
+                                   RF_Pane *			inSuper,
                                    XPWidgetFunc_t		inFunc);
 
 
-	virtual			~WED_Pane();
+	virtual			~RF_Pane();
 
-	static	WED_Pane *	GetPaneObj(XPWidgetID inWidget);
+	static	RF_Pane *	GetPaneObj(XPWidgetID inWidget);
 			XPWidgetID	GetWidget(void);
 
 			void	Kill(bool inRecursive);

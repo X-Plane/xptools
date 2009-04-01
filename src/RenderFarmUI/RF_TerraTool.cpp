@@ -37,8 +37,8 @@ class AsyncImage;
 inline long long hash_xy(int x, int y) { return ((long long) x << 32) + (long long) y; }
 
 
-WED_TerraTool::WED_TerraTool(WED_MapZoomer * inZoomer) :
-	WED_MapTool(inZoomer)
+RF_TerraTool::RF_TerraTool(RF_MapZoomer * inZoomer) :
+	RF_MapTool(inZoomer)
 {
 	static bool first_time = true;
 	if (first_time)
@@ -51,14 +51,14 @@ WED_TerraTool::WED_TerraTool(WED_MapZoomer * inZoomer) :
 	mData = "1";
 }
 
-WED_TerraTool::~WED_TerraTool()
+RF_TerraTool::~RF_TerraTool()
 {
 	for (map<long long, AsyncImage *>::iterator i = mImages.begin(); i != mImages.end(); ++i)
 		delete i->second;
 	delete mLocator;
 }
 
-void	WED_TerraTool::DrawFeedbackUnderlay(
+void	RF_TerraTool::DrawFeedbackUnderlay(
 				bool				inCurrent)
 {
 	if (!inCurrent && !mHas) return;
@@ -101,13 +101,13 @@ void	WED_TerraTool::DrawFeedbackUnderlay(
 		mHas = 0;
 }
 
-void	WED_TerraTool::DrawFeedbackOverlay(
+void	RF_TerraTool::DrawFeedbackOverlay(
 				bool				inCurrent)
 {
 }
 
 
-bool	WED_TerraTool::HandleClick(
+bool	RF_TerraTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
@@ -116,33 +116,33 @@ bool	WED_TerraTool::HandleClick(
 	return false;
 }
 
-int		WED_TerraTool::GetNumProperties(void)
+int		RF_TerraTool::GetNumProperties(void)
 {
 	return 1;
 }
 
-void	WED_TerraTool::GetNthPropertyName(int n, string& s)
+void	RF_TerraTool::GetNthPropertyName(int n, string& s)
 {
 	s = "Res (m):";
 }
 
-double	WED_TerraTool::GetNthPropertyValue(int)
+double	RF_TerraTool::GetNthPropertyValue(int)
 {
 	return mRes;
 }
 
-void	WED_TerraTool::SetNthPropertyValue(int, double v)
+void	RF_TerraTool::SetNthPropertyValue(int, double v)
 {
 	mRes = v;
 	if (mRes < 1) mRes = 1;
 	NthButtonPressed(1);
 }
 
-int		WED_TerraTool::GetNumButtons(void)
+int		RF_TerraTool::GetNumButtons(void)
 {
 	return 5;
 }
-void	WED_TerraTool::GetNthButtonName(int n, string& s)
+void	RF_TerraTool::GetNthButtonName(int n, string& s)
 {
 	switch(n) {
 	case 0:		s = "Retry";		break;
@@ -153,7 +153,7 @@ void	WED_TerraTool::GetNthButtonName(int n, string& s)
 	}
 }
 
-void	WED_TerraTool::NthButtonPressed(int n)
+void	RF_TerraTool::NthButtonPressed(int n)
 {
 	set<long long> nuke;
 	switch(n) {
@@ -189,7 +189,7 @@ void	WED_TerraTool::NthButtonPressed(int n)
 	}
 }
 
-char *	WED_TerraTool::GetStatusText(void)
+char *	RF_TerraTool::GetStatusText(void)
 {
 	int total = 0, done = 0, pending = 0, bad = 0;
 	for (map<long long, AsyncImage *>::iterator i = mImages.begin(); i != mImages.end(); ++i)
@@ -208,7 +208,7 @@ char *	WED_TerraTool::GetStatusText(void)
 	return buf;
 }
                   
-const char *	WED_TerraTool::ResString(void)
+const char *	RF_TerraTool::ResString(void)
 {
 	static char	resbuf[256];
 	sprintf(resbuf, "%dm", mRes);

@@ -76,8 +76,8 @@ static void	MapQuads(	double old_bounds[4][2], double old_sub[4][2],
 	}
 }
 
-WED_ImageTool::WED_ImageTool(WED_MapZoomer * inZoomer) :
-	WED_MapTool(inZoomer),
+RF_ImageTool::RF_ImageTool(RF_MapZoomer * inZoomer) :
+	RF_MapTool(inZoomer),
 	mHandles(4, kHandleInfos, 4, this),
 	mVisible(false),
 	mBits(false)
@@ -85,18 +85,18 @@ WED_ImageTool::WED_ImageTool(WED_MapZoomer * inZoomer) :
 	XPLMGenerateTextureNumbers(&mTexID, 1);
 }
 
-WED_ImageTool::~WED_ImageTool()
+RF_ImageTool::~RF_ImageTool()
 {
 	if (mBits)
 		glDeleteTextures(1, (GLuint *) &mTexID);
 }
 
-void	WED_ImageTool::DrawFeedbackUnderlay(
+void	RF_ImageTool::DrawFeedbackUnderlay(
 		bool				inCurrent)
 {
 }
 
-void	WED_ImageTool::DrawFeedbackOverlay(
+void	RF_ImageTool::DrawFeedbackOverlay(
 		bool				inCurrent)
 {
 	if (mVisible && mBits)
@@ -137,7 +137,7 @@ void	WED_ImageTool::DrawFeedbackOverlay(
 	}
 }
 
-bool	WED_ImageTool::HandleClick(
+bool	RF_ImageTool::HandleClick(
 		XPLMMouseStatus		inStatus,
 		int 				inX,
 		int 				inY,
@@ -160,37 +160,37 @@ bool	WED_ImageTool::HandleClick(
 
 #pragma mark -
 
-int		WED_ImageTool::GetNumProperties(void)
+int		RF_ImageTool::GetNumProperties(void)
 {
 	return 8;
 }
 
-void	WED_ImageTool::GetNthPropertyName(int n, string& s)
+void	RF_ImageTool::GetNthPropertyName(int n, string& s)
 {
 	s = kFieldNames[n];
 }
 
-double	WED_ImageTool::GetNthPropertyValue(int n)
+double	RF_ImageTool::GetNthPropertyValue(int n)
 {
 	return mCoords[n];
 }
 
-void	WED_ImageTool::SetNthPropertyValue(int n, double v)
+void	RF_ImageTool::SetNthPropertyValue(int n, double v)
 {
 	mCoords[n] = v;
 }
 
-int		WED_ImageTool::GetNumButtons(void)
+int		RF_ImageTool::GetNumButtons(void)
 {
 	return 6;
 }
 
-void	WED_ImageTool::GetNthButtonName(int n, string& s)
+void	RF_ImageTool::GetNthButtonName(int n, string& s)
 {
 	s = kBtnNames[n];
 }
 
-void	WED_ImageTool::NthButtonPressed(int n)
+void	RF_ImageTool::NthButtonPressed(int n)
 {
 	char	buf[1024];
 	switch (n) {
@@ -237,56 +237,56 @@ void	WED_ImageTool::NthButtonPressed(int n)
 	}
 }
 
-char *	WED_ImageTool::GetStatusText(void)
+char *	RF_ImageTool::GetStatusText(void)
 {
 	return NULL;
 }
 
 #pragma mark -
 
-double		WED_ImageTool::UIToLogX(double v) const
+double		RF_ImageTool::UIToLogX(double v) const
 {
 	return GetZoomer()->XPixelToLon(v);
 }
 
-double		WED_ImageTool::UIToLogY(double v) const
+double		RF_ImageTool::UIToLogY(double v) const
 {
 	return GetZoomer()->YPixelToLat(v);
 }
 
-double		WED_ImageTool::LogToUIX(double v) const
+double		RF_ImageTool::LogToUIX(double v) const
 {
 	return GetZoomer()->LonToXPixel(v);
 }
 
-double		WED_ImageTool::LogToUIY(double v) const
+double		RF_ImageTool::LogToUIY(double v) const
 {
 	return GetZoomer()->LatToYPixel(v);
 }
 
-double		WED_ImageTool::GetHandleX(int inHandle) const
+double		RF_ImageTool::GetHandleX(int inHandle) const
 {
 	return mCoords[inHandle * 2];
 }
 
-double		WED_ImageTool::GetHandleY(int inHandle) const
+double		RF_ImageTool::GetHandleY(int inHandle) const
 {
 	return mCoords[inHandle * 2 + 1];
 }
 
-void		WED_ImageTool::MoveHandleX(int h, double v)
+void		RF_ImageTool::MoveHandleX(int h, double v)
 {
 	mCoords[h * 2] += v;
 }
 
-void		WED_ImageTool::MoveHandleY(int h, double v)
+void		RF_ImageTool::MoveHandleY(int h, double v)
 {
 	mCoords[h * 2 + 1] += v;
 }
 
 #pragma mark -
 
-void		WED_ImageTool::GetOrthoPhotos(void)
+void		RF_ImageTool::GetOrthoPhotos(void)
 {
 	int texSize = 1024;
 	const char * scale = "16m";
@@ -396,7 +396,7 @@ void		WED_ImageTool::GetOrthoPhotos(void)
 				double so_far = (y - min_y) + (x - min_x) * (max_y - min_y + 1);
 				double total = (max_x - min_x + 1) * (max_y - min_y + 1);
 				if(total > 0)
-					WED_ProgressFunc(0, 1, buf, so_far / total);
+					RF_ProgressFunc(0, 1, buf, so_far / total);
 
 				for (int n = 0; n < 4; ++n)
 				{
@@ -406,7 +406,7 @@ void		WED_ImageTool::GetOrthoPhotos(void)
 				}
 				good++;
 			}
-			WED_ProgressFunc(0, 1, buf, 1.0);
+			RF_ProgressFunc(0, 1, buf, 1.0);
 
 			MapQuads(bounds, env, src, pixels);
 

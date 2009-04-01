@@ -122,7 +122,7 @@ static	const char	kCmdKeys [] = {
 
 static	XPLMMenuID	sSpecMenu = NULL;
 
-static	void	WED_HandleSpecMenuCmd(void *, void * i);
+static	void	RF_HandleSpecMenuCmd(void *, void * i);
 static	void 	DoScreenshot(void);
 
 struct FeatureHasNoHeight {
@@ -135,7 +135,7 @@ struct FeatureHasNoHeight {
 void	RegisterSpecialCommands(void)
 {
 	int n;
-	sSpecMenu = XPLMCreateMenu("Package", NULL, 0, WED_HandleSpecMenuCmd, NULL);
+	sSpecMenu = XPLMCreateMenu("Package", NULL, 0, RF_HandleSpecMenuCmd, NULL);
 	n = 0;
 	while (kSpecCmdNames[n])
 	{
@@ -162,7 +162,7 @@ static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
 #endif
 
 
-static	void	WED_HandleSpecMenuCmd(void *, void * i)
+static	void	RF_HandleSpecMenuCmd(void *, void * i)
 {
 	try {
 		int cmd = (int) i;
@@ -297,7 +297,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				char buf[1024];
 				map<float, int>	hist;
 				map<float, int>::iterator iter;
-				int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], hist, WED_ProgressFunc);
+				int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], hist, RF_ProgressFunc);
 
 				float minv = hist.begin()->first;
 				float maxv = hist.begin()->first;
@@ -412,7 +412,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 							temp(x,y) -= e * kStdLapseRate;
 					}
 				}
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+				RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
 			}
 			break;
 		case specCmd_FixMSL:
@@ -429,7 +429,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				if (msl2.get(x,y) == DEM_NO_DATA)
 					msl(x,y) = DEM_NO_DATA;
 			}
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
 			break;
 		case specCmd_FixRain:
 			{
@@ -445,37 +445,37 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				if (rain2.get(x,y) == DEM_NO_DATA)
 					rain(x,y) = DEM_NO_DATA;
 			}
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
 			break;
 		case specCmd_SplatClimate:
 			{
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.0);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.0);
 				while (SpreadDEMValuesIterate(gDem[dem_Temperature	  	 ])) { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.15);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.15);
 				while (SpreadDEMValuesIterate(gDem[dem_TemperatureRange	 ]))	 { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.3);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.3);
 				while (SpreadDEMValuesIterate(gDem[dem_Rainfall			 ])) { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.45);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.45);
 				while (SpreadDEMValuesIterate(gDem[dem_Biomass			 ])) { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.6);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.6);
 				while (SpreadDEMValuesIterate(gDem[dem_TemperatureSeaLevel ])) { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 0.75);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 0.75);
 				while (SpreadDEMValuesIterate(gDem[dem_Climate			 ])) { }
-				WED_ProgressFunc(0, 1, "Spreading climate.", 1.0);
+				RF_ProgressFunc(0, 1, "Spreading climate.", 1.0);
 
-				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+				RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
 			}
 			break;
 		case specCmd_ReloadConfigFiles:
-			WED_ProgressFunc(0, 1, "Reloading config files...", 0.0);
+			RF_ProgressFunc(0, 1, "Reloading config files...", 0.0);
 			LoadDEMTables();
 			LoadObjTables();
 			LoadNetFeatureTables();
-			WED_ProgressFunc(0, 1, "Reloading config files...", 1.0);
+			RF_ProgressFunc(0, 1, "Reloading config files...", 1.0);
 			CheckObjTable();
 			break;
 		case specCmd_Wizard:
-			WED_ShowSpreadsheetWizard();
+			RF_ShowSpreadsheetWizard();
 			break;
 		case specCmd_CountBorders:
 			{
@@ -575,7 +575,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			}
 			break;
 		}
-	} catch (wed_assert_fail_exception& e) {
+	} catch (rf_assert_fail_exception& e) {
 	} catch (exception& e) {
 		DoUserAlert(e.what());
 	} catch (...) {

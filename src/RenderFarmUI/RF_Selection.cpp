@@ -23,24 +23,24 @@
 #include "RF_Selection.h"
 #include "RF_Notify.h"
 #include "RF_Msgs.h"
-int							gSelectionMode = wed_Select_Face;
+int							gSelectionMode = rf_Select_Face;
 
 set<Pmwx::Face_handle>		gFaceSelection;
 set<Pmwx::Halfedge_handle>	gEdgeSelection;
 set<Pmwx::Vertex_handle>	gVertexSelection;
 set<PointFeatureSelection>	gPointFeatureSelection;
 
-void	WED_SetSelectionMode(int mode)
+void	RF_SetSelectionMode(int mode)
 {
 	if (mode == gSelectionMode) return;
 	gSelectionMode = mode;
 	int	cleared = 0;
-	if (mode != wed_Select_Vertex && !gVertexSelection.empty()) { gVertexSelection.clear(); cleared = 1; }
-	if (mode != wed_Select_Edge   && !  gEdgeSelection.empty()) {   gEdgeSelection.clear(); cleared = 1; }
-	if (mode != wed_Select_Face   && !  gFaceSelection.empty()) {   gFaceSelection.clear(); cleared = 1; }
-	if (mode != wed_Select_PointFeatures && !gPointFeatureSelection.empty()) { gPointFeatureSelection.clear(); cleared = 1; }
+	if (mode != rf_Select_Vertex && !gVertexSelection.empty()) { gVertexSelection.clear(); cleared = 1; }
+	if (mode != rf_Select_Edge   && !  gEdgeSelection.empty()) {   gEdgeSelection.clear(); cleared = 1; }
+	if (mode != rf_Select_Face   && !  gFaceSelection.empty()) {   gFaceSelection.clear(); cleared = 1; }
+	if (mode != rf_Select_PointFeatures && !gPointFeatureSelection.empty()) { gPointFeatureSelection.clear(); cleared = 1; }
 
-	WED_Notifiable::Notify(wed_Cat_Selection, wed_Msg_SelectionModeChanged, (void *) cleared);
+	RF_Notifiable::Notify(rf_Cat_Selection, rf_Msg_SelectionModeChanged, (void *) cleared);
 }
 
 

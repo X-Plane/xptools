@@ -23,10 +23,10 @@
 #ifndef RF_MAPZOOMER_H
 #define RF_MAPZOOMER_H
 
-class	WED_MapZoomer {
+class	RF_MapZoomer {
 public:
 
-	WED_MapZoomer();
+	RF_MapZoomer();
 
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
 	// This API is called by just about anything that needs to do coordinate

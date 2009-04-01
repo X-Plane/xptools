@@ -24,14 +24,14 @@
 #ifndef RF_PREFSDIALOG_H
 #define RF_PREFSDIALOG_H
 
-struct	WED_Prefs {
+struct	RF_Prefs {
 	int		dummy;
 };
 
-extern WED_Prefs	gWedPrefs;
+extern RF_Prefs	gWedPrefs;
 
-void	WED_ShowPrefsDialog(void);
-void	WED_LoadPrefs(void);
-void	WED_SavePrefs(void);
+void	RF_ShowPrefsDialog(void);
+void	RF_LoadPrefs(void);
+void	RF_SavePrefs(void);
 
 #endif

@@ -23,14 +23,14 @@
 #include "RF_Pane.h"
 #include "XPWidgets.h"
 #include "XPWidgetUtils.h"
-WED_Pane::WED_Pane(
+RF_Pane::RF_Pane(
                int                  inLeft,
                int                  inTop,
                int                  inRight,
                int                  inBottom,
                int                  inVisible,
                const char *         inDescriptor,
-               WED_Pane *			inSuper)
+               RF_Pane *			inSuper)
 {
 	XPWidgetID	super = NULL;
 	if (inSuper)
@@ -40,14 +40,14 @@ WED_Pane::WED_Pane(
 	XPSetWidgetProperty(mWidget, xpProperty_Object, reinterpret_cast<long>(this));
 }
 
-WED_Pane::WED_Pane(
+RF_Pane::RF_Pane(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
-                                   WED_Pane *			inSuper,
+                                   RF_Pane *			inSuper,
                                    XPWidgetClass		inClass)
 {
 	XPWidgetID	super = NULL;
@@ -59,14 +59,14 @@ WED_Pane::WED_Pane(
 	XPSetWidgetProperty(mWidget, xpProperty_Object, reinterpret_cast<long>(this));
 }
 
-WED_Pane::WED_Pane(
+RF_Pane::RF_Pane(
                                    int                  inLeft,
                                    int                  inTop,
                                    int                  inRight,
                                    int                  inBottom,
                                    int                  inVisible,
                                    const char *         inDescriptor,
-                                   WED_Pane *			inSuper,
+                                   RF_Pane *			inSuper,
                                    XPWidgetFunc_t		inFunc)
 {
 	XPWidgetID	super = NULL;
@@ -80,26 +80,26 @@ WED_Pane::WED_Pane(
 
 
 
-WED_Pane::~WED_Pane()
+RF_Pane::~RF_Pane()
 {
 }
 
-WED_Pane *	WED_Pane::GetPaneObj(XPWidgetID inWidget)
+RF_Pane *	RF_Pane::GetPaneObj(XPWidgetID inWidget)
 {
-	return reinterpret_cast<WED_Pane *>(XPGetWidgetProperty(inWidget, xpProperty_Object, NULL));
+	return reinterpret_cast<RF_Pane *>(XPGetWidgetProperty(inWidget, xpProperty_Object, NULL));
 }
 
-XPWidgetID	WED_Pane::GetWidget(void)
+XPWidgetID	RF_Pane::GetWidget(void)
 {
 	return mWidget;
 }
 
-void	WED_Pane::Kill(bool inRecursive)
+void	RF_Pane::Kill(bool inRecursive)
 {
 	XPDestroyWidget(mWidget,inRecursive);
 }
 
-void	WED_Pane::Show(bool inVisible)
+void	RF_Pane::Show(bool inVisible)
 {
 	if (inVisible)
 		XPShowWidget(mWidget);
@@ -107,32 +107,32 @@ void	WED_Pane::Show(bool inVisible)
 		XPHideWidget(mWidget);
 }
 
-bool	WED_Pane::IsVisible(void) const
+bool	RF_Pane::IsVisible(void) const
 {
 	return XPIsWidgetVisible(mWidget);
 }
 
 
-void	WED_Pane::DrawSelf(void)
+void	RF_Pane::DrawSelf(void)
 {
 }
 
-int		WED_Pane::HandleClick(XPLMMouseStatus status, int x, int y, int button)
-{
-	return 0;
-}
-
-int		WED_Pane::HandleKey(char key, XPLMKeyFlags flags, char vkey)
+int		RF_Pane::HandleClick(XPLMMouseStatus status, int x, int y, int button)
 {
 	return 0;
 }
 
-int		WED_Pane::HandleMouseWheel(int x, int y, int direction)
+int		RF_Pane::HandleKey(char key, XPLMKeyFlags flags, char vkey)
 {
 	return 0;
 }
 
-int		WED_Pane::MessageFunc(
+int		RF_Pane::HandleMouseWheel(int x, int y, int direction)
+{
+	return 0;
+}
+
+int		RF_Pane::MessageFunc(
                                    XPWidgetMessage      inMessage,
                                    long                 inParam1,
                                    long                 inParam2)
@@ -163,13 +163,13 @@ int		WED_Pane::MessageFunc(
 	}
 }
 
-int		WED_Pane::StaticMessageFunc(
+int		RF_Pane::StaticMessageFunc(
                                    XPWidgetMessage      inMessage,
                                    XPWidgetID           inWidget,
                                    long                 inParam1,
                                    long                 inParam2)
 {
-	WED_Pane * me = reinterpret_cast<WED_Pane *>(XPGetWidgetProperty(inWidget, xpProperty_Object, NULL));
+	RF_Pane * me = reinterpret_cast<RF_Pane *>(XPGetWidgetProperty(inWidget, xpProperty_Object, NULL));
 	if (me)
 		return me->MessageFunc(inMessage, inParam1, inParam2);
 	return 0;

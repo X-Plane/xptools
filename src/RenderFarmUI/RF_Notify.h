@@ -25,11 +25,11 @@
 
 // C++ interface
 
-class	WED_Notifiable {
+class	RF_Notifiable {
 public:
 
-					WED_Notifiable();
-	virtual			~WED_Notifiable();
+					RF_Notifiable();
+	virtual			~RF_Notifiable();
 	virtual	void	HandleNotification(int catagory, int message, void * param)=0;
 	static	void	Notify(int catagory, int message, void * param);
 
@@ -37,9 +37,9 @@ public:
 
 // C interface
 
-typedef	void (* WED_Notify_f)(int catagory, int message, void * param);
+typedef	void (* RF_Notify_f)(int catagory, int message, void * param);
 
-void	WED_RegisterNotifyFunc(WED_Notify_f inFunc);
-void	WED_UnregisterNotifyFunc(WED_Notify_f inFunc);
+void	RF_RegisterNotifyFunc(RF_Notify_f inFunc);
+void	RF_UnregisterNotifyFunc(RF_Notify_f inFunc);
 
 #endif
