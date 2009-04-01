@@ -2,6 +2,10 @@ TYPE		:= EXECUTABLE
 LDFLAGS		:= -static -static-libgcc
 LIBS		:= -lfreetype -ltiff -ljpeg -lpng12 -lz
 
+ifeq ($(PLATFORM), Mingw)
+REAL_TARGET	:= $(dir $(TARGET))/fonttool.exe
+endif
+
 SOURCES :=\
 src/fonttool/fonttool.cpp
 

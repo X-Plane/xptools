@@ -4,16 +4,36 @@ LIBRARIES	:= ./libs/local/.xpt_libs
 ifndef conf
 conf		:= debug_opt
 endif
-PLATFORM	:= $(shell uname)
 ifneq (, $(findstring MINGW, $(PLATFORM)))
 	PLATFORM	:= Mingw
+	PLAT_MINGW	:= Yes
+endif
+ifeq ($(PLATFORM), Linux)
+	PLAT_LINUX	:= Yes
+endif
+ifeq ($(PLATFORM), Darwin)
+	PLAT_DARWIN	:= Yes
+endif
+
+ifeq ($(ARCHITECTURE), i386)
+	ARCH_I386	:= Yes
+endif
+ifeq ($(ARCHITECTURE), i686)
+	ARCH_I386	:= Yes
+endif
+ifeq ($(ARCHITECTURE), x86_64)
+	ARCH_X86_64	:= Yes
 endif
 TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 
 .PHONY: all clean distclean libs ObjView WED DSFTool DDSTool ObjConverter \
-MeshTool RenderFarm fonttool ac3d
+MeshTool RenderFarm fonttool ac3d XGrinder
 
+ifdef PLAT_MINGW
+all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d XGrinder
+else
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d
+endif
 
 libs: $(LIBRARIES)
 
