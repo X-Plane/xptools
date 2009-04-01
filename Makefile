@@ -1,7 +1,5 @@
 BE_QUIET	:= > /dev/null 2>&1
 
-# TODO: add libexpat as separate library and adjust WED makerule accordingly
-
 VER_CGAL	:= 3.3.1
 # TODO: new release 2.3.9
 VER_FREETYPE	:= 2.3.8
