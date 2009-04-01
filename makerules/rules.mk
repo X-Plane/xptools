@@ -80,8 +80,11 @@ endif
 #############################
 
 include ./makerules/$(shell basename $(TARGET))
+ifdef REAL_TARGET
+REAL_TARGET := $(REAL_TARGET)$(MULTI_SUFFIX)
+else
 REAL_TARGET := $(TARGET)$(MULTI_SUFFIX)
-
+endif
 
 ##
 # architecture specific environment
@@ -240,20 +243,12 @@ endif
 # debug information
 
 ifneq ($(TYPE), LIBSTATIC)
-ifeq ($(PLATFORM), Linux)
 	@$(OBJCOPY) --only-keep-debug $(@) $(@).debug
 	@$(STRIP) -s -x $(@)
 	@cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
 	@chmod 0644 $(@).debug
 endif
-ifeq ($(PLATFORM), Mingw)
-	@$(OBJCOPY) --only-keep-debug $(@).exe $(@).debug
-	@$(STRIP) -s -x $(@).exe
-	@cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)).exe && cd $(WD)
-	@chmod 0644 $(@).debug
-endif
 #TODO: add Darwin, at least strip binaries
-endif
 	@$(print_finished)
 
 # basic rules

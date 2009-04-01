@@ -7,6 +7,9 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 ifeq ($(PLATFORM), Darwin)
 	LDFLAGS := -static-libgcc
 endif
+ifeq ($(PLATFORM), Mingw)
+REAL_TARGET	:= $(dir $(TARGET))/DDSTool.exe
+endif
 
 SOURCES :=\
 src/Utils/AssertUtils.cpp \

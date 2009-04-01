@@ -32,6 +32,7 @@ LIBS	+= -luuid -lws2_32 -Wl,-Bstatic -lexpat -lCGAL -lsquish
 LIBS	+= -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff
 LIBS	+= -ljpeg -lpng12 -lz
 WIN_RESOURCES := ./src/WEDResources/WED.rc
+REAL_TARGET := $(dir $(TARGET))/WED.exe
 endif #PLAT_MINGW
 
 ##

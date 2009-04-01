@@ -6,6 +6,10 @@ ifeq ($(PLATFORM), Darwin)
 	LDFLAGS := -static-libgcc
 endif
 
+ifeq ($(PLATFORM), Mingw)
+REAL_TARGET	:= $(dir $(TARGET))/DSFTool.exe
+endif
+
 SOURCES :=\
 src/DSF/DSFLib.cpp \
 src/DSF/DSFLibWrite.cpp \

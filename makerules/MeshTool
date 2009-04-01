@@ -6,6 +6,7 @@ LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 ifeq ($(PLATFORM), Mingw)
 DEFINES		:= $(DEFINES ) -DMINGW_BUILD=1
+REAL_TARGET	:= $(dir $(TARGET))/MeshTool.exe
 endif
 
 COMMON_SRC := \

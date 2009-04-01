@@ -12,6 +12,7 @@ LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -Wl,-Bs
 LDFLAGS		:= -Wl,-subsystem,windows
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
 WIN_RESOURCES := src/XPTools/ObjView.rc
+REAL_TARGET	:= $(dir $(TARGET))/XGrinder.exe
 endif
 
 COMMON_SRC := \

@@ -11,9 +11,9 @@ endif
 TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 
 .PHONY: all clean distclean libs ObjView WED DSFTool DDSTool ObjConverter \
-MeshTool RenderFarm fonttool
+MeshTool RenderFarm fonttool ac3d
 
-all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm
+all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d
 
 libs: $(LIBRARIES)
 
@@ -48,7 +48,7 @@ fonttool: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
 
 ac3d: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/XPlaneSupportLin.p -s -f makerules/rules.mk
+	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
 
 clean:
 	@echo "cleaning xptools tree, removing $(BUILDDIR)"

@@ -2,9 +2,16 @@ TYPE		:= LIBDYNAMIC
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
-ifeq ($(PLATFORM), Mingw)
+ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 LIBS		:= SDK/ac3d/ac3d.lib -lglu32 -lopengl32
+REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
+endif
+ifdef PLAT_LINUX
+REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
+endif
+ifdef PLAT_DARWIN
+REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportMac.p
 endif
 
 SOURCES :=\
