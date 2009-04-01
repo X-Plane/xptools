@@ -276,11 +276,20 @@ static bool	LowerPriorityFeature(GISPointFeature_t& lhs, GISPointFeature_t& rhs)
 }
 
 // Given a raod segment, return the widest type - this is the one we must use for insetting.
-static int	WidestRoadTypeForSegment(const GISNetworkSegmentVector& v)
+static int	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 {
 	int	best_type = NO_VALUE;
 	double best_width = 0.0;
-	for (GISNetworkSegmentVector::const_iterator i = v.begin(); i != v.end(); ++i)
+	for (GISNetworkSegmentVector::const_iterator i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
+	{
+		if (gNetEntities[i->mRepType].width > best_width)
+		{
+			best_type = i->mRepType;
+			best_width = gNetEntities[i->mRepType].width;
+		}
+	}
+
+	for (GISNetworkSegmentVector::const_iterator i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
 	{
 		if (gNetEntities[i->mRepType].width > best_width)
 		{
@@ -295,11 +304,7 @@ static int	WidestRoadTypeForSegment(const GISNetworkSegmentVector& v)
 // we're trying to ignore near-colllinear edges for subdivision
 static bool	CanSkipSegment(Halfedge_handle prev, Halfedge_handle edge)
 {
-	Halfedge_handle edge_d;
-	Halfedge_handle prev_d;
-	if (edge->data().mDominant) edge_d = edge; else edge_d = edge->twin();
-	if (edge->data().mDominant) prev_d = prev; else prev_d = prev->twin();
-	if (WidestRoadTypeForSegment(edge_d->data().mSegments) != WidestRoadTypeForSegment(prev_d->data().mSegments))
+	if (WidestRoadTypeForSegment(edge) != WidestRoadTypeForSegment(prev))
 		return false;
 	Vector_2	v1(edge->source()->point(), edge->target()->point());
 	Vector_2	v2(prev->source()->point(), prev->target()->point());
@@ -798,9 +803,7 @@ bool	SubdivideFace(
 			perimeter.push_back(iter->source()->point());
 			translator.mSrcMin = Point_2(min(CGAL::to_double(translator.mSrcMin.x()), CGAL::to_double(perimeter[n].x())), min(CGAL::to_double(translator.mSrcMin.y()), CGAL::to_double(perimeter[n].y())));
 			translator.mSrcMax = Point_2(max(CGAL::to_double(translator.mSrcMax.x()), CGAL::to_double(perimeter[n].x())), max(CGAL::to_double(translator.mSrcMax.y()), CGAL::to_double(perimeter[n].y())));
-			Pmwx::Halfedge_handle he = iter;
-			if (!he->data().mDominant) he = he->twin();
-			road_types[n] = WidestRoadTypeForSegment(he->data().mSegments);
+			road_types[n] = WidestRoadTypeForSegment(iter);
 			++n;
 		}
 	} while (iter != stop);
@@ -1699,10 +1702,7 @@ double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge)
 {
 	bool is_edge_of_map = inEdge->face()->is_unbounded() || inEdge->twin()->face()->is_unbounded();
 	bool is_coast = inEdge->face()->data().IsWater() != inEdge->twin()->face()->data().IsWater();
-	Halfedge_const_handle dom;
-	if (inEdge->data().mDominant) 
-		dom = inEdge; else dom = inEdge->twin();
-	int best_road = WidestRoadTypeForSegment(dom->data().mSegments);
+	int best_road = WidestRoadTypeForSegment(inEdge);
 	
 	double width = (is_coast && !is_edge_of_map) ? 30.0 : 5.0;
 	if (best_road != NO_VALUE)

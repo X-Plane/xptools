@@ -297,13 +297,13 @@ struct GIS_vertex_data {
 
 struct GIS_halfedge_data {
 public:
-	GIS_halfedge_data() : mDominant(false) { }
+	GIS_halfedge_data() : mDominantXXX(false) { }
 
 	int							mTransition;		// Transition type ID
 	GISNetworkSegmentVector		mSegments;			// Network segments along us
 	GISParamMap					mParams;
 	double						mInset;				// Largest unusable inset for this side
-	bool                        mDominant;
+	bool                        mDominantXXX;
 	bool						mMark;				// Temporary, for algorithms
 #if OPENGL_MAP
 	float						mGL[4];				// Pre-expanded line!
@@ -386,8 +386,8 @@ public:
   Halfedge* new_edge() 
   {
 	Halfedge * h = Dcel_base::new_edge();
-	h->data().mDominant = 1;
-	h->opposite()->data().mDominant = 0;
+	h->data().mDominantXXX = 1;
+	h->opposite()->data().mDominantXXX = 0;
 	return h;
 	}
 };

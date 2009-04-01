@@ -197,7 +197,16 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 
 	if (border)
 		SetColor(color,1.0, 0.0, 1.0);
-	if (!i->data().mSegments.empty())
+	
+	int tp = NO_VALUE;
+	for( GISNetworkSegmentVector::iterator r = i->data().mSegments.begin(); r != i->data().mSegments.end(); ++r)
+	if(tp == NO_VALUE || r->mFeatType < tp)
+		tp = r->mFeatType;
+	for( GISNetworkSegmentVector::iterator r = i->twin()->data().mSegments.begin(); r != i->twin()->data().mSegments.end(); ++r)
+	if(tp == NO_VALUE || r->mFeatType < tp)
+		tp = r->mFeatType;
+
+	if(tp != NO_VALUE)
 	{
 		int	tp = i->data().mSegments[0].mFeatType;
 		SetColor(color,1.0, 0.0, 1.0);
@@ -393,6 +402,7 @@ void	RecalcOGLColors(Pmwx& ioMap, ProgressFunc inFunc)
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Setting colors for vector map...", ctr, total, 1000)
 		SetColorForHalfedge(h, h->data().mGLColor);
+		SetColorForHalfedge(h, h->twin()->data().mGLColor);
 	}
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
@@ -622,10 +632,9 @@ void	DrawMapBucketed(
 	for (vector<Pmwx::Halfedge_handle>::iterator he = halfedges.begin(); he != halfedges.end(); ++he)
 	{
 		Pmwx::Halfedge_handle e = *he;
-		if (e->data().mDominant)
 		{
 			glColor3fv(e->data().mGLColor);
-			int wantWidth = (edgeSel.find(e) != edgeSel.end()) ? 2 : 1;
+			int wantWidth = (edgeSel.find(e) != edgeSel.end() || edgeSel.find(e->twin()) != edgeSel.end()) ? 2 : 1;
 			if (width != wantWidth)
 			{
 				glEnd();
@@ -951,7 +960,7 @@ void		FindHalfedgeTouchesRectFast(Pmwx& inMap, const Point2& p1, const Point2& p
 {
 	outIDs.clear();
 	Bbox2 sel(p1,p2);
-	for(Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
+	for(Pmwx::Edge_iterator e = inMap.edges_begin(); e != inMap.edges_end(); ++e)
 	{
 		Bbox2	ebox(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
 		if(sel.overlap(ebox))
@@ -963,7 +972,7 @@ void		FindHalfedgeFullyInRect(Pmwx& inMap, const Point2& p1, const Point2& p2, v
 {
 	outIDs.clear();
 	Bbox2 sel(p1,p2);
-	for(Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
+	for(Pmwx::Edge_iterator e = inMap.edges_begin(); e != inMap.edges_end(); ++e)
 	{
 		Bbox2	ebox(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
 		if(sel.contains(ebox))

@@ -690,12 +690,18 @@ bool	VPFImportTopo3(
 		if (lines[i].he_param != NO_VALUE)
 		{
 			DebugAssert(lines[i].he_param >= 0 && lines[i].he_param < gTokens.size());
+			
+			// Ben says: VPF data comes per edge not half edge.  It has no direction.  This code USED to go through both half-edge lists (a VPF edge is a chain really)
+			// and find the dominant halfedge in each for edge-based metadata.
+			// Since now we allow data on BOTH sides, just pick one arbitrarily.  We could someday make this "directed" - for now the "forward" direction is as good of
+			// a guess as any.
+			
 			for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
-			if ((*he)->data().mDominant)
+//			if(he_is_same_direction(*he))
 				(*he)->data().mParams[lines[i].he_param] = 0.0;
-			for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
-			if ((*he)->data().mDominant)
-				(*he)->data().mParams[lines[i].he_param] = 0.0;
+//			for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
+//			if(he_is_same_direction(*he))
+//				(*he)->data().mParams[lines[i].he_param] = 0.0;
 		}		
 
 		if (inTransTable && lines[i].he_trans_flags)
@@ -712,11 +718,11 @@ bool	VPFImportTopo3(
 					seg.mSourceHeight = seg.mTargetHeight = 0.0;
 					seg.mFeatType = the_val;
 					for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
-					if ((*he)->data().mDominant)
+//					if(he_is_same_direction(*he))
 						(*he)->data().mSegments.push_back(seg);
-					for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
-					if ((*he)->data().mDominant)
-						(*he)->data().mSegments.push_back(seg);
+//					for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
+//					if(he_is_same_direction(*he))
+//						(*he)->data().mSegments.push_back(seg);
 				}
 			}
 		}

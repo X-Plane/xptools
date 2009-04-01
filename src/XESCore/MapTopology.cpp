@@ -233,8 +233,8 @@ void	CleanFace(
 	Pmwx::Ccb_halfedge_circulator stop, iter;	
 	stop = iter = inFace->outer_ccb();
 	do {
-		if (iter->data().mDominant)
 		if (iter->face() == iter->twin()->face())
+		if(nuke.count(iter->twin())==0)
 			nuke.insert(iter);
 		++iter;
 	} while (iter != stop);
@@ -259,14 +259,14 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 	
 	int nuke = 0;
 	
-	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he, ++he)
+	for (Pmwx::Edge_iterator he = ioMap.edges_begin(); he != ioMap.edges_end(); ++he, ++he)
 	{
 		Pmwx::Halfedge_handle h = he;
-		if (!h->data().mDominant) h = h->twin();
 		
 		bool	iWet = h->face()->data().IsWater();
 		bool	oWet = h->twin()->face()->data().IsWater();
-		bool	road = !h->data().mSegments.empty();
+		bool	road = !h->data().mSegments.empty() ||
+					   !h->twin()->data().mSegments.empty();
 
 		if (!road && iWet && oWet)
 			deadList.push_back(he);
@@ -343,21 +343,20 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 	{
 		PROGRESS_CHECK(func,0,1,"Finding unneeded half-edges...",ctr,tot,1000);
 		Pmwx::Halfedge_handle h = he;
-		if (!h->data().mDominant) h = h->twin();
 		
 		bool	iWet = h->face()->data().IsWater();
 		bool	oWet = h->twin()->face()->data().IsWater();
-		bool	border = h->face()->is_unbounded() != h->twin()->face()->is_unbounded();
 		bool	coastline = iWet != oWet;
+		bool	border = h->face()->is_unbounded() != h->twin()->face()->is_unbounded();
 		bool	lu_change = h->face()->data().mTerrainType != h->twin()->face()->data().mTerrainType;
-		bool	road = !h->data().mSegments.empty();
+		bool	road = !h->data().mSegments.empty() || !h->twin()->data().mSegments.empty();
 		bool	stuff = h->face()->data().mAreaFeature.mFeatType != h->twin()->face()->data().mAreaFeature.mFeatType ||
-					(h->face()->data().mAreaFeature.mFeatType != NO_VALUE &&
+						(h->face()->data().mAreaFeature.mFeatType != NO_VALUE &&
 						h->face()->data().mAreaFeature.mParams != h->twin()->face()->data().mAreaFeature.mParams);
-		bool	river = h->data().mParams.find(he_IsRiver) != h->data().mParams.end();
+		bool	river = h->data().mParams.count(he_IsRiver) != 0 || h->twin()->data().mParams.count(he_IsRiver) != 0;
 		if (river && (iWet || oWet)) river = false;	// Wipe out rivers that are inside water bodies or coastlines too.
 		if (inKillRivers) river = false;
-		bool must_burn = h->data().mParams.count(he_MustBurn);
+		bool must_burn = h->data().mParams.count(he_MustBurn) || h->twin()->data().mParams.count(he_MustBurn);
 
 		if (!river && !stuff && !road && !coastline && !border && !lu_change && !must_burn)
 		{

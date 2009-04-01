@@ -631,8 +631,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	}
 
 	// Now - any remaining outer airport is there because it is adjacent to water and the edge is important.  Mark it as a "forced-burn-in" case for later.
-	for(Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he)
-	if (he->data().mDominant)
+	for(Pmwx::Edge_iterator he = ioMap.edges_begin(); he != ioMap.edges_end(); ++he)
 	if ((he->face()->data().mTerrainType == terrain_Airport && he->twin()->face()->data().mTerrainType == terrain_AirportOuter) ||
 		(he->face()->data().mTerrainType == terrain_AirportOuter && he->twin()->face()->data().mTerrainType == terrain_Airport))
 	{

@@ -829,27 +829,24 @@ int CopyWetPoints(
 
 	int wet = 0;
 
-	for (Pmwx::Halfedge_const_iterator i = map.halfedges_begin(); i != map.halfedges_end(); ++i)
+	for (Pmwx::Edge_const_iterator i = map.edges_begin(); i != map.edges_end(); ++i)
 	{
-		if (i->data().mDominant)
+		bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
+		bool	oWet = i->twin()->face()->data().IsWater() && !i->twin()->face()->is_unbounded();
+		
+		if (iWet != oWet)
 		{
-			bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
-			bool	oWet = i->twin()->face()->data().IsWater() && !i->twin()->face()->is_unbounded();
-			
-			if (iWet != oWet)
+			if (corners)
 			{
-				if (corners)
-				{
-					int xp, yp;
-					float e;
-					e = orig.xy_nearest(CGAL::to_double(i->source()->point().x()),CGAL::to_double(i->source()->point().y()), xp, yp);
-					if (e != DEM_NO_DATA)
-						(*corners)(xp,yp) = e;
-					
-					e = orig.xy_nearest(CGAL::to_double(i->target()->point().x()),CGAL::to_double(i->target()->point().y()), xp, yp);
-					if (e != DEM_NO_DATA)
-						(*corners)(xp,yp) = e;
-				}
+				int xp, yp;
+				float e;
+				e = orig.xy_nearest(CGAL::to_double(i->source()->point().x()),CGAL::to_double(i->source()->point().y()), xp, yp);
+				if (e != DEM_NO_DATA)
+					(*corners)(xp,yp) = e;
+				
+				e = orig.xy_nearest(CGAL::to_double(i->target()->point().x()),CGAL::to_double(i->target()->point().y()), xp, yp);
+				if (e != DEM_NO_DATA)
+					(*corners)(xp,yp) = e;
 			}
 		}
 	}
@@ -1110,7 +1107,7 @@ void	AddWaterMeshPoints(
 		he->data().mMark = false;
 		
 	for (he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
-	if (he->data().mDominant)
+	if (!he->twin()->data().mMark)
 	if (!he->data().mMark)
 	{
 		Pmwx::Face_const_handle	f1 = he->face();
@@ -1118,7 +1115,8 @@ void	AddWaterMeshPoints(
 		//fprintf(stderr,"\\");
 		if (!f1->is_unbounded() && !f2->is_unbounded() &&
 			(f1->data().mTerrainType != f2->data().mTerrainType ||
-			he->data().mParams.count(he_MustBurn)))
+			he->data().mParams.count(he_MustBurn) ||
+			he->twin()->data().mParams.count(he_MustBurn)))
 		{
 			Halfedge_handle extended1 = ExtendLanduseEdge(he);
 			Halfedge_handle extended2 = ExtendLanduseEdge(he->twin());
@@ -2368,33 +2366,30 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& rasterizer)
 {
 	fprintf(stderr,"SetupWaterRasterizer");
-	for (Pmwx::Halfedge_const_iterator i = map.halfedges_begin(); i != map.halfedges_end(); ++i)
+	for (Pmwx::Edge_const_iterator i = map.edges_begin(); i != map.edges_end(); ++i)
 	{
-		if (i->data().mDominant)
+		bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
+		bool	oWet = i->twin()->face()->data().IsWater() && !i->twin()->face()->is_unbounded();
+		
+		if (iWet != oWet)
 		{
-			bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
-			bool	oWet = i->twin()->face()->data().IsWater() && !i->twin()->face()->is_unbounded();
-			
-			if (iWet != oWet)
-			{
-				//fprintf(stderr,"|");
-				double x1 = orig.lon_to_x(CGAL::to_double(i->source()->point().x()));
-				double y1 = orig.lat_to_y(CGAL::to_double(i->source()->point().y()));
-				double x2 = orig.lon_to_x(CGAL::to_double(i->target()->point().x()));
-				double y2 = orig.lat_to_y(CGAL::to_double(i->target()->point().y()));
-									
+			//fprintf(stderr,"|");
+			double x1 = orig.lon_to_x(CGAL::to_double(i->source()->point().x()));
+			double y1 = orig.lat_to_y(CGAL::to_double(i->source()->point().y()));
+			double x2 = orig.lon_to_x(CGAL::to_double(i->target()->point().x()));
+			double y2 = orig.lat_to_y(CGAL::to_double(i->target()->point().y()));
+								
 //				gMeshLines.push_back(i->source()->point());
 //				gMeshLines.push_back(i->target()->point());
 
 //				fprintf(fi,"%lf,%lf    %lf,%lf   %s\n", x1,y1,x2,y2, ((y1 == 0.0 || y2 == 0.0) && y1 != y2) ? "****" : "");
 
-				if (y1 != y2)
-				{
-					if (y1 < y2)
-						rasterizer.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
-					else
-						rasterizer.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
-				}
+			if (y1 != y2)
+			{
+				if (y1 < y2)
+					rasterizer.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
+				else
+					rasterizer.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
 			}
 		}
 	}

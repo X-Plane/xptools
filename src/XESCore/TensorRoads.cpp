@@ -616,8 +616,7 @@ void	BuildRoadsForFace(
 				grid_y,
 				t);
 
-		for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-		if (e->data().mDominant)
+		for(Pmwx::Edge_iterator e = ioMap.edges_begin(); e != ioMap.edges_end(); ++e)
 			RasterEdge(e, road_restrict, Tensor_Func, &t);
 	}
 

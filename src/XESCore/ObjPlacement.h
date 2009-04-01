@@ -31,7 +31,6 @@
 
 typedef pair<Face_handle, Polygon_set_2>	PreinsetFace;
 
-
 double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge);
 double	GetInsetForEdgeDegs(Halfedge_const_handle inEdge);
 

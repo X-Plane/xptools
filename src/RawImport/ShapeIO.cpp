@@ -491,13 +491,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			if(flags & shp_Mode_Simple)
 			if(flags & shp_Mode_Road)
 			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
-			if(e->data().mDominant)
+			if(he_is_same_direction(e))
 				e->data().mSegments.push_back(r);
 
 			if(flags & shp_Mode_Map)
 			if(flags & shp_Mode_Road)
 			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
-			if(e->data().mDominant)
+			if(he_is_same_direction(e))
 			if(e->curve().data().front() >= 0 && e->curve().data().front() < feature_map.size())
 			{
 				r.mFeatType = feature_map[e->curve().data().front()];

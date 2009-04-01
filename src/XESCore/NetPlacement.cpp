@@ -35,8 +35,11 @@
 
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 {
-	if (!he->data().mDominant) he = he->twin();
 	for (GISNetworkSegmentVector::iterator seg = he->data().mSegments.begin(); seg != he->data().mSegments.end(); ++seg)
+	{
+		if (IsSeparatedHighway(seg->mFeatType)) return true;
+	}
+	for (GISNetworkSegmentVector::iterator seg = he->twin()->data().mSegments.begin(); seg != he->twin()->data().mSegments.end(); ++seg)
 	{
 		if (IsSeparatedHighway(seg->mFeatType)) return true;
 	}
@@ -45,7 +48,6 @@ bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 
 void	MakeHalfedgeOneway(Pmwx::Halfedge_handle he)
 {
-	if (!he->data().mDominant) he = he->twin();
 	for (GISNetworkSegmentVector::iterator seg = he->data().mSegments.begin(); seg != he->data().mSegments.end(); ++seg)
 	{
 		seg->mFeatType = SeparatedToOneway(seg->mFeatType);
@@ -121,7 +123,6 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	}
 
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
-	if (edge->data().mDominant)
 	{
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
 	
@@ -453,7 +454,6 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 		//printf("+");
 	}
 	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
-	if (e->data().mDominant)
 	for (GISNetworkSegmentVector::iterator seg = e->data().mSegments.begin(); seg != e->data().mSegments.end(); ++seg)
 	if (seg->mRepType != NO_VALUE)
 	{

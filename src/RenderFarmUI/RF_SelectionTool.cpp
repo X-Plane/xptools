@@ -343,10 +343,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 		{
 			set<Halfedge_handle>	nuke;
 			for (set<Halfedge_handle>::iterator sel = gEdgeSelection.begin(); sel != gEdgeSelection.end(); ++sel)
-				if ((*sel)->data().mDominant)
-					nuke.insert(*sel);
-				else
-					nuke.insert((*sel)->twin());
+				nuke.insert(he_get_same_direction(*sel));
 			for (set<Halfedge_handle>::iterator nukeme = nuke.begin(); nukeme != nuke.end(); ++nukeme)
 			{
 				gMap.remove_edge(*nukeme);

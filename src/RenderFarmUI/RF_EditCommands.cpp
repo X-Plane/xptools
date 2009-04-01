@@ -112,8 +112,7 @@ static	void	RF_HandleEditMenuCmd(void *, void * i)
 				PROGRESS_START(RF_ProgressFunc, 1, 3, "Accumulating Edges")
 				set<Halfedge_handle> kill_e;			
 				ctr = 0;
-				for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
-				if (e->data().mDominant)
+				for (Pmwx::Edge_iterator e = gMap.edges_begin(); e != gMap.edges_end(); ++e, ++ctr)
 				{
 					PROGRESS_CHECK(RF_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gMap.number_of_halfedges(), gMap.number_of_halfedges() / 200)
 					if (kill_f.count(e->face()) &&

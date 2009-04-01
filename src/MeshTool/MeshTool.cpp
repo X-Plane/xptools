@@ -551,13 +551,13 @@ int	main(int argc, char * argv[])
 		}
 		
 		
-		fprintf(stderr,"Dominance\n");
-		// assuming no dominant flags are set at this point
-		Pmwx::Halfedge_iterator hit;
-		for (hit = gMap.halfedges_begin(); hit != gMap.halfedges_end(); ++hit) {
-			if (!hit->twin()->data().mDominant)
-				hit->data().mDominant = true;
-		}
+//		fprintf(stderr,"Dominance\n");
+//		// assuming no dominant flags are set at this point
+//		Pmwx::Halfedge_iterator hit;
+//		for (hit = gMap.halfedges_begin(); hit != gMap.halfedges_end(); ++hit) {
+//			if (!hit->twin()->data().mDominant)
+//				hit->data().mDominant = true;
+//		}
 		
 		
 		fprintf(stderr,"Now to simplify\n");

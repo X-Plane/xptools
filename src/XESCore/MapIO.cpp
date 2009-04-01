@@ -344,7 +344,10 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 			writer.WriteDouble(CGAL::to_double(he->target()->point().x()));
 			writer.WriteDouble(CGAL::to_double(he->target()->point().y()));
 			
-			writer.WriteInt(he->data().mDominant);
+			// Ben says: we used to mark every other edge as dominant.  Now..since we are going to put vector data on BOTH halves of the half-edge
+			// (for the purpose of directionality) we're going to be a bit hosed anyway, but at least maintain the every-other semantics.
+			bool	was_dom = ctr % 2;
+			writer.WriteInt(was_dom);	//he->data().mDominant);
 			writer.WriteInt(he->data().mTransition);
 			writer.WriteDouble(he->data().mInset);		
 		}
@@ -526,7 +529,7 @@ public:
 		
 		int	dominant;		
 		mReader->ReadInt(dominant);
-		h->data().mDominant = (dominant != 0);
+//		h->data().mDominant = (dominant != 0);
 		mReader->ReadInt(h->data().mTransition);
 		mReader->ReadDouble(h->data().mInset);		
 

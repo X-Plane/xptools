@@ -212,7 +212,7 @@ public:
 //			reverse ? "yes" : "no");
 		
 		
-		DebugAssert(e->		data().mDominant != e->twin()->data().mDominant);
+//		DebugAssert(e->		data().mDominant != e->twin()->data().mDominant);
 		
 //		e->twin()->data().mDominant=1;
 		
@@ -243,8 +243,8 @@ public:
 //		DebugAssert(edges->count(e2) == 0);
 //		DebugAssert(edges->count(e2->twin()) == 0);
 
-		DebugAssert(e1->data().mDominant != e1->twin()->data().mDominant);
-		DebugAssert(e2->data().mDominant != e2->twin()->data().mDominant);
+//		DebugAssert(e1->data().mDominant != e1->twin()->data().mDominant);
+//		DebugAssert(e2->data().mDominant != e2->twin()->data().mDominant);
 		if(edges->count(e1)) edges->insert(e2);
 		if(edges->count(e1->twin())) edges->insert(e2->twin());
 
@@ -310,8 +310,7 @@ void	CutInside(
 //	if(!inWantOutside)
 	{
 		// this is the case where we THROW OUT the OUTSIDE - still very slow.
-		for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-		if(e->data().mDominant)
+		for(Pmwx::Edge_iterator e = ioMap.edges_begin(); e != ioMap.edges_end(); ++e)
 		{
 			CGAL::Bounded_side v1 = inBoundary.bounded_side(e->source()->point());
 			CGAL::Bounded_side v2 = inBoundary.bounded_side(e->target()->point());
@@ -461,8 +460,8 @@ static	void	__RemoveAntennasFromFace(Pmwx& inPmwx, Face_handle inFace)
 	
 	FindEdgesForFace(inFace, edges);
 	for (set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
-	if ((*i)->data().mDominant)
 	if ((*i)->twin()->face() == inFace)
+	if(nuke.count((*i)->twin()->face)==0)
 		nuke.insert(*i);
 
 	for (set<Halfedge_handle>::iterator j = nuke.begin(); j != nuke.end(); ++j)
@@ -1610,6 +1609,8 @@ Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point
 // iteration.  Cheesy but it works.
 bool	ValidateMapDominance(const Pmwx& inMap)
 {
+	return true;
+/*
 	int doubles = 0;
 	int zeros = 0;
 	int ctr = 0;
@@ -1653,6 +1654,10 @@ bool	ValidateMapDominance(const Pmwx& inMap)
 		printf("Validation : %d double-dominant halfedges, and %d zero-dominant halfedges.  %d wrong\n", doubles, zeros, wrong);
 #endif
 	return doubles == 0 && zeros == 0 && wrong == 0;
+*/
+#if !DEV
+	#error rip this out like asbestos!
+#endif
 }
 
 

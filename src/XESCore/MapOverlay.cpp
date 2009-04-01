@@ -249,12 +249,12 @@ struct Overlay_network
 //		DebugAssert(a.mDominant || a.mDominant == b.mDominant);
 //		DebugAssert(!b.mDominant || a.mDominant == b.mDominant);
 		GIS_halfedge_data r;
-		r.mDominant = a.mDominant;
+//		r.mDominant = a.mDominant;
 		GISNetworkSegmentVector::iterator i;
 		if (b.mSegments.empty())
 			for (i = a.mSegments.begin(); i != a.mSegments.end(); ++i)
 				r.mSegments.push_back(*i);
-		if(b.mDominant)
+//		if(b.mDominant)
 			for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
 				r.mSegments.push_back(*i);
 		return r;

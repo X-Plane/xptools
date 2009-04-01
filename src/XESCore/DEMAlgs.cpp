@@ -680,7 +680,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	for (Pmwx::Halfedge_const_iterator iter = inMap.halfedges_begin();
 		iter != inMap.halfedges_end(); ++iter)
 	{
-		if (iter->data().mDominant && !iter->data().mSegments.empty())
+		if (!iter->data().mSegments.empty())
 		{
 			int tsx, tsy, tdx, tdy;
 			ioTransport.xy_nearest(CGAL::to_double(iter->source()->point().x()),CGAL::to_double(iter->source()->point().y()), tsx, tsy);
