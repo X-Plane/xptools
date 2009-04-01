@@ -1,275 +1,386 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
-ifeq ($(PLATFORM), Linux)
-LDFLAGS		:= -nodefaultlibs -static-libgcc
-STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
-LIBS		:= -Wl,-Bdynamic -lGL -lGLU -Wl,-Bstatic -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
-include makerules/WED_resources
-endif
-ifeq ($(PLATFORM), Mingw)
-LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -lws2_32 -Wl,-Bstatic -lexpat -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
-LDFLAGS		:= -Wl,-subsystem,windows
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
-WIN_RESOURCES := src/WEDResources/WED.rc
-endif
+
+ifdef PLAT_LINUX
+DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
+LDFLAGS	:= -nodefaultlibs -static-libgcc
+LIBS	:= -Wl,-Bstatic
+LIBS	+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS	+= -Wl,-Bdynamic
+LIBS	+= -ldl -lpthread -lc
+LIBS	+= -Wl,-Bstatic
+LIBS	+= -lgcc -lgcc_eh
+LIBS	+= -Wl,-Bdynamic
+LIBS	+= -lGL -lGLU
+LIBS	+= -Wl,-Bstatic
+LIBS	+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
+LIBS	+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
+MESA_HEADERS := -I./libs/local/include/mesa
+endif #PLAT_LINUX
+
+ifdef PLAT_MINGW
+LDFLAGS	:= -Wl,-subsystem,windows
+DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500
+DEFINES	+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+LIBS	:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS	+= -luuid -lws2_32 -Wl,-Bstatic -lexpat -lCGAL -lsquish
+LIBS	+= -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff
+LIBS	+= -ljpeg -lpng12 -lz
+WIN_RESOURCES := ./src/WEDResources/WED.rc
+endif #PLAT_MINGW
+
+##
+# include-, librarypaths
+########################
+
+LIBPATHS := -L./libs/local/lib
+
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
 
 
-COMMON_SRC := \
-src/UI/FontMgr.cpp \
-src/WEDCore/WED_AppMain.cpp \
-src/WEDCore/WED_Application.cpp \
-src/WEDCore/WED_PackageMgr.cpp \
-src/WEDCore/WED_Package.cpp \
-src/WEDCore/WED_Archive.cpp \
-src/WEDCore/WED_Buffer.cpp \
-src/WEDCore/WED_Document.cpp \
-src/WEDCore/WED_EnumSystem.cpp \
-src/WEDCore/WED_Errors.cpp \
-src/WEDCore/WED_FastBuffer.cpp \
-src/WEDCore/WED_LibraryMgr.cpp \
-src/WEDCore/WED_Persistent.cpp \
-src/WEDCore/WED_Properties.cpp \
-src/WEDCore/WED_PropertyHelper.cpp \
-src/WEDCore/WED_TexMgr.cpp \
-src/WEDCore/WED_UndoLayer.cpp \
-src/WEDCore/WED_UndoMgr.cpp \
-src/WEDCore/WED_Assert.cpp \
-src/WEDCore/WED_ResourceMgr.cpp \
-src/WEDEntities/WED_AirportBeacon.cpp \
-src/WEDEntities/WED_AirportBoundary.cpp \
-src/WEDEntities/WED_AirportChain.cpp \
-src/WEDEntities/WED_Airport.cpp \
-src/WEDEntities/WED_AirportNode.cpp \
-src/WEDEntities/WED_AirportSign.cpp \
-src/WEDEntities/WED_ATCFrequency.cpp \
-src/WEDEntities/WED_DrapedOrthophotoBoundary.cpp \
-src/WEDEntities/WED_DrapedOrthophoto.cpp \
-src/WEDEntities/WED_ExclusionZone.cpp \
-src/WEDEntities/WED_TextureBezierNode.cpp \
-src/WEDEntities/WED_GISBoundingBox.cpp \
-src/WEDEntities/WED_Entity.cpp \
-src/WEDEntities/WED_FacadePlacement.cpp \
-src/WEDEntities/WED_ForestPlacement.cpp \
-src/WEDEntities/WED_GISChain.cpp \
-src/WEDEntities/WED_GISComposite.cpp \
-src/WEDEntities/WED_GISLine.cpp \
-src/WEDEntities/WED_GISLine_Width.cpp\
-src/WEDEntities/WED_GISPoint_Bezier.cpp \
-src/WEDEntities/WED_GISPoint.cpp \
-src/WEDEntities/WED_GISPoint_Heading.cpp\
-src/WEDEntities/WED_GISPoint_HeadingWidthLength.cpp \
-src/WEDEntities/WED_GISPolygon.cpp \
-src/WEDEntities/WED_Group.cpp \
-src/WEDEntities/WED_Helipad.cpp \
-src/WEDEntities/WED_KeyObjects.cpp \
-src/WEDEntities/WED_LightFixture.cpp \
-src/WEDEntities/WED_LinePlacement.cpp \
-src/WEDEntities/WED_ObjPlacement.cpp \
-src/WEDEntities/WED_OverlayImage.cpp \
-src/WEDEntities/WED_PolygonPlacement.cpp \
-src/WEDEntities/WED_RampPosition.cpp \
-src/WEDEntities/WED_Ring.cpp \
-src/WEDEntities/WED_Root.cpp \
-src/WEDEntities/WED_Runway.cpp \
-src/WEDEntities/WED_RunwayNode.cpp \
-src/WEDEntities/WED_Sealane.cpp \
-src/WEDEntities/WED_Select.cpp \
-src/WEDEntities/WED_SimpleBezierBoundaryNode.cpp \
-src/WEDEntities/WED_SimpleBoundaryNode.cpp \
-src/WEDEntities/WED_StringPlacement.cpp \
-src/WEDEntities/WED_Taxiway.cpp \
-src/WEDEntities/WED_TextureNode.cpp \
-src/WEDEntities/WED_Thing.cpp \
-src/WEDEntities/WED_TowerViewpoint.cpp \
-src/WEDEntities/WED_Windsock.cpp \
-src/WEDImportExport/WED_AptIE.cpp \
-src/WEDImportExport/WED_DSFExport.cpp \
-src/WEDImportExport/WED_DSFImport.cpp \
-src/WEDLibrary/WED_LibraryListAdapter.cpp \
-src/WEDLibrary/WED_LibraryPane.cpp \
-src/WEDMap/WED_Colors.cpp \
-src/WEDMap/WED_CreateLineTool.cpp \
-src/WEDMap/WED_CreatePointTool.cpp \
-src/WEDMap/WED_CreatePolygonTool.cpp \
-src/WEDMap/WED_CreateToolBase.cpp \
-src/WEDMap/WED_CreateBoxTool.cpp \
-src/WEDMap/WED_HandleToolBase.cpp \
-src/WEDMap/WED_Map.cpp \
-src/WEDMap/WED_MapBkgnd.cpp \
-src/WEDMap/WED_MapLayer.cpp \
-src/WEDMap/WED_MapPane.cpp \
-src/WEDMap/WED_MapToolNew.cpp \
-src/WEDMap/WED_MapZoomerNew.cpp \
-src/WEDMap/WED_MarqueeTool.cpp \
-src/WEDMap/WED_StructureLayer.cpp \
-src/WEDMap/WED_TerraserverLayer.cpp \
-src/WEDMap/WED_ToolInfoAdapter.cpp \
-src/WEDMap/WED_ToolUtils.cpp \
-src/WEDMap/WED_UIMeasurements.cpp \
-src/WEDMap/WED_VertexTool.cpp \
-src/WEDMap/WED_WorldMapLayer.cpp \
-src/WEDMap/WED_DrawUtils.cpp \
-src/WEDMap/WED_PreviewLayer.cpp \
-src/WEDTCE/WED_TCE.cpp \
-src/WEDTCE/WED_TCELayer.cpp \
-src/WEDTCE/WED_TCEPane.cpp \
-src/WEDTCE/WED_TCEToolAdapter.cpp \
-src/WEDTCE/WED_TCEToolNew.cpp \
-src/WEDTCE/WED_TCEVertexTool.cpp \
-src/WEDProperties/WED_PropertyPane.cpp \
-src/WEDProperties/WED_PropertyTable.cpp \
-src/WEDWindows/WED_AboutBox.cpp \
-src/WEDWindows/WED_DocumentWindow.cpp \
-src/WEDWindows/WED_GroupCommands.cpp \
-src/WEDWindows/WED_Menus.cpp \
-src/WEDWindows/WED_PackageListAdapter.cpp \
-src/WEDWindows/WED_PackageStatusPane.cpp \
-src/WEDWindows/WED_PackageWindow.cpp \
-src/WEDWindows/WED_StartWindow.cpp \
-src/GUI/GUI_Broadcaster.cpp \
-src/GUI/GUI_Button.cpp \
-src/GUI/GUI_ChangeView.cpp \
-src/GUI/GUI_Commander.cpp \
-src/GUI/GUI_Control.cpp \
-src/GUI/GUI_Destroyable.cpp \
-src/GUI/GUI_DrawUtils.cpp \
-src/GUI/GUI_Fonts.cpp \
-src/GUI/GUI_GraphState.cpp \
-src/GUI/GUI_Listener.cpp \
-src/GUI/GUI_MemoryHog.cpp \
-src/GUI/GUI_Packer.cpp \
-src/GUI/GUI_PopupButton.cpp \
-src/GUI/GUI_Prefs.cpp \
-src/GUI/GUI_Resources.cpp \
-src/GUI/GUI_ScrollBar.cpp \
-src/GUI/GUI_ScrollerPane.cpp \
-src/GUI/GUI_SimpleScroller.cpp \
-src/GUI/GUI_SimpleTableGeometry.cpp \
-src/GUI/GUI_Splitter.cpp \
-src/GUI/GUI_TabControl.cpp \
-src/GUI/GUI_Table.cpp \
-src/GUI/GUI_TabPane.cpp \
-src/GUI/GUI_TextField.cpp \
-src/GUI/GUI_TextTable.cpp \
-src/GUI/GUI_Timer.cpp \
-src/GUI/GUI_ToolBar.cpp \
-src/GUI/GUI_Window.cpp \
-src/GUI/GUI_Pane.cpp \
-src/GUI/GUI_Help.cpp \
-src/GUI/GUI_Clipboard.cpp \
-src/GUI/GUI_Application.cpp \
-src/Utils/SQLUtils.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/MemFileUtils.cpp \
-src/Utils/FileUtils.cpp \
-src/Utils/GISUtils.cpp \
-src/Utils/BitmapUtils.cpp \
-src/Utils/TexUtils.cpp \
-src/Utils/EndianUtils.c \
-src/Utils/md5.c \
-src/Utils/XChunkyFileUtils.cpp \
-src/Utils/CompGeomUtils.cpp \
-src/Utils/PolyRasterUtils.cpp \
-src/Utils/zip.c \
-src/Utils/unzip.c \
-src/Utils/XUtils.cpp \
-src/Utils/BWImage.cpp \
-src/Utils/ObjUtils.cpp \
-src/Utils/XFileTwiddle.cpp \
-src/Utils/Skeleton.cpp \
-src/Utils/perlin.cpp \
-src/Utils/MatrixUtils.cpp \
-src/Installer/ErrMsg.cpp \
-src/Obj/ObjPointPool.cpp \
-src/Obj/XObjDefs.cpp \
-src/Obj/XObjReadWrite.cpp \
-src/Obj/ObjDraw.cpp \
-src/Network/Terraserver.cpp \
-src/Network/HTTPClient.cpp \
-src/Network/XMLObject.cpp \
-src/Network/b64.c \
-src/DSF/DSFLib.cpp \
-src/DSF/DSFLibWrite.cpp \
-src/DSF/DSFPointPool.cpp \
-src/DSF/tri_stripper_101/tri_stripper.cpp \
-src/DSFTools/DSF2Text.cpp \
-src/DSFTools/ENV2Overlay.cpp \
-src/OGLE/ogle.cpp \
-src/XESCore/AptIO.cpp \
-src/Env/EnvParser.c \
-src/Env/Persistence.cpp \
-src/XPWidgets/XPLMGraphics.cpp \
-src/Obj/ObjConvert.cpp
+##
+# sources
+#########
 
+ifdef PLAT_MINGW
+SOURCES := ./src/UI/XWin.win.cpp
+SOURCES += ./src/UI/XWinGL.win.cpp
+SOURCES += ./src/UI/XWin32DND.cpp
+SOURCES += ./src/Utils/XFileTwiddle.win.cpp
+SOURCES += ./src/Utils/PlatformUtils.win.cpp
+SOURCES += ./src/Network/PCSBSocket.win.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
+endif #PLAT_MINGW
 
-WIN32_SRC := \
-src/UI/XWin.win.cpp \
-src/UI/XWinGL.win.cpp \
-src/UI/XWin32DND.cpp \
-src/Utils/XFileTwiddle.win.cpp \
-src/Utils/PlatformUtils.win.cpp \
-src/Network/PCSBSocket.win.cpp \
-src/Network/PCSBSocketUDP.win.cpp
+ifdef PLAT_LINUX
+SOURCES := ./src/linuxinit/initializer.cpp
+SOURCES += ./src/linuxinit/minigtk.cpp
+SOURCES += ./src/UI/XWin.lin.cpp
+SOURCES += ./src/UI/XWinGL.lin.cpp
+SOURCES += ./src/UI/XPopup.lin.cpp
+SOURCES += ./src/UI/xdnd.cpp
+SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
+SOURCES += ./src/Utils/PlatformUtils.lin.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+endif #PLAT_LINUX
 
-POSIX_SRC := \
-src/linuxinit/initializer.cpp \
-src/linuxinit/minigtk.cpp \
-src/UI/XWin.lin.cpp \
-src/UI/XWinGL.lin.cpp \
-src/UI/XPopup.lin.cpp \
-src/UI/xdnd.cpp \
-src/Utils/XFileTwiddle.unix.cpp \
-src/Utils/PlatformUtils.lin.cpp \
-src/GUI/GUI_Laftfont.cpp \
-src/Network/PCSBSocket.lin.cpp \
-src/Network/PCSBSocketUDP.lin.cpp
+SOURCES += ./src/UI/FontMgr.cpp
+SOURCES += ./src/WEDCore/WED_AppMain.cpp
+SOURCES += ./src/WEDCore/WED_Application.cpp
+SOURCES += ./src/WEDCore/WED_PackageMgr.cpp
+SOURCES += ./src/WEDCore/WED_Package.cpp
+SOURCES += ./src/WEDCore/WED_Archive.cpp
+SOURCES += ./src/WEDCore/WED_Buffer.cpp
+SOURCES += ./src/WEDCore/WED_Document.cpp
+SOURCES += ./src/WEDCore/WED_EnumSystem.cpp
+SOURCES += ./src/WEDCore/WED_Errors.cpp
+SOURCES += ./src/WEDCore/WED_FastBuffer.cpp
+SOURCES += ./src/WEDCore/WED_LibraryMgr.cpp
+SOURCES += ./src/WEDCore/WED_Persistent.cpp
+SOURCES += ./src/WEDCore/WED_Properties.cpp
+SOURCES += ./src/WEDCore/WED_PropertyHelper.cpp
+SOURCES += ./src/WEDCore/WED_TexMgr.cpp
+SOURCES += ./src/WEDCore/WED_UndoLayer.cpp
+SOURCES += ./src/WEDCore/WED_UndoMgr.cpp
+SOURCES += ./src/WEDCore/WED_Assert.cpp
+SOURCES += ./src/WEDCore/WED_ResourceMgr.cpp
+SOURCES += ./src/WEDEntities/WED_AirportBeacon.cpp
+SOURCES += ./src/WEDEntities/WED_AirportBoundary.cpp
+SOURCES += ./src/WEDEntities/WED_AirportChain.cpp
+SOURCES += ./src/WEDEntities/WED_Airport.cpp
+SOURCES += ./src/WEDEntities/WED_AirportNode.cpp
+SOURCES += ./src/WEDEntities/WED_AirportSign.cpp
+SOURCES += ./src/WEDEntities/WED_ATCFrequency.cpp
+SOURCES += ./src/WEDEntities/WED_DrapedOrthophotoBoundary.cpp
+SOURCES += ./src/WEDEntities/WED_DrapedOrthophoto.cpp
+SOURCES += ./src/WEDEntities/WED_ExclusionZone.cpp
+SOURCES += ./src/WEDEntities/WED_TextureBezierNode.cpp
+SOURCES += ./src/WEDEntities/WED_GISBoundingBox.cpp
+SOURCES += ./src/WEDEntities/WED_Entity.cpp
+SOURCES += ./src/WEDEntities/WED_FacadePlacement.cpp
+SOURCES += ./src/WEDEntities/WED_ForestPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_GISChain.cpp
+SOURCES += ./src/WEDEntities/WED_GISComposite.cpp
+SOURCES += ./src/WEDEntities/WED_GISLine.cpp
+SOURCES += ./src/WEDEntities/WED_GISLine_Width.cpp
+SOURCES += ./src/WEDEntities/WED_GISPoint_Bezier.cpp
+SOURCES += ./src/WEDEntities/WED_GISPoint.cpp
+SOURCES += ./src/WEDEntities/WED_GISPoint_Heading.cpp
+SOURCES += ./src/WEDEntities/WED_GISPoint_HeadingWidthLength.cpp
+SOURCES += ./src/WEDEntities/WED_GISPolygon.cpp
+SOURCES += ./src/WEDEntities/WED_Group.cpp
+SOURCES += ./src/WEDEntities/WED_Helipad.cpp
+SOURCES += ./src/WEDEntities/WED_KeyObjects.cpp
+SOURCES += ./src/WEDEntities/WED_LightFixture.cpp
+SOURCES += ./src/WEDEntities/WED_LinePlacement.cpp
+SOURCES += ./src/WEDEntities/WED_ObjPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_OverlayImage.cpp
+SOURCES += ./src/WEDEntities/WED_PolygonPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_RampPosition.cpp
+SOURCES += ./src/WEDEntities/WED_Ring.cpp
+SOURCES += ./src/WEDEntities/WED_Root.cpp
+SOURCES += ./src/WEDEntities/WED_Runway.cpp
+SOURCES += ./src/WEDEntities/WED_RunwayNode.cpp
+SOURCES += ./src/WEDEntities/WED_Sealane.cpp
+SOURCES += ./src/WEDEntities/WED_Select.cpp
+SOURCES += ./src/WEDEntities/WED_SimpleBezierBoundaryNode.cpp
+SOURCES += ./src/WEDEntities/WED_SimpleBoundaryNode.cpp
+SOURCES += ./src/WEDEntities/WED_StringPlacement.cpp
+SOURCES += ./src/WEDEntities/WED_Taxiway.cpp
+SOURCES += ./src/WEDEntities/WED_TextureNode.cpp
+SOURCES += ./src/WEDEntities/WED_Thing.cpp
+SOURCES += ./src/WEDEntities/WED_TowerViewpoint.cpp
+SOURCES += ./src/WEDEntities/WED_Windsock.cpp
+SOURCES += ./src/WEDImportExport/WED_AptIE.cpp
+SOURCES += ./src/WEDImportExport/WED_DSFExport.cpp
+SOURCES += ./src/WEDImportExport/WED_DSFImport.cpp
+SOURCES += ./src/WEDLibrary/WED_LibraryListAdapter.cpp
+SOURCES += ./src/WEDLibrary/WED_LibraryPane.cpp
+SOURCES += ./src/WEDMap/WED_Colors.cpp
+SOURCES += ./src/WEDMap/WED_CreateLineTool.cpp
+SOURCES += ./src/WEDMap/WED_CreatePointTool.cpp
+SOURCES += ./src/WEDMap/WED_CreatePolygonTool.cpp
+SOURCES += ./src/WEDMap/WED_CreateToolBase.cpp
+SOURCES += ./src/WEDMap/WED_CreateBoxTool.cpp
+SOURCES += ./src/WEDMap/WED_HandleToolBase.cpp
+SOURCES += ./src/WEDMap/WED_Map.cpp
+SOURCES += ./src/WEDMap/WED_MapBkgnd.cpp
+SOURCES += ./src/WEDMap/WED_MapLayer.cpp
+SOURCES += ./src/WEDMap/WED_MapPane.cpp
+SOURCES += ./src/WEDMap/WED_MapToolNew.cpp
+SOURCES += ./src/WEDMap/WED_MapZoomerNew.cpp
+SOURCES += ./src/WEDMap/WED_MarqueeTool.cpp
+SOURCES += ./src/WEDMap/WED_StructureLayer.cpp
+SOURCES += ./src/WEDMap/WED_TerraserverLayer.cpp
+SOURCES += ./src/WEDMap/WED_ToolInfoAdapter.cpp
+SOURCES += ./src/WEDMap/WED_ToolUtils.cpp
+SOURCES += ./src/WEDMap/WED_UIMeasurements.cpp
+SOURCES += ./src/WEDMap/WED_VertexTool.cpp
+SOURCES += ./src/WEDMap/WED_WorldMapLayer.cpp
+SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
+SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
+SOURCES += ./src/WEDTCE/WED_TCE.cpp
+SOURCES += ./src/WEDTCE/WED_TCELayer.cpp
+SOURCES += ./src/WEDTCE/WED_TCEPane.cpp
+SOURCES += ./src/WEDTCE/WED_TCEToolAdapter.cpp
+SOURCES += ./src/WEDTCE/WED_TCEToolNew.cpp
+SOURCES += ./src/WEDTCE/WED_TCEVertexTool.cpp
+SOURCES += ./src/WEDProperties/WED_PropertyPane.cpp
+SOURCES += ./src/WEDProperties/WED_PropertyTable.cpp
+SOURCES += ./src/WEDWindows/WED_AboutBox.cpp
+SOURCES += ./src/WEDWindows/WED_DocumentWindow.cpp
+SOURCES += ./src/WEDWindows/WED_GroupCommands.cpp
+SOURCES += ./src/WEDWindows/WED_Menus.cpp
+SOURCES += ./src/WEDWindows/WED_PackageListAdapter.cpp
+SOURCES += ./src/WEDWindows/WED_PackageStatusPane.cpp
+SOURCES += ./src/WEDWindows/WED_PackageWindow.cpp
+SOURCES += ./src/WEDWindows/WED_StartWindow.cpp
+SOURCES += ./src/GUI/GUI_Broadcaster.cpp
+SOURCES += ./src/GUI/GUI_Button.cpp
+SOURCES += ./src/GUI/GUI_ChangeView.cpp
+SOURCES += ./src/GUI/GUI_Commander.cpp
+SOURCES += ./src/GUI/GUI_Control.cpp
+SOURCES += ./src/GUI/GUI_Destroyable.cpp
+SOURCES += ./src/GUI/GUI_DrawUtils.cpp
+SOURCES += ./src/GUI/GUI_Fonts.cpp
+SOURCES += ./src/GUI/GUI_GraphState.cpp
+SOURCES += ./src/GUI/GUI_Listener.cpp
+SOURCES += ./src/GUI/GUI_MemoryHog.cpp
+SOURCES += ./src/GUI/GUI_Packer.cpp
+SOURCES += ./src/GUI/GUI_PopupButton.cpp
+SOURCES += ./src/GUI/GUI_Prefs.cpp
+SOURCES += ./src/GUI/GUI_Resources.cpp
+SOURCES += ./src/GUI/GUI_ScrollBar.cpp
+SOURCES += ./src/GUI/GUI_ScrollerPane.cpp
+SOURCES += ./src/GUI/GUI_SimpleScroller.cpp
+SOURCES += ./src/GUI/GUI_SimpleTableGeometry.cpp
+SOURCES += ./src/GUI/GUI_Splitter.cpp
+SOURCES += ./src/GUI/GUI_TabControl.cpp
+SOURCES += ./src/GUI/GUI_Table.cpp
+SOURCES += ./src/GUI/GUI_TabPane.cpp
+SOURCES += ./src/GUI/GUI_TextField.cpp
+SOURCES += ./src/GUI/GUI_TextTable.cpp
+SOURCES += ./src/GUI/GUI_Timer.cpp
+SOURCES += ./src/GUI/GUI_ToolBar.cpp
+SOURCES += ./src/GUI/GUI_Window.cpp
+SOURCES += ./src/GUI/GUI_Pane.cpp
+SOURCES += ./src/GUI/GUI_Help.cpp
+SOURCES += ./src/GUI/GUI_Clipboard.cpp
+SOURCES += ./src/GUI/GUI_Application.cpp
+SOURCES += ./src/Utils/SQLUtils.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/MemFileUtils.cpp
+SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/Utils/GISUtils.cpp
+SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/TexUtils.cpp
+SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/Utils/XChunkyFileUtils.cpp
+SOURCES += ./src/Utils/CompGeomUtils.cpp
+SOURCES += ./src/Utils/PolyRasterUtils.cpp
+SOURCES += ./src/Utils/zip.c
+SOURCES += ./src/Utils/unzip.c
+SOURCES += ./src/Utils/XUtils.cpp
+SOURCES += ./src/Utils/BWImage.cpp
+SOURCES += ./src/Utils/ObjUtils.cpp
+SOURCES += ./src/Utils/XFileTwiddle.cpp
+SOURCES += ./src/Utils/Skeleton.cpp
+SOURCES += ./src/Utils/perlin.cpp
+SOURCES += ./src/Utils/MatrixUtils.cpp
+SOURCES += ./src/Installer/ErrMsg.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/Obj/XObjDefs.cpp
+SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/Obj/ObjDraw.cpp
+SOURCES += ./src/Network/Terraserver.cpp
+SOURCES += ./src/Network/HTTPClient.cpp
+SOURCES += ./src/Network/XMLObject.cpp
+SOURCES += ./src/Network/b64.c
+SOURCES += ./src/DSF/DSFLib.cpp
+SOURCES += ./src/DSF/DSFLibWrite.cpp
+SOURCES += ./src/DSF/DSFPointPool.cpp
+SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+SOURCES += ./src/DSFTools/DSF2Text.cpp
+SOURCES += ./src/DSFTools/ENV2Overlay.cpp
+SOURCES += ./src/OGLE/ogle.cpp
+SOURCES += ./src/XESCore/AptIO.cpp
+SOURCES += ./src/Env/EnvParser.c
+SOURCES += ./src/Env/Persistence.cpp
+SOURCES += ./src/XPWidgets/XPLMGraphics.cpp
+SOURCES += ./src/Obj/ObjConvert.cpp
 
-ifeq ($(PLATFORM), Linux)
-SOURCES := $(COMMON_SRC) $(POSIX_SRC)
-endif
-ifeq ($(PLATFORM), Mingw)
-SOURCES := $(COMMON_SRC) $(WIN32_SRC)
-endif
+##
+# resources
+###########
 
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
-
-INCLUDEPATHS :=\
--Ilibs/local/include \
--Ilibs/local/include/freetype2 \
-$(MESA_HEADERS) \
--Isrc/linuxinit \
--Isrc/WEDTCE \
--Isrc/Env \
--Isrc/DSF \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/UI \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDLibrary \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--Isrc/DSF/tri_stripper_101
-
-LIBPATHS :=\
--Llibs/local/lib
+RESOURCES := ./src/WEDResources/WED.ico
+RESOURCES += ./src/WEDResources/Vera.ttf
+RESOURCES += ./src/WEDResources/sans.ttf
+RESOURCES += ./src/WEDResources/pushbutton.png
+RESOURCES += ./src/WEDResources/checkbutton.png
+RESOURCES += ./src/WEDResources/radiobutton.png
+RESOURCES += ./src/WEDResources/tabs.png
+RESOURCES += ./src/WEDResources/splitter_h.png
+RESOURCES += ./src/WEDResources/splitter_v.png
+RESOURCES += ./src/WEDResources/scrollbar_h.png
+RESOURCES += ./src/WEDResources/scrollbar_v.png
+RESOURCES += ./src/WEDResources/scroll_btn_h.png
+RESOURCES += ./src/WEDResources/scroll_btn_v.png
+RESOURCES += ./src/WEDResources/scrollbar_corner.png
+RESOURCES += ./src/WEDResources/about.png
+RESOURCES += ./src/WEDResources/colors.png
+RESOURCES += ./src/WEDResources/ui_measurements.txt
+RESOURCES += ./src/WEDResources/map_tools.png
+RESOURCES += ./src/WEDResources/startup_bar.png
+RESOURCES += ./src/WEDResources/startup_btns.png
+RESOURCES += ./src/WEDResources/startup_bkgnd.png
+RESOURCES += ./src/WEDResources/handles/handle_vertexsharp.png
+RESOURCES += ./src/WEDResources/handles/handle_cross.png
+RESOURCES += ./src/WEDResources/handles/handle_square.png
+RESOURCES += ./src/WEDResources/handles/handle_vertexround.png
+RESOURCES += ./src/WEDResources/handles/handle_arrowhead.png
+RESOURCES += ./src/WEDResources/handles/handle_rotatehead.png
+RESOURCES += ./src/WEDResources/handles/handle_closeloop.png
+RESOURCES += ./src/WEDResources/handles/handle_control.png
+RESOURCES += ./src/WEDResources/icons/map_heliport.png
+RESOURCES += ./src/WEDResources/icons/map_light.png
+RESOURCES += ./src/WEDResources/icons/map_rampstart.png
+RESOURCES += ./src/WEDResources/icons/map_airport.png
+RESOURCES += ./src/WEDResources/icons/map_beacon.png
+RESOURCES += ./src/WEDResources/icons/map_helipad.png
+RESOURCES += ./src/WEDResources/icons/map_windsock.png
+RESOURCES += ./src/WEDResources/icons/map_seaport.png
+RESOURCES += ./src/WEDResources/icons/map_taxisign.png
+RESOURCES += ./src/WEDResources/icons/map_towerview.png
+RESOURCES += ./src/WEDResources/tables/eye.png
+RESOURCES += ./src/WEDResources/tables/lock.png
+RESOURCES += ./src/WEDResources/tables/check.png
+RESOURCES += ./src/WEDResources/tables/gradient.png
+RESOURCES += ./src/WEDResources/tables/disclose.png
+RESOURCES += ./src/WEDResources/tables/header.png
+RESOURCES += ./src/WEDResources/tables/sider.png
+RESOURCES += ./src/WEDResources/tables/property_bar.png
+RESOURCES += ./src/WEDResources/tables/arrows.png
+RESOURCES += ./src/WEDResources/world/earth_12.jpg
+RESOURCES += ./src/WEDResources/world/earth_41.jpg
+RESOURCES += ./src/WEDResources/world/earth_22.jpg
+RESOURCES += ./src/WEDResources/world/earth_31.jpg
+RESOURCES += ./src/WEDResources/world/earth_21.jpg
+RESOURCES += ./src/WEDResources/world/earth_32.jpg
+RESOURCES += ./src/WEDResources/world/earth_11.jpg
+RESOURCES += ./src/WEDResources/world/earth_42.jpg
+RESOURCES += ./src/WEDResources/pavement/dirt.png
+RESOURCES += ./src/WEDResources/pavement/gravel.png
+RESOURCES += ./src/WEDResources/pavement/water.png
+RESOURCES += ./src/WEDResources/pavement/snow.png
+RESOURCES += ./src/WEDResources/pavement/concrete.png
+RESOURCES += ./src/WEDResources/pavement/lake.png
+RESOURCES += ./src/WEDResources/pavement/grass.png
+RESOURCES += ./src/WEDResources/pavement/asphalt.png
+RESOURCES += ./src/WEDResources/line_types/line_BDoubleSolidYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_RunwayHold.png
+RESOURCES += ./src/WEDResources/line_types/line_BSolidYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_WideBrokenSingle.png
+RESOURCES += ./src/WEDResources/line_types/line_WideBrokenDouble.png
+RESOURCES += ./src/WEDResources/line_types/line_DoubleSolidYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_SolidYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_HoldLights.png
+RESOURCES += ./src/WEDResources/line_types/line_BoundaryEdge.png
+RESOURCES += ./src/WEDResources/line_types/line_BrokenWhite.png
+RESOURCES += ./src/WEDResources/line_types/line_BrokenYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_ILSHold.png
+RESOURCES += ./src/WEDResources/line_types/line_BWideBrokenDouble.png
+RESOURCES += ./src/WEDResources/line_types/line_Chequered.png
+RESOURCES += ./src/WEDResources/line_types/line_TaxiCenter.png
+RESOURCES += ./src/WEDResources/line_types/line_BILSHold.png
+RESOURCES += ./src/WEDResources/line_types/line_HoldShortCenter.png
+RESOURCES += ./src/WEDResources/line_types/line_HoldLightsPulse.png
+RESOURCES += ./src/WEDResources/line_types/line_OtherHold.png
+RESOURCES += ./src/WEDResources/line_types/line_TaxiEdge.png
+RESOURCES += ./src/WEDResources/line_types/line_ILSCriticalCenter.png
+RESOURCES += ./src/WEDResources/line_types/line_BBrokenYellow.png
+RESOURCES += ./src/WEDResources/line_types/line_SolidWhite.png
+RESOURCES += ./src/WEDResources/line_types/line_BRunwayHold.png
+RESOURCES += ./src/WEDResources/line_types/line_BOtherHold.png
+RESOURCES += ./src/WEDResources/line_types/line_BWideBrokenSingle.png
+RESOURCES += ./src/WEDResources/line_types/line_BILSCriticalCenter.png
+RESOURCES += ./src/WEDResources/WEDManual.pdf
+RESOURCES += ./src/WEDCore/WED_DataModel.sql
