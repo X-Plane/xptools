@@ -2,6 +2,9 @@ TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
+ifeq ($(PLATFORM), Darwin)
+	LDFLAGS := -static-libgcc
+endif
 
 SOURCES :=\
 src/DSF/DSFLib.cpp \

@@ -4,7 +4,9 @@ CXXFLAGS	:= -include src/Obj/XDefs.h
 LDFLAGS		:= -static -static-libgcc
 LIBS		:= -lsquish -ltiff -ljpeg -lpng12 -lz
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
-
+ifeq ($(PLATFORM), Darwin)
+	LDFLAGS := -static-libgcc
+endif
 
 SOURCES :=\
 src/Utils/AssertUtils.cpp \
@@ -50,4 +52,4 @@ $(MESA_HEADERS) \
 -Isrc/DSF/tri_stripper_101
 
 LIBPATHS :=\
--Llibs/local/lib
+-L./libs/local/lib

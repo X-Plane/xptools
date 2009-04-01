@@ -6,6 +6,9 @@ LIBS		:= -lCGAL -ldime -l3ds
 ifeq ($(PLATFORM), Mingw)
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 endif
+ifeq ($(PLATFORM), Darwin)
+	LDFLAGS := -static-libgcc
+endif
 
 SOURCES :=\
 src/Obj/ObjConvert.cpp \

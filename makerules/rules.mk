@@ -122,10 +122,10 @@ ifeq ($(PLATFORM), Linux)
 	LDFLAGS		:= $(LDFLAGS) $(M32_SWITCH) -rdynamic
 endif
 ifeq ($(PLATFORM), Darwin)
-	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1 -DLIL=1 -DBIG=0
+	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= $(CXXFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4
 	CFLAGS		:= $(CFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4
-	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4
+	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4 -Z
 	MACARCHS	:= -arch i386 -arch ppc
 endif
 ifeq ($(PLATFORM), Mingw)
@@ -233,7 +233,7 @@ endif
 
 ifeq ($(TYPE), EXECUTABLE)
 	$(print_link) $@
-	$(LD) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
+	$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -o $@ $(CCOBJECTS) $(CXXOBJECTS) $(WIN_RESOURCEOBJ) $(RESOURCEOBJ) $(LIBS) $(STDLIBS) || $(print_error)
 endif
 
 # debug information
@@ -252,6 +252,7 @@ ifeq ($(PLATFORM), Mingw)
 	cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)).exe && cd $(WD)
 	chmod 0644 $(@).debug
 endif
+#TODO: add Darwin, at least strip binaries
 endif
 endif
 	$(print_finished)
