@@ -2,4 +2,5 @@ error.out
 build
 local
 .directory
+.DS_Store
 callgrind.out.*
