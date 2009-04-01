@@ -24,6 +24,26 @@
 #ifndef WED_ResourceMgr_H
 #define WED_ResourceMgr_H
 
+/*
+	WED_ResourceMgr - THEORY OF OPERATION
+	
+	This class maintains a lazy-create cache or art asset previews.  It currently supports two art asset classes:
+	- OBJ
+	- POL
+	
+	In the case of OBJ, we use the OBJ_ package for preview and data management, thus an OBJ preview is an XObj8 struct.
+	For .pol since there is no package for .pol preview (since it is somewhat trivial) we define a struct.
+	
+	HERE'S THE HACK
+	
+	Traditionally the UI interface for WED is firewalled off from the document class/implementation using a purely virtual
+	abstract interface.  (See ILibrarian.h for example.)  But...I have not had the time to do this here yet.  So 
+	WED_LibraryMgr is used directly as sort of its own interface.  This is definitely a hack, it's definitely "wrong", but
+	it's also definitely not very dangerous at this point in the code's development - that is, WED is not so big that this
+	represents a scalability issue.
+	
+*/
+
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
@@ -39,10 +59,6 @@ struct	pol_info_t {
 	bool		wrap;
 };	
 	
-#if !DEV
-	#error doc that this is a massive hack!
-#endif
-
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:

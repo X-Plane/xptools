@@ -127,9 +127,11 @@ static const char * fetch_att_s(const char * key, const char ** att)
 
 static int ok_attr(const char * attr, const char * list)
 {
+	if(list == NULL) return 1;
 	int al = strlen(attr);
 	const char * l = list;
-	while(l)
+	if(al == 0) return 0;
+	while(l)	
 	{
 		const char * sub = strstr(l,attr);
 		if(!sub) return 0;						// not found

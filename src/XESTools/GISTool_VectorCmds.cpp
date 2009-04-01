@@ -547,21 +547,25 @@ static int DoTigerBounds(const vector<const char *>& args)
 #define HELP_SHAPE \
 "-shapefile <mode> <feature> <filename>\n" \
 "Import a shape file.  Mode letters (similar to tar syntax are):\n" \
+"r - roads - attempt to import arcs as roads.\n" \
+"l - land use - attempt to import polygons as land use.\n" \
+"f - features - attempt to import polygons as area fatures.\n" \
+"s - simple feature import.  Feature param is applied to all elements.\n" \
+"m - feature map.  Feature param is a config text file that maps database properties to features.\n" \
 "c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
 "o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
-"f - attempt fast import.  For some shape files, this will assume correct noding, no overlaps, etc.  Fast, but may fail.\n" \
-"s - simple feature import.  Feature param is applied to all elements.\n" \
-"r - road mode - attempt to import vectors as roads.\n" \
-"l - land use - attempt to import vectors as land use.\n" 
+"q - attempt quick import.  For some shape files, this will assume correct noding, no overlaps, etc.  Fast, but may fail.  Only one area feature/landuse can be applied to all imported shapes.\n"
 static int DoShapeImport(const vector<const char *>& args)
 {
 	shp_Flags flags = shp_None;
 	if(strstr(args[0], "c"))	flags |= shp_Use_Crop;
 	if(strstr(args[0], "o"))	flags |= shp_Overlay;
-	if(strstr(args[0], "f"))	flags |= shp_Fast;
+	if(strstr(args[0], "q"))	flags |= shp_Fast;
 	if(strstr(args[0], "r"))	flags |= shp_Mode_Road;
 	if(strstr(args[0], "l"))	flags |= shp_Mode_Landuse;
+	if(strstr(args[0], "f"))	flags |= shp_Mode_Feature;
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
+	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
 	
 	
 	double b[4];

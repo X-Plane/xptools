@@ -140,11 +140,11 @@ enum {
 	viewCmd_ShowShading,
 	viewCmd_ShowTensor,
 	viewCmd_DEMDataChoice,
-	viewCmd_Break,
+viewCmd_Break,
 	viewCmd_RecalcDEM,
 	viewCmd_PrevDEM,
 	viewCmd_NextDEM,
-	viewCmd_Break2,
+viewCmd_Break2,
 	viewCmd_VecMap,
 	viewCmd_Airports,
 	viewCmd_MeshPoints,
@@ -153,7 +153,7 @@ enum {
 	viewCmd_MeshTrisHi,
 	viewCmd_MeshTerrains,
 //	viewCmd_MeshBorders,
-	viewCmd_Break3,
+viewCmd_Break3,
 	viewCmd_ZoomSel,
 	viewCmd_Count
 };
@@ -195,8 +195,8 @@ static	const char	kCmdKeys [] = {
 	'2', xplm_ControlFlag + xplm_OptionAltFlag,
 	'3', xplm_ControlFlag + xplm_OptionAltFlag,
 	'4', xplm_ControlFlag + xplm_OptionAltFlag,
-//	'5', xplm_ControlFlag + xplm_OptionAltFlag,
-//	'6', xplm_ControlFlag + xplm_OptionAltFlag,
+	'5', xplm_ControlFlag + xplm_OptionAltFlag,
+	'6', xplm_ControlFlag + xplm_OptionAltFlag,
 //	'7', xplm_ControlFlag + xplm_OptionAltFlag,
 	0,	0, // Divider 3
 	0,	0,

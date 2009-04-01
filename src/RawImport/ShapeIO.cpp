@@ -25,9 +25,10 @@
 #include <shapefil.h>
 #include "MapOverlay.h"
 #include "GISTool_Globals.h"
+#include "ConfigSystem.h"
 #include "MapAlgs.h"
 #if !DEV
-	factor this out
+	#errir factor this out
 #endif
 
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
@@ -37,20 +38,129 @@
 
 // Shape to feature 
 
+struct shape_pattern_t {
+	vector<string>		columns;
+	vector<int>			dbf_id;
+	vector<string>		values;
+	int					feature;
+};
+typedef vector<shape_pattern_t> shape_pattern_vector;
+
+static shape_pattern_vector	sShapeRules;
+
+bool shape_in_bounds(SHPObject * obj)
+{
+	if(obj->dfXMax < gMapWest)	return false;
+	if(obj->dfXMin > gMapEast)	return false;
+	if(obj->dfYMax < gMapSouth)	return false;
+	if(obj->dfYMin > gMapNorth) return false;
+								return true;
+}
+
+
+
+static int want_this_thing(DBFHandle db, int shape_id)
+{
+	for(shape_pattern_vector::iterator r = sShapeRules.begin(); r != sShapeRules.end(); ++r)
+	{
+		bool rule_ok = true;
+		
+		for(int n = 0; n < r->columns.size(); ++n)
+		{
+			if(r->dbf_id[n] == -1)														{ rule_ok = false; break; }				
+			
+				const char * field_val = DBFReadStringAttribute(db,shape_id,r->dbf_id[n]);
+				if(field_val == NULL)														{ rule_ok = false; break; }
+				if(strcmp(r->values[n].c_str(),"*") == 0)
+				{
+					if(field_val[0] == 0)													 { rule_ok = false; break; }
+				}
+				else
+				{
+					if(strcmp(r->values[n].c_str(),field_val) != 0)								{ rule_ok = false; break; }			
+				}
+		}
+		
+		if(rule_ok) return r->feature;
+	}
+	return NO_VALUE;
+}
+
+static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
+{
+	if(inTokenLine.size() != 4)
+	{
+		printf("Bad shape import line.\n");
+		return false;
+	}
+	shape_pattern_t		pat;
+	
+	if(!TokenizeEnum(inTokenLine[3], pat.feature, "Bad enum"))
+		return false;
+		
+	string::const_iterator e, s = inTokenLine[1].begin();
+	while(s != inTokenLine[1].end())
+	{
+		e=s;
+		while(e != inTokenLine[1].end() && *e != ',') ++e;
+		pat.columns.push_back(string(s,e));
+		if(e == inTokenLine[1].end())
+			s = e;
+		else
+			s = e+1;
+	}
+
+	s = inTokenLine[2].begin();
+	while(s != inTokenLine[2].end())
+	{
+		e=s;
+		while(e != inTokenLine[2].end() && *e != ',') ++e;
+		pat.values.push_back(string(s,e));
+		if(e == inTokenLine[2].end())
+			s = e;
+		else
+			s = e+1;
+	}
+	
+	if(pat.values.size() != pat.columns.size())
+	{
+		printf("mismatch in number of columns vs. patterns.\n");
+		return false;
+	}	
+	sShapeRules.push_back(pat);
+	return true;
+}
+
 
 bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], ProgressFunc	inFunc)
 {
 		int		entity_count;
 		int		shape_type;
 		double	bounds_lo[4], bounds_hi[4];
+		static bool first_time = true;
+	
+	if(first_time)
+	{	
+		RegisterLineHandler("SHAPE_FEATURE", ShapeLineImporter, NULL);
+		first_time = false;
+	}
 
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
 		feat = LookupToken(feature_desc);
 
-	if((flags & shp_Overlay) == 0)
-	if(flags & shp_Mode_Road)
-		io_map.clear();
+	if(flags & shp_Mode_Map)
+	{
+		sShapeRules.clear();
+		if (!LoadConfigFile(feature_desc))
+		{
+			printf("Could not load shape mapping file %s\n", feature_desc);
+			return false;
+		}
+	}
+
+	if((flags & shp_Overlay) == 0)					// If we are not overlaying, nuke the map now.  In _some_ modes (road curve insert,
+		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
 
 		list<Polygon_2>	boundaries, holes;
 		Polygon_set_2	poly_set;
@@ -58,6 +168,20 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 	SHPHandle file =  SHPOpen(in_file, "rb");
 	if(!file) return false;
+	DBFHandle db = NULL;
+	if(flags & shp_Mode_Map)
+	{
+		db = DBFOpen(in_file,"rb");
+		if(db == NULL)
+		{
+			SHPClose(file);
+			return false;
+		}
+
+		for(shape_pattern_vector::iterator r = sShapeRules.begin(); r != sShapeRules.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+	}
 	
 	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
 
@@ -76,12 +200,17 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	bounds[3] = bounds_hi[1];
 
 	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
+	
+	vector<int>	feature_map;
+	feature_map.resize(entity_count,NO_VALUE);
 
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
+		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId)) != NO_VALUE))
 		switch(obj->nSHPType) {
 		case SHPT_POINT:
 		case SHPT_POINTZ:
@@ -92,6 +221,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		case SHPT_ARCM:
 			if (obj->nVertices > 1)
 			{		
+				feature_map[n] = feat;			
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -166,6 +296,22 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						poly_set.difference(*i);				
 					boundaries.clear();
 					holes.clear();
+
+					if(flags & shp_Mode_Map)
+					{
+						set<Face_handle> faces;
+						MapOverlayPolygonSet(io_map, poly_set, NULL, &faces);
+
+						if(flags & shp_Mode_Landuse)
+						for(set<Face_handle>::iterator f = faces.begin(); f != faces.end(); ++f)						
+							(*f)->data().mTerrainType = feat;
+						
+						if(flags & shp_Mode_Feature)
+						for(set<Face_handle>::iterator f = faces.begin(); f != faces.end(); ++f)						
+							(*f)->data().mAreaFeature.mFeatType = feat;
+
+						poly_set.clear();
+					}
 				}
 			}
 			break;
@@ -234,7 +380,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				crop_box.clear();
 			}
 		}
-		
+
+		if((flags & shp_Fast) || (flags & shp_Mode_Map) == 0)		
 		{
 			Pmwx	local;
 			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
@@ -246,10 +393,30 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
 			if(f->contained())
 				f->data().mTerrainType = feat;
+
+			if(flags & shp_Mode_Simple)
+			if(flags & shp_Mode_Feature)
+			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+			if(f->contained())
+				f->data().mAreaFeature.mFeatType = feat;
+
+			if(flags & shp_Mode_Map)
+			if(flags & shp_Mode_Landuse)
+			if(!sShapeRules.empty())
+			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+			if(f->contained())
+				f->data().mTerrainType = sShapeRules.front().feature;
+
+			if(flags & shp_Mode_Map)
+			if(flags & shp_Mode_Feature)
+			if(!sShapeRules.empty())
+			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+			if(f->contained())
+				f->data().mAreaFeature.mFeatType = sShapeRules.front().feature;
 				
 			if(flags & shp_Overlay)
 			{
-				Pmwx	src(io_map);
+				Pmwx	src(io_map);				
 				MapOverlay(src,local,io_map);
 			}
 		}
@@ -324,7 +491,18 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			if(flags & shp_Mode_Simple)
 			if(flags & shp_Mode_Road)
 			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
+			if(e->data().mDominant)
 				e->data().mSegments.push_back(r);
+
+			if(flags & shp_Mode_Map)
+			if(flags & shp_Mode_Road)
+			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
+			if(e->data().mDominant)
+			if(e->curve().data().front() >= 0 && e->curve().data().front() < feature_map.size())
+			{
+				r.mFeatType = feature_map[e->curve().data().front()];
+				e->data().mSegments.push_back(r);
+			}	
 			
 			if(flags & shp_Overlay)
 			{
@@ -335,6 +513,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		break;
 	}
 	SHPClose(file);
+	if(db)	DBFClose(db);
 	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
 
 	return true;
