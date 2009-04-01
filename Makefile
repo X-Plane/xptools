@@ -1,4 +1,4 @@
-#BE_QUIET	:= > /dev/null 2>&1
+BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://www.cgal.org/download.html
