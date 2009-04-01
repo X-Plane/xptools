@@ -1,4 +1,4 @@
-BE_QUIET	:= > /dev/null 2>&1
+#BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://www.cgal.org/download.html
@@ -144,7 +144,7 @@ CFLAGS_LIBSQLITE	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
 LDFLAGS_LIBSQLITE	:= "-L$(DEFAULT_LIBDIR)"
 CONF_LIBSQLITE		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBSQLITE		+= --enable-shared=no
-CONF_LIBSQLITE		+= --disable-tcl
+CONF_LIBSQLITE		+= --disable-dependency-tracking
 
 # lib3ds
 ARCHIVE_LIB3DS		:= lib3ds-$(VER_LIB3DS).tar.gz
