@@ -145,7 +145,6 @@ $(MESA_HEADERS) \
 -Isrc/WEDProperties \
 -Isrc/WEDResources \
 -Isrc/WEDWindows \
--Isrc/WorldEditor \
 -Isrc/XPCompat \
 -Isrc/XPWidgets \
 -Isrc/Utils \

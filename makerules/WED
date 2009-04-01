@@ -35,8 +35,9 @@ src/WEDCore/WED_PropertyHelper.cpp \
 src/WEDCore/WED_TexMgr.cpp \
 src/WEDCore/WED_UndoLayer.cpp \
 src/WEDCore/WED_UndoMgr.cpp \
-src/WEDEntities/WED_AirportBeacon.cpp \
+src/WEDCore/WED_Assert.cpp \
 src/WEDCore/WED_ResourceMgr.cpp \
+src/WEDEntities/WED_AirportBeacon.cpp \
 src/WEDEntities/WED_AirportBoundary.cpp \
 src/WEDEntities/WED_AirportChain.cpp \
 src/WEDEntities/WED_Airport.cpp \
@@ -199,7 +200,6 @@ src/OGLE/ogle.cpp \
 src/XESCore/AptIO.cpp \
 src/Env/EnvParser.c \
 src/Env/Persistence.cpp \
-src/WorldEditor/WED_Assert.cpp \
 src/XPWidgets/XPLMGraphics.cpp \
 src/Obj/ObjConvert.cpp
 
@@ -262,7 +262,6 @@ $(MESA_HEADERS) \
 -Isrc/WEDProperties \
 -Isrc/WEDResources \
 -Isrc/WEDWindows \
--Isrc/WorldEditor \
 -Isrc/XPCompat \
 -Isrc/XPWidgets \
 -Isrc/Utils \
