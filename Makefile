@@ -1,26 +1,48 @@
 BE_QUIET	:= > /dev/null 2>&1
 
+# http://www.cgal.org/
+# http://www.cgal.org/download.html
 VER_CGAL	:= 3.3.1
-# TODO: new release 2.3.9
-VER_FREETYPE	:= 2.3.8
+# http://www.freetype.org/
+# http://sourceforge.net/project/showfiles.php?group_id=3157
+VER_FREETYPE	:= 2.3.9
+# http://trac.osgeo.org/proj/
 VER_LIBPROJ	:= 4.6.1
+# http://trac.osgeo.org/geotiff/
 VER_GEOTIFF	:= 1.2.5
-# TODO. new release 2.0, has API changes
+# http://www.lib3ds.org/; TODO: new release 2.0, has API changes
 VER_LIB3DS	:= 1.3.0
+# http://www.coin3d.org/lib/dime; no releases yet
+# svn co https://svn.coin3d.org/repos/dime/trunk dime
 VER_LIBDIME	:= r175
-# TODO: diff, create patch against 6b
-VER_LIBJPEG	:= 6b.1
-VER_LIBSQLITE	:= 3.6.11
+# http://www.ijg.org/
+# http://www.ijg.org/files/
+VER_LIBJPEG	:= 6b
+# http://www.sqlite.org/
+# http://www.sqlite.org/download.html ; use amalgamation tarball
+VER_LIBSQLITE	:= 3.6.12
+# http://www.libpng.org/
+# http://www.libpng.org/pub/png/libpng.html
 VER_LIBPNG	:= 1.2.35
+# http://www.zlib.net/
 VER_ZLIB	:= 1.2.3
+# http://www.libtiff.org/
+# ftp://ftp.remotesensing.org/pub/libtiff
 VER_LIBTIFF	:= 4.0.0beta3
-# TODO: diff, create patch against 1.2.10
-VER_LIBSHP	:= 1.2.10.2
-# TODO: diff, create patch against 1.10
-VER_LIBSQUISH	:= 1.10.1
+# http://shapelib.maptools.org/
+# http://dl.maptools.org/dl/shapelib/
+VER_LIBSHP	:= 1.2.10
+# http://code.google.com/p/libsquish/
+# http://code.google.com/p/libsquish/downloads/list
+VER_LIBSQUISH	:= 1.10
+# http://www.boost.org/
+# http://sourceforge.net/project/showfiles.php?group_id=7586
 VER_BOOST	:= 1.38.0
-# TODO: new release 7.4
-VER_MESA	:= 7.3
+# http://www.mesa3d.org/
+# http://sourceforge.net/project/showfiles.php?group_id=3
+VER_MESA	:= 7.4
+# http://expat.sourceforge.net/
+# http://sourceforge.net/project/showfiles.php?group_id=10127
 VER_LIBEXPAT	:= 2.0.1
 
 PLATFORM	:= $(shell uname)
@@ -117,7 +139,7 @@ CONF_GEOTIFF		+= --with-libtiff=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-proj=$(DEFAULT_PREFIX)
 
 # sqlite
-ARCHIVE_LIBSQLITE	:= sqlite-$(VER_LIBSQLITE).tar.gz
+ARCHIVE_LIBSQLITE	:= sqlite-amalgamation-$(VER_LIBSQLITE).tar.gz
 CFLAGS_LIBSQLITE	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3"
 LDFLAGS_LIBSQLITE	:= "-L$(DEFAULT_LIBDIR)"
 CONF_LIBSQLITE		:= --prefix=$(DEFAULT_PREFIX)
@@ -180,12 +202,14 @@ endif
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
 libexpat
 
+
 all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
  libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp libexpat
 	@touch ./local/.xpt_libs
 
+
 clean:
-	@echo "cleaning 3rd-party libraries..."
+	@echo "cleaning 3rd-party libraries, removing `pwd`/local"
 	@-rm -rf ./local
 
 
@@ -218,6 +242,7 @@ zlib: ./local/lib/.xpt_zlib
 	@-rm -rf zlib-$(VER_ZLIB)
 	@touch $@
 
+
 libexpat: ./local/lib/.xpt_libexpat
 ./local/lib/.xpt_libexpat:
 	@echo "building libexpat..."
@@ -230,6 +255,7 @@ libexpat: ./local/lib/.xpt_libexpat
 	@$(MAKE) -C "expat-$(VER_LIBEXPAT)" install $(BE_QUIET)
 	@-rm -rf expat-$(VER_LIBEXPAT)
 	@touch $@
+
 
 libpng: ./local/lib/.xpt_libpng
 ./local/lib/.xpt_libpng: ./local/lib/.xpt_zlib
@@ -265,6 +291,9 @@ libjpeg: ./local/lib/.xpt_libjpeg
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBJPEG)"
+	@cp patches/0001-libjpeg-fix-boolean-type-width.patch \
+	"jpeg-$(VER_LIBJPEG)" && cd "jpeg-$(VER_LIBJPEG)" && \
+	patch -p1 < ./0001-libjpeg-fix-boolean-type-width.patch $(BE_QUIET)
 	@cd "jpeg-$(VER_LIBJPEG)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBJPEG) LDFLAGS=$(LDFLAGS_LIBJPEG) \
@@ -309,7 +338,8 @@ libproj: ./local/lib/.xpt_libproj
 
 
 libgeotiff: ./local/lib/.xpt_libgeotiff
-./local/lib/.xpt_libgeotiff: ./local/lib/.xpt_zlib ./local/lib/.xpt_libjpeg ./local/lib/.xpt_libtiff ./local/lib/.xpt_libproj
+./local/lib/.xpt_libgeotiff: ./local/lib/.xpt_zlib ./local/lib/.xpt_libjpeg \
+./local/lib/.xpt_libtiff ./local/lib/.xpt_libproj
 	@echo "building libgeotiff..."
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
@@ -363,6 +393,9 @@ libsquish: ./local/lib/.xpt_libsquish
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBSQUISH)"
+	@cp patches/0001-libsquish-gcc-4.3-header-fix.patch \
+	"squish-$(VER_LIBSQUISH)" && cd "squish-$(VER_LIBSQUISH)" && \
+	patch -p1 < ./0001-libsquish-gcc-4.3-header-fix.patch $(BE_QUIET)
 	@cd "squish-$(VER_LIBSQUISH)" && \
 	$(MAKE) $(CONF_LIBSQUISH) install $(BE_QUIET)
 	@-rm -rf squish-$(VER_LIBSQUISH)
@@ -375,9 +408,9 @@ libcgal: boost_headers ./local/lib/.xpt_libcgal
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
-	@cp patches/cgal-no-description-0001.patch \
+	@cp patches/0001-libcgal-no-description.patch \
 	"CGAL-$(VER_CGAL)/include" && cd "CGAL-$(VER_CGAL)/include" && \
-	patch -p1 < ./cgal-no-description-0001.patch $(BE_QUIET)
+	patch -p1 < ./0001-libcgal-no-description.patch $(BE_QUIET)
 	@cd "CGAL-$(VER_CGAL)" && \
 	chmod +x install_cgal && \
 	./install_cgal $(CONF_CGAL) $(BE_QUIET)
@@ -407,6 +440,10 @@ libshp: ./local/lib/.xpt_libshp
 	@-mkdir -p "./local/include"
 	@-mkdir -p "./local/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBSHP)"
+	@cp patches/0001-libshp-fix-makefile-for-multiple-platforms.patch \
+	"shapelib-$(VER_LIBSHP)" && cd "shapelib-$(VER_LIBSHP)" && \
+	patch -p1 < ./0001-libshp-fix-makefile-for-multiple-platforms.patch \
+	$(BE_QUIET)
 	@$(MAKE) -C "shapelib-$(VER_LIBSHP)" lib $(BE_QUIET)
 	@cp -Lp shapelib-$(VER_LIBSHP)/*.h ./local/include
 	@cp shapelib-$(VER_LIBSHP)/.libs/libshp.a ./local/lib

@@ -1,0 +1,72 @@
+diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10.2/Makefile
+--- shapelib-1.2.10/Makefile	2003-04-07 15:03:22.000000000 +0200
++++ shapelib-1.2.10.2/Makefile	2009-04-01 21:14:01.000000000 +0200
+@@ -1,6 +1,17 @@
+ 
+ #LINKOPT	=	/usr/local/lib/libdbmalloc.a
+-CFLAGS	=	-g
++
++PLATFORM	:= $(shell uname)
++ifneq (, $(findstring MINGW, $(PLATFORM)))
++	CFLAGS	=	-g
++endif
++ifeq ($(PLATFORM), Linux)
++	CFLAGS	=	-g
++endif
++ifeq ($(PLATFORM), Darwin)
++	CFLAGS	=	-g -mmacosx-version-min=10.4 -arch i386 -arch ppc
++endif
++
+ 
+ default:	all
+ 
+@@ -99,32 +110,32 @@
+ LIBSHP_VERSION=1.0.1 # still once to be changed manually (see for 1:1:0), sorry
+ 
+ lib:
+-	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c shpopen.c
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC shpopen.c -o .libs/shpopen.lo
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c shpopen.c -o shpopen.o >/dev/null 2>&1
++	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    $(CFLAGS) -O2 -c shpopen.c
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c  -fPIC -DPIC shpopen.c -o .libs/shpopen.lo
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c shpopen.c -o shpopen.o >/dev/null 2>&1
+ 	mv -f .libs/shpopen.lo shpopen.lo
+-	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c shptree.c
++	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    $(CFLAGS) -O2 -c shptree.c
+ 	rm -f .libs/shptree.lo
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC shptree.c -o .libs/shptree.lo
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c shptree.c -o shptree.o >/dev/null 2>&1
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c  -fPIC -DPIC shptree.c -o .libs/shptree.lo
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c shptree.c -o shptree.o >/dev/null 2>&1
+ 	mv -f .libs/shptree.lo shptree.lo
+-	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c dbfopen.c
++	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    $(CFLAGS) -O2 -c dbfopen.c
+ 	rm -f .libs/dbfopen.lo
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC dbfopen.c -o .libs/dbfopen.lo
+-	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c dbfopen.c -o dbfopen.o >/dev/null 2>&1
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c  -fPIC -DPIC dbfopen.c -o .libs/dbfopen.lo
++	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O2 -c dbfopen.c -o dbfopen.o >/dev/null 2>&1
+ 	mv -f .libs/dbfopen.lo dbfopen.lo
+-	/bin/sh ./libtool --mode=link gcc  -g -O2  -o libshp.la -rpath /usr/local/lib -version-info 1:1:0 shpopen.lo shptree.lo dbfopen.lo  
+-	rm -fr .libs/libshp.la .libs/libshp.* .libs/libshp.*
+-	rm -fr .libs/libshp.lax
+-	mkdir .libs/libshp.lax
+-	/usr/bin/ld -G -h libshp.so.1 -o .libs/libshp.so.$(LIBSHP_VERSION)  shpopen.lo shptree.lo dbfopen.lo  -lc
++#	/bin/sh ./libtool --mode=link gcc  -g -O2  -o libshp.la -rpath /usr/local/lib -version-info 1:1:0 shpopen.lo shptree.lo dbfopen.lo  
++#	rm -fr .libs/libshp.la .libs/libshp.* .libs/libshp.*
++#	rm -fr .libs/libshp.lax
++#	mkdir .libs/libshp.lax
++#	/usr/bin/ld -G -h libshp.so.1 -o .libs/libshp.so.$(LIBSHP_VERSION)  shpopen.lo shptree.lo dbfopen.lo  -lc
+ 
+-	(cd .libs && rm -f libshp.so.1 && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so.1)
+-	(cd .libs && rm -f libshp.so && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so)
++#	(cd .libs && rm -f libshp.so.1 && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so.1)
++#	(cd .libs && rm -f libshp.so && ln -s libshp.so.$(LIBSHP_VERSION) libshp.so)
+ 	ar cru .libs/libshp.a  shpopen.o shptree.o dbfopen.o 
+ 	ranlib .libs/libshp.a
+ 	rm -fr .libs/libshp.lax
+-	(cd .libs && rm -f libshp.la && ln -s ../libshp.la libshp.la)
++#	(cd .libs && rm -f libshp.la && ln -s ../libshp.la libshp.la)
+ 
+ lib_install:
+ 	cp .libs/libshp.la .libs/libshp.lai
