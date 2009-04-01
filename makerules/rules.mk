@@ -240,7 +240,6 @@ endif
 # debug information
 
 ifneq ($(TYPE), LIBSTATIC)
-ifeq ($(conf), release_opt)
 ifeq ($(PLATFORM), Linux)
 	@$(OBJCOPY) --only-keep-debug $(@) $(@).debug
 	@$(STRIP) -s -x $(@)
@@ -254,7 +253,6 @@ ifeq ($(PLATFORM), Mingw)
 	@chmod 0644 $(@).debug
 endif
 #TODO: add Darwin, at least strip binaries
-endif
 endif
 	@$(print_finished)
 

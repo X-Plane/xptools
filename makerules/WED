@@ -291,6 +291,7 @@ SOURCES += ./src/Obj/ObjConvert.cpp
 # resources
 ###########
 
+ifndef PLAT_MINGW
 RESOURCES := ./src/WEDResources/WED.ico
 RESOURCES += ./src/WEDResources/Vera.ttf
 RESOURCES += ./src/WEDResources/sans.ttf
@@ -384,3 +385,4 @@ RESOURCES += ./src/WEDResources/line_types/line_BWideBrokenSingle.png
 RESOURCES += ./src/WEDResources/line_types/line_BILSCriticalCenter.png
 RESOURCES += ./src/WEDResources/WEDManual.pdf
 RESOURCES += ./src/WEDCore/WED_DataModel.sql
+endif #PLAT_MINGW
