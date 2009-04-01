@@ -51,7 +51,8 @@ ac3d: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/XPlaneSupportLin.p -s -f makerules/rules.mk
 
 clean:
+	@echo "cleaning xptools tree, removing $(BUILDDIR)"
 	@-rm -rf $(BUILDDIR)
 
 distclean:	clean
-	@$(MAKE) -C "./libs" clean
+	@$(MAKE) -s -C "./libs" clean
