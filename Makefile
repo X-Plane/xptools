@@ -411,6 +411,7 @@ libcgal: boost_headers ./local/lib/.xpt_libcgal
 	@cp patches/0001-libcgal-no-description.patch \
 	"CGAL-$(VER_CGAL)/include" && cd "CGAL-$(VER_CGAL)/include" && \
 	patch -p1 < ./0001-libcgal-no-description.patch $(BE_QUIET)
+	@-rm -f "CGAL-$(VER_CGAL)/include/0001-libcgal-no-description.patch"
 	@cd "CGAL-$(VER_CGAL)" && \
 	chmod +x install_cgal && \
 	./install_cgal $(CONF_CGAL) $(BE_QUIET)
