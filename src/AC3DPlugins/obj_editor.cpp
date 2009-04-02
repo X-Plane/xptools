@@ -230,12 +230,12 @@ static void xplane_anim_type_cb(const char * value, int idx, void * ref, TCL_lin
 
 static void xplane_anim_value_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
 {
-	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_value(obj, (int) ref, value))
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_value(obj, (intptr_t) ref, value))
 }
 
 static void xplane_anim_angle_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
 {
-	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_angle(obj, (int) ref, value))
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_angle(obj, (intptr_t) ref, value))
 }
 
 TCL_linked_variv * blend_enable_var = NULL;

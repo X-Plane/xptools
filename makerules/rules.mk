@@ -80,6 +80,8 @@ endif
 #############################
 
 include ./makerules/$(shell basename $(TARGET))
+#TODO: REAL_TARGET might contain fileextensions, respect this when applying
+#the multilib suffix
 ifdef REAL_TARGET
 REAL_TARGET := $(REAL_TARGET)$(MULTI_SUFFIX)
 else
@@ -147,12 +149,18 @@ endif
 
 ifeq ($(TYPE), LIBDYNAMIC)
 	DEFINES		:= $(DEFINES) -DPIC
+	TYPE_DYNAMIC	:= Yes
 ifneq ($(PLATFORM), Mingw)
 	CFLAGS		:= $(CFLAGS) -fPIC
 	CXXFLAGS	:= $(CXXFLAGS) -fPIC
 endif
 endif
-
+ifeq ($(TYPE), LIBSTATIC)
+	TYPE_STATIC	:= Yes
+endif
+ifeq ($(TYPE), LIBSTATIC)
+	TYPE_EXECUTABLE	:= Yes
+endif
 
 ##
 # configuration specific environment

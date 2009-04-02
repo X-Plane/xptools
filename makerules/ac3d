@@ -1,13 +1,16 @@
 TYPE		:= LIBDYNAMIC
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
-LDFLAGS		:= -static -static-libgcc
 ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 LIBS		:= SDK/ac3d/ac3d.lib -lglu32 -lopengl32
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
 endif
 ifdef PLAT_LINUX
+#LDFLAGS         := -Wl,--unresolved-symbols=report-all
+#LIBS            := -Wl,-Bdynamic,--start-group -lGLU -lGL -lX11 -lXext
+#LIBS		+=-lXdmcp -lXau -lxcb -lxcb-xlib
+#LIBS		+= -ldl -lc -lpthread -lgcc -lgcc_eh -lstdc++ -Wl,--end-group
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
 endif
 ifdef PLAT_DARWIN
