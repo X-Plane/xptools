@@ -1,64 +1,80 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
-LDFLAGS		:= -static -static-libgcc
-ifeq ($(PLATFORM), Darwin)
-	LDFLAGS := -static-libgcc
+
+ifdef PLAT_LINUX
+LDFLAGS	:= -static -static-libgcc
+MESA_HEADERS := -I./libs/local/include/mesa
 endif
 
-ifeq ($(PLATFORM), Mingw)
+ifdef PLAT_DARWIN
+LDFLAGS	:= -static-libgcc
+endif
+
+ifdef PLAT_MINGW
 REAL_TARGET	:= $(dir $(TARGET))/DSFTool.exe
 endif
 
-SOURCES :=\
-src/DSF/DSFLib.cpp \
-src/DSF/DSFLibWrite.cpp \
-src/DSF/DSFPointPool.cpp \
-src/DSFTools/DSFToolCmdLine.cpp \
-src/DSFTools/DSF2Text.cpp \
-src/DSFTools/ENV2Overlay.cpp \
-src/Env/EnvParser.c \
-src/Env/Persistence.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/EndianUtils.c \
-src/Utils/FileUtils.cpp \
-src/Utils/md5.c \
-src/Utils/XChunkyFileUtils.cpp \
-src/DSF/tri_stripper_101/tri_stripper.cpp
 
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
+##
+# include-, librarypaths
+########################
 
-INCLUDEPATHS :=\
--Ilibs/local/include \
-$(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
--Isrc/Env \
--Isrc/DSF \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/UI \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/WorldEditor \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--Isrc/DSF/tri_stripper_101
+LIBPATHS := -L./libs/local/lib
+
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
+
+
+##
+# sources
+#########
+
+SOURCES := ./src/DSF/DSFLib.cpp
+SOURCES += ./src/DSF/DSFLibWrite.cpp
+SOURCES += ./src/DSF/DSFPointPool.cpp
+SOURCES += ./src/DSFTools/DSFToolCmdLine.cpp
+SOURCES += ./src/DSFTools/DSF2Text.cpp
+SOURCES += ./src/DSFTools/ENV2Overlay.cpp
+SOURCES += ./src/Env/EnvParser.c
+SOURCES += ./src/Env/Persistence.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/Utils/XChunkyFileUtils.cpp
+SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp

@@ -1,68 +1,83 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
-LDFLAGS		:= -static -static-libgcc
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		:= -lCGAL -ldime -l3ds
-ifeq ($(PLATFORM), Mingw)
+
+ifdef PLAT_LINUX
+LDFLAGS	:= -static -static-libgcc
+MESA_HEADERS := -I./libs/local/include/mesa
+endif
+
+ifdef PLAT_DARWIN
+LDFLAGS	:= -static-libgcc
+endif
+
+ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 REAL_TARGET	:= $(dir $(TARGET))/ObjConverter.exe
 endif
-ifeq ($(PLATFORM), Darwin)
-	LDFLAGS := -static-libgcc
-endif
 
-SOURCES :=\
-src/Obj/ObjConvert.cpp \
-src/Obj/ObjPointPool.cpp \
-src/Obj/XObjBuilder.cpp \
-src/Obj/XObjDefs.cpp \
-src/Obj/XObjReadWrite.cpp \
-src/Obj/XObjWriteEmbedded.cpp \
-src/Utils/ObjUtils.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/MatrixUtils.cpp \
-src/XPTools/ConvertObj3DS.cpp \
-src/XPTools/ConvertObj.cpp \
-src/XPTools/ConvertObjDXF.cpp \
-src/DSF/tri_stripper_101/tri_stripper.cpp
 
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
+##
+# include-, librarypaths
+########################
 
-INCLUDEPATHS :=\
--Ilibs/local/include \
--Ilibs/local/include/freetype2 \
-$(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
--Isrc/Env \
--Isrc/DSF \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/UI \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/WorldEditor \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--Isrc/DSF/tri_stripper_101
+LIBPATHS := -L./libs/local/lib
 
-LIBPATHS :=\
--Llibs/local/lib
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
+
+
+##
+# sources
+#########
+
+SOURCES := ./src/Obj/ObjConvert.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/Obj/XObjBuilder.cpp
+SOURCES += ./src/Obj/XObjDefs.cpp
+SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/Obj/XObjWriteEmbedded.cpp
+SOURCES += ./src/Utils/ObjUtils.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/MatrixUtils.cpp
+SOURCES += ./src/XPTools/ConvertObj3DS.cpp
+SOURCES += ./src/XPTools/ConvertObj.cpp
+SOURCES += ./src/XPTools/ConvertObjDXF.cpp
+SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+

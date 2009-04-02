@@ -1,100 +1,113 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include src/Obj/XDefs.h
 CXXFLAGS	:= -include src/Obj/XDefs.h
-ifeq ($(PLATFORM), Linux)
-LDFLAGS		:= -nodefaultlibs -static-libgcc
-STDLIBS		:= -Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
-LIBS		:= -Wl,-Bdynamic -lGLU -Wl,-Bstatic -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
+
+ifdef PLAT_LINUX
+LDFLAGS	:= -nodefaultlibs -static-libgcc
+LIBS	:= -Wl,-Bstatic
+LIBS	+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS	+= -Wl,-Bdynamic
+LIBS	+= -ldl -lpthread -lc
+LIBS	+= -Wl,-Bstatic
+LIBS	+= -lgcc -lgcc_eh
+LIBS	+= -Wl,-Bdynamic
+LIBS	+= -lGLU
+LIBS	+= -Wl,-Bstatic
+LIBS	+= -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
+DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1
 endif
-ifeq ($(PLATFORM), Mingw)
-LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32 -luuid -Wl,-Bstatic -lCGAL -lsquish -ltiff -ljpeg -lpng12 -lz
+
+ifdef PLAT_MINGW
+LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS		+= -luuid -Wl,-Bstatic -lCGAL -lsquish -ltiff -ljpeg
+LIBS		+= -lpng12 -lz
 LDFLAGS		:= -Wl,-subsystem,windows
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
-WIN_RESOURCES := src/XPTools/ObjView.rc
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -D_WIN32_IE=0x0500
+DEFINES		+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+WIN_RESOURCES	:= ./src/XPTools/ObjView.rc
 REAL_TARGET	:= $(dir $(TARGET))/ObjView.exe
 endif
 
-COMMON_SRC := \
-src/Obj/ObjPointPool.cpp \
-src/Obj/XObjDefs.cpp \
-src/Obj/XObjReadWrite.cpp \
-src/Obj/ObjDraw.cpp \
-src/ObjEdit/OE_Zoomer3d.cpp \
-src/Utils/ObjUtils.cpp \
-src/Utils/BitmapUtils.cpp \
-src/Utils/TexUtils.cpp \
-src/Utils/trackball.c \
-src/Utils/XUtils.cpp \
-src/Utils/GeoUtils.cpp \
-src/Utils/MatrixUtils.cpp \
-src/Utils/EndianUtils.c \
-src/UI/XGUIApp.cpp \
-src/GUI/GUI_Timer.cpp \
-src/XPTools/ViewObj.cpp \
-src/Utils/AssertUtils.cpp
 
-WIN32_SRC := \
-src/Utils/PlatformUtils.win.cpp \
-src/UI/XWin.win.cpp \
-src/UI/XWin32DND.cpp \
-src/UI/XWinGL.win.cpp
+##
+# include-, librarypaths
+########################
 
-POSIX_SRC := \
-src/linuxinit/initializer.cpp \
-src/linuxinit/minigtk.cpp \
-src/Utils/PlatformUtils.lin.cpp \
-src/UI/XWin.lin.cpp \
-src/UI/XWinGL.lin.cpp \
-src/UI/XPopup.lin.cpp \
-src/UI/xdnd.cpp
+LIBPATHS := -L./libs/local/lib
 
-ifeq ($(PLATFORM), Linux)
-SOURCES := $(COMMON_SRC) $(POSIX_SRC)
-endif
-ifeq ($(PLATFORM), Mingw)
-SOURCES := $(COMMON_SRC) $(WIN32_SRC)
-endif
-
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
 
 
-INCLUDEPATHS :=\
--Ilibs/local/include \
--Ilibs/local/include/freetype2 \
-$(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
--Isrc/linuxinit \
--Isrc/Env \
--Isrc/DSF \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/UI \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/WorldEditor \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--Isrc/DSF/tri_stripper_101
+##
+# sources
+#########
 
-LIBPATHS :=\
--Llibs/local/lib
+ifdef PLAT_MINGW
+SOURCES := ./src/Utils/PlatformUtils.win.cpp
+SOURCES += ./src/UI/XWin.win.cpp
+SOURCES += ./src/UI/XWin32DND.cpp
+SOURCES += ./src/UI/XWinGL.win.cpp
+endif #PLAT_MINGW
+
+ifdef PLAT_LINUX
+SOURCES := ./src/linuxinit/initializer.cpp
+SOURCES += ./src/linuxinit/minigtk.cpp
+SOURCES += ./src/Utils/PlatformUtils.lin.cpp
+SOURCES += ./src/UI/XWin.lin.cpp
+SOURCES += ./src/UI/XWinGL.lin.cpp
+SOURCES += ./src/UI/XPopup.lin.cpp
+SOURCES += ./src/UI/xdnd.cpp
+endif #PLAT_LINUX
+
+SOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/Obj/XObjDefs.cpp
+SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/Obj/ObjDraw.cpp
+SOURCES += ./src/ObjEdit/OE_Zoomer3d.cpp
+SOURCES += ./src/Utils/ObjUtils.cpp
+SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/TexUtils.cpp
+SOURCES += ./src/Utils/trackball.c
+SOURCES += ./src/Utils/XUtils.cpp
+SOURCES += ./src/Utils/GeoUtils.cpp
+SOURCES += ./src/Utils/MatrixUtils.cpp
+SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/UI/XGUIApp.cpp
+SOURCES += ./src/GUI/GUI_Timer.cpp
+SOURCES += ./src/XPTools/ViewObj.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp

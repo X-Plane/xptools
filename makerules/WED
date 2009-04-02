@@ -35,6 +35,7 @@ WIN_RESOURCES := ./src/WEDResources/WED.rc
 REAL_TARGET := $(dir $(TARGET))/WED.exe
 endif #PLAT_MINGW
 
+
 ##
 # include-, librarypaths
 ########################
