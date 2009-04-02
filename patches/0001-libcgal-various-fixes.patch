@@ -1,6 +1,6 @@
-diff -Naur CGAL-3.3.1/include/CGAL/Arr_accessor.h CGAL-3.3.1.new/include/CGAL/Arr_accessor.h
---- CGAL-3.3.1/include/CGAL/Arr_accessor.h	Sat Aug 25 21:01:33 2007
-+++ CGAL-3.3.1.new/include/CGAL/Arr_accessor.h	Thu Apr  2 01:07:43 2009
+diff -Naur CGAL-3.3.1/orig_include/CGAL/Arr_accessor.h CGAL-3.3.1/include/CGAL/Arr_accessor.h
+--- CGAL-3.3.1/orig_include/CGAL/Arr_accessor.h	2007-08-25 15:01:33.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/Arr_accessor.h	2009-04-01 21:19:51.000000000 -0400
 @@ -225,6 +225,9 @@
      return (p_arr->_handle_for (p_arr->v_tr));
    }
@@ -11,9 +11,9 @@ diff -Naur CGAL-3.3.1/include/CGAL/Arr_accessor.h CGAL-3.3.1.new/include/CGAL/Ar
    /*! Get the fictitious face of the arrangement (non-const version). */
    Face_handle fictitious_face ()
    {
-diff -Naur CGAL-3.3.1/include/CGAL/Arr_landmarks_point_location.h CGAL-3.3.1.new/include/CGAL/Arr_landmarks_point_location.h
---- CGAL-3.3.1/include/CGAL/Arr_landmarks_point_location.h	Sat Aug 25 21:01:32 2007
-+++ CGAL-3.3.1.new/include/CGAL/Arr_landmarks_point_location.h	Thu Apr  2 01:07:43 2009
+diff -Naur CGAL-3.3.1/orig_include/CGAL/Arr_landmarks_point_location.h CGAL-3.3.1/include/CGAL/Arr_landmarks_point_location.h
+--- CGAL-3.3.1/orig_include/CGAL/Arr_landmarks_point_location.h	2007-08-25 15:01:32.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/Arr_landmarks_point_location.h	2009-04-01 21:19:51.000000000 -0400
 @@ -158,7 +158,7 @@
      CGAL_assertion(lm_gen != NULL);
      if (lm_gen)
@@ -23,9 +23,26 @@ diff -Naur CGAL-3.3.1/include/CGAL/Arr_landmarks_point_location.h CGAL-3.3.1.new
      }
    }
    
-diff -Naur CGAL-3.3.1/include/CGAL/General_polygon_set_2.h CGAL-3.3.1.new/include/CGAL/General_polygon_set_2.h
---- CGAL-3.3.1/include/CGAL/General_polygon_set_2.h	Sat Aug 25 21:01:32 2007
-+++ CGAL-3.3.1.new/include/CGAL/General_polygon_set_2.h	Thu Apr  2 01:07:43 2009
+diff -Naur CGAL-3.3.1/orig_include/CGAL/Convex_hull_2/ch_assertions.h CGAL-3.3.1/include/CGAL/Convex_hull_2/ch_assertions.h
+--- CGAL-3.3.1/orig_include/CGAL/Convex_hull_2/ch_assertions.h	2007-08-25 15:01:33.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/Convex_hull_2/ch_assertions.h	2009-04-01 21:42:20.000000000 -0400
+@@ -26,6 +26,8 @@
+ // ----------
+ 
+ 
++#ifndef CGAL_ch_assertion
++
+ #if defined(CGAL_CH_NO_ASSERTIONS) || defined(CGAL_NO_ASSERTIONS) \
+   || defined(NDEBUG)
+ #  define CGAL_ch_assertion(EX) ((void)0)
+@@ -264,3 +266,4 @@
+ #endif // CGAL_CH_NO_WARNINGS
+ 
+ 
++#endif 
+diff -Naur CGAL-3.3.1/orig_include/CGAL/General_polygon_set_2.h CGAL-3.3.1/include/CGAL/General_polygon_set_2.h
+--- CGAL-3.3.1/orig_include/CGAL/General_polygon_set_2.h	2007-08-25 15:01:32.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/General_polygon_set_2.h	2009-04-01 21:19:51.000000000 -0400
 @@ -55,7 +55,7 @@
    typedef std::size_t                                     Size;
  
@@ -35,9 +52,27 @@ diff -Naur CGAL-3.3.1/include/CGAL/General_polygon_set_2.h CGAL-3.3.1.new/includ
    typedef typename Traits_2::Point_2                      Point_2;
    typedef typename Traits_2::X_monotone_curve_2           X_monotone_curve_2;
    
-diff -Naur CGAL-3.3.1/include/CGAL/centroid.h CGAL-3.3.1.new/include/CGAL/centroid.h
---- CGAL-3.3.1/include/CGAL/centroid.h	Sat Aug 25 21:01:33 2007
-+++ CGAL-3.3.1.new/include/CGAL/centroid.h	Thu Apr  2 01:07:43 2009
+diff -Naur CGAL-3.3.1/orig_include/CGAL/Polygon_2/polygon_assertions.h CGAL-3.3.1/include/CGAL/Polygon_2/polygon_assertions.h
+--- CGAL-3.3.1/orig_include/CGAL/Polygon_2/polygon_assertions.h	2007-08-25 15:01:33.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/Polygon_2/polygon_assertions.h	2009-04-01 21:35:58.000000000 -0400
+@@ -27,7 +27,7 @@
+ // assertions
+ // ----------
+ 
+-
++#ifndef CGAL_polygon_assertion
+ #if defined(CGAL_POLYGON_NO_ASSERTIONS) || defined(CGAL_NO_ASSERTIONS) \
+   || defined(NDEBUG)
+ #  define CGAL_polygon_assertion(EX) (static_cast<void>(0))
+@@ -264,4 +264,4 @@
+    ((EX)?(static_cast<void>(0)): ::CGAL::warning_fail( # EX , __FILE__, __LINE__, MSG))
+ #  define CGAL_polygon_expensive_exactness_warning_code(CODE) CODE
+ #endif // CGAL_POLYGON_NO_WARNINGS
+-
++#endif
+diff -Naur CGAL-3.3.1/orig_include/CGAL/centroid.h CGAL-3.3.1/include/CGAL/centroid.h
+--- CGAL-3.3.1/orig_include/CGAL/centroid.h	2007-08-25 15:01:33.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/centroid.h	2009-04-01 21:19:51.000000000 -0400
 @@ -60,7 +60,7 @@
      v = v + (*begin++ - ORIGIN);
      nb_pts++;
@@ -47,18 +82,9 @@ diff -Naur CGAL-3.3.1/include/CGAL/centroid.h CGAL-3.3.1.new/include/CGAL/centro
  }// end centroid of a 2D point set
  
  // computes the centroid of a 3D point set
-diff -Naur CGAL-3.3.1/include/CGAL/triangulation_assertions.h CGAL-3.3.1.new/include/CGAL/triangulation_assertions.h
---- CGAL-3.3.1/include/CGAL/triangulation_assertions.h	Sat Aug 25 21:01:32 2007
-+++ CGAL-3.3.1.new/include/CGAL/triangulation_assertions.h	Tue Mar 31 18:51:43 2009
-@@ -12,7 +12,7 @@
- // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- //
- // $URL: svn+ssh://scm.gforge.inria.fr/svn/cgal/branches/CGAL-3.3-branch/Triangulation_2/include/CGAL/triangulation_assertions.h $
--// $Id$
-+// $Id$
- // 
- //
- // Author(s)     : script by Geert-Jan Giezeman and Sven Schoenherr 
+diff -Naur CGAL-3.3.1/orig_include/CGAL/triangulation_assertions.h CGAL-3.3.1/include/CGAL/triangulation_assertions.h
+--- CGAL-3.3.1/orig_include/CGAL/triangulation_assertions.h	2007-08-25 15:01:32.000000000 -0400
++++ CGAL-3.3.1/include/CGAL/triangulation_assertions.h	2009-04-01 21:19:51.000000000 -0400
 @@ -24,7 +24,7 @@
  // assertions
  // ----------
