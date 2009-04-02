@@ -269,6 +269,7 @@ int	main(int argc, char * argv[])
 		}
 		char buf[1024];
 
+		int num_cus_terrains = 0;
 		Polygon_set_2::Polygon_2   	ring, outer, the_hole;
 		std::vector<Polygon_set_2::Polygon_2> holes;
 		std::vector<Polygon_set_2::Polygon_with_holes_2> layer;
@@ -331,7 +332,9 @@ int	main(int argc, char * argv[])
 				nt.xon_dist = 0;
 				nt.xon_hack = 0;
 				nt.custom_ter = use_wat ? tex_custom_water : tex_custom;
-				gNaturalTerrainTable.insert(gNaturalTerrainTable.begin(),nt);
+
+				int rn = gNaturalTerrainTable.size();
+				gNaturalTerrainTable.insert(gNaturalTerrainTable.begin()+(num_cus_terrains++),nt);
 			}
 			if(sscanf(buf,"PROJECT_POINT %lf %lf %lf %lf",coords,coords+1,coords+2,coords+3)==4)
 			{
@@ -451,6 +454,40 @@ int	main(int argc, char * argv[])
 				} else {
 					fprintf(stderr,"x");
 				}
+				
+					
+				#if !DEV 
+					#error this is taken from the END_LAYER command.
+				#endif
+				fprintf(stderr,",");
+				Overlay_traits         overlay_traits;
+				Polygon_set_2	*temp = new Polygon_set_2(), *temp1 = new Polygon_set_2();
+				fprintf(stderr,",");
+				if (!layer.empty()) {
+					temp->join(layer.begin(), layer.end());
+					fprintf(stderr,",");
+					
+					int nfaces = 0, ntouched = 0;
+					Pmwx::Face_iterator ring_face;
+					for(ring_face = temp->arrangement().faces_begin(); ring_face != temp->arrangement().faces_end(); ++ring_face, ++nfaces) {
+						if (ring_face->contained()) {
+							ring_face->data().mTerrainType = terrain_type;
+							ntouched++;
+						}
+					}
+					fprintf(stderr,"%d %d %s,", nfaces, ntouched, FetchTokenString(terrain_type));
+					
+					CGAL::overlay (the_map->arrangement(), temp->arrangement(), temp1->arrangement(), overlay_traits);
+					delete the_map;
+					the_map = temp1;
+				}
+				#if !DEV
+					#error this is taken from the BEGIN_LAYER command
+				#endif
+				layer.clear();
+				ring.clear();
+				the_hole.clear();
+				holes.clear();
 			}
 			if(strncmp(buf,"END_LAYER",strlen("END_LAYER"))==0)
 			{
@@ -559,6 +596,10 @@ int	main(int argc, char * argv[])
 //				hit->data().mDominant = true;
 //		}
 		
+		gNaturalTerrainIndex.clear();
+		for(int rn = 0; rn < gNaturalTerrainTable.size(); ++rn)
+		if (gNaturalTerrainIndex.count(gNaturalTerrainTable[rn].name) == 0)
+			gNaturalTerrainIndex[gNaturalTerrainTable[rn].name] = rn;
 		
 		fprintf(stderr,"Now to simplify\n");
 		// -simplify
@@ -583,7 +624,19 @@ int	main(int argc, char * argv[])
 		
 		// -assignterrain
 		AssignLandusesToMesh(gDem,gTriangulationHi,argv[4],ConsoleProgressFunc);
-		
+
+		#if DEV
+		for (CDT::Finite_faces_iterator tri = gTriangulationHi.finite_faces_begin(); tri != gTriangulationHi.finite_faces_end(); ++tri)
+		if (tri->info().terrain == terrain_Water)
+		{
+			DebugAssert(tri->info().terrain == terrain_Water);
+		}
+		else
+		{
+			DebugAssert(tri->info().terrain != terrain_Water);
+			DebugAssert(tri->info().terrain != -1);
+		}
+		#endif	
 		
 		printf("Instantiating objects...\n");
 		vector<PreinsetFace>	insets;

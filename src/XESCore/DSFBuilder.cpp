@@ -844,7 +844,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
-		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
+		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);	
+		DebugAssert(fi->info().terrain != -1);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
 		if(IsCustomOverWater(fi->info().terrain))
@@ -857,6 +858,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
 			landuses.insert(map<int, int, SortByLULayer>::value_type(*border_lu,0));
+			DebugAssert(*border_lu != -1);			
 		}
 	}
 
@@ -899,6 +901,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		sLoResTris[(int) x + (int) y * PATCH_DIM_LO].push_back(fi);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
+		DebugAssert(fi->info().terrain != -1);
 		sLoResLU[(int) x + (int) y * PATCH_DIM_LO].insert(fi->info().terrain);
 	}
 #endif
@@ -927,6 +930,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		is_overwater = IsCustomOverWater(lu_ranked->first);
 		is_water = lu_ranked->first == terrain_Water;
+
+		
 #if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
@@ -1030,7 +1035,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						coords8[5] = GetWaterBlend((*vert), waterType);
 						coords8[6] = IsCoastal(inHiresMesh,*vert) ? 0.0 : 1.0;
 					}
-					else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
+					else if (pinfo)	{
+						ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
+						DebugAssert(coords8[5] >= 0.0);
+						DebugAssert(coords8[5] <= 1.0);
+						DebugAssert(coords8[6] >= 0.0);
+						DebugAssert(coords8[6] <= 1.0);
+					}
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);

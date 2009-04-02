@@ -316,7 +316,7 @@ public:
 class GIS_face_data {
 public:
 	//	int							mIsWater;
-	int							mTerrainType;
+	int							mTerrainType;		// This is a feature type for matching.  EXCEPTION: terrain_Water is both a feature and terrain.
 	GISParamMap					mParams;
 	GISPointFeatureVector		mPointFeatures;
 	GISPolygonFeatureVector		mPolygonFeatures;
