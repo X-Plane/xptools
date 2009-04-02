@@ -41,7 +41,7 @@ endif
 libs: $(LIBRARIES)
 
 $(LIBRARIES):
-	@$(MAKE) -C "./libs" all
+	@$(MAKE) -s -C "./libs" all
 
 ObjView: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
