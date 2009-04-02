@@ -1,0 +1,12 @@
+diff -Naur squish-1.10/squish.h squish-1.10.1/squish.h
+--- squish-1.10/squish.h	2007-03-21 21:13:51.000000000 +0100
++++ squish-1.10.1/squish.h	2008-10-02 21:47:55.000000000 +0200
+@@ -26,6 +26,8 @@
+ #ifndef SQUISH_H
+ #define SQUISH_H
+ 
++#include <limits.h>
++
+ //! All squish API functions live in this namespace.
+ namespace squish {
+ 
