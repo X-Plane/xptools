@@ -101,15 +101,6 @@
 		D60734BD0D197CA500E08F61 /* ProgressUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37990AB22C85003949C5 /* ProgressUtils.cpp */; };
 		D60734C20D197CC000E08F61 /* NetTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38650AB22C85003949C5 /* NetTables.cpp */; };
 		D60734C80D197CD100E08F61 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
-		D60734C90D197CD800E08F61 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D60734CA0D197CD900E08F61 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D60734CB0D197CDA00E08F61 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D60734CC0D197CDB00E08F61 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D60734CD0D197CDB00E08F61 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D60734CE0D197CDC00E08F61 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D60734CF0D197CDC00E08F61 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D60734D00D197CDD00E08F61 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D60734D10D197CDE00E08F61 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D60734E00D197D1300E08F61 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
 		D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
@@ -303,11 +294,6 @@
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D656B2440B5181F0003FF84F /* make_interface.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CF0AB22C85003949C5 /* make_interface.c */; };
 		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D656B2A40B5189B0003FF84F /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
-		D656B2A80B5189B0003FF84F /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
-		D656B33D0B518C9F003FF84F /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B32A0B518C9F003FF84F /* xmlparse.c */; };
-		D656B33F0B518C9F003FF84F /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3360B518C9F003FF84F /* xmlrole.c */; };
-		D656B3400B518C9F003FF84F /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3380B518C9F003FF84F /* xmltok.c */; };
 		D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
 		D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
 		D65E4B250B65427C004D7887 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
@@ -334,8 +320,6 @@
 		D65E4B4D0B654314004D7887 /* GISTool_ProcessingCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC388E0AB22C85003949C5 /* GISTool_ProcessingCmds.cpp */; };
 		D65E4B4E0B654317004D7887 /* GISTool_Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38900AB22C85003949C5 /* GISTool_Utils.cpp */; };
 		D65E4B4F0B654319004D7887 /* GISTool_VectorCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38920AB22C85003949C5 /* GISTool_VectorCmds.cpp */; };
-		D65E4B530B654363004D7887 /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
-		D65E4B540B654363004D7887 /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
 		D65E4B930B65451F004D7887 /* CompGeomDefs2_TEST.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37730AB22C85003949C5 /* CompGeomDefs2_TEST.cpp */; };
 		D65E4B940B654529004D7887 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D65E4B950B654530004D7887 /* WTPM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38750AB22C85003949C5 /* WTPM.cpp */; };
@@ -412,15 +396,6 @@
 		D6734D210EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
 		D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67682B60CC669830032B90C /* TensorUtils.cpp */; };
 		D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67682B60CC669830032B90C /* TensorUtils.cpp */; };
-		D67683520CC67B750032B90C /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D67683530CC67B760032B90C /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D67683540CC67B760032B90C /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D67683550CC67B780032B90C /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D67683560CC67B790032B90C /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D67683570CC67B790032B90C /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D67683580CC67B7A0032B90C /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D67683590CC67B7B0032B90C /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D676835B0CC67B7C0032B90C /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D67683600CC67B8D0032B90C /* GISTool_CoreCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */; };
 		D67683610CC67B8D0032B90C /* GISTool_DemCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38840AB22C85003949C5 /* GISTool_DemCmds.cpp */; };
 		D67683620CC67B8E0032B90C /* GISTool_DumpCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38860AB22C85003949C5 /* GISTool_DumpCmds.cpp */; };
@@ -541,8 +516,6 @@
 		D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */; };
 		D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
 		D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
-		D68E28A00EBF5DB10015648F /* shptree.c in Sources */ = {isa = PBXBuildFile; fileRef = D68E28980EBF5DB10015648F /* shptree.c */; };
-		D68E28A80EBF5DB10015648F /* shptree.c in Sources */ = {isa = PBXBuildFile; fileRef = D68E28980EBF5DB10015648F /* shptree.c */; };
 		D68E2A130EBF9D000015648F /* Forests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384E0AB22C85003949C5 /* Forests.cpp */; };
 		D68E2A890EBFC7F20015648F /* Forests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384E0AB22C85003949C5 /* Forests.cpp */; };
 		D68E2A8C0EBFC8270015648F /* MapBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */; };
@@ -646,38 +619,11 @@
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
 		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
-		D6C578AC0C7E33B200FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D6C578AE0C7E33B200FCB4C1 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D6C578AF0C7E33B200FCB4C1 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D6C578B00C7E33B200FCB4C1 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D6C578B10C7E33B200FCB4C1 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D6C578B80C7E33B200FCB4C1 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D6C578B90C7E33B200FCB4C1 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D6C578BB0C7E33B200FCB4C1 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D6C578BE0C7E33B200FCB4C1 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D6C579DC0C7E3CD600FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D6C579DD0C7E3CD600FCB4C1 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D6C579DE0C7E3CD700FCB4C1 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D6C579DF0C7E3CD800FCB4C1 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D6C579E00C7E3CD900FCB4C1 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D6C579E10C7E3CDA00FCB4C1 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D6C579E20C7E3CDA00FCB4C1 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D6C579E30C7E3CDB00FCB4C1 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D6C579E40C7E3CDE00FCB4C1 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */; };
 		D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D6C57F300C831B4A00FCB4C1 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
-		D6C57F310C831B5000FCB4C1 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D6C57F320C831B5000FCB4C1 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D6C57F330C831B5100FCB4C1 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D6C57F340C831B5200FCB4C1 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D6C57F350C831B5200FCB4C1 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D6C57F360C831B5300FCB4C1 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D6C57F370C831B5300FCB4C1 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D6C57F380C831B5500FCB4C1 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D6C57F3A0C831B5600FCB4C1 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D6C57F420C831B7F00FCB4C1 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D6C57F430C831B8400FCB4C1 /* ZLIBUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B20AB22C85003949C5 /* ZLIBUtils.cpp */; };
 		D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
@@ -760,11 +706,6 @@
 		D6ED37270B67964D00D5484E /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D6ED372A0B67964D00D5484E /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
-		D6ED372D0B67964D00D5484E /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
-		D6ED372E0B67964D00D5484E /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
-		D6ED37310B67964D00D5484E /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B32A0B518C9F003FF84F /* xmlparse.c */; };
-		D6ED37320B67964D00D5484E /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3360B518C9F003FF84F /* xmlrole.c */; };
-		D6ED37330B67964D00D5484E /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3380B518C9F003FF84F /* xmltok.c */; };
 		D6ED37350B67964D00D5484E /* GUI_Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF690B529EB900754E77 /* GUI_Application.cpp */; };
 		D6ED37360B67964D00D5484E /* GUI_Broadcaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF6A0B529EB900754E77 /* GUI_Broadcaster.cpp */; };
 		D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAFC20B52A01900754E77 /* GUI_Clipboard.cpp */; };
@@ -788,15 +729,6 @@
 		D6ED40440B6AD47300D5484E /* WED_UndoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */; };
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
-		D6F00F760CCD7F5A00A3F1B0 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
-		D6F00F770CCD7F5A00A3F1B0 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
-		D6F00F780CCD7F5A00A3F1B0 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
-		D6F00F790CCD7F5C00A3F1B0 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
-		D6F00F7A0CCD7F5C00A3F1B0 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
-		D6F00F7B0CCD7F5D00A3F1B0 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
-		D6F00F7C0CCD7F5D00A3F1B0 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
-		D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
-		D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
 		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
@@ -1108,25 +1040,6 @@
 		D656B12D0B51778F003FF84F /* XResources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XResources.h; sourceTree = "<group>"; };
 		D656B12E0B51778F003FF84F /* XResources.mac.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XResources.mac.cpp; sourceTree = "<group>"; };
 		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
-		D656B2980B5189B0003FF84F /* dbfopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = dbfopen.c; sourceTree = "<group>"; };
-		D656B29C0B5189B0003FF84F /* shpopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = shpopen.c; sourceTree = "<group>"; };
-		D656B32A0B518C9F003FF84F /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmlparse.c; sourceTree = "<group>"; };
-		D656B32B0B518C9F003FF84F /* xmlparse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmlparse.h; sourceTree = "<group>"; };
-		D656B32D0B518C9F003FF84F /* ascii.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ascii.h; sourceTree = "<group>"; };
-		D656B32E0B518C9F003FF84F /* asciitab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = asciitab.h; sourceTree = "<group>"; };
-		D656B3310B518C9F003FF84F /* iasciitab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = iasciitab.h; sourceTree = "<group>"; };
-		D656B3320B518C9F003FF84F /* latin1tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = latin1tab.h; sourceTree = "<group>"; };
-		D656B3330B518C9F003FF84F /* nametab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = nametab.h; sourceTree = "<group>"; };
-		D656B3340B518C9F003FF84F /* utf8tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = utf8tab.h; sourceTree = "<group>"; };
-		D656B3350B518C9F003FF84F /* xmldef.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmldef.h; sourceTree = "<group>"; };
-		D656B3360B518C9F003FF84F /* xmlrole.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmlrole.c; sourceTree = "<group>"; };
-		D656B3370B518C9F003FF84F /* xmlrole.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmlrole.h; sourceTree = "<group>"; };
-		D656B3380B518C9F003FF84F /* xmltok.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmltok.c; sourceTree = "<group>"; };
-		D656B3390B518C9F003FF84F /* xmltok.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmltok.h; sourceTree = "<group>"; };
-		D656B33A0B518C9F003FF84F /* xmltok_impl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmltok_impl.c; sourceTree = "<group>"; };
-		D656B33B0B518C9F003FF84F /* xmltok_impl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmltok_impl.h; sourceTree = "<group>"; };
-		D656B33C0B518C9F003FF84F /* xmltok_ns.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmltok_ns.c; sourceTree = "<group>"; };
-		D656B3630B518D69003FF84F /* assertions.C */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = assertions.C; sourceTree = "<group>"; };
 		D659755D0BEA6D18001FC7C3 /* GUI_ChangeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_ChangeView.h; sourceTree = "<group>"; };
 		D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ChangeView.cpp; sourceTree = "<group>"; };
 		D659758D0BEA6F2A001FC7C3 /* GUI_TabPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabPane.h; sourceTree = "<group>"; };
@@ -1226,8 +1139,6 @@
 		D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEVertexTool.cpp; sourceTree = "<group>"; };
 		D68E28810EBF5D3A0015648F /* ShapeIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShapeIO.h; sourceTree = "<group>"; };
 		D68E28820EBF5D3A0015648F /* ShapeIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShapeIO.cpp; sourceTree = "<group>"; };
-		D68E28930EBF5DB10015648F /* shapefil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shapefil.h; sourceTree = "<group>"; };
-		D68E28980EBF5DB10015648F /* shptree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = shptree.c; sourceTree = "<group>"; };
 		D6956EC80F82DBF800F6718E /* MapHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapHelpers.cpp; sourceTree = "<group>"; };
 		D6956EC90F82DBF800F6718E /* MapHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapHelpers.h; sourceTree = "<group>"; };
 		D6956ED00F82E91100F6718E /* WED_Assert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Assert.cpp; sourceTree = "<group>"; };
@@ -1794,30 +1705,6 @@
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
 		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
-		D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = alpha.cpp; sourceTree = "<group>"; };
-		D6C5787F0C7E33B200FCB4C1 /* alpha.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = alpha.h; sourceTree = "<group>"; };
-		D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = clusterfit.cpp; sourceTree = "<group>"; };
-		D6C578820C7E33B200FCB4C1 /* clusterfit.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = clusterfit.h; sourceTree = "<group>"; };
-		D6C578830C7E33B200FCB4C1 /* colourblock.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = colourblock.cpp; sourceTree = "<group>"; };
-		D6C578840C7E33B200FCB4C1 /* colourblock.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = colourblock.h; sourceTree = "<group>"; };
-		D6C578850C7E33B200FCB4C1 /* colourfit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = colourfit.cpp; sourceTree = "<group>"; };
-		D6C578860C7E33B200FCB4C1 /* colourfit.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = colourfit.h; sourceTree = "<group>"; };
-		D6C578870C7E33B200FCB4C1 /* colourset.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = colourset.cpp; sourceTree = "<group>"; };
-		D6C578880C7E33B200FCB4C1 /* colourset.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = colourset.h; sourceTree = "<group>"; };
-		D6C5788A0C7E33B200FCB4C1 /* config.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
-		D6C578910C7E33B200FCB4C1 /* maths.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = maths.cpp; sourceTree = "<group>"; };
-		D6C578920C7E33B200FCB4C1 /* maths.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = maths.h; sourceTree = "<group>"; };
-		D6C578930C7E33B200FCB4C1 /* rangefit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = rangefit.cpp; sourceTree = "<group>"; };
-		D6C578940C7E33B200FCB4C1 /* rangefit.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rangefit.h; sourceTree = "<group>"; };
-		D6C578960C7E33B200FCB4C1 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = simd.h; sourceTree = "<group>"; };
-		D6C578970C7E33B200FCB4C1 /* simd_float.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = simd_float.h; sourceTree = "<group>"; };
-		D6C578980C7E33B200FCB4C1 /* simd_sse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = simd_sse.h; sourceTree = "<group>"; };
-		D6C578990C7E33B200FCB4C1 /* simd_ve.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = simd_ve.h; sourceTree = "<group>"; };
-		D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = singlecolourfit.cpp; sourceTree = "<group>"; };
-		D6C5789B0C7E33B200FCB4C1 /* singlecolourfit.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = singlecolourfit.h; sourceTree = "<group>"; };
-		D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = singlecolourlookup.inl; sourceTree = "<group>"; };
-		D6C5789E0C7E33B200FCB4C1 /* squish.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = squish.cpp; sourceTree = "<group>"; };
-		D6C5789F0C7E33B200FCB4C1 /* squish.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = squish.h; sourceTree = "<group>"; };
 		D6C579D60C7E3C7B00FCB4C1 /* DDSTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DDSTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DDSTool.cpp; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
@@ -2024,7 +1911,6 @@
 			isa = PBXGroup;
 			children = (
 				D6EAD1900E6DBA8900FC011A /* SDK */,
-				D656B28F0B518951003FF84F /* libsrc */,
 				D6BC361B0AB22C84003949C5 /* src */,
 			);
 			name = Source;
@@ -2160,94 +2046,6 @@
 			children = (
 			);
 			path = CVS.sandboxinfo;
-			sourceTree = "<group>";
-		};
-		D656B28F0B518951003FF84F /* libsrc */ = {
-			isa = PBXGroup;
-			children = (
-				D6C5787D0C7E33B200FCB4C1 /* squish-1.10 */,
-				D656B3600B518D29003FF84F /* src */,
-				D656B3250B518C82003FF84F /* expat */,
-				D656B2920B518971003FF84F /* shapelib-1.2.10 */,
-			);
-			name = libsrc;
-			sourceTree = "<group>";
-		};
-		D656B2920B518971003FF84F /* shapelib-1.2.10 */ = {
-			isa = PBXGroup;
-			children = (
-				D68E28930EBF5DB10015648F /* shapefil.h */,
-				D68E28980EBF5DB10015648F /* shptree.c */,
-				D656B2980B5189B0003FF84F /* dbfopen.c */,
-				D656B29C0B5189B0003FF84F /* shpopen.c */,
-			);
-			name = "shapelib-1.2.10";
-			path = "libsrc/shapelib-1.2.10";
-			sourceTree = "<group>";
-		};
-		D656B3250B518C82003FF84F /* expat */ = {
-			isa = PBXGroup;
-			children = (
-				D656B3280B518C9F003FF84F /* xmlparse */,
-				D656B32C0B518C9F003FF84F /* xmltok */,
-			);
-			name = expat;
-			path = libsrc/expat;
-			sourceTree = "<group>";
-		};
-		D656B3280B518C9F003FF84F /* xmlparse */ = {
-			isa = PBXGroup;
-			children = (
-				D656B3290B518C9F003FF84F /* CVS.sandboxinfo */,
-				D656B32A0B518C9F003FF84F /* xmlparse.c */,
-				D656B32B0B518C9F003FF84F /* xmlparse.h */,
-			);
-			path = xmlparse;
-			sourceTree = "<group>";
-		};
-		D656B3290B518C9F003FF84F /* CVS.sandboxinfo */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CVS.sandboxinfo;
-			sourceTree = "<group>";
-		};
-		D656B32C0B518C9F003FF84F /* xmltok */ = {
-			isa = PBXGroup;
-			children = (
-				D656B32D0B518C9F003FF84F /* ascii.h */,
-				D656B32E0B518C9F003FF84F /* asciitab.h */,
-				D656B32F0B518C9F003FF84F /* CVS.sandboxinfo */,
-				D656B3310B518C9F003FF84F /* iasciitab.h */,
-				D656B3320B518C9F003FF84F /* latin1tab.h */,
-				D656B3330B518C9F003FF84F /* nametab.h */,
-				D656B3340B518C9F003FF84F /* utf8tab.h */,
-				D656B3350B518C9F003FF84F /* xmldef.h */,
-				D656B3360B518C9F003FF84F /* xmlrole.c */,
-				D656B3370B518C9F003FF84F /* xmlrole.h */,
-				D656B3380B518C9F003FF84F /* xmltok.c */,
-				D656B3390B518C9F003FF84F /* xmltok.h */,
-				D656B33A0B518C9F003FF84F /* xmltok_impl.c */,
-				D656B33B0B518C9F003FF84F /* xmltok_impl.h */,
-				D656B33C0B518C9F003FF84F /* xmltok_ns.c */,
-			);
-			path = xmltok;
-			sourceTree = "<group>";
-		};
-		D656B32F0B518C9F003FF84F /* CVS.sandboxinfo */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CVS.sandboxinfo;
-			sourceTree = "<group>";
-		};
-		D656B3600B518D29003FF84F /* src */ = {
-			isa = PBXGroup;
-			children = (
-				D656B3630B518D69003FF84F /* assertions.C */,
-			);
-			name = src;
-			path = "libsrc/CGAL-3.0/src";
 			sourceTree = "<group>";
 		};
 		D67082FF0C1A4DBA00F33E06 /* world */ = {
@@ -3264,38 +3062,6 @@
 			path = XPWidgets;
 			sourceTree = "<group>";
 		};
-		D6C5787D0C7E33B200FCB4C1 /* squish-1.10 */ = {
-			isa = PBXGroup;
-			children = (
-				D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */,
-				D6C5787F0C7E33B200FCB4C1 /* alpha.h */,
-				D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */,
-				D6C578820C7E33B200FCB4C1 /* clusterfit.h */,
-				D6C578830C7E33B200FCB4C1 /* colourblock.cpp */,
-				D6C578840C7E33B200FCB4C1 /* colourblock.h */,
-				D6C578850C7E33B200FCB4C1 /* colourfit.cpp */,
-				D6C578860C7E33B200FCB4C1 /* colourfit.h */,
-				D6C578870C7E33B200FCB4C1 /* colourset.cpp */,
-				D6C578880C7E33B200FCB4C1 /* colourset.h */,
-				D6C5788A0C7E33B200FCB4C1 /* config.h */,
-				D6C578910C7E33B200FCB4C1 /* maths.cpp */,
-				D6C578920C7E33B200FCB4C1 /* maths.h */,
-				D6C578930C7E33B200FCB4C1 /* rangefit.cpp */,
-				D6C578940C7E33B200FCB4C1 /* rangefit.h */,
-				D6C578960C7E33B200FCB4C1 /* simd.h */,
-				D6C578970C7E33B200FCB4C1 /* simd_float.h */,
-				D6C578980C7E33B200FCB4C1 /* simd_sse.h */,
-				D6C578990C7E33B200FCB4C1 /* simd_ve.h */,
-				D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */,
-				D6C5789B0C7E33B200FCB4C1 /* singlecolourfit.h */,
-				D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */,
-				D6C5789E0C7E33B200FCB4C1 /* squish.cpp */,
-				D6C5789F0C7E33B200FCB4C1 /* squish.h */,
-			);
-			name = "squish-1.10";
-			path = "libsrc/squish-1.10";
-			sourceTree = "<group>";
-		};
 		D6EAD1900E6DBA8900FC011A /* SDK */ = {
 			isa = PBXGroup;
 			children = (
@@ -3811,15 +3577,6 @@
 				D62434200AE3D03E004F00E3 /* trackball.c in Sources */,
 				D62434950AE3D6D0004F00E3 /* GeoUtils.cpp in Sources */,
 				D6C57F300C831B4A00FCB4C1 /* MemFileUtils.cpp in Sources */,
-				D6C57F310C831B5000FCB4C1 /* alpha.cpp in Sources */,
-				D6C57F320C831B5000FCB4C1 /* clusterfit.cpp in Sources */,
-				D6C57F330C831B5100FCB4C1 /* colourblock.cpp in Sources */,
-				D6C57F340C831B5200FCB4C1 /* colourfit.cpp in Sources */,
-				D6C57F350C831B5200FCB4C1 /* colourset.cpp in Sources */,
-				D6C57F360C831B5300FCB4C1 /* maths.cpp in Sources */,
-				D6C57F370C831B5300FCB4C1 /* rangefit.cpp in Sources */,
-				D6C57F380C831B5500FCB4C1 /* singlecolourfit.cpp in Sources */,
-				D6C57F3A0C831B5600FCB4C1 /* squish.cpp in Sources */,
 				D6C57F420C831B7F00FCB4C1 /* zip.c in Sources */,
 				D6C57F430C831B8400FCB4C1 /* ZLIBUtils.cpp in Sources */,
 				D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */,
@@ -3877,15 +3634,6 @@
 				D60734BD0D197CA500E08F61 /* ProgressUtils.cpp in Sources */,
 				D60734C20D197CC000E08F61 /* NetTables.cpp in Sources */,
 				D60734C80D197CD100E08F61 /* perlin.cpp in Sources */,
-				D60734C90D197CD800E08F61 /* alpha.cpp in Sources */,
-				D60734CA0D197CD900E08F61 /* colourblock.cpp in Sources */,
-				D60734CB0D197CDA00E08F61 /* clusterfit.cpp in Sources */,
-				D60734CC0D197CDB00E08F61 /* colourfit.cpp in Sources */,
-				D60734CD0D197CDB00E08F61 /* colourset.cpp in Sources */,
-				D60734CE0D197CDC00E08F61 /* maths.cpp in Sources */,
-				D60734CF0D197CDC00E08F61 /* rangefit.cpp in Sources */,
-				D60734D00D197CDD00E08F61 /* singlecolourfit.cpp in Sources */,
-				D60734D10D197CDE00E08F61 /* squish.cpp in Sources */,
 				D60734E00D197D1300E08F61 /* XObjReadWrite.cpp in Sources */,
 				D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */,
 				D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */,
@@ -4000,23 +3748,9 @@
 				D656B2290B518193003FF84F /* hl_types.cpp in Sources */,
 				D656B2320B5181C8003FF84F /* perlin.cpp in Sources */,
 				D656B2440B5181F0003FF84F /* make_interface.c in Sources */,
-				D656B2A40B5189B0003FF84F /* dbfopen.c in Sources */,
-				D656B2A80B5189B0003FF84F /* shpopen.c in Sources */,
-				D656B33D0B518C9F003FF84F /* xmlparse.c in Sources */,
-				D656B33F0B518C9F003FF84F /* xmlrole.c in Sources */,
-				D656B3400B518C9F003FF84F /* xmltok.c in Sources */,
 				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */,
-				D67683520CC67B750032B90C /* alpha.cpp in Sources */,
-				D67683530CC67B760032B90C /* clusterfit.cpp in Sources */,
-				D67683540CC67B760032B90C /* colourblock.cpp in Sources */,
-				D67683550CC67B780032B90C /* colourfit.cpp in Sources */,
-				D67683560CC67B790032B90C /* maths.cpp in Sources */,
-				D67683570CC67B790032B90C /* colourset.cpp in Sources */,
-				D67683580CC67B7A0032B90C /* rangefit.cpp in Sources */,
-				D67683590CC67B7B0032B90C /* singlecolourfit.cpp in Sources */,
-				D676835B0CC67B7C0032B90C /* squish.cpp in Sources */,
 				D67683600CC67B8D0032B90C /* GISTool_CoreCmds.cpp in Sources */,
 				D67683610CC67B8D0032B90C /* GISTool_DemCmds.cpp in Sources */,
 				D67683620CC67B8E0032B90C /* GISTool_DumpCmds.cpp in Sources */,
@@ -4044,7 +3778,6 @@
 				D6734D1C0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D210EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
-				D68E28A00EBF5DB10015648F /* shptree.c in Sources */,
 				D68E2A130EBF9D000015648F /* Forests.cpp in Sources */,
 				D6BB22900EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */,
@@ -4104,8 +3837,6 @@
 				D65E4B4D0B654314004D7887 /* GISTool_ProcessingCmds.cpp in Sources */,
 				D65E4B4E0B654317004D7887 /* GISTool_Utils.cpp in Sources */,
 				D65E4B4F0B654319004D7887 /* GISTool_VectorCmds.cpp in Sources */,
-				D65E4B530B654363004D7887 /* shpopen.c in Sources */,
-				D65E4B540B654363004D7887 /* dbfopen.c in Sources */,
 				D65E4B930B65451F004D7887 /* CompGeomDefs2_TEST.cpp in Sources */,
 				D65E4B940B654529004D7887 /* XESInit.cpp in Sources */,
 				D65E4B950B654530004D7887 /* WTPM.cpp in Sources */,
@@ -4166,15 +3897,6 @@
 				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */,
-				D6F00F760CCD7F5A00A3F1B0 /* alpha.cpp in Sources */,
-				D6F00F770CCD7F5A00A3F1B0 /* clusterfit.cpp in Sources */,
-				D6F00F780CCD7F5A00A3F1B0 /* colourblock.cpp in Sources */,
-				D6F00F790CCD7F5C00A3F1B0 /* colourfit.cpp in Sources */,
-				D6F00F7A0CCD7F5C00A3F1B0 /* colourset.cpp in Sources */,
-				D6F00F7B0CCD7F5D00A3F1B0 /* maths.cpp in Sources */,
-				D6F00F7C0CCD7F5D00A3F1B0 /* rangefit.cpp in Sources */,
-				D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */,
-				D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */,
 				D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */,
 				D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */,
 				D6FA51D40E16DFAC001C1035 /* MapAlgs.cpp in Sources */,
@@ -4183,7 +3905,6 @@
 				D6734D1B0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D200EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
-				D68E28A80EBF5DB10015648F /* shptree.c in Sources */,
 				D68E2A890EBFC7F20015648F /* Forests.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
@@ -4267,15 +3988,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6C579DC0C7E3CD600FCB4C1 /* alpha.cpp in Sources */,
-				D6C579DD0C7E3CD600FCB4C1 /* clusterfit.cpp in Sources */,
-				D6C579DE0C7E3CD700FCB4C1 /* colourblock.cpp in Sources */,
-				D6C579DF0C7E3CD800FCB4C1 /* colourfit.cpp in Sources */,
-				D6C579E00C7E3CD900FCB4C1 /* colourset.cpp in Sources */,
-				D6C579E10C7E3CDA00FCB4C1 /* maths.cpp in Sources */,
-				D6C579E20C7E3CDA00FCB4C1 /* rangefit.cpp in Sources */,
-				D6C579E30C7E3CDB00FCB4C1 /* singlecolourfit.cpp in Sources */,
-				D6C579E40C7E3CDE00FCB4C1 /* squish.cpp in Sources */,
 				D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */,
 				D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */,
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
@@ -4348,11 +4060,6 @@
 				D6ED37270B67964D00D5484E /* XObjReadWrite.cpp in Sources */,
 				D6ED372A0B67964D00D5484E /* hl_types.cpp in Sources */,
 				D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */,
-				D6ED372D0B67964D00D5484E /* dbfopen.c in Sources */,
-				D6ED372E0B67964D00D5484E /* shpopen.c in Sources */,
-				D6ED37310B67964D00D5484E /* xmlparse.c in Sources */,
-				D6ED37320B67964D00D5484E /* xmlrole.c in Sources */,
-				D6ED37330B67964D00D5484E /* xmltok.c in Sources */,
 				D6ED37350B67964D00D5484E /* GUI_Application.cpp in Sources */,
 				D6ED37360B67964D00D5484E /* GUI_Broadcaster.cpp in Sources */,
 				D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */,
@@ -4451,15 +4158,6 @@
 				D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */,
 				D67B1C010C54EC4000A21ABC /* WED_Ring.cpp in Sources */,
 				D67B28670C5647EF00A21ABC /* STLUtils.cpp in Sources */,
-				D6C578AC0C7E33B200FCB4C1 /* alpha.cpp in Sources */,
-				D6C578AE0C7E33B200FCB4C1 /* clusterfit.cpp in Sources */,
-				D6C578AF0C7E33B200FCB4C1 /* colourblock.cpp in Sources */,
-				D6C578B00C7E33B200FCB4C1 /* colourfit.cpp in Sources */,
-				D6C578B10C7E33B200FCB4C1 /* colourset.cpp in Sources */,
-				D6C578B80C7E33B200FCB4C1 /* maths.cpp in Sources */,
-				D6C578B90C7E33B200FCB4C1 /* rangefit.cpp in Sources */,
-				D6C578BB0C7E33B200FCB4C1 /* singlecolourfit.cpp in Sources */,
-				D6C578BE0C7E33B200FCB4C1 /* squish.cpp in Sources */,
 				D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
 				D633FA8F0E12E02F00A3913F /* PCSBSocket.lin.cpp in Sources */,
 				D6226E3A0E4B7F32005BD1D7 /* WED_FacadePlacement.cpp in Sources */,
@@ -4585,9 +4283,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libsquish.a,
 				);
 			};
 			name = Debug;
@@ -4597,9 +4296,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libsquish.a,
 				);
 			};
 			name = Release;
@@ -4620,24 +4320,21 @@
 				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
-					"libsrc/shapelib-1.2.10",
-					"libsrc/CGAL-3.3.1/include",
-					"libsrc/zlib-1.1.4/contrib/minizip",
-					/sw/include,
-					/usr/local/include/freetype2,
+					libs/local/include,
+					libs/local/include/freetype2,
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
+					libs/local/lib,
 					"$(inherited)",
 				);
 				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Debug;
@@ -4669,24 +4366,21 @@
 				GCC_UNROLL_LOOPS = YES;
 				GCC_VERSION = 4.2;
 				HEADER_SEARCH_PATHS = (
-					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
-					"libsrc/shapelib-1.2.10",
-					"libsrc/CGAL-3.3.1/include",
-					"libsrc/zlib-1.1.4/contrib/minizip",
-					/sw/include,
-					/usr/local/include/freetype2,
+					libs/local/include,
+					libs/local/include/freetype2,
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
+					libs/local/lib,
 					"$(inherited)",
 				);
 				ONLY_LINK_ESSENTIAL_SYMBOLS = NO;
 				OTHER_CFLAGS = "-frounding-math";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Release;
@@ -4696,12 +4390,16 @@
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = MeshTool;
 			};
@@ -4712,12 +4410,16 @@
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = MeshTool;
 			};
@@ -4732,12 +4434,16 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = MeshTool;
@@ -4762,24 +4468,21 @@
 				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
-					"libsrc/shapelib-1.2.10",
-					"libsrc/CGAL-3.3.1/include",
-					"libsrc/zlib-1.1.4/contrib/minizip",
-					/sw/include,
-					/usr/local/include/freetype2,
+					libs/local/include,
+					libs/local/include/freetype2,
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
+					libs/local/lib,
 					"$(inherited)",
 				);
 				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Phone;
@@ -4789,9 +4492,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libsquish.a,
 				);
 			};
 			name = Phone;
@@ -4810,12 +4514,16 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libgeotiff.a,
 				);
 			};
 			name = Phone;
@@ -4833,7 +4541,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
-					"OPENGL_MAP=1",
+					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
 				);
@@ -4845,14 +4553,17 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libtiffxx.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libsqlite3.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libshp.a,
 				);
 			};
 			name = Phone;
@@ -4875,14 +4586,17 @@
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = RenderFarm;
 			};
@@ -4899,8 +4613,8 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					/usr/local/lib/lib3ds.a,
-					/usr/local/lib/libdime.a,
+					libs/local/lib/lib3ds.a,
+					libs/local/lib/libdime.a,
 				);
 			};
 			name = Phone;
@@ -4909,7 +4623,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
-				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+				);
 				PRODUCT_NAME = DDSTool;
 			};
 			name = Phone;
@@ -4919,11 +4636,16 @@
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = MeshTool;
 			};
@@ -4981,22 +4703,22 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
-					"USE_GMP=1",
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libgeotiff.a,
 				);
 			};
 			name = Debug;
@@ -5010,22 +4732,22 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
-					"USE_GMP=1",
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libgeotiff.a,
 				);
 			};
 			name = Release;
@@ -5034,21 +4756,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"USE_GMP=1",
 					"USE_TIF=1",
 					"$(inherited)",
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = RenderFarm;
 			};
@@ -5059,21 +4783,23 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"USE_GMP=1",
 					"USE_TIF=1",
 					"$(inherited)",
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = RenderFarm;
 			};
@@ -5126,8 +4852,8 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					/usr/local/lib/lib3ds.a,
-					/usr/local/lib/libdime.a,
+					libs/local/lib/lib3ds.a,
+					libs/local/lib/libdime.a,
 				);
 			};
 			name = Debug;
@@ -5147,8 +4873,8 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					/usr/local/lib/lib3ds.a,
-					/usr/local/lib/libdime.a,
+					libs/local/lib/lib3ds.a,
+					libs/local/lib/libdime.a,
 				);
 				PREBINDING = NO;
 				ZERO_LINK = NO;
@@ -5159,7 +4885,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
-				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+				);
 				PRODUCT_NAME = DDSTool;
 			};
 			name = Debug;
@@ -5172,7 +4901,10 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = "$(HOME)/bin";
-				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+				);
 				PREBINDING = NO;
 				PRODUCT_NAME = DDSTool;
 				ZERO_LINK = NO;
@@ -5220,14 +4952,17 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libtiffxx.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libsqlite3.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libshp.a,
 				);
 			};
 			name = Debug;
@@ -5238,7 +4973,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
-					"OPENGL_MAP=1",
+					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
 				);
@@ -5250,15 +4985,17 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libtiffxx.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libsqlite3.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libshp.a,
 				);
 			};
 			name = Release;
@@ -5268,9 +5005,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = src/XPTools/ObjView.plist;
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libsquish.a,
 				);
 			};
 			name = DebugOpt;
@@ -5283,22 +5021,22 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
-					"USE_GMP=1",
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libgeotiff.a,
 				);
 			};
 			name = DebugOpt;
@@ -5315,7 +5053,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
-				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libpng.a,
+					libs/local/lib/libsquish.a,
+				);
 				PRODUCT_NAME = DDSTool;
 			};
 			name = DebugOpt;
@@ -5331,8 +5072,8 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					/usr/local/lib/lib3ds.a,
-					/usr/local/lib/libdime.a,
+					libs/local/lib/lib3ds.a,
+					libs/local/lib/libdime.a,
 				);
 			};
 			name = DebugOpt;
@@ -5350,7 +5091,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
-					"OPENGL_MAP=1",
+					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
 				);
@@ -5362,15 +5103,17 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					/usr/local/lib/libfreetype.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libtiffxx.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libsqlite3.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
+					libs/local/lib/libexpat.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libshp.a,
 				);
 			};
 			name = DebugOpt;
@@ -5379,21 +5122,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"USE_GMP=1",
 					"USE_TIF=1",
 					"$(inherited)",
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeotiff.a,
-					/usr/local/lib/libproj.a,
-					/usr/local/lib/libjpeg.a,
-					/usr/local/lib/libpng.a,
-					/usr/local/lib/libtiff.a,
-					"libsrc/CGAL-3.3.1/lib/i386_Darwin-9.3_g++-4.0.1/libCGAL.a",
-					/usr/local/lib/libgmp.a,
-					/usr/local/lib/libmpfr.a,
+					libs/local/lib/libpng.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libfreetype.a,
+					libs/local/lib/libproj.a,
+					libs/local/lib/libtiffxx.a,
+					libs/local/lib/libjpeg.a,
+					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libsqlite3.a,
+					libs/local/lib/libCGAL.a,
+					libs/local/lib/libshp.a,
+					libs/local/lib/libsquish.a,
 				);
 				PRODUCT_NAME = RenderFarm;
 			};
@@ -5437,24 +5182,21 @@
 				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"libsrc/CGAL-3.3.1/include/CGAL/config/i386_Darwin-9.3_g++-4.0.1",
-					"libsrc/shapelib-1.2.10",
-					"libsrc/CGAL-3.3.1/include",
-					"libsrc/zlib-1.1.4/contrib/minizip",
-					/sw/include,
-					/usr/local/include/freetype2,
+					libs/local/include,
+					libs/local/include/freetype2,
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
+					libs/local/lib,
 					"$(inherited)",
 				);
 				OTHER_CFLAGS = "-frounding-math";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = DebugOpt;
