@@ -23,7 +23,7 @@
 
 /*
 	Dependenceis: libz
-	Compile: gcc osm_tile.c -lz -o osm_tile
+	Compile: gcc osm_tile.c -lz -lexpat -o osm_tile
 	Use: osm_tile <max open streams> <osm source file>
 	
 	osm_tile is a simple program to split an OSM planet XML file into 1x1 degree tiles.
@@ -116,7 +116,8 @@
 #include <string.h>
 #include <math.h>
 #include <zlib.h>
-
+#include <stdarg.h>
+#include <expat.h>
 
 #define START_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<osm version=\"0.5\" generator=\"JOSM\">\n"
 #define END_STRING "</osm>\n"
@@ -124,8 +125,8 @@
 // osm_tile will log all actions taken with one node and one way. 
 // this provides a crude way to trace output (e.g. why is this node in my tile or why is this way not in my tile).
 // def to -1 to not use.
-#define CHECK_NODE_ID 200535
-#define CHECK_WAY_ID 46
+#define CHECK_NODE_ID 343223997
+#define CHECK_WAY_ID 30857863
 
 /********************************************************************************************************************************************
  * BOUNDING BOX
@@ -205,211 +206,6 @@ bbox_t bbox_for_ll(double lon, double lat)
 }
 
 /********************************************************************************************************************************************
- * BLOCK STREAM SCANNER
- ********************************************************************************************************************************************
-
-This is a simple file scanner that maps a chunk of file into memory using stdio.  The idea is to burn some CPU by "scooting down" the block
-in order to simplify file scanning.  We do this because we can't memmap the entire planet file on a 32-bit machine.
- 
-*/
-
-
-#define BUF_SIZE (1024 * 1024 * 64)
-#define SKIP_PT (1024 * 64)
-
-typedef struct {
-	gzFile *		fi;
-	char *		buf_start;
-	char *		buf_end;		/* Logical end of buffer */
-	int			buf_size;
-} file_scanner;
-
- 
-int scanner_init(file_scanner * scanner, const char * file_name);
-char *	scanner_advance(file_scanner * scanner, char * my_ptr);
-void scanner_kill(file_scanner * scanner);
-
-int scanner_init(file_scanner * scanner, const char * file_name)
-{
-	scanner->fi = gzopen(file_name, "rb");
-	if(!scanner->fi) return errno;
-	scanner->buf_start = (char *) malloc(BUF_SIZE);
-	scanner->buf_end = scanner->buf_start;
-	scanner->buf_size = BUF_SIZE;
-	scanner_advance(scanner, scanner->buf_start);
-	return 0;
-}
-
-void scanner_reset(file_scanner * scanner)
-{
-	gzrewind(scanner->fi);
-//	fseek(scanner->fi,0L, SEEK_SET);
-	scanner->buf_end = scanner->buf_start;
-	scanner_advance(scanner,scanner->buf_start);
-}
-
-/* Given a scanner and a pointer to a character within the buffer, this attemps to page the buffer forward without "losing" the ptr.
- * It returns the new ptr location.  If my_ptr and the returned value are the same, we cannot page forward any more! */
-char *	scanner_advance(file_scanner * scanner, char * my_ptr)
-{
-	if(my_ptr > scanner->buf_start)
-	{
-		memmove(scanner->buf_start, my_ptr, scanner->buf_end - my_ptr);
-		scanner->buf_end -= (my_ptr - scanner->buf_start);
-		my_ptr = scanner->buf_start;
-	}
-	if(!gzeof(scanner->fi) && (scanner->buf_end - scanner->buf_start < scanner->buf_size))
-	{
-		int free_space = scanner->buf_size - (scanner->buf_end - scanner->buf_start);
-		if(free_space > 0)
-		{
-			int read_len = gzread(scanner->fi, scanner->buf_end, free_space);
-			if(read_len > 0)
-				scanner->buf_end += read_len;
-		}
-	}
-	return my_ptr;
-}
-
-void scanner_kill(file_scanner * scanner)
-{
-	gzclose(scanner->fi);
-	free(scanner->buf_start);
-}
-
-/********************************************************************************************************************************************
- * XML TAG SCANNER
- ********************************************************************************************************************************************/
-
-char * find_close_tag(const char * tag_s, const char * tag_e, char * p, char * lim)
-{
-	int len = tag_e - tag_s;
-	if(len > 252)
-	{
-		fprintf(stderr,"We are searching for a huge tag name: %253s\n", tag_s);
-		exit(1);
-	}
-	char buf[256];
-	memcpy(buf+2,tag_s,tag_e-tag_s);
-	buf[0] = '<';
-	buf[1] = '/';
-	buf[2 + len] = '>';
-	buf[3 + len] = 0;
-	
-	while(p < (lim-len))
-	{
-		if(memcmp(p,buf,len+3) == 0) return p;
-		++p;
-	}
-	return NULL;
-}
-
-const char * find_xml_attr(const char * attr_str, const char * tag_start, const char * tag_end)
-{
-	char buf[256];
-	int len = strlen(attr_str);
-	if(len > 253)
-	{
-		fprintf(stderr,"Attribute name too long: %s\n", attr_str);
-		exit(1);
-	}
-	sprintf(buf,"%s=",attr_str);
-	len = strlen(buf);
-	const char * p = tag_start;	
-	while(p < tag_end - len)
-	{
-		if(memcmp(p,buf,len) == 0)
-			return p + len + 1;
-		++p;
-	}
-	return NULL;
-}
-
-// pulls out an XML chunk by range.
-// TODO: this is not safe - some of the scanners assume our tag will be 100% in our block!!
-
-int	find_xml_tag(
-		file_scanner *			scanner,
-		char *					ptr,
-		char **					out_tag_start,
-		char **					out_tag_end,
-		int						do_not_close)
-{
-	char * p = ptr;
-	char * name_s;
-	char * name_e;
-	
-	char * close_p;
-	
-	while(1)
-	{
-		if(scanner->buf_end - p < SKIP_PT)
-			p = scanner_advance(scanner, p);
-			
-		while(p < scanner->buf_end && *p != '<') ++p;
-		if(p == scanner->buf_end)
-		{
-			scanner_advance(scanner, scanner->buf_end);
-			if(scanner->buf_end == scanner->buf_start) 
-				return 0;
-		} else {
-			break;
-		}
-	}
-	*out_tag_start = p;
-	name_s = p+1;
-	name_e = name_s;
-	while(*name_e != ' ' && *name_e != '>' && *name_e != '/') ++name_e;
-	
-	close_p = name_e;
-	while(*close_p != '>') ++close_p;
-	if(close_p[-1] == '/' || close_p[-1] == '?' || do_not_close)
-	{
-		*out_tag_end = close_p+1;
-	}
-	else
-	{
-		*out_tag_end = find_close_tag(name_s,name_e,close_p+1, scanner->buf_end);
-		if(*out_tag_end == NULL) return 0;
-		*out_tag_end += (name_e - name_s) + 3;
-	}
-	return 1;	
-}
-
-// Return a property from its tag, e..g id="...."		
-double get_xml_property_d(
-					const char * tag_start,
-					const char * tag_end,
-					const char * tag_id)
-{
-	const char * v = find_xml_attr(tag_id, tag_start,tag_end);
-	if(v == NULL) return 0;
-	return atof(v);
-}
-					
-int get_xml_property_i(
-					const char * tag_start,
-					const char * tag_end,
-					const char * tag_id)
-{
-	const char * v = find_xml_attr(tag_id, tag_start,tag_end);
-	if(v == NULL) return 0;
-	return atoi(v);
-}
-
-char * get_xml_next_str(char * s, char * e, const char * pat)
-{
-	int len = strlen(pat);
-	e -= len;
-	while(s < e)
-	{
-		if(strncmp(s,pat,len) == 0) return s;
-		++s;
-	}
-	return NULL;
-}
-
-/********************************************************************************************************************************************
  * OUTPUT HELPERS
  ********************************************************************************************************************************************/
 
@@ -467,87 +263,484 @@ int hash(int x, int y) { return (x + 180) + (y + 90) * 360; }
 
 char * hash_fname(int x, int y, char * buf) { sprintf(buf,"%+03d%+04d.osm.gz",y,x); return buf; }
 											
-int copy_tag_to_bucket(int x, int y, const char * s, const char * e)
+gzFile * print_to_bucket_ok(int x, int y)
 {
 	char buf[256];
 	if(x < -180) x += 360;
 	if (x >= 180) x -= 360;
-	gzFile * fi = fopen_cached(hash_fname(x,y,buf), hash(x,y));
-	if(fi)
-	{
-		gzprintf(fi,"  ");
-		gzwrite(fi,s,e-s);
-		gzprintf(fi,"\n");
-		return 1;
-	}
-	return 0;
+	return fopen_cached(hash_fname(x,y,buf), hash(x,y));
 }
-					
-					
+
+
+
+void die(const char * fmt, ...)
+{
+	va_list va;
+	va_start(va,fmt);
+	vprintf(fmt, va);
+	exit(1);
+}
+
+static XML_Parser   g_parser=NULL;
+static gzFile		g_file=NULL;
+static char			g_buf[1024*1024*16];
+
+void xml_die(const char * fmt, ...)
+{
+	va_list va;
+	va_start(va,fmt);
+	vprintf(fmt, va);
+
+	printf("Line: %d, Col: %d (Byte %d)\n",
+		XML_GetCurrentLineNumber(g_parser),
+		XML_GetCurrentColumnNumber(g_parser),
+		XML_GetCurrentByteIndex(g_parser));
+	
+	exit(1);
+}
+
+
+
+void run_file(const char * fname,XML_StartElementHandler start,XML_EndElementHandler end)
+{
+	if(g_parser == NULL)
+		g_parser = XML_ParserCreate(NULL);
+	else
+		XML_ParserReset(g_parser, NULL);
+	
+	XML_SetElementHandler(g_parser, start,end);
+	
+	if(g_file == NULL)
+		g_file = gzopen(fname,"rb");
+	else
+		gzrewind(g_file);
+	if(g_file == NULL) die("Could not open file: %s\n", fname);
+	
+	while(!gzeof(g_file))
+	{
+		int len = gzread(g_file,g_buf,sizeof(g_buf));
+		XML_Parse(g_parser, g_buf, len, 0);
+	}
+	XML_Parse(g_parser, g_buf, 0, 1);
+}
+
+int get_int_attr(const char * key, const XML_Char ** atts,int d)
+{
+	while(*atts)
+	{
+		if(strcmp(*atts++,key)==0)	return atoi(*atts);
+		++atts;
+	}
+	return d;
+}
+
+float get_float_attr(const char * key, const XML_Char ** atts,float d)
+{
+	while(*atts)
+	{
+		if(strcmp(*atts++,key)==0)	return atof(*atts);
+		++atts;
+	}
+	return d;
+}
+
+
 /********************************************************************************************************************************************
- * PLANET SCANNER
+ * GLOBALS
  ********************************************************************************************************************************************/
 
-char * scan_osm_headers(file_scanner * scanner)
-{
-	char * tag_s;
-	char * tag_e;
+static bbox_t *		g_nodes = NULL;
+static bbox_t *		g_ways = NULL;
 
-	if(!find_xml_tag(scanner, scanner->buf_start, &tag_s, &tag_e, 1))
+static	int highest_w = 0;
+static	int highest_n = 0;
+static	int nw = 0, nn = 0;
+
+static	int	cur_way_id = -1;
+
+/********************************************************************************************************************************************
+ * PASS 0
+ ********************************************************************************************************************************************/
+
+void StartElementHandler_Count(void *userData,
+					const XML_Char *name,
+					const XML_Char **atts)
+{
+	if(strcmp(name,"node")==0)
 	{
-		fprintf(stderr,"Could not find XML tag.\n");
-		exit(1);
-	}
-	if(strncmp(tag_s,"<?xml",5) != 0)
+		++nn;
+		int nd = get_int_attr("id",atts,-1);
+		if(nd == -1) xml_die("Node contains no index.\n");
+		if(nd > highest_n) highest_n = nd;
+	}	
+
+	if(strcmp(name,"way")==0)
 	{
-		fprintf(stderr,"XML tag is incorrect.\n");
-		exit(1);
-	}
-	if(!find_xml_tag(scanner, tag_e, &tag_s, &tag_e, 1))
-	{
-		fprintf(stderr,"Could not find OSM tag.\n");
-		exit(1);
-	}
-	if(strncmp(tag_s,"<osm",4) != 0)
-	{
-		fprintf(stderr,"OSM tag is incorrect.\n");
-		exit(1);
-	}
-	return tag_e;
+		++nw;
+		int wd = get_int_attr("id",atts,-1);
+		if(wd == -1) xml_die("Way contains no index.\n");
+		if(wd > highest_w) highest_w = wd;
+	}	
 }
+
+void EndElementHandler_Count(void *userData,
+				      const XML_Char *name)
+{
+}
+
+/********************************************************************************************************************************************
+ * PASS 1
+ ********************************************************************************************************************************************/
+
+void StartElementHandler_IndexNodes(void *userData,
+					const XML_Char *name,
+					const XML_Char **atts)
+{
+	if(strcmp(name,"node")==0)
+	{
+		int nd = get_int_attr("id",atts,-1);
+		float lat = get_float_attr("lat",atts,-999.0);
+		float lon = get_float_attr("lon",atts,-999.0);
+
+		if(nd < 0 || nd > highest_n)	xml_die("Node has illegal or missing ID: %d\n", nd);
+		if(lat == -999.0)				xml_die("Node %d missing latitude.\n", nd);
+		if(lon == -999.0)				xml_die("Node %d missing longitude.\n", nd);
+		
+		g_nodes[nd] = bbox_for_ll(lon, lat);
+			
+		if(nd == CHECK_NODE_ID)
+		{
+			int bbox[4];
+			printf("    Node ID: %d lon=%lf, lat=%lf, bbox=0x%08x\n", nd,lon,lat,g_nodes[nd]);
+			if(!decode_bbox(g_nodes[nd],bbox))
+				printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
+			else
+				printf("	(bbox is empty.)\n");
+		}		
+	}	
+}
+
+void EndElementHandler_IndexNodes(void *userData,
+				      const XML_Char *name)
+{
+}
+
+/********************************************************************************************************************************************
+ * PASS 2
+ ********************************************************************************************************************************************/
+
+void StartElementHandler_IndexWays(void *userData,
+					const XML_Char *name,
+					const XML_Char **atts)
+{
+	if(strcmp(name,"way")==0)
+	{
+		if(cur_way_id != -1)	xml_die("Error: found a way inside way %d.\n",cur_way_id);
+		cur_way_id = get_int_attr("id",atts,-1);
+		if(cur_way_id < 0 || cur_way_id > highest_w)	xml_die("Way ID out of bounds: %d.\n",cur_way_id);
+		
+		if(cur_way_id == CHECK_WAY_ID)
+			printf("Found way ID: %d\n", cur_way_id);
+	}
+	
+	if(cur_way_id != -1 && strcmp(name,"nd")==0)
+	{
+		int nd_ref_id = get_int_attr("ref",atts,-1);
+		if(nd_ref_id == -1) xml_die("Way %d has no ref.\n", cur_way_id);
+		
+		if(nd_ref_id < 0 || nd_ref_id > highest_n)
+			fprintf(stderr,"ERROR: the file contains a way %d that references a node %d that we do not have.\n", cur_way_id, nd_ref_id);
+		
+		if(cur_way_id == CHECK_WAY_ID || nd_ref_id == CHECK_NODE_ID)
+			printf("Adding node %d to way %d.  ", nd_ref_id,cur_way_id);
+																
+		g_ways[cur_way_id] = bbox_union(g_ways[cur_way_id], g_nodes[nd_ref_id]);				
+
+		if(cur_way_id == CHECK_WAY_ID)
+		{
+			int bbox[4];
+			if(!decode_bbox(g_ways[nw],bbox))
+				printf("New bbox is: %d,%d -> %d,%d\n", bbox[0],bbox[1],bbox[2],bbox[3]);
+			else
+				printf("Empty.\n");
+		}
+	}
+}
+
+void EndElementHandler_IndexWays(void *userData,
+				      const XML_Char *name)
+{
+	if(strcmp(name,"way")==0)
+		cur_way_id = -1;
+}
+
+
+/********************************************************************************************************************************************
+ * PASS 3
+ ********************************************************************************************************************************************/
+
+void StartElementHandler_ReindexNodes(void *userData,
+					const XML_Char *name,
+					const XML_Char **atts)
+{
+	if(strcmp(name,"way")==0)
+	{
+		if(cur_way_id != -1)	xml_die("Error: found a way inside way %d.\n",cur_way_id);
+		cur_way_id = get_int_attr("id",atts,-1);
+		if(cur_way_id < 0 || cur_way_id > highest_w)	xml_die("Way ID out of bounds: %d.\n",cur_way_id);
+		
+		if(cur_way_id == CHECK_WAY_ID)
+			printf("Found way ID: %d\n", cur_way_id);
+	}
+	
+	if(cur_way_id != -1 && strcmp(name,"nd")==0)
+	{
+		int nd_ref_id = get_int_attr("ref",atts,-1);
+		if(nd_ref_id == -1) xml_die("Way %d has no ref.\n", cur_way_id);
+				
+		// Ben says: turns out the master OSM database sometimes has corruption - ways that reference deleted nodes.  If the node
+		// doesn't show up, don't panic - but do not try to use it, as we could use junk data or seg fault.  Note that if the node ID
+		// is IN table range but NOT in the file, the bbox is inited to empty, which is fine.
+		if(nd_ref_id >= 0 && nd_ref_id <= highest_n)
+			g_nodes[nd_ref_id] = bbox_union(g_ways[cur_way_id], g_nodes[nd_ref_id]);
+
+		if(nd_ref_id == CHECK_NODE_ID || cur_way_id == CHECK_WAY_ID)
+		{
+			int bbox[4];
+			printf("    Node ID: %d bbox=0x%08x, way ID: %d bbox=0x%08X\n", nd_ref_id,g_nodes[nd_ref_id], cur_way_id, g_ways[cur_way_id]);
+			if(!decode_bbox(g_nodes[nd_ref_id],bbox))
+				printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
+			else
+				printf("	(bbox is empty.)\n");
+		}
+	}
+}
+
+void EndElementHandler_ReindexNodes(void *userData,
+				      const XML_Char *name)
+{
+	if(strcmp(name,"way")==0)
+		cur_way_id = -1;
+}
+
+
+/********************************************************************************************************************************************
+ * PASS 4
+ ********************************************************************************************************************************************/
+
+static int	tag_level = 0;
+static int	output_level = 0;
+static int	out_box[4];
+static int	is_leaf = 0;
+
+const char * indent_str(int n)
+{
+	const char * spaces = "                                                  ";
+	int l = strlen(spaces);
+	if(n > l) n = l;
+	return spaces + l - n;
+}
+
+static void print_xml_encoded(gzFile * fi, const char * str)
+{
+	const char * r = str, * e;
+	while(*r)
+	{
+		e=r;
+		while(*e != 0 &&
+			*e != '<' &&
+			*e != '&' &&
+			*e != '>' &&
+			*e != '"' &&
+			*e != '\'') ++e;
+		
+		if(r != e)
+			gzwrite(fi,r,e-r);
+		
+		r = e;
+		if(*r == 0) 
+			break;
+		if(*r == '<')	gzprintf(fi,"&lt;");
+		if(*r == '&')	gzprintf(fi,"&amp;");
+		if(*r == '>')	gzprintf(fi,"&gt;");
+		if(*r == '"')	gzprintf(fi,"&quot;");
+		if(*r == '\'')	gzprintf(fi,"&apos;");
+		
+		++r;
+	}
+}
+
+static void print_one_tag(
+					gzFile *			fi,
+					const XML_Char *	name,
+					const XML_Char **	atts,
+					int					need_close,
+					int					x,
+					int					y,
+					int					node_id,
+					int					way_id)
+{
+	if(!fi)
+		return;
+	if(node_id == CHECK_NODE_ID)
+		printf("Wrote node %d to %d,%d, bbox=%d,%d -> %d,%d.\n", node_id, x, y, out_box[0], out_box[1],out_box[2],out_box[3]);
+
+	if(way_id == CHECK_WAY_ID)
+		printf("Wrote way %d to %d,%d, bbox=%d,%d -> %d,%d.\n", way_id, x, y, out_box[0], out_box[1],out_box[2],out_box[3]);
+
+	if(need_close)
+	gzprintf(fi,">\n");
+	
+	gzprintf(fi,"%s<%s",indent_str(tag_level),name);
+	if(*atts)
+		gzprintf(fi," ");
+		
+	while(*atts)
+	{
+		gzprintf(fi,"%s=\"",*atts++);
+		print_xml_encoded(fi,*atts++);		
+		gzprintf(fi,"\" ");
+	}			
+}
+
+void StartElementHandler_Output(void *userData,
+					const XML_Char *name,
+					const XML_Char **atts)
+{
+	int x,y;
+	int want_print = output_level > 0;
+
+	int need_to_close = is_leaf && output_level > 0;
+	is_leaf = 1;
+	
+	if(!want_print && strcmp(name,"node")==0)
+	{
+		if(output_level > 0)	xml_die("Nesting error: tag %s is in an already output tag.\n",name);
+		int node_id = get_int_attr("id",atts,-1);
+		if(node_id < 0 || node_id > highest_n) xml_die("Bad node id: %d\n",node_id);
+		
+		++output_level;
+		
+		if(!decode_bbox(g_nodes[node_id],out_box))
+		for(y = out_box[1]; y <= out_box[3]; ++y)
+		for(x = out_box[0]; x <= out_box[2]; ++x)
+			print_one_tag(
+				print_to_bucket_ok(x,y),
+				name,atts,need_to_close,
+				x,y,node_id,-1);
+	}
+	else if(!want_print && strcmp(name,"way")==0)
+	{
+		if(output_level > 0)	xml_die("Nesting error: tag %s is in an already output tag.\n",name);
+		int way_id = get_int_attr("id",atts,-1);
+		if(way_id < 0 || way_id > highest_w) xml_die("Bad way id: %d\n", way_id);
+
+		++output_level;
+		
+		if(!decode_bbox(g_ways[way_id],out_box))
+		for(y = out_box[1]; y <= out_box[3]; ++y)
+		for(x = out_box[0]; x <= out_box[2]; ++x)
+			print_one_tag(
+				print_to_bucket_ok(x,y),
+				name,atts,need_to_close,
+				x,y,-1,way_id);
+	}
+	else if (output_level > 0)
+	{
+		++output_level;
+		for(y = out_box[1]; y <= out_box[3]; ++y)
+		for(x = out_box[0]; x <= out_box[2]; ++x)
+			print_one_tag(
+				print_to_bucket_ok(x,y),
+				name,atts,need_to_close,
+				x,y,-1,-1);
+	}
+	++tag_level;
+}
+
+void EndElementHandler_Output(void *userData,
+				      const XML_Char *name)
+{
+	int x, y;
+	
+	--tag_level;
+	if(output_level > 0)
+	{
+		--output_level;
+		for(y = out_box[1]; y <= out_box[3]; ++y)
+		for(x = out_box[0]; x <= out_box[2]; ++x)
+		{
+			gzFile * fi = print_to_bucket_ok(x,y);
+			if(fi)
+			{
+				if(is_leaf)
+					gzprintf(fi,"/>\n");
+				else
+					gzprintf(fi,"%s</%s>\n",indent_str(tag_level),name);
+			} 
+		}
+	}
+	is_leaf=0;
+}
+
 
 /********************************************************************************************************************************************
  * MAIN!!!!
  ********************************************************************************************************************************************/
 
-bbox_t *		g_nodes = NULL;
-bbox_t *		g_ways = NULL;
+static void die_usage(void)
+{
+	fprintf(stderr,"osm_tile [-b<west>,<south>,<east>,<north>] [-m<max files>] <osm xml file>\n");
+	exit(1);
+}
 
 int main(int argc, const char * argv[])
 {
-	char * tag_s;
-	char * tag_e;
-	char * p;
+	int exp_bounds[4], x,y;
+	const char ** fname = argv;
+	if(argc < 1)	die_usage;
+
+	++fname;
+	--argc;
 	
-	int highest_w = 0;
-	int highest_n = 0;
-	int nw = 0, nn = 0;
+	while(argc && fname[0][0] == '-')
+	{
+		switch(fname[0][1]) {
+		case 'm':
+			max_files_use = atoi(*fname+2);
+			printf("Will write %d files at a time.\n",max_files_use);
+			++fname;
+			--argc;
+			break;
+		case 'b':
+			if(sscanf(*fname,"-b%d,%d,%d,%d",exp_bounds,exp_bounds+1,exp_bounds+2,exp_bounds+3) != 4)	die_usage();
+			for(y= -90;y< 90;++y)
+			for(x=-180;x<180;++x)
+			if (x < exp_bounds[0] ||
+				x > exp_bounds[2] ||
+				y < exp_bounds[1] ||
+				y > exp_bounds[3])
+			{
+				tile_file_status[hash(x,y)]=-1;
+			}
+			printf("Will restrict output to: %d,%d -> %d,%d\n",exp_bounds[0],exp_bounds[1],exp_bounds[2],exp_bounds[3]);
+			++fname;
+			--argc;
+			break;
+		default:
+			die_usage();
+		}
+	}
+	if(argc == 0)	die_usage();
 	
-	max_files_use = atoi(argv[1]);
-	printf("Export %d files at a time.\n", max_files_use);
+	
+	
 	if(max_files_use > MAX_FILES_EVER)
 	{
 		max_files_use = MAX_FILES_EVER;
 		printf("(I will use %d files - that is the API FD limit for this OS.\n", max_files_use);
 	}
 	
-	file_scanner scanner;
-	if (scanner_init(&scanner, argv[2]) != 0)
-	{
-		fprintf(stderr,"Could not open %s.\n", argv[2]);
-		exit(1);
-	}
-
 	/**************************************************************************************************************
 	 * PASS 0 - COUNTING 
 	 **************************************************************************************************************
@@ -555,28 +748,9 @@ int main(int argc, const char * argv[])
 	First we have to count every node and way in the file and find the highest IDs, so we can allocate spatial 
 	indices. */
 	
-
 	printf("Counting nodes and ways.\n");
-
-	p = scan_osm_headers(&scanner);
-	
-	while(find_xml_tag(&scanner, p, &tag_s, &tag_e, 0))
-	{	
-		if(strncmp(tag_s,"<node",5)==0)
-		{
-			++nn;
-			int nd = get_xml_property_i(tag_s,tag_e,"id");
-			if(nd > highest_n) highest_n = nd;			
-		}
-		if(strncmp(tag_s,"<way",4)==0)
-		{
-			++nw;
-			int wd = get_xml_property_i(tag_s,tag_e,"id");
-			if(wd > highest_w) highest_w = wd;
-		}
-		p = tag_e;
-	}
-	
+	run_file(*fname, StartElementHandler_Count,EndElementHandler_Count);
+		
 	printf("Highest node: %d.  Highest way: %d.\n", highest_n, highest_w);
 	printf("Total nodes: %d.  Total ways: %d.\n", nn, nw);
 	
@@ -594,31 +768,7 @@ int main(int argc, const char * argv[])
 
 	printf("Building node spatial index.\n");
 
-	scanner_reset(&scanner);
-	p = scan_osm_headers(&scanner);
-	
-	while(find_xml_tag(&scanner, p, &tag_s, &tag_e, 0))
-	{	
-		if(strncmp(tag_s,"<node",5)==0)
-		{
-			int nd = get_xml_property_i(tag_s,tag_e,"id");
-			double lat = get_xml_property_d(tag_s,tag_e,"lat");
-			double lon = get_xml_property_d(tag_s,tag_e,"lon");
-			g_nodes[nd] = bbox_for_ll(lon, lat);
-			
-			if(nd == CHECK_NODE_ID)
-			{
-				int bbox[4];
-				printf("    Node ID: %d lon=%lf, lat=%lf, bbox=0x%08x\n", nd,lon,lat,g_nodes[nd]);
-				if(!decode_bbox(g_nodes[nd],bbox))
-					printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
-				else
-					printf("	(bbox is empty.)\n");
-			}
-		}
-
-		p = tag_e;
-	}
+	run_file(*fname, StartElementHandler_IndexNodes,EndElementHandler_IndexNodes);
 
 	/**************************************************************************************************************
 	 * PASS 2 - WAY INDEXING
@@ -627,46 +777,8 @@ int main(int argc, const char * argv[])
 	 Read every way.  Build up a bounding box for a way that is the union of the bounding boxes for nodes. */
 
 	printf("Building way spatial index.\n");
+	run_file(*fname, StartElementHandler_IndexWays,EndElementHandler_IndexWays);
 
-	scanner_reset(&scanner);
-	p = scan_osm_headers(&scanner);
-	
-	while(find_xml_tag(&scanner, p, &tag_s, &tag_e, 0))
-	{	
-		if(strncmp(tag_s,"<way",4)==0)
-		{
-			int nw = get_xml_property_i(tag_s,tag_e,"id");
-			char * ndr = tag_s;
-			while((ndr = get_xml_next_str(ndr, tag_e, "<nd ref=")) != NULL)
-			{
-				int nd_ref_id = atoi(ndr + 9);
-				if(nd_ref_id < 0 || nd_ref_id > highest_n)
-				{
-					fprintf(stderr,"ERROR: the file contains a way %d that references a node %d that we do not have.\n",
-						nw, nd_ref_id);
-				}
-				
-				if(nw == CHECK_WAY_ID)
-					printf("Adding node %d to way %d.  ", nd_ref_id,nw);
-																
-				g_ways[nw] = bbox_union(g_ways[nw], g_nodes[nd_ref_id]);				
-
-				if(nw == CHECK_WAY_ID)
-				{
-					int bbox[4];
-					if(!decode_bbox(g_ways[nw],bbox))
-						printf("New bbox is: %d,%d -> %d,%d\n", bbox[0],bbox[1],bbox[2],bbox[3]);
-					else
-						printf("Empty.\n");
-				}
-				
-				ndr = ndr+9;
-			}			
-		}
-
-		p = tag_e;
-	}
-	
 	/**************************************************************************************************************
 	 * PASS 3 - NODE RE-INDEXING
 	 **************************************************************************************************************
@@ -684,43 +796,8 @@ int main(int argc, const char * argv[])
 	 because we want to include un-way-referenced nodes (e.g. a POI) in their original tile(s). */
 
 	printf("Rebuilding node spatial index.\n");
+	run_file(*fname, StartElementHandler_ReindexNodes,EndElementHandler_ReindexNodes);
 	
-	scanner_reset(&scanner);
-	p = scan_osm_headers(&scanner);
-	
-	while(find_xml_tag(&scanner, p, &tag_s, &tag_e, 0))
-	{	
-		if(strncmp(tag_s,"<way",4)==0)
-		{
-			int nw = get_xml_property_i(tag_s,tag_e,"id");
-			char * ndr = tag_s;
-			while((ndr = get_xml_next_str(ndr, tag_e, "<nd ref=")) != NULL)
-			{
-				int nd_ref_id = atoi(ndr + 9);				
-				
-				// Ben says: turns out the master OSM database sometimes has corruption - ways that reference deleted nodes.  If the node
-				// doesn't show up, don't panic - but do not try to use it, as we could use junk data or seg fault.  Note that if the node ID
-				// is IN table range but NOT in the file, the bbox is inited to empty, which is fine.
-				if(nd_ref_id >= 0 && nd_ref_id <= highest_n)
-					g_nodes[nd_ref_id] = bbox_union(g_ways[nw], g_nodes[nd_ref_id]);
-
-				if(nd_ref_id == CHECK_NODE_ID || nw == CHECK_WAY_ID)
-				{
-					int bbox[4];
-					printf("    Node ID: %d bbox=0x%08x, way ID: %d bbox=0x%08X\n", nd_ref_id,g_nodes[nd_ref_id], nw, g_ways[nw]);
-					if(!decode_bbox(g_nodes[nd_ref_id],bbox))
-						printf("    (bbox=%d,%d -> %d,%d)\n",bbox[0],bbox[1],bbox[2],bbox[3]);
-					else
-						printf("	(bbox is empty.)\n");
-				}
-
-				ndr = ndr+9;
-			}			
-		}
-
-		p = tag_e;
-	}
-
 	/**************************************************************************************************************
 	 * PASS 4 - ACTUAL FILE OUTPUT.
 	 **************************************************************************************************************
@@ -732,58 +809,18 @@ int main(int argc, const char * argv[])
 	if(CHECK_NODE_ID >= 0 && CHECK_NODE_ID <= highest_n)
 		printf("node %d: 0x%08X\n", CHECK_NODE_ID, g_nodes[CHECK_NODE_ID]);
 
-
 	while(1)
 	{
 		printf("Exporting tiles, %d at a time.\n", max_files_use);
 
-		scanner_reset(&scanner);
-		p = scan_osm_headers(&scanner);
-			
-		while(find_xml_tag(&scanner, p, &tag_s, &tag_e, 0))
-		{	
-			int bbox[4], x, y;
-			
-			if(strncmp(tag_s,"<node",5)==0)
-			{
-				int nd = get_xml_property_i(tag_s,tag_e,"id");
-				
-				if(!decode_bbox(g_nodes[nd],bbox))
-				{
-					for(y = bbox[1]; y <= bbox[3]; ++y)
-					for(x = bbox[0]; x <= bbox[2]; ++x)
-						if(copy_tag_to_bucket(x,y,tag_s,tag_e))
-							if(nd == CHECK_NODE_ID)
-								printf("Wrote node %d to %d,%d, bbox=%d,%d -> %d,%d.\n", nd, x, y, bbox[0], bbox[1],bbox[2],bbox[3]);
-				}			
-			}
+		not_enough_files=0;
+		run_file(*fname,StartElementHandler_Output,EndElementHandler_Output);
 
-			if(strncmp(tag_s,"<way",4)==0)
-			{
-				int nw = get_xml_property_i(tag_s,tag_e,"id");
-
-				if(!decode_bbox(g_ways[nw],bbox))
-				{
-					for(y = bbox[1]; y <= bbox[3]; ++y)
-					for(x = bbox[0]; x <= bbox[2]; ++x)
-						if(copy_tag_to_bucket(x,y,tag_s,tag_e))
-							if(nw == CHECK_WAY_ID)
-								printf("Wrote way %d to %d,%d, bbox=%d,%d -> %d,%d.\n", nw, x, y, bbox[0], bbox[1],bbox[2],bbox[3]);
-						
-				}			
-
-			}
-
-			p = tag_e;
-		}
-	
 		int done = not_enough_files == 0;
 		
 		fclose_cache_all();
 		if(done) 
 			break;
 	}
-	scanner_kill(&scanner);
-	
 	return 0;
 }

@@ -23,6 +23,8 @@
  
 /*
 
+	BUILD:	gcc osm2shape.c -lz -lexpat -lshp -o osm2shape
+
 	OSM2Shape converts ways to shape file arcs.  (An arc in a shape file is really a
 	string of connected line segments.)  Attributes on the ways are put into a
 	DBF table with the shape file.
@@ -44,8 +46,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
-#include "xmlparse/xmlparse.h"
-#include "shapefile/shapefil.h"
+#include <expat.h>
+#include <shapefil.h>
 
 static int	MAX_FIELD_LEN = 64;
 
