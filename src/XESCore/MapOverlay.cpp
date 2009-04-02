@@ -449,7 +449,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
 
 
 
-void OverlayMap(
+void OverlayMap_legacy(
 			Pmwx& 	inDst, 
 			Pmwx& 	inSrc)
 {
@@ -462,7 +462,7 @@ void OverlayMap(
 
 
 
-void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handle> * outFaces, bool pre_integrated, ProgressFunc func)
+void MergeMaps_legacy(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handle> * outFaces, bool pre_integrated, ProgressFunc func)
 {
 	DebugAssert(outFaces == NULL || !inForceProps);
 	if(outFaces) outFaces->clear();

@@ -860,7 +860,7 @@ void	BuildRoadsForFace(
 		#endif
 		
 		if(!sub.is_empty())
-			MergeMaps(ioMap, sub, false, NULL, true, inProg);
+			MergeMaps_legacy(ioMap, sub, false, NULL, true, inProg);
 	}
 
 	/**********************************************************************************************************************************

@@ -453,7 +453,7 @@ static int DoVPFImport(const vector<const char *>& args)
 			}
 			
 //			TopoIntegrateMaps(&gMap, &overlay);
-			MergeMaps(gMap, overlay, true, NULL, true, gProgress);
+			MergeMaps_legacy(gMap, overlay, true, NULL, true, gProgress);
 		}
 
 		if (ok)

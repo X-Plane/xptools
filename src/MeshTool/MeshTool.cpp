@@ -22,6 +22,7 @@
  */
 
 #include "MapDefsCGAL.h"
+#include "MapOverlay.h"
 #include "XESInit.h"
 #include "GISTool_Globals.h"
 #include "XESIO.h"
@@ -38,136 +39,10 @@
 #include "ObjTables.h"
 #include "ObjPlacement.h"
 #include <CGAL/assertions.h>
+#include "MapTopology.h"
 #if LIN
 #include <execinfo.h>
 #endif
-
-CGAL_BEGIN_NAMESPACE
-/*!
- * \class
- * An overlay-traits class for computing the overlay of two arrangement whose
- * face records are extended with auxiliary data fields, of type Data1 and
- * Data2, respectively. The resulting arrangement is also assumed to be
- * templated with the face-extended DCEL, where each face stores an auxiliart
- * Res_data field.
- * The resulting data object that corresponds to the overlay of two data
- * object of type Data1 and Data2 is computed using the functor
- * Overlay_face_data.
- * Additionally, we also handle edge data using the functor Overlay_edge_data
- * Note that we do not support interaction between face and edge data
- */
-template <class ArrangementA, class ArrangementB, class ArrangementR,
-class OverlayEdgeData_,
-class OverlayFaceData_>
-class Arr_face_edge_overlay_traits :
-public _Arr_default_overlay_traits<ArrangementA, ArrangementB, ArrangementR> 
-{
-public:
-	
-	typedef typename ArrangementA::Face_const_handle    Face_handle_A;
-	typedef typename ArrangementB::Face_const_handle    Face_handle_B;
-	typedef typename ArrangementR::Face_handle          Face_handle_R;
-
-	typedef typename ArrangementA::Halfedge_const_handle  Halfedge_handle_A;
-	typedef typename ArrangementB::Halfedge_const_handle  Halfedge_handle_B;
-	typedef typename ArrangementR::Halfedge_handle        Halfedge_handle_R;	
-	
-	typedef OverlayEdgeData_                            Overlay_edge_data;
-	typedef OverlayFaceData_                            Overlay_face_data;
-	
-private:
-	
-	Overlay_edge_data         overlay_edge_data;
-	Overlay_face_data         overlay_face_data;
-	
-public:
-	
-	/*!
-	 * Create an edge e that matches the overlap between e1 and e2.
-	 */
-	virtual void create_edge (Halfedge_handle_A e1,
-							  Halfedge_handle_B e2,
-							  Halfedge_handle_R e) const
-	{
-		e->set_data (overlay_edge_data (e1->data(), e2->data()));
-		return;
-	}
-	
-	/*!
-	 * Create an edge e that matches the edge e1, contained in the face f2.
-	 */
-	virtual void create_edge (Halfedge_handle_A e1,
-							  Face_handle_B f2,
-							  Halfedge_handle_R e) const
-	{
-		e->set_data (e1->data());
-		return;
-	}
-	
-	/*!
-	 * Create an edge e that matches the edge e2, contained in the face f1.
-	 */
-	virtual void create_edge (Face_handle_A f1,
-							  Halfedge_handle_B e2,
-							  Halfedge_handle_R e) const
-	{
-		e->set_data (e2->data());
-		return;
-	}
-	
-	
-	/*!
-	 * Create a face f that matches the overlapping region between f1 and f2.
-	 */
-	virtual void create_face (Face_handle_A f1,
-							  Face_handle_B f2,
-							  Face_handle_R f) const
-	{
-		// Overlay the data objects associated with f1 and f2 and store the result
-		// with f.
-		f->set_data (overlay_face_data (f1->data(), f2->data()));
-		return;
-	}
-	
-};
-CGAL_END_NAMESPACE
-
-struct Overlay_terrain
-{
-	GIS_face_data operator() (GIS_face_data a, GIS_face_data b) const
-	{
-		GIS_face_data r;
-		//fprintf(stderr, "%d-%d ", a.mTerrainType, b.mTerrainType);
-		// Our overlay comes from the RHS, but it might be a hole (in which case mTerrainType will be 0)
-		if (b.mTerrainType != 0 ) {
-			r.mTerrainType = b.mTerrainType;
-			return r;
-		}
-		if (a.mTerrainType != 0 ) {
-			r.mTerrainType = a.mTerrainType;
-			return r;
-		}
-		return r;
-	}
-};
-
-struct Overlay_network
-{
-	GIS_halfedge_data operator() (GIS_halfedge_data a, GIS_halfedge_data b) const
-	{
-		GIS_halfedge_data r;
-		GISNetworkSegmentVector::iterator i;
-		if (b.mSegments.empty())
-			for (i = a.mSegments.begin(); i != a.mSegments.end(); ++i)
-				r.mSegments.push_back(*i);
-		for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
-			r.mSegments.push_back(*i);
-		return r;
-	}
-};
-
-typedef CGAL::Arr_face_edge_overlay_traits<Pmwx, Pmwx, Pmwx, Overlay_network, Overlay_terrain>        Overlay_traits;
-
 
 
 void	CGALFailure(
@@ -193,12 +68,23 @@ void	CGALFailure(
 	exit(1);
 }
 
+static int			line_num;
+static const char * fname;
+
+static void die_parse(const char * msg, ...)
+{
+	va_list	va;
+	va_start(va,msg);
+	vfprintf(stderr,msg,va);
+	fprintf(stderr,"(%s: line %d.)\n",fname,line_num);
+	exit(1);
+}
 
 
 
 int	main(int argc, char * argv[])
 {
-	Polygon_set_2 *the_map = new Polygon_set_2();
+	Pmwx *the_map = new Pmwx;
 	
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
@@ -229,7 +115,7 @@ int	main(int argc, char * argv[])
 		MFMemFile *	xes = MemFile_Open(argv[2]);
 		if(xes == NULL)
 		{
-			fprintf(stderr,"ERROR: could not read:%s\n", argv[2]);
+			fprintf(stderr,"ERROR: could not read XES file:%s\n", argv[2]);
 			exit(1);
 		}
 
@@ -237,62 +123,69 @@ int	main(int argc, char * argv[])
 			Pmwx		dummy_vec;
 			CDT			dummy_mesh;
 			AptVector	dummy_apt;
-			fprintf(stderr,"Read XES: %p %p %p %p %p\n", xes, &dummy_vec, &dummy_mesh, &gDem, &dummy_apt);
-
 			ReadXESFile(xes, &dummy_vec, &dummy_mesh, &gDem, &dummy_apt, ConsoleProgressFunc);
 		}
 		MemFile_Close(xes);
 		
-		if(strstr(argv[3],".hgt")) {
-			fprintf(stderr,"Read HGT\n");		
-		if (!ReadRawHGT(gDem[dem_Elevation], argv[3]))
+		if(strstr(argv[3],".hgt")) 
 		{
-			fprintf(stderr,"Could not read HGT file: %s\n", argv[3]);
-			exit(1);
+			if (!ReadRawHGT(gDem[dem_Elevation], argv[3]))
+			{
+				fprintf(stderr,"Could not read HGT file: %s\n", argv[3]);
+				exit(1);
+			}
 		}
-		}
-		if(strstr(argv[3],".tif")) {
-			fprintf(stderr,"Read GeoTIFF\n");		
+		else if(strstr(argv[3],".tif")) 
+		{
 			if (!ExtractGeoTiff(gDem[dem_Elevation], argv[3]))
 			{
 				fprintf(stderr,"Could not read GeoTIFF file: %s\n", argv[3]);
 				exit(1);
 			}
+		} 
+		else
+		{
+			fprintf(stderr,"ERROR: unknown file extension for DEM: %s\n", argv[3]);
+			exit(1);
 		}
 		
-		fprintf(stderr,"Read Script\n");		
 		FILE * script = fopen(argv[1], "r");
+		fname=argv[1];
 		if(!script)
 		{
 			fprintf(stderr, "ERROR: could not open %s\n", argv[1]);
 			exit(1);
 		}
-		char buf[1024];
 
-		int num_cus_terrains = 0;
-		Polygon_set_2::Polygon_2   	ring, outer, the_hole;
-		std::vector<Polygon_set_2::Polygon_2> holes;
-		std::vector<Polygon_set_2::Polygon_with_holes_2> layer;
-		std::vector<X_monotone_curve_2> net;
-		int				terrain_type;
-		double			coords[4];
-		char			cus_ter[256];
-		char			typ[256];
-		int last_ter = -1;
-		int proj_pt;
-		tex_proj_info pinfo;
-		int use_wat;
-		int zlimit=0,zmin=30000,zmax=-2000;
+		int								num_cus_terrains = 0;
+		Polygon_2						ring, the_hole;
+		vector<Polygon_2>				holes;
+		vector<Polygon_with_holes_2> 	layer;
+		vector<X_monotone_curve_2>		net;
+		int								terrain_type;
+		int								layer_type = NO_VALUE;
+		double							coords[4];
+		char							cus_ter[256];
+		char							typ[256];
+		char							buf[1024];
+
+		int				last_ter = -1;
+		int				proj_pt;
+		tex_proj_info	pinfo;
+		int				use_wat;
+		int				zlimit=0,zmin=30000,zmax=-2000;
+		int				is_layer = 0;
+		
+		line_num=0;
 		while (fgets(buf, sizeof(buf), script))
 		{
+			++line_num;
 			if(sscanf(buf,"DEFINE_CUSTOM_TERRAIN %d %s",&use_wat, cus_ter)==2)
 			{
 				proj_pt = 0;
 				if(LookupToken(cus_ter) != -1)
-				{
-					fprintf(stderr,"ERROR: terrain '%s' already Defined or name is reserved.\n", cus_ter);
-					exit(1);
-				}
+					die_parse("ERROR: The terrain name '%s' already defined or name is reserved.\n", cus_ter);
+
 				int tt = NewToken(cus_ter);
 				last_ter = tt;
 				NaturalTerrainInfo_t nt = { 0 };
@@ -339,10 +232,8 @@ int	main(int argc, char * argv[])
 			if(sscanf(buf,"PROJECT_POINT %lf %lf %lf %lf",coords,coords+1,coords+2,coords+3)==4)
 			{
 				if(last_ter==-1)
-				{
-					fprintf(stderr,"PROJECT_POINT not allowde until custom terrain defined.\n");
-					exit(1);
-				}
+					die_parse("ERROR: PROJECT_POINT not allowed until custom terrain defined, or you have more than 4 projection pooints.\n");
+
 				pinfo.corners[proj_pt] = Point2(coords[0],coords[1]);
 				pinfo.ST[proj_pt] = Point2(coords[2],coords[3]);
 				proj_pt++;
@@ -354,6 +245,7 @@ int	main(int argc, char * argv[])
 			}
 			if(strncmp(buf,"BEGIN_LAYER",strlen("BEGIN_LAYER"))==0)
 			{
+				is_layer=1;
 				layer.clear();
 				ring.clear();
 				the_hole.clear();
@@ -368,10 +260,7 @@ int	main(int argc, char * argv[])
 				terrain_type = LookupToken(cus_ter);
 				zmin=30000,zmax=-2000;
 				if(terrain_type == -1)
-				{
-					fprintf(stderr,"ERROR: cannot find custom terrain type '%s'\n", cus_ter);
-					exit(1);
-				}
+					die_parse("ERROR: cannot find custom terrain type '%s'\n", cus_ter);
 			}
 
 			if(strncmp(buf,"LAND_POLY",strlen("LAND_POLY"))==0)
@@ -408,17 +297,8 @@ int	main(int argc, char * argv[])
 					if (the_hole.orientation() != CGAL::CLOCKWISE)
 						the_hole.reverse_orientation();
 					holes.push_back(the_hole);
-					fprintf(stderr,"_");
 				} else {
-					fprintf(stderr,"?");
-					/*
-					 fprintf(stderr,"\nPoly is: ");
-					 Polygon_2::Vertex_iterator vit;
-					 for (vit=ring.vertices_begin(); vit!=ring.vertices_end(); ++vit) {
-					 fprintf(stderr,"(%lf, %lf) ", CGAL::to_double(vit->x()), CGAL::to_double(vit->y()));
-					 }
-					 fprintf(stderr,"\n");
-					 */
+					die_parse("ERROR: This hole is a non-simple polygon - make sure none of the sides intersect with each other!\n");
 				}
 			}
 			if(strncmp(buf,"END_POLY",strlen("END_POLY"))==0)
@@ -438,85 +318,64 @@ int	main(int argc, char * argv[])
 							ring.reverse_orientation();
 						Polygon_set_2::Polygon_with_holes_2 P(ring, holes.begin(), holes.end());
 						layer.push_back(P);
-						fprintf(stderr,"-");
 					} else {
-						fprintf(stderr,"!");
-						/*
-						fprintf(stderr,"\nPoly is: ");
-						Polygon_2::Vertex_iterator vit;
-						for (vit=ring.vertices_begin(); vit!=ring.vertices_end(); ++vit) {
-							fprintf(stderr,"(%lf, %lf) ", CGAL::to_double(vit->x()), CGAL::to_double(vit->y()));
-						}
-						fprintf(stderr,"\n");
-						exit(1);
-						 */
+						die_parse("ERROR: this polygon is not simple.  Make sure none of the sides intersect with each other.\n");
 					}
-				} else {
-					fprintf(stderr,"x");
-				}
+				} 
 				
-					
-				#if !DEV 
-					#error this is taken from the END_LAYER command.
-				#endif
-				fprintf(stderr,",");
-				Overlay_traits         overlay_traits;
-				Polygon_set_2	*temp = new Polygon_set_2(), *temp1 = new Polygon_set_2();
-				fprintf(stderr,",");
-				if (!layer.empty()) {
-					temp->join(layer.begin(), layer.end());
-					fprintf(stderr,",");
-					
-					int nfaces = 0, ntouched = 0;
-					Pmwx::Face_iterator ring_face;
-					for(ring_face = temp->arrangement().faces_begin(); ring_face != temp->arrangement().faces_end(); ++ring_face, ++nfaces) {
-						if (ring_face->contained()) {
-							ring_face->data().mTerrainType = terrain_type;
-							ntouched++;
-						}
+				if(!is_layer)
+				{
+					Polygon_set_2		layer_map;					
+					if (!layer.empty()) 
+					{
+						layer_map.join(layer.begin(), layer.end());
+						
+						for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f) 
+						if (f->contained()) 
+							f->data().mTerrainType = terrain_type;
+
+						Pmwx *	new_map = new Pmwx;
+						MapOverlay(*the_map, layer_map.arrangement(), *new_map);
+						delete the_map;
+						the_map = new_map;
 					}
-					fprintf(stderr,"%d %d %s,", nfaces, ntouched, FetchTokenString(terrain_type));
-					
-					CGAL::overlay (the_map->arrangement(), temp->arrangement(), temp1->arrangement(), overlay_traits);
-					delete the_map;
-					the_map = temp1;
+					layer.clear();
+					ring.clear();
+					the_hole.clear();
+					holes.clear();
+				} else {
+					if(layer_type == NO_VALUE)
+						layer_type = terrain_type;
+					else
+						if(layer_type != terrain_type)
+							die_parse("This polygon's type does not match the others in the layer.  Layer is %s, but this is: %s.\n",
+								FetchTokenString(layer_type), FetchTokenString(terrain_type));
 				}
-				#if !DEV
-					#error this is taken from the BEGIN_LAYER command
-				#endif
-				layer.clear();
-				ring.clear();
-				the_hole.clear();
-				holes.clear();
 			}
 			if(strncmp(buf,"END_LAYER",strlen("END_LAYER"))==0)
-			{
-				fprintf(stderr,",");
-				Overlay_traits         overlay_traits;
-				Polygon_set_2	*temp = new Polygon_set_2(), *temp1 = new Polygon_set_2();
-				fprintf(stderr,",");
-				if (!layer.empty()) {
-					temp->join(layer.begin(), layer.end());
-					fprintf(stderr,",");
+			{			
+				Polygon_set_2		layer_map;					
+				if (!layer.empty()) 
+				{
+					if(layer_type == NO_VALUE)
+						die_parse("This layer does not have a terrain type.\n");
+				
+					layer_map.join(layer.begin(), layer.end());
 					
-					int nfaces = 0, ntouched = 0;
-					Pmwx::Face_iterator ring_face;
-					for(ring_face = temp->arrangement().faces_begin(); ring_face != temp->arrangement().faces_end(); ++ring_face, ++nfaces) {
-						if (ring_face->contained()) {
-							ring_face->data().mTerrainType = terrain_type;
-							ntouched++;
-						}
-					}
-					fprintf(stderr,"%d %d %s,", nfaces, ntouched, FetchTokenString(terrain_type));
-					
-					CGAL::overlay (the_map->arrangement(), temp->arrangement(), temp1->arrangement(), overlay_traits);
+					for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f) 
+					if (f->contained()) 
+						f->data().mTerrainType = terrain_type;
+
+					Pmwx *	new_map = new Pmwx;
+					MapOverlay(*the_map, layer_map.arrangement(), *new_map);
 					delete the_map;
-					the_map = temp1;
-				}
+					the_map = new_map;
+				}			
+				is_layer=0;
+				layer_type=NO_VALUE;
 			}
 			if (sscanf(buf, "POLYGON_POINT %lf %lf", &coords[0], &coords[1])==2)
 			{
-				//fprintf(stderr,".");
 				ring.push_back(Point_2(coords[0],coords[1]));
 				if (zlimit != 0) {
 					int z = gDem[dem_Elevation].xy_nearest(coords[0],coords[1]);
@@ -526,12 +385,10 @@ int	main(int argc, char * argv[])
 			}
 			if (sscanf(buf, "HOLE_POINT %lf %lf", &coords[0], &coords[1])==2)
 			{
-				//fprintf(stderr,".");
 				the_hole.push_back(Point_2(coords[0],coords[1]));
 			}
 			if (sscanf(buf, "ZLIMIT %d", &zlimit)==1)
 			{
-				fprintf(stderr,"zlimit %d\n", zlimit);
 				// store limit^2
 				zlimit *= zlimit;
 			}
@@ -541,69 +398,43 @@ int	main(int argc, char * argv[])
 			}
 			if (sscanf(buf, "NET_SEG %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3])==4)
 			{
-				fprintf(stderr,"=");
 				net.push_back(X_monotone_curve_2(Segment_2(Point_2(coords[0],coords[1]), Point_2(coords[2],coords[3])),0));
 			}
 			if(strncmp(buf,"END_NET",strlen("END_NET"))==0)
 			{
 				int net_type = LookupToken(typ);
 				struct	GISNetworkSegment_t segdata = { net_type, net_type, 0.0, 0.0 };
-				fprintf(stderr,",");
-				Overlay_traits         overlay_traits;
-				Polygon_set_2	*temp = new Polygon_set_2(), *temp1 = new Polygon_set_2();
-				fprintf(stderr,",");
-				if (!net.empty()) {
-					insert_x_monotone_curves(temp->arrangement(), net.begin(), net.end());
-					fprintf(stderr,",");
+				Pmwx road_grid;
+				
+				if (!net.empty()) 
+				{
+					insert_x_monotone_curves(road_grid, net.begin(), net.end());
 					
-					int nfaces = 0, ntouched = 0;
 					Pmwx::Edge_iterator the_edge;
-					for (the_edge = temp->arrangement().edges_begin(); the_edge != temp->arrangement().edges_end(); ++the_edge, ++nfaces) {
-						the_edge->data().mSegments.push_back(GISNetworkSegment_t(segdata));
-					}
-					fprintf(stderr,"%d %s,", nfaces, FetchTokenString(net_type));
-					
-					CGAL::overlay (the_map->arrangement(), temp->arrangement(), temp1->arrangement(), overlay_traits);
+					for (Pmwx::Edge_iterator e = road_grid.edges_begin(); e != road_grid.edges_end(); ++e)
+						e->data().mSegments.push_back(GISNetworkSegment_t(segdata));
+
+					Pmwx * new_map = new Pmwx;
+					MapMerge(*the_map, road_grid,*new_map);
 					delete the_map;
-					the_map = temp1;
+					the_map = new_map;
 				}
 			}
 		}
 		fclose(script);
 
-		Pmwx gMap = the_map->arrangement();
+		Pmwx gMap(*the_map);
+		delete the_map;
+		the_map = NULL;
 
-		{
-			fprintf(stderr,"\n");
-			int nfaces = 0, nwet = 0, nzero = 0;
-			Pmwx::Face_iterator fit;
-			for (fit = gMap.faces_begin(); fit != gMap.faces_end(); ++fit, ++nfaces) {
-				if (fit->data().IsWater())
-					nwet++;
-				if (fit->data().mTerrainType == 0)
-					nzero++;
-				//fprintf(stderr, "%d ", fit->data().mTerrainType);
-			}
-			fprintf(stderr,"Zero: %d Wet: %d Faces: %d Land ratio: %f\n", nzero, nwet, nfaces, ((double) (nfaces - nwet))/((double) nfaces));
-		}
-		
-		
-//		fprintf(stderr,"Dominance\n");
-//		// assuming no dominant flags are set at this point
-//		Pmwx::Halfedge_iterator hit;
-//		for (hit = gMap.halfedges_begin(); hit != gMap.halfedges_end(); ++hit) {
-//			if (!hit->twin()->data().mDominant)
-//				hit->data().mDominant = true;
-//		}
 		
 		gNaturalTerrainIndex.clear();
 		for(int rn = 0; rn < gNaturalTerrainTable.size(); ++rn)
 		if (gNaturalTerrainIndex.count(gNaturalTerrainTable[rn].name) == 0)
 			gNaturalTerrainIndex[gNaturalTerrainTable[rn].name] = rn;
 		
-		fprintf(stderr,"Now to simplify\n");
 		// -simplify
-		//SimplifyMap(gMap, true, ConsoleProgressFunc);
+		SimplifyMap(gMap, true, ConsoleProgressFunc);
 
 		//-calcslope
 		CalcSlopeParams(gDem, true, ConsoleProgressFunc);

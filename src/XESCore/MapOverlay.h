@@ -27,6 +27,10 @@
 #include "ProgressUtils.h"
 #include "MapDefs.h"
 
+/******************************************************************************************************************************
+ * WHOLE-MAP MERGE OPERATIONS
+ ******************************************************************************************************************************/
+
 // These opeations work on entire maps - they use sweep line, so they are very good for two huge maps.
 // But if one map is much smaller than the other, you eat the cost of the big map!!!
 
@@ -41,11 +45,9 @@ void	MapOverlay(Pmwx& bottom, Pmwx& top, Pmwx& result);
 
 
 
-
-
-
-
-
+/******************************************************************************************************************************
+ * LEGACY MERGING APIS
+ ******************************************************************************************************************************/
 
 // These ops insert a polygon "manually".  They are not as efficient as sweep, but computational complexity is "local" to the 
 // inserted polygon, which is a big win for a tiny polygon in a huge map.
@@ -64,9 +66,16 @@ Face_handle		MapOverlayPolygonWithHoles(Pmwx& io_dst, const Polygon_with_holes_2
 void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * loc, set<Face_handle> * faces);
 
 
+/******************************************************************************************************************************
+ * LEGACY MERGING APIS
+ ******************************************************************************************************************************/
 
 
-// These are stubs from the old API - need to be migrated some day.
+// These are stubs from the old API - need to be migrated some day.  They are marked as legacy because the underlying 
+// implementation is not (unlike my old code) in-place during merge...so there is a copy from a temp at the end.  This means
+// that we eat a copy of a potentially huge map each time we do this.  So _legacy is a warning when writing new code to try to
+// use the other routines.
+
 /*
  * OverlayMap
  *
@@ -75,7 +84,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
  * inDst has contents overwritten.
  *
  */
-void OverlayMap(
+void OverlayMap_legacy(
 			Pmwx& 	inDst, 
 			Pmwx& 	inSrc);
 
@@ -105,7 +114,7 @@ void OverlayMap(
  * ended up, without having to do a bunch of fac-relocates from edge bounds.
  *
  */
-void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handle> * outFaces, bool pre_integrated, ProgressFunc func);
+void MergeMaps_legacy(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handle> * outFaces, bool pre_integrated, ProgressFunc func);
 
 
 

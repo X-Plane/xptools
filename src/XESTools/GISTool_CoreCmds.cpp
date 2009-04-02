@@ -290,7 +290,7 @@ static int DoOverlay(const vector<const char *>& args)
 				theMap.number_of_halfedges(),
 				theMap.number_of_vertices());
 
-	OverlayMap(gMap, theMap);
+	OverlayMap_legacy(gMap, theMap);
 	if (gVerbose)
 			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
 				gMap.number_of_faces(),
@@ -320,7 +320,7 @@ static int DoMerge(const vector<const char *>& args)
 				theMap.number_of_vertices());
 
 //	TopoIntegrateMaps(&gMap, &theMap);
-	MergeMaps(gMap, theMap, false, NULL, true, gProgress);
+	MergeMaps_legacy(gMap, theMap, false, NULL, true, gProgress);
 	if (gVerbose)
 			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
 				gMap.number_of_faces(),
