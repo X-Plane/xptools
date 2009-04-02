@@ -537,7 +537,7 @@ void DSFOptimizePrimitives(
 	else
 		out_prims.push_back(*p);
 
-	printf("input: %d indices.\n", indices.size());
+//	printf("input: %d indices.\n", indices.size());
 
 #if !USE_PVRTC
 	tri_stripper stripper_thingie(indices);
@@ -546,7 +546,7 @@ void DSFOptimizePrimitives(
 
 	for(tri_stripper::primitives_vector::iterator new_prim = stripped_primitives.begin(); new_prim != stripped_primitives.end(); ++new_prim)
 	{
-		printf(" output: type=%d, size=%d\n",new_prim->m_Type, new_prim->m_Indices.size());
+//		printf(" output: type=%d, size=%d\n",new_prim->m_Type, new_prim->m_Indices.size());
 		if(new_prim->m_Type == tri_stripper::PT_Triangles)
 		{
 			int offset = 0;
