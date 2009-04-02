@@ -4,6 +4,9 @@ LIBRARIES	:= ./libs/local/.xpt_libs
 ifndef conf
 conf		:= debug_opt
 endif
+
+PLATFORM	:= $(shell uname)
+ARCHITECTURE	:= $(shell uname -m)
 ifneq (, $(findstring MINGW, $(PLATFORM)))
 	PLATFORM	:= Mingw
 	PLAT_MINGW	:= Yes
