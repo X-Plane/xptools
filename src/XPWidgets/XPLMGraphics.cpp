@@ -183,12 +183,7 @@ void                 XPLMGenerateTextureNumbers(
                                    int *                outTextureIDs,
                                    int                  inCount)
 {
-#if APL
-	glGenTextures (inCount, (unsigned long *) outTextureIDs);
-#endif
-#if IBM
-	glGenTextures (inCount, (unsigned int *) outTextureIDs);
-#endif
+	glGenTextures (inCount, (GLuint *) outTextureIDs);
 }
 
 int                  XPLMGetTexture(

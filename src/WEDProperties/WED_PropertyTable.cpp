@@ -41,7 +41,7 @@
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
 #if !DEV
-	this was 1.  What IS this?
+	#error this was 1.  What IS this?
 #endif
 int gExclusion=0;
 

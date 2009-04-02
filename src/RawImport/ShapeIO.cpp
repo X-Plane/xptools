@@ -28,7 +28,7 @@
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
 #if !DEV
-	#errir factor this out
+	#error factor this out
 #endif
 
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,

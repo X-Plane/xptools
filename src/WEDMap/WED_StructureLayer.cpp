@@ -205,7 +205,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glShape2v(GL_LINE_STRIP, pts, count);
 		glColor4f(1,1,1,1);
 		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(1,0xCCCCC);
+		glLineStipple(1,0xCCCC);
 		glShape2v(GL_LINE_STRIP, pts, count);
 		break;
 	case line_BrokenWhite:
