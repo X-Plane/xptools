@@ -18,6 +18,7 @@ ifdef PLAT_LINUX
 #LIBS		+= -lXdmcp -lXau -lxcb -lxcb-xlib
 #LIBS		+= -ldl -lc -lpthread -lgcc -lgcc_eh -lstdc++ -Wl,--end-group
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
+FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
