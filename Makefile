@@ -34,41 +34,41 @@ $(LIBRARIES):
 
 ObjView: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 WED: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 DSFTool: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 DDSTool: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ObjConverter: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 MeshTool: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ifdef PLAT_MINGW
 XGrinder: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 endif
 
 RenderFarm: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ac3d: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
-	TARGET=$(TARGETDIR)/$@ -s -f makerules/rules.mk
+	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 clean:
 	@echo "cleaning xptools tree, removing $(BUILDDIR)"
