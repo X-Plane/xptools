@@ -460,12 +460,12 @@ void	XWin::RegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon			= NULL; // LoadIcon(hInstance, (LPCTSTR)IDI_TESTDND);
+	wcex.hIcon		= LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(100));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;
 	wcex.lpszClassName	= sWindowClass;
-	wcex.hIconSm		= NULL; // LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+	wcex.hIconSm		= LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(100));
 
 	RegisterClassEx(&wcex);
 }
