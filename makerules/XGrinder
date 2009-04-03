@@ -3,19 +3,16 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_MINGW
-#TODO: strip unneeded libraries here
-LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32
-LIBS		+= -lcomdlg32 -luuid -Wl,-Bstatic -lCGAL -lsquish
-LIBS		+= -ltiff -ljpeg -lpng12 -lz
+LIBS		:= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32 -lz
 LDFLAGS		:= -Wl,-subsystem,windows
 DEFINES		:= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
 WIN_RESOURCES	:= ./src/XPTools/XGrinder.rc
 REAL_TARGET	:= $(dir $(TARGET))/XGrinder.exe
-endif
+endif #PLAT_MINGW
 
 
 ##

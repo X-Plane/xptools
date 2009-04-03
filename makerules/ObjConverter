@@ -3,24 +3,24 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		:= -lCGAL -ldime -l3ds
 
 ifdef PLAT_LINUX
-LDFLAGS	:= -static -static-libgcc
-MESA_HEADERS := -I./libs/local/include/mesa
-endif
+LDFLAGS		:= -static -static-libgcc
+MESA_HEADERS	:= -I./libs/local/include/mesa
+endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LDFLAGS	:= -static-libgcc
-endif
+LDFLAGS		:= -static-libgcc
+endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
 REAL_TARGET	:= $(dir $(TARGET))/ObjConverter.exe
-endif
+endif #PLAT_MINGW
 
 
 ##

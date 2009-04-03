@@ -1,161 +1,159 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
-LDFLAGS		:= -static -static-libgcc
-LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng12 -lz
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
-ifeq ($(PLATFORM), Mingw)
-DEFINES		:= $(DEFINES) -DMINGW_BUILD=1
+LDFLAGS		:= -static -static-libgcc
+LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
+LIBS		+= -lz
+
+ifdef PLAT_MINGW
+DEFINES		+= -DMINGW_BUILD=1
 REAL_TARGET	:= $(dir $(TARGET))/RenderFarm.exe
-endif
-#FORCEREBUILD_SUFFIX := _renderfarm
+endif #PLAT_MINGW
 
-COMMON_SRC := \
-src/Obj/ObjPointPool.cpp \
-src/Obj/XObjBuilder.cpp \
-src/Obj/XObjDefs.cpp \
-src/Obj/XObjReadWrite.cpp \
-src/DSF/DSFLib.cpp \
-src/DSF/DSFLibWrite.cpp \
-src/DSF/DSFPointPool.cpp \
-src/DSF/DSFLib_Print.cpp \
-src/Installer/ErrMsg.cpp \
-src/RawImport/AptElev.cpp \
-src/RawImport/FAA_Obs.cpp \
-src/RawImport/ShapeIO.cpp \
-src/RawImport/gshhs.cpp \
-src/Tiger/TIGERProcess.cpp \
-src/Tiger/TIGERRead.cpp \
-src/Tiger/TigerImport.cpp \
-src/VPF/VPFImport.cpp \
-src/VPF/VPFTable.cpp \
-src/XESCore/XESInit.cpp \
-src/XESCore/DEMTables.cpp \
-src/XESCore/AptIO.cpp \
-src/XESCore/Airports.cpp \
-src/XESCore/Beaches.cpp \
-src/XESCore/ConfigSystem.cpp \
-src/XESCore/DEMAlgs.cpp \
-src/XESCore/DEMDefs.cpp \
-src/XESCore/DEMToVector.cpp \
-src/XESCore/DEMIO.cpp \
-src/XESCore/DSFBuilder.cpp \
-src/XESCore/EnumSystem.cpp \
-src/XESCore/Forests.cpp \
-src/XESCore/GreedyMesh.cpp \
-src/XESCore/MapAlgsCGAL.cpp \
-src/XESCore/MapAlgs.cpp \
-src/XESCore/MapHelpers.cpp \
-src/XESCore/MapBuffer.cpp \
-src/XESCore/MapCreate.cpp \
-src/XESCore/MapIO.cpp \
-src/XESCore/MapOverlay.cpp \
-src/XESCore/MapPolygon.cpp \
-src/XESCore/MapTopology.cpp \
-src/XESCore/MeshAlgs.cpp \
-src/XESCore/MeshDefs.cpp \
-src/XESCore/MeshIO.cpp \
-src/XESCore/NetPlacement.cpp \
-src/XESCore/NetTables.cpp \
-src/XESCore/ObjPlacement.cpp \
-src/XESCore/ObjTables.cpp \
-src/XESCore/ParamDefs.cpp \
-src/XESCore/SceneryPackages.cpp \
-src/XESCore/SimpleIO.cpp \
-src/XESCore/TensorRoads.cpp \
-src/XESCore/TriFan.cpp \
-src/XESCore/XESIO.cpp \
-src/XESCore/WTPM.cpp \
-src/XESCore/Zoning.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/MemFileUtils.cpp \
-src/Utils/FileUtils.cpp \
-src/Utils/GISUtils.cpp \
-src/Utils/BitmapUtils.cpp \
-src/Utils/EndianUtils.c \
-src/Utils/md5.c \
-src/Utils/XChunkyFileUtils.cpp \
-src/Utils/CompGeomUtils.cpp \
-src/Utils/PolyRasterUtils.cpp \
-src/Utils/zip.c \
-src/Utils/unzip.c \
-src/Utils/XUtils.cpp \
-src/Utils/BWImage.cpp \
-src/Utils/ObjUtils.cpp \
-src/Utils/XFileTwiddle.cpp \
-src/Utils/Skeleton.cpp \
-src/Utils/perlin.cpp \
-src/Utils/MatrixUtils.cpp \
-src/Utils/ProgressUtils.cpp \
-src/XESTools/GISTool_Globals.cpp \
-src/XESTools/GISTool_CoreCmds.cpp \
-src/XESTools/GISTool.cpp \
-src/XESTools/GISTool_DemCmds.cpp \
-src/XESTools/GISTool_DumpCmds.cpp \
-src/XESTools/GISTool_MiscCmds.cpp \
-src/XESTools/GISTool_ObsCmds.cpp \
-src/XESTools/GISTool_ProcessingCmds.cpp \
-src/XESTools/GISTool_Utils.cpp \
-src/XESTools/GISTool_VectorCmds.cpp \
-src/XESTools/MiscFuncs.cpp \
-src/XESTools/SelfTest.cpp \
-src/DSF/tri_stripper_101/tri_stripper.cpp
 
-WIN32_SRC := \
-src/Utils/XFileTwiddle.win.cpp
+##
+# include-, librarypaths
+########################
 
-POSIX_SRC := \
-src/Utils/XFileTwiddle.unix.cpp
+LIBPATHS := -L./libs/local/lib
 
-ifeq ($(PLATFORM), Linux)
-SOURCES := $(COMMON_SRC) $(POSIX_SRC)
-endif
-ifeq ($(PLATFORM), Mingw)
-SOURCES := $(COMMON_SRC) $(WIN32_SRC)
-endif
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
 
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
 
-INCLUDEPATHS :=\
--Ilibs/local/include \
--Ilibs/local/include/freetype2 \
-$(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
--Isrc/Env \
--Isrc/DSF \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/RawImport \
--Isrc/RenderFarmUI \
--Isrc/SDTS \
--Isrc/Tiger \
--Isrc/UI \
--Isrc/VPF \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--Isrc/DSF/tri_stripper_101
+##
+# sources
+#########
 
-LIBPATHS :=\
--Llibs/local/lib
+ifdef PLAT_MINGW
+SOURCES := ./src/Utils/XFileTwiddle.win.cpp
+endif #PLAT_MINGW
 
+ifdef PLAT_LINUX
+SOURCES := ./src/Utils/XFileTwiddle.unix.cpp
+endif #PLAT_LINUX
+
+SOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/Obj/XObjBuilder.cpp
+SOURCES += ./src/Obj/XObjDefs.cpp
+SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/DSF/DSFLib.cpp
+SOURCES += ./src/DSF/DSFLibWrite.cpp
+SOURCES += ./src/DSF/DSFPointPool.cpp
+SOURCES += ./src/DSF/DSFLib_Print.cpp
+SOURCES += ./src/Installer/ErrMsg.cpp
+SOURCES += ./src/RawImport/AptElev.cpp
+SOURCES += ./src/RawImport/FAA_Obs.cpp
+SOURCES += ./src/RawImport/ShapeIO.cpp
+SOURCES += ./src/RawImport/gshhs.cpp
+SOURCES += ./src/Tiger/TIGERProcess.cpp
+SOURCES += ./src/Tiger/TIGERRead.cpp
+SOURCES += ./src/Tiger/TigerImport.cpp
+SOURCES += ./src/VPF/VPFImport.cpp
+SOURCES += ./src/VPF/VPFTable.cpp
+SOURCES += ./src/XESCore/XESInit.cpp
+SOURCES += ./src/XESCore/DEMTables.cpp
+SOURCES += ./src/XESCore/AptIO.cpp
+SOURCES += ./src/XESCore/Airports.cpp
+SOURCES += ./src/XESCore/Beaches.cpp
+SOURCES += ./src/XESCore/ConfigSystem.cpp
+SOURCES += ./src/XESCore/DEMAlgs.cpp
+SOURCES += ./src/XESCore/DEMDefs.cpp
+SOURCES += ./src/XESCore/DEMToVector.cpp
+SOURCES += ./src/XESCore/DEMIO.cpp
+SOURCES += ./src/XESCore/DSFBuilder.cpp
+SOURCES += ./src/XESCore/EnumSystem.cpp
+SOURCES += ./src/XESCore/Forests.cpp
+SOURCES += ./src/XESCore/GreedyMesh.cpp
+SOURCES += ./src/XESCore/MapAlgsCGAL.cpp
+SOURCES += ./src/XESCore/MapAlgs.cpp
+SOURCES += ./src/XESCore/MapHelpers.cpp
+SOURCES += ./src/XESCore/MapBuffer.cpp
+SOURCES += ./src/XESCore/MapCreate.cpp
+SOURCES += ./src/XESCore/MapIO.cpp
+SOURCES += ./src/XESCore/MapOverlay.cpp
+SOURCES += ./src/XESCore/MapPolygon.cpp
+SOURCES += ./src/XESCore/MapTopology.cpp
+SOURCES += ./src/XESCore/MeshAlgs.cpp
+SOURCES += ./src/XESCore/MeshDefs.cpp
+SOURCES += ./src/XESCore/MeshIO.cpp
+SOURCES += ./src/XESCore/NetPlacement.cpp
+SOURCES += ./src/XESCore/NetTables.cpp
+SOURCES += ./src/XESCore/ObjPlacement.cpp
+SOURCES += ./src/XESCore/ObjTables.cpp
+SOURCES += ./src/XESCore/ParamDefs.cpp
+SOURCES += ./src/XESCore/SceneryPackages.cpp
+SOURCES += ./src/XESCore/SimpleIO.cpp
+SOURCES += ./src/XESCore/TensorRoads.cpp
+SOURCES += ./src/XESCore/TriFan.cpp
+SOURCES += ./src/XESCore/XESIO.cpp
+SOURCES += ./src/XESCore/WTPM.cpp
+SOURCES += ./src/XESCore/Zoning.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/MemFileUtils.cpp
+SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/Utils/GISUtils.cpp
+SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/Utils/XChunkyFileUtils.cpp
+SOURCES += ./src/Utils/CompGeomUtils.cpp
+SOURCES += ./src/Utils/PolyRasterUtils.cpp
+SOURCES += ./src/Utils/zip.c
+SOURCES += ./src/Utils/unzip.c
+SOURCES += ./src/Utils/XUtils.cpp
+SOURCES += ./src/Utils/BWImage.cpp
+SOURCES += ./src/Utils/ObjUtils.cpp
+SOURCES += ./src/Utils/XFileTwiddle.cpp
+SOURCES += ./src/Utils/Skeleton.cpp
+SOURCES += ./src/Utils/perlin.cpp
+SOURCES += ./src/Utils/MatrixUtils.cpp
+SOURCES += ./src/Utils/ProgressUtils.cpp
+SOURCES += ./src/XESTools/GISTool_Globals.cpp
+SOURCES += ./src/XESTools/GISTool_CoreCmds.cpp
+SOURCES += ./src/XESTools/GISTool.cpp
+SOURCES += ./src/XESTools/GISTool_DemCmds.cpp
+SOURCES += ./src/XESTools/GISTool_DumpCmds.cpp
+SOURCES += ./src/XESTools/GISTool_MiscCmds.cpp
+SOURCES += ./src/XESTools/GISTool_ObsCmds.cpp
+SOURCES += ./src/XESTools/GISTool_ProcessingCmds.cpp
+SOURCES += ./src/XESTools/GISTool_Utils.cpp
+SOURCES += ./src/XESTools/GISTool_VectorCmds.cpp
+SOURCES += ./src/XESTools/MiscFuncs.cpp
+SOURCES += ./src/XESTools/SelfTest.cpp
+SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp

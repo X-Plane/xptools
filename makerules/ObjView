@@ -3,34 +3,36 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LDFLAGS	:= -nodefaultlibs -static-libgcc
-LIBS	:= -Wl,-Bstatic
-LIBS	+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS	+= -Wl,-Bdynamic
-LIBS	+= -ldl -lpthread -lc
-LIBS	+= -Wl,-Bstatic
-LIBS	+= -lgcc -lgcc_eh
-LIBS	+= -Wl,-Bdynamic
-LIBS	+= -lGLU
-LIBS	+= -Wl,-Bstatic
-LIBS	+= -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng12 -lz
-DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1
-endif
+LDFLAGS		:= -nodefaultlibs -static-libgcc
+LIBS		:= -Wl,-Bstatic
+LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -Wl,-Bdynamic
+LIBS		+= -ldl -lpthread -lc
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lgcc -lgcc_eh
+LIBS		+= -Wl,-Bdynamic
+LIBS		+= -lGLU
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng -lz
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
+endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-LIBS		+= -luuid -Wl,-Bstatic -lCGAL -lsquish -ltiff -ljpeg
-LIBS		+= -lpng12 -lz
+LIBS		+= -luuid
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lCGAL -lsquish -ltiff -ljpeg
+LIBS		+= -lpng -lz
 LDFLAGS		:= -Wl,-subsystem,windows
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -D_WIN32_IE=0x0500
 DEFINES		+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
 WIN_RESOURCES	:= ./src/XPTools/ObjView.rc
 REAL_TARGET	:= $(dir $(TARGET))/ObjView.exe
-endif
+endif #PLAT_MINGW
 
 
 ##

@@ -3,36 +3,37 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
-LDFLAGS	:= -nodefaultlibs -static-libgcc
-LIBS	:= -Wl,-Bstatic
-LIBS	+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS	+= -Wl,-Bdynamic
-LIBS	+= -ldl -lpthread -lc
-LIBS	+= -Wl,-Bstatic
-LIBS	+= -lgcc -lgcc_eh
-LIBS	+= -Wl,-Bdynamic
-LIBS	+= -lGL -lGLU
-LIBS	+= -Wl,-Bstatic
-LIBS	+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS	+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng12 -lz
-MESA_HEADERS := -I./libs/local/include/mesa
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
+LDFLAGS		:= -nodefaultlibs -static-libgcc
+LIBS		:= -Wl,-Bstatic
+LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -Wl,-Bdynamic
+LIBS		+= -ldl -lpthread -lc
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lgcc -lgcc_eh
+LIBS		+= -Wl,-Bdynamic
+LIBS		+= -lGL -lGLU
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
+LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+MESA_HEADERS	:= -I./libs/local/include/mesa
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LDFLAGS	:= -Wl,-subsystem,windows
-DEFINES	:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500
-DEFINES	+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
-LIBS	:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-LIBS	+= -luuid -lws2_32 -Wl,-Bstatic -lexpat -lCGAL -lsquish
-LIBS	+= -lsqlite3 -lshp -lgeotiff -lCGAL -lproj -lfreetype -ltiff
-LIBS	+= -ljpeg -lpng12 -lz
-WIN_RESOURCES := ./src/WEDResources/WED.rc
-REAL_TARGET := $(dir $(TARGET))/WED.exe
+LDFLAGS		:= -Wl,-subsystem,windows
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500
+DEFINES		+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS		+= -luuid -lws2_32
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lexpat -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL
+LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+WIN_RESOURCES	:= ./src/WEDResources/WED.rc
+REAL_TARGET	:= $(dir $(TARGET))/WED.exe
 endif #PLAT_MINGW
 
 
@@ -289,11 +290,12 @@ SOURCES += ./src/Env/Persistence.cpp
 SOURCES += ./src/XPWidgets/XPLMGraphics.cpp
 SOURCES += ./src/Obj/ObjConvert.cpp
 
+
 ##
 # resources
 ###########
 
-ifndef PLAT_MINGW
+ifdef PLAT_LINUX
 RESOURCES := ./src/WEDResources/WED.ico
 RESOURCES += ./src/WEDResources/Vera.ttf
 RESOURCES += ./src/WEDResources/sans.ttf
@@ -387,4 +389,4 @@ RESOURCES += ./src/WEDResources/line_types/line_BWideBrokenSingle.png
 RESOURCES += ./src/WEDResources/line_types/line_BILSCriticalCenter.png
 RESOURCES += ./src/WEDResources/WEDManual.pdf
 RESOURCES += ./src/WEDCore/WED_DataModel.sql
-endif #PLAT_MINGW
+endif #PLAT_LINUX

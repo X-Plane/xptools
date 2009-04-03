@@ -1,92 +1,101 @@
+##
+# generic configuration
+#######################
+
 TYPE		:= LIBDYNAMIC
-CFLAGS		:= -include src/Obj/XDefs.h
-CXXFLAGS	:= -include src/Obj/XDefs.h
+CFLAGS		:= -include ./src/Obj/XDefs.h
+CXXFLAGS	:= -include ./src/Obj/XDefs.h
+
 ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
-LIBS		:= SDK/ac3d/ac3d.lib -lglu32 -lopengl32
+LIBS		:= ./SDK/ac3d/ac3d.lib -lglu32 -lopengl32
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
-endif
+endif #PLAT_MINGW
+
 ifdef PLAT_LINUX
-#LDFLAGS         := -Wl,--unresolved-symbols=report-all
-#LIBS            := -Wl,-Bdynamic,--start-group -lGLU -lGL -lX11 -lXext
-#LIBS		+=-lXdmcp -lXau -lxcb -lxcb-xlib
+#LDFLAGS	:= -Wl,--unresolved-symbols=report-all
+#LIBS		:= -Wl,-Bdynamic,--start-group -lGLU -lGL -lX11 -lXext
+#LIBS		+= -lXdmcp -lXau -lxcb -lxcb-xlib
 #LIBS		+= -ldl -lc -lpthread -lgcc -lgcc_eh -lstdc++ -Wl,--end-group
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
-endif
+endif #PLAT_LINUX
+
 ifdef PLAT_DARWIN
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportMac.p
-endif
+endif #PLAT_DARWIN
 
-SOURCES :=\
-src/DSF/DSFLib.cpp \
-src/DSF/DSFLibWrite.cpp \
-src/DSF/DSFPointPool.cpp \
-src/DSF/tri_stripper_101/tri_stripper.cpp \
-src/Utils/AssertUtils.cpp \
-src/Utils/FileUtils.cpp \
-src/Utils/XChunkyFileUtils.cpp \
-src/Utils/md5.c \
-src/Obj/ObjConvert.cpp \
-src/Obj/ObjPointPool.cpp \
-src/Obj/XObjBuilder.cpp \
-src/Obj/XObjDefs.cpp \
-src/Obj/XObjReadWrite.cpp \
-src/AC3DPlugins/obj_editor.cpp \
-src/AC3DPlugins/ac_utils.cpp \
-src/AC3DPlugins/bitmap_match.cpp \
-src/AC3DPlugins/dsf_export.cpp \
-src/AC3DPlugins/obj8_export.cpp \
-src/AC3DPlugins/obj8_import.cpp \
-src/AC3DPlugins/obj_anim.cpp \
-src/AC3DPlugins/obj_model.cpp \
-src/AC3DPlugins/obj_panel.cpp \
-src/AC3DPlugins/obj_radius.cpp \
-src/AC3DPlugins/obj_tools.cpp \
-src/AC3DPlugins/obj_update.cpp \
-src/AC3DPlugins/prefs.cpp \
-src/AC3DPlugins/tcl_utils.cpp \
-src/AC3DPlugins/TclStubs.cpp \
-src/AC3DPlugins/uv_mapper.cpp \
-src/AC3DPlugins/xp_plugin.cpp
 
-ifeq ($(PLATFORM), Linux)
-MESA_HEADERS = -Ilibs/local/include/mesa
-endif
+##
+# include-, librarypaths
+########################
 
-INCLUDEPATHS :=\
--Ilibs/local/include \
--Ilibs/local/include/freetype2 \
-$(MESA_HEADERS) \
--Ilibsrc/expat/xmlparse \
--Ilibsrc/expat/xmltok \
--Isrc/Env \
--Isrc/DSF \
--Isrc/DSF/tri_stripper_101 \
--Isrc/GUI \
--Isrc/GUI/mmenu \
--Isrc/Interfaces \
--Isrc/Obj \
--Isrc/ObjEdit \
--Isrc/OGLE \
--Isrc/UI \
--Isrc/WEDCore \
--Isrc/WEDDocs \
--Isrc/WEDEntities \
--Isrc/WEDImportExport \
--Isrc/WEDLayers \
--Isrc/WEDMap \
--Isrc/WEDProperties \
--Isrc/WEDResources \
--Isrc/WEDWindows \
--Isrc/WorldEditor \
--Isrc/XPCompat \
--Isrc/XPWidgets \
--Isrc/Utils \
--Isrc/XESCore \
--Isrc/XESTools \
--Isrc/Installer \
--Isrc/Network \
--ISDK/ac3d
+LIBPATHS := -L./libs/local/lib
 
-LIBPATHS :=\
--Llibs/local/lib
+INCLUDEPATHS := $(MESA_HEADERS)
+INCLUDEPATHS += -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./src/linuxinit
+INCLUDEPATHS += -I./src/WEDTCE
+INCLUDEPATHS += -I./src/Env
+INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/GUI
+INCLUDEPATHS += -I./src/GUI/mmenu
+INCLUDEPATHS += -I./src/Interfaces
+INCLUDEPATHS += -I./src/Obj
+INCLUDEPATHS += -I./src/ObjEdit
+INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/UI
+INCLUDEPATHS += -I./src/WEDCore
+INCLUDEPATHS += -I./src/WEDDocs
+INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDImportExport
+INCLUDEPATHS += -I./src/WEDLayers
+INCLUDEPATHS += -I./src/WEDLibrary
+INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDProperties
+INCLUDEPATHS += -I./src/WEDResources
+INCLUDEPATHS += -I./src/WEDWindows
+INCLUDEPATHS += -I./src/XPCompat
+INCLUDEPATHS += -I./src/XPWidgets
+INCLUDEPATHS += -I./src/Utils
+INCLUDEPATHS += -I./src/XESCore
+INCLUDEPATHS += -I./src/XESTools
+INCLUDEPATHS += -I./src/Installer
+INCLUDEPATHS += -I./src/Network
+INCLUDEPATHS += -I./src/DSF/tri_stripper_101
+
+
+##
+# sources
+#########
+
+SOURCES := ./src/DSF/DSFLib.cpp
+SOURCES += ./src/DSF/DSFLibWrite.cpp
+SOURCES += ./src/DSF/DSFPointPool.cpp
+SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/Utils/XChunkyFileUtils.cpp
+SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/Obj/ObjConvert.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/Obj/XObjBuilder.cpp
+SOURCES += ./src/Obj/XObjDefs.cpp
+SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/AC3DPlugins/obj_editor.cpp
+SOURCES += ./src/AC3DPlugins/ac_utils.cpp
+SOURCES += ./src/AC3DPlugins/bitmap_match.cpp
+SOURCES += ./src/AC3DPlugins/dsf_export.cpp
+SOURCES += ./src/AC3DPlugins/obj8_export.cpp
+SOURCES += ./src/AC3DPlugins/obj8_import.cpp
+SOURCES += ./src/AC3DPlugins/obj_anim.cpp
+SOURCES += ./src/AC3DPlugins/obj_model.cpp
+SOURCES += ./src/AC3DPlugins/obj_panel.cpp
+SOURCES += ./src/AC3DPlugins/obj_radius.cpp
+SOURCES += ./src/AC3DPlugins/obj_tools.cpp
+SOURCES += ./src/AC3DPlugins/obj_update.cpp
+SOURCES += ./src/AC3DPlugins/prefs.cpp
+SOURCES += ./src/AC3DPlugins/tcl_utils.cpp
+SOURCES += ./src/AC3DPlugins/TclStubs.cpp
+SOURCES += ./src/AC3DPlugins/uv_mapper.cpp
+SOURCES += ./src/AC3DPlugins/xp_plugin.cpp
