@@ -1,8 +1,0 @@
-geocent.lo geocent.o: geocent.c /usr/include/math.h \
-  /usr/include/architecture/ppc/math.h geocent.h
-
-/usr/include/math.h:
-
-/usr/include/architecture/ppc/math.h:
-
-geocent.h:

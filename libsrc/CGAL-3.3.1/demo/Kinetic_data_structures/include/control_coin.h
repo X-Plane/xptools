@@ -1,3 +1,0 @@
-#ifndef CGAL_CONTROL_COIN_H
-#define CGAL_CONTROL_COINT_H
-#endif

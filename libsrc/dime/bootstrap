@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo "Error: to bootstrap, invoke the script simacros/bin/bootstrap. Exiting."
-
-exit 1
