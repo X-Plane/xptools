@@ -28,14 +28,7 @@
 #include <math.h>
 #include "XDefs.h"
 #if IBM
-	// Janos - as of this writing, I _have_ to build the ac3d plugin with CodeWarrior, because the mingw version
-	// crashes with a segfault on load, for reasons that I have not yet been able to debug with gdb.
-	// For reasons that I have not investigated yet, intptr_t is not happy in CodeWarrior.  
-	// So...for now I have this #define.  Bear in mind:
-	// - This code must work in CW - that's #1 prio until mingw is 100% happy.
-	// - AC3D does _not_ have to be 64-bit safe!  ac3d only ships in 32-bit editions - I could not make a 64-bit 
-	//   plugin if I tried.
-	// So....if this makes a compile err on mingw, please applya appropriate #defines.
+	// fix this if there is a 64bit version of ac3d somewhen
 	#define	intptr_t	int
 #endif
 	

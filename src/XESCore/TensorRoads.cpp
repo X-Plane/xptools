@@ -621,7 +621,7 @@ void	BuildRoadsForFace(
 	}
 
 #if DEV
-	gDem[dem_Wizard] = road_restrict;
+//	gDem[dem_Wizard] = road_restrict;
 #endif
 	/**********************************************************************************************************************************
 	 * BUILD GRID TENSOR FIELD
