@@ -23,6 +23,23 @@
 
 #include "MapDefsCGAL.h"
 
+/****** WHAT IS THIS!??!?!?! ************
+
+The vector processing code for the scenery tools have always used a
+planar map.  Originalyly I used CGAL 3.0's planar map with intersections,
+but it had some bugs.  So I wrote my own.  That home-rolled version
+is what is in this file.
+
+After the v9 render, Andrew McGregor replaced my map with CGAL 3.3's
+Arrangement_2, which is vastly superior, and is bug free.   This file will
+eventually get nuked, but for now, see MapDefsCGAL for the replacement
+drop-in map definitino!
+
+*/
+
+
+
+
 
 // be a bit brutal here
 #define MAPDEFS_H

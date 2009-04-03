@@ -44,10 +44,8 @@ void	FillPolygonGaps(Polygon_set_2& ioPolygon, double dist);
 // (For example, this is used to simplify an airport by annexing surrounding land.)
 void	SafeMakeMoreConvex(Polygon_set_2& ioPolygon, double max_area);
 
-// Return true if a polygon really is simple by checking for self-intersections.
-bool	ValidatePolygonSimply(const Polygon_2& ioPolygon);
-
-
+// Make the polygon simple, taking the outer hull around all edges if it is self-intersecting.
+void	MakePolygonSimple(Polygon_2& ioPolygon);
 
 
 

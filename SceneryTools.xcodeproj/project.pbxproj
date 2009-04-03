@@ -71,7 +71,6 @@
 		D60734260D197A1100E08F61 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D60734270D197A1100E08F61 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60734510D197B1100E08F61 /* MeshTool.cpp */; };
-		D607346F0D197B9800E08F61 /* GISTool_Globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38880AB22C85003949C5 /* GISTool_Globals.cpp */; };
 		D60734700D197BA200E08F61 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D60734800D197BD700E08F61 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
 		D60734810D197BD800E08F61 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
@@ -732,6 +731,8 @@
 		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
+		D6F3214D0F864156008E211B /* MeshTool_Create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3214C0F864156008E211B /* MeshTool_Create.cpp */; };
+		D6F322050F865E90008E211B /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
 		D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */; };
 		D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */; };
 		D6FA51D40E16DFAC001C1035 /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
@@ -1759,6 +1760,8 @@
 		D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_WorldMapLayer.cpp; sourceTree = "<group>"; };
 		D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCFrequency.h; sourceTree = "<group>"; };
 		D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCFrequency.cpp; sourceTree = "<group>"; };
+		D6F3214B0F864156008E211B /* MeshTool_Create.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshTool_Create.h; sourceTree = "<group>"; };
+		D6F3214C0F864156008E211B /* MeshTool_Create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshTool_Create.cpp; sourceTree = "<group>"; };
 		D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_OverlayImage.cpp; sourceTree = "<group>"; };
 		D6F8E4B60C3C861C007A2EA7 /* WED_OverlayImage.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_OverlayImage.h; sourceTree = "<group>"; };
 		D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureNode.cpp; sourceTree = "<group>"; };
@@ -1948,6 +1951,8 @@
 			children = (
 				D60418960D86E15200AF6E16 /* README.meshtool */,
 				D60734510D197B1100E08F61 /* MeshTool.cpp */,
+				D6F3214B0F864156008E211B /* MeshTool_Create.h */,
+				D6F3214C0F864156008E211B /* MeshTool_Create.cpp */,
 			);
 			path = MeshTool;
 			sourceTree = "<group>";
@@ -3604,7 +3609,6 @@
 				D60734230D197A1100E08F61 /* zip.c in Sources */,
 				D60734240D197A1100E08F61 /* FileUtils.cpp in Sources */,
 				D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */,
-				D607346F0D197B9800E08F61 /* GISTool_Globals.cpp in Sources */,
 				D60734700D197BA200E08F61 /* XESInit.cpp in Sources */,
 				D60734800D197BD700E08F61 /* AptIO.cpp in Sources */,
 				D60734810D197BD800E08F61 /* Beaches.cpp in Sources */,
@@ -3657,6 +3661,8 @@
 				D6BB23B00EC1EBE3006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF50F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECB0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
+				D6F3214D0F864156008E211B /* MeshTool_Create.cpp in Sources */,
+				D6F322050F865E90008E211B /* ShapeIO.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

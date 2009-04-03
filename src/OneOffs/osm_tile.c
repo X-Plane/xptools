@@ -200,9 +200,9 @@ bbox_t bbox_for_ll(double lon, double lat)
 	// pass in 2  - bbox should be 1,2			(ceil-1,floor)	1	2
 	return make_bbox(
 					int_lim(ceil (lon)-1,-181,181),
-					int_lim(ceil (lat)-1, -90, 90),
+					int_lim(ceil (lat)-1, -90, 89),
 					int_lim(floor(lon)  ,-181,181),
-					int_lim(floor(lat)  , -90, 90));
+					int_lim(floor(lat)  , -90, 89));
 }
 
 /********************************************************************************************************************************************
@@ -214,7 +214,7 @@ bbox_t bbox_for_ll(double lon, double lat)
 static int max_files_use = 16;
 
 // Values: -1 = completed.  0 not open. > 0 = index+1 of file handle.
-static int tile_file_status[360*180] = { 0 };
+static int tile_file_status[362*180] = { 0 };
 static int free_file_ptr = 0;
 gzFile *	file_table[MAX_FILES_EVER] = { 0 };
 static int not_enough_files = 0;
@@ -242,7 +242,7 @@ gzFile * fopen_cached(const char * fname, int hash)
 void fclose_cache_all(void)
 {
 	int n;
-	for(n = 0; n < (360*180); ++n)
+	for(n = 0; n < (362*180); ++n)
 	if(tile_file_status[n] > 0)
 		tile_file_status[n] = -1;
 		
@@ -259,7 +259,7 @@ void fclose_cache_all(void)
 	not_enough_files=0;
 }
 
-int hash(int x, int y) { return (x + 180) + (y + 90) * 360; }
+int hash(int x, int y) { return (x + 181) + (y + 90) * 362; }
 
 char * hash_fname(int x, int y, char * buf) { sprintf(buf,"%+03d%+04d.osm.gz",y,x); return buf; }
 											
@@ -451,7 +451,7 @@ void StartElementHandler_IndexWays(void *userData,
 		if(nd_ref_id < 0 || nd_ref_id > highest_n)
 			fprintf(stderr,"ERROR: the file contains a way %d that references a node %d that we do not have.\n", cur_way_id, nd_ref_id);
 		
-		if(cur_way_id == CHECK_WAY_ID || nd_ref_id == CHECK_NODE_ID)
+		if(cur_way_id == CHECK_WAY_ID)
 			printf("Adding node %d to way %d.  ", nd_ref_id,cur_way_id);
 																
 		g_ways[cur_way_id] = bbox_union(g_ways[cur_way_id], g_nodes[nd_ref_id]);				

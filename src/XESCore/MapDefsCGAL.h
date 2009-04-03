@@ -28,6 +28,31 @@
 #ifndef MAPDEFSCGAL_H
 #define MAPDEFSCGAL_H
 
+/*
+	Polygon tricks and notes:
+	
+	Polygon_2 and Polygon_with_holes_2 are just "dumb" containers - you can push any set of points into them
+	and not worry about the consequences.
+	
+	Polygon_set_2 is topological - when you add points and holes, you can use join and difference to hint
+	how you want holes overlapping each other to be handled.  Note that polygons must already be simple.
+	
+	Conversions:
+	
+	- To convert a map (or part of a map) to a polygon, simply set "contained" on each face. (If you set the 
+	  unbounded face to be contained, you get an unbounded polygon with holes.)  Then construct a new
+	  Polygon_set_2 with the map as the constructor.  The polygon_set_2 will be simpler than the map if
+	  there are adjacent contained or not contained faces.
+	  
+	- To convert a polygon set to a map, simply set the meta data on its internal arrangement, then use that
+	  arrangement.  The most typical way to do this is to set the meta data, then use "overlay" or "merge"
+	  to put the new polygons somewhere.  WARNING: Most polygon_set_2 processing operations consolidate and
+	  simplify the underlying map.  So it is highly recommended that you set the meta data immediately before
+	  using the underlying map!
+	  
+
+*/
+
 #include <CGAL/Cartesian.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Filtered_kernel.h>

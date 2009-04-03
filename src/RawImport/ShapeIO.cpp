@@ -24,12 +24,8 @@
 #include "ShapeIO.h"
 #include <shapefil.h>
 #include "MapOverlay.h"
-#include "GISTool_Globals.h"
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
-#if !DEV
-	#error factor this out
-#endif
 
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
@@ -37,6 +33,8 @@
 #define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
 
 // Shape to feature 
+
+static double s_crop[4] = { -180.0, -90.0, 180.0, 90.0 };
 
 struct shape_pattern_t {
 	vector<string>		columns;
@@ -50,10 +48,10 @@ static shape_pattern_vector	sShapeRules;
 
 bool shape_in_bounds(SHPObject * obj)
 {
-	if(obj->dfXMax < gMapWest)	return false;
-	if(obj->dfXMin > gMapEast)	return false;
-	if(obj->dfYMax < gMapSouth)	return false;
-	if(obj->dfYMin > gMapNorth) return false;
+	if(obj->dfXMax < s_crop[0])	return false;
+	if(obj->dfXMin > s_crop[2])	return false;
+	if(obj->dfYMax < s_crop[1])	return false;
+	if(obj->dfYMin > s_crop[3]) return false;
 								return true;
 }
 
@@ -138,6 +136,9 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		int		shape_type;
 		double	bounds_lo[4], bounds_hi[4];
 		static bool first_time = true;
+
+	for(int n = 0; n < 4; ++n)
+		s_crop[n] = bounds[n];
 	
 	if(first_time)
 	{	
@@ -243,10 +244,10 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						DebugAssert(p[i-1] != p[i]);
 						bool oob = false;
 						if(flags & shp_Use_Crop)
-						if ((p_raw[i-1].x() < gMapWest  && p_raw[i].x() < gMapWest ) ||
-							(p_raw[i-1].x() > gMapEast  && p_raw[i].x() > gMapEast ) ||
-							(p_raw[i-1].y() < gMapSouth && p_raw[i].y() < gMapSouth ) ||
-							(p_raw[i-1].y() > gMapNorth && p_raw[i].y() > gMapNorth ))
+						if ((p_raw[i-1].x() < s_crop[0]  && p_raw[i].x() < s_crop[0] ) ||
+							(p_raw[i-1].x() > s_crop[2]  && p_raw[i].x() > s_crop[2] ) ||
+							(p_raw[i-1].y() < s_crop[1] && p_raw[i].y() < s_crop[1] ) ||
+							(p_raw[i-1].y() > s_crop[3] && p_raw[i].y() > s_crop[3] ))
 							oob = true;
 						if(!oob)
 						ADD_PT_PAIR(p[i-1],p[i],p_raw[i-1],p_raw[i],n);
@@ -340,40 +341,40 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		if((flags & shp_Use_Crop) != 0)
 		{
 			Polygon_2	crop_box;
-			if(gMapWest > -180)
+			if(s_crop[0] > -180)
 			{
 				crop_box.push_back(Point_2(-180,-90));
-				crop_box.push_back(Point_2(gMapWest,-90));
-				crop_box.push_back(Point_2(gMapWest,90));
+				crop_box.push_back(Point_2(s_crop[0],-90));
+				crop_box.push_back(Point_2(s_crop[0],90));
 				crop_box.push_back(Point_2(-180,90));
 				poly_set.difference(crop_box);
 				crop_box.clear();
 			}
 
-			if(gMapEast < 180)
+			if(s_crop[2] < 180)
 			{
-				crop_box.push_back(Point_2(gMapEast,-90));
+				crop_box.push_back(Point_2(s_crop[2],-90));
 				crop_box.push_back(Point_2(180,-90));
 				crop_box.push_back(Point_2(180,90));
-				crop_box.push_back(Point_2(gMapEast,90));
+				crop_box.push_back(Point_2(s_crop[2],90));
 				poly_set.difference(crop_box);
 				crop_box.clear();
 			}
 		
-			if(gMapSouth > -90)
+			if(s_crop[1] > -90)
 			{
 				crop_box.push_back(Point_2(-180, -90));
 				crop_box.push_back(Point_2(180, -90));
-				crop_box.push_back(Point_2(180, gMapSouth));
-				crop_box.push_back(Point_2(-180, gMapSouth));
+				crop_box.push_back(Point_2(180, s_crop[1]));
+				crop_box.push_back(Point_2(-180, s_crop[1]));
 				poly_set.difference(crop_box);
 				crop_box.clear();
 			}
 
-			if(gMapNorth < 90)
+			if(s_crop[3] < 90)
 			{
-				crop_box.push_back(Point_2(-180, gMapNorth));
-				crop_box.push_back(Point_2(180, gMapNorth));
+				crop_box.push_back(Point_2(-180, s_crop[3]));
+				crop_box.push_back(Point_2(180, s_crop[3]));
 				crop_box.push_back(Point_2(180, 90));
 				crop_box.push_back(Point_2(-180, 90));
 				poly_set.difference(crop_box);
@@ -429,31 +430,31 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		if((flags & shp_Use_Crop))
 		{		
 			ADD_PT_PAIR(
-								Point_2(gMapWest,gMapSouth),
-								Point_2(gMapEast,gMapSouth),
-								Point2(gMapWest,gMapSouth),
-								Point2(gMapEast,gMapSouth),
+								Point_2(s_crop[0],s_crop[1]),
+								Point_2(s_crop[2],s_crop[1]),
+								Point2(s_crop[0],s_crop[1]),
+								Point2(s_crop[2],s_crop[1]),
 								entity_count);
 
 			ADD_PT_PAIR(
-								Point_2(gMapEast,gMapSouth),
-								Point_2(gMapEast,gMapNorth),
-								Point2(gMapEast,gMapSouth),
-								Point2(gMapEast,gMapNorth),
+								Point_2(s_crop[2],s_crop[1]),
+								Point_2(s_crop[2],s_crop[3]),
+								Point2(s_crop[2],s_crop[1]),
+								Point2(s_crop[2],s_crop[3]),
 								entity_count+1);
 
 			ADD_PT_PAIR(
-								Point_2(gMapEast,gMapNorth),
-								Point_2(gMapWest,gMapNorth),
-								Point2(gMapEast,gMapNorth),
-								Point2(gMapWest,gMapNorth),
+								Point_2(s_crop[2],s_crop[3]),
+								Point_2(s_crop[0],s_crop[3]),
+								Point2(s_crop[2],s_crop[3]),
+								Point2(s_crop[0],s_crop[3]),
 								entity_count+2);
 
 			ADD_PT_PAIR(
-								Point_2(gMapWest,gMapNorth),
-								Point_2(gMapWest,gMapSouth),
-								Point2(gMapWest,gMapNorth),
-								Point2(gMapWest,gMapSouth),
+								Point_2(s_crop[0],s_crop[3]),
+								Point_2(s_crop[0],s_crop[1]),
+								Point2(s_crop[0],s_crop[3]),
+								Point2(s_crop[0],s_crop[1]),
 								entity_count+3);
 		}
 		{
@@ -462,8 +463,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			
 			CGAL::insert_curves(*targ, curves.begin(), curves.end());
 			ValidateMapDominance(*targ);
-			Point_2 sw(gMapWest,gMapSouth);
-			Point_2 ne(gMapEast,gMapNorth);
+			Point_2 sw(s_crop[0],s_crop[1]);
+			Point_2 ne(s_crop[2],s_crop[3]);
 
 			if(flags & shp_Use_Crop)
 			for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end();)

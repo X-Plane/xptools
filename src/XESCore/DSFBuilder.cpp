@@ -452,6 +452,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	int lterrain = tri->info().terrain;
 	int is_apt = IsAirportTerrain(lterrain);
 	int i;
+	
+	if(IsCustom(lterrain)) return false;
 
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
 	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));

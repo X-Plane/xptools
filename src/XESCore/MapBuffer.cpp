@@ -27,6 +27,9 @@
 	#include "GISTool_Globals.h"
 #endif
 
+// Set to 1 to show any polygon that fails buffering.  Only works with RenderFarm[UI]
+#define DEBUG_BUFFER_POLY 0 
+
 // Set to 1 to show the raw inset ring per polygon.
 #define	SHOW_RAW_RING	0
 
@@ -385,7 +388,7 @@ void	BufferPolygon(
 	Pmwx	arr;	
 	CGAL::insert_curves(arr,inset_crv.begin(), inset_crv.end());
 
-	#if DEV
+	#if DEV && DEBUG_BUFFER_POLY
 	try {
 	#endif
 
@@ -427,7 +430,7 @@ void	BufferPolygon(
 	
 	out_new_polygon = arr;	
 	
-	#if DEV
+	#if DEV && DEBUG_BUFFER_POLY
 	} catch(...) {
 		for(Pmwx::Edge_iterator e = arr.edges_begin(); e != arr.edges_end(); ++e)
 		{

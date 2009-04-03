@@ -517,14 +517,29 @@ void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 	
 }
 
+// Make a polygon simpel as follows:
+// Insert all edges into an arrangement.  Whatever area is bounded is considered "in" the new polygon.
+#if !DEV
+	#error - hrm - figure 8 becomes two polys?
+#endif
 
-// Simple self-intersection check.
-// We build up a sorted map of our sides by their lower Y coordinate.
-// Then for each side, check all sides above us until the sides are starting
-// clearly above us.  (Why no need to check below?  Well, that's handled 
-// when the other side is the 'i' - in other words, given two polys X and Y
-// where X is below Y, we check XY, not YX).
-bool	ValidatePolygonSimply(const Polygon_2& ioPolygon)
+void	MakePolygonSimple(Polygon_2& ioPolygon)
 {
-	return ioPolygon.is_simple();
+	Pmwx	pmap;
+	vector<Curve_2>	curves;
+	curves.reserve(ioPolygon.size());
+	for(int n = 0; n < ioPolygon.size(); ++n)
+	curves.push_back(Curve_2(ioPolygon.edge(n),0));
+	curves.insert(curves.end(), curves.begin(),curves.end());
+	CGAL::insert_curves(pmap, curves.begin(), curves.end());
+	for(Pmwx::Face_iterator f = pmap.faces_begin(); f != pmap.faces_end(); ++f)
+	f->set_contained(!f->is_unbounded());
+	
+	Polygon_set_2	pset(pmap);
+	
+	vector<Polygon_with_holes_2>	all;
+	pset.polygons_with_holes(back_inserter(all));
+	DebugAssert(all.size()==1);
+	DebugAssert(all[0].holes_begin() == all[0].holes_end());
+	ioPolygon = all[0].outer_boundary();
 }

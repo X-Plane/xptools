@@ -5,6 +5,14 @@ Version History
 	3/11/08    Beta 1
 	12/28/07   Initial Draft
 
+Version 1.1 Changes
+	- Polygon cutting improvement
+	- Relaxed boundary issues
+	- Shapefile support
+	- Improved command syntax
+
+TODO - doc this more
+
 -------------------------------------------------------------------------------
 USAGE
 -------------------------------------------------------------------------------

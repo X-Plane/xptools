@@ -426,9 +426,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 
 //		SafeMakeMoreConvex(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_FILL_AREA : AIRPORT_OUTER_FILL_AREA);
 		
-//		DebugAssert(ValidatePolygonSimply(orig));
 		SimplifyPolygonMaxMove(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_SIMPLIFY : AIRPORT_OUTER_SIMPLIFY, true, false);
-//		DebugAssert(ValidatePolygonSimply(orig));
 
 		Pmwx	temp;
 		Halfedge_const_handle he;

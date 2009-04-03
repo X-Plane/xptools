@@ -568,7 +568,7 @@ static int DoShapeImport(const vector<const char *>& args)
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
 	
 	
-	double b[4];
+	double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
 	if(!ReadShapeFile(args[2], gMap, flags, args[1], b, gProgress))
 		return 1;
 		

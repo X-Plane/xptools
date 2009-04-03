@@ -29,6 +29,7 @@ SOURCES := ./src/Utils/XFileTwiddle.unix.cpp
 endif #PLAT_LINUX
 
 SOURCES += ./src/MeshTool/MeshTool.cpp
+SOURCES += ./src/MeshTool/MeshTool_Create.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
@@ -92,5 +93,5 @@ SOURCES += ./src/Utils/Skeleton.cpp
 SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/ProgressUtils.cpp
-SOURCES += ./src/XESTools/GISTool_Globals.cpp
+SOURCES += ./src/RawImport/ShapeIO.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp

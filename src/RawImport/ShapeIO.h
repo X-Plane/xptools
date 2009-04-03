@@ -40,7 +40,7 @@ enum {
 };
 typedef int shp_Flags;
 		
-
+// io_bounds - input: the crop box (if needed).  output: the shape file bounds.
 bool	ReadShapeFile(const char * in_file, Pmwx& out_map, shp_Flags mode, const char * feature_desc, double io_bounds[4], ProgressFunc	inFunc);
 
 #endif /* ShapeIO_H */
