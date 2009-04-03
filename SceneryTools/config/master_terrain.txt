@@ -1,5 +1,0 @@
-# MASTER TERRAIN SPREADSHEET!!!!
-
-# This is a dummy file - of course we need the REAL one from Sergio.
-
-MTERRAIN    NO_VALUE	NO_VALUE	NO_VALUE	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0	0	terrain/any	0	100	../textures/any.png	1	3000	DOWN	../textures/border/any.png	NO_VALUE	255	0	255
