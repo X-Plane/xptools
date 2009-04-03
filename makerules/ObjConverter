@@ -14,6 +14,9 @@ endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		:= -static-libgcc
+LIBS		:= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libdime.a
+LIBS		+= ./libs/local/lib/lib3ds.a
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW

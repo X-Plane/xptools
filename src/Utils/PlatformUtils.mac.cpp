@@ -175,7 +175,7 @@ void	DoUserAlert(const char * inMsg)
 	p1[0] = sl;
 	memcpy(p1+1, inMsg, sl);
 
-	StandardAlert(kAlertStopAlert, p1, "\p", NULL, NULL);
+	StandardAlert(kAlertStopAlert, (const unsigned char*)p1, (const unsigned char*)"", NULL, NULL);
 }
 
 void	ShowProgressMessage(const char * inMsg, float * progress)
@@ -241,7 +241,7 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 	params.cancelButton = 2;
 	params.position = kWindowDefaultPosition;
 
-	StandardAlert(kAlertCautionAlert, pStr, "\p", &params, &itemHit);
+	StandardAlert(kAlertCautionAlert, (const unsigned char*)pStr, (const unsigned char*)"", &params, &itemHit);
 
 	return (itemHit == 1);
 }

@@ -21,7 +21,7 @@ TARGETDIR	:= $(BUILDDIR)/$(PLATFORM)/$(conf)
 .PHONY: all clean distclean libs ObjView WED DSFTool DDSTool ObjConverter \
 MeshTool RenderFarm ac3d XGrinder
 
-ifdef PLAT_MINGW
+ifndef PLAT_LINUX
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d XGrinder
 else
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d
@@ -56,7 +56,7 @@ MeshTool: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
-ifdef PLAT_MINGW
+ifndef PLAT_LINUX
 XGrinder: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk

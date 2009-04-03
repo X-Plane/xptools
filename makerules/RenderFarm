@@ -15,6 +15,18 @@ DEFINES		+= -DMINGW_BUILD=1
 REAL_TARGET	:= $(dir $(TARGET))/RenderFarm.exe
 endif #PLAT_MINGW
 
+ifdef PLAT_DARWIN
+LDFLAGS		:= -static-libgcc -framework Carbon
+LIBS		:= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libsquish.a
+LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libproj.a
+LIBS		+= ./libs/local/lib/libtiff.a
+LIBS		+= ./libs/local/lib/libjpeg.a
+LIBS		+= ./libs/local/lib/libpng.a
+LIBS		+= ./libs/local/lib/libz.a
+endif #PLAT_DARWIN
 
 ##
 # sources
@@ -27,6 +39,11 @@ endif #PLAT_MINGW
 ifdef PLAT_LINUX
 SOURCES := ./src/Utils/XFileTwiddle.unix.cpp
 endif #PLAT_LINUX
+
+ifdef PLAT_DARWIN
+SOURCES := ./src/Utils/XFileTwiddle.mac.cpp
+SOURCES += ./src/Installer/MacSpec.cpp
+endif #PLAT_DARWIN
 
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp

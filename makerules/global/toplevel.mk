@@ -133,9 +133,9 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(CXXFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4 -Wno-multichar
-	CFLAGS		:= $(CFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4 -Wno-multichar
-	LDFLAGS		:= $(LDFLAGS) -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -Z
+	CXXFLAGS	:= $(CXXFLAGS) -mmacosx-version-min=10.4 -Wno-multichar -frounding-math
+	CFLAGS		:= $(CFLAGS) -mmacosx-version-min=10.4 -Wno-multichar -frounding-math
+	LDFLAGS		:= -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk  $(LDFLAGS)
 	MACARCHS	:= -arch i386 -arch ppc
 	STRIPFLAGS	:= -x
 endif

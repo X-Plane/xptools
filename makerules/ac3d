@@ -25,7 +25,11 @@ FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
+# we haven't set -fvisibility=hidden per default for mac builds
+CFLAGS		+= -fvisibility=hidden
+CXXFLAGS	+= -fvisibility=hidden
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportMac.p
+FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_DARWIN
 
 

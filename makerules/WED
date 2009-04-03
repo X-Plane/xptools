@@ -5,9 +5,9 @@
 TYPE		:= EXECUTABLE
 CFLAGS		:= -include ./src/Obj/XDefs.h
 CXXFLAGS	:= -include ./src/Obj/XDefs.h
+DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 
 ifdef PLAT_LINUX
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 LDFLAGS		:= -nodefaultlibs -static-libgcc
 LIBS		:= -Wl,-Bstatic
 LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
@@ -24,8 +24,7 @@ endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LDFLAGS		:= -Wl,-subsystem,windows
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -D_WIN32_IE=0x0500
-DEFINES		+= -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
 LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid -lws2_32
 LIBS		+= -Wl,-Bstatic
@@ -34,6 +33,23 @@ LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
 WIN_RESOURCES	:= ./src/WEDResources/WED.rc
 REAL_TARGET	:= $(dir $(TARGET))/WED.exe
 endif #PLAT_MINGW
+
+ifdef PLAT_DARWIN
+DEFINES		+= -DMAKE_BUILD
+LDFLAGS		:= -static-libgcc -framework Carbon -framework OpenGL -framework AGL
+LIBS		:= ./libs/local/lib/libexpat.a
+LIBS		+= ./libs/local/lib/libsquish.a
+LIBS		+= ./libs/local/lib/libsqlite3.a
+LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libproj.a
+LIBS		+= ./libs/local/lib/libfreetype.a
+LIBS		+= ./libs/local/lib/libtiff.a
+LIBS		+= ./libs/local/lib/libjpeg.a
+LIBS		+= ./libs/local/lib/libpng.a
+LIBS		+= ./libs/local/lib/libz.a
+endif #PLAT_DARWIN
 
 
 ##
@@ -62,6 +78,16 @@ SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 endif #PLAT_LINUX
+
+ifdef PLAT_DARWIN
+SOURCES := ./src/UI/XWin.mac.cpp
+SOURCES += ./src/UI/XWinGL.mac.cpp
+SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
+SOURCES += ./src/Utils/PlatformUtils.mac.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+SOURCES += ./src/Installer/MacSpec.cpp
+endif #PLAT_DARWIN
 
 SOURCES += ./src/UI/FontMgr.cpp
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
