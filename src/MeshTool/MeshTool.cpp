@@ -44,6 +44,7 @@
 #include "MapTopology.h"
 #if LIN
 #include <execinfo.h>
+#include <stdarg.h>
 #endif
 
 

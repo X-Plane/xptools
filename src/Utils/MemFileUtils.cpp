@@ -1232,8 +1232,36 @@ MF_GetDirectoryBulk(
 	FindClose(hFind);
 	return total;
 
+#elif LIN
+
+	int total=0;
+	DIR* dir = opendir ( path );
+	if ( !dir ) return false;
+	struct dirent* ent;
+
+	while ( ( ent = readdir ( dir ) ) )
+	{
+		struct stat ss;
+		if ( ( strcmp ( ent->d_name, "." ) ==0 ) ||
+		        ( strcmp ( ent->d_name, ".." ) ==0 ) )
+			continue;
+
+		string	fullPath ( path );
+		fullPath += DIR_CHAR;
+		fullPath += ent->d_name;
+
+		if ( stat ( fullPath.c_str(), &ss ) < 0 )
+			continue;
+		total++;
+		if ( !cbFunc ( ent->d_name, S_ISDIR ( ss.st_mode ),(unsigned long long) ss.st_mtime, refcon ) )
+			break;
+	}
+	closedir ( dir );
+
+	return total;
+
 #else
-#warning implement finddir function for linux here (see stat())
+#error not implemented
 #endif
 }
 
