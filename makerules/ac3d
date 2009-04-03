@@ -14,10 +14,12 @@ REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-#LDFLAGS	:= -Wl,--unresolved-symbols=report-all
-#LIBS		:= -Wl,-Bdynamic,--start-group -lGLU -lGL -lX11 -lXext
-#LIBS		+= -lXdmcp -lXau -lxcb -lxcb-xlib
-#LIBS		+= -ldl -lc -lpthread -lgcc -lgcc_eh -lstdc++ -Wl,--end-group
+ifdef ARCH_X86_64
+# note that this still requires libc-devel.i386 and libstdc++-devel.i386
+CFLAGS		+= -m32
+CXXFLAGS	+= -m32
+LDFLAGS		+= -m32
+endif
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
 FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX
