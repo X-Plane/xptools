@@ -64,6 +64,7 @@ CC	:= gcc-4.2
 CXX	:= g++-4.2
 LD	:= g++-4.2
 AR	:= libtool
+STRIP	:= strip
 else
 CC	:= $(CROSSPREFIX)gcc
 CXX	:= $(CROSSPREFIX)g++
@@ -127,20 +128,23 @@ ifdef PLAT_LINUX
 	CFLAGS		:= $(CFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-multichar
 	CXXFLAGS	:= $(CXXFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-multichar
 	LDFLAGS		:= $(LDFLAGS) $(M32_SWITCH) -rdynamic
+	STRIPFLAGS	:= -s -x
 endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= $(CXXFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4 -Wno-multichar
 	CFLAGS		:= $(CFLAGS) -fvisibility=hidden -mmacosx-version-min=10.4 -Wno-multichar
-	LDFLAGS		:= $(LDFLAGS) -mmacosx-version-min=10.4 -Z
+	LDFLAGS		:= $(LDFLAGS) -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -Z
 	MACARCHS	:= -arch i386 -arch ppc
+	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
 	DEFINES		:= $(DEFINES) -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:= $(CFLAGS) -Wno-multichar
 	CXXFLAGS	:= $(CXXFLAGS) -Wno-deprecated -Wno-multichar
 	LDFLAGS		:= $(LDFLAGS)
+	STRIPFLAGS	:= -s -x
 endif
 
 
@@ -154,6 +158,9 @@ ifeq ($(TYPE), LIBDYNAMIC)
 ifneq ($(PLATFORM), Mingw)
 	CFLAGS		:= $(CFLAGS) -fPIC
 	CXXFLAGS	:= $(CXXFLAGS) -fPIC
+endif
+ifdef PLAT_DARWIN
+	LDFLAGS		+= -undefined dynamic_lookup
 endif
 endif
 ifeq ($(TYPE), LIBSTATIC)
@@ -252,10 +259,15 @@ endif
 # debug information
 
 ifneq ($(TYPE), LIBSTATIC)
+#TODO: check how to detach mach-o debug info
+ifndef PLAT_DARWIN
 	@$(OBJCOPY) --only-keep-debug $(@) $(@).debug
-	@$(STRIP) -s -x $(@)
+endif
+	$(STRIP) $(STRIPFLAGS) $(@)
+ifndef PLAT_DARWIN
 	@cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
 	@chmod 0644 $(@).debug
+endif
 endif
 #TODO: add Darwin, at least strip binaries
 	@$(print_finished)

@@ -66,7 +66,7 @@ RenderFarm: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
-ac3d: libs
+ac3d:
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
