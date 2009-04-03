@@ -2,9 +2,9 @@
 # project wide include and library searchpaths
 ##############################################
 
-LIBPATHS := -L./libs/local/lib
+LIBPATHS += -L./libs/local/lib
 
-INCLUDEPATHS := -I./libs/local/include
+INCLUDEPATHS += -I./libs/local/include
 INCLUDEPATHS += -I./libs/local/include/freetype2
 INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./src/WEDTCE
