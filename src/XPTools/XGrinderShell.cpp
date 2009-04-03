@@ -41,8 +41,69 @@
 #include <sys/stat.h>
 
 #if IBM
-#define popen _popen
-#define pclose _pclose
+#include <fcntl.h>
+#define popen xpt_popen
+#define pclose xpt_pclose
+
+HANDLE stdout_read, stdout_write;
+HANDLE stderr_read, stderr_write;
+HANDLE stdin_read, stdin_write;
+
+int spawn_process(char* cmdline)
+{
+	DWORD e = 0;
+	STARTUPINFO si = {};
+	PROCESS_INFORMATION pi = {};
+
+	si.cb = sizeof(STARTUPINFO);
+	si.hStdOutput = stdout_write;
+	si.hStdInput = stdin_read;
+	si.hStdError = stderr_write;
+	si.dwFlags = STARTF_USESTDHANDLES;
+
+	CreateProcess(0, cmdline, 0, 0, 1, DETACHED_PROCESS, 0, 0, &si, &pi);
+	return e;
+}
+
+FILE* xpt_popen(const char *command, const char *mode)
+{
+	SECURITY_ATTRIBUTES sa;
+	DWORD nread;
+	char buf[4096] = {};
+
+	if (strcmp(mode, "r"))
+		return 0;
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = 1;
+	sa.lpSecurityDescriptor = 0;
+
+	CreatePipe(&stdout_read, &stdout_write, &sa, 0);
+	SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0);
+	CreatePipe(&stdin_read, &stdin_write, &sa, 0);
+	SetHandleInformation(stdin_write, HANDLE_FLAG_INHERIT, 0);
+	CreatePipe(&stderr_read, &stderr_write, &sa, 0);
+	SetHandleInformation(stderr_read, HANDLE_FLAG_INHERIT, 0);
+
+	spawn_process(const_cast<char*>(command));
+
+/* close child-side handles */
+	CloseHandle(stdout_write);
+	CloseHandle(stdin_read);
+	CloseHandle(stderr_write);
+
+	return _fdopen( _open_osfhandle((intptr_t)stdout_read, _O_RDONLY), "r");
+}
+
+int xpt_pclose(FILE *stream)
+{
+	fclose(stream);
+	/* close parent-side handles*/
+	CloseHandle(stdout_read);
+	CloseHandle(stdin_write);
+	CloseHandle(stderr_read);
+	return 0;
+}
+
 #endif
 
 using std::string;
