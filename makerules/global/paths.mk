@@ -35,6 +35,12 @@ INCLUDEPATHS += -I./src/XESTools
 INCLUDEPATHS += -I./src/Installer
 INCLUDEPATHS += -I./src/Network
 INCLUDEPATHS += -I./src/DSF/tri_stripper_101
+INCLUDEPATHS += -I./src/RenderFarmUI
+INCLUDEPATHS += -I./src/RawImport
+INCLUDEPATHS += -I./src/Tiger
+INCLUDEPATHS += -I./src/VPF
+INCLUDEPATHS += -I./src/SDTS
+INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
 INCLUDEPATHS += -I./libs/local/include/mesa
