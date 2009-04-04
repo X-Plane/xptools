@@ -29,6 +29,7 @@
 #include "MeshDefs.h"
 #include "AptDefs.h"
 #include "DEMTables.h"
+#include "GISUtils.h"
 #include "MapOverlay.h"
 #include "XESIO.h"
 #include "MemFileUtils.h"
@@ -36,12 +37,14 @@
 #include "MapAlgs.h"
 #include "DSFBuilder.h"
 #include "MapTopology.h"
+#include "BitmapUtils.h"
 #include "DEMAlgs.h"
 #include "Zoning.h"
 #include "NetPlacement.h"
 #include "ObjPlacement.h"
 #include "ObjTables.h"
 #include "ShapeIO.h"
+#include "FileUtils.h"
 
 static DEMGeoMap			sDem;
 static CDT					sMesh;
@@ -106,8 +109,8 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 void MT_FinishCreate(void)
 {
 	CropMap(*the_map, sBounds[0],sBounds[1],sBounds[2],sBounds[3],false,ConsoleProgressFunc);
-
 	WriteXESFile("temp.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+
 
 	gNaturalTerrainIndex.clear();
 	for(int rn = 0; rn < gNaturalTerrainTable.size(); ++rn)
@@ -400,4 +403,143 @@ void MT_NetEnd(void)
 	}
 }
 
+void MT_OrthoPhoto(
+					const char * terrain_name,
+					double		 proj_lon[4],
+					double		 proj_lat[4],
+					double		 proj_s[4],
+					double		 proj_t[4],
+					int			 back_with_water)
+{
+	int t = MT_CreateCustomTerrain(terrain_name, proj_lon,proj_lat,proj_s,proj_t,back_with_water);
+	MT_LayerStart(t);
+	MT_PolygonStart();
+	for(int n = 0; n < 4; ++n)
+		MT_PolygonPoint(proj_lon[n],proj_lat[n]);
+	MT_PolygonEnd();
+	MT_LayerEnd();
+}
+
+static void qmid_recurse(int q, double io_lon[4], double io_lat[4])
+{
+	// vert order
+	// 3 2
+	// 0 1 
+	// qmid parts
+	// 0 1
+	// 2 3
+	if(q == 0 || q == 1)
+	{
+		io_lat[0] = 0.5 * (io_lat[0] + io_lat[3]);		// top half
+		io_lat[1] = 0.5 * (io_lat[1] + io_lat[2]);
+	} else {
+		io_lat[3] = 0.5 * (io_lat[0] + io_lat[3]);		// bot half
+		io_lat[2] = 0.5 * (io_lat[1] + io_lat[2]);
+	}
+	
+	if(q == 1 || q == 3)
+	{
+		io_lon[0] = 0.5 * (io_lon[0] + io_lon[1]);	// left half
+		io_lon[3] = 0.5 * (io_lon[3] + io_lon[2]);
+	} else { 
+		io_lon[1] = 0.5 * (io_lon[0] + io_lon[1]);	// left half
+		io_lon[2] = 0.5 * (io_lon[3] + io_lon[2]);
+	}
+}
+
+void MT_QMID(const char * id)
+{
+	double lon[4] = { -180.0, 300.0, 300.0, -180.0 };
+	double lat[4] = { -270.0, -270.0, 90.0, 90.0 };	
+	double s[4] = { 0.0, 1.0, 1.0, 0.0 };
+	double t[4] = { 0.0, 0.0, 1.0, 1.0 };
+	
+	const char * i = id;
+	while(*i)
+		qmid_recurse((*i++) - '0',lon,lat);
+
+	char fname[1024];
+	sprintf(fname,"%s.ter",id);
+
+	printf("QMID: %s will go from: %lf,%lf to %lf,%lf\n",	
+		id,lon[0],lat[0],lon[2],lat[2]);
+
+	MT_OrthoPhoto(fname, lon, lat, s, t, 1);
+	
+	int want_lite = false;
+
+	int isize = 1024;
+
+	sprintf(fname,"%s.dds",id);
+	if(!FILE_exists(fname))
+	{
+		sprintf(fname,"%sSu.bmp",id);
+		ImageInfo rgb;
+		if(!CreateBitmapFromFile(fname,&rgb))
+		{		
+			isize = max(rgb.width,rgb.height);
+			if(!ConvertBitmapToAlpha(&rgb,false))
+			{
+				sprintf(fname,"%sBl.bmp",id);
+				ImageInfo alpha;
+				if(!CreateBitmapFromFile(fname,&alpha))
+				{
+					if(rgb.width == alpha.width && rgb.height == alpha.height)
+					for(int y = 0; y < alpha.height; ++y)
+					for(int x = 0; x < alpha.width; ++x)
+						rgb.data[x * rgb.channels + y * (rgb.width * rgb.channels + rgb.pad) + 3] =
+						alpha.data[x * alpha.channels + y * (alpha.width * alpha.channels + alpha.pad)];
+				
+					DestroyBitmap(&alpha);
+				}
+				
+				sprintf(fname,"%s.dds",id);
+				WriteBitmapToDDS(rgb, 5, fname);
+			}
+						
+			DestroyBitmap(&rgb);				
+		}
+	} else {
+		ImageInfo comp;
+		CreateBitmapFromDDS(fname,&comp);
+		isize = max(comp.width,comp.height);
+		DestroyBitmap(&comp);
+	}
+
+	sprintf(fname,"%s_LIT.dds",id);
+	if(FILE_exists(fname))
+		want_lite=true;
+	else
+	{
+		sprintf(fname,"%sLm.bmp",id);
+		ImageInfo lit;
+		if(!CreateBitmapFromFile(fname,&lit))
+		{
+			sprintf(fname,"%s_LIT.dds",id);
+			WriteBitmapToDDS(lit,1,fname);
+			DestroyBitmap(&lit);
+			want_lite=true;
+		}		
+	}
+	
+	int meters= LonLatDistMeters(lon[0],lat[0],lon[2],lat[2]);
+	
+	sprintf(fname,"%s.ter",id);
+	if(!FILE_exists(fname))
+	{
+		FILE * fi = fopen(fname,"w");
+		fprintf(fi,
+			"A\n"
+			"800\n"
+			"TERRAIN\n\n"
+			"BASE_TEX_NOWRAP %s.dds\n",id);
+		if(want_lite)
+			fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
+		fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
+
+		fclose(fi);
+	}
+
+
+}
 

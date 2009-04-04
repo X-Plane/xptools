@@ -311,6 +311,11 @@ int	main(int argc, char * argv[])
 			{
 				MT_NetEnd();
 			}
+						
+			if(sscanf(buf,"QMID %s",cus_ter)==1)
+			{
+				MT_QMID(cus_ter);
+			}
 		}
 		fclose(script);
 		
