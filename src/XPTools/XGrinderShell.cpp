@@ -271,7 +271,8 @@ static void spool_job(const char * cmd_line)
 	XGrinder_ShowMessage("%s",cmd_line);
 	string quoted(cmd_line);
 #if IBM
-	quoted = "\"" + quoted + "\"";
+// not applicable with xpt_popen()
+//	quoted = "\"" + quoted + "\"";
 #endif
 	FILE * pipe = popen(quoted.c_str(), "r");
 	while(!feof(pipe))

@@ -197,10 +197,11 @@ int main(int argc, const char * argv[])
 		const char *							pvr_mode = "--bits-per-pixel-2";
 		if(strcmp(argv[1],"--png2pvrtc4")==0)	pvr_mode = "--bits-per-pixel-4";
 
-		sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s -m -c PVR -o \"%s\" -p \"%s.png\" \"%s\"", my_dir, pvr_mode, argv[3], argv[3], argv[2]);
-
-		printf("Cmd: %s\n", cmd_buf);
-		system(cmd_buf);
+		//sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s -m -c PVR -o \"%s\" -p \"%s.png\" \"%s\"", my_dir, pvr_mode, argv[3], argv[3], argv[2]);
+		//printf("Cmd: %s\n", cmd_buf);
+		//system(cmd_buf);
+		printf("png2pvrtc/png2pvrtc4 are not implemented, poke Ben <bsupnik@xsquawkbox.net> to fix this.\n");
+		return 1;
 	}
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
