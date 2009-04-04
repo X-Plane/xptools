@@ -10,18 +10,9 @@ augment, WorldEditor.
 
 SOURCE TREE NOTES AND DEPENDENCIES
 
-The WorldEditor source tree and its related derived binaries are generally 
+The XPTools source tree and its related derived binaries are generally 
 open-source and may be dependent on GPL libraries.  All new code written by 
 Laminar for WorldEditor is available under the MIT/X11 license.
-
-Certain directories from WorldEditor are also used by X-Plane.  For examle, 
-X-plane uses DSFLib internally to read DSF files.  The directories that X-plane 
-uses must be free of GPL dependencies because X-Plane is not open source.  I 
-will try to note this where possible.
-
-X-Plane's file structure currently includes some global dependencies.  In a few
-cases the "XPCompat" headers are used to fake this environment for code that 
-must coexist in both environments.
 
 Each subtree in this source tree represents a "package" or set of components/
 translation units/objects  Each subtree directory will generally have a 
@@ -32,27 +23,29 @@ APPLICATIONS
 This source tree builds the following applications, all for Mac and Windows:
 
 	SCENERY EDITING
-		GISTool			Console	
 		WorldEditor		GUI
-		RenderFarm		GUI/Console (This is LR's internal DSF generator.)
+		RenderFarm		Console (This is LR's internal DSF generator.)
+		RenderFarmUI		GUI 	(This is LR's internal DSF generator.)
 	XPTOOLS
-		AddObjects		GUI
-		Env2DSF			GUI
-		GetImage		GUI
-		ObjConverter	GUI
+		ObjConverter		Console
+		DSF2Text		Console
+		DDSTool			Console
+		MeshTool		Console
 		ObjView			GUI
-		XTaxiMaker		GUI
-	DSFTOOLS
-		DSF2Text		GUI
-		DSFTool			Console
-	OBJEDIT
-		ObjEdit			GUI
+		XGrinder		GUI
+	AC3D
+		XPlaneSupport		GUI
+	OneOffs (unrelated command-line tools that can be useful.)
+		osm_tile		Console
+		osm2shape		Console
+		
+The code for some legacy projects like ObjEdit are probably floating around too.
 
 EXTERNAL LIBRARIES
 
-All of the libraries used by these apps are included as external static 
-libraries even though they are all available in source code - this is done to 
-simplify project management.
+All of the libraries used by these apps are linked as external static libraries even
+ though they may have DLL/dylib/so versions.  This is to minimize dependencies for
+end users.
 
 REQUIRED #DEFINE SYMBOLS
 
@@ -71,29 +64,32 @@ The following symbols are used that may need to be globally defined via the
 		or zero.
 	LIL BIG
 		These flags set the endian-ness of the executable (little or big).
+	USE_TIF, USE_JPEG
+		These eanble TIFF and JPEG support in BitmapUtils.h and other files.
+		At this point all of the apps have these enabled, since libjpeg and
+		libtiff are part of the standard library set.
 
 USE OF X-PLANE PLUGIN SYSTEM
 
-Some OpenGL GUI apps (RenderFarm, ObjEdit) use the X-Plane plugin system's 
-widgets library to draw UI in OpenGL.  However, this code has been 
-significantly modified.  The modified widgets lib is included in source.  The 
-XPLM has been partly included and partly hacked to not require a host 
-application.  NOTE: while this code is  available under the MIT/X11 license 
-the original XPLM code is NOT.
+The UI version of the RenderFarm uses a modified version of the X-Plane widgets
+library (on top of an emulation of part of the XPLM 1.0 APIs) to do UI work.  However
+all of the main binary distributed apps use the more portable, modern code in the
+UI and GUI directories.
 
-Other OpenGL apps do not require a framework (ObjView) or use "GUI", a more 
-advanced open source framework, to render UI.
+NOTE: while this code is  available under the MIT/X11 license 
+the original XPLM code is NOT.
 
 RENDERFARM VS XES VS WED
 
-The current naming convention for packages is in flux and is thus very
-confusing.  There are a few separate threads of technology that all exist in
-this one code base:
+Some of the naming conventions for the main scenery tools code for creating base
+meshes:
 
 - "XES" (X-Plane Editable Scenery) is a high level binary format for GIS data
-  that is used by RenderFarm (see below).  The "XESCore" code represent
-  algorithms and data structures for manipulating GIS data, usually saved to
-  XES files.
+  that is used by RenderFarm (see below).  The "XESCore" package represent
+  the core GIS engine used to make global scenery.  While XES 
+
+
+
 - "RenderFarm" is the name of the internal program we use to generate the 
   default scenery.  It comes as a command-line tool and a UI version (the UI
   can only run command-line transforms and show results on a map - it is meant
@@ -114,36 +110,46 @@ renderfarm apps, but I do not expect WED and RenderFarm to become one large app.
 
 PACKAGE OVERVIEW
 
-DSF				*	DSF I/O library.
-DSFTools			Code for DSFTool and DSF2Text
-Env					ENV7 import/export code
-GUI					X-platform OpenGL UI framework, used for WorldEditor.
-Installer			Installer utilities
-Interfaces			Abstract interfaces for WED.
-Mac Infrastructure	Precompiled headers etc. for XPTools.
-Mac Resources		Mac specific resource files.
-Network				Socket, HTTP, and Terraserver access.
-Obj					X-Plane object, facade and road network handling code.
-ObjEdit				ObjEdit specific source code, mostly UI.
-RawImport			Import code for variosu raw data file formats
-SDTS				"Spatial Data Transfer Spec" import/export code.
-ShadowDemo			Demo code - per-pixel shadow mapping.
-Tiger				Import and processing of TIGER/Line data
-TigerTools			Standalone command line tools for TIGER/Line data
-UI					UI wrapper classes for grinders and widget-based apps.
-Utils			*	A dump for utility function collections
-VPF					"Vector Product Format" import/export code
-WED*				World-Editor specific code.
-WorldEditor			Renderfarm-specific code (mostly UI)
-XESTools			Source for Cmd-line GISTool and other misc. RenderFarm code.
-XPCompat			Compatibility - simulation of some x-plane headers.
-XPTools				Source to the 6 XPTools apps.
-XPWidgets		**	A derivation nof the XPLM and XPWidgets DLLs for UI.
-XESCore				Core files for XES files - defs, I/O, algorithms, etc.
+AC3DPlugins			AC3D plugin
+DSF				DSFlib (DSF read/write library)
+DSFTools			DSF2Text
+Env				ENVlib (ENV read/write library)
+GUI				Cross-platform UI framework for WED
+Installer			Discontinued early installer code
+Interfaces			Abstract Interfaces for WED
+MeshTool			MeshTool
+Network				Networking Utils
+OGLE				OpenGL text Editor - text editing middleware
+Obj				OBJlib (OBJ read/write code)
+ObjEdit				Discontinued OBJ texturing utility
+OneOffs				Misc Command-line tools
+RawImport			GIS data import code
+RenderFarmUI			Visualization code for RenderFarm	
+SDTS				Import code for SDTS file format
+Tiger				Import code for TIGER/Line (old ASCII format)
+TigerTools			Command-line toosl for processing TIGER/Line (ASCII format)
+UI				Lower level cross-platform UI code for XGrinder/ObjView/GUI
+Utils				Utility code for all apps
+VPF				Vector Product Format file importe
+WEDCore				WorldEditor - core data model
+WEDDocs				WorldEditor - documentation sources
+WEDEntities			WorldEditor - class Hierarchy for data model
+WEDImportExport			WorldEditor - import/export code
+WEDLibrary			WorldEditor - library view for art assets
+WEDMap				WorldEditor - map UI
+WEDProperties			WorldEditor - property editing/table UI
+WEDResources			WorldEditor - graphic assets
+WEDTCE				WorldEditor - texture coordinate editor
+WEDWindows			WorldEditor - various windows
+XESCore				GIS engine for global scenery
+XESTools			RenderFarm command-parsing code
+XPCompat			Legacy code to help compile code that is in both this tree and X-Plane.*
+XPTools				Other XPTools applications (ObjView, ObjConverter, etc.)
+XPWidgets			Widgets port and XPLM emulation
+linuxinit			Linux boilerplate code
 
-*	Used by X-Plane.
-**	This is a derivation of the X-Plane plugin code with major changes.
+* Any code in this category is copyright LR, and licensed under the MIT/X11 license to save time
+in developing the scenery tools.
 
-Generally the vast majority of the WorldEditor code is either in the WorldEditor
-package (for WorldEditor UI code), or XESCore for the core algorithms that are
-used in the command line tool and the app.
+Generally the vast majority of the WorldEditor code is either in the 
+WED_xxx and GUI_ packages.
