@@ -31,6 +31,7 @@
 #include "MapOverlay.h"
 #include "DEMDefs.h"
 #include "PerfUtils.h"
+#include "MapHelpers.h"
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
@@ -173,7 +174,7 @@ void	CropMap(
 	CutInside(outCutout,p,false,inProgress);
 }
 
-class	collect_edges : public CGAL::Arr_observer<Arrangement_2> {
+class	collect_edges : public data_preserver_t {
 public:
 	set<Halfedge_handle> *  edges;
 	bool					use_outside;
@@ -221,6 +222,7 @@ public:
     virtual void after_split_edge (Halfedge_handle  e1,
                                  Halfedge_handle  e2)
 	{
+		data_preserver_t::after_split_edge(e1,e2);
 //		printf("Split edge: 0x%08x/0x%08x   to make 0x%08x/0x%08x %lf,%lf->%lf,%lf and %lf,%lf->%lf,%lf\n",
 //			&*e1,&*e1->twin(),&*e2,&*e2->twin(),
 //			CGAL::to_double(e1->source()->point().x()),
