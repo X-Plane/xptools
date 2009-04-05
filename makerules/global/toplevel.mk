@@ -104,12 +104,12 @@ ifdef ARCH_I386
 	OBJFORMAT = elf32-i386
 	BINFORMAT = i386
 endif
+
 ifdef ARCH_X86_64
-ifndef M32_SWITCH
+ifneq ($(cross), m32)
 	OBJFORMAT = elf64-x86-64
 	BINFORMAT = i386:x86-64
 else
-endif
 	OBJFORMAT = elf32-i386
 	BINFORMAT = i386
 endif
