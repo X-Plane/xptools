@@ -223,6 +223,7 @@ all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
 clean:
 	@echo "cleaning 3rd-party libraries, removing `pwd`/local"
 	@-rm -rf ./local
+	@-rm -rf ./local32
 
 
 boost_headers: ./local$(MULTI_SUFFIX)/include/.xpt_boost
