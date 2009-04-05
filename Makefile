@@ -139,7 +139,7 @@ CONF_LIBPROJ		+= CCDEPMODE="depmode=none"
 # geotiff
 ARCHIVE_GEOTIFF		:= libgeotiff-$(VER_GEOTIFF).tar.gz
 CFLAGS_GEOTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O3 $(M32_SWITCH)"
-LDFLAGS_GEOTIFF		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+LDFLAGS_GEOTIFF		:= $(M32_SWITCH) -L$(DEFAULT_LIBDIR)
 CONF_GEOTIFF		:= --prefix=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --enable-shared=no
 CONF_GEOTIFF		+= --without-ld-shared
@@ -202,7 +202,7 @@ CONF_LIBSHP		:= --prefix=$(DEFAULT_PREFIX)
 ifeq ($(PLATFORM), Darwin)
 	AR_ZLIB			:= "libtool -static -o"
 	CONF_LIBTIFF		+= --with-apple-opengl-framework
-	LDFLAGS_GEOTIFF     	:= "-Z $(LDFLAGS_GEOTIFF)"
+	LDFLAGS_GEOTIFF     	+= -Z
 endif
 ifeq ($(PLATFORM), Mingw)
 endif
@@ -359,7 +359,7 @@ libgeotiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libgeotiff
 	@tar -xzf "./archives/$(ARCHIVE_GEOTIFF)"
 	@cd "libgeotiff-$(VER_GEOTIFF)" && \
 	chmod +x configure && \
-	CFLAGS=$(CFLAGS_GEOTIFF) LDFLAGS=$(LDFLAGS_GEOTIFF) \
+	CFLAGS=$(CFLAGS_GEOTIFF) LDFLAGS="$(LDFLAGS_GEOTIFF)" \
 	./configure $(CONF_GEOTIFF) $(BE_QUIET)
 	@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" $(BE_QUIET)
 	@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" install $(BE_QUIET)
