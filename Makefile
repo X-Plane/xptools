@@ -36,8 +36,7 @@ else
 all: WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm ac3d
 endif
 
-libs: ./libs/local$(MULTI_SUFFIX)/.xpt_libs
-./libs/local$(MULTI_SUFFIX)/.xpt_libs:
+libs:
 	@$(MAKE) -s -C "./libs" cross=$(cross) gitlibs=$(gitlibs) all
 
 ObjView: libs
