@@ -215,14 +215,17 @@ libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
 libexpat
 
 ifneq ($(gitlibs), 1)
-all: boost_headers mesa_headers zlib libpng libfreetype libjpeg libtiff \
- libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp libexpat
+all: ./local$(MULTI_SUFFIX)/.xpt_libs
+./local$(MULTI_SUFFIX)/.xpt_libs: boost_headers mesa_headers zlib libpng \
+libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
+libsquish libdime libshp libexpat
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
 else
 ifeq ($(PLATFORM), Mingw)
-all:
+all: ./local$(MULTI_SUFFIX)/.xpt_libs
+./local$(MULTI_SUFFIX)/.xpt_libs:
 	@-rm -rf ./local
-	git clone git://dev.x-plane.com/~sothis/xptools-libs-win32.git local
+	git clone git://dev.x-plane.com/~sothis/xptools-libs-win32.git ./local
 endif
 endif
 
