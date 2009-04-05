@@ -225,7 +225,7 @@ ifeq ($(PLATFORM), Mingw)
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs:
 	@-rm -rf ./local
-	git clone git://dev.x-plane.com/~sothis/xptools-libs-win32.git ./local
+	git clone git://dev.x-plane.com/xptools-libs-win32.git ./local
 endif
 endif
 
