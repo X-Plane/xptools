@@ -38,7 +38,7 @@ endif
 
 libs: ./libs/local$(MULTI_SUFFIX)/.xpt_libs
 ./libs/local$(MULTI_SUFFIX)/.xpt_libs:
-	@$(MAKE) -s -C "./libs" cross=$(cross) all
+	@$(MAKE) -s -C "./libs" cross=$(cross) gitlibs=$(gitlibs) all
 
 ObjView: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
