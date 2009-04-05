@@ -2,10 +2,10 @@
 # project wide include and library searchpaths
 ##############################################
 
-LIBPATHS += -L./libs/local/lib
+LIBPATHS += -L./libs/local$(MULTI_SUFFIX)/lib
 
-INCLUDEPATHS += -I./libs/local/include
-INCLUDEPATHS += -I./libs/local/include/freetype2
+INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include
+INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/freetype2
 INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./src/WEDTCE
 INCLUDEPATHS += -I./src/Env
@@ -43,5 +43,5 @@ INCLUDEPATHS += -I./src/SDTS
 INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
-INCLUDEPATHS += -I./libs/local/include/mesa
+INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/mesa
 endif #PLAT_LINUX

@@ -33,9 +33,14 @@ ifeq ($(cross), mingw64)
 	CROSSPREFIX	:= x86_64-pc-mingw32-
 	ARCHITECTURE	:= x86_64
 endif
+
 ifeq ($(cross), m32)
+ifeq ($(ARCHITECTURE), x86_64)
 	MULTI_SUFFIX	:= 32
 	M32_SWITCH	:= -m32
+else
+	cross		:= ""
+endif
 endif
 
 ifndef PLAT_DARWIN
@@ -100,8 +105,13 @@ ifdef ARCH_I386
 	BINFORMAT = i386
 endif
 ifdef ARCH_X86_64
+ifndef M32_SWITCH
 	OBJFORMAT = elf64-x86-64
 	BINFORMAT = i386:x86-64
+else
+endif
+	OBJFORMAT = elf32-i386
+	BINFORMAT = i386
 endif
 
 ifdef PLAT_MINGW

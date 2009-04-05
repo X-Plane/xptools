@@ -14,12 +14,6 @@ REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-ifdef ARCH_X86_64
-# note that this still requires libc-devel.i386 and libstdc++-devel.i386
-CFLAGS		+= -m32
-CXXFLAGS	+= -m32
-LDFLAGS		+= -m32
-endif
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
 FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX

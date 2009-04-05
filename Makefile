@@ -30,7 +30,7 @@ endif
 libs: $(LIBRARIES)
 
 $(LIBRARIES):
-	@$(MAKE) -s -C "./libs" all
+	@$(MAKE) -s -C "./libs" cross=$(cross) all
 
 ObjView: libs
 	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
