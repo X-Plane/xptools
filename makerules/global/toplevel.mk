@@ -113,6 +113,7 @@ else
 	OBJFORMAT = elf32-i386
 	BINFORMAT = i386
 endif
+endif
 
 ifdef PLAT_MINGW
 # uname -m gives i686, regardless if on win32 or win64
