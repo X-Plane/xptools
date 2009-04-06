@@ -126,7 +126,9 @@
 // this provides a crude way to trace output (e.g. why is this node in my tile or why is this way not in my tile).
 // def to -1 to not use.
 #define CHECK_NODE_ID 343223997
-#define CHECK_WAY_ID 30857863
+//#define CHECK_WAY_ID 30857863
+
+#define CHECK_WAY_ID 28772032
 
 /********************************************************************************************************************************************
  * BOUNDING BOX
@@ -619,15 +621,16 @@ void StartElementHandler_Output(void *userData,
 		int node_id = get_int_attr("id",atts,-1);
 		if(node_id < 0 || node_id > highest_n) xml_die("Bad node id: %d\n",node_id);
 		
-		++output_level;
-		
 		if(!decode_bbox(g_nodes[node_id],out_box))
-		for(y = out_box[1]; y <= out_box[3]; ++y)
-		for(x = out_box[0]; x <= out_box[2]; ++x)
-			print_one_tag(
-				print_to_bucket_ok(x,y),
-				name,atts,need_to_close,
-				x,y,node_id,-1);
+		{
+			++output_level;
+			for(y = out_box[1]; y <= out_box[3]; ++y)
+			for(x = out_box[0]; x <= out_box[2]; ++x)
+				print_one_tag(
+					print_to_bucket_ok(x,y),
+					name,atts,need_to_close,
+					x,y,node_id,-1);
+		}
 	}
 	else if(!want_print && strcmp(name,"way")==0)
 	{
@@ -635,19 +638,20 @@ void StartElementHandler_Output(void *userData,
 		int way_id = get_int_attr("id",atts,-1);
 		if(way_id < 0 || way_id > highest_w) xml_die("Bad way id: %d\n", way_id);
 
-		++output_level;
-		
 		if(!decode_bbox(g_ways[way_id],out_box))
-		for(y = out_box[1]; y <= out_box[3]; ++y)
-		for(x = out_box[0]; x <= out_box[2]; ++x)
-			print_one_tag(
-				print_to_bucket_ok(x,y),
-				name,atts,need_to_close,
-				x,y,-1,way_id);
+		{
+			++output_level;
+			for(y = out_box[1]; y <= out_box[3]; ++y)
+			for(x = out_box[0]; x <= out_box[2]; ++x)
+				print_one_tag(
+					print_to_bucket_ok(x,y),
+					name,atts,need_to_close,
+					x,y,-1,way_id);
+		}
 	}
 	else if (output_level > 0)
 	{
-		++output_level;
+		++output_level;			
 		for(y = out_box[1]; y <= out_box[3]; ++y)
 		for(x = out_box[0]; x <= out_box[2]; ++x)
 			print_one_tag(
