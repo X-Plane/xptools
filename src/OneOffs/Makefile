@@ -13,7 +13,7 @@ osm_tile: osm_tile.c
 osm2shape: osm2shape.c
 	gcc osm2shape.c -lz -lexpat -lshp -o osm2shape
 
-split_image: SplitImage.c -o split_image
+split_image: SplitImage.c
 	gcc SplitImage.c -o split_image
 
 GenTerrain: GenTerrain.c
