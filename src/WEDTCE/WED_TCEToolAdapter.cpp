@@ -32,9 +32,9 @@ void				WED_TCEToolAdapter::HandleClickUp  (int inX, int inY, int inButton, GUI_
 	brains->HandleClickUp(inX, inY, inButton, modifiers);
 }
 
-int					WED_TCEToolAdapter::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )
+int					WED_TCEToolAdapter::HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )
 {
-	return brains->HandleKeyPress(inKey, inVK, inFlags);
+	return brains->HandleToolKeyPress(inKey, inVK, inFlags);
 }
 
 void				WED_TCEToolAdapter::KillOperation(bool mouse_is_down)

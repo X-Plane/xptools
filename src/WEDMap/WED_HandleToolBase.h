@@ -52,7 +52,7 @@ public:
 	virtual	int			HandleClickDown			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	void		HandleClickDrag			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	void		HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
-	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	void		KillOperation(bool mouse_is_down);
 
 	// GUI_Commander_Notifiable

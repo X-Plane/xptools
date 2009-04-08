@@ -271,7 +271,7 @@ WED_DocumentWindow::~WED_DocumentWindow()
 {
 }
 
-int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int	WED_DocumentWindow::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if ( mMapPane->Map_KeyPress(inKey, inVK, inFlags)) return 1;
 	if (inKey == GUI_KEY_DELETE && (inFlags & gui_DownFlag))

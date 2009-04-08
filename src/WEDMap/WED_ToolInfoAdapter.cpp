@@ -32,8 +32,6 @@ const int COL_WIDTH = 100;
 
 #define OUR_FONT font_UI_Small
 
-extern int gExclusion;
-
 WED_ToolInfoAdapter::WED_ToolInfoAdapter(int height) : mTool(NULL), mRowHeight(height)
 {
 }
@@ -121,7 +119,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 				the_content.text_val += label;
 			}
 			if (the_content.text_val.empty())	the_content.text_val="none";
-			if(gExclusion && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
+			if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		}
 
 	}
@@ -141,10 +139,15 @@ void	WED_ToolInfoAdapter::GetEnumDictionary(
 			map<int, string>&			out_dictionary)
 {
 	out_dictionary.clear();
+	PropertyInfo_t inf;
+	inf.exclusive=false;
 
 	if (mTool)
+	{
 		mTool->GetNthPropertyDict(cell_x / 2, out_dictionary);
-	if(gExclusion)
+		mTool->GetNthPropertyInfo(cell_x / 2, inf);
+	}
+	if(inf.exclusive)
 		out_dictionary.insert(map<int,string>::value_type(0,"None"));
 }
 void	WED_ToolInfoAdapter::AcceptEdit(
@@ -184,7 +187,7 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		break;
 	case prop_EnumSet:
 		val.prop_kind = prop_EnumSet;
-		if (gExclusion)
+		if (inf.exclusive)
 		{
 			val.set_val.clear();
 			if (the_content.int_val != 0)

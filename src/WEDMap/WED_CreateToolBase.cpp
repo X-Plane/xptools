@@ -407,7 +407,7 @@ void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 	mCreating = 0;
 }
 
-int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )
+int			WED_CreateToolBase::HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )
 {
 	if (!mCreating && (inFlags & gui_DownFlag))
 	switch (inKey) {
@@ -442,7 +442,7 @@ int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 		}
 		break;
 	}
-	return WED_HandleToolBase::HandleKeyPress(inKey, inVK, inFlags);
+	return WED_HandleToolBase::HandleToolKeyPress(inKey, inVK, inFlags);
 }
 
 /*

@@ -257,7 +257,7 @@ void	WED_MapPane::ZoomShowAll(void)
 
 int		WED_MapPane::Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	if (mMap->KeyPress(inKey, inVK, inFlags)) return 1;
+	if (mMap->HandleKeyPress(inKey, inVK, inFlags)) return 1;
 	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
 	if (kToolKeys[n])
 	if (kToolKeys[n]==inKey)

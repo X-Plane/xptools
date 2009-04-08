@@ -40,11 +40,6 @@
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
-#if !DEV
-	#error this was 1.  What IS this?
-#endif
-int gExclusion=0;
-
 inline bool AnyLocked(WED_Thing * t)
 {
 	if (t == NULL) return false;
@@ -182,7 +177,7 @@ void	WED_PropertyTable::GetCellContent(
 			the_content.text_val += label;
 		}
 		if (the_content.text_val.empty())	the_content.text_val="none";
-		if(gExclusion && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
+		if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		break;
 	}
 	int unused_vis, unused_kids;
@@ -216,7 +211,9 @@ void	WED_PropertyTable::GetEnumDictionary(
 	if (idx == -1) return;
 
 	t->GetNthPropertyDict(idx, out_dictionary);
-	if(gExclusion)
+	PropertyInfo_t info;
+	t->GetNthPropertyInfo(idx,info);	
+	if(info.exclusive)
 		out_dictionary.insert(map<int,string>::value_type(0,"None"));
 }
 
@@ -302,7 +299,7 @@ void	WED_PropertyTable::AcceptEdit(
 			break;
 		case prop_EnumSet:
 			val.prop_kind = prop_EnumSet;
-			if (gExclusion)
+			if (inf.exclusive)
 			{
 				val.set_val.clear();
 				if (content.int_val != 0)

@@ -247,7 +247,7 @@ public:
 	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void		KillEditing(bool save_it);
 
-	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			AcceptTakeFocus(void) 	{ return 1; }
 
 private:

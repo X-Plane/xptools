@@ -69,9 +69,9 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mPavement(tool == create_Taxi ? this : NULL,"Pavement","","",Surface_Type,surf_Concrete),
 		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25,4,2),
 		mHeading(tool == create_Taxi || tool == create_Polygon ? this : NULL,"Heading","","",0,5,2),
-		mMarkings(tool <= create_Hole ? this : NULL,".Markings", "", "", LinearFeature),
-		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", "", "", ".Markings",line_SolidYellow,line_BWideBrokenDouble),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge),
+		mMarkings(tool <= create_Hole ? this : NULL,".Markings", "", "", LinearFeature, 0),
+		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", "", "", ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
 
 		mResource(tool > create_Hole ? this : NULL, "Resource", "", "", ""),
 		mHeight(tool == create_Facade ? this : NULL, "Height", "", "", 10.0, 4, 2),

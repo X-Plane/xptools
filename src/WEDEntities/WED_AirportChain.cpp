@@ -33,8 +33,8 @@ DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0),
-	lines(this,"Line Attributes","","","Line Attributes"),
-	lights(this,"Light Attributes","","","Light Attributes")
+	lines(this,"Line Attributes","","","Line Attributes", 1),
+	lights(this,"Light Attributes","","","Light Attributes", 1)
 {
 }
 

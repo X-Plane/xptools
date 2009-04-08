@@ -56,7 +56,7 @@ public:
 	virtual	int			MouseMove(int x, int y);
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis);
 
-	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,

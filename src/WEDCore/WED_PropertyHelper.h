@@ -275,12 +275,13 @@ public:
 
 	set<int>	value;
 	int			domain;
+	int			exclusive;
 
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain)  : WED_PropertyItem(parent, title, table, column), domain(idomain) { }
+	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain, int iexclusive)  : WED_PropertyItem(parent, title, table, column), domain(idomain), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -302,8 +303,9 @@ public:
 	const char *			host;
 	int						minv;
 	int						maxv;
+	int						exclusive;
 
-	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost, int iminv, int imaxv)  : WED_PropertyItem(parent, title, table, column), host(ihost), minv(iminv), maxv(imaxv) { }
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title, table, column), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -322,8 +324,9 @@ class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
 public:
 
 	const char *			host;
+	int						exclusive;
 
-	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost)  : WED_PropertyItem(parent, title, table, column), host(ihost) {}
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title, table, column), host(ihost), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);

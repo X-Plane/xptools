@@ -36,8 +36,6 @@
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
 
-#undef KeyPress
-
 class	GUI_GraphState;
 
 class	GUI_TextField : public GUI_Pane,
@@ -71,7 +69,7 @@ public:
 	virtual void		SetBounds(int inBounds[4]);
 
 	// GUI_Commander
-	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			HandleCommand(int command);
 	virtual	int			CanHandleCommand(int command, string& ioName, int& ioCheck);
 	virtual	int			AcceptTakeFocus(void);

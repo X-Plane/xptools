@@ -1055,7 +1055,7 @@ GUI_TextTable::GUI_DragPart	GUI_TextTable::GetCellDragPart(int cell_bounds[4], i
 
 }
 
-int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			GUI_TextTable::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (!mContent) return 0;
 

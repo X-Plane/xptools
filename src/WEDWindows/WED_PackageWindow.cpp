@@ -65,7 +65,7 @@ WED_PackageWindow::~WED_PackageWindow()
 	printf("Package window (empty dtor.)\n");
 }
 
-int	WED_PackageWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int	WED_PackageWindow::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	return 0;
 }

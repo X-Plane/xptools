@@ -50,7 +50,7 @@ public:
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
-	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
+	virtual	int				HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 	virtual	int				HandleCommand(int command) 									;
 	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck) ;
 

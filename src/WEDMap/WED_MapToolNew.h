@@ -40,7 +40,7 @@ public:
 	virtual	int					HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers)=0;
 	virtual	void				HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers)=0;
 	virtual	void				HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers)=0;
-	virtual	int					HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )=0;
+	virtual	int					HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )=0;
 	virtual	void				KillOperation(bool mouse_is_down)=0;		// Called when another tool is picked.  If a shape is half built, ABORT!
 
 	virtual	const char *		GetStatusText(void)=0;

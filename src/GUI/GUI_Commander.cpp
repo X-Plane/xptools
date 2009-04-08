@@ -154,7 +154,7 @@ int				GUI_Commander::DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlag
 	GUI_Commander * who = this->GetFocusForCommander();
 	while (who != NULL)
 	{
-		if (who->KeyPress(inKey, inVK, inFlags)) return 1;
+		if (who->HandleKeyPress(inKey, inVK, inFlags)) return 1;
 		who = who->mCmdParent;
 	}
 	return 0;

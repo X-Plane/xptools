@@ -614,7 +614,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	mDragType = drag_None;
 }
 
-int			WED_HandleToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			WED_HandleToolBase::HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	return 0;
 }

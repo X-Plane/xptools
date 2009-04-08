@@ -53,6 +53,7 @@ struct PropertyInfo_t {
 	string			prop_name;
 	int				digits;
 	int				decimals;
+	int				exclusive;
 };
 
 struct	PropertyVal_t {

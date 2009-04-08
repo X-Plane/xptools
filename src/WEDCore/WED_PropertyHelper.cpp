@@ -32,7 +32,6 @@
 #include <algorithm>
 
 int gIsFeet = 0;
-extern int gExclusion;
 
 inline int remap(const map<int,int>& m, int v)
 {
@@ -602,6 +601,7 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
+	info.exclusive = this->exclusive;
 }
 
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
@@ -718,6 +718,7 @@ void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 	int me = mParent->FindProperty(host);
 	mParent->GetNthPropertyInfo(me, info);
 	info.prop_name = mTitle;
+	info.exclusive = exclusive;
 }
 
 void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
@@ -793,6 +794,7 @@ void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = host;
 	info.prop_kind = prop_EnumSet;
 	info.can_edit = 1;
+	info.exclusive = this->exclusive;
 }
 
 void		WED_PropIntEnumSetUnion::GetPropertyDict(PropertyDict_t& dict)
@@ -862,7 +864,7 @@ void		WED_PropIntEnumSetUnion::SetProperty(const PropertyVal_t& val, WED_Propert
 			int idx = inf->FindProperty(host);
 			if (idx != -1)
 			{
-				if (gExclusion)
+				if (exclusive)
 				{
 					inf->SetNthProperty(idx, val);
 				}

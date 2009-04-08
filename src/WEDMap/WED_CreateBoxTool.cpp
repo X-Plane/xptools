@@ -48,7 +48,7 @@ WED_CreateBoxTool::WED_CreateBoxTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
-		mExclusions(this,"Exclusions", "", "", ExclusionTypes)
+		mExclusions(this,"Exclusions", "", "", ExclusionTypes, 0)
 {
 }
 

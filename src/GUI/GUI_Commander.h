@@ -45,12 +45,6 @@
 	panes, commanders do not attempt any memory management!
 
 */
-#if !DEV
-#if !IBM
-	#warning refactor KeyPress symbol (conflicts with /SDK/ac3d/Tk/X11/X.h)
-#endif
-#endif
-#undef KeyPress
 
 class	GUI_Commander;
 
@@ -87,7 +81,7 @@ public:
 			int				DispatchCanHandleCommand(int command, string& ioName, int& ioCheck);
 
 	// Commander handler messages:
-	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	{ return 0; }
+	virtual	int				HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	{ return 0; }
 	virtual	int				HandleCommand(int command) 									{ return 0; }
 	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck) { return 0; }
 

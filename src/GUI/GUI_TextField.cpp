@@ -189,7 +189,7 @@ void		GUI_TextField::SetBounds(int inBounds[4])
 	Refresh();
 }
 
-int			GUI_TextField::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			GUI_TextField::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (!mAllowed[(unsigned char) inKey]) return 0;
 	if (!mAllowedVK[(unsigned char) inVK]) return 0;

@@ -29,13 +29,6 @@
 #include "GUI_Pane.h"
 #include "XWinGL.h"
 
-#if !DEV
-#if !IBM
-	#warning refactor KeyPress symbol (conflicts with /SDK/ac3d/Tk/X11/X.h)
-#endif
-#endif
-#undef KeyPress
-
 #if IBM
 class	GUI_Window_DND;
 #endif
