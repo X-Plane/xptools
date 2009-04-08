@@ -593,12 +593,24 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 
 // RebaseTriangle -
 
+inline bool has_no_xon(int tex1, int tex2)
+{
+	int ind1 = gNaturalTerrainIndex[tex1];
+	int	ind2 = gNaturalTerrainIndex[tex2];
+
+	NaturalTerrainInfo_t& rec1(gNaturalTerrainTable[ind1]);
+	NaturalTerrainInfo_t& rec2(gNaturalTerrainTable[ind2]);
+
+	return rec1.xon_dist == 0.0 || rec2.xon_dist == 0.0;
+}
 
 static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT::Vertex_handle v1, CDT::Vertex_handle v2, set<CDT::Vertex_handle>& ioModVertices)
 {
 	int old_base = tri->info().terrain;
 
 	if (old_base == terrain_Water || new_base == terrain_Water)
+		return;
+	if(has_no_xon(old_base,new_base))
 		return;
 
 	DebugAssert(new_base != terrain_Water);
