@@ -150,8 +150,8 @@ public:
 	void			ProcessPoints(void);
 	int				MapPoolNumber(int);	// From full to used pool #s
 
-	int				WritePoolAtoms(FILE * fi, int id);
-	int				WriteScaleAtoms(FILE * fi, int id);
+	int				WritePoolAtoms(FILE * fi, int32_t id);
+	int				WriteScaleAtoms(FILE * fi, int32_t id);
 
 private:
 
@@ -197,8 +197,8 @@ public:
 	void			ProcessPoints(void);
 	int				MapPoolNumber(int);	// From full to used pool #s
 
-	int				WritePoolAtoms(FILE * fi, int id);
-	int				WriteScaleAtoms(FILE * fi, int id);
+	int				WritePoolAtoms(FILE * fi, int32_t id);
+	int				WriteScaleAtoms(FILE * fi, int32_t id);
 
 private:
 
@@ -234,8 +234,8 @@ public:
 	DSFPointPoolLoc	AcceptContiguous(const DSFTupleVector& inPoints);
 	DSFPointPoolLoc	AcceptShared(const DSFTuple& inPoint);
 
-	int				WritePoolAtoms(FILE * fi, int id);
-	int				WriteScaleAtoms(FILE * fi, int id);
+	int				WritePoolAtoms(FILE * fi, int32_t id);
+	int				WriteScaleAtoms(FILE * fi, int32_t id);
 
 private:
 

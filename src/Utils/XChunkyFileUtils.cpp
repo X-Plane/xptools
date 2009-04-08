@@ -32,10 +32,10 @@
 
 using std::vector;
 
-inline short	SwapValueTyped(short v	) { return (short ) SWAP16(v); }
-inline int		SwapValueTyped(int v	) { return (int   ) SWAP32(v); }
-inline float	SwapValueTyped(float v	) { return (float ) SWAP32(v); }
-inline double	SwapValueTyped(double v	) { return (double) SWAP64(v); }
+inline short	SwapValueTyped(int16_t v) { return (int16_t) SWAP16(v); }
+inline int		SwapValueTyped(int32_t v) { return (int32_t) SWAP32(v); }
+inline float	SwapValueTyped(float v	) { return (float  ) SWAP32(v); }
+inline double	SwapValueTyped(double v	) { return (double ) SWAP64(v); }
 
 #pragma mark class FlatDecoder
 
@@ -311,21 +311,21 @@ XSpan::XSpan() :
 }
 
 
-unsigned long	XAtom::GetID(void)
+uint32_t	XAtom::GetID(void)
 {
 	if (begin == NULL) return 0;
 	XAtomHeader_t *	header = (XAtomHeader_t *) begin;
 	return SWAP32(header->id);
 }
 
-unsigned long	XAtom::GetContentLength(void)
+uint32_t	XAtom::GetContentLength(void)
 {
 	if (begin == NULL) return 0;
 	XAtomHeader_t *	header = (XAtomHeader_t *) begin;
 	return SWAP32(header->length) - sizeof(XAtomHeader_t);
 }
 
-unsigned long	XAtom::GetContentLengthWithHeader(void)
+uint32_t	XAtom::GetContentLengthWithHeader(void)
 {
 	if (begin == NULL) return 0;
 	XAtomHeader_t *	header = (XAtomHeader_t *) begin;
@@ -385,7 +385,7 @@ int		XAtomContainer::CountAtoms(void)
 	return n;
 }
 
-int 	XAtomContainer::CountAtomsOfID(unsigned long inID)
+int 	XAtomContainer::CountAtomsOfID(uint32_t inID)
 {
 	int n = 0;
 	XAtom	atom, next;
@@ -419,7 +419,7 @@ bool	XAtomContainer::GetNthAtom(int inIndex, XAtom& outAtom)
 	return false;
 }
 
-bool	XAtomContainer::GetNthAtomOfID(unsigned long inID, int inIndex, XAtom& outAtom)
+bool	XAtomContainer::GetNthAtomOfID(uint32_t inID, int inIndex, XAtom& outAtom)
 {
 	XAtom	next;
 	if (!GetFirst(outAtom))
@@ -563,7 +563,7 @@ int	XAtomPlanerNumericTable::DecompressShort(
 					int		numberOfPlanes,
 					int		planeSize,
 					int		interleaved,
-					short * ioPlaneBuffer)
+					int16_t * ioPlaneBuffer)
 {
 	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
 						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
@@ -575,7 +575,7 @@ int	XAtomPlanerNumericTable::DecompressInt(
 					int		numberOfPlanes,
 					int		planeSize,
 					int		interleaved,
-					int * ioPlaneBuffer)
+					int32_t * ioPlaneBuffer)
 {
 	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
 						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
@@ -607,7 +607,7 @@ int	XAtomPlanerNumericTable::DecompressDouble(
 
 #pragma mark -
 
-StAtomWriter::StAtomWriter(FILE * inFile, int inID)
+StAtomWriter::StAtomWriter(FILE * inFile, uint32_t inID)
 {
 	mID = inID;
 	mFile = inFile;
@@ -718,7 +718,7 @@ void	WritePlanarNumericAtomShort(
 							int		planeSize,
 							int		encodeMode,
 							int		interleaved,
-							short *	ioData)
+							int16_t *	ioData)
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
 }
@@ -729,7 +729,7 @@ void	WritePlanarNumericAtomInt(
 							int		planeSize,
 							int		encodeMode,
 							int		interleaved,
-							int *	ioData)
+							int32_t *	ioData)
 {
 	WritePlanarNumericAtom(file, numberOfPlanes, planeSize, encodeMode, interleaved, ioData);
 }
@@ -769,25 +769,25 @@ void			WriteSInt8  (FILE * fi, 		 char	v)
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
-void			WriteUInt16 (FILE * fi, unsigned short	v)
+void			WriteUInt16 (FILE * fi, uint16_t	v)
 {
 	v = SWAP16(v);
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
-void			WriteSInt16 (FILE * fi, 		 short	v)
+void			WriteSInt16 (FILE * fi, 		int16_t	v)
 {
 	v = SWAP16(v);
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
-void			WriteUInt32 (FILE * fi, unsigned int	v)
+void			WriteUInt32 (FILE * fi, uint32_t	v)
 {
 	v = SWAP32(v);
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
-void			WriteSInt32 (FILE * fi, 		 int	v)
+void			WriteSInt32 (FILE * fi, 		 int32_t	v)
 {
 	v = SWAP32(v);
 	fwrite(&v, 1, sizeof(v), fi);
@@ -795,12 +795,12 @@ void			WriteSInt32 (FILE * fi, 		 int	v)
 
 void			WriteFloat32(FILE * fi, float			v)
 {
-	*((int *) &v) = SWAP32(*((int *) &v));
+	*((int *) &v) = SWAP32(*((int32_t *) &v));
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
 void			WriteFloat64(FILE * fi, double			v)
 {
-	*((long long *) &v) = SWAP32(*((long long *) &v));
+	*((long long *) &v) = SWAP64(*((int64_t *) &v));
 	fwrite(&v, 1, sizeof(v), fi);
 }

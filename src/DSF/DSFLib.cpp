@@ -86,7 +86,7 @@ const char *	dsfErrorMessages[] = {
 
 inline	double	DECODE_SCALED(
 						unsigned int index, unsigned int pool, unsigned int plane,
-						const vector<vector<unsigned short> >& points, const vector<int>& depths,
+						const vector<vector<uint16_t> >& points, const vector<int>& depths,
 						const vector<vector<float> >& scale, const vector<vector<float> >& delta)
 {
 	double sc = scale[pool][plane];
@@ -101,7 +101,7 @@ inline	double	DECODE_SCALED(
 
 inline	double	DECODE_SCALED32(
 						unsigned int index, unsigned int pool, unsigned int plane,
-						const vector<vector<unsigned long> >& points, const vector<int>& depths,
+						const vector<vector<uint32_t> >& points, const vector<int>& depths,
 						const vector<vector<float> >& scale, const vector<vector<float> >& delta)
 {
 	double sc = scale[pool][plane];
@@ -313,15 +313,15 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 	/* Read raw geodata. */
 
 	int n;
-	vector<vector<unsigned short> >	planarData;		// Per plane array of shorts
+	vector<vector<uint16_t> >		planarData;		// Per plane array of 16-bit data
 	vector<int>						planeDepths;	// Per plane plane count
 	vector<int>						planeSizes;		// Per plane length of plane
 	vector<vector<float> >			planeScales;	// Per plane scaling factor
 	vector<vector<float> >			planeOffsets;	// Per plane offset
 
-	vector<vector<unsigned long> >	planarData32;		// Per plane array of shorts
+	vector<vector<uint32_t> >		planarData32;	// Per plane array of 32-bit data
 	vector<int>						planeDepths32;	// Per plane plane count
-	vector<int>						planeSizes32;		// Per plane length of plane
+	vector<int>						planeSizes32;	// Per plane length of plane
 	vector<vector<float> >			planeScales32;	// Per plane scaling factor
 	vector<vector<float> >			planeOffsets32;	// Per plane offset
 
@@ -332,10 +332,10 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		int pCount = poolAtom.GetPlaneCount();
 		planeDepths.push_back(pCount);
 		planeSizes.push_back(aSize);
-		planarData.push_back(vector<unsigned short>());
+		planarData.push_back(vector<uint16_t>());
 		planarData.back().resize(aSize * pCount);
 		if(aSize)
-			poolAtom.DecompressShort(pCount, aSize, 1, (short *) &*planarData.back().begin());
+			poolAtom.DecompressShort(pCount, aSize, 1, (int16_t *) &*planarData.back().begin());
 //		printf("[%0d] point pool depth %d, count %d\n", n, pCount, aSize);
 //		for (int n = 0; n < planarData.back().size(); ++n)
 //			printf("  %04X", planarData.back()[n]);
@@ -349,7 +349,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		int pCount = poolAtom.GetPlaneCount();
 		planeDepths32.push_back(pCount);
 		planeSizes32.push_back(aSize);
-		planarData32.push_back(vector<unsigned long>());
+		planarData32.push_back(vector<uint32_t>());
 		planarData32.back().resize(aSize * pCount);
 		if(aSize)
 			poolAtom.DecompressInt(pCount, aSize, 1, (int *) &*planarData32.back().begin());
@@ -448,7 +448,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 
 		unsigned int		currentDefinition = 0xFFFFFFFF;
 		unsigned int		roadSubtype = 0xFFFFFFFF;
-		unsigned short		currentPool = 0xFFFF;
+		uint16_t		currentPool = 0xFFFF;
 		unsigned int		junctionOffset = 0xFFFFFFFF;
 		double				patchLODNear = -1.0;
 		double				patchLODFar = -1.0;
@@ -468,10 +468,10 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		unsigned int	segID;
 		bool			hasCurve;
 
-		unsigned short	polyParam;
+		uint16_t		polyParam;
 
 		vector<double>	triCoord;
-		unsigned short	pool;
+		uint16_t		pool;
 
 		unsigned char	cmdID = cmdsAtom.ReadUInt8();
 		switch(cmdID) {

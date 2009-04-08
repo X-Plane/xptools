@@ -351,7 +351,7 @@ void DSFPrint_EndSegment(
 
 void DSFPrint_BeginPolygon(
 				unsigned int	inPolygonType,
-				unsigned short	inParam,
+				uint16_t		inParam,
 				int				inDepth,
 				void *			inRef)
 {

@@ -126,7 +126,7 @@ static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, i
 		} else if (curType > 255)
 		{
 			WriteUInt8(fi, dsf_Cmd_SetDefinition16);
-			WriteUInt16(fi, (unsigned short) curType);
+			WriteUInt16(fi, (uint16_t) curType);
 		} else {
 			WriteUInt8(fi, dsf_Cmd_SetDefinition8);
 			WriteUInt8(fi, (unsigned char) curType);
@@ -136,7 +136,7 @@ static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, i
 	{
 		curPool = newPool;
 		WriteUInt8(fi, dsf_Cmd_PoolSelect);
-		WriteUInt16(fi, (unsigned short) curPool);
+		WriteUInt16(fi, (uint16_t) curPool);
 	}
 }
 

@@ -216,12 +216,12 @@ int				DSFSharedPointPool::MapPoolNumber(int n)
 	return mUsageMapping[n];
 }
 
-int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int id)
+int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
 		StAtomWriter	poolAtom(fi, id);
-		vector<unsigned short>	shorts;
+		vector<uint16_t>	shorts;
 		for (DSFTupleVector::iterator i = pool->mPoints.begin();
 			i != pool->mPoints.end(); ++i)
 		{
@@ -230,12 +230,12 @@ int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int id)
 				shorts.push_back((*i)[j]);
 			}
 		}
-		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (short *) &*shorts.begin());
+		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) &*shorts.begin());
 	}
 	return mPools.size();
 }
 
-int			DSFSharedPointPool::WriteScaleAtoms(FILE * fi, int id)
+int			DSFSharedPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
@@ -342,12 +342,12 @@ int				DSFContiguousPointPool::MapPoolNumber(int n)
 	return mUsageMapping[n];
 }
 
-int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int id)
+int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
 	for (list<ContiguousSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
 		StAtomWriter	poolAtom(fi, id);
-		vector<unsigned short>	shorts;
+		vector<uint16_t>	shorts;
 		for (DSFTupleVector::iterator i = pool->mPoints.begin();
 			i != pool->mPoints.end(); ++i)
 		{
@@ -358,12 +358,12 @@ int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int id)
 			}
 		}
 //		printf("\n");
-		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (short *) &*shorts.begin());
+		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) &*shorts.begin());
 	}
 	return mPools.size();
 }
 
-int			DSFContiguousPointPool::WriteScaleAtoms(FILE * fi, int id)
+int			DSFContiguousPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
 	for (list<ContiguousSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
@@ -447,10 +447,10 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptShared(const DSFTuple& inPoint)
 	return result;
 }
 
-int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int id)
+int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
 	StAtomWriter	poolAtom(fi, id);
-	vector<unsigned long>	longs;
+	vector<uint32_t>	longs;
 	for (DSFTupleVector::iterator i = mPoints.begin();
 		i != mPoints.end(); ++i)
 	{
@@ -464,7 +464,7 @@ int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int id)
 	return 1;
 }
 
-int				DSF32BitPointPool::WriteScaleAtoms(FILE * fi, int id)
+int				DSF32BitPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
 	StAtomWriter	scaleAtom(fi, id);
 	for (int d = 0; d < mScale.size(); ++d)

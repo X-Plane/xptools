@@ -44,13 +44,13 @@
  * of the file. */
 struct	DSFHeader_t {
 	char	cookie[8];
-	int		version;
+	int32_t	version;
 };
 
 /* An atom starts with an ID, and then a length including the 8 byte header. */
 struct	AtomHeader_t {
-	int		id;
-	int		size;
+	int32_t		id;
+	int32_t		size;
 };
 
 /* The DSF file ends with a 128-bit foot MD5, signature summarizing the rest

@@ -57,8 +57,8 @@
 #endif
 
 struct	XAtomHeader_t {
-	unsigned long	id;
-	unsigned long	length;
+	uint32_t	id;
+	uint32_t	length;
 };
 
 
@@ -108,12 +108,12 @@ struct	XSpan {
  */
 struct	XAtom : public XSpan {
 
-	unsigned long	GetID(void);
-	unsigned long	GetContentLength(void);
-	unsigned long	GetContentLengthWithHeader(void);
-	void			GetContents(XSpan& outContents);
+	uint32_t	GetID(void);
+	uint32_t	GetContentLength(void);
+	uint32_t	GetContentLengthWithHeader(void);
+	void		GetContents(XSpan& outContents);
 
-	bool			GetNext(const XSpan& inContainer, XAtom& outNext);
+	bool		GetNext(const XSpan& inContainer, XAtom& outNext);
 
 };
 
@@ -128,10 +128,10 @@ struct	XAtomContainer : public XSpan {
 	bool	GetFirst(XAtom& outAtom);
 
 	int		CountAtoms(void);
-	int 	CountAtomsOfID(unsigned long inID);
+	int 	CountAtomsOfID(uint32_t inID);
 
 	bool	GetNthAtom(int inIndex, XAtom& outAtom);
-	bool	GetNthAtomOfID(unsigned long inID, int inIndex, XAtom& outAtom);
+	bool	GetNthAtomOfID(uint32_t inID, int inIndex, XAtom& outAtom);
 
 };
 
@@ -164,12 +164,12 @@ struct	XAtomPlanerNumericTable : public XAtom {
 						int		numberOfPlanes,
 						int		planeSize,
 						int		interleaved,
-						short * ioPlaneBuffer);
+						int16_t * ioPlaneBuffer);
 	int		DecompressInt(
 						int		numberOfPlanes,
 						int		planeSize,
 						int		interleaved,
-						int * ioPlaneBuffer);
+						int32_t * ioPlaneBuffer);
 	int		DecompressFloat(
 						int		numberOfPlanes,
 						int		planeSize,
@@ -218,54 +218,54 @@ struct	XAtomPackedData : public XAtom {
  */
 
 struct	StAtomWriter {
-	StAtomWriter(FILE * inFile, int inID);
+	StAtomWriter(FILE * inFile, uint32_t inID);
 	~StAtomWriter();
 
-	FILE *		mFile;
-	int			mAtomStart;
-	int			mID;
+	FILE *			mFile;
+	int32_t			mAtomStart;
+	uint32_t		mID;
 };
 
 void	WritePlanarNumericAtomShort(
-							FILE *	file,
-							int		numberOfPlanes,
-							int		planeSize,
-							int		encodeMode,
-							int		interleaved,
-							short *	ioData);
+							FILE *		file,
+							int			numberOfPlanes,
+							int			planeSize,
+							int			encodeMode,
+							int			interleaved,
+							int16_t *	ioData);
 
 void	WritePlanarNumericAtomInt(
-							FILE *	file,
-							int		numberOfPlanes,
-							int		planeSize,
-							int		encodeMode,
-							int		interleaved,
-							int *	ioData);
+							FILE *		file,
+							int			numberOfPlanes,
+							int			planeSize,
+							int			encodeMode,
+							int			interleaved,
+							int32_t *	ioData);
 
 void	WritePlanarNumericAtomFloat(
-							FILE *	file,
-							int		numberOfPlanes,
-							int		planeSize,
-							int		encodeMode,
-							int		interleaved,
-							float *	ioData);
+							FILE *		file,
+							int			numberOfPlanes,
+							int			planeSize,
+							int			encodeMode,
+							int			interleaved,
+							float *		ioData);
 
 void	WritePlanarNumericAtomDouble(
-							FILE *	file,
-							int		numberOfPlanes,
-							int		planeSize,
-							int		encodeMode,
-							int		interleaved,
+							FILE *		file,
+							int			numberOfPlanes,
+							int			planeSize,
+							int			encodeMode,
+							int			interleaved,
 							double *	ioData);
 
-void			WriteUInt8  (FILE * fi, unsigned char	v);
-void			WriteSInt8  (FILE * fi, 		 char	v);
-void			WriteUInt16 (FILE * fi, unsigned short	v);
-void			WriteSInt16 (FILE * fi, 		 short	v);
-void			WriteUInt32 (FILE * fi, unsigned int	v);
-void			WriteSInt32 (FILE * fi, 		 int	v);
-void			WriteFloat32(FILE * fi, float			v);
-void			WriteFloat64(FILE * fi, double			v);
+void			WriteUInt8  (FILE * fi, unsigned char	 v);
+void			WriteSInt8  (FILE * fi, 		 char	 v);
+void			WriteUInt16 (FILE * fi,			uint16_t v);
+void			WriteSInt16 (FILE * fi, 		 int16_t v);
+void			WriteUInt32 (FILE * fi,			uint32_t v);
+void			WriteSInt32 (FILE * fi, 		 int32_t v);
+void			WriteFloat32(FILE * fi,			 float   v);
+void			WriteFloat64(FILE * fi,			 double  v);
 
 
 #endif
