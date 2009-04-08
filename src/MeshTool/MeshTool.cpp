@@ -23,25 +23,11 @@
 
 #include "MeshTool_Create.h"
 
-#include "MapDefsCGAL.h"
-#include "MapOverlay.h"
 #include "XESInit.h"
-//#include "GISTool_Globals.h"
 #include "XESIO.h"
 #include "DEMIO.h"
-#include "DEMAlgs.h"
-#include "DEMTables.h"
-#include "MapAlgs.h"
-#include "MeshAlgs.h"
-#include "DSFBuilder.h"
-#include "Zoning.h"
 #include "MemFileUtils.h"
-#include "MeshDefs.h"
-#include "NetPlacement.h"
-#include "ObjTables.h"
-#include "ObjPlacement.h"
 #include <CGAL/assertions.h>
-#include "MapTopology.h"
 #if LIN
 #include <execinfo.h>
 #include <stdarg.h>
@@ -94,8 +80,6 @@ static void die_parse2(const char * msg, va_list va)
 
 int	main(int argc, char * argv[])
 {
-//	Pmwx *the_map = new Pmwx;
-	
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
 		fprintf(stdout, "MeshTool version 1.0b1, compiled " __DATE__ ".\n");
@@ -154,11 +138,6 @@ int	main(int argc, char * argv[])
 			exit(1);
 		}
 
-//		int								num_cus_terrains = 0;
-//		Polygon_2						ring, the_hole;
-//		vector<Polygon_2>				holes;
-//		vector<Polygon_with_holes_2> 	layer;
-//		vector<X_monotone_curve_2>		net;
 		int								terrain_type;
 		int								layer_type = NO_VALUE;
 		double							coords[4];
@@ -168,12 +147,11 @@ int	main(int argc, char * argv[])
 		char							buf[1024];
 		double							proj_lon[4],proj_lat[4],proj_s[4],proj_t[4];
 
-//		int				last_ter = -1;
 		int				proj_pt = -1;
 		
 		
 		int				use_wat;
-		int				zlimit=0;	//,zmin=30000,zmax=-2000;
+		int				zlimit=0;
 		int				is_layer = 0;
 		
 		MT_StartCreate(argv[2], dem_elev, die_parse2);
@@ -208,11 +186,31 @@ int	main(int argc, char * argv[])
 			{
 				MT_LayerShapefile(shp_path,cus_ter);
 			}
+
+			if(sscanf(buf,"BACKGROUND %s",cus_ter)==1)
+			{
+				MT_LayerBackground(cus_ter);
+			}
 			
 			if(strncmp(buf,"BEGIN_LAYER",strlen("BEGIN_LAYER"))==0)
 			{
 				is_layer=1;
 				layer_type = NO_VALUE;
+			}
+
+			if(sscanf(buf,"BEGIN_POLYGON %s",cus_ter)==1)
+			{
+				terrain_type = LookupToken(cus_ter);
+				if(terrain_type == -1)
+					die_parse("ERROR: cannot find custom terrain type '%s'\n", cus_ter);
+				if(layer_type == NO_VALUE)
+				{
+					layer_type = terrain_type;
+					MT_LayerStart(layer_type);
+					MT_PolygonStart();
+				}
+				else
+					die_parse("ERROR: you cannot use two different terrains inside a single layer.\n");
 			}
 
 			if(sscanf(buf,"CUSTOM_POLY %s",cus_ter)==1)
@@ -312,10 +310,30 @@ int	main(int argc, char * argv[])
 				MT_NetEnd();
 			}
 						
-			if(sscanf(buf,"QMID %s",cus_ter)==1)
+			if(sscanf(buf,"QMID %d %s",&use_wat,cus_ter)==2)
 			{
-				MT_QMID(cus_ter);
+				MT_QMID(cus_ter, use_wat);
 			}
+
+			if(sscanf(buf,"GEOTIFF %d %s",&use_wat,cus_ter)==2)
+			{
+				MT_GeoTiff(cus_ter, use_wat);
+			}
+			
+			if(sscanf(buf,"ORTHOPHOTO %d %lf %lf %lf %lf %lf %lf %lf %lf %s",&use_wat,
+					&proj_lon[0],&proj_lat[0],
+					&proj_lon[1],&proj_lat[1],
+					&proj_lon[2],&proj_lat[2],
+					&proj_lon[3],&proj_lat[3],
+					cus_ter) == 10)
+			{
+				proj_s[0] = proj_s[3] = 0.0;
+				proj_s[1] = proj_s[2] = 1.0;
+				proj_t[0] = proj_t[1] = 0.0;
+				proj_t[2] = proj_t[3] = 1.0;
+				MT_OrthoPhoto(cus_ter, proj_lon, proj_lat, proj_s,proj_t,use_wat);
+			}
+
 		}
 		fclose(script);
 		

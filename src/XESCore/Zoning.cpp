@@ -95,10 +95,6 @@ void	ZoneManMadeAreas(
 //		case feat_ForestPark:	face->data().mTerrainType = terrain_ForestPark;	break;
 //		}
 
-#if !DEV
-	#error review this
-#endif
-
 /*
 		switch(face->data().mAreaFeature.mFeatType) {
 //		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;

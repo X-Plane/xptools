@@ -226,14 +226,6 @@ static int DoValidate(const vector<const char *>& args)
 		fprintf(stderr,"Validation check failed for map %d,%d -> %d,%d\n", gMapWest, gMapSouth, gMapEast, gMapNorth);
 		return 1;
 	}
-	is_valid = ValidateMapDominance(gMap);
-	if (gVerbose)
-		printf("Map %s dominance valid.\n", is_valid ? "is" : "is not");
-	if (!is_valid)
-	{
-		fprintf(stderr,"Dominance Validation check failed for map %d,%d -> %d,%d\n", gMapWest, gMapSouth, gMapEast, gMapNorth);
-		return 1;
-	}
 	return 0;
 }
 

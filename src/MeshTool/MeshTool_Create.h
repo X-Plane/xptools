@@ -46,6 +46,7 @@ void MT_LimitZ(int limit);
 void MT_LayerStart(int in_terrain_type);
 void MT_LayerEnd(void);
 void MT_LayerShapefile(const char * fi, const char * in_terrain_type);
+void MT_LayerBackground(const char * in_terrain_type);
 
 void MT_PolygonStart(void);
 void MT_PolygonPoint(double lon, double lat);
@@ -68,6 +69,7 @@ void MT_OrthoPhoto(
 					double		 proj_t[4],
 					int			 back_with_water);
 
-void MT_QMID(const char * id);
+void MT_GeoTiff(const char * fname, int back_with_water);
+void MT_QMID(const char * id, int back_with_water);
 
 #endif /* MeshTool_Create_H */

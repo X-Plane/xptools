@@ -208,7 +208,6 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 
 	if(tp != NO_VALUE)
 	{
-		int	tp = i->data().mSegments[0].mFeatType;
 		SetColor(color,1.0, 0.0, 1.0);
 		if (Road_IsTrain   (tp))	SetColor(color,0.5, 0.3, 0.1);
 		if (Road_IsPowerline(tp))	SetColor(color,1.0, 1.0, 0.0);
@@ -402,7 +401,7 @@ void	RecalcOGLColors(Pmwx& ioMap, ProgressFunc inFunc)
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Setting colors for vector map...", ctr, total, 1000)
 		SetColorForHalfedge(h, h->data().mGLColor);
-		SetColorForHalfedge(h, h->twin()->data().mGLColor);
+//		SetColorForHalfedge(h, h->twin()->data().mGLColor);
 	}
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)

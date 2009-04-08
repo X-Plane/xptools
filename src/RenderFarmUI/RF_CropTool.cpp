@@ -171,19 +171,16 @@ void	RF_CropTool::NthButtonPressed(int n)
 	case 3: /* CROP */
 		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], false, RF_ProgressFunc);
 		DebugAssert(gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gMap));
 		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	case 4: /* DELETE */
 		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], true, RF_ProgressFunc);
 		DebugAssert(gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gMap));
 		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	case 5: /* REMOVE OCEANS */
 		RemoveUnboundedWater(gMap);
 		DebugAssert(gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gMap));
 		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 		break;
 	}

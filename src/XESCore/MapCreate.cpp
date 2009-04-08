@@ -54,17 +54,11 @@ void	Map_CreateWithLineData(
 		// Putting these two things together, we can easily detect which of two half-edges is in the same vs. opposite direction of the input
 		// curve.
 		// * lex-right means lexicographically x-y larger...means target is to the right of source UNLESS it's vertical (then UP = true, down = false).
-		#if !DEV
-			#error use he_get_same_direction is we can?
-		#endif
-		Halfedge_handle he = eit->curve().is_directed_right() == (eit->direction() == CGAL::SMALLER) ? eit : eit->twin();
+		Halfedge_handle he = he_is_same_direction(eit) ? eit : eit->twin();
 		
 		int cid = eit->curve().data().front();
 		DebugAssert(cid >= 0 && cid < input_data.size());
 		he->set_data(input_data[cid]);
-		#if !DEV
-			#error edge struct has junk data in it!
-		#endif
 //		he->data().mDominant = true;
 //		he->twin()->data().mDominant = false;
 		

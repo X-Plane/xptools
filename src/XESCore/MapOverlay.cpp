@@ -241,10 +241,6 @@ struct Overlay_network
 {
 	GIS_halfedge_data operator() (GIS_halfedge_data a, GIS_halfedge_data b) const
 	{
-	#if !DEV
-		#error this is highly LAME
-	#endif
-	
 //		DebugAssert(a.mDominant == b.mDominant);
 //		DebugAssert(a.mDominant || a.mDominant == b.mDominant);
 //		DebugAssert(!b.mDominant || a.mDominant == b.mDominant);

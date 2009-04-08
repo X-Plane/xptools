@@ -6,6 +6,8 @@ Version History
 	12/28/07   Initial Draft
 
 Version 1.1 Changes
+	- Shapefiles
+	- New orthophoto commands
 	- Polygon cutting improvement
 	- Relaxed boundary issues
 	- Shapefile support
@@ -27,122 +29,203 @@ burning in airporst, and adding custom orthophotos.
 DEM FILE FORMAT
 -------------------------------------------------------------------------------
 
-The mesh must be a 1201x1201 SRTM DEM, that is, big endian 16-bit shorts, with
-no voids.  Geographic projection.  The mesh covers the entire tile.  You
-are responsible for all flattening and conditioning.
+MeshTool can accept two DEM formats:
+
+* ".hgt" format - this is the format that SRTM DEMs are published in by JPL.
+  The file contains a 1201x1201 array of 16-bit big endian elevations in
+  geographic projection.
+  
+* GeoTiff - the GeoTiff file should be 16-bit.
+
+In both cases, the DEM must be geographic projection, and pre-cropped to the
+bounds of the DSF tile, with no missing data or voids.  You are responsible
+for all flattening and conditioning.  (For example, you must flatten the
+area over airports - MeshTool will not do this.)
 	 
 -------------------------------------------------------------------------------
 SCRIPT FILE FORMAT (POLYGON FILE)
 -------------------------------------------------------------------------------
 
-The general model for Mesh Tool polygons is a series of overlapping simple 
-polygons that cover the DSF.  Each polygon sets up a certain terrain type,
-potentially replacing the terrain below it.  These polygons are strictly 
-vector - there is no requirement that they be square or grid-shaped.  An
-adaptive mesh is then built that automatically puts triangle boundaries around
-the polygons to form the boundaries.  Four terrain types are supported:
+The MeshTool script file contains a series of instructions for defining
+landuses via vector data and overlaying orthophotos.  Land use areas are
+defined by polygon lat/lon coordinates.  
 
-- Water: forms X-plane water, with reflections, etc.
-- Land: builds natural "landuse" terrain, varying the actual terrain by 
-  elevation and climate.
+X-Plane has four fundamental land-use types (defined by vectors):
+
+- Water: forms "real" X-plane water, with reflections, wet physics 
+  interactions, etc.
+- Natural Land: builds terrain using X-Plane's built-in global scenery
+  land classes; the land use is selected based on the slope of the DEM and
+  climate data from the .xes file (see below).
 - Airport: builds airport surface areas, with the grass type varying with
-  climate.
-- Custom: puts in a custom-defined terrain, which can either be orthophoto
-  or landuse style, and can optionally show water where there is allpha.
+  climate.  Note that the airport land use type is not flattened!
+- Orthophoto: puts in a custom-defined orthophoto, which can optionally
+  show water behind the alpha channel.
+  
+When working with terrain, you can use the names terrain_Water, 
+terrain_Natural, and terrain_Airport for water, natural, and airport
+land-use, respectively.
  
-Rules for polyogons:
+Land uses are layered - with the later land uses in the file overlapping 
+the earlier ones.  For example, you can create a single polygon covering
+the entire DSF tile with water, then a polygon representing an island, then
+another polygon representing a lake inside the island.  The layer ordering
+will correctly create the water/land/water pattern desired.  (You could also
+set the tile to water and then create the island as a land polygon with a
+hole.)
 
-	All polygons must be CCW.
-	All polygons must be simple.
-	Polygons do not have holes.
-	All polygons must have at least 3 sides.
-	Polygons do not have to be convex.
-	Polygons cannot exceed the DSF tile bounds.
-	Polygons may overlap.  Later polygons overwrite earlier ones (holes can be 
-	done this way).
+Polygons input to MeshTool should be simple, meaning the edges of the polygon
+should not overlap each other or intersect each other.  For example, a 
+bow-tie pattern is not a valid polygon, whether made with 4 or 5 vertices.
+(The bow-tie can be modeled by two triangles meeting at a point - there is
+no restriction on polygons overlapping, intersecting, etc.)
+ 
+-------------------------------------------------------------------------------
+COMMANDS FOR SETTING LANDUSE
+-------------------------------------------------------------------------------
 
+These commands let you define the water and land areas of your DSF tile.
+Even if you are covering the entire tile with orthophotos, you may still want
+to use the water terrain type to have "real" physics where there is water.
 
-DEFINE_CUSTOM_TERAIN <transparency> <terrain_name>
-transparency: 0 or 1.  
-	0 means no water is put underneath, alpha now allowed.
-	1 menas water put underneath, transparency is allowed
-terrain_name: file path to a custom .ter or .png/.dds file
+SHAPEFILE_TERRAIN <terrain> <file>
 
-Performance tip: turning on water-under-terrain increases the cost of drawing 
-the terrain a lot - the water is fully drawn first and then over-drawn.  So use
-this option only if you really need it; it's expensive!
+Sets the area defined by the shapefile to the specified terrain.  The 
+shapefile must contain polygons.
 
-PROJECT_POINT <lon> <lat> <s> <t>
+BEGIN_POLYGON <terrain>
 
-If a custom terrain is going to be an orthophoto (not land use), four 
-PROEJCT_POINT records must follow, mapping lat-lon to texture coordinates.
-ST must be [0..1].
-
-WATER_POLY
-
-begins defining a water polygon (lake or ocean)
-
-APT_POLY
-
-begins defining an airport surface area polygon.  The area is NOT flattened,
-but special terrain is used.
-
-LAND_POLY
-
-begins defining a polygon of default land use...natural terrain is placed based
-on slope and climate data.
-
-CUSTOM_POLY <terrain_name>
-
-Starts a polygon of custom terrain..terrain_name must match a previous 
-define_custom_terrain line.
+Begin specifying a polygon's outer boundary by points.
 
 POLYGON_POINT <lon> <lat>
 
-Adds a point to the CCW boundary of a polygon.  
+Specify one point on the polygon's outer boundary.
 
 END_POLY
 
-ends the previous polygon
+End specifying a polygon.  All holes must be finished before the polygon
+ends.
+
+BEGIN_HOLE
+
+Begin specifying a hole inside the current polygon.  Holes must be specified
+between a polygon begin/end.
+
+HOLE_POINT <lon> <lat>
+
+Specify a point on the hole's boundary.
+
+END_HOLE
+
+End specification of the current hole.
+
+-------------------------------------------------------------------------------
+COMMANDS FOR WORKING WITH ORTHOPHOTOS
+-------------------------------------------------------------------------------
+
+When you import an orthophoto, it covers the land uses that are already 
+specified.  You can then specify additional land-uses on top of it; 
+orthophotos can also overlap each other.
+
+Orthophotos do not have to be fully inside a mesh tile - if they are not,
+their polygon placement is cropped automatically (but the image file is not).
+The orthophoto will be stretched as needed based on the coordinates specified.
+
+ORTHOPHOTO <bl> <br> <tr> <tl> <wet> <filename>
+
+This imports a single orthophoto - <filename> should be the name of the .ter
+file - if one does not exist, it is created.  The "wet" flag tells whether
+to put water under the orthophoto - if you want to use alpha as water, set
+this to 1.  The four coordinates are the lon/lat pairs of the image
+corners, starting with the lower elft corner of the image and going 
+around counter-clockwise.
+
+GEOTIFF <wet> <filename>
+
+This imports a single .tif image - its location in the file is placed based on
+the coordinates inside the .tif file.  A .ter of the same name is created
+(if it doesn't exist) for your convenience.
+
+Warning: PhotoShop and some other programs will remove the location 
+inforamtion from TIF files when it saves them.  Make sure to specify a TIF
+image that has not had its coordinates stripped!
+
+QMID <wet> <qmid id>
+
+Note: this command is intended for MSFS scenery developers who already have
+orthophotos cut into QMID tiles.
+
+Given a QMID (quad-mesh identifier), this command places an orthophoto whose
+.ter file is <qmid>.ter at the location specified by the qmid.  If  a .ter 
+file does not exist, a .ter file is created for your convenience.
+
+-------------------------------------------------------------------------------
+ADVANCED COMMANDS
+-------------------------------------------------------------------------------
+
+BACKGROUND terrain
+
+The background command sets the entire DSF tile to a single terrain.  This can
+be used to "start" a DSF as all land or all water.
+
+The advantage of the background command is that it takes its coordinates from
+the passed in DEM; by using the background command and a single shapefile
+(containing water for many tiles), you can use a single script to build 
+multiple DSF tiles.
+
+BEGIN_LAYER
+END_LAYER
+
+The begin/end layer properties start a group of polygons.  Inside the layer,
+only the polygon commands may be used (not shapefiles or orthophotos).  Every
+polygon inside the layer must be of the same terrain type.
+
+Polygons inside the begin/end layer should not overlap (but can share edges).
+
+The advantage of layers is processing speed.  If you are defining a large
+number of non-overlapping polygons of the same terrain type, using a layer
+might be significantly faster than not using one.  (A layer is no faster than
+using a single shapefile.)
+
+DEFINE_CUSTOM_TERRAIN wet name
+PROJECT_POINT lon lat s t
+
+These commands define a terrain type based on an orthophoto.  Unlike the
+orthophoto command, these commands define the terain type but don't use it;
+use POLYGON_BEGIN with the terrain name to then make several polygons that
+use the terrain type.
+
+After DEFINE_CUSTOM_TERRAIN you will need to specify four PROJECT_POINT
+lines that define the corners of th bitmap as "ST" (texture) coordinates
+and lat-lon.  The S coordinate is the horizontal position of the texture (0 is
+the left side, 1 is the right), and T is the vertical position of the
+texture (0 is the bottom, 1 is the top).
+
+Important: make sure that no polygon coordinates for the custom terrain are
+outside the bounds of the PROJECT_POINT quadrangle.
+
+-------------------------------------------------------------------------------
+LEGACY COMMANDS
+-------------------------------------------------------------------------------
+
+LAND_POLY
+WATER_POLY
+APT_POLY
+CUSTOM_POLY terrain
+
+These commands act the same as POLYGON_BEGIN - with land/water/apt_poly, you
+don't need to specify the terrain type.
 
 -------------------------------------------------------------------------------
 EXAMPLE:
 -------------------------------------------------------------------------------
 
-DEFINE_CUSTOM_TERRAIN 1 foo.ter
-PROJECT_POINT -117.3 34.1 0 0
-PROJECT_POINT -117.2 34.1 1 0
-PROJECT_POINT -117.2 34.4 1 1
-PROJECT_POINT -117.3 34.4 0 1
+BACKGROUND terrain_Natural
 
-LAND_POLY
-POLYGON_POINT -118 34
-POLYGON_POINT -117 34
-POLYGON_POINT -117 35
-POLYGON_POINT -118 35
-END_POLY
+SHAPEFILE_TERRAIN terrain_Water my_water.shp
 
-WATER_POLY
-POLYGON_POINT -117.75 34.25
-POLYGON_POINT -117.25 34.25
-POLYGON_POINT -117.25 34.75
-POLYGON_POINT -117.75 34.75
-END_POLY
-
-APT_POLY
-POLYGON_POINT -118 34
-POLYGON_POINT -117 34
-POLYGON_POINT -117 34.5
-POLYGON_POINT -118 34.5
-END_POLY
-
-CUSTOM_POLY foo.ter
-POLYGON_POINT -117.3 34.1
-POLYGON_POINT -117.2 34.1
-POLYGON_POINT -117.2 34.4
-POLYGON_POINT -117.3 34.4
-END_POLY
-
+GEOTIFF 0 my_ortho.tiff
+QMID 1 210332123
 
 -------------------------------------------------------------------------------
 CLIMATE FILES

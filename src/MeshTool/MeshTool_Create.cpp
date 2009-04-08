@@ -109,7 +109,7 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 void MT_FinishCreate(void)
 {
 	CropMap(*the_map, sBounds[0],sBounds[1],sBounds[2],sBounds[3],false,ConsoleProgressFunc);
-	WriteXESFile("temp.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+//	WriteXESFile("temp.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 
 	gNaturalTerrainIndex.clear();
@@ -171,6 +171,8 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	
 	InstantiateGTPolygonAll(insets, sDem, sMesh, ConsoleProgressFunc);
 	DumpPlacementCounts();
+
+//	WriteXESFile("temp2.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	
 	// -exportDSF
@@ -294,6 +296,33 @@ void MT_LayerEnd(void)
 		layer.clear();
 		layer_type = NO_VALUE;
 	}
+}
+
+void MT_LayerBackground(const char * in_terrain_type)
+{
+	int t = LookupToken(in_terrain_type);
+	if(t == -1)
+	{
+		die_err("Unknown terrain %s.\n", in_terrain_type);
+		return;
+	}
+	
+	Polygon_2	p;
+	p.push_back(Point_2(sBounds[0],sBounds[1]));
+	p.push_back(Point_2(sBounds[2],sBounds[1]));
+	p.push_back(Point_2(sBounds[2],sBounds[3]));
+	p.push_back(Point_2(sBounds[0],sBounds[3]));
+
+	Polygon_set_2	layer_map(p);
+	
+	for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f) 
+	if (f->contained()) 
+		f->data().mTerrainType = t;
+	
+	Pmwx *	new_map = new Pmwx;
+	MapOverlay(*the_map, layer_map.arrangement(), *new_map);
+	delete the_map;
+	the_map = new_map;
 }
 
 void MT_LayerShapefile(const char * fi, const char * in_terrain_type)
@@ -447,7 +476,64 @@ static void qmid_recurse(int q, double io_lon[4], double io_lat[4])
 	}
 }
 
-void MT_QMID(const char * id)
+inline const char * no_path(const char * f)
+{
+	const  char * r = f;
+	while(*f)
+	{
+		if(*f == '/') r=f+1;
+		++f;
+	}
+	return r;
+}
+
+void MT_GeoTiff(const char * fname, int back_with_water)
+{
+	double c[8];	// SW, SE, NW, NE lon,lat pairs
+	if(!FetchTIFFCorners(fname,c))
+	{
+		die_err("Unable to read corner coordinates from %s.\n",fname);
+		return;
+	}
+	
+	double lon[4] = { c[0], c[2], c[6], c[4] };
+	double lat[4] = { c[1], c[3], c[7], c[5] };
+	double s[4] = { 0.0, 1.0, 1.0, 0.0 };
+	double t[4] = { 0.0, 0.0, 1.0, 1.0 };
+	
+	char tname[1024],dname[1024];
+	strcpy(tname,fname);
+	char * i = tname, * p = NULL;
+	while(*i)
+		if(*i++=='.') p = i;
+	if(p) *p = 0;
+	strcpy(dname,tname);
+	strcat(tname,"ter");
+	strcat(dname,"dds");
+	
+	MT_OrthoPhoto(tname,lon,lat,s,t,back_with_water);
+
+	int meters= LonLatDistMeters(lon[0],lat[0],lon[2],lat[2]);
+	int isize=2048;
+		
+	if(!FILE_exists(tname))
+	{
+	
+		FILE * fi = fopen(tname,"w");
+		fprintf(fi,
+			"A\n"
+			"800\n"
+			"TERRAIN\n\n"
+			"BASE_TEX_NOWRAP %s\n",no_path(dname));
+//		if(want_lite)
+//			fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
+		fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
+
+		fclose(fi);
+	}
+}
+
+void MT_QMID(const char * id, int back_with_water)
 {
 	double lon[4] = { -180.0, 300.0, 300.0, -180.0 };
 	double lat[4] = { -270.0, -270.0, 90.0, 90.0 };	
@@ -464,7 +550,7 @@ void MT_QMID(const char * id)
 	printf("QMID: %s will go from: %lf,%lf to %lf,%lf\n",	
 		id,lon[0],lat[0],lon[2],lat[2]);
 
-	MT_OrthoPhoto(fname, lon, lat, s, t, 1);
+	MT_OrthoPhoto(fname, lon, lat, s, t, back_with_water);
 	
 	int want_lite = false;
 

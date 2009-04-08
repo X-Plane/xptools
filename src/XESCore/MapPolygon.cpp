@@ -519,17 +519,13 @@ void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 
 // Make a polygon simpel as follows:
 // Insert all edges into an arrangement.  Whatever area is bounded is considered "in" the new polygon.
-#if !DEV
-	#error - hrm - figure 8 becomes two polys?
-#endif
-
-void	MakePolygonSimple(Polygon_2& ioPolygon)
+void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple_polygons)
 {
 	Pmwx	pmap;
 	vector<Curve_2>	curves;
-	curves.reserve(ioPolygon.size());
-	for(int n = 0; n < ioPolygon.size(); ++n)
-	curves.push_back(Curve_2(ioPolygon.edge(n),0));
+	curves.reserve(inPolygon.size());
+	for(int n = 0; n < inPolygon.size(); ++n)
+	curves.push_back(Curve_2(inPolygon.edge(n),0));
 	curves.insert(curves.end(), curves.begin(),curves.end());
 	CGAL::insert_curves(pmap, curves.begin(), curves.end());
 	for(Pmwx::Face_iterator f = pmap.faces_begin(); f != pmap.faces_end(); ++f)
@@ -539,7 +535,9 @@ void	MakePolygonSimple(Polygon_2& ioPolygon)
 	
 	vector<Polygon_with_holes_2>	all;
 	pset.polygons_with_holes(back_inserter(all));
-	DebugAssert(all.size()==1);
-	DebugAssert(all[0].holes_begin() == all[0].holes_end());
-	ioPolygon = all[0].outer_boundary();
+	for(int n = 0; n < all.size(); ++n)
+	{
+		DebugAssert(all[n].holes_begin() == all[n].holes_end());
+		out_simple_polygons.push_back(all[n].outer_boundary());
+	}
 }

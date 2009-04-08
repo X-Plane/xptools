@@ -514,7 +514,14 @@ char *	RF_SelectionTool::GetStatusText(void)
 		{
 			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
 		}
+		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->twin()->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->twin()->data().mSegments.end(); ++seg)
+		{
+			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
+		}
+
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->data().mParams.begin(); p != (*gEdgeSelection.begin())->data().mParams.end(); ++p)
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
+		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->twin()->data().mParams.begin(); p != (*gEdgeSelection.begin())->twin()->data().mParams.end(); ++p)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
 			
 		if ((*gEdgeSelection.begin())->data().mTransition != 0)

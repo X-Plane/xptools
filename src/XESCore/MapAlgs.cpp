@@ -270,14 +270,12 @@ void	CutInside(
 	
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
-	ValidateMapDominance(ioMap);
 	vector<X_monotone_curve_2> v(inBoundary.edges_begin(),inBoundary.edges_end());
 //	CGAL::insert_x_monotone_curves(ioMap,v.begin(),v.end());
 	CGAL::insert_curves(ioMap,v.begin(),v.end());
 
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
-	ValidateMapDominance(ioMap);
 
 /*
 	for(vector<X_monotone_curve_2>::iterator i = v.begin(); i != v.end(); ++i)
@@ -357,7 +355,6 @@ void	CutInside(
 	
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
-	ValidateMapDominance(ioMap);
 	
 }
 
@@ -1605,67 +1602,6 @@ Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/
 #pragma mark -
-
-// Dominance: for conveninence I mark half my edges with a flag...this is a rapid way to
-// guarantee we never list an edge and its twin even when the edge set we get is not an in-order
-// iteration.  Cheesy but it works.
-bool	ValidateMapDominance(const Pmwx& inMap)
-{
-	return true;
-/*
-	int doubles = 0;
-	int zeros = 0;
-	int ctr = 0;
-	int wrong = 0;
-	for (Pmwx::Halfedge_const_iterator i = inMap.halfedges_begin(); i != inMap.halfedges_end(); ++i, ++ctr)
-	{
-		bool ideal_dom = ((ctr % 2) == 0);
-		if (i->data().mDominant != ideal_dom)
-		{
-#if DEV
-			++wrong;
-#else
-			return false;
-#endif
-		}
-		if (i->data().mDominant && i->twin()->data().mDominant)
-		{
-#if DEV
-			++doubles;
-//			printf("Double on edge: %lf,%lf -> %lf,%lf\n", 
-//				CGAL::to_double(i->source()->point().x()),CGAL::to_double(i->source()->point().y()),
-//				CGAL::to_double(i->target()->point().x()),CGAL::to_double(i->target()->point().y()));
-#else
-			return false;
-#endif
-		}
-		if (!i->data().mDominant && !i->twin()->data().mDominant)
-		{
-#if DEV
-			++zeros;
-//			printf("Zero on edge: %lf,%lf -> %lf,%lf\n", 
-//				CGAL::to_double(i->source()->point().x()),CGAL::to_double(i->source()->point().y()),
-//				CGAL::to_double(i->target()->point().x()),CGAL::to_double(i->target()->point().y()));
-#else
-			return false;
-#endif
-		}
-	}
-#if DEV
-	if (doubles > 0 || zeros > 0 || wrong > 0)
-		printf("Validation : %d double-dominant halfedges, and %d zero-dominant halfedges.  %d wrong\n", doubles, zeros, wrong);
-#endif
-	return doubles == 0 && zeros == 0 && wrong == 0;
-*/
-#if !DEV
-	#error rip this out like asbestos!
-#endif
-}
-
-
-
-
-
 
 void	CalcBoundingBox(
 			const Pmwx&		inMap,

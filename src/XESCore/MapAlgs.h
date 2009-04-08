@@ -162,17 +162,6 @@ void	CropMap(
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/
 
-// Lose??
-/*
- * ValidateMapDominance
- *
- * The scenery system depends on the 'dominant' system
- * to correctly deal with dominance issues...this routine
- * makes sure things aren't FUBAR.
- *
- */
-bool	ValidateMapDominance(const Pmwx& inMap);
-
 // Keep
 /*
  * CalcBoundingBox

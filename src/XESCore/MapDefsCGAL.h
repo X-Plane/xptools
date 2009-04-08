@@ -322,7 +322,7 @@ struct GIS_vertex_data {
 
 struct GIS_halfedge_data {
 public:
-	GIS_halfedge_data() : mDominantXXX(false) { }
+	GIS_halfedge_data() : mDominantXXX(false), mMark(false),mInset(0.0f), mTransition(0.0) { }
 
 	int							mTransition;		// Transition type ID
 	GISNetworkSegmentVector		mSegments;			// Network segments along us

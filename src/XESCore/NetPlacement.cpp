@@ -551,10 +551,7 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 			else
 			{
 				MarchHeightGo(inMesh, CDT::Point(CGAL::to_double(pt.x), CGAL::to_double(pt.y)), info, these_pts);
-				#if !DEV
-					msutfigure out why this blows up
-				#endif
-				#if 0 && !DEV				
+				#if 0 && DEV				
 					Point3 prev(chain->nth_pt(n-1));
 					Bbox2	lim(prev.x,prev.y,pt.x,pt.y);
 					for(int i = 0; i < these_pts.size(); ++i)

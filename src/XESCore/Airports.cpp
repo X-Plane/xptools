@@ -675,9 +675,7 @@ void	GenBoundary(
 			p->back().pt = cgal2ben(circ->target()->point());
 		} while(circ != stop);
 
-#if !DEV
-#error			this used to be a safe assertoin - but not now.  Why?  Ben needs to look.
-#endif
+		// This is not true because we intentionally leave holes in airports that might surround an area...whether this is a good idea or not I do not know.
 //		DebugAssert(f->holes_begin() == f->holes_end());
 	}
 }

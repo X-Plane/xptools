@@ -45,7 +45,7 @@ void	FillPolygonGaps(Polygon_set_2& ioPolygon, double dist);
 void	SafeMakeMoreConvex(Polygon_set_2& ioPolygon, double max_area);
 
 // Make the polygon simple, taking the outer hull around all edges if it is self-intersecting.
-void	MakePolygonSimple(Polygon_2& ioPolygon);
+void	MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple_polygons);
 
 
 
