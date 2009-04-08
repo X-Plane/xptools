@@ -133,6 +133,6 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
-    return("OBJ8 Import/Export Plugin v3.2b1 - by Ben Supnik");
+    return("OBJ8 Import/Export Plugin v3.2b2 - by Ben Supnik");
 }
 

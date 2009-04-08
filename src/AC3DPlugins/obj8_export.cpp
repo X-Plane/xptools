@@ -181,7 +181,7 @@ void obj8_output_polyline(XObjBuilder * builder, Surface *s)
 
 void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 {
-	if (!gHasTexNow && !builder->IsCockpit())
+	if (!gHasTexNow && !builder->IsCockpit() && builder->IsVisible())
 		++gErrMissingTex;
 
 	bool	is_two_sided = surface_get_twosided(s);
@@ -423,42 +423,48 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			int panel_reg = -1;
 			int has_real_tex = 0;
 
-			if (ac_object_has_texture(obj))
+			if(!OBJ_get_draw_disable(obj))
 			{
-				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
-				gHasTexNow = true;
+				if (ac_object_has_texture(obj))
+				{
+					string tex = texture_id_to_name(ac_object_get_texture_index(obj));
+					gHasTexNow = true;
 
-				if (is_panel_tex(ac_object_get_texture_index(obj)))
-				{
-					if(get_sub_panel_count())
+					if (is_panel_tex(ac_object_get_texture_index(obj)))
 					{
-						panel_reg = get_sub_panel_for_mesh(obj);
-						if(panel_reg >= 0)
-							builder->SetAttribute1(attr_Tex_Cockpit_Subregion,panel_reg);
+						if(get_sub_panel_count())
+						{
+							panel_reg = get_sub_panel_for_mesh(obj);
+							if(panel_reg >= 0)
+								builder->SetAttribute1(attr_Tex_Cockpit_Subregion,panel_reg);
+							else
+							{
+								printf("Subregion is out of bounds for: %s.\n", ac_object_get_name(obj));
+								gSubregionOOBErr = true;
+							}
+						}
 						else
-							gSubregionOOBErr = true;
+							builder->SetAttribute(attr_Tex_Cockpit);
+					} 
+					else {
+						has_real_tex = 1;
+						builder->SetAttribute(attr_Tex_Normal);
 					}
-					else
-						builder->SetAttribute(attr_Tex_Cockpit);
-				} 
-				else {
-					has_real_tex = 1;
-					builder->SetAttribute(attr_Tex_Normal);
-				}
-				if (!builder->IsCockpit())
-				if (tex_id == -1 || tex_id == ac_object_get_texture_index(obj))
-				{
-					if (tex != gTexName && !gTexName.empty())
+					if (!builder->IsCockpit())
+					if (tex_id == -1 || tex_id == ac_object_get_texture_index(obj))
 					{
-						gErrDoubleTex = true;
-						list_add_item_head(&gBadObjects, obj);
-						bad_obj = true;
+						if (tex != gTexName && !gTexName.empty())
+						{
+							gErrDoubleTex = true;
+							list_add_item_head(&gBadObjects, obj);
+							bad_obj = true;
+						}
+						gTexName = tex;
 					}
-					gTexName = tex;
+				} else {
+					builder->SetAttribute(attr_Tex_Normal);
+					gHasTexNow = false;
 				}
-			} else {
-				builder->SetAttribute(attr_Tex_Normal);
-				gHasTexNow = false;
 			}
 			
 			XObjManip8 m;

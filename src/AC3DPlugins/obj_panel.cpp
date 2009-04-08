@@ -286,7 +286,7 @@ int	get_sub_panel_for_mesh(ACObject * obj)
 	tmax *= (float) panel_y;
 
 	int best = -1;
-	float best_area = 0;
+	float best_area = -1;	// go negative so a zero area tri that is INSIDE the region is BETTER than nothing.
 
 	for(int sub = 0; sub < get_region_count(); ++sub)
 	{

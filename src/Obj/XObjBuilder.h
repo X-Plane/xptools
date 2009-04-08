@@ -80,6 +80,7 @@ using std::string;
 	// A few status checks
 	inline string	IsHard(void) const		{ return hard;			}
 	inline int		IsCockpit(void) const	{ return cockpit > -2;	}
+	inline bool		IsVisible(void) const	{ return !draw_disable;	}
 
  private:
  
