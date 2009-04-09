@@ -260,8 +260,8 @@ void	CalculateFilter(int dim, float * k, int kind, bool normalize)
 	for (y = 0; y < dim; ++y)
 	for (x = 0; x < dim; ++x)
 	{
-		float dx = abs(hdim - x);
-		float dy = abs(hdim - y);
+		float dx = std::abs(hdim - x);
+		float dy = std::abs(hdim - y);
 		float d = sqrt((float)dx * dx + dy * dy);
 		switch(kind) {
 		case demFilter_Linear:

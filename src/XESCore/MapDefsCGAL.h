@@ -106,7 +106,26 @@ typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> >  NT;
 
 // Use the filtered kernel to answer predicates rapidly in easy cases.  
 // Lazy kernel seems to be slower, and optimized compile almost brings down a Mac Pro, which is NOT a good sign.
-typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
+//typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
+typedef CGAL::Simple_cartesian<NT>  FastKernel;
+
+
+// This is very, very dangerous.  Basically this creates the illusion of a well-defined "sqrt" function for our numeric type.  Why is that dangerous?
+// Well, our number type advertises as exact constructions, meaning the math comes out perfect.  But this sqrt is defined via cast to double, so it
+// is very imperfect.  So...some CGAL algs that require sqrt might blow up.
+//
+// Why did I do it?  The delauney mesh conformer requires it, and doesn't terribly need a good sqrt - it has to "pick" a "decent" split point - being
+// off a little won't help, and the split makes such a huge mesh change that the operation isn't re-evaluted.
+
+CGAL_BEGIN_NAMESPACE
+CGAL_NTS_BEGIN_NAMESPACE
+inline FastKernel::FT sqrt(FastKernel::FT n)
+{
+	return ::sqrtf(CGAL::to_double(n));
+}
+CGAL_NTS_END_NAMESPACE
+CGAL_END_NAMESPACE
+
 
 typedef CGAL::Bbox_2									Bbox_2;
 typedef FastKernel::Point_2                             Point_2;

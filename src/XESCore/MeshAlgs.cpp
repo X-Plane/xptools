@@ -29,6 +29,7 @@
 #include "CompGeomDefs3.h"
 #include "CompGeomUtils.h"
 #include "PolyRasterUtils.h"
+#include <CGAL/Triangulation_conformer_2.h>
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 #include "PerfUtils.h"
@@ -42,6 +43,8 @@
 #include "XUtils.h"
 #endif
 #define PROFILE_PERFORMANCE 1
+
+
 
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
@@ -1096,7 +1099,7 @@ void CollectPointsAlongLine(const Point_2& p1, const Point_2& p2, vector<Point_2
 void	AddWaterMeshPoints(
 				Pmwx& 								inMap, 		// Vec Map of waterbodies
 				const DEMGeo& 						master, 	// Master DEM with elevations
-				const DEMGeo& 						water, 		// Water bodies lowered
+				const DEMGeo& 						water_not_used,// Water bodies lowered
 				DEMGeo& 							slave, 		// This DEM has mesh points erased where vertices are added
 				CDT& 								outMesh, 	// Vertices and constraints added to this mesh
 				vector<LanduseConstraint_t>&		outCons,	// The constraints we add for water are added here for later use
@@ -1184,7 +1187,7 @@ void	AddWaterMeshPoints(
 }
 
 
-void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& wetPts, const DEMGeo& allPts)
+void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& wetPts_not_used, const DEMGeo& allPts)
 {
 	set<CDT::Face_handle>		wet_faces;
 	set<CDT::Face_handle>		visited;
@@ -1210,7 +1213,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 
 		if (!PersistentFindEdge(ioMesh, c->first.second, c->first.first, face_h, vnum))
 		{
-			//AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
+			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
 		} else {
 			face_h->info().terrain = c->second.first->face()->data().mTerrainType;
 			face_h->info().feature = c->second.first->face()->data().mTerrainType;
@@ -1224,7 +1227,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 
 		if (!PersistentFindEdge(ioMesh, c->first.first, c->first.second, face_h, vnum))
 		{
-			//AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
+			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
 		} else {
 			face_h->info().terrain = c->second.second->face()->data().mTerrainType;
 			face_h->info().feature = c->second.second->face()->data().mTerrainType;
@@ -1697,6 +1700,19 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.8);
+
+
+	CDT::Vertex_iterator v1,v2,v;
+	v1 = outMesh.vertices_end();
+	--v1;
+	CGAL::make_conforming_Delaunay_2(outMesh);
+	++v1;
+	v2 = outMesh.vertices_end();
+	
+	for(v=v1;v!=v2;++v)
+	{
+		v->info().height = orig.value_linear(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
+	}
 
 	/*********************************************************************************************************************
 	 * LAND USE CALC (A LITTLE BIT)

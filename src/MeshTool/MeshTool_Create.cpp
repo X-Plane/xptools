@@ -137,11 +137,14 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);		
+
+	WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 	
 	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],ConsoleProgressFunc);
 	
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
+	WriteXESFile("temp3.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	#if DEV
 	for (CDT::Finite_faces_iterator tri = sMesh.finite_faces_begin(); tri != sMesh.finite_faces_end(); ++tri)
@@ -172,7 +175,6 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	InstantiateGTPolygonAll(insets, sDem, sMesh, ConsoleProgressFunc);
 	DumpPlacementCounts();
 
-//	WriteXESFile("temp2.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 	
 	// -exportDSF

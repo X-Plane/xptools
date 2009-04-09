@@ -74,11 +74,20 @@ will correctly create the water/land/water pattern desired.  (You could also
 set the tile to water and then create the island as a land polygon with a
 hole.)
 
-Polygons input to MeshTool should be simple, meaning the edges of the polygon
-should not overlap each other or intersect each other.  For example, a 
-bow-tie pattern is not a valid polygon, whether made with 4 or 5 vertices.
-(The bow-tie can be modeled by two triangles meeting at a point - there is
-no restriction on polygons overlapping, intersecting, etc.)
+Individual Polygons input to MeshTool should be simple (the mathematical
+definition of a "simple polygon") meaning the edges of the polygon
+should not overlap each other or intersect each other, except at the
+ends of adjacent edges.  For example, a bow-tie pattern is not a valid 
+polygon, whether made with 4 or 5 vertices.  (The bow-tie can be modeled 
+by two triangles meeting at a point - there is no restriction on polygons
+overlapping, intersecting, etc.)
+ 
+Individual holes must also be simple polygons, and should not overlap their
+outer boundaries.
+
+There is no restriction on the relationship of individual simple polygons
+with each other.  You can overlap, layer, or stack individual polygons against
+each other in any way.
  
 -------------------------------------------------------------------------------
 COMMANDS FOR SETTING LANDUSE
@@ -140,6 +149,14 @@ this to 1.  The four coordinates are the lon/lat pairs of the image
 corners, starting with the lower elft corner of the image and going 
 around counter-clockwise.
 
+Example:
+
+ORTHOPHOTO -72.0 42.0 -71.0 42.0 -71.0 43.0 -72.0 43.0 0 foo.ter
+
+Covers the entire +42-072.dsf tile with an ortho called "foo.ter", such 
+that the top of the photo is north and right side is east, and there is 
+no "water" behind it.
+
 GEOTIFF <wet> <filename>
 
 This imports a single .tif image - its location in the file is placed based on
@@ -180,7 +197,10 @@ The begin/end layer properties start a group of polygons.  Inside the layer,
 only the polygon commands may be used (not shapefiles or orthophotos).  Every
 polygon inside the layer must be of the same terrain type.
 
-Polygons inside the begin/end layer should not overlap (but can share edges).
+Unlike individual polygons, polygons inside the begin/end layer should
+not overlap in their interios (but can share edges).  If the polygons in a
+layer overlap, the resulting map may not come out the same as if the layer
+had no been used.
 
 The advantage of layers is processing speed.  If you are defining a large
 number of non-overlapping polygons of the same terrain type, using a layer

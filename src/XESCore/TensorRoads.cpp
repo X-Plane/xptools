@@ -477,7 +477,7 @@ void	RasterEdge(
 	Vector2	road_dir(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
 	road_dir.normalize();
 
-	if(abs(x2-x1) > abs(y2-y1))
+	if(std::abs(x2-x1) > std::abs(y2-y1))
 	{
 		// "Horizontal line"
 		if(x2 < x1)
