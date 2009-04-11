@@ -451,7 +451,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 	z->GetPixelBounds(l,b,r,t);
 
 	applyRotation(m1, heading, 0, 0, 1);
-	
+
 	applyTranslation(m1, l-centroid.x(),b-centroid.y(),0);
 
 	double	proj_tex_s[4], proj_tex_t[4];
@@ -805,7 +805,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			glEnd();
 		}
 		break;
-		
+
 	case gis_BoundingBox:
 		/******************************************************************************************************************************************************
 		 * BOUNDING BOXES
@@ -863,7 +863,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					}
 					centroid.x_ /= (double) pts.size();
 					centroid.y_ /= (double) pts.size();
-				
+
 //					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
 					if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, GetZoomer(), mPavementAlpha))
 					{

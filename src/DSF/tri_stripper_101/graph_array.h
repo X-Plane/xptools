@@ -74,7 +74,7 @@
 
 //          But you can add or remove arcs.
 
-//          
+//
 
 // History: - 3.00 BETA 6 (22/09/2003) - Improved std C++ compliance
 
@@ -126,7 +126,7 @@ namespace common_structures {
 
 template <class nodetype, class arctype>
 
-class graph_array 
+class graph_array
 
 {
 
@@ -156,7 +156,7 @@ public:
 
 	typedef graph_array<nodetype, arctype> _mytype;
 
-	
+
 
 
 
@@ -208,7 +208,7 @@ public:
 
 			: m_Initial(Initial), m_Terminal(Terminal), m_Elem(Elem), m_Marker(false) { }
 
-	
+
 
 		node_iterator	m_Initial;
 

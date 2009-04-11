@@ -1458,6 +1458,6 @@ int		MFS_xplane_header(MFScanner * s, int * versions, const char * identifier, s
 		MFS_string_eol(s,NULL);
 	}
 
-	return versions[n];	
+	return versions[n];
 }
 

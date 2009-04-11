@@ -78,7 +78,7 @@ private:
 	TriFanQueue					queue;				// Our tri fans in priority order
 	TriFanTable					index;				// Index of who is using what tri fans
 	set<CDT::Vertex_handle>		vertices;			// Vertices that we need to tri fan for building up the struct
-#endif	
+#endif
 	CDT *						mesh;				// Our mesh
 };
 

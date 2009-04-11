@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ static void split_path(const string& i, string& p, string& f)
 	}else{
 		p=i.substr(0,n);
 		f=i.substr(n+1);
-	}	
+	}
 }
 
 static int is_direct_parent(const string& parent, const string& child)
@@ -75,12 +75,12 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 {
 	children.clear();
 	res_map_t::iterator me = r.empty() ? res_table.begin() : res_table.find(r);
-	if(me == res_table.end())						return;		
+	if(me == res_table.end())						return;
 	if(me->second.res_type != res_Directory) 		return;
-	
+
 	if (!r.empty())
 		++me;
-	
+
 	while(me != res_table.end())
 	{
 		if(me->first.size() < r.size())							break;
@@ -97,7 +97,7 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			if(want_it)
 			{
 				children.push_back(me->first);
-			}		
+			}
 		}
 		++me;
 	}
@@ -146,7 +146,7 @@ void		WED_LibraryMgr::Rescan()
 		string pack_base;
 		gPackageMgr->GetNthPackagePath(p,pack_base);
 		pack_base += DIR_STR "Library.txt";
-		
+
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
 		if(lib)
 		{
@@ -202,23 +202,23 @@ void		WED_LibraryMgr::Rescan()
 				}
 				MFS_string_eol(&s,NULL);
 			}
-			
+
 			MemFile_Close(lib);
 		}
 	}
-	
+
 	string package_base;
 	package_base=gPackageMgr->ComputePath(local_package,"");
 	if(!package_base.empty())
 	{
 		package_base.erase(package_base.length()-1);
-		
+
 		local_scan_t info;
 		info.who = this;
 		info.full = package_base;
 		MF_IterateDirectory(package_base.c_str(), AccumLocalFile, reinterpret_cast<void*>(&info));
 	}
-	
+
 	BroadcastMessage(msg_LibraryChanged,NULL);
 }
 
@@ -232,7 +232,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
 	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
 	if(rt == res_None) return;
-	
+
 	string p(path);
 	while(!p.empty())
 	{
@@ -244,7 +244,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.packages.insert(package);
 			new_info.real_path = rpath;
 			new_info.is_backup = is_backup;
-			res_table.insert(res_map_t::value_type(p,new_info));			
+			res_table.insert(res_map_t::value_type(p,new_info));
 		}
 		else
 		{
@@ -256,7 +256,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 				i->second.real_path = rpath;
 			}
 		}
-	
+
 		string par, f;
 		split_path(p,par,f);
 		p = par;

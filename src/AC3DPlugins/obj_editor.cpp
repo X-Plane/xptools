@@ -31,7 +31,7 @@
 	// fix this if there is a 64bit version of ac3d somewhen
 	#define	intptr_t	int
 #endif
-	
+
 
 const int NUM_KEYFRAMES = 50;
 const int MAX_MULTI_COUNT = 5;

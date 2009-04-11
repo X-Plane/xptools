@@ -193,7 +193,7 @@ static int DoAptInfo(const vector<const char *>& args)
 				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(), \
 				gApts[*bd].bounds.p1.x(), \
 				gApts[*bd].bounds.p1.y()); }
-	
+
 	PRINT_LIST(new_bounded,"New airports with boundaries.\n");
 	PRINT_LIST(new_unbounded,"New airports with no boundaries.\n");
 	PRINT_LIST(empty_bounded,"Boundary-only airports.\n");

@@ -123,7 +123,7 @@ static int DoHydroSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Simplifying coastlines...\n");
 	Bbox2	bounds;
-	
+
 	Point_2	sw, ne;
 	CalcBoundingBox(gMap, sw,ne);
 	bounds.p1 = cgal2ben(sw);
@@ -205,7 +205,7 @@ static int DoAssignLandUse(const vector<const char *>& args)
 		sorted.insert(multimap<int,int>::value_type(l->second,l->first));
 	for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
 		printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
-	
+
 	return 0;
 }
 

@@ -81,7 +81,7 @@ public:
 	virtual	GISClass_t		GetGISClass		(void						 ) const=0;
 	virtual	const char *	GetGISSubtype	(void						 ) const=0;
 	virtual	bool			HasUV			(void						 ) const=0;
-	
+
 	virtual	void			GetBounds		(	   Bbox2&  bounds		 ) const=0;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds		 ) const=0;
 	virtual	bool			WithinBox		(const Bbox2&  bounds		 ) const=0;
@@ -233,7 +233,7 @@ public:
 
 	virtual			IGISPoint *				GetMin(void) const=0;
 	virtual			IGISPoint *				GetMax(void) const=0;
-	
+
 };
 
 //------------------------------------------------------------------------------------------------------------

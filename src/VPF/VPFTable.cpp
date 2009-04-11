@@ -788,7 +788,7 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 						printf("(");
 						for (int n = 0; n < p2.size(); ++n)
 						{
-							printf("%f,%f ", p2[n].x(), p2[n].y());					
+							printf("%f,%f ", p2[n].x(), p2[n].y());
 						}
 						printf(")");
 					} else if (inDef.IsFieldThreeTuple(n)) {
@@ -813,7 +813,7 @@ void	DumpVPFTable(MFMemFile * inFile, const VPF_TableDef& inDef)
 					} else if (inDef.IsFieldTwoTuple(n)) {
 						Point2 	p2;
 						iter.GetNthFieldAsCoordPair(n, p2);
-						printf("%f,%f ", p2.x(), p2.y());					
+						printf("%f,%f ", p2.x(), p2.y());
 					} else if (inDef.IsFieldThreeTuple(n)) {
 						Point3 	p3;
 						iter.GetNthFieldAsCoordTriple(n, p3);

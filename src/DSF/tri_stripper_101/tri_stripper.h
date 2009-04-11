@@ -64,7 +64,7 @@
 
 // Comment: Triangle stripper in O(n.log(n)).
 
-//          
+//
 
 //          Currently there are no protection against crazy values
 
@@ -74,9 +74,9 @@
 
 //          than 2, cache size should be about 10 for GeForce 256/2
 
-//          and about 10-16 for GeForce 3/4.) 
+//          and about 10-16 for GeForce 3/4.)
 
-//          
+//
 
 // History: - 1.00 FINAL  (23/04/2003) - Separated cache simulator into another class
 
@@ -210,7 +210,7 @@ public:
 
 	tri_stripper(const indices & TriIndices);
 
-	
+
 
 	// Settings functions
 
@@ -414,7 +414,7 @@ private:
 
 	typedef std::vector<size_t> triangle_indices;
 
-	typedef std::deque<index> indices_cache; 
+	typedef std::deque<index> indices_cache;
 
 
 
@@ -748,7 +748,7 @@ inline bool tri_stripper::_cmp_tri_interface_lt::operator() (const triangle_edge
 
 inline bool tri_stripper::_cmp_tri_degree_gt::operator () (const triangle_degree & a, const triangle_degree & b) const {
 
-	// the triangle with a smaller degree has more priority 
+	// the triangle with a smaller degree has more priority
 
 	return a.Degree() > b.Degree();
 

@@ -84,7 +84,7 @@ bool	HandleSeg(Pmwx& inMap, double clip[4], const Point2& p1, const Point2& p2)
 
 	if (p1.y() > clip[3] && p2.y() > clip[3]) return false;
 
-	
+
 	CGAL::insert_curve(inMap,Curve_2(Segment_2(Point_2(p1.x(),p1.y()),Point_2(p2.x(),p2.y()))));
 //	inMap.insert_edge(p1, p2, NULL, NULL);
 
@@ -240,7 +240,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 
 
-			if (now.x() > 180.0) now.x_ -= 360.0;		
+			if (now.x() > 180.0) now.x_ -= 360.0;
 
 			if (k > 0)
 

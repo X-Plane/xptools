@@ -207,7 +207,7 @@ char *	RF_TerraTool::GetStatusText(void)
 		sprintf(buf, "No area established.");
 	return buf;
 }
-                  
+
 const char *	RF_TerraTool::ResString(void)
 {
 	static char	resbuf[256];

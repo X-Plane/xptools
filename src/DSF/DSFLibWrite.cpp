@@ -474,16 +474,16 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	int num_v = 0;
 	int num_strip_v = 0;
 	int num_fan_v = 0;
-	
+
 	for(patchSpec = patches.begin(); patchSpec != patches.end(); ++patchSpec)
-	for(primIter = patchSpec->primitives.begin(); primIter != patchSpec->primitives.end(); ++primIter)	
+	for(primIter = patchSpec->primitives.begin(); primIter != patchSpec->primitives.end(); ++primIter)
 	{
 											++num_prim;
 		if(primIter->type == dsf_TriStrip)	++num_strip;
 		if(primIter->type == dsf_TriFan  )	++num_fan;
 											num_v += primIter->vertices.size();
 		if(primIter->type == dsf_TriStrip)	num_strip_v += primIter->vertices.size();
-		if(primIter->type == dsf_TriFan  )	num_fan_v += primIter->vertices.size();		
+		if(primIter->type == dsf_TriFan  )	num_fan_v += primIter->vertices.size();
 	}
 	printf("Vertices: total = %d, strip = %d, fan = %d.\n",num_v,num_strip_v, num_fan_v);
 	printf("Primitives: total = %d, strip = %d, fan = %d.\n", num_prim, num_strip, num_fan);

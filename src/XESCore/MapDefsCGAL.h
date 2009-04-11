@@ -5,22 +5,22 @@
  *  Created by Andrew McGregor on 3/04/08.
  *  Copyright 2008 Andrew McGregor.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,26 +30,26 @@
 
 /*
 	Polygon tricks and notes:
-	
+
 	Polygon_2 and Polygon_with_holes_2 are just "dumb" containers - you can push any set of points into them
 	and not worry about the consequences.
-	
+
 	Polygon_set_2 is topological - when you add points and holes, you can use join and difference to hint
 	how you want holes overlapping each other to be handled.  Note that polygons must already be simple.
-	
+
 	Conversions:
-	
-	- To convert a map (or part of a map) to a polygon, simply set "contained" on each face. (If you set the 
+
+	- To convert a map (or part of a map) to a polygon, simply set "contained" on each face. (If you set the
 	  unbounded face to be contained, you get an unbounded polygon with holes.)  Then construct a new
 	  Polygon_set_2 with the map as the constructor.  The polygon_set_2 will be simpler than the map if
 	  there are adjacent contained or not contained faces.
-	  
+
 	- To convert a polygon set to a map, simply set the meta data on its internal arrangement, then use that
 	  arrangement.  The most typical way to do this is to set the meta data, then use "overlay" or "merge"
 	  to put the new polygons somewhere.  WARNING: Most polygon_set_2 processing operations consolidate and
 	  simplify the underlying map.  So it is highly recommended that you set the meta data immediately before
 	  using the underlying map!
-	  
+
 
 */
 
@@ -104,7 +104,7 @@ typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> NT;
 typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> >  NT;
 #endif
 
-// Use the filtered kernel to answer predicates rapidly in easy cases.  
+// Use the filtered kernel to answer predicates rapidly in easy cases.
 // Lazy kernel seems to be slower, and optimized compile almost brings down a Mac Pro, which is NOT a good sign.
 //typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
 typedef CGAL::Simple_cartesian<NT>  FastKernel;
@@ -185,7 +185,7 @@ typedef Traits_2::Curve_2						Curve_2;
  * instantiation. */
 typedef	map<int, double>	GISParamMap;
 
-/* GISPointFeature_t 
+/* GISPointFeature_t
  *
  * A point feature is a 0-dimensional thing in the GIS data.
  * A point feature contains a seriers of parameters indicating
@@ -200,7 +200,7 @@ typedef vector<GISPointFeature_t>	GISPointFeatureVector;
  *
  * An area feature is a polygon that is fully contained within
  * a GT-polygon.  We deviate from more typical GIS standards
- * in representing area features non-topologically because 
+ * in representing area features non-topologically because
  * we aren't terribly interested in doing topological operations.
  * By comparison we do want to know the containing GT land block
  * and not have it be split by a feature that's right on the street.
@@ -209,9 +209,9 @@ typedef vector<GISPointFeature_t>	GISPointFeatureVector;
 struct GISPolygonFeature_t;
 typedef vector<GISPolygonFeature_t>	GISPolygonFeatureVector;
 
-/* GISAreaFeature_t 
+/* GISAreaFeature_t
  *
- * An area feature describes the entire GT-polygon, typically 
+ * An area feature describes the entire GT-polygon, typically
  * overriding the treatment and population of that GT-polygon.
  *
  */
@@ -228,20 +228,20 @@ struct	GISObjPlacement_t;
 typedef vector<GISObjPlacement_t>	GISObjPlacementVector;
 
 /* GISPolyObjPlacement_t
- * 
+ *
  * A single placement of a prototype by its polygon and height.
  * Derived info is saved just like a normal object. */
 struct	GISPolyObjPlacement_t;
-typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;	
+typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;
 
 /* GISNetworkSegment_t
- * 
+ *
  * A single road or other item along a network.  Each end has a height
  * stored in terms of levels from the network definition. */
 struct	GISNetworkSegment_t;
 typedef vector<GISNetworkSegment_t>		GISNetworkSegmentVector;
 
-/* GISPointFeature_t 
+/* GISPointFeature_t
  *
  * A point feature is a 0-dimensional thing in the GIS data.
  * A point feature contains a seriers of parameters indicating
@@ -253,7 +253,7 @@ struct	GISPointFeature_t {
 public:
 	int				mFeatType;
 	GISParamMap		mParams;
-	Point_2			mLocation;	
+	Point_2			mLocation;
 	bool			mInstantiated;
 };
 
@@ -261,7 +261,7 @@ public:
  *
  * An area feature is a polygon that is fully contained within
  * a GT-polygon.  We deviate from more typical GIS standards
- * in representing area features non-topologically because 
+ * in representing area features non-topologically because
  * we aren't terribly interested in doing topological operations.
  * By comparison we do want to know the containing GT land block
  * and not have it be split by a feature that's right on the street.
@@ -275,9 +275,9 @@ public:
 	bool			mInstantiated;
 };
 
-/* GISAreaFeature_t 
+/* GISAreaFeature_t
  *
- * An area feature describes the entire GT-polygon, typically 
+ * An area feature describes the entire GT-polygon, typically
  * overriding the treatment and population of that GT-polygon.
  *
  */
@@ -302,7 +302,7 @@ public:
 };
 
 /* GISPolyObjPlacement_t
- * 
+ *
  * A single placement of a prototype by its polygon and height.
  * Derived info is saved just like a normal object. */
 struct	GISPolyObjPlacement_t {
@@ -315,7 +315,7 @@ public:
 };
 
 /* GISNetworkSegment_t
- * 
+ *
  * A single road or other item along a network.  Each end has a height
  * stored in terms of levels from the network definition. */
 struct	GISNetworkSegment_t {
@@ -336,7 +336,7 @@ struct GIS_vertex_data {
 	bool mTunnelPortal;
 #if OPENGL_MAP
 	float						mGL[2];				// Pre-expanded line!
-#endif	
+#endif
 };
 
 struct GIS_halfedge_data {
@@ -351,7 +351,7 @@ public:
 	bool						mMark;				// Temporary, for algorithms
 #if OPENGL_MAP
 	float						mGL[4];				// Pre-expanded line!
-	float						mGLColor[3];	
+	float						mGLColor[3];
 #endif
 };
 
@@ -364,14 +364,14 @@ public:
 	GISParamMap					mParams;
 	GISPointFeatureVector		mPointFeatures;
 	GISPolygonFeatureVector		mPolygonFeatures;
-	//GISAreaFeatureVector			mAreaFeature;	
-	GISAreaFeature_t			mAreaFeature;	
+	//GISAreaFeatureVector			mAreaFeature;
+	GISAreaFeature_t			mAreaFeature;
 	// Stuff that's been hand placed in the area by object propagation
-	GISObjPlacementVector		mObjs; 
+	GISObjPlacementVector		mObjs;
 	GISPolyObjPlacementVector	mPolyObjs;
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
-	
+
 	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
 	bool		TerrainMatch(const GIS_face_data& rhs) const { return mTerrainType == rhs.mTerrainType; }
 	bool		AreaMatch(const GIS_face_data& rhs) const { return (mTerrainType == rhs.mTerrainType && mAreaFeature.mFeatType == rhs.mAreaFeature.mFeatType); }
@@ -394,7 +394,7 @@ public:
 #if OPENGL_MAP
 	vector<float>				mGLTris;						// Pre-expanded triangles
 	float						mGLColor[4];
-#endif	
+#endif
 };
 
 /******************************************************************************************************************************************************
@@ -403,31 +403,31 @@ public:
 
 /*
 	Our arrangement has a bunch of special tricks:
-	
+
 	1.	Because we are constructing based on the GPS traits, each face has "contained" to specify if the "face" is IN a set of polygons..if it is,
 		then we can convert to a polygon set.  Similarly, we can get a map from a set of polygons.
 
 	2.	We have GIS data on each of the face, vertex, and half-edge data.
-	
+
 	3.	We have a consolidated "key" value for curves.  What this lets us do is identify the source vector that created each half-edge...so we can insert
 		a ton of half-edges, then go look at these keys and see what source data they go with.
-		
+
 		Note that the keys are associated with EDGES, not HALF-EDGES...that is, two half-edges share a curve (which has its key) by ptr.
 
 */
 
-typedef CGAL::Arr_extended_dcel<Traits_2, 
-								GIS_vertex_data, 
-								GIS_halfedge_data, 
+typedef CGAL::Arr_extended_dcel<Traits_2,
+								GIS_vertex_data,
+								GIS_halfedge_data,
 								GIS_face_data,
 								CGAL::Arr_vertex_base<Point_2>,
 								CGAL::Arr_halfedge_base<X_monotone_curve_2>,
 								CGAL::Gps_face_base>									Dcel_base;
-								
+
 class	Dcel : public Dcel_base {
 public:
 
-  Halfedge* new_edge() 
+  Halfedge* new_edge()
   {
 	Halfedge * h = Dcel_base::new_edge();
 	h->data().mDominantXXX = 1;
@@ -484,16 +484,16 @@ inline bool he_is_same_direction_as(Halfedge_handle he, const Curve_2& c)
  ******************************************************************************************************************************************************/
 
 /*
-	Polygon_set_2 is a class that provides polygon boolean operations, using an arrangement to do the merge-cut operations.  Because it uses an 
+	Polygon_set_2 is a class that provides polygon boolean operations, using an arrangement to do the merge-cut operations.  Because it uses an
 	arragement we can make some very fast conversions from a map to a polygon set and back.  For example, we could:
-	
+
 	- Build a bunch of polygons, then use overlay to dump the results directly into a map.
 	- Get our map as a set of polygons.
-	
-	NOTE: if we are going to construct a polygon set from an arrangement, we must set the "contained" property on all faces!!  
+
+	NOTE: if we are going to construct a polygon set from an arrangement, we must set the "contained" property on all faces!!
 */
 
- 
+
 class	Polygon_set_2	: public CGAL::General_polygon_set_2<Traits_2, Dcel > {
 public:
 
@@ -508,7 +508,7 @@ public:
 
 	Polygon_set_2() { }
 	Polygon_set_2(const Polygon_2& rhs) : base(rhs) { }
-	
+
 	Polygon_set_2(const Polygon_set_2& rhs) : base(rhs) { }
 	Polygon_set_2(const base& rhs) : base(rhs) { }
 
@@ -526,7 +526,7 @@ public:
 		remove_redundant_edges();
 		return *this;
 	}
-	
+
 	Polygon_set_2& operator=(const Polygon_set_2& ps)
 	{
 		if (this == &ps)
@@ -600,12 +600,12 @@ static void	InsetPolygon_2(
 {
 	if (!outChain.is_empty())
 		outChain.clear();
-	
+
 	int n = 0;
 	vector<Segment_2>	segments, orig_segments;
-	
+
 	// First we calculate the inset edges of each side of the polygon.
-	
+
 	for (int n = 0, m = 1; n < inChain.size(); ++n, ++m)
 	{
 		Segment_2	edge(inChain[n], inChain[m % inChain.size()]);
@@ -614,22 +614,22 @@ static void	InsetPolygon_2(
 		MoveSegLeft(edge, (inRatios == NULL) ? inInset : (inRatios[n] * inInset), seg);
 		segments.push_back(seg);
 	}
-	
+
 	// Now we go through and find each vertex, the intersection of the supporting
 	// lines of the edges.  For the very first and last point if not in a polygon,
 	// we don't use the intersection, we just find where that segment ends for a nice
 	// crips 90 degree angle.
-	
-	int num_inserted = 0;	
+
+	int num_inserted = 0;
 	int last_vertex = segments.size() - 1;
-	
+
 	for (int outgoing_n = 0; outgoing_n < segments.size(); ++outgoing_n)
 	{
 		// the Nth segment goes from the Nth vertex to the Nth + 1 vertex.
 		// Therefore it is the "outgoing" segment.
 		int 				incoming_n = outgoing_n - 1;
 		if (incoming_n < 0)	incoming_n = last_vertex;
-		
+
 		/* We are going through vertex by vertex and determining the point(s) added
 		 * by each pair of sides.  incoming is the first side and outgoing is the second
 		 * in a CCW rotation.  There are 5 special cases:
@@ -637,10 +637,10 @@ static void	InsetPolygon_2(
 		 * (1) The first point in a non-ring is determined only by the second side.
 		 * (2) the last point in a non-ring is determined only by the first side.
 		 * (3) If we have a side that overlaps exactly backward onto itself, we generate two
-		 *     points to make a nice square corner around this 'antenna'.  Please note the 
+		 *     points to make a nice square corner around this 'antenna'.  Please note the
 		 *     requirement that both sides be the same length!!
 		 * (4) If two sides are almost colinear (or are colinear) then the intersection we would
-		 *     normally use to find the intersect point will have huge precision problems.  In 
+		 *     normally use to find the intersect point will have huge precision problems.  In
 		 *     this case we take an approximate point by just treating it as straight and splitting
 		 *     the difference.  The inset will be a bit too thin, but only by a fractional amount that
 		 *     is close to our precision limits anyway.
@@ -648,23 +648,23 @@ static void	InsetPolygon_2(
 		 *     sharp end.  We "mitre" this end by adding two points to prevent absurdity.
 		 *
 		 * GENERAL CASE: when all else fails, we inset both sides, and intersect - that's where the inset
-		 * polygon turns a corner. 
+		 * polygon turns a corner.
 		 *
 		 *****/
-		
+
 		if (outgoing_n == 0 && !inIsRing)
 		{
 			/* CASE 1 */
 			// We're the first in a chain.  Outgoing vertex is always right.
 			outChain.push_back(segments[outgoing_n].source());
-		} 
+		}
 		else if (outgoing_n == last_vertex && !inIsRing)
 		{
 			/* CASE 2 */
 			// We're the last in a chain.  Incoming vertex is always right
-			outChain.push_back(segments[incoming_n].target());			
-		}  
-		else if (orig_segments[incoming_n].source() == orig_segments[outgoing_n].target()) 
+			outChain.push_back(segments[incoming_n].target());
+		}
+		else if (orig_segments[incoming_n].source() == orig_segments[outgoing_n].target())
 		{
 			/* CASE 3 */
 			// Are the two sides in exactly opposite directions?  Special case...we have to add a vertex.
@@ -677,34 +677,34 @@ static void	InsetPolygon_2(
 			outChain.push_back(new_side2.target());
 			if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);
 		} else {
-			
+
 			// These are the intersecting cases - we need a dot product to determine what to do.
 			Vector_2 v1(segments[incoming_n].source(),segments[incoming_n].target());
 			Vector_2 v2(segments[outgoing_n].source(),segments[outgoing_n].target());
 			v1 = normalize(v1);
 			v2 = normalize(v2);
 			double dot = CGAL::to_double(v1 * v2);
-			
+
 			if (dot > 0.999961923064)
 			{
 				/* CASE 4 */
 				// Our sides are nearly colinear - don't trust intersect!
 				outChain.push_back(CGAL::midpoint(segments[incoming_n].target(), segments[outgoing_n].source()));
-			} 
+			}
 			else if (dot < -0.5 && !(CGAL::orientation(v1,v2)==CGAL::LEFT_TURN))
 			{
 				/* CASE 5 */
 				// A sharp outward turn of more than 60 degrees - at this point the intersect point will be over
-				// twice the road thickness from the intersect point.  Not good!  
+				// twice the road thickness from the intersect point.  Not good!
 				Point_2	p1(segments[incoming_n].target());
 				Point_2	p2(segments[outgoing_n].source());
 				p1 = p1 + (v1 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) *  inInset);
 				p2 = p2 + (v2 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) * -inInset);
 				outChain.push_back(p1);
 				outChain.push_back(p2);
-				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);				
+				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);
 			}
-			else  
+			else
 			{
 				/* GENERAL CASE */
 				// intersect the supporting line of two segments.
@@ -718,15 +718,15 @@ static void	InsetPolygon_2(
 					outChain.push_back(CGAL::midpoint(segments[incoming_n].target(), segments[outgoing_n].source()));
 			}
 		}
-	}	
-}				
+	}
+}
 
 struct	CoordTranslator_2 {
 	Point_2	mSrcMin;
 	Point_2	mSrcMax;
 	Point_2	mDstMin;
 	Point_2	mDstMax;
-	
+
 	Point_2	Forward(const Point_2& input) const;
 	Point_2	Reverse(const Point_2& input) const;
 };

@@ -205,7 +205,7 @@ static	void	RF_HandleProcMenuCmd(void *, void * i)
 //				char	f1[1024];
 //				f1[0] = 0;
 //				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
-//						
+//
 //				HydroReconstruct(gMap,  gDem,f1,"../rendering_data/OUTPUT-hydro",RF_ProgressFunc);
 //				RF_Notifiable::Notify(RF_Cat_File, RF_Msg_VectorChange, NULL);
 //				RF_Notifiable::Notify(RF_Cat_File, RF_Msg_RasterChange, NULL);
@@ -295,7 +295,7 @@ static	void	RF_HandleProcMenuCmd(void *, void * i)
 		case procCmd_InstantiateFor:
 			{
 //				StElapsedTime	timer("Total forest time.\n");
-//				
+//
 //				vector<PreinsetFace>	insets;
 //				set<int>				the_types;
 //				GetAllForestLUs(the_types);

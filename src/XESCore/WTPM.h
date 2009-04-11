@@ -95,7 +95,7 @@ struct	WTPM_Node {
 	WTPM_DirectedLineVector	lines;
 // Added by WTPM_ExportToMap
 	DVertex *				pm_vertex;
-	
+
 };
 
 struct	WTPM_Line {

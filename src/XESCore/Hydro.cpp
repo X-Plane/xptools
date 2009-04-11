@@ -418,7 +418,7 @@ static void BurnRiver(DEMGeo& dem, const Point2& p1, const Point2& p2, float v)
 	double	x2 = dem.lon_to_x(p2.x());
 	double	y1 = dem.lat_to_y(p1.y());
 	double	y2 = dem.lat_to_y(p2.y());
-	
+
 	Segment2	seg(Point2(x1, y1), Point2(x2, y2));
 	double len = sqrt(seg.squared_length());
 	if (len == 0.0) len = 1.0;
@@ -597,7 +597,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressF
 		hydro_dir(x,y) = sink_Known;
 
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
-	if (he->data().mDominant)	
+	if (he->data().mDominant)
 	if (he->data().mParams.count(he_IsRiver) > 0)
 	{
 		Point2	sp = cgal2ben(he->source()->point());
@@ -1076,13 +1076,13 @@ void TagOriginalBridges(Pmwx& io_map)
 {
 	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); ++e)
 	if(e->data().mDominant)
-	if(!e->data().mSegments.empty())	
+	if(!e->data().mSegments.empty())
 	{
 		e->data().mParams[he_Bridge] = (
 			!e->face()->is_unbounded() &&
 			!e->twin()->face()->is_unbounded() &&
 			e->face()->data().IsWater() &&
-			e->twin()->face()->data().IsWater()) ? 1.0 : 0.0;		
+			e->twin()->face()->data().IsWater()) ? 1.0 : 0.0;
 	}
 }
 
@@ -1091,7 +1091,7 @@ enum {
 	is_water,
 	is_coast,
 	is_border };
-	
+
 typedef list<Halfedge_handle>	LongStrand;
 
 int CategorizeHalfedge(Halfedge_handle e)
@@ -1168,7 +1168,7 @@ Halfedge_handle PrevOneRoad(Halfedge_handle r, bool allow_bridge)
 	circ=stop=r->source()->incident_halfedges();
 	do {
 		++circ;
-		if(r->twin() != circ && HasRoad(circ)) 
+		if(r->twin() != circ && HasRoad(circ))
 		if(allow_bridge || !IsBridge(circ))
 			{ ++n; ret = circ; }
 	} while(circ != stop);
@@ -1189,7 +1189,7 @@ void	BuildLongStrand(Halfedge_handle seed, LongStrand& out_s)
 		out_s.push_front(i);
 		i->data().mMark = 1;
 		i->twin()->data().mMark = 1;
-	}	
+	}
 	i = seed;
 	while (1)
 	{
@@ -1201,7 +1201,7 @@ void	BuildLongStrand(Halfedge_handle seed, LongStrand& out_s)
 		out_s.push_back(i);
 		i->data().mMark = 1;
 		i->twin()->data().mMark = 1;
-	}	
+	}
 }
 
 bool AllSameType(const LongStrand& s)
@@ -1320,14 +1320,14 @@ void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
 			{
 				for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
 				{
-					dominant(*ss)->data().mSegments = dominant(s->front())->data().mSegments;				
+					dominant(*ss)->data().mSegments = dominant(s->front())->data().mSegments;
 				}
 			}
 		}
 	}
 
 	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-	if(e->data().mDominant)	
+	if(e->data().mDominant)
 	if(!IsBridge(e))
 	if(HasRoad(e))
 	if(CategorizeHalfedge(e) == is_water)
@@ -1454,7 +1454,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	ConformWater(ioDem, hydro_dir, false, borders);
 #if !PHONE
 	BuildRivers		  (ioMap, ioDem, borders, inFunc);
-#endif	
+#endif
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
 	InterpDoubleDEM(foo, bar);
 	ReduceToBorder(bar, foo);
@@ -1462,7 +1462,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	Pmwx	water;
 	water.unbounded_face()->data().mTerrainType = terrain_Natural;
 	DemToVector(foo, water, false, terrain_Water, inFunc);
-	
+
 	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mSouth), Point_2(foo.mEast, foo.mSouth)));
 	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mNorth), Point_2(foo.mEast, foo.mNorth)));
 	CGAL::insert_curve(water,Segment_2(Point_2(foo.mWest, foo.mSouth), Point_2(foo.mWest, foo.mNorth)));
@@ -1480,8 +1480,8 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	TopoIntegrateMaps(&ioMap, &water);
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap = water;
-	
-	ConformWater(ioDem, hydro_dir, true, NULL);	
+
+	ConformWater(ioDem, hydro_dir, true, NULL);
 }
 
 /******************************************************************************************************************************
@@ -1544,9 +1544,9 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 
 	do {
 		// One cycle through: try to identify and cut off unneeded points.
-	
+
 		set <Halfedge_handle>	nuke_he;
-		did_work = false;	
+		did_work = false;
 		int ctr = 0;
 
 		// Start by finding any halfedge that's water on the left, land on the right, not border.
@@ -1619,8 +1619,8 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 				}
 			}
 		}
-		
-		// Now nuke anyone we got rid of and recalc face sizes.		
+
+		// Now nuke anyone we got rid of and recalc face sizes.
 		for (set<Halfedge_handle>::iterator nuke_e = nuke_he.begin(); nuke_e != nuke_he.end(); ++nuke_e)
 		{
 //			gMeshLines.push_back((*nuke_e)->source()->point());
@@ -1659,7 +1659,7 @@ inline int SubBoxIdx(const Bbox2& lim, const Point2& p, int div)
 {
 	float dx = (p.x() - lim.p1.x()) / (lim.p2.x() - lim.p1.x());
 	float dy = (p.y() - lim.p1.y()) / (lim.p2.y() - lim.p1.y());
-	
+
 	dx *= (float) div;
 	dy *= (float) div;
 
@@ -1713,7 +1713,7 @@ static bool	AnyPtInEdgeSpaceCCB(Halfedge_handle e1, Halfedge_handle e2, vector<p
 {
 	DebugAssert(e1->next() == e2);
 	if (e2->next() == e1) return true;
-	
+
 	Bbox2	lim(cgal2ben(e1->source()->point()));
 	lim += cgal2ben(e1->target()->point());
 	lim += cgal2ben(e2->target()->point());
@@ -1721,7 +1721,7 @@ static bool	AnyPtInEdgeSpaceCCB(Halfedge_handle e1, Halfedge_handle e2, vector<p
 	Segment2	s1(cgal2ben(e1->source()->point()), cgal2ben(e1->target()->point()));
 	Segment2	s2(cgal2ben(e2->source()->point()), cgal2ben(e2->target()->point()));
 	Segment2	s3(cgal2ben(e2->target()->point()), cgal2ben(e1->source()->point()));
-	
+
 	DebugAssert(Vector2(s1.p1,s1.p2).signed_area(Vector2(s2.p1,s2.p2)) > 0.0);
 
 	Pmwx::Ccb_halfedge_circulator circ, stop;
@@ -1751,11 +1751,11 @@ void	SimplifyWaterCCB(Pmwx& ioMap, Halfedge_handle edge, vector<pair<Bbox2, vect
 {
 	bool	is_split = false;
 	bool	first_split = false;
-	Halfedge_handle stop = edge;	
+	Halfedge_handle stop = edge;
 	bool	first_loop = true;
 	bool	last_loop = false;
 	do {
-	
+
 		DebugAssert(edge->face()->data().IsWater());
 		DebugAssert(!edge->face()->is_unbounded());
 
@@ -1812,7 +1812,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, Halfedge_handle edge, vector<pair<Bbox2, vect
 					int terrain_new = is_left ? edge->twin()->face()->mTerrainType : edge->face()->mTerrainType;
 
 					DebugAssert(cross_pt == pt_c);
-					
+
 					Halfedge_handle new_edge;
 					if (is_left)
 						new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
@@ -1881,8 +1881,8 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, Face_handle face, vector<pair<Bbox2, vec
 
 	set<Halfedge_handle> ee;
 
-	face->copy_holes(ee);			
-	
+	face->copy_holes(ee);
+
 	for (set<Halfedge_handle>::iterator e = ee.begin(); e != ee.end(); ++e)
 	{
 		SimplifyWaterCCB(ioMap,*e, cache);
@@ -1903,7 +1903,7 @@ void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 
 	PROGRESS_START(func, 0, 1, "Smoothing coastlines");
 	int ctr = 0;
-	
+
 	for (set<Face_handle>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);

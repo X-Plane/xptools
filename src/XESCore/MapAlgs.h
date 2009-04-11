@@ -96,7 +96,7 @@ void	RebuildMap(
 			Pmwx&			out_map);
 #endif
 
-// keep - but...Point_2 based?  
+// keep - but...Point_2 based?
 /*
  * CropMap
  *
@@ -149,8 +149,8 @@ void	CropMap(
 //			ProgressFunc	inFunc);
 
 
-//void	SwapMaps(	Pmwx& 							ioMapA, 
-//					Pmwx& 							ioMapB, 
+//void	SwapMaps(	Pmwx& 							ioMapA,
+//					Pmwx& 							ioMapB,
 //					const vector<Halfedge_handle>&	inBoundsA,
 //					const vector<Halfedge_handle>&	inBoundsB);
 

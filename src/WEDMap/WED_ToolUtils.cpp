@@ -180,7 +180,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	WED_Thing * wrl = WED_GetWorld(resolver);
-	
+
 	if (sel->GetSelectionCount() == 1)
 	{
 		WED_Thing * obj = SAFE_CAST(WED_Thing, sel->GetNthSelection(0));
@@ -210,7 +210,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 		else
 			parent_of_sel = wrl;
 	}
-	
+
 	if(parent_of_sel == wrl->GetParent()) parent_of_sel = wrl;
 	return parent_of_sel;
 }

@@ -69,7 +69,7 @@ protected:
 		WED_PropIntEnum			light_kind;
 		WED_PropDoubleText		light_angle;
 		WED_PropDoubleText		tower_height;
-		WED_PropBoolText		windsock_lit;		
+		WED_PropBoolText		windsock_lit;
 		WED_PropStringText		resource;
 
 	virtual	void		AcceptPath(

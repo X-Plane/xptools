@@ -60,14 +60,14 @@ class	WED_LibraryListAdapter;
 
 class	WED_MapPane : public GUI_Packer, GUI_Listener {
 public:
-		
+
 						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library);
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
-			
+
 			void		SetResource(const string& r, int res_type);
-			
+
 			GUI_Pane *	GetTopBar(void);
 
 			int				Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
@@ -102,14 +102,14 @@ private:
 	WED_ToolInfoAdapter *			mInfoAdapter;
 
 	IResolver *				mResolver;
-	
+
 	WED_CreatePointTool *	mObjTool;
 	WED_CreatePolygonTool *	mFacTool;
 	WED_CreatePolygonTool * mFstTool;
 	WED_CreatePolygonTool * mStrTool;
 	WED_CreatePolygonTool * mLinTool;
 	WED_CreatePolygonTool * mPolTool;
-	
+
 };
 
 

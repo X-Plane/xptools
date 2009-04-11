@@ -140,7 +140,7 @@ inline void cache_simulator::push(const index i, const bool CountCacheHit) {
 
 	}
 
-	    
+
 
 	// Manage the indices cache as a FIFO structure
 

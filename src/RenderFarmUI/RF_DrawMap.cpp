@@ -98,13 +98,13 @@ void PRECALC_End (void)
 
 
 void draw_he(Halfedge_handle e)
-{	
+{
 	Bezier2	b;
 	b.p1 = cgal2ben(e->source()->point());
 	b.p2 = cgal2ben(e->target()->point());
 	b.c1=b.p1;
 	b.c2=b.p2;
-	
+
 	if(e->source()->degree() == 2)
 	{
 		Vector2	vs(b.p1,b.p2);
@@ -123,7 +123,7 @@ void draw_he(Halfedge_handle e)
 				n=n.perpendicular_ccw();
 			else
 				n=n.perpendicular_cw();
-			
+
 			b.c1 = b.p1 + n * (sqrt(Segment2(b.p1,b.p2).squared_length()) / 3.0);
 		}
 	}
@@ -145,13 +145,13 @@ void draw_he(Halfedge_handle e)
 				n=n.perpendicular_ccw();
 			else
 				n=n.perpendicular_cw();
-			
+
 			b.c2 = b.p2 + n * (sqrt(Segment2(b.p2,b.p1).squared_length()) / 3.0);
 		}
-	
+
 	}
 
-/*	
+/*
 	glVertex2f(b.p1.x_,b.p1.y_);
 	glVertex2f(b.p2.x_,b.p2.y_);
 
@@ -165,10 +165,10 @@ void draw_he(Halfedge_handle e)
 	float c = 10.0;
 	if(b.p1 == b.c1 && b.p2 == b.c2)
 	c=1.0;
-	
+
 	if(XPLMGetModifiers() & xplm_ShiftFlag)
 		c=1.0;
-	
+
 	for(float s = 0.0; s < c; ++s)
 	{
 		Point2	p(b.midpoint(s/c));
@@ -176,7 +176,7 @@ void draw_he(Halfedge_handle e)
 		p = b.midpoint((s+1.0)/c);
 		glVertex2f(p.x_,p.y_);
 	}
-	
+
 }
 
 inline void SetColor(float c[3], float r, float g, float b)
@@ -190,14 +190,14 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 	int	border = i->face()->is_unbounded() || i->twin()->face()->is_unbounded();
 	int river = i->data().mParams.find(he_IsRiver) != i->data().mParams.end();
 	int dryriver = i->data().mParams.find(he_IsDryRiver) != i->data().mParams.end();
-	
+
 	int	wet = i->face()->data().IsWater() || i->twin()->face()->data().IsWater();
-	
+
 //	bool beach = i->mTransition != 0;
 
 	if (border)
 		SetColor(color,1.0, 0.0, 1.0);
-	
+
 	int tp = NO_VALUE;
 	for( GISNetworkSegmentVector::iterator r = i->data().mSegments.begin(); r != i->data().mSegments.end(); ++r)
 	if(tp == NO_VALUE || r->mFeatType < tp)
@@ -323,10 +323,10 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 	if (!f->is_unbounded())
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
-	
+
 		f->data().mGLTris.clear();
 		gAccum = &f->data().mGLTris;
-		
+
 		GLUtriangulatorObj *tobj;   /* tessellation object */
 		GLdouble v[3];              /* passed to gluTessVertex, prototype used 3d */
 
@@ -339,7 +339,7 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		do {
 			++i, ++needed;
 		} while (i != stop);
-		Pmwx::Hole_iterator hole;		
+		Pmwx::Hole_iterator hole;
 		for (hole = f->holes_begin(); hole != f->holes_end(); ++hole)
 		{
 			i = stop = *hole;
@@ -408,7 +408,7 @@ void	RecalcOGLColors(Pmwx& ioMap, ProgressFunc inFunc)
 	if (!f->is_unbounded())
 	{
 		PROGRESS_CHECK(inFunc, 0, 1, "Setting colors for vector map...", ctr, total, 1000)
-		SetColorForFace(f, f->data().mGLColor);					
+		SetColorForFace(f, f->data().mGLColor);
 	}
 	PROGRESS_DONE(inFunc, 0, 1, "Setting colors for vector map...")
 
@@ -599,18 +599,18 @@ void	DrawMapBucketed(
 		{
 			bool	sel = faceSel.count(f) > 0;
 			bool	draw = sel || f->data().mGLColor[3] != 0.0;
-			
+
 			if (draw)
 			{
 				if (sel)
 					glColor4f(f->data().mGLColor[0] * 0.5 + 0.5, f->data().mGLColor[1] * 0.5, f->data().mGLColor[2] * 0.5, 0.8);
 				else
 					glColor4fv(f->data().mGLColor);
-			
+
 				float * vs, * ve;
 				vs = &*f->data().mGLTris.begin();
 				ve = &*f->data().mGLTris.end();
-				
+
 				for (float * vv = vs; vv != ve; vv +=2)
 				{
 					glVertex2fv(vv);
@@ -672,7 +672,7 @@ void	DrawMapBucketed(
 				{
 					double	x1 = CGAL::to_double(obj->mLocation.x());
 					double	y1 = CGAL::to_double(obj->mLocation.y());
-					glVertex2f(x1, y1);					
+					glVertex2f(x1, y1);
 				}
 				glEnd();
 				glPointSize(1);
@@ -695,7 +695,7 @@ void	DrawMapBucketed(
 		{
 			if (vertexSel.find(*v) == vertexSel.end())
 				continue;
-		
+
 			double	x1 = CGAL::to_double((*v)->point().x());
 			double	y1 = CGAL::to_double((*v)->point().y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
@@ -723,11 +723,11 @@ void	DrawMapBucketed(
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
 			glColor4f(shade, shade, (*fi)->data().mObjs[j].mDerived ? 1.0 : 0.0, 1.0);
-		
+
 			double	x1 = CGAL::to_double((*fi)->data().mObjs[j].mLocation.x());
 			double	y1 = CGAL::to_double((*fi)->data().mObjs[j].mLocation.y());
 			double r = (*fi)->data().mObjs[j].mHeading;
-			
+
 			double	w = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->data().mObjs[j].mRepType]].width_min;
 			double	h = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->data().mObjs[j].mRepType]].depth_min;
 
@@ -750,7 +750,7 @@ void	DrawMapBucketed(
 			glEnd();
 			glPopMatrix();
 		}
-		
+
 		for (int j = 0; j < (*fi)->data().mPolyObjs.size(); ++j)
 		{
 			float shade = (float) (n % 10) / 20.0 + 0.1;
@@ -762,7 +762,7 @@ void	DrawMapBucketed(
 			for(int l = 0; l < ccb.size(); ++l)
 				glVertex2f(CGAL::to_double(ccb[l].x()),CGAL::to_double(ccb[l].y()));
 			glEnd();
-	
+
 
 			for (Polygon_with_holes_2::Hole_const_iterator h = (*fi)->data().mPolyObjs[j].mShape.holes_begin(); h != (*fi)->data().mPolyObjs[j].mShape.holes_end(); ++h)
 			{
@@ -803,7 +803,7 @@ void	DrawMapBucketed(
 				glPointSize(4);
 				glBegin(GL_POINTS);
 			}
-		
+
 			double	x1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.x());
 			double	y1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
@@ -838,8 +838,8 @@ void	DrawMapBucketed(
 
 #if 0
 			THIS CODE DRAWS THE SELECTED POLYGONS CCB IN CYAN AND HOLES IN GREEN, ALLOWING FOR TOPOLOGY DIAGNOSTICS!!
-			
-			glColor3f(0.0, 1.0, 1.0);			
+
+			glColor3f(0.0, 1.0, 1.0);
 //			for (GISPolyObjPlacementVector::const_iterator poly = f->data().mPolyObjs.begin(); poly != f->data().mPolyObjs.end(); ++poly)
 			if (faceSel.find(f) != faceSel.end())	// HACK
 			{
@@ -854,10 +854,10 @@ void	DrawMapBucketed(
 				glEnd();
 				glLineWidth(1);	// HACK
 			}
-			
-// COPY OF HACK			
-			
-			glColor3f(0.0, 1.0, 0.3);			
+
+// COPY OF HACK
+
+			glColor3f(0.0, 1.0, 0.3);
 //			for (GISPolyObjPlacementVector::const_iterator poly = f->data().mPolyObjs.begin(); poly != f->data().mPolyObjs.end(); ++poly)
 			for (vector<Polygon2>::iterator iter = pp.begin(); iter != pp.end(); ++iter)
 			if (faceSel.find(f) != faceSel.end())	// HACK
@@ -873,8 +873,8 @@ void	DrawMapBucketed(
 				}
 				glEnd();
 				glLineWidth(1);	// HACK
-			}			
-#endif	
+			}
+#endif
 
 
 
@@ -893,7 +893,7 @@ void		FindFaceTouchesPt(Pmwx& inMap, const Point2& p, vector<Face_handle>& outID
 			pol.push_back(cgal2ben(circ->target()->point()));
 //			printf("  pt %lf,%lf\n",CGAL::to_double(circ->target()->point().x()),CGAL::to_double(circ->target()->point().y()));
 		} while(++circ != stop);
-		
+
 		if(pol.inside(p))
 		{
 			bool in_hole = false;
@@ -920,7 +920,7 @@ void		FindFaceTouchesPt(Pmwx& inMap, const Point2& p, vector<Face_handle>& outID
 void		FindFaceTouchesRectFast(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Face_handle>& outIDs)
 {
 	outIDs.clear();
-	Bbox2	sel(p1, p2);	
+	Bbox2	sel(p1, p2);
 	for(Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
 	if(!f->is_unbounded())
 	{
@@ -930,7 +930,7 @@ void		FindFaceTouchesRectFast(Pmwx& inMap, const Point2& p1, const Point2& p2, v
 			fb += cgal2ben(circ->target()->point());
 		} while(++circ != stop);
 		if(sel.overlap(sel))
-			outIDs.push_back(f);			
+			outIDs.push_back(f);
 	}
 }
 
@@ -951,7 +951,7 @@ void		FindFaceFullyInRect(Pmwx& inMap, const Point2& p1, const Point2& p2, vecto
 			}
 		} while(++circ != stop);
 		if(ok)
-			outIDs.push_back(f);			
+			outIDs.push_back(f);
 	}
 }
 

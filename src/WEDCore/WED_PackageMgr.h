@@ -46,7 +46,7 @@ public:
 	void		GetNthPackagePath(int n, string& package) const;
 
 	void		RenameCustomPackage(int n, const string& new_name);
-	
+
 	int			CreateNewCustomPackage(void);
 	void		Rescan(void);
 

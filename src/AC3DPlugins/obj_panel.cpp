@@ -185,7 +185,7 @@ int		get_sub_panel_count(void)
 }
 
 int		get_sub_panel_l(int r)
-{ 
+{
 	switch(r) {
 	case 0: return get_region_l0();
 	case 1: return get_region_l1();
@@ -196,7 +196,7 @@ int		get_sub_panel_l(int r)
 }
 
 int		get_sub_panel_b(int r)
-{ 
+{
 	switch(r) {
 	case 0: return get_region_b0();
 	case 1: return get_region_b1();
@@ -207,7 +207,7 @@ int		get_sub_panel_b(int r)
 }
 
 int		get_sub_panel_r(int r)
-{ 
+{
 	switch(r) {
 	case 0: return get_region_r0();
 	case 1: return get_region_r1();
@@ -218,7 +218,7 @@ int		get_sub_panel_r(int r)
 }
 
 int		get_sub_panel_t(int r)
-{ 
+{
 	switch(r) {
 	case 0: return get_region_t0();
 	case 1: return get_region_t1();
@@ -278,7 +278,7 @@ int	get_sub_panel_for_mesh(ACObject * obj)
 
 	int panel_x, panel_y, dont_care;
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
-	
+
 	smin *= (float) panel_x;
 	smax *= (float) panel_x;
 
@@ -316,7 +316,7 @@ float	panel_get_texture_repeat_x(int sub, ACObject * obj)
 
 	int panel_x, panel_y, dont_care;
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
-	
+
 	// region is 512 wide, panel is 1024 wide
 	// we need to DOUBLE our UV map!
 	return (float) panel_x / (float) (get_sub_panel_r(sub) - get_sub_panel_l(sub));
@@ -333,7 +333,7 @@ float	panel_get_texture_repeat_y(int sub, ACObject * obj)
 
 	int panel_x, panel_y, dont_care;
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
-	
+
 	return (float) panel_y / (float) (get_sub_panel_t(sub) - get_sub_panel_b(sub));
 }
 
@@ -349,7 +349,7 @@ float	panel_get_texture_offset_x(int sub, ACObject * obj)
 
 	int panel_x, panel_y, dont_care;
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
-	
+
 	return (float) (-get_sub_panel_l(sub)) / (float)  (get_sub_panel_r(sub) - get_sub_panel_l(sub));
 }
 
@@ -366,14 +366,14 @@ float	panel_get_texture_offset_y(int sub, ACObject * obj)
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
 
 	return (float) (-get_sub_panel_b(sub)) / (float) (get_sub_panel_t(sub) - get_sub_panel_b(sub));
-	
+
 }
 
 void	panel_get_import_scaling(int tex_id, int sub, float * s_mul, float * t_mul, float * s_add, float * t_add)
 {
 	*s_mul = *t_mul = 1.0;
 	*s_add = *t_add = 0.0;
-	
+
 	ACImage * im = texture_id_to_image(tex_id);
 	if(im == NULL)
 	{
@@ -383,10 +383,10 @@ void	panel_get_import_scaling(int tex_id, int sub, float * s_mul, float * t_mul,
 
 	int panel_x, panel_y, dont_care;
 	ac_image_get_dim(im,&panel_x,&panel_y,&dont_care);
-	
+
 	*s_add = (float) get_sub_panel_l(sub) / (float) panel_x;
 	*t_add = (float) get_sub_panel_b(sub) / (float) panel_y;
-	
+
 	*s_mul = (float) (get_sub_panel_r(sub) - get_sub_panel_l(sub)) / (float) panel_x;
 	*t_mul = (float) (get_sub_panel_t(sub) - get_sub_panel_b(sub)) / (float) panel_y;
 }

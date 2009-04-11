@@ -91,9 +91,9 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	WED_MapLayer * cur = mTool;
 
 	Bbox2 bounds;
-	
+
 	bool draw_ent_v, draw_ent_s, wants_sel;
-	
+
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
@@ -198,17 +198,17 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	#define GET_DEGS(x) ((int) floor(fabs(x)))
 	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
 	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
-	
+
 	if (has_a1 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
-	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
 												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
 												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
 	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
 	if (has_a2 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
-	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
 												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
 												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-	
+
 
 	#undef GET_DEGS
 	#undef GET_MINS

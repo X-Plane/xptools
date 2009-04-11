@@ -59,7 +59,7 @@ struct	DSF_ResourceTable {
 		obj_defs_idx[f] = obj_defs.size()-1;
 		return			  obj_defs.size()-1;
 	}
-	
+
 	int accum_pol(const string& f)
 	{
 		map<string,int>::iterator i = polygon_defs_idx.find(f);
@@ -116,7 +116,7 @@ static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, v
 	{
 		IGISPoint * pt = ring->GetNthPoint(n % np);
 		IGISPoint_Bezier * pth = bezier ? dynamic_cast<IGISPoint_Bezier *>(pt) : NULL;
-		
+
 		pt->GetLocation(p);
 		if(tex_coord) pt->GetUV(st);
 		ch = p;
@@ -140,16 +140,16 @@ static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, v
 			c[4] = st.x();
 			c[5] = st.y();
 			c[6] = stch.x();
-			c[7] = stch.y();			
+			c[7] = stch.y();
 		}
 		cbs->AddPolygonPoint_f(c,writer);
 	}
 	cbs->EndPolygonWinding_f(writer);
-	
+
 }
 
 static void DSF_AccumWindings(IGISPolygon * pol, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int holes)
-{	
+{
 	DSF_AccumPts(pol->GetOuterRing(), cbs,writer,bezier,tex_coord, 0);	// don't dupe first point
 	int hc = holes ? pol->GetNumHoles() : 0;
 	for(int h = 0; h < hc; ++h)
@@ -183,7 +183,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		xcl->GetMax()->GetLocation(maxp);
 		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
 		{
-			const char * pname = NULL;		
+			const char * pname = NULL;
 			switch(*xt) {
 			case exclude_Obj:	pname = "sim/exclude_obj";	break;
 			case exclude_Fac:	pname = "sim/exclude_fac";	break;
@@ -265,8 +265,8 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		cbs->EndPolygon_f(writer);
 	}
 
-	
-	
+
+
 /*	if ((img = dynamic_cast<WED_OverlayImage *>(what)) != NULL)
 	{
 		string img_file, pol_file;
@@ -324,8 +324,8 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 			}
 		}
 	}
-*/	
-	
+*/
+
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 		DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_resources, io_table, cbs, writer);
@@ -358,7 +358,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 
 	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 		cbs.AcceptObjectDef_f(s->c_str(), writer);
-	
+
 	for(vector<string>::iterator s = rsrc.polygon_defs.begin(); s != rsrc.polygon_defs.end(); ++s)
 		cbs.AcceptPolygonDef_f(s->c_str(), writer);
 
@@ -384,7 +384,7 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 	int tile_east  = ceil (wrl_bounds.p2.x());
 	int tile_south = floor(wrl_bounds.p1.y());
 	int tile_north = ceil (wrl_bounds.p2.y());
-	
+
 	set<string>	generated_resources;
 
 	for (int y = tile_south; y < tile_north; ++y)

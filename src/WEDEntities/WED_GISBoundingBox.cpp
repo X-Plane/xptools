@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -54,7 +54,7 @@ void			WED_GISBoundingBox::GetBounds		(	   Bbox2&  bounds) const
 	Bbox2	b2;
 	GetMin()->GetBounds(bounds);
 	GetMax()->GetBounds(b2);
-	bounds += b2;	
+	bounds += b2;
 }
 
 bool			WED_GISBoundingBox::IntersectsBox	(const Bbox2&  bounds) const
@@ -82,20 +82,20 @@ bool			WED_GISBoundingBox::PtOnFrame		(const Point2& p, double d) const
 {
 	Bbox2	me;
 	GetBounds(me);
-	
+
 	if (p.x() < me.xmin() ||
 		p.x() > me.xmax() ||
 		p.y() < me.ymin() ||
 		p.y() > me.ymax())
 		return false;
-		
+
 	if (p.x() > me.xmin() &&
 		p.x() < me.xmax() &&
 		p.y() > me.ymin() &&
 		p.y() < me.ymax())
 		return false;
-	
-	return true;	
+
+	return true;
 }
 
 void			WED_GISBoundingBox::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds)

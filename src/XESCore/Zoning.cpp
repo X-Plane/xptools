@@ -82,7 +82,7 @@ void	ZoneManMadeAreas(
 		// airports take the cake/
 
 		if (face->data().mTerrainType != terrain_Natural) continue;
-	
+
 //		switch(face->data().mAreaFeature[0].mFeatType) {
 ////		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
 ////		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
@@ -90,7 +90,7 @@ void	ZoneManMadeAreas(
 ////		case feat_Marina:		face->mTerrainType = terrain_Marina;		break;
 //		case feat_GolfCourse:	face->data().mTerrainType = terrain_GolfCourse;	break;
 //		case feat_Cemetary:		face->data().mTerrainType = terrain_Cemetary;		break;
-////		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;		
+////		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;
 //		case feat_Park:			face->data().mTerrainType = terrain_Park;			break;
 //		case feat_ForestPark:	face->data().mTerrainType = terrain_ForestPark;	break;
 //		}
@@ -138,12 +138,12 @@ void	ZoneManMadeAreas(
 			me.push_back(circ->target()->point());
 			++circ;
 		} while (circ != stop);
-		
+
 		Point_2	myloc = centroid(me);
-		
+
 		double	my_agl = face->data().mParams[af_HeightObjs];
 		double	max_agl = my_agl;
-		
+
 		for (set<Face_handle>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
 		{
 			max_agl = max(max_agl, (*niter)->data().mParams[af_HeightObjs] * 0.5);
@@ -161,12 +161,12 @@ void	ZoneManMadeAreas(
 			{
 				midp = CGAL::midpoint(rwy->ends.source(), rwy->ends.target());
 				dist = LonLatDistMeters(midp.x(), midp.y(), myloc.x(), myloc.y());
-				
+
 				Vector_2	azi_rwy = normalize(Vector_2(rwy->ends.source(), rwy->ends.target()));
 				Vector_2 azi_me = normalize(Vector_2(midp, myloc));
-				
+
 				double dot = azi_rwy * azi_me;
-				
+
 				double gs_elev = dist / 18.0;
 				if (dot > 0.8 && dist < 700.0)
 					max_agl = min(max_agl, gs_elev);
@@ -196,10 +196,10 @@ void	ZoneManMadeAreas(
 			}
 			++circ;
 		} while (circ != stop);
-		
-		face->data().mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;		
+
+		face->data().mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;
 		face->data().mParams[af_WaterArea] = GetMapFaceAreaMeters(face);
-		
+
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
 }

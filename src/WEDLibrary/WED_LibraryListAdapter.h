@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -38,17 +38,17 @@ class WED_LibraryListAdapter : public GUI_TextTableProvider, public GUI_SimpleTa
 public:
 					 WED_LibraryListAdapter(WED_LibraryMgr * who);
 	virtual			~WED_LibraryListAdapter();
-	
+
 			void	SetMap(WED_MapPane * amap);
-			
+
 	// GUI_TextTableProvider
 	virtual void	GetCellContent(
-						int							cell_x, 
-						int							cell_y, 
-						GUI_CellContent&			the_content);	
+						int							cell_x,
+						int							cell_y,
+						GUI_CellContent&			the_content);
 	virtual	void	GetEnumDictionary(
-						int							cell_x, 
-						int							cell_y, 
+						int							cell_x,
+						int							cell_y,
 						map<int, string>&			out_dictionary);
 	virtual	void	AcceptEdit(
 						int							cell_x,
@@ -102,38 +102,38 @@ public:
 	virtual	GUI_DragOperation		CanDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended,
 											int&						whole_col,
 											int&						whole_row) { return gui_Drag_None; }
 	virtual	GUI_DragOperation		CanDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	virtual	GUI_DragOperation		CanDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 
 
 	virtual	GUI_DragOperation		DoDropIntoCell(
 											int							cell_x,
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	virtual	GUI_DragOperation		DoDropBetweenColumns(
 											int							cell_x,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	virtual	GUI_DragOperation		DoDropBetweenRows(
 											int							cell_y,
-											GUI_DragData *				drag, 
-											GUI_DragOperation			allowed, 
+											GUI_DragData *				drag,
+											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 
 	// GUI_[Simple]TableGeometry
@@ -142,8 +142,8 @@ public:
 
 	// GUI_TextTableHeaderProvider
 	virtual void	GetHeaderContent(
-						int							cell_x, 
-						GUI_HeaderContent&			the_content);		
+						int							cell_x,
+						GUI_HeaderContent&			the_content);
 
 	// GUI_Listener
 	virtual	void	ReceiveMessage(
@@ -158,11 +158,11 @@ private:
 			void	RebuildCache();
 			void	RebuildCacheRecursive(const string& r);
 			void	SetSel(const string& s);
-	
+
 		hash_map<string,int>	mOpen;
 		vector<string>			mCache;
 		bool					mCacheValid;
-		
+
 		WED_LibraryMgr *		mLibrary;
 		string					mSel;
 

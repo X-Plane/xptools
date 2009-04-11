@@ -105,7 +105,7 @@ void	AddEuroRoads(
 	{
 		if ((*face)->data().mTerrainType == terrain_Marker_Features)
 		{
-#if !DEBUG_SHOW_AREAS		
+#if !DEBUG_SHOW_AREAS
 			(*face)->data().mTerrainType = terrain_Natural;
 
 // BEN SAYS:

@@ -225,7 +225,7 @@ void	TIGERImport(
 
 		for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.first.begin(); he != chainIter->second.pm_edges.first.end(); ++he)
 			(*he)->data().mParams[he_TIGER_TLID] = chainIter->first;
-	
+
 		for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.second.begin(); he != chainIter->second.pm_edges.second.end(); ++he)
 			(*he)->data().mParams[he_TIGER_TLID] = chainIter->first;
 	}
@@ -235,15 +235,15 @@ void	TIGERImport(
 		if (polyIter->second.water)
 			polyIter->second.pm_face->data().mTerrainType = terrain_Water;
 	}
-	
+
 	Point_2	sw, ne;
 	CalcBoundingBox(ioMap, sw, ne);
 // 	ioMap.Index();
 	int skip = 0;
 	int	nolo = 0;
-	
+
 	CGAL::Arr_landmarks_point_location<Arrangement_2>	locator(ioMap);
-	
+
 	for (LandmarkInfoMap::const_iterator landIter = landmarks.begin(); landIter != landmarks.end(); ++landIter)
 	{
 		FeatureInfo_t * land_cfcc = LookupFeatureCFCC(landIter->second.cfcc.c_str());
@@ -267,7 +267,7 @@ void	TIGERImport(
 						if ((wet || !land_cfcc->water_required) && (!wet || land_cfcc->water_ok))
 						{
 							if (thePoly->second.pm_face->data().mAreaFeature.mFeatType != NO_VALUE)
-								printf("WARNING: double feature, %s and %s\n", 
+								printf("WARNING: double feature, %s and %s\n",
 									FetchTokenString(thePoly->second.pm_face->data().mAreaFeature.mFeatType),
 									FetchTokenString(feat.mFeatType));
 							thePoly->second.pm_face->data().mAreaFeature = feat;
@@ -307,10 +307,10 @@ void	TIGERImport(
 					feat.mFeatType = land_cfcc->feature_type;
 					feat.mLocation = Point_2(landIter->second.location.x(),landIter->second.location.y());
 					if ((wet || !land_cfcc->water_required) && (!wet || land_cfcc->water_ok))
-						f->data().mPointFeatures.push_back(feat);					
-					else 
+						f->data().mPointFeatures.push_back(feat);
+					else
 						++skip;	//printf("Skipped: wet = %d, feat = %s\n", wet, kFeatureCodes[cfcc].name);
-				} 
+				}
 				else
 					nolo++;
 			}

@@ -124,8 +124,8 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 	case attr_Manip_Drag_2d:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.dataref2 == rhs.data.dataref2 &&
-				data.axis[0] == rhs.data.axis[0] && 
-				data.axis[1] == rhs.data.axis[1] && 
+				data.axis[0] == rhs.data.axis[0] &&
+				data.axis[1] == rhs.data.axis[1] &&
 				data.v1_min == rhs.data.v1_min &&
 				data.v1_max == rhs.data.v1_max &&
 				data.v2_min == rhs.data.v2_min &&
@@ -134,9 +134,9 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.tooltip == rhs.data.tooltip;
 	case attr_Manip_Drag_Axis:
 		return	data.dataref1 == rhs.data.dataref1 &&
-				data.axis[0] == rhs.data.axis[0] && 
-				data.axis[1] == rhs.data.axis[1] && 
-				data.axis[2] == rhs.data.axis[2] && 
+				data.axis[0] == rhs.data.axis[0] &&
+				data.axis[1] == rhs.data.axis[1] &&
+				data.axis[2] == rhs.data.axis[2] &&
 				data.v1_min == rhs.data.v1_min &&
 				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
@@ -148,9 +148,9 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 	case attr_Manip_Command_Axis:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.dataref2 == rhs.data.dataref2 &&
-				data.axis[0] == rhs.data.axis[0] && 
-				data.axis[1] == rhs.data.axis[1] && 
-				data.axis[2] == rhs.data.axis[2] && 
+				data.axis[0] == rhs.data.axis[0] &&
+				data.axis[1] == rhs.data.axis[1] &&
+				data.axis[2] == rhs.data.axis[2] &&
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
 	default:
@@ -163,7 +163,7 @@ bool XObjBuilder::manip_data::operator!=(const manip_data& rhs) const
 	return !(*this == rhs);
 }
 
-	
+
 XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 {
 	tex_repeat_s = 1.0;
@@ -228,7 +228,7 @@ void	XObjBuilder::SetAttribute(int attr)
 	case attr_No_Solid_Wall:wall=0;			break;
 	case attr_Draw_Enable:	draw_disable=0;	break;
 	case attr_Draw_Disable:	draw_disable=1;	break;
-	case attr_Light_Level_Reset:light_level.clear(); break;	
+	case attr_Light_Level_Reset:light_level.clear(); break;
 	case attr_Reset:
 		diffuse[0] = 1.0; diffuse[1] = 1.0; diffuse[2] = 1.0;
 		emission[0] = 0.0; emission[1] = 0.0; emission[2] = 0.0;
@@ -572,7 +572,7 @@ void	XObjBuilder::SetDefaultState(void)
 	light_level = o_light_level = "";
 	draw_disable = o_draw_disable = 0;
 	manip.attr = o_manip.attr = attr_Manip_None;
-	
+
 	wall = o_wall = 0;
 	o_hard = hard = "";
 	o_deck = deck = 0;
@@ -597,29 +597,29 @@ void XObjBuilder::SyncAttrs(void)
 		lod->cmds.back().cmd = flat ? attr_Shade_Flat : attr_Shade_Smooth;
 		o_flat = flat;
 	}
-	
+
 	if(wall != o_wall)
 	{
 		o_wall = wall;
 		lod->cmds.push_back(XObjCmd8());
 		lod->cmds.back().cmd = wall ? attr_Solid_Wall : attr_No_Solid_Wall;
 	}
-	
+
 	if(draw_disable != o_draw_disable)
 	{
 		o_draw_disable = draw_disable;
 		lod->cmds.push_back(XObjCmd8());
 		lod->cmds.back().cmd = draw_disable ? attr_Draw_Disable : attr_Draw_Enable;
 	}
-	
+
 	if(light_level != o_light_level)
 	{
 		o_light_level = light_level;
 		lod->cmds.push_back(XObjCmd8());
 		lod->cmds.back().cmd = light_level.empty() ? attr_Light_Level_Reset : attr_Light_Level;
-		lod->cmds.back().name = light_level;		
+		lod->cmds.back().name = light_level;
 	}
-	
+
 	if (hard != o_hard || deck != o_deck)
 	{
 		lod->cmds.push_back(XObjCmd8());
@@ -725,7 +725,7 @@ void XObjBuilder::SyncAttrs(void)
 		o_diffuse[1] = diffuse[1];
 		o_diffuse[2] = diffuse[2];
 	}
-	
+
 	if(manip != o_manip)
 	{
 		o_manip = manip;
@@ -734,7 +734,7 @@ void XObjBuilder::SyncAttrs(void)
 
 		if( manip.attr != attr_Tex_Cockpit)
 		{
-			lod->cmds.back().idx_offset = obj->manips.size(); 
+			lod->cmds.back().idx_offset = obj->manips.size();
 			obj->manips.push_back(manip.data);
 		}
 	}

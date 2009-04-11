@@ -86,7 +86,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		} while (iter != stop);
 		if (xons >= 4) needs_processing = true;
 		if (xons > 0) has_unsep++;
-		
+
 		for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			if (needs_processing) break;
@@ -125,7 +125,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
 	{
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
-	
+
 		double	x1 = CGAL::to_double(edge->source()->point().x());
 		double	y1 = CGAL::to_double(edge->source()->point().y());
 		double	x2 = CGAL::to_double(edge->target()->point().x());
@@ -140,7 +140,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 
 		double gradient = fabs(startE - endE) / dist;
 		double urban = (urbanS + urbanE) * 0.5;
-		
+
 		for (GISNetworkSegmentVector::iterator seg = edge->data().mSegments.begin(); seg != edge->data().mSegments.end(); ++seg)
 		{
 			// GRADIENT BRIDGES ARE TURNED OFF!!  We do NOT have the calculations
@@ -472,7 +472,7 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 	// Do one initial compaction - odds are we have a lot of chains that need to be built up!
 
 	//OptimizeNetwork(outJunctions, outChains, true);
-	
+
 	CountNetwork(outJunctions, outChains);
 	int nukes = NukeStraightShapePoints(outChains);
 	CountNetwork(outJunctions, outChains);
@@ -531,7 +531,7 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 	int total = 0;
 	int added = 0;
 	vector<Point3>	all_pts,	these_pts;
-		
+
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
 	{
 		all_pts.clear();
@@ -551,7 +551,7 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 			else
 			{
 				MarchHeightGo(inMesh, CDT::Point(CGAL::to_double(pt.x), CGAL::to_double(pt.y)), info, these_pts);
-				#if 0 && DEV				
+				#if 0 && DEV
 					Point3 prev(chain->nth_pt(n-1));
 					Bbox2	lim(prev.x,prev.y,pt.x,pt.y);
 					for(int i = 0; i < these_pts.size(); ++i)
@@ -755,9 +755,9 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			case use_Ramp:		ramps.push_back(*chain); 													break;
 			case use_Rail:		trains.push_back(*chain); if ((*chain)->over_water) train_bridge = true; 	break;
 			case use_Power:																					break;
-			default: 
+			default:
 					streets.push_back(*chain); if ((*chain)->over_water) street_bridge = true;
-					printf("Unknown use!\n");															
+					printf("Unknown use!\n");
 					break;
 			}
 
@@ -1014,9 +1014,9 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 			Point3	p3 = (*chain)->nth_pt(i+2);
 
 			Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
-			
+
 			double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x(), p_mid.y());
-			
+
 			if (displacement < BRIDGE_TURN_SIMPLIFY)
 			{
 				(*chain)->shape.erase((*chain)->shape.begin()+i);
@@ -1436,9 +1436,9 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 				double	mid_msl = msl1 * (1.0 - rat) + msl2 * rat;
 
 				Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
-				
+
 				double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x(), p_mid.y());
-				
+
 				if ((len1 + len2) < ideal_dist_m &&		// We're short enough that we can wipe the middle and
 					(mid_msl + max_dip) > msl &&		// removing this wouldn't cause the segment to dip too deep and
 					(msl <= msl1 || msl <= msl2) &&		// This isn't a local high-point

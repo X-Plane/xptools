@@ -44,7 +44,7 @@ struct	CoordTranslator2 {
 // running on non-CGAL is being removed.
 
 #if 0
-/* 
+/*
  * InsetPolygon
  *
  * Given a CCW polygon (or a segment chain), this routine insets

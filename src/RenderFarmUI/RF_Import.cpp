@@ -461,7 +461,7 @@ void	DimsFromMap(XPWidgetID)
 		sImportState.south = -90.0;
 		sImportState.north =  90.0;
 	} else {
-			
+
 		Point_2	sw(180.0, 90.0), ne(-180.0,-90.0);
 		CalcBoundingBox(gMap, sw, ne);
 		sImportState.west = CGAL::to_double(sw.x());

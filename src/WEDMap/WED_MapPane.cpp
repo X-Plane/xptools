@@ -54,7 +54,7 @@
 #include "WED_LibraryListAdapter.h"
 #include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
-char	kToolKeys[] = { 
+char	kToolKeys[] = {
 	0, 0,0,0,		0,0,0,
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
@@ -112,7 +112,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(mFstTool=			new WED_CreatePolygonTool("Forests",mMap, mMap, resolver, archive, create_Forest));
 	mTools.push_back(mFacTool=			new WED_CreatePolygonTool("Facades",mMap, mMap, resolver, archive, create_Facade));
 	mTools.push_back(mObjTool=			new WED_CreatePointTool("Objects",mMap, mMap, resolver, archive, create_Object));
-	
+
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
 	mTools.push_back(					new WED_CreatePointTool("Airport Beacon", mMap, mMap, resolver, archive, create_Beacon));
@@ -235,7 +235,7 @@ WED_MapPane::~WED_MapPane()
 
 void WED_MapPane::SetResource(const string& r, int res_type)
 {
-	switch(res_type) { 
+	switch(res_type) {
 	case res_Object:	mObjTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mObjTool)));	break;
 	case res_Facade:	mFacTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFacTool)));	break;
 	case res_Forest:	mFstTool->SetResource(r);	mToolbar->SetValue(distance(mTools.begin(),find(mTools.begin(),mTools.end(),mFstTool)));	break;

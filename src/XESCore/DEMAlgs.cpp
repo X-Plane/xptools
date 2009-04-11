@@ -685,7 +685,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 			int tsx, tsy, tdx, tdy;
 			ioTransport.xy_nearest(CGAL::to_double(iter->source()->point().x()),CGAL::to_double(iter->source()->point().y()), tsx, tsy);
 			ioTransport.xy_nearest(CGAL::to_double(iter->target()->point().x()),CGAL::to_double(iter->target()->point().y()), tdx, tdy);
-			
+
 			for (GISNetworkSegmentVector::const_iterator seg = iter->data().mSegments.begin(); seg != iter->data().mSegments.end(); ++seg)
 			{
 
@@ -732,7 +732,7 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 	CalculateFilter(7, filter, demFilter_Spread, true);		// Take basic prop values and splat them all over the place
 	CalculateFilter(3, filter2, demFilter_Spread, true);	// slight diffusion of feature values just for niceness.
 
-	
+
 	ioDem.filter_self(7, filter);
 
 	for (Pmwx::Face_const_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
@@ -745,7 +745,7 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 
 		for (GISPolygonFeatureVector::const_iterator f = face->data().mPolygonFeatures.begin(); f != face->data().mPolygonFeatures.end(); ++f)
 		{
-			//ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());			
+			//ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());
 		}
 
 		/*
@@ -757,7 +757,7 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
 				ApplyFeatureAtPoint(ioDem, face->data().mAreaFeature.begin()->mFeatType, i->source()->point());
 				++i;
 			} while (i != s);
-		}		
+		}
 		 */
 	}
 

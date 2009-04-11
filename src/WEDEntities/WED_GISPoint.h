@@ -51,7 +51,7 @@ public:
 	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
 	virtual	const char *	GetGISSubtype	(void				 ) const;
 	virtual	bool			HasUV			(void				 ) const;
-	
+
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
 	virtual bool			PtWithin		(const Point2& p	 ) const;
@@ -63,7 +63,7 @@ public:
 	virtual	void	SetLocation(const Point2& p)      ;
 	virtual	void	GetUV	   (      Point2& p) const;
 	virtual	void	SetUV	   (const Point2& p)      ;
-	
+
 
 private:
 

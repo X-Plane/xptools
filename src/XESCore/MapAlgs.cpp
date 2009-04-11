@@ -58,7 +58,7 @@ void	RebuildMap(
 	}
 	printf("Rebuilding %d edges.\n",curves.size());
 	StElapsedTime rebuild_map("Rebuild_map");
-	CGAL::insert_curves(out_map,curves.begin(),curves.end());	
+	CGAL::insert_curves(out_map,curves.begin(),curves.end());
 }
 
 /*
@@ -69,11 +69,11 @@ void	CCBToPolygon(Halfedge_const_handle ccb, Polygon2& outPolygon, vector<double
 
 	outPolygon.clear();
 	if (road_types) road_types->clear();
-	
+
 	Halfedge_const_handle iter = ccb, stop = ccb;
-	
+
 	if (outBounds)	(*outBounds) = cgal2ben(iter->source()->point());
-	
+
 	do {
 		// BEN SAYS: SWITCH TO SOURCE or LU type is off by one!
 		#if !DEV
@@ -98,8 +98,8 @@ void	FaceToComplexPolygon(Face_const_handle face, vector<Polygon2>& outPolygon, 
 		if (road_types) road_types->push_back(vector<double>());
 		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, outBounds);
 	}
-	
-	for (Pmwx::Hole_const_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
+
+	for (Pmwx::Hole_const_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
@@ -120,7 +120,7 @@ Face_handle	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPm
 			Face_handle new_f = SafeInsertRing(&outPmwx, parent, *poly);
 			outer = new_f;
 			new_f->data().mTerrainType = inTerrain;
-		
+
 		}
 		else
 		{
@@ -184,7 +184,7 @@ public:
 		bool reverse = false;
 //		printf("Created edge 0x%08x/0x%08x ",&*e,&*e->twin());
 		Vector_2	actual_dir(e->source()->point(),e->target()->point());
-		
+
 		if(use_outside)
 		{
 			if(CGAL::angle(e->curve().target(),e->curve().source(),e->curve().source()+actual_dir)==CGAL::ACUTE)
@@ -193,7 +193,7 @@ public:
 				reverse = false;
 		}
 		else
-		{		
+		{
 			if(CGAL::angle(e->curve().target(),e->curve().source(),e->curve().source()+actual_dir)==CGAL::ACUTE)
 				reverse = false;
 			else
@@ -204,21 +204,21 @@ public:
 				edges->insert(e->twin());
 			else
 				edges->insert(e);
-				
+
 //		printf("Got edge: %lf,%lf->%lf,%lf, reverse=%s\n",
 //			CGAL::to_double(e->source()->point().x()),
 //			CGAL::to_double(e->source()->point().y()),
 //			CGAL::to_double(e->target()->point().x()),
 //			CGAL::to_double(e->target()->point().y()),
 //			reverse ? "yes" : "no");
-		
-		
+
+
 //		DebugAssert(e->		data().mDominant != e->twin()->data().mDominant);
-		
+
 //		e->twin()->data().mDominant=1;
-		
+
   }
-  
+
     virtual void after_split_edge (Halfedge_handle  e1,
                                  Halfedge_handle  e2)
 	{
@@ -234,9 +234,9 @@ public:
 //			CGAL::to_double(e2->source()->point().y()),
 //			CGAL::to_double(e2->target()->point().x()),
 //			CGAL::to_double(e2->target()->point().y()));
-	
-	
-	
+
+
+
 //		DebugAssert(!e2->data().mDominant);
 //		DebugAssert(!e2->twin()->data().mDominant);
 //		DebugAssert(e1->data().mDominant != e1->twin()->data().mDominant);
@@ -265,9 +265,9 @@ void	CutInside(
 	collect_edges		info;
 	info.edges = &edges;
 	info.use_outside = false;
-	
+
 	info.attach(ioMap);
-	
+
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
 	vector<X_monotone_curve_2> v(inBoundary.edges_begin(),inBoundary.edges_end());
@@ -287,13 +287,13 @@ void	CutInside(
 				CGAL::to_double(i->target().y()));
 		CGAL::insert_curve(ioMap,*i);
 	}
-*/	
+*/
 	info.detach();
 
 		set<Face_handle>	interior_region;
-		
+
 	FindFacesForEdgeSet(edges,interior_region);
-	
+
 	set<Halfedge_handle>	all_interior_edges;
 
 	for(set<Face_handle>::iterator f = interior_region.begin(); f != interior_region.end(); ++f)
@@ -306,7 +306,7 @@ void	CutInside(
 		DebugAssert(all_interior_edges.count(*e) > 0);
 
 	vector<Halfedge_handle>	kill;
-	
+
 //	if(!inWantOutside)
 	{
 		// this is the case where we THROW OUT the OUTSIDE - still very slow.
@@ -314,11 +314,11 @@ void	CutInside(
 		{
 			CGAL::Bounded_side v1 = inBoundary.bounded_side(e->source()->point());
 			CGAL::Bounded_side v2 = inBoundary.bounded_side(e->target()->point());
-			
+
 			// Sanity check - having burned in our edge, no edge should now SPAN our polygon.
 			if (v1 == CGAL::ON_BOUNDED_SIDE) DebugAssert(v2 != CGAL::ON_UNBOUNDED_SIDE);
 			if (v2 == CGAL::ON_BOUNDED_SIDE) DebugAssert(v1 != CGAL::ON_UNBOUNDED_SIDE);
-			
+
 			if(inWantOutside)
 			if(v1 == CGAL::ON_BOUNDED_SIDE || v2 == CGAL::ON_BOUNDED_SIDE)	kill.push_back(e);
 
@@ -347,15 +347,15 @@ void	CutInside(
 						v1,v2);
 			}
 
-	}	
-*/	
+	}
+*/
 	for(vector<Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
 		ioMap.remove_edge(*k);
 //	printf("Finishde one cut inside.\n");
-	
+
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
-	
+
 }
 
 #if 0
@@ -370,7 +370,7 @@ static void	__ProgNotifier(Halfedge_handle o, Halfedge_handle n, void * r)
 {
 	__CropProgInfo_t * ref = (__CropProgInfo_t *) r;
 	Halfedge_handle e = (n == Halfedge_handle()) ? o : n;
-	
+
 	if (o == Halfedge_handle() || n == Halfedge_handle())
 	if (o != Halfedge_handle() || n != Halfedge_handle())
 	{
@@ -391,7 +391,7 @@ void	CropMap(
 			ProgressFunc	inFunc)
 {
 	Pmwx	cutout;
-	
+
 	vector<Point_2>	pts;
 	pts.push_back(Point_2(inWest, inNorth));
 	pts.push_back(Point_2(inWest, inSouth));
@@ -411,14 +411,14 @@ void	CropMap(
 void	CropMap(
 			Pmwx&					ioMap,
 			Pmwx&					ioCutout,
-			const vector<Point_2>&	ring,			
+			const vector<Point_2>&	ring,
 			ProgressFunc			inFunc)
 {
 	__CropProgInfo_t	info;
 	__CropProgInfo_t * ref = &info;
 
 	vector<X_monotone_curve_2> curves;
-	
+
 	for (int n = 0; n < ring.size(); ++n)
 	{
 		int m = (n+1)%ring.size();
@@ -433,7 +433,7 @@ void	CropMap(
 	Face_handle area;
 	area = ioCutout.insert_ring(ioCutout.unbounded_face(), info.pts);
 	vector<Halfedge_handle>	inner_ring;
-	
+
 	Pmwx::Ccb_halfedge_circulator stop, iter;
 	stop = iter = area->outer_ccb();
 	do {
@@ -445,7 +445,7 @@ void	CropMap(
 #if DEV
 //	DebugAssert(ioMap.is_valid());
 //	DebugAssert(ioCutout.is_valid());
-#endif	
+#endif
 
 }
 
@@ -456,7 +456,7 @@ static	void	__RemoveAntennasFromFace(Pmwx& inPmwx, Face_handle inFace)
 // OPTIMIZE: remove second set?
 	set<Halfedge_handle>	edges;
 	set<Halfedge_handle>	nuke;
-	
+
 	FindEdgesForFace(inFace, edges);
 	for (set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
 	if ((*i)->twin()->face() == inFace)
@@ -476,7 +476,7 @@ struct	__InduceCCBInfo_t {
 	Halfedge_handle			master;
 	vector<Halfedge_handle>	slave_halfedges;
 	vector<Point_2>			break_pts;
-};	
+};
 
 void	__InduceCCBNotifier(Halfedge_handle o, Halfedge_handle n, void * r)
 {
@@ -493,11 +493,11 @@ void	__InduceCCBNotifier(Halfedge_handle o, Halfedge_handle n, void * r)
 }
 
 static	void	__InduceCCB(
-					Pmwx& 					inMaster, 
-					Pmwx& 					inSlave, 
-					Halfedge_handle 			ccb, 
-					vector<Halfedge_handle>& 	masterE, 
-					vector<Halfedge_handle>& 	slaveE, 
+					Pmwx& 					inMaster,
+					Pmwx& 					inSlave,
+					Halfedge_handle 			ccb,
+					vector<Halfedge_handle>& 	masterE,
+					vector<Halfedge_handle>& 	slaveE,
 					bool 					outer)
 {
 	Halfedge_handle iter = ccb;
@@ -551,7 +551,7 @@ void	SwapFace(
 	__InduceCCB(inMaster, inSlave, inFace->outer_ccb(), ringMaster, ringSlave, true);
 	DebugAssert(ringMaster.size() == ringSlave.size());
 	SwapMaps(inMaster, inSlave, ringMaster, ringSlave);
-	
+
 	for (Pmwx::Hole_iterator hole = inFace->holes_begin(); hole != inFace->holes_end(); ++hole)
 	{
 		ringMaster.clear();
@@ -579,7 +579,7 @@ static void __OverlayNotifier(Halfedge_handle o, Halfedge_handle n, void * r)
 	OverlayInfo_t * ref = (OverlayInfo_t *) r;
 	if (o != Halfedge_handle() && n != Halfedge_handle()) return;
 	Halfedge_handle e = (n == Halfedge_handle()) ? o : n;
-	
+
 	if (e->target()->point() == ref->curSrc->target()->point())
 	{
 		// this is the last edge to be added - easy!
@@ -591,7 +591,7 @@ static void __OverlayNotifier(Halfedge_handle o, Halfedge_handle n, void * r)
 		if (t != Halfedge_handle()) {
 			ref->curSrc = t;
 		ref->dstRing.push_back(e);
-		ref->srcRing.push_back(ref->curSrc);		
+		ref->srcRing.push_back(ref->curSrc);
 			ref->curSrc = ref->curSrc->next();
 		} else {
 			// that point was already there
@@ -669,11 +669,11 @@ static void __MergeMaps_EdgeNotifier(Halfedge_handle he_old, Halfedge_handle he_
 		// This is a new edge introduced...whether it is a real edge or a dupe of the old one, we need to copy params
 		// and establish a linking.
 		Halfedge_handle he = (he_old ? he_old : he_new);
-		
+
 		// Remember the mapping from old to new
 		info->edgeMap->insert(multimap<Halfedge_handle, Halfedge_handle>::value_type(info->srcEdge, he));
 		info->edgeMap->insert(multimap<Halfedge_handle, Halfedge_handle>::value_type(info->srcEdge->twin(), he->twin()));
-		
+
 		if (he->source()->point() == info->srcEdge->source()->point())
 			(*info->vertMap)[info->srcEdge->source()] = he->source();
 
@@ -717,9 +717,9 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 	if (pre_integrated)
 	{
 		// Pre-integrated edge merge case - we know there are no intersections, so find points and use the fast insertion routines.
-	
+
 		map<Point_2, Vertex_handle, lesser_y_then_x>			pt_index;
-		
+
 		for (Pmwx::Vertex_iterator v = ioDstMap.vertices_begin(); v != ioDstMap.vertices_end(); ++v)
 			pt_index[v->point()] = v;
 
@@ -727,10 +727,10 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 		if (iter->mDominant)
 		{
 			PROGRESS_CHECK(func, 0, 2, "Merging edges into map...", ctr, total, step)
-		
+
 			map<Point_2, Vertex_handle, lesser_y_then_x>::iterator i1, i2;
 			Halfedge_handle nh;
-			
+
 			i1 = pt_index.find(iter->source()->point());
 			i2 = pt_index.find(iter->target()->point());
 			if (i1 != pt_index.end())
@@ -763,7 +763,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 					pt_index[iter->target()->point()] = nh->target();
 				}
 			}
-			
+
 			edgeMap.insert(multimap<Halfedge_handle, Halfedge_handle>::value_type(iter, nh));
 			edgeMap.insert(multimap<Halfedge_handle, Halfedge_handle>::value_type(iter->twin(), nh->twin()));
 			if (!nh->mDominant) nh = nh->twin();
@@ -785,7 +785,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 
 			info.srcEdge = iter;
 			map<Vertex_handle, Vertex_handle>::iterator hint = vertMap.find(iter->source());
-			if (hint != vertMap.end()) 
+			if (hint != vertMap.end())
 			{
 				++fast;
 				ioDstMap.insert_edge(iter->source()->point(), iter->target()->point(), hint->second->halfedge(), Pmwx::locate_Vertex, __MergeMaps_EdgeNotifier, &info);
@@ -818,7 +818,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 		set<Halfedge_handle>	borders_old, borders_new;
 
 		FindEdgesForFace(fiter, borders_old);
-		
+
 		set<Face_handle>	sanity;
 		FindFacesForEdgeSet(borders_old, sanity);
 		DebugAssert(sanity.size() == 1);
@@ -830,9 +830,9 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 		for (set<Halfedge_handle>::iterator e = borders_old.begin(); e != borders_old.end(); ++e)
 		{
 			pair<multimap<Halfedge_handle, Halfedge_handle>::iterator, multimap<Halfedge_handle, Halfedge_handle>::iterator>	range;
-			range = edgeMap.equal_range(*e);			
+			range = edgeMap.equal_range(*e);
 			DebugAssert(range.first != range.second);
-			
+
 			for (multimap<Halfedge_handle, Halfedge_handle>::iterator i = range.first; i != range.second; ++i)
 			{
 				borders_new.insert(i->second);
@@ -842,16 +842,16 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 
 		// Next find facse for the edge set
 		set<Face_handle>		faces;
-		
-		FindFacesForEdgeSet(borders_new, faces);		
+
+		FindFacesForEdgeSet(borders_new, faces);
 		DebugAssert(!faces.empty());
 
 		// Finally, mark all items in faces.
-	
+
 		for (set<Face_handle>::iterator face = faces.begin(); face != faces.end(); ++face)
 		{
 			if (outFaces)	outFaces->insert(*face);
-			if (fiter->data().mTerrainType != terrain_Natural)	
+			if (fiter->data().mTerrainType != terrain_Natural)
 			if (inForceProps || (*face)->data().mTerrainType == terrain_Natural)
 				(*face)->data().mTerrainType = fiter->data().mTerrainType;
 
@@ -866,7 +866,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<Face_handl
 }
 
 
-// Vertex hasher - to be honest I forget why this was necessary, but without it the 
+// Vertex hasher - to be honest I forget why this was necessary, but without it the
 // STL couldn't build the hash table.  Foo.
 #if 0 //!MSC
 struct hash_vertex {
@@ -877,13 +877,13 @@ struct hash_vertex {
 
 // Map swap - Basically we build up mapping between the two maps and flood fill to
 // find the insides.
-void	SwapMaps(	Pmwx& 							ioMapA, 
-					Pmwx& 							ioMapB, 
+void	SwapMaps(	Pmwx& 							ioMapA,
+					Pmwx& 							ioMapB,
 					const vector<Halfedge_handle>&	inBoundsA,
 					const vector<Halfedge_handle>&	inBoundsB)
 {
 	DebugAssert(inBoundsA.size() == inBoundsB.size());
-	
+
 	set<Face_handle>		moveFaceFromA, moveFaceFromB;
 	set<Halfedge_handle>	moveEdgeFromA, moveEdgeFromB;
 	set<Vertex_handle >	moveVertFromA, moveVertFromB;
@@ -895,9 +895,9 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	hash_map<Vertex_handle, Vertex_handle, hash_vertex>::iterator findVert;
 #endif
 	set<Face_handle>::iterator		faceIter;
-	set<Halfedge_handle>::iterator	edgeIter;	
-	set<Vertex_handle>::iterator		vertIter;	
-	int n;	
+	set<Halfedge_handle>::iterator	edgeIter;
+	set<Vertex_handle>::iterator		vertIter;
+	int n;
 
 #if DEV
 	for (n = 0; n < inBoundsA.size(); ++n)
@@ -934,7 +934,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		// the crop inside is used.  So make sure it is dominant.  It's okay to f--- with dominance
 		// because the edge gets resorted later when we do the move of the halfedge.
 		if (!inBoundsA[n]->data().mDominant)		inBoundsA[n]->data().SwapDominance(inBoundsA[n].twin().data());
-		if (!inBoundsB[n]->data().mDominant)		inBoundsB[n]->data().SwapDominance(inBoundsB[n].twin().data());	
+		if (!inBoundsB[n]->data().mDominant)		inBoundsB[n]->data().SwapDominance(inBoundsB[n].twin().data());
 
 		// Vertices on the CCB do NOT move since they are used by exterior stuff.
 		// We need to know the correspondence for later!  So build a map
@@ -1101,19 +1101,19 @@ static bool __epsi_intersect(const Segment_2& segA, const Segment_2& segB, doubl
 	if (!Line2(segA).intersect(Line2(segB), cross)) return false;
 
 //	epsi = epsi * epsi;
-	
+
 	double	da1 = Vector2(segA.source(), cross).squared_length();
 	double	da2 = Vector2(segA.target(), cross).squared_length();
 	double	db1 = Vector2(segB.source(), cross).squared_length();
 	double	db2 = Vector2(segB.target(), cross).squared_length();
-	
+
 	if (da1 < epsi || da2 < epsi || db1 < epsi || db2 < epsi)
 	{
 		double da = (da1 < da2) ? da1 : da2;
 		Point_2 pa = (da1 < da2) ? segA.source() : segA.target();
 		double db = (db1 < db2) ? db1 : db2;
 		Point_2 pb = (db1 < db2) ? segB.source() : segB.target();
-		
+
 		if (da < epsi && db < epsi)
 		{
 			cross = (da < db) ? pa : pb;
@@ -1174,15 +1174,15 @@ inline bool	__near_colinear(const Segment_2& seg, Point_2& p)
 		return p.y() == seg.source().y() && ((seg.source().x() < p.x() && p.x() < seg.target().x()) || (seg.target().x() < p.x() && p.x() < seg.source().x()));
 	if (seg.is_vertical())
 		return p.x() == seg.source().x() && ((seg.source().y() < p.y() && p.y() < seg.target().y()) || (seg.target().y() < p.y() && p.y() < seg.source().y()));
-	
+
 	// OK, now we need to switch to CGAL's kernel
-	
+
 	CGAL::Point_2<FastKernel> p1 = CGAL::Point_2<FastKernel>(p.x(), p.y());
 	CGAL::Segment_2<FastKernel> seg1 = CGAL::Segment_2<FastKernel>(
 																   CGAL::Point_2<FastKernel>(seg.source().x(), seg.source().y()),
 																   CGAL::Point_2<FastKernel>(seg.target().x(), seg.target().y()));
 	CGAL::Point_2<FastKernel>	pp = seg1.supporting_line().projection(p1);
-	
+
 	if (p1 == pp || CGAL::Vector_2<FastKernel>(p1, pp).squared_length() < NEAR_SLIVER_COLINEAR)
 	{
 		// BEN SAYS: 11/11/07 - new check.  This is the non-horizontal/vertical colinear case.  Basically we're trying to divert segments
@@ -1190,9 +1190,9 @@ inline bool	__near_colinear(const Segment_2& seg, Point_2& p)
 		// accurate and tends to let points through that are NOT really "within" the span of the segment, causing problems.
 		//
 		// This isn't a fix, but by rejecting these points we do slightly improve quality - quick BBox test.  NO WAY a point is outside the seg's
-		// bbox and still "near-colinear-on".  
+		// bbox and still "near-colinear-on".
 		if (p.x() <= seg.source().x() || p.x() >= seg.target().x() || p.y() <= seg.source().y() || p.y() >= seg.target().y()) return false;
-			
+
 		return (CGAL::Vector_2<FastKernel>(seg1.source(), seg1.target()) * (CGAL::Vector_2<FastKernel>(seg1.source(), p1)) > 0.0) &&
 			   (CGAL::Vector_2<FastKernel>(seg1.target(), seg1.source()) * (CGAL::Vector_2<FastKernel>(seg1.target(), p1)) > 0.0);
 	}
@@ -1227,7 +1227,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 	typedef multimap<Halfedge_handle, Point_2>		SplitMap;
 	typedef	set<Halfedge_handle>					SplitSet;
 	typedef map<double, Point_2>					SortedPoints;
-		
+
 		HalfedgeMap				map_small;
 		HalfedgeMap				map_big;
 
@@ -1258,7 +1258,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 		printf("NOT Swapping maps for speed.\n");
 #endif
-	
+
 		//swap(mapA, mapB);
 	}
 
@@ -1271,7 +1271,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 	{
 		Bbox_2	bounds(iterB->source()->point(),iterB->target()->point());
 		bounds.expand(BBOX_SLOP);
-		
+
 		dist = bounds.y()max() - bounds.y()min();
 		if (dist > SMALL_SEG_CUTOFF)
 		{
@@ -1302,7 +1302,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (boxA.overlap(he_box->first))
 			{
 				Segment_2	segB(he_box->second->source()->point(), he_box->second->target()->point());
-				
+
 				// IMPORTANT: we need to check for the almost-colinear case first.  Why?  Well, it turns out that
 				// in a near-colinear case, sometimes the intersect route will return an intersection.  But we do
 				// not want to insert some bogus point P into two lines if really they overlap!  P might be epsi-
@@ -1320,7 +1320,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),segB.source().x(),segB.source().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segA, segB.target()))
 					{
@@ -1330,7 +1330,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),segB.target().x(),segB.target().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.source()))
 					{
@@ -1340,7 +1340,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),segA.source().x(),segA.source().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.target()))
 					{
@@ -1350,12 +1350,12 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),segA.target().x(),segA.target().y());
-#endif						
+#endif
 					}
 				}
-				
+
 				//				if (!did_colinear && segA.intersect(segB, p))	//__epsi_intersect(segA, segB, NEAR_INTERSECT_DIST, p))
-				if (!did_colinear) 
+				if (!did_colinear)
 				{
 					CGAL::Object iresult = CGAL::intersection(CGAL::Segment_2<FastKernel>(
 																						  CGAL::Point_2<FastKernel>(segA.source().x(), segA.source().y()),
@@ -1375,8 +1375,8 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 									segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),  p.x(),p.y(),  segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y());
-#endif						
-						
+#endif
+
 					}
 						if (ipoint != CGAL::Point_2<FastKernel>(segB.source().x(), segB.source().y()) && ipoint != CGAL::Point_2<FastKernel>(segB.target().x(), segB.target().y()))
 					{
@@ -1385,13 +1385,13 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 									segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),  p.x(),p.y(),  segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y());
-#endif						
+#endif
 					}
 				}
 			}
 		}
 		}
-		
+
 		key_lo = Point_2(0.0, boxA.y()min() - yrange_small);
 		key_hi = Point_2(0.0, boxA.y()max());
 		possibles.first = map_small.lower_bound(key_lo);
@@ -1401,55 +1401,55 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (boxA.overlap(he_box->first))
 			{
 				Segment_2	segB(he_box->second->source()->point(), he_box->second->target()->point());
-				did_colinear = false;				
-				
+				did_colinear = false;
+
 				if (segA.is_horizontal() == segB.is_horizontal() && segA.is_vertical() == segB.is_vertical())
 				{
 					if (__near_colinear(segA, segB.source()))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.source()));
 						setA.insert(iterA);
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),segB.source().x(),segB.source().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segA, segB.target()))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.target()));
 						setA.insert(iterA);
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),segB.target().x(),segB.target().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.source()))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.source()));
 						setB.insert(he_box->second);
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),segA.source().x(),segA.source().y());
-#endif						
+#endif
 					}
 					if (__near_colinear(segB, segA.target()))
 					{
-						did_colinear = true;				
+						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.target()));
 						setB.insert(he_box->second);
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
 								segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),segA.target().x(),segA.target().y());
-#endif						
+#endif
 					}
 				}
-				
+
 				//if (!did_colinear && segA.intersect(segB, p))
 					//				if (!did_colinear && segA.intersect(segB, p))	//__epsi_intersect(segA, segB, NEAR_INTERSECT_DIST, p))
-				if (!did_colinear) 
+				if (!did_colinear)
 				{
 					CGAL::Object iresult = CGAL::intersection(CGAL::Segment_2<FastKernel>(
 																						  CGAL::Point_2<FastKernel>(segA.source().x(), segA.source().y()),
@@ -1470,7 +1470,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 									   segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y(),  p.x(),p.y(),  segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y());
-#endif						
+#endif
 					}
 							if (ipoint != CGAL::Point_2<FastKernel>(segB.source().x(), segB.source().y()) && ipoint != CGAL::Point_2<FastKernel>(segB.target().x(), segB.target().y()))
 					{
@@ -1479,7 +1479,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 #if TRACE_TOPO_INTEGRATE
 						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
 									   segB.source().x(),segB.source().y(),segB.target().x(),segB.target().y(),  p.x(),p.y(),  segA.source().x(),segA.source().y(),segA.target().x(),segA.target().y());
-#endif						
+#endif
 					}
 				}
 			}
@@ -1511,7 +1511,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				DebugAssert(origSegA.source().y() == spi->second.y());
 #endif
 #if TRACE_TOPO_INTEGRATE
-			printf("Splitting A: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+			printf("Splitting A: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n",
 				subdiv->source()->point().x(),subdiv->source()->point().y(),
 				subdiv->target()->point().x(),subdiv->target()->point().y(),
 				spi->second.x(), spi->second.y());
@@ -1546,9 +1546,9 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				DebugAssert(origSegB.source().x() == spi->second.x());
 			if (origSegB.is_horizontal())
 				DebugAssert(origSegB.source().y() == spi->second.y());
-#endif				
+#endif
 #if TRACE_TOPO_INTEGRATE
-			printf("Splitting B: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+			printf("Splitting B: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n",
 				subdiv->source()->point().x(),subdiv->source()->point().y(),
 				subdiv->target()->point().x(),subdiv->target()->point().y(),
 				spi->second.x(), spi->second.y());
@@ -1556,7 +1556,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (mapB->locate_vertex(spi->second) == NULL)
 			{
 				// we may somehow have a zero length edge; refrain from trying to split it
-				if (!((subdiv->source()->point().x() == subdiv->target()->point().x()) 
+				if (!((subdiv->source()->point().x() == subdiv->target()->point().x())
 					  and (subdiv->source()->point().y() == subdiv->target()->point().y())))
 				mapB->split_edge(subdiv, spi->second);
 				subdiv = subdiv->next();
@@ -1570,7 +1570,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 class	collect_he : public CGAL::Arr_observer<Arrangement_2> {
 public:
 	Halfedge_handle he;
-	
+
   virtual void after_create_edge (Halfedge_handle e)
   {
 	he = e;
@@ -1584,7 +1584,7 @@ Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point
 // SPECULATION: even with point indexing, insert_ring is STILL faster - insert_edge, even when
 // both points are known still must find the sorting point around the vertices and worse yet
 // potentially has to split faces and move holes...all slow!  The ring does NONE of this.
-	
+
 	collect_he	c;
 	c.attach(*inPmwx);
 
@@ -1610,9 +1610,9 @@ void	CalcBoundingBox(
 {
 	bool		inited = false;
 	Bbox2		box;
-	
+
 	Face_const_handle	uf = inMap.unbounded_face();
-	
+
 	for (Pmwx::Hole_const_iterator holes = uf->holes_begin(); holes != uf->holes_end(); ++holes)
 	{
 		Pmwx::Ccb_halfedge_const_circulator	cur, last;
@@ -1624,16 +1624,16 @@ void	CalcBoundingBox(
 				box = Bbox2(cgal2ben(cur->source()->point()));
 				inited = true;
 			}
-			
+
 			box += cgal2ben(cur->source()->point());
 			box += cgal2ben(cur->target()->point());
-		
+
 			++cur;
 		} while (cur != last);
 	}
 	sw = ben2cgal(box.p1);
 	ne = ben2cgal(box.p2);
-}			
+}
 
 
 double	GetMapFaceAreaMeters(const Face_handle f)
@@ -1646,9 +1646,9 @@ double	GetMapFaceAreaMeters(const Face_handle f)
 			outer.push_back(cgal2ben(circ->source()->point()));
 		++circ;
 	} while (circ != start);
-	
+
 	CoordTranslator2 trans;
-	
+
 	CreateTranslatorForPolygon(outer, trans);
 
 	for (int n = 0; n < outer.size(); ++n)

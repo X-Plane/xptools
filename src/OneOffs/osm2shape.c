@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
- 
+
 /*
 
 	BUILD:	gcc osm2shape.c -lz -lexpat -lshp -o osm2shape
@@ -28,20 +28,20 @@
 	OSM2Shape converts ways to shape file arcs.  (An arc in a shape file is really a
 	string of connected line segments.)  Attributes on the ways are put into a
 	DBF table with the shape file.
-	
+
 	Requirements:
 		expat
 		shapelib
 		zlib
-		
-	
+
+
 	TODO:
-		Provide filtering for way sub-segments that are out of crop box.		
+		Provide filtering for way sub-segments that are out of crop box.
 		Provide filtering for ways with no attributes.
 		Provide filtering for attributes that we don't care about.
 
-*/ 
- 
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -133,14 +133,14 @@ static int ok_attr(const char * attr, const char * list)
 	int al = strlen(attr);
 	const char * l = list;
 	if(al == 0) return 0;
-	while(l)	
+	while(l)
 	{
 		const char * sub = strstr(l,attr);
 		if(!sub) return 0;						// not found
 		if(sub[al] == 0 || sub[al] == ',')
 			return 1;
 		l = sub+al;
-		
+
 
 	}
 	return 0;
@@ -240,7 +240,7 @@ void StartElementHandler_ReadNodes(void *userData,
 		}
 		node_info_t key;
 		key.id = fetch_att_i("ref", atts, -1);
-		if(key.id < 0) 
+		if(key.id < 0)
 		{
 			fprintf(stderr,"No ref!");
 			exit(1);
@@ -290,7 +290,7 @@ void StartElementHandler_ReadNodes(void *userData,
 		if (id <= last_id)
 			in_order = 0;
 		last_id = id;
-		
+
 		g_nodes[node_free].lat = lat;
 		g_nodes[node_free].lon = lon;
 		g_nodes[node_free].id = id;
@@ -313,7 +313,7 @@ void EndElementHandler_ReadNodes(void *userData,
 	if(strcmp(name,"relation") == 0)
 	{
 		is_rel = 0;
-	}	
+	}
 }
 
 
@@ -335,15 +335,15 @@ void StartElementHandler_ReadWays(void *userData,
 	{
 		node_info_t key;
 		key.id = fetch_att_i("ref", atts, -1);
-		if(key.id < 0) 
+		if(key.id < 0)
 		{
 			fprintf(stderr,"No ref!");
 			exit(1);
 		}
-		
+
 		node_info_t * my_node = (node_info_t *) bsearch(&key, g_nodes, node_count, sizeof(node_info_t), node_compare);
 		if(my_node != NULL)
-		{		
+		{
 			g_x[vert_free] = my_node->lon;
 			g_y[vert_free] = my_node->lat;
 			++vert_free;
@@ -356,7 +356,7 @@ void StartElementHandler_ReadWays(void *userData,
 	}
 	if(is_way && strcmp(name,"tag")==0)
 	{
-		att_info_t * a;		
+		att_info_t * a;
 		const char * k = fetch_att_s("k",atts);
 		for(a = g_atts; a; a = a->next)
 		if(strcmp(a->name,k)==0)
@@ -383,13 +383,13 @@ void EndElementHandler_ReadWays(void *userData,
 			has_any=1;
 			break;
 		}
-		
+
 		if((vert_free+vert_drop) != g_ways[way_free])
 		{
 			fprintf(stderr,"Accounting error - vert count did not match.\n");
 			exit(1);
 		}
-		
+
 		if((vert_free > 1) && (has_any || !drop_empty))
 		{
 			obj = SHPCreateSimpleObject(SHPT_ARC, vert_free, g_x, g_y, NULL);
@@ -397,7 +397,7 @@ void EndElementHandler_ReadWays(void *userData,
 			tot_v += vert_free;
 			id = SHPWriteObject(sfile, -1, obj);
 			SHPDestroyObject(obj);
-			
+
 			for(a = g_atts; a; a = a->next)
 			{
 				if(a->temp_val)
@@ -413,11 +413,11 @@ void EndElementHandler_ReadWays(void *userData,
 				}
 				else {
 					// null
-				}	
+				}
 			}
 			if(!has_any && g_atts)
 				DBFWriteNULLAttribute(dfile, id, g_atts->dbf_id);
-		} 
+		}
 		else
 		{
 			for(a = g_atts; a; a = a->next)
@@ -436,7 +436,7 @@ void EndElementHandler_ReadWays(void *userData,
 
 
 static void parse_stdio_file(gzFile * fi, XML_Parser parser)
-{	
+{
 	gzrewind(fi);
 	while(!gzeof(fi))
 	{
@@ -450,7 +450,7 @@ int main(int argc, const char * argv[])
 {
 	att_info_t * a;
 	gzFile * fi;
-	
+
 	++argv;
 	--argc;
 
@@ -467,33 +467,33 @@ int main(int argc, const char * argv[])
 			}
 			++argv;
 			--argc;
-				
+
 		}
 		else
 			break;
 	}
-	
-	
+
+
 	if(argc != 2)
 		do_help();
-		
+
 	printf("Useful tags: %s, Drop empty: %s.  Max field len: %d.\n", ok_tags ? ok_tags : "none", drop_empty ? "yes" : "no", MAX_FIELD_LEN);
-	 
+
 	 fi = gzopen(argv[0],"rb");
 	if(!fi) { fprintf(stderr, "Could not open %s.\n", argv[0]); exit(1); }
 
-	/* PASS 1 - Count all nodes and ways. */	
+	/* PASS 1 - Count all nodes and ways. */
 
 	XML_Parser	parser = XML_ParserCreate(NULL);
 	XML_SetElementHandler(parser, StartElementHandler_Count, EndElementHandler_Count);
 	parse_stdio_file(fi,parser);
 	XML_ParserFree(parser);
-	
+
 	printf("%d nodes, %d ways.\n", node_count, way_count);
 
 	g_nodes = (node_info_t *) malloc(node_count * sizeof(node_info_t));
 	g_ways = (int *) malloc(way_count * sizeof(int));
-	memset(g_ways,0,way_count * sizeof(int));	
+	memset(g_ways,0,way_count * sizeof(int));
 
 	/* PASS 2 - Count per-way nodes, read all node positions. */
 
@@ -521,9 +521,9 @@ int main(int argc, const char * argv[])
 	}
 
 	/* PASS 3 - Read and process all ways. */
-	
+
 	printf("Writing shape file.\n");
-	
+
 	sfile = SHPCreate(argv[1], SHPT_ARC);
 	dfile = DBFCreate(argv[1]);
 	if(sfile == NULL)
@@ -540,7 +540,7 @@ int main(int argc, const char * argv[])
 	{
 		a->dbf_id = DBFAddField(dfile, a->name, FTString, a->len, 0);
 	}
-	
+
 	way_free = 0;
 	parser = XML_ParserCreate(NULL);
 
@@ -548,10 +548,10 @@ int main(int argc, const char * argv[])
 
 	parse_stdio_file(fi,parser);
 	XML_ParserFree(parser);
-	
+
 	SHPClose(sfile);
 	DBFClose(dfile);
-	
+
 	printf("Wrote: %d features, %d vertices, %d attributes.\n",tot_f,tot_v,tot_a);
 	gzclose(fi);
 	return 0;

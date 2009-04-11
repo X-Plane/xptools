@@ -408,17 +408,17 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->SetAttribute1Named(attr_Light_Level, 0.0f, buf);
 			} else
 				builder->SetAttribute(attr_Light_Level_Reset);
-				
+
 			if(OBJ_get_draw_disable(obj))
 				builder->SetAttribute(attr_Draw_Disable);
 			else
 				builder->SetAttribute(attr_Draw_Enable);
-			
+
 			if(OBJ_get_wall(obj))
 				builder->SetAttribute(attr_Solid_Wall);
 			else
 				builder->SetAttribute(attr_No_Solid_Wall);
-				
+
 			bool bad_obj = false;
 			int panel_reg = -1;
 			int has_real_tex = 0;
@@ -445,7 +445,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 						}
 						else
 							builder->SetAttribute(attr_Tex_Cockpit);
-					} 
+					}
 					else {
 						has_real_tex = 1;
 						builder->SetAttribute(attr_Tex_Normal);
@@ -466,7 +466,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 					gHasTexNow = false;
 				}
 			}
-			
+
 			XObjManip8 m;
 			OBJ_get_manip_cursor(obj,buf);
 			m.cursor = buf;
@@ -483,7 +483,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.axis[0] = OBJ_get_manip_dx(obj);
 			m.axis[1] = OBJ_get_manip_dy(obj);
 			m.axis[2] = OBJ_get_manip_dz(obj);
-			
+
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:
 				builder->AccumManip(attr_Tex_Cockpit,m);
@@ -507,7 +507,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->AccumManip(attr_Manip_Noop,m);
 				break;
 			}
-			
+
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
 
 			if(panel_reg >= 0)
@@ -516,7 +516,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 					panel_get_texture_repeat_y(panel_reg,obj),
 					panel_get_texture_offset_x(panel_reg,obj),
 					panel_get_texture_offset_y(panel_reg,obj));
-			else			
+			else
 				builder->SetTexRepeatParams(
 					ac_object_get_texture_repeat_x(obj),
 					ac_object_get_texture_repeat_y(obj),
@@ -651,9 +651,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
-	
+
 	}
-#if PHONE	
+#if PHONE
 	else if (convert == convert_e)
 	{
 		Obj8_Optimize(obj8);
@@ -663,8 +663,8 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	        return 0;
 	    }
 
-	} 
-#endif	
+	}
+#endif
 	else {
 		if (!XObj8Write(export_path.c_str(), obj8))
 	    {
@@ -686,7 +686,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 
    if (gBadSurfaces)
     {
-    	if (convert == convert_7) {    	
+    	if (convert == convert_7) {
 			clear_selection();
 			ac_selection_select_surfacelist(gBadSurfaces);
 			redraw_all();

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -27,7 +27,7 @@
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
 
-WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) : 
+WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
 	mTextTable(this,WED_UIMeasurement("table_indent_width")),
 	mLibraryList(mgr)
@@ -35,14 +35,14 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	int bounds[4] = { 0, 0, 100, 100 };
 //	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
-	
+
 	mScroller->SetParent(this);
 	mScroller->Show();
 	mScroller->SetSticky(1,1,1,1);
-	
+
 	mTextTable.SetProvider(&mLibraryList);
 	mTextTable.SetGeometry(&mLibraryList);
-	
+
 	mTextTable.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Table_Select),
@@ -62,22 +62,22 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mTable->SetParent(mScroller);
 	mTable->Show();
 	mScroller->PositionInContentArea(mTable);
-	mScroller->SetContent(mTable);	
+	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
-	
+
 	mTextTableHeader.SetProvider(&mLibraryList);
-	mTextTableHeader.SetGeometry(&mLibraryList);	
-	
+	mTextTableHeader.SetGeometry(&mLibraryList);
+
 	mTextTableHeader.SetImage("header.png");
 	mTextTableHeader.SetColors(
 			WED_Color_RGBA(wed_Table_Gridlines),
 			WED_Color_RGBA(wed_Header_Text));
-		
+
 	mHeader = new GUI_Header(true);
 
 	bounds[1] = 0;
 	bounds[3] = GUI_GetImageResourceHeight("header.png");
-	mHeader->SetBounds(bounds);	
+	mHeader->SetBounds(bounds);
 	mHeader->SetGeometry(&mLibraryList);
 	mHeader->SetHeader(&mTextTableHeader);
 	mHeader->SetParent(this);
@@ -90,10 +90,10 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
-	
+
 					this->PackPane(mHeader, gui_Pack_Top);
 					this->PackPane(mScroller, gui_Pack_Center);
-					
+
 					mScroller->PositionHeaderPane(mHeader);
 }
 

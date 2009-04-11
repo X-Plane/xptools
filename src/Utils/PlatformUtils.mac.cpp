@@ -81,8 +81,8 @@ int		GetFilePathFromUser(
 		NavDialogRef				dialog = NULL;
 		NavUserAction				action;
 		NavEventUPP					eventUPP = NULL;
-		
-	err = NavGetDefaultDialogCreationOptions(&options);	
+
+	err = NavGetDefaultDialogCreationOptions(&options);
 	if (err != noErr) goto bail;
 
 	if (inType == getFile_Save)
@@ -96,7 +96,7 @@ int		GetFilePathFromUser(
 	options.preferenceKey = inID;
 
 	eventUPP = NewNavEventUPP(event_proc);
-	
+
 	switch(inType) {
 	case getFile_Open:
 		err = NavCreateGetFileDialog(&options, NULL, eventUPP, NULL, NULL, NULL, &dialog);
@@ -117,7 +117,7 @@ int		GetFilePathFromUser(
 	CFRelease(options.message);
 	CFRelease(options.actionButtonLabel);
 	if(options.saveFileName) CFRelease(options.saveFileName);
-	
+
 	action = NavDialogGetUserAction(dialog);
 	if (action !=kNavUserActionCancel && action != kNavUserActionNone)
 	{
@@ -156,7 +156,7 @@ int		GetFilePathFromUser(
 	return (action !=kNavUserActionCancel && action != kNavUserActionNone);
 
 bail:
-	if(eventUPP)	DisposeNavEventUPP(eventUPP);			
+	if(eventUPP)	DisposeNavEventUPP(eventUPP);
 	if(dialog)		NavDialogDispose(dialog);
 	return 0;
 

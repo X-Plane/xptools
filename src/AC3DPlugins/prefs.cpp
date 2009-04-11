@@ -38,14 +38,14 @@
 	int get_##n(void) {return *((int *) spec_##n->addr); } \
 	void set_##n(int v){ *((int *) spec_##n->addr) = v; \
 	ui_update_linked_var((char *) spec_##n->addr); }
-	
+
 #define DEFINE_PREF_DOUBLE(n,d)	\
 	PrefSpec *	spec_##n;	\
 	double			def_##n = d; \
 	double get_##n(void) {return *((double *) spec_##n->addr); } \
 	void set_##n(double v){ *((double *) spec_##n->addr) = v; \
 	ui_update_linked_var((char *) spec_##n->addr); }
-	
+
 
 PREFS_LIST
 

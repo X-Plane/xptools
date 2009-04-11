@@ -40,18 +40,18 @@
 	  NOT the same as moving the handles, so the client can decide the rules for dragging links.
 
 	- Entire entities may also be moved, and the interface provides hit testing.
-	
+
 	AN IMPORTANT NOTE ON PTR SIZE!!!
-	
+
 	The control handle interface is iterated by index..there is an integer number of entities, and each entity has an
 	integer number of links and nodes, referenced by zero-based array indices.  So any "nth" parameter (e.g. array index)
 	and any count parameter are all of type int.
-	
+
 	BUT entity IDs are opaque handles - that is, the Nth entity's ID is an opaque handle decided by the implementer.  Since
 	the handle might contain a ptr, intptr_t is used for 64-bit safety.
-	
-	Basically one control handle object might represent an ARRAY of objects in its implementation.  Since entities are 
-	referenced by ID and not by index (E.g. from the index, we get the ID and then use that), it allows the client to 
+
+	Basically one control handle object might represent an ARRAY of objects in its implementation.  Since entities are
+	referenced by ID and not by index (E.g. from the index, we get the ID and then use that), it allows the client to
 	efficiently provide access by ptr.
 
 */

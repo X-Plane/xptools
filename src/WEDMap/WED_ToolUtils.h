@@ -91,7 +91,7 @@ int	Iterate_IsNonEmptyComposite(ISelectable * what, void * ref);			// We are a c
 // Selection filters
 int Iterate_HasSelectedParent(ISelectable * what, void * ref);				// ref is ISelection.
 
-// Collecting - these 
+// Collecting - these
 int	Iterate_CollectThings(ISelectable * what, void * ref);				// ref is ptr to vector<wed_thing>
 int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 int Iterate_CollectEntities  (ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>

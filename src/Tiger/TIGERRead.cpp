@@ -380,7 +380,7 @@ bool	SegmentOutOfBounds(const Point2& start, const Point2& end,
 	double	slat = start.y();
 	double	elon = end.x();
 	double	elat = end.y();
-	
+
 	if (slon < inWest && elon < inWest) return true;
 	if (slon > inEast && elon > inEast) return true;
 	if (slat < inSouth && elat < inSouth) return true;

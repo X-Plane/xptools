@@ -49,7 +49,7 @@ void ProcessAirports(
 
 void	GenBoundary(
 				AptInfo_t * 	ioAirport);
-				
+
 
 void	AptPolygonToBezier(
 				const AptPolygon_t&			inPoly,
@@ -60,5 +60,5 @@ void	BezierToSegments(
 				Polygon_2&					outWinding,
 				float						inSimplify);
 
-				
+
 #endif /* AIRPORTS_H */

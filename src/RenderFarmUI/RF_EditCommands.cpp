@@ -110,7 +110,7 @@ static	void	RF_HandleEditMenuCmd(void *, void * i)
 				PROGRESS_DONE(RF_ProgressFunc, 0, 3, "Accumulating Faces")
 
 				PROGRESS_START(RF_ProgressFunc, 1, 3, "Accumulating Edges")
-				set<Halfedge_handle> kill_e;			
+				set<Halfedge_handle> kill_e;
 				ctr = 0;
 				for (Pmwx::Edge_iterator e = gMap.edges_begin(); e != gMap.edges_end(); ++e, ++ctr)
 				{
@@ -137,7 +137,7 @@ static	void	RF_HandleEditMenuCmd(void *, void * i)
 			break;
 		case editCmd_InsertMap:
 			{
-/*			
+/*
 				char	path[1024];
 				path[0] = 0;
 				if (gFaceSelection.size() == 1)
@@ -170,8 +170,8 @@ static	void	RF_HandleEditMenuCmd(void *, void * i)
 						MemFile_Close(fi);
 					}
 				}
-*/				
-			}			
+*/
+			}
 			gEdgeSelection.clear();
 			gFaceSelection.clear();
 			gVertexSelection.clear();

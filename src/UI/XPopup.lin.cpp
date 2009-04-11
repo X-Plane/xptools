@@ -30,11 +30,11 @@ XPopup::XPopup()
     mX = 0;
     mY = 0;
     mVisible = false;
-    
+
     memset(&mWnd, 0, sizeof(xwindow));
     memset(&mIWnd, 0, sizeof(xwindow));
     memset(&mTarget, 0, sizeof(xwindow));
-    
+
 	if (!mWnd.display)
 	{
 		mWnd.display = XOpenDisplay(0);
@@ -72,7 +72,7 @@ XPopup::XPopup()
     if (!mWnd.context)
 		throw 0;
 
-// input window which covers the whole display to handle clicks which will close the popup window 
+// input window which covers the whole display to handle clicks which will close the popup window
 	window_attributes.override_redirect = True;
     window_attributes.event_mask = ButtonPressMask;
     attribute_mask = CWEventMask | CWOverrideRedirect;

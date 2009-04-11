@@ -692,7 +692,7 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 					else
 					{
 						glVertex2d(s.p1.x(),s.p1.y());
-						glVertex2d(s.p2.x(),s.p2.y());									
+						glVertex2d(s.p2.x(),s.p2.y());
 					}
 				}
 			}
@@ -721,7 +721,7 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
 						glVertex2d(bscrp.x(), bscrp.y());
-						glVertex2d(scrpt.x(), scrpt.y());						
+						glVertex2d(scrpt.x(), scrpt.y());
 						glEnd();
 					}
 					orient = Vector2(bscrp,scrpt);
@@ -734,12 +734,12 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x(),scrpt.y(),0,1.0);	break;
 				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x(),scrpt.y(),0,1.0);		break;
-				case handle_ArrowHead:		
+				case handle_ArrowHead:
 				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				case handle_RotateHead:		
+				case handle_RotateHead:
 				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
-				}							
-			}						
+				}
+			}
 		}
 	}
 	if (mDragType == drag_Sel)

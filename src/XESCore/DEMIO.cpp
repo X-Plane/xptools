@@ -378,7 +378,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	}
 	ok = true;
 	}
-bail:	
+bail:
 	MemFile_Close(fi);
 	return ok;
 }
@@ -441,7 +441,7 @@ double	parse_field_float(const char ** s, const char * e)
 	else
 		return sign * (mantissa * pow(10.0f, rshift));
 	}
-bail:	
+bail:
 	*s = p;
 	return 0;
 
@@ -863,9 +863,9 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	inMap.mNorth = inMap.mSouth + 1.0;
 	inMap.mEast = inMap.mWest + 1.0;
 	{
-	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 + 
-				 (uhl->num_lines_lon[1]-'0') * 100 + 
-				 (uhl->num_lines_lon[2]-'0') * 10 + 
+	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 +
+				 (uhl->num_lines_lon[1]-'0') * 100 +
+				 (uhl->num_lines_lon[2]-'0') * 10 +
 				 (uhl->num_lines_lon[3]-'0') * 1;
 	int y_size = (uhl->num_lines_lat[0]-'0') * 1000 +
 				 (uhl->num_lines_lat[1]-'0') * 100 +

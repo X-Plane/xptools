@@ -46,7 +46,7 @@
 #if OPENGL_MAP
 	#include "RF_Msgs.h"
 	#include "RF_Notify.h"
-#endif	
+#endif
 
 const double	kShapeFileEpsi = 0.1 / (DEG_TO_NM_LAT * NM_TO_MTR);
 
@@ -435,7 +435,7 @@ static int DoVPFImport(const vector<const char *>& args)
 					CGAL::insert_curve(gMap, Curve_2(Segment_2(Point_2(sw.x(),y),Point_2(ne.x(),y))));
 				}
 			}
-			
+
 //			UnmangleBorder(gMap);
 		} else {
 			Pmwx	overlay;
@@ -451,7 +451,7 @@ static int DoVPFImport(const vector<const char *>& args)
 				for (Pmwx::Face_iterator ff = overlay.faces_begin(); ff != overlay.faces_end(); ++ff)
 					ff->data().mTerrainType = terrain_Natural;
 			}
-			
+
 //			TopoIntegrateMaps(&gMap, &overlay);
 			MergeMaps_legacy(gMap, overlay, true, NULL, true, gProgress);
 		}
@@ -566,16 +566,16 @@ static int DoShapeImport(const vector<const char *>& args)
 	if(strstr(args[0], "f"))	flags |= shp_Mode_Feature;
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
-	
-	
+
+
 	double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
 	if(!ReadShapeFile(args[2], gMap, flags, args[1], b, gProgress))
 		return 1;
-		
-		
+
+
 #if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
-#endif						
+#endif
 	return 0;
 }
 

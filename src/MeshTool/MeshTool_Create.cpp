@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -82,7 +82,7 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 	DebugAssert(the_map == NULL);
 	err_f = err_handler;
 	the_map = new Pmwx;
-	
+
 	MFMemFile *	xes = MemFile_Open(xes_path);
 	if(xes == NULL)
 	{
@@ -98,9 +98,9 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 		ReadXESFile(xes, &dummy_vec, &dummy_mesh, &sDem, &dummy_apt, ConsoleProgressFunc);
 	}
 	MemFile_Close(xes);
-	
+
 	sDem[dem_Elevation] = in_dem;
-	
+
 	sBounds[0] = in_dem.mWest;
 	sBounds[1] = in_dem.mSouth;
 	sBounds[2] = in_dem.mEast;
@@ -136,12 +136,12 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_Slope],sApts,ConsoleProgressFunc);
 
 	// -calcmesh
-	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);		
+	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
 
 	WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
-	
+
 	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],ConsoleProgressFunc);
-	
+
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
 	WriteXESFile("temp3.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
@@ -157,28 +157,28 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 		DebugAssert(tri->info().terrain != terrain_Water);
 		DebugAssert(tri->info().terrain != -1);
 	}
-	#endif	
-	
+	#endif
+
 	printf("Instantiating objects...\n");
 	vector<PreinsetFace>	insets;
-	
+
 	set<int>				the_types;
 	GetObjTerrainTypes		(the_types);
-	
+
 	printf("%d obj types\n", the_types.size());
 	for (set<int>::iterator i = the_types.begin(); i != the_types.end(); ++i)
 		printf("%s ", FetchTokenString(*i));
-	
+
 	Bbox2	lim(sDem[dem_Elevation].mWest, sDem[dem_Elevation].mSouth, sDem[dem_Elevation].mEast, sDem[dem_Elevation].mNorth);
 	GenerateInsets(*the_map, sMesh, lim, the_types, true, insets, ConsoleProgressFunc);
-	
+
 	InstantiateGTPolygonAll(insets, sDem, sMesh, ConsoleProgressFunc);
 	DumpPlacementCounts();
 
 
-	
+
 	// -exportDSF
-	BuildDSF(out_dsf, out_dsf, sDem[dem_LandUse],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);				
+	BuildDSF(out_dsf, out_dsf, sDem[dem_LandUse],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);
 }
 
 void MT_Cleanup(void)
@@ -247,7 +247,7 @@ int MT_CreateCustomTerrain(
 
 	int rn = gNaturalTerrainTable.size();
 	gNaturalTerrainTable.insert(gNaturalTerrainTable.begin()+(num_cus_terrains++),nt);
-	
+
 	tex_proj_info	pinfo;
 	for(int n = 0; n < 4; ++n)
 	{
@@ -255,16 +255,16 @@ int MT_CreateCustomTerrain(
 		pinfo.ST	 [n] = Point2(proj_s  [n],proj_t  [n]);
 	}
 	gTexProj[tt] = pinfo;
-	
+
 	return tt;
 }
-					
+
 void MT_LimitZ(int limit)
 {
 	// store limit^2
 	zlimit *= zlimit;
 }
-					
+
 void MT_LayerStart(int in_terrain_type)
 {
 	if(layer_type != NO_VALUE)
@@ -281,13 +281,13 @@ void MT_LayerEnd(void)
 		die_err("ERROR: layer cannot be ended - it has not been started.\n");
 	else
 	{
-		Polygon_set_2		layer_map;					
-		if (!layer.empty()) 
+		Polygon_set_2		layer_map;
+		if (!layer.empty())
 		{
 			layer_map.join(layer.begin(), layer.end());
-			
-			for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f) 
-			if (f->contained()) 
+
+			for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f)
+			if (f->contained())
 				f->data().mTerrainType = layer_type;
 
 			Pmwx *	new_map = new Pmwx;
@@ -308,7 +308,7 @@ void MT_LayerBackground(const char * in_terrain_type)
 		die_err("Unknown terrain %s.\n", in_terrain_type);
 		return;
 	}
-	
+
 	Polygon_2	p;
 	p.push_back(Point_2(sBounds[0],sBounds[1]));
 	p.push_back(Point_2(sBounds[2],sBounds[1]));
@@ -316,11 +316,11 @@ void MT_LayerBackground(const char * in_terrain_type)
 	p.push_back(Point_2(sBounds[0],sBounds[3]));
 
 	Polygon_set_2	layer_map(p);
-	
-	for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f) 
-	if (f->contained()) 
+
+	for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f)
+	if (f->contained())
 		f->data().mTerrainType = t;
-	
+
 	Pmwx *	new_map = new Pmwx;
 	MapOverlay(*the_map, layer_map.arrangement(), *new_map);
 	delete the_map;
@@ -333,7 +333,7 @@ void MT_LayerShapefile(const char * fi, const char * in_terrain_type)
 	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
 	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop | shp_Fast, in_terrain_type, b, ConsoleProgressFunc))
 		die_err("Unable to load shape file: %s\n", fi);
-		
+
 	Pmwx *	new_map = new Pmwx;
 	MapOverlay(*the_map, layer_map, *new_map);
 	delete the_map;
@@ -417,11 +417,11 @@ void MT_NetEnd(void)
 {
 	struct	GISNetworkSegment_t segdata = { net_type, net_type, 0.0, 0.0 };
 	Pmwx road_grid;
-	
-	if (!net.empty()) 
+
+	if (!net.empty())
 	{
 		insert_x_monotone_curves(road_grid, net.begin(), net.end());
-		
+
 		Pmwx::Edge_iterator the_edge;
 		for (Pmwx::Edge_iterator e = road_grid.edges_begin(); e != road_grid.edges_end(); ++e)
 			e->data().mSegments.push_back(GISNetworkSegment_t(segdata));
@@ -455,7 +455,7 @@ static void qmid_recurse(int q, double io_lon[4], double io_lat[4])
 {
 	// vert order
 	// 3 2
-	// 0 1 
+	// 0 1
 	// qmid parts
 	// 0 1
 	// 2 3
@@ -467,12 +467,12 @@ static void qmid_recurse(int q, double io_lon[4], double io_lat[4])
 		io_lat[3] = 0.5 * (io_lat[0] + io_lat[3]);		// bot half
 		io_lat[2] = 0.5 * (io_lat[1] + io_lat[2]);
 	}
-	
+
 	if(q == 1 || q == 3)
 	{
 		io_lon[0] = 0.5 * (io_lon[0] + io_lon[1]);	// left half
 		io_lon[3] = 0.5 * (io_lon[3] + io_lon[2]);
-	} else { 
+	} else {
 		io_lon[1] = 0.5 * (io_lon[0] + io_lon[1]);	// left half
 		io_lon[2] = 0.5 * (io_lon[3] + io_lon[2]);
 	}
@@ -497,12 +497,12 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 		die_err("Unable to read corner coordinates from %s.\n",fname);
 		return;
 	}
-	
+
 	double lon[4] = { c[0], c[2], c[6], c[4] };
 	double lat[4] = { c[1], c[3], c[7], c[5] };
 	double s[4] = { 0.0, 1.0, 1.0, 0.0 };
 	double t[4] = { 0.0, 0.0, 1.0, 1.0 };
-	
+
 	char tname[1024],dname[1024];
 	strcpy(tname,fname);
 	char * i = tname, * p = NULL;
@@ -512,15 +512,15 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 	strcpy(dname,tname);
 	strcat(tname,"ter");
 	strcat(dname,"dds");
-	
+
 	MT_OrthoPhoto(tname,lon,lat,s,t,back_with_water);
 
 	int meters= LonLatDistMeters(lon[0],lat[0],lon[2],lat[2]);
 	int isize=2048;
-		
+
 	if(!FILE_exists(tname))
 	{
-	
+
 		FILE * fi = fopen(tname,"w");
 		fprintf(fi,
 			"A\n"
@@ -538,10 +538,10 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 void MT_QMID(const char * id, int back_with_water)
 {
 	double lon[4] = { -180.0, 300.0, 300.0, -180.0 };
-	double lat[4] = { -270.0, -270.0, 90.0, 90.0 };	
+	double lat[4] = { -270.0, -270.0, 90.0, 90.0 };
 	double s[4] = { 0.0, 1.0, 1.0, 0.0 };
 	double t[4] = { 0.0, 0.0, 1.0, 1.0 };
-	
+
 	const char * i = id;
 	while(*i)
 		qmid_recurse((*i++) - '0',lon,lat);
@@ -549,11 +549,11 @@ void MT_QMID(const char * id, int back_with_water)
 	char fname[1024];
 	sprintf(fname,"%s.ter",id);
 
-	printf("QMID: %s will go from: %lf,%lf to %lf,%lf\n",	
+	printf("QMID: %s will go from: %lf,%lf to %lf,%lf\n",
 		id,lon[0],lat[0],lon[2],lat[2]);
 
 	MT_OrthoPhoto(fname, lon, lat, s, t, back_with_water);
-	
+
 	int want_lite = false;
 
 	int isize = 1024;
@@ -564,7 +564,7 @@ void MT_QMID(const char * id, int back_with_water)
 		sprintf(fname,"%sSu.bmp",id);
 		ImageInfo rgb;
 		if(!CreateBitmapFromFile(fname,&rgb))
-		{		
+		{
 			isize = max(rgb.width,rgb.height);
 			if(!ConvertBitmapToAlpha(&rgb,false))
 			{
@@ -577,15 +577,15 @@ void MT_QMID(const char * id, int back_with_water)
 					for(int x = 0; x < alpha.width; ++x)
 						rgb.data[x * rgb.channels + y * (rgb.width * rgb.channels + rgb.pad) + 3] =
 						alpha.data[x * alpha.channels + y * (alpha.width * alpha.channels + alpha.pad)];
-				
+
 					DestroyBitmap(&alpha);
 				}
-				
+
 				sprintf(fname,"%s.dds",id);
 				WriteBitmapToDDS(rgb, 5, fname);
 			}
-						
-			DestroyBitmap(&rgb);				
+
+			DestroyBitmap(&rgb);
 		}
 	} else {
 		ImageInfo comp;
@@ -607,11 +607,11 @@ void MT_QMID(const char * id, int back_with_water)
 			WriteBitmapToDDS(lit,1,fname);
 			DestroyBitmap(&lit);
 			want_lite=true;
-		}		
+		}
 	}
-	
+
 	int meters= LonLatDistMeters(lon[0],lat[0],lon[2],lat[2]);
-	
+
 	sprintf(fname,"%s.ter",id);
 	if(!FILE_exists(fname))
 	{

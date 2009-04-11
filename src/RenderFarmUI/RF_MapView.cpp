@@ -374,14 +374,14 @@ RF_MapView::RF_MapView(
 	}
 	mToolBtnsOffset += 10;
 
-	mTools.push_back(new RF_SelectionTool(mZoomer));	
-	mTools.push_back(new RF_CropTool(mZoomer));	
-//	mTools.push_back(new RF_BezierTestTool(mZoomer));		
-	mTools.push_back(new RF_ImageTool(mZoomer));	
-	mTools.push_back(new RF_TerraTool(mZoomer));	
-//	mTools.push_back(new RF_TopoTester(mZoomer));	
-//	mTools.push_back(new RF_MeshTester(mZoomer));	
-	
+	mTools.push_back(new RF_SelectionTool(mZoomer));
+	mTools.push_back(new RF_CropTool(mZoomer));
+//	mTools.push_back(new RF_BezierTestTool(mZoomer));
+	mTools.push_back(new RF_ImageTool(mZoomer));
+	mTools.push_back(new RF_TerraTool(mZoomer));
+//	mTools.push_back(new RF_TopoTester(mZoomer));
+//	mTools.push_back(new RF_MeshTester(mZoomer));
+
 	SetupForTool();
 
 //	XPCreateTab(50, 150, 300, 100, 1, "Tab A;Tab B;Tab C;Tab D", GetWidget());
@@ -571,7 +571,7 @@ void	RF_MapView::DrawSelf(void)
 								col[0] = 1.0; col[1] = 0.0; col[2] = 0.0;
 							}
 						}
-						
+
 						glColor4fv(col);					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 						glColor4fv(col);					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
 						glColor4fv(col);					glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
@@ -582,15 +582,15 @@ void	RF_MapView::DrawSelf(void)
 							GetNaturalTerrainColor(*i, col);
 
 							col[3] = 0.5 * fit->vertex(2)->info().border_blend[*i];
-							glColor4fv(col);	
+							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 
 							col[3] = 0.5 * fit->vertex(1)->info().border_blend[*i];
-							glColor4fv(col);	
+							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
 
 							col[3] = 0.5 * fit->vertex(0)->info().border_blend[*i];
-							glColor4fv(col);	
+							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 						}
 #endif
@@ -707,7 +707,7 @@ void	RF_MapView::DrawSelf(void)
 		{
 			glColor3f(i->second.x, i->second.y, i->second.z);
 			glVertex2f((i->first.x()),
-					   (i->first.y()));		
+					   (i->first.y()));
 		}
 		glEnd();
 		glPointSize(1);
@@ -721,7 +721,7 @@ void	RF_MapView::DrawSelf(void)
 		{
 			glColor4f(i->second.x, i->second.y, i->second.z, 0.5);
 			glVertex2f((i->first.x()),
-					   (i->first.y()));		
+					   (i->first.y()));
 		}
 		glEnd();
 		glLineWidth(1);

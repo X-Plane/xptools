@@ -589,7 +589,7 @@ static void set_anim_enable(float n)
 static void set_list_invis(float n)
 {
 	g_list_invis = n;
-}	
+}
 
 // null dref for all anim!
 static void sel_if_has(ACObject * who, const char *dref)

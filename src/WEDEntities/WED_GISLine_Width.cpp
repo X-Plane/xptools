@@ -165,8 +165,8 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 		GetSource()->SetLocation(ends[0]);
 		GetTarget()->SetLocation(ends[1]);
 		break;
-			
-	case rwy_prop_lat1:		
+
+	case rwy_prop_lat1:
 		ends[0].y_ = val.double_val;
 		GetSource()->SetLocation(ends[0]);
 		break;

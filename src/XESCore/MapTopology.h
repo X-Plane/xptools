@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,7 +30,7 @@
 /************************************************************************************************
  * FACE SETS AND EDGE SETS
  ************************************************************************************************
- * 
+ *
  * It is often useful to treat a group of faces or a group of edges as a unit...two examples:
  *
  * - A body of water might be made up of multiple faces becaue bridges split the body of water.
@@ -87,7 +87,7 @@ void	FindInternalEdgesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Halfed
  * Given a face, returns all faces that are touching this face.
  *
  */
-void	FindAdjacentFaces(Face_handle inFace, set<Face_handle>& outFaces); 
+void	FindAdjacentFaces(Face_handle inFace, set<Face_handle>& outFaces);
 
 /*
  * FindAdjacentWetFaces
@@ -95,14 +95,14 @@ void	FindAdjacentFaces(Face_handle inFace, set<Face_handle>& outFaces);
  * Given a face, returns all faces that are touching this face.
  *
  */
-void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces); 
+void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces);
 
 /*
  * IsAdjacentWater
  *
  * Return true if adjacent to any water poly.
  *
- */ 
+ */
 bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet);
 
 /*
@@ -112,11 +112,11 @@ bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet);
  * body, taking into account things like bridges.
  *
  */
-void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces); 
+void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces);
 
 /*
  * CleanFace
- * 
+ *
  * Given a face on a map, this routine 'cleans' its interior, removing any
  * antennas, holes, or anything else in its interior.
  *
@@ -150,7 +150,7 @@ int RemoveUnboundedWater(Pmwx& ioMap);
  * be constructed to form discrete water bodies up to the edge of the map's useful area.
  *
  * Performance: O(N*M) where N = number of removed halfedges, and M = average number
- * of halfedges in a CCB. 
+ * of halfedges in a CCB.
  *
  */
 void ReduceToWaterBodies(Pmwx& ioMap);

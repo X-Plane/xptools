@@ -616,7 +616,7 @@ bool find_tri_in(int p1, int p2, int p3, const vector<INDEX_T>& tl)
 		   p1 == tl[n+1] &&
 		   p2 == tl[n+2])	return true;
 	}
-	printf("COULD NOT FIND: %d,%d,%d!\n", p1,p2,p3);	
+	printf("COULD NOT FIND: %d,%d,%d!\n", p1,p2,p3);
 	return false;
 }
 
@@ -628,7 +628,7 @@ void dump_vec(const char * bl, const char * al, const vector<INDEX_T>& b, const 
 				n,
 				b[n],b[n+1],b[n+2],
 				a[n],a[n+1],a[n+2]);
-				
+
 }
 
 void compare_before_after(const vector<INDEX_T>& b, const vector<INDEX_T>& a)
@@ -697,8 +697,8 @@ bool	Obj8_Optimize(XObj8& obj8)
 		PVRTTriStripList(
 			&*ok.begin(),
 			ok.size() / 3);
-*/			
-		
+*/
+
 
 		vector<INDEX_T> after(ok.begin(), ok.end());
 		after.insert(after.end(),degen.begin(),degen.end());

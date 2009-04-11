@@ -283,7 +283,7 @@ bool	RF_SelectionTool::HandleClick(
 			for (set<Pmwx::Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
 			{
 				Point_2 p = (*v)->point();
-//				(*v)->set_point(p + delta);				
+//				(*v)->set_point(p + delta);
 			}
 			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 			mIsMoveVertices = false;
@@ -364,7 +364,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 				++gStopPt;
 
 				set<Face_handle>	fail;
-			
+
 			gMeshLines.clear();
 			gMeshPoints.clear();
 			bool was_empty = gFaceSelection.empty();
@@ -384,23 +384,23 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 				PolyInset_t					lims;
 				PolygonFromFace(*fsel, bounds, &lims, GetInsetForEdgeDegs, NULL);
 				Polygon_set_2				bs;
-				
+
 				try {
-				
+
 					BufferPolygonWithHoles(bounds, &lims, 1.0 , bs);
-					
+
 					ValidateBuffer(gMap,*fsel, loc, bs);
 				} catch (...) {
 					fail.insert(*fsel);
 					#if DEV
 						debug_mesh_point(cgal2ben((*fsel)->outer_ccb()->source()->point()),1,1,0);
 					#endif
-				}			
-				
+				}
+
 				vector<Polygon_with_holes_2>	all;
-				
+
 				bs.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(all));
-				
+
 				for(vector<Polygon_with_holes_2>::iterator a = all.begin(); a != all.end(); ++a)
 				{
 					GISPolyObjPlacement_t	res;
@@ -437,7 +437,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 			if(f != Face_handle())CreateNewBitmap(512,512,3,&img);
 			double		bounds[4];
 			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  RF_ProgressFunc, f != Face_handle() ? &img : NULL, bounds);
-			if(f != Face_handle()){			
+			if(f != Face_handle()){
 			gMapView->SetFlowImage(img,bounds);
 			DestroyBitmap(&img);}
 		}
@@ -489,12 +489,12 @@ char *	RF_SelectionTool::GetStatusText(void)
 		n += sprintf(buf+n, "%d sq m ", (int) area);
 //		if (the_face->data().mTerrainType != terrain_Natural)
 			n += sprintf(buf+n,"Art.Terrain:%s ", FetchTokenString(the_face->data().mTerrainType));
-			
+
 		if (the_face->data().mAreaFeature.mFeatType != NO_VALUE)
 		{
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->data().mAreaFeature.mFeatType));
 		}
-		
+
 		for(GISParamMap::iterator p = the_face->data().mParams.begin(); p != the_face->data().mParams.end(); ++p)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
@@ -520,10 +520,10 @@ char *	RF_SelectionTool::GetStatusText(void)
 		}
 
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->data().mParams.begin(); p != (*gEdgeSelection.begin())->data().mParams.end(); ++p)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->twin()->data().mParams.begin(); p != (*gEdgeSelection.begin())->twin()->data().mParams.end(); ++p)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
-			
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
+
 		if ((*gEdgeSelection.begin())->data().mTransition != 0)
 		{
 			n += sprintf(buf+n,"Beach=%d ", (*gEdgeSelection.begin())->data().mTransition);
@@ -551,7 +551,7 @@ char *	RF_SelectionTool::GetStatusText(void)
 
 	if (gVertexSelection.size() == 1)
 	{
-		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ", 
+		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ",
 			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
 			CGAL::to_double((*(gVertexSelection.begin()))->point().y()),
 			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
@@ -743,7 +743,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 				NearestEdgeToPt_t t;
 				t.found = false;
 				t.lon = bounds[0];
-				t.lat = bounds[1];			
+				t.lat = bounds[1];
 				FindHalfedgeTouchesRectFast(gMap,
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), halfedgeitems);

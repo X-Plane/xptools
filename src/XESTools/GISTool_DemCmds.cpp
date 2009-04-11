@@ -54,9 +54,9 @@ static int DoRasterImport(const vector<const char *>& args)
 		fprintf(stderr,"Unknown layer: %s\n", args[2]);
 		return 1;
 	}
-	
+
 	DEMGeo * dem = &gDem[layer];
-				
+
 	if(strcmp(args[0],"tiff") == 0)
 	{
 		if(!ExtractGeoTiff(*dem, args[1]))
@@ -65,7 +65,7 @@ static int DoRasterImport(const vector<const char *>& args)
 			return 1;
 		}
 	}
-	else 
+	else
 	{
 		fprintf(stderr,"Unknown importer: %s\n", args[0]);
 		return 1;
@@ -78,13 +78,13 @@ static int DoRasterImport(const vector<const char *>& args)
 			return 1;
 		}
 	}
-	
+
 	#if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 	#endif
-	
+
 	if(gVerbose) printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
-	return 0;	
+	return 0;
 }
 
 static int DoAnyImport(const vector<const char *>& args,

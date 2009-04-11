@@ -226,7 +226,7 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 		if (mIsRotate)
 		{
 			mRotateCtr.x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
-			mRotateCtr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];		
+			mRotateCtr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];
 //			mRotatePt.x = mCacheBounds.p1.x * kControlsX1[c] + mCacheBounds.p2.x * kControlsX2[c];
 //			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];
 		}
@@ -256,7 +256,7 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 		new_b = mCacheBounds;
 
 		if (mCacheBounds.is_point()) c = 8;
-		
+
 		new_b.p1.x_ += (delta.dx * kApplyCtrlX1[c]);
 		new_b.p2.x_ += (delta.dx * kApplyCtrlX2[c]);
 		new_b.p1.y_ += (delta.dy * kApplyCtrlY1[c]);
@@ -271,7 +271,7 @@ void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
 	new_b = mCacheBounds;
-	
+
 	new_b.p1.x_ += (delta.dx * kApplyLinkX1[c]);
 	new_b.p2.x_ += (delta.dx * kApplyLinkX2[c]);
 	new_b.p1.y_ += (delta.dy * kApplyLinkY1[c]);

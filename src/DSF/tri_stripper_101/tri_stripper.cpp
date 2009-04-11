@@ -112,7 +112,7 @@ void tri_stripper::Strip(primitives_vector * out_pPrimitivesVector)
 
 	m_Triangles.clear();
 
-	
+
 
 	// Put the results into the user's vector
 
@@ -154,11 +154,11 @@ void tri_stripper::InitTriGraph()
 
 	for (size_t i = 0; i < m_Triangles.size(); ++i) {
 
-		TriInterface.push_back(triangle_edge(m_Triangles[i]->A(), m_Triangles[i]->B(), i)); 
+		TriInterface.push_back(triangle_edge(m_Triangles[i]->A(), m_Triangles[i]->B(), i));
 
-		TriInterface.push_back(triangle_edge(m_Triangles[i]->B(), m_Triangles[i]->C(), i)); 
+		TriInterface.push_back(triangle_edge(m_Triangles[i]->B(), m_Triangles[i]->C(), i));
 
-		TriInterface.push_back(triangle_edge(m_Triangles[i]->C(), m_Triangles[i]->A(), i)); 
+		TriInterface.push_back(triangle_edge(m_Triangles[i]->C(), m_Triangles[i]->A(), i));
 
 	}
 
@@ -486,7 +486,7 @@ inline tri_stripper::triangle_strip tri_stripper::FindBestStrip()
 
 
 
-						// Priority 3: Keep the longest strip 
+						// Priority 3: Keep the longest strip
 
 						} else if (TempStrip.Size() > BestStrip.Size()) {
 
@@ -566,7 +566,7 @@ tri_stripper::triangle_strip tri_stripper::ExtendTriToStrip(const size_t StartTr
 
 	// Loop while we can further extend the strip
 
-	for (tri_node_iter TriNodeIt = (m_Triangles.begin() + StartTriPos); 
+	for (tri_node_iter TriNodeIt = (m_Triangles.begin() + StartTriPos);
 
 		(TriNodeIt != m_Triangles.end()) && ((m_Cache.size() == 0) || ((Size + 2) < m_Cache.size()));
 
@@ -656,7 +656,7 @@ tri_stripper::triangle_strip tri_stripper::ExtendTriToStrip(const size_t StartTr
 
 			TriNodeIt = LinkIt->terminal();
 
-    
+
 
 			// Setup for the next triangle
 
@@ -848,7 +848,7 @@ void tri_stripper::BuildStrip(const triangle_strip TriStrip)
 
 		MarkTriAsTaken(TriNodeIt - m_Triangles.begin());
 
-        
+
 
 		// Setup for the next triangle
 

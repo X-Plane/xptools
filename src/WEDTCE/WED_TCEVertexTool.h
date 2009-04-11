@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.  All rights reserved.
  *
  */
@@ -20,7 +20,7 @@ public:
 							WED_MapZoomerNew *		zoomer,
 							IResolver *				resolver);
 	virtual				~WED_TCEVertexTool();
-	
+
 	virtual		void	BeginEdit(void);
 	virtual		void	EndEdit(void);
 

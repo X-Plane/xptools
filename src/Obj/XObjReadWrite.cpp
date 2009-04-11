@@ -896,7 +896,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			cmd.cmd = attr_Manip_Drag_2d;
 			cmd.idx_offset = outObj.manips.size();
-			outObj.lods.back().cmds.push_back(cmd);			
+			outObj.lods.back().cmds.push_back(cmd);
 			XObjManip8 manip;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
@@ -916,7 +916,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			cmd.cmd = attr_Manip_Drag_Axis;
 			cmd.idx_offset = outObj.manips.size();
-			outObj.lods.back().cmds.push_back(cmd);			
+			outObj.lods.back().cmds.push_back(cmd);
 			XObjManip8 manip;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
@@ -934,7 +934,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			cmd.cmd = attr_Manip_Command;
 			cmd.idx_offset = outObj.manips.size();
-			outObj.lods.back().cmds.push_back(cmd);			
+			outObj.lods.back().cmds.push_back(cmd);
 			XObjManip8 manip;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
@@ -947,12 +947,12 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			cmd.cmd = attr_Manip_Command_Axis;
 			cmd.idx_offset = outObj.manips.size();
-			outObj.lods.back().cmds.push_back(cmd);			
+			outObj.lods.back().cmds.push_back(cmd);
 			XObjManip8 manip;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			manip.axis[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			manip.axis[1] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
-			manip.axis[2] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);			
+			manip.axis[2] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref2);
 			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
@@ -967,7 +967,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		}
 /******************************************************************************************************************************/
 		// LIGHT LEVEL (930)
-/******************************************************************************************************************************/		
+/******************************************************************************************************************************/
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_light_level",false))
 		{
 			cmd.cmd = attr_Light_Level;
@@ -976,7 +976,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		}
 /******************************************************************************************************************************/
 		// DEFAULT
-/******************************************************************************************************************************/		
+/******************************************************************************************************************************/
 		else
 		// Common attribute handling:
 		{
@@ -1186,7 +1186,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Tex_Cockpit_Subregion:
 				fprintf(fi,"ATTR_cockpit_region %d" CRLF, (int) cmd->params[0]);
 				break;
-				
+
 			case attr_Manip_Drag_2d:
 				fprintf(fi,"ATTR_manip_drag_xy %s %f %f %f %f %f %f %s %s %s" CRLF,
 					outObj.manips[cmd->idx_offset].cursor.c_str(),
@@ -1227,7 +1227,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					outObj.manips[cmd->idx_offset].dataref2.c_str(),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
-			
+
 			case attr_Light_Level:
 				fprintf(fi,"ATTR_light_level %s" CRLF, cmd->name.c_str());
 				break;

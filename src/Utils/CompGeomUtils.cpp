@@ -979,14 +979,14 @@ void	ReducePolygon(Polygon2& ioPolygon, double tolerance, double angle, double m
 inline bool IsIntegral(const Point2& p)
 {
 	return (p.x() == (double) (int) p.x() ||
-			p.y() == (double) (int) p.y()); 
+			p.y() == (double) (int) p.y());
 }
 
 // HACK UTILIITY: is this point a corner of a DSF
 inline bool IsCorner(const Point2& p)
 {
 	return (p.x() == (double) (int) p.x() &&
-			p.y() == (double) (int) p.y()); 
+			p.y() == (double) (int) p.y());
 }
 
 // UTILITY: give na span of points in a polygon defined by P and deltas from
@@ -1293,9 +1293,9 @@ inline bool NoHalfedgeInDir(GISVertex * v, const Vector2& vec, bool reverse)
 // Convert a polygon to a one-face pmwx.  Polygon must have no antennas and be simple.
 static GISFace* PolyToPmwx(const Polygon2& inPoly, Pmwx& outMap, vector<Vertex_handle> * outVertices)
 {
-//	DebugAssert(outMap.empty()); 
+//	DebugAssert(outMap.empty());
 	Face_handle face = outMap.insert_ring(outMap.unbounded_face(), inPoly);
-	if (outVertices) 
+	if (outVertices)
 	{
 		outVertices->resize(inPoly.size());
 		int i;

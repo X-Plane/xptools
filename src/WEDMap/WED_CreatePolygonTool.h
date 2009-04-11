@@ -34,7 +34,7 @@ enum CreateTool_t {
 	create_Boundary,
 	create_Marks,
 	create_Hole,
-	
+
 	create_Facade,
 	create_Forest,
 	create_String,
@@ -74,9 +74,9 @@ protected:
 		WED_PropDoubleText				mHeight;
 		WED_PropDoubleText				mDensity;
 		WED_PropDoubleText				mSpacing;
-		
+
 		WED_PropBoolText				mOrthophoto;
-		
+
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
 							const vector<Point2>&	dirs_lo,

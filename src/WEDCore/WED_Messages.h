@@ -44,7 +44,7 @@ enum {
 
 	msg_SystemFolderChanged,
 	msg_SystemFolderUpdated	,
-	
+
 	msg_LibraryChanged
 
 };

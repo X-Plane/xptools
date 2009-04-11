@@ -155,14 +155,14 @@ ACObject *	do_obj8_load(char *filename)
 	string texPath;
 	if(p2 != obj8.texture.npos) texPath = obj8.texture.substr(0,p2+1);
     string texNameBmp = texName + ".bmp";
-    string texNamePng = texName + ".png";    
-    string texNameDds = texName + ".dds";   
-    string texNamePvr = texName + ".pvr";   
-	string texPathBmp = texPath + texNameBmp; 
-	string texPathPng = texPath + texNamePng; 
-	string texPathDds = texPath + texNameDds; 
-	string texPathPvr = texPath + texNamePvr; 
-	
+    string texNamePng = texName + ".png";
+    string texNameDds = texName + ".dds";
+    string texNamePvr = texName + ".pvr";
+	string texPathBmp = texPath + texNameBmp;
+	string texPathPng = texPath + texNamePng;
+	string texPathDds = texPath + texNameDds;
+	string texPathPvr = texPath + texNamePvr;
+
 	char *	panel_names[] = {
 		"cockpit_3d/-PANELS-/Panel_Preview.png",
 		"cockpit_3d/-PANELS-/Panel.png",
@@ -186,7 +186,7 @@ ACObject *	do_obj8_load(char *filename)
 		"cockpit/-PANELS-/Panel_Autogyro_Twin.png",
 		"cockpit/-PANELS-/Panel_Fighter_IFR.png",
 		0 };
-	
+
     bool	has_cockpit_cmd = false;
 	bool	has_cockpit_reg = false;
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
@@ -229,14 +229,14 @@ ACObject *	do_obj8_load(char *filename)
 				panel_id = add_new_texture_opt(panel_full_name,panel_names[n]);
 			++n;
 		}
-	
+
 		if(panel_id == -1 && has_cockpit_reg)
 		{
 			message_dialog("Warning: I was unable to find a panel texture to load, but you are using panel regions.  Your texure coordinates may be incorrect after import.");
 		}
 	}
 
-	
+
 
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
     {
@@ -264,7 +264,7 @@ ACObject *	do_obj8_load(char *filename)
     	string	hard_poly;
 		int		deck = 0;
     	float	offset = 0;
-		
+
 		string	light_level;
 		int		draw_disable = 0;
 		int		wall = 0;
@@ -278,7 +278,7 @@ ACObject *	do_obj8_load(char *filename)
 		float	manip_v2_max;
 
 		map<int, Vertex *>	vmap;
-    	
+
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
@@ -303,7 +303,7 @@ ACObject *	do_obj8_load(char *filename)
 					}
 					OBJ_set_wall(stuff_obj,wall);
 					OBJ_set_draw_disable(stuff_obj,draw_disable);
-					
+
 					OBJ_set_manip_type(stuff_obj,manip_type);
 					switch(manip_type) {
 					case manip_axis:
@@ -342,8 +342,8 @@ ACObject *	do_obj8_load(char *filename)
 						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
 						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
 						break;
-					}					
-					
+					}
+
 					sprintf(strbuf, "POLY_OS=%d HARD=%s BLEND=%s",
 						(int) offset, hard_poly.c_str(), no_blend >= 0.0 ? "no":"yes");
 					object_set_name(stuff_obj, strbuf);
@@ -367,7 +367,7 @@ ACObject *	do_obj8_load(char *filename)
 							p3.x = dat[0];
 							p3.y = dat[1];
 							p3.z = dat[2];
-							verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));							
+							verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
 							vmap.insert(map<int,Vertex*>::value_type(obj8.indices[cmd->idx_offset + i],verts.back()));
 						}
 					}
@@ -388,7 +388,7 @@ ACObject *	do_obj8_load(char *filename)
 							if (our_material != default_material)
 								OBJ_set_use_materials(stuff_obj, 1);
 						}
-						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);						
+						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);
 				        surface_add_vertex_head(s, verts[i], dat[6] * s_mul + s_add, dat[7] * t_mul + t_add);
 				    }
 
@@ -526,8 +526,8 @@ ACObject *	do_obj8_load(char *filename)
 			case attr_Layer_Group:
 				OBJ_set_layer_group(group_obj, cmd->name.c_str());
 				OBJ_set_layer_group_offset(group_obj, cmd->params[0]);
-				break;			
-				
+				break;
+
 			case attr_Manip_Drag_Axis:
 				stuff_obj = NULL;
 				manip_type = manip_command_axis;

@@ -40,8 +40,8 @@
 #if DEV
 #include "GISTool_Globals.h"
 #endif
-	
-#define DEBUG_FLATTENING 0	
+
+#define DEBUG_FLATTENING 0
 
 #if DEBUG_FLATTENING
 #include "GISTool_Globals.h"
@@ -106,7 +106,7 @@ static void ExpandRunway(
 	double	aspect = cos(rwy->ends.midpoint().y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
 	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
-	
+
 	double rwy_len = LonLatDistMetersWithScale(rwy->ends.p1.x(), rwy->ends.p1.y(), rwy->ends.p2.x(), rwy->ends.p2.y(), DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
 	Vector2	rwy_dir(rwy->ends.p1,  rwy->ends.p2);
 	rwy_dir.dx *= DEG_TO_MTR_LON;
@@ -172,7 +172,7 @@ static void ExpandRunway(
 	double	aspect = cos(rwy->ends.midpoint().y() * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
 	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
-	
+
 	double rwy_len = LonLatDistMetersWithScale(rwy->ends.p1.x(), rwy->ends.p1.y(), rwy->ends.p2.x(), rwy->ends.p2.y(), DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
 	Vector2	rwy_dir(rwy->ends.p1,  rwy->ends.p2);
 	rwy_dir.dx *= DEG_TO_MTR_LON;
@@ -210,17 +210,17 @@ void BurnInAirport(
 	// Go through and burn every runway into the layout.  We will introduce
 	// a series of connected faces with each quad we burn in.  We accumulate
 	// them all so we have the area of all pavement that was introduced.
-	
+
 	ioArea.clear();
 
 	if (!inAirport->boundaries.empty() && inFillWater == fill_dirt2apt)
 	{
 		// Precomputed boundary?  Use it!
-		
+
 		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
 		{
 			vector<vector<Bezier2> >	bez_poly;
-			AptPolygonToBezier(b->area, bez_poly);			
+			AptPolygonToBezier(b->area, bez_poly);
 			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
 			{
 				Polygon_2	winding;
@@ -237,8 +237,8 @@ void BurnInAirport(
 			}
 		}
 	}
-	else 
-	{	
+	else
+	{
 		vector<Polygon_2>	poly_vec;
 		for (int rwy = 0; rwy < inAirport->pavements.size(); ++rwy)
 		if (inAirport->pavements[rwy].surf_code != apt_surf_water)
@@ -248,7 +248,7 @@ void BurnInAirport(
 			double	pad_height;
 			GetPadWidth(inAirport->pavements[rwy].name != "xxx", pad_width, pad_height, inFillWater);
 			ExpandRunway(&inAirport->pavements[rwy],pad_width, pad_height, corners);
-			
+
 			Polygon_2	poly;
 			poly.push_back(ben2cgal(corners[0]));
 			poly.push_back(ben2cgal(corners[1]));
@@ -299,16 +299,16 @@ void BurnInAirport(
 		{
 			vector<vector<Bezier2> >	bez_poly;
 			Polygon_2					winding;
-			AptPolygonToBezier(b->area, bez_poly);			
-			BezierToSegments(bez_poly.front(), winding,0.0);			
-			
+			AptPolygonToBezier(b->area, bez_poly);
+			BezierToSegments(bez_poly.front(), winding,0.0);
+
 			Polygon_2					convex_hull;
 			CGAL::convex_hull_2(winding.vertices_begin(),winding.vertices_end(),
 									back_insert_iterator<Polygon_2>(convex_hull));
 
-/*			
+/*
 //			MakePolygonConvex(winding);
-			
+
 				int n;
 				CoordTranslator_2	t;
 			CreateTranslatorForPolygon(winding, t);
@@ -326,10 +326,10 @@ void BurnInAirport(
 */
 //			ioArea.join(convex_hull);
 			poly_vec.push_back(convex_hull);
-			
-			
+
+
 		}
-		
+
 		for(vector<Polygon_2>::iterator p  = poly_vec.begin(); p != poly_vec.end(); ++p)
 		{
 			DebugAssert(ioArea.is_valid());
@@ -342,21 +342,21 @@ void BurnInAirport(
 		}
 		ioArea.join(poly_vec.begin(), poly_vec.end());
 	}
-	
+
 	if(inFillWater != fill_dirt2apt)
 	{
-		// In water-filling mode, we also fill in holes.  IN other words, if we form a ring of taxiways into the water, we fill in the 
+		// In water-filling mode, we also fill in holes.  IN other words, if we form a ring of taxiways into the water, we fill in the
 		// area inside the ring so that airports don't have little lakes inside them.
 		// But in dirt-filling mode, we do NOT do this.  This is because some very large airports might (theoretically) fully surround bits of city
 		// with their 2-mile long runways.
-		
+
 		Arrangement_2	rep(ioArea.arrangement());
 		for(Arrangement_2::Face_iterator f = rep.faces_begin(); f != rep.faces_end(); ++f)
 		if(!f->is_unbounded())
 			f->set_contained(true);
 		Polygon_set_2	filled_area(rep);
 		ioArea = filled_area;
-	}		
+	}
 }
 
 // Given a destination map and faces from a DIFFERENT map, we produce a NEW set of SIMPLER faces that are made
@@ -379,7 +379,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 
 	if (inFillWater == fill_dirt2apt)
 	{
-		// Merge in airports, leaving roads, etc.  
+		// Merge in airports, leaving roads, etc.
 		MapMergePolygonSet(inDstMap, area, &outDstFaces, loc);
 		for (set<Face_handle>::iterator f = outDstFaces.begin(); f != outDstFaces.end(); ++f)
 		{
@@ -389,7 +389,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 				(*f)->data().mTerrainType = terrain_AirportOuter;	// Airport outer - this is POSSIBLE airport terrain, unless we are under water.  We will resolve this later.
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
-	}	
+	}
 	else
 	{
 		// Splat-overlay, set two levels of airport terrain.
@@ -402,13 +402,13 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
 	}
-/*		
+/*
 	for (set<Face_handle>::const_iterator i = inSrcFaces.begin(); i != inSrcFaces.end(); ++i)
 	{
 		Assert(!(*i)->is_unbounded());
 		Assert((*i)->holes_begin() == (*i)->holes_end());
 		DebugAssert((*i)->data().mTerrainType == terrain_Airport || inFillWater == fill_water2dirt);
-		
+
 		Polygon2	orig;
 		Pmwx::Ccb_halfedge_circulator iter, stop;
 		iter = stop = (*i)->outer_ccb();
@@ -425,7 +425,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 //		FillPolygonGaps(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_FILLGAPS : AIRPORT_OUTER_FILLGAPS);
 
 //		SafeMakeMoreConvex(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_FILL_AREA : AIRPORT_OUTER_FILL_AREA);
-		
+
 		SimplifyPolygonMaxMove(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_SIMPLIFY : AIRPORT_OUTER_SIMPLIFY, true, false);
 
 		Pmwx	temp;
@@ -466,9 +466,9 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 #endif
 		if (inFillWater != fill_dirt2apt)
 			OverlayMap(inDstMap, temp);
-//			MergeMaps(inDstMap, temp, false, &outDstFaces, false, NULL);	
+//			MergeMaps(inDstMap, temp, false, &outDstFaces, false, NULL);
 		else {
-			MergeMaps(inDstMap, temp, false, &outDstFaces, false, NULL);	
+			MergeMaps(inDstMap, temp, false, &outDstFaces, false, NULL);
 			for (set<Face_handle>::iterator cleanMe = outDstFaces.begin(); cleanMe != outDstFaces.end(); ++cleanMe)
 				(*cleanMe)->data().mAreaFeature.mFeatType = NO_VALUE;
 		}
@@ -507,7 +507,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	Point_2 p1, p2;
 	if (crop)
 		CalcBoundingBox(ioMap, p1, p2);
-	
+
 	set<Face_handle>		simple_faces;
 
 	DEMGeo		working(elevation.mWidth,elevation.mHeight);
@@ -552,7 +552,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	{
-		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);	
+		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);
 		Polygon_set_2	foo;
 		BurnInAirport(&apts[n], foo, fill_dirt2apt);
 		SimplifyAirportAreas(ioMap, foo, simple_faces, fill_dirt2apt, NULL);
@@ -634,7 +634,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		(he->face()->data().mTerrainType == terrain_AirportOuter && he->twin()->face()->data().mTerrainType == terrain_Airport))
 	{
 		he->data().mParams[he_MustBurn] = 1.0;
-	}	
+	}
 
 
 	// Okay.  We have preserved our areas...outer boundary that is left is adjacent to water.  Promote it too now.
@@ -658,9 +658,9 @@ void	GenBoundary(
 		Polygon_set_2			area;
 
 	BurnInAirport(ioAirport, area, fill_dirt2apt);
-	
+
 	Pmwx	foo(area.arrangement());
-	
+
 	for(Pmwx::Face_iterator f = foo.faces_begin(); f != foo.faces_end(); ++f)
 	if (!f->is_unbounded())
 	if(f->contained())
@@ -685,8 +685,8 @@ inline Point2	ctrl_for_pt(const AptLinearSegment_t * lin)
 	if(lin->code == apt_rng_crv || lin->code == apt_lin_crv || lin->code == apt_end_crv)
 	return lin->ctrl; else return lin->pt;
 }
-	
-	
+
+
 void	AptPolygonToBezier(
 				const AptPolygon_t&			inPoly,
 				vector<vector<Bezier2> >&	outPoly)
@@ -695,7 +695,7 @@ void	AptPolygonToBezier(
 	DebugAssert(!inPoly.empty());
 	outPoly.push_back(vector<Bezier2>());
 	vector<Bezier2> * l = &outPoly.back();
-	
+
 	bool has_first = false;
 	Point2	fp, fc, lp, lc;
 	for (AptPolygon_t::const_iterator pt = inPoly.begin(); pt != inPoly.end(); ++pt)
@@ -733,7 +733,7 @@ void	AptPolygonToBezier(
 
 int	bz_tess(const Bezier2& b)
 {
-	double l = 
+	double l =
 		sqrt(Vector2(b.p1,b.c1).squared_length())+
 		sqrt(Vector2(b.c1,b.c2).squared_length())+
 		sqrt(Vector2(b.c2,b.p2).squared_length());
@@ -755,7 +755,7 @@ void	BezierToSegments(
 			if(outWinding.is_empty() || outWinding[outWinding.size()-1] != ben2cgal(b->p1))
 				outWinding.push_back(ben2cgal(b->p1));
 		}
-		else 
+		else
 		{
 			int tess = bz_tess(*b);
 			for (int n = 0; n < tess; ++n)

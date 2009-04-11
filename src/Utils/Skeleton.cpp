@@ -194,8 +194,8 @@ struct	SK_Vertex {
 	SK_Edge * 	prev;
 	SK_Edge *	next;
 	SK_Polygon * owner;
-	
-	void GetLocationAtTime(Point3& p, double t) const { 
+
+	void GetLocationAtTime(Point3& p, double t) const {
 		if (!SK_SafeIntersect(prev, next, Point3(location.x(), location.y(), 0), t, p))
 			AssertPrintf("Failed intersection.");
 	 }
@@ -546,7 +546,7 @@ bool	SK_PointInRing(SK_Edge * ring, SK_Vertex * inVert, double time)
 
 		Segment2	s(Point2(prev.x, prev.y), Point2(next.x, next.y));
 
-			
+
 		if ((s.p1.x() < inPoint.x() && inPoint.x() < s.p2.x()) ||
 			(s.p2.x() < inPoint.x() && inPoint.x() < s.p1.x()) ||
 			(s.p1.x() == inPoint.x() && s.p1.x() < inPoint.x()) ||
@@ -650,7 +650,7 @@ static SK_Polygon *	SK_PolygonCreate(
 		ne->ends = inPolygon.side(i);
 		Segment2	seg(inPolygon.side(i));
 		// This is a point along the base of the polygon.
-		Vector3	along_poly(Point3(seg.p1.x(), seg.p1.y(), 0.0), Point3(seg.p2.x(), seg.p2.y(), 0.0));		
+		Vector3	along_poly(Point3(seg.p1.x(), seg.p1.y(), 0.0), Point3(seg.p2.x(), seg.p2.y(), 0.0));
 		// This is the normal in flat 2-d space to the inset line.
 		// We will rescale it to be the length of the inset.
 		Vector2	inset_flat(Vector2(seg.p1, seg.p2).perpendicular_ccw());
@@ -660,7 +660,7 @@ static SK_Polygon *	SK_PolygonCreate(
 		// how fast we get there.
 		Vector3	inset_amount(inset_flat.dx, inset_flat.dy, 1.0);
 		// Now cross them to get our normal.
-		Vector3	plane_normal(inset_amount.cross(along_poly));		
+		Vector3	plane_normal(inset_amount.cross(along_poly));
 		ne->supporting_plane = Plane3(Point3(seg.p1.x(), seg.p1.y(), 0.0), plane_normal);
 		SK_NormalizeProjection(ne->supporting_plane);
 		last = ne;
@@ -849,7 +849,7 @@ static void SK_PolygonSplitAntennas(SK_Polygon * ioPolygon)
 				inset_flat.normalize();
 				inset_flat *= ne->inset_width;
 				Vector3	inset_amount(inset_flat.dx, inset_flat.dy, 1.0);
-				Vector3	plane_normal(inset_amount.cross(along_poly));		
+				Vector3	plane_normal(inset_amount.cross(along_poly));
 				ne->supporting_plane = Plane3(Point3(iter->location.x(), iter->location.y(), 0.0), plane_normal);
 				SK_NormalizeProjection(ne->supporting_plane);
 				ne->ends.p1 = ne->ends.p2 = iter->location;
@@ -909,7 +909,7 @@ static void SK_PolygonMitreReflexVertices(SK_Polygon * poly)
 						inset_flat.normalize();
 						inset_flat *= ne->inset_width;
 						Vector3	inset_amount(inset_flat.dx, inset_flat.dy, 1.0);
-						Vector3	plane_normal(inset_amount.cross(along_poly));		
+						Vector3	plane_normal(inset_amount.cross(along_poly));
 						ne->supporting_plane = Plane3(Point3(iter->location.x(), iter->location.y(), 0.0), plane_normal);
 						SK_NormalizeProjection(ne->supporting_plane);
 
@@ -948,8 +948,8 @@ static bool SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
 			if (!SK_SafeIntersect(iter->prev,iter->next, Point3(iter->location.x(), iter->location.y(), 0), advance_time, i))
 #if DEV
 				i = Point3(iter->location.x(), iter->location.y(), advance_time);
-#else	
-				return false;		
+#else
+				return false;
 //				AssertPrintf("Time intercept failed.\n");
 #endif
 			else
@@ -1148,9 +1148,9 @@ static SK_Event * SK_CheckCreateEvent(SK_Edge * a, SK_Edge * b, SK_Edge * c, dou
 	DebugAssert((b->next->next == c) != is_reflex);
 	DebugAssert((c->prev->prev == b) != is_reflex);
 #endif
-	
+
 	Point3	cross, loc_ab(b->prev->location.x(), b->prev->location.y(), 0), loc_bc(b->next->location.x(), b->next->location.y(), 0);
-	
+
 	if (( is_reflex && SK_SafeIntersect2(a, b, c, loc_ab, cross)) ||
 		(!is_reflex && SK_SafeIntersect3(a, b, c, loc_ab, loc_bc, cross)))
 	{

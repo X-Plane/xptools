@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -49,7 +49,7 @@ void	MapOverlay(Pmwx& bottom, Pmwx& top, Pmwx& result);
  * LEGACY MERGING APIS
  ******************************************************************************************************************************/
 
-// These ops insert a polygon "manually".  They are not as efficient as sweep, but computational complexity is "local" to the 
+// These ops insert a polygon "manually".  They are not as efficient as sweep, but computational complexity is "local" to the
 // inserted polygon, which is a big win for a tiny polygon in a huge map.
 
 
@@ -71,7 +71,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
  ******************************************************************************************************************************/
 
 
-// These are stubs from the old API - need to be migrated some day.  They are marked as legacy because the underlying 
+// These are stubs from the old API - need to be migrated some day.  They are marked as legacy because the underlying
 // implementation is not (unlike my old code) in-place during merge...so there is a copy from a temp at the end.  This means
 // that we eat a copy of a potentially huge map each time we do this.  So _legacy is a warning when writing new code to try to
 // use the other routines.
@@ -80,12 +80,12 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
  * OverlayMap
  *
  * Inserts all part of inSrc into inDst.  inSrc must not have antennas outside of the holes in
- * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was, 
+ * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was,
  * inDst has contents overwritten.
  *
  */
 void OverlayMap_legacy(
-			Pmwx& 	inDst, 
+			Pmwx& 	inDst,
 			Pmwx& 	inSrc);
 
 /*
@@ -98,19 +98,19 @@ void OverlayMap_legacy(
  * F is the number of faces in the source map that have important data that must be copied.
  *
  * For optimal performance, ioDstMap should have faces with small numbers of bounds
- * and ioSrcMap should have fewer or shorter halfedges, and fewer faces that have 
+ * and ioSrcMap should have fewer or shorter halfedges, and fewer faces that have
  * data that need to be copied.
  *
  * If inForceProps is true, when there is a property conflict for terrain type or area property
- * on a face, the srcMap will win; otherwise the dstMap will win.  A merge takes place where 
+ * on a face, the srcMap will win; otherwise the dstMap will win.  A merge takes place where
  * there is no conflicts.
  *
  * If outFaces is not NULL, then the handle of every face in the dst map that had a property
- * in the source map is returned.  Two warnings: "empty" faces (terrain natural, no area 
+ * in the source map is returned.  Two warnings: "empty" faces (terrain natural, no area
  * feature) are not included, and faces that are non-empty are copied even if the dest-map has
  * a property and inForceProps is false (in which case the face in outFaces did not receive a
  * property from the source.  (A typical use might be to put a bogus mark or terrain on all
- * source faces and thus receive an idea of where in the destination map your source map 
+ * source faces and thus receive an idea of where in the destination map your source map
  * ended up, without having to do a bunch of fac-relocates from edge bounds.
  *
  */

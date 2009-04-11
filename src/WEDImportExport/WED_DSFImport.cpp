@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -65,12 +65,12 @@ public:
 
 	WED_Group *			parent;
 	WED_Archive *		archive;
-	
+
 	WED_Thing *			ring;
 	WED_Thing *			poly;
 	bool				want_uv;
 	bool				want_bezier;
-	
+
 	void make_exclusion(const char * ex, int k)
 	{
 		float b[4];
@@ -102,19 +102,19 @@ public:
 	static void	AcceptTerrainDef(const char * inPartialPath, void * inRef)
 	{
 	}
-	
+
 	static void	AcceptObjectDef(const char * inPartialPath, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->obj_table.push_back(inPartialPath);
 	}
-	
+
 	static void	AcceptPolygonDef(const char * inPartialPath, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
 	}
-	
+
 	static void	AcceptNetworkDef(const char * inPartialPath, void * inRef)
 	{
 	}
@@ -122,7 +122,7 @@ public:
 	static void	AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
-	
+
 		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
 		if(strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
 		if(strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
@@ -148,18 +148,18 @@ public:
 					void *			inRef)
 	{
 	}
-	
+
 	static void	AddPatchVertex(
 					double			inCoordinates[],
 					void *			inRef)
 	{
 	}
-	
+
 	static void	EndPrimitive(
 					void *			inRef)
 	{
 	}
-	
+
 	static void	EndPatch(
 					void *			inRef)
 	{
@@ -189,14 +189,14 @@ public:
 					void *			inRef)
 	{
 	}
-	
+
 	static void	AddSegmentShapePoint(
 					double			inCoordinates[],
 					bool			inCurved,
 					void *			inRef)
 	{
 	}
-					
+
 	static void	EndSegment(
 					unsigned int	inEndNodeID,
 					double			inCoordinates[],
@@ -234,7 +234,7 @@ public:
 			forst->SetDensity(inParam / 255.0);
 			forst->SetResource(r);
 		}
-		
+
 		if(end_match(r.c_str(),".lin"))
 		{
 			me->want_uv=false;
@@ -245,7 +245,7 @@ public:
 			lin->SetClosed(inParam);
 			lin->SetResource(r);
 		}
-		
+
 		if(end_match(r.c_str(),".str"))
 		{
 			me->want_uv=false;
@@ -288,7 +288,7 @@ public:
 			me->ring->SetName(r);
 		}
 	}
-	
+
 	static void	BeginPolygonWinding(
 					void *			inRef)
 	{
@@ -300,7 +300,7 @@ public:
 			me->ring->SetName("Ring");
 		}
 	}
-	
+
 	static void	AddPolygonPoint(
 					double *		inCoordinates,
 					void *			inRef)
@@ -342,7 +342,7 @@ public:
 		node->SetParent(me->ring,me->ring->CountChildren());
 		node->SetName("Point");
 	}
-					
+
 	static void	EndPolygonWinding(
 					void *			inRef)
 	{
@@ -350,31 +350,31 @@ public:
 		if (me->poly != NULL)
 			me->ring = NULL;
 	}
-	
+
 	static void	EndPolygon(
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->poly = NULL;
 	}
-					
-					
+
+
 	void do_import(const char * file_name, WED_Group * base)
 	{
 		parent = base;
 		archive = parent->GetArchive();
-		
+
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
 								AddObject,
-								BeginSegment, AddSegmentShapePoint, EndSegment,	
+								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon };
 
 		int res = DSFReadFile(file_name, &cb, NULL, this);
 		if(res != 0)
-			printf("DSF Error: %d\n");		
+			printf("DSF Error: %d\n");
 	}
-};					
+};
 
 
 void DSF_Import(const char * path, WED_Group * base)
@@ -402,5 +402,5 @@ void	WED_DoImportDSF(IResolver * resolver)
 		DSF_Import(path,g);
 		wrl->CommitOperation();
 	}
-	
+
 }

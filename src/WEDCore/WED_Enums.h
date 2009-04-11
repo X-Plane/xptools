@@ -155,7 +155,7 @@ ENUM_DOMAIN(ATCFrequency, "ATC Frequency")
 	ENUM(atc_Departure,			"Departure",							apt_freq_dep)
 
 ENUM_DOMAIN(ExclusionTypes, "Exclusion Types")
-	ENUM(exclude_Obj,			"Objects",								0)	
+	ENUM(exclude_Obj,			"Objects",								0)
 	ENUM(exclude_Fac,			"Facades",								1)
 	ENUM(exclude_For,			"Forests",								2)
 	ENUM(exclude_Bch,			"Beaches",								3)

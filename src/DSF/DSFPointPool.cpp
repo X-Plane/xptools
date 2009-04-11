@@ -553,14 +553,14 @@ void DSFOptimizePrimitives(
 			while (1)
 			{
 				int num = min(new_prim->m_Indices.size() - offset, (size_t)255);
-				if(num == 0) 
+				if(num == 0)
 					break;
 				out_prims.push_back(DSFPrimitive());
 				out_prims.back().kind = dsf_Tri;
 
 				while(num--)
 				{
-					out_prims.back().vertices.push_back(vertices[new_prim->m_Indices[offset]]);		
+					out_prims.back().vertices.push_back(vertices[new_prim->m_Indices[offset]]);
 					++offset;
 				}
 			}
@@ -571,7 +571,7 @@ void DSFOptimizePrimitives(
 			// Ben says: make sure we have only 255 points...if we get a tri strip longer than that, the strip alg is REALLY amazing.
 			Assert(new_prim->m_Indices.size() <= 255);
 			for(tri_stripper::indices::iterator idx = new_prim->m_Indices.begin(); idx != new_prim->m_Indices.end(); ++idx)
-				out_prims.back().vertices.push_back(vertices[*idx]);		
+				out_prims.back().vertices.push_back(vertices[*idx]);
 		}
 	}
 

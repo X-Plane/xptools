@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -34,7 +34,7 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string root(path_of_tex);
 	string parent(path_of_obj);
-	
+
 	string::size_type pp = parent.find_last_of("\\:/");
 	if(pp == parent.npos) parent.clear();
 	else				  parent.erase(pp+1);
@@ -45,7 +45,7 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 	if(!FILE_exists(path_of_tex.c_str()))	path_of_tex = parent + root + ".png";
 	if(!FILE_exists(path_of_tex.c_str()))	path_of_tex = parent + root + ".bmp";
 }
-	
+
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)
 {
 }
@@ -72,7 +72,7 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 		obj = i->second;
 		return true;
 	}
-	
+
 	string p = mLibrary->GetResourcePath(path);
 	obj = new XObj8;
 	if(!XObj8Read(p.c_str(),*obj))
@@ -89,10 +89,10 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 			return false;
 		}
 	}
-	
+
 	process_texture_path(p,obj->texture);
 
-	mObj[path] = obj;		
+	mObj[path] = obj;
 	return true;
 }
 
@@ -104,11 +104,11 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		out_info = i->second;
 		return true;
 	}
-	
+
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * pol = MemFile_Open(p.c_str());
 	if(!pol) return false;
-	
+
 
 	MFScanner	s;
 	MFS_init(&s, pol);
@@ -120,14 +120,14 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		MemFile_Close(pol);
 		return false;
 	}
-	
+
 	out_info.base_tex.clear();
 	out_info.proj_s=1000;
 	out_info.proj_t=1000;
 	out_info.kill_alpha=false;
 	out_info.wrap=false;
-	
-	while(!MFS_done(&s)) 
+
+	while(!MFS_done(&s))
 	{
 		// TEXTURE <texname>
 		if (MFS_string_match(&s,"TEXTURE", false))
@@ -156,10 +156,10 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(pol);
-	
+
 	process_texture_path(p,out_info.base_tex);
-	
-	mPol[path] = out_info;		
+
+	mPol[path] = out_info;
 	return true;
 }
 
@@ -173,5 +173,5 @@ void	WED_ResourceMgr::ReceiveMessage(
 		inMsg == msg_SystemFolderUpdated)
 	{
 		Purge();
-	}	
+	}
 }

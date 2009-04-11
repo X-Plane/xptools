@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -39,7 +39,7 @@ void	FindEdgesForFace(Face_handle face, set<Halfedge_handle> &outEdges)
 			++circ;
 		} while (circ != stop);
 	}
-	
+
 	for (Pmwx::Hole_iterator hole = face->holes_begin();
 		hole != face->holes_end(); ++hole)
 	{
@@ -47,39 +47,39 @@ void	FindEdgesForFace(Face_handle face, set<Halfedge_handle> &outEdges)
 		do {
 			outEdges.insert(circ);
 			++circ;
-		} while (circ != stop);		
+		} while (circ != stop);
 	}
-	
+
 }
 
 void	FindFacesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Face_handle>& outFaces)
 {
 	if (inEdges.empty()) return;
 	outFaces.clear();
-	
+
 	set<Face_handle>	working;
-	
+
 	// Ben sez: the basic idea here is a "flood fill".  We keep adding more and more faces.
-	// Each time we add a new face, we cross all edges that aren't in our hard boundary 
+	// Each time we add a new face, we cross all edges that aren't in our hard boundary
 	// (inEdges) and add that face too if we haven't seen it yet.
 	//
 	// But...there is no requirement that all faces surrounded by inEdges be contiguous!
 	// So make sure to add ALL of the faces adjacent to inEdges immediately...otherwise
 	// we might not flood-fill from one disjoint area to another.
-	
-	for (set<Halfedge_handle>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)	
+
+	for (set<Halfedge_handle>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)
 		working.insert((*e)->face());
-	
+
 	while (!working.empty())
 	{
 		Face_handle	who = *working.begin();
 		DebugAssert(!who->is_unbounded());
 		outFaces.insert(who);
 		working.erase(who);
-		
+
 		set<Halfedge_handle> edges;
 		FindEdgesForFace(who, edges);
-		
+
 		for (set<Halfedge_handle>::iterator edge = edges.begin(); edge != edges.end(); ++edge)
 		{
 			if (inEdges.count(*edge) == 0)
@@ -98,37 +98,37 @@ void	FindInternalEdgesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Halfed
 	outEdges.clear();
 	set<Face_handle>	to_visit;
 	set<Face_handle>	visited;
-	
+
 	to_visit.insert((*inEdges.begin())->face());
-	
+
 	while(!to_visit.empty())
 	{
 		Face_handle who = *to_visit.begin();
 		DebugAssert(!who->is_unbounded());
 		to_visit.erase(who);
 		visited.insert(who);
-		
+
 		set<Halfedge_handle>	who_edges;
 
 		FindEdgesForFace(who,who_edges);
-		
+
 		for(set<Halfedge_handle>::iterator edge = who_edges.begin(); edge != who_edges.end(); ++edge)
 		if(inEdges.count(*edge) == 0)
 		{
 			// For every half-edge of this face that is not in the outer boundary...
-			
+
 			// Figure out which face we need to "flood fill" over to.
 			Face_handle neighbor = (*edge)->twin()->face();
 			if (!neighbor->is_unbounded())
 			if (visited.count(neighbor) == 0)
 				to_visit.insert(neighbor);
-			
+
 			// We only want to take each edge once.  Check relative to curve direction...if we are
 			// not "with out curve", we get inserted by the other side.
 			if(he_is_same_direction(*edge))
 				outEdges.insert(*edge);
 		}
-	}	
+	}
 }
 
 
@@ -164,7 +164,7 @@ void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
 	FindEdgesForFace(inFace, e);
 	for (set<Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
 	if ((*he)->twin()->face() != inFace)
-	if ((*he)->twin()->face()->data().IsWater())	
+	if ((*he)->twin()->face()->data().IsWater())
 		outFaces.insert((*he)->twin()->face());
 }
 
@@ -172,7 +172,7 @@ bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet)
 {
 	DebugAssert(!in_face->is_unbounded());
 	Pmwx::Ccb_halfedge_const_circulator circ, stop;
-	circ = stop = in_face->outer_ccb();	
+	circ = stop = in_face->outer_ccb();
 	do {
 		if(unbounded_is_wet || !circ->twin()->face()->is_unbounded())
 		if(circ->twin()->face()->data().IsWater())
@@ -185,7 +185,7 @@ bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet)
 			if(unbounded_is_wet || !circ->twin()->face()->is_unbounded())
 			if(circ->twin()->face()->data().IsWater())
 				return true;
-		} while (++circ != stop);		
+		} while (++circ != stop);
 	}
 	return false;
 }
@@ -198,7 +198,7 @@ void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
 	outFaces.clear();
 	set<Face_handle>	working;
 	working.insert(inFace);
-	
+
 	while (!working.empty())
 	{
 		Face_handle cur = *working.begin();
@@ -209,7 +209,7 @@ void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
 		for (set<Face_handle>::iterator f = adjacent.begin(); f != adjacent.end(); ++f)
 		if (!(*f)->is_unbounded())
 		if (outFaces.count(*f) == 0)
-			working.insert(*f);		
+			working.insert(*f);
 	}
 }
 
@@ -229,8 +229,8 @@ void	CleanFace(
 //
 	set<Halfedge_handle> nuke;
 	Assert(!inFace->is_unbounded());
-	
-	Pmwx::Ccb_halfedge_circulator stop, iter;	
+
+	Pmwx::Ccb_halfedge_circulator stop, iter;
 	stop = iter = inFace->outer_ccb();
 	do {
 		if (iter->face() == iter->twin()->face())
@@ -243,7 +243,7 @@ void	CleanFace(
 	{
 		inMap.remove_edge(*kill);
 	}
-	
+
 	while (inFace->holes_begin() != inFace->holes_end())
 	{
 		inMap.remove_edge(*inFace->holes_begin());
@@ -256,13 +256,13 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 {
 // OPTIMIZE: see above comments about nuke-lists.  Also that while loop needes some examination!
 	vector<Pmwx::Halfedge_handle>	deadList;
-	
+
 	int nuke = 0;
-	
+
 	for (Pmwx::Edge_iterator he = ioMap.edges_begin(); he != ioMap.edges_end(); ++he, ++he)
 	{
 		Pmwx::Halfedge_handle h = he;
-		
+
 		bool	iWet = h->face()->data().IsWater();
 		bool	oWet = h->twin()->face()->data().IsWater();
 		bool	road = !h->data().mSegments.empty() ||
@@ -271,13 +271,13 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 		if (!road && iWet && oWet)
 			deadList.push_back(he);
 	}
-	
-	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)	
+
+	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)
 	{
 		ioMap.remove_edge(*iter);
 		++nuke;
 	}
-	
+
 	while (1)
 	{
 		deadList.clear();
@@ -286,14 +286,14 @@ int RemoveUnboundedWater(Pmwx& ioMap)
 			deadList.push_back(he);
 		if (deadList.empty()) break;
 
-		for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)	
+		for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin(); iter != deadList.end(); ++iter)
 		{
 			ioMap.remove_edge(*iter);
 			++nuke;
-		}				
+		}
 	}
-	
-	
+
+
 	return nuke;
 }
 
@@ -304,7 +304,7 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 // to store the edges-to-die instead of a vector.  However this is probably NOT the major
 // bottleneck in this routine.
 	vector<Pmwx::Halfedge_handle>	deadList;
-	
+
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin();
 		he != ioMap.halfedges_end(); ++he, ++he)
 	{
@@ -313,20 +313,20 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 		if (iWet && oWet)
 			deadList.push_back(he);
 	}
-	
+
 	int i = 0;
 	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin();
-		iter != deadList.end(); ++iter, ++i)	
+		iter != deadList.end(); ++iter, ++i)
 	{
 		ioMap.remove_edge(*iter);
-	}	
+	}
 }
 
 
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 {
 //	return 0;
-	
+
 // OPTIMIZE: it would be possible to utilize the inherent 'creation order' in the Pmwx
 // to store the edges-to-die instead of a vector.  However this is probably NOT the major
 // bottleneck in this routine.
@@ -337,13 +337,13 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 	int ctr = 0;
 	int dead = 0;
 	int tot = ioMap.number_of_halfedges();
-	
+
 	for (Pmwx::Edge_iterator he = ioMap.edges_begin();
 		he != ioMap.edges_end(); ctr += 2)
 	{
 		PROGRESS_CHECK(func,0,1,"Finding unneeded half-edges...",ctr,tot,1000);
 		Pmwx::Halfedge_handle h = he;
-		
+
 		bool	iWet = h->face()->data().IsWater();
 		bool	oWet = h->twin()->face()->data().IsWater();
 		bool	coastline = iWet != oWet;
@@ -369,6 +369,6 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 			++he;
 	}
 	PROGRESS_DONE(func, 0, 1, "Finding unneeded half-edges...");
-	
+
 	return dead;
 }

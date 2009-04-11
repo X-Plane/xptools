@@ -384,7 +384,7 @@ static	void	RF_HandleSpecMenuCmd(void *, void * i)
 				for (set<Face_handle>::iterator face = gFaceSelection.begin(); face != gFaceSelection.end(); ++face)
 				{
 					(*face)->data().mPointFeatures.erase(remove_if((*face)->data().mPointFeatures.begin(), (*face)->data().mPointFeatures.end(), FeatureHasNoHeight()), (*face)->data().mPointFeatures.end());
-				}				
+				}
 			}
 			break;
 		case specCmd_TempMSL:

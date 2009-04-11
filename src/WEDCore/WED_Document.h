@@ -94,7 +94,7 @@ public:
 	virtual	void		WriteDoublePref(const char * in_key, double in_value);
 	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
 	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
-	
+
 	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
 	WED_ResourceMgr *	GetResourceMgr(void) { return mResourceMgr; }
 
@@ -104,7 +104,7 @@ public:
 	bool				IsDirty(void);
 
 	// LEGACY STUFF
-	
+
 //	Pmwx				gMap;
 //	DEMGeoMap			gDem;
 //	CDT					gTriangulationHi;

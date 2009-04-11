@@ -40,7 +40,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
 
-// TODO: 
+// TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
 

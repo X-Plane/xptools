@@ -59,7 +59,7 @@ void	RF_TopoTester::DrawFeedbackOverlay(
 	{
 		mTarget.x_ = GetZoomer()->XPixelToLon(mx);
 		mTarget.y_ = GetZoomer()->YPixelToLat(my);
-		
+
 		Vector2	dist(mAnchor, mTarget);
 		if (XPLMGetModifiers() & xplm_ShiftFlag)
 		{

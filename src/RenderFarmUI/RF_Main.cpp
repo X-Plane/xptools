@@ -271,7 +271,7 @@ void dump(Pmwx& m)
 									CGAL::to_double(eit->source()->point().y()));
 		printf("   Target: %f,%f\n",CGAL::to_double(eit->target()->point().x()),
 									CGAL::to_double(eit->target()->point().y()));
-									
+
 		printf("	Left: %f,%f\n", CGAL::to_double(eit->curve().left().x()),
 									CGAL::to_double(eit->curve().left().y()));
 		printf("	Right: %f,%f\n",CGAL::to_double(eit->curve().right().x()),
@@ -282,16 +282,16 @@ void dump(Pmwx& m)
 									CGAL::to_double(eit->curve().target().y()));
 
 		for(Arr_seg_traits_::Data_iterator i  = eit->curve().data().begin();
-						  i != eit->curve().data().end(); ++i)		
+						  i != eit->curve().data().end(); ++i)
 		printf("	Key: %d\n",		*i);
-		
+
 		printf("	This curve goes right? %s\n",
 			eit->curve().is_directed_right()? "yes" : "no");
-		
+
 		printf("	This edge owns the curve? %s\n",
 			eit->curve().is_directed_right() == (eit->direction() == CGAL::SMALLER) ? "yes" : "no");
-                                                                
-		
+
+
 	}
 }
 
@@ -321,7 +321,7 @@ void	XGrindInit(string& outName)
 	gFailure = CGAL::set_error_handler(cgal_failure);
 #if DEV
 	CGAL::set_warning_handler(cgal_warning);
-#endif	
+#endif
 	XESInit();
 
 	RF_LoadPrefs();
@@ -445,18 +445,18 @@ void	XGrindInit(string& outName)
 		RegisterObsCmds();
 		RegisterMiscCmds();
 
-/*		
+/*
 	Pmwx a,b,c;
 	Curve_2		top2(Segment_2(Point_2(3,0),Point_2(0,0)),2);
-	CGAL::insert_curve(a, top2);	
+	CGAL::insert_curve(a, top2);
 	dump(a);
 	for(Pmwx::Edge_iterator eit = a.edges_begin(); eit != a.edges_end(); ++eit)
 		eit->curve().data().clear();
 
 	Curve_2		top(Segment_2(Point_2(1,0),Point_2(2,0)),1);
-	CGAL::insert_curve(a, top);	
+	CGAL::insert_curve(a, top);
 	dump(a);
-*/	
+*/
 //	Overlay_traits t;
 //	CGAL::overlay(a,b,c, t);
 //	dump(c);

@@ -256,17 +256,17 @@ void GenerateForests(
 		{
 //			// Generate the "GT polygon base map".
 //			Pmwx				baseMap;
-			
+
 //			for (vector<ComplexPolygon2>::iterator poly = fp->second.begin(); poly != fp->second.end(); ++poly)
 //			{
 //				ComplexPolygonToPmwx(*poly, baseMap, terrain_ForestPark, terrain_Water);
 //			}
-		
+
 //			DebugAssert(baseMap.is_valid());
-			
+
 			int forest_type_ctr = 0;
 			for (set<int>::iterator fiter = forest_types.begin(); fiter != forest_types.end(); ++fiter, ++forest_type_ctr)
-			{	
+			{
 				Polygon_set_2	forest_area;
 				vector<Polygon_2>	tris;
 				for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
@@ -275,22 +275,22 @@ void GenerateForests(
 					Polygon_2	tri_poly;
 					tri_poly.push_back((*tri)->vertex(0)->point());
 					tri_poly.push_back((*tri)->vertex(1)->point());
-					tri_poly.push_back((*tri)->vertex(2)->point());					
+					tri_poly.push_back((*tri)->vertex(2)->point());
 					DebugAssert(tri_poly.is_counterclockwise_oriented());
 					tris.push_back(tri_poly);
 				}
 				forest_area.join(tris.begin(), tris.end());
-				
+
 				forest_area.intersection(fp->second);
-				
+
 				vector<Polygon_with_holes_2>	forests;
 				forest_area.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(forests));
-				
+
 				for(vector<Polygon_with_holes_2>::iterator f = forests.begin(); f != forests.end(); ++f)
 				{
 					GISPolyObjPlacement_t	placement;
 					placement.mRepType = *fiter;
-					placement.mShape = *f;					
+					placement.mShape = *f;
 					DebugAssert(!placement.mShape.is_unbounded());
 					placement.mLocation = CGAL::centroid(f->outer_boundary().vertices_begin(),f->outer_boundary().vertices_end());
 					placement.mHeight = 255.0;

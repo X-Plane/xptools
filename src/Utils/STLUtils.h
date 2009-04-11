@@ -88,7 +88,7 @@ public:
 	pqueue() { }
 	pqueue(const pqueue& rhs) : items_(rhs.items_) { rebuild_links(); }
 	pqueue& operator=(pqueue& rhs) { items_ = rhs.items_; back_links_.clear(); rebuild_links(); }
-	
+
 	map_iterator	insert(const priority_type& p, const value_type& v)
 	{
 		erase(v);
@@ -96,7 +96,7 @@ public:
 		back_links_.insert(back_link_value_type(v,i));
 		return i;
 	}
-	
+
 	bool			erase(const value_type& v)
 	{
 		back_link_iterator bi = back_links_.find(v);
@@ -116,7 +116,7 @@ public:
 		back_links_.erase(items_.begin()->second);
 		items_.erase(items_.begin());
 	}
-				
+
 	priority_type		front_priority() const
 	{
 		DebugAssert(!items_.empty());
@@ -128,18 +128,18 @@ public:
 		DebugAssert(!items_.empty());
 		return items_.begin()->second;
 	}
-	
+
 	int				count(const value_type& v) const
 	{
 		return back_links_.count(v);
 	}
-	
+
 	bool			empty(void) const
 	{
 		return items_.empty();
 	}
 
-	size_t			size(void) const 
+	size_t			size(void) const
 	{
 		return items_.size();
 	}

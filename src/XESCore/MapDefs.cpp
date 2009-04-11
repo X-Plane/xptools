@@ -57,7 +57,7 @@
 
 
  */
- 
+
 #include "MapDefsCGAL.h"
 #include "ParamDefs.h"
 #include "AssertUtils.h"
@@ -1643,7 +1643,7 @@ GISHalfedge *			Pmwx::split_edge(GISHalfedge * inEdge, const Point2& split)
 	//	printf("split_edge wierdness \n");
 	//	return inEdge;
 	//}
-	
+
 	// this assert implies that split must not already be in the map; if it is, and we get here, TopoIntegrateMaps messed up.
 	DebugAssert(mVertexIndex.count(split) == 0);
 	// Edge split.  The following items are affected:
@@ -2024,7 +2024,7 @@ GISHalfedge *		Pmwx::insert_edge(const Point2& p1, const Point2& p2,
 
 	cur = p1;
 	cur_he = locate_point(cur, cur_loc);
-	
+
 	// may as well return in this case
 	//if (p1 == p2)
 	//	return cur_he;

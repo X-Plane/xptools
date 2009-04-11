@@ -206,7 +206,7 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 		Point2 p;
 		GetLocation(p);
 		StateChanged();
-	
+
 		Point2	pt_old_lo(p.x() + ctrl_lon_lo.value, p.y() + ctrl_lat_lo.value);
 		Point2	pt_old_hi(p.x() + ctrl_lon_hi.value, p.y() + ctrl_lat_hi.value);
 		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
@@ -236,7 +236,7 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 		ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p.x();
 		ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p.y();
 		ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p.y();
-		
+
 	}
 }
 

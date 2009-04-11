@@ -66,11 +66,11 @@ static int DoExtent(const vector<const char *>& args)
 }
 
 static int DoBbox(const vector<const char *>& args)
-{		
+{
 	Point_2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
 	printf("SW = %lf,%lf  NE = %lf, %lf\n", CGAL::to_double(sw.x()), CGAL::to_double(sw.y()), CGAL::to_double(ne.x()), CGAL::to_double(ne.y()));
-	
+
 	for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 	{
 		printf("DEM %s: SW = %lfx%lf, NE = %lfx%lf, %d by %d\n",
@@ -122,7 +122,7 @@ static int DoWaterCount(const vector<const char *>& args)
 					  Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::COUNTERCLOCKWISE));
 			++circ;
 		} while (circ != stop);
-		
+
 		for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			circ = stop = *hole;
@@ -141,10 +141,10 @@ static int DoCropGrid(const vector<const char *>& args)
 {
 	gMap.unbounded_face()->data().mTerrainType = terrain_Natural;
 
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth))));				
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapEast,gMapNorth))));				
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapWest,gMapNorth))));				
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth))));				
+	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth))));
+	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapEast,gMapNorth))));
+	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapWest,gMapNorth))));
+	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth))));
 
 //	for (int x = sw.x; x <= ne.x; ++x)
 //	{
@@ -349,18 +349,18 @@ static int DoCropSave(const vector<const char *>& args)
 {
 	Point_2	sw, ne;
 	CalcBoundingBox(gMap, sw, ne);
-	
-	
+
+
 	for (int w = CGAL::to_double(sw.x()); w < CGAL::to_double(ne.x()); ++w)
-	for (int s = CGAL::to_double(sw.y()); s < CGAL::to_double(ne.y()); ++s)	
+	for (int s = CGAL::to_double(sw.y()); s < CGAL::to_double(ne.y()); ++s)
 	{
 		vector<Point_2>	pts;
 		pts.push_back(Point_2(w  ,s  ));
 		pts.push_back(Point_2(w+1,s  ));
 		pts.push_back(Point_2(w+1,s+1));
 		pts.push_back(Point_2(w  ,s+1));
-		
-		Pmwx	cutout;		
+
+		Pmwx	cutout;
 		CropMap(gMap, cutout, pts, gProgress);
 
 		SimplifyMap(cutout, false, gProgress);

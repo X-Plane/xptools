@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.  All rights reserved.
  *
  */
@@ -25,7 +25,7 @@ WED_TCEVertexTool::WED_TCEVertexTool(
 WED_TCEVertexTool::~WED_TCEVertexTool()
 {
 }
-	
+
 void		WED_TCEVertexTool::BeginEdit(void)
 {
 	ISelection * sel = WED_GetSelect(GetResolver());
@@ -71,7 +71,7 @@ int			WED_TCEVertexTool::CountControlHandles(intptr_t id						  ) const
 	case gis_Ring:
 	case gis_Chain:
 		s = dynamic_cast<IGISPointSequence *>(who);
-		DebugAssert(s);			
+		DebugAssert(s);
 		return s ? s->GetNumSides() * 4: 0;
 	default:
 		return 0;
@@ -81,24 +81,24 @@ int			WED_TCEVertexTool::CountControlHandles(intptr_t id						  ) const
 void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
 	bool dummy_a;
-	Point2 dummy_p;	
+	Point2 dummy_p;
 	HandleType_t dummy_h;
 	if(!active) active=&dummy_a;
 	if(!p)		p=&dummy_p;
 	if(!con_type) con_type = &dummy_h;
-	
+
 	if(direction) *direction = Vector2(1,0);
 
 	*active = 0;
 	*con_type = handle_None;
 	*p = Point2(0,0);
-	
+
 	IGISPointSequence * s = NULL;
 	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_bt;
-	
-	
+
+
 	switch(who->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Heading:
@@ -161,7 +161,7 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 			}
 		}
 		break;
-	}	
+	}
 }
 
 int			WED_TCEVertexTool::GetLinks		    (intptr_t id) const
@@ -180,7 +180,7 @@ int			WED_TCEVertexTool::GetLinks		    (intptr_t id) const
 		return s ? s->GetNumSides() : 0;
 	default:
 		return 0;
-	}	
+	}
 }
 
 void		WED_TCEVertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkType_t * ltype) const
@@ -189,7 +189,7 @@ void		WED_TCEVertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, Lin
 	if (who->GetGISClass() == gis_Point_Bezier)
 	{
 		IGISPoint_Bezier * pt_bt = dynamic_cast<IGISPoint_Bezier*>(who);
-		if(active) *active = 0;		
+		if(active) *active = 0;
 		if(ltype && pt_bt)
 		{
 			Point2 p;
@@ -199,7 +199,7 @@ void		WED_TCEVertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, Lin
 	} else {
 		if(active) *active = false;
 		if(ltype) *ltype = link_Solid;
-	}	
+	}
 }
 
 int			WED_TCEVertexTool::GetNthLinkSource   (intptr_t id, int n) const
@@ -252,9 +252,9 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_bt;
-	
+
 	Point2 p;
-	
+
 	switch(who->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Heading:
@@ -297,14 +297,14 @@ void	WED_TCEVertexTool::SyncRecurse(IGISEntity * who, ISelection * sel) const
 	IGISPointSequence * s;
 	IGISComposite * c;
 	IGISPolygon * p;
-	
+
 	switch(who->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Bezier:
 	case gis_Point_Heading:
 	case gis_Point_HeadingWidthLength:
 		mCache.push_back(who);
-		break;		
+		break;
 	case gis_PointSequence:
 	case gis_Line:
 	case gis_Line_Width:
@@ -331,7 +331,7 @@ void	WED_TCEVertexTool::SyncRecurse(IGISEntity * who, ISelection * sel) const
 }
 
 void		WED_TCEVertexTool::SyncCache(void) const
-{	
+{
 	mCache.clear();
 	vector<IGISEntity *> who;
 	ISelection * sel = WED_GetSelect(GetResolver());

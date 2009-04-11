@@ -74,28 +74,28 @@ using std::string;
  	void	AccumRotateKey(float v, float a);
 	void	AccumTranslateEnd(void);
 	void	AccumRotateEnd(void);
-	
+
 	void	AccumManip(int attr, const XObjManip8& in_data);
-	
+
 	// A few status checks
 	inline string	IsHard(void) const		{ return hard;			}
 	inline int		IsCockpit(void) const	{ return cockpit > -2;	}
 	inline bool		IsVisible(void) const	{ return !draw_disable;	}
 
  private:
- 
+
 	struct manip_data {
 		manip_data();
 		manip_data(int attr, XObjManip8& rhs);
 		manip_data(const manip_data& rhs);
-		
+
 		manip_data& operator=(const manip_data& rhs);
 		bool operator==(const manip_data& rhs) const;
 		bool operator!=(const manip_data& rhs) const;
-		
+
 		int			attr;
 		XObjManip8	data;
-	};	
+	};
 
  	void	AssureLOD(void);
  	void	SetDefaultState(void);
@@ -103,7 +103,7 @@ using std::string;
 
  	XObj8 *		obj;
  	XObjLOD8 *	lod;
-	
+
 	manip_data	manip;				manip_data	o_manip;
 	string		light_level;		string	o_light_level;
 	int			draw_disable;		int		o_draw_disable;

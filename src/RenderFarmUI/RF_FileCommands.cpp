@@ -314,7 +314,7 @@ void	RF_FileNew(void)
 	float mapSouth = -90.0;
 	float mapEast = 180.0;
 	float mapNorth = 90.0;
-	
+
 
 //	gMap.Index();
 
@@ -395,10 +395,10 @@ bool	RF_FileOpen(const string& inPath)
 			}
 
 				++circ;
-				
-			
+
+
 		} while (circ != start);
-		
+
 		if (!gMap._is_valid (vit))
 			Assert(!"Problem!");
 	}

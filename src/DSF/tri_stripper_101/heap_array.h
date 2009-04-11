@@ -74,7 +74,7 @@
 
 //          the heap via their index.
 
-//          
+//
 
 // History: -
 
@@ -104,7 +104,7 @@ namespace common_structures {
 
 
 
-template <class T, class CmpT = std::less<T> > 
+template <class T, class CmpT = std::less<T> >
 
 class heap_array
 
@@ -120,7 +120,7 @@ public:
 
 
 
-	// heap_array main interface. Pre = PreCondition, Post = PostCondition 
+	// heap_array main interface. Pre = PreCondition, Post = PostCondition
 
 
 
@@ -226,7 +226,7 @@ protected:
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline void heap_array<T, CmpT>::clear() {
 
@@ -242,7 +242,7 @@ inline void heap_array<T, CmpT>::clear() {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline bool heap_array<T, CmpT>::empty() const {
 
@@ -280,7 +280,7 @@ inline void heap_array<T, CmpT>::reserve(size_t Size) {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline size_t heap_array<T, CmpT>::size() const {
 
@@ -292,7 +292,7 @@ inline size_t heap_array<T, CmpT>::size() const {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline const T & heap_array<T, CmpT>::top() const {
 
@@ -310,7 +310,7 @@ inline const T & heap_array<T, CmpT>::top() const {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline const T & heap_array<T, CmpT>::peek(size_t i) const {
 
@@ -328,7 +328,7 @@ inline const T & heap_array<T, CmpT>::peek(size_t i) const {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline const T & heap_array<T, CmpT>::operator [] (size_t i) const {
 
@@ -340,7 +340,7 @@ inline const T & heap_array<T, CmpT>::operator [] (size_t i) const {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline void heap_array<T, CmpT>::pop() {
 
@@ -366,7 +366,7 @@ inline void heap_array<T, CmpT>::pop() {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline size_t heap_array<T, CmpT>::push(const T & Elem) {
 
@@ -446,7 +446,7 @@ inline bool heap_array<T, CmpT>::valid(size_t i) const {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline void heap_array<T, CmpT>::update(size_t i, const T & Elem) {
 
@@ -468,7 +468,7 @@ inline void heap_array<T, CmpT>::update(size_t i, const T & Elem) {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline void heap_array<T, CmpT>::Adjust(size_t i) {
 
@@ -510,7 +510,7 @@ inline void heap_array<T, CmpT>::Adjust(size_t i) {
 
 
 
-template <class T, class CmpT> 
+template <class T, class CmpT>
 
 inline void heap_array<T, CmpT>::Swap(size_t a, size_t b) {
 

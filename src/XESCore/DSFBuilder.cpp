@@ -213,7 +213,7 @@ inline bool IsCustom(int n)
 }
 
 inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
-{	
+{
 	double v1_dx = p2.x() - p1.x();
 	double v1_dy = p2.y() - p1.y();
 	double v2_dx = p3.x() - p2.x();
@@ -399,11 +399,11 @@ bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
 	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
 
 	DebugAssert(e1t == e2s);
-	
+
 	Point2	p1(CGAL::to_double(e1s->point().x()),CGAL::to_double(e1s->point().y()));
 	Point2	p2(CGAL::to_double(e1t->point().x()),CGAL::to_double(e1t->point().y()));
 	Point2	p3(CGAL::to_double(e2t->point().x()),CGAL::to_double(e2t->point().y()));
-	
+
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
 
@@ -419,11 +419,11 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
 
 	DebugAssert(e1t == e2s);
-	
+
 	Point2	p1(CGAL::to_double(e1s->point().x()),CGAL::to_double(e1s->point().y()));
 	Point2	p2(CGAL::to_double(e1t->point().x()),CGAL::to_double(e1t->point().y()));
 	Point2	p3(CGAL::to_double(e2t->point().x()),CGAL::to_double(e2t->point().y()));
-	
+
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
 	double scale = cos(p2.y() * DEG_TO_RAD);
@@ -452,15 +452,15 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	int lterrain = tri->info().terrain;
 	int is_apt = IsAirportTerrain(lterrain);
 	int i;
-	
+
 	if(IsCustom(lterrain)) return false;
 
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
 	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
-	
+
 	const Face_handle orig_face = inEdge.orig_face();
 	//Assert(orig_face != NULL);
-	
+
 	double	prev_ang = 1.0, next_ang = 1.0;
 	bool	prev_convex = true, next_convex =true;
 	double prev_len = 0.0;
@@ -488,7 +488,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
 	double		len = LonLatDistMeters(CGAL::to_double(v_s->point().x()),CGAL::to_double(v_s->point().y()),
 									   CGAL::to_double(v_t->point().x()),CGAL::to_double(v_t->point().y())) + prev_len + next_len;
-									   
+
 	double slope = tri->info().normal[2];
 
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
@@ -500,7 +500,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 			wave <= gBeachInfoTable[i].max_sea &&
 			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
-			fabs(CGAL::to_double(tri->vertex(0)->point().y())) >= gBeachInfoTable[i].min_lat && 
+			fabs(CGAL::to_double(tri->vertex(0)->point().y())) >= gBeachInfoTable[i].min_lat &&
 			fabs(CGAL::to_double(tri->vertex(0)->point().y())) <= gBeachInfoTable[i].max_lat &&
 			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
 			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
@@ -587,17 +587,17 @@ string		get_terrain_name(int composite)
 		return "RESOURCE:water.ter";
 #else
 		return FetchTokenString(composite);
-#endif		
+#endif
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
 		if(IsCustom(composite))
 			return FetchTokenString(composite);
 		else
-#if PHONE		
+#if PHONE
 			return FetchTokenString(composite);
 #else
 			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
-#endif			
+#endif
 	}
 
 //	DebugAssert(!"bad terrain.");
@@ -774,8 +774,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	/****************************************************************
 	 * SETUP
-	 ****************************************************************/	
-	 
+	 ****************************************************************/
+
 	// Andrew: change divisions to 16
 	writer1 = inFileName1 ? DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 16) : NULL;
 	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 16)) : NULL;
@@ -826,10 +826,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			printf("WARNING: X-colinear triangle. skipping.\n");
 			continue;
 		}
-		
+
 		x = (CGAL::to_double(fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x())) / 3.0;
 		y = (CGAL::to_double(fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y())) / 3.0;
-		
+
 		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
 		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
 
@@ -839,14 +839,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (x == PATCH_DIM_HI) x = PATCH_DIM_HI-1;
 		if (y == PATCH_DIM_HI) y = PATCH_DIM_HI-1;
 		if (x < 0 || y < 0 || x > PATCH_DIM_HI || y > PATCH_DIM_HI)
-			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y, 
+			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y,
 				CGAL::to_double(fi->vertex(0)->point().x()),CGAL::to_double(fi->vertex(0)->point().y()),
 				CGAL::to_double(fi->vertex(1)->point().x()),CGAL::to_double(fi->vertex(1)->point().y()),
 				CGAL::to_double(fi->vertex(2)->point().x()),CGAL::to_double(fi->vertex(2)->point().y()));
-		
+
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
-		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);	
+		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
 		DebugAssert(fi->info().terrain != -1);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
@@ -860,7 +860,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
 			landuses.insert(map<int, int, SortByLULayer>::value_type(*border_lu,0));
-			DebugAssert(*border_lu != -1);			
+			DebugAssert(*border_lu != -1);
 		}
 	}
 
@@ -933,7 +933,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		is_overwater = IsCustomOverWater(lu_ranked->first);
 		is_water = lu_ranked->first == terrain_Water;
 
-		
+
 #if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
@@ -1026,12 +1026,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
                 }
                 cbs.BeginPrimitive_f(primt, writer1);
                 for(vert = primv.begin(); vert != primv.end(); ++vert)
-                {	
+                {
 					coords8[0] = CGAL::to_double((*vert)->point().x());
 					coords8[1] = CGAL::to_double((*vert)->point().y());
 					coords8[2] = (*vert)->info().height;
 					coords8[3] = (*vert)->info().normal[0];
-					coords8[4] =-(*vert)->info().normal[1];						
+					coords8[4] =-(*vert)->info().normal[1];
 					if (is_water)
 					{
 						coords8[5] = GetWaterBlend((*vert), waterType);
@@ -1048,7 +1048,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer1);						
+					cbs.AddPatchVertex_f(coords8, writer1);
 				}
 				cbs.EndPrimitive_f(writer1);
 			}
@@ -1267,7 +1267,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
 	}
-#endif	
+#endif
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/
@@ -1282,7 +1282,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (!pf->is_unbounded())
 	{
 		for (pointObj = pf->data().mObjs.begin(); pointObj != pf->data().mObjs.end(); ++pointObj)
-			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));		
+			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));
 		for (polyObj = pf->data().mPolyObjs.begin(); polyObj != pf->data().mPolyObjs.end(); ++polyObj)
 			facades.insert(map<int, int>::value_type(polyObj->mRepType, 0));
 	}
@@ -1333,7 +1333,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				writer2);
 			++total_objs;
 		}
-		
+
 		for (polyObj = pf->data().mPolyObjs.begin(); polyObj != pf->data().mPolyObjs.end(); ++polyObj)
 		{
 			bool	 broken = false;
@@ -1354,13 +1354,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 //			if(polyObj->mShape.size() > 254)
 //				continue;
-							
+
 			cbs.BeginPolygon_f(
 						facades[polyObj->mRepType],
 						polyObj->mHeight, 2,
 						writer2);
 			// boundary
-			cbs.BeginPolygonWinding_f(writer2);					
+			cbs.BeginPolygonWinding_f(writer2);
 			for (polyPt = polyObj->mShape.outer_boundary().vertices_begin(); polyPt != polyObj->mShape.outer_boundary().vertices_end(); ++polyPt)
 			{
 				coords2[0] = CGAL::to_double(polyPt->x());
@@ -1373,7 +1373,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			// holes
 			for (polyHole = polyObj->mShape.holes_begin(); polyHole != polyObj->mShape.holes_end(); ++ polyHole)
 			{
-				cbs.BeginPolygonWinding_f(writer2);					
+				cbs.BeginPolygonWinding_f(writer2);
 				for (polyPt = polyHole->vertices_begin(); polyPt != polyHole->vertices_end(); ++polyPt)
 				{
 					coords2[0] = CGAL::to_double(polyPt->x());

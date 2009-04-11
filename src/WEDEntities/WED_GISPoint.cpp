@@ -143,10 +143,10 @@ void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
 		v_new *= old_len;
 
 		v_new = VectorMetersToLL(ctr,v_new);
-		
+
 		longitude.value = ctr.x() + v_new.dx;
 		latitude.value = ctr.y() + v_new.dy;
-		
+
 		CacheInval();
 		CacheBuild();
 	}

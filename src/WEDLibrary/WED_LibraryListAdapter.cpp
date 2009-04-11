@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -30,15 +30,15 @@
 #include "WED_MapPane.h"
 static int kDefCols[] = { 100, 0 };
 
-WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) : 
-		GUI_SimpleTableGeometry(1,kDefCols,20),	
+WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
+		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL)
 {
 	mLibrary->AddListener(this);
 }
-	
-	
+
+
 WED_LibraryListAdapter::~WED_LibraryListAdapter()
 {
 }
@@ -53,8 +53,8 @@ void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap)
  ********************************************************************************************************************************************/
 
 void	WED_LibraryListAdapter::GetCellContent(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			GUI_CellContent&			c)
 {
 	RebuildCache();
@@ -70,14 +70,14 @@ void	WED_LibraryListAdapter::GetCellContent(
 	int cut = -1;
 	c.indent_level = 0;
 	for(int n = 1; n < r.size(); ++n)
-		if(r[n] == '/') cut = n, ++c.indent_level;	
+		if(r[n] == '/') cut = n, ++c.indent_level;
 	c.text_val = r.substr(cut+1);
 	c.string_is_resource = false;
 }
 
 void	WED_LibraryListAdapter::GetEnumDictionary(
-			int							cell_x, 
-			int							cell_y, 
+			int							cell_x,
+			int							cell_y,
 			map<int, string>&			out_dictionary)
 {
 }
@@ -100,7 +100,7 @@ void	WED_LibraryListAdapter::ToggleDisclose(
 		string r(mCache[cell_y]);
 		SetOpen(r,1-IsOpen(r));
 		mCacheValid = false;
-		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);				
+		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
 
@@ -159,7 +159,7 @@ void	WED_LibraryListAdapter::SelectRange(
 	string r = mCache[start_y];
 	if(is_toggle && r == mSel)	SetSel("");
 	else						SetSel(r);
-	
+
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,NULL);
 }
 
@@ -175,7 +175,7 @@ int		WED_LibraryListAdapter::SelectDisclose(
 	{
 		SetOpen(mSel, open_it);
 		mCacheValid = false;
-		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);				
+		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
 
@@ -186,7 +186,7 @@ int		WED_LibraryListAdapter::TabAdvance(
 			GUI_CellContent&			the_content)
 {
 	return 0;
-}			
+}
 
 int		WED_LibraryListAdapter::DoubleClickCell(
 			int							cell_x,
@@ -210,7 +210,7 @@ int		WED_LibraryListAdapter::GetRowCount(void)
 }
 
 void	WED_LibraryListAdapter::GetHeaderContent(
-						int							cell_x, 
+						int							cell_x,
 						GUI_HeaderContent&			c)
 {
 	c.title = "Library";
@@ -218,7 +218,7 @@ void	WED_LibraryListAdapter::GetHeaderContent(
 	c.can_resize=false;
 	c.can_select=false;
 
-}						
+}
 
 void	WED_LibraryListAdapter::ReceiveMessage(
 						GUI_Broadcaster *		inSrc,
@@ -249,15 +249,15 @@ void	WED_LibraryListAdapter::RebuildCache()
 	if(mCacheValid) return;
 	mCacheValid = true;
 	mCache.clear();
-	
+
 	vector<string> seeds;
 	mLibrary->GetResourceChildren("",pack_All,seeds);
 	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
-		RebuildCacheRecursive(*s);	
-		
+		RebuildCacheRecursive(*s);
+
 	reverse(mCache.begin(),mCache.end());
 }
-	
+
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
 	mCache.push_back(r);
@@ -266,7 +266,7 @@ void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 		vector<string> kids;
 		mLibrary->GetResourceChildren(r,pack_All,kids);
 		for(vector<string>::iterator k = kids.begin(); k != kids.end(); ++k)
-			RebuildCacheRecursive(*k);			
+			RebuildCacheRecursive(*k);
 	}
 }
 

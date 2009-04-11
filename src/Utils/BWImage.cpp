@@ -209,9 +209,9 @@ BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 	for (vector<Polygon2>::const_iterator poly = inPolygon.begin(); poly != inPolygon.end(); ++poly)
 	for (int i = 0; i < poly->size(); ++i)
 	{
-		if ((*poly)[i].x() < 0 || 
+		if ((*poly)[i].x() < 0 ||
 			(*poly)[i].x() > mXLimit ||
-			(*poly)[i].y() < 0 || 
+			(*poly)[i].y() < 0 ||
 			(*poly)[i].y() > mYLimit)
 		{
 			return true;
@@ -326,9 +326,9 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 	for (vector<Polygon2>::const_iterator poly = inPolygon.begin(); poly != inPolygon.end(); ++poly)
 	for (int i = 0; i < poly->size(); ++i)
 	{
-		if ((*poly)[i].x() < 0 || 
+		if ((*poly)[i].x() < 0 ||
 			(*poly)[i].x() > mXLimit ||
-			(*poly)[i].y() < 0 || 
+			(*poly)[i].y() < 0 ||
 			(*poly)[i].y() > mYLimit)
 		{
 			return true;

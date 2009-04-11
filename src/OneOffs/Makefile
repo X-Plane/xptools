@@ -1,5 +1,5 @@
 all: gen_roads gen_path osm_tile osm2shape split_image GenTerrain
-	
+
 
 gen_roads: gen_roads.cpp
 	g++ gen_roads.cpp -o gen_roads

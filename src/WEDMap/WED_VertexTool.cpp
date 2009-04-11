@@ -197,7 +197,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		}
 		p->x_ =	corners[0].x() * kRunwayBlend0[n-9] + corners[1].x() * kRunwayBlend1[n-9] + corners[2].x() * kRunwayBlend2[n-9] + corners[3].x() * kRunwayBlend3[n-9];
 		p->y_ =	corners[0].y() * kRunwayBlend0[n-9] + corners[1].y() * kRunwayBlend1[n-9] + corners[2].y() * kRunwayBlend2[n-9] + corners[3].y() * kRunwayBlend3[n-9];
-		
+
 		if (dir)
 		{
 			rwy->GetCorners(corners);
@@ -220,7 +220,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		if(p)
 		{
 			p->x_ =	corners[0].x() * kQuadBlend0[n] + corners[1].x() * kQuadBlend1[n] + corners[2].x() * kQuadBlend2[n] + corners[3].x() * kQuadBlend3[n];
-			p->y_ =	corners[0].y() * kQuadBlend0[n] + corners[1].y() * kQuadBlend1[n] + corners[2].y() * kQuadBlend2[n] + corners[3].y() * kQuadBlend3[n];			
+			p->y_ =	corners[0].y() * kQuadBlend0[n] + corners[1].y() * kQuadBlend1[n] + corners[2].y() * kQuadBlend2[n] + corners[3].y() * kQuadBlend3[n];
 		}
 		if (dir && p) *dir = Vector2(ctr,*p);
 		if (n < 8 && con_type)
@@ -510,7 +510,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 					quad->GetCorners(corners);
 					mRotateCtr.x_ = corners[0].x() * 0.25 + corners[1].x() * 0.25 + corners[2].x() * 0.25 + corners[3].x() * 0.25;
 					mRotateCtr.y_ = corners[0].y() * 0.25 + corners[1].y() * 0.25 + corners[2].y() * 0.25 + corners[3].y() * 0.25;
-					
+
 					GetNthControlHandle(id, n, NULL, NULL, &io_pt, NULL, NULL);
 				}
 			}
@@ -678,7 +678,7 @@ void WED_VertexTool::GetEntityInternal(void) const
 
 	Bbox2	bounds;
 	GetZoomer()->GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
-	
+
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * gent = SAFE_CAST(IGISEntity,*i);
@@ -734,7 +734,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
 		mEntityCache.push_back(e);
-		break;			
+		break;
 	case gis_Polygon:
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
@@ -876,7 +876,7 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 			mSnapCache.clear();
 			Bbox2	bounds;
 			GetZoomer()->GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
-	
+
 			AddSnapPointRecursive(dynamic_cast<IGISEntity *>(wrl), bounds, sel);
 		}
 

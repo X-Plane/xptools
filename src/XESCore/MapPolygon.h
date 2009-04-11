@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2008, Laminar Research.  All rights reserved.
  *
  */
@@ -30,7 +30,7 @@ void	PolygonFromFace(Pmwx::Face_const_handle in_face, Polygon_with_holes_2& out_
 void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err);
 
 
-// Calculate the convex hull of a polygon. 
+// Calculate the convex hull of a polygon.
 void	MakePolygonConvex(Polygon_2& ioPolygon);
 
 // Fill in bridges outside the polygon where two points are less than 'dist' units

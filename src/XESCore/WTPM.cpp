@@ -163,7 +163,7 @@ WTPM_DirectedLinePtr			WTPM_FindLeftMostEdgeInSet(const set<WTPM_DirectedLinePtr
 		for (int i = 0; i < iter->first->shape.size(); ++i)
 		{
 			if (!has || iter->first->shape[i].x() < bestX)
-			{	
+			{
 				has = true;
 				bestKey = *iter;
 				bestX = iter->first->shape[i].x();
@@ -276,7 +276,7 @@ void	WTPM_ExportToMap(
 {
 	pmwx.clear();
 	Arr_accessor	dcel(pmwx);
-	
+
 	DVertex *			new_v;
 	int					n, hole_counter = 0;
 	DHalfedge *			myHalfedge;
@@ -308,8 +308,8 @@ void	WTPM_ExportToMap(
 		// are never shared, so we just blast through them.
 
 			vector<DVertex *>	vertices;
-	
-		vertices.push_back((*line)->startNode->pm_vertex);	
+
+		vertices.push_back((*line)->startNode->pm_vertex);
 
 		for (n = 1; n < ((*line)->shape.size() - 1); ++n)
 		{
@@ -391,7 +391,7 @@ void	WTPM_ExportToMap(
 		// First create the face (or use the world face) and index it.
 		DFace * new_face = &*pmwx.unbounded_face();
 		if (!(*face)->isWorld)
-			new_face = dcel.new_face();			
+			new_face = dcel.new_face();
 		(*face)->pm_face = new_face;
 
 		// For non-world polygons we need to set our outer CCB.
@@ -440,7 +440,7 @@ void	WTPM_ExportToMap(
 	for (line = inLines.begin(); line != inLines.end(); ++line)
 	{
 		DFace* face = (*line)->leftFace->pm_face;
-		
+
 		for (e = (*line)->pm_edges.first.begin(); e != (*line)->pm_edges.first.end(); ++e)
 			(*e)->set_face(face);
 

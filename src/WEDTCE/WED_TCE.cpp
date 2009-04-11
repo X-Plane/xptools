@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -84,9 +84,9 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 	WED_TCELayer * cur = mTool;
 
 	Bbox2 bounds;
-	
+
 	bool draw_ent_v, draw_ent_s, wants_sel;
-	
+
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
 	IGISEntity * base = GetGISBase();
@@ -99,8 +99,8 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 
 	if(mTex)
 	{
-		int tex_id = tman->GetTexID(mTex);				
-		if (tex_id != 0)					
+		int tex_id = tman->GetTexID(mTex);
+		if (tex_id != 0)
 		{
 			state->SetState(false,1,false,	!mKillAlpha,!mKillAlpha,		false,false);
 			state->BindTex(tex_id,0);
@@ -112,7 +112,7 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 			glTexCoord2f(1,1); glVertex2f(z->LonToXPixel(1),z->LatToYPixel(1));
 			glTexCoord2f(1,0); glVertex2f(z->LonToXPixel(1),z->LatToYPixel(0));
 			glEnd();
-		}						
+		}
 	}
 
 	vector<WED_TCELayer *>::iterator l;
@@ -270,7 +270,7 @@ void WED_TCE::CalcBgknd(void)
 
 		ITexMgr *	tman = WED_GetTexMgr(mResolver);
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(mResolver);
-	
+
 	for(vector<IGISEntity*>::iterator e = possibles.begin(); e != possibles.end(); ++e)
 	{
 		if ((ortho = dynamic_cast<WED_DrapedOrthophoto*>(*e)) != NULL)
@@ -281,7 +281,7 @@ void WED_TCE::CalcBgknd(void)
 			if(rmgr->GetPol(vpath,pol_info))
 			{
 				mTex = tman->LookupTexture(pol_info.base_tex.c_str(),true, pol_info.wrap ? tex_Wrap : 0);
-				if(mTex) 
+				if(mTex)
 				{
 					mKillAlpha=pol_info.kill_alpha;
 					break;
@@ -293,6 +293,6 @@ void WED_TCE::CalcBgknd(void)
 	{
 		int org_x,org_y;
 		tman->GetTexInfo(mTex,NULL,NULL,NULL,NULL,&org_x,&org_y);
-		
+
 	}
 }

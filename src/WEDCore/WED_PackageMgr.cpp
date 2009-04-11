@@ -30,9 +30,9 @@
 #include "WED_Messages.h"
 #include "FileUtils.h"
 
-#define CUSTOM_PACKAGE_PATH	"Custom Scenery" 
-#define GLOBAL_PACKAGE_PATH	"Global Scenery" 
-#define DEFAULT_PACKAGE_PATH "Resources" DIR_STR "default scenery" 
+#define CUSTOM_PACKAGE_PATH	"Custom Scenery"
+#define GLOBAL_PACKAGE_PATH	"Global Scenery"
+#define DEFAULT_PACKAGE_PATH "Resources" DIR_STR "default scenery"
 
 WED_PackageMgr * gPackageMgr = NULL;
 
@@ -104,7 +104,7 @@ void		WED_PackageMgr::GetNthPackageName(int n, string& package) const
 	if (n < global_package_names.size())	{ package = global_package_names[n]; return; }
 	n -= global_package_names.size();
 
-	package = default_package_names[n];	
+	package = default_package_names[n];
 }
 
 void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
@@ -115,7 +115,7 @@ void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
 	if (n < global_package_names.size())	{ package = system_path + DIR_STR GLOBAL_PACKAGE_PATH DIR_STR + global_package_names[n]; return; }
 	n -= global_package_names.size();
 
-	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_package_names[n];	
+	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_package_names[n];
 }
 
 
@@ -191,14 +191,14 @@ void		WED_PackageMgr::Rescan(void)
 		if (MF_GetFileType(glb_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			MF_IterateDirectory(glb_dir.c_str(), package_scan_func, &global_package_names);			
+			MF_IterateDirectory(glb_dir.c_str(), package_scan_func, &global_package_names);
 		}
 
 		string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
 		if (MF_GetFileType(def_dir.c_str(),mf_CheckType) == mf_Directory)
 		{
 			system_exists=true;
-			MF_IterateDirectory(def_dir.c_str(), package_scan_func, &default_package_names);			
+			MF_IterateDirectory(def_dir.c_str(), package_scan_func, &default_package_names);
 		}
 	}
 	BroadcastMessage(msg_SystemFolderChanged,0);

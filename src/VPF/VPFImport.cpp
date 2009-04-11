@@ -118,12 +118,12 @@ public:
 	void set_slot(WTPM_Line::EdgePair * islot) { slot = islot; }
 	virtual void after_create_edge(Halfedge_handle he)
 	{
-		
+
 	}
 	virtual void after_split_edge(Halfedge_handle e1, Halfedge_handle e2)
-	{	
+	{
 		// If we got here, the data is probably not network topology - that is, there are non-disjoint line segments.
-		DebugAssert(!"Should not be here!");	
+		DebugAssert(!"Should not be here!");
 	}
 };
 
@@ -690,19 +690,19 @@ bool	VPFImportTopo3(
 		if (lines[i].he_param != NO_VALUE)
 		{
 			DebugAssert(lines[i].he_param >= 0 && lines[i].he_param < gTokens.size());
-			
+
 			// Ben says: VPF data comes per edge not half edge.  It has no direction.  This code USED to go through both half-edge lists (a VPF edge is a chain really)
 			// and find the dominant halfedge in each for edge-based metadata.
 			// Since now we allow data on BOTH sides, just pick one arbitrarily.  We could someday make this "directed" - for now the "forward" direction is as good of
 			// a guess as any.
-			
+
 			for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
 //			if(he_is_same_direction(*he))
 				(*he)->data().mParams[lines[i].he_param] = 0.0;
 //			for (he = lines[i].pm_edges.second.begin(); he != lines[i].pm_edges.second.end(); ++he)
 //			if(he_is_same_direction(*he))
 //				(*he)->data().mParams[lines[i].he_param] = 0.0;
-		}		
+		}
 
 		if (inTransTable && lines[i].he_trans_flags)
 		{
