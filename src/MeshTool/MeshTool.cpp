@@ -21,6 +21,7 @@
  *
  */
 
+#include <XPTools/version.h>
 #include "MeshTool_Create.h"
 
 #include "XESInit.h"
@@ -46,8 +47,8 @@ void	CGALFailure(
 	}
 	free(strs);
 #else
-	fprintf(stderr,"callstack for mingw builds not yet implemented\n");
-#endif	
+	fprintf(stderr,"callstack not available\n");
+#endif
 	fprintf(stdout,"Terminating due to a CGAL exception.\n");
 	fprintf(stdout,"****************************************************************************\n");
 	fprintf(stdout,"ERROR  %s: %s (%s:%d).%s\n", what, expr, file, line, msg ? msg : "");
@@ -82,7 +83,7 @@ int	main(int argc, char * argv[])
 {
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
-		fprintf(stdout, "MeshTool version 1.0b1, compiled " __DATE__ ".\n");
+		print_product_version("MeshTool", MESHTOOL_VER, MESHTOOL_EXTRAVER);
 		exit(0);
 	}
 
@@ -104,11 +105,11 @@ int	main(int argc, char * argv[])
 			fprintf(stderr, "USAGE: MeshTool <script.txt> <file.xes> <file.hgt> <dir_base> <file.dsf>\n");
 			exit(1);
 		}
-		
+
 		DEMGeo	dem_elev;
 
-			
-		if(strstr(argv[3],".hgt")) 
+
+		if(strstr(argv[3],".hgt"))
 		{
 			if (!ReadRawHGT(dem_elev, argv[3]))
 			{
@@ -116,20 +117,20 @@ int	main(int argc, char * argv[])
 				exit(1);
 			}
 		}
-		else if(strstr(argv[3],".tif")) 
+		else if(strstr(argv[3],".tif"))
 		{
 			if (!ExtractGeoTiff(dem_elev, argv[3]))
 			{
 				fprintf(stderr,"Could not read GeoTIFF file: %s\n", argv[3]);
 				exit(1);
 			}
-		} 
+		}
 		else
 		{
 			fprintf(stderr,"ERROR: unknown file extension for DEM: %s\n", argv[3]);
 			exit(1);
 		}
-		
+
 		FILE * script = fopen(argv[1], "r");
 		fname=argv[1];
 		if(!script)
@@ -148,14 +149,14 @@ int	main(int argc, char * argv[])
 		double							proj_lon[4],proj_lat[4],proj_s[4],proj_t[4];
 
 		int				proj_pt = -1;
-		
-		
+
+
 		int				use_wat;
 		int				zlimit=0;
 		int				is_layer = 0;
-		
+
 		MT_StartCreate(argv[2], dem_elev, die_parse2);
-		
+
 		line_num=0;
 		while (fgets(buf, sizeof(buf), script))
 		{
@@ -168,12 +169,12 @@ int	main(int argc, char * argv[])
 			{
 				if(proj_pt==-1)
 					die_parse("ERROR: PROJECT_POINT not allowed until custom terrain defined, or you have more than 4 projection pooints.\n");
-				
+
 				proj_lon[proj_pt] = coords[0];
 				proj_lat[proj_pt] = coords[1];
 				proj_s  [proj_pt] = coords[2];
 				proj_t  [proj_pt] = coords[3];
-		
+
 				proj_pt++;
 				if(proj_pt==4)
 				{
@@ -181,7 +182,7 @@ int	main(int argc, char * argv[])
 					proj_pt=-1;
 				}
 			}
-			
+
 			if(sscanf(buf,"SHAPEFILE_TERRAIN %s %s",cus_ter,shp_path)==2)
 			{
 				MT_LayerShapefile(shp_path,cus_ter);
@@ -191,7 +192,7 @@ int	main(int argc, char * argv[])
 			{
 				MT_LayerBackground(cus_ter);
 			}
-			
+
 			if(strncmp(buf,"BEGIN_LAYER",strlen("BEGIN_LAYER"))==0)
 			{
 				is_layer=1;
@@ -272,7 +273,7 @@ int	main(int argc, char * argv[])
 			if(strncmp(buf,"END_POLY",strlen("END_POLY"))==0)
 			{
 				MT_PolygonEnd();
-								
+
 				if(!is_layer)
 				{
 					MT_LayerEnd();
@@ -280,7 +281,7 @@ int	main(int argc, char * argv[])
 				}
 			}
 			if(strncmp(buf,"END_LAYER",strlen("END_LAYER"))==0)
-			{		
+			{
 				MT_LayerEnd();
 				is_layer=0;
 				layer_type=NO_VALUE;
@@ -309,7 +310,7 @@ int	main(int argc, char * argv[])
 			{
 				MT_NetEnd();
 			}
-						
+
 			if(sscanf(buf,"QMID %d %s",&use_wat,cus_ter)==2)
 			{
 				MT_QMID(cus_ter, use_wat);
@@ -319,7 +320,7 @@ int	main(int argc, char * argv[])
 			{
 				MT_GeoTiff(cus_ter, use_wat);
 			}
-			
+
 			if(sscanf(buf,"ORTHOPHOTO %d %lf %lf %lf %lf %lf %lf %lf %lf %s",&use_wat,
 					&proj_lon[0],&proj_lat[0],
 					&proj_lon[1],&proj_lat[1],
@@ -336,11 +337,11 @@ int	main(int argc, char * argv[])
 
 		}
 		fclose(script);
-		
+
 		MT_FinishCreate();
-		
+
 		MT_MakeDSF(argv[4], argv[5]);
-		
+
 
 	} catch (exception& e) {
 		fprintf(stdout,"****************************************************************************\n");
@@ -357,6 +358,6 @@ int	main(int argc, char * argv[])
 		fprintf(stderr,"ERROR: Caught unknown exception.  Exiting.\n");
 		exit(0);
 	}
-	
+
 	MT_Cleanup();
 }

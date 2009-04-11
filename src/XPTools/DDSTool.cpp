@@ -21,6 +21,7 @@
  *
  */
 
+#include <XPTools/version.h>
 #include "BitmapUtils.h"
 
 enum {
@@ -30,12 +31,6 @@ enum {
 	pvr_4 = 3
 };
 static int exp_mode = pvr_2;
-
-#if LIN
-// for message box
-#include <X11/Xlib.h>
-Display* mDisplay = 0;
-#endif
 
 typedef struct PVR_Header_Texture_TAG
 {
@@ -163,7 +158,7 @@ int main(int argc, const char * argv[])
 
 	if (argc == 2 && strcmp(argv[1],"--version")==0)
 	{
-		printf("DDSTool 1.0b1, Coyright 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
+		print_product_version("DDSTool", DDSTOOL_VER, DDSTOOL_EXTRAVER);
 		return 0;
 	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)

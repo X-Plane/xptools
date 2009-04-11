@@ -7,7 +7,7 @@ CFLAGS		:= -include ./src/Obj/XDefs.h
 CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_MINGW
-DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE -DWINDOWS
+DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE -DWINDOWS -DMINGW_BUILD=1
 LIBPATHS	+= -L./SDK/ac3d
 LIBS		:= -lac3d -lopengl32
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p

@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  *
  */
+
+#include <XPTools/version.h>
 #include <stdio.h>
 #include "AssertUtils.h"
 
@@ -109,7 +111,7 @@ int main(int argc, char * argv[])
 		}
 		if (!strcmp(argv[n], "--version"))
 		{
-			fprintf(err_fi, "DSFTool 1.3, Copyright 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
+			print_product_version("DSFTool", DSFTOOL_VER, DSFTOOL_EXTRAVER);
 		}
 	}
 

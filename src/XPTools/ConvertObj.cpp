@@ -21,6 +21,7 @@
  *
  */
 
+#include <XPTools/version.h>
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"
@@ -175,10 +176,10 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 		if(gOptimize)
 			Obj8_Optimize(obj8);
-		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }	
-	}	
+		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
+	}
 #endif
-	
+
 	if(strcmp(inConvertFlag,"--3ds2obj")==0)
 	{
 		if (!ReadObj3DS(inSrcFile, obj, gPoly == poly_CCW))	{ printf("Error: unable to read DXF file %s\n", inSrcFile); exit(1); }
@@ -190,7 +191,7 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-			
+
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -207,10 +208,10 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 		if (gSave == save_OBJ8)
 		{
 			Obj7ToObj8(obj,obj8);
-			
+
 			if(gOptimize)
 				Obj8_Optimize(obj8);
-			
+
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
@@ -226,7 +227,7 @@ int main(int argc, const char * argv[])
 {
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
-		printf("ObjConverter 3.0b1, Copyight 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
+		print_product_version("ObjConverter", OBJCONVERT_VER, OBJCONVERT_EXTRAVER);
 		return 0;
 	}
 	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
@@ -236,7 +237,7 @@ int main(int argc, const char * argv[])
 		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 #if PHONE
 		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
-#endif		
+#endif
 		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");

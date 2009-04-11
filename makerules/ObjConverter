@@ -20,7 +20,7 @@ LIBS		+= ./libs/local/lib/lib3ds.a
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
-DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE
+DEFINES		+= -DDIME_NOT_DLL -DUNDER_CE -DMINGW_BUILD=1
 REAL_TARGET	:= $(dir $(TARGET))/ObjConverter.exe
 endif #PLAT_MINGW
 
@@ -42,4 +42,3 @@ SOURCES += ./src/XPTools/ConvertObj3DS.cpp
 SOURCES += ./src/XPTools/ConvertObj.cpp
 SOURCES += ./src/XPTools/ConvertObjDXF.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
-
