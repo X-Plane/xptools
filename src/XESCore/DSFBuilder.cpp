@@ -33,7 +33,7 @@
 #include "GISUtils.h"
 #include "ObjTables.h"
 #include "AssertUtils.h"
-
+#include "MathUtils.h"
 #include "PerfUtils.h"
 
 /*
@@ -593,8 +593,8 @@ string		get_terrain_name(int composite)
 		if(IsCustom(composite))
 			return FetchTokenString(composite);
 		else
-#if PHONE
-			return FetchTokenString(composite);
+#if PHONE		
+			return string(FetchTokenString(composite)) + ".ter";
 #else
 			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
 #endif
@@ -792,6 +792,35 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.0)) return;
 
+	#if DEV
+	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
+	for(int n = 0; n < 3; ++n)
+	{
+		double x = CGAL::to_double(fi->vertex(n)->point().x());
+		double y = CGAL::to_double(fi->vertex(n)->point().y());
+	
+		if(x < inLanduse.mWest)
+			DebugAssert(fi->vertex(n)->point().x() == inLanduse.mWest);
+		if(x > inLanduse.mEast)
+			DebugAssert(fi->vertex(n)->point().x() == inLanduse.mEast);
+
+		if(y < inLanduse.mSouth)
+			DebugAssert(fi->vertex(n)->point().y() == inLanduse.mSouth);
+		if(y > inLanduse.mNorth)
+			DebugAssert(fi->vertex(n)->point().y() == inLanduse.mNorth);
+	
+		if(fi->vertex(n)->point().y() > inLanduse.mNorth)
+			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
+		if(fi->vertex(n)->point().y() < inLanduse.mSouth)
+			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
+
+		if(fi->vertex(n)->point().x() > inLanduse.mEast)
+			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().x()));
+		if(fi->vertex(n)->point().x() < inLanduse.mWest)
+			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().x()));
+	}
+	#endif
+
 	if(writer1)
 	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
 	{
@@ -799,20 +828,37 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
 			fi->vertex(1)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
+			fi->vertex(2)->point().y() >= inLanduse.mNorth)
+		{
+			printf("WARNING: skipping colinear out of bounds triange.\n");
+			continue;
+		}
 
 		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
 			fi->vertex(1)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
+			fi->vertex(2)->point().y() <= inLanduse.mSouth)
+		{
+			printf("WARNING: skipping colinear out of bounds triange.\n");
+			continue;
+		}
+			
 
 		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
 			fi->vertex(1)->point().x() >= inLanduse.mEast &&
-			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
+			fi->vertex(2)->point().x() >= inLanduse.mEast)
+		{
+			printf("WARNING: skipping colinear out of bounds triange.\n");
+			continue;
+		}
+			
 
 		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
 			fi->vertex(1)->point().x() <= inLanduse.mWest &&
-			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
-
+			fi->vertex(2)->point().x() <= inLanduse.mWest)
+		{
+			printf("WARNING: skipping colinear out of bounds triange.\n");
+			continue;
+		}
 
 		if (fi->vertex(0)->point().y() == fi->vertex(1)->point().y() &&
 			fi->vertex(0)->point().y() == fi->vertex(2)->point().y())
@@ -1026,9 +1072,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
                 }
                 cbs.BeginPrimitive_f(primt, writer1);
                 for(vert = primv.begin(); vert != primv.end(); ++vert)
-                {
-					coords8[0] = CGAL::to_double((*vert)->point().x());
-					coords8[1] = CGAL::to_double((*vert)->point().y());
+                {	
+					// Ben says: the use of doblim warrants some explanation: CGAL provides EXACT arithmetic, but it does not give exact
+					// conversion back to float EVEN when that is possible!!  So the edge of our tile is guaranteed to be exactly on the DSF
+					// border but is not guaranteed to be within the DSF border once rounded.
+					// Because of this, we have to clamp our output to the double-precision bounds after conversion, since DSFLib is sensitive
+					// to out-of-boundary conditions!				
+					DebugAssert((*vert)->point().x() >= inLanduse.mWest  && (*vert)->point().x() <= inLanduse.mEast );
+					DebugAssert((*vert)->point().y() >= inLanduse.mSouth && (*vert)->point().y() <= inLanduse.mNorth);
+					coords8[0] = doblim(CGAL::to_double((*vert)->point().x()),inLanduse.mWest ,inLanduse.mEast );
+					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inLanduse.mSouth,inLanduse.mNorth);
+					DebugAssert(coords8[0] >= inLanduse.mWest  && coords8[0] <= inLanduse.mEast );
+					DebugAssert(coords8[1] >= inLanduse.mSouth && coords8[1] <= inLanduse.mNorth);
 					coords8[2] = (*vert)->info().height;
 					coords8[3] = (*vert)->info().normal[0];
 					coords8[4] =-(*vert)->info().normal[1];
@@ -1105,8 +1160,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 						for (vi = 2; vi >= 0 ; --vi)
 						{
-							coords8[0] = CGAL::to_double(f->vertex(vi)->point().x());
-							coords8[1] = CGAL::to_double(f->vertex(vi)->point().y());
+							DebugAssert(f->vertex(vi)->point().x() >= inLanduse.mWest  && f->vertex(vi)->point().x() <= inLanduse.mEast );
+							DebugAssert(f->vertex(vi)->point().y() >= inLanduse.mSouth && f->vertex(vi)->point().y() <= inLanduse.mNorth);
+							coords8[0] = doblim(CGAL::to_double(f->vertex(vi)->point().x()),inLanduse.mWest ,inLanduse.mEast );
+							coords8[1] = doblim(CGAL::to_double(f->vertex(vi)->point().y()),inLanduse.mSouth,inLanduse.mNorth);
+							DebugAssert(coords8[0] >= inLanduse.mWest  && coords8[0] <= inLanduse.mEast );
+							DebugAssert(coords8[1] >= inLanduse.mSouth && coords8[1] <= inLanduse.mNorth);
+							
 							coords8[2] = f->vertex(vi)->info().height;
 							coords8[3] = f->vertex(vi)->info().normal[0];
 							coords8[4] =-f->vertex(vi)->info().normal[1];

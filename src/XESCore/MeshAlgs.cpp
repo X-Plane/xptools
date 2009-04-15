@@ -119,26 +119,28 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 		CDT::Vertex_handle best = CDT::Vertex_handle();
 		circ = stop = ioMesh.incident_vertices(v);
 		do {
-			if (v->point() == circ->point())
+			if(!ioMesh.is_infinite(circ))				// Skip infinite vertices, for which the point location is undefined and will piss off CGAL!!
 			{
-				best = circ;
-				break;
-			} else {
-				//Vector_2	step(v->point(), circ->point());
-				// Previous line gets us in compiler trouble (I think, it's very hard to understand)
-				Vector_2	step(Point_2(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y())),
-								 Point_2(CGAL::to_double(circ->point().x()),CGAL::to_double(circ->point().y())));
-				if (along * step > 0.0 && (along.x() * step.y() == along.y() * step.x()))
-			{
-				best = circ;
-				break;
-			}
+				if (v->point() == circ->point())
+				{
+					best = circ;
+					break;
+				} else {
+					Vector_2	step(v->point(), circ->point());
+					if (along * step > 0.0 && (along.x() * step.y() == along.y() * step.x()))
+					{
+						best = circ;
+						break;
+					}
+				}
 			}
 			++circ;
 		} while (circ != stop);
 
-		if (best == CDT::Vertex_handle()) return false;
-		if (!ioMesh.is_edge(v, best, h, vnum)) return false;
+		if (best == CDT::Vertex_handle()) 
+			return false;
+		if (!ioMesh.is_edge(v, best, h, vnum)) 
+			return false;
 		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
 
 		v = best;
@@ -1702,13 +1704,15 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.8);
 
 
-	CDT::Vertex_iterator v1,v2,v;
-	v1 = outMesh.vertices_end();
-	--v1;
-	CGAL::make_conforming_Delaunay_2(outMesh);
-	++v1;
-	v2 = outMesh.vertices_end();
-
+	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
+	CGAL::make_conforming_Delaunay_2(outMesh);					// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
+																// across inserts.  To get around this, simply note how many vertices we inserted.  Note that we are assuming
+	CDT::Vertex_iterator v1,v2,v;								// vertices to be inserted into the END of the iteration list!
+	v1 = outMesh.vertices_begin();
+	v2 = outMesh.vertices_end();	
+	DebugAssert(outMesh.number_of_vertices() >= n_vert);
+	std::advance(v1,n_vert);
+	
 	for(v=v1;v!=v2;++v)
 	{
 		v->info().height = orig.value_linear(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
