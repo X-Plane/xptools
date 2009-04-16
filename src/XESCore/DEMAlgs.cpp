@@ -906,7 +906,8 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.0);
 
-	DownsampleDEM(elevation, elevation_reduced, 5);
+	int reduc = elevation.mWidth / 240;
+	DownsampleDEM(elevation, elevation_reduced, reduc);
 	DownsampleDEM(elevation_reduced, elevation_general, (elevation_reduced.mWidth-1) / (temperature.mWidth-1));
 	SpreadDEMValues(temperature);
 	SpreadDEMValues(climate);
@@ -1089,10 +1090,12 @@ void	DeriveDEMs(
 	const DEMGeo&		rainfall = 	ioDEMs[dem_Rainfall];
 		  DEMGeo&		urbanSquare =	ioDEMs[dem_UrbanSquare];
 
+	int reduce_1 = elevation.mWidth / 200;
 	DEMGeo elevation_reduced;
-	DownsampleDEM(elevation, elevation_reduced, 6);
+	DownsampleDEM(elevation, elevation_reduced, reduce_1);
 	DEMGeo	landuseBig;
-	UpsampleDEM(landuse, landuseBig, 2);
+	int reduce_2 = elevation.mWidth / 600;
+	UpsampleDEM(landuse, landuseBig, reduce_2);
 
 	DEMGeo	urban(landuse);
 	DEMGeo	values(landuse);
@@ -1558,11 +1561,18 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 		}
 	}
 
-	DEMGeo	elev2(elev);
-	elev2.derez(2);
+	DEMGeo	elev_not_insane(elev);
+	while(elev_not_insane.mWidth > 1201 || elev_not_insane.mHeight > 1201)
+		elev_not_insane.derez(2);
 
-	slope.resize(elev.mWidth, elev.mHeight);
-	slopeHeading.resize(elev.mWidth, elev.mHeight);
+	DEMGeo	elev2(elev);
+	while(elev2.mWidth > 1200 && elev2.mHeight > 1200)
+	{
+		elev2.derez(2);
+	}
+
+	slope.resize(elev_not_insane.mWidth, elev_not_insane.mHeight);
+	slopeHeading.resize(elev_not_insane.mWidth, elev_not_insane.mHeight);
 	relativeElev.resize(elev2.mWidth, elev2.mHeight);
 	elevationRange.resize(elev2.mWidth, elev2.mHeight);
 	elevationRange.mNorth = relativeElev.mNorth = slope.mNorth = slopeHeading.mNorth = elev.mNorth;
@@ -1570,7 +1580,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 	elevationRange.mEast = relativeElev.mEast = slope.mEast = slopeHeading.mEast = elev.mEast;
 	elevationRange.mWest = relativeElev.mWest = slope.mWest = slopeHeading.mWest = elev.mWest;
 
-	elev.calc_slope(slope, slopeHeading, inProg);
+	elev_not_insane.calc_slope(slope, slopeHeading, inProg);
 
 	{
 		DEMGeo	mins, maxs;

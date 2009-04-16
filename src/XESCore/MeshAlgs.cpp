@@ -907,34 +907,21 @@ int CopyWetPoints(
  *
  */
 void	BuildSparseWaterMesh(
-					const DEMGeo& inWet, 		// A mesh that contains all water points, dropped to water level
-					const DEMGeo& inEdges, 		// The vertices of the water bodies
+//					const DEMGeo& inWet, 		// A mesh that contains all water points, dropped to water level
+//					const DEMGeo& inEdges, 		// The vertices of the water bodies
 					DEMGeo& deriv, 				// A few water points are added to this DEM
 					int skip, 					// The skip interval - add a water point once every N DEM poionts
 					int search)					// Search range for coast vertices - search this far for a nearby  coast point.
 {
 	int x, y, dx, dy;
 	float h;
-	for (y = 0; y < inWet.mHeight; y++)
-	for (x = 0; x < inWet.mWidth; x++)
+	for (y = 0; y < deriv.mHeight; y++)
+	for (x = 0; x < deriv.mWidth; x++)
 	{
-		h = inWet.get(x,y);
+		h = deriv.get(x,y);
 		if (h != DEM_NO_DATA)
 		{
-			if ((x % skip) == 0 && (y % skip) == 0)
-			{
-				for (dy = y-search; dy <= y+search; ++dy)
-				for (dx = x-search; dx <= x+search; ++dx)
-				{
-					if (inEdges.get(dx,dy) != DEM_NO_DATA)
-						goto foundone;
-				}
-
-				deriv(x,y) = h;
-				continue;
-foundone:
-				deriv(x,y) = DEM_NO_DATA;
-			} else
+			if ((x % skip) != 0  || (y % skip) != 0)
 				deriv(x,y) = DEM_NO_DATA;
 		}
 	}
@@ -1101,7 +1088,6 @@ void CollectPointsAlongLine(const Point_2& p1, const Point_2& p2, vector<Point_2
 void	AddWaterMeshPoints(
 				Pmwx& 								inMap, 		// Vec Map of waterbodies
 				const DEMGeo& 						master, 	// Master DEM with elevations
-				const DEMGeo& 						water_not_used,// Water bodies lowered
 				DEMGeo& 							slave, 		// This DEM has mesh points erased where vertices are added
 				CDT& 								outMesh, 	// Vertices and constraints added to this mesh
 				vector<LanduseConstraint_t>&		outCons,	// The constraints we add for water are added here for later use
@@ -1189,7 +1175,7 @@ void	AddWaterMeshPoints(
 }
 
 
-void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& wetPts_not_used, const DEMGeo& allPts)
+void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& allPts)
 {
 	set<CDT::Face_handle>		wet_faces;
 	set<CDT::Face_handle>		visited;
@@ -1470,9 +1456,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	 * PRECALCULATION OF MASKS
 	 *********************************************************************************************************************/
 
-	DEMGeo	outline(deriv);										// DEM points that are near the corners of coastlines.
-	DEMGeo	water(deriv);										// Flattened DEM points inside water.
-	DEMGeo	land(orig);											// DEM points that are not in water.
+//	DEMGeo	outline(deriv);										// DEM points that are near the corners of coastlines.
+//	DEMGeo	water(deriv);										// Flattened DEM points inside water.
+//	DEMGeo	land(orig);											// DEM points that are not in water.
 
 	double	land_ratio;
 
@@ -1483,11 +1469,11 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		// from the map water GT-polygons.
 
 		TIMER(build_wet_map)
-		int wet_pts = CopyWetPoints(orig, water, &outline, inMap);
-		for (y = 0; y < deriv.mHeight; ++y)
-		for (x = 0; x < deriv.mWidth; ++x)
-		if (water.get(x,y) != DEM_NO_DATA)
-			land(x,y) = DEM_NO_DATA;
+		int wet_pts = CopyWetPoints(orig, deriv, NULL, inMap);
+//		for (y = 0; y < deriv.mHeight; ++y)
+//		for (x = 0; x < deriv.mWidth; ++x)
+//		if (water.get(x,y) != DEM_NO_DATA)
+//			land(x,y) = DEM_NO_DATA;
 
 		int total_pts = deriv.mWidth * deriv.mHeight;
 		int dry_pts = total_pts - wet_pts;
@@ -1531,7 +1517,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		// This step builds a derived "sparse" water mesh from the thick water raster layer.
 
 		TIMER(sparsify_wet_map)
-		BuildSparseWaterMesh(water, outline, deriv, LOW_RES_WATER_INTERVAL, LOW_RES_WATER_INTERVAL/2);
+		BuildSparseWaterMesh(deriv, LOW_RES_WATER_INTERVAL, LOW_RES_WATER_INTERVAL/2);
 	}
 
 
@@ -1624,31 +1610,21 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 	printf("temporary contains %d points\n", tc);
 	// Clear out the slaved edges in the data so that we don't add them as part of our process.
+	// If we burned some of the sparse water mesh into deriv at the edges (because a lake is on our tile edge)
+	// this clears it out if we are a slave.
 	{
 		if (!gMatchBorders[2].vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
-		{
-			land (deriv.mWidth-1, y) = DEM_NO_DATA;
 			deriv(deriv.mWidth-1, y) = DEM_NO_DATA;
-		}
 		if (!gMatchBorders[3].vertices.empty())
 		for (x = 0; x < deriv.mWidth; ++x)
-		{
-			land(x , deriv.mHeight-1) = DEM_NO_DATA;
 			deriv(x, deriv.mHeight-1) = DEM_NO_DATA;
-		}
 		if (!gMatchBorders[0].vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
-		{
-			land(0, y) = DEM_NO_DATA;
 			deriv(0, y) = DEM_NO_DATA;
-		}
 		if (!gMatchBorders[1].vertices.empty())
 		for (x = 0; x < deriv.mWidth; ++x)
-		{
-			land(x, 0) = DEM_NO_DATA;
 			deriv(x, 0) = DEM_NO_DATA;
-		}
 	}
 
 	// Add any bulk points - mostly edges and water.
@@ -1658,17 +1634,33 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		TIMER(Triangulate_Elevation)
 		AddBulkPointsToMesh(deriv, outMesh, prog);
 	}
-
+	
+	// Falsify that deriv edges were burned - this is the "flag" to greedy-insert to not go around adding those vertices.
+	{
+		if (!gMatchBorders[2].vertices.empty())
+		for (y = 0; y < deriv.mHeight; ++y)
+			deriv(deriv.mWidth-1, y) = orig(deriv.mWidth-1, y);
+		if (!gMatchBorders[3].vertices.empty())
+		for (x = 0; x < deriv.mWidth; ++x)
+			deriv(x, deriv.mHeight-1) = orig(x, deriv.mHeight-1);
+		if (!gMatchBorders[0].vertices.empty())
+		for (y = 0; y < deriv.mHeight; ++y)
+			deriv(0, y) =  orig(0,y);
+		if (!gMatchBorders[1].vertices.empty())
+		for (x = 0; x < deriv.mWidth; ++x)
+			deriv(x, 0) = orig(x,0);
+	}
+	
 	// Now greedy mesh build - first add pts to cover land.
 	{
 		TIMER(Greedy_Mesh)
-		GreedyMeshBuild(outMesh, land, deriv, gMeshPrefs.max_error, 0.0, (land_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
+		GreedyMeshBuild(outMesh, orig, deriv, gMeshPrefs.max_error, 0.0, (land_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 	}
 
 	// Another greedy mesh designed to limit triangle size.
 	{
 		TIMER(Greedy_Mesh_LimitSize)
-		GreedyMeshBuild(outMesh, land, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
+		GreedyMeshBuild(outMesh, orig, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 	}
 
 	// Now go nuke the temporary edge - we don't need it now.
@@ -1689,7 +1681,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 		TIMER(Triangulate_Coastlines)
 
-		AddWaterMeshPoints(inMap, orig, water, deriv, outMesh, coastlines_markers, true);
+		AddWaterMeshPoints(inMap, orig, deriv, outMesh, coastlines_markers, true);
 	}
 
 	// Finally, add the REAL slaved edge, canibalizing any coastline points as we go.
@@ -1725,7 +1717,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.2);
 	{
-		SetWaterBodiesToWet(outMesh, coastlines_markers, water, orig);
+		SetWaterBodiesToWet(outMesh, coastlines_markers, orig);
 	}
 
 	/*********************************************************************************************************************
