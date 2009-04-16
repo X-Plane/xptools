@@ -41,7 +41,7 @@
 "Usage: raster_import <format> <file> <layer> [<translation>]\n"\
 "Imports a single raster file.  The file must be in geographic projection\n"\
 "and have an axis-aligned bounding box.\n"\
-"Format can be one of: tiff\n"\
+"Format can be one of: tiff, bil\n"\
 "File is a unix file name.\n"\
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
 "If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
@@ -62,6 +62,14 @@ static int DoRasterImport(const vector<const char *>& args)
 		if(!ExtractGeoTiff(*dem, args[1]))
 		{
 			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[1]);
+			return 1;
+		}
+	}
+	else if(strcmp(args[0],"bil") == 0)
+	{
+		if(!ReadRawBIL(*dem,args[1]))
+		{
+			fprintf(stderr,"Unable to read BIL file %s\n", args[1]);
 			return 1;
 		}
 	}

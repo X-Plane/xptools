@@ -130,7 +130,7 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
-	long dim = sqrt((float) words);
+	long dim = sqrt((double) words);
 
 	inMap.resize(dim, dim);
 	if (inMap.mData)
@@ -147,6 +147,51 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 	MemFile_Close(fi);
 	return true;
 }
+
+// RAW HEIGHT FILE: N34W072.HGT
+// These files contian big-endian shorts with -32768 as DEM_NO_DATA
+bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName)
+{
+	int	lat, lon;
+	char ns, ew;
+	string	fname(inFileName);
+	string::size_type p = fname.find_last_of(":\\/");
+	if (p != fname.npos) fname = fname.substr(p+1);
+	if (sscanf(fname.c_str(), "%c%d%c%d", &ns, &lat, &ew, &lon) == 4)
+	{
+		if (ns == 'S' || ns == 's' || ns == '-') lat = -lat;
+		if (ew == 'W' || ew == 'w' || ew == '-') lon = -lon;
+		inMap.mWest = lon;
+		inMap.mEast = lon + 1;
+		inMap.mSouth = lat;
+		inMap.mNorth = lat + 1;
+	}
+
+	MFMemFile *	fi = MemFile_Open(inFileName);
+	if (!fi) return false;
+
+	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_LittleEndian);
+
+	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
+	long words = len / sizeof(short);
+	long dim = sqrt((double) words);		// Double?  Yes!  10801 x 10801 DEM (1/3 second) has more than 2^23 samples -- rounding error in xflt.
+
+	inMap.resize(dim, dim);
+	if (inMap.mData)
+	{
+		for (int y = dim-1; y >= 0; --y)
+		for (int x = 0; x < dim; ++x)
+		{
+			short	v;
+			reader.ReadShort(v);
+			inMap.mData[x + y * dim] = v;
+		}
+	}
+
+	MemFile_Close(fi);
+	return true;
+}
+
 
 bool	WriteRawHGT(const DEMGeo& dem, const char * inFileName)
 {
@@ -199,7 +244,7 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(float);
-	long dim = sqrt((float)words);
+	long dim = sqrt((double)words);
 
 	inMap.resize(dim, dim);
 	int dummy1;
@@ -247,7 +292,7 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
 
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
-	long dim = sqrt((float) words);
+	long dim = sqrt((double) words);
 
 	inMap.resize(dim, dim);
 	{

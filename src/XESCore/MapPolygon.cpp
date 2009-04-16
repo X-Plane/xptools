@@ -537,6 +537,7 @@ void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 	pset.polygons_with_holes(back_inserter(all));
 	for(int n = 0; n < all.size(); ++n)
 	{
+		DebugAssert(!all[n].is_unbounded());
 		DebugAssert(all[n].holes_begin() == all[n].holes_end());
 		out_simple_polygons.push_back(all[n].outer_boundary());
 	}

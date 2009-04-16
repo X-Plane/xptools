@@ -46,8 +46,13 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap);
 
 // 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
 // DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
+// This is a big-endian file.
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName);
 bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName);
+// 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
+// DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
+// This is a little-endian file.
+bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName);
 // 32-bit floating point with a 5-byte header - an Austin-invented format, but useful
 // because we have the entire US NED dataset in this form.  DEM position is taken from
 // the header in +42-073 format.

@@ -24,6 +24,7 @@
 #include "ShapeIO.h"
 #include <shapefil.h>
 #include "MapOverlay.h"
+#include "MapPolygon.h"
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
 
@@ -271,20 +272,33 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
 							p.push_back(pt);
 					}
-					DebugAssert(p.size() >= 4);
+//					DebugAssert(p.size() >= 4);											// Sometimes we have "2-d" polygons (2-pt loop, 0 area)
 					DebugAssert(p[0] == p[p.size()-1]);
 					while(p[0] == p[p.size()-1])
 						p.erase(p.vertices_end()-1);
-					DebugAssert(p.size() == 0 || p.size() >= 3);
-					if(p.size() > 0)
+//					DebugAssert(p.size() == 0 || p.size() >= 3);
+					if(p.size() > 2)
 					{
-						DebugAssert(p.is_simple());
-						if(p.is_counterclockwise_oriented())
+						if(p.is_simple())
 						{
-							holes.push_back(p);
+							if(p.is_counterclockwise_oriented())
+							{
+								holes.push_back(p);
+							} else {
+								p.reverse_orientation();
+								boundaries.push_back(p);					
+							}
 						} else {
-							p.reverse_orientation();
-							boundaries.push_back(p);
+							vector<Polygon_2>	simple_ones;
+							MakePolygonSimple(p,simple_ones);
+							#if DEV && 0
+							for(vector<Polygon_2>::iterator t = simple_ones.begin(); t != simple_ones.end(); ++t)
+							{
+								DebugAssert(t->is_simple());
+								DebugAssert(t->is_counterclockwise_oriented());
+							}
+							#endif
+							boundaries.insert(boundaries.end(),simple_ones.begin(),simple_ones.end());
 						}
 					}
 				}
