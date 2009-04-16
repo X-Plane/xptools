@@ -27,7 +27,7 @@
 #include "ProgressUtils.h"
 #include "Skeleton.h"
 #include "ObjPlacement.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 class 	CDT;
 //class	GISFace;
 

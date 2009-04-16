@@ -22,10 +22,10 @@
  */
 
 #include "Airports.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "MapPolygon.h"
 #include "MapTopology.h"
-#include "MapAlgsCGAL.h"
+#include "MapAlgs.h"
 #include "MapOverlay.h"
 #include "AptDefs.h"
 #include "AssertUtils.h"

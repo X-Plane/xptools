@@ -24,7 +24,7 @@
 #ifndef HYDRO_H
 #define HYDRO_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 class	DEMGeoMap;
 class	GISHalfedge;

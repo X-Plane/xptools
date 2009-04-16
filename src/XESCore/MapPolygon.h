@@ -6,7 +6,7 @@
 #ifndef MapPolygon_H
 #define MapPolygon_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 typedef	vector<double>			RingInset_t;
 typedef vector<RingInset_t>		PolyInset_t;

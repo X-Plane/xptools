@@ -21,7 +21,7 @@
  *
  */
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 #include "DEMToVector.h"
 #include "DEMDefs.h"

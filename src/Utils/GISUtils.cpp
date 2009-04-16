@@ -32,7 +32,6 @@
 #include <cpl_serv.h>
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
-#include "MapAlgsCGAL.h"
 
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {

@@ -24,7 +24,7 @@
 #define MAPIO_H
 
 #include "IODefs.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 #include "EnumSystem.h"
 

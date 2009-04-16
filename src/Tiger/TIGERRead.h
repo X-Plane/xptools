@@ -23,7 +23,7 @@
 #ifndef TIGERREAD_H
 #define TIGERREAD_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 #include "TIGERTypes.h"
 #include "ProgressUtils.h"

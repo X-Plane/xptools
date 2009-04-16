@@ -24,7 +24,7 @@
 
 #include "MeshTool_Create.h"
 #include <stdarg.h>
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 #include "AptDefs.h"

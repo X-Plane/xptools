@@ -89,6 +89,13 @@ inline int sign_of(double x) { return x > 0.0 ? 1 : (x < 0.0 ? -1 : 0); }
 #if 1
 CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 {
+//	int			li;
+//	Locate_type	lt;
+//	Face_handle	who = locate(p, lt, li, hint);
+//	return CDTBase::insert(p, lt, who, li);
+	return CDTBase::insert(p, hint);
+
+#if 0
 	int			li;
 	Locate_type	lt;
 	Face_handle	who = locate(p, lt, li, hint);
@@ -198,5 +205,7 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 		}
 	}
 	return CDTBase::insert(p, lt, who, li);
+	#endif
 }
 #endif
+

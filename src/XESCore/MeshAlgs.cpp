@@ -22,7 +22,7 @@
  *
  */
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
 #include "CompGeomDefs2.h"

@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "NetPlacement.h"
 #include "NetTables.h"
 #include "GISUtils.h"

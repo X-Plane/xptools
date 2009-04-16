@@ -24,7 +24,7 @@
 #define TIGERIMPORT_H
 
 #include "TIGERTypes.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 
 /*

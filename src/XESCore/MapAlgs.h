@@ -26,7 +26,7 @@
 #include "XESConstants.h"
 #define kOverscale 1.0
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 
 #include "MeshDefs.h"

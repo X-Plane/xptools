@@ -24,7 +24,7 @@
 #ifndef GISTOOL_GLOBALS_H
 #define GISTOOL_GLOBALS_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 #include "AptDefs.h"
 #include "CompGeomDefs2.h"

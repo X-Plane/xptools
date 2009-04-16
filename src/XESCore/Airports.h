@@ -26,7 +26,7 @@
 
 #include "AptDefs.h"
 #include "ProgressUtils.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 //class	Pmwx;
 struct	DEMGeo;
 

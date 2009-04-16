@@ -23,33 +23,21 @@
 #ifndef MESHDEFS_H
 #define MESHDEFS_H
 
-#define CGAL_NO_PRECONDITIONS
-#ifndef NDEBUG
-#define NDEBUG
-#endif
+//#define CGAL_NO_PRECONDITIONS
+//#ifndef NDEBUG
+//#define NDEBUG
+//#endif
 
-#include "ParamDefs.h"
-#include "DEMDefs.h"
-
-//class GISFace;
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Filtered_kernel.h>
-
-// make sure our kernel types match
-
-#include "MapDefsCGAL.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
-#include <CGAL/assertions.h>
-#include <CGAL/intersections.h>
 
+#include "ParamDefs.h"
+#include "CGALDefs.h"
+#include "DEMDefs.h"
+#include "MapDefs.h"			// We need this for face-handle forward declaration.
 
-//typedef	CGAL::Simple_cartesian<double>	                BaseKernel;
-
-//typedef CGAL::Filtered_kernel<BaseKernel> 					FastKernel;
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 
@@ -132,7 +120,6 @@ typedef CGAL::Triangulation_face_base_with_info_2<MeshFaceInfo, Traits_2>			Fbi;
 typedef	CGAL::Constrained_triangulation_face_base_2<Traits_2, Fbi>				Fb;
 typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>								TDS;
 
-//typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
 typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::Exact_predicates_tag>	CDTBase;
 
 class CDT : public CDTBase {

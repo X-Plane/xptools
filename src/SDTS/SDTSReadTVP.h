@@ -23,7 +23,7 @@
 #ifndef SDTSREADTVP_H
 #define SDTSREADTVP_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 class	sb_ForeignID;
 class	sc_Record;

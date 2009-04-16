@@ -21,7 +21,7 @@
  *
  */
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "Zoning.h"
 #include "MapAlgs.h"
 #include "DEMDefs.h"

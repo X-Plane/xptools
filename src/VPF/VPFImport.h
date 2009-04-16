@@ -24,7 +24,7 @@
 #ifndef VPFIMPORT_H
 #define VPFIMPORT_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 struct	VPF_LineRule_t {
 	const char *		table;			// Name of the table that has this attribute

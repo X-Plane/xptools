@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ *  MapDefs.h
+ *  SceneryTools
+ *
+ *  Created by Andrew McGregor on 3/04/08.
+ *  Copyright 2008 Andrew McGregor.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,44 +25,63 @@
  *
  */
 
-#include "MapDefsCGAL.h"
-
-/****** WHAT IS THIS!??!?!?! ************
-
-The vector processing code for the scenery tools have always used a
-planar map.  Originalyly I used CGAL 3.0's planar map with intersections,
-but it had some bugs.  So I wrote my own.  That home-rolled version
-is what is in this file.
-
-After the v9 render, Andrew McGregor replaced my map with CGAL 3.3's
-Arrangement_2, which is vastly superior, and is bug free.   This file will
-eventually get nuked, but for now, see MapDefsCGAL for the replacement
-drop-in map definitino!
-
-*/
-
-
-
-
-
-// be a bit brutal here
-#define MAPDEFS_H
-
-
 #ifndef MAPDEFS_H
 #define MAPDEFS_H
 
-#include <set>
-#include <vector>
-#include <map>
-#include <list>
-using std::list;
+/*
+	Polygon tricks and notes:
 
+	Polygon_2 and Polygon_with_holes_2 are just "dumb" containers - you can push any set of points into them
+	and not worry about the consequences.
+
+	Polygon_set_2 is topological - when you add points and holes, you can use join and difference to hint
+	how you want holes overlapping each other to be handled.  Note that polygons must already be simple.
+
+	Conversions:
+
+	- To convert a map (or part of a map) to a polygon, simply set "contained" on each face. (If you set the
+	  unbounded face to be contained, you get an unbounded polygon with holes.)  Then construct a new
+	  Polygon_set_2 with the map as the constructor.  The polygon_set_2 will be simpler than the map if
+	  there are adjacent contained or not contained faces.
+
+	- To convert a polygon set to a map, simply set the meta data on its internal arrangement, then use that
+	  arrangement.  The most typical way to do this is to set the meta data, then use "overlay" or "merge"
+	  to put the new polygons somewhere.  WARNING: Most polygon_set_2 processing operations consolidate and
+	  simplify the underlying map.  So it is highly recommended that you set the meta data immediately before
+	  using the underlying map!
+
+
+*/
+
+#include "CGALDefs.h"
+
+#include <CGAL/Arr_segment_traits_2.h>
+#include <CGAL/General_polygon_set_2.h>
+#include <CGAL/Gps_segment_traits_2.h>
+#include <CGAL/Arrangement_2.h>
+#include <CGAL/Arr_dcel_base.h>
+#include <CGAL/Arr_extended_dcel.h> // we need data extensions for everything
+#include <CGAL/Arr_consolidated_curve_data_traits_2.h>
+#include <CGAL/Arr_landmarks_point_location.h>
+//#include <CGAL/Arr_overlay.h>
+#include <CGAL/Arr_default_overlay_traits.h>
+#include <CGAL/Boolean_set_operations_2/Gps_default_dcel.h>
+//#include <CGAL/Bbox_2.h>
+//#include <CGAL/assertions.h>
+//#include <CGAL/intersections.h>
+
+
+#include "ParamDefs.h"
+#include "AssertUtils.h"
 #include "CompGeomDefs2.h"
 
-/************************************************************************
- * BASIC STRUCTURE TYPES
- ************************************************************************/
+/******************************************************************************************************************************************************
+ * GIS DATA
+ ******************************************************************************************************************************************************/
+
+/*
+	This is the GIS data actually stored on parts of the map.
+*/
 
 /* GISParamMap
  *
@@ -75,12 +98,7 @@ typedef	map<int, double>	GISParamMap;
  * that contains them.
  *
  */
-struct	GISPointFeature_t {
-	int				mFeatType;
-	GISParamMap		mParams;
-	Point2			mLocation;
-	bool			mInstantiated;
-};
+struct	GISPointFeature_t;
 typedef vector<GISPointFeature_t>	GISPointFeatureVector;
 
 /* GISPolygonFeature_t
@@ -93,12 +111,7 @@ typedef vector<GISPointFeature_t>	GISPointFeatureVector;
  * and not have it be split by a feature that's right on the street.
  *
  */
-struct GISPolygonFeature_t {
-	int				mFeatType;
-	GISParamMap		mParams;
-	Polygon2		mShape;
-	bool			mInstantiated;
-};
+struct GISPolygonFeature_t;
 typedef vector<GISPolygonFeature_t>	GISPolygonFeatureVector;
 
 /* GISAreaFeature_t
@@ -107,10 +120,7 @@ typedef vector<GISPolygonFeature_t>	GISPolygonFeatureVector;
  * overriding the treatment and population of that GT-polygon.
  *
  */
-struct GISAreaFeature_t {
-	int				mFeatType;
-	GISParamMap		mParams;
-};
+struct GISAreaFeature_t;
 //typedef vector<GISAreaFeature_t> GISAreaFeatureVector;
 
 /* GISObjPlacement_t
@@ -119,750 +129,563 @@ struct GISAreaFeature_t {
  * A lcoation is provided even for points for simplicity.
  * Derived tells whether this object was added by automatic
  * generation or by the user. */
-struct	GISObjPlacement_t {
-	int				mRepType;
-	Point2			mLocation;
-	double			mHeading;
-	bool			mDerived;
-};
+struct	GISObjPlacement_t;
 typedef vector<GISObjPlacement_t>	GISObjPlacementVector;
 
 /* GISPolyObjPlacement_t
  *
  * A single placement of a prototype by its polygon and height.
  * Derived info is saved just like a normal object. */
-struct	GISPolyObjPlacement_t {
-	int					mRepType;
-	vector<Polygon2>	mShape;
-	Point2				mLocation;	// Nominal center - used primarily for debugging!
-	double				mHeight;
-	bool				mDerived;
-};
+struct	GISPolyObjPlacement_t;
 typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;
 
 /* GISNetworkSegment_t
  *
  * A single road or other item along a network.  Each end has a height
  * stored in terms of levels from the network definition. */
+struct	GISNetworkSegment_t;
+typedef vector<GISNetworkSegment_t>		GISNetworkSegmentVector;
+
+/* GISPointFeature_t
+ *
+ * A point feature is a 0-dimensional thing in the GIS data.
+ * A point feature contains a seriers of parameters indicating
+ * vaguely what it is.  They are stored within the GT-polygon
+ * that contains them.
+ *
+ */
+struct	GISPointFeature_t {
+public:
+	int				mFeatType;
+	GISParamMap		mParams;
+	Point_2			mLocation;
+	bool			mInstantiated;
+};
+
+/* GISPolygonFeature_t
+ *
+ * An area feature is a polygon that is fully contained within
+ * a GT-polygon.  We deviate from more typical GIS standards
+ * in representing area features non-topologically because
+ * we aren't terribly interested in doing topological operations.
+ * By comparison we do want to know the containing GT land block
+ * and not have it be split by a feature that's right on the street.
+ *
+ */
+struct GISPolygonFeature_t {
+public:
+	int				mFeatType;
+	GISParamMap		mParams;
+	Polygon_with_holes_2		mShape;
+	bool			mInstantiated;
+};
+
+/* GISAreaFeature_t
+ *
+ * An area feature describes the entire GT-polygon, typically
+ * overriding the treatment and population of that GT-polygon.
+ *
+ */
+struct GISAreaFeature_t {
+public:
+	int				mFeatType;
+	GISParamMap		mParams;
+};
+
+/* GISObjPlacement_t
+ *
+ * A single object placed somewhere in or on a GIS entity.
+ * A lcoation is provided even for points for simplicity.
+ * Derived tells whether this object was added by automatic
+ * generation or by the user. */
+struct	GISObjPlacement_t {
+public:
+	int				mRepType;
+	Point_2			mLocation;
+	double			mHeading;
+	bool			mDerived;
+};
+
+/* GISPolyObjPlacement_t
+ *
+ * A single placement of a prototype by its polygon and height.
+ * Derived info is saved just like a normal object. */
+struct	GISPolyObjPlacement_t {
+public:
+	int					mRepType;
+	Polygon_with_holes_2	mShape;
+	Point_2				mLocation;	// Nominal center - used primarily for debugging!
+	double				mHeight;
+	bool				mDerived;
+};
+
+/* GISNetworkSegment_t
+ *
+ * A single road or other item along a network.  Each end has a height
+ * stored in terms of levels from the network definition. */
 struct	GISNetworkSegment_t {
+public:
 	int				mFeatType;
 	int				mRepType;
 	double			mSourceHeight;
 	double			mTargetHeight;
 };
-typedef vector<GISNetworkSegment_t>		GISNetworkSegmentVector;
-
-/************************************************************************
- * MAP TYPES
- ************************************************************************/
-
-class	GISFace;
-class	GISVertex;
-class	GISHalfedge;
-class	Pmwx;
 
 
 
-/************************************************************************
- * HALFEDGE
- ************************************************************************/
 
 
-class	GISHalfedge {
-
-	class	Halfedge_iterator : public iterator<bidirectional_iterator_tag, GISHalfedge> {
-		GISHalfedge *	ptr;
-	public:
-		Halfedge_iterator() : ptr(NULL) { }
-		explicit Halfedge_iterator(GISHalfedge * he) : ptr(he) { }
-		Halfedge_iterator(const Halfedge_iterator& rhs) : ptr(rhs.ptr) { }
-		Halfedge_iterator& operator=(GISHalfedge * rhs) { ptr = rhs; return *this; }
-		Halfedge_iterator& operator=(const Halfedge_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Halfedge_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Halfedge_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Halfedge_iterator& rhs) const { return ptr < rhs.ptr; }
-		GISHalfedge& operator*() const { return *ptr; }
-		GISHalfedge * operator->() const { return ptr; }
-		Halfedge_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Halfedge_iterator operator++(int) { GISHalfedge * old = ptr; ptr = ptr->mLinkNext; return Halfedge_iterator(old); }
-		Halfedge_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Halfedge_iterator operator--(int) { GISHalfedge * old = ptr; ptr = ptr->mLinkPrev; return Halfedge_iterator(old); }
-		operator GISHalfedge * () const { return ptr; }
-	};
-
-	class	Halfedge_const_iterator  : public iterator<bidirectional_iterator_tag, const GISHalfedge> {
-		const GISHalfedge *	ptr;
-	public:
-		Halfedge_const_iterator() : ptr(NULL) { }
-		explicit Halfedge_const_iterator(const GISHalfedge * he) : ptr(he) { }
-		Halfedge_const_iterator(const Halfedge_const_iterator& rhs) : ptr(rhs.ptr) { }
-		Halfedge_const_iterator& operator=(const GISHalfedge * he) { ptr = he; return *this; }
-		Halfedge_const_iterator& operator=(const Halfedge_const_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Halfedge_const_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Halfedge_const_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Halfedge_const_iterator& rhs) const { return ptr < rhs.ptr; }
-		const GISHalfedge& operator*() const { return *ptr; }
-		const GISHalfedge * operator->() const { return ptr; }
-		Halfedge_const_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Halfedge_const_iterator operator++(int) { const GISHalfedge * old = ptr; ptr = ptr->mLinkNext; return Halfedge_const_iterator(old); }
-		Halfedge_const_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Halfedge_const_iterator operator--(int) { const GISHalfedge * old = ptr; ptr = ptr->mLinkPrev; return Halfedge_const_iterator(old); }
-		operator const GISHalfedge * () const { return ptr; }
-	};
-
-	class Ccb_halfedge_circulator : public iterator<bidirectional_iterator_tag, GISHalfedge> {
-		GISHalfedge *	ptr;
-	public:
-		Ccb_halfedge_circulator() : ptr(NULL) { }
-		explicit Ccb_halfedge_circulator(GISHalfedge * he) : ptr(he) { }
-		Ccb_halfedge_circulator(const Ccb_halfedge_circulator& rhs) : ptr(rhs.ptr) { }
-		Ccb_halfedge_circulator& operator=(GISHalfedge * he) { ptr = he; return *this; }
-		Ccb_halfedge_circulator& operator=(const Ccb_halfedge_circulator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Ccb_halfedge_circulator& rhs) const { return ptr == rhs.ptr; }
-		bool operator==(	  GISHalfedge * rhs) const { return ptr == rhs; }					// This is needed because GCC is frickin' stupid
-		bool operator==(const GISHalfedge * rhs) const { return ptr == rhs; }
-		bool operator!=(const Ccb_halfedge_circulator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Ccb_halfedge_circulator& rhs) const { return ptr < rhs.ptr; }
-		GISHalfedge& operator*() const { return *ptr; }
-		GISHalfedge * operator->() const { return ptr; }
-		Ccb_halfedge_circulator& operator++() { ptr = ptr->mNext; return *this; }
-		Ccb_halfedge_circulator operator++(int) { GISHalfedge * old = ptr; ptr = ptr->mNext; return Ccb_halfedge_circulator(old); }
-		operator GISHalfedge * () const { return ptr; }
-	};
-
-	class Ccb_halfedge_const_circulator {
-		const GISHalfedge *	ptr;
-	public:
-		typedef bidirectional_iterator_tag iterator_category;
-		Ccb_halfedge_const_circulator() : ptr(NULL) { }
-		explicit Ccb_halfedge_const_circulator(const GISHalfedge * he) : ptr(he) { }
-		Ccb_halfedge_const_circulator(const Ccb_halfedge_const_circulator& rhs) : ptr(rhs.ptr) { }
-		Ccb_halfedge_const_circulator& operator=(const GISHalfedge* rhs) { ptr = rhs; return *this; }
-		Ccb_halfedge_const_circulator& operator=(const Ccb_halfedge_const_circulator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Ccb_halfedge_const_circulator& rhs) const { return ptr == rhs.ptr; }
-		bool operator==(	  GISHalfedge * rhs) const { return ptr == rhs; }
-		bool operator==(const GISHalfedge * rhs) const { return ptr == rhs; }
-		bool operator!=(const Ccb_halfedge_const_circulator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Ccb_halfedge_const_circulator& rhs) const { return ptr < rhs.ptr; }
-		const GISHalfedge& operator*() const { return *ptr; }
-		const GISHalfedge * operator->() const { return ptr; }
-		Ccb_halfedge_const_circulator& operator++() { ptr = ptr->mNext; return *this; }
-		Ccb_halfedge_const_circulator operator++(int) { const GISHalfedge * old = ptr; ptr = ptr->mNext; return Ccb_halfedge_const_circulator(old); }
-		operator const GISHalfedge * () const { return ptr; }
-	};
 
 
-	class Halfedge_around_vertex_circulator : public iterator<bidirectional_iterator_tag, GISHalfedge> {
-		GISHalfedge *	ptr;
-	public:
-		Halfedge_around_vertex_circulator(GISHalfedge * he = NULL) : ptr(he) { }
-		Halfedge_around_vertex_circulator(const Halfedge_around_vertex_circulator& rhs) : ptr(rhs.ptr) { }
-		Halfedge_around_vertex_circulator& operator=(const Halfedge_around_vertex_circulator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Halfedge_around_vertex_circulator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Halfedge_around_vertex_circulator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Halfedge_around_vertex_circulator& rhs) const { return ptr < rhs.ptr; }
-		GISHalfedge& operator*() const { return *ptr; }
-		GISHalfedge * operator->() const { return ptr; }
-		Halfedge_around_vertex_circulator& operator++() { ptr = ptr->mNext->mTwin; return *this; }
-		Halfedge_around_vertex_circulator operator++(int) { GISHalfedge * old = ptr; ptr = ptr->mNext->mTwin; return Halfedge_around_vertex_circulator(old); }
-		operator GISHalfedge * () const { return ptr; }
-	};
+struct GIS_vertex_data {
+	bool mTunnelPortal;
+#if OPENGL_MAP
+	float						mGL[2];				// Pre-expanded line!
+#endif
+};
 
-	class Halfedge_around_vertex_const_circulator {
-		const GISHalfedge *	ptr;
-	public:
-		typedef bidirectional_iterator_tag iterator_category;
-		Halfedge_around_vertex_const_circulator(const GISHalfedge * he = NULL) : ptr(he) { }
-		Halfedge_around_vertex_const_circulator(const Halfedge_around_vertex_const_circulator& rhs) : ptr(rhs.ptr) { }
-		Halfedge_around_vertex_const_circulator& operator=(const Halfedge_around_vertex_const_circulator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Halfedge_around_vertex_const_circulator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Halfedge_around_vertex_const_circulator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Halfedge_around_vertex_const_circulator& rhs) const { return ptr < rhs.ptr; }
-		const GISHalfedge& operator*() const { return *ptr; }
-		const GISHalfedge * operator->() const { return ptr; }
-		Halfedge_around_vertex_const_circulator& operator++() { ptr = ptr->mNext->mTwin; return *this; }
-		Halfedge_around_vertex_const_circulator operator++(int) { const GISHalfedge * old = ptr; ptr = ptr->mNext->mTwin; return Halfedge_around_vertex_const_circulator(old); }
-		operator const GISHalfedge * () const { return ptr; }
-	};
-
-
-	GISHalfedge *	mLinkPrev;
-	GISHalfedge *	mLinkNext;
-
-	GISHalfedge *	mNext;
-	GISHalfedge *	mTwin;
-	GISFace *		mFace;
-	GISVertex *		mTarget;
-
-	GISHalfedge *	mNextIndex;
-	friend class	MapHalfedgeBucketTraits;
-
+struct GIS_halfedge_data {
 public:
-
-	GISHalfedge *		next_index()	{ return mNextIndex; }
-
-	GISHalfedge *		twin() 			{ return mTwin; }
-	const GISHalfedge *	twin() const	{ return mTwin; }
-	GISFace *			face() 			{ return mFace; }
-	const GISFace *		face() const	{ return mFace; }
-	GISVertex *			target()	 	{ return mTarget; }
-	const GISVertex *	target() const	{ return mTarget; }
-	GISVertex *			source() 		{ return mTwin->mTarget; }
-	const GISVertex *	source() const	{ return mTwin->mTarget; }
-	GISHalfedge *		next() 			{ return mNext; }
-	const GISHalfedge *	next() const	{ return mNext; }
-
-	void set_next(GISHalfedge * next) 	{ mNext = next; }
-	void set_face(GISFace * face) 		{ mFace = face; }
-	void set_twin(GISHalfedge * twin) 	{ mTwin = twin; }
-	void set_target(GISVertex * target) { mTarget = target; }
-
-	GISHalfedge *		points_to_me(void);				// Returns the halfedge that has this as its next
-	bool				is_on_outer_ccb(void) const;	// Returns true if this edge is part on an outer CCB
-	GISHalfedge *		get_pre_twin(void);				// Returns the halfedge that has our twin as its next
-	GISHalfedge *		get_hole_rep(void);				// If we are a hole, returns the halfedge that "represents" the hole, or NULL if we're part of a CCB.
-	GISHalfedge *		get_leftmost(void);				// Return the leftmost in my ring.  If there is a vertical segment, this may return that seg, or a seg pointing to it.
-
-					GISHalfedge();
-					GISHalfedge(const GISHalfedge&);
-	virtual			~GISHalfedge();
-
-	void			SwapDominance(void);			// USE WITH CAUTION!!!!
-
-	bool						mDominant;			// Is non-sided info stored on this
-													// Halfedge or my twin?
-
-	GISHalfedge *		dominant() 			{ return mDominant ? this : mTwin; }
-	const GISHalfedge *	dominant() const	{ return mDominant ? this : mTwin; }
-
+	GIS_halfedge_data() : mDominantXXX(false), mMark(false),mInset(0.0f), mTransition(0.0) { }
 
 	int							mTransition;		// Transition type ID
 	GISNetworkSegmentVector		mSegments;			// Network segments along us
 	GISParamMap					mParams;
-
 	double						mInset;				// Largest unusable inset for this side
-
+	bool                        mDominantXXX;
 	bool						mMark;				// Temporary, for algorithms
-
 #if OPENGL_MAP
 	float						mGL[4];				// Pre-expanded line!
 	float						mGLColor[3];
 #endif
-
-
-private:
-
-	GISHalfedge&	operator=(const GISHalfedge&);
-
-	friend			class	Pmwx;
-	friend			class	GISFace;
-	friend			class	GISVertex;
-
-};
-
-/************************************************************************
- * VERTEX
- ************************************************************************/
-
-
-class	GISVertex {
-
-	class	Vertex_iterator : public iterator<bidirectional_iterator_tag, GISVertex> {
-		GISVertex *	ptr;
-	public:
-		Vertex_iterator(GISVertex * he = NULL) : ptr(he) { }
-		Vertex_iterator(const Vertex_iterator& rhs) : ptr(rhs.ptr) { }
-		Vertex_iterator& operator=(const Vertex_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Vertex_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Vertex_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Vertex_iterator& rhs) const { return ptr < rhs.ptr; }
-		GISVertex& operator*() const { return *ptr; }
-		GISVertex * operator->() const { return ptr; }
-		Vertex_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Vertex_iterator operator++(int) { GISVertex * old = ptr; ptr = ptr->mLinkNext; return Vertex_iterator(old); }
-		Vertex_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Vertex_iterator operator--(int) { GISVertex * old = ptr; ptr = ptr->mLinkPrev; return Vertex_iterator(old); }
-		operator GISVertex *() const { return ptr; }
-	};
-
-	class	Vertex_const_iterator : public iterator<bidirectional_iterator_tag, const GISVertex> {
-		const GISVertex *	ptr;
-	public:
-		Vertex_const_iterator(const GISVertex * he = NULL) : ptr(he) { }
-		Vertex_const_iterator(const Vertex_const_iterator& rhs) : ptr(rhs.ptr) { }
-		Vertex_const_iterator& operator=(const Vertex_const_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Vertex_const_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Vertex_const_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Vertex_const_iterator& rhs) const { return ptr < rhs.ptr; }
-		const GISVertex& operator*() const { return *ptr; }
-		const GISVertex * operator->() const { return ptr; }
-		Vertex_const_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Vertex_const_iterator operator++(int) { const GISVertex * old = ptr; ptr = ptr->mLinkNext; return Vertex_const_iterator(old); }
-		Vertex_const_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Vertex_const_iterator operator--(int) { const GISVertex * old = ptr; ptr = ptr->mLinkPrev; return Vertex_const_iterator(old); }
-		operator const GISVertex *() const { return ptr; }
-	};
-
-
-	GISVertex *		mLinkPrev;
-	GISVertex *		mLinkNext;
-
-	GISHalfedge *	mHalfedge;
-	Point2			mPoint;
-
-	typedef	GISHalfedge::Halfedge_around_vertex_circulator			Halfedge_around_vertex_circulator;
-	typedef	GISHalfedge::Halfedge_around_vertex_const_circulator	Halfedge_around_vertex_const_circulator;
-
-	GISVertex *		mNextIndex;
-	friend class	MapVertexBucketTraits;
-
-public:
-
-	GISVertex *			next_index()	{ return mNextIndex; }
-
-	Point2&				point() 				{ return mPoint; }
-	const Point2&		point() const 			{ return mPoint; }
-	GISHalfedge *		halfedge()				{ return mHalfedge; }
-	const GISHalfedge *	halfedge() const		{ return mHalfedge; }
-
-	void			set_halfedge(GISHalfedge * e)	{ mHalfedge = e; }
-
-	unsigned int 	degree() const;
-	GISHalfedge *	rightmost_rising();
-
-	Halfedge_around_vertex_circulator		incident_halfedges() 		{ return Halfedge_around_vertex_circulator(mHalfedge); }
-	Halfedge_around_vertex_const_circulator	incident_halfedges() const 	{ return Halfedge_around_vertex_const_circulator(mHalfedge); }
-
-					GISVertex();
-					GISVertex(const GISVertex&);
-	virtual			~GISVertex();
-
-	char			mTunnelPortal;
-
-#if OPENGL_MAP
-	float						mGL[2];				// Pre-expanded line!
-#endif
-
-private:
-
-	GISVertex		operator=(const GISVertex&);
-
-	friend			class	Pmwx;
-
 };
 
 
-/************************************************************************
- * FACE
- ************************************************************************/
 
-
-class	GISFace {
-
-	class	Face_iterator : public iterator<bidirectional_iterator_tag, GISFace> {
-		GISFace *	ptr;
-	public:
-		Face_iterator(GISFace * he = NULL) : ptr(he) { }
-		Face_iterator(const Face_iterator& rhs) : ptr(rhs.ptr) { }
-		Face_iterator& operator=(const Face_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Face_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Face_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Face_iterator& rhs) const { return ptr < rhs.ptr; }
-		GISFace& operator*() const { return *ptr; }
-		GISFace * operator->() const { return ptr; }
-		Face_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Face_iterator operator++(int) { GISFace * old = ptr; ptr = ptr->mLinkNext; return Face_iterator(old); }
-		Face_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Face_iterator operator--(int) { GISFace * old = ptr; ptr = ptr->mLinkPrev; return Face_iterator(old); }
-		operator GISFace * () const { return ptr; }
-	};
-
-	class	Face_const_iterator  : public iterator<bidirectional_iterator_tag, const GISFace> {
-		const GISFace *	ptr;
-	public:
-		Face_const_iterator(const GISFace * he = NULL) : ptr(he) { }
-		Face_const_iterator(const Face_const_iterator& rhs) : ptr(rhs.ptr) { }
-		Face_const_iterator& operator=(const Face_const_iterator& rhs) { ptr = rhs.ptr; return *this; }
-		bool operator==(const Face_const_iterator& rhs) const { return ptr == rhs.ptr; }
-		bool operator!=(const Face_const_iterator& rhs) const { return ptr != rhs.ptr; }
-		bool operator<(const Face_const_iterator& rhs) const { return ptr < rhs.ptr; }
-		const GISFace& operator*() const { return *ptr; }
-		const GISFace * operator->() const { return ptr; }
-		Face_const_iterator& operator++() { ptr = ptr->mLinkNext; return *this; }
-		Face_const_iterator operator++(int) { const GISFace * old = ptr; ptr = ptr->mLinkNext; return Face_const_iterator(old); }
-		Face_const_iterator& operator--() { ptr = ptr->mLinkPrev; return *this; }
-		Face_const_iterator operator--(int) { const GISFace * old = ptr; ptr = ptr->mLinkPrev; return Face_const_iterator(old); }
-		operator const GISFace * () const { return ptr; }
-	};
-
-	GISFace *					mLinkPrev;
-	GISFace *					mLinkNext;
-
-	GISHalfedge *				mOuterCCB;
-	set<GISHalfedge *>			mHoles;
-
-	typedef	set<GISHalfedge *>::iterator				Holes_iterator;
-	typedef	set<GISHalfedge *>::const_iterator			Holes_const_iterator;
-	typedef GISHalfedge::Ccb_halfedge_circulator		Ccb_halfedge_circulator;
-	typedef GISHalfedge::Ccb_halfedge_const_circulator	Ccb_halfedge_const_circulator;
-
-	GISFace *		mNextIndex;
-	friend class	MapFaceBucketTraits;
-
+class GIS_face_data {
 public:
-
-	GISFace *					next_index()			{ return mNextIndex; }
-
-	bool						is_unbounded() const 	{ return mOuterCCB == NULL; }
-	Holes_iterator				holes_begin() 			{ return mHoles.begin(); }
-	Holes_const_iterator		holes_begin() const 	{ return mHoles.begin(); }
-	Holes_iterator				holes_end() 			{ return mHoles.end(); }
-	Holes_const_iterator		holes_end() const 		{ return mHoles.end(); }
-	int							holes_count() const 	{ return mHoles.size(); }
-	void						copy_holes(set<GISHalfedge *>& holes) const { holes = mHoles; }
-
-	Ccb_halfedge_circulator			outer_ccb() 			{ return Ccb_halfedge_circulator(mOuterCCB); }
-	Ccb_halfedge_const_circulator	outer_ccb() const		{ return Ccb_halfedge_const_circulator(mOuterCCB); }
-
-	void	set_outer_ccb(GISHalfedge * outer);
-	void	add_hole(GISHalfedge * inner);
-	void	delete_hole(GISHalfedge * inner);
-	bool	is_hole_ccb(GISHalfedge * inner)				{ return mHoles.count(inner); }
-
-					GISFace();
-					GISFace(const GISFace&);
-	virtual			~GISFace();
-
-//	int							mIsWater;
-	int							mTerrainType;
+	//	int							mIsWater;
+	int							mTerrainType;		// This is a feature type for matching.  EXCEPTION: terrain_Water is both a feature and terrain.
 	GISParamMap					mParams;
 	GISPointFeatureVector		mPointFeatures;
 	GISPolygonFeatureVector		mPolygonFeatures;
+	//GISAreaFeatureVector			mAreaFeature;
 	GISAreaFeature_t			mAreaFeature;
-
 	// Stuff that's been hand placed in the area by object propagation
 	GISObjPlacementVector		mObjs;
 	GISPolyObjPlacementVector	mPolyObjs;
-
-	// A temporary cache - buckets use this to speed
-	// up queries.
-	Bbox2						mBoundsCache;
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
 
+	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
+	bool		TerrainMatch(const GIS_face_data& rhs) const { return mTerrainType == rhs.mTerrainType; }
+	bool		AreaMatch(const GIS_face_data& rhs) const { return (mTerrainType == rhs.mTerrainType && mAreaFeature.mFeatType == rhs.mAreaFeature.mFeatType); }
+
+	#if DEV
+		~GIS_face_data() { mTerrainType = 0xDEADBEEF; }
+	#endif
+	GIS_face_data() : mTerrainType(0) { mAreaFeature.mFeatType = 0; }
+	GIS_face_data(const GIS_face_data &x) {
+		mTerrainType = x.mTerrainType;
+		mParams = x.mParams;
+		mPointFeatures = x.mPointFeatures;
+		mPolygonFeatures = x.mPolygonFeatures;
+		mAreaFeature = x.mAreaFeature;
+		mObjs = x.mObjs;
+		mPolyObjs = x.mPolyObjs;
+		mTemp1 = x.mTemp1;
+		mTemp2 = x.mTemp2;
+	}
 #if OPENGL_MAP
 	vector<float>				mGLTris;						// Pre-expanded triangles
 	float						mGLColor[4];
 #endif
+};
 
-	bool			IsWater(void) const; 						// Is this polygon wet?
-	bool			TerrainMatch(const GISFace& rhs) const;		//
-	bool			AreaMatch(const GISFace& rhs) const;
+/******************************************************************************************************************************************************
+ * TRAITS NEEDED FOR THE MAP, ETC.
+ ******************************************************************************************************************************************************/
 
-private:
+/*
+	We wrap segment traits in both Gps_segment_traits_2 and Arr_consolidated_curve_data_traits_2 to allow us to keep an integer "key" per curve, and
+	also to use this in polygon sets.
+*/
 
-	GISFace&		operator=(const GISFace&);
+typedef	std::vector<FastKernel::Point_2>											Container_;
+typedef CGAL::Arr_segment_traits_2<FastKernel>										TraitsBase;
+typedef CGAL::Arr_consolidated_curve_data_traits_2<TraitsBase, int>					Arr_seg_traits_;
+typedef CGAL::Gps_segment_traits_2<FastKernel, Container_, Arr_seg_traits_>			Traits_2;
 
-	friend			class	Pmwx;
+// These data types define the "key" data per curve.
+typedef Arr_seg_traits_::Data					EdgeKey;
+typedef	Arr_seg_traits_::Data_container			EdgeKey_container;
+typedef	Arr_seg_traits_::Data_iterator			EdgeKey_iterator;
+
+// Some geometry types that are defined once our traits are established...
+typedef Traits_2::X_monotone_curve_2            X_monotone_curve_2;
+typedef Traits_2::Curve_2						Curve_2;
+
+/******************************************************************************************************************************************************
+ * ARRANGEMENT ("the map")
+ ******************************************************************************************************************************************************/
+
+/*
+	Our arrangement has a bunch of special tricks:
+
+	1.	Because we are constructing based on the GPS traits, each face has "contained" to specify if the "face" is IN a set of polygons..if it is,
+		then we can convert to a polygon set.  Similarly, we can get a map from a set of polygons.
+
+	2.	We have GIS data on each of the face, vertex, and half-edge data.
+
+	3.	We have a consolidated "key" value for curves.  What this lets us do is identify the source vector that created each half-edge...so we can insert
+		a ton of half-edges, then go look at these keys and see what source data they go with.
+
+		Note that the keys are associated with EDGES, not HALF-EDGES...that is, two half-edges share a curve (which has its key) by ptr.
+
+*/
+
+typedef CGAL::Arr_extended_dcel<Traits_2,
+								GIS_vertex_data,
+								GIS_halfedge_data,
+								GIS_face_data,
+								CGAL::Arr_vertex_base<Point_2>,
+								CGAL::Arr_halfedge_base<X_monotone_curve_2>,
+								CGAL::Gps_face_base>									Dcel_base;
+
+class	Dcel : public Dcel_base {
+public:
+
+  Halfedge* new_edge()
+  {
+	Halfedge * h = Dcel_base::new_edge();
+	h->data().mDominantXXX = 1;
+	h->opposite()->data().mDominantXXX = 0;
+	return h;
+	}
+};
+
+typedef CGAL::Arrangement_2<Traits_2,Dcel>					Arrangement_2;
+
+typedef Arrangement_2::Vertex_handle                  Vertex_handle;
+typedef Arrangement_2::Halfedge_handle                Halfedge_handle;
+typedef Arrangement_2::Face_handle                    Face_handle;
+
+typedef Arrangement_2::Vertex_const_handle                  Vertex_const_handle;
+typedef Arrangement_2::Halfedge_const_handle                Halfedge_const_handle;
+typedef Arrangement_2::Face_const_handle                    Face_const_handle;
+
+typedef CGAL::Arr_accessor<Arrangement_2>               Arr_accessor;
+
+typedef  Arr_accessor::Dcel_vertex              DVertex;
+typedef  Arr_accessor::Dcel_halfedge            DHalfedge;
+typedef  Arr_accessor::Dcel_face                DFace;
+typedef  Arr_accessor::Dcel_hole                DHole;
+typedef  Arr_accessor::Dcel_isolated_vertex     DIso_vert;
+
+// Landmark point location is pretty fast to construct, even on a complex map, and has good lookup time.  I tried the RIC
+// locator, but instantiation time is significantly longer.
+typedef CGAL::Arr_landmarks_point_location<Arrangement_2>  Locator;
+
+typedef Arrangement_2		Pmwx;
+
+inline bool	he_is_same_direction(Halfedge_handle he)
+{
+	return (he->curve().is_directed_right() == (he->direction() == CGAL::SMALLER));
+}
+
+inline Halfedge_handle he_get_same_direction(Halfedge_handle he)
+{
+	return he_is_same_direction(he) ? he : he->twin();
+}
+
+inline bool he_is_same_direction_as(Halfedge_handle he, const Curve_2& c)
+{
+	return CGAL::angle(
+		he->source()->point(),
+		he->target()->point(),
+		he->target()->point() + Vector_2(c.source(),c.target())) == CGAL::OBTUSE;
+}
+
+
+/******************************************************************************************************************************************************
+ * GENERAL POLYGONS
+ ******************************************************************************************************************************************************/
+
+/*
+	Polygon_set_2 is a class that provides polygon boolean operations, using an arrangement to do the merge-cut operations.  Because it uses an
+	arragement we can make some very fast conversions from a map to a polygon set and back.  For example, we could:
+
+	- Build a bunch of polygons, then use overlay to dump the results directly into a map.
+	- Get our map as a set of polygons.
+
+	NOTE: if we are going to construct a polygon set from an arrangement, we must set the "contained" property on all faces!!
+*/
+
+
+class	Polygon_set_2	: public CGAL::General_polygon_set_2<Traits_2, Dcel > {
+public:
+
+	typedef	CGAL::General_polygon_set_2<Traits_2, Dcel >	base;
+
+	  typedef base::Traits_2                                        Traits_2;
+	  typedef base::Dcel                                            Dcel;
+	  typedef base::Polygon_2										Polygon_2;
+	  typedef base::Polygon_with_holes_2							Polygon_with_holes_2;
+	  typedef base::Arrangement_2									Arrangement_2;
+	  typedef std::size_t											Size;
+
+	Polygon_set_2() { }
+	Polygon_set_2(const Polygon_2& rhs) : base(rhs) { }
+
+	Polygon_set_2(const Polygon_set_2& rhs) : base(rhs) { }
+	Polygon_set_2(const base& rhs) : base(rhs) { }
+
+	Polygon_set_2(const Arrangement_2& rhs)
+	{
+	    delete m_arr;
+		m_arr = new Arrangement_2(rhs);
+		remove_redundant_edges();
+	}
+
+	Polygon_set_2& operator=(const Arrangement_2& rhs)
+	{
+	    delete m_arr;
+		m_arr = new Arrangement_2(rhs);
+		remove_redundant_edges();
+		return *this;
+	}
+
+	Polygon_set_2& operator=(const Polygon_set_2& ps)
+	{
+		if (this == &ps)
+			return (*this);
+
+		if (m_traits_owner)
+			delete m_traits;
+		delete m_arr;
+		m_traits = new Traits_2(*(ps.m_traits));
+		m_traits_owner = true;
+		m_arr = new Arrangement_2(*(ps.m_arr));
+		return (*this);
+	}
 
 };
 
 
-/************************************************************************
- * SPATIAL INDEXING HELPERS
- ************************************************************************/
+/******************************************************************************************************************************************************
+ * MISC CRAP
+ ******************************************************************************************************************************************************/
 
-// Planar map uses quad trees to provide spatial indexing.  Basically
-// the index is okay FROM when we call "index until when we edit.
-// Fast accessors return queries/
+/*
+	This is all weird misc. crap that we ended up having to have to support temporary legacy code.  We're not done with the evolution until all of this
+	stuff is unused and can be nuked.
+*/
 
-// Please note that vertices are also stored in a 1-d map by Y coordinate.
-// This is NOT useful for spatial range queries - instead it is used for
-// fast exact-vert location - that is, recovering a vertex by its point coordinates.
-// This is very useful in certain construction ops.
 
-#include "QuadTree.h"
 
-class	MapBucketTraits {
-public:
+/*
+inline Vector_2 normalize(Vector_2 v) {
+	return v * (1.0/sqrt(CGAL::to_double(v.squared_length())));
+}
 
-	typedef	Bbox2		KeyType;
-	typedef	Bbox2		CullType;
+inline FastKernel::Vector_3 normalize(FastKernel::Vector_3 v) {
+	return v * (1.0/sqrt(CGAL::to_double(v.squared_length())));
+}
+ */
 
-	void		expand_by(CullType& io_cull, const CullType& part);		// expand io_cull by part
-	void		set_empty(CullType& c);									// make zero-area cull
+inline Vector_2 normalize(Vector_2 v) {
+	return v * (1.0/sqrt(CGAL::to_double(v.x())*CGAL::to_double(v.x()) + CGAL::to_double(v.y())*CGAL::to_double(v.y())));
+}
 
-	void		subkey(const KeyType& e, KeyType& k, int n);			// change K to be the Nth quadrant subkey of E
-	bool		contains(const KeyType& outer, const KeyType& inner);	// return true if outer fully contains inner
-	void		make_key(const CullType& cull, KeyType&	key);
+inline FastKernel::Vector_3 normalize(FastKernel::Vector_3 v) {
+	return v * (1.0/sqrt(CGAL::to_double(v.x())*CGAL::to_double(v.x()) + CGAL::to_double(v.y())*CGAL::to_double(v.y()) + CGAL::to_double(v.z())*CGAL::to_double(v.z())));
+}
 
-	void *		alloc(size_t bytes);
+/*
+inline Point_2 centroid(Polygon_2 p) {
+	return centroid(p.vertices_begin(), p.vertices_end());
+}
+*/
 
-	~MapBucketTraits();
+// Given a segment, move it to the left (based on its directionality) by a distance.
+static	void	MoveSegLeft(const Segment_2& l1, double dist, Segment_2& l2)
+{
+	Vector_2	v = Vector_2(l1.source(), l1.source()).perpendicular(CGAL::COUNTERCLOCKWISE);
+	v = normalize(v);
+	v = v * dist;
+	l2 = Segment_2(l1.source() + v, l1.target() + v);
+}
 
-	list<void *>	alloc_list;
 
+static void	InsetPolygon_2(
+					  const Polygon_2&				inChain,
+					  const double *				inRatios,
+					  double						inInset,
+					  bool						inIsRing,
+					  Polygon_2&					outChain,
+					  void						(* antennaFunc)(int n, void * ref),
+					  void *						ref)
+{
+	if (!outChain.is_empty())
+		outChain.clear();
+
+	int n = 0;
+	vector<Segment_2>	segments, orig_segments;
+
+	// First we calculate the inset edges of each side of the polygon.
+
+	for (int n = 0, m = 1; n < inChain.size(); ++n, ++m)
+	{
+		Segment_2	edge(inChain[n], inChain[m % inChain.size()]);
+		orig_segments.push_back(edge);
+		Segment_2	seg;
+		MoveSegLeft(edge, (inRatios == NULL) ? inInset : (inRatios[n] * inInset), seg);
+		segments.push_back(seg);
+	}
+
+	// Now we go through and find each vertex, the intersection of the supporting
+	// lines of the edges.  For the very first and last point if not in a polygon,
+	// we don't use the intersection, we just find where that segment ends for a nice
+	// crips 90 degree angle.
+
+	int num_inserted = 0;
+	int last_vertex = segments.size() - 1;
+
+	for (int outgoing_n = 0; outgoing_n < segments.size(); ++outgoing_n)
+	{
+		// the Nth segment goes from the Nth vertex to the Nth + 1 vertex.
+		// Therefore it is the "outgoing" segment.
+		int 				incoming_n = outgoing_n - 1;
+		if (incoming_n < 0)	incoming_n = last_vertex;
+
+		/* We are going through vertex by vertex and determining the point(s) added
+		 * by each pair of sides.  incoming is the first side and outgoing is the second
+		 * in a CCW rotation.  There are 5 special cases:
+		 *
+		 * (1) The first point in a non-ring is determined only by the second side.
+		 * (2) the last point in a non-ring is determined only by the first side.
+		 * (3) If we have a side that overlaps exactly backward onto itself, we generate two
+		 *     points to make a nice square corner around this 'antenna'.  Please note the
+		 *     requirement that both sides be the same length!!
+		 * (4) If two sides are almost colinear (or are colinear) then the intersection we would
+		 *     normally use to find the intersect point will have huge precision problems.  In
+		 *     this case we take an approximate point by just treating it as straight and splitting
+		 *     the difference.  The inset will be a bit too thin, but only by a fractional amount that
+		 *     is close to our precision limits anyway.
+		 * (5) If two sides are an outward bend over sixty degrees, the bend would produce a huge jagged
+		 *     sharp end.  We "mitre" this end by adding two points to prevent absurdity.
+		 *
+		 * GENERAL CASE: when all else fails, we inset both sides, and intersect - that's where the inset
+		 * polygon turns a corner.
+		 *
+		 *****/
+
+		if (outgoing_n == 0 && !inIsRing)
+		{
+			/* CASE 1 */
+			// We're the first in a chain.  Outgoing vertex is always right.
+			outChain.push_back(segments[outgoing_n].source());
+		}
+		else if (outgoing_n == last_vertex && !inIsRing)
+		{
+			/* CASE 2 */
+			// We're the last in a chain.  Incoming vertex is always right
+			outChain.push_back(segments[incoming_n].target());
+		}
+		else if (orig_segments[incoming_n].source() == orig_segments[outgoing_n].target())
+		{
+			/* CASE 3 */
+			// Are the two sides in exactly opposite directions?  Special case...we have to add a vertex.
+			// (This is almost always an "antenna" in the data, that's why we have to add the new side, the point of the antenna
+			// becomes thick.  Since antennas have equal coordinates, an exact opposite test works.)
+			Segment_2	new_side(segments[incoming_n].target(), segments[outgoing_n].source()), new_side2;
+			MoveSegLeft(new_side, (inRatios != NULL) ? (inRatios[outgoing_n] * inInset) : inInset, new_side2);
+			//			new_side2 = new_side;
+			outChain.push_back(new_side2.source());
+			outChain.push_back(new_side2.target());
+			if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);
+		} else {
+
+			// These are the intersecting cases - we need a dot product to determine what to do.
+			Vector_2 v1(segments[incoming_n].source(),segments[incoming_n].target());
+			Vector_2 v2(segments[outgoing_n].source(),segments[outgoing_n].target());
+			v1 = normalize(v1);
+			v2 = normalize(v2);
+			double dot = CGAL::to_double(v1 * v2);
+
+			if (dot > 0.999961923064)
+			{
+				/* CASE 4 */
+				// Our sides are nearly colinear - don't trust intersect!
+				outChain.push_back(CGAL::midpoint(segments[incoming_n].target(), segments[outgoing_n].source()));
+			}
+			else if (dot < -0.5 && !(CGAL::orientation(v1,v2)==CGAL::LEFT_TURN))
+			{
+				/* CASE 5 */
+				// A sharp outward turn of more than 60 degrees - at this point the intersect point will be over
+				// twice the road thickness from the intersect point.  Not good!
+				Point_2	p1(segments[incoming_n].target());
+				Point_2	p2(segments[outgoing_n].source());
+				p1 = p1 + (v1 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) *  inInset);
+				p2 = p2 + (v2 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) * -inInset);
+				outChain.push_back(p1);
+				outChain.push_back(p2);
+				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);
+			}
+			else
+			{
+				/* GENERAL CASE */
+				// intersect the supporting line of two segments.
+				Line_2	line1(segments[incoming_n]);
+				Line_2	line2(segments[outgoing_n]);
+				Point_2	p;
+				CGAL::Object r = CGAL::intersection(line1,line2);
+				if (CGAL::assign(p, r))
+					outChain.push_back(p);
+				else
+					outChain.push_back(CGAL::midpoint(segments[incoming_n].target(), segments[outgoing_n].source()));
+			}
+		}
+	}
+}
+
+struct	CoordTranslator_2 {
+	Point_2	mSrcMin;
+	Point_2	mSrcMax;
+	Point_2	mDstMin;
+	Point_2	mDstMax;
+
+	Point_2	Forward(const Point_2& input) const;
+	Point_2	Reverse(const Point_2& input) const;
 };
 
-class	MapFaceBucketTraits : public MapBucketTraits {
-public:
-
-	typedef	GISFace		ValueType;
-	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
-	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
-	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
-};
-
-class	MapHalfedgeBucketTraits : public MapBucketTraits {
-public:
-
-	typedef	GISHalfedge		ValueType;
-	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
-	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
-	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
-
-};
-
-class	MapVertexBucketTraits : public MapBucketTraits {
-public:
-
-	typedef	GISVertex		ValueType;
-	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
-	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
-	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
-
-};
-
-/************************************************************************
- * MAP
- ************************************************************************/
 
 
-class	Pmwx {
-public:
-					Pmwx();
-					Pmwx(const Pmwx&);
-					Pmwx(const GISFace&);
-					~Pmwx();
-	Pmwx& operator=(const Pmwx&);
-	Pmwx& operator=(const GISFace&);
-	void			swap(Pmwx&);
+ inline Point_2	CoordTranslator_2::Forward(const Point_2& input) const
+{
+	return Point_2(
+				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
+				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
+}
+ inline Point_2	CoordTranslator_2::Reverse(const Point_2& input) const
+{
+	return Point_2(
+				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
+				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
+}
 
-	typedef GISVertex *												Vertex_handle;
-	typedef const GISVertex *										Vertex_const_handle;
-	typedef GISHalfedge *											Halfedge_handle;
-	typedef const GISHalfedge *										Halfedge_const_handle;
-	typedef GISFace *												Face_handle;
-	typedef const GISFace *											Face_const_handle;
-	typedef	GISVertex::Vertex_iterator								Vertex_iterator;
-	typedef	GISVertex::Vertex_const_iterator						Vertex_const_iterator;
-	typedef	GISHalfedge::Halfedge_iterator							Halfedge_iterator;
-	typedef	GISHalfedge::Halfedge_const_iterator					Halfedge_const_iterator;
-	typedef	GISVertex::Halfedge_around_vertex_circulator			Halfedge_around_vertex_circulator;
-	typedef	GISVertex::Halfedge_around_vertex_const_circulator	Halfedge_around_vertex_const_circulator;
-	typedef GISFace::Face_iterator									Face_iterator;
-	typedef GISFace::Face_const_iterator							Face_const_iterator;
-	typedef GISFace::Holes_iterator									Holes_iterator;
-	typedef GISFace::Holes_const_iterator							Holes_const_iterator;
-	typedef GISFace::Ccb_halfedge_circulator						Ccb_halfedge_circulator;
-	typedef GISFace::Ccb_halfedge_const_circulator					Ccb_halfedge_const_circulator;
-
-	GISFace *		unbounded_face() { return mUnbounded; }
-	const GISFace *	unbounded_face() const { return mUnbounded; }
-
-	int				number_of_vertices() 	const { return mVertices;	}
-	int				number_of_halfedges() 	const { return mHalfedges;	}
-	int				number_of_faces() 		const { return mFaces;		}
-
-	Vertex_iterator			vertices_begin()			{ return Vertex_iterator(mFirstVertex); }
-	Vertex_const_iterator	vertices_begin()	const	{ return Vertex_const_iterator(mFirstVertex); }
-	Vertex_iterator			vertices_end()				{ return Vertex_iterator(NULL); }
-	Vertex_const_iterator	vertices_end()		const	{ return Vertex_const_iterator(NULL); }
-	Halfedge_iterator		halfedges_begin()			{ return Halfedge_iterator(mFirstHalfedge); }
-	Halfedge_const_iterator	halfedges_begin()	const	{ return Halfedge_const_iterator(mFirstHalfedge); }
-	Halfedge_iterator		halfedges_end()				{ return Halfedge_iterator(NULL); }
-	Halfedge_const_iterator	halfedges_end()		const	{ return Halfedge_const_iterator(NULL); }
-	Face_iterator			faces_begin()				{ return Face_iterator(mFirstFace); }
-	Face_const_iterator		faces_begin()		const	{ return Face_const_iterator(mFirstFace); }
-	Face_iterator			faces_end()					{ return Face_iterator(NULL); }
-	Face_const_iterator		faces_end()			const	{ return Face_const_iterator(NULL); }
-
-	void			clear();
-	bool			empty() const { return mVertices == 0 && mHalfedges == 0 && mFaces == 1; }
-	bool			is_valid() const;
-
-	/*****************************************************************************
-	 * LOCATION
-	 *****************************************************************************/
-
-	enum Locate_type {
-		locate_Vertex,
-		locate_Halfedge,
-		locate_Face
-	};
-
-	/* Given a point, find it.  Returns a locate type.  For a face, halfedge
-	 * is face's outer CCB halfedge.  For vertex, halfedge's target is vertex.  For
-	 * unbounded face, NULL is returned if it's empty. */
-	GISHalfedge *	locate_point(const Point2& p, Locate_type& loc);
-
-	/* Start from one point, go to the next.  We pass in our start as a fully
-	 * located point, e.g. the actual point, its topological location, and the
-	 * most useful halfedge we have.  Given a destination, we return the first
-	 * thing we intersect.  This will be either a vertex if we hit one, an edge
-	 * if we cross one, or a face if we terminate in a face.  (In this case,
-	 * the face should match our own!)  We return the crossing point, a locate type,
-	 * and a halfedge similar to above. */
-	GISHalfedge *	ray_shoot(
-						const Point2&		start,
-						Locate_type			start_type,
-						GISHalfedge *		start_hint,
-						const Point2&		dest,
-						Point2&				crossing,
-						Locate_type&		loc);
-
-	/* Vertex location - this is more specific than point location in that it utilizes
-	 * the hash table and then bails. */
-	GISVertex *		locate_vertex(const Point2& inLocation);
-
-	/*****************************************************************************
-	 * BASIC TOPOLOGICAL EDITING
-	 *****************************************************************************/
-
-	/* Relocate a vertex - please note that this does not check for
-	 * induced edge collisions. */
-	void			set_vertex_location(GISVertex * inVertex, const Point2& inPoint);
-
-	/* Given an edge, split it into two, creating a new vertex.
-	 * Returns inEdge, whose target is now the split pt. */
-	GISHalfedge	*	split_edge(GISHalfedge * inEdge, const Point2& split);
-
-	/* Merge two edges - first->next must be second.  Next is destroyed,
-	 * first is returned.  first's target's valence must be 2.  Returns first. */
-	GISHalfedge *	merge_edges(GISHalfedge * first, GISHalfedge * second);
-
-	/* Remove edge.  If a face is removed, the unbounded face must be kept, or
-	 * a face is kept over its hole.  In a tie, the edge's face is used.
-	 * This routine returns a ptr to the DELETED face!!  This means the pointer
-	 * is BAD and should only be used to figure out if a face was deleted. */
-	GISFace *			remove_edge(GISHalfedge * inEdge);
-
-	/* Insert one or more edges as needed to form an edge from one point
-	 * to another.  If passed, a notifier is called on each new halfedge - in
-	 * the direction from p1 to p2 when on the new edge.  The first param is
-	 * the old halfedge, the second the new.  One will be NULL for edges along
-	 * P1 to P2.  If they are both not NULL, it is a different edge being split.
-	 * Returns the last halfedge inserted, pointing to P2. */
-	GISHalfedge *	insert_edge(const Point2& p1, const Point2& p2,
-						void(* notifier)(GISHalfedge *, GISHalfedge *, void *), void * ref);
-	GISHalfedge *	insert_edge(const Point2& p1, const Point2& p2, GISHalfedge * hint, Locate_type location,
-						void(* notifier)(GISHalfedge *, GISHalfedge *, void *), void * ref);
+inline Point_2	ben2cgal(const Point2& p) { return Point_2(p.x(),p.y()); }
+inline Point2	cgal2ben(const Point_2& p) { return Point2(CGAL::to_double(p.x()),CGAL::to_double(p.y())); }
+inline Segment2	cgal2ben(const Segment_2& s) { return Segment2(cgal2ben(s.source()),cgal2ben(s.target())); }
 
 
-	/*****************************************************************************
-	 * SPECIALIZED TOPOLOGICAL EDITING - USEFUL WHEN YOU KNOW THINGS ABOUT THE MAP
-	 *****************************************************************************/
-
-	/* Given a ring of points that you know to not be in topological conflict
-	 * with any other lines, and whichd do not have antennas, this does an insert
-	 * in a given face. */
-	GISFace *		insert_ring(GISFace * parent, const vector<Point2>& inPoints);
-
-	/* These three routines insert an edge in specific situations.  The requirement
-	 * is that the edge not  cross any other edges; these routines are faster because
-	 * they don't check for splits.  For inserting between vertices, the flga on_outer_ccb
-	 * tells us that we know for a fact that both points are on the face's outer CCB.  This
-	 * provides a performance boost for the split-face-from-outer-ccb case because we can avoid
-	 * checking for holes.  Setting this on false causes the PMWX to check this for you. */
-	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);
-	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);
-	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2);
-
-	/*****************************************************************************
-	 * MISC STUFF
-	 *****************************************************************************/
-	/* Returns the smallest distance between any two points.  WARNING: this is
-	 * currently O(N^2) time! */
-	double		smallest_dist(Point2& p1, Point2& p2);
+inline bool operator<(const Face_handle& lhs, const Face_handle& rhs)			{	return &*lhs < &*rhs;	}
+inline bool operator<(const Vertex_handle& lhs, const Vertex_handle& rhs)		{	return &*lhs < &*rhs;	}
+inline bool operator<(const Halfedge_handle& lhs, const Halfedge_handle& rhs)	{	return &*lhs < &*rhs;	}
 
 
-	/*****************************************************************************
-	 * LOW LEVEL ACCESS - ONLY USE FOR SPECIALIZED CONSTRUCTION/FABRICATION
-	 *****************************************************************************/
-public:
-	GISVertex *		new_vertex(const Point2& inPoint);
-	GISHalfedge *	new_halfedge();
-	GISHalfedge *	new_halfedge(const GISHalfedge *);
-	GISHalfedge *	new_edge();
-	GISHalfedge *	new_edge(const GISHalfedge *);
-	GISFace *		new_face();
-	GISFace *		new_face(const GISFace *);
-
-	void	MoveFaceToMe		(Pmwx * old, GISFace * inFace);
-	void	MoveVertexToMe		(Pmwx * old, GISVertex * inVertex);
-	void	MoveHalfedgeToMe	(Pmwx * old, GISHalfedge * inHalfedge);
-	void	MoveEdgeToMe		(Pmwx * old, GISHalfedge * inHalfedge);
-
-	void	UnindexVertex(GISVertex * v);
-	void	ReindexVertex(GISVertex * v);
-
-	/*****************************************************************************
-	 * SPATIAL INDEXING
-	 *****************************************************************************/
-
-	void		FindFaceTouchesPt(const Point2&, vector<GISFace *>& outIDs);									// Fully checks for pt containment
-	void		FindFaceTouchesRectFast(const Point2&, const Point2&, vector<GISFace *>& outIDs);				// Intersects with face bbox, not face
-	void		FindFaceFullyInRect(const Point2&, const Point2&, vector<GISFace *>& outIDs);					// Full containment
-
-	void		FindHalfedgeTouchesRectFast(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);		// Intersects with half-edge bbox, not half-edge
-	void		FindHalfedgeFullyInRect(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);			// Full containment
-
-	void		FindVerticesTouchesPt(const Point2&, vector<GISVertex *>& outIDs);								// Perfect equalty.
-	void		FindVerticesTouchesRect(const Point2&, const Point2&, vector<GISVertex *>& outIDs);				// Full containment (any containment is full for pts)
-
-	void		Index(void);
-
-private:
-
-	typedef	QuadTree<MapFaceBucketTraits,9>			MapFaceBuckets;
-	typedef	QuadTree<MapHalfedgeBucketTraits,9>		MapHalfedgeBuckets;
-	typedef	QuadTree<MapVertexBucketTraits,4>		MapVertexBuckets;
-
-		MapFaceBuckets			mFaceBuckets;
-		MapHalfedgeBuckets		mHalfedgeBuckets;
-		MapVertexBuckets		mVertexBuckets;
-
-	// Special inserters.  NOTE: these are topological ONLY - all inserts are specified
-	// by half-edges.  The caller must ensure that when multiple halfedfges meet the
-	// topological requirements, that the one picked is the one meeting the geometric
-	// requirements.
-	GISHalfedge *	vertices_connected(GISVertex * v1, GISVertex * v2);
-	GISHalfedge *	get_preceding(GISHalfedge * points_to_vertex, const Point2& p);
-	GISHalfedge *	insert_edge_in_hole(GISFace * face, const Point2& p1, const Point2& p2);
-	GISHalfedge *	insert_edge_from_vertex(GISHalfedge * inAdjacent, const Point2& p);
-	GISHalfedge *	insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2);
 
 
-	void			delete_vertex(GISVertex * halfedge);
-	void			delete_halfedge(GISHalfedge * halfedge);
-	void			delete_edge(GISHalfedge * halfedge);
-	void			delete_face(GISFace * face);
 
-		GISVertex *		mFirstVertex;
-		GISVertex *		mLastVertex;
-		GISHalfedge *	mFirstHalfedge;
-		GISHalfedge *	mLastHalfedge;
-		GISFace *		mFirstFace;
-		GISFace *		mLastFace;
-
-		int		mVertices;
-		int		mHalfedges;
-		int		mFaces;
-
-		GISFace *		mUnbounded;
-
-	typedef	map<Point2, GISVertex *, lesser_y_then_x>	VertexMap;
-		VertexMap		mVertexIndex;
-};
 
 #endif

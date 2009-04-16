@@ -70,7 +70,7 @@
 
 #include <vector>
 #include "CompGeomDefs2.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 extern	int gWTPMErrors;
 

@@ -25,7 +25,7 @@
 #include "ParamDefs.h"
 #include "SimpleIO.h"
 #include "DEMDefs.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "MapAlgs.h"
 #include "GISTool_Globals.h"
 

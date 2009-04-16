@@ -22,7 +22,7 @@
  */
 
 #include "EuroRoads.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "DEMDefs.h"
 #include "DEMToVector.h"
 #include "DEMAlgs.h"

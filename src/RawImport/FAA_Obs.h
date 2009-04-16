@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 //class	Pmwx;
 
 struct	FAAObs_t {

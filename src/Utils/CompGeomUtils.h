@@ -25,7 +25,6 @@
 
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
-//#include "MapDefsCGAL.h"
 
 
 struct	CoordTranslator2 {

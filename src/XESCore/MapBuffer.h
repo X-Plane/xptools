@@ -24,7 +24,7 @@
 #ifndef MapBuffer_H
 #define MapBuffer_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "MapPolygon.h"
 
 // A tagged polygon is a set of curves such that the end points are all linked to form a polygon.  This allows you

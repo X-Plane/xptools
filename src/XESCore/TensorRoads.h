@@ -24,7 +24,7 @@
 #ifndef TensorRoads_H
 #define TensorRoads_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 struct	DEMGeo;
 struct	ImageInfo;
 

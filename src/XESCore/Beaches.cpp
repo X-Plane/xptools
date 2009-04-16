@@ -21,7 +21,7 @@
  *
  */
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "Beaches.h"
 #include "ParamDefs.h"
 #include "DEMTables.h"

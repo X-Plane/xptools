@@ -25,7 +25,7 @@
 #define SKELETON_H
 
 #include <vector>
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 //struct	Polygon2;
 
 typedef	vector<Polygon2>		ComplexPolygon2;

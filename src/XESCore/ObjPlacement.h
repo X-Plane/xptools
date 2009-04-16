@@ -23,7 +23,7 @@
 #ifndef OBJPLACEMENT_H
 #define OBJPLACEMENT_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 #include "ProgressUtils.h"

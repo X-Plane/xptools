@@ -22,7 +22,7 @@
  */
 #include "ObjPlacement.h"
 #include "MeshDefs.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "AssertUtils.h"
 #include "ParamDefs.h"
 #include <CGAL/centroid.h>
@@ -37,7 +37,7 @@
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XESConstants.h"
-#include "MapAlgsCGAL.h"
+#include "MapAlgs.h"
 #include "MapPolygon.h"
 #include "MapBuffer.h"
 

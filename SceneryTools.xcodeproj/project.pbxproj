@@ -629,7 +629,6 @@
 		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
 		D6C95C7D0E1ABFB1001EB14A /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
-		D6C95C810E1ABFCF001EB14A /* MapAlgsCGAL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6773CB20E154CF000E56046 /* MapAlgsCGAL.cpp */; };
 		D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
@@ -1071,9 +1070,6 @@
 		D67682B60CC669830032B90C /* TensorUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TensorUtils.cpp; sourceTree = "<group>"; };
 		D67685250CC6A0690032B90C /* TensorRoads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TensorRoads.h; sourceTree = "<group>"; };
 		D67685260CC6A0690032B90C /* TensorRoads.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TensorRoads.cpp; sourceTree = "<group>"; };
-		D6773CB20E154CF000E56046 /* MapAlgsCGAL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapAlgsCGAL.cpp; sourceTree = "<group>"; };
-		D6773CB30E154CF000E56046 /* MapAlgsCGAL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapAlgsCGAL.h; sourceTree = "<group>"; };
-		D6773CB40E154CF000E56046 /* MapDefsCGAL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapDefsCGAL.h; sourceTree = "<group>"; };
 		D678ADEC0F7952B700F72139 /* cache_simulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache_simulator.h; sourceTree = "<group>"; };
 		D678ADED0F7952B700F72139 /* graph_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graph_array.h; sourceTree = "<group>"; };
 		D678ADEE0F7952B700F72139 /* heap_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = heap_array.h; sourceTree = "<group>"; };
@@ -1570,7 +1566,6 @@
 		D6BC38540AB22C85003949C5 /* IODefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = IODefs.h; sourceTree = "<group>"; };
 		D6BC38550AB22C85003949C5 /* MapAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MapAlgs.cpp; sourceTree = "<group>"; };
 		D6BC38560AB22C85003949C5 /* MapAlgs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapAlgs.h; sourceTree = "<group>"; };
-		D6BC38570AB22C85003949C5 /* MapDefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MapDefs.cpp; sourceTree = "<group>"; };
 		D6BC38580AB22C85003949C5 /* MapDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapDefs.h; sourceTree = "<group>"; };
 		D6BC38590AB22C85003949C5 /* MapIO.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MapIO.cpp; sourceTree = "<group>"; };
 		D6BC385A0AB22C85003949C5 /* MapIO.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapIO.h; sourceTree = "<group>"; };
@@ -2842,9 +2837,6 @@
 			children = (
 				D6956EC80F82DBF800F6718E /* MapHelpers.cpp */,
 				D6956EC90F82DBF800F6718E /* MapHelpers.h */,
-				D6773CB20E154CF000E56046 /* MapAlgsCGAL.cpp */,
-				D6773CB30E154CF000E56046 /* MapAlgsCGAL.h */,
-				D6773CB40E154CF000E56046 /* MapDefsCGAL.h */,
 				D6BC382E0AB22C85003949C5 /* (MapAlgsOld.cpp) */,
 				D6BC382F0AB22C85003949C5 /* (MeshAlgsOLD.cpp) */,
 				D6BC38300AB22C85003949C5 /* Airports.cpp */,
@@ -2884,7 +2876,6 @@
 				D6BC38540AB22C85003949C5 /* IODefs.h */,
 				D6BC38550AB22C85003949C5 /* MapAlgs.cpp */,
 				D6BC38560AB22C85003949C5 /* MapAlgs.h */,
-				D6BC38570AB22C85003949C5 /* MapDefs.cpp */,
 				D6BC38580AB22C85003949C5 /* MapDefs.h */,
 				D6BC38590AB22C85003949C5 /* MapIO.cpp */,
 				D6BC385A0AB22C85003949C5 /* MapIO.h */,
@@ -3652,7 +3643,6 @@
 				D6B0DD0C0E155D8300DDBD89 /* XUtils.cpp in Sources */,
 				D6B0DD0F0E155D8E00DDBD89 /* Skeleton.cpp in Sources */,
 				D6C95C7D0E1ABFB1001EB14A /* MapAlgs.cpp in Sources */,
-				D6C95C810E1ABFCF001EB14A /* MapAlgsCGAL.cpp in Sources */,
 				D68E2A8C0EBFC8270015648F /* MapBuffer.cpp in Sources */,
 				D68E2A8D0EBFC8280015648F /* MapCreate.cpp in Sources */,
 				D68E2A8E0EBFC82C0015648F /* MapOverlay.cpp in Sources */,
@@ -4341,7 +4331,6 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Debug;
 		};
@@ -4387,7 +4376,6 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Release;
 		};
@@ -4489,7 +4477,6 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Phone;
 		};
@@ -5203,7 +5190,6 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = DebugOpt;
 		};

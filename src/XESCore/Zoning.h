@@ -25,7 +25,7 @@
 #define ZONING_H
 
 #include "AptDefs.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 
 struct	DEMGeo;

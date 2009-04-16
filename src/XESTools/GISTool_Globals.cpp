@@ -23,7 +23,7 @@
 
 #include "GISTool_Globals.h"
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 

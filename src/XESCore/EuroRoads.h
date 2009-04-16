@@ -23,7 +23,7 @@
 
 #ifndef EUROROADS_H
 #define EUROROADS_H
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 
 //class	Pmwx;

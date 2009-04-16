@@ -24,7 +24,7 @@
 #ifndef MapHelpers_H
 #define MapHelpers_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 class	data_preserver_t : public CGAL::Arr_observer<Pmwx> {
 public:

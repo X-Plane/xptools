@@ -31,7 +31,7 @@
 #include "GISTool_Globals.h"
 #include <shapefil.h>
 #include "VPFTable.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
 #include "DSFLib.h"

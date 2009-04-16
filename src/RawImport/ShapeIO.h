@@ -24,7 +24,7 @@
 #ifndef ShapeIO_H
 #define ShapeIO_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "ProgressUtils.h"
 
 enum {

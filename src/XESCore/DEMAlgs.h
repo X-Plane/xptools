@@ -23,7 +23,7 @@
 #ifndef DEMALGS_H
 #define DEMALGS_H
 
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 
 struct	DEMGeo;
 class	DEMGeoMap;

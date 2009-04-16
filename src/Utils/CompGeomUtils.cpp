@@ -23,7 +23,7 @@
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
 #include "GISTool_Globals.h"
-#include "MapDefsCGAL.h"
+#include "MapDefs.h"
 #include "AssertUtils.h"
 #include "STLUtils.h"
 #include "XESConstants.h"
