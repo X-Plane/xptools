@@ -28,7 +28,7 @@
 class CDT;
 struct DEMGeo;
 
-void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
 
 #endif /* GREEDYMESH_H */
 

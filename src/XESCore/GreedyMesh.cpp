@@ -31,8 +31,9 @@
 #include "PolyRasterUtils.h"
 //#include "WED_Globals.h"
 
-static CDT *	sCurrentMesh = NULL;
-static DEMGeo *	sCurrentDEM = NULL;
+static		 CDT *		sCurrentMesh = NULL;
+static const DEMGeo *	sCurrentDEM = NULL;
+static		 DEMGeo *	sUsedDEM = NULL;
 
 static FaceQueue	sBestChoices;
 
@@ -84,7 +85,8 @@ bool	InitOneTri(CDT::Face_handle face)
 }
 
 inline float ScanlineMaxError(
-					const DEMGeo *	inDEM,
+					const DEMGeo *	inDEMSrc,
+					const DEMGeo *	inDEMUsed,
 					int				y,
 					double			x1,
 					double			x2,
@@ -95,24 +97,25 @@ inline float ScanlineMaxError(
 					double			b,
 					double			c)
 {
-	float * row = inDEM->mData + y * inDEM->mWidth;
+	float * row = inDEMSrc->mData + y * inDEMSrc->mWidth;
+	float * used = inDEMUsed->mData + y * inDEMUsed->mWidth;
 //	DebugAssert(x1 < x2);
 	DebugAssert(y >= 0);
-	DebugAssert(y < inDEM->mHeight);
+	DebugAssert(y < inDEMSrc->mHeight);
 
 	int ix1 = ceil(min(x1,x2));
 	int ix2 = floor(max(x1,x2));
 	DebugAssert(ix1 >= 0);
-	DebugAssert(ix2 < inDEM->mWidth);
+	DebugAssert(ix2 < inDEMSrc->mWidth);
 
 	row += ix1;
 	float partial = b * y + c;
 
-	for (int x = ix1; x <= ix2; ++x, ++row)
+	for (int x = ix1; x <= ix2; ++x, ++row, ++used)
 	{
 //		gMeshPoints.push_back(pair<Point2, Point3>(Point2(inDEM->x_to_lon(x), inDEM->y_to_lat(y)), Point3(0, 1, 0.5)));
 		float want = *row;
-		if (want != DEM_NO_DATA)
+		if (want != DEM_NO_DATA && *used == DEM_NO_DATA)
 		{
 			float got = a * x + partial;
 			float diff = want - got;
@@ -238,7 +241,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		{
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x2), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-			err = ScanlineMaxError(sCurrentDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
+			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
 			x1 += dx1;
 			x2 += dx2;
 		}
@@ -255,7 +258,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		{
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x2), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-			err = ScanlineMaxError(sCurrentDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
+			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
 			x1 += dx1;
 			x2 += dx2;
 		}
@@ -284,10 +287,11 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 }
 
 // Init the whole mesh - all tris, calc errs, queue
-void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff, double size_lim)
+void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMGeo& inUsed, double err_cutoff, double size_lim)
 {
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
+	sUsedDEM = &inUsed;
 	sCurrentMesh = &inCDT;
 
 	for (CDT::All_faces_iterator face = inCDT.all_faces_begin(); face != inCDT.all_faces_end(); ++face)
@@ -309,14 +313,15 @@ void	DoneMesh(void)
 {
 	sBestChoices.clear();
 	sCurrentDEM = NULL;
+	sUsedDEM = NULL;
 	sCurrentMesh = NULL;
 }
 
-void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
 	fprintf(stderr,"Building Mesh %lf %lf\n", err_lim, size_lim);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
-	InitMesh(inCDT, inAvail, err_lim, size_lim);
+	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
@@ -347,8 +352,8 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
 		DebugAssert(h != DEM_NO_DATA);
-		outUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
-		inAvail(the_face->info().insert_x, the_face->info().insert_y) = DEM_NO_DATA;
+		ioUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
+//		inAvail(the_face->info().insert_x, the_face->info().insert_y) = DEM_NO_DATA;
 
 /*
 		CDT::Locate_type lt;
