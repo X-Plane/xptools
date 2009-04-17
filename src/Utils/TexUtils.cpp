@@ -59,6 +59,7 @@ __inline int NextPowerOf2(int a)
 {
 	GLint	maxDim = 1024;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
+	if(maxDim > 4096) maxDim = 4096;
 	int rval = 2;
 	while(rval < a && rval < maxDim)
 		rval <<= 1;

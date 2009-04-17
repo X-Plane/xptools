@@ -21,7 +21,7 @@
  *
  */
 
-#include <XPTools/version.h>
+#include "version.h"
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"

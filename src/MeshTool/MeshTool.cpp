@@ -21,7 +21,7 @@
  *
  */
 
-#include <XPTools/version.h>
+#include "../XPTools/version.h"
 #include "MeshTool_Create.h"
 
 #include "XESInit.h"

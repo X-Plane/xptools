@@ -21,7 +21,7 @@
  *
  */
 
-#include <XPTools/version.h>
+#include "version.h"
 #include "BitmapUtils.h"
 
 enum {

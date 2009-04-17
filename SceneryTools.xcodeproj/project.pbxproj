@@ -582,6 +582,40 @@
 		D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */; };
 		D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A1860D0BA9A59C00BBCD0C /* tabs.png */; };
 		D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */; };
+		D6A266960F99274300E1E754 /* ac_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266650F99274300E1E754 /* ac_utils.cpp */; };
+		D6A266980F99274300E1E754 /* bitmap_match.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266670F99274300E1E754 /* bitmap_match.cpp */; };
+		D6A2669C0F99274300E1E754 /* dsf_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2666C0F99274300E1E754 /* dsf_export.cpp */; };
+		D6A2669E0F99274300E1E754 /* obj8_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2666E0F99274300E1E754 /* obj8_export.cpp */; };
+		D6A266A00F99274300E1E754 /* obj8_import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266700F99274300E1E754 /* obj8_import.cpp */; };
+		D6A266A20F99274300E1E754 /* obj_anim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266720F99274300E1E754 /* obj_anim.cpp */; };
+		D6A266A40F99274300E1E754 /* obj_editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266740F99274300E1E754 /* obj_editor.cpp */; };
+		D6A266A80F99274300E1E754 /* obj_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266780F99274300E1E754 /* obj_model.cpp */; };
+		D6A266AA0F99274300E1E754 /* obj_panel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2667A0F99274300E1E754 /* obj_panel.cpp */; };
+		D6A266AC0F99274300E1E754 /* obj_radius.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2667C0F99274300E1E754 /* obj_radius.cpp */; };
+		D6A266AE0F99274300E1E754 /* obj_tools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2667E0F99274300E1E754 /* obj_tools.cpp */; };
+		D6A266B00F99274300E1E754 /* obj_update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266800F99274300E1E754 /* obj_update.cpp */; };
+		D6A266B20F99274300E1E754 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266820F99274300E1E754 /* prefs.cpp */; };
+		D6A266B40F99274300E1E754 /* tcl_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266850F99274300E1E754 /* tcl_utils.cpp */; };
+		D6A266B60F99274300E1E754 /* TclStubs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266870F99274300E1E754 /* TclStubs.cpp */; };
+		D6A266B80F99274300E1E754 /* uv_mapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A266890F99274300E1E754 /* uv_mapper.cpp */; };
+		D6A266BC0F99274300E1E754 /* xp_plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2668D0F99274300E1E754 /* xp_plugin.cpp */; };
+		D6A266E40F99293B00E1E754 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
+		D6A266E60F99296100E1E754 /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
+		D6A266E80F99296400E1E754 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
+		D6A266EA0F99296900E1E754 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
+		D6A266EC0F99296B00E1E754 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
+		D6A266EE0F99296D00E1E754 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
+		D6A266F00F99297000E1E754 /* XObjWriteEmbedded.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */; };
+		D6A266F40F99298900E1E754 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
+		D6A266F50F99299200E1E754 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
+		D6A266F60F99299300E1E754 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
+		D6A266F70F99299C00E1E754 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
+		D6A266F90F9929A700E1E754 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
+		D6A266FD0F992A1000E1E754 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
+		D6A266FE0F992A1700E1E754 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
+		D6A266FF0F992A1B00E1E754 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
+		D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A266940F99274300E1E754 /* XPlaneSupport.tcl */; };
+		D6A2670C0F992BD000E1E754 /* XPExporterMac.p in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A2665E0F99266D00E1E754 /* XPExporterMac.p */; };
 		D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143A0F126C930006E096 /* WED_TCE.cpp */; };
 		D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */; };
 		D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */; };
@@ -860,6 +894,20 @@
 			remoteInfo = DDSTool;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D6A2672F0F992DDE00E1E754 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /Applications/ac3dmac/plugins/;
+			dstSubfolderSpec = 0;
+			files = (
+				D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */,
+				D6A2670C0F992BD000E1E754 /* XPExporterMac.p in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -1238,6 +1286,49 @@
 		D6A1860D0BA9A59C00BBCD0C /* tabs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tabs.png; sourceTree = "<group>"; };
 		D6A186360BA9B28900BBCD0C /* GUI_TabControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabControl.h; sourceTree = "<group>"; };
 		D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TabControl.cpp; sourceTree = "<group>"; };
+		D6A2665E0F99266D00E1E754 /* XPExporterMac.p */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = XPExporterMac.p; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6A266640F99274300E1E754 /* ac3d_prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac3d_prefix.h; sourceTree = "<group>"; };
+		D6A266650F99274300E1E754 /* ac_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ac_utils.cpp; sourceTree = "<group>"; };
+		D6A266660F99274300E1E754 /* ac_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac_utils.h; sourceTree = "<group>"; };
+		D6A266670F99274300E1E754 /* bitmap_match.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bitmap_match.cpp; sourceTree = "<group>"; };
+		D6A266680F99274300E1E754 /* bitmap_match.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bitmap_match.h; sourceTree = "<group>"; };
+		D6A266690F99274300E1E754 /* car_export.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = car_export.cpp; sourceTree = "<group>"; };
+		D6A2666A0F99274300E1E754 /* car_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = car_export.h; sourceTree = "<group>"; };
+		D6A2666C0F99274300E1E754 /* dsf_export.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dsf_export.cpp; sourceTree = "<group>"; };
+		D6A2666D0F99274300E1E754 /* dsf_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dsf_export.h; sourceTree = "<group>"; };
+		D6A2666E0F99274300E1E754 /* obj8_export.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj8_export.cpp; sourceTree = "<group>"; };
+		D6A2666F0F99274300E1E754 /* obj8_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj8_export.h; sourceTree = "<group>"; };
+		D6A266700F99274300E1E754 /* obj8_import.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj8_import.cpp; sourceTree = "<group>"; };
+		D6A266710F99274300E1E754 /* obj8_import.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj8_import.h; sourceTree = "<group>"; };
+		D6A266720F99274300E1E754 /* obj_anim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_anim.cpp; sourceTree = "<group>"; };
+		D6A266730F99274300E1E754 /* obj_anim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_anim.h; sourceTree = "<group>"; };
+		D6A266740F99274300E1E754 /* obj_editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_editor.cpp; sourceTree = "<group>"; };
+		D6A266750F99274300E1E754 /* obj_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_editor.h; sourceTree = "<group>"; };
+		D6A266760F99274300E1E754 /* obj_export.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_export.cpp; sourceTree = "<group>"; };
+		D6A266770F99274300E1E754 /* obj_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_export.h; sourceTree = "<group>"; };
+		D6A266780F99274300E1E754 /* obj_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_model.cpp; sourceTree = "<group>"; };
+		D6A266790F99274300E1E754 /* obj_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_model.h; sourceTree = "<group>"; };
+		D6A2667A0F99274300E1E754 /* obj_panel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_panel.cpp; sourceTree = "<group>"; };
+		D6A2667B0F99274300E1E754 /* obj_panel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_panel.h; sourceTree = "<group>"; };
+		D6A2667C0F99274300E1E754 /* obj_radius.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_radius.cpp; sourceTree = "<group>"; };
+		D6A2667D0F99274300E1E754 /* obj_radius.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_radius.h; sourceTree = "<group>"; };
+		D6A2667E0F99274300E1E754 /* obj_tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_tools.cpp; sourceTree = "<group>"; };
+		D6A2667F0F99274300E1E754 /* obj_tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_tools.h; sourceTree = "<group>"; };
+		D6A266800F99274300E1E754 /* obj_update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_update.cpp; sourceTree = "<group>"; };
+		D6A266810F99274300E1E754 /* obj_update.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_update.h; sourceTree = "<group>"; };
+		D6A266820F99274300E1E754 /* prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = prefs.cpp; sourceTree = "<group>"; };
+		D6A266830F99274300E1E754 /* prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefs.h; sourceTree = "<group>"; };
+		D6A266840F99274300E1E754 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		D6A266850F99274300E1E754 /* tcl_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tcl_utils.cpp; sourceTree = "<group>"; };
+		D6A266860F99274300E1E754 /* tcl_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcl_utils.h; sourceTree = "<group>"; };
+		D6A266870F99274300E1E754 /* TclStubs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TclStubs.cpp; sourceTree = "<group>"; };
+		D6A266880F99274300E1E754 /* TclStubs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TclStubs.h; sourceTree = "<group>"; };
+		D6A266890F99274300E1E754 /* uv_mapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uv_mapper.cpp; sourceTree = "<group>"; };
+		D6A2668A0F99274300E1E754 /* uv_mapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uv_mapper.h; sourceTree = "<group>"; };
+		D6A2668B0F99274300E1E754 /* x86_Win32 DLL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "x86_Win32 DLL.cpp"; sourceTree = "<group>"; };
+		D6A2668C0F99274300E1E754 /* x86_Win32 DLL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "x86_Win32 DLL.h"; sourceTree = "<group>"; };
+		D6A2668D0F99274300E1E754 /* xp_plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xp_plugin.cpp; sourceTree = "<group>"; };
+		D6A266940F99274300E1E754 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
 		D6AC143A0F126C930006E096 /* WED_TCE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCE.cpp; sourceTree = "<group>"; };
 		D6AC143B0F126C930006E096 /* WED_TCE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCE.h; sourceTree = "<group>"; };
 		D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEPane.cpp; sourceTree = "<group>"; };
@@ -1854,6 +1945,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D6A2665C0F99266D00E1E754 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6A266E40F99293B00E1E754 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D6C579D00C7E3C7B00FCB4C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1889,6 +1988,7 @@
 				D6ED37490B67964D00D5484E /* WED.app */,
 				D6C579D60C7E3C7B00FCB4C1 /* DDSTool */,
 				D607342C0D197A1100E08F61 /* MeshTool */,
+				D6A2665E0F99266D00E1E754 /* XPExporterMac.p */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2193,6 +2293,63 @@
 			path = RenderFarmUI;
 			sourceTree = "<group>";
 		};
+		D6A266630F99274300E1E754 /* AC3DPlugins */ = {
+			isa = PBXGroup;
+			children = (
+				D6A266640F99274300E1E754 /* ac3d_prefix.h */,
+				D6A266650F99274300E1E754 /* ac_utils.cpp */,
+				D6A266660F99274300E1E754 /* ac_utils.h */,
+				D6A266670F99274300E1E754 /* bitmap_match.cpp */,
+				D6A266680F99274300E1E754 /* bitmap_match.h */,
+				D6A266690F99274300E1E754 /* car_export.cpp */,
+				D6A2666A0F99274300E1E754 /* car_export.h */,
+				D6A2666B0F99274300E1E754 /* CVS.sandboxinfo */,
+				D6A2666C0F99274300E1E754 /* dsf_export.cpp */,
+				D6A2666D0F99274300E1E754 /* dsf_export.h */,
+				D6A2666E0F99274300E1E754 /* obj8_export.cpp */,
+				D6A2666F0F99274300E1E754 /* obj8_export.h */,
+				D6A266700F99274300E1E754 /* obj8_import.cpp */,
+				D6A266710F99274300E1E754 /* obj8_import.h */,
+				D6A266720F99274300E1E754 /* obj_anim.cpp */,
+				D6A266730F99274300E1E754 /* obj_anim.h */,
+				D6A266740F99274300E1E754 /* obj_editor.cpp */,
+				D6A266750F99274300E1E754 /* obj_editor.h */,
+				D6A266760F99274300E1E754 /* obj_export.cpp */,
+				D6A266770F99274300E1E754 /* obj_export.h */,
+				D6A266780F99274300E1E754 /* obj_model.cpp */,
+				D6A266790F99274300E1E754 /* obj_model.h */,
+				D6A2667A0F99274300E1E754 /* obj_panel.cpp */,
+				D6A2667B0F99274300E1E754 /* obj_panel.h */,
+				D6A2667C0F99274300E1E754 /* obj_radius.cpp */,
+				D6A2667D0F99274300E1E754 /* obj_radius.h */,
+				D6A2667E0F99274300E1E754 /* obj_tools.cpp */,
+				D6A2667F0F99274300E1E754 /* obj_tools.h */,
+				D6A266800F99274300E1E754 /* obj_update.cpp */,
+				D6A266810F99274300E1E754 /* obj_update.h */,
+				D6A266820F99274300E1E754 /* prefs.cpp */,
+				D6A266830F99274300E1E754 /* prefs.h */,
+				D6A266840F99274300E1E754 /* README */,
+				D6A266850F99274300E1E754 /* tcl_utils.cpp */,
+				D6A266860F99274300E1E754 /* tcl_utils.h */,
+				D6A266870F99274300E1E754 /* TclStubs.cpp */,
+				D6A266880F99274300E1E754 /* TclStubs.h */,
+				D6A266890F99274300E1E754 /* uv_mapper.cpp */,
+				D6A2668A0F99274300E1E754 /* uv_mapper.h */,
+				D6A2668B0F99274300E1E754 /* x86_Win32 DLL.cpp */,
+				D6A2668C0F99274300E1E754 /* x86_Win32 DLL.h */,
+				D6A2668D0F99274300E1E754 /* xp_plugin.cpp */,
+				D6A266940F99274300E1E754 /* XPlaneSupport.tcl */,
+			);
+			path = AC3DPlugins;
+			sourceTree = "<group>";
+		};
+		D6A2666B0F99274300E1E754 /* CVS.sandboxinfo */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = CVS.sandboxinfo;
+			sourceTree = "<group>";
+		};
 		D6AC14390F126C930006E096 /* WEDTCE */ = {
 			isa = PBXGroup;
 			children = (
@@ -2215,6 +2372,7 @@
 		D6BC361B0AB22C84003949C5 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				D6A266630F99274300E1E754 /* AC3DPlugins */,
 				D6FF28500B6E42B000960D5E /* Interfaces */,
 				D656B1160B51778F003FF84F /* Installer */,
 				D6BC36430AB22C84003949C5 /* DSF */,
@@ -3352,6 +3510,23 @@
 			productReference = D67EF9890B6135F400D9190C /* ObjConverter */;
 			productType = "com.apple.product-type.tool";
 		};
+		D6A2665D0F99266D00E1E754 /* ac3d */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6A267300F992DDE00E1E754 /* Build configuration list for PBXNativeTarget "ac3d" */;
+			buildPhases = (
+				D6A2665B0F99266D00E1E754 /* Sources */,
+				D6A2665C0F99266D00E1E754 /* Frameworks */,
+				D6A2672F0F992DDE00E1E754 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ac3d;
+			productName = ac3d;
+			productReference = D6A2665E0F99266D00E1E754 /* XPExporterMac.p */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D6C579D30C7E3C7B00FCB4C1 /* Build configuration list for PBXNativeTarget "DDSTool" */;
@@ -3409,6 +3584,7 @@
 				D60734100D197A1100E08F61 /* MeshTool */,
 				D61C26E70B6155960092E098 /* Build Tools */,
 				D6C68DDD0BEFB3B300C9F880 /* Build All */,
+				D6A2665D0F99266D00E1E754 /* ac3d */,
 			);
 		};
 /* End PBXProject section */
@@ -3977,6 +4153,44 @@
 				D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */,
 				D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */,
 				D678AEA90F796D6900F72139 /* tri_stripper.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6A2665B0F99266D00E1E754 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6A266960F99274300E1E754 /* ac_utils.cpp in Sources */,
+				D6A266980F99274300E1E754 /* bitmap_match.cpp in Sources */,
+				D6A2669C0F99274300E1E754 /* dsf_export.cpp in Sources */,
+				D6A2669E0F99274300E1E754 /* obj8_export.cpp in Sources */,
+				D6A266A00F99274300E1E754 /* obj8_import.cpp in Sources */,
+				D6A266A20F99274300E1E754 /* obj_anim.cpp in Sources */,
+				D6A266A40F99274300E1E754 /* obj_editor.cpp in Sources */,
+				D6A266A80F99274300E1E754 /* obj_model.cpp in Sources */,
+				D6A266AA0F99274300E1E754 /* obj_panel.cpp in Sources */,
+				D6A266AC0F99274300E1E754 /* obj_radius.cpp in Sources */,
+				D6A266AE0F99274300E1E754 /* obj_tools.cpp in Sources */,
+				D6A266B00F99274300E1E754 /* obj_update.cpp in Sources */,
+				D6A266B20F99274300E1E754 /* prefs.cpp in Sources */,
+				D6A266B40F99274300E1E754 /* tcl_utils.cpp in Sources */,
+				D6A266B60F99274300E1E754 /* TclStubs.cpp in Sources */,
+				D6A266B80F99274300E1E754 /* uv_mapper.cpp in Sources */,
+				D6A266BC0F99274300E1E754 /* xp_plugin.cpp in Sources */,
+				D6A266E60F99296100E1E754 /* ObjConvert.cpp in Sources */,
+				D6A266E80F99296400E1E754 /* ObjPointPool.cpp in Sources */,
+				D6A266EA0F99296900E1E754 /* XObjBuilder.cpp in Sources */,
+				D6A266EC0F99296B00E1E754 /* XObjDefs.cpp in Sources */,
+				D6A266EE0F99296D00E1E754 /* XObjReadWrite.cpp in Sources */,
+				D6A266F00F99297000E1E754 /* XObjWriteEmbedded.cpp in Sources */,
+				D6A266F40F99298900E1E754 /* DSFLib.cpp in Sources */,
+				D6A266F50F99299200E1E754 /* AssertUtils.cpp in Sources */,
+				D6A266F60F99299300E1E754 /* BitmapUtils.cpp in Sources */,
+				D6A266F70F99299C00E1E754 /* MatrixUtils.cpp in Sources */,
+				D6A266F90F9929A700E1E754 /* XChunkyFileUtils.cpp in Sources */,
+				D6A266FD0F992A1000E1E754 /* EndianUtils.c in Sources */,
+				D6A266FE0F992A1700E1E754 /* md5.c in Sources */,
+				D6A266FF0F992A1B00E1E754 /* tri_stripper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4874,6 +5088,126 @@
 			};
 			name = Release;
 		};
+		D6A2665F0F99266E00E1E754 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = p;
+				EXECUTABLE_PREFIX = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(inherited)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libz.a,
+					libs/local/lib/libpng.a,
+					"$(inherited)",
+				);
+				PRODUCT_NAME = XPExporterMac;
+			};
+			name = Debug;
+		};
+		D6A266600F99266E00E1E754 /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = p;
+				EXECUTABLE_PREFIX = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(inherited)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libz.a,
+					libs/local/lib/libpng.a,
+					"$(inherited)",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = XPExporterMac;
+			};
+			name = Phone;
+		};
+		D6A266610F99266E00E1E754 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = p;
+				EXECUTABLE_PREFIX = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(inherited)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libz.a,
+					libs/local/lib/libpng.a,
+					"$(inherited)",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = XPExporterMac;
+			};
+			name = DebugOpt;
+		};
+		D6A266620F99266E00E1E754 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = p;
+				EXECUTABLE_PREFIX = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
+				GCC_DYNAMIC_NO_PIC = NO;
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(inherited)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				OTHER_LDFLAGS = (
+					libs/local/lib/libsquish.a,
+					libs/local/lib/libz.a,
+					libs/local/lib/libpng.a,
+					"$(inherited)",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = XPExporterMac;
+			};
+			name = Release;
+		};
 		D6C579D40C7E3C7B00FCB4C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5291,6 +5625,17 @@
 				D60E98F60EDDDEEA0096DE0E /* Phone */,
 				D6F01D750CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF9880B6135F400D9190C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6A267300F992DDE00E1E754 /* Build configuration list for PBXNativeTarget "ac3d" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6A2665F0F99266E00E1E754 /* Debug */,
+				D6A266600F99266E00E1E754 /* Phone */,
+				D6A266610F99266E00E1E754 /* DebugOpt */,
+				D6A266620F99266E00E1E754 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

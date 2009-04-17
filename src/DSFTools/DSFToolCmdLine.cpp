@@ -21,7 +21,7 @@
  *
  */
 
-#include <XPTools/version.h>
+#include "../XPTools/version.h"
 #include <stdio.h>
 #include "AssertUtils.h"
 

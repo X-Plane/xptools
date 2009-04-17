@@ -21,7 +21,7 @@
  *
  */
 
-#include <XPTools/version.h>
+#include "../XPTools/version.h"
 #include "dsf_export.h"
 #include "obj8_export.h"
 #include "obj8_import.h"
