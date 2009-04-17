@@ -23,7 +23,6 @@
 #ifndef OBJUTILS_H
 #define OBJUTILS_H
 
-#include "ExtrudeFunc.h"
 //#include "CompGeomDefs2.h"
 //#include "CompGeomDefs3.h"
 //#include "XProtoDefs.h"
@@ -67,7 +66,7 @@ void	ConformObjectToBox(XObj& 	ioObj,
 //bool	SavePrototype(const char * inFileName, const Prototype_t& outProto);
 
 
-void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float LOD_near, float LOD_far, void * inRef);
+//void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float LOD_near, float LOD_far, void * inRef);
 
 void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmd, int maxValence);
 void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence);

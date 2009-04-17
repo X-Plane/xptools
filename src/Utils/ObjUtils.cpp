@@ -815,6 +815,7 @@ bool	SavePrototype(const char * inFileName, const Prototype_t& outProto)
 }
 #endif
 
+#if 0
 void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float LOD_near, float LOD_far, void * inRef)
 {
 	XObj * obj = (XObj *) inRef;
@@ -861,6 +862,7 @@ void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float L
 	}
 	obj->cmds.push_back(cmd);
 }
+#endif
 
 void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxValence)
 {
