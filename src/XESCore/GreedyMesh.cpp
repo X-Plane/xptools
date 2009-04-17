@@ -29,7 +29,6 @@
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "PolyRasterUtils.h"
-//#include "WED_Globals.h"
 
 static		 CDT *		sCurrentMesh = NULL;
 static const DEMGeo *	sCurrentDEM = NULL;
@@ -109,13 +108,14 @@ inline float ScanlineMaxError(
 	DebugAssert(ix2 < inDEMSrc->mWidth);
 
 	row += ix1;
+	used += ix1;
 	float partial = b * y + c;
 
 	for (int x = ix1; x <= ix2; ++x, ++row, ++used)
 	{
 //		gMeshPoints.push_back(pair<Point2, Point3>(Point2(inDEM->x_to_lon(x), inDEM->y_to_lat(y)), Point3(0, 1, 0.5)));
 		float want = *row;
-		if (want != DEM_NO_DATA && *used == DEM_NO_DATA)
+		if (want != DEM_NO_DATA && (*used) == DEM_NO_DATA)
 		{
 			float got = a * x + partial;
 			float diff = want - got;
@@ -350,6 +350,11 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double e
 //		gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(), p.y()), Point3(1,1,1)));
 
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
+		#if DEV
+		
+		double hh = ioUsed.get(the_face->info().insert_x, the_face->info().insert_y);
+		DebugAssert(hh == DEM_NO_DATA);
+		#endif
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
 		DebugAssert(h != DEM_NO_DATA);
 		ioUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
@@ -373,6 +378,8 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double e
 */
 		CDT::Vertex_handle new_v = inCDT.safe_insert(p, face_handle);
 		new_v->info().height = h;
+//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(new_v->point()),Point3(1,1,1)));
+		
 
 		CDT::Face_circulator circ, stop;
 		circ = stop = inCDT.incident_faces(new_v);

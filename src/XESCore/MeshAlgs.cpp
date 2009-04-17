@@ -45,7 +45,6 @@
 #define PROFILE_PERFORMANCE 1
 
 
-
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
 #else
@@ -580,17 +579,23 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 		//	   CGAL::to_double(best_match.second->buddy->point().y()),
 		//	   CGAL::to_double(best_match.second->loc.x()),			CGAL::to_double(best_match.second->loc.y()));
 		slaves.erase(best_match.first);
+
+//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(best_match.second->buddy->point()	),Point3(1,1,0)));
+//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(best_match.second->loc				),Point3(0,1,0)));
+		
 	}
 
 	// Step 3.  Go through all unmatched masters and insert them diriectly into the mesh.
 	CDT::Face_handle	nearf = NULL;
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
-	{
+	{	
 		//printf("Found no buddy for: %lf,%lf\n", CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y()));
 		pts->buddy = ioMesh.safe_insert(CDT::Point(CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y())), nearf);
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
+//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(pts->loc),Point3(1,0,0)));
+		
 	}
 
 	// At this point all masters have a slave, and some slaves may be connected to a master.
@@ -1300,7 +1305,7 @@ void	AddBulkPointsToMesh(
 			float h = ioDEM(x,y);
 			if (h != DEM_NO_DATA)
 			{
-	//			gMeshPoints.push_back(Point_2(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y)));
+//				gMeshPoints.push_back(pair<Point2,Point3>(Point2(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y)),Point3(1,0,0)));
 				CDT::Point	p(ioDEM.x_to_lon(CGAL::to_double(x)),ioDEM.y_to_lat(CGAL::to_double(y)));
 				CDT::Locate_type tp;
 				int vnum;
@@ -1668,6 +1673,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	for (n = 0; n < temporary.size(); ++n)
 	{
 		DebugAssert(!outMesh.are_there_incident_constraints(temporary[n]));
+//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(temporary[n]->point()),Point3(1,1,1)));
 		if (!outMesh.are_there_incident_constraints(temporary[n]))
 			outMesh.remove(temporary[n]);
 	}
@@ -1708,6 +1714,16 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	for(v=v1;v!=v2;++v)
 	{
 		v->info().height = orig.value_linear(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
+		#if DEV
+		if(!gMatchBorders[0].vertices.empty())
+			DebugAssert(v->point().x() != orig.mWest);
+		if(!gMatchBorders[1].vertices.empty())
+			DebugAssert(v->point().y() != orig.mSouth);
+		if(!gMatchBorders[2].vertices.empty())
+			DebugAssert(v->point().x() != orig.mEast);
+		if(!gMatchBorders[3].vertices.empty())
+			DebugAssert(v->point().y() != orig.mNorth);
+		#endif	
 	}
 
 	/*********************************************************************************************************************
