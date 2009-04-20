@@ -24,6 +24,7 @@
 #define XCHUNKYFILEUTILS_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #if BIG
 	#if APL

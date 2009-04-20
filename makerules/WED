@@ -10,7 +10,7 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 ifdef PLAT_LINUX
 LDFLAGS		:= -nodefaultlibs -static-libgcc
 LIBS		:= -Wl,-Bstatic
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -lstdc++ -lgcc -lgcc_eh
 LIBS		+= -Wl,-Bdynamic
 LIBS		+= -ldl -lpthread -lc
 LIBS		+= -Wl,-Bstatic

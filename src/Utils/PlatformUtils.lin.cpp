@@ -36,7 +36,7 @@ const char* GetApplicationPath(char* pathBuf, int sz)
 	// the exact invokation line the user (or the script) entered
 	size_t len = 0;
 	// locate the last slash
-	char* last_slash = ::strrchr(Initializer::programname(), '/');
+	char* last_slash = ::strrchr((char*)Initializer::programname(), '/');
 	// not found? ok, we have a problem here :-), we are in PATH
 	// and need to locate ourself
 	if (!last_slash)

@@ -328,7 +328,7 @@ char** Initializer::translate_addresses_buf(bfd* abfd, bfd_vma* addr, int naddr)
 			if (m_filename != NULL) {
 				char *h;
 
-				h = strrchr((const char*)m_filename, '/');
+				h = strrchr((char*)m_filename, '/');
 				if (h != NULL)
 					m_filename = h + 1;
 			}
