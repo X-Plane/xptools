@@ -41,5 +41,6 @@ SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/UI/XGrinderApp.cpp
 SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
+SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/XPTools/XGrinderShell.cpp

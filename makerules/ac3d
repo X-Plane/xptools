@@ -39,6 +39,7 @@ SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/Utils/XChunkyFileUtils.cpp
 SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Obj/ObjConvert.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp

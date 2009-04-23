@@ -92,6 +92,7 @@ SOURCES += ./src/XESCore/Zoning.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/GISUtils.cpp
 SOURCES += ./src/Utils/BitmapUtils.cpp
 SOURCES += ./src/Utils/EndianUtils.c
