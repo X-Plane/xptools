@@ -46,7 +46,7 @@
 // numbers make darker fonts, and 1.0f gives you exactly what the "real font" looks like.
 // Small fonts can look a bit stronger with a gamma of around 0.6 - for larger fonts, use
 // normal 1.0
-#define	FONT_GAMMA			1.0
+#define	FONT_GAMMA			0.6
 
 #define X_SCALE 1.0
 #define Y_SCALE 1.0

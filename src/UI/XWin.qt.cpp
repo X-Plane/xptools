@@ -56,7 +56,6 @@ void XWin::resizeEvent(QResizeEvent* e)
 {
 	if (mInited) {
 		Resized(e->size().width(), e->size().height());
-		e->accept();
 	}
 }
 
@@ -73,7 +72,6 @@ void XWin::mousePressEvent(QMouseEvent* e)
 		btn = 1;
 	mDragging[btn]=1;
 	ClickDown(mMouse.x, mMouse.y, btn);
-	e->accept();
 }
 
 void XWin::mouseReleaseEvent(QMouseEvent* e)
@@ -89,7 +87,6 @@ void XWin::mouseReleaseEvent(QMouseEvent* e)
 		btn = 1;
 	mDragging[btn]=0;
 	ClickUp(mMouse.x, mMouse.y, btn);
-	e->accept();
 }
 
 void XWin::mouseMoveEvent(QMouseEvent* e)
@@ -105,7 +102,6 @@ void XWin::mouseMoveEvent(QMouseEvent* e)
 	}
 	if(bc==0)
 		ClickMove(mMouse.x, mMouse.y);
-	e->accept();
 }
 
 void XWin::wheelEvent(QWheelEvent* e)
@@ -113,23 +109,20 @@ void XWin::wheelEvent(QWheelEvent* e)
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 	MouseWheel(mMouse.x, mMouse.y, (e->delta() < 0) ? -1 : 1, 0);
-	e->accept();
 }
 
 void XWin::keyPressEvent(QKeyEvent* e)
 {
-	if (e->text().size() != 0)
+	uint32_t utf32char = 0;
+	if (e->text().size())
 	{
-		unsigned int utf32char = e->text().toUcs4().at(0);
-		KeyPressed(utf32char, 0, 0, 0);
+		utf32char = e->text().toUcs4().at(0);
 	}
-	e->accept();
+	KeyPressed(utf32char, e->key(), 0, 0);
 }
 
 void XWin::keyReleaseEvent(QKeyEvent* e)
-{
-	e->accept();
-}
+{}
 
 void XWin::dragEnterEvent(QDragEnterEvent* e)
 {

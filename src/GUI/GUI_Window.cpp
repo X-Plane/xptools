@@ -29,6 +29,7 @@
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
 #if LIN
+#include <QApplication>
 #include "WED_Menus.h"
 #endif
 
@@ -833,7 +834,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 {
 	GUI_KeyFlags		flags = 0;
 	uint32_t			charCode = 0;
-	unsigned char		virtualCode = 0;
+	uint32_t		virtualCode = 0;
 
 #if IBM
 	HKL hKL;
@@ -976,10 +977,11 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	UTF16_decode((const UTF16*)&inKey, charCode);
 #endif
 #endif
-
+#if !LIN
 	virtualCode = gui_Key_Map[virtualCode];
+#endif
 
-#if IBM || LIN
+#if IBM
 	switch (virtualCode)
 	{
 		case GUI_VK_RETURN:			charCode = GUI_KEY_RETURN;		break;
@@ -991,7 +993,6 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case GUI_VK_UP:				charCode = GUI_KEY_UP;			break;
 		case GUI_VK_RIGHT:			charCode = GUI_KEY_RIGHT;		break;
 		case GUI_VK_DOWN:			charCode = GUI_KEY_DOWN;		break;
-		#if IBM
 		case GUI_VK_NUMPAD0:		charCode = GUI_KEY_0;			break;
 		case GUI_VK_NUMPAD1:		charCode = GUI_KEY_1;			break;
 		case GUI_VK_NUMPAD2:		charCode = GUI_KEY_2;			break;
@@ -1003,16 +1004,32 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case GUI_VK_NUMPAD8:		charCode = GUI_KEY_8;			break;
 		case GUI_VK_NUMPAD9:		charCode = GUI_KEY_9;			break;
 		case GUI_VK_DECIMAL:		charCode = GUI_KEY_DECIMAL;		break;
-		#endif
 	}
 #endif
 #if LIN
-// this overlapping is nasty, we'll get rid of this when unicode support
-// is here
-#if 0
-	if (virtualCode == GUI_VK_DECIMAL && inParam1 != XK_n)
-		charCode = GUI_KEY_DECIMAL;
-#endif
+	virtualCode = inMsg;
+	charCode = inKey;
+	Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
+
+	if (modstate & Qt::AltModifier)
+		flags |= gui_OptionAltFlag;
+	if (modstate & Qt::ShiftModifier)
+		flags |= gui_ShiftFlag;
+	if (modstate & Qt::ControlModifier)
+		flags |= gui_ControlFlag;
+
+	switch (virtualCode)
+	{
+		case Qt::Key_Enter:
+		case Qt::Key_Return:	charCode = GUI_KEY_RETURN;	break;
+		case Qt::Key_Escape:	charCode = GUI_KEY_ESCAPE;	break;
+		case Qt::Key_Tab:	charCode = GUI_KEY_TAB;		break;
+		case Qt::Key_Delete:	charCode = GUI_KEY_DELETE;	break;
+		case Qt::Key_Left:	charCode = GUI_KEY_LEFT;	break;
+		case Qt::Key_Up:	charCode = GUI_KEY_UP;		break;
+		case Qt::Key_Right:	charCode = GUI_KEY_RIGHT;	break;
+		case Qt::Key_Down:	charCode = GUI_KEY_DOWN;	break;
+	}
 #endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
