@@ -12,8 +12,6 @@ glWidget::~glWidget()
 void glWidget::resizeGL(int inWidth, int inHeight)
 {
 	glViewport(0, 0, inWidth, inHeight);
-	if (mXWinGL->inited)
-		mXWinGL->GLReshaped(inWidth, inHeight);
 }
 
 void glWidget::paintGL(void)
@@ -23,8 +21,7 @@ void glWidget::paintGL(void)
 }
 
 void glWidget::initializeGL(void)
-{
-}
+{}
 
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default_dnd, parent)
 {
@@ -46,14 +43,9 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
+	mGlWidget->makeCurrent();
 	delete mGlWidget;
 }
-
-void	XWinGL::GLReshaped(int inWidth, int inHeight)
-{}
-
-void	XWinGL::GLDraw(void)
-{}
 
 void                    XWinGL::SetGLContext(void)
 {
@@ -66,10 +58,14 @@ void                    XWinGL::SwapBuffer(void)
 }
 
 void XWinGL::Resized(int inWidth, int inHeight)
-{}
+{
+	mGlWidget->makeCurrent();
+	glViewport(0, 0, inWidth, inHeight);
+	if (inited)
+		GLReshaped(inWidth, inHeight);
+}
 
 void XWinGL::Update(XContext ctx)
 {
-	mGlWidget->makeCurrent();
 	mGlWidget->updateGL();
 }

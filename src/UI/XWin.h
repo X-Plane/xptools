@@ -220,6 +220,16 @@ public:
 
 private:
 	void resizeEvent(QResizeEvent* e);
+	void mousePressEvent(QMouseEvent* e);
+	void mouseReleaseEvent(QMouseEvent* e);
+	void mouseMoveEvent(QMouseEvent* e);
+	void wheelEvent(QWheelEvent* e);
+	void keyPressEvent(QKeyEvent* e);
+	void keyReleaseEvent(QKeyEvent* e);
+	void dragEnterEvent(QDragEnterEvent* e);
+	void dragLeaveEvent(QDragLeaveEvent* e);
+	void dragMoveEvent(QDragMoveEvent* e);
+	void dropEvent(QDropEvent* e);
 
 #endif
 

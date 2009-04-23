@@ -28,7 +28,8 @@ XWin::XWin(
 	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
 	MoveTo(x, y);
 	Resize(w, h);
-
+	setMouseTracking(true);
+	setAcceptDrops(true);
 	sIniting = false;
 }
 
@@ -41,7 +42,8 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
 	mMouse.y = 0;
-
+	setMouseTracking(true);
+	setAcceptDrops(true);
 	sIniting = false;
 }
 
@@ -54,6 +56,90 @@ XWin::~XWin()
 void XWin::resizeEvent(QResizeEvent* e)
 {
 	Resized(e->size().width(), e->size().height());
+}
+
+void XWin::mousePressEvent(QMouseEvent* e)
+{
+	int btn = 0;
+	mMouse.x = e->globalX();
+	mMouse.y = e->globalY();
+        if (e->button() == Qt::LeftButton)
+		btn = 0;
+        if (e->button() == Qt::MidButton)
+		btn = 2;
+        if (e->button() == Qt::RightButton)
+		btn = 1;
+	mDragging[btn]=1;
+	ClickDown(mMouse.x, mMouse.y, btn);
+}
+
+void XWin::mouseReleaseEvent(QMouseEvent* e)
+{
+        int btn = 0;
+	mMouse.x = e->globalX();
+	mMouse.y = e->globalY();
+        if (e->button() == Qt::LeftButton)
+		btn = 0;
+        if (e->button() == Qt::MidButton)
+		btn = 2;
+        if (e->button() == Qt::RightButton)
+		btn = 1;
+	mDragging[btn]=0;
+	ClickUp(mMouse.x, mMouse.y, btn);
+}
+
+void XWin::mouseMoveEvent(QMouseEvent* e)
+{
+	mMouse.x = e->globalX();
+	mMouse.y = e->globalY();
+	int bc=0;
+	for(int b=0;b<BUTTON_DIM;++b) {
+		if(mDragging[b]) {
+			++bc;
+			ClickDrag(mMouse.x, mMouse.y, b);
+		}
+	}
+	if(bc==0)
+		ClickMove(mMouse.x, mMouse.y);
+}
+
+void XWin::wheelEvent(QWheelEvent* e)
+{
+	mMouse.x = e->globalX();
+	mMouse.y = e->globalY();
+	MouseWheel(mMouse.x, mMouse.y, (e->delta() < 0) ? -1 : 1, 0);
+}
+
+void XWin::keyPressEvent(QKeyEvent* e)
+{
+	// e->text() has unicode representation
+	KeyPressed((char)e->key(), 0, 0, 0);
+}
+
+void XWin::keyReleaseEvent(QKeyEvent* e)
+{}
+
+void XWin::dragEnterEvent(QDragEnterEvent* e)
+{
+	if (e->mimeData()->hasFormat("text/uri-list"))
+		e->acceptProposedAction();
+}
+
+void XWin::dragLeaveEvent(QDragLeaveEvent* e)
+{}
+
+void XWin::dragMoveEvent(QDragMoveEvent* e)
+{}
+
+void XWin::dropEvent(QDropEvent* e)
+{
+	vector<string> inFiles;
+	QList<QUrl> urls = e->mimeData()->urls();
+	for (int i = 0; i < urls.size(); ++i) {
+		if (urls.at(i).scheme() == "file")
+			inFiles.push_back(urls.at(i).toLocalFile().toStdString());
+	}
+	ReceiveFilesFromDrag(inFiles);
 }
 
 void                    XWin::Resized(int inWidth, int inHeight)
