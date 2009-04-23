@@ -29,7 +29,8 @@ XWin::XWin(
 	MoveTo(x, y);
 	Resize(w, h);
 	setMouseTracking(true);
-	setAcceptDrops(true);
+	if (default_dnd)
+		setAcceptDrops(true);
 	sIniting = false;
 }
 
@@ -43,7 +44,8 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
 	mMouse.x = 0;
 	mMouse.y = 0;
 	setMouseTracking(true);
-	setAcceptDrops(true);
+	if (default_dnd)
+		setAcceptDrops(true);
 	sIniting = false;
 }
 
@@ -142,28 +144,34 @@ void XWin::dropEvent(QDropEvent* e)
 	ReceiveFilesFromDrag(inFiles);
 }
 
+/* prevent pure virtual function calls. ben, we need to restructure this,
+** it hinders us using deep inheritance schemes, typically needed by Qt
+*/
+
 void                    XWin::Resized(int inWidth, int inHeight)
+{}
+
+void                    XWin::Update(XContext ctx)
 {}
 
 void                    XWin::SetTitle(const char * inTitle)
 {
+	setWindowTitle(inTitle);
 }
 
 void                    XWin::MoveTo(int inX, int inY)
 {
+	move(inX, inY);
 }
 
 void                    XWin::Resize(int inWidth, int inHeight)
 {
+	resize(inWidth, inHeight);
 }
 
 void                    XWin::ForceRefresh(void)
 {
 	Update(0);
-}
-
-void                    XWin::Update(XContext ctx)
-{
 }
 
 void                    XWin::UpdateNow(void)
@@ -194,24 +202,19 @@ void XWin::SetTimerInterval(double seconds)
 
 void XWin::GetBounds(int * outX, int * outY)
 {
-	unsigned int width_return = 800;
-	unsigned int height_return = 600;
-
-	if (outX) *outX = width_return;
-	if (outY) *outY = height_return;
+	if (outX) *outX = size().width();
+	if (outY) *outY = size().height();
 }
 
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
-    if (outX) *outX = mMouse.x;
+	if (outX) *outX = mMouse.x;
 	if (outY) *outY = mMouse.y;
-    return;
 }
 
 void	XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
 {
 	ReceiveFiles(inFiles, 0, 0);
-	return;
 }
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
