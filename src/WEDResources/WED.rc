@@ -2,7 +2,6 @@
 100 					ICON 		WED.ico
 
 /* core UI resources */
-Vera.ttf				GUI_RES		Vera.ttf
 sans.ttf				GUI_RES		sans.ttf
 
 pushbutton.png			GUI_RES		pushbutton.png	
