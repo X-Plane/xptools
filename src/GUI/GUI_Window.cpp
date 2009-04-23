@@ -1079,7 +1079,7 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
-	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, 0),OGL2Client_Y(y,0),-1);
+	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -1091,7 +1091,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	if (popup_temp)				gApplication->RebuildMenu(popup_temp, items);
 	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 
-	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,0), OGL2Client_Y(y,0), current);
+	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
 #else
 #if 0
 	mPopupMenu.show();
