@@ -890,7 +890,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 								}
 							}
 
-							DebugAssert(mX1 != -2147483648);
+							DebugAssert(mX1 != 0x80000000);
 							DebugAssert(mX2 >= mX1);
 							DebugAssert(mY2 >= mY1);
 

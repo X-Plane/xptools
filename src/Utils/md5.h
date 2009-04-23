@@ -40,8 +40,10 @@
     extern "C" {
 #endif
 
+#include <stdint.h>
+
 /* typedef a 32-bit type */
-typedef unsigned long  UINT4;
+typedef uint32_t  UINT4;
 
 /* Data structure for MD5 (Message-Digest) computation */
 typedef struct {
