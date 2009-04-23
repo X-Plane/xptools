@@ -50,8 +50,8 @@ ifdef PLAT_LINUX
 SOURCES := ./src/linuxinit/initializer.cpp
 SOURCES += ./src/linuxinit/minigtk.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
-SOURCES += ./src/UI/XWin.qt.cpp
-SOURCES += ./src/UI/XWinGL.qt.cpp
+SOURCES += ./src/UI/XWin.lin.cpp
+SOURCES += ./src/UI/XWinGL.lin.cpp
 
 MOCSRC := ./src/UI/XWin.h
 MOCSRC += ./src/UI/XWinGL.h
@@ -77,6 +77,6 @@ SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/GeoUtils.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/EndianUtils.c
-SOURCES += ./src/UI/XGUIApp.qt.cpp
+SOURCES += ./src/UI/XGUIApp.cpp
 SOURCES += ./src/XPTools/ViewObj.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp

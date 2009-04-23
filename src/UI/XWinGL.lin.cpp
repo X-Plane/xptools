@@ -1,97 +1,86 @@
 #include "XWinGL.h"
 
-XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
+glWidget::glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share) : QGLWidget(parent, share)
 {
-    int nfbConfig = 0;
-	int found_config = 0;
-	GLXFBConfig	fb_config;
-    int fbAttr[] = {GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-					GLX_RENDER_TYPE, GLX_RGBA_BIT,
-					GLX_DOUBLEBUFFER, True,
-					None
-                   };
-    GLXFBConfig* fb_configs = glXChooseFBConfig(_mDisplay,
-		DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
-
-	for (int i = 0; i < nfbConfig; i++)
-	{
-		XVisualInfo* xvisual_info = glXGetVisualFromFBConfig(_mDisplay,
-			fb_configs[i]);
-		if (!xvisual_info)
-			continue;
-		fb_config = fb_configs[i];
-		found_config = 1;
-		break;
-	}
-	if (!found_config)
-		throw "no valid framebuffer configuration found.";
-    mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
-		inShare ? inShare->mContext :NULL, 1);
-	glXMakeCurrent(_mDisplay, mWindow, mContext);
-	XFree(fb_configs);
-    SetTitle("XWinGL Window");
-    SetVisible(true);
+	mXWinGL = xwin;
 }
 
-XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
-{
-    int nfbConfig = 0;
-	int found_config = 0;
-	GLXFBConfig	fb_config;
-    int fbAttr[] = {GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-					GLX_RENDER_TYPE, GLX_RGBA_BIT,
-					GLX_DOUBLEBUFFER, True,
-					None
-                   };
-    GLXFBConfig* fb_configs = glXChooseFBConfig(_mDisplay,
-		DefaultScreen(_mDisplay), fbAttr, &nfbConfig);
+glWidget::~glWidget()
+{}
 
-	for (int i = 0; i < nfbConfig; i++)
-	{
-		XVisualInfo* xvisual_info = glXGetVisualFromFBConfig(_mDisplay,
-			fb_configs[i]);
-		if (!xvisual_info)
-			continue;
-		fb_config = fb_configs[i];
-		found_config = 1;
-		break;
+
+void glWidget::resizeGL(int inWidth, int inHeight)
+{
+	if (mXWinGL->mInited) {
+		glViewport(0, 0, inWidth, inHeight);
+		mXWinGL->GLReshaped(inWidth, inHeight);
 	}
-	if (!found_config)
-		throw "no valid framebuffer configuration found.";
-    mContext = glXCreateNewContext(_mDisplay, fb_config, GLX_RGBA_TYPE,
-		inShare ? inShare->mContext :NULL, 1);
-	glXMakeCurrent(_mDisplay, mWindow, mContext);
-	XFree(fb_configs);
-    SetTitle("XWinGL Window");
-	if (inAttributes & xwin_style_visible)
-        SetVisible(true);
+}
+
+void glWidget::paintGL(void)
+{
+	if (mXWinGL->mInited)
+		mXWinGL->GLDraw();
+}
+
+void glWidget::initializeGL(void)
+{}
+
+void glWidget::focusInEvent(QFocusEvent* e)
+{
+	if (mXWinGL->mInited)
+		mXWinGL->Activate(1);
+}
+
+void glWidget::focusOutEvent(QFocusEvent* e)
+{
+	if (mXWinGL->mInited)
+		mXWinGL->Activate(0);
+}
+
+XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default_dnd, parent), mInited(false)
+{
+	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
+	mGlWidget->setMouseTracking(true);
+	mGlWidget->setFocusPolicy(Qt::StrongFocus);
+	setCentralWidget(mGlWidget);
+	mGlWidget->updateGL();
+	XWin::show();
+	XWin::activateWindow();
+	XWinGL::mInited = true;
+}
+
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight, parent), mInited(false)
+{
+	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
+	mGlWidget->setMouseTracking(true);
+	mGlWidget->setFocusPolicy(Qt::StrongFocus);
+	setCentralWidget(mGlWidget);
+	mGlWidget->updateGL();
+	if (inAttributes & xwin_style_visible) {
+		XWin::show();
+		XWin::activateWindow();
+	}
+	XWinGL::mInited = true;
 }
 
 XWinGL::~XWinGL()
 {
-	//glXMakeContextCurrent(_mDisplay, None, None, mContext);
-	glXDestroyContext(_mDisplay, mContext);
+	mGlWidget->makeCurrent();
+	delete mGlWidget;
 }
+
+void                    XWinGL::Resized(int w, int h)
+{}
 
 void                    XWinGL::SetGLContext(void)
-{
-	glXMakeCurrent(_mDisplay, mWindow, mContext);
-}
+{}
 
 void                    XWinGL::SwapBuffer(void)
-{
-	glXSwapBuffers(_mDisplay, mWindow);
-}
+{}
 
-void                    XWinGL::Resized(int inWidth, int inHeight)
+void XWinGL::Update(XContext ctx)
 {
-    glViewport(0, 0, inWidth, inHeight);
-    this->GLReshaped(inWidth, inHeight);
-}
-
-void                    XWinGL::Update(XContext ctx)
-{
-	glXMakeCurrent(_mDisplay, mWindow, mContext);
-    this->GLDraw();
-	glXSwapBuffers(_mDisplay, mWindow);
+	if (XWinGL::mInited)
+		mGlWidget->update();
 }

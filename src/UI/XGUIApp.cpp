@@ -134,40 +134,13 @@ puke:
 
 int main(int argc, char* argv[])
 {
-    Display* display = 0;
-    Visual*  a_defVisual = 0;
-    int a_defDepth = 0;
-    int a_screenNumber = 0;
-    int haveVisual = 1;
-    XEvent xevent;
+	Initializer initializer(&argc, &argv, 0);
+	QApplication app(argc, argv);
 
-	// initialize minigtk and setup
-	// signal handlers
-	Initializer initializer(&argc, &argv);
-    display = XOpenDisplay(0);
-    if (!display)
-    {
-        fprintf(stderr, "failed to open the default display (:0).\n");
-        return 1;
-    }
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+	XGrindInit();
 
-	a_screenNumber = DefaultScreen(display);
-    a_defVisual = DefaultVisual(display, a_screenNumber);
-    if (!a_defVisual)
-    {
-        fprintf(stderr, "invalid visual.\n");
-        return 1;
-    }
-    a_defDepth  = DefaultDepth(display, a_screenNumber);
-    XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
-    XGrindInit();
-    while (haveVisual)
-    {
-        XNextEvent(display, &xevent);
-        XWin::WinEventHandler(&xevent, &haveVisual);
-        if (!haveVisual) break;
-    }
-    return 0;
+	return app.exec();
 }
 #endif
 

@@ -141,6 +141,7 @@ GUI_Timer::GUI_Timer(void)
 		mID = 0;
 	#endif
 	#if LIN
+	connect(this, SIGNAL(timeout()), this, SLOT(TimerCB()));
 #if 0
 		timer_objects.insert(this);
 		teh_thread = 0;
@@ -209,6 +210,7 @@ void GUI_Timer::Start(float seconds)
 		}
 #endif
 #if LIN
+	start(seconds*1000);
 #if 0
 	targ.sec = seconds;
 	targ.callme = this;
@@ -256,6 +258,7 @@ void GUI_Timer::Stop(void)
 		}
 	#endif
 	#if LIN
+	stop();
 #if 0
 	if (teh_thread)
 	{
@@ -295,6 +298,12 @@ void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD d
 {
 	GUI_Timer * me = sTimerMap[idEvent];
 	me->TimerFired();
+}
+#endif
+#if LIN
+void GUI_Timer::TimerCB(void)
+{
+	TimerFired();
 }
 #endif
 

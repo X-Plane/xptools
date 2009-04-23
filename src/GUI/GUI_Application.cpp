@@ -243,32 +243,11 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	}
 	InitCommonControls();
 #endif
-
 #if LIN
-    Visual*  a_defVisual = 0;
-    int a_defDepth = 0;
-    int a_screenNumber = 0;
-//	mMenubar = 0;
-
-    display = XOpenDisplay(NULL);
-    if (!display)
-        throw "failed to open the default display (:0).";
-
-    a_screenNumber = DefaultScreen(display);
-    a_defVisual = DefaultVisual(display, a_screenNumber);
-    if (!a_defVisual)
-        throw "invalid visual.";
-    a_defDepth  = DefaultDepth(display, a_screenNumber);
-    XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
-/*
-    mMenubar = new mmenu(display);
-    if (!mMenubar)
-        throw "could not create menubar";
-    mMenubar->registerApp(this);
-    mMenubar->registerCB(MenuCommandHandler);
-*/
+	int c = 0;
+	char* v[1] = {};
+	qapp = new QApplication(c, v);
 #endif
-
 }
 
 GUI_Application::~GUI_Application()
@@ -297,26 +276,8 @@ void			GUI_Application::Run(void)
 	}
 #endif
 #if LIN
-    XEvent xevent;
-    Atom a_menuAtom = XInternAtom(display, "_MMENU_EVENT", False);
-    int haveVisual = 1;
-
-    while (haveVisual && !mDone)
-    {
-        XNextEvent(display, &xevent);
-//		_do_timercallbacks();
-//		if (mMenubar) mMenubar->enter_eventloop(&xevent);
-		if (xevent.xclient.message_type == a_menuAtom)
-        {
-			int i = 0;
-			std::string t;
-			if(GUI_Commander::GetCommanderRoot()->DispatchCanHandleCommand(xevent.xclient.data.l[0], t, i))
-				DispatchHandleCommand(xevent.xclient.data.l[0]);
-        }
-        XWin::WinEventHandler(&xevent, &haveVisual);
-        if (!haveVisual) break;
-    }
-//   	if (mMenubar) delete mMenubar;
+	qapp->connect(qapp, SIGNAL(lastWindowClosed()), qapp, SLOT(quit()));
+	qapp->exec();
 #endif
 }
 
@@ -333,6 +294,9 @@ void			GUI_Application::Quit(void)
 	mDone = true;
 #if APL
 	QuitApplicationEventLoop();
+#endif
+#if LIN
+	qapp->quit();
 #endif
 }
 
