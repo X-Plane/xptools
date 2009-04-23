@@ -25,7 +25,7 @@
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];
 
-static __inline const char*
+static inline const char*
 product_version(uint32_t ver, const char* extra_ver)
 {
 	uint32_t maj = ver/10000;
@@ -36,7 +36,7 @@ product_version(uint32_t ver, const char* extra_ver)
 	return __gverbuf;
 }
 
-static __inline void
+static inline void
 print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
 	printf("%s %s, Copyight 2009 Laminar Research.  Compiled on "
