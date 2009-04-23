@@ -134,7 +134,7 @@ puke:
 
 int main(int argc, char* argv[])
 {
-	Initializer initializer(&argc, &argv);
+	Initializer initializer(&argc, &argv, 0);
 	QApplication app(argc, argv);
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));

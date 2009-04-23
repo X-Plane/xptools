@@ -58,16 +58,6 @@ typedef struct tagPOINT {
   int x;
   int y;
 } POINT, *PPOINT;
-#if 0
-class wmain : public QMainWindow
-{
-	Q_OBJECT
-public:
-	wmain(void){}
-	~wmain(void){}
-private:
-};
-#endif
 #endif
 
 #define	BUTTON_DIM 16
@@ -208,17 +198,13 @@ public:
 #endif
 
 #if LIN
-	bool	visible;
-	bool	active;
 	int	mDragging[BUTTON_DIM];
-	int	width;
-	int	height;
 	POINT	mMouse;
-//	wmain	mWindow;
+
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 
-private:
+protected:
 	void resizeEvent(QResizeEvent* e);
 	void mousePressEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);

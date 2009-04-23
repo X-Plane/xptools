@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  *
  */
+#include <QtCore>
+#include <QtGui>
 #include "PlatformUtils.h"
 #include "initializer.h"
 #include "minigtk.h"
@@ -95,7 +97,7 @@ int		GetFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
-	MiniGtk::WarningMessagebox(inMsg);
+	QMessageBox::warning(0, "", inMsg);
 }
 
 void	ShowProgressMessage(const char * inMsg, float * inProgress)

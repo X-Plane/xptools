@@ -134,7 +134,7 @@ public:
 	virtual void			ClickMove(int inX, int inY) { }
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis);
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int, int);
-	virtual	int				KeyPressed(char inKey, long, long, long);
+	virtual	int				KeyPressed(unsigned int inKey, long, long, long);
 
 	virtual	void			DragEnter(int inX, int inY) { }
 	virtual	void			DragOver(int inX, int inY) { }
@@ -572,7 +572,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 	}
 }
 
-int			XObjWin::KeyPressed(char inKey, long, long, long)
+int			XObjWin::KeyPressed(unsigned int inKey, long, long, long)
 {
 	SetGLContext();
 	int x, y;

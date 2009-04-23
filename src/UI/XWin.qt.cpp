@@ -1,8 +1,5 @@
 #include "XWin.h"
 
-static bool				sIniting = false;
-static std::map<QMainWindow*, XWin*>	sWindows;
-
 XWin::XWin(
 	int		default_dnd,
 	const char*	inTitle,
@@ -13,10 +10,6 @@ XWin::XWin(
 	int		inHeight,
 	QWidget *parent) : QMainWindow(parent)
 {
-	sIniting = true;
-	visible = false;
-	active = false;
-	sWindows[this] = this;
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
 	mMouse.y = 0;
@@ -31,28 +24,21 @@ XWin::XWin(
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
-	sIniting = false;
 }
 
 XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
 {
-	sIniting = true;
-	visible = false;
-	active = false;
-	sWindows[this] = this;
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
 	mMouse.y = 0;
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
-	sIniting = false;
 }
 
 XWin::~XWin()
 {
 	close();
-	sWindows.erase(this);
 }
 
 void XWin::resizeEvent(QResizeEvent* e)
@@ -114,8 +100,11 @@ void XWin::wheelEvent(QWheelEvent* e)
 
 void XWin::keyPressEvent(QKeyEvent* e)
 {
-	// e->text() has unicode representation
-	KeyPressed((char)e->key(), 0, 0, 0);
+	if (e->text().size() != 0)
+	{
+		unsigned int utf32char = e->text().toUcs4().at(0);
+		KeyPressed(utf32char, 0, 0, 0);
+	}
 }
 
 void XWin::keyReleaseEvent(QKeyEvent* e)
@@ -148,38 +137,38 @@ void XWin::dropEvent(QDropEvent* e)
 ** it hinders us using deep inheritance schemes, typically needed by Qt
 */
 
-void                    XWin::Resized(int inWidth, int inHeight)
+void XWin::Resized(int inWidth, int inHeight)
 {}
 
-void                    XWin::Update(XContext ctx)
+void XWin::Update(XContext ctx)
 {}
 
-void                    XWin::SetTitle(const char * inTitle)
+void XWin::SetTitle(const char * inTitle)
 {
 	setWindowTitle(inTitle);
 }
 
-void                    XWin::MoveTo(int inX, int inY)
+void XWin::MoveTo(int inX, int inY)
 {
 	move(inX, inY);
 }
 
-void                    XWin::Resize(int inWidth, int inHeight)
+void XWin::Resize(int inWidth, int inHeight)
 {
 	resize(inWidth, inHeight);
 }
 
-void                    XWin::ForceRefresh(void)
+void XWin::ForceRefresh(void)
 {
 	Update(0);
 }
 
-void                    XWin::UpdateNow(void)
+void XWin::UpdateNow(void)
 {
 	ForceRefresh();
 }
 
-void                    XWin::SetVisible(bool visible)
+void XWin::SetVisible(bool visible)
 {
 	setVisible(visible);
 }
@@ -193,7 +182,6 @@ bool XWin::GetActive(void) const
 {
 	return isActiveWindow();
 }
-
 
 void XWin::SetTimerInterval(double seconds)
 {
@@ -212,7 +200,7 @@ void XWin::GetMouseLoc(int * outX, int * outY)
 	if (outY) *outY = mMouse.y;
 }
 
-void	XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
+void XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
 {
 	ReceiveFiles(inFiles, 0, 0);
 }
