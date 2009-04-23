@@ -133,9 +133,8 @@ public:
 #if IBM
 			HDC				GetDC(void);
 #endif
-#if !LIN
 	virtual	void			Resized(int, int);
-#endif
+
 	// New hooks for you:
 	virtual	void			GLReshaped(int inWidth, int inHeight)=0;
 	virtual	void			GLDraw(void)=0;

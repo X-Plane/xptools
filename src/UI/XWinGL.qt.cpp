@@ -70,6 +70,9 @@ XWinGL::~XWinGL()
 	delete mGlWidget;
 }
 
+void                    XWinGL::Resized(int w, int h)
+{}
+
 void                    XWinGL::SetGLContext(void)
 {}
 
