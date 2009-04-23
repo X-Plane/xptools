@@ -28,6 +28,9 @@
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
+#if LIN
+extern QMenuBar* gQMenu;
+#endif
 
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }
@@ -544,6 +547,11 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 		SetWRefCon(mWindow, (long) this);
 
+	#endif
+	#if LIN
+		if (!sWindows.empty()) {
+			this->setMenuBar(gQMenu);
+		}
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;

@@ -24,8 +24,29 @@
 #ifndef WED_MENUS_H
 #define WED_MENUS_H
 
+#if LIN
+#include <QtCore>
+#include <QtGui>
+#endif
+
 #include "GUI_Application.h"
 #include "GUI_Menus.h"
+
+#if LIN
+class WEDAction : public QObject
+{
+	Q_OBJECT
+public:
+	WEDAction(const QString& text, int cmd, GUI_Application *app, bool checkable);
+	~WEDAction();
+
+	QAction* qaction;
+public slots:
+	void ontriggered();
+private:
+	GUI_Application* app;
+};
+#endif
 
 extern	GUI_Menu	test1;
 extern	GUI_Menu	sub1;

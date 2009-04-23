@@ -81,6 +81,7 @@ SOURCES += ./src/UI/XWinGL.qt.cpp
 MOCSRC := ./src/UI/XWin.h
 MOCSRC += ./src/UI/XWinGL.h
 MOCSRC += ./src/GUI/GUI_Timer.h
+MOCSRC += ./src/WEDWindows/WED_Menus.h
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
