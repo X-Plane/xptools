@@ -153,6 +153,7 @@ WEDAction::WEDAction
 	qaction = new QAction(text, this);
 	qaction->setData(cmd);
 	qaction->setCheckable(checkable);
+	qaction->setChecked(checkable);
 	connect(qaction, SIGNAL(triggered()), this, SLOT(ontriggered()));
 }
 
