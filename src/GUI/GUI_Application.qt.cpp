@@ -244,7 +244,9 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	InitCommonControls();
 #endif
 #if LIN
-	qapp = new QApplication(0, 0);
+	int c = 0;
+	char* v[1] = {};
+	qapp = new QApplication(c, v);
 #endif
 }
 
