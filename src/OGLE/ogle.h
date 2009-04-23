@@ -150,6 +150,16 @@ struct OGLE_Callbacks {
 							const char *	t1,
 							const char *	t2);
 
+	const char *	(* MBCS_Next_f)(
+							OGLE_Handle		handle,
+							const char *	ptr);
+	int				(* MBCS_NextPos_f)(
+							OGLE_Handle		handle,
+							int				pos);
+	int				(* MBCS_PrevPos_f)(
+							OGLE_Handle		handle,
+							int				pos);
+							
 };
 
 /*******************************************************************************************
@@ -173,6 +183,12 @@ void			OGLE_Draw(
 void			OGLE_Key(
 						OGLE_Handle			handle,
 						char				key,
+						int					extend);
+
+void			OGLE_Key_MBCS(
+						OGLE_Handle			handle,
+						int					count,
+						const char			keys[],
 						int					extend);
 
 void			OGLE_Click(
@@ -230,6 +246,11 @@ public:
 
 			void			Key(
 									char				key,
+									int					extend);
+
+			void			Key_MBCS(
+									int					count,
+									const char			keys[],
 									int					extend);
 
 			void			Click(
@@ -299,6 +320,12 @@ protected:
 	virtual	const char *	WordBreak(
 								const char *	t1,
 								const char *	t2)=0;
+	virtual	const char *	MBCS_Next(
+								const char *	ptr)=0;
+	virtual	int				MBCS_NextPos(
+								int				pos)=0;
+	virtual	int				MBCS_PrevPos(
+								int				pos)=0;
 
 private:
 
@@ -353,6 +380,15 @@ private:
 								OGLE_Handle		handle,
 								const char *	t1,
 								const char *	t2);
+	static	const char *	MBCS_NextCB(
+								OGLE_Handle		handle,
+								const char *	ptr);
+	static	int				MBCS_NextPosCB(
+								OGLE_Handle		handle,
+								int				pos);
+	static	int				MBCS_PrevPosCB(
+								OGLE_Handle		handle,
+								int				pos);
 
 	OGLE_Handle		mHandle;
 

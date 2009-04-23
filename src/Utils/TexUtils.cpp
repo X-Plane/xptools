@@ -55,7 +55,7 @@ static int	NextPowerOf2(int v)
 	return pt;
 }
 */
-__inline int NextPowerOf2(int a)
+inline int NextPowerOf2(int a)
 {
 	GLint	maxDim = 1024;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
@@ -195,6 +195,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 	p = useIt->data;
 	count = useIt->width * useIt->height;
+	if(useIt->channels > 2)
 	while (count--)
 	{
 		swap(p[0], p[2]);
@@ -203,6 +204,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 	int							glformat = GL_RGB;
 	if (useIt->channels == 4)	glformat = GL_RGBA;
+	if (useIt->channels == 1)	glformat = GL_ALPHA;
 
 	if (inFlags & tex_Mipmap)
 		gluBuild2DMipmaps(GL_TEXTURE_2D, glformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);

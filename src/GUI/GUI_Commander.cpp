@@ -149,7 +149,7 @@ int				GUI_Commander::IsFocusedChain(void)
 GUI_Commander * GUI_Commander::GetCmdParent(void) { return mCmdParent; }
 
 
-int				GUI_Commander::DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int				GUI_Commander::DispatchKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	GUI_Commander * who = this->GetFocusForCommander();
 	while (who != NULL)

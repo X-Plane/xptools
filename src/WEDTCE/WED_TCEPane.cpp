@@ -129,7 +129,7 @@ void	WED_TCEPane::ZoomShowAll(void)
 	mTCE->ZoomShowAll();
 }
 
-int		WED_TCEPane::TCE_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int		WED_TCEPane::TCE_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mTCE->HandleKeyPress(inKey, inVK, inFlags)) return 1;
 	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)

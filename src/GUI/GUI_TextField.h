@@ -69,7 +69,7 @@ public:
 	virtual void		SetBounds(int inBounds[4]);
 
 	// GUI_Commander
-	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			HandleCommand(int command);
 	virtual	int			CanHandleCommand(int command, string& ioName, int& ioCheck);
 	virtual	int			AcceptTakeFocus(void);
@@ -125,6 +125,12 @@ protected:
 	virtual	const char *	WordBreak(
 								const char *	t1,
 								const char *	t2);
+	virtual	const char *	MBCS_Next(
+								const char *	ptr);
+	virtual	int				MBCS_NextPos(
+								int				pos);
+	virtual	int				MBCS_PrevPos(
+								int				pos);
 
 private:
 

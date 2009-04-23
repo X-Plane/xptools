@@ -39,7 +39,7 @@ public:
 				 		WED_Package *	inPackage);
 	virtual		~WED_PackageWindow();
 
-	virtual	int	HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int	HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int	HandleCommand(int command);
 	virtual	int	CanHandleCommand(int command, string& ioName, int& ioCheck);
 

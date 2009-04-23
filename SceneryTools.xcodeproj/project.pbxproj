@@ -503,7 +503,6 @@
 		D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D67EF9C20B61424F00D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
-		D682DB260C0E3A7700BBE1A0 /* Vera.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D682DB250C0E3A7700BBE1A0 /* Vera.ttf */; };
 		D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */; };
 		D682DE5D0C10985100BBE1A0 /* startup_bar.png in Resources */ = {isa = PBXBuildFile; fileRef = D682DE5A0C10985100BBE1A0 /* startup_bar.png */; };
 		D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */ = {isa = PBXBuildFile; fileRef = D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */; };
@@ -653,6 +652,8 @@
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
 		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
+		D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
+		D6C390020FA0D93400EFA56C /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */; };
@@ -835,7 +836,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D6A2665D0F99266D00E1E754 /* ac3d */;
+			remoteGlobalIDString = D6A2665D0F99266D00E1E754;
 			remoteInfo = ac3d;
 		};
 		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
@@ -1176,7 +1177,6 @@
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9890B6135F400D9190C /* ObjConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjConverter; sourceTree = BUILT_PRODUCTS_DIR; };
-		D682DB250C0E3A7700BBE1A0 /* Vera.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Vera.ttf; sourceTree = "<group>"; };
 		D682DDEC0C10939C00BBE1A0 /* WED_StartWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StartWindow.h; sourceTree = "<group>"; };
 		D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StartWindow.cpp; sourceTree = "<group>"; };
 		D682DE5A0C10985100BBE1A0 /* startup_bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = startup_bar.png; sourceTree = "<group>"; };
@@ -1781,6 +1781,9 @@
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
 		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
+		D6C38FDB0FA0D6E500EFA56C /* GUI_Unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Unicode.h; sourceTree = "<group>"; };
+		D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Unicode.cpp; sourceTree = "<group>"; };
+		D6C390010FA0D93400EFA56C /* sans.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = sans.ttf; sourceTree = "<group>"; };
 		D6C579D60C7E3C7B00FCB4C1 /* DDSTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DDSTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DDSTool.cpp; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
@@ -2502,6 +2505,8 @@
 				D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */,
 				D6C37B160C27920D0023B35C /* GUI_Help.h */,
 				D6C37B170C27920D0023B35C /* GUI_Help.cpp */,
+				D6C38FDB0FA0D6E500EFA56C /* GUI_Unicode.h */,
+				D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -3188,6 +3193,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D6C390010FA0D93400EFA56C /* sans.ttf */,
 				D654C52E0C676995009726BD /* WEDManual.pdf */,
 				D67B29DA0C5661A100A21ABC /* line_types */,
 				D67B21400C5536A300A21ABC /* pavement */,
@@ -3196,7 +3202,6 @@
 				D682DE5A0C10985100BBE1A0 /* startup_bar.png */,
 				D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */,
 				D682DE5C0C10985100BBE1A0 /* startup_btns.png */,
-				D682DB250C0E3A7700BBE1A0 /* Vera.ttf */,
 				D607B7950C0B831400992876 /* tables */,
 				D607B64B0C0A3F8200992876 /* WED.icns */,
 				D60B090E0C061B2100AD5EB7 /* GUI.nib */,
@@ -3615,7 +3620,6 @@
 				D607B7980C0B831400992876 /* eye.png in Resources */,
 				D607B7990C0B831400992876 /* lock.png in Resources */,
 				D607B7A10C0B847C00992876 /* check.png in Resources */,
-				D682DB260C0E3A7700BBE1A0 /* Vera.ttf in Resources */,
 				D682DE5D0C10985100BBE1A0 /* startup_bar.png in Resources */,
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
@@ -3673,6 +3677,7 @@
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
+				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4361,6 +4366,7 @@
 				D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ED40F82E91100F6718E /* WED_Assert.cpp in Sources */,
 				D6956ED50F82E91100F6718E /* WED_Globals.cpp in Sources */,
+				D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

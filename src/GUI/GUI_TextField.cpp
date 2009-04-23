@@ -27,6 +27,7 @@
 #include "GUI_GraphState.h"
 #include "GUI_Menus.h"
 #include "GUI_Clipboard.h"
+#include "GUI_Unicode.h"
 #include <ctype.h>
 
 #if APL
@@ -188,12 +189,18 @@ void		GUI_TextField::SetBounds(int inBounds[4])
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 }
-
-int			GUI_TextField::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+	
+int			GUI_TextField::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	if (!mAllowed[(unsigned char) inKey]) return 0;
-	if (!mAllowedVK[(unsigned char) inVK]) return 0;
-	Key(inKey, inFlags & gui_ShiftFlag);
+	if(inKey == 0)		return 0;
+	if(!mAllowed[0] && inKey > 255)						return 0;		// use char 0 as the "extended" bit.
+	if (inKey < 256 && !mAllowed[(unsigned char) inKey]) return 0;
+	if (inKey < 256 && !mAllowedVK[(unsigned char) inVK]) return 0;
+	
+	UTF8 buf[4];
+	int l = UTF8_encode(inKey, buf);
+	if(l > 0)
+	Key_MBCS(l,(const char*)buf,inFlags & gui_ShiftFlag);
 	Refresh();
 	return 1;
 }
@@ -457,6 +464,33 @@ const char *	GUI_TextField::WordBreak(
 		++p;
 	return p;
 }
+
+
+const char *	GUI_TextField::MBCS_Next(
+								const char *	ptr)
+{
+	return (const char *) UTF8_next((const UTF8*) ptr);
+
+}
+
+int				GUI_TextField::MBCS_NextPos(
+								int				pos)
+{
+	if(pos >= mText.size()) return pos+1;					// OGLE will run off end and then fix it...do not attempt to 
+	const UTF8 * base = (const UTF8*) mText.c_str();		// access char data to decide if we're wide.
+	return UTF8_next(base+pos) - base;
+
+}
+
+int				GUI_TextField::MBCS_PrevPos(
+								int				pos)
+{
+	if(pos == 0) return -1;										// OGLE will run off end and then fix it...do not attempt to 
+	const UTF8 * base = (const UTF8*) mText.c_str();			// access char data to decide if we're wide.
+	return UTF8_prev(base+pos) - base;
+	
+}
+
 
 void	GUI_TextField::ConstrainLogicalBounds(void)
 {

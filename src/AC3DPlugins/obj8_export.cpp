@@ -565,6 +565,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 
 int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, int do_prefix, int tex_id, int do_misc)
 {
+	printf("Saving file: %s.  We have %d panel regions enabled.\n",fname,get_sub_panel_count());
 	XObj8	obj8;
 
 	obj8.lods.clear();

@@ -76,12 +76,12 @@ public:
 	static	void			UnregisterNotifiable(GUI_Commander_Notifiable * notif);
 
 	// Handler Dispatchers
-			int				DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+			int				DispatchKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 			int				DispatchHandleCommand(int command);
 			int				DispatchCanHandleCommand(int command, string& ioName, int& ioCheck);
 
 	// Commander handler messages:
-	virtual	int				HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	{ return 0; }
+	virtual	int				HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	{ return 0; }
 	virtual	int				HandleCommand(int command) 									{ return 0; }
 	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck) { return 0; }
 

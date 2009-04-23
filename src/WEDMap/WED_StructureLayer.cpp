@@ -951,6 +951,28 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 
 		if (poly)
 		{
+/*		
+			vector<Point2>	errs;			
+			if(IsBezierSequenceScrewed(poly->GetOuterRing(), NULL &errs))
+			{
+				g->SetState(false,0,false,false, false,false,false);
+				glColor3f(1,0,0);
+				Bbox2	bounds;
+				poly->GetBounds(bounds);
+				
+				glPointSize(5);
+				glBegin(GL_POINTS);
+//				for(int n = 0; n < errs.size(); ++n)
+				{
+//					glVertex2(GetZoomer()->LLToPixel(errs[n]));
+					glVertex2(GetZoomer()->LLToPixel(bounds.p1));
+					glVertex2(GetZoomer()->LLToPixel(bounds.p2));
+				}
+				glEnd();
+			}
+*/			
+		
+		
 			if (overlay)
 			{
 				IGISPointSequence * oring = overlay->GetOuterRing();

@@ -427,6 +427,7 @@ proc fetch_all_datarefs {} {
 	if {[catch {
 		set fi [open "plugins/DataRefs.txt" r]
 	}]} { 
+		puts "Unable to open datarefs.txt"
 		set all_datarefs ""	
 		return 
 	}
@@ -469,6 +470,7 @@ proc fetch_all_cmnds {} {
 	if {[catch {
 		set fi [open "plugins/Commands.txt" r]
 	}]} { 
+		puts "Unable to open commands.txt\n"
 		set all_cmnds ""	
 		return 
 	}

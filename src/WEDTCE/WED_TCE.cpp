@@ -214,7 +214,7 @@ int	WED_TCE::MouseMove(int x, int y)
 	return 1;
 }
 
-int			WED_TCE::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			WED_TCE::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mTool) 	return mTool->HandleToolKeyPress(inKey, inVK, inFlags);
 	else		return 0;

@@ -406,7 +406,20 @@ pascal OSStatus	XWin::MacEventHandler(
 		case kEventRawKeyDown:
 		case kEventRawKeyRepeat:
 			{
+				UInt32	vkey;
+				UInt32	mods;
+				char	macKey;
 				ConvertEventRefToEventRecord(inEvent, &e);
+				if(kind == kEventRawKeyDown)				e.what = keyDown;
+				if(kind == kEventRawKeyRepeat)				e.what = autoKey;
+
+				// Ben says: - yeah I know, this is soooo 1984 that I'm using an event rec. Bottom line is ConvertEventRefToEventRecord is not very thorough with raw keys. Help out a bit.
+				if(GetEventParameter(inEvent,kEventParamKeyMacCharCodes,typeChar,NULL,sizeof(macKey),NULL,&macKey) != noErr) macKey = 0;
+				if(GetEventParameter(inEvent,kEventParamKeyCode,typeUInt32,NULL,sizeof(vkey),NULL,&vkey) != noErr) vkey = 0;
+				if(GetEventParameter(inEvent,kEventParamKeyModifiers,typeUInt32,NULL,sizeof(mods),NULL,&mods) != noErr) mods = 0;
+				e.modifiers = mods;
+				e.message = (macKey & 0xFF) | ((vkey & 0xFF) << 8);		
+
 				if (!me->KeyPressed(macChar, e.what, e.message, e.modifiers))
 				{
 					if (macChar == '=')

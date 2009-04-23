@@ -327,7 +327,7 @@ int	WED_Map::MouseMove(int x, int y)
 	return 1;
 }
 
-int			WED_Map::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			WED_Map::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mTool) 	return mTool->HandleToolKeyPress(inKey, inVK, inFlags);
 	else		return 0;

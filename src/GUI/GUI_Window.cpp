@@ -26,6 +26,7 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
+#include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
 
 #if APL
@@ -50,8 +51,8 @@ static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSour
 	return 0;
 }
 
-#endif
-#endif
+#endif /* MINGW_BUILD */
+#endif /* IBM */
 
 #if LIN
 
@@ -822,13 +823,10 @@ const char	gui_Key_Map [256] = {
 int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam2)
 {
 	GUI_KeyFlags		flags = 0;
-#if APL
-	char		charCode = 0;
-	char		virtualCode = 0;
-#elif IBM
-	unsigned char	charCode = 0;
-	unsigned char	virtualCode = 0;
+	uint32_t			charCode = 0;
+	unsigned char		virtualCode = 0;
 
+#if IBM
 	HKL hKL;
 	unsigned int vKey, RetCode, ScanCode;
 	unsigned short Char = 0;
@@ -836,9 +834,6 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	long shiftKey, controlKey, optionKey, keyDown, keyUp, charCodeMask,	keyCodeMask;
 	long ExtKeyMask, ShiftControlMask, scrollLockKey, capsLockKey, numLockKey;
 	int ExtendedKey;
-#elif LIN
-	unsigned char	charCode = inKey;
-	unsigned char	virtualCode = inKey;
 #endif
 
 #if APL
@@ -856,12 +851,53 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	if (inMsg == keyUp)
 		flags |= gui_UpFlag;
 
-	// NOTE: the GUI_KEY ASCII defines are all mac-compatible.
+	KeyboardLayoutRef			kr;
+	const void *				KCHR=NULL;																	// First we'll try for a uchr (unicode keyboard layout)
+	const UCKeyboardLayout *	uchr=NULL;																	// then fall back to KCHR (script mgr layout) if we have no uhcr.
+																											// 10.5 has all uchr, but 10.4 has a mix.  There should always be
+	if(KLGetCurrentKeyboardLayout(&kr)==0)																	// one or the other.
+	if(KLGetKeyboardLayoutProperty(kr,kKLuchrData,(const void **) &uchr)!= noErr || uchr == NULL)
+	   KLGetKeyboardLayoutProperty(kr,kKLKCHRData,&KCHR);
 
-	// Finally, control and option keys are not available as ASCII because
-	// the ASCII codes are whacko.
-	if (inParam2 & (controlKey + optionKey + cmdKey))
-		charCode = 0;
+	int scan_code = ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// The vkey and the scan code are the same on the Mac.  
+	int os_vkey =   ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// So use for both.  Vkey codes are relatively low numbres.
+
+	if(uchr)
+	{
+		static UInt32	dead_state[3] = { 0 }, dead_lower = 0, dead_upper = 0;								// Translate 3 separate times - to generate the real key, and hypothetical
+		UniCharCount ct=0;																					// shift-down and shift-up keys.
+		UniChar buf[2];
+		OSStatus result;
+		
+		result = UCKeyTranslate(uchr,os_vkey, inMsg - keyDown + kUCKeyActionDown, (inParam2 >> 8) & 0xFF , LMGetKbdType(), 0, &dead_state[inMsg - keyDown], 2, &ct, buf);
+		if(result == noErr && ct > 0) charCode = buf[0];
+		
+//		result = UCKeyTranslate(uchr, os_vkey, kUCKeyActionDisplay, 0, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &dead_lower, 2, &ct, buf);
+//		if (result == noErr && ct > 0) uni_lower = buf[0];
+
+//		result = UCKeyTranslate(uchr, os_vkey, kUCKeyActionDisplay, shiftKey >> 8, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &dead_upper, 2, &ct, buf);
+//		if (result == noErr && ct > 0) uni_upper = buf[0];
+	}
+	else if (KCHR)
+	{
+		static UInt32	dead_state = 0;
+		UInt32 dead_lower = 0, dead_upper = 0;		// Why not static?  Don't accume daed state for up-down sniffing.  For vkeys we want the same value every time.
+		int result;
+		
+		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | (inMsg == keyUp ? 0x80 : 0) | (inParam2 & 0xFF00), &dead_state) & 0xFF;
+		if(result > 0 && result < 0x100) charCode = script_to_utf32(result);
+
+//		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | 0, &dead_lower) & 0xFF;
+//		if(result > 0 && result < 0x100) uni_lower = script_to_utf32(result);
+
+//		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | shiftKey, &dead_upper) & 0xFF;
+//		if(result > 0 && result < 0x100) uni_upper = script_to_utf32(result);
+	}
+	else
+	{		
+//		uni_lower = uni_upper = event->message & charCodeMask;												// Last fallback, take message a priori.  Should never get this desparate!
+	}
+
 
 #elif IBM
 	numLockKey = 0x01450000;

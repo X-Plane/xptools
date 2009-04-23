@@ -286,7 +286,7 @@ int		WED_StartWindow::MouseMove(int x, int y)
 	return 1;
 }
 
-int			WED_StartWindow::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+int			WED_StartWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	return 0;
 }

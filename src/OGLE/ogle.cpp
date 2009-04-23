@@ -173,7 +173,7 @@ static int			OGLE_LineLengthInternal(
 	{
 		const char * cur_p = start_p;
 		while (cur_p != end_p && isspace(*cur_p) && *start_p != '\r' && *start_p != '\n')
-			++cur_p;
+			cur_p = handle->callbacks.MBCS_Next_f(handle,cur_p);
 
 		total_width += handle->callbacks.MeasureString_f(handle, start_p, cur_p);
 		total_chars += (cur_p - start_p);
@@ -436,8 +436,8 @@ void			OGLE_Key(
 		{
 			if (handle->sel_start > 0)
 			{
-				handle->callbacks.ReplaceText_f(handle, handle->sel_start-1,handle->sel_start,NULL, NULL);
-				handle->sel_start--;
+				handle->callbacks.ReplaceText_f(handle, handle->callbacks.MBCS_PrevPos_f(handle,handle->sel_start),handle->sel_start,NULL, NULL);
+				handle->sel_start=handle->callbacks.MBCS_PrevPos_f(handle,handle->sel_start);
 				handle->sel_end = handle->sel_start;
 				OGLE_RepaginateInternal(handle, sline, handle->sel_end);
 				OGLE_RevealSelection(handle);
@@ -457,16 +457,16 @@ void			OGLE_Key(
 		if (extend)
 		{
 			if (handle->active_side)
-				--handle->sel_end;
+				handle->sel_end=handle->callbacks.MBCS_PrevPos_f(handle,handle->sel_end);
 			else
-				--handle->sel_start;
+				handle->sel_start=handle->callbacks.MBCS_PrevPos_f(handle,handle->sel_start);
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
 		}
 		else
 		{
 			if (handle->sel_end == handle->sel_start)
-				--handle->sel_start;
+				handle->sel_start=handle->callbacks.MBCS_PrevPos_f(handle,handle->sel_start);
 			handle->sel_end = handle->sel_start;
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
@@ -476,16 +476,16 @@ void			OGLE_Key(
 		if (extend)
 		{
 			if (handle->active_side)
-				++handle->sel_end;
+				handle->sel_end=handle->callbacks.MBCS_NextPos_f(handle,handle->sel_end);
 			else
-				++handle->sel_start;
+				handle->sel_start=handle->callbacks.MBCS_NextPos_f(handle,handle->sel_start);
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
 		}
 		else
 		{
 			if (handle->sel_end == handle->sel_start)
-				++handle->sel_end;
+				handle->sel_end=handle->callbacks.MBCS_NextPos_f(handle,handle->sel_end);
 			handle->sel_start = handle->sel_end;
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
@@ -531,7 +531,7 @@ void			OGLE_Key(
 		break;
 	default:
 		handle->callbacks.ReplaceText_f(handle, handle->sel_start,handle->sel_end,&key,(&key)+1);
-		handle->sel_start++;
+		handle->sel_start++;		// Okay - guaranteed input key is NOT MBCS!
 		handle->sel_end = handle->sel_start;
 		handle->active_side = 1;
 		OGLE_RepaginateInternal(handle, sline, handle->sel_end);
@@ -539,6 +539,30 @@ void			OGLE_Key(
 		break;
 	}
 }
+
+void			OGLE_Key_MBCS(
+						OGLE_Handle			handle,
+						int					count,
+						const char			keys[],
+						int					extend)
+{
+	if(count == 1)
+	{
+		OGLE_Key(handle,keys[0],extend);
+		return;
+	}
+	
+	int sline = OGLE_CharPosToLine(handle, handle->sel_start)-1;
+	handle->horizontal_gap = -1.0; 
+
+	handle->callbacks.ReplaceText_f(handle, handle->sel_start,handle->sel_end,keys,keys + count);
+	handle->sel_start+=count;
+	handle->sel_end = handle->sel_start;
+	handle->active_side = 1;
+	OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+	OGLE_RevealSelection(handle);
+}
+
 
 void			OGLE_Click(
 						OGLE_Handle			handle,
@@ -714,7 +738,10 @@ OGLE::OGLE()
 		FitStringRevCB,
 		DrawStringCB,
 		DrawSelectionCB,
-		WordBreakCB
+		WordBreakCB,
+		MBCS_NextCB,
+		MBCS_NextPosCB,
+		MBCS_PrevPosCB
 	};
 
 	mHandle = OGLE_Create(&cbs, reinterpret_cast<void *>(this));
@@ -734,6 +761,12 @@ void			OGLE::Key(char				key, int extend)
 {
 	OGLE_Key(mHandle, key, extend);
 }
+
+void			OGLE::Key_MBCS(int count, const char				keys[], int extend)
+{
+	OGLE_Key_MBCS(mHandle, count, keys, extend);
+}
+
 
 void			OGLE::Click(
 									float				x,
@@ -900,4 +933,26 @@ const char *	OGLE::WordBreakCB(
 	return me->WordBreak(t1, t2);
 }
 
+const char *	OGLE::MBCS_NextCB(
+								OGLE_Handle		handle,
+								const char *	ptr)
+{
+	OGLE * me = reinterpret_cast<OGLE *>(OGLE_GetRef(handle));
+	return me->MBCS_Next(ptr);
+}
 
+int				OGLE::MBCS_NextPosCB(
+								OGLE_Handle		handle,
+								int				pos)
+{
+	OGLE * me = reinterpret_cast<OGLE *>(OGLE_GetRef(handle));
+	return me->MBCS_NextPos(pos);
+}
+
+int				OGLE::MBCS_PrevPosCB(
+								OGLE_Handle		handle,
+								int				pos)
+{
+	OGLE * me = reinterpret_cast<OGLE *>(OGLE_GetRef(handle));
+	return me->MBCS_PrevPos(pos);
+}

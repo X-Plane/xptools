@@ -232,6 +232,7 @@ SOURCES += ./src/GUI/GUI_Pane.cpp
 SOURCES += ./src/GUI/GUI_Help.cpp
 SOURCES += ./src/GUI/GUI_Clipboard.cpp
 SOURCES += ./src/GUI/GUI_Application.cpp
+SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/SQLUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp

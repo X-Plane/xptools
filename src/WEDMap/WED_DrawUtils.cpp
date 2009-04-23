@@ -32,6 +32,28 @@
 #include <GL/glu.h>
 #endif
 
+/*
+bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where)
+{
+	if(!ps->IsClosed()) return false;
+	
+	vector<Bezier2>	der_sides;
+	for(int n = 0; n < ps->GetNumSides(); ++n)
+	{	
+		Bezier2 b;
+		Segment2 s;
+		ps->GetSide(n,s,b);
+		der_sides.push_back(b);
+	}
+	if(where == NULL) 
+		return do_beziers_cross(der_sides);
+	vector<Point2>	p;
+	if(where == NULL) where = &p;
+	find_crossing_beziers(der_sides,*where);
+	return !where->empty();
+}
+*/
+
 void PointSequenceToVector(
 			IGISPointSequence *		ps,
 			WED_MapZoomerNew *		z,
