@@ -283,7 +283,6 @@ SOURCES += ./src/Obj/ObjConvert.cpp
 
 ifdef PLAT_LINUX
 RESOURCES := ./src/WEDResources/WED.ico
-RESOURCES += ./src/WEDResources/Vera.ttf
 RESOURCES += ./src/WEDResources/sans.ttf
 RESOURCES += ./src/WEDResources/pushbutton.png
 RESOURCES += ./src/WEDResources/checkbutton.png

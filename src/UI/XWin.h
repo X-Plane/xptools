@@ -137,7 +137,7 @@ public:
 	virtual	void			DragOver(int inX, int inY)=0;
 	virtual	void			DragLeave(void)=0;
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int inX, int inY)=0;
-	virtual	int				KeyPressed(char inKey, long msg, long p1, long p2)=0;
+	virtual	int				KeyPressed(uint32_t inKey, long msg, long p1, long p2)=0;
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand)=0;
 
 			xmenu			GetMenuBar(void);

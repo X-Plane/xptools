@@ -36,8 +36,8 @@
 	#include <GL/gl.h>
 #endif
 
-#include "GUI_fonts.h"
-#include "GUI_unicode.h"
+#include "GUI_Fonts.h"
+#include "GUI_Unicode.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -62,16 +62,16 @@ struct	OGL_char_info {
 
 	int		pixel_bounds[4];	// Integer pixel coords in the bitmap where we stored this guy!  Stored in absolute pixels, not ratio
 								// because we may rescale the tex on the fly.
-	
+
 	float	dx;					// How much do we move our char position to the left and up from the base line location to draw.
 	float	dy;					// (Obvious being the lower left corner of the bitmap on the baseline and left at the cursor pos.)
 								// This means that we form a rect with the lower left corner on the baseline left side and move it
 								// by dx, dy.
 
 	float	advance_x;			// How much do we move to the right after this char.  The char's width, not the same as bitmap width.
-	
+
 	FT_Error	status;
-	
+
 };
 
 inline int FIXED1616(float f) { return f * 65536.0f; }
@@ -83,10 +83,10 @@ public:
 
 						TT_font_info();
 	void				clear(const string& inPath, float inSize);
-	float				require_char(UTF32 inChar, float s);					// returns advance-dist 
-	void				sync_tex(void);	
+	float				require_char(UTF32 inChar, float s);					// returns advance-dist
+	void				sync_tex(void);
 	float				draw_char(UTF32 inChar, float x, float y, float s);		// returns advance-dist!
-	
+
 	// Sort this out!
 	GLuint				tex_ref;
 
@@ -100,8 +100,8 @@ public:
 	float				line_height;		// total distance from one baseline to the next
 	float				line_descent;		// distance from the baseline to the bottom of all drawing
 	float				line_ascent;		// distance from the baseline to the top of all drawing
-	
-	OGL_char_map		char_map;	
+
+	OGL_char_map		char_map;
 	unsigned char *		image_mem;
 
 	FT_Face				face;
@@ -134,7 +134,7 @@ static void		ProcessBitmapSection(
 		*inSrcData = kTable[*inSrcData];
 		++inSrcData;
 	}
-	
+
 }
 static void		CopyBitmapSection(
 					unsigned int					inSrcWidth,
@@ -159,11 +159,11 @@ static void		CopyBitmapSection(
 	}
 }
 
-TT_font_info::TT_font_info() 
-{ 
+TT_font_info::TT_font_info()
+{
 	glGenTextures(1,&tex_ref);
-	image_mem = NULL; 
-	tex_height = 0; 
+	image_mem = NULL;
+	tex_height = 0;
 	tex_dirty = 0;
 	face = NULL;
 }
@@ -175,13 +175,13 @@ TT_font_info::TT_font_info()
 void TT_font_info::clear(const string& inPath, float inSize)
 {
 	FT_Error err;
-	
+
 	if(sLibrary == NULL)
 	{
 		err = FT_Init_FreeType(&sLibrary);
 		Assert(err == 0);
 	}
-	
+
 	tex_height = 0;
 	tex_dirty = 0;
 	char_map.clear();
@@ -191,7 +191,7 @@ void TT_font_info::clear(const string& inPath, float inSize)
 
 	if(face != NULL)	FT_Done_Face(face);
 	face = NULL;
-	
+
 	cur_row_x = cur_row_y = cur_row_max = 0;
 
 	file = GUI_LoadResource(inPath.c_str());
@@ -211,18 +211,18 @@ void TT_font_info::clear(const string& inPath, float inSize)
 	line_height = (float) inSize * (float) face->height / (float) face->units_per_EM;
 	line_descent = (float) inSize * (float) -face->descender / (float) face->units_per_EM;
 	line_ascent = (float) inSize * (float) face->ascender / (float) face->units_per_EM;
-	
+
 }
 
 float TT_font_info::require_char(UTF32 inChar, float s)
 {
 	if(inChar == '\t') return 0.0f;
-	
+
 	OGL_char_map::iterator i = char_map.find(inChar);
 	if (i != char_map.end())	return i->second.advance_x * s;
-	
+
 	FT_Error err;
-	
+
 	err = FT_Load_Char(face, inChar, FT_LOAD_RENDER|FT_LOAD_TARGET_LIGHT);
 	if (err != 0)
 	{
@@ -238,11 +238,11 @@ float TT_font_info::require_char(UTF32 inChar, float s)
 		char_map[inChar] = info;
 		return 0.0f;
 	}
-	
+
 	FT_GlyphSlot	glyph = face->glyph;
 
 	DebugAssert(!(glyph->metrics.width % 64));
-	DebugAssert(!(glyph->metrics.height % 64));	
+	DebugAssert(!(glyph->metrics.height % 64));
 	int width = glyph->bitmap.width;
 	int height = glyph->bitmap.rows;
 
@@ -252,9 +252,9 @@ float TT_font_info::require_char(UTF32 inChar, float s)
 		cur_row_x = 0;
 		cur_row_max = 0;
 	}
-	
+
 	cur_row_max = intmax2(cur_row_max,height);
-	
+
 	if (cur_row_y + cur_row_max > tex_height)
 	{
 		int desired_height = get_pow2(tex_height + cur_row_max);
@@ -262,7 +262,7 @@ float TT_font_info::require_char(UTF32 inChar, float s)
 		{
 			DebugAssert(image_mem == NULL);
 			tex_height = desired_height;
-			image_mem = (unsigned char*) malloc(FM_DEFAULT_TEX_WIDTH * tex_height);			
+			image_mem = (unsigned char*) malloc(FM_DEFAULT_TEX_WIDTH * tex_height);
 			memset(image_mem,0,FM_DEFAULT_TEX_WIDTH * tex_height);
 		}
 		else
@@ -271,11 +271,11 @@ float TT_font_info::require_char(UTF32 inChar, float s)
 			unsigned char * old_mem = image_mem;
 			DebugAssert(image_mem != NULL);
 			tex_height = desired_height;
-			image_mem = (unsigned char*) malloc(FM_DEFAULT_TEX_WIDTH * tex_height);			
+			image_mem = (unsigned char*) malloc(FM_DEFAULT_TEX_WIDTH * tex_height);
 			memset(image_mem + FM_DEFAULT_TEX_WIDTH * old_height,0,FM_DEFAULT_TEX_WIDTH * (tex_height - old_height));
 			memcpy(image_mem, old_mem, FM_DEFAULT_TEX_WIDTH * old_height);
 			free(old_mem);
-		}		
+		}
 	}
 
 	OGL_char_info	info;
@@ -311,17 +311,17 @@ void TT_font_info::sync_tex(void)
 		info.channels = 1;
 		bool ok = LoadTextureFromImage(info, tex_ref, 0, NULL,NULL,NULL,NULL);
 		DebugAssert(ok);
-	}	
+	}
 }
 
 float TT_font_info::draw_char(UTF32 inChar, float x, float y, float s)
-{	
+{
 	if(inChar == '\t') return 0.0f;
 
 	OGL_char_map::iterator i = char_map.find(inChar);
 	if(i==char_map.end()) return 0.0f;
-	
-	OGL_char_info * info = &i->second;	
+
+	OGL_char_info * info = &i->second;
 	if(info->status != 0) return 0.0f;
 
 	float	scale_tex_x = 1.0f / (float) FM_DEFAULT_TEX_WIDTH;
@@ -338,7 +338,7 @@ float TT_font_info::draw_char(UTF32 inChar, float x, float y, float s)
 	float x2 = x1 + s * (float) (info->pixel_bounds[2] - info->pixel_bounds[0]);
 	float y1 = floorf(y + info->dy);
 	float y2 = y1 + s * (float) (info->pixel_bounds[3] - info->pixel_bounds[1]);
-	
+
 	// Splat the character down where it belongs now
 	glTexCoord2f(s1,t2);	glVertex2f(x1, y1);		// NOT AN ERROR!!!  BEN SAY: TTF renders upside down (that is, Y=0 is the top)
 	glTexCoord2f(s1,t1);	glVertex2f(x1, y2);		// So flip on the fly or else everything is upside down.
@@ -348,9 +348,6 @@ float TT_font_info::draw_char(UTF32 inChar, float x, float y, float s)
 	return info->advance_x;
 }
 
-//¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥
-//¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥
-//¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥
 #define tt_dim font_Max
 typedef int tt_t;
 
@@ -376,7 +373,7 @@ float GUI_MeasureRange(int inFontID, const char * inStart, const char * inEnd)
 {
 	if(inStart == inEnd) return 0.0f;
 	TT_establish_font(inFontID);
-	float str_width = 0;	
+	float str_width = 0;
 	const UTF8 * p = (const UTF8 *) inStart;
 	const UTF8 * e = (const UTF8 *) inEnd;
 	while(p < e){
@@ -506,9 +503,9 @@ void	GUI_FontDrawScaled(
 	scale = (inTop - inBottom) / inFont->line_height;
 
 	// Why do we always measure?  Measuring forces the chars to be established.  That way, when we "sync" the font,
-	// all chars have a slot allocated.  Without this, we would have to resync the text per char, which would be 
+	// all chars have a slot allocated.  Without this, we would have to resync the text per char, which would be
 	// a big thrash for OpenGL.
-	
+
 	float width = GUI_MeasureRange(inFontID, inStart, inEnd) * (inTop - inBottom) / inFont->line_height;
 
 	if (inAlign == align_Left)
@@ -543,6 +540,6 @@ void	GUI_FontDrawScaled(
 	{
 		float w = inFont->draw_char(UTF8_decode(c),l,b, scale);
 		l += w;
-	}			
+	}
 	glEnd();
 }

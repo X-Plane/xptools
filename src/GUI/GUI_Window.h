@@ -80,7 +80,7 @@ public:
 	virtual	void			ClickDrag(int inX, int inY, int inButton);
 	virtual	void			ClickMove(int inX, int inY);
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis);
-	virtual	int				KeyPressed(char inKey, long msg, long p1, long p2);
+	virtual	int				KeyPressed(uint32_t inKey, long msg, long p1, long p2);
 	virtual void			Activate(int active);
 
 	// TODO - we need non-stub impl of these!

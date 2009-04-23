@@ -820,7 +820,7 @@ const char	gui_Key_Map [256] = {
 
 
 
-int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam2)
+int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inParam2)
 {
 	GUI_KeyFlags		flags = 0;
 	uint32_t			charCode = 0;
@@ -859,7 +859,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	if(KLGetKeyboardLayoutProperty(kr,kKLuchrData,(const void **) &uchr)!= noErr || uchr == NULL)
 	   KLGetKeyboardLayoutProperty(kr,kKLKCHRData,&KCHR);
 
-	int scan_code = ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// The vkey and the scan code are the same on the Mac.  
+	int scan_code = ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// The vkey and the scan code are the same on the Mac.
 	int os_vkey =   ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// So use for both.  Vkey codes are relatively low numbres.
 
 	if(uchr)
@@ -868,10 +868,10 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		UniCharCount ct=0;																					// shift-down and shift-up keys.
 		UniChar buf[2];
 		OSStatus result;
-		
+
 		result = UCKeyTranslate(uchr,os_vkey, inMsg - keyDown + kUCKeyActionDown, (inParam2 >> 8) & 0xFF , LMGetKbdType(), 0, &dead_state[inMsg - keyDown], 2, &ct, buf);
 		if(result == noErr && ct > 0) charCode = buf[0];
-		
+
 //		result = UCKeyTranslate(uchr, os_vkey, kUCKeyActionDisplay, 0, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &dead_lower, 2, &ct, buf);
 //		if (result == noErr && ct > 0) uni_lower = buf[0];
 
@@ -883,7 +883,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		static UInt32	dead_state = 0;
 		UInt32 dead_lower = 0, dead_upper = 0;		// Why not static?  Don't accume daed state for up-down sniffing.  For vkeys we want the same value every time.
 		int result;
-		
+
 		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | (inMsg == keyUp ? 0x80 : 0) | (inParam2 & 0xFF00), &dead_state) & 0xFF;
 		if(result > 0 && result < 0x100) charCode = script_to_utf32(result);
 
@@ -894,7 +894,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 //		if(result > 0 && result < 0x100) uni_upper = script_to_utf32(result);
 	}
 	else
-	{		
+	{
 //		uni_lower = uni_upper = event->message & charCodeMask;												// Last fallback, take message a priori.  Should never get this desparate!
 	}
 
