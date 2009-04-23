@@ -59,6 +59,8 @@ static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSour
 
 #if LIN
 
+#define mWindow 0
+
 inline int GUI_Window::Client2OGL_X(int x, void* w)
 {
 	return x;
@@ -601,7 +603,7 @@ GUI_Window::~GUI_Window()
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
-	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, 0), Client2OGL_Y(inY, 0), inButton);
+	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
 //					until we find out what the hell needed this!
@@ -621,7 +623,7 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 	// because there is no focus pain.
 	if (mMouseFocusPane[inButton])
 	{
-		mMouseFocusPane[inButton]->MouseUp(Client2OGL_X(inX, 0), Client2OGL_Y(inY, 0), inButton);
+		mMouseFocusPane[inButton]->MouseUp(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 		SetTimerInterval(0.0);
 	}
 	mMouseFocusPane[inButton] = NULL;
@@ -630,12 +632,12 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
 {
 	if (mMouseFocusPane[inButton])
-		mMouseFocusPane[inButton]->MouseDrag(Client2OGL_X(inX, 0), Client2OGL_Y(inY, 0), inButton);
+		mMouseFocusPane[inButton]->MouseDrag(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 }
 
 void		GUI_Window::ClickMove(int inX, int inY)
 {
-	this->InternalMouseMove(Client2OGL_X(inX, 0), Client2OGL_Y(inY, 0));
+	this->InternalMouseMove(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 	#if APL
 		// Windows handles this separately...to avoid thrash with WM_SETCURSOR
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
@@ -651,7 +653,7 @@ void		GUI_Window::ClickMove(int inX, int inY)
 
 void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 {
-	InternalMouseWheel(Client2OGL_X(inX, 0), Client2OGL_Y(inY, 0), inDelta, inAxis);
+	InternalMouseWheel(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inDelta, inAxis);
 }
 
 void			GUI_Window::GLReshaped(int inWidth, int inHeight)
@@ -1035,7 +1037,7 @@ void		GUI_Window::Timer(void)
 	if (mMouseFocusPane[btn])
 	{
 		XWinGL::GetMouseLoc(&x, &y);
-		mMouseFocusPane[btn]->MouseDrag(Client2OGL_X(x, 0), Client2OGL_Y(y, 0), btn);
+		mMouseFocusPane[btn]->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), btn);
 	}
 
 	// BEN SAYS: Mac D&D mgr does not call us back during drag if the mouse is still.  So use a timer to tell us
@@ -1053,8 +1055,8 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 {
 	int x, y;
 	XWinGL::GetMouseLoc(&x, &y);
-	if (out_x) *out_x = Client2OGL_X(x, 0);
-	if (out_y) *out_y = Client2OGL_Y(y, 0);;
+	if (out_x) *out_x = Client2OGL_X(x, mWindow);
+	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
 }
 
 
