@@ -119,9 +119,8 @@ int main(int argc, char * argv[])
 #endif
 {
 #if LIN
-	// initialize minigtk and setup
-	// signal handlers
-	Initializer initializer(&argc, &argv);
+	// setup signal handlers
+	Initializer initializer(&argc, &argv, 0);
 #endif
 #if IBM
 	gInstance = hInstance;
@@ -188,9 +187,9 @@ int main(int argc, char * argv[])
 	app.Run();
     // we're out of eventloop here, deleting windows on linux implies sending messages to them,
     // so this would fail.
-	#if !LIN
+//	#if !LIN
 	    delete about;
-    #endif
+//    #endif
 
 	GUI_MemoryHog::RemoveNewHandler();
 
