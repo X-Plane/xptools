@@ -33,7 +33,7 @@
 #endif
 
 static const char * kFontNames[font_Max] = {
-#if 1
+#if LIN || IBM
 	"sans.ttf",
 	"sans.ttf"
 #else
@@ -44,7 +44,7 @@ static const char * kFontNames[font_Max] = {
 };
 
 static const int	kFontSizes[font_Max] = {
-#if 1
+#if LIN || IBM
 	9,
 	8
 #else
