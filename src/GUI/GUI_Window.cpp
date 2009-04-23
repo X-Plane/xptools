@@ -705,7 +705,7 @@ void			GUI_Window::GLDraw(void)
 
 void		GUI_Window::Refresh(void)
 {
-//	ForceRefresh();
+	ForceRefresh();
 }
 
 void	GUI_Window::Show(void)

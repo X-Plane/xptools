@@ -53,21 +53,16 @@ XWinGL::~XWinGL()
 
 void                    XWinGL::SetGLContext(void)
 {
-	mGlWidget->makeCurrent();
+//	mGlWidget->makeCurrent();
 }
 
 void                    XWinGL::SwapBuffer(void)
 {
-	mGlWidget->swapBuffers();
+//	mGlWidget->swapBuffers();
 }
 
 void XWinGL::Resized(int inWidth, int inHeight)
-{
-	//mGlWidget->makeCurrent();
-	//glViewport(0, 0, inWidth, inHeight);
-	//if (inited)
-	//	GLReshaped(inWidth, inHeight);
-}
+{}
 
 void XWinGL::Update(XContext ctx)
 {
