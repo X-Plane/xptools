@@ -295,6 +295,9 @@ void			GUI_Application::Quit(void)
 #if APL
 	QuitApplicationEventLoop();
 #endif
+#if LIN
+	qapp->quit();
+#endif
 }
 
 GUI_Menu			GUI_Application::GetMenuBar(void)

@@ -47,9 +47,17 @@ typedef struct teh_args_t
 	GUI_Timer* callme;
 } teh_args_t;
 #endif
+#include <QTimer>
+
 #endif
 
-class	GUI_Timer {
+class	GUI_Timer
+#if LIN
+: public QTimer {
+	Q_OBJECT
+#else
+{
+#endif
 public:
 
 						 GUI_Timer(void);
@@ -57,7 +65,12 @@ public:
 
 			void		Start(float seconds);
 			void		Stop(void);
+
 	virtual	void		TimerFired(void)=0;
+#if LIN
+public slots:
+	void		TimerCB(void);
+#endif
 
 private:
 

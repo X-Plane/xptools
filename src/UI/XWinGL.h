@@ -49,7 +49,7 @@ class glWidget : public QGLWidget
 {
 	Q_OBJECT
 public:
-	glWidget(QWidget *parent, XWinGL* xwin);
+	glWidget(QWidget *parent, XWinGL* xwin, QGLWidget* share);
 	virtual ~glWidget(void);
 protected:
 	void resizeGL(int inWidth, int inHeight);

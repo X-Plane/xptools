@@ -205,6 +205,7 @@ public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 
 protected:
+	void closeEvent(QCloseEvent* e);
 	void resizeEvent(QResizeEvent* e);
 	void mousePressEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);

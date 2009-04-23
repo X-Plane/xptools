@@ -21,6 +21,7 @@
  *
  */
 
+#include "GUI_TextField.h"
 #include "GUI_TextTable.h"
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
@@ -29,7 +30,6 @@
 #include "PlatformUtils.h"
 #include "GUI_DrawUtils.h"
 #include <math.h>
-#include "GUI_TextField.h"
 #include "WED_ToolUtils.h"
 #include "GUI_Resources.h"
 #include "AssertUtils.h"

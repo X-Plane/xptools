@@ -705,14 +705,7 @@ void			GUI_Window::GLDraw(void)
 
 void		GUI_Window::Refresh(void)
 {
-// X11 generates already exposure messages on resize
-#if !LIN
-	ForceRefresh();
-#else
-#if 0
-	if (!isResizing) ForceRefresh();
-#endif
-#endif
+//	ForceRefresh();
 }
 
 void	GUI_Window::Show(void)

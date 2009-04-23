@@ -38,19 +38,27 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
 
 XWin::~XWin()
 {
-	close();
+}
+
+void XWin::closeEvent(QCloseEvent* e)
+{
+	if (Closed())
+		e->accept();
+	else
+		e->ignore();
 }
 
 void XWin::resizeEvent(QResizeEvent* e)
 {
 	Resized(e->size().width(), e->size().height());
+	e->accept();
 }
 
 void XWin::mousePressEvent(QMouseEvent* e)
 {
 	int btn = 0;
-	mMouse.x = e->globalX();
-	mMouse.y = e->globalY();
+	mMouse.x = e->x();
+	mMouse.y = e->y();
         if (e->button() == Qt::LeftButton)
 		btn = 0;
         if (e->button() == Qt::MidButton)
@@ -59,13 +67,14 @@ void XWin::mousePressEvent(QMouseEvent* e)
 		btn = 1;
 	mDragging[btn]=1;
 	ClickDown(mMouse.x, mMouse.y, btn);
+	e->accept();
 }
 
 void XWin::mouseReleaseEvent(QMouseEvent* e)
 {
         int btn = 0;
-	mMouse.x = e->globalX();
-	mMouse.y = e->globalY();
+	mMouse.x = e->x();
+	mMouse.y = e->y();
         if (e->button() == Qt::LeftButton)
 		btn = 0;
         if (e->button() == Qt::MidButton)
@@ -74,12 +83,13 @@ void XWin::mouseReleaseEvent(QMouseEvent* e)
 		btn = 1;
 	mDragging[btn]=0;
 	ClickUp(mMouse.x, mMouse.y, btn);
+	e->accept();
 }
 
 void XWin::mouseMoveEvent(QMouseEvent* e)
 {
-	mMouse.x = e->globalX();
-	mMouse.y = e->globalY();
+	mMouse.x = e->x();
+	mMouse.y = e->y();
 	int bc=0;
 	for(int b=0;b<BUTTON_DIM;++b) {
 		if(mDragging[b]) {
@@ -89,13 +99,15 @@ void XWin::mouseMoveEvent(QMouseEvent* e)
 	}
 	if(bc==0)
 		ClickMove(mMouse.x, mMouse.y);
+	e->accept();
 }
 
 void XWin::wheelEvent(QWheelEvent* e)
 {
-	mMouse.x = e->globalX();
-	mMouse.y = e->globalY();
+	mMouse.x = e->x();
+	mMouse.y = e->y();
 	MouseWheel(mMouse.x, mMouse.y, (e->delta() < 0) ? -1 : 1, 0);
+	e->accept();
 }
 
 void XWin::keyPressEvent(QKeyEvent* e)
@@ -105,10 +117,13 @@ void XWin::keyPressEvent(QKeyEvent* e)
 		unsigned int utf32char = e->text().toUcs4().at(0);
 		KeyPressed(utf32char, 0, 0, 0);
 	}
+	e->accept();
 }
 
 void XWin::keyReleaseEvent(QKeyEvent* e)
-{}
+{
+	e->accept();
+}
 
 void XWin::dragEnterEvent(QDragEnterEvent* e)
 {
@@ -139,6 +154,11 @@ void XWin::dropEvent(QDropEvent* e)
 
 void XWin::Resized(int inWidth, int inHeight)
 {}
+
+bool XWin::Closed(void)
+{
+	return true;
+}
 
 void XWin::Update(XContext ctx)
 {}
