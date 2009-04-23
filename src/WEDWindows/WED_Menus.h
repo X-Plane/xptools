@@ -33,6 +33,8 @@
 #include "GUI_Menus.h"
 
 #if LIN
+QMenuBar* getqmenu(GUI_Application * inApp);
+
 class WEDAction : public QObject
 {
 	Q_OBJECT

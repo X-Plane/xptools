@@ -146,8 +146,6 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 
 #if LIN
 
-QMenuBar* gQMenu;
-
 WEDAction::WEDAction
 (const QString& text, int cmd, GUI_Application *app, bool checkable)
 : app(app)
@@ -186,6 +184,36 @@ void fill_menu(QMenu* menu, const GUI_MenuItem_t items[], GUI_Application *inApp
 		++n;
 	}
 }
+
+QMenuBar* getqmenu(GUI_Application * inApp)
+{
+
+	QMenuBar* gQMenu = new QMenuBar(0);
+
+	QMenu* filemenu = gQMenu->addMenu("&File");
+	fill_menu(filemenu, kFileMenu, inApp);
+
+	QMenu* editmenu = gQMenu->addMenu("&Edit");
+	fill_menu(editmenu, kEditMenu, inApp);
+
+	QMenu* viewmenu = gQMenu->addMenu("&View");
+	fill_menu(viewmenu, kViewMenu, inApp);
+
+	QMenu* pavemenu = viewmenu->addMenu("Pavement T&ransparency");
+	fill_menu(pavemenu, kPavementMenu, inApp);
+
+	QMenu* selmenu = gQMenu->addMenu("&Select");
+	fill_menu(selmenu, kSelectMenu, inApp);
+
+	QMenu* airpmenu = gQMenu->addMenu("&Airport");
+	fill_menu(airpmenu, kAirportMenu, inApp);
+
+	QMenu* helpmenu = gQMenu->addMenu("&Help");
+	fill_menu(helpmenu, kHelpMenu, inApp);
+
+	return gQMenu;
+}
+
 #endif
 
 void WED_MakeMenus(GUI_Application * inApp)
@@ -223,29 +251,5 @@ void WED_MakeMenus(GUI_Application * inApp)
 #else
 	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 #endif
-#else
-
-	gQMenu = new QMenuBar(0);
-
-	QMenu* filemenu = gQMenu->addMenu("&File");
-	fill_menu(filemenu, kFileMenu, inApp);
-
-	QMenu* editmenu = gQMenu->addMenu("&Edit");
-	fill_menu(editmenu, kEditMenu, inApp);
-
-	QMenu* viewmenu = gQMenu->addMenu("&View");
-	fill_menu(viewmenu, kViewMenu, inApp);
-
-	QMenu* pavemenu = viewmenu->addMenu("Pavement T&ransparency");
-	fill_menu(pavemenu, kPavementMenu, inApp);
-
-	QMenu* selmenu = gQMenu->addMenu("&Select");
-	fill_menu(selmenu, kSelectMenu, inApp);
-
-	QMenu* airpmenu = gQMenu->addMenu("&Airport");
-	fill_menu(airpmenu, kAirportMenu, inApp);
-
-	QMenu* helpmenu = gQMenu->addMenu("&Help");
-	fill_menu(helpmenu, kHelpMenu, inApp);
 #endif
 }

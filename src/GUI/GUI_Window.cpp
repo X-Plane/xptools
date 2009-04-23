@@ -29,7 +29,7 @@
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
 #if LIN
-extern QMenuBar* gQMenu;
+#include "WED_Menus.h"
 #endif
 
 #if APL
@@ -549,9 +549,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 	#endif
 	#if LIN
-		if (!sWindows.empty()) {
-			this->setMenuBar(gQMenu);
-		}
+		this->setMenuBar(getqmenu(gApplication));
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
