@@ -66,5 +66,5 @@ void XWinGL::Resized(int inWidth, int inHeight)
 
 void XWinGL::Update(XContext ctx)
 {
-	mGlWidget->updateGL();
+	mGlWidget->update();
 }
