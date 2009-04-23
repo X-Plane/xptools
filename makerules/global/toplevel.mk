@@ -215,6 +215,8 @@ endif
 # determine intermediate filenames
 ##################################
 
+MOCS		:= $(patsubst %.h, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).moc.cpp, $(MOCSRC))
+SOURCES		+= $(MOCS)
 CXXSOURCES	:= $(filter %.cpp, $(SOURCES))
 CCSOURCES	:= $(filter %.c, $(SOURCES))
 CCDEPS		:= $(patsubst %.c, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).dep, $(CCSOURCES))
@@ -223,8 +225,6 @@ CXXDEPS		:= $(patsubst %.cpp, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX)
 CXXOBJECTS	:= $(patsubst %.cpp, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o, $(CXXSOURCES))
 RESOURCEOBJ	:= $(patsubst %, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).ro, $(RESOURCES))
 WIN_RESOURCEOBJ	:= $(patsubst %.rc, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).res, $(WIN_RESOURCES))
-MOCS		:= $(filter %.moc.cpp, $(SOURCES))
-MOCHEADERS	:= $(patsubst %.moc.cpp, %.h, $(MOCS))
 
 
 ##
@@ -299,9 +299,10 @@ $(WIN_RESOURCEOBJ): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).res : %.r
 	@-mkdir -p $(dir $(@))
 	@$(WINDRES) $< -O coff -o $(@)
 
-%.moc.cpp: %.h
+$(MOCS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).moc.cpp : %.h
 	@$(print_moc) $(subst $(PWD)/, ./, $(abspath $(<)))
-	$(MOC) $(DEFINES) $(INCLUDEPATHS) -o$(@) $<
+	@-mkdir -p $(dir $(@))
+	@$(MOC) $(DEFINES) $(INCLUDEPATHS) -o$(@) $<
 
 $(CCOBJECTS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o: %.c $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).dep
 	@$(print_comp_cc) $(subst $(PWD)/, ./, $(abspath $(<)))
@@ -311,6 +312,7 @@ $(CCOBJECTS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o: %.c $(BUILDD
 $(CXXOBJECTS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o: %.cpp $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).dep
 	@$(print_comp_cxx) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
+# TODO: recalculate output filenames for moc objects
 	@$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) -c $(<) -o $(@) || $(print_error)
 
 $(CCDEPS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).dep: %.c
