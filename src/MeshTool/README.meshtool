@@ -12,6 +12,7 @@ Version 1.1 Changes
 	- Relaxed boundary issues
 	- Shapefile support
 	- Improved command syntax
+	- Dump directory is made automatically.
 
 TODO - doc this more
 
@@ -270,7 +271,7 @@ DUMP DIRECTORY
 MeshTool requires a directory that contains sub-folders (e.g. +30-120) for any
 DSF tile you generate.  MeshTool places .txt files that describe the borders
 of the DSF tile into these sub-directories.  If you don't have a dump directory
-with sub-folders, MeshTool will fail.
+with sub-folders, MeshTool will create one for you.
 
 MeshTool also reads the borders, so if you render two adjacent tiles, the 
 borders will be coordinated.  It does not matter what order you render your

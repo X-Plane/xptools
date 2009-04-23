@@ -29,6 +29,8 @@
 #include "DEMIO.h"
 #include "MemFileUtils.h"
 #include <CGAL/assertions.h>
+#include "GISUtils.h"
+#include "FileUtils.h"
 #if LIN
 #include <execinfo.h>
 #include <stdarg.h>
@@ -130,6 +132,11 @@ int	main(int argc, char * argv[])
 			fprintf(stderr,"ERROR: unknown file extension for DEM: %s\n", argv[3]);
 			exit(1);
 		}
+
+		char dump_f[24];
+		sprintf(dump_f,"/%+03d%+04d",latlon_bucket(dem_elev.mSouth),latlon_bucket(dem_elev.mWest));
+		string dump_dir = string(argv[4]) + dump_f;
+		FILE_make_dir_exist(dump_dir.c_str());
 
 		FILE * script = fopen(argv[1], "r");
 		fname=argv[1];

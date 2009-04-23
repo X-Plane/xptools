@@ -87,9 +87,9 @@ int FILE_make_dir_exist(const char * in_dir)
 	{
 		const char * dc = in_dir + strlen(in_dir) - 1;
 		while(dc > in_dir && *dc != DIR_CHAR) --dc;
-
+		if(dc > in_dir){
 		string parent(in_dir, dc);
-							result = FILE_make_dir_exist(parent.c_str());
+							result = FILE_make_dir_exist(parent.c_str());}
 		if (result == 0)	result = FILE_make_dir(in_dir);
 	}
 	return result;
