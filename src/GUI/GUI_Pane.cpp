@@ -44,12 +44,7 @@
 using std::find;
 
 #if LIN
-/* from XWin.lin.cpp */
-#if 0
-extern int ShiftMod;
-extern int AltMod;
-extern int CtrlMod;
-#endif
+#include <QApplication>
 #endif
 
 
@@ -81,14 +76,14 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 	return flags;
 #else
 	GUI_KeyFlags	flags = 0;
-#if 0
-	if (ShiftMod)
-		flags |= gui_ShiftFlag;
-	if (CtrlMod)
-		flags |= gui_ControlFlag;
-	if (AltMod)
+	Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
+
+	if (modstate & Qt::AltModifier)
 		flags |= gui_OptionAltFlag;
-#endif
+	if (modstate & Qt::ShiftModifier)
+		flags |= gui_ShiftFlag;
+	if (modstate & Qt::ControlModifier)
+		flags |= gui_ControlFlag;
 	return flags;
 #endif
 }
