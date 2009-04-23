@@ -217,6 +217,8 @@ protected:
 	void dragLeaveEvent(QDragLeaveEvent* e);
 	void dragMoveEvent(QDragMoveEvent* e);
 	void dropEvent(QDropEvent* e);
+	void focusInEvent(QFocusEvent* e);
+	void focusOutEvent(QFocusEvent* e);
 
 #endif
 

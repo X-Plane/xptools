@@ -26,13 +26,27 @@ void glWidget::paintGL(void)
 void glWidget::initializeGL(void)
 {}
 
+void glWidget::focusInEvent(QFocusEvent* e)
+{
+	if (mXWinGL->mInited)
+		mXWinGL->Activate(1);
+}
+
+void glWidget::focusOutEvent(QFocusEvent* e)
+{
+	if (mXWinGL->mInited)
+		mXWinGL->Activate(0);
+}
+
 XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default_dnd, parent), mInited(false)
 {
 	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
 	mGlWidget->setMouseTracking(true);
+	mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
 	XWin::show();
+	XWin::activateWindow();
 	XWinGL::mInited = true;
 }
 
@@ -40,10 +54,13 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 {
 	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
 	mGlWidget->setMouseTracking(true);
+	mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
-	if (inAttributes & xwin_style_visible)
+	if (inAttributes & xwin_style_visible) {
 		XWin::show();
+		XWin::activateWindow();
+	}
 	XWinGL::mInited = true;
 }
 

@@ -550,6 +550,10 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#endif
 	#if LIN
 		this->setMenuBar(getqmenu(gApplication));
+		QApplication::setActiveWindow(this);
+		setFocusPolicy(Qt::StrongFocus);
+		raise();
+		activateWindow();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;

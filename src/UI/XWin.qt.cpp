@@ -21,6 +21,7 @@ XWin::XWin(
 	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
 	MoveTo(x, y);
 	Resize(w, h);
+	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
@@ -33,6 +34,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	mMouse.x = 0;
 	mMouse.y = 0;
 	setMouseTracking(true);
+	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
 		setAcceptDrops(true);
 	mInited = true;
@@ -152,6 +154,16 @@ void XWin::dropEvent(QDropEvent* e)
 	ReceiveFilesFromDrag(inFiles);
 }
 
+void XWin::focusInEvent(QFocusEvent* e)
+{
+	Activate(1);
+}
+
+void XWin::focusOutEvent(QFocusEvent* e)
+{
+	Activate(0);
+}
+
 /* prevent pure virtual function calls. ben, we need to restructure this,
 ** it hinders us using deep inheritance schemes, typically needed by Qt
 */
@@ -195,6 +207,8 @@ void XWin::UpdateNow(void)
 void XWin::SetVisible(bool visible)
 {
 	setVisible(visible);
+	if (visible)
+		activateWindow();
 }
 
 bool XWin::GetVisible(void) const
