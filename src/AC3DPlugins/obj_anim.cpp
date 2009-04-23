@@ -153,7 +153,7 @@ static void anim_add_any(
 
 	if (g_anim_inited)
 	{
-		tcl_command("hier_update");
+		tcl_command((char*)"hier_update");
 		redraw_all();
 	}
 }
@@ -394,7 +394,7 @@ void	sync_datarefs()
 		string tcl_name(buf);
 		string dref_q(dref->first);
 		quote_dref(dref_q);
-		tcl_command("sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+		tcl_command((char*)"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}
@@ -404,7 +404,7 @@ void	sync_datarefs()
 		char buf[10];
 		sprintf(buf,"dr%d", k);
 		string tcl_name(buf);
-		tcl_command("kill_dataref %s", tcl_name.c_str());
+		tcl_command((char*)"kill_dataref %s", tcl_name.c_str());
 	}
 	high_water = n;
 }
@@ -417,7 +417,7 @@ void	sync_datarefs()
 
 static void make_anim_group(void)
 {
-	add_undoable_all("Make animation group");
+	add_undoable_all((char*)"Make animation group");
 	List * objs_l = ac_selection_get_objects();
 	if (objs_l == NULL) return;
 	vector<ACObject *> 	objs;
@@ -436,13 +436,13 @@ static void make_anim_group(void)
 
 	if (parents.size() > 1)
 	{
-		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
+		message_dialog((char*)"Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
 	}
 
 	ACObject * new_obj = new_object(OBJECT_GROUP);
 
-	object_set_name(new_obj, "Animation");
+	object_set_name(new_obj, (char*)"Animation");
 
 	if (!objs.empty())
 	for (int n = objs.size()-1; n >= 0 ; --n)
@@ -453,14 +453,14 @@ static void make_anim_group(void)
 
 	if (g_anim_inited)
 	{
-		tcl_command("hier_update");
+		tcl_command((char*)"hier_update");
 		redraw_all();
 	}
 }
 
 static void do_bake_selection(void)
 {
-	add_undoable_all("Bake selection");
+	add_undoable_all((char*)"Bake selection");
 	vector<ACObject *> obs;
 	find_all_selected_objects_flat(obs);
 	for (vector<ACObject *>::iterator o = obs.begin(); o != obs.end(); ++o)
@@ -471,7 +471,7 @@ static void do_bake_selection(void)
 	if (g_anim_inited)
 	{
 		redraw_all();
-		tcl_command("hier_update");
+		tcl_command((char*)"hier_update");
 	}
 }
 
@@ -479,7 +479,7 @@ static void do_bake_selection(void)
 
 static void make_anim_of_type(int argc, char * argv[])
 {
-	add_undoable_all("Make Animation");
+	add_undoable_all((char*)"Make Animation");
 
 	List * objs_l = ac_selection_get_part_selected_objects();
 	if (objs_l == NULL) return;
@@ -499,7 +499,7 @@ static void make_anim_of_type(int argc, char * argv[])
 
 	if (parents.size() > 1)
 	{
-		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
+		message_dialog((char*)"Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
 	}
 
@@ -632,7 +632,7 @@ static void set_anim_now(int argc, char * argv[])
 static void set_sel_now(int argc, char * argv[])
 {
 	if (argc <= 1) return;
-	add_undoable_change_selection("Select animation");
+	add_undoable_change_selection((char*)"Select animation");
 	map<string,string>::iterator who = g_tcl_mapping.find(argv[1]);
 	if (who != g_tcl_mapping.end())
 	{
@@ -640,7 +640,7 @@ static void set_sel_now(int argc, char * argv[])
 		if (!dref.empty())
 		{
 			sel_if_has(ac_get_world(),dref.c_str());
-			tcl_command("hier_update");
+			tcl_command((char*)"hier_update");
 			redraw_all();
 			display_status();
 		}
@@ -649,10 +649,10 @@ static void set_sel_now(int argc, char * argv[])
 
 static void select_all_anim(void)
 {
-	add_undoable_change_selection("Select all animations");
+	add_undoable_change_selection((char*)"Select all animations");
 	clear_selection();
 	sel_if_has(ac_get_world(),NULL);
-	tcl_command("hier_update");
+	tcl_command((char*)"hier_update");
 	redraw_all();
 	display_status();
 }
@@ -696,7 +696,7 @@ static void add_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= (OBJ_get_anim_type(obj) == anim_trans ? 1 : 0))
 			{
-				add_undoable_all("Add Keyframe");
+				add_undoable_all((char*)"Add Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{
 					Boolean made;
@@ -740,7 +740,7 @@ static void delete_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= 0 && m > 2)
 			{
-				add_undoable_all("Add Keyframe");
+				add_undoable_all((char*)"Add Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{
 					SVertex * dead = surface_get_svertex_at(obj_get_first_surf(obj), n);
@@ -953,7 +953,7 @@ static void	reverse_sel(void)
 
 	if (ctr==0) return;
 
-	add_undoable_all("Reverse Keyframes");
+	add_undoable_all((char*)"Reverse Keyframes");
 
 	float lo=old_lo[0];
 	float hi=old_hi[0];
@@ -983,7 +983,7 @@ static void	rescale_sel(int argc, char * argv[])
 	find_all_selected_objects(objs);
 	if (objs.empty()) return;
 
-	add_undoable_all("Rescale Keyframes");
+	add_undoable_all((char*)"Rescale Keyframes");
 	for (int n = 0; n < objs.size(); ++n)
 	{
 		float l,h;
@@ -998,24 +998,24 @@ void setup_obj_anim(void)
 	tcl_stubs.Tcl_CreateExitHandler(anim_exit_cb, NULL);
 	ac_set_pre_render_object_callback(anim_pre_func);
 	ac_set_post_render_object_callback(anim_post_func);
-	ac_add_command_full("xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, "f", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
-	ac_add_command_full("xplane_set_anim_list_invis", CAST_CMD(set_list_invis),1,"f", "ac3d xplane_est_anim_list_invis <0 or 1>", "turn on or off anim sliders for invisible objs");
-	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_now <n> <t>", "set dataref n to time t");
-	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");
-	ac_add_command_full("xplane_anim_select_all", CAST_CMD(select_all_anim), 0, NULL, "ac3d xplane_anim_select_all", "select all animated objects");
-	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");
-	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");
-	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");
+	ac_add_command_full((char*)"xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, (char*)"f", (char*)"ac3d xplane_set_anim_enable <0 or 1>", (char*)"set animation on or off");
+	ac_add_command_full((char*)"xplane_set_anim_list_invis", CAST_CMD(set_list_invis),1,(char*)"f", (char*)"ac3d xplane_est_anim_list_invis <0 or 1>", (char*)"turn on or off anim sliders for invisible objs");
+	ac_add_command_full((char*)"xplane_set_anim_now", CAST_CMD(set_anim_now), 2, (char*)"argv", (char*)"ac3d xplane_set_anim_now <n> <t>", (char*)"set dataref n to time t");
+	ac_add_command_full((char*)"xplane_anim_select", CAST_CMD(set_sel_now), 2, (char*)"argv", (char*)"ac3d xplane_anim_select<n>", (char*)"select all objects using dtaref n");
+	ac_add_command_full((char*)"xplane_anim_select_all", CAST_CMD(select_all_anim), 0, NULL, (char*)"ac3d xplane_anim_select_all", (char*)"select all animated objects");
+	ac_add_command_full((char*)"xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_set_anim_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
+	ac_add_command_full((char*)"xplane_add_keyframe", CAST_CMD(add_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_add_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
+	ac_add_command_full((char*)"xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_delete_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
 
-	ac_add_command_full("xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, "ac3d xplane_reverse_keyframe", "reverse key frames of selection");
-	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, "argv", "ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", "rescale key frames of selection");
+	ac_add_command_full((char*)"xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, (char*)"ac3d xplane_reverse_keyframe", (char*)"reverse key frames of selection");
+	ac_add_command_full((char*)"xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, (char*)"argv", (char*)"ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", (char*)"rescale key frames of selection");
 
-	ac_add_command_full("xplane_resync_anim", CAST_CMD(do_resync_anim), 0, NULL, "ac3d xplane_resync_anim", "resync animation with model");
+	ac_add_command_full((char*)"xplane_resync_anim", CAST_CMD(do_resync_anim), 0, NULL, (char*)"ac3d xplane_resync_anim", (char*)"resync animation with model");
 
-	ac_add_command_full("xplane_make_anim_group", CAST_CMD(make_anim_group),0, NULL, "ac3d xplane_make_anim_group", "make animation group");
-	ac_add_command_full("xplane_make_anim_typed", CAST_CMD(make_anim_of_type),1, "argv", "ac3d make_anim_of_type rotate|transate|show|hide", "make animation");
+	ac_add_command_full((char*)"xplane_make_anim_group", CAST_CMD(make_anim_group),0, NULL, (char*)"ac3d xplane_make_anim_group", (char*)"make animation group");
+	ac_add_command_full((char*)"xplane_make_anim_typed", CAST_CMD(make_anim_of_type),1, (char*)"argv", (char*)"ac3d make_anim_of_type rotate|transate|show|hide", (char*)"make animation");
 
-	ac_add_command_full("xplane_bake_static", CAST_CMD(do_bake_selection),0,NULL, "ac3d xplane_bake_static", "bake down all static transitions");
+	ac_add_command_full((char*)"xplane_bake_static", CAST_CMD(do_bake_selection),0,NULL, (char*)"ac3d xplane_bake_static", (char*)"bake down all static transitions");
 
 	OBJ_register_change_cb(obj_changed_cb);
 }

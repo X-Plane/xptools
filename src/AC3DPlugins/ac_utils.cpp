@@ -331,7 +331,7 @@ void move_child_to_head(ACObject * parent, ACObject * child)
 	for (vector<ACObject*>::iterator i = kids.begin(); i != kids.end(); ++i)
 		object_add_child(parent, *i);
 */
-	tcl_command("ac3d object_move_to_head %d", child);
+	tcl_command((char*)"ac3d object_move_to_head %d", child);
 }
 
 Surface * obj_get_first_surf(ACObject * obj)

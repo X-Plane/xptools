@@ -182,8 +182,8 @@ static void OBJ_set_prop_tcl(int argc, const char * argv[])
 
 void		OBJ_register_datamodel_tcl_cmds(void)
 {
-	ac_add_command_full("xplane_get_prop", CAST_CMD(OBJ_get_prop_tcl), 1, "s", "ac3d xplane_get_prop key", "get a property.");
-	ac_add_command_full("xplane_set_prop", CAST_CMD(OBJ_set_prop_tcl), 2, "argv", "ac3d xplane_set_prop key value", "set a property.");
+	ac_add_command_full((char*)"xplane_get_prop", CAST_CMD(OBJ_get_prop_tcl), 1, (char*)"s", (char*)"ac3d xplane_get_prop key", (char*)"get a property.");
+	ac_add_command_full((char*)"xplane_set_prop", CAST_CMD(OBJ_set_prop_tcl), 2, (char*)"argv", (char*)"ac3d xplane_set_prop key value", (char*)"set a property.");
 }
 
 
@@ -218,7 +218,7 @@ void		OBJ_set_name(ACObject * obj, const char * name)
 	ac_object_set_name(obj,(char*)name);
 
 	redraw_all();
-	tcl_command("hier_update");
+	tcl_command((char*)"hier_update");
 	for (set<OBJ_change_f>::iterator f = gChangeFuncs.begin(); f != gChangeFuncs.end(); ++f)
 		(*f)(obj);
 

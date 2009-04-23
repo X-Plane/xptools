@@ -58,7 +58,7 @@ void do_show_night(void)
 		if (image)
 		{
 			char * strp;
-			ac_entity_get_string_value(image, "name", &strp);
+			ac_entity_get_string_value(image, (char*)"name", &strp);
 			string	tname = strp;
 			tname.insert(tname.length() - 4, "LIT");
 			printf("Trying %s\n", tname.c_str());
@@ -105,8 +105,8 @@ void do_change_tex(void)
 	find_all_selected_objects(all);
 	if (!all.empty())
 	{
-		char *filter[] = { "PNG files", "*.png", "BMP files", "*.bmp", "All files", "*", NULL };
-	    char *filename = ac_get_load_filename("Pick a bitman to use for your models...", filter);
+		const char *filter[] = { "PNG files", "*.png", "BMP files", "*.bmp", "All files", "*", NULL };
+	    char *filename = ac_get_load_filename((char*)"Pick a bitman to use for your models...", (char**)filter);
 	    if (STRINGISEMPTY(filename))
 	        return;
 
@@ -114,12 +114,12 @@ void do_change_tex(void)
 		ACImage * new_bitmap = texture_id_to_image(new_texture_id);
 		if (new_bitmap == NULL)
 		{
-			message_dialog("Could not open bitmap file '%s'.", filename);
+			message_dialog((char*)"Could not open bitmap file '%s'.", filename);
 //			myfree(filename);
 			return;
 		}
 
-		add_undoable_all("Merge textures");
+		add_undoable_all((char*)"Merge textures");
 
 		int total = 0, changed = 0;
 		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
@@ -158,12 +158,12 @@ void do_change_tex(void)
 			object_texture_set(*j, new_texture_id);
 		}
 
-		message_dialog("Changed %d of %d objects with textures.", changed, total);
+		message_dialog((char*)"Changed %d of %d objects with textures.", changed, total);
 
 //		myfree(filename);
 
 	} else
-		message_dialog("Cannot substitute textures when no objects are selected.");
+		message_dialog((char*)"Cannot substitute textures when no objects are selected.");
 
 
 /*
@@ -229,7 +229,7 @@ void do_rescale_tex(const char * config)
 
 	if (!all.empty())
 	{
-		add_undoable_all("Remap textures");
+		add_undoable_all((char*)"Remap textures");
 
 		int total = 0, changed = 0;
 		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
@@ -241,7 +241,7 @@ void do_rescale_tex(const char * config)
 		}
 
 	} else
-		message_dialog("Cannot substitute textures when no objects are selected.");
+		message_dialog((char*)"Cannot substitute textures when no objects are selected.");
 
 
 }
@@ -257,7 +257,7 @@ void do_calc_lod(void)
 
 		// resolution * radius / tan (half of field of view)
 		float LOD = 1024.0 / 2.0 * radius / tan(70.0 / 2.0);
-		message_dialog("Recommended LOD distance: %d meters.", (int) LOD);
+		message_dialog((char*)"Recommended LOD distance: %d meters.", (int) LOD);
 	}
 
 
@@ -283,7 +283,7 @@ void do_named_group(char * str)
 
 	if (parents.size() > 1)
 	{
-		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
+		message_dialog((char*)"Cannot animate these %d objects; they are not all part of the same group.", objs.size());
 		return;
 	}
 
@@ -297,12 +297,12 @@ void do_named_group(char * str)
 
 	object_add_child(*parents.begin(), new_obj);
 
-	tcl_command("hier_update");
+	tcl_command((char*)"hier_update");
 }
 
 void do_tree_extrude(void)
 {
-	add_undoable_all("Make trees");
+	add_undoable_all((char*)"Make trees");
 
 	List * objs_l = ac_selection_get_objects();
 	for (List * iter = objs_l; iter != NULL; iter = iter->next)
@@ -386,7 +386,7 @@ void do_tree_extrude(void)
 void do_bulk_export(void)
 {
 //	char * objs[] = { "Object files", ".obj", NULL };
-	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
+	char * fn = ac_get_export_folder((char*)"Please pick a bulk export folder...");
 	if (fn == NULL) return;
 	if (*fn == 0) return;
 
@@ -423,11 +423,11 @@ void do_tex_export(void)
 	get_all_used_texes(ac_get_world(), texes);
 	if (texes.empty())
 	{
-		message_dialog("Your model contains no textures - multi-export by texture is not useful here.");
+		message_dialog((char*)"Your model contains no textures - multi-export by texture is not useful here.");
 		return;
 	}
 
-	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
+	char * fn = ac_get_export_folder((char*)"Please pick a bulk export folder...");
 	if (fn == NULL) return;
 	if (*fn == 0) return;
 
@@ -448,7 +448,7 @@ void do_tex_export(void)
 
 void do_make_onesided(void)
 {
-	add_undoable_all("Make One-sided");
+	add_undoable_all((char*)"Make One-sided");
 
 	List * surf_l = ac_selection_get_whole_surfaces_all();
 
@@ -494,7 +494,7 @@ void do_make_onesided(void)
 
 void do_make_upnormal(void)
 {
-	add_undoable_all("Make Up Normals");
+	add_undoable_all((char*)"Make Up Normals");
 
 	List * surf_l = ac_selection_get_whole_surfaces_all();
 
@@ -551,14 +551,14 @@ void do_optimize_selection(float do_optimize)
 
 	if (objs.empty())
 	{
-		if (do_optimize)	message_dialog("Select one or more objects to optimize their order.");
-		else				message_dialog("Select one or more objects to count their batches.");
+		if (do_optimize)	message_dialog((char*)"Select one or more objects to optimize their order.");
+		else				message_dialog((char*)"Select one or more objects to count their batches.");
 		return;
 	}
 	ACObject * parent = do_optimize ? get_common_parent(objs) : NULL;
 	if (parent == NULL && do_optimize)
 	{
-		message_dialog("Internal error - selected objects do not appear to be part of the hierarchy.");
+		message_dialog((char*)"Internal error - selected objects do not appear to be part of the hierarchy.");
 		return;
 	}
 
@@ -574,7 +574,7 @@ void do_optimize_selection(float do_optimize)
 
 	if (!do_optimize)
 	{
-		message_dialog("Selection will take %d batches to draw.",state_pre);
+		message_dialog((char*)"Selection will take %d batches to draw.",state_pre);
 		return;
 	}
 
@@ -590,11 +590,11 @@ void do_optimize_selection(float do_optimize)
 
 	if (state_post == state_pre)
 	{
-		message_dialog("I cannot further optimize this selection.  It will require %d batches to draw.", state_pre);
+		message_dialog((char*)"I cannot further optimize this selection.  It will require %d batches to draw.", state_pre);
 		return;
 	}
 
-	add_undoable_all("Optimize Selection");
+	add_undoable_all((char*)"Optimize Selection");
 
 	for (vector<ACObject *>::iterator o = objs.begin(); o != objs.end(); ++o)
 	{
@@ -605,10 +605,10 @@ void do_optimize_selection(float do_optimize)
 		object_add_child(parent,*o);
 	}
 
-	message_dialog("X-Plane used to need %d batches for this set of objects, now we need %d batches.",state_pre,state_post);
+	message_dialog((char*)"X-Plane used to need %d batches for this set of objects, now we need %d batches.",state_pre,state_post);
 
 	redraw_all();
-	tcl_command("hier_update");
+	tcl_command((char*)"hier_update");
 }
 
 static void sel_if_light(ACObject * who)
@@ -625,10 +625,10 @@ static void sel_if_light(ACObject * who)
 
 void do_sel_lights(void)
 {
-	add_undoable_change_selection("Select all lights");
+	add_undoable_change_selection((char*)"Select all lights");
 	clear_selection();
 	sel_if_light(ac_get_world());
-	tcl_command("hier_update");
+	tcl_command((char*)"hier_update");
 	redraw_all();
 	display_status();
 

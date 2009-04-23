@@ -291,7 +291,7 @@ static void		map_t_from_heights(VertexMap& map, const cgd::Plane3& lateral_plane
 			printf("      Before proj: %f,%f,%f ",his_p.x,his_p.y,his_p.z);
 			his_p = lateral_plane.projection(his_p);
 			printf("      after proj: %f,%f,%f\n ",his_p.x,his_p.y,his_p.z);
-			if (visited.count(d) > 0) message_dialog("ERROR - multiply hit vertex.");
+			if (visited.count(d) > 0) message_dialog((char*)"ERROR - multiply hit vertex.");
 
 			cgd::Vector3	to_this_pt(me_p,his_p);
 			printf("      vector is: %f,%f,%f (%f)\n",to_this_pt.dx,to_this_pt.dy,to_this_pt.dz,sqrt(to_this_pt.squared_length()));
@@ -307,7 +307,7 @@ static void		map_t_from_heights(VertexMap& map, const cgd::Plane3& lateral_plane
 		}
 	}
 	if (!needed.empty())
-		message_dialog("ERROR - missed vertex!");
+		message_dialog((char*)"ERROR - missed vertex!");
 }
 
 static void		st_normalize(VertexMap& map)
@@ -588,7 +588,7 @@ void do_uv_copy(void)
 	vector<ACObject *> objs;
 
 	find_all_selected_objects_flat(objs);
-	if (objs.size() != 1) message_dialog("Please select one object.");
+	if (objs.size() != 1) message_dialog((char*)"Please select one object.");
 	else
 	{
 		g_tris.clear();
@@ -605,5 +605,5 @@ void do_uv_paste(void)
 	{
 		total += tex_an_object(objs[n], g_tris);
 	}
-	if (total > 0) message_dialog("Unable to texture %d points.\n", total);
+	if (total > 0) message_dialog((char*)"Unable to texture %d points.\n", total);
 }

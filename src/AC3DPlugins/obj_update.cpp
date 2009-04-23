@@ -114,7 +114,7 @@ void obj8_split_anim(ACObject * obj)
 	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
 	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
 	{
-		if (!ac_entity_is_class(obj, AC_CLASS_GROUP))
+		if (!ac_entity_is_class(obj, (char*)AC_CLASS_GROUP))
 		{
 			ACObject * new_grp = new_object(OBJECT_GROUP);
 			object_add_child(ac_object_get_parent(obj), new_grp);
@@ -123,8 +123,8 @@ void obj8_split_anim(ACObject * obj)
 			object_set_name(new_grp, ac_object_get_name(obj));
 			ac_object_set_data(new_grp, ac_object_get_data(obj));
 
-			object_set_name(obj, "object");
-			ac_object_set_data(obj, "");
+			object_set_name(obj, (char*)"object");
+			ac_object_set_data(obj, (char*)"");
 
 			obj8_split_anim(new_grp);
 		}
@@ -297,7 +297,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 	now_blend = pull_int_attr_recursive(obj, "_BLEND=", 1, root);
 	OBJ_set_blend(obj, now_blend ? -1.0 : 0.5);
 
-	if (ac_entity_is_class(obj, AC_CLASS_LIGHT))
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_LIGHT))
 	{
 		obj8_update_light(obj);
 	}
@@ -313,7 +313,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 
 static void do_obj8_update(void)
 {
-	add_undoable_all("Update object");
+	add_undoable_all((char*)"Update object");
 	obj8_split_anim(ac_get_world());
 	obj8_update_object(ac_get_world(),ac_get_world());
 	bake_static_transitions(ac_get_world());
@@ -323,5 +323,5 @@ static void do_obj8_update(void)
 
 void register_updater(void)
 {
-	ac_add_command_full("xplane_update_selection", CAST_CMD(do_obj8_update), 0, NULL, "ac3d xplane_update_selection", "change obj to new system.");
+	ac_add_command_full((char*)"xplane_update_selection", CAST_CMD(do_obj8_update), 0, NULL, (char*)"ac3d xplane_update_selection", (char*)"change obj to new system.");
 }

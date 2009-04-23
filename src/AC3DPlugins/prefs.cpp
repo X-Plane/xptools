@@ -55,9 +55,9 @@ PREFS_LIST
 
 void	prefs_init(void)
 {
-	#define DEFINE_PREF_STRING(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_STRING, &def_##n);
-	#define DEFINE_PREF_INT(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_INT, &def_##n);
-	#define DEFINE_PREF_DOUBLE(n,d)	spec_##n = ac_create_and_link_pref("xplane_" #n, PREF_DOUBLE, &def_##n);
+	#define DEFINE_PREF_STRING(n,d)	spec_##n = ac_create_and_link_pref((char*)"xplane_" #n, PREF_STRING, &def_##n);
+	#define DEFINE_PREF_INT(n,d)	spec_##n = ac_create_and_link_pref((char*)"xplane_" #n, PREF_INT, &def_##n);
+	#define DEFINE_PREF_DOUBLE(n,d)	spec_##n = ac_create_and_link_pref((char*)"xplane_" #n, PREF_DOUBLE, &def_##n);
 
 PREFS_LIST
 

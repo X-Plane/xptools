@@ -40,7 +40,7 @@ TCL_linked_vari::TCL_linked_vari(Tcl_Interp * iinterp, const char * tcl_name, TC
 	set(initial);
 
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
-		message_dialog("Internal error setting trace on %s.", var_name);
+		message_dialog((char*)"Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vari::~TCL_linked_vari()
@@ -57,7 +57,7 @@ void	TCL_linked_vari::set(int value)
 	Tcl_Obj * obj = tcl_stubs.Tcl_NewIntObj(var);
 	Tcl_IncrRefCount(obj);
 	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
-		message_dialog("Internal tcl error - could not create variable %s", var_name);
+		message_dialog((char*)"Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
 }
@@ -115,7 +115,7 @@ TCL_linked_vard::TCL_linked_vard(Tcl_Interp * iinterp, const char * tcl_name, TC
 	set(initial);
 
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
-		message_dialog("Internal error setting trace on %s.", var_name);
+		message_dialog((char*)"Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vard::~TCL_linked_vard()
@@ -136,7 +136,7 @@ char buf[200];
 
 	Tcl_IncrRefCount(obj);
 	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
-		message_dialog("Internal tcl error - could not create variable %s", var_name);
+		message_dialog((char*)"Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
 }
@@ -196,7 +196,7 @@ TCL_linked_vars::TCL_linked_vars(Tcl_Interp * iinterp, const char * tcl_name, TC
 	set(initial);
 
 	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
-		message_dialog("Internal error setting trace on %s.", var_name);
+		message_dialog((char*)"Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vars::~TCL_linked_vars()
@@ -214,7 +214,7 @@ void	TCL_linked_vars::set(const char * value)
 	Tcl_Obj * obj = var.empty() ? tcl_stubs.Tcl_NewObj() : tcl_stubs.Tcl_NewStringObj(var.c_str(), -1);
 	Tcl_IncrRefCount(obj);
 	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY)==NULL)
-		message_dialog("Internal tcl error - could not create variable %s", var_name);
+		message_dialog((char*)"Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
 }
@@ -253,7 +253,7 @@ char * TCL_linked_vars::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 		} else
 		{
 			tcl_stubs.Tcl_SetObjResult(interp, result);
-			message_dialog("Ben has not hit this case yet - trace call wtih no string conv in a string-linked var!\n");
+			message_dialog((char*)"Ben has not hit this case yet - trace call wtih no string conv in a string-linked var!\n");
 //			Tcl_ResetResult(interp);
 		}
 	}

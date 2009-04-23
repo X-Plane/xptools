@@ -193,17 +193,17 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 		if (mat)
 		{
 			ACrgb	diffuse, emissive, spec;
-			if (ac_entity_get_rgb_value((ACEntity*) mat, "diffuse", &diffuse))
+			if (ac_entity_get_rgb_value((ACEntity*) mat, (char*)"diffuse", &diffuse))
 			{
 				float diff[3] = { diffuse.r, diffuse.g, diffuse.b };
 				builder->SetAttribute3(attr_Diffuse_RGB,diff);
 			}
-			if (ac_entity_get_rgb_value((ACEntity*) mat, "emissive", &emissive))
+			if (ac_entity_get_rgb_value((ACEntity*) mat, (char*)"emissive", &emissive))
 			{
 				float emis[3] = { emissive.r, emissive.g, emissive.b };
 				builder->SetAttribute3(attr_Emission_RGB,emis);
 			}
-			if (ac_entity_get_rgb_value((ACEntity*) mat, "specular", &spec))
+			if (ac_entity_get_rgb_value((ACEntity*) mat, (char*)"specular", &spec))
 			{
 				builder->SetAttribute1(attr_Shiny_Rat,(spec.r + spec.g + spec.b) / 3.0);
 			}
@@ -250,7 +250,7 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 {
 	Point3	xyz;
-	ac_entity_get_point_value(obj, "loc", &xyz);
+	ac_entity_get_point_value(obj, (char*)"loc", &xyz);
 	float pos[3] = { xyz.x, xyz.y, xyz.z };
 
 	char lname[256], lref[256];
@@ -543,7 +543,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		break;
 	}
 
-	if (ac_entity_is_class(obj, AC_CLASS_LIGHT))
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_LIGHT))
 	if (do_misc)
 	{
 		obj8_output_light(builder, obj);
@@ -648,7 +648,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 		Obj8ToObj7(obj8, obj7);
 		if (!XObjWrite(export_path.c_str(), obj7))
 	    {
-	        message_dialog("can't open file '%s' for writing", export_path.c_str());
+	        message_dialog((char*)"can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
 
@@ -659,7 +659,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 		Obj8_Optimize(obj8);
 		if (!XObjWriteEmbedded(export_path.c_str(), obj8, true))	// 16 bit!
 	    {
-	        message_dialog("can't open file '%s' for writing", export_path.c_str());
+	        message_dialog((char*)"can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
 
@@ -668,21 +668,21 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	else {
 		if (!XObj8Write(export_path.c_str(), obj8))
 	    {
-	        message_dialog("can't open file '%s' for writing", export_path.c_str());
+	        message_dialog((char*)"can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
 	}
     if (gErrMissingTex)
-    	message_dialog("Warning: %d objects did not have textures assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
+    	message_dialog((char*)"Warning: %d objects did not have textures assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
-    	message_dialog("This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
+    	message_dialog((char*)"This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
 	if(gSubregionOOBErr)
-		message_dialog("You have used panel sub-regions, but your texture mapping goes out of the bounds of the sub-regions.  Your panel may not have exported right.");
+		message_dialog((char*)"You have used panel sub-regions, but your texture mapping goes out of the bounds of the sub-regions.  Your panel may not have exported right.");
 
    if (gErrBadCockpit && convert == convert_7)
-    	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");
+    	message_dialog((char*)"This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");
    if (gErrBadHard && convert == convert_7)
-    	message_dialog("This model has non-quad surfaces that rae marked as hard.  Only quad surfaces may be hard in OBJ7.");
+    	message_dialog((char*)"This model has non-quad surfaces that rae marked as hard.  Only quad surfaces may be hard in OBJ7.");
 
    if (gBadSurfaces)
     {

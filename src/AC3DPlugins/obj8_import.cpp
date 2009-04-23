@@ -163,7 +163,7 @@ ACObject *	do_obj8_load(char *filename)
 	string texPathDds = texPath + texNameDds;
 	string texPathPvr = texPath + texNamePvr;
 
-	char *	panel_names[] = {
+	const char *	panel_names[] = {
 		"cockpit_3d/-PANELS-/Panel_Preview.png",
 		"cockpit_3d/-PANELS-/Panel.png",
 		"cockpit_3d/-PANELS-/Panel_Airliner.png",
@@ -224,15 +224,15 @@ ACObject *	do_obj8_load(char *filename)
 		int n = 0;
 		while(panel_id == -1 && panel_names[n])
 		{
-			panel_full_name = search_texture(filename, panel_names[n]);
+			panel_full_name = search_texture(filename, (char*)panel_names[n]);
 			if(panel_full_name)
-				panel_id = add_new_texture_opt(panel_full_name,panel_names[n]);
+				panel_id = add_new_texture_opt(panel_full_name, (char*)panel_names[n]);
 			++n;
 		}
 
 		if(panel_id == -1 && has_cockpit_reg)
 		{
-			message_dialog("Warning: I was unable to find a panel texture to load, but you are using panel regions.  Your texure coordinates may be incorrect after import.");
+			message_dialog((char*)"Warning: I was unable to find a panel texture to load, but you are using panel regions.  Your texure coordinates may be incorrect after import.");
 		}
 	}
 
@@ -578,7 +578,7 @@ ACObject *	do_obj8_load(char *filename)
 					ACObject * parent = anim_obj.empty() ? lod_obj : anim_obj.back();
 					anim_obj.push_back(new_object(OBJECT_GROUP));
 					object_add_child(parent, anim_obj.back());
-					object_set_name(anim_obj.back(), "ANIMATION");
+					object_set_name(anim_obj.back(), (char*)"ANIMATION");
 					OBJ_set_animation_group(anim_obj.back(),1);
 
 					}
@@ -633,10 +633,10 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.x = dat[0];
 					pt_ac3.y = dat[1];
 					pt_ac3.z = dat[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
 
 					sprintf(strbuf, "RGB (%f,%f,%f)", dat[3], dat[4], dat[5]);
-					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					ac_entity_set_point_value(light, (char*)"diffuse", &col_ac3);
 					object_set_name(light, strbuf);
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_red(light, dat[3]);
@@ -653,8 +653,8 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
-					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
+					ac_entity_set_point_value(light, (char*)"diffuse", &col_ac3);
 					object_set_name(light, (char*) cmd->name.c_str());
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_named(light, cmd->name.c_str());
@@ -668,8 +668,8 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
-					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
+					ac_entity_set_point_value(light, (char*)"diffuse", &col_ac3);
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_named(light, "custom");
 					OBJ_set_light_dataref(light, cmd->name.c_str());
@@ -692,9 +692,9 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
-					ac_entity_set_point_value(light, "diffuse", &col_ac3);
-					object_set_name(light, "Black Smoke");
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
+					ac_entity_set_point_value(light, (char*)"diffuse", &col_ac3);
+					object_set_name(light, (char*)"Black Smoke");
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_smoke_size(light, cmd->params[3]);
 					OBJ_set_light_named(light, "black smoke");
@@ -708,9 +708,9 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
-					ac_entity_set_point_value(light, "diffuse", &col_ac3);
-					object_set_name(light, "White Smoke");
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
+					ac_entity_set_point_value(light, (char*)"diffuse", &col_ac3);
+					object_set_name(light, (char*)"White Smoke");
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 					OBJ_set_light_smoke_size(light, cmd->params[3]);
 					OBJ_set_light_named(light, "white smoke");

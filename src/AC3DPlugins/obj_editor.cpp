@@ -60,8 +60,8 @@ ACObject * get_sel_single_obj(int n)
 	find_all_selected_objects_flat(objs);
 	if (objs.size() <= n) return NULL;
 	obj = objs[n];
-	if (ac_entity_is_class(obj, AC_CLASS_LIGHT)) return NULL;
-	if (ac_entity_is_class(obj, AC_CLASS_GROUP)) return NULL;
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_LIGHT)) return NULL;
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_GROUP)) return NULL;
 	return obj;
 }
 
@@ -72,7 +72,7 @@ static ACObject * get_sel_single_grp(int n)
 	find_all_selected_objects_flat(objs);
 	if (objs.size() <= n) return NULL;
 	obj = objs[n];
-	if (ac_entity_is_class(obj, AC_CLASS_GROUP)) return obj;
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_GROUP)) return obj;
 	return NULL;
 }
 
@@ -84,7 +84,7 @@ static ACObject * get_sel_single_light(int n)
 	find_all_selected_objects_flat(objs);
 	if (objs.size() <= n) return NULL;
 	obj = objs[n];
-	if (ac_entity_is_class(obj, AC_CLASS_LIGHT)) return obj;
+	if (ac_entity_is_class(obj, (char*)AC_CLASS_LIGHT)) return obj;
 												 return NULL;
 }
 
@@ -264,8 +264,8 @@ enum {
 
 static int OBJ_get_single_type(ACObject * who)
 {
-		 if (ac_entity_is_class(who, AC_CLASS_LIGHT))			return (sel_light);
-	else if (ac_entity_is_class(who, AC_CLASS_GROUP))			return (sel_group);
+		 if (ac_entity_is_class(who, (char*)AC_CLASS_LIGHT))			return (sel_light);
+	else if (ac_entity_is_class(who, (char*)AC_CLASS_GROUP))			return (sel_group);
 	else														return (sel_obj);
 }
 
@@ -364,7 +364,7 @@ static void OBJ_editor_sync(ACObject * changed)
 
 			if (seltype == sel_obj && (changed == obj || changed == NULL))
 			{
-				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				if (obj == NULL) message_dialog((char*)"internal err - null obj!\n");
 				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_OBJ
 				blend_enable_var->set(idx, OBJ_get_blend(obj) <= 0.0);
@@ -378,13 +378,13 @@ static void OBJ_editor_sync(ACObject * changed)
 			}
 			if (seltype == sel_light && (changed == obj || changed == NULL))
 			{
-				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				if (obj == NULL) message_dialog((char*)"internal err - null obj!\n");
 				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_LGT
 			}
 			if (seltype == sel_group && (changed == obj || changed == NULL))
 			{
-				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				if (obj == NULL) message_dialog((char*)"internal err - null obj!\n");
 				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_GRP
 			}
@@ -405,10 +405,10 @@ static void OBJ_editor_sync_tcl(void)
 
 void	OBJ_editor_init(void)
 {
-	ac_add_command_full("xplane_can_animate", CAST_CMD(OBJ_can_animate_tcl), 1, "f", "ac3d xplane_can_animate", "can this object be an animation action?");
-	ac_add_command_full("xplane_get_sel_type", CAST_CMD(OBJ_get_sel_type_tcl), 1, "f", "ac3d xplane_get_sel_type", "get the selection type.");
-	ac_add_command_full("xplane_editor_sync", CAST_CMD(OBJ_editor_sync_tcl), 0, NULL, "ac3d xplane_editor_sync", "resync the editor.");
-	ac_add_command_full("xplane_get_sel_count", CAST_CMD(OBJ_get_sel_count_tcl), 0, NULL, "ac3d xplane_get_sel_count", "get number of selected items to edit.");
+	ac_add_command_full((char*)"xplane_can_animate", CAST_CMD(OBJ_can_animate_tcl), 1, (char*)"f", (char*)"ac3d xplane_can_animate", (char*)"can this object be an animation action?");
+	ac_add_command_full((char*)"xplane_get_sel_type", CAST_CMD(OBJ_get_sel_type_tcl), 1, (char*)"f", (char*)"ac3d xplane_get_sel_type", (char*)"get the selection type.");
+	ac_add_command_full((char*)"xplane_editor_sync", CAST_CMD(OBJ_editor_sync_tcl), 0, NULL, (char*)"ac3d xplane_editor_sync", (char*)"resync the editor.");
+	ac_add_command_full((char*)"xplane_get_sel_count", CAST_CMD(OBJ_get_sel_count_tcl), 0, NULL, (char*)"ac3d xplane_get_sel_count", (char*)"get number of selected items to edit.");
 
 	#define	SIMPLE_PROPERTY_STR(prop_name,obj_func,set_func,get_func,native_code,ui_code)	\
 		prop_name##_var = new TCL_linked_varsv(ac_get_tcl_interp(),"xplane_" #prop_name, MAX_MULTI_COUNT, xplane_##prop_name##_cb, NULL, "none");

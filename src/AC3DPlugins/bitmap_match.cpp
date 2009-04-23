@@ -31,7 +31,7 @@ static unsigned char * get_image_data(ACImage * im);
 static unsigned char * get_image_data(ACImage * im)
 {
 	int addr;
-	if (!ac_entity_get_int_value(im, "data", &addr)) return NULL;
+	if (!ac_entity_get_int_value(im, (char*)"data", &addr)) return NULL;
 	return (unsigned char *) addr;
 }
 
@@ -67,22 +67,22 @@ int	bitmap_match(
 	ac_image_get_dim(sub, &sub_width, &sub_height, &sub_depth);
 
 	char * subname, * mainname;
-	ac_entity_get_string_value(sub, "name", &subname);
-	ac_entity_get_string_value(main, "name", &mainname);
+	ac_entity_get_string_value(sub, (char*)"name", &subname);
+	ac_entity_get_string_value(main, (char*)"name", &mainname);
 
 	if (sub_depth != main_depth)
 	{
 		if (sub_depth == 3 && main_depth == 4)
-			message_dialog("Could not match bitmaps because bitmaps '%s' has alpha and '%s' does not.", mainname, subname);
+			message_dialog((char*)"Could not match bitmaps because bitmaps '%s' has alpha and '%s' does not.", mainname, subname);
 		else if (sub_depth == 4 && main_depth == 3)
-			message_dialog("Could not match bitmaps because bitmaps '%s' has alpha and '%s' does not.", subname, mainname);
+			message_dialog((char*)"Could not match bitmaps because bitmaps '%s' has alpha and '%s' does not.", subname, mainname);
 		else
-			message_dialog("Could not match bitmaps because bitmaps '%s' and '%s' have different color depths.", subname, mainname);
+			message_dialog((char*)"Could not match bitmaps because bitmaps '%s' and '%s' have different color depths.", subname, mainname);
 		return 0;
 	}
 	if (sub_width > main_width || sub_height > main_height)
 	{
-		message_dialog("Could not match bitmaps because new bitmap '%s' is smaller than old bitmap '%s'.", mainname, subname);
+		message_dialog((char*)"Could not match bitmaps because new bitmap '%s' is smaller than old bitmap '%s'.", mainname, subname);
 		return 0;
 	}
 
@@ -206,7 +206,7 @@ int make_transparent(ACImage * im)
 
 	if (im_depth != 3)
 	{
-		message_dialog("Bitmap already has an alpha channel.");
+		message_dialog((char*)"Bitmap already has an alpha channel.");
 		printf("Image is not depth 3.\n");
 		return 0;
 	}
@@ -242,7 +242,7 @@ int make_transparent(ACImage * im)
 	redraw_all();
 
 	if (transparent == 0)
-		message_dialog("No magenta pixels were found.");
+		message_dialog((char*)"No magenta pixels were found.");
 	printf("Rendered %d pixels transparent.\n", transparent);
 	return 1;
 }
