@@ -43,6 +43,7 @@
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
+#include "WED_ResourceMgr.h"
 #include "MathUtils.h"
 
 const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
@@ -76,8 +77,7 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mResource(tool > create_Hole ? this : NULL, "Resource", "", "", ""),
 		mHeight(tool == create_Facade ? this : NULL, "Height", "", "", 10.0, 4, 2),
 		mDensity(tool == create_Forest ? this : NULL, "Density", "", "", 1.0, 3, 2),
-		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1),
-		mOrthophoto(tool == create_Polygon ? this : NULL, "Orthophoto", "", "",0)
+		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -111,8 +111,17 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_bezier = mType != create_Facade && mType != create_Forest;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
-	int is_texed = (mType == create_Polygon && mOrthophoto);
-
+	int is_texed = 0;
+	if(mType == create_Polygon)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+		pol_info_t i;
+		if(rmgr->GetPol(mResource.value, i))
+		{
+			is_texed = !i.wrap;
+		}
+	}
+	
 	if(mType == create_Hole)
 	{
 		DebugAssert(host->CountChildren() > 0);
@@ -245,7 +254,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		}
 		break;
 	case create_Polygon:
-		if(mOrthophoto)
+		if(is_texed)
 		{
 			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
 			outer_ring->SetParent(dpol,0);
@@ -302,10 +311,13 @@ void	WED_CreatePolygonTool::AcceptPath(
 		}
 	}
 
+	const float hard_coded_s[4] = { 0.0, 1.0, 1.0, 0.0 };
+	const float hard_coded_t[4] = { 0.0, 0.0, 1.0, 1.0 };
+
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		int idx = is_ccw ? n : pts.size()-n-1;
-
+		
 		WED_AirportNode *		anode=NULL;
 		WED_GISPoint_Bezier *	bnode=NULL;
 		WED_GISPoint *			node=NULL;
@@ -321,6 +333,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 		node->SetLocation(pts[idx]);
 		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
 							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
+		if(pts.size() == 4)	{st.x_ = hard_coded_s[n];
+							 st.y_ = hard_coded_t[n];}
+							
 		if(tnode)			tnode->SetUV(st);
 		if(tbnode)			tbnode->SetUV(st);
 

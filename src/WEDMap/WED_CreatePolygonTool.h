@@ -75,8 +75,6 @@ protected:
 		WED_PropDoubleText				mDensity;
 		WED_PropDoubleText				mSpacing;
 
-		WED_PropBoolText				mOrthophoto;
-
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
 							const vector<Point2>&	dirs_lo,
