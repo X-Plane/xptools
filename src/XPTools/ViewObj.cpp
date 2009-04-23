@@ -745,6 +745,7 @@ void	XGrindFiles(const vector<string>& files)
 void	XGrindInit(void)
 {
 	(new XObjWin(NULL))->ForceRefresh();
+
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;
 	sscanf((const char *) glGetString(GL_VERSION), "%d.%d.%d", &major, &minor, &revision);

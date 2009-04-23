@@ -56,6 +56,7 @@ print_comp_res	:= echo $(ECHOFLAGS) "\033[0;32m[ RES ]\033[0m:"
 print_arch	:= echo $(ECHOFLAGS) "\033[0;34m[ AR  ]\033[0m:"
 print_so	:= echo $(ECHOFLAGS) "\033[0;34m[ SO  ]\033[0m:"
 print_dep	:= echo $(ECHOFLAGS) "\033[0;34m[ DEP ]\033[0m:"
+print_moc	:= echo $(ECHOFLAGS) "\033[0;34m[ MOC ]\033[0m:"
 print_finished	:= echo $(ECHOFLAGS) "\033[0;32m finished.\033[0m"
 print_error	:= (echo $(ECHOFLAGS) "\033[0;31m[ --FAILED-- ]\033[0m" && false)
 
@@ -78,6 +79,7 @@ AR	:= $(CROSSPREFIX)ar
 OBJCOPY	:= $(CROSSPREFIX)objcopy
 STRIP	:= $(CROSSPREFIX)strip
 WINDRES	:= $(CROSSPREFIX)windres
+MOC	:= moc-qt4
 endif
 
 
@@ -221,6 +223,8 @@ CXXDEPS		:= $(patsubst %.cpp, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX)
 CXXOBJECTS	:= $(patsubst %.cpp, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o, $(CXXSOURCES))
 RESOURCEOBJ	:= $(patsubst %, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).ro, $(RESOURCES))
 WIN_RESOURCEOBJ	:= $(patsubst %.rc, $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).res, $(WIN_RESOURCES))
+MOCS		:= $(filter %.moc.cpp, $(SOURCES))
+MOCHEADERS	:= $(patsubst %.moc.cpp, %.h, $(MOCS))
 
 
 ##
@@ -294,6 +298,10 @@ $(WIN_RESOURCEOBJ): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).res : %.r
 	@$(print_comp_res) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
 	@$(WINDRES) $< -O coff -o $(@)
+
+%.moc.cpp: %.h
+	@$(print_moc) $(subst $(PWD)/, ./, $(abspath $(<)))
+	$(MOC) $(DEFINES) $(INCLUDEPATHS) -o$(@) $<
 
 $(CCOBJECTS): $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).o: %.c $(BUILDDIR)/%$(FORCEREBUILD_SUFFIX)$(MULTI_SUFFIX).dep
 	@$(print_comp_cc) $(subst $(PWD)/, ./, $(abspath $(<)))

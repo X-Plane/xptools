@@ -41,6 +41,24 @@
 
 #if LIN
 extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
+
+#include <QGLWidget>
+class	XWinGL;
+
+class glWidget : public QGLWidget
+{
+	Q_OBJECT
+public:
+	glWidget(QWidget *parent, XWinGL* xwin);
+	virtual ~glWidget(void);
+protected:
+	void resizeGL(int inWidth, int inHeight);
+	void paintGL(void);
+	void initializeGL(void);
+private:
+	XWinGL* mXWinGL;
+};
+
 #endif
 
 #if IBM
@@ -92,11 +110,19 @@ extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
 
 #endif
 
-class	XWinGL : public XWin {
+class	XWinGL : public XWin
+{
+#if LIN
+	Q_OBJECT
+public:
+	XWinGL(int default_dnd, XWinGL * inShare, QWidget* parent = 0);
+	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent = 0);
+#else
 public:
 
-							XWinGL(int default_dnd, XWinGL * inShare);
-							XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
+	XWinGL(int default_dnd, XWinGL * inShare);
+	XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
+#endif
 	virtual					~XWinGL();
 
 			void			SetGLContext(void);
@@ -131,7 +157,9 @@ private:
 #endif
 
 #if LIN
-	    GLXContext		mContext;
+	glWidget*		mGlWidget;
+public:
+	bool			inited;
 #endif
 
 };

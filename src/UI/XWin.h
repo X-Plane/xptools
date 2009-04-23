@@ -44,14 +44,9 @@
 
 #if LIN
 #define xmenu void*
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glx.h>
-#include "XPopup.h"
-#include "xdnd.h"
+#include <QtCore>
+#include <QtGui>
+#include <QMainWindow>
 
 enum {
   _NET_WM_STATE_REMOVE,
@@ -63,6 +58,16 @@ typedef struct tagPOINT {
   int x;
   int y;
 } POINT, *PPOINT;
+#if 0
+class wmain : public QMainWindow
+{
+	Q_OBJECT
+public:
+	wmain(void){}
+	~wmain(void){}
+private:
+};
+#endif
 #endif
 
 #define	BUTTON_DIM 16
@@ -80,7 +85,13 @@ class	XWin
 #if IBM
 : public XWinFileReceiver
 #endif
+#if LIN
+: public QMainWindow
+#endif
 {
+#if LIN
+	Q_OBJECT
+#endif
 public:
 
 #if APL
@@ -90,18 +101,28 @@ public:
 		typedef HDC		XContext;
 #endif
 #if LIN
-        typedef Window	XContext;
+        typedef void*	XContext;
+	XWin(int default_dnd, QWidget *parent = 0);
+	XWin(
+		int		default_dnd,
+		const char * 	inTitle,
+		int		inAttributes,
+		int		inX,
+		int		inY,
+		int		inWidth,
+		int		inHeight,
+		QWidget *parent = 0);
+#else
+	XWin(int default_dnd);
+	XWin(
+		int		default_dnd,
+		const char * 	inTitle,
+		int		inAttributes,
+		int		inX,
+		int		inY,
+		int		inWidth,
+		int		inHeight);
 #endif
-
-							XWin(int default_dnd);
-							XWin(
-								int				default_dnd,
-								const char * 	inTitle,
-								int				inAttributes,
-								int				inX,
-								int				inY,
-								int				inWidth,
-								int				inHeight);
 	virtual					~XWin();
 
 	// Manipulators, etc.
@@ -187,32 +208,19 @@ public:
 #endif
 
 #if LIN
-        Display*                _mDisplay;
-        XSetWindowAttributes    windowAttr;
-        int                     attrMask;
-        GC                      defGC;
-        unsigned long           defGCmask;
-        bool                    visible;
-        bool					active;
-	    XGCValues               defGCvalues;
-        XTextProperty           title;
-        POINT			        mMouse;
-        DndClass                dnd;
-        int				        mDragging[BUTTON_DIM];
-		int						width;
-		int						height;
-		int						refresh_requests;
-		XPopup					mPopupMenu;
+	bool	visible;
+	bool	active;
+	int	mDragging[BUTTON_DIM];
+	int	width;
+	int	height;
+	POINT	mMouse;
+//	wmain	mWindow;
 public:
-        static void WinEventHandler(XEvent* xevent, int* visualstate);
-        static void RegisterClass(Display* display, int screen, int depth, Visual* visual);
-        virtual	void ReceiveFilesFromDrag(const vector<string>& inFiles);
-		void toggleFullscreen();
+	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 
-        Window                  mWindow;
-        bool					isResizing;
-		bool					fsState;
-		int						mMenuOffset;
+private:
+	void resizeEvent(QResizeEvent* e);
+
 #endif
 
 };
