@@ -80,15 +80,36 @@ int		GetFilePathFromUser(
 	{
 		case getFile_Open:
 		{
-			return MiniGtk::OpenFile(inPrompt, outFileName, inBufSize);
+			QString fileName = QFileDialog::getOpenFileName(0,
+			inPrompt, "/home");
+			if (!fileName.length())
+				return 0;
+			else {
+				::strncpy(outFileName, fileName.toAscii().constData(), inBufSize);
+				return 1;
+			}
 		}
 		case getFile_Save:
 		{
-			return MiniGtk::SaveFile(inPrompt, outFileName, inBufSize);
+			QString fileName = QFileDialog::getSaveFileName(0,
+			inPrompt, "/home");
+			if (!fileName.length())
+				return 0;
+			else {
+				::strncpy(outFileName, fileName.toAscii().constData(), inBufSize);
+				return 1;
+			}
 		}
 		case getFile_PickFolder:
 		{
-			return MiniGtk::ChooseFolder(inPrompt, outFileName, inBufSize);
+			QString dir = QFileDialog::getExistingDirectory
+			(0, inPrompt, "/home", QFileDialog::ShowDirsOnly);
+			if (!dir.length())
+				return 0;
+			else {
+				::strncpy(outFileName, dir.toAscii().constData(), inBufSize);
+				return 1;
+			}
 		}
 		default:
 			return 0;
@@ -114,14 +135,16 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-	int res = MiniGtk::SaveQuestionBox(inMessage2);
+	int res = QMessageBox::question(0, inMessage1, inMessage2,
+	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+	QMessageBox::Cancel);
 	switch (res)
 	{
-		case GTK_RESPONSE_YES:
+		case QMessageBox::Save:
 			return close_Save;
-		case GTK_RESPONSE_NO:
+		case QMessageBox::Discard:
 			return close_Discard;
-		case GTK_RESPONSE_CANCEL:
+		case QMessageBox::Cancel:
 		default:
 			return close_Cancel;
 	}
