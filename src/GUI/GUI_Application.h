@@ -30,8 +30,8 @@
 #endif
 
 #if LIN
-    #include <X11/Xlib.h>
-    //#include "mmenu.h"
+#include <QtCore>
+#include <QtGui>
 #endif
 
 #include "GUI_Commander.h"
@@ -97,8 +97,7 @@ private:
 
 #if LIN
     static void MenuCommandHandler(int cmd, void* arg);
-    Display* display;
-//    mmenu*   mMenubar;
+	QApplication*		qapp;
 #endif
 };
 

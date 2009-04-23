@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_DocumentWindow.h"
 #include "WED_Document.h"
 //#include "WED_Progress.h"
 //#include "XESIO.h"
@@ -29,7 +30,7 @@
 #include "WED_Messages.h"
 #include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
-#include "WED_DocumentWindow.h"
+
 #include "WED_MapPane.h"
 #include "WED_TCEPane.h"
 #include "WED_PropertyPane.h"

@@ -16,7 +16,7 @@ LIBS		+= -ldl -lpthread -lc
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lgcc -lgcc_eh
 LIBS		+= -Wl,-Bdynamic
-LIBS		+= -lGL -lGLU
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
@@ -69,14 +69,15 @@ endif #PLAT_MINGW
 ifdef PLAT_LINUX
 SOURCES := ./src/linuxinit/initializer.cpp
 SOURCES += ./src/linuxinit/minigtk.cpp
-SOURCES += ./src/UI/XWin.lin.cpp
-SOURCES += ./src/UI/XWinGL.lin.cpp
-SOURCES += ./src/UI/XPopup.lin.cpp
-SOURCES += ./src/UI/xdnd.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+
+SOURCES += ./src/UI/XWin.qt.cpp
+SOURCES += ./src/UI/XWinGL.qt.cpp
+SOURCES += ./src/UI/XWin.moc.cpp
+SOURCES += ./src/UI/XWinGL.moc.cpp
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -231,8 +232,8 @@ SOURCES += ./src/GUI/GUI_Window.cpp
 SOURCES += ./src/GUI/GUI_Pane.cpp
 SOURCES += ./src/GUI/GUI_Help.cpp
 SOURCES += ./src/GUI/GUI_Clipboard.cpp
-SOURCES += ./src/GUI/GUI_Application.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
+SOURCES += ./src/GUI/GUI_Application.qt.cpp
 SOURCES += ./src/Utils/SQLUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp

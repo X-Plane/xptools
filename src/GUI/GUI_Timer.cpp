@@ -34,8 +34,8 @@ static TimerMap						sTimerMap;
 
 
 #if LIN
-
-#include <X11/Xlib.h>
+#if 0
+//#include <X11/Xlib.h>
 #include <XWin.h>
 
 extern Display*  mDisplay;
@@ -129,7 +129,7 @@ void GUI_Timer::TimerCB(void *args)
 		me->TimerFired();
 	}
 }
-
+#endif
 #endif
 
 GUI_Timer::GUI_Timer(void)
@@ -141,9 +141,11 @@ GUI_Timer::GUI_Timer(void)
 		mID = 0;
 	#endif
 	#if LIN
+#if 0
 		timer_objects.insert(this);
 		teh_thread = 0;
 		is_running = false;
+#endif
 /*
 		mTimer = 0;
 		clock_getres(CLOCK_MONOTONIC, &tsres);
@@ -175,8 +177,10 @@ GUI_Timer::~GUI_Timer(void)
 		}
 #endif
 #if LIN
+#if 0
 	timer_objects.erase(this);
 	//if (mTimer) timer_delete(mTimer);
+#endif
 #endif
 }
 
@@ -205,7 +209,7 @@ void GUI_Timer::Start(float seconds)
 		}
 #endif
 #if LIN
-
+#if 0
 	targ.sec = seconds;
 	targ.callme = this;
 
@@ -231,6 +235,7 @@ void GUI_Timer::Start(float seconds)
 		return TimerFired();
 */
 #endif
+#endif
 }
 
 void GUI_Timer::Stop(void)
@@ -251,7 +256,7 @@ void GUI_Timer::Stop(void)
 		}
 	#endif
 	#if LIN
-
+#if 0
 	if (teh_thread)
 	{
 		is_running = false;
@@ -274,6 +279,7 @@ void GUI_Timer::Stop(void)
 		have_signal = 0;
 	}
 */
+#endif
 	#endif
 }
 

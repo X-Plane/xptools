@@ -23,6 +23,7 @@
 
  #define __DEBUGGING__
 
+#include "WED_AboutBox.h"
 // Stuff we need to init
 //#include "XESInit.h"
 #include "WED_Document.h"
@@ -36,7 +37,6 @@
 #include "WED_Package.h"
 #include "GUI_Resources.h"
 #include "WED_Application.h"
-#include "WED_AboutBox.h"
 #include "WED_PackageMgr.h"
 #include "GUI_Pane.h"
 #include "GUI_Fonts.h"

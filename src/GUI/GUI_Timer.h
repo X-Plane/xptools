@@ -32,7 +32,7 @@
 	#endif
 #endif
 #if LIN
-
+#if 0
 #include <pthread.h>
 /*
 #include <signal.h>
@@ -46,6 +46,7 @@ typedef struct teh_args_t
 	float sec;
 	GUI_Timer* callme;
 } teh_args_t;
+#endif
 #endif
 
 class	GUI_Timer {
@@ -72,6 +73,7 @@ private:
 		UINT_PTR	mID;
 
 	#elif LIN
+#if 0
 	public:
         static void TimerCB(void *args);
         bool is_running;
@@ -88,6 +90,7 @@ private:
 		struct itimerspec its;
 		struct sigevent ev;
 */
+#endif
 	#endif
 
 };
