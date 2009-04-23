@@ -9,7 +9,7 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		:= -lsquish -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static -static-libgcc
+LDFLAGS		:= -static-libgcc
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

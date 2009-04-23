@@ -7,7 +7,7 @@ CFLAGS		:= -include ./src/Obj/XDefs.h
 CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LDFLAGS	:= -static -static-libgcc
+LDFLAGS	:= -static-libgcc
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

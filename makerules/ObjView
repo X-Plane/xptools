@@ -8,16 +8,8 @@ CXXFLAGS	:= -include ./src/Obj/XDefs.h
 DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -nodefaultlibs -static-libgcc
-LIBS		:= -Wl,-Bstatic
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,-Bdynamic
-LIBS		+= -ldl -lpthread -lc
-LIBS		+= -Wl,-Bstatic
-LIBS		+= -lgcc -lgcc_eh
-LIBS		+= -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL
-LIBS		+= -Wl,-Bstatic
+LDFLAGS		:= -static-libgcc
+LIBS		:= -lQtCore -lQtGui -lQtOpenGL
 LIBS		+= -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng -lz
 endif #PLAT_LINUX
 
