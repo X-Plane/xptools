@@ -23,14 +23,25 @@
 
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#if IBM
+#include "GUI_Unicode.h"
+#endif
 
 #include <errno.h>
 #include <sys/stat.h>
 
 int FILE_exists(const char * path)
 {
+#if IBM
+	struct _stat ss;
+	string input(path);
+	string_utf16 output;
+	string_utf_8_to_16(input, output);
+	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return 0;
+#else
 	struct stat ss;
 	if (stat(path,&ss) < 0) return 0;
+#endif
 	return 1;
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
@@ -40,10 +51,13 @@ int FILE_delete_file(const char * nuke_path, int is_dir)
 	// NOTE: if the path is to a dir, it will end in a dir-char.
 	// We must clip off this char and also call the right routine on Windows.
 #if IBM
+	string input(nuke_path);
+	string_utf16 output;
+	string_utf_8_to_16(input, output);
 	if (is_dir)	{
-		if (!RemoveDirectory(nuke_path))	return GetLastError();
+		if (!RemoveDirectoryW((const wchar_t*)output.c_str()))	return GetLastError();
 	} else {
-		if (!DeleteFile(nuke_path))			return GetLastError();
+		if (!DeleteFileW((const wchar_t*)output.c_str()))			return GetLastError();
 	}
 #endif
 
@@ -60,7 +74,12 @@ int FILE_delete_file(const char * nuke_path, int is_dir)
 int FILE_rename_file(const char * old_name, const char * new_name)
 {
 #if IBM
-	if(!MoveFile(old_name,new_name)) return GetLastError();
+	string oldn(old_name);
+	string newn(new_name);
+	string_utf16 old16, new16;
+	string_utf_8_to_16(oldn, old16);
+	string_utf_8_to_16(newn, new16);
+	if(!MoveFileW((const wchar_t*)old16.c_str(), (const wchar_t*)new16.c_str())) return GetLastError();
 #endif
 #if LIN || APL
 	if(rename(old_name,new_name)<0)	return errno;
@@ -71,7 +90,10 @@ int FILE_rename_file(const char * old_name, const char * new_name)
 int FILE_make_dir(const char * in_dir)
 {
 	#if IBM
-		if (!CreateDirectory(in_dir,NULL))	return GetLastError();
+		string input(in_dir);
+		string_utf16 output;
+		string_utf_8_to_16(input, output);	
+		if (!CreateDirectoryW((const wchar_t*)output.c_str() ,NULL))	return GetLastError();
 	#endif
 	#if LIN || APL
 		if (mkdir(in_dir,0755) != 0)		return errno;

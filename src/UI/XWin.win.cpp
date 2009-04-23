@@ -407,6 +407,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 				if(bc==0)
 					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
+#if 1
 			else
 			if (!obj->KeyPressed(c, message, wParam, lParam))
 			{
@@ -415,10 +416,16 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 				else if (c == '-')
 					obj->MouseWheel(obj->mMouse.x,obj->mMouse.y, -1, 0);
 			}
-
+#endif
 		}
       break;
-
+#if 0
+	case WM_CHAR:
+		if (obj) {
+			obj->KeyPressed(wParam, message, wParam, lParam);
+		}
+		break;
+#endif
 	case WM_SYSCOMMAND:
 		if (obj && wParam == SC_CLOSE) {
 			if (obj->Closed())

@@ -963,6 +963,9 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	// the ASCII codes are whacko.
 	if ( ((inParam2 & ShiftControlMask) == controlKey) || ((inParam2 & ShiftControlMask) == optionKey))
 		charCode = 0;
+#if 0
+	UTF16_decode((const UTF16*)&inKey, charCode);
+#endif
 #endif
 
 	virtualCode = gui_Key_Map[virtualCode];

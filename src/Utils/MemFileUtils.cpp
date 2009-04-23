@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+
 #include "hl_types.h"
 #include "MemFileUtils.h"
 #include <stdio.h>
@@ -133,6 +134,7 @@
 		#include "hl_types.h"
 #elif IBM
 	#include <windows.h>
+	#include "GUI_Unicode.h"
 #else
 	#error PLATFORM NOT DEFINED
 #endif
@@ -539,8 +541,11 @@ cleanmmap:
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
+	string input(inPath);
+	string_utf16 output;
+	string_utf_8_to_16(input, output);
 
-	winFile = CreateFile(inPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	winFile = CreateFileW((const wchar_t*)output.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (!winFile) goto cleanupwin;
 
 	winFileMapping = CreateFileMapping(winFile, NULL, PAGE_READONLY, 0, 0, NULL);
@@ -958,13 +963,16 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 #elif IBM
 
 	char path[MAX_PATH], SearchPath[MAX_PATH];
-	WIN32_FIND_DATA FindFileData;
+	WIN32_FIND_DATAW FindFileData;
 	HANDLE hFind;
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
+	string input(path);
+	string_utf16 output;
+	string_utf_8_to_16(input, output);
 
-	hFind = FindFirstFile(path, &FindFileData);
+	hFind = FindFirstFileW((const wchar_t*)output.c_str(), &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
@@ -972,20 +980,26 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	}
 	else
 	{
-		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
+		string_utf16 in((const unsigned short*)FindFileData.cFileName);
+		string out;
+		string_utf_16_to_8(in, out);
+
+		if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
 		{
-			if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+			if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 			{
 				FindClose(hFind);
 				return true;
 			}
 		}
 
-		while (FindNextFile(hFind, &FindFileData) != 0)
+		while (FindNextFileW(hFind, &FindFileData) != 0)
 		{
-			if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
+			in = (const unsigned short*)FindFileData.cFileName;
+			string_utf_16_to_8(in, out);
+			if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
 			{
-				if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+				if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 				{
 					FindClose(hFind);
 					return true;
