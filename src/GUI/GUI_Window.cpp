@@ -675,7 +675,9 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 	{
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 			(*c)->ParentResized(oldBounds, mBounds);
+#if !LIN
 			Refresh();
+#endif
 	}
 }
 

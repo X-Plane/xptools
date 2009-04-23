@@ -138,7 +138,6 @@ public:
 
 	// Handled for you
 
-	virtual	void			Resized(int inWidth, int inHeight);
 	virtual	void			Update(XContext ctx);
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand) { return 0; }
 	virtual void			Activate(int active) { }
@@ -159,7 +158,7 @@ private:
 #if LIN
 	glWidget*		mGlWidget;
 public:
-	bool			inited;
+	bool			mInited;
 #endif
 
 };

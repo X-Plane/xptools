@@ -8,7 +8,7 @@ XWin::XWin(
 	int		inY,
 	int		inWidth,
 	int		inHeight,
-	QWidget *parent) : QMainWindow(parent)
+	QWidget *parent) : QMainWindow(parent), mInited(false)
 {
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
@@ -24,9 +24,10 @@ XWin::XWin(
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
+	mInited = true;
 }
 
-XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
+XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(false)
 {
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
 	mMouse.x = 0;
@@ -34,6 +35,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent)
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
+	mInited = true;
 }
 
 XWin::~XWin()
@@ -50,8 +52,10 @@ void XWin::closeEvent(QCloseEvent* e)
 
 void XWin::resizeEvent(QResizeEvent* e)
 {
-	Resized(e->size().width(), e->size().height());
-	e->accept();
+	if (mInited) {
+		Resized(e->size().width(), e->size().height());
+		e->accept();
+	}
 }
 
 void XWin::mousePressEvent(QMouseEvent* e)

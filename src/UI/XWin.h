@@ -134,10 +134,10 @@ public:
 
 	// Callbacks
 	virtual	void			Timer(void)=0;
-	virtual	bool			Closed(void)=0;		// return false to stop
-	virtual	void			Resized(int inWidth, int inHeight)=0;
+	virtual	bool			Closed(void);		// return false to stop
+	virtual	void			Resized(int inWidth, int inHeight);
 
-	virtual	void			Update(XContext ctx)=0;
+	virtual	void			Update(XContext ctx);
 	virtual void			Activate(int inActive)=0;
 	virtual	void			ClickDown(int inX, int inY, int inButton)=0;
 	virtual	void			ClickUp(int inX, int inY, int inButton)=0;
@@ -200,9 +200,9 @@ public:
 #if LIN
 	int	mDragging[BUTTON_DIM];
 	POINT	mMouse;
-
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
+	bool mInited;
 
 protected:
 	void closeEvent(QCloseEvent* e);
