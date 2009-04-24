@@ -176,7 +176,7 @@ CFLAGS_GEOTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_GEOTIFF		:= $(M32_SWITCH) -L$(DEFAULT_LIBDIR)
 CONF_GEOTIFF		:= --prefix=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --enable-shared=no
-#CONF_GEOTIFF		+= --without-ld-shared
+CONF_GEOTIFF		+= --without-ld-shared
 CONF_GEOTIFF		+= --with-zip=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-jpeg=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-libtiff=$(DEFAULT_PREFIX)
