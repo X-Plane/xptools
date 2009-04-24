@@ -8,7 +8,9 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
-Version 3.0b1 311/08
+Version 3.1b1 4/24/09
+	- Command-line arguments open files.
+Version 3.0b1 3/11/08
 	- DDS image file support
 	- Key-frame support
 	- LOD preview support
@@ -75,6 +77,9 @@ mouse over the object with the left button moves it; with the right button
 (or control + the left button) rotates it. ÊOn the Macintosh you can also open
 additional ObjView windows by dragging .obj files onto the application icon in 
 the dock. ÊThe mouse wheel zooms like the + and - keys.
+
+Linux/Comand-line users: you can also open files by passing the file paths to
+ObjView on the command line.
 
 One note: ObjView zooms in and out around the mouse, so you must point to the
 part of the object you want to see closer. ÊThis can take some getting used to, 

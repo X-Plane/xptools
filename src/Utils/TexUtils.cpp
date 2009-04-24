@@ -225,8 +225,11 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		// BAS note: for some reason on my WinXP system with GF-FX, if
 		// I do not set these explicitly to linear, I get no drawing at all.
 		// Who knows what default state the card is in. :-(
-		if (inFlags & tex_Linear)
+		if(inFlags & tex_Nearest)
 		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		} else if (inFlags & tex_Linear) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 		} else {
@@ -352,8 +355,11 @@ bool	LoadTextureFromDDS(
 		data += data_len;
 	} while (1);
 
-	if (in_flags & tex_Linear)
+	if(inFlags & tex_Nearest)
 	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	} else if (inFlags & tex_Linear) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (in_flags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 	} else {

@@ -44,7 +44,7 @@ public:
 	virtual	void			DragOver(int x, int y);
 	virtual	void			DragLeave(void);
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int x, int y);
-	virtual	int				KeyPressed(char inKey, long m, long p1, long p2);
+	virtual	int				KeyPressed(uint32_t inKey, long m, long p1, long p2);
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand);
 
 };

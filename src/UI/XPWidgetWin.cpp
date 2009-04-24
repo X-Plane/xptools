@@ -154,7 +154,7 @@ void			XPWidgetWin::ReceiveFiles(const vector<string>& inFiles, int x, int y)
 	XGrindFiles(inFiles, x, y);
 }
 
-int			XPWidgetWin::KeyPressed(char inKey, long msg, long param1, long param2)
+int			XPWidgetWin::KeyPressed(uint32_t inKey, long msg, long param1, long param2)
 {
 	// Conventions: XPLM Returns 1 if key is for X-Plane.
 	// XWin expects 0 if not used.
