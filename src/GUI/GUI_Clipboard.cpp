@@ -32,6 +32,11 @@
 #elif IBM
 #include <Windows.h>
 #endif
+#if LIN
+#include <QApplication>
+#include <QClipboard>
+#include <QString>
+#endif
 
 #if APL
 	typedef	OSType	GUI_CIT;		// Clipboard Internal Type
@@ -315,6 +320,7 @@ bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[]
 
 bool			GUI_GetTextFromClipboard(string& outText)
 {
+#if !LIN
 	GUI_ClipType text = GUI_GetTextClipType();
 	if (!GUI_Clipboard_HasClipType(text)) return false;
 	int sz = GUI_Clipboard_GetSize(text);
@@ -325,25 +331,34 @@ bool			GUI_GetTextFromClipboard(string& outText)
 		outText = string(buf.begin(),buf.begin()+sz);
 	#elif IBM
 		outText = string(buf.begin(),buf.begin()+sz-1);
-	#else
-		#warning implement clipboard getText() for linux
 	#endif
+
+#else
+
+    //TODO:  basic text clipboard implementation for now
+     QClipboard* cb = QApplication::clipboard();
+     outText = string(cb->text().toUtf8());
+#endif
 	return true;
 }
 
 bool			GUI_SetTextToClipboard(const string& inText)
 {
+    #if !LIN
 	GUI_ClipType text = GUI_GetTextClipType();
 	#if APL
 		int sz = inText.size();
 	#elif IBM
 		int sz = inText.size()+1;
-	#else
-		#warning implement clipboard setText() for linux
-        int sz = inText.size();
 	#endif
 	const void * ptr = inText.c_str();
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);
+	#else
+    //TODO:  basic text clipboard implementation for now
+     QClipboard* cb = QApplication::clipboard();
+     QString tex = QString::fromUtf8(inText.c_str());
+      cb->setText(tex);
+	#endif
 }
 
 
