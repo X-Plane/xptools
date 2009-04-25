@@ -61,32 +61,35 @@ void XWin::resizeEvent(QResizeEvent* e)
 
 void XWin::mousePressEvent(QMouseEvent* e)
 {
-	int btn = 0;
+    unsigned int rbtn = e->button();
+    int btn = 0;
+    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+    if (btn==0 || btn > 3)  return;
+    btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-        if (e->button() == Qt::LeftButton)
-		btn = 0;
-        if (e->button() == Qt::MidButton)
-		btn = 2;
-        if (e->button() == Qt::RightButton)
-		btn = 1;
-	mDragging[btn]=1;
-	ClickDown(mMouse.x, mMouse.y, btn);
+
+    if(!mDragging[btn])
+    {
+        mDragging[btn]=1;
+        ClickDown(mMouse.x, mMouse.y, btn);
+    }
 }
 
 void XWin::mouseReleaseEvent(QMouseEvent* e)
 {
-        int btn = 0;
+    unsigned int rbtn = e->button();
+    int btn = 0;
+    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+    if (btn==0 || btn > 3) return;
+    btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-        if (e->button() == Qt::LeftButton)
-		btn = 0;
-        if (e->button() == Qt::MidButton)
-		btn = 2;
-        if (e->button() == Qt::RightButton)
-		btn = 1;
-	mDragging[btn]=0;
-	ClickUp(mMouse.x, mMouse.y, btn);
+
+    if(mDragging[btn])
+			ClickUp(mMouse.x, mMouse.y, btn);
+    mDragging[btn]=0;
+
 }
 
 void XWin::mouseMoveEvent(QMouseEvent* e)

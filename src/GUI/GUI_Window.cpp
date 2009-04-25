@@ -650,6 +650,16 @@ void		GUI_Window::ClickMove(int inX, int inY)
 		default:					SetThemeCursor(kThemeArrowCursor);	break;
 		}
 	#endif
+	#if LIN
+		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
+		switch(cursor) {
+		case gui_Cursor_Resize_H:	this->setCursor(Qt::SplitHCursor);	break;
+		case gui_Cursor_Resize_V:	this->setCursor(Qt::SplitVCursor);	break;
+		case gui_Cursor_None:
+		case gui_Cursor_Arrow:
+		default:					this->setCursor(Qt::ArrowCursor);	break;
+		}
+	#endif
 }
 
 void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
