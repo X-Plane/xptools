@@ -1017,9 +1017,8 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	}
 #endif
 #if LIN
-	virtualCode = inMsg;
 	charCode = inKey;
-	Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
+        Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
 
 	if (modstate & Qt::AltModifier)
 		flags |= gui_OptionAltFlag;
@@ -1028,7 +1027,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	if (modstate & Qt::ControlModifier)
 		flags |= gui_ControlFlag;
 
-	switch (virtualCode)
+	switch (inMsg)
 	{
 		case Qt::Key_Enter:
 		case Qt::Key_Return:	charCode = GUI_KEY_RETURN;	break;
@@ -1040,11 +1039,30 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case Qt::Key_Right:	charCode = GUI_KEY_RIGHT;	break;
 		case Qt::Key_Down:	charCode = GUI_KEY_DOWN;	break;
 	}
+    // are the same as virtualkey
+	if ((0x2F < inMsg) && (inMsg < 0x5b))
+        virtualCode=inMsg;
+    else
+	{
+	    //only currently used
+	    #warning  using other virtualCodes breaking linux
+	    switch(inMsg)
+        {
+          case Qt::Key_Enter:
+          case Qt::Key_Return:  virtualCode = GUI_VK_RETURN;break;
+          case Qt::Key_PageUp:  virtualCode = GUI_VK_PRIOR; break;
+          case Qt::Key_PageDown:virtualCode = GUI_VK_NEXT;  break;
+          case Qt::Key_End:     virtualCode = GUI_VK_END;   break;
+          case Qt::Key_Home:    virtualCode = GUI_VK_HOME;  break;
+          case Qt::Key_Left :   virtualCode = GUI_VK_LEFT;  break;
+          case Qt::Key_Right:   virtualCode = GUI_VK_RIGHT; break;
+        }
+	}
+
 #endif
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
 		return 1;
-
 	if (this->DispatchKeyPress(charCode, virtualCode, flags)) return 1;
 
 	return 0;
