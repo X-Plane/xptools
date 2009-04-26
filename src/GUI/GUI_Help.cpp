@@ -25,6 +25,10 @@
 #if APL
 //	#include <Carbon/Carbon.h>
 #endif
+#if LIN
+#include <QDesktopServices>
+#include <QUrl>
+#endif
 
 void	GUI_LaunchURL(const char * url)
 {
@@ -46,6 +50,6 @@ void	GUI_LaunchURL(const char * url)
 		ShellExecute(NULL,"open",url,NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
-		#warning implement LaunchUrl() for linux
-	#endif
+     	QDesktopServices::openUrl(QString::fromUtf8(url));
+    #endif
 }
