@@ -1044,8 +1044,6 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
         virtualCode=inMsg;
     else
 	{
-	    //only currently used
-	    #warning  using other virtualCodes breaking linux
 	    switch(inMsg)
         {
           case Qt::Key_Enter:
@@ -1056,6 +1054,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
           case Qt::Key_Home:    virtualCode = GUI_VK_HOME;  break;
           case Qt::Key_Left :   virtualCode = GUI_VK_LEFT;  break;
           case Qt::Key_Right:   virtualCode = GUI_VK_RIGHT; break;
+	  default: virtualCode = 0;
         }
 	}
 
