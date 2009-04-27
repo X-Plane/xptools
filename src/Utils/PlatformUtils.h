@@ -49,10 +49,6 @@
 	#error PLATFORM NOT DEFINED
 #endif
 
-#if LIN
-	#include <X11/Xlib.h>
-#endif
-
 /*
  * This routine returns a fully qualified path to the application.
  *
