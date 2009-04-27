@@ -40,27 +40,27 @@ libs:
 	@$(MAKE) -s -C "./libs" cross=$(cross) gitlibs=$(gitlibs) all
 
 ObjView: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 WED: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
-DSFTool: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+DSFTool:
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 DDSTool: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ObjConverter: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 MeshTool: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ifndef PLAT_LINUX
@@ -70,11 +70,11 @@ XGrinder: libs
 endif
 
 RenderFarm: libs
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 ac3d:
-	@$(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
+	@export LD_RUN_PATH='$${ORIGIN}:$${ORIGIN}/lib' && $(MAKE) conf=$(conf) cross=$(cross) BUILDDIR=$(TARGETDIR) \
 	TARGET=$(TARGETDIR)/$@ -s -f makerules/global/toplevel.mk
 
 clean:
