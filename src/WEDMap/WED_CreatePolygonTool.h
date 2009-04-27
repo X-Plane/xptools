@@ -74,6 +74,8 @@ protected:
 		WED_PropDoubleText				mHeight;
 		WED_PropDoubleText				mDensity;
 		WED_PropDoubleText				mSpacing;
+		
+		WED_PropBoolText				mUVMap;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

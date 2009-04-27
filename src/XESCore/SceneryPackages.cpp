@@ -22,7 +22,7 @@
  */
 
 #include "SceneryPackages.h"
-#include "XFileTwiddle.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
@@ -30,6 +30,7 @@
 #include "EnumSystem.h"
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
+#include <errno.h>
 
 static void	only_dir(string& iopath)
 {
@@ -63,7 +64,7 @@ static void local_path(string& iopath)
 }
 
 
-void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
+int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 {
 	int 	n;
 	string	lib_path, dir_path;
@@ -72,11 +73,21 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	FILE *	ter;
 	FILE *	pol;
 	int image_ctr = 0, border_ctr = 0;
-
-	MakeDirExist(package.c_str());
+	int		e;
+	e = FILE_make_dir_exist(package.c_str());
+	if(e != 0)
+	{
+		fprintf(stderr,"Could not make directory %s: %d.\n",package.c_str(), e); 
+		return e;
+	}
 
 	lib_path = package + "library.txt";
 	lib = fopen(lib_path.c_str(), "w");
+	if(lib == NULL)
+	{
+		fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
+		return errno;
+	}
 
 	fprintf(lib,"%c" CRLF "800" CRLF "LIBRARY" CRLF CRLF, APL ? 'A' : 'I');
 
@@ -111,9 +122,18 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		local_path(lib_path);
 		dir_path = lib_path;
 		only_dir(dir_path);
-		MakeDirExist(dir_path.c_str());
-
+		e = FILE_make_dir_exist(dir_path.c_str());		
+		if(e != 0)
+		{
+			fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+			return e;
+		}
 		ter = fopen(lib_path.c_str(), "w");
+		if(ter == NULL)
+		{
+			fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
+			return errno;
+		}
 		fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
 		fprintf(ter, "BASE_TEX %s" CRLF, gNaturalTerrainTable[n].base_tex.c_str());
 		if (!gNaturalTerrainTable[n].lit_tex.empty())
@@ -187,9 +207,19 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		local_path(lib_path);
 		dir_path = lib_path;
 		only_dir(dir_path);
-		MakeDirExist(dir_path.c_str());
+		e = FILE_make_dir_exist(dir_path.c_str());
+		if(e != 0)
+		{
+			fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+			return e;
+		}
 
 		pol = fopen(lib_path.c_str(), "w");
+		if(pol == NULL)
+		{
+			fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
+			return errno;
+		}
 		fprintf(pol, "%c" CRLF "850" CRLF "DRAPED_POLYGON" CRLF CRLF, APL ? 'A' : 'I');
 		fprintf(pol, "TEXTURE %s" CRLF, gNaturalTerrainTable[p->second].base_tex.c_str());
 		if (!gNaturalTerrainTable[p->second].lit_tex.empty())
@@ -232,12 +262,15 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 					path[n] = DIR_CHAR;
 			}
 			string end_dir = path.substr(0, path.rfind(DIR_CHAR)+1);
-			MakeDirExist(end_dir.c_str());
+			e = FILE_make_dir_exist(end_dir.c_str());
+			if(e != 0)
+			{
+				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+				return e;
+			}
 
-			FILE * exists = fopen(path.c_str(), "rb");
-			if (exists)
-				fclose(exists);
-			else {
+			if (!FILE_exists(path.c_str()))
+			{
 				++image_ctr;
 				WriteBitmapToPNG(&image_data, path.c_str(), NULL, 0);
 			}
@@ -254,12 +287,15 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 					path[n] = DIR_CHAR;
 			}
 			string end_dir = path.substr(0, path.rfind(DIR_CHAR)+1);
-			MakeDirExist(end_dir.c_str());
+			e = FILE_make_dir_exist(end_dir.c_str());
+			if(e != 0)
+			{
+				fprintf(stderr,"Could not make directory %s: %d.\n",end_dir.c_str(), e); 
+				return e;
+			}
 
-			FILE * exists = fopen(path.c_str(), "rb");
-			if (exists)
-				fclose(exists);
-			else {
+			if(!FILE_exists(path.c_str()))
+			{
 				++border_ctr;
 				WriteBitmapToPNG(&border, path.c_str(), NULL, 0);
 			}
@@ -270,9 +306,10 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		DestroyBitmap(&border);
 
 //		char buf[1024];
-		printf("Made %d images and %d borders that were missing.", image_ctr, border_ctr);
+		printf("Made %d images and %d borders that were missing.\n", image_ctr, border_ctr);
 //		DoUserAlert(buf);
 	}
+	return 0;
 }
 
 void	CreatePackageForDSF(const char * inPackage, int lon, int lat, char * outDSFDestination)
@@ -280,7 +317,7 @@ void	CreatePackageForDSF(const char * inPackage, int lon, int lat, char * outDSF
 	sprintf(outDSFDestination, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR,
 					inPackage, latlon_bucket(lat), latlon_bucket(lon));
 
-	MakeDirExist(outDSFDestination);
+	FILE_make_dir_exist(outDSFDestination);
 	sprintf(outDSFDestination, "%sEarth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf",
 					inPackage, latlon_bucket(lat), latlon_bucket(lon), lat, lon);
 }

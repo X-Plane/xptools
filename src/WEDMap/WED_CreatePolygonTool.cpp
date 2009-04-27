@@ -77,7 +77,9 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mResource(tool > create_Hole ? this : NULL, "Resource", "", "", ""),
 		mHeight(tool == create_Facade ? this : NULL, "Height", "", "", 10.0, 4, 2),
 		mDensity(tool == create_Forest ? this : NULL, "Density", "", "", 1.0, 3, 2),
-		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1)
+		mSpacing(tool == create_String ? this : NULL, "Spacing", "", "", 5.0, 3, 1),
+		
+		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map", "", "", 0)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -114,12 +116,15 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_texed = 0;
 	if(mType == create_Polygon)
 	{
+		is_texed = mUVMap.value;
+		/*
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 		pol_info_t i;
 		if(rmgr->GetPol(mResource.value, i))
 		{
 			is_texed = !i.wrap;
 		}
+		*/
 	}
 	
 	if(mType == create_Hole)

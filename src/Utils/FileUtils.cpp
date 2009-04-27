@@ -108,6 +108,7 @@ int FILE_make_dir_exist(const char * in_dir)
 	if (!FILE_exists(in_dir))
 	{
 		const char * dc = in_dir + strlen(in_dir) - 1;
+		if(dc > in_dir && *dc == DIR_CHAR) --dc;			// Dir ends in trailing /?  Better pop it off.
 		while(dc > in_dir && *dc != DIR_CHAR) --dc;
 		if(dc > in_dir){
 		string parent(in_dir, dc);

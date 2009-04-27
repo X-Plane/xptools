@@ -30,6 +30,7 @@
 #include "SceneryPackages.h"
 #include "DEMTables.h"
 #include <md5.h>
+#include "SceneryPackages.h"
 
 #include "MapDefs.h"
 #include "GISUtils.h"
@@ -146,7 +147,7 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 		fputc(rel_c, im);
 	}
 	fclose(im);
-	return 1;
+	return 0;
 }
 
 int KillBadDSF(const vector<const char *>& args)
@@ -167,7 +168,7 @@ int DoShowCoverage(const vector<const char *>& args)
 	if (fi == NULL)
 	{
 		fprintf(stderr, "Could not open %s\n", args[0]);
-		return 0;
+		return 1;
 	}
 	for (int y = gMapSouth; y < gMapNorth; ++y)
 	for (int x = gMapWest; x < gMapEast; ++x)
@@ -176,7 +177,7 @@ int DoShowCoverage(const vector<const char *>& args)
 		if (c != 0) printf("Includes %+03d%+04d\n", y, x);
 	}
 	fclose(fi);
-	return 1;
+	return 0;
 }
 
 int DoMakeCoverage(const vector<const char *>& args)
@@ -188,7 +189,7 @@ int DoMakeCoverage(const vector<const char *>& args)
 	const char * fname2 = args[3];
 	FILE * fi = fopen(fname, "wb");
 	FILE * fi2 = (strcmp(fname2, "-")) ? fopen(fname2, "w") : NULL;
-	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 0; }
+	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 1; }
 	else {
 		printf("Computing coverage for %d,%d -> %d,%d at path '%s', extension '%s'\n", gMapWest, gMapSouth, gMapEast, gMapNorth,dir,ext);
 		int c = 0;
@@ -229,16 +230,19 @@ int DoMakeCoverage(const vector<const char *>& args)
 		if (fi2) fclose(fi2);
 		printf("Found %d files.\n", c);
 	}
-	return 1;
+	return 0;
 }
 
 
-
-
-
-
-
-
+#define make_terrain_package_HELP \
+"This command creates a scenery package with the library, ter, pol and png files based on the\n"\
+"current spreadsheet.  Pass in one argument, the directy path of the scenery package, with\n"\
+"trailing slash.  PNG files are only created if they do not already exist.  All ter files are\n"\
+"updated/rewritten, as is the library.\n"
+int DoMakeTerrainPackage(const vector<const char *>& args)
+{
+	return CreateTerrainPackage(args[0],true);
+}
 
 
 int DoDumpForests(const vector<const char *>& args)
@@ -265,6 +269,7 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
 { "-forest_types",	0,	0, DoDumpForests,			"Output types of forests from the spreadsaheet.", "" },
+{ "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
 { 0, 0, 0, 0, 0, 0 }
 };
 
