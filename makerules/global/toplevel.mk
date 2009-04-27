@@ -34,6 +34,12 @@ ifeq ($(cross), mingw64)
 	ARCHITECTURE	:= x86_64
 endif
 
+ifeq ($(cross), i686-linux)
+	MULTI_SUFFIX	:= 32
+	CROSSPREFIX	:= i686-glibc-linux-gnu-
+	ARCHITECTURE	:= i686
+endif
+
 ifeq ($(cross), m32)
 ifeq ($(ARCHITECTURE), x86_64)
 	MULTI_SUFFIX	:= 32
