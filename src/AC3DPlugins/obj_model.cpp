@@ -239,6 +239,8 @@ INT_PROP(draw_disable,draw_disable)
 INT_PROP(wall, wall)
 INT_PROP(mod_lit,mod_lit)
 STR_PROP(lit_dataref, lit_dataref)
+FLT_PROP(lit_v1,lit_v1);
+FLT_PROP(lit_v2,lit_v2);
 
 STR_PROP(light_named,light_name)
 FLT_PROP(light_red,light_red)

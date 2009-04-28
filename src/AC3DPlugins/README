@@ -12,6 +12,9 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
+Version 3.2b2
+	- ATTR_light_level syntax adjusted fto stay in sync with X-Plane.
+	- Panel region export fixed.
 Version 3.2b1	
 	- Panel_preview textures are supported
 	- Plugin will find the panel texture in a much wider range of locations,

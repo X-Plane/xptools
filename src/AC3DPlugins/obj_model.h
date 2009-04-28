@@ -54,6 +54,8 @@ void		OBJ_set_blend(ACObject * obj, float cutoff);	// -1 for smooth
 void		OBJ_set_poly_os(ACObject * obj, float offset);
 void		OBJ_set_use_materials(ACObject * obj, int use);
 void		OBJ_set_lit_dataref(ACObject * obj, const char * dataref);
+void		OBJ_set_lit_v1(ACObject * obj, float v1);
+void		OBJ_set_lit_v2(ACObject * obj, float v2);
 void		OBJ_set_draw_disable(ACObject * obj, int dis);
 void		OBJ_set_wall(ACObject * obj, int wall);
 void		OBJ_set_mod_lit(ACObject * obj, int mod_lit);
@@ -121,6 +123,8 @@ float			OBJ_get_blend(ACObject * obj);
 float			OBJ_get_poly_os(ACObject * obj);
 int				OBJ_get_use_materials(ACObject * obj);
 const char *	OBJ_get_lit_dataref(ACObject * obj, char * buf);
+float			OBJ_get_lit_v1(ACObject * obj);
+float			OBJ_get_lit_v2(ACObject * obj);
 int				OBJ_get_draw_disable(ACObject * obj);
 int				OBJ_get_wall(ACObject * obj);
 int				OBJ_get_mod_lit(ACObject * obj);

@@ -971,6 +971,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_light_level",false))
 		{
 			cmd.cmd = attr_Light_Level;
+			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,false);
+			cmd.params[1] = TXT_MAP_flt_scan(cur_ptr,end_ptr,false);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
@@ -1229,7 +1231,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 				break;
 
 			case attr_Light_Level:
-				fprintf(fi,"ATTR_light_level %s" CRLF, cmd->name.c_str());
+				fprintf(fi,"ATTR_light_level %f %f %s" CRLF, cmd->params[0], cmd->params[1],cmd->name.c_str());
 				break;
 			default:
 				{

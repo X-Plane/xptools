@@ -45,7 +45,9 @@ using std::string;
  	void	SetAttribute(int inAttribute);
  	void	SetAttribute1(int inAttribute, float v);
  	void	SetAttribute3(int inAttribute, float v[3]);
+ 	void	SetAttributeNamed(int inAttribute, const char * str);
  	void	SetAttribute1Named(int inAttribute, float v, const char * str);
+ 	void	SetAttribute2Named(int inAttribute, float v1, float v2, const char * str);
 
  	// X Y Z nX ny nZ S T repeated 3 times
  	void	AccumTri(float inTri[24]);
@@ -106,6 +108,7 @@ using std::string;
 
 	manip_data	manip;				manip_data	o_manip;
 	string		light_level;		string	o_light_level;
+	float		light_level_v1,		light_level_v2;
 	int			draw_disable;		int		o_draw_disable;
 	int			wall;				int		o_wall;
  	string		hard;				string	o_hard;

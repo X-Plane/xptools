@@ -101,6 +101,8 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_INT(anim_keyframe_count, get_sel_single_obj,OBJ_set_anim_keyframe_count,OBJ_get_anim_keyframe_count) \
 	SIMPLE_PROPERTY_INT(use_materials,get_sel_single_obj,OBJ_set_use_materials,OBJ_get_use_materials) \
 	SIMPLE_PROPERTY_STR(lit_dataref,get_sel_single_obj,OBJ_set_lit_dataref, OBJ_get_lit_dataref,"","") \
+	SIMPLE_PROPERTY_FLT(lit_v1,get_sel_single_obj,OBJ_set_lit_v1,OBJ_get_lit_v1) \
+	SIMPLE_PROPERTY_FLT(lit_v2,get_sel_single_obj,OBJ_set_lit_v2,OBJ_get_lit_v2) \
 	SIMPLE_PROPERTY_INT(mod_lit,get_sel_single_obj,OBJ_set_mod_lit,OBJ_get_mod_lit) \
 	SIMPLE_PROPERTY_INT(wall,get_sel_single_obj,OBJ_set_wall,OBJ_get_wall) \
 	SIMPLE_PROPERTY_INT(draw_disable,get_sel_single_obj,OBJ_set_draw_disable,OBJ_get_draw_disable) \

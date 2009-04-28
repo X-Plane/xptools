@@ -247,13 +247,9 @@ void	XObjBuilder::SetAttribute1(int attr, float v)
 	}
 }
 
-void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
+void XObjBuilder::SetAttributeNamed(int attr, const char * s)
 {
-	if (attr == attr_Light_Level)
-	{
-		light_level = s;
-	}
-	else if (attr == attr_Hard)
+	if (attr == attr_Hard)
 	{
 		hard = s ? s : "";
 		deck=0;
@@ -263,7 +259,19 @@ void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
 		hard = s ? s : "";
 		deck=1;
 	}
-	else if (attr == attr_Layer_Group)
+	else
+	{
+		AssureLOD();
+		lod->cmds.push_back(XObjCmd8());
+		lod->cmds.back().cmd = attr;
+		lod->cmds.back().name = s;
+	}
+}
+
+
+void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
+{
+	if (attr == attr_Layer_Group)
 	{
 		layer_group = s;
 		layer_group_offset = v;
@@ -277,6 +285,34 @@ void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
 		lod->cmds.back().params[0] = v;
 	}
 }
+
+
+
+void XObjBuilder::SetAttribute2Named(int attr, float v1, float v2, const char * s)
+{
+	if (attr == attr_Light_Level)
+	{	
+		light_level = s;
+		// Ben says: if we go from 0 1 dref to 0 2 dref, we would normally NOT get a light update on command state sync.
+		// So we need to set the old light level name to something else.  The empty string is NOT a good choice becasue if
+		// we from dref 1 2 to dref2 1 2 to none without update, the "empty" string in none will match our final state of
+		// none and we will output no attributes, leaving dref 1 2 in place.
+		if(v1 != light_level_v1 || v2 != light_level_v2)
+			o_light_level = "<force update>";
+		light_level_v1 = v1;
+		light_level_v2 = v2;
+	}
+	else
+	{
+		AssureLOD();
+		lod->cmds.push_back(XObjCmd8());
+		lod->cmds.back().cmd = attr;
+		lod->cmds.back().name = s;
+		lod->cmds.back().params[0] = v1;
+		lod->cmds.back().params[1] = v2;
+	}
+}
+
 
 void	XObjBuilder::SetAttribute3(int attr, float v[3])
 {
@@ -617,6 +653,8 @@ void XObjBuilder::SyncAttrs(void)
 		o_light_level = light_level;
 		lod->cmds.push_back(XObjCmd8());
 		lod->cmds.back().cmd = light_level.empty() ? attr_Light_Level_Reset : attr_Light_Level;
+		lod->cmds.back().params[0] = light_level_v1;
+		lod->cmds.back().params[1] = light_level_v2;
 		lod->cmds.back().name = light_level;
 	}
 

@@ -394,7 +394,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			else if (strcmp(buf,"object")==0)
 				builder->SetAttribute(deck ? attr_Hard_Deck : attr_Hard);
 			else
-				builder->SetAttribute1Named(deck ? attr_Hard_Deck : attr_Hard, 0.0, buf);
+				builder->SetAttributeNamed(deck ? attr_Hard_Deck : attr_Hard, buf);
 
 			now_blend = OBJ_get_blend(obj);
 			if (now_blend <= 0.0)
@@ -405,7 +405,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			if(OBJ_get_mod_lit(obj))
 			{
 				OBJ_get_lit_dataref(obj, buf);
-				builder->SetAttribute1Named(attr_Light_Level, 0.0f, buf);
+				builder->SetAttribute2Named(attr_Light_Level, OBJ_get_lit_v1(obj), OBJ_get_lit_v2(obj), buf);
 			} else
 				builder->SetAttribute(attr_Light_Level_Reset);
 

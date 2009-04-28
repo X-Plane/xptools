@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"9.04"
+#define XPT_PACKAGE_VER		"n/a"
 
 #define DDSTOOL_VER		10000
 #define DDSTOOL_EXTRAVER	"-b1"
@@ -16,7 +16,7 @@
 #define OBJCONVERT_VER		30000
 #define OBJCONVERT_EXTRAVER	"-b1"
 
-#define MESHTOOL_VER		10000
+#define MESHTOOL_VER		20000
 #define MESHTOOL_EXTRAVER	"-b1"
 
 #define AC3DPLUGIN_VER		30200

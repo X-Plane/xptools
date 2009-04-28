@@ -840,6 +840,8 @@ proc xplane_inspector {} {
 				checkbutton $container.obj.none.mod_lit -text "Dynamic LIT" -variable xplane_mod_lit$idx -command "xplane_obj_sync_all"
 				pack $container.obj.none.mod_lit
 				build_listbox_dref $container.obj.none.dref_list $container.obj.none.scroll xplane_lit_dataref$idx
+				make_labeled_entry $container.obj.none "v1" xplane_lit_v1$idx 10
+				make_labeled_entry $container.obj.none "v2" xplane_lit_v2$idx 10				
 
 				labelframe $container.obj.none.manip -text "Manipulators:"					
 

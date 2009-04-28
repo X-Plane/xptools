@@ -266,6 +266,7 @@ ACObject *	do_obj8_load(char *filename)
     	float	offset = 0;
 
 		string	light_level;
+		float	light_v1 = 0.0f, light_v2 = 1.0f;
 		int		draw_disable = 0;
 		int		wall = 0;
 
@@ -300,6 +301,8 @@ ACObject *	do_obj8_load(char *filename)
 					else {
 						OBJ_set_mod_lit(stuff_obj,1);
 						OBJ_set_lit_dataref(stuff_obj,light_level.c_str());
+						OBJ_set_lit_v1(stuff_obj, light_v1);
+						OBJ_set_lit_v2(stuff_obj, light_v2);
 					}
 					OBJ_set_wall(stuff_obj,wall);
 					OBJ_set_draw_disable(stuff_obj,draw_disable);
@@ -517,10 +520,16 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case attr_Light_Level:
 				if(light_level != cmd->name) stuff_obj = NULL;
+				if(light_v1 != cmd->params[0]) stuff_obj = NULL;
+				if(light_v2 != cmd->params[1]) stuff_obj = NULL;
+				light_v1 = cmd->params[0];
+				light_v2 = cmd->params[1];
 				light_level = cmd->name;
 				break;
 			case attr_Light_Level_Reset:
 				if(!light_level.empty()) stuff_obj = NULL;
+				light_v1 = 0.0f;
+				light_v2 = 1.0f;
 				light_level.clear();
 				break;
 			case attr_Layer_Group:
