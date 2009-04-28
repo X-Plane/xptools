@@ -194,7 +194,7 @@ endif
 ####################################
 
 ifeq ($(conf), release_opt)
-	CFLAGS		:= $(CFLAGS) -O2 -g
+	CFLAGS		:= $(CFLAGS) -O3 -fexpensive-optimizations -fomit-frame-pointer -funroll-loops
 	CXXFLAGS	:= $(CXXFLAGS) -O2 -g
 	DEFINES		:= $(DEFINES) -DDEV=0
 else ifeq ($(conf), release)
@@ -280,17 +280,17 @@ endif
 # debug information
 
 ifneq ($(TYPE), LIBSTATIC)
-#TODO: check how to detach mach-o debug info
+ifneq ($(conf), release_opt)
+
 ifndef PLAT_DARWIN
 	@$(OBJCOPY) --only-keep-debug $(@) $(@).debug
-endif
-	$(STRIP) $(STRIPFLAGS) $(@)
-ifndef PLAT_DARWIN
 	@cd  $(dir $(@)) && $(OBJCOPY) --add-gnu-debuglink=$(notdir $(@)).debug $(notdir $(@)) && cd $(WD)
 	@chmod 0644 $(@).debug
 endif
+
 endif
-#TODO: add Darwin, at least strip binaries
+	$(STRIP) $(STRIPFLAGS) $(@)
+endif
 	@$(print_finished)
 
 # basic rules

@@ -181,7 +181,7 @@ char** Initializer::backtrace_symbols_bfd(void* const* buffer, int size)
 			ret_buf = process_file(match.file, &addr, 1);
 		else {
 			ret_buf = process_file((const char*)m_programname, &addr, 1);
-			if (strstr(ret_buf[0], "??() ??:0"))
+			if (strstr(ret_buf[0], "?\?() ??:0"))
 				ret_buf = process_file(g_debugfile, &addr, 1);
 		}
 		locations[x] = ret_buf;
