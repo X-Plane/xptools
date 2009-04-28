@@ -185,7 +185,7 @@ endif
 ifeq ($(TYPE), LIBSTATIC)
 	TYPE_STATIC	:= Yes
 endif
-ifeq ($(TYPE), LIBSTATIC)
+ifeq ($(TYPE), EXECUTABLE)
 	TYPE_EXECUTABLE	:= Yes
 endif
 

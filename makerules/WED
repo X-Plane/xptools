@@ -62,7 +62,7 @@ ifdef PLAT_LINUX
 FORCEREBUILD_SUFFIX := _wed
 
 SOURCES := ./src/linuxinit/initializer.cpp
-SOURCES += ./src/linuxinit/minigtk.cpp
+#SOURCES += ./src/linuxinit/minigtk.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp

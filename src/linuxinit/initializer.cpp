@@ -36,6 +36,7 @@ Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 	m_init = true;
 	m_programname = *argv[0];
 	setup_signalhandlers();
+#if 0
 	if (loadgtk)
 	{
 		try
@@ -48,11 +49,12 @@ Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 			::exit(1);
 		}
 	}
+#endif
 }
 
 Initializer::~Initializer()
 {
-	MiniGtk::_cleanup();
+//	MiniGtk::_cleanup();
 }
 
 const char* const Initializer::programname()
