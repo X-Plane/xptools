@@ -615,7 +615,7 @@
 		D6A266FE0F992A1700E1E754 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D6A266FF0F992A1B00E1E754 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A266940F99274300E1E754 /* XPlaneSupport.tcl */; };
-		D6A2670C0F992BD000E1E754 /* XPExporterMac.p in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A2665E0F99266D00E1E754 /* XPExporterMac.p */; };
+		D6A2670C0F992BD000E1E754 /* XPlaneSupportMac.p in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */; };
 		D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143A0F126C930006E096 /* WED_TCE.cpp */; };
 		D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */; };
 		D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */; };
@@ -912,7 +912,7 @@
 			dstSubfolderSpec = 0;
 			files = (
 				D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */,
-				D6A2670C0F992BD000E1E754 /* XPExporterMac.p in CopyFiles */,
+				D6A2670C0F992BD000E1E754 /* XPlaneSupportMac.p in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1294,7 +1294,7 @@
 		D6A1860D0BA9A59C00BBCD0C /* tabs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tabs.png; sourceTree = "<group>"; };
 		D6A186360BA9B28900BBCD0C /* GUI_TabControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabControl.h; sourceTree = "<group>"; };
 		D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TabControl.cpp; sourceTree = "<group>"; };
-		D6A2665E0F99266D00E1E754 /* XPExporterMac.p */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = XPExporterMac.p; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = XPlaneSupportMac.p; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6A266640F99274300E1E754 /* ac3d_prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac3d_prefix.h; sourceTree = "<group>"; };
 		D6A266650F99274300E1E754 /* ac_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ac_utils.cpp; sourceTree = "<group>"; };
 		D6A266660F99274300E1E754 /* ac_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ac_utils.h; sourceTree = "<group>"; };
@@ -1980,7 +1980,7 @@
 				D6ED37490B67964D00D5484E /* WED.app */,
 				D6C579D60C7E3C7B00FCB4C1 /* DDSTool */,
 				D607342C0D197A1100E08F61 /* MeshTool */,
-				D6A2665E0F99266D00E1E754 /* XPExporterMac.p */,
+				D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3491,7 +3491,7 @@
 			);
 			name = ac3d;
 			productName = ac3d;
-			productReference = D6A2665E0F99266D00E1E754 /* XPExporterMac.p */;
+			productReference = D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */ = {
@@ -5086,7 +5086,7 @@
 					libs/local/lib/libpng.a,
 					"$(inherited)",
 				);
-				PRODUCT_NAME = XPExporterMac;
+				PRODUCT_NAME = XPlaneSupportMac;
 			};
 			name = Debug;
 		};
@@ -5116,7 +5116,7 @@
 					"$(inherited)",
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = XPExporterMac;
+				PRODUCT_NAME = XPlaneSupportMac;
 			};
 			name = Phone;
 		};
@@ -5146,7 +5146,7 @@
 					"$(inherited)",
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = XPExporterMac;
+				PRODUCT_NAME = XPlaneSupportMac;
 			};
 			name = DebugOpt;
 		};
@@ -5177,7 +5177,7 @@
 					"$(inherited)",
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = XPExporterMac;
+				PRODUCT_NAME = XPlaneSupportMac;
 			};
 			name = Release;
 		};
