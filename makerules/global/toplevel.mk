@@ -195,7 +195,7 @@ endif
 
 ifeq ($(conf), release_opt)
 	CFLAGS		:= $(CFLAGS) -O3 -fexpensive-optimizations -fomit-frame-pointer -funroll-loops
-	CXXFLAGS	:= $(CXXFLAGS) -O2 -g
+	CXXFLAGS	:= $(CXXFLAGS) -O3 -fexpensive-optimizations -fomit-frame-pointer -funroll-loops
 	DEFINES		:= $(DEFINES) -DDEV=0
 else ifeq ($(conf), release)
 	CFLAGS		:= $(CFLAGS) -O0 -g
@@ -208,6 +208,10 @@ else ifeq ($(conf), debug_opt)
 else ifeq ($(conf), debug)
 	CFLAGS		:= $(CFLAGS) -O0 -g
 	CXXFLAGS	:= $(CXXFLAGS) -O0 -g
+	DEFINES		:= $(DEFINES) -DDEV=1
+else ifeq ($(conf), release_test)
+	CFLAGS		:= $(CFLAGS) -O3 -fexpensive-optimizations -fomit-frame-pointer -funroll-loops
+	CXXFLAGS	:= $(CXXFLAGS) -O3 -fexpensive-optimizations -fomit-frame-pointer -funroll-loops
 	DEFINES		:= $(DEFINES) -DDEV=1
 # default to debug configuration
 else
