@@ -20,6 +20,8 @@ volatile const char* Initializer::m_filename = 0;
 volatile const char* Initializer::m_functionname = 0;
 volatile unsigned int Initializer::m_line = 0;
 volatile int Initializer::m_found = 0;
+static char g_debugfile[8192] = {};
+static char g_programname[8192] = {};
 
 Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 {
@@ -34,7 +36,10 @@ Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 		::exit(1);
 	}
 	m_init = true;
-	m_programname = *argv[0];
+	strcpy(g_programname, *argv[0]);
+	m_programname = g_programname;
+	strcpy(g_debugfile, *argv[0]);
+	strcat(g_debugfile, ".debug");
 	setup_signalhandlers();
 #if 0
 	if (loadgtk)
@@ -174,8 +179,11 @@ char** Initializer::backtrace_symbols_bfd(void* const* buffer, int size)
 		addr = (bfd_vma)((intptr_t)buffer[x] - (intptr_t)match.base);
 		if (match.file && strlen(match.file))
 			ret_buf = process_file(match.file, &addr, 1);
-		else
+		else {
 			ret_buf = process_file((const char*)m_programname, &addr, 1);
+			if (strstr(ret_buf[0], "??() ??:0"))
+				ret_buf = process_file(g_debugfile, &addr, 1);
+		}
 		locations[x] = ret_buf;
 		total += strlen(ret_buf[0]) + 1;
 	}
@@ -301,8 +309,8 @@ char** Initializer::translate_addresses_buf(bfd* abfd, bfd_vma* addr, int naddr)
 		m_pc = addr[naddr-1];
 
 		m_found = 0;
-		bfd_map_over_sections(abfd, find_address_in_section, (PTR) NULL);
 
+		bfd_map_over_sections(abfd, find_address_in_section, (PTR) NULL);
 		if (!m_found) {
 			total += snprintf(buf, len, "[0x%llx] \?\?() \?\?:0",(long long unsigned int) addr[naddr-1]) + 1;
 		} else {
