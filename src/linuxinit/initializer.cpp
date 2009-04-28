@@ -268,7 +268,8 @@ void Initializer::find_address_in_section(bfd* abfd, asection* section, void* da
 	size = bfd_section_size(abfd, section);
 	if (m_pc >= vma + size)
 		return;
-	m_found = bfd_find_nearest_line(abfd, section, (bfd_symbol**)m_syms, m_pc - vma, (const char**)&m_filename, (const char**)&m_functionname, (unsigned int*)&m_line);
+	if (m_syms)
+		m_found = bfd_find_nearest_line(abfd, section, (bfd_symbol**)m_syms, m_pc - vma, (const char**)&m_filename, (const char**)&m_functionname, (unsigned int*)&m_line);
 }
 
 char** Initializer::translate_addresses_buf(bfd* abfd, bfd_vma* addr, int naddr)
