@@ -16,6 +16,7 @@ LDFLAGS	:= -static-libgcc
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
+LDFLAGS		:= -static-libgcc -static -Wl,-O2
 REAL_TARGET	:= $(dir $(TARGET))/DSFTool.exe
 DEFINES		+= -DMINGW_BUILD=1
 endif #PLAT_MINGW

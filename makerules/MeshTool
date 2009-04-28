@@ -16,6 +16,7 @@ LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
+LDFLAGS		:= -static-libgcc -static -Wl,-O2
 DEFINES		+= -DMINGW_BUILD=1
 REAL_TARGET	:= $(dir $(TARGET))/MeshTool.exe
 endif #PLAT_MINGW

@@ -10,6 +10,7 @@ ifdef PLAT_MINGW
 DEFINES		:= -DDIME_NOT_DLL -DUNDER_CE -DWINDOWS -DMINGW_BUILD=1
 LIBPATHS	+= -L./SDK/ac3d
 LIBS		:= -lac3d -lopengl32
+LDFLAGS		:= -static-libgcc -Wl,-O2 -Wl,-Bstatic
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
 endif #PLAT_MINGW
 

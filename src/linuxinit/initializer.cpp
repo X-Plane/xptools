@@ -126,7 +126,7 @@ void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
 void Initializer::stack_trace(void)
 {
 	string logfile = ::getenv("HOME");
-	logfile += "/.wedtrace";
+	logfile += "/.xpt_trace";
 	FILE* logf = fopen(logfile.c_str(), "ab");
 	::fprintf(::stderr, "--stack trace start--\n\n");
 	if (logf) fprintf(logf, "--stack trace start--\n\n");
