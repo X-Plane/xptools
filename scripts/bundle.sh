@@ -29,10 +29,16 @@ case "$1" in
 ac3d)
 	out_file="ac3d_plugin_"$2"_"$3".zip"
 	src_files="$build_dir/XPlaneSupport$suffix.p ../src/AC3DPlugins/README ../src/AC3DPlugins/XPlaneSupport.tcl"
+	if [ "$2" != "mac" ]; then
+		src_files="$src_files $build_dir/XPlaneSupport$suffix.p.debug"
+	fi
 	;;
 meshtool)
 	out_file="meshtool_"$2"_"$3".zip"
 	src_files="$build_dir/MeshTool ../src/MeshTool/README.meshtool"
+	if [ "$2" != "mac" ]; then
+		src_files="$src_files $build_dir/MeshTool.debug"
+	fi
 	;;
 esac
 
