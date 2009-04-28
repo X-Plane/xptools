@@ -11,7 +11,7 @@ mac)
 	build_dir=../build/Release
 	;;
 win)
-	build_dir=../build/mingw/release_opt
+	build_dir=../build/Mingw/release_opt
 	;;
 lin)
 	build_dir=../build/linux/release_opt
