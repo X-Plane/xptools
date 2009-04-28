@@ -9,12 +9,15 @@ case "$2" in
 	;;
 mac)
 	build_dir=../build/Release
+	suffix=Mac
 	;;
 win)
 	build_dir=../build/Mingw/release_opt
+	suffix=Win
 	;;
 lin)
-	build_dir=../build/linux/release_opt
+	build_dir=../build/Linux/release_opt
+	suffix=Lin
 	;;
 esac
 
@@ -25,7 +28,7 @@ case "$1" in
 	;;
 ac3d)
 	out_file="ac3d_plugin_"$2"_"$3".zip"
-	src_files="$build_dir/XPlaneSupportMac.p ../src/AC3DPlugins/README ../src/AC3DPlugins/XPlaneSupport.tcl"
+	src_files="$build_dir/XPlaneSupport$suffix.p ../src/AC3DPlugins/README ../src/AC3DPlugins/XPlaneSupport.tcl"
 	;;
 meshtool)
 	out_file="meshtool_"$2"_"$3".zip"
