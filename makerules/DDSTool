@@ -9,7 +9,8 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		:= -lsquish -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static-libgcc
+LDFLAGS		:= -static-libgcc -static -Wl,-O2
+LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -35,3 +36,7 @@ SOURCES := ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/XPTools/DDSTool.cpp
 SOURCES += ./src/Utils/EndianUtils.c
 SOURCES += ./src/Utils/BitmapUtils.cpp
+
+ifdef PLAT_LINUX
+SOURCES += ./src/linuxinit/initializer.cpp
+endif #PLAT_LINUX

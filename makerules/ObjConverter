@@ -9,7 +9,8 @@ DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		:= -lCGAL -ldime -l3ds
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static-libgcc
+LDFLAGS		:= -static-libgcc -static -Wl,-O2
+LIBS		+= -lbfd -liberty -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -42,3 +43,7 @@ SOURCES += ./src/XPTools/ConvertObj3DS.cpp
 SOURCES += ./src/XPTools/ConvertObj.cpp
 SOURCES += ./src/XPTools/ConvertObjDXF.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+
+ifdef PLAT_LINUX
+SOURCES += ./src/linuxinit/initializer.cpp
+endif #PLAT_LINUX

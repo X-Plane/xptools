@@ -32,6 +32,7 @@
 #include "GISUtils.h"
 #include "FileUtils.h"
 #if LIN
+#include "initializer.h"
 #include <execinfo.h>
 #include <stdarg.h>
 #endif
@@ -83,6 +84,10 @@ static void die_parse2(const char * msg, va_list va)
 
 int	main(int argc, char * argv[])
 {
+#if LIN
+	Initializer initializer(&argc, &argv, 0);
+#endif
+
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
 		print_product_version("MeshTool", MESHTOOL_VER, MESHTOOL_EXTRAVER);

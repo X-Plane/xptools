@@ -7,7 +7,8 @@ CFLAGS		:= -include ./src/Obj/XDefs.h
 CXXFLAGS	:= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LDFLAGS	:= -static-libgcc
+LDFLAGS	:= -static-libgcc -static -Wl,-O2
+LIBS	+= -lbfd -liberty -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -39,3 +40,7 @@ SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/md5.c
 SOURCES += ./src/Utils/XChunkyFileUtils.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+
+ifdef PLAT_LINUX
+SOURCES += ./src/linuxinit/initializer.cpp
+endif #PLAT_LINUX

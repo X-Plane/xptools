@@ -24,6 +24,9 @@
 #include "../XPTools/version.h"
 #include <stdio.h>
 #include "AssertUtils.h"
+#if LIN
+#include "initializer.h"
+#endif
 
 FILE * err_fi = stdout;
 
@@ -40,6 +43,9 @@ bool ENV2Overlay(const char * inFileName, const char * inDSF);
 
 int main(int argc, char * argv[])
 {
+#if LIN
+	Initializer initializer(&argc, &argv, 0);
+#endif
 	InstallDebugAssertHandler(AssertShellBail);
 	InstallAssertHandler(AssertShellBail);
 

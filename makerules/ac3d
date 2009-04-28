@@ -14,6 +14,11 @@ REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportWin.p
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
+# always build 32 bit plugin
+ifdef ARCH_X86_64
+	M32_SWITCH	:= -m32
+endif
+LDFLAGS		:= -static-libgcc -Wl,-O2 -Wl,-Bstatic
 REAL_TARGET	:= $(dir $(TARGET))/XPlaneSupportLin.p
 FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX

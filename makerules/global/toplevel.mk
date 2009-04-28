@@ -144,8 +144,8 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= $(DEFINES) -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:= $(CFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-multichar
-	CXXFLAGS	:= $(CXXFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-multichar
+	CFLAGS		:= $(CFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-multichar -pipe
+	CXXFLAGS	:= $(CXXFLAGS) $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-multichar -pipe
 	LDFLAGS		:= $(LDFLAGS) $(M32_SWITCH) -rdynamic
 	STRIPFLAGS	:= -s -x
 endif
