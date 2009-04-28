@@ -82,7 +82,6 @@ inline int GUI_Window::OGL2Client_X(int x, void* w)
 
 inline int GUI_Window::OGL2Client_Y(int y, void* w)
 {
-	Window t;
 	int ry;
 	int rx;
 	XWin::GetBounds(&rx, &ry);
