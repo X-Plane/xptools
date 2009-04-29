@@ -23,6 +23,8 @@
 #ifndef XWIN_H
 #define XWIN_H
 
+#include <stdint.h>
+
 #if IBM
 #include "XWin32DND.h"
 #endif

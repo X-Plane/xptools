@@ -25,6 +25,7 @@
 #define GUI_COMMANDER_H
 
 #include "GUI_Defs.h"
+#include <stdint.h>
 
 /*
 

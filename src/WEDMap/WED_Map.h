@@ -28,6 +28,7 @@
 #include "GUI_Pane.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_Listener.h"
+#include <stdint.h>
 
 extern	int	gDMS;		// degrees, mins, seconds
 

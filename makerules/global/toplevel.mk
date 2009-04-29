@@ -18,16 +18,6 @@ ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN	:= Yes
 endif
 
-ifeq ($(ARCHITECTURE), i386)
-	ARCH_I386	:= Yes
-endif
-ifeq ($(ARCHITECTURE), i686)
-	ARCH_I386	:= Yes
-endif
-ifeq ($(ARCHITECTURE), x86_64)
-	ARCH_X86_64	:= Yes
-endif
-
 ifeq ($(cross), mingw64)
 	MULTI_SUFFIX	:= 64
 	CROSSPREFIX	:= x86_64-pc-mingw32-
@@ -47,6 +37,16 @@ ifeq ($(ARCHITECTURE), x86_64)
 else
 	cross		:= ""
 endif
+endif
+
+ifeq ($(ARCHITECTURE), i386)
+	ARCH_I386	:= Yes
+endif
+ifeq ($(ARCHITECTURE), i686)
+	ARCH_I386	:= Yes
+endif
+ifeq ($(ARCHITECTURE), x86_64)
+	ARCH_X86_64	:= Yes
 endif
 
 ifndef PLAT_DARWIN

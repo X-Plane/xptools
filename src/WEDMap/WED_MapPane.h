@@ -28,6 +28,8 @@
 #include "GUI_Listener.h"
 #include "GUI_Packer.h"
 
+#include <stdint.h>
+
 class GUI_ToolBar;
 class WED_Map;
 class WED_MapToolNew;

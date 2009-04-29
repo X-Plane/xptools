@@ -35,6 +35,7 @@ class	IGISEntity;
 #include "GUI_Pane.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_Listener.h"
+#include <stdint.h>
 
 class WED_TCE : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener {
 public:
