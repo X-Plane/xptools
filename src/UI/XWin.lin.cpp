@@ -260,5 +260,14 @@ void XWin::DrawMenuBar(void)
 
 int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
 {
-    return -1;
+	if(!in_menu) return -1;
+
+	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,
+	QPoint(mouse_x, mouse_y), Qt::LeftButton, Qt::LeftButton,
+	QApplication::keyboardModifiers());
+
+	QCoreApplication::postEvent(this, e);
+
+	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
+	return in_menu->actions().indexOf(aaction);
 }

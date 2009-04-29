@@ -132,6 +132,7 @@ private:
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 	#if LIN
+	QMenu * mPopupMenu;
     int Client2OGL_X(int x, void* w);
     int Client2OGL_Y(int y, void* w);
     int OGL2Client_X(int x, void* w);

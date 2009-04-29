@@ -62,6 +62,7 @@ static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSour
 
 #define mWindow 0
 
+
 inline int GUI_Window::Client2OGL_X(int x, void* w)
 {
 	return x;
@@ -552,6 +553,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#endif
 	#if LIN
 		this->setMenuBar(getqmenu(gApplication));
+		mPopupMenu = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		raise();
@@ -1110,21 +1112,30 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
 {
-#if !LIN
-	static GUI_Menu	popup_temp = NULL;
+ #if !LIN
+
+	static GUI_Menu *popup_temp = NULL;
 
 	DebugAssert(gApplication);
-	if (popup_temp)				gApplication->RebuildMenu(popup_temp, items);
-	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 
-	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-#else
-#if 0
-	mPopupMenu.show();
-#endif
-	return 0;
-#endif
+	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
+    else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
+    #endif
+    #if LIN
+     mPopupMenu->clear();
+    int n = 0;
+    while (items[n].name)
+    {
+        if (!strcmp(items[n].name, "-"))
+            mPopupMenu->addSeparator();
+        else
+            mPopupMenu->addAction(items[n].name);
+        ++n;
+    }
+    #endif
+	return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
 }
+
 
 bool				GUI_Window::IsDragClick(int x, int y, int button)
 {

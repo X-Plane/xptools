@@ -45,7 +45,7 @@
 #endif
 
 #if LIN
-#define xmenu void*
+#define xmenu QMenu*
 #include <QtCore>
 #include <QtGui>
 #include <QMainWindow>
