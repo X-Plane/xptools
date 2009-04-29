@@ -41,7 +41,7 @@ print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
 	printf("%s %s, Copyight 2009 Laminar Research.  Compiled on "
 		__DATE__".\n", product,	product_version(ver, extra_ver));
-	printf("Part of X-Plane Scenery Tools release %s\n", XPT_PACKAGE_VER);
+	printf("Part of X-Plane Scenery Tools release: %s\n", XPT_PACKAGE_VER);
 }
 
 #endif /* VERSION_H */
