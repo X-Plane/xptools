@@ -17,7 +17,7 @@ BEGIN
 			VALUE "FileDescription",	"Object Viewer"
 			VALUE "FileVersion",		"3.0b1"
 			VALUE "ProductVersion",		"3.0.0.1"
-			VALUE "LegalCopyright",		"Copyright 2008, Laminar Research"
+			VALUE "LegalCopyright",		"Copyright 2009, Laminar Research"
 			VALUE "ProductName",		"ObjView"
 		END
 	END
