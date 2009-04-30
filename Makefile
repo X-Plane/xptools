@@ -40,7 +40,7 @@ VER_LIBSQUISH	:= 1.10
 VER_BOOST	:= 1.38.0
 # http://www.mesa3d.org/
 # http://sourceforge.net/project/showfiles.php?group_id=3
-VER_MESA	:= 7.4
+VER_MESA	:= 7.4.1
 # http://expat.sourceforge.net/
 # http://sourceforge.net/project/showfiles.php?group_id=10127
 VER_LIBEXPAT	:= 2.0.1
