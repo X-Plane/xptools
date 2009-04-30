@@ -1114,14 +1114,14 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 {
  #if !LIN
 
-	static GUI_Menu *popup_temp = NULL;
+	static GUI_Menu popup_temp = NULL;
 
 	DebugAssert(gApplication);
 
 	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
     else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-    #endif
-    #if LIN
+    return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+#else
      mPopupMenu->clear();
     int n = 0;
     while (items[n].name)
@@ -1133,8 +1133,8 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
         ++n;
     }
     mMouseFocusPane[0]= 0;
-    #endif
-	return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+    return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+#endif
 }
 
 
