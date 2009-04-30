@@ -27,7 +27,7 @@ ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN	:= Yes
 endif
 ifndef conf
-conf	:= debug_opt
+conf	:= debug
 endif
 BUILDDIR	:= $(OUTDIR)/$(PLATFORM)/$(conf)
 
