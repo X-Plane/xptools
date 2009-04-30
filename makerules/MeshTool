@@ -3,26 +3,24 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include ./src/Obj/XDefs.h
-CXXFLAGS	:= -include ./src/Obj/XDefs.h
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
-LDFLAGS		:= -static-libgcc
-LIBS		:= -lCGAL -lsquish -lgeotiff -lshp -lproj
+CFLAGS		+= -include ./src/Obj/XDefs.h
+CXXFLAGS	+= -include ./src/Obj/XDefs.h
+DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
+LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
 LIBS		+= -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static-libgcc -static -Wl,-O2
+LDFLAGS		+= -static
 LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LDFLAGS		:= -static-libgcc -static -Wl,-O2
+LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
-REAL_TARGET	:= $(dir $(TARGET))/MeshTool.exe
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		:= -static-libgcc -framework Carbon
+LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libgeotiff.a
@@ -34,21 +32,22 @@ LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libz.a
 endif #PLAT_DARWIN
 
+
 ##
 # sources
 #########
 
 ifdef PLAT_MINGW
-SOURCES := ./src/Utils/XFileTwiddle.win.cpp
+SOURCES += ./src/Utils/XFileTwiddle.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-SOURCES := ./src/linuxinit/initializer.cpp
+SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-SOURCES := ./src/Utils/XFileTwiddle.mac.cpp
+SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
 SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
 

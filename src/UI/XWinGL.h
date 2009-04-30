@@ -42,7 +42,7 @@
 #if LIN
 extern "C" __attribute__ ((weak)) int glXSwapIntervalSGI(int);
 
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 class	XWinGL;
 
 class glWidget : public QGLWidget

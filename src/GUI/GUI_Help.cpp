@@ -26,8 +26,8 @@
 //	#include <Carbon/Carbon.h>
 #endif
 #if LIN
-#include <QDesktopServices>
-#include <QUrl>
+#include <QtGui/QDesktopServices>
+#include <QtCore/QUrl>
 #endif
 
 void	GUI_LaunchURL(const char * url)

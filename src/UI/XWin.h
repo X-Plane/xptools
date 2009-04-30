@@ -46,9 +46,9 @@
 
 #if LIN
 #define xmenu QMenu*
-#include <QtCore>
-#include <QtGui>
-#include <QMainWindow>
+#include <QtCore/QtCore>
+#include <QtGui/QtGui>
+#include <QtGui/QMainWindow>
 
 enum {
   _NET_WM_STATE_REMOVE,

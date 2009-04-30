@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <execinfo.h>
 #include "initializer.h"
-#include "minigtk.h"
 
 /* static variables */
 

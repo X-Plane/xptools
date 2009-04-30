@@ -3,19 +3,24 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include ./src/Obj/XDefs.h
-CXXFLAGS	:= -include ./src/Obj/XDefs.h
+CFLAGS		+= -include ./src/Obj/XDefs.h
+CXXFLAGS	+= -include ./src/Obj/XDefs.h
+
+ifdef PLAT_LINUX
+LDFLAGS	+= -static
+LIBS	+= -lbfd -liberty -lz
+endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LIBS		:= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32 -lz
-LDFLAGS		:= -Wl,-subsystem,windows
-DEFINES		:= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
-WIN_RESOURCES	:= ./src/XPTools/XGrinder.rc
-REAL_TARGET	:= $(dir $(TARGET))/XGrinder.exe
+LIBS		+= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32 -lz
+LDFLAGS		+= -Wl,-subsystem,windows
+DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+WIN_RESOURCES	+= ./src/XPTools/XGrinder.rc
+FORCEREBUILD_SUFFIX := _xgrinder
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		:= -static-libgcc -framework Carbon
+LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local/lib/libz.a
 endif #PLAT_DARWIN
 
@@ -24,14 +29,19 @@ endif #PLAT_DARWIN
 # sources
 #########
 
+ifdef PLAT_LINUX
+SOURCES += ./src/UI/XGrinderApp.lin.cpp
+SOURCES += ./src/linuxinit/initializer.cpp
+else
+
 ifdef PLAT_MINGW
-SOURCES := ./src/Utils/PlatformUtils.win.cpp
+SOURCES += ./src/Utils/PlatformUtils.win.cpp
 SOURCES += ./src/UI/XWin.win.cpp
 SOURCES += ./src/UI/XWin32DND.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-SOURCES := ./src/Utils/PlatformUtils.mac.cpp
+SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/UI/XWin.mac.cpp
 endif #PLAT_DARWIN
 
@@ -44,3 +54,5 @@ SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/XPTools/XGrinderShell.cpp
+
+endif #PLAT_LINUX

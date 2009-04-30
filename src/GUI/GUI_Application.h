@@ -30,8 +30,8 @@
 #endif
 
 #if LIN
-#include <QtCore>
-#include <QtGui>
+#include <QtCore/QtCore>
+#include <QtGui/QtGui>
 #endif
 
 #include "GUI_Commander.h"

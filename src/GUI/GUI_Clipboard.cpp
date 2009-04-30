@@ -33,9 +33,9 @@
 #include <Windows.h>
 #endif
 #if LIN
-#include <QApplication>
-#include <QClipboard>
-#include <QString>
+#include <QtGui/QApplication>
+#include <QtGui/QClipboard>
+#include <QtCore/QString>
 #endif
 
 #if APL

@@ -3,30 +3,30 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include ./src/Obj/XDefs.h
-CXXFLAGS	:= -include ./src/Obj/XDefs.h
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
+CFLAGS		+= -include ./src/Obj/XDefs.h
+CXXFLAGS	+= -include ./src/Obj/XDefs.h
+DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static-libgcc -Wl,-O2
-LIBS		:= -lQtCore -lQtGui -lQtOpenGL
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL
+#really needed?
 LIBS		+= -lCGAL -lbfd -liberty -lsquish -ltiff -ljpeg -lpng -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LIBS		:= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lCGAL -lsquish -ltiff -ljpeg
 LIBS		+= -lpng -lz
-LDFLAGS		:= -Wl,-subsystem,windows
+LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
-WIN_RESOURCES	:= ./src/XPTools/ObjView.rc
-REAL_TARGET	:= $(dir $(TARGET))/ObjView.exe
+WIN_RESOURCES	+= ./src/XPTools/ObjView.rc
+FORCEREBUILD_SUFFIX := _objview
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		:= -static-libgcc -framework Carbon -framework OpenGL -framework AGL
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libtiff.a
@@ -35,31 +35,29 @@ LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libz.a
 endif #PLAT_DARWIN
 
+
 ##
 # sources
 #########
 
 ifdef PLAT_MINGW
-SOURCES := ./src/Utils/PlatformUtils.win.cpp
+SOURCES += ./src/Utils/PlatformUtils.win.cpp
 SOURCES += ./src/UI/XWin.win.cpp
 SOURCES += ./src/UI/XWin32DND.cpp
 SOURCES += ./src/UI/XWinGL.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-SOURCES := ./src/linuxinit/initializer.cpp
-SOURCES += ./src/linuxinit/minigtk.cpp
+SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
-
-MOCSRC := ./src/UI/XWin.h
+MOCSRC += ./src/UI/XWin.h
 MOCSRC += ./src/UI/XWinGL.h
-
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-SOURCES := ./src/Utils/PlatformUtils.mac.cpp
+SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
 endif #PLAT_DARWIN

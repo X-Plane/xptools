@@ -47,7 +47,7 @@ typedef struct teh_args_t
 	GUI_Timer* callme;
 } teh_args_t;
 #endif
-#include <QTimer>
+#include <QtCore/QTimer>
 
 #endif
 

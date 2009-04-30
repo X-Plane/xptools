@@ -29,7 +29,7 @@
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
 #if LIN
-#include <QApplication>
+#include <QtGui/QApplication>
 #include "WED_Menus.h"
 #endif
 

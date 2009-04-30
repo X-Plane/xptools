@@ -3,18 +3,17 @@
 #######################
 
 TYPE		:= EXECUTABLE
-CFLAGS		:= -include ./src/Obj/XDefs.h
-CXXFLAGS	:= -include ./src/Obj/XDefs.h
-DEFINES		:= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		:= -lsquish -ltiff -ljpeg -lpng -lz
+CFLAGS		+= -include ./src/Obj/XDefs.h
+CXXFLAGS	+= -include ./src/Obj/XDefs.h
+DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
+LIBS		+= -lsquish -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		:= -static-libgcc -static -Wl,-O2
+LDFLAGS		+= -static
 LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LDFLAGS		:= -static-libgcc
 LIBS		:= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libtiff.a
 LIBS		+= ./libs/local/lib/libjpeg.a
@@ -23,8 +22,7 @@ LIBS		+= ./libs/local/lib/libz.a
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
-LDFLAGS		:= -static-libgcc -static -Wl,-O2
-REAL_TARGET	:= $(dir $(TARGET))/DDSTool.exe
+LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
 endif #PLAT_MINGW
 
@@ -33,11 +31,11 @@ endif #PLAT_MINGW
 # sources
 #########
 
-SOURCES := ./src/Utils/AssertUtils.cpp
-SOURCES += ./src/XPTools/DDSTool.cpp
-SOURCES += ./src/Utils/EndianUtils.c
-SOURCES += ./src/Utils/BitmapUtils.cpp
-
 ifdef PLAT_LINUX
 SOURCES += ./src/linuxinit/initializer.cpp
 endif #PLAT_LINUX
+
+SOURCES += ./src/Utils/AssertUtils.cpp
+SOURCES += ./src/XPTools/DDSTool.cpp
+SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/BitmapUtils.cpp

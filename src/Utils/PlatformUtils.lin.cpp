@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  *
  */
-#include <QtCore>
-#include <QtGui>
+#include <QtCore/QtCore>
+#include <QtGui/QtGui>
 #include "PlatformUtils.h"
 #include "initializer.h"
-#include "minigtk.h"
 #include <stdio.h>
 #include <cstring>
 #include <string>
