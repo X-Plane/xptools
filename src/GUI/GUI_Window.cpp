@@ -1132,6 +1132,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
             mPopupMenu->addAction(items[n].name);
         ++n;
     }
+    mMouseFocusPane[0]= 0;
     #endif
 	return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
 }
