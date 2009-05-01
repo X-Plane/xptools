@@ -243,10 +243,9 @@ EXAMPLE:
 
 BACKGROUND terrain_Natural
 
-SHAPEFILE_TERRAIN terrain_Water my_water.shp
-
 GEOTIFF 0 my_ortho.tiff
 QMID 1 210332123
+SHAPEFILE_TERRAIN terrain_Water my_water.shp
 
 -------------------------------------------------------------------------------
 CLIMATE FILES

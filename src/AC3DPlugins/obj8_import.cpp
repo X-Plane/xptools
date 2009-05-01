@@ -539,7 +539,7 @@ ACObject *	do_obj8_load(char *filename)
 
 			case attr_Manip_Drag_Axis:
 				stuff_obj = NULL;
-				manip_type = manip_command_axis;
+				manip_type = manip_axis;
 				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
 				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
 				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
@@ -551,7 +551,7 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case attr_Manip_Drag_2d:
 				stuff_obj = NULL;
-				manip_type = manip_command_axis;
+				manip_type = manip_axis_2d;
 				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
 				manip_dref2 = obj8.manips[cmd->idx_offset].dataref2;
 				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
@@ -565,7 +565,7 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case attr_Manip_Command:
 				stuff_obj = NULL;
-				manip_type = manip_command_axis;
+				manip_type = manip_command;
 				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
 				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
 				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
