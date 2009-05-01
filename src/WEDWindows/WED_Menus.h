@@ -33,13 +33,26 @@
 #include "GUI_Menus.h"
 
 #if LIN
-QMenuBar* getqmenu(GUI_Application * inApp);
+QMenuBar* getqmenu(GUI_Application * inApp );
+
+class WEDMenu : public QMenu
+{
+	Q_OBJECT
+public:
+	WEDMenu(const QString& text, GUI_Application *app);
+	~WEDMenu();
+
+private:
+	GUI_Application* app;
+protected:
+    void showEvent ( QShowEvent * event );
+};
 
 class WEDAction : public QObject
 {
 	Q_OBJECT
 public:
-	WEDAction(const QString& text, int cmd, GUI_Application *app, bool checkable);
+	WEDAction(const QString& text,const QString& sc , int cmd, GUI_Application *app, bool checkable);
 	~WEDAction();
 
 	QAction* qaction;

@@ -91,10 +91,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
-// Janos says: no submenus yet :-(
-#if !LIN
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
-#endif
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
@@ -146,12 +143,42 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 
 #if LIN
 
+
+WEDMenu::WEDMenu
+(const QString& text , GUI_Application *app)
+:QMenu(text),app(app)
+{}
+
+WEDMenu::~WEDMenu()
+{}
+
+void WEDMenu::showEvent ( QShowEvent * event )
+{
+    QList<QAction*> actlist = this->actions();
+    if (actlist.isEmpty()) return;
+    int checked = 0;
+    string new_name = "";
+    for (int i = 0; i < actlist.size(); ++i)
+    {
+        QAction * act = actlist.at(i);
+        int cmd = act->data().toInt();
+        if (cmd)
+         {
+            act->setEnabled(app->DispatchCanHandleCommand(cmd,new_name,checked));
+            //act->setText(QString::fromStdString(new_name));
+            act->setCheckable(checked);
+            act->setChecked(checked);
+        }
+    }
+}
+
 WEDAction::WEDAction
-(const QString& text, int cmd, GUI_Application *app, bool checkable)
+(const QString& text,const QString& sc ,int cmd, GUI_Application *app, bool checkable)
 : app(app)
 {
 	qaction = new QAction(text, this);
 	qaction->setData(cmd);
+	qaction->setShortcut(sc);
 	qaction->setCheckable(checkable);
 	qaction->setChecked(checkable);
 	connect(qaction, SIGNAL(triggered()), this, SLOT(ontriggered()));
@@ -177,11 +204,31 @@ void fill_menu(QMenu* menu, const GUI_MenuItem_t items[], GUI_Application *inApp
 	{
 		if (!strcmp(items[n].name, "-"))
 			menu->addSeparator();
-		else {
-			menu->addAction(
-			(new WEDAction(items[n].name, items[n].cmd,
-					inApp, false))->qaction);
-		}
+		else
+            if (!items[n].cmd)
+			    menu->addMenu(items[n].name);
+            else
+		    {
+		        QString	sc = "";
+		        if (items[n].flags & gui_ControlFlag)	{sc += "Ctrl+";	}
+				if (items[n].flags & gui_ShiftFlag)		{sc += "Shift+";}
+				if (items[n].flags & gui_OptionAltFlag) {sc += "Alt+";	}
+				char key_cstr[2] = { items[n].key, 0 };
+				switch(items[n].key)
+				{
+					case GUI_KEY_UP:		sc += "Up";			break;
+					case GUI_KEY_DOWN:		sc += "Down";		break;
+					case GUI_KEY_RIGHT:		sc += "Right";		break;
+					case GUI_KEY_LEFT:		sc += "Left";		break;
+					case GUI_KEY_DELETE:	sc += "Del";		break;
+					case GUI_KEY_RETURN:	sc += "Return";		break;
+					default:				sc += key_cstr;		break;
+				}
+			    menu->addAction(
+			     (new WEDAction(items[n].name,sc,items[n].cmd,
+			  		inApp, false))->qaction);
+
+		    }
 		++n;
 	}
 }
@@ -191,26 +238,33 @@ QMenuBar* getqmenu(GUI_Application * inApp)
 
 	QMenuBar* gQMenu = new QMenuBar(0);
 
-	QMenu* filemenu = gQMenu->addMenu("&File");
+	WEDMenu* filemenu = new WEDMenu("&File",inApp);
 	fill_menu(filemenu, kFileMenu, inApp);
+    gQMenu->addMenu(filemenu);
 
-	QMenu* editmenu = gQMenu->addMenu("&Edit");
+	WEDMenu* editmenu = new WEDMenu("&Edit",inApp);
 	fill_menu(editmenu, kEditMenu, inApp);
+    gQMenu->addMenu(editmenu);
 
-	QMenu* viewmenu = gQMenu->addMenu("&View");
+  	WEDMenu* viewmenu = new WEDMenu("&View",inApp);
 	fill_menu(viewmenu, kViewMenu, inApp);
+    gQMenu->addMenu(viewmenu);
 
-	QMenu* pavemenu = viewmenu->addMenu("Pavement T&ransparency");
+  	WEDMenu* pavemenu = new WEDMenu("Pavement T&ransparency",inApp);
 	fill_menu(pavemenu, kPavementMenu, inApp);
+    viewmenu->actions().at(9)->setMenu(pavemenu);
 
-	QMenu* selmenu = gQMenu->addMenu("&Select");
+  	WEDMenu* selmenu = new WEDMenu("&Select",inApp);
 	fill_menu(selmenu, kSelectMenu, inApp);
+    gQMenu->addMenu(selmenu);
 
-	QMenu* airpmenu = gQMenu->addMenu("&Airport");
+  	WEDMenu* airpmenu = new WEDMenu("&Airport",inApp);
 	fill_menu(airpmenu, kAirportMenu, inApp);
+    gQMenu->addMenu(airpmenu);
 
-	QMenu* helpmenu = gQMenu->addMenu("&Help");
+  	WEDMenu* helpmenu = new WEDMenu("&Help",inApp);
 	fill_menu(helpmenu, kHelpMenu, inApp);
+    gQMenu->addMenu(helpmenu);
 
 	return gQMenu;
 }
