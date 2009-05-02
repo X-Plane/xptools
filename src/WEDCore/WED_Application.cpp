@@ -31,7 +31,12 @@
 #include "WED_Menus.h"
 #include "WED_PackageMgr.h"
 
+#if LIN
+WED_Application::WED_Application(int& argc, char* argv[])
+: GUI_Application(argc, argv), mAboutBox(NULL)
+#else
 WED_Application::WED_Application() : mAboutBox(NULL)
+#endif
 {
 }
 

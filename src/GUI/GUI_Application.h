@@ -50,7 +50,11 @@
 
 class	GUI_Application : public GUI_Commander {
 public:
+#if LIN
+	GUI_Application(int& argc, char* argv[]);
+#else
 					 GUI_Application();
+#endif
 	virtual			~GUI_Application();
 
 	// APPLICATION API

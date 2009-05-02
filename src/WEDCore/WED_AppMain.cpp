@@ -128,7 +128,11 @@ int main(int argc, char * argv[])
 #endif
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
+#if LIN
+	WED_Application	app(argc, argv);
+#else
 	WED_Application	app;
+#endif
 	WED_PackageMgr	pMgr(NULL);
 
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold

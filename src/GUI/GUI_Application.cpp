@@ -28,10 +28,6 @@
 #include "GUI_Window.h"
 #define __DEBUGGING__
 
-#if LIN
-// extern void _do_timercallbacks(void);
-#endif
-
 GUI_Application *	gApplication = NULL;
 
 #if APL || LIN
@@ -202,8 +198,11 @@ static	void		BuildAccels(void)
 }
 #endif
 
-
+#if LIN
+GUI_Application::GUI_Application(int& argc, char* argv[]) : GUI_Commander(NULL)
+#else
 GUI_Application::GUI_Application() : GUI_Commander(NULL)
+#endif
 {
 	DebugAssert(gApplication == NULL);
 	gApplication = this;
@@ -244,9 +243,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	InitCommonControls();
 #endif
 #if LIN
-	int c = 0;
-	char* v[1] = {};
-	qapp = new QApplication(c, v);
+	qapp = new QApplication(argc, argv);
 #endif
 }
 

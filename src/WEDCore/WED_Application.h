@@ -30,7 +30,11 @@ class	GUI_Window;
 
 class	WED_Application : public GUI_Application {
 public:
+#if LIN
+	WED_Application(int& argc, char* argv[]);
+#else
 					 WED_Application();
+#endif
 	virtual			~WED_Application();
 
 			void	SetAbout(GUI_Window * about_box);
