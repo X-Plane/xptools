@@ -45,4 +45,6 @@ INCLUDEPATHS += -I./SDK/ac3d
 
 ifdef PLAT_LINUX
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/mesa
+# Ben says: hrm - I had to add this to make Linux+Ubuntu 8.10 happy -- please adjust as desired!
+INCLUDEPATHS += -I/usr/include/qt4
 endif #PLAT_LINUX
