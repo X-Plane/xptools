@@ -199,10 +199,10 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 		SetColor(color,1.0, 0.0, 1.0);
 
 	int tp = NO_VALUE;
-	for( GISNetworkSegmentVector::iterator r = i->data().mSegments.begin(); r != i->data().mSegments.end(); ++r)
+	for( GISNetworkSegmentVector::const_iterator r = i->data().mSegments.begin(); r != i->data().mSegments.end(); ++r)
 	if(tp == NO_VALUE || r->mFeatType < tp)
 		tp = r->mFeatType;
-	for( GISNetworkSegmentVector::iterator r = i->twin()->data().mSegments.begin(); r != i->twin()->data().mSegments.end(); ++r)
+	for( GISNetworkSegmentVector::const_iterator r = i->twin()->data().mSegments.begin(); r != i->twin()->data().mSegments.end(); ++r)
 	if(tp == NO_VALUE || r->mFeatType < tp)
 		tp = r->mFeatType;
 
