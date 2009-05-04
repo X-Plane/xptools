@@ -198,13 +198,13 @@ void GUI_QtMenu::showEvent ( QShowEvent * event )
 {
     QList<QAction*> actlist = this->actions();
     if (actlist.isEmpty()) return;
-    int checked = 0;
     for (int i = 0; i < actlist.size(); ++i)
     {
         QAction * act = actlist.at(i);
         int cmd = act->data().toInt();
         if (cmd)
-         {
+        {
+            int checked = 0;
             string new_name;
             act->setEnabled(app->DispatchCanHandleCommand(cmd,new_name,checked));
             if (!new_name.empty())
