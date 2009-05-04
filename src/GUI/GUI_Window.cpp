@@ -1134,7 +1134,11 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
         if (!strcmp(items[n].name, "-"))
             mPopupMenu->addSeparator();
         else
-            mPopupMenu->addAction(items[n].name);
+        {
+            QAction * aact =  mPopupMenu->addAction(items[n].name);
+            aact->setCheckable(items[n].checked);
+            aact->setChecked(items[n].checked);
+        }
         ++n;
     }
     mMouseFocusPane[0]= 0;
