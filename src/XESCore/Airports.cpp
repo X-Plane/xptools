@@ -535,7 +535,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Polygon_set_2	foo;
 		BurnInAirport(&apts[n], foo, fill_water2dirt);					// Produce a map that is the airport boundary.
-		SimplifyAirportAreas(ioMap, foo, simple_faces, fill_water2dirt, NULL);		// Simplify the airport surface area a bit.
+		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
+			SimplifyAirportAreas(ioMap, foo, simple_faces, fill_water2dirt, NULL);		// Simplify the airport surface area a bit.
 	}
 
 	for (int n = 0; n < apts.size(); ++n)
@@ -544,7 +545,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Polygon_set_2	foo;
 		BurnInAirport(&apts[n], foo, fill_water2apt);					// Produce a map that is the airport boundary.
-		SimplifyAirportAreas(ioMap, foo, simple_faces, fill_water2apt, NULL);		// Simplify the airport surface area a bit.
+		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
+			SimplifyAirportAreas(ioMap, foo, simple_faces, fill_water2apt, NULL);		// Simplify the airport surface area a bit.
 	}
 
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
@@ -555,67 +557,70 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);
 		Polygon_set_2	foo;
 		BurnInAirport(&apts[n], foo, fill_dirt2apt);
-		SimplifyAirportAreas(ioMap, foo, simple_faces, fill_dirt2apt, NULL);
-		if (dems)
+		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
 		{
-			working = DEM_NO_DATA;
-			if (ClipDEMToFaceSet(simple_faces, elevation, working, x1, y1, x2, y2))
+			SimplifyAirportAreas(ioMap, foo, simple_faces, fill_dirt2apt, NULL);
+			if (dems)
 			{
-				working.copy_geo_from(elevation);
-				#if PHONE
-					x1-=2;
-					y1-=2;
-					x2+=2;
-					y2+=2;
-					SpreadDEMValues(working, 2, x1, y1, x2, y2);
-				#else
-					--x1;
-					--y1;
-					++x2;
-					++y2;
-					SpreadDEMValues(working, 1, x1, y1, x2, y2);
-				#endif
-				DEMGeo		airport_area;
-				working.subset(airport_area, x1, y1, x2-1,y2-1);
-				vector<DEMGeo>	fft;
-				DEMMakeFFT(airport_area, fft);
-				if (fft.size() > 1)		fft[0] *= 0.0;
-				if (fft.size() > 2)		fft[1] *= 0.0;
-				if (fft.size() > 3)		fft[2] *= 0.0;
-				#if PHONE
-				if (fft.size() > 4)		fft[3] *= 0.0;
-				if (fft.size() > 5)		fft[4] *= 0.0;
-				if (fft.size() > 6)		fft[5] *= 0.0;
-				if (fft.size() > 7)		fft[6] *= 0.0;
-				if (fft.size() > 8)		fft[7] *= 0.0;
-				if (fft.size() > 9)		fft[8] *= 0.0;
-				if (fft.size() > 10)	fft[9] *= 0.0;
-				if (fft.size() > 11)	fft[10] *= 0.0;
-				if (fft.size() > 12)	fft[11] *= 0.0;
-				#endif
-				FFTMakeDEM(fft,airport_area);
-				#if PHONE
-				for(y = 0; y < airport_area.mHeight; ++y)
-				for(x = 0; x < airport_area.mWidth ; ++x)
-					if(airport_area.get(x,y) != DEM_NO_DATA)
-						airport_area(x,y) = (float) apts[n].elevation_ft * FT_TO_MTR;
-				#endif
-				for (y = y1; y < y2; ++y)
-				for (x = x1; x < x2; ++x)
+				working = DEM_NO_DATA;
+				if (ClipDEMToFaceSet(simple_faces, elevation, working, x1, y1, x2, y2))
 				{
-					if (working.get(x,y) != DEM_NO_DATA && airport_area(x-x1,y-y1) != DEM_NO_DATA)
-						working(x,y) = airport_area(x-x1,y-y1);
+					working.copy_geo_from(elevation);
+					#if PHONE
+						x1-=2;
+						y1-=2;
+						x2+=2;
+						y2+=2;
+						SpreadDEMValues(working, 2, x1, y1, x2, y2);
+					#else
+						--x1;
+						--y1;
+						++x2;
+						++y2;
+						SpreadDEMValues(working, 1, x1, y1, x2, y2);
+					#endif
+					DEMGeo		airport_area;
+					working.subset(airport_area, x1, y1, x2-1,y2-1);
+					vector<DEMGeo>	fft;
+					DEMMakeFFT(airport_area, fft);
+					if (fft.size() > 1)		fft[0] *= 0.0;
+					if (fft.size() > 2)		fft[1] *= 0.0;
+					if (fft.size() > 3)		fft[2] *= 0.0;
+					#if PHONE
+					if (fft.size() > 4)		fft[3] *= 0.0;
+					if (fft.size() > 5)		fft[4] *= 0.0;
+					if (fft.size() > 6)		fft[5] *= 0.0;
+					if (fft.size() > 7)		fft[6] *= 0.0;
+					if (fft.size() > 8)		fft[7] *= 0.0;
+					if (fft.size() > 9)		fft[8] *= 0.0;
+					if (fft.size() > 10)	fft[9] *= 0.0;
+					if (fft.size() > 11)	fft[10] *= 0.0;
+					if (fft.size() > 12)	fft[11] *= 0.0;
+					#endif
+					FFTMakeDEM(fft,airport_area);
+					#if PHONE
+					for(y = 0; y < airport_area.mHeight; ++y)
+					for(x = 0; x < airport_area.mWidth ; ++x)
+						if(airport_area.get(x,y) != DEM_NO_DATA)
+							airport_area(x,y) = (float) apts[n].elevation_ft * FT_TO_MTR;
+					#endif
+					for (y = y1; y < y2; ++y)
+					for (x = x1; x < x2; ++x)
+					{
+						if (working.get(x,y) != DEM_NO_DATA && airport_area(x-x1,y-y1) != DEM_NO_DATA)
+							working(x,y) = airport_area(x-x1,y-y1);
+					}
 				}
-			}
-			elevation.overlay(working);
-			#if DEBUG_FLATTENING
-			gDem[dem_Wizard].overlay(working);
-			#endif
+				elevation.overlay(working);
+				#if DEBUG_FLATTENING
+				gDem[dem_Wizard].overlay(working);
+				#endif
 
-			ClipDEMToFaceSet(simple_faces, transport_src, transport, x1, y1, x2, y2);
+				ClipDEMToFaceSet(simple_faces, transport_src, transport, x1, y1, x2, y2);
+			}
 		}
 	}
-
+	
 	PROGRESS_DONE(prog, 0, 1, "Burning in airports...")
 
 	// Promote outer airport when possible.  Basically...if the terrain type is outer airport AND we are not near
