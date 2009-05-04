@@ -95,17 +95,46 @@ private:
 
 
 #endif
-
+#if !LIN
 	set<GUI_Menu>		mMenus;
+#endif
 	bool				mDone;
-
 #if LIN
     static void MenuCommandHandler(int cmd, void* arg);
 	QApplication*		qapp;
 #endif
 };
+#if LIN
+class GUI_QtMenu : public QMenu
+{
+	Q_OBJECT
+public:
+	GUI_QtMenu(const QString& text, GUI_Application *app);
+	~GUI_QtMenu();
+
+private:
+	GUI_Application* app;
+protected:
+    void showEvent ( QShowEvent * event );
+};
+
+class GUI_QtAction : public QObject
+{
+	Q_OBJECT
+public:
+	GUI_QtAction(const QString& text,const QString& sc , int cmd, GUI_Application *app, bool checkable);
+	~GUI_QtAction();
+
+	QAction* qaction;
+public slots:
+	void ontriggered();
+private:
+	GUI_Application* app;
+};
+#endif
 
 extern	GUI_Application *	gApplication;
+
 
 #endif
 
