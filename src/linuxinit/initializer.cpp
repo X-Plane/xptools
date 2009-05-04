@@ -1,7 +1,17 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include <libgen.h>
+// we need <libgen.h> for dirname() but want to use GNU's basename()
+#ifdef basename
+#undef basename
+#endif
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
 #include <execinfo.h>
+#include <limits.h>
 #include "initializer.h"
 
 /* static variables */
@@ -11,7 +21,10 @@ volatile size_t Initializer::m_nsymbols = 0;
 volatile void* Initializer::m_symbol_addresses[tracedepth] = {};
 volatile size_t Initializer::m_iterator = 0;
 volatile sig_atomic_t Initializer::m_inhandler = 0;
+volatile char* Initializer::m_homedir = 0;
 volatile char* Initializer::m_programname = 0;
+volatile char* Initializer::m_dirname = 0;
+volatile char* Initializer::m_abspath = 0;
 volatile char** Initializer::m_symbol_names = 0;
 volatile asymbol** Initializer::m_syms = 0;
 volatile bfd_vma Initializer::m_pc = 0;
@@ -19,11 +32,11 @@ volatile const char* Initializer::m_filename = 0;
 volatile const char* Initializer::m_functionname = 0;
 volatile unsigned int Initializer::m_line = 0;
 volatile int Initializer::m_found = 0;
-static char g_debugfile[8192] = {};
-static char g_programname[8192] = {};
 
 Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 {
+	char* temp, *temp1;
+
 	if (!argc || !argv)
 	{
 		::fprintf(::stderr, "invalid startup parameters supplied\n");
@@ -35,35 +48,66 @@ Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 		::exit(1);
 	}
 	m_init = true;
-	strcpy(g_programname, *argv[0]);
-	m_programname = g_programname;
-	strcpy(g_debugfile, *argv[0]);
-	strcat(g_debugfile, ".debug");
+	// Try to resolve /proc/self/exe first
+	if (!(m_abspath = canonicalize_file_name("/proc/self/exe")))
+		// Try argv[0]
+		if (!(m_abspath = canonicalize_file_name(*argv[0])))
+			goto critical;
+
+	temp = strdup(const_cast<const char* const>(m_abspath));
+	if (!temp)
+		goto critical;
+	temp1 = dirname(temp);
+	if (!temp1)
+		goto critical;
+	m_dirname = strdup(const_cast<const char* const>(temp1));
+	if (!m_dirname)
+		goto critical;
+	free(temp);
+
+	temp = strdup(const_cast<const char* const>(m_abspath));
+	if (!temp)
+		goto critical;
+	temp1 = basename(const_cast<const char* const>(temp));
+	if (!temp1)
+		goto critical;
+	m_programname = strdup(const_cast<const char* const>(temp1));
+	if (!m_programname)
+		goto critical;
+	free(temp);
+
 	setup_signalhandlers();
-#if 0
-	if (loadgtk)
-	{
-		try
-		{
-			MiniGtk::_init(argc, argv);
-		}
-		catch (const char* reason)
-		{
-			::fprintf(::stderr, "Gtk init failed: %s\n", reason);
-			::exit(1);
-		}
-	}
-#endif
+	return;
+critical:
+	::fprintf(::stderr, "couldn't determine location of executable\n");
+	::exit(1);
 }
 
 Initializer::~Initializer()
 {
-//	MiniGtk::_cleanup();
+	free((void*)m_programname);
+	free((void*)m_dirname);
+	free((void*)m_abspath);
 }
 
-const char* const Initializer::programname()
+const char* const Initializer::program_file()
 {
 	return const_cast<const char* const>(m_programname);
+}
+
+const char* const Initializer::program_abspath()
+{
+	return const_cast<const char* const>(m_abspath);
+}
+
+const char* const Initializer::program_dir()
+{
+	return const_cast<const char* const>(m_dirname);
+}
+
+const char* const Initializer::home_dir()
+{
+	return const_cast<const char* const>(m_homedir);
 }
 
 void Initializer::setup_signalhandlers()
@@ -179,9 +223,11 @@ char** Initializer::backtrace_symbols_bfd(void* const* buffer, int size)
 		if (match.file && strlen(match.file))
 			ret_buf = process_file(match.file, &addr, 1);
 		else {
-			ret_buf = process_file((const char*)m_programname, &addr, 1);
+			ret_buf = process_file((const char*)m_abspath, &addr, 1);
+#if 0
 			if (strstr(ret_buf[0], "?\?() ??:0"))
 				ret_buf = process_file(g_debugfile, &addr, 1);
+#endif
 		}
 		locations[x] = ret_buf;
 		total += strlen(ret_buf[0]) + 1;

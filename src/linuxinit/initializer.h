@@ -50,8 +50,10 @@ class Initializer
 ** variable and throw an exception to avoid that.
 **/
 public:
-	// the only public member
-	static const char* const programname();
+	static const char* const program_abspath();
+	static const char* const program_file();
+	static const char* const program_dir();
+	static const char* const home_dir();
 private:
 	// intentionally left undefined
 	Initializer();
@@ -77,6 +79,9 @@ private:
 	**/
 	static volatile bool m_init;
 	static volatile char* m_programname;
+	static volatile char* m_dirname;
+	static volatile char* m_abspath;
+	static volatile char* m_homedir;
 	static volatile sig_atomic_t m_inhandler;
 	static volatile size_t m_nsymbols;
 	static volatile void* m_symbol_addresses[tracedepth];

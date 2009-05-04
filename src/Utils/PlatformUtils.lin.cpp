@@ -30,41 +30,12 @@
 
 const char* GetApplicationPath(char* pathBuf, int sz)
 {
-	if (!sz) return 0;
-	::memset(pathBuf, 0, sz);
-	// when lauched from a desktop environment we always
-	// get the absolute path in argv[0]. in a shell we get
-	// the exact invokation line the user (or the script) entered
-	size_t len = 0;
-	// locate the last slash
-	char* last_slash = ::strrchr((char*)Initializer::programname(), '/');
-	// not found? ok, we have a problem here :-), we are in PATH
-	// and need to locate ourself
-	if (!last_slash)
-	{
-		// TODO: do unusual stuff
-		return ".";
+	if (sz < (strlen(Initializer::program_dir()) + 1)) {
+		fprintf(stderr, "buffer size for application path too small");
+		exit(1);
 	}
-	len = last_slash - Initializer::programname();
-	// huh? we live in '/', fair enough
-	if (!len) return "/";
-	std::string pname;
-	pname.assign(Initializer::programname(), len);
-	if ((pname.at(0) == '/') || (pname.at(0) == '.'))
-	{
-		// we already have a properly formed path string
-		// and leave it that way
-		::strncpy(pathBuf, pname.c_str(), sz);
-		return pathBuf;
-	}
-	else
-	{
-		// else make a correct relative path
-		std::string pname_rel("./");
-		pname_rel.append(pname);
-		::strncpy(pathBuf, pname_rel.c_str(), sz);
-		return pathBuf;
-	}
+	strcpy(pathBuf, Initializer::program_dir());
+	return pathBuf;
 }
 
 int		GetFilePathFromUser(
@@ -80,7 +51,7 @@ int		GetFilePathFromUser(
 		case getFile_Open:
 		{
 			QString fileName = QFileDialog::getOpenFileName(0,
-			inPrompt, "/home");
+			inPrompt, "/");
 			if (!fileName.length())
 				return 0;
 			else {
@@ -91,7 +62,7 @@ int		GetFilePathFromUser(
 		case getFile_Save:
 		{
 			QString fileName = QFileDialog::getSaveFileName(0,
-			inPrompt, "/home");
+			inPrompt, "/");
 			if (!fileName.length())
 				return 0;
 			else {
@@ -102,7 +73,7 @@ int		GetFilePathFromUser(
 		case getFile_PickFolder:
 		{
 			QString dir = QFileDialog::getExistingDirectory
-			(0, inPrompt, "/home", QFileDialog::ShowDirsOnly);
+			(0, inPrompt, "/", QFileDialog::ShowDirsOnly);
 			if (!dir.length())
 				return 0;
 			else {
