@@ -134,6 +134,7 @@ private:
 	#if LIN
 	QMenu * mPopupMenu;
 	int		mMouseLastButton;
+	bool    mDragDetect;
     int Client2OGL_X(int x, void* w);
     int Client2OGL_Y(int y, void* w);
     int OGL2Client_X(int x, void* w);

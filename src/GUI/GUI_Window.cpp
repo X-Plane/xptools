@@ -619,6 +619,9 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 {
+    #if LIN
+    if(mDragDetect) return;
+    #endif
 	// Ben says: note that if we don't have a mouse focus paine we just "eat" the up-click.
 	// This deals with a Win32 design problem: Windows D&D _eats_ the up-click events.  So we
 	// post synthetic ones later.
@@ -1184,7 +1187,30 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	#else
 		#warning implement linux mouse drag handler
-		return false;
+        bool isdrag = false;
+        mDragDetect = true;
+        QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
+        while( !isdrag && mDragging[button])
+        {
+            QCoreApplication::processEvents() ;
+            QPoint currentPos(mMouse.x,mMouse.y);
+            isdrag = ((startPos - currentPos).manhattanLength() >=
+                                    QApplication::startDragDistance());
+        }
+        mDragDetect = false;
+
+        if (!isdrag)
+        {
+          //sending fake UP-Click ( was blocked while dragdetection )
+          // we must set the button aktiv again
+            mDragging[button]=true;
+            QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,Qt::LeftButton,
+                                        Qt::LeftButton,QApplication::keyboardModifiers());
+
+            QCoreApplication::postEvent(this, e);
+        }
+
+        return isdrag;
 	#endif
 }
 
@@ -1261,7 +1287,6 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
 		}
 
-
 	#elif IBM
 		GUI_DropSource	* drop_source = new GUI_DropSource;
 		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, fetch_func, ref);
@@ -1280,8 +1305,24 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
 		return result;
 	#else
-		#warning implement linux drag and drop handler
-		return gui_Drag_None;
+        #warning implement linux drag and drop handler
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+
+//        mimeData->setData(mimeType, data);
+        drag->setMimeData(mimeData);
+
+        Qt::DropAction dropAction = drag->start(Qt::CopyAction | Qt::MoveAction);
+
+        //sending fake UP-Click
+        QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
+        QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,
+        aPos, Qt::LeftButton, Qt::LeftButton,
+        QApplication::keyboardModifiers());
+
+        QCoreApplication::postEvent(this, e);
+
+        return gui_Drag_None;
 	#endif
 }
 
