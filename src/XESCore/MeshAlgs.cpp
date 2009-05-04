@@ -386,6 +386,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
 	if (f->info().terrain == terrain_Water) return;
+	DebugAssert(layer != -1);
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
 	{
@@ -420,6 +421,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 	float mix;
 	char ter[80];
 	double x, y;
+	int token;
 
 	for(int b = 0; b < 4; ++b)
 	{
@@ -462,21 +464,24 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 			{
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "VB %f %s", &mix, ter);
-				dest->vertices.back().blending[LookupToken(ter)] = mix;
+				dest->vertices.back().blending[token=LookupToken(ter)] = mix;
+				DebugAssert(token != -1);
 			}
 			if (go)
 			{
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "TERRAIN %s", ter);
 				dest->edges.push_back(mesh_match_edge_t());
-				dest->edges.back().base = LookupToken(ter);
+				dest->edges.back().base = token=LookupToken(ter);
+				DebugAssert(token != -1);
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "BORDER_C %d", &count);
 				while (count--)
 				{
 					if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 					sscanf(buf, "BORDER_T %s", ter);
-					dest->edges.back().borders.insert( LookupToken(ter));
+					dest->edges.back().borders.insert( token=LookupToken(ter));
+					DebugAssert(token != -1);
 				}
 			}
 		}
@@ -628,6 +633,7 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 	tri->info().terrain = new_base;
 	if (new_base != terrain_Water)
 	{
+		DebugAssert(old_base != -1);
 		tri->info().terrain_border.insert(old_base);
 
 		for (int i = 0; i < 3; ++i)
@@ -656,6 +662,7 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
 			if (iter->info().terrain != layer)
 			if (iter->info().terrain != terrain_Water)
 			{
+				DebugAssert(layer != -1);
 				iter->info().terrain_border.insert(layer);
 				for (int n = 0; n < 3; ++n)
 				{
@@ -2167,6 +2174,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 						if (dist3 > odist3) { spread = true; v3->info().border_blend[layer] = dist3; }
 
 						// HACK - does always extending the borders fix a bug?
+						DebugAssert(layer != -1);
 						border->info().terrain_border.insert(layer);
 						spread = true;
 					}
