@@ -12,6 +12,9 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
+Version 3.2b3
+	- Fixed manipulator import.
+	- Added automatic manipulator axis detection
 Version 3.2b2
 	- ATTR_light_level syntax adjusted fto stay in sync with X-Plane.
 	- Panel region export fixed.
@@ -237,6 +240,16 @@ If you want to use two regions, use two objects in the ac3d hierarchy!!
 For more information on panel regions: please see this page:
 
 http://wiki.x-plane.com/Panel_Regions
+
+The settings shown in the manipulator screen will vary depending on the type
+of manpulator shown.  For manipulators that require a 3-d relative axis in
+object space, a "guess" button will appear.  When you click this button, the
+plugin will inspect the surrounding animations and attempt to choose a 
+manipulation axis appropriate to match the animation.
+
+The guess feature is not perfect and will sometimes be unable to guess or will
+come up with wrong results.  For best results, set up your key frames and
+dataref values (for both the key frame and the manipulator) before guessing.
 
 -------------------------------------------------------------------------------
 ONE-VS-TWO-SIDED GEOMETRY AND FLAT-VS-SMOOTH SHADING

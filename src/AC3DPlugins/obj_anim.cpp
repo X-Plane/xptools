@@ -25,6 +25,7 @@
 #include "obj_model.h"
 #include "obj_editor.h"
 #include "Undoable.h"
+//#include "CompGeomDefs3.h"
 #include "ac_plugin.h"
 #include <ac_plugin.h>
 #if APL
@@ -657,6 +658,147 @@ static void select_all_anim(void)
 	display_status();
 }
 
+static void guess_obj_axis(float f)
+{
+	ACObject * obj = get_sel_single_obj(f);
+	if (obj)
+	{
+		vector<ACObject *>	all;
+		find_all_objects(ac_get_world(), all);
+		ACObject * anim_choice = NULL;
+		for(vector<ACObject *>::iterator a = all.begin(); a != all.end(); ++a)
+		{
+			if(obj == *a)
+				break;
+			if(OBJ_get_anim_type(*a) == anim_trans || OBJ_get_anim_type(*a) == anim_rotate)
+			{
+				anim_choice = *a;
+			}
+		}
+		if(anim_choice != NULL)
+		{			
+			if(OBJ_get_anim_type(anim_choice) == anim_rotate)
+			{
+				float center[3], axis[3];					// center and axis of the rotation axis we are gravitating around.
+				axis_for_rotation(anim_choice,axis);
+				center_for_rotation(anim_choice,center);
+
+				List * v = ac_object_get_vertexlist(obj);
+				float ctr[3] = { 0 };						// center of gravity of the obj!
+				int num=0;
+				
+				while(v)
+				{
+					vertex_t * vv = (vertex_t *) v->data;
+					ctr[0] += vv->x;
+					ctr[1] += vv->y;
+					ctr[2] += vv->z;
+					++num;
+					v=v->next;
+				}
+				if(num > 0)
+				{
+					float r = 1.0f / (float) num;
+					ctr[0] *= r;
+					ctr[1] *= r;
+					ctr[2] *= r;
+
+					float vec_to_grav[3] = { ctr[0] - center[0], ctr[1] - center[1], ctr[2] - center[2] };
+					
+					float p =  (axis[0] * vec_to_grav[0] + 
+								axis[1] * vec_to_grav[1] + 
+								axis[2] * vec_to_grav[2]) / 
+							   (axis[0] * axis[0] +
+							    axis[1] * axis[1] +
+							    axis[2] * axis[2]);
+
+					float proj_pt[3] = {				// projection onto axis of gravity pt
+						center[0] + p * axis[0],
+						center[1] + p * axis[1],
+						center[2] + p * axis[2] };
+					
+					float vec_to_r[3] = { ctr[0] - proj_pt[0], 
+										  ctr[1] - proj_pt[1], 
+										  ctr[2] - proj_pt[2] };
+
+					float dst[3];
+
+					dst[0] = vec_to_r[1] * axis[2] - vec_to_r[2] * axis[1] ;
+					dst[1] = vec_to_r[2] * axis[0] - vec_to_r[0] * axis[2] ;
+					dst[2] = vec_to_r[0] * axis[1] - vec_to_r[1] * axis[0] ;
+					
+					float arm = sqrt(vec_to_r[0] * vec_to_r[0] + vec_to_r[1] * vec_to_r[1] + vec_to_r[2] * vec_to_r[2]);
+					
+					int kf1 = 0;
+					int kf2 = OBJ_get_anim_keyframe_count(anim_choice)-1;
+
+					float a1 = OBJ_get_anim_nth_angle(anim_choice,kf1);
+					float a2 = OBJ_get_anim_nth_angle(anim_choice,kf2);
+					float v1 = OBJ_get_anim_nth_value(anim_choice,kf1);
+					float v2 = OBJ_get_anim_nth_value(anim_choice,kf2);
+					
+					float m2 = OBJ_get_manip_v1_max(obj);
+					float m1 = OBJ_get_manip_v1_min(obj);
+					
+					float arc = M_PI * arm * (a2 - a1) / 180.0;
+					
+					float s = arc / sqrt(
+										dst[0] * dst[0] + 
+										dst[1] * dst[1] + 
+										dst[2] * dst[2]);
+										
+					bool ang_neg = a2 < a1;
+					bool key_neg = v2 < v1;
+					bool anim_rev = key_neg != ang_neg;
+					bool manip_rev = m2 < m1;
+					
+					if(manip_rev != anim_rev) s *= -1.0f;
+										
+					dst[0] *= s;
+					dst[1] *= s;
+					dst[2] *= s;
+					
+					OBJ_set_manip_dx(obj, dst[0]);
+					OBJ_set_manip_dy(obj, dst[1]);
+					OBJ_set_manip_dz(obj, dst[2]);
+				}
+			}
+		
+			if(OBJ_get_anim_type(anim_choice) == anim_trans)
+			{
+				int kf1 = 0;
+				int kf2 = OBJ_get_anim_keyframe_count(anim_choice)-1;
+				float keyf1[3], keyf2[3];
+				float dx,dy,dz;
+				anim_trans_nth_relative(anim_choice,kf1,keyf1);
+				anim_trans_nth_relative(anim_choice,kf2,keyf2);
+				dx = keyf2[0]-keyf1[0];
+				dy = keyf2[1]-keyf1[1];
+				dz = keyf2[2]-keyf1[2];
+				
+				float manip_dir = OBJ_get_manip_v1_max(obj) - OBJ_get_manip_v1_min(obj);
+				float anim_dir = OBJ_get_anim_nth_value(anim_choice, kf2) - OBJ_get_anim_nth_value(anim_choice,kf1);
+				
+				manip_dir = (manip_dir < 0.0) ? -1.0 : 1.0;
+				anim_dir = (anim_dir < 0.0) ? -1.0 : 1.0;
+				
+				if(manip_dir != anim_dir)
+				{
+					if (dx != 0.0f) dx=-dx;
+					if (dy != 0.0f) dy=-dy;
+					if (dz != 0.0f) dz=-dz;
+				}
+			
+				OBJ_set_manip_dx(obj, dx);
+				OBJ_set_manip_dy(obj, dy);
+				OBJ_set_manip_dz(obj, dz);
+			}
+		}
+	}
+}
+
+
+
 
 static void set_anim_for_sel_keyframe(int argc, char * argv[])
 {
@@ -998,6 +1140,7 @@ void setup_obj_anim(void)
 	tcl_stubs.Tcl_CreateExitHandler(anim_exit_cb, NULL);
 	ac_set_pre_render_object_callback(anim_pre_func);
 	ac_set_post_render_object_callback(anim_post_func);
+	ac_add_command_full((char*)"xplane_guess_axis", CAST_CMD(guess_obj_axis), 1, (char *)"f", (char*)"ac3d xplane_guess_axis <obj idx>",(char *)"Guess correct manipulation axis");
 	ac_add_command_full((char*)"xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, (char*)"f", (char*)"ac3d xplane_set_anim_enable <0 or 1>", (char*)"set animation on or off");
 	ac_add_command_full((char*)"xplane_set_anim_list_invis", CAST_CMD(set_list_invis),1,(char*)"f", (char*)"ac3d xplane_est_anim_list_invis <0 or 1>", (char*)"turn on or off anim sliders for invisible objs");
 	ac_add_command_full((char*)"xplane_set_anim_now", CAST_CMD(set_anim_now), 2, (char*)"argv", (char*)"ac3d xplane_set_anim_now <n> <t>", (char*)"set dataref n to time t");

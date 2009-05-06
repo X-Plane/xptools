@@ -588,6 +588,7 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.manip.xplane_manip_dx$idx
 	pack forget $container.obj.none.manip.xplane_manip_dy$idx
 	pack forget $container.obj.none.manip.xplane_manip_dz$idx
+	pack forget $container.obj.none.manip.guess$idx
 	pack forget $container.obj.none.manip.xplane_manip_v1_min$idx
 	pack forget $container.obj.none.manip.xplane_manip_v1_max$idx
 	pack forget $container.obj.none.manip.xplane_manip_v2_min$idx
@@ -637,7 +638,14 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.is_deck
 	if { [set xplane_hard_surf$idx] != "none"} { pack $container.obj.none.is_deck -after $container.obj.none.hard_surf_btn }
 	pack forget $container.obj.none.dref_list
-	if { [set xplane_mod_lit$idx] != 0} { pack $container.obj.none.dref_list -after $container.obj.none.mod_lit }
+	pack forget $container.obj.none.xplane_lit_v1$idx
+	pack forget $container.obj.none.xplane_lit_v2$idx
+
+	if { [set xplane_mod_lit$idx] != 0} { 
+		pack $container.obj.none.dref_list -after $container.obj.none.mod_lit 
+		pack $container.obj.none.xplane_lit_v2$idx -after $container.obj.none.mod_lit 
+		pack $container.obj.none.xplane_lit_v1$idx -after $container.obj.none.mod_lit 
+	}
 
 	$container.obj.none.manip.type_btn configure -text [lindex $xplane_manip_types [set xplane_manip_type$idx]]
 
@@ -645,7 +653,7 @@ proc xplane_obj_sync { idx container } {
 	if { [set xplane_manip_type$idx] == 2} {
 		pack $container.obj.none.manip.xplane_manip_dx$idx
 		pack $container.obj.none.manip.xplane_manip_dy$idx
-		pack $container.obj.none.manip.xplane_manip_dz$idx
+		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx		
 		pack $container.obj.none.manip.xplane_manip_v1_min$idx
 		pack $container.obj.none.manip.xplane_manip_v1_max$idx
 		pack $container.obj.none.manip.dref1
@@ -675,7 +683,7 @@ proc xplane_obj_sync { idx container } {
 	if { [set xplane_manip_type$idx] == 5} {
 		pack $container.obj.none.manip.xplane_manip_dx$idx
 		pack $container.obj.none.manip.xplane_manip_dy$idx
-		pack $container.obj.none.manip.xplane_manip_dz$idx
+		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx
 		pack $container.obj.none.manip.cmnd1
 		pack $container.obj.none.manip.cmnd2
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
@@ -857,6 +865,8 @@ proc xplane_inspector {} {
 					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx 10
 					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx 10
 					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx 10
+					button $container.obj.none.manip.guess$idx -text "Guess" -command "ac3d xplane_guess_axis $idx"
+					pack $container.obj.none.manip.guess$idx -side left -anchor nw
 
 					make_labeled_entry $container.obj.none.manip "Min:" xplane_manip_v1_min$idx 10
 					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v1_max$idx 10
