@@ -128,7 +128,7 @@ private:
 	int				mInDrag;
 	int				mLastDragX;
 	int				mLastDragY;
-#if IBM
+#if IBM || LIN
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 	#if LIN

@@ -1204,12 +1204,14 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
           //sending fake UP-Click ( was blocked while dragdetection )
           // we must set the button aktiv again
             mDragging[button]=true;
-            QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,Qt::LeftButton,
-                                        Qt::LeftButton,QApplication::keyboardModifiers());
+            unsigned int sbtn = 1 << button;
+            QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
+                                        (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
 
             QCoreApplication::postEvent(this, e);
         }
-
+        else
+            mMouseFocusButton = button;
         return isdrag;
 	#endif
 }
@@ -1316,9 +1318,9 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
         //sending fake UP-Click
         QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-        QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,
-        aPos, Qt::LeftButton, Qt::LeftButton,
-        QApplication::keyboardModifiers());
+        unsigned int sbtn = 1 << mMouseFocusButton;
+        QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
+                                (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
 
         QCoreApplication::postEvent(this, e);
 
