@@ -85,9 +85,13 @@ critical:
 
 Initializer::~Initializer()
 {
+// we don't free this to be able to catch segfaults which happen after
+// main() returned
+#if 0
 	free((void*)m_programname);
 	free((void*)m_dirname);
 	free((void*)m_abspath);
+#endif
 }
 
 const char* const Initializer::program_file()

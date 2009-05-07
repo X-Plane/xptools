@@ -87,9 +87,9 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-multichar -pipe
-	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe
-	LDFLAGS		:=  $(M32_SWITCH) -rdynamic -static-libgcc -Wl,-O1
+	CFLAGS		:=  $(M32_SWITCH) -fpie -fvisibility=hidden -Wno-multichar -pipe
+	CXXFLAGS	:=  $(M32_SWITCH) -fpie -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe
+	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -Wl,-O1 -Wl,-z,now -rdynamic -Wl,-z,combreloc
 	BARE_LDFLAGS	+= -O1
 	STRIPFLAGS	:= -s -x
 endif
@@ -283,16 +283,16 @@ FINALBUILTIN	:= $(BUILDDIR)/obj/builtin$(BIN_SUFFIX).o.$(TARGET).final
 
 all: $(REAL_TARGET)
 
-$(REAL_TARGET): $(FINALBUILTIN)
+$(REAL_TARGET): $(BUILTINS)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 ifdef TYPE_EXECUTABLE
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -o $(@) \
-	$(FINALBUILTIN) $(LIBS) || $(print_error)
+	$(BUILTINS) $(LIBS) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
-	-Wl,-export-dynamic,-soname,$(notdir $(@)) -o $(@) $(FINALBUILTIN) \
+	-Wl,-export-dynamic,-soname,$(notdir $(@)) -o $(@) $(BUILTINS) \
 	$(LIBS) || $(print_error)
 endif
 ifdef StripDebug
@@ -342,11 +342,6 @@ $(BUILTINS): $$(filter $$(addprefix ./$$(dir $$(@)), $$(ALL_OBJECTFILES)), $$(AL
 	@-mkdir -p $(dir $(@))
 	@ld $(BARE_LDFLAGS) -r -o $(@) \
 	$(filter $(addprefix ./$(dir $(@)), $(ALL_OBJECTFILES)), $(ALL_OBJECTS))
-
-$(FINALBUILTIN): $(BUILTINS)
-	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
-	@-mkdir -p $(dir $(@))
-	@ld $(BARE_LDFLAGS) -r -o $(@) $(BUILTINS)
 
 linkclean:
 	@echo "removing builtins and binaries"
