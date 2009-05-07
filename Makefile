@@ -79,6 +79,9 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 ifeq ($(PLATFORM), Darwin)
 	DEFAULT_MACARGS	:= -mmacosx-version-min=10.4 -arch i386 -arch ppc
 endif
+ifeq ($(PLATFORM), Linux)
+	DEFAULT_MACARGS	:= -fpie
+endif
 
 # boost headers
 ARCHIVE_BOOST		:= boost-headers-$(VER_BOOST).tar.gz

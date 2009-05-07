@@ -11,7 +11,7 @@ diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
 +	CFLAGS	=	-g
 +endif
 +ifeq ($(PLATFORM), Linux)
-+	CFLAGS	=	-g $(cross)
++	CFLAGS	=	-g $(cross) -fpie
 +endif
 +ifeq ($(PLATFORM), Darwin)
 +	CFLAGS	=	-g -mmacosx-version-min=10.4 -arch i386 -arch ppc
@@ -27,8 +27,8 @@ diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
 -	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c shpopen.c
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC shpopen.c -o .libs/shpopen.lo
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c shpopen.c -o shpopen.o >/dev/null 2>&1
-+	/bin/sh ./libtool --mode=compile $(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    $(CFLAGS) -O2 -c shpopen.c
-+	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c  -fPIC -DPIC shpopen.c -o .libs/shpopen.lo
++	/bin/sh ./libtool --mode=compile $(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    $(CFLAGS) -O3 -c shpopen.c
++	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c -DPIC shpopen.c -o .libs/shpopen.lo
 +	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c shpopen.c -o shpopen.o >/dev/null 2>&1
  	mv -f .libs/shpopen.lo shpopen.lo
 -	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c shptree.c
@@ -36,7 +36,7 @@ diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
  	rm -f .libs/shptree.lo
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC shptree.c -o .libs/shptree.lo
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c shptree.c -o shptree.o >/dev/null 2>&1
-+	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c  -fPIC -DPIC shptree.c -o .libs/shptree.lo
++	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c -DPIC shptree.c -o .libs/shptree.lo
 +	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c shptree.c -o shptree.o >/dev/null 2>&1
  	mv -f .libs/shptree.lo shptree.lo
 -	/bin/sh ./libtool --mode=compile gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1  -I. -I. -I/usr/local/include    -g -O2 -c dbfopen.c
@@ -44,7 +44,7 @@ diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
  	rm -f .libs/dbfopen.lo
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c  -fPIC -DPIC dbfopen.c -o .libs/dbfopen.lo
 -	gcc -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include -g -O2 -c dbfopen.c -o dbfopen.o >/dev/null 2>&1
-+	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c  -fPIC -DPIC dbfopen.c -o .libs/dbfopen.lo
++	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c -DPIC dbfopen.c -o .libs/dbfopen.lo
 +	$(CC) -DPACKAGE=\"libshp\" -DVERSION=\"$(SHPLIB_VERSION)\" -DSTDC_HEADERS=1 -I. -I. -I/usr/local/include $(CFLAGS) -O3 -c dbfopen.c -o dbfopen.o >/dev/null 2>&1
  	mv -f .libs/dbfopen.lo dbfopen.lo
 -	/bin/sh ./libtool --mode=link gcc  -g -O2  -o libshp.la -rpath /usr/local/lib -version-info 1:1:0 shpopen.lo shptree.lo dbfopen.lo  
