@@ -23,6 +23,8 @@
 #ifndef RF_SELECTIONTOOL_H
 #define RF_SELECTIONTOOL_H
 
+#include "GUI_Timer.h"
+
 #include "RF_MapTool.h"
 #include "RF_Selection.h"
 #include "MapDefs.h"
@@ -32,14 +34,17 @@ public:
 					RF_SelectionTool(RF_MapZoomer * inZoomer);
 
 	virtual	void	DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	void	DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	bool	HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
-							int 				inButton);
+							int 				inButton,
+							GUI_KeyFlags		inModifiers);
 
 	virtual int		GetNumProperties(void);
 	virtual	void	GetNthPropertyName(int, string&);
@@ -50,7 +55,7 @@ public:
 	virtual	void	GetNthButtonName(int, string&);
 	virtual	void	NthButtonPressed(int);
 
-	virtual	char *	GetStatusText(void);
+	virtual	char *	GetStatusText(int x, int y);
 
 private:
 			bool	GetRectMapCoords(double coords[4]);
@@ -65,7 +70,7 @@ private:
 	double						mMoveLat;
 	bool						mIsDrag;
 	bool						mIsMoveVertices;
-	XPLMKeyFlags				mModifiers;
+	GUI_KeyFlags				mModifiers;
 
 	// State we remember for the selection.
 	set<Pmwx::Face_handle>		mFaceSelection;

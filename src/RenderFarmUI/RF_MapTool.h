@@ -23,9 +23,22 @@
 #ifndef RF_MAPTOOL_H
 #define RF_MAPTOOL_H
 
-#include "XPLMDisplay.h"
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
+#endif
+
+#include "GUI_Defs.h"
 
 class	RF_MapZoomer;
+class	GUI_GraphState;
+
+enum XPLMMouseStatus {
+     xplm_MouseDown                           = 1,
+     xplm_MouseDrag                           = 2,
+     xplm_MouseUp                             = 3
+};
 
 class	RF_MapTool {
 public:
@@ -36,14 +49,17 @@ public:
 	// Mouse API - the tool can provide visual indications of what's
 	// going on and also
 	virtual	void	DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 							bool				inCurrent)=0;
 	virtual	void	DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 							bool				inCurrent)=0;
 	virtual	bool	HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
-							int 				inButton)=0;
+							int 				inButton,
+							GUI_KeyFlags		inModifiers)=0;
 
 	// Support for some properties that can be edited.
 	virtual int		GetNumProperties(void)=0;
@@ -55,7 +71,7 @@ public:
 	virtual	void	GetNthButtonName(int, string&)=0;
 	virtual	void	NthButtonPressed(int)=0;
 
-	virtual	char *	GetStatusText(void)=0;
+	virtual	char *	GetStatusText(int x, int y)=0;
 
 protected:
 

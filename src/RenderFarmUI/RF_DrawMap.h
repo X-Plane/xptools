@@ -27,10 +27,12 @@
 #include "RF_Selection.h"
 #include "ProgressUtils.h"
 
+class	GUI_GraphState;
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc);
 void	RecalcOGLColors(Pmwx&					ioMap, ProgressFunc inFunc);
 
 void	DrawMapBucketed(
+				GUI_GraphState *				inState,
 				Pmwx&	 						inMap,
 				double							mapWest,
 				double							mapSouth,

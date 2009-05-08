@@ -21,7 +21,6 @@
  *
  */
 #include "RF_FileCommands.h"
-#include "XPLMMenus.h"
 #include "DEMTables.h"
 #include "ObjTables.h"
 #include "XESIO.h"
@@ -45,7 +44,7 @@
  * FILE MENU UI
  ****************************************************************************************/
 
-
+#if 0
 enum {
 	fileCmd_New,
 	fileCmd_Open,
@@ -288,6 +287,8 @@ void	RF_RecalcFileMenus(void)
 	XPLMEnableMenuItem(sFileMenu,fileCmd_Revert, gDirty);
 }
 
+#endif
+
 /****************************************************************************************
  * FILE COMMAND ALGORITHMS
  ****************************************************************************************/
@@ -427,6 +428,6 @@ void	RF_FileSave(void)
 #endif
 		WriteXESFile(gFilePath.c_str(), gMap, gTriangulationHi, gDem, gApts, RF_ProgressFunc);
 		gDirty = false;
-		RF_RecalcFileMenus();
+//		RF_RecalcFileMenus();
 	}
 }

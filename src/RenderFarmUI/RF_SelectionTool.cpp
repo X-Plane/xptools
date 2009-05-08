@@ -48,7 +48,7 @@
 #include "RF_DrawMap.h"
 #include "PlatformUtils.h"
 
-#include "XPLMGraphics.h"
+#include "GUI_GraphState.h"
 #include "MemFileUtils.h"
 #include "Hydro.h"
 /*
@@ -167,11 +167,13 @@ RF_SelectionTool::RF_SelectionTool(RF_MapZoomer * inZoomer) : RF_MapTool(inZoome
 }
 
 void	RF_SelectionTool::DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 				bool				inCurrent)
 {
 }
 
 void	RF_SelectionTool::DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 				bool				inCurrent)
 {
 	if (mIsDrag && (mMouseX != mMouseStartX || mMouseY != mMouseStartY))
@@ -181,7 +183,7 @@ void	RF_SelectionTool::DrawFeedbackOverlay(
 		int xMax = max(mMouseX, mMouseStartX);
 		int yMax = max(mMouseY, mMouseStartY);
 
-		XPLMSetGraphicsState(0, 0, 0,    0, 1,   0, 0);
+		state->SetState(0, 0, 0,    0, 1,   0, 0);
 		glColor4f(0.0, 0.5, 0.0, 0.3);
 		glBegin(GL_QUADS);
 		glVertex2i(xMin, yMin);
@@ -204,12 +206,13 @@ bool	RF_SelectionTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
-				int 				inButton)
+				int 				inButton,
+				GUI_KeyFlags		inModifiers)
 {
 	if (inButton != 0) return 0;
 	switch(inStatus) {
 	case xplm_MouseDown:
-		mModifiers = XPLMGetModifiers();
+		mModifiers = inModifiers;
 		mMouseStartX = mMouseX = inX;
 		mMouseStartY = mMouseY = inY;
 		mIsDrag = true;
@@ -220,7 +223,7 @@ bool	RF_SelectionTool::HandleClick(
 		mPointFeatureSelection = gPointFeatureSelection;
 		DoSelectionPreview();
 		if (gSelectionMode == rf_Select_Vertex)
-		if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
+		if ((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 		if (!gVertexSelection.empty() && mVertexSelection.find(*gVertexSelection.begin()) != mVertexSelection.end())
 		{
 			gVertexSelection = mVertexSelection;
@@ -447,7 +450,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 	gEdgeSelection.clear();
 }
 
-char *	RF_SelectionTool::GetStatusText(void)
+char *	RF_SelectionTool::GetStatusText(int x, int y)
 {
 	static char buf[1024];
 	int n = 0;
@@ -559,9 +562,7 @@ char *	RF_SelectionTool::GetStatusText(void)
 	}
 
 	{
-		int mx, my;
-		XPLMGetMouseLocation(&mx, &my);
-		Bbox2	vis_area(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)));
+		Bbox2	vis_area(Point2(GetZoomer()->XPixelToLon(x),GetZoomer()->YPixelToLat(y)));
 		set<int>	apts;
 		FindAirports(vis_area, gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
@@ -710,7 +711,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 	switch(gSelectionMode) {
 	case rf_Select_Face:
 		{
-			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
+			if ((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				gFaceSelection.clear();
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
@@ -719,17 +720,17 @@ void	RF_SelectionTool::DoSelectionPreview()
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							faceitems);
-				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
+				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & gui_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			} else {
 				FindFaceTouchesPt(gMap,
 							Point2(bounds[0], bounds[1]), faceitems);
-				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
+				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & gui_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			}
 		}
 		break;
 	case rf_Select_Edge:
 		{
-			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
+			if ((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				gEdgeSelection.clear();
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
@@ -738,7 +739,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							halfedgeitems);
-				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(), (mModifiers & xplm_ControlFlag) ? InsertEdgeInSet : ToggleEdgeInSet, &gEdgeSelection);
+				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(), (mModifiers & gui_ControlFlag) ? InsertEdgeInSet : ToggleEdgeInSet, &gEdgeSelection);
 			} else {
 				NearestEdgeToPt_t t;
 				t.found = false;
@@ -752,7 +753,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 							&t);
 				if (t.found)
 				{
-					if (mModifiers & xplm_ControlFlag)
+					if (mModifiers & gui_ControlFlag)
 						InsertEdgeInSet(t.e, &gEdgeSelection);
 					else
 						ToggleEdgeInSet(t.e, &gEdgeSelection);
@@ -762,7 +763,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 		break;
 	case rf_Select_Vertex:
 		{
-			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
+			if ((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				gVertexSelection.clear();
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
@@ -771,7 +772,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
-							(mModifiers & xplm_ControlFlag) ? InsertVertexInSet : ToggleVertexInSet,
+							(mModifiers & gui_ControlFlag) ? InsertVertexInSet : ToggleVertexInSet,
 							&gVertexSelection);
 			} else {
 				NearestVertexToPt_t t;
@@ -786,7 +787,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 							&t);
 				if (t.found)
 				{
-					if (mModifiers & xplm_ControlFlag)
+					if (mModifiers & gui_ControlFlag)
 						InsertVertexInSet(t.v, &gVertexSelection);
 					else
 						ToggleVertexInSet(t.v, &gVertexSelection);
@@ -796,7 +797,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 		break;
 	case rf_Select_PointFeatures:
 		{
-			if ((mModifiers & (xplm_ShiftFlag + xplm_ControlFlag)) == 0)
+			if ((mModifiers & (gui_ShiftFlag + gui_ControlFlag)) == 0)
 				gPointFeatureSelection.clear();
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
@@ -814,7 +815,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 						if (bounds[0] <= dx && bounds[1] <= dy && bounds[2] > dx && bounds[3] > dy)
 						{
 							PointFeatureSelection pfs(*i, j);
-							if (mModifiers & xplm_ControlFlag || gPointFeatureSelection.find(pfs) == gPointFeatureSelection.end())
+							if (mModifiers & gui_ControlFlag || gPointFeatureSelection.find(pfs) == gPointFeatureSelection.end())
 								gPointFeatureSelection.insert(pfs);
 							else
 								gPointFeatureSelection.erase(pfs);
@@ -840,7 +841,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 				}
 				if (t.found)
 				{
-					if (mModifiers & xplm_ControlFlag || gPointFeatureSelection.find(t.v) == gPointFeatureSelection.end())
+					if (mModifiers & gui_ControlFlag || gPointFeatureSelection.find(t.v) == gPointFeatureSelection.end())
 						gPointFeatureSelection.insert(t.v);
 					else
 						gPointFeatureSelection.erase(t.v);

@@ -1,3 +1,4 @@
+#error should not be included.
 /*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *

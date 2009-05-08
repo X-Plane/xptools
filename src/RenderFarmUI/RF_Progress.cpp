@@ -27,8 +27,8 @@
 	#include <gl.h>
 #endif
 
-#include "XPLMGraphics.h"
-#include "XPWidgetWin.h"
+#include "GUI_GraphState.h"
+//#include "XPWidgetWin.h"
 
 enum {
 	kDlgLeft = 200,
@@ -54,6 +54,7 @@ bool	RF_ProgressFunc(
 						const char *	inCurrentStageName,
 						float			inProgress)
 {
+/*
 	static	char	uiProgBuf[256];
 	sprintf(uiProgBuf, "%d of %d - %02.lf%%", inCurrentStage + 1, inCurrentStageCount, inProgress * 100.0);
 	XPLMSetGraphicsState(0, 0, 0,   0, 0,   0, 0);
@@ -96,6 +97,6 @@ bool	RF_ProgressFunc(
 	XPLMDrawString(col, kTex2X, kTex2Y, uiProgBuf, NULL, xplmFont_Basic);
 
 	gWidgetWin->SwapBuffer();
-
+*/
 	return false;
 }

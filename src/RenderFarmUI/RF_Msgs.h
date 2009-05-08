@@ -23,6 +23,9 @@
 #ifndef RF_MSGS_H
 #define RF_MSGS_H
 
+#include "ParamDefs.h"
+#include "GUI_Menus.h"
+
 enum {
 
 	rf_Cat_File = 0,
@@ -51,5 +54,39 @@ enum {
 	rf_Msg_SelectionChanged
 
 };
+
+/* RF Commands */
+
+const int num_dem_cmds = dem_Wizard - dem_Elevation + 2;
+
+enum {
+
+	viewCmd_DEMChoice = GUI_APP_MENUS,
+	viewCmd_ShowShading,
+	viewCmd_ShowTensor,
+	viewCmd_DEMDataChoice,
+
+	viewCmd_RecalcDEM,
+	viewCmd_PrevDEM,
+	viewCmd_NextDEM,
+
+	viewCmd_VecMap,
+	viewCmd_Airports,
+	viewCmd_MeshPoints,
+	viewCmd_MeshLines,
+	viewCmd_MeshTrisHi,
+	viewCmd_MeshTerrains,
+
+	viewCmd_ZoomSel,
+
+	viewCmd_DEMChoice_Start,
+	viewCmd_DEMChoice_Stop = viewCmd_DEMChoice_Start + num_dem_cmds,
+	
+	viewCmd_DEMDataChoice_Start,
+	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds
+};
+
+
+
 
 #endif

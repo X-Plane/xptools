@@ -1,3 +1,4 @@
+#error nuke this
 /*
  * Copyright (c) 2004, Laminar Research.
  *

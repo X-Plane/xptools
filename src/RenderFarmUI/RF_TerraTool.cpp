@@ -25,7 +25,7 @@
 
 #include "PCSBSocket.h"
 #include "TerraServer.h"
-#include "XPLMGraphics.h"
+#include "GUI_GraphState.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -59,6 +59,7 @@ RF_TerraTool::~RF_TerraTool()
 }
 
 void	RF_TerraTool::DrawFeedbackUnderlay(
+				GUI_GraphState *	inState,
 				bool				inCurrent)
 {
 	if (!inCurrent && !mHas) return;
@@ -92,7 +93,7 @@ void	RF_TerraTool::DrawFeedbackUnderlay(
 							coords[n][0] = GetZoomer()->LatToYPixel(coords[n][0]);
 							coords[n][1] = GetZoomer()->LonToXPixel(coords[n][1]);
 						}
-						i->Draw(coords);
+						i->Draw(coords,inState);
 					}
 				}
 			}
@@ -102,6 +103,7 @@ void	RF_TerraTool::DrawFeedbackUnderlay(
 }
 
 void	RF_TerraTool::DrawFeedbackOverlay(
+				GUI_GraphState *	inState,
 				bool				inCurrent)
 {
 }
@@ -111,7 +113,8 @@ bool	RF_TerraTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
-				int 				inButton)
+				int 				inButton,
+				GUI_KeyFlags		inModifiers)				
 {
 	return false;
 }
@@ -189,7 +192,7 @@ void	RF_TerraTool::NthButtonPressed(int n)
 	}
 }
 
-char *	RF_TerraTool::GetStatusText(void)
+char *	RF_TerraTool::GetStatusText(int x, int y)
 {
 	int total = 0, done = 0, pending = 0, bad = 0;
 	for (map<long long, AsyncImage *>::iterator i = mImages.begin(); i != mImages.end(); ++i)

@@ -22,14 +22,10 @@
  */
 #include "RF_MapView.h"
 
+#include "GUI_Application.h"
+
 #include "DEMTables.h"
-#include "XPLMMenus.h"
-#include "XPLMGraphics.h"
-#include "XPLMProcessing.h"
-#include "XPWidgets.h"
-#include "XPStandardWidgets.h"
-#include "XPWidgetUtils.h"
-#include "XPUIGraphics.h"
+#include "GUI_Fonts.h"
 #include "AssertUtils.h"
 #include "RF_MapZoomer.h"
 #include "RF_MapTool.h"
@@ -87,13 +83,7 @@
 
 #define DEBUG_PRINT_TRI_PARAMS 0
 
-
 RF_MapView *		gMapView = NULL;
-
-const int 	kInfoStripHeight = 18;
-
-const char *	kSelButtonLabels[] = { "V", "E", "F", "P", 0 };
-const char *	kToolButtonLabels[] = { "Select", "Crop", "Image", "Terra", 0 };
 
 struct	DEMViewInfo_t {
 	int				dem;
@@ -133,79 +123,49 @@ static DEMViewInfo_t	kDEMs[] = {
 
 const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 
+void	RF_MapView::MakeMenus(void)
+{
+	GUI_MenuItem_t	kViewItems[] = {
+	{	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
+	{	"Show Shading on Raster Layer",			0,				0,										0,	viewCmd_ShowShading		},
+	{	"Show Tensors",							0,				0,										0,	viewCmd_ShowTensor		},
+	{	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
+	{	"-",									0,				0,										0,	0						},
+	{	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
+	{	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
+	{	"Next Raster",							GUI_KEY_DOWN,	gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_NextDEM			},
+	{	"-",									0,				0,										0,	0						},
+	{	"Vector Map",							'1',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_VecMap			},
+	{	"Airports",								'2',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_Airports		},
+	{	"Mesh Points",							'3',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshPoints		},
+	{	"Mesh Lines",							'4',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshLines		},
+	{	"Mesh (Hires)",							'5',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTrisHi		},
+	{	"Mesh Terrains (Hires)",				'6',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTerrains	},
+	{	"-",									0,				0,										0,	0						},
+	{	"Move To Selection",					0,				0,										0,	viewCmd_ZoomSel			},
+	{	0,										0,				0,										0,	0						}};
+	
+	GUI_Menu view_menu = gApplication->CreateMenu("View", kViewItems,gApplication->GetMenuBar(), 0);
 
+	vector<GUI_MenuItem_t>	dem_menus(DEMChoiceCount+1);
+	for(int n = 0; n < DEMChoiceCount; ++n)
+	{
+		dem_menus[n].name = kDEMs[n].cmdName;
+		dem_menus[n].key = (n < 9) ? '1' + n : 0;
+		dem_menus[n].flags = gui_ControlFlag;
+		dem_menus[n].checked = 0;
+		dem_menus[n].cmd = viewCmd_DEMChoice_Start + n;
+	}
+	dem_menus.back().name = 0;
+	
+	gApplication->CreateMenu("DEM Choice", &*dem_menus.begin(),view_menu, 0);
 
-enum {
-	viewCmd_DEMChoice = 0,
-	viewCmd_ShowShading,
-	viewCmd_ShowTensor,
-	viewCmd_DEMDataChoice,
-viewCmd_Break,
-	viewCmd_RecalcDEM,
-	viewCmd_PrevDEM,
-	viewCmd_NextDEM,
-viewCmd_Break2,
-	viewCmd_VecMap,
-	viewCmd_Airports,
-	viewCmd_MeshPoints,
-	viewCmd_MeshLines,
-//	viewCmd_MeshTrisLo,
-	viewCmd_MeshTrisHi,
-	viewCmd_MeshTerrains,
-//	viewCmd_MeshBorders,
-viewCmd_Break3,
-	viewCmd_ZoomSel,
-	viewCmd_Count
-};
+	for(int n = 0; n < DEMChoiceCount; ++n)
+		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
-const char *	kCmdNames [] = {
-	"Raster Layer",
-	"Show Shading on Raster Layer",
-	"Show Tensors",
-	"Show Raster Data",
-	"-",
-	"Recalculate Raster Data Preview",
-	"Previous Raster",
-	"Next Raster",
-	"-",
-	"Vector Map",
-	"Airports",
-	"Mesh Points",
-	"Mesh Lines",
-//	"Mesh (Lores)",
-	"Mesh (Hires)",
-	"Mesh Terrains (Hires)",
-//	"Mesh Borders (Hires)",
-	"-",
-	"Move To Selection",
-	0
-};
+	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 3);
+}
 
-static	const char	kCmdKeys [] = {
-	0,	 0,
-	0,	 0,
-	0,	 0,
-	0,	 0,
-	0,	 0,	// Divider
-	'R', xplm_ControlFlag,
-	XPLM_KEY_UP, xplm_ControlFlag + xplm_OptionAltFlag,
-	XPLM_KEY_DOWN, xplm_ControlFlag + xplm_OptionAltFlag,
-	0,	 0,	// Divider2
-	'1', xplm_ControlFlag + xplm_OptionAltFlag,
-	'2', xplm_ControlFlag + xplm_OptionAltFlag,
-	'3', xplm_ControlFlag + xplm_OptionAltFlag,
-	'4', xplm_ControlFlag + xplm_OptionAltFlag,
-	'5', xplm_ControlFlag + xplm_OptionAltFlag,
-	'6', xplm_ControlFlag + xplm_OptionAltFlag,
-//	'7', xplm_ControlFlag + xplm_OptionAltFlag,
-	0,	0, // Divider 3
-	0,	0,
-	0,   0	// END
-};
-
-static	XPLMMenuID	sViewMenu = NULL;
-static	XPLMMenuID	sDEMMenu = NULL;
-static	XPLMMenuID	sDEMDataMenu = NULL;
 static	int			sDEMType = 0;
 static	int			sShowMeshPoints = 1;
 static	int			sShowMeshLines  = 1;
@@ -222,13 +182,129 @@ float		sShadingDecl = 45;
 static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0 };
 
 
-//static	int			sShowMeshBorders = 1;
-//static	int			sShowMeshTrisLo = 1;
-
 void	RF_MapView_HandleMenuCommand(void *, void *);
 void	RF_MapView_HandleDEMMenuCommand(void *, void *);
 void	RF_MapView_HandleDEMDataMenuCommand(void *, void *);
-void	RF_MapView_UpdateCommandStatus(void);
+
+int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
+{
+	switch(command) {	
+	case viewCmd_DEMChoice:
+	case viewCmd_DEMDataChoice:
+	case viewCmd_RecalcDEM:
+	case viewCmd_PrevDEM:
+	case viewCmd_NextDEM:
+	case viewCmd_ZoomSel:										return 1;
+	case viewCmd_VecMap:		ioCheck = sShowMap;				return 1;
+	case viewCmd_Airports:		ioCheck = sShowAirports;		return 1;
+	case viewCmd_ShowShading:	ioCheck = sShowShading;			return 1;
+	case viewCmd_ShowTensor:	ioCheck = sShowTensors;			return 1;
+	case viewCmd_MeshPoints:	ioCheck = sShowMeshPoints;		return 1;
+	case viewCmd_MeshLines:		ioCheck = sShowMeshLines;		return 1;
+	case viewCmd_MeshTrisHi:	ioCheck = sShowMeshTrisHi;		return 1;
+	case viewCmd_MeshTerrains:	ioCheck = sShowMeshAlphas;		return 1;
+	}
+	
+	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
+	{
+		int n = command - viewCmd_DEMChoice_Start;
+		ioCheck = sDEMType == n;
+		return n == 0 || (gDem.find(kDEMs[n].dem) != gDem.end());
+	}
+
+	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
+	{
+		int n = command - viewCmd_DEMDataChoice_Start;
+		ioCheck =sShowDEMData[n-1];
+		return gDem.find(kDEMs[n].dem) != gDem.end();
+	}
+	return 0;
+}
+
+
+
+int		RF_MapView::HandleCommand(int command)
+{
+	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
+	{
+		int n = command - viewCmd_DEMChoice_Start;
+		sDEMType = (int) n;
+		mNeedRecalcDEM = true;
+		return 1;
+	}
+
+	if(command >= viewCmd_DEMDataChoice_Start && command < viewCmd_DEMDataChoice_Stop)
+	{
+		int n = command - viewCmd_DEMDataChoice_Start;
+		sShowDEMData[n-1] = 1 - sShowDEMData[n-1];
+		return 1;
+	}
+	switch(command) {
+	case viewCmd_PrevDEM:
+		sDEMType--;
+		if (sDEMType < 0) sDEMType = DEMChoiceCount-1;
+		mNeedRecalcDEM = true;
+		return 1;
+	case viewCmd_NextDEM:
+		sDEMType++;
+		if (sDEMType >= DEMChoiceCount) sDEMType = 0;
+		mNeedRecalcDEM = true;
+		return 1;
+	case viewCmd_RecalcDEM:
+		mNeedRecalcDEM = true;
+		mNeedRecalcRelief = true;
+		return 1;
+	case viewCmd_VecMap:		sShowMap = !sShowMap;				return 1;
+	case viewCmd_Airports:		sShowAirports = !sShowAirports;		return 1;
+	case viewCmd_ShowShading:	sShowShading = !sShowShading;		return 1;
+	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		return 1;
+	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	return 1;
+	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	return 1;
+//	case viewCmd_MeshTrisLo:	sShowMeshTrisLo = !sShowMeshTrisLo;	return 1;
+	case viewCmd_MeshTrisHi:	sShowMeshTrisHi = !sShowMeshTrisHi;	return 1;
+	case viewCmd_MeshTerrains:	sShowMeshAlphas = !sShowMeshAlphas;	return 1;
+//	case viewCmd_MeshBorders:	sShowMeshBorders = !sShowMeshBorders;	return 1;
+	case viewCmd_ZoomSel:
+		{
+			Bbox2	bounds;
+			bool	has = false;
+			for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+			if (!(*f)->is_unbounded())
+			{
+				if (has)	bounds += cgal2ben((*f)->outer_ccb()->target()->point());
+				else		bounds  = cgal2ben((*f)->outer_ccb()->target()->point());
+				Pmwx::Ccb_halfedge_circulator iter, stop;
+				iter = stop = (*f)->outer_ccb();
+				do {
+					bounds += cgal2ben(iter->target()->point());
+					++iter;
+				} while (iter != stop);
+				has = true;
+			}
+			for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+			{
+				if (has)	bounds += cgal2ben((*e)->target()->point());
+				else		bounds  = cgal2ben((*e)->target()->point());
+				bounds += cgal2ben((*e)->source()->point());
+				has = true;
+			}
+			for (set<Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
+			{
+				if (has)	bounds += cgal2ben((*v)->point());
+				else		bounds  = cgal2ben((*v)->point());
+				has = true;
+			}
+			if (has)
+			{
+				mZoomer->ScrollReveal(bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
+			}
+		}
+		return 1;
+	}
+	return 0;
+}
+
+
 
 inline const char * QuickToFile(const string& s)
 {
@@ -287,14 +363,7 @@ inline	int GetBucketForEdge(Bbox2 * buckets, int bucket_count, CDT::Finite_edges
 	return bucket_count;
 }
 
-RF_MapView::RF_MapView(
-                       int                  inLeft,
-                       int                  inTop,
-                       int                  inRight,
-                       int                  inBottom,
-                       int                  inVisible,
-                       RF_Pane *			inSuper) :
-	RF_Pane(inLeft, inTop , inRight, inBottom, inVisible, "Map", inSuper),
+RF_MapView::RF_MapView(GUI_Commander * cmdr) : GUI_Commander(cmdr),
 	mNeedRecalcMapFull(true),
 	mNeedRecalcMapMeta(true),
 	mNeedRecalcDEM(true),
@@ -310,69 +379,15 @@ RF_MapView::RF_MapView(
 	mDLMeshLine = 0;
 	mDLMeshFill = 0;
 
-	int n;
-	sViewMenu = XPLMCreateMenu("View", NULL, 0, RF_MapView_HandleMenuCommand, reinterpret_cast<void *>(this));
-	n = 0;
-	while (kCmdNames[n])
-	{
-		XPLMAppendMenuItem(sViewMenu, kCmdNames[n], (void *) n, 1);
-		if (kCmdKeys[n*2])
-			XPLMSetMenuItemKey(sViewMenu,n,kCmdKeys[n*2],kCmdKeys[n*2+1]);
-		++n;
-	}
-	sDEMMenu = XPLMCreateMenu("DEMs", sViewMenu, viewCmd_DEMChoice, RF_MapView_HandleDEMMenuCommand, reinterpret_cast<void*>(this));
-	sDEMDataMenu = XPLMCreateMenu("DEM Data", sViewMenu, viewCmd_DEMDataChoice, RF_MapView_HandleDEMDataMenuCommand, reinterpret_cast<void*>(this));
-	for (n = 0; n < DEMChoiceCount; ++n)
-	{
-		XPLMAppendMenuItem(sDEMMenu, kDEMs[n].cmdName, (void *) n, 1);
-		if (n != 0)
-			XPLMAppendMenuItem(sDEMDataMenu, kDEMs[n].cmdName, (void *) n, 1);
-		if (n <= 9)
-			XPLMSetMenuItemKey(sDEMMenu, n, '0' + n, xplm_ControlFlag);
-		if (n >= 10 && n <= 19)
-			XPLMSetMenuItemKey(sDEMMenu, n, '0' + n - 10, xplm_ControlFlag + xplm_ShiftFlag);
-	}
-	RF_MapView_UpdateCommandStatus();
-
-	XPLMGenerateTextureNumbers(&mTexID, 1);
-	XPLMGenerateTextureNumbers(&mReliefID, 1);
-	XPLMGenerateTextureNumbers(&mFlowID, 1);
+	glGenTextures(1, &mTexID);
+	glGenTextures(1, &mReliefID);
+	glGenTextures(1, &mFlowID);
 	mHasTex = false;
 	mHasRelief = false;
 	mHasFlow = false;
 
 	mCurTool = 0;
 	mZoomer = new RF_MapZoomer;
-
-	mZoomer->SetPixelBounds(inLeft, inBottom + kInfoStripHeight, inRight, inTop - kInfoStripHeight);
-
-	mToolBtnsOffset   = inLeft + 10;
-	mToolStatusOffset = inLeft + 10;
-	n = 0;
-	while (kSelButtonLabels[n])
-	{
-		int labelWidth = 15 + 7 * strlen(kSelButtonLabels[n]);
-		mSelModeBtns.push_back(XPCreateWidget(mToolBtnsOffset, inTop,
-						mToolBtnsOffset + labelWidth, inTop - kInfoStripHeight, 1, kSelButtonLabels[n], 0, GetWidget(), xpWidgetClass_Button));
-		XPSetWidgetProperty(mSelModeBtns.back(), xpProperty_ButtonBehavior, xpButtonBehaviorRadioButton);
-		XPSetWidgetProperty(mSelModeBtns.back(), xpProperty_ButtonState, n == gSelectionMode);
-		mToolBtnsOffset += (labelWidth + 10);
-		++n;
-	}
-	n = 0;
-	mToolBtnsOffset += 10;
-	while (kToolButtonLabels[n])
-	{
-		int labelWidth = 15 + 7 * strlen(kToolButtonLabels[n]);
-		mToolBarBtns.push_back(XPCreateWidget(mToolBtnsOffset, inTop,
-						mToolBtnsOffset + labelWidth, inTop - kInfoStripHeight, 1, kToolButtonLabels[n], 0, GetWidget(), xpWidgetClass_Button));
-		XPSetWidgetProperty(mToolBarBtns.back(), xpProperty_ButtonBehavior, xpButtonBehaviorRadioButton);
-		XPSetWidgetProperty(mToolBarBtns.back(), xpProperty_ButtonState, n == mCurTool);
-
-		mToolBtnsOffset += (labelWidth + 10);
-		++n;
-	}
-	mToolBtnsOffset += 10;
 
 	mTools.push_back(new RF_SelectionTool(mZoomer));
 	mTools.push_back(new RF_CropTool(mZoomer));
@@ -382,8 +397,6 @@ RF_MapView::RF_MapView(
 //	mTools.push_back(new RF_TopoTester(mZoomer));
 //	mTools.push_back(new RF_MeshTester(mZoomer));
 
-	SetupForTool();
-
 //	XPCreateTab(50, 150, 300, 100, 1, "Tab A;Tab B;Tab C;Tab D", GetWidget());
 }
 
@@ -392,43 +405,88 @@ RF_MapView::~RF_MapView()
 	if (mDLMeshLine != 0)	glDeleteLists(mDLMeshLine, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 	if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
-	int n;
 	delete mZoomer;
-	for (n = 0; n < mToolFuncBtns.size(); ++n)
-		XPDestroyWidget(mToolFuncBtns[n], true);
-	for (n = 0; n < mToolProperties.size(); ++n)
-		XPDestroyWidget(mToolProperties[n], true);
-	for (n = 0; n < mSelModeBtns.size(); ++n)
-		XPDestroyWidget(mSelModeBtns[n], true);
-	for (n = 0; n < mToolBarBtns.size(); ++n)
-		XPDestroyWidget(mToolBarBtns[n], true);
+
+	#if !DEV
+		#error leak otols?
+	#endif
+}
+
+void		RF_MapView::SetBounds(int inBounds[4])
+{
+	GUI_Pane::SetBounds(inBounds);
+	mZoomer->SetPixelBounds(inBounds[0], inBounds[1], inBounds[2], inBounds[3]);
 }
 
 /***************************************************************************************************************************************
  * MAP DRAWING
  ***************************************************************************************************************************************/
 
-void	RF_MapView::DrawSelf(void)
+static void FontDrawDarkBox(
+				GUI_GraphState *				inState,
+				int 							inFontID,
+				float							color[4],	//	4-part color, featuring alpha.
+				float							inX,
+				float							inY,
+				const char *					inString)
+{
+	inState->SetState(false, 0, false, true, true, false, false);
+	glColor4f(0,0,0,0.5);
+	
+	float x1 = inX - 3;
+	float x2 = inX + GUI_MeasureRange(inFontID, inString, inString + strlen(inString)) + 3;
+	float y1 = inY - GUI_GetLineDescent(inFontID) - 3;
+	float y2 = inY - GUI_GetLineAscent(inFontID) + 3;
+	
+	glBegin(GL_QUADS);
+	glVertex2f(x1,y1);
+	glVertex2f(x1,y2);
+	glVertex2f(x2,y2);
+	glVertex2f(x2,y1);
+	glEnd();
+	
+	GUI_FontDraw(inState,inFontID, color,inX,inY,inString);
+}
+
+void	RF_MapView::Draw(GUI_GraphState * state)
 {
 	/***************************************************************************************************************************************
 	 * BASE LAYER, UNDERLAY AND DECALS
 	 ***************************************************************************************************************************************/
 
 	int	l, t, r, b;
-	XPGetWidgetGeometry(GetWidget(), &l, &t, &r, &b);
+	int lbrt[4];
+	GetBounds(lbrt);
+	l=lbrt[0];
+	b=lbrt[1];
+	r=lbrt[2];
+	t=lbrt[3];
 	RF_MapTool * cur = CurTool();
 	char * status = NULL;;
-	if (cur) status = cur->GetStatusText();
+	if (cur) 
+	{
+		int	mx, my;
+		GetMouseLocNow(&mx, &my);
+		status = cur->GetStatusText(mx,my);
+	}
 	char * mon = MonitorCaption();
 
-	XPDrawWindow(l, b, r, t,xpWindow_Screen);
+	/* TODO - map background */
+	state->SetState(false,0,false, false, false,   false, false);
+	glColor3f(0,0,0);
+	glBegin(GL_QUADS);
+	glVertex2i(l,b);
+	glVertex2i(l,t);
+	glVertex2i(r,t);
+	glVertex2i(r,b);
+	glEnd();
 
 	double	pl, pb, pr, pt;
 	double	ll, lb, lr, lt;
 	mZoomer->GetPixelBounds(pl, pb, pr, pt);
 	mZoomer->GetMapVisibleBounds(ll, lb, lr, lt);
 
-	XPLMSetGraphicsState(0, 0, 0,  0, 0,  0, 0);
+	state->SetState(0, 0, 0,  0, 0,  0, 0);
 	glColor3f(0.0, 0.0, 0.0);
 
 	glBegin(GL_QUADS);
@@ -442,7 +500,7 @@ void	RF_MapView::DrawSelf(void)
 	glEnable(GL_SCISSOR_TEST);
 
 	for (int n = 0; n < mTools.size(); ++n)
-		mTools[n]->DrawFeedbackUnderlay(mTools[n] == cur);
+		mTools[n]->DrawFeedbackUnderlay(state,mTools[n] == cur);
 
 	/***************************************************************************************************************************************
 	 * PRECALCULATE DISPLAY LISTS, ETC IF INVALID
@@ -454,17 +512,17 @@ void	RF_MapView::DrawSelf(void)
 	{
 		if (mNeedRecalcMapFull)
 		{
-			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
+//			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
 //			gMap.Index();
-			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
+//			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
 			PrecalcOGL(gMap,RF_ProgressFunc);
-			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
+//			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
 		}
 		else if (mNeedRecalcMapMeta)
 		{
-			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
+//			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
 			RecalcOGLColors(gMap,RF_ProgressFunc);
-			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
+//			RF_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
 		}
 
 		mNeedRecalcMapMeta = mNeedRecalcMapFull = false;
@@ -635,11 +693,11 @@ void	RF_MapView::DrawSelf(void)
 	if (mHasTex)
 	{
 		bool	 do_relief = mHasRelief && sShowShading;
-		XPLMSetGraphicsState(0, do_relief ? 2 : 1, 0,   0, 0,  0, 0);
-		XPLMBindTexture2d(mTexID, do_relief ? 1 : 0);
+		state->SetState(0, do_relief ? 2 : 1, 0,   0, 0,  0, 0);
+		state->BindTex(mTexID, do_relief ? 1 : 0);
 		if (do_relief)
 		{
-			XPLMBindTexture2d(mReliefID, 0);
+			state->BindTex(mReliefID, 0);
 			SetupNormalShading();
 		}
 		glColor3f(1.0, 1.0, 1.0);
@@ -667,8 +725,8 @@ void	RF_MapView::DrawSelf(void)
 
 	if(mHasFlow && sShowTensors)
 	{
-		XPLMSetGraphicsState(0, 11, 0,   0, 0,  0, 0);
-		XPLMBindTexture2d(mFlowID, 0);
+		state->SetState(0, 11, 0,   0, 0,  0, 0);
+		state->BindTex(mFlowID, 0);
 		glColor3f(1.0, 1.0, 1.0);
 		glBegin(GL_QUADS);
 		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  0.0   );glVertex2f((mFlowBounds[0]), (mFlowBounds[1]));
@@ -684,7 +742,7 @@ void	RF_MapView::DrawSelf(void)
 
 	if (sShowMap)
 	{
-		DrawMapBucketed(gMap,
+		DrawMapBucketed(state, gMap,
 			ll, lb, lr, lt,
 //			pl, pb, pr, pt,
 			gVertexSelection,
@@ -697,7 +755,7 @@ void	RF_MapView::DrawSelf(void)
 	 * DEBUG: PTS AND LINES
 	 ***************************************************************************************************************************************/
 
-	XPLMSetGraphicsState(0, 0, 0,    0, 1,    0, 0);
+	state->SetState(0, 0, 0,    0, 1,    0, 0);
 
 	if (sShowMeshPoints)
 	{
@@ -760,7 +818,7 @@ void	RF_MapView::DrawSelf(void)
 		double e, s, n, w;
 		mZoomer->GetMapVisibleBounds(w, s, e, n);
 		Bbox2	vis_area(w, s, e, n);
-		XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
+		state->SetState(0, 0, 0, 1, 1, 0, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		set<int>	apts;
 		FindAirports(vis_area, gAptIndex, apts);
@@ -805,7 +863,7 @@ void	RF_MapView::DrawSelf(void)
 //				XPLMDrawString(col, (gApts[n].bounds.xmax()),(gApts[n].bounds.ymin()),
 //														gApts[n].icao.c_str(), NULL, xplmFont_Basic);
 
-//				XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
+//				state->SetState(0, 0, 0, 1, 1, 0, 0);
 //				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
 		}
@@ -946,28 +1004,25 @@ put in  color enums?
 	glPopMatrix();
 
 	for (int n = 0; n < mTools.size(); ++n)
-		mTools[n]->DrawFeedbackOverlay(mTools[n] == cur);
+		mTools[n]->DrawFeedbackOverlay(state,mTools[n] == cur);
 
 	glDisable(GL_SCISSOR_TEST);
 
-		int w, h;
-		static GLfloat	white[3] = { 1.0, 1.0, 1.0 };
-
-	XPLMGetFontDimensions(xplmFont_Basic, &w, &h, NULL);
+		int w = 10, h = GUI_GetLineHeight(font_UI_Basic);
+		static GLfloat	white[4] = { 1.0, 1.0, 1.0, 1.0 };
 
 	if (mon)
 	{
-		XPLMDrawTranslucentDarkBox(l + 3, b + 20 + h, l + 5 + strlen(mon) * w, b + 20 - 1);
-		XPLMDrawString(white, l + 7, b + 20 + 1, mon, NULL, xplmFont_Basic);
+		FontDrawDarkBox(state, font_UI_Basic, white, l + 7, b + 20 + 1, mon);
 	}
 	if (status)
 	{
-		XPLMDrawString(white, mToolStatusOffset, b + 7, status, NULL, xplmFont_Basic);
+		GUI_FontDraw(state, font_UI_Basic, white, mToolStatusOffset, b + 7, status);
 	}
 
 	{
 		int	x, y;
-		XPLMGetMouseLocation(&x, &y);
+		GetMouseLocNow(&x, &y);
 		double	lat, lon;
 		lat = mZoomer->YPixelToLat(y);
 		lon = mZoomer->XPixelToLon(x);
@@ -981,8 +1036,7 @@ put in  color enums?
 			if (n == 0)
 			{
 				sprintf(buf, "Viewing: %s", kDEMs[sDEMType].cmdName);
-				XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
-				XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
+				FontDrawDarkBox(state, font_UI_Basic, white, l + 5, k, buf);
 				k -= (h+1);
 			}
 			else if (sShowDEMData[n-1] || n == sDEMType)
@@ -1002,8 +1056,7 @@ put in  color enums?
 						sprintf(buf,kDEMs[n].format_string,FetchTokenString(hh));
 					else
 						sprintf(buf,kDEMs[n].format_string,hh);
-					XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
-					XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
+					FontDrawDarkBox(state,font_UI_Basic, white, l + 5, k, buf);
 					k -= (h+1);
 				}
 			}
@@ -1013,29 +1066,23 @@ put in  color enums?
 	const char * nat = QuickToFile(gNaturalTerrainFile);
 	const char * obj = QuickToFile(gObjPlacementFile);
 
-	XPLMDrawTranslucentDarkBox(r-strlen(nat) * w - 20, t - 30 + h, r - 15, t - 30 - 1);
-	XPLMDrawString(white, r - strlen(nat) * w - 20, t - 30, nat, NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(nat) * w - 20, t - 30, nat);
 
-	XPLMDrawTranslucentDarkBox(r-gLanduseTransFile.size() * w - 20, t - 50 + h, r - 15, t - 50 - 1);
-	XPLMDrawString(white, r - gLanduseTransFile.size() * w - 20, t - 50, gLanduseTransFile.c_str(), NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gLanduseTransFile.size() * w - 20, t - 50, gLanduseTransFile.c_str());
 
-	XPLMDrawTranslucentDarkBox(r-gNaturalTerrainFile.size() * w - 20, t - 30 + h, r - 15, t - 30 - 1);
-	XPLMDrawString(white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str(), NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str());
 
-	XPLMDrawTranslucentDarkBox(r-gReplacementClimate.size() * w - 20, t - 70 + h, r - 15, t - 70 - 1);
-	XPLMDrawString(white, r - gReplacementClimate.size() * w - 20, t - 70, gReplacementClimate.c_str(), NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementClimate.size() * w - 20, t - 70, gReplacementClimate.c_str());
 
-	XPLMDrawTranslucentDarkBox(r-gReplacementRoads.size() * w - 20, t - 90 + h, r - 15, t - 90 - 1);
-	XPLMDrawString(white, r - gReplacementRoads.size() * w - 20, t - 90, gReplacementRoads.c_str(), NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementRoads.size() * w - 20, t - 90, gReplacementRoads.c_str());
 
-	XPLMDrawTranslucentDarkBox(r-strlen(obj) * w - 20, t - 120 + h, r - 15, t - 120 - 1);
-	XPLMDrawString(white, r - strlen(obj) * w - 20, t - 120, obj, NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(obj) * w - 20, t - 120, obj);
 
 
 	char	buf[50];
 	int	x, y;
 	int	lat, lon;
-	XPLMGetMouseLocation(&x, &y);
+	GetMouseLocNow(&x, &y);
 	lat = mZoomer->YPixelToLat(y) * 1000000.0;
 	lon = mZoomer->XPixelToLon(x) * 1000000.0;
 	char	ns = 'N';
@@ -1045,45 +1092,53 @@ put in  color enums?
 	sprintf(buf,"Lat: %02d.%06d%c Lon: %03d.%06d%c",
 		lat / 1000000, lat % 1000000, ns,
 		lon / 1000000, lon % 1000000, ew);
-	XPLMDrawTranslucentDarkBox(r-300, b + 20 + h, r - 300 + strlen(buf) * w, b + 20 - 1);
-	XPLMDrawString(white, r - 300, b + 20, buf, NULL, xplmFont_Basic);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - 300, b + 20, buf);
 }
+
+
 
 /***************************************************************************************************************************************
  * MAP INTERACTION
  ***************************************************************************************************************************************/
 
-int		RF_MapView::HandleClick(XPLMMouseStatus status, int x, int y, int button)
-{
-	RF_MapTool * cur = CurTool();
-	if (cur && cur->HandleClick(status, x, y, button)) { UpdateForTool(); return 1; }
-
-	static	int oldX = x, oldY = y;
-
-	switch(status) {
-	case xplm_MouseDown:
-		oldX = x;
-		oldY = y;
-		break;
-	case xplm_MouseDrag:
-		mZoomer->PanPixels(oldX, oldY, x, y);
-		oldX = x;
-		oldY = y;
-		break;
-	case xplm_MouseUp:
-		mZoomer->PanPixels(oldX, oldY, x, y);
-		break;
-	}
-
-	return 1;
-}
-
-int		RF_MapView::HandleKey(char key, XPLMKeyFlags flags, char vkey)
+int		RF_MapView::MouseMove(int x, int y			  )
 {
 	return 0;
 }
 
-int		RF_MapView::HandleMouseWheel(int x, int y, int direction)
+int		RF_MapView::MouseDown(int x, int y, int button)
+{
+	RF_MapTool * cur = CurTool();
+	if (cur && cur->HandleClick(xplm_MouseDown, x, y, button, GetModifiersNow())) { return 1; }
+
+	mOldX = x;
+	mOldY = y;
+}
+
+void	RF_MapView::MouseDrag(int x, int y, int button)
+{
+	RF_MapTool * cur = CurTool();
+	if (cur && cur->HandleClick(xplm_MouseDrag, x, y, button, GetModifiersNow())) return;
+
+	mZoomer->PanPixels(mOldX, mOldY, x, y);
+	mOldX = x;
+	mOldY = y;
+}
+
+void	RF_MapView::MouseUp  (int x, int y, int button)
+{
+	RF_MapTool * cur = CurTool();
+	if (cur && cur->HandleClick(xplm_MouseUp, x, y, button, GetModifiersNow())) 
+		return;
+	mZoomer->PanPixels(mOldX, mOldY, x, y);
+}	
+
+int		RF_MapView::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
+{
+	return 0;
+}
+
+int		RF_MapView::ScrollWheel(int x, int y, int direction, int axis)
 {
 	double	zoom = 1.0;
 	while (direction > 0)
@@ -1179,162 +1234,13 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 		switch(message) {
 		case rf_Msg_SelectionModeChanged:
 			{
-				for (n = 0; n < mSelModeBtns.size(); ++n)
-					XPSetWidgetProperty(mSelModeBtns[n], xpProperty_ButtonState, n == gSelectionMode);
+				#if !DEV
+					#error TODO
+				#endif
 			}
 			break;
 		}
 		break;
-	}
-	RF_MapView_UpdateCommandStatus();
-}
-
-void	RF_MapView::SetupForTool(void)
-{
-	int n;
-
-	for (n = 0; n < mToolBarBtns.size(); ++n)
-		XPSetWidgetProperty(mToolBarBtns[n], xpProperty_ButtonState, mCurTool == n);
-
-	// Blow away old btns
-	for (n = 0; n < mToolFuncBtns.size(); ++n)
-		XPDestroyWidget(mToolFuncBtns[n], true);
-	for (n = 0; n < mToolProperties.size(); ++n)
-		XPDestroyWidget(mToolProperties[n], true);
-
-	mToolProperties.clear();
-	mToolFuncBtns.clear();
-
-	int l, b, r, t;
-	XPGetWidgetGeometry(GetWidget(), &l, &t, &r, &b);
-	mToolStatusOffset = l + 10;
-
-	RF_MapTool * cur = CurTool();
-	if (cur)
-	{
-		int	btnLeft = mToolBtnsOffset;
-		for (n = 0; n < cur->GetNumButtons(); ++n)
-		{
-			string	label;
-			cur->GetNthButtonName(n, label);
-			int labelWidth = 15 + 7 * label.length();
-			mToolFuncBtns.push_back(XPCreateWidget(btnLeft, t, btnLeft + labelWidth, t - kInfoStripHeight,
-				1, label.c_str(), 0, GetWidget(), xpWidgetClass_Button));
-			btnLeft += (labelWidth + 10);
-		}
-
-		for (n = 0; n < cur->GetNumProperties(); ++n)
-		{
-			string	prop;
-			double	val;
-			char	valStr[50];
-			cur->GetNthPropertyName(n, prop);
-			val = cur->GetNthPropertyValue(n);
-			sprintf(valStr, "%lf", val);
-			int	labelWidth = 15 + 7 * prop.length();
-			mToolProperties.push_back(
-				XPCreateWidget(mToolStatusOffset, b + kInfoStripHeight, mToolStatusOffset + labelWidth, b,
-					1, prop.c_str(), 0, GetWidget(), xpWidgetClass_Caption));
-			XPSetWidgetProperty(mToolProperties.back(), xpProperty_CaptionLit, 1);
-			mToolStatusOffset += (10 + 	labelWidth);
-
-			labelWidth = 80;
-			mToolProperties.push_back(
-				XPCreateWidget(mToolStatusOffset, b + kInfoStripHeight, mToolStatusOffset + labelWidth, b,
-					1, valStr, 0, GetWidget(), xpWidgetClass_TextField));
-			mToolStatusOffset += (10 + 	labelWidth);
-		}
-
-		mToolStatusOffset += 10;
-	}
-}
-
-void	RF_MapView::UpdateForTool(void)
-{
-	RF_MapTool * cur = CurTool();
-	if (!cur) return;
-	for (int n = 0; n < cur->GetNumProperties(); ++n)
-	{
-		double	d = cur->GetNthPropertyValue(n);
-		char	buf[50];
-		sprintf(buf,"%lf", d);
-		XPSetWidgetDescriptor(mToolProperties[n * 2 + 1], buf);
-	}
-}
-
-int		RF_MapView::MessageFunc(
-                                   XPWidgetMessage      inMessage,
-                                   long                 inParam1,
-                                   long                 inParam2)
-{
-	XPWidgetID	target;
-	int n;
-	RF_MapTool * cur = CurTool();
-	switch(inMessage) {
-	case xpMsg_KeyPress:
-		if (cur)
-		{
-			if (KEY_CHAR(inParam1) == XPLM_KEY_RETURN)
-			{
-				target = XPGetWidgetWithFocus();
-				for (n = 0; n < cur->GetNumProperties(); ++n)
-				{
-					if (target == mToolProperties[n*2+1])
-					{
-						char	buf[60];
-						XPGetWidgetDescriptor(target, buf, sizeof(buf));
-						cur->SetNthPropertyValue(n, atof(buf));
-						UpdateForTool();
-						XPLoseKeyboardFocus(target);
-						return 1;
-					}
-				}
-			}
-			if (KEY_CHAR(inParam1) == XPLM_KEY_ESCAPE)
-			{
-				XPLoseKeyboardFocus(XPGetWidgetWithFocus());
-				UpdateForTool();
-				return 1;
-			}
-		}
-		return RF_Pane::MessageFunc(inMessage, inParam1, inParam2);
-	case xpMsg_PushButtonPressed:
-	case xpMsg_ButtonStateChanged:
-		target = (XPWidgetID) inParam1;
-		if (cur)
-		for (n = 0; n < mToolFuncBtns.size(); ++n)
-		{
-			if (target == mToolFuncBtns[n])
-			{
-				cur->NthButtonPressed(n);
-				UpdateForTool();
-				return 1;
-			}
-		}
-		for (n = 0; n < mSelModeBtns.size(); ++n)
-		{
-			if (target == mSelModeBtns[n])
-			{
-				RF_SetSelectionMode(n);
-				return 1;
-			}
-		}
-		for (n = 0; n < mToolBarBtns.size(); ++n)
-		{
-			if (target == mToolBarBtns[n])
-			{
-				if (mCurTool != n)
-				{
-					mCurTool = n;
-					SetupForTool();
-				}
-				return 1;
-			}
-		}
-
-		return 0;
-	default:
-		return RF_Pane::MessageFunc(inMessage, inParam1, inParam2);
 	}
 }
 
@@ -1404,126 +1310,12 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 	return true;
 }
 
-void	RF_MapView_HandleDEMMenuCommand(void * r, void * i)
-{
-	sDEMType = (int) i;
-	RF_MapView * me = (RF_MapView *) r;
-	me->mNeedRecalcDEM = true;
-	RF_MapView_UpdateCommandStatus();
-}
-
-void	RF_MapView_HandleDEMDataMenuCommand(void * r, void * i)
-{
-	int item = (int) i - 1;
-	sShowDEMData[item] = 1 - sShowDEMData[item];
-
-	RF_MapView_UpdateCommandStatus();
-}
-
-void	RF_MapView_HandleMenuCommand(void * r, void * i)
-{
-	int cmd = (int) i;
-	RF_MapView * me = (RF_MapView *) r;
-	switch(cmd) {
-	case viewCmd_PrevDEM:
-		sDEMType--;
-		if (sDEMType < 0) sDEMType = DEMChoiceCount-1;
-		me->mNeedRecalcDEM = true;
-		break;
-	case viewCmd_NextDEM:
-		sDEMType++;
-		if (sDEMType >= DEMChoiceCount) sDEMType = 0;
-		me->mNeedRecalcDEM = true;
-		break;
-	case viewCmd_RecalcDEM:
-		me->mNeedRecalcDEM = true;
-		me->mNeedRecalcRelief = true;
-		break;
-	case viewCmd_VecMap:		sShowMap = !sShowMap;				break;
-	case viewCmd_Airports:		sShowAirports = !sShowAirports;		break;
-	case viewCmd_ShowShading:	sShowShading = !sShowShading;		break;
-	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		break;
-	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	break;
-	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	break;
-//	case viewCmd_MeshTrisLo:	sShowMeshTrisLo = !sShowMeshTrisLo;	break;
-	case viewCmd_MeshTrisHi:	sShowMeshTrisHi = !sShowMeshTrisHi;	break;
-	case viewCmd_MeshTerrains:	sShowMeshAlphas = !sShowMeshAlphas;	break;
-//	case viewCmd_MeshBorders:	sShowMeshBorders = !sShowMeshBorders;	break;
-	case viewCmd_ZoomSel:
-		{
-			Bbox2	bounds;
-			bool	has = false;
-			for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
-			if (!(*f)->is_unbounded())
-			{
-				if (has)	bounds += cgal2ben((*f)->outer_ccb()->target()->point());
-				else		bounds  = cgal2ben((*f)->outer_ccb()->target()->point());
-				Pmwx::Ccb_halfedge_circulator iter, stop;
-				iter = stop = (*f)->outer_ccb();
-				do {
-					bounds += cgal2ben(iter->target()->point());
-					++iter;
-				} while (iter != stop);
-				has = true;
-			}
-			for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
-			{
-				if (has)	bounds += cgal2ben((*e)->target()->point());
-				else		bounds  = cgal2ben((*e)->target()->point());
-				bounds += cgal2ben((*e)->source()->point());
-				has = true;
-			}
-			for (set<Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
-			{
-				if (has)	bounds += cgal2ben((*v)->point());
-				else		bounds  = cgal2ben((*v)->point());
-				has = true;
-			}
-			if (has)
-			{
-				me->mZoomer->ScrollReveal(bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
-			}
-		}
-		break;
-	}
-	RF_MapView_UpdateCommandStatus();
-}
-
-void	RF_MapView_UpdateCommandStatus(void)
-{
-	XPLMCheckMenuItem(sViewMenu, viewCmd_VecMap	     ,sShowMap		? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_Airports	 ,sShowAirports ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowShading ,sShowShading  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowTensor  ,sShowTensors  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshPoints  ,sShowMeshPoints ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshLines   ,sShowMeshLines  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-//	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisLo  ,sShowMeshTrisLo ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisHi  ,sShowMeshTrisHi ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTerrains,sShowMeshAlphas ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-//	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshBorders ,sShowMeshBorders?xplm_Menu_Checked : xplm_Menu_Unchecked);
-
-
-//	XPLMEnableMenuItem(sViewMenu, viewCmd_ZoomSel, !gFaceSelection.empty() || !gEdgeSelection.empty() || !gVertexSelection.empty());
-
-	for (int n = 0; n < DEMChoiceCount; ++n) {
-		XPLMCheckMenuItem(sDEMMenu, n, (sDEMType == n) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (gDem.find(kDEMs[n].dem) != gDem.end()));
-
-		if (n != 0)
-		{
-			XPLMCheckMenuItem(sDEMDataMenu, n-1, sShowDEMData[n-1] ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-			XPLMEnableMenuItem(sDEMDataMenu, n-1, (gDem.find(kDEMs[n].dem) != gDem.end()));
-		}
-	}
-}
-
-
 char * RF_MapView::MonitorCaption(void)
 {
-	static float then = XPLMGetElapsedTime();
+	static float then = (float) clock() / float (CLOCKS_PER_SEC);
 	static char buf[1024];
 	int n = 0;
-	float now = XPLMGetElapsedTime();
+	float now = (float) clock() / float (CLOCKS_PER_SEC);
 	float elapsed = now - then;
 	then = now;
 	float fps = (elapsed == 0.0) ? 60.0 : 1.0 / elapsed;
@@ -1534,7 +1326,7 @@ char * RF_MapView::MonitorCaption(void)
 
 	CDT::Face_handle	recent;
 		int	x, y;
-		XPLMGetMouseLocation(&x, &y);
+		GetMouseLocNow(&x, &y);
 		double	lat, lon;
 		lat = mZoomer->YPixelToLat(y);
 		lon = mZoomer->XPixelToLon(x);
@@ -1616,4 +1408,16 @@ void	RF_MapView::SetFlowImage(
 	mFlowBounds[n] = bounds[n];
 	if (LoadTextureFromImage(image, mFlowID, tex_Mipmap + tex_Linear, NULL, NULL, &mFlowS, &mFlowT))
 		mHasFlow = true;
+}
+
+void	RF_MapView::ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam)
+{
+}
+
+void	RF_MapView::TimerFired(void)
+{
+	Refresh();
 }

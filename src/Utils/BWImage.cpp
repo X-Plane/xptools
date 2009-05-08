@@ -23,7 +23,6 @@
 #include "BWImage.h"
 //#include "CGALTypes.h"
 #include "PolyRasterUtils.h"
-#include "XPLMGraphics.h"
 #if APL
 #include <OpenGL/gl.h>
 #else

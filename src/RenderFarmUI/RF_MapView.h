@@ -23,9 +23,21 @@
 #ifndef RF_MAPVIEW_H
 #define RF_MAPVIEW_H
 
+#include "GUI_Timer.h"
+
 #include "CompGeomDefs2.h"
-#include "RF_Pane.h"
+#include "GUI_Pane.h"
+#include "GUI_Commander.h"
+#include "GUI_Listener.h"
 #include "RF_Notify.h"
+#include "GUI_GraphState.h"
+#include "AssertUtils.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
+#endif
 
 class	RF_MapZoomer;
 class	RF_MapTool;
@@ -41,39 +53,48 @@ extern	float		sShadingDecl;
 
 #define	MESH_BUCKET_SIZE 4
 
-class	RF_MapView : public RF_Pane, public RF_Notifiable {
+class	RF_MapView : public GUI_Pane, public GUI_Commander, public GUI_Listener, public RF_Notifiable, public GUI_Timer {
 public:
 
-					RF_MapView(
-                                   int                  inLeft,
-                                   int                  inTop,
-                                   int                  inRight,
-                                   int                  inBottom,
-                                   int                  inVisible,
-                                   RF_Pane *			inSuper);
+					 RF_MapView(GUI_Commander * cmdr);
 	virtual			~RF_MapView();
 
-	virtual	void	DrawSelf(void);
-	virtual	int		HandleClick(XPLMMouseStatus status, int x, int y, int button);
-	virtual	int		HandleKey(char key, XPLMKeyFlags flags, char vkey);
-	virtual	int		HandleMouseWheel(int x, int y, int direction);
+	// GUI_Pane
+	virtual void	SetBounds(int inBounds[4]);	
+	virtual	void	Draw(GUI_GraphState * state);
+	virtual	int		MouseMove(int x, int y			  );
+	virtual	int		MouseDown(int x, int y, int button);
+	virtual	void	MouseDrag(int x, int y, int button);
+	virtual	void	MouseUp  (int x, int y, int button);
+	virtual	int		ScrollWheel(int x, int y, int dist, int axis);
 
+	// GUI_Commander
+	virtual	int		AcceptTakeFocus(void) { return 1; }
+	virtual	int		HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int		HandleCommand(int command);
+	virtual	int		CanHandleCommand(int command, string& ioName, int& ioCheck);
+
+	// RF_Notifiable
 	virtual	void	HandleNotification(int catagory, int message, void * param);
 
-	virtual	int		MessageFunc(
-                                   XPWidgetMessage      inMessage,
-                                   long                 inParam1,
-                                   long                 inParam2);
+	// GUI_Listener
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam);
+
+	// GUI_Timer
+	virtual	void		TimerFired(void);
 
 			void	SetFlowImage(
 							ImageInfo&				image,
 							double					bounds[4]);
 
+			void	MakeMenus(void);
+
 private:
 
 			bool	RecalcDEM(bool do_relief);
-			void	SetupForTool(void);
-			void	UpdateForTool(void);
 
 			RF_MapTool *	CurTool(void);
 			char *	MonitorCaption(void);
@@ -81,17 +102,20 @@ private:
 	RF_MapZoomer *			mZoomer;
 	int						mCurTool;
 	vector<RF_MapTool *>	mTools;
+	
+	int						mOldX, mOldY;
+	
 
-	vector<XPWidgetID>		mToolFuncBtns;		// Buttons that do tool-specific cmds
-	vector<XPWidgetID>		mToolProperties;	// Editing of tool properties
-	vector<XPWidgetID>		mSelModeBtns;		// Selection-mode buttons
-	vector<XPWidgetID>		mToolBarBtns;		// Tools themselves
+	vector<GUI_Pane *>		mToolFuncBtns;		// Buttons that do tool-specific cmds
+	vector<GUI_Pane *>		mToolProperties;	// Editing of tool properties
+	vector<GUI_Pane *>		mSelModeBtns;		// Selection-mode buttons
+	vector<GUI_Pane *>		mToolBarBtns;		// Tools themselves
 
 	int						mToolBtnsOffset;
 	int						mToolStatusOffset;
 
-	int						mTexID;
-	int						mReliefID;
+	GLuint					mTexID;
+	GLuint					mReliefID;
 	bool					mHasTex;
 	bool					mHasRelief;
 	float					mTexS;
@@ -100,7 +124,7 @@ private:
 	float					mReliefT;
 	double					mDEMBounds[4];
 
-	int						mFlowID;
+	GLuint					mFlowID;
 	bool					mHasFlow;
 	float					mFlowS;
 	float					mFlowT;

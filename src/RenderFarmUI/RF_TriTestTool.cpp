@@ -23,7 +23,7 @@
 #include "RF_TriTestTool.h"
 #include "MapDefs.h"
 #include "RF_Selection.h"
-#include "XPLMGraphics.h"
+#include "GUI_GraphState.h"
 #include "ParamDefs.h"
 #include "RF_MapZoomer.h"
 #include "RF_Globals.h"
@@ -50,11 +50,13 @@ RF_TriTestTool::~RF_TriTestTool()
 }
 
 void	RF_TriTestTool::DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 				bool				inCurrent)
 {
 }
 
 void	RF_TriTestTool::DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 				bool				inCurrent)
 {
 	if (inCurrent)
@@ -67,7 +69,8 @@ bool	RF_TriTestTool::HandleClick(
 				XPLMMouseStatus		inStatus,
 				int 				inX,
 				int 				inY,
-				int 				inButton)
+				int 				inButton,
+				GUI_KeyFlags		inModifiers)
 {
 	if (inButton) return false;
 	if (inStatus == xplm_MouseDown)
@@ -93,13 +96,11 @@ void	RF_TriTestTool::NthButtonPressed(int n)
 {
 }
 
-char *	RF_TriTestTool::GetStatusText(void)
+char *	RF_TriTestTool::GetStatusText(int x, int y)
 {
 	static char buf[1024];
 
-	int	x, y;
 	double	lat, lon;
-	XPLMGetMouseLocation(&x, &y);
 	lat = GetZoomer()->YPixelToLat(y);
 	lon = GetZoomer()->XPixelToLon(x);
 //	double h = MeshHeightAtPoint(gTriangulation, lon, lat);

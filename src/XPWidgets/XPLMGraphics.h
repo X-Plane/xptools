@@ -1,3 +1,4 @@
+#error should not be used.
 /*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *

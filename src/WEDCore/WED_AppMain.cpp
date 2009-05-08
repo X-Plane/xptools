@@ -47,9 +47,6 @@
 #include "initializer.h"
 #endif
 
-#include "XPWidgets.h"
-#include "XPWidgetDialogs.h"
-
 #include "WED_Menus.h"
 
 #include "GUI_ScrollerPane.h"

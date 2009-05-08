@@ -24,11 +24,7 @@
 #include "HTTPClient.h"
 #include "AssertUtils.h"
 
-#if WED
 	#include "GUI_GraphState.h"
-#else
-	#include "XPLMGraphics.h"
-#endif
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -636,11 +632,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 			delete root;
 			delete mFetchImage;
 			mFetchImage = NULL;
-			#if WED
-				glGenTextures(1,(GLuint*) &mTexNum);
-			#else
-				XPLMGenerateTextureNumbers(&mTexNum, 1);
-			#endif
+			glGenTextures(1,(GLuint*) &mTexNum);
 
 			LoadTextureFromImage(*mImage, mTexNum, tex_Linear, NULL, NULL, &mS, &mT);
 			return mImage;
@@ -768,7 +760,6 @@ bool			AsyncImage::IsDone(void)
 	return cr && im;
 }
 
-#if WED
 void	AsyncImage::Draw(double coords[4][2],GUI_GraphState * g)
 {
 	g->SetState(0,1,0,  0, 0,   0, 0);
@@ -781,22 +772,6 @@ void	AsyncImage::Draw(double coords[4][2],GUI_GraphState * g)
 	glTexCoord2f(0.0, 0.0);		glVertex2d(coords[3][1],coords[3][0]);
 	glEnd();
 }
-
-#else
-void	AsyncImage::Draw(double coords[4][2])
-{
-	XPLMSetGraphicsState(0,1,0,  0, 0,   0, 0);
-	glColor3f(1.0, 1.0, 1.0);
-	XPLMBindTexture2d(mTexNum, 0);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, mT);		glVertex2d(coords[0][1],coords[0][0]);
-	glTexCoord2f(mS, mT);		glVertex2d(coords[1][1],coords[1][0]);
-	glTexCoord2f(mS, 0.0);		glVertex2d(coords[2][1],coords[2][0]);
-	glTexCoord2f(0.0, 0.0);		glVertex2d(coords[3][1],coords[3][0]);
-	glEnd();
-}
-#endif
-
 
 AsyncImageLocator::AsyncImageLocator(AsyncConnectionPool * pool)
 {

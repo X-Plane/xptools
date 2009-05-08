@@ -23,7 +23,16 @@
 #ifndef OE_ZOOMER3D_H
 #define OE_ZOOMER3D_H
 
-#include "XPLMDisplay.h"
+//#include "XPLMDisplay.h"
+
+enum {
+     xplm_MouseDown                           = 1,
+     xplm_MouseDrag                           = 2,
+     xplm_MouseUp                             = 3,
+
+     xplm_MouseWheel						  = 4
+};
+typedef int XPLMMouseStatus;
 
 /*
 

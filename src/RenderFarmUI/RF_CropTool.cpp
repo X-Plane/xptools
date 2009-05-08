@@ -21,7 +21,7 @@
  *
  */
 #include "RF_CropTool.h"
-
+#include "GUI_GraphState.h"
 #include "RF_MapTool.h"
 #include "RF_MapZoomer.h"
 #include "RF_Notify.h"
@@ -33,7 +33,6 @@
 #include "UIUtils.h"
 #include "AssertUtils.h"
 #include "RF_DrawMap.h"
-#include "XPLMGraphics.h"
 #include "GISTool_Globals.h"
 
 #if APL
@@ -75,16 +74,18 @@ RF_CropTool::~RF_CropTool()
 }
 
 void	RF_CropTool::DrawFeedbackUnderlay(
+							GUI_GraphState *	inState,
 							bool				inCurrent)
 {
 }
 
 void	RF_CropTool::DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 							bool				inCurrent)
 {
 	if (inCurrent && mCrop)
 	{
-		XPLMSetGraphicsState(0, 0, 0,    0, 0,  0, 0);
+		state->SetState(0, 0, 0,    0, 0,  0, 0);
 		glColor3f(0.0, 1.0, 0.3);
 		glBegin(GL_QUADS);
 		for (int n = 0; n < 8; ++n)
@@ -103,7 +104,8 @@ bool	RF_CropTool::HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
-							int 				inButton)
+							int 				inButton,
+							GUI_KeyFlags		inModifiers)
 {
 	if (!mCrop) return false;
 	if (inButton != 0) return false;
@@ -186,7 +188,7 @@ void	RF_CropTool::NthButtonPressed(int n)
 	}
 }
 
-char *	RF_CropTool::GetStatusText(void)
+char *	RF_CropTool::GetStatusText(int x, int y)
 {
 	return NULL;
 }

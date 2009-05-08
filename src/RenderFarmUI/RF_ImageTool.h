@@ -33,14 +33,17 @@ public:
 	virtual			~RF_ImageTool();
 
 	virtual	void	DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	void	DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	bool	HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
-							int 				inButton);
+							int 				inButton,
+							GUI_KeyFlags		inModifiers);
 
 	virtual int		GetNumProperties(void);
 	virtual	void	GetNthPropertyName(int, string&);
@@ -51,7 +54,7 @@ public:
 	virtual	void	GetNthButtonName(int, string&);
 	virtual	void	NthButtonPressed(int);
 
-	virtual	char *	GetStatusText(void);
+	virtual	char *	GetStatusText(int x, int y);
 
 	virtual	double		UIToLogX(double) const;
 	virtual	double		UIToLogY(double) const;
@@ -69,7 +72,7 @@ private:
 			void		GetOrthoPhotos(void);
 
 	DragHandleSet	mHandles;
-	int				mTexID;
+	GLuint			mTexID;
 	bool			mVisible;
 	bool			mBits;
 	string			mFile;

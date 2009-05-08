@@ -22,7 +22,10 @@
  */
 
 // Stuff we need to init
-#include "XWidgetApp.h"
+//#include "XWidgetApp.h"
+#include "GUI_MemoryHog.h"
+#include "GUI_Clipboard.h"
+#include "GUI_Timer.h"
 #include "XESInit.h"
 #include "DEMDefs.h"
 #include "RF_ProcessingCmds.h"
@@ -30,8 +33,6 @@
 #include "RF_EditCommands.h"
 #include "RF_SpecialCommands.h"
 #include "RF_MapView.h"
-#include "RF_PrefsDialog.h"
-#include "XPLMProcessing.h"
 #include "RF_Assert.h"
 #include "DEMTables.h"
 #include "ObjTables.h"
@@ -39,8 +40,6 @@
 #include <CGAL/assertions.h>
 #include <sys/stat.h>
 #include "fcntl.h"
-#include "XPWidgets.h"
-#include "XPWidgetDialogs.h"
 #include "GISTool_Utils.h"
 #include "GISTooL_ObsCmds.h"
 #include "GISTool_DemCmds.h"
@@ -52,6 +51,9 @@
 #include "GISTool_Globals.h"
 #include "RF_Notify.h"
 #include "RF_Msgs.h"
+#include "RF_Application.h"
+#include "RF_MapView.h"
+#include "GUI_Window.h"
 
 
 #if APL && defined(__MWERKS__)
@@ -196,11 +198,7 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 
 static int fifo = NULL;
 
-float CheckFifo(
-                                   float                inElapsedSinceLastCall,
-                                   float                inElapsedTimeSinceLastFlightLoop,
-                                   int                  inCounter,
-                                   void *               inRefcon)
+static float CheckFifo(void)
 {
 	static vector<char> data;
 	fd_set rd, wr, er;
@@ -295,9 +293,16 @@ void dump(Pmwx& m)
 	}
 }
 
+class	fifo_timer : public GUI_Timer {
+public:
 
+	virtual void TimerFired()	
+	{
+		CheckFifo();
+	}
+};
 
-void	XGrindInit(string& outName)
+void	XGrindInit(void)
 {
 	#if APL
 	int e = mkfifo("wed_cmds", 0777);
@@ -308,8 +313,6 @@ void	XGrindInit(string& outName)
 		fifo=open("wed_cmds",O_RDONLY | O_NONBLOCK, 0);
 	}
 	#endif
-
-	XPLMRegisterFlightLoopCallback(CheckFifo,-1, NULL);
 
 #if APL && defined(__MWERKS__)
 //	SIOUXSettings.stubmode = true;
@@ -324,22 +327,21 @@ void	XGrindInit(string& outName)
 #endif
 	XESInit();
 
-	RF_LoadPrefs();
+//	RF_LoadPrefs();
 
 	LoadDEMTables();
 	LoadObjTables();
 
-	int w, h;
-	XPLMGetScreenSize(&w, &h);
-	RegisterFileCommands();
-	RegisterEditCommands();
-	RF_MapView *	map_view = new RF_MapView(20, h - 20, w - 20, 20, 1, NULL);
-	RegisterProcessingCommands();
-	RegisterSpecialCommands();
+//	int w, h;
+//	XPLMGetScreenSize(&w, &h);
+//	RegisterFileCommands();
+//	RegisterEditCommands();
+//	RF_MapView *	map_view = new RF_MapView(20, h - 20, w - 20, 20, 1, NULL);
+//	RegisterProcessingCommands();
+//	RegisterSpecialCommands();
 
 	RF_AssertInit();
 
-	XPInitDefaultMargins();
 #if 0
 	XPWidgetID	foo = XPCreateWidgetLayout(0, XP_DIALOG_BOX, "Title", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
 									XP_TABS, "Tab 1;Tab 2;Tab 3", NULL,
@@ -463,15 +465,66 @@ void	XGrindInit(string& outName)
 
 }
 
-
-bool	XGrindCanQuit(void)
-{
-	return true;
-}
-
 void	XGrindDone(void)
 {
-	RF_SavePrefs();
+//	RF_SavePrefs();
 	if(fifo) close(fifo);
 	unlink("wed_cmds");
+}
+
+
+
+#if IBM
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+#else
+int main(int argc, char * argv[])
+#endif
+{
+#if LIN
+	// setup signal handlers
+	Initializer initializer(&argc, &argv, 0);
+#endif
+#if IBM
+	gInstance = hInstance;
+	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
+#endif
+	GUI_MemoryHog::InstallNewHandler();
+	GUI_InitClipboard();
+#if LIN
+	RF_Application	app(argc, argv);
+#else
+	RF_Application	app;
+#endif
+
+	XGrindInit();
+
+	fifo_timer * t = new fifo_timer;
+	t->Start(0.1);
+
+	int bounds[4] = { 0, 40, 1024, 768 };
+	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_movable | xwin_style_resizable | xwin_style_visible, bounds, &app);
+
+	bounds[3] -= bounds[1];
+	bounds[1] = 0;
+
+	RF_MapView * map_view = new RF_MapView(main_window);
+	map_view->MakeMenus();
+	map_view->SetParent(main_window);
+	map_view->SetBounds(bounds);
+	map_view->SetSticky(1,1,1,1);
+	map_view->Show();
+	map_view->Start(0.05);
+	
+	map_view->TakeFocus();
+	
+	app.Run();
+
+	t->Stop();
+	delete t;
+
+	XGrindDone();
+
+	GUI_MemoryHog::RemoveNewHandler();
+
+	return 0;
 }

@@ -23,9 +23,13 @@
 #ifndef TERRASERVER_H
 #define TERRASERVER_H
 
-#if WED
-class	GUI_GraphState;
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
 #endif
+
+class	GUI_GraphState;
 
 struct	ImageInfo;
 class	HTTPConnection;
@@ -102,11 +106,7 @@ public:
 	bool			GetCoords(double	coords[4][2]);		// NW, NE, SE, SW x Lat, Lon
 	bool			HasErr(void);
 	bool			IsDone(void);
-	#if WED
-		void		Draw(double coords[4][2], GUI_GraphState * g);
-	#else
-		void		Draw(double coords[4][2]);
-	#endif
+	void			Draw(double coords[4][2], GUI_GraphState * g);
 
 	int				GetGen(void) { return mGen; }
 	void			SetGen(int g) { mGen = g; }
@@ -136,11 +136,8 @@ private:
 
 	float 			mS;
 	float			mT;
-	#if WED
-	unsigned long	mTexNum;
-	#else
-	int				mTexNum;
-	#endif
+
+	GLuint			mTexNum;
 
 	int				mGen;
 

@@ -1,3 +1,4 @@
+#error do not use this.
 /*
  * Copyright (c) 2004, Ben Supnik and Sandy Barbour.
  *

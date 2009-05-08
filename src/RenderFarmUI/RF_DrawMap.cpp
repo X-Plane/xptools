@@ -31,11 +31,9 @@
 #include "ParamDefs.h"
 #include "MapAlgs.h"
 #include "DEMTables.h"
-#include "XPLMGraphics.h"
-#include "XPLMProcessing.h"
+#include "GUI_GraphState.h"
 #include "XESConstants.h"
 #include "ObjTables.h"
-#include "XPLMDisplay.h"
 
 #define DRAW_FACES 1
 #define DRAW_FEATURES 1
@@ -166,8 +164,8 @@ void draw_he(Halfedge_handle e)
 	if(b.p1 == b.c1 && b.p2 == b.c2)
 	c=1.0;
 
-	if(XPLMGetModifiers() & xplm_ShiftFlag)
-		c=1.0;
+//	if(XPLMGetModifiers() & xplm_ShiftFlag)
+//		c=1.0;
 
 	for(float s = 0.0; s < c; ++s)
 	{
@@ -546,7 +544,8 @@ void	FaceToScaledPoly(Pmwx::Face_const_handle	f, Polygon2& p, vector<Polygon2>& 
 
 
 void	DrawMapBucketed(
-				Pmwx& 	inMap,
+				GUI_GraphState *state,
+				Pmwx&			inMap,
 				double			mapWest,
 				double			mapSouth,
 				double			mapEast,
@@ -560,7 +559,7 @@ void	DrawMapBucketed(
 				const set<Pmwx::Face_handle>&		faceSel,
 				const set<PointFeatureSelection>&	pointFeatureSel)
 {
-	XPLMSetGraphicsState(0, 0, 0,   0, 1,   0, 0);
+	state->SetState(0, 0, 0,   0, 1,   0, 0);
 
 	double	mapWidth = mapEast - mapWest;
 	double	mapHeight = mapNorth - mapSouth;

@@ -21,7 +21,7 @@
  *
  */
 #include "RF_ImageTool.h"
-#include "XPLMGraphics.h"
+#include "GUI_GraphState.h"
 #include "RF_MapZoomer.h"
 #include "PlatformUtils.h"
 #include "TexUtils.h"
@@ -82,7 +82,7 @@ RF_ImageTool::RF_ImageTool(RF_MapZoomer * inZoomer) :
 	mVisible(false),
 	mBits(false)
 {
-	XPLMGenerateTextureNumbers(&mTexID, 1);
+	glGenTextures(1, &mTexID);
 }
 
 RF_ImageTool::~RF_ImageTool()
@@ -92,18 +92,20 @@ RF_ImageTool::~RF_ImageTool()
 }
 
 void	RF_ImageTool::DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 		bool				inCurrent)
 {
 }
 
 void	RF_ImageTool::DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 		bool				inCurrent)
 {
 	if (mVisible && mBits)
 	{
-		XPLMSetGraphicsState(0, 1, 0,    0, 1,  0, 0);
+		state->SetState(0, 1, 0,    0, 1,  0, 0);
 		glColor4f(1.0, 1.0, 1.0, 0.5);
-		XPLMBindTexture2d(mTexID, 0);
+		state->BindTex(mTexID, 0);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 0.0);
 		glVertex2f( GetZoomer()->LonToXPixel(mCoords[0]),
@@ -122,7 +124,7 @@ void	RF_ImageTool::DrawFeedbackOverlay(
 
 	if (inCurrent && mVisible)
 	{
-		XPLMSetGraphicsState(0, 0, 0,    0, 0,  0, 0);
+		state->SetState(0, 0, 0,    0, 0,  0, 0);
 		glColor3f(0.0, 1.0, 0.3);
 		glBegin(GL_QUADS);
 		for (int n = 0; n < 4; ++n)
@@ -141,7 +143,8 @@ bool	RF_ImageTool::HandleClick(
 		XPLMMouseStatus		inStatus,
 		int 				inX,
 		int 				inY,
-		int 				inButton)
+		int 				inButton,
+		GUI_KeyFlags		inModifiers)
 {
 	if (!mVisible) return false;
 	if (inButton != 0) return false;
@@ -197,7 +200,7 @@ void	RF_ImageTool::NthButtonPressed(int n)
 	case 0:	/* OPEN */
 		if (GetFilePathFromUser(getFile_Open, "Pick a bitmap", "Open", 1, buf, sizeof(buf)))
 		{
-			XPLMBindTexture2d(mTexID, 0);
+//			XPLMBindTexture2d(mTexID, 0);
 			if (LoadTextureFromFile(buf, mTexID, tex_Rescale + tex_Linear + tex_Mipmap, NULL, NULL, NULL, NULL))
 			{
 				mVisible = true;
@@ -237,7 +240,7 @@ void	RF_ImageTool::NthButtonPressed(int n)
 	}
 }
 
-char *	RF_ImageTool::GetStatusText(void)
+char *	RF_ImageTool::GetStatusText(int x, int y)
 {
 	return NULL;
 }
@@ -395,8 +398,8 @@ void		RF_ImageTool::GetOrthoPhotos(void)
 			{
 				double so_far = (y - min_y) + (x - min_x) * (max_y - min_y + 1);
 				double total = (max_x - min_x + 1) * (max_y - min_y + 1);
-				if(total > 0)
-					RF_ProgressFunc(0, 1, buf, so_far / total);
+//				if(total > 0)
+//					RF_ProgressFunc(0, 1, buf, so_far / total);
 
 				for (int n = 0; n < 4; ++n)
 				{
@@ -406,7 +409,7 @@ void		RF_ImageTool::GetOrthoPhotos(void)
 				}
 				good++;
 			}
-			RF_ProgressFunc(0, 1, buf, 1.0);
+//			RF_ProgressFunc(0, 1, buf, 1.0);
 
 			MapQuads(bounds, env, src, pixels);
 
@@ -422,7 +425,7 @@ void		RF_ImageTool::GetOrthoPhotos(void)
 				pixels[0][1], pixels[0][0],
 				0, 0, texSize, texSize);
 
-			XPLMBindTexture2d(mTexID, 0);
+			glBindTexture(GL_TEXTURE_2D, mTexID);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 					texSize, texSize, 0,
 					GL_RGB,

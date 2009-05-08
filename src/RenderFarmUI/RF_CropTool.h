@@ -26,6 +26,8 @@
 #include "RF_MapTool.h"
 #include "UIUtils.h"
 
+class GUI_GraphState;
+
 class	RF_CropTool : public RF_MapTool, public DragHandleManager {
 public:
 
@@ -33,14 +35,17 @@ public:
 	virtual			~RF_CropTool();
 
 	virtual	void	DrawFeedbackUnderlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	void	DrawFeedbackOverlay(
+							GUI_GraphState *	state,
 							bool				inCurrent);
 	virtual	bool	HandleClick(
 							XPLMMouseStatus		inStatus,
 							int 				inX,
 							int 				inY,
-							int 				inButton);
+							int 				inButton,
+							GUI_KeyFlags		inModifiers);
 
 	// Support for some properties that can be edited.
 	virtual int		GetNumProperties(void);
@@ -52,7 +57,7 @@ public:
 	virtual	void	GetNthButtonName(int, string&);
 	virtual	void	NthButtonPressed(int);
 
-	virtual	char *	GetStatusText(void);
+	virtual	char *	GetStatusText(int x, int y);
 
 	virtual	double		UIToLogX(double) const;
 	virtual	double		UIToLogY(double) const;
