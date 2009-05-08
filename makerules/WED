@@ -93,7 +93,6 @@ SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
 
-SOURCES += ./src/UI/FontMgr.cpp
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
 SOURCES += ./src/WEDCore/WED_Application.cpp
 SOURCES += ./src/WEDCore/WED_PackageMgr.cpp

@@ -148,6 +148,43 @@
 		D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */; };
 		D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */; };
 		D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D80AB22C84003949C5 /* Terraserver.cpp */; };
+		D6151DC50FB46008008A355F /* RF_Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6151DC40FB46008008A355F /* RF_Application.cpp */; };
+		D6151E8D0FB46BA6008A355F /* GUI_Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF690B529EB900754E77 /* GUI_Application.cpp */; };
+		D6151E8E0FB46BA6008A355F /* GUI_Broadcaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF6A0B529EB900754E77 /* GUI_Broadcaster.cpp */; };
+		D6151E8F0FB46BA6008A355F /* GUI_Button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */; };
+		D6151E900FB46BA7008A355F /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
+		D6151E910FB46BA7008A355F /* GUI_Clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAFC20B52A01900754E77 /* GUI_Clipboard.cpp */; };
+		D6151E920FB46BA8008A355F /* GUI_Commander.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC367F0AB22C84003949C5 /* GUI_Commander.cpp */; };
+		D6151E930FB46BA9008A355F /* GUI_Control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36810AB22C84003949C5 /* GUI_Control.cpp */; };
+		D6151E940FB46BA9008A355F /* GUI_Destroyable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */; };
+		D6151E950FB46BAA008A355F /* GUI_Fonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36840AB22C84003949C5 /* GUI_Fonts.cpp */; };
+		D6151E960FB46BAC008A355F /* GUI_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */; };
+		D6151E970FB46BAC008A355F /* GUI_GraphState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36860AB22C84003949C5 /* GUI_GraphState.cpp */; };
+		D6151E980FB46BAD008A355F /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
+		D6151E990FB46BAD008A355F /* GUI_Listener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36880AB22C84003949C5 /* GUI_Listener.cpp */; };
+		D6151E9A0FB46BAE008A355F /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
+		D6151E9B0FB46BAF008A355F /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
+		D6151E9C0FB46BB0008A355F /* GUI_Pane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC368C0AB22C84003949C5 /* GUI_Pane.cpp */; };
+		D6151E9D0FB46BB1008A355F /* GUI_PopupButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */; };
+		D6151E9E0FB46BB1008A355F /* GUI_Prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E60C39840400BD789F /* GUI_Prefs.cpp */; };
+		D6151E9F0FB46BB2008A355F /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
+		D6151EA00FB46BB3008A355F /* GUI_ScrollBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC368E0AB22C84003949C5 /* GUI_ScrollBar.cpp */; };
+		D6151EA10FB46BB3008A355F /* GUI_ScrollerPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36900AB22C84003949C5 /* GUI_ScrollerPane.cpp */; };
+		D6151EA20FB46BB4008A355F /* GUI_SimpleScroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36920AB22C84003949C5 /* GUI_SimpleScroller.cpp */; };
+		D6151EA30FB46BB5008A355F /* GUI_SimpleTableGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */; };
+		D6151EA40FB46BB6008A355F /* GUI_Splitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36940AB22C84003949C5 /* GUI_Splitter.cpp */; };
+		D6151EA50FB46BB6008A355F /* GUI_TabControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */; };
+		D6151EA60FB46BB8008A355F /* GUI_Table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36960AB22C84003949C5 /* GUI_Table.cpp */; };
+		D6151EA70FB46BB8008A355F /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
+		D6151EA80FB46BB9008A355F /* GUI_TextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36980AB22C84003949C5 /* GUI_TextField.cpp */; };
+		D6151EA90FB46BB9008A355F /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
+		D6151EAA0FB46BBB008A355F /* GUI_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369A0AB22C84003949C5 /* GUI_Timer.cpp */; };
+		D6151EAB0FB46BBB008A355F /* GUI_ToolBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */; };
+		D6151EAC0FB46BBC008A355F /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
+		D6151EAD0FB46BBC008A355F /* GUI_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369C0AB22C84003949C5 /* GUI_Window.cpp */; };
+		D6151EC20FB478FB008A355F /* RF_Progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F010F82E96900F6718E /* RF_Progress.cpp */; };
+		D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
+		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */; };
 		D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */; };
@@ -188,7 +225,6 @@
 		D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D80AB22C84003949C5 /* Terraserver.cpp */; };
 		D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36DA0AB22C84003949C5 /* XMLObject.cpp */; };
 		D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37330AB22C85003949C5 /* AptElev.cpp */; };
-		D62435E00AE403BE004F00E3 /* FontMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37580AB22C85003949C5 /* FontMgr.cpp */; };
 		D62435EC0AE403F4004F00E3 /* Airports.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38300AB22C85003949C5 /* Airports.cpp */; };
 		D62435ED0AE403F4004F00E3 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
 		D62435EE0AE403F4004F00E3 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
@@ -263,23 +299,12 @@
 		D656B0DD0B517570003FF84F /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D656B0DF0B517582003FF84F /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D656B0E00B517587003FF84F /* ogle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37290AB22C84003949C5 /* ogle.cpp */; };
-		D656B0E10B517596003FF84F /* XPLMDisplay.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38D20AB22C85003949C5 /* XPLMDisplay.c */; };
-		D656B0E20B51759D003FF84F /* XPLMGraphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38D40AB22C85003949C5 /* XPLMGraphics.cpp */; };
 		D656B0EC0B5175EA003FF84F /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D656B0ED0B5175FC003FF84F /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
 		D656B1310B51778F003FF84F /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
 		D656B1370B51778F003FF84F /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
 		D656B1380B51778F003FF84F /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
 		D656B1390B51778F003FF84F /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
-		D656B17A0B517DB2003FF84F /* XSBPopups.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38EF0AB22C85003949C5 /* XSBPopups.cpp */; };
-		D656B17B0B517DB3003FF84F /* XPWidgetUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38ED0AB22C85003949C5 /* XPWidgetUtils.cpp */; };
-		D656B17C0B517DB4003FF84F /* XPWidgetTab.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38EB0AB22C85003949C5 /* XPWidgetTab.cpp */; };
-		D656B17D0B517DB5003FF84F /* XPWidgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38E90AB22C85003949C5 /* XPWidgets.cpp */; };
-		D656B17E0B517DB7003FF84F /* XPWidgetDialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38E70AB22C85003949C5 /* XPWidgetDialogs.cpp */; };
-		D656B17F0B517DB9003FF84F /* XPUIGraphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38E30AB22C85003949C5 /* XPUIGraphics.cpp */; };
-		D656B1800B517DBB003FF84F /* XPStandardWidgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38E00AB22C85003949C5 /* XPStandardWidgets.cpp */; };
-		D656B18A0B517DD4003FF84F /* XPLMProcessing.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38DD0AB22C85003949C5 /* XPLMProcessing.c */; };
-		D656B18B0B517DD5003FF84F /* XPLMMenus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38D70AB22C85003949C5 /* XPLMMenus.cpp */; };
 		D656B1A20B517E87003FF84F /* b64.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36CD0AB22C84003949C5 /* b64.c */; };
 		D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
 		D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
@@ -288,11 +313,8 @@
 		D656B1EE0B517FCF003FF84F /* UIUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A50AB22C85003949C5 /* UIUtils.cpp */; };
 		D656B21D0B518111003FF84F /* Skeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC379F0AB22C85003949C5 /* Skeleton.cpp */; };
 		D656B2220B518132003FF84F /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
-		D656B2230B51813C003FF84F /* XPWidgetWin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375E0AB22C85003949C5 /* XPWidgetWin.cpp */; };
-		D656B2240B51813F003FF84F /* XWidgetApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37600AB22C85003949C5 /* XWidgetApp.cpp */; };
 		D656B2290B518193003FF84F /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
-		D656B2440B5181F0003FF84F /* make_interface.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CF0AB22C85003949C5 /* make_interface.c */; };
 		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
 		D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
@@ -531,27 +553,17 @@
 		D6956F150F82E96900F6718E /* RF_Assert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EDA0F82E96900F6718E /* RF_Assert.cpp */; };
 		D6956F180F82E96900F6718E /* RF_DEMGraphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE00F82E96900F6718E /* RF_DEMGraphics.cpp */; };
 		D6956F190F82E96900F6718E /* RF_DrawMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE20F82E96900F6718E /* RF_DrawMap.cpp */; };
-		D6956F1A0F82E96900F6718E /* RF_EditCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE40F82E96900F6718E /* RF_EditCommands.cpp */; };
-		D6956F1B0F82E96900F6718E /* RF_Export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE60F82E96900F6718E /* RF_Export.cpp */; };
-		D6956F1C0F82E96900F6718E /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
 		D6956F1D0F82E96900F6718E /* RF_Globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EEA0F82E96900F6718E /* RF_Globals.cpp */; };
 		D6956F1E0F82E96900F6718E /* RF_ImageTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EEC0F82E96900F6718E /* RF_ImageTool.cpp */; };
-		D6956F1F0F82E96900F6718E /* RF_Import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EEE0F82E96900F6718E /* RF_Import.cpp */; };
 		D6956F200F82E96900F6718E /* RF_Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EF00F82E96900F6718E /* RF_Main.cpp */; };
 		D6956F210F82E96900F6718E /* RF_MapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EF10F82E96900F6718E /* RF_MapTool.cpp */; };
 		D6956F220F82E96900F6718E /* RF_MapView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EF30F82E96900F6718E /* RF_MapView.cpp */; };
 		D6956F230F82E96900F6718E /* RF_MapZoomer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EF50F82E96900F6718E /* RF_MapZoomer.cpp */; };
 		D6956F250F82E96900F6718E /* RF_Notify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EFA0F82E96900F6718E /* RF_Notify.cpp */; };
-		D6956F260F82E96900F6718E /* RF_Pane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EFC0F82E96900F6718E /* RF_Pane.cpp */; };
-		D6956F270F82E96900F6718E /* RF_PrefsDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EFE0F82E96900F6718E /* RF_PrefsDialog.cpp */; };
-		D6956F280F82E96900F6718E /* RF_Progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F010F82E96900F6718E /* RF_Progress.cpp */; };
 		D6956F290F82E96900F6718E /* RF_Selection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F030F82E96900F6718E /* RF_Selection.cpp */; };
 		D6956F2A0F82E96900F6718E /* RF_SelectionTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F050F82E96900F6718E /* RF_SelectionTool.cpp */; };
-		D6956F2B0F82E96900F6718E /* RF_SpecialCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F070F82E96900F6718E /* RF_SpecialCommands.cpp */; };
-		D6956F2C0F82E96900F6718E /* RF_SpreadsheetWizard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F090F82E96900F6718E /* RF_SpreadsheetWizard.cpp */; };
 		D6956F2D0F82E96900F6718E /* RF_TerraTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F0B0F82E96900F6718E /* RF_TerraTool.cpp */; };
 		D6956F2F0F82E96900F6718E /* RF_TriTestTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F0F0F82E96900F6718E /* RF_TriTestTool.cpp */; };
-		D6956F620F82EC6C00F6718E /* RF_ProcessingCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F600F82EC6C00F6718E /* RF_ProcessingCmds.cpp */; };
 		D6956F770F82ECDB00F6718E /* RF_CropTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EDE0F82E96900F6718E /* RF_CropTool.cpp */; };
 		D695CD6F0EE0862E009C5F2E /* WED_GISBoundingBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD6E0EE0862E009C5F2E /* WED_GISBoundingBox.cpp */; };
 		D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */; };
@@ -709,7 +721,6 @@
 		D6ED36B90B67964D00D5484E /* GUI_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369C0AB22C84003949C5 /* GUI_Window.cpp */; };
 		D6ED36BA0B67964D00D5484E /* HTTPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D00AB22C84003949C5 /* HTTPClient.cpp */; };
 		D6ED36BE0B67964D00D5484E /* XMLObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36DA0AB22C84003949C5 /* XMLObject.cpp */; };
-		D6ED36C00B67964D00D5484E /* FontMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37580AB22C85003949C5 /* FontMgr.cpp */; };
 		D6ED36C20B67964D00D5484E /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
 		D6ED36FB0B67964D00D5484E /* WED_Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */; };
 		D6ED36FC0B67964D00D5484E /* WED_Document.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37C30AB22C85003949C5 /* WED_Document.cpp */; };
@@ -979,6 +990,8 @@
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
+		D6151DC30FB46008008A355F /* RF_Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF_Application.h; sourceTree = "<group>"; };
+		D6151DC40FB46008008A355F /* RF_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF_Application.cpp; sourceTree = "<group>"; };
 		D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ObjView_icons.icns; sourceTree = "<group>"; };
 		D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XGrinder_icons.icns; sourceTree = "<group>"; };
 		D6226E380E4B7F32005BD1D7 /* WED_FacadePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePlacement.h; sourceTree = "<group>"; };
@@ -2281,6 +2294,8 @@
 				D6956F100F82E96900F6718E /* RF_TriTestTool.h */,
 				D6956F110F82E96900F6718E /* rfnotes */,
 				D6956F120F82E96900F6718E /* SDTSNotes */,
+				D6151DC30FB46008008A355F /* RF_Application.h */,
+				D6151DC40FB46008008A355F /* RF_Application.cpp */,
 			);
 			path = RenderFarmUI;
 			sourceTree = "<group>";
@@ -3569,6 +3584,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6151ED80FB47A4D008A355F /* sans.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3822,7 +3838,6 @@
 				D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */,
 				D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */,
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
-				D62435E00AE403BE004F00E3 /* FontMgr.cpp in Sources */,
 				D62435EC0AE403F4004F00E3 /* Airports.cpp in Sources */,
 				D62435ED0AE403F4004F00E3 /* AptIO.cpp in Sources */,
 				D62435EE0AE403F4004F00E3 /* Beaches.cpp in Sources */,
@@ -3857,23 +3872,12 @@
 				D656B0DD0B517570003FF84F /* XChunkyFileUtils.cpp in Sources */,
 				D656B0DF0B517582003FF84F /* md5.c in Sources */,
 				D656B0E00B517587003FF84F /* ogle.cpp in Sources */,
-				D656B0E10B517596003FF84F /* XPLMDisplay.c in Sources */,
-				D656B0E20B51759D003FF84F /* XPLMGraphics.cpp in Sources */,
 				D656B0EC0B5175EA003FF84F /* MemFileUtils.cpp in Sources */,
 				D656B0ED0B5175FC003FF84F /* PolyRasterUtils.cpp in Sources */,
 				D656B1310B51778F003FF84F /* ErrMsg.cpp in Sources */,
 				D656B1370B51778F003FF84F /* MacSpec.cpp in Sources */,
 				D656B1380B51778F003FF84F /* XFileTwiddle.cpp in Sources */,
 				D656B1390B51778F003FF84F /* XFileTwiddle.mac.cpp in Sources */,
-				D656B17A0B517DB2003FF84F /* XSBPopups.cpp in Sources */,
-				D656B17B0B517DB3003FF84F /* XPWidgetUtils.cpp in Sources */,
-				D656B17C0B517DB4003FF84F /* XPWidgetTab.cpp in Sources */,
-				D656B17D0B517DB5003FF84F /* XPWidgets.cpp in Sources */,
-				D656B17E0B517DB7003FF84F /* XPWidgetDialogs.cpp in Sources */,
-				D656B17F0B517DB9003FF84F /* XPUIGraphics.cpp in Sources */,
-				D656B1800B517DBB003FF84F /* XPStandardWidgets.cpp in Sources */,
-				D656B18A0B517DD4003FF84F /* XPLMProcessing.c in Sources */,
-				D656B18B0B517DD5003FF84F /* XPLMMenus.cpp in Sources */,
 				D656B1A20B517E87003FF84F /* b64.c in Sources */,
 				D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */,
 				D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */,
@@ -3882,11 +3886,8 @@
 				D656B1EE0B517FCF003FF84F /* UIUtils.cpp in Sources */,
 				D656B21D0B518111003FF84F /* Skeleton.cpp in Sources */,
 				D656B2220B518132003FF84F /* XObjReadWrite.cpp in Sources */,
-				D656B2230B51813C003FF84F /* XPWidgetWin.cpp in Sources */,
-				D656B2240B51813F003FF84F /* XWidgetApp.cpp in Sources */,
 				D656B2290B518193003FF84F /* hl_types.cpp in Sources */,
 				D656B2320B5181C8003FF84F /* perlin.cpp in Sources */,
-				D656B2440B5181F0003FF84F /* make_interface.c in Sources */,
 				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */,
@@ -3925,28 +3926,54 @@
 				D6956F150F82E96900F6718E /* RF_Assert.cpp in Sources */,
 				D6956F180F82E96900F6718E /* RF_DEMGraphics.cpp in Sources */,
 				D6956F190F82E96900F6718E /* RF_DrawMap.cpp in Sources */,
-				D6956F1A0F82E96900F6718E /* RF_EditCommands.cpp in Sources */,
-				D6956F1B0F82E96900F6718E /* RF_Export.cpp in Sources */,
-				D6956F1C0F82E96900F6718E /* RF_FileCommands.cpp in Sources */,
 				D6956F1D0F82E96900F6718E /* RF_Globals.cpp in Sources */,
 				D6956F1E0F82E96900F6718E /* RF_ImageTool.cpp in Sources */,
-				D6956F1F0F82E96900F6718E /* RF_Import.cpp in Sources */,
 				D6956F200F82E96900F6718E /* RF_Main.cpp in Sources */,
 				D6956F210F82E96900F6718E /* RF_MapTool.cpp in Sources */,
 				D6956F220F82E96900F6718E /* RF_MapView.cpp in Sources */,
 				D6956F230F82E96900F6718E /* RF_MapZoomer.cpp in Sources */,
 				D6956F250F82E96900F6718E /* RF_Notify.cpp in Sources */,
-				D6956F260F82E96900F6718E /* RF_Pane.cpp in Sources */,
-				D6956F270F82E96900F6718E /* RF_PrefsDialog.cpp in Sources */,
-				D6956F280F82E96900F6718E /* RF_Progress.cpp in Sources */,
 				D6956F290F82E96900F6718E /* RF_Selection.cpp in Sources */,
 				D6956F2A0F82E96900F6718E /* RF_SelectionTool.cpp in Sources */,
-				D6956F2B0F82E96900F6718E /* RF_SpecialCommands.cpp in Sources */,
-				D6956F2C0F82E96900F6718E /* RF_SpreadsheetWizard.cpp in Sources */,
 				D6956F2D0F82E96900F6718E /* RF_TerraTool.cpp in Sources */,
 				D6956F2F0F82E96900F6718E /* RF_TriTestTool.cpp in Sources */,
-				D6956F620F82EC6C00F6718E /* RF_ProcessingCmds.cpp in Sources */,
 				D6956F770F82ECDB00F6718E /* RF_CropTool.cpp in Sources */,
+				D6151DC50FB46008008A355F /* RF_Application.cpp in Sources */,
+				D6151E8D0FB46BA6008A355F /* GUI_Application.cpp in Sources */,
+				D6151E8E0FB46BA6008A355F /* GUI_Broadcaster.cpp in Sources */,
+				D6151E8F0FB46BA6008A355F /* GUI_Button.cpp in Sources */,
+				D6151E900FB46BA7008A355F /* GUI_ChangeView.cpp in Sources */,
+				D6151E910FB46BA7008A355F /* GUI_Clipboard.cpp in Sources */,
+				D6151E920FB46BA8008A355F /* GUI_Commander.cpp in Sources */,
+				D6151E930FB46BA9008A355F /* GUI_Control.cpp in Sources */,
+				D6151E940FB46BA9008A355F /* GUI_Destroyable.cpp in Sources */,
+				D6151E950FB46BAA008A355F /* GUI_Fonts.cpp in Sources */,
+				D6151E960FB46BAC008A355F /* GUI_DrawUtils.cpp in Sources */,
+				D6151E970FB46BAC008A355F /* GUI_GraphState.cpp in Sources */,
+				D6151E980FB46BAD008A355F /* GUI_Help.cpp in Sources */,
+				D6151E990FB46BAD008A355F /* GUI_Listener.cpp in Sources */,
+				D6151E9A0FB46BAE008A355F /* GUI_MemoryHog.cpp in Sources */,
+				D6151E9B0FB46BAF008A355F /* GUI_Packer.cpp in Sources */,
+				D6151E9C0FB46BB0008A355F /* GUI_Pane.cpp in Sources */,
+				D6151E9D0FB46BB1008A355F /* GUI_PopupButton.cpp in Sources */,
+				D6151E9E0FB46BB1008A355F /* GUI_Prefs.cpp in Sources */,
+				D6151E9F0FB46BB2008A355F /* GUI_Resources.cpp in Sources */,
+				D6151EA00FB46BB3008A355F /* GUI_ScrollBar.cpp in Sources */,
+				D6151EA10FB46BB3008A355F /* GUI_ScrollerPane.cpp in Sources */,
+				D6151EA20FB46BB4008A355F /* GUI_SimpleScroller.cpp in Sources */,
+				D6151EA30FB46BB5008A355F /* GUI_SimpleTableGeometry.cpp in Sources */,
+				D6151EA40FB46BB6008A355F /* GUI_Splitter.cpp in Sources */,
+				D6151EA50FB46BB6008A355F /* GUI_TabControl.cpp in Sources */,
+				D6151EA60FB46BB8008A355F /* GUI_Table.cpp in Sources */,
+				D6151EA70FB46BB8008A355F /* GUI_TabPane.cpp in Sources */,
+				D6151EA80FB46BB9008A355F /* GUI_TextField.cpp in Sources */,
+				D6151EA90FB46BB9008A355F /* GUI_TextTable.cpp in Sources */,
+				D6151EAA0FB46BBB008A355F /* GUI_Timer.cpp in Sources */,
+				D6151EAB0FB46BBB008A355F /* GUI_ToolBar.cpp in Sources */,
+				D6151EAC0FB46BBC008A355F /* GUI_Unicode.cpp in Sources */,
+				D6151EAD0FB46BBC008A355F /* GUI_Window.cpp in Sources */,
+				D6151EC20FB478FB008A355F /* RF_Progress.cpp in Sources */,
+				D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4206,7 +4233,6 @@
 				D6ED36B90B67964D00D5484E /* GUI_Window.cpp in Sources */,
 				D6ED36BA0B67964D00D5484E /* HTTPClient.cpp in Sources */,
 				D6ED36BE0B67964D00D5484E /* XMLObject.cpp in Sources */,
-				D6ED36C00B67964D00D5484E /* FontMgr.cpp in Sources */,
 				D6ED36C20B67964D00D5484E /* AptIO.cpp in Sources */,
 				D6ED36FB0B67964D00D5484E /* WED_Application.cpp in Sources */,
 				D6ED36FC0B67964D00D5484E /* WED_Document.cpp in Sources */,
