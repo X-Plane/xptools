@@ -1,0 +1,57 @@
+# (You can import any byte-based file of land uses this way by making your own
+# file that maps keys to land use enumerations.
+
+LU_IMPORT 10	climate_TropicalRainForest
+LU_IMPORT 18	climate_TropicalRainForest
+LU_IMPORT 20	climate_TropicalMonsoon
+LU_IMPORT 28	climate_TropicalMonsoon
+LU_IMPORT 30	climate_TropicalDry
+LU_IMPORT 38	climate_TropicalDry
+
+LU_IMPORT 200	climate_DrySteppe
+LU_IMPORT 201	climate_DrySteppe
+LU_IMPORT 202	climate_DrySteppe
+LU_IMPORT 203	climate_DrySteppe
+LU_IMPORT 210	climate_DryDesert
+LU_IMPORT 211	climate_DryDesert
+LU_IMPORT 212	climate_DryDesert
+LU_IMPORT 213	climate_DryDesert
+
+LU_IMPORT 70	climate_TemperateAny
+LU_IMPORT 74	climate_TemperateAny
+LU_IMPORT 75	climate_TemperateAny
+LU_IMPORT 76	climate_TemperateAny
+LU_IMPORT 100	climate_TemperateSummerDry
+LU_IMPORT 104	climate_TemperateSummerDry
+LU_IMPORT 105	climate_TemperateSummerDry
+LU_IMPORT 106	climate_TemperateSummerDry
+LU_IMPORT 90	climate_TemperateWinterDry
+LU_IMPORT 94	climate_TemperateWinterDry
+LU_IMPORT 95	climate_TemperateWinterDry
+LU_IMPORT 96	climate_TemperateWinterDry
+LU_IMPORT 80	climate_TemperateWet
+LU_IMPORT 84	climate_TemperateWet
+LU_IMPORT 85	climate_TemperateWet
+LU_IMPORT 86	climate_TemperateWet
+
+LU_IMPORT 170	climate_ColdAny
+LU_IMPORT 174	climate_ColdAny
+LU_IMPORT 175	climate_ColdAny
+LU_IMPORT 176	climate_ColdAny
+LU_IMPORT 177	climate_ColdAny
+LU_IMPORT 180	climate_ColdSummerDry
+LU_IMPORT 184	climate_ColdSummerDry
+LU_IMPORT 185	climate_ColdSummerDry
+LU_IMPORT 186	climate_ColdSummerDry
+LU_IMPORT 187	climate_ColdSummerDry
+LU_IMPORT 190	climate_ColdWinterDry
+LU_IMPORT 194	climate_ColdWinterDry
+LU_IMPORT 195	climate_ColdWinterDry
+LU_IMPORT 196	climate_ColdWinterDry
+LU_IMPORT 197	climate_ColdWinterDry
+
+LU_IMPORT 40 	climate_PolarTundra
+LU_IMPORT 47	climate_PolarTundra
+LU_IMPORT 50	climate_PolarFrozen
+LU_IMPORT 57	climate_PolarFrozen
+

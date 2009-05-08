@@ -1,0 +1,28 @@
+# MASTER TERRAIN SPREADSHEET!!!! 
+#
+# This spreadsheet lists all of the spreadsheets that will be used, in order.
+# It then contains the "any" rule at the end to catch any problems.
+#
+#
+# FIRST - Airports.  	Airport areas are elevation-flattened by WED.  We never want terrain under an airport, so these go first.
+INCLUDE airport_terrain.txt
+#
+# SECOND - Urban rules by Max - cities, crops and town, crops.  All are controlled for slope and temperature, so we will not get this in strange places.
+INCLUDE urban_terrain.txt
+#
+# THIRD - Sergio's hi priority absolute rules for cliffs and glaciers.
+INCLUDE cliff_glacier_terrain.txt
+#
+# FOURTH - Sergio's landuse rules for terrain that are not cities, crops and town, crops.
+# this includes glaciers, swamp, tundra, forests, grasslands, sand deserts, volcanic-rock all of them with constrains with temp/rainfall and for slopes.
+INCLUDE landuse_terrain.txt
+#
+# FIFTH - Sergio's absolute rules.  These cover all conditions without using landuse, based strictly on rainfall, slope, temperature and latitude.
+INCLUDE absolute_terrain.txt
+#
+############ ANY ############## to close holes of missing terrains
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|  |--Forest Info-|	|--- MAP COLOR---|
+#           TERRAIN	LAND USE	CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME		LAYER	TRANS				LIT	TEXTURE	PROJ	BORDER				Forest		Red	Green	Blue
+#					KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX					DIST	TEXTURE				RES	
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+MTERRAIN    NO_VALUE	NO_VALUE	NO_VALUE	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0	0	terrain/any	0	100	../textures/any.png	0	3000	DOWN	../textures/border/any.png	NO_VALUE	255	0	255

@@ -1,0 +1,184 @@
+# LANDUSE RULES, these are the rules that will be following restricted landuse definitions translated by USGS landuse definitions.
+#
+# 18 oct 2005
+#
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# GLACIER
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE		 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# glacier for polar areas (above 65 deg of latitude)
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-2	0	0	0	60	120	0	0	0	0	0	0	65	90	0	terrain/L_polar_ice_steep_EW	81	100	../textures/soil/ice_steep.png			1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-2	0	0	0	0	0	0	0	0	0	0	0	65	90	0	terrain/L_polar_ice_steep_NS	81	100	../textures/soil/ice_steep.png			1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	20	90	-999	-1	0	0	0	0	0	0	0	0	0	0	0	65	90	0	terrain/L_polar_ice_hill	82	100	../textures/soil/ice_hill.png			3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	90	-999	-1	0	0	0	0	0	0	0	0	0	0	0	65	90	0	terrain/L_polar_ice_flat	83	200	../textures/soil/ice_flat.png			3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	90	-999	0.5	0	0	0	0	0	0	0	0	0	0	0	65	90	0	terrain/L_polar_ice_lo_flat	72	200	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE			
+
+# glacier for dry environment	(0-325 mm rainfall)
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-8	0	325	0	60	120	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep_dry_EW	81	100	../textures/soil/glacier_steep_dry.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-8	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep_dry_NS	81	100	../textures/soil/glacier_steep_dry.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	20	30	-999	-7	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_hill_dry	82	100	../textures/soil/glacier_hill_dry.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	10	20	-999	-7	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_sflat_dry	83	200	../textures/soil/glacier_flat_dry.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	-5	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_flat_dry	83	200	../textures/soil/ice_flat.png			3000	DOWN	../textures/border/glacier.png	NO_VALUE
+
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	-5	0	325	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_lo_flat_dry	72	200	../textures/soil/rock_ice_flat_dry.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE			
+
+# glacier for semi-dry environment	(325-655 mm rainfall)
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-6	325	655	0	60	120	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep_sdry_EW	81	100	../textures/soil/glacier_steep_sdry.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-6	325	655	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep_sdry_NS	81	100	../textures/soil/glacier_steep_sdry.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	20	30	-999	-5	325	655	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_hill_sdry	82	100	../textures/soil/glacier_hill_sdry.png		3000	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	-4	325	655	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_flat_sdry	83	200	../textures/soil/glacier_flat_sdry.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	-3	325	655	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_lo_flat_sdry	72	200	../textures/soil/rock_ice_flat_sdry.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE			
+
+# glacier for semi-wet and wet environments (655 99999 mm rainfall)
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-2	655	99999	0	60	120	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep_EW	81	100	../textures/soil/glacier_steep.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	40	90	-999	-1	655	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_steep.NS	81	100	../textures/soil/glacier_steep.png		1500	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	30	90	-999	-1	655	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_ssteep	81	100	../textures/soil/glacier_hill.png		3000	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	20	30	-999	-1	655	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_hill		82	100	../textures/soil/glacier_flat.png		3000	HDG	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	0	655	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_flat		83	200	../textures/soil/ice_flat.png			3000	DOWN	../textures/border/glacier.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_GLACIER		0	0	0	20	-999	0.5	655	99999	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_glacier_lo_flat	72	200	../textures/soil/rock_ice_flat.png		3000	DOWN	../textures/border/glacier.png	NO_VALUE
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# UPLAND TUNDRA for POLAR AREAS
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		   3D	    	    COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	44	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_barren_tundra_rock	81	100	../textures/soil/rock_dark_tan_dry.png		1500	HDG	../textures/border/tundra.png	NO_VALUE			
+#STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	30	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_barren_tundra_steep	82	100	../textures/loveg/upland_tundra_steep.png	4000	DOWN	../textures/border/tundra.png	NO_VALUE			
+#STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	15	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_barren_tundra_hill	82	100	../textures/loveg/upland_tundra_hill.png 	3000	DOWN	../textures/border/tundra.png	NO_VALUE			
+#STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_barren_tundra_flat	83	200	../textures/loveg/upland_tundra_flat.png 	2000	DOWN	../textures/border/tundra.png	NO_VALUE
+
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	44	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_utundra_rock		3	1	../textures/soil/rock_dark_tan_dry.png		1000	HDG	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	30	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_utundra_steep		81	10	../textures/loveg/upland_tundra_steep.png	4000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	15	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_utundra_hill		82	50	../textures/loveg/upland_tundra_hill.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	8	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_utundra_sflat		83	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72
+		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.0	0.2	0	200	0	0	55	90	0	terrain/L_utundra_flat_low	82	100	../textures/loveg/sdesert_cold_sflat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.2	0.7	0	200	0	0	55	90	0	terrain/L_utundra_flat_mid	83	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.7	1.0	0	200	0	0	55	90	0	terrain/L_utundra_flat_top	84	100	../textures/loveg/grass_cold.png		3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72
+		
+STERRAIN	NO_VALUE	lu_usgs_UTUNDRA		0	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_utundra_flat		84	100	../textures/loveg/upland_tundra_flat.png	3000	DOWN	../textures/border/rock-ice.png	NO_VALUE	99	103	72		
+			
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# TUNDRA and WOODY TUNDRA for POLAR AREAS
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   		  3D	    	    COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 			FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	44	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_tundra_rock		3	100	../textures/soil/rock_dark_tan_dry.png		1500	HDG	../textures/border/tundra.png	NO_VALUE			
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	30	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_tundra_steep		81	100	../textures/loveg/tundra_steep.png		4000	DOWN	../textures/border/tundra.png	NO_VALUE			
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	15	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_tundra_hill		82	100	../textures/loveg/tundra_hill.png 		4000	DOWN	../textures/border/tundra.png	tundra	
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	8	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_tundra_sflat		83	100	../textures/loveg/tundra_sflat.png 		4000	DOWN	../textures/border/tundra.png	tundra	
+
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.0	0.3	0	200	0	0	55	90	0	terrain/L_tundra_flat_low	84	200	../textures/hiveg/conifer_hill_sdry.png		4000	DOWN	../textures/border/tundra.png	taiga			
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.3	0.7	0	200	0	0	55	90	0	terrain/L_tundra_flat_mid	83	200	../textures/loveg/swamp_cold_woody.png 		4000	DOWN	../textures/border/tundra.png	taiga			
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	0	90	0	0	0	0	0	0	0	0.7	1.0	0	200	0	0	55	90	0	terrain/L_tundra_flat_top	82	200	../textures/loveg/tundra_flat.png 		4000	DOWN	../textures/border/tundra.png	tundra			
+
+STERRAIN	NO_VALUE	lu_usgs_TUNDRA		0	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	55	90	0	terrain/L_tundra_flat		83	200	../textures/loveg/tundra_flat.png 		4000	DOWN	../textures/border/tundra.png	tundra			
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# SAND
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   3D	    	COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 	FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																																
+STERRAIN	NO_VALUE	lu_usgs_SAND		0	0	0	4	7.5	999	0	350	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_sand_desert_flat	29	300	../textures/soil/desert_sand_flat.png		5000	DOWN	../textures/border/sand.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_SAND		0	0	4	8	7.5	999	0	350	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_sand_desert_sflat	28	300	../textures/soil/desert_sand_sflat.png		5000	DOWN	../textures/border/sand.png	NO_VALUE
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# VOLCANIC ROCK
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   3D	    	COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 	FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	NO_VALUE	lu_usgs_VOLCANIC_ROCK	0	0	0	0	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_volcanic_rock_ice	82	300	../textures/soil/volcanic_rock_ice.png		1000	DOWN	../textures/border/vrock.png	NO_VALUE			
+#STERRAIN	NO_VALUE	lu_usgs_VOLCANIC_ROCK	0	0	0	35	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_volcanic_rock		9	300	../textures/soil/volcanic_rock.png		1500	DOWN	../textures/border/vrock.png	NO_VALUE			
+#STERRAIN	NO_VALUE	lu_usgs_VOLCANIC_ROCK	0	0	35	90	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	terrain/L_volcanic_rock_steep	8	100	../textures/soil/volcanic_rock_steep.png		800	DOWN	../textures/border/vrock.png	NO_VALUE			
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+# SWAMP
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   3D	    	COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 	FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# swamp
+STERRAIN	NO_VALUE	lu_usgs_SWAMP		0	0	0	5	0	0	50	350	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_dry		1	200	../textures/loveg/swamp_dry.png			3000	DOWN	../textures/border/swamp.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_SWAMP		0	0	0	5	-999	4.2	350	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_cold		1	200	../textures/loveg/swamp_cold.png		3000	DOWN	../textures/border/swamp.png	NO_VALUE
+STERRAIN	NO_VALUE	lu_usgs_USWAMP		0	0	0	5	4.2	999	350	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp			1	200	../textures/loveg/swamp.png			3000	DOWN	../textures/border/swamp.png	NO_VALUE
+
+STERRAIN	NO_VALUE	lu_usgs_USWAMP		0	0	0	5	-999	4.2	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_cold_woody	1	200	../textures/loveg/swamp_cold_woody.png		3000	DOWN	../textures/border/swamp.png	cold_conifer
+STERRAIN	NO_VALUE	lu_usgs_USWAMP		0	0	0	5	4.2	17.5	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_woody		1	200	../textures/loveg/swamp_woody.png		3000	DOWN	../textures/border/swamp.png	broadleaf
+STERRAIN	NO_VALUE	lu_usgs_USWAMP		0	0	0	5	17.5	21.5	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_warm_woody	1	200	../textures/loveg/swamp_woody.png		3000	DOWN	../textures/border/swamp.png	med_forest
+STERRAIN	NO_VALUE	lu_usgs_USWAMP		0	0	0	5	21.5	999	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_swamp_hot_woody	1	200	../textures/loveg/swamp_woody.png		3000	DOWN	../textures/border/swamp.png	tropical
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+#  FOREST
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME					LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   3D	    	COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 	FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#  broadleaf boreal																																	
+
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	45	90	-2	10	375	99999	0	0	0	0	0	0	0	0	0	50	90	1	terrain/L_brdleaf_bor_steep		22	100	../textures/hiveg/broadleaf_steep.png	2000	DOWN	../textures/border/forests.png	broadleaf
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	15	45	-2	10	375	99999	0	0	0	0	0	0	0	0	0	50	90	1	terrain/L_brdleaf_bor_hill		23	200	../textures/hiveg/broadleaf_hill.png	3000	DOWN	../textures/border/forests.png	broadleaf
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	0	15	-2	10	375	99999	0	0	0	0	0	0	0	0	0	50	90	1	terrain/L_brdleaf_bor_flat		27	300	../textures/hiveg/broadleaf_flat.png	4000	DOWN	../textures/border/forests.png	broadleaf
+#  broadleaf cold dry																																	
+
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	45	90	-2	10	250	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_brdleaf_bor_steep		22	100	../textures/hiveg/broadleaf_steep.png	2000	DOWN	../textures/border/forests.png	broadleaf
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	15	45	-2	10	250	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_brdleaf_cold_hill		23	200	../textures/hiveg/broadleaf_hill.png	3000	DOWN	../textures/border/forests.png	broadleaf
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	0	15	-2	10	250	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_brdleaf_cold_flat		27	300	../textures/hiveg/broadleaf_flat.png	4000	DOWN	../textures/border/forests.png	broadleaf
+
+
+#  broadleaf temp dry																																	
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	0	10	-2	10	250	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/L_broadleaf_cold_flat		188	300	../textures/hiveg/broadleaf_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	10	30	-2	10	250	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/L_broadleaf_cold_flat		187	200	../textures/hiveg/broadleaf_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#  broadleaf warm dry
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	0	10	0	15,5	400	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_broadleaf_flat_dry		188	300	../textures/hiveg/broadleaf_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	10	30	0	15,5	250	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_broadleaf_flat_dry		184	300	../textures/hiveg/broadleaf_flat_dry.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#  broadleaf
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	0	10	0	15,5	400	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_broadleaf_flat_dry		188	300	../textures/hiveg/broadleaf_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_BROADLEAF	0	0	10	30	0	15,5	250	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_broadleaf_flat_dry		184	300	../textures/hiveg/broadleaf_flat_dry.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# conifer dry																															
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	0	10	-8	8	150	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_cold_flat_dry		168	300	../textures/hiveg/conifer_cold_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	10	30	-8	8	150	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_cold_hill_dry		167	200	../textures/hiveg/conifer_cold_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+# conifer semi-dry																															
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	0	10	-8	8	150	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_cold_flat_sdry	168	300	../textures/hiveg/conifer_cold_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	10	30	-8	8	150	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_cold_hill_sdry	167	200	../textures/hiveg/conifer_cold_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+# conifer
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	0	10	-6,5	8	400	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_flat			168	300	../textures/hiveg/conifer_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_CONIFER		0	0	10	30	-6,5	8	250	500	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_conifer_flat			164	300	../textures/hiveg/conifer_flat_dry.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# tropical
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	0	10	15,5	99	1000	2200	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_tropical_flat			137	300	../textures/hiveg/tropical_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	10	30	15,5	99	1000	2200	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_tropical_hill			136	200	../textures/hiveg/tropical_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	0	10	10	20	2200	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_rainforest_montane_flat	134	300	../textures/hiveg/rainforest_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	10	30	10	20	2200	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_rainforest_montane_hill	133	200	../textures/hiveg/rainforest_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	0	10	20	999	2200	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_rainforest_flat		134	300	../textures/hiveg/rainforest_flat.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+#STERRAIN	NO_VALUE	lu_usgs_TROPICAL	0	0	10	30	20	999	2200	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/L_rainforest_hill		133	200	../textures/hiveg/rainforest_hill.png	4000	DOWN	../textures/border/forests.png	NO_VALUE
+
+#======================================================================================================================================================================================================================================================================================================================================================================================
+#  FOREST
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	SLOPE HDG	REL ELEV	ELEV RANGE	TEMP RANGE	LATITUDE	VARIANT	NAME					LAYER	TRNS	TEXTURE						RES	PROJ	BORDER TEX	   3D	    	COLOR MAP
+#							MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 	FOREST		R	G	B
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#  GRASSLAND

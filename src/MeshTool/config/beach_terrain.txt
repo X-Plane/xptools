@@ -1,0 +1,72 @@
+#
+# Man-made terrain table
+#
+# This table defines the appearance of man-made terrain.  Man-made terrain is placed via algorithms that are not included here.
+#
+#
+# UNLIKE THE NATURAL TERRAIN TABLE, ALL RULES MUST BE SPECIFIED!! NO 0 0
+#
+# RAIN, TEMP, LAT ,SLOPE - These all filter the beach by the terrain it is next to, just like the natural terrain.
+#
+# Ocean Min/Ocean Max: A ratio for inland water vs. ocean...0.0 is lake, 1.0 = ocean.  Waterways that go into the ocean (like a huge river
+# will have this slowly change.  This is used to make sure that waterways connected to the ocean do not have sandy beaches when they are inland.
+#
+# Turn Convex, Turn Concave - these are the maximum turn this beach may make in a convex or concave turn.  Use this to apply a beach only to
+# certain angles!
+#
+# Length Min - the minimum length in meters that we can have this beach.
+#
+# REQ-OPEN - If this is 1, this beach can only be used on water that is "open" - goes to the edge of the DSF.
+#
+# MIN-AREA - the minimum size in meters of a waterbody that gets this beach.  This is used to make sure we do not use huge beaches on tiny water
+# bodies.
+#
+# BEACH TYPE - the X-Plane beach type...this is basically the row in the texture, but these numbers match the .bch file.
+#
+# BACKUP TYPE - If we can use this beach for all rules EXCEPT the beach is not long enough, replace it with this beach.  When we do this replacement,
+# the other rules are NOT checked, but the length is!
+# 
+
+#BEACH	RAIN	RAIN	TEMP	TEMP	LAT	LAT	SLOPE	SLOPE	OCEAN	OCEAN	TURN	TURN	LEN	REQ	MIN	REQUIRE	BEACH	BACKUP
+#	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	CONVEX	CONCAVE	MIN	OPEN	AREA	AIRPORT	TYPE	TYPE
+
+# APT BEACHES - Gray
+BEACH	0	99999	-999	5	0	90	12	80	0.0	1.0	180	180	0	0	0	1	20	0
+BEACH	0	99999	-999	5	0	90	0	12	0.0	1.0	180	180	0	0	0	1	21	0
+# APT BEACHES - Red
+BEACH	0	325	-999	999	0	90	12	80	0.0	1.0	180	180	0	0	0	1	22	0
+BEACH	0	325	-999	999	0	90	0	12	0.0	1.0	180	180	0	0	0	1	23	0
+# APT BEACHES - White
+BEACH	0	99999	-999	999	0	90	12	80	0.0	1.0	180	180	0	0	0	1	24	0
+BEACH	0	99999	-999	999	0	90	0	12	0.0	1.0	180	180	0	0	0	1	25	0
+
+# GRAY BEACHES
+BEACH	0	99999	-999	5	55	90	0	6	0.4	1.0	45	 2	1000	1	360000	0	9	10
+BEACH	0	99999	-999	5	55	90	0	30	0.4	1.0	45	 2	500	1	360000	0	10	11
+BEACH	0	99999	-999	5	55	90	25	45	0.4	1.0	60	 2	500	1	360000	0	12	11
+BEACH	0	99999	-999	5	55	90	0	45	0.4	1.0	60	 2	500	1	360000	0	11	14
+
+# WHITE BEACHES
+BEACH	325	99999	-999	999	0	90	0	12	0.4	1.0	20	 20	1000	1	360000	0	1	2
+BEACH	325	99999	-999	999	0	90	0	12	0.4	1.0	45	 45	500	1	360000	0	2	3
+BEACH	325	99999	-999	999	0	90	12	25	0.4	1.0	45	 45	500	1	360000	0	4	3
+BEACH	325	99999	-999	999	0	90	25	45	0.4	1.0	45	 45	500	1	360000	0	3	18
+
+# TAN BEACHES
+BEACH	0	325	-999	999	0	90	0	6	0.4	1.0	45	 2	1000	1	360000	0	5	6
+BEACH	0	325	-999	999	0	90	0	30	0.4	1.0	45	 2 	500	1	360000	0	6	7
+BEACH	0	325	-999	999	0	90	25	45	0.4	1.0	60	70	500	1	360000	0	8	7
+BEACH	0	325	-999	999	0	90	0	45	0.4	1.0	60	70	500	1	360000	0	7	16
+
+# LAKE BEACHES
+BEACH	0	99999	-999	999	0	90	0	6	0.0	1.0	60	70	500	0	360000	0	13	19
+
+# SMALL BEACHES - Gray
+BEACH	0	99999	-999	5	0	90	12	25	0.0	1.0	180	180	0	0	0	0	14	0
+BEACH	0	99999	-999	5	0	90	0	12	0.0	1.0	180	180	0	0	0	0	15	0
+# SMALL BEACHES - Red
+BEACH	0	325	-999	999	0	90	12	25	0.0	1.0	180	180	0	0	0	0	16	0
+BEACH	0	325	-999	999	0	90	0	12	0.0	1.0	180	180	0	0	0	0	17	0
+# SMALL BEACHES - White
+BEACH	0	99999	-999	999	0	90	12	25	0.0	1.0	180	180	0	0	0	0	18	0
+BEACH	0	99999	-999	999	0	90	0	12	0.0	1.0	180	180	0	0	0	0	19	0

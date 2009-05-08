@@ -1,0 +1,58 @@
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#STERRAIN	TERRAIN		LAND USE	 ELEVATION	  SLOPE		   TEMP		  RAINFALL	WATER	 SLOPE HDG	 REL ELEV	ELEV RANGE	 TEMP RANGE	 LATITUDE	VARIANT	NAME				LAYER	TRNS	TEXTURE					RES	PROJ	BORDER TEX	   		3D	    	    COLOR MAP
+#						MIN	MAX	MIN	MAX	MIN	MAX	MIN	MIN	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX																	 		FOREST		R	G	B
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# AIRPORT PREMISIS TERRAIN 
+# Airport premisis terrain: different textures in according with rainfall and temperature, note that snow/ice appears only in very cold lands (below -22 deg) or in cold lands (-20 -12) if the temp range is less than 35 deg
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-99	-20	0	0	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_ice_any		606	50	../textures/apt/apt_ice.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-20	-12	0	0	0	0	0	0	0	0	0	0	32	0	0	1	terrain/apt_ice			606	50	../textures/apt/apt_ice.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-20	-12	0	0	0	0	0	0	0	0	0	32	99	0	0	1	terrain/apt_polar_tundra	605	50	../textures/apt/apt_utundra.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-12	-4	0	350	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_utundra		604	50	../textures/apt/apt_utundra.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-12	-4	350	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_tundra		604	50	../textures/apt/apt_tundra.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+
+# desert airport
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	7.5	0	55	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_desert_cold		606	50	../textures/apt/apt_desert_cold.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	7.5	15.5	0	95	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_desert_temp		606	50	../textures/apt/apt_desert_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	15.5	19.5	0	125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_desert_warm		606	50	../textures/apt/apt_desert.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	19.5	23.5	0	165	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_desert_hot		606	50	../textures/apt/apt_desert.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	0	205	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_desert_vhot		606	50	../textures/apt/apt_desert.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+
+# semidesert airport
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	55	175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_cold	605	50	../textures/apt/apt_sdesert_cold.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	175	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_cold2	605	50	../textures/apt/apt_sdesert_cold2.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	4.2	7.5	55	225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_cool	605	50	../textures/apt/apt_sdesert_cool.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	7.5	12	95	325	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_temp	605	50	../textures/apt/apt_sdesert_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	12	15.5	95	375	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_temp2	605	50	../textures/apt/apt_sdesert_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	15.5	19.5	125	445	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_warm	605	50	../textures/apt/apt_sdesert_warm.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	19.5	23.5	165	625	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_hot		605	50	../textures/apt/apt_sdesert_warm.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	205	775	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdesert_vhot	605	50	../textures/apt/apt_savanna.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+
+# dry Airport	
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	375	425	0	0	0	0	0	0	0	0	0	50	90	1	terrain/apt_dry_bor		604	50	../textures/apt/apt_bor.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	375	455	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_cold		604	50	../textures/apt/apt_dry_cold.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	4.2	7.5	225	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry2_cold		604	50	../textures/apt/apt_dry_cold.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	7.5	12	325	425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_cool		604	50	../textures/apt/apt_dry_cool.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	12	15.5	375	475	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_temp		604	50	../textures/apt/apt_dry_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	15.5	19.5	445	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_warm		604	50	../textures/apt/apt_dry_warm.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	19.5	23.5	625	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_hot		604	50	../textures/apt/apt_savanna.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	775	1125	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_dry_vhot		604	50	../textures/apt/apt_savanna.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+
+# semi-dry Airport		
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	7.9	425	575	0	0	0	0	0	0	0	0	0	50	90	1	terrain/apt_sdry_bor		603	50	../textures/apt/apt_bor.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	455	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_cold		603	50	../textures/apt/apt_bor.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	4.2	7.5	425	525	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_cool		603	50	../textures/apt/apt_bor.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	7.5 	13.5	425	575	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry		603	50	../textures/apt/apt_sdry_cool.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	13.5	15.5	475	675	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_temp		603	50	../textures/apt/apt_sdry.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	15.5	19.5	675	925	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_warm		603	50	../textures/apt/apt_sdry.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	19.5	23.5	925	1175	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_hot		603	50	../textures/apt/apt_sdry_tropical.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	1125	1425	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_sdry_vhot		603	50	../textures/apt/apt_sdry_tropical.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+
+# wet airport	
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	6.5	500	99999	0	0	0	0	0	0	0	0	0	55	90	1	terrain/apt_wet_cold_bor	602	50	../textures/apt/apt_wet.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	-999	4.2	500	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_cold		602	50	../textures/apt/apt_wet.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	4.2	10.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_cool		602	50	../textures/apt/apt_wet.png		500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	10.5	15.5	525	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_temp		602	50	../textures/apt/apt_wet_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	15.5	19.5	925	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_warm		602	50	../textures/apt/apt_wet_temp.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	19.5	23.5	1175	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_hot		602	50	../textures/apt/apt_wet_tropical.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	1425	2225	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_wet_vhot		602	50	../textures/apt/apt_wet_tropical.png	500	DOWN	../textures/border/apt.png	NO_VALUE
+STERRAIN	terrain_Airport	NO_VALUE	0	0	0	0	23.5	999	2225	99999	0	0	0	0	0	0	0	0	0	0	0	1	terrain/apt_rainforest		602	50	../textures/apt/apt_wet_tropical.png	500	DOWN	../textures/border/apt.png	NO_VALUE																																																																																																									

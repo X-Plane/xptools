@@ -1,0 +1,206 @@
+#
+# This text file is used to import the TIGER/Line features and convert them to features.
+#
+
+# TIGER_WATER		<cfcc>		<name>
+TIGER_WATER			H00			GenericWater
+TIGER_WATER			H10			Stream_Generic
+TIGER_WATER			H11			Stream_Perenial
+TIGER_WATER			H12			Stream_Intermittent
+TIGER_WATER			H13			Stream_Braided
+TIGER_WATER			H20			Canal_Generic
+TIGER_WATER			H21			Canal_Perenial
+TIGER_WATER			H22			Canal_Intermittent
+TIGER_WATER			H30			Pond_Generic
+TIGER_WATER			H31			Pond_Perenial
+TIGER_WATER			H32			Pond_Intermittent
+TIGER_WATER			H40			Resevoir_Generic
+TIGER_WATER			H41			Resevoir_Perenial
+TIGER_WATER			H42			Resevoir_Intermittent
+TIGER_WATER			H43			Treatment_Pond
+TIGER_WATER			H50			Bay_Geeric
+TIGER_WATER			H51			Bay
+TIGER_WATER			H53			Ocean
+TIGER_WATER			H60			FilledQuaryPit
+TIGER_WATER			H80			GenericWater
+#TIGER_WATER			H81			Glacier
+
+# TIGER_FEATURE <cfcc> <name> 											<feature code>			<use gt, require gt, water ok, water req>
+#TIGER_FEATURE D10 Military_installation 								feat_MilitaryBase					1	1	0	0
+TIGER_FEATURE D20 Multihousehold_and_transient_quarters 				feat_ResidentialLowRise				0	0	0	0
+TIGER_FEATURE D21 Apartment_building_or_complex 						feat_ResidentialComplex				0	0	0	0
+TIGER_FEATURE D22 Rooming_or_boarding_house 							feat_ResidentialHouse				0	0	0	0
+TIGER_FEATURE D23 Trailer_court_or_mobile_home_park 					feat_TrailerPark					1	1	0	0
+TIGER_FEATURE D24 Marina 												feat_Marina							1	0	1	1
+TIGER_FEATURE D25 Crew-of-vessel_area 									feat_ResidentialLowValueComplex		0	0	0	0
+TIGER_FEATURE D26 Housing_facility_for_workers 							feat_ResidentialLowRise				0	0	0	0
+TIGER_FEATURE D27 Hotel,_motel,_resort,_spa,_YMCA,_or_YWCA 				feat_ResidentialMidRise				0	0	0	0
+TIGER_FEATURE D28 Campground 											feat_Campground						1	0	0	0
+TIGER_FEATURE D29 Shelter_or_mission 									feat_ResidentialLowValueComplex		0	0	0	0
+TIGER_FEATURE D30 Custodial_facility 									feat_ResidentialLowRise				0	0	0	0
+TIGER_FEATURE D31 Hospital 												feat_MedicalCenter					0	0	0	0
+TIGER_FEATURE D32 Halfway_house 										feat_ResidentialLowValueComplex		0	0	0	0
+TIGER_FEATURE D33 Nursing_home,_retirement_home,_or_home_for_the_aged	feat_MedicalCenter					0	0	0	0	
+TIGER_FEATURE D34 County_home_or_poor_farm 								feat_ResidentialLowValueComplex		0	0	0	0
+TIGER_FEATURE D35 Orphanage 											feat_ResidentialHouse				0	0	0	0
+TIGER_FEATURE D36 Jail_or_detention_center 								feat_Jail							0	0	0	0
+TIGER_FEATURE D37 Federal_penitentiary,_state_prison,_or_prison_farm 	feat_Jail							0	0	0	0
+TIGER_FEATURE D40 Educational_or_religious_institution 					feat_EducationalCenter				0	0	0	0
+TIGER_FEATURE D41 Sorority_or_fraternity 								feat_EducationalCenter				0	0	0	0
+TIGER_FEATURE D42 Convent_or_monastery 									feat_Religious						0	0	0	0
+TIGER_FEATURE D43 Educational_institution 								feat_EducationalCenter				0	0	0	0	
+TIGER_FEATURE D44 Religious_institution 								feat_Religious						0	0	0	0
+TIGER_FEATURE D50 Transportation_terminal 								feat_BusTerminal					0	0	0	0
+TIGER_FEATURE D52 Train_station 										feat_TrainTerminal					0	0	0	0
+TIGER_FEATURE D53 Bus_terminal 											feat_BusTerminal					0	0	0	0
+TIGER_FEATURE D54 Marine_terminal 										feat_SeaTerminal					0	0	1	0
+TIGER_FEATURE D60 Employment_center 									feat_CommercialOffice				0	0	0	0
+TIGER_FEATURE D61 Shopping_center_or_major_retail_center 				feat_CommercialShoppingPlaza		0	0	0	0
+TIGER_FEATURE D62 Industrial_building_or_industrial_park 				feat_Industrial						0	0	0	0	
+TIGER_FEATURE D63 Office_building_or_office_park 						feat_CommercialOffice				0	0	0	0
+TIGER_FEATURE D64 Amusement_center 										feat_AmusementCenter				0	0	0	0
+TIGER_FEATURE D65 Government_center 									feat_Government						0	0	0	0
+TIGER_FEATURE D66 Other_employment_center	 							feat_CommercialOffice				0	0	0	0
+TIGER_FEATURE D81 Golf_course 											feat_GolfCourse						1	1	0	0
+TIGER_FEATURE D82 Cemetery 												feat_Cemetary						1	1	0	0
+TIGER_FEATURE D85 State_or_local_park_or_forest 						feat_ForestPark						1	1	0	0
+TIGER_FEATURE D91 Post_office 											feat_PostOffice						0	0	0	0
+																										  
+
+#TIGER_NETWORK <code> <feature type>	<underpassing> <tunnel>
+TIGER_NETWORK A11	road_PrimaryLimUnsep		0	0
+TIGER_NETWORK A12	road_PrimaryLimUnsep		0	1
+TIGER_NETWORK A13	road_PrimaryLimUnsep		1	0
+TIGER_NETWORK A14	road_PrimaryLimUnsepRail	0	0
+TIGER_NETWORK A15	road_PrimaryLimOneway		0	0
+TIGER_NETWORK A16	road_PrimaryLimOneway		0	1
+TIGER_NETWORK A17	road_PrimaryLimOneway		1	0
+TIGER_NETWORK A18	road_PrimaryLimOnewayRail	0	0
+TIGER_NETWORK A19	road_PrimaryLimBridge		0	0
+
+TIGER_NETWORK A21	road_PrimaryUnsep			0	0
+TIGER_NETWORK A22	road_PrimaryUnsep			0	1
+TIGER_NETWORK A23	road_PrimaryUnsep			1	0
+TIGER_NETWORK A24	road_PrimaryUnsepRail		0	0
+TIGER_NETWORK A25	road_PrimaryOneway			0	0
+TIGER_NETWORK A26	road_PrimaryOneway			0	1
+TIGER_NETWORK A27	road_PrimaryOneway			1	0
+TIGER_NETWORK A28	road_PrimaryOnewayRail		0	0
+TIGER_NETWORK A29	road_PrimaryBridge			0	0
+
+TIGER_NETWORK A31	road_SecondUnsep			0	0
+TIGER_NETWORK A32	road_SecondUnsep			0	1
+TIGER_NETWORK A33	road_PrimarySep				1	0
+TIGER_NETWORK A34	road_SecondUnsepRail		0	0
+TIGER_NETWORK A35	road_SecondOneway			0	0
+TIGER_NETWORK A36	road_SecondOneway			0	1
+TIGER_NETWORK A37	road_SecondOneway			1	0
+TIGER_NETWORK A38	road_SecondOnewayRail		0	0
+TIGER_NETWORK A39	road_SecondBridge			0	0
+
+TIGER_NETWORK A41	road_LocalUnsep				0	0
+TIGER_NETWORK A42	road_LocalUnsep				0	1
+TIGER_NETWORK A43	road_LocalUnsep				1	0
+TIGER_NETWORK A44	road_LocalUnsepRail			0	0
+TIGER_NETWORK A45	road_LocalOneway			0	0
+TIGER_NETWORK A46	road_LocalOneway			0	1
+TIGER_NETWORK A47	road_LocalOneway			1	0
+TIGER_NETWORK A48	road_LocalOnewayRail		0	0
+TIGER_NETWORK A49	road_LocalBridge			0	0
+
+TIGER_NETWORK A51	road_4WDUnsep				0	0
+TIGER_NETWORK A52	road_4WDUnsep				0	1
+TIGER_NETWORK A53	road_4WDUnsep				1	0
+
+TIGER_NETWORK A60	road_Unknown				0	0
+TIGER_NETWORK A61	road_Culdesac				0	0
+TIGER_NETWORK A62	road_TrafficCircle			0	0
+TIGER_NETWORK A63	road_Ramp					0	0
+TIGER_NETWORK A64	road_Service				0	0
+
+TIGER_NETWORK A70	walk_Unknown				0	0
+TIGER_NETWORK A71	walk_Trail					0	0
+TIGER_NETWORK A72	walk_Stairway				0	0
+TIGER_NETWORK A73	road_Alley					0	0
+TIGER_NETWORK A74	road_Driveway				0	0
+
+
+TIGER_NETWORK P11	road_PrimaryLimUnsep		0	0
+TIGER_NETWORK P12	road_PrimaryLimUnsep		0	1
+TIGER_NETWORK P13	road_PrimaryLimUnsep		1	0
+TIGER_NETWORK P14	road_PrimaryLimUnsepRail	0	0
+TIGER_NETWORK P15	road_PrimaryLimOneway		0	0
+TIGER_NETWORK P16	road_PrimaryLimOneway		0	1
+TIGER_NETWORK P17	road_PrimaryLimOneway		1	0
+TIGER_NETWORK P18	road_PrimaryLimOnewayRail	0	0
+TIGER_NETWORK P19	road_PrimaryLimBridge		0	0
+
+TIGER_NETWORK P21	road_PrimaryUnsep			0	0
+TIGER_NETWORK P22	road_PrimaryUnsep			0	1
+TIGER_NETWORK P23	road_PrimaryUnsep			1	0
+TIGER_NETWORK P24	road_PrimaryUnsepRail		0	0
+TIGER_NETWORK P25	road_PrimaryOneway			0	0
+TIGER_NETWORK P26	road_PrimaryOneway			0	1
+TIGER_NETWORK P27	road_PrimaryOneway			1	0
+TIGER_NETWORK P28	road_PrimaryOnewayRail		0	0
+TIGER_NETWORK P29	road_PrimaryBridge			0	0
+
+TIGER_NETWORK P31	road_SecondUnsep			0	0
+TIGER_NETWORK P32	road_SecondUnsep			0	1
+TIGER_NETWORK P33	road_PrimarySep				1	0
+TIGER_NETWORK P34	road_SecondUnsepRail		0	0
+TIGER_NETWORK P35	road_SecondOneway			0	0
+TIGER_NETWORK P36	road_SecondOneway			0	1
+TIGER_NETWORK P37	road_SecondOneway			1	0
+TIGER_NETWORK P38	road_SecondOnewayRail		0	0
+TIGER_NETWORK P39	road_SecondBridge			0	0
+
+TIGER_NETWORK P41	road_LocalUnsep				0	0
+TIGER_NETWORK P42	road_LocalUnsep				0	1
+TIGER_NETWORK P43	road_LocalUnsep				1	0
+TIGER_NETWORK P44	road_LocalUnsepRail			0	0
+TIGER_NETWORK P45	road_LocalOneway			0	0
+TIGER_NETWORK P46	road_LocalOneway			0	1
+TIGER_NETWORK P47	road_LocalOneway			1	0
+TIGER_NETWORK P48	road_LocalOnewayRail		0	0
+TIGER_NETWORK P49	road_LocalBridge			0	0
+
+TIGER_NETWORK P51	road_4WDUnsep				0	0
+TIGER_NETWORK P52	road_4WDUnsep				0	1
+TIGER_NETWORK P53	road_4WDUnsep				1	0
+
+TIGER_NETWORK P60	road_Unknown				0	0
+TIGER_NETWORK P61	road_Culdesac				0	0
+TIGER_NETWORK P62	road_TrafficCircle			0	0
+TIGER_NETWORK P63	road_Ramp					0	0
+TIGER_NETWORK P64	road_Service				0	0
+
+TIGER_NETWORK P70	walk_Unknown				0	0
+TIGER_NETWORK P71	walk_Trail					0	0
+TIGER_NETWORK P72	walk_Stairway				0	0
+TIGER_NETWORK P73	road_Alley					0	0
+TIGER_NETWORK P74	road_Driveway				0	0
+
+
+
+
+# Main railroad
+TIGER_NETWORK B11	train_Generic				0	0
+TIGER_NETWORK B12	train_Generic				0	1
+TIGER_NETWORK B13	train_Generic				1	0
+# Railroad spur
+TIGER_NETWORK B21	train_Spur					0	0
+TIGER_NETWORK B22	train_Spur					0	1
+TIGER_NETWORK B23	train_Spur					1	0
+# Railroad yard
+TIGER_NETWORK B31	train_Spur					0	0
+TIGER_NETWORK B32	train_Spur					0	1
+TIGER_NETWORK B33	train_Spur					1	0
+# Railroad line								
+TIGER_NETWORK B50	train_Generic				1	0
+# Street car
+TIGER_NETWORK B51	train_Generic				1	0
+# Cog railroad
+TIGER_NETWORK B52	train_Generic				1	0
+
+TIGER_NETWORK C20	powerline_Generic			1	0
