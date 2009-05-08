@@ -41,7 +41,7 @@
 #include <sys/stat.h>
 #include "fcntl.h"
 #include "GISTool_Utils.h"
-#include "GISTooL_ObsCmds.h"
+#include "GISTool_ObsCmds.h"
 #include "GISTool_DemCmds.h"
 #include "GISTool_CoreCmds.h"
 #include "GISTool_DumpCmds.h"
@@ -54,6 +54,10 @@
 #include "RF_Application.h"
 #include "RF_MapView.h"
 #include "GUI_Window.h"
+
+#if LIN
+#include "initializer.h"
+#endif
 
 
 #if APL && defined(__MWERKS__)
