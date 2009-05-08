@@ -276,7 +276,6 @@ SOURCES += ./src/OGLE/ogle.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
 SOURCES += ./src/Env/EnvParser.c
 SOURCES += ./src/Env/Persistence.cpp
-SOURCES += ./src/XPWidgets/XPLMGraphics.cpp
 SOURCES += ./src/Obj/ObjConvert.cpp
 
 
