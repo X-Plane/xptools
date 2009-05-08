@@ -17,6 +17,7 @@ INCLUDEPATHS += -I./src/Interfaces
 INCLUDEPATHS += -I./src/Obj
 INCLUDEPATHS += -I./src/ObjEdit
 INCLUDEPATHS += -I./src/OGLE
+INCLUDEPATHS += -I./src/RenderFarmUI
 INCLUDEPATHS += -I./src/UI
 INCLUDEPATHS += -I./src/WEDCore
 INCLUDEPATHS += -I./src/WEDDocs

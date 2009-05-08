@@ -5,7 +5,7 @@
 TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
-DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
+DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DOPENGL_MAP=1
 LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
 LIBS		+= -lz
 
@@ -51,39 +51,9 @@ SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
 SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
 
-SOURCES += ./src/GUI/GUI_Broadcaster.cpp
-SOURCES += ./src/GUI/GUI_Button.cpp
-SOURCES += ./src/GUI/GUI_ChangeView.cpp
-SOURCES += ./src/GUI/GUI_Commander.cpp
-SOURCES += ./src/GUI/GUI_Control.cpp
-SOURCES += ./src/GUI/GUI_Destroyable.cpp
-SOURCES += ./src/GUI/GUI_DrawUtils.cpp
-SOURCES += ./src/GUI/GUI_Fonts.cpp
-SOURCES += ./src/GUI/GUI_GraphState.cpp
-SOURCES += ./src/GUI/GUI_Listener.cpp
-SOURCES += ./src/GUI/GUI_MemoryHog.cpp
-SOURCES += ./src/GUI/GUI_Packer.cpp
-SOURCES += ./src/GUI/GUI_PopupButton.cpp
-SOURCES += ./src/GUI/GUI_Prefs.cpp
-SOURCES += ./src/GUI/GUI_Resources.cpp
-SOURCES += ./src/GUI/GUI_ScrollBar.cpp
-SOURCES += ./src/GUI/GUI_ScrollerPane.cpp
-SOURCES += ./src/GUI/GUI_SimpleScroller.cpp
-SOURCES += ./src/GUI/GUI_SimpleTableGeometry.cpp
-SOURCES += ./src/GUI/GUI_Splitter.cpp
-SOURCES += ./src/GUI/GUI_TabControl.cpp
-SOURCES += ./src/GUI/GUI_Table.cpp
-SOURCES += ./src/GUI/GUI_TabPane.cpp
-SOURCES += ./src/GUI/GUI_TextField.cpp
-SOURCES += ./src/GUI/GUI_TextTable.cpp
-SOURCES += ./src/GUI/GUI_Timer.cpp
-SOURCES += ./src/GUI/GUI_ToolBar.cpp
-SOURCES += ./src/GUI/GUI_Window.cpp
-SOURCES += ./src/GUI/GUI_Pane.cpp
-SOURCES += ./src/GUI/GUI_Help.cpp
-SOURCES += ./src/GUI/GUI_Clipboard.cpp
-SOURCES += ./src/GUI/GUI_Unicode.cpp
-SOURCES += ./src/GUI/GUI_Application.cppSOURCES += ./src/Obj/ObjPointPool.cpp
+SOURCES += ./src/RenderFarmUI/RF_Assert.cpp
+SOURCES += ./src/RenderFarmUI/RF_Main.cpp
+SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
@@ -161,7 +131,6 @@ SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/ProgressUtils.cpp
 SOURCES += ./src/XESTools/GISTool_Globals.cpp
 SOURCES += ./src/XESTools/GISTool_CoreCmds.cpp
-SOURCES += ./src/XESTools/GISTool.cpp
 SOURCES += ./src/XESTools/GISTool_DemCmds.cpp
 SOURCES += ./src/XESTools/GISTool_DumpCmds.cpp
 SOURCES += ./src/XESTools/GISTool_MiscCmds.cpp

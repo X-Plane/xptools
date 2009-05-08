@@ -1,5 +1,5 @@
 TARGETS := 	WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm \
-		ac3d XGrinder
+		ac3d XGrinder RenderFarmUI
 
 .PHONY: $(TARGETS) all clean distclean libs release linkclean release-test
 
