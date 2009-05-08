@@ -6,26 +6,47 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DOPENGL_MAP=1
-LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
-LIBS		+= -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
-LIBS		+= -lbfd -liberty
+LDFLAGS		+= -nodefaultlibs
+LIBS		+= -Wl,--as-needed
+LIBS		+= -Wl,-Bstatic,--start-group
+LIBS		+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
+LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -Wl,--end-group
+LIBS		+= -Wl,-Bdynamic
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -ldl -lc -lpthread
+
+# we need this as preparation for an in-memory elf image loader
+# however, when we build the application as standalone image, we shouldn't
+# link it as PIE because the GUI filemanagers will recognize the file as
+# shared library then and won't execute it on double-click
+#LDFLAGS	+= -pie
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LDFLAGS		+= -static
-DEFINES		+= -DMINGW_BUILD=1
+LDFLAGS		+= -Wl,-subsystem,windows
+DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS		+= -luuid -lws2_32
+LIBS		+= -Wl,-Bstatic
+LIBS		+= -lexpat -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL
+LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		+= -framework Carbon
-LIBS		:= ./libs/local/lib/libCGAL.a
+DEFINES		+= -DMAKE_BUILD
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
+LIBS		:= ./libs/local/lib/libexpat.a
 LIBS		+= ./libs/local/lib/libsquish.a
-LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libsqlite3.a
 LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libproj.a
+LIBS		+= ./libs/local/lib/libfreetype.a
 LIBS		+= ./libs/local/lib/libtiff.a
 LIBS		+= ./libs/local/lib/libjpeg.a
 LIBS		+= ./libs/local/lib/libpng.a
@@ -38,18 +59,39 @@ endif #PLAT_DARWIN
 #########
 
 ifdef PLAT_MINGW
+SOURCES += ./src/UI/XWin.win.cpp
+SOURCES += ./src/UI/XWinGL.win.cpp
+SOURCES += ./src/UI/XWin32DND.cpp
 SOURCES += ./src/Utils/XFileTwiddle.win.cpp
+SOURCES += ./src/Utils/PlatformUtils.win.cpp
+SOURCES += ./src/Network/PCSBSocket.win.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/linuxinit/initializer.cpp
+SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
+SOURCES += ./src/Utils/PlatformUtils.lin.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+SOURCES += ./src/UI/XWin.lin.cpp
+SOURCES += ./src/UI/XWinGL.lin.cpp
+MOCSRC += ./src/UI/XWin.h
+MOCSRC += ./src/UI/XWinGL.h
+MOCSRC += ./src/GUI/GUI_Timer.h
+MOCSRC += ./src/GUI/GUI_Application.h
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
+SOURCES += ./src/UI/XWin.mac.cpp
+SOURCES += ./src/UI/XWinGL.mac.cpp
 SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
+SOURCES += ./src/Utils/PlatformUtils.mac.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
+
 
 SOURCES += ./src/RenderFarmUI/RF_Application.cpp
 SOURCES += ./src/RenderFarmUI/RF_Assert.cpp
@@ -80,6 +122,41 @@ SOURCES += ./src/RenderFarmUI/RF_SelectionTool.cpp
 SOURCES += ./src/RenderFarmUI/RF_TerraTool.cpp
 #SOURCES += ./src/RenderFarmUI/RF_TopoTester.cpp
 SOURCES += ./src/RenderFarmUI/RF_TriTestTool.cpp
+
+
+SOURCES += ./src/GUI/GUI_Broadcaster.cpp
+SOURCES += ./src/GUI/GUI_Button.cpp
+SOURCES += ./src/GUI/GUI_ChangeView.cpp
+SOURCES += ./src/GUI/GUI_Commander.cpp
+SOURCES += ./src/GUI/GUI_Control.cpp
+SOURCES += ./src/GUI/GUI_Destroyable.cpp
+SOURCES += ./src/GUI/GUI_DrawUtils.cpp
+SOURCES += ./src/GUI/GUI_Fonts.cpp
+SOURCES += ./src/GUI/GUI_GraphState.cpp
+SOURCES += ./src/GUI/GUI_Listener.cpp
+SOURCES += ./src/GUI/GUI_MemoryHog.cpp
+SOURCES += ./src/GUI/GUI_Packer.cpp
+SOURCES += ./src/GUI/GUI_PopupButton.cpp
+SOURCES += ./src/GUI/GUI_Prefs.cpp
+SOURCES += ./src/GUI/GUI_Resources.cpp
+SOURCES += ./src/GUI/GUI_ScrollBar.cpp
+SOURCES += ./src/GUI/GUI_ScrollerPane.cpp
+SOURCES += ./src/GUI/GUI_SimpleScroller.cpp
+SOURCES += ./src/GUI/GUI_SimpleTableGeometry.cpp
+SOURCES += ./src/GUI/GUI_Splitter.cpp
+SOURCES += ./src/GUI/GUI_TabControl.cpp
+SOURCES += ./src/GUI/GUI_Table.cpp
+SOURCES += ./src/GUI/GUI_TabPane.cpp
+SOURCES += ./src/GUI/GUI_TextField.cpp
+SOURCES += ./src/GUI/GUI_TextTable.cpp
+SOURCES += ./src/GUI/GUI_Timer.cpp
+SOURCES += ./src/GUI/GUI_ToolBar.cpp
+SOURCES += ./src/GUI/GUI_Window.cpp
+SOURCES += ./src/GUI/GUI_Pane.cpp
+SOURCES += ./src/GUI/GUI_Help.cpp
+SOURCES += ./src/GUI/GUI_Clipboard.cpp
+SOURCES += ./src/GUI/GUI_Unicode.cpp
+SOURCES += ./src/GUI/GUI_Application.cpp
 
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp
@@ -136,10 +213,13 @@ SOURCES += ./src/XESCore/TriFan.cpp
 SOURCES += ./src/XESCore/XESIO.cpp
 SOURCES += ./src/XESCore/WTPM.cpp
 SOURCES += ./src/XESCore/Zoning.cpp
+SOURCES += ./src/Network/b64.c
+SOURCES += ./src/Network/Terraserver.cpp
+SOURCES += ./src/Network/HTTPClient.cpp
+SOURCES += ./src/Network/XMLObject.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
-SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/GISUtils.cpp
 SOURCES += ./src/Utils/BitmapUtils.cpp
 SOURCES += ./src/Utils/EndianUtils.c
@@ -157,6 +237,9 @@ SOURCES += ./src/Utils/Skeleton.cpp
 SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/ProgressUtils.cpp
+SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/TexUtils.cpp
+SOURCES += ./src/Utils/UIUtils.cpp
 SOURCES += ./src/XESTools/GISTool_Globals.cpp
 SOURCES += ./src/XESTools/GISTool_CoreCmds.cpp
 SOURCES += ./src/XESTools/GISTool_DemCmds.cpp
@@ -169,3 +252,5 @@ SOURCES += ./src/XESTools/GISTool_VectorCmds.cpp
 SOURCES += ./src/XESTools/MiscFuncs.cpp
 SOURCES += ./src/XESTools/SelfTest.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
+SOURCES += ./src/OGLE/ogle.cpp
+
