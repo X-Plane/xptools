@@ -51,8 +51,36 @@ SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
 SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
 
+SOURCES += ./src/RenderFarmUI/RF_Application.cpp
 SOURCES += ./src/RenderFarmUI/RF_Assert.cpp
+#SOURCES += ./src/RenderFarmUI/RF_BezierTestTool.cpp
+SOURCES += ./src/RenderFarmUI/RF_CropTool.cpp
+SOURCES += ./src/RenderFarmUI/RF_DEMGraphics.cpp
+SOURCES += ./src/RenderFarmUI/RF_DrawMap.cpp
+#SOURCES += ./src/RenderFarmUI/RF_EditCommands.cpp
+#SOURCES += ./src/RenderFarmUI/RF_Export.cpp
+SOURCES += ./src/RenderFarmUI/RF_FileCommands.cpp
+SOURCES += ./src/RenderFarmUI/RF_Globals.cpp
+SOURCES += ./src/RenderFarmUI/RF_ImageTool.cpp
+#SOURCES += ./src/RenderFarmUI/RF_Import.cpp
 SOURCES += ./src/RenderFarmUI/RF_Main.cpp
+SOURCES += ./src/RenderFarmUI/RF_MapTool.cpp
+SOURCES += ./src/RenderFarmUI/RF_MapView.cpp
+SOURCES += ./src/RenderFarmUI/RF_MapZoomer.cpp
+#SOURCES += ./src/RenderFarmUI/RF_MeshTester.cpp
+SOURCES += ./src/RenderFarmUI/RF_Notify.cpp
+#SOURCES += ./src/RenderFarmUI/RF_Pane.cpp
+#SOURCES += ./src/RenderFarmUI/RF_PrefsDialog.cpp
+#SOURCES += ./src/RenderFarmUI/RF_ProcessingCmds.cpp
+SOURCES += ./src/RenderFarmUI/RF_Progress.cpp
+SOURCES += ./src/RenderFarmUI/RF_Selection.cpp
+SOURCES += ./src/RenderFarmUI/RF_SelectionTool.cpp
+#SOURCES += ./src/RenderFarmUI/RF_SpecialCommands.cpp
+#SOURCES += ./src/RenderFarmUI/RF_SpreadsheetWizard.cpp
+SOURCES += ./src/RenderFarmUI/RF_TerraTool.cpp
+#SOURCES += ./src/RenderFarmUI/RF_TopoTester.cpp
+SOURCES += ./src/RenderFarmUI/RF_TriTestTool.cpp
+
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
