@@ -26,7 +26,7 @@
 #include "CompGeomDefs3.h"
 #include "TensorUtils.h"
 #include "CompGeomDefs2.h"
-#include "Perlin.h"
+#include "perlin.h"
 
 #define		DDA_STEPS 10.0f
 #define		DDA_FACTOR 0.5

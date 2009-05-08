@@ -26,7 +26,7 @@
 #include "PlatformUtils.h"
 #include "TexUtils.h"
 #include "GISUtils.h"
-#include "Terraserver.h"
+#include "TerraServer.h"
 #include "BitmapUtils.h"
 #include "RF_Progress.h"
 #if IBM
@@ -37,7 +37,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <GL/gl.h>
 #endif
 
 static const DragHandleInfo_t kHandleInfos[4] = {

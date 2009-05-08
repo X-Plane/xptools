@@ -25,8 +25,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <gl.h>
-	#include <glu.h>
+	#include <GL/gl.h>
+	#include <GL/glu.h>
 #endif
 #include "ParamDefs.h"
 #include "MapAlgs.h"
@@ -41,7 +41,7 @@
 #define DRAW_VERTICES 1
 #define DRAW_FOOTPRINTS 1
 
-#if APL
+#if APL || LIN
 #define STDCALL_MACRO
 #elif IBM
 #define STDCALL_MACRO __stdcall

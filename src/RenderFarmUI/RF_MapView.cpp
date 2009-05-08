@@ -61,7 +61,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <GL/gl.h>
 #endif
 
 #define GL_EXT_texture_env_combine 1
@@ -70,7 +70,7 @@
 #if APL
 	#include <OpenGL/glext.h>
 #else
-	#include <glext.h>
+	#include <GL/glext.h>
 #endif
 
 #define DRAW_MESH_BORDERS 1
