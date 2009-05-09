@@ -308,7 +308,6 @@ public:
 
 void	XGrindInit(void)
 {
-	#if APL
 	int e = mkfifo("wed_cmds", 0777);
 	if(e==-1 && errno != EEXIST)
 	{
@@ -316,7 +315,6 @@ void	XGrindInit(void)
 	} else {
 		fifo=open("wed_cmds",O_RDONLY | O_NONBLOCK, 0);
 	}
-	#endif
 
 #if APL && defined(__MWERKS__)
 //	SIOUXSettings.stubmode = true;
