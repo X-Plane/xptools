@@ -29,7 +29,7 @@ LIBS		+= -luuid -lws2_32
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lexpat -lCGAL -lsquish -lsqlite3 -lshp -lgeotiff -lCGAL
 LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-WIN_RESOURCES	+= ./src/WEDResources/WED.rc
+WIN_RESOURCES	+= ./src/WEDResources/rfui.rc
 endif #PLAT_MINGW
 
 
