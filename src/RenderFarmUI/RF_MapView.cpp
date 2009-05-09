@@ -123,28 +123,29 @@ static DEMViewInfo_t	kDEMs[] = {
 
 const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 
+GUI_MenuItem_t	kViewItems[] = {
+{	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
+{	"Show Shading on Raster Layer",			0,				0,										0,	viewCmd_ShowShading		},
+{	"Show Tensors",							0,				0,										0,	viewCmd_ShowTensor		},
+{	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
+{	"-",									0,				0,										0,	0						},
+{	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
+{	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
+{	"Next Raster",							GUI_KEY_DOWN,	gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_NextDEM			},
+{	"-",									0,				0,										0,	0						},
+{	"Vector Map",							'1',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_VecMap			},
+{	"Airports",								'2',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_Airports		},
+{	"Mesh Points",							'3',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshPoints		},
+{	"Mesh Lines",							'4',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshLines		},
+{	"Mesh (Hires)",							'5',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTrisHi		},
+{	"Mesh Terrains (Hires)",				'6',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTerrains	},
+{	"-",									0,				0,										0,	0						},
+{	"Move To Selection",					0,				0,										0,	viewCmd_ZoomSel			},
+{	0,										0,				0,										0,	0						}};
+
 void	RF_MapView::MakeMenus(void)
 {
-	GUI_MenuItem_t	kViewItems[] = {
-	{	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
-	{	"Show Shading on Raster Layer",			0,				0,										0,	viewCmd_ShowShading		},
-	{	"Show Tensors",							0,				0,										0,	viewCmd_ShowTensor		},
-	{	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
-	{	"-",									0,				0,										0,	0						},
-	{	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
-	{	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
-	{	"Next Raster",							GUI_KEY_DOWN,	gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_NextDEM			},
-	{	"-",									0,				0,										0,	0						},
-	{	"Vector Map",							'1',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_VecMap			},
-	{	"Airports",								'2',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_Airports		},
-	{	"Mesh Points",							'3',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshPoints		},
-	{	"Mesh Lines",							'4',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshLines		},
-	{	"Mesh (Hires)",							'5',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTrisHi		},
-	{	"Mesh Terrains (Hires)",				'6',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTerrains	},
-	{	"-",									0,				0,										0,	0						},
-	{	"Move To Selection",					0,				0,										0,	viewCmd_ZoomSel			},
-	{	0,										0,				0,										0,	0						}};
-	
+#if !LIN
 	GUI_Menu view_menu = gApplication->CreateMenu("View", kViewItems,gApplication->GetMenuBar(), 0);
 
 	vector<GUI_MenuItem_t>	dem_menus(DEMChoiceCount+1);
@@ -157,14 +158,50 @@ void	RF_MapView::MakeMenus(void)
 		dem_menus[n].cmd = viewCmd_DEMChoice_Start + n;
 	}
 	dem_menus.back().name = 0;
-	
+
 	gApplication->CreateMenu("DEM Choice", &*dem_menus.begin(),view_menu, 0);
 
 	for(int n = 0; n < DEMChoiceCount; ++n)
 		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
 	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 3);
+#endif
 }
+
+#if LIN
+QMenuBar* getqmenu(GUI_Application * inApp)
+{
+	QMenuBar* gQMenu = new QMenuBar(0);
+
+	GUI_QtMenu* viewmenu = new GUI_QtMenu("&View",inApp);
+	inApp->RebuildMenu(viewmenu, kViewItems);
+	gQMenu->addMenu(viewmenu);
+
+	vector<GUI_MenuItem_t>	dem_menus(DEMChoiceCount+1);
+	for(int n = 0; n < DEMChoiceCount; ++n)
+	{
+		dem_menus[n].name = kDEMs[n].cmdName;
+		dem_menus[n].key = (n < 9) ? '1' + n : 0;
+		dem_menus[n].flags = gui_ControlFlag;
+		dem_menus[n].checked = 0;
+		dem_menus[n].cmd = viewCmd_DEMChoice_Start + n;
+	}
+	dem_menus.back().name = 0;
+
+	GUI_QtMenu* demcmenu = new GUI_QtMenu("DEM &Choice",inApp);
+	inApp->RebuildMenu(demcmenu, &*dem_menus.begin());
+	viewmenu->addMenu(demcmenu);
+
+	for(int n = 0; n < DEMChoiceCount; ++n)
+		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
+
+	GUI_QtMenu* demdcmenu = new GUI_QtMenu("DEM &Data Choice",inApp);
+	inApp->RebuildMenu(demdcmenu, &*dem_menus.begin());
+	viewmenu->addMenu(demdcmenu);
+
+	return gQMenu;
+}
+#endif
 
 static	int			sDEMType = 0;
 static	int			sShowMeshPoints = 1;
@@ -188,7 +225,7 @@ void	RF_MapView_HandleDEMDataMenuCommand(void *, void *);
 
 int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
-	switch(command) {	
+	switch(command) {
 	case viewCmd_DEMChoice:
 	case viewCmd_DEMDataChoice:
 	case viewCmd_RecalcDEM:
@@ -204,7 +241,7 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_MeshTrisHi:	ioCheck = sShowMeshTrisHi;		return 1;
 	case viewCmd_MeshTerrains:	ioCheck = sShowMeshAlphas;		return 1;
 	}
-	
+
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
 	{
 		int n = command - viewCmd_DEMChoice_Start;
@@ -432,19 +469,19 @@ static void FontDrawDarkBox(
 {
 	inState->SetState(false, 0, false, true, true, false, false);
 	glColor4f(0,0,0,0.5);
-	
+
 	float x1 = inX - 3;
 	float x2 = inX + GUI_MeasureRange(inFontID, inString, inString + strlen(inString)) + 3;
 	float y1 = inY - GUI_GetLineDescent(inFontID) - 3;
 	float y2 = inY - GUI_GetLineAscent(inFontID) + 3;
-	
+
 	glBegin(GL_QUADS);
 	glVertex2f(x1,y1);
 	glVertex2f(x1,y2);
 	glVertex2f(x2,y2);
 	glVertex2f(x2,y1);
 	glEnd();
-	
+
 	GUI_FontDraw(inState,inFontID, color,inX,inY,inString);
 }
 
@@ -463,7 +500,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 	t=lbrt[3];
 	RF_MapTool * cur = CurTool();
 	char * status = NULL;;
-	if (cur) 
+	if (cur)
 	{
 		int	mx, my;
 		GetMouseLocNow(&mx, &my);
@@ -1128,10 +1165,10 @@ void	RF_MapView::MouseDrag(int x, int y, int button)
 void	RF_MapView::MouseUp  (int x, int y, int button)
 {
 	RF_MapTool * cur = CurTool();
-	if (cur && cur->HandleClick(xplm_MouseUp, x, y, button, GetModifiersNow())) 
+	if (cur && cur->HandleClick(xplm_MouseUp, x, y, button, GetModifiersNow()))
 		return;
 	mZoomer->PanPixels(mOldX, mOldY, x, y);
-}	
+}
 
 int		RF_MapView::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {

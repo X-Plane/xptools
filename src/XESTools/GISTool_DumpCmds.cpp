@@ -38,7 +38,11 @@
 #include "MemFileUtils.h"
 #include "XChunkyFileUtils.h"
 #if OPENGL_MAP
+#if APL
 #include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 #include "BitmapUtils.h"
 #endif
 
