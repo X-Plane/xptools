@@ -145,7 +145,7 @@ GUI_MenuItem_t	kViewItems[] = {
 
 void	RF_MapView::MakeMenus(void)
 {
-#if !LIN
+
 	GUI_Menu view_menu = gApplication->CreateMenu("View", kViewItems,gApplication->GetMenuBar(), 0);
 
 	vector<GUI_MenuItem_t>	dem_menus(DEMChoiceCount+1);
@@ -165,43 +165,8 @@ void	RF_MapView::MakeMenus(void)
 		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
 	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 3);
-#endif
+
 }
-
-#if LIN
-QMenuBar* getqmenu(GUI_Application * inApp)
-{
-	QMenuBar* gQMenu = new QMenuBar(0);
-
-	GUI_QtMenu* viewmenu = new GUI_QtMenu("&View",inApp);
-	inApp->RebuildMenu(viewmenu, kViewItems);
-	gQMenu->addMenu(viewmenu);
-
-	vector<GUI_MenuItem_t>	dem_menus(DEMChoiceCount+1);
-	for(int n = 0; n < DEMChoiceCount; ++n)
-	{
-		dem_menus[n].name = kDEMs[n].cmdName;
-		dem_menus[n].key = (n < 9) ? '1' + n : 0;
-		dem_menus[n].flags = gui_ControlFlag;
-		dem_menus[n].checked = 0;
-		dem_menus[n].cmd = viewCmd_DEMChoice_Start + n;
-	}
-	dem_menus.back().name = 0;
-
-	GUI_QtMenu* demcmenu = new GUI_QtMenu("DEM &Choice",inApp);
-	inApp->RebuildMenu(demcmenu, &*dem_menus.begin());
-	viewmenu->addMenu(demcmenu);
-
-	for(int n = 0; n < DEMChoiceCount; ++n)
-		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
-
-	GUI_QtMenu* demdcmenu = new GUI_QtMenu("DEM &Data Choice",inApp);
-	inApp->RebuildMenu(demdcmenu, &*dem_menus.begin());
-	viewmenu->addMenu(demdcmenu);
-
-	return gQMenu;
-}
-#endif
 
 static	int			sDEMType = 0;
 static	int			sShowMeshPoints = 1;

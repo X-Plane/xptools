@@ -141,47 +141,9 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 {	NULL,							0,		0,									0, 0,				}
 };
 
-#if LIN
-QMenuBar* getqmenu(GUI_Application * inApp)
-{
-	QMenuBar* gQMenu = new QMenuBar(0);
-
-	GUI_QtMenu* filemenu = new GUI_QtMenu("&File",inApp);
-	inApp->RebuildMenu(filemenu, kFileMenu);
-    gQMenu->addMenu(filemenu);
-
-	GUI_QtMenu* editmenu = new GUI_QtMenu("&Edit",inApp);
-	inApp->RebuildMenu(editmenu, kEditMenu);
-    gQMenu->addMenu(editmenu);
-
-  	GUI_QtMenu* viewmenu = new GUI_QtMenu("&View",inApp);
-	inApp->RebuildMenu(viewmenu, kViewMenu);
-    gQMenu->addMenu(viewmenu);
-
-  	GUI_QtMenu* pavemenu = new GUI_QtMenu("Pavement T&ransparency",inApp);
-	inApp->RebuildMenu(pavemenu, kPavementMenu);
-    viewmenu->actions().at(9)->setMenu(pavemenu);
-
-  	GUI_QtMenu* selmenu = new GUI_QtMenu("&Select",inApp);
-	inApp->RebuildMenu(selmenu, kSelectMenu);
-    gQMenu->addMenu(selmenu);
-
-  	GUI_QtMenu* airpmenu = new GUI_QtMenu("&Airport",inApp);
-	inApp->RebuildMenu(airpmenu, kAirportMenu);
-    gQMenu->addMenu(airpmenu);
-
-  	GUI_QtMenu* helpmenu = new GUI_QtMenu("&Help",inApp);
-	inApp->RebuildMenu(helpmenu, kHelpMenu);
-    gQMenu->addMenu(helpmenu);
-
-	return gQMenu;
-}
-
-#endif
-
 void WED_MakeMenus(GUI_Application * inApp)
 {
-#if !LIN
+
 	GUI_Menu file_menu = inApp->CreateMenu(
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 
@@ -214,5 +176,5 @@ void WED_MakeMenus(GUI_Application * inApp)
 #else
 	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 #endif
-#endif
+
 }

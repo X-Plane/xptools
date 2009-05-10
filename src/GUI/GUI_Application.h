@@ -36,6 +36,8 @@
 
 #include "GUI_Commander.h"
 
+class GUI_QtMenu;
+
 /*
 	WINDOWS WARNING: MENUS
 
@@ -77,8 +79,9 @@ public:
 	virtual	int				AcceptTakeFocus(void) 	{ return 1; }
 	virtual	int				HandleCommand(int command);
 	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck);
-
-
+#if LIN
+    QMenuBar* getqmenu();
+#endif
 private:
 
 #if APL
@@ -98,9 +101,9 @@ private:
 #if !LIN
 	set<GUI_Menu>		mMenus;
 #endif
-	bool				mDone;
+	bool                mDone;
 #if LIN
-    static void MenuCommandHandler(int cmd, void* arg);
+	QList<GUI_QtMenu*>	mMenus;
 	QApplication*		qapp;
 #endif
 };
@@ -131,6 +134,10 @@ public slots:
 private:
 	GUI_Application* app;
 };
+
+
+static GUI_QtMenu * cloneMenu(	GUI_QtMenu * menu,GUI_Application *app);
+
 #endif
 
 extern	GUI_Application *	gApplication;

@@ -32,10 +32,6 @@
 #include "GUI_Application.h"
 #include "GUI_Menus.h"
 
-#if LIN
-QMenuBar* getqmenu(GUI_Application * inApp );
-#endif
-
 extern	GUI_Menu	test1;
 extern	GUI_Menu	sub1;
 

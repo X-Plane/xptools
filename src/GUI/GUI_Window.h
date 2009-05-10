@@ -133,7 +133,7 @@ private:
 #endif
 	#if LIN
 	QMenu * mPopupMenu;
-	int		mMouseLastButton;
+	int     mMouseLastButton;
 	bool    mDragDetect;
     int Client2OGL_X(int x, void* w);
     int Client2OGL_Y(int y, void* w);

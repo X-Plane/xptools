@@ -552,7 +552,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 	#endif
 	#if LIN
-		this->setMenuBar(getqmenu(gApplication));
+        this->setMenuBar(gApplication->getqmenu());
 		mPopupMenu = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);

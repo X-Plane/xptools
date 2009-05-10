@@ -237,6 +237,45 @@ void GUI_QtAction::ontriggered()
 {
 	app->DispatchHandleCommand(qaction->data().toInt());
 }
+
+QMenuBar* GUI_Application::getqmenu()
+{
+    QMenuBar * mbar = new QMenuBar(0);
+    QList<GUI_QtMenu*>::iterator iter = mMenus.begin();
+    while (iter != mMenus.end())
+	{
+//		GUI_QtMenu * qmenu = (GUI_QtMenu *) *iter;
+//		mbar->addMenu(cloneMenu(qmenu,this));
+		mbar->addMenu(*iter);
+		++iter;
+	}
+    return mbar;
+}
+
+ GUI_QtMenu * cloneMenu(GUI_QtMenu * menu,GUI_Application *app)
+{
+    GUI_QtMenu * newmenu = new GUI_QtMenu(menu->title(),app);
+
+    QList<QAction *> acts = menu->actions();
+    for (int i = 0; i < acts.size(); ++i)
+    {
+       QAction * act = acts.at(i) ;
+       if (act->isSeparator())
+            {newmenu->addSeparator(); continue;}
+       if (act->menu())
+        {
+              GUI_QtMenu * newsubmenu = cloneMenu( (GUI_QtMenu *) act->menu(),app);
+              newmenu->addMenu(newsubmenu);
+        }
+        else
+        {
+          newmenu->addAction(
+			     (new GUI_QtAction(act->text(),act->shortcut(),act->data().toInt(),
+			  		app,act->isChecked()))->qaction);
+        }
+    }
+    return newmenu;
+}
 #endif
 
 
@@ -332,14 +371,6 @@ void			GUI_Application::Run(void)
 #endif
 }
 
-#if LIN
-void GUI_Application::MenuCommandHandler(int cmd, void* arg)
-{
-    GUI_Application* tmp = reinterpret_cast<GUI_Application*>(arg);
-    tmp->DispatchHandleCommand(cmd);
-}
-#endif
-
 void			GUI_Application::Quit(void)
 {
 	mDone = true;
@@ -351,7 +382,7 @@ void			GUI_Application::Quit(void)
 #endif
 }
 
-GUI_Menu			GUI_Application::GetMenuBar(void)
+GUI_Menu		GUI_Application::GetMenuBar(void)
 {
 	#if APL
 		return NULL;
@@ -364,8 +395,13 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 		::SetMenu(hwnd, mbar);
 		return mbar;
 	#else
-//		return mMenubar;
-		return 0;
+        QMainWindow* mwindow = ((QMainWindow*)qapp->activeWindow());
+        if (mwindow)
+        {
+            QMenuBar* mbar =  mwindow->menuBar();
+            return mbar;
+        }
+        return NULL;
 	#endif
 }
 
@@ -438,17 +474,18 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	}
 #endif
 #if LIN
-/*    mmenu* new_menu = 0;
-	if (!mMenubar) return 0;
-    std::string itemname(inTitle);
-    NukeAmpersand(itemname);
-    mMenubar->addItem(gIDs++, itemname);
-	mMenubar->currItemName = itemname;
-    new_menu = mMenubar;*/
-	void* new_menu = 0;
+	GUI_QtMenu* new_menu = new GUI_QtMenu(inTitle,this);
+
+    if (parent==GetMenuBar())
+    {
+        mMenus << new_menu;
+        if (parent)
+                ((QMenuBar*) parent)->addMenu(new_menu);
+    }
+    else
+         ((GUI_QtMenu*) parent)->actions().at(parentItem)->setMenu(new_menu);
 
 #endif
-
 	RebuildMenu(new_menu, items);
 #if !LIN
 	mMenus.insert(new_menu);
