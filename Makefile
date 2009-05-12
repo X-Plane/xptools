@@ -13,6 +13,7 @@ VER_GEOTIFF	:= 1.2.5
 # http://www.lib3ds.org/; TODO: new release 2.0, has API changes
 VER_LIB3DS	:= 1.3.0
 # http://www.coin3d.org/lib/dime; no releases yet
+# https://svn.coin3d.org/repos/dime/trunk/
 # svn co https://svn.coin3d.org/repos/dime/trunk dime
 VER_LIBDIME	:= r175
 # http://www.ijg.org/
@@ -20,7 +21,7 @@ VER_LIBDIME	:= r175
 VER_LIBJPEG	:= 6b
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
-VER_LIBSQLITE	:= 3.6.13
+VER_LIBSQLITE	:= 3.6.14
 # http://www.libpng.org/
 # http://www.libpng.org/pub/png/libpng.html
 VER_LIBPNG	:= 1.2.35
@@ -37,7 +38,7 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/project/showfiles.php?group_id=7586
-VER_BOOST	:= 1.38.0
+VER_BOOST	:= 1.39.0
 # http://www.mesa3d.org/
 # http://sourceforge.net/project/showfiles.php?group_id=3
 VER_MESA	:= 7.4.1
