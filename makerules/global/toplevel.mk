@@ -117,8 +117,8 @@ endif
 ####################################
 
 ifeq ($(conf), release_opt)
-	CFLAGS		+= -O3 -fomit-frame-pointer -funroll-loops
-	CXXFLAGS	+= -O3 -fomit-frame-pointer -funroll-loops
+	CFLAGS		+= -O2 -fomit-frame-pointer -funroll-loops
+	CXXFLAGS	+= -O2 -fomit-frame-pointer -funroll-loops
 	DEFINES		+= -DDEV=0
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
@@ -130,8 +130,8 @@ else ifeq ($(conf), debug)
 	CXXFLAGS	+=  -O0 -g
 	DEFINES		+=  -DDEV=1
 else ifeq ($(conf), release_test)
-	CFLAGS		+= -O3 -fomit-frame-pointer -funroll-loops
-	CXXFLAGS	+= -O3 -fomit-frame-pointer -funroll-loops
+	CFLAGS		+= -O2 -fomit-frame-pointer -funroll-loops
+	CXXFLAGS	+= -O2 -fomit-frame-pointer -funroll-loops
 	DEFINES		+= -DDEV=1
 	StripDebug	:= Yes
 # default to debug_opt configuration
