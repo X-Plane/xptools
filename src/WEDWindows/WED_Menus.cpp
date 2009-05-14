@@ -141,6 +141,36 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 {	NULL,							0,		0,									0, 0,				}
 };
 
+/*
+	Ben says: what Matthias and Janos have done here warrants a little bit of explanation.
+	Basically the GUI menu port isn't quite opaque to client code yet.  Unlike Win32,
+	the Qt Menus used on Linux cannot be shared by multiple windows, thus we cannot
+	really have a global set of menu resources (simulating the mac) that are installed
+	in every window.
+	
+	So...right now we have a temporary call-out from the window code to re-generate
+	a copy of the client-specific menu content.  This effectively means we have 
+	duplicate copies of the menu bar, one per window, which is what we want (since closing
+	a window releases the qt menu bar.).
+	
+	So in the long term we probably need to do something like this:
+	
+	1. menu creation is a virtual function called in app object - guarantees the menu
+	bar is established once before any windows are made.  (We know this because windows
+	need the app as a commander so app is always created before any windows.)  Without
+	this we have to broadcast out menu bar changes all over the place.
+	
+	2. rebuild menu item API becomes private.  In practice it is only used in
+	implementations, so exposing it to client code implies we can revise menus when 
+	most clients still don't need this.
+	
+	(Note that clients CAN revise menus by changing the ioName param in a command
+	evaluation callback).
+	
+	3. Qt app menu code persists the menus, and clones out a copy when a window is made.
+
+*/
+
 void WED_MakeMenus(GUI_Application * inApp)
 {
 
