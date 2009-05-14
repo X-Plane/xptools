@@ -49,14 +49,8 @@ TOP LEVEL FILE STRUCTURE
 
 
 SceneryTools.xcodeproj
-	X-Code project file for all tools except ac3d plugin, OS X.
+	X-Code project file for all tools OS X.
 
-
-XPExporter.xcodeproj
-	X-Code project file for ac3d plugin, OS X.
-
-XPExporter.mcp
-	Metroworks CodeWarrior project for ac3d plugin, Windows.
 
 libs
 	Third party library directory.  The makefile will unpack the tarballs
