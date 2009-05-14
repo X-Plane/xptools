@@ -44,7 +44,7 @@ inline int OGL2Client_Y(int y, WindowRef w) { Rect c; GetWindowBounds(w,kWindowC
 inline int Client2OGL_X(int x, HWND w) { return x; }
 inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
 inline int OGL2Client_X(int x, HWND w) { return x; }
-inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom-y; }
 
 #if MINGW_BUILD
 #define _TRUNCATE 0
@@ -1391,14 +1391,11 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 				me->GetMouseLoc(&x,&y);
 				int curs = me->InternalGetCursor(Client2OGL_X(x,me->mWindow),Client2OGL_Y(y,me->mWindow));
 				switch(curs) {
-				case gui_Cursor_Resize_H:	SetCursor(LoadCursor(NULL,IDC_SIZEWE));	break;
-				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	break;
-				case gui_Cursor_None:
-				case gui_Cursor_Arrow:
-				default:					SetCursor(LoadCursor(NULL,IDC_ARROW));	break;
+				case gui_Cursor_Resize_H:	SetCursor(LoadCursor(NULL,IDC_SIZEWE));	return 0;
+				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	return 0;
 				}
 			}
-			return 0;
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		default:
 			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
 	}

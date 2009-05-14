@@ -69,7 +69,7 @@ static vector<open_doc_t>	sDocs;
 
 static int kDefaultBounds[4] = { 50, 50, 850, 650 };
 
-WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_resizable | xwin_style_centered, kDefaultBounds, cmder)
+WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_centered, kDefaultBounds, cmder)
 {
 	int btns[2];
 //	GUI_GetImageResourceSize("startup_bkgnd.png", bkgnd);

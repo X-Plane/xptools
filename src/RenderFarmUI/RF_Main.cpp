@@ -507,7 +507,7 @@ int main(int argc, char * argv[])
 	t->Start(0.1);
 
 	int bounds[4] = { 0, 40, 1024, 768 };
-	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_movable | xwin_style_resizable | xwin_style_visible, bounds, &app);
+	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_visible, bounds, &app);
 
 	bounds[3] -= bounds[1];
 	bounds[1] = 0;

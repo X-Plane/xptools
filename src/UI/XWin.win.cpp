@@ -44,10 +44,7 @@ XWin::XWin(int default_dnd)
 {
 	sIniting = true;
 	mWindow = CreateWindow(sWindowClass, "FullScreen",
-		(WS_OVERLAPPED     |
-         WS_CAPTION        |
-         WS_SYSMENU        |
-         WS_THICKFRAME      ) ,	// Style,
+		WS_OVERLAPPEDWINDOW,	// Style,
 		10, 10, 50, 50,
 		NULL,	// Parent
 		NULL,	// Menu
@@ -85,17 +82,18 @@ XWin::XWin(
 	int				inWidth,
 	int				inHeight)
 {
-	RECT	bounds = { inX, inY, inX + inWidth, inY + inHeight };
-	AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, true);
-
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, inTitle,
-		(inAttributes & xwin_style_movable) ? WS_CAPTION :
-		((inAttributes & xwin_style_resizable) ? WS_OVERLAPPEDWINDOW : WS_BORDER),
-		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.left,
-		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.top,
-		(inAttributes & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.right-bounds.left,
-		(inAttributes & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.bottom-bounds.top,
+	RECT	bounds = { inX, inY, inX + inWidth, inY + inHeight };
+	DWORD style = WS_SYSMENU | WS_CAPTION | WS_BORDER;
+
+	(inAttributes & xwin_style_resizable) ?
+		(style |= WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME) :
+		(style |= WS_MINIMIZEBOX);
+
+	AdjustWindowRect(&bounds, style, true);
+	mWindow = CreateWindow(sWindowClass, inTitle, style,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		bounds.right-bounds.left, bounds.bottom-bounds.top-1,
 		NULL,	// Parent
 		NULL,	// Menu
 		gInstance,	// (app)
@@ -252,7 +250,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_XBUTTONDOWN:
 		if (obj)
 		{
-			POINTSTOPOINT(obj->mMouse, lParam);
+			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
 				int btn = 0;
 			switch(message) {
 			case WM_LBUTTONDOWN:	btn = 0;	break;
@@ -283,7 +281,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			case WM_XBUTTONUP:	btn = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
 			}
 
-			POINTSTOPOINT(obj->mMouse, lParam);
+			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
 			if(obj->mDragging[btn])
 			obj->ClickUp(obj->mMouse.x, obj->mMouse.y, btn);
 			obj->mDragging[btn]=0;
@@ -296,7 +294,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj)
 		{
 			POINT	p;
-			POINTSTOPOINT(p,lParam);
+			POINTSTOPOINT(p, MAKEPOINTS(lParam));
 			ScreenToClient(obj->mWindow,&p);
 			obj->MouseWheel(p.x, p.y, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA, (message == WM_MOUSEWHEEL) ? 0 : 1);
 		}
@@ -305,7 +303,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_MOUSEMOVE:
 		if (obj)
 		{
-			POINTSTOPOINT(obj->mMouse, lParam);
+			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
 			int bc=0;
 			for(int b=0;b<BUTTON_DIM;++b)
 			if(obj->mDragging[b])
