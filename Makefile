@@ -1,7 +1,8 @@
 TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm \
 		ac3d XGrinder RenderFarmUI
 
-.PHONY: $(TARGETS) all clean distclean libs release linkclean release-test
+.PHONY: $(TARGETS) all clean distclean libs release linkclean release-test \
+srpm-head
 
 all: $(TARGETS)
 
@@ -32,6 +33,15 @@ linkclean:
 distclean: clean
 	@$(MAKE) -s -C "./libs" clean
 
+srpm-head:
+	git archive --format=tar --prefix=xptools/ HEAD^{tree} | bzip2 > xptools.tar.bz2
+	rpmbuild -ts xptools.tar.bz2
+	rm -rf xptools.tar.bz2
+
+ifndef rpmbuild
 $(TARGETS): libs
+else
+$(TARGETS):
+endif
 	@export LD_RUN_PATH='$${ORIGIN}/slib' && \
 	$(MAKE) -s -f ./makerules/global/toplevel.mk TARGET=$(@) all

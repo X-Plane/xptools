@@ -10,7 +10,6 @@ LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
 LIBS		+= -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
 LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 

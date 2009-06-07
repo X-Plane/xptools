@@ -11,7 +11,6 @@ LIBS		+= -lz
 FORCEREBUILD_SUFFIX	:= _rf
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
 LIBS		+= -lbfd -liberty
 endif #PLAT_LINUX
 
