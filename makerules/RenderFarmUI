@@ -17,7 +17,7 @@ LIBS		+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
 LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -ldl -lc -lpthread
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
