@@ -126,6 +126,7 @@
 		D607B7A10C0B847C00992876 /* check.png in Resources */ = {isa = PBXBuildFile; fileRef = D607B7A00C0B847C00992876 /* check.png */; };
 		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
 		D60B090F0C061B2100AD5EB7 /* GUI.nib in Resources */ = {isa = PBXBuildFile; fileRef = D60B090E0C061B2100AD5EB7 /* GUI.nib */; };
+		D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */; };
 		D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */; };
 		D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3E0C03619A00AD5EB7 /* map_airport.png */; };
 		D60BFC4A0C03619A00AD5EB7 /* map_beacon.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */; };
@@ -525,6 +526,7 @@
 		D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D67EF9C20B61424F00D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */; };
 		D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */; };
 		D682DE5D0C10985100BBE1A0 /* startup_bar.png in Resources */ = {isa = PBXBuildFile; fileRef = D682DE5A0C10985100BBE1A0 /* startup_bar.png */; };
 		D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */ = {isa = PBXBuildFile; fileRef = D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */; };
@@ -965,6 +967,8 @@
 		D60A99AC0B7A57E0002680BD /* GUI_Packer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Packer.h; sourceTree = "<group>"; };
 		D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Packer.cpp; sourceTree = "<group>"; };
 		D60B090E0C061B2100AD5EB7 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = GUI.nib; sourceTree = "<group>"; };
+		D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Orthophoto.h; sourceTree = "<group>"; };
+		D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Orthophoto.cpp; sourceTree = "<group>"; };
 		D60B10200C075B3700AD5EB7 /* WED_AptIE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AptIE.h; sourceTree = "<group>"; };
 		D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AptIE.cpp; sourceTree = "<group>"; };
 		D60BFC3E0C03619A00AD5EB7 /* map_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_airport.png; sourceTree = "<group>"; };
@@ -1190,6 +1194,8 @@
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9890B6135F400D9190C /* ObjConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjConverter; sourceTree = BUILT_PRODUCTS_DIR; };
+		D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISUtils.h; sourceTree = "<group>"; };
+		D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISUtils.cpp; sourceTree = "<group>"; };
 		D682DDEC0C10939C00BBE1A0 /* WED_StartWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StartWindow.h; sourceTree = "<group>"; };
 		D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StartWindow.cpp; sourceTree = "<group>"; };
 		D682DE5A0C10985100BBE1A0 /* startup_bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = startup_bar.png; sourceTree = "<group>"; };
@@ -2395,7 +2401,6 @@
 				D6BC37E10AB22C85003949C5 /* WEDMap */,
 				D6AC14390F126C930006E096 /* WEDTCE */,
 				D6BC37E70AB22C85003949C5 /* WEDWindows */,
-				D6BC37F40AB22C85003949C5 /* WorldEditor */,
 				D6BC382D0AB22C85003949C5 /* XESCore */,
 				D6BC387E0AB22C85003949C5 /* XESTools */,
 				D6BC38AB0AB22C85003949C5 /* XPCompat */,
@@ -2890,6 +2895,10 @@
 				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
 				D6226F230E4C6A48005BD1D7 /* WED_LibraryMgr.h */,
 				D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */,
+				D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */,
+				D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */,
+				D680AA1C0FCD85B400712B5B /* WED_GISUtils.h */,
+				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -2969,13 +2978,6 @@
 				D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */,
 			);
 			path = WEDWindows;
-			sourceTree = "<group>";
-		};
-		D6BC37F40AB22C85003949C5 /* WorldEditor */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = WorldEditor;
 			sourceTree = "<group>";
 		};
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
@@ -4393,6 +4395,8 @@
 				D6956ED40F82E91100F6718E /* WED_Assert.cpp in Sources */,
 				D6956ED50F82E91100F6718E /* WED_Globals.cpp in Sources */,
 				D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */,
+				D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */,
+				D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4739,6 +4743,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
+					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5187,6 +5192,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
+					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5216,6 +5222,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
+					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5316,6 +5323,7 @@
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
+					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
