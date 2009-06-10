@@ -308,6 +308,10 @@ void	WED_GISLine_Width::GetCorners(Point2 corners[4]) const
 	Quad_2to4(ends, GetWidth(), corners);
 }
 
+void	WED_GISLine_Width::GetCornersUV(Point2 corners[4]) const
+{
+}
+
 void	WED_GISLine_Width::MoveCorner(int corner, const Vector2& delta)
 {
 	Point2	corners[4];

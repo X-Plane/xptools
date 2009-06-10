@@ -73,6 +73,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"Rever&se",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
+{	"Make Overla&y",		0,		0,								0,	wed_Overlay		},
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},

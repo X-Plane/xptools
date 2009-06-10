@@ -1487,11 +1487,22 @@ void 	DSFFileWriterImp::AddPolygonPoint(
 void	DSFFileWriterImp::EndPolygonWinding(
 				void *			inRef)
 {
+	DSFTupleVector * cw = &REF(inRef)->accum_poly_winding.back();
+	if(cw->empty())
+	{
+		REF(inRef)->accum_poly_winding.pop_back();
+	}
 }
 
 void	DSFFileWriterImp::EndPolygon(
 				void *			inRef)
 {
+	if(REF(inRef)->accum_poly_winding.empty())
+	{
+		REF(inRef)->polygons.pop_back();
+		return;
+	}
+	
 	DSFTupleVector	pts;
 	for (DSFTupleVectorVector::iterator i = REF(inRef)->accum_poly_winding.begin(); i != REF(inRef)->accum_poly_winding.end(); ++i)
 		pts.insert(pts.end(), i->begin(), i->end());

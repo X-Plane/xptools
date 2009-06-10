@@ -29,6 +29,7 @@
 #include "XObjDefs.h"
 #include "ObjConvert.h"
 #include "FileUtils.h"
+#include "WED_PackageMgr.h"
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
@@ -162,6 +163,30 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	mPol[path] = out_info;
 	return true;
 }
+
+void WED_ResourceMgr::MakePol(const string& path, const pol_info_t& out_info)
+{
+	map<string,pol_info_t>::iterator i = mPol.find(path);
+	if(i != mPol.end())
+	{
+		return;
+	}
+
+	string p = mLibrary->CreateLocalResourcePath(path);
+	
+	FILE * fi = fopen(p.c_str(), "w");
+	if(!fi)	return;
+	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");
+	
+	fprintf(fi,out_info.wrap ? "TEXTURE %s\n" : "TEXTURE_NOWRAP %s\n", out_info.base_tex.c_str());
+	fprintf(fi,"SCALE %lf %lf\n",out_info.proj_s,out_info.proj_t);
+
+	if(out_info.kill_alpha)
+		fprintf(fi,"NO_ALPHA\n");
+	fclose(fi);	
+	gPackageMgr->Rescan();
+}
+
 
 
 void	WED_ResourceMgr::ReceiveMessage(

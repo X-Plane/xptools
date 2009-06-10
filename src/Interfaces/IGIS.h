@@ -100,6 +100,7 @@ class	IGISQuad : public virtual IGISEntity {
 public:
 
 	virtual	void	GetCorners(Point2 corners[4]) const=0;
+	virtual	void	GetCornersUV(Point2 corners[4]) const=0;
 
 	virtual	void	MoveCorner(int corner, const Vector2& delta)=0;
 	virtual	void	MoveSide(int side, const Vector2& delta)=0;

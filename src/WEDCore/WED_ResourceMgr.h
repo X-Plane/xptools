@@ -69,6 +69,7 @@ public:
 			void	Purge(void);
 
 			bool	GetPol(const string& path, pol_info_t& out_info);
+			void	MakePol(const string& path, const pol_info_t& out_info);
 			bool	GetObj(const string& path, XObj8 *& obj);
 
 	virtual	void	ReceiveMessage(

@@ -132,6 +132,11 @@ void	WED_GISBoundingBox::GetCorners(Point2 corners[4]) const
 	corners[3] = Point2(corners[0].x(),corners[2].y());
 }
 
+void	WED_GISBoundingBox::GetCornersUV(Point2 corners[4]) const
+{
+}
+
+
 void	WED_GISBoundingBox::MoveCorner(int corner, const Vector2& delta)
 {
 	Point2	p1,p2;

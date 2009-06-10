@@ -37,7 +37,8 @@ using std::max;
 
 struct	Point2;
 struct	Vector2;
-
+struct	Bbox2;
+struct  Line2;
 
 
 #if IBM
@@ -186,6 +187,10 @@ struct	Segment2 {
 	bool	intersect(const Segment2& rhs, Point2& p) const;
 
 	bool	is_near(const Point2& p, double distance) const;
+	
+	bool	clip_to(const Bbox2& bbox);
+	bool	clip_to(const Segment2& bbox);
+	
 
 	double	y_at_x(double x) const { 	if (p1.x_ == p2.x_) 	return p1.y_;
 										if (x == p1.x_) 		return p1.y_;
@@ -595,6 +600,45 @@ inline bool	Segment2::is_near(const Point2& p, double distance) const
 	Point2 proj = projection(p);
 	return (p.squared_distance(proj) < distance);
 }
+
+inline bool	Segment2::clip_to(const Segment2& l)
+{
+	bool out1 = l.on_right_side(p1);
+	bool out2 = l.on_right_side(p2);
+	
+	if(out1 && out2)	return false;
+	if(!out1 && !out2)	return true;
+	
+	Point2	x;
+	if (!l.intersect((*this), x))
+//		Assert(!"Reliability problem.");
+		return false;
+	
+	if(out1)	p1 = x;
+	else		p2 = x;
+	return true;	
+}
+
+inline bool	Segment2::clip_to(const Bbox2& bbox)
+{
+	Point2	c1(bbox.xmin(), bbox.ymin());
+	Point2	c2(bbox.xmax(), bbox.ymin());
+	Point2	c3(bbox.xmax(), bbox.ymax());
+	Point2	c4(bbox.xmin(), bbox.ymax());
+	
+	Segment2	l1(c1,c2);
+	Segment2	l2(c2,c3);
+	Segment2	l3(c3,c4);
+	Segment2	l4(c4,c1);
+	
+	if(!clip_to(l1))	return false;
+	if(!clip_to(l2))	return false;
+	if(!clip_to(l3))	return false;
+	if(!clip_to(l4))	return false;
+	return true;
+}
+
+
 
 
 inline bool Line2::intersect(const Line2& l, Point2& p) const

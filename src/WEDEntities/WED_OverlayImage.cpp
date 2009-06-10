@@ -53,6 +53,12 @@ void	WED_OverlayImage::GetCorners(Point2 corners[4]) const
 		GetOuterRing()->GetNthPoint(n)->GetLocation(corners[n]);
 }
 
+void	WED_OverlayImage::GetCornersUV(Point2 corners[4]) const
+{
+	for (int n = 0; n < 4; ++n)
+		GetOuterRing()->GetNthPoint(n)->GetUV(corners[n]);
+}
+
 void	WED_OverlayImage::MoveCorner(int corner, const Vector2& delta)
 {
 	Point2	p;

@@ -32,7 +32,7 @@
 
 /*
 	This is a full overlay helper that attempts to maintain the meta-data attached to our map through the merge.  It takes merge-functors as template
-	parameters.
+	parameters.  Data from all bounded faces are used.
 
 */
 
@@ -61,7 +61,7 @@ public:
 
 	typedef OverlayEdgeData_                            Overlay_edge_data;
 	typedef OverlayFaceData_                            Overlay_face_data;
-	typedef OverlayVertexData_                            Overlay_vertex_data;
+	typedef OverlayVertexData_                          Overlay_vertex_data;
 
 private:
 
@@ -122,7 +122,13 @@ public:
 
 };
 
+/*
 
+	Replace overlay trates: "contained" faces in arrangement B replace what is below.  Any edges fully inside a contained
+	area are put on the "dead" list (because they should not exist and need to be later removed) and do not have meta data
+	copied.  Meta data is copied based on the "overlay-replace area" principle.
+	
+ */
 
 template <class ArrangementA, class ArrangementB, class ArrangementR>
 class Arr_replace_overlay_traits :
@@ -148,24 +154,34 @@ public:
 
 	virtual void create_vertex (Vertex_handle_A v1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
-		v->set_data(v2->data());
+		v->set_data(v2->data());		// Co-located vertices - top layer wins.
 	}
+	
 	virtual void create_vertex (Vertex_handle_A v1, Halfedge_handle_B e2, Vertex_handle_R v) const
 	{
+		if (!e2->face()->contained() ||
+			!e2->twin()->face()->contained())
+		{
+			v->set_data(v1->data());
+		}
 	}
+	
 	virtual void create_vertex (Vertex_handle_A v1, Face_handle_B f2, Vertex_handle_R v) const
 	{
-		if(f2->is_unbounded())
+		if(!f2->contained())
 			v->set_data(v1->data());
 	}
+	
 	virtual void create_vertex (Halfedge_handle_A e1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
 		v->set_data(v2->data());
 	}
+	
 	virtual void create_vertex (Face_handle_A f1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
 		v->set_data(v2->data());
 	}
+	
 	virtual void create_vertex (Halfedge_handle_A e1, Halfedge_handle_B e2, Vertex_handle_R v) const
 	{
 	}
@@ -175,15 +191,17 @@ public:
 		e->		   set_data (e2->data());
 		e->twin()->set_data (e2->twin()->data());
 	}
+	
 	virtual void create_edge (Halfedge_handle_A e1, Face_handle_B f2, Halfedge_handle_R e) const
 	{
-		if(f2->is_unbounded())
+		if(!f2->contained())
 		{
 			e->set_data (e1->data());
 			e->twin()->set_data (e1->twin()->data());
 		} else if(dead)
 			dead->push_back(e);
 	}
+	
 	virtual void create_edge (Face_handle_A f1, Halfedge_handle_B e2, Halfedge_handle_R e) const
 	{
 		e->set_data (e2->data());
@@ -192,17 +210,15 @@ public:
 
 	virtual void create_face (Face_handle_A f1, Face_handle_B f2, Face_handle_R f) const
 	{
-		f->set_contained(!f2->is_unbounded());
-		f->set_data (f2->is_unbounded() ? f1->data() : f2->data());
+		f->set_contained(f2->contained());															// overlay face drives containment after merge - that is, we copy the overlay pattern.  If we wanted
+		f->set_data(f2->contained() ? f2->data() : f1->data());										// the whole surface area, we could just set contained = ! unbounded.
 	}
-
 };
 
 
-
-
-
-
+/*
+	Overlay functors to try to merge our meta-data as best we can when we do a full overlay and have overlapping data.
+*/
 
 struct Overlay_vertex
 {
@@ -219,7 +235,6 @@ struct Overlay_terrain
 	GIS_face_data operator() (GIS_face_data a, GIS_face_data b) const
 	{
 		GIS_face_data r;
-		//fprintf(stderr, "%d-%d ", a.mTerrainType, b.mTerrainType);
 		// Our overlay comes from the RHS, but it might be a hole (in which case mTerrainType will be 0)
 		if (b.mTerrainType != 0 ) {
 			r.mTerrainType = b.mTerrainType;
@@ -241,18 +256,13 @@ struct Overlay_network
 {
 	GIS_halfedge_data operator() (GIS_halfedge_data a, GIS_halfedge_data b) const
 	{
-//		DebugAssert(a.mDominant == b.mDominant);
-//		DebugAssert(a.mDominant || a.mDominant == b.mDominant);
-//		DebugAssert(!b.mDominant || a.mDominant == b.mDominant);
 		GIS_halfedge_data r;
-//		r.mDominant = a.mDominant;
 		GISNetworkSegmentVector::iterator i;
 		if (b.mSegments.empty())
 			for (i = a.mSegments.begin(); i != a.mSegments.end(); ++i)
 				r.mSegments.push_back(*i);
-//		if(b.mDominant)
-			for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
-				r.mSegments.push_back(*i);
+		for (i = b.mSegments.begin(); i != b.mSegments.end(); ++i)
+			r.mSegments.push_back(*i);
 		return r;
 	}
 };

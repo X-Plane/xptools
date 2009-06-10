@@ -212,6 +212,7 @@ inline bool IsCustom(int n)
 	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter != tex_not_custom;
 }
 
+
 inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
 {
 	double v1_dx = p2.x() - p1.x();
@@ -221,7 +222,7 @@ inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
 	return (v1_dx * v2_dy - v1_dy * v2_dx) * 0.5;
 }
 
-static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_info * info)
+void ProjectTex(double lon, double lat, double& s, double& t, const tex_proj_info * info)
 {
 	Point2 p(lon, lat);
 	double total1 = tri_area(info->corners[0],info->corners[1],info->corners[2]);
@@ -261,6 +262,8 @@ static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_in
 	if(s <  1.001 & s > 1.0) s = 1.0;
 	if(t <  1.001 & t > 1.0) t = 1.0;
 }
+
+
 
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 {

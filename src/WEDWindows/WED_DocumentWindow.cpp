@@ -48,6 +48,8 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 
+#include "WED_Orthophoto.h"
+
 #if LIN
 // temporary, testing stuff here
 #include "GUI_Fonts.h"
@@ -61,7 +63,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 		const char * 	inTitle,
 	 		GUI_Commander * inCommander,
 	 		WED_Document *	inDocument) :
-	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible, kDefaultDocSize, inCommander),
+	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_fullscreen, kDefaultDocSize, inCommander),
 	mDocument(inDocument)
 {
 	#if LIN
@@ -271,6 +273,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
+	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
@@ -320,6 +323,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case wed_Crop:		return	WED_CanCrop(mDocument);
+	case wed_Overlay:														return 1;
+		#if !DEV
+			#error fix this
+		#endif
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);

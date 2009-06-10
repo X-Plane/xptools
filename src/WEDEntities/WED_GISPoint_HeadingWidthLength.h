@@ -50,6 +50,7 @@ public:
 	virtual	void	SetLength(double width)      ;
 
 	virtual	void	GetCorners(Point2 corners[4]) const;
+	virtual	void	GetCornersUV(Point2 corners[4]) const;
 
 	virtual	void	MoveCorner(int corner, const Vector2& delta);
 	virtual	void	MoveSide(int side, const Vector2& delta);

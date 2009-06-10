@@ -117,6 +117,10 @@ string		WED_LibraryMgr::GetResourcePath(const string& r)
 	return me->second.real_path;
 }
 
+string		WED_LibraryMgr::CreateLocalResourcePath(const string& r)
+{
+	return gPackageMgr->ComputePath(local_package, r);
+}
 
 void	WED_LibraryMgr::ReceiveMessage(
 						GUI_Broadcaster *		inSrc,

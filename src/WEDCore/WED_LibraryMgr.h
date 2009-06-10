@@ -55,6 +55,8 @@ public:
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
 	string		GetResourcePath(const string& r);
+	
+	string		CreateLocalResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,

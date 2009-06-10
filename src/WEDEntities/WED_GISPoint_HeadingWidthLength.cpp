@@ -157,6 +157,10 @@ void	WED_GISPoint_HeadingWidthLength::GetCorners(Point2 corners[4]) const
 	Quad_1to4(center, GetHeading(), GetLength(), GetWidth(), corners);
 }
 
+void	WED_GISPoint_HeadingWidthLength::GetCornersUV(Point2 corners[4]) const
+{
+}
+
 void	WED_GISPoint_HeadingWidthLength::MoveCorner(int corner, const Vector2& delta)
 {
 	Point2	corners[4];

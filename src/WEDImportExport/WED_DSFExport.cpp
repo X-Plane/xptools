@@ -43,6 +43,10 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
 #include "WED_EnumSystem.h"
+#include "WED_GISUtils.h"
+#include "MathUtils.h"
+
+static bool g_dropped_pts = false;;
 
 struct	DSF_ResourceTable {
 	vector<string>		obj_defs;
@@ -105,55 +109,294 @@ static int DSF_HasBezierPol(IGISPolygon * pol)
 	return 0;
 }
 
-
-static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int double_end)
+static void DSF_AccumPtsCGAL(const Polygon_2& ring, const DSFCallbacks_t * cbs, void * writer, const Polygon_2 * tex_coord, const Bbox2& bounds)
 {
 	cbs->BeginPolygonWinding_f(writer);
+	for (int n = 0; n < ring.size(); ++n)
+	{
+		double c[4] = { CGAL::to_double(ring[n].x()),
+						CGAL::to_double(ring[n].y()),
+						0,0};
+		if(tex_coord)
+		{
+			c[2] = CGAL::to_double(tex_coord->vertex(n).x());
+			c[3] = CGAL::to_double(tex_coord->vertex(n).y());
+		}
+
+		c[0] = doblim(c[0],bounds.xmin(),bounds.xmax());
+		c[1] = doblim(c[1],bounds.ymin(),bounds.ymax());
+		c[2] = doblim(c[2],0,1);
+		c[3] = doblim(c[3],0,1);
+		cbs->AddPolygonPoint_f(c,writer);
+	}
+	cbs->EndPolygonWinding_f(writer);	
+}
+
+class	DSF_LineClipper {
+public:
+
+	DSF_LineClipper(
+			const DSFCallbacks_t *	icbs,
+			void *					iwriter,
+			const Bbox2&			iclip) : cbs(icbs), writer(iwriter), clip(iclip), alive(false), inited(false)
+	{
+	}
+	
+	~DSF_LineClipper()
+	{
+		if(alive)
+			cbs->EndPolygonWinding_f(writer);			
+	}
+	
+	void Accum(const Point2& c)
+	{
+		double coords[2];
+	
+		if(!inited)
+		{
+			last = c;
+			inited=1;
+			return;
+		}
+		
+		Segment2	seg(last,c);
+		
+		bool in1 = clip.contains(seg.p1);
+		bool in2 = clip.contains(seg.p2);
+		
+		if(in1 && in2)
+		{
+			if(!alive)
+			{
+				alive=true;
+				cbs->BeginPolygonWinding_f(writer);
+				coords[0] = last.x();
+				coords[1] = last.y();
+				DebugAssert(clip.contains(last));
+				cbs->AddPolygonPoint_f(coords,writer);							
+			}
+			coords[0] = c.x(); coords[1] = c.y();
+			DebugAssert(clip.contains(c));
+			cbs->AddPolygonPoint_f(coords,writer);			
+		}
+		else if (in1)
+		{
+			if(!alive)
+			{
+				alive=true;
+				cbs->BeginPolygonWinding_f(writer);
+				coords[0] = last.x();
+				coords[1] = last.y();
+				DebugAssert(clip.contains(last));
+				cbs->AddPolygonPoint_f(coords,writer);							
+			}
+
+			if (seg.clip_to(clip))
+			{
+				coords[0] = seg.p2.x(); coords[1] = seg.p2.y(); 
+				DebugAssert(clip.contains(seg.p2));
+				cbs->AddPolygonPoint_f(coords,writer);			
+			}
+			else
+			{
+				DebugAssert(!"Clipping error.");
+			}
+			cbs->EndPolygonWinding_f(writer);
+			alive = false;			
+		}
+		else if (in2)
+		{
+			DebugAssert(!alive);
+			alive = true;
+			cbs->BeginPolygonWinding_f(writer);
+
+			if (seg.clip_to(clip))
+			{
+				cbs->BeginPolygonWinding_f(writer);
+				coords[0] = seg.p1.x(); coords[1] = seg.p1.y(); 
+				DebugAssert(clip.contains(seg.p1));
+				cbs->AddPolygonPoint_f(coords,writer);
+				coords[0] = seg.p2.x(); coords[1] = seg.p2.y(); 
+				DebugAssert(clip.contains(seg.p2));
+				cbs->AddPolygonPoint_f(coords,writer);
+			}
+			else
+			{
+				DebugAssert(!"Clipping error.");
+			}
+		}
+		else
+		{
+			DebugAssert(!alive);
+			if (seg.clip_to(clip))
+			{
+				cbs->BeginPolygonWinding_f(writer);
+				coords[0] = seg.p1.x(); coords[1] = seg.p1.y(); 
+				DebugAssert(clip.contains(seg.p1));
+				cbs->AddPolygonPoint_f(coords,writer);
+				coords[0] = seg.p2.x(); coords[1] = seg.p2.y(); 
+				DebugAssert(clip.contains(seg.p2));
+				cbs->AddPolygonPoint_f(coords,writer);
+				cbs->EndPolygonWinding_f(writer);
+			}
+		}
+		
+		last = c;
+	}
+
+private:
+	const DSFCallbacks_t *	cbs;
+	void *					writer;
+	bool					alive;
+	bool					inited;
+	Bbox2					clip;
+	Point2					last;
+};	
+
+static void assemble_dsf_pt(double c[8], const Point2& p, const Point2& st, const Point2& ch, const Point2& stch, bool bezier, bool tex_coord)
+{	
+	c[0] = p.x();
+	c[1] = p.y();
+
+	if(bezier)
+	{
+		c[2] = ch.x();
+		c[3] = ch.y();
+	}
+	if(!bezier && tex_coord)
+	{
+		c[2] = st.x();
+		c[3] = st.y();
+	}
+	if(bezier && tex_coord)
+	{
+		c[4] = st.x();
+		c[5] = st.y();
+		c[6] = stch.x();
+		c[7] = stch.y();
+	}
+}	
+
+static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int double_end, const Bbox2& bounds)
+{
+	bool can_clip = !tex_coord && !bezier;
+	DSF_LineClipper	clipper(cbs,writer,bounds);
+	if(!can_clip)
+		cbs->BeginPolygonWinding_f(writer);
 	Point2	p,	cl,ch;
 	Point2	st,	stcl,	stch;
 	int np = ring->GetNumPoints();
+	double c[8];
 	for (int n = 0; n < (np + double_end); ++n)
 	{
 		IGISPoint * pt = ring->GetNthPoint(n % np);
 		IGISPoint_Bezier * pth = bezier ? dynamic_cast<IGISPoint_Bezier *>(pt) : NULL;
-
+		bool has_hi = false, has_lo = false;
 		pt->GetLocation(p);
 		if(tex_coord) pt->GetUV(st);
 		ch = p;
-		if(pth) pth->GetControlHandleHi(ch);
+		if(pth) has_hi = pth->GetControlHandleHi(ch);
 		if(pth && tex_coord) pth->GetUVHi(stch);
 
-		double c[8] = { p.x(), p.y(), 0, 0,  0, 0,  0, 0 };
+		if(pth && pth->IsSplit())
+		{
+			has_lo = pth->GetControlHandleLo(cl);
+			if(tex_coord) pth->GetUVLo(stcl);
+			
+			cl.x_ = 2.0 * p.x_ - cl.x_;
+			cl.y_ = 2.0 * p.y_ - cl.y_;
+			
+			stcl.x_ = 2.0 * st.x_ - stcl.x_;
+			stcl.y_ = 2.0 * st.y_ - stcl.y_;
+			
+			if(has_lo)
+			{
+				assemble_dsf_pt(c,p,st,cl,stcl, bezier, tex_coord);
+				if(bounds.contains(Point2(c[0],c[1])))	cbs->AddPolygonPoint_f(c,writer);
+				else									g_dropped_pts = true;
+			}
+			assemble_dsf_pt(c,p,st,p,st, bezier, tex_coord);
+			if(bounds.contains(Point2(c[0],c[1])))	cbs->AddPolygonPoint_f(c,writer);
+			else									g_dropped_pts = true;
+			if(has_hi)
+			{
+				assemble_dsf_pt(c,p,st,ch,stch, bezier, tex_coord);
+				if(bounds.contains(Point2(c[0],c[1])))	cbs->AddPolygonPoint_f(c,writer);
+				else									g_dropped_pts = true;
+			}
+		} else {
+			
+			assemble_dsf_pt(c,p,st,ch,stch, bezier, tex_coord);
 
-		if(bezier)
-		{
-			c[2] = ch.x();
-			c[3] = ch.y();
+			if(can_clip)
+				clipper.Accum(Point2(c[0],c[1]));
+			else {
+				if(bounds.contains(Point2(c[0],c[1])))		cbs->AddPolygonPoint_f(c,writer);
+				else										g_dropped_pts = true;
+			}
 		}
-		if(!bezier && tex_coord)
-		{
-			c[2] = st.x();
-			c[3] = st.y();
-		}
-		if(bezier && tex_coord)
-		{
-			c[4] = st.x();
-			c[5] = st.y();
-			c[6] = stch.x();
-			c[7] = stch.y();
-		}
-		cbs->AddPolygonPoint_f(c,writer);
 	}
-	cbs->EndPolygonWinding_f(writer);
+	if(!can_clip)
+		cbs->EndPolygonWinding_f(writer);
 
 }
 
-static void DSF_AccumWindings(IGISPolygon * pol, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int holes)
+static void DSF_AccumWindings(IGISPolygon * pol, const DSFCallbacks_t * cbs, void * writer, int bezier, int tex_coord, int holes, const Bbox2& bounds)
 {
-	DSF_AccumPts(pol->GetOuterRing(), cbs,writer,bezier,tex_coord, 0);	// don't dupe first point
-	int hc = holes ? pol->GetNumHoles() : 0;
-	for(int h = 0; h < hc; ++h)
-		DSF_AccumPts(pol->GetNthHole(h),cbs,writer,bezier,tex_coord, 0); // don't dupe first point
+	if(bezier)
+	{
+		DSF_AccumPts(pol->GetOuterRing(), cbs,writer,bezier,tex_coord, 0, bounds);	// don't dupe first point
+		int hc = holes ? pol->GetNumHoles() : 0;
+		for(int h = 0; h < hc; ++h)
+			DSF_AccumPts(pol->GetNthHole(h),cbs,writer,bezier,tex_coord, 0, bounds); // don't dupe first point
+	} else {
+		Polygon_2	outer_ring, uv_ring;
+		if (!WED_PolygonForPointSequence(pol->GetOuterRing(), outer_ring, tex_coord ? &uv_ring : NULL))
+			Assert(!"Found beziers in supposedly no-bez case");
+		UVMap_t		uv_map;
+		if(tex_coord)
+			WED_MakeUVMap(outer_ring,uv_ring, uv_map);
+		
+		Polygon_set_2	ent_area;
+		
+		WED_PolygonSetForEntity(pol,ent_area);
+		
+		Polygon_2		clip;
+		clip.push_back(Point_2(bounds.xmin(),bounds.ymin()));
+		clip.push_back(Point_2(bounds.xmax(),bounds.ymin()));
+		clip.push_back(Point_2(bounds.xmax(),bounds.ymax()));
+		clip.push_back(Point_2(bounds.xmin(),bounds.ymax()));
+		
+		ent_area.intersection(clip);
+		
+		vector<Polygon_with_holes_2>	sub_entities;
+		ent_area.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(sub_entities));
+		
+		for(vector<Polygon_with_holes_2>::iterator sub_ent = sub_entities.begin(); sub_ent != sub_entities.end(); ++ sub_ent)
+		{
+			Polygon_with_holes_2	sub_ent_uv;
+			if(tex_coord)
+				if (!WED_MapPolygonWithHoles(uv_map, *sub_ent, sub_ent_uv))
+					Assert(!"UV map failed.");
+			
+			DebugAssert(!sub_ent->is_unbounded());
+			DSF_AccumPtsCGAL(sub_ent->outer_boundary(), cbs, writer, tex_coord ? &sub_ent_uv.outer_boundary() : NULL, bounds);
+			
+			if(holes)
+			{
+				if(tex_coord)
+				{
+					for(Polygon_with_holes_2::Hole_iterator h = sub_ent->holes_begin(); h != sub_ent->holes_end(); ++h)
+						DSF_AccumPtsCGAL(*h, cbs, writer, NULL, bounds);
+				}
+				else
+				{
+					for(Polygon_with_holes_2::Hole_iterator h = sub_ent->holes_begin(), u = sub_ent_uv.holes_begin(); h != sub_ent->holes_end(); ++h, ++u)
+						DSF_AccumPtsCGAL(*h, cbs, writer, &*u, bounds);
+				}
+			}
+		}		
+	}
 }
 
 static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bbox2& bounds, set<string>& io_resources, DSF_ResourceTable& io_table, const DSFCallbacks_t * cbs, void * writer)
@@ -173,6 +416,13 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
 	if (!ent) return;
 	if (ent->GetHidden()) return;
+	
+	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
+	
+		Bbox2	ent_box;
+		e->GetBounds(ent_box);
+	if(!ent_box.overlap(bounds))
+		return;
 
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	{
@@ -209,15 +459,20 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		obj->GetResource(r);
 		idx = io_table.accum_obj(r);
 		obj->GetLocation(p);
-		double xy[2] = { p.x(), p.y() };
-		cbs->AddObject_f(idx, xy, obj->GetHeading(), writer);
+		if(bounds.contains(p))
+		{
+			double xy[2] = { p.x(), p.y() };
+			cbs->AddObject_f(idx, xy, obj->GetHeading(), writer);
+		}
 	}
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
 	{
 		fac->GetResource(r);
 		idx = io_table.accum_pol(r);
-		cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
-		DSF_AccumWindings(fac,cbs,writer,0,0,0);	// no curves, no tex, no holes
+		bool bez = DSF_HasBezierPol(fac);
+		
+		cbs->BeginPolygon_f(idx,fac->GetHeight(),bez ? 4 : 2,writer);
+		DSF_AccumWindings(fac,cbs,writer,bez ? 1:0,0,0,bounds);	// no curves, no tex, no holes
 		cbs->EndPolygon_f(writer);
 	}
 	if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
@@ -225,7 +480,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		fst->GetResource(r);
 		idx = io_table.accum_pol(r);
 		cbs->BeginPolygon_f(idx,fst->GetDensity() * 255.0,2,writer);
-		DSF_AccumWindings(fst,cbs,writer,0,0,1);	// no curves, no tex, yes holes
+		DSF_AccumWindings(fst,cbs,writer,0,0,1,bounds);	// no curves, no tex, yes holes
 		cbs->EndPolygon_f(writer);
 	}
 	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
@@ -234,7 +489,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		idx = io_table.accum_pol(r);
 		bool bez = DSF_HasBezierSeq(str);
 		cbs->BeginPolygon_f(idx,str->GetSpacing(),bez ? 4 : 2,writer);
-		DSF_AccumPts(str,cbs,writer,bez,0, str->IsClosed());	// yes curves, no tex holes, dupe end pt if closed
+		DSF_AccumPts(str,cbs,writer,bez,0, str->IsClosed(),bounds);	// yes curves, no tex holes, dupe end pt if closed
 		cbs->EndPolygon_f(writer);
 	}
 	if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
@@ -242,8 +497,12 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		lin->GetResource(r);
 		idx = io_table.accum_pol(r);
 		bool bez = DSF_HasBezierSeq(lin);
-		cbs->BeginPolygon_f(idx,lin->IsClosed(),bez ? 4 : 2,writer);
-		DSF_AccumPts(lin,cbs,writer,bez,0, 0);	// yes curves, no tex holes, don't dupe end pt
+		// Ben says: this is a huge freaking mess.  If a bezier is FULLY contained in the 
+		
+		bool no_close = bounds.overlap(ent_box) && !bounds.contains(ent_box);
+		
+		cbs->BeginPolygon_f(idx,!no_close && lin->IsClosed(),bez ? 4 : 2,writer);
+		DSF_AccumPts(lin,cbs,writer,bez,0, no_close && lin->IsClosed(), bounds);	// yes curves, no tex holes, don't dupe end pt
 		cbs->EndPolygon_f(writer);
 	}
 	if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
@@ -252,7 +511,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		idx = io_table.accum_pol(r);
 		bool bez = DSF_HasBezierPol(pol);
 		cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-		DSF_AccumWindings(pol,cbs,writer,bez,0,1);	// yes curves, no tex, yes holes
+		DSF_AccumWindings(pol,cbs,writer,bez,0,1,bounds);	// yes curves, no tex, yes holes
 		cbs->EndPolygon_f(writer);
 	}
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
@@ -261,7 +520,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		idx = io_table.accum_pol(r);
 		bool bez = DSF_HasBezierPol(orth);
 		cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
-		DSF_AccumWindings(orth,cbs,writer,bez,1,1);	// yes curves, no tex, yes holes
+		DSF_AccumWindings(orth,cbs,writer,bez,1,1,bounds);	// yes curves, no tex, yes holes
 		cbs->EndPolygon_f(writer);
 	}
 
@@ -378,6 +637,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 
 void DSF_Export(WED_Group * base, ILibrarian * package)
 {
+	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
 	base->GetBounds(wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
@@ -390,6 +650,8 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 	for (int y = tile_south; y < tile_north; ++y)
 	for (int x = tile_west ; x < tile_east ; ++x)
 		DSF_ExportTile(base, package, x, y, generated_resources);
+	if(g_dropped_pts)
+		DoUserAlert("Warning: you have curved overlays that cross a DSF tile - they may not have exported correctly.  Do not use overlay elements that are curved and cross a DSF tile boundary.");
 }
 
 int		WED_CanExportDSF(IResolver * resolver)

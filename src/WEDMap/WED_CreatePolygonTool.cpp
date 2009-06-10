@@ -50,7 +50,7 @@ const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade
 
 const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
 const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
-const int kAllowCurved[] = { 1, 1, 1, 1,    0, 0,  1, 1, 1 };
+const int kAllowCurved[] = { 1, 1, 1, 1,    1, 0,  1, 1, 1 };
 
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,
@@ -110,7 +110,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (mType != create_Hole)
 	sel->Clear();
 
-	int is_bezier = mType != create_Facade && mType != create_Forest;
+	int is_bezier = mType != create_Forest;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
 	int is_texed = 0;

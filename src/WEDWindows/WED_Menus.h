@@ -50,6 +50,7 @@ enum {
 	wed_Group,
 	wed_Ungroup,
 	wed_Crop,
+	wed_Overlay,
 	wed_Split,
 	wed_Reverse,
 	wed_MoveFirst,

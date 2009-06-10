@@ -41,6 +41,9 @@ enum {
 typedef int shp_Flags;
 
 // io_bounds - input: the crop box (if needed).  output: the shape file bounds.
+// Note: if the shape file is importing faces (landuse/feature) and is NOT in overlay then "contained" flags on the faces describe the area that is
+// inside the shapefile.  if the shapefile is in overlay mode...well, I think the same is true but who knows.
+
 bool	ReadShapeFile(const char * in_file, Pmwx& out_map, shp_Flags mode, const char * feature_desc, double io_bounds[4], ProgressFunc	inFunc);
 
 #endif /* ShapeIO_H */

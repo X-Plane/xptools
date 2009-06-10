@@ -408,7 +408,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
 			if(f->contained())
 				f->data().mTerrainType = feat;
-
 			if(flags & shp_Mode_Simple)
 			if(flags & shp_Mode_Feature)
 			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
