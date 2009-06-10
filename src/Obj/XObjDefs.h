@@ -120,6 +120,11 @@ enum {
 	attr_Manip_Command,
 	attr_Manip_Command_Axis,
 	attr_Manip_Noop,
+	attr_Manip_Push,
+	attr_Manip_Radio,
+	attr_Manip_Toggle,
+	attr_Manip_Delta,
+	attr_Manip_Wrap,
 	// 930 commands
 	attr_Light_Level,
 	attr_Light_Level_Reset,

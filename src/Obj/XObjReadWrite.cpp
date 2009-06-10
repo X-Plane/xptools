@@ -976,6 +976,87 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
+
+		// ATTR_manip_push <cursor> <v1max> <v1min> <dref1> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_push", false))
+		{
+			cmd.cmd = attr_Manip_Push;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_radio <cursor> <v1max> <dref1> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_radio", false))
+		{
+			cmd.cmd = attr_Manip_Radio;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_toggle <cursor> <v1max> <v1min> <dref1> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_toggle", false))
+		{
+			cmd.cmd = attr_Manip_Toggle;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+
+		// ATTR_manip_delta <cursor> <v1max> <v1min> <dref1> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_delta", false))
+		{
+			cmd.cmd = attr_Manip_Delta;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		// ATTR_manip_wrap <cursor> <v1max> <v1min> <dref1> <tooltip>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_wrap", false))
+		{
+			cmd.cmd = attr_Manip_Wrap;
+			cmd.idx_offset = outObj.manips.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			XObjManip8 manip;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
+			manip.v1_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v1_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			manip.v2_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
+			ate_eoln=true;
+			outObj.manips.push_back(manip);
+		}
+		
 /******************************************************************************************************************************/
 		// DEFAULT
 /******************************************************************************************************************************/
@@ -1233,6 +1314,54 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Light_Level:
 				fprintf(fi,"ATTR_light_level %f %f %s" CRLF, cmd->params[0], cmd->params[1],cmd->name.c_str());
 				break;
+				
+			case attr_Manip_Push:
+					fprintf(fi,"ATTR_manip_push %s %f %f %s %s" CRLF,
+						outObj.manips[cmd->idx_offset].cursor.c_str(),
+						outObj.manips[cmd->idx_offset].v1_max,
+						outObj.manips[cmd->idx_offset].v1_min,
+						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+			case attr_Manip_Radio:
+					fprintf(fi,"ATTR_manip_radio %s %f %s %s" CRLF,
+						outObj.manips[cmd->idx_offset].cursor.c_str(),
+						outObj.manips[cmd->idx_offset].v1_max,
+						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+			case attr_Manip_Toggle:
+					fprintf(fi,"ATTR_manip_toggle %s %f %f %s %s" CRLF,
+						outObj.manips[cmd->idx_offset].cursor.c_str(),
+						outObj.manips[cmd->idx_offset].v1_max,
+						outObj.manips[cmd->idx_offset].v1_min,
+						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+					
+			case attr_Manip_Delta:
+					fprintf(fi,"ATTR_manip_delta %s %f %f %f %f %s %s" CRLF,
+						outObj.manips[cmd->idx_offset].cursor.c_str(),
+						outObj.manips[cmd->idx_offset].v1_min,
+						outObj.manips[cmd->idx_offset].v1_max,
+						outObj.manips[cmd->idx_offset].v2_min,
+						outObj.manips[cmd->idx_offset].v2_max,
+						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+
+			case attr_Manip_Wrap:
+					fprintf(fi,"ATTR_manip_wrap %s %f %f %f %f %s %s" CRLF,
+						outObj.manips[cmd->idx_offset].cursor.c_str(),
+						outObj.manips[cmd->idx_offset].v1_min,
+						outObj.manips[cmd->idx_offset].v1_max,
+						outObj.manips[cmd->idx_offset].v2_min,
+						outObj.manips[cmd->idx_offset].v2_max,
+						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+					
+					
 			default:
 				{
 					int idx = FindIndexForCmd(cmd->cmd);

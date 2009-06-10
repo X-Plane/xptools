@@ -44,7 +44,12 @@ enum {
 	manip_axis_2d = 3,
 	manip_command = 4,
 	manip_command_axis = 5,
-	manip_noop = 6
+	manip_noop = 6,
+	manip_dref_push = 7,
+	manip_dref_radio = 8,
+	manip_dref_toggle = 9,
+	manip_dref_delta = 10,
+	manip_dref_wrap = 11
 };
 
 void		OBJ_set_name(ACObject * obj, const char * name);

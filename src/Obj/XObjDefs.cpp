@@ -94,6 +94,13 @@ cmd_info	gCmds[] = {
 {	attr_Solid_Wall,		type_Attr,	"ATTR_solid_camera",		0,0,1},
 {	attr_No_Solid_Wall,		type_Attr,	"ATTR_no_solid_camera",		0,0,1},
 
+
+{	attr_Manip_Push,		type_Attr,	"ATTR_manip_push",			1,0,1},
+{	attr_Manip_Radio,		type_Attr,	"ATTR_manip_radio",			1,0,1},
+{	attr_Manip_Toggle,		type_Attr,	"ATTR_manip_toggle",		1,0,1},
+{	attr_Manip_Delta,		type_Attr,	"ATTR_manip_delta",			1,0,1},
+{	attr_Manip_Wrap,		type_Attr,	"ATTR_manip_wrap",			1,0,1},
+
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
 };

@@ -153,6 +153,27 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.axis[2] == rhs.data.axis[2] &&
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
+	case attr_Manip_Push:
+	case attr_Manip_Toggle:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.v1_min == rhs.data.v1_min &&
+				data.v1_max == rhs.data.v1_max &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip;
+	case attr_Manip_Radio:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.v1_max == rhs.data.v1_max &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip;
+	case attr_Manip_Delta:
+	case attr_Manip_Wrap:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.v1_min == rhs.data.v1_min &&
+				data.v1_max == rhs.data.v1_max &&
+				data.v2_min == rhs.data.v2_min &&
+				data.v2_max == rhs.data.v2_max &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip;
 	default:
 		return true;
 	}

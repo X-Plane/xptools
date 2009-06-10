@@ -76,6 +76,10 @@ proc make_labeled_entry_pair { path name1 var1 name2 var2 } {
 	pack $varc -side top -anchor nw
 }
 
+proc packtext { w t } {
+	pack $w
+	$w.l configure -text $t
+}
 
 ##########################################################################################################################################################
 # BULK CONVERSION
@@ -651,23 +655,23 @@ proc xplane_obj_sync { idx container } {
 
 	# axis
 	if { [set xplane_manip_type$idx] == 2} {
-		pack $container.obj.none.manip.xplane_manip_dx$idx
-		pack $container.obj.none.manip.xplane_manip_dy$idx
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
 		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx		
-		pack $container.obj.none.manip.xplane_manip_v1_min$idx
-		pack $container.obj.none.manip.xplane_manip_v1_max$idx
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
 	# axis_2d
 	if { [set xplane_manip_type$idx] == 3} {
-		pack $container.obj.none.manip.xplane_manip_dx$idx
-		pack $container.obj.none.manip.xplane_manip_dy$idx
-		pack $container.obj.none.manip.xplane_manip_v1_min$idx
-		pack $container.obj.none.manip.xplane_manip_v1_max$idx
-		pack $container.obj.none.manip.xplane_manip_v2_min$idx
-		pack $container.obj.none.manip.xplane_manip_v2_max$idx
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "X Axis Length"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Y Axis Length"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min X"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max X"
+		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Y"
+		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Y"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.dref2
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
@@ -681,14 +685,62 @@ proc xplane_obj_sync { idx container } {
 	}
 	# command-axis
 	if { [set xplane_manip_type$idx] == 5} {
-		pack $container.obj.none.manip.xplane_manip_dx$idx
-		pack $container.obj.none.manip.xplane_manip_dy$idx
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
 		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx
 		pack $container.obj.none.manip.cmnd1
 		pack $container.obj.none.manip.cmnd2
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
+	#no-op is 6
+
+
+	# dref-push
+	if { [set xplane_manip_type$idx] == 7} {
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Up"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Down"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# dref-radio
+	if { [set xplane_manip_type$idx] == 8} {
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Down"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# dref-toggle
+	if { [set xplane_manip_type$idx] == 9} {
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Off"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "On"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# dref-delta
+	if { [set xplane_manip_type$idx] == 10} {
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Click"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Hold"
+		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# dref-wrap
+	if { [set xplane_manip_type$idx] == 11} {
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Click"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Hold"
+		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+
+
 }
 
 
@@ -864,7 +916,7 @@ proc xplane_inspector {} {
 
 					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx 10
 					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx 10
-					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx 10
+					make_labeled_entry $container.obj.none.manip "Axis (Z Component)" xplane_manip_dz$idx 10
 					button $container.obj.none.manip.guess$idx -text "Guess" -command "ac3d xplane_guess_axis $idx"
 					pack $container.obj.none.manip.guess$idx -side left -anchor nw
 
@@ -1041,7 +1093,7 @@ set xplane_layer_group_options [list none terrain beaches shoulders taxiways run
 set xplane_cursor_options [list four_arrows hand button rotate_small rotate_small_left rotate_small_right rotate_medium rotate_medium_left rotate_medium_right rotate_large \
 	rotate_large_left rotate_large_right up_down down up left_right right left  arrow]
 
-set xplane_manip_types [list none panel axis axis_2d command command_axis no_op]
+set xplane_manip_types [list none panel axis axis_2d command command_axis no_op push radio toggle delta wrap]
 
 
 trace add variable select_info write xplane_inspector_update

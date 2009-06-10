@@ -506,6 +506,21 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			case manip_noop:
 				builder->AccumManip(attr_Manip_Noop,m);
 				break;
+			case manip_dref_push:
+				builder->AccumManip(attr_Manip_Push,m);
+				break;
+			case manip_dref_radio:
+				builder->AccumManip(attr_Manip_Radio,m);
+				break;
+			case manip_dref_toggle:
+				builder->AccumManip(attr_Manip_Toggle,m);
+				break;
+			case manip_dref_delta:
+				builder->AccumManip(attr_Manip_Delta,m);
+				break;
+			case manip_dref_wrap:
+				builder->AccumManip(attr_Manip_Wrap,m);
+				break;
 			}
 
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
