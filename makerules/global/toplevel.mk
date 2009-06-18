@@ -340,7 +340,7 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.cpp
 $(BUILTINS): $$(filter $$(addprefix ./$$(dir $$(@)), $$(ALL_OBJECTFILES)), $$(ALL_OBJECTS))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 	@-mkdir -p $(dir $(@))
-	@ld $(BARE_LDFLAGS) -r -o $(@) \
+	@ld $(MACARCHS) $(BARE_LDFLAGS) -r -o $(@) \
 	$(filter $(addprefix ./$(dir $(@)), $(ALL_OBJECTFILES)), $(ALL_OBJECTS))
 
 linkclean:
