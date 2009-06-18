@@ -285,6 +285,12 @@ all: ./local$(MULTI_SUFFIX)/.xpt_libs
 	@-rm -rf ./local
 	git clone git://dev.x-plane.com/xptools-libs-win32.git ./local
 endif
+ifeq ($(PLATFORM), Darwin)
+all: ./local$(MULTI_SUFFIX)/.xpt_libs
+./local$(MULTI_SUFFIX)/.xpt_libs:
+	@-rm -rf ./local
+	git clone git://dev.x-plane.com/xptools-libs-macosx.git ./local
+endif
 endif
 
 clean:
