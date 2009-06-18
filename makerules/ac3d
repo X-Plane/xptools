@@ -22,7 +22,7 @@ ifdef ARCH_X86_64
 	LDFLAGS		+= -m32
 	BARE_LDFLAGS	+= -melf_i386
 endif
-LDFLAGS		+= -Wl,-Bstatic
+#LDFLAGS		+= -Wl,-Bstatic
 REAL_TARGET	:= XPlaneSupportLin
 FORCEREBUILD_SUFFIX := _fpic
 endif #PLAT_LINUX
