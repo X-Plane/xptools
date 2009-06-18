@@ -12,6 +12,8 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
+Version 3.2b4
+	- New manipulators for 930b13
 Version 3.2b3
 	- LIT level commands are scaled.
 	- Fixed manipulator import.
