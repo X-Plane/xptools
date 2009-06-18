@@ -14,6 +14,19 @@
 #include <limits.h>
 #include "initializer.h"
 
+char* _strdup(const char* o)
+{
+	return strdup((char*)o);
+}
+
+char* _basename(const char* o)
+{
+	return basename((char*)o);
+}
+
+#define strdup _strdup
+#define basename _basename
+
 /* static variables */
 
 volatile bool Initializer::m_init = false;
