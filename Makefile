@@ -21,7 +21,7 @@ VER_LIBDIME	:= r175
 VER_LIBJPEG	:= 6b
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
-VER_LIBSQLITE	:= 3.6.14.2
+VER_LIBSQLITE	:= 3.6.15
 # http://www.libpng.org/
 # http://www.libpng.org/pub/png/libpng.html
 VER_LIBPNG	:= 1.2.37
