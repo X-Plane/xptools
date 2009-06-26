@@ -213,6 +213,7 @@ static float CheckFifo(void)
 	FD_SET(fifo,&er);
 	struct timeval to = { 0, 0 };
 	int res = select(fifo+1,&rd,&wr,&er, &to);
+	int did_read = 0;
 	if (res > 0)
 	{
 		if(FD_ISSET(fifo,&rd))
@@ -231,6 +232,7 @@ static float CheckFifo(void)
 		for(int n = 0; n < data.size();++n)
 		if(data[n]=='\r' || data[n] == '\n')
 		{
+			did_read = 1;
 			data[n] = 0;
 			vector<const char*>	args;
 			char * str = &*data.begin();
@@ -252,11 +254,13 @@ static float CheckFifo(void)
 			n = 0;
 		}
 
-		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
-		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
-		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
-		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_AirportsLoaded, NULL);
-
+		if(did_read)
+		{
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+			RF_Notifiable::Notify(rf_Cat_File, rf_Msg_AirportsLoaded, NULL);
+		}
 
 	}
 	return -1;
