@@ -44,7 +44,7 @@ bool ENV2Overlay(const char * inFileName, const char * inDSF);
 int main(int argc, char * argv[])
 {
 #if LIN
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 #endif
 	InstallDebugAssertHandler(AssertShellBail);
 	InstallAssertHandler(AssertShellBail);

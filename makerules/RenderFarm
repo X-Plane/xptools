@@ -11,7 +11,7 @@ LIBS		+= -lz
 FORCEREBUILD_SUFFIX	:= _rf
 
 ifdef PLAT_LINUX
-LIBS		+= -lbfd -liberty
+LIBS		+=
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -43,7 +43,7 @@ endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
-SOURCES += ./src/linuxinit/initializer.cpp
+#SOURCES += ./src/linuxinit/initializer.cpp
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN

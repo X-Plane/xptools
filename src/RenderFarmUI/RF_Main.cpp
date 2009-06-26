@@ -300,7 +300,7 @@ void dump(Pmwx& m)
 class	fifo_timer : public GUI_Timer {
 public:
 
-	virtual void TimerFired()	
+	virtual void TimerFired()
 	{
 		CheckFifo();
 	}
@@ -487,7 +487,7 @@ int main(int argc, char * argv[])
 {
 #if LIN
 	// setup signal handlers
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 #endif
 #if IBM
 	gInstance = hInstance;
@@ -519,9 +519,9 @@ int main(int argc, char * argv[])
 	map_view->SetSticky(1,1,1,1);
 	map_view->Show();
 	map_view->Start(0.05);
-	
+
 	map_view->TakeFocus();
-	
+
 	app.Run();
 
 	t->Stop();

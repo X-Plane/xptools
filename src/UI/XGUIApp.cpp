@@ -49,9 +49,9 @@ int		main(int argc, char ** argv)
 		NewAEEventHandlerUPP(HandleOpenDoc), 0, FALSE);
 
 	XGrindInit();
-	
+
 	vector<string> files;
-	
+
 	for(int n = 1; n < argc; ++n)
 		files.push_back(argv[n]);
 	if(!files.empty())
@@ -141,7 +141,7 @@ puke:
 
 int main(int argc, char* argv[])
 {
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 	QApplication app(argc, argv);
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));

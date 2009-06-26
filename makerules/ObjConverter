@@ -9,7 +9,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -ldime -l3ds
 
 ifdef PLAT_LINUX
-LIBS		+= -lbfd -liberty -lz
+LIBS		+= -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -29,7 +29,7 @@ endif #PLAT_MINGW
 #########
 
 ifdef PLAT_LINUX
-SOURCES += ./src/linuxinit/initializer.cpp
+#SOURCES += ./src/linuxinit/initializer.cpp
 endif #PLAT_LINUX
 
 SOURCES += ./src/Obj/ObjConvert.cpp

@@ -117,7 +117,7 @@ int main(int argc, char * argv[])
 {
 #if LIN
 	// setup signal handlers
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 #endif
 #if IBM
 	gInstance = hInstance;

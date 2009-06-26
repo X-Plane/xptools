@@ -12,7 +12,7 @@ ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,--start-group
-LIBS		+= -lbfd -liberty -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
+LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
 LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group
@@ -69,7 +69,7 @@ SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-SOURCES += ./src/linuxinit/initializer.cpp
+#SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp

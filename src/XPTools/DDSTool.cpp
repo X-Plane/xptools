@@ -148,7 +148,7 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 int main(int argc, char * argv[])
 {
 #if LIN
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 #endif
 
 	char	my_dir[2048];

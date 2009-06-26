@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LIBS	+= -lbfd -liberty -lz
+LIBS	+= -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -21,7 +21,7 @@ endif #PLAT_MINGW
 #########
 
 ifdef PLAT_LINUX
-SOURCES += ./src/linuxinit/initializer.cpp
+#SOURCES += ./src/linuxinit/initializer.cpp
 endif #PLAT_LINUX
 
 SOURCES += ./src/DSF/DSFLib.cpp

@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LIBS	+= -lbfd -liberty -lz
+LIBS	+= -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -30,7 +30,7 @@ endif #PLAT_DARWIN
 
 ifdef PLAT_LINUX
 SOURCES += ./src/UI/XGrinderApp.lin.cpp
-SOURCES += ./src/linuxinit/initializer.cpp
+#SOURCES += ./src/linuxinit/initializer.cpp
 else
 
 ifdef PLAT_MINGW

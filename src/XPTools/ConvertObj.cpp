@@ -231,7 +231,7 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 int main(int argc, char * argv[])
 {
 #if LIN
-	Initializer initializer(&argc, &argv, 0);
+//	Initializer initializer(&argc, &argv, 0);
 #endif
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{

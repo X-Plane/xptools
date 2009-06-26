@@ -30,12 +30,16 @@
 
 const char* GetApplicationPath(char* pathBuf, int sz)
 {
+//TODO: remove Initializer dependency
+#if 0
 	if (sz < (strlen(Initializer::program_dir()) + 1)) {
 		fprintf(stderr, "buffer size for application path too small");
 		exit(1);
 	}
 	strcpy(pathBuf, Initializer::program_dir());
 	return pathBuf;
+#endif
+	return ".";
 }
 
 int		GetFilePathFromUser(
