@@ -244,40 +244,12 @@ QMenuBar* GUI_Application::getqmenu()
     QList<GUI_QtMenu*>::iterator iter = mMenus.begin();
     while (iter != mMenus.end())
 	{
-//		GUI_QtMenu * qmenu = (GUI_QtMenu *) *iter;
-//		mbar->addMenu(cloneMenu(qmenu,this));
 		mbar->addMenu(*iter);
 		++iter;
 	}
     return mbar;
 }
-
- GUI_QtMenu * cloneMenu(GUI_QtMenu * menu,GUI_Application *app)
-{
-    GUI_QtMenu * newmenu = new GUI_QtMenu(menu->title(),app);
-
-    QList<QAction *> acts = menu->actions();
-    for (int i = 0; i < acts.size(); ++i)
-    {
-       QAction * act = acts.at(i) ;
-       if (act->isSeparator())
-            {newmenu->addSeparator(); continue;}
-       if (act->menu())
-        {
-              GUI_QtMenu * newsubmenu = cloneMenu( (GUI_QtMenu *) act->menu(),app);
-              newmenu->addMenu(newsubmenu);
-        }
-        else
-        {
-          newmenu->addAction(
-			     (new GUI_QtAction(act->text(),act->shortcut(),act->data().toInt(),
-			  		app,act->isChecked()))->qaction);
-        }
-    }
-    return newmenu;
-}
 #endif
-
 
 #if IBM
 void	RegisterAccel(const ACCEL& inAccel)

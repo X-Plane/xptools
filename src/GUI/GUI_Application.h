@@ -134,10 +134,6 @@ public slots:
 private:
 	GUI_Application* app;
 };
-
-
-static GUI_QtMenu * cloneMenu(	GUI_QtMenu * menu,GUI_Application *app);
-
 #endif
 
 extern	GUI_Application *	gApplication;

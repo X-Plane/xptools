@@ -28,10 +28,6 @@
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
-#if LIN
-#include <QtGui/QApplication>
-#include "WED_Menus.h"
-#endif
 
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }

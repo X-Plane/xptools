@@ -24,11 +24,6 @@
 #ifndef WED_MENUS_H
 #define WED_MENUS_H
 
-#if LIN
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
-#endif
-
 #include "GUI_Application.h"
 #include "GUI_Menus.h"
 
