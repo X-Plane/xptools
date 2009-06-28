@@ -82,6 +82,8 @@ using std::string;
 	// A few status checks
 	inline string	IsHard(void) const		{ return hard;			}
 	inline int		IsCockpit(void) const	{ return cockpit > -2;	}
+	inline int		IsRegion(void) const	{ return cockpit >= 0;  }
+	inline int		GetRegion(void) const	{ return cockpit;		}
 	inline bool		IsVisible(void) const	{ return !draw_disable;	}
 
  private:

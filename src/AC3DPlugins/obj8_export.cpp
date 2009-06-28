@@ -94,6 +94,7 @@ static int		gErrMissingTex;
 static int		gHasTexNow;
 static bool		gErrDoubleTex;
 static bool		gSubregionOOBErr;
+static bool		gBadPanelManip;
 static List *	gBadObjects;
 static bool		gErrBadCockpit;
 static bool		gErrBadHard;
@@ -486,7 +487,16 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:
-				builder->AccumManip(attr_Tex_Cockpit,m);
+				if(!builder->IsCockpit())
+					gBadPanelManip=true;
+				else
+				{
+					builder->AccumManip(attr_Tex_Cockpit,m);
+//					if (builder->IsRegion())
+//						builder->SetAttribute1(attr_Tex_Cockpit_Subregion,builder->GetRegion());
+//					else
+//						printf("Manipulator: back to panel.\n");
+				}
 				break;
 			case manip_none:
 				builder->AccumManip(attr_Manip_None,m);
@@ -597,6 +607,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	gHasTexNow = false;
 	gErrDoubleTex = false;
 	gSubregionOOBErr = false;
+	gBadPanelManip = false;
 	gBadObjects = NULL;
 	gBadSurfaces = NULL;
 	gErrBadCockpit = false;
@@ -694,6 +705,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
     	message_dialog((char*)"This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
 	if(gSubregionOOBErr)
 		message_dialog((char*)"You have used panel sub-regions, but your texture mapping goes out of the bounds of the sub-regions.  Your panel may not have exported right.");
+
+	if(gBadPanelManip)
+		message_dialog((char*)"You are using panel manipulators on meshes without panel texture.");
 
    if (gErrBadCockpit && convert == convert_7)
     	message_dialog((char*)"This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");

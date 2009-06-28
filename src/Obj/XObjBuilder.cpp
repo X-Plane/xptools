@@ -791,6 +791,12 @@ void XObjBuilder::SyncAttrs(void)
 		lod->cmds.push_back(XObjCmd8());
 		lod->cmds.back().cmd = manip.attr;
 
+		if(lod->cmds.back().cmd == attr_Tex_Cockpit && IsRegion())
+		{
+			lod->cmds.back().cmd = attr_Tex_Cockpit_Subregion;
+			lod->cmds.back().params[0] = GetRegion();
+		}
+
 		if( manip.attr != attr_Tex_Cockpit)
 		{
 			lod->cmds.back().idx_offset = obj->manips.size();
