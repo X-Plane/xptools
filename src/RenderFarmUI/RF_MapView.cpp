@@ -408,10 +408,8 @@ RF_MapView::~RF_MapView()
 	if (mDLMeshFill != 0)	glDeleteLists(mDLMeshFill, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
 
 	delete mZoomer;
-
-	#if !DEV
-		#error leak otols?
-	#endif
+	for(int n = 0; n < mTools.size(); ++n)
+		delete mTools[n];
 }
 
 void		RF_MapView::SetBounds(int inBounds[4])
@@ -1236,9 +1234,6 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 		switch(message) {
 		case rf_Msg_SelectionModeChanged:
 			{
-				#if !DEV
-					#error TODO
-				#endif
 			}
 			break;
 		}

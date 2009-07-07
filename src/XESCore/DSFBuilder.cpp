@@ -222,7 +222,7 @@ inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
 	return (v1_dx * v2_dy - v1_dy * v2_dx) * 0.5;
 }
 
-void ProjectTex(double lon, double lat, double& s, double& t, const tex_proj_info * info)
+static void ProjectTex(double lon, double lat, double& s, double& t, const tex_proj_info * info)
 {
 	Point2 p(lon, lat);
 	double total1 = tri_area(info->corners[0],info->corners[1],info->corners[2]);

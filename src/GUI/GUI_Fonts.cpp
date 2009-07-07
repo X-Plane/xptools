@@ -161,16 +161,13 @@ static void		CopyBitmapSection(
 
 TT_font_info::TT_font_info()
 {
-	glGenTextures(1,&tex_ref);
+	tex_ref=0;
 	image_mem = NULL;
 	tex_height = 0;
 	tex_dirty = 0;
+	file = NULL;
 	face = NULL;
 }
-
-#if !DEV
-	#error THIS LEAKS!!  It leaks the font, the memory from the font, the GL texture, and the resource.  THIS NEEDS CLEANUP.
-#endif
 
 void TT_font_info::clear(const string& inPath, float inSize)
 {
@@ -182,6 +179,9 @@ void TT_font_info::clear(const string& inPath, float inSize)
 		Assert(err == 0);
 	}
 
+	if(tex_ref != 0)	glDeleteTextures(1,&tex_ref);
+	tex_ref = 0;
+
 	tex_height = 0;
 	tex_dirty = 0;
 	char_map.clear();
@@ -191,6 +191,9 @@ void TT_font_info::clear(const string& inPath, float inSize)
 
 	if(face != NULL)	FT_Done_Face(face);
 	face = NULL;
+
+	if(file)	GUI_UnloadResource(file);
+	file = NULL;
 
 	cur_row_x = cur_row_y = cur_row_max = 0;
 
@@ -309,6 +312,8 @@ void TT_font_info::sync_tex(void)
 		info.height = tex_height;
 		info.pad = 0;
 		info.channels = 1;
+		if(tex_ref==0)
+			glGenTextures(1,&tex_ref);		
 		bool ok = LoadTextureFromImage(info, tex_ref, 0, NULL,NULL,NULL,NULL);
 		DebugAssert(ok);
 	}

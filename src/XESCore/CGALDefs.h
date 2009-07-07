@@ -51,10 +51,9 @@ typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> NT;
 typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> >  NT;
 #endif
 
-// Use the filtered kernel to answer predicates rapidly in easy cases.
-// Lazy kernel seems to be slower, and optimized compile almost brings down a Mac Pro, which is NOT a good sign.
-//typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
-typedef CGAL::Simple_cartesian<NT>  FastKernel;
+// Use the filtered kernel to answer predicates rapidly in easy cases.  This makes a big difference in mesh operations, since they 
+// tend to be predicate-bound.
+typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
 
 
 // This is very, very dangerous.  Basically this creates the illusion of a well-defined "sqrt" function for our numeric type.  Why is that dangerous?

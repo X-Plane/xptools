@@ -22,6 +22,8 @@
  */
 
 #include "MapBuffer.h"
+#include "XESConstants.h"
+
 #include <CGAL/Arr_batched_point_location.h>
 #if DEV
 	#include "GISTool_Globals.h"
@@ -35,6 +37,10 @@
 
 // Set to put colored points on vertices
 #define SHOW_VERTEX_CHOICE 0
+
+// This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
+// we must do on the planar map build-up by, well, a lot!
+#define PROCESS(x) (ben2cgal(cgal2ben((x))))
 
 /***************************************************************************************************************************************
  * POLYGON TAGGING
@@ -129,6 +135,9 @@ static void	BuildPointSequence(
 					double					in_inset,
 					Polygon_2&				out_curves)
 {
+	int count_angle=0;
+	int count_parallel=0;
+	int count_windings=0;
 	// Special case: if wer are buffering outward, simply reverse the CCW of the polygon and inset.  This is so that we don't
 	// have to handle the negative-inset antennas cases!
 	if(in_inset < 0.0)
@@ -194,8 +203,8 @@ static void	BuildPointSequence(
 			Vector_2	off;
 			MoveSegLeft_(new_side, end_cap_inset, new_side2, off);
 
-			out_curves.push_back(new_side2.source());
-			out_curves.push_back(new_side2.target());
+			out_curves.push_back(PROCESS(new_side2.source()));
+			out_curves.push_back(PROCESS(new_side2.target()));
 
 		}
 		else if (CGAL::left_turn(input_seq[prev],input_seq[n], input_seq[next]))
@@ -220,12 +229,13 @@ static void	BuildPointSequence(
 			Point_2	p;
 			CGAL::Object r = CGAL::intersection(ray1, ray2);
 			if (CGAL::assign(p, r))
-				out_curves.push_back(p);											// Found an intersection, use it
+				out_curves.push_back(PROCESS(p));											// Found an intersection, use it
 			else
 			{
-				out_curves.push_back(segments[outgoing].target());					// Build the CW winding
-				out_curves.push_back(input_seq[n]);
-				out_curves.push_back(segments[incoming].source());
+				++count_windings;
+				out_curves.push_back(PROCESS(segments[outgoing].target()));					// Build the CW winding
+				out_curves.push_back(PROCESS(input_seq[n]));
+				out_curves.push_back(PROCESS(segments[incoming].source()));
 			}
 		}
 		else if (CGAL::right_turn(input_seq[prev],input_seq[n], input_seq[next]))
@@ -244,9 +254,10 @@ static void	BuildPointSequence(
 			Point_2	p;
 			CGAL::Object r = CGAL::intersection(s1, s2);
 			if (CGAL::assign(p, r))
-				out_curves.push_back(p);
+				out_curves.push_back(PROCESS(p));
 			else
 			{
+				++count_angle;
 				// If the angle is less than 90 degrees, the lack of intersection of the segments with "extra end cap" can mean that
 				// connecting them arbitrarily will cause a CCW ring, which is bad - it adds positive space to the boundary, causing
 				// art artifacts.  So only join the "extended" segments if we have an acute angle.
@@ -262,13 +273,13 @@ static void	BuildPointSequence(
 				// connecting the two is fine.
 				if(CGAL::angle(input_seq[prev],input_seq[n], input_seq[next]) == CGAL::ACUTE)
 				{
-					out_curves.push_back(s1.target());
-					out_curves.push_back(s2.source());
+					out_curves.push_back(PROCESS(s1.target()));
+					out_curves.push_back(PROCESS(s2.source()));
 				}
 				else
 				{
-					out_curves.push_back(segments[outgoing].target());
-					out_curves.push_back(segments[incoming].source());
+					out_curves.push_back(PROCESS(segments[outgoing].target()));
+					out_curves.push_back(PROCESS(segments[incoming].source()));
 				}
 			}
 		}
@@ -278,21 +289,23 @@ static void	BuildPointSequence(
 			#if SHOW_VERTEX_CHOICE
 				debug_mesh_point(cgal2ben(input_seq[n]),1,1,0);
 			#endif
+			++count_parallel;
 			// Almost perfectly straight lines.  In this case, we add only one point, but if the offset distances differ, add two to keep the segments connected
 			// without changing the segments themselves.
 			if(in_insets && in_insets->at(outgoing) != in_insets->at(incoming))
 			{
-				out_curves.push_back(segments[outgoing].target());
-				out_curves.push_back(segments[incoming].source());
+				out_curves.push_back(PROCESS(segments[outgoing].target()));
+				out_curves.push_back(PROCESS(segments[incoming].source()));
 			}
 			else
 			{
 				// Note: in this case technically we don't HAVE to add the vertex - but if we ever want to correlate the resulting sides to the source sides,
 				// we would need this vertex to have two output segments for two input segments.
-				out_curves.push_back(CGAL::midpoint(segments[incoming].source(), segments[outgoing].target()));
+				out_curves.push_back(PROCESS(CGAL::midpoint(segments[incoming].source(), segments[outgoing].target())));
 			}
 		}
 	}
+//	printf("%d angles %d parallel %d winding %d total\n",count_angle, count_parallel, count_windings, input_seq.size());
 }
 
 /***************************************************************************************************************************************
@@ -348,9 +361,32 @@ static void visit_face(Face_handle f, set<Face_handle>& to_visit, int depth)
 		visit_ccb(f,to_visit,*h,depth);
 }
 
+// Ben says: I tried this to cut down the number of points in the buffer, in an attempt to reduce thrash.
+// But we drop only a fraction of points and it makes no real difference in performance.
+
+#define CUTOFF (MTR_TO_NM*MTR_TO_NM*NM_TO_DEG_LAT*NM_TO_DEG_LAT)
+
+void	SimplifyPointSequence(Polygon_2& input_seq)
+{
+	int n = 0;
+	while(n < input_seq.size())
+	{
+		if(input_seq.size() < 3) {
+			input_seq.clear();
+			return;
+		}
+		Segment_2 s(input_seq.edge(n));
+		if(CGAL::to_double(s.squared_length()) < CUTOFF)
+			input_seq.erase(input_seq.vertices_begin()+n);
+		else
+			++n;
+	}	
+}
+
 /***************************************************************************************************************************************
  * POLYGON BUFFERING
  ***************************************************************************************************************************************/
+
 
 void	BufferPolygon(
 				const Polygon_2&			in_polygon,
@@ -366,6 +402,13 @@ void	BufferPolygon(
 	Polygon_2		inset_seq;
 	TaggedPolygon_t	inset_crv;
 	BuildPointSequence(in_polygon, in_insets, in_inset, inset_seq);
+//	SimplifyPointSequence(inset_seq);
+//	if(inset_seq.size() < 3)
+//	{
+//		out_new_polygon.clear();
+//		return;
+//	}
+
 	if	(in_polygon.size() == 3 &&
 		(in_polygon.is_counterclockwise_oriented() == (in_inset > 0.0)) &&
 		IsTriangleInverted(in_polygon,inset_seq, in_insets,in_inset))

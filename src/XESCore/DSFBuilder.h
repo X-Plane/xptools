@@ -34,12 +34,6 @@ struct	DSFBuildPrefs_t {
 
 extern DSFBuildPrefs_t	gDSFBuildPrefs;
 
-#if !DEV
-	#error Ben needs to put this somewhere sane.
-#endif
-struct tex_proj_info;
-void ProjectTex(double lon, double lat, double& s, double& t, const tex_proj_info * info);
-
 
 void	BuildDSF(
 			const char *	inFileName1,

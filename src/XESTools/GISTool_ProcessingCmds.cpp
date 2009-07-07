@@ -40,6 +40,7 @@
 #include "Hydro.h"
 #include "DEMTables.h"
 #include "MapAlgs.h"
+#include "PerfUtils.h"
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -165,9 +166,16 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	GetObjTerrainTypes		(the_types);
 
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-	GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
 
-	InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
+	{
+		StElapsedTime	time_inset("insets");
+		GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
+	}
+	
+	{
+		StElapsedTime	time_gt_poly("Place objs");
+		InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
+	}
 	DumpPlacementCounts();
 	return 0;
 
