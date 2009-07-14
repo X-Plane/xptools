@@ -23,6 +23,8 @@
 #ifndef GISUTILS_H
 #define GISUTILS_H
 
+#include <math.h>
+
 struct	Polygon2;
 struct	Vector2;
 struct	Point2;
@@ -32,6 +34,9 @@ typedef	struct tiff TIFF;
 // This routine returns the corners of a GeoTIFF file in the order:
 // SW, SE, NW, NE, lon before lat.  It returns true if all four corners
 // could be successfully fetched; all corners are returned in lat/lon.
+// Important: these are CENTER-PIXEL corners, e.g. where EXACTLY does the MIDDLE
+// of the CORNERS of the image go?  If the image is an area pixel WITHIN a tile,
+// these are going to seem to be a bit small for a tile!
 bool	FetchTIFFCorners(const char * inFileName, double corners[8]);
 bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8]);
 
@@ -54,6 +59,30 @@ inline int	latlon_bucket(int p)
 	if (p > 0) return (p / 10) * 10;
 	else return ((-p + 9) / 10) * -10;
 }
+
+
+// Round a floating point number to fall as closely as possible onto a grid of N parts. 
+// We use this to try to clean up screwed up DEM coordinates...1/1200 = floating point
+// rounding error!
+inline double round_by_parts(double c, int parts)
+{
+	double fparts=parts;
+	return round(c * fparts) / fparts;
+}
+
+// Given a DEM of parts wide, this tries to round.  The trick is: we will round based on
+// EITHER "point pixels" or "area pixels".  But how to know which one?  Well, most DEM
+// samplings are even post spacings, e.g. 120, 1200, 3600, etc.  So if we see an odd number,
+// assume that we have pixel-center and subtract.  If we see even, assume area center and add.
+inline double round_by_parts_guess(double c, int parts)
+{
+	if(parts % 2)
+		return round_by_parts(c, parts-1);	
+	else
+		return round_by_parts(c, parts  );	
+}
+
+
 
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir);
 double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);

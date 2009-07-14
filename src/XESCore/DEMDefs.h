@@ -131,7 +131,8 @@ struct	DEMGeo {
 	DEMGeo& operator*=(const DEMGeo&);
 
 
-	void	resize(int width, int height);
+	void	resize(int width, int height);					// Resize, reset to 0
+	void	resize_save(int width, int height, float fill);	// REsize, save lower left data,  fill with param
 	void	derez(int);
 	void	overlay(const DEMGeo& onTop);					// Overlay - requires 1:1 layout
 	void	overlay(const DEMGeo& onTop, int dx, int dy);	// Overlay - requires onTop <= main
@@ -173,6 +174,9 @@ struct	DEMGeo {
 	inline double	lat_to_y(double inLat) const;
 	inline double	x_dist_to_m(double inX) const;
 	inline double	y_dist_to_m(double inY) const;
+	
+	inline int		map_x_from(const DEMGeo& src, int x) const;
+	inline int		map_y_from(const DEMGeo& src, int y) const;
 
 	// These routines return the grid point below or above a coordinate constrained
 	// to within the grid.
@@ -807,6 +811,17 @@ inline double	DEMGeo::y_dist_to_m(double inY) const
 	d *= (DEG_TO_MTR_LAT);
 	return d;
 }
+
+inline int	DEMGeo::map_x_from(const DEMGeo& src, int x) const
+{
+	return x + 		(src.mWest - mWest) * (mWidth-1) / (mEast-mWest);
+}
+
+inline int	DEMGeo::map_y_from(const DEMGeo& src, int y) const
+{
+	return y + 		(src.mSouth - mSouth) * (mHeight-1) / (mNorth-mSouth);
+}
+
 
 inline float	DEMGeo::gradient_x(int x, int y) const
 {

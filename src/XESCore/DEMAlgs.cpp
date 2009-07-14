@@ -1755,3 +1755,31 @@ void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
 			dst(x,y) = 0.0;
 	}
 }
+
+void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles)
+{
+	for(int y = inDEM.mSouth; y < inDEM.mNorth; ++y)
+	for(int x = inDEM.mWest ; x < inDEM.mEast ; ++x)
+	{
+		int x1 = inDEM.lon_to_x(x  );
+		int x2 = inDEM.lon_to_x(x+1);
+		int y1 = inDEM.lat_to_y(y  );
+		int y2 = inDEM.lat_to_y(y+1);
+		
+		bool has_data = false;
+		for(int yy = y1; yy <= y2; ++yy)
+		for(int xx = x1; xx <= x2; ++xx)
+		if(inDEM.get(xx,yy) != DEM_NO_DATA)
+		{
+			has_data=true;
+			break;
+		}
+		
+		if(has_data)
+		{
+			outTiles.push_back(DEMGeo());
+			inDEM.subset(outTiles.back(),x1,y1,x2,y2);
+		}
+	}
+}
+

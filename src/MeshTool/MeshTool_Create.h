@@ -60,6 +60,8 @@ void MT_NetStart(const char * road_type);
 void MT_NetSegment(double lon1, double lat1, double lon2, double lat2);
 void MT_NetEnd(void);
 
+void MT_EnableDDSGeneration(int create);
+void MT_SetMeshSpecs(int max_pts, float max_err);
 
 void MT_OrthoPhoto(
 					const char * terrain_name,

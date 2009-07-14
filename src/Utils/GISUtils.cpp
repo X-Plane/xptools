@@ -34,7 +34,7 @@
 #include "CompGeomUtils.h"
 
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
-{
+{	
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
@@ -78,15 +78,42 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8])
 		GTIFDefn 	defn;
         if( GTIFGetDefn( gtif, &defn ) )
         {
-        	int xsize, ysize;
-            TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xsize );
-            TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ysize );
+        	int xs, ys;
+            TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
+            TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ys );
 
-        	if (TransformTiffCorner(gtif, &defn, 0,     ysize, corners[0], corners[1]) &&
-	        	TransformTiffCorner(gtif, &defn, xsize, ysize, corners[2], corners[3]) &&
-	        	TransformTiffCorner(gtif, &defn, 0,     0,     corners[4], corners[5]) &&
-	        	TransformTiffCorner(gtif, &defn, xsize, 0,     corners[6], corners[7]))
+			uint16 pixel_type;
+			double dx=0.0;
+			double dy=0.0;
+			double xsize=xs;
+			double ysize=ys;
+			
+			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
+				pixel_type=RasterPixelIsArea;
+			if(pixel_type==RasterPixelIsArea)
+			{
+				dx=0.5;
+				dy=0.5;
+			}
+
+
+
+        	if (TransformTiffCorner(gtif, &defn,	   dx, ysize-dy, corners[0], corners[1]) &&
+	        	TransformTiffCorner(gtif, &defn, xsize-dx, ysize-dy, corners[2], corners[3]) &&
+	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5]) &&
+	        	TransformTiffCorner(gtif, &defn, xsize-dx,		 dy, corners[6], corners[7]))
 	        {
+				corners[0]=round_by_parts_guess(corners[0],xs);
+				corners[2]=round_by_parts_guess(corners[2],xs);
+				corners[4]=round_by_parts_guess(corners[4],xs);
+				corners[6]=round_by_parts_guess(corners[6],xs);
+
+				corners[1]=round_by_parts_guess(corners[1],ys);
+				corners[3]=round_by_parts_guess(corners[3],ys);
+				corners[5]=round_by_parts_guess(corners[5],ys);
+				corners[7]=round_by_parts_guess(corners[7],ys);
+				
+				
 	        	retVal = true;
 	        }
 		}

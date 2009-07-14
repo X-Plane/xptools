@@ -968,7 +968,7 @@ void AddEdgePoints(
 		for (dy = 0; dy < deriv.mHeight; dy += interval)
 		for (dx = 0; dx < deriv.mWidth; dx += interval)
 		{
-			deriv(x,dx) = orig(x,dx);
+			deriv(x,dy) = orig(x,dy);
 			deriv(dx,y) = orig(dx,y);
 		}
 		if (orig(x,y) == DEM_NO_DATA)

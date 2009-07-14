@@ -334,7 +334,23 @@ void	DEMGeo::resize(int width, int height)
 	}
 }
 
-
+void DEMGeo::resize_save(int w, int h, float fill_value)
+{
+	if(w == mWidth && h == mHeight) return;
+	
+	DEMGeo	other(w,h);
+	other = fill_value;
+	
+	other.copy_geo_from(*this);
+	int xx = min(mWidth, w);
+	int yy = min(mHeight, h);
+	
+	for(int y = 0; y < yy; ++y)
+	for(int x = 0; x < xx; ++x)
+		other(x,y) = get(x,y);
+	
+	swap(other);	
+}
 
 
 void	DEMGeo::subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const

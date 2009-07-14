@@ -665,6 +665,18 @@ static void 	MemTIFFUnmapFileProc(thandle_t, tdata_t, toff_t)
 {
 }
 
+template<typename T>
+void copy_scanline(
+				const T * v,
+				int y,
+				DEMGeo& dem)
+{
+	for (int x = 0; x < dem.mWidth; ++x, ++v)
+	{
+		float e = *v;
+		dem(x,dem.mHeight-y-1) = e;
+	}
+}
 
 /*
 	GeoTiff notes -
@@ -717,87 +729,100 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 		return false;
 	}
 
-	inMap.mWest = round(corners[0]);
-	inMap.mSouth = round(corners[1]);
-	inMap.mEast = round(corners[6]);
-	inMap.mNorth = round(corners[7]);
+	inMap.mWest = corners[0];
+	inMap.mSouth = corners[1];
+	inMap.mEast = corners[6];
+	inMap.mNorth = corners[7];
 
-	printf("Corners: %lf,%lf   %lf,%lf   %lf,%lf   %lf,%lf\n",
+	printf("Corners: %.12lf,%.12lf   %.12lf,%.12lf   %.12lf,%.12lf   %.12lf,%.12lf\n",
 		corners[0], corners[1], corners[2], corners[3], corners[4], corners[5], corners[6], corners[7]);
 
 	uint32 w, h;
 	uint16 cc;
 	uint16 d;
-//	size_t npixels;
-//	uint32* raster;
+	uint16 format;
 
 
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &cc);
 	TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &d);
-	printf("Image is: %dx%d, samples: %d, depth: %d\n", w, h, cc, d);
+	TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &format);
+	printf("Image is: %dx%d, samples: %d, depth: %d, format: %d\n", w, h, cc, d, format);
 
-	inMap.resize(w+1,h+1);
+	inMap.resize(w,h);
 	{
-	tsize_t line_size = TIFFScanlineSize(tif);
-	tdata_t aline = _TIFFmalloc(line_size);
+		tsize_t line_size = TIFFScanlineSize(tif);
+		tdata_t aline = _TIFFmalloc(line_size);
 
-	int cs = TIFFCurrentStrip(tif);
-//	TIFFSetupStrips
-	int nos = TIFFNumberOfStrips(tif);
-	int cr = TIFFCurrentRow  (tif);
-//	printf("cs = %d, nos = %d, cr = %d, linesize=%d\n", cs, nos, cr,line_size);
+		int cs = TIFFCurrentStrip(tif);
+		int nos = TIFFNumberOfStrips(tif);
+		int cr = TIFFCurrentRow  (tif);
 
-	for (int y = 0; y < h; ++y)
-	{
-//		printf("Reading line %d\n", y);
-		result = TIFFReadScanline(tif, aline, y, 0);
-		if (result == -1) { printf("Tiff error in read.\n"); break; }
-
-		if (d == 16)
+		for (int y = 0; y < h; ++y)
 		{
-			short * v = (short *) aline;
-			for (int x = 0; x < w; ++x, ++v)
-			{
-			#if BENTODO
-			Examine this
-			#endif
-				float e = *v;
-//				if (*v == -1) e = DEM_NO_DATA;		// was 0xFFFF
-//				if (e > 30000) e = DEM_NO_DATA;		// SRTM HACK!!!
-//				if (e < -30000) e = DEM_NO_DATA;		// SRTM HACK!!!
-				inMap(x,h-y-1) = e;
-				if (y == 0)
-					inMap(x,h) = e;
-			}
-		} else {
-			// Ben says: this is the 8-bit case (at least right now).  We were putting in a bunch of filters for out of range data, but
-			// no one in their right mind is EVER going to use an 8-bit TIF to encode elevation data!  So ... for now treat as unsigned
-			// and don't try to catch "bad" values.  In the future, maybe we can read some TIF meta data to figure out what we have here.
-			unsigned char * v = (unsigned char *) aline;
-			for (int x = 0; x < w; ++x, ++v)
-			{
-				float e = *v;
-//				if (*v == -1) e = DEM_NO_DATA;		// was 0xFF
-//				if (e > 127) e = DEM_NO_DATA;		// SRTM HACK!!!
-				inMap(x,h-y-1) = e;
-				if (y == 0)
-					inMap(x,h) = e;
-			}
-		}
-		inMap(w,y) = inMap(w-1,y);
-	}
-//	printf("Extra byte.\n");
-	inMap(w,h) = inMap(w-1,h-1);
-//	printf("Done reading.\n");
-	_TIFFfree(aline);
+			result = TIFFReadScanline(tif, aline, y, 0);
+			if (result == -1) { printf("Tiff error in read.\n"); break; }
 
-	TIFFClose(tif);
-//	printf("closed file.\n");
-	TIFFSetWarningHandler(warnH);
-	TIFFSetErrorHandler(errH);
-    return result != -1;
+			switch(format) {
+			case SAMPLEFORMAT_UINT:
+				switch(d) {
+				case 8:
+					copy_scanline<unsigned char>((const unsigned char *) aline, y, inMap);
+					break;
+				case 16:
+					copy_scanline<unsigned short>((const unsigned short *) aline, y, inMap);
+					break;
+				case 32:
+					copy_scanline<unsigned int>((const unsigned int *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported unsigned int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_INT:
+				switch(d) {
+				case 8:
+					copy_scanline<char>((const char *) aline, y, inMap);
+					break;
+				case 16:
+					copy_scanline<short>((const short *) aline, y, inMap);
+					break;
+				case 32:
+					copy_scanline<int>((const int *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported signed int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_IEEEFP:
+				switch(d) {
+				case 32:
+					copy_scanline<float>((const float *) aline, y, inMap);
+					break;
+				case 64:
+					copy_scanline<double>((const double *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported floating point sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			default:
+				printf("TIFF error: unsupported pixel format %d\n", format);
+				break;			
+			}
+
+		}
+		_TIFFfree(aline);
+
+		TIFFClose(tif);
+
+		TIFFSetWarningHandler(warnH);
+		TIFFSetErrorHandler(errH);
+		return result != -1;
 	}
 bail:
 	TIFFSetWarningHandler(warnH);
@@ -947,6 +972,87 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	}
 bail:
 	if (fi) MemFile_Close(fi);
+	return false;
+}
+
+bool	ReadARCASCII(DEMGeo& inMap, const char * inFileName)
+{
+	// ARC ASCII FORMAT: http://geotools.codehaus.org/ArcInfo+ASCII+Grid+format
+	// basically it's a few header fields and then a giant list of int heights.
+	// Notes:
+	// -	All fields are required except no data, -9999 is typical implied no data value.
+	// -	projection is fubar.  The posts are always grid-aligned.  (vertex is pixel).  But...
+	//		the borders are the extent of area covered.  This means that a nice 1201x1201 is
+	//		going to have borders that are 1/240th of a a degree OUTSIDE their bounds!
+	//		Since the odds of the floating point math for such a calculation coming out right is, um, zero
+	//		we apply some basic rounding to try to get a perfectly aligned DEM.
+	// -	Data is ordered northwest to southeast, longitude coords change fastest.
+
+	MFMemFile * f = MemFile_Open(inFileName);
+	if(f == NULL)
+		return false;
+
+	int NODATA_value = -9999;
+	double xllcorner, yllcorner, cellsize, half_cell;
+	int nrows, ncols;
+
+	MFScanner	s;
+	MFS_init(&s,f);
+	
+	if(!MFS_string_match(&s,"ncols",false))	goto bail;
+	ncols = MFS_int(&s);
+	MFS_string_eol(&s, NULL);
+	
+	if(!MFS_string_match(&s,"nrows",false))	goto bail;
+	nrows = MFS_int(&s);
+	MFS_string_eol(&s, NULL);
+	
+	inMap.resize(ncols,nrows);
+	
+	if(!MFS_string_match(&s,"xllcorner",false))	goto bail;
+	xllcorner = MFS_double(&s);
+	MFS_string_eol(&s, NULL);
+
+	if(!MFS_string_match(&s,"yllcorner",false))	goto bail;
+	yllcorner = MFS_double(&s);
+	MFS_string_eol(&s, NULL);
+
+	if(!MFS_string_match(&s,"cellsize",false))	goto bail;
+	cellsize = MFS_double(&s);
+	MFS_string_eol(&s, NULL);
+	
+	if(MFS_string_match(&s,"NODATA_value",false))
+	{
+		NODATA_value = MFS_int(&s);
+		MFS_string_eol(&s,NULL);
+	}
+	
+	half_cell = cellsize * 0.5;
+	inMap.mWest = round_by_parts(xllcorner + half_cell, (ncols-1)*2);
+	inMap.mSouth = round_by_parts(yllcorner + half_cell, (nrows-1)*2);
+	inMap.mEast = round_by_parts(xllcorner + cellsize * (double) ncols - half_cell, (ncols-1)*2);
+	inMap.mNorth = round_by_parts(yllcorner + cellsize * (double) nrows - half_cell, (nrows-1)*2);
+	
+	printf("Importing %dx%d posts to: (%lf,%lf -> %lf,%lf)\n", ncols,nrows, inMap.mWest, inMap.mSouth, inMap.mEast, inMap.mNorth);
+				
+	for(int y = 0; y < nrows; ++y)
+	{
+		for(int x = 0; x < nrows; ++x)
+		{
+			if(MFS_done(&s)) goto bail;
+			
+			int p = MFS_int(&s);
+			if(p == NODATA_value) p = DEM_NO_DATA;
+			inMap(x,nrows-y-1) = p;
+		}
+		MFS_string_eol(&s,NULL);
+	}
+
+	MemFile_Close(f);
+	return true;
+	
+bail:
+	MemFile_Close(f);
 	return false;
 }
 

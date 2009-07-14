@@ -115,7 +115,14 @@ int	main(int argc, char * argv[])
 
 		DEMGeo	dem_elev;
 
-
+		if(strstr(argv[3],".bil"))
+		{
+			if (!ReadRawBIL(dem_elev, argv[3]))
+			{
+				fprintf(stderr,"Could not read bil file: %s\n", argv[3]);
+				exit(1);
+			}
+		}
 		if(strstr(argv[3],".hgt"))
 		{
 			if (!ReadRawHGT(dem_elev, argv[3]))
@@ -166,13 +173,27 @@ int	main(int argc, char * argv[])
 		int				use_wat;
 		int				zlimit=0;
 		int				is_layer = 0;
-
+		int				param1;
+		float			param2;
 		MT_StartCreate(argv[2], dem_elev, die_parse2);
 
 		line_num=0;
 		while (fgets(buf, sizeof(buf), script))
 		{
 			++line_num;
+			
+			if(sscanf(buf,"GENERATE_DDS %d", &param1)==1)
+			{
+				printf("%s DDS generation.\n", param1 ? "Enabling" : "Disabling");
+				MT_EnableDDSGeneration(param1);
+			}
+			
+			if(sscanf(buf,"MESH_SPECS %d %f", &param1, &param2) == 2)
+			{
+				printf("Setting mesh specs to: %d height points max, %f minimum error.\n", param1, param2);
+				MT_SetMeshSpecs(param1, param2);
+			}
+			
 			if(sscanf(buf,"DEFINE_CUSTOM_TERRAIN %d %s",&use_wat, cus_ter)==2)
 			{
 				proj_pt = 0;

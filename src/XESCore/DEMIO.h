@@ -44,11 +44,21 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap);
  * DEM IMPORTERS
  *****************************************************************************/
 
-// 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
-// DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
-// This is a big-endian file.
+// SRTM HGT Files
+//	16-bit signed meter heights in geo projection with -32768 = NO_DATA.
+//	DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
+//	This is a big-endian file.
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName);
 bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName);
+// IDA - a proprietary and rather weird old GIS raster format that we use for climate data.
+// Files contain their location.
+bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
+// USGS natural files - ASCII dems type A and B records.  Files contain their bounds.
+bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
+// GeoTiff - must be geographic projected for us to use.
+bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName);
+// DTED - contains its own geo info
+bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
 // 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
 // DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
 // This is a little-endian file.
@@ -56,22 +66,18 @@ bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName);
 // 32-bit floating point with a 5-byte header - an Austin-invented format, but useful
 // because we have the entire US NED dataset in this form.  DEM position is taken from
 // the header in +42-073 format.
-bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);
-// "Oz" file - same as above but no header and 16-bit big endian
-bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);
-bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName);
+bool	ReadARCASCII(DEMGeo& inMap, const char * inFileName);
+
 // Raw IMG files - a giant 8-bit-per-sample worldwide image at 30 arc-seconds.  Used to
 // get data out of GTOPO30 land use.
 bool	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int inSouth, int inEast, int inNorth);
-// IDA - a proprietary and rather weird old GIS raster format that we use for climate data.
-// Files contain their location.
-bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
-// USGS natural files - ASCII dems type A and B records.  Files contain their bounds.
-bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
-// GeoTiff - must be projceted
-bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName);
-// DTED - contains its own geo info
-bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
+
+
+// Weird X-Plane specific formats...preferably we'll never need to use these again!
+// "Oz" file - same as above but no header and 16-bit big endian
+bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);
+bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);
+bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName);
 
 /*****************************************************************************
  * DEM TRANSLATION SYSTEM

@@ -113,7 +113,7 @@ static	FT_Library			sLibrary = NULL;
 inline int get_pow2(int n)
 {
 	int r = 1;
-	while(r < n) r <<= 2;
+	while(r < n) r <<= 1;
 	return r;
 }
 

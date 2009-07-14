@@ -4,6 +4,8 @@ Version History
 	???????    2.0 Beta 2
 		Bug fix: shape files that create rings of water will not remove the
 		orthophotos behind them "inside" the rings island land area.
+		Improved diagnostics for illegal input
+		Cleaned GeoTIFF importer
 	4/30/08    Version 2.0 - Beta 1
 	3/11/08    Beta 1
 	12/28/07   Initial Draft
@@ -33,19 +35,49 @@ burning in airporst, and adding custom orthophotos.
 DEM FILE FORMAT
 -------------------------------------------------------------------------------
 
-MeshTool can accept two DEM formats:
+MeshTool can accept three DEM formats:
 
 * ".hgt" format - this is the format that SRTM DEMs are published in by JPL.
   The file contains a 1201x1201 array of 16-bit big endian elevations in
-  geographic projection.
+  geographic projection.  The first sample is the north-west corner of the DEM.
+  Note: hgt is really not a file format - it is an extension indicating
+  elevation data - JPL calls this "raw" format.  But in the GIS community if
+  you see a DEM that's ".hgt" it's probably SRTM-format.
   
-* GeoTiff - the GeoTiff file should be 16-bit.
+* ".bil" (band interleaved by line) - this is almost the same as .hgt except
+  that it is little endian, not big endian.
+  
+* GeoTiff - the GeoTiff must be in scanline format, not tiled.  Use the
+  command-line tool geotifcp to convert tiled images to scanline, e.g.
+  
+	geotiffcp -s old.tif new.tif
 
-In both cases, the DEM must be geographic projection, and pre-cropped to the
-bounds of the DSF tile, with no missing data or voids.  You are responsible
-for all flattening and conditioning.  (For example, you must flatten the
-area over airports - MeshTool will not do this.)
-	 
+ geotifcp comes as part of libgeotiff.
+
+In all cases, DEMs used for MeshTool have some requirements, no matter what
+format is used.
+
+* The DEM must be geographically projected - that is, the DEM's rows and 
+  columns must align to latitude and longitude lines.
+  
+* The DEM must exactly cover the 1x1 degree tile being created.
+
+* They must be grid-aligned (sometimes also called pixel-is-point).  In other
+  words, the DEM must cover the exact edges of the tile with samples.  If
+  you are making two adjacent tiles, the the left edge of one DEM should
+  contain a copy of the same data as the right edge of the next DEM.
+
+* There must be no voids or 'no data' points in the DEM, even for water.
+
+MeshTool will issue an error for a number of common DEM problems.  If your
+DEM is almost aligned to a tile but is slightly off, MeshTool will issue
+a warning, but not fail.  The reason is: sometimes the coordinate encoding
+for GeoTIFF files contains rounding errors.  You must ascertain whether there
+is an alignment problem.
+
+You are responsible for all flattening and conditioning.  (For example, you 
+must flatten the area over airports - MeshTool will not do this.)
+
 -------------------------------------------------------------------------------
 SCRIPT FILE FORMAT (POLYGON FILE)
 -------------------------------------------------------------------------------
@@ -144,6 +176,27 @@ Orthophotos do not have to be fully inside a mesh tile - if they are not,
 their polygon placement is cropped automatically (but the image file is not).
 The orthophoto will be stretched as needed based on the coordinates specified.
 
+Orthophotos do not have to be in geographic projection.  However if you use
+a large orthophoto that uses an alternate projection scheme, you may get
+alignment errors, because MeshTool generates texture coordinates using
+geographic projection.  The simplest solution to ailgnment problems is to
+cut the orthophoto into smaller pieces.  Usually X-Plane's 2048x2048 texture
+limit makes this necessary anyway.
+
+MeshTool can optionally convert BMPs (from the QMID command) and GeoTIFFs to
+DDS format as they are processed.  If a set of BMPs (with naming conventions
+to match the QMID for summer + blend) are found, or a TIFF is found, it is
+converted to DDS5 (QMID) or DDS1 (GeoTIFF).  For GeoTIFFs, the resolution
+is converted to the smallest power of 2 that is not smaller than the original,
+clamped at 2048x2048.
+
+If you do not want conversion, it is reocommended that the DDS files already be
+in place (next to the original images) in your project, so that the .ter files
+can be built with correct image size loading directives.  (See LOAD_CENTER
+in the .ter file spec.)  If this inforamtion is not available, MeshTool assumes
+1024x1024 for QMID and 2048x2048 for GeoTIFF; you may have to edit your .ter
+files later.
+
 ORTHOPHOTO <bl> <br> <tr> <tl> <wet> <filename>
 
 This imports a single orthophoto - <filename> should be the name of the .ter
@@ -171,6 +224,10 @@ Warning: PhotoShop and some other programs will remove the location
 inforamtion from TIF files when it saves them.  Make sure to specify a TIF
 image that has not had its coordinates stripped!
 
+GeoTIFF files used for orthophotos do not have to be geographically projected
+or cropped to the tile.  Generally the image data in a GeoTiff used for an
+orthophoto should be "pixel is area", not "pixel is point".
+
 QMID <wet> <qmid id>
 
 Note: this command is intended for MSFS scenery developers who already have
@@ -180,9 +237,56 @@ Given a QMID (quad-mesh identifier), this command places an orthophoto whose
 .ter file is <qmid>.ter at the location specified by the qmid.  If  a .ter 
 file does not exist, a .ter file is created for your convenience.
 
+GENERATE_DDS <n>
+
+Controls automatic DDS generation - n=1 means generate DDS, n=0 means do not.
+The default is to not generate DDS.
+
 -------------------------------------------------------------------------------
 ADVANCED COMMANDS
 -------------------------------------------------------------------------------
+
+MESH_SPECS <point count> <error>
+
+This command controls the density and quality of the mesh that is generated.
+MeshTool builds your mesh using the following steps:
+
+1. Points are added to form the basic mesh structure, match any adjacent
+already made meshes at the edges, and represent any polygonal features
+exactly.  This step can add as many vertices as is necessary to meet these
+goals.  A rough grid is placed in open water.
+
+2. Points are added in priority order from the DEM to reduce the vertical
+error between the partly built mesh and the original DEM.  The points are added
+on a worst-case-first basis...that is, the point that is most wrong in our
+mesh compared to our DEM is added first.
+
+This process repeats until one of two conditions takes place:
+
+- We have added <point count> new points or
+- The worst error between the DEM and our mesh is less than <error>
+
+3. Additional points are added to assure that no triangle is larger than 3.5
+km on a side.
+
+The MESH_SPECS command lets you tune your mesh by adjusting the "point budget"
+and error limit.  You can think of these two numbers as "stop" conditions:
+
+- <point count> guarantees that we won't just add points forever.  When terrain
+  is very complex, point count stops us from adding all 1.5 million+ DEM points
+  into the mesh and producing an unflyably slow mesh.
+
+- <error> stops us from adding points when we reach a point where adding new
+  points isn't doing us any good.  For example, if we set our error limit to
+  1 meter and our point count to a huge number (1 billion points, for example)
+  then MeshTool will keep adding points until the worst error in the entire mesh
+  (compared to the original DME) is only 1 meter.  
+  
+The error limit can be thought of as "diminishing returns".  If you have a huge
+point budget, but boring flat land, you don't want to have a very high density
+slow mesh.  The error limit says "enough is enough".
+
+The default settings are 78000 points and 6.5 meters error.
 
 BACKGROUND terrain
 

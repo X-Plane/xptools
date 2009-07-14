@@ -25,10 +25,12 @@
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
 #include "DEMIO.h"
+#include "DEMAlgs.h"
 #include "GISUtils.h"
 #include "PerfUtils.h"
 #include "PlatformUtils.h"
 #include "XFileTwiddle.h"
+#include "FileUtils.h"
 #include "MemFileUtils.h"
 
 #if OPENGL_MAP
@@ -38,54 +40,194 @@
 
 
 #define DoRasterImport_HELP \
-"Usage: raster_import <format> <file> <layer> [<translation>]\n"\
+"Usage: raster_import <flags> <format> <file> <layer> [<null>] [<fill>] [<translation>]\n"\
 "Imports a single raster file.  The file must be in geographic projection\n"\
 "and have an axis-aligned bounding box.\n"\
-"Format can be one of: tiff, bil\n"\
+"Flagged special ops (done in this order):\n"\
+" p Pad the DEM by one pixel on the north and east sides.\n"\
+" s Snap DEM bounds to 1x1 degree grid.\n"\
+" n Treat <null> as null value.\n"\
+" f Fill voids with <fill> value.\n"\
+" t Translate DEM with translation file.\n"\
+" o Overlay DEM on existing DEM\n"\
+" c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
+"Format can be one of: tiff, bil, hgt, ascii\n"\
 "File is a unix file name.\n"\
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
 "If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
 static int DoRasterImport(const vector<const char *>& args)
 {
 	// format file layer [mapping]
-	int layer = LookupToken(args[2]);
+	int layer = LookupToken(args[3]);
 	if (layer == -1)
 	{
-		fprintf(stderr,"Unknown layer: %s\n", args[2]);
+		fprintf(stderr,"Unknown layer: %s\n", args[3]);
 		return 1;
 	}
 
-	DEMGeo * dem = &gDem[layer];
-
-	if(strcmp(args[0],"tiff") == 0)
+	DEMGeo * kill = NULL, * dem = NULL;
+	if(strstr(args[0],"o"))
 	{
-		if(!ExtractGeoTiff(*dem, args[1]))
+		kill = dem = new DEMGeo;
+	}
+	else
+	{
+		dem = &gDem[layer];
+	}
+	
+	if(strcmp(args[1],"ascii") == 0)
+	{
+		if(!ReadARCASCII(*dem,args[2]))
 		{
-			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[1]);
+			fprintf(stderr,"Unable to read ARC-ASCII file %s\n", args[2]);
 			return 1;
 		}
 	}
-	else if(strcmp(args[0],"bil") == 0)
+	else if(strcmp(args[1],"tiff") == 0)
 	{
-		if(!ReadRawBIL(*dem,args[1]))
+		if(!ExtractGeoTiff(*dem, args[2]))
 		{
-			fprintf(stderr,"Unable to read BIL file %s\n", args[1]);
+			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[2]);
+			return 1;
+		}
+	}
+	else if(strcmp(args[1],"hgt") == 0)
+	{
+		if(!ReadRawHGT(*dem, args[2])) 
+		{
+			fprintf(stderr,"Unable to read HGT file %s\n", args[2]);
+			return 1;
+		}
+	}
+	else if(strcmp(args[1],"bil") == 0)
+	{
+		if(!ReadRawBIL(*dem,args[2]))
+		{
+			fprintf(stderr,"Unable to read BIL file %s\n", args[2]);
 			return 1;
 		}
 	}
 	else
 	{
-		fprintf(stderr,"Unknown importer: %s\n", args[0]);
+		fprintf(stderr,"Unknown importer: %s\n", args[1]);
 		return 1;
 	}
-	if(args.size() == 4)
+
+	if(strstr(args[0],"p"))
 	{
-		if(!TranslateDEM(*dem, args[3]))
+		dem->resize_save(dem->mWidth+1,dem->mHeight+1, DEM_NO_DATA);
+	}
+
+	if(strstr(args[0],"s"))
+	{
+		dem->mWest =round(dem->mWest );
+		dem->mEast =round(dem->mEast );
+		dem->mNorth=round(dem->mNorth);
+		dem->mSouth=round(dem->mSouth);
+	}
+
+	int var_param = 4;
+
+	if(strstr(args[0],"n"))
+	{
+		float n = atof(args[var_param]); 
+		for(int y = 0; y < dem->mHeight; ++y)
+		for(int x = 0; x < dem->mWidth ; ++x)
+		if(dem->get(x,y) == n)
+			(*dem)(x,y) = DEM_NO_DATA;
+		++var_param;
+	}
+
+	if(strstr(args[0],"f"))
+	{
+		float f = atof(args[var_param]); 
+		for(int y = 0; y < dem->mHeight; ++y)
+		for(int x = 0; x < dem->mWidth ; ++x)
+		if(dem->get(x,y) == DEM_NO_DATA)
+			(*dem)(x,y) = f;
+		++var_param;
+	}
+
+	if(strstr(args[0],"t"))
+	{
+		if(!TranslateDEM(*dem, args[var_param]))
 		{
-			fprintf(stderr,"Unable to translsate DEM using mapping file: %s\n", args[3]);
+			fprintf(stderr,"Unable to translsate DEM using mapping file: %s\n", args[4]);
 			return 1;
 		}
+		++var_param;
 	}
+
+	if(strstr(args[0],"o"))
+	{
+		DEMGeo * dst = &gDem[layer];
+		
+		if( ((double)(dst->mWidth-1) * (dem->mEast-dem->mWest)) !=
+			((double)(dem->mWidth-1) * (dst->mEast-dst->mWest)))
+		{
+			fprintf(stderr,"Unable to overlay %s onto layer %s: horizontal resolution mismatch.\n", args[2], args[3]);
+			return 1;
+		}
+		if( ((double)(dst->mHeight-1) * (dem->mNorth-dem->mSouth)) !=
+			((double)(dem->mHeight-1) * (dst->mNorth-dst->mSouth)))
+		{
+			fprintf(stderr,"Unable to overlay %s onto layer %s: vertical resolution mismatch.\n", args[2], args[3]);
+			return 1;
+		}
+			
+		DEMGeo	tmp;
+		tmp.mWest = min(dem->mWest ,dst->mWest );
+		tmp.mSouth= min(dem->mSouth,dst->mSouth);
+		tmp.mEast = max(dem->mEast ,dst->mEast );
+		tmp.mNorth= max(dem->mNorth,dst->mNorth);
+		
+		tmp.resize(
+				1+(double) (dem->mWidth -1) * (tmp.mEast -tmp.mWest ) / (dem->mEast -dem->mWest ),
+				1+(double) (dem->mHeight-1) * (tmp.mNorth-tmp.mSouth) / (dem->mNorth-dem->mSouth));
+		tmp = DEM_NO_DATA;
+		
+		bool err_check = strstr(args[0],"c");
+		
+		for(int y = 0; y < dst->mHeight; ++y)
+		for(int x = 0; x < dst->mWidth ; ++x)
+		{
+			int xp = tmp.map_x_from(*dst,x);
+			int yp = tmp.map_y_from(*dst,y);			
+			tmp(xp,yp)=dst->get(x,y);
+		}
+
+		for(int y = 0; y < dem->mHeight; ++y)
+		for(int x = 0; x < dem->mWidth ; ++x)
+		{
+			int xp = tmp.map_x_from(*dem,x);
+			int yp = tmp.map_y_from(*dem,y);			
+			
+			float top_val = dem->get(x,y);
+			if(top_val != DEM_NO_DATA)
+			{
+				if(err_check)
+				{
+					float bot_val = tmp.get(xp,yp);
+					if(top_val != bot_val && bot_val != DEM_NO_DATA)
+					{
+						fprintf(stderr,"Error: DEMs do not match at %d,%d\n", x,y);
+						return 1;
+					}					
+				}
+				tmp(xp,yp)=top_val;
+			}
+		}
+
+		tmp.swap(*dst);
+		
+		dem = dst;
+	}
+
+	if(kill) 
+		delete kill;
+	
+	
+	
 
 	#if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
@@ -166,6 +308,38 @@ static int DoHGTExport(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoHGTTileExport_HELP \
+"Usage: -hgt_tiles <dest_dir>\n"\
+"Given a multi-tile DEM loaded into memory as elevation, this routine exports one\n"\
+"SRTM.hgt style DEM for each 1x1 degree tile that has at least one non-void data point.\n"\
+"The intended use is to decompose 5x5 or other large-format DEMs into 1x1s.  Note that the\n"\
+"exported files are zip-compressed for size.\n"
+static int DoHGTTileExport(const vector<const char *>& args)
+{
+	list<DEMGeo>	tiles;
+	MakeTiles(gDem[dem_Elevation], tiles);
+	for(list<DEMGeo>::iterator t= tiles.begin(); t != tiles.end(); ++t)
+	{
+		char path[2048];
+		sprintf(path,"%s" DIR_STR "%+03d%+04d" DIR_STR, args[0], latlon_bucket(t->mSouth), latlon_bucket(t->mWest));
+		FILE_make_dir_exist(path);
+		sprintf(path, "%s" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.hgt.zip", args[0], latlon_bucket(t->mSouth), latlon_bucket(t->mWest), (int) t->mSouth, (int) t->mWest);
+		printf("Writing %s...\n", path);
+		if (!WriteRawHGT(*t, path))
+		{
+			printf("Error writing %s\n", path);
+			return 1;
+		}		
+	}
+	return 0;
+}
+
+// Ben says: this routine was based on two assumptions, both of which may not be true:
+// 1. that the CGIAR SRTM tiles are 6000x6000 GeoTiffs, incorrectly offset by half a pixel, missing
+// one row and
+// 2. that the GeoTiff importer will pad up one row.
+// Thus this code tries to load the rows out of the neighboring tiles.  This should probably not be used
+// because the GeoTiff importer has changed!!
 // -bulksrtm <src dir> <dst dir> <x> <y>
 static int DoBulkConvertSRTM(const vector<const  char *>& args)
 {
@@ -313,8 +487,9 @@ static int DoApply(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sDemCmds[] = {
-{ "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit raw HGT DEM.", "" },
-{ "-hgtzip", 		1, 1, DoHGTExport, 			"Export 16-bit raw HGT DEM.", "" },
+{ "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit BE raw HGT DEM.", "" },
+{ "-hgtzip", 		1, 1, DoHGTExport, 			"Export 16-bit BE raw HGT DEM.", "" },
+{ "-hgt_tiles",		1, 1, DoHGTTileExport,		"Export 16-bit BE raw HGT DEMs in tiles.", DoHGTTileExport_HELP },
 { "-oz",			1, 1, DoShortOzImport,		"Read short DEM.", "" },
 { "-floatdem", 		1, 1, DoFloatDEMImport, 	"Import floating-point DEM", "" },
 { "-usgs_natural", 	1, 1, DoUSGSNaturalImport, 	"Import USGS Natural-format DEM", "" },
@@ -324,7 +499,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-bulksrtm",		4, 4, DoBulkConvertSRTM,	"Bulk convert SRTM data.", "" },
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },
 { "-readmask",		1, 1, DoMaskRemember,		"Remember the current elevation as overlay.", "" },
-{ "-raster_import",	3, 4, DoRasterImport,		"Import one RASTER DEM file.", DoRasterImport_HELP },
+{ "-raster_import",	4, 7, DoRasterImport,		"Import one RASTER DEM file.", DoRasterImport_HELP },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

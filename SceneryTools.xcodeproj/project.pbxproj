@@ -4599,6 +4599,10 @@
 		D60734290D197A1100E08F61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_TIF=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -4617,6 +4621,10 @@
 		D607342A0D197A1100E08F61 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_TIF=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -4635,6 +4643,10 @@
 		D607342B0D197A1100E08F61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_TIF=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -4812,6 +4824,10 @@
 		D60E98F80EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_TIF=1",
+				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
