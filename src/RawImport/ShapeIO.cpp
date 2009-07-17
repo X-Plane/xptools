@@ -291,7 +291,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						} else {
 							vector<Polygon_2>	simple_ones;
 							MakePolygonSimple(p,simple_ones);
-							#if DEV && 0
+							#if DEV
 							for(vector<Polygon_2>::iterator t = simple_ones.begin(); t != simple_ones.end(); ++t)
 							{
 								DebugAssert(t->is_simple());

@@ -525,20 +525,32 @@ void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 	vector<Curve_2>	curves;
 	curves.reserve(inPolygon.size());
 	for(int n = 0; n < inPolygon.size(); ++n)
-	curves.push_back(Curve_2(inPolygon.edge(n),0));
+	if(inPolygon.edge(n).source() != inPolygon.edge(n).target())
+		curves.push_back(Curve_2(inPolygon.edge(n),0));
 	curves.insert(curves.end(), curves.begin(),curves.end());
 	CGAL::insert_curves(pmap, curves.begin(), curves.end());
-	for(Pmwx::Face_iterator f = pmap.faces_begin(); f != pmap.faces_end(); ++f)
-	f->set_contained(!f->is_unbounded());
+	Pmwx::Face_iterator f;
+	for(f = pmap.faces_begin(); f != pmap.faces_end(); ++f)
+		f->set_contained(!f->is_unbounded());
+
+	// Ben says: ugliness: we cannot simply use the output iterator because
+	// the polygons set depends on the curve insertions being based on polygon windings.  Since we have 
+	// thrown in self-intersecting curves, some of the curve directions will be whacked out.
+	// So...how to get our curves.  CCB of the holes in the unbounded face is not a simple polygon in the
+	// figure-8 case.  Instead, iterate and export all faces.  The fact that we have filled freaking 
+	// everything is what assures that bounded face outer ccb's are simple.
 
 	Polygon_set_2	pset(pmap);
 
-	vector<Polygon_with_holes_2>	all;
-	pset.polygons_with_holes(back_inserter(all));
-	for(int n = 0; n < all.size(); ++n)
+	for(f = pset.arrangement().faces_begin(); f != pset.arrangement().faces_end(); ++f)
+	if(f->contained())
 	{
-		DebugAssert(!all[n].is_unbounded());
-		DebugAssert(all[n].holes_begin() == all[n].holes_end());
-		out_simple_polygons.push_back(all[n].outer_boundary());
+		out_simple_polygons.push_back(Polygon_2());
+		Pmwx::Ccb_halfedge_circulator circ = f->outer_ccb(), stop = f->outer_ccb();
+		do {
+			out_simple_polygons.back().push_back(circ->target()->point());
+		} while (++circ != stop);
+
+		DebugAssert(out_simple_polygons.back().is_simple());
 	}
 }
