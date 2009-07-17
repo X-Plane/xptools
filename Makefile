@@ -291,6 +291,14 @@ all: ./local$(MULTI_SUFFIX)/.xpt_libs
 	@-rm -rf ./local
 	git clone git://dev.x-plane.com/xptools-libs-macosx.git ./local
 endif
+ifeq ($(PLATFORM), Linux)
+ifeq ($(ARCHITECTURE), x86_64)
+all: ./local$(MULTI_SUFFIX)/.xpt_libs
+./local$(MULTI_SUFFIX)/.xpt_libs:
+	@-rm -rf ./local
+	git clone git://dev.x-plane.com/xptools-libs-linux64.git ./local
+endif
+endif
 endif
 
 clean:
