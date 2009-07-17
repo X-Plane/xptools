@@ -4,7 +4,7 @@ BE_QUIET	:= > /dev/null 2>&1
 # http://www.cgal.org/download.html
 VER_CGAL	:= 3.3.1
 # http://www.freetype.org/
-# http://sourceforge.net/project/showfiles.php?group_id=3157
+# http://sourceforge.net/projects/freetype/files/
 VER_FREETYPE	:= 2.3.9
 # http://trac.osgeo.org/proj/
 VER_LIBPROJ	:= 4.6.1
@@ -37,13 +37,13 @@ VER_LIBSHP	:= 1.2.10
 # http://code.google.com/p/libsquish/downloads/list
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
-# http://sourceforge.net/project/showfiles.php?group_id=7586
+# http://sourceforge.net/projects/boost/files/
 VER_BOOST	:= 1.39.0
 # http://www.mesa3d.org/
-# http://sourceforge.net/project/showfiles.php?group_id=3
+# http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.4.2
 # http://expat.sourceforge.net/
-# http://sourceforge.net/project/showfiles.php?group_id=10127
+# http://sourceforge.net/projects/expat/files/
 VER_LIBEXPAT	:= 2.0.1
 
 ARCHITECTURE	:= $(shell uname -m)
