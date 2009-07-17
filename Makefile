@@ -21,10 +21,10 @@ VER_LIBDIME	:= r175
 VER_LIBJPEG	:= 6b
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
-VER_LIBSQLITE	:= 3.6.15
+VER_LIBSQLITE	:= 3.6.16
 # http://www.libpng.org/
 # http://www.libpng.org/pub/png/libpng.html
-VER_LIBPNG	:= 1.2.37
+VER_LIBPNG	:= 1.2.38
 # http://www.zlib.net/
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
@@ -41,7 +41,7 @@ VER_LIBSQUISH	:= 1.10
 VER_BOOST	:= 1.39.0
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
-VER_MESA	:= 7.4.2
+VER_MESA	:= 7.4.4
 # http://expat.sourceforge.net/
 # http://sourceforge.net/projects/expat/files/
 VER_LIBEXPAT	:= 2.0.1
