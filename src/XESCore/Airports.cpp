@@ -350,12 +350,13 @@ void BurnInAirport(
 		// But in dirt-filling mode, we do NOT do this.  This is because some very large airports might (theoretically) fully surround bits of city
 		// with their 2-mile long runways.
 
-		Arrangement_2	rep(ioArea.arrangement());
-		for(Arrangement_2::Face_iterator f = rep.faces_begin(); f != rep.faces_end(); ++f)
+//		Arrangement_2	rep(ioArea.arrangement());
+		for(Arrangement_2::Face_iterator f = ioArea.arrangement().faces_begin(); f != ioArea.arrangement().faces_end(); ++f)
 		if(!f->is_unbounded())
 			f->set_contained(true);
-		Polygon_set_2	filled_area(rep);
-		ioArea = filled_area;
+		ioArea.remove_redundant_edges();
+//		Polygon_set_2	filled_area(rep);
+//		ioArea = filled_area;
 	}
 }
 

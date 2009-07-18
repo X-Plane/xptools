@@ -542,6 +542,19 @@ void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 
 	Polygon_set_2	pset(pmap);
 
+/*
+	Can't do this!  See note above.
+	
+	vector<Polygon_with_holes_2>	all;
+	pset.polygons_with_holes(back_inserter(all));
+	
+	for(vector<Polygon_with_holes_2>::iterator a = all.begin(); a != all.end(); ++a)
+	{
+		out_simple_polygons.push_back(a->outer_boundary());
+		DebugAssert(out_simple_polygons.back().is_simple());
+		DebugAssert(a->holes_begin() == a->holes_end());
+	}
+*/	
 	for(f = pset.arrangement().faces_begin(); f != pset.arrangement().faces_end(); ++f)
 	if(f->contained())
 	{
