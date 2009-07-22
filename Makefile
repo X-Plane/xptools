@@ -18,7 +18,7 @@ VER_LIB3DS	:= 1.3.0
 VER_LIBDIME	:= r175
 # http://www.ijg.org/
 # http://www.ijg.org/files/
-VER_LIBJPEG	:= 6b
+VER_LIBJPEG	:= 7
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
 VER_LIBSQLITE	:= 3.6.16
@@ -41,7 +41,7 @@ VER_LIBSQUISH	:= 1.10
 VER_BOOST	:= 1.39.0
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
-VER_MESA	:= 7.4.4
+VER_MESA	:= 7.5
 # http://expat.sourceforge.net/
 # http://sourceforge.net/projects/expat/files/
 VER_LIBEXPAT	:= 2.0.1
@@ -380,7 +380,6 @@ libfreetype: ./local$(MULTI_SUFFIX)/lib/.xpt_libfreetype
 	@-rm -rf freetype-$(VER_FREETYPE)
 	@touch $@
 
-
 libjpeg: ./local$(MULTI_SUFFIX)/lib/.xpt_libjpeg
 ./local$(MULTI_SUFFIX)/lib/.xpt_libjpeg:
 	@echo "building libjpeg..."
@@ -395,7 +394,7 @@ libjpeg: ./local$(MULTI_SUFFIX)/lib/.xpt_libjpeg
 	CFLAGS=$(CFLAGS_LIBJPEG) LDFLAGS=$(LDFLAGS_LIBJPEG) CC=$(CC_LIBJPEG) \
 	./configure $(CONF_LIBJPEG) $(BE_QUIET)
 	@$(MAKE) -C "jpeg-$(VER_LIBJPEG)" $(BE_QUIET)
-	@$(MAKE) -C "jpeg-$(VER_LIBJPEG)" install-lib install-headers \
+	@$(MAKE) -C "jpeg-$(VER_LIBJPEG)" install \
 	$(BE_QUIET)
 	@-rm -rf jpeg-$(VER_LIBJPEG)
 	@touch $@
