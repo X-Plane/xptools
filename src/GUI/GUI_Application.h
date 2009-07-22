@@ -104,7 +104,6 @@ private:
 	bool                mDone;
 #if LIN
 	QList<GUI_QtMenu*>	mMenus;
-public:
 	QApplication*		qapp;
 #endif
 };

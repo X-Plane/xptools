@@ -69,10 +69,6 @@ int		WED_Application::HandleCommand(int command)
 			if (GUI_GetTempResourcePath("WEDManual.pdf",path))
 			{
 				GUI_LaunchURL(path.c_str());
-				#if LIN
-				qapp->processEvents();
-				unlink(path.c_str());
-				#endif
 			}
 		}
 		return 1;
