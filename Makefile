@@ -138,6 +138,7 @@ CC_LIBJPEG		:= "$(CROSSPREFIX)gcc"
 CFLAGS_LIBJPEG		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBJPEG		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBJPEG		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBJPEG		+= --disable-dependency-tracking
 CONF_LIBJPEG		+= --enable-shared=no
 ifeq ($(cross), mingw64)
 CONF_LIBJPEG		+= --host=$(CROSSHOST)
