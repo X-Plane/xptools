@@ -89,7 +89,7 @@ ifdef PLAT_LINUX
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:=  $(M32_SWITCH) -fpie -fvisibility=hidden -Wno-multichar -pipe
 	CXXFLAGS	:=  $(M32_SWITCH) -fpie -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe
-	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -Wl,-O1 -Wl,-z,now -rdynamic -Wl,-z,combreloc
+	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -Wl,-O1 -rdynamic
 	BARE_LDFLAGS	+= -O1
 	STRIPFLAGS	:= -s -x
 endif
@@ -117,8 +117,8 @@ endif
 ####################################
 
 ifeq ($(conf), release_opt)
-	CFLAGS		+= -O2 -fomit-frame-pointer -funroll-loops
-	CXXFLAGS	+= -O2 -fomit-frame-pointer -funroll-loops
+	CFLAGS		+= -O2 -fomit-frame-pointer
+	CXXFLAGS	+= -O2 -fomit-frame-pointer
 	DEFINES		+= -DDEV=0
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
@@ -130,8 +130,8 @@ else ifeq ($(conf), debug)
 	CXXFLAGS	+=  -O0 -g
 	DEFINES		+=  -DDEV=1
 else ifeq ($(conf), release_test)
-	CFLAGS		+= -O2 -fomit-frame-pointer -funroll-loops
-	CXXFLAGS	+= -O2 -fomit-frame-pointer -funroll-loops
+	CFLAGS		+= -O2 -fomit-frame-pointer
+	CXXFLAGS	+= -O2 -fomit-frame-pointer
 	DEFINES		+= -DDEV=1
 	StripDebug	:= Yes
 # default to debug_opt configuration
@@ -283,16 +283,16 @@ FINALBUILTIN	:= $(BUILDDIR)/obj/builtin$(BIN_SUFFIX).o.$(TARGET).final
 
 all: $(REAL_TARGET)
 
-$(REAL_TARGET): $(BUILTINS)
+$(REAL_TARGET): $(ALL_OBJECTS)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 ifdef TYPE_EXECUTABLE
-	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -o $(@) \
-	$(BUILTINS) $(LIBS) || $(print_error)
+	$(LD) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) -o $(@) \
+	$(ALL_OBJECTS) $(LIBS) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
-	-Wl,-export-dynamic,-soname,$(notdir $(@)) -o $(@) $(BUILTINS) \
+	-Wl,-export-dynamic,-soname,$(notdir $(@)) -o $(@) $(ALL_OBJECTS) \
 	$(LIBS) || $(print_error)
 endif
 ifdef StripDebug
@@ -335,6 +335,11 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.cpp
 	@$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) $(CPPFLAGS) \
 	-MM -MT $(@) -MT $(@:.o=.cppdep) -o $(@:.o=.cppdep) $(<) \
 	|| $(print_error)
+
+$(FINALBUILTIN): $(BUILTINS)
+	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
+	@-mkdir -p $(dir $(@))
+	@ld $(MACARCHS) $(BARE_LDFLAGS) -Ur -o $(@) $(BUILTINS)
 
 .SECONDEXPANSION:
 $(BUILTINS): $$(filter $$(addprefix ./$$(dir $$(@)), $$(ALL_OBJECTFILES)), $$(ALL_OBJECTS))
