@@ -37,6 +37,7 @@
 #include "GUI_Commander.h"
 
 class GUI_QtMenu;
+class GUI_QtApp;
 
 /*
 	WINDOWS WARNING: MENUS
@@ -104,7 +105,7 @@ private:
 	bool                mDone;
 #if LIN
 	QList<GUI_QtMenu*>	mMenus;
-	QApplication*		qapp;
+	GUI_QtApp*		qapp;
 #endif
 };
 #if LIN
@@ -134,7 +135,17 @@ public slots:
 private:
 	GUI_Application* app;
 };
+
+class GUI_QtApp : public QApplication
+{
+	Q_OBJECT
+public:
+	GUI_QtApp(int& argc, char** argv);
+	~GUI_QtApp();
+	bool notify(QObject* receiver, QEvent* event);
+};
 #endif
+
 
 extern	GUI_Application *	gApplication;
 

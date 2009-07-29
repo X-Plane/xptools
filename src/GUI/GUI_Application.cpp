@@ -249,6 +249,26 @@ QMenuBar* GUI_Application::getqmenu()
 	}
     return mbar;
 }
+
+GUI_QtApp::GUI_QtApp(int& argc, char** argv)
+: QApplication(argc, argv)
+{}
+
+GUI_QtApp::~GUI_QtApp()
+{}
+
+bool GUI_QtApp::notify(QObject* receiver, QEvent* event)
+{
+	bool r;
+	try {
+		r = QApplication::notify(receiver, event);
+	}
+	catch (...) {
+		r = false;
+	}
+	return r;
+}
+
 #endif
 
 #if IBM
@@ -308,7 +328,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	InitCommonControls();
 #endif
 #if LIN
-	qapp = new QApplication(argc, argv);
+	qapp = new GUI_QtApp(argc, argv);
 #endif
 }
 
