@@ -1030,6 +1030,9 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	if (modstate & Qt::ControlModifier)
 		flags |= gui_ControlFlag;
 
+ 	if (!(modstate & Qt::AltModifier))
+ 		flags |= gui_DownFlag;
+
 	switch (inMsg)
 	{
 		case Qt::Key_Enter:
