@@ -437,8 +437,6 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	{
 		::SetMenuItemHierarchicalID((MenuRef) parent, parentItem + 1, ::GetMenuID(new_menu));
 	}
-
-	RebuildMenu(new_menu, items);
 #endif
 
 #if IBM
