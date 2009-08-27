@@ -96,10 +96,11 @@ DEFAULT_LIBDIR		:= "$(DEFAULT_PREFIX)/lib"
 DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 
 ifeq ($(PLATFORM), Darwin)
+	PLAT_DARWIN := Yes
 	DEFAULT_MACARGS	:= -mmacosx-version-min=10.4 -arch i386 -arch ppc
 endif
 ifeq ($(PLATFORM), Linux)
-	DEFAULT_MACARGS	:= -fpie
+	PLAT_LINUX := Yes
 endif
 
 # boost
@@ -122,6 +123,11 @@ CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
+# no assembler code on mac os
+ifdef PLAT_DARWIN
+CONF_LIBGMP		+= --enable-fat
+CONF_LIBGMP		+= --host=none-apple-darwin
+endif
 ifdef PLAT_MINGW
 CONF_LIBGMP		+= --host=$(CROSSHOST)
 endif
@@ -132,6 +138,7 @@ CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBMPFR		+= --enable-shared=no
+CONF_LIBMPFR		+= --disable-dependency-tracking
 ifdef PLAT_MINGW
 CONF_LIBMPFR		+= --host=$(CROSSHOST)
 endif
@@ -346,7 +353,6 @@ clean:
 	@-rm -rf ./local32
 	@-rm -rf ./local64
 
-
 boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 ./local$(MULTI_SUFFIX)/lib/.xpt_boost:
 	@echo "building boost..."
@@ -355,11 +361,13 @@ boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
-	./bjam install $(BE_QUIET)
+	./bjam install architecture=combined $(BE_QUIET)
 	@cd local/include && \
 	ln -s boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
 	@cd local/lib && \
-	rm -f *.so* $(BE_QUIET)
+	rm -f *.so* && \
+	rm -f *.dylib* && \
+	ln -s libboost_thread*-mt.a libboost_thread-mt.a
 	@-rm -rf boost_$(VER_BOOST)
 	@touch $@
 
@@ -579,9 +587,15 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@cp patches/0001-libcgal-3.4-various-fixes.patch \
 	"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
 	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
+ifdef PLAT_DARWIN
+	@cd "CGAL-$(VER_CGAL)" && \
+	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-arch ppc -arch i386 -I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	make $(BE_QUIET) && make install $(BE_QUIET)
+else
 	@cd "CGAL-$(VER_CGAL)" && \
 	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
+endif
 	@-rm -rf CGAL-$(VER_CGAL)
 	@touch $@
 
