@@ -576,6 +576,9 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
+	@cp patches/0001-libcgal-3.4-various-fixes.patch \
+	"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
+	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 	@cd "CGAL-$(VER_CGAL)" && \
 	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
