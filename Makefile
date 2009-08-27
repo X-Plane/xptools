@@ -83,8 +83,8 @@ endif
 else
 ifdef PLAT_MINGW
 	MULTI_SUFFIX	:=
-	CROSSPREFIX	:= i686-w64-mingw32-
-	CROSSHOST	:= i686-w64-mingw32
+#	CROSSPREFIX	:= i686-w64-mingw32-
+#	CROSSHOST	:= i686-w64-mingw32
 	ARCHITECTURE	:= i686
 else
 	cross		:= ""
@@ -123,13 +123,14 @@ CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
-# no assembler code on mac os
+# no assembler code
 ifdef PLAT_DARWIN
 CONF_LIBGMP		+= --enable-fat
 CONF_LIBGMP		+= --host=none-apple-darwin
 endif
 ifdef PLAT_MINGW
-CONF_LIBGMP		+= --host=$(CROSSHOST)
+CONF_LIBGMP		+= --host=none-pc-mingw32
+#CONF_LIBGMP		+= --host=$(CROSSHOST)
 endif
 
 # libmpfr
@@ -261,20 +262,8 @@ CONF_LIB3DS		+= --host=$(CROSSHOST)
 endif
 
 # libcgal
-# note that 3.3.1 skips the build of libCGALPDB because of compilation errors
-# when compiling with gcc > 4.4 (header pickyness), we can patch that if we ever
-# happen to need that specific library
 ARCHIVE_CGAL		:= CGAL-$(VER_CGAL).tar.gz
-CFLAGS_CGAL		:= -I$(DEFAULT_INCDIR)
-CFLAGS_CGAL		+= -O2 -frounding-math $(M32_SWITCH) $(DEFAULT_MACARGS)
-LDFLAGS_CGAL		:= -L$(DEFAULT_LIBDIR) $(M32_SWITCH)
-CONF_CGAL		:= --CXXFLAGS '$(CFLAGS_CGAL)'
-CONF_CGAL		+= --CXX '$(CROSSPREFIX)g++'
-CONF_CGAL		+= --LDFLAGS '$(LDFLAGS_CGAL)'
-CONF_CGAL		+= --BOOST_INCL_DIR $(DEFAULT_INCDIR)
-CONF_CGAL		+= --prefix $(DEFAULT_PREFIX)
-CONF_CGAL		+= --disable-shared
-CONF_CGAL		+= --verbose
+
 
 # libsquish
 ARCHIVE_LIBSQUISH	:= squish-$(VER_LIBSQUISH).tar.gz
@@ -357,6 +346,7 @@ boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 ./local$(MULTI_SUFFIX)/lib/.xpt_boost:
 	@echo "building boost..."
 	@tar -xzf "./archives/$(ARCHIVE_BOOST)"
+ifndef PLAT_MINGW
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
@@ -368,6 +358,17 @@ boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 	rm -f *.so* && \
 	rm -f *.dylib* && \
 	ln -s libboost_thread*-mt.a libboost_thread-mt.a
+else
+	@cd "boost_$(VER_BOOST)" && \
+	chmod +x bootstrap.sh && \
+	bjam.exe install --toolset=gcc --with-thread --prefix=$(DEFAULT_PREFIX) --libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET)
+	@cd local/include && \
+	ln -s boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
+	rm -rf boost-$(BOOST_SHORTVER)
+	@cd local/lib && \
+	ln -s libboost_thread*-mt.lib libboost_thread-mt.a && \
+	rm -f *.lib
+endif
 	@-rm -rf boost_$(VER_BOOST)
 	@touch $@
 
@@ -591,9 +592,15 @@ ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
 	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-arch ppc -arch i386 -I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
-else
+endif
+ifdef PLAT_LINUX
 	@cd "CGAL-$(VER_CGAL)" && \
 	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	make $(BE_QUIET) && make install $(BE_QUIET)
+endif
+ifdef PLAT_MINGW
+	@cd "CGAL-$(VER_CGAL)" && \
+	cmake -G "MSYS Makefiles" . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 	@-rm -rf CGAL-$(VER_CGAL)
