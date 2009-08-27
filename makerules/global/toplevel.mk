@@ -76,7 +76,7 @@ ifdef ARCH_X86_64
 	OBJFORMAT 	:= pei-x86-64
 	BINFORMAT 	:= i386
 endif
-	CROSSPREFIX	:= i686-w64-mingw32-
+	#CROSSPREFIX	:= i686-w64-mingw32-
 endif #PLAT_MINGW
 
 
