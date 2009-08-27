@@ -41,7 +41,7 @@ void	Map_CreateWithLineData(
 	for(n = 0; n < input_curves.size(); ++n)
 		curves[n] = Curve_2(input_curves[n], n);
 
-	CGAL::insert_curves(out_map, curves.begin(), curves.end());
+	CGAL::insert(out_map, curves.begin(), curves.end());
 
 	for(Pmwx::Edge_iterator eit = out_map.edges_begin(); eit != out_map.edges_end(); ++eit)
 	{
@@ -83,7 +83,7 @@ void	Map_CreateReturnEdges(
 	for(n = 0; n < input_curves.size(); ++n)
 		curves[n] = Curve_2(input_curves[n], n);
 
-	CGAL::insert_curves(out_map, curves.begin(), curves.end());
+	CGAL::insert(out_map, curves.begin(), curves.end());
 
 	for(Pmwx::Edge_iterator eit = out_map.edges_begin(); eit != out_map.edges_end(); ++eit)
 	{

@@ -429,7 +429,7 @@ void	BufferPolygon(
 	// Step 2.
 	// Insert the non-simple naive ring into an arrangement.
 	Pmwx	arr;
-	CGAL::insert_curves(arr,inset_crv.begin(), inset_crv.end());
+	CGAL::insert(arr,inset_crv.begin(), inset_crv.end());
 
 	#if DEV && DEBUG_BUFFER_POLY
 	try {

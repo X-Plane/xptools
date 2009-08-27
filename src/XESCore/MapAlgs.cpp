@@ -56,9 +56,9 @@ void	RebuildMap(
 	{
 		curves.push_back(i->curve());
 	}
-	printf("Rebuilding %d edges.\n",curves.size());
+	printf("Rebuilding %llu edges.\n",(unsigned long long)curves.size());
 	StElapsedTime rebuild_map("Rebuild_map");
-	CGAL::insert_curves(out_map,curves.begin(),curves.end());
+	CGAL::insert(out_map,curves.begin(),curves.end());
 }
 
 /*
@@ -272,7 +272,7 @@ void	CutInside(
 	DebugAssert(inBoundary.is_simple());
 	vector<X_monotone_curve_2> v(inBoundary.edges_begin(),inBoundary.edges_end());
 //	CGAL::insert_x_monotone_curves(ioMap,v.begin(),v.end());
-	CGAL::insert_curves(ioMap,v.begin(),v.end());
+	CGAL::insert(ioMap,v.begin(),v.end());
 
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());

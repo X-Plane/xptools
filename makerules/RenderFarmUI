@@ -6,18 +6,18 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DOPENGL_MAP=1
-FORCEREBUILD_SUFFIX	:= _rfui
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs
 #LDFLAGS	+= -pie
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,--start-group
-LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff -lboost_thread-gcc43-mt
+LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
 LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
+LIBS		+= -lboost_thread-gcc43-mt -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -47,7 +47,6 @@ SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
@@ -145,11 +144,6 @@ SOURCES += ./src/RawImport/AptElev.cpp
 SOURCES += ./src/RawImport/FAA_Obs.cpp
 SOURCES += ./src/RawImport/ShapeIO.cpp
 SOURCES += ./src/RawImport/gshhs.cpp
-SOURCES += ./src/Tiger/TIGERProcess.cpp
-SOURCES += ./src/Tiger/TIGERRead.cpp
-SOURCES += ./src/Tiger/TigerImport.cpp
-SOURCES += ./src/VPF/VPFImport.cpp
-SOURCES += ./src/VPF/VPFTable.cpp
 SOURCES += ./src/XESCore/XESInit.cpp
 SOURCES += ./src/XESCore/DEMTables.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
@@ -185,7 +179,6 @@ SOURCES += ./src/XESCore/SimpleIO.cpp
 SOURCES += ./src/XESCore/TensorRoads.cpp
 SOURCES += ./src/XESCore/TriFan.cpp
 SOURCES += ./src/XESCore/XESIO.cpp
-SOURCES += ./src/XESCore/WTPM.cpp
 SOURCES += ./src/XESCore/Zoning.cpp
 SOURCES += ./src/Network/b64.c
 SOURCES += ./src/Network/Terraserver.cpp

@@ -172,7 +172,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 	}
 
 	float r,g,b,a,s,s1,s2,t1,t2;
-	if(sscanf(ac_object_get_name(obj), "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", &r,&g,&b,&a,&s,&s1,&t1,&s2,&t2,&light_name) == 10)
+	if(sscanf(ac_object_get_name(obj), "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", &r,&g,&b,&a,&s,&s1,&t1,&s2,&t2,light_name) == 10)
 	{
 		OBJ_set_light_named(obj,"custom");
 		OBJ_set_light_red(obj,r);

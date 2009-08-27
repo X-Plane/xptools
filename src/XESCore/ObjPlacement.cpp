@@ -1695,7 +1695,7 @@ void	InstantiateGTPolygonAll(
 		}
 	}
 	PROGRESS_DONE(inProg, 0, 1, "Instantiating Face Objects...")
-	printf("Processed %d faces.\n", inFaces.size());
+	printf("Processed %llu faces.\n", (unsigned long long)inFaces.size());
 }
 
 double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge)

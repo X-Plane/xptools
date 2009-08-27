@@ -590,7 +590,7 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
 	ValidateNetworkTopology(ioJunctions, ioChains);
-	printf("Promote: before: %d juncs, %d chains\n", ioJunctions.size(), ioChains.size());
+	printf("Promote: before: %llu juncs, %llu chains\n", (unsigned long long)ioJunctions.size(), (unsigned long long)ioChains.size());
 	Net_ChainInfoSet	new_chains;
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
 	if (!(*chainIter)->over_water)
@@ -628,7 +628,7 @@ void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCh
 		}
 	}
 	ioChains.insert(new_chains.begin(), new_chains.end());
-	printf("Promote: after: %d juncs, %d chains\n", ioJunctions.size(), ioChains.size());
+	printf("Promote: after: %llu juncs, %llu chains\n", (unsigned long long)ioJunctions.size(), (unsigned long long)ioChains.size());
 	ValidateNetworkTopology(ioJunctions, ioChains);
 
 }

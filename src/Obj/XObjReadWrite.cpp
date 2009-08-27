@@ -456,7 +456,7 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 		case type_PtLine:
 
 			if (gCmds[index].elem_count == 0)
-				fprintf(fi,"%s %d\t\t//" CRLF, gCmds[index].name, iter->rgb.size());
+				fprintf(fi,"%s %llu\t\t//" CRLF, gCmds[index].name, (unsigned long long)iter->rgb.size());
 			else
 				fprintf(fi,"%s\t\t//" CRLF, gCmds[index].name);
 
@@ -474,7 +474,7 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
 		case type_Poly:
 
 			if (gCmds[index].elem_count == 0)
-				fprintf(fi,"%s %d\t\t//" CRLF, gCmds[index].name, iter->st.size());
+				fprintf(fi,"%s %llu\t\t//" CRLF, gCmds[index].name, (unsigned long long)iter->st.size());
 			else
 				fprintf(fi,"%s\t\t//" CRLF, gCmds[index].name);
 
@@ -1116,7 +1116,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 
 	// POINT POOLS
 
-	fprintf(fi, "POINT_COUNTS %d %d %d %d" CRLF, outObj.geo_tri.count(), outObj.geo_lines.count(), outObj.geo_lights.count(), outObj.indices.size());
+	fprintf(fi, "POINT_COUNTS %d %d %d %llu" CRLF, outObj.geo_tri.count(), outObj.geo_lines.count(), outObj.geo_lights.count(), (unsigned long long)outObj.indices.size());
 
 	for (n = 0; n < outObj.geo_tri.count(); ++n)
 	{

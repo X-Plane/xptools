@@ -81,10 +81,10 @@ static int DoObsImport(const vector<const char *>& args)
 		if (!ok)
 			fprintf(stderr, "Could not import obstacles from %s\n", fname);
 		else
-			printf("Imported %s (%d obs)\n", fname, gFAAObs.size() - countl);
+			printf("Imported %s (%lld obs)\n", fname, (long long)gFAAObs.size() - countl);
 		if (!ok) return 1;
 	}
-	printf("Imported %d obstacles.\n", gFAAObs.size());
+	printf("Imported %llu obstacles.\n", (unsigned long long)gFAAObs.size());
 
 	ApplyObjects(gMap);
 //	gFAAObs.clear();
@@ -226,7 +226,7 @@ static int DoAptFilter(const vector<const char *>& args)
 	int wv = atoi(args[0]);
 	int wb = strcmp(args[1],"yes")==0;
 	if(gVerbose) printf("Want version: %d.  Want boundaries: %s.\n", wv, wb ? "yes" : "no");
-	if(gVerbose) printf("Before filter: %d airports.\n", gApts.size());
+	if(gVerbose) printf("Before filter: %llu airports.\n", (unsigned long long)gApts.size());
 
 	vector<int>	keep(gApts.size());
 	int keep_ctr = 0;
@@ -276,7 +276,7 @@ static int DoAptFilter(const vector<const char *>& args)
 		gProgress(1, 2, "Deleting airports", 1.0);
 
 
-	if(gVerbose) printf("After filter: %d airports.\n", gApts.size());
+	if(gVerbose) printf("After filter: %llu airports.\n", (unsigned long long)gApts.size());
 	return 0;
 }
 
@@ -358,7 +358,7 @@ static int DoShowObjRange(const vector<const char *>& args)
 {
 	map<int, float> mins, maxs;
 	int num = GetObjMinMaxHeights(mins, maxs);
-	printf("Info on %d types.\n", mins.size());
+	printf("Info on %llu types.\n", (unsigned long long)mins.size());
 	for(map<int,float>::iterator i = mins.begin(); i != mins.end(); ++i)
 	{
 		printf("%30s %7d %7d\n",

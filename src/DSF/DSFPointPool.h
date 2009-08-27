@@ -525,7 +525,7 @@ inline void DSFTuple::dumphex(void) const
 		printf("Tuple bad length: %d", mLen);
 	else
 	for (int n = 0; n < mLen; ++n)
-		printf("%c%lx%lx",(n==0) ? ' ' : ',', mData[n]);
+		printf("%c%.16llx",(n==0) ? ' ' : ',', *(unsigned long long*)&mData[n]);
 }
 
 inline size_t DSFTuple::hash(void) const

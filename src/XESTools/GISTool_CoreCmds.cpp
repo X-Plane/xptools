@@ -141,10 +141,10 @@ static int DoCropGrid(const vector<const char *>& args)
 {
 	gMap.unbounded_face()->data().mTerrainType = terrain_Natural;
 
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth))));
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapEast,gMapNorth))));
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapWest,gMapNorth))));
-	CGAL::insert_curve(gMap,Curve_2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth))));
+	CGAL::insert(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth))));
+	CGAL::insert(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapEast,gMapNorth))));
+	CGAL::insert(gMap,Curve_2(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapWest,gMapNorth))));
+	CGAL::insert(gMap,Curve_2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth))));
 
 //	for (int x = sw.x; x <= ne.x; ++x)
 //	{
@@ -162,10 +162,10 @@ static int DoCrop(const vector<const char *>& args)
 	if (gMap.number_of_halfedges() > 0)
 		CropMap(gMap, gMapWest, gMapSouth, gMapEast, gMapNorth, false, gProgress);
 
-	printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-		gMap.number_of_faces(),
-		gMap.number_of_halfedges(),
-		gMap.number_of_vertices());
+	printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+		(unsigned long long)gMap.number_of_faces(),
+		(unsigned long long)gMap.number_of_halfedges(),
+		(unsigned long long)gMap.number_of_vertices());
 
 	set<int>	nukable;
 	for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
@@ -244,10 +244,10 @@ static int DoLoad(const vector<const char *>& args)
 		return 1;
 	}
 	if (gVerbose)
-			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-				gMap.number_of_faces(),
-				gMap.number_of_halfedges(),
-				gMap.number_of_vertices());
+			printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)gMap.number_of_faces(),
+				(unsigned long long)gMap.number_of_halfedges(),
+				(unsigned long long)gMap.number_of_vertices());
 
 #if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
@@ -270,24 +270,24 @@ static int DoOverlay(const vector<const char *>& args)
 		return 1;
 	}
 	if (gVerbose)
-			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-				theMap.number_of_faces(),
-				theMap.number_of_halfedges(),
-				theMap.number_of_vertices());
+			printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)theMap.number_of_faces(),
+				(unsigned long long)theMap.number_of_halfedges(),
+				(unsigned long long)theMap.number_of_vertices());
 
 	RemoveUnboundedWater(theMap);
 	if (gVerbose)
-			printf("Without Water Map contains: %d faces, %d half edges, %d vertices.\n",
-				theMap.number_of_faces(),
-				theMap.number_of_halfedges(),
-				theMap.number_of_vertices());
+			printf("Without Water Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)theMap.number_of_faces(),
+				(unsigned long long)theMap.number_of_halfedges(),
+				(unsigned long long)theMap.number_of_vertices());
 
 	OverlayMap_legacy(gMap, theMap);
 	if (gVerbose)
-			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
-				gMap.number_of_faces(),
-				gMap.number_of_halfedges(),
-				gMap.number_of_vertices());
+			printf("Merged Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)gMap.number_of_faces(),
+				(unsigned long long)gMap.number_of_halfedges(),
+				(unsigned long long)gMap.number_of_vertices());
 	return 0;
 }
 
@@ -306,18 +306,18 @@ static int DoMerge(const vector<const char *>& args)
 		return 1;
 	}
 	if (gVerbose)
-			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-				theMap.number_of_faces(),
-				theMap.number_of_halfedges(),
-				theMap.number_of_vertices());
+			printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)theMap.number_of_faces(),
+				(unsigned long long)theMap.number_of_halfedges(),
+				(unsigned long long)theMap.number_of_vertices());
 
 //	TopoIntegrateMaps(&gMap, &theMap);
 	MergeMaps_legacy(gMap, theMap, false, NULL, true, gProgress);
 	if (gVerbose)
-			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
-				gMap.number_of_faces(),
-				gMap.number_of_halfedges(),
-				gMap.number_of_vertices());
+			printf("Merged Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+				(unsigned long long)gMap.number_of_faces(),
+				(unsigned long long)gMap.number_of_halfedges(),
+				(unsigned long long)gMap.number_of_vertices());
 	return 0;
 }
 
@@ -398,17 +398,17 @@ static int DoTagOrigin(const vector<const char *>& args)
 	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 		f->data().mParams[af_OriginCode] = o;
 	if (gVerbose)
-		printf("Set %d faces to have origin ode %f\n",gMap.number_of_faces(), o);
+		printf("Set %llu faces to have origin ode %f\n",(unsigned long long)gMap.number_of_faces(), o);
 	return 0;
 }
 
 static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
-		printf("Halfedges before simplify: %d\n", gMap.number_of_halfedges());
+		printf("Halfedges before simplify: %llu\n", (unsigned long long)gMap.number_of_halfedges());
 	SimplifyMap(gMap, false, gProgress);
 	if (gVerbose)
-		printf("Halfedges after simplify: %d\n", gMap.number_of_halfedges());
+		printf("Halfedges after simplify: %llu\n", (unsigned long long)gMap.number_of_halfedges());
 	return 0;
 }
 

@@ -1120,8 +1120,9 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 		FILE * fi = fopen(path, "rb");
 		if (!fi)	return mf_BadFile;
 		unsigned char	buf[2] = { 0 };
-		fread(buf, 2, 1, fi);
+		size_t n = fread(buf, 2, 1, fi);
 		fclose(fi);
+		if (n != 1) return  mf_BadFile;
 		if (buf[0] == 'P' && buf[1] == 'K') return mf_ZipFile;
 		if (buf[0] == 0x1f && buf[1] == 0x8b) return mf_GZFile;
 	}

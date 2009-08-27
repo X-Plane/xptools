@@ -6,7 +6,6 @@ TYPE			:= EXECUTABLE
 CFLAGS			+= -include ./src/Obj/XDefs.h
 CXXFLAGS		+= -include ./src/Obj/XDefs.h
 DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
-FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs
@@ -70,7 +69,6 @@ SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp

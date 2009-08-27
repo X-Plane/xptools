@@ -118,8 +118,8 @@ endif
 ####################################
 
 ifeq ($(conf), release_opt)
-	CFLAGS		+= -O2 -fomit-frame-pointer
-	CXXFLAGS	+= -O2 -fomit-frame-pointer
+	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
+	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=0
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
@@ -128,17 +128,17 @@ else ifeq ($(conf), release)
 	DEFINES		+= -DDEV=0
 else ifeq ($(conf), debug)
 	CFLAGS		+= -O0 -g
-	CXXFLAGS	+=  -O0 -g
-	DEFINES		+=  -DDEV=1
+	CXXFLAGS	+= -O0 -g
+	DEFINES		+= -DDEV=1
 else ifeq ($(conf), release_test)
-	CFLAGS		+= -O2 -fomit-frame-pointer
-	CXXFLAGS	+= -O2 -fomit-frame-pointer
+	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
+	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=1
 	StripDebug	:= Yes
-# default to debug_opt configuration
+# default to debug configuration
 else
-	CFLAGS		+= -O2 -g
-	CXXFLAGS	+= -O2 -g
+	CFLAGS		+= -O0 -g
+	CXXFLAGS	+= -O0 -g
 	DEFINES		+= -DDEV=1
 endif
 

@@ -221,9 +221,12 @@ void	CheckLib(const char * inDir)
 	map <string, float>		offz;
 	FILE * libf = fopen(buf, "r");
 	if (libf == NULL) { printf("Could not open %s\n", buf); return; }
-	fgets(buf, 1024, libf);
-	fgets(buf, 1024, libf);
-	fgets(buf, 1024, libf);
+	if (!fgets(buf, 1024, libf))
+		throw "fgets error";
+	if (!fgets(buf, 1024, libf))
+		throw "fgets error";
+	if (!fgets(buf, 1024, libf))
+		throw "fgets error";
 	while (fgets(buf, 1024, libf))
 	{
 		char * t = strtok(buf, " \t");

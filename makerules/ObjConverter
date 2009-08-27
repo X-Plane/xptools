@@ -28,10 +28,6 @@ endif #PLAT_MINGW
 # sources
 #########
 
-ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
-endif #PLAT_LINUX
-
 SOURCES += ./src/Obj/ObjConvert.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp

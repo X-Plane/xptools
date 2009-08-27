@@ -20,10 +20,6 @@ endif #PLAT_MINGW
 # sources
 #########
 
-ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
-endif #PLAT_LINUX
-
 SOURCES += ./src/DSF/DSFLib.cpp
 SOURCES += ./src/DSF/DSFLibWrite.cpp
 SOURCES += ./src/DSF/DSFPointPool.cpp

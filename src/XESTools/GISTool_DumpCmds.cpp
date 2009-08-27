@@ -260,7 +260,7 @@ static int DoDumpMap(const vector<const char *>& args)
 {
 	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
-		printf("%d\n", distance(f->holes_begin(),f->holes_end()) + 1);
+		printf("%lld\n", (long long)distance(f->holes_begin(),f->holes_end()) + 1);
 		if (f->is_unbounded())
 			printf("0\n");
 		else

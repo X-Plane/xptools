@@ -1318,7 +1318,7 @@ char * RF_MapView::MonitorCaption(void)
 	float fps = (elapsed == 0.0) ? 60.0 : 1.0 / elapsed;
 	n += sprintf(buf+n, "Framerate: %03d ", (int) fps);
 
-	n += sprintf(buf+n,"Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+	n += sprintf(buf+n,"Hires: %llu ", (unsigned long long)gTriangulationHi.number_of_faces()/*, (unsigned long long)gTriangulationLo.number_of_faces()*/);
 
 
 	CDT::Face_handle	recent;

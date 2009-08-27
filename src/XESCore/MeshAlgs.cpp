@@ -2373,7 +2373,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 					++circ;
 				} while (circ != circstop);
 
-				fprintf(border, "VBC %d\n", borders.size());
+				fprintf(border, "VBC %llu\n", (unsigned long long)borders.size());
 				for (hash_map<int, float>::iterator hfi = borders.begin(); hfi != borders.end(); ++hfi)
 					fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
 
@@ -2382,7 +2382,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				DebugAssert(!ioMesh.is_infinite(f));
 
 				fprintf(border, "TERRAIN %s\n", FetchTokenString(f->info().terrain));
-				fprintf(border, "BORDER_C %d\n", f->info().terrain_border.size());
+				fprintf(border, "BORDER_C %llu\n", (unsigned long long)f->info().terrain_border.size());
 				for (set<int>::iterator si = f->info().terrain_border.begin(); si != f->info().terrain_border.end(); ++si)
 					fprintf(border, "BORDER_T %s\n", FetchTokenString(*si));
 
@@ -2392,7 +2392,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 					CGAL::to_double(f->vertex(i)->point().x()),
 					CGAL::to_double(f->vertex(i)->point().y()),
 					CGAL::to_double(f->vertex(i)->info().height));
-			fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
+			fprintf(border, "VBC %llu\n", (unsigned long long)f->vertex(i)->info().border_blend.size());
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
 				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
 		}

@@ -418,7 +418,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 			if (!fail.empty())
 			{
 				char buf[256];
-				sprintf(buf, "%d out of %d failed.\n", fail.size(), gFaceSelection.size());
+				sprintf(buf, "%llu out of %llu failed.\n", (unsigned long long)fail.size(), (unsigned long long)gFaceSelection.size());
 				DoUserAlert(buf);
 	//			RF_Notifiable::Notify(RF_Cat_File, RF_Msg_VectorChange, NULL);
 				gEdgeSelection.clear();
@@ -482,8 +482,8 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 		}
 	}
 
-	n += sprintf(buf+n, "Vertices: %d Edges: %d Faces: %d Features: %d ",
-		gVertexSelection.size(), gEdgeSelection.size(), gFaceSelection.size(), gPointFeatureSelection.size());
+	n += sprintf(buf+n, "Vertices: %llu Edges: %llu Faces: %llu Features: %llu ",
+		(unsigned long long)gVertexSelection.size(), (unsigned long long)gEdgeSelection.size(), (unsigned long long)gFaceSelection.size(), (unsigned long long)gPointFeatureSelection.size());
 	if (gFaceSelection.size() == 1)
 	{
 		Pmwx::Face_handle	the_face = *(gFaceSelection.begin());
@@ -554,11 +554,10 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 
 	if (gVertexSelection.size() == 1)
 	{
-		n += sprintf(buf+n, "%lf,%lf %016llX,%016llX ",
-			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
-			CGAL::to_double((*(gVertexSelection.begin()))->point().y()),
-			CGAL::to_double((*(gVertexSelection.begin()))->point().x()),
-			CGAL::to_double((*(gVertexSelection.begin()))->point().y()));
+		double d1 = CGAL::to_double((*(gVertexSelection.begin()))->point().x());
+		double d2 = CGAL::to_double((*(gVertexSelection.begin()))->point().y());
+		n += sprintf(buf+n, "%lf,%lf %.16llX, %.16llX ",
+			d1, d2,	*(unsigned long long*)&d1,*(unsigned long long*)&d2);
 	}
 
 	{

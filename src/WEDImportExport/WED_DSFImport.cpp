@@ -372,7 +372,7 @@ public:
 
 		int res = DSFReadFile(file_name, &cb, NULL, this);
 		if(res != 0)
-			printf("DSF Error: %d\n");
+			printf("DSF Error: %d\n", res);
 	}
 };
 

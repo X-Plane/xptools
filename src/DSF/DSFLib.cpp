@@ -490,8 +490,8 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			if (currentPool >= planarData.size() && currentPool >= planarData32.size())
 			{
 #if DEBUG_MESSAGES
-				printf("DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %d.  32-bit pools = %d.\n",
-						currentPool, planarData.size(), planarData32.size());
+				printf("DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %llu.  32-bit pools = %llu.\n",
+						currentPool, (unsigned long long)planarData.size(),  (unsigned long long)planarData32.size());
 #endif
 				return dsf_ErrPoolOutOfRange;
 			}
@@ -797,7 +797,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %d.\n", pool, planarData.size());
+					printf("DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
@@ -858,7 +858,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %d.\n", pool, planarData.size());
+					printf("DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
@@ -919,7 +919,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %d.\n", pool, planarData.size());
+					printf("DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}

@@ -203,7 +203,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	set<int>				the_types;
 	GetObjTerrainTypes		(the_types);
 
-	printf("%d obj types\n", the_types.size());
+	printf("%llu obj types\n", (unsigned long long)the_types.size());
 	for (set<int>::iterator i = the_types.begin(); i != the_types.end(); ++i)
 		printf("%s ", FetchTokenString(*i));
 

@@ -528,7 +528,7 @@ void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 	if(inPolygon.edge(n).source() != inPolygon.edge(n).target())
 		curves.push_back(Curve_2(inPolygon.edge(n),0));
 	curves.insert(curves.end(), curves.begin(),curves.end());
-	CGAL::insert_curves(pmap, curves.begin(), curves.end());
+	CGAL::insert(pmap, curves.begin(), curves.end());
 	Pmwx::Face_iterator f;
 	for(f = pmap.faces_begin(); f != pmap.faces_end(); ++f)
 		f->set_contained(!f->is_unbounded());

@@ -187,7 +187,7 @@ inline bool LessEdgesThan(Face_handle f, int c)
 
 void BulkZapRoads(const DEMGeo& inUrbanDensity, Pmwx& io_map)
 {
-	printf("BEFORE ZAP: %d generated roads.\n",io_map.number_of_halfedges() / 2);
+	printf("BEFORE ZAP: %llu generated roads.\n",(unsigned long long)io_map.number_of_halfedges() / 2);
 	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); )
 	{
 		if((e->source()->degree() > 2 && e->target()->degree() > 2 &&		// If we have a real intersection on both sides AND
@@ -216,7 +216,7 @@ void BulkZapRoads(const DEMGeo& inUrbanDensity, Pmwx& io_map)
 		} else
 			++e;
 	}
-	printf("AFTER ZAP: %d generated roads.\n",io_map.number_of_halfedges() / 2);
+	printf("AFTER ZAP: %llu generated roads.\n",(unsigned long long)io_map.number_of_halfedges() / 2);
 }
 
 void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
@@ -746,7 +746,7 @@ void	BuildRoadsForFace(
 			}
 		}
 
-		printf("Queued %d seeds origially.\n", seedQ.size());
+		printf("Queued %llu seeds origially.\n", (unsigned long long)seedQ.size());
 	}
 
 	/**********************************************************************************************************************************

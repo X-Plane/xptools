@@ -29,7 +29,6 @@ LIBS		+= -lpng -lz
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/ObjView.rc
-FORCEREBUILD_SUFFIX := _objview
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
@@ -55,7 +54,6 @@ SOURCES += ./src/UI/XWinGL.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp

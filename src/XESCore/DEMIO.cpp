@@ -369,7 +369,11 @@ bool 	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int 
 	for (int y = 0; y <= imp_y_res; ++y)
 	{
 		fseek(fi, (y_off + IMG_Y_RES - y) * IMG_X_SIZE + (x_off), SEEK_SET);
-		fread(membuf, imp_x_res+1, 1, fi);
+		size_t n = fread(membuf, imp_x_res+1, 1, fi);
+		if (n != 1) {
+			fclose(fi);
+			return false;
+		}
 		for (int x = 0; x <= imp_x_res; ++x)
 		{
 			float e = inMap(x,y) = membuf[x];

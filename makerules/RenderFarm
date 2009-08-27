@@ -7,8 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
-LIBS		+= -lz -lboost_thread-gcc43-mt
-FORCEREBUILD_SUFFIX	:= _rf
+LIBS		+= -lz -lboost_thread-gcc43-mt -lpthread
 
 ifdef PLAT_LINUX
 LIBS		+=
@@ -43,7 +42,6 @@ endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
-#SOURCES += ./src/linuxinit/initializer.cpp
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -97,11 +95,6 @@ SOURCES += ./src/RawImport/AptElev.cpp
 SOURCES += ./src/RawImport/FAA_Obs.cpp
 SOURCES += ./src/RawImport/ShapeIO.cpp
 SOURCES += ./src/RawImport/gshhs.cpp
-SOURCES += ./src/Tiger/TIGERProcess.cpp
-SOURCES += ./src/Tiger/TIGERRead.cpp
-SOURCES += ./src/Tiger/TigerImport.cpp
-SOURCES += ./src/VPF/VPFImport.cpp
-SOURCES += ./src/VPF/VPFTable.cpp
 SOURCES += ./src/XESCore/XESInit.cpp
 SOURCES += ./src/XESCore/DEMTables.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
@@ -137,7 +130,6 @@ SOURCES += ./src/XESCore/SimpleIO.cpp
 SOURCES += ./src/XESCore/TensorRoads.cpp
 SOURCES += ./src/XESCore/TriFan.cpp
 SOURCES += ./src/XESCore/XESIO.cpp
-SOURCES += ./src/XESCore/WTPM.cpp
 SOURCES += ./src/XESCore/Zoning.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp

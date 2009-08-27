@@ -474,7 +474,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			Pmwx	local;
 			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
 
-			CGAL::insert_curves(*targ, curves.begin(), curves.end());
+			CGAL::insert(*targ, curves.begin(), curves.end());
 			Point_2 sw(s_crop[0],s_crop[1]);
 			Point_2 ne(s_crop[2],s_crop[3]);
 

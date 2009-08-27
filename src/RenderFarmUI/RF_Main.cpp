@@ -56,11 +56,6 @@
 #include "RF_MapView.h"
 #include "GUI_Window.h"
 
-#if LIN
-#include "initializer.h"
-#endif
-
-
 #if APL && defined(__MWERKS__)
 #include "SIOUX.h"
 #endif
@@ -296,7 +291,7 @@ void dump(Pmwx& m)
 			eit->curve().is_directed_right()? "yes" : "no");
 
 		printf("	This edge owns the curve? %s\n",
-			eit->curve().is_directed_right() == (eit->direction() == CGAL::SMALLER) ? "yes" : "no");
+			eit->curve().is_directed_right() == ((int)eit->direction() == (int)CGAL::SMALLER) ? "yes" : "no");
 
 
 	}
@@ -490,10 +485,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, char * argv[])
 #endif
 {
-#if LIN
-	// setup signal handlers
-//	Initializer initializer(&argc, &argv, 0);
-#endif
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);

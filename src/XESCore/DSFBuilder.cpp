@@ -1700,7 +1700,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 //		(float) (total_tri_fan_pts + total_tris) / (float) total_patches,
 //		(total_tri_fans == 0) ? 0.0 : ((float) (total_tri_fan_pts) / (float) total_tri_fans));
 	printf("Objects: %d, Polys: %d\n", total_objs, total_polys);
-	printf("LU: %d, Objdef: %d, PolyDef: %d\n", landuses.size(), objects.size(), facades.size());
+	printf("LU: %llu, Objdef: %llu, PolyDef: %llu\n", (unsigned long long)landuses.size(), (unsigned long long)objects.size(), (unsigned long long)facades.size());
 	printf("Chains: %d, Shapes: %d\n", total_chains, total_shapes);
 //	printf("Submitted to tri fan builder: %d.  Removed from builder: %d.\n", debug_add_tri_fan, debug_sub_tri_fan);
 

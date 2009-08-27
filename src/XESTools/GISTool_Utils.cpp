@@ -143,8 +143,8 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 
 			if (cmdargs.size() < minp || cmdargs.size() > maxp)
 			{
-				fprintf(stderr, "%s - needs %d-%d args, got %d args.\n",
-					cname, minp, maxp, cmdargs.size());
+				fprintf(stderr, "%s - needs %d-%d args, got %llu args.\n",
+					cname, minp, maxp, (unsigned long long)cmdargs.size());
 				return 1;
 			} else {
 				StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);

@@ -30,10 +30,6 @@ endif #PLAT_MINGW
 # sources
 #########
 
-ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
-endif #PLAT_LINUX
-
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/XPTools/DDSTool.cpp
 SOURCES += ./src/Utils/EndianUtils.c

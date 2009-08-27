@@ -85,7 +85,7 @@ bool	HandleSeg(Pmwx& inMap, double clip[4], const Point2& p1, const Point2& p2)
 	if (p1.y() > clip[3] && p2.y() > clip[3]) return false;
 
 
-	CGAL::insert_curve(inMap,Curve_2(Segment_2(Point_2(p1.x(),p1.y()),Point_2(p2.x(),p2.y()))));
+	CGAL::insert(inMap,Curve_2(Segment_2(Point_2(p1.x(),p1.y()),Point_2(p2.x(),p2.y()))));
 //	inMap.insert_edge(p1, p2, NULL, NULL);
 
 	return true;
@@ -282,7 +282,7 @@ bool ImportGSHHS(const char * inFile, Pmwx& outMap, double clip[4])
 
 
 
-	printf("Read %d points, used %d points, map has %d halfedges\n", tot, keep, outMap.number_of_halfedges());
+	printf("Read %d points, used %d points, map has %llu halfedges\n", tot, keep, (unsigned long long)outMap.number_of_halfedges());
 
 	CropMap(outMap, clip[0], clip[1], clip[2], clip[3], false , NULL);
 

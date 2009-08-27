@@ -303,8 +303,8 @@ void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_2& s
 		collector->input = Curve_2(src.edge(n),0);
 		collector->ctr = 0;
 		DebugAssert(collector->input.source() != collector->input.target());
-		if(loc)			insert_curve(io_dst, collector->input,*loc);
-		else			insert_curve(io_dst, collector->input);
+		if(loc)			CGAL::insert(io_dst, collector->input,*loc);
+		else			CGAL::insert(io_dst, collector->input);
 		DebugAssert(collector->ctr > 0);
 	}
 }
@@ -342,8 +342,8 @@ void		CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_set
 			collector->input = Curve_2(Segment_2(eit->target()->point(),eit->source()->point()),0);
 
 		collector->ctr = 0;
-		if(loc)			insert_curve(io_dst, collector->input,*loc);
-		else			insert_curve(io_dst, collector->input);
+		if(loc)			CGAL::insert(io_dst, collector->input,*loc);
+		else			CGAL::insert(io_dst, collector->input);
 		DebugAssert(collector->ctr > 0);
 
 	}

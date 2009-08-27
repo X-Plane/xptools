@@ -51,31 +51,36 @@ FileReader::~FileReader()
 
 void	FileReader::ReadShort(short& x)
 {
-	fread(&x, sizeof(x), 1, mFile);
+	if (1 != fread(&x, sizeof(x), 1, mFile))
+		throw "fread error";
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapTwo, &x);
 }
 
 void	FileReader::ReadInt(int& x)
 {
-	fread(&x, sizeof(x), 1, mFile);
+	if (1 != fread(&x, sizeof(x), 1, mFile))
+		throw "fread error";
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapFour, &x);
 }
 
 void	FileReader::ReadFloat(float& x)
 {
-	fread(&x, sizeof(x), 1, mFile);
+	if (1 != fread(&x, sizeof(x), 1, mFile))
+		throw "fread error";
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapFour, &x);
 }
 
 void	FileReader::ReadDouble(double& x)
 {
-	fread(&x, sizeof(x), 1, mFile);
+	if (1 != fread(&x, sizeof(x), 1, mFile))
+		throw "fread error";
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapEight, &x);
 }
 
 void	FileReader::ReadBulk(char * inBuf, int inLength, bool inZip)
 {
-	fread(inBuf, inLength, 1, mFile);
+	if (1 != fread(inBuf, inLength, 1, mFile))
+		throw "fread error";
 }
 
 MemFileReader::MemFileReader(const char * inStart, const char * inEnd, PlatformType platform)

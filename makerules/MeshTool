@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
-LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread-gcc43-mt
+LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread-gcc43-mt -lpthread
 
 ifdef PLAT_LINUX
 LIBS		+=
@@ -41,7 +41,6 @@ SOURCES += ./src/Utils/XFileTwiddle.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
-#SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 endif #PLAT_LINUX
 

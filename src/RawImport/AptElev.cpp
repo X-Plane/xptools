@@ -303,7 +303,7 @@ bool	WriteAirportElevations(const char * demdir, const char * outdir)
 
 				FILE * fi = fopen(fname, "w");
 				if (fi == NULL) {
-					printf("Problem Writing %d airports to %s\n", b->second.size(), fname);
+					printf("Problem Writing %llu airports to %s\n", (unsigned long long)b->second.size(), fname);
 					return false;
 				}
 				for (RwyInfoVector::iterator rwy = b->second.begin(); rwy != b->second.end(); ++rwy)

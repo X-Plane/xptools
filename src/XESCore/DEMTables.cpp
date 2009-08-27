@@ -690,9 +690,9 @@ void ValidateNaturalTerrain(void)
 		if (ref != n)
 		{
 			if (gNaturalTerrainTable[n].layer    		  != gNaturalTerrainTable[ref].layer    		)	printf("ERROR: land use lines %d and %d - terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].layer,gNaturalTerrainTable[ref].layer);
-			if (gNaturalTerrainTable[n].xon_dist 		  != gNaturalTerrainTable[ref].xon_dist 		)	printf("ERROR: land use lines %d and %d - terrain 'xon_dist' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].xon_dist,gNaturalTerrainTable[ref].xon_dist);
+			if (gNaturalTerrainTable[n].xon_dist 		  != gNaturalTerrainTable[ref].xon_dist 		)	printf("ERROR: land use lines %d and %d - terrain 'xon_dist' does not match.  name = %s, layers = %f vs %f\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].xon_dist,gNaturalTerrainTable[ref].xon_dist);
 			if (gNaturalTerrainTable[n].base_tex    	  != gNaturalTerrainTable[ref].base_tex    	 	)	printf("ERROR: land use lines %d and %d - terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_tex.c_str(),gNaturalTerrainTable[ref].base_tex.c_str());
-			if (gNaturalTerrainTable[n].base_res		  != gNaturalTerrainTable[ref].base_res		 	)	printf("ERROR: land use lines %d and %d - terrain 'base_res' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_res,gNaturalTerrainTable[ref].base_res);
+			if (gNaturalTerrainTable[n].base_res		  != gNaturalTerrainTable[ref].base_res		 	)	printf("ERROR: land use lines %d and %d - terrain 'base_res' does not match.  name = %s, layers = %f vs %f\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_res,gNaturalTerrainTable[ref].base_res);
 		}
 	}
 }
@@ -860,21 +860,21 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 
 	int any_rule = gNaturalTerrainTable.back().name;
 
-	printf("Landuse: %d states.\n",landuse.size());
-	printf("Terrain: %d states.\n",terrain.size());
-	printf("Elev: %d states.\n",elev.size() );
-	printf("Slope: %d states.\n",slope.size() );
-	printf("Temp: %d states.\n",temp.size() );
-	printf("Temp Range: %d states.\n",temp_rng.size() );
-	printf("Rain: %d states.\n",rain.size() );
-	printf("Near Water: %d states.\n",near_water.size());
-	printf("Slope Headign: %d states.\n",slope_head.size() );
-	printf("Elevation Range: %d states.\n",elev_range.size() );
-	printf("Urban Density: %d states.\n",urban_density.size() );
-	printf("Urban Radial: %d states.\n",urban_radial.size() );
-	printf("Urban Trans: %d states.\n",urban_trans.size() );
-	printf("Urban Square: %d states.\n",urban_square.size());
-	printf("Latitude: %d states.\n",lat.size());
+	printf("Landuse: %llu states.\n",(unsigned long long)landuse.size());
+	printf("Terrain: %llu states.\n",(unsigned long long)terrain.size());
+	printf("Elev: %llu states.\n",(unsigned long long)elev.size() );
+	printf("Slope: %llu states.\n",(unsigned long long)slope.size() );
+	printf("Temp: %llu states.\n",(unsigned long long)temp.size() );
+	printf("Temp Range: %llu states.\n",(unsigned long long)temp_rng.size() );
+	printf("Rain: %llu states.\n",(unsigned long long)rain.size() );
+	printf("Near Water: %llu states.\n",(unsigned long long)near_water.size());
+	printf("Slope Headign: %llu states.\n",(unsigned long long)slope_head.size() );
+	printf("Elevation Range: %llu states.\n",(unsigned long long)elev_range.size() );
+	printf("Urban Density: %llu states.\n",(unsigned long long)urban_density.size() );
+	printf("Urban Radial: %llu states.\n",(unsigned long long)urban_radial.size() );
+	printf("Urban Trans: %llu states.\n",(unsigned long long)urban_trans.size() );
+	printf("Urban Square: %llu states.\n",(unsigned long long)urban_square.size());
+	printf("Latitude: %llu states.\n",(unsigned long long)lat.size());
 
 	int total = landuse.size() *
 				terrain.size() *

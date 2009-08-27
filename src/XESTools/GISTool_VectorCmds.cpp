@@ -496,10 +496,10 @@ static int DoGSHHSImport(const vector<const char *>& args)
 	double c[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
 	if (ImportGSHHS(args[0], gMap, c))
 	{
-		if (gVerbose)printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-			gMap.number_of_faces(),
-			gMap.number_of_halfedges(),
-			gMap.number_of_vertices());
+		if (gVerbose)printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+			(unsigned long long)gMap.number_of_faces(),
+			(unsigned long long)gMap.number_of_halfedges(),
+			(unsigned long long)gMap.number_of_vertices());
 	} else {
 		printf("Error importing GSHHS file %s\n", args[0]);
 		return 1;

@@ -322,7 +322,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (!strncmp(buf, "BEGIN_WINDING", strlen("BEGIN_WINDING")))					cbs.BeginPolygonWinding_f(writer);
 		else if (!strncmp(buf, "END_WINDING", strlen("END_WINDING")))						cbs.EndPolygonWinding_f(writer);
 		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==3)			cbs.BeginPolygon_f(ptype, param, depth, writer);
-		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param)		 ==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
+		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
 		else if (!strncmp(buf, "END_POLYGON", strlen("END_POLYGON")))						cbs.EndPolygon_f(writer);
 
 

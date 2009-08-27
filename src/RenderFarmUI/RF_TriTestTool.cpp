@@ -110,10 +110,10 @@ char *	RF_TriTestTool::GetStatusText(int x, int y)
 		int x, y;
 		float h = gDem[dem_Elevation].xy_nearest(lon, lat, x, y);
 		if (h == DEM_NO_DATA)
-			sprintf(buf, "Hires: %d  (%d,%d NO DATA)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y);
+			sprintf(buf, "Hires: %llu  (%d,%d NO DATA)", (unsigned long long)gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y);
 		else
-			sprintf(buf, "Hires: %d  (%d, %d h=%f)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y, h);
+			sprintf(buf, "Hires: %llu  (%d, %d h=%f)", (unsigned long long)gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y, h);
 	} else
-		sprintf(buf, "Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+		sprintf(buf, "Hires: %llu ", (unsigned long long)gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
 	return buf;
 }
