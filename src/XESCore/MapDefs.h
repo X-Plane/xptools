@@ -379,7 +379,8 @@ typedef CGAL::Arr_accessor<Arrangement_2>               Arr_accessor;
 typedef  Arr_accessor::Dcel_vertex              DVertex;
 typedef  Arr_accessor::Dcel_halfedge            DHalfedge;
 typedef  Arr_accessor::Dcel_face                DFace;
-typedef  Arr_accessor::Dcel_hole                DHole;
+typedef  Arr_accessor::Dcel_outer_ccb			DOuter_ccb;
+typedef  Arr_accessor::Dcel_inner_ccb           DInner_ccb;
 typedef  Arr_accessor::Dcel_isolated_vertex     DIso_vert;
 
 // Landmark point location is pretty fast to construct, even on a complex map, and has good lookup time.  I tried the RIC
@@ -390,7 +391,7 @@ typedef Arrangement_2		Pmwx;
 
 inline bool	he_is_same_direction(Halfedge_handle he)
 {
-	return (he->curve().is_directed_right() == (he->direction() == CGAL::SMALLER));
+	return (he->curve().is_directed_right() == (he->direction() == CGAL::ARR_LEFT_TO_RIGHT));
 }
 
 inline Halfedge_handle he_get_same_direction(Halfedge_handle he)
@@ -426,7 +427,7 @@ class	Polygon_set_2	: public CGAL::General_polygon_set_2<Traits_2, Dcel > {
 public:
 
 	typedef	CGAL::General_polygon_set_2<Traits_2, Dcel >	base;
-
+	
 	  typedef base::Traits_2                                        Traits_2;
 	  typedef base::Dcel                                            Dcel;
 	  typedef base::Polygon_2										Polygon_2;

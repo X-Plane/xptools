@@ -39,6 +39,8 @@
 #include <CHUD/CHUD.h>
 #endif
 #include <CGAL/assertions.h>
+#include <CGAL/assertions_behaviour.h>
+
 
 
 extern void	SelfTestAll(void);

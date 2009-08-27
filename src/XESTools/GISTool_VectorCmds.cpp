@@ -34,11 +34,11 @@
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
 #include "Hydro.h"
-#include "TIGERRead.h"
+//#include "TIGERRead.h"
 #include "gshhs.h"
-#include "TIGERProcess.h"
-#include "TIGERImport.h"
-#include "VPFImport.h"
+//#include "TIGERProcess.h"
+//#include "TIGERImport.h"
+//#include "VPFImport.h"
 #include "CompGeomUtils.h"
 #include "ConfigSystem.h"
 #include <ctype.h>
@@ -68,6 +68,8 @@ inline void ClampCoord(double& v, double low, double hi, int grid, double& err, 
 	else
 		err = 0.0;
 }
+
+/*
 
 static void	import_tiger_repository(const string& rt)
 {
@@ -115,6 +117,7 @@ static void	import_tiger_repository(const string& rt)
 	}
 }
 
+*/
 /*
 static int DoSDTSImport(const vector<const char *>& args)
 {
@@ -127,6 +130,7 @@ static int DoSDTSImport(const vector<const char *>& args)
 	return 0;
 }*/
 
+/*
 // This fetches all the counties for a given degree, using a pre-index.
 static int DoMakeTigerIndex(const vector<const char *>& args)
 {
@@ -486,7 +490,7 @@ static int DoVPFImport(const vector<const char *>& args)
 	}
 	return ok_any ? 0 : 1;
 }
-
+*/
 static int DoGSHHSImport(const vector<const char *>& args)
 {
 	double c[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
@@ -502,7 +506,7 @@ static int DoGSHHSImport(const vector<const char *>& args)
 	}
 	return 0;
 }
-
+/*
 static int DoTigerBounds(const vector<const char *>& args)
 {
 		TigerMap	tigerMap;
@@ -543,7 +547,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 	}
 	return 0;
 }
-
+*/
 #define HELP_SHAPE \
 "-shapefile <mode> <feature> <filename>\n" \
 "Import a shape file.  Mode letters (similar to tar syntax are):\n" \
@@ -590,11 +594,11 @@ int DoWetMask(const vector<const char *>& args)
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
-{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
-{ "-tiger", 		1, -1, 	DoTigerImport, 			"Import tiger line file.", "" },
-{ "-tigerindex", 	1, 1, 	DoTigerIndex, 			"Import tiger line files.", "" },
-{ "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
-{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
+//{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
+//{ "-tiger", 		1, -1, 	DoTigerImport, 			"Import tiger line file.", "" },
+//{ "-tigerindex", 	1, 1, 	DoTigerIndex, 			"Import tiger line files.", "" },
+//{ "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
+//{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	3, 3, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },

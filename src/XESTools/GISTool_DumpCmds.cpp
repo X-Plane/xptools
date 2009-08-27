@@ -27,10 +27,10 @@
 //#include "SDTSRead.h"
 #include "GISTool_Utils.h"
 #include "SDTSReadTVP.h"
-#include "VPFImport.h"
+//#include "VPFImport.h"
 #include "GISTool_Globals.h"
 #include <shapefil.h>
-#include "VPFTable.h"
+//#include "VPFTable.h"
 #include "MapDefs.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
@@ -98,6 +98,7 @@ static void	dump_sdts(const char *  ifs_name, const char * modName)
 }
 #endif
 
+/*
 static void dump_vpf_table(const char * inFileName)
 {
 	MFMemFile * mf = MemFile_Open(inFileName);
@@ -114,6 +115,7 @@ static void dump_vpf_table(const char * inFileName)
 
 	MemFile_Close(mf);
 }
+*/
 
 static int dump_shape_file(const char * inFileName)
 {
@@ -217,12 +219,13 @@ static int DoDumpDSF(const vector<const char *>& args)
 	return 0;
 }
 
-
+/*
 static int DoDumpVPF(const vector<const char *>& args)
 {
 	dump_vpf_table(args[0]);
 	return 0;
 }
+*/
 
 /*
 static int DoDumpSDTS(const vector<const char *>& args)
@@ -298,7 +301,7 @@ static	GISTool_RegCmd_t		sDumpCmds[] = {
 { "-dumpatomic",	1,	1, DoDumpAtomic ,		"Dump atom table of atomic file.", "" },
 { "-dumpobs", 		0, 0, DoDumpObs, 		"Dump current FAA objects.", "" },
 { "-dumpdsf", 		1, -1, DoDumpDSF, 		"Dump contents of a DSF file.", "" },
-{ "-dumpvpf", 		1, 1, DoDumpVPF, 		"Dump a VPF table.", "" },
+//{ "-dumpvpf", 		1, 1, DoDumpVPF, 		"Dump a VPF table.", "" },
 //{ "-dumpsdts", 		2, 2, DoDumpSDTS, 		"Dump an SDTS module.", "" },
 { "-dumpshp",		1, 1, DoDumpShapeFile,	"Dump an ESRI shape file.", "" },
 { "-dumpmap",		0, 0, DoDumpMap,		"Dump current map as text.", "" },

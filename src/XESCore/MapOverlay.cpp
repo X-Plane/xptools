@@ -42,7 +42,7 @@ class OverlayVertexData_,
 class OverlayEdgeData_,
 class OverlayFaceData_>
 class Arr_full_overlay_traits :
-public CGAL::_Arr_default_overlay_traits<ArrangementA, ArrangementB, ArrangementR>
+public CGAL::_Arr_default_overlay_traits_base<ArrangementA, ArrangementB, ArrangementR>
 {
 public:
 
@@ -132,7 +132,7 @@ public:
 
 template <class ArrangementA, class ArrangementB, class ArrangementR>
 class Arr_replace_overlay_traits :
-public CGAL::_Arr_default_overlay_traits<ArrangementA, ArrangementB, ArrangementR>
+public CGAL::_Arr_default_overlay_traits_base<ArrangementA, ArrangementB, ArrangementR>
 {
 public:
 

@@ -496,7 +496,8 @@ public:
 //		if (p == Point_2(0.0, 0.0))
 //			printf("WARNING: got null pt.\n");
 //		DVertex* v = &*CGAL::insert_point(the_map, Point_2((x),(y)));
-		DVertex * v = m_arr_access.new_vertex(Point_2(x,y));
+		Point_2 p(x,y);
+		DVertex * v = m_arr_access.new_vertex(&p,CGAL::ARR_INTERIOR,CGAL::ARR_INTERIOR);
 		mVerticesVec.push_back(v);
 		return v;
 	}
@@ -520,10 +521,10 @@ public:
 
 		bool larger = ((x1 == x2 && y2 < y1) || (x2 < x1));
 		cv = X_monotone_curve_2(Segment_2(Point_2(x1, y1), Point_2(x2, y2)));
-		DHalfedge* h = me ? me : m_arr_access.new_edge(cv);
+		DHalfedge* h = me ? me : m_arr_access.new_edge(&cv);
 //		CGAL::Comparison_result r;
 //		h->set_direction(r = compare_xy(cv.source(),cv.target()));
-		h->set_direction(larger ? CGAL::LARGER : CGAL::SMALLER);
+		h->set_direction(larger ? CGAL::ARR_RIGHT_TO_LEFT : CGAL::ARR_LEFT_TO_RIGHT);
 //		if(r == CGAL::LARGER) DebugAssert(!larger);
 //		if(r == CGAL::SMALLER) DebugAssert(larger);
 
@@ -551,6 +552,9 @@ public:
 		{
 			int  index, prev_index = 0, first_index;
 
+			DOuter_ccb * new_ring = m_arr_access.new_outer_ccb();
+			new_ring->set_face(f);
+
 			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++)
 			{
 				mReader->ReadInt(index);
@@ -562,10 +566,11 @@ public:
 					prev_nh->set_next(nh);
 					nh->set_prev(prev_nh);
 				} else {
-					f->set_halfedge(nh);
+					f->add_outer_ccb(new_ring,nh);				
+					new_ring->set_halfedge(nh);
 					first_index = index;
 				}
-				nh->set_face(f);
+				nh->set_outer_ccb(new_ring);
 				prev_index = index;
 			}
 
@@ -574,13 +579,15 @@ public:
 			DHalfedge* prev_nh = mHalfedgesVec[prev_index];
 			prev_nh->set_next(nh);
 			nh->set_prev(prev_nh);
+
+
 		}
 
 		mReader->ReadInt(num_of_holes);
 		for (unsigned int k = 0; k < num_of_holes; k++)
 		{
 		#if USE_HOLES
-			DHole * new_hole = m_arr_access.new_hole();
+			DInner_ccb * new_hole = m_arr_access.new_inner_ccb();
 			new_hole->set_face(f);
 		#endif
 			int  num_halfedges_on_inner_ccb;
@@ -599,7 +606,7 @@ public:
 					nh->set_prev(prev_nh);
 				} else {
 #if  USE_HOLES
-					new_hole->set_iterator(f->add_hole(nh));
+					f->add_inner_ccb(new_hole,nh);
 #else
 					f->add_hole(nh);
 #endif
@@ -608,7 +615,7 @@ public:
 
 
 #if USE_HOLES
-				nh->set_hole(new_hole);
+				nh->set_inner_ccb(new_hole);
 #else
 				nh->set_face(f);
 #endif
@@ -683,11 +690,17 @@ public:
 
 		for (i = 0; i < number_of_faces(); i++)
 		{
-			DFace * nf =  m_arr_access.un_face();
+			DFace * nf =  m_arr.topology_traits()->unbounded_face();
 			if(i == 0)
 			{
-				DHalfedge * h = *nf->holes_begin();
-				nf = h->opposite()->face();
+					// Ben says: hrm - the old code would pull the ficticious face and have to spelunk to get the unbounded one.
+					// With top traits we can get the unbounded face as a DCEL element directly.
+//				DHalfedge * h = *nf->inner_ccbs_begin();
+//				DHalfedge * o = h->opposite();
+//				if (! o->is_on_inner_ccb())
+//					nf = o->outer_ccb()->face();
+//				else
+//					nf = o->inner_ccb()->face();
 			}
 
 			if(i != 0) nf = m_arr_access.new_face() ;

@@ -38,6 +38,7 @@
 #include "ObjTables.h"
 #include <errno.h>
 #include <CGAL/assertions.h>
+#include <CGAL/assertions_behaviour.h>
 #include <sys/stat.h>
 #include "fcntl.h"
 #include "GISTool_Utils.h"

@@ -242,8 +242,8 @@ static Face_handle	face_for_curve(
 		return curr->face();
 
 	while (! is_between_cw (cv, to_left,
-						  curr->curve(), (curr->direction() == CGAL::LARGER),
-						  next->curve(), (next->direction() == CGAL::LARGER),
+						  curr->curve(), (curr->direction() == CGAL::ARR_LEFT_TO_RIGHT),
+						  next->curve(), (next->direction() == CGAL::ARR_LEFT_TO_RIGHT),
 						  v->point(), eq_curr, eq_next))
   {
     if (eq_curr || eq_next)

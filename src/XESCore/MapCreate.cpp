@@ -95,7 +95,8 @@ void	Map_CreateReturnEdges(
 		// create correct rings.
 		for(EdgeKey_iterator k = eit->curve().data().begin(); k != eit->curve().data().end(); ++k)
 		{
-			Halfedge_handle he = curves[*k].is_directed_right() == (eit->direction() == CGAL::SMALLER) ? he : he->twin();
+			
+			Halfedge_handle he = he_get_same_direction(eit);
 			halfedge_handles[*k].push_back(he);
 		}
 
