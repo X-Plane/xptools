@@ -137,11 +137,8 @@ puke:
 #endif
 
 #if LIN
-#include "initializer.h"
-
 int main(int argc, char* argv[])
 {
-//	Initializer initializer(&argc, &argv, 0);
 	QApplication app(argc, argv);
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));

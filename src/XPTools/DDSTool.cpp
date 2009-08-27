@@ -24,10 +24,6 @@
 #include "version.h"
 #include "BitmapUtils.h"
 
-#if LIN
-#include "initializer.h"
-#endif
-
 enum {
 	raw_16 = 0,
 	raw_24 = 1,
@@ -147,10 +143,6 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 
 int main(int argc, char * argv[])
 {
-#if LIN
-//	Initializer initializer(&argc, &argv, 0);
-#endif
-
 	char	my_dir[2048];
 	strcpy(my_dir,argv[0]);
 	char * last_slash = my_dir;

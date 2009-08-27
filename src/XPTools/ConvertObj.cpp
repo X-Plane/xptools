@@ -32,10 +32,6 @@
 #include "ConvertObjDXF.h"
 #include "ConvertObj3DS.h"
 
-#if LIN
-#include "initializer.h"
-#endif
-
 
 #define kFeetToMeters			0.3048
 #define	kInchesToMeters			(0.3048 / 12.0)
@@ -230,9 +226,6 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 int main(int argc, char * argv[])
 {
-#if LIN
-//	Initializer initializer(&argc, &argv, 0);
-#endif
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
 		print_product_version("ObjConverter", OBJCONVERT_VER, OBJCONVERT_EXTRAVER);

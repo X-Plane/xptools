@@ -470,7 +470,7 @@ void MT_NetEnd(void)
 
 	if (!net.empty())
 	{
-		insert_x_monotone_curves(road_grid, net.begin(), net.end());
+		CGAL::insert(road_grid, net.begin(), net.end());
 
 		Pmwx::Edge_iterator the_edge;
 		for (Pmwx::Edge_iterator e = road_grid.edges_begin(); e != road_grid.edges_end(); ++e)

@@ -88,8 +88,8 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:=  $(M32_SWITCH) -fpie -fvisibility=hidden -Wno-multichar -pipe
-	CXXFLAGS	:=  $(M32_SWITCH) -fpie -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe
+	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -Wl,-O1 -rdynamic
 	BARE_LDFLAGS	+= -O1
 	STRIPFLAGS	:= -s -x

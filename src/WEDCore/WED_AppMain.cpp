@@ -43,10 +43,6 @@
 #include "GUI_Window.h"
 #include "GUI_Prefs.h"
 
-#if LIN
-#include "initializer.h"
-#endif
-
 #include "WED_Menus.h"
 
 #include "GUI_ScrollerPane.h"
@@ -115,10 +111,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, char * argv[])
 #endif
 {
-#if LIN
-	// setup signal handlers
-//	Initializer initializer(&argc, &argv, 0);
-#endif
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
