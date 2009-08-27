@@ -2,7 +2,7 @@ BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://www.cgal.org/download.html
-VER_CGAL	:= 3.3.1
+VER_CGAL	:= 3.4
 # http://www.freetype.org/
 # http://sourceforge.net/projects/freetype/files/
 VER_FREETYPE	:= 2.3.9
@@ -21,10 +21,10 @@ VER_LIBDIME	:= r175
 VER_LIBJPEG	:= 7
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
-VER_LIBSQLITE	:= 3.6.16
+VER_LIBSQLITE	:= 3.6.17
 # http://www.libpng.org/
 # http://www.libpng.org/pub/png/libpng.html
-VER_LIBPNG	:= 1.2.38
+VER_LIBPNG	:= 1.2.39
 # http://www.zlib.net/
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
@@ -38,13 +38,22 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1.39.0
+VER_BOOST	:= 1_39_0
+BOOST_SHORTVER	:= 1_39
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
 # http://expat.sourceforge.net/
 # http://sourceforge.net/projects/expat/files/
 VER_LIBEXPAT	:= 2.0.1
+# http://gmplib.org/
+# http://gmplib.org/#DOWNLOAD
+VER_LIBGMP	:= 4.3.1
+# http://www.mpfr.org/
+# http://www.mpfr.org/mpfr-current/#download
+VER_LIBMPFR	:= 2.4.1
+
+
 
 ARCHITECTURE	:= $(shell uname -m)
 PLATFORM	:= $(shell uname)
@@ -65,9 +74,18 @@ endif
 ifeq ($(cross), mingw64)
 ifdef PLAT_MINGW
 	MULTI_SUFFIX	:= 64
-	CROSSPREFIX	:= x86_64-pc-mingw32-
-	CROSSHOST	:= x86_64-pc-mingw32
+	CROSSPREFIX	:= x86_64-w64-mingw32-
+	CROSSHOST	:= x86_64-w64-mingw32
 	ARCHITECTURE	:= x86_64
+else
+	cross		:= ""
+endif
+else
+ifdef PLAT_MINGW
+	MULTI_SUFFIX	:=
+	CROSSPREFIX	:= i686-w64-mingw32-
+	CROSSHOST	:= i686-w64-mingw32
+	ARCHITECTURE	:= i686
 else
 	cross		:= ""
 endif
@@ -84,8 +102,8 @@ ifeq ($(PLATFORM), Linux)
 	DEFAULT_MACARGS	:= -fpie
 endif
 
-# boost headers
-ARCHIVE_BOOST		:= boost-headers-$(VER_BOOST).tar.gz
+# boost
+ARCHIVE_BOOST		:= boost_$(VER_BOOST).tar.gz
 
 # mesa headers
 ARCHIVE_MESA		:= mesa-headers-$(VER_MESA).tar.gz
@@ -98,13 +116,33 @@ CFLAGS_ZLIB		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_ZLIB		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 
-# expat
+# libgmp
+ARCHIVE_LIBGMP		:= gmp-$(VER_LIBGMP).tar.gz
+CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBGMP		+= --enable-shared=no
+ifdef PLAT_MINGW
+CONF_LIBGMP		+= --host=$(CROSSHOST)
+endif
+
+# libmpfr
+ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.gz
+CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBMPFR		+= --enable-shared=no
+ifdef PLAT_MINGW
+CONF_LIBMPFR		+= --host=$(CROSSHOST)
+endif
+
+# libexpat
 ARCHIVE_LIBEXPAT	:= expat-$(VER_LIBEXPAT).tar.gz
 CFLAGS_LIBEXPAT		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBEXPAT	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBEXPAT		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBEXPAT		+= --enable-shared=no
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBEXPAT		+= --host=$(CROSSHOST)
 endif
 
@@ -117,7 +155,7 @@ CONF_LIBPNG		+= --enable-shared=no
 CONF_LIBPNG		+= --enable-maintainer-mode
 CONF_LIBPNG		+= --disable-dependency-tracking
 CONF_LIBPNG		+= CCDEPMODE="depmode=none"
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBPNG		+= --host=$(CROSSHOST)
 endif
 
@@ -128,7 +166,7 @@ LDFLAGS_FREETYPE	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_FREETYPE		:= --prefix=$(DEFAULT_PREFIX)
 CONF_FREETYPE		+= --enable-shared=no
 CONF_FREETYPE		+= --with-zlib
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_FREETYPE		+= --host=$(CROSSHOST)
 endif
 
@@ -140,7 +178,7 @@ LDFLAGS_LIBJPEG		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBJPEG		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBJPEG		+= --disable-dependency-tracking
 CONF_LIBJPEG		+= --enable-shared=no
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBJPEG		+= --host=$(CROSSHOST)
 endif
 
@@ -157,7 +195,7 @@ CONF_LIBTIFF		+= --with-jpeg-lib-dir=$(DEFAULT_LIBDIR)
 CONF_LIBTIFF		+= --with-zlib-include-dir=$(DEFAULT_INCDIR)
 CONF_LIBTIFF		+= --with-zlib-lib-dir=$(DEFAULT_LIBDIR)
 CONF_LIBTIFF		+= CCDEPMODE="depmode=none"
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBTIFF		+= --host=$(CROSSHOST)
 endif
 
@@ -169,7 +207,7 @@ CONF_LIBPROJ		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBPROJ		+= --enable-shared=no
 CONF_LIBPROJ		+= --disable-dependency-tracking
 CONF_LIBPROJ		+= CCDEPMODE="depmode=none"
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBPROJ		+= --host=$(CROSSHOST)
 endif
 
@@ -186,7 +224,7 @@ CONF_GEOTIFF		+= --with-zip=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-jpeg=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-libtiff=$(DEFAULT_PREFIX)
 CONF_GEOTIFF		+= --with-proj=$(DEFAULT_PREFIX)
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_GEOTIFF		+= --host=$(CROSSHOST)
 CONF_GEOTIFF		+= --target=$(CROSSHOST)
 endif
@@ -198,7 +236,7 @@ LDFLAGS_LIBSQLITE	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBSQLITE		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBSQLITE		+= --enable-shared=no
 CONF_LIBSQLITE		+= --disable-dependency-tracking
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBSQLITE		+= --host=$(CROSSHOST)
 endif
 
@@ -211,11 +249,11 @@ CONF_LIB3DS		+= --enable-shared=no
 CONF_LIB3DS		+= --enable-maintainer-mode
 CONF_LIB3DS		+= --disable-dependency-tracking
 CONF_LIB3DS		+= CCDEPMODE="depmode=none"
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIB3DS		+= --host=$(CROSSHOST)
 endif
 
-# cgal
+# libcgal
 # note that 3.3.1 skips the build of libCGALPDB because of compilation errors
 # when compiling with gcc > 4.4 (header pickyness), we can patch that if we ever
 # happen to need that specific library
@@ -245,7 +283,7 @@ CONF_LIBDIME		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBDIME		+= --enable-static=yes
 CONF_LIBDIME		+= --enable-shared=no
 CONF_LIBDIME		+= --disable-dependency-tracking
-ifeq ($(cross), mingw64)
+ifdef PLAT_MINGW
 CONF_LIBDIME		+= --host=$(CROSSHOST)
 endif
 
@@ -269,15 +307,15 @@ ifeq ($(PLATFORM), Linux)
 endif
 
 # targets
-.PHONY: all clean boost_headers mesa_headers zlib libpng libfreetype libjpeg \
+.PHONY: all clean boost mesa_headers zlib libpng libfreetype libjpeg \
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
-libexpat
+libexpat libgmp libmpfr
 
 ifneq ($(gitlibs), 1)
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
-./local$(MULTI_SUFFIX)/.xpt_libs: boost_headers mesa_headers zlib libpng \
+./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
-libsquish libdime libshp libexpat
+libsquish libdime libshp libexpat libgmp libmpfr
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
 else
 ifeq ($(PLATFORM), Mingw)
@@ -309,13 +347,21 @@ clean:
 	@-rm -rf ./local64
 
 
-boost_headers: ./local$(MULTI_SUFFIX)/include/.xpt_boost
-./local$(MULTI_SUFFIX)/include/.xpt_boost:
-	@echo "extracting boost headers..."
-	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
-	@tar -C "./local$(MULTI_SUFFIX)/include" -xzf "./archives/$(ARCHIVE_BOOST)"
+boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
+./local$(MULTI_SUFFIX)/lib/.xpt_boost:
+	@echo "building boost..."
+	@tar -xzf "./archives/$(ARCHIVE_BOOST)"
+	@cd "boost_$(VER_BOOST)" && \
+	chmod +x bootstrap.sh && \
+	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
+	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
+	./bjam install $(BE_QUIET)
+	@cd local/include && \
+	ln -s boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
+	@cd local/lib && \
+	rm -f *.so* $(BE_QUIET)
+	@-rm -rf boost_$(VER_BOOST)
 	@touch $@
-
 
 mesa_headers: ./local$(MULTI_SUFFIX)/include/.xpt_mesa
 ./local$(MULTI_SUFFIX)/include/.xpt_mesa:
@@ -353,6 +399,31 @@ libexpat: ./local$(MULTI_SUFFIX)/lib/.xpt_libexpat
 	@-rm -rf expat-$(VER_LIBEXPAT)
 	@touch $@
 
+libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
+./local$(MULTI_SUFFIX)/lib/.xpt_libgmp:
+	@echo "building libgmp..."
+	@tar -xzf "./archives/$(ARCHIVE_LIBGMP)"
+	@cd "gmp-$(VER_LIBGMP)" && \
+	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
+	./configure $(CONF_LIBGMP) $(BE_QUIET)
+	@$(MAKE) -C "gmp-$(VER_LIBGMP)" $(BE_QUIET)
+	@$(MAKE) -C "gmp-$(VER_LIBGMP)" install $(BE_QUIET)
+	@-rm -rf gmp-$(VER_LIBGMP)
+	@touch $@
+
+libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr
+./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
+	@echo "building libmpfr..."
+	@tar -xzf "./archives/$(ARCHIVE_LIBMPFR)"
+	@cd "mpfr-$(VER_LIBMPFR)" && \
+	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBMPFR) LDFLAGS=$(LDFLAGS_LIBMPFR) \
+	./configure $(CONF_LIBMPFR) $(BE_QUIET)
+	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" $(BE_QUIET)
+	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" install $(BE_QUIET)
+	@-rm -rf mpfr-$(VER_LIBMPFR)
+	@touch $@
 
 libpng: ./local$(MULTI_SUFFIX)/lib/.xpt_libpng
 ./local$(MULTI_SUFFIX)/lib/.xpt_libpng: ./local$(MULTI_SUFFIX)/lib/.xpt_zlib
@@ -445,8 +516,8 @@ libgeotiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libgeotiff
 	CFLAGS=$(CFLAGS_GEOTIFF) LDFLAGS="$(LDFLAGS_GEOTIFF)" \
 	LD_SHARED="$(LD_GEOTIFF)" AR="$(AR_GEOTIFF)" \
 	./configure $(CONF_GEOTIFF) $(BE_QUIET)
-	@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" $(BE_QUIET)
-	@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" install $(BE_QUIET)
+	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" $(BE_QUIET)
+	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" install $(BE_QUIET)
 	@-rm -rf libgeotiff-$(VER_GEOTIFF)
 	@-rm -rf ./local/lib/libgeotiff.so*
 	@touch $@
@@ -499,19 +570,15 @@ libsquish: ./local$(MULTI_SUFFIX)/lib/.xpt_libsquish
 	@touch $@
 
 
-libcgal: boost_headers ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
-./local$(MULTI_SUFFIX)/lib/.xpt_libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_zlib
+libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
+./local$(MULTI_SUFFIX)/lib/.xpt_libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_zlib ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 	@echo "building libcgal..."
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
-	@cp patches/0001-libcgal-various-fixes.patch \
-	"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
-	patch -p1 < ./0001-libcgal-various-fixes.patch $(BE_QUIET)
 	@cd "CGAL-$(VER_CGAL)" && \
-	chmod +x install_cgal && \
-	./install_cgal $(CONF_CGAL) $(BE_QUIET)
-	@-rm -f ./local$(MULTI_SUFFIX)/lib/*.so*
+	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	make $(BE_QUIET) && make install $(BE_QUIET)
 	@-rm -rf CGAL-$(VER_CGAL)
 	@touch $@
 
