@@ -42,7 +42,7 @@ struct  Line2;
 
 
 #if IBM
-	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
+//	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
 #endif
 
 enum {

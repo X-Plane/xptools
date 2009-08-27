@@ -13,7 +13,7 @@ endif #PLAT_LINUX
 ifdef PLAT_MINGW
 LIBS		+= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32 -lz
 LDFLAGS		+= -Wl,-subsystem,windows
-DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/XGrinder.rc
 FORCEREBUILD_SUFFIX := _xgrinder
 endif #PLAT_MINGW

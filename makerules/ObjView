@@ -27,7 +27,7 @@ LIBS		+= -Wl,-Bstatic
 LIBS		+= -lCGAL -lsquish -ltiff -ljpeg
 LIBS		+= -lpng -lz
 LDFLAGS		+= -Wl,-subsystem,windows
-DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/ObjView.rc
 FORCEREBUILD_SUFFIX := _objview
 endif #PLAT_MINGW

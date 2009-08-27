@@ -27,7 +27,7 @@ endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -Wl,-subsystem,windows
-DEFINES		+= -D_WIN32_IE=0x0500 -D_WIN32_WINNT=0x0500 -DMINGW_BUILD=1
+DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid -lws2_32
 LIBS		+= -Wl,-Bstatic

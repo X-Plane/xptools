@@ -76,6 +76,7 @@ ifdef ARCH_X86_64
 	OBJFORMAT 	:= pei-x86-64
 	BINFORMAT 	:= i386
 endif
+	CROSSPREFIX	:= i686-w64-mingw32-
 endif #PLAT_MINGW
 
 
@@ -287,7 +288,7 @@ $(REAL_TARGET): $(ALL_OBJECTS)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 ifdef TYPE_EXECUTABLE
-	$(LD) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) -o $(@) \
+	@$(LD) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) -o $(@) \
 	$(ALL_OBJECTS) $(LIBS) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC
@@ -296,7 +297,7 @@ ifdef TYPE_LIBDYNAMIC
 	$(LIBS) || $(print_error)
 endif
 ifdef StripDebug
-	$(STRIP) $(STRIPFLAGS) $(@)
+	@$(STRIP) $(STRIPFLAGS) $(@)
 endif
 	@$(print_finished)
 

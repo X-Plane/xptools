@@ -26,8 +26,6 @@
 
 #include <exception>
 
-using std::exception;
-
 #define	WED_ThrowOSErr(x) \
 	if ((x) != 0)	throw wed_error_exception(x, __FILE__, __LINE__)
 
@@ -44,7 +42,7 @@ using std::exception;
 #define _MSL_THROW throw()
 #endif
 
-class wed_error_exception : public exception {
+class wed_error_exception : public std::exception {
 public:
 	wed_error_exception(int os_error_code, const char * file, int line) _MSL_THROW ;
 	wed_error_exception(const char * inMessage, const char * file, int line) _MSL_THROW ;
@@ -66,6 +64,6 @@ private:
 };
 
 const char *	WED_StringForOSError(int code);
-void			WED_ReportExceptionUI(const exception& what, const char * inFmt, ...);
+void			WED_ReportExceptionUI(const std::exception& what, const char * inFmt, ...);
 
 #endif

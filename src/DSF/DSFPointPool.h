@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <list>
+#include <stdint.h>
 
 #include "AssertUtils.h"
 

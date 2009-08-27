@@ -26,9 +26,7 @@
 
 #include <exception>
 
-using std::exception;
-
-class wed_assert_fail_exception : public exception {
+class wed_assert_fail_exception : public std::exception {
 public:
 	wed_assert_fail_exception(const char * c, const char * f, int l) _MSL_THROW
 		: c_(c), f_(f), l_(l) {}

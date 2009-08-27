@@ -376,7 +376,7 @@ int	main(int argc, char * argv[])
 		MT_MakeDSF(argv[4], argv[5]);
 
 
-	} catch (exception& e) {
+	} catch (std::exception& e) {
 		fprintf(stdout,"****************************************************************************\n");
 		fprintf(stdout,"ERROR: Caught unknown exception %s.  Exiting.\n", e.what());
 		fprintf(stdout,"****************************************************************************\n");
