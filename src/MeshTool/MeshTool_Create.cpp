@@ -168,7 +168,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	UpsampleEnvironmentalParams(sDem, ConsoleProgressFunc);
 
 	// -derivedems
-	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, ConsoleProgressFunc);
+	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, true, ConsoleProgressFunc);
 
 	// -zoning
 	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_Slope],sApts,ConsoleProgressFunc);
@@ -376,7 +376,7 @@ void MT_LayerShapefile(const char * fi, const char * in_terrain_type)
 	
 	Pmwx	layer_map;
 	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
-	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop | shp_Fast, in_terrain_type, b, ConsoleProgressFunc))
+	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , in_terrain_type, b, ConsoleProgressFunc))
 		die_err("Unable to load shape file: %s\n", fi);
 
 	Pmwx *	new_map = new Pmwx;
