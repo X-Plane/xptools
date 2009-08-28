@@ -30,7 +30,7 @@
 #include "GISTool_Globals.h"
 #include "MapTopology.h"
 
-#include <CGAL/sweep_line_2_algorithms.h>
+#include <CGAL/Sweep_line_2_algorithms.h>
 
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
@@ -437,7 +437,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		else
 			++i;
 	}
-	printf("%d nodes locked.\n", nodes.size());
+	printf("%llu nodes locked.\n", (unsigned long long)nodes.size());
 
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)

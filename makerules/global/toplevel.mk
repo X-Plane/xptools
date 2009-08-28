@@ -88,7 +88,7 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -rdynamic
 	BARE_LDFLAGS	:=
@@ -98,14 +98,14 @@ ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
+	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	LDFLAGS		:= -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -static-libgcc
 	MACARCHS	:= -arch i386 -arch ppc
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:= -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar
+	CFLAGS		:= -Wno-deprecated-declarations -Wno-multichar
 	CXXFLAGS	:= -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar
 	LDFLAGS		:= -static-libgcc
 	BARE_LDFLAGS	:=
