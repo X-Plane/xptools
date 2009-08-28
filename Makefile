@@ -354,7 +354,7 @@ ifndef PLAT_MINGW
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
 	./bjam cxxflags="$(DEFAULT_MACARGS)" $(BE_QUIET) && \
-	./bjam install
+	./bjam install $(BE_QUIET)
 	@cd local/include && \
 	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
 	@cd local/lib && \
