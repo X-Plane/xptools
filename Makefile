@@ -348,7 +348,7 @@ boost: ./local$(MULTI_SUFFIX)/lib/.xpt_boost
 ./local$(MULTI_SUFFIX)/lib/.xpt_boost:
 	@echo "building boost..."
 	@tar -xzf "./archives/$(ARCHIVE_BOOST)"
-ifndef PLAT_MINGW
+ifdef PLAT_DARWIN
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
@@ -361,7 +361,22 @@ ifndef PLAT_MINGW
 	rm -f *.so* && \
 	rm -f *.dylib* && \
 	ln -sf libboost_thread*-mt.a libboost_thread-mt.a
-else
+endif
+ifdef PLAT_LINUX
+	@cd "boost_$(VER_BOOST)" && \
+	chmod +x bootstrap.sh && \
+	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
+	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
+	./bjam $(BE_QUIET) && \
+	./bjam install $(BE_QUIET)
+	@cd local/include && \
+	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
+	@cd local/lib && \
+	rm -f *.so* && \
+	rm -f *.dylib* && \
+	ln -sf libboost_thread*-mt.a libboost_thread-mt.a
+endif
+ifdef PLAT_MINGW
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	bjam.exe install --toolset=gcc --with-thread --prefix=$(DEFAULT_PREFIX) --libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET)
