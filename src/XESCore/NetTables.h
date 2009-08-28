@@ -23,32 +23,44 @@
 #ifndef NETTABLES_H
 #define NETTABLES_H
 
+/*
+	Terminology note:
+	
+		FEATURE = an ABSTRACT road modeled on real world data, e.g. a "primary one-way limited access highway".  Comes from GIS data.
+		REP = an ACTUAL specific road type, e.g. six-lane divided highway.  A translation of the GIS type based on some circumstances
+		
+		FEATURES can help define things like density of urban areas.
+		REPS have metrics like how big they are, can they spawn buildings, etc.
+*/
+
 struct	NetFeatureInfo {
 	float		density_factor;
-	int			one_way;
+	int			oneway_feature;
 };
 typedef hash_map<int, NetFeatureInfo>	NetFeatureInfoTable;
 
-struct	NetEntityInfo {
+struct	NetRepInfo {
 	float		width;
 	float		pad;
 	float		building_percent;
 	float		max_slope;
 	int			use_mode;
+	int			is_oneway;	
 	int			export_type_normal;
 	int			export_type_overpass;
+	int			export_type_draped;
 };
-typedef hash_map<int, NetEntityInfo>			NetEntityInfoTable;
+typedef hash_map<int, NetRepInfo>				NetRepInfoTable;
 
-struct	Road2NetInfo {
+struct	Feature2RepInfo {
 	float		min_density;
 	float		max_density;
-	int			entity_type;
+	int			rep_type;
 };
-typedef hash_multimap<int, Road2NetInfo>		Road2NetInfoTable;
+typedef hash_multimap<int, Feature2RepInfo>		Feature2RepInfoTable;
 
 struct	BridgeInfo {
-	int			entity_type;
+	int			rep_type;
 
 	// Rulez
 	float		min_length;
@@ -82,14 +94,15 @@ typedef	vector<BridgeInfo>				BridgeInfoTable;
 
 
 extern	NetFeatureInfoTable				gNetFeatures;
-extern 	NetEntityInfoTable				gNetEntities;
-extern	Road2NetInfoTable				gRoad2Net;
+extern 	NetRepInfoTable					gNetReps;
+extern	Feature2RepInfoTable			gFeature2Rep;
 extern	BridgeInfoTable					gBridgeInfo;
 void	LoadNetFeatureTables(void);
 
-bool	IsSeparatedHighway(int road_type);
-int		SeparatedToOneway(int road_type);
+bool	IsSeparatedHighway(int feat_type);
+int		SeparatedToOneway(int feat_type);
+bool	IsOneway(int rep_type);
 
-int		FindBridgeRule(int entity_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2);
+int		FindBridgeRule(int rep_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2);
 
 #endif

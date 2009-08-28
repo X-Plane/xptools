@@ -169,4 +169,71 @@ void ReduceToWaterBodies(Pmwx& ioMap);
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
 
 
+
+template <typename Properties>
+class	MapBFSVisitor {
+public:
+
+	typedef pair<Face_handle, Properties>							prop_pair;
+	typedef list<prop_pair>											face_queue;
+
+	virtual	void	initialize_properties(Properties& io_properties)=0;
+	virtual	void	adjust_properties(Pmwx::Halfedge_handle edge, Properties& io_properties)=0;
+	virtual	void	mark_face(const Properties& in_properties, Face_handle face)=0;
+	
+	void	Visit(Pmwx * targ)
+	{
+		face_queue	q;
+		targ->unbounded_face()->set_visited(true);
+		Properties p;
+		initialize_properties(p);
+		q.push_back(prop_pair(targ->unbounded_face(), p));			
+		bfs_scan(q);		
+		for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+			f->set_visited(false);
+	}
+	
+private:
+
+	void bfs_process_ccb(Pmwx::Ccb_halfedge_circulator ccb, const Properties& props, face_queue& q)
+	{
+		Pmwx::Ccb_halfedge_circulator circ(ccb), stop(ccb);
+		do {
+			if(!circ->twin()->face()->visited())
+			{
+				Face_handle f(circ->twin()->face());
+				f->set_visited(true);
+				Properties	twin_props(props);
+				
+				adjust_properties(circ, twin_props);
+				
+				// go through cuve, twiddle twin-props
+				q.push_back(prop_pair(f,twin_props));
+			}
+		} while (++circ != stop);
+	}
+
+	void bfs_scan(face_queue& q)
+	{
+		while(!q.empty())
+		{
+			Properties	props(q.front().second);
+			Face_handle	f(q.front().first);
+			q.pop_front();
+			
+			mark_face(props,f);
+			
+			if(!f->is_unbounded())
+				bfs_process_ccb(f->outer_ccb(), props, q);
+			
+			for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+				bfs_process_ccb(*h, props, q);
+		}
+	}
+
+};
+
+
+
+
 #endif /* MapTopology_H */

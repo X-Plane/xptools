@@ -56,12 +56,28 @@ void	MakeHalfedgeOneway(Pmwx::Halfedge_handle he)
 
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, ProgressFunc inProg)
 {
+	int kill = 0;
+	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge)
+	for (int i = 0    ; i < edge->data().mSegments.size(); ++i)
+	for (int j = i + 1; j < edge->data().mSegments.size(); ++j)
+	{
+		if(edge->data().mSegments[i] == edge->data().mSegments[j])
+		{
+			edge->data().mSegments.erase(edge->data().mSegments.begin() + j);
+			--j;
+			++kill;
+		}	
+	}
+	if(kill > 0)
+		printf("Killed %d duplicate roads.\n", kill);
+
 	double	total = ioMap.number_of_faces() + ioMap.number_of_halfedges();
 	int		ctr = 0;
 
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 
 	for (Pmwx::Face_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
 	if (!face->data().IsWater())
 	{
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
@@ -149,14 +165,14 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 //			if (edge->face()->IsWater() && edge->twin()->face()->IsWater())
 //				bridge = true;
 			seg->mRepType = NO_VALUE;
-			for (Road2NetInfoTable::iterator p = gRoad2Net.begin(); p != gRoad2Net.end(); ++p)
+			for (Feature2RepInfoTable::iterator p = gFeature2Rep.begin(); p != gFeature2Rep.end(); ++p)
 			{
 				if (p->first == seg->mFeatType &&
 //					bridge == p->second.bridge &&
 					urban >= p->second.min_density &&
 					urban <= p->second.max_density)
 				{
-					seg->mRepType = p->second.entity_type;
+					seg->mRepType = p->second.rep_type;
 				}
 			}
 		}
@@ -191,14 +207,30 @@ double		Net_JunctionInfo_t::GetMatchingAngle(Net_ChainInfo_t * chain1, Net_Chain
 	vec2.normalize();
 	double dot = -(vec1.dot(vec2));
 	if (dot >= 0.0)
-	if (chain1->entity_type == chain2->entity_type)
+	if (chain1->rep_type == chain2->rep_type)
 		dot += 1.0;
 	return dot;
+}
+
+int			Net_JunctionInfo_t::GetLayerForChain(Net_ChainInfo_t * me)
+{
+	if(me->start_junction == this) return me->start_layer;
+	if(me->end_junction == this) return me->end_layer;	
+		Assert(!"Not found");
+	return 0;
+}
+
+void		Net_JunctionInfo_t::SetLayerForChain(Net_ChainInfo_t * me, int l)
+{
+	if(me->start_junction == this) me->start_layer = l;
+	else if(me->end_junction == this) me->end_layer = l;
+	else	Assert(!"Not found");
 }
 
 void	Net_ChainInfo_t::reverse(void)
 {
 	swap(start_junction, end_junction);
+	swap(start_layer, end_layer);
 	for (int n = 0; n < shape.size() / 2; ++n)
 	{
 		swap(shape[n], shape[shape.size()-n-1]);
@@ -299,77 +331,79 @@ void					Net_ChainInfo_t::split_seg(int n, double rat)
 #pragma mark -
 
 // This routine takes a network and combines chains that are contiguous through a junction, reducing
-// junctions and forming longer chains.  This routien will not remove a junction that is colocated
-// with another jucntion unless compact_colocated is true.
+// junctions and forming longer chains.
 void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChains, bool water_only)
 {
 	int	total_merged = 0;
 	int total_removed = 0;
 
 	// First go through and consider every jucntion...if it has 2 items and they're the same and not a
-	// loop, we can coalesce.  Look out for a colocated junctions.
+	// loop, we can coalesce.
 	for (Net_JunctionInfoSet::iterator junc = ioJunctions.begin(); junc != ioJunctions.end(); ++junc)
 	{
 		Net_JunctionInfo_t * me = (*junc);
 		if (me->chains.size() == 2)
-//		if (compact_colocated || me->colocated.empty())
 		{
 			Net_ChainInfoSet::iterator i = me->chains.begin();
-			Net_ChainInfo_t * sc = *i;
-			++i;
-			Net_ChainInfo_t * ec = *i;
+			Net_ChainInfo_t * sc = *i++;
+			Net_ChainInfo_t * ec = *i++;
 
 			if (sc->over_water || !water_only)
-			if (sc != ec && sc->entity_type == ec->entity_type &&
-						    sc->export_type == ec->export_type &&
+			if (sc != ec && sc->rep_type == ec->rep_type &&					// Ignore layer?  YES!  If we only have 2 roads coming together, assume that differing layer does 
+						    sc->export_type == ec->export_type &&			// NOT mean that they really are hanging off.
 						    sc->over_water == ec->over_water &&
+							sc->draped == ec->draped &&
 				sc->start_junction != sc->end_junction &&
 				ec->start_junction != ec->end_junction &&
 				sc->other_junc(me) != ec->other_junc(me))
 			{
 				// Organize so start chain feeds into end chain directionally, with
 				// us as the middle junction.
-				if (sc->end_junction != me)		sc->reverse();
-				if (ec->start_junction != me)	ec->reverse();
-				Assert (sc->end_junction == me);
-				Assert(ec->start_junction == me);
+				
+				if(sc->start_junction == me && ec->end_junction == me)
+					swap(sc,ec);
 
-				// These junctions cap the new complete chain.
-				Net_JunctionInfo_t * sj = sc->start_junction;
-				Net_JunctionInfo_t * ej = ec->end_junction;
-				Assert (sj != me);
-				Assert (ej != me);
-				// Accumulate all shape points.
-				sc->shape.push_back(me->location);
-				sc->agl.push_back(me->agl);
-				sc->power_crossing.push_back(me->power_crossing);
-				sc->shape.insert(sc->shape.end(), ec->shape.begin(),ec->shape.end());
-				sc->agl.insert(sc->agl.end(), ec->agl.begin(),ec->agl.end());
-				sc->power_crossing.insert(sc->power_crossing.end(), ec->power_crossing.begin(), ec->power_crossing.end());
-				// We no longer have points.
-				me->chains.clear();
-				// End junction now has first chain instead of second.
-				ej->chains.erase(ec);
-				ej->chains.insert(sc);
-				// Start chain now ends at end junction, not us.
-				sc->end_junction = ej;
-				// Nuke second chain, it's useless.
-				delete ec;
-				outChains.erase(ec);
-				++total_merged;
+				if(!IsOneway(sc->rep_type) && sc->end_junction != me)	sc->reverse();
+				if(!IsOneway(ec->rep_type) && ec->start_junction != me)	ec->reverse();
+
+				if(sc->end_junction == me && ec->start_junction == me)
+				{
+					// These junctions cap the new complete chain.
+					Net_JunctionInfo_t * sj = sc->start_junction;
+					Net_JunctionInfo_t * ej = ec->end_junction;
+					Assert (sj != me);
+					Assert (ej != me);
+					// Accumulate all shape points.
+					sc->shape.push_back(me->location);
+					sc->agl.push_back(me->agl);
+					sc->power_crossing.push_back(me->power_crossing);
+					sc->shape.insert(sc->shape.end(), ec->shape.begin(),ec->shape.end());
+					sc->agl.insert(sc->agl.end(), ec->agl.begin(),ec->agl.end());
+					sc->power_crossing.insert(sc->power_crossing.end(), ec->power_crossing.begin(), ec->power_crossing.end());
+					// We no longer have points.
+					me->chains.clear();
+					// End junction now has first chain instead of second.
+					ej->chains.erase(ec);
+					ej->chains.insert(sc);
+					// Start chain now ends at end junction, not us.
+					sc->end_junction = ej;
+					sc->end_layer = ec->end_layer;
+					// Nuke second chain, it's useless.
+					delete ec;
+					outChains.erase(ec);
+					++total_merged;
+				}
 			}
 		}
 	}
 
 	// Now go through and take out the trash...schedule for deletion every 0-valence
-	// junction and also undo the colocation loops.
+	// junction.
 	Net_JunctionInfoSet	deadJuncs;
 	for (Net_JunctionInfoSet::iterator junc = ioJunctions.begin(); junc != ioJunctions.end(); ++junc)
 	{
 		if ((*junc)->chains.empty())
 		{
-//			for (Net_JunctionInfoSet::iterator colo = (*junc)->colocated.begin(); colo != (*junc)->colocated.end(); ++colo)
-//				(*colo)->colocated.erase(*junc);
 			deadJuncs.insert(*junc);
 			++total_removed;
 		}
@@ -387,6 +421,11 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 #define REDUCE_SHAPE_ANGLE 	0.984807753012208	// 0.9961946980917455
 #define MAX_CUT_DIST		2000
 
+// This routine removes shape points that form less than a certain cosine dot angle, as long
+// as the two edges forming the angle are < 2 km.  We use this to reduce the number of nodes...
+// in particular, shape points that were due to the original crossing of a road with some
+// land use change or other arbitrary vector feature will get reduced if they are no longer
+// doing any good.
 int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
 {
 	int reduces = 0;
@@ -394,6 +433,7 @@ int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
 	{
 		Net_ChainInfo_t * c = *i;
 		for (int v = 0; v < c->shape.size();)
+		if (!c->power_crossing[v])							// Do not nuke power crossings - we flag them on purpsoe and need to preserve them in the export!!
 		{
 			Point3 * p1, * p2, * p3;
 			p2 = &c->shape[v];
@@ -430,15 +470,19 @@ int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
 	return reduces;
 }
 
-#if 1
-void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
+// This routine forms an original topology level 1 network from our planar map.
+void	BuildNetworkTopology(Pmwx& inMap, CDT& inMesh, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
 	outJunctions.clear();
 	outChains.clear();
 
 	typedef	map<Pmwx::Vertex *, Net_JunctionInfo_t*>		JunctionTableType;
-	typedef	map<Pmwx::Halfedge_handle, Net_ChainInfo_t*>		ChainTableType;
-	JunctionTableType												junctionTable;
+	typedef	map<Pmwx::Halfedge_handle, Net_ChainInfo_t*>	ChainTableType;
+	JunctionTableType										junctionTable;
+
+	CDT::Face_handle	f;
+	CDT::Locate_type	lt;
+	int					li;
 
 	/************ STEP 1 - BUILD THE BASIC NETWORK ************/
 	for (Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v)
@@ -447,7 +491,9 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 		junc->vertical_locked = false;
 		junc->location.x = CGAL::to_double(v->point().x());
 		junc->location.y = CGAL::to_double(v->point().y());
-		junc->location.z = 0.0;
+		f = inMesh.locate(v->point(), lt, li, f);
+		junc->location.z = HeightWithinTri(inMesh, f, v->point());
+		
 		junc->power_crossing = false;
 		junctionTable.insert(JunctionTableType::value_type(&*v,junc));
 		outJunctions.insert(junc);
@@ -458,20 +504,21 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 	if (seg->mRepType != NO_VALUE)
 	{
 		Net_ChainInfo_t *	chain = new Net_ChainInfo_t;
-		chain->entity_type = seg->mRepType;
+		chain->rep_type = seg->mRepType;
 		chain->export_type = NO_VALUE;
+		chain->draped = true;
 		chain->over_water = e->face()->data().IsWater() && e->twin()->face()->data().IsWater();
 		chain->start_junction = junctionTable[&*e->source()];
 		chain->end_junction = junctionTable[&*e->target()];
 		chain->start_junction->chains.insert(chain);
 		chain->end_junction->chains.insert(chain);
+		chain->start_layer = seg->mSourceHeight;
+		chain->end_layer = seg->mTargetHeight;
 		outChains.insert(chain);
 		//printf("|");
 	}
 
-	// Do one initial compaction - odds are we have a lot of chains that need to be built up!
-
-	//OptimizeNetwork(outJunctions, outChains, true);
+	
 
 	CountNetwork(outJunctions, outChains);
 	int nukes = NukeStraightShapePoints(outChains);
@@ -481,8 +528,8 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 	// Now we need to start sorting out the big mess we have - we have a flat topology and in reality
 	// highways don't work that way!
 }
-#endif
 
+// This routine purges the memory used for a network set.
 void	CleanupNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
 	for (Net_JunctionInfoSet::iterator i = outJunctions.begin(); i != outJunctions.end(); ++i)
@@ -492,6 +539,7 @@ void	CleanupNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet&
 		delete (*j);
 }
 
+// This routine checks the connectivity of the network for linkage and ptr errors.
 void	ValidateNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
 	Net_JunctionInfoSet::iterator ji;
@@ -513,6 +561,7 @@ void	ValidateNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet
 	}
 }
 
+// This routine prints the counts for all junctions, chains and shape points.
 void	CountNetwork(const Net_JunctionInfoSet& inJunctions, const Net_ChainInfoSet& inChains)
 {
 	int juncs = inJunctions.size();
@@ -526,13 +575,14 @@ void	CountNetwork(const Net_JunctionInfoSet& inJunctions, const Net_ChainInfoSet
 	printf("Junctions: %d, Chains: %d, Segs: %d\n", juncs, chains, segs);
 }
 
-void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CDT& inMesh)
+void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CDT& inMesh, bool only_power_lines)
 {
 	int total = 0;
 	int added = 0;
 	vector<Point3>	all_pts,	these_pts;
 
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
+	if(!only_power_lines || gNetReps[(*chainIter)->rep_type].use_mode == use_Power)
 	{
 		all_pts.clear();
 		these_pts.clear();
@@ -596,6 +646,8 @@ void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCh
 	if (!(*chainIter)->over_water)
 	{
 		Net_ChainInfo_t * chain = *chainIter;
+		
+		
 		while (!chain->shape.empty())
 		{
 			Net_ChainInfo_t * new_chain = new Net_ChainInfo_t;
@@ -612,8 +664,10 @@ void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCh
 			new_junc->vertical_locked = false;
 
 			new_chain->start_junction = new_junc;
+			new_chain->start_layer = chain->end_layer;
 			new_chain->end_junction = chain->end_junction;
-			new_chain->entity_type = chain->entity_type;
+			new_chain->end_layer = chain->end_layer;
+			new_chain->rep_type = chain->rep_type;
 			new_chain->export_type = chain->export_type;
 			new_chain->over_water = chain->over_water;
 
@@ -633,55 +687,14 @@ void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCh
 
 }
 
-// RoadLayers - THEORY OF OPERATION
-// We need to keep track of what has been put at what level of our intersection...we use a vector of ints
-// where each int is a type of road use.  The first slot (0) represents ground level and each slot then stacks
-// up a layer.  We can ask for the next slot compatible with a given road type.  This code takes care of the
-// logic that says things like...roads and city streets can cross on ground but not mid-air...put the highway
-// in the first unused slot...etc.  wants_ground tells us if we search the ground slot first....it's possible that
-// a number of road layers connect to water-bridges and must start above ground!
-class	RoadLayers {
-public:
-	int		GetGoodSlot(int road_type, int wants_ground);
-	void	UseSlot(int road_type, int slot);
-private:
-	bool	Compatible(int base_type, int new_type, int on_ground);
-	vector<int>	slots;
-};
-
-int RoadLayers::GetGoodSlot(int road_type, int wants_ground)
+Net_JunctionInfo_t * CloneJunction (Net_JunctionInfo_t * j)
 {
-	int start = wants_ground ? 0 : 1;
-	int n;
-	for (n = start; n < slots.size(); ++n)
-		if (Compatible(slots[n], road_type, n == 0))	return n;
+	Net_JunctionInfo_t * n = new Net_JunctionInfo_t;
+	n->location = j->location;
+	n->agl = j->agl;
+	n->power_crossing = j->power_crossing;
+	n->vertical_locked = j->vertical_locked;
 	return n;
-}
-
-void RoadLayers::UseSlot(int road_type, int slot)
-{
-	while (slot >= slots.size())	slots.push_back(use_None);
-	slots[slot] = road_type;
-}
-
-bool	RoadLayers::Compatible(int base_type, int new_type, int on_ground)
-{
-	if (base_type == use_None) return true;
-	if (base_type == use_Limited || new_type == use_Limited) return false;
-	if (base_type == new_type) return true;
-	if (base_type == use_Street && new_type == use_Rail && on_ground)	return true;
-	if (base_type == use_Rail && new_type == use_Street && on_ground)	return true;
-	return false;
-}
-
-Net_JunctionInfo_t *	CloneJunction(Net_JunctionInfo_t * junc)
-{
-	Net_JunctionInfo_t * new_junc = new Net_JunctionInfo_t;
-	new_junc->location = junc->location;
-	new_junc->agl = junc->agl;
-	new_junc->power_crossing = false;
-	new_junc->vertical_locked = true;
-	return new_junc;
 }
 
 void	MigrateChain(Net_ChainInfo_t * chain, Net_JunctionInfo_t * old_j, Net_JunctionInfo_t * new_j)
@@ -693,32 +706,16 @@ void	MigrateChain(Net_ChainInfo_t * chain, Net_JunctionInfo_t * old_j, Net_Junct
 	if (chain->end_junction == old_j) chain->end_junction = new_j;
 }
 
-// VerticalPartitionRoads
-//
-// When we get road data it's often in "flat" form - if a highway goes over a street via a bridge,
-// the data has _four_ segments meeting at a point wehre the highway is on top of the street, even
-// though no car could go directly from the highway to the street.
-//
-// This routine attempts to 'unflatten' the data:
-// - It breaks up junctions with many segments into separate junctions based on where there is
-//	 real connectivity.
-// - It positions the junctions vertically where they need spatial separation.  This vertical
-//   separation tries to take into account water bridges:
-
-void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
+// This is like the original vertical partition, but...we only pull out power lines...we do this for the new
+// draping format, which REQUIRES shared junctions for stacks of bridges, etc.
+void	VerticalPartitionOnlyPower(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
 	int	total_power_crossings = 0;
 
-	typedef	pair<Net_ChainInfo_t *, Net_ChainInfo_t *> 		HighwayPair;
-	typedef	multimap<double, HighwayPair, greater<double> >	HighwayAngleMap;
+	vector<Net_JunctionInfo_t *>		new_juncs;		// This is any new junctions created during this partitioning phase.
 
-	Net_JunctionInfoSet		new_juncs;		// This is any new junctions created during this partitioning phase.
-
-	// Iterate across all junctions that have more than 2 things going into them!  If 2 things connect to each other
-	// we just assume they blend nicely.  (Note that this can be stupid...a road that ends at the start of a powerline...
-	// but we don't try to sort out that pathological case.)
+	// Iterate across all junctions - since we separate power from non-power...
 	for (Net_JunctionInfoSet::iterator juncIter = ioJunctions.begin(); juncIter != ioJunctions.end(); ++juncIter)
-	if ((*juncIter)->chains.size() > 2)
 	{
 		Net_JunctionInfo_t * junc = *juncIter;
 
@@ -726,43 +723,17 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		// We go through and find out who is around and pull out various useful chains.  When we're done we'll know some
 		// of the main groups we must make and also roughly how the highways relate.
 
-			vector<Net_ChainInfo_t *>						trains, streets, ramps;							// All of the segments...
-			HighwayAngleMap									highways;										// A map of all POSSIBLE highway matches
-			map<Net_ChainInfo_t *, Net_JunctionInfo_t *>	used_highways;									// For any highway that's been placed, who did we connect it to?
-			Net_ChainInfoSet								unused_highways;								// All of the highways
-			bool											train_bridge = false, street_bridge = false;
-			RoadLayers										occupied;										// Tracking which layer is where.
-			vector<Net_JunctionInfo_t *>					cloned_junctions;
+			vector<Net_ChainInfo_t *>						power_lines;									// All of the segments...
 			bool											has_power = false;
 			bool											has_nonpower = false;
 
 		for (Net_ChainInfoSet::iterator chain = junc->chains.begin(); chain != junc->chains.end(); ++chain)
 		{
-				double	angle;
-
-			switch(gNetEntities[(*chain)->entity_type].use_mode) {
-			case use_Limited:
-				for (Net_ChainInfoSet::iterator other = junc->chains.begin(); other != junc->chains.end(); ++other)
-				if (*chain != *other)
-				if (gNetEntities[(*other)->entity_type].use_mode == use_Limited)
-				{
-					angle = junc->GetMatchingAngle(*chain, *other);
-					highways.insert(HighwayAngleMap::value_type(angle, HighwayPair(*chain, *other)));
-				}
-				unused_highways.insert(*chain);
-				break;
-			case use_Street:	streets.push_back(*chain); if ((*chain)->over_water) street_bridge = true; 	break;
-			case use_Ramp:		ramps.push_back(*chain); 													break;
-			case use_Rail:		trains.push_back(*chain); if ((*chain)->over_water) train_bridge = true; 	break;
-			case use_Power:																					break;
-			default:
-					streets.push_back(*chain); if ((*chain)->over_water) street_bridge = true;
-					printf("Unknown use!\n");
-					break;
-			}
-
-			if (gNetEntities[(*chain)->entity_type].use_mode == use_Power)
+			if (gNetReps[(*chain)->rep_type].use_mode == use_Power)
+			{
 				has_power = true;
+				power_lines.push_back(*chain);
+			}
 			else
 				has_nonpower = true;
 		}
@@ -770,204 +741,43 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		if (has_power && has_nonpower)
 		{
 			junc->power_crossing = true;
+			Net_JunctionInfo_t * only_power = CloneJunction(junc);
+			new_juncs.push_back(only_power);		
+			
+			for (vector<Net_ChainInfo_t *>::iterator pl = power_lines.begin(); pl != power_lines.end(); ++pl)
+			{
+				MigrateChain(*pl, junc, only_power);
+			}
+			
 			++total_power_crossings;
 		}
-
-			Net_JunctionInfo_t * 			street_junc = NULL;
-			Net_JunctionInfo_t * 			ramp_junc = NULL;
-			Net_JunctionInfo_t * 			train_junc = NULL;
-			vector<Net_JunctionInfo_t *>	highway_juncs;
-
-		// STEP 2 - STREETS
-		// Build a new layer with all city streets...this is pretty easy - they all just go together.
-		if (!streets.empty())
+		
+		map<int, int>	layer_map;
+		int best = 0;
+		for(Net_ChainInfoSet::iterator chain = junc->chains.begin(); chain != junc->chains.end(); ++chain)
 		{
-			street_junc = CloneJunction(junc);
-			cloned_junctions.push_back(street_junc);
-			new_juncs.insert(street_junc);
-			int street_level = occupied.GetGoodSlot(use_Street, !street_bridge);
-			occupied.UseSlot(use_Street, street_level);
-			street_junc->location.z += (5.0 * street_level);
-			street_junc->agl = 5.0 * street_level;
-
-			for (vector<Net_ChainInfo_t *>::iterator street = streets.begin(); street != streets.end(); ++street)
-			{
-				MigrateChain(*street, junc, street_junc);
-			}
+			int l = junc->GetLayerForChain(*chain);
+			int c = ++layer_map[l];
+			if (c >= 2 && l > best)
+				best = l;
 		}
-
-		// STEP 3 - TRAINS
-		// Build a new layer with all trains - similar to city streets.
-		if (!trains.empty())
+		
+		
+		
+		for(Net_ChainInfoSet::iterator chain = junc->chains.begin(); chain != junc->chains.end(); ++chain)		
 		{
-			train_junc = CloneJunction(junc);
-			cloned_junctions.push_back(train_junc);
-			new_juncs.insert(train_junc);
-			int train_level = occupied.GetGoodSlot(use_Rail, !train_bridge);
-			occupied.UseSlot(use_Rail, train_level);
-			train_junc->location.z += (5.0 * train_level);
-			train_junc->agl = 5.0 * train_level;
-
-			for (vector<Net_ChainInfo_t *>::iterator train = trains.begin(); train != trains.end(); ++train)
-			{
-				MigrateChain(*train, junc, train_junc);
-			}
-		}
-
-		// STEP 4 - HIGHWAYS
-		// Go through each highway pair.  For each highway pair, if neither segment is used, build a new
-		// continuous highway on its own layer.  This tries to build the most continuous, least crossing,
-		// least twisty set of highway layers we can come up with.
-		for (HighwayAngleMap::iterator highway = highways.begin(); highway != highways.end(); ++highway)
-		if (unused_highways.count(highway->second.first) > 0)
-		if (unused_highways.count(highway->second.second) > 0)
-		{
-			bool	highway_bridge = highway->second.first->over_water || highway->second.second->over_water;
-			Net_JunctionInfo_t * highway_junc = CloneJunction(junc);
-			cloned_junctions.push_back(highway_junc);
-			highway_juncs.push_back(highway_junc);
-			new_juncs.insert(highway_junc);
-			int highway_level = occupied.GetGoodSlot(use_Limited, !highway_bridge);
-			occupied.UseSlot(use_Limited, highway_level);
-			highway_junc->location.z += (5.0 * highway_level);
-			highway_junc->agl = 5.0 * highway_level;
-
-			MigrateChain(highway->second.first, junc, highway_junc);
-			MigrateChain(highway->second.second, junc, highway_junc);
-
-			unused_highways.erase(highway->second.first);
-			unused_highways.erase(highway->second.second);
-			used_highways[highway->second.first] = highway_junc;
-			used_highways[highway->second.second] = highway_junc;
-		}
-
-		// Odd highway case - we have a number of highways but some unpaired segment...this happens when for
-		// example we have a Y-split...two of the three parts  of the Y were merged previously...now we have
-		// one extra piece.  We jam it into the junction it would fit best with.
-		for (HighwayAngleMap::iterator highway = highways.begin(); highway != highways.end(); ++highway)
-		if (unused_highways.count(highway->second.first) > 0)
-		{
-			bool	highway_bridge = highway->second.first->over_water;
-			DebugAssert(used_highways.count(highway->second.second) > 0);
-			Net_JunctionInfo_t * highway_junc = used_highways[highway->second.second];
-			// Horrendous case: what if the piece we are merging with is on the ground but we
-			// are a bridge?!?  Rip the layer out and put it on top of the stack.  This is
-			// yucky and leaves the bottom layer open but we don't think this will happen much and
-			// also frankly we don't care.
-			if (highway_junc->agl == 0.0 && highway_bridge)
-			{
-				int highway_level = occupied.GetGoodSlot(use_Limited, !highway_bridge);
-				occupied.UseSlot(use_Limited, highway_level);
-				highway_junc->location.z = junc->location.z + (5.0 * highway_level);
-				highway_junc->agl = 5.0 * highway_level;
-			}
-
-			MigrateChain(highway->second.first, junc, highway_junc);
-
-			unused_highways.erase(highway->second.first);
-			used_highways[highway->second.first] = highway_junc;
-		}
-
-		// Straggler case - we may have one more highway segment laying around...for example if this junction ends in a highway turning
-		// into a city street or just ending.  Make sure that (1) we never have TWO stragglers - they should have been jammed together into
-		// a continuous highway and (2) if we have a straggler, that we didn't have highway pairs.
-		DebugAssert(unused_highways.size() < 2);
-		DebugAssert(highways.empty() || unused_highways.empty());
-		for (Net_ChainInfoSet::iterator straggler = unused_highways.begin(); straggler != unused_highways.end(); ++straggler)
-		{
-			// Either make a new junction or recycle the street junction.  Only use the street junction if:
-			// (1) there is a street junction
-			// (2) there are NO exit ramps here
-			// (3) the street's elevation matches the bridging we need for this bridge.
-			bool	highway_bridge = (*straggler)->over_water;
-			Net_JunctionInfo_t * highway_junc = NULL;
-			if (street_junc != NULL && (highway_bridge == (street_junc->agl != 0.0)))
-			{
-				highway_junc = street_junc;
-			} else {
-				highway_junc = CloneJunction(junc);
-				cloned_junctions.push_back(highway_junc);
-				highway_juncs.push_back(highway_junc);
-				new_juncs.insert(highway_junc);
-				int highway_level = occupied.GetGoodSlot(use_Limited, !highway_bridge);
-				occupied.UseSlot(use_Limited, highway_level);
-				highway_junc->location.z += (5.0 * highway_level);
-				highway_junc->agl = 5.0 * highway_level;
-			}
-
-			MigrateChain(*straggler, junc, highway_junc);
-		}
-
-		// STEP 5 - RAMPS
-		// Ramps then just have to be attached to, well, whatever we can find.  First we'll try all highways with a nice
-		// merge angle, then city streets, then any highway we have.  If all that fails, we'll have to make up a junction.
-
-		for (vector<Net_ChainInfo_t *>::iterator ramp = ramps.begin(); ramp != ramps.end(); ++ramp)
-		{
-			double 				 best_angle = 0.0;
-			Net_JunctionInfo_t * best_junc = NULL;
-			Vector2				 ramp_vec = (*ramp)->vector_to_junc_flat(junc);
-			ramp_vec.normalize();
-			for (vector<Net_JunctionInfo_t *>::iterator h_junc = highway_juncs.begin(); h_junc != highway_juncs.end(); ++h_junc)
-			{
-				for (Net_ChainInfoSet::iterator j_chain = (*h_junc)->chains.begin(); j_chain != (*h_junc)->chains.end(); ++j_chain)
-				{
-					Vector2	chain_vec = (*j_chain)->vector_to_junc_flat(junc);
-					chain_vec.normalize();
-					double dot = fabs(chain_vec.dot(ramp_vec));
-					if (dot >= best_angle)
-					{
-						best_junc = *h_junc;
-						best_angle = dot;
-					}
-				}
-			}
-
-			if (best_junc == NULL && street_junc == NULL)
-			{
-				if (ramp_junc == NULL)
-				{
-					ramp_junc = CloneJunction(junc);
-					cloned_junctions.push_back(ramp_junc);
-					new_juncs.insert(ramp_junc);
-					int ramp_level = occupied.GetGoodSlot(use_Limited, true);
-					occupied.UseSlot(use_Limited, ramp_level);
-					ramp_junc->location.z += (5.0 * ramp_level);
-					ramp_junc->agl = 5.0 * ramp_level;
-				}
-				MigrateChain(*ramp, junc, ramp_junc);
-			} else {
-
-				if (best_angle >= 0.85 || street_junc == NULL)
-				{
-					MigrateChain(*ramp, junc, best_junc);
-				} else {
-					MigrateChain(*ramp, junc, street_junc);
-				}
-			}
-		}
-
-		// STEP 6 - CLEANUP
-		// Finally we will check to see whether we really have a vertically-controlled situation, e.g. bridges over each other.
-		// If not we can vertically unlock our junctions, which will allow the road smoother to later do a better job of bringing
-		// highways gently up and down.
-
-		int total_juncs = 0;
-		for (vector<Net_JunctionInfo_t *>::iterator all_juncs = cloned_junctions.begin(); all_juncs != cloned_junctions.end(); ++all_juncs)
-		{
-			if (!(*all_juncs)->chains.empty())	++total_juncs;
-		}
-
-		if (total_juncs < 2)
-		for (vector<Net_JunctionInfo_t *>::iterator all_juncs = cloned_junctions.begin(); all_juncs != cloned_junctions.end(); ++all_juncs)
-		{
-			(*all_juncs)->vertical_locked = false;
+			int l = junc->GetLayerForChain(*chain);
+			if(layer_map[l] < 2)
+				junc->SetLayerForChain(*chain, best);
 		}
 	}
-
 	ioJunctions.insert(new_juncs.begin(),new_juncs.end());
 	printf("total_power_crossings=%d\n",total_power_crossings);
 }
+
+
+
+
 
 // Given a chain, go from origin along chain at least scan_dist or until we hit a locked or otherwise screwy
 // vertex.
@@ -1046,13 +856,13 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 
 		double	agl1 = -1.0;
 		double	agl2 = -1.0;
-		if ((*chain)->start_junction->vertical_locked)	agl1 = (*chain)->start_junction->agl;
-		if ((*chain)->end_junction->vertical_locked)	agl2 = (*chain)->end_junction->agl;
+//		if ((*chain)->start_junction->vertical_locked)	agl1 = (*chain)->start_junction->agl;
+//		if ((*chain)->end_junction->vertical_locked)	agl2 = (*chain)->end_junction->agl;
 
-		int	bridge_rule = FindBridgeRule((*chain)->entity_type, total_len, smallest_len, biggest_len, (*chain)->seg_count(), sharpest_turn, agl1, agl2);
+		int	bridge_rule = FindBridgeRule((*chain)->rep_type, total_len, smallest_len, biggest_len, (*chain)->seg_count(), sharpest_turn, agl1, agl2);
 		if (bridge_rule == -1)
 		{
-			(*chain)->export_type = -1;
+			(*chain)->export_type = -1;			
 
 		} else {
 
@@ -1237,6 +1047,7 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 			}
 
 			(*chain)->export_type = gBridgeInfo[bridge_rule].export_type;
+			(*chain)->draped = false;
 		}
 	}
 }
@@ -1258,11 +1069,11 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		bool	nearby_locked = false;
 		for (chain = (*junc)->chains.begin(); chain != (*junc)->chains.end(); ++chain)
 		{
-			DebugAssert((*chain)->over_water == false || (*chain)->export_type == -1);	// If it's water, it better be hidden or locked down
+			DebugAssert(((*chain))->over_water == false || ((*chain))->export_type == -1);	// If it's water, it better be hidden or locked down
 
-			if ((*chain)->other_junc(*junc)->vertical_locked)
+			if (((*chain))->other_junc(*junc)->vertical_locked)
 			{
-				shortest_len = min(shortest_len, (*chain)->meter_length(0, (*chain)->seg_count()));
+				shortest_len = min(shortest_len, ((*chain))->meter_length(0, ((*chain))->seg_count()));
 				nearby_locked = true;
 			}
 		}
@@ -1286,18 +1097,18 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 
 			for (chain = current->chains.begin(); chain != current->chains.end(); ++chain)
 			{
-				Net_JunctionInfo_t * other = (*chain)->other_junc(current);
+				Net_JunctionInfo_t * other = ((*chain))->other_junc(current);
 				if (other->vertical_locked)
 				{
-					double seg_len = (*chain)->meter_length(0, (*chain)->seg_count());
+					double seg_len = ((*chain))->meter_length(0, ((*chain))->seg_count());
 
-					double var = seg_len * gNetEntities[(*chain)->entity_type].max_slope;
+					double var = seg_len * gNetReps[((*chain))->rep_type].max_slope;
 
 					min_msl = max(min_msl, other->location.z - var);
 					max_msl = min(max_msl, other->location.z + var);
 					max_agl = max(max_agl,  other->agl);
 				} else {
-					double len = current_lock_dist + (*chain)->meter_length(0, (*chain)->seg_count());
+					double len = current_lock_dist + ((*chain))->meter_length(0, ((*chain))->seg_count());
 					to_process.insert(q_type::value_type(len, other));
 				}
 			}
@@ -1322,7 +1133,7 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 	It is also disabled - we don't use shape points for on-land anymore, we use a ton of junctions!
 
 	for (chain = ioChains.begin(); chain != ioChains.end(); ++chain)
-	if (gNetEntities[(*chain)->entity_type].use_mode != use_Power)
+	if (gNetReps[(*chain)->rep_type].use_mode != use_Power)
 	{
 		Net_JunctionInfo_t * start = (*chain)->start_junction;
 		Net_JunctionInfo_t * end = (*chain)->end_junction;
@@ -1358,6 +1169,7 @@ void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCha
 	for (Net_ChainInfoSet::iterator chain = ioChains.begin(); chain != ioChains.end(); ++chain)
 	if ((*chain)->export_type == 0)
 	{
+		/*
 		bool above_ground = false;
 		for (int n = 0; n < (*chain)->pt_count(); ++n)
 		{
@@ -1367,8 +1179,10 @@ void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCha
 				break;
 			}
 		}
-
-		(*chain)->export_type = above_ground ?  gNetEntities[(*chain)->entity_type].export_type_overpass : gNetEntities[(*chain)->entity_type].export_type_normal;
+		
+		(*chain)->export_type = above_ground ?  gNetReps[(*chain)->rep_type].export_type_overpass : gNetReps[(*chain)->rep_type].export_type_normal;
+		*/
+		(*chain)->export_type = gNetReps[(*chain)->rep_type].export_type_draped;
 	}
 }
 
@@ -1399,7 +1213,7 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 //	gMeshPoints.clear();
 
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
-	if (gNetEntities[(*chainIter)->entity_type].use_mode == use_Power)
+	if (gNetReps[(*chainIter)->rep_type].use_mode == use_Power)
 	{
 		Net_ChainInfo_t * chain = *chainIter;
 

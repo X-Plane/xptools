@@ -33,7 +33,11 @@
 #include "SceneryPackages.h"
 
 #include "MapDefs.h"
+#include "MapAlgs.h"
 #include "GISUtils.h"
+#include "MemFileUtils.h"
+#include "XESIO.h"
+#include "MapDefs.h"
 
 static double calc_water_area(void)
 {
@@ -233,6 +237,127 @@ int DoMakeCoverage(const vector<const char *>& args)
 	return 0;
 }
 
+int DoMakeWetCoverage(const vector<const char *>& args)
+{
+	char buf[1024];
+	const char * dir = args[0];
+	const char * fname = args[1];
+	FILE * fi = fopen(fname, "wb");
+	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 1; }
+	else {
+		printf("Computing coverage for %d,%d -> %d,%d at path '%s'\n", gMapWest, gMapSouth, gMapEast, gMapNorth,dir);
+		int c = 0;
+		char dirchar = APL ? '/' : '\\';
+		for (int y = gMapSouth; y < gMapNorth; ++y)
+		for (int x = gMapWest; x < gMapEast; ++x)
+		{
+			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d.xes", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x);
+
+			MFMemFile * mf = MemFile_Open(buf);
+			if(mf == NULL)
+			{
+				fputc(255,fi);				
+			}
+			else 
+			{
+				Pmwx		a_map;
+
+				ReadXESFile(mf,&a_map, NULL, NULL, NULL, gProgress);
+				
+				if(!a_map.is_valid())
+				{
+					fputc(254,fi);
+				}
+				else
+				{					
+					double a = 0.0f;
+					for(Pmwx::Face_iterator f = a_map.faces_begin(); f != a_map.faces_end(); ++f)
+					if(!f->is_unbounded())
+					if(f->data().IsWater())
+						a += GetMapFaceAreaDegrees(f);
+					
+					fputc(a * 100.0, fi);
+					printf("          %d percent.\n", (int) (a * 100.0));
+				}
+
+				MemFile_Close(mf);
+			}
+		}
+		fclose(fi);
+		printf("Found %d files.\n", c);
+	}
+	return 0;
+}
+
+int DoMakeLUCoverage(const vector<const char *>& args)
+{
+	const char * dir = args[0];
+	const char * fname = args[2];
+	float lu = atoi(args[1]);
+	FILE * fi = fopen(fname, "wb");
+	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 1; }
+	else {
+		printf("Computing coverage for %d,%d -> %d,%d at path '%s'\n", gMapWest, gMapSouth, gMapEast, gMapNorth,dir);
+		int c = 0;
+		char dirchar = APL ? '/' : '\\';
+		for (int y = gMapSouth; y < gMapNorth; ++y)
+		for (int x = gMapWest; x < gMapEast; ++x)
+		{
+			char buf[2048];
+			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d.tif", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x);
+
+			DEMGeo	g;
+			if(!ExtractGeoTiff(g,buf))
+			{
+				fputc(255,fi);				
+			}
+			else 
+			{
+				int t = g.mWidth * g.mHeight, c = 0;
+				for(int yy = 0; yy < g.mHeight; ++yy)
+				for(int xx = 0; xx < g.mWidth; ++xx)
+				if (g.get(xx,yy) == lu) ++c;
+				
+				fputc(254.0 * (float) c / (float) t,fi);
+			}			
+		}
+		fclose(fi);
+		printf("Found %d files.\n", c);
+	}
+	return 0;
+	
+}
+
+int InitFromLU(const vector<const char *>& args)
+{
+	MFMemFile * mf = MemFile_Open(args[0]);
+	if(mf == NULL) return 1;
+	
+	Curve_2	c1(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth)),0);
+	Curve_2	c2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth)),0);
+	Curve_2	c3(Segment_2(Point_2(gMapEast,gMapNorth),Point_2(gMapWest,gMapNorth)),0);
+	Curve_2	c4(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapWest,gMapSouth)),0);
+	vector<Curve_2>	c;
+	c.push_back(c1);
+	c.push_back(c2);
+	c.push_back(c3);
+	c.push_back(c4);
+	gMap.clear();
+	CGAL::insert_curves(gMap, c.begin(),c.end());
+
+	const unsigned char * mem = (const unsigned char * ) MemFile_GetBegin(mf);
+
+	int w = mem[360*(gMapSouth+90)+(gMapWest+180)];
+	printf("Tile is %d%% wet.\n", w * 100 / 254);
+	int lu = (w > 200) ? terrain_Water : NO_VALUE;
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+		f->data().mTerrainType = lu;
+	
+	MemFile_Close(mf);
+	return 0;
+}
+
 
 #define make_terrain_package_HELP \
 "This command creates a scenery package with the library, ter, pol and png files based on the\n"\
@@ -265,6 +390,9 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "" },
 { "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "" },
+{ "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "" },
+{ "-lucoverage", 3, 3, DoMakeLUCoverage,			"dir output.", "" },
+{ "-luinit", 1, 1, InitFromLU,					"int from landuse." ,"" },
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },

@@ -282,19 +282,19 @@ static int	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 	double best_width = 0.0;
 	for (GISNetworkSegmentVector::const_iterator i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
 	{
-		if (gNetEntities[i->mRepType].width > best_width)
+		if (gNetReps[i->mRepType].width > best_width)
 		{
 			best_type = i->mRepType;
-			best_width = gNetEntities[i->mRepType].width;
+			best_width = gNetReps[i->mRepType].width;
 		}
 	}
 
 	for (GISNetworkSegmentVector::const_iterator i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
 	{
-		if (gNetEntities[i->mRepType].width > best_width)
+		if (gNetReps[i->mRepType].width > best_width)
 		{
 			best_type = i->mRepType;
-			best_width = gNetEntities[i->mRepType].width;
+			best_width = gNetReps[i->mRepType].width;
 		}
 	}
 	return best_type;
@@ -822,8 +822,8 @@ bool	SubdivideFace(
 	for (n = 0; n < 4; ++n)
 	{
 		Point_2	middle = translator.Reverse(CGAL::midpoint(perimeter.edge(n).source(), perimeter.edge(n).target()));
-		road_widths[n] = (gNetEntities[road_types[n]].width)+2.0 + (gNetEntities[road_types[n]].pad);
-		road_densities[n] = gNetEntities[road_types[n]].building_percent;
+		road_widths[n] = (gNetReps[road_types[n]].width)+2.0 + (gNetReps[road_types[n]].pad);
+		road_densities[n] = gNetReps[road_types[n]].building_percent;
 	}
 
 	// Inset by the road width.
@@ -1706,7 +1706,7 @@ double	GetInsetForEdgeMeters(Halfedge_const_handle inEdge)
 
 	double width = (is_coast && !is_edge_of_map) ? 30.0 : 5.0;
 	if (best_road != NO_VALUE)
-		width = max(width, (double) gNetEntities[best_road].width + gNetEntities[best_road].pad);
+		width = max(width, (double) gNetReps[best_road].width + gNetReps[best_road].pad);
 	return width;
 }
 

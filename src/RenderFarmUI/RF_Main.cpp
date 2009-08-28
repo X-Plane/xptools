@@ -517,7 +517,7 @@ int main(int argc, char * argv[])
 	map_view->Start(0.05);
 
 	map_view->TakeFocus();
-
+	
 	app.Run();
 
 	t->Stop();

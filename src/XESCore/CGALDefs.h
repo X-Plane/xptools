@@ -54,6 +54,7 @@ typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> >  NT;
 // Use the filtered kernel to answer predicates rapidly in easy cases.  This makes a big difference in mesh operations, since they 
 // tend to be predicate-bound.
 typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
+//typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> > > > FastKernel;
 
 
 // This is very, very dangerous.  Basically this creates the illusion of a well-defined "sqrt" function for our numeric type.  Why is that dangerous?

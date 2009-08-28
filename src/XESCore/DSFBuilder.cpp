@@ -1565,12 +1565,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		{
 			TIMER(BuildNetworkTopology)
-			BuildNetworkTopology(inVectorMap, junctions, chains);
+			BuildNetworkTopology(inVectorMap, inHiresMesh, junctions, chains);
 		}
 		{
 			TIMER(DrapeRoads)
 			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;
-			DrapeRoads(junctions, chains, inHiresMesh);
+//			DrapeRoads(junctions, chains, inHiresMesh, false);
+//			DrapeRoads(junctions, chains, inHiresMesh, true);
 		}
 		{
 			TIMER(PromoteShapePoints)
@@ -1578,7 +1579,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		{
 			TIMER(VerticalPartitionRoads)
-			VerticalPartitionRoads(junctions, chains);
+//			VerticalPartitionRoads(junctions, chains);
+			VerticalPartitionOnlyPower(junctions, chains);
 		}
 		{
 			TIMER(VerticalBuildBridges)
@@ -1586,7 +1588,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		{
 			TIMER(InterpolateRoadHeights)
-			InterpolateRoadHeights(junctions, chains);
+//			InterpolateRoadHeights(junctions, chains);
 		}
 		{
 			TIMER(AssignExportTypes)
@@ -1616,9 +1618,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			coords3[0] = (*ci)->start_junction->location.x;
 			coords3[1] = (*ci)->start_junction->location.y;
-			coords3[2] = (*ci)->start_junction->location.z;
+			if((*ci)->draped)
+				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+			else
+				coords3[2] = (*ci)->start_junction->location.z;
+
 			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 				printf("WARNING: coordinate out of range.\n");
+
+			DebugAssert(junctions.count((*ci)->start_junction));
+			DebugAssert(((*ci)->start_junction->index) != 0xDEADBEEF);
+			DebugAssert(junctions.count((*ci)->end_junction));
+			DebugAssert(((*ci)->end_junction->index) != 0xDEADBEEF);
 
 			cbs.BeginSegment_f(
 							0,
@@ -1633,7 +1644,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			{
 				coords3[0] = shapePoint->x;
 				coords3[1] = shapePoint->y;
-				coords3[2] = shapePoint->z;
+				if((*ci)->draped)
+					coords3[2] = 0.0f;
+				else
+					coords3[2] = shapePoint->z;
+				
 				if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
@@ -1643,9 +1658,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			coords3[0] = (*ci)->end_junction->location.x;
 			coords3[1] = (*ci)->end_junction->location.y;
-			coords3[2] = (*ci)->end_junction->location.z;
+			if((*ci)->draped)
+				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+			else 
+				coords3[2] = (*ci)->end_junction->location.z;
 			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 				printf("WARNING: coordinate out of range.\n");
+
 			cbs.EndSegment_f(
 					(*ci)->end_junction->index,
 					coords3,

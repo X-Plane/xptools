@@ -154,6 +154,18 @@ void dump_geos_recursive(const geos::geom::Geometry * g, GISPolyObjPlacementVect
 
 */
 
+const char * card_dir_str(Pmwx::Halfedge_handle e)
+{
+	Point2 s (cgal2ben(e->source()->point()));
+	Point2 t (cgal2ben(e->target()->point()));
+	Vector2 v(s,t);
+	v.normalize();
+	double d = atan2(v.dx,v.dy) * 180.0 / PI;
+	static char buf[100];
+	sprintf(buf,"%d", (int) d);
+	return buf;
+}
+
 template <typename __InputIterator, typename  __Ref>
 void ApplyRange(__InputIterator begin, __InputIterator end, void (* func)(typename __InputIterator::value_type, __Ref), __Ref ref)
 {
@@ -513,13 +525,17 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 	{
 		double len = GetMapEdgeLengthMeters(*gEdgeSelection.begin());
 		n += sprintf(buf+n, "%.1f m ", len);
+		if(!(*gEdgeSelection.begin())->data().mSegments.empty())
+			n += sprintf(buf+n,"%s: ", card_dir_str((*gEdgeSelection.begin())));
 		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->data().mSegments.end(); ++seg)
 		{
-			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
+			n += sprintf(buf+n, "%s->%s (%d)", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight);
 		}
+		if(!(*gEdgeSelection.begin())->twin()->data().mSegments.empty())
+			n += sprintf(buf+n,"%s: ", card_dir_str((*gEdgeSelection.begin())->twin()));
 		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->twin()->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->twin()->data().mSegments.end(); ++seg)
 		{
-			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
+			n += sprintf(buf+n, "%s->%s (%d) ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight);
 		}
 
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->data().mParams.begin(); p != (*gEdgeSelection.begin())->data().mParams.end(); ++p)

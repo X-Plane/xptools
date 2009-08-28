@@ -188,7 +188,7 @@ void	BuildFakeLib(const char * dir)
 	strcat(fbuf, "gen_roads.net");
 	FILE * rds = fopen(fbuf, "w");
 	fprintf(rds, "A\n800\nROADS\n\nTEXTURE 3 road.bmp\nTEXTURE_LIT road_LIT.bmp\n\n");
-	for (NetEntityInfoTable::iterator net = gNetEntities.begin(); net != gNetEntities.end(); ++net)
+	for (NetRepInfoTable::iterator net = gNetReps.begin(); net != gNetReps.end(); ++net)
 	{
 //		bool bridge = false;
 //		for (Road2NetInfoTable::iterator feat = gRoad2Net.begin(); feat != gRoad2Net.end(); ++feat)

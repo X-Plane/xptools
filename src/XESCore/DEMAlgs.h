@@ -69,7 +69,7 @@ void	DEMMakeDifferential(const DEMGeo& inSrc, DEMGeo& dst);
 
 void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg);
 void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg);
-void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, AptVector& ioApts, AptIndex& ioAptIndex, ProgressFunc inProg);
+void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, AptVector& ioApts, AptIndex& ioAptIndex, int do_translate, ProgressFunc inProg);
 
 void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles);
 

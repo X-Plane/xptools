@@ -46,24 +46,35 @@ struct	Net_JunctionInfo_t {
 	int								index;
 	Point3							location;					// Locations are in absolute MSL space -
 	double							agl;						// agl of point over ground
-	int								power_crossing;				// Crossing of powerline with a road??
+	int								power_crossing;				// This junction crosses a road.  (Used for all junction types.)
 	Net_ChainInfoSet				chains;
 	bool							vertical_locked;			// Is this loc's vertical pre-determined already?  (If so, don't mess with it!)
 
 	double							GetMatchingAngle(Net_ChainInfo_t * chain, Net_ChainInfo_t * match);
 	Net_ChainInfo_t *				get_other(Net_ChainInfo_t * me);
+	int								GetLayerForChain(Net_ChainInfo_t * me);
+	void							SetLayerForChain(Net_ChainInfo_t * me, int l);
+	
+	#if DEV
+		Net_JunctionInfo_t() {
+			index = 0xDEADBEEF;
+		}
+	#endif
 };
 
 struct	Net_ChainInfo_t {
 	Net_JunctionInfo_t *			start_junction;				// Start and end junction ptrs
 	Net_JunctionInfo_t *			end_junction;
+	int								start_layer;
+	int								end_layer;					
 
-	int								entity_type;				// A specific road type
-	int								export_type;				// The type x-plane sees
+	int								rep_type;					// A specific road type (a RF enum)
+	int								export_type;				// The DSF sub-type x-plane sees
 	bool							over_water;					// Is this segment over water?
+	bool							draped;
 	vector<Point3>					shape;						// Intermediate shaping pts - 3d loc and
 	vector<double>					agl;						// AGL height
-	vector<int>						power_crossing;				// Does a powerline cross a road here?
+	vector<int>						power_crossing;				// Does a road cross this powerline at this shape point (or vice versa)?
 
 	void							reverse(void);
 	int								pt_count(void);				// Points and segments are identified by index numbers - 0 for the start, then increasing.
@@ -84,16 +95,16 @@ struct	Net_ChainInfo_t {
 
 
 
-void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains);
+void	BuildNetworkTopology(Pmwx& inMap, CDT& inMesh, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains);
 void	CleanupNetworkTopology(Net_JunctionInfoSet& inJunctions, Net_ChainInfoSet& inChains);
 void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChains, bool water_only);
 
 // Given the road network, insert shaping points to make sure we don't go underground.
-void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CDT& inMesh);
+void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CDT& inMesh, bool only_power_lines);
 // Turn shape points into nodes
 void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
-// Split up junctions vertically.
-void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
+// Split power lines from roads
+void	VerticalPartitionOnlyPower(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
 // Build vertical bridge sloping
 void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
 // Build in all intermediate road heights
@@ -101,7 +112,7 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 // Assign actual export types to all roadways.
 void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
 // Delete any chain whose export type is -1
-void DeleteBlankChains(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
+void	DeleteBlankChains(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains);
 // Minimize powerline segmnets!
 void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, double ideal_dist_m, double max_dip);
 

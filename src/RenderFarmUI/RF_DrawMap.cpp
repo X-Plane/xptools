@@ -219,7 +219,9 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 	} else {
 //		if (beach)
 //			SetColor(color,0.8, 0.6, 0.2);
-		 if (wet)
+		 if (wet && border)
+			SetColor(color,0.5, 0.0, 1.0);
+		 else if (wet)
 			SetColor(color,0.1, 0.3, 1.0);
 		else if (terrainChange)
 			SetColor(color,0.7, 0.7, 0.7);
@@ -227,6 +229,8 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 			SetColor(color,0.0, 0.0, 1.0);
 		else if (dryriver)
 			SetColor(color, 0.6, 0.6, 0.3);
+		else if (border)
+			SetColor(color,1.0, 0.0, 1.0);
 		else
 			SetColor(color,0.3, 0.3, 0.3);
 	}

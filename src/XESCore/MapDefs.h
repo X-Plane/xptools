@@ -229,6 +229,11 @@ public:
 	int				mRepType;
 	double			mSourceHeight;
 	double			mTargetHeight;
+	bool operator==(const GISNetworkSegment_t& rhs) const {
+		return  mFeatType == rhs.mFeatType &&
+				mRepType == rhs.mRepType &&
+				mSourceHeight == rhs.mSourceHeight &&
+				mTargetHeight == rhs.mTargetHeight; }
 };
 
 

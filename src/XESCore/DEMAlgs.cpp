@@ -1062,6 +1062,7 @@ void	DeriveDEMs(
 			DEMGeoMap& 		ioDEMs,
 			AptVector&		ioApts,
 			AptIndex&		ioAptIndex,
+			int				do_translate,
 			ProgressFunc 	inProg)
 {
 	int x, y;
@@ -1069,6 +1070,7 @@ void	DeriveDEMs(
 	{
 		ioDEMs[dem_OrigLandUse] = ioDEMs[dem_LandUse];
 		DEMGeo& lu_t = ioDEMs[dem_LandUse];
+		if(do_translate)
 		for (int y = 0; y < lu_t.mHeight; ++y)
 		for (int x = 0; x < lu_t.mWidth; ++x)
 		{

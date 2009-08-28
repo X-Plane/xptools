@@ -27,6 +27,10 @@
 #include "MapPolygon.h"
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
+#include "GISTool_Globals.h"
+#include "MapTopology.h"
+
+#include <CGAL/sweep_line_2_algorithms.h>
 
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
@@ -34,6 +38,95 @@
 #define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
 
 // Shape to feature
+
+
+template <typename __InputIterator, typename __OutputIterator, typename __Functor>
+void douglas_peuker(
+			__InputIterator			start,
+			__InputIterator			stop,
+			__OutputIterator		out,
+			double					epsi_2,
+			__Functor&				lock_check)
+{
+	if(start == stop)
+		return;
+	if(*start == *stop)
+	{
+		int n = stop - start;
+		if (n == 1) 
+			return;
+		
+		__InputIterator p(start);
+		++p;
+		while(p < stop)
+		{
+			if(lock_check(*p))
+			{
+				douglas_peuker(start,p,out,epsi_2,lock_check);
+				douglas_peuker(p,stop,out,epsi_2,lock_check);
+				return;
+			}
+			++p;
+		}
+			
+		__InputIterator mid(start);
+		advance(mid,n/2);
+		douglas_peuker(start,mid,out,epsi_2,lock_check);
+		douglas_peuker(mid,stop,out,epsi_2,lock_check);
+		return;		
+	}
+	
+	
+	Segment2	s(*start, *stop);
+	__InputIterator p(start);
+	++p;
+	double max_d=0.0;
+	__InputIterator worst(stop);
+	while(p < stop)
+	{
+		if(lock_check(*p))
+		{
+			douglas_peuker(start,p,out,epsi_2,lock_check);
+			douglas_peuker(p,stop,out,epsi_2,lock_check);
+			return;
+		}
+		double d = s.squared_distance(*p);
+		if(d > max_d)
+		{
+			max_d = d;
+			worst = p;
+		}
+		++p;
+	}
+	if(max_d >= epsi_2)
+	{
+		douglas_peuker(start,worst,out,epsi_2,lock_check);
+		douglas_peuker(worst,stop,out,epsi_2,lock_check);
+	}
+	else
+	{
+		*out++ = *start;
+	}
+}
+
+class node_checker {
+public:
+	node_checker(map<Point2,int,lesser_y_then_x>& nodes) : nodes_(nodes) { }
+	
+	bool operator()(const Point2& p) const {
+		return nodes_.count(p);
+	}
+	map<Point2,int,lesser_y_then_x>& nodes_;
+};
+
+
+
+template <class T>
+void nuke_container(T& v)
+{
+	T e;
+	v.swap(e);
+}
 
 static double s_crop[4] = { -180.0, -90.0, 180.0, 90.0 };
 
@@ -46,6 +139,10 @@ struct shape_pattern_t {
 typedef vector<shape_pattern_t> shape_pattern_vector;
 
 static shape_pattern_vector	sShapeRules;
+static shape_pattern_vector sLineReverse;
+static shape_pattern_vector sLineBridge;
+static string				sLayerTag;
+static int					sLayerID;
 
 bool shape_in_bounds(SHPObject * obj)
 {
@@ -56,11 +153,18 @@ bool shape_in_bounds(SHPObject * obj)
 								return true;
 }
 
-
-
-static int want_this_thing(DBFHandle db, int shape_id)
+inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2)
 {
-	for(shape_pattern_vector::iterator r = sShapeRules.begin(); r != sShapeRules.end(); ++r)
+	for(int n = 0; n < p.size(); ++n)
+	{
+		gMeshLines.push_back(pair<Point2,Point3>(cgal2ben(p[n]),c1));
+		gMeshLines.push_back(pair<Point2,Point3>(cgal2ben(p[(n+1)%p.size()]),c2));
+	}
+}
+
+static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vector& rules)
+{
+	for(shape_pattern_vector::const_iterator r = rules.begin(); r != rules.end(); ++r)
 	{
 		bool rule_ok = true;
 
@@ -87,52 +191,113 @@ static int want_this_thing(DBFHandle db, int shape_id)
 
 static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 {
-	if(inTokenLine.size() != 4)
+	if(inTokenLine[0] == "SHAPE_FEATURE" || inTokenLine[0] == "SHAPE_ARC_REVERSE" || inTokenLine[0] == "SHAPE_ARC_BRIDGE")
 	{
-		printf("Bad shape import line.\n");
-		return false;
-	}
-	shape_pattern_t		pat;
+		if((inTokenLine[0] == "SHAPE_FEATURE" && inTokenLine.size() != 4) ||
+		    (inTokenLine[0] != "SHAPE_FEATURE" && inTokenLine.size() != 3))
+		{
+			printf("Bad shape import line.\n");
+			return false;
+		}
+		shape_pattern_t		pat;
 
-	if(!TokenizeEnum(inTokenLine[3], pat.feature, "Bad enum"))
-		return false;
+		if(inTokenLine[0] == "SHAPE_FEATURE")
+		{
+			if(!TokenizeEnum(inTokenLine[3], pat.feature, "Bad enum"))
+				return false;
+		} else 
+			pat.feature = 1;
 
-	string::const_iterator e, s = inTokenLine[1].begin();
-	while(s != inTokenLine[1].end())
-	{
-		e=s;
-		while(e != inTokenLine[1].end() && *e != ',') ++e;
-		pat.columns.push_back(string(s,e));
-		if(e == inTokenLine[1].end())
-			s = e;
+		string::const_iterator e, s = inTokenLine[1].begin();
+		while(s != inTokenLine[1].end())
+		{
+			e=s;
+			while(e != inTokenLine[1].end() && *e != ',') ++e;
+			pat.columns.push_back(string(s,e));
+			if(e == inTokenLine[1].end())
+				s = e;
+			else
+				s = e+1;
+		}
+
+		s = inTokenLine[2].begin();
+		while(s != inTokenLine[2].end())
+		{
+			e=s;
+			while(e != inTokenLine[2].end() && *e != ',') ++e;
+			pat.values.push_back(string(s,e));
+			if(e == inTokenLine[2].end())
+				s = e;
+			else
+				s = e+1;
+		}
+
+		if(pat.values.size() != pat.columns.size())
+		{
+			printf("mismatch in number of columns vs. patterns.\n");
+			return false;
+		}
+		
+		if(inTokenLine[0] == "SHAPE_ARC_REVERSE")
+			sLineReverse.push_back(pat);
+		else if (inTokenLine[0] == "SHAPE_ARC_BRIDGE")
+			sLineBridge.push_back(pat);
 		else
-			s = e+1;
+			sShapeRules.push_back(pat);
+		return true;
 	}
-
-	s = inTokenLine[2].begin();
-	while(s != inTokenLine[2].end())
+	else if (inTokenLine[0] == "ROAD_LAYER_TAG")
 	{
-		e=s;
-		while(e != inTokenLine[2].end() && *e != ',') ++e;
-		pat.values.push_back(string(s,e));
-		if(e == inTokenLine[2].end())
-			s = e;
-		else
-			s = e+1;
+		if(inTokenLine.size() != 2)
+		{
+			printf("Bad shape import line.\n");
+			return false;		
+		}
+		sLayerTag=inTokenLine[1];
+		return true;
 	}
-
-	if(pat.values.size() != pat.columns.size())
-	{
-		printf("mismatch in number of columns vs. patterns.\n");
-		return false;
-	}
-	sShapeRules.push_back(pat);
-	return true;
+	return false;
 }
+
+class toggle_properties_visitor : public MapBFSVisitor<set<int> > {
+public:
+
+	typedef	set<int>	Prop_t;
+
+	const vector<int> *	feature_map;
+
+	virtual	void	initialize_properties(Prop_t& io_properties)
+	{
+		io_properties.clear();
+	}
+	
+	virtual	void	adjust_properties(Pmwx::Halfedge_handle edge, Prop_t& io_properties)
+	{
+		for(EdgeKey_iterator k = edge->curve().data().begin(); k != edge->curve().data().end(); ++k)
+		{
+			int key = *k;
+			if(key >= 0 && key < feature_map->size())
+			{
+				if(io_properties.count(key))	io_properties.erase(key);
+				else							io_properties.insert(key);
+			}
+		}
+	}
+	
+	virtual	void	mark_face(const Prop_t& in_properties, Face_handle face)
+	{
+		face->set_contained(!in_properties.empty());
+		if(!in_properties.empty())
+		{
+			face->data().mTerrainType = (*feature_map)[*(--in_properties.end())];
+		}	
+	}
+};
 
 
 bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], ProgressFunc	inFunc)
 {
+		int		killed = 0, total = 0;
 		int		entity_count;
 		int		shape_type;
 		double	bounds_lo[4], bounds_hi[4];
@@ -144,9 +309,34 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	if(first_time)
 	{
 		RegisterLineHandler("SHAPE_FEATURE", ShapeLineImporter, NULL);
+		RegisterLineHandler("ROAD_LAYER_TAG",ShapeLineImporter, NULL);
+		RegisterLineHandler("SHAPE_ARC_REVERSE",ShapeLineImporter, NULL);
+		RegisterLineHandler("SHAPE_ARC_BRIDGE",ShapeLineImporter, NULL);
 		first_time = false;
 	}
 
+	SHPHandle file =  SHPOpen(in_file, "rb");
+	if(!file) 
+		return false;
+
+	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
+	if(flags & shp_Use_Crop)
+	{
+		if(bounds_lo[0] > bounds[2] ||
+		   bounds_hi[0] < bounds[0] ||
+		   bounds_lo[1] > bounds[3] ||
+		   bounds_hi[1] < bounds[1])
+		{
+			SHPClose(file);
+			return true;
+		}
+	}
+
+	if((flags & shp_Overlay) == 0)	// If we are not overlaying or err checking, nuke the map now.  In _some_ modes (road curve insert,
+		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
+
+		vector<Curve_2>							curves;
+	
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
 		feat = LookupToken(feature_desc);
@@ -154,28 +344,24 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	if(flags & shp_Mode_Map)
 	{
 		sShapeRules.clear();
+		sLineReverse.clear();
+		sLineBridge.clear();
+		sLayerTag.clear();
 		if (!LoadConfigFile(feature_desc))
 		{
 			printf("Could not load shape mapping file %s\n", feature_desc);
+			SHPClose(file);
 			return false;
 		}
 	}
-
-	if((flags & shp_Overlay) == 0)					// If we are not overlaying, nuke the map now.  In _some_ modes (road curve insert,
-		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
-
-		list<Polygon_2>	boundaries, holes;
-		Polygon_set_2	poly_set;
-		vector<Curve_2>	curves;
-
-	SHPHandle file =  SHPOpen(in_file, "rb");
-	if(!file) return false;
+	
 	DBFHandle db = NULL;
 	if(flags & shp_Mode_Map)
 	{
 		db = DBFOpen(in_file,"rb");
 		if(db == NULL)
 		{
+			printf("Could not open shape DB file.n\n");
 			SHPClose(file);
 			return false;
 		}
@@ -183,17 +369,24 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		for(shape_pattern_vector::iterator r = sShapeRules.begin(); r != sShapeRules.end(); ++r)
 		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
 			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+
+		for(shape_pattern_vector::iterator r = sLineReverse.begin(); r != sLineReverse.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+
+		for(shape_pattern_vector::iterator r = sLineBridge.begin(); r != sLineBridge.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+		
+		
+		if(!sLayerTag.empty())
+			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
+
 	}
 
-	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
 
-	switch(shape_type) {
-	case SHPT_ARC:
-	case SHPT_ARCZ:
-	case SHPT_ARCM:
-		for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
-			e->curve().set_data(-1);
-	}
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+		e->curve().set_data(-1);
 
 	bounds[0] = bounds_lo[0];
 	bounds[1] = bounds_lo[1];
@@ -203,8 +396,48 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
 
-	vector<int>	feature_map;
+	vector<int>	feature_map, feature_rev, feature_lay;
 	feature_map.resize(entity_count,NO_VALUE);
+	feature_rev.resize(entity_count,0);
+	feature_lay.resize(entity_count,0);
+	
+	/************************************************************************************************************************************
+	 * MAIN SHAPE READING LOOP
+	 ************************************************************************************************************************************/
+
+	map<Point2,int,lesser_y_then_x>	nodes;
+	if (shape_type == SHPT_ARC ||
+		shape_type == SHPT_ARCZ ||
+		shape_type == SHPT_ARCM)
+	for(int n = 0; n < entity_count; ++n)
+	{
+		SHPObject * obj = SHPReadObject(file, n);
+		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != NO_VALUE))
+		for (int part = 0; part < obj->nParts; ++part)
+		{
+			int start_idx = obj->panPartStart[part];
+			int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+			for (int i = start_idx; i < stop_idx; ++i)
+			{
+				Point2 pt(obj->padfX[i],obj->padfY[i]);
+				nodes[pt]++;
+			}
+		}
+		SHPDestroyObject(obj);
+	}
+	for(map<Point2,int,lesser_y_then_x>::iterator i = nodes.begin(); i != nodes.end();)
+	{
+		if(i->second < 2)
+		{
+			map<Point2,int>::iterator k = i;
+			++i;
+			nodes.erase(k);
+		}
+		else
+			++i;
+	}
+	printf("%d nodes locked.\n", nodes.size());
 
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
@@ -212,7 +445,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId)) != NO_VALUE))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != NO_VALUE))
 		switch(obj->nSHPType) {
 		case SHPT_POINT:
 		case SHPT_POINTZ:
@@ -224,34 +457,62 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			if (obj->nVertices > 1)
 			{
 				feature_map[n] = feat;
+				if(db) {
+					feature_rev[n] = want_this_thing(db,obj->nShapeId, sLineReverse) != NO_VALUE ? 1 : 0;
+					if(!sLayerTag.empty() && sLayerID != -1)
+						feature_lay[n] = DBFReadIntegerAttribute(db, obj->nShapeId, sLayerID);
+					if(sLayerTag.empty() || sLayerID == -1 || DBFIsAttributeNULL(db, obj->nShapeId, sLayerID))
+					if(want_this_thing(db,obj->nShapeId,sLineBridge) != NO_VALUE)
+						feature_lay[n] = 1;
+				}	
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
 					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-					vector<Point_2>	p;
-					vector<Point2>	p_raw;
+					vector<Point2>	p;
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
-						Point_2 pt(obj->padfX[i],obj->padfY[i]);
+						Point2 pt(obj->padfX[i],obj->padfY[i]);
 						if(p.empty() || pt != p.back())
 						{
 							p.push_back(pt);
-							p_raw.push_back(Point2(obj->padfX[i],obj->padfY[i]));
 						}
 					}
-//					DebugAssert(p.size() >= 2);
-					for(int i = 1; i < p.size(); ++i)
+					vector<Point2> reduced;
+					node_checker checker(nodes);
+					douglas_peuker(p.begin(),p.end()-1, 
+							back_inserter(reduced),
+								(5.0 * MTR_TO_NM * NM_TO_DEG_LAT)*(5.0 * MTR_TO_NM * NM_TO_DEG_LAT),
+								checker);
+					reduced.push_back(p.back());
+					
+					/* 
+					// we could see what points we killed.
+					for(int dp=0;dp<p.size();++dp)
+					if(find(reduced.begin(),reduced.end(),p[dp])==reduced.end())
+						debug_mesh_point(p[dp],1,1,1);
+					*/
+					
+					killed += (p.size() - reduced.size());
+					total += (p.size());
+//					DebugAssert(reduced.size() >= 2);
+					for(int i = 1; i < reduced.size(); ++i)
 					{
-						DebugAssert(p[i-1] != p[i]);
+						DebugAssert(reduced[i-1] != reduced[i]);
 						bool oob = false;
 						if(flags & shp_Use_Crop)
-						if ((p_raw[i-1].x() < s_crop[0]  && p_raw[i].x() < s_crop[0] ) ||
-							(p_raw[i-1].x() > s_crop[2]  && p_raw[i].x() > s_crop[2] ) ||
-							(p_raw[i-1].y() < s_crop[1] && p_raw[i].y() < s_crop[1] ) ||
-							(p_raw[i-1].y() > s_crop[3] && p_raw[i].y() > s_crop[3] ))
+						if ((reduced[i-1].x() < s_crop[0]  && reduced[i].x() < s_crop[0] ) ||
+							(reduced[i-1].x() > s_crop[2]  && reduced[i].x() > s_crop[2] ) ||
+							(reduced[i-1].y() < s_crop[1] && reduced[i].y() < s_crop[1] ) ||
+							(reduced[i-1].y() > s_crop[3] && reduced[i].y() > s_crop[3] ))
 							oob = true;
 						if(!oob)
-						ADD_PT_PAIR(p[i-1],p[i],p_raw[i-1],p_raw[i],n);
+						ADD_PT_PAIR(
+							ben2cgal(reduced[i-1]),
+							ben2cgal(reduced[i]),
+							reduced[i-1],
+							reduced[i],
+							n);
 					}
 				}
 			}
@@ -261,6 +522,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		case SHPT_POLYGONM:
 			if (obj->nVertices > 0)
 			{
+				feature_map[n] = feat;				
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -272,23 +534,22 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
 							p.push_back(pt);
 					}
-//					DebugAssert(p.size() >= 4);											// Sometimes we have "2-d" polygons (2-pt loop, 0 area)
+
 					DebugAssert(p[0] == p[p.size()-1]);
 					while(p[0] == p[p.size()-1])
 						p.erase(p.vertices_end()-1);
-//					DebugAssert(p.size() == 0 || p.size() >= 3);
+
 					if(p.size() > 2)
 					{
 						if(p.is_simple())
 						{
-							if(p.is_counterclockwise_oriented())
+							for(int s = 0; s < p.size(); ++s)
 							{
-								holes.push_back(p);
-							} else {
-								p.reverse_orientation();
-								boundaries.push_back(p);					
+								curves.push_back(Curve_2(p.edge(s), n));
 							}
+
 						} else {
+
 							vector<Polygon_2>	simple_ones;
 							MakePolygonSimple(p,simple_ones);
 							#if DEV
@@ -298,36 +559,17 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 								DebugAssert(t->is_counterclockwise_oriented());
 							}
 							#endif
-							boundaries.insert(boundaries.end(),simple_ones.begin(),simple_ones.end());
+							for(vector<Polygon_2>::iterator t = simple_ones.begin(); t != simple_ones.end(); ++t)
+							{
+								for(int s = 0; s < t->size(); ++s)
+								{
+									curves.push_back(Curve_2(t->edge(s), n));
+								}
+							}
 						}
 					}
 				}
-
-				if((flags & shp_Fast) == 0)
-				{
-					for(list<Polygon_2>::iterator i = boundaries.begin(); i != boundaries.end(); ++i)
-						poly_set.join(*i);
-					for(list<Polygon_2>::iterator i = holes.begin(); i != holes.end(); ++i)
-						poly_set.difference(*i);
-					boundaries.clear();
-					holes.clear();
-
-					if(flags & shp_Mode_Map)
-					{
-						set<Face_handle> faces;
-						MapOverlayPolygonSet(io_map, poly_set, NULL, &faces);
-
-						if(flags & shp_Mode_Landuse)
-						for(set<Face_handle>::iterator f = faces.begin(); f != faces.end(); ++f)
-							(*f)->data().mTerrainType = feat;
-
-						if(flags & shp_Mode_Feature)
-						for(set<Face_handle>::iterator f = faces.begin(); f != faces.end(); ++f)
-							(*f)->data().mAreaFeature.mFeatType = feat;
-
-						poly_set.clear();
-					}
-				}
+				
 			}
 			break;
 		case SHPT_MULTIPOINT:
@@ -338,67 +580,135 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		}
 		SHPDestroyObject(obj);
 	}
+	
+	nuke_container(nodes);
+		
+	/************************************************************************************************************************************
+	 * CROP, INSERT AND TRIM
+	 ************************************************************************************************************************************/
+
+	if(flags & shp_ErrCheck)
+	if(curves.empty())
+	{
+		printf("Aborting because the shape file is empty within our insert area.\n");
+		return false;
+	}
+
+
+	if((flags & shp_Use_Crop))
+	{
+		ADD_PT_PAIR(
+							Point_2(s_crop[0],s_crop[1]),
+							Point_2(s_crop[2],s_crop[1]),
+							Point2(s_crop[0],s_crop[1]),
+							Point2(s_crop[2],s_crop[1]),
+							entity_count);
+
+		ADD_PT_PAIR(
+							Point_2(s_crop[2],s_crop[1]),
+							Point_2(s_crop[2],s_crop[3]),
+							Point2(s_crop[2],s_crop[1]),
+							Point2(s_crop[2],s_crop[3]),
+							entity_count+1);
+
+		ADD_PT_PAIR(
+							Point_2(s_crop[2],s_crop[3]),
+							Point_2(s_crop[0],s_crop[3]),
+							Point2(s_crop[2],s_crop[3]),
+							Point2(s_crop[0],s_crop[3]),
+							entity_count+2);
+
+		ADD_PT_PAIR(
+							Point_2(s_crop[0],s_crop[3]),
+							Point_2(s_crop[0],s_crop[1]),
+							Point2(s_crop[0],s_crop[3]),
+							Point2(s_crop[0],s_crop[1]),
+							entity_count+3);
+	}
+
+	Pmwx	local;
+	Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
+	
+	if(flags & shp_ErrCheck)
+	{
+		Traits_2			tr;
+		vector<Point_2>		errs;
+		CGAL::compute_intersection_points(curves.begin(), curves.end()-4, back_inserter(errs), false, tr);
+		if(!errs.empty())
+		{
+			printf("File skipped because it contains intersections.\n");
+			return false;
+		}
+	}
+
+	SHPClose(file);
+	if(db)	DBFClose(db);
+	
+//	printf("Inserting %d curves into %d.\n", curves.size(), targ->number_of_edges());
+	CGAL::insert(*targ, curves.begin(), curves.end());
+
+	nuke_container(curves);
+	Point_2 sw(s_crop[0],s_crop[1]);
+	Point_2 ne(s_crop[2],s_crop[3]);
+
+	/************************************************************************************************************************************
+	 * ATTRIBUTE APPLY!
+	 ************************************************************************************************************************************/
+
 	switch(shape_type) {
 	case SHPT_POLYGON:
 	case SHPT_POLYGONZ:
 	case SHPT_POLYGONM:
-
-		if((flags & shp_Fast))
 		{
-			poly_set.join(boundaries.begin(),boundaries.end(),holes.begin(),holes.end());
-			holes.clear();
-			boundaries.clear();
+			for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+				f->set_visited(false);
+
+			toggle_properties_visitor	visitor;
+			visitor.feature_map = &feature_map;
+			
+			visitor.Visit(targ);
+
+			int count = 0;
+			// map: crop last!  Otherwise closed polygons "leak" into open area...we are NOT clever enough
+			// to tag the open area by membership, so BFS first.
+			if(flags & shp_Use_Crop)
+			for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end();)
+			{
+				Pmwx::Edge_iterator k(e);
+				++e;
+
+				if (CGAL::compare_x(k->source()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_x(k->target()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_x(k->source()->point(),ne) == CGAL::LARGER ||
+					CGAL::compare_x(k->target()->point(),ne) == CGAL::LARGER ||
+					CGAL::compare_y(k->source()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_y(k->target()->point(),sw) == CGAL::SMALLER ||
+					CGAL::compare_y(k->source()->point(),ne) == CGAL::LARGER ||
+					CGAL::compare_y(k->target()->point(),ne) == CGAL::LARGER)
+				{
+					targ->remove_edge(k); 
+					++count;
+				}
+			}
+//			if(count) printf("Removed: %d edges.\n", count);
+			
+			if(flags & shp_Overlay)
+			{
+				nuke_container(feature_map);
+				nuke_container(feature_rev);
+				nuke_container(feature_lay);			
+			
+				Pmwx	src(io_map);
+				io_map.clear();
+				MapOverlay(src,local,io_map);
+			}
+
 		}
-
-		// Ben says: crop must be done later, EVEN in fast mode...if we try to batch the crop with the
-		// union, it gets "lost" - something about the order of ops of the true bulk cropper.  Ah, well, such is life.
-		if((flags & shp_Use_Crop) != 0)
-		{
-			Polygon_2	crop_box;
-			if(s_crop[0] > -180)
-			{
-				crop_box.push_back(Point_2(-180,-90));
-				crop_box.push_back(Point_2(s_crop[0],-90));
-				crop_box.push_back(Point_2(s_crop[0],90));
-				crop_box.push_back(Point_2(-180,90));
-				poly_set.difference(crop_box);
-				crop_box.clear();
-			}
-
-			if(s_crop[2] < 180)
-			{
-				crop_box.push_back(Point_2(s_crop[2],-90));
-				crop_box.push_back(Point_2(180,-90));
-				crop_box.push_back(Point_2(180,90));
-				crop_box.push_back(Point_2(s_crop[2],90));
-				poly_set.difference(crop_box);
-				crop_box.clear();
-			}
-
-			if(s_crop[1] > -90)
-			{
-				crop_box.push_back(Point_2(-180, -90));
-				crop_box.push_back(Point_2(180, -90));
-				crop_box.push_back(Point_2(180, s_crop[1]));
-				crop_box.push_back(Point_2(-180, s_crop[1]));
-				poly_set.difference(crop_box);
-				crop_box.clear();
-			}
-
-			if(s_crop[3] < 90)
-			{
-				crop_box.push_back(Point_2(-180, s_crop[3]));
-				crop_box.push_back(Point_2(180, s_crop[3]));
-				crop_box.push_back(Point_2(180, 90));
-				crop_box.push_back(Point_2(-180, 90));
-				poly_set.difference(crop_box);
-				crop_box.clear();
-			}
-		}
-
-		if((flags & shp_Fast) || (flags & shp_Mode_Map) == 0)
-		{
-			Pmwx	local;
+		break;
+	
+	
+	
+/*			Pmwx	local;
 			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
 
 			*targ = poly_set.arrangement();
@@ -435,49 +745,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			}
 		}
 		break;
-
+*/
 	case SHPT_ARC:
 	case SHPT_ARCZ:
 	case SHPT_ARCM:
-
-		if((flags & shp_Use_Crop))
 		{
-			ADD_PT_PAIR(
-								Point_2(s_crop[0],s_crop[1]),
-								Point_2(s_crop[2],s_crop[1]),
-								Point2(s_crop[0],s_crop[1]),
-								Point2(s_crop[2],s_crop[1]),
-								entity_count);
-
-			ADD_PT_PAIR(
-								Point_2(s_crop[2],s_crop[1]),
-								Point_2(s_crop[2],s_crop[3]),
-								Point2(s_crop[2],s_crop[1]),
-								Point2(s_crop[2],s_crop[3]),
-								entity_count+1);
-
-			ADD_PT_PAIR(
-								Point_2(s_crop[2],s_crop[3]),
-								Point_2(s_crop[0],s_crop[3]),
-								Point2(s_crop[2],s_crop[3]),
-								Point2(s_crop[0],s_crop[3]),
-								entity_count+2);
-
-			ADD_PT_PAIR(
-								Point_2(s_crop[0],s_crop[3]),
-								Point_2(s_crop[0],s_crop[1]),
-								Point2(s_crop[0],s_crop[3]),
-								Point2(s_crop[0],s_crop[1]),
-								entity_count+3);
-		}
-		{
-			Pmwx	local;
-			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
-
-			CGAL::insert(*targ, curves.begin(), curves.end());
-			Point_2 sw(s_crop[0],s_crop[1]);
-			Point_2 ne(s_crop[2],s_crop[3]);
-
+			// Lines: crop first - just get rid of data, save time.
+			int count = 0;
 			if(flags & shp_Use_Crop)
 			for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end();)
 			{
@@ -493,10 +767,12 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					CGAL::compare_y(k->source()->point(),ne) == CGAL::LARGER ||
 					CGAL::compare_y(k->target()->point(),ne) == CGAL::LARGER)
 				{
+					++count;
 					targ->remove_edge(k);
 				}
 			}
-
+//			if(count) printf("Removed: %d edges.\n", count);
+			
 			GISNetworkSegment_t r;
 			r.mFeatType = feat;
 			r.mRepType = NO_VALUE;
@@ -509,25 +785,65 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 			if(flags & shp_Mode_Map)
 			if(flags & shp_Mode_Road)
-			for(Pmwx::Halfedge_iterator e = targ->halfedges_begin(); e != targ->halfedges_end(); ++e)
-			if(he_is_same_direction(e))
-			if(e->curve().data().front() >= 0 && e->curve().data().front() < feature_map.size())
+			for(Pmwx::Edge_iterator eit = targ->edges_begin(); eit != targ->edges_end(); ++eit)
+			for(EdgeKey_iterator k = eit->curve().data().begin(); k != eit->curve().data().end(); ++k)
+			if(*k < entity_count)
 			{
-				r.mFeatType = feature_map[e->curve().data().front()];
-				e->data().mSegments.push_back(r);
+				r.mFeatType = feature_map[*k];
+				r.mSourceHeight = r.mTargetHeight = feature_lay[*k];
+				if(feature_rev[*k])
+				{
+					if(he_is_same_direction(eit))
+						eit->twin()->data().mSegments.push_back(r);
+					else
+						eit->data().mSegments.push_back(r);
+				}
+				else
+				{
+					if(he_is_same_direction(eit))
+						eit->data().mSegments.push_back(r);
+					else
+						eit->twin()->data().mSegments.push_back(r);
+				}
+			}
+
+			if(flags & shp_Mode_Coastline)
+			{
+				int feature = 0;
+				if(flags & shp_Mode_Simple)
+					feature = feat;
+				if(flags & shp_Mode_Map)
+					feature = sShapeRules.front().feature;
+		
+				bool hosed = false;
+				for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end(); ++e)
+				if(*e->curve().data().begin() < entity_count)
+				{
+					Pmwx::Halfedge_handle ee = he_get_same_direction(e);
+					ee->twin()->face()->set_contained(true);					
+					ee->twin()->face()->data().mTerrainType = feature;
+					if(ee->face()->contained())
+						hosed = true;
+				}
 			}
 
 			if(flags & shp_Overlay)
 			{
+				nuke_container(feature_map);
+				nuke_container(feature_rev);
+				nuke_container(feature_lay);	
+				int n1 = SimplifyMap(io_map,false,NULL);
+				int n2 = SimplifyMap(local,false,NULL);
+				printf("Simplify: %d and %d\n", n1, n2);
 				Pmwx	src(io_map);
+				io_map.clear();
 				MapMerge(src,local,io_map);
 			}
 		}
 		break;
 	}
-	SHPClose(file);
-	if(db)	DBFClose(db);
 	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
+	printf("DP killed off %d points of %d.\n", killed, total);
 
 	return true;
 }

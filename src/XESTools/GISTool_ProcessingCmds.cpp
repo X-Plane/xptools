@@ -146,7 +146,7 @@ static int DoBridgeRebuild(const vector<const char *>& args)
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Deriving raster parameters...\n");
-	DeriveDEMs(gMap, gDem,gApts, gAptIndex, gProgress);
+	DeriveDEMs(gMap, gDem,gApts, gAptIndex, atoi(args[0]), gProgress);
 	return 0;
 }
 
@@ -243,7 +243,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 //{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 //{ "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
 //{ "-hydrobridge",	0, 0, DoBridgeRebuild,	"Rebuild bridgse after hydro.",		  "" },
-{ "-derivedems", 	0, 0, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
+{ "-derivedems", 	1, 1, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
 { "-forests", 		0, 0, DoInstantiateForests, "Build 3-d Forests.",	 		  "" },

@@ -176,7 +176,7 @@ struct	Segment2 {
 													p1.x_ == p2.x_ ? p1.x_ : p1.x_ * ms + p2.x_ * s,
 													p1.y_ == p2.y_ ? p1.y_ : p1.y_ * ms + p2.y_ * s); }
 	Point2	projection(const Point2& pt) const;
-//	double	squared_distance(const Point2& p) const;
+	double	squared_distance(const Point2& p) const;
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
 	bool	on_right_side(const Point2& p) const { return Vector2(p1, p2).right_turn(Vector2(p1, p)); }
@@ -485,14 +485,17 @@ inline Point2	Segment2::projection(const Point2& pt) const
 	return p1 + Vector2(p1,p2).projection(Vector2(p1,pt));
 }
 
-/*
+
 inline double	Segment2::squared_distance(const Point2& p) const
 {
 	// TODO - would we get more efficiency from (1) calculating the line L that supports P and then
 	// (2) appling the line distance formula?
+	// BAS: NO!  To use a line to get distance we must normalize -- that means a sqrt and a divide.
+	// This runs with just adds and mults.  (Projection and squared length are both secretly dot products.)
+	// If we wanted the distance (not sqrd distance) we might be closer.
 	return Segment2(p, projection(p)).squared_length();
 }
-*/
+
 
 // Determines if this point is within the scope of the segment.
 // We assume colinear-ness...really it checks to see if we're
@@ -1456,6 +1459,5 @@ bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
 	}
 	return is_ccw;
 }
-
 
 #endif

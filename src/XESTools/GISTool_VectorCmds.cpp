@@ -549,33 +549,52 @@ static int DoTigerBounds(const vector<const char *>& args)
 }
 */
 #define HELP_SHAPE \
-"-shapefile <mode> <feature> <filename>\n" \
+"-shapefile <mode> <feature> <filename> [...<filename]\n" \
 "Import a shape file.  Mode letters (similar to tar syntax are):\n" \
 "r - roads - attempt to import arcs as roads.\n" \
+"w - water - attempt to import arcs as water boundaries.\n" \
 "l - land use - attempt to import polygons as land use.\n" \
 "f - features - attempt to import polygons as area fatures.\n" \
 "s - simple feature import.  Feature param is applied to all elements.\n" \
 "m - feature map.  Feature param is a config text file that maps database properties to features.\n" \
 "c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
 "o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
-"q - attempt quick import.  For some shape files, this will assume correct noding, no overlaps, etc.  Fast, but may fail.  Only one area feature/landuse can be applied to all imported shapes.\n"
+"e - check for overlapping polygon errors.  Abort the import silently if we hit this case.\n"
 static int DoShapeImport(const vector<const char *>& args)
 {
 	shp_Flags flags = shp_None;
 	if(strstr(args[0], "c"))	flags |= shp_Use_Crop;
 	if(strstr(args[0], "o"))	flags |= shp_Overlay;
-	if(strstr(args[0], "q"))	flags |= shp_Fast;
 	if(strstr(args[0], "r"))	flags |= shp_Mode_Road;
 	if(strstr(args[0], "l"))	flags |= shp_Mode_Landuse;
 	if(strstr(args[0], "f"))	flags |= shp_Mode_Feature;
+	if(strstr(args[0], "w"))	flags |= shp_Mode_Coastline;
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
+	if(strstr(args[0], "e"))	flags |= shp_ErrCheck;
 
-
-	double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
-	if(!ReadShapeFile(args[2], gMap, flags, args[1], b, gProgress))
-		return 1;
-
+	for(int n = 2; n < args.size(); ++n)
+	{
+		double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
+		
+		Pmwx backup;
+		
+		if(flags & shp_ErrCheck)
+			backup = gMap;
+			
+		if(!ReadShapeFile(args[n], gMap, flags, args[1], b, gProgress))
+		{
+			if(flags & shp_ErrCheck)
+			{
+				gMap = backup;
+			}
+			else
+			{
+				if(gVerbose) printf("Failed to load shape file: %s\n", args[n]);
+				return 1;
+			}
+		}
+	}
 
 #if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
@@ -600,7 +619,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
 //{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
-{ "-shapefile", 	3, 3, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
+{ "-shapefile", 	3, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

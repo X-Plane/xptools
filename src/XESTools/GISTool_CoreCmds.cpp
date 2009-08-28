@@ -326,7 +326,8 @@ static int DoMerge(const vector<const char *>& args)
 static int DoSave(const vector<const char *>& args)
 {
 	int nland = 0;
-	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
 	{
 		if (!f->data().IsWater())
 			++nland;

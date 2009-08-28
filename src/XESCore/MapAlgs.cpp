@@ -261,21 +261,25 @@ void	CutInside(
 			bool				inWantOutside,
 			ProgressFunc		inProgress)
 {
-	set<Halfedge_handle>	edges;
-	collect_edges		info;
-	info.edges = &edges;
-	info.use_outside = false;
+//	set<Halfedge_handle>	edges;
+//	collect_edges		info;
+//	info.edges = &edges;
+//	info.use_outside = false;
 
-	info.attach(ioMap);
+//	info.attach(ioMap);
 
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
 	vector<X_monotone_curve_2> v(inBoundary.edges_begin(),inBoundary.edges_end());
-//	CGAL::insert_x_monotone_curves(ioMap,v.begin(),v.end());
-	CGAL::insert(ioMap,v.begin(),v.end());
+
+	// Ben says: use insert_curve...insert_curves always sweeps, which is nlogn the number of
+	// half-edges in the map, which might be really huge.  With insert_curve we pay for 
+	// geometric queries, but for an AABB that's only 4 inserts, way cheaper than nlogn on
+	// 500,000 edges!!
+	for(int n = 0; n < v.size(); ++n)
+		CGAL::insert_curve(ioMap, v[n]);
 
 //	DebugAssert(CGAL::is_valid(ioMap));
-	DebugAssert(inBoundary.is_simple());
 
 /*
 	for(vector<X_monotone_curve_2>::iterator i = v.begin(); i != v.end(); ++i)
@@ -288,22 +292,22 @@ void	CutInside(
 		CGAL::insert_curve(ioMap,*i);
 	}
 */
-	info.detach();
+//	info.detach();
 
-		set<Face_handle>	interior_region;
+//		set<Face_handle>	interior_region;
 
-	FindFacesForEdgeSet(edges,interior_region);
+//	FindFacesForEdgeSet(edges,interior_region);
 
-	set<Halfedge_handle>	all_interior_edges;
+//	set<Halfedge_handle>	all_interior_edges;
 
-	for(set<Face_handle>::iterator f = interior_region.begin(); f != interior_region.end(); ++f)
-	{
-		DebugAssert(!(*f)->is_unbounded());
-		FindEdgesForFace(*f,all_interior_edges);
-	}
+//	for(set<Face_handle>::iterator f = interior_region.begin(); f != interior_region.end(); ++f)
+//	{
+//		DebugAssert(!(*f)->is_unbounded());
+//		FindEdgesForFace(*f,all_interior_edges);
+//	}
 
-	for(set<Halfedge_handle>::iterator e = edges.begin(); e != edges.end(); ++e)
-		DebugAssert(all_interior_edges.count(*e) > 0);
+//	for(set<Halfedge_handle>::iterator e = edges.begin(); e != edges.end(); ++e)
+//		DebugAssert(all_interior_edges.count(*e) > 0);
 
 	vector<Halfedge_handle>	kill;
 
@@ -1675,6 +1679,35 @@ double	GetMapFaceAreaMeters(const Face_handle f)
 	}
 	return me;
 }
+
+double	GetMapFaceAreaDegrees(const Face_handle f)
+{
+	if (f->is_unbounded()) return -1.0;
+	Polygon2	outer;
+	Pmwx::Ccb_halfedge_circulator	circ = f->outer_ccb();
+	Pmwx::Ccb_halfedge_circulator	start = circ;
+	do {
+			outer.push_back(cgal2ben(circ->source()->point()));
+		++circ;
+	} while (circ != start);
+
+	double me = outer.area();
+
+	for (Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+	{
+		Polygon2	ib;
+		Pmwx::Ccb_halfedge_circulator	circ(*h);
+		Pmwx::Ccb_halfedge_circulator	start = circ;
+		do {
+				ib.push_back(Point2(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->source()->point().y())));
+			++circ;
+		} while (circ != start);
+
+		me += ib.area();
+	}
+	return me;
+}
+
 
 double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e)
 {

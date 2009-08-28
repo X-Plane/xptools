@@ -198,7 +198,7 @@ in the .ter file spec.)  If this inforamtion is not available, MeshTool assumes
 1024x1024 for QMID and 2048x2048 for GeoTIFF; you may have to edit your .ter
 files later.
 
-ORTHOPHOTO <bl> <br> <tr> <tl> <wet> <filename>
+ORTHOPHOTO <wet> <bl> <br> <tr> <tl> <filename>
 
 This imports a single orthophoto - <filename> should be the name of the .ter
 file - if one does not exist, it is created.  The "wet" flag tells whether
@@ -209,7 +209,7 @@ around counter-clockwise.
 
 Example:
 
-ORTHOPHOTO -72.0 42.0 -71.0 42.0 -71.0 43.0 -72.0 43.0 0 foo.ter
+ORTHOPHOTO 0 -72.0 42.0 -71.0 42.0 -71.0 43.0 -72.0 43.0 foo.ter
 
 Covers the entire +42-072.dsf tile with an ortho called "foo.ter", such 
 that the top of the photo is north and right side is east, and there is 

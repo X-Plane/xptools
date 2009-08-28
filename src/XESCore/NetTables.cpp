@@ -28,8 +28,8 @@
 #include <math.h>
 
 NetFeatureInfoTable				gNetFeatures;
-NetEntityInfoTable				gNetEntities;
-Road2NetInfoTable				gRoad2Net;
+NetRepInfoTable					gNetReps;
+Feature2RepInfoTable			gFeature2Rep;
 BridgeInfoTable					gBridgeInfo;
 
 
@@ -38,7 +38,7 @@ bool	RoadGeneralProps(const vector<string>& tokens, void * ref)
 	int				feature_type;
 	NetFeatureInfo	info;
 	if (TokenizeLine(tokens, " efe", &feature_type,
-		&info.density_factor, &info.one_way) != 4) return false;
+		&info.density_factor, &info.oneway_feature) != 4) return false;
 
 
 	if (gNetFeatures.count(feature_type) > 0)
@@ -51,29 +51,29 @@ bool	RoadGeneralProps(const vector<string>& tokens, void * ref)
 
 bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 {
-	int entity_type;
-	NetEntityInfo	info;
+	int rep_type;
+	NetRepInfo	info;
 
-	if (TokenizeLine(tokens, " effffeii",&entity_type,
-		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.export_type_normal,&info.export_type_overpass) != 9)
+	if (TokenizeLine(tokens, " effffeiiii",&rep_type,
+		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) != 11)
 		return false;
 
-	if (gNetEntities.count(entity_type) > 0)
-		printf("WARNING: duplicate token %s\n", FetchTokenString(entity_type));
+	if (gNetReps.count(rep_type) > 0)
+		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));
 
-	gNetEntities[entity_type] = info;
+	gNetReps[rep_type] = info;
 	return true;
 }
 
 bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 {
-	Road2NetInfo	info;
+	Feature2RepInfo	info;
 	int				feature_type;
 
 	if (TokenizeLine(tokens, " effe", &feature_type, &info.min_density,
-		&info.max_density, &info.entity_type) != 5)	return false;
+		&info.max_density, &info.rep_type) != 5)	return false;
 
-	gRoad2Net.insert(Road2NetInfoTable::value_type(feature_type, info));
+	gFeature2Rep.insert(Feature2RepInfoTable::value_type(feature_type, info));
 	return true;
 }
 
@@ -82,7 +82,7 @@ bool	ReadRoadBridge(const vector<string>& tokens, void * ref)
 	BridgeInfo	info;
 
 	if (TokenizeLine(tokens, " efffffffififfffffffi",
-		&info.entity_type,
+		&info.rep_type,
 		&info.min_length, &info.max_length,
 		&info.min_seg_length, &info.max_seg_length,
 		&info.min_seg_count, &info.max_seg_count,
@@ -107,8 +107,8 @@ bool	ReadRoadBridge(const vector<string>& tokens, void * ref)
 void	LoadNetFeatureTables(void)
 {
 	gNetFeatures.clear();
-	gNetEntities.clear();
-	gRoad2Net.clear();
+	gNetReps.clear();
+	gFeature2Rep.clear();
 	gBridgeInfo.clear();
 
 	RegisterLineHandler("ROAD_GENERAL", RoadGeneralProps, NULL);
@@ -118,21 +118,28 @@ void	LoadNetFeatureTables(void)
 	LoadConfigFile("road_properties.txt");
 }
 
-bool	IsSeparatedHighway(int road_type)
+bool	IsSeparatedHighway(int feat_type)
 {
-	if (gNetFeatures.count(road_type) == 0) return false;
-	return gNetFeatures[road_type].one_way != NO_VALUE;
+	if (gNetFeatures.count(feat_type) == 0) return false;
+	return gNetFeatures[feat_type].oneway_feature != NO_VALUE;
 }
 
-int		SeparatedToOneway(int road_type)
+int		SeparatedToOneway(int feat_type)
 {
-	if (gNetFeatures.count(road_type) == 0) return road_type;
-	int new_type = gNetFeatures[road_type].one_way;
-	if (new_type == NO_VALUE) return road_type;
+	if (gNetFeatures.count(feat_type) == 0) return feat_type;
+	int new_type = gNetFeatures[feat_type].oneway_feature;
+	if (new_type == NO_VALUE) return feat_type;
 	return new_type;
 }
 
-int		FindBridgeRule(int entity_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2)
+bool	IsOneway(int rep_type)
+{
+	if (gNetReps.count(rep_type) == 0) return 0;
+	return gNetReps[rep_type].is_oneway;
+}
+
+
+int		FindBridgeRule(int rep_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2)
 {
 	DebugAssert(len > 0.0);
 	DebugAssert(smallest_seg > 0.0);
@@ -144,7 +151,7 @@ int		FindBridgeRule(int entity_type, double len, double smallest_seg, double big
 	for (int n = 0; n < gBridgeInfo.size(); ++n)
 	{
 		BridgeInfo& rule = gBridgeInfo[n];
-		if (rule.entity_type == entity_type &&
+		if (rule.rep_type == rep_type &&
 			(rule.curve_limit <= curve_dot) &&
 			(rule.min_length == rule.max_length || (rule.min_length <= len && len <= rule.max_length)) &&
 			(rule.min_start_agl == rule.max_start_agl || agl1 == -1.0 || (rule.min_start_agl <= agl1 && agl1 <= rule.max_start_agl)) &&

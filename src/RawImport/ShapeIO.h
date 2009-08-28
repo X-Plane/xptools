@@ -29,14 +29,15 @@
 
 enum {
 		shp_None			= 0,
-		shp_Mode_Landuse	= 1,
-		shp_Mode_Feature	= 2,
-		shp_Mode_Road		= 4,
+		shp_Mode_Landuse	= 1,			// Polygon shape file, params go into the land use fields.
+		shp_Mode_Feature	= 2,			// Polygon shape file, params go into the featuer field
+		shp_Mode_Coastline	= 3,			// Line shape file, right-side of vectors become param
+		shp_Mode_Road		= 4,			// Line shaep file, lines become roads
 		shp_Mode_Simple		= 8,			// Use a simple feature desc for import.
 		shp_Mode_Map		= 16,			// Use a map file for features.
 		shp_Use_Crop		= 32,			// Add the crop-box to the import on the fly.
 		shp_Overlay			= 64,			// Do not clear previous data.
-		shp_Fast			= 128			// Assume data is well-formed, use fast path.  Can be dangerous!
+		shp_ErrCheck		= 128			// Check for overlapping line segments
 };
 typedef int shp_Flags;
 

@@ -132,10 +132,55 @@ int	main(int argc, char * argv[])
 		RegisterMiscCmds();
 
 		vector<const char *>	args;
+
+
+
+
+
 		for (int n = start_arg; n < argc; ++n)
 		{
 			args.push_back(argv[n]);
 		}
+
+
+
+		if(args.empty())
+		{
+			vector<char> data;
+			
+			while(!feof(stdin))
+			{
+				char buf[1024];
+				int nread = fread(buf, 1, sizeof(buf), stdin);
+				if(nread > 0)
+				{
+					data.insert(data.end(),buf,buf+nread);
+				}
+			}
+
+			for(int n = 0; n < data.size();++n)
+			if(data[n]=='\r' || data[n] == '\n')
+			{
+				data[n] = 0;
+				char * str = &*data.begin();
+				const char * sep = "\r\n \t";
+				while(1)
+				{
+					char * tok = strtok(str,sep);
+					str = NULL;
+					if(tok == NULL)
+						break;
+					args.push_back(strdup(tok));
+				}
+				data.erase(data.begin(),data.begin()+n+1);
+				n = 0;
+			}
+		}
+
+
+
+
+
 
 #if USE_CHUD
 		chudInitialize();
@@ -143,6 +188,8 @@ int	main(int argc, char * argv[])
 		if (can_profile) 	can_profile = chudAcquireRemoteAccess() == chudSuccess;
 		else 							  chudCleanup();
 #endif
+		for(int n = 0; n < args.size(); ++n)
+			printf("%d) '%s'\n", n,args[n]);
 		result = GISTool_ParseCommands(args);
 
 #if USE_CHUD
