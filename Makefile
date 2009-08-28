@@ -120,9 +120,11 @@ CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 # libgmp
 ARCHIVE_LIBGMP		:= gmp-$(VER_LIBGMP).tar.gz
 CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
+CONF_LIBGMP		+= --enable-cxx
 # no assembler code
 ifdef PLAT_DARWIN
 CONF_LIBGMP		+= --enable-fat
@@ -351,22 +353,23 @@ ifndef PLAT_MINGW
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
-	./bjam install architecture=combined $(BE_QUIET)
+	./bjam cxxflags="$(DEFAULT_MACARGS)" $(BE_QUIET) && \
+	./bjam install
 	@cd local/include && \
-	ln -s boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
+	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.so* && \
 	rm -f *.dylib* && \
-	ln -s libboost_thread*-mt.a libboost_thread-mt.a
+	ln -sf libboost_thread*-mt.a libboost_thread-mt.a
 else
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	bjam.exe install --toolset=gcc --with-thread --prefix=$(DEFAULT_PREFIX) --libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET)
 	@cd local/include && \
-	ln -s boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
+	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
 	rm -rf boost-$(BOOST_SHORTVER)
 	@cd local/lib && \
-	ln -s libboost_thread*-mt.lib libboost_thread-mt.a && \
+	ln -sf libboost_thread*-mt.lib libboost_thread-mt.a && \
 	rm -f *.lib
 endif
 	@-rm -rf boost_$(VER_BOOST)
@@ -414,7 +417,7 @@ libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 	@tar -xzf "./archives/$(ARCHIVE_LIBGMP)"
 	@cd "gmp-$(VER_LIBGMP)" && \
 	chmod +x configure && \
-	CFLAGS=$(CFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
+	CFLAGS=$(CFLAGS_LIBGMP) CXXFLAGS=$(CXXFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
 	./configure $(CONF_LIBGMP) $(BE_QUIET)
 	@$(MAKE) -C "gmp-$(VER_LIBGMP)" $(BE_QUIET)
 	@$(MAKE) -C "gmp-$(VER_LIBGMP)" install $(BE_QUIET)
