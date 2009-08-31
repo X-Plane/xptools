@@ -4580,6 +4580,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					"libs/local/lib/libboost_thread-mt.a",
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4602,6 +4603,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					"libs/local/lib/libboost_thread-mt.a",
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4624,6 +4626,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					"libs/local/lib/libboost_thread-mt.a",
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4808,6 +4811,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					"libs/local/lib/libboost_thread-mt.a",
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
