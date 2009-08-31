@@ -39,16 +39,16 @@ BUILDDIR	:= $(OUTDIR)/$(PLATFORM)/$(conf)
 ifdef PLAT_LINUX
 
 ifeq ($(ARCHITECTURE), x86_64)
-ifeq ($(cross), m32)
-	MULTI_SUFFIX	:= 32
-	M32_SWITCH	:= -m32
-	BARE_LDFLAGS	:= -melf_i386
-	OBJFORMAT	:= elf32-i386
-	BINFORMAT	:= i386
-else
+#ifeq ($(cross), m32)
+#	MULTI_SUFFIX	:= 32
+#	M32_SWITCH	:= -m32
+#	BARE_LDFLAGS	:= -melf_i386
+#	OBJFORMAT	:= elf32-i386
+#	BINFORMAT	:= i386
+#else
 	OBJFORMAT = elf64-x86-64
 	BINFORMAT = i386:x86-64
-endif #CROSS_32
+#endif #CROSS_32
 	ARCH_X86_64	:= Yes
 endif #ARCH_X86_64
 
@@ -89,7 +89,7 @@ ifdef PLAT_LINUX
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -fvisibility-inlines-hidden -Wno-deprecated -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -rdynamic
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -293,7 +293,7 @@ ifdef TYPE_EXECUTABLE
 endif
 ifdef TYPE_LIBDYNAMIC
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
-	-Wl,-export-dynamic,-soname,$(notdir $(@)) -o $(@) $(ALL_OBJECTS) \
+	-Wl,-soname,$(notdir $(@)) -o $(@) $(ALL_OBJECTS) \
 	$(LIBS) || $(print_error)
 endif
 ifdef StripDebug

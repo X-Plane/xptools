@@ -16,12 +16,12 @@ endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
 # always build 32 bit plugin
-ifdef ARCH_X86_64
-	CXXFLAGS	+= -m32
-	CFLAGS		+= -m32
-	LDFLAGS		+= -m32
-	BARE_LDFLAGS	+= -melf_i386
-endif
+#ifdef ARCH_X86_64
+#	CXXFLAGS	+= -m32
+#	CFLAGS		+= -m32
+#	LDFLAGS		+= -m32
+#	BARE_LDFLAGS	+= -melf_i386
+#endif
 #LDFLAGS		+= -Wl,-Bstatic
 REAL_TARGET	:= XPlaneSupportLin
 FORCEREBUILD_SUFFIX := _fpic

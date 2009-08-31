@@ -45,3 +45,4 @@ $(TARGETS):
 endif
 	@export LD_RUN_PATH='$${ORIGIN}/slib' && \
 	$(MAKE) -s -f ./makerules/global/toplevel.mk TARGET=$(@) all
+

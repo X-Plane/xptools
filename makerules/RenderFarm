@@ -10,6 +10,7 @@ LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
 LIBS		+= -lz -lboost_thread-mt -lpthread
 
 ifdef PLAT_LINUX
+LDFLAGS		+= -static
 LIBS		+=
 endif #PLAT_LINUX
 

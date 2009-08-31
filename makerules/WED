@@ -10,13 +10,14 @@ DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs
 LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,--start-group
+LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lboost_thread-mt
 LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group
+LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh 
+LIBS		+= -Wl,--end-group -Wl,-Bdynamic
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
+#-ldl -lc -lpthread
 
 # we need this as preparation for an in-memory elf image loader
 # however, when we build the application as standalone image, we shouldn't

@@ -7,7 +7,8 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
-LIBS	+= -lz
+LDFLAGS		+= -static
+LIBS		+= -lz
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW

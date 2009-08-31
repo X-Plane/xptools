@@ -12,11 +12,11 @@ ifdef PLAT_LINUX
 #LDFLAGS	+= -pie
 LDFLAGS		+= -nodefaultlibs
 LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,--start-group
+LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
 LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
 LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group
+LIBS		+= -Wl,--end-group -Wl,-Bdynamic
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
 endif #PLAT_LINUX
 

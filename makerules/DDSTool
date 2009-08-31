@@ -9,6 +9,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lsquish -ltiff -ljpeg -lpng -lz
 
 ifdef PLAT_LINUX
+LDFLAGS		+= -static
 LIBS		+=
 endif #PLAT_LINUX
 
