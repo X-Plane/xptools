@@ -22,6 +22,7 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libboost_thread-mt.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libgeotiff.a
 LIBS		+= ./libs/local/lib/libshp.a

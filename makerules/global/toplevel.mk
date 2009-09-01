@@ -99,7 +99,7 @@ ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	LDFLAGS		:= -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -static-libgcc
+	LDFLAGS		:= -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk
 	MACARCHS	:= -arch i386 -arch ppc
 	STRIPFLAGS	:= -x
 endif

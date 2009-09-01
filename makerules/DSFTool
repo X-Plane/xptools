@@ -16,6 +16,9 @@ LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
 endif #PLAT_MINGW
 
+ifdef PLAT_DARWIN
+LDFLAGS		+= -framework Carbon
+endif #PLAT_DARWIN
 
 ##
 # sources

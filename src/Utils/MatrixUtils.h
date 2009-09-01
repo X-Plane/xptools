@@ -30,7 +30,7 @@
 
 //#include <glut.h>
 #if __MACH__
-#include <opengl/gl.h>
+#include <OpenGL/gl.h>
 #elif LIN
 #include <GL/gl.h>
 #else
