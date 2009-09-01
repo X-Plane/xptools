@@ -7,6 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lsquish -ltiff -ljpeg -lpng -lz
+FORCEREBUILD_SUFFIX := _ddst
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
