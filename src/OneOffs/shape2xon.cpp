@@ -64,8 +64,12 @@ struct pt_t {
 		return x==o.x && y==o.y;
 	}
 	bool operator<(const pt_t& rhs) const {
-		if(y==rhs.y) return x < rhs.x;
-		return y < rhs.y;
+		if(x==rhs.x) return y < rhs.y;
+		return x < rhs.x;
+	}
+	
+	void print(void) const {
+		printf("(%lf,%lf [0x%016llx,0x%016llx] ",x,y,x,y);
 	}
 };
 
@@ -114,11 +118,23 @@ struct	seg_t {
 		int j3 = other.side_of(p1);
 		int j4 = other.side_of(p2);
 		
-		if(j1 == 0) { p = other.p1; return true; }
-		if(j2 == 0) { p = other.p2; return true; }
-		if(j3 == 0) { p =		p1; return true; }
-		if(j4 == 0) { p =		p2; return true; }
+		// Check cases of parallel segments first.  Here we return one arbitrary vertex.
+
+		if(j1 == 0 && j2 == 0) { p = other.p1; return true; }
+		if(j3 == 0 && j4 == 0) { p =		p1; return true; }
 		
+		// OKay, we have a colinear point but the segments aren't parallel, at least we think.  
+		// Note that if j3==j4 or j1==j2, we know they are not ON the other line because
+		// we checked that case above.  So essentially we are saying: if we have a colinear point
+		// on our line, we have to span that colinear point.  This fixes the false intersection
+		// where a point "above" us is being hit.
+		
+		if(j1 == 0) { if(j3 == j4) return false; p = other.p1; return true; }
+		if(j2 == 0) { if(j3 == j4) return false; p = other.p2; return true; }
+		if(j3 == 0) { if(j1 == j2) return false; p =		p1; return true; }
+		if(j4 == 0) { if(j1 == j2) return false; p =		p2; return true; }
+		
+		// No colinear.  If either segment is entirely on one side of the other, there is no intersection, bail.		
 		if(j1 == j2) return false;
 		if(j3 == j4) return false;
 		
@@ -132,6 +148,11 @@ struct	seg_t {
 		
 		return true;
 		
+	}
+	void print(void) const {
+		p1.print();
+		printf(" -> ");
+		p2.print();
 	}
 };
 
@@ -149,13 +170,43 @@ void calc_intersections(vector<seg_t>& segs, vector<pt_t>& xons)
 			if(segs[s].intersect(segs[t],p))
 				xons.push_back(p);
 		}
+//		if(xons.size() > 10000)
+//		{
+//			printf("Killing %d\n", 10000);
+//			xons.clear();
+//		}
 	}
+
+/*
+	// older debug code - I was looking for incorrect cases of quads beign considered self intersecting.
+	if(segs.size() == 4 && xons.size() > 0)
+	{
+		for(int n = 0; n < segs.size(); ++n)
+		{
+			printf("  SEG %d: ",n);
+			segs[n].print();
+			printf("\n");
+		}
+		for(int n = 0; n < xons.size(); ++n)
+		{
+			printf("  XON %d: ",n);
+			xons[n].print();
+			printf("\n");
+		}
+	}	
+*/
 }
 
 // Usage: shape2xon <inputfile> <outputfile>
 
 int main(int argc, const char * argv[])
 {
+	if(argc < 2) 
+	{
+		fprintf(stderr,"Usage: shape2xon <input shape file> <output shapefile>\n");
+		exit(1);
+	}
+	
 	SHPHandle i = SHPOpen(argv[1],"rb");
 	SHPHandle o = SHPCreate(argv[2], SHPT_MULTIPOINT);
 	if(i == NULL) { printf("Could not open %s\n",argv[1]); exit(1); }
@@ -163,15 +214,16 @@ int main(int argc, const char * argv[])
 
 	int shape_type;
 	int entity_count;
+	int err_count = 0;
 	SHPGetInfo(i, &entity_count, &shape_type, NULL, NULL);
 	
 	
 	printf("%d entities.\n", entity_count);
-	
+
 	for(int n = 0; n < entity_count; ++n)
 	{
 		vector<seg_t>	segs;
-		vector<pt_t>	errs;
+		vector<pt_t>	errs;	
 		
 		SHPObject * obj = SHPReadObject(i, n);
 		switch(obj->nSHPType) {
@@ -187,6 +239,24 @@ int main(int argc, const char * argv[])
 				{
 					int start_idx = obj->panPartStart[part];
 					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+
+/*					
+					// Debug code: check for non-closed polygons in the shapefile.
+					if (obj->padfX[start_idx] != obj->padfX[stop_idx-1] ||
+						obj->padfY[start_idx] != obj->padfY[stop_idx-1])
+					{
+						printf("PROBLEM: our start and stop nodes do not close a loop.\n");
+						seg_t d;
+						d.p1.x = obj->padfX[start_idx];
+						d.p1.y = obj->padfY[start_idx];
+						d.p2.x = obj->padfX[stop_idx-1];
+						d.p2.y = obj->padfY[stop_idx-1];
+						d.print();
+						printf("\n");
+						exit(1);
+					}
+*/					
+					
 					for (int i = start_idx+1; i < stop_idx; ++i)
 					{
 						seg_t s;
@@ -199,18 +269,20 @@ int main(int argc, const char * argv[])
 						{
 							s.organize();
 							segs.push_back(s);
-						}
+						} 
 					}
 				}
 			}
 			break;
 		}
+
 		SHPDestroyObject(obj);
-		
+
 		calc_intersections(segs,errs);		
+	
 		if(!errs.empty())
 		{
-			printf("%d had %d errs.\n", n, errs.size());
+			err_count += errs.size();
 			vector<double> x(errs.size()),y(errs.size());
 			for(int nn = 0; nn < errs.size(); ++nn)
 			{
@@ -220,11 +292,9 @@ int main(int argc, const char * argv[])
 			SHPObject * e = SHPCreateSimpleObject(SHPT_MULTIPOINT, errs.size(), &*x.begin(), &*y.begin(), NULL);
 			SHPWriteObject(o, -1, e);
 			SHPDestroyObject(e);
-			
-			
 		}
 	}
-
+	printf("%d self-intersections total.\n", err_count);
 	SHPClose(i);
 	SHPClose(o);
 
