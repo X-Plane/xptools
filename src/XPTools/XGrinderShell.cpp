@@ -194,8 +194,8 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 	if(strstr(fileName,".icns")) return true;
 	if(g_me && strcmp(fileName, g_me)==0) return true;
 	if(fileName[0] == '.') return true;
-	char pipe_buf[1024];
-	sprintf(pipe_buf,"%s/%s",ref,fileName);
+	char pipe_buf[8192];
+	sprintf(pipe_buf,"%s/%s", (const char*)ref, fileName);
 	struct stat ss;
 	if(stat(pipe_buf,&ss) != 0) return true;
 #if IBM
@@ -207,7 +207,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 #if IBM
 	if(!IsConsoleApp(pipe_buf)) return true;
 #endif
-	sprintf(pipe_buf,"\"%s/%s\" --auto_config", ref,fileName);
+	sprintf(pipe_buf,"\"%s/%s\" --auto_config", (const char*)ref, fileName);
 	FILE * fi = popen(pipe_buf, "r");
 	if (fi)
 	{

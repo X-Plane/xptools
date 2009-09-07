@@ -29,8 +29,10 @@
 
 const char* GetApplicationPath(char* pathBuf, int sz)
 {
- readlink("/proc/self/exe", pathBuf, sz);
- return pathBuf ;
+	memset(pathBuf, 0, sz);
+	if (readlink("/proc/self/exe", pathBuf, sz) == -1)
+		return 0;
+	return pathBuf;
 }
 
 int		GetFilePathFromUser(
