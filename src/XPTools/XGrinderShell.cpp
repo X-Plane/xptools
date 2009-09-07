@@ -40,6 +40,10 @@
 #include <vector>
 #include <sys/stat.h>
 
+#if LIN
+#include <errno.h>
+#endif
+
 #if IBM
 #include <fcntl.h>
 #define popen xpt_popen

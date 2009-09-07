@@ -8,8 +8,12 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 FORCEREBUILD_SUFFIX := _xg
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
-LIBS		+=
+LDFLAGS		+= -nodefaultlibs
+LIBS		+= -Wl,--as-needed
+LIBS		+= -Wl,-Bstatic -Wl,--start-group
+LIBS		+= -lz -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -Wl,--end-group -Wl,-Bdynamic
+LIBS		+= -lQtCore -lQtGui  -lc -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -30,8 +34,10 @@ endif #PLAT_DARWIN
 #########
 
 ifdef PLAT_LINUX
-SOURCES += ./src/UI/XGrinderApp.lin.cpp
-else
+SOURCES += ./src/Utils/PlatformUtils.lin.cpp
+SOURCES += ./src/UI/XWin.lin.cpp
+MOCSRC += ./src/UI/XWin.h
+endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 SOURCES += ./src/Utils/PlatformUtils.win.cpp
@@ -54,4 +60,4 @@ SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/XPTools/XGrinderShell.cpp
 
-endif #PLAT_LINUX
+

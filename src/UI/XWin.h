@@ -205,7 +205,8 @@ public:
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 	bool mInited;
-
+private slots:
+	void onMenuAction(QAction* a);
 protected:
 	void closeEvent(QCloseEvent* e);
 	void resizeEvent(QResizeEvent* e);

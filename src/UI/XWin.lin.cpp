@@ -239,21 +239,55 @@ void XWin::ReceiveFilesFromDrag(const vector<string>& inFiles)
 	ReceiveFiles(inFiles, 0, 0);
 }
 
+void XWin::onMenuAction(QAction* a)
+{
+	QMenu * amenu = (QMenu *) a->parent();
+	int cmd = amenu->actions().indexOf(a);
+	HandleMenuCmd(amenu,cmd);
+}
+
+xmenu XWin::GetMenuBar(void)
+{
+	QMenu* amenu = (QMenu*) this->menuBar();
+	return (QMenu*) this->menuBar();
+}
+
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
-    return 0;
+	QMenu * newmenu = new QMenu(inTitle,parent);
+	//FIXME:mroe is parent->window() always the mainwindow ?
+	connect(newmenu,SIGNAL(triggered(QAction*)),parent->window(),SLOT(onMenuAction(QAction*)));
+	if (item == -1)
+	    parent->addMenu(newmenu);
+	else
+		parent->actions().at(item)->setMenu(newmenu);
+	return newmenu;
 }
 
 int XWin::AppendMenuItem(xmenu menu, const char * inTitle)
-{}
+{
+	QAction * aact = menu->addAction(inTitle);
+	return  menu->actions().count()-1;
+}
 
 int XWin::AppendSeparator(xmenu menu)
-{}
+{
+	menu->addSeparator();
+	return  menu->actions().count()-1;
+}
 
 void XWin::CheckMenuItem(xmenu menu, int item, bool inCheck)
-{}
+{
+   	 QAction * aact = menu->actions().at(item);
+	 aact->setCheckable(inCheck);
+	 aact->setChecked(inCheck);
+}
+
 void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
-{}
+{
+   	 QAction * aact = menu->actions().at(item);
+	 aact->setEnabled(inEnable);
+}
 
 void XWin::DrawMenuBar(void)
 {}

@@ -29,8 +29,8 @@
 
 const char* GetApplicationPath(char* pathBuf, int sz)
 {
-//TODO: readlink() on /proc/self/exe
-	return ".";
+ readlink("/proc/self/exe", pathBuf, sz);
+ return pathBuf ;
 }
 
 int		GetFilePathFromUser(
