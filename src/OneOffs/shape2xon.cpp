@@ -208,9 +208,12 @@ int main(int argc, const char * argv[])
 	}
 	
 	SHPHandle i = SHPOpen(argv[1],"rb");
-	SHPHandle o = SHPCreate(argv[2], SHPT_MULTIPOINT);
+	SHPHandle o = SHPCreate(argv[2], SHPT_POINT);
+	DBFHandle d = DBFCreate(argv[2]);
 	if(i == NULL) { printf("Could not open %s\n",argv[1]); exit(1); }
-	if(o == NULL) { printf("Could not open %s\n",argv[2]); exit(1); }
+	if(o == NULL || d == NULL) { printf("Could not open %s\n",argv[2]); exit(1); }
+
+	DBFAddField( d, "type", FTInteger, 5, 0 );
 
 	int shape_type;
 	int entity_count;
@@ -288,15 +291,17 @@ int main(int argc, const char * argv[])
 			{
 				x[nn] = errs[nn].x;
 				y[nn] = errs[nn].y;
+				SHPObject * e = SHPCreateSimpleObject(SHPT_POINT, 1, &x[nn], &y[nn], NULL);
+				int idx = SHPWriteObject(o, -1, e);
+				SHPDestroyObject(e);
+				DBFWriteIntegerAttribute( d, idx, 0, 0 );
 			}
-			SHPObject * e = SHPCreateSimpleObject(SHPT_MULTIPOINT, errs.size(), &*x.begin(), &*y.begin(), NULL);
-			SHPWriteObject(o, -1, e);
-			SHPDestroyObject(e);
 		}
 	}
 	printf("%d self-intersections total.\n", err_count);
 	SHPClose(i);
 	SHPClose(o);
+	DBFClose(d);
 
 	return 0;
 }
