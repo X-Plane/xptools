@@ -74,6 +74,7 @@ int		GetFilePathFromUser(
 			if (!dir.length())
 				return 0;
 			else {
+				 dir.truncate(dir.size()-1);
 				::strncpy(outFileName, dir.toAscii().constData(), inBufSize);
 				return 1;
 			}
