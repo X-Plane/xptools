@@ -417,6 +417,9 @@ void	XGrindInit(string& t)
 	*last_sep++=0;
 	g_me=last_sep;
 
+	/* search binaries under ./tools */
+	sprintf(base, "%s/tools", base);
+
 	MF_GetDirectoryBulk(base, file_cb, base);
 
 	// sort conversions
