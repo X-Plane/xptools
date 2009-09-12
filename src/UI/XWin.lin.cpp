@@ -25,6 +25,7 @@ XWin::XWin(
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
+	mTimer=0;
 	mInited = true;
 }
 
@@ -37,6 +38,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
 		setAcceptDrops(true);
+	mTimer=0;
 	mInited = true;
 }
 
@@ -150,6 +152,11 @@ void XWin::dropEvent(QDropEvent* e)
 	ReceiveFilesFromDrag(inFiles);
 }
 
+void XWin::timerEvent(QTimerEvent* e)
+{
+	Timer();
+}
+
 void XWin::focusInEvent(QFocusEvent* e)
 {
 	Activate(1);
@@ -219,7 +226,21 @@ bool XWin::GetActive(void) const
 
 void XWin::SetTimerInterval(double seconds)
 {
-    return;
+	 if (seconds)
+	 {
+	 	if (mTimer)
+		{
+			killTimer(mTimer);
+			mTimer = startTimer(seconds);
+		}
+		else
+		  mTimer = startTimer(seconds);
+	 }
+	 else
+	 {
+		killTimer(mTimer);
+		mTimer=0;
+	 }
 }
 
 void XWin::GetBounds(int * outX, int * outY)

@@ -96,7 +96,7 @@ public:
 private:
 
 	friend class GUI_Application;
-	#if IBM
+#if IBM
 		static	HWND	AnyHWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.
 		static	void	EnableMenusWin(void);
 
@@ -108,9 +108,9 @@ private:
 		HWND				mToolTip;
 		int					mTipBounds[4];
 
-	#endif
+#endif
 
-	#if APL
+#if APL
 		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
 		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
 		static pascal OSStatus	TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent);
@@ -118,7 +118,7 @@ private:
 		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
 		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
 		static HMWindowContentUPP		sTooltipUPP;
-	#endif
+#endif
 
 	GUI_GraphState	mState;
 	float			mClearColorRGBA[4];
@@ -131,7 +131,7 @@ private:
 #if IBM || LIN
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
-	#if LIN
+#if LIN
 	QMenu * mPopupMenu;
 	int     mMouseLastButton;
 	bool    mDragDetect;
@@ -139,7 +139,12 @@ private:
     int Client2OGL_Y(int y, void* w);
     int OGL2Client_X(int x, void* w);
     int OGL2Client_Y(int y, void* w);
-    #endif
+protected:
+	void dragEnterEvent(QDragEnterEvent* e);
+	void dragLeaveEvent(QDragLeaveEvent* e);
+	void dragMoveEvent(QDragMoveEvent* e);
+	void dropEvent(QDropEvent* e);
+#endif
 };
 
 

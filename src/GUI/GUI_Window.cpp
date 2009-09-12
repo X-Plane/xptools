@@ -84,6 +84,80 @@ inline int GUI_Window::OGL2Client_Y(int y, void* w)
 	XWin::GetBounds(&rx, &ry);
 	return (ry-y);
 }
+//---------------------------------------------------------------------------------------------------------------------------------------
+// LIN DND
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+
+//TODO:mroe we are shipping no data yet !
+//			providing calls in DragData seems sufficient for WED
+
+void GUI_Window::dragEnterEvent(QDragEnterEvent* e)
+{
+	int x = OGL2Client_X(e->pos().x(),mWindow);
+	int y = OGL2Client_Y(e->pos().y(),mWindow);
+
+	GUI_DragData_Adapter  adapter(NULL);
+	GUI_DragOperation allowed;
+	allowed = (this->InternalDragEnter(x,y,&adapter,
+				OP_LIN2GUI(e->possibleActions()),
+				OP_LIN2GUI(e->proposedAction())));
+
+	this->mInDrag = 1;
+	this->SetTimerInterval(0.05);
+	this->mLastDragX = x;
+	this->mLastDragY = y;
+
+	if (allowed == gui_Drag_None)
+		e->setDropAction(Qt::IgnoreAction);
+	//FIXME:mroe:if we comein from outside , drop is not allowed from pane
+	//untill the targetrect riched , anyhow we must allow the drag here .
+	e->acceptProposedAction();
+}
+
+void GUI_Window::dragMoveEvent(QDragMoveEvent* e)
+{
+	int x = OGL2Client_X(e->pos().x(),mWindow);
+	int y = OGL2Client_Y(e->pos().y(),mWindow);
+
+	GUI_DragData_Adapter  adapter(NULL);
+	GUI_DragOperation allowed;
+	allowed = (this->InternalDragOver(x,y,&adapter,
+				OP_LIN2GUI(e->possibleActions()),
+				OP_LIN2GUI(e->proposedAction())));
+
+	this->mLastDragX = x;
+	this->mLastDragY = y;
+
+	if (allowed == gui_Drag_None)
+		e->setDropAction(Qt::IgnoreAction);
+	else
+		e->acceptProposedAction();
+}
+
+void GUI_Window::dragLeaveEvent(QDragLeaveEvent* e)
+{
+	this->mInDrag = 0;
+	this->SetTimerInterval(0);
+	this->InternalDragLeave();
+}
+
+void GUI_Window::dropEvent(QDropEvent* e)
+{
+	int x = OGL2Client_X(e->pos().x(),mWindow);
+	int y = OGL2Client_Y(e->pos().y(),mWindow);
+
+	this->mInDrag = 0;
+	this->SetTimerInterval(0);
+
+	GUI_DragData_Adapter  adapter(NULL);
+	GUI_DragOperation allowed;
+	allowed = (this->InternalDrop(x,y,&adapter,
+				OP_LIN2GUI(e->possibleActions()),
+				OP_LIN2GUI(e->proposedAction())));
+
+	this->InternalDragLeave();
+}
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -552,6 +626,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 		mPopupMenu = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
+		setAcceptDrops(true);
 		raise();
 		activateWindow();
 	#endif
@@ -1185,7 +1260,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 		return ret;
 
 	#else
-		#warning implement linux mouse drag handler
+
         bool isdrag = false;
         mDragDetect = true;
         QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
@@ -1306,24 +1381,26 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
 		return result;
 	#else
-        #warning implement linux drag and drop handler
+
+        // TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
+
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-//        mimeData->setData(mimeType, data);
+//		mimeData->setData(mimeType, data);
         drag->setMimeData(mimeData);
 
-        Qt::DropAction dropAction = drag->start(Qt::CopyAction | Qt::MoveAction);
+		//start the drag
+        GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
 
         //sending fake UP-Click
         QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
         unsigned int sbtn = 1 << mMouseFocusButton;
         QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
                                 (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
-
         QCoreApplication::postEvent(this, e);
 
-        return gui_Drag_None;
+        return result;
 	#endif
 }
 

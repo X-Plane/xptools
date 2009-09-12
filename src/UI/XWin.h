@@ -140,7 +140,7 @@ public:
 	virtual	void			Resized(int inWidth, int inHeight)=0;
 
 	virtual	void			Update(XContext ctx)=0;
-	virtual void			Activate(int inActive)=0;
+	virtual	void			Activate(int inActive)=0;
 	virtual	void			ClickDown(int inX, int inY, int inButton)=0;
 	virtual	void			ClickUp(int inX, int inY, int inButton)=0;
 	virtual	void			ClickDrag(int inX, int inY, int inButton)=0;	// 0 = left
@@ -201,6 +201,7 @@ public:
 
 #if LIN
 	int	mDragging[BUTTON_DIM];
+	int mTimer;
 	POINT	mMouse;
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
@@ -222,6 +223,7 @@ protected:
 	void dropEvent(QDropEvent* e);
 	void focusInEvent(QFocusEvent* e);
 	void focusOutEvent(QFocusEvent* e);
+	void timerEvent(QTimerEvent *e);
 
 #endif
 

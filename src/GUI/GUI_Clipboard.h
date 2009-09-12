@@ -237,4 +237,40 @@ void GUI_LoadSimpleDrag(
 
 #endif /* APL */
 
+//---------------------------------------------------------------------------------------------------------
+// DRAG & DROP - LIN
+//---------------------------------------------------------------------------------------------------------
+
+#if LIN
+#include <QtGui/QClipboard>
+
+inline  Qt::DropActions OP_GUI2LIN(GUI_DragOperation fx)
+{
+	return (fx & gui_Drag_Move ? Qt::MoveAction : Qt::IgnoreAction) |
+		   (fx & gui_Drag_Copy ? Qt::CopyAction : Qt::IgnoreAction);
+}
+
+inline GUI_DragOperation	OP_LIN2GUI(Qt::DropActions fx)
+{
+	return (fx & Qt::MoveAction ? gui_Drag_Move : gui_Drag_None) +
+		   (fx & Qt::CopyAction ? gui_Drag_Copy : gui_Drag_None);
+}
+
+
+// mroe:We need a adapter to present GUI's generic drag & drop data in Linux too.
+class	GUI_DragData_Adapter : public GUI_DragData {
+public:
+			 GUI_DragData_Adapter(void * data_obj);
+			~GUI_DragData_Adapter();
+
+	virtual	int		CountItems(void);
+	virtual	bool	NthItemHasClipType(int n, GUI_ClipType ct);
+	virtual	int		GetNthItemSize(int n, GUI_ClipType ct);
+	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr);
+private:
+	void *		mObject;
+};
+
+#endif /* LIN */
+
 #endif /* GUI_CLIPBOAD_H */

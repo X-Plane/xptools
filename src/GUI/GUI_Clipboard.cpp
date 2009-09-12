@@ -858,3 +858,50 @@ void GUI_LoadSimpleDrag(
 }
 
 #endif /* APL */
+
+//---------------------------------------------------------------------------------------------------------
+// DRAG & DROP -- LIN
+//---------------------------------------------------------------------------------------------------------
+
+#if LIN
+# warning DND is not fully implemented for Linux
+// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
+
+// mroe: implementation of a adapter like MAC version
+GUI_DragData_Adapter::GUI_DragData_Adapter(void * data_obj) : mObject(data_obj)
+{
+}
+
+GUI_DragData_Adapter::~GUI_DragData_Adapter()
+{
+}
+
+int		GUI_DragData_Adapter::CountItems(void)
+{
+	// TODO:mroe CountItems not implemented yet;
+	// only a workaround while develop WED;
+	return 1;
+}
+
+bool	GUI_DragData_Adapter::NthItemHasClipType(int n, GUI_ClipType ct)
+{
+	// TODO:mroe NthItemHasClipType not implemented yet ;
+	// only a workaround while develop WED;
+	return true;
+}
+
+int		GUI_DragData_Adapter::GetNthItemSize(int n, GUI_ClipType ct)
+{
+ // TODO:mroe GetNthItemSize not implemented yet ;
+	return 0;
+}
+
+bool	GUI_DragData_Adapter::GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)
+{
+ // TODO:mroe GetNthItemData not implemented yet ;
+	return false;
+}
+
+
+
+#endif /* LIN */
