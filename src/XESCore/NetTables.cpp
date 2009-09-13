@@ -53,9 +53,10 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 {
 	int rep_type;
 	NetRepInfo	info;
+	info.export_type_draped = NO_VALUE;	// hack for mesh tool - allow draped param to not be attached!
 
 	if (TokenizeLine(tokens, " effffeiiii",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) != 11)
+		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) < 10)
 		return false;
 
 	if (gNetReps.count(rep_type) > 0)
