@@ -93,10 +93,7 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 	}
 
 	{
-		Pmwx		dummy_vec;
-		CDT			dummy_mesh;
-		AptVector	dummy_apt;
-		ReadXESFile(xes, &dummy_vec, &dummy_mesh, &sDem, &dummy_apt, ConsoleProgressFunc);
+		ReadXESFile(xes, NULL, NULL, &sDem, NULL, ConsoleProgressFunc);
 	}
 	MemFile_Close(xes);
 	
@@ -376,7 +373,7 @@ void MT_LayerShapefile(const char * fi, const char * in_terrain_type)
 	
 	Pmwx	layer_map;
 	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
-	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , in_terrain_type, b, ConsoleProgressFunc))
+	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , in_terrain_type, b, 0.0, 0, ConsoleProgressFunc))
 		die_err("Unable to load shape file: %s\n", fi);
 
 	Pmwx *	new_map = new Pmwx;
