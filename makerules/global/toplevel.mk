@@ -100,7 +100,7 @@ ifdef PLAT_DARWIN
 	CXXFLAGS	:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	LDFLAGS		:= -mmacosx-version-min=10.4
-	MACARCHS	:= -arch i386 -arch x86_64 -arch ppc
+	MACARCHS	:= -arch i386
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
@@ -121,6 +121,7 @@ ifeq ($(conf), release_opt)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=0
+	MACARCHS	+= -arch ppc
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
 	CFLAGS		+= -O0 -g
@@ -134,6 +135,7 @@ else ifeq ($(conf), release_test)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=1
+	MACARCHS	+= -arch ppc
 	StripDebug	:= Yes
 # default to debug configuration
 else
