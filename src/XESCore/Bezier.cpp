@@ -42,7 +42,7 @@ void	find_crossing_beziers(
 	out_xons.clear();
 	Bezier_traits_2 traits;
 	try {
-		CGAL::get_intersection_points(in_curves.begin(),in_curves.end(),back_inserter(out_xons), false, traits);
+		CGAL::compute_intersection_points(in_curves.begin(),in_curves.end(),back_inserter(out_xons), false, traits);
 	} catch(...) {
 		printf("Crossing beziers blew up.  Listing %d curves:\n", in_curves.size());
 		for(int n = 0; n < in_curves.size(); ++n)
