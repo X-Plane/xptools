@@ -34,7 +34,7 @@
 */
 
 #if APL
-#pragma options align=mac68k
+#pragma pack(2)
 #endif
 #if IBM || LIN
 #pragma pack(push, 2)

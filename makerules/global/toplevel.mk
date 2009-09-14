@@ -99,8 +99,8 @@ ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	LDFLAGS		:= -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk
-	MACARCHS	:= -arch i386 -arch ppc
+	LDFLAGS		:= -mmacosx-version-min=10.4
+	MACARCHS	:= -arch i386 -arch x86_64 -arch ppc
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
@@ -205,8 +205,11 @@ ifndef REAL_TARGET
 endif
 REAL_TARGET := $(BUILDDIR)/$(REAL_TARGET)$(MULTI_SUFFIX)
 
-ifdef PLAT_LINUX
+ifdef PLAT_MINGW
 
+ifdef TYPE_EXECUTABLE
+REAL_TARGET := $(REAL_TARGET).exe
+endif
 ifdef TYPE_LIBDYNAMIC
 REAL_TARGET := $(REAL_TARGET).p
 endif
@@ -214,13 +217,8 @@ ifdef TYPE_LIBSTATIC
 REAL_TARGET := $(REAL_TARGET).a
 endif
 
-endif #LINUX
+else
 
-ifdef PLAT_MINGW
-
-ifdef TYPE_EXECUTABLE
-REAL_TARGET := $(REAL_TARGET).exe
-endif
 ifdef TYPE_LIBDYNAMIC
 REAL_TARGET := $(REAL_TARGET).p
 endif
@@ -293,8 +291,14 @@ ifdef TYPE_EXECUTABLE
 endif
 ifdef TYPE_LIBDYNAMIC
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
+	-o $(@) $(ALL_OBJECTS) \
+	$(LIBS) || $(print_error)
+ifdef PLAT_DARWIN
+else
+	@$(LD) $(LDFLAGS) $(LIBPATHS) -shared \
 	-Wl,-soname,$(notdir $(@)) -o $(@) $(ALL_OBJECTS) \
 	$(LIBS) || $(print_error)
+endif
 endif
 ifdef StripDebug
 	@$(STRIP) $(STRIPFLAGS) $(@)

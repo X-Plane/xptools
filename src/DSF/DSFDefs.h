@@ -26,8 +26,8 @@
 /* Use chunky file utils because they define some aspects of chunky files! */
 #include "XChunkyFileUtils.h"
 
-#if APL
-#pragma options align=mac68k
+#if APL || LIN
+#pragma pack(2)
 #endif
 #if IBM
 #pragma pack(push, 2)
@@ -138,7 +138,7 @@ enum {
 
 };
 
-#if APL
+#if APL || LIN
 #pragma options align=reset
 #endif
 #if IBM

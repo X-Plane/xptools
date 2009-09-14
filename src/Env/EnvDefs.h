@@ -60,8 +60,8 @@
 
 /* We have to align to 2-byte boundaries to read the file; I'll fix this to work on the PC eventually. :-( */
 
-#if APL
-#pragma options align=mac68k
+#if APL || LIN
+#pragma pack(2)
 #endif
 #if IBM
 #pragma pack(push, 2)

@@ -50,8 +50,8 @@
 	#error endian not defined
 #endif
 
-#if APL
-#pragma options align=mac68k
+#if APL || LIN
+#pragma pack(2)
 #endif
 #if IBM
 #pragma pack(push, 2)
