@@ -439,7 +439,7 @@ void	CropMap(
 		if (inFunc) inFunc(0,2,"Cutting map...", (float) n / (float) ring.size());
 		curves.push_back(X_monotone_curve_2(ring[n], ring[m]));
 	}
-	ioMap.insert_curves(curves.begin(), curves.end(), __ProgNotifier, &info);
+	ioMap.insert(curves.begin(), curves.end(), __ProgNotifier, &info);
 
 	if (inFunc) inFunc(0, 2, "Cutting map...", 1.0);
 
@@ -1605,7 +1605,7 @@ Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point
 	for (int n = 0; n < inPoints.size(); ++n)
 	{
 		if(inPoints[n] != inPoints[(n+1)%inPoints.size()])
-			CGAL::insert_curve(*inPmwx, Curve_2(Segment_2(Point_2(ben2cgal(inPoints[n])), Point_2(ben2cgal(inPoints[(n+1)%inPoints.size()])))));
+			CGAL::insert(*inPmwx, Curve_2(Segment_2(Point_2(ben2cgal(inPoints[n])), Point_2(ben2cgal(inPoints[(n+1)%inPoints.size()])))));
 	}
 	return c.he->face();
 }
