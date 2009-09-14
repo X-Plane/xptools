@@ -284,7 +284,6 @@ SOURCES += ./src/OGLE/ogle.cpp
 SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
 SOURCES += ./src/XESCore/AptRouting.cpp
-SOURCES += ./src/XESCore/Bezier.cpp
 SOURCES += ./src/XESCore/CGALAlgs.cpp
 SOURCES += ./src/XESCore/MapPolygon.cpp
 SOURCES += ./src/Env/EnvParser.c

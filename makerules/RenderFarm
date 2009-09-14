@@ -6,7 +6,7 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		+= -lCGAL -lCGAL_Core -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
+LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
 LIBS		+= -lz -lboost_thread-mt -lpthread -lgmp -lmpfr
 FORCEREBUILD_SUFFIX := _rf
 
@@ -69,6 +69,8 @@ SOURCES += ./src/RawImport/gshhs.cpp
 SOURCES += ./src/XESCore/XESInit.cpp
 SOURCES += ./src/XESCore/DEMTables.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
+SOURCES += ./src/XESCore/AptAlgs.cpp
+SOURCES += ./src/XESCore/AptRouting.cpp
 SOURCES += ./src/XESCore/Airports.cpp
 SOURCES += ./src/XESCore/Beaches.cpp
 SOURCES += ./src/XESCore/ConfigSystem.cpp
