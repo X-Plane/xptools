@@ -22,6 +22,7 @@
  */
 
 #include "ShapeIO.h"
+#include <proj_api.h>	
 #include <shapefil.h>
 #include "MapOverlay.h"
 #include "MapPolygon.h"
@@ -144,13 +145,48 @@ static shape_pattern_vector sLineBridge;
 static string				sLayerTag;
 static int					sLayerID;
 
+static projPJ 				sProj=NULL;
+
+static void reproj(Point2& io_pt)
+{
+	projXY xy;
+	projLP lp;
+    xy.u = io_pt.x();
+    xy.v = io_pt.y();
+
+	lp = pj_inv( xy, sProj);
+
+	io_pt.x_ = lp.u * RAD_TO_DEG;
+	io_pt.y_ = lp.v * RAD_TO_DEG;
+}
+
+static void reproj(double io_pt[2])
+{
+	projXY xy;
+	projLP lp;
+    xy.u = io_pt[0];
+    xy.v = io_pt[1];
+
+	lp = pj_inv( xy, sProj);
+
+	io_pt[0] = lp.u * RAD_TO_DEG;
+	io_pt[1] = lp.v * RAD_TO_DEG;
+}
+
 bool shape_in_bounds(SHPObject * obj)
 {
-	if(obj->dfXMax < s_crop[0])	return false;
-	if(obj->dfXMin > s_crop[2])	return false;
-	if(obj->dfYMax < s_crop[1])	return false;
-	if(obj->dfYMin > s_crop[3]) return false;
-								return true;
+	Point2	lo(obj->dfXMin,obj->dfYMin);
+	Point2	hi(obj->dfXMax,obj->dfYMax);
+	if(sProj)
+	{
+		reproj(lo);
+		reproj(hi);
+	}
+	if(hi.x() < s_crop[0]) return false;
+	if(lo.x() > s_crop[2]) return false;
+	if(hi.y() < s_crop[1]) return false;
+	if(lo.y() > s_crop[3]) return false;
+						   return true;
 }
 
 inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2)
@@ -186,11 +222,22 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 
 		if(rule_ok) return r->feature;
 	}
-	return NO_VALUE;
+	return -1;
 }
 
 static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 {
+	if(inTokenLine[0] == "PROJ")
+	{
+		vector<char*> args;
+		for(int n = 1; n < inTokenLine.size(); ++n)
+			args.push_back(strdup(inTokenLine[n].c_str()));
+		if(sProj) pj_free(sProj);
+		sProj = pj_init(args.size(),&*args.begin());
+		for(int n = 0; n < args.size(); ++n)
+			free(args[n]);
+		return true;
+	}
 	if(inTokenLine[0] == "SHAPE_FEATURE" || inTokenLine[0] == "SHAPE_ARC_REVERSE" || inTokenLine[0] == "SHAPE_ARC_BRIDGE")
 	{
 		if((inTokenLine[0] == "SHAPE_FEATURE" && inTokenLine.size() != 4) ||
@@ -294,14 +341,25 @@ public:
 	}
 };
 
+static void round_grid(Point2& io_pt, int steps)
+{
+	int x_steps = round((io_pt.x() - s_crop[0]) * (double) steps / (s_crop[2] - s_crop[0]));
+	int y_steps = round((io_pt.y() - s_crop[1]) * (double) steps / (s_crop[3] - s_crop[1]));
+	
+	io_pt.x_ = s_crop[0] + (double) x_steps * (s_crop[2] - s_crop[0]) / (double) steps;
+	io_pt.y_ = s_crop[1] + (double) y_steps * (s_crop[3] - s_crop[1]) / (double) steps;
+}
 
-bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], ProgressFunc	inFunc)
+bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], double simplify_mtr, int grid_steps, ProgressFunc	inFunc)
 {
 		int		killed = 0, total = 0;
 		int		entity_count;
 		int		shape_type;
 		double	bounds_lo[4], bounds_hi[4];
 		static bool first_time = true;
+
+	if(sProj) pj_free(sProj);sProj=NULL;
+
 
 	for(int n = 0; n < 4; ++n)
 		s_crop[n] = bounds[n];
@@ -312,14 +370,33 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		RegisterLineHandler("ROAD_LAYER_TAG",ShapeLineImporter, NULL);
 		RegisterLineHandler("SHAPE_ARC_REVERSE",ShapeLineImporter, NULL);
 		RegisterLineHandler("SHAPE_ARC_BRIDGE",ShapeLineImporter, NULL);
+		RegisterLineHandler("PROJ",ShapeLineImporter, NULL);
 		first_time = false;
 	}
 
 	SHPHandle file =  SHPOpen(in_file, "rb");
 	if(!file) 
 		return false;
-
+		
+	// Gotta do this before we crop out the whole file.  Why?  Cuz we might wnat the projection info!
+	if(flags & shp_Mode_Map)
+	{
+		sShapeRules.clear();
+		sLineReverse.clear();
+		sLineBridge.clear();
+		sLayerTag.clear();
+		if (!LoadConfigFile(feature_desc))
+		{
+			printf("Could not load shape mapping file %s\n", feature_desc);
+			SHPClose(file);
+			return false;
+		}
+	}
+	
 	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
+	if(sProj) reproj(bounds_lo);
+	if(sProj) reproj(bounds_hi);
+
 	if(flags & shp_Use_Crop)
 	{
 		if(bounds_lo[0] > bounds[2] ||
@@ -341,20 +418,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	if(flags & shp_Mode_Simple)
 		feat = LookupToken(feature_desc);
 
-	if(flags & shp_Mode_Map)
-	{
-		sShapeRules.clear();
-		sLineReverse.clear();
-		sLineBridge.clear();
-		sLayerTag.clear();
-		if (!LoadConfigFile(feature_desc))
-		{
-			printf("Could not load shape mapping file %s\n", feature_desc);
-			SHPClose(file);
-			return false;
-		}
-	}
-	
 	DBFHandle db = NULL;
 	if(flags & shp_Mode_Map)
 	{
@@ -413,7 +476,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	{
 		SHPObject * obj = SHPReadObject(file, n);
 		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != NO_VALUE))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
 		for (int part = 0; part < obj->nParts; ++part)
 		{
 			int start_idx = obj->panPartStart[part];
@@ -421,6 +484,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			for (int i = start_idx; i < stop_idx; ++i)
 			{
 				Point2 pt(obj->padfX[i],obj->padfY[i]);
+				if(sProj)		reproj(pt);
+				if(grid_steps)  round_grid(pt, grid_steps);
 				nodes[pt]++;
 			}
 		}
@@ -445,7 +510,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != NO_VALUE))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
 		switch(obj->nSHPType) {
 		case SHPT_POINT:
 		case SHPT_POINTZ:
@@ -458,11 +523,11 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			{
 				feature_map[n] = feat;
 				if(db) {
-					feature_rev[n] = want_this_thing(db,obj->nShapeId, sLineReverse) != NO_VALUE ? 1 : 0;
+					feature_rev[n] = want_this_thing(db,obj->nShapeId, sLineReverse) != -1 ? 1 : 0;
 					if(!sLayerTag.empty() && sLayerID != -1)
 						feature_lay[n] = DBFReadIntegerAttribute(db, obj->nShapeId, sLayerID);
 					if(sLayerTag.empty() || sLayerID == -1 || DBFIsAttributeNULL(db, obj->nShapeId, sLayerID))
-					if(want_this_thing(db,obj->nShapeId,sLineBridge) != NO_VALUE)
+					if(want_this_thing(db,obj->nShapeId,sLineBridge) != -1)
 						feature_lay[n] = 1;
 				}	
 				for (int part = 0; part < obj->nParts; ++part)
@@ -473,6 +538,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point2 pt(obj->padfX[i],obj->padfY[i]);
+						if(sProj)	   reproj(pt);
+						if(grid_steps) round_grid(pt, grid_steps);						
 						if(p.empty() || pt != p.back())
 						{
 							p.push_back(pt);
@@ -480,11 +547,17 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					}
 					vector<Point2> reduced;
 					node_checker checker(nodes);
-					douglas_peuker(p.begin(),p.end()-1, 
-							back_inserter(reduced),
-								(5.0 * MTR_TO_NM * NM_TO_DEG_LAT)*(5.0 * MTR_TO_NM * NM_TO_DEG_LAT),
-								checker);
-					reduced.push_back(p.back());
+					if(simplify_mtr)
+					{
+						douglas_peuker(p.begin(),p.end()-1, 
+								back_inserter(reduced),
+									(simplify_mtr * MTR_TO_NM * NM_TO_DEG_LAT)*(simplify_mtr * MTR_TO_NM * NM_TO_DEG_LAT),
+									checker);
+						reduced.push_back(p.back());
+						killed += (p.size() - reduced.size());
+						p.clear();
+					} else
+						swap(p,reduced);
 					
 					/* 
 					// we could see what points we killed.
@@ -493,7 +566,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						debug_mesh_point(p[dp],1,1,1);
 					*/
 					
-					killed += (p.size() - reduced.size());
 					total += (p.size());
 //					DebugAssert(reduced.size() >= 2);
 					for(int i = 1; i < reduced.size(); ++i)
@@ -531,12 +603,19 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point_2 pt(obj->padfX[i],obj->padfY[i]);
+						if(grid_steps || sProj) 
+						{
+							Point2 raw_pt(obj->padfX[i],obj->padfY[i]);
+							if(sProj) reproj(raw_pt);
+							if(grid_steps) round_grid(raw_pt, grid_steps);
+							pt = ben2cgal(raw_pt);
+						}
 						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
 							p.push_back(pt);
 					}
-
+					
 					DebugAssert(p[0] == p[p.size()-1]);
-					while(p[0] == p[p.size()-1])
+					while(p.size() > 0 && p[0] == p[p.size()-1])
 						p.erase(p.vertices_end()-1);
 
 					if(p.size() > 2)

@@ -35,6 +35,13 @@ struct	GISTool_CmdInfo_t {
 };
 
 static map<string, GISTool_CmdInfo_t>		sCmds;
+static int									sSkip = 0;
+
+void	GISTool_SetSkip(int n)
+{
+	if(gVerbose)	printf("Skipping next %d commands.\n",n);
+	sSkip = n;
+}
 
 void	GISTool_RegisterCommand(
 						const char *		inName,
@@ -149,10 +156,25 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 					cname, minp, maxp, (unsigned long long)cmdargs.size());
 				return 1;
 			} else {
-				StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);
-				int result = cmd(cmdargs);
-				delete timer;
-				if (result != 0) return result;
+				if(sSkip > 0)
+				{
+					--sSkip;
+				}
+				else
+				{
+					try {
+						StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);
+						int result = cmd(cmdargs);
+						delete timer;
+						if (result != 0) return result;
+					} catch(const char * msg) {
+						printf("Caught: %s\n", msg);
+						return 1;
+					} catch(exception& x) {
+						printf("%s\n",x.what());
+						return 1;
+					}	
+				}
 			}
 		}
 	}

@@ -37,6 +37,7 @@
 #include "RF_Msgs.h"
 #include "ParamDefs.h"
 #include "AptIO.h"
+#include "AptAlgs.h"
 #include "XESIO.h"
 
 #include "GISUtils.h"

@@ -32,6 +32,16 @@
 #include "DEMDefs.h"
 #include "PerfUtils.h"
 #include "MapHelpers.h"
+#if DEV
+#include "GISTool_Globals.h"
+#endif
+
+#if CGAL_BETA_SIMPLIFIER
+#include <CGAL/Polyline_simplification_2.h>
+#include <CGAL/Polyline_simplification_2/Squared_distance_cost.h>
+#include <CGAL/Polyline_simplification_2/Stop_below_cost_threshold.h>
+//#include <CGAL/Polyline_simplification_2/Visitor_base.h>
+#endif
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
@@ -277,7 +287,7 @@ void	CutInside(
 	// geometric queries, but for an AABB that's only 4 inserts, way cheaper than nlogn on
 	// 500,000 edges!!
 	for(int n = 0; n < v.size(); ++n)
-		CGAL::insert_curve(ioMap, v[n]);
+		CGAL::insert(ioMap, v[n]);
 
 //	DebugAssert(CGAL::is_valid(ioMap));
 
@@ -1908,3 +1918,315 @@ int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& de
 	return floor(rasterizer.masters.front().y1);
 }
 
+/************************************************************************************************************************************************************************************************
+ *
+ ************************************************************************************************************************************************************************************************/
+#pragma mark -
+
+#if CGAL_BETA_SIMPLIFIER
+
+#define DUMP_INPUT_DATA 0
+
+typedef CGAL::Simplify_polylines_2<FastKernel>		Simplify_polylines_2;
+
+static bool BuildEdgeString(Halfedge_handle e, vector<Point_2>& out_pts)
+{
+	out_pts.push_back(e->source()->point());
+	Vertex_handle start_v = e->source();
+	while(1)
+	{
+		e->data().mMark = true;
+		e->twin()->data().mMark = true;
+		out_pts.push_back(e->target()->point());
+		if(e->target()->degree() != 2) 
+			break;	
+		if(e->next()->data().mMark)
+			break;
+		DebugAssert(e->next() != e->twin());
+		e = e->next();
+	}
+	
+	if(e->target() == start_v)
+	{
+		DebugAssert(out_pts.size() > 1);
+		DebugAssert(out_pts.front() == out_pts.back());
+		out_pts.pop_back();
+		return true;
+	}
+	return false;
+}
+
+template <typename PS>
+class Visitor_base {
+public:
+	typedef typename PS::Vertex_handle Vertex_handle;
+
+  virtual void OnStarted() const {} 
+  virtual void OnFinished() const {} 
+  virtual void OnStopConditionReached() const {} 
+  virtual void OnCollected( Vertex_handle const& vertex ) const {}                
+  virtual void OnSelected( Vertex_handle const& vertex, boost::optional<double> const& cost, unsigned initial_count, unsigned current_count) const {}                
+  virtual void OnRemoving( Vertex_handle const& p, Vertex_handle const& q, Vertex_handle const& r) const {}          
+  virtual void OnRemoved( Vertex_handle const& p, Vertex_handle const& r) const {}        
+  virtual void OnNonRemovable( Vertex_handle const& vertex) const {}                
+};
+
+void debug_he_dir(Halfedge_handle he, Pmwx * pmwx)
+{
+//	cerr << "p1 = " << he->source()->point() << " and target pt is " << he->target()->point() << "\n";
+   CGAL::Comparison_result res = pmwx->geometry_traits()->compare_xy_2_object()(he->source()->point(), he->target()->point());
+
+  if (res == CGAL::SMALLER)
+  {
+    DebugAssert (he->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+  }
+  else if (res == CGAL::LARGER)
+  {
+    DebugAssert (he->direction() == CGAL::ARR_RIGHT_TO_LEFT);
+	}
+}
+
+struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
+{
+	map<Point_2, Pmwx::Vertex_handle> *		vertex_lookup_table;
+	Pmwx *									pmwx;
+
+	virtual void OnSelected( Vertex_handle const& v2, boost::optional<double> const& cost, unsigned initial_count, unsigned current_count) const
+	{
+	}
+
+	virtual void OnRemoving(Vertex_handle v1, Vertex_handle v2, Vertex_handle v3) const
+	{
+		map<Point_2, Pmwx::Vertex_handle>::iterator i = vertex_lookup_table->find(v2->point());
+		DebugAssert(i != vertex_lookup_table->end());
+		
+		Pmwx::Vertex_handle dead = i->second;
+		vertex_lookup_table->erase(i);
+		
+		DebugAssert(dead->degree() == 2);
+		
+		Halfedge_handle e1 = dead->incident_halfedges();
+		Halfedge_handle e2 = e1->next();
+		
+		DebugAssert(e1->target() == e2->source());
+		DebugAssert(e2->source() == dead);
+		DebugAssert(dead->point() == v2->point());
+		
+		DebugAssert(
+			(e1->source()->point() == v1->point() && e2->target()->point() == v3->point()) ||
+			(e1->source()->point() == v3->point() && e2->target()->point() == v1->point())
+		);
+		
+		if(e2->next()->target() == e1->source() ||			// Circulate both us and our twins - if our outside CCB is connected to something like a road at the point not being
+		   e1->twin()->next()->target() == e2->target())	// removed it is still legal to collapse our triangle.
+		{
+			DebugAssert(e1->face() != e1->twin()->face());
+			DebugAssert(e2->face() != e2->twin()->face());
+			DebugAssert(e1->face() == e2->face());
+			DebugAssert(e1->twin()->face() == e2->twin()->face());
+			
+			// The face we want to preserve is the one that is NOT the tiny triangle we are about to nuke.
+			// BUT: consider an isolated triangle!  We can go around the triangle whether we are on the INSIDE or the
+			// OUTSIDE.  So 
+
+			CGAL::Orientation o = CGAL::orientation(e1->source()->point(), dead->point(), e2->target()->point());
+			DebugAssert(o != CGAL::COLLINEAR);
+			
+			if(o == CGAL::COUNTERCLOCKWISE)
+			{
+				// CCW - e1 is "inside" the triangle.  e1 takes data from its twin (that is, the great wide world).
+				e1->face()->set_data(e1->twin()->face()->data());
+			}
+			else
+			{
+				// CW - we actually went around the outside of the triangle - outside the tri must not be touching anything at least on the part
+				// we went around.  Go the other way.
+				e1->twin()->face()->set_data(e1->face()->data());
+			}
+			Face_handle left_over = pmwx->remove_edge(e1);
+			DebugAssert(e2->face() == e2->twin()->face());
+			DebugAssert(e2->face() == left_over);			
+			pmwx->remove_edge(e2);
+			#if DEV
+				debug_mesh_point(cgal2ben(v2->point()),1,1,0);			
+			#endif
+		}
+		else
+		{			
+			Curve_2	nc(Segment_2(e1->source()->point(),e2->target()->point()));
+			
+			CGAL::Arr_halfedge_direction old_dir = e1->direction();
+			CGAL::Arr_halfedge_direction new_dir = nc.is_directed_right() ? CGAL::ARR_LEFT_TO_RIGHT : CGAL::ARR_RIGHT_TO_LEFT;
+
+			Halfedge_handle m = pmwx->merge_edge(e1,e2,nc);
+			
+			CGAL::Arr_halfedge_direction retained_dir = m->direction();
+			
+			Halfedge_handle t = m->twin();
+
+			typedef CGAL::Arr_accessor<Pmwx>::Dcel_halfedge          DHalfedge;
+
+			if(new_dir != retained_dir)
+			{
+				DHalfedge * dcel_he = &(*m);
+				dcel_he->set_direction(new_dir);
+			}
+			
+			#if DEV			
+				debug_he_dir(m, pmwx);
+				debug_he_dir(t, pmwx);
+				debug_mesh_point(cgal2ben(v2->point()), 1,0,0);
+			#endif
+		}
+	}
+};
+
+#if DEV
+void debug_poly_line(const vector<Point_2>& pts,bool loop)
+{
+	if(loop)
+	{
+		DebugAssert(pts.size() > 2);
+		debug_mesh_line(cgal2ben(pts[0]),cgal2ben(pts[1]),0,0,1, 0,1,0);
+		for(int n = 2; n < pts.size(); ++n)
+			debug_mesh_line(cgal2ben(pts[n-1]),cgal2ben(pts[n]),1,0,0, 0,1,0);
+		debug_mesh_line(cgal2ben(pts[pts.size()-1]),cgal2ben(pts[0]),1,0,0, 1,1,1);
+	}
+	else
+	{
+		if(pts.size() == 2)
+			debug_mesh_line(cgal2ben(pts[0]),cgal2ben(pts[1]),0,0,1, 1,1,0);
+		else {
+			debug_mesh_line(cgal2ben(pts[0]),cgal2ben(pts[1]),0,0,1, 0,1,0);
+			for(int n = 2; n < pts.size()-1; ++n)
+				debug_mesh_line(cgal2ben(pts[n-1]),cgal2ben(pts[n]),1,0,0, 0,1,0);
+			debug_mesh_line(cgal2ben(pts[pts.size()-2]),cgal2ben(pts[pts.size()-1]),1,0,0, 1,1,0);
+		}
+	}
+}
+#endif
+
+void insert_poly_line(Simplify_polylines_2& simplifier, const vector<Point_2>& pts, bool loop)
+{
+	if(!loop && simplifier.pct().number_of_vertices()==0 && pts.size() == 2)
+		printf("WE WILL CRASH.\n");
+	#if DUMP_INPUT_DATA
+	printf("pts.clear();\n");
+	for(int n = 0; n < pts.size(); ++n)
+		printf("pts.push_back(Point_2(%lf,%lf))\n",
+			CGAL::to_double(pts[n].x()),
+			CGAL::to_double(pts[n].y()));
+	if(loop)
+		printf("simplifier.insert_polygon(pts.begin(),pts.end());");
+	else
+		printf("simplifier.insert_polyline(pts.begin(),pts.end());");
+	#endif
+	
+	if(loop)
+		simplifier.insert_polygon(pts.begin(),pts.end());
+	else
+		simplifier.insert_polyline(pts.begin(),pts.end());
+}
+
+#endif
+
+void MapSimplify(Pmwx& pmwx, double metric)
+{
+#if CGAL_BETA_SIMPLIFIER
+	Simplify_polylines_2	simplifier;
+	
+	Pmwx::Halfedge_iterator e;
+	Pmwx::Vertex_iterator v;
+	Pmwx::Face_iterator f;
+	
+	map<Point_2, Pmwx::Vertex_handle>		vertex_lookup_table;
+	
+
+	for(e = pmwx.halfedges_begin(); e != pmwx.halfedges_end(); ++e)
+		e->data().mMark = false;
+
+	for(e = pmwx.halfedges_begin(); e != pmwx.halfedges_end(); ++e)
+	if(!e->data().mMark)
+	if(e->source()->degree() != 2)
+	{
+		vector<Point_2>	pts;
+		bool loop = BuildEdgeString(e,pts);
+
+		DebugAssert(pts.size() > 1);
+//		debug_poly_line(pts,loop);		
+		insert_poly_line(simplifier,pts,loop);
+	}			
+
+	for(e = pmwx.halfedges_begin(); e != pmwx.halfedges_end(); ++e)
+	if(!e->data().mMark)
+	{
+		vector<Point_2>	pts;
+		bool loop = BuildEdgeString(e,pts);
+
+		DebugAssert(pts.size() > 2);
+		DebugAssert(loop);
+		
+//		debug_poly_line(pts,loop);
+		insert_poly_line(simplifier,pts,loop);
+	}			
+
+	#if DEV
+	for(e = pmwx.halfedges_begin(); e != pmwx.halfedges_end(); ++e)
+		DebugAssert(e->data().mMark);
+	#endif
+
+#if 0
+	for(f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f)
+	{
+		if(!f->is_unbounded())
+		{
+			vector<Point_2> pts;
+			Pmwx::Ccb_halfedge_circulator circ, stop;
+			circ = stop = f->outer_ccb();
+			do {
+				pts.push_back(circ->target()->point());
+				++circ;
+			} while (circ != stop);
+			
+			if(pts.size() > 2)
+			insert_poly_line(simplifier,pts,true);
+		}
+		for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+		{
+			vector<Point_2> pts;
+			Pmwx::Ccb_halfedge_circulator circ, stop;
+			circ = stop = *h;
+			do {
+				pts.push_back(circ->target()->point());
+				++circ;
+			} while (circ != stop);
+			
+			if(pts.size() > 2)
+			insert_poly_line(simplifier,pts,true);			
+		}
+	}	
+#endif	
+	
+	for(v = pmwx.vertices_begin(); v != pmwx.vertices_end(); ++v)
+	if(v->degree() > 0)
+	{
+		DebugAssert(vertex_lookup_table.count(v->point()) == 0);
+		vertex_lookup_table.insert(map<Point_2,Pmwx::Vertex_handle>::value_type(v->point(), v));
+	}
+	
+	CGAL::Polyline_simplification_2::Stop_below_cost_threshold stop(metric*metric);
+	CGAL::Polyline_simplification_2::Squared_distance_cost cost;
+	UpdatePmwx visitor ;
+	visitor.pmwx = &pmwx;
+	visitor.vertex_lookup_table = &vertex_lookup_table;
+
+	simplifier.simplify(stop, cost, visitor) ;
+
+#if DEV
+//	for(v = pmwx.vertices_begin(); v != pmwx.vertices_end(); ++v)
+//	if(!pmwx._is_valid(v))
+//		debug_mesh_point(cgal2ben(v->point()),1,1,1);
+#endif		
+
+#endif
+}

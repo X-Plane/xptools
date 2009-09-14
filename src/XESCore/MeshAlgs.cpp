@@ -22,6 +22,7 @@
  *
  */
 
+#include "GISTool_Globals.h"
 #include "MapDefs.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
@@ -991,6 +992,8 @@ static Halfedge_handle ExtendLanduseEdge(Halfedge_handle start)
 
 	start->data().mMark = true;
 	start->twin()->data().mMark = true;
+	return start;
+	
 	Vector_2 dir_v(start->source()->point(), start->target()->point());
 	dir_v = normalize(dir_v);
 
@@ -1089,6 +1092,17 @@ void CollectPointsAlongLine(const Point_2& p1, const Point_2& p2, vector<Point_2
 
 }
 
+#if DEV
+static void dump_ccb(Face_const_handle f)
+{
+	Pmwx::Ccb_halfedge_const_circulator circ, stop;
+	circ = stop = f->outer_ccb();
+	do {
+		cout << circ->target()->point() << "\n";
+	} while(++circ != stop);
+}
+#endif
+
 /*
  * AddWaterMeshPoints
  *
@@ -1133,6 +1147,9 @@ void	AddWaterMeshPoints(
 			he->data().mParams.count(he_MustBurn) ||
 			he->twin()->data().mParams.count(he_MustBurn)))
 		{
+			DebugAssert(!f1->is_unbounded());
+			DebugAssert(!f2->is_unbounded());
+			
 			Halfedge_handle extended1 = ExtendLanduseEdge(he);
 			Halfedge_handle extended2 = ExtendLanduseEdge(he->twin());
 			//Point_2	p1(extended2->target()->point().x(), extended2->target()->point().y());
@@ -1171,6 +1188,12 @@ void	AddWaterMeshPoints(
 
 				if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA)
 					AssertPrintf("ERROR: missing elevation data for constraint.\n");
+//				cout << "constraint: " << pts[n-1] << " to " << pts[n] << "\n";				
+//				cout << "face 1: \n";				
+//				dump_ccb(f1);
+//				cout << "face 2: \n";
+//				dump_ccb(f2);
+//				
 				v1 = outMesh.insert(pts[n-1]);
 				v1->info().height = e1;
 				locale = v1->face();
@@ -1374,6 +1397,14 @@ void CalculateMeshNormals(CDT& ioMesh)
                 v2.normalize();
                 Vector3 normal(v1.cross(v2));
                 DebugAssert(normal.dx != 0.0 || normal.dy != 0.0 || normal.dz != 0.0);
+#if DEV && 0
+				if(normal.dz < 0.0)
+				{	
+					debug_mesh_point(cgal2ben(i->point()),1,1,1);
+					debug_mesh_point(cgal2ben(last->point()),1,1,1);
+					debug_mesh_point(cgal2ben(nowi->point()),1,1,1);
+				}
+#endif				
                 DebugAssert(normal.dz > 0.0);
                 normal.normalize();
  /*
@@ -1710,7 +1741,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
-	CGAL::make_conforming_Delaunay_2(outMesh);					// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
+//	CGAL::make_conforming_Delaunay_2(outMesh);					// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
 																// across inserts.  To get around this, simply note how many vertices we inserted.  Note that we are assuming
 	CDT::Vertex_iterator v1,v2,v;								// vertices to be inserted into the END of the iteration list!
 	v1 = outMesh.vertices_begin();
@@ -1793,8 +1824,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	DEMGeo&	inTemp(inDEMs[dem_Temperature]);
 	DEMGeo&	inTempRng(inDEMs[dem_TemperatureRange]);
 	DEMGeo&	inRain(inDEMs[dem_Rainfall]);
-	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
-	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
+//	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
+//	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
 	DEMGeo& inUrbanTransport(inDEMs[dem_UrbanTransport]);
 	DEMGeo& usquare(inDEMs[dem_UrbanSquare]);
 
@@ -1843,21 +1874,21 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float lu2 = landuse.search_nearest(x1,y1);
 				float lu3 = landuse.search_nearest(x2,y2);
 
-				float cl  = inClimate.search_nearest(center_x, center_y);
-				float cl1 = inClimate.search_nearest(x0,y0);
-				float cl2 = inClimate.search_nearest(x1,y1);
-				float cl3 = inClimate.search_nearest(x2,y2);
+//				float cl  = inClimate.search_nearest(center_x, center_y);
+//				float cl1 = inClimate.search_nearest(x0,y0);
+//				float cl2 = inClimate.search_nearest(x1,y1);
+//				float cl3 = inClimate.search_nearest(x2,y2);
 
 				// Ben sez: tiny island in the middle of nowhere - do NOT expect LU.  That's okay - Sergio doesn't need it.
 //				if (lu == DEM_NO_DATA)
 //					fprintf(stderr, "NO data anywhere near %f, %f\n", center_x, center_y);
 				lu = MAJORITY_RULES(lu,lu1,lu2, lu3);
-				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
+//				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
 
-				float	el1 = inElevation.value_linear(x0,y0);
-				float	el2 = inElevation.value_linear(x1,y1);
-				float	el3 = inElevation.value_linear(x2,y2);
-				float	el = SAFE_AVERAGE(el1, el2, el3);
+//				float	el1 = inElevation.value_linear(x0,y0);
+//				float	el2 = inElevation.value_linear(x1,y1);
+//				float	el3 = inElevation.value_linear(x2,y2);
+//				float	el = SAFE_AVERAGE(el1, el2, el3);
 
 				float	sl1 = inSlope.value_linear(x0,y0);
 				float	sl2 = inSlope.value_linear(x1,y1);
@@ -1899,15 +1930,15 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 									(tri->neighbor(1)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(1))) ||
 									(tri->neighbor(2)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(2)));
 
-				float	uden1 = inUrbanDensity.value_linear(x0,y0);
-				float	uden2 = inUrbanDensity.value_linear(x1,y1);
-				float	uden3 = inUrbanDensity.value_linear(x2,y2);
-				float	uden = SAFE_AVERAGE(uden1, uden2, uden3);	// Could be safe max.
+//				float	uden1 = inUrbanDensity.value_linear(x0,y0);
+//				float	uden2 = inUrbanDensity.value_linear(x1,y1);
+//				float	uden3 = inUrbanDensity.value_linear(x2,y2);
+//				float	uden = SAFE_AVERAGE(uden1, uden2, uden3);	// Could be safe max.
 
-				float	urad1 = inUrbanRadial.value_linear(x0,y0);
-				float	urad2 = inUrbanRadial.value_linear(x1,y1);
-				float	urad3 = inUrbanRadial.value_linear(x2,y2);
-				float	urad = SAFE_AVERAGE(urad1, urad2, urad3);	// Could be safe max.
+//				float	urad1 = inUrbanRadial.value_linear(x0,y0);
+//				float	urad2 = inUrbanRadial.value_linear(x1,y1);
+//				float	urad3 = inUrbanRadial.value_linear(x2,y2);
+//				float	urad = SAFE_AVERAGE(urad1, urad2, urad3);	// Could be safe max.
 
 				float	utrn1 = inUrbanTransport.value_linear(x0,y0);
 				float	utrn2 = inUrbanTransport.value_linear(x1,y1);
@@ -1944,9 +1975,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (sh_tri >  0.7)	variant_head = 5;
 
 				//fprintf(stderr, " %d", tri->info().feature);
-				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
+				int terrain = FindNaturalTerrain(tri->info().feature, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, /* uden, urad, */ utrn, usq, fabs((float) center_y), variant_blob, variant_head);
 				if (terrain == -1)
-					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
+					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 
 				tri->info().debug_slope_dem = sl;
 				tri->info().debug_slope_tri = sl_tri;
@@ -1957,9 +1988,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
-					AssertPrintf("Hit %s rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
+					AssertPrintf("Hit %s rule. lu=%s, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
 						FetchTokenString(gNaturalTerrainTable.back().name),
-						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh_tri, center_y);
+						FetchTokenString(lu), /*el,*/ acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh_tri, center_y);
 				}
 				//fprintf(stderr, "->%d", terrain);
 

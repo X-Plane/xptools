@@ -30,6 +30,7 @@
 #include "RF_MapZoomer.h"
 #include "RF_MapTool.h"
 #include "ObjTables.h"
+#include "AptAlgs.h"
 #include "RF_Progress.h"
 #include "RF_SelectionTool.h"
 #include "RF_CropTool.h"
@@ -97,7 +98,7 @@ struct	DEMViewInfo_t {
 static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
-{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
+//{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
@@ -106,7 +107,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_TemperatureSeaLevel,"Sea Level Temperature"			,	dem_TemperatureSeaLevel,	true,	false,	"SL Temp=%fC "	},
 {		dem_TemperatureRange,	"Temperature Range"				,	dem_TemperatureRange,		true,	false,	"TempR=%fC "	},
 {		dem_UrbanDensity,		"Urban Density"					,	dem_UrbanDensity,			true,	false,	"Density=%f "	},
-{		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
+//{		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
 {		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Urban Rad=%f "	},
 {		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Urban Trns=%f "},
 {		dem_UrbanSquare,		"Urban Square"					,	dem_UrbanSquare,			true,	false,	"Square=%f "	},

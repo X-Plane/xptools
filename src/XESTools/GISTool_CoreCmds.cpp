@@ -27,6 +27,7 @@
 #include "MapTopology.h"
 #include "MapOverlay.h"
 #include "PerfUtils.h"
+#include "AptAlgs.h"
 #include "MeshDefs.h"
 #include "MapAlgs.h"
 #include "XFileTwiddle.h"
@@ -346,6 +347,25 @@ static int DoSave(const vector<const char *>& args)
 	}
 }
 
+static int DoIfEmpty(const vector<const char *>& args)
+{
+	int nland = 0;
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	{
+		if (!f->data().IsWater())
+			++nland;
+		if (nland > 0)
+			break;
+	}
+	if(nland > 0)
+		GISTool_SetSkip(atoi(args[0]));
+	return 0;
+}
+
+
+
+
 static int DoCropSave(const vector<const char *>& args)
 {
 	Point_2	sw, ne;
@@ -423,6 +443,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-validate", 		0, 0, DoValidate, 		"Test vector map integrity.", "" },
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },
 { "-save", 			1, 1, DoSave, 			"Save an XES file.", "" },
+{ "-ifempty",		1, 1, DoIfEmpty,		"Skip the next N commands unless the map is empty.", "" },
 { "-cropsave", 		1, 1, DoCropSave, 		"Save only extent as an XES file.", "" },
 { "-overlay", 		1, 1, DoOverlay, 		"Superimpose/replace a second vector map.", "" },
 { "-merge", 		1, 1, DoMerge,			"Superimpose/merge a second vector map.", "" },

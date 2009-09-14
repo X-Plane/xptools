@@ -188,8 +188,8 @@ int	main(int argc, char * argv[])
 		if (can_profile) 	can_profile = chudAcquireRemoteAccess() == chudSuccess;
 		else 							  chudCleanup();
 #endif
-		for(int n = 0; n < args.size(); ++n)
-			printf("%d) '%s'\n", n,args[n]);
+//		for(int n = 0; n < args.size(); ++n)
+//			printf("%d) '%s'\n", n,args[n]);
 		result = GISTool_ParseCommands(args);
 
 #if USE_CHUD

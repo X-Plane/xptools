@@ -68,4 +68,6 @@ int		GISTool_PrintHelpCommand(const char * inCommand);
 
 int		GISTool_ParseCommands(const vector<const char *>& inArgs);
 
+void	GISTool_SetSkip(int n);
+
 #endif /* GISTOOL_UTILS_H */

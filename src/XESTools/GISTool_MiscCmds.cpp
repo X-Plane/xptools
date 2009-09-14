@@ -242,6 +242,7 @@ int DoMakeWetCoverage(const vector<const char *>& args)
 	char buf[1024];
 	const char * dir = args[0];
 	const char * fname = args[1];
+	unsigned long long total = 0;
 	FILE * fi = fopen(fname, "wb");
 	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 1; }
 	else {
@@ -270,6 +271,8 @@ int DoMakeWetCoverage(const vector<const char *>& args)
 				}
 				else
 				{					
+					++c;
+					total += (a_map.number_of_halfedges() / 2);
 					double a = 0.0f;
 					for(Pmwx::Face_iterator f = a_map.faces_begin(); f != a_map.faces_end(); ++f)
 					if(!f->is_unbounded())
@@ -284,7 +287,7 @@ int DoMakeWetCoverage(const vector<const char *>& args)
 			}
 		}
 		fclose(fi);
-		printf("Found %d files.\n", c);
+		printf("Found %d files.  %lld half-edges\n", c, total);
 	}
 	return 0;
 }
@@ -318,7 +321,7 @@ int DoMakeLUCoverage(const vector<const char *>& args)
 				for(int xx = 0; xx < g.mWidth; ++xx)
 				if (g.get(xx,yy) == lu) ++c;
 				
-				fputc(254.0 * (float) c / (float) t,fi);
+				fputc(100.0 * (float) c / (float) t,fi);
 			}			
 		}
 		fclose(fi);
@@ -343,18 +346,40 @@ int InitFromLU(const vector<const char *>& args)
 	c.push_back(c3);
 	c.push_back(c4);
 	gMap.clear();
-	CGAL::insert_curves(gMap, c.begin(),c.end());
+	CGAL::insert(gMap, c.begin(),c.end());
 
 	const unsigned char * mem = (const unsigned char * ) MemFile_GetBegin(mf);
 
 	int w = mem[360*(gMapSouth+90)+(gMapWest+180)];
-	printf("Tile is %d%% wet.\n", w * 100 / 254);
-	int lu = (w > 200) ? terrain_Water : NO_VALUE;
+	printf("Tile is %d%% wet.\n", w);
+	int lu = (w > 50) ? terrain_Water : NO_VALUE;
 	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	if(!f->is_unbounded())
 		f->data().mTerrainType = lu;
 	
 	MemFile_Close(mf);
+	return 0;
+}
+
+int InitFromWet(const vector<const char *>& args)
+{
+	Curve_2	c1(Segment_2(Point_2(gMapWest,gMapSouth),Point_2(gMapEast,gMapSouth)),0);
+	Curve_2	c2(Segment_2(Point_2(gMapEast,gMapSouth),Point_2(gMapEast,gMapNorth)),0);
+	Curve_2	c3(Segment_2(Point_2(gMapEast,gMapNorth),Point_2(gMapWest,gMapNorth)),0);
+	Curve_2	c4(Segment_2(Point_2(gMapWest,gMapNorth),Point_2(gMapWest,gMapSouth)),0);
+	vector<Curve_2>	c;
+	c.push_back(c1);
+	c.push_back(c2);
+	c.push_back(c3);
+	c.push_back(c4);
+	gMap.clear();
+	CGAL::insert(gMap, c.begin(),c.end());
+
+	int lu = terrain_Water;
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+		f->data().mTerrainType = lu;
+	
 	return 0;
 }
 
@@ -388,11 +413,12 @@ int DoDumpForests(const vector<const char *>& args)
 
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
-{ "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "" },
-{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "" },
-{ "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "" },
-{ "-lucoverage", 3, 3, DoMakeLUCoverage,			"dir output.", "" },
-{ "-luinit", 1, 1, InitFromLU,					"int from landuse." ,"" },
+{ "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
+{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
+{ "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "This produces a coverage from XES files - 0-100 = amount of water, 255=missing,254=invalid map.\n" },
+{ "-lucoverage", 3, 3, DoMakeLUCoverage,			"dir LU output.", "This makes a coverage from geotif with a certain pixel value being treated as water.  Water=0-100,255=file missing or broken.\n" },
+{ "-luinit", 1, 1, InitFromLU,						"init from landuse (LU file)." ,"Given a water coverage, this inits our tile to a single square that is all wet or dry, base on the coverage. " },
+{ "-wetinit", 0, 0, InitFromWet,						"init to all water.", ""},
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },

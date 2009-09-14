@@ -27,53 +27,13 @@
 #include "SimpleIO.h"
 #include "AssertUtils.h"
 #include "MapAlgs.h"
-
-#include <CGAL/Arr_accessor.h>
-
-// CGAL 3.3.1 has a data structure for a hole...I am trying to figure out if we need it...had code that APPEARED
-// to work without it...this controls whether half-edges link to hole structures.
-#define USE_HOLES 1
-
-// Rebuidl map
-#define REBUILD_MAP 0
+#include <CGAL/IO/Arrangement_2_writer.h>
+#include <CGAL/IO/Arrangement_2_reader.h>
 
 // Ratio of operations to an update of the progress bar.
 #define	PROGRESS_RATIO	5000
 
-typedef	CGAL::Inverse_index<Pmwx::Halfedge_const_iterator>		H_Index;
-typedef	CGAL::Inverse_index<Pmwx::Vertex_const_iterator>		V_Index;
-
-const int kMainMapID = 'MAPi';
-const int kFaceData1 = 'Fac1';
-const int kEdgeData1 = 'Edg1';
-const int kVertData1 = 'Ver1';
-
-int	CountCirculator(Pmwx::Ccb_halfedge_const_circulator circ)
-{
-	Pmwx::Ccb_halfedge_const_circulator stop = circ;
-	int n = 0;
-	do {
-		++n;
-		if (circ->face() != stop->face())
-			printf("Strange circulator error.\n");
-		++circ;
-	} while (stop != circ);
-	return n;
-}
-
-
-int	CountCirculator(Halfedge_handle circ)
-{
-	Halfedge_handle stop = circ;
-	int n = 0;
-	do {
-		++n;
-		if (circ->face() != stop->face())
-			printf("Strange circulator error.\n");
-		circ = circ->next();
-	} while (stop != circ);
-	return n;
-}
+const int kMainMapID = 'MAP2';
 
 template <class	T, class F>
 void WriteVector(IOWriter& writer, const T& v, F func)
@@ -300,427 +260,343 @@ void ReadAreaFeature(IOReader& inReader, GISAreaFeature_t& obj, const TokenConve
 	ReadParamMap(inReader, obj.mParams, c);
 }
 
+// Numeric type for now is a lazy wrapper around quotient around mp_float.
+// lazy wrapper = ptr with lazy eval and lazy op tree.  Use ctor and exact() to get around this.
+// quotient is a numerator/denominator pair to make division exact.  I/O both members.
+// MP_Float is manual floating point - mantissa is vector of shorts, exponent is double.  Just IO it all.
+
+/*
+	// This is for debugging- use without the lazy wrappers around quotient+MP_float
+void hex_print(const NT& c)
+{
+	printf("%lf/%lf ",c.num.exp,c.den.exp);
+	for(int n = 0; n < c.num.v.size(); ++n)
+		printf("%02X",c.num.v[n]);
+	printf(" ");
+	for(int n = 0; n < c.den.v.size(); ++n)
+		printf("%02X",c.den.v[n]);
+	printf("\n");
+}
+*/
+void WriteCoordinate(IOWriter& inWriter, const NT& c)
+{
+	NT::ET e = c.exact();
+	NT::ET::NT num = e.num;
+	NT::ET::NT den = e.den;
+//	NT e = c;
+//	NT::NT num = e.num;
+//	NT::NT den = e.den;
+	
+	inWriter.WriteDouble(num.exp);
+	inWriter.WriteInt(num.v.size());
+	for(int n = 0; n < num.v.size(); ++n)
+		inWriter.WriteShort(num.v[n]);
+
+	inWriter.WriteDouble(den.exp);
+	inWriter.WriteInt(den.v.size());
+	for(int n = 0; n < den.v.size(); ++n)
+		inWriter.WriteShort(den.v[n]);
+}
+
+void ReadCoordinate(IOReader& inReader, NT& c)
+{
+	int n;
+	
+	NT::ET et;
+//	NT et;
+	
+	inReader.ReadDouble(et.num.exp);
+	inReader.ReadInt(n);
+	et.num.v.clear();
+	while(n--)
+	{
+		et.num.v.push_back(short());
+		inReader.ReadShort(et.num.v.back());
+	}
+
+	inReader.ReadDouble(et.den.exp);
+	inReader.ReadInt(n);
+	et.den.v.clear();
+	while(n--)
+	{
+		et.den.v.push_back(short());
+		inReader.ReadShort(et.den.v.back());
+	}
+	
+	c = et;
+}
+
+void WritePoint(IOWriter& inWriter, const Point_2& p)
+{
+	WriteCoordinate(inWriter,p.x());
+	WriteCoordinate(inWriter,p.y());
+}
+
+void ReadPoint(IOReader& inReader, Point_2& p)
+{
+	NT	x, y;
+	ReadCoordinate(inReader,x);
+	ReadCoordinate(inReader,y);
+	p = Point_2(x,y);
+}
+
+
+#pragma mark -
+
+#define VERSION_VERTEX 1
+#define VERSION_HALFEDGE 1
+#define VERSION_FACE 1
+
+class PmwxFmt { 
+public:
+
+	typedef Pmwx										   Arrangement_2;
+	typedef Arrangement_2::Size                   Size;
+	typedef Arrangement_2::Dcel                   Dcel;
+	typedef Arrangement_2::X_monotone_curve_2     X_monotone_curve_2;
+	typedef Arrangement_2::Point_2                Point_2;
+
+	typedef Arrangement_2::Vertex_handle          Vertex_handle;
+	typedef Arrangement_2::Halfedge_handle        Halfedge_handle;
+	typedef Arrangement_2::Face_handle            Face_handle;
+
+	typedef Arrangement_2::Vertex_const_handle    Vertex_const_handle;
+	typedef Arrangement_2::Halfedge_const_handle  Halfedge_const_handle;
+	typedef Arrangement_2::Face_const_handle      Face_const_handle;
+
+	IOReader *					reader;
+	IOWriter *					writer;
+	const TokenConversionMap * 	token_map;
+	PmwxFmt(IOReader * r, const TokenConversionMap * t) : reader(r), writer(NULL), token_map(t) { }
+	PmwxFmt(IOWriter * w) : reader(NULL), writer(w), token_map(NULL) { }
+
+	void write_size (const char *label, Size size)
+	{
+		writer->WriteInt(size);
+	}
+
+	void write_arrangement_begin () { }
+	void write_arrangement_end() { }
+	void write_vertices_begin () { }
+	void write_vertices_end () { }
+	void write_edges_begin () { }
+	void write_edges_end () { }
+	void write_faces_begin () { }
+	void write_faces_end () { }
+	void write_vertex_begin () { }
+	void write_vertex_end () { }
+	void write_edge_begin () { }
+	void write_edge_end () { }
+	void write_face_begin () { }
+	void write_face_end () { }
+	void write_outer_ccbs_begin () { }
+	void write_outer_ccbs_end () { }
+	void write_inner_ccbs_begin () { }
+	void write_inner_ccbs_end () { }
+	void write_ccb_halfedges_begin() { }
+	void write_ccb_halfedges_end() { }
+	void write_isolated_vertices_begin () { }
+	void write_isolated_vertices_end () { }
+
+
+	virtual void write_point (const Point_2& p)
+	{
+		WritePoint(*writer, p);
+	}
+
+	virtual void write_vertex_data (Vertex_const_handle  v)
+	{
+		writer->WriteInt(VERSION_VERTEX);
+		// Version 1
+		writer->WriteInt(v->data().mTunnelPortal ? 1 : 0);
+	}
+
+	void write_vertex_index (int idx)
+	{
+		writer->WriteInt(idx);
+	}
+
+	virtual void write_x_monotone_curve (const X_monotone_curve_2& cv)
+	{
+		WritePoint(*writer, cv.source());
+		WritePoint(*writer, cv.target());
+		writer->WriteInt(cv.data().size());
+		for(EdgeKey_container::const_iterator e = cv.data().begin(); e != cv.data().end(); ++e)
+			writer->WriteInt(*e);
+	}
+
+	virtual void write_halfedge_data (Halfedge_const_handle e)
+	{
+		writer->WriteInt(VERSION_HALFEDGE);
+		// Version 1
+		writer->WriteInt(e->data().mTransition);
+		WriteVector(*writer, e->data().mSegments, WriteNetworkSegment);
+		WriteParamMap(*writer, e->data().mParams);
+		writer->WriteDouble(e->data().mInset);
+	}
+
+	virtual void write_face_data (Face_const_handle f)
+	{
+		writer->WriteInt(VERSION_FACE);
+		// Version 1
+		writer->WriteInt(f->data().mTerrainType);
+		WriteParamMap(*writer, f->data().mParams);
+		WriteVector(*writer, f->data().mPointFeatures, WritePointFeature);
+		WriteVector(*writer, f->data().mPolygonFeatures, WritePolygonFeature);
+		WriteAreaFeature(*writer, f->data().mAreaFeature);
+		WriteVector(*writer, f->data().mObjs, WriteObjPlacement);
+		WriteVector(*writer,f->data().mPolyObjs,WritePolyObjPlacement);
+	}
+
+	void write_halfedge_index (int idx)
+	{
+		writer->WriteInt(idx);
+	}
+
+
+	void read_arrangement_begin () { } 
+	void read_arrangement_end() { } 
+	void read_vertices_begin() { }
+	void read_vertices_end() { }
+	void read_edges_begin() { }
+	void read_edges_end() { }
+	void read_faces_begin() { }
+	void read_faces_end() { }
+	void read_vertex_begin () { }
+	void read_vertex_end () { }
+	void read_edge_begin () { }
+	void read_edge_end () { }
+	void read_face_begin () { }
+	void read_face_end () { }
+	void read_outer_ccbs_begin () { }
+	void read_outer_ccbs_end () { }
+	void read_inner_ccbs_begin () { }
+	void read_inner_ccbs_end () { }
+	void read_ccb_halfedges_begin() { }
+	void read_ccb_halfedges_end() { } 
+	void read_isolated_vertices_begin () { }
+	void read_isolated_vertices_end () { } 
+
+
+
+	Size read_size (const char* /* title */ = NULL)
+	{
+		int n;
+		reader->ReadInt(n);
+		return n;
+	}
+
+	virtual void read_point (Point_2& p) 
+	{
+		ReadPoint(*reader,p);
+	}
+
+	virtual void read_vertex_data (Vertex_handle v)
+	{
+		int vers, i;
+		reader->ReadInt(vers);
+		if(vers >= 1)
+		{
+			reader->ReadInt(i);
+			v->data().mTunnelPortal = i != 0;
+			
+		}
+	}
+
+	int read_vertex_index () 
+	{
+		int n;
+		reader->ReadInt(n);
+		return n;
+	}
+
+	virtual void read_x_monotone_curve (X_monotone_curve_2& cv) 
+	{
+		Point_2 s, t;
+		int n, v;
+		EdgeKey_container d;
+		ReadPoint(*reader,s);
+		ReadPoint(*reader,t);
+		reader->ReadInt(n);
+		while(n--)
+		{
+			reader->ReadInt(v);
+			d.insert(v);
+		}
+	
+		cv = X_monotone_curve_2(Segment_2(s,t),d);
+	}	
+		
+	virtual void read_halfedge_data (Halfedge_handle e)
+	{
+		int vers;
+		reader->ReadInt(vers);
+		if(vers >= 1)
+		{
+			reader->ReadInt(e->data().mTransition);
+			ReadVector(*reader, e->data().mSegments, ReadNetworkSegment, *token_map);
+			ReadParamMap(*reader, e->data().mParams, *token_map);
+			reader->ReadDouble(e->data().mInset);
+		}
+	}
+
+	int read_halfedge_index ()
+	{ 
+		int n;
+		reader->ReadInt(n);
+		return n;
+	}
+
+	virtual void read_face_data (Face_handle f)
+	{
+		int vers;
+		reader->ReadInt(vers);
+		if(vers >= 1)
+		{
+			reader->ReadInt(f->data().mTerrainType);
+			f->data().mTerrainType = token_map->at(f->data().mTerrainType);			
+			ReadParamMap(*reader, f->data().mParams,*token_map);
+			ReadVector(*reader, f->data().mPointFeatures, ReadPointFeature, *token_map);
+			ReadVector(*reader, f->data().mPolygonFeatures, ReadPolygonFeature, *token_map);
+			ReadAreaFeature(*reader, f->data().mAreaFeature, *token_map);
+			ReadVector(*reader, f->data().mObjs, ReadObjPlacement, *token_map);
+			ReadVector(*reader,f->data().mPolyObjs,ReadPolyObjPlacement, *token_map);
+		}
+	}
+
+	
+private:
+
+	PmwxFmt();
+	
+};	
+
+
 #pragma mark -
 
 void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 {
-	Pmwx::Face_const_iterator f;
-
 	StAtomWriter	mapAtom(fi, atomID);
 
 	if (inProgress)	inProgress(0, 1, "Writing", 0.0);
 
-	double	total = (inMap.number_of_faces() + inMap.number_of_halfedges() + inMap.number_of_vertices()) * 2.0;
+	double	total = inMap.number_of_faces() + inMap.number_of_halfedges() + inMap.number_of_vertices();
 	int	ctr = 0;
 
 	{
-			StAtomWriter 	mainMap(fi, kMainMapID);
-			FileWriter		writer(fi);
-
-		V_Index	v_index(inMap.vertices_begin(), inMap.vertices_end());
-		H_Index	h_index(inMap.halfedges_begin(), inMap.halfedges_end());
-
-		writer.WriteInt(inMap.number_of_vertices());
-		writer.WriteInt(inMap.number_of_halfedges());
-		writer.WriteInt(inMap.number_of_faces());
-
-		for (Pmwx::Vertex_const_iterator v = inMap.vertices_begin();
-			v != inMap.vertices_end(); ++v, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			writer.WriteDouble(CGAL::to_double(v->point().x()));
-			writer.WriteDouble(CGAL::to_double(v->point().y()));
-		}
-
-		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
-			he != inMap.halfedges_end(); ++he, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			writer.WriteInt(v_index[he->target()]);
-			writer.WriteDouble(CGAL::to_double(he->source()->point().x()));
-			writer.WriteDouble(CGAL::to_double(he->source()->point().y()));
-			writer.WriteDouble(CGAL::to_double(he->target()->point().x()));
-			writer.WriteDouble(CGAL::to_double(he->target()->point().y()));
-
-			// Ben says: we used to mark every other edge as dominant.  Now..since we are going to put vector data on BOTH halves of the half-edge
-			// (for the purpose of directionality) we're going to be a bit hosed anyway, but at least maintain the every-other semantics.
-			bool	was_dom = ctr % 2;
-			writer.WriteInt(was_dom);	//he->data().mDominant);
-			writer.WriteInt(he->data().mTransition);
-			writer.WriteDouble(he->data().mInset);
-		}
-
-		for (f = inMap.faces_begin();
-			f != inMap.faces_end(); ++f, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			if (f->is_unbounded())
-				writer.WriteInt(0);
-			else {
-				writer.WriteInt(CountCirculator(f->outer_ccb()));
-				Pmwx::Ccb_halfedge_const_circulator	edge, last;
-				last = edge = f->outer_ccb();
-				do {
-					// This warrants a comment - in porting to a native PM type: the reverse indexer uses
-					// iterators because it likes iterator tags to know if it can run in constant time (it can't).
-					// So we take the circulator, get the edge, take a ptr and force an iterator.  Since we use inline lists this works.
-					writer.WriteInt(h_index[Pmwx::Halfedge_const_iterator(&*edge)]);
-					++edge;
-				} while (last != edge);
-			}
-
-			writer.WriteInt(distance(f->holes_begin(), f->holes_end()));
-			for (Pmwx::Hole_const_iterator hole = f->holes_begin();
-				hole != f->holes_end(); ++hole)
-			{
-				writer.WriteInt(CountCirculator(*hole));
-				Pmwx::Ccb_halfedge_const_circulator	edge, last;
-				last = edge = *hole;
-				do {
-					writer.WriteInt(h_index[Pmwx::Halfedge_const_iterator(&*edge)]);
-					++edge;
-				} while (last != edge);
-			}
-
-			int dummy = f->data().IsWater();
-			writer.WriteInt(dummy);
-//			writer.WriteInt(f->mIsWater);
-			writer.WriteInt(f->data().mTerrainType);
-		}
-	}
-
-	{
-		StAtomWriter	edges1(fi, kEdgeData1);
+		StAtomWriter 	mainMap(fi, kMainMapID);
 		FileWriter		writer(fi);
-		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
-			he != inMap.halfedges_end(); ++he, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 
-			WriteVector(writer, he->data().mSegments, WriteNetworkSegment);
-			WriteParamMap(writer, he->data().mParams);
-		}
-	}
-
-	{
-		StAtomWriter	faces1(fi, kFaceData1);
-		FileWriter		writer(fi);
-		for (f = inMap.faces_begin();
-			f != inMap.faces_end(); ++f, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			WriteParamMap(writer, f->data().mParams);
-			WriteVector(writer, f->data().mObjs, WriteObjPlacement);
-			WriteVector(writer, f->data().mPolyObjs, WritePolyObjPlacement);
-			WriteVector(writer, f->data().mPointFeatures, WritePointFeature);
-			WriteVector(writer, f->data().mPolygonFeatures, WritePolygonFeature);
-			vector<GISAreaFeature_t>	fakeVector;
-			//fakeVector.push_back(f->data().mAreaFeature[0]);
-			WriteVector(writer, fakeVector, WriteAreaFeature);
-		}
-	}
-	{
-		StAtomWriter	vertices1(fi, kVertData1);
-		FileWriter		writer(fi);
-		for (Pmwx::Vertex_const_iterator v = inMap.vertices_begin();
-			v != inMap.vertices_end(); ++v, ++ctr)
-		{
-			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
-
-			writer.WriteBulk((char *) &v->data().mTunnelPortal, 1, false);
-		}
+		PmwxFmt	write_formatter(&writer);
+		
+		CGAL::Arrangement_2_writer<Pmwx>	arr_writer(inMap);
+		
+		arr_writer(write_formatter);
 	}
 
 	if (inProgress) inProgress(0, 1, "Writing", 1.0);
 }
 
-#pragma mark -
-
-class	MapScanner {
-public:
-
-	int			mVertices;
-	int			mFaces;
-	int			mHalfedges;
-	int			mTotal;
-	int			mCount;
-	IOReader *	mReader;
-	// yes really, pointers not handles
-	Arrangement_2&           m_arr;
-	Arr_accessor             m_arr_access;
-	vector<DFace*>		mFacesVec;
-	vector<DHalfedge*>	mHalfedgesVec;
-	vector<DVertex*>	mVerticesVec;
-	ProgressFunc 	mProgress;
-	bool			mLegacy;
-
-	MapScanner(IOReader * inReader, Pmwx & the_map, ProgressFunc func) : mReader(inReader),
-		mVertices(0), mFaces(0), mHalfedges(0), mProgress(func), mTotal(0), mCount(0), mLegacy(false),
-	    m_arr (the_map), m_arr_access (m_arr)
-	{
-		if (mProgress) mProgress(0, 1, "Reading", 0.0);
-
-	}
-
-	~MapScanner()
-	{
-		if (mProgress) mProgress(0, 1, "Reading", 1.0);
-	}
-
-	std::size_t   number_of_vertices()   const { return mVertices; }
-	std::size_t   number_of_halfedges()  const { return mHalfedges; }
-	std::size_t   number_of_faces()     const { return mFaces; }
-
-
-	void scan_pm_vhf_sizes(void)
-	{
-		mReader->ReadInt(mVertices);
-		mReader->ReadInt(mHalfedges);
-		mReader->ReadInt(mFaces);
-		mTotal = mVertices + mHalfedges + mFaces;
-	}
-
-	DVertex* scan_vertex (Pmwx& the_map)
-	{
-		++mCount;
-		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-
-		double	x, y;
-		mReader->ReadDouble(x);
-		mReader->ReadDouble(y);
-
-//		if (p == Point_2(0.0, 0.0))
-//			printf("WARNING: got null pt.\n");
-//		DVertex* v = &*CGAL::insert_point(the_map, Point_2((x),(y)));
-		Point_2 p(x,y);
-		DVertex * v = m_arr_access.new_vertex(&p,CGAL::ARR_INTERIOR,CGAL::ARR_INTERIOR);
-		mVerticesVec.push_back(v);
-		return v;
-	}
-
-	DHalfedge* scan_halfedge (DHalfedge * me)
-	{
-		++mCount;
-		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-
-		double	x1, y1, x2, y2;
-		X_monotone_curve_2 cv;
-		mReader->ReadDouble(x1);
-		mReader->ReadDouble(y1);
-		mReader->ReadDouble(x2);
-		mReader->ReadDouble(y2);
-
-//					FastKernel kernel;
-  //      FastKernel::Compare_xy_2 compare_xy =
-    //                                              kernel.compare_xy_2_object();
-
-
-		bool larger = ((x1 == x2 && y2 < y1) || (x2 < x1));
-		cv = X_monotone_curve_2(Segment_2(Point_2(x1, y1), Point_2(x2, y2)));
-		DHalfedge* h = me ? me : m_arr_access.new_edge(&cv);
-//		CGAL::Comparison_result r;
-//		h->set_direction(r = compare_xy(cv.source(),cv.target()));
-		h->set_direction(larger ? CGAL::ARR_RIGHT_TO_LEFT : CGAL::ARR_LEFT_TO_RIGHT);
-//		if(r == CGAL::LARGER) DebugAssert(!larger);
-//		if(r == CGAL::SMALLER) DebugAssert(larger);
-
-		int	dominant;
-		mReader->ReadInt(dominant);
-//		h->data().mDominant = (dominant != 0);
-		mReader->ReadInt(h->data().mTransition);
-		mReader->ReadDouble(h->data().mInset);
-
-
-		mHalfedgesVec.push_back(h);
-		return h;
-	}
-
-	void scan_face(DFace* f)
-	{
-		++mCount;
-		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
-
-		int  num_of_holes, num_halfedges_on_outer_ccb, i = 0;
-
-		mReader->ReadInt(num_halfedges_on_outer_ccb);
-
-		if (num_halfedges_on_outer_ccb > 0)
-		{
-			int  index, prev_index = 0, first_index;
-
-			DOuter_ccb * new_ring = m_arr_access.new_outer_ccb();
-			new_ring->set_face(f);
-
-			for (unsigned int j = 0; j < num_halfedges_on_outer_ccb; j++)
-			{
-				mReader->ReadInt(index);
-				DHalfedge* nh = mHalfedgesVec[index];
-
-				if (j > 0)
-				{
-					DHalfedge* prev_nh = mHalfedgesVec[prev_index];
-					prev_nh->set_next(nh);
-					nh->set_prev(prev_nh);
-				} else {
-					f->add_outer_ccb(new_ring,nh);				
-					new_ring->set_halfedge(nh);
-					first_index = index;
-				}
-				nh->set_outer_ccb(new_ring);
-				prev_index = index;
-			}
-
-			// making the last halfedge point to the first one (cyclic order).
-			DHalfedge* nh = mHalfedgesVec[first_index];
-			DHalfedge* prev_nh = mHalfedgesVec[prev_index];
-			prev_nh->set_next(nh);
-			nh->set_prev(prev_nh);
-
-
-		}
-
-		mReader->ReadInt(num_of_holes);
-		for (unsigned int k = 0; k < num_of_holes; k++)
-		{
-		#if USE_HOLES
-			DInner_ccb * new_hole = m_arr_access.new_inner_ccb();
-			new_hole->set_face(f);
-		#endif
-			int  num_halfedges_on_inner_ccb;
-			mReader->ReadInt(num_halfedges_on_inner_ccb);
-
-			int  index, prev_index, first_index;
-			for (unsigned int j = 0; j < num_halfedges_on_inner_ccb; j++)
-			{
-				mReader->ReadInt(index);
-
-				DHalfedge* nh = mHalfedgesVec[index];
-				if (j > 0)
-				{
-					DHalfedge* prev_nh = mHalfedgesVec[prev_index];
-					prev_nh->set_next(nh);
-					nh->set_prev(prev_nh);
-				} else {
-#if  USE_HOLES
-					f->add_inner_ccb(new_hole,nh);
-#else
-					f->add_hole(nh);
-#endif
-					first_index = index;
-				}
-
-
-#if USE_HOLES
-				nh->set_inner_ccb(new_hole);
-#else
-				nh->set_face(f);
-#endif
-				prev_index = index;
-			}
-
-			// making the last halfedge point to the first one (cyclic order).
-			DHalfedge* nh = mHalfedgesVec[first_index];
-			DHalfedge* prev_nh = mHalfedgesVec[prev_index];
-			prev_nh->set_next(nh);
-			nh->set_prev(prev_nh);
-		}
-
-		// Other params
-		int dummy;
-//		mReader->ReadInt(f->mIsWater);
-		mReader->ReadInt(dummy);
-		mReader->ReadInt(f->data().mTerrainType);
-		if (f->data().mTerrainType == NO_VALUE)
-		{
-			if (dummy) mLegacy = true;
-			f->data().mTerrainType = dummy ? terrain_Water : terrain_Natural;
-		}
-		mFacesVec.push_back(f);
-	}
-
-	void scan_index(std::size_t& index)
-	{
-		int	n;
-		mReader->ReadInt(n);
-		index = n;
-	}
-
-	void read(Pmwx& the_map)
-	{
-		std::vector<DHalfedge* >  halfedges_vec;
-		std::vector<DVertex* >    vertices_vec;
-
-		scan_pm_vhf_sizes();
-
-		unsigned int  i;
-		for (i = 0; i < number_of_vertices(); i++)
-		{
-			DVertex * nv = scan_vertex (the_map);
-			nv->set_halfedge((DHalfedge *) 0x0BADF00D);
-			vertices_vec.push_back(nv);
-		}
-
-		for (i = 0; i < number_of_halfedges(); i++, i++)
-		{
-			DHalfedge * nh, * no;
-			DVertex * nv1, * nv2;
-			std::size_t index1, index2;
-
-			//nh = m_arr_access.new_edge();
-			scan_index(index1);
-			nh = scan_halfedge(NULL);
-			scan_index (index2);
-			no = scan_halfedge(nh->opposite());
-
-			nv1 = vertices_vec[index1];
-			nv1->set_halfedge(nh);
-			nh->set_vertex(nv1);
-
-			nv2 = vertices_vec[index2];
-			nv2->set_halfedge(no);
-			no->set_vertex(nv2);
-
-			halfedges_vec.push_back(nh);
-			halfedges_vec.push_back(no);
-		}
-
-		for (i = 0; i < number_of_faces(); i++)
-		{
-			DFace * nf =  m_arr.topology_traits()->unbounded_face();
-			if(i == 0)
-			{
-					// Ben says: hrm - the old code would pull the ficticious face and have to spelunk to get the unbounded one.
-					// With top traits we can get the unbounded face as a DCEL element directly.
-//				DHalfedge * h = *nf->inner_ccbs_begin();
-//				DHalfedge * o = h->opposite();
-//				if (! o->is_on_inner_ccb())
-//					nf = o->outer_ccb()->face();
-//				else
-//					nf = o->inner_ccb()->face();
-			}
-
-			if(i != 0) nf = m_arr_access.new_face() ;
-
-			// BEN SAYS: back in the day, if i == 0 (unbounded face) we would set its half edge to NULL.
-			// NOT ANY MORE!  In the new CGAL 3.3.1 the unbounded face(s) are bounded by ficticious edges that make up a single hole
-			// in the "ficticious face".  Now..this is ALREADY set up for us - in an EMPTY dcel we have two faces:
-			// - the ficticious face, and the unbounded face (inside it).  A rectangle around infinity separates them.
-			// So we LEAVE THIS THE HELL ALONE.  Nuking the half-edge around the unbounded face is, like, bad and drives CGAL insane.
-			// Only the ficticious face can really be unbounded.
-//			if (i == 0) //this is the unbounded face.
-//				nf->set_halfedge (NULL);
-
-			scan_face(nf);
-		}
-	}
-
-
-
-};
 
 void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, int atomID, const TokenConversionMap& c)
 {
@@ -733,58 +609,12 @@ void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, in
 	if (!meContainer.GetNthAtomOfID(kMainMapID, 0, mapAtom)) return;
 	mapAtom.GetContents(mapContainer);
 	MemFileReader	readMainMap(mapContainer.begin, mapContainer.end);
-#if REBUILD_MAP
-	Pmwx	tempMap;
-#else
-	#define tempMap inMap
-#endif
-	MapScanner	scanner(&readMainMap, tempMap, inProgress);
-	scanner.read(tempMap);
-
-	if (meContainer.GetNthAtomOfID(kFaceData1, 0, faceAtom))
-	{
-		faceAtom.GetContents(faceContainer);
-		MemFileReader	readFaceData(faceContainer.begin, faceContainer.end);
-		for (vector<DFace*>::iterator f = scanner.mFacesVec.begin(); f != scanner.mFacesVec.end(); ++f)
-		{
-			ReadParamMap(readFaceData, (*f)->data().mParams, c);
-			ReadVector(readFaceData, (*f)->data().mObjs, ReadObjPlacement, c);
-			ReadVector(readFaceData, (*f)->data().mPolyObjs, ReadPolyObjPlacement, c);
-			ReadVector(readFaceData, (*f)->data().mPointFeatures, ReadPointFeature, c);
-			ReadVector(readFaceData, (*f)->data().mPolygonFeatures, ReadPolygonFeature, c);
-			vector<GISAreaFeature_t>	fakeVector;
-			ReadVector(readFaceData, fakeVector, ReadAreaFeature, c);
-			if (!fakeVector.empty()) {
-				(*f)->data().mAreaFeature = fakeVector[0];
-			} else {
-				(*f)->data().mAreaFeature.mFeatType = NO_VALUE;
-			}
-			if (!scanner.mLegacy)
-				(*f)->data().mTerrainType = c[(*f)->data().mTerrainType];
-		}
-	}
-
-	if (meContainer.GetNthAtomOfID(kEdgeData1, 0, edgeAtom))
-	{
-		edgeAtom.GetContents(edgeContainer);
-		MemFileReader	readEdgeData(edgeContainer.begin, edgeContainer.end);
-		for (vector<DHalfedge*>::iterator h = scanner.mHalfedgesVec.begin(); h != scanner.mHalfedgesVec.end(); ++h)
-		{
-			ReadVector(readEdgeData, (*h)->data().mSegments, ReadNetworkSegment, c);
-			ReadParamMap(readEdgeData, (*h)->data().mParams, c);
-		}
-	}
-	if (meContainer.GetNthAtomOfID(kVertData1, 0, vertAtom))
-	{
-		vertAtom.GetContents(vertContainer);
-		MemFileReader	readVertData(vertContainer.begin, vertContainer.end);
-		for (vector<DVertex*>::iterator v = scanner.mVerticesVec.begin(); v != scanner.mVerticesVec.end(); ++v)
-		{
-			readVertData.ReadBulk((char *) &(*v)->data().mTunnelPortal, 1, false);
-		}
-	}
-#if REBUILD_MAP
-	RebuildMap(tempMap, inMap);
-#endif
+	
+	PmwxFmt	read_formatter(&readMainMap, &c);
+		
+	CGAL::Arrangement_2_reader<Pmwx>	arr_reader(inMap);
+		
+	arr_reader(read_formatter);
 }
+
 

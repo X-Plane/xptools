@@ -158,6 +158,19 @@ void	CropMap(
 
 //Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point2>& inPoints);
 
+
+/*
+ * MapSimplify
+ *
+ * Given a map and an error metric (in degrees) this routine merges edges and removes vertices
+ * such that the maximum distance from any point on any edge to its original position is less
+ * than metric, and the map is not transformed in any way topologically.  This is the best way
+ * to de-rez a map.
+ *
+ */
+void MapSimplify(Pmwx& pmwx, double metric);
+
+
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/

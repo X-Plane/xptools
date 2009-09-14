@@ -202,6 +202,10 @@ enum {
 
 };
 
+inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
+inline bool apt_code_is_end(int code) { return code == apt_end_seg || code == apt_end_crv; }
+inline bool apt_code_is_ring(int code) { return code == apt_rng_seg || code == apt_rng_crv; }
+inline bool apt_code_is_term(int code) { return apt_code_is_end(code) || apt_code_is_ring(code); }
 
 
 struct	AptRunway_t {

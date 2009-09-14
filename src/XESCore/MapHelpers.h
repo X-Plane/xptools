@@ -34,6 +34,7 @@ public:
                                  bool is_hole)
 	{
 		new_f->set_data(f->data());
+		new_f->set_contained(f->contained());
 	}
 
 	virtual void after_split_edge(Halfedge_handle e1, Halfedge_handle e2)

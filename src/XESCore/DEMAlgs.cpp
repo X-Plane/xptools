@@ -35,7 +35,7 @@
 #include "DEMAlgs.h"
 #include "WED_Globals.h"
 #include <math.h>
-#include "AptIO.h"
+#include "AptAlgs.h"
 #include "MemFileUtils.h"
 #include "XESIO.h"
 
@@ -90,35 +90,20 @@ inline	bool	non_integral(float f) { return (f != DEM_NO_DATA && f != 0.0 && f !=
  */
 void	SpreadDEMValues(DEMGeo& ioDem)
 {
-	// Note: we can't do this in place because what will happen is values will be smeared
-	// - let's say we have a whole row of no value.  the left most coord is resolved first
-	// and will be closest as we go right on the row.  Since we want to smear inward, we
-	// find the nearest value from the old dem, copy to a new dem and then swap.
-	DEMGeo	temp(ioDem);
-	for (int y = 0; y < ioDem.mHeight; ++y)
-	for (int x = 0; x < ioDem.mWidth; ++x)
+	DEMGeo	half_size;
+	ioDem.derez_nearest(half_size);
+	
+	if(half_size.mWidth != 1 || half_size.mHeight != 1)
 	{
-		float	h =  temp(x,y);
-		if (h == DEM_NO_DATA)
-		{
-			int n = 1;
-			while (n < ioDem.mWidth || n < ioDem.mHeight)
-			{
-				h = ioDem.get(x-n,y);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x+n,y);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x,y-n);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x,y+n);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x+n,y-n);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x+n,y+n);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x-n,y-n);	if (h != DEM_NO_DATA) break;
-				h = ioDem.get(x-n,y+n);	if (h != DEM_NO_DATA) break;
-				++n;
-			}
-			if (h != DEM_NO_DATA)
-				temp(x,y) = h;
-		}
+		SpreadDEMValues(half_size);
 	}
-	ioDem.swap(temp);
+	
+	for(int y = 0; y < ioDem.mHeight; ++y)
+	for(int x = 0; x < ioDem.mWidth ; ++x)
+	{
+		if(ioDem.get(x,y) == DEM_NO_DATA)
+			ioDem(x,y) = half_size.xy_nearest(ioDem.x_to_lon(x),ioDem.y_to_lat(y));
+	}
 }
 
 void	SpreadDEMValuesTotal(DEMGeo& ioDem)
@@ -1068,7 +1053,7 @@ void	DeriveDEMs(
 	int x, y;
 
 	{
-		ioDEMs[dem_OrigLandUse] = ioDEMs[dem_LandUse];
+//		ioDEMs[dem_OrigLandUse] = ioDEMs[dem_LandUse];
 		DEMGeo& lu_t = ioDEMs[dem_LandUse];
 		if(do_translate)
 		for (int y = 0; y < lu_t.mHeight; ++y)
@@ -1090,7 +1075,7 @@ void	DeriveDEMs(
 	const DEMGeo&		slope = 	ioDEMs[dem_Slope];
 	const DEMGeo&		slopeHeading = ioDEMs[dem_SlopeHeading];
 	const DEMGeo&		rainfall = 	ioDEMs[dem_Rainfall];
-		  DEMGeo&		urbanSquare =	ioDEMs[dem_UrbanSquare];
+		  DEMGeo&		urbanSquare =ioDEMs[dem_UrbanSquare];
 
 	int reduce_1 = elevation.mWidth / 200;
 	DEMGeo elevation_reduced;
@@ -1100,7 +1085,7 @@ void	DeriveDEMs(
 	UpsampleDEM(landuse, landuseBig, reduce_2);
 
 	DEMGeo	urban(landuse);
-	DEMGeo	values(landuse);
+//	DEMGeo	values(landuse);
 //	DEMGeo	nudeColor(landuse);
 //	DEMGeo	vegetation(elevation_reduced);
 	DEMGeo	urbanRadial(landuse);
@@ -1131,7 +1116,23 @@ void	DeriveDEMs(
 		for (y = 0; y < urban.mHeight;++y)
 		for (x = 0; x < urban.mWidth; ++x)
 		{
-			urbanTemp(x,y) = (urban(x,y) == lu_usgs_URBAN_IRREGULAR || urban(x,y) == lu_usgs_URBAN_SQUARE) ? 1 : 0;
+			float e = urban.get(x,y);
+			 if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
+		else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
+		else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
+		else if(e == lu_globcover_URBAN_MEDIUM)						e = 0.75;
+
+		else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
+		else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 0.25;
+		else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 0.5;
+		else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 0.75;
+		
+		else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 0.1;
+		else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
+		else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
+		else if(e == lu_globcover_INDUSTRY)							e = 1.0;
+		else														e = 0.0;		
+			urbanTemp(x,y) = e;
 		}
 
 
@@ -1157,7 +1158,7 @@ void	DeriveDEMs(
 	if (inMap.number_of_halfedges() > 0)
 		BuildRoadDensityDEM(inMap, urbanTrans);
 
-	CalcPropertyValues(values, elevation_reduced, inMap);
+//	CalcPropertyValues(values, elevation_reduced, inMap);
 
 	set<int>	apts;
 
@@ -1184,19 +1185,28 @@ void	DeriveDEMs(
 	for (x = 0; x < urbanSquare.mWidth; ++x)
 	{
 		float e = urbanSquare.get(x,y);
-		if (e != DEM_NO_DATA && e != lu_usgs_URBAN_SQUARE  && e != lu_usgs_URBAN_IRREGULAR)
-			urbanSquare(x,y) = DEM_NO_DATA;
+		
+	 if(e == lu_globcover_URBAN_HIGH)						e = 2.0;
+else if(e == lu_globcover_URBAN_TOWN)						e = 2.0;
+else if(e == lu_globcover_URBAN_LOW)						e = 2.0;
+else if(e == lu_globcover_URBAN_MEDIUM)						e = 2.0;
+
+else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 1.0;
+else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 1.0;
+else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 1.0;
+else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
+
+else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 2.0;
+else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 1.0;
+else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
+else if(e == lu_globcover_INDUSTRY)							e = 2.0;
+else														e = DEM_NO_DATA;		
+		urbanSquare(x,y)=e;
 	}
 
 	SpreadDEMValues(urbanSquare);
-
-	for (y = 0; y < urbanSquare.mHeight; ++y)
-	for (x = 0; x < urbanSquare.mWidth; ++x)
-	{
-		float e = urbanSquare.get(x,y);
-		if (e == lu_usgs_URBAN_SQUARE)		urbanSquare(x,y) = 1.0;
-		else if (e == lu_usgs_URBAN_IRREGULAR)	urbanSquare(x,y) = 2.0;
-	}
+	if(urbanSquare.get(0,0) == DEM_NO_DATA)
+		urbanSquare = 1.0;
 
 	/********************************************************************************************************
 	 * CALCULATE VEGETATION DENSITY
@@ -1501,7 +1511,7 @@ void	DeriveDEMs(
 //	ioDEMs[dem_3dVegePhenomena ].swap(phenom3d);
 //	ioDEMs[dem_2dVegiDensity   ].swap(density2d);
 //	ioDEMs[dem_3dVegiDensity   ].swap(density3d);
-	ioDEMs[dem_UrbanPropertyValue].swap(values);
+//	ioDEMs[dem_UrbanPropertyValue].swap(values);
 //	ioDEMs[dem_TerrainType	   ].swap(terrain);
 //	ioDEMs[dem_NudeColor	   ].swap(nudeColor);
 //	ioDEMs[dem_VegetationDensity].swap(vegetation);

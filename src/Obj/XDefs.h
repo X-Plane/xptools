@@ -23,6 +23,11 @@
 #ifndef XDEFS_H
 #define XDEFS_H
 
+/************************************************************************************************************************************************************************
+ * PLATFORM AND COMPILER CONTROL
+ ************************************************************************************************************************************************************************/
+
+
 #if __MWERKS__
 	#if __MACH__
 		#pragma c99 on
@@ -57,6 +62,25 @@
 #else
 	#error NO PLATFORM!
 #endif
+
+/************************************************************************************************************************************************************************
+ * GLOBAL FEATURE CONTROL
+ ************************************************************************************************************************************************************************/
+
+/*
+	This is sort of a hack: we can turn off and on some global flags here to try experimental features that we might otherwise not want.
+*/
+
+// I am beta testing CGAL's polygon simplifier (which is a freaking AWESOME package btw) but can't check the code in until they release it.  So this
+// #ifs out code that depends on the module.
+#define	CGAL_BETA_SIMPLIFIER 0
+
+// Experimental code to try to generate default taxiway routings from airport layouts (using straight skeleton).  
+#define AIRPORT_ROUTING 0
+
+/************************************************************************************************************************************************************************
+ * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
+ ************************************************************************************************************************************************************************/
 
 #ifdef __cplusplus
 
@@ -168,13 +192,23 @@ using namespace std;
 
 #endif
 
-
-
 #if IBM
 #include <winsock2.h>
 #include <windows.h>
 #endif
 
+/************************************************************************************************************************************************************************
+ * CGAL ADAPTER MACROS.  
+ ************************************************************************************************************************************************************************/
+ 
+/*
+	The original theory was that we would use macros to let the airport code run in either double-precision or CGAL-precision math.  But in practice this is probably
+	not going to happen.  A few months ago as I was moving to CGAL 3.3 I thought this could be handy.  But the structure that is emerging now is a conversion from
+	IEEE to CGAL at the point where we need to do "precise" operations (like polygon intersections).  The storage of airports (and such) in IEEE usually is a flag
+	to the programmer that the data has not been validated.
+	
+	That's all a long way of saying: someday these will go away when I get around to it.  /ben	
+*/
 
 #define CGAL2DOUBLE(x)		(x)
 #define POINT2				Point2

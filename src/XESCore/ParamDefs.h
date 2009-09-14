@@ -48,7 +48,7 @@
 	TOKEN(dem_ElevationRange)		//	Total span of min/max in this area.
 
 	TOKEN(dem_UrbanDensity)			//	Human settlement density
-	TOKEN(dem_UrbanPropertyValue)	//	Human settlement density
+//	TOKEN(dem_UrbanPropertyValue)	//	Human settlement density
 	TOKEN(dem_UrbanRadial)			//	DEM of urban radial stuff
 	TOKEN(dem_UrbanTransport)		//	DEM of possible transportation stuff
 	TOKEN(dem_UrbanSquare)			//	Boolean DEM - is it square? (Contains 1.0 for square, 2.0 for irregular urban)
@@ -61,7 +61,7 @@
 	TOKEN(dem_HydroElevation)		// Water level or NO_VALUE for dry land for hydro reprocessing
 
 	/* These are enum DEMs. */
-	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
+//	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_Climate)				//	Type of climate
 //	TOKEN(dem_NudeColor)			//	Color of nude terrain (geology)
@@ -414,6 +414,49 @@
 	TOKEN(lu_usgs_Unused98)
 	TOKEN(lu_usgs_Unused99)
 	TOKEN(lu_usgs_NO_DATA)
+		
+	TOKEN(lu_globcover_BARE_CONSOLIDATED)
+	TOKEN(lu_globcover_BARE_ROCKS)
+	TOKEN(lu_globcover_BARE_SANDY)
+	TOKEN(lu_globcover_BARE_SCREE)
+	TOKEN(lu_globcover_CROP)
+	TOKEN(lu_globcover_CROP_FRUIT)
+	TOKEN(lu_globcover_CROP_MOSAIC)
+	TOKEN(lu_globcover_CROP_ORCHARDS)
+	TOKEN(lu_globcover_FOREST_BRAODLEAVED_DENSE)
+	TOKEN(lu_globcover_FOREST_BRAODLEAVED_SPARSE)
+	TOKEN(lu_globcover_FOREST_CONIFER_DENSE)
+	TOKEN(lu_globcover_FOREST_CONIFER_SPARSE)
+	TOKEN(lu_globcover_FOREST_DECIDUOS_DENSE)
+	TOKEN(lu_globcover_FOREST_DECIDUOS_SPARSE)
+	TOKEN(lu_globcover_FOREST_MIXED_DENSE)
+	TOKEN(lu_globcover_FOREST_MIXED_SPARSE)
+	TOKEN(lu_globcover_FOREST_MOSAIC)
+	TOKEN(lu_globcover_GRASSLAND)
+	TOKEN(lu_globcover_INDUSTRY)
+	TOKEN(lu_globcover_INDUSTRY_SQUARE)
+	TOKEN(lu_globcover_NO_DATA)
+	TOKEN(lu_globcover_PASTURES)
+	TOKEN(lu_globcover_SHRUB)
+	TOKEN(lu_globcover_SNOW_ICE)
+	TOKEN(lu_globcover_SPARSE)
+	TOKEN(lu_globcover_SPARSE_SCREE)
+	TOKEN(lu_globcover_SPARSE_TREES)
+	TOKEN(lu_globcover_URBAN_CROP_TOWN)
+	TOKEN(lu_globcover_URBAN_HIGH)
+	TOKEN(lu_globcover_URBAN_LOW)
+	TOKEN(lu_globcover_URBAN_MEDIUM)
+	TOKEN(lu_globcover_URBAN_SQUARE_CROP_TOWN)
+	TOKEN(lu_globcover_URBAN_SQUARE_HIGH)
+	TOKEN(lu_globcover_URBAN_SQUARE_LOW)
+	TOKEN(lu_globcover_URBAN_SQUARE_MEDIUM)
+	TOKEN(lu_globcover_URBAN_SQUARE_TOWN)
+	TOKEN(lu_globcover_URBAN_TOWN)
+	TOKEN(lu_globcover_WATER)
+	TOKEN(lu_globcover_WETLAND_BROADLEAVED_OPEN)
+	TOKEN(lu_globcover_WETLAND_GRASSLAND)
+	TOKEN(lu_globcover_WETLAND_SHRUB_CLOSED)
+
 
 	/* Natural phenomena for dem_TerrainPhenomena - these define things
 	   that happen on the ground other than plants. */

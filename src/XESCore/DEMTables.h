@@ -126,11 +126,13 @@ typedef map<int, int>					NaturalTerrainIndex;			// Index from .ter enum to line
 extern	NaturalTerrainTable				gNaturalTerrainTable;
 //extern	NaturalTerrainLandUseIndex		gNaturalTerrainLandUseIndex;
 extern	NaturalTerrainIndex				gNaturalTerrainIndex;
+
+void	CheckRuleUsage(void);
 int		FindNaturalTerrain(
 				int		terrain,
 				int 	landuse,
-				int 	climate,
-				float 	elevation,
+//				int 	climate,
+//				float 	elevation,
 				float 	slope,
 				float	slope_tri,
 				float	temp,
@@ -140,8 +142,8 @@ int		FindNaturalTerrain(
 				float	slopeheading,
 				float	relelevation,
 				float	elevrange,
-				float	urban_density,
-				float	urban_radial,
+//				float	urban_density,
+//				float	urban_radial,
 				float	urban_trans,
 				int		urban_square,	// use 1=square, 2=irregulra NO_DATA
 				float	lat,			// use NO_DATA!

@@ -42,6 +42,7 @@
 #include "CompGeomUtils.h"
 #include "ConfigSystem.h"
 #include <ctype.h>
+#include "MapAlgs.h"
 
 #if OPENGL_MAP
 	#include "RF_Msgs.h"
@@ -549,7 +550,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 }
 */
 #define HELP_SHAPE \
-"-shapefile <mode> <feature> <filename> [...<filename]\n" \
+"-shapefile <mode> <feature> <err> <grid> <filename> [...<filename]\n" \
 "Import a shape file.  Mode letters (similar to tar syntax are):\n" \
 "r - roads - attempt to import arcs as roads.\n" \
 "w - water - attempt to import arcs as water boundaries.\n" \
@@ -559,7 +560,9 @@ static int DoTigerBounds(const vector<const char *>& args)
 "m - feature map.  Feature param is a config text file that maps database properties to features.\n" \
 "c - crop to current map bounds on import.  This can be faster than a separate cropping stage.\n" \
 "o - overlay on existing map.  This can be slower than cleaning the vector space first.\n" \
-"e - check for overlapping polygon errors.  Abort the import silently if we hit this case.\n"
+"e - check for overlapping polygon errors.  Abort the import silently if we hit this case.\n" \
+"<err> is the max error in meters to be allowed when simplifying imported roads.  Pass zero to\n"\
+"import the data with no change.\n"
 static int DoShapeImport(const vector<const char *>& args)
 {
 	shp_Flags flags = shp_None;
@@ -572,8 +575,11 @@ static int DoShapeImport(const vector<const char *>& args)
 	if(strstr(args[0], "s"))	flags |= shp_Mode_Simple;
 	if(strstr(args[0], "m"))	flags |= shp_Mode_Map;
 	if(strstr(args[0], "e"))	flags |= shp_ErrCheck;
+	
+	double err_margin = atof(args[2]);
+	int grid_steps = atoi(args[3]);
 
-	for(int n = 2; n < args.size(); ++n)
+	for(int n = 4; n < args.size(); ++n)
 	{
 		double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
 		
@@ -582,7 +588,7 @@ static int DoShapeImport(const vector<const char *>& args)
 		if(flags & shp_ErrCheck)
 			backup = gMap;
 			
-		if(!ReadShapeFile(args[n], gMap, flags, args[1], b, gProgress))
+		if(!ReadShapeFile(args[n], gMap, flags, args[1], b, err_margin, grid_steps, gProgress))
 		{
 			if(flags & shp_ErrCheck)
 			{
@@ -611,6 +617,20 @@ int DoWetMask(const vector<const char *>& args)
 }
 */
 
+#define HELP_REDUCE_VECTORS \
+"-reduce_vectors <tolerance>\n"\
+"This command will reduce the number of vertices in the map, without destroying the topological relations.\n"\
+"The tolerance is in meters and is the farthest any point will end up from another point.  Area features that\n"\
+"are smaller than the tolerance may be completely collapsed.\n"
+int DoReduceVectors(const vector<const char *>& args)
+{
+	int b = gMap.number_of_halfedges();
+	MapSimplify(gMap, atof(args[0]));
+	int a = gMap.number_of_halfedges();
+	printf("Before: %d, after: %d\n", b,a);
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 //{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
@@ -619,7 +639,8 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
 //{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
-{ "-shapefile", 	3, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
+{ "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
+{ "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

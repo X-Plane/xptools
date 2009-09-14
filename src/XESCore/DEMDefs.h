@@ -133,7 +133,9 @@ struct	DEMGeo {
 
 	void	resize(int width, int height);					// Resize, reset to 0
 	void	resize_save(int width, int height, float fill);	// REsize, save lower left data,  fill with param
-	void	derez(int);
+	void	derez(int n);									// Reduce size by a factor of "n".  Averages down (box filter).
+	void	derez_nearest(void);							// Derez by a factor of two with nearest-neighbor down-sampling....good for enums.
+	void	derez_nearest(DEMGeo& smaller);					// Derez by a factor of two with nearest-neighbor down-sampling....good for enums.
 	void	overlay(const DEMGeo& onTop);					// Overlay - requires 1:1 layout
 	void	overlay(const DEMGeo& onTop, int dx, int dy);	// Overlay - requires onTop <= main
 	void	copy_geo_from(const DEMGeo& rhs);

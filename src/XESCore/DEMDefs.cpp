@@ -315,6 +315,42 @@ void DEMGeo::derez(int r)
 	this->swap(smaller);
 }
 
+void DEMGeo::derez_nearest(DEMGeo& smaller)
+{
+	smaller.resize((mWidth-1) / 2 + 1, (mHeight-1) / 2 + 1);
+	smaller.mNorth = mNorth;
+	smaller.mSouth = mSouth;
+	smaller.mEast = mEast;
+	smaller.mWest = mWest;
+
+	for(int x = 0; x < smaller.mWidth; ++x)
+	for(int y=  0; y < smaller.mHeight; ++y)
+	{
+		float samples[4] = {
+			get(x*2  ,y*2  ),
+			get(x*2+1,y*2  ),
+			get(x*2  ,y*2+1),
+			get(x*2+1,y*2+1) };
+		
+		float best_val = samples[0];
+		for(int n = 1; n < 4; ++n)
+		if(samples[n] != DEM_NO_DATA)
+		{
+			best_val = samples[n];
+			break;
+		}
+		
+		smaller(x,y) = best_val;
+	}
+}
+
+void DEMGeo::derez_nearest(void)
+{
+	DEMGeo	smaller;
+	derez_nearest(smaller);
+	this->swap(smaller);
+}
+
 void	DEMGeo::resize(int width, int height)
 {
 	if (width == mWidth && height == mHeight) return;

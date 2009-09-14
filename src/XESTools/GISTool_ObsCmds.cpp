@@ -28,6 +28,8 @@
 #include "Airports.h"
 #include "MapDefs.h"
 #include "DEMDefs.h"
+#include "AptAlgs.h"
+#include "AptRouting.h"
 #include "AssertUtils.h"
 #include "XFileTwiddle.h"
 #include "FAA_Obs.h"
@@ -280,6 +282,87 @@ static int DoAptFilter(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoAptRouting(const vector<const char *>& args)
+{
+	AssertHandler_f	h  = InstallDebugAssertHandler(AssertThrower);
+	AssertHandler_f dh = InstallAssertHandler(AssertThrower);
+	int ok = 0;
+	int bad = 0;
+	set<int>	bad_idx;
+	for (int a = 0; a < gApts.size(); ++a)
+	{
+		try {
+			if ((a % 100) == 0)
+				gProgress(0, 1, "Processing airports", (float) a / (float) gApts.size());
+
+			vector<Polygon2>	windings;
+			
+			GetAptPolygons(gApts[a], 0.0001, windings);
+			
+			WindingToFile(windings,"test.txt");
+			WindingFromFile(windings,"test.txt");
+
+			vector<Point2>	poi;
+			GetAptPOI(&gApts[a], poi);
+
+			cgal_net_t route;
+			if (make_map_with_skeleton(windings, poi, route))
+				++ok;
+			else
+			{
+				++bad;
+				bad_idx.insert(a);
+				if (gVerbose)
+					printf("There was a validation problem with the airport '%s' %s\n",
+						gApts[a].icao.c_str(), gApts[a].name.c_str());
+			}
+		} catch (const char * msg) {
+			if (gVerbose)
+				printf("Assertion failure stopped airport: %s\n", msg);
+			++bad;
+			bad_idx.insert(a);
+			if (gVerbose)
+				printf("There was a problem with the airport '%s' %s\n",
+					gApts[a].icao.c_str(), gApts[a].name.c_str());
+
+		} catch (exception& e) {
+			if (gVerbose)
+				printf("Exception stopped airport: %s\n", e.what());
+			++bad;
+			bad_idx.insert(a);
+			if (gVerbose)
+				printf("There was a problem with the airport '%s' %s\n",
+					gApts[a].icao.c_str(), gApts[a].name.c_str());
+
+
+		} catch (...) {
+			if (gVerbose)
+				printf("Unknown Exception stopped airport.\n");
+			++bad;
+			bad_idx.insert(a);
+			if (gVerbose)
+				printf("There was a problem with the airport '%s' %s\n",
+					gApts[a].icao.c_str(), gApts[a].name.c_str());
+		}
+	}
+	printf("%d OK, %d bad.\n", ok, bad);
+
+	if (!bad_idx.empty())
+	{
+		for (set<int>::iterator bd = bad_idx.begin(); bd != bad_idx.end(); ++bd)
+		{
+			printf("There was a problem with the airport '%s' %s (%.6lf,%.06lf\n",
+				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(),
+				gApts[*bd].bounds.p1.x(),
+				gApts[*bd].bounds.p1.y());
+		}
+	}
+
+	InstallDebugAssertHandler(h);
+	InstallAssertHandler(dh);
+	return 0;
+
+}
 
 static int DoAptTest(const vector<const char *>& args)
 {
@@ -387,8 +470,9 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 { "-apt", 			1, -1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
 { "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.adt file." },
 { "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
+{ "-aptrouting",	0, 0, DoAptRouting,			"Test the routing-generation code.", "-aptrouting\nTest the routing code on every single airport." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
-{ "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
+{ "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command prints out diagnostics about all airports." },
 { "-aptfilter",		2, 2, DoAptFilter,			"Filter airports.", "-aptfilter <810|850> <yes|no>\nFilters airports to only take ones with taxiways of a certain version and boundaries (or not).\n" },
 { "-aptboundary",	0,	0,DoAptGenBounds,		"Generate boundaries", "-aptboundary\nGenerates boundaries for all airports that don't have them.\n" },
 { "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "-obsrange\nPrints the range of heights of loaded objects, by type." },

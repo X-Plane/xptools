@@ -37,11 +37,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 bool	WriteAptFile(const char * inFileName, const AptVector& outApts);
 bool	WriteAptFileOpen(FILE * inFile, const AptVector& outApts);
 
-void	IndexAirports(const AptVector& apts, AptIndex& index);
-void	FindAirports(const Bbox2& bounds, const AptIndex& index, set<int>& apts);
-
-void	ConvertForward(AptInfo_t& io_apt);
-
 #if OPENGL_MAP
 void	GenerateOGL(AptInfo_t * apt);
 #endif

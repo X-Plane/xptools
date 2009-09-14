@@ -688,6 +688,9 @@ inline Segment2	cgal2ben(const Segment_2& s) { return Segment2(cgal2ben(s.source
 inline bool operator<(const Face_handle& lhs, const Face_handle& rhs)			{	return &*lhs < &*rhs;	}
 inline bool operator<(const Vertex_handle& lhs, const Vertex_handle& rhs)		{	return &*lhs < &*rhs;	}
 inline bool operator<(const Halfedge_handle& lhs, const Halfedge_handle& rhs)	{	return &*lhs < &*rhs;	}
+inline bool operator<(const Face_const_handle& lhs, const Face_const_handle& rhs)			{	return &*lhs < &*rhs;	}
+inline bool operator<(const Vertex_const_handle& lhs, const Vertex_const_handle& rhs)		{	return &*lhs < &*rhs;	}
+inline bool operator<(const Halfedge_const_handle& lhs, const Halfedge_const_handle& rhs)	{	return &*lhs < &*rhs;	}
 
 
 
