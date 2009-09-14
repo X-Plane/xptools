@@ -29,7 +29,7 @@
 	#if __MWERKS__
 		#include <AGL.h>
 	#else
-		#include <AGL/AGL.h>
+		#include <AGL/agl.h>
 	#endif
 #endif
 #include "XWin.h"
