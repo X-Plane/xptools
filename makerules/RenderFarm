@@ -18,6 +18,7 @@ endif #PLAT_LINUX
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
+LIBS		+= -lCGAL_Core -lgmp
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
