@@ -121,7 +121,9 @@ ifeq ($(conf), release_opt)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=0
+	ifdef PLAT_DARWIN
 	MACARCHS	+= -arch ppc
+	endif
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
 	CFLAGS		+= -O0 -g
@@ -135,7 +137,9 @@ else ifeq ($(conf), release_test)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=1
+	ifdef PLAT_DARWIN
 	MACARCHS	+= -arch ppc
+	endif
 	StripDebug	:= Yes
 # default to debug configuration
 else
