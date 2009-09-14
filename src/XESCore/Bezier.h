@@ -23,8 +23,8 @@
 
 #ifndef Bezier_H
 #define Bezier_H
-
-#error We are not ready to use this header yet.  We need to get gmp into the general build environment.
+// janos says: huh?
+//#error We are not ready to use this header yet.  We need to get gmp into the general build environment.
 
 #include "CGALDefs.h"
 
