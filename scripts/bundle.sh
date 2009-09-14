@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # usage: bundle.sh product platform version
 
