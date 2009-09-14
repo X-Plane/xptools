@@ -107,7 +107,7 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		{
 			*active = 1;
 			*con_type = handle_VertexSharp;
-			pt->GetUV(*p);
+			pt->GetLocation(gis_UV,*p);
 		}
 		break;
 	case gis_Point_Bezier:
@@ -116,23 +116,15 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		case 0:
 			*active = 1;
 			*con_type = handle_Vertex;
-			pt_bt->GetUV(*p);
+			pt_bt->GetLocation(gis_UV,*p);
 			break;
 		case 1:
-			*active = pt_bt->GetControlHandleLo(*p);
-			if(*active)
-			{
-				*con_type = handle_Bezier;
-				pt_bt->GetUVLo(*p);
-			}
+			*con_type = handle_Bezier;
+			*active = pt_bt->GetControlHandleLo(gis_UV,*p);
 			break;
 		case 2:
-			*active = pt_bt->GetControlHandleHi(*p);
-			if(*active)
-			{
-				*con_type = handle_Bezier;
-				pt_bt->GetUVHi(*p);
-			}
+			*con_type = handle_Bezier;
+			*active = pt_bt->GetControlHandleHi(gis_UV,*p);
 			break;
 		}
 		break;
@@ -148,7 +140,7 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 			*active = 0;
 			*con_type = handle_None;
 			Bezier2 bez; Segment2 seg;
-			if(!s->GetSideUV(n/4, seg, bez))
+			if(!s->GetSide(gis_UV,n/4, seg, bez))
 			{
 				bez.p1 = bez.c1 = seg.p1;
 				bez.p2 = bez.c2 = seg.p2;
@@ -193,11 +185,11 @@ void		WED_TCEVertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, Lin
 		if(ltype && pt_bt)
 		{
 			Point2 p;
-			if(n == 0)	*ltype = pt_bt->GetControlHandleHi(p) ? link_BezierCtrl : link_None;
-			else		*ltype = pt_bt->GetControlHandleHi(p) ? link_BezierCtrl : link_None;
+			if(n == 0)	*ltype = pt_bt->GetControlHandleHi(gis_UV, p) ? link_BezierCtrl : link_None;
+			else		*ltype = pt_bt->GetControlHandleHi(gis_UV, p) ? link_BezierCtrl : link_None;
 		}
 	} else {
-		if(active) *active = false;
+		if(active) *active = true;
 		if(ltype) *ltype = link_Solid;
 	}
 }
@@ -240,11 +232,22 @@ int			WED_TCEVertexTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 
 bool		WED_TCEVertexTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
+	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
+	if (who->GetGISClass() == gis_Polygon)
+	if (who->PtWithin(gis_UV,p)) return true;
+	
 	return false;
 }
 
 void		WED_TCEVertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle)
 {
+	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
+	io_handle += delta;
+	Bbox2	old_b(0,0,1,1);
+	Bbox2	new_b(0,0,1,1);
+	new_b.p1 += delta;
+	new_b.p2 += delta;
+	who->Rescale(gis_UV,old_b,new_b);
 }
 
 void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt)
@@ -262,27 +265,33 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 		if((pt = dynamic_cast<IGISPoint *>(who)) != NULL)
 		{
 			io_pt += delta;
-			pt->GetUV(p);
+			pt->GetLocation(gis_UV,p);
 			p += delta;
-			pt->SetUV(p);
+			pt->SetLocation(gis_UV,p);
 		}
 		break;
 	case gis_Point_Bezier:
 		if((pt_bt = dynamic_cast<IGISPoint_Bezier *>(who)) != NULL)
 		{
 			io_pt += delta;
-			pt_bt->GetUV(p);
-			p += delta;
-			pt_bt->SetUV(p);
-
-			pt_bt->GetUVLo(p);
-			p += delta;
-			pt_bt->SetUVLo(p);
-
-			pt_bt->GetUVHi(p);
-			p += delta;
-			pt_bt->SetUVHi(p);
-
+			if(c == 0)
+			{
+				pt_bt->GetLocation(gis_UV,p);
+				p += delta;
+				pt_bt->SetLocation(gis_UV,p);
+			}
+			if(c == 1)
+			{
+				pt_bt->GetControlHandleLo(gis_UV,p);
+				p += delta;
+				pt_bt->SetControlHandleLo(gis_UV,p);
+			}
+			if(c == 2)
+			{
+				pt_bt->GetControlHandleHi(gis_UV,p);
+				p += delta;
+				pt_bt->SetControlHandleHi(gis_UV,p);
+			}
 		}
 		break;
 	}
@@ -290,6 +299,26 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 
 void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
 {
+	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
+	IGISPointSequence * s;
+	switch(who->GetGISClass()) {
+	case gis_PointSequence:
+	case gis_Line:
+	case gis_Line_Width:
+	case gis_Ring:
+	case gis_Chain:
+		s = dynamic_cast<IGISPointSequence*>(who);
+		if(s)
+		{
+			IGISPoint * p1 = s->GetNthPoint(c);
+			IGISPoint * p2 = s->GetNthPoint((c+1) % s->GetNumPoints());
+			Point2 p;
+			p1->GetLocation(gis_UV,p);			p += delta;			p1->SetLocation(gis_UV,p);
+			p2->GetLocation(gis_UV,p);			p += delta;			p2->SetLocation(gis_UV,p);
+		}
+		break;
+	}
+	
 }
 
 void	WED_TCEVertexTool::SyncRecurse(IGISEntity * who, ISelection * sel) const
@@ -316,6 +345,7 @@ void	WED_TCEVertexTool::SyncRecurse(IGISEntity * who, ISelection * sel) const
 			SyncRecurse(s->GetNthPoint(n), sel);
 		break;
 	case gis_Polygon:
+		mCache.push_back(who);
 		if((p = dynamic_cast<IGISPolygon *>(who)) != NULL)
 		{
 			SyncRecurse(p->GetOuterRing(), sel);

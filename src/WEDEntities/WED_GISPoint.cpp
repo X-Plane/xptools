@@ -50,72 +50,86 @@ const char *	WED_GISPoint::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
-bool			WED_GISPoint::HasUV(void) const
+bool			WED_GISPoint::HasLayer(GISLayer_t l) const
+{
+	return l == gis_Geo;
+}
+
+void			WED_GISPoint::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
+{
+	Point2	p;
+	GetLocation(l,p);
+	bounds = Bbox2(p);
+}
+
+bool				WED_GISPoint::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
+{
+	Point2	p;
+	GetLocation(l,p);
+	return bounds.contains(p);
+}
+
+bool				WED_GISPoint::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
+{
+	Point2	p;
+	GetLocation(l,p);
+	return bounds.contains(p);
+}
+
+bool				WED_GISPoint::PtWithin		(GISLayer_t l,const Point2& p	 ) const
 {
 	return false;
 }
 
-void			WED_GISPoint::GetBounds		(	   Bbox2&  bounds) const
+bool				WED_GISPoint::PtOnFrame		(GISLayer_t l, const Point2& pt, double dist) const
 {
-	bounds = Bbox2(Point2(longitude.value,latitude.value));
+	Point2	p;
+	GetLocation(l,p);
+	return p.squared_distance(pt) < (dist*dist);
 }
 
-bool				WED_GISPoint::IntersectsBox	(const Bbox2&  bounds) const
-{
-	return bounds.contains(Point2(longitude.value,latitude.value));
-}
-
-bool				WED_GISPoint::WithinBox		(const Bbox2&  bounds) const
-{
-	return bounds.contains(Point2(longitude.value,latitude.value));
-}
-
-bool				WED_GISPoint::PtWithin		(const Point2& p	 ) const
-{
-	return false;
-}
-
-bool				WED_GISPoint::PtOnFrame		(const Point2& p, double dist) const
-{
-	return p.squared_distance(Point2(longitude.value,latitude.value)) < (dist*dist);
-}
-
-void			WED_GISPoint::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds)
+void			WED_GISPoint::Rescale			(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
 	if (old_bounds != new_bounds)
 	{
-		StateChanged();
-		longitude.value = old_bounds.rescale_to_x(new_bounds,longitude.value);
-		latitude.value  = old_bounds.rescale_to_y(new_bounds,latitude.value );
-		CacheInval();
-		CacheBuild();
+		Point2 p;
+		GetLocation(l,p);
+		p.x_ = old_bounds.rescale_to_x(new_bounds,p.x_);
+		p.y_ = old_bounds.rescale_to_y(new_bounds,p.y_);
+		SetLocation(l,p);
 	}
 }
 
-void	WED_GISPoint::GetLocation(      Point2& p) const
+void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
 {
 	// Bit of a hack: a client can call this to build its own bounding box cache.
 	// So re-validate OUR cache here.  (Otherwise our change of location won't
 	// start a cache-inval cascade.)
-	CacheBuild();
+//	CacheBuild();
 
-	p.x_ = longitude.value;
-	p.y_ = latitude.value;
+	// Ben says: 9/13/09 - the above comment is from WED 1.1 and seems like it is perhaps
+	// wrong.  Since we reval our cache every time we inval it (this pair invals our parents
+	// just once and then remembers that we did it) we should NOT ever be in a state where our
+	// own cache is invalid.  (Since we have no cache, how can it be invalid?  So we mark it as
+	// valid every time we inval, so the next inval will wrok.)
+	//
+	// So - commenting out for now.  If the caching system goes hinky on us...perhaps that will
+	// show why this was necessary?
+	
+
+	if(l == gis_Geo)
+	{
+		p.x_ = longitude.value;
+		p.y_ = latitude.value;
+	} else {
+		p.x_ = p.y_ = 0.0;
+	}
 }
 
-void	WED_GISPoint::GetUV	   (      Point2& p) const
+void	WED_GISPoint::SetLocation(GISLayer_t l, const Point2& p)
 {
-	DebugAssert(!"Should not be accessing this.");
-	p = Point2(0,0);
-}
+	DebugAssert(l==gis_Geo);
 
-void	WED_GISPoint::SetUV	   (const Point2& p)
-{
-	DebugAssert(!"Should not be accessing this.");
-}
-
-void	WED_GISPoint::SetLocation(const Point2& p)
-{
 	if (p.x() != longitude.value || p.y() != latitude.value)
 	{
 		StateChanged();
@@ -126,12 +140,12 @@ void	WED_GISPoint::SetLocation(const Point2& p)
 	}
 }
 
-void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
+void			WED_GISPoint::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 {
 	if (a != 0.0)
 	{
-		StateChanged();
-		Point2	pt_old(longitude.value, latitude.value);
+		Point2	pt_old;
+		GetLocation(l,pt_old);
 		Vector2	v_old = VectorLLToMeters(ctr,Vector2(ctr,pt_old));
 		double old_len = sqrt(v_old.squared_length());
 
@@ -144,8 +158,7 @@ void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
 
 		v_new = VectorMetersToLL(ctr,v_new);
 
-		longitude.value = ctr.x() + v_new.dx;
-		latitude.value = ctr.y() + v_new.dy;
+		SetLocation(l,ctr + v_new);
 
 		CacheInval();
 		CacheBuild();

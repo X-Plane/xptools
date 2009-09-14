@@ -120,8 +120,8 @@ void		WED_GISLine_Width::GetNthProperty(int n, PropertyVal_t& val) const
 	double	l,h;
 	if (n < rwy_prop_count)
 	{
-		GetSource()->GetLocation(ends[0]);
-		GetTarget()->GetLocation(ends[1]);
+		GetSource()->GetLocation(gis_Geo, ends[0]);
+		GetTarget()->GetLocation(gis_Geo, ends[1]);
 		Quad_2to1(ends, ctr, h, l);
 		if (gIsFeet) l *= MTR_TO_FT;
 	}
@@ -146,8 +146,8 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 	double	l,h;
 	if (n < rwy_prop_count)
 	{
-		GetSource()->GetLocation(ends[0]);
-		GetTarget()->GetLocation(ends[1]);
+		GetSource()->GetLocation(gis_Geo,ends[0]);
+		GetTarget()->GetLocation(gis_Geo,ends[1]);
 		Quad_2to1(ends, ctr, h, l);
 	}
 
@@ -156,45 +156,45 @@ void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
 		l = val.double_val;
 		if (gIsFeet) l *= FT_TO_MTR;
 		Quad_1to2(ctr, h, l, ends);
-		GetSource()->SetLocation(ends[0]);
-		GetTarget()->SetLocation(ends[1]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 	case rwy_prop_heading:
 		h = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
-		GetSource()->SetLocation(ends[0]);
-		GetTarget()->SetLocation(ends[1]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 
 	case rwy_prop_lat1:
 		ends[0].y_ = val.double_val;
-		GetSource()->SetLocation(ends[0]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
 		break;
 	case rwy_prop_lon1:
 		ends[0].x_ = val.double_val;
-		GetSource()->SetLocation(ends[0]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
 		break;
 
 	case rwy_prop_latc:
 		ctr.y_ = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
-		GetSource()->SetLocation(ends[0]);
-		GetTarget()->SetLocation(ends[1]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 	case rwy_prop_lonc:
 		ctr.x_ = val.double_val;
 		Quad_1to2(ctr, h, l, ends);
-		GetSource()->SetLocation(ends[0]);
-		GetTarget()->SetLocation(ends[1]);
+		GetSource()->SetLocation(gis_Geo,ends[0]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 
 	case rwy_prop_lat2:
 		ends[1].y_ = val.double_val;
-		GetTarget()->SetLocation(ends[1]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 	case rwy_prop_lon2:
 		ends[1].x_ = val.double_val;
-		GetTarget()->SetLocation(ends[1]);
+		GetTarget()->SetLocation(gis_Geo,ends[1]);
 		break;
 
 	default:
@@ -213,37 +213,37 @@ GISClass_t		WED_GISLine_Width::GetGISClass		(void				 ) const
 }
 
 
-void			WED_GISLine_Width::GetBounds		(	   Bbox2&  bounds) const
+void			WED_GISLine_Width::GetBounds		(GISLayer_t l,  Bbox2&  bounds) const
 {
 	CacheBuild();
 	Point2 corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	bounds = Bbox2(corners[0],corners[1]);
 	bounds += corners[2];
 	bounds += corners[3];
 }
 
-bool			WED_GISLine_Width::IntersectsBox	(const Bbox2&  bounds) const
+bool			WED_GISLine_Width::IntersectsBox	(GISLayer_t l,  const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	return me.overlap(bounds);
 }
 
-bool			WED_GISLine_Width::WithinBox		(const Bbox2&  bounds) const
+bool			WED_GISLine_Width::WithinBox		(GISLayer_t l,  const Bbox2&  bounds) const
 {
 	Point2	corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	return  bounds.contains(corners[0]) &&
 			bounds.contains(corners[1]) &&
 			bounds.contains(corners[2]) &&
 			bounds.contains(corners[3]);
 }
 
-bool			WED_GISLine_Width::PtOnFrame		(const Point2& p, double dist) const
+bool			WED_GISLine_Width::PtOnFrame		(GISLayer_t l,  const Point2& p, double dist) const
 {
 	Point2	corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	if (Segment2(corners[0],corners[1]).is_near(p,dist)) return true;
 	if (Segment2(corners[1],corners[2]).is_near(p,dist)) return true;
 	if (Segment2(corners[2],corners[3]).is_near(p,dist)) return true;
@@ -251,19 +251,19 @@ bool			WED_GISLine_Width::PtOnFrame		(const Point2& p, double dist) const
 	return false;
 }
 
-bool			WED_GISLine_Width::PtWithin		(const Point2& p	 ) const
+bool			WED_GISLine_Width::PtWithin		(GISLayer_t l,  const Point2& p	 ) const
 {
 	Point2 corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	return inside_polygon_pt(corners,corners+4,p);
 }
 
-void			WED_GISLine_Width::Rescale(
+void			WED_GISLine_Width::Rescale(GISLayer_t l,  
 								const Bbox2& old_bounds,			// Defines a linear remappign of coordinates we can apply.
 								const Bbox2& new_bounds)
 {
 	Point2 corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	for(int n = 0; n < 4; ++n)
 	{
 		corners[n].x_ = old_bounds.rescale_to_x(new_bounds,corners[n].x());
@@ -273,8 +273,8 @@ void			WED_GISLine_Width::Rescale(
 	Point2	 ends[2];
 	double  w;
 	Quad_4to2(corners, ends, w);
-	GetSource()->SetLocation(ends[0]);
-	GetTarget()->SetLocation(ends[1]);
+	GetSource()->SetLocation(l,ends[0]);
+	GetTarget()->SetLocation(l,ends[1]);
 	SetWidth(w);
 
 }
@@ -299,25 +299,21 @@ void	WED_GISLine_Width::SetWidth (double w)
 	}
 }
 
-void	WED_GISLine_Width::GetCorners(Point2 corners[4]) const
+void	WED_GISLine_Width::GetCorners(GISLayer_t l,  Point2 corners[4]) const
 {
 	Point2		ends[2];
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(l,ends[0]);
+	GetTarget()->GetLocation(l,ends[1]);
 
 	Quad_2to4(ends, GetWidth(), corners);
 }
 
-void	WED_GISLine_Width::GetCornersUV(Point2 corners[4]) const
-{
-}
-
-void	WED_GISLine_Width::MoveCorner(int corner, const Vector2& delta)
+void	WED_GISLine_Width::MoveCorner(GISLayer_t layer,  int corner, const Vector2& delta)
 {
 	Point2	corners[4];
 	Point2	ends[2];
 
-	GetCorners(corners);
+	GetCorners(layer,corners);
 	corners[corner] += delta;
 	int swapped = corner == 1 || corner == 3;
 	if (swapped)
@@ -334,50 +330,50 @@ void	WED_GISLine_Width::MoveCorner(int corner, const Vector2& delta)
 	Quad_diagto1(ends, w, ctr, h, l, swapped);
 	Quad_1to2(ctr, h, l, ends);
 
-	GetSource()->SetLocation(ends[0]);
-	GetTarget()->SetLocation(ends[1]);
+	GetSource()->SetLocation(layer,ends[0]);
+	GetTarget()->SetLocation(layer,ends[1]);
 }
 
 
-void	WED_GISLine_Width::MoveSide(int side, const Vector2& delta)
+void	WED_GISLine_Width::MoveSide(GISLayer_t l,  int side, const Vector2& delta)
 {
 	Point2	ends[2];
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(l,ends[0]);
+	GetTarget()->GetLocation(l,ends[1]);
 	double w = GetWidth();
 
 	Quad_MoveSide2(ends, w, side, delta);
 
 	SetWidth(w);
-	GetSource()->SetLocation(ends[0]);
-	GetTarget()->SetLocation(ends[1]);
+	GetSource()->SetLocation(l,ends[0]);
+	GetTarget()->SetLocation(l,ends[1]);
 }
 
-void	WED_GISLine_Width::ResizeSide(int side, const Vector2& delta, bool symetric)
+void	WED_GISLine_Width::ResizeSide(GISLayer_t l,  int side, const Vector2& delta, bool symetric)
 {
 	Point2	ends[2], corners[4];
 	double	width;
 
-	GetCorners(corners);
+	GetCorners(l,corners);
 	Quad_ResizeSide4(corners, side, delta, symetric);
 	Quad_4to2(corners, ends, width);
 
-	GetSource()->SetLocation(ends[0]);
-	GetTarget()->SetLocation(ends[1]);
+	GetSource()->SetLocation(l,ends[0]);
+	GetTarget()->SetLocation(l,ends[1]);
 	SetWidth(width);
 }
 
-void	WED_GISLine_Width::ResizeCorner(int corner, const Vector2& delta, bool symetric)
+void	WED_GISLine_Width::ResizeCorner(GISLayer_t layer,  int corner, const Vector2& delta, bool symetric)
 {
 	Point2	ctr, ends[2];
 	double	w = GetWidth(), h, l;
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(layer,ends[0]);
+	GetTarget()->GetLocation(layer,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	Quad_ResizeCorner1(ctr, h, l, w, corner, delta, symetric);
 	Quad_1to2(ctr, h, l, ends);
-	GetSource()->SetLocation(ends[0]);
-	GetTarget()->SetLocation(ends[1]);
+	GetSource()->SetLocation(layer,ends[0]);
+	GetTarget()->SetLocation(layer,ends[1]);
 	SetWidth(w);
 
 }
@@ -388,8 +384,8 @@ double		WED_GISLine_Width::GetHeading(void) const
 	Point2	ends[2];
 	Point2	ctr;
 	double h,l;
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(gis_Geo,ends[0]);
+	GetTarget()->GetLocation(gis_Geo,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	return h;
 }
@@ -399,8 +395,8 @@ Point2		WED_GISLine_Width::GetCenter(void) const
 	Point2	ends[2];
 	Point2	ctr;
 	double h,l;
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(gis_Geo,ends[0]);
+	GetTarget()->GetLocation(gis_Geo,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	return ctr;
 }
@@ -411,8 +407,8 @@ double		WED_GISLine_Width::GetLength(void) const
 	Point2	ends[2];
 	Point2	ctr;
 	double h,l;
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
+	GetSource()->GetLocation(gis_Geo,ends[0]);
+	GetTarget()->GetLocation(gis_Geo,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	return l;
 }

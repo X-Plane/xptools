@@ -59,8 +59,9 @@ void	WED_GISPoint_Heading::SetHeading(double h)
 	}
 }
 
-void	WED_GISPoint_Heading::Rotate			(const Point2& center, double angle)
+void	WED_GISPoint_Heading::Rotate			(GISLayer_t l,const Point2& center, double angle)
 {
-	WED_GISPoint::Rotate(center,angle);
+	WED_GISPoint::Rotate(l,center,angle);
+	if(l == gis_Geo)
 	heading = heading.value + angle;
 }

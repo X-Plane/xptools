@@ -32,15 +32,16 @@ DECLARE_PERSISTENT(WED_TextureBezierNode)
 
 public:
 
-	virtual		bool		HasUV(void) const;
+	virtual		bool		HasLayer(GISLayer_t l) const;
 
-	virtual		void		SetUV(const Point2& st);
-	virtual		void		GetUV(	   Point2& st) const;
+	virtual		void		SetLocation(GISLayer_t layer,const Point2& st);
+	virtual		void		GetLocation(GISLayer_t layer,	   Point2& st) const;
 
-	virtual		void		SetUVLo(const Point2& st);
-	virtual		void		GetUVLo(	    Point2& st) const;
-	virtual		void		SetUVHi(const Point2& st);
-	virtual		void		GetUVHi(	    Point2& st) const;
+	virtual	bool	GetControlHandleLo (GISLayer_t layer,      Point2& p) const;
+	virtual	bool	GetControlHandleHi (GISLayer_t layer,      Point2& p) const;
+	virtual	void	SetControlHandleLo (GISLayer_t layer,const Point2& p)      ;
+	virtual	void	SetControlHandleHi (GISLayer_t layer,const Point2& p)      ;
+
 
 private:
 

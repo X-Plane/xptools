@@ -95,7 +95,7 @@ static int DSF_HasBezierSeq(IGISPointSequence * ring)
 	for(int n = 0; n < np; ++n)
 	if(ring->GetNthPoint(n)->GetGISClass() == gis_Point_Bezier)
 	if((b =dynamic_cast<IGISPoint_Bezier *>(ring->GetNthPoint(n))) != NULL)
-	if(b->GetControlHandleHi(d) || b->GetControlHandleLo(d))
+	if(b->GetControlHandleHi(gis_Geo,d) || b->GetControlHandleLo(gis_Geo,d))
 		return 1;
 	return 0;
 }
@@ -125,8 +125,8 @@ static void DSF_AccumPtsCGAL(const Polygon_2& ring, const DSFCallbacks_t * cbs, 
 
 		c[0] = doblim(c[0],bounds.xmin(),bounds.xmax());
 		c[1] = doblim(c[1],bounds.ymin(),bounds.ymax());
-		c[2] = doblim(c[2],0,1);
-		c[3] = doblim(c[3],0,1);
+		c[2] = doblim(c[2],-32.0,32.0);
+		c[3] = doblim(c[3],-32.0,32.0);
 		cbs->AddPolygonPoint_f(c,writer);
 	}
 	cbs->EndPolygonWinding_f(writer);	
@@ -292,16 +292,16 @@ static void DSF_AccumPts(IGISPointSequence * ring, const DSFCallbacks_t * cbs, v
 		IGISPoint * pt = ring->GetNthPoint(n % np);
 		IGISPoint_Bezier * pth = bezier ? dynamic_cast<IGISPoint_Bezier *>(pt) : NULL;
 		bool has_hi = false, has_lo = false;
-		pt->GetLocation(p);
-		if(tex_coord) pt->GetUV(st);
+		pt->GetLocation(gis_Geo,p);
+		if(tex_coord) pt->GetLocation(gis_UV,st);
 		ch = p;
-		if(pth) has_hi = pth->GetControlHandleHi(ch);
-		if(pth && tex_coord) pth->GetUVHi(stch);
+		if(pth) has_hi = pth->GetControlHandleHi(gis_Geo,ch);
+		if(pth && tex_coord) pth->GetControlHandleHi(gis_UV,stch);
 
 		if(pth && pth->IsSplit())
 		{
-			has_lo = pth->GetControlHandleLo(cl);
-			if(tex_coord) pth->GetUVLo(stcl);
+			has_lo = pth->GetControlHandleLo(gis_Geo,cl);
+			if(tex_coord) pth->GetControlHandleLo(gis_UV,stcl);
 			
 			cl.x_ = 2.0 * p.x_ - cl.x_;
 			cl.y_ = 2.0 * p.y_ - cl.y_;
@@ -420,7 +420,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	
 		Bbox2	ent_box;
-		e->GetBounds(ent_box);
+		e->GetBounds(gis_Geo,ent_box);
 	if(!ent_box.overlap(bounds))
 		return;
 
@@ -429,8 +429,8 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		set<int> xtypes;
 		xcl->GetExclusions(xtypes);
 		Point2 minp, maxp;
-		xcl->GetMin()->GetLocation(minp);
-		xcl->GetMax()->GetLocation(maxp);
+		xcl->GetMin()->GetLocation(gis_Geo,minp);
+		xcl->GetMax()->GetLocation(gis_Geo,maxp);
 		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
 		{
 			const char * pname = NULL;
@@ -458,7 +458,7 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 	{
 		obj->GetResource(r);
 		idx = io_table.accum_obj(r);
-		obj->GetLocation(p);
+		obj->GetLocation(gis_Geo,p);
 		if(bounds.contains(p))
 		{
 			double xy[2] = { p.x(), p.y() };
@@ -639,7 +639,7 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 {
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
-	base->GetBounds(wrl_bounds);
+	base->GetBounds(gis_Geo,wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
 	int tile_east  = ceil (wrl_bounds.p2.x());
 	int tile_south = floor(wrl_bounds.p1.y());

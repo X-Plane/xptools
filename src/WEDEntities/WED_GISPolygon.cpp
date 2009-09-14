@@ -27,7 +27,7 @@
 
 class Bezier_Seq_Iterator {
 public:
-	Bezier_Seq_Iterator(IGISPointSequence * seq, int n);
+	Bezier_Seq_Iterator(IGISPointSequence * seq, GISLayer_t l, int n);
 	Bezier_Seq_Iterator(const Bezier_Seq_Iterator& rhs);
 	Bezier_Seq_Iterator& operator=(const Bezier_Seq_Iterator& rhs);
 
@@ -43,6 +43,7 @@ private:
 
 	IGISPointSequence *	mSeq;
 	int					mIndex;
+	GISLayer_t			mLayer;
 
 	Bezier_Seq_Iterator();
 };
@@ -68,27 +69,33 @@ const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
-bool			WED_GISPolygon::HasUV			(void				 ) const
+bool			WED_GISPolygon::HasLayer			(GISLayer_t l) const
 {
 	CacheBuild();
-	return GetOuterRing()->HasUV();
+	if (!GetOuterRing()->HasLayer(l)) return false;
+	int h = GetNumHoles();
+	for(int hh = 0; hh < h; ++hh)
+	{
+		if(!GetNthHole(hh)->HasLayer(l)) return false;
+	}
+	return true;
 }
 
 
 
-void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
+void			WED_GISPolygon::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
 {
 	CacheBuild();
-	GetOuterRing()->GetBounds(bounds);
+	GetOuterRing()->GetBounds(l,bounds);
 }
 
-bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
+bool				WED_GISPolygon::IntersectsBox		(GISLayer_t l, const Bbox2&  bounds) const
 {
 	Bbox2	me;
 
 	// Quick check: if there is no union between our bbox and the bounds
 	// no possible intersection - fast exit.
-	GetBounds(me);
+	GetBounds(l,me);
 	if (!bounds.overlap(me)) return false;
 
 	// We have a slight problem: rings don't have area.  So we will do TWO possible
@@ -104,28 +111,28 @@ bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
 	// the "pt inside ring" case using a bbox test.  I don't know how well
 	// our ring-box intersection code can fast-exit.
 
-	if (PtWithin(bounds.p1)) return true;
+	if (PtWithin(l,bounds.p1)) return true;
 
 	// Okay at least one point of the box is outside - if there is an interesection
 	// there must be an edge crossing, um, somewhere.
 
-	if (GetOuterRing()->IntersectsBox(bounds)) return true;
+	if (GetOuterRing()->IntersectsBox(l,bounds)) return true;
 
 	int hh = GetNumHoles();
 	for (int h = 0; h < hh; ++h)
 	{
-		if (GetNthHole(h)->IntersectsBox(bounds)) return true;
+		if (GetNthHole(h)->IntersectsBox(l,bounds)) return true;
 	}
 	return false;
 }
 
-bool				WED_GISPolygon::WithinBox		(const Bbox2&  bounds) const
+bool				WED_GISPolygon::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 {
-	return GetOuterRing()->WithinBox(bounds);
+	return GetOuterRing()->WithinBox(l,bounds);
 }
 
 
-bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
+bool				WED_GISPolygon::PtWithin		(GISLayer_t l,const Point2& p	 ) const
 {
 	// WARNING: rings do not contain the area inside them!  So PtWithin
 	// returns false for our sub-parts.  That's why we're using inside_polygon_bez.
@@ -135,12 +142,12 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 	IGISPointSequence * outer_ring = GetOuterRing();
 	// Fast exit: if the bbox of our outer ring doesn't contain the point, we can
 	// go home happy fast.
-	outer_ring->GetBounds(bounds);
+	outer_ring->GetBounds(l,bounds);
 	if (!bounds.contains(p)) return false;
 
 	if (!inside_polygon_bez(
-			Bezier_Seq_Iterator(outer_ring,0),
-			Bezier_Seq_Iterator(outer_ring,outer_ring->GetNumPoints()),
+			Bezier_Seq_Iterator(outer_ring,l,0),
+			Bezier_Seq_Iterator(outer_ring,l,outer_ring->GetNumPoints()),
 			p))
 		return false;
 
@@ -151,56 +158,56 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 
 		// Fast skip: if p is outside the bbox don't bother with a full
 		// polygon check, which is rather expensive.
-		sq->GetBounds(bounds);
+		sq->GetBounds(l,bounds);
 		if (bounds.contains(p))
 		if (inside_polygon_bez(
-				Bezier_Seq_Iterator(sq,0),
-				Bezier_Seq_Iterator(sq,sq->GetNumPoints()),
+				Bezier_Seq_Iterator(sq,l,0),
+				Bezier_Seq_Iterator(sq,l,sq->GetNumPoints()),
 				p))
 		return false;
 	}
 	return true;
 }
 
-bool				WED_GISPolygon::PtOnFrame		(const Point2& p, double d) const
+bool				WED_GISPolygon::PtOnFrame		(GISLayer_t l,const Point2& p, double d) const
 {
 	// Fast case: normally we must check all inner holes if we "miss" the outer hole.
 	// BUT: if we are OUTSIDE the outer hole, we can early exit and not test a damned
 	// thing.
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	me.p1 -= Vector2(d,d);
 	me.p2 += Vector2(d,d);
 	if (!me.contains(p)) return false;
 
-	if (GetOuterRing()->PtOnFrame(p,d)) return true;
+	if (GetOuterRing()->PtOnFrame(l,p,d)) return true;
 
 	int h = GetNumHoles();
 	for (int n = 0; n < h; ++n)
 	{
 		IGISPointSequence * sq = GetNthHole(n);
-		if (sq->PtOnFrame(p,d)) return true;
+		if (sq->PtOnFrame(l,p,d)) return true;
 	}
 	return false;
 }
 
-void			WED_GISPolygon::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds)
+void			WED_GISPolygon::Rescale(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
-	GetOuterRing()->Rescale(old_bounds, new_bounds);
+	GetOuterRing()->Rescale(l,old_bounds, new_bounds);
 	int h = GetNumHoles();
 	for (int n = 0; n < h; ++n)
 	{
-		GetNthHole(n)->Rescale(old_bounds,new_bounds);
+		GetNthHole(n)->Rescale(l,old_bounds,new_bounds);
 	}
 }
 
-void			WED_GISPolygon::Rotate(const Point2& ctr, double angle)
+void			WED_GISPolygon::Rotate(GISLayer_t l,const Point2& ctr, double angle)
 {
-	GetOuterRing()->Rotate(ctr, angle);
+	GetOuterRing()->Rotate(l,ctr, angle);
 	int h = GetNumHoles();
 	for (int n = 0; n < h; ++n)
 	{
-		GetNthHole(n)->Rotate(ctr, angle);
+		GetNthHole(n)->Rotate(l,ctr, angle);
 	}
 }
 
@@ -239,23 +246,24 @@ void				WED_GISPolygon::AddHole		(IGISPointSequence * r)
 	t->SetParent(this,CountChildren());
 }
 
-void WED_GISPolygon::Reverse(void)
+void WED_GISPolygon::Reverse(GISLayer_t l)
 {
-	GetOuterRing()->Reverse();
+	GetOuterRing()->Reverse(l);
 	int hh = GetNumHoles();
 	for (int h = 0; h < hh; ++h)
 	{
-		GetNthHole(h)->Reverse();
+		GetNthHole(h)->Reverse(l);
 	}
 }
-Bezier_Seq_Iterator::Bezier_Seq_Iterator(IGISPointSequence * seq, int n) :
-	mSeq(seq), mIndex(n)
+Bezier_Seq_Iterator::Bezier_Seq_Iterator(IGISPointSequence * seq, GISLayer_t l, int n) :
+	mSeq(seq), mIndex(n), mLayer(l)
 {
 }
 
 Bezier_Seq_Iterator::Bezier_Seq_Iterator(const Bezier_Seq_Iterator& rhs) :
 	mSeq(rhs.mSeq),
-	mIndex(rhs.mIndex)
+	mIndex(rhs.mIndex),
+	mLayer(rhs.mLayer)
 {
 }
 
@@ -263,17 +271,18 @@ Bezier_Seq_Iterator& Bezier_Seq_Iterator::operator=(const Bezier_Seq_Iterator& r
 {
 	mSeq = rhs.mSeq;
 	mIndex = rhs.mIndex;
+	mLayer = rhs.mLayer;
 	return *this;
 }
 
 bool Bezier_Seq_Iterator::operator==(const Bezier_Seq_Iterator& rhs) const
 {
-	return mIndex == rhs.mIndex && mSeq == rhs.mSeq;
+	return mIndex == rhs.mIndex && mSeq == rhs.mSeq && mLayer == rhs.mLayer;
 }
 
 bool Bezier_Seq_Iterator::operator!=(const Bezier_Seq_Iterator& rhs) const
 {
-	return mIndex != rhs.mIndex || mSeq != rhs.mSeq;
+	return mIndex != rhs.mIndex || mSeq != rhs.mSeq || mLayer != rhs.mLayer;
 }
 
 Bezier_Seq_Iterator& Bezier_Seq_Iterator::operator++(void)
@@ -293,7 +302,7 @@ Bezier2 Bezier_Seq_Iterator::operator*(void) const
 {
 	Bezier2 ret;
 	Segment2 s;
-	if (!mSeq->GetSide(mIndex, s, ret))
+	if (!mSeq->GetSide(mLayer, mIndex, s, ret))
 	{
 		ret.p1 = ret.c1 = s.p1;
 		ret.p2 = ret.c2 = s.p2;

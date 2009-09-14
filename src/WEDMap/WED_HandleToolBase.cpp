@@ -305,12 +305,12 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 							frame_dist = max(icon_dist_h,icon_dist_v);
 
 						Bbox2		ent_bounds;
-						e->GetBounds(ent_bounds);
+						e->GetBounds(gis_Geo,ent_bounds);
 						ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
 						ent_bounds.p2 += Vector2(max_slop_h,max_slop_v);
 						if (ent_bounds.contains(click_pt))
 						{
-							if (e->PtWithin(click_pt) || e->PtOnFrame(click_pt, frame_dist))
+							if (e->PtWithin(gis_Geo,click_pt) || e->PtOnFrame(gis_Geo,click_pt, frame_dist))
 								has_click = true;
 						}
 					}
@@ -429,7 +429,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		frame_dist = max(icon_dist_h,icon_dist_v);
 
 	Bbox2		ent_bounds;
-	entity->GetBounds(ent_bounds);
+	entity->GetBounds(gis_Geo,ent_bounds);
 //	if (pt_sel)
 	{
 		ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
@@ -451,8 +451,8 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
 	switch(choice) {
 	case ent_Atomic:
-		if (pt_sel)	{ if (entity->PtWithin(psel) || entity->PtOnFrame(psel, frame_dist))	result.insert(entity); return 1;	}
-		else		{ if (entity->WithinBox(bounds))										result.insert(entity);	}
+		if (pt_sel)	{ if (entity->PtWithin(gis_Geo,psel) || entity->PtOnFrame(gis_Geo,psel, frame_dist))	result.insert(entity); return 1;	}
+		else		{ if (entity->WithinBox(gis_Geo,bounds))										result.insert(entity);	}
 		break;
 	case ent_Container:
 		if (com)
@@ -476,7 +476,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		}
 		break;
 	case ent_AtomicOrContainer:
-		if (!pt_sel && entity->WithinBox(bounds)) result.insert(entity);
+		if (!pt_sel && entity->WithinBox(gis_Geo,bounds)) result.insert(entity);
 		else if (com)
 		{
 			int count = com->GetNumEntities();
@@ -496,8 +496,8 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 			for (int n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
 		}
-		if (pt_sel && entity->PtWithin(psel))				{ result.insert(entity); return 1; }
-		if (pt_sel && entity->PtOnFrame(psel, frame_dist))  { result.insert(entity); return 1; }
+		if (pt_sel && entity->PtWithin(gis_Geo,psel))				{ result.insert(entity); return 1; }
+		if (pt_sel && entity->PtOnFrame(gis_Geo,psel, frame_dist))  { result.insert(entity); return 1; }
 
 		break;
 	}
@@ -542,7 +542,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			new_b.p2 += delta;
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
-				(*e)->Rescale(old_b, new_b);
+				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
 		}
 		break;

@@ -38,7 +38,7 @@ public:
 	virtual	double	GetHeading(void			 ) const;
 	virtual	void	SetHeading(double heading)      ;
 
-	virtual	void	Rotate			(const Point2& center, double angle);
+	virtual	void	Rotate			(GISLayer_t l,const Point2& center, double angle);
 
 private:
 

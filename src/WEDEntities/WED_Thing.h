@@ -65,6 +65,13 @@ public:
 			void				SetParent(WED_Thing * parent, int nth);
 			int					GetMyPosition(void) const;
 
+			int					CountSources(void) const;
+			WED_Thing *			GetNthSource(int n) const;
+			int					CountViewers(void) const;
+			WED_Thing *			GetNthViewer(int n) const;
+			void				AddSource(WED_Thing * src, int nth);
+			void				RemoveSource(WED_Thing * src);
+
 			void				GetName(string& name) const;
 			void				SetName(const string& name);
 
@@ -95,9 +102,14 @@ protected:
 
 	virtual		void			AddChild(int id, int n);
 	virtual		void			RemoveChild(int id);
+	virtual		void			AddViewer(int id);
+	virtual		void			RemoveViewer(int id);
 
 	int				parent_id;
 	vector<int>		child_id;
+	
+	vector<int>		source_id;				// These are MY sources!  I am watching them.
+	set<int>		viewer_id;				// These are MY vieweres!  They are watching me.
 
 	WED_PropStringText			name;
 

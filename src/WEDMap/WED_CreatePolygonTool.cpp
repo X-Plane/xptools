@@ -46,11 +46,11 @@
 #include "WED_ResourceMgr.h"
 #include "MathUtils.h"
 
-const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
+static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", "Facade", "Forest", "String", "Line", "Polygon" };
 
-const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
-const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
-const int kAllowCurved[] = { 1, 1, 1, 1,    1, 0,  1, 1, 1 };
+static const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
+static const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
+static const int kAllowCurved[] = { 1, 1, 1, 1,    1, 0,  1, 1, 1 };
 
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,
@@ -335,14 +335,14 @@ void	WED_CreatePolygonTool::AcceptPath(
 		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());
 		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 
-		node->SetLocation(pts[idx]);
+		node->SetLocation(gis_Geo,pts[idx]);
 		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
 							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
 		if(pts.size() == 4)	{st.x_ = hard_coded_s[n];
 							 st.y_ = hard_coded_t[n];}
 							
-		if(tnode)			tnode->SetUV(st);
-		if(tbnode)			tbnode->SetUV(st);
+		if(tnode)			tnode->SetLocation(gis_UV,st);
+		if(tbnode)			tbnode->SetLocation(gis_UV,st);
 
 		if(bnode)
 		{
@@ -352,8 +352,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 				bnode->DeleteHandleLo();
 				if(tbnode)
 				{
-					tbnode->SetUVLo(st);
-					tbnode->SetUVHi(st);
+					tbnode->SetControlHandleLo(gis_UV,st);
+					tbnode->SetControlHandleHi(gis_UV,st);
 				}
 			}
 			else
@@ -361,26 +361,26 @@ void	WED_CreatePolygonTool::AcceptPath(
 				bnode->SetSplit(has_split[idx]);
 				if (is_ccw)
 				{
-					bnode->SetControlHandleHi(dirs_hi[idx]);
-					bnode->SetControlHandleLo(dirs_lo[idx]);
+					bnode->SetControlHandleHi(gis_Geo,dirs_hi[idx]);
+					bnode->SetControlHandleLo(gis_Geo,dirs_lo[idx]);
 					if(tbnode)
 					{
-						tbnode->SetUVHi(Point2(
+						tbnode->SetControlHandleHi(gis_UV,Point2(
 							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
 							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
-						tbnode->SetUVLo(Point2(
+						tbnode->SetControlHandleLo(gis_UV,Point2(
 							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
 							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
 					}
 				} else {
-					bnode->SetControlHandleHi(dirs_lo[idx]);
-					bnode->SetControlHandleLo(dirs_hi[idx]);
+					bnode->SetControlHandleHi(gis_Geo,dirs_lo[idx]);
+					bnode->SetControlHandleLo(gis_Geo,dirs_hi[idx]);
 					if(tbnode)
 					{
-						tbnode->SetUVHi(Point2(
+						tbnode->SetControlHandleHi(gis_UV,Point2(
 							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
 							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
-						tbnode->SetUVLo(Point2(
+						tbnode->SetControlHandleLo(gis_UV,Point2(
 							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
 							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
 					}

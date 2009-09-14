@@ -47,6 +47,7 @@
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
+#include "WED_Routing.h"
 
 #include "WED_Orthophoto.h"
 
@@ -274,6 +275,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
 	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
+#if AIRPORT_ROUTING
+	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
+#endif	
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
@@ -323,10 +327,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case wed_Crop:		return	WED_CanCrop(mDocument);
+#if AIRPORT_ROUTING
+	case wed_MakeRouting:
+#endif	
 	case wed_Overlay:														return 1;
-		#if !DEV
-			#error fix this
-		#endif
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);

@@ -22,20 +22,25 @@
  */
 #include "WED_Globals.h"
 
-//Pmwx				gMap;
-//DEMGeoMap			gDem;
+#if DEV
 
-//MapFaceBuckets		gFaceBuckets		(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
-//MapHalfedgeBuckets	gHalfedgeBuckets	(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
-//MapVertexBuckets		gVertexBuckets		(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
-//CDT					gTriangulationLo;
-//CDT					gTriangulationHi;
+vector<pair<Point2,Point3> >		gMeshPoints;
+vector<pair<Point2,Point3> >		gMeshLines;
+vector<pair<Polygon2,Point3> >		gMeshPolygons;
 
-//vector<pair<Point2,Point3> >		gMeshPoints;
-//vector<pair<Point2,Point3> >		gMeshLines;
-//int					gLayer = NO_DATA;
+void	debug_mesh_line(const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	gMeshLines.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));
+	gMeshLines.push_back(pair<Point2,Point3>(p2,Point3(r2,g2,b2)));
+}
 
-string				gFilePath;
-bool				gDirty = false;
-//AptVector			gApts;
-//AptIndex			gAptIndex;
+void	debug_mesh_point(const Point2& p1, float r1, float g1, float b1)
+{
+	gMeshPoints.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));
+}
+
+void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1)
+{
+	gMeshPolygons.push_back(pair<Polygon2,Point3>(p1,Point3(r1,g1,b1)));
+}
+#endif

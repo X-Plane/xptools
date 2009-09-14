@@ -41,53 +41,91 @@ WED_TextureBezierNode::~WED_TextureBezierNode()
 }
 
 
-bool		WED_TextureBezierNode::HasUV(void) const
+bool		WED_TextureBezierNode::HasLayer(GISLayer_t l) const
 {
+	if(l == gis_UV) return true;
+	return WED_GISPoint_Bezier::HasLayer(l);
+}
+
+void		WED_TextureBezierNode::SetLocation(GISLayer_t l,const Point2& st)
+{
+	if(l == gis_UV)
+	{
+		if (st.x() != mS.value || st.y() != mT.value)
+		{
+			StateChanged();
+			mS = st.x();
+			mT = st.y();
+			CacheInval();
+			CacheBuild();
+		}
+	}
+	else 
+		WED_GISPoint_Bezier::SetLocation(l,st);
+}
+
+void		WED_TextureBezierNode::GetLocation(GISLayer_t l,	   Point2& st) const
+{
+	if(l == gis_UV)
+	{
+		st.x_ = mS.value;
+		st.y_ = mT.value;
+	} else 
+		WED_GISPoint_Bezier::GetLocation(l,st);
+}
+
+bool	WED_TextureBezierNode::GetControlHandleLo (GISLayer_t layer,      Point2& p) const
+{
+	if(!WED_GISPoint_Bezier::GetControlHandleLo(layer,p)) return false;
+	if(layer == gis_UV) 
+	{
+		p.x_ = mScL.value + mS.value;
+		p.y_ = mTcL.value + mT.value;	
+	}
 	return true;
 }
 
-void		WED_TextureBezierNode::SetUV(const Point2& st)
+bool	WED_TextureBezierNode::GetControlHandleHi (GISLayer_t layer,      Point2& p) const
 {
-	if (st.x() != mS.value || st.y() != mT.value)
+	if(!WED_GISPoint_Bezier::GetControlHandleHi(layer,p)) return false;
+	if(layer == gis_UV) 
 	{
-		mS = st.x();
-		mT = st.y();
+		p.x_ = mScH.value + mS.value;
+		p.y_ = mTcH.value + mT.value;	
 	}
+	return true;
 }
 
-void		WED_TextureBezierNode::GetUV(	   Point2& st) const
+void	WED_TextureBezierNode::SetControlHandleLo (GISLayer_t layer,const Point2& p)
 {
-	st.x_ = mS.value;
-	st.y_ = mT.value;
-}
-
-
-void		WED_TextureBezierNode::SetUVLo(const Point2& st)
-{
-	if (st.x() != mScL.value || st.y() != mTcL.value)
+	if(layer == gis_UV)
 	{
-		mScL = st.x();
-		mTcL = st.y();
-	}
+		if(p.x() != mScL.value + mS.value ||
+		   p.y() != mTcL.value + mT.value)
+		{
+			StateChanged();
+			mScL = p.x() - mS.value;
+			mTcL = p.y() - mT.value;
+			CacheInval();
+			CacheBuild();
+		}
+	} else
+		WED_GISPoint_Bezier::SetControlHandleLo(layer,p);
 }
 
-void		WED_TextureBezierNode::GetUVLo(	   Point2& st) const
+void	WED_TextureBezierNode::SetControlHandleHi (GISLayer_t layer,const Point2& p)
 {
-	st.x_ = mScL.value;
-	st.y_ = mTcL.value;
-}
-
-void		WED_TextureBezierNode::SetUVHi(const Point2& st)
-{
-	if (st.x() != mScH.value || st.y() != mTcH.value)
+	if(layer == gis_UV)
 	{
-		mScH = st.x();
-		mTcH = st.y();
-	}
-}
-
-void		WED_TextureBezierNode::GetUVHi(	   Point2& st) const
-{
-	st.x_ = mScH.value;
-	st.y_ = mTcH.value;
+		if(p.x() != mScH.value + mS.value ||
+		   p.y() != mTcH.value + mT.value)
+		{
+			StateChanged();
+			mScH = p.x() - mS.value;
+			mTcH = p.y() - mT.value;
+			CacheInval();
+			CacheBuild();
+		}
+	} else
+		WED_GISPoint_Bezier::SetControlHandleHi(layer,p);
 }

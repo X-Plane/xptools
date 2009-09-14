@@ -47,47 +47,41 @@ void		WED_OverlayImage::SetImage(const string& image_file)
 	mImageFile = image_file;
 }
 
-void	WED_OverlayImage::GetCorners(Point2 corners[4]) const
+void	WED_OverlayImage::GetCorners(GISLayer_t l,Point2 corners[4]) const
 {
 	for (int n = 0; n < 4; ++n)
-		GetOuterRing()->GetNthPoint(n)->GetLocation(corners[n]);
+		GetOuterRing()->GetNthPoint(n)->GetLocation(l,corners[n]);
 }
 
-void	WED_OverlayImage::GetCornersUV(Point2 corners[4]) const
-{
-	for (int n = 0; n < 4; ++n)
-		GetOuterRing()->GetNthPoint(n)->GetUV(corners[n]);
-}
-
-void	WED_OverlayImage::MoveCorner(int corner, const Vector2& delta)
+void	WED_OverlayImage::MoveCorner(GISLayer_t l,int corner, const Vector2& delta)
 {
 	Point2	p;
 	IGISPoint * pt = GetOuterRing()->GetNthPoint(corner);
-	pt->GetLocation(p);
+	pt->GetLocation(l,p);
 	p += delta;
-	pt->SetLocation(p);
+	pt->SetLocation(l,p);
 }
 
-void	WED_OverlayImage::MoveSide(int side, const Vector2& delta)
+void	WED_OverlayImage::MoveSide(GISLayer_t l,int side, const Vector2& delta)
 {
-	MoveCorner(side, delta);
-	MoveCorner((side+1)%4, delta);
+	MoveCorner(l,side, delta);
+	MoveCorner(l,(side+1)%4, delta);
 }
 
-void WED_OverlayImage::ResizeSide(int side, const Vector2& delta, bool symetric)
+void WED_OverlayImage::ResizeSide(GISLayer_t l,int side, const Vector2& delta, bool symetric)
 {
 	Point2	corners[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	Quad_ResizeSide4(corners, side, delta, symetric);
 	for (int n = 0; n < 4; ++n)
-		GetOuterRing()->GetNthPoint(n)->SetLocation(corners[n]);
+		GetOuterRing()->GetNthPoint(n)->SetLocation(l,corners[n]);
 
 }
 
-void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symetric)
+void	WED_OverlayImage::ResizeCorner(GISLayer_t l,int corner, const Vector2& delta, bool symetric)
 {
 	Point2	corners[4], orig[4];
-	GetCorners(corners);
+	GetCorners(l,corners);
 	Point2 ctr;
 	ctr.x_ = (corners[0].x() + corners[1].x() + corners[2].x() + corners[3].x()) * 0.25;
 	ctr.y_ = (corners[0].y() + corners[1].y() + corners[2].y() + corners[3].y()) * 0.25;
@@ -110,6 +104,6 @@ void	WED_OverlayImage::ResizeCorner(int corner, const Vector2& delta, bool symet
 	}
 
 	for (int n = 0; n < 4; ++n)
-		GetOuterRing()->GetNthPoint(n)->SetLocation(corners[n]);
+		GetOuterRing()->GetNthPoint(n)->SetLocation(l,corners[n]);
 
 }

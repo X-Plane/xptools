@@ -75,7 +75,7 @@ int			WED_Helipad::GetSurface(void) const
 void	WED_Helipad::Import(const AptHelipad_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(x.id);
-	SetLocation(x.location);
+	SetLocation(gis_Geo,x.location);
 	SetHeading(x.heading);
 	SetWidth(x.width_mtr);
 	SetLength(x.length_mtr);
@@ -110,7 +110,7 @@ void	WED_Helipad::Import(const AptHelipad_t& x, void (* print_func)(void *, cons
 void	WED_Helipad::Export(		 AptHelipad_t& x) const
 {
 	GetName(x.id);
-	GetLocation(x.location);
+	GetLocation(gis_Geo,x.location);
 	x.heading = GetHeading();
 	x.width_mtr = GetWidth();
 	x.length_mtr = GetLength();

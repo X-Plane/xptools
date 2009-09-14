@@ -36,23 +36,35 @@ WED_TextureNode::~WED_TextureNode()
 {
 }
 
-bool		WED_TextureNode::HasUV(void) const
+bool		WED_TextureNode::HasLayer(GISLayer_t l) const
 {
-	return true;
+	if(l == gis_UV) return true;
+	return WED_GISPoint::HasLayer(l);
 }
 
 
-void		WED_TextureNode::SetUV(const Point2& st)
+void		WED_TextureNode::SetLocation(GISLayer_t l, const Point2& st)
 {
-	if (st.x() != mS.value || st.y() != mT.value)
+	if(l == gis_UV)
 	{
-		mS = st.x();
-		mT = st.y();
-	}
+		if (st.x() != mS.value || st.y() != mT.value)
+		{
+			StateChanged();
+			mS = st.x();
+			mT = st.y();
+			CacheInval();
+			CacheBuild();			
+		}
+	} else
+		WED_GISPoint::SetLocation(l,st);
 }
 
-void		WED_TextureNode::GetUV(	   Point2& st) const
+void		WED_TextureNode::GetLocation(GISLayer_t l,	   Point2& st) const
 {
-	st.x_ = mS.value;
-	st.y_ = mT.value;
+	if(l == gis_UV)
+	{
+		CacheBuild();
+		st.x_ = mS.value;
+		st.y_ = mT.value;
+	} else WED_GISPoint::GetLocation(l,st);
 }

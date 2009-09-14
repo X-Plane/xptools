@@ -43,14 +43,14 @@ void	WED_Windsock::SetLit(int l)
 
 void	WED_Windsock::Import(const AptWindsock_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
-	SetLocation(x.location);
+	SetLocation(gis_Geo,x.location);
 	SetName(x.name);
 	lit = x.lit;
 }
 
 void	WED_Windsock::Export(		 AptWindsock_t& x) const
 {
-	GetLocation(x.location);
+	GetLocation(gis_Geo,x.location);
 	GetName(x.name);
 	x.lit = lit;
 }

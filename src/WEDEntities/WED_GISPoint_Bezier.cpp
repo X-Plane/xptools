@@ -52,26 +52,26 @@ GISClass_t		WED_GISPoint_Bezier::GetGISClass		(void				 ) const
 	return gis_Point_Bezier;
 }
 
-void			WED_GISPoint_Bezier::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds)
+void			WED_GISPoint_Bezier::Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
-	WED_GISPoint::Rescale(old_bounds, new_bounds);
+	WED_GISPoint::Rescale(l, old_bounds, new_bounds);
 	ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value);
 	ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
 	ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value);
 	ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
 }
 
-bool	WED_GISPoint_Bezier::GetControlHandleLo (      Point2& p) const
+bool	WED_GISPoint_Bezier::GetControlHandleLo (GISLayer_t l,       Point2& p) const
 {
-	GetLocation(p);
+	GetLocation(l,p);
 	p.x_ += ctrl_lon_lo.value;
 	p.y_ += ctrl_lat_lo.value;
 	return (ctrl_lon_lo.value != 0.0 || ctrl_lat_lo.value != 0.0);
 }
 
-bool	WED_GISPoint_Bezier::GetControlHandleHi (      Point2& p) const
+bool	WED_GISPoint_Bezier::GetControlHandleHi (GISLayer_t l,       Point2& p) const
 {
-	GetLocation(p);
+	GetLocation(l,p);
 	p.x_ += ctrl_lon_hi.value;
 	p.y_ += ctrl_lat_hi.value;
 	return (ctrl_lon_hi.value != 0.0 || ctrl_lat_hi.value != 0.0);
@@ -84,10 +84,10 @@ bool	WED_GISPoint_Bezier::IsSplit(void) const
 
 
 
-void	WED_GISPoint_Bezier::SetControlHandleLo (const Point2& p)
+void	WED_GISPoint_Bezier::SetControlHandleLo (GISLayer_t l, const Point2& p)
 {
 	Point2	me;
-	GetLocation(me);
+	GetLocation(l,me);
 	Vector2	lo_vec(me,p);
 	Vector2	hi_vec(ctrl_lon_hi.value,ctrl_lat_hi.value);
 	if (!is_split.value)
@@ -108,10 +108,10 @@ void	WED_GISPoint_Bezier::SetControlHandleLo (const Point2& p)
 	}
 }
 
-void	WED_GISPoint_Bezier::SetControlHandleHi (const Point2& p)
+void	WED_GISPoint_Bezier::SetControlHandleHi (GISLayer_t l, const Point2& p)
 {
 	Point2	me;
-	GetLocation(me);
+	GetLocation(l,me);
 	Vector2	hi_vec(me,p);
 	Vector2	lo_vec(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	if (!is_split.value)
@@ -199,12 +199,12 @@ void WED_GISPoint_Bezier::Reverse(void)
 
 
 
-void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
+void			WED_GISPoint_Bezier::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 {
 	if (a != 0.0)
 	{
 		Point2 p;
-		GetLocation(p);
+		GetLocation(l,p);
 		StateChanged();
 
 		Point2	pt_old_lo(p.x() + ctrl_lon_lo.value, p.y() + ctrl_lat_lo.value);
@@ -229,36 +229,15 @@ void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
 		v_new_lo = VectorMetersToLL(ctr,v_new_lo);
 		v_new_hi = VectorMetersToLL(ctr,v_new_hi);
 
-		WED_GISPoint::Rotate(ctr,a);
-		GetLocation(p);
+		WED_GISPoint::Rotate(l,ctr,a);
+		GetLocation(l,p);
 
 		ctrl_lon_lo.value = ctr.x() + v_new_lo.dx - p.x();
 		ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p.x();
 		ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p.y();
 		ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p.y();
+		CacheInval();
+		CacheBuild();
 
 	}
 }
-
-void	WED_GISPoint_Bezier::SetUVLo			   (const Point2& p)
-{
-	DebugAssert(!"Should not be accessing this.");
-}
-
-void	WED_GISPoint_Bezier::SetUVHi			   (const Point2& p)
-{
-	DebugAssert(!"Should not be accessing this.");
-}
-
-void	WED_GISPoint_Bezier::GetUVLo			   (      Point2& p) const
-{
-	DebugAssert(!"Should not be accessing this.");
-	p = Point2(0,0);
-}
-
-void	WED_GISPoint_Bezier::GetUVHi			   (      Point2& p) const
-{
-	DebugAssert(!"Should not be accessing this.");
-	p = Point2(0,0);
-}
-

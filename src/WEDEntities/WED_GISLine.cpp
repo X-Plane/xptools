@@ -45,24 +45,24 @@ const char *	WED_GISLine::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
-bool			WED_GISLine::HasUV			(void				 ) const
+bool			WED_GISLine::HasLayer		(GISLayer_t l) const
 {
-	return false;
+	return GetSource()->HasLayer(l) && GetTarget()->HasLayer(l);
 }
 
-void			WED_GISLine::GetBounds		(	   Bbox2&  bounds) const
+void			WED_GISLine::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
 {
 	CacheBuild();
 	Point2 p1,p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(l,p1);
+	GetTarget()->GetLocation(l,p2);
 	bounds = Bbox2(p1,p2);
 }
 
-bool			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
+bool			WED_GISLine::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	if (!me.overlap(bounds)) return false;
 
 	#if BENTODO
@@ -71,42 +71,42 @@ bool			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
 	return true;
 }
 
-bool			WED_GISLine::WithinBox		(const Bbox2&  bounds) const
+bool			WED_GISLine::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	return bounds.contains(me);
 }
 
-bool			WED_GISLine::PtWithin		(const Point2& p	 ) const
+bool			WED_GISLine::PtWithin		(GISLayer_t l,const Point2& p	 ) const
 {
 	return false;
 }
 
-bool			WED_GISLine::PtOnFrame		(const Point2& p, double dist ) const
+bool			WED_GISLine::PtOnFrame		(GISLayer_t l,const Point2& p, double dist ) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	me.p1 -= Vector2(dist,dist);
 	me.p2 += Vector2(dist,dist);
 	if (!me.contains(p)) return false;
 
 	Segment2 s;
-	GetSource()->GetLocation(s.p1);
-	GetTarget()->GetLocation(s.p2);
+	GetSource()->GetLocation(l,s.p1);
+	GetTarget()->GetLocation(l,s.p2);
 	return s.is_near(p,dist);
 }
 
-void	WED_GISLine::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)
+void	WED_GISLine::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
-	GetSource()->Rescale(old_bounds,new_bounds);
-	GetTarget()->Rescale(old_bounds,new_bounds);
+	GetSource()->Rescale(l,old_bounds,new_bounds);
+	GetTarget()->Rescale(l,old_bounds,new_bounds);
 }
 
-void	WED_GISLine::Rotate			(const Point2& ctr, double angle)
+void	WED_GISLine::Rotate			(GISLayer_t l,const Point2& ctr, double angle)
 {
-	GetSource()->Rotate(ctr,angle);
-	GetTarget()->Rotate(ctr,angle);
+	GetSource()->Rotate(l,ctr,angle);
+	GetTarget()->Rotate(l,ctr,angle);
 }
 
 
@@ -157,27 +157,19 @@ int					WED_GISLine::GetNumSides(void) const
 	return 1;
 }
 
-bool				WED_GISLine::GetSide(int n, Segment2& s, Bezier2& b) const
+bool				WED_GISLine::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 {
 	Assert(n == 0);
-	GetSource()->GetLocation(s.p1);
-	GetTarget()->GetLocation(s.p2);
+	GetSource()->GetLocation(l,s.p1);
+	GetTarget()->GetLocation(l,s.p2);
 	return false;
 }
 
-bool				WED_GISLine::GetSideUV(int n, Segment2& s, Bezier2& b) const
-{
-	DebugAssert(!"Should not be here.");
-	s.p1 = s.p2 = Point2(0,0);
-	return false;
-}
-
-
-void WED_GISLine::Reverse(void)
+void WED_GISLine::Reverse(GISLayer_t l)
 {
 	Point2	ends[2];
-	GetSource()->GetLocation(ends[0]);
-	GetTarget()->GetLocation(ends[1]);
-	GetSource()->SetLocation(ends[1]);
-	GetTarget()->SetLocation(ends[0]);
+	GetSource()->GetLocation(l,ends[0]);
+	GetTarget()->GetLocation(l,ends[1]);
+	GetSource()->SetLocation(l,ends[1]);
+	GetTarget()->SetLocation(l,ends[0]);
 }

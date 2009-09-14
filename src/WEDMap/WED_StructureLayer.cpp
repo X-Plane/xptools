@@ -62,6 +62,62 @@
 	#include <GL/glu.h>
 #endif
 
+// This was experimental code to draw lagrange polynomials for taxiway lines.  Turns out that they don't look very good and aren't useful.
+// Also, "combo" would need to be rewritten because it tends to overflow...of course we could just use long-long.
+
+inline int factorial(int n)
+{
+	int t = 1;
+	while(n > 1)
+		t *= n--;
+	return t;
+}
+
+inline int combo(int n, int k) { return factorial(n) / (factorial(k) * factorial(n - k)); }
+
+inline double lagrange_coef(int n, int s)
+{
+	return combo(s-1, n);
+}
+
+inline double lagrange_weight(double t, int n, int s)
+{
+	double it = 1.0 - t;
+	double r = 1.0;
+	
+	int in = s - n;
+	while(in-- > 0)
+		r *= it;
+	while(n-- > 0)
+		r *= t;
+	return r;
+}
+
+void DrawLaGrange(const vector<Point2>& p)
+{
+	if(p.empty()) return;
+	vector<double>	coef(p.size());
+	for(int n = 0; n < p.size(); ++n)
+		coef[n] = lagrange_coef(n,p.size());
+	
+	for(double t = 0.0; t <= 1.0; t += 0.00390625)
+	{
+		Point2	x(0.0,0.0);
+		for(int n = 0; n < p.size(); ++n)
+		{
+			double w = coef[n] * lagrange_weight(t, n, p.size()-1);
+			x.x_ += p[n].x_ * w;
+			x.y_ += p[n].y_ * w;
+		}
+		glVertex2(x);	
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :
 	WED_MapLayer(h, zoomer, resolver)
 {
@@ -530,7 +586,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	if (sub_class == WED_Airport::sClass && (airport = SAFE_CAST(WED_Airport, entity)) != NULL)
 	{
 		Bbox2	bounds;
-		airport->GetBounds(bounds);
+		airport->GetBounds(gis_Geo,bounds);
 		bounds.p1 = GetZoomer()->LLToPixel(bounds.p1);
 		bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);
 		if (bounds.xspan() < GetAirportTransWidth() && bounds.yspan() < GetAirportTransWidth())
@@ -552,7 +608,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		bool	has_shoulders, has_disp1, has_disp2, has_blas1, has_blas2;
 
 		// First, transform our geometry.
-						rwy->GetCorners(corners);					GetZoomer()->LLToPixelv(corners, corners, 4);
+						rwy->GetCorners(gis_Geo,corners);			GetZoomer()->LLToPixelv(corners, corners, 4);
 		if (has_blas1 = rwy->GetCornersBlas1(blas1))				GetZoomer()->LLToPixelv(blas1, blas1, 4);
 		if (has_blas2 = rwy->GetCornersBlas2(blas2))				GetZoomer()->LLToPixelv(blas2, blas2, 4);
 		if (has_disp1 = rwy->GetCornersDisp1(disp1))				GetZoomer()->LLToPixelv(disp1, disp1, 4);
@@ -621,7 +677,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
-				pt->GetLocation(l);
+				pt->GetLocation(gis_Geo,l);
 				l = GetZoomer()->LLToPixel(l);
 				if (icon) GUI_PlotIcon(g,icon, l.x(),l.y(),0,icon_scale);
 				else {
@@ -650,7 +706,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			else pth = SAFE_CAST(IGISPoint_Heading,entity);
 			if (pth)
 			{
-				pth->GetLocation(l);
+				pth->GetLocation(gis_Geo,l);
 				NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
 				Vector2 r(dir.perpendicular_cw());
 				l = GetZoomer()->LLToPixel(l);
@@ -675,7 +731,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			if (ptwl)
 			{
 				Point2 corners[4];
-				ptwl->GetCorners(corners);
+				ptwl->GetCorners(gis_Geo,corners);
 				GetZoomer()->LLToPixelv(corners, corners, 4);
 
 				if (helipad && mPavementAlpha > 0.0f)
@@ -697,7 +753,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				if (helipad)
 				{
 					Point2	p;
-					helipad->GetLocation(p);
+					helipad->GetLocation(gis_Geo,p);
 					p = GetZoomer()->LLToPixel(p);
 					GUI_PlotIcon(g, "map_helipad.png", p.x(), p.y(), ptwl->GetHeading(),icon_scale);
 				}
@@ -726,7 +782,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 				Segment2	s;
 				Bezier2		b;
-				if (ps->GetSide(i,s,b))
+				if (ps->GetSide(gis_Geo,i,s,b))
 				{
 					s.p1 = b.p1;
 					s.p2 = b.p2;
@@ -768,7 +824,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					if(!e || !e->GetHidden())
 					{
 						Point2 p;
-						pt->GetLocation(p);
+						pt->GetLocation(gis_Geo,p);
 						glVertex2(GetZoomer()->LLToPixel(p));
 					}
 				}
@@ -787,7 +843,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		if (lw)
 		{
 			Point2 corners[4];
-			lw->GetCorners(corners);
+			lw->GetCorners(gis_Geo,corners);
 			GetZoomer()->LLToPixelv(corners, corners, 4);
 
 			if (sea && mPavementAlpha > 0.0f)
@@ -814,8 +870,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		if(box)
 		{
 			Point2	pts[2];
-			box->GetMin()->GetLocation(pts[0]);
-			box->GetMax()->GetLocation(pts[1]);
+			box->GetMin()->GetLocation(gis_Geo,pts[0]);
+			box->GetMax()->GetLocation(gis_Geo,pts[1]);
 			GetZoomer()->LLToPixelv(pts,pts,2);
 			glColor4fv(WED_Color_RGBA_Alpha(wed_Link, mPavementAlpha, storage));
 			glBegin(GL_LINE_LOOP);
@@ -958,7 +1014,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 				g->SetState(false,0,false,false, false,false,false);
 				glColor3f(1,0,0);
 				Bbox2	bounds;
-				poly->GetBounds(bounds);
+				poly->GetBounds(gis_Geo,bounds);
 				
 				glPointSize(5);
 				glBegin(GL_POINTS);
@@ -981,10 +1037,10 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 				WED_TextureNode * tn3 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(2));
 				WED_TextureNode * tn4 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(3));
 				Point2 st1,st2,st3,st4, v1,v2,v3,v4;
-				tn1->GetUV(st1);	tn1->GetLocation(v1);
-				tn2->GetUV(st2);	tn2->GetLocation(v2);
-				tn3->GetUV(st3);	tn3->GetLocation(v3);
-				tn4->GetUV(st4);	tn4->GetLocation(v4);
+				tn1->GetLocation(gis_UV,st1);	tn1->GetLocation(gis_Geo,v1);
+				tn2->GetLocation(gis_UV,st2);	tn2->GetLocation(gis_Geo,v2);
+				tn3->GetLocation(gis_UV,st3);	tn3->GetLocation(gis_Geo,v3);
+				tn4->GetLocation(gis_UV,st4);	tn4->GetLocation(gis_Geo,v4);
 
 
 				string img_file;

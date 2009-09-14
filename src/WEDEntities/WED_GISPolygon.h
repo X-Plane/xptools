@@ -48,14 +48,14 @@ public:
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 	virtual	const char *	GetGISSubtype	(void				 ) const;
-	virtual	bool			HasUV			(void				 ) const;
-	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
-	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
-	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
-	virtual bool			PtWithin		(const Point2& p	 ) const;
-	virtual bool			PtOnFrame		(const Point2& p, double d) const;
-	virtual	void			Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds);
-	virtual	void			Rotate			(const Point2& center, double angle);
+	virtual	bool			HasLayer		(GISLayer_t l		 ) const;
+	virtual	void			GetBounds		(GISLayer_t l,	    Bbox2&  bounds) const;
+	virtual	bool			IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const;
+	virtual	bool			WithinBox		(GISLayer_t l,const Bbox2&  bounds) const;
+	virtual bool			PtWithin		(GISLayer_t l,const Point2& p	 ) const;
+	virtual bool			PtOnFrame		(GISLayer_t l,const Point2& p, double d) const;
+	virtual	void			Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds);
+	virtual	void			Rotate			(GISLayer_t l,const Point2& center, double angle);
 	// IGISPolygon
 	virtual			IGISPointSequence *		GetOuterRing(void )	const;
 	virtual			int						GetNumHoles (void ) const;
@@ -63,7 +63,7 @@ public:
 
 	virtual			void					DeleteHole  (int n)					;
 	virtual			void					AddHole		(IGISPointSequence * r) ;
-	virtual			void					Reverse(void);
+	virtual			void					Reverse(GISLayer_t l);
 
 
 };

@@ -64,7 +64,7 @@ private:
 	vector<WED_TCELayer *>	mLayers;
 	vector<WED_TCEToolNew *>mTools;
 
-	GUI_ToolBar *			mToolbar;
+//	GUI_ToolBar *			mToolbar;
 
 //	GUI_Table *				mTable;
 //	GUI_TextTable *			mTextTable;

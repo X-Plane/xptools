@@ -8,35 +8,40 @@
  */
 
 #include "WED_GISUtils.h"
-
 #include "IGIS.h"
-
+#include <CGAL/Sweep_line_2_algorithms.h>
+#include "WED_Globals.h"
 /************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************/
 
+#if !DEV
+	#error we need an option to get approximate pt sequenes from beziers!
+	#error we need to handle degunking self-intersecting and backward polygons!
+#endif
+
 bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Polygon_2 * uv)
 {
 	DebugAssert(ps->IsClosed());
-	DebugAssert(!uv || ps->HasUV());
+	DebugAssert(!uv || ps->HasLayer(gis_UV));
 	int ss = ps->GetNumSides();
 	for(int s = 0; s < ss; ++s)
 	{
 		Segment2 seg;
 		Bezier2 bez;
-		if(ps->GetSide(s, seg, bez))
+		if(ps->GetSide(gis_Geo,s, seg, bez))
 			return false;
 	}
 	int nn = ps->GetNumPoints();
 	for(int n = 0; n < nn; ++n)
 	{
 		Point2	pt;
-		ps->GetNthPoint(n)->GetLocation(pt);
+		ps->GetNthPoint(n)->GetLocation(gis_Geo,pt);
 		p.push_back(ben2cgal(pt));
 		if(uv)
 		{
 			Point2 st;
-			ps->GetNthPoint(n)->GetUV(st);
+			ps->GetNthPoint(n)->GetLocation(gis_UV,st);
 			uv->push_back(ben2cgal(st));
 		}
 	}
@@ -66,9 +71,32 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 			int nn = p->GetNumHoles();
 			for(int n = 0; n < nn; ++n)
 			{
+				pring.clear();
 				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring, NULL))
 					return false;
-				if (pring.orientation() != CGAL::CLOCKWISE)
+				if(!pring.is_simple())
+				{
+					vector<Point_2>	errs;
+					Traits_2			tr;					
+					vector<Curve_2>	sides;
+					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
+					{
+						sides.push_back(Curve_2(*e,0));
+						#if DEV
+						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
+						#endif
+					}
+					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
+					for(int n = 0; n < errs.size(); ++n)
+					{
+						#if DEV
+						debug_mesh_point(cgal2ben(errs[n]),1,0,0);
+						#endif
+					}
+					return false;
+				}	
+					
+				if (pring.orientation() == CGAL::CLOCKWISE)
 					pring.reverse_orientation();
 				
 				pring.reverse_orientation();
@@ -81,8 +109,8 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 		if((b = SAFE_CAST(IGISBoundingBox, in_entity)) != NULL)
 		{
 			Point2	pmin, pmax;
-			b->GetMin()->GetLocation(pmin);
-			b->GetMax()->GetLocation(pmax);
+			b->GetMin()->GetLocation(gis_Geo,pmin);
+			b->GetMax()->GetLocation(gis_Geo,pmax);
 
 			Polygon_2	bounds;
 			bounds.push_back(Point_2(pmin.x(),pmin.y()));
@@ -111,12 +139,12 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 		if((q = SAFE_CAST(IGISQuad, in_entity)) != NULL)
 		{
 			Point2	crn[4];
-			q->GetCorners(crn);
+			q->GetCorners(gis_Geo,crn);
 			Polygon_2	bounds;
-			bounds.push_back(ben2cgal(crn[0]));
-			bounds.push_back(ben2cgal(crn[1]));
-			bounds.push_back(ben2cgal(crn[2]));
 			bounds.push_back(ben2cgal(crn[3]));
+			bounds.push_back(ben2cgal(crn[2]));
+			bounds.push_back(ben2cgal(crn[1]));
+			bounds.push_back(ben2cgal(crn[0]));
 			DebugAssert(bounds.orientation() != CGAL::CLOCKWISE);
 			out_pgs = bounds;
 		}
@@ -172,8 +200,8 @@ void	WED_MakeUVMap(
 {
 	Point2	corners[4];
 	Point2		ST[4];
-	in_quad->GetCorners  (corners);
-	in_quad->GetCornersUV(ST);
+	in_quad->GetCorners (gis_Geo,corners);
+	in_quad->GetCorners(gis_UV,ST);
 	Polygon_2 map_ll, map_uv;
 	for(int n = 0; n < 4; ++n)
 	{

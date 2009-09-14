@@ -71,6 +71,7 @@ private:
 
 		TexRef			mTex;
 		bool			mKillAlpha;
+		bool			mWrap;
 
 	vector<WED_TCELayer *>			mLayers;
 	WED_TCEToolNew *				mTool;

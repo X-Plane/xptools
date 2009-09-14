@@ -46,12 +46,12 @@ public:
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 
-	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
-	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
-	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
-	virtual bool			PtOnFrame		(const Point2& p, double dist) const;
-	virtual bool			PtWithin		(const Point2& p	 ) const;
-	virtual	void			Rescale(
+	virtual	void			GetBounds		(GISLayer_t l,	   Bbox2&  bounds) const;
+	virtual	bool			IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const;
+	virtual	bool			WithinBox		(GISLayer_t l,const Bbox2&  bounds) const;
+	virtual bool			PtOnFrame		(GISLayer_t l,const Point2& p, double dist) const;
+	virtual bool			PtWithin		(GISLayer_t l,const Point2& p	 ) const;
+	virtual	void			Rescale(GISLayer_t l,
 								const Bbox2& old_bounds,			// Defines a linear remappign of coordinates we can apply.
 								const Bbox2& new_bounds);
 
@@ -59,14 +59,13 @@ public:
 	virtual	double	GetWidth (void		 ) const;
 	virtual	void	SetWidth (double width)      ;
 
-	virtual	void	GetCorners(Point2 corners[4]) const;
-	virtual	void	GetCornersUV(Point2 corners[4]) const;	
+	virtual	void	GetCorners(GISLayer_t l,Point2 corners[4]) const;
 
-	virtual	void	MoveCorner(int corner, const Vector2& delta);
-	virtual	void	MoveSide(int side, const Vector2& delta);
+	virtual	void	MoveCorner(GISLayer_t l,int corner, const Vector2& delta);
+	virtual	void	MoveSide(GISLayer_t l,int side, const Vector2& delta);
 
-	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric);
-	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric);
+	virtual	void	ResizeSide(GISLayer_t l,int side, const Vector2& delta, bool symetric);
+	virtual	void	ResizeCorner(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 
 	double		GetHeading(void) const;
 	double		GetLength(void) const;

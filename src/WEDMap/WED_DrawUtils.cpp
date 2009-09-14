@@ -67,8 +67,8 @@ void PointSequenceToVector(
 	{
 		Segment2	s, suv;
 		Bezier2		b, buv;
-		if(get_uv) ps->GetSideUV(i,suv,buv);
-		if (ps->GetSide(i,s,b))
+		if(get_uv) ps->GetSide(gis_UV,i,suv,buv);
+		if (ps->GetSide(gis_Geo,i,s,b))
 		{
 			b.p1 = z->LLToPixel(b.p1);
 			b.p2 = z->LLToPixel(b.p2);

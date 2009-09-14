@@ -34,12 +34,16 @@
 #include "WED_ToolUtils.h"
 #include "WED_MarqueeTool.h"
 #include "WED_CreateBoxTool.h"
+#if AIRPORT_ROUTING
+#include "WED_CreateEdgeTool.h"
+#endif
 #include "WED_CreatePolygonTool.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
 #include "WED_WorldMapLayer.h"
 #include "WED_PreviewLayer.h"
+#include "WED_DebugLayer.h"
 #include "WED_VertexTool.h"
 //#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
@@ -55,6 +59,9 @@
 #include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
 char	kToolKeys[] = {
+#if AIRPORT_ROUTING
+	0,
+#endif
 	0, 0,0,0,		0,0,0,
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
@@ -67,7 +74,7 @@ static void GetExtentAll(Bbox2& box, IResolver * resolver)
 	box = Bbox2();
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	IGISEntity * ent = dynamic_cast<IGISEntity *>(wrl);
-	if (ent) ent->GetBounds(box);
+	if (ent) ent->GetBounds(gis_Geo,box);
 }
 
 static int accum_box(ISelectable * who, void * ref)
@@ -77,7 +84,7 @@ static int accum_box(ISelectable * who, void * ref)
 	if (ent)
 	{
 		Bbox2 ent_box;
-		ent->GetBounds(ent_box);
+		ent->GetBounds(gis_Geo,ent_box);
 		*total += ent_box;
 	}
 	return 0;
@@ -102,8 +109,12 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
+	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
 
 	// TOOLS
+#if AIRPORT_ROUTING
+	mTools.push_back(					new WED_CreateEdgeTool("Taxi Routes",mMap, mMap, resolver, archive, create_TaxiRoute));
+#endif	
 	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
 
 	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
@@ -158,7 +169,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(1,15+6+1,"map_tools.png");
+	mToolbar = new GUI_ToolBar(1,mTools.size(),"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);

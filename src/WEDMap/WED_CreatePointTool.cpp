@@ -162,7 +162,7 @@ void	WED_CreatePointTool::AcceptPath(
 
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
 
-	new_pt_obj->SetLocation(pts[0]);
+	new_pt_obj->SetLocation(gis_Geo,pts[0]);
 	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
 
 	static int n = 0;

@@ -200,7 +200,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 
 		if (dir)
 		{
-			rwy->GetCorners(corners);
+			rwy->GetCorners(gis_Geo,corners);
 			*dir = Vector2(Segment2(corners[0],corners[3]).midpoint(),Segment2(corners[1],corners[2]).midpoint());
 			if (n == 9 || n == 11) *dir = -*dir;
 		}
@@ -211,7 +211,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	else if (quad)
 	{
 		Point2	corners[4];
-		quad->GetCorners(corners);
+		quad->GetCorners(gis_Geo,corners);
 
 		Point2 ctr;
 		ctr.x_ =	corners[0].x() * kQuadBlend0[8] + corners[1].x() * kQuadBlend1[8] + corners[2].x() * kQuadBlend2[8] + corners[3].x() * kQuadBlend3[8];
@@ -260,7 +260,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 					if (con_type) *con_type = handle_VertexSharp;
 				}
 			}
-			pt->GetLocation(*p);
+			pt->GetLocation(gis_Geo,*p);
 			return;
 		}
 		break;
@@ -270,23 +270,23 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 				Point2 dummy;
 			if (active) *active = (n == 0);
 			switch(n) {
-			case 0:	pt_b->GetLocation(*p);
+			case 0:	pt_b->GetLocation(gis_Geo,*p);
 					if (con_type)
 					{
 						*con_type = handle_VertexSharp;
-						if (pt_b->GetControlHandleLo(dummy) || pt_b->GetControlHandleHi(dummy))
+						if (pt_b->GetControlHandleLo(gis_Geo,dummy) || pt_b->GetControlHandleHi(gis_Geo,dummy))
 							*con_type = handle_Vertex;
 					}
 					break;
-			case 1:	if (pt_b->GetControlHandleLo(*p) && active) *active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
-			case 2: if (pt_b->GetControlHandleHi(*p) && active)	*active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
+			case 1:	if (pt_b->GetControlHandleLo(gis_Geo,*p) && active) *active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(gis_Geo,dummy);*dir=Vector2(*p,dummy);}break;
+			case 2: if (pt_b->GetControlHandleHi(gis_Geo,*p) && active)	*active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(gis_Geo,dummy);*dir=Vector2(*p,dummy);}break;
 			}
 
 			if (active)
 			{
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
-				if ((mods & gui_OptionAltFlag) && n == 0 && !pt_b->GetControlHandleHi(dummy))	*active = 0;
-				if ((mods & gui_OptionAltFlag) && n == 2 && !pt_b->GetControlHandleHi(dummy))	*active = 1;
+				if ((mods & gui_OptionAltFlag) && n == 0 && !pt_b->GetControlHandleHi(gis_Geo,dummy))	*active = 0;
+				if ((mods & gui_OptionAltFlag) && n == 2 && !pt_b->GetControlHandleHi(gis_Geo,dummy))	*active = 1;
 			}
 			return;
 		}
@@ -294,7 +294,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	case gis_Point_Heading:
 		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
 		{
-			pt_h->GetLocation(*p);
+			pt_h->GetLocation(gis_Geo,*p);
 			Vector2	vdir;
 			NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
 			if(n==1)
@@ -315,8 +315,8 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	case gis_Line:
 		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
 		{
-			if (n == 0) ln->GetSource()->GetLocation(*p);
-			else		ln->GetTarget()->GetLocation(*p);
+			if (n == 0) ln->GetSource()->GetLocation(gis_Geo,*p);
+			else		ln->GetTarget()->GetLocation(gis_Geo,*p);
 			return;
 		}
 		break;
@@ -418,7 +418,7 @@ bool	WED_VertexTool::PointOnStructure(intptr_t id, const Point2& p) const
 	if (taxi || poly)
 	{
 		if (GetHost()->GetModifiersNow() & gui_ShiftFlag)
-		if (en->PtWithin(p))
+		if (en->PtWithin(gis_Geo,p))
 		{
 			mRotateCtr = p;
 			mTaxiDest = p;
@@ -471,8 +471,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		}
 		Vector2	slop(handle, io_pt);
 		Point2	p1, p2;
-		rwy->GetSource()->GetLocation(p1);
-		rwy->GetTarget()->GetLocation(p2);
+		rwy->GetSource()->GetLocation(gis_Geo,p1);
+		rwy->GetTarget()->GetLocation(gis_Geo,p2);
 		Vector2	axis(p1,p2);
 		Vector2 delta_m;
 		axis = VectorLLToMeters(p1,axis);
@@ -507,7 +507,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				if (mIsRotate)
 				{
 					Point2	corners[4];
-					quad->GetCorners(corners);
+					quad->GetCorners(gis_Geo,corners);
 					mRotateCtr.x_ = corners[0].x() * 0.25 + corners[1].x() * 0.25 + corners[2].x() * 0.25 + corners[3].x() * 0.25;
 					mRotateCtr.y_ = corners[0].y() * 0.25 + corners[1].y() * 0.25 + corners[2].y() * 0.25 + corners[3].y() * 0.25;
 
@@ -518,34 +518,34 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 
 		if (mIsRotate)
 		{
-			quad->Rotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr,io_pt,delta));
+			quad->Rotate(gis_Geo,mRotateCtr,WED_CalcDragAngle(mRotateCtr,io_pt,delta));
 			io_pt += delta;
 		}
 		else if (mIsScale)
 		{
-			if (n >= 4)				quad->ResizeSide(n-4, delta, mIsSymetric);
-			else					quad->ResizeCorner(n, delta, mIsSymetric);
+			if (n >= 4)				quad->ResizeSide(gis_Geo,n-4, delta, mIsSymetric);
+			else					quad->ResizeCorner(gis_Geo,n, delta, mIsSymetric);
 		}
 		else if (n >= 8)
 		{
 			Bbox2	oldb, newb;
-			quad->GetBounds(oldb);
+			quad->GetBounds(gis_Geo,oldb);
 			newb = oldb;
 			newb.p1 += delta;
 			newb.p2 += delta;
-			quad->Rescale(oldb,newb);
+			quad->Rescale(gis_Geo,oldb,newb);
 		}
-		else if (n >= 4)			quad->MoveSide(n-4, delta);
-		else						quad->MoveCorner(n,delta);
+		else if (n >= 4)			quad->MoveSide(gis_Geo,n-4, delta);
+		else						quad->MoveCorner(gis_Geo,n,delta);
 		return;
 	}
 	else switch(en->GetGISClass()) {
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
-			pt->GetLocation(p);
+			pt->GetLocation(gis_Geo,p);
 			SnapMovePoint(p,delta, en);
-			pt->SetLocation(p);
+			pt->SetLocation(gis_Geo,p);
 			return;
 		}
 		break;
@@ -554,19 +554,19 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		{
 			if (!mInEdit)
 			{
-				pt_b->GetLocation(p);
+				pt_b->GetLocation(gis_Geo,p);
 				Point2 dummy;
 				mInEdit = 1;
 				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 				if ((mods & gui_OptionAltFlag) && (mods & gui_ShiftFlag))
 				{
-					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(dummy))	pt_b->DeleteHandleLo(); else pt_b->SetControlHandleLo(p+delta); }
-					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(dummy))	pt_b->DeleteHandleHi(); else pt_b->SetControlHandleHi(p+delta); }
+					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(gis_Geo,dummy))	pt_b->DeleteHandleLo(); else pt_b->SetControlHandleLo(gis_Geo,p+delta); }
+					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(gis_Geo,dummy))	pt_b->DeleteHandleHi(); else pt_b->SetControlHandleHi(gis_Geo,p+delta); }
 				}
 				else if (mods & gui_OptionAltFlag)
 				{
-					if (n == 1) { if (pt_b->GetControlHandleLo(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleLo(p+delta); } }
-					if (n == 2) { if (pt_b->GetControlHandleHi(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleHi(p+delta); } }
+					if (n == 1) { if (pt_b->GetControlHandleLo(gis_Geo,dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleLo(gis_Geo,p+delta); } }
+					if (n == 2) { if (pt_b->GetControlHandleHi(gis_Geo,dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleHi(gis_Geo,p+delta); } }
 				}
 				else if (mods & gui_ShiftFlag && n != 0)
 				{
@@ -578,15 +578,15 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				}
 			}
 			switch(n) {
-			case 0:	pt_b->GetLocation(p);						break;
-			case 1:	if (!pt_b->GetControlHandleLo(p)) return;	break;
-			case 2: if (!pt_b->GetControlHandleHi(p)) return;	break;
+			case 0:	pt_b->GetLocation(gis_Geo,p);						break;
+			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) return;	break;
+			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) return;	break;
 			}
 			SnapMovePoint(p,delta, en);
 			switch(n) {
-			case 0:	pt_b->SetLocation(p);	break;
-			case 1:	pt_b->SetControlHandleLo(p);	break;
-			case 2: pt_b->SetControlHandleHi(p);	break;
+			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
+			case 1:	pt_b->SetControlHandleLo(gis_Geo,p);	break;
+			case 2: pt_b->SetControlHandleHi(gis_Geo,p);	break;
 			}
 			return;
 		}
@@ -594,11 +594,11 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Point_Heading:
 		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
 		{
-			pt_h->GetLocation(p);
+			pt_h->GetLocation(gis_Geo,p);
 			if (n == 0)
 			{
 				SnapMovePoint(p,delta, en);
-				pt_h->SetLocation(p);
+				pt_h->SetLocation(gis_Geo,p);
 			} else {
 				Point2 me = p;
 				Vector2	dir;
@@ -617,11 +617,11 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Line:
 		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
 		{
-			if (n == 0) ln->GetSource()->GetLocation(p);
-			else		ln->GetTarget()->GetLocation(p);
+			if (n == 0) ln->GetSource()->GetLocation(gis_Geo,p);
+			else		ln->GetTarget()->GetLocation(gis_Geo,p);
 			p += delta;
-			if (n == 0) ln->GetSource()->SetLocation(p);
-			else		ln->GetTarget()->SetLocation(p);
+			if (n == 0) ln->GetSource()->SetLocation(gis_Geo,p);
+			else		ln->GetTarget()->SetLocation(gis_Geo,p);
 			return;
 		}
 		break;
@@ -648,7 +648,7 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	case gis_Polygon:		return	pt_sel ? ent_AtomicOrContainer : ent_Container;
 	case gis_PointSequence: return	ent_Container;
 	case gis_Ring:			return	ent_Container;
-	case gis_Chain:			return	ent_Container;
+	case gis_Chain:			return	pt_sel ? ent_AtomicOrContainer : ent_Container;		// single click on the chain edge?  Grab the chain.  But drag to encompass?  collect vertices but don't "move up" to the chain.
 	case gis_Line:			return	ent_AtomicOrContainer;
 	case gis_Line_Width:	return	ent_AtomicOrContainer;
 	default:				return	ent_Atomic;
@@ -696,7 +696,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 	}
 
 	Bbox2	ent_bounds;
-	e->GetBounds(ent_bounds);
+	e->GetBounds(gis_Geo,ent_bounds);
 
 	if (!ent_bounds.overlap(vis_area))	return;
 
@@ -778,7 +778,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	}
 
 	Bbox2	ent_bounds;
-	e->GetBounds(ent_bounds);
+	e->GetBounds(gis_Geo,ent_bounds);
 
 	if (!ent_bounds.overlap(vis_area))	return;
 
@@ -800,7 +800,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		pt = SAFE_CAST(IGISPoint, e);
 		if (pt)
 		{
-			pt->GetLocation(loc);
+			pt->GetLocation(gis_Geo,loc);
 			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 		}
 		break;
@@ -808,13 +808,13 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		bt = SAFE_CAST(IGISPoint_Bezier, e);
 		if (bt)
 		{
-			bt->GetLocation(loc);
+			bt->GetLocation(gis_Geo,loc);
 			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 //			if (sel->IsSelected(e))
 			{
-				if (bt->GetControlHandleLo(loc))
+				if (bt->GetControlHandleLo(gis_Geo,loc))
 					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
-				if (bt->GetControlHandleHi(loc))
+				if (bt->GetControlHandleHi(gis_Geo,loc))
 					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 			}
 		}

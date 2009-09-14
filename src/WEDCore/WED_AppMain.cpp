@@ -32,7 +32,7 @@
 #include "WED_AboutBox.h"
 #include "WED_StartWindow.h"
 //#include "ObjTables.h"
-//#include <CGAL/assertions.h>
+#include <CGAL/assertions_behaviour.h>
 #include "GUI_Clipboard.h"
 #include "WED_Package.h"
 #include "GUI_Resources.h"
@@ -83,7 +83,8 @@
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
-	_R(WED_ExclusionZone)
+	_R(WED_ExclusionZone) \
+	_R(WED_TaxiRoute)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
@@ -95,15 +96,20 @@ REGISTER_LIST
 HINSTANCE gInstance = NULL;
 #endif
 
-/*
+
 CGAL::Failure_function	gFailure = NULL;
 void	cgal_failure(const char* a, const char* b, const char* c, int d, const char* e)
 {
+	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
 	if (gFailure)
 		(*gFailure)(a, b, c, d, e);
 	throw a;
 }
-*/
+
+void	cgal_warning(const char* a, const char* b, const char* c, int d, const char* e)
+{
+	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
+}
 
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -136,8 +142,10 @@ int main(int argc, char * argv[])
 
 	start->Show();
 
-
-//	gFailure = CGAL::set_error_handler(cgal_failure);
+	gFailure = CGAL::set_error_handler(cgal_failure);
+#if DEV
+	CGAL::set_warning_handler(cgal_warning);
+#endif
 
 	start->ShowMessage("Initializing...");
 //	XESInit();

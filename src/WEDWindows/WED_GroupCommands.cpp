@@ -235,10 +235,10 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			img->SetParent(wrl,0);
 			sel->Select(img);
 
-			p1->SetLocation(coords[3]);
-			p2->SetLocation(coords[2]);
-			p3->SetLocation(coords[1]);
-			p4->SetLocation(coords[0]);
+			p1->SetLocation(gis_Geo,coords[3]);
+			p2->SetLocation(gis_Geo,coords[2]);
+			p3->SetLocation(gis_Geo,coords[1]);
+			p4->SetLocation(gis_Geo,coords[0]);
 
 
 			string img_path(buf);
@@ -255,10 +255,10 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
 			img->SetName(n);
 
-			p1->SetUV(Point2(0,0));
-			p2->SetUV(Point2(0,1));
-			p3->SetUV(Point2(1,1));
-			p4->SetUV(Point2(1,0));
+			p1->SetLocation(gis_UV,Point2(0,0));
+			p2->SetLocation(gis_UV,Point2(0,1));
+			p3->SetLocation(gis_UV,Point2(1,1));
+			p4->SetLocation(gis_UV,Point2(1,0));
 
 			wrl->CommitOperation();
 
@@ -774,8 +774,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 	if (!t) return 1;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 1;
-	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
-	if (!a) return 1;
+//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+//	if (!a) return 1;
 
 	WED_Thing * parent = t->GetParent();
 	if (!parent) return 1;
@@ -811,8 +811,8 @@ static int	collect_splits(ISelectable * base, void * ref)
 	if (!t) return 0;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 0;
-	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
-	if (!a) return 0;
+//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+//	if (!a) return 0;
 
 	WED_Thing * parent = t->GetParent();
 	if (!parent) return 0;
@@ -865,39 +865,62 @@ void	WED_DoSplit(IResolver * resolver)
 	{
 		WED_Thing * parent = (*w)->GetParent();
 		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
-		WED_AirportNode * node = dynamic_cast<WED_AirportNode *>(*w);
-		WED_AirportNode * new_node = WED_AirportNode::CreateTyped(parent->GetArchive());
+		WED_Thing * new_w = (WED_Thing *) (*w)->Clone();
+
+		IGISPoint * as_p = dynamic_cast<IGISPoint *>(new_w);
+		IGISPoint_Bezier * as_bp = dynamic_cast<IGISPoint_Bezier *>(new_w);
+
 		Segment2	seg;
 		Bezier2		bez;
 
-		set<int> attrs;
-		node->GetAttributes(attrs);
-		new_node->SetAttributes(attrs);
+//		set<int> attrs;
+//		node->GetAttributes(attrs);
+///		new_node->SetAttributes(attrs);
 
-		if (seq->GetSide((*w)->GetMyPosition(),seg,bez))
+		if (seq->GetSide(gis_Geo,(*w)->GetMyPosition(),seg,bez))
 		{
+			IGISPoint_Bezier * pre = dynamic_cast<IGISPoint_Bezier *>(*w);
+			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
+			DebugAssert(as_bp);
+			DebugAssert(pre);
+			DebugAssert(follow);
 			Bezier2	b1, b2;
 			bez.partition(b1,b2);
-			new_node->SetLocation(b2.p1);
-			new_node->SetSplit(false);
-			new_node->SetControlHandleHi(b2.c1);
-			node->SetSplit(true);
-			node->SetControlHandleHi(b1.c1);
-			WED_AirportNode * follow = dynamic_cast<WED_AirportNode *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
+			as_bp->SetLocation(gis_Geo,b2.p1);
+			as_bp->SetSplit(false);
+			as_bp->SetControlHandleHi(gis_Geo,b2.c1);
+			pre->SetSplit(true);
+			pre->SetControlHandleHi(gis_Geo,b1.c1);
 			follow->SetSplit(true);
-			follow->SetControlHandleLo(b2.c2);
+			follow->SetControlHandleLo(gis_Geo,b2.c2);
+			if(as_bp->HasLayer(gis_UV))
+			{
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);
+				bez.partition(b1,b2);
+				as_bp->SetLocation(gis_UV,b2.p1);
+				as_bp->SetControlHandleHi(gis_UV,b2.c1);
+				as_bp->SetControlHandleLo(gis_UV,b1.c2);
+				pre->SetControlHandleHi(gis_UV,b1.c1);
+				follow->SetControlHandleLo(gis_UV,b2.c2);			
+			}
 		}
 		else
 		{
-			new_node->SetLocation(seg.midpoint());
+			DebugAssert(as_p);
+			as_p->SetLocation(gis_Geo,seg.midpoint());
+			if(as_p->HasLayer(gis_UV))
+			{
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);			
+				as_p->SetLocation(gis_UV,seg.midpoint());
+			}
 		}
-		new_node->SetParent(parent, (*w)->GetMyPosition() + 1);
+		new_w->SetParent(parent, (*w)->GetMyPosition() + 1);
 		string name;
-		node->GetName(name);
+		new_w->GetName(name);
 		name += ".1";
-		new_node->SetName(name);
+		new_w->SetName(name);
 
-		sel->Insert(new_node);
+		sel->Insert(new_w);
 	}
 
 	op->CommitOperation();
@@ -923,8 +946,8 @@ static int IterateDoReverse(ISelectable * what, void * ref)
 {
 	IGISPolygon * p;
 	IGISPointSequence * ps;
-	if ((p =  dynamic_cast<IGISPolygon*      >(what))!= NULL) p->Reverse();
-	if ((ps = dynamic_cast<IGISPointSequence*>(what))!= NULL) ps->Reverse();
+	if ((p =  dynamic_cast<IGISPolygon*      >(what))!= NULL) p->Reverse(gis_Geo);
+	if ((ps = dynamic_cast<IGISPointSequence*>(what))!= NULL) ps->Reverse(gis_Geo);
 	return 0;
 }
 

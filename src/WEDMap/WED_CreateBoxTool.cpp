@@ -90,8 +90,8 @@ void	WED_CreateBoxTool::AcceptPath(
 	n1->SetName("Start");
 	n2->SetName("End");
 
-	obj->GetMin()->SetLocation(pts[0]);
-	obj->GetMax()->SetLocation(dirs_hi[0]);
+	obj->GetMin()->SetLocation(gis_Geo,pts[0]);
+	obj->GetMax()->SetLocation(gis_Geo,dirs_hi[0]);
 	static int n = 0;
 	++n;
 	obj->SetParent(host, idx);

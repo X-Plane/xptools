@@ -52,29 +52,29 @@ WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive
 //	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
 
-	mToolbar = new GUI_ToolBar(1,15+6+1,"map_tools.png");
-	mToolbar->SizeToBitmap();
-	mToolbar->Show();
-	mToolbar->SetParent(this);
-	mToolbar->SetSticky(1,0,0,1);
-	this->PackPane(mToolbar,gui_Pack_Left);
-	mToolbar->SizeToBitmap();
-	mToolbar->AddListener(this);
-	vector<string>	tips;
+//	mToolbar = new GUI_ToolBar(1,15+6+1,"map_tools.png");
+//	mToolbar->SizeToBitmap();
+//	mToolbar->Show();
+//	mToolbar->SetParent(this);
+//	mToolbar->SetSticky(1,0,0,1);
+//	this->PackPane(mToolbar,gui_Pack_Left);
+//	mToolbar->SizeToBitmap();
+//	mToolbar->AddListener(this);
+//	vector<string>	tips;
 
-	for (int n = 0; n < mTools.size(); ++n)
-	{
-		string tip(mTools[n]->GetToolName());
-		if (kToolKeys[n])
-		{
-			char buf[5] = { " [x]" };
-			buf[2] = toupper(kToolKeys[n]);
-			tip += buf;
-		}
-		tips.push_back(tip);
-	}
+//	for (int n = 0; n < mTools.size(); ++n)
+//	{
+//		string tip(mTools[n]->GetToolName());
+//		if (kToolKeys[n])
+//		{
+//			char buf[5] = { " [x]" };
+//			buf[2] = toupper(kToolKeys[n]);
+//			tip += buf;
+//		}
+//		tips.push_back(tip);
+//	}
 
-	mToolbar->SetToolTips(tips);
+//	mToolbar->SetToolTips(tips);
 
 
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
@@ -101,7 +101,7 @@ WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive
 		mTCE->AddLayer(*t);
 
 	mTCE->SetTool(mTools[0]);
-	mToolbar->SetValue(mTools.size()-1);
+//	mToolbar->SetValue(mTools.size()-1);
 
 	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
 	// 1. On the commit of any operation.
@@ -132,13 +132,13 @@ void	WED_TCEPane::ZoomShowAll(void)
 int		WED_TCEPane::TCE_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mTCE->HandleKeyPress(inKey, inVK, inFlags)) return 1;
-	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
-	if (kToolKeys[n])
-	if (kToolKeys[n]==inKey)
-	{
-		mToolbar->SetValue(n);
-		return 1;
-	}
+//	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
+//	if (kToolKeys[n])
+//	if (kToolKeys[n]==inKey)
+//	{
+//		mToolbar->SetValue(n);
+//		return 1;
+//	}
 	return 0;
 }
 
@@ -162,11 +162,11 @@ void	WED_TCEPane::ReceiveMessage(
 							intptr_t				inMsg,
 							intptr_t				inParam)
 {
-	int i = mToolbar->GetValue();
-	WED_TCEToolNew * t = NULL;
-	if (i >= 0 && i < mTools.size())
-		t = mTools[i];
-	mTCE->SetTool(t);
+//	int i = mToolbar->GetValue();
+//	WED_TCEToolNew * t = NULL;
+//	if (i >= 0 && i < mTools.size())
+//		t = mTools[i];
+//	mTCE->SetTool(t);
 }
 
 void			WED_TCEPane::FromPrefs(IDocPrefs * prefs)

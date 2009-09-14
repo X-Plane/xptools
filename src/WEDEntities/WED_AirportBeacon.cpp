@@ -45,7 +45,7 @@ void		WED_AirportBeacon::SetKind(int k)
 
 void	WED_AirportBeacon::Import(const AptBeacon_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
-	SetLocation(x.location);
+	SetLocation(gis_Geo, x.location);
 	kind = ENUM_Import(Airport_Beacon, x.color_code);
 	if (kind == -1)
 	{
@@ -57,7 +57,7 @@ void	WED_AirportBeacon::Import(const AptBeacon_t& x, void (* print_func)(void *,
 
 void	WED_AirportBeacon::Export(		 AptBeacon_t& x) const
 {
-	GetLocation(x.location);
+	GetLocation(gis_Geo, x.location);
 	x.color_code = ENUM_Export(kind.value);
 	GetName(x.name);
 }

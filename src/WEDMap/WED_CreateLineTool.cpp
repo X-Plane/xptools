@@ -123,8 +123,8 @@ void	WED_CreateLineTool::AcceptPath(
 	n1->SetName("Start");
 	n2->SetName("End");
 
-	obj->GetSource()->SetLocation(pts[0]);
-	obj->GetTarget()->SetLocation(pts[1]);
+	obj->GetSource()->SetLocation(gis_Geo,pts[0]);
+	obj->GetTarget()->SetLocation(gis_Geo,pts[1]);
 	obj->SetWidth(50.0);
 	static int n = 0;
 	++n;
@@ -134,8 +134,8 @@ void	WED_CreateLineTool::AcceptPath(
 	if (h < 0) h += 360;
 	if (h > 180)
 	{
-		obj->GetSource()->SetLocation(pts[1]);
-		obj->GetTarget()->SetLocation(pts[0]);
+		obj->GetSource()->SetLocation(gis_Geo,pts[1]);
+		obj->GetTarget()->SetLocation(gis_Geo,pts[0]);
 		h = obj->GetHeading();
 		if (h < 0) h += 360;
 	}

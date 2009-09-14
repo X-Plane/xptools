@@ -24,6 +24,8 @@
 #ifndef WED_AptIE_H
 #define WED_AptIE_H
 
+#include "AptDefs.h"
+
 class	WED_Thing;
 class	WED_Archive;
 class	IResolver;
@@ -36,6 +38,13 @@ void	WED_AptImport(
 void	WED_AptExport(
 				WED_Thing *		container,
 				const char *	file_path);
+
+// Given a "WED_thing", add it to the apts as needed.
+// A little bit dangerous but this can be a good way
+// to convert a selection into an aptdefs.h construct.
+void	AptExportRecursive(WED_Thing * what, 
+				AptVector& apts);
+
 
 int		WED_CanExportApt(IResolver * resolver);
 void	WED_DoExportApt(IResolver * resolver);

@@ -75,23 +75,30 @@ enum GISClass_t {
 	gis_Composite
 };
 
+enum GISLayer_t {
+	gis_Geo,
+	gis_UV
+};
+
 class	IGISEntity : public virtual ISelectable {
 public:
 
-	virtual	GISClass_t		GetGISClass		(void						 ) const=0;
-	virtual	const char *	GetGISSubtype	(void						 ) const=0;
-	virtual	bool			HasUV			(void						 ) const=0;
+	virtual	GISClass_t		GetGISClass		(void										  ) const=0;
+	virtual	const char *	GetGISSubtype	(void										  ) const=0;
+	virtual	bool			HasLayer		(GISLayer_t layer							  ) const=0;
 
-	virtual	void			GetBounds		(	   Bbox2&  bounds		 ) const=0;
-	virtual	bool			IntersectsBox	(const Bbox2&  bounds		 ) const=0;
-	virtual	bool			WithinBox		(const Bbox2&  bounds		 ) const=0;
-	virtual bool			PtWithin		(const Point2& p			 ) const=0;
-	virtual bool			PtOnFrame		(const Point2& p, double dist) const=0;
+	virtual	void			GetBounds		(GISLayer_t layer,	    Bbox2&  bounds		  ) const=0;
+	virtual	bool			IntersectsBox	(GISLayer_t layer,const Bbox2&  bounds		  ) const=0;
+	virtual	bool			WithinBox		(GISLayer_t layer,const Bbox2&  bounds		  ) const=0;
+	virtual bool			PtWithin		(GISLayer_t layer,const Point2& p			  ) const=0;
+	virtual bool			PtOnFrame		(GISLayer_t layer,const Point2& p, double dist) const=0;
 
 	virtual	void			Rescale(
+								GISLayer_t layer,
 								const Bbox2& old_bounds,			// Defines a linear remappign of coordinates we can apply.
 								const Bbox2& new_bounds)=0;
 	virtual	void			Rotate(
+								GISLayer_t layer,
 								const Point2& center,
 								double angle)=0;
 };
@@ -99,14 +106,13 @@ public:
 class	IGISQuad : public virtual IGISEntity {
 public:
 
-	virtual	void	GetCorners(Point2 corners[4]) const=0;
-	virtual	void	GetCornersUV(Point2 corners[4]) const=0;
+	virtual	void	GetCorners(GISLayer_t layer, Point2 corners[4]) const=0;
 
-	virtual	void	MoveCorner(int corner, const Vector2& delta)=0;
-	virtual	void	MoveSide(int side, const Vector2& delta)=0;
+	virtual	void	MoveCorner(GISLayer_t layer,int corner, const Vector2& delta)=0;
+	virtual	void	MoveSide(GISLayer_t layer,int side, const Vector2& delta)=0;
 
-	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric)=0;
-	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric)=0;
+	virtual	void	ResizeSide(GISLayer_t layer,int side, const Vector2& delta, bool symetric)=0;
+	virtual	void	ResizeCorner(GISLayer_t layer,int side, const Vector2& delta, bool symetric)=0;
 
 };
 
@@ -119,27 +125,20 @@ public:
 class	IGISPoint : public virtual IGISEntity {
 public:
 
-	virtual	void	GetLocation(      Point2& p) const=0;
-	virtual	void	SetLocation(const Point2& p)      =0;
-
-	virtual	void	GetUV	   (      Point2& p) const=0;
-	virtual	void	SetUV	   (const Point2& p)      =0;
+	virtual	void	GetLocation(GISLayer_t layer,      Point2& p) const=0;
+	virtual	void	SetLocation(GISLayer_t layer,const Point2& p)      =0;
 
 };
 
 class	IGISPoint_Bezier : public virtual IGISPoint {
 public:
 
-	virtual	bool	GetControlHandleLo (      Point2& p) const=0;
-	virtual	bool	GetControlHandleHi (      Point2& p) const=0;
-	virtual	bool	IsSplit			   (void		   ) const=0;
-	virtual	void	GetUVLo			   (      Point2& p) const=0;
-	virtual	void	GetUVHi			   (      Point2& p) const=0;
+	virtual	bool	GetControlHandleLo (GISLayer_t layer,      Point2& p) const=0;
+	virtual	bool	GetControlHandleHi (GISLayer_t layer,      Point2& p) const=0;
+	virtual	bool	IsSplit			   (void							) const=0;
 
-	virtual	void	SetControlHandleLo (const Point2& p)      =0;
-	virtual	void	SetControlHandleHi (const Point2& p)      =0;
-	virtual	void	SetUVLo			   (const Point2& p)	  =0;
-	virtual	void	SetUVHi			   (const Point2& p)	  =0;
+	virtual	void	SetControlHandleLo (GISLayer_t layer,const Point2& p)      =0;
+	virtual	void	SetControlHandleHi (GISLayer_t layer,const Point2& p)      =0;
 	virtual	void	DeleteHandleLo	   (void		   )	  =0;
 	virtual	void	DeleteHandleHi	   (void		   )	  =0;
 	virtual	void	SetSplit		   (bool is_split  )	  =0;	// WARNING: unsplitting control handles WITHOUT then moving one handle leaves the resolution of split handles AMBIGUOUS!
@@ -183,12 +182,11 @@ public:
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
-	virtual	bool				GetSide  (int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
-	virtual	bool				GetSideUV(int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
+	virtual	bool				GetSide  (GISLayer_t layer, int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
 
 	virtual	bool				IsClosed(void) const=0;
 
-	virtual	void				Reverse(void)=0;
+	virtual	void				Reverse(GISLayer_t l)=0;
 
 };
 
@@ -225,7 +223,7 @@ public:
 	virtual			void					DeleteHole  (int n)					=0;
 	virtual			void					AddHole		(IGISPointSequence * r) =0;
 
-	virtual			void					Reverse(void)=0;
+	virtual			void					Reverse(GISLayer_t l)=0;
 
 };
 

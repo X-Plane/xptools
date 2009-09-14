@@ -52,14 +52,15 @@
 		1. A child is added or removed from the object.
 		2. The object is read in from DB or undo-memory (since we can't know what changed).
 		3. Any child or child's child's cache is invalidated (that is, cache invalidation goes up-stream.
-
+		4. viewers are added or removed.  (NOTE: this change is probably not strictly necessary?!?!)
+		
 	- The cache is rebuilt on demand by expensive-access routines.  Typically these include "GetBounds" and expensive
 	  iterators over children.  CacheRebuild is called to mark it as good and find out if real work must be done.
 
 	CORRECT CACHING BEHAVIORS:
 
 	- Classes that use a cache should invalidate it if their internal state changes in a way that would change cached data,
-	  and force a rebuild any time it is accessed.  Exmaple: GIS Chain
+	  and force a rebuild any time it is accessed.  Example: GIS Chain
 
 	- Classes that do not cache but pas through conventionally cached data should rebuild their caches (a no-op but call
 	  BuildCache()) so that the next inval is passed to all parents.  Example: GIS Line-Width.
@@ -102,6 +103,8 @@ protected:
 
 	virtual	void	AddChild(int id, int n);
 	virtual	void	RemoveChild(int id);
+	virtual	void	AddViewer(int id);
+	virtual	void	RemoveViewer(int id);
 
 private:
 

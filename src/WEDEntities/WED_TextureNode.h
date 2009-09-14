@@ -32,9 +32,9 @@ DECLARE_PERSISTENT(WED_TextureNode)
 
 public:
 
-	virtual		bool		HasUV(void) const;
-	virtual		void		GetUV	   (      Point2& p) const;
-	virtual		void		SetUV	   (const Point2& p)      ;
+	virtual		bool		HasLayer(GISLayer_t l) const;
+	virtual		void		GetLocation	   (GISLayer_t l,      Point2& p) const;
+	virtual		void		SetLocation	   (GISLayer_t l,const Point2& p)      ;
 
 private:
 

@@ -29,8 +29,8 @@ static void add_pol_ring(WED_OverlayImage * image, const Polygon_2& loc, const P
 		WED_TextureNode * tnode = WED_TextureNode::CreateTyped(r->GetArchive());
 		tnode->SetParent(r, n);
 		tnode->SetName("node");
-		tnode->SetLocation(cgal2ben(loc[n]));
-		tnode->SetUV(cgal2ben(uv[n]));
+		tnode->SetLocation(gis_Geo,cgal2ben(loc[n]));
+		tnode->SetLocation(gis_UV,cgal2ben(uv[n]));
 	}	
 }
 

@@ -457,7 +457,7 @@ int Iterate_CollectEntitiesUV(ISelectable * what, void * ref)
 {
 	vector<IGISEntity *> * container = (vector<IGISEntity *> *) ref;
 	IGISEntity * who = dynamic_cast<IGISEntity *>(what);
-	if (who && who->HasUV()) container->push_back(who);
+	if (who && who->HasLayer(gis_UV)) container->push_back(who);
 	return 0;
 }
 

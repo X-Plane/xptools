@@ -49,6 +49,15 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 		WED_Thing * new_child = dynamic_cast<WED_Thing *>(child->Clone());
 		new_child->SetParent(this, n);
 	}
+	
+	viewer_id.clear();		// I am a clone.  No one is REALLY watching me.
+	
+	nn = CountSources();						// But I am YET ANOTHER observer of my sources...
+	for(int n = 0; n < nn; ++n)						// go register with my parent now!
+	{
+		WED_Thing * the_src = GetNthSource(n);
+		the_src->viewer_id.insert(GetID());
+	}
 
 	int pc = rhs->CountProperties();
 	for (int p = 0; p < pc; ++p)
@@ -63,11 +72,24 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 {
 	int ct;
 	reader->ReadInt(parent_id);
+	// Children
 	reader->ReadInt(ct);
 	child_id.resize(ct);
 	for (int n = 0; n < ct; ++n)
 		reader->ReadInt(child_id[n]);
-
+	// Viewers
+	reader->ReadInt(ct);
+	for(int n = 0; n < ct; ++n)
+	{
+		int vid;
+		reader->ReadInt(vid);
+		viewer_id.insert(vid);
+	}
+	// Sources
+	reader->ReadInt(ct);
+	source_id.resize(ct);
+	for(int n = 0; n < ct; ++n)
+		reader->ReadInt(source_id[n]);
 	ReadPropsFrom(reader);
 }
 
@@ -75,38 +97,71 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 {
 	int n;
 	writer->WriteInt(parent_id);
-
+	// Children
 	writer->WriteInt(child_id.size());
 	for (int n = 0; n < child_id.size(); ++n)
 		writer->WriteInt(child_id[n]);
-
+	// Viewers
+	writer->WriteInt(viewer_id.size());
+	for(set<int>::iterator vid = viewer_id.begin(); vid != viewer_id.end(); ++vid)
+		writer->WriteInt(*vid);
+	//Sources
+	writer->WriteInt(source_id.size());
+	for(int n = 0; n < source_id.size(); ++n)
+		writer->WriteInt(source_id[n]);
 	WritePropsTo(writer);
 }
 
 void			WED_Thing::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
 	child_id.clear();
-	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
+	viewer_id.clear();
+	source_id.clear();
 
 	sql_row1<int>						key(GetID());
+	
+	// Read in parent
+	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
 	sql_row1<int>						me;
-
 	int err = cmd.simple_exec(key, me);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete thing query: %d (%s)",err, sqlite3_errmsg(db));
-
 	parent_id = me.a;
 
+	// Read in Children
 	sql_command kids(db, "SELECT id FROM WED_things WHERE parent=@id ORDER BY seq;","@id");
 	sql_row1<int>	kid;
-
 	kids.set_params(key);
 	kids.begin();
 	while ((err = kids.get_row(kid)) == SQLITE_ROW)
 	{
 		child_id.push_back(kid.a);
 	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));
 
+	// Read in viewers
+	sql_command viewers(db,"SELECT viewer FROM WED_thing_viewers WHERE source=@id;","@id");
+	sql_row1<int>	viewer;
+	viewers.set_params(key);
+	viewers.begin();
+	while((err = viewers.get_row(viewer)) == SQLITE_ROW)
+	{
+		viewer_id.insert(viewer.a);
+	}
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on viewers: %d (%s)",err, sqlite3_errmsg(db));
+
+	// Read in sources.  Note that sources are ORDERED because we might make a point sequence from our sources. 
+	// Viewers are not ordered - they only exist so that a point can notify its observing line that it is, like, dead or something.
+	sql_command sources(db,"SELECT source FROM WED_thing_viewers WHERE viewer=@id ORDER BY seq;","@id");
+	sql_row1<int>	source;
+	sources.set_params(key);
+	sources.begin();
+	while((err = sources.get_row(source)) == SQLITE_ROW)
+	{
+		source_id.push_back(source.a);
+	}
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on sources: %d (%s)",err, sqlite3_errmsg(db));	
+	
+	// Read in properties
 	char where_crud[100];
 	sprintf(where_crud,"id=%d",GetID());
 	PropsFromDB(db,where_crud,mapping);
@@ -146,6 +201,7 @@ void			WED_Thing::ToDB(sqlite3 * db)
 		}
 	}
 
+	// Write our properties and parent.  Children array is not written - it is inferred by a backward query.
 	sql_command write_me(db,"INSERT OR REPLACE INTO WED_things VALUES(@id,@parent,@seq,@name,@class_id);","@id,@parent,@seq,@name,@class_id");
 	sql_row5<int,int,int,string,int>	bindings(
 												GetID(),
@@ -156,6 +212,15 @@ void			WED_Thing::ToDB(sqlite3 * db)
 
 	err =  write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
+
+	// Write out our sources in order. 
+	sql_command write_src(db,"INSERT OR REPLACE INTO WED_thing_viewers VALUES(@v, @s,@n);","@v,@s,@n");
+	for(int n = 0; n < source_id.size(); ++n)
+	{
+		sql_row3<int,int,int> one_tuple(GetID(), source_id[n], n);
+		err = write_src.simple_exec(one_tuple);
+		if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to update thing source info info: %d (%s)",err, sqlite3_errmsg(db));		
+	}
 
 	char id_str[20];
 	sprintf(id_str,"%d",GetID());
@@ -189,6 +254,28 @@ WED_Thing *		WED_Thing::GetNamedChild(const string& s) const
 	return NULL;
 }
 
+int					WED_Thing::CountSources(void) const
+{
+	return source_id.size();
+}
+
+WED_Thing *			WED_Thing::GetNthSource(int n) const
+{
+	return SAFE_CAST(WED_Thing,FetchPeer(source_id[n]));
+}
+
+int					WED_Thing::CountViewers(void) const
+{
+	return viewer_id.size();
+}
+
+WED_Thing *			WED_Thing::GetNthViewer(int n) const
+{
+	set<int>::iterator i = viewer_id.begin();
+	advance(i,n);
+	return SAFE_CAST(WED_Thing,FetchPeer(*i));
+}
+
 
 void	WED_Thing::GetName(string& n) const
 {
@@ -212,6 +299,29 @@ void				WED_Thing::SetParent(WED_Thing * parent, int nth)
 	if (old_parent) old_parent->RemoveChild(GetID());
 	parent_id = parent ? parent->GetID() : 0;
 	if (parent) parent->AddChild(GetID(),nth);
+}
+
+void				WED_Thing::AddSource(WED_Thing * src, int nth)
+{
+	DebugAssert(nth >= 0);
+	DebugAssert(nth <= source_id.size());
+	StateChanged(wed_Change_Topology);
+	source_id.insert(source_id.begin()+nth,src->GetID());
+	if(src->viewer_id.count(GetID())==0)
+		src->AddViewer(GetID());
+}
+
+void				WED_Thing::RemoveSource(WED_Thing * src)
+{
+	vector<int>::iterator k = find(source_id.begin(), source_id.end(), src->GetID());
+	DebugAssert(k != source_id.end());
+	DebugAssert(src->viewer_id.count(GetID()) > 0);
+	StateChanged(wed_Change_Topology);
+
+	source_id.erase(k);
+	k = find(source_id.begin(), source_id.end(), src->GetID());
+	if(k == source_id.end())
+		src->RemoveViewer(GetID());
 }
 
 int			WED_Thing::GetMyPosition(void) const
@@ -240,6 +350,21 @@ void				WED_Thing::RemoveChild(int id)
 	DebugAssert(i != child_id.end());
 	child_id.erase(i);
 }
+
+void		WED_Thing::AddViewer(int id)
+{
+	StateChanged(wed_Change_Topology);
+	DebugAssert(viewer_id.count(id) == 0);
+	viewer_id.insert(id);
+}
+	
+void		WED_Thing::RemoveViewer(int id)
+{
+	StateChanged(wed_Change_Topology);
+	DebugAssert(viewer_id.count(id) != 0);
+	viewer_id.erase(id);
+}
+
 
 void		WED_Thing::PropEditCallback(int before)
 {

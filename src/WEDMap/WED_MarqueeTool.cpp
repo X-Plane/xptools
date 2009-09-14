@@ -341,7 +341,7 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 		{
 			if (iconic && !WED_IsIconic(ent)) iconic = false;
 			Bbox2 local;
-			ent->GetBounds(local);
+			ent->GetBounds(gis_Geo,local);
 			mCacheBounds += local;
 		}
 	}
@@ -369,7 +369,7 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 
 		if (ent)
 		{
-			ent->Rescale(old_bounds,new_bounds);
+			ent->Rescale(gis_Geo,old_bounds,new_bounds);
 		}
 	}
 
@@ -395,7 +395,7 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 
 		if (ent)
 		{
-			ent->Rotate(ctr, angle);
+			ent->Rotate(gis_Geo,ctr, angle);
 		}
 	}
 

@@ -84,6 +84,14 @@ void	WED_Entity::CacheInval(void)
 			if (e)
 				e->CacheInval();
 		}
+		int nn = CountViewers();
+		for(int n = 0; n < nn; ++n)
+		{
+			WED_Thing * t = GetNthViewer(n);
+			WED_Entity * e = dynamic_cast<WED_Entity *>(t);
+			if(e)
+				e->CacheInval();
+		}		
 	}
 }
 
@@ -105,3 +113,14 @@ void	WED_Entity::RemoveChild(int id)
 	WED_Thing::RemoveChild(id);
 }
 
+void	WED_Entity::AddViewer(int id)
+{
+	CacheInval();
+	WED_Thing::AddViewer(id);
+}
+
+void	WED_Entity::RemoveViewer(int id)
+{
+	CacheInval();
+	WED_Thing::RemoveViewer(id);
+}

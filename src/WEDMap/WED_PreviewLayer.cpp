@@ -280,7 +280,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 loc;
-			obj->GetLocation(loc);
+			obj->GetLocation(gis_Geo,loc);
 			loc = GetZoomer()->LLToPixel(loc);
 			float r = obj->GetHeading();
 			glTranslatef(loc.x(),loc.y(),0.0);

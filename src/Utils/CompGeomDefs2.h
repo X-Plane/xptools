@@ -39,6 +39,7 @@ struct	Point2;
 struct	Vector2;
 struct	Bbox2;
 struct  Line2;
+struct Bezier2;
 
 
 #if IBM
@@ -59,16 +60,36 @@ enum {
 
 };
 
+// Root-finders...they're only approximations, but they're still useful for some of the weirder
+// algs here.
 int linear_formula(double a, double b, double roots[1]);
 int quadratic_formula(double a, double b, double c, double roots[2]);
 int cubic_formula(double a, double b, double c, double d, double roots[3]);
 
+// Some polygon algorithms are available as a templated alg on a sequence of Point2s.  This
+// might be useful if you have your polygon in something other than a stand-alone Polygon2.
 template <class __Iterator>
 bool inside_polygon_pt(__Iterator begin, __Iterator end, const Point2& inPoint);
 template <class __Iterator>
 bool inside_polygon_seg(__Iterator begin, __Iterator end, const Point2& inPoint);
 template <class __Iterator>
 bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint);
+template <class __Iterator>
+bool is_ccw_polygon_pt(__Iterator begin, __Iterator end);
+
+// This takes a Bezier2 and recursively output-iterates it into a point container.  A quick way to get guaranteed-approximation
+// bezier approximations.  Endpoint is omitted - for chaining!
+template <class __output_iterator>
+void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start=0.0, double t_middle=0.5, double t_end=1.0);
+
+// This takes a "bezier sequence", which is an iterator pair of Point2 and int codes.  If you just ahve a "bezier polygon" (that is, a vector of Bezier2)
+// just iterate on it directly and call approximate_bezier_epsi.
+template <class __input_iterator, class __output_iterator>
+void approximate_bezier_sequence_epsi(
+						__input_iterator		s,
+						__input_iterator		e, 
+						__output_iterator		o,
+						double					epsi);
 
 
 
@@ -327,6 +348,8 @@ struct	Polygon2 : public vector<Point2> {
 				Polygon2() 						: vector<Point2>() 		{ }
 				Polygon2(const Polygon2& rhs)   : vector<Point2>(rhs) 	{ }
 				Polygon2(int x) 				: vector<Point2>(x) 	{ }
+	template <typename __Iterator>
+				Polygon2(__Iterator s, __Iterator e) : vector<Point2>(s,e) { }
 
 	// This returns side N, where side 0 goes from point 0 to point 1.
 	Segment2	side(int n) const { if (n == (size()-1)) return Segment2(at(n),at(0)); return Segment2(at(n), at(n+1)); }
@@ -354,6 +377,8 @@ struct	Polygon2 : public vector<Point2> {
 
 	int			prev(int index) const { return (index + size() - 1) % size(); }
 	int			next(int index) const { return (index + 1) % size(); }
+
+	bool		is_ccw(void) const;
 
 };
 
@@ -875,18 +900,28 @@ inline bool		Polygon2::inside_convex(const Point2& inPoint) const
 inline bool		Polygon2::inside(const Point2& inPoint) const
 {
 	return inside_polygon_pt(begin(),end(),inPoint);
-/*	int cross_counter = 0;
-	for (int n = 0; n < size(); ++n)
-	{
-		Segment2 s(side(n));
-		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
-			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
-		if (inPoint.y > s.y_at_x(inPoint.x))
-			++cross_counter;
-	}
-
-	return (cross_counter % 2) == 1;	*/
 }
+
+inline bool Polygon2::is_ccw(void) const
+{
+	if(size() < 3)	return true;
+	
+	int b = 0;		// best (lexicog highest then rightmost)
+	greater_y_then_x	comp;
+	
+	for(int i = 1; i < size(); ++i)
+	if(comp(at(i),at(b)))
+		b = i;
+		
+	int n = next(b);
+	int p = prev(b);
+	
+	if(at(n).y() == at(b).y())	return true;				// next is same height - top is flat, we are CCW
+	if(at(p).y() == at(b).y())	return false;				// prev is same height? - top is flat, we are CW
+	
+	return Vector2(at(p),at(b)).left_turn(Vector2(at(b),at(n)));	// we are truly highest.  Check for left-turn.
+}
+
 
 inline	Point2	Bezier2::midpoint(double t) const
 {
@@ -1459,5 +1494,89 @@ bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
 	}
 	return is_ccw;
 }
+
+// Given a single bezier curve, this routine outputs the start and enough intermediate points that the err
+// to the curve is less than "err".  Note that the LAST point is NOT emitted!!!  Why?  So that you
+// can chain a sequence or ring of these guys together.
+template <class __output_iterator>
+void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start=0.0, double t_middle=0.5, double t_end=1.0)
+{
+	if(t_middle <= t_start || t_middle >= t_end) return;	// No "space"?  Probably too much recursion, just bail.
+	
+	Segment2	s;
+	s.p1=b.midpoint(t_start);
+	s.p2=b.midpoint(t_end);
+	
+	Point2	x = b.midpoint(t_middle);
+	if(s.squared_distance(x) > (err*err))
+	{
+		// We are definitely going to emit X.  Better try two recursions too.
+		// This will emit t_start and t_midle (since each call MUST emit a point).		
+		approximate_bezier_epsi(b,err,output,t_start,(t_start + t_middle) * 0.5, t_middle);		
+		approximate_bezier_epsi(b,err,output,t_middle,(t_middle + t_end) * 0.5, t_end);
+	} else {
+		// We're done.  We awlays emit t_start - our caller certified that p1 is a good thing to emit.
+		*output = s.p1;
+		++output;
+	}
+}
+
+// Given a bezier-iterator type input iterator sequence and an output iterator that takes points,
+// this translates the entire point sequence, converting curves to epsi as needed.
+template <class __input_iterator, class __output_iterator>
+void approximate_bezier_sequence_epsi(
+						__input_iterator		s,
+						__input_iterator		e, 
+						__output_iterator		o,
+						double					epsi)
+{
+	pair<Point2,int>	lp;
+	Bezier2	b;	
+	if(s == e) return;
+	lp = *s;
+	b.p1 = b.c1 = lp.first;
+//	DebugAssert(lp.second == 0);
+	++s;
+	bool has_1 = false;
+	bool has_2 = false;
+	while(s != e)
+	{
+		lp = *s; ++s;
+		switch(lp.second) {
+		case -1:	b.c2 = lp.first;	has_2 = true; break;
+		case 1:		b.c1 = lp.first;	has_1 = true; break;
+		case 0:			
+			if(!has_1 && !has_2)
+			{
+				// No curve..emit straight segment.
+				*o = b.p1;
+				++o;
+				// Now remember the last
+				has_1=has_2=false;
+				b.p1 = lp.first;
+			}
+			else
+			{
+				// We have a bezier - patch it up.
+				b.p2 = lp.first;
+				if(!has_1) b.c1 = b.p1;
+				if(!has_2) b.c2 = b.p2;
+				approximate_bezier_epsi(b,epsi,o);
+				// Now remember the last
+				has_1=has_2=false;
+				b.p1 = b.p2;
+			}			
+			break;
+//		default:
+//			DebugAssert(!"Logice rror");
+		}
+	}
+	// All done - push the last point.
+	*o = b.p1;
+	++o;
+}
+
+
+
 
 #endif

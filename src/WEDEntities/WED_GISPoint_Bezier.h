@@ -34,20 +34,16 @@ public:
 
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
-	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);
-	virtual	void			Rotate			(const Point2& center, double angle);
+	virtual	void			Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds);
+	virtual	void			Rotate			(GISLayer_t l, const Point2& center, double angle);
 	// IGISPoint_Bezier
 
-	virtual	bool	GetControlHandleLo (      Point2& p) const;
-	virtual	bool	GetControlHandleHi (      Point2& p) const;
+	virtual	bool	GetControlHandleLo (GISLayer_t l,       Point2& p) const;
+	virtual	bool	GetControlHandleHi (GISLayer_t l,       Point2& p) const;
 	virtual	bool	IsSplit			   (void		   ) const;
 
-	virtual	void	SetControlHandleLo (const Point2& p)      ;
-	virtual	void	SetControlHandleHi (const Point2& p)      ;
-	virtual	void	SetUVLo			   (const Point2& p)	  ;
-	virtual	void	SetUVHi			   (const Point2& p)	  ;
-	virtual	void	GetUVLo			   (      Point2& p) const;
-	virtual	void	GetUVHi			   (      Point2& p) const;
+	virtual	void	SetControlHandleLo (GISLayer_t l, const Point2& p)      ;
+	virtual	void	SetControlHandleHi (GISLayer_t l, const Point2& p)      ;
 	virtual	void	DeleteHandleLo	   (void		   )	  ;
 	virtual	void	DeleteHandleHi	   (void		   )	  ;
 	virtual	void	SetSplit		   (bool is_split  )	  ;

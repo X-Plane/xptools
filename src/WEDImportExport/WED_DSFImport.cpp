@@ -89,8 +89,8 @@ public:
 			p2->SetParent(z,1);
 			p1->SetName("e1");
 			p2->SetName("e2");
-			p1->SetLocation(Point2(b[0],b[1]));
-			p2->SetLocation(Point2(b[2],b[3]));
+			p1->SetLocation(gis_Geo,Point2(b[0],b[1]));
+			p2->SetLocation(gis_Geo,Point2(b[2],b[3]));
 		}
 	}
 
@@ -174,7 +174,7 @@ public:
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
-		obj->SetLocation(Point2(inCoordinates[0],inCoordinates[1]));
+		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
 		obj->SetHeading(inRotation);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->parent,me->parent->CountChildren());
@@ -311,11 +311,11 @@ public:
 		{
 			WED_TextureBezierNode * tb = WED_TextureBezierNode::CreateTyped(me->archive);
 			node=tb;
-			tb->SetLocation(Point2(inCoordinates[0],inCoordinates[1]));
-			tb->SetControlHandleHi(Point2(inCoordinates[2],inCoordinates[3]));
-			tb->SetUV(Point2(inCoordinates[4],inCoordinates[5]));
-			tb->SetUVHi(Point2(inCoordinates[6],inCoordinates[7]));
-			tb->SetUVLo(Point2(
+			tb->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+			tb->SetControlHandleHi(gis_Geo,Point2(inCoordinates[2],inCoordinates[3]));
+			tb->SetLocation(gis_UV,Point2(inCoordinates[4],inCoordinates[5]));
+			tb->SetControlHandleHi(gis_UV,Point2(inCoordinates[6],inCoordinates[7]));
+			tb->SetControlHandleLo(gis_UV,Point2(
 							inCoordinates[4] * 2.0 - inCoordinates[6],
 							inCoordinates[5] * 2.0 - inCoordinates[7]));
 		}
@@ -323,21 +323,21 @@ public:
 		{
 			WED_TextureNode * t = WED_TextureNode::CreateTyped(me->archive);
 			node=t;
-			t->SetLocation(Point2(inCoordinates[0],inCoordinates[1]));
-			t->SetUV(Point2(inCoordinates[2],inCoordinates[3]));
+			t->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+			t->SetLocation(gis_UV,Point2(inCoordinates[2],inCoordinates[3]));
 		}
 		else if (me->want_bezier)
 		{
 			WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
 			node=b;
-			b->SetLocation(Point2(inCoordinates[0],inCoordinates[1]));
-			b->SetControlHandleHi(Point2(inCoordinates[2],inCoordinates[3]));
+			b->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+			b->SetControlHandleHi(gis_Geo,Point2(inCoordinates[2],inCoordinates[3]));
 		}
 		else
 		{
 			WED_SimpleBoundaryNode * n = WED_SimpleBoundaryNode::CreateTyped(me->archive);
 			node=n;
-			n->SetLocation(Point2(inCoordinates[0],inCoordinates[1]));
+			n->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
 		}
 		node->SetParent(me->ring,me->ring->CountChildren());
 		node->SetName("Point");

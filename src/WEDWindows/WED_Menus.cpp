@@ -74,6 +74,9 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Make Overla&y",		0,		0,								0,	wed_Overlay		},
+#if AIRPORT_ROUTING
+{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
+#endif
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},

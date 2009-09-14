@@ -36,14 +36,13 @@ public:
 	void		GetImage(string& image_file) const;
 	void		SetImage(const string& image_file);
 
-	virtual	void	GetCorners(Point2 corners[4]) const;
-	virtual	void	GetCornersUV(Point2 corners[4]) const;
+	virtual	void	GetCorners(GISLayer_t l,Point2 corners[4]) const;
 
-	virtual	void	MoveCorner(int corner, const Vector2& delta);
-	virtual	void	MoveSide(int side, const Vector2& delta);
+	virtual	void	MoveCorner(GISLayer_t l,int corner, const Vector2& delta);
+	virtual	void	MoveSide(GISLayer_t l,int side, const Vector2& delta);
 
-	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric);
-	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric);
+	virtual	void	ResizeSide(GISLayer_t l,int side, const Vector2& delta, bool symetric);
+	virtual	void	ResizeCorner(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 
 private:
 

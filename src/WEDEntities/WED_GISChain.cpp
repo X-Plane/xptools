@@ -44,22 +44,22 @@ const char *	WED_GISChain::GetGISSubtype	(void				 ) const
 	return GetClass();
 }
 
-bool			WED_GISChain::HasUV			(void				 ) const
-{
-	if(GetNumPoints() == 0) return false;
-	return GetNthPoint(0)->HasUV();
-}
-
-void			WED_GISChain::GetBounds		(	   Bbox2&  bounds) const
+bool			WED_GISChain::HasLayer			(GISLayer_t l) const
 {
 	if (CacheBuild())	RebuildCache();
-	bounds = mCacheBounds;
+	return (l == gis_UV) ? mHasUV : true;
 }
 
-bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
+void			WED_GISChain::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
+{
+	if (CacheBuild())	RebuildCache();
+	bounds = (l == gis_UV) ? mCacheBoundsUV : mCacheBounds;
+}
+
+bool				WED_GISChain::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	if (!bounds.overlap(me)) return false;
 
 	#if BENTODO
@@ -68,10 +68,10 @@ bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
 	return true;
 }
 
-bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
+bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	if (bounds.contains(me)) return true;
 
 	int n = GetNumSides();
@@ -79,7 +79,7 @@ bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 	{
 		Segment2 s;
 		Bezier2 b;
-		if (GetSide(i,s,b))
+		if (GetSide(l,i,s,b))
 		{
 			Bbox2	bb;
 			b.bounds(bb);
@@ -95,16 +95,16 @@ bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 	return true;
 }
 
-bool			WED_GISChain::PtWithin		(const Point2& p	 ) const
+bool			WED_GISChain::PtWithin		(GISLayer_t l,const Point2& p	 ) const
 {
 	// Rings do NOT contain area!  They are just lines that are self-connected.
 	return false;
 }
 
-bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
+bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 {
 	Bbox2	me;
-	GetBounds(me);
+	GetBounds(l,me);
 	me.p1 -= Vector2(d,d);
 	me.p2 += Vector2(d,d);
 	if (!me.contains(p)) return false;
@@ -114,7 +114,7 @@ bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
 	{
 		Segment2 s;
 		Bezier2 b;
-		if (GetSide(n,s,b))
+		if (GetSide(l,n,s,b))
 		{
 			if (b.is_near(p,d)) return true;
 		} else {
@@ -124,23 +124,23 @@ bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
 	return false;
 }
 
-void			WED_GISChain::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)
+void			WED_GISChain::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	int t = GetNumPoints();
 	for (int n = 0; n <  t; ++n)
 	{
 		IGISPoint * p = GetNthPoint(n);
-		p->Rescale(old_bounds,new_bounds);
+		p->Rescale(l,old_bounds,new_bounds);
 	}
 }
 
-void			WED_GISChain::Rotate			(const Point2& ctr, double angle)
+void			WED_GISChain::Rotate			(GISLayer_t l,const Point2& ctr, double angle)
 {
 	int t = GetNumPoints();
 	for (int n = 0; n <  t; ++n)
 	{
 		IGISPoint * p = GetNthPoint(n);
-		p->Rotate(ctr, angle);
+		p->Rotate(l,ctr, angle);
 	}
 }
 
@@ -174,7 +174,7 @@ int			WED_GISChain::GetNumSides(void) const
 	return (IsClosed()) ? n : (n-1);
 }
 
-bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
+bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 {
 	if (CacheBuild())	RebuildCache();
 
@@ -186,15 +186,15 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	IGISPoint_Bezier * c1 = mCachePtsBezier[n1];
 	IGISPoint_Bezier * c2 = mCachePtsBezier[n2];
 
-	p1->GetLocation(b.p1);
-	p2->GetLocation(b.p2);
+	p1->GetLocation(l, b.p1);
+	p2->GetLocation(l, b.p2);
 	b.c1 = b.p1;		// Mirror end-points to controls so that if we are a half-bezier,
 	b.c2 = b.p2;		// we don't have junk in our bezier.
 
 	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
 	// if the bezier handle doesn't exist -- this is a flag to us!
-	if (c1) if (!c1->GetControlHandleHi(b.c1)) c1 = NULL;
-	if (c2) if (!c2->GetControlHandleLo(b.c2)) c2 = NULL;
+	if (c1) if (!c1->GetControlHandleHi(l, b.c1)) c1 = NULL;
+	if (c2) if (!c2->GetControlHandleLo(l, b.c2)) c2 = NULL;
 
 	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
 	// Simpify down to a segment and return it -- some code may use this 'fast case'.
@@ -205,48 +205,6 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 		return false;
 	}
 	return true;
-}
-
-bool		WED_GISChain::GetSideUV(int n, Segment2& s, Bezier2& b) const
-{
-	if (CacheBuild())	RebuildCache();
-
-	int n1 = n;
-	int n2 = (n + 1) % mCachePts.size();
-
-	IGISPoint * p1 = mCachePts[n1];
-	IGISPoint * p2 = mCachePts[n2];
-	IGISPoint_Bezier * c1 = mCachePtsBezier[n1];
-	IGISPoint_Bezier * c2 = mCachePtsBezier[n2];
-
-	DebugAssert(p1->HasUV());
-	DebugAssert(p2->HasUV());
-
-	p1->GetUV(b.p1);
-	p2->GetUV(b.p2);
-	b.c1 = b.p1;		// Mirror end-points to controls so that if we are a half-bezier,
-	b.c2 = b.p2;		// we don't have junk in our bezier.
-
-	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
-	// if the bezier handle doesn't exist -- this is a flag to us!
-	Point2 dummy;
-	if (c1) if (!c1->GetControlHandleHi(dummy)) c1 = NULL;
-	if (c2) if (!c2->GetControlHandleLo(dummy)) c2 = NULL;
-	if (c1) DebugAssert(c1->HasUV());
-	if (c2) DebugAssert(c2->HasUV());
-	if (c1) c1->GetUVHi(b.c1);
-	if (c2) c2->GetUVLo(b.c2);
-
-	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
-	// Simpify down to a segment and return it -- some code may use this 'fast case'.
-	if (!c1 && !c2)
-	{
-		s.p1 = b.p1;
-		s.p2 = b.p2;
-		return false;
-	}
-	return true;
-
 }
 
 void WED_GISChain::RebuildCache(void) const
@@ -256,7 +214,8 @@ void WED_GISChain::RebuildCache(void) const
 	int nc = CountChildren();
 	mCachePts.reserve(nc);
 	mCachePtsBezier.reserve(nc);
-
+	mHasUV = nc > 0;
+	
 	int n;
 	for (n = 0; n < nc; ++n)
 	{
@@ -268,17 +227,20 @@ void WED_GISChain::RebuildCache(void) const
 		{
 			mCachePts.push_back(p);
 			mCachePtsBezier.push_back(b);
+			if(mHasUV && !p->HasLayer(gis_UV))
+				mHasUV = false;
 		}
 	}
 
 	n = GetNumSides();
 	mCacheBounds = Bbox2();
-
+	mCacheBoundsUV = Bbox2();
+	
 	for (int i = 0; i < n; ++i)
 	{
 		Segment2 s;
 		Bezier2 b;
-		if (GetSide(i,s,b))
+		if (GetSide(gis_Geo, i,s,b))
 		{
 			Bbox2	bb;
 			b.bounds(bb);
@@ -287,10 +249,21 @@ void WED_GISChain::RebuildCache(void) const
 			mCacheBounds += s.p1;
 			mCacheBounds += s.p2;
 		}
+
+		if(mHasUV)
+		if (GetSide(gis_UV, i,s,b))
+		{
+			Bbox2	bb;
+			b.bounds(bb);
+			mCacheBoundsUV += bb;
+		} else {
+			mCacheBoundsUV += s.p1;
+			mCacheBoundsUV += s.p2;
+		}
 	}
 }
 
-void WED_GISChain::Reverse(void)
+void WED_GISChain::Reverse(GISLayer_t l)
 {
 	if (CacheBuild())	RebuildCache();
 	int n,t,np = GetNumPoints();
@@ -303,22 +276,22 @@ void WED_GISChain::Reverse(void)
 
 	for(n = 0; n < np; ++n)
 	{
-		mCachePtsBezier[n]->GetLocation(p[n]);
-		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(p_l[n]);
-		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(p_h[n]);
+		mCachePtsBezier[n]->GetLocation(l, p[n]);
+		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
+		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
 		split[n] = mCachePtsBezier[n]->IsSplit();
 	}
 
 	for(n = 0; n < np; ++n)
 	{
 		t = np - n - 1;
-		mCachePtsBezier[t]->SetLocation(p[n]);
+		mCachePtsBezier[t]->SetLocation(l, p[n]);
 		mCachePtsBezier[t]->SetSplit(split[n]);
 
-		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(p_l[n]);
+		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_l[n]);
 		else			mCachePtsBezier[t]->DeleteHandleHi();
 
-		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(p_h[n]);
+		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
 		else			mCachePtsBezier[t]->DeleteHandleLo();
-	}
+	}	
 }

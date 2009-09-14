@@ -41,6 +41,7 @@
 #include "WED_EnumSystem.h"
 #include "WED_OverlayImage.h"
 #include "AptIO.h"
+#include "AptAlgs.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
 #include "PlatformUtils.h"
@@ -79,9 +80,9 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 		WED_AirportNode * node = dynamic_cast<WED_AirportNode *>(chain->GetNthPoint(i));
 		if (node)
 		{
-			node->GetLocation(pt);
-			bool has_hi = node->GetControlHandleHi(hi);
-			bool has_lo = node->GetControlHandleLo(lo);
+			node->GetLocation(gis_Geo,pt);
+			bool has_hi = node->GetControlHandleHi(gis_Geo,hi);
+			bool has_lo = node->GetControlHandleLo(gis_Geo,lo);
 			bool is_split = node->IsSplit();
 			if (!closed && last)
 			{
@@ -120,7 +121,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 	}
 }
 
-static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
+void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 {
 	WED_Airport *			apt;
 	WED_AirportBeacon *		bcn;
@@ -336,10 +337,10 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		//	Now we can form a node.
 		WED_AirportNode * n = WED_AirportNode::CreateTyped(archive);
 		n->SetParent(chain, chain->CountChildren());
-		n->SetLocation(cur->pt);
+		n->SetLocation(gis_Geo,cur->pt);
 		n->SetSplit(has_lo != has_hi || orig != cur);
-		if (has_lo) n->SetControlHandleLo(lo_pt);
-		if (has_hi) n->SetControlHandleHi(hi_pt);
+		if (has_lo) n->SetControlHandleLo(gis_Geo,lo_pt);
+		if (has_hi) n->SetControlHandleHi(gis_Geo,hi_pt);
 
 		n->SetAttributes(attrs);
 

@@ -63,16 +63,16 @@ WED_Runway::~WED_Runway()
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
-	GetCorners(corners);
+	GetCorners(gis_Geo,corners);
 	corners[1] = corners[0];
 	corners[2] = corners[3];
 	if (blas1.value == 0.0) return false;
 	Point2	bounds[4];
-	GetCorners(bounds);
+	GetCorners(gis_Geo,bounds);
 
 	Point2	p1, p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(gis_Geo,p1);
+	GetTarget()->GetLocation(gis_Geo,p2);
 
 	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
@@ -89,16 +89,16 @@ bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 
 bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
 {
-	GetCorners(corners);
+	GetCorners(gis_Geo,corners);
 	corners[0] = corners[1];
 	corners[3] = corners[2];
 	if (blas2.value == 0.0) return false;
 	Point2	bounds[4];
-	GetCorners(bounds);
+	GetCorners(gis_Geo,bounds);
 
 	Point2	p1, p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(gis_Geo,p1);
+	GetTarget()->GetLocation(gis_Geo,p2);
 
 	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
@@ -115,16 +115,16 @@ bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
 
 bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
 {
-	GetCorners(corners);
+	GetCorners(gis_Geo,corners);
 	corners[1] = corners[0];
 	corners[2] = corners[3];
 	if (disp1.value == 0.0) return false;
 	Point2	bounds[4];
-	GetCorners(bounds);
+	GetCorners(gis_Geo,bounds);
 
 	Point2	p1, p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(gis_Geo,p1);
+	GetTarget()->GetLocation(gis_Geo,p2);
 
 	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
@@ -141,16 +141,16 @@ bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
 
 bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 {
-	GetCorners(corners);
+	GetCorners(gis_Geo,corners);
 	corners[0] = corners[1];
 	corners[3] = corners[2];
 	if (disp2.value == 0.0) return false;
 	Point2	bounds[4];
-	GetCorners(bounds);
+	GetCorners(gis_Geo,bounds);
 
 	Point2	p1, p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(gis_Geo,p1);
+	GetTarget()->GetLocation(gis_Geo,p2);
 
 	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
@@ -167,15 +167,15 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 
 bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 {
-	GetCorners(corners);
-	GetCorners(corners+4);
+	GetCorners(gis_Geo,corners);
+	GetCorners(gis_Geo,corners+4);
 	if (shoulder.value == shoulder_None) return false;
 	Point2	bounds[4];
-	GetCorners(bounds);
+	GetCorners(gis_Geo,bounds);
 
 	Point2	p1, p2;
-	GetSource()->GetLocation(p1);
-	GetTarget()->GetLocation(p2);
+	GetSource()->GetLocation(gis_Geo,p1);
+	GetTarget()->GetLocation(gis_Geo,p2);
 
 	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
 	if (my_len == 0.0) return false;
@@ -273,8 +273,8 @@ double		WED_Runway::GetBlas2(void) const { return blas2.value; }
 
 void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
-	GetSource()->SetLocation(x.ends.p1  );
-	GetTarget()->SetLocation(x.ends.p2  );
+	GetSource()->SetLocation(gis_Geo,x.ends.p1  );
+	GetTarget()->SetLocation(gis_Geo,x.ends.p2  );
 				 SetWidth	(x.width_mtr);
 
 	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
@@ -354,8 +354,8 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 
 void		WED_Runway::Export(		 AptRunway_t& x) const
 {
-	GetSource()->GetLocation(x.ends.p1  );
-	GetTarget()->GetLocation(x.ends.p2  );
+	GetSource()->GetLocation(gis_Geo,x.ends.p1  );
+	GetTarget()->GetLocation(gis_Geo,x.ends.p2  );
 							 x.width_mtr = GetWidth();
 
 	x.surf_code				 = ENUM_Export(surface.value   );
