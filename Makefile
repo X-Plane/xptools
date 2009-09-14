@@ -97,7 +97,7 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
-	DEFAULT_MACARGS	:= -mmacosx-version-min=10.4 -arch i386 -arch ppc
+	DEFAULT_MACARGS	:= -mmacosx-version-min=10.4 -arch x86_64 -arch i386 -arch ppc
 endif
 ifeq ($(PLATFORM), Linux)
 	PLAT_LINUX := Yes
@@ -508,6 +508,10 @@ libtiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libtiff
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBTIFF)"
+	@cp patches/0001-libtiff-dont-use-typedefs.patch \
+	"tiff-$(VER_LIBTIFF)" && cd "tiff-$(VER_LIBTIFF)" && \
+	patch -p1 < ./0001-libtiff-dont-use-typedefs.patch \
+	$(BE_QUIET)
 	@cd "tiff-$(VER_LIBTIFF)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBTIFF) LDFLAGS=$(LDFLAGS_LIBTIFF) \
@@ -611,7 +615,7 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
-	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-arch ppc -arch i386 -I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-arch x86_64 -arch i386 -arch ppc -I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 ifdef PLAT_LINUX

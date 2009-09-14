@@ -1,6 +1,6 @@
-diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
---- shapelib-1.2.10/Makefile	2003-04-07 15:03:22.000000000 +0200
-+++ shapelib-1.2.10_/Makefile	2009-04-05 01:39:53.000000000 +0200
+diff -Naur shapelib-1.2.10.org/Makefile shapelib-1.2.10/Makefile
+--- shapelib-1.2.10.org/Makefile	2003-04-07 15:03:22.000000000 +0200
++++ shapelib-1.2.10/Makefile	2009-09-14 04:55:48.000000000 +0200
 @@ -1,6 +1,17 @@
  
  #LINKOPT	=	/usr/local/lib/libdbmalloc.a
@@ -14,7 +14,7 @@ diff -Naur shapelib-1.2.10/Makefile shapelib-1.2.10_/Makefile
 +	CFLAGS	=	-g $(cross) -fpie
 +endif
 +ifeq ($(PLATFORM), Darwin)
-+	CFLAGS	=	-g -mmacosx-version-min=10.4 -arch i386 -arch ppc
++	CFLAGS	=	-g -mmacosx-version-min=10.4 -arch x86_64 -arch i386 -arch ppc
 +endif
 +
  
