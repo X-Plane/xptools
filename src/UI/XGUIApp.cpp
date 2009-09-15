@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	XGrindInit();
-
+	setlocale(LC_ALL,"C");
 	return app.exec();
 }
 #endif

@@ -184,7 +184,7 @@ int main(int argc, char * argv[])
 	app.SetAbout(about);
 
 	start->ShowMessage(string());
-
+	setlocale(LC_ALL,"C");
 	app.Run();
     // we're out of eventloop here, deleting windows on linux implies sending messages to them,
     // so this would fail.
