@@ -29,6 +29,105 @@
 
 #include <errno.h>
 #include <sys/stat.h>
+#include <dirent.h>
+
+#define LOG_CASE_DESENS 0
+
+#if LOG_CASE_DESENS	
+	#define	LOG_MSG(fmt,...) printf(fmt, __VA_ARGS__)
+#else
+	#define	LOG_MSG(fmt,...)
+#endif
+
+
+static int desens_partial(DIR * dir, char * io_file)
+{
+	struct dirent* de;
+	while (de = readdir(dir))
+	{
+		if (!strcasecmp(io_file, de->d_name))
+		{
+			strcpy(io_file, de->d_name);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int FILE_case_correct(char * buf)
+{
+	LOG_MSG("Case desens for: '%s'\n", buf);
+
+	// Fast match?  Try that first - MOST content in x-plane is case-correct, and any file path derived from dir scanning will be.
+
+	struct stat sta;
+	if (stat(buf, &sta) == 0) 
+	{
+		LOG_MSG("  Fast match.  Done.\n",0);
+		return 1;
+	}
+	
+	char * p = buf;
+	
+	while (*p != 0)
+	{
+		DIR * dir;
+		if (*p == '/')
+		{
+			dir = opendir("/");
+			LOG_MSG("  Open-dir '%s': 0x%08x\n","/",dir);
+			++p;
+		}
+		else if (p == buf)
+		{
+			dir = opendir(".");
+			LOG_MSG("  Open-dir '%s': 0x%08x\n",".",dir);
+		}
+		else
+		{
+			*(p-1) = 0;
+			dir = opendir(buf);
+			LOG_MSG("  Open-dir '%s': 0x%08x\n",buf,dir);
+			*(p-1) = '/';
+		}
+		if (dir == NULL)
+		{
+			return 0;
+		}	
+		char * q = p;// Ptr past EOF
+		while (*q != 0 && *q != '/') ++q;
+		
+		int last_time = *q == 0;
+		*q = 0;		// Fake null term
+		
+		int worked = desens_partial(dir, p);
+		closedir(dir);
+		
+		if (!last_time)
+		{
+			*q = '/';
+			p = q+1;
+			if (!worked)
+			{
+				LOG_MSG("  Partial-desens failed.  Done at '%s'\n",buf);
+				return 0;
+			}
+		} else {
+			LOG_MSG("  Finished all parts.  Done at '%s'\n",buf);
+			return 1;
+		}		
+	}
+}
+
+
+	FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
+	FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
+	
+	FILE_case_correct_path::operator const char * (void) const { return path; }
+	
+
+
+
 
 int FILE_exists(const char * path)
 {

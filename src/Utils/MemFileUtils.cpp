@@ -23,6 +23,7 @@
 
 #include "hl_types.h"
 #include "MemFileUtils.h"
+#include "FileUtils.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -447,6 +448,7 @@ const char *	MemFile_GetEnd(MFMemFile * inFile)
 
 MFMemFile * 	MemFile_Open(const char * inPath)
 {
+	FILE_case_correct_path	path(inPath);
 	FILE *		fi = NULL;
 	char *		mem = NULL;
 	int			file_size = 0;
@@ -462,7 +464,7 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	obj = new MFMemFile;
 	if (!obj) goto bail;
 
-	unz = unzOpen(inPath);
+	unz = unzOpen(path);
 	if (unz)
 	{
 		unz_global_info	info;
@@ -497,16 +499,16 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 #if APL	|| LIN
 
 	#if LIN || __MACH__
-		fd = bsd_open(inPath, O_RDONLY, 0);
+		fd = bsd_open(path, O_RDONLY, 0);
 	#else
 	Str255	pStrPath;
 	FSSpec	spec;
 	FSRef	ref;
 	char	osx_path[1024];
-	int pStrLen = strlen(inPath);
+	int pStrLen = strlen(path);
 	if (pStrLen > 255) pStrLen = 255;
 	pStrPath[0] = pStrLen;
-	memcpy(pStrPath+1,inPath, pStrLen);
+	memcpy(pStrPath+1,path, pStrLen);
 	if(FSMakeFSSpec(0, 0, pStrPath, &spec) != noErr) goto cleanmmap;
 	FSpMakeFSRef(&spec, &ref);
 	FSRefMakePath(&ref, (unsigned char *) osx_path, sizeof(osx_path)-1);
@@ -541,7 +543,7 @@ cleanmmap:
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
-	string input(inPath);
+	string input(path);
 	string_utf16 output;
 	string_utf_8_to_16(input, output);
 
@@ -568,7 +570,7 @@ cleanupwin:
 #endif
 
 
-	fi = fopen(inPath, "rb");
+	fi = fopen(path, "rb");
 	if (!fi) goto bail;
 
 	fseek(fi, 0L, SEEK_END);
