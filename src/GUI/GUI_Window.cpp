@@ -28,6 +28,7 @@
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
+static bool    mDragDetect = false;
 
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }
