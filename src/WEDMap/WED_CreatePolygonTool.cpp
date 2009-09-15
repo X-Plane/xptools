@@ -294,7 +294,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	double	latmax=-9.9e9;
 	double	lonmin= 9.9e9;
 	double	latmin= 9.9e9;
-
+	bool	has_any_dirs = false;
 	for(int n = 0; n < pts.size(); ++n)
 	{
 		lonmax=max(lonmax,pts[n].x());
@@ -303,6 +303,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		latmin=min(latmin,pts[n].y());
 		if(has_dirs[n])
 		{
+			has_any_dirs=true;
 
 			lonmax=max(lonmax,dirs_hi[n].x());
 			lonmin=min(lonmin,dirs_hi[n].x());
@@ -338,8 +339,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		node->SetLocation(gis_Geo,pts[idx]);
 		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
 							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
-		if(pts.size() == 4)	{st.x_ = hard_coded_s[n];
-							 st.y_ = hard_coded_t[n];}
+		if(pts.size() == 4 && !has_any_dirs)	{st.x_ = hard_coded_s[n];
+												 st.y_ = hard_coded_t[n];}
 							
 		if(tnode)			tnode->SetLocation(gis_UV,st);
 		if(tbnode)			tbnode->SetLocation(gis_UV,st);

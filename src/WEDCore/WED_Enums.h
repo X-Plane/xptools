@@ -163,3 +163,12 @@ ENUM_DOMAIN(ExclusionTypes, "Exclusion Types")
 	ENUM(exclude_Lin,			"Lines",								5)
 	ENUM(exclude_Pol,			"Draped Polygons",						6)
 	ENUM(exclude_Str,			"String",								7)
+
+ENUM_DOMAIN(TCE_GridSnap, "Grid")
+	ENUM(tce_Grid_None,				"None",								0)
+	ENUM(tce_Grid_Whole,			"1",								1)
+	ENUM(tce_Grid_Half,				"1/2",								2)		
+	ENUM(tce_Grid_Quarter,			"1/4",								3)
+	
+	
+	

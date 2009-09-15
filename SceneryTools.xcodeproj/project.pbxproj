@@ -692,6 +692,8 @@
 		D6E064820BDD32010070E31C /* map_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E064810BDD32010070E31C /* map_tools.png */; };
 		D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */; };
 		D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */; };
+		D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */; };
+		D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E30556105F8EE7009E6E7F /* tce_tools.png */; };
 		D6E528831057041400D0D162 /* WED_CreateEdgeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E528821057041400D0D162 /* WED_CreateEdgeTool.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
@@ -1839,6 +1841,9 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
+		D6E304B1105F7779009E6E7F /* WED_TCEMarqueeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEMarqueeTool.h; sourceTree = "<group>"; };
+		D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEMarqueeTool.cpp; sourceTree = "<group>"; };
+		D6E30556105F8EE7009E6E7F /* tce_tools.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tce_tools.png; sourceTree = "<group>"; };
 		D6E528811057041400D0D162 /* WED_CreateEdgeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateEdgeTool.h; sourceTree = "<group>"; };
 		D6E528821057041400D0D162 /* WED_CreateEdgeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreateEdgeTool.cpp; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2384,6 +2389,8 @@
 				D68ABC720F1E51A9002892AD /* WED_TCEToolAdapter.cpp */,
 				D68ABC820F1E5B5F002892AD /* WED_TCEVertexTool.h */,
 				D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */,
+				D6E304B1105F7779009E6E7F /* WED_TCEMarqueeTool.h */,
+				D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */,
 			);
 			path = WEDTCE;
 			sourceTree = "<group>";
@@ -3240,6 +3247,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D6E30556105F8EE7009E6E7F /* tce_tools.png */,
 				D6C390010FA0D93400EFA56C /* sans.ttf */,
 				D654C52E0C676995009726BD /* WEDManual.pdf */,
 				D67B29DA0C5661A100A21ABC /* line_types */,
@@ -3730,6 +3738,7 @@
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
+				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4433,6 +4442,7 @@
 				D6DEB67B1056FF0300C378BE /* WED_TaxiRoute.cpp in Sources */,
 				D6E528831057041400D0D162 /* WED_CreateEdgeTool.cpp in Sources */,
 				D6DBA1E210572F33004E1089 /* AptRouting.cpp in Sources */,
+				D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

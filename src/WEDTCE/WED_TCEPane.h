@@ -36,6 +36,9 @@ class	WED_Archive;
 class	IResolver;
 class	GUI_Commander;
 class	GUI_ToolBar;
+class	GUI_Table;
+class	GUI_TextTable;
+class	WED_ToolInfoAdapter;
 
 class WED_TCEPane  : public GUI_Packer, GUI_Listener, public GUI_Commander {
 public:
@@ -64,11 +67,11 @@ private:
 	vector<WED_TCELayer *>	mLayers;
 	vector<WED_TCEToolNew *>mTools;
 
-//	GUI_ToolBar *			mToolbar;
+	GUI_ToolBar *			mToolbar;
 
-//	GUI_Table *				mTable;
-//	GUI_TextTable *			mTextTable;
-//	WED_ToolInfoAdapter *	mInfoAdapter;
+	GUI_Table *				mTable;
+	GUI_TextTable *			mTextTable;
+	WED_ToolInfoAdapter *	mInfoAdapter;
 
 	IResolver *				mResolver;
 

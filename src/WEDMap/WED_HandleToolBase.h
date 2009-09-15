@@ -78,8 +78,10 @@ protected:
 	virtual	void				CreationUp(const Point2& start_pt, const Point2& now_pt) { }
 
 	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent, int pt_sel)  { return ent_Skip; }
-			void				SetCanSelect(int can_select);
-			void				SetControlProvider(IControlHandles * provider);
+
+			void				SetCanSelect(int can_select);							// Normally all tool-base tools can select - but sub-classes can turn this off.
+			void				SetDrawAlways(int can_draw_always);						// Normally no drawing when the tool is not selected...but we can set this to draw
+			void				SetControlProvider(IControlHandles * provider);			//		links no matter what.  Used in the TCE because I am lazy.
 
 private:
 
@@ -100,6 +102,7 @@ private:
 
 		IControlHandles *		mHandles;
 		int						mCanSelect;
+		int						mDrawAlways;
 
 		vector<ISelectable *>	mSelSave;
 		int						mSelToggle;

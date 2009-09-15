@@ -33,6 +33,8 @@ DECLARE_PERSISTENT(WED_TextureBezierNode)
 public:
 
 	virtual		bool		HasLayer(GISLayer_t l) const;
+	virtual	void			Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds);
+	virtual	void			Rotate			(GISLayer_t l, const Point2& center, double angle);
 
 	virtual		void		SetLocation(GISLayer_t layer,const Point2& st);
 	virtual		void		GetLocation(GISLayer_t layer,	   Point2& st) const;

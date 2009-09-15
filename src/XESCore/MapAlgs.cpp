@@ -2047,7 +2047,7 @@ struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
 			DebugAssert(e2->face() == e2->twin()->face());
 			DebugAssert(e2->face() == left_over);			
 			pmwx->remove_edge(e2);
-			#if DEV
+			#if DEV && 0
 				debug_mesh_point(cgal2ben(v2->point()),1,1,0);			
 			#endif
 		}
@@ -2072,7 +2072,7 @@ struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
 				dcel_he->set_direction(new_dir);
 			}
 			
-			#if DEV			
+			#if DEV	&& 0
 				debug_he_dir(m, pmwx);
 				debug_he_dir(t, pmwx);
 				debug_mesh_point(cgal2ben(v2->point()), 1,0,0);
@@ -2081,7 +2081,7 @@ struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
 	}
 };
 
-#if DEV
+#if DEV && 0
 void debug_poly_line(const vector<Point_2>& pts,bool loop)
 {
 	if(loop)

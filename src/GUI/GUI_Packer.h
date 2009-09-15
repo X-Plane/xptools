@@ -42,10 +42,10 @@ public:
 	virtual	~GUI_Packer();
 
 			void		PackPane(GUI_Pane * child, GUI_Packer_Side);
-
+			void		PackPaneToRight(GUI_Pane * child, GUI_Packer_Side side, GUI_Pane * target);
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
-
+	
 private:
 
 	int		mPackArea[4];

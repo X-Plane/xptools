@@ -187,7 +187,7 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 	}
 }
 
-void WED_GISPoint_Bezier::Reverse(void)
+void WED_GISPoint_Bezier::Reverse_(void)
 {
 	StateChanged();
 	CacheInval();

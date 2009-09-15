@@ -78,6 +78,35 @@ void		GUI_Packer::PackPane(GUI_Pane * child, GUI_Packer_Side side)
 	child->SetBounds(subsize);
 }
 
+void		GUI_Packer::PackPaneToRight(GUI_Pane * child, GUI_Packer_Side side, GUI_Pane * target)
+{
+	int subsize[6];
+	int targetsize[4];
+	child->GetBounds(subsize);
+	target->GetBounds(targetsize);
+	subsize[4] = subsize[2] - subsize[0];
+	subsize[5] = subsize[3] - subsize[1];
+
+	switch(side) {
+	case gui_Pack_Bottom:
+		subsize[0] = targetsize[2];
+		subsize[1] = targetsize[1];
+		subsize[2] = targetsize[2]; + subsize[4];
+		subsize[3] = targetsize[1] + subsize[5];
+		mPackArea[1] = max(subsize[3],targetsize[3]);
+		break;
+	case gui_Pack_Top:
+		subsize[0] = targetsize[2];
+		subsize[3] = targetsize[3];
+		subsize[2] = targetsize[2]; + subsize[4];
+		subsize[1] = targetsize[3] - subsize[5];
+		mPackArea[3] = min(targetsize[1], subsize[1]);
+		break;
+	}
+	child->SetBounds(subsize);
+}
+
+
 void		GUI_Packer::SetBounds(int x1, int y1, int x2, int y2)
 {
 	GUI_Pane::SetBounds(x1,y1,x2,y2);

@@ -125,7 +125,8 @@ WED_HandleToolBase::WED_HandleToolBase(
 	WED_MapToolNew(tool_name, host, zoomer,resolver),
 	mHandles(NULL),
 	mDragType(drag_None),
-	mCanSelect(1)
+	mCanSelect(1),
+	mDrawAlways(0)
 {
 
 }
@@ -138,6 +139,12 @@ void				WED_HandleToolBase::SetCanSelect(int can_select)
 {
 	mCanSelect = can_select;
 }
+
+void				WED_HandleToolBase::SetDrawAlways(int can_draw_always)
+{
+	mDrawAlways = can_draw_always;
+}
+
 
 void		WED_HandleToolBase::SetControlProvider(IControlHandles	* provider)
 {
@@ -643,7 +650,7 @@ void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& care
 
 void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 {
-	if (!inCurrent) return;
+	if (!inCurrent && !mDrawAlways) return;
 	if (mHandles != NULL)
 	{
 		int ei_count = mHandles->CountEntities();
@@ -698,6 +705,7 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 			}
 			glEnd();
 
+			if(inCurrent)
 			for (int cp = 0; cp < ch_count; ++cp)
 			{
 				Vector2		dir;

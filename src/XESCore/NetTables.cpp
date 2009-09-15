@@ -56,9 +56,14 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 	info.export_type_draped = NO_VALUE;	// hack for mesh tool - allow draped param to not be attached!
 
 	if (TokenizeLine(tokens, " effffeiiii",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) < 10)
-		return false;
-
+		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) != 11)
+	{
+		if (TokenizeLine(tokens, " effffeii",&rep_type,
+			&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.export_type_normal,&info.export_type_overpass) != 9)
+			return false;
+		info.is_oneway = false;
+		info.export_type_draped = NO_VALUE;
+	}
 	if (gNetReps.count(rep_type) > 0)
 		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));
 

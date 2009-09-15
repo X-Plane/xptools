@@ -47,7 +47,7 @@ public:
 	virtual	void	DeleteHandleLo	   (void		   )	  ;
 	virtual	void	DeleteHandleHi	   (void		   )	  ;
 	virtual	void	SetSplit		   (bool is_split  )	  ;
-	virtual	void	Reverse			   (void		   )	  ;
+			void	Reverse_		   (void		   )	  ;
 
 private:
 

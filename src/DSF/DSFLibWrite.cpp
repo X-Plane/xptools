@@ -599,6 +599,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	//		work through the length-sorted vector, building up the longest possible type-consistent chains,
 	//		removing them from the index.
 
+/*
 	bool	did_merge;
 	do {
 		did_merge = false;
@@ -701,7 +702,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 		}
 	} while (did_merge);
-
+*/
 	// We now have each chain lengthened as far as we think it can go.  Now it's time to
 	// assign points to the pools.  Delete unused chains and resort.
 
@@ -1354,109 +1355,114 @@ void 	DSFFileWriterImp::BeginPolygon(
 
 	if (REF(inRef)->polygonPools.count(hash_depth) == 0)
 	{
-		DSFContiguousPointPool& polygonPool = REF(inRef)->polygonPools[hash_depth];
-
-		DSFTuple	polyRangeMin, polyRangeMax;
-						polyRangeMin.push_back(REF(inRef)->mWest);
-						polyRangeMax.push_back(REF(inRef)->mEast);
-						polyRangeMin.push_back(REF(inRef)->mSouth);
-						polyRangeMax.push_back(REF(inRef)->mNorth);
-		if (inDepth > 2)polyRangeMin.push_back(-32768.0);
-		if (inDepth > 2)polyRangeMax.push_back(32767.0);
-		if (inDepth > 3)polyRangeMin.push_back(-1.0);
-		if (inDepth > 3)polyRangeMax.push_back(1.0);
-		if (inDepth > 4)polyRangeMin.push_back(-1.0);
-		if (inDepth > 4)polyRangeMax.push_back(1.0);
-
-		if (inDepth > 5)polyRangeMin.push_back(0.0);
-		if (inDepth > 5)polyRangeMax.push_back(0.0);
-		if (inDepth > 6)polyRangeMin.push_back(0.0);
-		if (inDepth > 6)polyRangeMax.push_back(1.0);
-		if (inDepth > 7)polyRangeMin.push_back(0.0);
-		if (inDepth > 7)polyRangeMax.push_back(1.0);
-
-		printf("depth = %d, hash = %d, param = %d, has_st = %s has_bezier = %s\n", inDepth, hash_depth, inParam, has_st ? "yes" : "no", has_bezier ? "yes" : "no");
-
-		if (has_bezier)
+		for(int p = 0; p < (has_st ? 2 : 1); ++p)
 		{
-			polyRangeMin[2]=polyRangeMin[0];
-			polyRangeMax[2]=polyRangeMax[0];
-			polyRangeMin[3]=polyRangeMin[1];
-			polyRangeMax[3]=polyRangeMax[1];
-		}
-		if (has_st)
-		{
+			float st_min = (p == 0 ? 0.0 : -32.0);
+			float st_max = (p == 0 ? 1.0 :  32.0);
+			DSFContiguousPointPool& polygonPool = REF(inRef)->polygonPools[hash_depth];
+
+			DSFTuple	polyRangeMin, polyRangeMax;
+							polyRangeMin.push_back(REF(inRef)->mWest);
+							polyRangeMax.push_back(REF(inRef)->mEast);
+							polyRangeMin.push_back(REF(inRef)->mSouth);
+							polyRangeMax.push_back(REF(inRef)->mNorth);
+			if (inDepth > 2)polyRangeMin.push_back(-32768.0);
+			if (inDepth > 2)polyRangeMax.push_back(32767.0);
+
+			if (inDepth > 3)polyRangeMin.push_back(-1.0);
+			if (inDepth > 3)polyRangeMax.push_back(1.0);
+			if (inDepth > 4)polyRangeMin.push_back(-1.0);
+			if (inDepth > 4)polyRangeMax.push_back(1.0);			
+			if (inDepth > 5)polyRangeMin.push_back(0.0);		// These values don't matter much - they are updated below.
+			if (inDepth > 5)polyRangeMax.push_back(0.0);
+			if (inDepth > 6)polyRangeMin.push_back(0.0);
+			if (inDepth > 6)polyRangeMax.push_back(1.0);
+			if (inDepth > 7)polyRangeMin.push_back(0.0);
+			if (inDepth > 7)polyRangeMax.push_back(1.0);
+
+			printf("depth = %d, hash = %d, param = %d, has_st = %s has_bezier = %s\n", inDepth, hash_depth, inParam, has_st ? "yes" : "no", has_bezier ? "yes" : "no");
+
 			if (has_bezier)
 			{
-				polyRangeMin[4]=0.0;
-				polyRangeMax[4]=1.0;
-				polyRangeMin[5]=0.0;
-				polyRangeMax[5]=1.0;
+				polyRangeMin[2]=polyRangeMin[0];
+				polyRangeMax[2]=polyRangeMax[0];
+				polyRangeMin[3]=polyRangeMin[1];
+				polyRangeMax[3]=polyRangeMax[1];
 			}
-			else
+			if (has_st)
 			{
-				polyRangeMin[2]=0;
-				polyRangeMax[2]=1;
-				polyRangeMin[3]=0;
-				polyRangeMax[3]=1;
+				if (has_bezier)
+				{
+					polyRangeMin[4]=st_min;
+					polyRangeMax[4]=st_max;
+					polyRangeMin[5]=st_min;
+					polyRangeMax[5]=st_max;
+				}
+				else
+				{
+					polyRangeMin[2]=st_min;
+					polyRangeMax[2]=st_max;
+					polyRangeMin[3]=st_min;
+					polyRangeMax[3]=st_max;
+				}
 			}
-		}
 
 
-		polygonPool.SetRange(polyRangeMin, polyRangeMax);
-		for (int i = 0; i < REF(inRef)->mDivisions; ++i)
-		for (int j = 0; j < REF(inRef)->mDivisions; ++j)
-		{
-			DSFTuple	fracMin, fracMax;
-			fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
-			fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
-			fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
-			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			if (has_bezier) {
+			polygonPool.SetRange(polyRangeMin, polyRangeMax);
+			for (int i = 0; i < REF(inRef)->mDivisions; ++i)
+			for (int j = 0; j < REF(inRef)->mDivisions; ++j)
+			{
+				DSFTuple	fracMin, fracMax;
 				fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
 				fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
 				fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
 				fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			}
-			for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
-				fracMin.push_back(0.0);
-				fracMax.push_back(1.0);
-			}
+				if (has_bezier) {
+					fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
+					fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
+					fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
+					fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
+				}
+				for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
+					fracMin.push_back(0.0);
+					fracMax.push_back(1.0);
+				}
 
-			for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
-				polygonPool.AddPool(fracMin, fracMax);
-		}
-		for (int i = 1; i < REF(inRef)->mDivisions; ++i)
-		for (int j = 1; j < REF(inRef)->mDivisions; ++j)
-		{
-			DSFTuple	fracMin, fracMax;
-			fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
-			fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
-			fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
-			fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
-			if (has_bezier) {
+				for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
+					polygonPool.AddPool(fracMin, fracMax);
+			}
+			for (int i = 1; i < REF(inRef)->mDivisions; ++i)
+			for (int j = 1; j < REF(inRef)->mDivisions; ++j)
+			{
+				DSFTuple	fracMin, fracMax;
 				fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
 				fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
 				fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
 				fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
+				if (has_bezier) {
+					fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
+					fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
+					fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
+					fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
+				}
+				for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
+					fracMin.push_back(0.0);
+					fracMax.push_back(1.0);
+				}
+
+				for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
+					polygonPool.AddPool(fracMin, fracMax);
 			}
-			for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
+			DSFTuple	fracMin, fracMax;
+			fracMin.push_back(0.0);		fracMax.push_back(1.0);
+			fracMin.push_back(0.0);		fracMax.push_back(1.0);
+			for (int k = 2; k < inDepth; ++k) {
 				fracMin.push_back(0.0);
 				fracMax.push_back(1.0);
 			}
-
 			for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
 				polygonPool.AddPool(fracMin, fracMax);
 		}
-		DSFTuple	fracMin, fracMax;
-		fracMin.push_back(0.0);		fracMax.push_back(1.0);
-		fracMin.push_back(0.0);		fracMax.push_back(1.0);
-		for (int k = 2; k < inDepth; ++k) {
-			fracMin.push_back(0.0);
-			fracMax.push_back(1.0);
-		}
-		for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
-			polygonPool.AddPool(fracMin, fracMax);
 	}
 }
 
@@ -1472,9 +1478,7 @@ void 	DSFFileWriterImp::AddPolygonPoint(
 {
 	DSFTupleVector * cw = &REF(inRef)->accum_poly_winding.back();
 	cw->push_back(DSFTuple(inCoordinates, REF(inRef)->accum_poly->depth));
-#if !DEV
-		#warning hello1?!
-#endif
+// Ben says: dupe points ARE allowed when making split beziers, so don't freak out about this.
 #if DEV && 0
 	int sz = cw->size();
 	if (sz > 1)

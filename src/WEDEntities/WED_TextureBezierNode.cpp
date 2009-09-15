@@ -22,6 +22,7 @@
  */
 
 #include "WED_TextureBezierNode.h"
+#include "GISUtils.h"
 
 DEFINE_PERSISTENT(WED_TextureBezierNode)
 TRIVIAL_COPY(WED_TextureBezierNode, WED_GISPoint_Bezier)
@@ -129,3 +130,74 @@ void	WED_TextureBezierNode::SetControlHandleHi (GISLayer_t layer,const Point2& p
 	} else
 		WED_GISPoint_Bezier::SetControlHandleHi(layer,p);
 }
+
+
+void			WED_TextureBezierNode::Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds)
+{
+	if(l == gis_Geo)	WED_GISPoint_Bezier::Rescale(l,old_bounds,new_bounds);
+	else
+	{
+		Point2 p;
+		GetLocation(l,p);
+		
+		StateChanged();
+
+		mS.value = old_bounds.rescale_to_x(new_bounds,mS.value);
+		mT.value = old_bounds.rescale_to_y(new_bounds,mT.value);
+		
+		mScL.value = old_bounds.rescale_to_xv(new_bounds,mScL.value);
+		mTcL.value = old_bounds.rescale_to_yv(new_bounds,mTcL.value );
+		mScH.value = old_bounds.rescale_to_xv(new_bounds,mScH.value);
+		mTcH.value = old_bounds.rescale_to_yv(new_bounds,mTcH.value );
+
+		CacheInval();
+		CacheBuild();
+	}
+}
+
+void			WED_TextureBezierNode::Rotate			(GISLayer_t l, const Point2& ctr, double a)
+{
+	if(l == gis_Geo)	WED_GISPoint_Bezier::Rotate(l,ctr,a);
+	else
+	if (a != 0.0)
+	{
+		Point2 p;
+		GetLocation(l,p);
+		StateChanged();
+
+		Point2	pt_old_lo(p.x() + mScL.value, p.y() + mTcL.value);
+		Point2	pt_old_hi(p.x() + mScH.value, p.y() + mTcH.value);
+		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
+		Vector2	v_old_hi = VectorLLToMeters(ctr, Vector2(ctr,pt_old_hi));
+		double old_len_lo = sqrt(v_old_lo.squared_length());
+		double old_len_hi = sqrt(v_old_hi.squared_length());
+
+		double old_ang_lo = VectorMeters2NorthHeading(ctr,ctr,v_old_lo);
+		double old_ang_hi = VectorMeters2NorthHeading(ctr,ctr,v_old_hi);
+		Vector2	v_new_lo;
+		Vector2	v_new_hi;
+
+		NorthHeading2VectorMeters(ctr, ctr, old_ang_lo + a, v_new_lo);
+		NorthHeading2VectorMeters(ctr, ctr, old_ang_hi + a, v_new_hi);
+		v_new_lo.normalize();
+		v_new_hi.normalize();
+		v_new_lo *= old_len_lo;
+		v_new_hi *= old_len_hi;
+
+		v_new_lo = VectorMetersToLL(ctr,v_new_lo);
+		v_new_hi = VectorMetersToLL(ctr,v_new_hi);
+
+		WED_GISPoint::Rotate(l,ctr,a);
+		GetLocation(l,p);
+
+		mScL.value = ctr.x() + v_new_lo.dx - p.x();
+		mScH.value = ctr.x() + v_new_hi.dx - p.x();
+		mTcL.value = ctr.y() + v_new_lo.dy - p.y();
+		mTcH.value = ctr.y() + v_new_hi.dy - p.y();
+		CacheInval();
+		CacheBuild();
+
+	}
+	
+}
+

@@ -29,9 +29,15 @@
 #include "IDocPrefs.h"
 #include "WED_TCEToolAdapter.h"
 #include "WED_TCEVertexTool.h"
+#include "WED_TCEMarqueeTool.h"
+#include "GUI_Resources.h"
+#include "GUI_Table.h"
+#include "WED_ToolInfoAdapter.h"
+#include "WED_Colors.h"
+#include "GUI_Fonts.h"
 
 static char	kToolKeys[] = {
-	'v'
+	'v', 'e'
 };
 
 
@@ -39,42 +45,71 @@ static char	kToolKeys[] = {
 WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive * archive) : GUI_Commander(cmdr), mResolver(resolver)
 {
 	mTCE = new WED_TCE(resolver);
-	mTools.push_back(new WED_TCEToolAdapter("Vetex Tool",mTCE, mTCE, resolver, new WED_TCEVertexTool("Vertex Tool", mTCE, mTCE, resolver)));
-
-	// Visualizatoin layers
-//	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
-//	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
-//	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
-//	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
-
-	// TOOLS
-//	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
-//	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
+	mTools.push_back(new WED_TCEToolAdapter("Vertex Tool",mTCE, mTCE, resolver, new WED_TCEVertexTool("Vertex Tool", mTCE, mTCE, resolver)));
+	mTools.push_back(new WED_TCEToolAdapter("Marquee Tool",mTCE, mTCE, resolver, new WED_TCEMarqueeTool("Marquee Tool", mTCE, mTCE, resolver)));
 
 
-//	mToolbar = new GUI_ToolBar(1,15+6+1,"map_tools.png");
-//	mToolbar->SizeToBitmap();
-//	mToolbar->Show();
-//	mToolbar->SetParent(this);
-//	mToolbar->SetSticky(1,0,0,1);
-//	this->PackPane(mToolbar,gui_Pack_Left);
-//	mToolbar->SizeToBitmap();
-//	mToolbar->AddListener(this);
-//	vector<string>	tips;
 
-//	for (int n = 0; n < mTools.size(); ++n)
-//	{
-//		string tip(mTools[n]->GetToolName());
-//		if (kToolKeys[n])
-//		{
-//			char buf[5] = { " [x]" };
-//			buf[2] = toupper(kToolKeys[n]);
-//			tip += buf;
-//		}
-//		tips.push_back(tip);
-//	}
 
-//	mToolbar->SetToolTips(tips);
+	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
+	mTextTable = new GUI_TextTable(cmdr,10);
+	mTable = new GUI_Table(1);
+
+	mTextTable->SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Table_Select),
+				WED_Color_RGBA(wed_Table_Text),
+				WED_Color_RGBA(wed_PropertyBar_Text),
+				WED_Color_RGBA(wed_Table_Drag_Insert),
+				WED_Color_RGBA(wed_Table_Drag_Into));
+	mTextTable->SetFont(font_UI_Small);
+
+
+	mToolbar = new GUI_ToolBar(2,1,"tce_tools.png");
+	mToolbar->SizeToBitmap();
+	mToolbar->Show();
+	mToolbar->SetParent(this);
+	mToolbar->SetSticky(1,0,0,1);
+	this->PackPane(mToolbar,gui_Pack_Top);
+	mToolbar->SizeToBitmap();
+	mToolbar->AddListener(this);
+	vector<string>	tips;
+
+	for (int n = 0; n < mTools.size(); ++n)
+	{
+		string tip(mTools[n]->GetToolName());
+		if (kToolKeys[n])
+		{
+			char buf[5] = { " [x]" };
+			buf[2] = toupper(kToolKeys[n]);
+			tip += buf;
+		}
+		tips.push_back(tip);
+	}
+
+	mToolbar->SetToolTips(tips);
+
+
+
+
+
+	mTable->SetGeometry(mInfoAdapter);
+	mTable->SetContent(mTextTable);
+	mTextTable->SetProvider(mInfoAdapter);
+	mTable->SetParent(this);
+	mTable->Show();
+	mTable->SizeShowAll();
+	mTextTable->SetParentTable(mTable);
+	mTable->SetSticky(1,0,1,1);
+//	this->PackPane(mTable, gui_Pack_Top);
+	this->PackPaneToRight(mTable, gui_Pack_Top, mToolbar);
+	mTextTable->AddListener(mTable);
+	mTextTable->SetImage("property_bar.png", 2);
+
+	mInfoAdapter->AddListener(mTable);
+
+
+	
 
 
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
@@ -101,7 +136,9 @@ WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive
 		mTCE->AddLayer(*t);
 
 	mTCE->SetTool(mTools[0]);
-//	mToolbar->SetValue(mTools.size()-1);
+	mInfoAdapter->SetTool(mTools[0]);
+	
+	mToolbar->SetValue(mTools.size()-1);
 
 	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
 	// 1. On the commit of any operation.
@@ -119,6 +156,8 @@ WED_TCEPane::~WED_TCEPane()
 	for(vector<WED_TCEToolNew *>::iterator t = mTools.begin(); t != mTools.end(); ++t)
 		delete *t;
 
+	delete mTextTable;
+	delete mInfoAdapter;
 }
 
 void	WED_TCEPane::ZoomShowAll(void)
@@ -132,13 +171,13 @@ void	WED_TCEPane::ZoomShowAll(void)
 int		WED_TCEPane::TCE_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	if (mTCE->HandleKeyPress(inKey, inVK, inFlags)) return 1;
-//	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
-//	if (kToolKeys[n])
-//	if (kToolKeys[n]==inKey)
-//	{
-//		mToolbar->SetValue(n);
-//		return 1;
-//	}
+	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
+	if (kToolKeys[n])
+	if (kToolKeys[n]==inKey)
+	{
+		mToolbar->SetValue(n);
+		return 1;
+	}
 	return 0;
 }
 
@@ -162,11 +201,12 @@ void	WED_TCEPane::ReceiveMessage(
 							intptr_t				inMsg,
 							intptr_t				inParam)
 {
-//	int i = mToolbar->GetValue();
-//	WED_TCEToolNew * t = NULL;
-//	if (i >= 0 && i < mTools.size())
-//		t = mTools[i];
-//	mTCE->SetTool(t);
+	int i = mToolbar->GetValue();
+	WED_TCEToolNew * t = NULL;
+	if (i >= 0 && i < mTools.size())
+		t = mTools[i];
+	mTCE->SetTool(t);
+	mInfoAdapter->SetTool(t);	
 }
 
 void			WED_TCEPane::FromPrefs(IDocPrefs * prefs)

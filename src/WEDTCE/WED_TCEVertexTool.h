@@ -47,6 +47,9 @@ public:
 
 private:
 
+		WED_PropIntEnum		mGrid;
+
+				void	HandleSnap(Point2& io_pt, const Vector2& delta);
 				void	SyncRecurse(IGISEntity * g, ISelection * sel) const;
 				void	SyncCache(void) const;
 

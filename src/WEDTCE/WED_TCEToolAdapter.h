@@ -47,6 +47,17 @@ public:
 
 	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s);
 
+	// IPropertyObject
+
+	virtual	int			FindProperty(const char * in_prop);
+	virtual int			CountProperties(void) const;
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);			// Ben says: dictionary ops are broken out (and one vs all lookup are split too) for performance.
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);		// It may be slow to get all enums, so give the UI code a way to say if it needs this info.
+
+	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+	
 
 private:
 

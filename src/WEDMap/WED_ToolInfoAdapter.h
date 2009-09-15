@@ -26,7 +26,7 @@
 
 #include "GUI_TextTable.h"
 
-class	WED_MapToolNew;
+class	IPropertyObject;
 
 class	WED_ToolInfoAdapter : public GUI_TextTableProvider, public GUI_TableGeometry, public GUI_Broadcaster {
 public:
@@ -34,7 +34,7 @@ public:
 					 WED_ToolInfoAdapter(int height);
 	virtual			~WED_ToolInfoAdapter();
 
-			void	SetTool(WED_MapToolNew * tool);
+			void	SetTool(IPropertyObject * tool);
 
 	virtual void	GetCellContent(
 						int							cell_x,
@@ -151,7 +151,7 @@ public:
 
 private:
 
-	WED_MapToolNew *	mTool;
+	IPropertyObject *	mTool;
 	int					mRowHeight;
 };
 

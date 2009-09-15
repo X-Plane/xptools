@@ -10,17 +10,17 @@
 #define DDSTOOL_VER		10000
 #define DDSTOOL_EXTRAVER	"-b1"
 
-#define DSFTOOL_VER		10300
+#define DSFTOOL_VER		10400
 #define DSFTOOL_EXTRAVER	""
 
 #define OBJCONVERT_VER		30000
 #define OBJCONVERT_EXTRAVER	"-b1"
 
 #define MESHTOOL_VER		20000
-#define MESHTOOL_EXTRAVER	"-b2"
+#define MESHTOOL_EXTRAVER	"-b3"
 
 #define AC3DPLUGIN_VER		30200
-#define AC3DPLUGIN_EXTRAVER	"-b5"
+#define AC3DPLUGIN_EXTRAVER	"-r1"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];

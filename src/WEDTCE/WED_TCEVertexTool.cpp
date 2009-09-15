@@ -10,15 +10,18 @@
 #include "WED_ToolUtils.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
+#include "WED_EnumSystem.h"
 
 WED_TCEVertexTool::WED_TCEVertexTool(
 							const char *			tool_name,
 							GUI_Pane *				host,
 							WED_MapZoomerNew *		zoomer,
 							IResolver *				resolver) :
-	WED_HandleToolBase(tool_name, host, zoomer, resolver)
+	WED_HandleToolBase(tool_name, host, zoomer, resolver),
+	mGrid(this,"Snap To Vertices", "", "", TCE_GridSnap, tce_Grid_None)	
 {
 	SetCanSelect(0);
+	SetDrawAlways(1);
 	SetControlProvider(this);
 }
 
@@ -266,31 +269,35 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 		{
 			io_pt += delta;
 			pt->GetLocation(gis_UV,p);
-			p += delta;
+			p = io_pt;
+			HandleSnap(p,delta);
 			pt->SetLocation(gis_UV,p);
 		}
 		break;
 	case gis_Point_Bezier:
 		if((pt_bt = dynamic_cast<IGISPoint_Bezier *>(who)) != NULL)
 		{
-			io_pt += delta;
 			if(c == 0)
 			{
 				pt_bt->GetLocation(gis_UV,p);
-				p += delta;
+				io_pt += delta;				
+				p = io_pt;
+				HandleSnap(p,delta);
 				pt_bt->SetLocation(gis_UV,p);
 			}
 			if(c == 1)
 			{
 				pt_bt->GetControlHandleLo(gis_UV,p);
-				p += delta;
+				HandleSnap(p,delta);
 				pt_bt->SetControlHandleLo(gis_UV,p);
+				io_pt = p;
 			}
 			if(c == 2)
 			{
 				pt_bt->GetControlHandleHi(gis_UV,p);
-				p += delta;
+				HandleSnap(p,delta);
 				pt_bt->SetControlHandleHi(gis_UV,p);
+				io_pt = p;
 			}
 		}
 		break;
@@ -319,6 +326,21 @@ void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& de
 		break;
 	}
 	
+}
+
+void	WED_TCEVertexTool::HandleSnap(Point2& io_pt, const Vector2& delta)
+{
+	if(mGrid.value != tce_Grid_None)
+	{
+		double sub_div = 1;
+		switch(mGrid.value) {
+		case tce_Grid_Whole:	sub_div = 1;	break;
+		case tce_Grid_Half:		sub_div = 2;	break;
+		case tce_Grid_Quarter:	sub_div = 4;	break;
+		}
+		io_pt.x_ = round(io_pt.x_ * sub_div) / sub_div;
+		io_pt.y_ = round(io_pt.y_ * sub_div) / sub_div;
+	}
 }
 
 void	WED_TCEVertexTool::SyncRecurse(IGISEntity * who, ISelection * sel) const

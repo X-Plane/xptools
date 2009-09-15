@@ -26,8 +26,9 @@
 
 #include "WED_TCELayer.h"
 #include "GUI_Defs.h"
+#include "IPropertyObject.h"
 
-class WED_TCEToolNew: public WED_TCELayer {
+class WED_TCEToolNew: public WED_TCELayer, public IPropertyObject {
 public:
 
 						 		 WED_TCEToolNew(const char * tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);

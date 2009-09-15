@@ -40,7 +40,7 @@ WED_ToolInfoAdapter::~WED_ToolInfoAdapter()
 {
 }
 
-void	WED_ToolInfoAdapter::SetTool(WED_MapToolNew * tool)
+void	WED_ToolInfoAdapter::SetTool(IPropertyObject * tool)
 {
 	mTool = tool;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);

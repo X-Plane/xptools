@@ -24,9 +24,9 @@
 #ifndef WED_Version_H
 #define WED_Version_H
 
-#define	WED_VERSION			 1.0r1
-#define	WED_VERSION_STRING	"1.0r1"
-#define	WED_VERSION_RES		"1.0r1"
-#define	WED_VERSION_BIN		1,0,0,13
+#define	WED_VERSION			 1.1d1
+#define	WED_VERSION_STRING	"1.1d1"
+#define	WED_VERSION_RES		"1.1d1"
+#define	WED_VERSION_BIN		1,1,0,1
 
 #endif /* WED_Version_H */
