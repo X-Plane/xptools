@@ -60,7 +60,7 @@
 
 /* We have to align to 2-byte boundaries to read the file; I'll fix this to work on the PC eventually. :-( */
 
-#if APL || LIN
+#if APL
 #pragma pack(2)
 #endif
 #if IBM

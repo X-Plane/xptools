@@ -26,7 +26,7 @@
 /* Use chunky file utils because they define some aspects of chunky files! */
 #include "XChunkyFileUtils.h"
 
-#if APL || LIN
+#if APL
 #pragma pack(2)
 #endif
 #if IBM

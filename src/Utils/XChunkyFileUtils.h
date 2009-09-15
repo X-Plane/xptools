@@ -50,7 +50,7 @@
 	#error endian not defined
 #endif
 
-#if APL || LIN
+#if APL
 #pragma pack(2)
 #endif
 #if IBM
