@@ -50,6 +50,7 @@
 " f Fill voids with <fill> value.\n"\
 " t Translate DEM with translation file.\n"\
 " o Overlay DEM on existing DEM\n"\
+" e Do not use if DEM is empty.\n"\
 " c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
 "Format can be one of: tiff, bil, hgt, ascii\n"\
 "File is a unix file name.\n"\
@@ -57,6 +58,8 @@
 "If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
 static int DoRasterImport(const vector<const char *>& args)
 {
+	bool did_skip = false;
+	
 	// format file layer [mapping]
 	int layer = LookupToken(args[3]);
 	if (layer == -1)
@@ -66,7 +69,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	}
 
 	DEMGeo * kill = NULL, * dem = NULL;
-	if(strstr(args[0],"o"))
+	if(strstr(args[0],"o") || strstr(args[0],"e"))
 	{
 		kill = dem = new DEMGeo;
 	}
@@ -133,7 +136,7 @@ static int DoRasterImport(const vector<const char *>& args)
 		float n = atof(args[var_param]); 
 		for(int y = 0; y < dem->mHeight; ++y)
 		for(int x = 0; x < dem->mWidth ; ++x)
-		if(dem->get(x,y) == n)
+		if(round(dem->get(x,y)) == n)
 			(*dem)(x,y) = DEM_NO_DATA;
 		++var_param;
 	}
@@ -156,6 +159,23 @@ static int DoRasterImport(const vector<const char *>& args)
 			return 1;
 		}
 		++var_param;
+	}
+
+	if(strstr(args[0],"e"))
+	{
+		bool has_data = false;
+		for(int y = 0; y < dem->mHeight; ++y)
+		for(int x = 0; x < dem->mWidth ; ++x)
+		if(dem->get(x,y) != DEM_NO_DATA)
+		{
+			has_data = true;
+			break;
+		}
+		if(has_data)
+			dem->swap(gDem[layer]);
+		else
+			did_skip=true;
+		dem = &gDem[layer];
 	}
 
 	if(strstr(args[0],"o"))
@@ -233,7 +253,13 @@ static int DoRasterImport(const vector<const char *>& args)
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
 	#endif
 
-	if(gVerbose) printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
+	if(gVerbose) 
+	{
+		if(did_skip)
+			printf("Skipped DEM because source file is empty and 'e' option used.\n");
+		else
+			printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
+	}
 	return 0;
 }
 

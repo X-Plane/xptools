@@ -181,7 +181,18 @@ static bool			can_merge(
 							Pmwx&					p,
 							Halfedge_handle			he)
 {
-	DebugAssert(he->target()->degree() == 2);
+	// Ben says: degree isn't 2?  This can can happen - for example,
+	//	*
+	//	|\
+	//	*-*
+	//	|\|\
+	//	*-*-*
+	// Using GPS this is one outer triangle and one inner hole.  But as a planar map,
+	// outside junctions have degree 4.  So...if our degree isn't 2, it probably means
+	// our outer CCB touches our hole at a noded point.  No biggie, but we're not going
+	// to remove that node, ever!	
+	if(he->target()->degree() != 2)	return false;
+	
 	Vertex_handle v1 = he->source();
 	Vertex_handle v2 = he->next()->target();
 

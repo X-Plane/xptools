@@ -349,17 +349,37 @@ static int DoSave(const vector<const char *>& args)
 
 static int DoIfEmpty(const vector<const char *>& args)
 {
-	int nland = 0;
-	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-	if(!f->is_unbounded())
+	if(args.size() == 1)
 	{
-		if (!f->data().IsWater())
-			++nland;
-		if (nland > 0)
-			break;
+		int nland = 0;
+		for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+		if(!f->is_unbounded())
+		{
+			if (!f->data().IsWater())
+				++nland;
+			if (nland > 0)
+				break;
+		}
+		if(nland > 0)
+			GISTool_SetSkip(atoi(args[0]));
 	}
-	if(nland > 0)
-		GISTool_SetSkip(atoi(args[0]));
+	else 
+	{
+		int token = LookupToken(args[1]);
+		if(token == -1)
+			return 1;
+		if(gDem.count(token) == 0)					// No dem - by definition empty.
+			return 0;
+		DEMGeo& l(gDem[token]);
+		
+		for(int y=0;y<l.mHeight;++y)
+		for(int x=0;x<l.mWidth;++x)
+		if(l.get(x,y) != DEM_NO_DATA)
+		{
+			GISTool_SetSkip(atoi(args[0]));		
+			return 0;
+		}		
+	}
 	return 0;
 }
 
@@ -443,7 +463,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-validate", 		0, 0, DoValidate, 		"Test vector map integrity.", "" },
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },
 { "-save", 			1, 1, DoSave, 			"Save an XES file.", "" },
-{ "-ifempty",		1, 1, DoIfEmpty,		"Skip the next N commands unless the map is empty.", "" },
+{ "-ifempty",		1, 2, DoIfEmpty,		"Skip the next N commands unless the map or a layer is empty.", "" },
 { "-cropsave", 		1, 1, DoCropSave, 		"Save only extent as an XES file.", "" },
 { "-overlay", 		1, 1, DoOverlay, 		"Superimpose/replace a second vector map.", "" },
 { "-merge", 		1, 1, DoMerge,			"Superimpose/merge a second vector map.", "" },

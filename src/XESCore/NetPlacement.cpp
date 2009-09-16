@@ -487,6 +487,30 @@ void	BuildNetworkTopology(Pmwx& inMap, CDT& inMesh, Net_JunctionInfoSet& outJunc
 	/************ STEP 1 - BUILD THE BASIC NETWORK ************/
 	for (Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v)
 	{
+		bool has_any = false;
+		Pmwx::Halfedge_around_vertex_circulator circ, stop;
+		circ = stop = v->incident_halfedges();
+		do {
+			for (GISNetworkSegmentVector::iterator seg = circ->data().mSegments.begin(); seg != circ->data().mSegments.end(); ++seg)
+			if (seg->mRepType != NO_VALUE)
+			{
+				has_any = true;
+				goto hack;
+			}
+
+			for (GISNetworkSegmentVector::iterator seg = circ->twin()->data().mSegments.begin(); seg != circ->twin()->data().mSegments.end(); ++seg)
+			if (seg->mRepType != NO_VALUE)
+			{
+				has_any = true;
+				goto hack;
+			}
+
+		} while (++circ != stop);
+		
+	hack:
+		if(!has_any)
+			continue;
+		
 		Net_JunctionInfo_t * junc = new Net_JunctionInfo_t;
 		junc->vertical_locked = false;
 		junc->location.x = CGAL::to_double(v->point().x());

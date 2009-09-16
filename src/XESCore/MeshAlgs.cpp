@@ -1643,13 +1643,17 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	for(b=0;b<4;++b)
 	if (!gMatchBorders[b].vertices.empty())  {// Because size-1 for empty is max-unsigned-int - gross.
 		tc += gMatchBorders[b].vertices.size();
-	for (n = 1; n < gMatchBorders[b].vertices.size()-1; ++n)
-	{
-			//printf("temp: %lf, %lf\n",  gMatchBorders[b].vertices[n].loc.x, gMatchBorders[b].vertices[n].loc.y);
-			temporary.push_back(outMesh.insert(CDT::Point(gMatchBorders[b].vertices[n].loc.x(),
-														  gMatchBorders[b].vertices[n].loc.y())));
-		temporary.back()->info().height = gMatchBorders[b].vertices[n].height;
-	}
+		for (n = 1; n < gMatchBorders[b].vertices.size()-1; ++n)
+		{
+			if(gMatchBorders[b].vertices[n].loc != gMatchBorders[b].vertices[n-1].loc)
+			{
+					//printf("temp: %lf, %lf\n",  gMatchBorders[b].vertices[n].loc.x, gMatchBorders[b].vertices[n].loc.y);
+					temporary.push_back(outMesh.insert(CDT::Point(gMatchBorders[b].vertices[n].loc.x(),
+																  gMatchBorders[b].vertices[n].loc.y())));
+				temporary.back()->info().height = gMatchBorders[b].vertices[n].height;
+			} else 
+				printf("skipping dupe border point.\n");
+		}
 	}
 	printf("temporary contains %d points\n", tc);
 	// Clear out the slaved edges in the data so that we don't add them as part of our process.
@@ -1708,10 +1712,24 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	// Now go nuke the temporary edge - we don't need it now.
 
+	for(int i = 0; i < temporary.size(); ++i)
+	for(int j = i+1; j < temporary.size(); ++j)
+		if(temporary[i] == temporary[j])
+			cout << "WARNING: temporary point: " << temporary[i]->point() << "\n";
+
 	for (n = 0; n < temporary.size(); ++n)
 	{
+	#if DEV
+		try {
+		if(outMesh.are_there_incident_constraints(temporary[n]))
+			gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(temporary[n]->point()),Point3(1,1,1)));
+		} catch(...)
+		{
+			gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(temporary[n]->point()),Point3(1,1,1)));
+			throw;
+		}
+	#endif		
 		DebugAssert(!outMesh.are_there_incident_constraints(temporary[n]));
-//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(temporary[n]->point()),Point3(1,1,1)));
 		if (!outMesh.are_there_incident_constraints(temporary[n]))
 			outMesh.remove(temporary[n]);
 	}

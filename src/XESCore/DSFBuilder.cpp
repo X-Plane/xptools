@@ -268,8 +268,8 @@ static void ProjectTex(double lon, double lat, double& s, double& t, const tex_p
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 {
 	double lon, lat;
-	lon = CGAL::to_double(v_han->point().x());
-	lat = CGAL::to_double(v_han->point().y());
+	lon = doblim(CGAL::to_double(v_han->point().x()),dem.mWest ,dem.mEast );
+	lat = doblim(CGAL::to_double(v_han->point().y()),dem.mSouth,dem.mNorth);
 
 
 	float ret = dem.value_linear(lon, lat);
@@ -739,7 +739,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	for (y = 0; y < waterType.mHeight;++y)
 	for (x = 0; x < waterType.mWidth; ++x)
 	{
-		if (waterType(x,y) != lu_usgs_SEA_WATER && waterType(x,y) != lu_usgs_INLAND_WATER)
+		if (waterType(x,y) != lu_usgs_SEA_WATER && waterType(x,y) != lu_usgs_INLAND_WATER && waterType(x,y) != lu_globcover_WATER)
 			waterType(x,y) = NO_VALUE;
 	}
 
@@ -749,7 +749,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		for (x = 0; x < waterType.mWidth; ++x)
 		{
 			float e = temp.get_radial(x,y,2, NO_VALUE);
-			waterType(x,y) = (e == lu_usgs_SEA_WATER) ? 1.0 : 0.0;
+			waterType(x,y) = (e == lu_usgs_SEA_WATER || e == lu_globcover_WATER) ? 1.0 : 0.0;
 
 		}
 	}
@@ -1094,6 +1094,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					{
 						coords8[5] = GetWaterBlend((*vert), waterType);
 						coords8[6] = IsCoastal(inHiresMesh,*vert) ? 0.0 : 1.0;
+						DebugAssert(coords8[5] >= 0.0);
+						DebugAssert(coords8[5] <= 1.0);
 					}
 					else if (pinfo)	{
 						ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
@@ -1176,6 +1178,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
 							coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
 							coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
+							DebugAssert(coords8[5] >= 0.0);
+							DebugAssert(coords8[5] <= 1.0);
+							DebugAssert(coords8[6] >= 0.0);
+							DebugAssert(coords8[6] <= 1.0);
 							DebugAssert(!is_water);
 	//						if (is_composite)
 	//							coords8[7] = is_water ? GetWaterBlend(f->vertex(vi), waterType) : f->vertex(vi)->info().vege_density;
@@ -1286,12 +1292,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(all.count(beach) != 0);
 				beachKind = all[beach];
 				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
+				coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
+				coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
 				cbs.AddPolygonPoint_f(coords6, writer1);
 				all.erase(beach);
 			}
 			DebugAssert(all.count(*a_start) == 0);
 
 			BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
+			coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
+			coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
 			cbs.AddPolygonPoint_f(coords6, writer1);
 
 			cbs.EndPolygonWinding_f(writer1);
@@ -1320,6 +1330,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(linkNext.count(beach) != 0);
 				beachKind = all.begin()->second;
 				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
+				coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
+				coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
 				cbs.AddPolygonPoint_f(coords6, writer1);
 				all.erase(beach);
 				beach = linkNext[beach];
