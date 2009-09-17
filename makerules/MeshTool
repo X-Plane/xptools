@@ -97,6 +97,7 @@ SOURCES += ./src/XESCore/TensorRoads.cpp
 SOURCES += ./src/XESCore/TriFan.cpp
 SOURCES += ./src/XESCore/XESIO.cpp
 SOURCES += ./src/XESCore/Zoning.cpp
+SOURCES += ./src/XESTools/GISTool_Globals.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
