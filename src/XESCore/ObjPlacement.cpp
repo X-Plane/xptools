@@ -1087,6 +1087,8 @@ void	InstantiateGTPolygon(
 
 		Point2	trial, l;
 
+	static CDT::Face_handle hint = CDT::Face_handle();
+
 	for (GISPointFeatureVector::iterator iter = inFace->data().mPointFeatures.begin(); iter != inFace->data().mPointFeatures.end(); ++iter)
 	if (IsWellKnownFeature(iter->mFeatType))
 	{
@@ -1096,7 +1098,7 @@ void	InstantiateGTPolygon(
 		CDT::Locate_type lt;
 		int side;
 		CDT::Face_handle recent = NULL;
-		recent = mesh.locate(CDT::Point(iter->mLocation.x(),iter->mLocation.y()), lt, side);
+		hint = recent = mesh.locate(CDT::Point(iter->mLocation.x(),iter->mLocation.y()), lt, side,hint);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
 			terrain = highest_prio_tri(recent);
@@ -1343,7 +1345,7 @@ void	InstantiateGTPolygon(
 
 							terrain = NO_VALUE;
 							recent = CDT::Face_handle();
-							recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side);
+							hint = recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side, hint);
 							if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 							{
 								terrain = highest_prio_tri(recent);
@@ -1466,7 +1468,7 @@ void	InstantiateGTPolygon(
 		if (!geo_bounds.contains(l))
 			continue;
 
-		recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side);
+		hint = recent = mesh.locate(CDT::Point(l.x(),l.y()), lt, side, hint);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
 			terrain = highest_prio_tri(recent);

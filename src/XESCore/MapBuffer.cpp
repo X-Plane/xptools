@@ -366,6 +366,23 @@ static void visit_face(Face_handle f, set<Face_handle>& to_visit, int depth)
 
 #define CUTOFF (MTR_TO_NM*MTR_TO_NM*NM_TO_DEG_LAT*NM_TO_DEG_LAT)
 
+void	RemoveDupes(Polygon_2& io_p)
+{
+	Polygon_2	n;
+	for(Polygon_2::Vertex_iterator v = io_p.vertices_begin(); v != io_p.vertices_end(); ++v)
+	if(n.is_empty() || *v != n.vertex(n.size()-1))
+		n.push_back(*v);
+	
+	swap(io_p,n);
+
+	while(!io_p.is_empty() && io_p.vertex(0) == io_p.vertex(io_p.size()-1))
+	{
+		Polygon_2::iterator i = io_p.vertices_end();
+		--i;
+		io_p.erase(i);
+	}
+}
+
 void	SimplifyPointSequence(Polygon_2& input_seq)
 {
 	int n = 0;
@@ -402,6 +419,7 @@ void	BufferPolygon(
 	Polygon_2		inset_seq;
 	TaggedPolygon_t	inset_crv;
 	BuildPointSequence(in_polygon, in_insets, in_inset, inset_seq);
+	RemoveDupes(inset_seq);
 //	SimplifyPointSequence(inset_seq);
 //	if(inset_seq.size() < 3)
 //	{
