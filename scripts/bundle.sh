@@ -11,16 +11,19 @@ mac)
 	build_dir=../build/Release
 	suffix=Mac
 	tsuffix=""
+	asuffix=".app"
 	;;
 win)
 	build_dir=../build/Mingw/release_opt
 	suffix=Win
 	tsuffix=".exe"
+	asuffix=".exe"
 	;;
 lin)
 	build_dir=../build/Linux/release_opt
 	suffix=Lin
 	tsuffix=""
+	asuffix=""
 	;;
 esac
 
@@ -42,6 +45,10 @@ meshtool)
 	if [ "$2" == "lin" ]; then
 		src_files="$src_files $build_dir/MeshTool.debug"
 	fi
+	;;
+wed)
+	out_file="wed_"$2"_"$3".zip"
+	src_files="$build_dir/WED$asuffix ../src/WEDResources/WEDManual.pdf"
 	;;
 esac
 
