@@ -62,9 +62,9 @@ static void make_one_pol(WED_OverlayImage * image, const Polygon_with_holes_2& a
 		info.kill_alpha = false;
 		info.wrap = false;
 		rmgr->MakePol(res,info);
-		#if !DEV
-			#error add load center
-		#endif
+//		#if !DEV
+//			#error add load center
+//		#endif
 	}
 	
 	WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());

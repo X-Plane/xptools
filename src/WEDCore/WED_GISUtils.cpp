@@ -15,10 +15,10 @@
  *
  ************************************************************************************************************************************************************************************/
 
-#if !DEV
-	#error we need an option to get approximate pt sequenes from beziers!
-	#error we need to handle degunking self-intersecting and backward polygons!
-#endif
+// TODO:
+//	#error we need an option to get approximate pt sequenes from beziers!
+//	#error we need to handle degunking self-intersecting and backward polygons!
+
 
 bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Polygon_2 * uv)
 {
