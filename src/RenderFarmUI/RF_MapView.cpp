@@ -82,6 +82,8 @@
 
 #define DEBUG_PRINT_CORNERS 0
 
+#define DEBUG_PRINT_WAVES 1
+
 #define DEBUG_PRINT_TRI_PARAMS 0
 
 RF_MapView *		gMapView = NULL;
@@ -98,6 +100,7 @@ struct	DEMViewInfo_t {
 static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
+{		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
@@ -1367,6 +1370,13 @@ char * RF_MapView::MonitorCaption(void)
 						recent->vertex(2)->info().height);
 #endif
 
+#if DEBUG_PRINT_WAVES
+	n += sprintf(buf+n,"Wave:%0.f,%0.f,%0.f ",
+						recent->vertex(0)->info().wave_height,
+						recent->vertex(1)->info().wave_height,
+						recent->vertex(2)->info().wave_height);
+#endif
+	
 #if HACK_CHECK_FLATCALCS
 		{
 			if (recent->info()->terrain == terrain_Water)
