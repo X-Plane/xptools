@@ -120,11 +120,10 @@ int					WED_GISLine::GetNumPoints(void ) const
 //	Assert(!"You cannot delete points from a line.");
 //}
 
-/*IGISPoint *	WED_GISLine::SplitSide   (int n)
+IGISPoint *	WED_GISLine::SplitSide   (const Point2& p, double dist)
 {
-	Assert(!"You cannot split a line.");
 	return NULL;
-}*/
+}
 
 IGISPoint *	WED_GISLine::GetNthPoint (int n) const
 {

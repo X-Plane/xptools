@@ -304,7 +304,7 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	}
 }
 
-void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
+void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
 	IGISEntity * who = reinterpret_cast<IGISEntity *>(id);
 	IGISPointSequence * s;

@@ -231,6 +231,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 					mDragType = drag_Links;
 					mHandleEntity = eid;
 					mHandles->BeginEdit();
+					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
 					break;
 				}
 			}
@@ -242,6 +243,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 					mDragType = drag_Links;
 					mHandleEntity = eid;
 					mHandles->BeginEdit();
+					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
 					break;
 				}
 			}
@@ -527,7 +529,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			mDragX = inX; mDragY = inY;
 			switch(mDragType) {
 			case drag_Handles:				mHandles->ControlsHandlesBy(mHandleEntity,	mHandleIndex,	delta, mTrackPoint);	break;
-			case drag_Links:				mHandles->ControlsLinksBy(mHandleEntity,	mHandleIndex,	delta			  );	break;
+			case drag_Links:				mHandles->ControlsLinksBy(mHandleEntity,	mHandleIndex,	delta, mTrackPoint);	break;
 			case drag_Ent:					mHandles->ControlsMoveBy(mHandleEntity,						delta, mTrackPoint);	break;
 			}
 		}

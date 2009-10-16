@@ -120,7 +120,7 @@ public:
 
 	// Move ALL control handles (that is, the whole entity) by a delta.
 	virtual		void	ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_handle)=0;
-	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)=0;
+	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_handle)=0;
 	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_handle)=0;
 
 };

@@ -84,6 +84,10 @@ enum {
 	wed_CreateApt,
 	wed_EditApt,
 	wed_AddATCFreq,
+#if AIRPORT_ROUTING
+	wed_AddATCFlow,
+	wed_AddATCRunwayUse,
+#endif
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

@@ -84,7 +84,9 @@
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
 	_R(WED_ExclusionZone) \
-	_R(WED_TaxiRoute)
+	_R(WED_TaxiRoute) \
+	_R(WED_ATCFlow) \
+	_R(WED_ATCRunwayUse)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

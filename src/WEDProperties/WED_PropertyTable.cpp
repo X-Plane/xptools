@@ -926,8 +926,10 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	int is_composite = 0;
 	visible = 0;
 
-	IGISEntity * e = SAFE_CAST(IGISEntity, what);
-	if (e) is_composite = e->GetGISClass() == gis_Composite;
+	is_composite = WED_IsFolder(what);
+
+//	IGISEntity * e = SAFE_CAST(IGISEntity, what);
+//	if (e) is_composite = e->GetGISClass() == gis_Composite;
 	if (mSelOnly) is_composite = 1;
 
 	if (!mSelOnly || !sel || sel->IsSelected(what))

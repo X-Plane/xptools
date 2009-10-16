@@ -63,6 +63,15 @@ bool			WED_IsIconic(IGISEntity * what);
 
 double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector2& drag);
 
+// This tells us if the WED thing can contain other things, from a property view perspective.
+bool			WED_IsFolder(WED_Thing * what);
+
+// Do we have a single selection of a known type?  We need this
+WED_Thing*		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_class);
+
+// What ancestor type do we need to be nested within?
+const char *	WED_GetParentForClass(const char * in_class);
+
 //---------------------------------------------------------------------------------------------------------------------------------
 // FILTERS:
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -75,12 +84,12 @@ int Iterate_ParentMismatch(ISelectable * what, void * ref);				// This object's 
 int Iterate_IsParentOf(ISelectable * what, void * ref);					// This object is a parent of (or is) "ref".
 int	Iterate_MatchesThing(ISelectable * what, void * ref);					// ref is a thing to match
 int	Iterate_NotMatchesThing(ISelectable * what, void * ref);				// ref is a thing to match
-// Airport containment filters
-int	Iterate_RequiresAirport(ISelectable * what, void * ref);				// This object MUST have an airport as part of its ancestors.
-int	Iterate_ChildRequiresAirport(ISelectable * what, void * ref);			// This object MUST have an airport as part of its ancestors.  Or one of our children requires this.
-int	Iterate_IsAirport(ISelectable * what, void * ref);						// This object is an airport.
-int	Iterate_IsOrParentAirport(ISelectable * what, void * ref);				// This object is an airport, or its parent is or something.
-int	Iterate_IsOrChildAirport(ISelectable * what, void * ref);				// This object is an airport, or its child is or something.
+// Type containment filters - ref is really a class string ptr.
+int	Iterate_RequiresClass(ISelectable * what, void * ref);				// This object MUST have a certain type as part of its ancestors.
+int	Iterate_ChildRequiresClass(ISelectable * what, void * ref);			// This object MUST have an certain type as part of its ancestors.  Or one of our children requires this.
+int	Iterate_IsClass(ISelectable * what, void * ref);						// This object is an certain type.
+int	Iterate_IsOrParentClass(ISelectable * what, void * ref);				// This object is an certain type, or its parent is or something.
+int	Iterate_IsOrChildClass(ISelectable * what, void * ref);				// This object is an certain type, or its child is or something.
 // Grouping and structured obj filters
 int	Iterate_IsStructuredObject(ISelectable * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
 int	Iterate_IsNotStructuredObject(ISelectable * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
@@ -93,6 +102,7 @@ int Iterate_HasSelectedParent(ISelectable * what, void * ref);				// ref is ISel
 
 // Collecting - these
 int	Iterate_CollectThings(ISelectable * what, void * ref);				// ref is ptr to vector<wed_thing>
+int Iterate_CollectRequiredParents(ISelectable * what, void * ref);		// ref is a set of strings that are the required classes.
 int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 int Iterate_CollectEntities  (ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>
 int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>  - only take entities with UV maps!

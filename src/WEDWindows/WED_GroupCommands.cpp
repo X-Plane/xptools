@@ -28,6 +28,8 @@
 #include "WED_Thing.h"
 #include "WED_Airport.h"
 #include "WED_ATCFrequency.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
 #include "BitmapUtils.h"
@@ -40,6 +42,7 @@
 #include "WED_OverlayImage.h"
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
+#include "WED_Airport.h"
 
 int		WED_CanGroup(IResolver * inResolver)
 {
@@ -53,20 +56,20 @@ int		WED_CanGroup(IResolver * inResolver)
 	// Can't group a piece of a structured object - would break its internal make-up.
 	if (sel->IterateSelection(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 
-	int has_airport = sel->IterateSelection(Iterate_IsAirport, NULL);
+	int has_airport = sel->IterateSelection(Iterate_IsClass, (void*) WED_Airport::sClass);
 
 	WED_Thing * global_parent = WED_FindParent(sel, NULL, NULL);
 	if (global_parent == NULL) return 0;
 
-	if (Iterate_IsOrParentAirport(global_parent, NULL))
+	if (Iterate_IsOrParentClass(global_parent, (void*) WED_Airport::sClass))
 	{
 		// We are going into an airport.  DO NOT allow an airport into another one.
-		if (sel->IterateSelection(Iterate_IsOrChildAirport, NULL)) return 0;
+		if (sel->IterateSelection(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
 	else
 	{
 		// Not going into an airport.  If we need to, well, we can't do this.
-		if (sel->IterateSelection(	Iterate_ChildRequiresAirport, NULL)) return 0;
+		if (sel->IterateSelection(	Iterate_ChildRequiresClass, (void *) WED_Airport::sClass)) return 0;
 
 	}
 	return 1;
@@ -313,20 +316,48 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 }
 
 
-int		WED_CanMakeNewATC(IResolver * inResolver)
+int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 {
-	WED_Airport * now_sel = WED_GetCurrentAirport(inResolver);
-	return now_sel != NULL;
+	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
 }
 
-void	WED_DoMakeNewATC(IResolver * inResolver)
+int		WED_CanMakeNewATCFlow(IResolver * inResolver)
 {
-	WED_Airport * now_sel = WED_GetCurrentAirport(inResolver);
+	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
+}
+
+int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver)
+{
+	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
+}
+
+void	WED_DoMakeNewATCFreq(IResolver * inResolver)
+{
+	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass);
 	now_sel->StartOperation("Add ATC Frequency");
 	WED_ATCFrequency * f=  WED_ATCFrequency::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
+
+void	WED_DoMakeNewATCFlow(IResolver * inResolver)
+{
+	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass);
+	now_sel->StartOperation("Add ATC Flow");
+	WED_ATCFlow * f=  WED_ATCFlow::CreateTyped(now_sel->GetArchive());
+	f->SetParent(now_sel,now_sel->CountChildren());
+	now_sel->CommitOperation();
+}
+
+void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
+{
+	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
+	now_sel->StartOperation("Add ATC Flow");
+	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
+	f->SetParent(now_sel,now_sel->CountChildren());
+	now_sel->CommitOperation();
+}
+
 
 void	WED_DoSetCurrentAirport(IResolver * inResolver)
 {
@@ -365,7 +396,10 @@ static bool WED_NoLongerViable(WED_Thing * t)
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
 
-		if (t->CountChildren() < min_children)
+		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
+		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
+
+		if ((t->CountChildren() + t->CountSources()) < min_children)
 			return true;
 	}
 
@@ -387,8 +421,8 @@ void	WED_DoClear(IResolver * resolver)
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *> (sel);
 
-	set<WED_Thing *>	who;
-	set<WED_Thing *>	chain;
+	set<WED_Thing *>	who;		// Who - objs to be nuked!
+	set<WED_Thing *>	chain;		// Chain - dependents who _might_ need to be nuked!
 
 	WED_GetSelectionRecursive(resolver, who);
 	if (who.empty()) return;
@@ -397,13 +431,20 @@ void	WED_DoClear(IResolver * resolver)
 
 	sel->Clear();
 
+	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
+	// some reprecussions on other objects.
 	while(!who.empty())
 	{
 		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
 		{
 			WED_Thing * p = (*i)->GetParent();
-			if (p && who.count(p) == 0)
+			if (p)
 				chain.insert(p);
+				set<WED_Thing *> viewers;
+			(*i)->GetAllViewers(viewers);
+			
+			chain.insert(viewers.begin(), viewers.end());
+					
 			(*i)->SetParent(NULL, 0);
 			(*i)->Delete();
 		}
@@ -571,18 +612,23 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 	// (This includes moving the container into itself.
 	if (sel->IterateSelection(Iterate_IsParentOf, dest)) return 0;
 
-	if (dynamic_cast<IGISComposite *>(dest) == NULL) return 0;
+	// If our destination isn't a folder, just bail now...only certain types can contain other types, like, at all.
+	if(!WED_IsFolder(dest)) return 0;
 
-	if (Iterate_IsOrParentAirport(dest, NULL))
+	// No nested airports.  This is sort of a special case..we need to make sure no airport is inside another airport.
+	// Most other types only have demands about their, supervisor, not about who ISN'T their supervisor.
+	if (Iterate_IsOrParentClass(dest, (void*) WED_Airport::sClass))
 	{
 		// We are going into an airport.  DO NOT allow an airport into another one.
-		if (sel->IterateSelection(Iterate_IsOrChildAirport, NULL)) return 0;
+		if (sel->IterateSelection(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
-	else
-	{
-		// Not going into an airport.  If we need to, well, we can't do this.
-		if (sel->IterateSelection(	Iterate_ChildRequiresAirport, NULL)) return 0;
-	}
+	
+	// Finally, we need to make sure that everyone in the selection is going to get their needs met.
+	set<string>	required_parents;
+	sel->IterateSelection(Iterate_CollectRequiredParents, &required_parents);
+	for(set<string>::iterator s = required_parents.begin(); s != required_parents.end(); ++s)
+		if(!Iterate_IsOrParentClass(dest, (void*) s->c_str()))
+			return 0;
 	return 1;
 }
 

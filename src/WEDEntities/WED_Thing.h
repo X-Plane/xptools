@@ -68,9 +68,10 @@ public:
 			int					CountSources(void) const;
 			WED_Thing *			GetNthSource(int n) const;
 			int					CountViewers(void) const;
-			WED_Thing *			GetNthViewer(int n) const;
+			void				GetAllViewers(set<WED_Thing *>& out_viewers) const;
 			void				AddSource(WED_Thing * src, int nth);
 			void				RemoveSource(WED_Thing * src);
+			void				ReplaceSource(WED_Thing * old, WED_Thing * rep);
 
 			void				GetName(string& name) const;
 			void				SetName(const string& name);

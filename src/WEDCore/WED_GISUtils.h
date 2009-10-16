@@ -15,6 +15,7 @@ class IGISPointSequence;
 class IGISEntity;
 class IGISQuad;
 class IGISPolygon;
+class WED_Thing;
 
 // Return a polygon for a WED point ring.
 // Return false for point sequence that has bezier parts.
@@ -44,5 +45,14 @@ bool	WED_MapPoint(const UVMap_t&	in_map, const Point_2& ll, Point_2& uv);
 bool	WED_MapPolygon(const UVMap_t&	in_map, const Polygon_2& ll, Polygon_2& uv);
 bool	WED_MapPolygonWithHoles(const UVMap_t&	in_map, const Polygon_with_holes_2& ll, Polygon_with_holes_2& uv);
 
+/********************************************************************************************************************************************
+ * MORE COMPLEX IGIS-BASED OPERATIONS
+ ********************************************************************************************************************************************/
+ 
+// This will attempt to merge the above points, connecting any attached edges.
+bool	WED_MergePoints(const vector<IGISEntity *>& in_points);
+
+// This splits an edge at a given internal pt, forming two new edges.
+bool	WED_SplitEdgeIfNeeded(WED_Thing * pt, const string& in_cross_name);
 
 #endif

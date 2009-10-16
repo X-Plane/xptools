@@ -269,7 +269,7 @@ void	WED_TCEMarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	}
 }
 
-void	WED_TCEMarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
+void	WED_TCEMarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;

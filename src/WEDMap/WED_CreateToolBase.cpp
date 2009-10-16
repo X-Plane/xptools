@@ -268,7 +268,7 @@ void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 	io_pt += delta;
 }
 
-void	WED_CreateToolBase::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
+void	WED_CreateToolBase::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
 	if (c != mPts.size()-1)
 	{

@@ -25,6 +25,8 @@
 #include "WED_ToolUtils.h"
 #include "WED_AirportNode.h"
 #include "WED_TaxiRoute.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_GISUtils.h"
 
 static const char * kCreateCmds[] = { "Taxiway Route Line" };
 static const int kIsAirport[] = { 1 };
@@ -44,7 +46,8 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
-	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", "", "", 1)
+	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", "", "", 1),
+	mName(tool == create_TaxiRoute ? this : NULL, "Name", "", "", "N")
 {
 }
 
@@ -52,16 +55,30 @@ WED_CreateEdgeTool::~WED_CreateEdgeTool()
 {
 }
 
+struct sort_by_seg_rat {
+	sort_by_seg_rat(const Point2& i) : a(i) { }
+	Point2	a;
+	bool operator()(const Point2& p1, const Point2& p2) const {
+		return a.squared_distance(p1) < a.squared_distance(p2);
+	}
+};
+
+static void SortSplits(const Segment2& s, vector<Point2>& splits)
+{
+	sort(splits.begin(), splits.end(), sort_by_seg_rat(s.p1));
+}
+
+
+
 void		WED_CreateEdgeTool::AcceptPath(
-			const vector<Point2>&	pts,
+			const vector<Point2>&	in_pts,
 			const vector<Point2>&	dirs_lo,
 			const vector<Point2>&	dirs_hi,
 			const vector<int>		has_dirs,
 			const vector<int>		has_split,
 			int						closed)
 {
-		char buf[256];
-
+	vector<Point2>	pts(in_pts);
 	int idx;
 	WED_Thing * host = GetHost(idx);
 	if (host == NULL) return;
@@ -73,68 +90,96 @@ void		WED_CreateEdgeTool::AcceptPath(
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	sel->Clear();
 
+	for(int p = 1; p < pts.size(); ++p)
+	{
+		vector<Point2>	splits;
+		int dummy;
+		SplitByLine(GetHost(dummy), NULL, Segment2(pts[p-1],pts[p]), splits);
+		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+		pts.insert(pts.begin() + p, splits.begin(),splits.end());
+		p += splits.size();
+	}
+
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
 	
 	static int n = 0;
-	++n;
+	int stop = closed ? pts.size() : pts.size()-1;
+	int start = 0;
 	
-	switch(mType) {
-	case create_TaxiRoute:
-		new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
-		tr->SetOneway(mOneway.value);
-		
-		sprintf(buf,"New taxiway route %d",n);
-		tr->SetName(buf);
-		break;
-	}
-	
-	WED_Thing * src = NULL, * dst = NULL;
-	
-	int last = pts.size()-1;
-	int stop = pts.size()-1;
-	if(closed)
+	WED_Thing * last = NULL;
+	while(start < stop)
 	{
-		last = 0;
-		stop = pts.size();
-	}
-//						double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
-	double	dist=0.00001*0.00001;
-	FindNear(host, NULL, pts[0],src,dist);
-			dist=0.00001*0.00001;
-	FindNear(host, NULL, pts[last],dst,dist);
+		++n;	
+		switch(mType) {
+		case create_TaxiRoute:
+			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
+			tr->SetOneway(mOneway.value);
+			
+			tr->SetName(mName);
+			break;
+		}
 	
-	WED_AirportNode * c;
-	
-	if(src == NULL)
-	{
-		src = c = WED_AirportNode::CreateTyped(GetArchive());
-		src->SetParent(host,idx);
-		src->SetName(buf);
-		c->SetLocation(gis_Geo,pts[0]);
-	}
-	if(dst == NULL)
-	{
-		dst = c = WED_AirportNode::CreateTyped(GetArchive());
-		dst->SetParent(host,idx);
-		dst->SetName(buf);
-		c->SetLocation(gis_Geo,pts[last]);
-	}
-	new_edge->AddSource(src,0);
-	new_edge->AddSource(dst,1);
-	for(int n = 1; n < stop; ++n)
-	{
-		WED_AirportNode * i = WED_AirportNode::CreateTyped(GetArchive());
-		i->SetParent(new_edge,n-1);
-		i->SetLocation(gis_Geo,pts[n]);
-		sprintf(buf,"Curve point %d",n);
-		i->SetName(buf);
-	}
+		WED_AirportNode * c;
+		WED_Thing * src = last, * dst = NULL;
+		double frame_dist = fabs(GetZoomer()->YPixelToLat(5)-GetZoomer()->YPixelToLat(0));
+		double	dist=frame_dist*frame_dist;
+		if(src == NULL)	
+		{
+			FindNear(host, NULL, pts[start % pts.size()],src,dist);
+			if(src != NULL) WED_SplitEdgeIfNeeded(src, mName.value);
+		}
+		if(src == NULL)
+		{
+			src = c = WED_AirportNode::CreateTyped(GetArchive());
+			src->SetParent(host,idx);
+			src->SetName(mName.value + "_start");
+			c->SetLocation(gis_Geo,pts[0]);
+		}
+		new_edge->AddSource(src,0);
 
-	sel->Select(new_edge);
-	
-	new_edge->SetParent(host,idx);
-	
+		int cidx = 0;		
+		int p = start + 1;
+		while(p <= stop)
+		{
+			dist=frame_dist*frame_dist;
+			FindNear(host, NULL, pts[p % pts.size()],dst,dist);
+			if(dst != NULL)
+			{
+				WED_SplitEdgeIfNeeded(dst, mName.value);
+				new_edge->AddSource(dst,1);
+				sel->Insert(new_edge);	
+				new_edge->SetParent(host,idx);
+				
+				last = dst;
+				start = p;
+				break;
+			}
+			else if(p == stop)
+			{
+				dst = c = WED_AirportNode::CreateTyped(GetArchive());
+				dst->SetParent(host,idx);
+				dst->SetName(mName.value+"_stop");
+				c->SetLocation(gis_Geo,pts[p]);
+				new_edge->AddSource(dst,1);
+				sel->Insert(new_edge);	
+				new_edge->SetParent(host,idx);
+
+				start = p;
+				break;
+			}
+			else
+			{
+				src = c = WED_AirportNode::CreateTyped(GetArchive());
+				src->SetParent(new_edge,cidx);
+				src->SetName(mName.value+"_internal");
+				c->SetLocation(gis_Geo,pts[p]);
+				++p;
+				++cidx;
+			}
+		}
+	}	
+
 	GetArchive()->CommitCommand();
 }
 
@@ -211,6 +256,58 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Poin
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
 			FindNear(host->GetNthChild(n), NULL, loc, out_thing, out_dsq);
+	}
+}
+
+
+void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<Point2>& out_splits)
+{
+	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
+	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	if(e && t)
+	{
+		Point2	l;
+		IGISPoint * p;
+		IGISPointSequence * ps;
+		IGISComposite * c;
+	
+		switch(e->GetGISClass()) {
+		case gis_PointSequence:
+		case gis_Line:
+		case gis_Line_Width:
+		case gis_Ring:
+		case gis_Chain:			
+			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
+			{
+				int ss = ps->GetNumSides();
+				for(int s = 0; s < ss; ++s)
+				{
+					Segment2 side;
+					Bezier2 bez;
+					if(!ps->GetSide(gis_Geo,s,side,bez))
+					{
+						Point2 x;
+						if(splitter.intersect(side,x))
+						{
+							out_splits.push_back(x);
+							ps->SplitSide(x, 0.001);
+						}
+					}
+				}
+			}
+			break;
+		case gis_Composite:
+			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
+			{
+				for(int n = 0; n < c->GetNumEntities(); ++n)
+					SplitByLine(NULL,c->GetNthEntity(n), splitter, out_splits);
+			}
+		}
+	}
+	else
+	{
+		for(int n = 0; n < host->CountChildren(); ++n)
+			SplitByLine(host->GetNthChild(n), NULL, splitter, out_splits);
 	}
 }
 

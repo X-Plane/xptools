@@ -52,6 +52,7 @@ public:
 private:
 
 	WED_PropBoolText		mOneway;
+	WED_PropStringText		mName;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
@@ -63,6 +64,7 @@ private:
 	virtual	bool		CanCreateNow(void);
 
 			void		FindNear(WED_Thing * host, IGISEntity * ent, const Point2& loc, WED_Thing *& out_thing, double& out_dsq);
+			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<Point2>& out_splits);
 			WED_Thing *	GetHost(int& idx);
 
 		CreateEdge_t	mType;

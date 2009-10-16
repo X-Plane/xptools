@@ -233,6 +233,54 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 }
 
 
+IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
+{
+	int s = GetNumSides();
+	int best = -1;
+	double d = dist*dist;
+	Segment2	best_p;
+	for(int n = 0; n < s; ++n)
+	{
+		Segment2 s;
+		Bezier2 b;
+		if(!GetSide(gis_Geo, n, s, b))
+		{
+			double dd = s.squared_distance(p);
+			if (dd < d)
+			{
+				d = dd;
+				best = n;
+				best_p = s;
+			}
+		}
+	}
+	if(best != -1)
+	{
+		WED_Thing * np = dynamic_cast<WED_Thing*>(dynamic_cast<WED_Thing*>(GetNthPoint(best))->Clone());
+		IGISPoint * npp = dynamic_cast<IGISPoint *>(np);		
+		Point2 bpp_proj=best_p.projection(p);
+		npp->SetLocation(gis_Geo, bpp_proj);
+
+		if(HasLayer(gis_UV))
+		{
+			double t = sqrt(best_p.squared_distance(bpp_proj)) /
+					   sqrt(best_p.squared_length());
+			Segment2 uvs;
+			Bezier2  uvb;
+			if(GetSide(gis_UV, best, uvs, uvb))
+				npp->SetLocation(gis_UV, uvb.midpoint(t));
+			else
+				npp->SetLocation(gis_UV, uvs.midpoint(t));
+		}
+		np->SetParent(this, best);
+
+		return npp;
+	}
+	return NULL;
+}
+
+
+
 void WED_GISEdge::RebuildCache(void) const
 {
 	mCachePts.clear();

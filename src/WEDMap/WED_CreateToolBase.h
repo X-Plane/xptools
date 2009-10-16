@@ -72,7 +72,7 @@ public:
 	virtual		int		GetNthLinkTargetCtl(intptr_t id, int n) const;
 	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const;
 	virtual		void	ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt);
-	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta);
+	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_pt);
 
 	virtual	int					CreationDown(const Point2& start_pt);

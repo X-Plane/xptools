@@ -38,8 +38,13 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer);
 int		WED_CanMakeNewAirport(IResolver * inResolver);
 void	WED_DoMakeNewAirport(IResolver * inResolver);
 
-int		WED_CanMakeNewATC(IResolver * inResolver);
-void	WED_DoMakeNewATC(IResolver * inResolver);
+int		WED_CanMakeNewATCFreq(IResolver * inResolver);
+void	WED_DoMakeNewATCFreq(IResolver * inResolver);
+int		WED_CanMakeNewATCFlow(IResolver * inResolver);
+void	WED_DoMakeNewATCFlow(IResolver * inResolver);
+int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver);
+void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver);
+
 
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);

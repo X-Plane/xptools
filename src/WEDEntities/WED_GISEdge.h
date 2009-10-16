@@ -67,7 +67,8 @@ public:
 	virtual	bool				GetSide  (GISLayer_t l,int n, Segment2& s, Bezier2& b) const;	// true for bezier
 
 	virtual	bool				IsClosed(void) const;
-	virtual			void		Reverse(GISLayer_t l);
+	virtual	void				Reverse(GISLayer_t l);
+	virtual	IGISPoint *			SplitSide   (const Point2& p, double dist);
 
 private:
 

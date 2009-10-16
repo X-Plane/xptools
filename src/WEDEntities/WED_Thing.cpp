@@ -52,6 +52,7 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 	
 	viewer_id.clear();		// I am a clone.  No one is REALLY watching me.
 	
+	source_id = rhs->source_id;
 	nn = CountSources();						// But I am YET ANOTHER observer of my sources...
 	for(int n = 0; n < nn; ++n)						// go register with my parent now!
 	{
@@ -269,11 +270,16 @@ int					WED_Thing::CountViewers(void) const
 	return viewer_id.size();
 }
 
-WED_Thing *			WED_Thing::GetNthViewer(int n) const
+void WED_Thing::GetAllViewers(set<WED_Thing *>& out_viewers) const
 {
-	set<int>::iterator i = viewer_id.begin();
-	advance(i,n);
-	return SAFE_CAST(WED_Thing,FetchPeer(*i));
+	out_viewers.clear();
+	for(set<int>::iterator i = viewer_id.begin(); i != viewer_id.end(); ++i)
+	{
+		WED_Thing * v = SAFE_CAST(WED_Thing, FetchPeer(*i));
+		DebugAssert(v);
+		if(v)
+			out_viewers.insert(v);
+	}
 }
 
 
@@ -323,6 +329,26 @@ void				WED_Thing::RemoveSource(WED_Thing * src)
 	if(k == source_id.end())
 		src->RemoveViewer(GetID());
 }
+
+void	WED_Thing::ReplaceSource(WED_Thing * old, WED_Thing * rep)
+{
+	int old_id = old->GetID();
+	int new_id = rep->GetID();
+	DebugAssert(old->viewer_id.count(GetID() > 0));
+	old->RemoveViewer(GetID());
+	
+	StateChanged();
+	int subs =0;
+	for(vector<int>::iterator s = source_id.begin(); s != source_id.end(); ++s)
+	if(*s == old_id)
+	{
+		++subs;
+		*s = new_id;
+	}
+	DebugAssert(subs > 0);
+	rep->AddViewer(GetID());
+}
+
 
 int			WED_Thing::GetMyPosition(void) const
 {

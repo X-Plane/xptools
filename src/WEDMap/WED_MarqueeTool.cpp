@@ -266,7 +266,7 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 	}
 }
 
-void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta)
+void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;

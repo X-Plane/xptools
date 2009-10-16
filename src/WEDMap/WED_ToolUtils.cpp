@@ -50,6 +50,9 @@
 #include "WED_TowerViewpoint.h"
 #include "WED_Windsock.h"
 #include "WED_ResourceMgr.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCFrequency.h"
+#include "WED_ATCRunwayUse.h"
 
 using std::list;
 
@@ -187,7 +190,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 		if (obj != wrl)
 		if (obj->GetParent())
 		if (!Iterate_IsPartOfStructuredObject(obj,NULL))
-		if (!require_airport || Iterate_IsOrParentAirport(obj->GetParent(), NULL))
+		if (!require_airport || Iterate_IsOrParentClass(obj->GetParent(), (void *) WED_Airport::sClass))
 		{
 			idx = obj->GetMyPosition();
 			return obj->GetParent();
@@ -200,7 +203,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 
 	if (Iterate_IsStructuredObject(parent_of_sel, NULL))	parent_of_sel = NULL;
 
-	if (parent_of_sel && require_airport && !Iterate_IsOrParentAirport(parent_of_sel, NULL))
+	if (parent_of_sel && require_airport && !Iterate_IsOrParentClass(parent_of_sel, (void *) WED_Airport::sClass))
 		parent_of_sel = NULL;
 
 	if (parent_of_sel == NULL)
@@ -262,70 +265,111 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 	return sel->IterateSelection(Iterate_HasSelectedParent, sel);
 }
 
-int	Iterate_RequiresAirport(ISelectable * what, void * ref)
+#pragma mark -
+
+bool WED_IsFolder(WED_Thing * what)
 {
-	if (dynamic_cast<WED_AirportBeacon *>(what)) return 1;
-	if (dynamic_cast<WED_AirportBoundary *>(what)) return 1;
-	if (dynamic_cast<WED_AirportChain *>(what)) return 1;
-	if (dynamic_cast<WED_AirportNode *>(what)) return 1;
-	if (dynamic_cast<WED_AirportSign *>(what)) return 1;
-	if (dynamic_cast<WED_Helipad *>(what)) return 1;
-	if (dynamic_cast<WED_LightFixture *>(what)) return 1;
-	if (dynamic_cast<WED_RampPosition *>(what)) return 1;
-	if (dynamic_cast<WED_Runway *>(what)) return 1;
-	if (dynamic_cast<WED_RunwayNode *>(what)) return 1;
-	if (dynamic_cast<WED_Sealane *>(what)) return 1;
-	if (dynamic_cast<WED_Taxiway *>(what)) return 1;
-	if (dynamic_cast<WED_TowerViewpoint *>(what)) return 1;
-	if (dynamic_cast<WED_Windsock *>(what)) return 1;
-	return 0;
+	if(dynamic_cast<IGISComposite*>(what))					return true;
+	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
+	return false;
 }
 
-int	Iterate_ChildRequiresAirport(ISelectable * what, void * ref)
+WED_Thing *		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_class)
 {
-	if (Iterate_RequiresAirport(what, ref)) return 1;
+	ISelection * sel = WED_GetSelect(resolver);
+	vector<WED_Thing *> who;
+	sel->IterateSelection(Iterate_CollectThings, &who);
+	if(who.size() != 1) return NULL;
+	if(strcmp(who[0]->GetClass(), in_class) != 0) return NULL;
+	return who[0];
+}
+
+const char *	WED_GetParentForClass(const char * in_class)
+{
+	if(strcmp(in_class,WED_AirportBeacon::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_AirportBoundary::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_AirportChain::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_AirportNode::sClass)==0)			return WED_Airport::sClass;
+	if(strcmp(in_class,WED_AirportSign::sClass)==0)			return WED_Airport::sClass;
+	if(strcmp(in_class,WED_Helipad::sClass)==0)				return WED_Airport::sClass;
+	if(strcmp(in_class,WED_LightFixture::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_RampPosition::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_Runway::sClass)==0)				return WED_Airport::sClass;
+	if(strcmp(in_class,WED_RunwayNode::sClass)==0)			return WED_Airport::sClass;
+	if(strcmp(in_class,WED_Sealane::sClass)==0)				return WED_Airport::sClass;
+	if(strcmp(in_class,WED_Taxiway::sClass)==0)				return WED_Airport::sClass;
+	if(strcmp(in_class,WED_TowerViewpoint::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_Windsock::sClass)==0)			return WED_Airport::sClass;
+	
+	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
+	if(strcmp(in_class,WED_ATCFrequency::sClass)==0)		return WED_Airport::sClass;
+	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
+
+	return NULL;
+}
+
+#pragma mark -
+
+int	Iterate_RequiresClass(ISelectable * what, void * ref)
+{
+	WED_Persistent * t = dynamic_cast<WED_Persistent *>(what);
+	if(t == NULL) return 0;
+	
+	const char * parent_class = WED_GetParentForClass(t->GetClass());
+	if(parent_class == NULL) return 0;
+	
+	const char * query_class = (const char *) ref;
+	return strcmp(parent_class, query_class) == 0;	
+}
+
+int	Iterate_ChildRequiresClass(ISelectable * what, void * ref)
+{
+	if (Iterate_RequiresClass(what, ref)) return 1;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
 	if (o == NULL) return 0;
 	if (dynamic_cast<WED_Airport *>(what)) return 0;				// Ben says: if we are an airport, do not eval our kids - their needs are met!
 	for (int n = 0; n < o->CountChildren(); ++n)
-	if (Iterate_ChildRequiresAirport(o->GetNthChild(n), ref))
+	if (Iterate_ChildRequiresClass(o->GetNthChild(n), ref))
 		return 1;
 	return 0;
 }
 
-int	Iterate_IsAirport(ISelectable * what, void * ref)
+int	Iterate_IsClass(ISelectable * what, void * ref)
 {
-	if (dynamic_cast<WED_Airport *>(what)) return 1;
-	return 0;
+	WED_Persistent * t = dynamic_cast<WED_Persistent*>(what);
+	if(t == NULL) return 0;
+	return strcmp(t->GetClass(), (const char *) ref) == 0;
 }
 
-int	Iterate_IsOrParentAirport(ISelectable * what, void * ref)
+int	Iterate_IsOrParentClass(ISelectable * what, void * ref)
 {
 	if (what == NULL) return 0;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
 	if (o == NULL) return 0;
 	while (o)
 	{
-		if (dynamic_cast<WED_Airport *>(o) != NULL) return 1;
+		if(strcmp(o->GetClass(), (const char *) ref)==0) return 1;
 		o = o->GetParent();
 	}
 	return 0;
 }
 
-int	Iterate_IsOrChildAirport(ISelectable * what, void * ref)
+int	Iterate_IsOrChildClass(ISelectable * what, void * ref)
 {
 	if (what == NULL) return 0;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
 	if (o == NULL) return 0;
-	if (dynamic_cast<WED_Airport *>(o) != NULL) return 1;
+	if(strcmp(o->GetClass(), (const char *) ref)==0) return 1;
 
 	for (int n = 0; n < o->CountChildren(); ++n)
 	{
-		if (Iterate_IsOrChildAirport(o->GetNthChild(n), ref))
+		if (Iterate_IsOrChildClass(o->GetNthChild(n), ref))
 			return 1;
 	}
 	return 0;
 }
+
+#pragma mark -
 
 int	Iterate_IsStructuredObject(ISelectable * what, void * ref)
 {
@@ -466,6 +510,20 @@ int Iterate_CollectThings(ISelectable * what, void * ref)
 	vector<WED_Thing *> * container = (vector<WED_Thing *> *) ref;
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	if (who) container->push_back(who);
+	return 0;
+}
+
+int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
+{
+	set<string> * classes = (set<string> *) ref;
+	WED_Thing * w = dynamic_cast<WED_Thing *>(what);
+	if(w)
+	{
+		const char * p = WED_GetParentForClass(w->GetClass());
+		if(p) classes->insert(p);
+		for(int n = 0; n < w->CountChildren(); ++n)
+			Iterate_CollectRequiredParents(w->GetNthChild(n), ref);
+	}
 	return 0;
 }
 

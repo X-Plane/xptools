@@ -60,7 +60,7 @@ public:
 
 	virtual		void	ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt);
-	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta);
+	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt);
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
 

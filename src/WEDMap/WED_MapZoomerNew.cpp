@@ -102,6 +102,11 @@ double	WED_MapZoomerNew::GetPPM(void)
 	return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
 }
 
+double WED_MapZoomerNew::GetClickRadius(double p)
+{
+	return fabs(YPixelToLat(p) - YPixelToLat(0));
+}
+
 
 void	WED_MapZoomerNew::SetPixelBounds(
 					double 	inLeft,

@@ -178,7 +178,7 @@ public:
 
 	virtual	int					GetNumPoints(void ) const=0;
 //	virtual	void				DeletePoint (int n)		 =0;
-//	virtual		  IGISPoint *	SplitSide   (int n)		 =0;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
+
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
@@ -187,6 +187,11 @@ public:
 	virtual	bool				IsClosed(void) const=0;
 
 	virtual	void				Reverse(GISLayer_t l)=0;
+
+	// Split the side at this point, returning the new point.  Or return NULL if the split is 
+	// impossible/makes no sense.  Dist is a maximum distance from the point where "where" can be 
+	// that we would still split.  The split is made on the line as close to "where" as possible.
+	virtual		  IGISPoint *	SplitSide   (const Point2& where, double dist)=0;
 
 };
 

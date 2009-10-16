@@ -84,11 +84,11 @@ void	WED_Entity::CacheInval(void)
 			if (e)
 				e->CacheInval();
 		}
-		int nn = CountViewers();
-		for(int n = 0; n < nn; ++n)
+		set<WED_Thing *>	viewers;
+		GetAllViewers(viewers);
+		for(set<WED_Thing *>::iterator v=  viewers.begin(); v != viewers.end(); ++v)
 		{
-			WED_Thing * t = GetNthViewer(n);
-			WED_Entity * e = dynamic_cast<WED_Entity *>(t);
+			WED_Entity * e = dynamic_cast<WED_Entity *>(*v);
 			if(e)
 				e->CacheInval();
 		}		

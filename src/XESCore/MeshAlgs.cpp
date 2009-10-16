@@ -22,7 +22,7 @@
  *
  */
 
-#include "GISTool_Globals.h"
+//#include "GISTool_Globals.h"
 #include "MapDefs.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
@@ -1719,7 +1719,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	for (n = 0; n < temporary.size(); ++n)
 	{
-	#if DEV
+	#if DEV && 0
 		try {
 		if(outMesh.are_there_incident_constraints(temporary[n]))
 			gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(temporary[n]->point()),Point3(1,1,1)));

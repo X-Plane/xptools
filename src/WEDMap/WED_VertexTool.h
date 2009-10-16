@@ -29,6 +29,7 @@
 #include "IOperation.h"
 
 class	IGISEntity;
+class	IGISPoint;
 class	ISelection;
 
 class	WED_VertexTool : public WED_HandleToolBase, public virtual IControlHandles {
@@ -63,7 +64,7 @@ public:
 
 	virtual		void	ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle);
 	virtual		void	ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt);
-	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta);
+	virtual		void	ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt);
 
 //	virtual	int			FindProperty(const char * in_prop) { return -1; }
 //	virtual int			CountProperties(void) { return 0; }
@@ -99,6 +100,8 @@ private:
 		mutable Point2			mRotateCtr;
 		mutable Point2			mTaxiDest;
 
+		IGISPoint *				mNewSplitPoint;		// When we option-click to get a split point...this is the newly born point.
+		
 		WED_PropBoolText		mSnapToGrid;
 
 		mutable vector<IGISEntity *>	mEntityCache;

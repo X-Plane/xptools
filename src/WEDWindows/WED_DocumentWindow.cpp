@@ -288,7 +288,11 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
 
-	case wed_AddATCFreq:WED_DoMakeNewATC(mDocument); return 1;
+	case wed_AddATCFreq:WED_DoMakeNewATCFreq(mDocument); return 1;
+#if AIRPORT_ROUTING
+	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
+	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
+#endif	
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -337,7 +341,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
-	case wed_AddATCFreq:return WED_CanMakeNewATC(mDocument);
+	case wed_AddATCFreq:return WED_CanMakeNewATCFreq(mDocument);
+#if AIRPORT_ROUTING
+	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
+	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
+#endif	
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
 	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);

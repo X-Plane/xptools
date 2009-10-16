@@ -47,7 +47,7 @@ public:
 	// IGISPointSequence
 	virtual	int					GetNumPoints(void ) const;
 //	virtual	void				DeletePoint (int n)		 ;
-//	virtual		  IGISPoint *	SplitSide   (int n)		 ;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
+	virtual		  IGISPoint *	SplitSide   (const Point2& p, double dist);
 	virtual		  IGISPoint *	GetNthPoint (int n) const;
 
 	virtual	int					GetNumSides(void) const;

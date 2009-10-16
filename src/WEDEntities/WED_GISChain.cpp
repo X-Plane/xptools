@@ -134,6 +134,53 @@ void			WED_GISChain::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2
 	}
 }
 
+IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
+{
+	int s = GetNumSides();
+	int best = -1;
+	double d = dist*dist;
+	Segment2	best_p;
+	for(int n = 0; n < s; ++n)
+	{
+		Segment2 s;
+		Bezier2 b;
+		if(!GetSide(gis_Geo, n, s, b))
+		{
+			double dd = s.squared_distance_supporting_line(p);
+			if (dd < d && s.collinear_has_on(p))
+			{
+				d = dd;
+				best = n;
+				best_p = s;
+			}
+		}
+	}
+	if(best != -1)
+	{
+		WED_Thing * np = dynamic_cast<WED_Thing*>(GetNthChild(best)->Clone());
+		IGISPoint * npp = dynamic_cast<IGISPoint *>(np);		
+		Point2	bpp_proj = best_p.projection(p);
+		npp->SetLocation(gis_Geo, bpp_proj);
+		
+		if(HasLayer(gis_UV))
+		{
+			double t = sqrt(best_p.p1.squared_distance(bpp_proj)) /
+					   sqrt(best_p.squared_length());
+			Segment2 uvs;
+			Bezier2  uvb;
+			if(GetSide(gis_UV, best, uvs, uvb))
+				npp->SetLocation(gis_UV, uvb.midpoint(t));
+			else
+				npp->SetLocation(gis_UV, uvs.midpoint(t));
+		}
+		// Why wait?  Cuz...Getside on old side will USE this as soon as we are its parent!
+		np->SetParent(this, best+1);
+		
+		return npp;
+	}
+	return NULL;
+}
+
 void			WED_GISChain::Rotate			(GISLayer_t l,const Point2& ctr, double angle)
 {
 	int t = GetNumPoints();

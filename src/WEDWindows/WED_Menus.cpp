@@ -130,6 +130,10 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 static const GUI_MenuItem_t kAirportMenu[] = {
 {	"&Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
 {	"Create ATC &Frequency",	'F',	gui_ControlFlag,						0, wed_AddATCFreq },
+#if AIRPORT_ROUTING
+{	"Create Airport Flow",		0,		0,										0, wed_AddATCFlow },
+{	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
+#endif
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	NULL,						0,		0,										0, 0,				}
 };
