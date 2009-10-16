@@ -36,6 +36,7 @@
 
 	/* These are continuous data DEMs. */
 	TOKEN(dem_Elevation)			//	Height above sea level, meters from a DEM (raw elevation)
+	TOKEN(dem_Bathymetry)			// Height of water bottom, raw.
 
 	TOKEN(dem_Temperature)			//	Average Temperature Data
 	TOKEN(dem_TemperatureRange)		//	Average Temperature Range over a year Data
@@ -302,7 +303,7 @@
   * from the Olson Global Ecosystem Legend.  This is a superset of the
   * XP7 values in that a few values were missing in XP7.  Typically used
   * with dem_LandUse. */
-
+/*
 	TOKEN(lu_usgs_INTERRUPTED_AREAS)
 	TOKEN(lu_usgs_URBAN_IRREGULAR)
 	TOKEN(lu_usgs_URBAN_SQUARE)
@@ -414,6 +415,7 @@
 	TOKEN(lu_usgs_Unused98)
 	TOKEN(lu_usgs_Unused99)
 	TOKEN(lu_usgs_NO_DATA)
+*/	
 		
 	TOKEN(lu_globcover_BARE_CONSOLIDATED)
 	TOKEN(lu_globcover_BARE_ROCKS)

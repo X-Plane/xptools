@@ -640,7 +640,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	fprintf(stderr, "BuildRoadDensityDEM");
 	for (yp = 0; yp < ioTransport.mHeight; ++yp)
 	for (xp = 0; xp < ioTransport.mWidth ; ++xp)
-		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_usgs_INLAND_WATER || ioTransport(xp, yp) == lu_usgs_SEA_WATER) ? 1.0 : 0.0;
+		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_globcover_WATER) ? 1.0 : 0.0;
 
 	PolyRasterizer	rasterizer;
 	SetupWaterRasterizer(inMap, ioTransport, rasterizer);

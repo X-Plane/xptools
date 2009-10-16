@@ -265,14 +265,17 @@ static void ProjectTex(double lon, double lat, double& s, double& t, const tex_p
 
 
 
-static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
+static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem_land, const DEMGeo& dem_water)
 {
 	double lon, lat;
-	lon = doblim(CGAL::to_double(v_han->point().x()),dem.mWest ,dem.mEast );
-	lat = doblim(CGAL::to_double(v_han->point().y()),dem.mSouth,dem.mNorth);
+	lon = doblim(CGAL::to_double(v_han->point().x()),dem_land.mWest ,dem_land.mEast );
+	lat = doblim(CGAL::to_double(v_han->point().y()),dem_land.mSouth,dem_land.mNorth);
 
+	float land_ele  = dem_land.value_linear(lon, lat);
+	float water_ele = dem_water.value_linear(lon, lat);
 
-	float ret = dem.value_linear(lon, lat);
+	float ret = interp(0, 0, 50, 1, land_ele - water_ele);
+
 	v_han->info().wave_height = ret;
 
 	if (ret > 1.0)
@@ -663,7 +666,8 @@ struct	ObjPrio {
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
-			const DEMGeo&	inLanduse,
+			const DEMGeo&	inElevation,
+			const DEMGeo&	inBathymetry,			
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
 //			CDT&			inLoresMesh,
@@ -732,56 +736,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		char	prop_buf[256];
 
-	/***********************************************************************************************
-	 * PICK UP 2-D VALUES
-	 ***********************************************************************************************/
-	DEMGeo	waterType(inLanduse);
-	for (y = 0; y < waterType.mHeight;++y)
-	for (x = 0; x < waterType.mWidth; ++x)
-	{
-		if (waterType(x,y) != lu_usgs_SEA_WATER && waterType(x,y) != lu_usgs_INLAND_WATER && waterType(x,y) != lu_globcover_WATER)
-			waterType(x,y) = NO_VALUE;
-	}
-
-	{
-		DEMGeo temp(waterType);
-		for (y = 0; y < waterType.mHeight;++y)
-		for (x = 0; x < waterType.mWidth; ++x)
-		{
-			float e = temp.get_radial(x,y,2, NO_VALUE);
-			waterType(x,y) = (e == lu_usgs_SEA_WATER || e == lu_globcover_WATER) ? 1.0 : 0.0;
-
-		}
-	}
-
-	// Ben sez: this is about the minimum smeaer we can do without seeing spiky triangular marks
-	// in the water depth info...this is because we have to blend enough that a tiny triangle
-	// never goes from full to min blend fast.
-	#define SMEAR_SIZE_WATER 3
-
-	float	smear[SMEAR_SIZE_WATER*SMEAR_SIZE_WATER];
-	CalculateFilter(SMEAR_SIZE_WATER,smear,demFilter_Spread,true);
-	waterType.filter_self(SMEAR_SIZE_WATER,smear);
-	for (y = 0; y < waterType.mHeight;++y)
-	for (x = 0; x < waterType.mWidth; ++x)
-	{
-		waterType(x,y) = min(max(waterType(x,y), 0.0f), 1.0f);
-	}
-
-//	for (vert = inHiresMesh.finite_vertices_begin(); vert != inHiresMesh.finite_vertices_end(); ++vert)
-//	{
-//	 	vert->info().vege_density = inVegeDem.value_linear(vert->point().x(), vert->point().y());
-//	 	if (vert->info().vege_density > 1.0) vert->info().vege_density = 1.0;
-//	 	if (vert->info().vege_density < 0.0) vert->info().vege_density = 0.0;
-//	}
-
 	/****************************************************************
 	 * SETUP
 	 ****************************************************************/
 
 	// Andrew: change divisions to 16
-	writer1 = inFileName1 ? DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 16) : NULL;
-	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 16)) : NULL;
+	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 16) : NULL;
+	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 16)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
  	DSFGetWriterCallbacks(&cbs);
@@ -802,24 +763,24 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		double x = CGAL::to_double(fi->vertex(n)->point().x());
 		double y = CGAL::to_double(fi->vertex(n)->point().y());
 	
-		if(x < inLanduse.mWest)
-			DebugAssert(fi->vertex(n)->point().x() == inLanduse.mWest);
-		if(x > inLanduse.mEast)
-			DebugAssert(fi->vertex(n)->point().x() == inLanduse.mEast);
+		if(x < inElevation.mWest)
+			DebugAssert(fi->vertex(n)->point().x() == inElevation.mWest);
+		if(x > inElevation.mEast)
+			DebugAssert(fi->vertex(n)->point().x() == inElevation.mEast);
 
-		if(y < inLanduse.mSouth)
-			DebugAssert(fi->vertex(n)->point().y() == inLanduse.mSouth);
-		if(y > inLanduse.mNorth)
-			DebugAssert(fi->vertex(n)->point().y() == inLanduse.mNorth);
+		if(y < inElevation.mSouth)
+			DebugAssert(fi->vertex(n)->point().y() == inElevation.mSouth);
+		if(y > inElevation.mNorth)
+			DebugAssert(fi->vertex(n)->point().y() == inElevation.mNorth);
 	
-		if(fi->vertex(n)->point().y() > inLanduse.mNorth)
+		if(fi->vertex(n)->point().y() > inElevation.mNorth)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
-		if(fi->vertex(n)->point().y() < inLanduse.mSouth)
+		if(fi->vertex(n)->point().y() < inElevation.mSouth)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
 
-		if(fi->vertex(n)->point().x() > inLanduse.mEast)
+		if(fi->vertex(n)->point().x() > inElevation.mEast)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().x()));
-		if(fi->vertex(n)->point().x() < inLanduse.mWest)
+		if(fi->vertex(n)->point().x() < inElevation.mWest)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().x()));
 	}
 	#endif
@@ -829,35 +790,35 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		fi->info().flag = 0;
 
-		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(2)->point().y() >= inLanduse.mNorth)
+		if (fi->vertex(0)->point().y() >= inElevation.mNorth &&
+			fi->vertex(1)->point().y() >= inElevation.mNorth &&
+			fi->vertex(2)->point().y() >= inElevation.mNorth)
 		{
 			printf("WARNING: skipping colinear out of bounds triange.\n");
 			continue;
 		}
 
-		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(2)->point().y() <= inLanduse.mSouth)
-		{
-			printf("WARNING: skipping colinear out of bounds triange.\n");
-			continue;
-		}
-			
-
-		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
-			fi->vertex(1)->point().x() >= inLanduse.mEast &&
-			fi->vertex(2)->point().x() >= inLanduse.mEast)
+		if (fi->vertex(0)->point().y() <= inElevation.mSouth &&
+			fi->vertex(1)->point().y() <= inElevation.mSouth &&
+			fi->vertex(2)->point().y() <= inElevation.mSouth)
 		{
 			printf("WARNING: skipping colinear out of bounds triange.\n");
 			continue;
 		}
 			
 
-		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
-			fi->vertex(1)->point().x() <= inLanduse.mWest &&
-			fi->vertex(2)->point().x() <= inLanduse.mWest)
+		if (fi->vertex(0)->point().x() >= inElevation.mEast &&
+			fi->vertex(1)->point().x() >= inElevation.mEast &&
+			fi->vertex(2)->point().x() >= inElevation.mEast)
+		{
+			printf("WARNING: skipping colinear out of bounds triange.\n");
+			continue;
+		}
+			
+
+		if (fi->vertex(0)->point().x() <= inElevation.mWest &&
+			fi->vertex(1)->point().x() <= inElevation.mWest &&
+			fi->vertex(2)->point().x() <= inElevation.mWest)
 		{
 			printf("WARNING: skipping colinear out of bounds triange.\n");
 			continue;
@@ -879,8 +840,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		x = (CGAL::to_double(fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x())) / 3.0;
 		y = (CGAL::to_double(fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y())) / 3.0;
 
-		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
-		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
+		x = (x - inElevation.mWest) / (inElevation.mEast - inElevation.mWest);
+		y = (y - inElevation.mSouth) / (inElevation.mNorth - inElevation.mSouth);
 
 		x = floor(x*PATCH_DIM_HI);
 		y = floor(y*PATCH_DIM_HI);
@@ -919,27 +880,27 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if(writer1)
 	for (fi = inLoresMesh.finite_faces_begin(); fi != inLoresMesh.finite_faces_end(); ++fi)
 	{
-		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y() >= inLanduse.mNorth &&
-			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
+		if (fi->vertex(0)->point().y() >= inElevation.mNorth &&
+			fi->vertex(1)->point().y() >= inElevation.mNorth &&
+			fi->vertex(2)->point().y() >= inElevation.mNorth)			continue;
 
-		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y() <= inLanduse.mSouth &&
-			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
+		if (fi->vertex(0)->point().y() <= inElevation.mSouth &&
+			fi->vertex(1)->point().y() <= inElevation.mSouth &&
+			fi->vertex(2)->point().y() <= inElevation.mSouth)			continue;
 
-		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
-			fi->vertex(1)->point().x() >= inLanduse.mEast &&
-			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
+		if (fi->vertex(0)->point().x() >= inElevation.mEast &&
+			fi->vertex(1)->point().x() >= inElevation.mEast &&
+			fi->vertex(2)->point().x() >= inElevation.mEast)			continue;
 
-		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
-			fi->vertex(1)->point().x() <= inLanduse.mWest &&
-			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
+		if (fi->vertex(0)->point().x() <= inElevation.mWest &&
+			fi->vertex(1)->point().x() <= inElevation.mWest &&
+			fi->vertex(2)->point().x() <= inElevation.mWest)			continue;
 
 		x = (fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x()) / 3.0;
 		y = (fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y()) / 3.0;
 
-		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
-		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
+		x = (x - inElevation.mWest) / (inElevation.mEast - inElevation.mWest);
+		y = (y - inElevation.mSouth) / (inElevation.mNorth - inElevation.mSouth);
 
 		x = floor(x*PATCH_DIM_LO);
 		y = floor(y*PATCH_DIM_LO);
@@ -1081,18 +1042,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					// border but is not guaranteed to be within the DSF border once rounded.
 					// Because of this, we have to clamp our output to the double-precision bounds after conversion, since DSFLib is sensitive
 					// to out-of-boundary conditions!				
-					DebugAssert((*vert)->point().x() >= inLanduse.mWest  && (*vert)->point().x() <= inLanduse.mEast );
-					DebugAssert((*vert)->point().y() >= inLanduse.mSouth && (*vert)->point().y() <= inLanduse.mNorth);
-					coords8[0] = doblim(CGAL::to_double((*vert)->point().x()),inLanduse.mWest ,inLanduse.mEast );
-					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inLanduse.mSouth,inLanduse.mNorth);
-					DebugAssert(coords8[0] >= inLanduse.mWest  && coords8[0] <= inLanduse.mEast );
-					DebugAssert(coords8[1] >= inLanduse.mSouth && coords8[1] <= inLanduse.mNorth);
+					DebugAssert((*vert)->point().x() >= inElevation.mWest  && (*vert)->point().x() <= inElevation.mEast );
+					DebugAssert((*vert)->point().y() >= inElevation.mSouth && (*vert)->point().y() <= inElevation.mNorth);
+					coords8[0] = doblim(CGAL::to_double((*vert)->point().x()),inElevation.mWest ,inElevation.mEast );
+					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
+					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
+					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 					coords8[2] = (*vert)->info().height;
 					coords8[3] = (*vert)->info().normal[0];
 					coords8[4] =-(*vert)->info().normal[1];
 					if (is_water)
 					{
-						coords8[5] = GetWaterBlend((*vert), waterType);
+						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
 						coords8[6] = IsCoastal(inHiresMesh,*vert) ? 0.0 : 1.0;
 						DebugAssert(coords8[5] >= 0.0);
 						DebugAssert(coords8[5] <= 1.0);
@@ -1165,12 +1126,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 						for (vi = 2; vi >= 0 ; --vi)
 						{
-							DebugAssert(f->vertex(vi)->point().x() >= inLanduse.mWest  && f->vertex(vi)->point().x() <= inLanduse.mEast );
-							DebugAssert(f->vertex(vi)->point().y() >= inLanduse.mSouth && f->vertex(vi)->point().y() <= inLanduse.mNorth);
-							coords8[0] = doblim(CGAL::to_double(f->vertex(vi)->point().x()),inLanduse.mWest ,inLanduse.mEast );
-							coords8[1] = doblim(CGAL::to_double(f->vertex(vi)->point().y()),inLanduse.mSouth,inLanduse.mNorth);
-							DebugAssert(coords8[0] >= inLanduse.mWest  && coords8[0] <= inLanduse.mEast );
-							DebugAssert(coords8[1] >= inLanduse.mSouth && coords8[1] <= inLanduse.mNorth);
+							DebugAssert(f->vertex(vi)->point().x() >= inElevation.mWest  && f->vertex(vi)->point().x() <= inElevation.mEast );
+							DebugAssert(f->vertex(vi)->point().y() >= inElevation.mSouth && f->vertex(vi)->point().y() <= inElevation.mNorth);
+							coords8[0] = doblim(CGAL::to_double(f->vertex(vi)->point().x()),inElevation.mWest ,inElevation.mEast );
+							coords8[1] = doblim(CGAL::to_double(f->vertex(vi)->point().y()),inElevation.mSouth,inElevation.mNorth);
+							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
+							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 							
 							coords8[2] = f->vertex(vi)->info().height;
 							coords8[3] = f->vertex(vi)->info().normal[0];
@@ -1292,16 +1253,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(all.count(beach) != 0);
 				beachKind = all[beach];
 				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-				coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
-				coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
+				coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
+				coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
 				cbs.AddPolygonPoint_f(coords6, writer1);
 				all.erase(beach);
 			}
 			DebugAssert(all.count(*a_start) == 0);
 
 			BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
-			coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
-			coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
+			coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
+			coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
 			cbs.AddPolygonPoint_f(coords6, writer1);
 
 			cbs.EndPolygonWinding_f(writer1);
@@ -1330,8 +1291,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(linkNext.count(beach) != 0);
 				beachKind = all.begin()->second;
 				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-				coords6[0] = doblim(coords6[0],inLanduse.mWest,  inLanduse.mEast);
-				coords6[1] = doblim(coords6[1],inLanduse.mSouth, inLanduse.mNorth);
+				coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
+				coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
 				cbs.AddPolygonPoint_f(coords6, writer1);
 				all.erase(beach);
 				beach = linkNext[beach];
@@ -1414,10 +1375,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			bool	 broken = false;
 			for (polyPt = polyObj->mShape.outer_boundary().vertices_begin(); polyPt != polyObj->mShape.outer_boundary().vertices_end(); ++polyPt)
 			{
-				if (polyPt->x() < inLanduse.mWest ||
-					polyPt->x() > inLanduse.mEast ||
-					polyPt->y() < inLanduse.mSouth ||
-					polyPt->y() > inLanduse.mNorth)
+				if (polyPt->x() < inElevation.mWest ||
+					polyPt->x() > inElevation.mEast ||
+					polyPt->y() < inElevation.mSouth ||
+					polyPt->y() > inElevation.mNorth)
 				{
 					printf("Pt %lf %lf is out of DEM.\n", CGAL::to_double(polyPt->x()), CGAL::to_double(polyPt->y()));
 					broken = true;
@@ -1635,7 +1596,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			else
 				coords3[2] = (*ci)->start_junction->location.z;
 
-			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
+			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
 
 			DebugAssert(junctions.count((*ci)->start_junction));
@@ -1661,7 +1622,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				else
 					coords3[2] = shapePoint->z;
 				
-				if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
+				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
 				cbs.AddSegmentShapePoint_f(coords3, false, writer2);
@@ -1674,7 +1635,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
 			else 
 				coords3[2] = (*ci)->end_junction->location.z;
-			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
+			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
 
 			cbs.EndSegment_f(
@@ -1696,10 +1657,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if(writer1)
 	{
-		sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer1);
-		sprintf(prop_buf, "%d", (int) inLanduse.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer1);
-		sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer1);
-		sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inElevation.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inElevation.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inElevation.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inElevation.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer1);
 		cbs.AcceptProperty_f("sim/planet", "earth", writer1);
 		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer1);
 		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer1);
@@ -1707,10 +1668,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (writer2 && writer2 != writer1)
 	{
-		sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer2);
-		sprintf(prop_buf, "%d", (int) inLanduse.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer2);
-		sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer2);
-		sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inElevation.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inElevation.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inElevation.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inElevation.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer2);
 		cbs.AcceptProperty_f("sim/planet", "earth", writer2);
 		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer2);
 		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer2);

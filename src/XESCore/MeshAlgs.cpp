@@ -1858,8 +1858,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 //			e == lu_usgs_INTERRUPTED_AREAS ||
 //			e == lu_usgs_URBAN_SQUARE ||
 //			e == lu_usgs_URBAN_IRREGULAR ||
-			e == lu_usgs_INLAND_WATER ||
-			e == lu_usgs_SEA_WATER)
+			e == lu_globcover_WATER)
+//			e == lu_usgs_SEA_WATER)
 //			e == lu_usgs_DEM_NO_DATA)
 			landuse(x,y) = DEM_NO_DATA;
 	}

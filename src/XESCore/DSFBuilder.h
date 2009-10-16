@@ -38,7 +38,8 @@ extern DSFBuildPrefs_t	gDSFBuildPrefs;
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
-			const DEMGeo&	inLanduse,
+			const DEMGeo&	inElevation,
+			const DEMGeo&	inBathymetry,			
 //			const DEMGeo&	inVege,
 			CDT&			inHiresMesh,
 //			CDT&			inLowresMesh,
