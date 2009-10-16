@@ -91,7 +91,7 @@ void douglas_peuker(
 			douglas_peuker(p,stop,out,epsi_2,lock_check);
 			return;
 		}
-		double d = s.squared_distance(*p);
+		double d = s.squared_distance_supporting_line(*p);
 		if(d > max_d)
 		{
 			max_d = d;
