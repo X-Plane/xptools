@@ -197,6 +197,7 @@ struct	Segment2 {
 													p1.x_ == p2.x_ ? p1.x_ : p1.x_ * ms + p2.x_ * s,
 													p1.y_ == p2.y_ ? p1.y_ : p1.y_ * ms + p2.y_ * s); }
 	Point2	projection(const Point2& pt) const;
+	double	squared_distance_supporting_line(const Point2& p) const;		// Squared distance to our supporting line.
 	double	squared_distance(const Point2& p) const;
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
@@ -307,6 +308,7 @@ struct	Bbox2 {
 	bool		operator!=(const Bbox2& rhs) const { return p1 != rhs.p1 || p2 != rhs.p2; }
 
 	Bbox2&		operator+=(const Point2& p);
+	Bbox2&		operator+=(const Vector2& p);
 	Bbox2&		operator+=(const Bbox2& o);
 
 	double		xmin() const { return p1.x_; }
@@ -511,7 +513,7 @@ inline Point2	Segment2::projection(const Point2& pt) const
 }
 
 
-inline double	Segment2::squared_distance(const Point2& p) const
+inline double	Segment2::squared_distance_supporting_line(const Point2& p) const
 {
 	// TODO - would we get more efficiency from (1) calculating the line L that supports P and then
 	// (2) appling the line distance formula?
@@ -532,6 +534,15 @@ inline bool	Segment2::collinear_has_on(const Point2& p) const
 	if (Vector2(p1, p2).dot(Vector2(p1, p)) < 0.0) return false;
 	if (Vector2(p2, p1).dot(Vector2(p2, p)) < 0.0) return false;
 	return true;
+}
+
+inline double Segment2::squared_distance(const Point2& p) const 
+{
+	// If we are "colinear on" (that is, in between the two half planes that cover our expanse and left-right neighrborhoods
+	// then the supporting line distance is the closest and best distance.
+	// Otherwise, just take the closer of the two end points.
+	if(collinear_has_on(p)) return squared_distance_supporting_line(p);
+	else					return min(p1.squared_distance(p), p2.squared_distance(p));
 }
 
 inline bool Segment2::could_intersect(const Segment2& rhs) const
@@ -726,6 +737,16 @@ inline Bbox2& Bbox2::operator+=(const Point2& rhs)
 		p1.y_ = min(p1.y_,rhs.y_);
 		p2.x_ = max(p2.x_,rhs.x_);
 		p2.y_ = max(p2.y_,rhs.y_);
+	}
+	return *this;
+}
+
+inline Bbox2& Bbox2::operator+=(const Vector2& rhs)
+{
+	if (!is_null())
+	{
+			p1 += rhs;
+			p2 += rhs;
 	}
 	return *this;
 }
@@ -1508,7 +1529,7 @@ void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator out
 	s.p2=b.midpoint(t_end);
 	
 	Point2	x = b.midpoint(t_middle);
-	if(s.squared_distance(x) > (err*err))
+	if(s.squared_distance_supporting_line(x) > (err*err))
 	{
 		// We are definitely going to emit X.  Better try two recursions too.
 		// This will emit t_start and t_midle (since each call MUST emit a point).		
