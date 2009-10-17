@@ -34,6 +34,8 @@
 
 #if !INLINING_BW
 
+#define WORD_SIZE  (sizeof(long)*8)
+
 BWImage::BWImage() : mData(NULL), mBackup(NULL), mWidth(0), mHeight(0)
 {
 }
@@ -148,7 +150,7 @@ BWINLINE void			BWImage::RasterizeLocal(
 	{
 		int x1, x2;
 
-		int scan_offset = mWidth * y / 32;
+		int scan_offset = mWidth * y / WORD_SIZE;
 		while (rasterizer.GetRange(x1, x2))
 		{
 			if (x1 < 0) x1 = 0;
@@ -158,13 +160,13 @@ BWINLINE void			BWImage::RasterizeLocal(
 				// Start word is the first word we will
 				// write into...x_start_bit is where in the
 				// word to start filling.
-				int x_start_word = x1 / 32;
-				int x_start_bit = x1 % 32;
+				int x_start_word = x1 / WORD_SIZE;
+				int x_start_bit = x1 % WORD_SIZE;
 				// Stop word is the first word we won't totally
 				// fill.  stop_bit is the first non-touched bit
 				// in that word (0 indicates the word is not touched at all.
-				int x_stop_word = x2 / 32;
-				int x_stop_bit = x2 % 32;
+				int x_stop_word = x2 / WORD_SIZE;
+				int x_stop_bit = x2 % WORD_SIZE;
 
 				unsigned long start_mask = ~((1 << x_start_bit)-1);
 				unsigned long stop_mask = ((1 << x_stop_bit)-1);
@@ -253,7 +255,7 @@ BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 	{
 		int x1, x2;
 
-		int scan_offset = mWidth * y / 32;
+		int scan_offset = mWidth * y / WORD_SIZE;
 		while (rasterizer.GetRange(x1, x2))
 		{
 			if (x1 < 0) x1 = 0;
@@ -263,13 +265,13 @@ BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 				// Start word is the first word we will
 				// write into...x_start_bit is where in the
 				// word to start filling.
-				int x_start_word = x1 / 32;
-				int x_start_bit = x1 % 32;
+				int x_start_word = x1 / WORD_SIZE;
+				int x_start_bit = x1 % WORD_SIZE;
 				// Stop word is the first word we won't totally
 				// fill.  stop_bit is the first non-touched bit
 				// in that word (0 indicates the word is not touched at all.
-				int x_stop_word = x2 / 32;
-				int x_stop_bit = x2 % 32;
+				int x_stop_word = x2 / WORD_SIZE;
+				int x_stop_bit = x2 % WORD_SIZE;
 
 				unsigned long start_mask = ~((1 << x_start_bit)-1);
 				unsigned long stop_mask = ((1 << x_stop_bit)-1);
@@ -360,7 +362,7 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 	{
 		int x1, x2;
 
-		int scan_offset = mWidth * y / 32;
+		int scan_offset = mWidth * y / WORD_SIZE;
 		while (rasterizer.GetRange(x1, x2))
 		{
 			if (x1 < 0) x1 = 0;
@@ -370,13 +372,13 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 				// Start word is the first word we will
 				// write into...x_start_bit is where in the
 				// word to start filling.
-				int x_start_word = x1 / 32;
-				int x_start_bit = x1 % 32;
+				int x_start_word = x1 / WORD_SIZE;
+				int x_start_bit = x1 % WORD_SIZE;
 				// Stop word is the first word we won't totally
 				// fill.  stop_bit is the first non-touched bit
 				// in that word (0 indicates the word is not touched at all.
-				int x_stop_word = x2 / 32;
-				int x_stop_bit = x2 % 32;
+				int x_stop_word = x2 / WORD_SIZE;
+				int x_stop_bit = x2 % WORD_SIZE;
 
 				unsigned long start_mask = ~((1 << x_start_bit)-1);
 				unsigned long stop_mask = ((1 << x_stop_bit)-1);
@@ -423,7 +425,9 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 void BWImage::Debug()
 {
 	#if BIG
-	for (int i = 0; i < (mWidth * mHeight / 32); ++i)
+	if(WORD_SIZE != 32)	
+		assert(!"This code is not 64-bit PPC safe!");
+	for (int i = 0; i < (mWidth * mHeight / WORD_SIZE); ++i)
 	{
 		mData[i] = Endian32_Swap(mData[i]);
 	}
@@ -445,7 +449,7 @@ void BWImage::Debug()
 	while (Button()) { }
 	glPixelStorei(GL_UNPACK_LSB_FIRST, 0);
 	#if BIG
-	for (int i = 0; i < (mWidth * mHeight / 32); ++i)
+	for (int i = 0; i < (mWidth * mHeight / WORD_SIZE); ++i)
 	{
 		mData[i] = Endian32_Swap(mData[i]);
 	}

@@ -23,7 +23,7 @@
 #include "RF_Selection.h"
 #include "RF_Notify.h"
 #include "RF_Msgs.h"
-int							gSelectionMode = rf_Select_Vertex;
+int							gSelectionMode = rf_Select_Face;
 
 set<Pmwx::Face_handle>		gFaceSelection;
 set<Pmwx::Halfedge_handle>	gEdgeSelection;
