@@ -34,8 +34,6 @@
 
 #if !INLINING_BW
 
-#define WORD_SIZE  (sizeof(long)*8)
-
 BWImage::BWImage() : mData(NULL), mBackup(NULL), mWidth(0), mHeight(0)
 {
 }

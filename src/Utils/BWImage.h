@@ -55,6 +55,8 @@ struct	StRestoreChunk {
 	}
 };
 
+#define WORD_SIZE  (sizeof(long)*8)
+
 #if DEV
 #define BWINLINE
 #else
