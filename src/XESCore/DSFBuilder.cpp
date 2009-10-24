@@ -203,6 +203,7 @@ float GetParamConst(const Face_handle face, int e)
 inline bool IsCustomOverWater(int n)
 {
 	if (n == terrain_Water)	return false;
+	if (n == terrain_VisualWater)	return false;
 	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_water;
 }
 
@@ -710,7 +711,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int>::iterator 		obdef;
 		map<int, int, ObjPrio>::iterator obdef_prio;
 		set<int>::iterator				border_lu;
-		bool							is_water, is_overwater;
+		bool							is_water, is_underwater, is_overlay;
 		list<CDT::Face_handle>::iterator nf;
 
 		Pmwx::Face_iterator						pf;
@@ -728,8 +729,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		Net_ChainInfoSet::iterator 		ci;
 		vector<Point3>::iterator		shapePoint;
 
-		map<int, int, SortByLULayer>landuses;
-		map<int, int>				landuses_reversed;
+		map<int, int, SortByLULayer>landuses;			// This is a map from DSF to layer, used to start a patch and generally get organized.  Sorting is specialized to be by LU layering from config file.
+		map<int, int>				landuses_reversed;	// This is a map from DSF layer to land-use, used to write out DSF layers in order.
 		map<int, int>				objects_reversed;
 		map<int, int>	facades,	facades_reversed;
 		map<int, int, ObjPrio>		objects;
@@ -863,7 +864,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if(IsCustomOverWater(fi->info().terrain))
 		{
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
-			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_Water);
+			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_VisualWater,0));
+			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_VisualWater);
 		}
 
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
@@ -923,11 +925,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	cur_id = 0;
 	if(writer1)
-	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, ++cur_id)
+	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked)
+	if (lu_ranked->first != terrain_VisualWater)
 	{
 		lu_ranked->second = cur_id;
 		landuses_reversed[cur_id] = lu_ranked->first;
+		++cur_id;
 	}
+	
+	landuses[terrain_VisualWater] = landuses[terrain_Water];
+	
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
@@ -940,10 +947,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT LOW RES ORTHOPHOTO PATCHES
 		 ***************************************************************************************************************************************/
 
-		is_overwater = IsCustomOverWater(lu_ranked->first);
-		is_water = lu_ranked->first == terrain_Water;
-
-
+		is_underwater	= lu_ranked->first == terrain_VisualWater;
+		is_water		= lu_ranked->first == terrain_VisualWater || lu_ranked->first == terrain_Water;
+		is_overlay		= IsCustomOverWater(lu_ranked->first);
+		
 #if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
@@ -1001,13 +1008,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT HI RES BASE PATCHES
 		 ***************************************************************************************************************************************/
 		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)
-		if (sHiResLU[cur_id].count(lu_ranked->first))
+		if (sHiResLU[cur_id].count(lu_ranked->first))		
 		{
 			TriFanBuilder	fan_builder(&inHiresMesh);
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first || (IsCustomOverWater(f->info().terrain) && lu_ranked->first == terrain_Water))
+				if (f->info().terrain == lu_ranked->first || (IsCustomOverWater(f->info().terrain) && lu_ranked->first == terrain_VisualWater))
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -1018,7 +1025,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			fan_builder.CalcFans();
 
 			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 7 : (pinfo ? 7 : 5), writer1);
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, 
+									is_overlay ? (dsf_Flag_Overlay | dsf_Flag_Physical) :
+									(is_underwater ? 0 : dsf_Flag_Physical), is_water ? 7 : (pinfo ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
 			list<CDT::Vertex_handle>::iterator		vert;
 			int										primt;

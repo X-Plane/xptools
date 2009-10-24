@@ -571,6 +571,7 @@
 */
 	// Natural land uses
 	TOKEN(terrain_Water)
+	TOKEN(terrain_VisualWater)				// This is a special token to indicate visual but not physical water.
 
 	// Man made land uses....each of tehse must have a hill variant
 /*

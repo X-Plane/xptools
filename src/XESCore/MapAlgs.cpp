@@ -272,11 +272,12 @@ void	CutInside(
 			ProgressFunc		inProgress)
 {
 //	set<Halfedge_handle>	edges;
+	data_preserver_t	info;
 //	collect_edges		info;
 //	info.edges = &edges;
 //	info.use_outside = false;
 
-//	info.attach(ioMap);
+	info.attach(ioMap);
 
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
@@ -302,7 +303,7 @@ void	CutInside(
 		CGAL::insert_curve(ioMap,*i);
 	}
 */
-//	info.detach();
+	info.detach();
 
 //		set<Face_handle>	interior_region;
 
