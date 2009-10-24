@@ -144,13 +144,20 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 void MT_FinishCreate(void)
 {
 	CropMap(*the_map, sBounds[0],sBounds[1],sBounds[2],sBounds[3],false,ConsoleProgressFunc);
-//	WriteXESFile("temp.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
 
 	gNaturalTerrainIndex.clear();
 	for(int rn = 0; rn < gNaturalTerrainTable.size(); ++rn)
 	if (gNaturalTerrainIndex.count(gNaturalTerrainTable[rn].name) == 0)
 		gNaturalTerrainIndex[gNaturalTerrainTable[rn].name] = rn;
+}
+
+static void print_mesh_stats(void)
+{
+	float minv, maxv, mean, devsq;
+	int n = CalcMeshError(sMesh, sDem[dem_Elevation], minv, maxv,mean,devsq, ConsoleProgressFunc);
+
+	printf("mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 }
 
 void MT_MakeDSF(const char * dump, const char * out_dsf)
@@ -179,7 +186,9 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
-	WriteXESFile("temp3.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+	WriteXESFile("temp2.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
+
+	print_mesh_stats();
 
 	#if DEV
 	for (CDT::Finite_faces_iterator tri = sMesh.finite_faces_begin(); tri != sMesh.finite_faces_end(); ++tri)
