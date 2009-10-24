@@ -440,14 +440,22 @@ void	WED_DoClear(IResolver * resolver)
 			WED_Thing * p = (*i)->GetParent();
 			if (p)
 				chain.insert(p);
-				set<WED_Thing *> viewers;
+
+			set<WED_Thing *> viewers;
+
 			(*i)->GetAllViewers(viewers);
 			
 			chain.insert(viewers.begin(), viewers.end());
-					
+			
+			while((*i)->CountChildren())
+				(*i)->GetNthChild(0)->SetParent(NULL,0);
+									
 			(*i)->SetParent(NULL, 0);
 			(*i)->Delete();
 		}
+
+		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+			chain.erase(*i);
 
 		who.clear();
 		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
