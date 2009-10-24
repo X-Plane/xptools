@@ -82,7 +82,7 @@
 
 #define DEBUG_PRINT_CORNERS 0
 
-#define DEBUG_PRINT_WAVES 1
+#define DEBUG_PRINT_WAVES 0
 
 #define DEBUG_PRINT_TRI_PARAMS 0
 
@@ -1021,7 +1021,7 @@ put in  color enums?
 	}
 	if (status)
 	{
-		GUI_FontDraw(state, font_UI_Basic, white, mToolStatusOffset, b + 7, status);
+		GUI_FontDraw(state, font_UI_Basic, white, l + 7, b + 7, status);
 	}
 
 	{

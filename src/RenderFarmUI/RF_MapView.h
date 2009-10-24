@@ -112,7 +112,7 @@ private:
 	vector<GUI_Pane *>		mToolBarBtns;		// Tools themselves
 
 	int						mToolBtnsOffset;
-	int						mToolStatusOffset;
+//	int						mToolStatusOffset;
 
 	GLuint					mTexID;
 	GLuint					mReliefID;
