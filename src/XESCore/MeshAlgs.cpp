@@ -31,6 +31,7 @@
 #include "CompGeomUtils.h"
 #include "PolyRasterUtils.h"
 #include <CGAL/Triangulation_conformer_2.h>
+#include "MeshConformer.h"
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 #include "PerfUtils.h"
@@ -45,6 +46,8 @@
 #endif
 #define PROFILE_PERFORMANCE 1
 
+typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
+//typedef CGAL::Mesh_2::Is_locally_conforming_Gabriel<CDT>	LCP;
 
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
@@ -862,7 +865,7 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
  */
 void InsertDEMPoint(
 				const DEMGeo&			in_orig,
-					  DEMGeo&			io_used,
+					  DEMMask&			io_used,
 					  CDT&				io_mesh,
 					  int				x,
 					  int				y,
@@ -877,7 +880,7 @@ void InsertDEMPoint(
 	np->info().height = h;
 	hint = np->face();
 	
-	io_used(x,y) = h;
+	io_used.set(x,y,true);
 }
 
 
@@ -893,7 +896,7 @@ void InsertDEMPoint(
  */
 double CopyWetPoints(
 				const DEMGeo&			in_orig,
-					  DEMGeo&			io_used,
+					  DEMMask&			io_used,
 					  CDT&				io_mesh,
 					  int				in_skip,
 				const Pmwx& 			map)		// The map we get the water bodies from
@@ -974,7 +977,7 @@ void	BuildSparseWaterMesh(
  */
 void AddEdgePoints(
 			const DEMGeo& 		orig, 			// The original DEM
-			DEMGeo& 			deriv, 			// Edge points are added to this
+			DEMMask& 			deriv, 			// Edge points are added to this
 			int 				interval,		// The interval - add an edge point once every N points.
 			int					divisions,		// Number of divisions - 1 means 1 big, "2" means 4 parts, etc.
 			bool				has_border[4],	// Useful in making sure our borders match up.
@@ -1006,15 +1009,15 @@ void AddEdgePoints(
 	if(has_left || has_right)
 	for(y = 0; y < orig.mHeight; ++y)
 	{
-		if(has_left ) deriv(0			  ,y) = orig.get(0			   ,y);
-		if(has_right) deriv(deriv.mWidth-1,y) = orig.get(deriv.mWidth-1,y);
+		if(has_left ) deriv.set(0			  ,y,true);
+		if(has_right) deriv.set(deriv.mWidth-1,y,true);
 	}
 
 	if(has_bottom || has_top)
 	for(x = 0; x < orig.mWidth; ++x)
 	{
-		if(has_bottom) deriv(x,0			  ) = orig.get(x,0			    );
-		if(has_top   ) deriv(x,deriv.mHeight-1) = orig.get(x,deriv.mHeight-1);
+		if(has_bottom) deriv.set(x,0			  ,true);
+		if(has_top   ) deriv.set(x,deriv.mHeight-1,true);
 	}
 }
 
@@ -1187,6 +1190,7 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 
 bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Vertex_handle b, Point_2& candidate, float err)
 {
+	return false;
 	Point_2 pa(a->point());
 	Point_2 pb(b->point());
 	
@@ -1200,6 +1204,8 @@ bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Verte
 	if (fabs(ha - hc) > err)
 		return true;
 	
+	return false;
+	/*
 	CDT::Face_handle	f1,f2;
 	int					n1,n2;
 	if(!mesh.is_edge(a,b,f1,n1))
@@ -1222,6 +1228,7 @@ bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Verte
 	if(d < err || l < err) return false;
 
 	return (l / d) > 20.0;
+	*/
 }
 
 void	SplitConstraints(
@@ -1243,6 +1250,9 @@ void	SplitConstraints(
 		io_mesh.insert_constraint(m.first,m.second);
 		
 		vector<CDT::Vertex_handle> actual_pts;
+	
+		DebugAssert(m.first->point() != m.second->point());
+		
 		if(!collect_virtual_edge(io_mesh, m.first,m.second,actual_pts))
 		{
 			DebugAssert(!"Invalid constraint");
@@ -1551,11 +1561,29 @@ void CalculateMeshNormals(CDT& ioMesh)
                 v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
                 v1.dy *= (DEG_TO_MTR_LAT);
                 v2.dy *= (DEG_TO_MTR_LAT);
-                DebugAssert(v1.dx != 0.0 || v1.dy != 0.0 || v1.dz != 0.0);
-                DebugAssert(v2.dx != 0.0 || v2.dy != 0.0 || v2.dz != 0.0);
-                v1.normalize();
-                v2.normalize();
-                Vector3 normal(v1.cross(v2));
+				
+				Vector3 normal;
+				
+				if((v1.dx == 0.0 && v1.dy == 0.0 && v1.dz == 0.0) ||
+				   (v2.dx == 0.0 && v2.dy == 0.0 && v2.dz == 0.0))
+				{
+					normal = Vector3(0,0,1);
+				}
+				else 
+				{
+				
+					v1.normalize();
+					v2.normalize();
+					normal = v1.cross(v2);
+					if(normal.dz <= 0.0)
+					{
+						normal = Vector3(0,0,1);
+					} 
+					else
+						normal.normalize();
+
+				}
+/*
 #if DEV && 0
 				if(normal.dx == 0.0 && normal.dy == 0.0 && normal.dz == 0.0)
 				{
@@ -1575,8 +1603,8 @@ void CalculateMeshNormals(CDT& ioMesh)
 					debug_mesh_point(cgal2ben(nowi->point()),1,1,1);
 				}
 #endif				
-                DebugAssert(normal.dz > 0.0);
-                normal.normalize();
+*/				
+//                DebugAssert(normal.dz > 0.0);
  /*
 				FastKernel::Point_3	lastP(last->point().x(), last->point().y(), last->info().height);
 				FastKernel::Point_3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
@@ -1661,9 +1689,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	Assert(orig.get(0			 ,orig.mHeight-1) != DEM_NO_DATA);
 	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
 
-	DEMGeo	deriv(orig.mWidth, orig.mHeight);					// A mash-up of points we will add to the final mesh.
+	DEMMask	deriv(orig.mWidth, orig.mHeight,false);					// A mash-up of points we will add to the final mesh.
 	deriv.copy_geo_from(orig);
-	deriv = DEM_NO_DATA;
 
 	vector<LanduseConstraint_t>	coastlines_markers;
 
@@ -1705,10 +1732,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	/* TRIANGULATE CORNERS */
 	
 	CDT::Vertex_handle	corner;
-	deriv(0			   ,0			   ) = outMesh.insert(CDT::Point( orig.mWest,  orig.mSouth))->info().height = orig.get(0			,0			   );
-	deriv(0			   ,deriv.mHeight-1) = outMesh.insert(CDT::Point( orig.mWest,  orig.mNorth))->info().height = orig.get(0			,orig.mHeight-1);
-	deriv(orig.mWidth-1,0			   ) = outMesh.insert(CDT::Point( orig.mEast,  orig.mSouth))->info().height = orig.get(orig.mWidth-1,0			   );
-	deriv(orig.mWidth-1,deriv.mHeight-1) = outMesh.insert(CDT::Point( orig.mEast,  orig.mNorth))->info().height = orig.get(orig.mWidth-1,orig.mHeight-1);
+	deriv.set(0			   ,0			   ,true); outMesh.insert(CDT::Point( orig.mWest,  orig.mSouth))->info().height = orig.get(0			,0			   );
+	deriv.set(0			   ,deriv.mHeight-1,true); outMesh.insert(CDT::Point( orig.mWest,  orig.mNorth))->info().height = orig.get(0			,orig.mHeight-1);
+	deriv.set(orig.mWidth-1,0			   ,true); outMesh.insert(CDT::Point( orig.mEast,  orig.mSouth))->info().height = orig.get(orig.mWidth-1,0			   );
+	deriv.set(orig.mWidth-1,deriv.mHeight-1,true); outMesh.insert(CDT::Point( orig.mEast,  orig.mNorth))->info().height = orig.get(orig.mWidth-1,orig.mHeight-1);
 	
 //	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
 //	DoUserAlert("Finished corners");
@@ -1770,7 +1797,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
-//	CGAL::make_conforming_Delaunay_2(outMesh);					// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
+	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
 																// across inserts.  To get around this, simply note how many vertices we inserted.  Note that we are assuming
 	CDT::Vertex_iterator v1,v2,v;								// vertices to be inserted into the END of the iteration list!
 	v1 = outMesh.vertices_begin();
@@ -1778,9 +1805,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	DebugAssert(outMesh.number_of_vertices() >= n_vert);
 	std::advance(v1,n_vert);
 	
+	int n_added = outMesh.number_of_vertices() - n_vert;
+		
+	printf("Conformer built %d verts.\n", n_added);
+	
 	for(v=v1;v!=v2;++v)
 	{
 		v->info().height = orig.value_linear(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
+//		debug_mesh_point(cgal2ben(v->point()),1,1,0);
 		#if DEV
 		if(!gMatchBorders[0].vertices.empty())
 			DebugAssert(v->point().x() != orig.mWest);
@@ -2969,4 +3001,25 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 */
 		DebugAssert(circ != stop);
 	}
+}
+
+
+void hacksubdivide(CDT& io_cdt)
+{
+	vector<CDT::Point>	p;
+	for(CDT::Finite_faces_iterator f = io_cdt.finite_faces_begin(); f != io_cdt.finite_faces_end(); ++f)
+	for(int n = 0; n < 3; ++n)
+	{
+		CDT::Face_handle f1(f);
+		CDT::Face_handle f2(f1->neighbor(n));
+		
+		if(&*f1 > &*f2)
+		if(f1->is_constrained(n))
+		{
+			Point_2	p1(f1->vertex(CDT::ccw(n))->point());
+			Point_2	p2(f1->vertex(CDT::cw (n))->point());
+			p.push_back(CGAL::midpoint(p1,p2));
+		}		
+	}
+	io_cdt.insert(p.begin(), p.end());
 }

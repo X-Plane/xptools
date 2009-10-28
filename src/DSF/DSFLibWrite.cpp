@@ -152,6 +152,8 @@ public:
 	double	mSouth;
 	double	mEast;
 	double	mWest;
+	double	mElevMin;
+	double	mElevMax;
 
 	vector<string>		terrainDefs;
 	vector<string>		objectDefs;
@@ -268,7 +270,7 @@ public:
 			return lhs.path.size() > rhs.path.size(); } };
 
 
-	DSFFileWriterImp(double inWest, double inSouth, double inEast, double inNorth, int divisions);
+	DSFFileWriterImp(double inWest, double inSouth, double inEast, double inNorth, double inElevMin, double inElevMax, int divisions);
 	void WriteToFile(const char * inPath);
 
 	// DATA ACCUMULATORS
@@ -342,9 +344,9 @@ public:
 
 
 
-void *	DSFCreateWriter(double inWest, double inSouth, double inEast, double inNorth, int divisions)
+void *	DSFCreateWriter(double inWest, double inSouth, double inEast, double inNorth, double inElevMin, double inElevMax, int divisions)
 {
-	DSFFileWriterImp * imp = new DSFFileWriterImp(inWest, inSouth, inEast, inNorth, divisions);
+	DSFFileWriterImp * imp = new DSFFileWriterImp(inWest, inSouth, inEast, inNorth, inElevMin, inElevMax, divisions);
 	return imp;
 }
 
@@ -383,13 +385,15 @@ void	DSFWriteToFile(const char * inPath, void * inRef)
 	((DSFFileWriterImp *)	inRef)->WriteToFile(inPath);
 }
 
-DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast, double inNorth, int divisions)
+DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast, double inNorth, double inElevMin, double inElevMax, int divisions)
 {
 	mDivisions = divisions;
 	mNorth = inNorth;
 	mSouth = inSouth;
 	mEast = inEast;
 	mWest = inWest;
+	mElevMin = inElevMin;
+	mElevMax = inElevMax;
 
 	// BUILD VECTOR POOLS
 	DSFTuple	vecRangeMin, vecRangeMax;
@@ -1169,14 +1173,14 @@ void 	DSFFileWriterImp::BeginPatch(
 		DSFTuple	patchRangeMin, patchRangeMax;
 		patchRangeMin.push_back(REF(inRef)->mWest);
 		patchRangeMin.push_back(REF(inRef)->mSouth);
-		patchRangeMin.push_back(-32768.0);
+		patchRangeMin.push_back(REF(inRef)->mElevMin);
 		patchRangeMin.push_back(-1.0);
 		patchRangeMin.push_back(-1.0);
 		for (int i = 0; i < (inCoordDepth-5); ++i)
 			patchRangeMin.push_back(0.0);
 		patchRangeMax.push_back(REF(inRef)->mEast);
 		patchRangeMax.push_back(REF(inRef)->mNorth);
-		patchRangeMax.push_back(32767.0);
+		patchRangeMax.push_back(REF(inRef)->mElevMax);
 		patchRangeMax.push_back(1.0);
 		patchRangeMax.push_back(1.0);
 		for (int i = 0; i < (inCoordDepth-5); ++i)
@@ -1366,8 +1370,8 @@ void 	DSFFileWriterImp::BeginPolygon(
 							polyRangeMax.push_back(REF(inRef)->mEast);
 							polyRangeMin.push_back(REF(inRef)->mSouth);
 							polyRangeMax.push_back(REF(inRef)->mNorth);
-			if (inDepth > 2)polyRangeMin.push_back(-32768.0);
-			if (inDepth > 2)polyRangeMax.push_back(32767.0);
+			if (inDepth > 2)polyRangeMin.push_back(REF(inRef)->mElevMin);
+			if (inDepth > 2)polyRangeMax.push_back(REF(inRef)->mElevMax);
 
 			if (inDepth > 3)polyRangeMin.push_back(-1.0);
 			if (inDepth > 3)polyRangeMax.push_back(1.0);

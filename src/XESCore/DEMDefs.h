@@ -210,6 +210,37 @@ struct	DEMGeo {
 
 };
 
+// Same idea, except we use a bit-mask.  Use STL vector to get the bit mask.  32x memory savings compared to a DEM.
+struct	DEMMask {
+
+	DEMMask();
+	DEMMask(int w, int h, bool ini);
+	DEMMask(const DEMGeo&);
+
+	DEMMask& operator=(bool);			// Fill
+	DEMMask& operator=(const DEMGeo&);	// Copy
+	DEMMask& operator=(const DEMMask&);	// Copy
+
+	void	resize(int width, int height, bool ini);		// Resize, reset to X
+	void	copy_geo_from(const DEMGeo& rhs);
+	void	copy_geo_from(const DEMMask& rhs);
+
+//	inline bool&	operator()(int, int);
+	inline bool		operator()(int, int) const;
+	inline bool		get(int x, int y) const;									// Get value at x,y, false
+	inline void		set(int x, int y, bool v);									// Safe set - no-op if off
+
+	double	mWest;
+	double	mSouth;
+	double	mEast;
+	double	mNorth;
+
+	int		mWidth;
+	int		mHeight;
+
+	vector<bool>	mData;
+};
+
 /*************************************************************************************
  * DEMGeo - SINGLE RASTER LAYER
  *************************************************************************************/
@@ -914,6 +945,36 @@ inline float	DEMGeo::gradient_y_bilinear(float x, float y) const
 
 	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;
 }
+
+// STL doesn't do this - bvector is optimized!
+/*
+inline bool&	DEMMask::operator()(int x, int y)
+{
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight)
+		Assert(!"ERROR: ASSIGN OUTSIDE BOUNDS!");
+	return mData[x + y * mWidth];
+}
+*/
+
+inline bool	DEMMask::operator()(int x, int y) const
+{
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
+	return mData[x + y * mWidth];
+}
+
+inline bool	DEMMask::get(int x, int y) const
+{
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
+	return mData[x + y * mWidth];
+}
+
+inline void	DEMMask::set(int x, int y, bool v)
+{
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return;
+	mData[x + y * mWidth] = v;
+}
+
+
 
 
 #endif

@@ -60,7 +60,7 @@ bool ENV2Overlay(const char * inFileName, const char * inDSF)
 	lon_max = ceil (lon_max);
 	lat_max = ceil (lat_max);
 
-	writer = DSFCreateWriter(lon_min, lat_min, lon_max, lat_max, divisions);
+	writer = DSFCreateWriter(lon_min, lat_min, lon_max, lat_max, -32768.0, 32767.0, divisions);
 	DSFGetWriterCallbacks(&cbs);
 
 

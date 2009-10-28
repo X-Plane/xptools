@@ -1,6 +1,17 @@
 MeshTool Instructions and Release Notes
 
 Version History
+		Bug fixes:
+			= custom orthophotos crossing the border of the tile are not lost.
+			- fixed creases in orthophotos
+			- "wet" orthophotos act dry but have water under them
+		Mesh stats added to output.
+		Vertical accuracy improved - if your mesh has a narrow vertical span (and
+			most do) MeshTool will use more bits of vertical precision toward accuracy
+			by scaling down the DSF vertical range.  You should get about 15 bits of
+			vertical accuracy in your span, which will provide 0.25 m accuracy for
+			highly mountainous range and much higher for flat planes.
+		QMID_PATH added to make QMID texture management simpler.
 	7/17/09	  2.0 Beta 2
 		Bug fix: shape files that create rings of water will not remove the
 		orthophotos behind them "inside" the rings island land area.
@@ -20,8 +31,6 @@ Version 1.1 Changes
 	- Improved command syntax
 	- Dump directory is made automatically.
 
-TODO - doc this more
-
 -------------------------------------------------------------------------------
 USAGE
 -------------------------------------------------------------------------------
@@ -31,6 +40,9 @@ MeshTool <script file> <climate file> <DEM file> <dump directory> <output file>
 MeshTool converts a polygon script, climate digest and DEM folder into a base
 DSF mesh.  It supports customizing coastlines via vector polygon data,
 burning in airporst, and adding custom orthophotos.
+
+IMPORTANT: MeshTool must be run with the current directory set to the directory
+that contains the project files and config folders!
 
 -------------------------------------------------------------------------------
 DEM FILE FORMAT
@@ -237,6 +249,14 @@ orthophotos cut into QMID tiles.
 Given a QMID (quad-mesh identifier), this command places an orthophoto whose
 .ter file is <qmid>.ter at the location specified by the qmid.  If  a .ter 
 file does not exist, a .ter file is created for your convenience.
+
+QMID_PATH <path>
+
+Normally MeshTool locates files via relative paths in its working directory.
+But in the case of QMIDs, the file name is the QMID ID.  This routine
+specifies a path to prepend to QMIDs to form file names.  All QMID statements
+following a QMID_PATH are affected.  The path should end in a trailing slash.
+This directory will be used to build .ter files and locate .dds files.
 
 GENERATE_DDS <n>
 

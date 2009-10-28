@@ -741,9 +741,25 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * SETUP
 	 ****************************************************************/
 
+	double hmin = 9.9e9, hmax = -9.9e9;
+	for(vert = inHiresMesh.finite_vertices_begin(); vert != inHiresMesh.finite_vertices_end(); ++vert)
+	{
+		hmin = min(hmin, vert->info().height);
+		hmax = max(hmax, vert->info().height);
+	}
+	int emin = floor(hmin);
+	int emax = ceil(hmax);
+	int erange = emax - emin;
+	int erange2 = 1;
+	while(erange2 <= erange) erange2 *= 2;
+	erange2--;
+	int extra = erange2 - erange;
+	int use_min = emin - extra/2;
+	int use_max = use_min + erange2;
+	printf("Real span: %lf to %lf.  Using: %d to %d\n", hmin, hmax, use_min, use_max);
 	// Andrew: change divisions to 16
-	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 16) : NULL;
-	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 16)) : NULL;
+	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, use_min, use_max, 16) : NULL;
+	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth,use_min, use_max, 16)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
  	DSFGetWriterCallbacks(&cbs);

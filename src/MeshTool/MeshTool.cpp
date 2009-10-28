@@ -340,6 +340,10 @@ int	main(int argc, char * argv[])
 				MT_NetEnd();
 			}
 
+			if(sscanf(buf,"QMID_PATH %s",cus_ter)==1)
+			{
+				MT_QMID_Prefix(cus_ter);
+			}
 			if(sscanf(buf,"QMID %d %s",&use_wat,cus_ter)==2)
 			{
 				MT_QMID(cus_ter, use_wat);

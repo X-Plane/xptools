@@ -73,4 +73,6 @@ void MarchHeightStart(CDT& inMesh, const CDT::Point& inLoc, CDT_MarchOverTerrain
 // March to a new point.  Fills out intermediates with at least two points plus any intermediates.
 void MarchHeightGo   (CDT& inMesh, const CDT::Point& inLoc, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates);
 
+void hacksubdivide(CDT& io_cdt);
+
 #endif

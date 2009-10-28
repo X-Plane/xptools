@@ -32,7 +32,7 @@
 
 static		 CDT *		sCurrentMesh = NULL;
 static const DEMGeo *	sCurrentDEM = NULL;
-static		 DEMGeo *	sUsedDEM = NULL;
+static		 DEMMask *	sUsedDEM = NULL;
 
 static FaceQueue	sBestChoices;
 
@@ -85,7 +85,7 @@ bool	InitOneTri(CDT::Face_handle face)
 
 inline float ScanlineMaxError(
 					const DEMGeo *	inDEMSrc,
-					const DEMGeo *	inDEMUsed,
+					const DEMMask *	inDEMUsed,
 					int				y,
 					double			x1,
 					double			x2,
@@ -97,7 +97,7 @@ inline float ScanlineMaxError(
 					double			c)
 {
 	float * row = inDEMSrc->mData + y * inDEMSrc->mWidth;
-	float * used = inDEMUsed->mData + y * inDEMUsed->mWidth;
+	vector<bool>::const_iterator used = inDEMUsed->mData.begin() + y * inDEMUsed->mWidth;
 //	DebugAssert(x1 < x2);
 	DebugAssert(y >= 0);
 	DebugAssert(y < inDEMSrc->mHeight);
@@ -115,7 +115,7 @@ inline float ScanlineMaxError(
 	{
 //		gMeshPoints.push_back(pair<Point2, Point3>(Point2(inDEM->x_to_lon(x), inDEM->y_to_lat(y)), Point3(0, 1, 0.5)));
 		float want = *row;
-		if (want != DEM_NO_DATA && (*used) == DEM_NO_DATA)
+		if (want != DEM_NO_DATA && (*used) == false)
 		{
 			float got = a * x + partial;
 			float diff = want - got;
@@ -287,7 +287,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 }
 
 // Init the whole mesh - all tris, calc errs, queue
-void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMGeo& inUsed, double err_cutoff, double size_lim)
+void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMMask& inUsed, double err_cutoff, double size_lim)
 {
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
@@ -317,7 +317,7 @@ void	DoneMesh(void)
 	sCurrentMesh = NULL;
 }
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
 	fprintf(stderr,"Building Mesh %lf %lf\n", err_lim, size_lim);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
@@ -352,12 +352,12 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double e
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 		#if DEV
 		
-		double hh = ioUsed.get(the_face->info().insert_x, the_face->info().insert_y);
-		DebugAssert(hh == DEM_NO_DATA);
+		bool hh = ioUsed.get(the_face->info().insert_x, the_face->info().insert_y);
+		DebugAssert(!hh);
 		#endif
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
 		DebugAssert(h != DEM_NO_DATA);
-		ioUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
+		ioUsed.set(the_face->info().insert_x, the_face->info().insert_y,true);
 //		inAvail(the_face->info().insert_x, the_face->info().insert_y) = DEM_NO_DATA;
 
 /*

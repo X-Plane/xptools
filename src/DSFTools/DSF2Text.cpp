@@ -292,7 +292,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 
 	printf("Got dimension properties, establishing file writer...\n");
 
-	writer = DSFCreateWriter(west, south, east, north, divisions);
+	writer = DSFCreateWriter(west, south, east, north, -32768.0, 32767.0, divisions);
 	DSFGetWriterCallbacks(&cbs);
 
 	for (int p = 0; p < properties.size(); ++p)

@@ -51,7 +51,7 @@ static CDT					sMesh;
 static AptVector			sApts;
 static AptIndex				sAptIndex;
 static double				sBounds[4];
-
+static string				g_qmid_prefix;
 
 static int					sMakeDDS = 0;
 
@@ -637,6 +637,11 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 	}
 }
 
+void MT_QMID_Prefix(const char * prefix)
+{
+	g_qmid_prefix = prefix;
+}
+
 void MT_QMID(const char * id, int back_with_water)
 {
 	double lon[4] = { -180.0, 300.0, 300.0, -180.0 };
@@ -649,7 +654,7 @@ void MT_QMID(const char * id, int back_with_water)
 		qmid_recurse((*i++) - '0',lon,lat);
 
 	char fname[1024];
-	sprintf(fname,"%s.ter",id);
+	sprintf(fname,"%s%s.ter",g_qmid_prefix.c_str(),id);
 
 	printf("QMID: %s will go from: %lf,%lf to %lf,%lf\n",
 		id,lon[0],lat[0],lon[2],lat[2]);
@@ -660,19 +665,19 @@ void MT_QMID(const char * id, int back_with_water)
 
 	int isize = 1024;
 
-	sprintf(fname,"%s.dds",id);
+	sprintf(fname,"%s%s.dds",g_qmid_prefix.c_str(), id);
 	if(!FILE_exists(fname))
 	{
 		if(sMakeDDS)
 		{
-			sprintf(fname,"%sSu.bmp",id);
+			sprintf(fname,"%s%sSu.bmp",g_qmid_prefix.c_str(),id);
 			ImageInfo rgb;
 			if(!CreateBitmapFromFile(fname,&rgb))
 			{
 				isize = max(rgb.width,rgb.height);
 				if(!ConvertBitmapToAlpha(&rgb,false))
 				{
-					sprintf(fname,"%sBl.bmp",id);
+					sprintf(fname,"%s%sBl.bmp",g_qmid_prefix.c_str(),id);
 					ImageInfo alpha;
 					if(!CreateBitmapFromFile(fname,&alpha))
 					{
@@ -685,7 +690,7 @@ void MT_QMID(const char * id, int back_with_water)
 						DestroyBitmap(&alpha);
 					}
 
-					sprintf(fname,"%s.dds",id);
+					sprintf(fname,"%s%s.dds",g_qmid_prefix.c_str(),id);
 					WriteBitmapToDDS(rgb, 5, fname);
 				}
 
@@ -699,16 +704,16 @@ void MT_QMID(const char * id, int back_with_water)
 		DestroyBitmap(&comp);
 	}
 
-	sprintf(fname,"%s_LIT.dds",id);
+	sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
 	if(FILE_exists(fname))
 		want_lite=true;
 	else
 	{
-		sprintf(fname,"%sLm.bmp",id);
+		sprintf(fname,"%s%sLm.bmp",g_qmid_prefix.c_str(),id);
 		ImageInfo lit;
 		if(!CreateBitmapFromFile(fname,&lit))
 		{
-			sprintf(fname,"%s_LIT.dds",id);
+			sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
 			WriteBitmapToDDS(lit,1,fname);
 			DestroyBitmap(&lit);
 			want_lite=true;
@@ -717,7 +722,7 @@ void MT_QMID(const char * id, int back_with_water)
 
 	int meters= LonLatDistMeters(lon[0],lat[0],lon[2],lat[2]);
 
-	sprintf(fname,"%s.ter",id);
+	sprintf(fname,"%s%s.ter",g_qmid_prefix.c_str(),id);
 	if(!FILE_exists(fname))
 	{
 		FILE * fi = fopen(fname,"w");

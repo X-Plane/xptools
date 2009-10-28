@@ -940,3 +940,74 @@ float	DEMGeo_LocalMinMaxWithCache(
 	return maxh - minh;
 }
 
+DEMMask::DEMMask() :
+	mWest(-180), mEast(180), mSouth(-90), mNorth(90),
+	mWidth(0),mHeight(0)
+{
+}
+
+DEMMask::DEMMask(int w, int h, bool ini) :
+	mWest(-180), mEast(180), mSouth(-90), mNorth(90),
+	mWidth(w),mHeight(h)
+{
+	mData.assign(mWidth * mHeight, ini);
+}
+
+DEMMask::DEMMask(const DEMGeo& rhs) : mWidth(rhs.mWidth), mHeight(rhs.mHeight),
+	mNorth(rhs.mNorth), mSouth(rhs.mSouth), mEast(rhs.mEast), mWest(rhs.mWest)
+{
+	mData.resize(mWidth * mHeight);
+	for(int y = 0; y < mHeight; ++y)
+	for(int x = 0; x < mWidth; ++x)
+		mData[y * mWidth + x] = (rhs.mData[y * mWidth + x] != DEM_NO_DATA);
+}
+
+DEMMask& DEMMask::operator=(bool x)
+{
+	mData.assign(mWidth * mHeight, x);
+	return *this;
+}
+
+DEMMask& DEMMask::operator=(const DEMGeo& rhs)
+{
+	copy_geo_from(rhs);
+	mWidth = rhs.mWidth;
+	mHeight = rhs.mHeight;
+	mData.resize(mWidth * mHeight);
+	for(int y = 0; y < mHeight; ++y)
+	for(int x = 0; x < mWidth; ++x)
+		mData[y * mWidth + x] = (rhs.mData[y * mWidth + x] != DEM_NO_DATA);
+	return *this;
+}
+
+DEMMask& DEMMask::operator=(const DEMMask& x)
+{
+	copy_geo_from(x);
+	mWidth = x.mWidth;
+	mHeight = x.mHeight;
+	mData = x.mData;
+	return *this;
+}
+
+void	DEMMask::resize(int width, int height, bool ini)
+{
+	mWidth = width;
+	mHeight = height;
+	mData.assign(mWidth * mHeight, ini);
+}
+
+void	DEMMask::copy_geo_from(const DEMGeo& rhs)
+{
+	mNorth = rhs.mNorth;
+	mSouth = rhs.mSouth;
+	mEast = rhs.mEast;
+	mWest = rhs.mWest;
+}
+
+void	DEMMask::copy_geo_from(const DEMMask& rhs)
+{
+	mNorth = rhs.mNorth;
+	mSouth = rhs.mSouth;
+	mEast = rhs.mEast;
+	mWest = rhs.mWest;
+}

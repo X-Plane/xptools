@@ -27,8 +27,9 @@
 #include "ProgressUtils.h"
 class CDT;
 struct DEMGeo;
+struct DEMMask;
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMGeo& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
 
 #endif /* GREEDYMESH_H */
 

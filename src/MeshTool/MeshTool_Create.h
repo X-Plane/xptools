@@ -73,5 +73,6 @@ void MT_OrthoPhoto(
 
 void MT_GeoTiff(const char * fname, int back_with_water);
 void MT_QMID(const char * id, int back_with_water);
+void MT_QMID_Prefix(const char * prefix);
 
 #endif /* MeshTool_Create_H */
