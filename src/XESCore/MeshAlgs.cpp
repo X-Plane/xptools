@@ -130,6 +130,8 @@ inline bool collinear_he(Halfedge_handle he1, Halfedge_handle he2)
 
 static	void	SlightClampToDEM(Point_2& ioPoint, const DEMGeo& ioDEM);
 
+bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b, vector<CDT::Vertex_handle>& out_pts);
+
 inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Face_handle& h, int& vnum)
 {
 	if (ioMesh.is_edge(a, b, h, vnum))
@@ -137,6 +139,21 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
 		return true;
 	}
+
+	vector<CDT::Vertex_handle>	pts;
+	if(!collect_virtual_edge(ioMesh, a,b,pts))
+		AssertPrintf("Failed to collect edge.\n");
+
+	Assert(pts.size() > 1);
+	
+	if (ioMesh.is_edge(pts[0],pts[1], h, vnum))
+	{
+		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
+		return true;
+	}
+	
+	Assert(!"Failed persistent find edge.");
+	return false;
 
 	Vector_2	along(a->point(), b->point());
 
@@ -863,7 +880,7 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
  * InsertDEMPoint
  *
  */
-void InsertDEMPoint(
+CDT::Vertex_handle InsertDEMPoint(
 				const DEMGeo&			in_orig,
 					  DEMMask&			io_used,
 					  CDT&				io_mesh,
@@ -881,8 +898,29 @@ void InsertDEMPoint(
 	hint = np->face();
 	
 	io_used.set(x,y,true);
+	
+	return np;
 }
 
+CDT::Vertex_handle InsertAnyPoint(
+			const DEMGeo&			in_orig,
+			CDT&					io_mesh,
+			const Point_2&			p,
+			CDT::Face_handle&		hint)
+{
+	float e;
+	e = in_orig.value_linear(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
+	if (e == DEM_NO_DATA)
+		e = in_orig.xy_nearest(CGAL::to_double(p.x()), CGAL::to_double(p.y()));
+
+	DebugAssert(e != DEM_NO_DATA);
+
+	CDT::Vertex_handle v = io_mesh.insert(p, hint);
+	hint = v->face();
+	v->info().height = e;
+	
+	return v;
+}
 
 
 /*
@@ -1167,7 +1205,8 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 			Point_2 pc = circ->point();
 			
 			if(CGAL::collinear(pa,pc,pb) &&
-				CGAL::collinear_are_ordered_along_line(pa,pc,pb))
+//				CGAL::collinear_are_ordered_along_line(pa,pc,pb) &&
+				CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))
 			{
 				n = circ;
 				break;
@@ -1257,18 +1296,16 @@ void	SplitConstraints(
 		{
 			DebugAssert(!"Invalid constraint");
 		}
+		
+		CDT::Face_handle hint;
+		
 		for(int n = 1; n < actual_pts.size(); ++n)
 		{
 			Point_2 candidate;
 			if (needs_split(io_mesh, elev, actual_pts[n-1], actual_pts[n], candidate, max_err))
 			{
-				CDT::Vertex_handle v = io_mesh.insert(candidate);
-				float e1 = elev.value_linear(CGAL::to_double(candidate.x()), CGAL::to_double(candidate.y()));
-				if (e1 == DEM_NO_DATA)					e1 = elev.xy_nearest  (CGAL::to_double(candidate.x()), CGAL::to_double(candidate.y()));
-				DebugAssert(e1 != DEM_NO_DATA);
-				v->info().height = e1;
-				
-//				debug_mesh_point(cgal2ben(candidate), 1,0,0);
+				CDT::Vertex_handle v =  InsertAnyPoint(elev, io_mesh, candidate, hint);
+//				debug_mesh_point(cgal2ben(candidate), 1,1,0);
 				++total;
 				queue.push_back(ConstraintMarker_t(actual_pts[n-1], v));
 				queue.push_back(ConstraintMarker_t(v, actual_pts[n]));
@@ -1350,27 +1387,14 @@ void	AddWaterMeshPoints(
 //					if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA)
 //						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY.  LOC=%lf,%lf->%lf,%lf\n",pts[n-1].x,pts[n-1].y,pts[n].x,pts[n].y);
 //				}
-				if (e1 == DEM_NO_DATA)					e1 = master.value_linear(CGAL::to_double(pts[n-1].x()), CGAL::to_double(pts[n-1].y()));
-				if (e2 == DEM_NO_DATA)					e2 = master.value_linear(CGAL::to_double(pts[n].x()), CGAL::to_double(pts[n].y()));
-				if (e1 == DEM_NO_DATA)					e1 = master.xy_nearest(CGAL::to_double(pts[n-1].x()), CGAL::to_double(pts[n-1].y()));
-				if (e2 == DEM_NO_DATA)					e2 = master.xy_nearest(CGAL::to_double(pts[n].x()), CGAL::to_double(pts[n].y()));
-//				slave.zap_linear(pts[n-1].x, pts[n-1].y);
-//				slave.zap_linear(pts[n].x, pts[n].y);
-
-				if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA)
-					AssertPrintf("ERROR: missing elevation data for constraint.\n");
 //				cout << "constraint: " << pts[n-1] << " to " << pts[n] << "\n";				
 //				cout << "face 1: \n";				
 //				dump_ccb(f1);
 //				cout << "face 2: \n";
 //				dump_ccb(f2);
 //				
-				v1 = outMesh.insert(pts[n-1], locale);
-				v1->info().height = e1;
-				locale = v1->face();
-				v2 = outMesh.insert(pts[n], locale);
-				v2->info().height = e2;
-				locale = v2->face();
+				v1 = InsertAnyPoint(master, outMesh, pts[n-1], locale);
+				v2 = InsertAnyPoint(master, outMesh, pts[n  ], locale);
 
 				outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
 			}
@@ -1525,6 +1549,48 @@ void	AddBulkPointsToMesh(
 	}
 	printf("Inserted %d points.\n", total);
 	if (inFunc) inFunc(1, 3, "Building Triangle Mesh", 1.0);
+}
+
+Vector3 CalculateMeshNormal(CDT::Face_handle f)
+{
+	Point3	p1(CGAL::to_double(f->vertex(0)->point().x()), CGAL::to_double(f->vertex(0)->point().y()), f->vertex(0)->info().height);
+	Point3	p2(CGAL::to_double(f->vertex(1)->point().x()), CGAL::to_double(f->vertex(1)->point().y()), f->vertex(1)->info().height);
+	Point3	p3(CGAL::to_double(f->vertex(2)->point().x()), CGAL::to_double(f->vertex(2)->point().y()), f->vertex(2)->info().height);
+
+	Vector3 v1(p1,p2);
+	Vector3 v2(p1,p3);
+	v1.dx *= (DEG_TO_MTR_LAT * cos(p1.y * DEG_TO_RAD));
+	v2.dx *= (DEG_TO_MTR_LAT * cos(p1.y * DEG_TO_RAD));
+	v1.dy *= (DEG_TO_MTR_LAT);
+	v2.dy *= (DEG_TO_MTR_LAT);
+				
+	if((v1.dx == 0.0 && v1.dy == 0.0 && v1.dz == 0.0) ||
+	   (v2.dx == 0.0 && v2.dy == 0.0 && v2.dz == 0.0))
+	{
+		return Vector3(0,0,1);
+	}
+	else 
+	{
+	
+		v1.normalize();
+		v2.normalize();
+		Vector3 normal(v1.cross(v2));
+		if(normal.dz <= 0.0)
+		{
+			return Vector3(0,0,1);
+		} 
+		else {
+			normal.normalize();
+			return normal;
+		}
+	}
+}
+
+bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
+{
+	if(io_mesh.is_infinite(f)) return false;
+	Vector3 n = CalculateMeshNormal(f);
+	return n.dz < 0.7;
 }
 
 /*
@@ -1731,12 +1797,12 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE CORNERS */
 	
-	CDT::Vertex_handle	corner;
-	deriv.set(0			   ,0			   ,true); outMesh.insert(CDT::Point( orig.mWest,  orig.mSouth))->info().height = orig.get(0			,0			   );
-	deriv.set(0			   ,deriv.mHeight-1,true); outMesh.insert(CDT::Point( orig.mWest,  orig.mNorth))->info().height = orig.get(0			,orig.mHeight-1);
-	deriv.set(orig.mWidth-1,0			   ,true); outMesh.insert(CDT::Point( orig.mEast,  orig.mSouth))->info().height = orig.get(orig.mWidth-1,0			   );
-	deriv.set(orig.mWidth-1,deriv.mHeight-1,true); outMesh.insert(CDT::Point( orig.mEast,  orig.mNorth))->info().height = orig.get(orig.mWidth-1,orig.mHeight-1);
-	
+	CDT::Face_handle hint;
+	InsertDEMPoint(orig, deriv, outMesh, 0, 0, hint);
+	InsertDEMPoint(orig, deriv, outMesh, orig.mWidth-1, 0, hint);
+	InsertDEMPoint(orig, deriv, outMesh, orig.mWidth-1, orig.mHeight-1, hint);
+	InsertDEMPoint(orig, deriv, outMesh, 0, orig.mHeight-1, hint);
+
 //	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
 //	DoUserAlert("Finished corners");
 	
@@ -1788,13 +1854,32 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 //	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
 //	DoUserAlert("Split Contraints");
 
+	set<Point_2> splits_needed;
 
-
-
-
-
-
-
+	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
+	{
+		if(tri_is_cliff(outMesh, f))
+		{
+			if(!tri_is_cliff(outMesh, f->neighbor(0)) ||
+			   !tri_is_cliff(outMesh, f->neighbor(1)) ||
+			   !tri_is_cliff(outMesh, f->neighbor(2)))
+			{
+				CDT::Triangle tr(outMesh.triangle(f));
+//				splits_needed.insert(CGAL::centroid(tr));
+				splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
+				splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
+				splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
+			}
+		}
+	}
+	
+	printf("Need %d splits.\n", splits_needed.size());
+	hint = CDT::Face_handle();
+	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
+	{
+		InsertAnyPoint(orig, outMesh, *n, hint);
+//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
+	}
 
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
 	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
@@ -1824,7 +1909,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 			DebugAssert(v->point().y() != orig.mNorth);
 		#endif	
 	}
-
+	
 	/*********************************************************************************************************************
 	 * LAND USE CALC (A LITTLE BIT)
 	 *********************************************************************************************************************/
@@ -2361,6 +2446,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 					{
 						tri->info().terrain = *blayer;
 						need_optimize = true;
+//						debug_mesh_point(cgal2ben(CGAL::centroid(ioMesh.triangle(tri))),1,0,1);
 					}
 				}
 			}
