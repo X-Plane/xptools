@@ -1202,16 +1202,18 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 		circ = stop = s->incident_vertices();
 		
 		do {
-			Point_2 pc = circ->point();
-			
-			if(CGAL::collinear(pa,pc,pb) &&
-//				CGAL::collinear_are_ordered_along_line(pa,pc,pb) &&
-				CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))
+			if(!mesh.is_infinite(circ))
 			{
-				n = circ;
-				break;
+				Point_2 pc = circ->point();
+				
+				if(CGAL::collinear(pa,pc,pb) &&
+	//				CGAL::collinear_are_ordered_along_line(pa,pc,pb) &&
+					CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))
+				{
+					n = circ;
+					break;
+				}
 			}
-			
 		} while(++circ != stop);
 		
 		if(n == CDT::Vertex_handle())
