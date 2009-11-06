@@ -94,6 +94,12 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 
 	{
 		ReadXESFile(xes, NULL, NULL, &sDem, NULL, ConsoleProgressFunc);
+		DEMGeo& lu(sDem[dem_LandUse]);
+		for(int y = 0; y < lu.mHeight; ++y)
+		for(int x = 0; x < lu.mWidth ; ++x)
+			if (lu.get(x,y) == lu_usgs_INLAND_WATER ||
+				lu.get(x,y) == lu_usgs_SEA_WATER)
+			lu(x,y) = lu_globcover_WATER;
 	}
 	MemFile_Close(xes);
 	
@@ -143,6 +149,8 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 
 void MT_FinishCreate(void)
 {
+	CheckRuleUsage();
+	
 	CropMap(*the_map, sBounds[0],sBounds[1],sBounds[2],sBounds[3],false,ConsoleProgressFunc);
 
 
@@ -624,16 +632,19 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 	{
 
 		FILE * fi = fopen(tname,"w");
-		fprintf(fi,
-			"A\n"
-			"800\n"
-			"TERRAIN\n\n"
-			"BASE_TEX_NOWRAP %s\n",no_path(dname));
-//		if(want_lite)
-//			fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
-		fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
+		if(fi)
+		{
+			fprintf(fi,
+				"A\n"
+				"800\n"
+				"TERRAIN\n\n"
+				"BASE_TEX_NOWRAP %s\n",no_path(dname));
+	//		if(want_lite)
+	//			fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
+			fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
 
-		fclose(fi);
+			fclose(fi);
+		}
 	}
 }
 
@@ -726,16 +737,19 @@ void MT_QMID(const char * id, int back_with_water)
 	if(!FILE_exists(fname))
 	{
 		FILE * fi = fopen(fname,"w");
-		fprintf(fi,
-			"A\n"
-			"800\n"
-			"TERRAIN\n\n"
-			"BASE_TEX_NOWRAP %s.dds\n",id);
-		if(want_lite)
-			fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
-		fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
+		if(fi)
+		{
+			fprintf(fi,
+				"A\n"
+				"800\n"
+				"TERRAIN\n\n"
+				"BASE_TEX_NOWRAP %s.dds\n",id);
+			if(want_lite)
+				fprintf(fi,"LIT_TEX_NOWRAP %s_LIT.dds\n",id);
+			fprintf(fi,"LOAD_CENTER %lf %lf %d %d\n\n",0.5 * (lat[0] + lat[2]), 0.5 * (lon[0] + lon[2]), meters, isize);
 
-		fclose(fi);
+			fclose(fi);
+		}
 	}
 
 
