@@ -195,6 +195,42 @@ static int DoInstantiateForests(const vector<const char *>& args)
 	return 0;
 }
 
+
+
+
+
+
+static int DoInstantiateObjsForests(const vector<const char *>& args)
+{
+	if (gVerbose)	printf("Instantiating objects...\n");
+	vector<PreinsetFace>	insets;
+
+	set<int>				the_types;
+	GetObjTerrainTypes		(the_types);
+	GetAllForestLUs			(the_types);
+
+	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+
+	{
+		StElapsedTime	time_inset("insets");
+		GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
+	}
+	
+	{
+		StElapsedTime	time_gt_poly("Place objs");
+		InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
+	}
+	DumpPlacementCounts();
+	
+	{
+		GenerateForests(gMap, insets, gTriangulationHi, gProgress);
+	}
+	
+	return 0;
+
+}
+
+
 static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
@@ -247,6 +283,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
 { "-forests", 		0, 0, DoInstantiateForests, "Build 3-d Forests.",	 		  "" },
+{ "-instobjsforests",0, 0, DoInstantiateObjsForests, "Instantiate Objects And Forests.", 			  "" },
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },
