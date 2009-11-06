@@ -27,6 +27,7 @@
 #include "DEMTables.h"
 #include "GUI_Fonts.h"
 #include "AssertUtils.h"
+#include "Forests.h"
 #include "RF_MapZoomer.h"
 #include "RF_MapTool.h"
 #include "ObjTables.h"
@@ -74,17 +75,29 @@
 	#include <GL/glext.h>
 #endif
 
-#define DRAW_MESH_BORDERS 1
+// Draw mesh borders onto the colored mesh layer.
+#define DRAW_MESH_BORDERS 0
 
+// Draw mesh tris with some shading.  Generally not as useful as it would sound.
+#define SHADE_TRIS 0
+
+// Print out each border layer on top of a tri stack under mouse
 #define DEBUG_PRINT_LAYERS 1
 
+// Print the normal for the tri under the mouse
 #define DEBUG_PRINT_NORMALS 0
 
+// Print height at all 3 corners of tri under mouse
 #define DEBUG_PRINT_CORNERS 0
 
+// Print water params of tri under mouse
 #define DEBUG_PRINT_WAVES 0
 
-#define DEBUG_PRINT_TRI_PARAMS 0
+// Print input parameters used to pick LU rule for tri under mouse
+#define DEBUG_PRINT_TRI_PARAMS 1
+
+// Print out forest type
+#define DEBUG_PRINT_FOREST_TYPE 0
 
 RF_MapView *		gMapView = NULL;
 
@@ -432,24 +445,49 @@ static void FontDrawDarkBox(
 				float							color[4],	//	4-part color, featuring alpha.
 				float							inX,
 				float							inY,
+				float							inWidth,
 				const char *					inString)
 {
-	inState->SetState(false, 0, false, true, true, false, false);
-	glColor4f(0,0,0,0.5);
+	const char * sb = inString;
+	const char * se = inString + strlen(sb);
 
-	float x1 = inX - 3;
-	float x2 = inX + GUI_MeasureRange(inFontID, inString, inString + strlen(inString)) + 3;
-	float y1 = inY - GUI_GetLineDescent(inFontID) - 3;
-	float y2 = inY - GUI_GetLineAscent(inFontID) + 3;
+	float des = GUI_GetLineDescent(inFontID);
+	float lh  = GUI_GetLineHeight(inFontID);
+	
+	while(sb < se)
+	{
+		int chars_this_line = GUI_FitForward(inFontID, sb, se, inWidth);
 
-	glBegin(GL_QUADS);
-	glVertex2f(x1,y1);
-	glVertex2f(x1,y2);
-	glVertex2f(x2,y2);
-	glVertex2f(x2,y1);
-	glEnd();
+		const char * sl = sb + chars_this_line;
+	
+		float x1 = inX - 3;
+		float x2 = inX + GUI_MeasureRange(inFontID, sb, sl) + 3;
+		float y1 = inY - des - 3;
+		float y2 = inY - des + lh + 3;
 
-	GUI_FontDraw(inState,inFontID, color,inX,inY,inString);
+		inState->SetState(false, 0, false, true, true, false, false);
+		glColor4f(0,0,0,0.5);
+
+		glBegin(GL_QUADS);
+		glVertex2f(x1,y1);
+		glVertex2f(x1,y2);
+		glVertex2f(x2,y2);
+		glVertex2f(x2,y1);
+		glEnd();
+
+
+		GUI_FontDrawScaled(inState, inFontID, color, 
+			inX,
+			inY - des,
+			inX,
+			inY - des  + lh,
+			sb, sl,
+			align_Left);
+
+		inY -= lh;
+
+		sb = sl;
+	}
 }
 
 void	RF_MapView::Draw(GUI_GraphState * state)
@@ -633,6 +671,26 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 								col[0] = 1.0; col[1] = 0.0; col[2] = 0.0;
 							}
 						}
+						
+						#if SHADE_TRIS
+						{
+							float	nrm_z    = sin(sShadingDecl * DEG_TO_RAD);
+							float	scale_xy = cos(sShadingDecl * DEG_TO_RAD);
+
+							float	nrm_x = scale_xy * sin(sShadingAzi * DEG_TO_RAD);
+							float	nrm_y = scale_xy * cos(sShadingAzi * DEG_TO_RAD);
+
+							float scale = nrm_x * fit->info().normal[0] +
+										  nrm_y * fit->info().normal[1] +
+										  nrm_z * fit->info().normal[2];
+							scale = max(scale,0.0f);
+										  		  
+							col[0] *= scale;
+							col[1] *= scale;
+							col[2] *= scale;
+						}
+						#endif
+						
 
 						glColor4fv(col);					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 						glColor4fv(col);					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
@@ -1017,7 +1075,7 @@ put in  color enums?
 
 	if (mon)
 	{
-		FontDrawDarkBox(state, font_UI_Basic, white, l + 7, b + 20 + 1, mon);
+		FontDrawDarkBox(state, font_UI_Basic, white, l + 7, b + 80 + 1, r - l - 350, mon);
 	}
 	if (status)
 	{
@@ -1040,7 +1098,7 @@ put in  color enums?
 			if (n == 0)
 			{
 				sprintf(buf, "Viewing: %s", kDEMs[sDEMType].cmdName);
-				FontDrawDarkBox(state, font_UI_Basic, white, l + 5, k, buf);
+				FontDrawDarkBox(state, font_UI_Basic, white, l + 5, k, 9999, buf);
 				k -= (h+1);
 			}
 			else if (sShowDEMData[n-1] || n == sDEMType)
@@ -1060,7 +1118,7 @@ put in  color enums?
 						sprintf(buf,kDEMs[n].format_string,FetchTokenString(hh));
 					else
 						sprintf(buf,kDEMs[n].format_string,hh);
-					FontDrawDarkBox(state,font_UI_Basic, white, l + 5, k, buf);
+					FontDrawDarkBox(state,font_UI_Basic, white, l + 5, k, 9999,buf);
 					k -= (h+1);
 				}
 			}
@@ -1070,17 +1128,17 @@ put in  color enums?
 	const char * nat = QuickToFile(gNaturalTerrainFile);
 	const char * obj = QuickToFile(gObjPlacementFile);
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(nat) * w - 20, t - 30, nat);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(nat) * w - 20, t - 30, 9999,nat);
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - gLanduseTransFile.size() * w - 20, t - 50, gLanduseTransFile.c_str());
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gLanduseTransFile.size() * w - 20, t - 50, 9999,gLanduseTransFile.c_str());
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str());
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gNaturalTerrainFile.size() * w - 20, t - 30, 9999,gNaturalTerrainFile.c_str());
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementClimate.size() * w - 20, t - 70, gReplacementClimate.c_str());
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementClimate.size() * w - 20, t - 70, 9999,gReplacementClimate.c_str());
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementRoads.size() * w - 20, t - 90, gReplacementRoads.c_str());
+	FontDrawDarkBox(state,font_UI_Basic,white, r - gReplacementRoads.size() * w - 20, t - 90, 9999,gReplacementRoads.c_str());
 
-	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(obj) * w - 20, t - 120, obj);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - strlen(obj) * w - 20, t - 120, 9999,obj);
 
 
 	char	buf[50];
@@ -1096,7 +1154,7 @@ put in  color enums?
 	sprintf(buf,"Lat: %02d.%06d%c Lon: %03d.%06d%c",
 		lat / 1000000, lat % 1000000, ns,
 		lon / 1000000, lon % 1000000, ew);
-	FontDrawDarkBox(state,font_UI_Basic,white, r - 300, b + 20, buf);
+	FontDrawDarkBox(state,font_UI_Basic,white, r - 300, b + 20, 9999,buf);
 }
 
 
@@ -1314,7 +1372,7 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 char * RF_MapView::MonitorCaption(void)
 {
 	static float then = (float) clock() / float (CLOCKS_PER_SEC);
-	static char buf[1024];
+	static char buf[4096];
 	int n = 0;
 	float now = (float) clock() / float (CLOCKS_PER_SEC);
 	float elapsed = now - then;
@@ -1352,15 +1410,24 @@ char * RF_MapView::MonitorCaption(void)
 #if DEBUG_PRINT_NORMALS
 		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
 #endif
-#if DEBUG_PRINT_TRI_PARAMS
-		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f) ",
+#if DEBUG_PRINT_TRI_PARAMS && DEV
+		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f,%s) ",
 					acos(1.0-recent->info().debug_slope_dem) * RAD_TO_DEG,
 					acos(1.0-recent->info().debug_slope_tri) * RAD_TO_DEG,
-					recent->info().debug_temp,
+					recent->info().mesh_temp,
 					recent->info().debug_temp_range,
-					recent->info().debug_rain,
+					recent->info().mesh_rain,
 //					-asin(recent->info().debug_heading) * RAD_TO_DEG + 90.0);
-					recent->info().debug_heading);
+					recent->info().debug_heading,
+//					FetchTokenString(recent->info().debug_lu[0]),
+//					FetchTokenString(recent->info().debug_lu[1]),
+//					FetchTokenString(recent->info().debug_lu[2]),
+//					FetchTokenString(recent->info().debug_lu[3]),
+					FetchTokenString(recent->info().debug_lu[4]));
+#endif
+
+#if DEBUG_PRINT_FOREST_TYPE
+	n += sprintf(buf+n,"(%s) ", FetchTokenString(tri_forest_type(recent)));
 #endif
 
 #if DEBUG_PRINT_CORNERS
