@@ -464,7 +464,6 @@ void CheckObjTable(void)
 
 void GetObjTerrainTypes(set<int>& outTypes)
 {
-	outTypes.clear();
 	for (int n = 0; n < gRepTable.size(); ++n)
 	if (gRepTable[n].terrain != NO_VALUE)
 		outTypes.insert(gRepTable[n].terrain);

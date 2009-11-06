@@ -142,8 +142,8 @@ int		FindNaturalTerrain(
 				float	slopeheading,
 				float	relelevation,
 				float	elevrange,
-//				float	urban_density,
-//				float	urban_radial,
+				float	urban_density,
+				float	urban_radial,
 				float	urban_trans,
 				int		urban_square,	// use 1=square, 2=irregulra NO_DATA
 				float	lat,			// use NO_DATA!

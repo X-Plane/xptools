@@ -509,10 +509,10 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			fabs(CGAL::to_double(tri->vertex(0)->point().y())) >= gBeachInfoTable[i].min_lat &&
 			fabs(CGAL::to_double(tri->vertex(0)->point().y())) <= gBeachInfoTable[i].max_lat &&
-			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
-			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
-			tri->info().debug_rain >= gBeachInfoTable[i].min_rain &&
-			tri->info().debug_rain <= gBeachInfoTable[i].max_rain &&
+			tri->info().mesh_temp >= gBeachInfoTable[i].min_temp &&
+			tri->info().mesh_temp <= gBeachInfoTable[i].max_temp &&
+			tri->info().mesh_rain >= gBeachInfoTable[i].min_rain &&
+			tri->info().mesh_rain <= gBeachInfoTable[i].max_rain &&
 //			len >= gBeachInfoTable[i].min_len &&
 			gBeachInfoTable[i].min_area < GetParamConst(orig_face, af_WaterArea) &&
 			(gBeachInfoTable[i].require_open == 0 || GetParamConst(orig_face,af_WaterOpen) != 0.0))

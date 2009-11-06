@@ -55,6 +55,9 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define LOW_RES_WATER_INTERVAL 40
 #endif
 
+// Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
+#define NO_BORDERS_AT_ALL 0
+
 #define NO_BORDER_SHARING 0
 
 #define DEBUG_DROPPED_PTS 0
@@ -69,23 +72,17 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define TIMER(x)
 #endif
 
-MeshPrefs_t gMeshPrefs = {
-#if PHONE
-				25000,	// 30000,
-				15,		// 12.0,
-#else
-				78000,	// 65000,
-				6.25,	// 7.5,
+#ifndef PHONE
+#define PHONE 0
 #endif
-				1,
-				1,
-#if PHONE
-				6000.0,	// 3500.0,	// 3500.0,
-				50000.0
-#else
-				3500.0,
-				50000.0
-#endif
+
+MeshPrefs_t gMeshPrefs = {		/*iphone*/
+/* max_points		*/	PHONE ?		25000	: 78000,
+/* max_error		*/	PHONE ?		15		: 6.25,
+/* border_match		*/	PHONE ?		1		: 1,
+/* optimize_borders	*/	PHONE ?		1		: 1,
+/* max_tri_size_m	*/	PHONE ?		6000	: 1500,
+/* rep_switch_m		*/	PHONE ?		50000	: 50000
 };
 
 /* Conststraint markers - here's the deal: the way we set the water body
@@ -95,9 +92,7 @@ MeshPrefs_t gMeshPrefs = {
  * wet.  This lets us seed the water-finding process. */
 
 typedef pair<CDT::Vertex_handle, CDT::Vertex_handle>	ConstraintMarker_t;
-// won't compile if these are const, even though they really are
 typedef pair< Halfedge_handle,  Halfedge_handle>		LandusePair_t;			// "Left" and "right" side
-//typedef pair<const Halfedge_handle, const Halfedge_handle>	LandusePair_t;			// "Left" and "right" side
 typedef pair<ConstraintMarker_t, LandusePair_t>			LanduseConstraint_t;
 
 struct FaceHandleVectorHack {
@@ -128,8 +123,6 @@ inline bool collinear_he(Halfedge_handle he1, Halfedge_handle he2)
 	return true;
 }
 
-static	void	SlightClampToDEM(Point_2& ioPoint, const DEMGeo& ioDEM);
-
 bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b, vector<CDT::Vertex_handle>& out_pts);
 
 inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Face_handle& h, int& vnum)
@@ -154,43 +147,6 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 	
 	Assert(!"Failed persistent find edge.");
 	return false;
-
-	Vector_2	along(a->point(), b->point());
-
-	CDT::Vertex_handle v = a;
-	do {
-		CDT::Vertex_circulator	circ, stop;
-		CDT::Vertex_handle best = CDT::Vertex_handle();
-		circ = stop = ioMesh.incident_vertices(v);
-		do {
-			if(!ioMesh.is_infinite(circ))				// Skip infinite vertices, for which the point location is undefined and will piss off CGAL!!
-			{
-				if (v->point() == circ->point())
-				{
-					best = circ;
-					break;
-				} else {
-					Vector_2	step(v->point(), circ->point());
-					if (along * step > 0.0 && (along.x() * step.y() == along.y() * step.x()))
-					{
-						best = circ;
-						break;
-					}
-				}
-			}
-			++circ;
-		} while (circ != stop);
-
-		if (best == CDT::Vertex_handle()) 
-			return false;
-		if (!ioMesh.is_edge(v, best, h, vnum)) 
-			return false;
-		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
-
-		v = best;
-	} while (v != b);
-
-	return true;
 }
 
 inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v)
@@ -488,9 +444,6 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
 				dest->vertices.back().buddy = NULL;
-				//fprintf(stderr, "%lf, %lf  %lf, %lf\n",
-				//		CGAL::to_double(dest->vertices.back().loc.x()),
-				//		CGAL::to_double(dest->vertices.back().loc.y()), x, y);
 			}
 			if (MATCH(buf, "VC"))
 			{
@@ -499,9 +452,6 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
 				dest->vertices.back().buddy = NULL;
-				//fprintf(stderr, "%lf, %lf  %lf, %lf\n",
-				//		CGAL::to_double(dest->vertices.back().loc.x()),
-				//		CGAL::to_double(dest->vertices.back().loc.y()), x, y);
 			}
 			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 			sscanf(buf, "VBC %d", &count);
@@ -776,48 +726,7 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 
 	double base_dist = min(dist_1, dist_2);
 
-return base_dist * y_normal;
-
-	if (!rec1.xon_hack ||
-		!rec2.xon_hack ||
-		rec1.terrain == terrain_Airport ||
-		rec2.terrain == terrain_Airport
-		) return base_dist * y_normal;
-
-#if 0
-	bool diff_lat = 	rec1.lat_min != rec2.lat_min ||
-						rec1.lat_max != rec2.lat_max;
-
-	bool diff_temp = 	rec1.temp_min > rec2.temp_max ||
-				     	rec2.temp_min > rec1.temp_max;
-
-	bool diff_rain = 	rec1.rain_min > rec2.rain_max ||
-				     	rec2.rain_min > rec1.rain_max;
-
-	bool diff_temp_rng =rec1.temp_rng_min > rec2.temp_rng_max ||
-				     	rec2.temp_rng_min > rec1.temp_rng_max;
-
-	if (rec1.temp_min == rec1.temp_max)	diff_temp = false;
-	if (rec2.temp_min == rec2.temp_max)	diff_temp = false;
-	if (rec1.rain_min == rec1.rain_max)	diff_rain = false;
-	if (rec2.rain_min == rec2.rain_max)	diff_rain = false;
-	if (rec1.temp_rng_min == rec1.temp_rng_max)	diff_temp_rng = false;
-	if (rec2.temp_rng_min == rec2.temp_rng_max)	diff_temp_rng = false;
-
-	if (diff_lat || diff_temp || diff_rain || diff_temp_rng)
-	{
-//		printf("%s, %s (%lf,%lf) 30x norm=%lf\n", t1, t2, dist_1, dist_2, y_normal);
-		base_dist *= 30.0;
-	}
-#endif
-
-	if (rec1.proj_angle != proj_Down ||
-		rec2.proj_angle != proj_Down)
-	return 1.0;
-
-	return 500.0 * y_normal * y_normal * y_normal;
-
-//	return max(base_dist, 50.0) * y_normal * y_normal;
+	return base_dist * y_normal;
 }
 
 
@@ -825,36 +734,33 @@ return base_dist * y_normal;
 inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 {
 	// Find the closest a triangle comes to a point.  Inputs are in lat/lon, otuput is in meters!
-	Point_2	vp(v->point().x(), v->point().y());
-	Vector_2	tp1(f->vertex(0)->point().x(), f->vertex(0)->point().y());
-	Vector_2	tp2(f->vertex(1)->point().x(), f->vertex(1)->point().y());
-	Vector_2	tp3(f->vertex(2)->point().x(), f->vertex(2)->point().y());
-	Vector_2	vpv(v->point().x(), v->point().y());
-	tp1 = tp1 - vpv;
-	tp2 = tp2 - vpv;
-	tp3 = tp3 - vpv;
+	Point2		vp(cgal2ben(v->point()));
+	Point2		tp1(cgal2ben(f->vertex(0)->point()));
+	Point2		tp2(cgal2ben(f->vertex(1)->point()));
+	Point2		tp3(cgal2ben(f->vertex(2)->point()));
+
 	double	DEG_TO_NM_LON = DEG_TO_NM_LAT * cos(CGAL::to_double(vp.y()) * DEG_TO_RAD);
-	tp1 = tp1 * (DEG_TO_NM_LON * NM_TO_MTR);
-	//tp1.y *= (DEG_TO_NM_LAT * NM_TO_MTR);
-	tp2 = tp2 * (DEG_TO_NM_LON * NM_TO_MTR);
-	//tp2.y *= (DEG_TO_NM_LAT * NM_TO_MTR);
-	tp3 = tp3 * (DEG_TO_NM_LON * NM_TO_MTR);
-	//tp3.y *= (DEG_TO_NM_LAT * NM_TO_MTR);
+	tp1.x_ *= (DEG_TO_NM_LON * NM_TO_MTR);
+	tp1.y_ *= (DEG_TO_NM_LAT * NM_TO_MTR);
+	tp2.x_ *= (DEG_TO_NM_LON * NM_TO_MTR);
+	tp2.y_ *= (DEG_TO_NM_LAT * NM_TO_MTR);
+	tp3.x_ *= (DEG_TO_NM_LON * NM_TO_MTR);
+	tp3.y_ *= (DEG_TO_NM_LAT * NM_TO_MTR);
+	 vp.x_ *= (DEG_TO_NM_LON * NM_TO_MTR);
+	 vp.y_ *= (DEG_TO_NM_LAT * NM_TO_MTR);
 
-//	Segment_2	s1(tp1, tp2);
-//	Segment_2	s2(tp2, tp3);
-//	Segment_2	s3(tp3, tp1);
-//	Point_2	origin(0.0, 0.0);
+	Segment2	s1(tp1, tp2);
+	Segment2	s2(tp2, tp3);
+	Segment2	s3(tp3, tp1);
 
-//	double d1 = s1.squared_distance(origin);
-//	double d2 = s2.squared_distance(origin);
-//	double d3 = s3.squared_distance(origin);
-	double d4 = CGAL::to_double(tp1.squared_length());
-	double d5 = CGAL::to_double(tp2.squared_length());
-	double d6 = CGAL::to_double(tp3.squared_length());
+	double d1 = s1.squared_distance_supporting_line(vp);
+	double d2 = s2.squared_distance_supporting_line(vp);
+	double d3 = s3.squared_distance_supporting_line(vp);
+	double d4 = tp1.squared_distance(vp);
+	double d5 = tp2.squared_distance(vp);
+	double d6 = tp3.squared_distance(vp);
 
-//	double	nearest = min(min(d1, d2), min(min(d3, d4), min(d5, d6)));
-	double	nearest = min(min(d4, d5), d6);
+	double	nearest = min(min(d1, d2), min(min(d3, d4), min(d5, d6)));
 	return sqrt(nearest);
 }
 
@@ -877,7 +783,7 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
  */
 
 /*
- * InsertDEMPoint
+ * InsertDEMPoint - insert one point from the DEM into the mesh.
  *
  */
 CDT::Vertex_handle InsertDEMPoint(
@@ -902,6 +808,10 @@ CDT::Vertex_handle InsertDEMPoint(
 	return np;
 }
 
+/*
+ * InsertAnyPoint - insert a non-DEM-aligned point into the mesh with interpolation.
+ *
+ */
 CDT::Vertex_handle InsertAnyPoint(
 			const DEMGeo&			in_orig,
 			CDT&					io_mesh,
@@ -926,10 +836,8 @@ CDT::Vertex_handle InsertAnyPoint(
 /*
  * CopyWetPoints
  *
- * This routine copies the points that are inside water bodies and copies
- * them, modifying their altitude to be at sea level.  It also copies
- * to another DEM (if desired) points that are near the edges of the water bodies.
- * this can be a useful reference.  We return the number of wet points.
+ * This routine inserts every Nth point that is inside water into the mesh.  This is used
+ * to put a sparse mesh inside the water areas.
  *
  */
 double CopyWetPoints(
@@ -974,38 +882,6 @@ double CopyWetPoints(
 	
 	return (double) wet / (double) total;
 }
-
-/*
- * BuildSparseWaterMesh
- *
- * Given a DEM that contains all wet points and a DEM that contains approximations (snapped to the DEM) of
- * all coastline points, this routine adds to a final DEM a sparse subset of points from the wet DEM
- * that are every X points and at least Y points from any coastlines.  This builds a sparse mesh for
- * water bodies to keep fogging working properly.  It also erases the rest of the water body.
- *
- */
-void	BuildSparseWaterMesh(
-//					const DEMGeo& inWet, 		// A mesh that contains all water points, dropped to water level
-//					const DEMGeo& inEdges, 		// The vertices of the water bodies
-					DEMGeo& deriv, 				// A few water points are added to this DEM
-					int skip, 					// The skip interval - add a water point once every N DEM poionts
-					int search)					// Search range for coast vertices - search this far for a nearby  coast point.
-{
-	int x, y, dx, dy;
-	float h;
-	for (y = 0; y < deriv.mHeight; y++)
-	for (x = 0; x < deriv.mWidth; x++)
-	{
-		h = deriv.get(x,y);
-		if (h != DEM_NO_DATA)
-		{
-			if ((x % skip) != 0  || (y % skip) != 0)
-				deriv(x,y) = DEM_NO_DATA;
-		}
-	}
-}
-
-
 
 /*
  * AddEdgePoints
@@ -1111,72 +987,10 @@ static Halfedge_handle ExtendLanduseEdge(Halfedge_handle start)
 	}
 }
 
-void CollectPointsAlongLine(const Point_2& p1, const Point_2& p2, vector<Point_2>& outPts)//, DEMGeo& ioDem)
-{
-	outPts.push_back(p1);
-
-#if 0
-	int x1 = floor(ioDem.lon_to_x(CGAL::to_double(p1.x())));
-	int y1 = floor(ioDem.lat_to_y(CGAL::to_double(p1.y())));
-	int x2 = ceil(ioDem.lon_to_x(CGAL::to_double(p2.x())));
-	int y2 = ceil(ioDem.lat_to_y(CGAL::to_double(p2.y())));
-	if (x1 > x2) swap(x1, x2);
-	if (y1 > y2) swap(y1, y2);
-
-	double	DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(DEG_TO_RAD * (CGAL::to_double(p1.y() + p2.y())) * 0.5);
-
-	Segment_2	seg(p1, p2);
-	//Vector_2		dir(p1, p2);
-	//dir.normalize();
-	multimap<double, Point_2>	added_pts;
-
-	if ((x2-x1)>2 && (y2-y1)>2)
-	for (int y = y1; y <= y2; ++y)
-	for (int x = x1; x <= x2; ++x)
-	{
-		float e = ioDem.get(x,y);
-		if (e != DEM_NO_DATA)
-		{
-			Point_2 test = Point_2(ioDem.x_to_lon(x), ioDem.y_to_lat(y));
-			Point_2 proj = seg.supporting_line().projection(test);
-			if (seg.collinear_has_on(proj) && proj != p1 && proj != p2)
-			{
-				double alen = CGAL::to_double(Vector_2(p1, proj).squared_length());
-				double llen = CGAL::to_double(Vector_2(proj, test).squared_length());
-
-				if ((llen*16.0) < alen)
-				{
-//					gMeshPoints.push_back(test);
-					added_pts.insert(multimap<double, Point_2>::value_type(alen, proj));
-
-					if (LonLatDistMetersWithScale(CGAL::to_double(test.x()), CGAL::to_double(test.y()), CGAL::to_double(proj.x()), CGAL::to_double(proj.y()), DEG_TO_MTR_LON, DEG_TO_MTR_LAT) < 10.0)
-					if (x != 0 && x != (ioDem.mWidth-1) && y != 0 && y != (ioDem.mHeight-1))
-						ioDem(x,y) = DEM_NO_DATA;
-				}
-			}
-		}
-	}
-
-	for (multimap<double, Point_2>::iterator i = added_pts.begin(); i != added_pts.end(); ++i)
-	if (LonLatDistMetersWithScale(CGAL::to_double(outPts.back().x()), CGAL::to_double(outPts.back().y()), CGAL::to_double(i->second.x()), CGAL::to_double(i->second.y()), DEG_TO_MTR_LON, DEG_TO_MTR_LAT) > 90.0)
-	if (LonLatDistMetersWithScale(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()), CGAL::to_double(i->second.x()), CGAL::to_double(i->second.y()), DEG_TO_MTR_LON, DEG_TO_MTR_LAT) > 90.0)
-		outPts.push_back(i->second);
-#endif
-	outPts.push_back(p2);
-
-}
-
-#if DEV
-static void dump_ccb(Face_const_handle f)
-{
-	Pmwx::Ccb_halfedge_const_circulator circ, stop;
-	circ = stop = f->outer_ccb();
-	do {
-		cout << circ->target()->point() << "\n";
-	} while(++circ != stop);
-}
-#endif
-
+/*
+ * Given a start and end point, collect all mesh points along the straight edge of the mesh.  Return true
+ * if the edge is made entirely of sub-edges (or false if we must cut through the middle of a triangle).  Since 
+ * constraints can be cut, this gievs us a way to do a colinear test. */
 bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b, vector<CDT::Vertex_handle>& out_pts)
 {
 	Face_handle h;
@@ -1207,8 +1021,7 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 				Point_2 pc = circ->point();
 				
 				if(CGAL::collinear(pa,pc,pb) &&
-	//				CGAL::collinear_are_ordered_along_line(pa,pc,pb) &&
-					CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))
+					CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))	// Require in-order from the current point or else we will take the halfedge going backward.
 				{
 					n = circ;
 					break;
@@ -1229,7 +1042,9 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 	return true;
 }
 
-bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Vertex_handle b, Point_2& candidate, float err)
+/* This routine atttempts to determine if a constraint needs to be split.  For now, split if the mesh err gets too high along the constraint.
+ * But don't try to split long thin tris - that code does not work. */
+static bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Vertex_handle b, Point_2& candidate, float err)
 {
 	return false;
 	Point_2 pa(a->point());
@@ -1247,6 +1062,7 @@ bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Verte
 	
 	return false;
 	/*
+	// This tries to split long thin tris but never worked well.
 	CDT::Face_handle	f1,f2;
 	int					n1,n2;
 	if(!mesh.is_edge(a,b,f1,n1))
@@ -1272,6 +1088,7 @@ bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Verte
 	*/
 }
 
+/* This burns the constraints into the mesh, splitting them as needed to reduce error. */
 void	SplitConstraints(
 				CDT&								io_mesh,
 				const DEMGeo&						elev,
@@ -1318,17 +1135,16 @@ void	SplitConstraints(
 }
 
 /*
- * AddWaterMeshPoints
+ * AddConstraintPoints
  *
- * Given a water map, this point adds the vertices (based on the rough height of the master DEM) into
- * the triangualtion and clears any nearby DEM points in the slave DEM.  If it is hires, constraints
- * are added to enforce coastlines.
+ * This routine calculates the constraints we need based on burned-in edges from the map, water, etc.
+ * It inserts the vertices of the constraints now (so that triangulation can take advantage of them) and returns
+ * the pairs that become constraints.  We don't add constraints now as that would screw up the quality of triangulation.
  *
  */
-void	AddWaterMeshPoints(
+void	AddConstraintPoints(
 				Pmwx& 								inMap, 		// Vec Map of waterbodies
 				const DEMGeo& 						master, 	// Master DEM with elevations
-//				DEMGeo& 							slave, 		// This DEM has mesh points erased where vertices are added
 				CDT& 								outMesh, 	// Vertices and constraints added to this mesh
 				vector<LanduseConstraint_t>&		outCons)	// The constraints we add for water are added here for later use
 {
@@ -1354,7 +1170,6 @@ void	AddWaterMeshPoints(
 	{
 		Pmwx::Face_const_handle	f1 = he->face();
 		Pmwx::Face_const_handle	f2 = he->twin()->face();
-		//fprintf(stderr,"\\");
 		if (must_burn_he(he))
 		{
 			DebugAssert(!f1->is_unbounded());
@@ -1362,56 +1177,23 @@ void	AddWaterMeshPoints(
 			
 			Halfedge_handle extended1 = ExtendLanduseEdge(he);
 			Halfedge_handle extended2 = ExtendLanduseEdge(he->twin());
-			//Point_2	p1(extended2->target()->point().x(), extended2->target()->point().y());
-			//Point_2	p2( extended1->target()->point().x(), extended1->target()->point().y());
-			// Dr IT HURTS!
-			//SlightClampToDEM(p1, master);
-			//SlightClampToDEM(p2, master);
 
-			vector<Point_2>	pts;
-			CollectPointsAlongLine(extended2->target()->point(), extended1->target()->point(), pts);//, slave);
-			int c=0;
+			v1 = InsertAnyPoint(master, outMesh, extended2->target()->point(), locale);
+			v2 = InsertAnyPoint(master, outMesh, extended1->target()->point(), locale);
 
-			for (int n = 1; n < pts.size(); ++n)
-			{
-				e1 = DEM_NO_DATA;
-				e2 = DEM_NO_DATA;
-//				if (f1->mTerrainType == terrain_Water || f2->mTerrainType == terrain_Water)
-//				{
-//					e1 = water.xy_nearest(pts[n-1].x, pts[n-1].y);
-//					e2 = water.xy_nearest(pts[n].x, pts[n].y);
-//					if (e1 == DEM_NO_DATA)
-//						e1 = water.search_nearest(pts[n-1].x, pts[n-1].y);
-//					if (e2 == DEM_NO_DATA)
-//						e2 = water.search_nearest(pts[n].x,pts[n].y);
-//					BEN SEZ: this is not really an error!  Remember - water data is only points contained inside a water body; very narrrow ones will contain NO
-//					DEM points and this will fail.
-//					if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA)
-//						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY.  LOC=%lf,%lf->%lf,%lf\n",pts[n-1].x,pts[n-1].y,pts[n].x,pts[n].y);
-//				}
-//				cout << "constraint: " << pts[n-1] << " to " << pts[n] << "\n";				
-//				cout << "face 1: \n";				
-//				dump_ccb(f1);
-//				cout << "face 2: \n";
-//				dump_ccb(f2);
-//				
-				v1 = InsertAnyPoint(master, outMesh, pts[n-1], locale);
-				v2 = InsertAnyPoint(master, outMesh, pts[n  ], locale);
-
-				outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
-			}
+			outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
 		}
 	}
-	printf("\n");
 }
 
-
-void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& allPts)
+/* This routine sets the feature type for the mesh tris from the terrain that required burn-in for constraints.
+ * This is how we know that our water tris should be wet.  We set every tri on the border of a constraint, then 
+ * flood-fill.*/
+void	SetTerrainForConstraints(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& allPts)
 {
 	set<CDT::Face_handle>		wet_faces;
 	set<CDT::Face_handle>		visited;
 
-	fprintf(stderr, "SetWaterToWet ");
 	// Quick pass - set everyone to natural.   This is needed because if there are no polys,
 	// then the outside of those polys won't make natural terrain.
 
@@ -1501,59 +1283,10 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 		if (e != DEM_NO_DATA)
 			ffi->vertex(vi)->info().height = e;
 	}
-	fprintf(stderr, "\n");
-
 }
 
-
-
-/*
- * AddBulkPointsToMesh
- *
- * Given a DEM with points that need to be in the mesh, this routine blasts them in.
- *
- */
-void	AddBulkPointsToMesh(
-				DEMGeo& 				ioDEM, 		// DEM with data only where we want mesh points, points are nuked
-				CDT& 					outMesh,
-				ProgressFunc			inFunc)	// mesh to receive points.
-{
-	if (inFunc) inFunc(1, 3, "Building Triangle Mesh", 0.0);
-
-	int x, y, step, total = 0;
-	CDT::Face_handle	local;
-	for (step = 1024; step > 0; step /= 4)
-	{
-		for (y = 0; y < ioDEM.mHeight; y+=step)
-		for (x = 0; x < ioDEM.mWidth; x+=step)
-		{
-			if (inFunc && x == 0 && (y % 20 == 0)) inFunc(1, 3, "Building Triangle Mesh", (double) y / (double) ioDEM.mHeight);
-			float h = ioDEM(x,y);
-			if (h != DEM_NO_DATA)
-			{
-//				gMeshPoints.push_back(pair<Point2,Point3>(Point2(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y)),Point3(1,0,0)));
-				CDT::Point	p(ioDEM.x_to_lon(CGAL::to_double(x)),ioDEM.y_to_lat(CGAL::to_double(y)));
-				CDT::Locate_type tp;
-				int vnum;
-				local = outMesh.locate(p, tp, vnum, local);
-//				if (tp != CDT::EDGE)
-				{
-					//printf("Bulk Point %lf, %lf\n",  ioDEM.x_to_lon(x),  ioDEM.y_to_lat(y));
-					CDT::Vertex_handle vv = outMesh.safe_insert(p, local);
-					vv->info().height = h;
-					local = vv->face();
-					++total;
-				}
-				ioDEM(x,y) = DEM_NO_DATA;
-			}
-		}
-//		if (step == 1) break;
-	}
-	printf("Inserted %d points.\n", total);
-	if (inFunc) inFunc(1, 3, "Building Triangle Mesh", 1.0);
-}
-
-Vector3 CalculateMeshNormal(CDT::Face_handle f)
+/* Calculate the normal of one face. */
+inline Vector3 CalculateMeshNormal(CDT::Face_handle f)
 {
 	Point3	p1(CGAL::to_double(f->vertex(0)->point().x()), CGAL::to_double(f->vertex(0)->point().y()), f->vertex(0)->info().height);
 	Point3	p2(CGAL::to_double(f->vertex(1)->point().x()), CGAL::to_double(f->vertex(1)->point().y()), f->vertex(1)->info().height);
@@ -1588,7 +1321,8 @@ Vector3 CalculateMeshNormal(CDT::Face_handle f)
 	}
 }
 
-bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
+/* Is this triangle a cliff?  For special hadnling. */
+inline bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
 {
 	if(io_mesh.is_infinite(f)) return false;
 	Vector3 n = CalculateMeshNormal(f);
@@ -1603,18 +1337,13 @@ bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
  */
 void CalculateMeshNormals(CDT& ioMesh)
 {
-// BEN SAYS:
-// PRESERVED here is Andrew McGreggor's port to CGAL - but see below.
-
 	for (CDT::Finite_vertices_iterator i = ioMesh.finite_vertices_begin(); i != ioMesh.finite_vertices_end(); ++i)
 	{
 		Vector3	total(0.0, 0.0, 0.0);
-//		FastKernel::Vector_3	total(0.0, 0.0, 0.0);
 		CDT::Vertex_circulator last = ioMesh.incident_vertices(i);
 		CDT::Vertex_circulator nowi = last, stop = last;
 		Point3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
 
-//		FastKernel::Point_3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
 		do {
 			last = nowi;
 			++nowi;
@@ -1651,65 +1380,13 @@ void CalculateMeshNormals(CDT& ioMesh)
 						normal.normalize();
 
 				}
-/*
-#if DEV && 0
-				if(normal.dx == 0.0 && normal.dy == 0.0 && normal.dz == 0.0)
-				{
-					DebugAssert(i->point() != nowi->point());
-					DebugAssert(i->point() != last->point());
-					debug_mesh_point(cgal2ben(i->point()),1,1,1);
-					debug_mesh_point(cgal2ben(last->point()),1,1,1);
-					debug_mesh_point(cgal2ben(nowi->point()),1,1,1);
-				}
-#endif
-                DebugAssert(normal.dx != 0.0 || normal.dy != 0.0 || normal.dz != 0.0);
-#if DEV && 0
-				if(normal.dz < 0.0)
-				{	
-					debug_mesh_point(cgal2ben(i->point()),1,1,1);
-					debug_mesh_point(cgal2ben(last->point()),1,1,1);
-					debug_mesh_point(cgal2ben(nowi->point()),1,1,1);
-				}
-#endif				
-*/				
-//                DebugAssert(normal.dz > 0.0);
- /*
-				FastKernel::Point_3	lastP(last->point().x(), last->point().y(), last->info().height);
-				FastKernel::Point_3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
-				BEN SAYS:	note that application of degrees->meters is WRONG here - scaling must be done to the VECTOR, not just ONE point.
-				FastKernel::Vector_3	v1(selfP, FastKernel::Point_3(lastP.x()*(DEG_TO_MTR_LAT * cos(CGAL::to_double(selfP.y()) * DEG_TO_RAD)),
-													   lastP.y()*(DEG_TO_MTR_LAT),
-													   last->info().height));
-				FastKernel::Vector_3	v2(selfP, FastKernel::Point_3(nowiP.x()*(DEG_TO_MTR_LAT * cos(CGAL::to_double(selfP.y()) * DEG_TO_RAD)),
-													   nowiP.y()*(DEG_TO_MTR_LAT),
-													   nowi->info().height));
-				DebugAssert(v1.x() != 0.0 || v1.y() != 0.0 || v1.z() != 0.0);
-				DebugAssert(v2.x() != 0.0 || v2.y() != 0.0 || v2.z() != 0.0);
-				v1 = normalize(v1);
-				v2 = normalize(v2);
-				FastKernel::Vector_3	normal = CGAL::cross_product(v1,v2);
-				DebugAssert(normal.x() != 0.0 || normal.y() != 0.0 || normal.z() != 0.0);
-				//DebugAssert(normal.z() > 0.0);
-				normal = normalize(normal);
-				// not sure we have a guaranteed CCW circulation, so this will fix us (normals are ALWAYS upward).
-				if (normal.z() < 0.0)
-					normal = -normal;
-				//fprintf(stderr, "v1 = (%lf, %lf, %lf), v2 = (%lf, %lf, %lf), normal = (%lf, %lf, %lf)\n",
-				//		CGAL::to_double(v1.x()), CGAL::to_double(v1.y()), CGAL::to_double(v1.z()),
-				//		CGAL::to_double(v2.x()), CGAL::to_double(v2.y()), CGAL::to_double(v2.z()),
-				//		CGAL::to_double(normal.x()), CGAL::to_double(normal.y()), CGAL::to_double(normal.z()));
-*/
+
 				CDT::Face_handle	a_face;
 				if (ioMesh.is_face(i, last, nowi, a_face))
 				{
                     a_face->info().normal[0] = normal.dx;
                     a_face->info().normal[1] = normal.dy;
                     a_face->info().normal[2] = normal.dz;
- /*
-					a_face->info().normal[0] = CGAL::to_double(normal.x());
-					a_face->info().normal[1] = CGAL::to_double(normal.y());
-					a_face->info().normal[2] = CGAL::to_double(normal.z());
-*/
 				}
 				total = total + normal;
 			}
@@ -1720,15 +1397,6 @@ void CalculateMeshNormals(CDT& ioMesh)
         i->info().normal[0] = total.dx;
         i->info().normal[1] = total.dy;
         i->info().normal[2] = total.dz;
-
-/*
-		DebugAssert(total.x() != 0.0 || total.y() != 0.0 || total.z() != 0.0);
-		DebugAssert(total.z() > 0.0);
-		total = normalize(total);
-		i->info().normal[0] = CGAL::to_double(total.x());
-		i->info().normal[1] = CGAL::to_double(total.y());
-		i->info().normal[2] = CGAL::to_double(total.z());
-*/
 	}
 }
 
@@ -1810,7 +1478,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE CONSTRAINTS */
 	
-	AddWaterMeshPoints(inMap, orig, outMesh, coastlines_markers);
+	AddConstraintPoints(inMap, orig, outMesh, coastlines_markers);
 
 //	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
 //	DoUserAlert("Finished constraints");
@@ -1919,7 +1587,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.2);
 	{
-		SetWaterBodiesToWet(outMesh, coastlines_markers, orig);
+		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
 	}
 
 	/*********************************************************************************************************************
@@ -1972,8 +1640,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	DEMGeo&	inTemp(inDEMs[dem_Temperature]);
 	DEMGeo&	inTempRng(inDEMs[dem_TemperatureRange]);
 	DEMGeo&	inRain(inDEMs[dem_Rainfall]);
-//	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
-//	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
+	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
+	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
 	DEMGeo& inUrbanTransport(inDEMs[dem_UrbanTransport]);
 	DEMGeo& usquare(inDEMs[dem_UrbanSquare]);
 
@@ -2017,10 +1685,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				double	center_x = (x0 + x1 + x2) / 3.0;
 				double	center_y = (y0 + y1 + y2) / 3.0;
 
-				float lu  = landuse.search_nearest(center_x, center_y);
+				float lu0  = landuse.search_nearest(center_x, center_y);
 				float lu1 = landuse.search_nearest(x0,y0);
 				float lu2 = landuse.search_nearest(x1,y1);
 				float lu3 = landuse.search_nearest(x2,y2);
+				float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
 
 //				float cl  = inClimate.search_nearest(center_x, center_y);
 //				float cl1 = inClimate.search_nearest(x0,y0);
@@ -2030,7 +1699,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				// Ben sez: tiny island in the middle of nowhere - do NOT expect LU.  That's okay - Sergio doesn't need it.
 //				if (lu == DEM_NO_DATA)
 //					fprintf(stderr, "NO data anywhere near %f, %f\n", center_x, center_y);
-				lu = MAJORITY_RULES(lu,lu1,lu2, lu3);
 //				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
 
 //				float	el1 = inElevation.value_linear(x0,y0);
@@ -2078,15 +1746,15 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 									(tri->neighbor(1)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(1))) ||
 									(tri->neighbor(2)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(2)));
 
-//				float	uden1 = inUrbanDensity.value_linear(x0,y0);
-//				float	uden2 = inUrbanDensity.value_linear(x1,y1);
-//				float	uden3 = inUrbanDensity.value_linear(x2,y2);
-//				float	uden = SAFE_AVERAGE(uden1, uden2, uden3);	// Could be safe max.
+				float	uden1 = inUrbanDensity.value_linear(x0,y0);
+				float	uden2 = inUrbanDensity.value_linear(x1,y1);
+				float	uden3 = inUrbanDensity.value_linear(x2,y2);
+				float	uden = SAFE_AVERAGE(uden1, uden2, uden3);	// Could be safe max.
 
-//				float	urad1 = inUrbanRadial.value_linear(x0,y0);
-//				float	urad2 = inUrbanRadial.value_linear(x1,y1);
-//				float	urad3 = inUrbanRadial.value_linear(x2,y2);
-//				float	urad = SAFE_AVERAGE(urad1, urad2, urad3);	// Could be safe max.
+				float	urad1 = inUrbanRadial.value_linear(x0,y0);
+				float	urad2 = inUrbanRadial.value_linear(x1,y1);
+				float	urad3 = inUrbanRadial.value_linear(x2,y2);
+				float	urad = SAFE_AVERAGE(urad1, urad2, urad3);	// Could be safe max.
 
 				float	utrn1 = inUrbanTransport.value_linear(x0,y0);
 				float	utrn2 = inUrbanTransport.value_linear(x1,y1);
@@ -2123,17 +1791,23 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (sh_tri >  0.7)	variant_head = 5;
 
 				//fprintf(stderr, " %d", tri->info().feature);
-				int terrain = FindNaturalTerrain(tri->info().feature, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, /* uden, urad, */ utrn, usq, fabs((float) center_y), variant_blob, variant_head);
+				int terrain = FindNaturalTerrain(tri->info().feature, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 
+				tri->info().mesh_temp = tm;
+				tri->info().mesh_rain = rn;
+			#if DEV
 				tri->info().debug_slope_dem = sl;
 				tri->info().debug_slope_tri = sl_tri;
-				tri->info().debug_temp = tm;
 				tri->info().debug_temp_range = tmr;
-				tri->info().debug_rain = rn;
 				tri->info().debug_heading = sh_tri;
-
+				tri->info().debug_lu[0] = lu0;
+				tri->info().debug_lu[1] = lu1;
+				tri->info().debug_lu[2] = lu2;
+				tri->info().debug_lu[3] = lu3;
+				tri->info().debug_lu[4] = lu ;
+			#endif
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
 					AssertPrintf("Hit %s rule. lu=%s, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
@@ -2268,6 +1942,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	 ***********************************************************************************************/
 
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.5);
+
+#if !NO_BORDERS_AT_ALL
 
 	/* 	Here's the idea:
 		We are going to go through each triangle, which now has a land use, and figure ouet which
@@ -2485,7 +2161,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		printf("Total: %d - border: %d - check: %d - opt: %d, devary=%d\n", tri_total, tri_border, tri_check, tri_opt,tri_merged);
 	}
 
-
+#endif /* NO_BORDERS_AT_ALL */
 
 	/***********************************************************************************************
 	 * WRITE OUT MESH
@@ -2593,7 +2269,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
  *******************************************************************************************/
 void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& rasterizer)
 {
-	fprintf(stderr,"SetupWaterRasterizer");
 	for (Pmwx::Edge_const_iterator i = map.edges_begin(); i != map.edges_end(); ++i)
 	{
 		bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
@@ -2601,7 +2276,6 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& r
 
 		if (iWet != oWet)
 		{
-			//fprintf(stderr,"|");
 			double x1 = orig.lon_to_x(CGAL::to_double(i->source()->point().x()));
 			double y1 = orig.lat_to_y(CGAL::to_double(i->source()->point().y()));
 			double x2 = orig.lon_to_x(CGAL::to_double(i->target()->point().x()));
@@ -2621,11 +2295,7 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& r
 			}
 		}
 	}
-//	fclose(fi);
-	fprintf(stderr,".");
-
 	rasterizer.SortMasters();
-	fprintf(stderr,".");
 }
 
 void	Calc2ndDerivative(DEMGeo& deriv)
@@ -2729,35 +2399,6 @@ double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id)
 		return DEM_NO_DATA;
 	}
 }
-
-
-
-
-#define 	CLAMP_EPSILON	0.001
-
-static void SlightClampToDEM(Point_2& ioPoint, const DEMGeo& ioDEM)
-{
-#if 0
-	double	wicked_north = ioDEM.mNorth + CLAMP_EPSILON;
-	double	wicked_south = ioDEM.mSouth - CLAMP_EPSILON;
-	double	wicked_east = ioDEM.mEast + CLAMP_EPSILON;
-	double	wicked_west = ioDEM.mWest - CLAMP_EPSILON;
-	if (ioPoint.y() > wicked_north ||
-		ioPoint.y() < wicked_south ||
-		ioPoint.x() > wicked_east ||
-		ioPoint.x() < wicked_west)
-	{
-		AssertPrintf("WARNING: Point is way outside DEM.  Will probably cause a leak.\n");
-	} else {
-		if (ioPoint.x() > ioDEM.mEast)	ioPoint.x() = ioDEM.mEast;
-		if (ioPoint.x() < ioDEM.mWest)	ioPoint.x() = ioDEM.mWest;
-		if (ioPoint.y() > ioDEM.mNorth)	ioPoint.y() = ioDEM.mNorth;
-		if (ioPoint.y() < ioDEM.mSouth)	ioPoint.y() = ioDEM.mSouth;
-	}
-#endif
-}
-
-#undef CLAMP_EPSILON
 
 int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float& out_ave, float& std_dev, ProgressFunc inFunc)
 {

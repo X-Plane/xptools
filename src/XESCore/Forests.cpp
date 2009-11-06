@@ -45,7 +45,7 @@
 
 #endif
 
-inline	int	tri_forest_type(CDT::Face_handle f)
+int	tri_forest_type(CDT::Face_handle f)
 {
 	// WHAT's THE IDEA?
 	// Return the top terrain type's forest type - visually we want to match the guy who is topmost.
@@ -312,7 +312,6 @@ void GenerateForests(
 void GetAllForestLUs(
 				set<int>&				out_types)
 {
-	out_types.clear();
 	for(int n = 0; n < gNaturalTerrainTable.size(); ++n)
 	if(gNaturalTerrainTable[n].forest_type != NO_VALUE)
 		out_types.insert(gNaturalTerrainTable[n].name);

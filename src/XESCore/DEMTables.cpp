@@ -691,8 +691,8 @@ int	FindNaturalTerrain(
 				float	slopeheading,
 				float	relelevation,
 				float	elevrange,
-//				float	urban_density,
-//				float	urban_radial,
+				float	urban_density,
+				float	urban_radial,
 				float	urban_trans,
 				int		urban_square,
 				float	lat,
@@ -721,12 +721,12 @@ int	FindNaturalTerrain(
 		if (rec.terrain == NO_VALUE/* || terrain == NO_VALUE*/ || terrain == rec.terrain)
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == DEM_NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
 		if (rec.elev_range_min == rec.elev_range_max || elevrange == DEM_NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
-//		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
+		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == DEM_NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
 		if (rec.urban_square == 0 || urban_square == DEM_NO_DATA || rec.urban_square == urban_square)
 		if (rec.lat_min == rec.lat_max || lat == DEM_NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (!rec.near_water || water)
-//		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == DEM_NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
+		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == DEM_NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.landuse == NO_VALUE || landuse == rec.landuse)	// NOTE: no land use is NOT a free pass to match anything!!
 //		if (rec.climate == NO_VALUE || climate == rec.climate)	// Same with  climate
 //		if (rec.elev_min == rec.elev_max || elevation == DEM_NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
@@ -886,7 +886,7 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 */
 
 	set<int>		terrain, landuse, urban_square, near_water;
-	set<float>		/*elev, */slope, temp, temp_rng, rain, slope_head, rel_elev, elev_range, /*urban_density, urban_radial, */urban_trans, lat;
+	set<float>		/*elev, */slope, temp, temp_rng, rain, slope_head, rel_elev, elev_range, urban_density, urban_radial, urban_trans, lat;
 
 	terrain.insert(NO_VALUE);
 	landuse.insert(NO_VALUE);
@@ -913,10 +913,10 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 		rel_elev.insert(rec.rel_elev_max);
 		elev_range.insert(rec.elev_range_min);
 		elev_range.insert(rec.elev_range_max);
-//		urban_density.insert(rec.urban_density_min);
-//		urban_density.insert(rec.urban_density_max);
-//		urban_radial.insert(rec.urban_radial_min);
-//		urban_radial.insert(rec.urban_radial_max);
+		urban_density.insert(rec.urban_density_min);
+		urban_density.insert(rec.urban_density_max);
+		urban_radial.insert(rec.urban_radial_min);
+		urban_radial.insert(rec.urban_radial_max);
 		urban_trans.insert(rec.urban_trans_min);
 		urban_trans.insert(rec.urban_trans_max);
 		urban_square.insert(rec.urban_square);
@@ -936,8 +936,8 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	printf("Near Water: %llu states.\n",(unsigned long long)near_water.size());
 	printf("Slope Headign: %llu states.\n",(unsigned long long)slope_head.size() );
 	printf("Elevation Range: %llu states.\n",(unsigned long long)elev_range.size() );
-//	printf("Urban Density: %llu states.\n",(unsigned long long)urban_density.size() );
-//	printf("Urban Radial: %llu states.\n",(unsigned long long)urban_radial.size() );
+	printf("Urban Density: %llu states.\n",(unsigned long long)urban_density.size() );
+	printf("Urban Radial: %llu states.\n",(unsigned long long)urban_radial.size() );
 	printf("Urban Trans: %llu states.\n",(unsigned long long)urban_trans.size() );
 	printf("Urban Square: %llu states.\n",(unsigned long long)urban_square.size());
 	printf("Latitude: %llu states.\n",(unsigned long long)lat.size());
@@ -952,8 +952,8 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 				near_water.size() *
 				(slope_head.size() * 2 - 1)*
 				(elev_range.size() * 2 - 1)*
-//				(urban_density.size() * 2 - 1)*
-//				(urban_radial.size() * 2 - 1)*
+				(urban_density.size() * 2 - 1)*
+				(urban_radial.size() * 2 - 1)*
 				(urban_trans.size() * 2 - 1)*
 				urban_square.size() *
 				(lat.size() * 2 - 1);
@@ -977,8 +977,8 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	for (float_between_iterator sh(slope_head); sh(); ++sh)
 	for (float_between_iterator re(rel_elev); re(); ++re)
 	for (float_between_iterator er(elev_range); er(); ++er)
-//	for (float_between_iterator ud(urban_density); ud(); ++ud)
-//	for (float_between_iterator ur(urban_radial); ur(); ++ur)
+	for (float_between_iterator ud(urban_density); ud(); ++ud)
+	for (float_between_iterator ur(urban_radial); ur(); ++ur)
 	for (float_between_iterator ut(urban_trans); ut(); ++ut)
 	for (set<int>::iterator us = urban_square.begin(); us != urban_square.end(); ++us)
 	for (float_between_iterator l(lat); l(); ++l)
@@ -986,7 +986,7 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 		PROGRESS_CHECK(func, 0, 1, "Checking tables", ctr, total, step);
 
 		int found = FindNaturalTerrain(*ter, *lu, /*NO_VALUE,  *el, */ *sd, *st,
-			*t, *tr, *r, *nw, *sh, *re, *er, /* *ud, *ur, */ *ut, *us, *l, 1, 5);
+			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l, 1, 5);
 
 		if (found == any_rule)
 		printf("Found %s rule on: ter=%s lu=%s el=XX sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=XX ur=XX ut=%f us=%d l=%f\n",

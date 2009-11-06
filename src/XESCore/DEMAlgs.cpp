@@ -1131,6 +1131,9 @@ void	DeriveDEMs(
 		else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
 		else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
 		else if(e == lu_globcover_INDUSTRY)							e = 1.0;
+		else if(e == lu_usgs_URBAN_IRREGULAR)						e = 1.0;
+		else if(e == lu_usgs_URBAN_SQUARE)							e = 1.0;
+
 		else														e = 0.0;		
 			urbanTemp(x,y) = e;
 		}

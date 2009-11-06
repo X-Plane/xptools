@@ -31,6 +31,8 @@
 class 	CDT;
 //class	GISFace;
 
+int	tri_forest_type(CDT::Face_handle f);
+
 void GenerateForests(
 				Pmwx&					ioMap,
 				vector<PreinsetFace>&	inFaces,

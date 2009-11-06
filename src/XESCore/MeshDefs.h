@@ -104,13 +104,16 @@ struct	MeshFaceInfo {
 
 	FaceQueue::iterator	self;					// Queue ref to self!
 
-// BENTODO - clean this up
+	float			mesh_temp;				// These are not debug - beach code uses this.
+	float			mesh_rain;
+
+#if DEV
 	float			debug_slope_dem;
 	float			debug_slope_tri;
-	float			debug_temp;
 	float			debug_temp_range;
-	float			debug_rain;
 	float			debug_heading;
+	float			debug_lu[5];
+#endif	
 };
 
 typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, Traits_2>		Vb;
