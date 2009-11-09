@@ -1,6 +1,7 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	11/8/09	2.0 Beta 3
 		Bug fixes:
 			= custom orthophotos crossing the border of the tile are not lost.
 			- fixed creases in orthophotos
