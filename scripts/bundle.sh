@@ -49,7 +49,7 @@ ac3d)
 	src_files="XPlaneSupport$suffix.p"
 	doc_files="$build_dir/XPlaneSupport$suffix.p src/AC3DPlugins/README src/AC3DPlugins/XPlaneSupport.tcl"
 	if [ "$2" == "lin" ]; then
-		doc_files="doc_files $build_dir/XPlaneSupport$suffix.p.debug"
+		doc_files="$doc_files $build_dir/XPlaneSupport$suffix.p.debug"
 	fi
 	;;
 meshtool)
