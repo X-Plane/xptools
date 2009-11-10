@@ -332,7 +332,7 @@ bool	BoxRasterizer::GetNextBox(double& x1, double& y1, double& x2, double& y2)
 		if(rasterizer->DoneScan()) return false;
 		if (y >= stop) return false;
 		
-		assert(output.size() >= 2);
+//		assert(output.size() >= 2);
 		y1 = output_y;
 		y2 = y1 + interval;
 		x1 = output[output_idx];
