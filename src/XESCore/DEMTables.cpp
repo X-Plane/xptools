@@ -46,7 +46,7 @@ TexProjTable					gTexProj;
 
 
 static	void	ValidateNaturalTerrain(void);
-static map<int,int>		sForests;
+static set<int>			sForests;
 
 static set<int>			sAirports;
 
@@ -368,13 +368,20 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.map_rgb[1] /= 255.0;
 	info.map_rgb[2] /= 255.0;
 
-	int orig_forest = info.forest_type;
-	if (info.forest_type != NO_VALUE)	info.forest_type = LookupTokenCreate(ter_name.c_str());
-	if (info.forest_type != NO_VALUE)
-	{
-		if(sForests.count(info.forest_type) > 0)	Assert(sForests[info.forest_type] == orig_forest);
-		sForests[info.forest_type] = orig_forest;
-	}
+	if(info.forest_type != NO_VALUE)
+		sForests.insert(info.forest_type);
+
+//	int orig_forest = info.forest_type;
+//	if (info.forest_type != NO_VALUE)	info.forest_type = LookupTokenCreate(ter_name.c_str());
+//	if (info.forest_type != NO_VALUE)
+//	{
+//		if(sForests.count(info.forest_type) > 0)	if(sForests[info.forest_type] != orig_forest)
+//			printf("WARNING: terrain %s has conflicting forest types %s and %s.\n", 
+//								FetchTokenString(info.forest_type),
+//								FetchTokenString(orig_forest),
+//								FetchTokenString(sForests[info.forest_type]));
+//		sForests[info.forest_type] = orig_forest;
+//	}
 
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
@@ -755,6 +762,7 @@ void ValidateNaturalTerrain(void)
 		ref = canonical[gNaturalTerrainTable[n].name];
 		if (ref != n)
 		{
+			if (gNaturalTerrainTable[n].forest_type		  != gNaturalTerrainTable[ref].forest_type 		)	printf("ERROR: land use lines %d and %d - terrain 'forest type' does not match.  name = %s, layers = %s vs %s\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), FetchTokenString(gNaturalTerrainTable[n].forest_type),FetchTokenString(gNaturalTerrainTable[ref].forest_type));
 			if (gNaturalTerrainTable[n].layer    		  != gNaturalTerrainTable[ref].layer    		)	printf("ERROR: land use lines %d and %d - terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].layer,gNaturalTerrainTable[ref].layer);
 			if (gNaturalTerrainTable[n].xon_dist 		  != gNaturalTerrainTable[ref].xon_dist 		)	printf("ERROR: land use lines %d and %d - terrain 'xon_dist' does not match.  name = %s, layers = %f vs %f\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].xon_dist,gNaturalTerrainTable[ref].xon_dist);
 			if (gNaturalTerrainTable[n].base_tex    	  != gNaturalTerrainTable[ref].base_tex    	 	)	printf("ERROR: land use lines %d and %d - terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_tex.c_str(),gNaturalTerrainTable[ref].base_tex.c_str());
@@ -1028,8 +1036,12 @@ bool	IsAirportTerrain(int t)
 	return sAirports.count(t) != 0;
 }
 
-
-void	GetForestMapping(map<int,int>& forests)
+void			GetForestTypes(set<int>& forests)
 {
 	forests = sForests;
 }
+
+//void	GetForestMapping(map<int,int>& forests)
+//{
+//	forests = sForests;
+//}

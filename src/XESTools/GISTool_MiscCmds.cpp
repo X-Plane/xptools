@@ -26,6 +26,7 @@
 #include "GISTool_Globals.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
+#include "PolyRasterUtils.h"
 #include "PerfUtils.h"
 #include "SceneryPackages.h"
 #include "DEMTables.h"
@@ -38,6 +39,7 @@
 #include "MemFileUtils.h"
 #include "XESIO.h"
 #include "MapDefs.h"
+#include "MeshAlgs.h"
 
 static double calc_water_area(void)
 {
@@ -385,6 +387,7 @@ int InitFromWet(const vector<const char *>& args)
 
 
 #define make_terrain_package_HELP \
+"-make_terrain_package <path to pack base\n"\
 "This command creates a scenery package with the library, ter, pol and png files based on the\n"\
 "current spreadsheet.  Pass in one argument, the directy path of the scenery package, with\n"\
 "trailing slash.  PNG files are only created if they do not already exist.  All ter files are\n"\
@@ -394,22 +397,57 @@ int DoMakeTerrainPackage(const vector<const char *>& args)
 	return CreateTerrainPackage(args[0],true);
 }
 
-
+#define dump_forests_HELP \
+"-dump_forests [<proxy>]\n"\
+"This dumps out all forests used in the spreadsheet in a format appropriate for library files.  If a\n"\
+"proxy forest file is provided, then the format is modified to export all forests to the proxy instead\n"\
+"of to their real export type.  This can be useful if forest artwork is not finisihed yet.  Proxy does not\n"\
+"need .for at the end."
 int DoDumpForests(const vector<const char *>& args)
 {
-	map<int,int>	fm;
 	set<int>		ts;
-	GetForestMapping(fm);
-	for(map<int,int>::iterator i = fm.begin(); i != fm.end(); ++i)
-	{
-		ts.insert(i->second);
-		printf("EXPORT\tlib/g8/%s.for\t%s.for\n", FetchTokenString(i->first), FetchTokenString(i->second));
-	}
+	GetForestTypes(ts);
 	for(set<int>::iterator i = ts.begin(); i != ts.end(); ++i)
-		printf("# %s.for\n", FetchTokenString(*i));
+	{		
+		printf("EXPORT\tlib/g8/%s.for\t%s.for\n", FetchTokenString(*i), args.size() > 0 ? args[0] : FetchTokenString(*i));
+	}
 	return 0;
 }
 
+/*
+static int DoHack(const vector<const char *>& args)
+{
+	PolyRasterizer	rasterizer;
+	
+	DEMGeo temp(1201,1201);
+	temp.mEast = gMapEast;
+	temp.mWest = gMapWest;
+	temp.mNorth = gMapNorth;
+	temp.mSouth = gMapSouth;
+	
+	
+	SetupWaterRasterizer(gMap, temp, rasterizer);
+	
+	BoxRasterizer	brasterizer(&rasterizer, 50, 1150, 2);
+	double x1,y1,x2,y2;
+	while(brasterizer.GetNextBox(x1,y1,x2,y2))
+	{
+		x1 = ceil(x1);
+		x2 = floor(x2);
+
+		Point2	p1(temp.x_to_lon(x1),temp.y_to_lat(y1));
+		Point2	p2(temp.x_to_lon(x2),temp.y_to_lat(y2));
+		
+		if(p1.x() < p2.x())
+		{
+			debug_mesh_line(Point2(p1.x(),p1.y()),Point2(p1.x(),p2.y()),1,1,1,1,1,1);
+			debug_mesh_line(Point2(p2.x(),p1.y()),Point2(p2.x(),p2.y()),1,1,1,1,1,1);
+			debug_mesh_line(Point2(p1.x(),p1.y()),Point2(p2.x(),p1.y()),1,1,1,1,1,1);
+			debug_mesh_line(Point2(p1.x(),p2.y()),Point2(p2.x(),p2.y()),1,1,1,1,1,1);
+		}
+	}	
+}
+*/
 
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
@@ -422,8 +460,9 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
-{ "-forest_types",	0,	0, DoDumpForests,			"Output types of forests from the spreadsaheet.", "" },
+{ "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
+//{ "-hack",				   0, 0, DoHack, "", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 

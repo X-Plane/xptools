@@ -107,7 +107,8 @@ struct	MeshFaceInfo {
 	float			mesh_temp;				// These are not debug - beach code uses this.
 	float			mesh_rain;
 
-#if DEV
+#if OPENGL_MAP
+	int				debug_terrain_orig;
 	float			debug_slope_dem;
 	float			debug_slope_tri;
 	float			debug_temp_range;

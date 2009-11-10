@@ -1410,8 +1410,8 @@ char * RF_MapView::MonitorCaption(void)
 #if DEBUG_PRINT_NORMALS
 		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
 #endif
-#if DEBUG_PRINT_TRI_PARAMS && DEV
-		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f,%s) ",
+#if DEBUG_PRINT_TRI_PARAMS
+		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f,%s) original: %s ",
 					acos(1.0-recent->info().debug_slope_dem) * RAD_TO_DEG,
 					acos(1.0-recent->info().debug_slope_tri) * RAD_TO_DEG,
 					recent->info().mesh_temp,
@@ -1423,7 +1423,8 @@ char * RF_MapView::MonitorCaption(void)
 //					FetchTokenString(recent->info().debug_lu[1]),
 //					FetchTokenString(recent->info().debug_lu[2]),
 //					FetchTokenString(recent->info().debug_lu[3]),
-					FetchTokenString(recent->info().debug_lu[4]));
+					FetchTokenString(recent->info().debug_lu[4]),
+					FetchTokenString(recent->info().debug_terrain_orig));
 #endif
 
 #if DEBUG_PRINT_FOREST_TYPE

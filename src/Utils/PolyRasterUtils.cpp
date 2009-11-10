@@ -80,6 +80,23 @@ void		PolyRasterizer::AdvanceScanline(double y)
 	current_active_index = 0;
 }
 
+double		PolyRasterizer::NextInterestingTime(double y)
+{
+	// If we have active segments floating around, the client
+	// just wants to go up one scanline..if nothing else, they will
+	// have changed their intercepts to the scan line, maybe.
+	if(!actives.empty()) return y;
+
+	// No more segments to add and we're empty?  Let the client just go
+	// up one - it'll figure out we are done-done anyway.
+	if(unused_master_index == masters.size()) return y;
+	
+	// Hrm - no segments now?  Tell the client it's okay to jump
+	// all the way up to the next insert...we probably have a big gap.
+	return max(masters[unused_master_index].y1, y);
+}
+
+
 // Return an integer scan-range value.  This is pretty easy...
 // the first two unused active elements are the next range.
 // One warning, a range can be zero either because (1) the points
@@ -103,6 +120,21 @@ bool		PolyRasterizer::GetRange(int& x1, int& x2)
 		x2 = floor(x2f) + 1;
 		if (x1 < x2)
 			return true;
+	}
+}
+
+void		PolyRasterizer::GetLine(vector<double>& out_line, double& next_y)
+{
+	out_line.resize(actives.size());
+	// If we have any unused lines, the next line starting might be an "event"
+	if(unused_master_index < masters.size())
+		next_y = min(next_y, masters[unused_master_index].y1);
+	for(int n = 0; n <actives.size(); ++n)
+	{
+		out_line[n] = masters[actives[n]].cur_x;
+		// If an active segment ends in the future, it may be the next "event."
+		if(masters[actives[n]].y2 > current_scan_y)
+			next_y = min(next_y, masters[actives[n]].y2);
 	}
 }
 
@@ -189,3 +221,180 @@ void	PolyRasterizer::Validate(void)
 		}
 	}
 }
+
+inline bool IS_POSITIVE(int n) 	{ return (n%2) == 0; }
+
+#define func(a,b) ((a) && (b))
+
+void IntersectRanges(vector<double>& out, const vector<double>& a, const vector<double>& b)
+{
+	out.clear();
+	if(a.empty())
+	{
+		out=b;
+		return;
+	}
+	if(b.empty())
+	{
+		out=a;
+		return;
+	}
+	
+	int na = 0, nb = 0;
+	
+	bool sa = false, sb = false;
+	
+	while(na < a.size() || nb < b.size())
+	{
+		if(na == a.size())
+		{
+			sb = IS_POSITIVE(nb);		
+			if(IS_POSITIVE(out.size()) == func(sa,sb))
+				out.push_back(b[nb]);
+			++nb;
+		}
+		else if (nb == b.size())
+		{
+			sa = IS_POSITIVE(na);		
+			if(IS_POSITIVE(out.size()) == func(sa,sb))
+				out.push_back(a[na]);
+			++na;
+		}
+		else
+		{
+			if(a[na] < b[nb])
+			{
+				sa = IS_POSITIVE(na);		
+				if(IS_POSITIVE(out.size()) == func(sa,sb))
+					out.push_back(a[na]);
+				++na;
+			}
+			else if(a[na] > b[nb])
+			{
+				sb = IS_POSITIVE(nb);		
+				if(IS_POSITIVE(out.size()) == func(sa,sb))
+					out.push_back(b[nb]);
+				++nb;			
+			}
+			else
+			{
+				sa = IS_POSITIVE(na);		
+				sb = IS_POSITIVE(nb);		
+				if(IS_POSITIVE(out.size()) == func(sa,sb))
+					out.push_back(b[nb]);
+				++na;
+				++nb;
+			}
+		}
+	}
+}
+
+void IntersectRanges(vector<double>& o, const vector<double>& a)
+{
+	vector<double>	temp;
+	IntersectRanges(temp, o, a);
+	swap(o, temp);
+}
+
+
+
+BoxRasterizer::BoxRasterizer(PolyRasterizer * raster, double baseline, double limit, double i)
+{
+	stop = limit;
+	rasterizer = raster;
+	interval =  i;
+	y = baseline;
+	
+	double next_event = y+1;
+	rasterizer->GetLine(range, next_event);
+	
+	scan();	
+}
+
+	
+bool	BoxRasterizer::GetNextBox(double& x1, double& y1, double& x2, double& y2)
+{
+	if (y >= stop) return false;
+	if(rasterizer->DoneScan()) return false;
+	
+	if(output_idx < output.size())
+	{
+		y1 = output_y;
+		y2 = y1 + interval;
+		x1 = output[output_idx];
+		x2 = output[output_idx+1];
+		output_idx += 2;
+		return true;
+	}
+	else
+	{
+		scan();
+		if(rasterizer->DoneScan()) return false;
+		if (y >= stop) return false;
+		
+		assert(output.size() >= 2);
+		y1 = output_y;
+		y2 = y1 + interval;
+		x1 = output[output_idx];
+		x2 = output[output_idx+1];
+		output_idx += 2;
+		return true;
+	}
+}
+
+void BoxRasterizer::scan(void)
+{
+	while(1)
+	{
+		if(range.empty())
+		{
+			// This scan line is already empty.  Either we never had any regions, or the constrictions are too tight.
+			// Either way we want to advance to the next full scan line...or maybe even more.
+			
+			double dy = floor(rasterizer->NextInterestingTime(y+interval));
+			y += interval*(floor((dy-y) / interval));
+			rasterizer->AdvanceScanline(y);
+			if(rasterizer->DoneScan())
+				break;
+			
+			// And load up the next event.
+			next_event = y+interval;
+			rasterizer->GetLine(range, next_event);
+		}
+		else
+		{		
+			bool must_flush = next_event >= y+interval;
+
+			rasterizer->AdvanceScanline(next_event);
+			if(rasterizer->DoneScan()) 
+				break;
+			
+			vector<double>	r;
+			next_event = y+interval;
+			if(must_flush) 
+				next_event += interval;
+			rasterizer->GetLine(r, next_event);
+					
+			if(must_flush)
+			{
+				IntersectRanges(output, r, range);
+				range = r;
+				
+				if(!output.empty())
+				{
+					output_idx = 0;
+					output_y = y;
+					y += interval;
+					return;
+				}
+				y += interval;
+			}
+			else
+			{
+				IntersectRanges(range, r);
+			}
+		}
+	}
+}
+
+

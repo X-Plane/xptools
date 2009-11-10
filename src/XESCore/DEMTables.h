@@ -225,7 +225,8 @@ inline bool	HasVariant(int lhs);
 inline int		OtherVariant(int terrain);								// Returns a different variant of the terrain
 inline int		AnyVariant(int terrain);								// Returns any variant of the terrain randomly
 inline int		SpecificVariant(int terrain, int i);					// Use i (0-4) as a seed - get variant
-void	GetForestMapping(map<int,int>& forests);
+//void	GetForestMapping(map<int,int>& forests);
+void			GetForestTypes(set<int>& forests);
 
 bool	IsAirportTerrain(int t);
 

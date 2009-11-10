@@ -44,10 +44,8 @@
 #define __DEBUGGING__
 #include "XUtils.h"
 #endif
-#define PROFILE_PERFORMANCE 1
 
 typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
-//typedef CGAL::Mesh_2::Is_locally_conforming_Gabriel<CDT>	LCP;
 
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
@@ -55,10 +53,20 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define LOW_RES_WATER_INTERVAL 40
 #endif
 
+// This adds more vertices to cliffs.
+#define SPLIT_CLIFFS 0
+
 // Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
 #define NO_BORDERS_AT_ALL 0
 
+// This disables borders from neighboring DSFs.  Generally you ALWAYS want border sharing on.  If you see weird borders along the edge of the DSF, turn
+// this off to see if the neighboring DSF is causing them.
 #define NO_BORDER_SHARING 0
+
+// This causes the alg to print out timing of individual meshing steps.
+#define PROFILE_PERFORMANCE 1
+
+
 
 #define DEBUG_DROPPED_PTS 0
 
@@ -1524,8 +1532,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 //	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
 //	DoUserAlert("Split Contraints");
 
-	set<Point_2> splits_needed;
+#if SPLIT_CLIFFS
 
+	set<Point_2> splits_needed;
 	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
 	{
 		if(tri_is_cliff(outMesh, f))
@@ -1550,6 +1559,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		InsertAnyPoint(orig, outMesh, *n, hint);
 //		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
 	}
+#endif
 
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
 	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
@@ -1797,7 +1807,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 				tri->info().mesh_temp = tm;
 				tri->info().mesh_rain = rn;
-			#if DEV
+			#if OPENGL_MAP
+				tri->info().debug_terrain_orig = terrain;
 				tri->info().debug_slope_dem = sl;
 				tri->info().debug_slope_tri = sl_tri;
 				tri->info().debug_temp_range = tmr;
@@ -2733,22 +2744,3 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 }
 
 
-void hacksubdivide(CDT& io_cdt)
-{
-	vector<CDT::Point>	p;
-	for(CDT::Finite_faces_iterator f = io_cdt.finite_faces_begin(); f != io_cdt.finite_faces_end(); ++f)
-	for(int n = 0; n < 3; ++n)
-	{
-		CDT::Face_handle f1(f);
-		CDT::Face_handle f2(f1->neighbor(n));
-		
-		if(&*f1 > &*f2)
-		if(f1->is_constrained(n))
-		{
-			Point_2	p1(f1->vertex(CDT::ccw(n))->point());
-			Point_2	p2(f1->vertex(CDT::cw (n))->point());
-			p.push_back(CGAL::midpoint(p1,p2));
-		}		
-	}
-	io_cdt.insert(p.begin(), p.end());
-}
