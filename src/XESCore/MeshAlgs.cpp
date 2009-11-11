@@ -2489,8 +2489,8 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 								   last_plane.ndotp) / -last_plane.n.dz;
 					
 					float derr = real - ideal;
-					if(fabs(derr) > 300.0)	
-						printf("Huge error.\n");
+//					if(fabs(derr) > 300.0)	
+//						printf("Huge error.\n");
 					out_min = min(out_min,derr);
 					out_max = max(out_max,derr);
 					out_ave += derr;
