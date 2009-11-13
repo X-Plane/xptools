@@ -54,7 +54,7 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #endif
 
 // This adds more vertices to cliffs.
-#define SPLIT_CLIFFS 0
+#define SPLIT_CLIFFS 1
 
 // Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
 #define NO_BORDERS_AT_ALL 0
@@ -1813,6 +1813,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				tri->info().debug_slope_tri = sl_tri;
 				tri->info().debug_temp_range = tmr;
 				tri->info().debug_heading = sh_tri;
+				tri->info().debug_re = re;
+				tri->info().debug_er = er;				
 				tri->info().debug_lu[0] = lu0;
 				tri->info().debug_lu[1] = lu1;
 				tri->info().debug_lu[2] = lu2;

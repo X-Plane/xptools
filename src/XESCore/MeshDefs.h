@@ -113,6 +113,8 @@ struct	MeshFaceInfo {
 	float			debug_slope_tri;
 	float			debug_temp_range;
 	float			debug_heading;
+	float			debug_re;
+	float			debug_er;	
 	float			debug_lu[5];
 #endif	
 };
