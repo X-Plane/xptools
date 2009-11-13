@@ -40,7 +40,6 @@
 #include <CGAL/Polyline_simplification_2.h>
 #include <CGAL/Polyline_simplification_2/Squared_distance_cost.h>
 #include <CGAL/Polyline_simplification_2/Stop_below_cost_threshold.h>
-//#include <CGAL/Polyline_simplification_2/Visitor_base.h>
 #endif
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
