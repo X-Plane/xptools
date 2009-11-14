@@ -496,6 +496,7 @@ int main(int argc, char * argv[])
 #else
 	RF_Application	app;
 #endif
+	setlocale(LC_ALL,"en_US.UTF-8");
 
 	XGrindInit();
 
