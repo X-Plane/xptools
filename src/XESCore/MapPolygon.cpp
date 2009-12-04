@@ -6,6 +6,7 @@
 #include "hl_types.h"
 #include "MapPolygon.h"
 #include "STLUtils.h"
+#include "MapAlgs.h"
 
 void	PolygonFromCCB(Pmwx::Ccb_halfedge_const_circulator circ, Polygon_2& out_poly, RingInset_t * out_inset, Inset_f func,Bbox_2 * extent)
 {
@@ -434,7 +435,18 @@ static double calc_err(Halfedge_handle h, float max_err)
 
 void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 {
+#if CGAL_BETA_SIMPLIFIER
+	if(ioPolygon.is_empty())	
+		return;
+//	printf("Before: %d polys, %d vertices.\n", ioPolygon.arrangement().number_of_faces(), ioPolygon.arrangement().number_of_vertices());
 	Pmwx pmwx(ioPolygon.arrangement());
+	MapSimplify(pmwx, max_err);
+	ioPolygon = Polygon_set_2(pmwx);
+//	printf("After: %d polys, %d vertices.\n", ioPolygon.arrangement().number_of_faces(), ioPolygon.arrangement().number_of_vertices());
+#else
+
+	Pmwx pmwx(ioPolygon.arrangement());
+	
 
 	Pmwx::Ccb_halfedge_circulator circ,stop;
 	Pmwx::Hole_iterator h;
@@ -525,7 +537,7 @@ void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 	ioPolygon = Polygon_set_2(pmwx);
 
 //	printf("Originally: %d.  Max possible remove: %d.  Actual remove: %d.\n", orig, total, ctr);
-
+#endif
 }
 
 // Make a polygon simpel as follows:

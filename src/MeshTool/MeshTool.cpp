@@ -24,6 +24,7 @@
 #include "../XPTools/version.h"
 #include "MeshTool_Create.h"
 
+#include "DEMTables.h"
 #include "XESInit.h"
 #include "XESIO.h"
 #include "DEMIO.h"
@@ -102,6 +103,7 @@ int	main(int argc, char * argv[])
 		CGAL::set_error_handler(CGALFailure);
 
 		XESInit();
+		MakeDirectRules();
 
 		if(argc != 6)
 		{
@@ -366,6 +368,14 @@ int	main(int argc, char * argv[])
 				proj_t[0] = proj_t[1] = 0.0;
 				proj_t[2] = proj_t[3] = 1.0;
 				MT_OrthoPhoto(cus_ter, proj_lon, proj_lat, proj_s,proj_t,use_wat);
+			}
+			if(sscanf(buf,"SHAPEFILE_MASK %s",&shp_path)==1)
+			{
+				MT_Mask(shp_path);
+			}
+			if(strncmp(buf,"CLEAR_MASK",strlen("CLEAR_MASK"))==0)
+			{
+				MT_Mask(NULL);
 			}
 
 		}

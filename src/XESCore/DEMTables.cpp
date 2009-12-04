@@ -1045,3 +1045,50 @@ void			GetForestTypes(set<int>& forests)
 //{
 //	forests = sForests;
 //}
+
+void MakeDirectRules(void)
+{
+	vector<NaturalTerrainInfo_t>	nr;
+	for(NaturalTerrainIndex::iterator all_names = gNaturalTerrainIndex.begin(); all_names != gNaturalTerrainIndex.end(); ++all_names)
+	{
+		NaturalTerrainInfo_t	rule(gNaturalTerrainTable[all_names->second]);
+//		printf("Terrain %s comes from line %d (%s->%s)\n", 
+//			FetchTokenString(all_names->first),
+//			all_names->second,
+//			FetchTokenString(gNaturalTerrainTable[all_names->second].terrain),
+//			FetchTokenString(gNaturalTerrainTable[all_names->second].name));
+		
+		rule.terrain = all_names->first;
+		rule.landuse = NO_VALUE;
+		rule.climate = NO_VALUE;
+		rule.elev_min = rule.elev_max = 0.0f;
+		rule.slope_min = rule.slope_max = 0.0;
+		rule.temp_min = rule.temp_max = 0.0;
+		rule.temp_rng_min = rule.temp_rng_max = 0.0;
+		rule.rain_min = rule.rain_max = 0.0;
+		rule.near_water = 0;
+		rule.slope_heading_min = rule.slope_heading_max = 0.0;
+		rule.rel_elev_min = rule.rel_elev_max;
+		rule.elev_range_min = rule.elev_range_max;
+
+		rule.urban_density_min= 0.0;
+		rule.urban_density_max= 0.0;
+		rule.urban_radial_min= 0.0;
+		rule.urban_radial_max= 0.0;
+		rule.urban_trans_min= 0.0;
+		rule.urban_trans_max= 0.0;
+		rule.urban_square = 0;
+
+		rule.lat_min=0.0;
+		rule.lat_max=0.0;
+		rule.variant=0;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
+//		printf("Adding rule: %s->%s\n", FetchTokenString(rule.terrain), FetchTokenString(rule.name));
+		nr.push_back(rule);
+	}
+	
+	int num_inserts = nr.size();
+	gNaturalTerrainTable.insert(gNaturalTerrainTable.begin(), nr.begin(),nr.end());
+	for(NaturalTerrainIndex::iterator all_names = gNaturalTerrainIndex.begin(); all_names != gNaturalTerrainIndex.end(); ++all_names)
+		all_names->second += num_inserts;
+
+}

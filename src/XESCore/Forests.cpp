@@ -25,6 +25,7 @@
 #include "MapDefs.h"
 #include "MeshDefs.h"
 #include "MapAlgs.h"
+#include "MapPolygon.h"
 #include "AssertUtils.h"
 #include "DEMTables.h"
 #include "CompGeomUtils.h"
@@ -44,6 +45,8 @@
 #include "RF_Globals.h"
 
 #endif
+
+#define POST_SIMPLIFY 0.001
 
 int	tri_forest_type(CDT::Face_handle f)
 {
@@ -282,6 +285,8 @@ void GenerateForests(
 				forest_area.join(tris.begin(), tris.end());
 
 				forest_area.intersection(fp->second);
+				
+				SimplifyPolygonMaxMove(fp->second, POST_SIMPLIFY);
 
 				vector<Polygon_with_holes_2>	forests;
 				forest_area.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(forests));

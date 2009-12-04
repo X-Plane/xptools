@@ -53,8 +53,11 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define LOW_RES_WATER_INTERVAL 40
 #endif
 
+// Burn every road segment!
+#define BURN_ROADS 0
+
 // This adds more vertices to cliffs.
-#define SPLIT_CLIFFS 1
+#define SPLIT_CLIFFS 0
 
 // Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
 #define NO_BORDERS_AT_ALL 0
@@ -115,6 +118,11 @@ inline bool must_burn_he(Halfedge_handle he)
 	
 	if(f1->is_unbounded() || f2->is_unbounded()) 
 		return false;
+
+#if BURN_ROADS
+	if(!he->data().mSegments.empty() ||
+		!he->twin()->data().mSegments.empty()) return true;
+#endif
 	
 	return he->data().mParams.count(he_MustBurn) ||
 		   tw->data().mParams.count(he_MustBurn) ||

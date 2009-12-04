@@ -66,6 +66,9 @@ void	GenerateInsets(
 					vector<PreinsetFace>&	outInsets,
 					ProgressFunc			func);
 
+void	SubtractPlaced(
+					PreinsetFace&			face);
+
 
 void	DumpPlacementCounts(void);
 

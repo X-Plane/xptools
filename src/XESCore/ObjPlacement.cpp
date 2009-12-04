@@ -1850,3 +1850,41 @@ void	GenerateInsets(
 	printf("Good polys: %d bad polys: %d\n", good_poly, bad_poly);
 }
 
+
+
+void	SubtractPlaced(
+					PreinsetFace&			f)
+{
+	vector<Polygon_2>	goo;
+	goo.reserve(f.first->data().mPolyObjs.size() + f.first->data().mObjs.size());
+	
+	for (int j = 0; j < f.first->data().mPolyObjs.size(); ++j)
+		goo.push_back(f.first->data().mPolyObjs[j].mShape.outer_boundary());
+		
+	for (int j = 0; j < f.first->data().mObjs.size(); ++j)
+	{	
+			Point2	corners[4];
+
+		double	x1 = CGAL::to_double(f.first->data().mObjs[j].mLocation.x());
+		double	y1 = CGAL::to_double(f.first->data().mObjs[j].mLocation.y());
+		double r = f.first->data().mObjs[j].mHeading;
+
+		double	w = gRepTable[gRepFeatureIndex[f.first->data().mObjs[j].mRepType]].width_min;
+		double	h = gRepTable[gRepFeatureIndex[f.first->data().mObjs[j].mRepType]].depth_min;
+
+		Quad_1to4(Point2(x1,y1), r, h+50, w+50, corners);
+		
+		Polygon_2	p;
+		p.push_back(ben2cgal(corners[3]));
+		p.push_back(ben2cgal(corners[2]));
+		p.push_back(ben2cgal(corners[1]));
+		p.push_back(ben2cgal(corners[0]));
+		
+		goo.push_back(p);
+	}
+
+	Polygon_set_2	unusable_area;
+	unusable_area.join(goo.begin(),goo.end());
+	
+	f.second.difference(unusable_area);
+}

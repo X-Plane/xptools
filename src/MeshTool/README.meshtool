@@ -1,6 +1,11 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	12/4/09 2.0 Beta 4
+		Natural terrain can be placed via the SHAPEFILE command and others.
+		Masks can limit where commands actuate.
+		Orthophotos can act wet or solid.
+		Meshing code doesn't add extra vertices.
 	11/8/09	2.0 Beta 3
 		Bug fixes:
 			= custom orthophotos crossing the border of the tile are not lost.
@@ -114,7 +119,55 @@ X-Plane has four fundamental land-use types (defined by vectors):
   
 When working with terrain, you can use the names terrain_Water, 
 terrain_Natural, and terrain_Airport for water, natural, and airport
-land-use, respectively.
+land-use, respectively.  When using terrain_Natural and terrain_Airport,
+MeshTool will pick the appropriate actual X-Plane land classes for your
+climate, e.g. your airport will look dry in an area with low rainfall or
+lush and green in a tropical wet area.
+
+You can also use specific X-Plane default terrain.  The terrain name
+is the virtual path of the terrain without the .ter extension or
+lib/g8 prefix.  For example, to use
+
+	lib/g8/terrain/apt_ice4.ter
+
+Use the terrain
+
+	terrain/apt_ice4
+
+Note: name your terrains entirely in lower-case, regardless of 
+capitalization in the library file.  The library file in the default
+scenery pack 900 World Terrain lists all built-in terrain types.
+
+IMPORTANT: the terrains that are available are the ones defined in the
+config folder - the config folder that ships with MeshTool matches the
+default terrain that X-Plane shipped with for version 9.00.
+(That is, is is the current released global terrain config spec.)  If you
+want to use your own land classes there are two ways to do this:
+
+1. Pick an unused terrain type and, after creating the DSF, use DSF2Text
+to edit the header of the DSF, naming another .ter file.
+
+2. Use a library.txt file in your pack to redirect the .ter file to your
+resources.  You can use the "region" feature of library files to to
+assure that this only happens to your custom mesh DSFs.  See the 
+library.txt format spec and other library docs on scenery.x-plane.com for
+more info.
+
+Note: most of the subtle terrain effects in the global scenery come from
+the careful choice among terrains within the ruleset, not from the terrain
+textures themselves.  Thus if you directly specify a terrain type, you
+will not get:
+- Cliff effects.
+- Rock slides oriented toward the direction of gravity.
+- Automatic break-up of large repeating areas.
+
+Warning: when you create a terrain area with a shapefile, mesh vertices 
+are inserted to guarantee that the edge of the area precisely matches your
+shapefile, no matter how detailed.  Thus if you use a highly detailed
+shapefile, you will end up with a huge number of vertices at the border
+of the terrain, EVEN if the terrain is flat and the vertices are thus
+totally unnecessary.  It is strongly recommended that you reduce the
+vertex count of your shape files as much as possible!
  
 Land uses are layered - with the later land uses in the file overlapping 
 the earlier ones.  For example, you can create a single polygon covering
@@ -210,6 +263,21 @@ can be built with correct image size loading directives.  (See LOAD_CENTER
 in the .ter file spec.)  If this inforamtion is not available, MeshTool assumes
 1024x1024 for QMID and 2048x2048 for GeoTIFF; you may have to edit your .ter
 files later.
+
+When you specify an orthophoto, a "wet" flag tells how you want water to be
+handled.  The options are:
+
+0	No water.  The orthophoto must be opaque, no water is drawn under it.
+	This is the fastest potoin for frame-rate.
+1	Water, Solid.  Water is drawn under transparent parts of the orthophoto,
+	but the entire orthophoto is marked as "solid", using the surface type in
+	The .ter file.  You may see water, but a seaplane cannot land on it.
+2.	Water, Wet.  Water is drawn under the transparent parts of the orthophoto,
+	and the entire orthophoto acts "wet".  Note that even the opaque parts of
+	the orthophoto act wet.
+	
+X-Plane does not allow the 'physics' of a tile to vary with the alpha channel
+of an image; see the section on masks at the end of the "advanced" section.
 
 ORTHOPHOTO <wet> <bl> <br> <tr> <tl> <filename>
 
@@ -353,6 +421,34 @@ texture (0 is the bottom, 1 is the top).
 
 Important: make sure that no polygon coordinates for the custom terrain are
 outside the bounds of the PROJECT_POINT quadrangle.
+
+SHAPPEFILE_MASK <file>
+CLEAR_MASK
+
+These commands establish (or remove) an area mask.  When a mask is in effect,
+all commands act _only_ inside the mask.  For example, a QMID or GeoTIFF square
+orthophoto can be 'clipped' to an arbitrary polygonal shape by first setting
+a mask.
+
+One thing you can do with masks is handle water differently in different parts
+of a single orthophoto.  First, include the orthophotos, with the water flag
+set to '1' (solid).  Then set a mask for the wet areas and issue the areas
+again with the water flag set to '2' (wet).  The wet areas will have their
+orthophoto replaced.  (The user will not _see_ any difference since the 
+orthophoto has not changed, but the physics will be different in the two areas.)
+
+Example:
+
+QMID 1 0103333010221
+SHAPEFILE_MASK wet_areas.shp
+QMID 2 0103333010221
+
+In this case, most of 0103333010221 is solid, but the interior of 0103333010221
+that is inside the wet_areas shape file will act wet.
+
+WARNING: masks induce vertices in your mesh, so when using a mask to make wet
+and dry areas, reduce th resolution of your mesh.  Users probably won't notice
+the lack of detail in the physics mesh, but it will save triangles.
 
 -------------------------------------------------------------------------------
 LEGACY COMMANDS

@@ -200,11 +200,26 @@ float GetParamConst(const Face_handle face, int e)
 
 #define	INLAND_BLEND_DIST 5.0
 
-inline bool IsCustomOverWater(int n)
+inline bool IsCustomOverWaterHard(int n)
 {
 	if (n == terrain_Water)	return false;
 	if (n == terrain_VisualWater)	return false;
-	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_water;
+	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_hard_water;
+}
+
+inline bool IsCustomOverWaterSoft(int n)
+{
+	if (n == terrain_Water)	return false;
+	if (n == terrain_VisualWater)	return false;
+	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_soft_water;
+}
+
+inline bool IsCustomOverWaterAny(int n)
+{
+	if (n == terrain_Water)	return false;
+	if (n == terrain_VisualWater)	return false;
+	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_hard_water ||
+			gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_soft_water;
 }
 
 inline bool IsCustom(int n)
@@ -585,6 +600,15 @@ void FixBeachContinuity(
 		} while (retry);
 	}
 }
+bool StripSoft(string& n)
+{
+	if(n.size() > 5 && n.substr(n.size()-5) == "_soft")
+	{
+		n.erase(n.size()-5,5);
+		return true;
+	}
+	return false;
+}
 
 
 string		get_terrain_name(int composite)
@@ -598,8 +622,15 @@ string		get_terrain_name(int composite)
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
 		if(IsCustom(composite))
+		{
+			if(IsCustomOverWaterSoft(composite))
+			{
+				string n=FetchTokenString(composite);
+				StripSoft(n);
+				return n;
+			}
 			return FetchTokenString(composite);
-		else
+		} else
 #if PHONE		
 			return string(FetchTokenString(composite)) + ".ter";
 #else
@@ -663,6 +694,20 @@ struct	ObjPrio {
 };
 
 
+static int IsAliased(int lu)
+{
+	if (lu == terrain_VisualWater) 
+		return terrain_Water;
+	if (IsCustomOverWaterSoft(lu))
+	{
+		string  rn(FetchTokenString(lu));
+		if(!StripSoft(rn)) return NO_VALUE;
+		
+		int lup = LookupToken(rn.c_str());
+		return (lup == -1) ? 0 : lup;
+	}
+	return 0;
+}
 
 void	BuildDSF(
 			const char *	inFileName1,
@@ -711,7 +756,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int>::iterator 		obdef;
 		map<int, int, ObjPrio>::iterator obdef_prio;
 		set<int>::iterator				border_lu;
-		bool							is_water, is_underwater, is_overlay;
+		bool							is_water, is_overlay;
 		list<CDT::Face_handle>::iterator nf;
 
 		Pmwx::Face_iterator						pf;
@@ -877,11 +922,19 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		DebugAssert(fi->info().terrain != -1);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
-		if(IsCustomOverWater(fi->info().terrain))
+
+		if(IsCustomOverWaterHard(fi->info().terrain))
 		{
+			// Over water, but maintain hard physics.  So we need to put ourselves in the visual layer, and make sure there is water for aliasing.
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_VisualWater,0));
 			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_VisualWater);
+		}
+		if(IsCustomOverWaterSoft(fi->info().terrain))
+		{
+			// Over water soft - put us in the water layer.
+			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
+			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_Water);
 		}
 
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
@@ -942,15 +995,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	cur_id = 0;
 	if(writer1)
 	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked)
-	if (lu_ranked->first != terrain_VisualWater)
+	if (!IsAliased(lu_ranked->first))
 	{
 		lu_ranked->second = cur_id;
 		landuses_reversed[cur_id] = lu_ranked->first;
 		++cur_id;
 	}
 	
-	landuses[terrain_VisualWater] = landuses[terrain_Water];
-	
+	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked)
+	if(IsAliased(lu_ranked->first))
+		lu_ranked->second = landuses[IsAliased(lu_ranked->first)];	
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
@@ -963,9 +1017,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT LOW RES ORTHOPHOTO PATCHES
 		 ***************************************************************************************************************************************/
 
-		is_underwater	= lu_ranked->first == terrain_VisualWater;
 		is_water		= lu_ranked->first == terrain_VisualWater || lu_ranked->first == terrain_Water;
-		is_overlay		= IsCustomOverWater(lu_ranked->first);
+		is_overlay		= IsCustomOverWaterAny(lu_ranked->first);		// This layer is an overlay to water, so be sure to set the flags!
 		
 #if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
@@ -1030,7 +1083,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first || (IsCustomOverWater(f->info().terrain) && lu_ranked->first == terrain_VisualWater))
+				if (f->info().terrain == lu_ranked->first || 
+					(IsCustomOverWaterHard(f->info().terrain) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
+					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -1041,9 +1096,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			fan_builder.CalcFans();
 
 			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, 
-									is_overlay ? (dsf_Flag_Overlay | dsf_Flag_Physical) :
-									(is_underwater ? 0 : dsf_Flag_Physical), is_water ? 7 : (pinfo ? 7 : 5), writer1);
+			
+			int flags = 0;
+			if(is_overlay)  flags |= dsf_Flag_Overlay;
+			if(lu_ranked->first != terrain_VisualWater &&			// Every patch is physical EXCEPT: visual water, obviously just for looks!
+				!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
+				flags |= dsf_Flag_Physical;						
+			
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, is_water ? 7 : (pinfo ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
 			list<CDT::Vertex_handle>::iterator		vert;
 			int										primt;

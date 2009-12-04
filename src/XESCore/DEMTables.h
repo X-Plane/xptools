@@ -150,6 +150,8 @@ int		FindNaturalTerrain(
 				int		variant_blob,
 				int		variant_head);	// use 0
 
+void	MakeDirectRules(void);
+
 /************************************************************************
  * ZONED TERRAIN PROMOTIONS
  ************************************************************************/
@@ -243,11 +245,6 @@ void	GetNaturalTerrainColor(int terrain, float rgb[3]);
 /************************************************************************
  * CUSTOM TEXTURES
  ************************************************************************/
-enum {
-	tex_not_custom = 0,
-	tex_custom = 1,
-	tex_custom_water = 2
-};
 
 struct tex_proj_info {
 	Point2	corners[4];
@@ -256,6 +253,12 @@ struct tex_proj_info {
 typedef map<int,tex_proj_info>		TexProjTable;
 extern TexProjTable					gTexProj;
 
+enum {
+    tex_not_custom = 0,
+    tex_custom_no_water = 1,
+    tex_custom_hard_water = 2,
+    tex_custom_soft_water = 3
+};
 
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 {

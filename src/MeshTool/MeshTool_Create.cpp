@@ -60,6 +60,7 @@ static int								layer_type = NO_VALUE;
 static Polygon_2						ring, the_hole;
 static vector<Polygon_2>				holes;
 static vector<Polygon_with_holes_2>		layer;
+static Polygon_set_2					layer_mask;
 static vector<X_monotone_curve_2>		net;
 static int								zlimit=0,zmin=30000,zmax=-2000;
 static MT_Error_f						err_f=NULL;
@@ -295,7 +296,7 @@ int MT_CreateCustomTerrain(
 	nt.layer = 0;
 	nt.xon_dist = 0;
 	nt.xon_hack = 0;
-	nt.custom_ter = back_with_water ? tex_custom_water : tex_custom;
+	nt.custom_ter = (back_with_water == 2) ? tex_custom_soft_water : ((back_with_water == 1) ? tex_custom_hard_water : tex_custom_no_water);
 
 	int rn = gNaturalTerrainTable.size();
 	gNaturalTerrainTable.insert(gNaturalTerrainTable.begin()+(num_cus_terrains++),nt);
@@ -337,6 +338,8 @@ void MT_LayerEnd(void)
 		if (!layer.empty())
 		{
 			layer_map.join(layer.begin(), layer.end());
+			if(!layer_mask.is_empty())
+				layer_map.intersection(layer_mask);
 
 			for(Pmwx::Face_iterator f = layer_map.arrangement().faces_begin(); f != layer_map.arrangement().faces_end(); ++f)
 			if (f->contained())
@@ -509,6 +512,23 @@ void MT_SetMeshSpecs(int max_pts, float max_err)
 	gMeshPrefs.max_error = max_err;
 }
 
+void MT_Mask(const char * shapefile)
+{
+	if(shapefile == NULL)
+		layer_mask.clear();
+	else
+	{
+		Pmwx	mask_map;
+		double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
+		if(!ReadShapeFile(shapefile,mask_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , "terrain_Water", b, 0.0, 0, ConsoleProgressFunc))
+			die_err("Unable to load shape file: %s\n", shapefile);
+
+		for(Pmwx::Face_iterator f = mask_map.faces_begin(); f != mask_map.faces_end(); ++f)
+			f->set_contained(!f->is_unbounded() && f->data().IsWater());
+		
+		layer_mask = mask_map;
+	}
+}
 
 void MT_OrthoPhoto(
 					const char * terrain_name,
@@ -518,7 +538,10 @@ void MT_OrthoPhoto(
 					double		 proj_t[4],
 					int			 back_with_water)
 {
-	int t = MT_CreateCustomTerrain(terrain_name, proj_lon,proj_lat,proj_s,proj_t,back_with_water);
+	string tname(terrain_name);
+	if(back_with_water == 2)
+		tname += "_soft";
+	int t = MT_CreateCustomTerrain(tname.c_str(), proj_lon,proj_lat,proj_s,proj_t,back_with_water);
 	MT_LayerStart(t);
 	MT_PolygonStart();
 	for(int n = 0; n < 4; ++n)
