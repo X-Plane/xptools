@@ -769,14 +769,13 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 	Segment2	s2(tp2, tp3);
 	Segment2	s3(tp3, tp1);
 
-	double d1 = s1.squared_distance_supporting_line(vp);
-	double d2 = s2.squared_distance_supporting_line(vp);
-	double d3 = s3.squared_distance_supporting_line(vp);
-	double d4 = tp1.squared_distance(vp);
-	double d5 = tp2.squared_distance(vp);
-	double d6 = tp3.squared_distance(vp);
+	// BEN SAYS: squared dist to line is the dist to the supporting line if we are withn the interval, or dist to vertices
+	// otherwise.  So this is good enough to do the whole tri.  This is INCORRECT for pts in the INTERIOR of the tri, but 
+	// we have to trust CGAL's mesh to never give us a point INSIDE the tri!
+	double d1 = s1.squared_distance(vp);
+	double d2 = s2.squared_distance(vp);
+	double d3 = s3.squared_distance(vp);
 
-	double	nearest = min(min(d1, d2), min(min(d3, d4), min(d5, d6)));
 	return sqrt(nearest);
 }
 
