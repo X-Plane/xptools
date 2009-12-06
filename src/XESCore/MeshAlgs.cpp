@@ -776,7 +776,7 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 	double d2 = s2.squared_distance(vp);
 	double d3 = s3.squared_distance(vp);
 
-	return sqrt(nearest);
+	return sqrt(min(min(d1,d2),d3));
 }
 
 
