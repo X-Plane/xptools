@@ -52,11 +52,39 @@ static const double kApplyCtrlX2[9] = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 
 static const double kApplyCtrlY1[9] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
 static const double kApplyCtrlY2[9] = { 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
 
+static const double kApplyCtrlCtrX1[9] = { 1.0, 1.0, 1.0, 0.0,-1.0,-1.0,-1.0, 0.0, 1.0 };
+static const double kApplyCtrlCtrX2[9] = {-1.0,-1.0,-1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0 };
+static const double kApplyCtrlCtrY1[9] = { 1.0, 0.0,-1.0,-1.0,-1.0, 0.0, 1.0, 1.0, 1.0 };
+static const double kApplyCtrlCtrY2[9] = {-1.0, 0.0, 1.0, 1.0, 1.0, 0.0,-1.0,-1.0, 1.0 };
+
+static const double kApplyCtrlPropX1[9] = { 1.0, 1.0, 1.0,-0.5, 0.0, 0.0, 0.0, 0.5, 1.0 };
+static const double kApplyCtrlPropX2[9] = { 0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0,-0.5, 1.0 };
+static const double kApplyCtrlPropY1[9] = { 1.0, 0.5, 0.0, 0.0, 0.0,-0.5, 1.0, 1.0, 1.0 };
+static const double kApplyCtrlPropY2[9] = { 0.0,-0.5, 1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 1.0 };
+
+static const double kApplyCtrlPropCtrX1[9] = { 1.0, 1.0, 1.0,-0.5,-1.0,-1.0,-1.0, 0.5, 1.0 };
+static const double kApplyCtrlPropCtrX2[9] = {-1.0,-1.0,-1.0, 0.5, 1.0, 1.0, 1.0,-0.5, 1.0 };
+static const double kApplyCtrlPropCtrY1[9] = { 1.0, 0.5,-1.0,-1.0,-1.0,-0.5, 1.0, 1.0, 1.0 };
+static const double kApplyCtrlPropCtrY2[9] = {-1.0,-0.5, 1.0, 1.0, 1.0, 0.5,-1.0,-1.0, 1.0 };
+
+// 1. Make CORNER prop work, probably average dx,dy for now, and then update prop and prop ctr tables
+// 2. Modify icons for the non-drag case to make this easier to visualize.
+// 3. Copy to TCE code too!
+
 // How much to transform each point when we drag a LINK!
 static const double kApplyLinkX1[8] = { 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 static const double kApplyLinkX2[8] = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 };
 static const double kApplyLinkY1[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
 static const double kApplyLinkY2[8] = { 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
+
+static marquee_mode_t	mode_for_modifiers(GUI_KeyFlags flags, bool rotate_ok)
+{
+	if (rotate_ok) if (flags & gui_OptionAltFlag) return mm_Rotate;
+	if (flags & gui_ShiftFlag)
+		return (flags & gui_ControlFlag) ? mm_Prop_Center : mm_Center;
+	else
+		return (flags & gui_ControlFlag) ? mm_Prop : mm_Drag ;
+}
 
 WED_MarqueeTool::WED_MarqueeTool(
 										const char *			tool_name,
@@ -65,8 +93,7 @@ WED_MarqueeTool::WED_MarqueeTool(
 										IResolver *				resolver) :
 				WED_HandleToolBase(tool_name, host, zoomer, resolver),
 				mCacheKeyArchive(-1),
-				mInEdit(0),
-				mIsRotate(0)
+				mEditMode(mm_None)
 {
 	SetControlProvider(this);
 }
@@ -81,8 +108,7 @@ void	WED_MarqueeTool::BeginEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->StartOperation("Marquee Drag");
-	mInEdit=0;
-	mIsRotate=0;
+	mEditMode=mm_None;
 }
 
 void	WED_MarqueeTool::EndEdit(void)
@@ -91,8 +117,7 @@ void	WED_MarqueeTool::EndEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->CommitOperation();
-	mIsRotate=0;
-	mInEdit=0;
+	mEditMode=mm_None;
 }
 
 int		WED_MarqueeTool::CountEntities(void) const
@@ -118,38 +143,67 @@ int		WED_MarqueeTool::CountControlHandles(intptr_t id						  ) const
 
 void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-	if (mIsRotate)
+	marquee_mode_t show_mode = (mEditMode == mm_None) ? mode_for_modifiers(GetHost()->GetModifiersNow(),true) : mEditMode;
+	
+	if(mEditMode == mm_Rotate)
 	{
 		if(p) *p = (n == 0) ? mRotateCtr : mRotatePt;
 		if(active) *active=(n<2);
 		if(con_type) *con_type = n==1 ? handle_Rotate : (n==0 ? handle_Square : handle_None);
 		if(direction) *direction=Vector2(mRotateCtr,mRotatePt);
-	}
-	else
-	{
-		int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag) && !mCacheBounds.is_point();
-		if(active) *active=(mCacheBounds.is_point() ? (n == 8) : 1);
-		if (con_type) *con_type = mCacheIconic ? handle_Icon : ((could_rotate && n < 8) ? handle_RotateHead : handle_Square);
-		if (radius && mCacheIconic) *radius = GetFurnitureIconRadius();
-		if (direction) *direction=Vector2(0,1);
-		if (p)
+
+	} else {
+
+		if(mCacheBounds.is_point())
 		{
-			if (!GetTotalBounds())
+			if(active) *active = (n == 8);
+			if (con_type) *con_type = handle_Icon;
+			if (radius) *radius = GetFurnitureIconRadius();
+			if (direction) *direction=Vector2(0,1);
+			if (p)
 			{
-				*p = Point2(); return;
+				if (!GetTotalBounds())
+					*p = Point2(); return;
+
+				p->x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
+				p->y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];
 			}
-
-			if (mCacheBounds.is_point()) n = 8;
-
-			p->x_ = mCacheBounds.p1.x() * kControlsX1[n] + mCacheBounds.p2.x() * kControlsX2[n];
-			p->y_ = mCacheBounds.p1.y() * kControlsY1[n] + mCacheBounds.p2.y() * kControlsY2[n];
 		}
-		if (p && direction && could_rotate)
+		else if (show_mode == mm_Rotate)
 		{
-			Point2 ctr;
-			ctr.x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
-			ctr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];
-			*direction = Vector2(ctr,*p);
+			if(active) *active=1;
+			if (con_type) *con_type = (n == 8) ? handle_Square : handle_RotateHead;
+			if (p)
+			{
+				if (!GetTotalBounds())
+				{
+					*p = Point2(); return;
+				}
+				p->x_ = mCacheBounds.p1.x() * kControlsX1[n] + mCacheBounds.p2.x() * kControlsX2[n];
+				p->y_ = mCacheBounds.p1.y() * kControlsY1[n] + mCacheBounds.p2.y() * kControlsY2[n];
+			}
+			if (direction) *direction=Vector2(
+					Point2(
+						mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8],
+						mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8]),
+					Point2(
+						mCacheBounds.p1.x() * kControlsX1[n] + mCacheBounds.p2.x() * kControlsX2[n],
+						mCacheBounds.p1.y() * kControlsY1[n] + mCacheBounds.p2.y() * kControlsY2[n]));
+		}
+		else
+		{	
+			if(active) *active=1;
+			if (con_type) *con_type = handle_Square;
+			if (direction) *direction=Vector2(0,1);
+			if (p)
+			{
+				if (!GetTotalBounds())
+				{
+					*p = Point2(); return;
+				}
+				p->x_ = mCacheBounds.p1.x() * kControlsX1[n] + mCacheBounds.p2.x() * kControlsX2[n];
+				p->y_ = mCacheBounds.p1.y() * kControlsY1[n] + mCacheBounds.p2.y() * kControlsY2[n];
+			}
 		}
 	}
 }
@@ -164,17 +218,8 @@ int		WED_MarqueeTool::GetLinks		    (intptr_t id) const
 
 void	WED_MarqueeTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkType_t * ltype) const
 {
-	int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag);
-	if (could_rotate)
-	{
-		if (active) *active=1;
-		if (ltype) *ltype = link_Marquee;
-	}
-	else
-	{
-		if (active) *active=1;
-		if (ltype) *ltype = link_Marquee;
-	}
+	if (active) *active=1;
+	if (ltype) *ltype = link_Marquee;
 }
 
 int		WED_MarqueeTool::GetNthLinkSource   (intptr_t id, int n) const
@@ -199,13 +244,24 @@ int		WED_MarqueeTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 
 bool	WED_MarqueeTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
-	return false;
+	if (!GetTotalBounds()) return false;
+	return mCacheBounds.contains(p);
 }
 
 void	WED_MarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
+	
+	if(mEditMode == mm_None)
+	{
+		GUI_KeyFlags flags = GetHost()->GetModifiersNow();
+		if (flags & gui_OptionAltFlag)
+			WED_DoDuplicate(GetResolver(), false);
+	}
+	
+	mEditMode = mm_Drag;
+
 	new_b = mCacheBounds;
 	new_b.p1 += delta;
 	new_b.p2 += delta;
@@ -217,13 +273,12 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
 
-	if (mInEdit==0)
+	if (mEditMode == mm_None)
 	{
-		mInEdit=1;
 		GUI_KeyFlags flags = GetHost()->GetModifiersNow();
-		mIsRotate = (flags & gui_OptionAltFlag) && (c != 8);
+		mEditMode = mode_for_modifiers(flags, c != 8);
 
-		if (mIsRotate)
+		if (mEditMode == mm_Rotate)
 		{
 			mRotateCtr.x_ = mCacheBounds.p1.x() * kControlsX1[8] + mCacheBounds.p2.x() * kControlsX2[8];
 			mRotateCtr.y_ = mCacheBounds.p1.y() * kControlsY1[8] + mCacheBounds.p2.y() * kControlsY2[8];
@@ -236,33 +291,106 @@ void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta
 			WED_DoDuplicate(GetResolver(), false);
 		}
 	}
-
-	if (mIsRotate)
+	
+	Vector2	d(delta);
+	
+	if(mCacheBounds.xspan() != 0.0 && mCacheBounds.yspan() != 0.0)			// Don't run if bbox is degenerate - we can't preserve its aspect ratio, which is 0 or infinite.
+	if(delta.dx != 0.0 || delta.dy != 0.0)									// Don't run if no delta, we get a div-by-zero in vector project.
+	if (mEditMode == mm_Prop_Center || mEditMode == mm_Prop)
 	{
-		Point2 new_p;
+		if(c == 1 || c == 5)
+			d.dy = d.dx * mCacheBounds.yspan() / mCacheBounds.xspan();
+		else if (c == 3 || c == 7)
+			d.dx = d.dy * mCacheBounds.xspan() / mCacheBounds.yspan();
+		else if (c < 8)
+		{
+			double l = sqrt(delta.squared_length());
+			Vector2 n = Vector2(fabs(mCacheBounds.xspan()), fabs(mCacheBounds.yspan()));
+			n.normalize();
+			n *= l;
+			
+				 if (c == 0) n    *= -1.0;
+			else if (c == 2) n.dx *= -1.0;
+			else if (c == 6) n.dy *= -1.0;
 
-		new_p = io_pt + delta;
-
-		double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
-		double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
-		ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, delta));
-
-		io_pt = new_p;
-		mRotatePt = io_pt;
-
+			d = n.projection(d);
+		}			
 	}
-	else
-	{
-		new_b = mCacheBounds;
+	
 
-		if (mCacheBounds.is_point()) c = 8;
+	switch(mEditMode) {
+	case mm_Rotate:
+		{
+			Point2 new_p;
 
-		new_b.p1.x_ += (delta.dx * kApplyCtrlX1[c]);
-		new_b.p2.x_ += (delta.dx * kApplyCtrlX2[c]);
-		new_b.p1.y_ += (delta.dy * kApplyCtrlY1[c]);
-		new_b.p2.y_ += (delta.dy * kApplyCtrlY2[c]);
+			new_p = io_pt + d;
 
-		ApplyRescale(mCacheBounds,new_b);
+			double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
+			double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
+			ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, d));
+
+			io_pt = new_p;
+			mRotatePt = io_pt;
+
+		}
+		break;
+	case mm_Center:
+		{
+			new_b = mCacheBounds;
+
+			if (mCacheBounds.is_point()) c = 8;
+
+			new_b.p1.x_ += (d.dx * kApplyCtrlCtrX1[c]);
+			new_b.p2.x_ += (d.dx * kApplyCtrlCtrX2[c]);
+			new_b.p1.y_ += (d.dy * kApplyCtrlCtrY1[c]);
+			new_b.p2.y_ += (d.dy * kApplyCtrlCtrY2[c]);
+
+			ApplyRescale(mCacheBounds,new_b);
+		}
+		break;
+	case mm_Prop_Center:
+		{
+			new_b = mCacheBounds;
+
+			if (mCacheBounds.is_point()) c = 8;
+
+			new_b.p1.x_ += (d.dx * kApplyCtrlPropCtrX1[c]);
+			new_b.p2.x_ += (d.dx * kApplyCtrlPropCtrX2[c]);
+			new_b.p1.y_ += (d.dy * kApplyCtrlPropCtrY1[c]);
+			new_b.p2.y_ += (d.dy * kApplyCtrlPropCtrY2[c]);
+
+			ApplyRescale(mCacheBounds,new_b);
+		}
+		break;
+	case mm_Prop:
+		{
+			new_b = mCacheBounds;
+
+			if (mCacheBounds.is_point()) c = 8;
+
+			new_b.p1.x_ += (d.dx * kApplyCtrlPropX1[c]);
+			new_b.p2.x_ += (d.dx * kApplyCtrlPropX2[c]);
+			new_b.p1.y_ += (d.dy * kApplyCtrlPropY1[c]);
+			new_b.p2.y_ += (d.dy * kApplyCtrlPropY2[c]);
+
+			ApplyRescale(mCacheBounds,new_b);
+		}
+		break;
+	case mm_Drag:
+	default:
+		{
+			new_b = mCacheBounds;
+
+			if (mCacheBounds.is_point()) c = 8;
+
+			new_b.p1.x_ += (d.dx * kApplyCtrlX1[c]);
+			new_b.p2.x_ += (d.dx * kApplyCtrlX2[c]);
+			new_b.p1.y_ += (d.dy * kApplyCtrlY1[c]);
+			new_b.p2.y_ += (d.dy * kApplyCtrlY2[c]);
+
+			ApplyRescale(mCacheBounds,new_b);
+		}
+		break;
 	}
 }
 
@@ -270,6 +398,9 @@ void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
+
+	mEditMode = mm_Drag;
+	
 	new_b = mCacheBounds;
 
 	new_b.p1.x_ += (delta.dx * kApplyLinkX1[c]);

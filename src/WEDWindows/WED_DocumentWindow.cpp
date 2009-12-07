@@ -228,14 +228,16 @@ WED_DocumentWindow::WED_DocumentWindow(
 	int zw[2];
 	XWin::GetBounds(zw,zw+1);
 
-//	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
+	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.25f);
+	int main_split2 = inDocument->ReadIntPref("window/main_split2",(zw[0]) * 0.5f);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
 
-//	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
+	if (main_split > (zw[0])) main_split = (zw[0]) * 0.25f;
+	if (main_split2 > (zw[0] - main_split)) main_split2 = (zw[0]) * 0.5f;
 	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
 
-	mMainSplitter->AlignContentsAt(300);
-	mMainSplitter2->AlignContentsAt(600);
+	mMainSplitter->AlignContentsAt(main_split);
+	mMainSplitter2->AlignContentsAt(main_split2);
 	mPropSplitter->AlignContentsAt(prop_split);
 	mMapPane->ZoomShowAll();
 
@@ -277,6 +279,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
 #if AIRPORT_ROUTING
 	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
+	case wed_Merge:		WED_DoMerge(mDocument); return 1;
 #endif	
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
@@ -306,6 +309,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
 
+#if AIRPORT_ROUTING
+	case wed_SelectZeroLength:	WED_DoSelectZeroLength(mDocument);	return 1;
+	case wed_SelectDoubles:		WED_DoSelectDoubles(mDocument);		return 1;
+	case wed_SelectCrossing:	WED_DoSelectCrossing(mDocument);	return 1;
+#endif
+
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
@@ -333,6 +342,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Crop:		return	WED_CanCrop(mDocument);
 #if AIRPORT_ROUTING
 	case wed_MakeRouting:
+	case wed_Merge:		return WED_CanMerge(mDocument);
 #endif	
 	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
@@ -363,6 +373,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
 
+#if AIRPORT_ROUTING
+	case wed_SelectZeroLength:
+	case wed_SelectDoubles:
+	case wed_SelectCrossing:	return 1;
+#endif
+
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
@@ -389,6 +405,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mMapPane->ToPrefs(prefs);
 		prefs->WriteIntPref("doc/use_feet",gIsFeet);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
+		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
 	}
 	if (inMsg == msg_DocLoaded)

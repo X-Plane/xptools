@@ -71,6 +71,9 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
+#if AIRPORT_ROUTING
+{	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
+#endif
 {	"Rever&se",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Make Overla&y",		0,		0,								0,	wed_Overlay		},
@@ -124,6 +127,12 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select &Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
 {	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
+#if AIRPORT_ROUTING
+{	"-",				0,				0,								0,	0					},
+{	"Select Zero-Length Edges",	0,		0,								0,	wed_SelectZeroLength },
+{	"Select Double Nodes",	0,			0,								0,	wed_SelectDoubles	},
+{	"Select Crossing Edges",	0,		0,								0,	wed_SelectCrossing	},
+#endif	
 {	NULL,				0,				0,								0,	0					},
 };
 

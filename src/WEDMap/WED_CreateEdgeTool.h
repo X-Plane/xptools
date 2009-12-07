@@ -24,6 +24,13 @@
 #ifndef WED_CreateEdgeTool_H
 #define WED_CreateEdgeTool_H
 
+// Ben says: edges are going to be a general part of future WEDs - not just for
+// taxi routes but for roads!  But since WED 1.1 has NEITHER roads nor tai routes,
+// kill the whole tool.  We can't make the tool sanely if there are ZERO real
+// entity types it can make.
+
+#if AIRPORT_ROUTING
+
 #include "WED_CreateToolBase.h"
 
 enum CreateEdge_t {
@@ -32,6 +39,7 @@ enum CreateEdge_t {
 
 class	WED_Thing;
 class	IGISEntity;
+class	IGISPointSequence;
 
 class WED_CreateEdgeTool : public WED_CreateToolBase {
 public:
@@ -53,6 +61,7 @@ private:
 
 	WED_PropBoolText		mOneway;
 	WED_PropStringText		mName;
+	WED_PropIntText			mSlop;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
@@ -64,11 +73,15 @@ private:
 	virtual	bool		CanCreateNow(void);
 
 			void		FindNear(WED_Thing * host, IGISEntity * ent, const Point2& loc, WED_Thing *& out_thing, double& out_dsq);
-			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<Point2>& out_splits);
+			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq);
+			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<pair<IGISPointSequence *, Point2> >& out_splits);
+			void		SplitByPts(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<Point2>& out_splits, double dsq);
 			WED_Thing *	GetHost(int& idx);
 
 		CreateEdge_t	mType;
 
 };
+
+#endif
 
 #endif /* WED_CreateEdgeTool_H */

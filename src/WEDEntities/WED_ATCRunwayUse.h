@@ -21,28 +21,36 @@
  *
  */
 
-#ifndef WED_TaxiRoute_H
-#define WED_TaxiRoute_H
+#ifndef WED_ATCRunwayUse_H
+#define WED_ATCRunwayUse_H
 
 #if AIRPORT_ROUTING
 
-#include "WED_GISEdge.h"
+#include "WED_Thing.h"
 
-class WED_TaxiRoute : public WED_GISEdge {
+struct AptRunwayRule_t;
 
-DECLARE_PERSISTENT(WED_TaxiRoute)
+class WED_ATCRunwayUse : public WED_Thing {
 
+DECLARE_PERSISTENT(WED_ATCRunwayUse)
 public:
-	
-				void		SetOneway(int p);
-				int			GetOneway(void) const;
-	
-private:	
 
-		WED_PropBoolText		oneway;
+	void	Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
+	void	Export(		 AptRunwayRule_t& info) const;
+
+private:
+
+	WED_PropStringText		rwy;
+	WED_PropDoubleText		dep_frq;
+	WED_PropIntEnumBitfield	traffic;
+	WED_PropIntEnumBitfield	operations;	
+	WED_PropIntText			dep_heading_min;		// This is the range of departure gates that we'd want to use this runway for.
+	WED_PropIntText			dep_heading_max;		// Without this, tower might hose the TRACON.  min==max -> any dep gate is okay.
+	WED_PropIntText			vec_heading_min;		// This is the range of legal vectors tower can issue.  min==max -> runway heading only, no DVA.
+	WED_PropIntText			vec_heading_max;
 
 };
 
-#endif /* WED_TaxiRoute_H */
+#endif
 
-#endif /* AIRPORT_ROUTING*/
+#endif /* WED_ATCRunwayUse_H */

@@ -197,6 +197,17 @@ int					ENUM_Export(int value)
 	return sEnums[value].export_value;
 }
 
+int					ENUM_ExportSet(const set<int>& members)
+{
+	int r = 0;
+	for(set<int>::const_iterator m = members.begin(); m != members.end(); ++m)
+	{
+		if(!ENUM_Validate(*m)) return -1;
+		r |= sEnums[*m].export_value;
+	}		
+	return r;
+}
+
 int					ENUM_Lookup(const char * value)
 {
 	string v(value);
@@ -230,6 +241,19 @@ int					ENUM_Import(int domain, int export_value)
 		return e;
 
 	return -1;
+}
+
+void				ENUM_ImportSet(int domain, int export_value, set<int>& vals)
+{
+	vals.clear();
+	if (!DOMAIN_Validate(domain)) return;
+
+	domain_Info * d = &sDomains[domain];
+
+	for (int e = d->enum_begin; e != d->enum_end; ++e)
+	if (sEnums[e].domain == domain)
+	if (sEnums[e].export_value & export_value)
+		vals.insert(e);
 }
 
 

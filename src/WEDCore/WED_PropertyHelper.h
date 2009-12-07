@@ -296,6 +296,32 @@ public:
 
 };
 
+class	WED_PropIntEnumBitfield : public WED_PropertyItem {
+public:
+
+	set<int>	value;
+	int			domain;
+						
+						operator set<int>&() { return value; }
+						operator set<int>() const { return value; }
+	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
+
+	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain)  : WED_PropertyItem(parent, title, table, column), domain(idomain) { }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val) const;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
+
+};
+
+
 
 class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
 public:

@@ -67,6 +67,7 @@ enum GISClass_t {
 	gis_PointSequence,
 		gis_Line,
 			gis_Line_Width,
+		gis_Edge,
 		gis_Ring,
 		gis_Chain,
 	gis_Area,
@@ -192,6 +193,13 @@ public:
 	// impossible/makes no sense.  Dist is a maximum distance from the point where "where" can be 
 	// that we would still split.  The split is made on the line as close to "where" as possible.
 	virtual		  IGISPoint *	SplitSide   (const Point2& where, double dist)=0;
+
+};
+
+class	IGISEdge : public virtual IGISPointSequence { 
+
+	virtual	void				SetSide(GISLayer_t layer, const Segment2& s)=0;
+	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b)=0;
 
 };
 

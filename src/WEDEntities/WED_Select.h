@@ -59,7 +59,8 @@ public:
 	virtual		void			GetSelectionVector(vector<ISelectable *>& sel) const;
 	virtual		ISelectable *	GetNthSelection(int n) const;
 
-	virtual		int				IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const;
+	virtual		int				IterateSelectionOr(int (* func)(ISelectable * who, void * ref), void * ref) const;
+	virtual		int				IterateSelectionAnd(int (* func)(ISelectable * who, void * ref), void * ref) const;
 
 	// WED_Persistent
 	virtual		void 			ReadFrom(IOReader * reader);

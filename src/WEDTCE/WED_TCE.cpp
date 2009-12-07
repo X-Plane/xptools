@@ -95,7 +95,7 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 	IGISEntity * base = GetGISBase();
 
 	vector<IGISEntity *> possibles;
-	sel->IterateSelection(Iterate_CollectEntities, &possibles);
+	sel->IterateSelectionOr(Iterate_CollectEntities, &possibles);
 
 //		ILibrarian * lmgr = WED_GetLibrarian(mResolver);
 		ITexMgr *	tman = WED_GetTexMgr(mResolver);
@@ -288,7 +288,7 @@ void WED_TCE::CalcBgknd(void)
 	WED_DrapedOrthophoto * ortho;
 	mTex = NULL;
 	vector<IGISEntity *> possibles;
-	sel->IterateSelection(Iterate_CollectEntities, &possibles);
+	sel->IterateSelectionOr(Iterate_CollectEntities, &possibles);
 
 		ITexMgr *	tman = WED_GetTexMgr(mResolver);
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(mResolver);

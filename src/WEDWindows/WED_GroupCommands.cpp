@@ -43,6 +43,9 @@
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
+#include "XESConstants.h"
+
+#define DOUBLE_PT_DIST (10.0 * MTR_TO_DEG_LAT)
 
 int		WED_CanGroup(IResolver * inResolver)
 {
@@ -51,12 +54,12 @@ int		WED_CanGroup(IResolver * inResolver)
 	DebugAssert(sel != NULL);
 
 	// Can't group the world itself!
-	if (sel->IterateSelection(Iterate_MatchesThing,wrl)) return 0;
+	if (sel->IterateSelectionOr(Iterate_MatchesThing,wrl)) return 0;
 
 	// Can't group a piece of a structured object - would break its internal make-up.
-	if (sel->IterateSelection(Iterate_IsPartOfStructuredObject, NULL)) return 0;
+	if (sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 
-	int has_airport = sel->IterateSelection(Iterate_IsClass, (void*) WED_Airport::sClass);
+	int has_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
 
 	WED_Thing * global_parent = WED_FindParent(sel, NULL, NULL);
 	if (global_parent == NULL) return 0;
@@ -64,12 +67,12 @@ int		WED_CanGroup(IResolver * inResolver)
 	if (Iterate_IsOrParentClass(global_parent, (void*) WED_Airport::sClass))
 	{
 		// We are going into an airport.  DO NOT allow an airport into another one.
-		if (sel->IterateSelection(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
+		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
 	else
 	{
 		// Not going into an airport.  If we need to, well, we can't do this.
-		if (sel->IterateSelection(	Iterate_ChildRequiresClass, (void *) WED_Airport::sClass)) return 0;
+		if (sel->IterateSelectionOr(	Iterate_ChildRequiresClass, (void *) WED_Airport::sClass)) return 0;
 
 	}
 	return 1;
@@ -80,7 +83,7 @@ int		WED_CanUngroup(IResolver * inResolver)
 	ISelection * sel = WED_GetSelect(inResolver);
 	DebugAssert(sel != NULL);
 
-	if(sel->IterateSelection(Iterate_IsNotGroup, NULL)) return 0;
+	if(sel->IterateSelectionOr(Iterate_IsNotGroup, NULL)) return 0;
 
 	if (sel->GetSelectionCount() == 0) return 0;
 	return 1;
@@ -321,6 +324,8 @@ int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
 }
 
+#if AIRPORT_ROUTING
+
 int		WED_CanMakeNewATCFlow(IResolver * inResolver)
 {
 	return WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass) != NULL;
@@ -331,6 +336,8 @@ int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
 }
 
+#endif
+
 void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_Airport::sClass);
@@ -339,6 +346,8 @@ void	WED_DoMakeNewATCFreq(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }
+
+#if AIRPORT_ROUTING
 
 void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 {
@@ -358,6 +367,7 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->CommitOperation();
 }
 
+#endif
 
 void	WED_DoSetCurrentAirport(IResolver * inResolver)
 {
@@ -403,6 +413,11 @@ static bool WED_NoLongerViable(WED_Thing * t)
 			return true;
 	}
 
+	if(SAFE_CAST(WED_AirportNode,t) &&
+		SAFE_CAST(IGISComposite,t->GetParent()) &&
+		t->CountViewers() == 0)
+		return true;
+
 	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
 	if (p && t->CountChildren() == 0)
 		return true;
@@ -431,29 +446,76 @@ void	WED_DoClear(IResolver * resolver)
 
 	sel->Clear();
 
+	set<WED_AirportNode *>	common_nodes;
+	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	{
+		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
+		if(n && n->CountViewers() == 2)
+			common_nodes.insert(n);
+	}
+	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
+	{
+		set<WED_Thing *> viewers;
+		(*n)->GetAllViewers(viewers);
+		DebugAssert(viewers.size() == 2);
+		set<WED_Thing *>::iterator v =viewers.begin();
+		WED_Thing * e1 = *v;
+		++v;
+		WED_Thing * e2 = *v;
+		
+		// We are goin to find E2's destination - that's where E1 will point.
+		WED_Thing *				other_node = e2->GetNthSource(0);
+		if(other_node == *n)	other_node = e2->GetNthSource(1);
+		DebugAssert(other_node != *n);
+		
+		// Adjust E1 to span to E2's other node.
+		e1->ReplaceSource(*n, other_node);
+		
+		// Now nuke E2 and ourselves.
+		
+		e2->RemoveSource(*n);
+		e2->RemoveSource(other_node);
+		who.insert(e2);
+	}
+
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
 	// some reprecussions on other objects.
 	while(!who.empty())
 	{
 		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
 		{
+			// Children get detached...just in case.  They should be fully 
+			// contained in our recursive selection.
+			while((*i)->CountChildren())
+				(*i)->GetNthChild(0)->SetParent(NULL,0);
+
+			// Our parent has to be reconsidered - maybe the parent can't live without its kids?
 			WED_Thing * p = (*i)->GetParent();
 			if (p)
 				chain.insert(p);
 
 			set<WED_Thing *> viewers;
-
-			(*i)->GetAllViewers(viewers);
+			(*i)->GetAllViewers(viewers);			
 			
+			// All of our viewers lose a source.  
+			for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+				(*v)->RemoveSource(*i);
+			
+			// And - any one of our viewers might now be hosed, due to a lack of sources!
 			chain.insert(viewers.begin(), viewers.end());
 			
-			while((*i)->CountChildren())
-				(*i)->GetNthChild(0)->SetParent(NULL,0);
-									
+			while((*i)->CountSources() > 0)
+			{
+				chain.insert((*i)->GetNthSource(0));
+				(*i)->RemoveSource((*i)->GetNthSource(0));
+			}
+			
 			(*i)->SetParent(NULL, 0);
 			(*i)->Delete();
 		}
-
+		
+		// If we had a guy who was going to be potentially unviable, but he was elsewherein the selection,
+		// we need to not consider him.  With viewers, this can happen!
 		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
 			chain.erase(*i);
 
@@ -514,7 +576,7 @@ void	WED_DoCrop(IResolver * resolver)
 	set<WED_Thing *>	nuke_em;
 	set<WED_Thing *>	chain;
 
-	sel->IterateSelection(AccumSelectionAndParents, &must_keep);
+	sel->IterateSelectionOr(AccumSelectionAndParents, &must_keep);
 	AccumDead(wrl, nuke_em, must_keep, sel);
 
 	if (nuke_em.empty()) return;
@@ -563,7 +625,7 @@ int		WED_CanReorder(IResolver * resolver, int direction, int to_end)
 	if (obj == NULL) return 0;
 	if (obj->GetParent() == NULL) return 0;
 
-	if (sel->IterateSelection(Iterate_ParentMismatch, obj->GetParent())) return 0;
+	if (sel->IterateSelectionOr(Iterate_ParentMismatch, obj->GetParent())) return 0;
 																		 return 1;
 }
 
@@ -618,7 +680,7 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 
 	// We cannot move a grandparent of the container INTO the container - that'd make a loop.
 	// (This includes moving the container into itself.
-	if (sel->IterateSelection(Iterate_IsParentOf, dest)) return 0;
+	if (sel->IterateSelectionOr(Iterate_IsParentOf, dest)) return 0;
 
 	// If our destination isn't a folder, just bail now...only certain types can contain other types, like, at all.
 	if(!WED_IsFolder(dest)) return 0;
@@ -628,12 +690,12 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 	if (Iterate_IsOrParentClass(dest, (void*) WED_Airport::sClass))
 	{
 		// We are going into an airport.  DO NOT allow an airport into another one.
-		if (sel->IterateSelection(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
+		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
 	
 	// Finally, we need to make sure that everyone in the selection is going to get their needs met.
 	set<string>	required_parents;
-	sel->IterateSelection(Iterate_CollectRequiredParents, &required_parents);
+	sel->IterateSelectionOr(Iterate_CollectRequiredParents, &required_parents);
 	for(set<string>::iterator s = required_parents.begin(); s != required_parents.end(); ++s)
 		if(!Iterate_IsOrParentClass(dest, (void*) s->c_str()))
 			return 0;
@@ -707,7 +769,7 @@ int		WED_CanSelectParent(IResolver * resolver)
 	if (sel->GetSelectionCount() == 0) return 0;
 
 	// IF we don't have at least ONE non-world sel, we can't sel
-	if (!sel->IterateSelection(Iterate_NotMatchesThing,WED_GetWorld(resolver))) return 0;
+	if (!sel->IterateSelectionOr(Iterate_NotMatchesThing,WED_GetWorld(resolver))) return 0;
 	return 1;
 }
 
@@ -717,7 +779,7 @@ void	WED_DoSelectParent(IResolver * resolver)
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_CollectThings,&things);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Parent");
 	sel->Clear();
@@ -732,7 +794,7 @@ void	WED_DoSelectParent(IResolver * resolver)
 int		WED_CanSelectChildren(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	return (sel->IterateSelection(Iterate_IsNonEmptyComposite, NULL));
+	return (sel->IterateSelectionOr(Iterate_IsNonEmptyComposite, NULL));
 }
 
 void	WED_DoSelectChildren(IResolver * resolver)
@@ -741,7 +803,7 @@ void	WED_DoSelectChildren(IResolver * resolver)
 	vector<WED_Thing *>	things;
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_CollectThings,&things);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Children");
 	sel->Clear();
@@ -764,7 +826,7 @@ int		WED_CanSelectVertices(IResolver * resolver)
 	// we can select vertices if all sel items are of gis type polygon or point seq
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return 0;
-	if (sel->IterateSelection(Iterate_IsNotStructuredObject, NULL)) return 0;
+	if (sel->IterateSelectionOr(Iterate_IsNotStructuredObject, NULL)) return 0;
 	return 1;
 }
 
@@ -773,7 +835,7 @@ void	WED_DoSelectVertices(IResolver * resolver)
 	vector<IGISPointSequence *>	seqs;
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_CollectChildPointSequences, &seqs);
+	sel->IterateSelectionOr(Iterate_CollectChildPointSequences, &seqs);
 	op->StartOperation("Select Vertices");
 	sel->Clear();
 	for(vector<IGISPointSequence *>::iterator s=  seqs.begin(); s != seqs.end(); ++s)
@@ -790,7 +852,7 @@ int		WED_CanSelectPolygon(IResolver * resolver)
 	// we can select our parent poly if everyone's parent is a point seq
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return 0;
-	if (sel->IterateSelection(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
+	if (sel->IterateSelectionOr(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
 	return 1;
 }
 
@@ -799,7 +861,7 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	vector<WED_Thing *>	things;
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	sel->IterateSelection(Iterate_CollectThings,&things);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
 	if (things.empty()) return;
 	op->StartOperation("Select Polygon");
 	sel->Clear();
@@ -819,6 +881,113 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 		if (keeper) sel->Insert(keeper);
 	}
 
+	op->CommitOperation();
+}
+
+void select_zero_recursive(WED_Thing * t, ISelection * s)
+{
+	IGISEdge * e = dynamic_cast<IGISEdge *>(t);
+	if(e)
+	if(e->GetNthPoint(0) == e->GetNthPoint(1))
+		s->Insert(t);
+	int nn = t->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		select_zero_recursive(t->GetNthChild(n), s);
+}
+
+void WED_DoSelectZeroLength(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Zero-Length Edges");
+	sel->Clear();
+	select_zero_recursive(WED_GetWorld(resolver), sel);
+	op->CommitOperation();
+}
+
+void WED_DoSelectDoubles(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Zero-Length Edges");
+	sel->Clear();
+
+	vector<WED_Thing *> pts;
+	CollectRecursive(WED_GetWorld(resolver), IsGraphNode, pts);
+	
+	// Ben says: yes this totally sucks - replace it someday?
+	for(int i = 0; i < pts.size(); ++i)
+	{
+		for(int j = i + 1; j < pts.size(); ++j)
+		{
+			IGISPoint * ii = dynamic_cast<IGISPoint *>(pts[i]);
+			IGISPoint * jj = dynamic_cast<IGISPoint *>(pts[j]);
+			DebugAssert(ii != jj);
+			DebugAssert(ii);
+			DebugAssert(jj);
+			Point2 p1, p2;
+			ii->GetLocation(gis_Geo, p1);
+			jj->GetLocation(gis_Geo, p2);
+			
+			if(p1.squared_distance(p2) < (DOUBLE_PT_DIST*DOUBLE_PT_DIST))
+			{
+				sel->Insert(pts[i]);
+				sel->Insert(pts[j]);
+				break;
+			}			
+		}
+	}
+	op->CommitOperation();
+	
+}
+
+void WED_DoSelectCrossing(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Zero-Length Edges");
+	sel->Clear();
+
+	vector<WED_Thing *> pts;
+	CollectRecursive(WED_GetWorld(resolver), IsGraphEdge, pts);
+	
+	// Ben says: yes this totally sucks - replace it someday?
+	for(int i = 0; i < pts.size(); ++i)
+	{
+		for(int j = i + 1; j < pts.size(); ++j)
+		{
+			IGISEdge * ii = dynamic_cast<IGISEdge *>(pts[i]);
+			IGISEdge * jj = dynamic_cast<IGISEdge *>(pts[j]);
+			DebugAssert(ii != jj);
+			DebugAssert(ii);
+			DebugAssert(jj);
+			Segment2 s1, s2;
+			Bezier2 b1, b2;
+			
+			if(ii->GetSide(gis_Geo, 0, s1,b1))
+			{
+				s1.p1 = b1.p1;
+				s1.p2 = b1.p2;
+			}
+			if(jj->GetSide(gis_Geo, 0, s2,b2))
+			{
+				s2.p1 = b2.p1;
+				s2.p2 = b2.p2;
+			}
+			
+			Point2 x;
+			if (s1.p1 != s2.p1 &&
+				s1.p2 != s2.p1 &&
+				s1.p1 != s2.p2 &&
+				s1.p2 != s2.p2)
+			if(s1.intersect(s2, x))			
+			{
+				sel->Insert(pts[i]);
+				sel->Insert(pts[j]);
+				break;
+			}			
+		}
+	}
 	op->CommitOperation();
 }
 
@@ -896,7 +1065,7 @@ int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return false;
-	if (sel->IterateSelection(unsplittable, sel)) return 0;
+	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
 	return 1;
 }
 
@@ -910,7 +1079,7 @@ void	WED_DoSplit(IResolver * resolver)
 	info.first = sel;
 	info.second = &who;
 
-	sel->IterateSelection(collect_splits, &info);
+	sel->IterateSelectionOr(collect_splits, &info);
 	if (who.empty()) return;
 
 	op->StartOperation("Split Segments.");
@@ -980,6 +1149,79 @@ void	WED_DoSplit(IResolver * resolver)
 	op->CommitOperation();
 }
 
+int	WED_CanMerge(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if(sel->GetSelectionCount() == 0) return 0;
+	if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_AirportNode::sClass)) return 0;
+	
+	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
+	
+	return 1;
+}
+
+static int iterate_do_merge(ISelectable * who, void * ref)
+{
+	vector<WED_Thing *> * nodes = (vector<WED_Thing *> *) ref;
+	
+	WED_AirportNode * n = dynamic_cast<WED_AirportNode *>(who);
+	
+	if(n)
+	{
+		if(!nodes->empty())
+		{
+			WED_Thing * rep = nodes->front();
+			set<WED_Thing *> viewers;
+			n->GetAllViewers(viewers);
+			for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+				(*v)->ReplaceSource(n, rep);
+		}
+		nodes->push_back(n);
+	}
+	
+	return 0;
+}
+
+void WED_DoMerge(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Merge Nodes");
+
+	vector<WED_Thing *>	nodes;
+	sel->IterateSelectionOr(iterate_do_merge,&nodes);
+		
+	for(int n = 1; n < nodes.size(); ++n)
+	{
+		nodes[n]->SetParent(NULL,0);
+		nodes[n]->Delete();
+	}
+	
+	if(nodes.empty())
+		sel->Clear();
+	else
+	{
+		set<WED_Thing *>	viewers;
+		nodes[0]->GetAllViewers(viewers);
+		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+		{
+			if((*v)->GetNthSource(0) == (*v)->GetNthSource(1))
+			{
+				(*v)->RemoveSource(nodes[0]);
+				(*v)->SetParent(NULL,0);
+				(*v)->Delete();
+			}
+		}
+	
+		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
+		// User can clean this by hand - it is in the selection when we are done.
+				
+		sel->Select(nodes[0]);
+	}
+	op->CommitOperation();
+}
+
+
 static int IterateNonReversable(ISelectable * what, void * ref)
 {
 	if (dynamic_cast<IGISPolygon*>(what)) return 0;
@@ -992,7 +1234,7 @@ int		WED_CanReverse(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return 0;
-	if (sel->IterateSelection(IterateNonReversable, NULL)) return 0;
+	if (sel->IterateSelectionOr(IterateNonReversable, NULL)) return 0;
 	return 1;
 }
 
@@ -1011,7 +1253,7 @@ void	WED_DoReverse(IResolver * resolver)
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Reverse");
-	sel->IterateSelection(IterateDoReverse, NULL);
+	sel->IterateSelectionOr(IterateDoReverse, NULL);
 	op->CommitOperation();
 }
 

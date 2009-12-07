@@ -106,6 +106,15 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref);		// ref is a
 int Iterate_CollectChildPointSequences(ISelectable * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 int Iterate_CollectEntities  (ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>
 int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr to a vector<IGISEntity *>  - only take entities with UV maps!
+
+//---------------------------------------------------------------------------------------------------------------------------------
+// WORLD ITERATION
+//---------------------------------------------------------------------------------------------------------------------------------
+
+bool IsGraphNode(WED_Thing * what);
+bool IsGraphEdge(WED_Thing * what);
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_Thing *>& items);
+
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP
 //---------------------------------------------------------------------------------------------------------------------------------

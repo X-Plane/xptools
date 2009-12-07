@@ -74,6 +74,16 @@ WED_Document::WED_Document(
 	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
 	GUI_UnloadResource(res);
 
+#if AIRPORT_ROUTING
+	string buf2;
+
+	GUI_Resource res2 = GUI_LoadResource("WED_DataModel2.sql");
+	if (res2 == NULL)
+		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf2.c_str());
+
+	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res2), GUI_GetResourceEnd(res2));
+	GUI_UnloadResource(res2);
+#endif
 
 	mBounds[0] = inBounds[0];
 	mBounds[1] = inBounds[1];

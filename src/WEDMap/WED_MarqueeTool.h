@@ -28,6 +28,15 @@
 #include "IControlHandles.h"
 #include "IOperation.h"
 
+enum marquee_mode_t {
+	mm_None=0,			// No edit going on
+	mm_Drag,			// Drag any corner
+	mm_Rotate,			// Rotate around center
+	mm_Center,			// Drag, keep center in center
+	mm_Prop,			// Drag, maintain aspect ratio
+	mm_Prop_Center		// DRag, maintain aspect ratio AND keep center in center
+};
+
 class	WED_MarqueeTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
@@ -72,14 +81,13 @@ private:
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
 				void	ApplyRotate(const Point2& ctr, double angle);
 
-			int			mInEdit;
-			bool		mIsRotate;
-			Point2		mRotateCtr;
-			Point2		mRotatePt;
+			marquee_mode_t	mEditMode;
+			Point2			mRotateCtr;
+			Point2			mRotatePt;
 
-	mutable	Bbox2		mCacheBounds;
-	mutable long long	mCacheKeyArchive;
-	mutable bool		mCacheIconic;
+	mutable	Bbox2			mCacheBounds;
+	mutable long long		mCacheKeyArchive;
+	mutable bool			mCacheIconic;
 
 };
 

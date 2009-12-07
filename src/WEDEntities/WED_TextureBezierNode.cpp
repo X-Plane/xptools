@@ -77,7 +77,7 @@ void		WED_TextureBezierNode::GetLocation(GISLayer_t l,	   Point2& st) const
 
 bool	WED_TextureBezierNode::GetControlHandleLo (GISLayer_t layer,      Point2& p) const
 {
-	if(!WED_GISPoint_Bezier::GetControlHandleLo(layer,p)) return false;
+	if(!WED_GISPoint_Bezier::GetControlHandleLo(gis_Geo,p)) return false;
 	if(layer == gis_UV) 
 	{
 		p.x_ = mScL.value + mS.value;
@@ -88,7 +88,7 @@ bool	WED_TextureBezierNode::GetControlHandleLo (GISLayer_t layer,      Point2& p
 
 bool	WED_TextureBezierNode::GetControlHandleHi (GISLayer_t layer,      Point2& p) const
 {
-	if(!WED_GISPoint_Bezier::GetControlHandleHi(layer,p)) return false;
+	if(!WED_GISPoint_Bezier::GetControlHandleHi(gis_Geo,p)) return false;
 	if(layer == gis_UV) 
 	{
 		p.x_ = mScH.value + mS.value;

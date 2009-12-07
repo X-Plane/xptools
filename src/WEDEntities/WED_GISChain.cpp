@@ -240,8 +240,8 @@ bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 
 	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
 	// if the bezier handle doesn't exist -- this is a flag to us!
-	if (c1) if (!c1->GetControlHandleHi(l, b.c1)) c1 = NULL;
-	if (c2) if (!c2->GetControlHandleLo(l, b.c2)) c2 = NULL;
+	if (c1) if (!c1->GetControlHandleHi(l, b.c1)) { c1 = NULL; b.c1 = b.p1; }
+	if (c2) if (!c2->GetControlHandleLo(l, b.c2)) { c2 = NULL; b.c2 = b.p2; }
 
 	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
 	// Simpify down to a segment and return it -- some code may use this 'fast case'.

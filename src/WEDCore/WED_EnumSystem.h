@@ -61,11 +61,13 @@ void				DOMAIN_Members(int domain, map<int, string>& members);
 bool				ENUM_Validate(int value);
 const char *		ENUM_Fetch(int value);													// Return the string name of an enum
 int					ENUM_Export(int value);													// Return the export value for an enum
+int					ENUM_ExportSet(const set<int>& members);
 int					ENUM_Lookup(const char * value);										// Find an enum or -1 if missing
 int					ENUM_Domain(int value);													// What domain are we in?
 const char *		ENUM_Desc(int value);
 int					ENUM_Create(int domain, const char * value, const char * descrip, int export_value);			// Find an enum, add if needed
 int					ENUM_Import(int domain, int export_value);
+void				ENUM_ImportSet(int domain, int export_value, set<int>& members);
 
 void				ENUM_Init(void);
 

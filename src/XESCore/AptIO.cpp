@@ -32,10 +32,57 @@
 #include "AssertUtils.h"
 #include "CompGeomUtils.h"
 
+// for now
+#define	ATC_VERS 1000
+
+
 #if OPENGL_MAP
 #include "Airports.h"
 void	GenerateOGL(AptInfo_t * a);
 #endif
+
+const char * pattern_strings[] = { "left", "right", 0 };
+const char * equip_strings[] = { "heavy", "jets", "props", "helicopters", 0 };
+const char * op_strings[] = { "arrivals", "departures" };
+
+// LLLHHH
+void divide_heading(int * lo, int * hi)
+{
+	*hi = (*lo % 1000);
+	*lo = (*lo / 1000);
+}
+
+int scan_bitfields(const char * str, const char * bits[])
+{
+	int r = 0;
+	int n = 0;
+	int b = 1;
+	while(bits[n])
+	{
+		if(strstr(str, bits[n]))
+			r |= b;
+		++n;
+		b <<= 1;
+	}
+	return r;
+}
+
+void print_bitfields(FILE * fi, int flags, const char * bits[])
+{
+	int n = 0, b = 1;
+	bool any = false;
+	while(bits[n])
+	{
+		if(flags & b)
+		{
+			if(any) fprintf(fi,"|");
+			any = true;
+			fprintf(fi,"%s", bits[n]);
+		}
+		++n;
+		b <<= 1;
+	}
+}
 
 static void	parse_linear_codes(const string& codes, set<int> * attributes)
 {
@@ -168,7 +215,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	if (ok.empty())
 	{
 		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
-		if (vers != 703 && vers != 715 && vers != 810 && vers != 850) ok = "Illegal Version";
+		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000) ok = "Illegal Version";
 		TextScanner_Next(s);
 		++ln;
 	}
@@ -523,6 +570,122 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->back().ctrl = POINT2(p2x, p2y);
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
+		case apt_flow_def:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: flow outside an airport.";
+			else {
+				outApts.back().flows.push_back(AptFlow_t());
+				if(TextScanner_FormatScan(s,"iTiiiiiiT|",
+					&rec_code,
+					&outApts.back().flows.back().icao,
+					&outApts.back().flows.back().ceiling,
+					&outApts.back().flows.back().visibility,
+					&outApts.back().flows.back().wind_dir_min,
+					&outApts.back().flows.back().wind_speed_max,
+					&outApts.back().flows.back().time_min,
+					&outApts.back().flows.back().time_max,
+					&outApts.back().flows.back().name) != 9) ok = "Error: bad apt flow record.";
+				else
+					divide_heading(
+						&outApts.back().flows.back().wind_dir_min,
+						&outApts.back().flows.back().wind_dir_max);
+			}
+			break;
+		case apt_flow_pattern:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: traffic pattern outside an airport.";
+			else if (outApts.back().flows.empty()) ok = "Error: traffic pattern outside a flow.";
+			else {
+				string side;
+				if(TextScanner_FormatScan(s,"iTT", &rec_code, 
+					&outApts.back().flows.back().pattern_runway,
+					&side) != 3) ok =  "Error: incorrect pattrn record";
+				else 
+					outApts.back().flows.back().pattern_side = scan_bitfields(side.c_str(), pattern_strings);
+			}
+			break;
+		case apt_flow_rwy_rule:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: runway use outside an airport.";
+			else if (outApts.back().flows.empty()) ok = "Error: runway use outside a flow.";
+			else {
+				outApts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
+				string op, equip;
+				if(TextScanner_FormatScan(s,"iTiTTiiT|", &rec_code, 
+					&outApts.back().flows.back().runway_rules.back().runway,
+					&outApts.back().flows.back().runway_rules.back().dep_freq,
+					&op,
+					&equip,
+					&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
+					&outApts.back().flows.back().runway_rules.back().ini_heading_lo,
+					&outApts.back().flows.back().runway_rules.back().name) != 8) ok = "Error: incorrect runway use rule.";
+				else
+				{
+					outApts.back().flows.back().runway_rules.back().operations = scan_bitfields(op.c_str(),op_strings);
+					outApts.back().flows.back().runway_rules.back().equipment = scan_bitfields(equip.c_str(), equip_strings);
+					divide_heading(
+										&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
+										&outApts.back().flows.back().runway_rules.back().dep_heading_hi);
+					divide_heading(
+										&outApts.back().flows.back().runway_rules.back().ini_heading_lo,
+										&outApts.back().flows.back().runway_rules.back().ini_heading_hi);
+				}
+			}
+			break;
+			
+			
+		case apt_taxi_header:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout use outside an airport.";
+			else {
+				if(TextScanner_FormatScan(s,"iT|",&rec_code, &outApts.back().taxi_route.name) < 1)
+					ok = "Illegal taxi layout header.";
+			}
+			break;
+		case apt_taxi_node:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout node outside an airport.";
+			else {
+				outApts.back().taxi_route.nodes.push_back(AptRouteNode_t());
+				string flags;
+				if(TextScanner_FormatScan(s,"iddTiT|",
+					&rec_code, 
+					&outApts.back().taxi_route.nodes.back().location.y_,
+					&outApts.back().taxi_route.nodes.back().location.x_,
+					&flags,
+					&outApts.back().taxi_route.nodes.back().id,
+					&outApts.back().taxi_route.nodes.back().name) != 6) ok = "illegal taxi node.";
+			}
+			break;
+		case apt_taxi_edge:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
+			else {
+				outApts.back().taxi_route.edges.push_back(AptRouteEdge_t());
+				string flags, id;
+				if(TextScanner_FormatScan(s,"iiiTTT|",
+					&rec_code, 
+					&outApts.back().taxi_route.edges.back().src,
+					&outApts.back().taxi_route.edges.back().dst,
+					&flags,
+					&id, 
+					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";
+			}
+			break;
+		case apt_taxi_shape:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
+			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi layout shape point without an edge.";
+			else {
+				outApts.back().taxi_route.edges.back().shape.push_back(Point2());
+				if(TextScanner_FormatScan(s,"idd", &rec_code,
+					&outApts.back().taxi_route.edges.back().shape.back().y_,
+					&outApts.back().taxi_route.edges.back().shape.back().x_) != 3) ok = "Error: illegal shape point record.";
+			}
+			break;			
+
+
+
 		case apt_done:
 			forceDone = true;
 			break;
@@ -616,7 +779,7 @@ bool	WriteAptFile(const char * inFileName, const AptVector& inApts)
 bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 {
 	fprintf(fi, "%c" CRLF, APL ? 'A' : 'I');
-	fprintf(fi, "850 Generated by WorldEditor" CRLF);
+	fprintf(fi, "%d Generated by WorldEditor" CRLF, AIRPORT_ROUTING ? 1000 : 850);
 
 
 	for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
@@ -732,7 +895,44 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 			fprintf(fi, "%2d %d %s" CRLF, atc->atc_type,
 					atc->freq, atc->name.c_str());
 		}
+		
+		for(AptFlowVector::const_iterator flow = apt->flows.begin(); flow != apt->flows.end(); ++flow)
+		{
+			fprintf(fi,"%2d %s %d %d %03d%03d %d %04d %04d %s" CRLF, apt_flow_def, 
+					flow->icao.c_str(), flow->ceiling, flow->visibility, flow->wind_dir_min, flow->wind_dir_max, flow->wind_speed_max,
+									flow->time_min, flow->time_max, flow->name.c_str());
+									
+			if(!flow->pattern_runway.empty() && flow->pattern_side)
+			{
+				fprintf(fi,"%2d %s ", apt_flow_pattern, flow->pattern_runway.c_str());
+				print_bitfields(fi,flow->pattern_side,pattern_strings);
+				fprintf(fi,CRLF);
+			}	 
 
+			for(AptRunwayRuleVector::const_iterator	rule = flow->runway_rules.begin(); rule != flow->runway_rules.end(); ++rule)
+			{
+				fprintf(fi,"%2d %s %6d ",apt_flow_rwy_rule, rule->runway.c_str(), rule->dep_freq);							
+				print_bitfields(fi,rule->operations, op_strings);
+				fprintf(fi," ");
+				print_bitfields(fi,rule->equipment, equip_strings);				
+				fprintf(fi," %03d%03d %03d%03d %s" CRLF, rule->dep_heading_lo, rule->dep_heading_hi, rule->ini_heading_lo, rule->ini_heading_hi, rule->name.c_str());
+			}
+		}
+		
+		if(!apt->taxi_route.edges.empty())
+		{
+			fprintf(fi,"%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
+			for(vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+			{
+				fprintf(fi,"%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
+			}
+			for(vector<AptRouteEdge_t>::const_iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+			{
+				fprintf(fi,"%2d %d %d twoway %d %s" CRLF, apt_taxi_edge, e->src, e->dst, distance(apt->taxi_route.edges.begin(), e), e->name.c_str());
+				for(vector<Point2>::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+					fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->y(), s->x());
+			}			
+		}
 	}
 	fprintf(fi, "%d" CRLF, apt_done);
 	return true;

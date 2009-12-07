@@ -23,6 +23,8 @@
 
 #include "WED_TaxiRoute.h"
 
+#if AIRPORT_ROUTING
+
 DEFINE_PERSISTENT(WED_TaxiRoute)
 TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
@@ -44,3 +46,5 @@ int			WED_TaxiRoute::GetOneway(void) const
 {
 	return oneway.value;
 }
+
+#endif

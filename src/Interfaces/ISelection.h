@@ -64,7 +64,10 @@ public:
 	virtual		void			GetSelectionVector(vector<ISelectable *>& sel) const=0;
 	virtual		ISelectable *	GetNthSelection(int n) const=0;
 
-	virtual		int				IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const=0;
+	// Iterate the selection until our func returns true for at least one item.  Return true if ANY objs passed.  Returns false for the empty set.  (None passed)
+	virtual		int				IterateSelectionOr(int (* func)(ISelectable * who, void * ref), void * ref) const=0;
+	// Iterate the selection as long as our func returns true.  Return true if they ALL passed.  Returns true for the empty set.  (None failed)
+	virtual		int				IterateSelectionAnd(int (* func)(ISelectable * who, void * ref), void * ref) const=0;
 
 };
 

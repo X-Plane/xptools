@@ -83,13 +83,18 @@
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
-	_R(WED_ExclusionZone) \
+	_R(WED_ExclusionZone)
+
+#define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \
 	_R(WED_ATCFlow) \
 	_R(WED_ATCRunwayUse)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
+#if AIRPORT_ROUTING
+REGISTER_LIST_ATC
+#endif
 #undef _R
 
 #include "WED_EnumSystem.h"

@@ -57,7 +57,7 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 	for(int n = 0; n < nn; ++n)						// go register with my parent now!
 	{
 		WED_Thing * the_src = GetNthSource(n);
-		the_src->viewer_id.insert(GetID());
+		the_src->AddViewer(GetID());
 	}
 
 	int pc = rhs->CountProperties();
@@ -73,12 +73,15 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 {
 	int ct;
 	reader->ReadInt(parent_id);
+
 	// Children
 	reader->ReadInt(ct);
 	child_id.resize(ct);
 	for (int n = 0; n < ct; ++n)
 		reader->ReadInt(child_id[n]);
+
 	// Viewers
+	viewer_id.clear();
 	reader->ReadInt(ct);
 	for(int n = 0; n < ct; ++n)
 	{
@@ -86,11 +89,13 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 		reader->ReadInt(vid);
 		viewer_id.insert(vid);
 	}
+
 	// Sources
 	reader->ReadInt(ct);
 	source_id.resize(ct);
 	for(int n = 0; n < ct; ++n)
 		reader->ReadInt(source_id[n]);
+
 	ReadPropsFrom(reader);
 }
 
@@ -98,18 +103,22 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 {
 	int n;
 	writer->WriteInt(parent_id);
+
 	// Children
 	writer->WriteInt(child_id.size());
 	for (int n = 0; n < child_id.size(); ++n)
 		writer->WriteInt(child_id[n]);
+
 	// Viewers
 	writer->WriteInt(viewer_id.size());
 	for(set<int>::iterator vid = viewer_id.begin(); vid != viewer_id.end(); ++vid)
 		writer->WriteInt(*vid);
+
 	//Sources
 	writer->WriteInt(source_id.size());
 	for(int n = 0; n < source_id.size(); ++n)
 		writer->WriteInt(source_id[n]);
+
 	WritePropsTo(writer);
 }
 
@@ -324,17 +333,20 @@ void				WED_Thing::RemoveSource(WED_Thing * src)
 	DebugAssert(src->viewer_id.count(GetID()) > 0);
 	StateChanged(wed_Change_Topology);
 
-	source_id.erase(k);
-	k = find(source_id.begin(), source_id.end(), src->GetID());
-	if(k == source_id.end())
-		src->RemoveViewer(GetID());
+	while(k != source_id.end())
+	{
+		source_id.erase(k);
+		k = find(source_id.begin(), source_id.end(), src->GetID());
+	}
+
+	src->RemoveViewer(GetID());
 }
 
 void	WED_Thing::ReplaceSource(WED_Thing * old, WED_Thing * rep)
 {
 	int old_id = old->GetID();
 	int new_id = rep->GetID();
-	DebugAssert(old->viewer_id.count(GetID() > 0));
+	DebugAssert(old->viewer_id.count(GetID()) > 0);
 	old->RemoveViewer(GetID());
 	
 	StateChanged();
@@ -346,7 +358,8 @@ void	WED_Thing::ReplaceSource(WED_Thing * old, WED_Thing * rep)
 		*s = new_id;
 	}
 	DebugAssert(subs > 0);
-	rep->AddViewer(GetID());
+	if(rep->viewer_id.count(GetID()) == 0)
+		rep->AddViewer(GetID());
 }
 
 
@@ -438,3 +451,36 @@ void	WED_Thing::AbortOperation(void)
 	AbortCommand();
 }
 
+
+void	WED_Thing::Validate(void)
+{
+	if(parent_id != 0)
+	{
+		WED_Thing * p = SAFE_CAST(WED_Thing,FetchPeer(parent_id));
+		DebugAssert(p);
+		vector<int>::iterator me = find(p->child_id.begin(),p->child_id.end(), GetID());
+		DebugAssert(me != p->child_id.end());
+	}
+	
+	for(vector<int>::iterator c = child_id.begin(); c != child_id.end(); ++c)
+	{
+		WED_Thing * cc = SAFE_CAST(WED_Thing,FetchPeer(*c));
+		DebugAssert(cc);
+		DebugAssert(cc->parent_id == GetID());
+	}
+	
+	for(vector<int>::iterator s = source_id.begin(); s != source_id.end(); ++s)
+	{
+		WED_Thing * ss = SAFE_CAST(WED_Thing,FetchPeer(*s));
+		DebugAssert(ss);
+		DebugAssert(ss->viewer_id.count(GetID()) > 0);
+	}
+	
+	for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
+	{
+		WED_Thing * vv = SAFE_CAST(WED_Thing,FetchPeer(*v));
+		DebugAssert(vv);
+		vector<int>::iterator me = find(vv->source_id.begin(), vv->source_id.end(), GetID());
+		DebugAssert(me != vv->source_id.end());
+	}
+}

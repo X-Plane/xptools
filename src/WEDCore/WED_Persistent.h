@@ -198,6 +198,8 @@ public:
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
 	virtual void			ToDB(sqlite3 * db)=0;
 
+	virtual void			Validate(void) { }
+
 	virtual const char *	GetClass(void) const=0;
 
 	// These are for the archive's use..

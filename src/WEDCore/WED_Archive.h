@@ -84,6 +84,8 @@ public:
 	int				IsDirty(void);	// returns operation count since save, 0 if we're saved, or positive if new changes, or negative if saved changes were undone.
 
 	long long		CacheKey(void);
+	
+	void			Validate(void);
 
 private:
 

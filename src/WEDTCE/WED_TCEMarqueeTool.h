@@ -27,6 +27,15 @@
 #include "WED_HandleToolBase.h"
 #include "IControlHandles.h"
 
+enum tce_marquee_mode_t {
+	tmm_None=0,			// No edit going on
+	tmm_Drag,			// Drag any corner
+	tmm_Rotate,			// Rotate around center
+	tmm_Center,			// Drag, keep center in center
+	tmm_Prop,			// Drag, maintain aspect ratio
+	tmm_Prop_Center		// DRag, maintain aspect ratio AND keep center in center
+};
+
 class	WED_TCEMarqueeTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
@@ -71,8 +80,7 @@ private:
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
 				void	ApplyRotate(const Point2& ctr, double angle);
 
-			int			mInEdit;
-			bool		mIsRotate;
+			tce_marquee_mode_t	mEditMode;
 			Point2		mRotateCtr;
 			Point2		mRotatePt;
 

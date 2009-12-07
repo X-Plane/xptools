@@ -254,7 +254,7 @@ void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel
 	ISelection * sel = WED_GetSelect(resolver);
 	WED_Thing * wrl = WED_GetWorld(resolver);
 
-	sel->IterateSelection(WED_GetSelectionRecursiveOne, &out_sel);
+	sel->IterateSelectionOr(WED_GetSelectionRecursiveOne, &out_sel);
 	out_sel.erase(wrl);
 }
 
@@ -262,7 +262,7 @@ void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel
 bool			WED_IsSelectionNested(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	return sel->IterateSelection(Iterate_HasSelectedParent, sel);
+	return sel->IterateSelectionOr(Iterate_HasSelectedParent, sel);
 }
 
 #pragma mark -
@@ -270,7 +270,9 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 bool WED_IsFolder(WED_Thing * what)
 {
 	if(dynamic_cast<IGISComposite*>(what))					return true;
+#if AIRPORT_ROUTING
 	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
+#endif	
 	return false;
 }
 
@@ -278,7 +280,7 @@ WED_Thing *		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	vector<WED_Thing *> who;
-	sel->IterateSelection(Iterate_CollectThings, &who);
+	sel->IterateSelectionOr(Iterate_CollectThings, &who);
 	if(who.size() != 1) return NULL;
 	if(strcmp(who[0]->GetClass(), in_class) != 0) return NULL;
 	return who[0];
@@ -301,10 +303,11 @@ const char *	WED_GetParentForClass(const char * in_class)
 	if(strcmp(in_class,WED_TowerViewpoint::sClass)==0)		return WED_Airport::sClass;
 	if(strcmp(in_class,WED_Windsock::sClass)==0)			return WED_Airport::sClass;
 	
-	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_ATCFrequency::sClass)==0)		return WED_Airport::sClass;
+#if AIRPORT_ROUTING
+	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
-
+#endif
 	return NULL;
 }
 
@@ -585,3 +588,23 @@ double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector
 }
 
 
+bool IsGraphNode(WED_Thing * what)
+{
+	if(what->CountViewers() == 0) return false;
+	WED_Thing * parent = what->GetParent();	
+	if(SAFE_CAST(IGISComposite,parent) == NULL) return false;	
+	return SAFE_CAST(IGISPoint, what) != NULL;
+}
+
+bool IsGraphEdge(WED_Thing * what)
+{
+	return dynamic_cast<IGISEdge*>(what) != NULL;
+}
+
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_Thing *>& items)
+{
+	if(filter(root)) items.push_back(root);
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		CollectRecursive(root->GetNthChild(n), filter, items);
+}

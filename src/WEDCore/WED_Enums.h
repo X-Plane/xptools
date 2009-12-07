@@ -172,15 +172,15 @@ ENUM_DOMAIN(TCE_GridSnap, "Grid")
 	
 	
 ENUM_DOMAIN(ATCPatternSide,"Pattern Side")
-	ENUM(atc_Left,					"Left",								0)
-	ENUM(atc_Right,					"Right",							1)		
+	ENUM(atc_Left,					"Left",								apt_pattern_left)
+	ENUM(atc_Right,					"Right",							apt_pattern_right)		
 
 ENUM_DOMAIN(ATCTrafficType,"Traffic Type")
-	ENUM(atc_Heavies,				"Heavy Jets",						1)
-	ENUM(atc_Jets,					"Jets",								2)
-	ENUM(atc_Props,					"Props",							4)	
-	ENUM(atc_Helicopters,			"Helicopters",						8)		
+	ENUM(atc_Heavies,				"Heavy Jets",						atc_traffic_heavies)
+	ENUM(atc_Jets,					"Jets",								atc_traffic_jets)
+	ENUM(atc_Props,					"Props",							atc_traffic_props)	
+	ENUM(atc_Helicopters,			"Helicopters",						atc_traffic_helis)		
 	
 ENUM_DOMAIN(ATCOperationType,"Operations")
-	ENUM(atc_Arrivals,				"Arrivals",							1)
-	ENUM(atc_Departures,			"Departures",						2)
+	ENUM(atc_Arrivals,				"Arrivals",							atc_op_arrivals)
+	ENUM(atc_Departures,			"Departures",						atc_op_departures)

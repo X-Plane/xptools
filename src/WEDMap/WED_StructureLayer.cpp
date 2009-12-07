@@ -763,6 +763,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	case gis_PointSequence:
 	case gis_Line:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:
 		/******************************************************************************************************************************************************
 		 * CHAINS

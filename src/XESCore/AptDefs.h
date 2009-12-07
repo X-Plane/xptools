@@ -64,6 +64,15 @@ enum {
 	apt_end_seg		 	= 115,
 	apt_end_crv 		= 116,
 
+	apt_flow_def		= 1000,			// <icao> <cld> <vis> <wind range> <wind max> <time on> <time off> <name> 		
+	apt_flow_rwy_rule	= 1100,			// <rwy> <freq> <ops> <equp> <dep range> <initial turn range> <name>
+	apt_flow_pattern	= 1101,			// <rwy> <left|right>
+	
+	apt_taxi_header		= 1200,			// <name>
+	apt_taxi_node		= 1201,			// <lat> <lon> <type> <id> <name>
+	apt_taxi_edge		= 1202,			// <src> <dst> <flags> <id> <name>
+	apt_taxi_shape		= 1203,			// <lat> <lon>
+
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -198,8 +207,20 @@ enum {
 	apt_light_hold_short,
 	apt_light_hold_short_flash,
 	apt_light_hold_short_centerline,
-	apt_light_bounary
-
+	apt_light_bounary,
+	
+	// ATC Crap
+	
+	apt_pattern_left = 1,
+	apt_pattern_right = 2,
+	
+	atc_traffic_heavies = 1,
+	atc_traffic_jets = 2,
+	atc_traffic_props = 4,
+	atc_traffic_helis = 8,
+	
+	atc_op_arrivals = 1,
+	atc_op_departures = 2
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -359,6 +380,58 @@ struct	AptATCFreq_t {
 };
 typedef vector<AptATCFreq_t>	AptATCFreqVector;
 
+/************************************************************************************************************************
+ * ATC INFO
+ ************************************************************************************************************************/
+struct AptRunwayRule_t {
+	string			name;
+	string			runway;
+	int				operations;
+	int				equipment;
+	int				dep_freq;
+	int				dep_heading_lo;		// lo == hi if "any" is okay.
+	int				dep_heading_hi;		// This filters the use of the runway by where we are going, to keep traffic from crossing in-air.
+	int				ini_heading_lo;		// This is the range of initial headings the tower can issue.
+	int				ini_heading_hi;		
+};	
+typedef vector<AptRunwayRule_t>	AptRunwayRuleVector;
+
+struct AptFlow_t {
+	string						name;
+
+	string						icao;
+	int							ceiling;
+	int							visibility;
+	int							wind_speed_max;
+	int							wind_dir_min;
+	int							wind_dir_max;
+	int							time_min;
+	int							time_max;
+	
+	int							pattern_side;
+	string						pattern_runway;
+	AptRunwayRuleVector			runway_rules;
+};
+typedef vector<AptFlow_t>		AptFlowVector;
+
+struct AptRouteNode_t {
+	string						name;
+	int							id;
+	Point2						location;
+};
+
+struct AptRouteEdge_t {
+	string						name;
+	int							src;
+	int							dst;
+	vector<Point2>				shape;
+};
+
+struct AptNetwork_t {
+	string						name;
+	vector<AptRouteNode_t>		nodes;
+	vector<AptRouteEdge_t>		edges;
+};
 
 struct AptInfo_t {
 	int					kind_code;				// Enum
@@ -384,6 +457,9 @@ struct AptInfo_t {
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;
 	AptATCFreqVector	atc;
+
+	AptFlowVector		flows;
+	AptNetwork_t		taxi_route;
 
 	Bbox2				bounds;
 

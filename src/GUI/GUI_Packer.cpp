@@ -22,6 +22,17 @@
  */
 
 #include "GUI_Packer.h"
+#include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <GL/gl.h>
+	#include <GL/glu.h>
+#endif
+
 
 GUI_Packer::GUI_Packer()
 {
@@ -125,3 +136,21 @@ void		GUI_Packer::SetBounds(int inBounds[4])
 	mPackArea[3] = inBounds[3];
 }
 
+void		GUI_Packer::Draw(GUI_GraphState * state)
+{
+		int tile[4] = { 0, 0, 1, 1 };
+
+		glColor3f(1,1,1);
+
+	if (!mImage.empty())
+	{
+		int		bounds[4];
+		GetBounds(bounds);
+		GUI_DrawStretched(state, mImage.c_str(), bounds, tile);
+	}
+}
+
+void		GUI_Packer::SetBkgkndImage(const char * image_res)
+{
+	mImage = image_res;
+}

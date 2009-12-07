@@ -40,6 +40,7 @@ GUI_ToolBar::GUI_ToolBar(int h, int v, const char * in_resource) :
 	mH(h),
 	mV(v)
 {
+	mEnabled.resize(h*v,1);
 }
 
 GUI_ToolBar::~GUI_ToolBar()
@@ -49,6 +50,11 @@ GUI_ToolBar::~GUI_ToolBar()
 void	GUI_ToolBar::SetToolTips(const vector<string>& in_tips)
 {
 	mTips = in_tips;
+}
+
+void	GUI_ToolBar::DisableTool(int idx)
+{
+	mEnabled[idx] = 0;
 }
 
 void	GUI_ToolBar::SetValue(float inValue)
@@ -128,6 +134,7 @@ int			GUI_ToolBar::MouseDown(int x, int y, int button)
 	int yt = (y - bounds[1]) / bounds[5];
 
 	if (xt >= 0 && xt < mH && yt >= 0 && yt < mV)
+	if (mEnabled[(xt + yt * mH)])
 	{
 		SetValue(xt + yt * mH);
 		BroadcastMessage(GUI_CONTROL_VALUE_CHANGED, 0);

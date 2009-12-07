@@ -170,6 +170,7 @@ int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
+	case gis_Edge:
 		s = dynamic_cast<IGISPointSequence *>(en);
 		DebugAssert(s);
 		return s ? s->GetNumSides() * 4 : 0;
@@ -330,6 +331,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		break;
 	case gis_PointSequence:
 	case gis_Chain:
+	case gis_Edge:
 	case gis_Ring:
 		s = dynamic_cast<IGISPointSequence *>(en);
 		DebugAssert(s);
@@ -384,6 +386,7 @@ int		WED_VertexTool::GetLinks		    (intptr_t id) const
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
+	case gis_Edge:
 		s = dynamic_cast<IGISPointSequence*>(en);
 		return s ? s->GetNumSides() : 0;
 	}
@@ -407,6 +410,7 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
+	case gis_Edge:
 		if(ltype) *ltype = link_None;
 		if(active) *active = 1;
 		break;
@@ -428,6 +432,7 @@ int		WED_VertexTool::GetNthLinkSource   (intptr_t id, int n) const
 	case gis_Line_Width:		return kSourceIndex[n];
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:				return n*4;	
 	}
 	return 0;
@@ -439,6 +444,7 @@ int		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, int n) const
 	switch(en->GetGISClass()) {
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:				return n*4+1;	
 	}
 	return -1;
@@ -457,6 +463,7 @@ int		WED_VertexTool::GetNthLinkTarget   (intptr_t id, int n) const
 	case gis_Line:				return 1;
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:				return n*4+2;	
 	}
 	return 0;
@@ -468,6 +475,7 @@ int		WED_VertexTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 	switch(en->GetGISClass()) {
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:				return n*4+3;	
 	}
 	return -1;
@@ -742,6 +750,7 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	case gis_Chain:			return	pt_sel ? ent_AtomicOrContainer : ent_Container;		// single click on the chain edge?  Grab the chain.  But drag to encompass?  collect vertices but don't "move up" to the chain.
 	case gis_Line:			return	ent_AtomicOrContainer;
 	case gis_Line_Width:	return	ent_AtomicOrContainer;
+	case gis_Edge:			return	ent_AtomicOrContainer;
 	default:				return	ent_Atomic;
 	}
 }
@@ -810,6 +819,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		break;
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
@@ -915,6 +925,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	case gis_Line_Width:
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Edge:
 	case gis_Chain:
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE &&
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;

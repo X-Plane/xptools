@@ -244,7 +244,7 @@ void	WED_PropertyTable::AcceptEdit(
 	if (apply_all)
 	{
 		ISelection * sel = WED_GetSelect(mResolver);
-		sel->IterateSelection(Iterate_CollectThings, &apply_vec);
+		sel->IterateSelectionOr(Iterate_CollectThings, &apply_vec);
 	}
 	else
 	{
@@ -768,7 +768,7 @@ void WED_PropertyTable::RebuildCache(void)
 	WED_Thing * root = WED_GetWorld(mResolver);
 	ISelection * sel = WED_GetSelect(mResolver);
 	if (mSelOnly)
-		sel->IterateSelection(SelectAndParents,&all_sel);
+		sel->IterateSelectionOr(SelectAndParents,&all_sel);
 	if (root)
 		RebuildCacheRecursive(root,sel,mSelOnly ? &all_sel : NULL);
 }

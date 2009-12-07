@@ -387,7 +387,7 @@ void		WED_TCEVertexTool::SyncCache(void) const
 	mCache.clear();
 	vector<IGISEntity *> who;
 	ISelection * sel = WED_GetSelect(GetResolver());
-	sel->IterateSelection(Iterate_CollectEntitiesUV,&who);
+	sel->IterateSelectionOr(Iterate_CollectEntitiesUV,&who);
 	for(vector<IGISEntity *>::iterator w = who.begin(); w != who.end(); ++w)
 		SyncRecurse(*w, sel);
 }

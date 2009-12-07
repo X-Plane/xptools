@@ -50,6 +50,9 @@ enum {
 	wed_MakeRouting,
 #endif	
 	wed_Split,
+#if AIRPORT_ROUTING
+	wed_Merge,
+#endif
 	wed_Reverse,
 	wed_MoveFirst,
 	wed_MovePrev,
@@ -80,6 +83,11 @@ enum {
 	wed_SelectChild,
 	wed_SelectVertex,
 	wed_SelectPoly,
+#if AIRPORT_ROUTING
+	wed_SelectZeroLength,
+	wed_SelectDoubles,
+	wed_SelectCrossing,
+#endif	
 	// Airport Menu
 	wed_CreateApt,
 	wed_EditApt,

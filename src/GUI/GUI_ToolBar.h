@@ -35,6 +35,7 @@ public:
 			void	SizeToBitmap(void);
 
 			void	SetToolTips(const vector<string>& in_tips);
+			void	DisableTool(int idx);
 
 	virtual	void	SetValue(float inValue);
 
@@ -50,6 +51,7 @@ public:
 private:
 
 	vector<string>	mTips;
+	vector<int>		mEnabled;
 	string			mResource;
 	int				mH;
 	int				mV;

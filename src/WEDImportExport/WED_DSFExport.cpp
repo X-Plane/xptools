@@ -596,7 +596,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	DSFCallbacks_t	cbs;
 	char	prop_buf[256];
 
-	writer = DSFCreateWriter(x,y,x+1,y+1, 8);
+	writer = DSFCreateWriter(x,y,x+1,y+1, -32768.0,32767.0,8);
 	DSFGetWriterCallbacks(&cbs);
 
 	sprintf(prop_buf, "%d", (int) x  );		cbs.AcceptProperty_f("sim/west", prop_buf, writer);

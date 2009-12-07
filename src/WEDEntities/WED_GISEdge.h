@@ -41,7 +41,7 @@
 #include "WED_Entity.h"
 #include "IGIS.h"
 
-class WED_GISEdge : public WED_Entity, public virtual IGISPointSequence {
+class WED_GISEdge : public WED_Entity, public virtual IGISEdge {
 
 DECLARE_INTERMEDIATE(WED_GISEdge)
 
@@ -69,16 +69,27 @@ public:
 	virtual	bool				IsClosed(void) const;
 	virtual	void				Reverse(GISLayer_t l);
 	virtual	IGISPoint *			SplitSide   (const Point2& p, double dist);
+	
+	virtual	void				SetSide(GISLayer_t layer, const Segment2& b);
+	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b);
+	
+	virtual	void				Validate(void);
 
 private:
 
-			void				RebuildCache(void) const;
+		WED_PropDoubleText		ctrl_lat_lo;			// NOTE: THESE ARE STORED AS DELTAS!!!
+		WED_PropDoubleText		ctrl_lon_lo;
+		WED_PropDoubleText		ctrl_lat_hi;
+		WED_PropDoubleText		ctrl_lon_hi;
 
-	mutable	Bbox2						mCacheBounds;
-	mutable	Bbox2						mCacheBoundsUV;
-	mutable bool						mCacheHasUV;
-	mutable	vector<IGISPoint *>			mCachePts;
-	mutable	vector<IGISPoint_Bezier *>	mCachePtsBezier;
+		WED_PropBoolText		is_split;
+
+/*
+		WED_PropDoubleText			mScL;
+		WED_PropDoubleText			mTcL;
+		WED_PropDoubleText			mScH;
+		WED_PropDoubleText			mTcH;
+*/		
 
 };
 

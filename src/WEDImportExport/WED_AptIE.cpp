@@ -40,6 +40,10 @@
 #include "WED_Windsock.h"
 #include "WED_EnumSystem.h"
 #include "WED_OverlayImage.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_TaxiRoute.h"
+
 #include "AptIO.h"
 #include "AptAlgs.h"
 #include "WED_ToolUtils.h"
@@ -121,6 +125,47 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 	}
 }
 
+#if AIRPORT_ROUTING
+
+static void CollectTaxiEdges(WED_Thing * root, set<WED_TaxiRoute *> & all_edges)
+{
+	WED_TaxiRoute * r = dynamic_cast<WED_TaxiRoute*>(root);
+	if(r) all_edges.insert(r);
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		CollectTaxiEdges(root->GetNthChild(n), all_edges);
+}
+
+static void MakeRouting(set<WED_TaxiRoute *>& edges, AptNetwork_t& net)
+{
+	set<WED_Thing *>	nodes;
+	for(set<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	{
+		AptRouteEdge_t ne;
+		
+		(*e)->GetName(ne.name);
+		ne.src = (*e)->GetNthSource(0)->GetID();
+		ne.dst = (*e)->GetNthSource(1)->GetID();
+		
+		nodes.insert((*e)->GetNthSource(0));
+		nodes.insert((*e)->GetNthSource(1));
+		
+		net.edges.push_back(ne);
+	}	
+
+	for(set<WED_Thing *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
+	{
+		AptRouteNode_t nd;
+		nd.id = (*n)->GetID();
+		(*n)->GetName(nd.name);
+		
+		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
+		p->GetLocation(gis_Geo, nd.location);
+		net.nodes.push_back(nd);
+	}
+}
+#endif
+
 void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 {
 	WED_Airport *			apt;
@@ -137,7 +182,11 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_Taxiway *			tax;
 	WED_TowerViewpoint *	twr;
 	WED_Windsock *			win;
-
+	
+#if AIRPORT_ROUTING
+	WED_ATCFlow *			flw;
+	WED_ATCRunwayUse *		use;
+#endif
 	int holes, h;
 
 	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to
@@ -149,6 +198,12 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	{
 		apts.push_back(AptInfo_t());
 		apt->Export(apts.back());
+		
+#if AIRPORT_ROUTING
+		set<WED_TaxiRoute *> edges;
+		CollectTaxiEdges(apt, edges);
+		MakeRouting(edges, apts.back().taxi_route);		
+#endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
 	{
@@ -235,7 +290,18 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.back().atc.push_back(AptATCFreq_t());
 		atc->Export(apts.back().atc.back());
 	}
-
+#if AIRPORT_ROUTING	
+	else if(flw = dynamic_cast<WED_ATCFlow *>(what))
+	{
+		apts.back().flows.push_back(AptFlow_t());
+		flw->Export(apts.back().flows.back());
+	}
+	else if(use = dynamic_cast<WED_ATCRunwayUse *>(what))
+	{
+		apts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
+		use->Export(apts.back().flows.back().runway_rules.back());
+	}
+#endif	
 
 	int cc = what->CountChildren();
 	for (int i = 0; i < cc; ++i)
@@ -509,6 +575,40 @@ void	WED_AptImport(
 			new_atc->SetParent(new_apt,new_apt->CountChildren());
 			new_atc->Import(*atc, LazyPrintf, &log);
 		}
+		
+#if AIRPORT_ROUTING
+		for(AptFlowVector::iterator flw = apt->flows.begin(); flw != apt->flows.end(); ++flw)
+		{
+			WED_ATCFlow * new_flw = WED_ATCFlow::CreateTyped(archive);
+			new_flw->SetParent(new_apt,new_apt->CountChildren());
+			new_flw->Import(*flw, LazyPrintf, &log);
+			
+			for(AptRunwayRuleVector::iterator use = flw->runway_rules.begin(); use != flw->runway_rules.end(); ++use)
+			{
+				WED_ATCRunwayUse * new_use = WED_ATCRunwayUse::CreateTyped(archive);
+				new_use->SetParent(new_flw, new_flw->CountChildren());
+				new_use->Import(*use, LazyPrintf, &log);
+			}
+		}
+		
+		map<int,WED_AirportNode *>	nodes;
+		for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+		{
+			WED_AirportNode * new_n = WED_AirportNode::CreateTyped(archive);
+			new_n->SetParent(new_apt,new_apt->CountChildren());
+			new_n->SetName(n->name);
+			new_n->SetLocation(gis_Geo,n->location);
+			nodes[n->id] = new_n;
+		}
+		for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+		{
+			WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+			new_e->AddSource(nodes[e->src], 0);
+			new_e->AddSource(nodes[e->dst], 1);
+			new_e->SetParent(new_apt,new_apt->CountChildren());
+			new_e->SetName(e->name);
+		}
+#endif		
 	}
 
 	if (log.fi)

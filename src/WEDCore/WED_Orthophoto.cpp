@@ -112,7 +112,7 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 	ISelection * sel = WED_GetSelect(in_resolver);
 	
 	vector<IGISEntity *>	entities;	
-	sel->IterateSelection(Iterate_CollectEntities,&entities);
+	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
 	if(entities.empty()) return;
 
 	bool	skip = false;

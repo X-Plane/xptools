@@ -28,7 +28,8 @@
 #include "WED_CreatePointTool.h"
 #include "WED_CreatePolygonTool.h"
 #include "WED_MapPane.h"
-static int kDefCols[] = { 100, 0 };
+
+static int kDefCols[] = { 100, 100 };
 
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
@@ -176,7 +177,9 @@ int		WED_LibraryListAdapter::SelectDisclose(
 		SetOpen(mSel, open_it);
 		mCacheValid = false;
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+		return 1;
 	}
+	return 0;
 }
 
 int		WED_LibraryListAdapter::TabAdvance(
@@ -192,6 +195,7 @@ int		WED_LibraryListAdapter::DoubleClickCell(
 			int							cell_x,
 			int							cell_y)
 {
+	return 0;
 }
 
 /********************************************************************************************************************************************

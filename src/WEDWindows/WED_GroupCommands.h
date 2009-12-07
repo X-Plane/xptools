@@ -40,11 +40,12 @@ void	WED_DoMakeNewAirport(IResolver * inResolver);
 
 int		WED_CanMakeNewATCFreq(IResolver * inResolver);
 void	WED_DoMakeNewATCFreq(IResolver * inResolver);
+#if AIRPORT_ROUTING
 int		WED_CanMakeNewATCFlow(IResolver * inResolver);
 void	WED_DoMakeNewATCFlow(IResolver * inResolver);
 int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver);
 void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver);
-
+#endif
 
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);
@@ -56,6 +57,9 @@ int		WED_CanClear(IResolver * resolver);
 void	WED_DoClear(IResolver * resolver);
 int		WED_CanCrop(IResolver * resolver);
 void	WED_DoCrop(IResolver * resolver);
+
+int		WED_CanMerge(IResolver * resolver);
+void	WED_DoMerge(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
 void	WED_DoSplit(IResolver * resolver);
@@ -77,6 +81,11 @@ int		WED_CanSelectVertices(IResolver * resolver);
 void	WED_DoSelectVertices(IResolver * resolver);
 int		WED_CanSelectPolygon(IResolver * resolver);
 void	WED_DoSelectPolygon(IResolver * resolver);
+
+void	WED_DoSelectZeroLength(IResolver * resolver);
+void	WED_DoSelectDoubles(IResolver * resolver);
+void	WED_DoSelectCrossing(IResolver * resolver);
+
 
 // This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);

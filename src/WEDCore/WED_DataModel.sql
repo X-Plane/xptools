@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS WED_thing_viewers(
 	viewer			integer		NOT NULL,
 	source			integer		NOT NULL,
 	seq				integer		NOT NULL,
-	PRIMARY KEY(viewer,source)
+	PRIMARY KEY(viewer,source,seq)
 );
 
 CREATE TABLE IF NOT EXISTS WED_selection(
@@ -240,11 +240,6 @@ CREATE TABLE IF NOT EXISTS WED_exclusionzone(
 	id				integer		NOT NULL,
 	exclusions		string		NOT NULL,
 	PRIMARY KEY(id,exclusions)	
-);
-
-CREATE TABLE IF NOT EXISTS WED_taxiroute(
-	id				integer		PRIMARY KEY,
-	oneway			integer		NOT NULL
 );
 
 -- Other Book Keeping

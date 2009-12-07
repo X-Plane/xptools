@@ -82,6 +82,8 @@ public:
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual void			ToDB(sqlite3 * db);
 
+	virtual	void			Validate(void);
+
 	// From WED_PropertyHelper...
 	virtual	void			PropEditCallback(int before);
 	virtual	int					CountSubs(void);
@@ -105,6 +107,8 @@ protected:
 	virtual		void			RemoveChild(int id);
 	virtual		void			AddViewer(int id);
 	virtual		void			RemoveViewer(int id);
+
+private:
 
 	int				parent_id;
 	vector<int>		child_id;

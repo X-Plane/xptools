@@ -28,6 +28,8 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_GISUtils.h"
 
+#if AIRPORT_ROUTING
+
 static const char * kCreateCmds[] = { "Taxiway Route Line" };
 static const int kIsAirport[] = { 1 };
 
@@ -47,7 +49,8 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	0),						// close required
 	mType(tool),
 	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", "", "", 1),
-	mName(tool == create_TaxiRoute ? this : NULL, "Name", "", "", "N")
+	mName(tool == create_TaxiRoute ? this : NULL, "Name", "", "", "N"),
+	mSlop(tool == create_TaxiRoute ? this : NULL, "Slop", "", "", 10, 2)
 {
 }
 
@@ -58,14 +61,34 @@ WED_CreateEdgeTool::~WED_CreateEdgeTool()
 struct sort_by_seg_rat {
 	sort_by_seg_rat(const Point2& i) : a(i) { }
 	Point2	a;
+	bool operator()(const pair<IGISPointSequence *, Point2>& p1, const pair<IGISPointSequence *, Point2>& p2) const {
+		return a.squared_distance(p1.second) < a.squared_distance(p2.second);
+	}
 	bool operator()(const Point2& p1, const Point2& p2) const {
 		return a.squared_distance(p1) < a.squared_distance(p2);
 	}
 };
 
+template <class A, class B>
+struct compare_second {
+	bool operator()(const pair<A,B>& lhs, const pair<A,B>& rhs) const {
+		return lhs.second == rhs.second; }
+};
+
 static void SortSplits(const Segment2& s, vector<Point2>& splits)
 {
 	sort(splits.begin(), splits.end(), sort_by_seg_rat(s.p1));
+	
+	// Nuke dupe pts.  A hack?  NO!  Intentional.  When we GIS-iterate through our hierarchy
+	// we pick up all our graph end pts many times - once as nodes, and once as the points making
+	// up the pt sequences that is the edges.
+	splits.erase(unique(splits.begin(),splits.end()),splits.end());
+}
+
+static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point2 > >& splits)
+{
+	sort(splits.begin(), splits.end(), sort_by_seg_rat(s.p1));
+	splits.erase(unique(splits.begin(),splits.end(), compare_second<IGISPointSequence*,Point2>()),splits.end());
 }
 
 
@@ -89,16 +112,89 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	ISelection *	sel = WED_GetSelect(GetResolver());
 	sel->Clear();
+	double frame_dist = fabs(GetZoomer()->YPixelToLat(mSlop.value)-GetZoomer()->YPixelToLat(0));
 
+	/************************************************************************************************
+	 * FIRST SNAPPING PASS - NODE TO NODE
+	 ************************************************************************************************/
+	
+	// For each node we want to add, we are going to find a nearby existing node - and if we find one, we
+	// lock our location to theirs.  This "direct hit" will get consoldiated during create.  (By moving our
+	// path first, we don't get false intersections when the user meant to hit end to end.)
+	for(int p = 0; p < pts.size(); ++p)
+	{
+		double	dist=frame_dist*frame_dist;
+		WED_Thing * who = NULL;
+		FindNear(host, NULL, pts[p],who,dist);
+		if (who != NULL)
+		{
+			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
+			if(pp)
+				pp->GetLocation(gis_Geo,pts[p]);
+		}	
+	}
+	
+	/************************************************************************************************
+	 * SECOND SNAPPING PASS - LOCK NEW PTS TO EXISTING EDGES
+	 ************************************************************************************************/
+	// Next: we need to see if our ndoes go near existing by existing edges...in that case,
+	// split the edges and snap us over.
+	for (int p = 0; p < pts.size(); ++p)
+	{
+		double dist=frame_dist*frame_dist;
+		IGISPointSequence * seq = NULL;
+		FindNearP2S(host, NULL, pts[p], seq, dist);
+		if(seq)
+			seq->SplitSide(pts[p], 0.001);		
+	}
+	
+	/************************************************************************************************
+	 * THIRD SNAPPING PASS - SPLIT NEW EDGES NEAR TO EXISTING PTS
+	 ************************************************************************************************/
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<Point2>	splits;
-		int dummy;
-		SplitByLine(GetHost(dummy), NULL, Segment2(pts[p-1],pts[p]), splits);
+		SplitByPts(host, NULL, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+//		printf("At index %d, got %d splits from pts.\n", p, splits.size());
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-		pts.insert(pts.begin() + p, splits.begin(),splits.end());
+
+		pts.insert(pts.begin()+p,splits.begin(), splits.end());
 		p += splits.size();
+		
+//		printf("p = %d\n", p);
+//		for(int n = 0; n < pts.size(); ++n)
+//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());		
 	}
+
+	/************************************************************************************************
+	 * FOURTH SNAPPING PASS - PRE-INTERSECT LINES WE WILL GO THROUGH
+	 ************************************************************************************************/
+	// Now that we've snapped all we can, look for real non-end point segment intersections.  Cut the
+	// existing segment using "split" and save the exact point.  This way we will have exact hits on
+	// nodes later and consolidate.
+
+	for(int p = 1; p < pts.size(); ++p)
+	{
+		vector<pair<IGISPointSequence *, Point2> >	splits;
+		SplitByLine(host, NULL, Segment2(pts[p-1],pts[p]), splits);
+		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+			s->first->SplitSide(s->second,0.001);
+//		printf("At index %d, got %d splits.\n", p, splits.size());
+		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+		{			
+			pts.insert(pts.begin()+p,s->second);
+			++p;
+		}	
+		
+//		printf("p = %d\n", p);
+//		for(int n = 0; n < pts.size(); ++n)
+//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());
+	}
+
+	/************************************************************************************************
+	 *
+	 ************************************************************************************************/
 
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
@@ -106,78 +202,52 @@ void		WED_CreateEdgeTool::AcceptPath(
 	static int n = 0;
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
-	
-	WED_Thing * last = NULL;
-	while(start < stop)
+
+	WED_AirportNode * c;
+	WED_Thing * src = NULL, * dst = NULL;
+	double	dist=frame_dist*frame_dist;
+	if(src == NULL)	
+		FindNear(host, NULL, pts[start % pts.size()],src,dist);
+	if(src == NULL)
 	{
-		++n;	
+		src = c = WED_AirportNode::CreateTyped(GetArchive());
+		src->SetParent(host,idx);
+		src->SetName(mName.value + "_start");
+		c->SetLocation(gis_Geo,pts[0]);
+	}
+
+	int p = start + 1;
+	while(p <= stop)
+	{
 		switch(mType) {
 		case create_TaxiRoute:
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
-			tr->SetOneway(mOneway.value);
-			
+			tr->SetOneway(mOneway.value);			
 			tr->SetName(mName);
 			break;
 		}
 	
-		WED_AirportNode * c;
-		WED_Thing * src = last, * dst = NULL;
-		double frame_dist = fabs(GetZoomer()->YPixelToLat(5)-GetZoomer()->YPixelToLat(0));
-		double	dist=frame_dist*frame_dist;
-		if(src == NULL)	
-		{
-			FindNear(host, NULL, pts[start % pts.size()],src,dist);
-			if(src != NULL) WED_SplitEdgeIfNeeded(src, mName.value);
-		}
-		if(src == NULL)
-		{
-			src = c = WED_AirportNode::CreateTyped(GetArchive());
-			src->SetParent(host,idx);
-			src->SetName(mName.value + "_start");
-			c->SetLocation(gis_Geo,pts[0]);
-		}
 		new_edge->AddSource(src,0);
-
-		int cidx = 0;		
-		int p = start + 1;
-		while(p <= stop)
+		dst = NULL;
+		
+		dist=frame_dist*frame_dist;
+		FindNear(host, NULL, pts[p % pts.size()],dst,dist);
+		if(dst == NULL)
 		{
-			dist=frame_dist*frame_dist;
-			FindNear(host, NULL, pts[p % pts.size()],dst,dist);
-			if(dst != NULL)
-			{
-				WED_SplitEdgeIfNeeded(dst, mName.value);
-				new_edge->AddSource(dst,1);
-				sel->Insert(new_edge);	
-				new_edge->SetParent(host,idx);
-				
-				last = dst;
-				start = p;
-				break;
-			}
-			else if(p == stop)
-			{
-				dst = c = WED_AirportNode::CreateTyped(GetArchive());
-				dst->SetParent(host,idx);
-				dst->SetName(mName.value+"_stop");
-				c->SetLocation(gis_Geo,pts[p]);
-				new_edge->AddSource(dst,1);
-				sel->Insert(new_edge);	
-				new_edge->SetParent(host,idx);
+			dst = c = WED_AirportNode::CreateTyped(GetArchive());
+			dst->SetParent(host,idx);
+			dst->SetName(mName.value+"_stop");
+			c->SetLocation(gis_Geo,pts[p % pts.size()]);
+		}		
+		new_edge->AddSource(dst,1);
 
-				start = p;
-				break;
-			}
-			else
-			{
-				src = c = WED_AirportNode::CreateTyped(GetArchive());
-				src->SetParent(new_edge,cidx);
-				src->SetName(mName.value+"_internal");
-				c->SetLocation(gis_Geo,pts[p]);
-				++p;
-				++cidx;
-			}
-		}
+		// Do this last - half-built edge inserted the world destabilizes accessors.
+		new_edge->SetParent(host,idx);
+		sel->Insert(new_edge);	
+	
+//		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
+		src = dst;
+		++p;
 	}	
 
 	GetArchive()->CommitCommand();
@@ -237,6 +307,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Poin
 		case gis_Line:
 		case gis_Line_Width:
 		case gis_Ring:
+		case gis_Edge:
 		case gis_Chain:
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
@@ -259,8 +330,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Poin
 	}
 }
 
-
-void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<Point2>& out_splits)
+void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
@@ -276,6 +346,68 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const S
 		case gis_Line:
 		case gis_Line_Width:
 		case gis_Ring:
+		case gis_Edge:
+		case gis_Chain:
+			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
+			{
+				int ns = ps->GetNumSides();
+				for(int n = 0; n < ns; ++n)
+				{
+					Bezier2 b;
+					Segment2 s;
+					if(ps->GetSide(gis_Geo,n,s,b))
+					{						
+					}
+					else					
+					{
+						if(loc != s.p1 && loc != s.p2)
+						{
+							double d = s.squared_distance(loc);
+							if(d < out_dsq)
+							{
+								out_dsq = d;
+								out_thing = ps;
+							}
+						}
+					}
+				}
+			}
+			break;
+		case gis_Composite:
+			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
+			{
+				for(int n = 0; n < c->GetNumEntities(); ++n)
+					FindNearP2S(NULL,c->GetNthEntity(n), loc, out_thing, out_dsq);
+			}
+		}
+	}
+	else
+	{
+		for(int n = 0; n < host->CountChildren(); ++n)
+			FindNearP2S(host->GetNthChild(n), NULL, loc, out_thing, out_dsq);
+	}
+}
+
+
+
+
+void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
+{
+	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
+	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	if(e && t)
+	{
+		Point2	l;
+		IGISPoint * p;
+		IGISPointSequence * ps;
+		IGISComposite * c;
+	
+		switch(e->GetGISClass()) {
+		case gis_PointSequence:
+		case gis_Line:
+		case gis_Line_Width:
+		case gis_Ring:
+		case gis_Edge:
 		case gis_Chain:			
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
@@ -287,10 +419,14 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const S
 					if(!ps->GetSide(gis_Geo,s,side,bez))
 					{
 						Point2 x;
+						if(splitter.p1 != side.p1 &&
+						   splitter.p1 != side.p2 &&
+						   splitter.p2 != side.p1 &&
+						   splitter.p2 != side.p2)						
 						if(splitter.intersect(side,x))
 						{
-							out_splits.push_back(x);
-							ps->SplitSide(x, 0.001);
+							out_splits.push_back(pair<IGISPointSequence *, Point2>(ps, x));
+//							ps->SplitSide(x, 0.001);
 						}
 					}
 				}
@@ -311,3 +447,60 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const S
 	}
 }
 
+
+void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
+{
+	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
+	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	if(e && t)
+	{
+		Point2	l;
+		IGISPoint * p;
+		IGISPointSequence * ps;
+		IGISComposite * c;
+	
+		switch(e->GetGISClass()) {
+		case gis_Point:
+		case gis_Point_Bezier:
+		case gis_Point_Heading:
+		case gis_Point_HeadingWidthLength:
+			if((p = dynamic_cast<IGISPoint *>(e)) != NULL)
+			{
+				p->GetLocation(gis_Geo,l);
+				double my_dist = splitter.squared_distance(l);
+				if(my_dist < dsq && splitter.p1 != l && splitter.p2 != l)
+				{
+					out_splits.push_back(l);
+				}
+			}
+			break;
+		case gis_PointSequence:
+		case gis_Line:
+		case gis_Line_Width:
+		case gis_Ring:
+		case gis_Edge:
+		case gis_Chain:			
+			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
+			{
+				for(int n = 0; n < ps->GetNumPoints(); ++n)
+					SplitByPts(NULL,ps->GetNthPoint(n), splitter, out_splits, dsq);
+			}
+			break;
+
+			break;
+		case gis_Composite:
+			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
+			{
+				for(int n = 0; n < c->GetNumEntities(); ++n)
+					SplitByPts(NULL,c->GetNthEntity(n), splitter, out_splits, dsq);
+			}
+		}
+	}
+	else
+	{
+		for(int n = 0; n < host->CountChildren(); ++n)
+			SplitByPts(host->GetNthChild(n), NULL, splitter, out_splits,dsq);
+	}
+}
+
+#endif

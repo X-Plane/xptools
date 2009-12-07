@@ -208,11 +208,20 @@ ISelectable *		WED_Select::GetNthSelection(int n) const
 	return FetchPeer(*i);
 }
 
-int			WED_Select::IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const
+int			WED_Select::IterateSelectionOr(int (* func)(ISelectable * who, void * ref), void * ref) const
 {
 	int n = 0;
 	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		if ((n=func(FetchPeer(*i), ref)) != 0)
 			return n;
 	return 0;
+}
+
+int			WED_Select::IterateSelectionAnd(int (* func)(ISelectable * who, void * ref), void * ref) const
+{
+	int n = 0;
+	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+		if ((n=func(FetchPeer(*i), ref)) == 0)
+			return n;
+	return 1;
 }

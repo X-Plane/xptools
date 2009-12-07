@@ -710,6 +710,91 @@ void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
 {
 }
 
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
+{
+	info.can_edit = 1;
+	info.prop_kind = prop_EnumSet;
+	info.prop_name = mTitle;
+	info.exclusive = false;
+}
+
+void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
+{
+	DOMAIN_Members(domain,dict);
+}
+
+void		WED_PropIntEnumBitfield::GetPropertyDictItem(int e, string& item)
+{
+	item = ENUM_Desc(e);
+}
+
+void		WED_PropIntEnumBitfield::GetProperty(PropertyVal_t& val) const
+{
+	val.prop_kind = prop_EnumSet;
+	val.set_val = value;
+}
+
+void		WED_PropIntEnumBitfield::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	DebugAssert(val.prop_kind == prop_EnumSet);
+	if (value != val.set_val)
+	{
+		for (set<int>::const_iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
+		if (ENUM_Domain(*e) != domain)
+			return;
+		parent->PropEditCallback(1);
+		value = val.set_val;
+		parent->PropEditCallback(0);
+	}
+}
+
+void 		WED_PropIntEnumBitfield::ReadFrom(IOReader * reader)
+{
+	int sz, ee;
+	value.clear();
+	reader->ReadInt(sz);
+	while (sz--)
+	{
+		reader->ReadInt(ee);
+		value.insert(ee);
+	}
+}
+
+void 		WED_PropIntEnumBitfield::WriteTo(IOWriter * writer)
+{
+	writer->WriteInt(value.size());
+	for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
+	{
+		writer->WriteInt(*i);
+	}
+}
+
+void		WED_PropIntEnumBitfield::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
+{
+	char cmd_buf[1000];
+	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
+	sql_command cmd(db, cmd_buf,NULL);
+	sql_row0		k;
+	sql_row1<int>	v;
+	int err = cmd.simple_exec(k,v);
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+	ENUM_ImportSet(domain, v.a, value);
+}
+
+void		WED_PropIntEnumBitfield::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
+{
+}
+
+void		WED_PropIntEnumBitfield::GetUpdate(SQL_Update& io_update)
+{
+	char as_int[1024];
+	sprintf(as_int,"%d", ENUM_ExportSet(value));
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
+}
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

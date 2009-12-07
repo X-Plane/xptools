@@ -21,28 +21,40 @@
  *
  */
 
-#ifndef WED_TaxiRoute_H
-#define WED_TaxiRoute_H
+#ifndef WED_ATCFlow_H
+#define WED_ATCFlow_H
 
 #if AIRPORT_ROUTING
 
-#include "WED_GISEdge.h"
+#include "WED_Thing.h"
+struct AptFlow_t;
 
-class WED_TaxiRoute : public WED_GISEdge {
+class WED_ATCFlow : public WED_Thing {
 
-DECLARE_PERSISTENT(WED_TaxiRoute)
+DECLARE_PERSISTENT(WED_ATCFlow)
 
 public:
-	
-				void		SetOneway(int p);
-				int			GetOneway(void) const;
-	
-private:	
 
-		WED_PropBoolText		oneway;
+	void	Import(const AptFlow_t& info, void (* print_func)(void *, const char *, ...), void * ref);
+	void	Export(		 AptFlow_t& info) const;
+
+private:
+
+	// Flow rules
+	WED_PropStringText	icao;
+	WED_PropIntText		cld_min;
+	WED_PropIntText		vis_min;
+	WED_PropIntText		wnd_spd_max;
+	WED_PropIntText		wnd_dir_min;
+	WED_PropIntText		wnd_dir_max;	
+	WED_PropIntText		time_min;
+	WED_PropIntText		time_max;	
+	
+	WED_PropStringText	pattern_rwy;
+	WED_PropIntEnum		traffic_dir;
 
 };
 
-#endif /* WED_TaxiRoute_H */
+#endif
 
-#endif /* AIRPORT_ROUTING*/
+#endif /* WED_ATCFlow_H */

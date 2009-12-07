@@ -144,6 +144,10 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 	++mCacheKey;
 
 	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
+	
+	sql_command nuke_src(db,"DELETE FROM WED_thing_viewers where source=@id;","@id");
+	sql_command nuke_vew(db,"DELETE FROM WED_thing_viewers where viewer=@id;","@id");
+	
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{
 
@@ -153,6 +157,15 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 			int err = nuke_obj.simple_exec(key);
 			if (err != SQLITE_DONE)
 				WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+
+			err = nuke_src.simple_exec(key);
+			if (err != SQLITE_DONE)
+				WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+
+			err = nuke_vew.simple_exec(key);
+			if (err != SQLITE_DONE)
+				WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+
 		}
 		else
 		{
@@ -188,6 +201,10 @@ void			WED_Archive::CommitCommand(void)
 	mUndoMgr->CommitCommand();
 
 	++mOpCount;
+
+#if DEV	
+	this->Validate();
+#endif
 }
 
 void			WED_Archive::AbortCommand(void)
@@ -211,4 +228,11 @@ long long WED_Archive::CacheKey(void)
 int		WED_Archive::IsDirty(void)
 {
 	return mOpCount;
+}
+
+void	WED_Archive::Validate(void)
+{
+	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
+	if (ob->second != NULL)
+		ob->second->Validate();
 }

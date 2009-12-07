@@ -75,7 +75,12 @@
 // #ifs out code that depends on the module.
 #define	CGAL_BETA_SIMPLIFIER 0
 
-// Experimental code to try to generate default taxiway routings from airport layouts (using straight skeleton).  
+// This define controls the inclusion of experimental next-gen features for ATC.  I have added them as I need to generate experimental data.
+// READ MY LIPS: DO NOT SET THIS TO 1.  
+// The file formats for ATC are not even REMOTELY close to being finished...if you set this to 1 and compile WED, you will create a WED that will make:
+// - Bogus output apt.dat files.
+// - Bogus earth.wed files that won't work with either future WEDs or the current WED.
+// So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!  
 #define AIRPORT_ROUTING 0
 
 /************************************************************************************************************************************************************************
