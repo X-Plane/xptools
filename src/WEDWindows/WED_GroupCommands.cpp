@@ -25,6 +25,7 @@
 #include "WED_ToolUtils.h"
 #include "AssertUtils.h"
 #include "ISelection.h"
+#include "DEMIO.h"
 #include "WED_Thing.h"
 #include "WED_Airport.h"
 #include "WED_ATCFrequency.h"
@@ -206,8 +207,9 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 			DestroyBitmap(&inf);
 
+			int align = dem_want_Area;
 			if (tif_ok==0)
-			if (FetchTIFFCorners(buf, c))
+			if (FetchTIFFCorners(buf, c, align))
 			{
 			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
 			coords[3].x_ = c[0];

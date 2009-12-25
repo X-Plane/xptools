@@ -22,6 +22,7 @@
  */
 
 #include "WED_DSFExport.h"
+#include "WED_AptIE.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -431,6 +432,10 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		Point2 minp, maxp;
 		xcl->GetMin()->GetLocation(gis_Geo,minp);
 		xcl->GetMax()->GetLocation(gis_Geo,maxp);
+		
+		if(minp.x_ > maxp.x_)	swap(minp.x_, maxp.x_);
+		if(minp.y_ > maxp.y_)	swap(minp.y_, maxp.y_);
+		
 		for(set<int>::iterator xt = xtypes.begin(); xt != xtypes.end(); ++xt)
 		{
 			const char * pname = NULL;
@@ -654,15 +659,21 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 		DoUserAlert("Warning: you have curved overlays that cross a DSF tile - they may not have exported correctly.  Do not use overlay elements that are curved and cross a DSF tile boundary.");
 }
 
-int		WED_CanExportDSF(IResolver * resolver)
+int		WED_CanExportPack(IResolver * resolver)
 {
 	return 1;
 }
 
-void	WED_DoExportDSF(IResolver * resolver)
+void	WED_DoExportPack(IResolver * resolver)
 {
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
 	DSF_Export(dynamic_cast<WED_Group *>(w), l);
+
+	string	apt = "Earth nav data" DIR_STR "apt.dat";
+	l->LookupPath(apt);
+	
+	WED_AptExport(w, apt.c_str());
+	
 }
 

@@ -45,9 +45,9 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"-",					0,  	0,								0,	0					},
 {	"&Validate",			'V',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Validate		},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
-{	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
-{	"Export &DSFs",			0,		0,								0,	wed_ExportDSF		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+{	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
+{	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},

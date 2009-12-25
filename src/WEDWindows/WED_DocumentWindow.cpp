@@ -30,7 +30,7 @@
 #include "WED_Messages.h"
 #include "GUI_Menus.h"
 #include "WED_UndoMgr.h"
-
+#include "WED_AptIE.h"
 #include "WED_MapPane.h"
 #include "WED_TCEPane.h"
 #include "WED_PropertyPane.h"
@@ -316,7 +316,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
-	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
+	case wed_ExportPack:		WED_DoExportPack(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
@@ -380,7 +380,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
-	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
+	case wed_ExportPack:	return WED_CanExportPack(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_Validate:		return 1;

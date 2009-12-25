@@ -39,7 +39,7 @@ enum {
 	wed_Validate,
 	wed_ImportApt,
 	wed_ExportApt,
-	wed_ExportDSF,
+	wed_ExportPack,
 	wed_ImportDSF,
 	// Edit Menu,
 	wed_Group,

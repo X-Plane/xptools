@@ -30,8 +30,8 @@ class	ILibrarian;
 
 void DSF_Export(WED_Group * base, ILibrarian * in_package);
 
-int		WED_CanExportDSF(IResolver * resolver);
-void	WED_DoExportDSF(IResolver * resolver);
+int		WED_CanExportPack(IResolver * resolver);
+void	WED_DoExportPack(IResolver * resolver);
 
 
 #endif /* WED_DSFExport_H */

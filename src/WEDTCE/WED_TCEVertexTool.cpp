@@ -288,6 +288,8 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 			if(c == 1)
 			{
 				pt_bt->GetControlHandleLo(gis_UV,p);
+				io_pt += delta;				
+				p = io_pt;
 				HandleSnap(p,delta);
 				pt_bt->SetControlHandleLo(gis_UV,p);
 				io_pt = p;
@@ -295,6 +297,8 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 			if(c == 2)
 			{
 				pt_bt->GetControlHandleHi(gis_UV,p);
+				io_pt += delta;				
+				p = io_pt;
 				HandleSnap(p,delta);
 				pt_bt->SetControlHandleHi(gis_UV,p);
 				io_pt = p;
