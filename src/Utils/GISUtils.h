@@ -37,8 +37,8 @@ typedef	struct tiff TIFF;
 // Important: these are CENTER-PIXEL corners, e.g. where EXACTLY does the MIDDLE
 // of the CORNERS of the image go?  If the image is an area pixel WITHIN a tile,
 // these are going to seem to be a bit small for a tile!
-bool	FetchTIFFCorners(const char * inFileName, double corners[8]);
-bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8]);
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos);
+bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos);
 
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.

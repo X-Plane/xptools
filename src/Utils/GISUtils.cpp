@@ -32,6 +32,7 @@
 #include <cpl_serv.h>
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
+#include "DEMIO.h"
 
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {	
@@ -57,19 +58,19 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 	return false;
 }
 
-bool	FetchTIFFCorners(const char * inFileName, double corners[8])
+bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 {
 	bool retVal = false;
 	TIFF * tiffFile = XTIFFOpen(inFileName, "r");
 	if (tiffFile)
 	{
-		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners);
+		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
 		XTIFFClose(tiffFile);
 	}
 	return retVal;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8])
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
@@ -90,14 +91,26 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8])
 			
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
-			if(pixel_type==RasterPixelIsArea)
+
+			if(pixel_type==RasterPixelIsArea && post_pos == dem_want_Post)
 			{
+				// This is an area-pixel DEM, but we are going to reinterpret it via pixel centers.
+				// This will INSET the corners of the pixels by 1/2 pixel to the sample centers.
 				dx=0.5;
 				dy=0.5;
 			}
 
-
-
+			if(pixel_type==RasterPixelIsPoint && post_pos == dem_want_Area)
+			{
+				// This is a center post sampled image, but we are going to treat it as area.  Each 
+				// pixel "sticks out" a bit in its coverage, so extend.
+				dx=-0.5;
+				dy=-0.5;
+			}
+			
+			if(post_pos == dem_want_File)
+				post_pos = (pixel_type==RasterPixelIsPoint) ? dem_want_Post : dem_want_Area;
+			
         	if (TransformTiffCorner(gtif, &defn,	   dx, ysize-dy, corners[0], corners[1]) &&
 	        	TransformTiffCorner(gtif, &defn, xsize-dx, ysize-dy, corners[2], corners[3]) &&
 	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5]) &&

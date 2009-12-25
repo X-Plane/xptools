@@ -414,6 +414,9 @@ struct	Bezier2 {
 
 	double	y_at_x(double x) const;
 	double	x_at_y(double y) const;
+	
+	int		t_at_x(double x, double t[4]) const;
+	int		t_at_y(double y, double t[4]) const;
 
 	Point2	p1;
 	Point2	p2;
@@ -1288,6 +1291,75 @@ inline double	Bezier2::x_at_y(double y) const
 		return Ax * roots[n] * roots[n] * roots[n] + Bx * roots[n] * roots[n] + Cx * roots[n] + Dx;
 	return p1.x_;
 }
+
+template <typename T>
+bool in_order(T& lhs, T& rhs)	// Assure lhs <= rhs
+{
+	if(lhs > rhs)
+	{
+		swap(lhs, rhs);
+		return true;
+	} else
+		return false;
+}
+
+inline int	Bezier2::t_at_x(double x, double t[3]) const
+{
+	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
+	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
+	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
+	double Dx =		   p1.x_;
+
+	Dx -= x;
+
+	double roots[3];
+	int num_roots = cubic_formula(Ax,Bx,Cx,Dx, roots);
+
+	int r = 0;
+
+	for (int n = 0; n < num_roots; ++n)
+	if (roots[n] >= 0.0 && roots[n] <= 1.0)
+		t[r++] = roots[n];
+
+	if(r > 1) in_order(t[0], t[1]);			// Assure bottom 2 are in order
+	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
+					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
+
+	return r;
+}
+
+inline int	Bezier2::t_at_y(double y, double t[3]) const
+{
+	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
+	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
+	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
+	double Dy =		   p1.y_;
+
+	Dy -= y;
+
+	double roots[3];
+	int num_roots = cubic_formula(Ay,By,Cy,Dy, roots);
+
+	int r = 0;
+
+	for (int n = 0; n < num_roots; ++n)
+	if (roots[n] >= 0.0 && roots[n] <= 1.0)
+		t[r++] = roots[n];
+
+	if(r > 1) in_order(t[0], t[1]);			// Assure bottom 2 are in order
+	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
+					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
+
+	return r;
+}
+
+
+
+
+
+
+
+
 
 
 void	TEST_CompGeomDefs2(void);
