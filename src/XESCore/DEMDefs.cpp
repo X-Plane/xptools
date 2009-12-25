@@ -97,6 +97,7 @@ DEMGeo::DEMGeo() :
 	mEast(0.0),
 	mWidth(0),
 	mHeight(0),
+	mPost(1),
 	mData(0)
 {
 }
@@ -107,6 +108,7 @@ DEMGeo::DEMGeo(const DEMGeo& x) :
 	mEast(x.mEast),
 	mNorth(x.mNorth),
 	mWidth(x.mWidth),
+	mPost(x.mPost),
 	mHeight(x.mHeight)
 {
 	if (mWidth == 0 || mHeight == 0)
@@ -127,7 +129,7 @@ DEMGeo::DEMGeo(const DEMGeo& x) :
 
 DEMGeo::DEMGeo(int width, int height) :
 	mSouth(0.0), mNorth(0.0), mEast(0.0), mWest(0.0),
-	mWidth(width), mHeight(height)
+	mWidth(width), mHeight(height), mPost(1)
 {
 	if (mWidth == 0 || mHeight == 0)
 	{
@@ -170,7 +172,7 @@ DEMGeo& DEMGeo::operator+=(float v)
 
 DEMGeo& DEMGeo::operator+=(const DEMGeo& rhs)
 {
-	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL)
+	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL || mPost != rhs.mPost)
 		return *this;
 	int sz = mWidth * mHeight;
 	const float * src = rhs.mData;
@@ -200,7 +202,7 @@ DEMGeo& DEMGeo::operator*=(float v)
 
 DEMGeo& DEMGeo::operator*=(const DEMGeo& rhs)
 {
-	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL)
+	if (rhs.mWidth != mWidth || rhs.mHeight != mHeight || mData == NULL || rhs.mData == NULL || mPost != rhs.mPost)
 		return *this;
 	int sz = mWidth * mHeight;
 	const float * src = rhs.mData;
@@ -231,7 +233,8 @@ DEMGeo& DEMGeo::operator=(const DEMGeo& x)
 	mNorth = x.mNorth;
 	mWest = x.mWest;
 	mEast = x.mEast;
-
+	mPost = x.mPost;
+	
 	if (mData == NULL)
 		mWidth = mHeight = 0;
 	else {
@@ -245,7 +248,7 @@ DEMGeo& DEMGeo::operator=(const DEMGeo& x)
 
 void DEMGeo::overlay(const DEMGeo& x)	// Overlay
 {
-	if (x.mWidth != mWidth || x.mHeight != mHeight || mData == NULL || x.mData == NULL)
+	if (x.mWidth != mWidth || x.mHeight != mHeight || mPost != x.mPost || mData == NULL || x.mData == NULL)
 	{
 		return;
 	}
@@ -283,8 +286,8 @@ void	DEMGeo::copy_geo_from(const DEMGeo& rhs)
 
 
 void DEMGeo::derez(int r)
-{
-	DEMGeo	smaller(mWidth / r + 1, mHeight / r + 1);
+{	
+	DEMGeo	smaller((mWidth+r-1) / r, (mHeight+r-1) / r);
 	smaller.mNorth = mNorth;
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
@@ -392,14 +395,27 @@ void DEMGeo::resize_save(int w, int h, float fill_value)
 void	DEMGeo::subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const
 {
 	newDEM.resize(x2 - x1 + 1, y2 - y1 + 1);
+	newDEM.mPost = mPost;
 	for (int x = x1; x <= x2; ++x)
 	for (int y = y1; y <= y2; ++y)
 		newDEM(x - x1, y - y1) = (*this)(x, y);
 
-	newDEM.mSouth = y_to_lat(y1);
-	newDEM.mNorth = y_to_lat(y2);
-	newDEM.mWest = x_to_lon(x1);
-	newDEM.mEast = x_to_lon(x2);
+	if(mPost)
+	{
+		// On post?  The coordinates of the pixels ARE the edges of the boundary.
+		newDEM.mSouth = y_to_lat(y1);
+		newDEM.mNorth = y_to_lat(y2);
+		newDEM.mWest = x_to_lon(x1);
+		newDEM.mEast = x_to_lon(x2);
+	} 
+	else 
+	{
+		// Area pixels?  The edge of the pixel is 1/2 pixel on either side.
+		newDEM.mSouth = y_to_lat_double((double) y1 - 0.5);
+		newDEM.mNorth = y_to_lat_double((double) y2 + 0.5);
+		newDEM.mWest = x_to_lon_double((double) x1 - 0.5);
+		newDEM.mEast = x_to_lon_double((double) x2 + 0.5);
+	}
 }
 
 void	DEMGeo::swap(DEMGeo& rhs)
@@ -411,7 +427,11 @@ void	DEMGeo::swap(DEMGeo& rhs)
 	std::swap(mWidth, rhs.mWidth);
 	std::swap(mHeight, rhs.mHeight);
 	std::swap(mData, rhs.mData);
+	std::swap(mPost, rhs.mPost);
 }
+
+
+//// Past here I have not checked for correct post use.
 
 void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inProg) const
 {
@@ -942,19 +962,19 @@ float	DEMGeo_LocalMinMaxWithCache(
 
 DEMMask::DEMMask() :
 	mWest(-180), mEast(180), mSouth(-90), mNorth(90),
-	mWidth(0),mHeight(0)
+	mWidth(0),mHeight(0), mPost(1)
 {
 }
 
 DEMMask::DEMMask(int w, int h, bool ini) :
 	mWest(-180), mEast(180), mSouth(-90), mNorth(90),
-	mWidth(w),mHeight(h)
+	mWidth(w),mHeight(h), mPost(1)
 {
 	mData.assign(mWidth * mHeight, ini);
 }
 
 DEMMask::DEMMask(const DEMGeo& rhs) : mWidth(rhs.mWidth), mHeight(rhs.mHeight),
-	mNorth(rhs.mNorth), mSouth(rhs.mSouth), mEast(rhs.mEast), mWest(rhs.mWest)
+	mNorth(rhs.mNorth), mSouth(rhs.mSouth), mEast(rhs.mEast), mWest(rhs.mWest), mPost(rhs.mPost)
 {
 	mData.resize(mWidth * mHeight);
 	for(int y = 0; y < mHeight; ++y)
@@ -973,6 +993,7 @@ DEMMask& DEMMask::operator=(const DEMGeo& rhs)
 	copy_geo_from(rhs);
 	mWidth = rhs.mWidth;
 	mHeight = rhs.mHeight;
+	mPost = rhs.mPost;
 	mData.resize(mWidth * mHeight);
 	for(int y = 0; y < mHeight; ++y)
 	for(int x = 0; x < mWidth; ++x)

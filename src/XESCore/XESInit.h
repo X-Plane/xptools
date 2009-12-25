@@ -28,6 +28,10 @@
 // But init APIs don't change much.  So this is really just a hack to try to
 // reduce incremental compile time.
 
-void	XESInit(void);
+// Forests?  The one change in config file format from v9 to v10/next-gen is 
+// the use of a SEPARATE forest file...everything else is reverse-compatible.
+// So: allow no-init forests for mesh tool so mesh tool can continue to run on
+// v9 config files.  That way meshtool can make v9 compatible scenery!
+void	XESInit(bool want_forests);	
 
 #endif

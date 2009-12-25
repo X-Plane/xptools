@@ -706,7 +706,7 @@ void copy_scanline(
 	In other words, the CGIAR SRTM files have essentially been shifted to the northeast by 1.5 arc-seconds.
 
 */
-bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
+bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 {
 	int result = -1;
 	double	corners[8];
@@ -727,7 +727,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 
     if (tif == NULL) goto bail;
 
-	if (!FetchTIFFCornersWithTIFF(tif, corners))
+	if (!FetchTIFFCornersWithTIFF(tif, corners, post_style))
 	{
 		printf("Could not read GeoTiff projection data.\n");
 		return false;
@@ -737,6 +737,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	inMap.mSouth = corners[1];
 	inMap.mEast = corners[6];
 	inMap.mNorth = corners[7];
+	inMap.mPost = (post_style == dem_want_Post);
 
 	printf("Corners: %.12lf,%.12lf   %.12lf,%.12lf   %.12lf,%.12lf   %.12lf,%.12lf\n",
 		corners[0], corners[1], corners[2], corners[3], corners[4], corners[5], corners[6], corners[7]);

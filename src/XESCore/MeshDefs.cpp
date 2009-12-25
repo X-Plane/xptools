@@ -207,5 +207,48 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 	return CDTBase::insert(p, lt, who, li);
 	#endif
 }
+
 #endif
+
+
+void 
+CDT::my_propagating_flip(Face_handle& f,int i, set<Face_handle>& all)
+// similar to the corresponding function in Delaunay_triangulation_2.h 
+{ 
+  if (!is_flipable(f,i)) return;
+  Face_handle ni = f->neighbor(i); 
+  flip(f, i); // flip for constrained triangulations
+  all.insert(f);
+  all.insert(ni);
+  my_propagating_flip(f,i, all); 
+  i = ni->index(f->vertex(i)); 
+  my_propagating_flip(ni,i, all); 
+} 
+
+
+CDT::Vertex_handle	CDT::insert_collect_flips(const Point& p, Face_handle hint, set<Face_handle>& all)
+{
+	Vertex_handle va= Ctr::insert(p,hint);
+
+	if (dimension() > 1)
+	{
+		Face_handle f=va->face();
+		Face_handle next;    
+		Face_handle start(f);
+		int i;
+		do {
+			all.insert(f);
+			i = f->index(va); // FRAGILE : DIM 1
+			next = f->neighbor(ccw(i));  // turns ccw around a
+			my_propagating_flip(f,i, all);
+			f=next;
+		} while(next != start);
+	}
+
+
+
+
+  return va;
+}
+
 

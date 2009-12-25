@@ -249,6 +249,31 @@ bool				TokenizeEnum(const string& token, int& slot, const char * errMsg)
 	return (slot != -1);
 }
 
+bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
+{
+	string::size_type e,s=0;
+	slots.clear();
+	while(1)
+	{
+		e=tokens.find(',', s);
+
+		string subst;
+		if(e==tokens.npos)
+			subst=tokens.substr(s);
+		else
+			subst=tokens.substr(s,e-s);
+		
+		slots.insert(LookupToken(subst.c_str()));
+		
+		if(e==tokens.npos)
+			break;
+		else
+			s=e+1;
+	}
+	return slots.count(-1) == 0;
+}
+
+
 // Format is:
 // i - int
 // f - float
@@ -311,4 +336,15 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 bail:
 	va_end(args);
 	return n;
+}
+
+
+void	DebugPrintTokens(const vector<string>& tokens)
+{
+	for(int n = 0; n < tokens.size(); ++n)
+	{
+		if(n) printf(" ");
+		printf("%s",tokens[n].c_str());
+	}
+	printf("\n");
 }

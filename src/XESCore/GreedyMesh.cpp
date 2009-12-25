@@ -140,13 +140,6 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		face->info().insert_err = 0.0;
 		return;
 	}
-//	gMeshLines.clear();
-//	gMeshPoints.clear();
-	//fprintf(stderr, "%lf %lf, %lf %lf, %lf %lf\n",
-	//		face->vertex(0)->point().x(), face->vertex(0)->point().y(),
-	//		face->vertex(1)->point().x(), face->vertex(1)->point().y(),
-	//		face->vertex(2)->point().x(), face->vertex(2)->point().y());
-
 	Point2	p0( sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(0)->point().x())),
 			    sCurrentDEM->lat_to_y(CGAL::to_double(face->vertex(0)->point().y())));
 	Point2	p1( sCurrentDEM->lon_to_x(CGAL::to_double(face->vertex(1)->point().x())),
@@ -199,6 +192,14 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	if (p1.y() < p0.y()) swap(p1, p0);
 	if (p2.y() < p1.y()) swap(p1, p2);
 	DebugAssert(p0.y() <= p1.y() && p1.y() <= p2.y());
+	
+	if(p0.y() == p2.y())
+	{
+		// WTF?  Well, maybe the vector data has a micr-sliver, and the floating point equivalent is so damned thin...bail out.
+		face->info().insert_err = 0.0;
+		return;
+	}
+
 
 	float err = 0;
 
@@ -217,7 +218,14 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	double c = face->info().plane_c;
 
 	x1 = x2 = p0.x();
-
+/*	
+	if(p0.y() == p2.y())
+	{		
+		debug_mesh_point(cgal2ben(face->vertex(0)->point()), 1,1,1);
+		debug_mesh_point(cgal2ben(face->vertex(1)->point()), 1,0,1);
+		debug_mesh_point(cgal2ben(face->vertex(2)->point()), 1,1,0);
+	}
+*/
 	DebugAssert(p0.y() != p2.y());
 
 	if (p0.y() != p2.y())
@@ -256,8 +264,6 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 
 		for (y = y1; y < y2; ++y)
 		{
-//			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-//			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x2), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
 			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
 			x1 += dx1;
 			x2 += dx2;
@@ -269,20 +275,6 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	{
 		face->info().insert_x = worst_x;
 		face->info().insert_y = worst_y;
-
-//		double lon = sCurrentDEM->x_to_lon(worst_x);
-//		double lat = sCurrentDEM->y_to_lat(worst_y);
-//		Point2 t(lon, lat);
-//		gMeshPoints.push_back(pair<Point2,Point3>(t, Point3(1, 0, 0)));
-/*
-		Point2 t0(face->vertex(0)->point().x(),face->vertex(0)->point().y());
-		Point2 t1(face->vertex(1)->point().x(),face->vertex(1)->point().y());
-		Point2 t2(face->vertex(2)->point().x(),face->vertex(2)->point().y());
-
-		if(Segment2(t0,t1).on_right_side(t)) { AssertPrintf("ERROR OB"); }
-		if(Segment2(t1,t2).on_right_side(t)) { AssertPrintf("ERROR OB"); }
-		if(Segment2(t2,t0).on_right_side(t)) { AssertPrintf("ERROR OB"); }
-*/
 	}
 }
 
@@ -297,12 +289,14 @@ void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMMask& inUsed, double err_cutof
 	for (CDT::All_faces_iterator face = inCDT.all_faces_begin(); face != inCDT.all_faces_end(); ++face)
 	{
 		if (!sCurrentMesh->is_infinite(face)) {
-		face->info().flag = 0;
-		InitOneTri(face);
-		CalcOneTriError(face, size_lim);
-		if (face->info().insert_err > err_cutoff)
-		{
-			face->info().self = sBestChoices.insert(FaceQueue::value_type(face->info().insert_err, &*face));
+			face->info().flag = 0;
+			InitOneTri(face);
+			CalcOneTriError(face, size_lim);
+			if (face->info().insert_err > err_cutoff)
+			{
+//				printf("Initing 0x%08x because err is %f at %d,%d\n", &*face, face->info().insert_err,face->info().insert_x,face->info().insert_y);
+			
+				face->info().self = sBestChoices.insert(FaceQueue::value_type(face->info().insert_err, &*face));
 			}
 		}
 	}
@@ -319,16 +313,23 @@ void	DoneMesh(void)
 
 void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
-	fprintf(stderr,"Building Mesh %lf %lf\n", err_lim, size_lim);
+	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
 	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
 
+//	if(!sBestChoices.empty())
+//		printf("GD start, worst err is: %f\n", sBestChoices.begin()->first);
+
 	for (int n = 0; n < max_num; ++n)
 	{
-		if (sBestChoices.empty()) break;
+		if (sBestChoices.empty()) 
+		{
+//			printf("Done with greedy mesh - we met our criteria.\n");
+			break;
+		}
 		PROGRESS_CHECK(func, 0, 1, "Building mesh", n, max_num, max_num / 200)
 		++cnt_insert;
 		CDT::Face * the_face = (CDT::Face *) sBestChoices.begin()->second;
@@ -353,38 +354,28 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 		#if DEV
 		
 		bool hh = ioUsed.get(the_face->info().insert_x, the_face->info().insert_y);
+		if(hh)
+		{
+			printf("ERROR: we want to do this.\n");
+			printf("Inserting: 0x%08lx, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
+			printf("But the point is not available for insert.\n");
+		}
 		DebugAssert(!hh);
 		#endif
-//		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
+//		printf("Inserting: 0x%08lx, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
 		DebugAssert(h != DEM_NO_DATA);
 		ioUsed.set(the_face->info().insert_x, the_face->info().insert_y,true);
-//		inAvail(the_face->info().insert_x, the_face->info().insert_y) = DEM_NO_DATA;
 
-/*
-		CDT::Locate_type lt;
-		int li;
-		CDT::Face_handle test = inCDT.locate(p, lt, li, the_face);
-		printf("  LOCATE TYPE = %d\n", lt);
-		if (lt == CDT::FACE)
-		{
-			DebugAssert(test == the_face);
-		} else if (lt == CDT::EDGE) {
-			DebugAssert(test == the_face || test->neighbor(li) == the_face);
-		} else if (lt == CDT::VERTEX) {
-			CDT::Vertex_handle v = test->vertex(li);
-			DebugAssert(v == the_face->vertex(0) || v == the_face->vertex(1) || v == the_face->vertex(2));
-		} else
-			AssertPrintf("Bad Locate.");
-*/
-		CDT::Vertex_handle new_v = inCDT.safe_insert(p, face_handle);
+		set<CDT::Face_handle>	affected;
+		CDT::Vertex_handle new_v = inCDT.insert_collect_flips(p,face_handle, affected);
 		new_v->info().height = h;
-//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(new_v->point()),Point3(1,1,1)));
-		
 
-		CDT::Face_circulator circ, stop;
-		circ = stop = inCDT.incident_faces(new_v);
-		do {
-//			printf("   Realc 0x%08lx\n", &*circ);
+	DebugAssert(affected.count(face_handle) > 0);
+
+		for(set<CDT::Face_handle>::iterator a = affected.begin(); a != affected.end(); ++a)
+		{
+			CDT::Face_handle circ(*a);
+			
 			if (InitOneTri(circ))
 			{
 				++cnt_new;
@@ -397,11 +388,10 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 			CalcOneTriError(circ, size_lim);
 			if (circ->info().insert_err > err_lim)
 			{
+//				printf("Reinserting 0x%08x because err is %f at %d,%d\n", &*circ, circ->info().insert_err,circ->info().insert_x,circ->info().insert_y);
 				circ->info().self = sBestChoices.insert(FaceQueue::value_type(circ->info().insert_err, &*circ));
 			}
-			++the_face;
-			++circ;
-		} while (circ != stop);
+		} 
 
 	}
 

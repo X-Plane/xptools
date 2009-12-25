@@ -138,6 +138,7 @@ public:
 			void		cache_reset(void);
 			void		clear(void);
 
+	Vertex_handle	insert_collect_flips(const Point& p, Face_handle hint, set<Face_handle>& all);
 
 	// SAFE insert...basically when using a fast cartesian kernel, the
 	// face locate may return 'face' when it means 'edge' because the
@@ -194,6 +195,8 @@ public:
 	}
 #endif
 private:
+
+	void			my_propagating_flip(Face_handle& f,int i, set<Face_handle>& all);
 
 	static	int		sKeyGen;
 	mutable	HintMap	mHintMap;

@@ -113,6 +113,8 @@ struct	DEMGeo {
 	// the 'extra' sample, e.g. for a 3 arc-second DEM, mWidth = 1201
 	int		mWidth;
 	int		mHeight;
+	int		mPost;		// If 1, pixels sit "on" grid-lines, e.g. 1201 samples on a 90m DEM. If 0, a pixel is an _area_ between grid-lines.
+	inline	float	pixel_offset() const { return mPost ? 0.0 : 0.5; }	// distance from the coordinate defining a pixel to its sampling center.
 
 	// An array of width*height data points in floating point format.
 	// The first sample is the southwest corner, we then proceed east.
@@ -161,7 +163,7 @@ struct	DEMGeo {
 
 	// Lat/lon access and erasing
 	inline float	value_linear(double lon, double lat) const;					// Get linear interp value of coordinate
-	inline void	zap_linear(double lon, double lat);							// Zap all values that are near the point (up to 2x2)
+//	inline void	zap_linear(double lon, double lat);							// Zap all values that are near the point (up to 2x2)
 	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value (nearest non-void)
 	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, (nearest non-void), return coordinate used
 	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
@@ -237,6 +239,7 @@ struct	DEMMask {
 
 	int		mWidth;
 	int		mHeight;
+	int		mPost;
 
 	vector<bool>	mData;
 };
@@ -568,8 +571,11 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 
-	x_fract *= (double) (mWidth-1);
-	y_fract *= (double) (mHeight-1);
+	x_fract *= (double) (mWidth-mPost);
+	y_fract *= (double) (mHeight-mPost);
+
+	x_fract -= pixel_offset();
+	y_fract -= pixel_offset();
 
 	int x = x_fract;
 	int y = y_fract;
@@ -597,6 +603,7 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 	return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
 }
 
+/*
 inline void DEMGeo::zap_linear(double lon, double lat)
 {
 	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return;
@@ -633,6 +640,7 @@ inline void DEMGeo::zap_linear(double lon, double lat)
 		}
 	}
 }
+*/
 
 inline float	DEMGeo::xy_nearest(double lon, double lat) const
 {
@@ -646,8 +654,10 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 
-	x_fract *= (double) (mWidth-1);
-	y_fract *= (double) (mHeight-1);
+	x_fract *= (double) (mWidth-mPost);
+	y_fract *= (double) (mHeight-mPost);
+	x_fract -= pixel_offset();
+	y_fract -= pixel_offset();
 	int x = x_fract;
 	int y = y_fract;
 	float e1, e2, e3, e4;
@@ -698,8 +708,10 @@ inline float	DEMGeo::xy_nearest_raw(double lon, double lat) const
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 
-	x_fract *= (double) (mWidth-1);
-	y_fract *= (double) (mHeight-1);
+	x_fract *= (double) (mWidth-mPost);
+	y_fract *= (double) (mHeight-mPost);
+	x_fract -= pixel_offset();
+	y_fract -= pixel_offset();
 	int x = x_fract;
 	int y = y_fract;
 	float e1, e2, e3, e4;
@@ -731,10 +743,10 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 
-	x_fract *= (double) (mWidth-1);
-	y_fract *= (double) (mHeight-1);
-	int x = x_fract;
-	int y = y_fract;
+	x_fract *= (double) (mWidth-mPost);
+	y_fract *= (double) (mHeight-mPost);
+	int x = (x_fract - pixel_offset() + 0.5);		// Since this is doing a "floor" and not a divide at the half point we must add 0.5 for the 
+	int y = (y_fract - pixel_offset() + 0.5);		// on-post sampling case!
 	float h;
 
 	h = get_clamp(x,y); if (h != DEM_NO_DATA) return h;
@@ -757,41 +769,41 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 
 inline double	DEMGeo::x_to_lon(int inX) const
 {
-	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-1));
+	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-mPost));
 }
 
 inline double	DEMGeo::y_to_lat(int inY) const
 {
-	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-1));
+	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-mPost));
 }
 
 inline double	DEMGeo::x_to_lon_double(double inX) const
 {
-	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-1));
+	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-mPost));
 }
 
 inline double	DEMGeo::y_to_lat_double(double inY) const
 {
-	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-1));
+	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-mPost));
 }
 
 inline double	DEMGeo::lon_to_x(double inLon) const
 {
-	return (inLon - mWest) * (double) (mWidth-1) / (mEast - mWest);
+	return (inLon - mWest) * (double) (mWidth-mPost) / (mEast - mWest);
 }
 
 inline double	DEMGeo::lat_to_y(double inLat) const
 {
-	return (inLat - mSouth) * (double) (mHeight-1) / (mNorth - mSouth);
+	return (inLat - mSouth) * (double) (mHeight-mPost) / (mNorth - mSouth);
 }
 
 inline int		DEMGeo::x_lower(double lon) const
 {
 	if (lon <= mWest) return 0;
-	if (lon >= mEast) return mWidth-1;
+	if (lon >= mEast) return mWidth-mPost;
 
 	lon -= mWest;
-	lon *= (mWidth-1);
+	lon *= (mWidth-mPost);
 	lon /= (mEast - mWest);
 	return floor(lon);
 }
@@ -799,10 +811,10 @@ inline int		DEMGeo::x_lower(double lon) const
 inline int		DEMGeo::x_upper(double lon) const
 {
 	if (lon <= mWest) return 0;
-	if (lon >= mEast) return mWidth-1;
+	if (lon >= mEast) return mWidth-mPost;
 
 	lon -= mWest;
-	lon *= (mWidth-1);
+	lon *= (mWidth-mPost);
 	lon /= (mEast - mWest);
 	return ceil(lon);
 }
@@ -810,10 +822,10 @@ inline int		DEMGeo::x_upper(double lon) const
 inline int		DEMGeo::y_lower(double lat) const
 {
 	if (lat <= mSouth) return 0;
-	if (lat >= mNorth) return mHeight-1;
+	if (lat >= mNorth) return mHeight-mPost;
 
 	lat -= mSouth;
-	lat *= (mHeight-1);
+	lat *= (mHeight-mPost);
 	lat /= (mNorth - mSouth);
 	return floor(lat);
 }
@@ -821,10 +833,10 @@ inline int		DEMGeo::y_lower(double lat) const
 inline int		DEMGeo::y_upper(double lat) const
 {
 	if (lat <= mSouth) return 0;
-	if (lat >= mNorth) return mHeight-1;
+	if (lat >= mNorth) return mHeight-mPost;
 
 	lat -= mSouth;
-	lat *= (mHeight-1);
+	lat *= (mHeight-mPost);
 	lat /= (mNorth - mSouth);
 	return ceil(lat);
 }
@@ -847,14 +859,13 @@ inline double	DEMGeo::y_dist_to_m(double inY) const
 
 inline int	DEMGeo::map_x_from(const DEMGeo& src, int x) const
 {
-	return x + 		(src.mWest - mWest) * (mWidth-1) / (mEast-mWest);
+	return lon_to_x(src.x_to_lon_double(x));
 }
 
 inline int	DEMGeo::map_y_from(const DEMGeo& src, int y) const
 {
-	return y + 		(src.mSouth - mSouth) * (mHeight-1) / (mNorth-mSouth);
+	return lat_to_y(src.y_to_lat_double(y));
 }
-
 
 inline float	DEMGeo::gradient_x(int x, int y) const
 {
@@ -945,6 +956,7 @@ inline float	DEMGeo::gradient_y_bilinear(float x, float y) const
 
 	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;
 }
+
 
 // STL doesn't do this - bvector is optimized!
 /*

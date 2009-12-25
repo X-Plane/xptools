@@ -27,6 +27,12 @@
 #include "DEMDefs.h"
 #include "EnumSystem.h"
 
+enum {
+	dem_want_Post,	// Use pixel=post sampling
+	dem_want_Area,	// Use area-pixel sampling!
+	dem_want_File	// Use whatever the file has.
+};
+
 /*****************************************************************************
  * BASIC DEM IO FOR XES FILE FORMAT
  *****************************************************************************/
@@ -56,7 +62,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
 // USGS natural files - ASCII dems type A and B records.  Files contain their bounds.
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
 // GeoTiff - must be geographic projected for us to use.
-bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName);
+bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style);
 // DTED - contains its own geo info
 bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
 // 16-bit signed meter heights in geo projection with -32768 = NO_DATA.

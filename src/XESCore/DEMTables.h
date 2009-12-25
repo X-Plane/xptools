@@ -150,6 +150,9 @@ int		FindNaturalTerrain(
 				int		variant_blob,
 				int		variant_head);	// use 0
 
+// This routine creates a rule whereby if the "terrain" input type matches a real .ter file, we simply use it, period.
+// This allows MeshTool to allow authors to direct-select final x-plane terrain types.  This is an optional init so we 
+// don't have 500 extra rules in the table when making global scenery.
 void	MakeDirectRules(void);
 
 /************************************************************************

@@ -59,6 +59,48 @@
 
 // Ignore urban density - useful for debugging
 #define IGNORE_DENSITY 1
+
+
+/*
+
+	Back before we had OSM, TensorRoads generated the "fake" road grids for urban areas where we lacked true vector data.  This came from
+	an academic paper.  Here are the major ideas:
+	
+	- A "tensor field is a "flow field" - that is, a field of 2-d vector directions.
+	- The idea was two-step: make a flow field that loosel corresponds to how we want the road grid to "flow", then turn the tensor field into
+	  roads.
+	  
+	TENSOR FIELDS
+	
+	A tensor field is a field of 3-d rotations - its "flow" is bent by the rotations.
+	
+	What's cool about tensors (as opposed to a normal 2-d field of vectors indicating direction, or a 2-d field of angles) is that tensor
+	fields are affine transforms and thus we can add them together and scale them.  In other words, the same kinds of "blending" that would
+	make an image look good produces VERY reasonable and sane results for tensor fields.
+	
+	Furthermore, tensor fields can be defined functionally - thus we can do a "composition of functions" (with the functions weighted.
+	
+	In fact, that is exactly what we do: we can build a tensor out of:
+	- The terrain gradient, which will make the road grid follow the terrain.
+	- Linear or circular pre-defined functions, which may have attenuation.
+	- We can build linear gradients that scale off known edges to enforce the grid along highways.
+	
+	With the right blending gradients, we get a reasonably sane tensor map that seems to reflect 'local stuff'.
+	
+	TENSOR 2 ROADS
+	
+	The way we convert our tensor field is pretty easy.  We create "seed" points along known highways (seed roads) and at those seed points
+	we make a small step either along or normal to the flow.  We then drop a seed for our cross-street and keep going.
+	
+	The result will be a sort of emergent grid that bends around the natural "flow" of the tensor field.  If our tensor field is aesthetically
+	pleasing (in otherwords, fly) then the road grid won't look that bad.
+	
+	There are some heuristics in this seeding to try to weed out and generally sanatize the emerging edges, as well as to keep the process fast.
+	For example, we use a raster mask to avoid over-adding roads.  (If the algorithm is allowed to run forever, it will eventually fill in an
+	infinite number of infinitely thin lines, for certain tensors.)
+	
+*/
+
 /************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************/

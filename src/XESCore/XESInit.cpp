@@ -25,6 +25,7 @@
 #include "NetTables.h"
 #include "DEMTables.h"
 #include "ObjTables.h"
+#include "ForestTables.h"
 
 static bool HandleVocab(const vector<string>& inTokenLine, void * inRef)
 {
@@ -37,7 +38,7 @@ static bool HandleVocab(const vector<string>& inTokenLine, void * inRef)
 	return true;
 }
 
-void	XESInit(void)
+void	XESInit(bool want_forests)
 {
 	InitEnumSystem();
 	RegisterLineHandler("VOCAB", HandleVocab, NULL);
@@ -47,6 +48,8 @@ void	XESInit(void)
 	LoadNetFeatureTables();
 	LoadDEMTables();
 	LoadObjTables();
+	if(want_forests)
+		LoadForestTables();
 	int new_mark = gTokens.size();
 
 	if (old_mark != new_mark)

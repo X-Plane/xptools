@@ -52,13 +52,14 @@ bool	LoadConfigFileFullPath(const char * inFilename);
 // this is called.  This is useful for lazy on-demand loading of prefs files.
 bool	LoadConfigFileOnce(const char * inFilename);
 
-
+void	DebugPrintTokens(const vector<string>& tokens);
 
 // A few useful parsers
 int					TokenizeInt(const string&);
 float				TokenizeFloat(const string&);
 bool				TokenizeColor(const string&, RGBColor_t&);
 bool				TokenizeEnum(const string& token, int& slot, const char * errMsg);
+bool				TokenizeEnumSet(const string& tokens, set<int>& slots);
 
 // Format is:
 // i - int

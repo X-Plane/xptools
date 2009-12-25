@@ -89,7 +89,7 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
 MeshPrefs_t gMeshPrefs = {		/*iphone*/
 /* max_points		*/	PHONE ?		25000	: 78000,
-/* max_error		*/	PHONE ?		15		: 6.25,
+/* max_error		*/	PHONE ?		15		: 5.0,
 /* border_match		*/	PHONE ?		1		: 1,
 /* optimize_borders	*/	PHONE ?		1		: 1,
 /* max_tri_size_m	*/	PHONE ?		6000	: 1500,
@@ -2434,6 +2434,12 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 	Plane3				last_plane;
 	Point2				last_tri_loc[3];
 	double				DEG_TO_NM_LON = DEG_TO_NM_LAT;
+
+	float				worst_pos = 0.0;
+	float				worst_neg = 0.0;
+	Point2				worst_pos_p;
+	Point2				worst_neg_p;
+	
 	if(mesh.number_of_faces() >= 1)
 	for (int y = 0; y < elev.mHeight; ++y)
 	{
@@ -2486,7 +2492,7 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 						Vector3	s1(p2, p3);
 						Vector3	s2(p2, p1);
 						Vector3	n = s1.cross(s2);
-//						n.normalize();
+						n.normalize();
 						last_plane = Plane3(p1,n);
 					}
 				}
@@ -2497,9 +2503,22 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 								   last_plane.n.dy * ll.y() -
 								   last_plane.ndotp) / -last_plane.n.dz;
 					
+					double	close = last_plane.distance_denormaled(Point3(ll.x(),ll.y(),ideal));
 					float derr = real - ideal;
-//					if(fabs(derr) > 300.0)	
-//						printf("Huge error.\n");
+					derr = close;
+
+					Point2	me(elev.x_to_lon(x), elev.y_to_lat(y));
+					if(derr > worst_pos)
+					{
+						worst_pos = derr;
+						worst_pos_p = me;
+					}
+					if(derr < worst_neg)
+					{
+						worst_neg = derr;
+						worst_neg_p = me;
+					}
+					
 					out_min = min(out_min,derr);
 					out_max = max(out_max,derr);
 					out_ave += derr;
@@ -2509,6 +2528,17 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 			}
 		}
 	}
+	if(worst_pos > 0.0)
+	{	
+//		debug_mesh_point(worst_pos_p,1,0,0);
+		printf("Worst positive error is %f meters at %+08.6lf, %+09.7lf\n", worst_pos, worst_pos_p.x(), worst_pos_p.y());
+	}	
+	if(worst_neg < 0.0)
+	{
+		printf("Worst negative error is %f meters at %+08.6lf, %+09.7lf\n", worst_neg, worst_neg_p.x(), worst_neg_p.y());	
+//		debug_mesh_point(worst_neg_p,1,0,1);
+	}
+	
 	if(ctr > 0)
 	{
 		out_ave /= (float) ctr;
