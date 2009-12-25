@@ -52,6 +52,7 @@
 " o Overlay DEM on existing DEM\n"\
 " e Do not use if DEM is empty.\n"\
 " c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
+" a GEoTiff only - allow DEM to be area data if file contains area data.\n"\
 "Format can be one of: tiff, bil, hgt, ascii\n"\
 "File is a unix file name.\n"\
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
@@ -59,6 +60,7 @@
 static int DoRasterImport(const vector<const char *>& args)
 {
 	bool did_skip = false;
+	int mode = dem_want_Post;
 	
 	// format file layer [mapping]
 	int layer = LookupToken(args[3]);
@@ -67,6 +69,9 @@ static int DoRasterImport(const vector<const char *>& args)
 		fprintf(stderr,"Unknown layer: %s\n", args[3]);
 		return 1;
 	}
+
+	if(strstr(args[0],"a"))
+		mode = dem_want_File;
 
 	DEMGeo * kill = NULL, * dem = NULL;
 	if(strstr(args[0],"o") || strstr(args[0],"e"))
@@ -88,7 +93,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	}
 	else if(strcmp(args[1],"tiff") == 0)
 	{
-		if(!ExtractGeoTiff(*dem, args[2]))
+		if(!ExtractGeoTiff(*dem, args[2], mode))
 		{
 			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[2]);
 			return 1;
@@ -258,7 +263,7 @@ static int DoRasterImport(const vector<const char *>& args)
 		if(did_skip)
 			printf("Skipped DEM because source file is empty and 'e' option used.\n");
 		else
-			printf("Imported %d x %d DEM.\n", dem->mWidth, dem->mHeight);
+			printf("Imported %d x %d DEM, post=%d.\n", dem->mWidth, dem->mHeight, dem->mPost);
 	}
 	return 0;
 }
@@ -302,10 +307,12 @@ static int DoIDAImport(const vector<const char *>& args)
 	return DoAnyImport(args, ExtractIDAFile);
 }
 
+/*
 static int DoGeoTiffImport(const vector<const char *>& args)
 {
 	return DoAnyImport(args, ExtractGeoTiff);
 }
+*/
 
 static int DoGLCCImport(const vector<const char *>& args)
 {
@@ -375,8 +382,9 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	int x = atoi(args[2]);
 	int y = atoi(args[3]);
 	int n;
+	int mode = dem_want_Post;
 	sprintf(path, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], x, y);
-	if (!ExtractGeoTiff(me, path))
+	if (!ExtractGeoTiff(me, path,mode))
 	{
 		printf("File %s not found.\n", path);
 		return 0;
@@ -389,7 +397,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], (x%72)+1, y);
-	if (ExtractGeoTiff(east, path2))
+	if (ExtractGeoTiff(east, path2, mode))
 	{
 		if (east.mWest != me.mEast ||
 			east.mSouth != me.mSouth ||
@@ -404,7 +412,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], x, y - 1);
-	if (ExtractGeoTiff(north, path2))
+	if (ExtractGeoTiff(north, path2, mode))
 	{
 		if (north.mSouth != me.mNorth ||
 			north.mWest != me.mWest ||
@@ -419,7 +427,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], (x%72)+1, y - 1);
-	if (ExtractGeoTiff(northeast, path2))
+	if (ExtractGeoTiff(northeast, path2, mode))
 	{
 		if (northeast.mSouth != me.mNorth ||
 			northeast.mWest != me.mEast)
@@ -520,7 +528,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-floatdem", 		1, 1, DoFloatDEMImport, 	"Import floating-point DEM", "" },
 { "-usgs_natural", 	1, 1, DoUSGSNaturalImport, 	"Import USGS Natural-format DEM", "" },
 { "-ida", 			1, 1, DoIDAImport, 			"Import IDA-format raster file.", "" },
-{ "-geotiff", 		1, 1, DoGeoTiffImport, 		"Import GeoTiff DEM", "" },
+//{ "-geotiff", 		1, 1, DoGeoTiffImport, 		"Import GeoTiff DEM", "" },
 { "-glcc", 			2, 2, DoGLCCImport, 		"Import GLCC land use raster data.", "" },
 { "-bulksrtm",		4, 4, DoBulkConvertSRTM,	"Bulk convert SRTM data.", "" },
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },

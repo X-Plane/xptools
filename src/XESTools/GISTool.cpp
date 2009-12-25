@@ -116,7 +116,7 @@ int	main(int argc, char * argv[])
 		int start_arg = 1;
 		{
 			if (argc < 2 || strcmp(argv[1], "-noinit"))
-				XESInit();
+				XESInit(true);
 			else
 				++start_arg;
 		}

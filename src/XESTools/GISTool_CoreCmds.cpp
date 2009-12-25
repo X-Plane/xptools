@@ -236,7 +236,7 @@ static int DoLoad(const vector<const char *>& args)
 	MFMemFile * load = MemFile_Open(args[0]);
 	if (load)
 	{
-		ReadXESFile(load, &gMap, /*&gTriangulationHi*/NULL, &gDem, &gApts, gProgress);
+		ReadXESFile(load, &gMap, &gTriangulationHi, &gDem, &gApts, gProgress);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(load);
 

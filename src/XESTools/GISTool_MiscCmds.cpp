@@ -32,7 +32,7 @@
 #include "DEMTables.h"
 #include <md5.h>
 #include "SceneryPackages.h"
-
+#include "MapRaster.h"
 #include "MapDefs.h"
 #include "MapAlgs.h"
 #include "GISUtils.h"
@@ -40,6 +40,7 @@
 #include "XESIO.h"
 #include "MapDefs.h"
 #include "MeshAlgs.h"
+#include "ForestTables.h"
 
 static double calc_water_area(void)
 {
@@ -312,7 +313,7 @@ int DoMakeLUCoverage(const vector<const char *>& args)
 			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d.tif", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x);
 
 			DEMGeo	g;
-			if(!ExtractGeoTiff(g,buf))
+			if(!ExtractGeoTiff(g,buf,dem_want_File))
 			{
 				fputc(255,fi);				
 			}
@@ -414,6 +415,37 @@ int DoDumpForests(const vector<const char *>& args)
 	return 0;
 }
 
+
+static int DoHack(const vector<const char *>& args)
+{
+	DEMGeo	lu_forest(gDem[dem_LandUse]);
+	DEMGeo&	lu_landuse(gDem[dem_LandUse]);
+	DEMGeo&	lu_temp(gDem[dem_Temperature]);
+	DEMGeo&	lu_temp_range(gDem[dem_TemperatureRange]);
+	DEMGeo&	lu_rain(gDem[dem_Rainfall]);
+
+	for(int y = 0; y < lu_forest.mHeight; ++y)
+	for(int x = 0; x < lu_forest.mWidth ; ++x)
+	{
+		double lon = lu_landuse.x_to_lon(x);
+		double lat = lu_landuse.y_to_lat(y);
+		lu_forest(x,y) =
+			FindForest(lu_landuse.get(x,y),
+						lu_temp.value_linear(lon, lat),
+//						lu_temp_range.value_linear(lon, lat),
+						lu_rain.value_linear(lon, lat));
+						
+		
+	}
+	
+	
+
+	MapFromDEM(lu_forest, 0, 0, gDem[dem_LandUse].mWidth, gDem[dem_LandUse].mHeight, -2010/*lu_globcover_WATER*/, gMap);
+	
+	MapSimplify(gMap, 0.002);
+	
+}
+
 /*
 static int DoHack(const vector<const char *>& args)
 {
@@ -449,6 +481,15 @@ static int DoHack(const vector<const char *>& args)
 }
 */
 
+static int DoMeshErrStats(const vector<const char *>& s)
+{
+	float minv, maxv, mean, devsq;
+	int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], minv, maxv,mean,devsq, ConsoleProgressFunc);
+
+	printf("mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
@@ -462,7 +503,8 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
 { "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
-//{ "-hack",				   0, 0, DoHack, "", "" },
+{ "-mesh_err_stats", 0, 0, DoMeshErrStats,			"Print statistics about mesh error.", "" },
+{ "-hack",				   0, 0, DoHack, "", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 

@@ -32,7 +32,8 @@
 #include "DSFBuilder.h"
 #include "ObjPlacement.h"
 #include "SceneryPackages.h"
-#include "TensorRoads.h"
+//#include "TensorRoads.h"
+#include "MapPolygon.h"
 #include "Forests.h"
 #include "Zoning.h"
 #include "DEMDefs.h"
@@ -68,11 +69,13 @@ static int DoSetMeshLevel(const vector<const char *>& args)
 	return 0;
 }
 
+/*
 static int DoRoads(const vector<const char *>& args)
 {
 	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], Face_handle(),  gProgress, NULL, NULL);
 	return 0;
 }
+*/
 
 
 static int DoUpsample(const vector<const char *>& args)
@@ -223,6 +226,15 @@ static int DoInstantiateObjsForests(const vector<const char *>& args)
 	DumpPlacementCounts();
 	
 	{
+		StElapsedTime	time_gt_poly("remove placed objs");
+		for(vector<PreinsetFace>::iterator pif = insets.begin(); pif != insets.end(); ++pif)
+		{
+			SubtractPlaced(*pif);
+			SimplifyPolygonMaxMove(pif->second, 0.0001);
+		}
+	}
+	
+	{		
 		GenerateForests(gMap, insets, gTriangulationHi, gProgress);
 	}
 	
@@ -268,7 +280,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sProcessCmds[] = {
-{ "-roads",			0, 0, DoRoads,			"Generate Fake Roads.",				  "" },
+//{ "-roads",			0, 0, DoRoads,			"Generate Fake Roads.",				  "" },
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-mesh_level",	1, 1, DoSetMeshLevel,	"Set mesh complexity.",				  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
