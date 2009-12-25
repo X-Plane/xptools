@@ -672,6 +672,7 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case anim_Translate:
 				{
+					stuff_obj = NULL;
 					int root = 0;
 					if (obj8.animation[cmd->idx_offset].keyframes[root].v[0] != 0.0 ||
 						obj8.animation[cmd->idx_offset].keyframes[root].v[1] != 0.0 ||
@@ -689,6 +690,7 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case anim_Rotate:
 				{
+					stuff_obj = NULL;
 					float center[3] = { 0.0, 0.0, 0.0 };
 
 					anim_add_rotate(anim_obj.back(), 0, center, obj8.animation[cmd->idx_offset].axis,
@@ -697,11 +699,13 @@ ACObject *	do_obj8_load(char *filename)
 				}
 				break;
 			case anim_Show:
+				stuff_obj = NULL;
 				anim_add_show(anim_obj.back(), 0,
 									obj8.animation[cmd->idx_offset].keyframes,
 									obj8.animation[cmd->idx_offset].dataref.c_str(), "show");
 				break;
 			case anim_Hide:
+				stuff_obj = NULL;
 				anim_add_hide(anim_obj.back(), 0,
 									obj8.animation[cmd->idx_offset].keyframes,
 									obj8.animation[cmd->idx_offset].dataref.c_str(), "show");
