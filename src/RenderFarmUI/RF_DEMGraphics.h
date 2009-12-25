@@ -34,7 +34,7 @@ enum {
 	dem_Shaded,
 	dem_Enum,
 	dem_Normals,
-	dem_DDA,
+//	dem_DDA,
 
 	dem_StrataBiomass,
 	dem_StrataRainfallYearly,

@@ -480,6 +480,7 @@ int	DEMToBitmap(
 			outImage.data[(x + (outImage.height-2) * outImage.width) * outImage.channels + ch];
 		}
 		break;
+/*
 	case dem_DDA:
 		for (y = 0; y < inDEM.mHeight; ++y)
 		for (x = 0; x < inDEM.mWidth; ++x)
@@ -504,6 +505,7 @@ int	DEMToBitmap(
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = v * 255.0f;
 		}
 		break;
+*/		
 	}
 	return 0;
 }

@@ -26,6 +26,7 @@
 #include "PlatformUtils.h"
 #include "TexUtils.h"
 #include "GISUtils.h"
+#include "DEMIO.h"
 #include "TerraServer.h"
 #include "BitmapUtils.h"
 #include "RF_Progress.h"
@@ -206,7 +207,8 @@ void	RF_ImageTool::NthButtonPressed(int n)
 				mVisible = true;
 				mBits = true;
 				mFile = buf;
-				if (!FetchTIFFCorners(buf, mCoords))
+				int align = dem_want_Area;
+				if (!FetchTIFFCorners(buf, mCoords, align))
 				{
 					GetZoomer()->GetMapLogicalBounds(mCoords[0], mCoords[1], mCoords[6], mCoords[7]);
 					GetZoomer()->GetMapLogicalBounds(mCoords[4], mCoords[3], mCoords[2], mCoords[5]);

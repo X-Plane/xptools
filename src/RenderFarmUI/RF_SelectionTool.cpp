@@ -81,7 +81,7 @@
 //#include <geos/version.h>
 */
 #include "BitmapUtils.h"
-#include "TensorRoads.h"
+//#include "TensorRoads.h"
 
 #include "ObjPlacement.h"
 
@@ -335,7 +335,7 @@ void	RF_SelectionTool::SetNthPropertyValue(int, double v)
 
 int		RF_SelectionTool::GetNumButtons(void)
 {
-	return 6;
+	return 5;
 }
 
 void	RF_SelectionTool::GetNthButtonName(int n, string& s)
@@ -346,7 +346,7 @@ void	RF_SelectionTool::GetNthButtonName(int n, string& s)
 	case 2: s=  "Inset"; break;
 	case 3: s=  "Clear"; break;
 	case 4: s=  "Next"; break;
-	case 5: s= "Roads"; break;
+//	case 5: s= "Roads"; break;
 	}
 }
 
@@ -446,6 +446,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 		for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			(*fsel)->data().mPolyObjs.clear();
 		return;
+/*		
 	case 5:
 		{
 			ImageInfo	img;
@@ -457,6 +458,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 			gMapView->SetFlowImage(img,bounds);
 			DestroyBitmap(&img);}
 		}
+*/		
 	}
 	DebugAssert(gMap.is_valid());
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);

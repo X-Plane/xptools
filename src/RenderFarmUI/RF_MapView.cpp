@@ -76,7 +76,7 @@
 #endif
 
 // Draw mesh borders onto the colored mesh layer.
-#define DRAW_MESH_BORDERS 0
+#define DRAW_MESH_BORDERS 1
 
 // Draw mesh tris with some shading.  Generally not as useful as it would sound.
 #define SHADE_TRIS 0
@@ -88,13 +88,13 @@
 #define DEBUG_PRINT_NORMALS 0
 
 // Print height at all 3 corners of tri under mouse
-#define DEBUG_PRINT_CORNERS 0
+#define DEBUG_PRINT_CORNERS 1
 
 // Print water params of tri under mouse
 #define DEBUG_PRINT_WAVES 0
 
 // Print input parameters used to pick LU rule for tri under mouse
-#define DEBUG_PRINT_TRI_PARAMS 1
+#define DEBUG_PRINT_TRI_PARAMS 0
 
 // Print out forest type
 #define DEBUG_PRINT_FOREST_TYPE 0
@@ -1434,10 +1434,14 @@ char * RF_MapView::MonitorCaption(void)
 #endif
 
 #if DEBUG_PRINT_CORNERS
-		n += sprintf(buf+n,"%.0f,%.0f,%.0f ",
+		n += sprintf(buf+n,"%.0f,%.0f,%.0f (err %f at %d,%d) on 0x%08x",
 						recent->vertex(0)->info().height,
 						recent->vertex(1)->info().height,
-						recent->vertex(2)->info().height);
+						recent->vertex(2)->info().height,
+						recent->info().insert_err,
+						recent->info().insert_x,
+						recent->info().insert_y,
+						&*recent);
 #endif
 
 #if DEBUG_PRINT_WAVES
@@ -1465,11 +1469,11 @@ char * RF_MapView::MonitorCaption(void)
 //		PRINT BLENDING LAYERS
 		for (set<int>::iterator border = recent->info().terrain_border.begin(); border != recent->info().terrain_border.end(); ++ border)
 		{
-			n += sprintf(buf+n, "%s ", FetchTokenString(*border));
-//			n += sprintf(buf+n, "%s (%f,%f,%f) ", FetchTokenString(*border),
-//						recent->vertex(0)->info().border_blend[*border],
-//						recent->vertex(1)->info().border_blend[*border],
-//						recent->vertex(2)->info().border_blend[*border]);
+//			n += sprintf(buf+n, "%s ", FetchTokenString(*border));
+			n += sprintf(buf+n, "%s (%f,%f,%f) ", FetchTokenString(*border),
+						recent->vertex(0)->info().border_blend[*border],
+						recent->vertex(1)->info().border_blend[*border],
+						recent->vertex(2)->info().border_blend[*border]);
 		}
 #endif
 	}

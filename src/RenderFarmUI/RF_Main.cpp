@@ -328,7 +328,7 @@ void	XGrindInit(void)
 #if DEV
 	CGAL::set_warning_handler(cgal_warning);
 #endif
-	XESInit();
+	XESInit(true);
 
 //	RF_LoadPrefs();
 
@@ -503,7 +503,7 @@ int main(int argc, char * argv[])
 	fifo_timer * t = new fifo_timer;
 	t->Start(0.1);
 
-	int bounds[4] = { 0, 40, 1024, 768 };
+	int bounds[4] = { 0, 20, 1280, 1024 };
 	GUI_Window * main_window = new GUI_Window("RenderFarm", xwin_style_visible, bounds, &app);
 
 	bounds[3] -= bounds[1];
