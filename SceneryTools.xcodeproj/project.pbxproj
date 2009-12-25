@@ -697,6 +697,12 @@
 		D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */; };
 		D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E30556105F8EE7009E6E7F /* tce_tools.png */; };
 		D6E528831057041400D0D162 /* WED_CreateEdgeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E528821057041400D0D162 /* WED_CreateEdgeTool.cpp */; };
+		D6E941DC10DC717300192A02 /* ForestTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941D810DC717300192A02 /* ForestTables.cpp */; };
+		D6E941DD10DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
+		D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941D810DC717300192A02 /* ForestTables.cpp */; };
+		D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
+		D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941D810DC717300192A02 /* ForestTables.cpp */; };
+		D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
 		D6ED369F0B67964D00D5484E /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -1855,6 +1861,10 @@
 		D6E30556105F8EE7009E6E7F /* tce_tools.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tce_tools.png; sourceTree = "<group>"; };
 		D6E528811057041400D0D162 /* WED_CreateEdgeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateEdgeTool.h; sourceTree = "<group>"; };
 		D6E528821057041400D0D162 /* WED_CreateEdgeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreateEdgeTool.cpp; sourceTree = "<group>"; };
+		D6E941D810DC717300192A02 /* ForestTables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ForestTables.cpp; sourceTree = "<group>"; };
+		D6E941D910DC717300192A02 /* ForestTables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ForestTables.h; sourceTree = "<group>"; };
+		D6E941DA10DC717300192A02 /* MapRaster.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapRaster.cpp; sourceTree = "<group>"; };
+		D6E941DB10DC717300192A02 /* MapRaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapRaster.h; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
@@ -3023,6 +3033,10 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6E941D810DC717300192A02 /* ForestTables.cpp */,
+				D6E941D910DC717300192A02 /* ForestTables.h */,
+				D6E941DA10DC717300192A02 /* MapRaster.cpp */,
+				D6E941DB10DC717300192A02 /* MapRaster.h */,
 				D6956EC80F82DBF800F6718E /* MapHelpers.cpp */,
 				D6956EC90F82DBF800F6718E /* MapHelpers.h */,
 				D6BC38300AB22C85003949C5 /* Airports.cpp */,
@@ -3872,6 +3886,8 @@
 				D6F3214D0F864156008E211B /* MeshTool_Create.cpp in Sources */,
 				D6F322050F865E90008E211B /* ShapeIO.cpp in Sources */,
 				D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */,
+				D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */,
+				D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4030,6 +4046,8 @@
 				D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */,
 				D6DBA1E310572F33004E1089 /* AptRouting.cpp in Sources */,
 				D6DBA2A210574180004E1089 /* AptAlgs.cpp in Sources */,
+				D6E941DC10DC717300192A02 /* ForestTables.cpp in Sources */,
+				D6E941DD10DC717300192A02 /* MapRaster.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4128,6 +4146,8 @@
 				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 				D6DBA1E410572F33004E1089 /* AptRouting.cpp in Sources */,
 				D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */,
+				D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */,
+				D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4709,6 +4729,7 @@
 		D607342B0D197A1100E08F61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
