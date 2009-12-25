@@ -64,6 +64,7 @@ SOURCES += ./src/DSF/DSFPointPool.cpp
 SOURCES += ./src/Installer/ErrMsg.cpp
 SOURCES += ./src/XESCore/XESInit.cpp
 SOURCES += ./src/XESCore/DEMTables.cpp
+SOURCES += ./src/XESCore/ForestTables.cpp
 SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
 SOURCES += ./src/XESCore/Beaches.cpp
