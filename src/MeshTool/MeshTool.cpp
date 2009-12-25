@@ -102,7 +102,7 @@ int	main(int argc, char * argv[])
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
 
-		XESInit();
+		XESInit(false);			// no forests
 		MakeDirectRules();
 
 		if(argc != 6)
@@ -131,7 +131,8 @@ int	main(int argc, char * argv[])
 		}
 		else if(strstr(argv[3],".tif"))
 		{
-			if (!ExtractGeoTiff(dem_elev, argv[3]))
+			int align = dem_want_Post;
+			if (!ExtractGeoTiff(dem_elev, argv[3], align))
 			{
 				fprintf(stderr,"Could not read GeoTIFF file: %s\n", argv[3]);
 				exit(1);

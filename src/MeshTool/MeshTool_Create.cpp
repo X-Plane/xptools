@@ -21,6 +21,11 @@
  *
  */
 
+#if __POWERPC__
+	#pragma optimization_level 0
+#endif
+
+
 
 #include "MeshTool_Create.h"
 #include <stdarg.h>
@@ -597,7 +602,9 @@ inline int near2(int n) {
 void MT_GeoTiff(const char * fname, int back_with_water)
 {
 	double c[8];	// SW, SE, NW, NE lon,lat pairs
-	if(!FetchTIFFCorners(fname,c))
+	int align = dem_want_Area;
+	
+	if(!FetchTIFFCorners(fname,c, align))
 	{
 		die_err("Unable to read corner coordinates from %s.\n",fname);
 		return;
