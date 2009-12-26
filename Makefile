@@ -1,13 +1,13 @@
 BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
-# http://www.cgal.org/download.html
+# http://gforge.inria.fr/frs/?group_id=52
 VER_CGAL	:= 3.4
 # http://www.freetype.org/
 # http://sourceforge.net/projects/freetype/files/
-VER_FREETYPE	:= 2.3.9
+VER_FREETYPE	:= 2.3.11
 # http://trac.osgeo.org/proj/
-VER_LIBPROJ	:= 4.6.1
+VER_LIBPROJ	:= 4.7.0
 # http://trac.osgeo.org/geotiff/
 VER_GEOTIFF	:= 1.2.5
 # http://www.lib3ds.org/; TODO: new release 2.0, has API changes
@@ -21,15 +21,15 @@ VER_LIBDIME	:= r175
 VER_LIBJPEG	:= 7
 # http://www.sqlite.org/
 # http://www.sqlite.org/download.html ; use amalgamation tarball
-VER_LIBSQLITE	:= 3.6.17
+VER_LIBSQLITE	:= 3.6.21
 # http://www.libpng.org/
 # http://www.libpng.org/pub/png/libpng.html
-VER_LIBPNG	:= 1.2.39
+VER_LIBPNG	:= 1.2.41
 # http://www.zlib.net/
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
 # ftp://ftp.remotesensing.org/pub/libtiff
-VER_LIBTIFF	:= 4.0.0beta3
+VER_LIBTIFF	:= 4.0.0beta5
 # http://shapelib.maptools.org/
 # http://dl.maptools.org/dl/shapelib/
 VER_LIBSHP	:= 1.2.10
@@ -38,8 +38,8 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1_39_0
-BOOST_SHORTVER	:= 1_39
+VER_BOOST	:= 1_41_0
+BOOST_SHORTVER	:= 1_41
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
@@ -51,7 +51,7 @@ VER_LIBEXPAT	:= 2.0.1
 VER_LIBGMP	:= 4.3.1
 # http://www.mpfr.org/
 # http://www.mpfr.org/mpfr-current/#download
-VER_LIBMPFR	:= 2.4.1
+VER_LIBMPFR	:= 2.4.2
 
 
 
@@ -221,6 +221,7 @@ CONF_LIBPROJ		+= --enable-shared=no
 CONF_LIBPROJ		+= --disable-dependency-tracking
 CONF_LIBPROJ		+= CCDEPMODE="depmode=none"
 ifdef PLAT_MINGW
+CONF_LIBPROJ		+= --without-mutex
 CONF_LIBPROJ		+= --host=$(CROSSHOST)
 endif
 
@@ -358,12 +359,8 @@ ifdef PLAT_DARWIN
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
 	./bjam cxxflags="$(DEFAULT_MACARGS)" $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
-	@cd local/include && \
-	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
 	@cd local/lib && \
-	rm -f *.so* && \
-	rm -f *.dylib* && \
-	ln -sf libboost_thread*-mt.a libboost_thread-mt.a
+	rm -f *.dylib*
 endif
 ifdef PLAT_LINUX
 	@cd "boost_$(VER_BOOST)" && \
@@ -372,22 +369,18 @@ ifdef PLAT_LINUX
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
 	./bjam $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
-	@cd local/include && \
-	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET)
 	@cd local/lib && \
-	rm -f *.so* && \
-	rm -f *.dylib* && \
-	ln -sf libboost_thread*-mt.a libboost_thread-mt.a
+	rm -f *.so*
 endif
 ifdef PLAT_MINGW
 	@cd "boost_$(VER_BOOST)" && \
-	chmod +x bootstrap.sh && \
-	bjam.exe install --toolset=gcc --with-thread --prefix=$(DEFAULT_PREFIX) --libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET)
+	bjam.exe install --toolset=gcc --prefix=$(DEFAULT_PREFIX) \
+	--libdir=$(DEFAULT_PREFIX)/lib --with-thread $(BE_QUIET)
 	@cd local/include && \
 	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
 	rm -rf boost-$(BOOST_SHORTVER)
 	@cd local/lib && \
-	ln -sf libboost_thread*-mt.lib libboost_thread-mt.a && \
+	ln -sf libboost_thread*-mt.lib libboost_thread.a && \
 	rm -f *.lib
 endif
 	@-rm -rf boost_$(VER_BOOST)
@@ -528,6 +521,9 @@ libproj: ./local$(MULTI_SUFFIX)/lib/.xpt_libproj
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBPROJ)"
+	@cp patches/0001-libproj-disable-win32-mutex.patch \
+	"proj-$(VER_LIBPROJ)" && cd "proj-$(VER_LIBPROJ)" && \
+	patch -p1 < .//0001-libproj-disable-win32-mutex.patch $(BE_QUIET)
 	@cd "proj-$(VER_LIBPROJ)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBPROJ) LDFLAGS=$(LDFLAGS_LIBPROJ) \
@@ -605,7 +601,11 @@ libsquish: ./local$(MULTI_SUFFIX)/lib/.xpt_libsquish
 
 
 libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
-./local$(MULTI_SUFFIX)/lib/.xpt_libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_zlib ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr ./local$(MULTI_SUFFIX)/lib/.xpt_boost
+./local$(MULTI_SUFFIX)/lib/.xpt_libcgal: \
+./local$(MULTI_SUFFIX)/lib/.xpt_zlib \
+./local$(MULTI_SUFFIX)/lib/.xpt_libgmp \
+./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr \
+./local$(MULTI_SUFFIX)/lib/.xpt_boost
 	@echo "building libcgal..."
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
@@ -615,17 +615,40 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
-	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-arch x86_64 -arch i386 -arch ppc -I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . \
+	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
+	-DBUILD_SHARED_LIBS=FALSE \
+	-DCGAL_CXX_FLAGS="-arch x86_64 -arch i386 -arch ppc -I$(DEFAULT_INCDIR)" \
+	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
+	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 ifdef PLAT_LINUX
 	@cd "CGAL-$(VER_CGAL)" && \
-	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DBoost_INCLUDE_DIR=$(DEFAULT_PREFIX)/include -DBOOST_ROOT=$(DEFAULT_PREFIX) $(BE_QUIET) && \
+	cmake . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) \
+	-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE \
+	-DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" \
+	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
+	-DWITH_CGAL_Qt4=OFF -DBoost_INCLUDE_DIR=$(DEFAULT_PREFIX)/include \
+	-DBOOST_ROOT=$(DEFAULT_PREFIX) $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 ifdef PLAT_MINGW
 	@cd "CGAL-$(VER_CGAL)" && \
-	cmake -G "MSYS Makefiles" . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" -DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	cmake -G "MSYS Makefiles" . -DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) \
+	-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE \
+	-DCGAL_CXX_FLAGS="-I$(DEFAULT_INCDIR)" \
+	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
+	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
+	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 	@-rm -rf CGAL-$(VER_CGAL)

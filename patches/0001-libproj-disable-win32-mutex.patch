@@ -1,0 +1,12 @@
+diff -Naur proj-4.7.0-org/src/pj_mutex.c proj-4.7.0/src/pj_mutex.c
+--- proj-4.7.0-org/src/pj_mutex.c	Wed Sep 23 21:03:26 2009
++++ proj-4.7.0/src/pj_mutex.c	Sat Dec 26 10:20:45 2009
+@@ -37,7 +37,7 @@
+ #include <proj_api.h>
+ #endif
+ 
+-#ifdef _WIN32
++ #if defined (_WIN32) && !defined(__MINGW32__)
+ #  define MUTEX_win32
+ #endif
+ 
