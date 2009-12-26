@@ -14,11 +14,11 @@ LDFLAGS		+= -nodefaultlibs
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+LIBS		+= -lgmp -lmpfr -lstdc++ -lm -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group -Wl,-Bdynamic
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
-LIBS		+= -lboost_thread-mt -lpthread
+LIBS		+= -lboost_thread -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
@@ -28,7 +28,7 @@ LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid -lws2_32
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff -lgmp -lmpfr
-LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lboost_thread-mt
+LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lboost_thread
 WIN_RESOURCES	+= ./src/WEDResources/rfui.rc
 endif #PLAT_MINGW
 
@@ -149,6 +149,7 @@ SOURCES += ./src/XESCore/DEMIO.cpp
 SOURCES += ./src/XESCore/DSFBuilder.cpp
 SOURCES += ./src/XESCore/EnumSystem.cpp
 SOURCES += ./src/XESCore/Forests.cpp
+SOURCES += ./src/XESCore/ForestTables.cpp
 SOURCES += ./src/XESCore/GreedyMesh.cpp
 SOURCES += ./src/XESCore/MapAlgs.cpp
 SOURCES += ./src/XESCore/MapHelpers.cpp
@@ -157,6 +158,7 @@ SOURCES += ./src/XESCore/MapCreate.cpp
 SOURCES += ./src/XESCore/MapIO.cpp
 SOURCES += ./src/XESCore/MapOverlay.cpp
 SOURCES += ./src/XESCore/MapPolygon.cpp
+SOURCES += ./src/XESCore/MapRaster.cpp
 SOURCES += ./src/XESCore/MapTopology.cpp
 SOURCES += ./src/XESCore/MeshAlgs.cpp
 SOURCES += ./src/XESCore/MeshDefs.cpp

@@ -6,8 +6,8 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj -ltiff -ljpeg -lpng
-LIBS		+= -lz -lboost_thread-mt -lpthread -lgmp -lmpfr
+LIBS		+= -lCGAL -lCGAL_Core -lsquish -lgeotiff -lshp -lproj -ltiff
+LIBS		+= -ljpeg -lpng -lz -lboost_thread -lpthread -lgmp -lmpfr
 FORCEREBUILD_SUFFIX := _rf
 
 ifdef PLAT_LINUX
@@ -24,7 +24,7 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libboost_thread-mt.a
+LIBS		+= ./libs/local/lib/libboost_thread.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libgeotiff.a
 LIBS		+= ./libs/local/lib/libshp.a
@@ -82,6 +82,7 @@ SOURCES += ./src/XESCore/DEMIO.cpp
 SOURCES += ./src/XESCore/DSFBuilder.cpp
 SOURCES += ./src/XESCore/EnumSystem.cpp
 SOURCES += ./src/XESCore/Forests.cpp
+SOURCES += ./src/XESCore/ForestTables.cpp
 SOURCES += ./src/XESCore/GreedyMesh.cpp
 SOURCES += ./src/XESCore/MapAlgs.cpp
 SOURCES += ./src/XESCore/MapHelpers.cpp
@@ -90,6 +91,7 @@ SOURCES += ./src/XESCore/MapCreate.cpp
 SOURCES += ./src/XESCore/MapIO.cpp
 SOURCES += ./src/XESCore/MapOverlay.cpp
 SOURCES += ./src/XESCore/MapPolygon.cpp
+SOURCES += ./src/XESCore/MapRaster.cpp
 SOURCES += ./src/XESCore/MapTopology.cpp
 SOURCES += ./src/XESCore/MeshAlgs.cpp
 SOURCES += ./src/XESCore/MeshDefs.cpp

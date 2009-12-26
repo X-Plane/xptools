@@ -7,7 +7,7 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
-LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread-mt -lpthread
+LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread -lpthread
 FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
@@ -23,7 +23,7 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libboost_thread-mt.a
+LIBS		+= ./libs/local/lib/libboost_thread.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libgeotiff.a
 LIBS		+= ./libs/local/lib/libshp.a
