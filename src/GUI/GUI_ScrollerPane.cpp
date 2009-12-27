@@ -26,7 +26,7 @@
 #include "GUI_Messages.h"
 #include "GUI_DrawUtils.h"
 #if APL
-#include <OpenGL/GL.h>
+#include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
 #endif

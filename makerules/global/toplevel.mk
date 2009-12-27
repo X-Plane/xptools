@@ -97,10 +97,10 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= -mmacosx-version-min=10.4 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	CFLAGS		:= -mmacosx-version-min=10.4 -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	LDFLAGS		:= -mmacosx-version-min=10.4
-	MACARCHS	:= -arch i386
+	CXXFLAGS	:= -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
+	CFLAGS		:= -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math
+	LDFLAGS		:= -mmacosx-version-min=10.5
+	MACARCHS	:= -arch x86_64 -arch i386
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
@@ -121,9 +121,6 @@ ifeq ($(conf), release_opt)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=0
-	ifdef PLAT_DARWIN
-	MACARCHS	+= -arch ppc
-	endif
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
 	CFLAGS		+= -O0 -g
@@ -137,9 +134,6 @@ else ifeq ($(conf), release_test)
 	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=1
-	ifdef PLAT_DARWIN
-	MACARCHS	+= -arch ppc
-	endif
 	StripDebug	:= Yes
 # default to debug configuration
 else
