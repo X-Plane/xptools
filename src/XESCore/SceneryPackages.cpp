@@ -94,31 +94,18 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	set<string>	imageFiles;
 	set<string> borderFiles;
 
-	set<int>			predone;
-	map<string, int>	has_pol;
-
-	for (n = 0; n < gNaturalTerrainTable.size(); ++n)
+	for (NaturalTerrainInfoMap::iterator n = gNaturalTerrainInfo.begin(); n != gNaturalTerrainInfo.end(); ++n)
 	{
-		if (predone.count(gNaturalTerrainTable[n].name)) continue;
-		predone.insert(gNaturalTerrainTable[n].name);
-
-		string	pol_name(FetchTokenString(gNaturalTerrainTable[n].name));
+		string	pol_name(FetchTokenString(n->first));
 		string::size_type d = pol_name.find('/');
 		DebugAssert(d != pol_name.npos);
 		pol_name.erase(0,d);
 		pol_name.insert(0,"pol");
-		if(gNaturalTerrainTable[n].auto_vary)
-			pol_name.erase(pol_name.length()-3);
-		else if (gNaturalTerrainTable[n].related >= 0)
-			pol_name.erase(pol_name.length()-1);
 
 		fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
-			FetchTokenString(gNaturalTerrainTable[n].name),FetchTokenString(gNaturalTerrainTable[n].name));
+			FetchTokenString(n->first),FetchTokenString(n->first));
 
-		if(has_pol.count(pol_name) == 0)
-			has_pol[pol_name] = n;
-
-		lib_path = package + FetchTokenString(gNaturalTerrainTable[n].name) + ".ter";
+		lib_path = package + FetchTokenString(n->first) + ".ter";
 		local_path(lib_path);
 		dir_path = lib_path;
 		only_dir(dir_path);
@@ -135,75 +122,59 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			return errno;
 		}
 		fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
-		fprintf(ter, "BASE_TEX %s" CRLF, gNaturalTerrainTable[n].base_tex.c_str());
-		if (!gNaturalTerrainTable[n].lit_tex.empty())
-			fprintf(ter, "LIT_TEX %s" CRLF, gNaturalTerrainTable[n].lit_tex.c_str());
-		fprintf(ter, "BORDER_TEX %s" CRLF, gNaturalTerrainTable[n].border_tex.c_str());
-		fprintf(ter, "PROJECTED %d %d" CRLF, (int) gNaturalTerrainTable[n].base_res, (int) gNaturalTerrainTable[n].base_res);
-//		if (gNaturalTerrainTable[n].base_alpha_invert)
-//			fprintf(ter, "BASE_ALPHA_INVERT" CRLF);
+		fprintf(ter, "BASE_TEX %s" CRLF, n->second.base_tex.c_str());
+		if (!n->second.lit_tex.empty())
+			fprintf(ter, "LIT_TEX %s" CRLF, n->second.lit_tex.c_str());
+		fprintf(ter, "BORDER_TEX %s" CRLF, n->second.border_tex.c_str());
+		fprintf(ter, "PROJECTED %d %d" CRLF, (int) n->second.base_res, (int) n->second.base_res);
 
-		if(!gNaturalTerrainTable[n].vary_tex.empty())
-		{
-			fprintf(ter, "COMPOSITE_TEX %s" CRLF, gNaturalTerrainTable[n].vary_tex.c_str());
-		}
-		if(gNaturalTerrainTable[n].auto_vary > 0)
-		{
-			fprintf(ter, "AUTO_VARY" CRLF);
-		}
-
-//		if (!gNaturalTerrainTable[n].comp_tex.empty())
-//		{
-//			fprintf(ter, "COMPOSITE_TEX %s" CRLF, gNaturalTerrainTable[n].comp_tex.c_str());
-//			fprintf(ter, "COMPOSITE_PROJECTED %d %d" CRLF, (int) gNaturalTerrainTable[n].comp_res, (int) gNaturalTerrainTable[n].comp_res);
-//			if (gNaturalTerrainTable[n].comp_alpha_invert)
-//				fprintf(ter, "COMPOSITE_ALPHA_INVERT" CRLF);
-//		} else {
-			fprintf(ter, "NO_ALPHA" CRLF);
-//		}
-
-		fprintf(ter, "COMPOSITE_BORDERS" CRLF);
-
-		switch(gNaturalTerrainTable[n].variant) {
-		case 5:			fprintf(ter, "PROJECT_ANGLE 0 1 0 180" CRLF);		break;
-		case 6:			fprintf(ter, "PROJECT_ANGLE 0 1 0 270" CRLF);		break;
-		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);			break;
-		case 8:			fprintf(ter, "PROJECT_ANGLE 0 1 0 90" CRLF);		break;
-		default:
-			{
-				switch(gNaturalTerrainTable[n].proj_angle) {
-				case proj_Down:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
-				case proj_NorthSouth:	fprintf(ter, "PROJECT_ANGLE 0 0 1 0" CRLF);		break;
-				case proj_EastWest:		fprintf(ter, "PROJECT_ANGLE -1 0 0 90" CRLF);	break;
-				}
-
-				switch(gNaturalTerrainTable[n].variant) {
-				case 1: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
-				case 2: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.3));	break;
-				case 3: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.7), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
-				case 4:	fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.4), (int) (gNaturalTerrainTable[n].base_res * 0.6));	break;
-				}
-			}
-		}
-
-		dir_path = string(FetchTokenString(gNaturalTerrainTable[n].name)) + ".ter";
+		dir_path = string(FetchTokenString(n->first)) + ".ter";
 		only_dir(dir_path);
 		canonical_path(dir_path);
 
-		imageFiles.insert(dir_path+gNaturalTerrainTable[n].base_tex);
-		if (!gNaturalTerrainTable[n].vary_tex.empty())	imageFiles.insert(dir_path+gNaturalTerrainTable[n].vary_tex);
-		if (!gNaturalTerrainTable[n].lit_tex.empty())	imageFiles.insert(dir_path+gNaturalTerrainTable[n].lit_tex);
-//		imageFiles.insert(dir_path+gNaturalTerrainTable[n].comp_tex);
-		borderFiles.insert(dir_path+gNaturalTerrainTable[n].border_tex);
+		switch(n->second.shader) {
+		case shader_vary:	
+			if(!n->second.compo_tex.empty())
+				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
+			fprintf(ter, "AUTO_VARY" CRLF);	
+			break;
+		case shader_tile:	
+			if(!n->second.compo_tex.empty())
+				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
+			fprintf(ter, "AUTO_TILE %d %d" CRLF, n->second.tiles_x, n->second.tiles_y);	
+			break;
+		case shader_slope:	
+			fprintf(ter, "AUTO_SLOPE" CRLF);
+			fprintf(ter,"AUTO_SLOPE_HILL %d %f %f %s" CRLF, (int) n->second.hill_res, n->second.hill_angle1, n->second.hill_angle2, n->second.compo_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_CLIFF %d %f %f %s" CRLF, (int) n->second.cliff_res, n->second.cliff_angle1, n->second.cliff_angle2, n->second.cliff_tex.c_str());
+			imageFiles.insert(dir_path+n->second.cliff_tex);
+			break;
+		case  shader_normal:
+			if(!n->second.compo_tex.empty())
+				printf("WARNING: terrain %s has unneeded compo tex.\n", FetchTokenString(n->first));
+			break;
+		default:
+			printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
+			break;
+		}
+
+		fprintf(ter, "NO_ALPHA" CRLF);
+
+		fprintf(ter, "COMPOSITE_BORDERS" CRLF);
+
+		imageFiles.insert(dir_path+n->second.base_tex);
+		if (!n->second.compo_tex.empty())	imageFiles.insert(dir_path+n->second.compo_tex);
+		if (!n->second.lit_tex.empty())	imageFiles.insert(dir_path+n->second.lit_tex);
+		borderFiles.insert(dir_path+n->second.border_tex);
 
 		fclose(ter);
 	}
 
-	for(map<string, int>::iterator p = has_pol.begin(); p != has_pol.end(); ++p)
+	for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
 	{
-		fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, p->first.c_str(), p->first.c_str());
+		fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, FetchTokenString(p->first), FetchTokenString(p->first));
 
-		lib_path = package + p->first + ".pol";
+		lib_path = package + FetchTokenString(p->first) + ".pol";
 		local_path(lib_path);
 		dir_path = lib_path;
 		only_dir(dir_path);
@@ -221,11 +192,11 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			return errno;
 		}
 		fprintf(pol, "%c" CRLF "850" CRLF "DRAPED_POLYGON" CRLF CRLF, APL ? 'A' : 'I');
-		fprintf(pol, "TEXTURE %s" CRLF, gNaturalTerrainTable[p->second].base_tex.c_str());
-		if (!gNaturalTerrainTable[p->second].lit_tex.empty())
-			fprintf(pol, "TEXTURE_LIT %s" CRLF, gNaturalTerrainTable[p->second].lit_tex.c_str());
+		fprintf(pol, "TEXTURE %s" CRLF, p->second.base_tex.c_str());
+		if (!p->second.lit_tex.empty())
+			fprintf(pol, "TEXTURE_LIT %s" CRLF, p->second.lit_tex.c_str());
 
-		fprintf(pol, "SCALE %d %d" CRLF, (int) gNaturalTerrainTable[p->second].base_res, (int) gNaturalTerrainTable[p->second].base_res);
+		fprintf(pol, "SCALE %d %d" CRLF, (int) p->second.base_res, (int) p->second.base_res);
 		fprintf(pol, "NO_ALPHA" CRLF);
 		fprintf(pol, "SURFACE dirt" CRLF);
 		fprintf(pol, "LAYER_GROUP airports -1" CRLF);
@@ -269,10 +240,14 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 				return e;
 			}
 
-			if (!FILE_exists(path.c_str()))
+			string path_as_png(path);	path_as_png.erase(path_as_png.length()-3,3);	path_as_png.insert(path_as_png.length(),"png");
+			string path_as_dds(path);	path_as_png.erase(path_as_png.length()-3,3);	path_as_png.insert(path_as_png.length(),"dds");
+
+			if (!FILE_exists(path_as_png.c_str()))
+			if (!FILE_exists(path_as_dds.c_str()))
 			{
 				++image_ctr;
-				WriteBitmapToPNG(&image_data, path.c_str(), NULL, 0);
+				WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0);		
 			}
 		}
 

@@ -458,7 +458,7 @@ bool IsFeatureObject(int inName)
 void CheckObjTable(void)
 {
 	for (int n = 0; n < gRepTable.size(); ++n)
-		if (gRepTable[n].terrain != NO_VALUE && gNaturalTerrainIndex.count(gRepTable[n].terrain) == 0)
+		if (gRepTable[n].terrain != NO_VALUE && gNaturalTerrainInfo.count(gRepTable[n].terrain) == 0)
 			printf("WARNING: object %s references unknown terrain %s\n",FetchTokenString(gRepTable[n].obj_name), FetchTokenString(gRepTable[n].terrain));
 }
 

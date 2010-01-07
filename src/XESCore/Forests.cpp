@@ -50,6 +50,8 @@
 
 int	tri_forest_type(CDT::Face_handle f)
 {
+	return NO_VALUE;
+/*	
 	// WHAT's THE IDEA?
 	// Return the top terrain type's forest type - visually we want to match the guy who is topmost.
 	// BUT if ANY terrain has no forest, return no forest.  This way we will never put trees over a potentially
@@ -70,6 +72,7 @@ int	tri_forest_type(CDT::Face_handle f)
 		}
 	}
 	return forest_type;
+*/	
 }
 
 
@@ -314,6 +317,7 @@ void GenerateForests(
 
 }
 
+/*
 void GetAllForestLUs(
 				set<int>&				out_types)
 {
@@ -321,3 +325,4 @@ void GetAllForestLUs(
 	if(gNaturalTerrainTable[n].forest_type != NO_VALUE)
 		out_types.insert(gNaturalTerrainTable[n].name);
 }
+*/

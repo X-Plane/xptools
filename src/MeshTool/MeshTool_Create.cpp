@@ -155,15 +155,8 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 
 void MT_FinishCreate(void)
 {
-	CheckRuleUsage();
-	
 	CropMap(*the_map, sBounds[0],sBounds[1],sBounds[2],sBounds[3],false,ConsoleProgressFunc);
 
-
-	gNaturalTerrainIndex.clear();
-	for(int rn = 0; rn < gNaturalTerrainTable.size(); ++rn)
-	if (gNaturalTerrainIndex.count(gNaturalTerrainTable[rn].name) == 0)
-		gNaturalTerrainIndex[gNaturalTerrainTable[rn].name] = rn;
 }
 
 static void print_mesh_stats(void)
@@ -265,46 +258,47 @@ int MT_CreateCustomTerrain(
 	}
 
 	int tt = NewToken(terrain_name);
-	NaturalTerrainInfo_t nt = { 0 };
-	nt.terrain = tt;
-	nt.landuse = NO_VALUE;
-	nt.climate = NO_VALUE;
-	nt.elev_min = DEM_NO_DATA;;
-	nt.elev_max = DEM_NO_DATA;;
-	nt.slope_min = DEM_NO_DATA;;
-	nt.slope_max = DEM_NO_DATA;;
-	nt.temp_min = DEM_NO_DATA;;
-	nt.temp_max = DEM_NO_DATA;;
-	nt.temp_rng_min = DEM_NO_DATA;;
-	nt.temp_rng_max = DEM_NO_DATA;;
-	nt.rain_min = DEM_NO_DATA;;
-	nt.rain_max = DEM_NO_DATA;;
-	nt.near_water = 0;
-	nt.slope_heading_min = DEM_NO_DATA;;
-	nt.slope_heading_max = DEM_NO_DATA;;
-	nt.rel_elev_min = DEM_NO_DATA;;
-	nt.rel_elev_max = DEM_NO_DATA;;
-	nt.elev_range_min = DEM_NO_DATA;;
-	nt.elev_range_max = DEM_NO_DATA;;
-	nt.urban_density_min = DEM_NO_DATA;;
-	nt.urban_density_max = DEM_NO_DATA;;
-	nt.urban_radial_min = DEM_NO_DATA;;
-	nt.urban_radial_max = DEM_NO_DATA;;
-	nt.urban_trans_min = DEM_NO_DATA;;
-	nt.urban_trans_max = DEM_NO_DATA;
-	nt.urban_square = 0;
-	nt.lat_min = DEM_NO_DATA;
-	nt.lat_max = DEM_NO_DATA;
-	nt.variant = 0;
-	nt.related = -1;
-	nt.name = tt;
-	nt.layer = 0;
-	nt.xon_dist = 0;
-	nt.xon_hack = 0;
-	nt.custom_ter = (back_with_water == 2) ? tex_custom_soft_water : ((back_with_water == 1) ? tex_custom_hard_water : tex_custom_no_water);
+	NaturalTerrainInfo_t ni;
+	NaturalTerrainRule_t nr = { 0 };
+	nr.terrain = tt;
+	nr.landuse = NO_VALUE;
+	nr.climate = NO_VALUE;
+	nr.elev_min = DEM_NO_DATA;;
+	nr.elev_max = DEM_NO_DATA;;
+	nr.slope_min = DEM_NO_DATA;;
+	nr.slope_max = DEM_NO_DATA;;
+	nr.temp_min = DEM_NO_DATA;;
+	nr.temp_max = DEM_NO_DATA;;
+	nr.temp_rng_min = DEM_NO_DATA;;
+	nr.temp_rng_max = DEM_NO_DATA;;
+	nr.rain_min = DEM_NO_DATA;;
+	nr.rain_max = DEM_NO_DATA;;
+	nr.near_water = 0;
+	nr.slope_heading_min = DEM_NO_DATA;;
+	nr.slope_heading_max = DEM_NO_DATA;;
+	nr.rel_elev_min = DEM_NO_DATA;;
+	nr.rel_elev_max = DEM_NO_DATA;;
+	nr.elev_range_min = DEM_NO_DATA;;
+	nr.elev_range_max = DEM_NO_DATA;;
+	nr.urban_density_min = DEM_NO_DATA;;
+	nr.urban_density_max = DEM_NO_DATA;;
+	nr.urban_radial_min = DEM_NO_DATA;;
+	nr.urban_radial_max = DEM_NO_DATA;;
+	nr.urban_trans_min = DEM_NO_DATA;;
+	nr.urban_trans_max = DEM_NO_DATA;
+	nr.urban_square = 0;
+	nr.lat_min = DEM_NO_DATA;
+	nr.lat_max = DEM_NO_DATA;
+	nr.variant = 0;
+//	nr.related = -1;
+	nr.name = tt;
+	ni.layer = 0;
+	ni.xon_dist = 0;
+//	ni.xon_hack = 0;
+	ni.custom_ter = (back_with_water == 2) ? tex_custom_soft_water : ((back_with_water == 1) ? tex_custom_hard_water : tex_custom_no_water);
 
-	int rn = gNaturalTerrainTable.size();
-	gNaturalTerrainTable.insert(gNaturalTerrainTable.begin()+(num_cus_terrains++),nt);
+	gNaturalTerrainRules.insert(gNaturalTerrainRules.begin(), nr);
+	gNaturalTerrainInfo[tt] = ni;
 
 	tex_proj_info	pinfo;
 	for(int n = 0; n < 4; ++n)
@@ -645,7 +639,7 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 
 					CopyBitmapSection(&rgba,&smaller, 0,0,rgba.width,rgba.height, 0, 0, smaller.width,smaller.height);				
 
-					WriteBitmapToDDS(smaller, 1, dname);
+					WriteBitmapToDDS(smaller, 5, dname);
 					DestroyBitmap(&smaller);
 				}
 				DestroyBitmap(&rgba);

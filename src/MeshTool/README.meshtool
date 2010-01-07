@@ -1,6 +1,8 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	....
+		GEOTIFF command makes DDS using DXT5.
 	12/25/09 2.0 Beta 4
 		Natural terrain can be placed via the SHAPEFILE command and others.
 		Masks can limit where commands actuate.

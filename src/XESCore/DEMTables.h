@@ -49,17 +49,26 @@ extern ColorBandTable				gColorBands;
 
 extern set<int>						gEnumDEMs;
 
-enum {
+enum proj_dir_t {
 	proj_Down,
 	proj_NorthSouth,
 	proj_EastWest
 };
 
+enum shader_t {
+	shader_normal,
+	shader_vary,
+	shader_slope,
+	shader_tile
+
+};
+	
+
 /************************************************************************
  * NATURAL TERRAIN RULES
  ************************************************************************/
 
-struct	NaturalTerrainInfo_t {
+struct	NaturalTerrainRule_t {
 	// RULES
 	int				terrain;	//	e.g. natural_Terrain
 	int				landuse;
@@ -88,46 +97,63 @@ struct	NaturalTerrainInfo_t {
 	float			urban_trans_min;
 	float			urban_trans_max;
 	int				urban_square;
-
 	float			lat_min;
 	float			lat_max;
-	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
-	int				related;
+	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5.  This is a SELECTOR for terrain.
 
-	// DEFS
 	int				name;
+
+};
+
+struct	NaturalTerrainInfo_t {
+	// DEFS
 	int				layer;
 	float			xon_dist;
-	int				xon_hack;
-	// 2-D Texturing
-	string			base_tex;
-	string			vary_tex;			// variation tex if needed
-	string			lit_tex;
-	int				auto_vary;			// Use shaders to make variations
-//	string			comp_tex;
-	float			base_res;
-//	float			comp_res;
-//	int				base_alpha_invert;
-//	int				comp_alpha_invert;
-	int				proj_angle;
-	string			border_tex;
 	int				custom_ter;
+	proj_dir_t		proj_angle;			// Projection angle.  For legacy terrain this influences the xon distances.  For next-gen, always use "down"...the way the xon is scaled
+										// is pretty reasonable for a next-gen terrain because xon distances are horizontal.
+
+	// 2-D texturing common to pretty much everything.
+	string			base_tex;
+	string			lit_tex;
+	float			base_res;
+	string			border_tex;			
+	string			compo_tex;		/// ALL modes that can have a second texture jam it here.
+
+	// Mode of shader we run in
+	shader_t		shader;
+
+	// Slope shader
+	float			hill_res;
+	float			cliff_res;
+	float			hill_angle1;
+	float			hill_angle2;
+	float			cliff_angle1;
+	float			cliff_angle2;	
+	string			cliff_tex;
+
+	// Tile shader
+	int				tiles_x;
+	int				tiles_y;
+
+
+	// 2-D Texturing we don't really use anymore?					
+//	string			vary_tex_;			// variation tex if needed
+//	int				auto_vary_;			// Use shaders to make variations.  This a flag to add the AUTO_VARY to the .ter and is only present to allow full .ter generation.
 
 	// Forests!
-	int				forest_type;
+//	int				forest_type;
 //	float			forest_ratio;
 
-	float			map_rgb[3];
+	RGBColor_t		map_rgb;
 };
-typedef vector<NaturalTerrainInfo_t>	NaturalTerrainTable;			// Natural terrain rules ordered by rule priority
-//typedef multimap<int, int>				NaturalTerrainLandUseIndex;		// Index based on land use ranges
-typedef map<int, int>					NaturalTerrainIndex;			// Index from .ter enum to line info!
+typedef vector<NaturalTerrainRule_t>	NaturalTerrainRuleVector;			// Natural terrain rules ordered by rule priority
+typedef map<int, NaturalTerrainInfo_t>	NaturalTerrainInfoMap;				// Index from .ter enum to line info!
 
-extern	NaturalTerrainTable				gNaturalTerrainTable;
-//extern	NaturalTerrainLandUseIndex		gNaturalTerrainLandUseIndex;
-extern	NaturalTerrainIndex				gNaturalTerrainIndex;
+extern	NaturalTerrainRuleVector		gNaturalTerrainRules;
+extern	NaturalTerrainInfoMap			gNaturalTerrainInfo;
 
-void	CheckRuleUsage(void);
+// This returns a rule NAME
 int		FindNaturalTerrain(
 				int		terrain,
 				int 	landuse,
@@ -223,15 +249,15 @@ extern LandUseTransTable	gLandUseTransTable;
 // However please note that there is no equality of priority, e.g.
 // priority(a) == priorty((b) -> a == b
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if lhs is lower prio than rhs.  Lower prio is from lower layer or earlier rule if layers equal
-bool	IsForestType(int inType);								// Returns true if enum is for a forest
-inline bool 	IncompatibleProjection(int lhs, int rhs);				// Returns true if terrains are not projected the same way
-inline bool	AreVariants(int lhs, int rhs);							// Returns true if two terrains are variants of each other
-inline bool	HasVariant(int lhs);
-inline int		OtherVariant(int terrain);								// Returns a different variant of the terrain
-inline int		AnyVariant(int terrain);								// Returns any variant of the terrain randomly
-inline int		SpecificVariant(int terrain, int i);					// Use i (0-4) as a seed - get variant
+//bool	IsForestType(int inType);								// Returns true if enum is for a forest
+//inline bool 	IncompatibleProjection(int lhs, int rhs);				// Returns true if terrains are not projected the same way
+//inline bool	AreVariants(int lhs, int rhs);							// Returns true if two terrains are variants of each other
+//inline bool	HasVariant(int lhs);
+//inline int		OtherVariant(int terrain);								// Returns a different variant of the terrain
+//inline int		AnyVariant(int terrain);								// Returns any variant of the terrain randomly
+//inline int		SpecificVariant(int terrain, int i);					// Use i (0-4) as a seed - get variant
 //void	GetForestMapping(map<int,int>& forests);
-void			GetForestTypes(set<int>& forests);
+//void			GetForestTypes(set<int>& forests);
 
 bool	IsAirportTerrain(int t);
 
@@ -271,11 +297,12 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 
 	if (lhs == terrain_Water) return true;
 	if (rhs == terrain_Water) return false;
-	lhs = gNaturalTerrainIndex[lhs];
-	rhs = gNaturalTerrainIndex[rhs];
 
-	int lhs_layer = gNaturalTerrainTable[lhs].layer;
-	int rhs_layer = gNaturalTerrainTable[rhs].layer;
+	DebugAssert(gNaturalTerrainInfo.count(lhs));
+	DebugAssert(gNaturalTerrainInfo.count(rhs));
+
+	int lhs_layer = gNaturalTerrainInfo[lhs].layer;
+	int rhs_layer = gNaturalTerrainInfo[rhs].layer;
 
 	// Lookups - if we have a layer difference, that goes.
 	if (lhs_layer < rhs_layer) return true;
@@ -288,53 +315,61 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 	return lhs < rhs;
 }
 
-
+/*
 inline bool IncompatibleProjection(int lhs, int rhs)
 {
 	if (lhs == rhs) return false;
 	return (gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].proj_angle !=
 			gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].proj_angle);
 }
-
+*/
+/*
 inline bool	AreVariants(int lhs, int rhs)
 {
-	int v1 = gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related;
-	int v2 = gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].related;
-	return (v1 == v2 && v1 != -1);
+	return false;
+//	int v1 = gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related;
+//	int v2 = gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].related;
+//	return (v1 == v2 && v1 != -1);
 }
+*/
 
+/*
 inline bool	HasVariant(int lhs)
 {
-	return gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related != -1;
+	return false;
+//	return gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related != -1;
 }
 
 inline int		OtherVariant(int terrain)
 {
-	int me_idx = gNaturalTerrainIndex[terrain];
-	int base = gNaturalTerrainTable[me_idx].related;
-	if (base == -1) return terrain;
+	return terrain;
+//	int me_idx = gNaturalTerrainIndex[terrain];
+//	int base = gNaturalTerrainTable[me_idx].related;
+//	if (base == -1) return terrain;
 
-	if (base == me_idx) return gNaturalTerrainTable[base + 1 + rand() % 3].name;
+//	if (base == me_idx) return gNaturalTerrainTable[base + 1 + rand() % 3].name;
 
-	int vary = gNaturalTerrainTable[base + rand() % 4].name;
-	if (vary == terrain) 	return gNaturalTerrainTable[base].name;
-	else					return gNaturalTerrainTable[vary].name;
+//	int vary = gNaturalTerrainTable[base + rand() % 4].name;
+//	if (vary == terrain) 	return gNaturalTerrainTable[base].name;
+//	else					return gNaturalTerrainTable[vary].name;
 }
 
 inline int		AnyVariant(int terrain)
 {
-	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
-	if (base == -1) return terrain;
-	return gNaturalTerrainTable[base + rand() % 4].name;
+	return terrain;
+//	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
+//	if (base == -1) return terrain;
+//	return gNaturalTerrainTable[base + rand() % 4].name;
 }
 
 inline int SpecificVariant(int terrain, int i)
 {
-	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
-	if (base == -1) return terrain;
-	return gNaturalTerrainTable[base + i].name;
+	return terrain;
+//	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
+//	if (base == -1) return terrain;
+//	return gNaturalTerrainTable[base + i].name;
 }
 
-
+*/
 
 #endif

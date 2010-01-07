@@ -25,6 +25,7 @@
 #include "DSFDefs.h"
 #include "EnumSystem.h"
 #include "NetTables.h"
+#include "ForestTables.h"
 #include "NetPlacement.h"
 #include "MeshAlgs.h"
 #include "TriFan.h"
@@ -204,28 +205,28 @@ inline bool IsCustomOverWaterHard(int n)
 {
 	if (n == terrain_Water)	return false;
 	if (n == terrain_VisualWater)	return false;
-	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_hard_water;
+	return gNaturalTerrainInfo[n].custom_ter == tex_custom_hard_water;
 }
 
 inline bool IsCustomOverWaterSoft(int n)
 {
 	if (n == terrain_Water)	return false;
 	if (n == terrain_VisualWater)	return false;
-	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_soft_water;
+	return gNaturalTerrainInfo[n].custom_ter == tex_custom_soft_water;
 }
 
 inline bool IsCustomOverWaterAny(int n)
 {
 	if (n == terrain_Water)	return false;
 	if (n == terrain_VisualWater)	return false;
-	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_hard_water ||
-			gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_soft_water;
+	return gNaturalTerrainInfo[n].custom_ter == tex_custom_hard_water ||
+			gNaturalTerrainInfo[n].custom_ter == tex_custom_soft_water;
 }
 
 inline bool IsCustom(int n)
 {
 	if (n == terrain_Water)	return false;
-	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter != tex_not_custom;
+	return gNaturalTerrainInfo[n].custom_ter != tex_not_custom;
 }
 
 
@@ -310,7 +311,7 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 	// ass.  In that case automatically tighten up the border via a cos^2 power curve, for the tightest
 	// border at totally shear angle.
 	Vector3	tproj(0,0,1);
-	int proj = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].proj_angle;
+	int proj = gNaturalTerrainInfo[terrain].proj_angle;
 	if (proj == proj_EastWest)	tproj = Vector3(1,0,0);
 	if (proj == proj_NorthSouth)	tproj = Vector3(0,1,0);
 
@@ -619,7 +620,7 @@ string		get_terrain_name(int composite)
 #else
 		return FetchTokenString(composite);
 #endif
-	else if (gNaturalTerrainIndex.count(composite) > 0)
+	else if (gNaturalTerrainInfo.count(composite) > 0)
 	{
 		if(IsCustom(composite))
 		{
@@ -1191,7 +1192,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					// the non-cliff terrain surrouding on 3 sides.)  In this case we make THREE passes and force one vertex to 0% blend for
 					// each pass.
 					int ts = -1, te = 0;
-					if (!AreVariants(lu_ranked->first, f->info().terrain))
+//					if (!AreVariants(lu_ranked->first, f->info().terrain))
 					if (bblend[0] == bblend[1] &&
 						bblend[1] == bblend[2] &&
 						bblend[0] == 1.0)

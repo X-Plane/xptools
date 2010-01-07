@@ -250,6 +250,7 @@ inline void FindNextNorth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index, boo
 	Assert(!"Next pt not found.");
 }
 
+/*
 // This builds the set of all continuous triangles that have the same variation of a terrain (a contiguous blob if you will)
 void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& all, Bbox_2& bounds)
 {
@@ -280,6 +281,7 @@ void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& al
 		}
 	}
 }
+*/
 
 #pragma mark -
 /************************************************************************************************************************
@@ -621,11 +623,8 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 
 inline bool has_no_xon(int tex1, int tex2)
 {
-	int ind1 = gNaturalTerrainIndex[tex1];
-	int	ind2 = gNaturalTerrainIndex[tex2];
-
-	NaturalTerrainInfo_t& rec1(gNaturalTerrainTable[ind1]);
-	NaturalTerrainInfo_t& rec2(gNaturalTerrainTable[ind2]);
+	NaturalTerrainInfo_t& rec1(gNaturalTerrainInfo[tex1]);
+	NaturalTerrainInfo_t& rec2(gNaturalTerrainInfo[tex2]);
 
 	return rec1.xon_dist == 0.0 || rec2.xon_dist == 0.0;
 }
@@ -726,15 +725,12 @@ inline float SAFE_MAX(float a, float b, float c)
 
 inline double GetXonDist(int layer1, int layer2, double y_normal)
 {
-	int ind1 = gNaturalTerrainIndex[layer1];
-	int	ind2 = gNaturalTerrainIndex[layer2];
-
-	NaturalTerrainInfo_t& rec1(gNaturalTerrainTable[ind1]);
-	NaturalTerrainInfo_t& rec2(gNaturalTerrainTable[ind2]);
+	NaturalTerrainInfo_t& rec1(gNaturalTerrainInfo[layer1]);
+	NaturalTerrainInfo_t& rec2(gNaturalTerrainInfo[layer2]);
 
 #if DEV
-	const char * t1 = FetchTokenString(rec1.name);
-	const char * t2 = FetchTokenString(rec2.name);
+	const char * t1 = FetchTokenString(layer1);
+	const char * t2 = FetchTokenString(layer2);
 #endif
 
 	double dist_1 = rec1.xon_dist;
@@ -1828,10 +1824,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				tri->info().debug_lu[3] = lu3;
 				tri->info().debug_lu[4] = lu ;
 			#endif
-				if (terrain == gNaturalTerrainTable.back().name)
+				if (terrain == -1)
 				{
-					AssertPrintf("Hit %s rule. lu=%s, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
-						FetchTokenString(gNaturalTerrainTable.back().name),
+					AssertPrintf("No rule. lu=%s, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
 						FetchTokenString(lu), /*el,*/ acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh_tri, center_y);
 				}
 				//fprintf(stderr, "->%d", terrain);
@@ -1849,6 +1844,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// If a blob's total area is less than the blobbing distance, it's not really needed!  Simplify
 	// it.
 
+/*
 	int tri_merged = 0;
 	set<CDT::Face_handle>	all_variants;
 
@@ -1879,6 +1875,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			all_variants.erase(*kill);
 		}
 	}
+*/
 
 	/***********************************************************************************************
 	 * DEAL WITH INTRUSION FROM OUR MASTER SIDE
@@ -2178,7 +2175,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			tri_border += (tri->info().terrain_border.size());
 		} else if (!tri->info().terrain_border.empty())
 			AssertPrintf("BORDER ON WATER LAND USE!  Terrain = %s", FetchTokenString(tri->info().terrain));
-		printf("Total: %d - border: %d - check: %d - opt: %d, devary=%d\n", tri_total, tri_border, tri_check, tri_opt,tri_merged);
+		printf("Total: %d - border: %d - check: %d - opt: %d\n", tri_total, tri_border, tri_check, tri_opt);
 	}
 
 #endif /* NO_BORDERS_AT_ALL */
