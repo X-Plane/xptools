@@ -116,6 +116,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
+{		dem_ForestType,			"Forests"						,	dem_Enum,					false,  true,	"Forest=%s"		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
 {		dem_Rainfall,			"Rainfall"						,	dem_Rainfall,				true,	false,	"Rain=%fmm "	},
