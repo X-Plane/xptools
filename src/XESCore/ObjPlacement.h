@@ -69,7 +69,7 @@ void	GenerateInsets(
 void	SubtractPlaced(
 					PreinsetFace&			face);
 
-
 void	DumpPlacementCounts(void);
+
 
 #endif

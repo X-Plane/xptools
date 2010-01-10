@@ -38,6 +38,7 @@
 #include "AptAlgs.h"
 #include "MemFileUtils.h"
 #include "XESIO.h"
+#include "ForestTables.h"
 
 DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
 
@@ -1091,6 +1092,8 @@ void	DeriveDEMs(
 	DEMGeo	urbanRadial(landuse);
 	DEMGeo	urbanTrans(landuse);
 	urbanSquare = landuse;
+	DEMGeo		forests(landuse);
+
 
 	urban.mNorth = landuseBig.mNorth;
 	urban.mSouth = landuseBig.mSouth;
@@ -1507,6 +1510,21 @@ else														e = DEM_NO_DATA;
 
 	if (inProg) inProg(0, 1, "Calculating Derived Raster Data", 1.0);
 
+	for (y = 0; y < landuse.mHeight;++y)
+	for (x = 0; x < landuse.mWidth; ++x)
+	{
+		int l = landuse.get(x,y);
+		float t = temp.get(temp.map_x_from(landuse,x),
+						 temp.map_y_from(landuse,y));
+		float r = rainfall.get(rainfall.map_x_from(landuse,x),
+						 rainfall.map_y_from(landuse,y));
+
+		int f = FindForest(l,t,r);
+		
+		forests(x,y) = f;		
+	}
+
+
 
 	ioDEMs[dem_UrbanDensity	   ].swap(urban);
 //	ioDEMs[dem_TerrainPhenomena].swap(phenomTerrain);
@@ -1520,6 +1538,7 @@ else														e = DEM_NO_DATA;
 //	ioDEMs[dem_VegetationDensity].swap(vegetation);
 	ioDEMs[dem_UrbanRadial].swap(urbanRadial);
 	ioDEMs[dem_UrbanTransport].swap(urbanTrans);
+	ioDEMs[dem_ForestType].swap(forests);
 
 }
 

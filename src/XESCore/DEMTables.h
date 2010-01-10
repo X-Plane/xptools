@@ -105,6 +105,17 @@ struct	NaturalTerrainRule_t {
 
 };
 
+struct CliffInfo_t {
+	float			hill_res;
+	float			cliff_res;
+	float			hill_angle1;
+	float			hill_angle2;
+	float			cliff_angle1;
+	float			cliff_angle2;	
+	string			hill_tex;
+	string			cliff_tex;
+};
+
 struct	NaturalTerrainInfo_t {
 	// DEFS
 	int				layer;
@@ -124,13 +135,7 @@ struct	NaturalTerrainInfo_t {
 	shader_t		shader;
 
 	// Slope shader
-	float			hill_res;
-	float			cliff_res;
-	float			hill_angle1;
-	float			hill_angle2;
-	float			cliff_angle1;
-	float			cliff_angle2;	
-	string			cliff_tex;
+	CliffInfo_t		cliff_info;
 
 	// Tile shader
 	int				tiles_x;

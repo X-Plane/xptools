@@ -66,6 +66,7 @@
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_Climate)				//	Type of climate
 //	TOKEN(dem_NudeColor)			//	Color of nude terrain (geology)
+	TOKEN(dem_ForestType)			//	Forest token type...
 
 	/* Boolean DEMs. */
 

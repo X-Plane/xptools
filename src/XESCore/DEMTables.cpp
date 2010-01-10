@@ -52,6 +52,8 @@ string	gLanduseTransFile;
 string	gReplacementClimate;
 string 	gReplacementRoads;
 
+static map<string,CliffInfo_t>		sCliffs;
+
 #define R_VARY 0
 
 inline double cosdeg(double deg)
@@ -211,7 +213,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string		lu_set_string;
 	
 		NaturalTerrainRule_t	rule;
-		if(TokenizeLine(tokens," esffffffffffiffffe",
+		if(TokenizeLine(tokens," esffffffffffiffffffe",
 			&rule.terrain, &lu_set_string,
 			&rule.elev_min,
 			&rule.elev_max,
@@ -228,7 +230,9 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&rule.rel_elev_max,
 			&rule.elev_range_min,
 			&rule.elev_range_max,
-			&rule.name) != 19)
+			&rule.lat_min,
+			&rule.lat_max,
+			&rule.name) != 21)
 				return false;
 		
 		rule.climate = NO_VALUE;
@@ -236,7 +240,6 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		rule.urban_radial_min = rule.urban_radial_max = 0.0;
 		rule.urban_trans_min = rule.urban_trans_max = 0.0;
 		rule.urban_square = 0;
-		rule.lat_min = rule.lat_max = 0;
 		rule.slope_heading_min = rule.slope_heading_max = 0.0;
 		rule.variant = 0;
 		if (rule.elev_min > rule.elev_max)
@@ -269,6 +272,31 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		}
 		return true;
 	}
+	else if(tokens[0] == "CLIFF_INFO")
+	{
+		CliffInfo_t info;
+		string	id;
+		if(TokenizeLine(tokens," sffffffss",
+			&id,
+			&info.hill_res,
+			&info.cliff_res,
+			&info.hill_angle1,
+			&info.hill_angle2,
+			&info.cliff_angle1,
+			&info.cliff_angle2,
+			&info.hill_tex,
+			&info.cliff_tex
+			) != 10)
+		return false;
+		
+		if(sCliffs.count(id))
+		{
+			fprintf(stderr,"ERROR: cliff %s defined twice.\n", id.c_str());
+			return false;
+		}
+		sCliffs[id] = info;		
+	}
+
 	else if (tokens[0] == "TERRAIN_INFO")
 	{
 		//	TERRAIN_INFO			NAME	LAYER	XON		RGB		BASE TEX	BORDER_TEX	RES	LIT		COMPO		MODE		MODE PARAMS
@@ -299,18 +327,13 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		else	if(shader_mode == "TILE")	info.shader = shader_tile;
 		else	{ fprintf(stderr,"Illegal shader: %s.\n",shader_mode.c_str()); return false; }
 		
+		string id;
 		switch(info.shader) {
 		case shader_slope:
-			if(TokenizeLine(tokens,"          ffffffss",
-				&info.hill_res,
-				&info.cliff_res,				
-				&info.hill_angle1,
-				&info.hill_angle2,
-				&info.cliff_angle1,
-				&info.cliff_angle2,
-				&info.compo_tex,
-				&info.cliff_tex
-				) != 18) return false;
+			if(TokenizeLine(tokens,"          s", &id) != 11) return false;
+			if(sCliffs.count(id) == 0) { fprintf(stderr,"Unknown cliff type: %s\n", id.c_str()); return false; }
+			
+			info.cliff_info = sCliffs[id];
 			break;
 		case shader_tile:
 			if(TokenizeLine(tokens,"          iii",
@@ -739,6 +762,8 @@ void	LoadDEMTables(void)
 //	sForests.clear();
 	gLandUseTransTable.clear();
 
+	sCliffs.clear();
+
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
 	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
@@ -748,6 +773,7 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("TERRAIN_RULE", ReadNewTerrainInfo, NULL);
 	RegisterLineHandler("TERRAIN_INFO", ReadNewTerrainInfo, NULL);
+	RegisterLineHandler("CLIFF_INFO", ReadNewTerrainInfo, NULL);
 //	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
 
