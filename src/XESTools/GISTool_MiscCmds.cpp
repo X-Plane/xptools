@@ -30,6 +30,7 @@
 #include "PerfUtils.h"
 #include "SceneryPackages.h"
 #include "DEMTables.h"
+#include "ForestTables.h"
 #include <md5.h>
 #include "SceneryPackages.h"
 #include "MapRaster.h"
@@ -406,11 +407,9 @@ int DoMakeTerrainPackage(const vector<const char *>& args)
 "need .for at the end."
 int DoDumpForests(const vector<const char *>& args)
 {
-	set<int>		ts;
-	GetForestTypes(ts);
-	for(set<int>::iterator i = ts.begin(); i != ts.end(); ++i)
+	for(ForestInfoMap::iterator i = gForestInfo.begin(); i != gForestInfo.end(); ++i)
 	{		
-		printf("EXPORT\tlib/g8/%s.for\t%s.for\n", FetchTokenString(*i), args.size() > 0 ? args[0] : FetchTokenString(*i));
+		printf("EXPORT\tlib/g8/%s.for\t%s.for\n", FetchTokenString(i->first), args.size() > 0 ? args[0] : FetchTokenString(i->first));
 	}
 	return 0;
 }

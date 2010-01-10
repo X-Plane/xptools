@@ -191,7 +191,7 @@ static int DoInstantiateForests(const vector<const char *>& args)
 
 	vector<PreinsetFace>	insets;
 	set<int>				the_types;
-	GetAllForestLUs(the_types);
+//	GetAllForestLUs(the_types);
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
 	GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, gProgress);
 	GenerateForests(gMap, insets, gTriangulationHi, gProgress);
@@ -210,7 +210,7 @@ static int DoInstantiateObjsForests(const vector<const char *>& args)
 
 	set<int>				the_types;
 	GetObjTerrainTypes		(the_types);
-	GetAllForestLUs			(the_types);
+//	GetAllForestLUs			(the_types);
 
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
 
