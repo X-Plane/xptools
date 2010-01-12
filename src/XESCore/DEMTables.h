@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2004, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -59,6 +59,8 @@ enum shader_t {
 	shader_normal,
 	shader_vary,
 	shader_slope,
+	shader_slope2,
+	shader_heading,
 	shader_tile
 
 };

@@ -295,6 +295,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			return false;
 		}
 		sCliffs[id] = info;		
+		return true;
 	}
 
 	else if (tokens[0] == "TERRAIN_INFO")
@@ -324,12 +325,15 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 				if(shader_mode == "NORMAL")	info.shader = shader_normal;
 		else	if(shader_mode == "VARY")	info.shader = shader_vary;
 		else	if(shader_mode == "SLOPE")	info.shader = shader_slope;
+		else	if(shader_mode == "SLOPE2")	info.shader = shader_slope2;
+		else	if(shader_mode == "HEADING")info.shader = shader_heading;
 		else	if(shader_mode == "TILE")	info.shader = shader_tile;
 		else	{ fprintf(stderr,"Illegal shader: %s.\n",shader_mode.c_str()); return false; }
 		
 		string id;
 		switch(info.shader) {
 		case shader_slope:
+		case shader_slope2:
 			if(TokenizeLine(tokens,"          s", &id) != 11) return false;
 			if(sCliffs.count(id) == 0) { fprintf(stderr,"Unknown cliff type: %s\n", id.c_str()); return false; }
 			
