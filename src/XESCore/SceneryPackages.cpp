@@ -144,11 +144,17 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			fprintf(ter, "AUTO_TILE %d %d" CRLF, n->second.tiles_x, n->second.tiles_y);	
 			break;
 		case shader_slope:	
+		case shader_slope2:	
 			fprintf(ter, "AUTO_SLOPE" CRLF);
 			fprintf(ter,"AUTO_SLOPE_HILL %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res, n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
 			fprintf(ter,"AUTO_SLOPE_CLIFF %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res, n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
 			imageFiles.insert(dir_path+n->second.cliff_info.hill_tex);
 			imageFiles.insert(dir_path+n->second.cliff_info.cliff_tex);
+			break;
+		case shader_heading:
+			fprintf(ter, "AUTO_SLOPE" CRLF);
+			fprintf(ter,"AUTO_SLOPE_HILL -10 -5 %s" CRLF, n->second.base_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_CLIFF 80 85 %s" CRLF, n->second.base_tex.c_str());
 			break;
 		case  shader_normal:
 			if(!n->second.compo_tex.empty())
