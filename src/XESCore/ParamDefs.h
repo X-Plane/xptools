@@ -96,6 +96,32 @@
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
 
 	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?
+	
+	TOKEN(af_Zoning)
+		TOKEN(zoning_Large_Industrial)
+		TOKEN(zoning_Large_High)
+		TOKEN(zoning_Large_Medium)
+		TOKEN(zoning_Large_Low)
+		TOKEN(zoning_Large_Town)
+		TOKEN(zoning_Large_Crop)
+		TOKEN(zoning_Large_None)
+
+		TOKEN(zoning_Irregular_Industrial)
+		TOKEN(zoning_Irregular_High)
+		TOKEN(zoning_Irregular_Medium)
+		TOKEN(zoning_Irregular_Low)
+		TOKEN(zoning_Irregular_Town)
+		TOKEN(zoning_Irregular_Crop)
+		TOKEN(zoning_Irregular_None)
+
+
+		TOKEN(zoning_Urban_Industrial)
+		TOKEN(zoning_Urban_High)
+		TOKEN(zoning_Urban_Medium)
+		TOKEN(zoning_Urban_Low)
+		TOKEN(zoning_Urban_Town)
+		TOKEN(zoning_Urban_Crop)
+		TOKEN(zoning_Urban_None)
 
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.
@@ -421,7 +447,7 @@
 	TOKEN(lu_usgs_Unused99)
 	TOKEN(lu_usgs_NO_DATA)
 */	
-		
+
 	TOKEN(lu_globcover_BARE_CONSOLIDATED)
 	TOKEN(lu_globcover_BARE_ROCKS)
 	TOKEN(lu_globcover_BARE_SANDY)
@@ -430,6 +456,7 @@
 	TOKEN(lu_globcover_CROP_FRUIT)
 	TOKEN(lu_globcover_CROP_MOSAIC)
 	TOKEN(lu_globcover_CROP_ORCHARDS)
+	TOKEN(lu_globcover_CROP_SQUARE)
 	TOKEN(lu_globcover_FOREST_BRAODLEAVED_DENSE)
 	TOKEN(lu_globcover_FOREST_BRAODLEAVED_SPARSE)
 	TOKEN(lu_globcover_FOREST_CONIFER_DENSE)
@@ -463,7 +490,6 @@
 	TOKEN(lu_globcover_WETLAND_BROADLEAVED_OPEN)
 	TOKEN(lu_globcover_WETLAND_GRASSLAND)
 	TOKEN(lu_globcover_WETLAND_SHRUB_CLOSED)
-
 
 	/* Natural phenomena for dem_TerrainPhenomena - these define things
 	   that happen on the ground other than plants. */
