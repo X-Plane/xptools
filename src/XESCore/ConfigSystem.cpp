@@ -263,8 +263,10 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
 		else
 			subst=tokens.substr(s,e-s);
 		
-		slots.insert(LookupToken(subst.c_str()));
-		
+		int bade;
+		slots.insert(bade = LookupToken(subst.c_str()));
+		if (bade == -1)
+			printf("WARNING: could not find token: '%s'\n", subst.c_str());
 		if(e==tokens.npos)
 			break;
 		else
