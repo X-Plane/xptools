@@ -265,11 +265,19 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			fprintf(stderr, "Illegal landuse.\n");
 			return false;
 		}	
+		
+		if(gNaturalTerrainInfo.count(rule.name) == 0)
+		{
+			fprintf(stderr,"Rule final terrain name %s is not a real terrain name.\n", FetchTokenString(rule.name));
+			return false;
+		}
+
 		for(set<int>::iterator lu = lu_set.begin(); lu != lu_set.end(); ++lu)
 		{
 			rule.landuse = *lu;
 			gNaturalTerrainRules.push_back(rule);
 		}
+		
 		return true;
 	}
 	else if(tokens[0] == "CLIFF_INFO")
