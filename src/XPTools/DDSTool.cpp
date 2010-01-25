@@ -23,6 +23,7 @@
 
 #include "version.h"
 #include "BitmapUtils.h"
+#include "QuiltUtils.h"
 
 enum {
 	raw_16 = 0,
@@ -289,6 +290,28 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 		return 0;
+		// Quilt src w h splat over trials dest
+	} else if (strcmp(argv[1],"--quilt")==0)
+	{
+		ImageInfo src, dst;
+		if(CreateBitmapFromPNG(argv[2], &src, false) != 0)
+			return 1;
+		
+		int dst_w = atoi(argv[3]);
+		int dst_h = atoi(argv[4]);
+		int splat = atoi(argv[5]);
+		int overlap = atoi(argv[6]);
+		int trials = atoi(argv[7]);
+		
+		printf("Will make %d x %d tex, with %d splats (%d overlap, %d trials.)\n", dst_w,dst_h, splat,overlap,trials);
+			
+		CreateNewBitmap(dst_w,dst_h, 4, &dst);
+		if(src.channels == 3) ConvertBitmapToAlpha(&src,false);
+
+		make_texture(src, dst, splat, overlap, trials);
+
+		WriteBitmapToPNG(&dst, argv[8], NULL, 0);
+		
 	} else {
 		printf("Unknown conversion flag %s\n", argv[1]);
 		return 1;
