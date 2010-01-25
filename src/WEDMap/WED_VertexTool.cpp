@@ -93,6 +93,7 @@ WED_VertexTool::WED_VertexTool(
 		mIsRotate(0),
 		mIsSymetric(0),
 		mIsTaxiSpin(0),
+		mNewSplitPoint(NULL),
 		mIsScale(0),
 		mSnapToGrid(this,"Snap To Vertices", "", "", 0)
 {
@@ -712,7 +713,9 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 		if (mods & gui_OptionAltFlag)
 		{
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
-		}
+		} else
+			mNewSplitPoint = NULL;
+		
 	}	
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
