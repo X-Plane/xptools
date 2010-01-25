@@ -43,7 +43,8 @@ TCL_linked_vari  * panel_sub_enable	=NULL;
 
 int		is_panel_tex(int tex_id)
 {
-	return strstrnocase(texture_id_to_name(tex_id), "-PANELS-/Panel.") != NULL;
+	return strstrnocase(texture_id_to_name(tex_id), "-PANELS-/Panel.") != NULL ||
+		   strstrnocase(texture_id_to_name(tex_id), "-PANELS-/Panel_") != NULL ||
 }
 
 /*
