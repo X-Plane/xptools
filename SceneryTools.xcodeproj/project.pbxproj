@@ -275,6 +275,7 @@
 		D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */; };
 		D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */; };
 		D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */; };
+		D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */; };
 		D633FA6D0E12DF7400A3913F /* PCSBSocket.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */; };
 		D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
 		D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
@@ -1085,6 +1086,8 @@
 		D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Taxiway.cpp; sourceTree = "<group>"; };
 		D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportBoundary.h; sourceTree = "<group>"; };
 		D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBoundary.cpp; sourceTree = "<group>"; };
+		D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QuiltUtils.cpp; sourceTree = "<group>"; };
+		D62FD75C110E14E900C5D48E /* QuiltUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuiltUtils.h; sourceTree = "<group>"; };
 		D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PCSBSocket.lin.cpp; sourceTree = "<group>"; };
 		D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PCSBSocketUDP.lin.cpp; sourceTree = "<group>"; };
 		D6367D180B82123400091AFC /* WED_Select.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Select.cpp; sourceTree = "<group>"; };
@@ -2783,6 +2786,8 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */,
+				D62FD75C110E14E900C5D48E /* QuiltUtils.h */,
 				D6708AA60C1F2A1A00F33E06 /* MathUtils.h */,
 				D69FD7430B6CF765008E3AEC /* unzip.c */,
 				D69FD7440B6CF765008E3AEC /* unzip.h */,
@@ -4269,6 +4274,7 @@
 				D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */,
 				D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */,
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
+				D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
