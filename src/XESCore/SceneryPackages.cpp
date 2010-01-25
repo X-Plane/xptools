@@ -153,8 +153,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			break;
 		case shader_heading:
 			fprintf(ter, "AUTO_SLOPE" CRLF);
-			fprintf(ter,"AUTO_SLOPE_HILL -10 -5 %s" CRLF, n->second.base_tex.c_str());
-			fprintf(ter,"AUTO_SLOPE_CLIFF 80 85 %s" CRLF, n->second.base_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_HILL %d -10 -5 %s" CRLF, (int) n->second.base_res, n->second.base_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_CLIFF %d 80 85 %s" CRLF, (int) n->second.base_res, n->second.base_tex.c_str());
 			break;
 		case  shader_normal:
 			if(!n->second.compo_tex.empty())
