@@ -8,6 +8,7 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
+1.1		1/25/10	Quilting Added
 Version 3/11/08 Initial Version
 
 -------------------------------------------------------------------------------
@@ -108,3 +109,66 @@ image is handled:
 The technical details of the DXTn compression schemes can be found here:
 
 http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
+
+-------------------------------------------------------------------------------
+QUILTING
+-------------------------------------------------------------------------------
+
+DDSTool 1.1 contains an implementation of texture quilting.  Here's the basic
+idea:
+
+* You want to form a "detail" texture that has high frequency, is homogenous
+  (e.g. it doesn't have vivid details when viewed from far away) but does not
+  appear to repeat when close.
+* You have a source texture that is fairly uniform but does not tile.
+
+Texture quliting will cut many small "patches" from the source and paste them
+into a tiling texture.  Texture quiltng will attempt to blend and match the
+edges (cutting them along wavy lines) so that the resulting texture is seamless
+and artifact free.  To read more:
+
+http://www.robburke.net/mle/wang/
+
+(This implementation does quilting but not transfer or wang tiles.)
+
+To quilt a texture, you use this syntax:
+
+DDSTool --quilt src_png width height patch overlap trials destination
+
+Example:
+
+DDSTool --quilt grass.png 1024 1024 15 7 10 grass_texture.png
+
+This would create a new 1024x1024 texture based on 15 pixel patches of
+grass (overlapped by 7 pixels).  DDStool will make 10 tries to fit each patch,
+and hte result will be saved in grass_texture.png.  (Quilting is not available
+via XGrinder.)
+
+Arguments:
+
+The source file must be a PNG.  It does not have to be a power of 2 in size, but it
+must be at least as large as the patch size.  (In practice it should be quite a bit
+bigger.)  It should be an RGB or RGBA PNG.
+
+The width and height are the size of the output texture.  These should be a power
+of 2 if you want to use the texture with X-Plane.  Width and height do not need
+to be the same size.
+
+The patch size is the size of the element to be copied, and overlap is the number
+of pixels to overlap each patch.  A few limits:
+
+- The overlap must be no more than half the patch size.
+- The texture must be a multiple of the difference of the patch size and overlap
+  in both dimensions.
+  
+In the above example, the difference between patch and overlap is 8 pixels, and 1024
+is a multiple of 8.
+
+Larger overlap areas will often mean more consistent "tone" because more pixels will
+be tested between tiles to match tiles.
+
+Trials is the number of times to try different random slices to fit texture.  If you
+have a fast computer, large overlap, and a large source texture, you may want to try
+a fairly large (e.g. 1000+) number of trials to improve visual quality.
+
+THe output file specifies the location for the new texture.

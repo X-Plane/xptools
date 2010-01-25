@@ -20,6 +20,12 @@ Version History
 	 						Tool can show version.
 	 						Total capacity for polygons increased a lot.
      3/11/08 - 1.3			Support for XGrinder automation.
+	 1/25/08 - 1.4			Elevation in the DSF is scaled to improve precision vertically.
+							Raw triangles will be optimized into strips - simply dump
+							an arbitrary number of raw triangles - DSF2Text will form strips
+							and break up groups of tris that are too numerous.
+							Vector roads are not reversed as part of optimization - this helps traffic flow.
+							DSF2Text will recognize the ST coordinates for draped polygons.
 								 
 -------------------------------------------------------------------------------
 OVERVIEW
