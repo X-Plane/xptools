@@ -220,6 +220,21 @@ void	CreateTranslatorForPolygon(
 	trans.mDstMax.y_ = (trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT;
 }
 
+void	CreateTranslatorForBounds(
+					const Point_2&		inSrcMin,
+					const Point_2&		inSrcMax,
+					CoordTranslator_2&	trans)
+{
+	trans.mSrcMin = inSrcMin;
+	trans.mSrcMax = inSrcMax;
+	
+	trans.mDstMin = Point_2(0,0);
+	trans.mDstMax = Point_2(
+					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(to_double((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
+					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
+}
+
+
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
 	double lon_delta = p.x() - ref.x();

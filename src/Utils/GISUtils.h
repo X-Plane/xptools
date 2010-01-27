@@ -24,6 +24,7 @@
 #define GISUTILS_H
 
 #include <math.h>
+#include "CGALDefs.h"
 
 struct	Polygon2;
 struct	Vector2;
@@ -53,6 +54,10 @@ double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double l
 void	CreateTranslatorForPolygon(
 					const Polygon2&		inPolygon,
 					CoordTranslator2&	outTranslator);
+					
+void	CreateTranslatorForBounds(
+					const Bbox_2&		inBox,
+					CoordTranslator_2&	outTranslator);
 
 inline int	latlon_bucket(int p)
 {

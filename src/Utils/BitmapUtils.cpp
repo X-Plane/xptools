@@ -31,6 +31,119 @@
 #include "Interpolation.h"
 #include <squish.h>
 
+
+
+/*
+	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
+	structures to be happy!!!
+*/
+
+/*
+	These headers match the Microsoft bitmap file and image headers more or less
+	and are read right out of the file.
+*/
+
+#if APL
+#pragma pack(2)
+#endif
+#if IBM || LIN
+#pragma pack(push, 2)
+#endif
+
+struct	BMPHeader {
+	char			signature1;
+	char			signature2;
+	long			fileSize;
+	long			reserved;
+	long			dataOffset;
+};
+
+struct	BMPImageDesc {
+	long			structSize;
+	long			imageWidth;
+	long			imageHeight;
+	short			planes;
+	short			bitCount;
+	long			compressionType;
+	long			imageSize;
+	long			xPixelsPerM;	//130B0000?  B013 = 45075?
+	long			yPixelsPerM;
+	long			colorsUsed;
+	long			colorsImportant;
+};
+
+#if APL
+#pragma options align=reset
+#endif
+#if IBM || LIN
+#pragma pack(pop)
+#endif
+
+
+
+// DD surface flags
+#define DDSD_CAPS               0x00000001l     // default
+#define DDSD_HEIGHT             0x00000002l
+#define DDSD_WIDTH              0x00000004l
+#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
+#define DDSD_PIXELFORMAT        0x00001000l
+#define DDSD_MIPMAPCOUNT        0x00020000l
+#define DDSD_LINEARSIZE         0x00080000l
+
+// DD Pixel format flags
+#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
+#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
+#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
+
+// DD surface caps
+#define DDSCAPS_TEXTURE			0x00001000l
+#define DDSCAPS_MIPMAP          0x00400000l
+#define DDSCAPS_COMPLEX         0x00000008l
+
+#if APL || LIN
+	#define DWORD unsigned int
+#endif
+
+struct TEX_dds_caps2 {
+    DWORD       dwCaps;         // capabilities of surface wanted
+    DWORD       dwCaps2;
+    DWORD       dwCaps3;
+    DWORD       dwCaps4;
+};
+
+struct TEX_dds_pixelformat {
+    DWORD       dwSize;                 // size of structure (must be 32)
+    DWORD       dwFlags;                // pixel format flags
+    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
+	DWORD		dwRGBBitCount;          // how many bits per pixel
+	DWORD		dwRBitMask;             // mask for red bit
+	DWORD		dwGBitMask;             // mask for green bits
+	DWORD		dwBBitMask;             // mask for blue bits
+	DWORD		dwRGBAlphaBitMask;      // mask for alpha channel
+};
+
+struct TEX_dds_desc {
+	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
+
+    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
+    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+    DWORD               dwHeight;               // height of surface to be created
+    DWORD               dwWidth;                // width of input surface
+	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
+    DWORD               dwDepth;				// Vol texes-depth.
+	DWORD				dwMipMapCount;          // number of mip-map levels requestde
+	DWORD               dwReserved1[11];        //
+	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
+    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+    DWORD               dwReserved2;			//
+};
+
+
+
+
+
+
+
 /*
 	NOTES ON ENDIAN CHAOS!!!!!!!!!!!!!!!!!!!
 
@@ -1196,12 +1309,12 @@ bail:
 
 #endif
 
-static void	in_place_scaleXY(int x, int y, unsigned char * io_data)
+static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst)
 {
 	int rb = x * 4;
-	unsigned char *	s1 = io_data;
-	unsigned char *	s2 = io_data + rb;
-	unsigned char * d1 = io_data;
+	unsigned char *	s1 = src;
+	unsigned char *	s2 = src + rb;
+	unsigned char * d1 = dst;
 
 	x /= 2;
 	y /= 2;
@@ -1226,10 +1339,10 @@ static void	in_place_scaleXY(int x, int y, unsigned char * io_data)
 	}
 }
 
-static void	in_place_scaleX(int x, int y, unsigned char * io_data)
+static void	in_place_scaleX(int x, int y, unsigned char * src, unsigned char * dst)
 {
-	unsigned char *	s1 = io_data;
-	unsigned char * d1 = io_data;
+	unsigned char *	s1 = src;
+	unsigned char * d1 = dst;
 
 	x /= 2;
 
@@ -1246,12 +1359,12 @@ static void	in_place_scaleX(int x, int y, unsigned char * io_data)
 }
 
 
-static void	in_place_scaleY(int x, int y, unsigned char * io_data)
+static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * dst)
 {
 	int rb = x * 4;
-	unsigned char *	s1 = io_data;
-	unsigned char *	s2 = io_data + rb;
-	unsigned char * d1 = io_data;
+	unsigned char *	s1 = src;
+	unsigned char *	s2 = src + rb;
+	unsigned char * d1 = dst;
 
 	x /= 2;
 	y /= 2;
@@ -1292,7 +1405,21 @@ static void	in_place_scaleY(int x, int y, unsigned char * io_data)
 	#error BIG or LIL are not defined - what endian are we?
 #endif
 
+static void swap_bgra_y(struct ImageInfo& i)
+{
+	int num_swaps = (i.height+1) / 2;	// add 1 - if we have 9 lines, do 5 swaps, line 4 swaps on itself safely.
+	for(int y=0;y<num_swaps         ;++y)
+	for(int x=0;x<i.width    ; ++x)
+	{
+		unsigned char * srcp = i.data + x * i.channels + (i.height - y - 1) * (i.channels * i.width + i.pad);
+		unsigned char * dstp = i.data + x * i.channels +				   y	  * (i.channels * i.width + i.pad);
 
+		swap(dstp[2], dstp[0]);
+		if(srcp != dstp)				// check for self-swap, don't undo.
+			swap(srcp[0], srcp[2]);
+	}
+
+}
 
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 {
@@ -1300,9 +1427,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	if (fi == NULL) return -1;
 	vector<unsigned char>	src_v, dst_v;
 	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5));
-	src_v.resize(ioImage.width * ioImage.height * 4);
 	dst_v.resize(squish::GetStorageRequirements(ioImage.width,ioImage.height,flags));
-	unsigned char * src_mem = &*src_v.begin();
 	unsigned char * dst_mem = &*dst_v.begin();
 
 	int x = ioImage.width;
@@ -1315,21 +1440,9 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 		++mips;
 	}
 
-	for(y=0;y<ioImage.height;++y)
-	for(x=0;x<ioImage.width;++x)
-	{
-		unsigned char * srcp = ioImage.data + x * ioImage.channels + (ioImage.height - y - 1) * (ioImage.channels * ioImage.width + ioImage.pad);
-		unsigned char * dstp = src_mem + x * 4 + y * 4 * ioImage.width;
-
-		dstp[0] = srcp[2];
-		dstp[1] = srcp[1];
-		dstp[2] = srcp[0];
-		dstp[3] = ioImage.channels == 4 ? srcp[3] : 255;
-	}
-
-	x = ioImage.width;
-	y = ioImage.height;
-	int len = squish::GetStorageRequirements(x,y,flags);
+	struct ImageInfo img(ioImage);
+	
+	int len = squish::GetStorageRequirements(img.width,img.height,flags);
 
 
 	TEX_dds_desc header = { 0 };
@@ -1355,23 +1468,20 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	fwrite(&header,sizeof(header),1,fi);
 
 	do {
-		squish::CompressImage(src_mem, x, y, dst_mem, flags|squish::kColourIterativeClusterFit);
-		len = squish::GetStorageRequirements(x,y,flags);
-		// write out mem
-
+	
+		swap_bgra_y(img);		
+	
+		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
+		len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
 
-		if(x==1 && y==1) break;
+		swap_bgra_y(img);		
 
-		if(x > 1) {
-			if (y > 1)		in_place_scaleXY(x,y,src_mem);
-			else			in_place_scaleX (x,y,src_mem);
-		} else if (y > 1)	in_place_scaleY (x,y,src_mem);
-
-		if(x > 1) x >>= 1;
-		if(y > 1) y >>= 1;
+		if(!AdvanceMipmapStack(&img))
+			break;
 
 	} while (1);
+	
 	fclose(fi);
 	return 0;
 	// close file
@@ -1392,8 +1502,6 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 		++mips;
 	}
 
-	int width = ioImage.width/2;
-
 	TEX_dds_desc header = { 0 };
 	header.dwMagic[0] = 'D';
 	header.dwMagic[1] = 'D';
@@ -1402,8 +1510,8 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
 	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_PITCH);
 	header.dwHeight = SWAP32(ioImage.height);
-	header.dwWidth = SWAP32(width);
-	header.dwLinearSize = SWAP32(width * ioImage.channels);
+	header.dwWidth = SWAP32(ioImage.width);
+	header.dwLinearSize = SWAP32(ioImage.width * ioImage.channels);
 	header.dwDepth=0;
 	header.dwMipMapCount=SWAP32(mips);
 	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
@@ -1418,25 +1526,19 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 
 	fwrite(&header,sizeof(header),1,fi);
 
-	int xo = 0;
-	x = ioImage.width/2;
-	y = ioImage.height;
+	struct ImageInfo im(ioImage);
 
 	do {
 
-		struct ImageInfo im;
-		CreateNewBitmap(x, y, ioImage.channels, &im);
-		CopyBitmapSectionDirect(ioImage, im, xo, 0, 0, 0, x, y);
-
 		FlipImageY(im);
-		fwrite(im.data,x*y*ioImage.channels,1,fi);
+		fwrite(im.data,im.width*im.height*im.channels,1,fi);
+		FlipImageY(im);
 
 		if(x==1 && y==1) break;
 
-		xo += x;
+		if (!AdvanceMipmapStack(&im))
+			break;
 
-		if(x > 1) x >>= 1;
-		if(y > 1) y >>= 1;
 
 	} while (1);
 	fclose(fi);
@@ -1558,3 +1660,108 @@ void	FlipImageY(struct ImageInfo&	io_image)
 		swap_mem(io_image.data + y1 * row_len,io_image.data + y2 * row_len, row_len);
 	}
 }
+
+
+int MakeMipmapStack(struct ImageInfo * ioImage)
+{
+	if(ioImage->channels == 3)
+		ConvertAlphaToBitmap(ioImage, false);
+	int storage = 0;
+	int mips = 0;
+	int x = ioImage->width;
+	int y = ioImage->height;
+	do {
+		storage += (x * y * 4);
+		++mips;
+		if(x == 1 && y == 1) break;
+		if (x > 1) x >>= 1;
+		if (y > 1) y >>= 1;
+	} while (1);
+	
+	unsigned char * base = (unsigned char *) malloc(storage);
+	
+	ImageInfo ni;
+	ni.width = ioImage->width;
+	ni.height = ioImage->height;
+	ni.pad = 0;
+	ni.channels = 4;
+	ni.data = base;
+
+	CopyBitmapSectionDirect(*ioImage, ni, 0, 0, 0, 0, ni.width, ni.height);
+	
+	while(ni.width > 1 || ni.height > 1)
+	{
+		unsigned char * old_ptr = ni.data;
+		ni.data += (4 * ni.width * ni.height);
+
+		if(ni.width > 1) {
+			if (ni.height > 1)		in_place_scaleXY(ni.width,ni.height,old_ptr,ni.data);
+			else					in_place_scaleX (ni.width,ni.height,old_ptr,ni.data);
+		} else if (ni.height > 1)	in_place_scaleY (ni.width,ni.height,old_ptr,ni.data);
+
+		if(ni.width > 1) ni.width >>= 1;
+		if(ni.height > 1) ni.height >>= 1;
+	}
+	
+	free(ioImage->data);
+	ioImage->data = base;
+	
+	return mips;
+}
+
+int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
+{
+	if(ioImage->channels == 3)
+		ConvertAlphaToBitmap(ioImage, false);
+	int storage = 0;
+	int mips = 0;
+	int x = ioImage->width;
+	int y = ioImage->height;
+	do {
+		storage += (x * y * 4);
+		++mips;
+		if(x == 1 && y == 1) break;
+		if (x > 1) x >>= 1;
+		if (y > 1) y >>= 1;
+	} while (1);
+	
+	unsigned char * base = (unsigned char *) malloc(storage);
+	
+	ImageInfo ni;
+	ni.width = ioImage->width / 2;
+	ni.height = ioImage->height;
+	ni.pad = 0;
+	ni.channels = 4;
+	ni.data = base;
+
+	int xo = 0;
+
+	do {
+
+		CopyBitmapSectionDirect(*ioImage, ni, xo, 0, 0, 0, ni.width, ni.height);
+	
+		xo += ni.width;
+
+		if (!AdvanceMipmapStack(&ni))
+			break;
+	} while(1);
+	
+	free(ioImage->data);
+	ioImage->data = base;
+	
+	ioImage->width /= 2;
+	
+	return mips;
+}
+
+int AdvanceMipmapStack(struct ImageInfo * ioImage)
+{
+	if(ioImage->width == 1 && ioImage->height == 1) return 0;
+	
+	ioImage->data += (4 * ioImage->width * ioImage->height);
+	if(ioImage->width > 1) ioImage->width >>= 1;
+	if(ioImage->height > 1) ioImage->height >>= 1;
+	return 1;
+}
+ 
+
