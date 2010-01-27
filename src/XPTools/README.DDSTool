@@ -9,6 +9,7 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
 1.1		1/25/10	Quilting Added
+				Mipmap support changed
 Version 3/11/08 Initial Version
 
 -------------------------------------------------------------------------------
@@ -32,7 +33,7 @@ into the X-Grinder window.
 
 The command-line syntax for DDSTool is:
 
-DDSTool <mode flag> <src file> <dst file>
+DDSTool <conversion> <flags> <src file> <dst file>
 
 DDSTool provides five modes of conversion.  These options list both the menu
 choice in XGrinder and the command-line option.  See the next section for 
@@ -59,16 +60,26 @@ Use DXT5 Compression (smooth alpha)
 
 In this mode, the PNG file is always compressed using DXT5.
 
-Use no compression (requires mipmap)
+Use no compression
 --png2rgb
 
-This mode builds an uncompressed RGB DDS file.  The image file must contain 
-the entire mipmap tree (justified to the bottom of the PNG file with each mip
-to the right of the previous one).  
+This mode builds an uncompressed RGB DDS file.  Note that X-Plane may
+compress the image when loaded, so this should typically not be used except
+in a few rare cases.
 
-This mode is NOT recommended for scenery use; there are only a few very special
-cases where X-Plane will allow an uncompressed DDS file, and generally they
-do not occur in either third party airplanes or third party scenery!
+--has_mips
+
+If you pass this flag, the image is treated as if all mipmaps are present:
+the image should be double-width, and the images should be packed from
+left to right (large to small), aligned along the bottom edge of the image.
+Instead of computing mipmaps using a box filter, your images will be used.
+
+Use this feature when you want to tune the look of lower-res images for 
+improved clarity.
+
+Note: the command-line version of DDSTool is capable of creating "PVRTC" format
+images; this is not shown in XGrinder because X-Plane does not use this format;
+this format is used or the iphone.
 
 -------------------------------------------------------------------------------
 FORMS OF DXT COMPRESSION

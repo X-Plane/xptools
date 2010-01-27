@@ -25,6 +25,12 @@
 #include "BitmapUtils.h"
 #include "QuiltUtils.h"
 
+#if PHONE
+	#define WANT_PVR 1
+#else
+	#define WANT_PVR 0
+#endif
+
 enum {
 	raw_16 = 0,
 	raw_24 = 1,
@@ -164,24 +170,30 @@ int main(int argc, char * argv[])
 	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
-		printf("CMD .png .dds \"%s\" DDS_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
 		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
-		printf("RADIO DDS_MODE 0 --png2rgb Use no compression (requires mipmap)\n");
+		printf("RADIO DDS_MODE 0 --png2rgb No Compression\n");
+		printf("DIV\n");
+		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
+
+#if WANT_PVR		
 		printf("DIV\n");
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvrtc4 4-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw16 PVR uses 16-bit color\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");
 		printf("CMD .png .pvr \"%s\" PVR_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+#endif		
 		return 0;
 	}
 
 	if (argc < 4) {
-		printf("Usage: %s --png2dds <input_file> <output_file>|-\n",argv[0]);
+		printf("Usage: %s <convert mode> <options> <input_file> <output_file>|-\n",argv[0]);
+		printf("Usage: %s --quilt <input_file> <width> <height> <patch size> <overlap> <trials> <output_files>n",argv[0]);
 		printf("       %s --version\n",argv[0]);
 		exit(1);
 	}
@@ -230,18 +242,22 @@ int main(int argc, char * argv[])
 	   strcmp(argv[1],"--png2dxt3")==0 ||
 	   strcmp(argv[1],"--png2dxt5")==0)
 	{
+	
+		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
+		int arg_base = has_mips ? 3 : 2;
+	
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[2], &info, false)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
-			printf("Unable to open png file %s\n", argv[2]);
+			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
 		}
 
 		char buf[1024];
-		const char * outf = argv[3];
+		const char * outf = argv[arg_base+1];
 		if(strcmp(outf,"-")==0)
 		{
-			strcpy(buf,argv[2]);
+			strcpy(buf,argv[arg_base]);
 			buf[strlen(buf)-4]=0;
 			strcat(buf,".dds");
 			outf=buf;
@@ -249,7 +265,7 @@ int main(int argc, char * argv[])
 
 		if(info.channels == 1)
 		{
-			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[2]);
+			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[arg_base+1]);
 		}
 		int dxt_type = argv[1][9]-'0';
 		if(argv[1][9]==0)
@@ -257,36 +273,45 @@ int main(int argc, char * argv[])
 			if(info.channels == 3)  dxt_type=1;
 			else					dxt_type=5;
 		}
+		
+		if(has_mips)	MakeMipmapStackFromImage(&info);
+		else			MakeMipmapStack(&info);
 
-		if (WriteBitmapToDDS(info, dxt_type,outf)!=0)
+		if (WriteBitmapToDDS(info, dxt_type, outf)!=0)
 		{
-			printf("Unable to write DDS file %s\n", argv[3]);
+			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
 			return 1;
 		}
 		return 0;
 	}
 	else if(strcmp(argv[1],"--png2rgb")==0)
 	{
+		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
+		int arg_base = has_mips ? 3 : 2;
+	
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[2], &info, false)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
-			printf("Unable to open png file %s\n", argv[2]);
+			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
 		}
 
 		char buf[1024];
-		const char * outf = argv[3];
+		const char * outf = argv[arg_base+1];
 		if(strcmp(outf,"-")==0)
 		{
-			strcpy(buf,argv[2]);
+			strcpy(buf,argv[arg_base]);
 			buf[strlen(buf)-4]=0;
 			strcat(buf,".raw");
 			outf=buf;
 		}
 
+		if(has_mips)	MakeMipmapStackFromImage(&info);
+		else			MakeMipmapStack(&info);
+
 		if (WriteUncompressedToDDS(info, outf)!=0)
 		{
-			printf("Unable to write DDS file %s\n", argv[3]);
+			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
 			return 1;
 		}
 		return 0;
