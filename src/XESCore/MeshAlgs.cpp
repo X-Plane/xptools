@@ -69,7 +69,9 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 // This causes the alg to print out timing of individual meshing steps.
 #define PROFILE_PERFORMANCE 1
 
-
+// This guarantees that we don't have "beached" triangles - that is, water trianglse where all 3 points are coastal, and thus the water depth is ZERO in the entire
+// thing.
+#define SPLIT_BEACHED_WATER 1
 
 #define DEBUG_DROPPED_PTS 0
 
@@ -1602,6 +1604,35 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	{
 		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
 	}
+
+#if SPLIT_BEACHED_WATER
+	set<Point_2> splits_needed;
+	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
+	{
+		if( f->info().terrain == terrain_Water)
+		{
+			bool	c0 = outMesh.are_there_incident_constraints(f->vertex(0));
+			bool	c1 = outMesh.are_there_incident_constraints(f->vertex(1));
+			bool	c2 = outMesh.are_there_incident_constraints(f->vertex(2));
+			if(c0 && c1 && !f->is_constrained(2)) splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
+			if(c1 && c2 && !f->is_constrained(0)) splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
+			if(c2 && c0 && !f->is_constrained(1)) splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
+		}
+	}
+
+	printf("Need %d splits for beaches.\n", splits_needed.size());
+	hint = CDT::Face_handle();
+	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
+	{
+		InsertAnyPoint(orig, outMesh, *n, hint);
+	}
+	
+		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
+	
+#endif
+
+
+
 
 	/*********************************************************************************************************************
 	 * CLEANUP - CALC MESH NORMALS
