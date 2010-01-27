@@ -246,6 +246,24 @@ bool DSF2Text(const char * inDSF, const char * inFileName)
 	return true;
 }
 
+static char * strip_and_clean(char * raw)
+{
+	char * r = raw;
+
+	while(*r == ' ' || *r == '\t')					// Advance past any white space, so we can start a line with tab indent.
+		++r;
+
+	char * p = r;
+
+	while(*p)										// Convert any CRLF or # to null term, so we don't pick them up.
+	{
+		if(*p == '#' || *p == '\r' || *p == '\n')
+			*p = 0;
+		++p;
+	}
+	return r;
+}
+
 
 bool Text2DSF(const char * inFileName, const char * inDSF)
 {
@@ -270,15 +288,20 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 
 	while (fgets(buf, sizeof(buf), fi))
 	{
-		if (sscanf(buf, "PROPERTY %s %[^\r\n]", prop_id, prop_value) == 2)
+		char * ptr = strip_and_clean(buf);
+		if (sscanf(ptr, "PROPERTY %s %[^\r\n]", prop_id, prop_value) == 2)
 			properties.push_back(pair<string, string>(prop_id, prop_value));
 
-		if (sscanf(buf, "PROPERTY sim/west %f", &west) == 1) ++props_got;
-		if (sscanf(buf, "PROPERTY sim/east %f", &east) == 1) ++props_got;
-		if (sscanf(buf, "PROPERTY sim/north %f", &north) == 1) ++props_got;
-		if (sscanf(buf, "PROPERTY sim/south %f", &south) == 1) ++props_got;
-		sscanf(buf, "DIVISIONS %d", &divisions);
-		if (props_got >= 4 && west != 999.0 && east != 999.0 && north != 999.0 & south != 999.0) break;
+		if (sscanf(ptr, "PROPERTY sim/west %f", &west) == 1) ++props_got;
+		if (sscanf(ptr, "PROPERTY sim/east %f", &east) == 1) ++props_got;
+		if (sscanf(ptr, "PROPERTY sim/north %f", &north) == 1) ++props_got;
+		if (sscanf(ptr, "PROPERTY sim/south %f", &south) == 1) ++props_got;
+		sscanf(ptr, "DIVISIONS %d", &divisions);
+
+		if (strcmp(ptr,"DIVISIONS") != 0 &&
+		   strcmp(ptr,"PROPERTY") != 0 &&
+		   ptr[0] != 0)
+			break;
 	}
 
 	if (west >= 180.0 || west < -180.0 ||
@@ -305,35 +328,35 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 
 	while (fgets(buf, sizeof(buf), fi))
 	{
+		char * ptr = strip_and_clean(buf);
+			 if (sscanf(ptr, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
+		else if (sscanf(ptr, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObject_f(ptype, coords, coords[2], writer);
 
-			 if (sscanf(buf, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
-		else if (sscanf(buf, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObject_f(ptype, coords, coords[2], writer);
+		else if (sscanf(ptr,"BEGIN_SEGMENT %d %d %d %lf %lf %lf", &ptype, &subtype, &nodeid,  &coords[0],&coords[1],&coords[2]) == 6)							cbs.BeginSegment_f(ptype, subtype, nodeid, coords, false, writer);
+		else if (sscanf(ptr,"SHAPE_POINT %lf %lf %lf", &coords[0], &coords[1], &coords[2])== 3) 			cbs.AddSegmentShapePoint_f(coords, false, writer);
+		else if (sscanf(ptr,"END_SEGMENT %d %lf %lf %lf", &nodeid, &coords[0], &coords[1], &coords[2])== 4) cbs.EndSegment_f(nodeid, coords, false, writer);
 
-		else if (sscanf(buf,"BEGIN_SEGMENT %d %d %d %lf %lf %lf", &ptype, &subtype, &nodeid,  &coords[0],&coords[1],&coords[2]) == 6)							cbs.BeginSegment_f(ptype, subtype, nodeid, coords, false, writer);
-		else if (sscanf(buf,"SHAPE_POINT %lf %lf %lf", &coords[0], &coords[1], &coords[2])== 3) 			cbs.AddSegmentShapePoint_f(coords, false, writer);
-		else if (sscanf(buf,"END_SEGMENT %d %lf %lf %lf", &nodeid, &coords[0], &coords[1], &coords[2])== 4) cbs.EndSegment_f(nodeid, coords, false, writer);
+		else if (sscanf(ptr, "BEGIN_PRIMITIVE %d", &ptype) == 1)												cbs.BeginPrimitive_f(ptype, writer);
+		else if (!strncmp(ptr, "END_PRIMITIVE", strlen("END_PRIMITIVE")))										cbs.EndPrimitive_f(writer);
+		else if (sscanf(ptr,"BEGIN_PATCH %d %lf %lf %d %d", &ptype, &lod_near, &lod_far, &flags, &depth) == 5) 	cbs.BeginPatch_f(ptype, lod_near, lod_far, flags, depth, writer);
+		else if (!strncmp(ptr, "END_PATCH", strlen("END_PATCH")))												{ cbs.EndPatch_f(writer); depth = 99; }
 
-		else if (sscanf(buf, "BEGIN_PRIMITIVE %d", &ptype) == 1)												cbs.BeginPrimitive_f(ptype, writer);
-		else if (!strncmp(buf, "END_PRIMITIVE", strlen("END_PRIMITIVE")))										cbs.EndPrimitive_f(writer);
-		else if (sscanf(buf,"BEGIN_PATCH %d %lf %lf %d %d", &ptype, &lod_near, &lod_far, &flags, &depth) == 5) 	cbs.BeginPatch_f(ptype, lod_near, lod_far, flags, depth, writer);
-		else if (!strncmp(buf, "END_PATCH", strlen("END_PATCH")))												{ cbs.EndPatch_f(writer); depth = 99; }
-
-		else if (sscanf(buf, "POLYGON_POINT %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7])==depth)			cbs.AddPolygonPoint_f(coords, writer);
-		else if (!strncmp(buf, "BEGIN_WINDING", strlen("BEGIN_WINDING")))					cbs.BeginPolygonWinding_f(writer);
-		else if (!strncmp(buf, "END_WINDING", strlen("END_WINDING")))						cbs.EndPolygonWinding_f(writer);
-		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==3)			cbs.BeginPolygon_f(ptype, param, depth, writer);
-		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
-		else if (!strncmp(buf, "END_POLYGON", strlen("END_POLYGON")))						cbs.EndPolygon_f(writer);
+		else if (sscanf(ptr, "POLYGON_POINT %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7])==depth)			cbs.AddPolygonPoint_f(coords, writer);
+		else if (!strncmp(ptr, "BEGIN_WINDING", strlen("BEGIN_WINDING")))					cbs.BeginPolygonWinding_f(writer);
+		else if (!strncmp(ptr, "END_WINDING", strlen("END_WINDING")))						cbs.EndPolygonWinding_f(writer);
+		else if (sscanf(ptr,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==3)			cbs.BeginPolygon_f(ptype, param, depth, writer);
+		else if (sscanf(ptr,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
+		else if (!strncmp(ptr, "END_POLYGON", strlen("END_POLYGON")))						cbs.EndPolygon_f(writer);
 
 
-		else if (sscanf(buf, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
-		else if (sscanf(buf, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
-		else if (sscanf(buf, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
-		else if (sscanf(buf, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
+		else if (sscanf(ptr, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
+		else if (sscanf(ptr, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
+		else if (sscanf(ptr, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
+		else if (sscanf(ptr, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
 
-		else if (sscanf(buf,"BEGIN_SEGMENT_CURVED %d %d %d %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &nodeid, &coords[0],&coords[1],&coords[2],&coords[3],&coords[4],&coords[5]) == 9) cbs.BeginSegment_f(ptype, subtype, nodeid, coords, true, writer);
-		else if (sscanf(buf,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
-		else if (sscanf(buf,"SHAPE_POINT_CURVED %d %lf %lf %lf %lf %lf %lf ", &nodeid, &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 7) cbs.EndSegment_f(nodeid, coords, true, writer);
+		else if (sscanf(ptr,"BEGIN_SEGMENT_CURVED %d %d %d %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &nodeid, &coords[0],&coords[1],&coords[2],&coords[3],&coords[4],&coords[5]) == 9) cbs.BeginSegment_f(ptype, subtype, nodeid, coords, true, writer);
+		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
+		else if (sscanf(ptr,"SHAPE_POINT_CURVED %d %lf %lf %lf %lf %lf %lf ", &nodeid, &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 7) cbs.EndSegment_f(nodeid, coords, true, writer);
 	}
 
 	if (strcmp(inFileName, "-"))
