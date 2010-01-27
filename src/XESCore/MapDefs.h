@@ -655,35 +655,6 @@ static void	InsetPolygon_2(
 	}
 }
 
-struct	CoordTranslator_2 {
-	Point_2	mSrcMin;
-	Point_2	mSrcMax;
-	Point_2	mDstMin;
-	Point_2	mDstMax;
-
-	Point_2	Forward(const Point_2& input) const;
-	Point_2	Reverse(const Point_2& input) const;
-};
-
-
-
- inline Point_2	CoordTranslator_2::Forward(const Point_2& input) const
-{
-	return Point_2(
-				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
-				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
-}
- inline Point_2	CoordTranslator_2::Reverse(const Point_2& input) const
-{
-	return Point_2(
-				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
-				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
-}
-
-inline Point_2	ben2cgal(const Point2& p) { return Point_2(p.x(),p.y()); }
-inline Point2	cgal2ben(const Point_2& p) { return Point2(CGAL::to_double(p.x()),CGAL::to_double(p.y())); }
-inline Segment2	cgal2ben(const Segment_2& s) { return Segment2(cgal2ben(s.source()),cgal2ben(s.target())); }
-
 
 inline bool operator<(const Face_handle& lhs, const Face_handle& rhs)			{	return &*lhs < &*rhs;	}
 inline bool operator<(const Vertex_handle& lhs, const Vertex_handle& rhs)		{	return &*lhs < &*rhs;	}
