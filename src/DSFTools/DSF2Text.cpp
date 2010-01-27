@@ -298,8 +298,12 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		if (sscanf(ptr, "PROPERTY sim/south %f", &south) == 1) ++props_got;
 		sscanf(ptr, "DIVISIONS %d", &divisions);
 
-		if (strcmp(ptr,"DIVISIONS") != 0 &&
-		   strcmp(ptr,"PROPERTY") != 0 &&
+		if (strncmp(ptr,"DIVISIONS",9) != 0 &&
+		   strncmp(ptr,"PROPERTY",8) != 0 &&
+		   strncmp(ptr,"I",1) != 0 &&
+		   strncmp(ptr,"A",1) != 0 &&
+		   strncmp(ptr,"800",3) != 0 &&
+		   strncmp(ptr,"DSF2TEXT",8) != 0 &&
 		   ptr[0] != 0)
 			break;
 	}
