@@ -291,6 +291,9 @@
 		D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681990B8AC9C200091AFC /* WED_GISChain.cpp */; };
 		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
+		D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
+		D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
+		D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
 		D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */; };
 		D653D6861054371B00A502FF /* WED_Routing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D653D6851054371B00A502FF /* WED_Routing.cpp */; };
@@ -1115,6 +1118,8 @@
 		D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPolygon.cpp; sourceTree = "<group>"; };
 		D63681A00B8ACA2600091AFC /* WED_GISComposite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISComposite.h; sourceTree = "<group>"; };
 		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
+		D64A0E83110F820A006172C3 /* ObjPlacement2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjPlacement2.h; sourceTree = "<group>"; };
+		D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement2.cpp; sourceTree = "<group>"; };
 		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
 		D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_MemoryHog.cpp; sourceTree = "<group>"; };
 		D6536E950C3D7E3500005385 /* ITexMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITexMgr.h; sourceTree = "<group>"; };
@@ -3129,6 +3134,8 @@
 				D6DBA1E110572F33004E1089 /* AptRouting.cpp */,
 				D6DBA33910576739004E1089 /* BugTest.h */,
 				D6DBA33A10576739004E1089 /* BugTest.cpp */,
+				D64A0E83110F820A006172C3 /* ObjPlacement2.h */,
+				D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
@@ -3893,6 +3900,7 @@
 				D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */,
 				D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */,
+				D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4053,6 +4061,7 @@
 				D6DBA2A210574180004E1089 /* AptAlgs.cpp in Sources */,
 				D6E941DC10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DD10DC717300192A02 /* MapRaster.cpp in Sources */,
+				D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4153,6 +4162,7 @@
 				D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */,
 				D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */,
+				D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
