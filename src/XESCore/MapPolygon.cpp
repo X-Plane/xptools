@@ -52,6 +52,73 @@ void	PolygonFromFace(Pmwx::Face_const_handle in_face, Polygon_with_holes_2& out_
 	out_ps = Polygon_with_holes_2(outer_ccb,holes.begin(),holes.end());
 }
 
+static void PolygonFromFaceExCCB(		
+			Pmwx::Halfedge_const_handle	in_edge,
+			Polygon_2&					out_ccb, 
+			RingInset_t *				out_insets, 
+			Inset_f						inset_f, 
+			CoordTranslator_2 *			xform,
+			Simplify_f					simplify_f)
+{
+	Pmwx::Halfedge_const_handle circ = in_edge;
+	do {
+	
+		Pmwx::Halfedge_const_handle next = circ->next();
+//		while(next->twin()->face() != next->face() && in_faces.count(next->twin()->face()))
+//			next = next->twin()->next();
+		
+		if(!simplify_f || !simplify_f(circ,next))
+		{
+			if(xform)
+				out_ccb.push_back(xform->Forward(circ->target()->point()));
+			else
+				out_ccb.push_back(				 circ->target()->point() );
+			
+			if(out_insets && inset_f)
+				out_insets->push_back(inset_f(next));				
+		}
+		
+		circ = next;		
+	
+	} while(circ != in_edge);
+}
+				
+
+
+void PolygonFromFaceEx(
+			Pmwx::Face_const_handle		in_face, 
+			Polygon_with_holes_2&		out_ps, 
+			PolyInset_t *				out_insets, 
+			Inset_f						func, 
+			CoordTranslator_2 *			xform,
+			Simplify_f					simplify)
+{
+	Polygon_2			outer_ccb;
+	vector<Polygon_2>	holes;
+
+	if(out_insets)
+		out_insets->push_back(RingInset_t());
+
+	PolygonFromFaceExCCB(in_face->outer_ccb(), outer_ccb, out_insets ? &out_insets->back() : NULL, func, xform, simplify);
+
+	for(Pmwx::Hole_const_iterator h = (in_face)->holes_begin(); h != (in_face)->holes_end(); ++h)
+	{
+		if(out_insets)
+			out_insets->push_back(RingInset_t());
+
+		holes.push_back(Polygon_2());
+
+		PolygonFromFaceExCCB(*h, holes.back(), out_insets ? &out_insets->back() : NULL, func, xform, simplify);
+	}
+	out_ps = Polygon_with_holes_2(outer_ccb,holes.begin(),holes.end());
+
+}
+
+
+
+
+
+
 void	MapPolygonForward(Polygon_2& io_poly, const CoordTranslator_2& translator)
 {
 	for(Polygon_2::Vertex_iterator v = io_poly.vertices_begin(); v != io_poly.vertices_end(); ++v)
