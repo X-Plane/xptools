@@ -182,7 +182,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, true, ConsoleProgressFunc);
 
 	// -zoning
-	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_Slope],sApts,ConsoleProgressFunc);
+	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_Slope],sApts,ConsoleProgressFunc);
 
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
