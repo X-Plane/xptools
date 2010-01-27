@@ -29,16 +29,22 @@
 #include "GISUtils.h"
 #include "ObjTables.h"
 #include "ParamDefs.h"
+#include "MapAlgs.h"
+#include "PolyRasterUtils.h"
 #include "AptDefs.h"
+#include "ObjPlacement2.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
 
+// This is how big a block can be and still "grow" sky scrapers from one big one, in square meters.  The idea is to keep 
+// a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
 
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
+				const DEMGeo&		inForest,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
 				ProgressFunc		inProg)
@@ -56,6 +62,7 @@ void	ZoneManMadeAreas(
 	 *****************************************************************************/
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
+	if(!face->data().IsWater())
 	{
 		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
 
@@ -72,6 +79,129 @@ void	ZoneManMadeAreas(
 				max_height = max(max_height, feat->mParams[pf_Height]);
 			}
 		}
+
+		PolyRasterizer	r;
+		int x, y, x1, x2;
+		y = SetupRasterizerForDEM(face, inLanduse, r);
+		r.StartScanline(y);
+		float count = 0, total_forest = 0, total_urban = 0;
+		while (!r.DoneScan())
+		{
+			while (r.GetRange(x1, x2))
+			{
+				for (x = x1; x < x2; ++x)
+				{
+					float e = inLanduse.get(x,y);
+					float f = inForest.get(x,y);
+					count++;
+					if(f != NO_VALUE)
+						++total_forest;
+					switch((int) e) { 
+					#define URBAN(x) total_urban = max(total_urban,x); break;
+					case lu_globcover_INDUSTRY:					
+					case lu_globcover_INDUSTRY_SQUARE:			URBAN(1.0f);
+					case lu_globcover_URBAN_SQUARE_HIGH:
+					case lu_globcover_URBAN_HIGH:				URBAN(0.8f);
+					case lu_globcover_URBAN_SQUARE_MEDIUM:
+					case lu_globcover_URBAN_MEDIUM:				URBAN(0.6f);
+					case lu_globcover_URBAN_SQUARE_LOW:
+					case lu_globcover_URBAN_LOW:				URBAN(0.4f);
+					case lu_globcover_URBAN_SQUARE_TOWN:
+					case lu_globcover_URBAN_TOWN:				URBAN(0.2f);
+					case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+					case lu_globcover_URBAN_CROP_TOWN:			URBAN(0.1f);
+					}					
+				}
+			}
+			++y;
+			if (y >= inLanduse.mHeight) break;
+			r.AdvanceScanline(y);
+		}
+		
+		if(count == 0)
+		{
+			Point2 any = cgal2ben(face->outer_ccb()->source()->point());
+			float e = inLanduse.xy_nearest(any.x(),any.y());
+			float f = inForest.xy_nearest(any.x(),any.y());
+
+					count++;
+					if(f != NO_VALUE)
+						++total_forest;
+					switch((int) e) { 
+					#define URBAN(x) total_urban = max(total_urban,x); break;
+					case lu_globcover_INDUSTRY:					
+					case lu_globcover_INDUSTRY_SQUARE:			URBAN(1.0f);
+					case lu_globcover_URBAN_SQUARE_HIGH:
+					case lu_globcover_URBAN_HIGH:				URBAN(0.8f);
+					case lu_globcover_URBAN_SQUARE_MEDIUM:
+					case lu_globcover_URBAN_MEDIUM:				URBAN(0.6f);
+					case lu_globcover_URBAN_SQUARE_LOW:
+					case lu_globcover_URBAN_LOW:				URBAN(0.4f);
+					case lu_globcover_URBAN_SQUARE_TOWN:
+					case lu_globcover_URBAN_TOWN:				URBAN(0.2f);
+					case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+					case lu_globcover_URBAN_CROP_TOWN:			URBAN(0.1f);
+					}					
+
+
+		}
+		
+//		if(count != 0.0)
+//		{
+//			face->data().mParams[af_Urbanized] = total_urban / count;
+//			face->data().mParams[af_Forestized] = total_forest / count;
+///		}
+
+		Polygon_with_holes_2	ra;
+
+		GetTotalAreaForFaceSet(face,ra);
+
+
+			
+		bool has_holes = ra.has_holes();
+
+		int num_sides = ra.outer_boundary().size();
+		
+		face->data().mParams[af_OriginCode] = num_sides;
+
+
+		if(count)
+		{
+//			total_urban /= count;
+//			total_forest /= count;
+		} else total_urban = total_forest = 0.0;
+		
+		if (mfam > (300 * 300))
+		{
+				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Large_Industrial;
+			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Large_High;
+			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Large_Medium;
+			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Large_Low;
+			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Large_Town;
+			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Large_Crop;
+			else							face->data().mParams[af_Zoning] = zoning_Large_None;
+		}
+		else if (has_holes || num_sides > 4)
+		{
+				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Irregular_Industrial;
+			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Irregular_High;
+			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Irregular_Medium;
+			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Irregular_Low;
+			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Irregular_Town;
+			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Irregular_Crop;
+			else							face->data().mParams[af_Zoning] = zoning_Irregular_None;
+		}
+		else
+		{
+				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Urban_Industrial;
+			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Urban_High;
+			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Urban_Medium;
+			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Urban_Low;
+			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Urban_Town;
+			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Urban_Crop;
+			else							face->data().mParams[af_Zoning] = zoning_Urban_None;
+		}
+
 		face->data().mParams[af_HeightObjs] = max_height;
 
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
@@ -109,6 +239,8 @@ void	ZoneManMadeAreas(
 		}
 */
 	}
+
+
 
 	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
 #if 0
@@ -178,6 +310,9 @@ void	ZoneManMadeAreas(
 	}
 	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
 #endif
+
+
+
 	PROGRESS_START(inProg, 2, 3, "Checking Water")
 	ctr = 0;
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)

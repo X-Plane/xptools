@@ -40,6 +40,7 @@ struct	DEMGeo;
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
+				const DEMGeo&		inForest,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
 				ProgressFunc		inProg);
