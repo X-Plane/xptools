@@ -25,26 +25,41 @@
 
 static int sDSF2TEXT_CoordDepth;
 
+static int offset_ter = 0;
+static int offset_obj = 0;
+static int offset_pol = 0;
+static int offset_net = 0;
+
+static int count_ter = 0;
+static int count_obj = 0;
+static int count_pol = 0;
+static int count_net = 0;
+
+
 void DSF2Text_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
+	++count_ter;
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "TERRAIN_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
+	++count_obj;
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "OBJECT_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
+	++count_pol;
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "POLYGON_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
+	++count_net;
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "NETWORK_DEF %s\n", inPartialPath);
 }
@@ -65,7 +80,7 @@ void DSF2Text_BeginPatch(
 {
 	FILE * fi = (FILE *) inRef;
 	sDSF2TEXT_CoordDepth = inCoordDepth;
-	fprintf(fi, "BEGIN_PATCH %d %lf %lf %d %d\n", inTerrainType, inNearLOD, inFarLOD, inFlags, inCoordDepth);
+	fprintf(fi, "BEGIN_PATCH %d %lf %lf %d %d\n", inTerrainType + offset_ter, inNearLOD, inFarLOD, inFlags, inCoordDepth);
 }
 
 void DSF2Text_BeginPrimitive(
@@ -107,8 +122,10 @@ void DSF2Text_AddObject(
 	double			inRotation,
 	void *			inRef)
 {
+	if(inObjectType >= count_obj)
+		printf("WARNING: out of bounds obj.\n");
 	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "OBJECT %d %.8lf %.8lf %lf\n", inObjectType, inCoordinates[0], inCoordinates[1], inRotation);
+	fprintf(fi, "OBJECT %d %.8lf %.8lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
 }
 
 void DSF2Text_BeginSegment(
@@ -121,7 +138,7 @@ void DSF2Text_BeginSegment(
 {
 	FILE * fi = (FILE *) inRef;
 	if (!inCurved)
-		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
+		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.8lf %.8lf %.8lf\n", inNetworkType + offset_net, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
 		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
@@ -169,7 +186,7 @@ void DSF2Text_BeginPolygon(
 {
 	sDSF2TEXT_CoordDepth = inDepth;
 	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "BEGIN_POLYGON %d %d %d\n", inPolygonType, inParam, inDepth);
+	fprintf(fi, "BEGIN_POLYGON %d %d %d\n", inPolygonType + offset_pol, inParam, inDepth);
 }
 
 void DSF2Text_BeginPolygonWinding(
@@ -203,15 +220,15 @@ void DSF2Text_EndPolygon(
 	fprintf(fi, "END_POLYGON\n");
 }
 
-bool DSF2Text(const char * inDSF, const char * inFileName)
+bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 {
 	FILE * fi = strcmp(inFileName, "-") ? fopen(inFileName, "w") : stdout;
 	if (fi == NULL) return false;
 
 	#if APL
-	fprintf(fi, "A\n800\nDSF2TEXT\n\n#%s\n\n", inDSF);
+	fprintf(fi, "A\n800\nDSF2TEXT\n\n");
 	#elif IBM
-	fprintf(fi, "I\n800\nDSF2TEXT\n\n#%s\n\n", inDSF);
+	fprintf(fi, "I\n800\nDSF2TEXT\n\n");
 	#endif
 
 	DSFCallbacks_t	cbs;
@@ -236,10 +253,25 @@ bool DSF2Text(const char * inDSF, const char * inFileName)
 	cbs.EndPolygon_f				=DSF2Text_EndPolygon				;
 	cbs.NextPass_f					=DSF2Text_NextPass					;
 
+	while(n--)
+	{
+		fprintf(fi,"# file: %s\n\n",*inDSF);
+		int result = DSFReadFile(*inDSF, &cbs, NULL, fi);
 
-	int result = DSFReadFile(inDSF, &cbs, NULL, fi);
+		fprintf(fi, "# Result code: %d\n", result);
 
-	fprintf(fi, "# Result code: %d\n", result);
+		printf("File %s had %d ter, %d obj, %d pol, %d net.\n", *inDSF,
+			count_ter, count_obj,count_pol,count_net);
+
+		++inDSF;
+		
+		offset_ter += count_ter;
+		offset_obj += count_obj;
+		offset_pol += count_pol;
+		offset_net += count_net;
+		
+		count_ter = count_obj = count_pol = count_net = 0;
+	}
 
 	if (strcmp(inFileName, "-"))
 		fclose(fi);
@@ -330,7 +362,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 
 	double	coords[10];
 
-	while (fgets(buf, sizeof(buf), fi))
+	do 
 	{
 		char * ptr = strip_and_clean(buf);
 			 if (sscanf(ptr, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
@@ -362,6 +394,8 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %d %lf %lf %lf %lf %lf %lf ", &nodeid, &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 7) cbs.EndSegment_f(nodeid, coords, true, writer);
 	}
+	while(fgets(buf, sizeof(buf), fi));
+
 
 	if (strcmp(inFileName, "-"))
 		fclose(fi);

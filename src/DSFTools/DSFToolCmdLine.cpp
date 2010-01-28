@@ -34,7 +34,7 @@ void AssertShellBail(const char * condition, const char * file, int line)
 	exit(1);
 }
 
-bool DSF2Text(const char * inDSF, const char * inFileName);
+bool DSF2Text(char ** inDSF, int n, const char * inFileName);
 bool Text2DSF(const char * inFileName, const char * inDSF);
 bool ENV2Overlay(const char * inFileName, const char * inDSF);
 
@@ -78,19 +78,16 @@ int main(int argc, char * argv[])
 		{
 			++n;
 			if (n >= argc) goto help;
-			const char * f1 = argv[n];
-			++n;
-			if (n >= argc) goto help;
-			const char * f2 = argv[n];
-
+			
+			const char * f2 = argv[argc-1];
 			if (strcmp(f2,"-")==0)			// If we are directing the DSF text stream to stdout
 				err_fi=stderr;				// then put err msgs to stderr.
 
-			fprintf(err_fi,"Converting %s from DSF to text as %s\n", f1, f2);
-			if (DSF2Text(f1, f2))
-				fprintf(err_fi,"Converted %s to %s\n",f1, f2);
+			fprintf(err_fi,"Converting %s from DSF to text as %s\n", argv[n], f2);
+			if (DSF2Text(argv+n, argc - n - 1, f2))
+				fprintf(err_fi,"Converted %s to %s\n",argv[n], f2);
 			else
-				{ fprintf(err_fi,"ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
+				{ fprintf(err_fi,"ERROR: Error convertiong %s to %s\n", argv[n], f2); exit(1); }
 		}
 
 		if (!strcmp(argv[n], "-text2dsf") ||

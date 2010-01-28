@@ -77,7 +77,7 @@ it is working, but you should see elevated CPU usage.
 
 The syntax for the command line version is:
 
-DSFTool --dsf2text <input dsf> <output text>
+DSFTool --dsf2text <input dsf> [<input dsf>] <output text>
 
 to convert from DSF to text and
 
@@ -98,6 +98,8 @@ Piping is not available for DSF and ENV output files.  When converting to a bina
 file, status messages are sent to stdout and error messages to stderr.  When
 converting to text, all messages are sent to stderr so that piped output is
 strictly the DSF contents.  The result code indicates a successful conversion.
+
+See below to merge two DSF files.
 
 -------------------------------------------------------------------------------
 DSFTool FILE FORMAT
@@ -243,3 +245,34 @@ END_WINDING
 END_POLYGON
 
 	This ends the winding and polygon respectively.
+
+-------------------------------------------------------------------------------
+MERGING TWO DSF FILES
+-------------------------------------------------------------------------------
+
+DSFTool can help you merge the contents of two DSF files.  When you send
+multiple DSF files to text using --dsf2text mode, DSFTool will offset the
+indices for art assets in subsequent files so that they can be rewritten into
+a single file.  
+
+For example, consider two DSF overlays A and B.  Each one contains one object
+(A.obj and B.obj).  When you convert them both to text simultaneously, you will
+get this output:
+
+# A.dsf
+OBJECT_DEF A.obj
+OBJECT 0 <location of object A>
+# B.dsf
+OBJECT_DEF B.obj
+OBJECT 1 <location of object B>
+
+Object B now has index 1 (not 0) because it is the 2nd object among _all_ files.
+
+Once you have this output, to produce a merged DSF, simply consolidate all
+properties to the header of the file.  (Each DSF will come with its own properties
+so you will have a number of duplicates.)
+
+TIP: the sim/require_obj property forces objects of a certain index _and higher_
+to be loaded all of the time.  When merging a DSF with autogen-type objects with
+a DSF with custom scenery, list the custom scenery second, so the highest priority
+objects will have the highest index numbers in the final file.
