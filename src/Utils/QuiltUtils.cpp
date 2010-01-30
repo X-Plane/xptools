@@ -25,6 +25,10 @@
 #include "QuiltUtils.h"
 #include "BitmapUtils.h"
 
+#if MINGW_BUILD
+#define random rand
+#endif
+
 inline unsigned long error_func(const unsigned long * c1, const unsigned long * c2)
 {
 	int r1 = (*c1 & 0xFF000000) >> 24 ;
