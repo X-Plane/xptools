@@ -90,6 +90,7 @@ SOURCES += ./src/XESCore/MeshIO.cpp
 SOURCES += ./src/XESCore/NetPlacement.cpp
 SOURCES += ./src/XESCore/NetTables.cpp
 SOURCES += ./src/XESCore/ObjPlacement.cpp
+SOURCES += ./src/XESCore/ObjPlacement2.cpp
 SOURCES += ./src/XESCore/ObjTables.cpp
 SOURCES += ./src/XESCore/ParamDefs.cpp
 SOURCES += ./src/XESCore/SceneryPackages.cpp

@@ -36,3 +36,4 @@ SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/XPTools/DDSTool.cpp
 SOURCES += ./src/Utils/EndianUtils.c
 SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/QuiltUtils.cpp
