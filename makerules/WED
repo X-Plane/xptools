@@ -9,7 +9,7 @@ DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 FORCEREBUILD_SUFFIX := _wed
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -nodefaultlibs
+LDFLAGS		+= -nodefaultlibs -rdynamic
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff

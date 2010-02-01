@@ -90,7 +90,7 @@ ifdef PLAT_LINUX
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc -rdynamic
+	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
