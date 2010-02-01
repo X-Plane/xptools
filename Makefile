@@ -313,34 +313,11 @@ endif
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
 libexpat libgmp libmpfr
 
-ifneq ($(gitlibs), 1)
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
 libsquish libdime libshp libexpat libgmp libmpfr
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
-else
-ifeq ($(PLATFORM), Mingw)
-all: ./local$(MULTI_SUFFIX)/.xpt_libs
-./local$(MULTI_SUFFIX)/.xpt_libs:
-	@-rm -rf ./local
-	git clone git://dev.x-plane.com/xptools-libs-win32.git ./local
-endif
-ifeq ($(PLATFORM), Darwin)
-all: ./local$(MULTI_SUFFIX)/.xpt_libs
-./local$(MULTI_SUFFIX)/.xpt_libs:
-	@-rm -rf ./local
-	git clone git://dev.x-plane.com/xptools-libs-macosx.git ./local
-endif
-ifeq ($(PLATFORM), Linux)
-ifeq ($(ARCHITECTURE), x86_64)
-all: ./local$(MULTI_SUFFIX)/.xpt_libs
-./local$(MULTI_SUFFIX)/.xpt_libs:
-	@-rm -rf ./local
-	git clone git://dev.x-plane.com/xptools-libs-linux64.git ./local
-endif
-endif
-endif
 
 clean:
 	@echo "cleaning 3rd-party libraries, removing `pwd`/local"
