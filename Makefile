@@ -504,8 +504,8 @@ libproj: ./local$(MULTI_SUFFIX)/lib/.xpt_libproj
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBPROJ) LDFLAGS=$(LDFLAGS_LIBPROJ) \
 	./configure $(CONF_LIBPROJ) $(BE_QUIET)
-	@$(MAKE) -C "proj-$(VER_LIBPROJ)" $(BE_QUIET)
-	@$(MAKE) -C "proj-$(VER_LIBPROJ)" install $(BE_QUIET)
+	@$(MAKE) -C "proj-$(VER_LIBPROJ)" -j1 $(BE_QUIET)
+	@$(MAKE) -C "proj-$(VER_LIBPROJ)" install -j1 $(BE_QUIET)
 	@-rm -rf proj-$(VER_LIBPROJ)
 	@touch $@
 
