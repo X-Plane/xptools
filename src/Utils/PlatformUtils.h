@@ -78,9 +78,6 @@ int		GetFilePathFromUser(
  *
  */
 void	DoUserAlert(const char * inMsg);
-#if LIN
-int __init_minimalist_gtk(int* argc, char*** argv);
-#endif
 
 /*
  * ShowProgressMessage puts up a dialog box with a progress message.  Calling it

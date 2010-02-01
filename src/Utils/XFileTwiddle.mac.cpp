@@ -25,9 +25,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include "MacSpec.h"
-#if !DEV
-what are we doing with this?
-#endif
+//#if !DEV
+//what are we doing with this?
+//#endif
+// janos says: introduce something new and get rid of this
+// installer stuff. we need to revamp the file-io abstraction anyway as we
+// need to replace deprecated FSSpec related functions, since they aren't
+// available on x86_64 MacOS anymore
 #include "../Installer/ErrMsg.h"
 #include <string>
 #include "PlatformUtils.h"

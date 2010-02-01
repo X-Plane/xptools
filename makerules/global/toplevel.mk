@@ -100,7 +100,7 @@ ifdef PLAT_DARWIN
 	CXXFLAGS	:= -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	CFLAGS		:= -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	LDFLAGS		:= -mmacosx-version-min=10.5
-	MACARCHS	:= -arch x86_64 -arch i386
+	MACARCHS	:= -arch i386
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
