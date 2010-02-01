@@ -501,6 +501,10 @@ libtiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libtiff
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBTIFF)"
+	@cp patches/0001-libtiff-fix-types.patch \
+	"tiff-$(VER_LIBTIFF)" && cd "tiff-$(VER_LIBTIFF)" && \
+	patch -p1 < ./0001-libtiff-fix-types.patch \
+	$(BE_QUIET)
 	@cd "tiff-$(VER_LIBTIFF)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBTIFF) LDFLAGS=$(LDFLAGS_LIBTIFF) \
@@ -509,11 +513,6 @@ libtiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libtiff
 	@$(MAKE) -C "tiff-$(VER_LIBTIFF)" install $(BE_QUIET)
 	@-rm -rf tiff-$(VER_LIBTIFF)
 	@touch $@
-
-#	@cp patches/0001-libtiff-dont-use-typedefs.patch \
-#	"tiff-$(VER_LIBTIFF)" && cd "tiff-$(VER_LIBTIFF)" && \
-#	patch -p1 < ./0001-libtiff-dont-use-typedefs.patch \
-#	$(BE_QUIET)
 
 libproj: ./local$(MULTI_SUFFIX)/lib/.xpt_libproj
 ./local$(MULTI_SUFFIX)/lib/.xpt_libproj:

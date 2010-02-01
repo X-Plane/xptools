@@ -1,7 +1,7 @@
-diff -Naur tiff-4.0.0beta3.org/libtiff/tiff.h tiff-4.0.0beta3/libtiff/tiff.h
---- tiff-4.0.0beta3.org/libtiff/tiff.h	2007-07-11 17:11:58.000000000 +0200
-+++ tiff-4.0.0beta3/libtiff/tiff.h	2009-09-14 05:36:03.000000000 +0200
-@@ -4,23 +4,23 @@
+diff -Naur tiff-4.0.0beta5-org/libtiff/tiff.h tiff-4.0.0beta5/libtiff/tiff.h
+--- tiff-4.0.0beta5-org/libtiff/tiff.h	2007-07-11 17:11:58.000000000 +0200
++++ tiff-4.0.0beta5/libtiff/tiff.h	2010-02-01 10:40:41.000000000 +0100
+@@ -4,29 +4,30 @@
   * Copyright (c) 1988-1997 Sam Leffler
   * Copyright (c) 1991-1997 Silicon Graphics, Inc.
   *
@@ -33,33 +33,40 @@ diff -Naur tiff-4.0.0beta3.org/libtiff/tiff.h tiff-4.0.0beta3/libtiff/tiff.h
   * OF THIS SOFTWARE.
   */
  
-@@ -65,17 +65,17 @@
+ #ifndef _TIFF_
+ #define	_TIFF_
+ 
++#include <stdint.h>
+ #include "tiffconf.h"
+ 
+ /*
+@@ -65,17 +66,17 @@
   * strings              unsigned char*
   */
  
 -typedef TIFF_INT8_T   int8;
 -typedef TIFF_UINT8_T  uint8;
-+#define int8 TIFF_INT8_T
-+#define uint8 TIFF_UINT8_T
++typedef int8_t   int8;
++typedef uint8_t  uint8;
  
 -typedef TIFF_INT16_T  int16;
 -typedef TIFF_UINT16_T uint16;
-+#define int16 TIFF_INT16_T
-+#define uint16 TIFF_UINT16_T
++typedef int16_t  int16;
++typedef uint16_t uint16;
  
 -typedef TIFF_INT32_T  int32;
 -typedef TIFF_UINT32_T uint32;
-+#define int32 TIFF_INT32_T
-+#define uint32 TIFF_UINT32_T
++typedef int32_t  int32;
++typedef uint32_t uint32;
  
 -typedef TIFF_INT64_T  int64;
 -typedef TIFF_UINT64_T uint64;
-+#define int64 TIFF_INT64_T
-+#define uint64 TIFF_UINT64_T
++typedef int64_t  int64;
++typedef uint64_t uint64;
  
  /*
   * Some types as promoted in a variable argument list
-@@ -357,7 +357,7 @@
+@@ -357,7 +358,7 @@
  /* tags 33300-33309 are private tags registered to Pixar */
  /*
   * TIFFTAG_PIXAR_IMAGEFULLWIDTH and TIFFTAG_PIXAR_IMAGEFULLLENGTH
@@ -68,7 +75,7 @@ diff -Naur tiff-4.0.0beta3.org/libtiff/tiff.h tiff-4.0.0beta3/libtiff/tiff.h
   * They reflect the size of the original uncropped image.
   * The TIFFTAG_XPOSITION and TIFFTAG_YPOSITION can be used
   * to determine the position of the smaller image in the larger one.
-@@ -400,7 +400,7 @@
+@@ -400,7 +401,7 @@
  /* tags 34232-34236 are private tags registered to Texas Instruments */
  #define TIFFTAG_FRAMECOUNT              34232   /* Sequence Frame Count */
  /* tag 34377 is private tag registered to Adobe for PhotoShop */
@@ -77,7 +84,7 @@ diff -Naur tiff-4.0.0beta3.org/libtiff/tiff.h tiff-4.0.0beta3/libtiff/tiff.h
  /* tags 34665, 34853 and 40965 are documented in EXIF specification */
  #define TIFFTAG_EXIFIFD			34665	/* Pointer to EXIF private directory */
  /* tag 34750 is a private tag registered to Adobe? */
-@@ -440,7 +440,7 @@
+@@ -440,7 +441,7 @@
  #define TIFFTAG_DEFAULTSCALE		50718	/* &default scale factors */
  #define TIFFTAG_DEFAULTCROPORIGIN	50719	/* &origin of the final image
  						   area */
