@@ -99,7 +99,7 @@ ifdef PLAT_DARWIN
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
 	CXXFLAGS	:= -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math
 	CFLAGS		:= -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math
-	LDFLAGS		:= -mmacosx-version-min=10.5
+	LDFLAGS		:= -mmacosx-version-min=10.5 -static-libgcc
 	MACARCHS	:= -arch i386
 	STRIPFLAGS	:= -x
 endif

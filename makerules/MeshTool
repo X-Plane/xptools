@@ -8,7 +8,7 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
 LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread -lpthread
-FORCEREBUILD_SUFFIX := _mt
+#FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static

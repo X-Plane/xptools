@@ -5,7 +5,7 @@
 TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
-FORCEREBUILD_SUFFIX := _xg
+#FORCEREBUILD_SUFFIX := _xg
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs

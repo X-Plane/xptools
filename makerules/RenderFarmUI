@@ -32,6 +32,24 @@ LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lboost_thread
 WIN_RESOURCES	+= ./src/WEDResources/rfui.rc
 endif #PLAT_MINGW
 
+ifdef PLAT_DARWIN
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
+LIBS		:= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libCGAL_Core.a
+LIBS		+= ./libs/local/lib/libboost_thread.a
+LIBS		+= ./libs/local/lib/libgmp.a
+LIBS		+= ./libs/local/lib/libgmpxx.a
+LIBS		+= ./libs/local/lib/libsquish.a
+LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libproj.a
+LIBS		+= ./libs/local/lib/libtiff.a
+LIBS		+= ./libs/local/lib/libjpeg.a
+LIBS		+= ./libs/local/lib/libpng.a
+LIBS		+= ./libs/local/lib/libfreetype.a
+LIBS		+= ./libs/local/lib/libexpat.a
+LIBS		+= ./libs/local/lib/libz.a
+endif #PLAT_DARWIN
 
 ##
 # sources
