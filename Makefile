@@ -546,8 +546,8 @@ libgeotiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libgeotiff
 	CFLAGS=$(CFLAGS_GEOTIFF) LDFLAGS="$(LDFLAGS_GEOTIFF)" \
 	LD_SHARED="$(LD_GEOTIFF)" AR="$(AR_GEOTIFF)" \
 	./configure $(CONF_GEOTIFF) $(BE_QUIET)
-	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" $(BE_QUIET)
-	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" install $(BE_QUIET)
+	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" -j1 $(BE_QUIET)
+	-@$(MAKE) -C "libgeotiff-$(VER_GEOTIFF)" install -j1 $(BE_QUIET)
 	@-rm -rf libgeotiff-$(VER_GEOTIFF)
 	@-rm -rf ./local/lib/libgeotiff.so*
 	@touch $@
