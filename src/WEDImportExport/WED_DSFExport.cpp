@@ -47,6 +47,10 @@
 #include "WED_GISUtils.h"
 #include "MathUtils.h"
 
+// This is the number of sub-buckets to build in the DSF writer...the larger, the more precise the DSF, but the more likely
+// some big item goes across buckets and we lose precision.
+#define DSF_DIVISIONS 32
+
 static bool g_dropped_pts = false;;
 
 struct	DSF_ResourceTable {
@@ -601,7 +605,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	DSFCallbacks_t	cbs;
 	char	prop_buf[256];
 
-	writer = DSFCreateWriter(x,y,x+1,y+1, -32768.0,32767.0,8);
+	writer = DSFCreateWriter(x,y,x+1,y+1, -32768.0,32767.0,DSF_DIVISIONS);
 	DSFGetWriterCallbacks(&cbs);
 
 	sprintf(prop_buf, "%d", (int) x  );		cbs.AcceptProperty_f("sim/west", prop_buf, writer);
