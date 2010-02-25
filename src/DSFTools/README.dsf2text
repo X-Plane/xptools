@@ -26,6 +26,7 @@ Version History
 							and break up groups of tris that are too numerous.
 							Vector roads are not reversed as part of optimization - this helps traffic flow.
 							DSF2Text will recognize the ST coordinates for draped polygons.
+							Precision increased to 9 digits.
 								 
 -------------------------------------------------------------------------------
 OVERVIEW

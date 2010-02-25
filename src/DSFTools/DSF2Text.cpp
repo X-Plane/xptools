@@ -98,7 +98,7 @@ void DSF2Text_AddPatchVertex(
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "PATCH_VERTEX");
 	for (int n = 0; n < sDSF2TEXT_CoordDepth; ++n)
-		fprintf(fi, " %.8lf", inCoordinates[n]);
+		fprintf(fi, " %.9lf", inCoordinates[n]);
 	fprintf(fi, "\n");
 }
 
@@ -125,7 +125,7 @@ void DSF2Text_AddObject(
 	if(inObjectType >= count_obj)
 		printf("WARNING: out of bounds obj.\n");
 	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "OBJECT %d %.8lf %.8lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
+	fprintf(fi, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
 }
 
 void DSF2Text_BeginSegment(
@@ -138,10 +138,10 @@ void DSF2Text_BeginSegment(
 {
 	FILE * fi = (FILE *) inRef;
 	if (!inCurved)
-		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.8lf %.8lf %.8lf\n", inNetworkType + offset_net, inNetworkSubtype, inStartNodeID,
+		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.9lf %.9lf %.9lf\n", inNetworkType + offset_net, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
+		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
@@ -153,9 +153,9 @@ void DSF2Text_AddSegmentShapePoint(
 {
 	FILE * fi = (FILE *) inRef;
 	if (!inCurved)
-		fprintf(fi, "SHAPE_POINT %.8lf %.8lf %.8lf\n", inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+		fprintf(fi, "SHAPE_POINT %.9lf %.9lf %.9lf\n", inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "SHAPE_POINT_CURVED %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],
+		fprintf(fi, "SHAPE_POINT_CURVED %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
 
@@ -167,9 +167,9 @@ void DSF2Text_EndSegment(
 {
 	FILE * fi = (FILE *) inRef;
 	if (!inCurved)
-		fprintf(fi, "END_SEGMENT %d %.8lf %.8lf %.8lf\n", inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+		fprintf(fi, "END_SEGMENT %d %.9lf %.9lf %.9lf\n", inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "END_SEGMENT_CURVED %d %.8lf %.8lf %.8lf %.8lf %.8lf %.8lf\n",inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2],
+		fprintf(fi, "END_SEGMENT_CURVED %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
 
@@ -202,7 +202,7 @@ void DSF2Text_AddPolygonPoint(
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "POLYGON_POINT");
 	for (int n = 0; n < sDSF2TEXT_CoordDepth; ++n)
-		fprintf(fi, " %.8lf", inCoordinates[n]);
+		fprintf(fi, " %.9lf", inCoordinates[n]);
 	fprintf(fi, "\n");
 }
 

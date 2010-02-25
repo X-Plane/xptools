@@ -94,34 +94,8 @@
 
 	TOKEN(af_WaterArea)				// square area in sq meters
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
-
-	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?
-	
+	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?	
 	TOKEN(af_Zoning)
-		TOKEN(zoning_Large_Industrial)
-		TOKEN(zoning_Large_High)
-		TOKEN(zoning_Large_Medium)
-		TOKEN(zoning_Large_Low)
-		TOKEN(zoning_Large_Town)
-		TOKEN(zoning_Large_Crop)
-		TOKEN(zoning_Large_None)
-
-		TOKEN(zoning_Irregular_Industrial)
-		TOKEN(zoning_Irregular_High)
-		TOKEN(zoning_Irregular_Medium)
-		TOKEN(zoning_Irregular_Low)
-		TOKEN(zoning_Irregular_Town)
-		TOKEN(zoning_Irregular_Crop)
-		TOKEN(zoning_Irregular_None)
-
-
-		TOKEN(zoning_Urban_Industrial)
-		TOKEN(zoning_Urban_High)
-		TOKEN(zoning_Urban_Medium)
-		TOKEN(zoning_Urban_Low)
-		TOKEN(zoning_Urban_Town)
-		TOKEN(zoning_Urban_Crop)
-		TOKEN(zoning_Urban_None)
 
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.

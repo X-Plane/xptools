@@ -88,13 +88,13 @@
 #define DEBUG_PRINT_NORMALS 0
 
 // Print height at all 3 corners of tri under mouse
-#define DEBUG_PRINT_CORNERS 1
+#define DEBUG_PRINT_CORNERS 0
 
 // Print water params of tri under mouse
 #define DEBUG_PRINT_WAVES 0
 
 // Print input parameters used to pick LU rule for tri under mouse
-#define DEBUG_PRINT_TRI_PARAMS 0
+#define DEBUG_PRINT_TRI_PARAMS 1
 
 // Print out forest type
 #define DEBUG_PRINT_FOREST_TYPE 0
@@ -1435,14 +1435,10 @@ char * RF_MapView::MonitorCaption(void)
 #endif
 
 #if DEBUG_PRINT_CORNERS
-		n += sprintf(buf+n,"%.0f,%.0f,%.0f (err %f at %d,%d) on 0x%08x",
+		n += sprintf(buf+n,"%.0f,%.0f,%.0f ",
 						recent->vertex(0)->info().height,
 						recent->vertex(1)->info().height,
-						recent->vertex(2)->info().height,
-						recent->info().insert_err,
-						recent->info().insert_x,
-						recent->info().insert_y,
-						&*recent);
+						recent->vertex(2)->info().height);
 #endif
 
 #if DEBUG_PRINT_WAVES

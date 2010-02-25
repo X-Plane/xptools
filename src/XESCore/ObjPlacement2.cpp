@@ -25,6 +25,7 @@
 #include "NetTables.h"
 #include "MapPolygon.h"
 
+
 // Given a raod segment, return the widest type - this is the one we must use for insetting.
 static int	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 {

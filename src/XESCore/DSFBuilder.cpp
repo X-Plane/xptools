@@ -608,6 +608,11 @@ bool StripSoft(string& n)
 		n.erase(n.size()-5,5);
 		return true;
 	}
+	if(n.size() > 5 && n.substr(n.size()-5) == "_hard")
+	{
+		n.erase(n.size()-5,5);
+		return true;
+	}
 	return false;
 }
 
@@ -624,7 +629,7 @@ string		get_terrain_name(int composite)
 	{
 		if(IsCustom(composite))
 		{
-			if(IsCustomOverWaterSoft(composite))
+			if(IsCustomOverWaterAny(composite))
 			{
 				string n=FetchTokenString(composite);
 				StripSoft(n);

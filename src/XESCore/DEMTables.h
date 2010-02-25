@@ -73,6 +73,7 @@ enum shader_t {
 struct	NaturalTerrainRule_t {
 	// RULES
 	int				terrain;	//	e.g. natural_Terrain
+	int				zoning;
 	int				landuse;
 	int				climate;
 	float			elev_min;
@@ -108,8 +109,8 @@ struct	NaturalTerrainRule_t {
 };
 
 struct CliffInfo_t {
-	float			hill_res;
-	float			cliff_res;
+	Point2			hill_res;
+	Point2			cliff_res;
 	float			hill_angle1;
 	float			hill_angle2;
 	float			cliff_angle1;
@@ -129,7 +130,7 @@ struct	NaturalTerrainInfo_t {
 	// 2-D texturing common to pretty much everything.
 	string			base_tex;
 	string			lit_tex;
-	float			base_res;
+	Point2			base_res;
 	string			border_tex;			
 	string			compo_tex;		/// ALL modes that can have a second texture jam it here.
 
@@ -163,6 +164,7 @@ extern	NaturalTerrainInfoMap			gNaturalTerrainInfo;
 // This returns a rule NAME
 int		FindNaturalTerrain(
 				int		terrain,
+				int		zoning,
 				int 	landuse,
 //				int 	climate,
 //				float 	elevation,
@@ -275,7 +277,7 @@ extern	string	gReplacementClimate;
 extern 	string	gReplacementRoads;
 
 void	LoadDEMTables(void);
-void	CheckDEMRuleCoverage(ProgressFunc func);
+//void	CheckDEMRuleCoverage(ProgressFunc func);
 void	GetNaturalTerrainColor(int terrain, float rgb[3]);
 
 /************************************************************************

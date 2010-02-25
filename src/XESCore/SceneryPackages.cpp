@@ -126,7 +126,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		if (!n->second.lit_tex.empty())
 			fprintf(ter, "LIT_TEX %s" CRLF, n->second.lit_tex.c_str());
 		fprintf(ter, "BORDER_TEX %s" CRLF, n->second.border_tex.c_str());
-		fprintf(ter, "PROJECTED %d %d" CRLF, (int) n->second.base_res, (int) n->second.base_res);
+		fprintf(ter, "PROJECTED %d %d" CRLF, (int) n->second.base_res.x(), (int) n->second.base_res.y());
 
 		dir_path = string(FetchTokenString(n->first)) + ".ter";
 		only_dir(dir_path);
@@ -146,15 +146,13 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		case shader_slope:	
 		case shader_slope2:	
 			fprintf(ter, "AUTO_SLOPE" CRLF);
-			fprintf(ter,"AUTO_SLOPE_HILL %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res, n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
-			fprintf(ter,"AUTO_SLOPE_CLIFF %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res, n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_HILL %d %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res.x(), (int) n->second.cliff_info.hill_res.y(), n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
+			fprintf(ter,"AUTO_SLOPE_CLIFF %d %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res.x(), (int) n->second.cliff_info.cliff_res.y(), n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
 			imageFiles.insert(dir_path+n->second.cliff_info.hill_tex);
 			imageFiles.insert(dir_path+n->second.cliff_info.cliff_tex);
 			break;
 		case shader_heading:
-			fprintf(ter, "AUTO_SLOPE" CRLF);
-			fprintf(ter,"AUTO_SLOPE_HILL %d -10 -5 %s" CRLF, (int) n->second.base_res, n->second.base_tex.c_str());
-			fprintf(ter,"AUTO_SLOPE_CLIFF %d 80 85 %s" CRLF, (int) n->second.base_res, n->second.base_tex.c_str());
+			fprintf(ter, "AUTO_HEADING" CRLF);
 			break;
 		case  shader_normal:
 			if(!n->second.compo_tex.empty())
@@ -203,7 +201,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		if (!p->second.lit_tex.empty())
 			fprintf(pol, "TEXTURE_LIT %s" CRLF, p->second.lit_tex.c_str());
 
-		fprintf(pol, "SCALE %d %d" CRLF, (int) p->second.base_res, (int) p->second.base_res);
+		fprintf(pol, "SCALE %d %d" CRLF, (int) p->second.base_res.x(), (int) p->second.base_res.y());
 		fprintf(pol, "NO_ALPHA" CRLF);
 		fprintf(pol, "SURFACE dirt" CRLF);
 		fprintf(pol, "LAYER_GROUP airports -1" CRLF);
@@ -248,7 +246,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			}
 
 			string path_as_png(path);	path_as_png.erase(path_as_png.length()-3,3);	path_as_png.insert(path_as_png.length(),"png");
-			string path_as_dds(path);	path_as_png.erase(path_as_png.length()-3,3);	path_as_png.insert(path_as_png.length(),"dds");
+			string path_as_dds(path);	path_as_dds.erase(path_as_dds.length()-3,3);	path_as_dds.insert(path_as_dds.length(),"dds");
 
 			if (!FILE_exists(path_as_png.c_str()))
 			if (!FILE_exists(path_as_dds.c_str()))

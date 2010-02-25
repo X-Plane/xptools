@@ -513,7 +513,13 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->data().mAreaFeature.mFeatType));
 		}
 
+		if(the_face->data().GetZoning() != NO_VALUE)
+		{
+			n += sprintf(buf+n, "Zoning:%s ",FetchTokenString(the_face->data().GetZoning()));
+		}
+
 		for(GISParamMap::iterator p = the_face->data().mParams.begin(); p != the_face->data().mParams.end(); ++p)
+		if(p->first != af_Zoning)
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
 	if (gEdgeSelection.size() > 1)

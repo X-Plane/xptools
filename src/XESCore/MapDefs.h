@@ -283,6 +283,9 @@ public:
 	int							mTemp2;							// Per face temp value
 
 	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
+	int			GetZoning(void) const { GISParamMap::const_iterator i = mParams.find(af_Zoning); return (i == mParams.end()) ? NO_VALUE : i->second; }
+	void		SetZoning(int z) { mParams[af_Zoning] = z; }
+
 	bool		TerrainMatch(const GIS_face_data& rhs) const { return mTerrainType == rhs.mTerrainType; }
 	bool		AreaMatch(const GIS_face_data& rhs) const { return (mTerrainType == rhs.mTerrainType && mAreaFeature.mFeatType == rhs.mAreaFeature.mFeatType); }
 

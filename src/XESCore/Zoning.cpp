@@ -33,6 +33,7 @@
 #include "PolyRasterUtils.h"
 #include "AptDefs.h"
 #include "ObjPlacement2.h"
+#include "ConfigSystem.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
@@ -40,6 +41,175 @@
 // This is how big a block can be and still "grow" sky scrapers from one big one, in square meters.  The idea is to keep 
 // a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
+
+ZoningRuleTable				gZoningRules;
+set<int>					gZoningTypes;
+
+
+static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
+{
+	ZoningRule_t	r;
+	
+	if(TokenizeLine(tokens," effiiffffffffffffiiiiiSSe",
+		&r.terrain,
+		&r.size_min,&r.size_max,
+		&r.side_min,			&r.side_max,
+		&r.slope_min,			&r.slope_max,
+		&r.urban_min,			&r.urban_max,
+		&r.forest_min,			&r.forest_max,
+		&r.urban_avg_min,		&r.urban_avg_max,
+		&r.forest_avg_min,		&r.forest_avg_max,
+		&r.bldg_min,			&r.bldg_max,
+		&r.req_water,
+		&r.req_train,
+		&r.req_road,
+		&r.hole_ok,
+		&r.crud_ok,
+		&r.require_features,
+		&r.consume_features,
+		&r.zoning) != 26)	return false;
+
+	r.slope_min = 1.0 - cos(r.slope_min * DEG_TO_RAD);
+	r.slope_max = 1.0 - cos(r.slope_max * DEG_TO_RAD);
+	gZoningRules.push_back(r);
+	gZoningTypes.insert(r.zoning);
+
+	return true;
+}
+
+void LoadZoningRules(void)
+{
+	gZoningRules.clear();
+	gZoningTypes.clear();
+
+	RegisterLineHandler("ZONING_RULE", ReadZoningRule, NULL);
+	LoadConfigFile("zoning.txt");	
+}
+
+template <typename T>
+inline bool	check_rule(T minv, T maxv, T actv)
+{
+	return ((minv == maxv) && (minv == 0) || (actv >= minv && actv <= maxv));
+}
+
+inline bool any_match(const set<int>& lhs, const set<int>& rhs)
+{
+	set<int>::const_iterator l = lhs.begin(), r = rhs.begin();
+
+	while(l != lhs.end() && r != rhs.end())	// While we're not off the end of either
+	{
+		if(*l < *r)							// Advance the lesser
+			++l;
+		else if (*l > *r)
+			++r;
+		else 
+			return true;					// Any match = a win
+	}
+	return false;							// if one is EOF we're not going to get a match.
+}
+
+inline bool all_match(const set<int>& lhs, const set<int>& rhs)
+{
+	if(lhs.size() != rhs.size()) return false;
+	
+	set<int>::const_iterator l = lhs.begin(), r = rhs.begin();
+
+	while(l != lhs.end() && r != rhs.end())
+	{
+		if(*l < *r) return false;			// Mismatch?  Bail.
+		if(*l > *r) return false;
+		++l, ++r;							// match, continue.
+	}	
+	return l == lhs.end() && r == rhs.end();// We match if we ran out of BOTH at the same time.
+}
+
+inline bool remove_these(set<int>& stuff, const set<int>& nuke_these)
+{
+	for(set<int>::const_iterator i = nuke_these.begin(); i != nuke_these.end(); ++i)
+		stuff.erase(*i);
+}
+
+static int		PickZoningRule(
+						int			terrain,
+						float		area,
+						int			sides,
+						float		max_slope,
+						float		urban,
+						float		forest,
+						float		urban_avg,
+						float		forest_avg,
+						float		bldg_hgt,
+						int			has_water,
+						int			has_train,
+						int			has_road,
+						int			has_hole,
+						set<int>&	features)
+{
+	for(ZoningRuleTable::const_iterator r = gZoningRules.begin(); r != gZoningRules.end(); ++r)
+	{
+		if(r->terrain == NO_VALUE || terrain == terrain)
+		if(check_rule(r->size_min, r->size_max, area))
+		if(check_rule(r->side_min, r->side_max, sides))
+		if(check_rule(r->slope_min, r->slope_max, max_slope))
+		if(check_rule(r->urban_min, r->urban_max, urban))
+		if(check_rule(r->forest_min, r->forest_max, forest))
+		if(check_rule(r->urban_avg_min, r->urban_avg_max, urban_avg))
+		if(check_rule(r->forest_avg_min, r->urban_avg_max, forest_avg))
+		if(check_rule(r->bldg_min, r->bldg_max, bldg_hgt))
+		if(has_water || !r->req_water)
+		if(has_train || !r->req_train)
+		if(has_road || !r->req_road)
+		if(!has_hole || r->hole_ok)		
+		if(r->require_features.empty() || any_match(r->require_features, features))
+		if(r->crud_ok || all_match(r->consume_features, features))
+		{
+			remove_these(features, r->consume_features);
+			return r->zoning;
+		}
+	}
+	return NO_VALUE;
+}
+						
+
+
+
+typedef int(* Feature_Is_f)(int);
+
+template<Feature_Is_f evaluator>
+int evaluate_he(Pmwx::Halfedge_handle he)
+{
+	GISNetworkSegmentVector::iterator i;
+	for(i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
+		if(evaluator(i->mFeatType))
+			return 1;
+	for(i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
+		if(evaluator(i->mFeatType))
+			return 1;
+	
+}
+
+
+inline void accum_lu(int lu, int fo, float& total_forest, float& total_urban)
+{
+	if(fo != NO_VALUE)
+		++total_forest;
+	switch((int) lu) { 
+	#define URBAN(x) total_urban += (x); break;
+	case lu_globcover_INDUSTRY:					
+	case lu_globcover_INDUSTRY_SQUARE:			URBAN(1.0f);
+	case lu_globcover_URBAN_SQUARE_HIGH:
+	case lu_globcover_URBAN_HIGH:				URBAN(0.8f);
+	case lu_globcover_URBAN_SQUARE_MEDIUM:
+	case lu_globcover_URBAN_MEDIUM:				URBAN(0.6f);
+	case lu_globcover_URBAN_SQUARE_LOW:
+	case lu_globcover_URBAN_LOW:				URBAN(0.4f);
+	case lu_globcover_URBAN_SQUARE_TOWN:
+	case lu_globcover_URBAN_TOWN:				URBAN(0.2f);
+	case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+	case lu_globcover_URBAN_CROP_TOWN:			URBAN(0.1f);
+	}					
+}
+
 
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
@@ -69,16 +239,35 @@ void	ZoneManMadeAreas(
 		double mfam = GetMapFaceAreaMeters(face);
 
 		double	max_height = 0.0;
+		set<int>	my_pt_features;
 
 		if (mfam < MAX_OBJ_SPREAD)
 		for (GISPointFeatureVector::iterator feat = face->data().mPointFeatures.begin(); feat != face->data().mPointFeatures.end(); ++feat)
 		{
+			my_pt_features.insert(feat->mFeatType);
 			if (feat->mFeatType == feat_Building)
-			if (feat->mParams.count(pf_Height))
 			{
-				max_height = max(max_height, feat->mParams[pf_Height]);
+				if (feat->mParams.count(pf_Height))
+				{
+					max_height = max(max_height, feat->mParams[pf_Height]);
+				}
+			} else {
+				printf("Has other feature: %s\n", FetchTokenString(feat->mFeatType));
 			}
 		}
+	
+		int has_water = 0;
+		int has_train = 0;
+		int has_local = 0;		
+	
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			if(evaluate_he<Road_IsTrain>(circ)) has_train = true;
+			if(evaluate_he<Road_IsLocal>(circ) || 
+				evaluate_he<Road_IsMainDrag>(circ)) has_local = true;			
+			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) has_water = 1;
+		} while (++circ != stop);
 
 		PolyRasterizer	r;
 		int x, y, x1, x2;
@@ -94,23 +283,7 @@ void	ZoneManMadeAreas(
 					float e = inLanduse.get(x,y);
 					float f = inForest.get(x,y);
 					count++;
-					if(f != NO_VALUE)
-						++total_forest;
-					switch((int) e) { 
-					#define URBAN(x) total_urban = max(total_urban,x); break;
-					case lu_globcover_INDUSTRY:					
-					case lu_globcover_INDUSTRY_SQUARE:			URBAN(1.0f);
-					case lu_globcover_URBAN_SQUARE_HIGH:
-					case lu_globcover_URBAN_HIGH:				URBAN(0.8f);
-					case lu_globcover_URBAN_SQUARE_MEDIUM:
-					case lu_globcover_URBAN_MEDIUM:				URBAN(0.6f);
-					case lu_globcover_URBAN_SQUARE_LOW:
-					case lu_globcover_URBAN_LOW:				URBAN(0.4f);
-					case lu_globcover_URBAN_SQUARE_TOWN:
-					case lu_globcover_URBAN_TOWN:				URBAN(0.2f);
-					case lu_globcover_URBAN_SQUARE_CROP_TOWN:
-					case lu_globcover_URBAN_CROP_TOWN:			URBAN(0.1f);
-					}					
+					accum_lu(e,f,total_forest,total_urban);
 				}
 			}
 			++y;
@@ -123,86 +296,65 @@ void	ZoneManMadeAreas(
 			Point2 any = cgal2ben(face->outer_ccb()->source()->point());
 			float e = inLanduse.xy_nearest(any.x(),any.y());
 			float f = inForest.xy_nearest(any.x(),any.y());
+			accum_lu(e,f,total_forest, total_urban);
+			count++;
+		}
 
-					count++;
-					if(f != NO_VALUE)
-						++total_forest;
-					switch((int) e) { 
-					#define URBAN(x) total_urban = max(total_urban,x); break;
-					case lu_globcover_INDUSTRY:					
-					case lu_globcover_INDUSTRY_SQUARE:			URBAN(1.0f);
-					case lu_globcover_URBAN_SQUARE_HIGH:
-					case lu_globcover_URBAN_HIGH:				URBAN(0.8f);
-					case lu_globcover_URBAN_SQUARE_MEDIUM:
-					case lu_globcover_URBAN_MEDIUM:				URBAN(0.6f);
-					case lu_globcover_URBAN_SQUARE_LOW:
-					case lu_globcover_URBAN_LOW:				URBAN(0.4f);
-					case lu_globcover_URBAN_SQUARE_TOWN:
-					case lu_globcover_URBAN_TOWN:				URBAN(0.2f);
-					case lu_globcover_URBAN_SQUARE_CROP_TOWN:
-					case lu_globcover_URBAN_CROP_TOWN:			URBAN(0.1f);
-					}					
-
-
+		PolyRasterizer	r2;
+		y = SetupRasterizerForDEM(face, inSlope, r2);
+		r2.StartScanline(y);
+		int scount = 0;
+		float max_slope = 0.0;
+		while (!r2.DoneScan())
+		{
+			while (r2.GetRange(x1, x2))
+			{
+				for (x = x1; x < x2; ++x)
+				{
+					float s = inSlope.get(x,y);
+					max_slope = max(max_slope, s);
+					++scount;
+				}
+			}
+			++y;
+			if (y >= inLanduse.mHeight) break;
+			r2.AdvanceScanline(y);
 		}
 		
-//		if(count != 0.0)
-//		{
-//			face->data().mParams[af_Urbanized] = total_urban / count;
-//			face->data().mParams[af_Forestized] = total_forest / count;
-///		}
+		if(scount == 0)
+		{
+			Point2 any = cgal2ben(face->outer_ccb()->source()->point());
+			float s = inSlope.xy_nearest(any.x(),any.y());
+			max_slope = s;
+		}
+		
 
 		Polygon_with_holes_2	ra;
 
 		GetTotalAreaForFaceSet(face,ra);
 
-
 			
 		bool has_holes = ra.has_holes();
-
 		int num_sides = ra.outer_boundary().size();
-		
-		face->data().mParams[af_OriginCode] = num_sides;
 
+		int zone = PickZoningRule(
+						face->data().mTerrainType,
+						mfam,
+						num_sides,
+						max_slope,
+						total_urban,total_forest,
+						total_urban/(float)count,total_forest/(float)count,
+						max_height,
+						has_water,
+						has_train,
+						has_local,
+						has_holes,
+						my_pt_features);
 
-		if(count)
-		{
-//			total_urban /= count;
-//			total_forest /= count;
-		} else total_urban = total_forest = 0.0;
-		
-		if (mfam > (300 * 300))
-		{
-				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Large_Industrial;
-			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Large_High;
-			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Large_Medium;
-			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Large_Low;
-			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Large_Town;
-			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Large_Crop;
-			else							face->data().mParams[af_Zoning] = zoning_Large_None;
-		}
-		else if (has_holes || num_sides > 4)
-		{
-				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Irregular_Industrial;
-			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Irregular_High;
-			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Irregular_Medium;
-			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Irregular_Low;
-			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Irregular_Town;
-			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Irregular_Crop;
-			else							face->data().mParams[af_Zoning] = zoning_Irregular_None;
-		}
-		else
-		{
-				 if(total_urban > 0.9)		face->data().mParams[af_Zoning] = zoning_Urban_Industrial;
-			else if(total_urban > 0.7)		face->data().mParams[af_Zoning] = zoning_Urban_High;
-			else if(total_urban > 0.5)		face->data().mParams[af_Zoning] = zoning_Urban_Medium;
-			else if(total_urban > 0.3)		face->data().mParams[af_Zoning] = zoning_Urban_Low;
-			else if(total_urban > 0.1)		face->data().mParams[af_Zoning] = zoning_Urban_Town;
-			else if(total_urban > 0.0)		face->data().mParams[af_Zoning] = zoning_Urban_Crop;
-			else							face->data().mParams[af_Zoning] = zoning_Urban_None;
-		}
-
+		if(zone != NO_VALUE)
+			face->data().SetZoning(zone);
 		face->data().mParams[af_HeightObjs] = max_height;
+		face->data().mParams[af_OriginCode] = total_urban / (float) count;
 
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
 		face->data().mTemp1 = NO_VALUE;
@@ -338,3 +490,5 @@ void	ZoneManMadeAreas(
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
 }
+
+

@@ -24,6 +24,7 @@
 
 #include "EnumSystem.h"
 #include "DEMDefs.h"
+#include "Zoning.h"
 #include <ctype.h>
 //#include "CoverageFinder.h"
 
@@ -194,7 +195,7 @@ static void 	AddRuleInfoPair(NaturalTerrainRule_t& rule, NaturalTerrainInfo_t& i
 		if (i->second.layer    		!= info.layer    	)	printf("ERROR:  terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", FetchTokenString(rule.name), i->second.layer,info.layer);
 		if (i->second.xon_dist 		!= info.xon_dist 	)	printf("ERROR:  terrain 'xon_dist' does not match.  name = %s, layers = %f vs %f\n", FetchTokenString(rule.name), i->second.xon_dist,info.xon_dist);
 		if (i->second.base_tex    	!= info.base_tex    )	printf("ERROR:  terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", FetchTokenString(rule.name), i->second.base_tex.c_str(),info.base_tex.c_str());
-		if (i->second.base_res		!= info.base_res	)	printf("ERROR:  terrain 'base_res' does not match.  name = %s, layers = %f vs %f\n", FetchTokenString(rule.name), i->second.base_res,info.base_res);
+		if (i->second.base_res		!= info.base_res	)	printf("ERROR:  terrain 'base_res' does not match.  name = %s, layers = %lfx%lf vs %lfx%lf\n", FetchTokenString(rule.name), i->second.base_res.x(),i->second.base_res.y(),info.base_res.x(),info.base_res.y());
 
 //		if(i->second != info)
 //		{
@@ -213,8 +214,8 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string		lu_set_string;
 	
 		NaturalTerrainRule_t	rule;
-		if(TokenizeLine(tokens," esffffffffffiffffffe",
-			&rule.terrain, &lu_set_string,
+		if(TokenizeLine(tokens," eesffffffffffiffffffe",
+			&rule.terrain, &rule.zoning, &lu_set_string,
 			&rule.elev_min,
 			&rule.elev_max,
 			&rule.slope_min,
@@ -232,7 +233,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&rule.elev_range_max,
 			&rule.lat_min,
 			&rule.lat_max,
-			&rule.name) != 21)
+			&rule.name) != 22)
 				return false;
 		
 		rule.climate = NO_VALUE;
@@ -266,25 +267,35 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			return false;
 		}	
 		
+		if(rule.zoning != NO_VALUE && gZoningTypes.count(rule.zoning) == 0)
+		{
+			fprintf(stderr,"Zoning type %s is unknown.\n", FetchTokenString(rule.zoning));
+			return false;
+		}
 		if(gNaturalTerrainInfo.count(rule.name) == 0)
 		{
 			fprintf(stderr,"Rule final terrain name %s is not a real terrain name.\n", FetchTokenString(rule.name));
 			return false;
 		}
 
+		if(lu_set.empty())
+		{
+			rule.landuse = NO_VALUE;
+			gNaturalTerrainRules.push_back(rule);
+		}
+		else
 		for(set<int>::iterator lu = lu_set.begin(); lu != lu_set.end(); ++lu)
 		{
 			rule.landuse = *lu;
 			gNaturalTerrainRules.push_back(rule);
 		}
-		
 		return true;
 	}
 	else if(tokens[0] == "CLIFF_INFO")
 	{
 		CliffInfo_t info;
 		string	id;
-		if(TokenizeLine(tokens," sffffffss",
+		if(TokenizeLine(tokens," sPPffffss",
 			&id,
 			&info.hill_res,
 			&info.cliff_res,
@@ -315,7 +326,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string	shader_mode;
 
 		NaturalTerrainInfo_t	info;
-		if(TokenizeLine(tokens," eifcssfis",
+		if(TokenizeLine(tokens," eifcssPis",
 			&ter_name,	
 			&info.layer,
 			&info.xon_dist,
@@ -383,6 +394,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	int						has_lit = 0;;
 	int						auto_vary;									// 0 = none. 1 = 4 variations, all fake. 2 = 4 variations, 2 & 2. 3 = 4 variations for HEADING.
 
+	rule.zoning = NO_VALUE;
 	rule.climate = NO_VALUE;
 	rule.urban_density_min = rule.urban_density_max = 0.0;
 	rule.urban_radial_min = rule.urban_radial_max = 0.0;
@@ -394,7 +406,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 	if (tokens[0] == "STERRAIN")
 	{
-		if (TokenizeLine(tokens, " eeffffffffiffffffffffisifsfssefff",
+		if (TokenizeLine(tokens, " eeffffffffiffffffffffisifsPssefff",
 			&rule.terrain,
 			&rule.landuse,
 			&rule.elev_min,
@@ -437,7 +449,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	} else 	if (tokens[0] == "MTERRAIN") {
 
 
-		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsifssefff",
+		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsiPssefff",
 			&rule.terrain,
 			&rule.landuse,
 			&rule.climate,
@@ -494,7 +506,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 	} else {
 
-		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsfssefff",
+		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsPssefff",
 			&rule.terrain,
 			&rule.landuse,
 			&rule.climate,
@@ -600,7 +612,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (rule.slope_min < 30.0)
 		printf("WARNING: base tex %s is projected but min slope is %f\n", ter_name.c_str(), rule.slope_min);
 
-	if (info.base_res == 0.0)
+	if (info.base_res.x() == 0.0 || info.base_res.y() == 0.0)
 		printf("WARNING: bad base res on texture %s\n", ter_name.c_str());
 
 	if (info.proj_angle == proj_NorthSouth)
@@ -815,6 +827,7 @@ void	LoadDEMTables(void)
 
 int	FindNaturalTerrain(
 				int		terrain,
+				int		zoning,
 				int 	landuse,
 //				int 	climate,
 //				float 	elevation,
@@ -835,10 +848,22 @@ int	FindNaturalTerrain(
 				int		variant_blob,
 				int		variant_head)
 {
-	// OPTIMIZE - figure out what the major keys should be.
+	// Check for no data in the continuous floating point inputs!
+//	DebugAssert(DEM_NO_DATA !=  	elevation);
+	DebugAssert(DEM_NO_DATA !=  	slope);
+	DebugAssert(DEM_NO_DATA !=  	slope_tri);
+	DebugAssert(DEM_NO_DATA != 	temp);
+	DebugAssert(DEM_NO_DATA != 	temp_rng);
+	DebugAssert(DEM_NO_DATA != 	rain);
+	DebugAssert(DEM_NO_DATA != 	slopeheading);
+	DebugAssert(DEM_NO_DATA != 	relelevation);
+	DebugAssert(DEM_NO_DATA != 	elevrange);
+	DebugAssert(DEM_NO_DATA != 	urban_density);
+	DebugAssert(DEM_NO_DATA != 	urban_radial);
+	DebugAssert(DEM_NO_DATA != 	urban_trans);
+	DebugAssert(DEM_NO_DATA != 	lat);
 
-//	pair<NaturalTerrainLandUseIndex::iterator,NaturalTerrainLandUseIndex::iterator>	range;
-//	range = gNaturalTerrainLandUseIndex.equal_range(landuse);
+	// OPTIMIZE - figure out what the major keys should be.
 
 	for (int rec_num = 0; rec_num < gNaturalTerrainRules.size(); ++rec_num)
 	{
@@ -846,26 +871,27 @@ int	FindNaturalTerrain(
 
 //		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 		float slope_to_use = slope_tri;
-
-		if (rec.temp_min == rec.temp_max || temp == DEM_NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
-		if (rec.slope_min == rec.slope_max || slope_to_use == DEM_NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
-		if (rec.rain_min == rec.rain_max || rain == DEM_NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
-		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == DEM_NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
-		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == DEM_NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
+		
+		#define MATCH_RANGE(x,vmin,vmax)	if(rec.vmin == rec.vmax || (rec.vmin <= x && x <= rec.vmax))
+		#define MATCH_ENUM(x,field) if(rec.field == NO_VALUE || x == rec.field)
+		
+		MATCH_RANGE(temp,temp_min,temp_max)
+		MATCH_RANGE(slope_to_use,slope_min,slope_max)
+		MATCH_RANGE(rain,rain_min,rain_max)
+		MATCH_RANGE(temp_rng,temp_rng_min,temp_rng_max)
+		MATCH_RANGE(slopeheading,slope_heading_min,slope_heading_max)
 		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
-		// Ben says: v9 -- make sure that if the terrain is untagged that we don't use airport terrain -- that's an error!
-		if (rec.terrain == NO_VALUE/* || terrain == NO_VALUE*/ || terrain == rec.terrain)
-		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == DEM_NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
-		if (rec.elev_range_min == rec.elev_range_max || elevrange == DEM_NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
-		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
-		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == DEM_NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
+		MATCH_ENUM(landuse,landuse)
+		MATCH_ENUM(terrain,terrain)
+		MATCH_ENUM(zoning,zoning)
+		MATCH_RANGE(relelevation,rel_elev_min,rel_elev_max)
+		MATCH_RANGE(elevrange,elev_range_min,elev_range_max)
+		MATCH_RANGE(urban_density,urban_density_min,urban_density_max)
+		MATCH_RANGE(urban_trans,urban_trans_min,urban_trans_max)
 		if (rec.urban_square == 0 || urban_square == DEM_NO_DATA || rec.urban_square == urban_square)
-		if (rec.lat_min == rec.lat_max || lat == DEM_NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
+		MATCH_RANGE(lat,lat_min,lat_max)
 		if (!rec.near_water || water)
-		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == DEM_NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
-		if (rec.landuse == NO_VALUE || landuse == rec.landuse)	// NOTE: no land use is NOT a free pass to match anything!!
-//		if (rec.climate == NO_VALUE || climate == rec.climate)	// Same with  climate
-//		if (rec.elev_min == rec.elev_max || elevation == DEM_NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
+		MATCH_RANGE(urban_radial,urban_radial_min,urban_radial_max)		
 		{
 			return rec.name;
 		}
@@ -918,7 +944,7 @@ struct float_between_iterator {
 
 };
 
-
+#if 0
 
 void	CheckDEMRuleCoverage(ProgressFunc func)
 {
@@ -1116,6 +1142,8 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	PROGRESS_DONE(func, 0, 1, "Checking tables");
 	printf("Total: %d\n", ctr);
 }
+
+#endif
 
 void	GetNaturalTerrainColor(int terrain, float rgb[3])
 {

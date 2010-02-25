@@ -94,11 +94,13 @@ static int	DoObjToConfig(const vector<const char *>& args)
 	return 0;
 }
 
+/*
 static int	DoCheckSpreadsheet(const vector<const char *>& args)
 {
 	CheckDEMRuleCoverage(gProgress);
 	return 0;
 }
+*/
 
 static int DoCheckWaterConform(const vector<const char *>& args)
 {
@@ -498,7 +500,7 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-luinit", 1, 1, InitFromLU,						"init from landuse (LU file)." ,"Given a water coverage, this inits our tile to a single square that is all wet or dry, base on the coverage. " },
 { "-wetinit", 0, 0, InitFromWet,						"init to all water.", ""},
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
-{ "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
+//{ "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
 { "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },

@@ -71,7 +71,11 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
 // This guarantees that we don't have "beached" triangles - that is, water trianglse where all 3 points are coastal, and thus the water depth is ZERO in the entire
 // thing.
-#define SPLIT_BEACHED_WATER 1
+#if PHONE
+	#define SPLIT_BEACHED_WATER 0
+#else
+	#define SPLIT_BEACHED_WATER 1
+#endif
 
 #define DEBUG_DROPPED_PTS 0
 
@@ -128,7 +132,8 @@ inline bool must_burn_he(Halfedge_handle he)
 	
 	return he->data().mParams.count(he_MustBurn) ||
 		   tw->data().mParams.count(he_MustBurn) ||
-		   f1->data().mTerrainType != f2->data().mTerrainType;
+		   f1->data().mTerrainType != f2->data().mTerrainType ||
+		   f1->data().GetZoning() != f2->data().GetZoning();
 }
 
 inline bool collinear_he(Halfedge_handle he1, Halfedge_handle he2)
@@ -1566,6 +1571,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 #endif
 
+#if !PHONE
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
 	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
 																// across inserts.  To get around this, simply note how many vertices we inserted.  Note that we are assuming
@@ -1594,6 +1600,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 			DebugAssert(v->point().y() != orig.mNorth);
 		#endif	
 	}
+#endif
 	
 	/*********************************************************************************************************************
 	 * LAND USE CALC (A LITTLE BIT)
@@ -1835,7 +1842,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (sh_tri >  0.7)	variant_head = 5;
 
 				//fprintf(stderr, " %d", tri->info().feature);
-				int terrain = FindNaturalTerrain(tri->info().feature, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
+				int zoning = (tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
+				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 

@@ -26,6 +26,7 @@
 #include "DEMTables.h"
 #include "ObjTables.h"
 #include "ForestTables.h"
+#include "Zoning.h"
 
 static bool HandleVocab(const vector<string>& inTokenLine, void * inRef)
 {
@@ -44,12 +45,17 @@ void	XESInit(bool want_forests)
 	RegisterLineHandler("VOCAB", HandleVocab, NULL);
 	LoadConfigFile("vocab.txt");
 
+	// Load first - zoning rules needed to validate terrain rules.
+	if(want_forests)
+	{
+		LoadForestTables();
+		LoadZoningRules();
+	}
+
 	int old_mark = gTokens.size();
 	LoadNetFeatureTables();
 	LoadDEMTables();
 	LoadObjTables();
-	if(want_forests)
-		LoadForestTables();
 	int new_mark = gTokens.size();
 
 	if (old_mark != new_mark)

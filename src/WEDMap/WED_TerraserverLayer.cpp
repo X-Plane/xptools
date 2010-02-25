@@ -48,7 +48,7 @@ WED_TerraserverLayer::WED_TerraserverLayer(GUI_Pane * h, WED_MapZoomerNew * zoom
 		mLocator[z] = new AsyncImageLocator(mPool);
 		mHas[z] = 0;
 	}
-	mData = "1";
+	mData = "1";	// "1" = B&W, "2" = topo, "4" = color orthos.
 }
 
 WED_TerraserverLayer::~WED_TerraserverLayer()

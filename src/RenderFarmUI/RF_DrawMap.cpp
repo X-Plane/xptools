@@ -239,64 +239,29 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 
 static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 {
-	float red = 0.0;
-	float green = 0.0;
-	float blue = 0.0;
+	outColor[0] = outColor[1] = outColor[2] = outColor[3] = 0.0;
+	
+	int our_prop = NO_VALUE;
+	if (f->data().mTerrainType != terrain_Natural && f->data().mTerrainType != NO_VALUE)
+		our_prop = f->data().mTerrainType;
 
-	RGBColor_t& rgbc = gEnumColors[f->data().mTerrainType];
-	red = rgbc.rgb[0];
-	green = rgbc.rgb[1];
-	blue = rgbc.rgb[2];
-#if 0
-
-	switch(f->data().mTerrainType) {
-	case NO_VALUE:							red = 1.0;  green = 0.0;	blue = 1.0; break;
-	case terrain_Natural:					red = 0.0;	green = 0.0;	blue = 0.0;	break;
-	case terrain_Water:						red = 0.0;	green = 0.0;	blue = 0.5;	break;
-
-	case terrain_OutlayResidential:
-	case terrain_OutlayResidentialHill:		red = 0.2;	green = 0.2;	blue = 0.2;
-	case terrain_OutlayHighrise:
-	case terrain_OutlayHighriseHill:		red = 0.0;	green = 0.4;	blue = 0.4; break;
-	case terrain_Residential:
-	case terrain_ResidentialHill:			red = 0.6;	green = 0.6;	blue = 0.0; break;
-	case terrain_CommercialSprawl:
-	case terrain_CommercialSprawlHill:		red = 0.0;	green = 0.6;	blue = 0.6; break;
-	case terrain_Urban:
-	case terrain_UrbanHill:					red = 0.8;	green = 0.8;	blue = 0.0; break;
-	case terrain_Industrial:
-	case terrain_IndustrialHill:			red = 0.8;	green = 0.5;	blue = 0.0;	break;
-	case terrain_Downtown:
-	case terrain_DowntownHill:				red = 1.0;	green = 1.0;	blue = 0.0;	break;
-
-	case terrain_FarmTown:
-	case terrain_FarmTownHill:				red = 0.2;	green = 0.5;	blue = 0.2;	break;
-	case terrain_Farm:
-	case terrain_FarmHill:					red = 0.0;	green = 0.5;	blue = 0.0;	break;
-	case terrain_MixedFarm:
-	case terrain_MixedFarmHill:				red = 0.0;	green = 0.3;	blue = 0.0;	break;
-
-	case terrain_MilitaryBase:				red = 0.3;	green = 0.3;	blue = 0.3;	break;
-	case terrain_TrailerPark:				red = 0.0;	green = 0.3;	blue = 0.0;	break;
-	case terrain_Campground:				red = 0.0;	green = 0.3;	blue = 0.0;	break;
-	case terrain_Marina:					red = 0.0;	green = 0.0;	blue = 0.8;	break;
-
-	case terrain_GolfCourse:				red = 0.2;	green = 0.5;	blue = 0.0;	break;
-	case terrain_Cemetary:					red = 0.2;	green = 0.5;	blue = 0.0;	break;
-	case terrain_Airport:					red = 0.3;	green = 0.3;	blue = 0.3;	break;
-	case terrain_AirportOuter:				red = 0.3;	green = 0.3;	blue = 0.2;	break;
-	case terrain_Park:						red = 0.2;	green = 0.5;	blue = 0.0;	break;
-	case terrain_ForestPark:				red = 0.2;	green = 0.4;	blue = 0.0;	break;
-	}
-#endif
-	if (red == 0.0 && green == 0.0 && blue == 0.0)
 	if (f->data().mAreaFeature.mFeatType != NO_VALUE)
-		green = 0.5;
+	if(gEnumColors.count(f->data().mAreaFeature.mFeatType))
+		our_prop = f->data().mAreaFeature.mFeatType;
+		
+	if(gEnumColors.count(f->data().GetZoning()))
+		our_prop = f->data().GetZoning();
 
-	if (red == 0.0 && green == 0.0 && blue == 0.0) outColor[3] = 0.0; else outColor[3] = 0.5;
-	outColor[0] = red;
-	outColor[1] = green;
-	outColor[2] = blue;
+	if(our_prop != NO_VALUE)
+	{
+		RGBColor_t& rgbc = gEnumColors[our_prop];
+
+		outColor[0] = rgbc.rgb[0];
+		outColor[1] = rgbc.rgb[1];
+		outColor[2] = rgbc.rgb[2];
+		outColor[3] = 0.5;
+	}
+	
 }
 
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
@@ -804,6 +769,7 @@ void	DrawMapBucketed(
 	glPointSize(3);
 	glColor4f(0.0, 1.0, 1.0, 1.0);
 	glBegin(GL_POINTS);
+	int osz = 3;
 	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin();
 		fi != faces.end(); ++fi)
 	{
@@ -811,29 +777,32 @@ void	DrawMapBucketed(
 		for (int j = 0; j < (*fi)->data().mPointFeatures.size(); ++j)
 		{
 			bool	isel = pointFeatureSel.find(PointFeatureSelection(*fi, j)) != pointFeatureSel.end();
-			if (isel || fsel)
-				glColor4f(1.0, 1.0, 1.0, 1.0);
-			else
-				glColor4f(0.0, 0.6, 0.6, 1.0);
-
-			if (isel)
+			bool	has_height = (*fi)->data().mPointFeatures[j].mParams.count(pf_Height) != 0;
+			
+			int sz = has_height ? 4 : 2;
+			
+			if(sz != osz)
 			{
 				glEnd();
-				glPointSize(4);
+				glPointSize(sz);
 				glBegin(GL_POINTS);
+				osz = sz;
 			}
+
+			if (isel || fsel)
+				glColor4f(1.0, 1.0, 1.0, 1.0);
+			else if(gEnumColors.count((*fi)->data().mPointFeatures[j].mFeatType))
+			{
+				glColor3fv(gEnumColors[(*fi)->data().mPointFeatures[j].mFeatType].rgb);
+			}
+			else
+				glColor4f(0.0, 0.6, 0.6, 1.0);
 
 			double	x1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.x());
 			double	y1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
 			glVertex2f(x1, y1);
-			if (isel)
-			{
-				glEnd();
-				glPointSize(3);
-				glBegin(GL_POINTS);
-			}
 		}
 	}
 	glEnd();

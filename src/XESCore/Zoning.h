@@ -30,6 +30,37 @@
 
 struct	DEMGeo;
 
+struct ZoningRule_t {
+
+	int			terrain;								// Required base terrain (or require natural)
+	float		size_min,		size_max;				// Size of block in square meters
+	int			side_min,		side_max;				// Number of sides of block
+	float		slope_min,		slope_max;				// Max slope within block
+	float		urban_min,		urban_max;				// Total sum of urban activity
+	float		forest_min,		forest_max;				// Total sum of forest
+	float		urban_avg_min,	urban_avg_max;			// Average urbanization level
+	float		forest_avg_min,	forest_avg_max;			// Average forest level
+	float		bldg_min,		bldg_max;				// Maximum building height (0 if none)
+
+	int			req_water;								// Are we adjacent to water (not counting holes/lakes)
+	int			req_train;								// Train tracks on outer border?
+	int			req_road;								// Roads with direct access (primary/secondary, not highway or ramp)
+
+	set<int>	require_features;						// One of these features MUST be present or we can't use the rule.
+	set<int>	consume_features;						// These features get consumed by the act of zoning.
+	int			crud_ok;								// We can live with "stuff" in our zone that we haven't consumed.
+	int			hole_ok;								// Is there a hole in the block?
+	
+	int			zoning;
+};
+typedef vector<ZoningRule_t>	ZoningRuleTable;
+extern ZoningRuleTable				gZoningRules;
+
+extern set<int>						gZoningTypes;
+
+void	LoadZoningRules(void);
+
+
 /*
  * Given a map and various raster parameters, go through the map and
  * assign terrain types to all polygons as appropriate.  This includes

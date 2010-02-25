@@ -22,6 +22,7 @@
  */
 #include "ConfigSystem.h"
 #include "MemFileUtils.h"
+#include "CompGeomDefs2.h"
 #include "EnumSystem.h"
 #include <stdarg.h>
 #include <list>
@@ -272,6 +273,7 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
 		else
 			s=e+1;
 	}
+	slots.erase(NO_VALUE);
 	return slots.count(-1) == 0;
 }
 
@@ -283,6 +285,8 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
 // e - enum
 // s - STL string
 // t = char **
+// S - enum set
+// P - Point2, splatted
 //   - skip
 int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 {
@@ -293,7 +297,9 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 	float *			fp;
 	RGBColor_t *	cp;
 	string *		sp;
+	set<int>*		es;
 	char **			tp;
+	Point2 *		pp;
 	while (fmt[n] && n < tokens.size())
 	{
 		switch(fmt[n]) {
@@ -319,6 +325,11 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 			sp = va_arg(args, string *);
 			*sp = tokens[n];
 			break;
+		case 'S':
+			es = va_arg(args, set<int> *);
+			if(!TokenizeEnumSet(tokens[n], *es))
+				goto bail;
+			break;
 		case 't':
 			tp = va_arg(args, char **);
 			if (tokens[n] == "-")
@@ -327,6 +338,11 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 				*tp = (char *) malloc(tokens[n].size() + 1);
 				strcpy(*tp, tokens[n].c_str());
 			}
+			break;
+		case 'P':
+			pp = va_arg(args,Point2 *);
+			if(sscanf(tokens[n].c_str(),"%lf,%lf",&pp->x_, &pp->y_) != 2)			
+				pp->x_ = pp->y_ = TokenizeFloat(tokens[n]);
 			break;
 		case ' ':
 			break;

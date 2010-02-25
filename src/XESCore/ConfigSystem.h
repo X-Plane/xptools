@@ -67,6 +67,9 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots);
 // c - color
 // e - enum
 // s - STL string
+// t = char **
+// S - enum set
+// P - Point2, splatted
 //   - skip
 int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...);
 

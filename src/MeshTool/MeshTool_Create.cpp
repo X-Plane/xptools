@@ -540,6 +540,8 @@ void MT_OrthoPhoto(
 	string tname(terrain_name);
 	if(back_with_water == 2)
 		tname += "_soft";
+	if(back_with_water == 1)
+		tname += "_hard";
 	int t = MT_CreateCustomTerrain(tname.c_str(), proj_lon,proj_lat,proj_s,proj_t,back_with_water);
 	MT_LayerStart(t);
 	MT_PolygonStart();
@@ -638,7 +640,8 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 					isize = max(smaller.width,smaller.height);
 
 					CopyBitmapSection(&rgba,&smaller, 0,0,rgba.width,rgba.height, 0, 0, smaller.width,smaller.height);				
-
+					
+					MakeMipmapStackFromImage(&smaller);
 					WriteBitmapToDDS(smaller, 5, dname);
 					DestroyBitmap(&smaller);
 				}
@@ -725,6 +728,7 @@ void MT_QMID(const char * id, int back_with_water)
 						DestroyBitmap(&alpha);
 					}
 
+					MakeMipmapStackFromImage(&rgb);
 					sprintf(fname,"%s%s.dds",g_qmid_prefix.c_str(),id);
 					WriteBitmapToDDS(rgb, 5, fname);
 				}
@@ -749,6 +753,7 @@ void MT_QMID(const char * id, int back_with_water)
 		if(!CreateBitmapFromFile(fname,&lit))
 		{
 			sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
+			MakeMipmapStackFromImage(&lit);
 			WriteBitmapToDDS(lit,1,fname);
 			DestroyBitmap(&lit);
 			want_lite=true;
