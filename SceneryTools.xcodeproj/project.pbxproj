@@ -4704,7 +4704,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4727,7 +4727,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4751,7 +4751,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4826,7 +4826,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libsquish.a,
@@ -4866,7 +4866,7 @@
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
 					libs/local/lib/libCGAL_Core.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -4899,7 +4899,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -4945,7 +4945,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -5016,7 +5016,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libsquish.a,
@@ -5045,7 +5045,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libsquish.a,
@@ -5071,7 +5071,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -5099,7 +5099,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
@@ -5344,7 +5344,7 @@
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
 					libs/local/lib/libCGAL_Core.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5378,7 +5378,7 @@
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
 					libs/local/lib/libCGAL_Core.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5420,7 +5420,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libsquish.a,
@@ -5487,7 +5487,7 @@
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
 					libs/local/lib/libCGAL_Core.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
@@ -5514,7 +5514,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
-					"libs/local/lib/libboost_thread-mt.a",
+					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
