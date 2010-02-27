@@ -364,6 +364,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 				&info.tiles_y,
 				&has_compo) != 13) return false;
 			if(has_compo)info.compo_tex = MakeCompo(info.base_tex);	
+			break;
 		case shader_vary:
 			info.compo_tex = MakeCompo(info.base_tex);	
 			break;			
