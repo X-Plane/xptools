@@ -97,7 +97,8 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
-	DEFAULT_MACARGS	:= -mmacosx-version-min=10.4 -arch x86_64 -arch i386 -arch ppc
+	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -arch x86_64 -arch i386 -arch ppc
+	VIS	:= -fvisibility=hidden
 endif
 ifeq ($(PLATFORM), Linux)
 	PLAT_LINUX := Yes
@@ -335,7 +336,7 @@ ifdef PLAT_DARWIN
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
 	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
-	./bjam cxxflags="$(DEFAULT_MACARGS)" $(BE_QUIET) && \
+	./bjam cxxflags="$(VIS) $(DEFAULT_MACARGS)" $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.dylib*
@@ -592,15 +593,15 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
-	export MACOSX_DEPLOYMENT_TARGET=10.4 && cmake . \
+	export MACOSX_DEPLOYMENT_TARGET=10.5 && CXXFLAGS="-fvisibility=hidden" cmake \
 	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-arch x86_64 -arch i386 -arch ppc -I$(DEFAULT_INCDIR)" \
+	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch x86_64 -arch i386 -arch ppc -I$(DEFAULT_INCDIR)" \
 	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
-	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) && \
+	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) . && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
 endif
 ifdef PLAT_LINUX
