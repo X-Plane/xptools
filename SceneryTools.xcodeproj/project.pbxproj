@@ -5337,7 +5337,7 @@
 					"WED=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
+				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
