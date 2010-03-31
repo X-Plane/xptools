@@ -78,7 +78,7 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 	GUI_KeyFlags	flags = 0;
 	Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
 
-	if (modstate & Qt::AltModifier)
+	if (modstate & Qt::MetaModifier||modstate & Qt::AltModifier)
 		flags |= gui_OptionAltFlag;
 	if (modstate & Qt::ShiftModifier)
 		flags |= gui_ShiftFlag;
