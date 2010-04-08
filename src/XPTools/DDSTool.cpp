@@ -24,6 +24,20 @@
 #include "version.h"
 #include "BitmapUtils.h"
 #include "QuiltUtils.h"
+#include "FileUtils.h"
+
+/*
+
+	WHAT IS ALL OF THIS PHONE STUFF???
+	
+	DDSTool is mainly used by the X-Plane community to convert PNGs to DDS/DXT files so that the texture compression they get is high quality/produced offline.
+	
+	But...LR also uses DDSTool and XGrinder to prepare content for the iphone apps.  The iphone uses "pvr" files, an image container for use with PowerVR's
+	PVRTC compressed format.  In other words, the iphone has its own file formats and its own compression.  When PHONE is defined to 1, the tools compile
+	with iphone options enabled...that's what most of this junk is.  Normally we ship the tools with phone features off because they are (1) completely useless
+	to desktop users and (2) likely to create confusion.
+
+*/
 
 #if PHONE
 	#define WANT_PVR 1
@@ -147,6 +161,49 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 	return 0;
 }
 
+int pow2_up(int n)
+{
+	int o = 1;
+	while(o < n) o *= 2;
+	return o;
+}
+
+int pow2_down(int n)
+{
+	int o = 65536;
+	while(o > n) o /= 2;
+	return o;
+}
+
+// Resizes the image to meet our constraints.  
+// up - resize bigger to hit power of 2
+// down - resize smaller to hit power of 2
+// if neither: do nothing
+// square: require image to be square
+// returns true if the image ALREADY meets these criteria, false if it must
+// be resized.  if up & down are both false, a "false" return leaves the image in its
+// original (unusable) form.
+static bool HandleScale(ImageInfo& info, bool up, bool down, bool square)
+{
+	int nx = down ? pow2_down(info.width) : pow2_up(info.width);
+	int ny = down ? pow2_down(info.height) : pow2_up(info.height);
+	
+	if(square && up) nx = ny = max(nx,ny);
+	if(square && down) nx = ny = min(nx, ny);
+	
+	if(nx == info.width && ny == info.height)
+		return true;
+		
+	if(!up && !down) return false;
+	
+	ImageInfo	n;
+	CreateNewBitmap(nx,ny,info.channels, &n);
+	CopyBitmapSection(&info, &n, 0, 0, info.width, info.height, 0, 0, nx, ny);
+	swap(n, info);
+	DestroyBitmap(&n);
+	
+	return false;
+}
 
 int main(int argc, char * argv[])
 {
@@ -181,12 +238,21 @@ int main(int argc, char * argv[])
 		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
 
 #if WANT_PVR		
+		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("DIV\n");
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvrtc4 4-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw16 PVR uses 16-bit color\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");
-		printf("CMD .png .pvr \"%s\" PVR_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("DIV\n");
+		printf("RADIO PVR_SCALE 1 --scale_none Do not resize images\n");
+		printf("RADIO PVR_SCALE 0 --scale_up Scale up to nearest power of 2\n");
+		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");		
+		printf("DIV\n");
+		printf("CHECK PREVIEW 0 --make_preview Output preview of compressed PVR image\n");
+		printf("CHECK MIPS 1 --make_mips Create mipmap for PVR image\n");
+		printf("CHECK ONEFILE 1 --one_file All text info goes into one file\n");
+		printf("CMD .png .pvr \"%s\" PVR_MODE PVR_SCALE PREVIEW MIPS \"INFILE\" \"OUTFILE\"\n",argv[0]);
 #endif		
 		return 0;
 	}
@@ -198,41 +264,171 @@ int main(int argc, char * argv[])
 		exit(1);
 	}
 
-	if(strcmp(argv[1],"--png2pvrtc2")==0 ||
+	if(strcmp(argv[1],"--info")==0)
+	{
+		ImageInfo	info;
+		
+		int n = 2;
+		bool one_file = false;
+		
+		if(strcmp(argv[n],"--one_file")==0) { ++n; one_file = true; }
+		if(CreateBitmapFromPNG(argv[n], &info, true))
+		{
+			printf("Unable to open png file %s\n", argv[n]);
+			return 1;
+		}
+		
+		string target = argv[n+1];
+		if(one_file)
+		{
+			string::size_type p = target.find_last_of("\\/:");
+			if(p != target.npos)
+				target.erase(p+1);
+			target += "info.txt";
+		}
+		
+		FILE * fi = fopen(target.c_str(), one_file ? "a" : "w");
+		if(fi)
+		{
+			const char * name = argv[n];
+			const char * p = name;
+			while(*p)
+			{
+				if(*p == '\\' || *p == ':' || *p == '/')
+					name = p+1;
+				++p;
+			}
+			fprintf(fi,"\"%s\", %d, %d, %d\n", name, info.width, info.height, info.channels);
+			fclose(fi);
+		}
+		
+	}
+
+	else if(strcmp(argv[1],"--png2pvrtc2")==0 ||
 	   strcmp(argv[1],"--png2pvrtc4")==0)
 	{
 		char cmd_buf[2048];
 		const char *							pvr_mode = "--bits-per-pixel-2";
 		if(strcmp(argv[1],"--png2pvrtc4")==0)	pvr_mode = "--bits-per-pixel-4";
+		
+		// PowerVR does not provide open src for PVRTC.  So...we have to convert our png using Apple's texture tool.
+		
+		bool want_preview = false;
+		bool want_mips = false;
+		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		
+		int n = 3;
+		
+		if(strcmp(argv[n],"--make_preview")==0) { want_preview = true; ++n; }
+		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
+		
+		ImageInfo	info;
+		if(CreateBitmapFromPNG(argv[n], &info, true))
+		{
+			printf("Unable to open png file %s\n", argv[n]);
+			return 1;
+		}
+		
+		if (!HandleScale(info, scale_up, scale_down, true))
+		{
+			// Image does NOT meet our power of 2 needs.  
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a square power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
+			else if(want_preview)
+			{
+				string preview_path = string(argv[n]) + ".scl.png";
+				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0);
+			}
+		}
+		
+		FlipImageY(info);
+		string temp_path = argv[n];
+		temp_path += "_temp";
+		if(WriteBitmapToPNG(&info, temp_path.c_str(), NULL, 0))
+		{
+			printf("Unable to write temp file %s\n", temp_path.c_str());
+			return 1;
+		}
+		DestroyBitmap(&info);
 
-		//sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s -m -c PVR -o \"%s\" -p \"%s.png\" \"%s\"", my_dir, pvr_mode, argv[3], argv[3], argv[2]);
-		//printf("Cmd: %s\n", cmd_buf);
-		//system(cmd_buf);
-		printf("png2pvrtc/png2pvrtc4 are not implemented, poke Ben <bsupnik@xsquawkbox.net> to fix this.\n");
+		string preview = string(argv[n+1]) + ".png";			
+				
+		string flags;
+		if(want_mips) flags += "-m ";
+		if(want_preview){
+			flags += "-p \"";
+			flags += preview;
+			flags += "\" ";
+		}
+						
+		sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s %s -c PVR -o \"%s\" \"%s\"", my_dir, pvr_mode, flags.c_str(), argv[n+1], temp_path.c_str());
+		printf("Cmd: %s\n", cmd_buf);
+		system(cmd_buf);
+		
+		FILE_delete_file(temp_path.c_str(), 0);
+		if(want_preview)
+		{
+			if(!CreateBitmapFromPNG(preview.c_str(), &info, true))
+			{
+				FlipImageY(info);
+				WriteBitmapToPNG(&info, preview.c_str(),0,false);
+				DestroyBitmap(&info);
+			}
+		}
+		
 		return 1;
 	}
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
 	{
+		bool want_preview = false;
+		bool want_mips = false;
+		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		
+		int n = 3;
+		
+		if(strcmp(argv[n],"--make_preview")==0) { want_preview = true; ++n; }
+		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
+
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[2], &info, true)!=0)
+		if (CreateBitmapFromPNG(argv[n], &info, true)!=0)
 		{
-			printf("Unable to open png file %s\n", argv[2]);
+			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
 		}
 
+		if (!HandleScale(info, scale_up, scale_down, false))
+		{
+			// Image does NOT meet our power of 2 needs.  
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
+			else if(want_preview)
+			{
+				string preview_path = string(argv[n]) + ".scl.png";
+				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0);
+			}
+		}
+
 		char buf[1024];
-		const char * outf = argv[3];
+		const char * outf = argv[n+1];
 		if(strcmp(outf,"-")==0)
 		{
-			strcpy(buf,argv[2]);
+			strcpy(buf,argv[n]);
 			buf[strlen(buf)-4]=0;
 			strcat(buf,".raw");
 			outf=buf;
 		}
 		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0)!=0)
 		{
-			printf("Unable to write raw PVR file %s\n", argv[3]);
+			printf("Unable to write raw PVR file %s\n", argv[n+1]);
 			return 1;
 		}
 		return 0;
