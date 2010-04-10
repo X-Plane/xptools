@@ -25,13 +25,15 @@
 #include "BitmapUtils.h"
 #include "QuiltUtils.h"
 #include "FileUtils.h"
+#include "ATI_Compress.h"
+#include "MathUtils.h"
 
 /*
 
 	WHAT IS ALL OF THIS PHONE STUFF???
-	
+
 	DDSTool is mainly used by the X-Plane community to convert PNGs to DDS/DXT files so that the texture compression they get is high quality/produced offline.
-	
+
 	But...LR also uses DDSTool and XGrinder to prepare content for the iphone apps.  The iphone uses "pvr" files, an image container for use with PowerVR's
 	PVRTC compressed format.  In other words, the iphone has its own file formats and its own compression.  When PHONE is defined to 1, the tools compile
 	with iphone options enabled...that's what most of this junk is.  Normally we ship the tools with phone features off because they are (1) completely useless
@@ -70,6 +72,18 @@ typedef struct PVR_Header_Texture_TAG
         unsigned int dwNumSurfs;                        /*!< the number of surfaces present in the pvr */
 } PVR_Texture_Header;
 
+typedef struct ATC_Header_Texture_TAG
+{
+		unsigned int signature;
+		unsigned int width;
+		unsigned int height;
+		unsigned int flags;
+		unsigned int dataOffset;  // From start of header/file
+		unsigned int reserved1;
+		unsigned int reserved2;
+		unsigned int reserved3;
+} ATC_Texture_Header;
+
 enum {
 		OGL_RGBA_4444= 0x10,
         OGL_RGBA_5551,
@@ -83,6 +97,12 @@ enum {
         OGL_PVRTC4,
         OGL_PVRTC2_2,
         OGL_PVRTC2_4,
+};
+
+enum {
+		ATC_RGB   = 0x00000001,
+		ATC_RGBA  = 0x00000002,
+		ATC_TILED = 0X00000004
 };
 
 static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit)
@@ -175,7 +195,7 @@ int pow2_down(int n)
 	return o;
 }
 
-// Resizes the image to meet our constraints.  
+// Resizes the image to meet our constraints.
 // up - resize bigger to hit power of 2
 // down - resize smaller to hit power of 2
 // if neither: do nothing
@@ -187,21 +207,21 @@ static bool HandleScale(ImageInfo& info, bool up, bool down, bool square)
 {
 	int nx = down ? pow2_down(info.width) : pow2_up(info.width);
 	int ny = down ? pow2_down(info.height) : pow2_up(info.height);
-	
+
 	if(square && up) nx = ny = max(nx,ny);
 	if(square && down) nx = ny = min(nx, ny);
-	
+
 	if(nx == info.width && ny == info.height)
 		return true;
-		
+
 	if(!up && !down) return false;
-	
+
 	ImageInfo	n;
 	CreateNewBitmap(nx,ny,info.channels, &n);
 	CopyBitmapSection(&info, &n, 0, 0, info.width, info.height, 0, 0, nx, ny);
 	swap(n, info);
 	DestroyBitmap(&n);
-	
+
 	return false;
 }
 
@@ -237,7 +257,7 @@ int main(int argc, char * argv[])
 		printf("DIV\n");
 		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
 
-#if WANT_PVR		
+#if WANT_PVR
 		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("DIV\n");
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
@@ -247,13 +267,14 @@ int main(int argc, char * argv[])
 		printf("DIV\n");
 		printf("RADIO PVR_SCALE 1 --scale_none Do not resize images\n");
 		printf("RADIO PVR_SCALE 0 --scale_up Scale up to nearest power of 2\n");
-		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");		
+		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");
 		printf("DIV\n");
 		printf("CHECK PREVIEW 0 --make_preview Output preview of compressed PVR image\n");
 		printf("CHECK MIPS 1 --make_mips Create mipmap for PVR image\n");
 		printf("CHECK ONEFILE 1 --one_file All text info goes into one file\n");
 		printf("CMD .png .pvr \"%s\" PVR_MODE PVR_SCALE PREVIEW MIPS \"INFILE\" \"OUTFILE\"\n",argv[0]);
-#endif		
+		printf("CMD .png .atc \"%s\" --png2atc \"INFILE\" \"OUTFILE\"\n",argv[0]);
+#endif
 		return 0;
 	}
 
@@ -267,17 +288,17 @@ int main(int argc, char * argv[])
 	if(strcmp(argv[1],"--info")==0)
 	{
 		ImageInfo	info;
-		
+
 		int n = 2;
 		bool one_file = false;
-		
+
 		if(strcmp(argv[n],"--one_file")==0) { ++n; one_file = true; }
 		if(CreateBitmapFromPNG(argv[n], &info, true))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
 		}
-		
+
 		string target = argv[n+1];
 		if(one_file)
 		{
@@ -286,7 +307,7 @@ int main(int argc, char * argv[])
 				target.erase(p+1);
 			target += "info.txt";
 		}
-		
+
 		FILE * fi = fopen(target.c_str(), one_file ? "a" : "w");
 		if(fi)
 		{
@@ -301,7 +322,7 @@ int main(int argc, char * argv[])
 			fprintf(fi,"\"%s\", %d, %d, %d\n", name, info.width, info.height, info.channels);
 			fclose(fi);
 		}
-		
+
 	}
 
 	else if(strcmp(argv[1],"--png2pvrtc2")==0 ||
@@ -310,32 +331,32 @@ int main(int argc, char * argv[])
 		char cmd_buf[2048];
 		const char *							pvr_mode = "--bits-per-pixel-2";
 		if(strcmp(argv[1],"--png2pvrtc4")==0)	pvr_mode = "--bits-per-pixel-4";
-		
+
 		// PowerVR does not provide open src for PVRTC.  So...we have to convert our png using Apple's texture tool.
-		
+
 		bool want_preview = false;
 		bool want_mips = false;
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
-		
+
 		int n = 3;
-		
+
 		if(strcmp(argv[n],"--make_preview")==0) { want_preview = true; ++n; }
 		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
-		
+
 		ImageInfo	info;
 		if(CreateBitmapFromPNG(argv[n], &info, true))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
 		}
-		
+
 		if (!HandleScale(info, scale_up, scale_down, true))
 		{
-			// Image does NOT meet our power of 2 needs.  
+			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down)
 			{
-				printf("The imager is not a square power of 2.  It is: %d by %d\n", info.width, info.height);
+				printf("The image is not a square power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
 			}
 			else if(want_preview)
@@ -344,7 +365,7 @@ int main(int argc, char * argv[])
 				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0);
 			}
 		}
-		
+
 		FlipImageY(info);
 		string temp_path = argv[n];
 		temp_path += "_temp";
@@ -355,8 +376,8 @@ int main(int argc, char * argv[])
 		}
 		DestroyBitmap(&info);
 
-		string preview = string(argv[n+1]) + ".png";			
-				
+		string preview = string(argv[n+1]) + ".png";
+
 		string flags;
 		if(want_mips) flags += "-m ";
 		if(want_preview){
@@ -364,11 +385,11 @@ int main(int argc, char * argv[])
 			flags += preview;
 			flags += "\" ";
 		}
-						
+
 		sprintf(cmd_buf,"\"%stexturetool\" -e PVRTC %s %s -c PVR -o \"%s\" \"%s\"", my_dir, pvr_mode, flags.c_str(), argv[n+1], temp_path.c_str());
 		printf("Cmd: %s\n", cmd_buf);
 		system(cmd_buf);
-		
+
 		FILE_delete_file(temp_path.c_str(), 0);
 		if(want_preview)
 		{
@@ -379,7 +400,7 @@ int main(int argc, char * argv[])
 				DestroyBitmap(&info);
 			}
 		}
-		
+
 		return 1;
 	}
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
@@ -389,9 +410,9 @@ int main(int argc, char * argv[])
 		bool want_mips = false;
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
-		
+
 		int n = 3;
-		
+
 		if(strcmp(argv[n],"--make_preview")==0) { want_preview = true; ++n; }
 		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
 
@@ -404,7 +425,7 @@ int main(int argc, char * argv[])
 
 		if (!HandleScale(info, scale_up, scale_down, false))
 		{
-			// Image does NOT meet our power of 2 needs.  
+			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
@@ -438,10 +459,10 @@ int main(int argc, char * argv[])
 	   strcmp(argv[1],"--png2dxt3")==0 ||
 	   strcmp(argv[1],"--png2dxt5")==0)
 	{
-	
+
 		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
 		int arg_base = has_mips ? 3 : 2;
-	
+
 		ImageInfo	info;
 		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
@@ -469,7 +490,7 @@ int main(int argc, char * argv[])
 			if(info.channels == 3)  dxt_type=1;
 			else					dxt_type=5;
 		}
-		
+
 		if(has_mips)	MakeMipmapStackFromImage(&info);
 		else			MakeMipmapStack(&info);
 
@@ -484,7 +505,7 @@ int main(int argc, char * argv[])
 	{
 		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
 		int arg_base = has_mips ? 3 : 2;
-	
+
 		ImageInfo	info;
 		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
@@ -512,27 +533,146 @@ int main(int argc, char * argv[])
 		}
 		return 0;
 		// Quilt src w h splat over trials dest
-	} else if (strcmp(argv[1],"--quilt")==0)
+	}
+	else if (strcmp(argv[1],"--quilt")==0)
 	{
 		ImageInfo src, dst;
 		if(CreateBitmapFromPNG(argv[2], &src, false) != 0)
 			return 1;
-		
+
 		int dst_w = atoi(argv[3]);
 		int dst_h = atoi(argv[4]);
 		int splat = atoi(argv[5]);
 		int overlap = atoi(argv[6]);
 		int trials = atoi(argv[7]);
-		
+
 		printf("Will make %d x %d tex, with %d splats (%d overlap, %d trials.)\n", dst_w,dst_h, splat,overlap,trials);
-			
+
 		CreateNewBitmap(dst_w,dst_h, 4, &dst);
 		if(src.channels == 3) ConvertBitmapToAlpha(&src,false);
 
 		make_texture(src, dst, splat, overlap, trials);
 
 		WriteBitmapToPNG(&dst, argv[8], NULL, 0);
-		
+
+	}
+	else if(strcmp(argv[1],"--png2atc")==0)
+	{
+		int n = 2;
+
+		/*
+			typedef struct
+			{
+			   ATI_TC_DWORD   dwSize;                    ///< Size of this structure.
+			   ATI_TC_DWORD	dwWidth;                   ///< Width of the texture.
+			   ATI_TC_DWORD	dwHeight;                  ///< Height of the texture.
+			   ATI_TC_DWORD	dwPitch;                   ///< Distance to start of next line - necessary only for uncompressed textures.
+			   ATI_TC_FORMAT	format;                    ///< Format of the texture.
+			   ATI_TC_DWORD	dwDataSize;                ///< Size of the allocated texture data.
+			   ATI_TC_BYTE*	pData;                     ///< Pointer to the texture data
+			} ATI_TC_Texture;
+
+			struct	ImageInfo {
+				unsigned char *	data;
+				long			width;
+				long			height;
+				long			pad;
+				short			channels;
+			};
+
+			typedef struct
+			{
+			   ATI_TC_DWORD	dwSize;					      ///< The size of this structure.
+			   BOOL			   bUseChannelWeighting;      ///< Use channel weightings. With swizzled formats the weighting applies to the data within the specified channel not the channel itself.
+			   double			fWeightingRed;			      ///< The weighting of the Red or X Channel.
+			   double			fWeightingGreen;		      ///< The weighting of the Green or Y Channel.
+			   double			fWeightingBlue;		      ///< The weighting of the Blue or Z Channel.
+			   BOOL			   bUseAdaptiveWeighting;     ///< Adapt weighting on a per-block basis.
+			   BOOL			   bDXT1UseAlpha;             ///< Encode single-bit alpha data. Only valid when compressing to DXT1 & BC1.
+			   ATI_TC_BYTE		nAlphaThreshold;           ///< The alpha threshold to use when compressing to DXT1 & BC1 with bDXT1UseAlpha. Texels with an alpha value less than the threshold are treated as transparent.
+			   BOOL			   bDisableMultiThreading;    ///< Disable multi-threading of the compression. This will slow the compression but can be useful if you're managing threads in your application.
+			   ATI_TC_Speed   nCompressionSpeed;         ///< The trade-off between compression speed & quality.
+			} ATI_TC_CompressOptions;
+		*/
+		ImageInfo	info;
+		if(CreateBitmapFromPNG(argv[n], &info, true))
+		{
+			printf("Unable to open png file %s\n", argv[n]);
+			return 1;
+		}
+
+		// We need to save our channel count because MakeMipmapStack is going to
+		// manually force everything to have an alpha channel.
+		int channels = info.channels;
+		MakeMipmapStack(&info);
+		struct ImageInfo img(info);
+
+		ATC_Texture_Header h;
+		h.signature = 0xCCC40002;
+		h.dataOffset = sizeof(h);
+		h.height = info.height;
+		h.width = info.width;
+		h.flags = (channels == 3) ? ATC_RGB : ATC_RGBA;
+		h.reserved1 = h.reserved2 = h.reserved3 = 0;
+
+		FILE * fi = fopen(argv[++n],"wb");
+
+		if(!fi)
+		{
+			printf("Unable to open destination file %s\n", argv[n]);
+			return 1;
+		}
+
+		// Write the file header
+		fwrite(&h,1,sizeof(h),fi);
+
+		// Initialize our source texture
+		ATI_TC_Texture srcTex;
+		srcTex.dwSize = sizeof(srcTex);
+		srcTex.format = (channels == 3) ? ATI_TC_FORMAT_RGB_888 : ATI_TC_FORMAT_ARGB_8888;
+
+		// Initialize our destination texture
+		ATI_TC_Texture destTex;
+		destTex.dwSize = sizeof(destTex);
+		destTex.format = (channels == 3) ? ATI_TC_FORMAT_ATC_RGB : ATI_TC_FORMAT_ATC_RGBA_Explicit;
+
+		do {
+			ImageInfo tempImg;
+			CreateNewBitmap(img.width, img.height, img.channels, &tempImg);
+			CopyBitmapSectionDirect(img, tempImg, 0, 0, 0, 0, img.width, img.height);
+
+			if(channels == 3)
+				ConvertAlphaToBitmap(&tempImg, false);
+
+			srcTex.dwWidth = tempImg.width;
+			srcTex.dwHeight = tempImg.height;
+			srcTex.dwPitch = 0;
+			// We use img.channels here because  MipMapStack will change it to 4 soemtimes even if it's really 3.
+			srcTex.dwDataSize = (tempImg.width * tempImg.height * (tempImg.channels * 8)) / 8;
+			srcTex.pData = tempImg.data;
+
+
+			destTex.dwWidth = srcTex.dwWidth;
+			destTex.dwHeight = srcTex.dwHeight;
+			destTex.dwPitch = 0;
+			// Min block size is 4x4 which is either 8 or 16 byte blocks MINIMUM
+			destTex.dwDataSize = intmax2((destTex.dwHeight * destTex.dwWidth * (tempImg.channels == 3 ? 4 : 8)) / 8, (tempImg.channels == 3 ? 8 : 16));
+   			destTex.pData = (ATI_TC_BYTE*) malloc(destTex.dwDataSize);
+
+			// Convert it!
+   			ATI_TC_ConvertTexture(&srcTex, &destTex, NULL, NULL, NULL, NULL);
+
+   			fwrite(destTex.pData,1,destTex.dwDataSize,fi);
+   			free(destTex.pData);
+   			DestroyBitmap(&tempImg);
+
+			if(!AdvanceMipmapStack(&img))
+				break;
+		} while (1);
+
+		fclose(fi);
+		DestroyBitmap(&info);
+
 	} else {
 		printf("Unknown conversion flag %s\n", argv[1]);
 		return 1;

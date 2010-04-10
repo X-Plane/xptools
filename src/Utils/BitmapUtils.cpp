@@ -1441,7 +1441,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	}
 
 	struct ImageInfo img(ioImage);
-	
+
 	int len = squish::GetStorageRequirements(img.width,img.height,flags);
 
 
@@ -1468,20 +1468,20 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	fwrite(&header,sizeof(header),1,fi);
 
 	do {
-	
-		swap_bgra_y(img);		
-	
+
+		swap_bgra_y(img);
+
 		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
 		len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
 
-		swap_bgra_y(img);		
+		swap_bgra_y(img);
 
 		if(!AdvanceMipmapStack(&img))
 			break;
 
 	} while (1);
-	
+
 	fclose(fi);
 	return 0;
 	// close file
@@ -1665,7 +1665,7 @@ void	FlipImageY(struct ImageInfo&	io_image)
 int MakeMipmapStack(struct ImageInfo * ioImage)
 {
 	if(ioImage->channels == 3)
-		ConvertAlphaToBitmap(ioImage, false);
+		ConvertBitmapToAlpha(ioImage, false);
 	int storage = 0;
 	int mips = 0;
 	int x = ioImage->width;
@@ -1677,9 +1677,9 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 		if (x > 1) x >>= 1;
 		if (y > 1) y >>= 1;
 	} while (1);
-	
+
 	unsigned char * base = (unsigned char *) malloc(storage);
-	
+
 	ImageInfo ni;
 	ni.width = ioImage->width;
 	ni.height = ioImage->height;
@@ -1688,7 +1688,7 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 	ni.data = base;
 
 	CopyBitmapSectionDirect(*ioImage, ni, 0, 0, 0, 0, ni.width, ni.height);
-	
+
 	while(ni.width > 1 || ni.height > 1)
 	{
 		unsigned char * old_ptr = ni.data;
@@ -1702,17 +1702,17 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 		if(ni.width > 1) ni.width >>= 1;
 		if(ni.height > 1) ni.height >>= 1;
 	}
-	
+
 	free(ioImage->data);
 	ioImage->data = base;
-	
+
 	return mips;
 }
 
 int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 {
 	if(ioImage->channels == 3)
-		ConvertAlphaToBitmap(ioImage, false);
+		ConvertBitmapToAlpha(ioImage, false);
 	int storage = 0;
 	int mips = 0;
 	int x = ioImage->width;
@@ -1724,9 +1724,9 @@ int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 		if (x > 1) x >>= 1;
 		if (y > 1) y >>= 1;
 	} while (1);
-	
+
 	unsigned char * base = (unsigned char *) malloc(storage);
-	
+
 	ImageInfo ni;
 	ni.width = ioImage->width / 2;
 	ni.height = ioImage->height;
@@ -1739,29 +1739,29 @@ int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 	do {
 
 		CopyBitmapSectionDirect(*ioImage, ni, xo, 0, 0, 0, ni.width, ni.height);
-	
+
 		xo += ni.width;
 
 		if (!AdvanceMipmapStack(&ni))
 			break;
 	} while(1);
-	
+
 	free(ioImage->data);
 	ioImage->data = base;
-	
+
 	ioImage->width /= 2;
-	
+
 	return mips;
 }
 
 int AdvanceMipmapStack(struct ImageInfo * ioImage)
 {
 	if(ioImage->width == 1 && ioImage->height == 1) return 0;
-	
+
 	ioImage->data += (4 * ioImage->width * ioImage->height);
 	if(ioImage->width > 1) ioImage->width >>= 1;
 	if(ioImage->height > 1) ioImage->height >>= 1;
 	return 1;
 }
- 
+
 
