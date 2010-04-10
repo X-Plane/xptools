@@ -429,7 +429,7 @@ void	XGrindInit(string& t)
 	g_me=last_sep;
 
 	/* search binaries under ./tools */
-	#if (APL && DEV) || (DEV && PHONE)
+	#if (!LIN && DEV) || (DEV && PHONE)
 		sprintf(base, "%s", base);				// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
 	#else										// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
 		sprintf(base, "%s/tools", base);
