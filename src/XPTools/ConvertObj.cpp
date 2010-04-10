@@ -49,10 +49,8 @@ enum {
 	axis_Y,
 	axis_Z,
 	save_OBJ7,
-	save_OBJ8,
-
-	size_16,
-	size_32
+	save_OBJ8
+	
 };
 
 static	int	gUnits = unit_Meters;
@@ -63,7 +61,6 @@ static	int	gFlipZ = 0;
 static	int	gPoly = poly_CCW;
 static	int	gAxis = axis_Z;
 static	int	gSave = save_OBJ8;
-static	int	gBitSize = size_16;
 
 static int	gOptimize = 0;
 
@@ -177,7 +174,7 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 		if(gOptimize)
 			Obj8_Optimize(obj8);
-		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
+		if (!XObjWriteEmbedded(inDstFile, obj8))			{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 	}
 #endif
 
@@ -235,9 +232,9 @@ int main(int argc, char * argv[])
 	{
 		printf("CMD .obj .3ds \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj .dxf \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 #if PHONE
-		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
 #endif
 		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
@@ -258,9 +255,6 @@ int main(int argc, char * argv[])
 		printf("DIV\n");
 		printf("RADIO CO_AXIS 1 --axis_y Y Axis is up\n");
 		printf("RADIO CO_AXIS 0 --axis_z Z Axis is up\n");
-		printf("DIV\n");
-		printf("RADIO CO_BS 1 --16 16-bit vertices\n");
-		printf("RADIO CO_BS 0 --32 32-bit vertices\n");
 		printf("DIV\n");
 		printf("RADIO CO_OBJ8 0 --obj7 Write OBJ version 7\n");
 		printf("RADIO CO_OBJ8 1 --obj8 Write OBJ version 8\n");
@@ -288,9 +282,6 @@ int main(int argc, char * argv[])
 
 		else if (!strcmp(argv[a],"--obj7"))			gSave = save_OBJ7;
 		else if (!strcmp(argv[a],"--obj8"))			gSave = save_OBJ8;
-
-		else if (!strcmp(argv[a],"--16"))			gBitSize = size_16;
-		else if (!strcmp(argv[a],"--32"))			gBitSize = size_32;
 
 		else { printf("Unknown option %s\n",argv[a]); exit(1); }
 	}
