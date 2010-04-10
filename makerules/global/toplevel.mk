@@ -135,6 +135,10 @@ else ifeq ($(conf), release_test)
 	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
 	DEFINES		+= -DDEV=1
 	StripDebug	:= Yes
+else ifeq ($(conf), phone)
+	CFLAGS		+= -O0 -g
+	CXXFLAGS	+= -O0 -g
+	DEFINES		+= -DDEV=1 -DPHONE=1
 # default to debug configuration
 else
 	CFLAGS		+= -O0 -g

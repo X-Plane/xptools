@@ -25,8 +25,11 @@
 #include "BitmapUtils.h"
 #include "QuiltUtils.h"
 #include "FileUtils.h"
-#include "ATI_Compress.h"
-#include "MathUtils.h"
+
+#if PHONE
+	#include "ATI_Compress.h"
+	#include "MathUtils.h"
+#endif
 
 /*
 
@@ -72,6 +75,7 @@ typedef struct PVR_Header_Texture_TAG
         unsigned int dwNumSurfs;                        /*!< the number of surfaces present in the pvr */
 } PVR_Texture_Header;
 
+#if PHONE
 typedef struct ATC_Header_Texture_TAG
 {
 		unsigned int signature;
@@ -83,6 +87,7 @@ typedef struct ATC_Header_Texture_TAG
 		unsigned int reserved2;
 		unsigned int reserved3;
 } ATC_Texture_Header;
+#endif
 
 enum {
 		OGL_RGBA_4444= 0x10,
@@ -99,11 +104,13 @@ enum {
         OGL_PVRTC2_4,
 };
 
+#if PHONE
 enum {
 		ATC_RGB   = 0x00000001,
 		ATC_RGBA  = 0x00000002,
 		ATC_TILED = 0X00000004
 };
+#endif
 
 static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit)
 {
@@ -258,6 +265,9 @@ int main(int argc, char * argv[])
 		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
 
 #if WANT_PVR
+	#if PHONE
+		printf("CMD .png .atc \"%s\" --png2atc \"INFILE\" \"OUTFILE\"\n",argv[0]);
+	#endif
 		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("DIV\n");
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
@@ -273,7 +283,6 @@ int main(int argc, char * argv[])
 		printf("CHECK MIPS 1 --make_mips Create mipmap for PVR image\n");
 		printf("CHECK ONEFILE 1 --one_file All text info goes into one file\n");
 		printf("CMD .png .pvr \"%s\" PVR_MODE PVR_SCALE PREVIEW MIPS \"INFILE\" \"OUTFILE\"\n",argv[0]);
-		printf("CMD .png .atc \"%s\" --png2atc \"INFILE\" \"OUTFILE\"\n",argv[0]);
 #endif
 		return 0;
 	}
@@ -556,44 +565,11 @@ int main(int argc, char * argv[])
 		WriteBitmapToPNG(&dst, argv[8], NULL, 0);
 
 	}
+#if PHONE
 	else if(strcmp(argv[1],"--png2atc")==0)
 	{
 		int n = 2;
 
-		/*
-			typedef struct
-			{
-			   ATI_TC_DWORD   dwSize;                    ///< Size of this structure.
-			   ATI_TC_DWORD	dwWidth;                   ///< Width of the texture.
-			   ATI_TC_DWORD	dwHeight;                  ///< Height of the texture.
-			   ATI_TC_DWORD	dwPitch;                   ///< Distance to start of next line - necessary only for uncompressed textures.
-			   ATI_TC_FORMAT	format;                    ///< Format of the texture.
-			   ATI_TC_DWORD	dwDataSize;                ///< Size of the allocated texture data.
-			   ATI_TC_BYTE*	pData;                     ///< Pointer to the texture data
-			} ATI_TC_Texture;
-
-			struct	ImageInfo {
-				unsigned char *	data;
-				long			width;
-				long			height;
-				long			pad;
-				short			channels;
-			};
-
-			typedef struct
-			{
-			   ATI_TC_DWORD	dwSize;					      ///< The size of this structure.
-			   BOOL			   bUseChannelWeighting;      ///< Use channel weightings. With swizzled formats the weighting applies to the data within the specified channel not the channel itself.
-			   double			fWeightingRed;			      ///< The weighting of the Red or X Channel.
-			   double			fWeightingGreen;		      ///< The weighting of the Green or Y Channel.
-			   double			fWeightingBlue;		      ///< The weighting of the Blue or Z Channel.
-			   BOOL			   bUseAdaptiveWeighting;     ///< Adapt weighting on a per-block basis.
-			   BOOL			   bDXT1UseAlpha;             ///< Encode single-bit alpha data. Only valid when compressing to DXT1 & BC1.
-			   ATI_TC_BYTE		nAlphaThreshold;           ///< The alpha threshold to use when compressing to DXT1 & BC1 with bDXT1UseAlpha. Texels with an alpha value less than the threshold are treated as transparent.
-			   BOOL			   bDisableMultiThreading;    ///< Disable multi-threading of the compression. This will slow the compression but can be useful if you're managing threads in your application.
-			   ATI_TC_Speed   nCompressionSpeed;         ///< The trade-off between compression speed & quality.
-			} ATI_TC_CompressOptions;
-		*/
 		ImageInfo	info;
 		if(CreateBitmapFromPNG(argv[n], &info, true))
 		{
@@ -673,7 +649,9 @@ int main(int argc, char * argv[])
 		fclose(fi);
 		DestroyBitmap(&info);
 
-	} else {
+	}
+#endif
+	else {
 		printf("Unknown conversion flag %s\n", argv[1]);
 		return 1;
 	}

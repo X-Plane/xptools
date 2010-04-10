@@ -5,7 +5,7 @@
 TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
-DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DPHONE=1
+DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lsquish -ltiff -ljpeg -lpng -lz
 #FORCEREBUILD_SUFFIX := _ddst
 
@@ -24,8 +24,12 @@ endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
-LIBS		+= ./libs/local/lib/ATI_Compress_1_7_DLL.lib
 DEFINES		+= -DMINGW_BUILD=1
+
+ifeq ($(conf), phone)
+LIBS		+= ./libs/local/lib/ATI_Compress_1_7_DLL.lib
+endif
+
 endif #PLAT_MINGW
 
 
