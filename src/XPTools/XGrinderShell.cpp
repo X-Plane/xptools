@@ -278,6 +278,8 @@ static void spool_job(const char * cmd_line)
 // not applicable with xpt_popen()
 //	quoted = "\"" + quoted + "\"";
 #endif
+	string log_txt;
+
 	FILE * pipe = popen(quoted.c_str(), "r");
 	while(!feof(pipe))
 	{
@@ -289,8 +291,17 @@ static void spool_job(const char * cmd_line)
 			break;
 		}
 		fwrite(buf,1,count,log);
+		if(count)
+			log_txt.insert(log_txt.end(), buf,buf+count);
 	}
-	pclose(pipe);
+	int err_code = pclose(pipe);
+	if(err_code)
+	{
+		if(log_txt.empty())
+			XGrinder_ShowMessage("%s: error code %d.\n", cmd_line, err_code);
+		else
+			XGrinder_ShowMessage("%s",log_txt.c_str());
+	}
 	if(log != stdout)
 		fclose(log);
 }
@@ -418,9 +429,9 @@ void	XGrindInit(string& t)
 	g_me=last_sep;
 
 	/* search binaries under ./tools */
-	#if APL && DEV
+	#if (APL && DEV) || (DEV && IPHONE)
 		sprintf(base, "%s", base);				// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
-	#else										// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.
+	#else										// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
 		sprintf(base, "%s/tools", base);
 	#endif
 	MF_GetDirectoryBulk(base, file_cb, base);
