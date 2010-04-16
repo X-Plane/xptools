@@ -145,7 +145,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			break;
 		case shader_slope:	
 		case shader_slope2:	
-			fprintf(ter, n->second.shader == shader_slope2 ? "AUTO_SLOPE_HEADING" : "AUTO_SLOPE" CRLF);
+			fprintf(ter, n->second.shader == shader_slope2 ? ("AUTO_SLOPE_HEADING" CRLF) : ("AUTO_SLOPE" CRLF));
 			fprintf(ter,"AUTO_SLOPE_HILL %d %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res.x(), (int) n->second.cliff_info.hill_res.y(), n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
 			fprintf(ter,"AUTO_SLOPE_CLIFF %d %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res.x(), (int) n->second.cliff_info.cliff_res.y(), n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
 			imageFiles.insert(dir_path+n->second.cliff_info.hill_tex);
