@@ -79,6 +79,21 @@ static bool one_winding(const vector<Bezier2>& v)
 	return true;
 }
 
+// Here's the problem(s):
+// 1. X-Plane won't open a DSF whose points are outside the tile boundaries.
+// 2. CGAL sometimes gives us a point that is fractionally outside the DSF due to a rounding error.
+// So: apply clamping, but flag when we are off by more than 1 meter.  (CGAL is significantly better
+// than this.
+#define MAX_OUTSIDE 0.00001
+static void gentle_crop(Point2& p, const Bbox2& bounds, bool& hard_crop)
+{
+	double x_outside = max(bounds.xmin() - p.x(), p.x() - bounds.xmax());
+	double y_outside = max(bounds.ymin() - p.y(), p.y() - bounds.ymax());
+	if(x_outside > MAX_OUTSIDE || y_outside > MAX_OUTSIDE)
+		hard_crop = true;
+	p = bounds.clamp(p);
+}
+
 /************************************************************************************************************************************************
  * BEZIER AND SEGMENT POLYGON CUTTING
  ************************************************************************************************************************************************/
@@ -389,7 +404,7 @@ void CropSegmentChainBox(const vector<Segment2>& in_chain, vector<Segment2>& out
 // some big item goes across buckets and we lose precision.
 #define DSF_DIVISIONS 32
 
-static bool g_dropped_pts = false;;
+static bool g_dropped_pts = false;
 
 struct	DSF_ResourceTable {
 	vector<string>		obj_defs;
@@ -455,12 +470,14 @@ static int DSF_HasBezierPol(IGISPolygon * pol)
 void assemble_dsf_pt(double c[8], const Point_2& pt, const Point_2 * bez, UVMap_t * uv, const Bbox2& bounds)
 {	
 	Point2	p = cgal2ben(pt);
+	gentle_crop(p, bounds, g_dropped_pts);
 	c[0] = p.x();
 	c[1] = p.y();
 
 	if(bez)
 	{
 		Point2 b = cgal2ben(*bez);
+		gentle_crop(b, bounds, g_dropped_pts);
 		c[2] = b.x();
 		c[3] = b.y();
 	}
@@ -490,12 +507,14 @@ void assemble_dsf_pt(double c[8], const Point_2& pt, const Point_2 * bez, UVMap_
 void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t * uv, const Bbox2& bounds)
 {	
 	Point2	p = pt;
+	gentle_crop(p, bounds, g_dropped_pts);
 	c[0] = p.x();
 	c[1] = p.y();
 
 	if(bez)
 	{
 		Point2 b = *bez;
+		gentle_crop(b, bounds, g_dropped_pts);
 		c[2] = b.x();
 		c[3] = b.y();
 	}
@@ -1055,7 +1074,7 @@ void DSF_Export(WED_Group * base, ILibrarian * package)
 	}
 
 	if(g_dropped_pts)
-		DoUserAlert("Warning: you have curved overlays that cross a DSF tile - they may not have exported correctly.  Do not use overlay elements that are curved and cross a DSF tile boundary.");
+		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
 }
 
 int		WED_CanExportPack(IResolver * resolver)
