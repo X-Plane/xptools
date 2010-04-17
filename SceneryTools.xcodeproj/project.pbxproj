@@ -276,6 +276,7 @@
 		D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */; };
 		D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */; };
 		D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */; };
+		D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D633FA6D0E12DF7400A3913F /* PCSBSocket.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */; };
 		D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
 		D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
@@ -324,6 +325,7 @@
 		D656B2290B518193003FF84F /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
+		D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6580A87113D8E17004C7C23 /* Bezier.cpp */; };
 		D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
 		D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
 		D65E4B250B65427C004D7887 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
@@ -401,6 +403,7 @@
 		D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
+		D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D660F8E4116FADA6005B8E14 /* WED_TCEDebugLayer.cpp */; };
 		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
 		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
 		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
@@ -1118,6 +1121,7 @@
 		D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPolygon.cpp; sourceTree = "<group>"; };
 		D63681A00B8ACA2600091AFC /* WED_GISComposite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISComposite.h; sourceTree = "<group>"; };
 		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
+		D6424EFD115948CD0031370E /* WED_DataModel2.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel2.sql; sourceTree = "<group>"; };
 		D64A0E83110F820A006172C3 /* ObjPlacement2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjPlacement2.h; sourceTree = "<group>"; };
 		D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement2.cpp; sourceTree = "<group>"; };
 		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
@@ -1141,6 +1145,8 @@
 		D656B12D0B51778F003FF84F /* XResources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XResources.h; sourceTree = "<group>"; };
 		D656B12E0B51778F003FF84F /* XResources.mac.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XResources.mac.cpp; sourceTree = "<group>"; };
 		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
+		D6580A86113D8E17004C7C23 /* Bezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bezier.h; sourceTree = "<group>"; };
+		D6580A87113D8E17004C7C23 /* Bezier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Bezier.cpp; sourceTree = "<group>"; };
 		D659755D0BEA6D18001FC7C3 /* GUI_ChangeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_ChangeView.h; sourceTree = "<group>"; };
 		D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ChangeView.cpp; sourceTree = "<group>"; };
 		D659758D0BEA6F2A001FC7C3 /* GUI_TabPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabPane.h; sourceTree = "<group>"; };
@@ -1148,6 +1154,8 @@
 		D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomerNew.cpp; sourceTree = "<group>"; };
 		D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapZoomerNew.h; sourceTree = "<group>"; };
 		D65E4B3A0B65427C004D7887 /* RenderFarm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RenderFarm; sourceTree = BUILT_PRODUCTS_DIR; };
+		D660F8E3116FADA6005B8E14 /* WED_TCEDebugLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCEDebugLayer.h; sourceTree = "<group>"; };
+		D660F8E4116FADA6005B8E14 /* WED_TCEDebugLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEDebugLayer.cpp; sourceTree = "<group>"; };
 		D66864230C4F783C00DB3056 /* WED_DSFExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFExport.h; sourceTree = "<group>"; };
 		D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFExport.cpp; sourceTree = "<group>"; };
 		D67083000C1A4DBA00F33E06 /* earth_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_11.jpg; sourceTree = "<group>"; };
@@ -2906,6 +2914,7 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6424EFD115948CD0031370E /* WED_DataModel2.sql */,
 				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
 				D6956ED10F82E91100F6718E /* WED_Assert.h */,
 				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
@@ -2955,6 +2964,8 @@
 				D680AA1D0FCD85B400712B5B /* WED_GISUtils.cpp */,
 				D653D6841054371B00A502FF /* WED_Routing.h */,
 				D653D6851054371B00A502FF /* WED_Routing.cpp */,
+				D660F8E3116FADA6005B8E14 /* WED_TCEDebugLayer.h */,
+				D660F8E4116FADA6005B8E14 /* WED_TCEDebugLayer.cpp */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3043,6 +3054,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6580A86113D8E17004C7C23 /* Bezier.h */,
+				D6580A87113D8E17004C7C23 /* Bezier.cpp */,
 				D6E941D810DC717300192A02 /* ForestTables.cpp */,
 				D6E941D910DC717300192A02 /* ForestTables.h */,
 				D6E941DA10DC717300192A02 /* MapRaster.cpp */,
@@ -4285,6 +4298,7 @@
 				D6C57A190C7E3E2500FCB4C1 /* BitmapUtils.cpp in Sources */,
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
 				D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */,
+				D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4497,6 +4511,8 @@
 				D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */,
 				D6DF67C2107E8A060004F643 /* WED_ATCFlow.cpp in Sources */,
 				D6DF67C3107E8A060004F643 /* WED_ATCRunwayUse.cpp in Sources */,
+				D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */,
+				D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4654,10 +4670,7 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(NATIVE_ARCH)";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_AUTO_VECTORIZATION = NO;
 				GCC_DYNAMIC_NO_PIC = YES;
@@ -4745,7 +4758,6 @@
 		D607342B0D197A1100E08F61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USE_TIF=1",
@@ -5035,7 +5047,6 @@
 		D62435430AE401EF004F00E3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5091,7 +5102,6 @@
 		D65E4B390B65427C004D7887 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"$(inherited)",
@@ -5257,6 +5267,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
