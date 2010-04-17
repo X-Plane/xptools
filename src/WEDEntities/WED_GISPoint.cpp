@@ -88,6 +88,13 @@ bool				WED_GISPoint::PtOnFrame		(GISLayer_t l, const Point2& pt, double dist) c
 	return p.squared_distance(pt) < (dist*dist);
 }
 
+bool WED_GISPoint::Cull(const Bbox2& b) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	return b.overlap(me);
+}
+
 void			WED_GISPoint::Rescale			(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
 	if (old_bounds != new_bounds)

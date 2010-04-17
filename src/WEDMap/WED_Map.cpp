@@ -241,9 +241,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
 {
-	Bbox2	what_bounds;
-	what->GetBounds(gis_Geo,what_bounds);
-	if (!bounds.overlap(what_bounds)) return;
+	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
@@ -260,9 +258,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
 {
-	Bbox2	what_bounds;
-	what->GetBounds(gis_Geo,what_bounds);
-	if (!bounds.overlap(what_bounds)) return;
+	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(what);

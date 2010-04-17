@@ -35,6 +35,7 @@
 #include "WED_ToolInfoAdapter.h"
 #include "WED_Colors.h"
 #include "GUI_Fonts.h"
+#include "WED_TCEDebugLayer.h"
 
 static char	kToolKeys[] = {
 	'v', 'e'
@@ -129,6 +130,8 @@ WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive
 	mTCE->SetMapLogicalBounds(0,0,1,1);
 
 	mTCE->ZoomShowAll();
+
+	mLayers.push_back(					new WED_TCEDebugLayer(mTCE, mTCE, resolver));
 
 	for(vector<WED_TCELayer *>::iterator l = mLayers.begin(); l != mLayers.end(); ++l)
 		mTCE->AddLayer(*l);

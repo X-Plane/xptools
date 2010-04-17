@@ -249,6 +249,7 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 	if(gEnumColors.count(f->data().mAreaFeature.mFeatType))
 		our_prop = f->data().mAreaFeature.mFeatType;
 		
+	if(f->data().GetZoning() != NO_VALUE)	
 	if(gEnumColors.count(f->data().GetZoning()))
 		our_prop = f->data().GetZoning();
 

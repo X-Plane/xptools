@@ -82,6 +82,12 @@ bool	WED_GISPoint_Bezier::IsSplit(void) const
 	return is_split.value;
 }
 
+void	WED_GISPoint_Bezier::GetBezierLocation  (GISLayer_t l, BezierPoint2& p) const
+{
+	this->GetLocation(l,p.pt);
+	if(!this->GetControlHandleLo(l, p.lo)) p.lo = p.pt;
+	if(!this->GetControlHandleHi(l, p.hi)) p.hi = p.pt;
+}
 
 
 void	WED_GISPoint_Bezier::SetControlHandleLo (GISLayer_t l, const Point2& p)
@@ -187,6 +193,26 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 	}
 }
 
+void	WED_GISPoint_Bezier::SetBezierLocation  (GISLayer_t l, const BezierPoint2& p)
+{
+	this->SetLocation(l,p.pt);
+	if(l == gis_Geo)
+	{
+		this->SetSplit(p.is_split());
+		if(p.has_lo())		this->SetControlHandleLo(l,p.lo);
+		else				this->DeleteHandleLo();
+		if(p.has_hi())		this->SetControlHandleHi(l,p.hi);
+		else				this->DeleteHandleHi();
+	} 
+	else 
+	{
+		this->SetControlHandleLo(l,p.lo);
+		this->SetControlHandleHi(l,p.hi);
+	}
+}
+
+
+/*
 void WED_GISPoint_Bezier::Reverse_(void)
 {
 	StateChanged();
@@ -194,9 +220,8 @@ void WED_GISPoint_Bezier::Reverse_(void)
 	CacheBuild();
 	swap(ctrl_lat_lo.value, ctrl_lat_hi.value);
 	swap(ctrl_lon_lo.value, ctrl_lon_hi.value);
-
 }
-
+*/
 
 
 void			WED_GISPoint_Bezier::Rotate			(GISLayer_t l, const Point2& ctr, double a)

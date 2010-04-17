@@ -91,6 +91,11 @@ void approximate_bezier_sequence_epsi(
 						__output_iterator		o,
 						double					epsi);
 
+// Same as above, but we split TWO beziers.  "b" is used for error metrics, but b2 is output to output2 at the same T intervals.
+// We can use this to get the UV map for a bezier as we approximate it.
+template <class __output_iterator>
+void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output1, __output_iterator output2, double t_start=0.0, double t_middle=0.5, double t_end=1.0);
+
 
 
 /****************************************************************************************************
@@ -213,7 +218,6 @@ struct	Segment2 {
 	bool	clip_to(const Bbox2& bbox);
 	bool	clip_to(const Segment2& bbox);
 	
-
 	double	y_at_x(double x) const { 	if (p1.x_ == p2.x_) 	return p1.y_;
 										if (x == p1.x_) 		return p1.y_;
 										if (x == p2.x_) 		return p2.y_;
@@ -317,6 +321,15 @@ struct	Bbox2 {
 	double		ymax() const { return p2.y_; }
 	double		xspan() const { return p2.x_ - p1.x_; }
 	double		yspan() const { return p2.y_ - p1.y_; }
+	
+	Point2		bottom_left (void) const { return Point2(p1.x(),p1.y()); }
+	Point2		bottom_right(void) const { return Point2(p2.x(),p1.y()); }
+	Point2		top_left    (void) const { return Point2(p1.x(),p2.y()); }
+	Point2		top_right   (void) const { return Point2(p2.x(),p2.y()); }
+	Segment2	bottom_side (void) const { return Segment2(bottom_left(), bottom_right()); }
+	Segment2	top_side    (void) const { return Segment2(top_right(), top_left()); }
+	Segment2	left_side   (void) const { return Segment2(top_left(), bottom_left()); }
+	Segment2	right_side  (void) const { return Segment2(bottom_right(), top_right()); }
 
 	bool		is_empty() const { return p1.x_ == p2.x_ || p1.y_ == p2.y_; }
 	bool		is_point() const { return p1 == p2; }
@@ -331,6 +344,10 @@ struct	Bbox2 {
 
 	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }
 	Point2		centroid(void) const { return Point2((p1.x_ + p2.x_) * 0.5,(p1.y_+p2.y_) * 0.5); }
+
+	Point2		clamp(const Point2& p) const { return Point2(
+						p.x() < xmin() ? xmin() : (p.x() > xmax() ? xmax() : p.x()),
+						p.y() < ymin() ? ymin() : (p.y() > ymax() ? ymax() : p.y())); };
 
 	double		rescale_to_x (const Bbox2& new_box, double x) const;
 	double		rescale_to_y (const Bbox2& new_box, double y) const;
@@ -392,6 +409,7 @@ struct	Bezier2 {
 	Bezier2() { }
 	Bezier2(const Point2& ip1, const Point2& ic1, const Point2& ic2, const Point2& ip2) : p1(ip1), p2(ip2), c1(ic1), c2(ic2) { }
 	Bezier2(const Bezier2& x) : p1(x.p1), p2(x.p2), c1(x.c1), c2(x.c2) { }
+	Bezier2(const Segment2& x) : p1(x.p1), p2(x.p2), c1(x.p1), c2(x.p2) { }
 	Bezier2& operator=(const Bezier2& x) { p1 = x.p1; p2 = x.p2; c1 = x.c1; c2 = x.c2; return *this; }
 
 	bool operator==(const Bezier2& x) const { return p1 == x.p1 && p2 == x.p2 && c1 == x.c1 && c2 == x.c2; }
@@ -400,6 +418,7 @@ struct	Bezier2 {
 	Point2	midpoint(double t=0.5) const;											// Returns a point on curve at time T
 	Vector2 derivative(double t) const;												// Gives derivative vector at time T.  Length may be zero!
 	void	partition(Bezier2& lhs, Bezier2& rhs, double t=0.5) const;				// Splits curve at time T
+	void	subcurve(Bezier2& sub, double t1, double t2) const;						// Sub-curve from T1 to T2.
 	void	bounds_fast(Bbox2& bounds) const;										// Returns reasonable bounding box
 	int		x_monotone(void) const;
 	int		y_monotone(void) const;
@@ -411,6 +430,9 @@ struct	Bezier2 {
 	bool	self_intersect(int depth) const;										// True if curve intersects itself except at end-points
 	bool	intersect(const Bezier2& rhs, int depth) const;							// True if curves intersect except at end-points
 	bool	is_near(const Point2& p, double distance) const;
+	
+	bool		is_segment(void) const { return p1 == c1 && p2 == c2; }
+	Segment2	as_segment(void) const { return Segment2(p1,p2); }
 
 	double	y_at_x(double x) const;
 	double	x_at_y(double y) const;
@@ -422,9 +444,24 @@ struct	Bezier2 {
 	Point2	p2;
 	Point2	c1;
 	Point2	c2;
+	
+	inline	Point2	source() const { return p1; }
+	inline	Point2	target() const { return p2; }	
 
 private:
 	bool	self_intersect_recursive(const Bezier2& rhs, int depth) const;
+};
+
+// "Bezier point" - a simplified version of what WED does.  lo or hi control handles being colocated with pt is used to signal no control handle.
+struct	BezierPoint2 {
+	Point2		lo;
+	Point2		pt;
+	Point2		hi;
+	bool		has_lo(void) const { return lo != pt; }
+	bool		has_hi(void) const { return hi != pt; }
+	bool		is_split(void) const { return Vector2(lo,pt) != Vector2(pt,hi); }
+	
+	bool operator==(const BezierPoint2& rhs) const { return lo == rhs.lo && pt == rhs.pt && hi == rhs.hi; }
 };
 
 /****************************************************************************************************
@@ -976,6 +1013,21 @@ inline Vector2 Bezier2::derivative(double t) const
 }
 
 
+inline void	Bezier2::subcurve(Bezier2& sub, double t1, double t2) const
+{
+	Bezier2 dummy, sub1;
+	if(t1 <= 0.0 && t2 >= 1.0)
+		sub = *this;
+	else if (t1 <= 0.0)
+		partition(sub,dummy,t2);
+	else if (t2 >= 1.0)
+		partition(dummy, sub, t1);
+	else
+	{
+		partition(sub1, dummy, t2);
+		sub1.partition(dummy, sub, t1 / t2);
+	}
+}
 
 
 inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
@@ -1613,6 +1665,36 @@ void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator out
 		++output;
 	}
 }
+
+template <class __output_iterator>
+void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output, __output_iterator output2, double t_start=0.0, double t_middle=0.5, double t_end=1.0)
+{
+	if(t_middle <= t_start || t_middle >= t_end) return;	// No "space"?  Probably too much recursion, just bail.
+	
+	Segment2	s;
+	Segment2	u;
+	s.p1=b.midpoint(t_start);
+	s.p2=b.midpoint(t_end);
+
+	u.p1=b2.midpoint(t_start);
+	u.p2=b2.midpoint(t_end);
+	
+	Point2	x = b.midpoint(t_middle);
+	if(s.squared_distance_supporting_line(x) > (err*err))
+	{
+		// We are definitely going to emit X.  Better try two recursions too.
+		// This will emit t_start and t_midle (since each call MUST emit a point).		
+		approximate_bezier_epsi_2(b,b2,err,output,output2,t_start,(t_start + t_middle) * 0.5, t_middle);		
+		approximate_bezier_epsi_2(b,b2,err,output,output2,t_middle,(t_middle + t_end) * 0.5, t_end);
+	} else {
+		// We're done.  We awlays emit t_start - our caller certified that p1 is a good thing to emit.
+		*output  = s.p1;
+		*output2 = u.p1;
+		++output;
+		++output2;
+	}
+}
+
 
 // Given a bezier-iterator type input iterator sequence and an output iterator that takes points,
 // this translates the entire point sequence, converting curves to epsi as needed.

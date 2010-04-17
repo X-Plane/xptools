@@ -16,12 +16,12 @@ CREATE TABLE IF NOT EXISTS WED_atcflow(
 	time_min		integer		NOT NULL,
 	time_max		integer		NOT NULL,
 	pattern_side	integer		NOT NULL,
-	pattern_rwy		string		NOT NULL
+	pattern_rwy		integer		NOT NULL
 );	
 
 CREATE TABLE IF NOT EXISTS WED_runwayuse(
 	id				integer		PRIMARY KEY,
-	rwy				string		NOT NULL,
+	rwy				integer		NOT NULL,
 	dep_frq			double		NOT NULL,
 	traffic			int			NOT NULL,
 	operations		int			NOT NULL,

@@ -23,8 +23,7 @@
 
 #ifndef Bezier_H
 #define Bezier_H
-// janos says: huh?
-//#error We are not ready to use this header yet.  We need to get gmp into the general build environment.
+
 
 #include "CGALDefs.h"
 
@@ -35,7 +34,7 @@
 #include <CGAL/General_polygon_set_2.h>
 #include <CGAL/General_polygon_2.h>
 #include <CGAL/General_polygon_with_holes_2.h>
-#include <CGAL/Gps_segment_traits_2.h>
+#include <CGAL/Gps_traits_2.h>
 
 #include "CompGeomDefs2.h"
 
@@ -46,19 +45,26 @@ typedef CGAL::Cartesian<Rational>							Rat_kernel;
 typedef CGAL::Cartesian<Algebraic>							Alg_kernel;
 typedef Rat_kernel::Point_2									Rat_point_2;
 typedef Alg_kernel::Point_2									Alg_point_2;
-typedef std::vector<Rat_point_2>							Bezier_container_;
 typedef CGAL::Arr_Bezier_curve_traits_2<Rat_kernel,
                                         Alg_kernel,
                                         Nt_traits>			Bezier_traits_base_;
-typedef CGAL::Gps_segment_traits_2<Rat_kernel, Bezier_container_, Bezier_traits_base_>	Bezier_traits_2;
+typedef CGAL::Gps_traits_2<Bezier_traits_base_>				Bezier_traits_2;
 										
 typedef Bezier_traits_2::Curve_2							Bezier_curve_2;
 
 typedef Bezier_traits_2::Point_2							Bezier_point_2;
 typedef CGAL::General_polygon_set_2<Bezier_traits_2>		Bezier_polygon_set_2;
 typedef Bezier_polygon_set_2::Arrangement_2					Bezier_arrangement_2;
-typedef CGAL::General_polygon_2<Bezier_traits_2>			Bezier_polygon_2;
-typedef CGAL::General_polygon_with_holes_2<Bezier_traits_2>	Bezier_polygon_with_holes_2;
+typedef Bezier_polygon_set_2::Polygon_2						Bezier_polygon_2;
+typedef Bezier_polygon_set_2::Polygon_with_holes_2			Bezier_polygon_with_holes_2;
+//typedef CGAL::General_polygon_2<Bezier_traits_base_>			Bezier_polygon_2;			
+//typedef CGAL::General_polygon_with_holes_2<Bezier_polygon_2>	Bezier_polygon_with_holes_2;
+
+
+Bezier_curve_2	ben2cgal(const Bezier2& b);
+Bezier2	cgal2ben(const Bezier_curve_2& b);
+Bezier2	cgal2ben(const Bezier_polygon_2::X_monotone_curve_2& b);		// This is really a monotone sub-curve converter!
+
 
 void	find_crossing_beziers(
 					const vector<Bezier_curve_2>& in_curves,
@@ -74,5 +80,15 @@ bool	do_beziers_cross(
 					
 bool	do_beziers_cross(
 					const vector<Bezier2>&	in_curves);
+					
+void	clip_bezier_polygon(
+					const Bezier_polygon_with_holes_2&		in_poly,
+					vector<Bezier_polygon_with_holes_2>&	out_remaining,
+					const Bbox_2&							clip_bounds);
+					
+void	clip_bezier_chain(
+					const vector<Bezier_curve_2>&			in_curves,
+					vector<Bezier_curve_2>&					out_curves,
+					const Bbox_2&							clip_bounds);
 
 #endif /* Bezier_H */

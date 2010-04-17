@@ -46,11 +46,13 @@ void	XESInit(bool want_forests)
 	LoadConfigFile("vocab.txt");
 
 	// Load first - zoning rules needed to validate terrain rules.
+	#if !PHONE
 	if(want_forests)
 	{
 		LoadForestTables();
 		LoadZoningRules();
 	}
+	#endif
 
 	int old_mark = gTokens.size();
 	LoadNetFeatureTables();

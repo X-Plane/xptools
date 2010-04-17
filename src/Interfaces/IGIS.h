@@ -93,6 +93,7 @@ public:
 	virtual	bool			WithinBox		(GISLayer_t layer,const Bbox2&  bounds		  ) const=0;
 	virtual bool			PtWithin		(GISLayer_t layer,const Point2& p			  ) const=0;
 	virtual bool			PtOnFrame		(GISLayer_t layer,const Point2& p, double dist) const=0;
+	virtual bool			Cull			(				  const Bbox2& bounds		  ) const=0;	// Returns true if visible.  Different from bounds, because some objects "hang off" the screen a bit.
 
 	virtual	void			Rescale(
 								GISLayer_t layer,
@@ -134,15 +135,17 @@ public:
 class	IGISPoint_Bezier : public virtual IGISPoint {
 public:
 
-	virtual	bool	GetControlHandleLo (GISLayer_t layer,      Point2& p) const=0;
-	virtual	bool	GetControlHandleHi (GISLayer_t layer,      Point2& p) const=0;
-	virtual	bool	IsSplit			   (void							) const=0;
+	virtual	bool	GetControlHandleLo (GISLayer_t layer,      Point2& p ) const=0;
+	virtual	bool	GetControlHandleHi (GISLayer_t layer,      Point2& p ) const=0;
+	virtual	bool	IsSplit			   (void							 ) const=0;
+	virtual	void	GetBezierLocation  (GISLayer_t layer, BezierPoint2& p) const=0;
 
-	virtual	void	SetControlHandleLo (GISLayer_t layer,const Point2& p)      =0;
-	virtual	void	SetControlHandleHi (GISLayer_t layer,const Point2& p)      =0;
-	virtual	void	DeleteHandleLo	   (void		   )	  =0;
-	virtual	void	DeleteHandleHi	   (void		   )	  =0;
-	virtual	void	SetSplit		   (bool is_split  )	  =0;	// WARNING: unsplitting control handles WITHOUT then moving one handle leaves the resolution of split handles AMBIGUOUS!
+	virtual	void	SetControlHandleLo (GISLayer_t layer,const Point2& p	   )=0;
+	virtual	void	SetControlHandleHi (GISLayer_t layer,const Point2& p	   )=0;
+	virtual	void	DeleteHandleLo	   (void								   )=0;
+	virtual	void	DeleteHandleHi	   (void								   )=0;
+	virtual	void	SetSplit		   (				  bool is_split		   )=0;	// WARNING: unsplitting control handles WITHOUT then moving one handle leaves the resolution of split handles AMBIGUOUS!
+	virtual	void	SetBezierLocation  (GISLayer_t layer, const BezierPoint2& p)=0;
 
 };
 

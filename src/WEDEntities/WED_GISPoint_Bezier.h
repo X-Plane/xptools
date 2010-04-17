@@ -41,13 +41,15 @@ public:
 	virtual	bool	GetControlHandleLo (GISLayer_t l,       Point2& p) const;
 	virtual	bool	GetControlHandleHi (GISLayer_t l,       Point2& p) const;
 	virtual	bool	IsSplit			   (void		   ) const;
+	virtual	void	GetBezierLocation  (GISLayer_t layer, BezierPoint2& p) const;
 
 	virtual	void	SetControlHandleLo (GISLayer_t l, const Point2& p)      ;
 	virtual	void	SetControlHandleHi (GISLayer_t l, const Point2& p)      ;
 	virtual	void	DeleteHandleLo	   (void		   )	  ;
 	virtual	void	DeleteHandleHi	   (void		   )	  ;
 	virtual	void	SetSplit		   (bool is_split  )	  ;
-			void	Reverse_		   (void		   )	  ;
+	virtual	void	SetBezierLocation  (GISLayer_t layer, const BezierPoint2& p);
+//			void	Reverse_		   (void		   )	  ;
 
 private:
 

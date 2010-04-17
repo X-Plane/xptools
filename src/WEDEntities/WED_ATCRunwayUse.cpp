@@ -33,7 +33,7 @@ TRIVIAL_COPY(WED_ATCRunwayUse,WED_Thing)
 
 WED_ATCRunwayUse::WED_ATCRunwayUse(WED_Archive * a, int i) :
 	WED_Thing(a,i),
-	rwy(this,"Runway","WED_runwayuse","rwy","4L"),
+	rwy(this,"Runway","WED_runwayuse","rwy",ATCRunwayName, atc_4L),
 	dep_frq(this,"Departure Frequency","WED_runwayuse","dep_frq", 133.0, 6, 3),
 	traffic(this,"Traffic Type","WED_runwayuse","traffic",ATCTrafficType),
 	operations(this,"Operations","WED_runwayuse","operations",ATCOperationType),
@@ -51,7 +51,13 @@ WED_ATCRunwayUse::~WED_ATCRunwayUse()
 void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
-	rwy = info.runway;
+	int rwy_int = ENUM_Lookup(info.runway.c_str());
+	if(rwy_int == -1)
+	{
+		print_func(ref,"Illegal runway %s\n",info.runway.c_str());
+		rwy_int = atc_Runway_None;
+	}
+	rwy = rwy_int;
 	ENUM_ImportSet(operations.domain,info.operations,operations.value);
 	ENUM_ImportSet(traffic.domain,info.equipment,traffic.value);
 	dep_frq = info.dep_freq;
@@ -64,7 +70,7 @@ void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(v
 void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 {
 	GetName(info.name);
-	info.runway = rwy.value;
+	info.runway = ENUM_Fetch(rwy.value);
 	info.operations = ENUM_ExportSet(operations.value);
 	info.equipment = ENUM_ExportSet(traffic.value);
 	info.dep_freq = dep_frq;

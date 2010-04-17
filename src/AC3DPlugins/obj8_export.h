@@ -34,4 +34,6 @@ int 		do_obj7_save_convert(char * fname, ACObject * obj);
 
 int 		do_obje_save(char * fname, ACObject * obj);
 
+int			do_ag_save(char * fname, ACObject * obj);
+
 #endif

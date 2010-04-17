@@ -191,6 +191,11 @@ bool				WED_GISPolygon::PtOnFrame		(GISLayer_t l,const Point2& p, double d) cons
 	return false;
 }
 
+bool			WED_GISPolygon::Cull(const Bbox2& b) const
+{
+	return GetOuterRing()->Cull(b);
+}
+
 void			WED_GISPolygon::Rescale(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	GetOuterRing()->Rescale(l,old_bounds, new_bounds);

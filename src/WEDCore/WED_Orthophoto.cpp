@@ -40,9 +40,7 @@ static void make_one_pol(WED_OverlayImage * image, const Polygon_with_holes_2& a
 	UVMap_t	uv_map;
 	
 	WED_MakeUVMap((IGISQuad *) image, uv_map);
-	if(!WED_MapPolygonWithHoles(uv_map, area, uv_poly))
-		DoUserAlert("UVMapFailed");
-
+	WED_MapPolygonWithHoles(uv_map, area, uv_poly);
 	
 	string img, res;
 	image->GetImage(img);

@@ -106,6 +106,15 @@ bool			WED_GISComposite::PtOnFrame		(GISLayer_t l, const Point2& p, double d) co
 	return false;
 }
 
+bool WED_GISComposite::Cull(const Bbox2& b) const
+{
+	int n = GetNumEntities();
+	for (int i = 0; i < n; ++i)
+		if(GetNthEntity(i)->Cull(b))
+			return true;
+	return false;	
+}
+
 void			WED_GISComposite::Rescale(GISLayer_t l, const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	int n = GetNumEntities();

@@ -61,7 +61,7 @@ inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offs
 // So it's an interleaved array.  This is what PointSequenceToVector returns too.
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n);
 void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours, int is_hole);
-//bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where);
+bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where);
 
 
 #endif /* WED_DrawUtils_H */

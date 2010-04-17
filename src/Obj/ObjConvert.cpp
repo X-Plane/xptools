@@ -693,42 +693,12 @@ bool	Obj8_Optimize(XObj8& obj8)
 
 		make_strip_order(ok);
 
-/*
-		PVRTTriStripList(
-			&*ok.begin(),
-			ok.size() / 3);
-*/
-
-
 		vector<INDEX_T> after(ok.begin(), ok.end());
 		after.insert(after.end(),degen.begin(),degen.end());
 
 		compare_before_after(before,after);
-
-/*
-		PVRTGeometrySort(
-			obj8.geo_tri.get(0),
-			&idx16[r->first],
-			32,
-			obj8.geo_tri.count(),
-			(r->second - r->first) / 3,
-			obj8.geo_tri.count(),
-			(r->second - r->first) / 3,
-			PVRTGEOMETRY_SORT_VERTEXCACHE | PVRTGEOMETRY_SORT_IGNOREVERTS);
-*/
 	}
 
-/*
-	PVRTGeometrySort(
-		obj8.geo_tri.get(0),
-		&idx16[0],
-		32,
-		obj8.geo_tri.count(),
-		idx16.size() / 3,
-		obj8.geo_tri.count(),
-		idx16.size() / 3,
-		0);
-*/
 	obj8.indices.clear();
 	obj8.indices.insert(obj8.indices.end(),idx16.begin(), idx16.end());
 

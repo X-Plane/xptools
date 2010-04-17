@@ -84,6 +84,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_register_file_exporter((char*)"OBJ8Save", (char*)".obj", (char*)"X-Plane 8 Object File", do_obj8_save, (char*)"X-Plane 8 Object File Export Plugin");
 #if PHONE
 	ac_register_file_exporter((char*)"OBJeSave", (char*)".obe", (char*)"X-Plane 8 Embedded Object File", do_obje_save, (char*)"X-Plane 8 Embedded Object File Export Plugin");
+	ac_register_file_exporter((char*)"AGSave", (char*)".ag", (char*)"X-Plane 8 iPad Autogen", do_ag_save, (char*)"X-Plane iPad AG File");
 #endif
 	ac_register_file_importer((char*)"OBJ8Load", (char*)".obj", (char*)"X-Plane 8 Object File", do_obj8_load, (char*)"X-Plane 7/8 Object File Import Plugin");
 

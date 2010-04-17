@@ -44,3 +44,13 @@ void		WED_ObjPlacement::SetResource(const string& r)
 {
 	resource = r;
 }
+
+bool		WED_ObjPlacement::Cull(const Bbox2& b) const
+{
+	Point2	my_loc;
+	GetLocation(gis_Geo,my_loc);
+
+	#define SLOP 0.01
+	Bbox2	my_bounds(my_loc - Vector2(SLOP,SLOP), my_loc + Vector2(SLOP, SLOP));	
+	return b.overlap(my_bounds);
+}

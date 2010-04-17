@@ -12,6 +12,6 @@
 
 #include "XObjDefs.h"
 
-bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int use_shorts);
+bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj);
 
 #endif

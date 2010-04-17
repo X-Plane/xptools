@@ -60,6 +60,24 @@ WED_Runway::~WED_Runway()
 {
 }
 
+bool	WED_Runway::Cull(const Bbox2& b) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo,me);
+	Point2	c[8];
+	int n;
+	if(GetCornersBlas1(c))
+	for(n=0;n<4;++n)
+		me+=c[n];
+	if(GetCornersBlas2(c))
+	for(n=0;n<4;++n)
+		me+=c[n];
+	if(GetCornersShoulders(c))	
+	for(n=0;n<8;++n)
+		me+=c[n];
+	return b.overlap(me);	
+}
+
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {

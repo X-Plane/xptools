@@ -124,6 +124,14 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 	return false;
 }
 
+bool	WED_GISChain::Cull(const Bbox2& bounds) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	return bounds.overlap(me);
+}
+
+
 void			WED_GISChain::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	int t = GetNumPoints();

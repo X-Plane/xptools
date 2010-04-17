@@ -255,8 +255,9 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			}
 
 			if(pol || orth)
-			setup_pol_texture(tman, pol_info, pol ? pol->GetHeading() : 0.0, orth != NULL, centroid, g, GetZoomer());
-
+			{
+				setup_pol_texture(tman, pol_info, pol ? pol->GetHeading() : 0.0, orth != NULL, centroid, g, GetZoomer());
+			}
 			glFrontFace(GL_CCW);
 			glPolygon2(&*pts.begin(), orth != NULL, &*is_hole_start.begin(), pts.size() / (orth != NULL ? 2 : 1));
 			glFrontFace(GL_CW);
@@ -295,5 +296,5 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			glPopMatrix();
 		}
 	}
-
+	return true;
 }

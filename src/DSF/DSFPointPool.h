@@ -133,6 +133,7 @@ public:
 
 
 	void			AddPool(DSFTuple& minFrac, DSFTuple& maxFrac);
+	void			AddPoolDirect(DSFTuple& minFrac, DSFTuple& maxFrac);
 
 	// This returns true if the set of points can be kept as a run...
 	// it tests only whether the points span subpools, and can be
@@ -193,6 +194,7 @@ public:
 				const DSFTuple& 		max);
 
 	void			AddPool(DSFTuple& minFrac, DSFTuple& maxFrac);
+	void			AddPoolDirect(DSFTuple& minFrac, DSFTuple& maxFrac);
 	DSFPointPoolLoc	AccumulatePoint(const DSFTuple& inPoint);
 	DSFPointPoolLoc	AccumulatePoints(const DSFTupleVector& inPoints);
 	void			ProcessPoints(void);

@@ -71,6 +71,16 @@ void			DSFSharedPointPool::AddPool(DSFTuple& minFrac, DSFTuple& maxFrac)
 	mPools.back().mScale = submax - submin;
 }
 
+void			DSFSharedPointPool::AddPoolDirect(DSFTuple& minFrac, DSFTuple& maxFrac)
+{
+	DSFTuple	submin = minFrac;
+	DSFTuple	submax = maxFrac;
+
+	mPools.push_back(SharedSubPool());
+	mPools.back().mOffset = submin;
+	mPools.back().mScale = submax - submin;
+}
+
 bool			DSFSharedPointPool::CanBeContiguous(const DSFTupleVector& inPoints)
 {
 	for (list<SharedSubPool>::iterator p = mPools.begin(); p != mPools.end(); ++p)
@@ -281,6 +291,16 @@ void			DSFContiguousPointPool::AddPool(DSFTuple& minFrac, DSFTuple& maxFrac)
 	mPools.back().mScale = submax - submin;
 }
 
+void			DSFContiguousPointPool::AddPoolDirect(DSFTuple& minFrac, DSFTuple& maxFrac)
+{
+	DSFTuple	submin = minFrac;
+	DSFTuple	submax = maxFrac;
+
+	mPools.push_back(ContiguousSubPool());
+	mPools.back().mOffset = submin;
+	mPools.back().mScale = submax - submin;
+}
+
 pair<int, int>	DSFContiguousPointPool::AccumulatePoint(const DSFTuple& inPoint)
 {
 	DSFTupleVector	v;
@@ -314,8 +334,8 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 			return pair<int, int>(p, pos);
 		}
 	}
-	printf("point pool failure...%d out of %d tried.  Points = %llu.\n", tris, p, (unsigned long long)inPoints.size());
-		inPoints[n].dump();
+//	printf("point pool failure...%d out of %d tried.  Points = %llu.\n", tris, p, (unsigned long long)inPoints.size());
+//		inPoints[n].dump();
 	printf("\n");
 	return pair<int, int>(-1, -1);
 }

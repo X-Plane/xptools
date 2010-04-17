@@ -50,7 +50,7 @@ private:
 	WED_PropIntText		time_min;
 	WED_PropIntText		time_max;	
 	
-	WED_PropStringText	pattern_rwy;
+	WED_PropIntEnum		pattern_rwy;
 	WED_PropIntEnum		traffic_dir;
 
 };

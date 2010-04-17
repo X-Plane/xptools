@@ -798,10 +798,10 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		if (went->GetHidden()) return;
 	}
 
+	if(!e->Cull(vis_area)) return;
+
 	Bbox2	ent_bounds;
 	e->GetBounds(gis_Geo,ent_bounds);
-
-	if (!ent_bounds.overlap(vis_area))	return;
 
 	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
 	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);

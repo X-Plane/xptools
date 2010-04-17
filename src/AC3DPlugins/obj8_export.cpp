@@ -684,7 +684,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	else if (convert == convert_e)
 	{
 		Obj8_Optimize(obj8);
-		if (!XObjWriteEmbedded(export_path.c_str(), obj8, true))	// 16 bit!
+		if (!XObjWriteEmbedded(export_path.c_str(), obj8))	// 16 bit!
 	    {
 	        message_dialog((char*)"can't open file '%s' for writing", export_path.c_str());
 	        return 0;
@@ -755,4 +755,96 @@ int 		do_obj8_save_ex(char * fname, ACObject * obj, int do_prefix, int tex_id, i
 int 		do_obj7_save_convert(char * fname, ACObject * obj)
 {
 	return do_obj8_save_common(fname, obj, convert_7, false, -1, true);
+}
+
+
+
+
+
+
+void ag_output_polygon(FILE * fi, Surface *s)
+{
+	static float x_off = 0, z_off = 0;
+	if (s->numvert == 4)
+	{
+		Vertex * p1, * p2, * p3, * p4;
+		
+		p1 = SVERTEX(list_get_item(s->vertlist, 0));
+		p2 = SVERTEX(list_get_item(s->vertlist, 1));
+		p3 = SVERTEX(list_get_item(s->vertlist, 2));
+		p4 = SVERTEX(list_get_item(s->vertlist, 3));
+
+		if (p1->y == p2->y &&
+			p1->y == p3->y &&	
+			p1->y == p4->y)
+		if(s->normal.y > 0.0)
+
+		if(p1->y < 0.0)
+		{
+			float x1 = min(min(p1->x,p2->x),min(p3->x,p4->x));
+			float x2 = max(max(p1->x,p2->x),max(p3->x,p4->x));
+
+			float z1 = min(min(p1->z,p2->z),min(p3->z,p4->z));
+			float z2 = max(max(p1->z,p2->z),max(p3->z,p4->z));
+			
+			fprintf(fi,"DIMS %d %d\n", (int) (x2-x1),(int)(z2-z1));
+			x_off = -x1;
+			z_off = -z1;
+		}
+		else
+		{
+			fprintf(fi, "BLDG %f\t%f %f\t%f %f\t %f %f\t%f %f\n",
+				p1->y,
+				p1->x + x_off,z_off + p1->z,
+				p2->x + x_off,z_off + p2->z,
+				p3->x + x_off,z_off + p3->z,
+				p4->x + x_off,z_off + p4->z);		
+		}
+	}
+}
+
+
+
+void ag_output_object(FILE * fi, ACObject * obj)
+{
+	if (!ac_object_is_visible(obj)) return;
+
+		int 	numvert, numsurf, numkids;
+		List 	*vertices, *surfaces, *kids;
+		List 	*p;
+
+//    printf("outputing %s\n", ac_object_get_name(obj));
+
+    ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
+        &vertices, &surfaces, &kids);
+
+	for (p = surfaces; p != NULL; p = p->next)
+	{
+		Surface *s = (Surface *)p->data;
+		if (surface_get_type(s) == SURFACE_POLYGON)
+			ag_output_polygon(fi, s);
+	}
+
+    for (p = kids; p != NULL; p = p->next)
+    {
+    	ACObject * child = (ACObject *)p->data;
+	        ag_output_object(fi, child);
+	}
+} 
+
+int do_ag_save(char * fname, ACObject * obj)
+{
+	FILE * fi = fopen(fname,"w");
+	if(fi == NULL)
+	{
+    	message_dialog((char*)"Could not write file %s\n", fname);
+		return 0;
+	}
+	
+	fprintf(fi,"A\n900\nAUTOGEN\n\n");
+	
+	ag_output_object(fi,obj);
+	
+	fclose(fi);
+	return 1;
 }

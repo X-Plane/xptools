@@ -45,6 +45,21 @@
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
 
+#include "WED_GISUtils.h"
+
+static void debug_it(const vector<BezierPoint2>& pts)
+{
+	for(int n = 0; n < pts.size(); ++n)
+		printf("%d) %lf,%lf (%lf,%lf/%lf,%lf)\n",
+			n,
+			pts[n].pt.x(),
+			pts[n].pt.y(),
+			pts[n].lo.x() - pts[n].pt.x(),
+			pts[n].lo.y() - pts[n].pt.y(),
+			pts[n].hi.x() - pts[n].pt.x(),
+			pts[n].hi.y() - pts[n].pt.y());
+}
+
 inline bool end_match(const char * str, const char * suf)
 {
 	int ls = strlen(suf);
@@ -66,6 +81,7 @@ public:
 	WED_Group *			parent;
 	WED_Archive *		archive;
 
+	vector<BezierPoint2>pts,uvs;
 	WED_Thing *			ring;
 	WED_Thing *			poly;
 	bool				want_uv;
@@ -215,8 +231,9 @@ public:
 		string r  = me->pol_table[inPolygonType];
 		if(end_match(r.c_str(),".fac"))
 		{
+			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_uv=false;
-			me->want_bezier=false;
+			me->want_bezier=(inCoordDepth == 4);
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(me->archive);
 			me->poly = fac;
 			me->ring = NULL;
@@ -293,8 +310,10 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		me->pts.clear();
+		me->uvs.clear();
 		if(me->poly != NULL)
-		{
+		{			
 			me->ring = WED_Ring::CreateTyped(me->archive);
 			me->ring->SetParent(me->poly,me->poly->CountChildren());
 			me->ring->SetName("Ring");
@@ -309,44 +328,129 @@ public:
 		WED_Thing * node;
 		if(me->want_uv && me->want_bezier)
 		{
-			WED_TextureBezierNode * tb = WED_TextureBezierNode::CreateTyped(me->archive);
-			node=tb;
-			tb->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-			tb->SetControlHandleHi(gis_Geo,Point2(inCoordinates[2],inCoordinates[3]));
-			tb->SetLocation(gis_UV,Point2(inCoordinates[4],inCoordinates[5]));
-			tb->SetControlHandleHi(gis_UV,Point2(inCoordinates[6],inCoordinates[7]));
-			tb->SetControlHandleLo(gis_UV,Point2(
-							inCoordinates[4] * 2.0 - inCoordinates[6],
-							inCoordinates[5] * 2.0 - inCoordinates[7]));
+			BezierPoint2	p, u;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.hi.x_ = inCoordinates[2];
+			p.hi.y_ = inCoordinates[3];
+			p.lo = p.pt + Vector2(p.hi, p.pt);
+
+			u.pt.x_ = inCoordinates[4];
+			u.pt.y_ = inCoordinates[5];
+			u.hi.x_ = inCoordinates[6];
+			u.hi.y_ = inCoordinates[7];
+			u.lo = u.pt + Vector2(u.hi, u.pt);
+			
+			me->pts.push_back(p);
+			me->uvs.push_back(u);
 		}
 		else if (me->want_uv)
 		{
-			WED_TextureNode * t = WED_TextureNode::CreateTyped(me->archive);
-			node=t;
-			t->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-			t->SetLocation(gis_UV,Point2(inCoordinates[2],inCoordinates[3]));
+			BezierPoint2	p, u;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.lo = p.hi = p.pt;
+
+			u.pt.x_ = inCoordinates[2];
+			u.pt.y_ = inCoordinates[3];
+			u.lo = u.hi = u.pt;
+			me->pts.push_back(p);
+			me->uvs.push_back(u);	
 		}
 		else if (me->want_bezier)
 		{
-			WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
-			node=b;
-			b->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-			b->SetControlHandleHi(gis_Geo,Point2(inCoordinates[2],inCoordinates[3]));
+			BezierPoint2	p;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.hi.x_ = inCoordinates[2];
+			p.hi.y_ = inCoordinates[3];
+			p.lo = p.pt + Vector2(p.hi, p.pt);
+			me->pts.push_back(p);
 		}
 		else
 		{
-			WED_SimpleBoundaryNode * n = WED_SimpleBoundaryNode::CreateTyped(me->archive);
-			node=n;
-			n->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+			BezierPoint2	p;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.lo = p.hi = p.pt;
+			me->pts.push_back(p);
 		}
-		node->SetParent(me->ring,me->ring->CountChildren());
-		node->SetName("Point");
 	}
 
 	static void	EndPolygonWinding(
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		
+		if(me->want_bezier)
+		{
+			vector<BezierPoint2>	pc, uc;
+
+			debug_it(me->pts);
+			debug_it(me->uvs);
+			
+			BezierPointSeqFromTriple(me->pts.begin(),me->pts.end(), back_inserter(pc));
+			me->pts.swap(pc);
+			if(me->want_uv)
+			{
+				BezierPointSeqFromTriple(me->uvs.begin(),me->uvs.end(), back_inserter(uc));
+				me->uvs.swap(uc);
+			}
+
+			if(me->pts.front().pt == me->pts.back().pt)
+			{
+				me->pts.front().lo = me->pts.back().lo;
+				me->pts.pop_back();
+				if(me->want_uv)
+				{
+					me->uvs.front().lo = me->uvs.back().lo;
+					me->uvs.pop_back();
+				}
+				
+				WED_StringPlacement * str = dynamic_cast<WED_StringPlacement*>(me->ring);
+				if(str)
+					str->SetClosed(1);
+			}
+			
+			debug_it(me->pts);
+			debug_it(me->uvs);
+			
+		}
+		
+		for(int n = 0; n < me->pts.size(); ++n)
+		{		
+			WED_Thing * node;
+			if(me->want_uv && me->want_bezier)
+			{
+				WED_TextureBezierNode * tb = WED_TextureBezierNode::CreateTyped(me->archive);
+				node=tb;
+				tb->SetBezierLocation(gis_Geo,me->pts[n]);
+				tb->SetBezierLocation(gis_UV,me->uvs[n]);
+			}
+			else if (me->want_uv)
+			{
+				WED_TextureNode * t = WED_TextureNode::CreateTyped(me->archive);
+				node=t;
+				t->SetLocation(gis_Geo,me->pts[n].pt);
+				t->SetLocation(gis_UV,me->uvs[n].pt);
+			}
+			else if (me->want_bezier)
+			{
+				WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
+				node=b;
+				b->SetBezierLocation(gis_Geo,me->pts[n]);
+			}
+			else
+			{
+				WED_SimpleBoundaryNode * nd = WED_SimpleBoundaryNode::CreateTyped(me->archive);
+				node=nd;
+				nd->SetLocation(gis_Geo,me->pts[n].pt);
+			}
+			node->SetParent(me->ring,me->ring->CountChildren());
+			node->SetName("Point");
+		}
+
+		
 		if (me->poly != NULL)
 			me->ring = NULL;
 	}

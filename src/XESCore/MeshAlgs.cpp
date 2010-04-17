@@ -1347,6 +1347,44 @@ inline bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
 	return n.dz < 0.7;
 }
 
+void FlattenWater(CDT& ioMesh)
+{
+	set<CDT::Face_handle>	changed;
+	for(CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
+	{
+		if (f->info().terrain == terrain_Water)
+			changed.insert(f);
+	}
+	
+	while(!changed.empty())
+	{
+		CDT::Face_handle w = *changed.begin();
+		
+		#define MAX_SLOPE 0.5;
+		
+		float lowest = min(min(w->vertex(0)->info().height,w->vertex(1)->info().height),w->vertex(2)->info().height);
+		float ok = lowest + MAX_SLOPE;
+
+		for(int n = 0; n < 3; ++n)
+		{
+			if(w->vertex(n)->info().height > ok)
+			{
+				w->vertex(n)->info().height = ok;
+				CDT::Face_circulator circ, stop;
+				circ = stop = w->vertex(n)->incident_faces();
+				do {
+					if(!ioMesh.is_infinite(circ))
+					if(circ->info().terrain == terrain_Water)
+						changed.insert(circ);
+				} while(++circ != stop);
+			}
+		}
+		
+		changed.erase(w);
+		
+	}
+}
+
 /*
  * CalculateMeshNormals
  *
@@ -1644,6 +1682,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	/*********************************************************************************************************************
 	 * CLEANUP - CALC MESH NORMALS
 	 *********************************************************************************************************************/
+
+#if PHONE
+	FlattenWater(outMesh);
+#endif	
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.5);
 	CalculateMeshNormals(outMesh);

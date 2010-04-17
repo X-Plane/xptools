@@ -10,9 +10,43 @@
 #include "WED_GISUtils.h"
 #include "IGIS.h"
 #include <CGAL/Sweep_line_2_algorithms.h>
-#include "WED_Globals.h"
+//#include "WED_Globals.h"
 #include "WED_GISEdge.h"
 #include "WED_Thing.h"
+
+
+void	BezierToBezierPointStart (const Bezier2& next,BezierPoint2& out_pt)
+{
+	out_pt.lo = out_pt.pt = next.p1;
+	out_pt.hi = next.c1;
+}
+
+void	BezierToBezierPointMiddle(const Bezier2& prev,const Bezier2& next,BezierPoint2& out_pt)
+{
+	// CGAL gives imprecise matching...need to investigate.
+//	DebugAssert(prev.p2 == next.p1);
+	out_pt.lo = prev.c2;
+	out_pt.hi = next.c1;
+	out_pt.pt = next.p1;
+}
+
+void	BezierToBezierPointEnd	 (const Bezier2& prev,					BezierPoint2& out_pt)
+{
+	out_pt.lo = prev.c2;
+	out_pt.hi = out_pt.pt = prev.p2;
+}
+
+void	BezierPointToBezier(const BezierPoint2& p1,const BezierPoint2& p2, Bezier2& b)
+{
+	b.p1 = p1.pt;
+	b.c1 = p1.hi;
+	b.c2 = p2.lo;
+	b.p2 = p2.pt;	
+}
+
+
+
+
 /************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************/
@@ -21,11 +55,41 @@
 //	#error we need an option to get approximate pt sequenes from beziers!
 //	#error we need to handle degunking self-intersecting and backward polygons!
 
+bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Segment2	s;
+		if(in_seq->GetSide(gis_Geo, n, s, b))
+			return false;
 
-bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Polygon_2 * uv)
+		out_pol.push_back(s);
+	}
+	return true;
+}
+
+
+bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Segment2	s;
+		if(in_seq->GetSide(gis_Geo, n, s, b))
+			return false;
+
+		out_pol.push_back(Segment_2(ben2cgal(s.p1),ben2cgal(s.p2)));
+	}
+	return true;
+}
+
+
+bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p)
 {
 	DebugAssert(ps->IsClosed());
-	DebugAssert(!uv || ps->HasLayer(gis_UV));
 	int ss = ps->GetNumSides();
 	for(int s = 0; s < ss; ++s)
 	{
@@ -40,12 +104,21 @@ bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Polygon_2
 		Point2	pt;
 		ps->GetNthPoint(n)->GetLocation(gis_Geo,pt);
 		p.push_back(ben2cgal(pt));
-		if(uv)
-		{
-			Point2 st;
-			ps->GetNthPoint(n)->GetLocation(gis_UV,st);
-			uv->push_back(ben2cgal(st));
-		}
+	}
+	return true;
+}
+
+bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol)
+{
+	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary()))
+		return false;
+	int nn = in_poly->GetNumHoles();
+	for(int n = 0; n < nn; ++n)
+	{
+		Polygon_2 hole;
+		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), hole))
+			return false;
+		out_pol.add_hole(hole);
 	}
 	return true;
 }
@@ -64,7 +137,7 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 		if((p = SAFE_CAST(IGISPolygon, in_entity)) != NULL)
 		{
 			Polygon_2	pring;
-			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring, NULL))
+			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring))
 				return false;
 			if (pring.orientation() == CGAL::CLOCKWISE)
 				pring.reverse_orientation();
@@ -74,7 +147,7 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 			for(int n = 0; n < nn; ++n)
 			{
 				pring.clear();
-				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring, NULL))
+				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring))
 					return false;
 				if(!pring.is_simple())
 				{
@@ -84,16 +157,16 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
 					{
 						sides.push_back(Curve_2(*e,0));
-						#if DEV
-						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
-						#endif
+//						#if DEV
+//						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
+//						#endif
 					}
 					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
 					for(int n = 0; n < errs.size(); ++n)
 					{
-						#if DEV
-						debug_mesh_point(cgal2ben(errs[n]),1,0,0);
-						#endif
+//						#if DEV
+//						debug_mesh_point(cgal2ben(errs[n]),1,0,0);
+//						#endif
 					}
 					return false;
 				}	
@@ -155,6 +228,126 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 	return true;
 }
 
+void WED_ApproxPolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Polygon_2 * uv, double epsi)
+{
+	DebugAssert(ps->IsClosed());
+	DebugAssert(!uv || ps->HasLayer(gis_UV));
+	int ss = ps->GetNumSides();
+	for(int s = 0; s < ss; ++s)
+	{
+		Segment2 g_seg, uv_seg;
+		Bezier2 g_bez, uv_bez;
+		if (uv)
+			ps->GetSide(gis_UV,s, uv_seg,uv_bez);
+
+		if(ps->GetSide(gis_Geo,s, g_seg, g_bez))
+		{
+			vector<Point2>	pts_ben, uv_ben;
+			if(uv)			
+				approximate_bezier_epsi_2(g_bez, uv_bez, epsi, back_inserter(pts_ben),back_inserter(uv_ben));
+			else
+				approximate_bezier_epsi(g_bez, epsi, back_inserter(pts_ben));
+			for(int n = 0; n < pts_ben.size(); ++n)
+			{
+				p.push_back(ben2cgal(pts_ben[n]));
+				if(uv)
+					uv->push_back(ben2cgal(uv_ben[n]));
+			}
+		} else {
+			p.push_back(ben2cgal(g_seg.p1));
+			if(uv)
+				uv->push_back(ben2cgal(uv_seg.p1));			
+		}
+	}
+}
+
+void	WED_ApproxPolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol, Polygon_with_holes_2 * out_uv, double epsi)
+{	
+	WED_ApproxPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary(), out_uv ? &out_uv->outer_boundary() : NULL, epsi);	
+	
+	int nn = in_poly->GetNumHoles();
+	for(int n = 0; n < nn; ++n)
+	{
+		Polygon_2	h, huv;
+		WED_ApproxPolygonForPointSequence(in_poly->GetNthHole(n), h, out_uv ? &huv : NULL, epsi);
+		out_pol.add_hole(h);
+		if(out_uv)
+			out_uv->add_hole(huv);
+	}
+}
+
+void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Segment2	s;
+		if(!in_seq->GetSide(gis_Geo, n, s, b))
+		{
+			b.p1 = b.c1 = s.p1;
+			b.p2 = b.c2 = s.p2;
+		}
+		out_pol.push_back(b);
+	}
+}
+
+void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_curve_2>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Segment2	s;
+		if(!in_seq->GetSide(gis_Geo, n, s, b))
+		{
+			b.p1 = b.c1 = s.p1;
+			b.p2 = b.c2 = s.p2;
+		}
+		out_pol.push_back(ben2cgal(b));
+	}
+}
+
+void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol)
+{
+	vector<Bezier_curve_2>	crvs;
+	DebugAssert(in_seq->IsClosed());
+	WED_BezierVectorForPointSequence(in_seq, crvs);
+	
+	Bezier_traits_base_ traits;
+	Bezier_traits_base_::Make_x_monotone_2	monifier(traits.make_x_monotone_2_object());
+	
+	vector<CGAL::Object>	mono_curves;
+	
+	for(vector<Bezier_curve_2>::iterator c = crvs.begin(); c != crvs.end(); ++c)
+		monifier(*c, back_inserter(mono_curves));
+	
+	out_pol.clear();
+	
+	for(vector<CGAL::Object>::iterator o = mono_curves.begin(); o != mono_curves.end(); ++o)
+	{
+		Bezier_polygon_2::X_monotone_curve_2	c;
+		if(CGAL::assign(c,*o))
+			out_pol.push_back(c);
+		else
+			Assert(!"No cast.");
+	}
+}
+
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol)
+{
+	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary());
+	int nn = in_poly->GetNumHoles();
+	for(int n = 0; n < nn; ++n)
+	{
+		Bezier_polygon_2 hole;
+		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n), hole);
+		out_pol.add_hole(hole);
+	}
+}
+
+
+
 /************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************/
@@ -172,8 +365,8 @@ typedef	CGAL::Triangulation_data_structure_2<tVb, tFb>						tTDS;
 typedef	CGAL::Triangulation_2<FastKernel, tTDS>								UV_Mesh;
 
 void	WED_MakeUVMap(
-						const Polygon_2&		uv_map_ll,
-						const Polygon_2&		uv_map_uv,
+						const vector<Point_2>&	uv_map_ll,
+						const vector<Point_2>&	uv_map_uv,
 						UVMap_t&				out_map)
 {
 	UV_Mesh	mesh;
@@ -189,6 +382,21 @@ void	WED_MakeUVMap(
 					f->vertex(0)->point(),
 					f->vertex(1)->point(),
 					f->vertex(2)->point()));
+
+//		debug_mesh_point(cgal2ben(f->vertex(0)->point()),1,1,1);
+//		debug_mesh_point(cgal2ben(f->vertex(1)->point()),1,1,1);
+//		debug_mesh_point(cgal2ben(f->vertex(2)->point()),1,1,1);
+//		debug_mesh_line (cgal2ben(f->vertex(0)->point()),cgal2ben(f->vertex(1)->point()),0,0,1,0,0,1);
+//		debug_mesh_line (cgal2ben(f->vertex(1)->point()),cgal2ben(f->vertex(2)->point()),0,0,1,0,0,1);
+//		debug_mesh_line (cgal2ben(f->vertex(2)->point()),cgal2ben(f->vertex(0)->point()),0,0,1,0,0,1);
+//
+//		debug_mesh_point(cgal2ben(f->vertex(0)->info()),1,1,1);
+//		debug_mesh_point(cgal2ben(f->vertex(1)->info()),1,1,1);
+//		debug_mesh_point(cgal2ben(f->vertex(2)->info()),1,1,1);
+//		debug_mesh_line (cgal2ben(f->vertex(0)->info()),cgal2ben(f->vertex(1)->info()),0,0,1,0,0,1);
+//		debug_mesh_line (cgal2ben(f->vertex(1)->info()),cgal2ben(f->vertex(2)->info()),0,0,1,0,0,1);
+//		debug_mesh_line (cgal2ben(f->vertex(2)->info()),cgal2ben(f->vertex(0)->info()),0,0,1,0,0,1);					
+					
 		out_map.push_back(Triangle_2(
 					f->vertex(0)->info(),
 					f->vertex(1)->info(),
@@ -196,84 +404,186 @@ void	WED_MakeUVMap(
 	}
 }
 
+static void	WED_MakeUVMapInternal(IGISEntity * entity, vector<Point_2>& pts_ll, vector<Point_2>& pts_uv)
+{
+	if(!entity->HasLayer(gis_UV))
+		return;
+		
+	Point2	g,u;
+	
+	int n,nn;
+	IGISPoint * pt;
+	IGISPoint_Bezier * bez;
+	IGISPointSequence * seq;
+	IGISPolygon * poly;
+	IGISBoundingBox * bbox;
+	IGISComposite * comp;
+	switch(entity->GetGISClass()) {
+	case gis_Point:
+	case gis_Point_Heading:
+	case gis_Point_HeadingWidthLength:
+		if((pt = dynamic_cast<IGISPoint *>(entity)) != NULL)
+		{
+			pt->GetLocation(gis_Geo,g);
+			pt->GetLocation(gis_UV ,u);
+			
+			pts_ll.push_back(ben2cgal(g));
+			pts_uv.push_back(ben2cgal(u));
+		}
+		break;
+	case gis_Point_Bezier:
+		if((bez = dynamic_cast<IGISPoint_Bezier *>(entity)) != NULL)
+		{
+			bez->GetLocation(gis_Geo,g);
+			bez->GetLocation(gis_UV ,u);
+			pts_ll.push_back(ben2cgal(g));
+			pts_uv.push_back(ben2cgal(u));
+			
+			if(bez->GetControlHandleLo(gis_Geo,g))
+			{
+				bez->GetControlHandleLo(gis_UV,u);
+				pts_ll.push_back(ben2cgal(g));
+				pts_uv.push_back(ben2cgal(u));
+			}
+
+			if(bez->GetControlHandleHi(gis_Geo,g))
+			{
+				bez->GetControlHandleHi(gis_UV,u);
+				pts_ll.push_back(ben2cgal(g));
+				pts_uv.push_back(ben2cgal(u));
+			}
+		}
+		break;
+	case gis_PointSequence:
+	case gis_Line:
+	case gis_Line_Width:
+	case gis_Edge:
+	case gis_Ring:
+	case gis_Chain:
+		if((seq = dynamic_cast<IGISPointSequence *>(entity)) != NULL)
+		{
+			nn = seq->GetNumPoints();
+			for(n = 0; n < nn; ++n)
+				WED_MakeUVMapInternal(seq->GetNthPoint(n),pts_ll,pts_uv);
+		}
+		break;	
+//	case gis_Area:
+	case gis_Polygon:
+		if((poly = dynamic_cast<IGISPolygon *>(entity)) != NULL)
+		{
+			WED_MakeUVMapInternal(poly->GetOuterRing(),pts_ll,pts_uv);
+			nn = poly->GetNumHoles();
+			for(n = 0; n < nn; ++n)
+				WED_MakeUVMapInternal(poly->GetNthHole(n),pts_ll,pts_uv);
+		}
+		break;
+	case gis_BoundingBox:
+		if((bbox = dynamic_cast<IGISBoundingBox *>(entity)) != NULL)
+		{
+			WED_MakeUVMapInternal(bbox->GetMin(),pts_ll,pts_uv);
+			WED_MakeUVMapInternal(bbox->GetMax(),pts_ll,pts_uv);
+		}
+		break;
+	case gis_Composite:
+		if((comp = dynamic_cast<IGISComposite *>(entity)) != NULL)
+		{
+			nn = comp->GetNumEntities();
+			for(n = 0; n < nn; ++n)
+				WED_MakeUVMapInternal(comp->GetNthEntity(n),pts_ll,pts_uv);
+		}
+		break;
+	}
+}
+
 void	WED_MakeUVMap(
-						IGISQuad *				in_quad,
+						IGISEntity *			in_quad,
 						UVMap_t&				out_map)
 {
-	Point2	corners[4];
-	Point2		ST[4];
-	in_quad->GetCorners (gis_Geo,corners);
-	in_quad->GetCorners(gis_UV,ST);
-	Polygon_2 map_ll, map_uv;
-	for(int n = 0; n < 4; ++n)
-	{
-		map_ll.push_back(ben2cgal(corners[n]));
-		map_uv.push_back(ben2cgal(ST	   [n]));
-	}
+	vector<Point_2> map_ll, map_uv;
+	WED_MakeUVMapInternal(in_quad, map_ll, map_uv);
 	WED_MakeUVMap(map_ll,map_uv, out_map);
 }
 
-void	WED_MakeUVMap(
-						IGISPolygon *			in_quad,
-						UVMap_t&				out_map)
+void WED_MapPoint(const UVMap_t&	in_map, const Point_2& ll, Point_2& uv)
 {
-	
-}
+	// If we find a point INSIDE a triangle, we take the bathymetric coordinates and we're done.
+	// If we are outside a triangle, we track the CLOSEST outside point, trying closer ones.
+	// We do this so that if the point is SLIGHTLY outside the mesh due to rounding error, we take the nearest
+	// triangle's three points to establish our bathymetric coordinate system.  This will produce basically
+	// perfect results for points just outside the mesh.
+	FastKernel::FT							best_dist;
+	bool									found_one = false;
 
-
-bool	WED_MapPoint(const UVMap_t&	in_map, const Point_2& ll, Point_2& uv)
-{
 	for(int n = 0; n < in_map.size(); n += 2)
-	if(in_map[n].bounded_side(ll) != CGAL::ON_UNBOUNDED_SIDE)
 	{
-		FastKernel::FT	total = in_map[n].area();
+		bool is_in = in_map[n].bounded_side(ll) != CGAL::ON_UNBOUNDED_SIDE;
+		bool want_it = is_in;
+		if(!is_in)
+		{
+			if(found_one)
+			{
+				FastKernel::FT my_dist =  	  squared_distance(in_map[n], ll);
+				if(CGAL::compare(my_dist, best_dist) == CGAL::SMALLER)
+				{
+					want_it = true;
+					best_dist = my_dist;
+				}
+			}
+			else
+			{
+				FastKernel::FT my_dist =  	  squared_distance(in_map[n], ll);
+				want_it = true;
+				found_one = true;
+				best_dist = my_dist;
+			}
+		}
 		
-		FastKernel::FT a0 = Triangle_2(in_map[n].vertex(1), in_map[n].vertex(2), ll).area() / total;
-		FastKernel::FT a1 = Triangle_2(in_map[n].vertex(2), in_map[n].vertex(0), ll).area() / total;
-		FastKernel::FT a2 = Triangle_2(in_map[n].vertex(0), in_map[n].vertex(1), ll).area() / total;
+		if(want_it)
+		{
+			FastKernel::FT	total = in_map[n].area();
+			
+			FastKernel::FT a0 = Triangle_2(in_map[n].vertex(1), in_map[n].vertex(2), ll).area() / total;
+			FastKernel::FT a1 = Triangle_2(in_map[n].vertex(2), in_map[n].vertex(0), ll).area() / total;
+			FastKernel::FT a2 = Triangle_2(in_map[n].vertex(0), in_map[n].vertex(1), ll).area() / total;
 
-		uv = CGAL::ORIGIN +
-			Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(0)) * a0 +
-			Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(1)) * a1 +
-			Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(2)) * a2;
+			uv = CGAL::ORIGIN +
+				Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(0)) * a0 +
+				Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(1)) * a1 +
+				Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(2)) * a2;
 
-		return true;
+			if(is_in) 
+				return;
+		}
 	}
-	return false;	
 }
 
-bool	WED_MapPolygon(const UVMap_t&	in_map, const Polygon_2& ll, Polygon_2& uv)
+void	WED_MapPolygon(const UVMap_t&	in_map, const Polygon_2& ll, Polygon_2& uv)
 {
 	uv.clear();
 	for(Polygon_2::Vertex_const_iterator v = ll.vertices_begin(); v != ll.vertices_end(); ++v)
 	{
 		Point_2	uvp;
-		if (!WED_MapPoint(in_map, *v, uvp))
-			return false;
+		WED_MapPoint(in_map, *v, uvp);
 		uv.push_back(uvp);
 	}
-	return true;
 }
 
-bool	WED_MapPolygonWithHoles(const UVMap_t&	in_map, const Polygon_with_holes_2& ll, Polygon_with_holes_2& uv)
+void	WED_MapPolygonWithHoles(const UVMap_t&	in_map, const Polygon_with_holes_2& ll, Polygon_with_holes_2& uv)
 {
 	uv.clear();
 	if(!ll.is_unbounded())
 	{
 		Polygon_2	outer_ring;
-		if (!WED_MapPolygon(in_map,ll.outer_boundary(), outer_ring))
-			return false;
+		WED_MapPolygon(in_map,ll.outer_boundary(), outer_ring);
 		uv = Polygon_with_holes_2(outer_ring);
 	}
 
 	for(Polygon_with_holes_2::Hole_const_iterator h = ll.holes_begin(); h != ll.holes_end(); ++h)
 	{
 		Polygon_2	hole_uv;
-		if (!WED_MapPolygon(in_map, *h, hole_uv))
-			return false;
+		WED_MapPolygon(in_map, *h, hole_uv);
 		uv.add_hole(hole_uv);
 	}
-	return true;
 }
 
 bool	WED_MergePoints(const vector<IGISEntity *>& in_points)

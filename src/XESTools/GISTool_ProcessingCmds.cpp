@@ -62,9 +62,11 @@ static int DoSetMeshLevel(const vector<const char *>& args)
 	if(gVerbose) printf("Setting mesh level to %s\n", args[0]);
 	int ml = atoi(args[0]);
 	switch(ml) {
-	case 2:		gMeshPrefs.max_points = 10000;		gMeshPrefs.max_error = 30; gMeshPrefs.max_tri_size_m = 8000;	break;
-	case 1:		gMeshPrefs.max_points = 30000;		gMeshPrefs.max_error = 12; gMeshPrefs.max_tri_size_m = 3500;	break;
-	case 0:		gMeshPrefs.max_points = 25000;		gMeshPrefs.max_error = 15; gMeshPrefs.max_tri_size_m = 5000;	break;
+	case 0:		gMeshPrefs.max_points = 10000;		gMeshPrefs.max_error = 30; gMeshPrefs.max_tri_size_m = 8000;	break;
+	case 1:		gMeshPrefs.max_points = 25000;		gMeshPrefs.max_error = 15; gMeshPrefs.max_tri_size_m = 5000;	break;
+	case 2:		gMeshPrefs.max_points = 30000;		gMeshPrefs.max_error = 12; gMeshPrefs.max_tri_size_m = 3500;	break;
+	case 3:		gMeshPrefs.max_points = 50000;		gMeshPrefs.max_error = 10; gMeshPrefs.max_tri_size_m = 3500;	break;
+	case 4:		gMeshPrefs.max_points = 70000;		gMeshPrefs.max_error =  8; gMeshPrefs.max_tri_size_m = 3500;	break;
 	}
 	return 0;
 }

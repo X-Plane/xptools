@@ -42,6 +42,7 @@ public:
 	virtual	bool			WithinBox		(GISLayer_t l,const Bbox2&  bounds) const;
 	virtual bool			PtWithin		(GISLayer_t l,const Point2& p	 ) const;
 	virtual bool			PtOnFrame		(GISLayer_t l,const Point2& p, double d) const;
+	virtual bool			Cull			(const Bbox2& bounds) const;
 	virtual	void			Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds);
 	virtual	void			Rotate			(GISLayer_t l,const Point2& center, double angle);
 	// IGISPointSequence

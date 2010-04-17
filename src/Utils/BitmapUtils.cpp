@@ -1137,6 +1137,12 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	case PNG_COLOR_TYPE_RGBA:		outImageInfo->channels = 					4;		break;
 	default: goto bail;
 	}
+	
+	// Some pngs have PNG_INFO_tRNS as a transparent index color...since we set "expansion" on this,
+	// we need to update our channel count; lib png is going to write rgba data.
+	if(!leaveIndexed && png_get_valid(pngPtr,infoPtr,PNG_INFO_tRNS) && outImageInfo->channels == 3)
+		outImageInfo->channels = 4;
+	
 	png_set_bgr(pngPtr);
 	png_read_update_info(pngPtr,infoPtr);
 

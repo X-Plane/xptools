@@ -97,6 +97,13 @@ bool			WED_GISLine::PtOnFrame		(GISLayer_t l,const Point2& p, double dist ) cons
 	return s.is_near(p,dist);
 }
 
+bool WED_GISLine::Cull(const Bbox2& b) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	return b.overlap(me);
+}
+
 void	WED_GISLine::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	GetSource()->Rescale(l,old_bounds,new_bounds);

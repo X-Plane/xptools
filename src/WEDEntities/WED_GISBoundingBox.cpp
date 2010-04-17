@@ -98,6 +98,13 @@ bool			WED_GISBoundingBox::PtOnFrame		(GISLayer_t l,const Point2& p, double d) c
 	return true;
 }
 
+bool	WED_GISBoundingBox::Cull(const Bbox2& b) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	return b.overlap(me);
+}
+
 void			WED_GISBoundingBox::Rescale(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	GetMin()->Rescale(l,old_bounds, new_bounds);

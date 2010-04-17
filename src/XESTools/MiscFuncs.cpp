@@ -24,6 +24,7 @@
 #include "ObjTables.h"
 #include <stdio.h>
 #include "EnumSystem.h"
+#include "ObjConvert.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"
 #include "XObjReadWrite.h"
@@ -54,9 +55,9 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	lod.attributes.push_back(15000);
 	obj.cmds.push_back(lod);
 	XObjCmd	cmd;
-	cmd.cmdType = type_Attr;
-	cmd.cmdID = attr_NoCull;
-	if (faketype != fake_build) obj.cmds.push_back(cmd);
+//	cmd.cmdType = type_Attr;
+//	cmd.cmdID = attr_NoCull;
+//	if (faketype != fake_build) obj.cmds.push_back(cmd);
 	cmd.cmdType = type_Poly;
 	cmd.cmdID = obj_Quad;
 	cmd.st.resize(4);
@@ -96,7 +97,11 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = h; cmd.st[3].v[2] =  d;
 	if (faketype != fake_tree)
 		obj.cmds.push_back(cmd);
-	XObjWrite(path, obj);
+
+	XObj8	obj8;
+	
+	Obj7ToObj8(obj,obj8);
+	XObj8Write(path, obj8);
 }
 
 void	BuildOneFakeFacade(const char * dir, const char * fname)

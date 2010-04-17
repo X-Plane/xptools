@@ -21,36 +21,19 @@
  *
  */
 
-#ifndef WED_ATCRunwayUse_H
-#define WED_ATCRunwayUse_H
+#ifndef WED_TCEDebugLayer_H
+#define WED_TCEDebugLayer_H
 
-#if AIRPORT_ROUTING
+#include "WED_TCELayer.h"
 
-#include "WED_Thing.h"
-
-struct AptRunwayRule_t;
-
-class WED_ATCRunwayUse : public WED_Thing {
-
-DECLARE_PERSISTENT(WED_ATCRunwayUse)
+class WED_TCEDebugLayer : public WED_TCELayer {
 public:
+						 WED_TCEDebugLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_TCEDebugLayer();
 
-	void	Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
-	void	Export(		 AptRunwayRule_t& info) const;
-
-private:
-
-	WED_PropIntEnum			rwy;
-	WED_PropDoubleText		dep_frq;
-	WED_PropIntEnumBitfield	traffic;
-	WED_PropIntEnumBitfield	operations;	
-	WED_PropIntText			dep_heading_min;		// This is the range of departure gates that we'd want to use this runway for.
-	WED_PropIntText			dep_heading_max;		// Without this, tower might hose the TRACON.  min==max -> any dep gate is okay.
-	WED_PropIntText			vec_heading_min;		// This is the range of legal vectors tower can issue.  min==max -> runway heading only, no DVA.
-	WED_PropIntText			vec_heading_max;
+	virtual	void		DrawStructure			(bool inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s);
 
 };
 
-#endif
-
-#endif /* WED_ATCRunwayUse_H */
+#endif /* WED_TCEDebugLayer_H */

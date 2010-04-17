@@ -139,6 +139,13 @@ bool			WED_GISEdge::PtOnFrame		(GISLayer_t l,const Point2& p, double d) const
 	return false;
 }
 
+bool WED_GISEdge::Cull(const Bbox2& b) const
+{
+	Bbox2	me;
+	GetBounds(gis_Geo, me);
+	return b.overlap(me);
+}
+
 void			WED_GISEdge::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2& new_bounds)
 {
 	int t = GetNumPoints();

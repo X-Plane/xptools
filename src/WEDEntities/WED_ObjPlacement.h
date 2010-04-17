@@ -33,8 +33,10 @@ DECLARE_PERSISTENT(WED_ObjPlacement)
 
 public:
 
+	virtual	bool		Cull(const Bbox2& b) const;
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
+			
 
 private:
 

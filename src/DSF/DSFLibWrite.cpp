@@ -28,6 +28,7 @@
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
+#include <math.h>
 
 #include <set>
 #include <algorithm>
@@ -138,6 +139,14 @@ static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, i
 		WriteUInt8(fi, dsf_Cmd_PoolSelect);
 		WriteUInt16(fi, (uint16_t) curPool);
 	}
+}
+
+static void extend_box(double box[4], double x, double y)
+{
+	box[0] = min(box[0],x);
+	box[1] = min(box[1],y);
+	box[2] = max(box[2],x);
+	box[3] = max(box[3],y);
 }
 
 #define REF(x) ((DSFFileWriterImp *) (x))
@@ -1356,118 +1365,6 @@ void 	DSFFileWriterImp::BeginPolygon(
 	REF(inRef)->accum_poly->hash_depth = hash_depth;
 	REF(inRef)->accum_poly->param = inParam;
 //	REF(inRef)->accum_poly_depth = inDepth;
-
-	if (REF(inRef)->polygonPools.count(hash_depth) == 0)
-	{
-		for(int p = 0; p < (has_st ? 2 : 1); ++p)
-		{
-			float st_min = (p == 0 ? 0.0 : -32.0);
-			float st_max = (p == 0 ? 1.0 :  32.0);
-			DSFContiguousPointPool& polygonPool = REF(inRef)->polygonPools[hash_depth];
-
-			DSFTuple	polyRangeMin, polyRangeMax;
-							polyRangeMin.push_back(REF(inRef)->mWest);
-							polyRangeMax.push_back(REF(inRef)->mEast);
-							polyRangeMin.push_back(REF(inRef)->mSouth);
-							polyRangeMax.push_back(REF(inRef)->mNorth);
-			if (inDepth > 2)polyRangeMin.push_back(REF(inRef)->mElevMin);
-			if (inDepth > 2)polyRangeMax.push_back(REF(inRef)->mElevMax);
-
-			if (inDepth > 3)polyRangeMin.push_back(-1.0);
-			if (inDepth > 3)polyRangeMax.push_back(1.0);
-			if (inDepth > 4)polyRangeMin.push_back(-1.0);
-			if (inDepth > 4)polyRangeMax.push_back(1.0);			
-			if (inDepth > 5)polyRangeMin.push_back(0.0);		// These values don't matter much - they are updated below.
-			if (inDepth > 5)polyRangeMax.push_back(0.0);
-			if (inDepth > 6)polyRangeMin.push_back(0.0);
-			if (inDepth > 6)polyRangeMax.push_back(1.0);
-			if (inDepth > 7)polyRangeMin.push_back(0.0);
-			if (inDepth > 7)polyRangeMax.push_back(1.0);
-
-			printf("depth = %d, hash = %d, param = %d, has_st = %s has_bezier = %s\n", inDepth, hash_depth, inParam, has_st ? "yes" : "no", has_bezier ? "yes" : "no");
-
-			if (has_bezier)
-			{
-				polyRangeMin[2]=polyRangeMin[0];
-				polyRangeMax[2]=polyRangeMax[0];
-				polyRangeMin[3]=polyRangeMin[1];
-				polyRangeMax[3]=polyRangeMax[1];
-			}
-			if (has_st)
-			{
-				if (has_bezier)
-				{
-					polyRangeMin[4]=st_min;
-					polyRangeMax[4]=st_max;
-					polyRangeMin[5]=st_min;
-					polyRangeMax[5]=st_max;
-				}
-				else
-				{
-					polyRangeMin[2]=st_min;
-					polyRangeMax[2]=st_max;
-					polyRangeMin[3]=st_min;
-					polyRangeMax[3]=st_max;
-				}
-			}
-
-
-			polygonPool.SetRange(polyRangeMin, polyRangeMax);
-			for (int i = 0; i < REF(inRef)->mDivisions; ++i)
-			for (int j = 0; j < REF(inRef)->mDivisions; ++j)
-			{
-				DSFTuple	fracMin, fracMax;
-				fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
-				fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
-				fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
-				fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-				if (has_bezier) {
-					fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
-					fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
-					fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
-					fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-				}
-				for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
-					fracMin.push_back(0.0);
-					fracMax.push_back(1.0);
-				}
-
-				for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
-					polygonPool.AddPool(fracMin, fracMax);
-			}
-			for (int i = 1; i < REF(inRef)->mDivisions; ++i)
-			for (int j = 1; j < REF(inRef)->mDivisions; ++j)
-			{
-				DSFTuple	fracMin, fracMax;
-				fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
-				fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
-				fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
-				fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
-				if (has_bezier) {
-					fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
-					fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
-					fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
-					fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
-				}
-				for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
-					fracMin.push_back(0.0);
-					fracMax.push_back(1.0);
-				}
-
-				for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
-					polygonPool.AddPool(fracMin, fracMax);
-			}
-			DSFTuple	fracMin, fracMax;
-			fracMin.push_back(0.0);		fracMax.push_back(1.0);
-			fracMin.push_back(0.0);		fracMax.push_back(1.0);
-			for (int k = 2; k < inDepth; ++k) {
-				fracMin.push_back(0.0);
-				fracMax.push_back(1.0);
-			}
-			for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
-				polygonPool.AddPool(fracMin, fracMax);
-		}
-	}
 }
 
 void 	DSFFileWriterImp::BeginPolygonWinding(
@@ -1510,22 +1407,114 @@ void	DSFFileWriterImp::EndPolygon(
 		REF(inRef)->polygons.pop_back();
 		return;
 	}
-	
+
 	DSFTupleVector	pts;
 	for (DSFTupleVectorVector::iterator i = REF(inRef)->accum_poly_winding.begin(); i != REF(inRef)->accum_poly_winding.end(); ++i)
 		pts.insert(pts.end(), i->begin(), i->end());
 
+	int depth = REF(inRef)->accum_poly->depth;
+	int param = REF(inRef)->accum_poly->param;
+	bool has_bezier = (depth == 4 && REF(inRef)->accum_poly->param != 65535) || depth == 8;
+	bool has_st = (depth == 4 && param == 65535) || depth == 8;
+	int hash_depth = depth + (has_bezier ? 100 : 0) + (has_st ? 200 : 0);
+	
 	DSFPointPoolLoc	loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AccumulatePoints(pts);
 	if (loc.first == -1 || loc.second == -1)
 	{
-		for (int n = 0; n < pts.size(); ++n)
+		double	ll_extent[4] = { 180.0, 90.0, -180.0, -90.0 };
+		double	st_extent[4] = { 0.0, 0.0, 1.0, 1.0 };
+		for(DSFTupleVector::iterator p = pts.begin(); p != pts.end(); ++p)
 		{
-//			for (int m = 0; m < pts[n].size(); ++m)
-//				printf("%lf ", pts[n][m]);
-//			printf("\n");
+			extend_box(ll_extent,(*p)[0],(*p)[1]);			
+			if(has_st && has_bezier)
+			{
+				extend_box(ll_extent,(*p)[2],(*p)[3]);
+				extend_box(st_extent,(*p)[4],(*p)[5]);
+				extend_box(st_extent,(*p)[6],(*p)[7]);
+			} 
+			else if(has_bezier)
+				extend_box(ll_extent,(*p)[2],(*p)[3]);
+			else if (has_st)
+				extend_box(st_extent,(*p)[2],(*p)[3]);								
 		}
-		Assert(!"ERROR: Could not sink polygon point.\n");
+		
+		float n;
+		for(n = REF(inRef)->mDivisions; n > 1.0; --n)
+		{
+			float dim = 1.0 / n;
+			if(dim >= (ll_extent[2] - ll_extent[0]) && dim >= ll_extent[3] - ll_extent[1])
+				break;
+		}
+		ll_extent[0] = floor(ll_extent[0] * n) / n;
+		ll_extent[2] =  ceil(ll_extent[2] * n) / n;
+		ll_extent[1] = floor(ll_extent[1] * n) / n;
+		ll_extent[3] =  ceil(ll_extent[3] * n) / n;
+	
+		st_extent[0] = floor(st_extent[0]);
+		st_extent[1] = floor(st_extent[1]);
+		st_extent[2] = ceil (st_extent[2]);
+		st_extent[3] = ceil (st_extent[3]);
+	
+
+		DSFTuple	polyRangeMin, polyRangeMax;
+
+		if(hash_depth == 6)
+		{
+			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+			polyRangeMin.push_back(REF(inRef)->mElevMin);	polyRangeMax.push_back(REF(inRef)->mElevMax);
+			polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);
+			polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);					
+			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
+		}
+		else
+		{
+			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+			if(has_bezier)
+			{
+				polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+				polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+			}
+			if(has_st)
+			{
+				polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
+				polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
+				if(has_bezier)
+				{
+					polyRangeMin.push_back(st_extent[0]);		polyRangeMax.push_back(st_extent[2]);
+					polyRangeMin.push_back(st_extent[1]);		polyRangeMax.push_back(st_extent[3]);
+				}
+			}
+			
+		}
+
+		printf("Adding pool for: %d\n   ", REF(inRef)->accum_poly->hash_depth);
+			polyRangeMin.dump();
+			printf("\n   ");
+			polyRangeMax.dump();
+			printf("\n");
+
+		REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AddPoolDirect(polyRangeMin, polyRangeMax);
+
+		loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AccumulatePoints(pts);
+
+		if (loc.first == -1 || loc.second == -1)
+		{
+			for (int n = 0; n < pts.size(); ++n)
+			{
+				for (int m = 0; m < pts[n].size(); ++m)
+					printf("%lf ", pts[n][m]);
+				printf("\n");
+			}
+			Assert(!"ERROR: Could not sink polygon point.\n");
+		}
 	}
+
+	//------------------------------------------------------------------------------------------------------------------------------
+	// Actually sink the polygon
+	//------------------------------------------------------------------------------------------------------------------------------		
+	
 	REF(inRef)->accum_poly->pool = loc.first;
 	REF(inRef)->accum_poly->intervals.push_back(loc.second);
 	for (DSFTupleVectorVector::iterator i = REF(inRef)->accum_poly_winding.begin(); i != REF(inRef)->accum_poly_winding.end(); ++i)
