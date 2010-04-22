@@ -631,8 +631,9 @@ int main(int argc, char * argv[])
 			destTex.dwWidth = srcTex.dwWidth;
 			destTex.dwHeight = srcTex.dwHeight;
 			destTex.dwPitch = 0;
-			// Min block size is 4x4 which is either 8 or 16 byte blocks MINIMUM
-			destTex.dwDataSize = intmax2((destTex.dwHeight * destTex.dwWidth * (tempImg.channels == 3 ? 4 : 8)) / 8, (tempImg.channels == 3 ? 8 : 16));
+			// Min block size is 4x4 which is always 16 byte minimum. It doesn't seem to matter whether there's an alpha
+			// channel or not, the minimum remains 16 bytes.
+			destTex.dwDataSize = intmax2((destTex.dwHeight * destTex.dwWidth * (tempImg.channels == 3 ? 4 : 8)) / 8, 16);
    			destTex.pData = (ATI_TC_BYTE*) malloc(destTex.dwDataSize);
 
 			// Convert it!
