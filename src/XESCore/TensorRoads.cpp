@@ -611,7 +611,7 @@ void	BuildRoadsForFace(
 		if(!RoadsForThisFace(f))
 			no_road_faces.insert(f);
 
-		FindEdgesForFaceSet(no_road_faces, bounds);
+		FindEdgesForFaceSet<Pmwx>(no_road_faces, bounds);
 		y = SetupRasterizerForDEM(bounds, road_restrict, raster);
 
 		raster.StartScanline(y);

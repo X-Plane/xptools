@@ -23,6 +23,7 @@
 
 #include "MapCreate.h"
 #include "AssertUtils.h"
+#include "MapHelpers.h"
 
 void	Map_CreateWithLineData(
 					Pmwx&									out_map,
@@ -96,7 +97,7 @@ void	Map_CreateReturnEdges(
 		for(EdgeKey_iterator k = eit->curve().data().begin(); k != eit->curve().data().end(); ++k)
 		{
 			
-			Halfedge_handle he = he_get_same_direction(eit);
+			Halfedge_handle he = he_get_same_direction(Halfedge_handle(eit));
 			halfedge_handles[*k].push_back(he);
 		}
 

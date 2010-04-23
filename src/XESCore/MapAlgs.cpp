@@ -183,6 +183,7 @@ void	CropMap(
 	CutInside(outCutout,p,false,inProgress);
 }
 
+/*
 class	collect_edges : public data_preserver_t {
 public:
 	set<Halfedge_handle> *  edges;
@@ -261,7 +262,7 @@ public:
 
 	}
 };
-
+*/
 
 
 void	CutInside(
@@ -271,7 +272,7 @@ void	CutInside(
 			ProgressFunc		inProgress)
 {
 //	set<Halfedge_handle>	edges;
-	data_preserver_t	info;
+	data_preserver_t<Pmwx>	info;
 //	collect_edges		info;
 //	info.edges = &edges;
 //	info.use_outside = false;
@@ -1834,7 +1835,7 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 	for (set<Face_handle>::const_iterator f = inFaces.begin(); f != inFaces.end(); ++f)
 	{
 		localEdges.clear();
-		FindEdgesForFace(*f, localEdges);
+		FindEdgesForFace<Pmwx>(*f, localEdges);
 		for (set<Halfedge_handle>::iterator e = localEdges.begin(); e != localEdges.end(); ++e)
 		{
 			if (inFaces.count((*e)->face()) == 0 || inFaces.count((*e)->twin()->face()) == 0)
@@ -1884,7 +1885,7 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer)
 {
 	set<Halfedge_handle>	all, useful;
-	FindEdgesForFace(f, all);
+	FindEdgesForFace<Pmwx>(f, all);
 	for (set<Halfedge_handle>::iterator e = all.begin(); e != all.end(); ++e)
 	{
 		if ((*e)->face() != (*e)->twin()->face())

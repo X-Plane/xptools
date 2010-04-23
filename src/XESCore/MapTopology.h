@@ -52,7 +52,8 @@
  * THIS DOES NOT CLEAR THE SET, FOR YOUR CONVENIENCE!!
  *
  */
-void	FindEdgesForFace(Face_handle face, set<Halfedge_handle>& outEdges);
+template <typename Arr>
+void	FindEdgesForFace(typename Arr::Face_handle face, set<typename Arr::Halfedge_handle>& outEdges);
 
 /*
  * FindFacesForEdgeSet
@@ -61,7 +62,8 @@ void	FindEdgesForFace(Face_handle face, set<Halfedge_handle>& outEdges);
  * THIS DOES CLEAR THE FACE SET!
  *
  */
-void	FindFacesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Face_handle>& outFaces);
+template <typename Arr>
+void	FindFacesForEdgeSet(const set<typename Arr::Halfedge_handle>& inEdges, set<typename Arr::Face_handle>& outFaces);
 
 /*
  * FindEdgesForFaceSet
@@ -70,7 +72,8 @@ void	FindFacesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Face_handle>& 
  * inside of the face set are returned.
  *
  */
-void	FindEdgesForFaceSet(const set<Face_handle>& inFaces, set<Halfedge_handle>& outEdges);
+template <typename Arr>
+void	FindEdgesForFaceSet(const set<typename Arr::Face_handle>& inFaces, set<typename Arr::Halfedge_handle>& outEdges);
 
 /*
  * FindInternalEdgesForFaceSet
@@ -79,7 +82,8 @@ void	FindEdgesForFaceSet(const set<Face_handle>& inFaces, set<Halfedge_handle>& 
  * be twins, but no guarantee about which edge we get!
  *
  */
-void	FindInternalEdgesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Halfedge_handle>& outEdges);
+template <typename Arr>
+void	FindInternalEdgesForEdgeSet(const set<typename Arr::Halfedge_handle>& inEdges, set<typename Arr::Halfedge_handle>& outEdges);
 
 /*
  * FindAdjacentFaces
@@ -87,7 +91,8 @@ void	FindInternalEdgesForEdgeSet(const set<Halfedge_handle>& inEdges, set<Halfed
  * Given a face, returns all faces that are touching this face.
  *
  */
-void	FindAdjacentFaces(Face_handle inFace, set<Face_handle>& outFaces);
+template <typename Arr>
+void	FindAdjacentFaces(typename Arr::Face_handle inFace, set<typename Arr::Face_handle>& outFaces);
 
 /*
  * FindAdjacentWetFaces
@@ -170,18 +175,18 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
 
 
 
-template <typename Properties>
+template <typename Properties, typename Arr=Pmwx>
 class	MapBFSVisitor {
 public:
 
-	typedef pair<Face_handle, Properties>							prop_pair;
+	typedef pair<typename Arr::Face_handle, Properties>				prop_pair;
 	typedef list<prop_pair>											face_queue;
 
 	virtual	void	initialize_properties(Properties& io_properties)=0;
-	virtual	void	adjust_properties(Pmwx::Halfedge_handle edge, Properties& io_properties)=0;
-	virtual	void	mark_face(const Properties& in_properties, Face_handle face)=0;
+	virtual	void	adjust_properties(typename Arr::Halfedge_handle edge, Properties& io_properties)=0;
+	virtual	void	mark_face(const Properties& in_properties, typename Arr::Face_handle face)=0;
 	
-	void	Visit(Pmwx * targ)
+	void	Visit(Arr * targ)
 	{
 		face_queue	q;
 		targ->unbounded_face()->set_visited(true);
@@ -189,19 +194,19 @@ public:
 		initialize_properties(p);
 		q.push_back(prop_pair(targ->unbounded_face(), p));			
 		bfs_scan(q);		
-		for(Pmwx::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
+		for(typename Arr::Face_iterator f = targ->faces_begin(); f != targ->faces_end(); ++f)
 			f->set_visited(false);
 	}
 	
 private:
 
-	void bfs_process_ccb(Pmwx::Ccb_halfedge_circulator ccb, const Properties& props, face_queue& q)
+	void bfs_process_ccb(typename Arr::Ccb_halfedge_circulator ccb, const Properties& props, face_queue& q)
 	{
-		Pmwx::Ccb_halfedge_circulator circ(ccb), stop(ccb);
+		typename Arr::Ccb_halfedge_circulator circ(ccb), stop(ccb);
 		do {
 			if(!circ->twin()->face()->visited())
 			{
-				Face_handle f(circ->twin()->face());
+				typename Arr::Face_handle f(circ->twin()->face());
 				f->set_visited(true);
 				Properties	twin_props(props);
 				
@@ -218,7 +223,7 @@ private:
 		while(!q.empty())
 		{
 			Properties	props(q.front().second);
-			Face_handle	f(q.front().first);
+			typename Arr::Face_handle	f(q.front().first);
 			q.pop_front();
 			
 			mark_face(props,f);
@@ -226,13 +231,149 @@ private:
 			if(!f->is_unbounded())
 				bfs_process_ccb(f->outer_ccb(), props, q);
 			
-			for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+			for(typename Arr::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 				bfs_process_ccb(*h, props, q);
 		}
 	}
 
 };
 
+/************************************************************************************************************************
+ * TEMPLATE IMPLS
+ ************************************************************************************************************************/
+
+template <typename Arr>
+inline void	FindEdgesForFace(typename Arr::Face_handle face, set<typename Arr::Halfedge_handle> &outEdges)
+{
+	typename Arr::Ccb_halfedge_circulator	circ, stop;
+	if (!face->is_unbounded())
+	{
+		circ = stop = face->outer_ccb();
+		do {
+			outEdges.insert(circ);
+			++circ;
+		} while (circ != stop);
+	}
+
+	for (typename Arr::Hole_iterator hole = face->holes_begin();
+		hole != face->holes_end(); ++hole)
+	{
+		circ = stop = *hole;
+		do {
+			outEdges.insert(circ);
+			++circ;
+		} while (circ != stop);
+	}
+
+}
+
+template <typename Arr>
+inline void	FindFacesForEdgeSet(const set<typename Arr::Halfedge_handle>& inEdges, set<typename Arr::Face_handle>& outFaces)
+{
+	if (inEdges.empty()) return;
+	outFaces.clear();
+
+	set<typename Arr::Face_handle>	working;
+
+	// Ben sez: the basic idea here is a "flood fill".  We keep adding more and more faces.
+	// Each time we add a new face, we cross all edges that aren't in our hard boundary
+	// (inEdges) and add that face too if we haven't seen it yet.
+	//
+	// But...there is no requirement that all faces surrounded by inEdges be contiguous!
+	// So make sure to add ALL of the faces adjacent to inEdges immediately...otherwise
+	// we might not flood-fill from one disjoint area to another.
+
+	for (typename set<typename Arr::Halfedge_handle>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)
+		working.insert((*e)->face());
+
+	while (!working.empty())
+	{
+		typename Arr::Face_handle	who = *working.begin();
+		DebugAssert(!who->is_unbounded());
+		outFaces.insert(who);
+		working.erase(who);
+
+		set<typename Arr::Halfedge_handle> edges;
+		FindEdgesForFace<Arr>(who, edges);
+
+		for (typename set<typename Arr::Halfedge_handle>::iterator edge = edges.begin(); edge != edges.end(); ++edge)
+		{
+			if (inEdges.count(*edge) == 0)
+			{
+				typename Arr::Face_handle neighbor = (*edge)->twin()->face();
+				if (!neighbor->is_unbounded())
+				if (outFaces.count(neighbor) == 0)
+					working.insert(neighbor);
+			}
+		}
+	}
+}
+
+template <typename Arr>
+inline void	FindInternalEdgesForEdgeSet(const set<typename Arr::Halfedge_handle>& inEdges, set<typename Arr::Halfedge_handle>& outEdges)
+{
+	outEdges.clear();
+	set<typename Arr::Face_handle>	to_visit;
+	set<typename Arr::Face_handle>	visited;
+
+	to_visit.insert((*inEdges.begin())->face());
+
+	while(!to_visit.empty())
+	{
+		typename Arr::Face_handle who = *to_visit.begin();
+		DebugAssert(!who->is_unbounded());
+		to_visit.erase(who);
+		visited.insert(who);
+
+		set<typename Arr::Halfedge_handle>	who_edges;
+
+		FindEdgesForFace<Arr>(who,who_edges);
+
+		for(typename set<typename Arr::Halfedge_handle>::iterator edge = who_edges.begin(); edge != who_edges.end(); ++edge)
+		if(inEdges.count(*edge) == 0)
+		{
+			// For every half-edge of this face that is not in the outer boundary...
+
+			// Figure out which face we need to "flood fill" over to.
+			typename Arr::Face_handle neighbor = (*edge)->twin()->face();
+			if (!neighbor->is_unbounded())
+			if (visited.count(neighbor) == 0)
+				to_visit.insert(neighbor);
+
+			// We only want to take each edge once.  Check relative to curve direction...if we are
+			// not "with out curve", we get inserted by the other side.
+			if(he_is_same_direction(*edge))
+				outEdges.insert(*edge);
+		}
+	}
+}
+
+template <typename Arr>
+inline void	FindEdgesForFaceSet(const set<typename Arr::Face_handle>& inFaces, set<typename Arr::Halfedge_handle>& outEdges)
+{
+	outEdges.clear();
+	for (typename set<typename Arr::Face_handle>::const_iterator f = inFaces.begin(); f != inFaces.end(); ++f)
+	{
+		set<typename Arr::Halfedge_handle>	local;
+		FindEdgesForFace<Pmwx>(*f, local);
+		for (typename set<typename Arr::Halfedge_handle>::iterator l = local.begin(); l != local.end(); ++l)
+		{
+			if (inFaces.count((*l)->twin()->face()) == 0)
+				outEdges.insert(*l);
+		}
+	}
+}
+
+template <typename Arr>
+inline void	FindAdjacentFaces(typename Arr::Face_handle inFace, set<typename Arr::Face_handle>& outFaces)
+{
+	outFaces.clear();
+	set<typename Arr::Halfedge_handle> e;
+	FindEdgesForFace(inFace, e);
+	for (typename set<typename Arr::Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
+	if ((*he)->twin()->face() != inFace)
+		outFaces.insert((*he)->twin()->face());
+}
 
 
 

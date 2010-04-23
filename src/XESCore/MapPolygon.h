@@ -58,13 +58,13 @@ void	MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 
 
 
-
+/*
 void	TranslatePolygonForward(Polygon_2& io_poly, const CoordTranslator_2& translator);
 void	TranslatePolygonForward(Polygon_with_holes_2& io_poly, const CoordTranslator_2& translator);
 
 void	TranslatePolygonReverse(Polygon_2& io_poly, const CoordTranslator_2& translator);
 void	TranslatePolygonReverse(Polygon_with_holes_2& io_poly, const CoordTranslator_2& translator);
-
+*/
 
 
 

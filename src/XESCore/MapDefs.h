@@ -251,13 +251,12 @@ struct GIS_vertex_data {
 
 struct GIS_halfedge_data {
 public:
-	GIS_halfedge_data() : mDominantXXX(false), mMark(false),mInset(0.0f), mTransition(0.0) { }
+	GIS_halfedge_data() : mMark(false),mInset(0.0f), mTransition(0.0) { }
 
 	int							mTransition;		// Transition type ID
 	GISNetworkSegmentVector		mSegments;			// Network segments along us
 	GISParamMap					mParams;
 	double						mInset;				// Largest unusable inset for this side
-	bool                        mDominantXXX;
 	bool						mMark;				// Temporary, for algorithms
 #if OPENGL_MAP
 	float						mGL[4];				// Pre-expanded line!
@@ -358,19 +357,7 @@ typedef CGAL::Arr_extended_dcel<Traits_2,
 								GIS_face_data,
 								CGAL::Arr_vertex_base<Point_2>,
 								CGAL::Arr_halfedge_base<X_monotone_curve_2>,
-								CGAL::Gps_face_base>									Dcel_base;
-
-class	Dcel : public Dcel_base {
-public:
-
-  Halfedge* new_edge()
-  {
-	Halfedge * h = Dcel_base::new_edge();
-	h->data().mDominantXXX = 1;
-	h->opposite()->data().mDominantXXX = 0;
-	return h;
-	}
-};
+								CGAL::Gps_face_base>									Dcel;
 
 typedef CGAL::Arrangement_2<Traits_2,Dcel>					Arrangement_2;
 
@@ -396,24 +383,6 @@ typedef  Arr_accessor::Dcel_isolated_vertex     DIso_vert;
 typedef CGAL::Arr_landmarks_point_location<Arrangement_2>  Locator;
 
 typedef Arrangement_2		Pmwx;
-
-inline bool	he_is_same_direction(Halfedge_handle he)
-{
-	return (he->curve().is_directed_right() == (he->direction() == CGAL::ARR_LEFT_TO_RIGHT));
-}
-
-inline Halfedge_handle he_get_same_direction(Halfedge_handle he)
-{
-	return he_is_same_direction(he) ? he : he->twin();
-}
-
-inline bool he_is_same_direction_as(Halfedge_handle he, const Curve_2& c)
-{
-	return CGAL::angle(
-		he->source()->point(),
-		he->target()->point(),
-		he->target()->point() + Vector_2(c.source(),c.target())) == CGAL::OBTUSE;
-}
 
 
 /******************************************************************************************************************************************************

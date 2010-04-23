@@ -22,6 +22,7 @@
  */
 
 #include "MapRaster.h"
+#include "MapHelpers.h"
 
 inline void push_vertical(double x, double y1, double y2, vector<X_monotone_curve_2>& c, int key)
 {
@@ -127,7 +128,7 @@ void	MapFromDEM(
 	
 	for(Pmwx::Edge_iterator e = out_map.edges_begin(); e != out_map.edges_end(); ++e)
 	{
-		Pmwx::Halfedge_handle ee = he_get_same_direction(e);
+		Pmwx::Halfedge_handle ee = he_get_same_direction(Halfedge_handle(e));
 		if(!ee->face()->is_unbounded())
 		if(*(ee->curve().data().begin()) != null_post)
 			ee->face()->data().mTerrainType = *(ee->curve().data().begin());

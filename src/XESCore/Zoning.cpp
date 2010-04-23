@@ -44,6 +44,7 @@
 
 ZoningRuleTable				gZoningRules;
 set<int>					gZoningTypes;
+FillRuleTable				gFillRules;
 
 
 static bool	ReadZoningRule(const vector<string>& tokens, void * ref)

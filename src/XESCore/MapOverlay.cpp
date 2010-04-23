@@ -294,13 +294,13 @@ void	MapOverlay(Pmwx& bottom, Pmwx& top, Pmwx& result)
 
 
 // Edge collection routines for various shapes...
-void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_2& src, Locator * loc)
+static void	CollectEdges(Pmwx& io_dst, edge_collector_t<Pmwx> * collector, const Polygon_2& src, Locator * loc)
 {
 	DebugAssert(src.size() >= 3);
 	DebugAssert(src.is_simple());
 	for(int n = 0; n < src.size(); ++n)
 	{
-		collector->input = Curve_2(src.edge(n),0);
+		collector->input = Pmwx::X_monotone_curve_2(src.edge(n),0);
 		collector->ctr = 0;
 		DebugAssert(collector->input.source() != collector->input.target());
 		if(loc)			CGAL::insert(io_dst, collector->input,*loc);
@@ -309,7 +309,7 @@ void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_2& s
 	}
 }
 
-void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_with_holes_2& src, Locator * loc)
+static void	CollectEdges(Pmwx& io_dst, edge_collector_t<Pmwx> * collector, const Polygon_with_holes_2& src, Locator * loc)
 {
 	DebugAssert(!src.is_unbounded());
 
@@ -322,7 +322,7 @@ void	CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_with
 // requires a search over the entire map to capture the topology.  This will copy all edges, which we will then re-iterate.
 // So instead, we simply go over every edge in the set (all of which "have meaning") and insert them.  gives us nice linear time
 // processing, which is as good as it gets.
-void		CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_set_2& src, Locator * loc)
+static void		CollectEdges(Pmwx& io_dst, edge_collector_t<Pmwx> * collector, const Polygon_set_2& src, Locator * loc)
 {
 	DebugAssert(!src.arrangement().unbounded_face()->contained());
 	/*
@@ -354,7 +354,7 @@ void		CollectEdges(Pmwx& io_dst, edge_collector_t * collector, const Polygon_set
 template <class __EdgeContainer>
 void	MapMergePolygonAny(Pmwx& io_dst, const __EdgeContainer& src, set<Face_handle> * out_faces, Locator * loc)
 {
-	edge_collector_t	collector;
+	edge_collector_t<Pmwx>	collector;
 	collector.attach(io_dst);
 
 	CollectEdges(io_dst, &collector, src, loc);
@@ -362,14 +362,14 @@ void	MapMergePolygonAny(Pmwx& io_dst, const __EdgeContainer& src, set<Face_handl
 	if(out_faces)
 	{
 		out_faces->clear();
-		FindFacesForEdgeSet(collector.results, *out_faces);
+		FindFacesForEdgeSet<Pmwx>(collector.results, *out_faces);
 	}
 }
 
 template <class __EdgeContainer>
 Face_handle		MapOverlayPolygonAny(Pmwx& io_dst, const __EdgeContainer& src, Locator * loc)
 {
-	edge_collector_t	collector;
+	edge_collector_t<Pmwx>	collector;
 	collector.attach(io_dst);
 
 	CollectEdges(io_dst, &collector, src, loc);
@@ -378,7 +378,7 @@ Face_handle		MapOverlayPolygonAny(Pmwx& io_dst, const __EdgeContainer& src, Loca
 
 	// Go through and find all internal edges to the area - we will nuke them!
 	set<Halfedge_handle>	to_nuke;
-	FindInternalEdgesForEdgeSet(collector.results, to_nuke);
+	FindInternalEdgesForEdgeSet<Pmwx>(collector.results, to_nuke);
 
 	collector.detach();
 
@@ -430,7 +430,7 @@ Face_handle		MapOverlayPolygonWithHoles(Pmwx& io_dst, const Polygon_with_holes_2
 
 void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * loc, set<Face_handle> * faces)
 {
-	edge_collector_t	collector;
+	edge_collector_t<Pmwx>	collector;
 	collector.attach(io_dst);
 
 	CollectEdges(io_dst, &collector, src, loc);
@@ -439,7 +439,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
 
 	// Go through and find all internal edges to the area - we will nuke them!
 	set<Halfedge_handle>	to_nuke;
-	FindInternalEdgesForEdgeSet(collector.results, to_nuke);
+	FindInternalEdgesForEdgeSet<Pmwx>(collector.results, to_nuke);
 
 	collector.detach();
 
@@ -450,7 +450,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
 	}
 
 	if(faces)
-		FindFacesForEdgeSet(collector.results, *faces);
+		FindFacesForEdgeSet<Pmwx>(collector.results, *faces);
 }
 
 

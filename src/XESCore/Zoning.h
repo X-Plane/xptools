@@ -53,10 +53,32 @@ struct ZoningRule_t {
 	
 	int			zoning;
 };
+
 typedef vector<ZoningRule_t>	ZoningRuleTable;
 extern ZoningRuleTable				gZoningRules;
-
 extern set<int>						gZoningTypes;
+
+struct FillRule_t {
+	
+	int			zoning;									// Base zoning we act upon
+	
+	float		size_min,		size_max;				// These params limit the kind of block we act upon
+	int			side_min,		side_max;
+	float		slope_min,		slope_max;
+	float		bldg_min,		bldg_max;
+
+	int			adj_terrain;							// These locate an adjacent edge with a certain property.   We will key
+	int			adj_network;							// the feature to align to this edge.
+	int			adj_zoning;
+
+	int			block_id;								// art asset names of various things we can insert.
+	int			string_id;
+	int			point_id;
+	int			veg_id;
+};	
+
+typedef vector<FillRule_t>		FillRuleTable;
+extern FillRuleTable			gFillRules;
 
 void	LoadZoningRules(void);
 

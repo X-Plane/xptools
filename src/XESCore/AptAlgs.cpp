@@ -512,7 +512,7 @@ void apt_make_cut_map(Polygon_set_2& in_area, Pmwx& out_map, double cut_x, doubl
 		cuts.push_back(Curve_2(Segment_2(Point_2(min_x,y),Point_2(max_x,y)),0));
 	
 	{
-		data_preserver_t	preserver;
+		data_preserver_t<Pmwx>	preserver;
 		preserver.attach(out_map);
 		CGAL::insert(out_map, cuts.begin(), cuts.end());
 		preserver.detach();
