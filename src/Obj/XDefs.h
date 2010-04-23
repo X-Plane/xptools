@@ -83,6 +83,9 @@
 // So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!  
 #define AIRPORT_ROUTING 0
 
+#include "MemUtils.h"
+
+
 /************************************************************************************************************************************************************************
  * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
  ************************************************************************************************************************************************************************/
