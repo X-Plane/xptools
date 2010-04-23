@@ -56,7 +56,8 @@ void	CreateTranslatorForPolygon(
 					CoordTranslator2&	outTranslator);
 					
 void	CreateTranslatorForBounds(
-					const Bbox_2&		inBox,
+					const Point_2&		inSrcMin,
+					const Point_2&		inSrcMax,
 					CoordTranslator_2&	outTranslator);
 
 inline int	latlon_bucket(int p)
