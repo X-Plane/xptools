@@ -20,7 +20,7 @@
 #define MESHTOOL_EXTRAVER	"-r1"
 
 #define AC3DPLUGIN_VER		30201
-#define AC3DPLUGIN_EXTRAVER	"-r1"
+#define AC3DPLUGIN_EXTRAVER	"-r2"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];
