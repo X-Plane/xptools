@@ -292,6 +292,10 @@
 		D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681990B8AC9C200091AFC /* WED_GISChain.cpp */; };
 		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
+		D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
+		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
+		D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
+		D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
 		D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
@@ -629,6 +633,8 @@
 		D6A266FF0F992A1B00E1E754 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A266940F99274300E1E754 /* XPlaneSupport.tcl */; };
 		D6A2670C0F992BD000E1E754 /* XPlaneSupportMac.p in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */; };
+		D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A88BE511820B05000EBFBF /* MemUtils.cpp */; };
+		D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A88BE511820B05000EBFBF /* MemUtils.cpp */; };
 		D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143A0F126C930006E096 /* WED_TCE.cpp */; };
 		D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */; };
 		D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */; };
@@ -1121,6 +1127,11 @@
 		D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPolygon.cpp; sourceTree = "<group>"; };
 		D63681A00B8ACA2600091AFC /* WED_GISComposite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISComposite.h; sourceTree = "<group>"; };
 		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
+		D63F7255117FAB3500AB7C1F /* BlockDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockDefs.h; sourceTree = "<group>"; };
+		D63F725A117FB60900AB7C1F /* BlockAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockAlgs.h; sourceTree = "<group>"; };
+		D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockAlgs.cpp; sourceTree = "<group>"; };
+		D63F72731180917800AB7C1F /* BlockFill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockFill.h; sourceTree = "<group>"; };
+		D63F72741180917800AB7C1F /* BlockFill.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockFill.cpp; sourceTree = "<group>"; };
 		D6424EFD115948CD0031370E /* WED_DataModel2.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel2.sql; sourceTree = "<group>"; };
 		D64A0E83110F820A006172C3 /* ObjPlacement2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjPlacement2.h; sourceTree = "<group>"; };
 		D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement2.cpp; sourceTree = "<group>"; };
@@ -1387,6 +1398,8 @@
 		D6A2668C0F99274300E1E754 /* x86_Win32 DLL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "x86_Win32 DLL.h"; sourceTree = "<group>"; };
 		D6A2668D0F99274300E1E754 /* xp_plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xp_plugin.cpp; sourceTree = "<group>"; };
 		D6A266940F99274300E1E754 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
+		D6A88BE411820B05000EBFBF /* MemUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemUtils.h; sourceTree = "<group>"; };
+		D6A88BE511820B05000EBFBF /* MemUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemUtils.cpp; sourceTree = "<group>"; };
 		D6AC143A0F126C930006E096 /* WED_TCE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCE.cpp; sourceTree = "<group>"; };
 		D6AC143B0F126C930006E096 /* WED_TCE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCE.h; sourceTree = "<group>"; };
 		D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEPane.cpp; sourceTree = "<group>"; };
@@ -2887,6 +2900,8 @@
 				D67B28660C5647EF00A21ABC /* STLUtils.cpp */,
 				D67682B50CC669830032B90C /* TensorUtils.h */,
 				D67682B60CC669830032B90C /* TensorUtils.cpp */,
+				D6A88BE411820B05000EBFBF /* MemUtils.h */,
+				D6A88BE511820B05000EBFBF /* MemUtils.cpp */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3149,6 +3164,11 @@
 				D6DBA33A10576739004E1089 /* BugTest.cpp */,
 				D64A0E83110F820A006172C3 /* ObjPlacement2.h */,
 				D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */,
+				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
+				D63F725A117FB60900AB7C1F /* BlockAlgs.h */,
+				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
+				D63F72731180917800AB7C1F /* BlockFill.h */,
+				D63F72741180917800AB7C1F /* BlockFill.cpp */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
@@ -4075,6 +4095,9 @@
 				D6E941DC10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DD10DC717300192A02 /* MapRaster.cpp in Sources */,
 				D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
+				D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
+				D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */,
+				D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4176,6 +4199,9 @@
 				D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */,
 				D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
+				D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
+				D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */,
+				D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4654,6 +4680,7 @@
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
+					SDK/nedmalloc,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
@@ -4696,6 +4723,7 @@
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
+					SDK/nedmalloc,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
@@ -4800,6 +4828,7 @@
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
+					SDK/nedmalloc,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
@@ -4834,6 +4863,7 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
+					"WANT_NED_MALLOC=1",
 				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
@@ -4906,6 +4936,7 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
+					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -5024,6 +5055,7 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
+					"WANT_NED_MALLOC=1",
 				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
@@ -5052,6 +5084,7 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
+					"WANT_NED_MALLOC=1",
 				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
@@ -5077,6 +5110,7 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
+					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -5104,6 +5138,7 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
+					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -5428,6 +5463,7 @@
 					"USE_JPEG=1",
 					"OPENGL_MAP=1",
 					"$(inherited)",
+					"WANT_NED_MALLOC=1",
 				);
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
@@ -5521,6 +5557,7 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
+					"WANT_NED_MALLOC=1",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -5586,6 +5623,7 @@
 					"/usr/include/c++/4.0.0",
 					/usr/local/include,
 					"$(inherited)",
+					SDK/nedmalloc,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					libs/local/lib,
