@@ -12,8 +12,9 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
-Version 3.2.1r1
+Version 3.2.1r2
 	- Panel export works with Panel_general.png naming convention.
+	- Dataref.txt parsing isn't fooled by quoted strings.
 Version 3.2r1
 	- No changes, relabel to final.
 Version 3.2b5

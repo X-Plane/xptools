@@ -438,6 +438,9 @@ proc fetch_all_datarefs {} {
 
 	gets $fi line	
 	while { [gets $fi line] >= 0 } {
+
+		set line [split $line "\t \""] 
+	
 		if [llength $line] {
 		   set dref_fullname [lindex $line 0]
 		   set dref_dtype [lindex $line 1]
