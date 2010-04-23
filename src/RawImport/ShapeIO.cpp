@@ -30,6 +30,7 @@
 #include "MapAlgs.h"
 #include "GISTool_Globals.h"
 #include "MapTopology.h"
+#include "MapHelpers.h"
 
 #include <CGAL/Sweep_line_2_algorithms.h>
 
@@ -306,7 +307,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 	return false;
 }
 
-class toggle_properties_visitor : public MapBFSVisitor<set<int> > {
+class toggle_properties_visitor : public MapBFSVisitor<set<int>, Pmwx > {
 public:
 
 	typedef	set<int>	Prop_t;
@@ -898,7 +899,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end(); ++e)
 				if(*e->curve().data().begin() < entity_count)
 				{
-					Pmwx::Halfedge_handle ee = he_get_same_direction(e);
+					Pmwx::Halfedge_handle ee = he_get_same_direction(Halfedge_handle(e));
 					ee->twin()->face()->set_contained(true);					
 					ee->twin()->face()->data().mTerrainType = feature;
 					if(ee->face()->contained())
