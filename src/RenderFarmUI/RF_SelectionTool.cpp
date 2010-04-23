@@ -29,6 +29,7 @@
 #include "RF_Selection.h"
 #include "RF_Progress.h"
 #include "MapTopology.h"
+#include "MapHelpers.h"
 #include "MapPolygon.h"
 #include "MapBuffer.h"
 #include "GISTool_Globals.h"
