@@ -77,6 +77,8 @@ static const double kApplyLinkX2[8] = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 }
 static const double kApplyLinkY1[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
 static const double kApplyLinkY2[8] = { 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 
+#define MIN_MARQUEE_PIXELS 4
+
 static marquee_mode_t	mode_for_modifiers(GUI_KeyFlags flags, bool rotate_ok)
 {
 	if (rotate_ok) if (flags & gui_OptionAltFlag) return mm_Rotate;
@@ -137,7 +139,7 @@ intptr_t		WED_MarqueeTool::GetNthEntityID(int n) const
 int		WED_MarqueeTool::CountControlHandles(intptr_t id						  ) const
 {
 	if (!GetTotalBounds())			return 0;
-///	if (mCacheBounds.is_point())	return 1;
+//	if (mCacheBounds.is_point())	return 1;
 									return 9;
 }
 
@@ -154,7 +156,9 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, int n, bool * active, Han
 
 	} else {
 
-		if(mCacheBounds.is_point())
+		double min_size = GetZoomer()->GetClickRadius(MIN_MARQUEE_PIXELS);
+
+		if(mCacheBounds.xspan() < min_size && mCacheBounds.yspan() < min_size)
 		{
 			if(active) *active = (n == 8);
 			if (con_type) *con_type = handle_Icon;
@@ -193,6 +197,17 @@ void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, int n, bool * active, Han
 		else
 		{	
 			if(active) *active=1;
+
+			if(active)
+			if(mCacheBounds.xspan() < min_size)
+			if(n != 8 && n != 3 && n != 7)
+				*active=0;
+		
+			if(active)
+			if(mCacheBounds.yspan() < min_size)
+			if(n != 8 && n != 1 && n != 5)
+				*active=0;
+		
 			if (con_type) *con_type = handle_Square;
 			if (direction) *direction=Vector2(0,1);
 			if (p)

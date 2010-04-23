@@ -45,6 +45,7 @@
 #include "WED_Runway.h"
 #include "WED_RunwayNode.h"
 #include "WED_TextureNode.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_Sealane.h"
 #include "WED_Taxiway.h"
 #include "WED_TowerViewpoint.h"
@@ -571,9 +572,12 @@ bool			WED_IsIconic(IGISEntity * what)
 	switch(what->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Heading:
-		return what->GetGISSubtype() != WED_RunwayNode::sClass && what->GetGISSubtype() != WED_TextureNode::sClass;
-//	case gis_Point_HeadingWidthLength:
-//		return true;
+		// Ben says: this is a little fugly.  All point types turn into icons (e.g. windsocks, etc.) except for a few exceptions.
+		// This is only for POINTS, not for BEZIER points, hence the "non-icon" bezier classes are NOT listed.
+		return what->GetGISSubtype() != WED_RunwayNode::sClass &&			// Runways have a special node type.  Special type avoids wed-airportnode with taxiway lines and bezier caps
+			   what->GetGISSubtype() != WED_TextureNode::sClass &&			// This is for non-bezier scenery UV mapped stuff
+			   what->GetGISSubtype() != WED_SimpleBoundaryNode::sClass;		// This is for non-bezier scenery non-UV mapped stuff.
+
 	default:
 		return false;
 	}
