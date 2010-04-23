@@ -1489,11 +1489,11 @@ void	DSFFileWriterImp::EndPolygon(
 			
 		}
 
-		printf("Adding pool for: %d\n   ", REF(inRef)->accum_poly->hash_depth);
-			polyRangeMin.dump();
-			printf("\n   ");
-			polyRangeMax.dump();
-			printf("\n");
+//		printf("Adding pool for: %d\n   ", REF(inRef)->accum_poly->hash_depth);
+//			polyRangeMin.dump();
+//			printf("\n   ");
+//			polyRangeMax.dump();
+//			printf("\n");
 
 		REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AddPoolDirect(polyRangeMin, polyRangeMax);
 
