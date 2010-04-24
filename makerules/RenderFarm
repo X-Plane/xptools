@@ -61,6 +61,7 @@ SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
+SOURCES += ./src/Obj/ObjConvert.cpp
 SOURCES += ./src/DSF/DSFLib.cpp
 SOURCES += ./src/DSF/DSFLibWrite.cpp
 SOURCES += ./src/DSF/DSFPointPool.cpp
