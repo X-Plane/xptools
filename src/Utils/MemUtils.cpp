@@ -22,9 +22,10 @@
  */
 
 #include "MemUtils.h"
-#include <nedmalloc.h>
 
 #if WANT_NED_MALLOC
+
+#include <nedmalloc.h>
 
 void* operator new(std::size_t sz) throw (std::bad_alloc)
 {

@@ -189,15 +189,6 @@ extern "C" {
 }
 #endif
 
-
-#if APL
-	#if !defined(__MWERKS__) || defined(__MACH__)
-		#include <Carbon/Carbon.h>
-	#else
-		#include <Carbon.h>
-	#endif
-#endif
-
 #include <png.h>
 #if USE_TIF
 #include <tiffio.h>
