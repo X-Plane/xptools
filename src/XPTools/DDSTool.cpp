@@ -665,16 +665,11 @@ int main(int argc, char * argv[])
 			CopyBitmapSectionDirect(img, tempImg, 0, 0, 0, 0, img.width, img.height);
 
 			if(channels == 3)
-				ConvertAlphaToBitmap(&tempImg, false);
+				ConvertAlphaToBitmap(&tempImg, false, false);
 
 			srcTex.dwWidth = tempImg.width;
 			srcTex.dwHeight = tempImg.height;
-			// This really makes no sense at all. Our pngs are padded to be 4 byte aligned after
-			// we call ConvertAlphaToBitmap but yet if we consider this padding in the dwPitch
-			// variable, we get garbage. If we exclude it, we get a strange pattern in our
-			// 2x2 mipmap but it's the same strange pattern that their Compressonator tool
-			// comes up with and we can't figure out a way to make it any better so we'll just
-			// stick with this for now.
+			// This is true because we shut padding off in ConvertAlphaToBitmap
 			srcTex.dwPitch = tempImg.width * tempImg.channels;
 			srcTex.dwDataSize = (tempImg.width * tempImg.height * (tempImg.channels * 8)) / 8;
 			srcTex.pData = tempImg.data;

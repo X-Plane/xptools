@@ -161,6 +161,13 @@ int	ConvertAlphaToBitmap(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha);
 
+/* This routine converts a 4-channel bitmap to a 3-channel bitmap by converting
+ * alpha back to magenta. */
+int	ConvertAlphaToBitmap(
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha,
+			bool					doPadding);
+
 /* This routine makes a "mipmap stack" from the source image by box-filtering it.
  * The number of consecutive images in the stack is returned. */
 int MakeMipmapStack(struct ImageInfo * ioImage);

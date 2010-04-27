@@ -725,6 +725,14 @@ int	ConvertAlphaToBitmap(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha)
 {
+	return ConvertAlphaToBitmap(ioImage, doMagentaAlpha, true);
+}
+
+int	ConvertAlphaToBitmap(
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha,
+			bool					doPadding)
+{
 		unsigned char * 	oldData, * newData, * srcPixel, * dstPixel;
 		long 	count;
 		long 	x,y;
@@ -733,7 +741,11 @@ int	ConvertAlphaToBitmap(
 	if (ioImage->channels == 3)
 		return 0;
 
-	pad = ((ioImage->width * 3 + 3) & ~3) - (ioImage->width * 3);
+	if(doPadding)
+		pad = ((ioImage->width * 3 + 3) & ~3) - (ioImage->width * 3);
+	else
+		pad = 0;
+
 	newData = (unsigned char *) malloc((ioImage->width * 3 + pad) * ioImage->height);
 	if (newData == NULL)
 		return ENOMEM;
