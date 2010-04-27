@@ -106,39 +106,83 @@ enum {
 
 #if PHONE
 enum {
-		ATC_RGB   = 0x00000001,
-		ATC_RGBA  = 0x00000002,
-		ATC_TILED = 0X00000004
+		ATC_RGB   			= 0x01,
+		ATC_RGBA  			= 0x02,
+		ATC_TILED 			= 0x04,
+		ATC_INTERP_RGBA		= 0x12,
+		ATC_RAW_RGBA_4444	= 0x20,		// From here down, these are formats that WE made up
+		ATC_RAW_RGBA_8888,				// They are NOT part of the ATITC spec.
+		ATC_RAW_RGB_565,
+		ATC_RAW_RGB_888,
+		ATC_RAW_I_8
 };
 #endif
 
-static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit)
+static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit, bool isPvr)
 {
-	PVR_Texture_Header	h = { 0 };
-	h.dwHeaderSize = sizeof(h);
-	h.dwHeight = info.height;
-	h.dwWidth = info.width;
-	h.dwMipMapCount = 1;
-	if(s_raw_16_bit)		h.dwTextureDataSize = (info.channels > 1) ? (info.width * info.height * 2) : (info.width * info.height);
-	else					h.dwTextureDataSize = info.channels * info.width * info.height;
-	h.dwPVR = 0x21525650;
-	if(s_raw_16_bit)
-	switch(info.channels) {
-	case 1: h.dwpfFlags =	OGL_I_8;		break;
-	case 3: h.dwpfFlags =	OGL_RGB_565;	break;
-	case 4: h.dwpfFlags =	OGL_RGBA_4444;	break;
+	PVR_Texture_Header	h 			= { 0 };
+	ATC_Texture_Header	atcHdr 		= { 0 };
+	unsigned int 		totalSize 	= 0;
+	unsigned int		hdrSize 	= 0;
+	void*				hdr			= NULL;
+
+	if(isPvr)
+	{
+		h.dwHeaderSize = sizeof(h);
+		h.dwHeight = info.height;
+		h.dwWidth = info.width;
+		h.dwMipMapCount = 1;
+		if(s_raw_16_bit)		h.dwTextureDataSize = (info.channels > 1) ? (info.width * info.height * 2) : (info.width * info.height);
+		else					h.dwTextureDataSize = info.channels * info.width * info.height;
+		h.dwPVR = 0x21525650;
+		if(s_raw_16_bit)
+		switch(info.channels) {
+		case 1: h.dwpfFlags =	OGL_I_8;		break;
+		case 3: h.dwpfFlags =	OGL_RGB_565;	break;
+		case 4: h.dwpfFlags =	OGL_RGBA_4444;	break;
+		}
+		else
+		switch(info.channels) {
+		case 1: h.dwpfFlags =	OGL_I_8;		break;
+		case 3: h.dwpfFlags =	OGL_RGB_888;	break;
+		case 4: h.dwpfFlags =	OGL_RGBA_8888;	break;
+		}
+
+		totalSize = h.dwTextureDataSize;
+		hdrSize = h.dwHeaderSize;
+		hdr = &h;
 	}
+	// We must be ATC then if we're not PVR
 	else
-	switch(info.channels) {
-	case 1: h.dwpfFlags =	OGL_I_8;		break;
-	case 3: h.dwpfFlags =	OGL_RGB_888;	break;
-	case 4: h.dwpfFlags =	OGL_RGBA_8888;	break;
+	{
+		atcHdr.signature = 0xCCC40002;
+		atcHdr.width = info.width;
+		atcHdr.height = info.height;
+		atcHdr.dataOffset = sizeof(atcHdr);
+
+		if(s_raw_16_bit)
+		switch(info.channels) {
+		case 1: atcHdr.flags =	ATC_RAW_I_8;		break;
+		case 3: atcHdr.flags =	ATC_RAW_RGB_565;	break;
+		case 4: atcHdr.flags =	ATC_RAW_RGBA_4444;	break;
+		}
+		else
+		switch(info.channels) {
+		case 1: atcHdr.flags =	ATC_RAW_I_8;		break;
+		case 3: atcHdr.flags =	ATC_RAW_RGB_888;	break;
+		case 4: atcHdr.flags =	ATC_RAW_RGBA_8888;	break;
+		}
+
+		totalSize = (info.channels > 1) ? (info.width * info.height * 2) : (info.width * info.height);
+		hdrSize = sizeof(atcHdr);
+		hdr = &atcHdr;
 	}
+
 	int sbp = info.channels;
 	int dbp = sbp >= 3 ? 2 : 1;
 	if(!s_raw_16_bit)
 		dbp = sbp;
-	unsigned char * storage = (unsigned char *) malloc(h.dwTextureDataSize);
+	unsigned char * storage = (unsigned char *) malloc(totalSize);
 
 	for(int y = 0; y < info.height; ++y)
 	for(int x = 0; x < info.width; ++x)
@@ -180,8 +224,8 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 	FILE * fi = fopen(outf,"wb");
 	if(fi)
 	{
-		fwrite(&h,1,sizeof(h),fi);
-		fwrite(storage,1,h.dwTextureDataSize,fi);
+		fwrite(hdr,1,hdrSize,fi);
+		fwrite(storage,1,totalSize,fi);
 		fclose(fi);
 	}
 	free(storage);
@@ -266,7 +310,10 @@ int main(int argc, char * argv[])
 
 #if WANT_PVR
 	#if PHONE
-		printf("CMD .png .atc \"%s\" --png2atc \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .atc \"%s\" ATC_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("DIV\n");
+		printf("RADIO ATC_MODE 1 --png2atc4 4-bit ATC compression\n");
+		printf("RADIO ATC_MODE 0 --png2atc_raw16 ATC uses 16-bit color\n");
 	#endif
 		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("DIV\n");
@@ -456,7 +503,7 @@ int main(int argc, char * argv[])
 			strcat(buf,".raw");
 			outf=buf;
 		}
-		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0)!=0)
+		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0, true)!=0)
 		{
 			printf("Unable to write raw PVR file %s\n", argv[n+1]);
 			return 1;
@@ -566,7 +613,7 @@ int main(int argc, char * argv[])
 
 	}
 #if PHONE
-	else if(strcmp(argv[1],"--png2atc")==0)
+	else if(strcmp(argv[1],"--png2atc4")==0)
 	{
 		int n = 2;
 
@@ -622,18 +669,20 @@ int main(int argc, char * argv[])
 
 			srcTex.dwWidth = tempImg.width;
 			srcTex.dwHeight = tempImg.height;
-			srcTex.dwPitch = 0;
-			// We use img.channels here because  MipMapStack will change it to 4 soemtimes even if it's really 3.
+			// This really makes no sense at all. Our pngs are padded to be 4 byte aligned after
+			// we call ConvertAlphaToBitmap but yet if we consider this padding in the dwPitch
+			// variable, we get garbage. If we exclude it, we get a strange pattern in our
+			// 2x2 mipmap but it's the same strange pattern that their Compressonator tool
+			// comes up with and we can't figure out a way to make it any better so we'll just
+			// stick with this for now.
+			srcTex.dwPitch = tempImg.width * tempImg.channels;
 			srcTex.dwDataSize = (tempImg.width * tempImg.height * (tempImg.channels * 8)) / 8;
 			srcTex.pData = tempImg.data;
-
 
 			destTex.dwWidth = srcTex.dwWidth;
 			destTex.dwHeight = srcTex.dwHeight;
 			destTex.dwPitch = 0;
-			// Min block size is 4x4 which is always 16 byte minimum. It doesn't seem to matter whether there's an alpha
-			// channel or not, the minimum remains 16 bytes.
-			destTex.dwDataSize = intmax2((destTex.dwHeight * destTex.dwWidth * (tempImg.channels == 3 ? 4 : 8)) / 8, 16);
+			destTex.dwDataSize = intmax2((destTex.dwHeight * destTex.dwWidth * (tempImg.channels == 3 ? 4 : 8)) / 8, (tempImg.channels == 3) ? 8 : 16);
    			destTex.pData = (ATI_TC_BYTE*) malloc(destTex.dwDataSize);
 
 			// Convert it!
@@ -650,6 +699,24 @@ int main(int argc, char * argv[])
 		fclose(fi);
 		DestroyBitmap(&info);
 
+	}
+	else if(strcmp(argv[1],"--png2atc_raw16")==0)
+	{
+		int n = 2;
+		ImageInfo	info;
+		if(CreateBitmapFromPNG(argv[n], &info, true))
+		{
+			printf("Unable to open png file %s\n", argv[n]);
+			return 1;
+		}
+		const char * outf = argv[++n];
+		if (WriteToRaw(info, outf, true, false)!=0)
+		{
+			printf("Unable to write raw ARC file %s\n", argv[n]);
+			return 1;
+		}
+
+		return 0;
 	}
 #endif
 	else {
