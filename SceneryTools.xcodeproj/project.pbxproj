@@ -292,6 +292,7 @@
 		D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681990B8AC9C200091AFC /* WED_GISChain.cpp */; };
 		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
+		D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F070F82E96900F6718E /* RF_SpecialCommands.cpp */; };
 		D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
@@ -716,6 +717,8 @@
 		D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
 		D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941D810DC717300192A02 /* ForestTables.cpp */; };
 		D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
+		D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6424EFD115948CD0031370E /* WED_DataModel2.sql */; };
+		D6EAA00F11A19ECA004ADCCC /* WED_RoadEdge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
 		D6ED369F0B67964D00D5484E /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -1894,6 +1897,8 @@
 		D6E941D910DC717300192A02 /* ForestTables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ForestTables.h; sourceTree = "<group>"; };
 		D6E941DA10DC717300192A02 /* MapRaster.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapRaster.cpp; sourceTree = "<group>"; };
 		D6E941DB10DC717300192A02 /* MapRaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapRaster.h; sourceTree = "<group>"; };
+		D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadEdge.h; sourceTree = "<group>"; };
+		D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadEdge.cpp; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
@@ -3463,6 +3468,8 @@
 				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
 				D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */,
 				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
+				D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */,
+				D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -3811,6 +3818,7 @@
 				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
+				D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4098,6 +4106,7 @@
 				D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
 				D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */,
+				D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4539,6 +4548,7 @@
 				D6DF67C3107E8A060004F643 /* WED_ATCRunwayUse.cpp in Sources */,
 				D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */,
 				D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */,
+				D6EAA00F11A19ECA004ADCCC /* WED_RoadEdge.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
