@@ -25,8 +25,12 @@
 #include "WED_ToolUtils.h"
 #include "WED_AirportNode.h"
 #include "WED_TaxiRoute.h"
+#include "WED_RoadEdge.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_GISUtils.h"
+#include "WED_EnumSystem.h"
+#include "STLUtils.h"
 
 #if AIRPORT_ROUTING
 
@@ -48,9 +52,17 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
+	mName(this, "Name", "", "", "N"),
 	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", "", "", 1),
-	mName(tool == create_TaxiRoute ? this : NULL, "Name", "", "", "N"),
-	mSlop(tool == create_TaxiRoute ? this : NULL, "Slop", "", "", 10, 2)
+	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", "", "", ATCRunwayTwoway, atc_rwy_None),
+	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", "", "", ATCRunwayOneway,false),
+	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", "", "", ATCRunwayOneway,false),
+	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", "", "", ATCRunwayOneway,false),
+
+	mLayer(tool == create_Road ? this : NULL, "Layer", "", "", 0, 2),
+	mSubtype(tool == create_Road ? this : NULL, "Type", "", "", RoadSubType, road_Highway),
+	
+	mSlop(this, "Slop", "", "", 10, 2)
 {
 }
 
@@ -198,12 +210,12 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
-	
+	WED_RoadEdge * er = NULL;
 	static int n = 0;
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
 
-	WED_AirportNode * c;
+	WED_GISPoint * c;
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
@@ -223,7 +235,17 @@ void		WED_CreateEdgeTool::AcceptPath(
 		case create_TaxiRoute:
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
 			tr->SetOneway(mOneway.value);			
+			tr->SetRunway(mRunway.value);
+			tr->SetHotDepart(mHotDepart.value);
+			tr->SetHotArrive(mHotArrive.value);
+			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
+			break;
+		case create_Road:
+			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
+			er->SetSubtype(mSubtype.value);
+			er->SetLayer(mLayer.value);
+			er->SetName(mName);
 			break;
 		}
 	
@@ -234,7 +256,14 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNear(host, NULL, pts[p % pts.size()],dst,dist);
 		if(dst == NULL)
 		{
-			dst = c = WED_AirportNode::CreateTyped(GetArchive());
+			switch(mType) {
+			case create_TaxiRoute:
+				dst = c = WED_AirportNode::CreateTyped(GetArchive());
+				break;
+			case create_Road:
+				dst = c = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+				break;
+			}
 			dst->SetParent(host,idx);
 			dst->SetName(mName.value+"_stop");
 			c->SetLocation(gis_Geo,pts[p % pts.size()]);
@@ -502,5 +531,51 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const Se
 			SplitByPts(host->GetNthChild(n), NULL, splitter, out_splits,dsq);
 	}
 }
+
+void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict)
+{
+	dict.clear();
+	if(n == PropertyItemNumber(&mRunway))
+	{
+		WED_Airport * airport = WED_GetCurrentAirport(GetResolver());
+		if(airport)
+		{
+			PropertyDict_t full;
+			WED_CreateToolBase::GetNthPropertyDict(n,full);			
+			set<int> legal;
+			WED_GetAllRunwaysTwoway(airport, legal);
+			legal.insert(mRunway.value);
+			legal.insert(atc_rwy_None);
+			dict.clear();
+			for(PropertyDict_t::iterator f = full.begin(); f != full.end(); ++f)
+			if(legal.count(f->first))
+				dict.insert(PropertyDict_t::value_type(f->first,f->second));
+		}
+	}
+	else if (n == PropertyItemNumber(&mHotDepart) ||
+			 n == PropertyItemNumber(&mHotArrive) ||
+			 n == PropertyItemNumber(&mHotILS))
+	{
+		WED_Airport * airport = WED_GetCurrentAirport(GetResolver());
+		if(airport)
+		{
+			PropertyDict_t full;
+			WED_CreateToolBase::GetNthPropertyDict(n,full);			
+			set<int> legal;
+			WED_GetAllRunwaysOneway(airport, legal);
+			PropertyVal_t val;
+			this->GetNthProperty(n,val);
+			DebugAssert(val.prop_kind == prop_EnumSet);
+			copy(val.set_val.begin(),val.set_val.end(),set_inserter(legal));
+			dict.clear();
+			for(PropertyDict_t::iterator f = full.begin(); f != full.end(); ++f)
+			if(legal.count(f->first))
+				dict.insert(PropertyDict_t::value_type(f->first,f->second));
+		}
+	}
+	else
+		WED_CreateToolBase::GetNthPropertyDict(n,dict);			
+}
+
 
 #endif

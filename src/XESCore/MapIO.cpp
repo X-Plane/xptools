@@ -121,7 +121,7 @@ void ReadObjPlacement(IOReader& inReader, GISObjPlacement_t& p, const TokenConve
 	p.mRepType = c[p.mRepType];
 	inReader.ReadDouble(x);
 	inReader.ReadDouble(y);
-	p.mLocation = Point_2(x, y);
+//	p.mLocation = Point_2(x, y);
 	inReader.ReadDouble(p.mHeading);
 	int derived;
 	inReader.ReadInt(derived);
@@ -131,26 +131,19 @@ void ReadObjPlacement(IOReader& inReader, GISObjPlacement_t& p, const TokenConve
 void WritePolyObjPlacement(IOWriter& inWriter, const GISPolyObjPlacement_t& i)
 {
 	inWriter.WriteInt(i.mRepType);
-	inWriter.WriteInt(1 + distance(i.mShape.holes_begin(),i.mShape.holes_end()));
+	inWriter.WriteInt(i.mShape.size());	
 
-	inWriter.WriteInt(i.mShape.outer_boundary().size());
-	for (Polygon_2::Vertex_iterator vv = i.mShape.outer_boundary().vertices_begin(); vv != i.mShape.outer_boundary().vertices_end(); ++vv)
+	for(vector<Polygon2>::const_iterator r = i.mShape.begin(); r != i.mShape.end(); ++r)
 	{
-		inWriter.WriteDouble(CGAL::to_double(vv->x()));
-		inWriter.WriteDouble(CGAL::to_double(vv->y()));
-	}
-
-	for(Polygon_with_holes_2::Hole_const_iterator h = i.mShape.holes_begin(); h != i.mShape.holes_end(); ++h)
-	{
-		inWriter.WriteInt(h->size());
-		for (Polygon_2::Vertex_iterator vv = h->vertices_begin(); vv != h->vertices_end(); ++vv)
+		inWriter.WriteInt(r->size());
+		for (Polygon2::const_iterator vv = r->begin(); vv != r->end(); ++vv)
 		{
-			inWriter.WriteDouble(CGAL::to_double(vv->x()));
-			inWriter.WriteDouble(CGAL::to_double(vv->y()));
+			inWriter.WriteDouble(vv->x());
+			inWriter.WriteDouble(vv->y());
 		}
 	}
 
-	inWriter.WriteDouble(i.mHeight);
+	inWriter.WriteDouble(i.mParam);
 	inWriter.WriteInt(i.mDerived ? 1 : 0);
 }
 
@@ -161,39 +154,25 @@ void ReadPolyObjPlacement(IOReader& inReader, GISPolyObjPlacement_t& obj, const 
 	int	ptcount, rcount;
 	inReader.ReadInt(rcount);
 	DebugAssert(rcount >= 1);
-	--rcount;
-
-	Polygon_2	ring;
-
-	inReader.ReadInt(ptcount);
-	while(ptcount--)
-	{
-		double	x,y;
-		inReader.ReadDouble(x);
-		inReader.ReadDouble(y);
-		ring.push_back(Point_2((x), (y)));
-	}
-
-	vector<Polygon_2>	holes;
 
 	while(rcount--)
 	{
-		holes.push_back(Polygon_2());
+		obj.mShape.push_back(Polygon2());
 		inReader.ReadInt(ptcount);
 		while(ptcount--)
 		{
 			double	x,y;
 			inReader.ReadDouble(x);
 			inReader.ReadDouble(y);
-			holes.back().push_back(Point_2((x), (y)));
+			obj.mShape.back().push_back(Point2(x, y));
 		}
 	}
 
-	obj.mShape = Polygon_with_holes_2(ring,holes.begin(),holes.end());
-
-	inReader.ReadDouble(obj.mHeight);
+	double param;
 	int derived;
+	inReader.ReadDouble(param);
 	inReader.ReadInt(derived);
+	obj.mParam = param;
 	obj.mDerived = (derived != 0);
 }
 
@@ -280,6 +259,7 @@ void hex_print(const NT& c)
 */
 void WriteCoordinate(IOWriter& inWriter, const NT& c)
 {
+#if !USE_GMP
 	NT::ET e = c.exact();
 	NT::ET::NT num = e.num;
 	NT::ET::NT den = e.den;
@@ -296,10 +276,12 @@ void WriteCoordinate(IOWriter& inWriter, const NT& c)
 	inWriter.WriteInt(den.v.size());
 	for(int n = 0; n < den.v.size(); ++n)
 		inWriter.WriteShort(den.v[n]);
+#endif		
 }
 
 void ReadCoordinate(IOReader& inReader, NT& c)
 {
+#if !USE_GMP
 	int n;
 	
 	NT::ET et;
@@ -324,6 +306,7 @@ void ReadCoordinate(IOReader& inReader, NT& c)
 	}
 	
 	c = et;
+#endif	
 }
 
 void WritePoint(IOWriter& inWriter, const Point_2& p)

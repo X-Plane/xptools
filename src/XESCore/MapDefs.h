@@ -201,7 +201,7 @@ public:
 struct	GISObjPlacement_t {
 public:
 	int				mRepType;
-	Point_2			mLocation;
+	Point2			mLocation;
 	double			mHeading;
 	bool			mDerived;
 };
@@ -213,9 +213,9 @@ public:
 struct	GISPolyObjPlacement_t {
 public:
 	int					mRepType;
-	Polygon_with_holes_2	mShape;
-	Point_2				mLocation;	// Nominal center - used primarily for debugging!
-	double				mHeight;
+	vector<Polygon2>	mShape;
+//	Point_2				mLocation;	// Nominal center - used primarily for debugging!
+	unsigned short		mParam;
 	bool				mDerived;
 };
 

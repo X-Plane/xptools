@@ -60,6 +60,10 @@ void	CreateTranslatorForBounds(
 					const Point_2&		inSrcMax,
 					CoordTranslator_2&	outTranslator);
 
+void	CreateTranslatorForBounds(
+					const Bbox2&		inBounds,
+					CoordTranslator2&	outTranslator);
+
 inline int	latlon_bucket(int p)
 {
 	if (p > 0) return (p / 10) * 10;

@@ -34,7 +34,8 @@
 #include "WED_CreateToolBase.h"
 
 enum CreateEdge_t {
-	create_TaxiRoute = 0
+	create_TaxiRoute = 0,
+	create_Road
 };
 
 class	WED_Thing;
@@ -57,11 +58,21 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
+	virtual void				GetNthPropertyDict(int n, PropertyDict_t& dict);
+
 private:
 
 	WED_PropBoolText		mOneway;
+	WED_PropIntEnum			mRunway;
+	WED_PropIntEnumSet		mHotDepart;
+	WED_PropIntEnumSet		mHotArrive;
+	WED_PropIntEnumSet		mHotILS;		
+	
 	WED_PropStringText		mName;
 	WED_PropIntText			mSlop;
+	
+	WED_PropIntText			mLayer;
+	WED_PropIntEnum			mSubtype;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

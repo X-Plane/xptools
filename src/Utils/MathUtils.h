@@ -31,6 +31,7 @@
 //******************************************************************************************************************************************************************************
 inline int		sign		(const int in																){													return (in<0   )?-1   :1   ;}
 inline float	sign		(const float in																){													return (in<0.0f)?-1.0f:1.0f;}
+inline double	sign		(const double in															){													return (in<0.0)?-1.0:1.0;}
 inline int		intround	(const float in																){													return (in<0.0f)?(int)(in-0.5f):(int)(in+0.5f);}
 inline float	sqr			(const float in																){													return in*in;}
 inline double	dob_sqr		(const double in															){													return in*in;}
@@ -185,6 +186,11 @@ inline float signzero(const float in){
 	if(in> 0.00001f)return  1.0f;
 	if(in<-0.00001f)return -1.0f;
 				    return  0.0f;}
+
+inline double signzero(const double in){
+	if(in> 0.0)return  1.0;
+	if(in<-0.0)return -1.0;
+			    return  0.0;}
 
 inline float interp2(const float rat_x,
 						  float rat_z,const float ya,const float yb,const float yc,const float yd){

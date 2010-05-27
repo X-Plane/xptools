@@ -25,20 +25,30 @@
 #define BlockFill_H
 
 #include "BlockDefs.h"
+#include "MeshDefs.h"
+
+struct CoordTranslator2;
 
 void	init_block(
+					CDT&					mesh,
 					Pmwx::Face_handle		face,
 					Block_2&				out_block,
-					CoordTranslator_2&		translator);
+					CoordTranslator2&		translator);
 
 void	apply_fill_rules(
+					int						zoning,
 					Block_2&				block,
-					CoordTranslator_2&		translator);
+					CoordTranslator2&		translator,
+					DEMGeo&					forest_dem);
 
 void	extract_features(
 					Block_2&				block,
 					Pmwx::Face_handle		dest_face,
-					CoordTranslator_2&		translator);
+					CoordTranslator2&		translator);
 
+void	process_block(
+					Pmwx::Face_handle		f, 
+					CDT&					mesh,
+					DEMGeo&					forest_dem);
 
 #endif /* BlockFill_H */

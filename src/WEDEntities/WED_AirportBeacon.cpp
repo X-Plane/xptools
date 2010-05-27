@@ -49,7 +49,7 @@ void	WED_AirportBeacon::Import(const AptBeacon_t& x, void (* print_func)(void *,
 	kind = ENUM_Import(Airport_Beacon, x.color_code);
 	if (kind == -1)
 	{
-		print_func(ref,"Error importing airport beacon: beacon color code %d is illegal (not a member of type %s).\n", x.color_code, DOMAIN_Fetch(kind.domain));
+		print_func(ref,"Error importing airport beacon: beacon color code %d is illegal (not a member of type %s).\n", x.color_code, DOMAIN_Desc(kind.domain));
 		kind = beacon_Airport;
 	}
 	SetName(x.name);

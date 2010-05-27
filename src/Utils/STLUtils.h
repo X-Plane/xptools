@@ -73,6 +73,19 @@ public:
 template <class Container>
 inline set_erase_iterator<Container> set_eraser(Container& x) { return set_erase_iterator<Container>(x); }
 
+
+template <typename Circulator>
+int count_circulator(Circulator circ)
+{
+	int r = 0;
+	Circulator stop(circ);
+	do {
+		++r;
+	} while (++circ != stop);
+	return r;
+}
+
+
 template <typename Priority, typename Value>
 class pqueue {
 public:
@@ -157,6 +170,25 @@ private:
 
 
 };
+
+template<class InputIterator, class Separator, class OutputIterator>
+void tokenize_string(InputIterator begin, InputIterator end, OutputIterator oi, Separator sep)
+{
+	typedef typename OutputIterator::container_type::value_type WordType;
+	while(begin != end)
+	{
+		while(begin != end && *begin == sep) ++begin;
+		
+		InputIterator mark1(begin);
+		
+		while(begin != end && *begin != sep) ++begin;
+		
+		InputIterator mark2(begin);
+		
+		if(mark1 != mark2)
+			*oi = WordType(mark1, mark2);		
+	}
+}
 
 
 

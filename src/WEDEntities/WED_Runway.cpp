@@ -304,17 +304,17 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 
 	if (surface == -1)
 	{
-		print_func(ref,"Error importing runway: surface code %d is illegal (not a member of type %s).\n", x.surf_code, DOMAIN_Fetch(surface.domain));
+		print_func(ref,"Error importing runway: surface code %d is illegal (not a member of type %s).\n", x.surf_code, DOMAIN_Desc(surface.domain));
 		surface = surf_Concrete;
 	}
 	if (shoulder == -1)
 	{
-		print_func(ref,"Error importing runway: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Fetch(shoulder.domain));
+		print_func(ref,"Error importing runway: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Desc(shoulder.domain));
 		shoulder = shoulder_None;
 	}
 	if (edge_lites == -1)
 	{
-		print_func(ref,"Error importing runway: edge light code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Fetch(edge_lites.domain));
+		print_func(ref,"Error importing runway: edge light code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Desc(edge_lites.domain));
 		edge_lites = edge_MIRL;
 	}
 
@@ -329,17 +329,17 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 	reil1 = ENUM_Import(REIL_Lights,		x.reil_code		[0]);
 	if (mark1 == -1)
 	{
-		print_func(ref,"Error importing runway: low-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[0], DOMAIN_Fetch(mark1.domain));
+		print_func(ref,"Error importing runway: low-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[0], DOMAIN_Desc(mark1.domain));
 		mark1 = mark_NonPrecis;
 	}
 	if (appl1 == -1)
 	{
-		print_func(ref,"Error importing runway: low-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[0], DOMAIN_Fetch(appl1.domain));
+		print_func(ref,"Error importing runway: low-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[0], DOMAIN_Desc(appl1.domain));
 		appl1 = app_None;
 	}
 	if (reil1 == -1)
 	{
-		print_func(ref,"Error importing runway: low-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[0], DOMAIN_Fetch(reil1.domain));
+		print_func(ref,"Error importing runway: low-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[0], DOMAIN_Desc(reil1.domain));
 		reil1 = reil_None;
 	}
 
@@ -352,17 +352,17 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 
 	if (mark2 == -1)
 	{
-		print_func(ref,"Error importing runway: high-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[1], DOMAIN_Fetch(mark2.domain));
+		print_func(ref,"Error importing runway: high-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[1], DOMAIN_Desc(mark2.domain));
 		mark2 = mark_NonPrecis;
 	}
 	if (appl2 == -1)
 	{
-		print_func(ref,"Error importing runway: high-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[1], DOMAIN_Fetch(appl2.domain));
+		print_func(ref,"Error importing runway: high-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[1], DOMAIN_Desc(appl2.domain));
 		appl2 = app_None;
 	}
 	if (reil2 == -1)
 	{
-		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Fetch(reil2.domain));
+		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Desc(reil2.domain));
 		reil2 = reil_None;
 	}
 

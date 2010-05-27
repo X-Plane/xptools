@@ -25,5 +25,6 @@
 #define RF_SPECIALCMDS_H
 
 void	RegisterSpecialCommands(void);
+void	HandleSpecialCommand(int cmd);
 
 #endif

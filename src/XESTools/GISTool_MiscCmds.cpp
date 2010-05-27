@@ -24,6 +24,7 @@
 #include "GISTool_MiscCmds.h"
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
+#include "RF_Selection.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "PolyRasterUtils.h"
@@ -32,6 +33,7 @@
 #include "DEMTables.h"
 #include "ForestTables.h"
 #include <md5.h>
+#include "Zoning.h"
 #include "SceneryPackages.h"
 #include "MapRaster.h"
 #include "MapDefs.h"
@@ -42,6 +44,7 @@
 #include "MapDefs.h"
 #include "MeshAlgs.h"
 #include "ForestTables.h"
+#include "BlockFill.h"
 
 static double calc_water_area(void)
 {
@@ -419,69 +422,31 @@ int DoDumpForests(const vector<const char *>& args)
 
 static int DoHack(const vector<const char *>& args)
 {
-	DEMGeo	lu_forest(gDem[dem_LandUse]);
-	DEMGeo&	lu_landuse(gDem[dem_LandUse]);
-	DEMGeo&	lu_temp(gDem[dem_Temperature]);
-	DEMGeo&	lu_temp_range(gDem[dem_TemperatureRange]);
-	DEMGeo&	lu_rain(gDem[dem_Rainfall]);
+//	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+//	if(!f->is_unbounded())
+//	if(!f->data().IsWater())
+//	if(gFaceSelection.count(f) || gFaceSelection.empty())
+//	{
+//		CoordTranslator_2	trans;
+//		Block_2 block;
+//		
+//		init_block(f, block, trans);
+//		
+//		apply_fill_rules(block, trans);
+//		
+//		extract_features(block, f, trans);
+//	}
 
-	for(int y = 0; y < lu_forest.mHeight; ++y)
-	for(int x = 0; x < lu_forest.mWidth ; ++x)
-	{
-		double lon = lu_landuse.x_to_lon(x);
-		double lat = lu_landuse.y_to_lat(y);
-		lu_forest(x,y) =
-			FindForest(lu_landuse.get(x,y),
-						lu_temp.value_linear(lon, lat),
-//						lu_temp_range.value_linear(lon, lat),
-						lu_rain.value_linear(lon, lat));
-						
-		
-	}
-	
-	
+//	Pmwx	foo;
+//
+//	DEMGeo& f(gDem[dem_ForestType]);
+//	MapFromDEM(f, 0, 0, f.mWidth, f.mHeight, NO_VALUE, foo);
 
-	MapFromDEM(lu_forest, 0, 0, gDem[dem_LandUse].mWidth, gDem[dem_LandUse].mHeight, -2010/*lu_globcover_WATER*/, gMap);
-	
-	MapSimplify(gMap, 0.002);
-	
+//	if(!gFaceSelection.empty())
+//	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,*gFaceSelection.begin(), gProgress);
+
+	return 0;
 }
-
-/*
-static int DoHack(const vector<const char *>& args)
-{
-	PolyRasterizer	rasterizer;
-	
-	DEMGeo temp(1201,1201);
-	temp.mEast = gMapEast;
-	temp.mWest = gMapWest;
-	temp.mNorth = gMapNorth;
-	temp.mSouth = gMapSouth;
-	
-	
-	SetupWaterRasterizer(gMap, temp, rasterizer);
-	
-	BoxRasterizer	brasterizer(&rasterizer, 50, 1150, 2);
-	double x1,y1,x2,y2;
-	while(brasterizer.GetNextBox(x1,y1,x2,y2))
-	{
-		x1 = ceil(x1);
-		x2 = floor(x2);
-
-		Point2	p1(temp.x_to_lon(x1),temp.y_to_lat(y1));
-		Point2	p2(temp.x_to_lon(x2),temp.y_to_lat(y2));
-		
-		if(p1.x() < p2.x())
-		{
-			debug_mesh_line(Point2(p1.x(),p1.y()),Point2(p1.x(),p2.y()),1,1,1,1,1,1);
-			debug_mesh_line(Point2(p2.x(),p1.y()),Point2(p2.x(),p2.y()),1,1,1,1,1,1);
-			debug_mesh_line(Point2(p1.x(),p1.y()),Point2(p2.x(),p1.y()),1,1,1,1,1,1);
-			debug_mesh_line(Point2(p1.x(),p2.y()),Point2(p2.x(),p2.y()),1,1,1,1,1,1);
-		}
-	}	
-}
-*/
-
 static int DoMeshErrStats(const vector<const char *>& s)
 {
 	float minv, maxv, mean, devsq;

@@ -83,7 +83,27 @@ enum {
 	viewCmd_DEMChoice_Stop = viewCmd_DEMChoice_Start + num_dem_cmds,
 	
 	viewCmd_DEMDataChoice_Start,
-	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds
+	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds, 
+	
+	specCmd_Screenshot,
+	specCmd_CreateTerrainPackage,
+	specCmd_UpdateTerrainPackage,
+	specCmd_Wizard,
+	specCmd_CountBorders,
+	specCmd_ClimateRange,
+	specCmd_ReloadConfigFiles,
+	specCmd_TempMSL,
+	specCmd_FixMSL,
+	specCmd_FixRain,
+	specCmd_SplatClimate,
+	specCmd_FaceHeight,
+	specCmd_ObjHeight,
+	specCmd_MeshErr,
+	specCmd_MeshLU,
+	specCmd_PreviewSHP,
+	specCmd_KillObjs,
+	specCmd_CheckEnums
+	
 };
 
 

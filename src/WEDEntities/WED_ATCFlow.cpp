@@ -24,6 +24,7 @@
 #include "WED_ATCFlow.h"
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
+#include "WED_ToolUtils.h"
 
 #if AIRPORT_ROUTING
 
@@ -41,7 +42,7 @@ WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) :
 	time_min(this,"Start Time (Local)","WED_atcflow","time_min", 0, 3),
 	time_max(this,"End Time (Local)","WED_atcflow","time_max", 2400, 3),
 	traffic_dir(this,"Pattern Direction","WED_atcflow","pattern_side",ATCPatternSide,atc_Left),
-	pattern_rwy(this,"Pattern Runway", "WED_atcflow","pattern_rwy",ATCRunwayName, atc_Runway_None)
+	pattern_rwy(this,"Pattern Runway", "WED_atcflow","pattern_rwy",ATCRunwayOneway, atc_Runway_None)
 {
 	
 }
@@ -69,7 +70,7 @@ void	WED_ATCFlow::Import(const AptFlow_t& info, void (* print_func)(void *, cons
 		print_func(ref,"Error: illegal traffic pattern code %d", info.pattern_side);
 	}
 	
-	int rwy = ENUM_Lookup(info.pattern_runway.c_str());
+	int rwy = ENUM_LookupDesc(ATCRunwayOneway, info.pattern_runway.c_str());
 	if(rwy == -1)
 	{
 		print_func(ref,"Error: illegal pattern runway %s\n", info.pattern_runway.c_str());
@@ -90,7 +91,31 @@ void	WED_ATCFlow::Export(		 AptFlow_t& info) const
 	info.time_min = time_min.value;
 	info.time_max = time_max.value;
 	info.pattern_side = ENUM_Export(traffic_dir.value);
-	info.pattern_runway = ENUM_Fetch(pattern_rwy.value);
+	info.pattern_runway = ENUM_Desc(pattern_rwy.value);
 }
+
+void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict)
+{
+	dict.clear();
+	if(n == PropertyItemNumber(&pattern_rwy))
+	{
+		WED_Airport * airport = WED_GetParentAirport(this);
+		if(airport)
+		{
+			PropertyDict_t full;
+			WED_Thing::GetNthPropertyDict(n,full);			
+			set<int> legal;
+			WED_GetAllRunwaysOneway(airport, legal);
+			legal.insert(pattern_rwy.value);
+			dict.clear();
+			for(PropertyDict_t::iterator f = full.begin(); f != full.end(); ++f)
+			if(legal.count(f->first))
+				dict.insert(PropertyDict_t::value_type(f->first,f->second));
+		}
+	}
+	else
+		WED_Thing::GetNthPropertyDict(n,dict);			
+}
+
 
 #endif

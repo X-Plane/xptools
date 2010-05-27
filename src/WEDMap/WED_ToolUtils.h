@@ -50,6 +50,7 @@ bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there ar
 WED_Thing *		WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx);
 
 WED_Airport *	WED_GetCurrentAirport(IResolver * resolver);
+WED_Airport *	WED_GetParentAirport(WED_Thing * who);
 void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport);		// Does NOT create a command!!!!!!
 void			WED_SetAnyAirport(IResolver * resolver);
 
@@ -71,6 +72,10 @@ WED_Thing*		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_c
 
 // What ancestor type do we need to be nested within?
 const char *	WED_GetParentForClass(const char * in_class);
+
+
+void			WED_GetAllRunwaysOneway(WED_Airport * airport, set<int>& runways);
+void			WED_GetAllRunwaysTwoway(WED_Airport * airport, set<int>& runways);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // FILTERS:

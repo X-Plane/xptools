@@ -92,13 +92,13 @@ public:
 	virtual	int					CountSubs(void)=0;
 	virtual	IPropertyObject *	GetNthSub(int n)=0;
 
-
 	// Utility to help manage streaming
 			void 		ReadPropsFrom(IOReader * reader);
 			void 		WritePropsTo(IOWriter * writer);
 			void		PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
 
+			int			PropertyItemNumber(WED_PropertyItem * item);
 private:
 
 	friend class	WED_PropertyItem;
@@ -280,7 +280,7 @@ public:
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
-
+	WED_PropIntEnumSet& operator+=(const int v) { if(value.count(v) == 0) { if (mParent) mParent->PropEditCallback(1); value.insert(v); if (mParent) mParent->PropEditCallback(0); } return *this; }
 	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain, int iexclusive)  : WED_PropertyItem(parent, title, table, column), domain(idomain), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);

@@ -421,6 +421,7 @@ IPropertyObject *	WED_Thing::GetNthSub(int n)
 	return GetNthChild(n);
 }
 
+
 int				WED_Thing::Array_Count (void )
 {
 	return CountChildren();

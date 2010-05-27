@@ -58,7 +58,7 @@ void	WED_LightFixture::Import(const AptLight_t& x, void (* print_func)(void *, c
 	light_type = ENUM_Import(Light_Fixt, x.light_code);
 	if (light_type == -1)
 	{
-		print_func(ref,"Error importing light fixture: light type code %d is illegal (not a member of type %s).\n", x.light_code, DOMAIN_Fetch(light_type.domain));
+		print_func(ref,"Error importing light fixture: light type code %d is illegal (not a member of type %s).\n", x.light_code, DOMAIN_Desc(light_type.domain));
 		light_type = light_VASI;
 	}
 

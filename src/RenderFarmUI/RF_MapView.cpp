@@ -37,6 +37,7 @@
 #include "RF_CropTool.h"
 //#include "RF_BezierTestTool.h"
 #include "RF_ImageTool.h"
+#include "RF_SpecialCommands.h"
 #include "RF_TerraTool.h"
 //#include "RF_TopoTester.h"
 //#include "RF_MeshTester.h"
@@ -85,7 +86,7 @@
 #define DEBUG_PRINT_LAYERS 1
 
 // Print the normal for the tri under the mouse
-#define DEBUG_PRINT_NORMALS 0
+#define DEBUG_PRINT_NORMALS 1
 
 // Print height at all 3 corners of tri under mouse
 #define DEBUG_PRINT_CORNERS 0
@@ -208,6 +209,7 @@ void	RF_MapView_HandleDEMDataMenuCommand(void *, void *);
 
 int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
+	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) return 1;
 	switch(command) {
 	case viewCmd_DEMChoice:
 	case viewCmd_DEMDataChoice:
@@ -245,6 +247,8 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 
 int		RF_MapView::HandleCommand(int command)
 {
+	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) { HandleSpecialCommand(command); return 1; }
+
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
 	{
 		int n = command - viewCmd_DEMChoice_Start;
@@ -1084,6 +1088,7 @@ put in  color enums?
 	}
 
 	{
+		char buf[1024];
 		int	x, y;
 		GetMouseLocNow(&x, &y);
 		double	lat, lon;
@@ -1095,7 +1100,6 @@ put in  color enums?
 
 		for (int n = 0; n < DEMChoiceCount; ++n)
 		{
-			char buf[1024];
 			if (n == 0)
 			{
 				sprintf(buf, "Viewing: %s", kDEMs[sDEMType].cmdName);
@@ -1124,6 +1128,52 @@ put in  color enums?
 				}
 			}
 		}
+		
+		k -= 10;
+		
+		if(gFaceSelection.size() == 1)
+		{
+			Pmwx::Face_handle f = *gFaceSelection.begin();
+			for(GISParamMap::iterator i = f->data().mParams.begin(); i != f->data().mParams.end(); ++i)
+			{
+				if(i->second == floor(i->second) && i->second >= 0 && i->second < gTokens.size())
+				{
+					sprintf(buf,"%s: %s (%d)", FetchTokenString(i->first), FetchTokenString(floor(i->second)), (int) floor(i->second));
+				}
+				else
+					sprintf(buf,"%s: %lf", FetchTokenString(i->first), i->second);				
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+			
+			for(GISPointFeatureVector::iterator i = f->data().mPointFeatures.begin(); i != f->data().mPointFeatures.end(); ++i)
+			{
+				sprintf(buf,"%s",FetchTokenString(i->mFeatType));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+
+			for(GISPolygonFeatureVector::iterator i = f->data().mPolygonFeatures.begin(); i != f->data().mPolygonFeatures.end(); ++i)
+			{
+				sprintf(buf,"%s",FetchTokenString(i->mFeatType));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+
+			for(GISObjPlacementVector::iterator i = f->data().mObjs.begin(); i != f->data().mObjs.end(); ++i)
+			{
+				sprintf(buf,"%s",FetchTokenString(i->mRepType));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+
+			for(GISPolyObjPlacementVector::iterator i = f->data().mPolyObjs.begin(); i != f->data().mPolyObjs.end(); ++i)
+			{
+				sprintf(buf,"%s",FetchTokenString(i->mRepType));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+		}				
 	}
 
 	const char * nat = QuickToFile(gNaturalTerrainFile);

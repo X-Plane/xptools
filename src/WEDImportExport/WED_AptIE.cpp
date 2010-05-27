@@ -142,8 +142,9 @@ static void MakeRouting(set<WED_TaxiRoute *>& edges, AptNetwork_t& net)
 	for(set<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
 	{
 		AptRouteEdge_t ne;
+
+		(*e)->Export(ne);
 		
-		(*e)->GetName(ne.name);
 		ne.src = (*e)->GetNthSource(0)->GetID();
 		ne.dst = (*e)->GetNthSource(1)->GetID();
 		
@@ -606,7 +607,7 @@ void	WED_AptImport(
 			new_e->AddSource(nodes[e->src], 0);
 			new_e->AddSource(nodes[e->dst], 1);
 			new_e->SetParent(new_apt,new_apt->CountChildren());
-			new_e->SetName(e->name);
+			new_e->Import(*e,LazyPrintf, &log);
 		}
 #endif		
 	}

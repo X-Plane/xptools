@@ -763,13 +763,17 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	case gis_PointSequence:
 	case gis_Line:
 	case gis_Ring:
-	case gis_Edge:
 	case gis_Chain:
+	case gis_Edge:
 		/******************************************************************************************************************************************************
 		 * CHAINS
 		 ******************************************************************************************************************************************************/
 		if ((ps = SAFE_CAST(IGISPointSequence,entity)) != NULL)
 		{
+			IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
+			
+			bool one_way = gisedge != NULL && gisedge->IsOneway();
+			
 			int i, n = ps->GetNumSides();
 			for (i = 0; i < n; ++i)
 			{
@@ -809,6 +813,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					pts.push_back(GetZoomer()->LLToPixel(s.p2));
 				}
 				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);
+				
+				if(one_way && pts.size() >= 2)
+				{
+					Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
+					GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
+				}
 			}
 
 			if (mVertices)

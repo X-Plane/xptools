@@ -32,6 +32,7 @@
 #include "DSFBuilder.h"
 #include "ObjPlacement.h"
 #include "SceneryPackages.h"
+#include "CompGeomUtils.h"
 //#include "TensorRoads.h"
 #include "MapPolygon.h"
 #include "Forests.h"
@@ -42,6 +43,8 @@
 #include "DEMTables.h"
 #include "MapAlgs.h"
 #include "PerfUtils.h"
+#include "BlockFill.h"
+#include "RF_Selection.h"
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -112,7 +115,7 @@ static int DoBurnAirports(const vector<const char *>& args)
 static int DoZoning(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating zoning info...\n");
-	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,gProgress);
+	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,Pmwx::Face_handle(), gProgress);
 	return 0;
 }
 
@@ -164,24 +167,43 @@ static int DoRemoveDupeObjs(const vector<const char *>& args)
 
 static int DoInstantiateObjs(const vector<const char *>& args)
 {
-	if (gVerbose)	printf("Instantiating objects...\n");
-	vector<PreinsetFace>	insets;
+	PROGRESS_START(gProgress, 0, 1, "Creating 3-d.")
+	int idx = 0;
+	int t = gMap.number_of_faces();
+	int step = t / 100;
+	if(step < 1) step = 1;
 
-	set<int>				the_types;
-	GetObjTerrainTypes		(the_types);
-
-	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f, ++idx)
+	if(!f->is_unbounded())
+	if(!f->data().IsWater())
+	#if OPENGL_MAP
+	if(gFaceSelection.count(f) || gFaceSelection.empty())
+	#endif
 	{
-		StElapsedTime	time_inset("insets");
-		GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
+		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
+		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
 	}
+	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
+
 	
-	{
-		StElapsedTime	time_gt_poly("Place objs");
-		InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
-	}
-	DumpPlacementCounts();
+//	if (gVerbose)	printf("Instantiating objects...\n");
+//	vector<PreinsetFace>	insets;
+//
+//	set<int>				the_types;
+//	GetObjTerrainTypes		(the_types);
+//
+//	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+//
+//	{
+//		StElapsedTime	time_inset("insets");
+//		GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
+//	}
+//	
+//	{
+//		StElapsedTime	time_gt_poly("Place objs");
+//		InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
+//	}
+//	DumpPlacementCounts();
 	return 0;
 
 }

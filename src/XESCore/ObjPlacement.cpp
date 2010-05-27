@@ -633,13 +633,14 @@ bool	ProcessOneLot(
 			Polygon_2	facade;
 			InsetPolygon_2(lot, NULL, RandRange(2.0,4.0), true, facade, NULL, NULL);
 			GISPolyObjPlacement_t	place;
+			place.mShape.push_back(Polygon2());
 			for (i = 0; i < facade.size(); ++i)
 			{
-				place.mShape.outer_boundary().push_back(coords.Reverse(facade[i]));
+				place.mShape.back().push_back(cgal2ben(coords.Reverse(facade[i])));
 			}
 			place.mRepType = gRepTable[query].obj_name;
-			place.mLocation = CGAL::centroid(place.mShape.outer_boundary().vertices_begin(),place.mShape.outer_boundary().vertices_end());
-			place.mHeight = (required_agl == -1) ? RandRange(gRepTable[query].height_min, gRepTable[query].height_max) : required_agl;
+//			place.mLocation = CGAL::centroid(place.mShape.outer_boundary().vertices_begin(),place.mShape.outer_boundary().vertices_end());
+			place.mParam = (required_agl == -1) ? RandRange(gRepTable[query].height_min, gRepTable[query].height_max) : required_agl;
 			place.mDerived = require_feat != NO_VALUE;
 			if (SanityCheck(place))
 				owner->data().mPolyObjs.push_back(place);
@@ -680,7 +681,7 @@ bool	ProcessOneLot(
 			{
 				GISObjPlacement_t	obj;
 				obj.mRepType = gRepTable[query].obj_name;
-				obj.mLocation = cent;
+				obj.mLocation = cgal2ben(cent);
 				Vector_2	facing(lot[s],lot[(s+1)%4]);
 				facing = normalize(facing);
 				facing = facing.perpendicular(CGAL::CLOCKWISE);
@@ -998,9 +999,9 @@ void	InstantiateGTPolygon(
 	{
 		polyObjLocalV[0].clear();
 
-		for (Polygon_2::iterator vert = polyObj->mShape.outer_boundary().vertices_begin(); vert != polyObj->mShape.outer_boundary().vertices_end(); ++vert)
+		for (Polygon2::iterator vert = polyObj->mShape.front().begin(); vert != polyObj->mShape.front().end(); ++vert)
 		{
-			polyObjLocalV[0].push_back((mapping.Forward(cgal2ben(*vert))));
+			polyObjLocalV[0].push_back((mapping.Forward((*vert))));
 		}
 		gImage.RasterizeLocal(polyObjLocalV);
 	}
@@ -1014,7 +1015,7 @@ void	InstantiateGTPolygon(
 	{
 		polyObjLocalV.resize(1);
 
-		Point2	center = (mapping.Forward(cgal2ben(obj->mLocation)));
+		Point2	center = (mapping.Forward(obj->mLocation));
 
 		if (FetchObjectBoundaryByRep(obj->mRepType, &polyObjLocalV[0], 1.0 / scale, NULL, NULL))
 		{
@@ -1144,13 +1145,13 @@ void	InstantiateGTPolygon(
 						rep.mRepType = info.obj_name;
 						for (int n = 0; n < polyObjLocalV[0].size(); ++n)
 						{
-							Point_2 m = ben2cgal(mapping.Reverse(polyObjLocalV[0][n]));
-							rep.mShape.outer_boundary().push_back(m);
+							Point2 m = mapping.Reverse(polyObjLocalV[0][n]);
+							rep.mShape.back().push_back(m);
 						}
 						if (iter->mParams.find(pf_Height) != iter->mParams.end())
-							rep.mHeight = iter->mParams[pf_Height];
+							rep.mParam = iter->mParams[pf_Height];
 						else
-							rep.mHeight = RandRange(info.height_min,info.height_max);
+							rep.mParam = RandRange(info.height_min,info.height_max);
 						rep.mDerived = true;
 						if (SanityCheck(rep))
 							inFace->data().mPolyObjs.push_back(rep);
@@ -1204,7 +1205,7 @@ void	InstantiateGTPolygon(
 				++feat_raster_ok;
 				GISObjPlacement_t	rep;
 				rep.mRepType = info.obj_name;
-				rep.mLocation = iter->mLocation;
+				rep.mLocation = cgal2ben(iter->mLocation);
 				rep.mHeading = heading;
 				rep.mDerived = true;
 				inFace->data().mObjs.push_back(rep);
@@ -1249,8 +1250,7 @@ void	InstantiateGTPolygon(
 					++feat_raster_ok;
 					GISObjPlacement_t	rep;
 					rep.mRepType = info.obj_name;
-					Point_2 m = ben2cgal(mapping.Reverse(trial));
-					rep.mLocation = m;
+					rep.mLocation = mapping.Reverse(trial);
 					//DebugAssert(uber_bounds.contains(rep.mLocation));
 					rep.mHeading = heading;
 					rep.mDerived = true;
@@ -1413,7 +1413,7 @@ void	InstantiateGTPolygon(
 									++fill_raster_ok;
 									GISObjPlacement_t	obj;
 									obj.mRepType = types[ok];
-									obj.mLocation = Point_2(l.x(), l.y());
+									obj.mLocation = Point2(l.x(), l.y());
 									obj.mHeading = heading;
 									obj.mDerived = false;
 									inFace->data().mObjs.push_back(obj);
@@ -1550,7 +1550,7 @@ void	InstantiateGTPolygon(
 					++fill_raster_ok;
 					GISObjPlacement_t	obj;
 					obj.mRepType = types[on];
-					obj.mLocation = Point_2(l.x(), l.y());
+					obj.mLocation = Point2(l.x(), l.y());
 					obj.mHeading = heading;
 					obj.mDerived = false;
 					inFace->data().mObjs.push_back(obj);
@@ -1859,8 +1859,11 @@ void	SubtractPlaced(
 	goo.reserve(f.first->data().mPolyObjs.size() + f.first->data().mObjs.size());
 	
 	for (int j = 0; j < f.first->data().mPolyObjs.size(); ++j)
-		goo.push_back(f.first->data().mPolyObjs[j].mShape.outer_boundary());
-		
+	{
+		Polygon_2	p;
+		ben2cgal(f.first->data().mPolyObjs[j].mShape.front(), p);
+		goo.push_back(p);
+	}	
 	for (int j = 0; j < f.first->data().mObjs.size(); ++j)
 	{	
 			Point2	corners[4];

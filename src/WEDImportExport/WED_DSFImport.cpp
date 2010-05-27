@@ -263,7 +263,7 @@ public:
 			lin->SetResource(r);
 		}
 
-		if(end_match(r.c_str(),".str"))
+		if(end_match(r.c_str(),".str") || end_match(r.c_str(),".ags"))
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
@@ -274,7 +274,7 @@ public:
 			str->SetResource(r);
 		}
 
-		if(end_match(r.c_str(),".pol"))
+		if(end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb"))
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);

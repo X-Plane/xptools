@@ -72,11 +72,12 @@ class apply_properties_visitor : public MapBFSVisitor<set<int>, Block_2 > {
 public:
 
 	typedef	set<int>				Prop_t;
-	const vector<block_create_t> *	feature_map;
-
+	const vector<BLOCK_face_data> *	feature_map;
+	Prop_t							initial;
+	
 	virtual	void	initialize_properties(Prop_t& io_properties)
 	{
-		io_properties.clear();
+		io_properties = initial;
 	}
 	
 	virtual	void	adjust_properties(Block_2::Halfedge_handle edge, Prop_t& io_properties)
@@ -96,11 +97,12 @@ public:
 	{
 		if(!in_properties.empty())
 		{
-			face->set_data((*feature_map)[*(--in_properties.end())].data);
+			face->set_data((*feature_map)[*(--in_properties.end())]);
 		} 
 		else
 		{
 			face->data().usage = usage_Empty;
+			face->data().feature = NO_VALUE;
 		}	
 	}
 };
@@ -109,30 +111,17 @@ public:
 // We build a block from scratch with a bunch of polygons.  Note that where polygons overlap, the earliest one in the block will "win" - that is, unneeded halfedges
 // WILL exist, but the "tags" will match the lower prio blokc data.
 void	create_block(
-					Block_2&						block,
-					const vector<block_create_t>&	in_data)
+					Block_2&									block,
+					const vector<BLOCK_face_data>&				in_data,
+					const vector<Block_2::X_monotone_curve_2>&	in_bounds,
+					int											unbounded_idx)
 {
 	block.clear();
 	
 	// First we are going to build up a curve list and bulk insert them all.  Each curve has the polygon number as its data.
 	// This should be faster than doing a series of piece-wise inserts.
 	
-//	vector<Block_2::Halfedge_handle>	reps(in_data.size(), Block_2::Halfedge_handle());
-	
-	int n, total_edges = 0;
-	for(n = 0; n < in_data.size(); ++n)
-		total_edges += in_data[n].bounds.size();
-		
-	vector<Block_2::X_monotone_curve_2>	curves;
-	curves.reserve(total_edges);
-	
-	for(n = 0; n < in_data.size(); ++n)
-	{
-		for(Polygon_2::Edge_const_iterator e = in_data[n].bounds.edges_begin(); e != in_data[n].bounds.edges_end(); ++e)
-			curves.push_back(Block_2::X_monotone_curve_2(*e, n));
-	}
-	
-	CGAL::insert(block, curves.begin(), curves.end());
+	CGAL::insert(block, in_bounds.begin(), in_bounds.end());
 
 	// Now we go back and do a search from the outside in, toggling our "membership" each time we cross a bounding edge, to keep track of
 	// which face we are in.
@@ -142,6 +131,9 @@ void	create_block(
 
 	apply_properties_visitor	visitor;
 	visitor.feature_map = &in_data;
+	// What is this?  The FIRST contour is considered the contour that tags the unbounded polygon.  So we "start" with this polygon in effect.
+	if(unbounded_idx != -1)
+		visitor.initial.insert(unbounded_idx);
 	
 	visitor.Visit(&block);
 }
@@ -227,3 +219,14 @@ void	do_insert_into_block(
 }					
 
 
+void clean_block(Block_2& block)
+{
+	vector<Block_2::Halfedge_handle> kill;
+	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
+		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
+		   eig->face()->data().feature == eig->twin()->face()->data().feature)
+			kill.push_back(eig);
+
+	for(vector<Block_2::Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
+		block.remove_edge(*k);
+}

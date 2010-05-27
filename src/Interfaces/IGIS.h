@@ -200,7 +200,9 @@ public:
 };
 
 class	IGISEdge : public virtual IGISPointSequence { 
+public:
 
+	virtual	bool				IsOneway(void) const=0;
 	virtual	void				SetSide(GISLayer_t layer, const Segment2& s)=0;
 	virtual	void				SetSideBezier(GISLayer_t layer, const Bezier2& b)=0;
 

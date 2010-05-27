@@ -122,6 +122,7 @@ struct CliffInfo_t {
 struct	NaturalTerrainInfo_t {
 	// DEFS
 	int				layer;
+	int				is_city;
 	float			xon_dist;
 	int				custom_ter;
 	proj_dir_t		proj_angle;			// Projection angle.  For legacy terrain this influences the xon distances.  For next-gen, always use "down"...the way the xon is scaled

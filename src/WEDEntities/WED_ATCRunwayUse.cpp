@@ -24,6 +24,7 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
+#include "WED_ToolUtils.h"
 
 #if AIRPORT_ROUTING
 
@@ -33,7 +34,7 @@ TRIVIAL_COPY(WED_ATCRunwayUse,WED_Thing)
 
 WED_ATCRunwayUse::WED_ATCRunwayUse(WED_Archive * a, int i) :
 	WED_Thing(a,i),
-	rwy(this,"Runway","WED_runwayuse","rwy",ATCRunwayName, atc_4L),
+	rwy(this,"Runway","WED_runwayuse","rwy",ATCRunwayOneway, atc_4L),
 	dep_frq(this,"Departure Frequency","WED_runwayuse","dep_frq", 133.0, 6, 3),
 	traffic(this,"Traffic Type","WED_runwayuse","traffic",ATCTrafficType),
 	operations(this,"Operations","WED_runwayuse","operations",ATCOperationType),
@@ -51,7 +52,7 @@ WED_ATCRunwayUse::~WED_ATCRunwayUse()
 void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
-	int rwy_int = ENUM_Lookup(info.runway.c_str());
+	int rwy_int = ENUM_LookupDesc(ATCRunwayOneway, info.runway.c_str());
 	if(rwy_int == -1)
 	{
 		print_func(ref,"Illegal runway %s\n",info.runway.c_str());
@@ -70,7 +71,7 @@ void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(v
 void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 {
 	GetName(info.name);
-	info.runway = ENUM_Fetch(rwy.value);
+	info.runway = ENUM_Desc(rwy.value);
 	info.operations = ENUM_ExportSet(operations.value);
 	info.equipment = ENUM_ExportSet(traffic.value);
 	info.dep_freq = dep_frq;
@@ -80,5 +81,30 @@ void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 	info.ini_heading_hi = vec_heading_max;
 }
 
+void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict)
+{
+	dict.clear();
+	if(n == PropertyItemNumber(&rwy))
+	{
+		WED_Airport * airport = WED_GetParentAirport(this);
+		if(airport)
+		{
+			PropertyDict_t full;
+			WED_Thing::GetNthPropertyDict(n,full);			
+			set<int> legal;
+			WED_GetAllRunwaysOneway(airport, legal);
+			legal.insert(rwy.value);
+
+			dict.clear();
+			for(PropertyDict_t::iterator f = full.begin(); f != full.end(); ++f)
+			if(legal.count(f->first))
+				dict.insert(PropertyDict_t::value_type(f->first,f->second));
+		}
+	}
+	else
+		WED_Thing::GetNthPropertyDict(n,dict);			
+}
+
 
 #endif
+

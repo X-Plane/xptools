@@ -29,7 +29,7 @@
 	#include <gl.h>
 #endif
 
-#include "XPLMMenus.h"
+#include "GUI_Application.h"
 #include "PlatformUtils.h"
 #include "SceneryPackages.h"
 #include "RF_Assert.h"
@@ -46,81 +46,38 @@
 #include "RF_Msgs.h"
 #include "PlatformUtils.h"
 #include "RF_Globals.h"
-#include "RF_SpreadsheetWizard.h"
+//#include "RF_SpreadsheetWizard.h"
 
 #define	kMaxDegChangePerSample	0.125
 
-enum {
-	specCmd_Screenshot,
-	specCmd_CreateTerrainPackage,
-	specCmd_UpdateTerrainPackage,
-	specCmd_Div1,
-	specCmd_Wizard,
-	specCmd_CountBorders,
-	specCmd_ClimateRange,
-	specCmd_ReloadConfigFiles,
-	specCmd_TempMSL,
-	specCmd_FixMSL,
-	specCmd_FixRain,
-	specCmd_SplatClimate,
-	specCmd_Div2,
-	specCmd_FaceHeight,
-	specCmd_ObjHeight,
-	specCmd_MeshErr,
-	specCmd_MeshLU,
-	specCmd_PreviewSHP,
-	specCmd_KillObjs,
-	specCmd_CheckEnums,
-	specCmd_Count
-};
 
-const char *	kSpecCmdNames [] = {
-	"Take Screenshot...",
-	"Create Terrain Package...",
-	"Update Terrain Package...",
-	"-",
-	"Spreadsheet Wizard...",
-	"Count Mesh and Border Triangles...",
-	"Show Climate Ranges...",
-	"Reload Configuration Files",
-	"Create Sea Level Temperatures...",
-	"Filter Sea Level Temperatures...",
-	"Filter Rain Fall...",
-	"Spread Climate Data...",
-	"-",
-	"Show Height of Selected Faces...",
-	"Show Height of Objs in Selected Faces...",
-	"Measure Error in Triangulation...",
-	"Print Terrain Histogram...",
-	"Preview Shape File",
-	"Kill Features Without Heights in Selected Faces",
-	"Self-Check Enums",
-	0
-};
 
-static	const char	kCmdKeys [] = {
-	'.',	xplm_ControlFlag,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-//	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0
-};
+GUI_MenuItem_t	kSpecialItems[] = {
+{	"Take Screenshot...",										'.',	gui_ControlFlag,	0,		specCmd_Screenshot				},
+{	"Create Terrain Package...",								0,		0,					0,		specCmd_CreateTerrainPackage	},
+{	"Update Terrain Package...",								0,		0,					0,		specCmd_UpdateTerrainPackage	},
+{	"-",														0,		0,					0,		0								},
+//{	"Spreadsheet Wizard...",									0,		0,					0,		specCmd_Wizard					},
+{	"Count Mesh and Border Triangles...",						0,		0,					0,		specCmd_CountBorders			},
+{	"Show Climate Ranges...",									0,		0,					0,		specCmd_ClimateRange			},
+{	"Reload Configuration Files",								0,		0,					0,		specCmd_ReloadConfigFiles		},
+{	"Create Sea Level Temperatures...",							0,		0,					0,		specCmd_TempMSL					},
+{	"Filter Sea Level Temperatures...",							0,		0,					0,		specCmd_FixMSL					},
+{	"Filter Rain Fall...",										0,		0,					0,		specCmd_FixRain					},
+{	"Spread Climate Data...",									0,		0,					0,		specCmd_SplatClimate			},
+{	"-",														0,		0,					0,		0								},
+{	"Show Height of Selected Faces...",							0,		0,					0,		specCmd_FaceHeight				},
+{	"Show Height of Objs in Selected Faces...",					0,		0,					0,		specCmd_ObjHeight				},
+{	"Measure Error in Triangulation...",						0,		0,					0,		specCmd_MeshErr					},
+{	"Print Terrain Histogram...",								0,		0,					0,		specCmd_MeshLU					},
+{	"Preview Shape File",										0,		0,					0,		specCmd_PreviewSHP				},
+{	"Kill Features Without Heights in Selected Faces",			0,		0,					0,		specCmd_KillObjs				},
+{	"Self-Check Enums",											0,		0,					0,		specCmd_CheckEnums				},
+{	0,															0,		0,					0,		0 } };
 
-static	XPLMMenuID	sSpecMenu = NULL;
+
+
+//static	XPLMMenuID	sSpecMenu = NULL;
 
 static	void	RF_HandleSpecMenuCmd(void *, void * i);
 static	void 	DoScreenshot(void);
@@ -134,16 +91,7 @@ struct FeatureHasNoHeight {
 
 void	RegisterSpecialCommands(void)
 {
-	int n;
-	sSpecMenu = XPLMCreateMenu("Package", NULL, 0, RF_HandleSpecMenuCmd, NULL);
-	n = 0;
-	while (kSpecCmdNames[n])
-	{
-		XPLMAppendMenuItem(sSpecMenu, kSpecCmdNames[n], (void *) n, 1);
-		if (kCmdKeys[n*2])
-			XPLMSetMenuItemKey(sSpecMenu,n,kCmdKeys[n*2],kCmdKeys[n*2+1]);
-		++n;
-	}
+	GUI_Menu special_menu = gApplication->CreateMenu("Special", kSpecialItems,gApplication->GetMenuBar(), 0);
 }
 
 
@@ -162,10 +110,9 @@ static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
 #endif
 
 
-static	void	RF_HandleSpecMenuCmd(void *, void * i)
+void	HandleSpecialCommand(int cmd)
 {
 	try {
-		int cmd = (int) i;
 		switch(cmd) {
 		case specCmd_Screenshot:
 			{
@@ -295,28 +242,9 @@ static	void	RF_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_MeshErr:
 			{
 				char buf[1024];
-				map<float, int>	hist;
 				map<float, int>::iterator iter;
-				int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], hist, RF_ProgressFunc);
-
-				float minv = hist.begin()->first;
-				float maxv = hist.begin()->first;
-				float mean = 0.0;
-				for (iter = hist.begin(); iter != hist.end(); ++iter)
-				{
-					mean += (iter->first * (float) iter->second);
-					minv = min(minv, iter->first);
-					maxv = max(maxv, iter->first);
-				}
-				mean /= float (n);
-
-				float	devsq = 0.0;
-				for (iter = hist.begin(); iter != hist.end(); ++iter)
-				{
-					devsq += ( ((float) iter->second) * (iter->first - mean) * (iter->first - mean) );
-				}
-				devsq /= (float) (n-1);
-				devsq = sqrt(devsq);
+				float minv, maxv, mean, devsq;
+				int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], minv, maxv, mean, devsq, RF_ProgressFunc);
 
 				sprintf(buf, "mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 				DoUserAlert(buf);
@@ -475,7 +403,7 @@ static	void	RF_HandleSpecMenuCmd(void *, void * i)
 			CheckObjTable();
 			break;
 		case specCmd_Wizard:
-			RF_ShowSpreadsheetWizard();
+//			RF_ShowSpreadsheetWizard();
 			break;
 		case specCmd_CountBorders:
 			{
@@ -504,7 +432,7 @@ static	void	RF_HandleSpecMenuCmd(void *, void * i)
 				DEMGeo& rain(gDem[dem_Rainfall]);
 				DEMGeo& elev(gDem[dem_Elevation]);
 				DEMGeo& lu(gDem[dem_LandUse]);
-				DEMGeo&	old_lu(gDem[dem_OrigLandUse]);
+//				DEMGeo&	old_lu(gDem[dem_OrigLandUse]);
 				DEMGeo	rain_diff, temp_diff;
 				DEMMakeDifferential(temps, temp_diff);
 				DEMMakeDifferential(rain, rain_diff);
@@ -555,13 +483,13 @@ static	void	RF_HandleSpecMenuCmd(void *, void * i)
 				for (x = 0; x < lu.mWidth; ++x)
 					lus.insert(lu.get(x,y));
 
-				for (y = 0; y < old_lu.mHeight; ++y)
-				for (x = 0; x < old_lu.mWidth; ++x)
-					olus.insert(old_lu.get(x,y));
+//				for (y = 0; y < old_lu.mHeight; ++y)
+//				for (x = 0; x < old_lu.mWidth; ++x)
+//					olus.insert(old_lu.get(x,y));
 
 				char buf[1024];
-				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.  Max temp change = %f, Max rain dif = %f",
-						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, olus.size(), lus.size(), temp_max_dif, rain_max_dif);
+				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d new landuses.  Max temp change = %f, Max rain dif = %f",
+						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, lus.size(), temp_max_dif, rain_max_dif);
 				DoUserAlert(buf);
 				set<int>::iterator iter;
 				printf("--------OLD LANDUSES---------\n");

@@ -234,6 +234,19 @@ void	CreateTranslatorForBounds(
 					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
 }
 
+void	CreateTranslatorForBounds(
+					const Bbox2&		inBounds,
+					CoordTranslator2&	trans)
+{
+	trans.mSrcMin = inBounds.p1;
+	trans.mSrcMax = inBounds.p2;
+	
+	trans.mDstMin = Point2(0,0);
+	trans.mDstMax = Point2(
+					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
+					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
+}
+
 
 void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {

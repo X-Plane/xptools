@@ -768,8 +768,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		Pmwx::Face_iterator						pf;
 		GISObjPlacementVector::iterator			pointObj;
 		GISPolyObjPlacementVector::iterator		polyObj;
-		Polygon_2::iterator						polyPt;
-		Polygon_with_holes_2::Hole_const_iterator           polyHole;
+		Polygon2::iterator						polyPt;
+		vector<Polygon2>::iterator				polyHole;
 
 		void *			writer1, * writer2;
 		DSFCallbacks_t	cbs;
@@ -1464,7 +1464,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		for (polyObj = pf->data().mPolyObjs.begin(); polyObj != pf->data().mPolyObjs.end(); ++polyObj)
 		{
 			bool	 broken = false;
-			for (polyPt = polyObj->mShape.outer_boundary().vertices_begin(); polyPt != polyObj->mShape.outer_boundary().vertices_end(); ++polyPt)
+			for (polyPt = polyObj->mShape.front().begin(); polyPt != polyObj->mShape.front().end(); ++polyPt)
 			{
 				if (polyPt->x() < inElevation.mWest ||
 					polyPt->x() > inElevation.mEast ||
@@ -1484,27 +1484,17 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			cbs.BeginPolygon_f(
 						facades[polyObj->mRepType],
-						polyObj->mHeight, 2,
+						polyObj->mParam, 2,
 						writer2);
 			// boundary
-			cbs.BeginPolygonWinding_f(writer2);
-			for (polyPt = polyObj->mShape.outer_boundary().vertices_begin(); polyPt != polyObj->mShape.outer_boundary().vertices_end(); ++polyPt)
-			{
-				coords2[0] = CGAL::to_double(polyPt->x());
-				coords2[1] = CGAL::to_double(polyPt->y());
-				cbs.AddPolygonPoint_f(coords2, writer2);
-
-			}
-			cbs.EndPolygonWinding_f(writer2);
-
-			// holes
-			for (polyHole = polyObj->mShape.holes_begin(); polyHole != polyObj->mShape.holes_end(); ++ polyHole)
+			
+			for (polyHole = polyObj->mShape.begin(); polyHole != polyObj->mShape.end(); ++ polyHole)
 			{
 				cbs.BeginPolygonWinding_f(writer2);
-				for (polyPt = polyHole->vertices_begin(); polyPt != polyHole->vertices_end(); ++polyPt)
+				for (polyPt = polyHole->begin(); polyPt != polyHole->end(); ++polyPt)
 				{
-					coords2[0] = CGAL::to_double(polyPt->x());
-					coords2[1] = CGAL::to_double(polyPt->y());
+					coords2[0] = polyPt->x();
+					coords2[1] = polyPt->y();
 					cbs.AddPolygonPoint_f(coords2, writer2);
 				}
 				cbs.EndPolygonWinding_f(writer2);
@@ -1528,11 +1518,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		Assert(obdef->second != NO_VALUE);
 		string facName = FetchTokenString(obdef->second);
-		if (IsForestType(obdef->second))
+		
+		if(facName.find('.') == facName.npos)
 		{
-			facName = "lib/g8/"+facName+".for";
-		} else
-			facName = gObjLibPrefix + facName + ".fac";
+			if (IsForestType(obdef->second))
+			{
+				facName = "lib/g8/"+facName+".for";
+			} else
+				facName = gObjLibPrefix + facName + ".fac";
+		}
 		cbs.AcceptPolygonDef_f(facName.c_str(), writer2);
 	}
 

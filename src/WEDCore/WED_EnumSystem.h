@@ -49,8 +49,9 @@ struct	sqlite3;
 */
 
 bool				DOMAIN_Validate(int domain);
-const char *		DOMAIN_Fetch(int domain);
-int					DOMAIN_Lookup(const char * domain);
+const char *		DOMAIN_Name(int domain);
+//int					DOMAIN_LookupName(const char * domain);
+int					DOMAIN_LookupDesc(const char * domain);
 int					DOMAIN_Create(const char * domain, const char * desc);
 const char *		DOMAIN_Desc(int domain);
 
@@ -59,10 +60,11 @@ void				DOMAIN_Members(int domain, set<int>& members);
 void				DOMAIN_Members(int domain, map<int, string>& members);
 
 bool				ENUM_Validate(int value);
-const char *		ENUM_Fetch(int value);													// Return the string name of an enum
+const char *		ENUM_Name(int value);													// Return the string name of an enum
 int					ENUM_Export(int value);													// Return the export value for an enum
 int					ENUM_ExportSet(const set<int>& members);
-int					ENUM_Lookup(const char * value);										// Find an enum or -1 if missing
+//int					ENUM_LookupName(const char * value);									// Find an enum or -1 if missing
+int					ENUM_LookupDesc(int domain, const char * value);							// Find an enum or -1 if missing
 int					ENUM_Domain(int value);													// What domain are we in?
 const char *		ENUM_Desc(int value);
 int					ENUM_Create(int domain, const char * value, const char * descrip, int export_value);			// Find an enum, add if needed

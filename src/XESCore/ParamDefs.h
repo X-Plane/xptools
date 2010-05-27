@@ -96,7 +96,20 @@
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
 	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?	
 	TOKEN(af_Zoning)
-
+	
+	// These tokens are derived 
+	TOKEN(af_UrbanAverage)
+	TOKEN(af_ForestAverage)
+	TOKEN(af_SlopeMax)
+	TOKEN(af_Relief)
+	TOKEN(af_AreaMeters)
+	TOKEN(af_Cat1)				// Dominant land class
+	TOKEN(af_Cat1Rat)
+	TOKEN(af_Cat2)				// Dominant land class
+	TOKEN(af_Cat2Rat)
+	TOKEN(af_Cat3)				// Dominant land class
+	TOKEN(af_Cat3Rat)
+	
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.
  ************************************************************************/

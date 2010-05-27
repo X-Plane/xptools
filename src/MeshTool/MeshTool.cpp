@@ -145,7 +145,7 @@ int	main(int argc, char * argv[])
 		}
 
 		char dump_f[24];
-		sprintf(dump_f,"/%+03d%+04d",latlon_bucket(dem_elev.mSouth),latlon_bucket(dem_elev.mWest));
+		sprintf(dump_f,"/%+03d%+04d",latlon_bucket(round(dem_elev.mSouth)),latlon_bucket(round(dem_elev.mWest)));
 		string dump_dir = string(argv[4]) + dump_f;
 		FILE_make_dir_exist(dump_dir.c_str());
 

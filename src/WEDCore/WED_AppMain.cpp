@@ -88,7 +88,8 @@
 #define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \
 	_R(WED_ATCFlow) \
-	_R(WED_ATCRunwayUse)
+	_R(WED_ATCRunwayUse) \
+	_R(WED_RoadEdge)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
@@ -176,6 +177,9 @@ int main(int argc, char * argv[])
 	start->ShowMessage("Registering classes...");
 	#define _R(x)	x##_Register();
 	REGISTER_LIST
+	#if AIRPORT_ROUTING
+	REGISTER_LIST_ATC
+	#endif
 	#undef _R
 
 	for (int y = 0; y < 2; ++y)

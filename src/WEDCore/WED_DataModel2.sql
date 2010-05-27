@@ -2,9 +2,28 @@ BEGIN TRANSACTION setup2;
 
 CREATE TABLE IF NOT EXISTS WED_taxiroute(
 	id				integer		PRIMARY KEY,
-	oneway			integer		NOT NULL
+	oneway			integer		NOT NULL,
+	runway			integer		NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS WED_taxiroute_depart(
+	id				integer		NOT NULL,
+	departures		string		NOT NULL,
+	PRIMARY KEY(id,departures)
+);		
+
+CREATE TABLE IF NOT EXISTS WED_taxiroute_arrive(
+	id				integer		NOT NULL,
+	arrivals		string		NOT NULL,
+	PRIMARY KEY(id,arrivals)
+);		
+
+CREATE TABLE IF NOT EXISTS WED_taxiroute_ils(
+	id				integer		NOT NULL,
+	ils		string		NOT NULL,
+	PRIMARY KEY(id,ils)
+);		
+	
 CREATE TABLE IF NOT EXISTS WED_atcflow(
 	id				integer		PRIMARY KEY,
 	icao			string		NOT NULL,
@@ -30,5 +49,11 @@ CREATE TABLE IF NOT EXISTS WED_runwayuse(
 	ini_min			int			NOT NULL,
 	ini_max			int			NOT NULL
 );	
+
+CREATE TABLE IF NOT EXISTS WED_roadedge(
+	id				integer		PRIMARY KEY,
+	layer			integer		NOT NULL,
+	subtype			integer		NOT NULL
+);
 
 COMMIT TRANSACTION setup2;

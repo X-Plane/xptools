@@ -24,12 +24,14 @@
 #include "WED_ToolUtils.h"
 #include "ISelection.h"
 #include "WED_Thing.h"
+#include "WED_EnumSystem.h"
 #include "GUI_Pane.h"
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "GISUtils.h"
 #include "ITexMgr.h"
 #include "WED_Airport.h"
+#include "STLUtils.h"
 #include <list>
 
 #include "GUI_Clipboard.h"
@@ -129,6 +131,17 @@ void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport)
 {
 	IDirectoryEdit * keys = SAFE_CAST(IDirectoryEdit, resolver->Resolver_Find("choices"));
 	keys->Directory_Edit("airport", airport);
+}
+
+WED_Airport * WED_GetParentAirport(WED_Thing * who)
+{
+	while(who)
+	{
+		WED_Airport * a = dynamic_cast<WED_Airport *>(who);
+		if(a) return a;
+		who = who->GetParent();
+	}
+	return NULL;
 }
 
 static WED_Airport *			FindAnyAirport(WED_Thing * who)
@@ -310,6 +323,48 @@ const char *	WED_GetParentForClass(const char * in_class)
 	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
 #endif
 	return NULL;
+}
+
+static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int domain)
+{
+	WED_Runway * rwy = dynamic_cast<WED_Runway *>(thing);
+	if(rwy)
+	{
+		string name;
+		rwy->GetName(name);
+		int e1 = ENUM_LookupDesc(domain,name.c_str());
+		if(ENUM_Domain(e1) == domain)
+			runways.insert(e1);
+		vector<string> parts;
+		tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+		for(vector<string>::iterator p = parts.begin(); p != parts.end(); ++p)
+		{
+			int e2 = ENUM_LookupDesc(domain,p->c_str());
+			if(ENUM_Domain(e2) == domain)
+				runways.insert(e2);
+		}
+		name += "/XXX";
+		int e3 = ENUM_LookupDesc(domain,name.c_str());
+		if(ENUM_Domain(e3) == domain)
+			runways.insert(e3);
+		
+	}
+	for(int n = 0; n < thing->CountChildren(); ++n)
+	{
+		WED_LookupRunwayRecursive(thing->GetNthChild(n), runways, domain);
+	}
+}
+
+void			WED_GetAllRunwaysOneway(WED_Airport * airport, set<int>& runways)
+{
+	runways.clear();
+	WED_LookupRunwayRecursive(airport,runways, ATCRunwayOneway);
+}
+
+void			WED_GetAllRunwaysTwoway(WED_Airport * airport, set<int>& runways)
+{
+	runways.clear();
+	WED_LookupRunwayRecursive(airport,runways, ATCRunwayTwoway);
 }
 
 #pragma mark -

@@ -56,13 +56,13 @@ void		WED_AirportSign::Import(const AptSign_t& x, void (* print_func)(void *, co
 	style = ENUM_Import(Sign_Style, x.style_code);
 	if (style == -1)
 	{
-		print_func(ref,"Error importing airport sign: sign style code %d is illegal (not a member of type %s).\n", x.style_code, DOMAIN_Fetch(style.domain));
+		print_func(ref,"Error importing airport sign: sign style code %d is illegal (not a member of type %s).\n", x.style_code, DOMAIN_Desc(style.domain));
 		style = style_Default;
 	}
 	height = ENUM_Import(Sign_Size, x.size_code);
 	if (height == -1)
 	{
-		print_func(ref,"Error importing airport sign: sign height code %d is illegal (not a member of type %s).\n", x.size_code, DOMAIN_Fetch(height.domain));
+		print_func(ref,"Error importing airport sign: sign height code %d is illegal (not a member of type %s).\n", x.size_code, DOMAIN_Desc(height.domain));
 		height = size_MediumTaxi;
 	}
 

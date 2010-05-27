@@ -170,7 +170,7 @@ void	WED_PropertyTable::GetCellContent(
 			t->GetNthPropertyDictItem(idx,*iter,label);
 			if (ENUM_Domain(*iter) == LinearFeature)
 			{
-				label = ENUM_Fetch(*iter);
+				label = ENUM_Name(*iter);
 				label += ".png";
 				the_content.string_is_resource = 1;
 			}
@@ -213,6 +213,7 @@ void	WED_PropertyTable::GetEnumDictionary(
 	t->GetNthPropertyDict(idx, out_dictionary);
 	PropertyInfo_t info;
 	t->GetNthPropertyInfo(idx,info);
+	if(info.prop_kind == prop_EnumSet)
 	if(info.exclusive)
 		out_dictionary.insert(map<int,string>::value_type(0,"None"));
 }

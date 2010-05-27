@@ -297,11 +297,11 @@ void GenerateForests(
 				for(vector<Polygon_with_holes_2>::iterator f = forests.begin(); f != forests.end(); ++f)
 				{
 					GISPolyObjPlacement_t	placement;
+					DebugAssert(!f->is_unbounded());
 					placement.mRepType = *fiter;
-					placement.mShape = *f;
-					DebugAssert(!placement.mShape.is_unbounded());
-					placement.mLocation = CGAL::centroid(f->outer_boundary().vertices_begin(),f->outer_boundary().vertices_end());
-					placement.mHeight = 255.0;
+					cgal2ben(*f,placement.mShape);
+//					placement.mLocation = CGAL::centroid(f->outer_boundary().vertices_begin(),f->outer_boundary().vertices_end());
+					placement.mParam = 255.0;
 					placement.mDerived = false;
 					face->data().mPolyObjs.push_back(placement);
 					forest_poly_count++;

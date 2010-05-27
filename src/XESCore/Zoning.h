@@ -30,17 +30,44 @@
 
 struct	DEMGeo;
 
+/************************************************************************************************
+ * LAND CLASS TABLES
+ ************************************************************************************************/
+
+struct LandClassInfo_t {
+	int			category;								// 
+	float		urban_density;
+	float		veg_density;
+};	
+
+typedef hash_map<int, LandClassInfo_t>	LandClassInfoTable;
+extern LandClassInfoTable gLandClassInfo;
+
+/************************************************************************************************
+ * ZOOOOOOOOOOOOOOOONING RULES
+ ************************************************************************************************/
+
+struct ZoningInfo_t {
+	float		max_slope;								// Exclude areas that have slope > this value
+	int			need_lu;								// Exclude areas that are not urban LU?
+	int			fill_edge;								// Use rules to put AG along edges.
+	int			fill_area;								// Use rules to put AG in interior areas
+	int			fill_veg;								// Use rules to put forests into remaining area
+};
+
 struct ZoningRule_t {
 
 	int			terrain;								// Required base terrain (or require natural)
 	float		size_min,		size_max;				// Size of block in square meters
-	int			side_min,		side_max;				// Number of sides of block
 	float		slope_min,		slope_max;				// Max slope within block
-	float		urban_min,		urban_max;				// Total sum of urban activity
-	float		forest_min,		forest_max;				// Total sum of forest
 	float		urban_avg_min,	urban_avg_max;			// Average urbanization level
 	float		forest_avg_min,	forest_avg_max;			// Average forest level
 	float		bldg_min,		bldg_max;				// Maximum building height (0 if none)
+
+	int			req_cat1;
+	float		req_cat1_min;
+	int			req_cat2;
+	float		req_cat2_min;
 
 	int			req_water;								// Are we adjacent to water (not counting holes/lakes)
 	int			req_train;								// Train tracks on outer border?
@@ -55,8 +82,21 @@ struct ZoningRule_t {
 };
 
 typedef vector<ZoningRule_t>	ZoningRuleTable;
+typedef map<int, ZoningInfo_t>	ZoningInfoTable;
 extern ZoningRuleTable				gZoningRules;
-extern set<int>						gZoningTypes;
+extern ZoningInfoTable				gZoningInfo;
+
+/************************************************************************************************
+ * 3-D FILL RULES
+ ************************************************************************************************/
+
+struct EdgeRule_t {
+	int			zoning;
+	int			road_type;
+	int			resource_id;
+	float		width;
+};
+
 
 struct FillRule_t {
 	
@@ -65,19 +105,23 @@ struct FillRule_t {
 	float		size_min,		size_max;				// These params limit the kind of block we act upon
 	int			side_min,		side_max;
 	float		slope_min,		slope_max;
-	float		bldg_min,		bldg_max;
+	
+	int			hole_ok;								// Okay to have holes or interruptions in our block?
+	
+	int			resource_id;
+	
+	
+//	float		bldg_min,		bldg_max;
+//
+//	int			adj_terrain;							// These locate an adjacent edge with a certain property.   We will key
+//	int			adj_network;							// the feature to align to this edge.
+//	int			adj_zoning;
 
-	int			adj_terrain;							// These locate an adjacent edge with a certain property.   We will key
-	int			adj_network;							// the feature to align to this edge.
-	int			adj_zoning;
-
-	int			block_id;								// art asset names of various things we can insert.
-	int			string_id;
-	int			point_id;
-	int			veg_id;
 };	
 
+typedef vector<EdgeRule_t>		EdgeRuleTable;
 typedef vector<FillRule_t>		FillRuleTable;
+extern EdgeRuleTable			gEdgeRules;
 extern FillRuleTable			gFillRules;
 
 void	LoadZoningRules(void);
@@ -96,6 +140,7 @@ void	ZoneManMadeAreas(
 				const DEMGeo&		inForest,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
+				Pmwx::Face_handle	inDebug,
 				ProgressFunc		inProg);
 
 #endif /* ZONING_H */

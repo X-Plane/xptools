@@ -55,6 +55,8 @@
 #include "RF_Application.h"
 #include "RF_MapView.h"
 #include "GUI_Window.h"
+#include "MathUtils.h"
+#include "RF_Selection.h"
 
 #if APL && defined(__MWERKS__)
 #include "SIOUX.h"
@@ -166,7 +168,43 @@ void	import_tiger_repository(const string& rt)
 #endif
 
 
+static int DoSelectFaces(const vector<const char *>& args)
+{
+	int sel = LookupToken(args[0]);
+	if(sel == -1)
+	{
+		fprintf(stderr,"Could not understand parameter %s\n", args[0]);
+		return 1;
+	}
+	
+	double val = LookupToken(args[2]);
+	if(val == -1.0) val = atof(args[2]);
+	
+	int s = 0;
+		 if(strcmp(args[1], "<")==0) s = -1;
+	else if(strcmp(args[1], ">")==0) s = 1;
+	else if(strcmp(args[1], "=")==0) s = 0;
+	else{
+		fprintf(stderr,"Could not understand parameter %s\n", args[0]);
+		return 1;
+	}
 
+	gFaceSelection.clear();
+
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().mParams.count(sel) > 0)
+	{
+		double v = f->data().mParams[sel];
+		if(signzero(v - val) == s)
+			gFaceSelection.insert(f);
+	}
+
+
+	return 0;
+}
+
+static int DoSetSelMode(const vector<const char *>& args) { RF_SetSelectionMode(atoi(args[0])); return 1; } 
 
 static int DoSelfTest(const vector<const char *>& args)		{	/*SelfTestAll();*/ 	return 0; 	}
 static int DoVerbose(const vector<const char *>& args)		{	gVerbose = 1;	return 0;	}
@@ -189,6 +227,9 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 { "-chud_start",	1, 1, DoChudStart, "Start profiling", "" },
 { "-chud_stop",		0, 0, DoChudStop, "stop profiling", "" },
 #endif
+{ "-selectf",	3, 3, DoSelectFaces, "Select faces.", "" },
+{ "-sel_mode", 1, 1, DoSetSelMode, "Set Selection Mode", "" },
+
 { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -341,7 +382,6 @@ void	XGrindInit(void)
 //	RegisterEditCommands();
 //	RF_MapView *	map_view = new RF_MapView(20, h - 20, w - 20, 20, 1, NULL);
 //	RegisterProcessingCommands();
-//	RegisterSpecialCommands();
 
 	RF_AssertInit();
 
@@ -511,6 +551,8 @@ int main(int argc, char * argv[])
 
 	RF_MapView * map_view = new RF_MapView(main_window);
 	map_view->MakeMenus();
+	RegisterSpecialCommands();
+
 	map_view->SetParent(main_window);
 	map_view->SetBounds(bounds);
 	map_view->SetSticky(1,1,1,1);

@@ -70,7 +70,7 @@ void		WED_Taxiway::Import(const AptTaxiway_t& x, void (* print_func)(void *, con
 	surface = ENUM_Import(Surface_Type, x.surface_code);
 	if (surface == -1)
 	{
-		print_func(ref,"Error importing taxiway: surface code %d is illegal (not a member of type %s).\n", x.surface_code, DOMAIN_Fetch(surface.domain));
+		print_func(ref,"Error importing taxiway: surface code %d is illegal (not a member of type %s).\n", x.surface_code, DOMAIN_Desc(surface.domain));
 		surface = surf_Concrete;
 	}
 

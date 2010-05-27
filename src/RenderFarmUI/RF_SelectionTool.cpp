@@ -421,9 +421,9 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 				for(vector<Polygon_with_holes_2>::iterator a = all.begin(); a != all.end(); ++a)
 				{
 					GISPolyObjPlacement_t	res;
-					res.mShape = *a;
+					cgal2ben(*a, res.mShape);
 					res.mRepType = 1;
-					res.mHeight = 20;
+					res.mParam = 20;
 					res.mDerived = true;
 					(*fsel)->data().mPolyObjs.push_back(res);
 				}
@@ -514,14 +514,14 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->data().mAreaFeature.mFeatType));
 		}
 
-		if(the_face->data().GetZoning() != NO_VALUE)
-		{
-			n += sprintf(buf+n, "Zoning:%s ",FetchTokenString(the_face->data().GetZoning()));
-		}
+//		if(the_face->data().GetZoning() != NO_VALUE)
+//		{
+//			n += sprintf(buf+n, "Zoning:%s ",FetchTokenString(the_face->data().GetZoning()));
+//		}
 
-		for(GISParamMap::iterator p = the_face->data().mParams.begin(); p != the_face->data().mParams.end(); ++p)
-		if(p->first != af_Zoning)
-			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
+//		for(GISParamMap::iterator p = the_face->data().mParams.begin(); p != the_face->data().mParams.end(); ++p)
+//		if(p->first != af_Zoning)
+//			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 	}
 	if (gEdgeSelection.size() > 1)
 	{

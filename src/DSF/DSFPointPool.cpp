@@ -336,7 +336,7 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 	}
 //	printf("point pool failure...%d out of %d tried.  Points = %llu.\n", tris, p, (unsigned long long)inPoints.size());
 //		inPoints[n].dump();
-	printf("\n");
+//	printf("\n");
 	return pair<int, int>(-1, -1);
 }
 

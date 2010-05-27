@@ -62,7 +62,7 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	airport_type = ENUM_Import(Airport_Type, info.kind_code);
 	if (airport_type == -1)
 	{
-		print_func(ref,"Error importing airport: airport type code %d is illegal (not a member of type %s).\n", info.kind_code, DOMAIN_Fetch(airport_type.domain));
+		print_func(ref,"Error importing airport: airport type code %d is illegal (not a member of type %s).\n", info.kind_code, DOMAIN_Desc(airport_type.domain));
 		airport_type = type_Airport;
 	}
 

@@ -28,10 +28,12 @@
 #include <ctype.h>
 //#include "CoverageFinder.h"
 
+static int s_is_city = 0;
+
+
 EnumColorTable				gEnumColors;
 ColorBandTable				gColorBands;
 set<int>					gEnumDEMs;
-
 
 
 NaturalTerrainRuleVector		gNaturalTerrainRules;
@@ -206,6 +208,15 @@ static void 	AddRuleInfoPair(NaturalTerrainRule_t& rule, NaturalTerrainInfo_t& i
 	gNaturalTerrainRules.push_back(rule);
 }
 
+bool HandleFlags(const vector<string>& tokens, void * ref)
+{
+	if(tokens[0] == "TERRAIN_IS_CITY")
+	{
+		s_is_city = atoi(tokens[1].c_str());
+		return true;
+	}
+	return false;
+}
 bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	if(tokens[0] == "TERRAIN_RULE")
@@ -267,7 +278,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			return false;
 		}	
 		
-		if(rule.zoning != NO_VALUE && gZoningTypes.count(rule.zoning) == 0)
+		if(rule.zoning != NO_VALUE && gZoningInfo.count(rule.zoning) == 0)
 		{
 			fprintf(stderr,"Zoning type %s is unknown.\n", FetchTokenString(rule.zoning));
 			return false;
@@ -326,6 +337,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string	shader_mode;
 
 		NaturalTerrainInfo_t	info;
+		info.is_city = s_is_city;
 		if(TokenizeLine(tokens," eifcssPis",
 			&ter_name,	
 			&info.layer,
@@ -389,6 +401,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	NaturalTerrainInfo_t	info;
 	NaturalTerrainRule_t	rule;
 	
+	info.is_city = s_is_city;
 	int						forest_type;	// no longer used
 	string					ter_name, tex_name, proj;
 
@@ -788,6 +801,7 @@ void	LoadDEMTables(void)
 	gLandUseTransTable.clear();
 
 	sCliffs.clear();
+	s_is_city = 0;
 
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
@@ -801,6 +815,7 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("CLIFF_INFO", ReadNewTerrainInfo, NULL);
 //	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
+	RegisterLineHandler("TERRAIN_IS_CITY",HandleFlags,NULL);
 
 	if (gNaturalTerrainFile.empty())	LoadConfigFile("master_terrain.txt");
 	else								LoadConfigFileFullPath(gNaturalTerrainFile.c_str());

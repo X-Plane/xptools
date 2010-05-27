@@ -31,6 +31,7 @@
 #include "GISUtils.h"
 #include "AssertUtils.h"
 #include "CompGeomUtils.h"
+#include "STLUtils.h"
 
 // for now
 #define	ATC_VERS 1000
@@ -662,14 +663,17 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
 			else {
 				outApts.back().taxi_route.edges.push_back(AptRouteEdge_t());
-				string flags, id;
+				string oneway_flag, runway_flag;
 				if(TextScanner_FormatScan(s,"iiiTTT|",
 					&rec_code, 
 					&outApts.back().taxi_route.edges.back().src,
 					&outApts.back().taxi_route.edges.back().dst,
-					&flags,
-					&id, 
-					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";
+					&oneway_flag,
+					&runway_flag,
+					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";				
+				outApts.back().taxi_route.edges.back().oneway = oneway_flag == "oneway";
+				outApts.back().taxi_route.edges.back().runway = runway_flag == "runway";
+				
 			}
 			break;
 		case apt_taxi_shape:
@@ -683,8 +687,24 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().taxi_route.edges.back().shape.back().x_) != 3) ok = "Error: illegal shape point record.";
 			}
 			break;			
-
-
+		case apt_taxi_active:
+		
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";			
+			else if (outApts.empty()) ok = "Error: taxi active zone outside an airport.";
+			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi taxi active zone without an edge.";
+			else {
+				string flags, runways;
+				if(TextScanner_FormatScan(s,"iTT", &rec_code, &flags, &runways) != 3) ok = "Error: illegal active zone record.";
+				vector<string> runways_parsed;
+				tokenize_string(runways.begin(), runways.end(), back_inserter(runways_parsed), ',');
+				if(flags.find("departure") != flags.npos)
+					copy(runways_parsed.begin(),runways_parsed.end(), set_inserter(outApts.back().taxi_route.edges.back().hot_depart));
+				if(flags.find("arrival") != flags.npos)
+					copy(runways_parsed.begin(),runways_parsed.end(), set_inserter(outApts.back().taxi_route.edges.back().hot_arrive));
+				if(flags.find("ils") != flags.npos)
+					copy(runways_parsed.begin(),runways_parsed.end(), set_inserter(outApts.back().taxi_route.edges.back().hot_ils));
+			}
+			break;
 
 		case apt_done:
 			forceDone = true;
@@ -904,7 +924,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 									
 			if(!flow->pattern_runway.empty() && flow->pattern_side)
 			{
-				fprintf(fi,"%2d %s ", apt_flow_pattern, flow->pattern_runway.c_str());
+				fprintf(fi,"%02d %s ", apt_flow_pattern, flow->pattern_runway.c_str());
 				print_bitfields(fi,flow->pattern_side,pattern_strings);
 				fprintf(fi,CRLF);
 			}	 
@@ -928,9 +948,31 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 			}
 			for(vector<AptRouteEdge_t>::const_iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 			{
-				fprintf(fi,"%2d %d %d twoway %d %s" CRLF, apt_taxi_edge, e->src, e->dst, distance(apt->taxi_route.edges.begin(), e), e->name.c_str());
+				fprintf(fi,"%2d %d %d %s %s %s" CRLF, apt_taxi_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway", e->runway ? "runway" : "taxiway", e->name.c_str());
 				for(vector<Point2>::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
 					fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->y(), s->x());
+
+				if(!e->hot_depart.empty())
+				{
+					fprintf(fi,"%2d departure", apt_taxi_active);
+					for(set<string>::const_iterator s = e->hot_depart.begin(); s != e->hot_depart.end(); ++s)
+						fprintf(fi,"%c%s", s == e->hot_depart.begin() ? ' ' : ',', s->c_str());
+					fprintf(fi,CRLF);
+				}
+				if(!e->hot_arrive.empty())
+				{
+					fprintf(fi,"%2d arrival", apt_taxi_active);
+					for(set<string>::const_iterator s = e->hot_arrive.begin(); s != e->hot_arrive.end(); ++s)
+						fprintf(fi,"%c%s", s == e->hot_arrive.begin() ? ' ' : ',', s->c_str());
+					fprintf(fi,CRLF);
+				}
+				if(!e->hot_ils.empty())
+				{
+					fprintf(fi,"%2d ils", apt_taxi_active);
+					for(set<string>::const_iterator s = e->hot_ils.begin(); s != e->hot_ils.end(); ++s)
+						fprintf(fi,"%c%s", s == e->hot_ils.begin() ? ' ' : ',', s->c_str());
+					fprintf(fi,CRLF);
+				}
 			}			
 		}
 	}

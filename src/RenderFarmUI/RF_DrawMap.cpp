@@ -736,28 +736,25 @@ void	DrawMapBucketed(
 			
 		}
 
-		for (int j = 0; j < (*fi)->data().mPolyObjs.size(); ++j)
+		for (GISPolyObjPlacementVector::iterator j = (*fi)->data().mPolyObjs.begin(); j != (*fi)->data().mPolyObjs.end(); ++j)
 		{
+			int is_string = strstr(FetchTokenString(j->mRepType),".ags") != NULL;		
+			
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
-			glColor4f(shade, shade, (*fi)->data().mPolyObjs[j].mDerived ? 1.0 : 0.0, 1.0);
+			glColor4f(shade, shade, j->mDerived ? 1.0 : 0.0, 1.0);
 
-			Polygon_2 ccb((*fi)->data().mPolyObjs[j].mShape.outer_boundary());
-			glBegin(GL_LINE_LOOP);
-			for(int l = 0; l < ccb.size(); ++l)
-				glVertex2f(CGAL::to_double(ccb[l].x()),CGAL::to_double(ccb[l].y()));
-			glEnd();
-
-
-			for (Polygon_with_holes_2::Hole_const_iterator h = (*fi)->data().mPolyObjs[j].mShape.holes_begin(); h != (*fi)->data().mPolyObjs[j].mShape.holes_end(); ++h)
+			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
 			{
-				glBegin(GL_LINE_LOOP);
-				for(int l = 0; l < h->size(); ++l)
+				glLineWidth(is_string ? 2 : 1);
+				glBegin(is_string ? GL_LINE_STRIP : GL_LINE_LOOP);
+				for(int l = 0; l < r->size(); ++l)
 					glVertex2f(
-						CGAL::to_double((*h)[l].x()),
-						CGAL::to_double((*h)[l].y()));
+						((*r)[l].x()),
+						((*r)[l].y()));
 				glEnd();
 			}
+			glLineWidth(1);
 		}
 	}
 #endif

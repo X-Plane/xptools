@@ -23,25 +23,39 @@
 
 #include "MapRaster.h"
 #include "MapHelpers.h"
+#include "CompGeomUtils.h"
 
-inline void push_vertical(double x, double y1, double y2, vector<X_monotone_curve_2>& c, int key)
+inline void push_vertical(double x, double y1, double y2, vector<X_monotone_curve_2>& c, int key, CoordTranslator2 * translator)
 {
-	c.push_back(X_monotone_curve_2(Segment_2(Point_2(x,y1),Point_2(x,y2)), key));
+	Point2 p1(x,y1), p2(x,y2);
+	if(translator)
+	{
+		p1 = translator->Forward(p1);
+		p2 = translator->Forward(p2);
+	}
+	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal(p1), ben2cgal(p2)),key));
 }
 
-inline void push_horizontal(double y, double x1, double x2, vector<X_monotone_curve_2>& c, int key)
+inline void push_horizontal(double y, double x1, double x2, vector<X_monotone_curve_2>& c, int key, CoordTranslator2 * translator)
 {
-	c.push_back(X_monotone_curve_2(Segment_2(Point_2(x1,y),Point_2(x2,y)),key));
+	Point2	p1(x1,y), p2(x2,y);
+	if(translator)
+	{
+		p1 = translator->Forward(p1);
+		p2 = translator->Forward(p2);
+	}
+	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal(p1), ben2cgal(p2)),key));
 }
 
 void	MapFromDEM(
-				const DEMGeo&	in_dem,
-				int				x1,
-				int				y1,
-				int				x2,
-				int				y2,
-				float			null_post,
-				Pmwx&			out_map)
+				const DEMGeo&		in_dem,
+				int					x1,
+				int					y1,
+				int					x2,
+				int					y2,
+				float				null_post,
+				Pmwx&				out_map,
+				CoordTranslator2 *	translator)
 {
 	out_map.clear();
 	int x, y;
@@ -57,14 +71,14 @@ void	MapFromDEM(
 			double y_top = in_dem.y_to_lat_double(y+0.5);
 			
 			if(in_dem.get(x1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x1-0.5), y_bot, y_top, curves, null_post);
+				push_vertical(in_dem.x_to_lon_double(x1-0.5), y_bot, y_top, curves, null_post, translator);
 
 			for(x = x1+1; x < x2; ++x)
 			if(in_dem.get(x-1,y) != in_dem.get(x,y))
-				push_vertical(in_dem.x_to_lon_double(x-0.5), y_bot, y_top, curves, in_dem.get(x-1,y));
+				push_vertical(in_dem.x_to_lon_double(x-0.5), y_bot, y_top, curves, in_dem.get(x-1,y), translator);
 
 			if(in_dem.get(x2-1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x2-0.5), y_bot, y_top, curves, in_dem.get(x2-1,y));
+				push_vertical(in_dem.x_to_lon_double(x2-0.5), y_bot, y_top, curves, in_dem.get(x2-1,y), translator);
 			
 		}
 
@@ -75,14 +89,14 @@ void	MapFromDEM(
 			double x_rgt = in_dem.x_to_lon_double(x+0.5);
 			
 			if(in_dem.get(x,y1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y1-0.5), x_rgt, x_lft, curves, null_post);
+				push_horizontal(in_dem.y_to_lat_double(y1-0.5), x_rgt, x_lft, curves, null_post, translator);
 
 			for(y = y1+1; y < y2; ++y)
 			if(in_dem.get(x,y-1) != in_dem.get(x,y))
-				push_horizontal(in_dem.y_to_lat_double(y-0.5), x_rgt, x_lft, curves, in_dem.get(x,y-1));
+				push_horizontal(in_dem.y_to_lat_double(y-0.5), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator);
 
 			if(in_dem.get(x,y2-1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y2-0.5), x_rgt, x_lft, curves, in_dem.get(x,y2-1));			
+				push_horizontal(in_dem.y_to_lat_double(y2-0.5), x_rgt, x_lft, curves, in_dem.get(x,y2-1), translator);			
 		}
 	} 
 	else
@@ -94,14 +108,14 @@ void	MapFromDEM(
 			double y_top = in_dem.y_to_lat_double(y+1);
 			
 			if(in_dem.get(x1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x1), y_bot, y_top, curves, null_post);
+				push_vertical(in_dem.x_to_lon_double(x1), y_bot, y_top, curves, null_post, translator);
 
 			for(x = x1+1; x < x2; ++x)
 			if(in_dem.get(x-1,y) != in_dem.get(x,y))
-				push_vertical(in_dem.x_to_lon_double(x), y_bot, y_top, curves, in_dem.get(x-1,y));
+				push_vertical(in_dem.x_to_lon_double(x), y_bot, y_top, curves, in_dem.get(x-1,y), translator);
 				
 			if(in_dem.get(x2-1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x2), y_bot, y_top, curves, null_post);
+				push_vertical(in_dem.x_to_lon_double(x2), y_bot, y_top, curves, null_post, translator);
 				
 				
 		}
@@ -113,14 +127,14 @@ void	MapFromDEM(
 			double x_rgt = in_dem.x_to_lon_double(x+1);
 			
 			if(in_dem.get(x,y1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y1), x_rgt, x_lft, curves, null_post);
+				push_horizontal(in_dem.y_to_lat_double(y1), x_rgt, x_lft, curves, null_post, translator);
 
 			for(y = y1+1; y < y2; ++y)
 			if(in_dem.get(x,y-1) != in_dem.get(x,y))
-				push_horizontal(in_dem.y_to_lat_double(y), x_rgt, x_lft, curves, in_dem.get(x,y-1));
+				push_horizontal(in_dem.y_to_lat_double(y), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator);
 
 			if(in_dem.get(x,y2-1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y2), x_rgt, x_lft, curves, null_post);
+				push_horizontal(in_dem.y_to_lat_double(y2), x_rgt, x_lft, curves, null_post, translator);
 		}	
 	}
 	
@@ -133,12 +147,4 @@ void	MapFromDEM(
 		if(*(ee->curve().data().begin()) != null_post)
 			ee->face()->data().mTerrainType = *(ee->curve().data().begin());
 	}
-	
-//	CGAL::insert_curves(out_map, curves.begin(), curves.end());
-
-//	for(Pmwx::Face_iterator f = out_map.faces_begin(); f != out_map.faces_end(); ++f)
-//	if(!f->is_unbounded())
-//	{
-//	
-///	}
 }

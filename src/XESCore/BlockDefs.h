@@ -32,9 +32,12 @@ enum {
 	usage_Road_End,
 
 	usage_Empty,
+	usage_Steep,
 
 	usage_Point_Feature,
-	usage_Polygonal_Feature
+	usage_Polygonal_Feature,
+	
+	usage_OOB
 
 };
 
@@ -42,9 +45,11 @@ struct BLOCK_vertex_data { };
 struct BLOCK_halfedge_data { };
 
 struct BLOCK_face_data {
+	BLOCK_face_data() : usage(usage_Empty), feature(0) { }
+	BLOCK_face_data(int u,int f) : usage(u), feature(f) { }
 	int		usage;
 	int		feature;
-	int		pre_placed;
+//	int		pre_placed;
 	Point2	center;
 	double	heading;
 	

@@ -38,6 +38,9 @@ public:
 	void	Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptRunwayRule_t& info) const;
 
+	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict);
+
+
 private:
 
 	WED_PropIntEnum			rwy;

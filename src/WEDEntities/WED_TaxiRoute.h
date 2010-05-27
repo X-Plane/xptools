@@ -28,18 +28,34 @@
 
 #include "WED_GISEdge.h"
 
+struct AptRouteEdge_t;
+
 class WED_TaxiRoute : public WED_GISEdge {
 
 DECLARE_PERSISTENT(WED_TaxiRoute)
 
 public:
+
+	void		Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
+	void		Export(		 AptRouteEdge_t& info) const;
+	
+	virtual		bool	IsOneway(void) const;
 	
 				void		SetOneway(int p);
-				int			GetOneway(void) const;
+				void		SetRunway(int r);
+				void		SetHotDepart(const set<int>& rwys);
+				void		SetHotArrive(const set<int>& rwys);
+				void		SetHotILS(const set<int>& rwys);
+
+	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict);
 	
 private:	
 
 		WED_PropBoolText		oneway;
+		WED_PropIntEnum			runway;
+		WED_PropIntEnumSet		hot_depart;
+		WED_PropIntEnumSet		hot_arrive;
+		WED_PropIntEnumSet		hot_ils;		
 
 };
 

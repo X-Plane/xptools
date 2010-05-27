@@ -24,17 +24,19 @@
 #ifndef MapRaster_H
 #define MapRaster_H
 
-
 #include "MapDefs.h"
 #include "DEMDefs.h"
 
+struct CoordTranslator2;
+
 void	MapFromDEM(
-				const DEMGeo&	in_dem,
-				int				x1,
-				int				y1,
-				int				x2,
-				int				y2,
-				float			null_post,
-				Pmwx&			out_map);
+				const DEMGeo&		in_dem,
+				int					x1,
+				int					y1,
+				int					x2,
+				int					y2,
+				float				null_post,
+				Pmwx&				out_map,
+				CoordTranslator2 *	translator);
 
 #endif /* MapRaster_H */

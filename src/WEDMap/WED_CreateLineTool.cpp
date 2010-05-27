@@ -142,7 +142,7 @@ void	WED_CreateLineTool::AcceptPath(
 	h /= 10;
 	if (h < 1) h = 1;
 
-	sprintf(buf,"%d/%d",h,h+18);
+	sprintf(buf,"%02d/%02d",h,h+18);
 	obj->SetName(buf);
 
 	ISelection * sel = WED_GetSelect(GetResolver());

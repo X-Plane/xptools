@@ -72,6 +72,7 @@ enum {
 	apt_taxi_node		= 1201,			// <lat> <lon> <type> <id> <name>
 	apt_taxi_edge		= 1202,			// <src> <dst> <flags> <id> <name>
 	apt_taxi_shape		= 1203,			// <lat> <lon>
+	apt_taxi_active		= 1204,			// type|flags runway,list
 
 	// Surface codes
 	apt_surf_none		= 0,
@@ -424,6 +425,12 @@ struct AptRouteEdge_t {
 	string						name;
 	int							src;
 	int							dst;
+	int							oneway;
+	int							runway;
+	set<string>					hot_depart;
+	set<string>					hot_arrive;
+	set<string>					hot_ils;
+	
 	vector<Point2>				shape;
 };
 

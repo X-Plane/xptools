@@ -136,6 +136,14 @@ void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const ch
 	}
 }
 
+int			WED_PropertyHelper::PropertyItemNumber(WED_PropertyItem * item)
+{
+	for(int n = 0; n < mItems.size(); ++n)
+		if(item == mItems[n]) return n;
+	return -1;
+}
+
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------

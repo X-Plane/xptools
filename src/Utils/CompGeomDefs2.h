@@ -160,12 +160,14 @@ struct	Vector2 {
 	bool	no_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) == 0.0; }
 	int		turn_direction(const Vector2& v) const { double d = -dy * v.dx + dx * v.dy; if (d > 0.0) return LEFT_TURN; if (d < 0.0) return RIGHT_TURN; return COLLINEAR; }
 
-	// Signed area = the area of the triangle formed by placing V after this.
-	// If they form a counter-clockwise triangle, the area is positive, clockwise = negative
-	// Why does this work?  Well this is really half the dot product of this vector and the next
-	// one rotated right 90 degrees.  What we really want is half base height sin theta - the
-	// rotate right lets us write the thing in terms of cosine - the dot product then gives us
-	// the quanty len v1 * len v2 * cos theta.
+	// Signed area = the area of the triangle formed by placing V at our origin.
+	// If they form a counter-clockwise triangle (that is, rotate us ccw to get to V) then
+	// the area is positive, clockwise = negative.
+	// Why does this work?  If we are the base of the triangle, we can scale the other vector
+	// to be 'height' by multiplying by the cosine of the that vector with the real height vector.
+	// That height vector is us.ccw_perpendicular.  So...we want 0.5 * A * B * cos(|A'| |B|)
+	// which is the same as 0.5 * dot(A', B).  Thus this is just the dot product on our ccw_perpendicular.
+	// 
 	// (NOTE: this is really a special case - the magnitude of the cross-product of two vectors
 	// is the signed area.  In the 2-d case the normal vector is entirely in the Z component, because
 	// the source vecotrs are in the XY plane, so we can "extract" the magnitude without the usual

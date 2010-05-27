@@ -31,9 +31,16 @@ struct block_create_t {
 	Polygon_2			bounds;
 };
 
+// Create a block from a set of polygons.  
+// When two polygons overlap, the LATER polygon in the vector takes priority.
+// If we want to specify that the area OUTSIDE the block (unbounded) has some
+// property, we can pass the index of one polygon whose _outside_ is tagged.  Pass
+// -1 for the index if we don't want this.
 void	create_block(
-					Block_2&						block,
-					const vector<block_create_t>&	in_data);
+					Block_2&									block,
+					const vector<BLOCK_face_data>&				in_data,
+					const vector<Block_2::X_monotone_curve_2>&	in_bounds,
+					int											unbounded_idx);
 
 bool	can_insert_into_block(
 					Block_2&						block,
@@ -43,5 +50,7 @@ void	do_insert_into_block(
 					Block_2&						block,
 					const Polygon_2&				bounds,
 					const BLOCK_face_data&			data);
+
+void clean_block(Block_2& block);
 
 #endif /* BlockAlgs_H */
