@@ -1582,30 +1582,32 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 #if SPLIT_CLIFFS
 
-	set<Point_2> splits_needed;
-	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
 	{
-		if(tri_is_cliff(outMesh, f))
+		set<Point_2> splits_needed;
+		for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
 		{
-			if(!tri_is_cliff(outMesh, f->neighbor(0)) ||
-			   !tri_is_cliff(outMesh, f->neighbor(1)) ||
-			   !tri_is_cliff(outMesh, f->neighbor(2)))
+			if(tri_is_cliff(outMesh, f))
 			{
-				CDT::Triangle tr(outMesh.triangle(f));
-//				splits_needed.insert(CGAL::centroid(tr));
-				splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
-				splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
-				splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
+				if(!tri_is_cliff(outMesh, f->neighbor(0)) ||
+				   !tri_is_cliff(outMesh, f->neighbor(1)) ||
+				   !tri_is_cliff(outMesh, f->neighbor(2)))
+				{
+					CDT::Triangle tr(outMesh.triangle(f));
+	//				splits_needed.insert(CGAL::centroid(tr));
+					splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
+					splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
+					splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
+				}
 			}
 		}
-	}
-	
-	printf("Need %d splits.\n", splits_needed.size());
-	hint = CDT::Face_handle();
-	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
-	{
-		InsertAnyPoint(orig, outMesh, *n, hint);
-//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
+		
+		printf("Need %d splits.\n", splits_needed.size());
+		hint = CDT::Face_handle();
+		for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
+		{
+			InsertAnyPoint(orig, outMesh, *n, hint);
+	//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
+		}
 	}
 #endif
 
