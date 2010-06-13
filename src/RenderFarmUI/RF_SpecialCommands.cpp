@@ -26,14 +26,14 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <GL/gl.h>
 #endif
 
 #include "GUI_Application.h"
 #include "PlatformUtils.h"
 #include "SceneryPackages.h"
 #include "RF_Assert.h"
-#include <ShapeFil.h>
+#include <shapefil.h>
 #include "MapAlgs.h"
 #include "ObjTables.h"
 #include "NetTables.h"
