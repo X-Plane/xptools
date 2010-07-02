@@ -42,6 +42,9 @@ int main(int argc, const char ** argv)
 	shader	base_normal("roads_1000_provisional1.dds",0, 2048);
 			base_normal.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
 
+	traffic	car("lib/cars/car.obj");
+	traffic truck("lib/cars/car_or_truck.obj");
+
 	//----------------------------------------------------------------------------------------------------
 	// ROAD CORES
 	//----------------------------------------------------------------------------------------------------
@@ -76,6 +79,23 @@ int main(int argc, const char ** argv)
 	// we mark the cores and nothing else.
 	for(map<int,road>::iterator r = road_cores_draped.begin(); r != road_cores_draped.end(); ++r)
 	{
+		r->second.add_traffic(&car  , 34, 35, 0.6);
+		r->second.add_traffic(&car  , 62, 30, 0.6);
+		r->second.add_traffic(&truck, 90, 25, 0.6);
+
+		r->second.add_traffic(&car  , 170, 30, 0.6);
+		r->second.add_traffic(&truck, 199, 25, 0.6);
+
+		r->second.add_traffic(&truck, 265, 25, 0.6);
+
+
+		r->second.add_traffic(&truck, 363, 25, 0.6, 1);
+		r->second.add_traffic(&car  , 386, 20, 0.6, 1);
+		r->second.add_traffic(&car  , 461, 20, 0.6, 0);
+		r->second.add_traffic(&truck, 486, 25, 0.6, 0);
+
+		// 1473 for railroad
+	
 		r->second.set_center_at_center();
 		road_cores_graded[r->first] = graded_from_draped(base_normal, r->second);
 	}

@@ -15,6 +15,18 @@ void	copy_string_vector(const char ** i, vector<string>& o)
 	}
 }
 
+inline float fltmin2		(const float x1,const float x2											){													return (x1<x2)?x1:x2;}
+inline float fltmax2		(const float x1,const float x2											){													return (x1>x2)?x1:x2;}
+inline float fltlim(const float in,const float min,const float max){
+	if(in<min)return min;
+	if(in>max)return max;
+	return in;}
+
+inline float interp(const float x1,const float y1,const float x2,const float y2,const float x)
+{
+	if(x1==x2)	return (y1+y2)*0.5f;
+				return fltlim(y1+((y2-y1)/(x2-x1))*(x-x1),fltmin2(y1,y2),fltmax2(y1,y2));
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -88,6 +100,21 @@ static void set_shader_width(FILE * fi, shader * s)
 	}
 	last = s;
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+
+class	traffic {
+public:
+	string					res;
+	int						idx;
+	static vector<traffic*>	all;
+
+	traffic(const string& model) : res(model) { idx = all.size(); all.push_back(this); }
+	void output_one(FILE * fi) { fprintf(fi,"CAR_MODEL\t%s\n",res.c_str()); }
+	static void output(FILE * fi) { for(vector<traffic*>::iterator t = all.begin(); t != all.end(); ++t) (*t)->output_one(fi); }
+};
+
+vector<traffic*> traffic::all;
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -171,6 +198,14 @@ struct obj_placement {
 	grading_type	grad;
 };
 
+struct traffic_lane {
+	int				reverse;
+	float			lat;
+	float			speed;
+	float			density;
+	grading_type	grad;
+	traffic *		car;
+};
 
 class	road {
 public:
@@ -204,6 +239,12 @@ public:
 			objects[i].lat[0] += o;
 			objects[i].lat[1] += o;
 		}
+		n = lanes.size();
+		lanes.insert(lanes.end(),rhs.lanes.begin(),rhs.lanes.end());
+		for(int i = n; i < lanes.size(); ++i)
+		{
+			lanes[i].lat += o;
+		}
 		
 		return *this;
 	}
@@ -214,6 +255,7 @@ public:
 		assert(markers.empty() || rhs.markers.empty());
 		markers.insert(markers.end(),rhs.markers.begin(),rhs.markers.end());
 		objects.insert(objects.end(),rhs.objects.begin(),rhs.objects.end());
+		lanes.insert(lanes.end(),rhs.lanes.begin(),rhs.lanes.end());
 		return *this;
 	}
 	
@@ -232,6 +274,7 @@ public:
 	vector<road_segment>		segments;
 	vector<obj_placement>		objects;
 	vector<road_center_marker>	markers;
+	vector<traffic_lane>		lanes;
 	
 	void	set_center_at(float x)
 	{
@@ -313,6 +356,24 @@ public:
 		float w = max_x();
 		add_obj_left(name, grad, lat1 + w, lat2 + w, psi1, psi2, off1, off2, spa1, spa2, frq1, frq2, noise);
 	}	
+
+	void add_traffic(traffic * car, float pixel, float speed, float density, int rev=0)
+	{
+		for(int s = 0; s < segments.size(); ++s)
+		if ((segments[s].s[0] < pixel && pixel < segments[s].s[1]) || 
+			(segments[s].s[0] > pixel && pixel > segments[s].s[1]))
+		{
+			traffic_lane t;
+			t.reverse = segments[s].s[0] > pixel;
+			if(rev) t.reverse = !t.reverse;
+			t.lat = interp(segments[s].s[0], segments[s].x[0], segments[s].s[1], segments[s].x[1], pixel);
+			t.speed = speed;
+			t.density = density;
+			t.grad = segments[s].grad;
+			t.car = car;
+			lanes.push_back(t);
+		}
+	}
 	
 };
 
@@ -383,6 +444,8 @@ road	graded_from_draped(shader& shad, const road& r)
 	{
 		o->grad = graded;
 	}
+	for(vector<traffic_lane>::iterator l = ret.lanes.begin(); l != ret.lanes.end(); ++l)
+		l->grad = graded;
 	return ret;
 }
 
@@ -449,9 +512,14 @@ public:
 		for(vector<obj_placement>::iterator o = guts.objects.begin(); o != guts.objects.end(); ++o)
 		{
 			if(o->models.empty())	fprintf(stderr, "ERROR: an object has no models.\n");
-			fprintf(fi,"OBJECT_RANDOM\t%30s %5.1f %5.1f  %5.1f %5.1f  %d  %5.1f %5.1f  %5.1f %5.1f\n",
+			if(o->grad == draped)
+			fprintf(fi,"OBJECT_DRAPED\t%30s %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f\n",
 				o->models.front().c_str(), o->lat[0], o->lat[1], o->psi[0], o->psi[1],
-				o->grad == draped ? 1 : 0, o->off[0], o->off[1], o->spa[0], o->spa[1]);
+						o->off[0], o->off[1], o->spa[0], o->spa[1]);
+			else
+			fprintf(fi,"OBJECT_GRADED\t%30s %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f\n",
+				o->models.front().c_str(), o->lat[0], o->lat[1], o->psi[0], o->psi[1],
+						o->off[0], o->off[1], o->spa[0], o->spa[1]);
 			if(!o->wave.is_null())
 				fprintf(fi,"OBJECT_FREQ\t%5.2f %5.2f   %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f %5.1f\n",
 					o->frq[0], o->frq[1],
@@ -461,6 +529,16 @@ public:
 					o->wave.w[3], o->wave.a[3]);
 			for(int k = 1; k < o->models.size(); ++k)
 				fprintf(fi,"OBJECT_ALT\t%s\n", o->models[k].c_str());
+		}
+
+		for(vector<traffic_lane>::iterator l = guts.lanes.begin(); l != guts.lanes.end(); ++l)
+		{
+			if(l->grad == draped)
+				fprintf(fi,"CAR_DRAPED\t%d %5.2f %3.0f %4.2f %d\n",
+					l->reverse, l->lat, l->speed, l->density, l->car->idx);
+			else
+				fprintf(fi,"CAR_GRADED\t%d %5.2f %3.0f %4.2f %d\n",
+					l->reverse, l->lat, l->speed, l->density, l->car->idx);				
 		}
 		
 		fprintf(fi,"\n");
@@ -603,6 +681,7 @@ void output(FILE * fi)
 	virtual_table::sync_all_width();
 	fprintf(fi,"A\n800\nROADS\n\nONE_SIDED\n");
 	shader::output(fi);
+	traffic::output(fi);
 	published_road::output(fi);
 	virtual_table::output(fi);
 }
