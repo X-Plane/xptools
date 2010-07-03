@@ -42,8 +42,48 @@ int main(int argc, const char ** argv)
 	shader	base_normal("roads_1000_provisional1.dds",0, 2048);
 			base_normal.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
 
+	//----------------------------------------------------------------------------------------------------
+	// VEHICLES
+	//----------------------------------------------------------------------------------------------------
+
+	// Trivial vehicles are declared into a traffic object as follows:
 	traffic	car("lib/cars/car.obj");
 	traffic truck("lib/cars/car_or_truck.obj");
+
+	// For trains, things are slightly more tricky.   Each train car is individually
+	// declared (here we have a virtual path into the lib and then the two half-lengths of the train, just
+	// as in the old format).
+	train_car		HS_head("lib/trains/HS_head.obj",11.0,9.64);
+	train_car		HS_body("lib/trains/HS_body.obj",13.88,13.72);
+	train_car		HS_tail("lib/trains/HS_tail.obj",9.84,10.9);
+		
+	train_car		R_head("lib/trains/R_head.obj",		10	,	6.37);
+	train_car		R_body("lib/trains/R_body.obj",		6.6	,	6.2	);
+	train_car		R_tail("lib/trains/R_tail.obj",		6.84,	9.7	);
+
+	train_car		IC_head("lib/trains/IC_head.obj",	15.8,	13.924);
+	train_car		IC_powr("lib/trains/IC_powr.obj",	13.8,	13.68);
+	train_car		IC_body("lib/trains/IC_body.obj",	13.8,	13.68);
+	train_car		IC_tail("lib/trains/IC_tail.obj",	14.26,	15.47);
+
+	train_car		F_head("lib/trains/F_head.obj",		11.46,	11.46);
+	train_car		F_13  ("lib/trains/F_13_33.obj",	6.665,	6.665);
+	train_car		F_20  ("lib/trains/F_20.06.obj",	10.03,	10.03);
+	train_car		F_23  ("lib/trains/F_23.88.obj",	11.94,	11.94);
+	train_car		F_17  ("lib/trains/F_17.33.obj",	8.665,	8.665);
+	train_car		F_18  ("lib/trains/F_18.31.obj",	9.155,	9.155);
+	train_car		F_tail("lib/trains/F_tail.obj",		11.46,	11.46);
+
+	// We can declare a "traffic" object that takes the SUM of train cars to spell
+	// a train.
+	traffic train_freight(F_head + F_13 + F_20 + F_23 + F_17 + F_18 + F_tail);	
+	traffic	train_passenger(HS_head + HS_body + HS_body + HS_body + HS_tail);
+	
+	// If we then add a new "spelling" it makes VARIANTS.  So the passenger train
+	// has THREE variants...a 5-car high speed train, a 3 car regional train,
+	// and a 5 car inter-city train.
+	train_passenger += (R_head + R_body + R_tail);
+	train_passenger += (IC_head + IC_body + IC_powr + IC_body + IC_tail);
 
 	//----------------------------------------------------------------------------------------------------
 	// ROAD CORES
@@ -79,23 +119,24 @@ int main(int argc, const char ** argv)
 	// we mark the cores and nothing else.
 	for(map<int,road>::iterator r = road_cores_draped.begin(); r != road_cores_draped.end(); ++r)
 	{
-		r->second.add_traffic(&car  , 34, 35, 0.6);
-		r->second.add_traffic(&car  , 62, 30, 0.6);
-		r->second.add_traffic(&truck, 90, 25, 0.6);
+		// Cars: ptr to car, pixel ofset, velocity in meters, density, and then optionally: 0 for same dir, 1 for reverse direction
+		r->second.add_traffic(&car  , 34, 35, 0.06);
+		r->second.add_traffic(&car  , 62, 30, 0.06);
+		r->second.add_traffic(&truck, 90, 25, 0.06);
 
-		r->second.add_traffic(&car  , 170, 30, 0.6);
-		r->second.add_traffic(&truck, 199, 25, 0.6);
+		r->second.add_traffic(&car  , 170, 30, 0.06);
+		r->second.add_traffic(&truck, 199, 25, 0.06);
 
-		r->second.add_traffic(&truck, 265, 25, 0.6);
+		r->second.add_traffic(&truck, 265, 25, 0.06);
 
 
-		r->second.add_traffic(&truck, 363, 25, 0.6, 1);
-		r->second.add_traffic(&car  , 386, 20, 0.6, 1);
-		r->second.add_traffic(&car  , 461, 20, 0.6, 0);
-		r->second.add_traffic(&truck, 486, 25, 0.6, 0);
+		r->second.add_traffic(&truck, 363, 25, 0.06, 1);
+		r->second.add_traffic(&car  , 386, 20, 0.06, 1);
+		r->second.add_traffic(&car  , 461, 20, 0.06, 0);
+		r->second.add_traffic(&truck, 486, 25, 0.06, 0);
 
-		// 1473 for railroad
-	
+		r->second.add_traffic(&train_freight, 1473, 25, 0.01);
+
 		r->second.set_center_at_center();
 		road_cores_graded[r->first] = graded_from_draped(base_normal, r->second);
 	}
@@ -106,13 +147,13 @@ int main(int argc, const char ** argv)
 	perlin_params stringie = { 500, 50, 0, 0, 0.9, 0.1, 0, 0 };	
 	
 	// This defines a set of obj alternatives.  NULL at end is necessary!!
-	const char * cars[] = { "car.obj", "cart.obj", "cafe.obj", NULL };
+	const char * cars[] = { "local_pylon.obj", "cart.obj", "cafe.obj", NULL };
 	
 	// Example 1: add a set of obj choices 1 meter in from the left side of our primary core a random object with perlin frequency.  This obj exists 30% of the time.  (See last two params)
-	road_cores_draped[1].add_obj_left(cars,draped, 1, 1, 0, 0, 10, 12, 15, 15, 0, 0.3, &stringie);
+	road_cores_draped[1].add_obj_left(cars,graded, 1, 1, 0, 0, 10, 12, 15, 15, 0, 0.3, &stringie);
 	// Example 2: add a specific obj 1 meter to the left of the right edge (-1 = left of center and this obj adds to the right).
 	// This obj has no frequency info.
-	road_cores_draped[1].add_obj_right("car.obj",graded, -1, -1, 0, 0, 10, 12, 15, 15, 0, 0, NULL);
+	road_cores_draped[1].add_obj_right("ramp_pylon.obj",graded, -1, -1, 0, 0, 10, 12, 15, 15, 0, 0, NULL);
 	
 	//----------------------------------------------------------------------------------------------------
 	// OUTER ATTACHMENTS AND CRUD
@@ -238,6 +279,20 @@ int main(int argc, const char ** argv)
 			make_draped(string(*name) + climate_names[climate] + sidewalk_names[sidewalkL] + "/" + sidewalk_names[sidewalkR], *core * 10 + climate * 10 + sidewalkL + sidewalkR * 3, 0.1, 1.0, schedule_city);
 		}
 	}
+
+
+	// This make a single real-type powerline.
+
+	road	power_lines = make_wire(lod_standard, 0 , 22.8, 0.4) |
+						  make_wire(lod_standard, 25, 22.8, 0.4);
+	power_lines.add_obj_left("powerline_tower.obj", graded, 12.5, 12.5, 0, 0, 0, 0, 0, 0, 0, 0, NULL);
+	power_lines.set_center_at_center();
+	publish_road(
+					220,
+					"power lines",
+					1, 1,1,0,
+					power_lines);
+				
 
 
 	// Finally, we call this to cause the program to output all of this stuff to a single road.net file.

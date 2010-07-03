@@ -103,14 +103,72 @@ static void set_shader_width(FILE * fi, shader * s)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
+struct train_car {
+	train_car(const char * name, float l1, float l2) : res(name) { len[0] = l1; len[1] = l2; }
+	string	res;
+	float	len[2];
+};
+
+typedef vector<train_car>	train_spelling;
+
+vector<train_car> operator+(const train_car& lhs, const train_car& rhs)
+{
+	vector<train_car> ret;
+	ret.push_back(lhs);
+	ret.push_back(rhs);
+	return ret;
+}
+
+vector<train_car> operator+(const vector<train_car>& lhs, const train_car& rhs)
+{
+	vector<train_car> ret(lhs);
+	ret.push_back(rhs);
+	return ret;
+}
+
+vector<train_car>& operator+=(vector<train_car>& lhs, const train_car& rhs)
+{
+	lhs.push_back(rhs);
+	return lhs;
+}
+
+
 class	traffic {
 public:
 	string					res;
+	vector<train_spelling>	trains;
 	int						idx;
 	static vector<traffic*>	all;
 
 	traffic(const string& model) : res(model) { idx = all.size(); all.push_back(this); }
-	void output_one(FILE * fi) { fprintf(fi,"CAR_MODEL\t%s\n",res.c_str()); }
+	traffic(const train_spelling& s) { idx = all.size(); all.push_back(this); trains.push_back(s); }
+	
+	traffic& operator+=(const train_spelling& rhs) {
+		if(!res.empty()) { fprintf(stderr,"ERROR: car %s has train added.\n", res.c_str()); }
+		trains.push_back(rhs);
+		return *this;
+	}
+	
+	void output_one(FILE * fi) { 
+		if(!res.empty())
+		{
+			fprintf(fi,"CAR_MODEL\t%s\n",res.c_str()); 
+		}
+		else
+		{
+			fprintf(fi,"TRAIN\n");
+			for(int t = 0; t < trains.size(); ++t)
+			{
+				fprintf(fi,"TRAIN_VARIANT\n");
+				for(int c = 0; c < trains[t].size(); ++c)
+					fprintf(fi,"TRAIN_CAR\t%6.3f %6.3f %s\n",	
+						trains[t][c].len[0],
+						trains[t][c].len[1],
+						trains[t][c].res.c_str());
+			}
+			fprintf(fi,"\n");
+		}
+	}
 	static void output(FILE * fi) { for(vector<traffic*>::iterator t = all.begin(); t != all.end(); ++t) (*t)->output_one(fi); }
 };
 
@@ -207,14 +265,24 @@ struct traffic_lane {
 	traffic *		car;
 };
 
+struct wire {
+	lod_range		lod;
+	float			lat;
+	float			y;
+	float			droop;
+};
+
 class	road {
 public:
 
 	inline float max_x(void) const { 
-		if(segments.empty()) return 0.0f;
-		float m = segments[0].max_x();
-		for(int n = 1; n < segments.size(); ++n)
+		float m = 0;
+		for(int n = 0; n < segments.size(); ++n)
 			m = max(segments[n].max_x(),m);
+		for(int n = 0; n < objects.size(); ++n)
+			m = max(max(objects[n].lat[0],objects[n].lat[1]),m);
+		for(int n = 0; n < wires.size(); ++n)
+			m = max(wires[n].lat,m);
 		return m;
 	}
 
@@ -242,9 +310,11 @@ public:
 		n = lanes.size();
 		lanes.insert(lanes.end(),rhs.lanes.begin(),rhs.lanes.end());
 		for(int i = n; i < lanes.size(); ++i)
-		{
 			lanes[i].lat += o;
-		}
+		n = wires.size();
+		wires.insert(wires.end(),rhs.wires.begin(),rhs.wires.end());
+		for(int i = n; i < wires.size(); ++i)
+			wires[i].lat += o;
 		
 		return *this;
 	}
@@ -256,6 +326,7 @@ public:
 		markers.insert(markers.end(),rhs.markers.begin(),rhs.markers.end());
 		objects.insert(objects.end(),rhs.objects.begin(),rhs.objects.end());
 		lanes.insert(lanes.end(),rhs.lanes.begin(),rhs.lanes.end());
+		wires.insert(wires.end(),rhs.wires.begin(),rhs.wires.end());
 		return *this;
 	}
 	
@@ -275,6 +346,7 @@ public:
 	vector<obj_placement>		objects;
 	vector<road_center_marker>	markers;
 	vector<traffic_lane>		lanes;
+	vector<wire>				wires;
 	
 	void	set_center_at(float x)
 	{
@@ -428,6 +500,17 @@ road make_obj(const char * name, grading_type grad, float lat1, float lat2, floa
 	return ret;
 }
 
+road make_wire(lod_range r, float lat, float y, float d)
+{
+	wire w;
+	w.lod = r;
+	w.lat = lat;
+	w.y = y;
+	w.droop = d;
+	road ret;
+	ret.wires.push_back(w);
+	return ret;
+}
 
 road	graded_from_draped(shader& shad, const road& r)
 {
@@ -487,7 +570,7 @@ public:
 	
 	void output_one(FILE * fi) {
 		fprintf(fi,"# %s\n",name.c_str());
-		fprintf(fi,"ROAD_TYPE\t%d %.3f %.1f %.1f %.1f %.1f\n", id, width, length(), rgb[0],rgb[1],rgb[2]);
+		fprintf(fi,"ROAD_TYPE\t%d %.3f %.1f 0 %.1f %.1f %.1f\n", id, width, length(), rgb[0],rgb[1],rgb[2]);
 		if(show_level) fprintf(fi,"SHOW_LEVEL\t%d\n", show_level);
 		
 		for(vector<road_center_marker>::iterator m = guts.markers.begin(); m != guts.markers.end(); ++m)
@@ -500,6 +583,12 @@ public:
 		for(vector<road_segment>::iterator s = guts.segments.begin(); s != guts.segments.end(); ++s)
 		{
 			set_shader_width(fi,s->shad);
+			
+			if(s->grad == draped && s->shad->os == 0)
+				fprintf(stderr,"ERROR: draped road segment uses non-offset shader.\n");
+			if(s->grad == graded && s->shad->os != 0)
+				fprintf(stderr,"ERROR: graded road segment uses offset shader.\n");
+			
 			if(s->grad == draped)
 				fprintf(fi,"SEGMENT_DRAPED\t% 2d\t% 3d % 5d\t%4.2f\t% 6.2f % 7.1f\t% 6.2f % 7.1f %s\n",
 					s->shad->idx, (int) s->lod.near, (int) s->lod.far, length() / s->length.length, s->x[0],s->s[0],s->x[1], s->s[1], surf_name(s->surf));
@@ -540,6 +629,10 @@ public:
 				fprintf(fi,"CAR_GRADED\t%d %5.2f %3.0f %4.2f %d\n",
 					l->reverse, l->lat, l->speed, l->density, l->car->idx);				
 		}
+		
+		for(vector<wire>::iterator w = guts.wires.begin(); w != guts.wires.end(); ++w)
+			fprintf(fi,"WIRE\t% 3d % 5d\t%5.3f %5.2f %4.2f\n",
+				(int) w->lod.near, (int) w->lod.far, w->lat / width, w->y, w->droop);
 		
 		fprintf(fi,"\n");
 	}
