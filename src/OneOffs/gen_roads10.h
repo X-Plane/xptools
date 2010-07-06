@@ -3,6 +3,7 @@
 #include <string>
 #include <math.h>
 #include <stdio.h>
+#include <map>
 
 using namespace::std;
 
@@ -72,7 +73,7 @@ public:
 	int idx;
 	int tile_x, tile_y;
 	float bias_x, bias_y;
-	int wave_x, wave_y;
+	float wave_x, wave_y;
 	int width;
 	
 	void output_one(FILE * fi)
@@ -534,6 +535,143 @@ road	graded_from_draped(shader& shad, const road& r)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
+class	road_map {
+public:
+	typedef multimap<int,road>		base;
+	typedef base::iterator			iterator;	
+	typedef pair<iterator,iterator>	range;
+	
+	base							b;
+	
+	struct	range_ref {
+		base *		self;
+		int			key;
+		
+		range_ref(base * b, int k) : self(b), key(k) { }
+		range_ref(const range_ref& rhs) : self(rhs.self), key(rhs.key) { }
+
+		range_ref& operator=(const range_ref& rhs) {
+			self = rhs.self; key = rhs.key;
+			return *this;
+		}
+
+		range_ref& operator=(const road& rhs) {
+			self->insert(base::value_type(key,rhs));
+			return *this;
+		}
+		
+		size_t size() { pair<iterator, iterator> p = self->equal_range(key); return distance(p.first,p.second); }
+		road& operator[](int n) { pair<iterator, iterator> p = self->equal_range(key); advance(p.first, n); return p.first->second; }
+		
+		void add_obj_left(const char * name, grading_type grad, float lat1, float lat2, float psi1, float psi2, float off1, float off2, float spa1, float spa2, float frq1, float frq2, perlin_params * noise)
+		{
+			pair<iterator,iterator> r = self->equal_range(key);
+			for(iterator i = r.first; i != r.second; ++i)
+				i->second.add_obj_left(name,grad,lat1,lat2,psi1,psi2,off1,off2,spa1,spa2,frq1,frq2,noise);
+		}
+		void add_obj_right(const char * name, grading_type grad, float lat1, float lat2, float psi1, float psi2, float off1, float off2, float spa1, float spa2, float frq1, float frq2, perlin_params * noise)
+		{
+			pair<iterator,iterator> r = self->equal_range(key);
+			for(iterator i = r.first; i != r.second; ++i)
+				i->second.add_obj_right(name,grad,lat1,lat2,psi1,psi2,off1,off2,spa1,spa2,frq1,frq2,noise);
+		}		
+		void add_obj_left(const char ** name, grading_type grad, float lat1, float lat2, float psi1, float psi2, float off1, float off2, float spa1, float spa2, float frq1, float frq2, perlin_params * noise)
+		{
+			pair<iterator,iterator> r = self->equal_range(key);
+			for(iterator i = r.first; i != r.second; ++i)
+				i->second.add_obj_left(name,grad,lat1,lat2,psi1,psi2,off1,off2,spa1,spa2,frq1,frq2,noise);
+		}		
+		void add_obj_right(const char ** name, grading_type grad, float lat1, float lat2, float psi1, float psi2, float off1, float off2, float spa1, float spa2, float frq1, float frq2, perlin_params * noise)
+		{
+			pair<iterator,iterator> r = self->equal_range(key);
+			for(iterator i = r.first; i != r.second; ++i)
+				i->second.add_obj_right(name,grad,lat1,lat2,psi1,psi2,off1,off2,spa1,spa2,frq1,frq2,noise);
+		}		
+		void add_traffic(traffic * car, float pixel, float speed, float density, int rev=0)
+		{
+			pair<iterator,iterator> r = self->equal_range(key);
+			for(iterator i = r.first; i != r.second; ++i)
+				i->second.add_traffic(car,pixel,speed,density,rev);
+		}
+
+
+
+	};
+
+	range_ref operator[](int key)
+	{
+		return range_ref(&b,key);
+	}
+	
+	iterator begin() { return b.begin(); }
+	iterator end() { return b.end(); }
+	
+};	
+	
+vector<road_map::range_ref>		operator+(const road_map::range_ref& a, const road_map::range_ref& b)
+{
+	vector<road_map::range_ref> ret;
+	ret.push_back(a);
+	ret.push_back(b);
+	return ret;
+}
+
+vector<road_map::range_ref>		operator+(const vector<road_map::range_ref>& a, const road_map::range_ref& b)
+{
+	vector<road_map::range_ref> ret(a);
+	ret.push_back(b);
+	return ret;
+}
+
+road	optimize(vector<road_map::range_ref> r)
+{
+	vector<int> dims;
+	dims.resize(r.size(),0);
+	vector<road_map::range_ref>::iterator i;
+	int n;
+
+//		fprintf(stderr,"range has %d atom sets.\n", r.size());
+	
+	int t = 1;
+	for (n = 0, i = r.begin(); i != r.end(); ++i, ++n)
+	{
+		dims[n] = i->size();
+		if(dims[n])
+			t *= dims[n];
+//		fprintf(stderr," slot %d has %d combos.\n", n, i->size());
+	}
+//	fprintf(stderr,"There are %d combos total.\n", t);
+	
+	road	best;
+	int		best_segs = 1000;
+	for(int idx = 0; idx < t; ++idx)
+	{
+		road trial;
+		int remainder = idx;
+//		fprintf(stderr,"Speculating on index %d\n  ", idx);
+		
+		for (n = 0, i = r.begin(); i != r.end(); ++i, ++n)
+		if(dims[n])
+		{
+			int local = remainder % dims[n];
+//			fprintf(stderr,"%d,",local);
+			trial += (*i)[local];
+			remainder /= dims[n];
+		}
+		trial.optimize_segments();
+//		fprintf(stderr,"   ended up with %d segs.\n", trial.segments.size());
+		if(trial.segments.size() < best_segs)
+		{
+			best = trial;
+			best_segs = trial.segments.size();
+		}		
+	}
+	return best;
+}
+	
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+
 class	published_road {
 public:
 
@@ -778,3 +916,4 @@ void output(FILE * fi)
 	published_road::output(fi);
 	virtual_table::output(fi);
 }
+

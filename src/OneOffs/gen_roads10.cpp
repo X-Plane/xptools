@@ -93,7 +93,7 @@ int main(int argc, const char ** argv)
 	//
 	// In some cases, we are simply copying atoms inappropriately to have a complete set of information.
 
-	map<int, road>	road_cores_graded, road_cores_draped;	
+	road_map	road_cores_graded, road_cores_draped;	
 
 	// This declares a simple asphalt standard LOD deck based on the normal shader.  Numbers are a pair of x,y,s coordinates.
 	road	primary_left = make_deck_draped(base_offset, lod_standard, len_normal, 0,334,8.5625,402.5,asphalt);
@@ -101,7 +101,7 @@ int main(int argc, const char ** argv)
 	road	residential	= make_deck_draped(base_offset, lod_standard, len_normal, 0.0,589,9.0,661,asphalt);
 	
 	road_cores_draped[15] = make_deck_draped(base_offset, lod_standard, len_normal, 0,1,16.25,131,asphalt);	// 6 lane city
-	road_cores_draped[16] = road_cores_draped[15];	// Clone 6 lane city for rural
+	road_cores_draped[16] = make_deck_draped(base_offset, lod_standard, len_normal, 0,1,16.25,131,asphalt);// Clone 6 lane city for rural
 	
 	road_cores_draped[17] = make_deck_draped(base_offset, lod_standard, len_normal, 0,242, 7,298,asphalt);
 
@@ -161,10 +161,10 @@ int main(int argc, const char ** argv)
 	// Here we build our attachment atoms.  IN most cases, atoms are "filed" by a 2 digit code, the first
 	// being the attachment type and the seocnd being the draping suffix.
 
-	map<int, road>	left_embankment_rural;
-	map<int, road>	right_embankment_rural;
-	map<int, road>	left_embankment_city;
-	map<int, road>	right_embankment_city;
+	road_map	left_embankment_rural;
+	road_map	right_embankment_rural;
+	road_map	left_embankment_city;
+	road_map	right_embankment_city;
 
 	// Using | to "or" together roads simply merges all elements in place.  These are embankments, stored in the format
 	// climate * 10 + grading.  So this is cilmate = 0, grading = 2, which is the 30 degree grading of a wet climate.
@@ -176,8 +176,8 @@ int main(int argc, const char ** argv)
 	right_embankment_rural[ 2] =make_deck_graded(base_normal, lod_standard, len_normal, 0,0,840,			1.25,0,830,grass) | 
 								make_deck_graded(base_normal, lod_standard, len_normal, 1.25,0,830,			7.25,-3,776,grass);
 
-	map<int, road>	left_sidewalks;
-	map<int, road>	right_sidewalks;
+	road_map	left_sidewalks;
+	road_map	right_sidewalks;
 
 	// Sidewalks, stored in sidewalk code * 10 + grading.  So these are the draped sidewalks, normal and wide.
 	left_sidewalks [11] = make_deck_draped(base_offset,lod_standard,len_normal, 0,569,2.5,589,none);
@@ -186,8 +186,8 @@ int main(int argc, const char ** argv)
 	right_sidewalks[21] = make_deck_draped(base_offset,lod_standard,len_normal, 0,516,4.5,551,none);
 
 
-	map<int, road>	left_rail;
-	map<int, road>	right_rail;
+	road_map	left_rail;
+	road_map	right_rail;
 	left_rail [12] = make_deck_graded(base_normal, lod_standard, len_normal, 0  ,  -12, 1629, 0  , 1.25, 1718, none) |
 					 make_deck_graded(base_normal, lod_standard, len_normal, 0  , 1.25, 1718, 0.5, 1.25, 1721, none) |
 					 make_deck_graded(base_normal, lod_standard, len_normal, 0.5, 1.25, 1721, 0.5, 0   , 1731, none);
@@ -223,7 +223,10 @@ int main(int argc, const char ** argv)
 					*core * 1000 + climate * 100 + grading,
 					string(*name) + " city "+ climate_names[climate] + city_grading_names[grading],
 					1, 0.6, 0.6, 0.6,
-					left_embankment_city[climate * 10 + grading] + (grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + right_embankment_city[climate * 10 + grading]);
+					optimize(
+						left_embankment_city[climate * 10 + grading] + 
+						(grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + 
+						right_embankment_city[climate * 10 + grading]));
 
 			if(need_drape)
 				make_draped(string(*name) + " city "+ climate_names[climate], *core * 10 + climate, 0.1, 0.2, schedule_city);
@@ -237,7 +240,10 @@ int main(int argc, const char ** argv)
 					*core * 1000 + 3000 + climate * 100 + grading,
 					string(*name) + " rural " + climate_names[climate] + rural_grading_names[grading],
 					1, 0.6, 0.6, 0.6,
-					left_embankment_rural[climate * 10 + grading] + (grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + right_embankment_rural[climate * 10 + grading]);
+					optimize(
+						left_embankment_rural[climate * 10 + grading] + 
+						(grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + 
+						right_embankment_rural[climate * 10 + grading]));
 
 			if(need_drape)
 				make_draped(string(*name) + " rural " + climate_names[climate], *core * 10 + 30 + climate, 0.1, 0.2, schedule_rural);
@@ -251,7 +257,7 @@ int main(int argc, const char ** argv)
 	float	schedule_railway[] = { 0.0, -12.0, 0.0 };					// drape, 90 bridge
 
 
-	publish_road(21102, "rail", 1, 0.5, 0.2, 0.2, left_rail[12] + road_cores_graded[20] + right_rail[12]);
+	publish_road(21102, "rail", 1, 0.5, 0.2, 0.2, optimize(left_rail[12] + road_cores_graded[20] + right_rail[12]));
 	make_graded("rail", 211, 0.05, schedule_railway);
 
 	// This crosses our 4 city cores with our sidewalk combinations...
@@ -273,9 +279,10 @@ int main(int argc, const char ** argv)
 					*core * 1000 + climate * 1000 + sidewalkL * 100 + sidewalkR * 300 + grading,
 					string(*name) + climate_names[climate] + sidewalk_names[sidewalkL] + "/" + sidewalk_names[sidewalkR] + grading_names[grading],
 					2, 0.5, 0.5, 0.5, 
-					left_sidewalks[sidewalkL*10+grading] + 
-					(grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + 
-					right_sidewalks[sidewalkR*10+grading]);
+					optimize(
+						left_sidewalks[sidewalkL*10+grading] + 
+						(grading == 1 ? road_cores_draped[*core] : road_cores_graded[*core]) + 
+						right_sidewalks[sidewalkR*10+grading]));
 			make_draped(string(*name) + climate_names[climate] + sidewalk_names[sidewalkL] + "/" + sidewalk_names[sidewalkR], *core * 10 + climate * 10 + sidewalkL + sidewalkR * 3, 0.1, 1.0, schedule_city);
 		}
 	}
