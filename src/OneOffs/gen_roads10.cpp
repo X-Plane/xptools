@@ -147,7 +147,7 @@ int main(int argc, const char ** argv)
 	perlin_params stringie = { 500, 50, 0, 0, 0.9, 0.1, 0, 0 };	
 	
 	// This defines a set of obj alternatives.  NULL at end is necessary!!
-	const char * cars[] = { "local_pylon.obj", "cart.obj", "cafe.obj", NULL };
+	const char * cars[] = { "local_pylon.obj", "ramp_pylon.obj", NULL };
 	
 	// Example 1: add a set of obj choices 1 meter in from the left side of our primary core a random object with perlin frequency.  This obj exists 30% of the time.  (See last two params)
 	road_cores_draped[1].add_obj_left(cars,graded, 1, 1, 0, 0, 10, 12, 15, 15, 0, 0.3, &stringie);
@@ -295,11 +295,11 @@ int main(int argc, const char ** argv)
 	power_lines.add_obj_left("powerline_tower.obj", graded, 12.5, 12.5, 0, 0, 0, 0, 0, 0, 0, 0, NULL);
 	power_lines.set_center_at_center();
 	publish_road(
-					220,
+					22001,
 					"power lines",
 					1, 1,1,0,
 					power_lines);
-				
+	make_draped_only("power lines", 220, 0.1);
 
 
 	// Finally, we call this to cause the program to output all of this stuff to a single road.net file.
