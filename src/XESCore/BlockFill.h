@@ -29,11 +29,11 @@
 
 struct CoordTranslator2;
 
-void	init_block(
+bool	init_block(
 					CDT&					mesh,
 					Pmwx::Face_handle		face,
 					Block_2&				out_block,
-					CoordTranslator2&		translator);
+					CoordTranslator2&		translator);		// returns true if block is not insanely small!
 
 void	apply_fill_rules(
 					int						zoning,

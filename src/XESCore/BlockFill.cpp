@@ -487,7 +487,7 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 }
 
 
-void	init_block(
+bool	init_block(
 					CDT&					mesh,
 					Pmwx::Face_handle		face,
 					Block_2&				out_block,
@@ -510,6 +510,8 @@ void	init_block(
 	} while(++circ != stop);
 
 	CreateTranslatorForBounds(bounds, translator);
+	if(translator.mDstMax.x() < 1.0 || translator.mDstMax.y() < 1.0)
+		return false;
 
 	int num_he = count_circulator(face->outer_ccb());
 	for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
@@ -543,6 +545,7 @@ void	init_block(
 
 	create_block(out_block,parts, curves, idx_oob);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
 	clean_block(out_block);
+	return true;
 }					
 
 static double get_ccb_area(Block_2::Ccb_halfedge_circulator first)
@@ -806,9 +809,9 @@ void process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
 	CoordTranslator2	trans;
 	Block_2 block;
 	
-	init_block(mesh, f, block, trans);
-	
-	apply_fill_rules(z, block, trans, forest_dem);
-	
-	extract_features(block, f, trans);
+	if(init_block(mesh, f, block, trans))
+	{
+		apply_fill_rules(z, block, trans, forest_dem);	
+		extract_features(block, f, trans);
+	}
 }
