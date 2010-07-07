@@ -927,7 +927,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
 		DebugAssert(fi->info().terrain != -1);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
+		// special case: maybe the hard variant is never used?  In that case, make sure to accum it here or we'll never export that land use.
+		if(IsAliased(fi->info().terrain))
+			landuses.insert(map<int, int, SortByLULayer>::value_type(IsAliased(fi->info().terrain),0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
+
 
 		if(IsCustomOverWaterHard(fi->info().terrain))
 		{
@@ -1733,7 +1737,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		CleanupNetworkTopology(junctions, chains);
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
-		cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer2);
+		cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
 	}
 
 	/****************************************************************
