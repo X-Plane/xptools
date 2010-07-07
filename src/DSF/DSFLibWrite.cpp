@@ -1076,6 +1076,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			if (chain->subType != curSubDef)
 			{
 				curSubDef = chain->subType;
+				if(curSubDef > 255 || curSubDef < 0)
+					Assert(!"Error: overflow on road subtype.\n");
 				WriteUInt8(fi, dsf_Cmd_SetRoadSubtype8);
 				WriteUInt8(fi, (unsigned char) curSubDef);
 			}
