@@ -120,22 +120,22 @@ int main(int argc, const char ** argv)
 	for(map<int,road>::iterator r = road_cores_draped.begin(); r != road_cores_draped.end(); ++r)
 	{
 		// Cars: ptr to car, pixel ofset, velocity in meters, density, and then optionally: 0 for same dir, 1 for reverse direction
-		r->second.add_traffic(&car  , 34, 35, 0.06);
-		r->second.add_traffic(&car  , 62, 30, 0.06);
-		r->second.add_traffic(&truck, 90, 25, 0.06);
+		r->second.add_traffic(&car  , &base_offset, 34, 35, 0.06);
+		r->second.add_traffic(&car  , &base_offset, 62, 30, 0.06);
+		r->second.add_traffic(&truck, &base_offset, 90, 25, 0.06);
 
-		r->second.add_traffic(&car  , 170, 30, 0.06);
-		r->second.add_traffic(&truck, 199, 25, 0.06);
+		r->second.add_traffic(&car  , &base_offset, 170, 30, 0.06);
+		r->second.add_traffic(&truck, &base_offset, 199, 25, 0.06);
 
-		r->second.add_traffic(&truck, 265, 25, 0.06);
+		r->second.add_traffic(&truck, &base_offset, 265, 25, 0.06);
 
 
-		r->second.add_traffic(&truck, 363, 25, 0.06, 1);
-		r->second.add_traffic(&car  , 386, 20, 0.06, 1);
-		r->second.add_traffic(&car  , 461, 20, 0.06, 0);
-		r->second.add_traffic(&truck, 486, 25, 0.06, 0);
+		r->second.add_traffic(&truck, &base_offset, 363, 25, 0.06, 1);
+		r->second.add_traffic(&car  , &base_offset, 386, 20, 0.06, 1);
+		r->second.add_traffic(&car  , &base_offset, 461, 20, 0.06, 0);
+		r->second.add_traffic(&truck, &base_offset, 486, 25, 0.06, 0);
 
-		r->second.add_traffic(&train_freight, 1473, 25, 0.01);
+		r->second.add_traffic(&train_freight, &base_offset, 1473, 25, 0.01);
 
 		r->second.set_center_at_center();
 		road_cores_graded[r->first] = graded_from_draped(base_normal, r->second);

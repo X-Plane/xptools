@@ -430,9 +430,10 @@ public:
 		add_obj_left(name, grad, lat1 + w, lat2 + w, psi1, psi2, off1, off2, spa1, spa2, frq1, frq2, noise);
 	}	
 
-	void add_traffic(traffic * car, float pixel, float speed, float density, int rev=0)
+	void add_traffic(traffic * car, shader * shad, float pixel, float speed, float density, int rev=0)
 	{
 		for(int s = 0; s < segments.size(); ++s)
+		if(segments[s].shad == shad)
 		if ((segments[s].s[0] < pixel && pixel < segments[s].s[1]) || 
 			(segments[s].s[0] > pixel && pixel > segments[s].s[1]))
 		{
@@ -587,11 +588,11 @@ public:
 			for(iterator i = r.first; i != r.second; ++i)
 				i->second.add_obj_right(name,grad,lat1,lat2,psi1,psi2,off1,off2,spa1,spa2,frq1,frq2,noise);
 		}		
-		void add_traffic(traffic * car, float pixel, float speed, float density, int rev=0)
+		void add_traffic(traffic * car, shader * shad, float pixel, float speed, float density, int rev=0)
 		{
 			pair<iterator,iterator> r = self->equal_range(key);
 			for(iterator i = r.first; i != r.second; ++i)
-				i->second.add_traffic(car,pixel,speed,density,rev);
+				i->second.add_traffic(car,shad,pixel,speed,density,rev);
 		}
 
 
