@@ -229,7 +229,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 
 
 	// -exportDSF
-	BuildDSF(out_dsf, out_dsf, sDem[dem_Elevation],sDem[dem_Elevation],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);
+	BuildDSF(out_dsf, NULL, sDem[dem_Elevation],sDem[dem_Elevation],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);
 }
 
 void MT_Cleanup(void)
