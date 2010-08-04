@@ -92,7 +92,7 @@ struct	road_coords_checker {
 		if(fabs(c[0] - last[0]) < epsi &&
 		   fabs(c[1] - last[1]) < epsi)
 		{
-			printf("ERROR: double point: %lf, %lf to %lf, %lf (0x%08x)\n", last[0],last[1], c[0], c[1], (int) ptr);
+			printf("ERROR: double point: %lf, %lf to %lf, %lf (%p)\n", last[0],last[1], c[0], c[1], ptr);
 			exit(1);
 		}
 		last[0] = c[0]; last[1] = c[1];

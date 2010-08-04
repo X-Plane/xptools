@@ -604,12 +604,12 @@ void	MergeNearJunctions(Net_JunctionInfoSet& juncs, Net_ChainInfoSet& chains, do
 		if(within_box((*c)->start_junction->location, (*c)->end_junction->location, dist))
 		{
 			bad_a = (*c)->start_junction; bad_b = (*c)->end_junction;
-			printf("0x%08x: %f,%f to %f, %f\n", (*c), 
+			printf("%p: %f,%f to %f, %f\n", (*c), 
 						(*c)->start_junction->location.x(),
 						(*c)->start_junction->location.y(),
 						(*c)->end_junction->location.x(),
 						(*c)->end_junction->location.y());
-			printf("ERROR: junctions too close together (0x%08x, 0x%08x).\n", 
+			printf("ERROR: junctions too close together (%p, %p).\n", 
 						(*c)->start_junction,(*c)->end_junction);
 		}
 	}
