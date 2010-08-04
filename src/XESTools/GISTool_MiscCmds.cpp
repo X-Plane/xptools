@@ -193,6 +193,33 @@ int DoShowCoverage(const vector<const char *>& args)
 	return 0;
 }
 
+int DoDiffCoverage(const vector<const char *>& args)
+{
+	FILE * fi1 = fopen(args[0], "rb");
+	if (fi1 == NULL)
+	{
+		fprintf(stderr, "Could not open %s\n", args[0]);
+		return 1;
+	}
+	FILE * fi2 = fopen(args[1], "rb");
+	if (fi2 == NULL)
+	{
+		fprintf(stderr, "Could not open %s\n", args[1]);
+		fclose(fi1);
+		return 1;
+	}
+	for (int y = gMapSouth; y < gMapNorth; ++y)
+	for (int x = gMapWest; x < gMapEast; ++x)
+	{
+		char c1 = fgetc(fi1);
+		char c2 = fgetc(fi2);
+		if (c1 != 0 && c2 == 0) printf("%+03d%+04d\n", y, x);
+	}
+	fclose(fi1);
+	fclose(fi2);
+	return 0;
+}
+
 int DoMakeCoverage(const vector<const char *>& args)
 {
 	char buf[1024];
@@ -459,7 +486,8 @@ static int DoMeshErrStats(const vector<const char *>& s)
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
-{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
+{ "-diffcoverage", 2, 2, DoDiffCoverage,			"Difference two coverages.","Given two raw 360x180s, shows a list of all tiles in the first but NOT the second one.\n" },
+{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master md5|- - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
 { "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "This produces a coverage from XES files - 0-100 = amount of water, 255=missing,254=invalid map.\n" },
 { "-lucoverage", 3, 3, DoMakeLUCoverage,			"dir LU output.", "This makes a coverage from geotif with a certain pixel value being treated as water.  Water=0-100,255=file missing or broken.\n" },
 { "-luinit", 1, 1, InitFromLU,						"init from landuse (LU file)." ,"Given a water coverage, this inits our tile to a single square that is all wet or dry, base on the coverage. " },

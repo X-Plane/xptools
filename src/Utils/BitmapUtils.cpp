@@ -1318,9 +1318,9 @@ bail:
 
 #endif
 
-static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst)
+static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst, int channels)
 {
-	int rb = x * 4;
+	int rb = x * channels;
 	unsigned char *	s1 = src;
 	unsigned char *	s2 = src + rb;
 	unsigned char * d1 = dst;
@@ -1335,12 +1335,12 @@ static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * 
 		while(ctr--)
 		{
 			t1=t2=t3=t4=0;
-			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
-			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
-			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
-			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
-			t1 >>= 2;				t2 >>= 2;				t3 >>= 2;				t4 >>= 2;
-			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
+			t1 += *s1++;	if(channels>1)t2 += *s1++;		if(channels>2)t3 += *s1++;		if(channels>3)t4 += *s1++;
+			t1 += *s1++;	if(channels>1)t2 += *s1++;		if(channels>2)t3 += *s1++;		if(channels>3)t4 += *s1++;
+			t1 += *s2++;	if(channels>1)t2 += *s2++;		if(channels>2)t3 += *s2++;		if(channels>3)t4 += *s2++;
+			t1 += *s2++;	if(channels>1)t2 += *s2++;		if(channels>2)t3 += *s2++;		if(channels>3)t4 += *s2++;
+			t1 >>= 2;		if(channels>1)t2 >>= 2;			if(channels>2)t3 >>= 2;			if(channels>3)t4 >>= 2;
+			*d1++ = t1;		if(channels>1)*d1++ = t2;		if(channels>2)*d1++ = t3;		if(channels>3)*d1++ = t4;
 
 		}
 		s1 += rb;
@@ -1348,7 +1348,7 @@ static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * 
 	}
 }
 
-static void	in_place_scaleX(int x, int y, unsigned char * src, unsigned char * dst)
+static void	in_place_scaleX(int x, int y, unsigned char * src, unsigned char * dst, int channels)
 {
 	unsigned char *	s1 = src;
 	unsigned char * d1 = dst;
@@ -1360,17 +1360,17 @@ static void	in_place_scaleX(int x, int y, unsigned char * src, unsigned char * d
 	while(ctr--)
 	{
 		t1=t2=t3=t4=0;
-		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
-		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
-		t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
-		*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
+		t1 += *s1++;		if(channels>1)t2 += *s1++;		if(channels>2)t3 += *s1++;		if(channels>3)t4 += *s1++;
+		t1 += *s1++;		if(channels>1)t2 += *s1++;		if(channels>2)t3 += *s1++;		if(channels>3)t4 += *s1++;
+		t1 >>= 1;			if(channels>1)t2 >>= 1;			if(channels>2)t3 >>= 1;			if(channels>3)t4 >>= 1;
+		*d1++ = t1;			if(channels>1)*d1++ = t2;		if(channels>2)*d1++ = t3;		if(channels>3)*d1++ = t4;
 	}
 }
 
 
-static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * dst)
+static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * dst, int channels)
 {
-	int rb = x * 4;
+	int rb = x * channels;
 	unsigned char *	s1 = src;
 	unsigned char *	s2 = src + rb;
 	unsigned char * d1 = dst;
@@ -1385,10 +1385,10 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 		while(ctr--)
 		{
 			t1=t2=t3=t4=0;
-			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
-			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
-			t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
-			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
+			t1 += *s1++;		if(channels>1)t2 += *s1++;		if(channels>2)t3 += *s1++;		if(channels>3)t4 += *s1++;
+			t1 += *s2++;		if(channels>1)t2 += *s2++;		if(channels>2)t3 += *s2++;		if(channels>3)t4 += *s2++;
+			t1 >>= 1;			if(channels>1)t2 >>= 1;			if(channels>2)t3 >>= 1;			if(channels>3)t4 >>= 1;
+			*d1++ = t1;			if(channels>1)*d1++ = t2;		if(channels>2)*d1++ = t3;		if(channels>3)*d1++ = t4;
 
 		}
 		s1 += rb;
@@ -1673,14 +1673,14 @@ void	FlipImageY(struct ImageInfo&	io_image)
 
 int MakeMipmapStack(struct ImageInfo * ioImage)
 {
-	if(ioImage->channels == 3)
-		ConvertBitmapToAlpha(ioImage, false);
+//	if(ioImage->channels == 3)
+//		ConvertBitmapToAlpha(ioImage, false);
 	int storage = 0;
 	int mips = 0;
 	int x = ioImage->width;
 	int y = ioImage->height;
 	do {
-		storage += (x * y * 4);
+		storage += (x * y * ioImage->channels);
 		++mips;
 		if(x == 1 && y == 1) break;
 		if (x > 1) x >>= 1;
@@ -1693,7 +1693,7 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 	ni.width = ioImage->width;
 	ni.height = ioImage->height;
 	ni.pad = 0;
-	ni.channels = 4;
+	ni.channels = ioImage->channels;
 	ni.data = base;
 
 	CopyBitmapSectionDirect(*ioImage, ni, 0, 0, 0, 0, ni.width, ni.height);
@@ -1701,12 +1701,12 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 	while(ni.width > 1 || ni.height > 1)
 	{
 		unsigned char * old_ptr = ni.data;
-		ni.data += (4 * ni.width * ni.height);
+		ni.data += (ni.channels * ni.width * ni.height);
 
 		if(ni.width > 1) {
-			if (ni.height > 1)		in_place_scaleXY(ni.width,ni.height,old_ptr,ni.data);
-			else					in_place_scaleX (ni.width,ni.height,old_ptr,ni.data);
-		} else if (ni.height > 1)	in_place_scaleY (ni.width,ni.height,old_ptr,ni.data);
+			if (ni.height > 1)		in_place_scaleXY(ni.width,ni.height,old_ptr,ni.data,ni.channels);
+			else					in_place_scaleX (ni.width,ni.height,old_ptr,ni.data,ni.channels);
+		} else if (ni.height > 1)	in_place_scaleY (ni.width,ni.height,old_ptr,ni.data,ni.channels);
 
 		if(ni.width > 1) ni.width >>= 1;
 		if(ni.height > 1) ni.height >>= 1;
@@ -1720,14 +1720,14 @@ int MakeMipmapStack(struct ImageInfo * ioImage)
 
 int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 {
-	if(ioImage->channels == 3)
-		ConvertBitmapToAlpha(ioImage, false);
+//	if(ioImage->channels == 3)
+//		ConvertBitmapToAlpha(ioImage, false);
 	int storage = 0;
 	int mips = 0;
 	int x = ioImage->width;
 	int y = ioImage->height;
 	do {
-		storage += (x * y * 4);
+		storage += (x * y *ioImage->channels);
 		++mips;
 		if(x == 1 && y == 1) break;
 		if (x > 1) x >>= 1;
@@ -1740,7 +1740,7 @@ int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 	ni.width = ioImage->width / 2;
 	ni.height = ioImage->height;
 	ni.pad = 0;
-	ni.channels = 4;
+	ni.channels = ioImage->channels;
 	ni.data = base;
 
 	int xo = 0;
@@ -1767,7 +1767,7 @@ int AdvanceMipmapStack(struct ImageInfo * ioImage)
 {
 	if(ioImage->width == 1 && ioImage->height == 1) return 0;
 
-	ioImage->data += (4 * ioImage->width * ioImage->height);
+	ioImage->data += (ioImage->channels * ioImage->width * ioImage->height);
 	if(ioImage->width > 1) ioImage->width >>= 1;
 	if(ioImage->height > 1) ioImage->height >>= 1;
 	return 1;

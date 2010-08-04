@@ -676,18 +676,8 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 			{
 
 				switch(seg->mFeatType) {
-				case road_PrimaryLimUnsep:
-				case road_PrimaryLimUnsepRail:
-				case road_PrimaryLimSep:
-				case road_PrimaryLimSepRail:
-				case road_PrimaryLimOneway:
-				case road_PrimaryLimOnewayRail:
-				case road_PrimaryUnsep:
-				case road_PrimaryUnsepRail:
-				case road_PrimarySep:
-				case road_PrimarySepRail:
-				case train_Generic:
-				case train_Spur:
+				case road_MotorwayOneway:
+				case train_RailwayOneway:
 					ioTransport(tsx, tsy) = max(ioTransport(tsx, tsy), 0.5f);
 					ioTransport(tdx, tdy) = max(ioTransport(tdx, tdy), 0.5f);
 					break;

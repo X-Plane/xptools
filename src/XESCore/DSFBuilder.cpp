@@ -79,6 +79,26 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		NO_BORDERS 0
 #define 	TEST_FORESTS 0
 
+
+struct	road_coords_checker {
+	double last[2];
+	void * ptr;
+	road_coords_checker(void * p, double c[2]) {ptr = p;  last[0] = c[0]; last[1] = c[1]; }
+	
+	#define epsi 0.00001
+	
+	void check(double c[2]) { 
+	
+		if(fabs(c[0] - last[0]) < epsi &&
+		   fabs(c[1] - last[1]) < epsi)
+		{
+			printf("ERROR: double point: %lf, %lf to %lf, %lf (0x%08x)\n", last[0],last[1], c[0], c[1], (int) ptr);
+			exit(1);
+		}
+		last[0] = c[0]; last[1] = c[1];
+	}
+};
+
 // We have to transform generic/specific int pair land uses into one numbering system and back!
 
 // Edge-wrapper...turns out CDT::Edge is so deeply templated that stuffing it in a map crashes CW8.
@@ -778,7 +798,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		Net_ChainInfoSet				chains;
 		Net_JunctionInfoSet::iterator 	ji;
 		Net_ChainInfoSet::iterator 		ci;
-		vector<Point3>::iterator		shapePoint;
+		vector<Point2>::iterator		shapePoint;
 
 		map<int, int, SortByLULayer>landuses;			// This is a map from DSF to layer, used to start a patch and generally get organized.  Sorting is specialized to be by LU layering from config file.
 		map<int, int>				landuses_reversed;	// This is a map from DSF layer to land-use, used to write out DSF layers in order.
@@ -1629,29 +1649,40 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			TIMER(BuildNetworkTopology)
 			BuildNetworkTopology(inVectorMap, inHiresMesh, junctions, chains);
 		}
+
 		{
-			TIMER(DrapeRoads)
-			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;
+			TIMER(RemoveSmall)
+			MergeNearJunctions(junctions, chains, 0.00002);
+		}
+
+
+//		{
+//			TIMER(DrapeRoads)
+//			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;
 //			DrapeRoads(junctions, chains, inHiresMesh, false);
 //			DrapeRoads(junctions, chains, inHiresMesh, true);
-		}
-		{
-			TIMER(PromoteShapePoints)
-			PromoteShapePoints(junctions, chains);
-		}
-		{
-			TIMER(VerticalPartitionRoads)
+//		}
+
+//		{
+//			TIMER(PromoteShapePoints)
+//			PromoteShapePoints(junctions, chains);
+//		}
+
+//		{
+//			TIMER(VerticalPartitionRoads)
 //			VerticalPartitionRoads(junctions, chains);
-			VerticalPartitionOnlyPower(junctions, chains);
-		}
-		{
-			TIMER(VerticalBuildBridges)
-			VerticalBuildBridges(junctions, chains);
-		}
-		{
-			TIMER(InterpolateRoadHeights)
+//			VerticalPartitionOnlyPower(junctions, chains);
+//		}
+
+//		{
+//			TIMER(VerticalBuildBridges)
+//			VerticalBuildBridges(junctions, chains);
+//		}
+
+//		{
+//			TIMER(InterpolateRoadHeights)
 //			InterpolateRoadHeights(junctions, chains);
-		}
+//		}
 		{
 			TIMER(AssignExportTypes)
 			AssignExportTypes(junctions, chains);
@@ -1660,14 +1691,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			TIMER(DeleteBlankChains)
 			DeleteBlankChains(junctions, chains);
 		}
+
 		{
 			TIMER(OptimizeNetwork)
 			OptimizeNetwork(junctions, chains, false);
 		}
-		{
-			TIMER(SpacePowerlines)
-			SpacePowerlines(junctions, chains, 1000.0, 10.0);
-		}
+		
+//		{
+//			TIMER(SpacePowerlines)
+//			SpacePowerlines(junctions, chains, 1000.0, 10.0);
+//		}
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;
 
 		cur_id = 1;
@@ -1678,12 +1711,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		for (ci = chains.begin(); ci != chains.end(); ++ci)
 		{
-			coords3[0] = (*ci)->start_junction->location.x;
-			coords3[1] = (*ci)->start_junction->location.y;
-			if((*ci)->draped)
+			coords3[0] = (*ci)->start_junction->location.x();
+			coords3[1] = (*ci)->start_junction->location.y();
+//			if((*ci)->draped)
 				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
-			else
-				coords3[2] = (*ci)->start_junction->location.z;
+//			else
+//				coords3[2] = (*ci)->start_junction->location.z;
 
 			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
@@ -1693,6 +1726,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			DebugAssert(junctions.count((*ci)->end_junction));
 			DebugAssert(((*ci)->end_junction->index) != 0xDEADBEEF);
 
+			road_coords_checker	checker((*ci), coords3);
+//			printf("Bgn: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->start_junction->index);
 			cbs.BeginSegment_f(
 							0,
 							(*ci)->export_type,
@@ -1704,28 +1739,34 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
 			{
-				coords3[0] = shapePoint->x;
-				coords3[1] = shapePoint->y;
-				if((*ci)->draped)
+				coords3[0] = shapePoint->x();
+				coords3[1] = shapePoint->y();
+//				if((*ci)->draped)
 					coords3[2] = 0.0f;
-				else
-					coords3[2] = shapePoint->z;
+//				else
+//					coords3[2] = shapePoint->z;
 				
 				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
+				checker.check(coords3);
+
+//				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
 				cbs.AddSegmentShapePoint_f(coords3, false, writer2);
 				++total_shapes;
 			}
 
-			coords3[0] = (*ci)->end_junction->location.x;
-			coords3[1] = (*ci)->end_junction->location.y;
-			if((*ci)->draped)
+			coords3[0] = (*ci)->end_junction->location.x();
+			coords3[1] = (*ci)->end_junction->location.y();
+//			if((*ci)->draped)
 				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
-			else 
-				coords3[2] = (*ci)->end_junction->location.z;
+//			else 
+//				coords3[2] = (*ci)->end_junction->location.z;
 			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
+
+			checker.check(coords3);
+//			printf("End: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->end_junction->index);
 
 			cbs.EndSegment_f(
 					(*ci)->end_junction->index,
@@ -1752,7 +1793,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		sprintf(prop_buf, "%d", (int) inElevation.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer1);
 		cbs.AcceptProperty_f("sim/planet", "earth", writer1);
 		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer1);
-		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer1);
+		cbs.AcceptProperty_f("laminar/internal_revision", "1", writer1);
 	}
 
 	if (writer2 && writer2 != writer1)
@@ -1763,7 +1804,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		sprintf(prop_buf, "%d", (int) inElevation.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer2);
 		cbs.AcceptProperty_f("sim/planet", "earth", writer2);
 		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer2);
-		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer2);
+		cbs.AcceptProperty_f("laminar/internal_revision", "1", writer2);
 		cbs.AcceptProperty_f("sim/overlay", "1", writer2);
 	}
 

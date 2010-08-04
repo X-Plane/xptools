@@ -31,6 +31,8 @@
 #include "GISTool_Globals.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
+//#include <CGAL/Snap_rounding_2.h>
+//#include <CGAL/Snap_rounding_traits_2.h>
 
 #include <CGAL/Sweep_line_2_algorithms.h>
 
@@ -38,6 +40,49 @@
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
 // team if they want one.
 #define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
+
+#if 0
+static void ISR(vector<Curve_2>& io_curves)
+{
+	vector<Curve_2>			results;
+	list<list<Point_2> >	poly_lines;
+
+	
+	CGAL::snap_rounding_2<CGAL::Snap_rounding_traits_2<FastKernel>, vector<Curve_2>::const_iterator,list<list<Point_2> > >
+		(io_curves.begin(), io_curves.end(), poly_lines, 0.00001, false, false, 1);
+
+	int ts = 0;
+	for(list<list<Point_2> >::iterator pli = poly_lines.begin(); pli != poly_lines.end(); ++pli)
+		ts += (pli->size() - 1);
+	results.reserve(ts);
+	
+	printf("ISR before: %d after %d\n", io_curves.size(), ts);
+	
+	int ic = 0;
+	for(list<list<Point_2> >::iterator pli = poly_lines.begin(); pli != poly_lines.end(); ++pli, ++ic)
+	if(pli->size() > 1)
+	{
+//		DebugAssert(pli->size() > 1);
+		list<Point_2>::iterator s, e;
+		s = e = pli->begin();
+		++e;
+		int this_time = 0;
+		while(e != pli->end())
+		{
+			DebugAssert(*s != *e);
+			if(*s != *e)
+			{
+				results.push_back(Curve_2(Segment_2(*s,*e),io_curves[ic].data()));
+				++this_time;
+			}
+			++s;
+			++e;
+		}
+//		DebugAssert(this_time > 0);
+	}
+	swap(io_curves,results);
+}
+#endif
 
 // Shape to feature
 
@@ -725,6 +770,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	if(db)	DBFClose(db);
 	
 //	printf("Inserting %d curves into %d.\n", curves.size(), targ->number_of_edges());
+//	ISR(curves);
 	CGAL::insert(*targ, curves.begin(), curves.end());
 
 	nuke_container(curves);

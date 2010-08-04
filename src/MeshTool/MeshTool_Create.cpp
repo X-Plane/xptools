@@ -189,7 +189,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 
 	WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
-	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],ConsoleProgressFunc);
+	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],sDem[dem_Temperature], sDem[dem_Rainfall],ConsoleProgressFunc);
 
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
@@ -641,7 +641,7 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 
 					CopyBitmapSection(&rgba,&smaller, 0,0,rgba.width,rgba.height, 0, 0, smaller.width,smaller.height);				
 					
-					MakeMipmapStackFromImage(&smaller);
+					MakeMipmapStack(&smaller);
 					WriteBitmapToDDS(smaller, 5, dname);
 					DestroyBitmap(&smaller);
 				}
@@ -728,7 +728,7 @@ void MT_QMID(const char * id, int back_with_water)
 						DestroyBitmap(&alpha);
 					}
 
-					MakeMipmapStackFromImage(&rgb);
+					MakeMipmapStack(&rgb);
 					sprintf(fname,"%s%s.dds",g_qmid_prefix.c_str(),id);
 					WriteBitmapToDDS(rgb, 5, fname);
 				}
@@ -753,7 +753,8 @@ void MT_QMID(const char * id, int back_with_water)
 		if(!CreateBitmapFromFile(fname,&lit))
 		{
 			sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
-			MakeMipmapStackFromImage(&lit);
+			ConvertBitmapToAlpha(&lit,false);
+			MakeMipmapStack(&lit);
 			WriteBitmapToDDS(lit,1,fname);
 			DestroyBitmap(&lit);
 			want_lite=true;

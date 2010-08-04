@@ -94,6 +94,7 @@ SOURCES += ./src/RenderFarmUI/RF_CropTool.cpp
 SOURCES += ./src/RenderFarmUI/RF_DEMGraphics.cpp
 SOURCES += ./src/RenderFarmUI/RF_DrawMap.cpp
 SOURCES += ./src/RenderFarmUI/RF_FileCommands.cpp
+SOURCES += ./src/RenderFarmUI/RF_SpecialCommands.cpp
 SOURCES += ./src/RenderFarmUI/RF_Globals.cpp
 SOURCES += ./src/RenderFarmUI/RF_ImageTool.cpp
 SOURCES += ./src/RenderFarmUI/RF_Main.cpp

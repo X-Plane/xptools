@@ -265,7 +265,7 @@ void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 {
 	GIS_halfedge_data	hed;
 	hed.mSegments.push_back(GISNetworkSegment_t());
-	hed.mSegments.back().mFeatType = road_LocalUnsep;
+	hed.mSegments.back().mFeatType = road_Local;
 
 	vector<Segment_2>			road_vec(roads.size());
 	vector<GIS_halfedge_data>	data_vec(roads.size(),hed);

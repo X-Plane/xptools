@@ -57,7 +57,7 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define BURN_ROADS 0
 
 // This adds more vertices to cliffs.
-#define SPLIT_CLIFFS 0
+#define SPLIT_CLIFFS 1
 
 // Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
 #define NO_BORDERS_AT_ALL 0

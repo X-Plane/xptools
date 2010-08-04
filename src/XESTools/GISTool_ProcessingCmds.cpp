@@ -270,7 +270,7 @@ static int DoInstantiateObjsForests(const vector<const char *>& args)
 static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
-	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gProgress);
+	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature],gDem[dem_Rainfall],gProgress);
 	return 0;
 }
 

@@ -539,13 +539,13 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 			n += sprintf(buf+n,"%s: ", card_dir_str((*gEdgeSelection.begin())));
 		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->data().mSegments.end(); ++seg)
 		{
-			n += sprintf(buf+n, "%s->%s (%d)", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight);
+			n += sprintf(buf+n, "%s->%s (%d,%d)", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight, (int) seg->mTargetHeight);
 		}
 		if(!(*gEdgeSelection.begin())->twin()->data().mSegments.empty())
 			n += sprintf(buf+n,"%s: ", card_dir_str((*gEdgeSelection.begin())->twin()));
 		for (GISNetworkSegmentVector::iterator seg = (*gEdgeSelection.begin())->twin()->data().mSegments.begin(); seg != (*gEdgeSelection.begin())->twin()->data().mSegments.end(); ++seg)
 		{
-			n += sprintf(buf+n, "%s->%s (%d) ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight);
+			n += sprintf(buf+n, "%s->%s (%d,%d) ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType), (int) seg->mSourceHeight, (int) seg->mTargetHeight);
 		}
 
 		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->data().mParams.begin(); p != (*gEdgeSelection.begin())->data().mParams.end(); ++p)

@@ -118,64 +118,35 @@
 	TOKEN(road_Unknown)
 
 	TOKEN(road_Start_Highway)
-		TOKEN(road_PrimaryLimUnsep)
-		TOKEN(road_PrimaryLimUnsepRail)
-		TOKEN(road_PrimaryLimSep)
-		TOKEN(road_PrimaryLimSepRail)
-		TOKEN(road_PrimaryLimOneway)
-		TOKEN(road_PrimaryLimOnewayRail)
-		TOKEN(road_PrimaryLimBridge)
+		TOKEN(road_MotorwayOneway)
 	TOKEN(road_End_Highway)
 
 	TOKEN(road_Start_MainDrag)
-		TOKEN(road_PrimaryUnsep)
-		TOKEN(road_PrimaryUnsepRail)
-		TOKEN(road_PrimarySep)
-		TOKEN(road_PrimarySepRail)
+		TOKEN(road_Primary)
 		TOKEN(road_PrimaryOneway)
-		TOKEN(road_PrimaryOnewayRail)
-		TOKEN(road_PrimaryBridge)
-
-		TOKEN(road_SecondUnsep)
-		TOKEN(road_SecondUnsepRail)
-		TOKEN(road_SecondSep)
-		TOKEN(road_SecondSepRail)
-		TOKEN(road_SecondOneway)
-		TOKEN(road_SecondOnewayRail)
-		TOKEN(road_SecondBridge)
+		TOKEN(road_Secondary)
+		TOKEN(road_SecondaryOneway)
+		TOKEN(road_Tertiary)
+		TOKEN(road_TertiaryOneway)
 	TOKEN(road_End_MainDrag)
 
 	TOKEN(road_Start_LocalRoad)
-		TOKEN(road_LocalUnsep)
-		TOKEN(road_LocalUnsepRail)
-		TOKEN(road_LocalSep)
-		TOKEN(road_LocalSepRail)
+		TOKEN(road_Local)
 		TOKEN(road_LocalOneway)
-		TOKEN(road_LocalOnewayRail)
-		TOKEN(road_LocalBridge)
-
-		TOKEN(road_Culdesac)
-		TOKEN(road_TrafficCircle)
 	TOKEN(road_End_LocalRoad)
 
 	TOKEN(road_Start_Access)
-		TOKEN(road_4WDUnsep)
 		TOKEN(road_Ramp)
-		TOKEN(road_Service)
-		TOKEN(road_Alley)
-		TOKEN(road_Driveway)
 	TOKEN(road_End_Access)
 
 	TOKEN(road_Start_Walkway)
-		TOKEN(walk_Unknown)
 		TOKEN(walk_Trail)
-		TOKEN(walk_Stairway)
 	TOKEN(road_End_Walkway)
 
 	TOKEN(train_Start)
-		TOKEN(train_Generic)
-		TOKEN(train_Spur)
+		TOKEN(train_RailwayOneway)
 	TOKEN(train_End)
+
 	TOKEN(powerline_Generic)
 	TOKEN(dam_Generic)
 
@@ -766,70 +737,60 @@
 	/* Six and four-lane highways...may be together or seprated.  If separated,
 	 * small, and with no trains or brigdeg, there may be no guard rails (for out in Arizona).
 	 * The inner edge line is always yellow, the outer edge line is white. */
-	TOKEN(net_SixLaneUSHighway)
-	TOKEN(net_SixLaneUSHighwaySeparated)
-	TOKEN(net_SixLaneUSHighwayOneway)
-
-	TOKEN(net_SixLaneUSHighwayWithTrain)
-	TOKEN(net_SixLaneUSHighwaySeparatedWithTrain)
-	TOKEN(net_SixLaneUSHighwayOnewayWithTrain)
-
-	TOKEN(net_FourLaneUSHighway)
-	TOKEN(net_FourLaneUSHighwaySeparated)
-	TOKEN(net_FourLaneUSHighwaySeparatedNoGuardRails)
-	TOKEN(net_FourLaneUSHighwayOneway)
-
-	TOKEN(net_FourLaneUSHighwayWithTrain)
-	TOKEN(net_FourLaneUSHighwaySeparatedWithTrain)
-	TOKEN(net_FourLaneUSHighwayOnewayWithTrain)
+	TOKEN(net_SixLaneHighwayOnewayGraded)
 
 	/* Primary road - two lanes in each direction, double yellow lines in the center
 	 * and white lines on the edge.  If there are no sidewalks, there should be a rough
 	 * edge.  If there are no sidewalks, the trains should show grass (clear alpha)
 	 * and not cement underneath. */
-	TOKEN(net_PrimaryUndivided)
-	TOKEN(net_PrimaryUndividedWithSidewalks)
-	TOKEN(net_PrimaryUndividedWithTrains)
-	TOKEN(net_PrimaryUndividedWithSidewalksWithTrains)
+	TOKEN(net_Primary_xx)
+	TOKEN(net_Primary_sx)
+	TOKEN(net_Primary_Sx)
+	TOKEN(net_Primary_xs)
+	TOKEN(net_Primary_ss)
+	TOKEN(net_Primary_Ss)
+	TOKEN(net_Primary_xS)
+	TOKEN(net_Primary_sS)
+	TOKEN(net_Primary_SS)
 
-	/* Primary divided road - two lanes in the same direction.  Use white lines
-	 * for all lines (center and edge).  Center line is dashed. */
-	TOKEN(net_PrimaryDivided)
-	TOKEN(net_PrimaryDividedWithSidewalks)
-	TOKEN(net_PrimaryDividedWithTrains)
-	TOKEN(net_PrimaryDividedWithSidewalksWithTrains)
-
-	/* Primary oneway road - two lanes in the same direction.  Use white lines
-	 * for all lines (center and edge).  Center line is dashed. */
-	TOKEN(net_PrimaryOneway)
-	TOKEN(net_PrimaryOnewayWithSidewalks)
-	TOKEN(net_PrimaryOnewayWithTrains)
-	TOKEN(net_PrimaryOnewayWithSidewalksWithTrains)
-
-	/* Secondary road - in the city with sidewalks - double yellow line.  In
-	 * the country - single yellow line.  Passing - dashed yellow line. */
-	TOKEN(net_SecondaryRoadWithSidewalks)
-	TOKEN(net_SecondaryRoad)
-	TOKEN(net_SecondaryRoadPassing)
-
+	TOKEN(net_PrimaryOneway_xx)
+	TOKEN(net_PrimaryOneway_sx)
+	TOKEN(net_PrimaryOneway_Sx)
+	TOKEN(net_PrimaryOneway_xs)
+	TOKEN(net_PrimaryOneway_ss)
+	TOKEN(net_PrimaryOneway_Ss)
+	TOKEN(net_PrimaryOneway_xS)
+	TOKEN(net_PrimaryOneway_sS)
+	TOKEN(net_PrimaryOneway_SS)
+	
 	/* Local roads - two directions, no separators.  Only access ramps have
 	 * markings.  Alleys are damaged. */
-	TOKEN(net_LocalRoad)
-	TOKEN(net_CulDeSac)
-	TOKEN(net_AccessRamp)	// Always a bridge?
-	TOKEN(net_4WDRoad)
-	TOKEN(net_Alley)
-	TOKEN(net_Driveway)
+	TOKEN(net_Local_xx)
+	TOKEN(net_Local_sx)
+	TOKEN(net_Local_Sx)
+	TOKEN(net_Local_xs)
+	TOKEN(net_Local_ss)
+	TOKEN(net_Local_Ss)
+	TOKEN(net_Local_xS)
+	TOKEN(net_Local_sS)
+	TOKEN(net_Local_SS)
+
+	TOKEN(net_LocalOneway_xx)
+	TOKEN(net_LocalOneway_sx)
+	TOKEN(net_LocalOneway_Sx)
+	TOKEN(net_LocalOneway_xs)
+	TOKEN(net_LocalOneway_ss)
+	TOKEN(net_LocalOneway_Ss)
+	TOKEN(net_LocalOneway_xS)
+	TOKEN(net_LocalOneway_sS)
+	TOKEN(net_LocalOneway_SS)
 
 	/* Trains - one or two tracks.  Need graphics for both by themselves and
 	 * crossing roads */
-	TOKEN(net_TrainsTwoWay)
-	TOKEN(net_TrainsOneWay)
+	TOKEN(net_TrainsOneway)
 
 	/* Walking trail - enough said */
 	TOKEN(net_Walking)
-	TOKEN(net_WalkingCity)
-	TOKEN(net_WalkingCitySteps)
 
 	/* Electrical */
 	TOKEN(net_Powerlines)
