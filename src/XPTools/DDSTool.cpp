@@ -604,7 +604,7 @@ int main(int argc, char * argv[])
 		int arg_base = has_mips ? 3 : 2;
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, true)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;

@@ -1501,7 +1501,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
 
-	int x = ioImage.width/2;
+	int x = ioImage.width;
 	int y = ioImage.height;
 	int mips=1;
 	while(x > 1 || y > 1)
@@ -1524,12 +1524,25 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	header.dwDepth=0;
 	header.dwMipMapCount=SWAP32(mips);
 	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
-	header.ddpfPixelFormat.dwFlags=SWAP32((ioImage.channels==3 ? DDPF_RGB : (DDPF_RGB|DDPF_ALPHAPIXELS)));
-	header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
-	header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
-	header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
-	header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);
-	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
+
+	if(ioImage.channels == 1)
+	{
+		header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_ALPHAPIXELS);
+		header.ddpfPixelFormat.dwRGBBitCount=SWAP32(8);
+		header.ddpfPixelFormat.dwRBitMask=SWAP32(0x0);
+		header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0);
+		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x0);
+		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF);
+	}
+	else
+	{
+		header.ddpfPixelFormat.dwFlags=SWAP32((ioImage.channels==3 ? DDPF_RGB : (DDPF_RGB|DDPF_ALPHAPIXELS)));
+		header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
+		header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
+		header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
+		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);
+		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
+	}
 
 	header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
@@ -1538,12 +1551,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	struct ImageInfo im(ioImage);
 
 	do {
-
-		FlipImageY(im);
 		fwrite(im.data,im.width*im.height*im.channels,1,fi);
-		FlipImageY(im);
-
-		if(x==1 && y==1) break;
 
 		if (!AdvanceMipmapStack(&im))
 			break;
