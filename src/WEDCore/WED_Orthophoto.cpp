@@ -128,7 +128,17 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 	if (!all.is_empty())
 	{
 		wrl->StartCommand("Make orthophotos");
-		int num_made = cut_for_image(wrl, all, wrl, WED_GetResourceMgr(in_resolver));
+		// Ben says: if the user has selected an overlay image itself, we are going to start our hierarchy traversal at THAT IMAGE,
+		// ensuring that we only spit out one draped polygon for that overlay.  
+		// This prevents the problem where, when two overlays are overlapped, WED creates the unnecessary overlap fragments of both.
+		// In the overlap case we have to assume that if the user is selecting images one at a time then he or she wants overlapping square
+		// draped polygons.
+		// If the selection isn't exactly one overlay image, then start the traversal at the entire world, so that we pick up ANY overlay
+		// that coincides with the area the user has selected.
+		WED_OverlayImage * sel_over = NULL;
+		if(entities.size() == 1)
+			sel_over = SAFE_CAST(WED_OverlayImage,entities[0]);
+		int num_made = cut_for_image(sel_over ? sel_over : wrl, all, wrl, WED_GetResourceMgr(in_resolver));
 		if(num_made == 0)
 		{
 			wrl->AbortCommand();
