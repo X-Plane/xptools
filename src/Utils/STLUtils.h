@@ -190,6 +190,19 @@ void tokenize_string(InputIterator begin, InputIterator end, OutputIterator oi, 
 	}
 }
 
-
+template<typename K, typename V>
+K highest_key(const map<K,V>& histo)
+{
+	typename map<K,V>::const_iterator best = histo.begin();
+	typename map<K,V>::const_iterator i(best);
+	++i;
+	while(i != histo.end())
+	{
+		if(i->second > best->second)
+			best = i;
+		++i;
+	}
+	return best->first;
+}
 
 #endif /* STLUtils_H */

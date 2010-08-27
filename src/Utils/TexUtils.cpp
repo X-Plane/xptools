@@ -198,8 +198,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if(useIt->channels > 2)
 	while (count--)
 	{
-		swap(p[0], p[2]);
-		p += useIt->channels;
+		swap(p[0], p[2]);						// Ben says: since we get BGR or BGRA, swap red and blue channesl to make RGB or RGBA.  Some day we could
+		p += useIt->channels;					// use our brains and use GL_BGR_EXT and GL_BGRA_EXT; literally all GL cards from Radeon/GeForce on support this.
 	}
 
 	int							glformat = GL_RGB;

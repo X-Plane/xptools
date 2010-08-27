@@ -194,6 +194,9 @@ extern "C" {
 #include <tiffio.h>
 #endif
 
+
+// BMP is always BGR, and alwys lower-left origin.  Since this is what we want in memory
+// (E.g. DIB conventions) we can just load.
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
 		struct	BMPHeader		header;
@@ -891,8 +894,7 @@ jpeg_throw_error (setjmp_err_mgr * err)
 
 
 
-
-
+// JPEG is 0,0 = upper left and lib gives us RGB.  So we need to red-blue swap and vertically flip.
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
 	// We bail immediately if the file is no good.  This prevents us from
@@ -1045,6 +1047,7 @@ void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t leng
    png_current_pos+=length;
 }
 
+// PNG is 0,0 = upper left so we vertically flip.  Lib gives us image in any component order we want.
 int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed)
 {
 	FILE * file = fopen(fname, "rb");
@@ -1146,6 +1149,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	if(!leaveIndexed && png_get_valid(pngPtr,infoPtr,PNG_INFO_tRNS) && outImageInfo->channels == 3)
 		outImageInfo->channels = 4;
 	
+	// Since we use "BGR" conventions ask PNG to just swap red-blue for us.
 	png_set_bgr(pngPtr);
 	png_read_update_info(pngPtr,infoPtr);
 
@@ -1156,6 +1160,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	rows=(char**)malloc(height*sizeof(char*));
 	if (!rows) goto bail;
 
+	// Set our rows to reverse order to flip the image.
 	for(int i=0;i<height;i++)
 	{
 		rows[i]=(char*)outImageInfo->data     +((outImageInfo->height-1-i)*(outImageInfo->width)*(outImageInfo->channels));
@@ -1256,6 +1261,9 @@ static	void	IgnoreTiffWarnings(const char *, const char*, va_list)
 {
 }
 
+// TIFF is 0,0 = lower left.  But the byte order is ENDIAN dependent. 
+// BIG ENDIAN: we get ABGR
+// LIL ENDIAN: we get RGBA
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
 	int result = -1;
@@ -1289,15 +1297,15 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			while (count--)
 			{
 #if BIG
-				d[0] = s[1];
-				d[1] = s[2];
-				d[2] = s[3];
-				d[3] = s[0];
+				d[0] = s[1];	// B
+				d[1] = s[2];	// G
+				d[2] = s[3];	// R
+				d[3] = s[0];	// A
 #elif LIL
-				d[0] = s[2];
-				d[1] = s[1];
-				d[2] = s[0];
-				d[3] = s[3];
+				d[0] = s[2];	// B
+				d[1] = s[1];	// G
+				d[2] = s[0];	// R
+				d[3] = s[3];	// A
 #else
 	#error PLATFORM NOT DEFINED
 #endif
@@ -1414,6 +1422,7 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 	#error BIG or LIL are not defined - what endian are we?
 #endif
 
+// This routine swaps Y and BGRA on desktop, but only BGRA on phone.  
 static void swap_bgra_y(struct ImageInfo& i)
 {
 	int num_swaps = (i.height+1) / 2;	// add 1 - if we have 9 lines, do 5 swaps, line 4 swaps on itself safely.
@@ -1424,12 +1433,22 @@ static void swap_bgra_y(struct ImageInfo& i)
 		unsigned char * dstp = i.data + x * i.channels +				   y	  * (i.channels * i.width + i.pad);
 
 		swap(dstp[2], dstp[0]);
-		if(srcp != dstp)				// check for self-swap, don't undo.
-			swap(srcp[0], srcp[2]);
+		if(srcp != dstp)				// check for self-swap, don't undo, also don't waste time.
+		{
+			swap(srcp[0], srcp[2]);		// This swaps BGRA to RGBA
+
+// On mobile devices, we pre-encode DXT with 0,0 = lower left so the phone doesn't have to flip the DDS before feeding it into OpenGL.
+// This will look upside down on all viewers.
+#if !PHONE			
+			for(int c = 0; c < i.channels; ++c)	// This flips the image.
+				swap(srcp[c], dstp[c]);
+#endif				
+		}
 	}
 
 }
 
+// Compressed DDS.  
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 {
 	FILE * fi = fopen(file_name,"wb");
@@ -1478,12 +1497,14 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 
 	do {
 
+		// Get the image into RGBA upper left origin, that's what Squish/DXT/DDS wants.
 		swap_bgra_y(img);
 
 		squish::CompressImage(img.data, img.width, img.height, dst_mem, flags|squish::kColourIterativeClusterFit);
 		len = squish::GetStorageRequirements(img.width,img.height,flags);
 		fwrite(dst_mem,len,1,fi);
 
+		// Put it back before we advance...really necessary??!
 		swap_bgra_y(img);
 
 		if(!AdvanceMipmapStack(&img))
@@ -1496,6 +1517,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	// close file
 }
 
+// Uncomp: write BGR or BGRA, origin depends on phone or desktop - see below.
 int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 {
 	FILE * fi = fopen(file_name,"wb");
@@ -1540,7 +1562,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 		header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
 		header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
 		header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
-		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);
+		header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);		// Little endian: B is first, FF is first byte.
 		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
 	}
 
@@ -1551,8 +1573,14 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	struct ImageInfo im(ioImage);
 
 	do {
+	// On the phone, feed image in lower left = 0,0, looks upside down on std tool chain, but saves swap for DD->GL conventions.
+	#if !PHONE
+		FlipImageY(im);
+	#endif
 		fwrite(im.data,im.width*im.height*im.channels,1,fi);
-
+	#if !PHONE
+		FlipImageY(im);
+	#endif
 		if (!AdvanceMipmapStack(&im))
 			break;
 
