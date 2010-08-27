@@ -61,7 +61,7 @@ void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(v
 	rwy = rwy_int;
 	ENUM_ImportSet(operations.domain,info.operations,operations.value);
 	ENUM_ImportSet(traffic.domain,info.equipment,traffic.value);
-	dep_frq = info.dep_freq;
+	dep_frq = (float) info.dep_freq / 100.0f;
 	dep_heading_min = info.dep_heading_lo;
 	dep_heading_max = info.dep_heading_hi;
 	vec_heading_min = info.ini_heading_lo;
@@ -74,7 +74,7 @@ void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 	info.runway = ENUM_Desc(rwy.value);
 	info.operations = ENUM_ExportSet(operations.value);
 	info.equipment = ENUM_ExportSet(traffic.value);
-	info.dep_freq = dep_frq;
+	info.dep_freq = (dep_frq * 100.0f);
 	info.dep_heading_lo = dep_heading_min;
 	info.dep_heading_hi = dep_heading_max;
 	info.ini_heading_lo = vec_heading_min;
