@@ -142,6 +142,7 @@ static int size_for_mipmap(int x, int y, int bpp, int min_bytes)
 	return total;
 }
 
+#if PHONE
 static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit, bool isPvr, int mip_count)
 {
 	PVR_Texture_Header	h 			= { 0 };
@@ -267,6 +268,7 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 	free(storage);
 	return 0;
 }
+#endif
 
 int pow2_up(int n)
 {
@@ -495,6 +497,7 @@ int main(int argc, char * argv[])
 
 		return 1;
 	}
+#if PHONE	
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
 	{
@@ -550,6 +553,7 @@ int main(int argc, char * argv[])
 		}
 		return 0;
 	}
+#endif	
 	else if(strcmp(argv[1],"--png2dxt")==0 ||
 	   strcmp(argv[1],"--png2dxt1")==0 ||
 	   strcmp(argv[1],"--png2dxt3")==0 ||
