@@ -35,7 +35,7 @@ bool	init_block(
 					Block_2&				out_block,
 					CoordTranslator2&		translator);		// returns true if block is not insanely small!
 
-void	apply_fill_rules(
+bool	apply_fill_rules(
 					int						zoning,
 					Block_2&				block,
 					CoordTranslator2&		translator,
@@ -46,7 +46,7 @@ void	extract_features(
 					Pmwx::Face_handle		dest_face,
 					CoordTranslator2&		translator);
 
-void	process_block(
+bool	process_block(
 					Pmwx::Face_handle		f, 
 					CDT&					mesh,
 					DEMGeo&					forest_dem);

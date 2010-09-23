@@ -45,6 +45,7 @@
 #include "MeshAlgs.h"
 #include "ForestTables.h"
 #include "BlockFill.h"
+#include "MapPolygon.h"
 
 static double calc_water_area(void)
 {
@@ -446,9 +447,34 @@ int DoDumpForests(const vector<const char *>& args)
 	return 0;
 }
 
+#if OPENGL_MAP
+static int DoClear(const vector<const char *>& args)
+{
+	for(set<Pmwx::Face_handle>::iterator i = gFaceSelection.begin(); i != gFaceSelection.end(); ++i)
+	{
+		(*i)->data().mObjs.clear();
+		(*i)->data().mPolyObjs.clear();
+	}
+}
+#endif
 
 static int DoHack(const vector<const char *>& args)
 {
+#if 0
+	gFaceSelection.clear();
+	double r = atof(args[0]);
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	{
+		Polygon_with_holes_2 pwh;
+		Bbox_2 e;
+		PolygonFromFace(f, pwh, NULL, NULL, &e);
+		if(IsPolygonSliver(pwh, r, e))
+			gFaceSelection.insert(f);
+	}
+		//	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+//	if(!f->is_unbounded())
+
 //	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 //	if(!f->is_unbounded())
 //	if(!f->data().IsWater())
@@ -471,9 +497,10 @@ static int DoHack(const vector<const char *>& args)
 
 //	if(!gFaceSelection.empty())
 //	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,*gFaceSelection.begin(), gProgress);
-
+#endif
 	return 0;
 }
+
 static int DoMeshErrStats(const vector<const char *>& s)
 {
 	float minv, maxv, mean, devsq;
@@ -498,7 +525,10 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
 { "-mesh_err_stats", 0, 0, DoMeshErrStats,			"Print statistics about mesh error.", "" },
-{ "-hack",				   0, 0, DoHack, "", "" },
+{ "-hack",				   1, 1, DoHack, "", "" },
+#if OPENGL_MAP
+{ "-clear_block",		   0, 0, DoClear, "", "" },
+#endif
 { 0, 0, 0, 0, 0, 0 }
 };
 

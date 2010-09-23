@@ -53,4 +53,6 @@ void	do_insert_into_block(
 
 void clean_block(Block_2& block);
 
+void simplify_block(Block_2& io_block, double max_err);
+
 #endif /* BlockAlgs_H */

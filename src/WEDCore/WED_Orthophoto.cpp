@@ -18,6 +18,8 @@
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
 #include "PlatformUtils.h"
+#include "WED_DrawUtils.h"
+#include "WED_ObjPlacement.h"
 
 static void add_pol_ring(WED_OverlayImage * image, const Polygon_2& loc, const Polygon_2& uv, WED_Thing * parent, bool is_outer)
 {
@@ -102,6 +104,38 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 	for(int n = 0; n < ent->CountChildren(); ++n)
 		c += cut_for_image(ent->GetNthChild(n), area,wrl, rmgr);
 	return c;
+}
+
+void	WED_CheckPolys(IResolver * in_resolver)
+{
+	WED_Thing	*	wrl = 	WED_GetWorld(in_resolver);
+	ISelection * sel =		WED_GetSelect(in_resolver);
+	vector<IGISEntity *>	entities;	
+	vector<Point2>			fail_pts;
+	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
+	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
+	{
+		IGISPolygon * poly = dynamic_cast<IGISPolygon *>(*e);
+		if(poly)
+		{
+			vector<Point2>	bad;
+			IsBezierPolyScrewed(poly, &bad);
+			fail_pts.insert(fail_pts.end(),bad.begin(),bad.end());
+		}
+	}
+	if(!fail_pts.empty())
+	{
+		wrl->StartOperation("Adding error pins.");
+
+		for(vector<Point2>::iterator b = fail_pts.begin(); b != fail_pts.end(); ++b)
+		{
+			WED_ObjPlacement * pin = WED_ObjPlacement::CreateTyped(wrl->GetArchive());
+			pin->SetLocation(gis_Geo,*b);
+			pin->SetParent(wrl,0);
+			pin->SetName("Error:Self-Crossing Polygon");
+		}
+		wrl->CommitOperation();
+	}
 }
 
 void	WED_MakeOrthos(IResolver * in_resolver)

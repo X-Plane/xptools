@@ -5,8 +5,10 @@
 
 #include "hl_types.h"
 #include "MapPolygon.h"
+#include "MapBuffer.h"
 #include "STLUtils.h"
 #include "MapAlgs.h"
+#include "MapHelpers.h"
 
 void	PolygonFromCCB(Pmwx::Ccb_halfedge_const_circulator circ, Polygon_2& out_poly, RingInset_t * out_inset, Inset_f func,Bbox_2 * extent)
 {
@@ -47,7 +49,7 @@ void	PolygonFromFace(Pmwx::Face_const_handle in_face, Polygon_with_holes_2& out_
 
 		holes.push_back(Polygon_2());
 
-		PolygonFromCCB(*h, holes.back(), out_inset ? &out_inset->back() : NULL, func, extent);
+		PolygonFromCCB(*h, holes.back(), out_inset ? &out_inset->back() : NULL, func, NULL);	// hole can't increase extent, plus passing it here nulls it out!
 	}
 	out_ps = Polygon_with_holes_2(outer_ccb,holes.begin(),holes.end());
 }
@@ -177,127 +179,6 @@ void	ben2cgal(const vector<Polygon2>& ben, Polygon_with_holes_2& cgal)
 		ben2cgal(ben[n],holes[n]);
 	cgal = Polygon_with_holes_2(holes[0],holes.begin()+1,holes.end());
 }
-
-
-
-
-class check_split_zone_visitor {
-public:
-  typedef std::pair<Halfedge_handle, bool>            Result;
-
-	X_monotone_curve_2	cv;
-	Vertex_handle		v1;
-	Vertex_handle		v2;
-	bool				has_overlap;
-	bool				has_split;
-	bool				has_complete;
-	Face_handle			found_face;
-
-  void init (Arrangement_2 *arr)
-  {
-	has_overlap = false;
-	has_split = false;
-	has_complete = false;
-  }
-
-  Result found_subcurve (const X_monotone_curve_2& partial,
-                         Face_handle face,
-                         Vertex_handle left_v, Halfedge_handle left_he,
-                         Vertex_handle right_v, Halfedge_handle right_he)
-	{
-		if(				partial.left() != cv.left() ||
-						partial.right() != cv.right())
-			has_split=true;
-		else
-			has_complete=true;
-			found_face=face;
-	return Result(Halfedge_handle(), true);
-	}
-
-  Result found_overlap (const X_monotone_curve_2& cv,
-                        Halfedge_handle he,
-                        Vertex_handle left_v, Vertex_handle right_v)
-{
-	has_overlap = true;
-	return Result(he,true);
-}
-
-};
-
-static bool			can_insert(
-							Pmwx&					p,
-							Vertex_handle			v1,
-							Vertex_handle			v2)
-{
-	if(v1->point() == v2->point()) return false;
-	typedef	CGAL::Arrangement_zone_2<Pmwx,check_split_zone_visitor>	zone_type;
-
-	check_split_zone_visitor v;
-	zone_type		zone(p, &v);
-	v.cv = X_monotone_curve_2(Segment_2(v1->point(),v2->point()),0);
-	v.v1 = v1;
-	v.v2 = v2;
-
-	Vertex_const_handle lv = (v.cv.left() == v1->point()) ? v1 : v2;
-
-	zone.init_with_hint(v.cv,CGAL::make_object(lv));
-	zone.compute_zone();
-	return !v.has_overlap && !v.has_split && v.has_complete;
-}
-
-static bool			can_merge(
-							Pmwx&					p,
-							Halfedge_handle			he)
-{
-	// Ben says: degree isn't 2?  This can can happen - for example,
-	//	*
-	//	|\
-	//	*-*
-	//	|\|\
-	//	*-*-*
-	// Using GPS this is one outer triangle and one inner hole.  But as a planar map,
-	// outside junctions have degree 4.  So...if our degree isn't 2, it probably means
-	// our outer CCB touches our hole at a noded point.  No biggie, but we're not going
-	// to remove that node, ever!	
-	if(he->target()->degree() != 2)	return false;
-	
-	Vertex_handle v1 = he->source();
-	Vertex_handle v2 = he->next()->target();
-
-	if(v1->point() == v2->point()) return false;
-	if(he->direction() != he->next()->direction())
-		return false;
-
-	// Ben says: we cannot test the collinear case (a truly unneeded vertex because it doesn't turn anything) because
-	// we cannot tell what an "overlap" result from the test insertion REALLY means.  It could mean we are collinear, so the
-	// test insertion of the "bypass" edge covers both originals perfectly.  It could also mean that there is already a bypass
-	// edge in place that we are going to overlap.  In this second case, the merge will create an invalid pmwx.  So just
-	// test collinear here, rather than trying to make the overlap detector wicked smart.
-	if(CGAL::collinear(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-	if(CGAL::collinear_are_ordered_along_line(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-		return true;
-	typedef	CGAL::Arrangement_zone_2<Pmwx,check_split_zone_visitor>	zone_type;
-
-	check_split_zone_visitor v;
-	zone_type		zone(p, &v);
-	v.cv = X_monotone_curve_2(Segment_2(v1->point(),v2->point()),0);
-	v.v1 = v1;
-	v.v2 = v2;
-
-	Vertex_const_handle lv = (v.cv.left() == v1->point()) ? v1 : v2;
-
-	zone.init_with_hint(v.cv,CGAL::make_object(lv));
-	zone.compute_zone();
-	if (v.has_overlap || v.has_split || !v.has_complete) return false;
-
-	// Topology check: if we have a non-convex quad, merging the edges might put them in a different face - but
-	// CGAL's merge op does NOT handle topology changes.  So be sure the face isn't going to change!
-	if(CGAL::left_turn(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-		return v.found_face == he->face();
-	else
-		return v.found_face == he->twin()->face();
-}
-
 
 static Face_handle	face_for_curve(
 							Vertex_handle			v,
@@ -482,6 +363,11 @@ void	SafeMakeMoreConvex(Polygon_set_2& ioPolygon, double max_area)
 	ioPolygon = Polygon_set_2(pmwx);
 }
 
+// Given a half-edge, how much error would be induced from 
+// removing its target point?  Max-err is returned if this remove
+// is topologically illegal e.g. we have an antenna.  This also returns
+// the cumulative error if the two sides being 'merged' have ALREADY
+// accumulated some error.
 static double calc_err(Halfedge_handle h, float max_err)
 {
 	Segment_2	seg(h->source()->point(),h->next()->target()->point());
@@ -500,9 +386,30 @@ static double calc_err(Halfedge_handle h, float max_err)
 	return err_me + h->data().mInset + h->next()->data().mInset;
 }
 
+struct lock_traits {
+	bool is_locked(Pmwx::Vertex_handle v) const
+	{
+		return false;
+	}
+};
+
+
 void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 {
-#if CGAL_BETA_SIMPLIFIER
+#if 1
+	if(ioPolygon.is_empty())	
+		return;
+	Pmwx pmwx(ioPolygon.arrangement());
+	
+	arrangement_simplifier<Pmwx,lock_traits> simplifier;
+	
+	lock_traits tr;
+	simplifier.simplify(pmwx, max_err, tr);
+	
+	ioPolygon = Polygon_set_2(pmwx);
+
+
+#elif 0
 	if(ioPolygon.is_empty())	
 		return;
 //	printf("Before: %d polys, %d vertices.\n", ioPolygon.arrangement().number_of_faces(), ioPolygon.arrangement().number_of_vertices());
@@ -656,4 +563,15 @@ void MakePolygonSimple(const Polygon_2& inPolygon, vector<Polygon_2>& out_simple
 
 		DebugAssert(out_simple_polygons.back().is_simple());
 	}
+}
+
+
+bool	IsPolygonSliver(const Polygon_with_holes_2& pwh, double r, const Bbox_2& extent)
+{
+	if((extent.xmax() - extent.xmin()) <= (r*2.0)) return true;
+	if((extent.ymax() - extent.ymin()) <= (r*2.0)) return true;
+
+	Polygon_set_2	ops;
+	BufferPolygonWithHoles(pwh, NULL, r, ops);
+	return ops.is_empty();
 }

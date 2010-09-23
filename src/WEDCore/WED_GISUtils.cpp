@@ -51,6 +51,29 @@ void	BezierPointToBezier(const BezierPoint2& p1,const BezierPoint2& p2, Bezier2&
  *
  ************************************************************************************************************************************************************************************/
 
+
+int WED_HasBezierSeq(IGISPointSequence * ring)
+{
+	int np = ring->GetNumPoints();
+	IGISPoint_Bezier * b;
+	Point2 d;
+	for(int n = 0; n < np; ++n)
+	if(ring->GetNthPoint(n)->GetGISClass() == gis_Point_Bezier)
+	if((b =dynamic_cast<IGISPoint_Bezier *>(ring->GetNthPoint(n))) != NULL)
+	if(b->GetControlHandleHi(gis_Geo,d) || b->GetControlHandleLo(gis_Geo,d))
+		return 1;
+	return 0;
+}
+
+int WED_HasBezierPol(IGISPolygon * pol)
+{
+	if(WED_HasBezierSeq(pol->GetOuterRing())) return 1;
+	int hc = pol->GetNumHoles();
+	for(int h = 0; h < hc; ++h)
+	if(WED_HasBezierSeq(pol->GetNthHole(h))) return 1;
+	return 0;
+}
+
 // TODO:
 //	#error we need an option to get approximate pt sequenes from beziers!
 //	#error we need to handle degunking self-intersecting and backward polygons!
@@ -147,7 +170,10 @@ bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2&
 			return false;
 		out_pol.add_hole(hole);
 	}
-	return true;
+	
+	Traits_2 tr;
+	bool ok = tr.is_valid_2_object()(out_pol);
+	return ok;
 }
 
 bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
@@ -307,7 +333,7 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_
 	}
 }
 
-void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol)
+bool	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol, CGAL::Orientation orientation)
 {
 	vector<Bezier_curve_2>	crvs;
 	DebugAssert(in_seq->IsClosed());
@@ -331,18 +357,37 @@ void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygo
 		else
 			Assert(!"No cast.");
 	}
+	
+	if(orientation != CGAL::ZERO)
+	{
+		// Ben says: we should really check for self-intersecting polygons here...but...
+		// GPS doesn't seem to care for orientation, nor does it know about them, so defer until later.
+		// Once we get our orientation's right in WED_BezierPolygonWithHolesForPolygon we can validate the whole thing.
+//		if(!out_pol.is_simple())
+//			return false;
+		if(orientation != out_pol.orientation())
+			out_pol.reverse_orientation();
+	}
+	return true;
+	
 }
 
-void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol)
+bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol)
 {
-	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary());
+	if (!WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary(), CGAL::COUNTERCLOCKWISE))
+		return false;
 	int nn = in_poly->GetNumHoles();
 	for(int n = 0; n < nn; ++n)
 	{
 		Bezier_polygon_2 hole;
-		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n), hole);
+		if (!WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n), hole, CGAL::CLOCKWISE))
+			return false;
 		out_pol.add_hole(hole);
 	}
+	Bezier_traits_2 tr;
+	bool ok = tr.is_valid_2_object()(out_pol);
+	return ok;
+	
 }
 
 

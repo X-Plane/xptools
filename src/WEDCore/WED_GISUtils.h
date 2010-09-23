@@ -60,6 +60,10 @@ void BezierPointSeqFromTriple(InputIterator s, InputIterator e, OutputIterator o
  * Polygon control
  ********************************************************************************************************************************************/
 
+// These return true if there are any beziers in the GIS entities...
+int WED_HasBezierSeq(IGISPointSequence * ring);
+int WED_HasBezierPol(IGISPolygon * pol);
+
 // These routines return UV mapped polygons for GIS entities.  They are ALWAYS exact, but FAIL on beziers.
 // They return false if we get a bezier, true if we converted the all-side sequence.
 bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& out_pol);			
@@ -79,8 +83,8 @@ void	WED_ApproxPolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_ho
 // Same as above, but we create exact bezier polygons - yikes!  We blissfully ignore UV maps - we can re-establish those later!
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2>& out_pol);			
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_curve_2>& out_pol);			
-void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol);				// requires closed ring
-void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol);
+bool	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol, CGAL::Orientation);				// requires closed ring
+bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol);
 
 template<typename __BezierSeqIter, class __NodeType>
 void	WED_SetSequenceForIterator(__BezierSeqIter start, __BezierSeqIter end, WED_Thing * parent, bool is_ring);

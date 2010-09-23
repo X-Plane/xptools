@@ -76,7 +76,13 @@ private:
 		bool		is_backup;
 	};
 
-	typedef map<string,res_info_t>	res_map_t;
+	struct compare_str_no_case {
+		bool operator()(const string& lhs, const string& rhs) const {
+			return strcasecmp(lhs.c_str(),rhs.c_str()) < 0;
+		}
+	};
+
+	typedef map<string,res_info_t,compare_str_no_case>	res_map_t;
 	res_map_t						res_table;
 
 	string							local_package;

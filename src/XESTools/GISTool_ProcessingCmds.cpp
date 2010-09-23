@@ -173,15 +173,24 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	int step = t / 100;
 	if(step < 1) step = 1;
 
+	#if OPENGL_MAP
+		bool no_sel = gFaceSelection.empty();
+	#endif
+
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f, ++idx)
 	if(!f->is_unbounded())
 	if(!f->data().IsWater())
 	#if OPENGL_MAP
-	if(gFaceSelection.count(f) || gFaceSelection.empty())
+	if(gFaceSelection.count(f) || no_sel)
 	#endif
 	{
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
-		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
+		if(process_block(f,gTriangulationHi,gDem[dem_ForestType]))
+		{
+			#if OPENGL_MAP
+			gFaceSelection.insert(f);
+			#endif
+		}
 	}
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 

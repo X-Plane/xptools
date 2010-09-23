@@ -46,6 +46,7 @@ enum {
 	wed_Ungroup,
 	wed_Crop,
 	wed_Overlay,
+	wed_CheckPolys,
 #if AIRPORT_ROUTING
 	wed_MakeRouting,
 #endif	

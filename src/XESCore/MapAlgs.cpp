@@ -31,6 +31,8 @@
 #include "MapOverlay.h"
 #include "DEMDefs.h"
 #include "PerfUtils.h"
+#include "STLUtils.h"
+#include "MapPolygon.h"
 #include "MapHelpers.h"
 #if DEV
 #include "GISTool_Globals.h"
@@ -45,6 +47,7 @@
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
 
+#define SHOW_REMOVALS 0
 
 // Show all ideal insert lines for an inset!
 #define DEBUG_SHOW_INSET 0
@@ -2048,7 +2051,7 @@ struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
 			DebugAssert(e2->face() == e2->twin()->face());
 			DebugAssert(e2->face() == left_over);			
 			pmwx->remove_edge(e2);
-			#if DEV && 0
+			#if DEV && SHOW_REMOVALS
 				debug_mesh_point(cgal2ben(v2->point()),1,1,0);			
 			#endif
 		}
@@ -2073,7 +2076,7 @@ struct UpdatePmwx : public Visitor_base<Simplify_polylines_2>
 				dcel_he->set_direction(new_dir);
 			}
 			
-			#if DEV	&& 0
+			#if DEV	&& SHOW_REMOVALS
 				debug_he_dir(m, pmwx);
 				debug_he_dir(t, pmwx);
 				debug_mesh_point(cgal2ben(v2->point()), 1,0,0);
@@ -2231,3 +2234,55 @@ void MapSimplify(Pmwx& pmwx, double metric)
 
 #endif
 }
+
+int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
+{
+	PROGRESS_START(func, 0, 1, "Deslivering...")
+	int ctr = 0, tot = pmwx.number_of_faces();
+	int chk = max(1,tot/100);
+	int ret = 0;
+
+	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
+	if(!f->is_unbounded())
+	{
+		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
+		Polygon_with_holes_2 pwh;
+		Bbox_2 bbox;
+		PolygonFromFace(f, pwh, NULL, NULL, &bbox);
+		if(IsPolygonSliver(pwh, metric, bbox))
+		{
+			set<Pmwx::Halfedge_handle>	my_edges;
+			FindEdgesForFace<Pmwx>(f,my_edges);
+			map<int,int>	road_lu_count;
+			map<int,int>	other_lu_count;
+			for(set<Pmwx::Halfedge_handle>::iterator e = my_edges.begin(); e != my_edges.end(); ++e)
+			if(!(*e)->twin()->face()->is_unbounded())
+			{
+				if(!(*e)->data().mSegments.empty() ||
+				   !(*e)->twin()->data().mSegments.empty())
+				{
+					road_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+				}
+				else
+				{
+					DebugAssert((*e)->twin()->face()->data().mTerrainType != f->data().mTerrainType);
+					other_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
+				}
+			}
+			
+			if(!road_lu_count.empty())
+			{
+				++ret;
+				f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+			}
+			else if (!other_lu_count.empty())
+			{
+				++ret;
+				f->data().mTerrainType = highest_key<int,int>(other_lu_count);
+			}
+		}
+	}
+	PROGRESS_DONE(func, 0, 1, "Deslivering...")
+	return ret;
+}
+

@@ -155,8 +155,14 @@ void	WED_CreatePointTool::AcceptPath(
 		sock->SetLit(windsock_lit.value);
 		break;
 	case create_Object:
-		new_pt_obj = new_pt_h = obj = WED_ObjPlacement::CreateTyped(GetArchive());
-		obj->SetResource(resource.value);
+		{
+			new_pt_obj = new_pt_h = obj = WED_ObjPlacement::CreateTyped(GetArchive());
+			obj->SetResource(resource.value);
+			string n = resource.value;
+			string::size_type p = n.find_last_of("/\\:");
+			if(p != n.npos) n.erase(0,p+1);
+			obj->SetName(n);
+		}
 		break;
 	}
 
@@ -172,7 +178,7 @@ void	WED_CreatePointTool::AcceptPath(
 		sprintf(buf,"H%d",++n);
 	else
 		sprintf(buf,"New %s %d",kCreateCmds[mType],++n);
-	if (mType != create_Sign)
+	if (mType != create_Sign && mType != create_Object)
 		new_pt_obj->SetName(buf);
 
 	ISelection * sel = WED_GetSelect(GetResolver());
