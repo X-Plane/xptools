@@ -64,7 +64,7 @@ void BezierPointSeqFromTriple(InputIterator s, InputIterator e, OutputIterator o
 // They return false if we get a bezier, true if we converted the all-side sequence.
 bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& out_pol);			
 bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& out_pol);			
-bool	WED_PolygonForPointSequence(IGISPointSequence * in_seq, Polygon_2& out_pol);
+bool	WED_PolygonForPointSequence(IGISPointSequence * in_seq, Polygon_2& out_pol, CGAL::Orientation);
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol);
 
 bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs);

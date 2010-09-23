@@ -812,14 +812,18 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		{
 			Polygon_with_holes_2	fac_area;
 			vector<Polygon_with_holes_2>	cuts;
-			WED_PolygonWithHolesForPolygon(fac,fac_area);
-			ClipPolygon(fac_area, bounds,cuts);
-			for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+			if(WED_PolygonWithHolesForPolygon(fac,fac_area))
 			{
-				cbs->BeginPolygon_f(idx,fac->GetHeight(),bez ? 4 : 2,writer);
-				DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
+				ClipPolygon(fac_area, bounds,cuts);
+				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+				{
+					cbs->BeginPolygon_f(idx,fac->GetHeight(),bez ? 4 : 2,writer);
+					DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
 			}
+			else
+				printf("FUBAR.\n");
 		}
 	}
 
@@ -832,14 +836,18 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 
 		Polygon_with_holes_2	fst_area;
 		vector<Polygon_with_holes_2>	cuts;
-		WED_PolygonWithHolesForPolygon(fst,fst_area);
-		ClipPolygon(fst_area, bounds,cuts);
-		for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+		if(WED_PolygonWithHolesForPolygon(fst,fst_area))
 		{
-			cbs->BeginPolygon_f(idx,fst->GetDensity() * 255.0,2,writer);
-			DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-			cbs->EndPolygon_f(writer);
+			ClipPolygon(fst_area, bounds,cuts);
+			for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+			{
+				cbs->BeginPolygon_f(idx,fst->GetDensity() * 255.0,2,writer);
+				DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
 		}
+		else
+			printf("foobar poly.\n");
 	}
 	
 	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
@@ -958,14 +966,18 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		{
 			Polygon_with_holes_2	pol_area;
 			vector<Polygon_with_holes_2>	cuts;
-			WED_PolygonWithHolesForPolygon(pol,pol_area);
-			ClipPolygon(pol_area, bounds,cuts);
-			for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+			if(WED_PolygonWithHolesForPolygon(pol,pol_area))
 			{
-				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-				DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
+				ClipPolygon(pol_area, bounds,cuts);
+				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+				{
+					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+					DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
 			}
+			else
+				printf("FUBAR\n");
 		}
 	}
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
@@ -994,14 +1006,18 @@ static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bb
 		{
 			Polygon_with_holes_2	orth_area;
 			vector<Polygon_with_holes_2>	cuts;
-			WED_PolygonWithHolesForPolygon(orth,orth_area);
-			ClipPolygon(orth_area, bounds,cuts);
-			for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+			if(WED_PolygonWithHolesForPolygon(orth,orth_area))
 			{
-				cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
-				DSF_AccumPolygonWithHoles(*ci, &uv, bounds, cbs, writer);
-				cbs->EndPolygon_f(writer);
+				ClipPolygon(orth_area, bounds,cuts);
+				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
+				{
+					cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
+					DSF_AccumPolygonWithHoles(*ci, &uv, bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
 			}
+			else
+				printf("fubar.\n");
 		}
 	}
 

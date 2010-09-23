@@ -87,10 +87,11 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& o
 }
 
 
-bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p)
+bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, CGAL::Orientation wanted_orientation)
 {
 	DebugAssert(ps->IsClosed());
 	int ss = ps->GetNumSides();
+	DebugAssert(ss >= 3);
 	for(int s = 0; s < ss; ++s)
 	{
 		Segment2 seg;
@@ -99,24 +100,50 @@ bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p)
 			return false;
 	}
 	int nn = ps->GetNumPoints();
+	Point2 last;
+	ps->GetNthPoint(nn-1)->GetLocation(gis_Geo,last);
 	for(int n = 0; n < nn; ++n)
 	{
 		Point2	pt;
 		ps->GetNthPoint(n)->GetLocation(gis_Geo,pt);
-		p.push_back(ben2cgal(pt));
+		if(pt != last)
+			p.push_back(ben2cgal(pt));
+		last = pt;
 	}
+	DebugAssert(p.size() >= 3);
+	if(wanted_orientation != CGAL::ZERO)
+	{
+		if(!p.is_simple())
+			return false;
+		if(p.orientation() != wanted_orientation)
+			p.reverse_orientation();
+	}
+
+// Debug code if we have to sort out non-simple polygons...
+//					vector<Point_2>	errs;
+//					Traits_2			tr;					
+//					vector<Curve_2>	sides;
+//					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
+//					{
+//						sides.push_back(Curve_2(*e,0));
+//						#if DEV
+//						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
+//						#endif
+//					}
+//					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
+	
 	return true;
 }
 
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol)
 {
-	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary()))
+	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary(), CGAL::COUNTERCLOCKWISE))
 		return false;
 	int nn = in_poly->GetNumHoles();
 	for(int n = 0; n < nn; ++n)
 	{
 		Polygon_2 hole;
-		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), hole))
+		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), hole, CGAL::CLOCKWISE))
 			return false;
 		out_pol.add_hole(hole);
 	}
@@ -137,44 +164,16 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 		if((p = SAFE_CAST(IGISPolygon, in_entity)) != NULL)
 		{
 			Polygon_2	pring;
-			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring))
+			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring, CGAL::COUNTERCLOCKWISE))
 				return false;
-			if (pring.orientation() == CGAL::CLOCKWISE)
-				pring.reverse_orientation();
 			
 			Polygon_with_holes_2 pwh(pring);
 			int nn = p->GetNumHoles();
 			for(int n = 0; n < nn; ++n)
 			{
 				pring.clear();
-				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring))
+				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring, CGAL::CLOCKWISE))
 					return false;
-				if(!pring.is_simple())
-				{
-					vector<Point_2>	errs;
-					Traits_2			tr;					
-					vector<Curve_2>	sides;
-					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
-					{
-						sides.push_back(Curve_2(*e,0));
-//						#if DEV
-//						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
-//						#endif
-					}
-					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
-					for(int n = 0; n < errs.size(); ++n)
-					{
-//						#if DEV
-//						debug_mesh_point(cgal2ben(errs[n]),1,0,0);
-//						#endif
-					}
-					return false;
-				}	
-					
-				if (pring.orientation() == CGAL::CLOCKWISE)
-					pring.reverse_orientation();
-				
-				pring.reverse_orientation();
 				pwh.add_hole(pring);
 			}
 			out_pgs.join(pwh);
