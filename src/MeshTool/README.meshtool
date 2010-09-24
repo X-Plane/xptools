@@ -1,7 +1,8 @@
 MeshTool Instructions and Release Notes
 
 Version History
-	....
+	9/23/10 2.0 r2
+		Fixed export with wet-dry masks
 		GEOTIFF command makes DDS using DXT5.
 	12/25/09 2.0 Beta 4
 		Natural terrain can be placed via the SHAPEFILE command and others.
