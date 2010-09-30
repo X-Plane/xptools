@@ -51,14 +51,15 @@ WED_CreateLineTool::WED_CreateLineTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
+		// Ben says: toolbar for runway create tool BARELY fits on 1024 x 768 res, so all tool names are intentionally super-short.
 		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",				"","",Surface_Type,	surf_Concrete),
 		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",				"","",Shoulder_Type,shoulder_None),
 		rwy_roughness		(tool==create_Runway	?this:NULL,"Rough",					"","",0.25,4,2),
-		rwy_center_lites	(tool==create_Runway	?this:NULL,"Center Lgts",			"","",1),
-		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge Lgts",				"","",Edge_Lights,	edge_MIRL),
-		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Dist Signs",			"","",1),
-		rwy_markings		(tool==create_Runway	?this:NULL,"Markings",				"","",Runway_Markings,	mark_NonPrecis),
-		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appch Lgts",			"","",Light_App,		app_MALSF),
+		rwy_center_lites	(tool==create_Runway	?this:NULL,"Center",				"","",1),
+		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge",					"","",Edge_Lights,	edge_MIRL),
+		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Dist",					"","",1),
+		rwy_markings		(tool==create_Runway	?this:NULL,"Marks",					"","",Runway_Markings,	mark_NonPrecis),
+		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appch",					"","",Light_App,		app_MALSF),
 		rwy_tdzl			(tool==create_Runway	?this:NULL,"TDZL",					"","",0),
 		rwy_reil			(tool==create_Runway	?this:NULL,"REIL",					"","",REIL_Lights,		reil_None),
 		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",					"","",1)

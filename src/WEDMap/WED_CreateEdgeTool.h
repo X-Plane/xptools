@@ -83,10 +83,12 @@ private:
 							int						closed);
 	virtual	bool		CanCreateNow(void);
 
-			void		FindNear(WED_Thing * host, IGISEntity * ent, const Point2& loc, WED_Thing *& out_thing, double& out_dsq);
-			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq);
-			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<pair<IGISPointSequence *, Point2> >& out_splits);
-			void		SplitByPts(WED_Thing * host, IGISEntity * ent, const Segment2& s, vector<Point2>& out_splits, double dsq);
+			// FILTERING: we don't actually want our network-creation tools to pick up just ANY part of the airport.  Filter field (if not null) is the 
+			// name of the classes that we 'intersect' with.  It should be the edge class name.
+			void		FindNear(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, WED_Thing *& out_thing, double& out_dsq);
+			void		FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq);
+			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<pair<IGISPointSequence *, Point2> >& out_splits);
+			void		SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<Point2>& out_splits, double dsq);
 			WED_Thing *	GetHost(int& idx);
 
 		CreateEdge_t	mType;

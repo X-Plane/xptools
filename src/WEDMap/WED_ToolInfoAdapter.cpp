@@ -316,17 +316,18 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 
 	if (n % 2)
 	switch(inf.prop_kind) {
+	// Check runway-creation tool if you retune these...it is the most space constrained up top!
 	case prop_Int:
 	case prop_Double:		return inf.digits * GUI_MeasureRange(OUR_FONT, zero,zero+1) + 10;
 	case prop_String:		return 100;
 	case prop_FilePath:		return 150;
 	case prop_Bool:			return 30;
 	case prop_Enum:
-	case prop_EnumSet:
-		mTool->GetNthPropertyDict(n / 2, dict);
-		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
-			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
-		return w;
+	case prop_EnumSet:		return 75;
+//		mTool->GetNthPropertyDict(n / 2, dict);
+//		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
+//			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
+//		return w;
 	default:				return 50;
 	}
 	else

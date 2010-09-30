@@ -137,7 +137,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double	dist=frame_dist*frame_dist;
 		WED_Thing * who = NULL;
-		FindNear(host, NULL, pts[p],who,dist);
+		FindNear(host, NULL, WED_TaxiRoute::sClass, pts[p],who,dist);
 		if (who != NULL)
 		{
 			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
@@ -155,7 +155,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double dist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host, NULL, pts[p], seq, dist);
+		FindNearP2S(host, NULL, WED_TaxiRoute::sClass,pts[p], seq, dist);
 		if(seq)
 			seq->SplitSide(pts[p], 0.001);		
 	}
@@ -166,7 +166,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<Point2>	splits;
-		SplitByPts(host, NULL, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+		SplitByPts(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
 //		printf("At index %d, got %d splits from pts.\n", p, splits.size());
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
@@ -188,7 +188,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host, NULL, Segment2(pts[p-1],pts[p]), splits);
+		SplitByLine(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits);
 		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
 			s->first->SplitSide(s->second,0.001);
 //		printf("At index %d, got %d splits.\n", p, splits.size());
@@ -219,7 +219,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
-		FindNear(host, NULL, pts[start % pts.size()],src,dist);
+		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
 		src = c = WED_AirportNode::CreateTyped(GetArchive());
@@ -253,7 +253,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		dst = NULL;
 		
 		dist=frame_dist*frame_dist;
-		FindNear(host, NULL, pts[p % pts.size()],dst,dist);
+		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[p % pts.size()],dst,dist);
 		if(dst == NULL)
 		{
 			switch(mType) {
@@ -305,10 +305,12 @@ const char *		WED_CreateEdgeTool::GetStatusText(void)
 	return NULL;
 }
 
-void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Point2& loc, WED_Thing *& out_thing, double& out_dsq)
+void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, WED_Thing *& out_thing, double& out_dsq)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
+	if(et && et->GetHidden()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -320,7 +322,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Poin
 		case gis_Point:
 		case gis_Point_Bezier:
 		case gis_Point_Heading:
-		case gis_Point_HeadingWidthLength:
+		case gis_Point_HeadingWidthLength:			
 			if((p = dynamic_cast<IGISPoint *>(e)) != NULL)
 			{
 				p->GetLocation(gis_Geo,l);
@@ -338,31 +340,34 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const Poin
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:
+			if(filter == NULL || filter == t->GetClass())
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
-					FindNear(NULL,ps->GetNthPoint(n), loc, out_thing, out_dsq);
+					FindNear(NULL,ps->GetNthPoint(n), filter, loc, out_thing, out_dsq);
 			}
 			break;
 		case gis_Composite:
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
-					FindNear(NULL,c->GetNthEntity(n), loc, out_thing, out_dsq);
+					FindNear(NULL,c->GetNthEntity(n), filter, loc, out_thing, out_dsq);
 			}
 		}
 	}
 	else
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
-			FindNear(host->GetNthChild(n), NULL, loc, out_thing, out_dsq);
+			FindNear(host->GetNthChild(n), NULL, filter, loc, out_thing, out_dsq);
 	}
 }
 
-void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq)
+void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const char * filter, const Point2& loc, IGISPointSequence *& out_thing, double& out_dsq)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
+	if(et && et->GetHidden()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -377,6 +382,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const P
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:
+			if(filter == NULL || t->GetClass() == filter)
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				int ns = ps->GetNumSides();
@@ -406,24 +412,26 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const P
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
-					FindNearP2S(NULL,c->GetNthEntity(n), loc, out_thing, out_dsq);
+					FindNearP2S(NULL,c->GetNthEntity(n), filter, loc, out_thing, out_dsq);
 			}
 		}
 	}
 	else
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
-			FindNearP2S(host->GetNthChild(n), NULL, loc, out_thing, out_dsq);
+			FindNearP2S(host->GetNthChild(n), NULL, filter, loc, out_thing, out_dsq);
 	}
 }
 
 
 
 
-void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
+void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const char* filter, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
+	if(et && et->GetHidden()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -438,6 +446,7 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const S
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:			
+			if(filter == NULL || t->GetClass() == filter)
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				int ss = ps->GetNumSides();
@@ -465,22 +474,24 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const S
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
-					SplitByLine(NULL,c->GetNthEntity(n), splitter, out_splits);
+					SplitByLine(NULL,c->GetNthEntity(n), filter, splitter, out_splits);
 			}
 		}
 	}
 	else
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
-			SplitByLine(host->GetNthChild(n), NULL, splitter, out_splits);
+			SplitByLine(host->GetNthChild(n), NULL, filter, splitter, out_splits);
 	}
 }
 
 
-void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
+void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
 {
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
+	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
+	if(et && et->GetHidden()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -509,10 +520,11 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const Se
 		case gis_Ring:
 		case gis_Edge:
 		case gis_Chain:			
+			if(filter == NULL || filter == t->GetClass())
 			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
 			{
 				for(int n = 0; n < ps->GetNumPoints(); ++n)
-					SplitByPts(NULL,ps->GetNthPoint(n), splitter, out_splits, dsq);
+					SplitByPts(NULL,ps->GetNthPoint(n), filter, splitter, out_splits, dsq);
 			}
 			break;
 
@@ -521,14 +533,14 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const Se
 			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
 			{
 				for(int n = 0; n < c->GetNumEntities(); ++n)
-					SplitByPts(NULL,c->GetNthEntity(n), splitter, out_splits, dsq);
+					SplitByPts(NULL,c->GetNthEntity(n), filter, splitter, out_splits, dsq);
 			}
 		}
 	}
 	else
 	{
 		for(int n = 0; n < host->CountChildren(); ++n)
-			SplitByPts(host->GetNthChild(n), NULL, splitter, out_splits,dsq);
+			SplitByPts(host->GetNthChild(n), NULL, filter, splitter, out_splits,dsq);
 	}
 }
 

@@ -327,7 +327,7 @@ const char *	WED_GetParentForClass(const char * in_class)
 
 static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int domain)
 {
-	WED_Runway * rwy = dynamic_cast<WED_Runway *>(thing);
+	WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<WED_Runway *>(thing) : NULL;
 	if(rwy)
 	{
 		string name;
