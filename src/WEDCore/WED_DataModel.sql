@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS WED_selection(
 
 CREATE TABLE IF NOT EXISTS WED_key_objects(
 	id				integer		NOT NULL,
-	key				string		NOT NULL,
+	key				varchar		NOT NULL,
 	value			integer		NOT NULL,
 	PRIMARY KEY(id,key)
 );
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS GIS_lines_heading(
 
 CREATE TABLE IF NOT EXISTS WED_beacons(
 	id				integer		PRIMARY KEY,
-	type			string		NOT NULL
+	type			varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_windsocks(
@@ -124,45 +124,45 @@ CREATE TABLE IF NOT EXISTS WED_towerviewpoint(
 
 CREATE TABLE IF NOT EXISTS WED_airportsign(
 	id				integer		PRIMARY KEY,
-	style			string		NOT NULL,
-	size			string		NOT NULL
+	style			varchar		NOT NULL,
+	size			varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_lightfixture(
 	id				integer		PRIMARY KEY,
-	kind			string		NOT NULL,
+	kind			varchar		NOT NULL,
 	angle			double		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_helipad(
 	id				integer		PRIMARY KEY,
-	surface			string		NOT NULL,
-	markings		string		NOT NULL,
-	shoulder		string		NOT NULL,
+	surface			varchar		NOT NULL,
+	markings		varchar		NOT NULL,
+	shoulder		varchar		NOT NULL,
 	roughness		double		NOT NULL,
-	lights			string		NOT NULL
+	lights			varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_runway(
 	id				integer		PRIMARY KEY,
-	surface			string		NOT NULL,
-	shoulder		string		NOT NULL,
+	surface			varchar		NOT NULL,
+	shoulder		varchar		NOT NULL,
 	roughness		double		NOT NULL,
 	center_lites	integer		NOT NULL,
-	edge_lites		string		NOT NULL,
+	edge_lites		varchar		NOT NULL,
 	distance_signs	integer		NOT NULL,
 	displaced1		double		NOT NULL,
 	blastpad1		double		NOT NULL,
-	markings1		string		NOT NULL,
-	app_lites1		string		NOT NULL,
+	markings1		varchar		NOT NULL,
+	app_lites1		varchar		NOT NULL,
 	TDZL1			integer		NOT NULL,
-	REIL1			string		NOT NULL,
+	REIL1			varchar		NOT NULL,
 	displaced2		double		NOT NULL,
 	blastpad2		double		NOT NULL,
-	markings2		string		NOT NULL,
-	app_lites2		string		NOT NULL,
+	markings2		varchar		NOT NULL,
+	app_lites2		varchar		NOT NULL,
 	TDZL2			integer		NOT NULL,
-	REIL2			string		NOT NULL
+	REIL2			varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_sealane(
@@ -177,28 +177,28 @@ CREATE TABLE IF NOT EXISTS WED_airportchains(
 
 CREATE TABLE IF NOT EXISTS WED_taxiway(
 	id				integer		PRIMARY KEY,
-	surface			string		NOT NULL,
+	surface			varchar		NOT NULL,
 	roughness		double		NOT NULL,
 	heading			double		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_airport(
 	id				integer		PRIMARY KEY,
-	kind			string		NOT NULL,
+	kind			varchar		NOT NULL,
 	elevation		double		NOT NULL,
 	has_atc			integer		NOT NULL,
-	icao			string		NOT NULL
+	icao			varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_ATCFrequency(
 	id				integer		PRIMARY KEY,
-	kind			string		NOT NULL,
+	kind			varchar		NOT NULL,
 	freq			double		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_airportnode(
 	id				integer		NOT NULL,
-	attributes		string		NOT NULL,
+	attributes		varchar		NOT NULL,
 	PRIMARY KEY(id,attributes)	
 );
 
@@ -220,14 +220,14 @@ CREATE TABLE IF NOT EXISTS WED_texturenode_bezier(
 
 CREATE TABLE IF NOT EXISTS WED_overlayimage(
 	id				integer		PRIMARY KEY,
-	file			string		NOT NULL
+	file			varchar		NOT NULL
 );
 
 -- Specific types for DSF overlays
 
 CREATE TABLE IF NOT EXISTS WED_dsf_overlay(
 	id				integer		PRIMARY KEY,
-	resource		string		NOT NULL
+	resource		varchar		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_dsf_polygon(
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS WED_dsf_polygon(
 
 CREATE TABLE IF NOT EXISTS WED_exclusionzone(
 	id				integer		NOT NULL,
-	exclusions		string		NOT NULL,
+	exclusions		varchar		NOT NULL,
 	PRIMARY KEY(id,exclusions)	
 );
 
@@ -248,15 +248,15 @@ CREATE TABLE IF NOT EXISTS WED_exclusionzone(
 
 CREATE TABLE IF NOT EXISTS WED_enum_system(
 	value			integer		PRIMARY KEY,
-	name			string		NOT NULL,
-	desc			string		NOT NULL,
+	name			varchar		NOT NULL,
+	desc			varchar		NOT NULL,
 	domain			integer		NOT NULL,
 	export			integer		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_doc_prefs(
-	key				string		PRIMARY KEY,
-	value			string
+	key				varchar		PRIMARY KEY,
+	value			varchar
 );
 
 INSERT OR REPLACE INTO WED_things VALUES(1,0,0,"root",0);

@@ -8,25 +8,25 @@ CREATE TABLE IF NOT EXISTS WED_taxiroute(
 
 CREATE TABLE IF NOT EXISTS WED_taxiroute_depart(
 	id				integer		NOT NULL,
-	departures		string		NOT NULL,
+	departures		varchar		NOT NULL,
 	PRIMARY KEY(id,departures)
 );		
 
 CREATE TABLE IF NOT EXISTS WED_taxiroute_arrive(
 	id				integer		NOT NULL,
-	arrivals		string		NOT NULL,
+	arrivals		varchar		NOT NULL,
 	PRIMARY KEY(id,arrivals)
 );		
 
 CREATE TABLE IF NOT EXISTS WED_taxiroute_ils(
 	id				integer		NOT NULL,
-	ils		string		NOT NULL,
+	ils		varchar		NOT NULL,
 	PRIMARY KEY(id,ils)
 );		
 	
 CREATE TABLE IF NOT EXISTS WED_atcflow(
 	id				integer		PRIMARY KEY,
-	icao			string		NOT NULL,
+	icao			varchar		NOT NULL,
 	cld_min			integer		NOT NULL,
 	vis_min			integer		NOT NULL,
 	wnd_spd_max		integer		NOT NULL,
