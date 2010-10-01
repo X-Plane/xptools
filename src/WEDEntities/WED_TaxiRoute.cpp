@@ -33,7 +33,7 @@ DEFINE_PERSISTENT(WED_TaxiRoute)
 TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	oneway(this,"Direction","WED_taxiroute","oneway", 1),
+	oneway(this,"One-Way","WED_taxiroute","oneway", 1),
 	runway(this,"Runway", "WED_taxiroute","runway", ATCRunwayTwoway, atc_rwy_None),
 	hot_depart(this,"Departures","WED_taxiroute_depart","departures", ATCRunwayOneway,false),
 	hot_arrive(this,"Arrivals","WED_taxiroute_arrive","arrivals", ATCRunwayOneway,false),
