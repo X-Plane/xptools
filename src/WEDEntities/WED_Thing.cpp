@@ -210,7 +210,7 @@ void			WED_Thing::ToDB(sqlite3 * db)
 			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
 		}
 	}
-
+	
 	// Write our properties and parent.  Children array is not written - it is inferred by a backward query.
 	sql_command write_me(db,"INSERT OR REPLACE INTO WED_things VALUES(@id,@parent,@seq,@name,@class_id);","@id,@parent,@seq,@name,@class_id");
 	sql_row5<int,int,int,string,int>	bindings(
@@ -222,6 +222,14 @@ void			WED_Thing::ToDB(sqlite3 * db)
 
 	err =  write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
+
+	// We have to clear out old viewers that we might have had!  INSERT OR REPLACE only replaces if we have a sane primary key.
+	// Since the viewer->source table is really a bunch of tuples (with ordering), we must nuke everything or we'll have stale points.
+	char cmd_buf[1024];
+	sprintf(cmd_buf,"DELETE FROM WED_thing_viewers WHERE viewer=%d;",GetID());
+	sql_command clear_viewers(db,cmd_buf,NULL);
+	err = clear_viewers.simple_exec();
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 
 	// Write out our sources in order. 
 	sql_command write_src(db,"INSERT OR REPLACE INTO WED_thing_viewers VALUES(@v, @s,@n);","@v,@s,@n");
