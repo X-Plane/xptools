@@ -198,5 +198,25 @@ bool	WED_TaxiRoute::IsOneway(void) const
 	return oneway.value;
 }
 
+bool	WED_TaxiRoute::IsRunway(void) const
+{
+	return runway.value != atc_rwy_None;
+}
+
+bool	WED_TaxiRoute::HasHotArrival(void) const
+{
+	return !hot_arrive.value.empty();
+}
+
+bool	WED_TaxiRoute::HasHotDepart(void) const
+{
+	return !hot_depart.value.empty();
+}
+
+bool	WED_TaxiRoute::HasHotILS(void) const
+{
+	return !hot_ils.value.empty();
+}
+
 
 #endif

@@ -64,6 +64,14 @@ enum WED_Color {
 	wed_TextField_Text,
 	wed_TextField_Hilite,
 	wed_TextField_FocusRing,
+	
+	wed_Runway,						// In a future version these will be used to color airport taxi routing lines for some of their special properties.
+	wed_Runway_Selected,
+	wed_Hotzone,
+	wed_Hotzone_Selected,
+	wed_ILSzone,
+	wed_ILSzone_Selected,
+
 
 	wed_Last
 };

@@ -53,6 +53,7 @@
 #include "WED_AirportBeacon.h"
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
+#include "WED_TaxiRoute.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -775,6 +776,22 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			IGISEdge * gisedge = SAFE_CAST(IGISEdge, ps);
 			
 			bool one_way = gisedge != NULL && gisedge->IsOneway();
+
+			#if AIRPORT_ROUTING
+			bool hot = false;
+			bool ils = false;
+			bool rwy = false;
+			WED_TaxiRoute * tr = SAFE_CAST(WED_TaxiRoute, gisedge);
+			if(tr)
+			{
+				hot = tr->HasHotDepart() || tr->HasHotArrival();
+				rwy = tr->IsRunway();
+				ils = tr->HasHotILS();
+			}
+			if(hot)				struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+			else if(ils)		struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+			else if (rwy)		struct_color = selected ? wed_Runway_Selected : wed_Runway;
+			#endif
 			
 			int i, n = ps->GetNumSides();
 			for (i = 0; i < n; ++i)

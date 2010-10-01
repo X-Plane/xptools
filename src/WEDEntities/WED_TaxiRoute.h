@@ -40,6 +40,10 @@ public:
 	void		Export(		 AptRouteEdge_t& info) const;
 	
 	virtual		bool	IsOneway(void) const;
+				bool	IsRunway(void) const;
+				bool	HasHotArrival(void) const;
+				bool	HasHotDepart(void) const;
+				bool	HasHotILS(void) const;
 	
 				void		SetOneway(int p);
 				void		SetRunway(int r);
