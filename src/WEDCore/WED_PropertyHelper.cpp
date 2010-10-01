@@ -33,6 +33,19 @@
 
 int gIsFeet = 0;
 
+inline string sqlite3_quote_string(const string& v)
+{
+	string quoted = "'";
+	for(string::const_iterator c = v.begin(); c != v.end(); ++c)
+	{
+		if(*c=='\'')
+			quoted.push_back(*c);
+		quoted.push_back(*c);
+	}
+	quoted += '\'';
+	return quoted;
+}
+
 inline int remap(const map<int,int>& m, int v)
 {
 	map<int,int>::const_iterator i = m.find(v);
@@ -445,9 +458,7 @@ void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * i
 
 void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 {
-	string quoted("'");
-	quoted += value;
-	quoted += '\'';
+	string quoted = sqlite3_quote_string(value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
 }
 
@@ -521,9 +532,7 @@ void		WED_PropFileText::ToDB(sqlite3 * db, const char * id_col, const char * id_
 
 void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
 {
-	string quoted("'");
-	quoted += value;
-	quoted += '\'';
+	string quoted = sqlite3_quote_string(value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
 }
 
