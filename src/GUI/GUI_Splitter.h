@@ -50,6 +50,9 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp(int x, int y, int button);
 	virtual	int			GetCursor(int x, int y);
+	
+	virtual void		SetBounds(int x1, int y1, int x2, int y2);
+	virtual void		SetBounds(int inBounds[4]);
 
 private:
 

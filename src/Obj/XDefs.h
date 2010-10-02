@@ -83,6 +83,9 @@
 // So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!  
 #define AIRPORT_ROUTING 0
 
+// Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
+#define SAFE_VECTORS 0
+
 #include "MemUtils.h"
 
 
@@ -96,6 +99,35 @@
 #include <string>
 #include <map>
 #include <set>
+
+#if SAFE_VECTORS && DEV
+
+	// This goo hacks vector to bounds check ALL array accesses...not fast, but a nice way to catch stupid out of bounds conditions.
+	namespace std
+	{
+		template <class T, class Allocator = allocator<T> >
+		class __dev_vector : public vector<T, Allocator>
+		{
+			public:
+				typedef vector<T,Allocator>					base_type;
+				typedef typename base_type::size_type		size_type;
+				typedef typename base_type::reference		reference;
+				typedef typename base_type::const_reference	const_reference;
+
+				explicit __dev_vector(									const Allocator& a = Allocator()) : base_type(		  a	){}
+				explicit __dev_vector(size_type n, const T& value = T(),const Allocator& a = Allocator()) : base_type(n,value,a	){}
+
+				template <class InputIterator>
+					__dev_vector(InputIterator first, InputIterator last,const Allocator& a = Allocator()) : base_type(first,last, a){}
+					__dev_vector(const __dev_vector& x													 ) : base_type(x			){}
+
+				inline 	     reference operator[](size_type n)		 {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
+				inline const_reference operator[](size_type n) const {assert(n>=0 && n<base_type::size()); return base_type::operator[](n);}
+		};
+	}
+	#define vector __dev_vector
+	
+#endif
 
 using namespace std;
 

@@ -117,7 +117,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	lib->GetAdapter()->SetMap(mMapPane);
 	mMapPane->SetParent(mMainSplitter2);
 	mMapPane->Show();
-	mMapPane->SetSticky(1,1,0.5,1);
+	mMapPane->SetSticky(1,1,1,1);
 
 	GUI_Pane * top_bar = mMapPane->GetTopBar();
 	top_bar->SetParent(packer);
@@ -228,13 +228,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	int zw[2];
 	XWin::GetBounds(zw,zw+1);
 
-	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.25f);
-	int main_split2 = inDocument->ReadIntPref("window/main_split2",(zw[0]) * 0.5f);
-	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
+	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
+	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
+	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);
 
-	if (main_split > (zw[0])) main_split = (zw[0]) * 0.25f;
-	if (main_split2 > (zw[0] - main_split)) main_split2 = (zw[0]) * 0.5f;
-	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
 
 	mMainSplitter->AlignContentsAt(main_split);
 	mMainSplitter2->AlignContentsAt(main_split2);
@@ -266,10 +263,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		{
 			int zw[2];
 			XWin::GetBounds(zw,zw+1);
-			int main_split = (zw[0]) * 0.5f;
-			int prop_split = (zw[1]) * 0.5f;
+			int main_split = zw[0] / 5;
+			int main_split2 = zw[0] * 2 / 3;
+			int prop_split = zw[1] / 2;
+
 			mMainSplitter->AlignContentsAt(main_split);
+			mMainSplitter2->AlignContentsAt(main_split2);
 			mPropSplitter->AlignContentsAt(prop_split);
+
 		}
 		return 1;
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;

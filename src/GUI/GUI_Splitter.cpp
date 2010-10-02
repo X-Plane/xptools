@@ -130,15 +130,25 @@ void		GUI_Splitter::MouseDrag(int x, int y, int button)
 		GetNthChild(0)->GetBounds(b1);
 		GetNthChild(1)->GetBounds(b2);
 
+		int ss = GetSplitSize();
+
 		if (mDirection == gui_Split_Horizontal)
 		{
+			int smin = b[0];
+			int smax = b[2] - ss;			
 			b1[2] = x - mSlop;
-			b2[0] = x - mSlop + GetSplitSize();
+			if(b1[2] < smin)	b1[2] = smin;
+			if(b1[2] > smax)	b1[2] = smax;
+			b2[0] = b1[2] + ss;
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
+			int smin = b[1];
+			int smax = b[3] - ss;
 			b1[3] = y - mSlop;
-			b2[1] = y - mSlop + GetSplitSize();
+			if(b1[3] < smin) b1[3] = smin;
+			if(b1[3] > smax) b1[3] = smax;
+			b2[1] = b1[3] + ss;
 			b1[0] = b2[0] = b[0];
 			b1[2] = b2[2] = b[2];
 		}
@@ -182,22 +192,27 @@ void		GUI_Splitter::AlignContents()
 		GetNthChild(0)->GetBounds(b1);
 		GetNthChild(1)->GetBounds(b2);
 
+		int ss = GetSplitSize();
 		int split = mDirection == gui_Split_Horizontal ?
-			(b1[2] + b2[0] + GetSplitSize()) / 2 :
-			(b1[3] + b2[1] + GetSplitSize()) / 2;
+			(b1[2] + b2[0] + ss) / 2 :
+			(b1[3] + b2[1] + ss) / 2;
 
 		if (mDirection == gui_Split_Horizontal)
 		{
+			if(split < b[0]) split = b[0];
+			if(split > b[2]-ss) split = b[2]-ss;
 			b1[0] = b[0];
 			b1[2] = split;
-			b2[0] = split + GetSplitSize();
+			b2[0] = split + ss;
 			b2[2] = b[2];
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
+			if(split < b[1]) split = b[1];
+			if(split > b[3]-ss) split=b[3]-ss;
 			b1[1] = b[1];
 			b1[3] = split;
-			b2[1] = split + GetSplitSize();
+			b2[1] = split + ss;
 			b2[3] = b[3];
 			b1[0] = b2[0] = b[0];
 			b1[2] = b2[2] = b[2];
@@ -217,9 +232,13 @@ void		GUI_Splitter::AlignContentsAt(int split)
 		GetBounds(b);
 		GetNthChild(0)->GetBounds(b1);
 		GetNthChild(1)->GetBounds(b2);
-
+		int ss = GetSplitSize();
+		
 		if (mDirection == gui_Split_Horizontal)
 		{
+			if(split < b[0]) split = b[0];
+			if(split > b[2]-ss) split = b[2]-ss;
+		
 			b1[0] = b[0];
 			b1[2] = split;
 			b2[0] = split + GetSplitSize();
@@ -227,6 +246,9 @@ void		GUI_Splitter::AlignContentsAt(int split)
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
+			if(split < b[1]) split = b[1];
+			if(split > b[3]-ss) split=b[3]-ss;
+		
 			b1[1] = b[1];
 			b1[3] = split;
 			b2[1] = split + GetSplitSize();
@@ -267,4 +289,52 @@ int		GUI_Splitter::GetSplitSize(void)
 	} else {
 		return GUI_GetImageResourceWidth("splitter_v.png") / 2;
 	}
+}
+
+void		GUI_Splitter::SetBounds(int x1, int y1, int x2, int y2)
+{
+	int b[4] = { x1, y1, x2, y2 };
+	this->SetBounds(b);
+}
+
+void		GUI_Splitter::SetBounds(int inBounds[4])
+{
+	GUI_Pane::SetBounds(inBounds);
+
+	if (CountChildren() > 1)
+	{
+		int b[4], b1[4], b2[4];
+		GetBounds(b);
+		GetNthChild(0)->GetBounds(b1);
+		GetNthChild(1)->GetBounds(b2);
+		int ss = GetSplitSize();
+		int split = mDirection == gui_Split_Horizontal ? b1[2] : b1[3];
+
+		
+		if (mDirection == gui_Split_Horizontal)
+		{
+			if(split < b[0]) split = b[0];
+			if(split > b[2]-ss) split = b[2]-ss;
+		
+			b1[0] = b[0];
+			b1[2] = split;
+			b2[0] = split + GetSplitSize();
+			b2[2] = b[2];
+			b1[1] = b2[1] = b[1];
+			b1[3] = b2[3] = b[3];
+		} else {
+			if(split < b[1]) split = b[1];
+			if(split > b[3]-ss) split=b[3]-ss;
+		
+			b1[1] = b[1];
+			b1[3] = split;
+			b2[1] = split + GetSplitSize();
+			b2[3] = b[3];
+			b1[0] = b2[0] = b[0];
+			b1[2] = b2[2] = b[2];
+		}
+		GetNthChild(0)->SetBounds(b1);
+		GetNthChild(1)->SetBounds(b2);
+	}
+	
 }

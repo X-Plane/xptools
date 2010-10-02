@@ -6,7 +6,7 @@
 
 //
 
-//  Copyright (C) 2002 Tanguy Fautré.
+//  Copyright (C) 2002 Tanguy FautrÃˆ.
 
 //
 
@@ -42,7 +42,7 @@
 
 //
 
-//  Tanguy Fautré
+//  Tanguy FautrÃˆ
 
 //  softdev@pandora.be
 
@@ -279,6 +279,7 @@ public:
 		nodetype & operator = (const nodetype & Elem)	{ return (m_Elem = Elem); }
 
 
+		node() : m_Marker(false) { }
 
 	protected:
 
@@ -288,7 +289,6 @@ public:
 
 
 
-		node() : m_Marker(false) { }
 
 
 

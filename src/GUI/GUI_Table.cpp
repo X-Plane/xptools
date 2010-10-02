@@ -541,10 +541,13 @@ void	GUI_Table::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[
 		return;
 	}
 
+	int rc = mGeometry->GetRowCount();
+	int cc = mGeometry->GetColCount();
+
 	outTotalBounds[0] = b[0] - GetScrollH();
 	outTotalBounds[1] = b[1] - GetScrollV();
-	outTotalBounds[2] = b[0] - GetScrollH() + mGeometry->GetCellRight(mGeometry->GetColCount()-1);
-	outTotalBounds[3] = b[1] - GetScrollV() + mGeometry->GetCellTop(mGeometry->GetRowCount()-1);
+	outTotalBounds[2] = b[0] - GetScrollH() + (cc ? mGeometry->GetCellRight(cc-1) : 0);
+	outTotalBounds[3] = b[1] - GetScrollV() + (rc ? mGeometry->GetCellTop(rc-1) : 0);
 }
 
 void	GUI_Table::ScrollH(float xOffset)

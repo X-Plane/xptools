@@ -60,10 +60,10 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 
 	char buf[1024];
 
-	sprintf(buf,"WED " WED_VERSION_STRING ", compiled on "__DATE__" "__TIME__);
-	float color[4] = { 1.0, 1.0, 1.0, 1.0 };
-
 	float f = GUI_GetLineHeight(font_UI_Basic);
+	float color[4] = { 1.0, 1.0, 1.0, 0.7 };
+
+	sprintf(buf,"WorldEditor " WED_VERSION_STRING ", compiled on "__DATE__" "__TIME__);
 
 	GUI_FontDrawScaled(state, font_UI_Basic, color,
 		bounds[0],
@@ -71,6 +71,26 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		bounds[2],
 		bounds[0] * 0.75 + bounds[2] * 0.25 + f * 0.5,
 		buf,buf+strlen(buf), align_Center);
+
+	// Don't like how you have been acredited (or NOT acredited)?  FIX IT!  Change the code
+	// here, submit a patch, or file a bug report.
+
+	const char * credits[] = { 
+		"Thanks to Janos Laube and everyone else", 
+		"who has contributed to WorldEditor's development.", 
+		0 };
+	int n = 0;
+	while(credits[n])
+	{
+		GUI_FontDrawScaled(
+			state,font_UI_Basic,color,
+			bounds[0],
+			bounds[0] * 0.75 + 
+			bounds[2] * 0.25 - 2.5 * f - n * f,
+			bounds[2],bounds[0] * 0.75 + bounds[2] * 0.25 - 1.5 * f - n * f,
+			credits[n],credits[n]+strlen(credits[n]),align_Center);
+		++n;
+	}
 
 }
 
