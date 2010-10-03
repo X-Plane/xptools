@@ -44,6 +44,12 @@
 #define __DEBUGGING__
 #include "XUtils.h"
 #endif
+//#if OPENGL_MAP
+//#include "GISTool_Globals.h"
+//#if !DEV
+//	#error killl this
+//#endif
+//#endif
 
 typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
@@ -153,7 +159,7 @@ inline bool must_burn_he(Halfedge_handle he)
 		   tw->data().mParams.count(he_MustBurn) ||
 //		   f1->data().GetZoning() != f2->data().GetZoning() ||
 #if !DEV
-	#error put zoning back
+//	#error put zoning back
 #endif
 		   f1->data().mTerrainType != f2->data().mTerrainType;
 }
@@ -891,7 +897,7 @@ double CopyWetPoints(
 	// in this case...xy_nearest could care less...and the polygon rasterizer doesn't care much
 	// either.  We do not generate any coastline edges here.
 
-	PolyRasterizer	rasterizer;
+	PolyRasterizer<double>	rasterizer;
 	SetupWaterRasterizer(map, in_orig, rasterizer);
 
 	CDT::Face_handle	hint;
@@ -2381,7 +2387,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 /*******************************************************************************************
  *	UTILITY ROUTINES
  *******************************************************************************************/
-void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& rasterizer)
+void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<double>& rasterizer)
 {
 	for (Pmwx::Edge_const_iterator i = map.edges_begin(); i != map.edges_end(); ++i)
 	{
@@ -2400,13 +2406,7 @@ void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer& r
 
 //				fprintf(fi,"%lf,%lf    %lf,%lf   %s\n", x1,y1,x2,y2, ((y1 == 0.0 || y2 == 0.0) && y1 != y2) ? "****" : "");
 
-			if (y1 != y2)
-			{
-				if (y1 < y2)
-					rasterizer.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
-				else
-					rasterizer.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
-			}
+			rasterizer.AddEdge(x1,y1,x2,y2);
 		}
 	}
 	rasterizer.SortMasters();

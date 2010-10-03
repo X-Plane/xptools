@@ -27,6 +27,7 @@
 #include "ProgressUtils.h"
 #include "CompGeomDefs3.h"
 
+template<typename Number>
 struct	PolyRasterizer;
 struct	DEMGeo;
 class	DEMGeoMap;
@@ -49,7 +50,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDems,
 								const char * mesh_folder,
 								ProgressFunc inProg);
 
-void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer& outRasterizer);
+void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer<double>& outRasterizer);
 double	HeightWithinTri(CDT& inMesh, CDT::Face_handle tri, CDT::Point in);
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id);
 void	Calc2ndDerivative(DEMGeo& ioDEM);

@@ -46,6 +46,7 @@
 #include "ForestTables.h"
 #include "BlockFill.h"
 #include "MapPolygon.h"
+#include "GISTool_Globals.h"
 
 static double calc_water_area(void)
 {
@@ -460,44 +461,78 @@ static int DoClear(const vector<const char *>& args)
 
 static int DoHack(const vector<const char *>& args)
 {
-#if 0
-	gFaceSelection.clear();
-	double r = atof(args[0]);
-	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-	if(!f->is_unbounded())
+	DEMGeo d(1201,1201);
+
+	Point_2 sw, ne;
+	CalcBoundingBox(gMap, sw,ne);
+	d.mWest = round(CGAL::to_double(sw.x()));
+	d.mSouth = round(CGAL::to_double(sw.y()));
+	d.mEast = round(CGAL::to_double(ne.x()));
+	d.mNorth = round(CGAL::to_double(ne.y()));
+	
 	{
-		Polygon_with_holes_2 pwh;
-		Bbox_2 e;
-		PolygonFromFace(f, pwh, NULL, NULL, &e);
-		if(IsPolygonSliver(pwh, r, e))
-			gFaceSelection.insert(f);
+		PolyRasterizer<double>	r;
+		SetupWaterRasterizer(gMap, d, r);
+	
+		StElapsedTime	time_scan("time_scan line");
+		
+		double y = 0;
+		r.StartScanline(y);
+		vector<double> f;
+		while(!r.DoneScan())
+		{
+			double yy = y+1.0;
+			r.GetLine(f,yy);
+			assert(f.size() % 2 == 0);
+			#if DEV
+			for(int n = 0; n < f.size(); n += 2)
+			{
+				assert(f[n] <= f[n+1]);
+				debug_mesh_line(Point2(
+						d.x_to_lon_double(f[n]),
+						d.y_to_lat_double(y)),
+								Point2(
+						d.x_to_lon_double(f[n+1]),
+						d.y_to_lat_double(y)),
+						0.2,0.2,1, 0.2,0.2,1);
+			}
+			#endif			
+			++y;
+			r.AdvanceScanline(y);
+		}
 	}
-		//	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-//	if(!f->is_unbounded())
-
-//	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-//	if(!f->is_unbounded())
-//	if(!f->data().IsWater())
-//	if(gFaceSelection.count(f) || gFaceSelection.empty())
-//	{
-//		CoordTranslator_2	trans;
-//		Block_2 block;
-//		
-//		init_block(f, block, trans);
-//		
-//		apply_fill_rules(block, trans);
-//		
-//		extract_features(block, f, trans);
-//	}
-
-//	Pmwx	foo;
-//
-//	DEMGeo& f(gDem[dem_ForestType]);
-//	MapFromDEM(f, 0, 0, f.mWidth, f.mHeight, NO_VALUE, foo);
-
-//	if(!gFaceSelection.empty())
-//	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,*gFaceSelection.begin(), gProgress);
-#endif
+	{
+		PolyRasterizer<double>	rr;
+		SetupWaterRasterizer(gMap, d, rr);
+	
+		StElapsedTime	time_scan("time_scan box");
+		
+		BoxRasterizer<double> b(&rr);
+		
+		double y = 0;
+		b.StartScanline(y,y+1);
+		while(!b.DoneScan())
+		{
+			vector<double> f;
+			b.GetLineTrash(f);
+			assert(f.size() % 2 == 0);
+			#if DEV
+			for(int n = 0; n < f.size(); n += 2)
+			{
+				assert(f[n] <= f[n+1]);
+				debug_mesh_line(Point2(
+						d.x_to_lon_double(f[n]),
+						d.y_to_lat_double(y+0.5)),
+								Point2(
+						d.x_to_lon_double(f[n+1]),
+						d.y_to_lat_double(y+0.5)),
+						1,1,1, 1,1,1);
+			}
+			#endif			
+			++y;
+			b.AdvanceScanline(y,y+1);
+		}
+	}
 	return 0;
 }
 

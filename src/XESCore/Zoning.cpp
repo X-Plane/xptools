@@ -319,7 +319,7 @@ void	ZoneManMadeAreas(
 			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) has_water = 1;
 		} while (++circ != stop);
 
-		PolyRasterizer	r;
+		PolyRasterizer<double>	r;
 		int x, y, x1, x2;
 		y = SetupRasterizerForDEM(face, inLanduse, r);
 		r.StartScanline(y);
@@ -385,7 +385,7 @@ void	ZoneManMadeAreas(
 		for(map<int,int>::iterator i = histo.begin(); i != histo.end(); ++i)
 			histo2.insert(multimap<int,int, greater<int> >::value_type(i->second,i->first));		
 
-		PolyRasterizer  r2;
+		PolyRasterizer<double>  r2;
         y = SetupRasterizerForDEM(face, inSlope, r2);
         r2.StartScanline(y);
         int scount = 0;

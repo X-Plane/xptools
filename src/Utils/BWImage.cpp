@@ -111,7 +111,7 @@ BWINLINE void			BWImage::RasterizeLocal(
 						const vector<Polygon2>& inPolygon)
 {
 	bool	it = false;
-	PolyRasterizer	rasterizer;
+	PolyRasterizer<double>	rasterizer;
 
 	int bottom = mHeight-1;
 	int top = 0;
@@ -120,15 +120,7 @@ BWINLINE void			BWImage::RasterizeLocal(
 	for (int i = 0; i < poly->size(); ++i)
 	{
 		int j = (i+1)%poly->size();
-		if ((*poly)[i].y() != (*poly)[j].y())
-		{
-			if ((*poly)[i].y() < (*poly)[j].y())
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[i].x(), (*poly)[i].y(),
-												 			 (*poly)[j].x(), (*poly)[j].y()));
-			else
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[j].x(), (*poly)[j].y(),
-												 			 (*poly)[i].x(), (*poly)[i].y()));
-		}
+		rasterizer.AddEdge((*poly)[i].x(), (*poly)[i].y(),(*poly)[j].x(), (*poly)[j].y());
 		if ((*poly)[i].y() < bottom)
 			bottom = (*poly)[i].y();
 		if (ceil((*poly)[i].y()) > top)
@@ -200,7 +192,7 @@ BWINLINE void			BWImage::RasterizeLocal(
 BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 						const vector<Polygon2>& inPolygon)
 {
-	PolyRasterizer	rasterizer;
+	PolyRasterizer<double>	rasterizer;
 
 	int bottom = mHeight-1;
 	int top = 0;
@@ -217,15 +209,7 @@ BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 		}
 
 		int j = (i+1)%poly->size();
-		if ((*poly)[i].y() != (*poly)[j].y())
-		{
-			if ((*poly)[i].y() < (*poly)[j].y())
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[i].x(), (*poly)[i].y(),
-												 			 (*poly)[j].x(), (*poly)[j].y()));
-			else
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[j].x(), (*poly)[j].y(),
-												 			 (*poly)[i].x(), (*poly)[i].y()));
-		}
+		rasterizer.AddEdge((*poly)[i].x(), (*poly)[i].y(),(*poly)[j].x(), (*poly)[j].y());
 		if ((*poly)[i].y() < bottom)
 			bottom = (*poly)[i].y();
 		if (ceil((*poly)[i].y()) > top)
@@ -317,7 +301,7 @@ BWINLINE bool			BWImage::RasterizeLocalStopConflicts(
 BWINLINE bool			BWImage::RasterizeLocalCheck(
 						const vector<Polygon2>& inPolygon)
 {
-	PolyRasterizer	rasterizer;
+	PolyRasterizer<double>	rasterizer;
 
 	int bottom = mHeight-1;
 	int top = 0;
@@ -334,15 +318,8 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 		}
 
 		int j = (i+1)%poly->size();
-		if ((*poly)[i].y() != (*poly)[j].y())
-		{
-			if ((*poly)[i].y() < (*poly)[j].y())
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[i].x(), (*poly)[i].y(),
-												 			 (*poly)[j].x(), (*poly)[j].y()));
-			else
-				rasterizer.masters.push_back(PolyRasterSeg_t((*poly)[j].x(), (*poly)[j].y(),
-												 			 (*poly)[i].x(), (*poly)[i].y()));
-		}
+		rasterizer.AddEdge((*poly)[i].x(), (*poly)[i].y(), (*poly)[j].x(), (*poly)[j].y());
+
 		if ((*poly)[i].y() < bottom)
 			bottom = (*poly)[i].y();
 		if (ceil((*poly)[i].y()) > top)

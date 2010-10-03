@@ -643,7 +643,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	for (xp = 0; xp < ioTransport.mWidth ; ++xp)
 		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_globcover_WATER) ? 1.0 : 0.0;
 
-	PolyRasterizer	rasterizer;
+	PolyRasterizer<double>	rasterizer;
 	SetupWaterRasterizer(inMap, ioTransport, rasterizer);
 	int x, y = 0;
 	rasterizer.StartScanline(y);
@@ -748,7 +748,7 @@ static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx
  */
 void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool trees)
 {
-	PolyRasterizer rasterizer;
+	PolyRasterizer<double> rasterizer;
 	Pmwx::Ccb_halfedge_const_circulator	iter, stop;
 	iter = stop = face->outer_ccb();
 	do {

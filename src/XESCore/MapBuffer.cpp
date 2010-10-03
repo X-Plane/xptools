@@ -87,7 +87,9 @@ inline	void	MoveSegLeft_(const Segment_2& l1, double dist, Segment_2& l2, Vector
 {
 	offset_vector = Vector_2(l1.source(), l1.target()).perpendicular(CGAL::COUNTERCLOCKWISE);
 	offset_vector = normalize(offset_vector) * dist;
-	l2 = Segment_2(l1.source() + offset_vector, l1.target() + offset_vector);
+	Point_2 p1(l1.source() + offset_vector);
+	Point_2 p2(l1.target() + offset_vector);
+	l2 = Segment_2(p1,p2);
 }
 
 
@@ -97,6 +99,8 @@ bool IsTriangleInverted(
 					const RingInset_t *		in_insets,
 					double					in_inset)
 {
+	DebugAssert(new_polygon.size() >= in_polygon.size());
+	DebugAssert(3 == in_polygon.size());
 	Line_2	l0(in_polygon.edge(0));
 	Line_2	l1(in_polygon.edge(1));
 	Line_2	l2(in_polygon.edge(2));
@@ -155,6 +159,7 @@ static void	BuildPointSequence(
 	DebugAssert(input_seq.size() >= 2);
 
 	// First we calculate the inset edges of each side of the polygon in a vacuum.
+
 
 	for (n = 0; n < input_seq.size(); ++n)
 	{
@@ -427,7 +432,7 @@ void	BufferPolygon(
 //		return;
 //	}
 
-	if	(in_polygon.size() == 3 &&
+	if	(in_polygon.size() == 3 && inset_seq.size() == 3 &&
 		(in_polygon.is_counterclockwise_oriented() == (in_inset > 0.0)) &&
 		IsTriangleInverted(in_polygon,inset_seq, in_insets,in_inset))
 	{

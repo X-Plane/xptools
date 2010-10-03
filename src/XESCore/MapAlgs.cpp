@@ -34,8 +34,9 @@
 #include "STLUtils.h"
 #include "MapPolygon.h"
 #include "MapHelpers.h"
-#if DEV
-#include "GISTool_Globals.h"
+
+#if OPENGL_MAP
+	#include "RF_Selection.h"
 #endif
 
 #if CGAL_BETA_SIMPLIFIER
@@ -1734,7 +1735,7 @@ double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e)
 
 float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outMin, float * outMax)
 {
-	PolyRasterizer	rast;
+	PolyRasterizer<double>	rast;
 	int count = 0;
 	float e;
 	float avg = 0.0;
@@ -1797,7 +1798,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 
 int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram)
 {
-	PolyRasterizer	rast;
+	PolyRasterizer<double>	rast;
 	int count = 0;
 	int e;
 	int y = SetupRasterizerForDEM(f, dem, rast);
@@ -1846,7 +1847,7 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 		}
 	}
 
-	PolyRasterizer	rast;
+	PolyRasterizer<double>	rast;
 	int x, y;
 	y = SetupRasterizerForDEM(allEdges, inSrcDEM, rast);
 
@@ -1885,7 +1886,7 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
 	return ok;
 }
 
-int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer)
+int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRasterizer<double>& rasterizer)
 {
 	set<Halfedge_handle>	all, useful;
 	FindEdgesForFace<Pmwx>(f, all);
@@ -1897,7 +1898,7 @@ int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRas
 	return SetupRasterizerForDEM(useful, dem, rasterizer);
 }
 
-int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer& rasterizer)
+int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer<double>& rasterizer)
 {
 	for (set<Halfedge_handle>::const_iterator e = inEdges.begin(); e != inEdges.end(); ++e)
 	{
@@ -1906,13 +1907,7 @@ int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& de
 		double x2 = dem.lon_to_x(CGAL::to_double((*e)->target()->point().x()));
 		double y2 = dem.lat_to_y(CGAL::to_double((*e)->target()->point().y()));
 
-		if (y1 != y2)
-		{
-			if (y1 < y2)
-				rasterizer.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
-			else
-				rasterizer.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
-		}
+		rasterizer.AddEdge(x1,y1,x2,y2);
 	}
 
 	rasterizer.SortMasters();
@@ -2235,21 +2230,128 @@ void MapSimplify(Pmwx& pmwx, double metric)
 #endif
 }
 
+bool IsFaceNotSliverFast(Pmwx::Face_handle f, double metric)
+{
+	if(f->is_unbounded()) return false;
+	PolyRasterizer<double> rasterizer;
+	
+	Pmwx::Ccb_halfedge_circulator circ,stop;
+	circ = stop = f->outer_ccb();
+	do {
+
+		double x1 = (CGAL::to_double(circ->source()->point().x()));
+		double y1 = (CGAL::to_double(circ->source()->point().y()));
+		double x2 = (CGAL::to_double(circ->target()->point().x()));
+		double y2 = (CGAL::to_double(circ->target()->point().y()));
+
+		rasterizer.AddEdge(x1,y1,x2,y2);
+		
+	} while (++circ != stop);
+
+	for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+	{
+		circ = stop = *h;
+		do {
+			double x1 = (CGAL::to_double(circ->source()->point().x()));
+			double y1 = (CGAL::to_double(circ->source()->point().y()));
+			double x2 = (CGAL::to_double(circ->target()->point().x()));
+			double y2 = (CGAL::to_double(circ->target()->point().y()));
+
+			rasterizer.	AddEdge(x1,y1,x2,y2);
+			
+		} while (++circ != stop);
+	}
+
+	rasterizer.SortMasters();
+
+	double y = rasterizer.bounds[1];
+/*	rasterizer.StartScanline(y);
+	while(!rasterizer.DoneScan())
+	{
+		vector<double> pts;
+		double yy = y;
+		y += metric;
+		rasterizer.GetLine(pts,y);
+		for(int n = 0; n < pts.size(); n += 2)
+			debug_mesh_line(Point2(pts[n], yy), Point2(pts[n+1], yy), 1,0,0,0,1,0);
+		rasterizer.AdvanceScanline(y);
+	}
+
+	rasterizer.SortMasters();
+	rasterizer.actives.clear();
+
+	y = rasterizer.bounds[1];*/
+
+	BoxRasterizer<double> braster(&rasterizer);
+
+	braster.StartScanline(y, y + metric);
+
+	while(!braster.DoneScan())
+	{
+		vector<double> line;
+		braster.GetLineTrash(line);
+
+		for(int n = 0; n < line.size(); n += 2)
+		{
+			if(line[n+1]-line[n] > metric)
+				return true;
+//			debug_mesh_line(Point2(line[n],y),Point2(line[n+1],y),1,1,1,1,1,1);
+//			debug_mesh_line(Point2(line[n],y+metric),Point2(line[n+1],y+metric),1,1,1,1,1,1);
+//			debug_mesh_line(Point2(line[n],y),Point2(line[n],y+metric),1,1,1,1,1,1);
+//			debug_mesh_line(Point2(line[n+1],y),Point2(line[n+1],y+metric),1,1,1,1,1,1);
+		}
+		
+		y += metric;
+		braster.AdvanceScanline(y,y+metric);
+	}
+	return false;
+}
+
 int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 {
 	PROGRESS_START(func, 0, 1, "Deslivering...")
 	int ctr = 0, tot = pmwx.number_of_faces();
 	int chk = max(1,tot/100);
 	int ret = 0;
+	
+	int fast = 0;
+	int sliver = 0;
+	int total = 0;
+	
+	set<Pmwx::Face_handle> bad;
 
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())
+	#if OPENGL_MAP
+	if(gFaceSelection.empty() || gFaceSelection.count(f))
+	#endif
+//	if(ctr >= 40259 )
 	{
 		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
 		Polygon_with_holes_2 pwh;
 		Bbox_2 bbox;
-		PolygonFromFace(f, pwh, NULL, NULL, &bbox);
-		if(IsPolygonSliver(pwh, metric, bbox))
+		bool maybe_sliver = !IsFaceNotSliverFast(f, metric * 3.0);
+		bool is_sliver = false;
+		
+		if(maybe_sliver)
+		{
+			PolygonFromFace(f, pwh, NULL, NULL, &bbox);
+//			if(ctr > 40259)
+			is_sliver = IsPolygonSliver(pwh, metric, bbox);
+		}
+		++total;
+		if(is_sliver) ++sliver;
+		if(!maybe_sliver) ++fast;
+//		if(is_sliver && !maybe_sliver)
+//		{
+//			bad.insert(f);
+//			printf("Bad face at: %f,%f\n",	
+//				CGAL::to_double(f->outer_ccb()->target()->point().x()),
+//				CGAL::to_double(f->outer_ccb()->target()->point().y()));
+//		}
+		
+		is_sliver = false;
+		if(is_sliver)
 		{
 			set<Pmwx::Halfedge_handle>	my_edges;
 			FindEdgesForFace<Pmwx>(f,my_edges);
@@ -2265,24 +2367,27 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 				}
 				else
 				{
-					DebugAssert((*e)->twin()->face()->data().mTerrainType != f->data().mTerrainType);
+//					DebugAssert((*e)->twin()->face()->data().mTerrainType != f->data().mTerrainType);
 					other_lu_count[(*e)->twin()->face()->data().mTerrainType]++;
 				}
 			}
 			
-			if(!road_lu_count.empty())
-			{
-				++ret;
-				f->data().mTerrainType = highest_key<int,int>(road_lu_count);
-			}
-			else if (!other_lu_count.empty())
+			if (!other_lu_count.empty())
 			{
 				++ret;
 				f->data().mTerrainType = highest_key<int,int>(other_lu_count);
 			}
+			else if(!road_lu_count.empty())
+			{
+				++ret;
+				f->data().mTerrainType = highest_key<int,int>(road_lu_count);
+			}
 		}
 	}
 	PROGRESS_DONE(func, 0, 1, "Deslivering...")
+	printf("Fast checks: %d, slivers: %d, fixed: %d, total: %d\n", fast, sliver, ret, total);
+	
+//	gFaceSelection.insert(bad.begin(),bad.end());
 	return ret;
 }
 

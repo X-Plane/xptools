@@ -605,7 +605,7 @@ void	BuildRoadsForFace(
 
 		set<Face_handle>			no_road_faces;
 		set<Halfedge_handle>		bounds;
-		PolyRasterizer				raster;
+		PolyRasterizer<double>		raster;
 		for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 		if (!f->is_unbounded())
 		if(!RoadsForThisFace(f))
@@ -682,9 +682,9 @@ void	BuildRoadsForFace(
 		if(RoadsForThisFace(f))
 		{
 			// First build a polygon with tensor weights for the face we're working on.
-			vector<Point2>		poly;
-			vector<Vector2>		tensors;
-			PolyRasterizer		raster;
+			vector<Point2>			poly;
+			vector<Vector2>			tensors;
+			PolyRasterizer<double>	raster;
 
 
 			Pmwx::Ccb_halfedge_circulator	circ = f->outer_ccb();

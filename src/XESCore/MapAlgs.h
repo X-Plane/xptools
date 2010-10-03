@@ -31,6 +31,7 @@
 
 #include "MeshDefs.h"
 
+template<typename Number>
 struct	PolyRasterizer;
 struct	DEMGeo;
 
@@ -264,8 +265,8 @@ bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, D
  * the rasterize outer loop.
  *
  */
-int		SetupRasterizerForDEM(const Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer);
-int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer& rasterizer);
+int		SetupRasterizerForDEM(const Face_handle f, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
+int		SetupRasterizerForDEM(const set<Halfedge_handle>& inEdges, const DEMGeo& dem, PolyRasterizer<double>& rasterizer);
 
 /************************************************************************************************
  * POLYGON TRUNCATING AND EDITING
