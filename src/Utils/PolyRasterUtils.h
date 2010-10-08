@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <math.h>
+#include <assert.h>
 using std::vector;
 
 // Set to 1 to do heavy checking of the rasterizer.
@@ -56,8 +57,8 @@ struct	PolyRasterSeg_t {
 	bool LessInFutureThan(const PolyRasterSeg_t& rhs) const { return (x2-x1)*(rhs.y2-rhs.y1) < (rhs.x2-rhs.x1)*(y2-y1); }
 	// This is our intercept (X) with a given scanline (Y).
 	Number	CalcCurX(Number y) const;
-	
-	
+
+
 
 };
 
@@ -105,17 +106,17 @@ struct	PolyRasterizer {
 
 	// Start at this scanline. Call once to init.
 	void		StartScanline(Number y);
-	
+
 	// Go up to the next (increasing) scanline.  We can skip whole ranges of lines if we need!
 	void		AdvanceScanline(Number y);
-	
-	// This gives us the next time to scan that is at least as large as y.  In particular, if we 
+
+	// This gives us the next time to scan that is at least as large as y.  In particular, if we
 	// are in a "dead zone" where there is no polygon, and y is where we would jump, this can return
 	// a larger jump to the next point where something interesting happens.  This can be a huge win for
 	// mostly sparse empty areas.  Note that the return value is in no way "grid aligned" so it may have
 	// to be rounded down.
 	Number		NextNonEmptyTime(Number y);
-	
+
 	// This returns an entire scan line as range pairs.  Note that some range pairs may be zero length.
 	// next_y is input as the latest time we care about.  It will be reduced to an earlier time if there
 	// is a topological event that needs consideration coming up.
@@ -125,7 +126,7 @@ struct	PolyRasterizer {
 	// iterate along the scanline without allocating memory.
 	bool		GetRange(int& x1, int& x2);	// X1 is inclusive, X2 is exclusive
 
-	// This returns true when the scanner has nothing more to do.  It will not return true until the 
+	// This returns true when the scanner has nothing more to do.  It will not return true until the
 	// scanline has been advanced.  That is, if GetRange returns false on the last line, DoneScan won't
 	// return true until we advance one last time.  Note also that NextNonEmptyTime will return a valid
 	// scanline (the one you pass in) if there is nothing above us.  So bottom line: always just advance
@@ -145,13 +146,13 @@ private:
 	vector<ActiveSeg>			actives;
 	vector<ActiveSeg>			temp_actives;
 	vector<ActiveSeg>			new_actives;
-	
+
 	void		RecalcActiveCurX(void);			// Recalc current Y intercepts.
 	void		CleanupFinishedMasters(void);	// Throw out masters that we're not using.
 	void		InsertNewMasters(void);			// Add any masters that should be in but are not.
 
 	void		Validate(void) const;
-	
+
 	// This compares two active segments to figure out which one comes first.
 	struct compare_active_segs {
 		bool operator()(const ActiveSeg& lhs, const ActiveSeg& rhs) const
@@ -165,7 +166,7 @@ private:
 	struct active_seg_dead {
 		Number current_scan_y;
 		active_seg_dead(Number n) : current_scan_y(n) { }
-		bool operator()(const ActiveSeg& x) const 
+		bool operator()(const ActiveSeg& x) const
 		{
 			return x.first->y2 <= current_scan_y;
 		}
@@ -184,23 +185,23 @@ template<typename Number>
 struct	BoxRasterizer {
 
 			BoxRasterizer(PolyRasterizer<Number> * raster);
-	
+
 	// Start box rasterization at the range from y1 to y2.
 	void	StartScanline(Number y1, Number y2);
-	
+
 	// Continue at this interval...y1 must be at least >= to y2 from last time.
 	void	AdvanceScanline(Number y1, Number y2);
-	
+
 	// Get the line from advance scanline.  It is a list of interval pairs.
 	// Note that we can call this only once per advance, because it swaps
 	// memory instead of copying.
 	void	GetLineTrash(vector<Number>& out_line);
-	
+
 	// Are we done scanning?  Make sure to call advance first.
 	bool	DoneScan();
-	
-private:	
-		
+
+private:
+
 		PolyRasterizer<Number> *	rasterizer;
 
 		Number				y1;							// Current output.
@@ -211,7 +212,7 @@ private:
 	// from gumming up the namespace.
 	void IntersectRanges(vector<Number>& o, const vector<Number>& a, const vector<Number>& b);
 	void IntersectRanges(vector<Number>& o, const vector<Number>& a);
-		
+
 };
 
 /************************************************************************************************************************************
@@ -301,7 +302,7 @@ Number		PolyRasterizer<Number>::NextNonEmptyTime(Number y)
 	// No more segments to add and we're empty?  Let the client just go
 	// up one - it'll figure out we are done-done anyway.
 	if(unused_master_index == masters.size()) return y;
-	
+
 	// Hrm - no segments now?  Tell the client it's okay to jump
 	// all the way up to the next insert...we probably have a big gap.
 	return max(masters[unused_master_index].y1, y);
@@ -366,7 +367,7 @@ template<typename Number>
 void		PolyRasterizer<Number>::CleanupFinishedMasters(void)
 {
 	// We use the STL remove_if because it moves all remaining items to the left in a single O(N) pass, avoiding some
-	// thrash.  
+	// thrash.
 	typename vector<ActiveSeg>::iterator new_last = remove_if(actives.begin(), actives.end(), active_seg_dead(current_scan_y));
 	actives.erase(new_last, actives.end());
 }
@@ -391,7 +392,7 @@ void		PolyRasterizer<Number>::InsertNewMasters(void)
 		if (masters[unused_master_index].y2 > current_scan_y)				// Quick check: if y2 were to be on or below the scanline, we are already DONE with this guy.
 		{																	// Happens when a seg is so small it is BETWEEN scanlines!  Skip insert but DO increment unused index.
 			new_actives.push_back(ActiveSeg(								// This saves having to resort actives, bla bla bla.
-				&masters[unused_master_index], 
+				&masters[unused_master_index],
 				 masters[unused_master_index].CalcCurX(current_scan_y)));
 		}
 		unused_master_index++;
@@ -412,7 +413,7 @@ void		PolyRasterizer<Number>::InsertNewMasters(void)
 			// Slow case: use merge-sort to merge the two together, then swap the result back.
 			temp_actives.resize(new_actives.size() + actives.size());
 			#if DEV
-				typename vector<ActiveSeg>::iterator l = 
+				typename vector<ActiveSeg>::iterator l =
 			#endif
 			merge(actives.begin(),actives.end(),new_actives.begin(),new_actives.end(),temp_actives.begin(),compare_active_segs());
 			#if DEV
@@ -475,12 +476,12 @@ void BoxRasterizer<Number>::IntersectRanges(vector<Number>& out, const vector<Nu
 	out.clear();
 	if(a.empty())		return;
 	if(b.empty())		return;
-	
+
 	int na = 0, nb = 0;
-	
+
 	bool sa = false, sb = false;
 	out.reserve(a.size());				// Pre-allocate about 'a' number of cuts, to try to avoid vector hell.
-	
+
 	// Only do intersections whie BOTH are open.  Any hang-off-the-end of either is NOT in the final.
 	while(na < a.size() && nb < b.size())
 	{
@@ -488,22 +489,22 @@ void BoxRasterizer<Number>::IntersectRanges(vector<Number>& out, const vector<Nu
 		// "positivity" as the region we eval.
 		if(a[na] < b[nb])
 		{
-			sa = IS_POSITIVE(na);		
+			sa = IS_POSITIVE(na);
 			if(IS_POSITIVE(out.size()) == __boolean_op_func(sa,sb))
 				out.push_back(a[na]);
 			++na;
 		}
 		else if(a[na] > b[nb])
 		{
-			sb = IS_POSITIVE(nb);		
+			sb = IS_POSITIVE(nb);
 			if(IS_POSITIVE(out.size()) == __boolean_op_func(sa,sb))
 				out.push_back(b[nb]);
-			++nb;			
+			++nb;
 		}
 		else
 		{
-			sa = IS_POSITIVE(na);		
-			sb = IS_POSITIVE(nb);		
+			sa = IS_POSITIVE(na);
+			sb = IS_POSITIVE(nb);
 			if(IS_POSITIVE(out.size()) == __boolean_op_func(sa,sb))
 				out.push_back(b[nb]);
 			++na;
@@ -528,22 +529,22 @@ void BoxRasterizer<Number>::IntersectRanges(vector<Number>& o, const vector<Numb
 }
 
 template<typename Number>
-BoxRasterizer<Number>::BoxRasterizer(PolyRasterizer<Number> * raster) : rasterizer(raster) 
+BoxRasterizer<Number>::BoxRasterizer(PolyRasterizer<Number> * raster) : rasterizer(raster)
 {
 }
-			
+
 template<typename Number>
 void	BoxRasterizer<Number>::StartScanline(Number iy1, Number iy2)
 {
 	y1 = iy1;
 	y2 = iy2;
-	
+
 	// First: get what we have for the bottom of our range.
 	rasterizer->StartScanline(y1);
 	vector<Number>	r;
 	Number			ny = y2;
 	rasterizer->GetLine(output, ny);
-	
+
 	// 'ny' is the next time we might care about that is less than y2
 	// (or y2) if we care about nothing else.  As long as we have some
 	// region to keep checking and we're not at y2, advance and
@@ -555,7 +556,7 @@ void	BoxRasterizer<Number>::StartScanline(Number iy1, Number iy2)
 		rasterizer->GetLine(r, ny);
 		IntersectRanges(output,r);
 	}
-	
+
 	// Finally, advance to y2 (every time) and if we still have
 	// output, merge in y2.
 	rasterizer->AdvanceScanline(y2);
@@ -573,7 +574,7 @@ void	BoxRasterizer<Number>::AdvanceScanline(Number iy1, Number iy2)
 	assert(iy1 >= y2);
 	if(iy1 > y2)
 		rasterizer->AdvanceScanline(iy1);
-	
+
 	y1 = iy1;
 	y2 = iy2;
 	vector<Number>	r;
@@ -593,7 +594,7 @@ void	BoxRasterizer<Number>::AdvanceScanline(Number iy1, Number iy2)
 		rasterizer->GetLine(r, ny);
 		IntersectRanges(output,r);
 	}
-	
+
 }
 
 template<typename Number>
