@@ -75,6 +75,7 @@ SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
+SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp

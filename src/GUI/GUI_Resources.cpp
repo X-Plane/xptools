@@ -283,7 +283,7 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 	if (!res) return false;
 	const char * sp = GUI_GetResourceBegin(res);
 	const char * ep = GUI_GetResourceEnd(res);
-	char tmpfilename[255] = "/tmp/wed_XXXXXX";
+	char tmpfilename[255] = "/tmp/.wed_XXXXXX";
 	int fd = mkstemp(tmpfilename);
 	if (fd == -1)
 	{

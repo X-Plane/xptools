@@ -22,7 +22,7 @@
 #include <string>
 #include <dlfcn.h>
 #include <link.h>
-#include <bfd.h>
+//#include <bfd.h>
 
 enum InitializerConstants
 {
@@ -83,6 +83,7 @@ private:
 	static volatile char* m_abspath;
 	static volatile char* m_homedir;
 	static volatile sig_atomic_t m_inhandler;
+#if 0
 	static volatile size_t m_nsymbols;
 	static volatile void* m_symbol_addresses[tracedepth];
 	// currently unused
@@ -114,6 +115,7 @@ private:
 	static void slurp_symtab(bfd* abfd);
 	static void find_address_in_section(bfd* abfd, asection* section, void* data __attribute__((__unused__)));
 	static char** translate_addresses_buf(bfd* abfd, bfd_vma* addr, int naddr);
+#endif
 };
 
 #endif /*  INITIALIZER_H */

@@ -12,6 +12,8 @@
 #include <cstdio>
 #include <execinfo.h>
 #include <limits.h>
+#include <dirent.h>
+#include <errno.h>
 #include "initializer.h"
 
 char* _strdup(const char* o)
@@ -30,14 +32,17 @@ char* _basename(const char* o)
 /* static variables */
 
 volatile bool Initializer::m_init = false;
-volatile size_t Initializer::m_nsymbols = 0;
-volatile void* Initializer::m_symbol_addresses[tracedepth] = {};
-volatile size_t Initializer::m_iterator = 0;
+
 volatile sig_atomic_t Initializer::m_inhandler = 0;
 volatile char* Initializer::m_homedir = 0;
 volatile char* Initializer::m_programname = 0;
 volatile char* Initializer::m_dirname = 0;
 volatile char* Initializer::m_abspath = 0;
+
+#if 0
+volatile size_t Initializer::m_nsymbols = 0;
+volatile void* Initializer::m_symbol_addresses[tracedepth] = {};
+volatile size_t Initializer::m_iterator = 0;
 volatile char** Initializer::m_symbol_names = 0;
 volatile asymbol** Initializer::m_syms = 0;
 volatile bfd_vma Initializer::m_pc = 0;
@@ -45,10 +50,45 @@ volatile const char* Initializer::m_filename = 0;
 volatile const char* Initializer::m_functionname = 0;
 volatile unsigned int Initializer::m_line = 0;
 volatile int Initializer::m_found = 0;
+#endif
+
+
+static int
+_find_stale_files(const struct dirent* e)
+{
+	if (strlen(e->d_name) < 3)
+		return 0;
+	return (!memcmp(e->d_name, ".wed_", 5) && (e->d_type == DT_REG));
+}
+
+static void
+_unlink_stale_files(void)
+{
+	struct dirent** e;
+	int32_t n;
+
+	n = scandir("/tmp", &e, _find_stale_files, alphasort);
+	if (n < 0)
+		return;
+	if (chdir("/tmp")) {
+		::fprintf(::stderr, "can't chdir to '/tmp'\n");
+		abort();
+	}
+	for (int32_t i = 0; i < n; ++i) {
+		::fprintf(::stderr, "removing stale file: '%s'\n", e[i]->d_name);
+		if (unlink(e[i]->d_name)) {
+			::fprintf(::stderr, "unable to unlink '%s': %s\n", e[i]->d_name,
+				strerror(errno));
+			abort();
+		}
+	}
+}
 
 Initializer::Initializer(int* argc, char** argv[], bool loadgtk)
 {
 	char* temp, *temp1;
+
+	atexit(_unlink_stale_files);
 
 	if (!argc || !argv)
 	{
@@ -141,27 +181,21 @@ void Initializer::setup_signalhandlers()
 	::sigaddset(&to_block, SIGSTOP);
 	::sigaddset(&to_block, SIGTERM);
 	::sigaddset(&to_block, SIGABRT);
-	// SIGINT
+	::sigaddset(&to_block, SIGHUP);
+
 	::memset(&action, 0, sizeof(action));
 	::sigemptyset(&action.sa_mask);
 	action.sa_sigaction = _handle_signal;
 	action.sa_mask = to_block;
 	action.sa_flags = SA_SIGINFO;
 	::sigaction(SIGSEGV, &action, 0);
-	// SIGSEGV
-	::memset(&action, 0, sizeof(action));
-	::sigemptyset(&action.sa_mask);
-	action.sa_sigaction = _handle_signal;
-	action.sa_mask = to_block;
-	action.sa_flags = SA_SIGINFO;
+	::sigaction(SIGTERM, &action, 0);
 	::sigaction(SIGINT, &action, 0);
-	// SIGABRT, for unhandled c++ exceptions
-	::memset(&action, 0, sizeof(action));
-	::sigemptyset(&action.sa_mask);
-	action.sa_sigaction = _handle_signal;
-	action.sa_mask = to_block;
-	action.sa_flags = SA_SIGINFO;
+	::sigaction(SIGSTOP, &action, 0);
+	::sigaction(SIGQUIT, &action, 0);
+	::sigaction(SIGKILL, &action, 0);
 	::sigaction(SIGABRT, &action, 0);
+	::sigaction(SIGHUP, &action, 0);
 }
 
 void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
@@ -172,22 +206,22 @@ void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
 	switch (signal)
 	{
 		case SIGINT:
-			::fprintf(::stderr, "\nInterrupt Request. Stack trace follows.\n");
+			::fprintf(::stderr, "\nInterrupt Request. Cleaning up.\n");
 			break;
 		case SIGSEGV:
-			::fprintf(::stderr, "\nSegmentation Fault. Stack trace follows.\n");
+			::fprintf(::stderr, "\nSegmentation Fault.  Cleaning up.\n");
 			break;
 		case SIGABRT:
-			::fprintf(::stderr, "\nUnhandled exception. Stack trace follows.\n");
+			::fprintf(::stderr, "\nUnhandled exception.  Cleaning up.\n");
 			break;
 		default:
-			::fprintf(::stderr, "\nReceived signal %d. Stack trace follows.\n", signal);
+			::fprintf(::stderr, "\nReceived signal %d.  Cleaning up.\n", signal);
 			break;
 	}
-	stack_trace();
-	::exit(1);
-}
 
+	::exit(0);
+}
+# if 0
 void Initializer::stack_trace(void)
 {
 	string logfile = ::getenv("HOME");
@@ -419,3 +453,4 @@ char** Initializer::translate_addresses_buf(bfd* abfd, bfd_vma* addr, int naddr)
 	}
 	return ret_buf;
 }
+#endif

@@ -103,6 +103,9 @@ REGISTER_LIST_ATC
 #if IBM
 HINSTANCE gInstance = NULL;
 #endif
+#if LIN
+#include "initializer.h"
+#endif
 
 
 CGAL::Failure_function	gFailure = NULL;
@@ -132,6 +135,7 @@ int main(int argc, char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 #if LIN
+	Initializer linit(&argc, &argv, false);
 	WED_Application	app(argc, argv);
 #else
 	WED_Application	app;
