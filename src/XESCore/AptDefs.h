@@ -217,8 +217,9 @@ enum {
 	
 	atc_traffic_heavies = 1,
 	atc_traffic_jets = 2,
-	atc_traffic_props = 4,
-	atc_traffic_helis = 8,
+	atc_traffic_turbos = 4,
+	atc_traffic_props = 8,
+	atc_traffic_helis = 16,
 	
 	atc_op_arrivals = 1,
 	atc_op_departures = 2

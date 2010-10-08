@@ -178,6 +178,7 @@ ENUM_DOMAIN(ATCPatternSide,"Pattern Side")
 ENUM_DOMAIN(ATCTrafficType,"Traffic Type")
 	ENUM(atc_Heavies,				"Heavy Jets",						atc_traffic_heavies)
 	ENUM(atc_Jets,					"Jets",								atc_traffic_jets)
+	ENUM(atc_Turbos,				"Turboprops",						atc_traffic_turbos)
 	ENUM(atc_Props,					"Props",							atc_traffic_props)	
 	ENUM(atc_Helicopters,			"Helicopters",						atc_traffic_helis)		
 	

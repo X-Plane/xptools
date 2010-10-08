@@ -43,7 +43,7 @@ void	GenerateOGL(AptInfo_t * a);
 #endif
 
 const char * pattern_strings[] = { "left", "right", 0 };
-const char * equip_strings[] = { "heavy", "jets", "props", "helicopters", 0 };
+const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", 0 };
 const char * op_strings[] = { "arrivals", "departures" };
 
 // LLLHHH
