@@ -177,11 +177,8 @@ void Initializer::setup_signalhandlers()
 	::sigemptyset(&to_block);
 	::sigaddset(&to_block, SIGINT);
 	::sigaddset(&to_block, SIGQUIT);
-	::sigaddset(&to_block, SIGKILL);
-	::sigaddset(&to_block, SIGSTOP);
 	::sigaddset(&to_block, SIGTERM);
 	::sigaddset(&to_block, SIGABRT);
-	::sigaddset(&to_block, SIGHUP);
 
 	::memset(&action, 0, sizeof(action));
 	::sigemptyset(&action.sa_mask);
@@ -191,36 +188,17 @@ void Initializer::setup_signalhandlers()
 	::sigaction(SIGSEGV, &action, 0);
 	::sigaction(SIGTERM, &action, 0);
 	::sigaction(SIGINT, &action, 0);
-	::sigaction(SIGSTOP, &action, 0);
 	::sigaction(SIGQUIT, &action, 0);
-	::sigaction(SIGKILL, &action, 0);
 	::sigaction(SIGABRT, &action, 0);
-	::sigaction(SIGHUP, &action, 0);
 }
 
 void Initializer::_handle_signal(int signal, siginfo_t* info, void* context)
 {
 	if (m_inhandler) return;
-	// this is guaranteed to be an atomic operation
 	m_inhandler = 1;
-	switch (signal)
-	{
-		case SIGINT:
-			::fprintf(::stderr, "\nInterrupt Request. Cleaning up.\n");
-			break;
-		case SIGSEGV:
-			::fprintf(::stderr, "\nSegmentation Fault.  Cleaning up.\n");
-			break;
-		case SIGABRT:
-			::fprintf(::stderr, "\nUnhandled exception.  Cleaning up.\n");
-			break;
-		default:
-			::fprintf(::stderr, "\nReceived signal %d.  Cleaning up.\n", signal);
-			break;
-	}
-
 	::exit(0);
 }
+
 # if 0
 void Initializer::stack_trace(void)
 {
