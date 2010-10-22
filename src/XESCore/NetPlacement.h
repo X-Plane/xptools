@@ -126,4 +126,30 @@ void	DeleteBlankChains(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCha
 void	ValidateNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains);
 void	CountNetwork(const Net_JunctionInfoSet& inJunctions, const Net_ChainInfoSet& inChains);
 
+/********************************************************************************************************************
+ *
+ ********************************************************************************************************************/
+
+//void categorize_turn(
+//				const Point2&	a,
+//				const Point2&	b,
+//				const Point2&	c,
+//				double			min_deflection,
+//				bool&			straight_ab,
+//				bool&			straight_bc);
+//				
+void generate_bezier(
+				const Point2&	a,
+				const Point2&	b,
+				const Point2&	c,
+				double			min_deflection,
+				double			crease_angle_cos,
+				vector<Point2>&	pts,
+				vector<int>&	flags);
+
 #endif
+
+#if OPENGL_MAP && DEV
+void	debug_network(Pmwx& io_map);
+#endif
+void	repair_network(Pmwx& io_map);

@@ -27,6 +27,90 @@
 #include "MapDefs.h"
 #include "ProgressUtils.h"
 
+enum Pmwx_Coastal_t {
+	pmwx_Wet,				// Uniform conditions
+	pmwx_Dry,
+	pmwx_Unbounded,
+	pmwx_Coastal,			// 2-way conditions (wet/drY)
+	pmwx_WetBoundary,
+	pmwx_DryBoundary,
+	pmwx_CoastalBoundary,	// Three way condition (impossible for HE)
+} ;
+
+inline Pmwx_Coastal_t pmwx_categorize(Pmwx::Halfedge_const_handle he)
+{
+	bool ub1 = he->face()->is_unbounded();
+	bool ub2 = he->twin()->face()->is_unbounded();
+	bool w1 = he->face()->data().IsWater();
+	bool w2 = he->twin()->face()->data().IsWater();
+
+	if (ub1)
+	{
+		if(ub2)			return pmwx_Unbounded;
+		else if(w2)		return pmwx_WetBoundary;
+		else			return pmwx_DryBoundary;
+	}
+	else if (w1)
+	{
+		if(ub2)			return pmwx_WetBoundary;
+		else if(w2)		return pmwx_Wet;
+		else			return pmwx_Coastal;
+	}
+	else
+	{
+		if(ub2)			return pmwx_DryBoundary;
+		else if(w2)		return pmwx_Coastal;
+		else			return pmwx_Dry;
+	}	
+}
+
+inline Pmwx_Coastal_t pmwx_categorize(Pmwx::Vertex_const_handle v)
+{
+	Pmwx::Halfedge_around_vertex_const_circulator circ,stop;
+	if(v->is_isolated())
+	{
+		if(v->face()->is_unbounded())		return pmwx_Unbounded;
+		else if(v->face()->data().IsWater())return pmwx_Wet;
+		else								return pmwx_Dry;
+	}
+	circ=stop=v->incident_halfedges();
+	bool has_w = false;
+	bool has_d = false;
+	bool has_u = false;
+	do
+	{
+		if(circ->face()->is_unbounded())			has_u = true;
+		else if (circ->face()->data().IsWater())	has_w = true;
+		else										has_d = true;
+	} while (++circ != stop);
+	
+	DebugAssert(has_u || has_w || has_d);
+	
+	if(has_u)
+	{
+		if(has_w)
+		{
+			if(has_d)	return pmwx_CoastalBoundary;
+			else		return pmwx_WetBoundary;
+		}
+		else
+		{
+			if(has_d)	return pmwx_DryBoundary;
+			else		return pmwx_Unbounded;
+		}
+	}
+	else if(has_w)
+	{
+		if(has_d)	return pmwx_Coastal;
+		else		return pmwx_Wet;
+	}
+	else
+	{
+		DebugAssert(has_d);
+		return pmwx_Dry;
+	}
+}
+
 /************************************************************************************************
  * FACE SETS AND EDGE SETS
  ************************************************************************************************

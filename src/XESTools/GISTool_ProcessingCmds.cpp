@@ -185,12 +185,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	#endif
 	{
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
-		if(process_block(f,gTriangulationHi,gDem[dem_ForestType]))
-		{
-			#if OPENGL_MAP
-			gFaceSelection.insert(f);
-			#endif
-		}
+		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
 	}
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 

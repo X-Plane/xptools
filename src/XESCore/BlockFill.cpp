@@ -53,6 +53,11 @@
 #include "MathUtils.h"
 #include "MapRaster.h"
 #include "STLUtils.h"
+//#include "RF_Selection.h"
+#include "MapHelpers.h"
+//#if !DEV
+//	#error nuke tihs
+//#endif
 
 #include <CGAL/Arr_overlay_2.h>
 
@@ -684,7 +689,6 @@ public:
 
 };
 
-
 bool	apply_fill_rules(
 					int						zoning,
 					Block_2&				block,
@@ -767,20 +771,26 @@ bool	apply_fill_rules(
 	
 	if(gZoningInfo[zoning].fill_veg)
 	{
-//		int x1 = intmax2(floor(forest_dem.lon_to_x(translator.mSrcMin.x())),0);
-//		int y1 = intmax2(floor(forest_dem.lat_to_y(translator.mSrcMin.y())),0);
-//		int x2 = intmin2(ceil (forest_dem.lon_to_x(translator.mSrcMax.x())),forest_dem.mWidth );
-//		int y2 = intmin2(ceil (forest_dem.lat_to_y(translator.mSrcMax.y())),forest_dem.mHeight);
-//
-//		Pmwx forest_areas;
-//		
-//		MapFromDEM(forest_dem,x1,y1,x2,y2,NO_VALUE, forest_areas, &translator);
-//
-//		Block_2	orig(block);
-//		overlay_forests traits;
-//		CGAL::overlay(orig, forest_areas, block, traits);
-//
-//		clean_block(block);
+		int x1 = intmax2(floor(forest_dem.lon_to_x(translator.mSrcMin.x())),0);
+		int y1 = intmax2(floor(forest_dem.lat_to_y(translator.mSrcMin.y())),0);
+		int x2 = intmin2(ceil (forest_dem.lon_to_x(translator.mSrcMax.x())),forest_dem.mWidth );
+		int y2 = intmin2(ceil (forest_dem.lat_to_y(translator.mSrcMax.y())),forest_dem.mHeight);
+
+		Pmwx forest_areas;
+		
+		MapFromDEM(forest_dem,x1,y1,x2,y2,NO_VALUE, forest_areas, &translator);
+
+		arrangement_simplifier<Pmwx> simplifier;
+		simplifier.simplify(forest_areas, 0.75);
+		
+		simplify_block(block, 0.75);
+		
+
+		Block_2	orig(block);
+		overlay_forests traits;
+		CGAL::overlay(orig, forest_areas, block, traits);
+
+		clean_block(block);
 
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
@@ -828,6 +838,11 @@ void	PolygonFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_
 		out_ps.push_back(Polygon2());
 		PolygonFromBlockCCB(*h, out_ps.back(), translator);
 		DebugAssert(out_ps.back().size() > 2);
+	}
+	if (in_face->number_of_holes() >= 255)
+	{
+		printf("Face had %d holes.\n",in_face->number_of_holes());
+		throw "too many holes.";
 	}
 }
 
@@ -897,6 +912,12 @@ int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps
 		StringFromCCB(*h, ps_use,ps_bad, translator);
 	out_ps.clear();
 	out_ps.reserve(ps_use.size() + ps_bad.size());
+
+	if((ps_use.size() + ps_bad.size()) > 255)
+	{
+		printf("ag string had %d useful and %d boundaries.\n", ps_use.size(), ps_bad.size());
+		throw "too many contours";
+	}
 	out_ps.insert(out_ps.end(), ps_use.begin(),ps_use.end());
 	out_ps.insert(out_ps.end(), ps_bad.begin(),ps_bad.end());
 	DebugAssert(ps_use.size() <= 65535);	// 
@@ -909,39 +930,45 @@ void	extract_features(
 					Pmwx::Face_handle		dest_face,
 					CoordTranslator2&		translator)
 {
-	for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
-	if(!f->is_unbounded())
-	if(f->data().usage == usage_Polygonal_Feature)
-//	if(!f->data().pre_placed)
-	{
-		GISPolyObjPlacement_t o;
-		
-		o.mRepType = f->data().feature;
-		o.mDerived = true;
-		if(strstr(FetchTokenString(o.mRepType),".fac"))
-			o.mParam = 10;
-		else
-			o.mParam = 255;
+	try {
+		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
+		if(!f->is_unbounded())
+		if(f->data().usage == usage_Polygonal_Feature)
+	//	if(!f->data().pre_placed)
+		{
+			GISPolyObjPlacement_t o;
+			
+			o.mRepType = f->data().feature;
+			o.mDerived = true;
+			if(strstr(FetchTokenString(o.mRepType),".fac"))
+				o.mParam = 10;
+			else
+				o.mParam = 255;
 
-		if(strstr(FetchTokenString(o.mRepType),".ags"))
-		{
-			o.mParam = StringFromBlock(f,o.mShape,translator);
-			dest_face->data().mPolyObjs.push_back(o);				
-		}
-		else
-		{
-			PolygonFromBlock(f,o.mShape, translator);
-			if(strstr(FetchTokenString(o.mRepType),".agb"))
+			if(strstr(FetchTokenString(o.mRepType),".ags"))
 			{
-				int ls = o.mShape[0].longest_side();
-				while(ls-- > 0)
-				{
-					o.mShape[0].push_back(o.mShape[0].front());
-					o.mShape[0].erase(o.mShape[0].begin());
-				}
+				o.mParam = StringFromBlock(f,o.mShape,translator);
+				DebugAssert(o.mShape.size() <= 255);
+				dest_face->data().mPolyObjs.push_back(o);				
 			}
-			dest_face->data().mPolyObjs.push_back(o);
+			else
+			{
+				PolygonFromBlock(f,o.mShape, translator);
+				DebugAssert(o.mShape.size() <= 255);
+				if(strstr(FetchTokenString(o.mRepType),".agb"))
+				{
+					int ls = o.mShape[0].longest_side();
+					while(ls-- > 0)
+					{
+						o.mShape[0].push_back(o.mShape[0].front());
+						o.mShape[0].erase(o.mShape[0].begin());
+					}
+				}
+				dest_face->data().mPolyObjs.push_back(o);
+			}
 		}
+	} catch (...) {
+//		gFaceSelection.insert(dest_face);
 	}
 }
 

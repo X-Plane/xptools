@@ -23,6 +23,7 @@
 #include "MapDefs.h"
 #include "NetPlacement.h"
 #include "NetTables.h"
+#include "MapTopology.h"
 #include "GISUtils.h"
 #include "ParamDefs.h"
 #include "XESConstants.h"
@@ -30,6 +31,10 @@
 #include "MeshAlgs.h"
 #include "STLUtils.h"
 #include "MathUtils.h"
+#include "GISTool_Globals.h"
+#if OPENGL_MAP
+#include "RF_Selection.h"
+#endif
 
 // Move a bridge N meters to simlify it
 #define	BRIDGE_TURN_SIMPLIFY	20
@@ -488,7 +493,7 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 		ioJunctions.erase(*junc);
 		delete (*junc);
 	}
-	int s = NukeStraightShapePoints(outChains);
+	int s = 0;//NukeStraightShapePoints(outChains);
 	printf("Optimize: %d merged, %d removed, %d straight.\n", total_merged, total_removed, s);
 
 }
@@ -1491,3 +1496,483 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 }
 
 #endif
+
+static void to_metric(
+				const Point2& anchor,
+				double cos_lat,
+				Point2& pt)
+{
+	pt.x_ -= anchor.x();
+	pt.y_ -= anchor.y();
+	pt.x_ *= (DEG_TO_MTR_LAT * cos_lat);
+	pt.y_ *= (DEG_TO_MTR_LAT		  );
+}
+
+static void from_metric(
+				const Point2& anchor,
+				double cos_lat,
+				Point2& pt)
+{
+	pt.x_ /= (DEG_TO_MTR_LAT * cos_lat);
+	pt.y_ /= (DEG_TO_MTR_LAT		  );
+	pt.x_ += anchor.x();
+	pt.y_ += anchor.y();
+}
+
+//void categorize_turn(
+//				const Point2&	a,
+//				const Point2&	b,
+//				const Point2&	c,
+//				double			min_deflection,
+//				bool&			straight_ab,
+//				bool&			straight_bc)
+//{
+//	DebugAssert(a != b);
+//	DebugAssert(b != c);
+//	DebugAssert(a != c);
+//	Vector2 ab(a,b);
+//	Vector2 bc(b,c);
+//	double len_ab = ab.normalize();
+//	double len_bc = bc.normalize();
+//	DebugAssert(len_ab > 0.0);
+//	DebugAssert(len_bc > 0.0);
+//	double angle = acos(doblim(ab.dot(bc),-1.0,1.0));
+//	
+//	straight_ab = (angle / len_ab) > min_deflection;
+//	straight_bc = (angle / len_bc) > min_deflection;	
+//}
+				
+void generate_bezier(
+				const Point2&	a,
+				const Point2&	b,
+				const Point2&	c,
+				double			min_deflection_deg_mtr,
+				double			crease_angle_cos,
+				vector<Point2>&	pts,
+				vector<int>&	flags)
+{
+	//printf("Bezier for: %lf,%lf %lf,%lf %lf,%lf\n", a.x(),a.y(),b.x(),b.y(),c.x(),c.y());
+	DebugAssert(a != b);
+	DebugAssert(b != c);
+	DebugAssert(a != c);
+
+	Point2	ma(a), mb(0.0,0.0),mc(c);
+	double cos_lat = cos(b.y() * DEG_TO_RAD);
+	to_metric(b,cos_lat,ma);
+	to_metric(b,cos_lat,mc);
+	DebugAssert(ma!=mb);
+	DebugAssert(mb!=mc);
+	DebugAssert(ma!=mc);
+	Vector2 ab(ma,mb);
+	Vector2 bc(mb,mc);
+	double len_ab = ab.normalize();
+	double len_bc = bc.normalize();
+	DebugAssert(len_ab > 0.0);
+	DebugAssert(len_bc > 0.0);
+	double dot = doblim(ab.dot(bc),-1.0,1.0);
+	
+	if(len_ab < 10.0) printf("WARNING: AB is %lf m.\n", len_ab);
+	if(len_bc < 10.0) printf("WARNING: BC is %lf m.\n", len_bc);
+	
+	if(dot < crease_angle_cos)
+	{
+		pts.push_back(b);
+		flags.push_back(0);
+		//printf("   Crease.\n");
+	}
+	else
+	{
+		double angle = acos(doblim(ab.dot(bc),-1.0,1.0)) * RAD_TO_DEG;
+		
+		if(angle < 0.5)
+		{
+			pts.push_back(b);
+			flags.push_back(0);
+		}
+		else
+		{		
+			bool straight_ab = (angle / len_ab) < min_deflection_deg_mtr;
+			bool straight_bc = (angle / len_bc) < min_deflection_deg_mtr;	
+			if(straight_ab)
+			{
+				if(straight_bc)
+				{
+					// AB and BC are both straight, but come together at a non-crease angle.  We need to 'pull back' AB and BC
+					// to make an artificial turn.
+					// The back-pull distance is half the distance to make the turn.
+					double pull_back = (angle * 0.5) / min_deflection_deg_mtr;
+					DebugAssert(pull_back > 1.0);
+					Point2 b1 = mb - (ab * pull_back);
+					Point2 b2 = mb + (bc * pull_back);
+					from_metric(b,cos_lat,b1);
+					from_metric(b,cos_lat,b2);
+					pts.push_back(b1);
+					pts.push_back(b );		// B becomes quadratic control point - ensures nice tangents.
+					pts.push_back(b2);
+					flags.push_back(0);
+					flags.push_back(1);
+					flags.push_back(0);
+					//printf("   Pull back of %lf mtrs for %lf degs.\n", pull_back, angle);
+					//debug_mesh_line(b1,b,0.5,0.5,0,1,1,0);
+					//debug_mesh_line(b,b2,0.5,0.5,0,1,1,0);				
+				}
+				else
+				{
+					// AB is straight, BC is curved.  We will start a curve after AB.
+					Point2 b2 = mb + (ab * 0.33 * len_bc);
+					from_metric(b,cos_lat,b2);
+					pts.push_back(b );
+					pts.push_back(b2);
+					flags.push_back(0);
+					flags.push_back(1);
+					//debug_mesh_line(b,b2,0,0.5,0,0,1,0);
+					//printf("   straight->curve, handle is %lf.\n", 0.33 * len_bc);
+				}
+			}
+			else
+			{
+				if(straight_bc)
+				{
+					// AB is curved, BC is straight.  We will end the curve going into BC.
+					Point2 b1 = mb - (bc * 0.33 * len_ab);
+					from_metric(b,cos_lat,b1);
+					pts.push_back(b1);
+					pts.push_back(b );
+					flags.push_back(1);
+					flags.push_back(0);
+					//debug_mesh_line(b1,b,0.5,0,0,1,0,0);
+					//printf("   curve->straight, handle is %lf.\n", 0.33 * len_ab);
+				}
+				else
+				{
+					// Both are curved.  Use PN-triangle-like approximation.  Add ab and bc together to get the tangent line,
+					// and assume that the crease angle protects us from ab and bc being near opposites.
+					Vector2 tangent(ab+bc);
+					tangent.normalize();
+					Point2 b1 = mb - (tangent * 0.33 * len_ab);
+					Point2 b2 = mb + (tangent * 0.33 * len_bc);
+					from_metric(b,cos_lat,b1);
+					from_metric(b,cos_lat,b2);
+					pts.push_back(b1);
+					pts.push_back(b );		// B becomes real point, with b1/b2 forming tangent controls
+					pts.push_back(b2);
+					flags.push_back(1);
+					flags.push_back(0);
+					flags.push_back(1);
+					//printf("   Flow curve, length of %lf, %lf\n", 0.33 * len_ab, 0.33 * len_bc);
+					//debug_mesh_line(b1,b,0,0,0.5,0,0,1);
+					//debug_mesh_line(b,b2,0,0,0.5,0,0,1);				
+				}
+			}
+		}
+	}
+}
+
+
+inline bool he_has_any_roads(Pmwx::Halfedge_handle he)
+{
+	return he->data().HasRoads() || he->twin()->data().HasRoads();	
+}
+
+inline double get_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v)
+{
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	DebugAssert(he->source() == v || he->target() == v);
+	if(!he->data().mSegments.empty())
+	{
+		if(he->source() == v)	return he->data().mSegments.back().mSourceHeight;
+		else					return he->data().mSegments.back().mTargetHeight;
+	}
+	else
+	{
+		if(he->source() == v)	return he->twin()->data().mSegments.back().mTargetHeight;
+		else					return he->twin()->data().mSegments.back().mSourceHeight;
+	}
+}
+
+double set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, double h)
+{
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() == 1);
+	DebugAssert(he->source() == v || he->target() == v);
+	if(!he->data().mSegments.empty())
+	{
+		if(he->source() == v)	he->data().mSegments.back().mSourceHeight=h;
+		else					he->data().mSegments.back().mTargetHeight=h;
+	}
+	else
+	{
+		if(he->source() == v)	he->twin()->data().mSegments.back().mTargetHeight=h;
+		else					he->twin()->data().mSegments.back().mSourceHeight=h;
+	}
+}
+
+inline Vector2 get_he_road_dir(Pmwx::Halfedge_handle he)
+{
+	Vector2 v;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	if(!he->data().mSegments.empty())
+		v = Vector2(cgal2ben(he->source()->point()),cgal2ben(he->target()->point()));
+	else
+		v = Vector2(cgal2ben(he->target()->point()),cgal2ben(he->source()->point()));
+	v.normalize();
+	return v;
+}
+
+inline double get_he_road_dot(Pmwx::Halfedge_handle h1,Pmwx::Halfedge_handle h2)
+{
+	Vector2 v1(get_he_road_dir(h1));
+	Vector2 v2(get_he_road_dir(h2));
+	return v1.dot(v2);
+}
+
+inline int get_he_road_use(Pmwx::Halfedge_handle he)
+{
+	int rep = NO_VALUE;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() == 1);
+	if(!he->data().mSegments.empty())
+		rep = he->data().mSegments.back().mRepType;
+	else
+		rep = he->twin()->data().mSegments.back().mRepType;
+	DebugAssert(gNetReps.count(rep) > 0);
+	return gNetReps[rep].use_mode;
+}
+
+
+#if OPENGL_MAP  && DEV
+void	debug_network(Pmwx& io_map)
+{
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	#if OPENGL_MAP
+	if(gEdgeSelection.empty() || gEdgeSelection.count(e)|| gEdgeSelection.count(e->twin()))
+	#endif
+	{
+		if(e->data().HasGroundRoads() || e->twin()->data().HasGroundRoads())
+		if(!e->face()->is_unbounded() && !e->twin()->face()->is_unbounded())
+		if(e->face()->data().IsWater() && e->twin()->face()->data().IsWater())
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),0,0,1,0,0,1);
+
+		bool bad_type = false;
+		
+		map<int,int>	src,trg;
+		GISNetworkSegmentVector::iterator r;
+		for (r=e->data().mSegments.begin(); r != e->data().mSegments.end(); ++r)
+		{
+			if(gNetReps.count(r->mRepType) == 0 ||
+			   gNetReps[r->mRepType].use_mode == use_None)
+				bad_type=true;
+			src[(int) r->mSourceHeight]++;
+			trg[(int) r->mTargetHeight]++;
+		}
+		for (r=e->twin()->data().mSegments.begin(); r != e->twin()->data().mSegments.end(); ++r)
+		{
+			if(gNetReps.count(r->mRepType) == 0 ||
+			   gNetReps[r->mRepType].use_mode == use_None)
+				bad_type=true;
+			trg[(int) r->mSourceHeight]++;
+			src[(int) r->mTargetHeight]++;
+		}
+		
+		bool doubled = false;
+		map<int,int>::iterator i;
+		for(i=src.begin(); i != src.end(); ++i)
+			if(i->second > 1) doubled = true;
+		for(i=trg.begin(); i != trg.end(); ++i)
+			if(i->second > 1) doubled = true;
+
+		if(bad_type)
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,1,1,0,1);
+		else if(doubled)
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,0,1,0,0);
+		else if(e->data().mSegments.size() + e->twin()->data().mSegments.size() > 1)
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,1,0,1,1,0);
+			
+							
+	}
+	
+	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
+	#if OPENGL_MAP
+	if(gVertexSelection.empty() || gVertexSelection.count(v))
+	#endif
+	{
+		Pmwx::Halfedge_around_vertex_circulator circ,stop;
+		circ=stop=v->incident_halfedges();
+		multimap<int, int>	inc, out, roads;
+		multimap<int, Vector2>	spokes;
+		set<int>				levels;
+		do {
+			GISNetworkSegmentVector::iterator r;
+			for(r=circ->data().mSegments.begin(); r != circ->data().mSegments.end(); ++r)
+			{
+				roads.insert(multimap<int,int>::value_type((int) r->mTargetHeight, r->mRepType));
+				inc.insert(multimap<int,int>::value_type((int) r->mTargetHeight, r->mRepType));
+				if(!gNetReps[r->mRepType].is_oneway)
+					out.insert(multimap<int,int>::value_type((int) r->mTargetHeight, r->mRepType));
+				levels.insert((int) r->mTargetHeight);
+			}
+			for(r=circ->twin()->data().mSegments.begin(); r != circ->twin()->data().mSegments.end(); ++r)
+			{
+				roads.insert(multimap<int,int>::value_type((int) r->mSourceHeight, r->mRepType));
+				out.insert(multimap<int,int>::value_type((int) r->mSourceHeight, r->mRepType));
+				if(!gNetReps[r->mRepType].is_oneway)
+					inc.insert(multimap<int,int>::value_type((int) r->mTargetHeight, r->mRepType));
+				levels.insert((int) r->mSourceHeight);
+			}
+			if(he_has_any_roads(circ))
+				spokes.insert(multimap<int,Vector2>::value_type(get_he_level_at(circ,v),get_he_road_dir(circ)));
+		} while(++circ != stop);
+		
+		bool bad_level = false;
+		bool bad_dir = false;
+		bool bad_type = false;
+		bool bad_angle = false;
+		for(set<int>::iterator l = levels.begin(); l != levels.end(); ++l)
+		{
+			if(roads.count(*l) == 1 && *l != 0)			bad_level = true;
+
+			if(inc.count(*l) > 1 && out.count(*l) < 1)	bad_dir = true;
+			if(out.count(*l) > 1 && inc.count(*l) < 1)	bad_dir = true;
+			
+			bool has_lim = false;
+			bool has_str = false;
+			bool has_ram = false;
+			bool has_trn = false;
+			pair <multimap<int,int>::iterator,multimap<int,int>::iterator> range;
+			multimap<int,int>::iterator iter;
+			range = roads.equal_range(*l);
+			for(iter = range.first; iter != range.second; ++iter)
+			switch(gNetReps[iter->second].use_mode) {
+			case use_Limited:	has_lim=true;break;
+			case use_Street:	has_str=true;break;
+			case use_Ramp:		has_ram=true;break;
+			case use_Rail:		has_trn=true;break;
+			}
+			
+			if(has_str && has_lim) bad_type = true;
+			if(has_trn && has_lim) bad_type = true;
+			if(has_ram && has_trn) bad_type = true;
+			
+			if(has_lim && !bad_type && spokes.count(*l) > 1)
+			{
+				pair<multimap<int,Vector2>::iterator,multimap<int,Vector2>::iterator> srange;
+				multimap<int,Vector2>::iterator siter, niter;
+				srange = spokes.equal_range(*l);
+				for(siter = srange.first; siter != srange.second; ++siter)
+				{
+					niter = siter ;
+					++niter;
+					while(niter != srange.second)
+					{
+						if(niter->second.dot(siter->second) < 0.7)
+							bad_angle = true;
+						++niter;
+					}
+				}
+			}
+		}
+		
+		if(bad_level)
+			debug_mesh_point(cgal2ben(v->point()), 1, 0, 0);
+		else if (bad_dir)
+			debug_mesh_point(cgal2ben(v->point()), 1, 0, 1);
+		else if (bad_type)
+			debug_mesh_point(cgal2ben(v->point()), 1, 1, 0);
+		else if (bad_angle)
+			debug_mesh_point(cgal2ben(v->point()), 0, 1, 1);
+	}
+}
+#endif
+
+static void elevate_segments_to(GISNetworkSegmentVector& v, double h)
+{
+	for(GISNetworkSegmentVector::iterator i = v.begin(); i != v.end(); ++i)
+	{
+		i->mSourceHeight = max(i->mSourceHeight, h);
+		i->mTargetHeight = max(i->mTargetHeight, h);
+	}
+}
+
+static void strip_segments_to_one(GISNetworkSegmentVector& v)
+{
+	if(v.size() < 2) return;
+	GISNetworkSegmentVector::iterator best = v.begin();
+	for(GISNetworkSegmentVector::iterator i = v.begin(); i != v.end(); ++i)
+		if(i->mFeatType < best->mFeatType)
+			best = i;
+	GISNetworkSegment_t keep = *best;
+	v.clear();
+	v.push_back(keep);			
+}
+
+
+void repair_network(Pmwx& io_map)
+{
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	{
+		strip_segments_to_one(e->data().mSegments);
+		strip_segments_to_one(e->twin()->data().mSegments);
+		if(!e->data().mSegments.empty() && !e->twin()->data().mSegments.empty())
+		{
+			if(e->data().mSegments.front().mFeatType < e->twin()->data().mSegments.front().mFeatType)
+				e->twin()->data().mSegments.clear();
+			else
+				e->data().mSegments.clear();
+		}
+		if(pmwx_categorize(e) == pmwx_Wet)
+		{
+			elevate_segments_to(e->data().mSegments,1.0f);
+			elevate_segments_to(e->twin()->data().mSegments,1.0f);
+		}
+	}
+	
+	// Fix loose ends.
+	// Because OSM "levels" are per segment, often we'll have "loose" ends where a level 1 and level 0 road link up.
+	
+	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
+	{
+		multimap<int,Pmwx::Halfedge_handle>	parts;
+		Pmwx::Halfedge_around_vertex_circulator circ,stop;
+		circ=stop=v->incident_halfedges();
+		do
+		{	
+			if(he_has_any_roads(circ))
+			{
+				parts.insert(multimap<int,Pmwx::Halfedge_handle>::value_type(get_he_level_at(circ,v),circ));
+			}			
+		} while (++circ != stop);
+		
+		multimap<int,Pmwx::Halfedge_handle>::iterator me, other, kill_retry;
+		if(parts.size() == 1)				
+		{
+			set_he_level_at(parts.begin()->second,v,0);							// Only one node in this intersection TOTAL.  Don't dead end in-air for now.
+		}
+		else
+		{
+			for(me = parts.begin(); me != parts.end();)
+			if(parts.count(me->first) == 1 &&									// Isolated part (dead end)!
+			  (me->first != 0 || get_he_road_use(me->second) == use_Limited))	// Elevated or limited access...shouldn't be 'hanging')
+			{
+				Pmwx::Halfedge_handle best;
+				double best_dot = -2.0;
+				for(other = parts.begin(); other != parts.end(); ++other)
+				if(other != me)
+				{
+					double this_dot = get_he_road_dot(other->second, me->second);
+					if(this_dot > best_dot)
+					{
+						best_dot =this_dot;
+						best = other->second;
+					}
+				}
+				DebugAssert(best != Halfedge_handle());
+				set_he_level_at(me->second, v, get_he_level_at(best, v));
+				kill_retry = me;
+				++me;
+				parts.insert(multimap<int,Pmwx::Halfedge_handle>::value_type(get_he_level_at(kill_retry->second,v),kill_retry->second));
+				parts.erase(kill_retry);				
+			} else
+				++me;
+		}
+	}
+	
+	
+}

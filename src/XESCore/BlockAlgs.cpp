@@ -248,6 +248,7 @@ void clean_block(Block_2& block)
  ********************************************************************************************************************************************/
 
 struct traits {
+	void remove(Block_2::Vertex_handle v) const {} 
 	bool is_locked(Block_2::Vertex_handle v) const
 	{
 		DebugAssert(v->degree() == 2);

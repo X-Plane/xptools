@@ -36,6 +36,9 @@
 #include "ObjTables.h"
 #include "GISUtils.h"
 
+// Set this to 1 to not render faces...we can save a lot of memory this way for a huge XES that won't otherwise fit into RAM.
+#define NO_FACE_RENDER 0
+
 #define DRAW_FACES 1
 #define DRAW_FEATURES 1
 #define DRAW_EDGES 1
@@ -48,12 +51,12 @@
 #define STDCALL_MACRO __stdcall
 #endif
 
-vector<float> *	gAccum;
-int				gMode;
-int				gCount;
-float			gFirst[2];
-float			gPrev[2];
-float			gPrevPrev[2];
+vector<const float*> *	gAccum;
+int						gMode;
+int						gCount;
+const float*			gFirst;
+const float*			gPrev;
+const float*			gPrevPrev;
 
 void PRECALC_Begin (GLenum mode)
 {
@@ -65,27 +68,26 @@ void PRECALC_Vertex2fv (const GLfloat *v)
 {
 	if (gMode == GL_TRIANGLES)
 	{
-		gAccum->insert(gAccum->end(), v, v+2);
+		gAccum->push_back(v);
 	}
 	if (gMode == GL_TRIANGLE_FAN)
 	{
-		if (gCount == 0) 	{ 	gFirst[0] = v[0];  gFirst[1] = v[1]; }
-		if (gCount > 1)		{ 	gAccum->insert(gAccum->end(), gFirst, gFirst+2);
-								gAccum->insert(gAccum->end(), gPrev, gPrev+2);
-								gAccum->insert(gAccum->end(), v, v+2); }
-		gPrev[0] = v[0]; gPrev[1] = v[1];
+		if (gCount == 0) 	{ 	gFirst=v;					}
+		if (gCount > 1)		{ 	gAccum->push_back(gFirst);
+								gAccum->push_back(gPrev);
+								gAccum->push_back(v);		}
+		gPrev = v;
 	}
 	if (gMode == GL_TRIANGLE_STRIP)
 	{
-		if (gCount > 1 && (gCount % 2)==1) {	gAccum->insert(gAccum->end(), gPrev, gPrev+2);
-												gAccum->insert(gAccum->end(), gPrevPrev, gPrevPrev+2);
-												gAccum->insert(gAccum->end(), v, v+2); }
-		if (gCount > 1 && (gCount % 2)==0) {	gAccum->insert(gAccum->end(), gPrevPrev, gPrevPrev+2);
-												gAccum->insert(gAccum->end(), gPrev, gPrev+2);
-												gAccum->insert(gAccum->end(), v, v+2); }
-		gPrevPrev[0] = gPrev[0]; gPrevPrev[1] = gPrev[1];
-		gPrev[0] = v[0]; gPrev[1] = v[1];
-
+		if (gCount > 1 && (gCount % 2)==1) {	gAccum->push_back(gPrev);
+												gAccum->push_back(gPrevPrev);
+												gAccum->push_back(v); }
+		if (gCount > 1 && (gCount % 2)==0) {	gAccum->push_back(gPrevPrev);
+												gAccum->push_back(gPrev);
+												gAccum->push_back(v); }
+		gPrevPrev = gPrev;
+		gPrev = v;
 	}
 	++gCount;
 }
@@ -178,12 +180,12 @@ void draw_he(Halfedge_handle e)
 
 }
 
-inline void SetColor(float c[3], float r, float g, float b)
+inline void SetColor(GLubyte c[3], float r, float g, float b)
 {
-	c[0] = r; c[1] = g; c[2] = b;
+	c[0] = r*255.0f; c[1] = g*255.0f; c[2] = b*255.0f;
 }
 
-static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
+static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, GLubyte color[3])
 {
 	int	terrainChange = !i->face()->data().TerrainMatch(i->twin()->face()->data());
 	int	border = i->face()->is_unbounded() || i->twin()->face()->is_unbounded();
@@ -237,9 +239,9 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 	}
 }
 
-static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
+static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 {
-	outColor[0] = outColor[1] = outColor[2] = outColor[3] = 0.0;
+	outColor[0] = outColor[1] = outColor[2] = outColor[3] = 0;
 	
 	int our_prop = NO_VALUE;
 	if (f->data().mTerrainType != terrain_Natural && f->data().mTerrainType != NO_VALUE)
@@ -257,10 +259,10 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 	{
 		RGBColor_t& rgbc = gEnumColors[our_prop];
 
-		outColor[0] = rgbc.rgb[0];
-		outColor[1] = rgbc.rgb[1];
-		outColor[2] = rgbc.rgb[2];
-		outColor[3] = 0.5;
+		outColor[0] = rgbc.rgb[0]*255.0f;
+		outColor[1] = rgbc.rgb[1]*255.0f;
+		outColor[2] = rgbc.rgb[2]*255.0f;
+		outColor[3] = 128;
 	}
 	
 }
@@ -279,14 +281,14 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		v->data().mGL[1] = CGAL::to_double(v->point().y());
 	}
 
-	for (Pmwx::Halfedge_iterator h = ioMap.halfedges_begin(); h != ioMap.halfedges_end(); ++h, ++ctr)
-	{
-		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
-		h->data().mGL[0] = CGAL::to_double(h->source()->point().x());
-		h->data().mGL[1] = CGAL::to_double(h->source()->point().y());
-		h->data().mGL[2] = CGAL::to_double(h->target()->point().x());
-		h->data().mGL[3] = CGAL::to_double(h->target()->point().y());
-	}
+//	for (Pmwx::Halfedge_iterator h = ioMap.halfedges_begin(); h != ioMap.halfedges_end(); ++h, ++ctr)
+//	{
+//		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
+//		h->data().mGL[0] = CGAL::to_double(h->source()->point().x());
+//		h->data().mGL[1] = CGAL::to_double(h->source()->point().y());
+//		h->data().mGL[2] = CGAL::to_double(h->target()->point().x());
+//		h->data().mGL[3] = CGAL::to_double(h->target()->point().y());
+//	}
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
 	if (!f->is_unbounded())
@@ -294,31 +296,11 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		PROGRESS_CHECK(inFunc, 0, 1, "Building preview of vector map...", ctr, total, 1000)
 
 		f->data().mGLTris.clear();
+		#if !NO_FACE_RENDER
 		gAccum = &f->data().mGLTris;
 
 		GLUtriangulatorObj *tobj;   /* tessellation object */
 		GLdouble v[3];              /* passed to gluTessVertex, prototype used 3d */
-
-		vector<float>	storage;
-		int needed = 0;
-
-		Pmwx::Ccb_halfedge_circulator	i, stop;
-		Pmwx::Hole_iterator holes;
-		i = stop = f->outer_ccb();
-		do {
-			++i, ++needed;
-		} while (i != stop);
-		Pmwx::Hole_iterator hole;
-		for (hole = f->holes_begin(); hole != f->holes_end(); ++hole)
-		{
-			i = stop = *hole;
-			do {
-				++i, ++needed;
-			} while (i != stop);
-		}
-
-		storage.resize(needed * 2);
-		float * vv = &*storage.begin();
 
 		tobj = gluNewTess();
 		gluTessCallback(tobj, GLU_BEGIN, (GLvoid (STDCALL_MACRO *)())PRECALC_Begin);
@@ -327,32 +309,30 @@ void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
 		gluBeginPolygon(tobj);
 		gluNextContour(tobj, GLU_EXTERIOR);
 
-		int ctr = 0;
+		Pmwx::Ccb_halfedge_circulator i, stop;
 		i = stop = f->outer_ccb();
 		do {
-			vv[ctr*2  ] = v[0] = CGAL::to_double(i->source()->point().x());
-			vv[ctr*2+1] = v[1] = CGAL::to_double(i->source()->point().y());
-						  v[2] = 0.0;
-			gluTessVertex(tobj, v, &vv[ctr*2]);
-			++i, ++ctr;
-		} while (i != stop);
-		for (hole = f->holes_begin(); hole != f->holes_end(); ++hole)
+			const float * p = i->source()->data().mGL;
+			v[0] = CGAL::to_double(i->source()->point().x());
+			v[1] = CGAL::to_double(i->source()->point().y());
+			v[2] = 0.0;
+			gluTessVertex(tobj, v, (GLvoid*) p);
+		} while (++i != stop);
+		for (Pmwx::Hole_iterator hole = f->holes_begin(); hole != f->holes_end(); ++hole)
 		{
 			gluNextContour(tobj, GLU_INTERIOR);
 			i = stop = *hole;
 			do {
-				vv[ctr*2  ] = v[0] = CGAL::to_double(i->source()->point().x());
-				vv[ctr*2+1] = v[1] = CGAL::to_double(i->source()->point().y());
-							  v[2] = 0.0;
-				gluTessVertex(tobj, v, &vv[ctr*2]);
-				++i, ++ctr;
-			} while (i != stop);
+				const float * p = i->source()->data().mGL;			
+				v[0] = CGAL::to_double(i->source()->point().x());
+				v[1] = CGAL::to_double(i->source()->point().y());
+			    v[2] = 0.0;
+				gluTessVertex(tobj, v, (GLvoid *) p);
+			} while (++i != stop);
 		}
-		if (ctr != needed)
-			printf("ERROR!\n");
 		gluEndPolygon(tobj);
 		gluDeleteTess(tobj);
-
+		#endif
 	}
 
 	PROGRESS_DONE(inFunc, 0, 1, "Building preview of vector map...")
@@ -573,18 +553,12 @@ void	DrawMapBucketed(
 			if (draw)
 			{
 				if (sel)
-					glColor4f(f->data().mGLColor[0] * 0.5 + 0.5, f->data().mGLColor[1] * 0.5, f->data().mGLColor[2] * 0.5, 0.8);
+					glColor4ub(f->data().mGLColor[0] / 2 + 127, f->data().mGLColor[1]/2, f->data().mGLColor[2]/2,200);
 				else
-					glColor4fv(f->data().mGLColor);
+					glColor4ubv(f->data().mGLColor);
 
-				float * vs, * ve;
-				vs = &*f->data().mGLTris.begin();
-				ve = &*f->data().mGLTris.end();
-
-				for (float * vv = vs; vv != ve; vv +=2)
-				{
-					glVertex2fv(vv);
-				}
+				for(vector<const float *>::const_iterator v = f->data().mGLTris.begin(); v != f->data().mGLTris.end(); ++v)
+					glVertex2fv(*v);
 			}
 		}
 	}
@@ -602,7 +576,7 @@ void	DrawMapBucketed(
 	{
 		Pmwx::Halfedge_handle e = *he;
 		{
-			glColor3fv(e->data().mGLColor);
+			glColor3ubv(e->data().mGLColor);
 			int wantWidth = (edgeSel.find(e) != edgeSel.end() || edgeSel.find(e->twin()) != edgeSel.end()) ? 2 : 1;
 			if (width != wantWidth)
 			{
@@ -612,8 +586,8 @@ void	DrawMapBucketed(
 				glBegin(GL_LINES);
 			}
 
-			glVertex2fv(e->data().mGL);
-			glVertex2fv(e->data().mGL+2);
+			glVertex2fv(e->source()->data().mGL);
+			glVertex2fv(e->target()->data().mGL);
 
 //			draw_he(e);
 		}
@@ -666,14 +640,72 @@ void	DrawMapBucketed(
 			if (vertexSel.find(*v) == vertexSel.end())
 				continue;
 
-			double	x1 = CGAL::to_double((*v)->point().x());
-			double	y1 = CGAL::to_double((*v)->point().y());
+//			double	x1 = CGAL::to_double((*v)->point().x());
+//			double	y1 = CGAL::to_double((*v)->point().y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
 			glVertex2fv((*v)->data().mGL);
 		}
 		glEnd();
 		glPointSize(1);
+		
+		glBegin(GL_LINES);
+		
+		for (vector<Pmwx::Vertex_handle>::iterator v = vertices.begin(); v != vertices.end(); ++v)
+		if((*v)->degree() == 2)
+		{
+			if (vertexSel.find(*v) == vertexSel.end())
+				continue;
+				
+			continue;
+				
+			Point2	p1(cgal2ben((*v)->incident_halfedges()->next()->target()->point()));
+			Point2	p2(cgal2ben((*v)->point()));
+			Point2	p3(cgal2ben((*v)->incident_halfedges()->source()->point()));
+			
+			Vector2	v1(p2,p1);
+			Vector2 v2(p2,p3);
+			double r = cos(p2.y() * DEG_TO_RAD);
+			v1.dx *= r;
+			v2.dx *= r;
+			double l1 = sqrt(v1.squared_length());
+			double l2 = sqrt(v2.squared_length());
+			v1.normalize();
+			v2.normalize();
+			double d = v1.dot(v2);
+			Vector2 bisector;
+			if(d > 0.7 || d < -0.7)
+			{
+				bisector = v1+v2;
+				bisector.normalize();
+			} 
+			else
+			{
+				if(right_turn(p1,p2,p3))
+					bisector = v1.perpendicular_ccw() + v2.perpendicular_cw();
+				else
+					bisector = v1.perpendicular_cw() + v2.perpendicular_ccw();
+				bisector.normalize();
+			}
+			
+			double arc = (l1+l2) * 0.5;
+			double lrat = (l1 < l2) ? l2 / l1 : l1 / l2;
+			if(lrat > 2.0)
+			{
+				glColor3f(1,1,1);
+				arc = min(l1,l2);
+			}
+			else
+				glColor3f(1,1,0);
+			double radius = arc / acos(-d);
+			bisector *= radius;
+			
+			bisector.dx / r;
+			
+			glVertex2f(p2.x(),p2.y());
+			glVertex2f(p2.x() + bisector.dx,p2.y() + bisector.dy);			
+		}
+		glEnd();
 	}
 #endif
 

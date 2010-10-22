@@ -205,4 +205,11 @@ K highest_key(const map<K,V>& histo)
 	return best->first;
 }
 
+template <class T>
+void nuke_container(T& v)
+{
+	T e;
+	v.swap(e);
+}
+
 #endif /* STLUtils_H */

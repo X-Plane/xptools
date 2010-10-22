@@ -28,7 +28,7 @@
 #include "MapPolygon.h"
 #include "ConfigSystem.h"
 #include "MapAlgs.h"
-#include "GISTool_Globals.h"
+//#include "GISTool_Globals.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
 //#include <CGAL/Snap_rounding_2.h>
@@ -156,24 +156,6 @@ void douglas_peuker(
 	}
 }
 
-class node_checker {
-public:
-	node_checker(map<Point2,int,lesser_y_then_x>& nodes) : nodes_(nodes) { }
-	
-	bool operator()(const Point2& p) const {
-		return nodes_.count(p);
-	}
-	map<Point2,int,lesser_y_then_x>& nodes_;
-};
-
-
-
-template <class T>
-void nuke_container(T& v)
-{
-	T e;
-	v.swap(e);
-}
 
 static double s_crop[4] = { -180.0, -90.0, 180.0, 90.0 };
 
@@ -235,6 +217,7 @@ bool shape_in_bounds(SHPObject * obj)
 						   return true;
 }
 
+/*
 inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2)
 {
 	for(int n = 0; n < p.size(); ++n)
@@ -243,6 +226,7 @@ inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2
 		gMeshLines.push_back(pair<Point2,Point3>(cgal2ben(p[(n+1)%p.size()]),c2));
 	}
 }
+*/
 
 static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vector& rules)
 {
@@ -396,6 +380,33 @@ static void round_grid(Point2& io_pt, int steps)
 	io_pt.y_ = s_crop[1] + (double) y_steps * (s_crop[3] - s_crop[1]) / (double) steps;
 }
 
+struct shape_lock_traits {
+	bool is_locked(Pmwx::Vertex_handle v) const { 
+		return false;
+		Pmwx::Halfedge_handle h1(v->incident_halfedges());
+		Pmwx::Halfedge_handle h2(h1->next());
+		Point2 p1(cgal2ben(h1->source()->point()));
+		Point2 p2(cgal2ben(h1->target()->point()));
+		Point2 p3(cgal2ben(h2->target()->point()));
+		Vector2 v1(p1,p2);
+		Vector2 v2(p2,p3);
+		v1.normalize();
+		v2.normalize();
+		if (v1.dot(v2) < 0.7)
+		{
+//			debug_mesh_point(p2,1,0,0);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	void remove(Pmwx::Vertex_handle v) const { 
+//		debug_mesh_point(cgal2ben(v->point()),0.6,0.6,0.6);
+	}
+};
+
 bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const char * feature_desc, double bounds[4], double simplify_mtr, int grid_steps, ProgressFunc	inFunc)
 {
 		int		killed = 0, total = 0;
@@ -514,41 +525,40 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	 * MAIN SHAPE READING LOOP
 	 ************************************************************************************************************************************/
 
-	map<Point2,int,lesser_y_then_x>	nodes;
-	if (shape_type == SHPT_ARC ||
-		shape_type == SHPT_ARCZ ||
-		shape_type == SHPT_ARCM)
-	for(int n = 0; n < entity_count; ++n)
-	{
-		SHPObject * obj = SHPReadObject(file, n);
-		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
-		for (int part = 0; part < obj->nParts; ++part)
-		{
-			int start_idx = obj->panPartStart[part];
-			int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-			for (int i = start_idx; i < stop_idx; ++i)
-			{
-				Point2 pt(obj->padfX[i],obj->padfY[i]);
-				if(sProj)		reproj(pt);
-				if(grid_steps)  round_grid(pt, grid_steps);
-				nodes[pt]++;
-			}
-		}
-		SHPDestroyObject(obj);
-	}
-	for(map<Point2,int,lesser_y_then_x>::iterator i = nodes.begin(); i != nodes.end();)
-	{
-		if(i->second < 2)
-		{
-			map<Point2,int>::iterator k = i;
-			++i;
-			nodes.erase(k);
-		}
-		else
-			++i;
-	}
-	printf("%llu nodes locked.\n", (unsigned long long)nodes.size());
+//	if (shape_type == SHPT_ARC ||
+//		shape_type == SHPT_ARCZ ||
+//		shape_type == SHPT_ARCM)
+//	for(int n = 0; n < entity_count; ++n)
+//	{
+//		SHPObject * obj = SHPReadObject(file, n);
+//		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
+//		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
+//		for (int part = 0; part < obj->nParts; ++part)
+//		{
+//			int start_idx = obj->panPartStart[part];
+//			int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+//			for (int i = start_idx; i < stop_idx; ++i)
+//			{
+//				Point2 pt(obj->padfX[i],obj->padfY[i]);
+//				if(sProj)		reproj(pt);
+//				if(grid_steps)  round_grid(pt, grid_steps);
+//				nodes[pt]++;
+//			}
+//		}
+//		SHPDestroyObject(obj);
+//	}
+//	for(map<Point2,int,lesser_y_then_x>::iterator i = nodes.begin(); i != nodes.end();)
+//	{
+//		if(i->second < 2)
+//		{
+//			map<Point2,int>::iterator k = i;
+//			++i;
+//			nodes.erase(k);
+//		}
+//		else
+//			++i;
+//	}
+//	printf("%llu nodes locked.\n", (unsigned long long)nodes.size());
 
 	int step = entity_count ? (entity_count / 150) : 2;
 	for(int n = 0; n < entity_count; ++n)
@@ -592,18 +602,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						}
 					}
 					vector<Point2> reduced;
-					node_checker checker(nodes);
-					if(simplify_mtr)
-					{
-						douglas_peuker(p.begin(),p.end()-1, 
-								back_inserter(reduced),
-									(simplify_mtr * MTR_TO_NM * NM_TO_DEG_LAT)*(simplify_mtr * MTR_TO_NM * NM_TO_DEG_LAT),
-									checker);
-						reduced.push_back(p.back());
-						killed += (p.size() - reduced.size());
-						p.clear();
-					} else
-						swap(p,reduced);
+					swap(p,reduced);
 					
 					/* 
 					// we could see what points we killed.
@@ -705,9 +704,9 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		}
 		SHPDestroyObject(obj);
 	}
+
+	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
 	
-	nuke_container(nodes);
-		
 	/************************************************************************************************************************************
 	 * CROP, INSERT AND TRIM
 	 ************************************************************************************************************************************/
@@ -816,7 +815,17 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					++count;
 				}
 			}
-//			if(count) printf("Removed: %d edges.\n", count);
+			if(count) printf("Removed: %d edges.\n", count);
+			
+			if(simplify_mtr)
+			{
+				printf("Before import simplify: %d. ", targ->number_of_halfedges());
+//				MapSimplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT);
+				arrangement_simplifier<Pmwx, shape_lock_traits> simplifier;
+				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT, shape_lock_traits(), inFunc);
+
+				printf("After import simplify: %d.\n", targ->number_of_halfedges());
+			}
 			
 			if(flags & shp_Overlay)
 			{
@@ -897,7 +906,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					targ->remove_edge(k);
 				}
 			}
-//			if(count) printf("Removed: %d edges.\n", count);
+			if(count) printf("Removed: %d edges.\n", count);
 			
 			GISNetworkSegment_t r;
 			r.mFeatType = feat;
@@ -953,6 +962,15 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				}
 			}
 
+			if(simplify_mtr)
+			{
+				printf("Before import simplify: %d. ", targ->number_of_halfedges());
+//				MapSimplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT);
+				arrangement_simplifier<Pmwx, shape_lock_traits> simplifier;
+				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT,shape_lock_traits(), inFunc);
+				printf("After import simplify: %d.\n", targ->number_of_halfedges());
+			}
+			
 			if(flags & shp_Overlay)
 			{
 				nuke_container(feature_map);
@@ -968,7 +986,6 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		}
 		break;
 	}
-	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
 	printf("DP killed off %d points of %d.\n", killed, total);
 
 	return true;

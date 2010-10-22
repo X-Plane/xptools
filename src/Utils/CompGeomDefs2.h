@@ -76,6 +76,8 @@ template <class __Iterator>
 bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint);
 template <class __Iterator>
 bool is_ccw_polygon_pt(__Iterator begin, __Iterator end);
+template <class __Iterator>
+double signed_area_pt(__Iterator begin, __Iterator end);
 
 // This takes a Bezier2 and recursively output-iterates it into a point container.  A quick way to get guaranteed-approximation
 // bezier approximations.  Endpoint is omitted - for chaining!
@@ -150,7 +152,40 @@ struct	Vector2 {
 	Vector2	 operator- (void) const { return Vector2(-dx, -dy); }
 
 	double	squared_length(void) const { return dx * dx + dy * dy; }
-	void 	normalize(void) { if (dx == 0.0) dy = (dy >= 0.0) ? 1.0 : -1.0; else if (dy == 0.0) dx = (dx >= 0.0) ? 1.0 : -1.0; else { double len = sqrt(dx * dx + dy * dy); if (len != 0.0) { len = 1.0 / len; dx *= len; dy *= len; } } }
+	double 	normalize(void) { 
+		double len;
+		if (dx == 0.0) 
+		{
+			if(dy >= 0.0)
+			{
+				len = dy;
+				dy = 1.0;
+			}
+			else
+			{
+				len = -dy;
+				dy = -1.0;
+			}
+		}
+		else if (dy == 0.0) 
+		{
+			if(dx >= 0.0)
+			{
+				len = dx;
+				dx = 1.0;
+			}						
+			else
+			{
+				len = -dx;
+				dx = -1.0;
+			}
+		}
+		else { 
+			len = sqrt(dx * dx + dy * dy); 
+			if (len != 0.0) { double l = 1.0 / len; dx *= l; dy *= l; } 
+		} 
+		return len;
+	}
 	Vector2 perpendicular_cw() const { return Vector2(dy, -dx); }
 	Vector2 perpendicular_ccw() const { return Vector2(-dy, dx); }
 
@@ -1641,6 +1676,25 @@ bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
 	}
 	return is_ccw;
 }
+
+template <class __Iterator>
+double signed_area_pt(__Iterator begin, __Iterator end)
+{
+	if(begin == end) return 0.0;
+	Point2	o(*begin++);
+	if(begin == end) return 0.0;
+	Vector2 prev(o, *begin++);
+	if(begin == end) return 0.0;
+	double total = 0.0;	
+	while(begin != end)
+	{
+		Vector2	curr(o,*begin++);
+		total += prev.signed_area(curr);
+		prev = curr;
+	}
+	return total;
+}
+
 
 // Given a single bezier curve, this routine outputs the start and enough intermediate points that the err
 // to the curve is less than "err".  Note that the LAST point is NOT emitted!!!  Why?  So that you

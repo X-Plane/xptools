@@ -258,9 +258,20 @@ public:
 	GISParamMap					mParams;
 	double						mInset;				// Largest unusable inset for this side
 	bool						mMark;				// Temporary, for algorithms
+	
+	inline	bool	HasRoads(void) const { return !mSegments.empty(); }
+	inline	bool	HasGroundRoads(void) const { 
+						for(GISNetworkSegmentVector::const_iterator r = mSegments.begin(); r != mSegments.end(); ++r) 
+						if(r->mSourceHeight == 0.0 && r->mTargetHeight == 0.0) 
+							return true; 
+						return false; }	
+	inline	bool	HasBridgeRoads(void) const { 
+						for(GISNetworkSegmentVector::const_iterator r = mSegments.begin(); r != mSegments.end(); ++r) 
+						if(r->mSourceHeight > 0.0 || r->mTargetHeight > 0.0) 
+							return true; 
+						return false; }	
 #if OPENGL_MAP
-	float						mGL[4];				// Pre-expanded line!
-	float						mGLColor[3];
+	unsigned char				mGLColor[3];
 #endif
 };
 
@@ -304,8 +315,8 @@ public:
 		mTemp2 = x.mTemp2;
 	}
 #if OPENGL_MAP
-	vector<float>				mGLTris;						// Pre-expanded triangles
-	float						mGLColor[4];
+	vector<const float *>		mGLTris;						// Pre-expanded triangle indices
+	unsigned char				mGLColor[4];
 #endif
 };
 

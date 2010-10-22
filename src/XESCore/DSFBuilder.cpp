@@ -36,12 +36,16 @@
 #include "AssertUtils.h"
 #include "MathUtils.h"
 #include "PerfUtils.h"
+#include "GISTool_Globals.h"
 
 /*
 	TODO:
 		make names that are written out to the definition manifest be what we want!
 
  */
+
+// Measured a 500m radius curve for 90 degrees in KSAN
+#define	MIN_DEFL 0.1
 
 #define PROFILE_PERFORMANCE 1
 #if PROFILE_PERFORMANCE
@@ -85,7 +89,8 @@ struct	road_coords_checker {
 	void * ptr;
 	road_coords_checker(void * p, double c[2]) {ptr = p;  last[0] = c[0]; last[1] = c[1]; }
 	
-	#define epsi 0.00001
+//	#define epsi 0.00001
+	#define epsi 0.0000001
 	
 	void check(double c[2]) { 
 	
@@ -1707,16 +1712,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		for (ji = junctions.begin(); ji != junctions.end(); ++ji)
 			(*ji)->index = cur_id++;
 
-			vector<Point3>	intermediates;
-
 		for (ci = chains.begin(); ci != chains.end(); ++ci)
 		{
 			coords3[0] = (*ci)->start_junction->location.x();
 			coords3[1] = (*ci)->start_junction->location.y();
-//			if((*ci)->draped)
-				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
-//			else
-//				coords3[2] = (*ci)->start_junction->location.z;
+			coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
 
 			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
@@ -1736,43 +1736,78 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							false,
 							writer2);
 			++total_chains;
+			//debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,0);
 
-			for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
+			vector<Point2>	pts;
+			vector<int>		flags;
+			for(int n = 0; n < (*ci)->shape.size(); ++n)
 			{
-				coords3[0] = shapePoint->x();
-				coords3[1] = shapePoint->y();
-//				if((*ci)->draped)
-					coords3[2] = 0.0f;
-//				else
-//					coords3[2] = shapePoint->z;
+				if((*ci)->shape.size() == 1)
+				{
+					generate_bezier((*ci)->start_junction->location,
+									(*ci)->shape[0  ],
+									(*ci)->end_junction->location,
+									MIN_DEFL, 0.0,
+									pts,flags);
+				}
+				else if(n == 0)
+				{
+					generate_bezier((*ci)->start_junction->location,
+									(*ci)->shape[n  ],
+									(*ci)->shape[n+1],
+									MIN_DEFL, 0.0,
+									pts,flags);
+				}
+				else if (n == (*ci)->shape.size()-1)
+				{
+					generate_bezier((*ci)->shape[n-1],
+									(*ci)->shape[n  ],
+									(*ci)->end_junction->location,
+									MIN_DEFL, 0.0,
+									pts,flags);
+				}
+				else
+				{
+					generate_bezier((*ci)->shape[n-1],
+									(*ci)->shape[n  ],
+									(*ci)->shape[n+1],
+									MIN_DEFL, 0.0,
+									pts,flags);
+				}
+			}
+			
+			DebugAssert(pts.size() == flags.size());
+			for(int n = 0; n < pts.size(); ++n)
+			{
+				coords3[0] = pts[n].x();
+				coords3[1] = pts[n].y();
+				coords3[2] = flags[n];
 				
 				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
 				checker.check(coords3);
-
 //				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
 				cbs.AddSegmentShapePoint_f(coords3, false, writer2);
 				++total_shapes;
+				//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
 			}
 
 			coords3[0] = (*ci)->end_junction->location.x();
 			coords3[1] = (*ci)->end_junction->location.y();
-//			if((*ci)->draped)
-				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
-//			else 
-//				coords3[2] = (*ci)->end_junction->location.z;
+			coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+
 			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 				printf("WARNING: coordinate out of range.\n");
 
 			checker.check(coords3);
-//			printf("End: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->end_junction->index);
 
 			cbs.EndSegment_f(
 					(*ci)->end_junction->index,
 					coords3,
 					false,
 					writer2);
+			//debug_mesh_point(Point2(coords3[0],coords3[1]),0,1,0);
 		}
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;
 

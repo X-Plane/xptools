@@ -34,6 +34,7 @@
 #include "STLUtils.h"
 #include "MapPolygon.h"
 #include "MapHelpers.h"
+#include "GISTool_Globals.h"
 
 #if OPENGL_MAP
 	#include "RF_Selection.h"
@@ -44,6 +45,8 @@
 #include <CGAL/Polyline_simplification_2/Squared_distance_cost.h>
 #include <CGAL/Polyline_simplification_2/Stop_below_cost_threshold.h>
 #endif
+
+#define DEBUG_OUTSET_REMOVER 1
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
 // for the sole purpose of making it easy to read the function list popup in the IDE...
@@ -2391,3 +2394,269 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 	return ret;
 }
 
+int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_circulator circ, double max_len_sq, double max_area, spatial_index<Point_2>& idx)
+{
+	int ret = 0;
+	int tot=0,kwik=0;
+	Pmwx::Ccb_halfedge_circulator stop(circ);
+	do {
+		Pmwx::Halfedge_handle h1, h2, h3, h4, h5;
+		h1 = circ;
+		h2 = h1->next();
+		h3 = h2->next();
+		h4 = h3->next();
+		h5 = h4->next();
+		
+		Pmwx::Face_handle l = h1->twin()->face();
+		
+		if(!l->is_unbounded())
+		if(!l->data().IsWater())
+		if(h2 != h1 && h3 != h1 && h4 != h1 && h5 != h1)
+		if(h2->twin()->face() == l &&
+			h3->twin()->face() == l &&
+			h4->twin()->face() == l &&
+			h5->twin()->face() == l)
+		if(CGAL::left_turn (h1->source()->point(),h1->target()->point(),h2->target()->point()) &&
+		   CGAL::right_turn(h2->source()->point(),h2->target()->point(),h3->target()->point()) &&
+		   CGAL::right_turn(h3->source()->point(),h3->target()->point(),h4->target()->point()) &&
+		   CGAL::left_turn (h4->source()->point(),h4->target()->point(),h5->target()->point()))
+		{
+			Point2 pts[4] = {   cgal2ben(h1->target()->point()),
+								cgal2ben(h2->target()->point()),
+								cgal2ben(h3->target()->point()),
+								cgal2ben(h4->target()->point()) };
+			
+			if (pts[0].squared_distance(pts[1]) < max_len_sq &&
+				pts[1].squared_distance(pts[2]) < max_len_sq &&
+				pts[2].squared_distance(pts[3]) < max_len_sq &&
+				pts[3].squared_distance(pts[0]) < max_len_sq)
+			{
+				if(signed_area_pt(pts,pts+4) > -max_area)
+				{
+					if((!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
+						!idx.pts_in_tri_no_corners(h1->target()->point(),h3->target()->point(),h4->target()->point()))
+						|| can_insert(io_map, h1->target(),h4->target()))
+					{	
+						#if DEV && DEBUG_OUTSET_REMOVER
+							if(!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
+								!idx.pts_in_tri_no_corners(h1->target()->point(),h3->target()->point(),h4->target()->point()))
+							{
+								DebugAssert(can_insert(io_map, h1->target(),h4->target()));
+							}
+						#endif
+						
+						Pmwx::Vertex_handle v1(h1->target());
+						Pmwx::Vertex_handle v2(h4->target());
+						Pmwx::Halfedge_handle e = io_map.insert_at_vertices(Curve_2(Segment_2(v1->point(),v2->point())),v1,v2);
+						e->face()->set_data(f->data());			
+						++ret;	
+					}
+				} 
+//				else
+//					debug_mesh_line(pts[0],pts[3],1,1,0,1,1,0);	// area fail
+			} 
+//			else
+//				debug_mesh_line(pts[0],pts[3],0,1,0,0,1,0);	// length fail
+		}
+		
+	} while(++circ != stop);
+	return ret;
+}
+
+int RemoveOutsets(Pmwx& io_map, double max_len_sq, double max_area)
+{
+	if(io_map.is_empty()) return 0;
+	DebugAssert(io_map.vertices_begin() != io_map.vertices_end());
+	Point2	minc = cgal2ben(io_map.vertices_begin()->point());
+	Point2	maxc = minc;
+	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
+	{
+		Point2	p = cgal2ben(v->point());
+		minc.x_ = min(minc.x(),p.x());
+		minc.y_ = min(minc.y(),p.y());
+		maxc.x_ = max(maxc.x(),p.x());
+		maxc.y_ = max(maxc.y(),p.y());
+	}
+		
+	spatial_index<Point_2>	vertex_index(minc, maxc, 1024);
+	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
+	{
+		vertex_index.insert(v->point());
+	}
+
+	
+	int ret = 0;
+	data_preserver_t<Pmwx>	preserve(io_map);
+	for(Pmwx::Face_handle f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	{
+		ret += remove_outsets_ccb(io_map,f,f->outer_ccb(), max_len_sq, max_area,vertex_index);
+		for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+			ret += remove_outsets_ccb(io_map,f,*h, max_len_sq, max_area,vertex_index);
+	}
+	return ret;
+}
+
+Pmwx::Face_handle containing_face(Pmwx::Ccb_halfedge_circulator circ)
+{
+	Pmwx::Ccb_halfedge_circulator stop(circ);
+	Pmwx::Face_handle ret = Pmwx::Face_handle();
+	do {
+		if(circ->twin()->face() != ret)
+		{
+			if(ret == Pmwx::Face_handle())
+				ret = circ->twin()->face();
+			else
+				return Pmwx::Face_handle();
+		}
+	} while (++circ != stop);
+	return ret;
+}
+
+int RemoveIslands(Pmwx& io_map, double max_area)
+{
+	int k = 0;
+	for(Pmwx::Face_iterator f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->holes_begin() == f->holes_end())
+	{
+		Pmwx::Face_handle holds_me = containing_face(f->outer_ccb());
+		if(holds_me != Pmwx::Face_handle() && !holds_me->is_unbounded())
+		{
+			double a = GetMapFaceAreaMeters(f);
+			if (a < max_area)
+			{
+				f->set_data(holds_me->data());
+				++k;
+			}
+		}
+	}
+	return k;
+}
+
+int KillWetAntennaRoads(Pmwx& io_map)
+{
+	int dead = 0;
+	set<Pmwx::Vertex_handle>	kill_q;
+	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
+	if(v->degree() == 1)
+	if(v->incident_halfedges()->face()->data().IsWater())
+	{
+		kill_q.insert(v);
+	}
+	
+	while(!kill_q.empty())
+	{
+		Pmwx::Vertex_handle k = *kill_q.begin();
+		kill_q.erase(kill_q.begin());
+		DebugAssert(k->degree() == 1);
+		DebugAssert(k->incident_halfedges()->face()->data().IsWater());
+		Pmwx::Halfedge_handle h = k->incident_halfedges();
+		Pmwx::Vertex_handle o(h->source());
+		bool need_o = true;
+		if(o->degree() == 1)
+		{
+			DebugAssert(kill_q.count(o));
+			kill_q.erase(o);
+			need_o = false;
+		}
+		io_map.remove_edge(h);
+		++dead;
+		if(need_o)
+		{
+			if(o->degree() == 1 && o->incident_halfedges()->face()->data().IsWater())
+			{
+				DebugAssert(kill_q.count(o) == 0);
+				kill_q.insert(o);
+			}
+		}
+	}	
+	return dead;
+}
+
+bool is_strand(Pmwx::Halfedge_handle h)
+{
+	Pmwx::Halfedge_handle t(h->twin());
+	return  h->face()->data().IsWater() &&
+			t->face()->data().IsWater() &&
+			(h->data().HasGroundRoads() || t->data().HasGroundRoads()) &&
+			!h->data().HasBridgeRoads() &&
+			!t->data().HasBridgeRoads();
+			
+}
+
+bool is_coast(Pmwx::Halfedge_handle h)
+{
+	Pmwx::Halfedge_handle t(h->twin());
+	return !h->face()->is_unbounded() &&
+		   !t->face()->is_unbounded() &&
+		   !h->data().HasRoads() && 
+		   !t->data().HasRoads() && 
+		   h->face()->data().IsWater() != t->face()->data().IsWater();
+}
+
+// This doesn't work right yet...since the sliver case is general, a long thin 'sliver' between two adjacent bridges over water
+// will fill the bridge median as land.  Really we should offset only the land contours!
+int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi)
+{
+	int filled = 0;
+	for(Pmwx::Face_iterator f = io_map.faces_begin(); f != io_map.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	if(f->holes_begin() == f->holes_end())
+	{
+		Pmwx::Ccb_halfedge_circulator circ, stop, next;
+		circ=stop=f->outer_ccb();
+		double strand_len = 0;
+		int sides;
+		int change = 0;		
+		do {
+			++sides;
+			if(circ->data().HasBridgeRoads() ||
+				circ->twin()->data().HasBridgeRoads())
+			{
+				strand_len=0.0;
+				break;
+			}
+			if(is_strand(circ))
+			{	
+				strand_len += sqrt(CGAL::to_double(CGAL::squared_distance(circ->source()->point(),circ->target()->point())));
+			} 
+			else if (is_coast(circ))
+			{
+				next =circ;
+				++next;
+				if(!is_coast(next))
+					++change;				
+			}
+
+			if(change > 1)			
+				break;
+
+		} while(++circ != stop);
+		
+		if(change == 1 && strand_len > 0.0 && sides < 20)
+		{
+			Polygon_with_holes_2 pwh;
+			Bbox_2 bbox;
+			PolygonFromFace(f, pwh, NULL, NULL, &bbox);
+			
+			double margin = strand_len / 5.0;
+			if(margin > dist_hi) margin = dist_hi;
+			if(margin < dist_lo) margin = dist_lo;
+			
+			if(IsPolygonSliver(pwh, margin, bbox))
+			{
+//				debug_mesh_point(cgal2ben(f->outer_ccb()->source()->point()),1,1,0);
+				f->data().mTerrainType = NO_VALUE;
+				++filled;
+			}
+//			else
+//				debug_mesh_point(cgal2ben(f->outer_ccb()->source()->point()),1,0,0);
+			
+		
+		}			
+	}
+	return filled;
+}

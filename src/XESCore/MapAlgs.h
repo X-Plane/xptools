@@ -187,6 +187,11 @@ void MapSimplify(Pmwx& pmwx, double metric);
  */
 int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func);
 
+int RemoveOutsets(Pmwx& io_map, double max_size, double max_area);
+int RemoveIslands(Pmwx& io_map, double max_area);
+int KillWetAntennaRoads(Pmwx& io_map);
+int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi);
+
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/

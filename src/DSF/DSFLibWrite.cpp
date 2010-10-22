@@ -1373,6 +1373,7 @@ void 	DSFFileWriterImp::BeginPolygonWinding(
 				void *			inRef)
 {
 	REF(inRef)->accum_poly_winding.push_back(DSFTupleVector());
+	DebugAssert(REF(inRef)->accum_poly_winding.size() <= 255);
 }
 
 void 	DSFFileWriterImp::AddPolygonPoint(

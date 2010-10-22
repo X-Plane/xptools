@@ -386,14 +386,6 @@ static double calc_err(Halfedge_handle h, float max_err)
 	return err_me + h->data().mInset + h->next()->data().mInset;
 }
 
-struct lock_traits {
-	bool is_locked(Pmwx::Vertex_handle v) const
-	{
-		return false;
-	}
-};
-
-
 void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 {
 #if 1
@@ -401,10 +393,9 @@ void	SimplifyPolygonMaxMove(Polygon_set_2& ioPolygon, double max_err)
 		return;
 	Pmwx pmwx(ioPolygon.arrangement());
 	
-	arrangement_simplifier<Pmwx,lock_traits> simplifier;
+	arrangement_simplifier<Pmwx> simplifier;
 	
-	lock_traits tr;
-	simplifier.simplify(pmwx, max_err, tr);
+	simplifier.simplify(pmwx, max_err);
 	
 	ioPolygon = Polygon_set_2(pmwx);
 

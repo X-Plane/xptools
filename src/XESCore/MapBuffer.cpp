@@ -40,7 +40,8 @@
 
 // This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
 // we must do on the planar map build-up by, well, a lot!
-#define PROCESS(x) (ben2cgal(cgal2ben((x))))
+//#define PROCESS(x) (ben2cgal(cgal2ben((x))))
+#define PROCESS(x) (x)
 
 /***************************************************************************************************************************************
  * POLYGON TAGGING
@@ -195,6 +196,7 @@ static void	BuildPointSequence(
 
 		if(input_seq[prev] == input_seq[next])
 		{
+			//printf("A");
 			// CASE 1: ANTENNA (perfect 180 degree turn)
 			// The two sides go in exactly opposite directions.  Since the polygon MUST be perfectly noded, we simply detect this
 			// because our previous and next vertiecs are exactly the same before offset.
@@ -214,6 +216,7 @@ static void	BuildPointSequence(
 		}
 		else if (CGAL::left_turn(input_seq[prev],input_seq[n], input_seq[next]))
 		{
+			//printf("L");
 			// CASE 2: LEFT TURN
 			#if SHOW_VERTEX_CHOICE
 				debug_mesh_point(cgal2ben(input_seq[n]),0,1,0);
@@ -229,13 +232,13 @@ static void	BuildPointSequence(
 			// another part of the polygon, that part of the polygon would technically not be in the buffered area.)
 			//
 			// Note that in all likelinhood if the rays do not intersect, the angle _must_ be accute, but we don't need to utilize this fact.
-			Ray_2	ray1(segments[outgoing].source(),segments[outgoing].target());
-			Ray_2	ray2(segments[incoming].target(),segments[incoming].source());	// Turn around outgoing so it points toward the vertex.
-			Point_2	p;
-			CGAL::Object r = CGAL::intersection(ray1, ray2);
-			if (CGAL::assign(p, r))
-				out_curves.push_back(PROCESS(p));											// Found an intersection, use it
-			else
+//			Ray_2	ray1(segments[outgoing].source(),segments[outgoing].target());
+//			Ray_2	ray2(segments[incoming].target(),segments[incoming].source());	// Turn around outgoing so it points toward the vertex.
+//			Point_2	p;
+//			CGAL::Object r = CGAL::intersection(ray1, ray2);
+//			if (CGAL::assign(p, r))
+//				out_curves.push_back(PROCESS(p));											// Found an intersection, use it
+//			else
 			{
 				++count_windings;
 				out_curves.push_back(PROCESS(segments[outgoing].target()));					// Build the CW winding
@@ -245,6 +248,7 @@ static void	BuildPointSequence(
 		}
 		else if (CGAL::right_turn(input_seq[prev],input_seq[n], input_seq[next]))
 		{
+			//printf("R");
 			// CASE 3: RIGHT TURN (REFLEX VERTEX)
 			#if SHOW_VERTEX_CHOICE
 				debug_mesh_point(cgal2ben(input_seq[n]),1,0,0);
@@ -290,6 +294,7 @@ static void	BuildPointSequence(
 		}
 		else
 		{
+			//printf("P");
 			// CASE 4: PARALLEL LINES
 			#if SHOW_VERTEX_CHOICE
 				debug_mesh_point(cgal2ben(input_seq[n]),1,1,0);
@@ -310,6 +315,7 @@ static void	BuildPointSequence(
 			}
 		}
 	}
+//	printf("\n");
 //	printf("%d angles %d parallel %d winding %d total\n",count_angle, count_parallel, count_windings, input_seq.size());
 }
 
@@ -575,11 +581,11 @@ void	ValidateBuffer(
 		Face_const_handle f;
 		if(!CGAL::assign(f,o))
 		{
-			DebugAssert(!"Got a point that is not actually inside the face!");
+			throw "Got a point that is not actually inside the face!";
 		}
 		if(f != face)
 		{
-			DebugAssert(!"Got wrong face.");
+			throw "Got wrong face.";
 		}
 /*		printf("Pt was: %lf,%lf.\n",CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
 		int ctr = 0;

@@ -28,6 +28,7 @@
 #include "MapDefs.h"
 #include "MapAlgs.h"
 #include "GISTool_Globals.h"
+#include <CGAL/Arr_walk_along_line_point_location.h>
 
 FAAObsTable		gFAAObs;
 
@@ -507,7 +508,8 @@ void ApplyObjects(Pmwx& ioMap)
 
 	int	placed = 0;
 
-	CGAL::Arr_landmarks_point_location<Arrangement_2>	locator(gMap);
+//	CGAL::Arr_landmarks_point_location<Arrangement_2>	locator(gMap);
+	CGAL::Arr_walk_along_line_point_location<Arrangement_2>	locator(gMap);
 
 	for (FAAObsTable::iterator i = gFAAObs.begin(); i != gFAAObs.end(); ++i)
 	{
@@ -515,6 +517,7 @@ void ApplyObjects(Pmwx& ioMap)
 		{
 			Point_2 loc = Point_2(i->second.lon, i->second.lat);
 
+			DebugAssert(CGAL::is_valid(gMap));
 			CGAL::Object obj = locator.locate(loc);
 			Face_const_handle ff;
 			if(CGAL::assign(ff,obj))

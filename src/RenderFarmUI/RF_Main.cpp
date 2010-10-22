@@ -204,7 +204,9 @@ static int DoSelectFaces(const vector<const char *>& args)
 	return 0;
 }
 
-static int DoSetSelMode(const vector<const char *>& args) { RF_SetSelectionMode(atoi(args[0])); return 1; } 
+static int DoSetSelMode(const vector<const char *>& args) { RF_SetSelectionMode(atoi(args[0])); return 0; } 
+
+static int DoClearMarks(const vector<const char *>& args) { gMeshLines.clear(); gMeshPoints.clear(); return 0; }
 
 static int DoSelfTest(const vector<const char *>& args)		{	/*SelfTestAll();*/ 	return 0; 	}
 static int DoVerbose(const vector<const char *>& args)		{	gVerbose = 1;	return 0;	}
@@ -229,6 +231,7 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 #endif
 { "-selectf",	3, 3, DoSelectFaces, "Select faces.", "" },
 { "-sel_mode", 1, 1, DoSetSelMode, "Set Selection Mode", "" },
+{ "-clear_marks", 0, 0, DoClearMarks, "Clear Markings", "" },
 
 { 0, 0, 0, 0, 0, 0 }
 };

@@ -43,6 +43,8 @@
 #include "ConfigSystem.h"
 #include <ctype.h>
 #include "MapAlgs.h"
+#include "MapHelpers.h"
+#include "NetPlacement.h"
 
 #if OPENGL_MAP
 	#include "RF_Msgs.h"
@@ -617,6 +619,56 @@ int DoWetMask(const vector<const char *>& args)
 }
 */
 
+struct debug_lock_traits {
+	bool is_locked(Pmwx::Vertex_handle v) const { 
+		Pmwx::Halfedge_handle h1(v->incident_halfedges());
+		Pmwx::Halfedge_handle h2(h1->next());
+		if(h1->face()->data().IsWater() == h1->twin()->face()->data().IsWater())
+			return true;
+			
+		Point2 p1(cgal2ben(h1->source()->point()));
+		Point2 p2(cgal2ben(h1->target()->point()));
+		Point2 p3(cgal2ben(h2->target()->point()));
+		Vector2 v1(p1,p2);
+		Vector2 v2(p2,p3);
+//		if (v1.dot(v2) < 0.0)
+//		{
+//			debug_mesh_point(p2,1,0,0);
+//			return true;
+//		}
+
+		if(h1->source()->degree() == 2)
+		{
+			Point2 p0(cgal2ben(h1->prev()->source()->point()));
+			Vector2 v0(p0,p1);			
+			Vector2	vn(p1,p3);
+			if(v0.dot(vn) < 0.0)
+			{
+//				debug_mesh_point(p2,1,0,0);
+				return true;
+			}
+		}
+		if(h2->target()->degree() == 2)
+		{
+			Point2 p4(cgal2ben(h2->next()->target()->point()));
+			Vector2 vn(p1,p3);			
+			Vector2	v3(p3,p4);
+			if(vn.dot(v3) < 0.0)
+			{
+//				debug_mesh_point(p2,0,1,0);
+				return true;
+			}
+		}
+		return false;
+		
+
+	}
+	void remove(Pmwx::Vertex_handle v) const { 
+//		debug_mesh_point(cgal2ben(v->point()),1,1,0); 
+	}
+};
+
+
 #define HELP_REDUCE_VECTORS \
 "-reduce_vectors <tolerance>\n"\
 "This command will reduce the number of vertices in the map, without destroying the topological relations.\n"\
@@ -625,7 +677,11 @@ int DoWetMask(const vector<const char *>& args)
 int DoReduceVectors(const vector<const char *>& args)
 {
 	int b = gMap.number_of_halfedges();
-	MapSimplify(gMap, atof(args[0]));
+//	MapSimplify(gMap, atof(args[0]));
+
+	arrangement_simplifier<Pmwx,debug_lock_traits> simplifier;
+	simplifier.simplify(gMap, atof(args[0]),debug_lock_traits(), gProgress);
+
 	int a = gMap.number_of_halfedges();
 	printf("Before: %d, after: %d\n", b,a);
 	return 0;
@@ -641,6 +697,59 @@ int DoDesliver(const vector<const char *> &args)
 	return 0;
 }
 
+#if OPENGL_MAP && DEV
+int DoCheckRoads(const vector<const char *>& args)
+{
+	debug_network(gMap);
+	return 0;
+}
+#endif
+
+int DoFixRoads(const vector<const char *>& args)
+{
+	repair_network(gMap);
+	return 0;
+}
+
+#define HELP_REMOVE_OUTSETS \
+"-remove_outsets max_len max_area\n" \
+"This command removes any square-sh outset piers in the water that are less than the length and area requirements."
+int DoRemoveOutsets(const vector<const char *>& args)
+{
+	double len = atof(args[0]);
+	double area = atof(args[1]);
+	int k = RemoveOutsets(gMap, len*len,area);
+	if (gVerbose)
+		printf("Removed %d outsets.\n",k);
+	return 0;
+}
+
+#define HELP_REMOVE_ISLANDS \
+"-remove_islands max_area_mtr\n" \
+"This command removes any tiny islands of land or water that are below a certain square m size."
+int DoRemoveIslands(const vector<const char *>& args)
+{
+	double area = atof(args[0]);
+	int k = RemoveIslands(gMap, area);
+	if (gVerbose)
+		printf("Removed %d islands\n",k);
+	return 0;
+}
+
+#define HELP_REMOVE_WET_ANTENNAS \
+"-remove_wet_antennas dist_lo dist_hi\n" \
+"Removes roads that hang into the water.  Land-fill bridges near land by <dist>\n"
+int DoRemoveWetAntennas(const vector<const char *>& args)
+{
+	int k = KillWetAntennaRoads(gMap);
+	if(gVerbose) printf("Killed %d roads.\n",  k);
+	k = LandFillStrandedRoads(gMap, atof(args[0]),atof(args[1]));
+	if(gVerbose) printf("Filled %d roads-ponds.\n",  k);
+
+	return 0;	
+}
+
+
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
@@ -652,7 +761,14 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
+{ "-remove_outsets", 2, 2, DoRemoveOutsets,			"Remove square outset piers from water areas.", HELP_REMOVE_OUTSETS },
+{ "-remove_islands", 1, 1, DoRemoveIslands,			"Remove square outset piers from water areas.", HELP_REMOVE_ISLANDS },
+{ "-remove_wet_antennas", 2, 2, DoRemoveWetAntennas,	"Remove roads that hang out into the water.", HELP_REMOVE_WET_ANTENNAS },	
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
+#if OPENGL_MAP && DEV
+{ "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
+#endif
+{ "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
