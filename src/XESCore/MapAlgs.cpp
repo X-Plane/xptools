@@ -2394,6 +2394,27 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 	return ret;
 }
 
+bool	convex_quad(const Point_2& p1, const Point_2& p2, const Point_2& p3, const Point_2& p4)
+{
+	if(CGAL::right_turn(p1,p2,p3))
+	if(CGAL::right_turn(p2,p3,p4))
+	if(CGAL::right_turn(p3,p4,p1))
+	if(CGAL::right_turn(p4,p1,p2))
+		return true;
+	return false;
+}
+
+bool	connected_vertices(Pmwx::Vertex_handle v1, Pmwx::Vertex_handle v2)
+{
+	if(v1->is_isolated()) return false;
+	Pmwx::Halfedge_around_vertex_circulator circ, stop;
+	circ=stop=v1->incident_halfedges();
+	do {
+		if(circ->source() == v2)
+			return true;
+	} while(++circ != stop);
+	return false;
+}
 int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_circulator circ, double max_len_sq, double max_area, spatial_index<Point_2>& idx)
 {
 	int ret = 0;
@@ -2416,6 +2437,8 @@ int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_cir
 			h3->twin()->face() == l &&
 			h4->twin()->face() == l &&
 			h5->twin()->face() == l)
+		if(h2->target()->degree() == 2 &&	// If the outset's outer edge degree is not 2, then a lake INSIDE the land might shoot a tiny triangle THROUGH the outset's entrance
+		   h3->target()->degree() == 2)		// and yet no vertices are 'inside'.
 		if(CGAL::left_turn (h1->source()->point(),h1->target()->point(),h2->target()->point()) &&
 		   CGAL::right_turn(h2->source()->point(),h2->target()->point(),h3->target()->point()) &&
 		   CGAL::right_turn(h3->source()->point(),h3->target()->point(),h4->target()->point()) &&
@@ -2432,17 +2455,14 @@ int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_cir
 				pts[3].squared_distance(pts[0]) < max_len_sq)
 			{
 				if(signed_area_pt(pts,pts+4) > -max_area)
-				{
-					if((!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
+				{					
+					if((!connected_vertices(h1->target(),h4->target()) &&
+						!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
 						!idx.pts_in_tri_no_corners(h1->target()->point(),h3->target()->point(),h4->target()->point()))
 						|| can_insert(io_map, h1->target(),h4->target()))
 					{	
 						#if DEV && DEBUG_OUTSET_REMOVER
-							if(!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
-								!idx.pts_in_tri_no_corners(h1->target()->point(),h3->target()->point(),h4->target()->point()))
-							{
-								DebugAssert(can_insert(io_map, h1->target(),h4->target()));
-							}
+							DebugAssert(can_insert(io_map, h1->target(),h4->target()));
 						#endif
 						
 						Pmwx::Vertex_handle v1(h1->target());

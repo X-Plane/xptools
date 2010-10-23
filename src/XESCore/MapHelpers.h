@@ -29,7 +29,7 @@
 #include "MathUtils.h"
 #include "ProgressUtils.h"
 
-#define DEBUG_SIMPLIFY 1
+#define DEBUG_SIMPLIFY 0
 
 // move this
 
