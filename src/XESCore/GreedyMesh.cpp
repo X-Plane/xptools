@@ -83,6 +83,16 @@ bool	InitOneTri(CDT::Face_handle face)
 	return first_time;
 }
 
+// The rasterization of triangles is done in floating point, but this can lead to subtle errors.  This code goes back
+// and checks the final point (converted back to precise CGAL coordinates) against the original triangle.  We don't include
+// the point if (1) it is outside the triangle bounds or (2) it duplicates a corner (since corners are already exact).
+bool really_ok_point(const DEMGeo * dem, int x, int y, const CDT::Point& v1, const CDT::Point& v2, const CDT::Point& v3)
+{
+	CDT::Point p(dem->x_to_lon(x), dem->y_to_lat(y));
+	return p != v1 && p != v2 && p != v3 &&
+		!Triangle_2(v1,v2,v3).has_on_unbounded_side(p);
+}
+
 inline float ScanlineMaxError(
 					const DEMGeo *	inDEMSrc,
 					const DEMMask *	inDEMUsed,
@@ -94,7 +104,10 @@ inline float ScanlineMaxError(
 					int *			worst_y,
 					double			a,
 					double			b,
-					double			c)
+					double			c,
+					const CDT::Point&		v1,
+					const CDT::Point&		v2,
+					const CDT::Point&		v3)
 {
 	float * row = inDEMSrc->mData + y * inDEMSrc->mWidth;
 	vector<bool>::const_iterator used = inDEMUsed->mData.begin() + y * inDEMUsed->mWidth;
@@ -121,6 +134,7 @@ inline float ScanlineMaxError(
 			float diff = want - got;
 			if (diff < 0.0) diff = -diff;
 			if (diff > worst)
+			if (really_ok_point(inDEMSrc,x,y,v1,v2,v3))
 			{
 				worst = diff;
 				*worst_x = x;
@@ -236,6 +250,10 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 	double partial = p0yc-p0.y();
 	x2 += dx2 * partial;
 
+	CDT::Point v1(face->vertex(0)->point());
+	CDT::Point v2(face->vertex(1)->point());
+	CDT::Point v3(face->vertex(2)->point());
+
 	// SPECIAL CASE: if p1 and p2 are horizontal, there is no section 2 of the tri - it has a flat top.  Do NOT miss that top scanline!
 	// Basically use floor + 1 to INCLDE the top scanline if we have a perfect match.
 	if (p1.y() == p2.y())
@@ -249,7 +267,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		{
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
 //			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x2), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
+			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
 			x1 += dx1;
 			x2 += dx2;
 		}
@@ -264,7 +282,7 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 
 		for (y = y1; y < y2; ++y)
 		{
-			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c);
+			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
 			x1 += dx1;
 			x2 += dx2;
 		}
@@ -313,7 +331,7 @@ void	DoneMesh(void)
 
 void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
-	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
+//	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
 	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
 
@@ -339,8 +357,8 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 
 		DebugAssert(!inCDT.is_infinite(face_handle));
 
-		CDT::Point p((double) inAvail.x_to_lon(the_face->info().insert_x),
-					  (double) inAvail.y_to_lat(the_face->info().insert_y));
+		CDT::Point p(inAvail.x_to_lon(the_face->info().insert_x),
+					  inAvail.y_to_lat(the_face->info().insert_y));
 
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
@@ -369,8 +387,6 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 		set<CDT::Face_handle>	affected;
 		CDT::Vertex_handle new_v = inCDT.insert_collect_flips(p,face_handle, affected);
 		new_v->info().height = h;
-
-	DebugAssert(affected.count(face_handle) > 0);
 
 		for(set<CDT::Face_handle>::iterator a = affected.begin(); a != affected.end(); ++a)
 		{

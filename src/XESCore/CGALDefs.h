@@ -70,15 +70,17 @@ typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<NT> > FastKernel;
 //
 // Why did I do it?  The delauney mesh conformer requires it, and doesn't terribly need a good sqrt - it has to "pick" a "decent" split point - being
 // off a little won't help, and the split makes such a huge mesh change that the operation isn't re-evaluted.
+//
+// Ben says: hrm -- delauney conformer is producing junk outputs...perhaps from bad a sqrt function?  Let's kill this for now.
 
-CGAL_BEGIN_NAMESPACE
-CGAL_NTS_BEGIN_NAMESPACE
-inline FastKernel::FT sqrt(FastKernel::FT n)
-{
-	return ::sqrtf(CGAL::to_double(n));
-}
-CGAL_NTS_END_NAMESPACE
-CGAL_END_NAMESPACE
+//CGAL_BEGIN_NAMESPACE
+//CGAL_NTS_BEGIN_NAMESPACE
+//inline FastKernel::FT sqrt(FastKernel::FT n)
+//{
+//	return ::sqrtf(CGAL::to_double(n));
+//}
+//CGAL_NTS_END_NAMESPACE
+//CGAL_END_NAMESPACE
 
 
 typedef CGAL::Bbox_2									Bbox_2;

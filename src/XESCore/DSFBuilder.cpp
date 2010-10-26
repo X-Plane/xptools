@@ -46,6 +46,8 @@
 
 // Measured a 500m radius curve for 90 degrees in KSAN
 #define	MIN_DEFL 0.1
+// More than 45 degree turn?  Probably intentional!
+#define CREASE_ANGLE 0.7
 
 #define PROFILE_PERFORMANCE 1
 #if PROFILE_PERFORMANCE
@@ -143,10 +145,14 @@ bool	IsCoastal(const CDT& inMesh, CDT::Vertex_handle v)
 {
 	CDT::Face_circulator circ, stop;
 	circ = stop = inMesh.incident_faces(v);
+	DebugAssert(!inMesh.is_infinite(v));
+	int ctr = 0;
 	do {
 		if(!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
 			return true;
+		++ctr;
 	} while (++circ != stop);
+	DebugAssert(ctr < 100);
 	return false;
 }
 
@@ -1747,7 +1753,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->start_junction->location,
 									(*ci)->shape[0  ],
 									(*ci)->end_junction->location,
-									MIN_DEFL, 0.0,
+									MIN_DEFL, CREASE_ANGLE,
 									pts,flags);
 				}
 				else if(n == 0)
@@ -1755,7 +1761,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->start_junction->location,
 									(*ci)->shape[n  ],
 									(*ci)->shape[n+1],
-									MIN_DEFL, 0.0,
+									MIN_DEFL, CREASE_ANGLE,
 									pts,flags);
 				}
 				else if (n == (*ci)->shape.size()-1)
@@ -1763,7 +1769,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->shape[n-1],
 									(*ci)->shape[n  ],
 									(*ci)->end_junction->location,
-									MIN_DEFL, 0.0,
+									MIN_DEFL, CREASE_ANGLE,
 									pts,flags);
 				}
 				else
@@ -1771,7 +1777,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->shape[n-1],
 									(*ci)->shape[n  ],
 									(*ci)->shape[n+1],
-									MIN_DEFL, 0.0,
+									MIN_DEFL, CREASE_ANGLE,
 									pts,flags);
 				}
 			}
@@ -1779,13 +1785,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			DebugAssert(pts.size() == flags.size());
 			for(int n = 0; n < pts.size(); ++n)
 			{
-				coords3[0] = pts[n].x();
-				coords3[1] = pts[n].y();
+				coords3[0] = doblim(pts[n].x(),inElevation.mWest,inElevation.mEast);
+				coords3[1] = doblim(pts[n].y(),inElevation.mSouth,inElevation.mNorth);
 				coords3[2] = flags[n];
 				
 				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+				{
 					printf("WARNING: coordinate out of range.\n");
-
+//					debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,coords3[2]);
+				}
 				checker.check(coords3);
 //				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
 				cbs.AddSegmentShapePoint_f(coords3, false, writer2);

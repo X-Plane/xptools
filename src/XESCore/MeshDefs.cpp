@@ -226,10 +226,25 @@ CDT::my_propagating_flip(Face_handle& f,int i, set<Face_handle>& all)
 } 
 
 
+// The standard CGAL delauney triangulation doesn't have a way to collect the set of faces affected by an insert
+// operation; this set can be larger than just the neighboring triangles, because the flip recursively spans out in
+// all directions.  So this is a simple re-paste of the CGAL insert code, except it collects all of the affected
+// faces so we can reprocess them if desired.
+//
+// One note: unlike regular insert this assumes that the 'hint' face is actually a face that OWNS p.  So not only do
+// we assert that (1) our locate is sane and (2) we're on or in the tri but we also check at the end that the face
+// we inserted into was affected by the insert.  If it wasn't, we'd have a logic error in our collection of flipped faces.
 CDT::Vertex_handle	CDT::insert_collect_flips(const Point& p, Face_handle hint, set<Face_handle>& all)
 {
-	Vertex_handle va= Ctr::insert(p,hint);
+	Face_handle loc;
+	int li;
+	Locate_type lt;
 
+
+	loc = Ctr::locate(p, lt, li, hint);
+	DebugAssert(Ctr::oriented_side(hint, p) != CGAL::ON_NEGATIVE_SIDE);
+	DebugAssert(lt == CDT::FACE || lt == CDT::EDGE);
+	Vertex_handle va= Ctr::insert(p,lt,loc,li);
 	if (dimension() > 1)
 	{
 		Face_handle f=va->face();
@@ -245,7 +260,7 @@ CDT::Vertex_handle	CDT::insert_collect_flips(const Point& p, Face_handle hint, s
 		} while(next != start);
 	}
 
-
+	DebugAssert(all.count(hint) > 0);
 
 
   return va;

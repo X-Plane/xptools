@@ -22,7 +22,6 @@
  *
  */
 
-//#include "GISTool_Globals.h"
 #include "MapDefs.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
@@ -30,8 +29,6 @@
 #include "CompGeomDefs3.h"
 #include "CompGeomUtils.h"
 #include "PolyRasterUtils.h"
-#include <CGAL/Triangulation_conformer_2.h>
-#include "MeshConformer.h"
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 #include "PerfUtils.h"
@@ -39,19 +36,17 @@
 #include "DEMAlgs.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
+#include "XESConstants.h"
 #include "GreedyMesh.h"
 #if APL && !defined(__MACH__)
 #define __DEBUGGING__
 #include "XUtils.h"
 #endif
-//#if OPENGL_MAP
-//#include "GISTool_Globals.h"
-//#if !DEV
-//	#error killl this
-//#endif
-//#endif
+#if OPENGL_MAP
+#include "GISTool_Globals.h"
+#endif
 
-typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
+//typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
@@ -86,6 +81,11 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #else
 	#define SPLIT_BEACHED_WATER 1
 #endif
+
+// This is the max distance that we can have from a planar map edge.  If we have a longer edge we subdivide it.
+#define MAX_EDGE_DIST	500.0
+
+#define MIN_EDGE_DIST	50.0
 
 #define DEBUG_DROPPED_PTS 0
 
@@ -878,6 +878,42 @@ CDT::Vertex_handle InsertAnyPoint(
 	return v;
 }
 
+/*
+ * InsertMidPoints
+ *
+ * Given two already inserted points, we keep adding mid-points to subdivide to be less than the max edge distance.
+ *
+ */
+void InsertMidPoints(const DEMGeo& in_orig, CDT& io_mesh, CDT::Vertex_handle v1, CDT::Vertex_handle v2, CDT::Face_handle& hint)
+{
+	NT d_sqr = CGAL::squared_distance(v1->point(),v2->point());
+	bool want_split = d_sqr > (MAX_EDGE_DIST * MAX_EDGE_DIST * MTR_TO_DEG_LAT * MTR_TO_DEG_LAT);
+	Point_2 midp(CGAL::midpoint(v1->point(),v2->point()));
+	if(want_split)
+	{
+//		debug_mesh_point(cgal2ben(midp),1,1,0);
+	}
+	else if (d_sqr > (MIN_EDGE_DIST * MIN_EDGE_DIST * MTR_TO_DEG_LAT * MTR_TO_DEG_LAT))
+	{
+		float h1 = in_orig.value_linear(CGAL::to_double(v1->point().x()),CGAL::to_double(v1->point().y()));
+		float h2 = in_orig.value_linear(CGAL::to_double(v2->point().x()),CGAL::to_double(v2->point().y()));
+		float hc = in_orig.value_linear(CGAL::to_double(midp.x()),CGAL::to_double(midp.y()));
+		float ha = (h1 + h2) * 0.5;
+		if (fabs(ha - hc) > gMeshPrefs.max_error)
+		{
+			want_split = true;		
+//			debug_mesh_point(cgal2ben(midp),1,0,0);
+		}
+	}
+
+	if(want_split)
+	{
+		CDT::Vertex_handle vm = InsertAnyPoint(in_orig, io_mesh, midp, hint);
+		InsertMidPoints(in_orig,io_mesh,v1,vm,hint);
+		InsertMidPoints(in_orig,io_mesh,vm,v2,hint);
+	}
+}
+
 
 /*
  * CopyWetPoints
@@ -1088,6 +1124,8 @@ bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b,
 	return true;
 }
 
+#if 0
+
 /* This routine atttempts to determine if a constraint needs to be split.  For now, split if the mesh err gets too high along the constraint.
  * But don't try to split long thin tris - that code does not work. */
 static bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Vertex_handle b, Point_2& candidate, float err)
@@ -1134,6 +1172,7 @@ static bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT
 	*/
 }
 
+
 /* This burns the constraints into the mesh, splitting them as needed to reduce error. */
 void	SplitConstraints(
 				CDT&								io_mesh,
@@ -1170,7 +1209,7 @@ void	SplitConstraints(
 			if (needs_split(io_mesh, elev, actual_pts[n-1], actual_pts[n], candidate, max_err))
 			{
 				CDT::Vertex_handle v =  InsertAnyPoint(elev, io_mesh, candidate, hint);
-//				debug_mesh_point(cgal2ben(candidate), 1,1,0);
+				//debug_mesh_point(cgal2ben(candidate), 1,1,0);
 				++total;
 				queue.push_back(ConstraintMarker_t(actual_pts[n-1], v));
 				queue.push_back(ConstraintMarker_t(v, actual_pts[n]));
@@ -1179,6 +1218,8 @@ void	SplitConstraints(
 	}
 	printf("Added %d vertices to reduce error on constraints.\n",total);
 }
+
+#endif
 
 /*
  * AddConstraintPoints
@@ -1226,6 +1267,14 @@ void	AddConstraintPoints(
 
 			v1 = InsertAnyPoint(master, outMesh, extended2->target()->point(), locale);
 			v2 = InsertAnyPoint(master, outMesh, extended1->target()->point(), locale);
+
+			// Ben says: constrain now!  This will force near-edge triangles to flip to the way they 
+			// will have to be, which will then help the greedy mesh understand where the worst errors are.
+			outMesh.insert_constraint(v1,v2);
+			locale = CDT::Face_handle();			// Face handle may be trashed by constraint propagation!
+			
+			// Subdivide if necessary; our CDT can handle subdividing constraints.
+			InsertMidPoints(master, outMesh, v1, v2, locale);
 
 			outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
 		}
@@ -1421,60 +1470,59 @@ void FlattenWater(CDT& ioMesh)
  */
 void CalculateMeshNormals(CDT& ioMesh)
 {
+	for(CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
+	{
+		Point3	selfP(CGAL::to_double(f->vertex(0)->point().x()), CGAL::to_double(f->vertex(0)->point().y()), f->vertex(0)->info().height);
+		Point3  lastP(CGAL::to_double(f->vertex(1)->point().x()), CGAL::to_double(f->vertex(1)->point().y()), f->vertex(1)->info().height);
+		Point3  nowiP(CGAL::to_double(f->vertex(2)->point().x()), CGAL::to_double(f->vertex(2)->point().y()), f->vertex(2)->info().height);
+		Vector3 v1(selfP, lastP);
+		Vector3 v2(selfP, nowiP);
+		v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+		v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+		v1.dy *= (DEG_TO_MTR_LAT);
+		v2.dy *= (DEG_TO_MTR_LAT);
+		
+		Vector3 normal;
+		
+		if((v1.dx == 0.0 && v1.dy == 0.0 && v1.dz == 0.0) ||
+		   (v2.dx == 0.0 && v2.dy == 0.0 && v2.dz == 0.0))
+		{
+			normal = Vector3(0,0,1);
+		}
+		else 
+		{
+		
+			v1.normalize();
+			v2.normalize();
+			normal = v1.cross(v2);
+			if(normal.dz <= 0.0)
+			{
+				normal = Vector3(0,0,1);
+			} 
+			else
+				normal.normalize();
+		}
+
+		f->info().normal[0] = normal.dx;
+		f->info().normal[1] = normal.dy;
+		f->info().normal[2] = normal.dz;		
+	}
+
 	for (CDT::Finite_vertices_iterator i = ioMesh.finite_vertices_begin(); i != ioMesh.finite_vertices_end(); ++i)
 	{
 		Vector3	total(0.0, 0.0, 0.0);
-		CDT::Vertex_circulator last = ioMesh.incident_vertices(i);
-		CDT::Vertex_circulator nowi = last, stop = last;
-		Point3	selfP(CGAL::to_double(i->point().x()), CGAL::to_double(i->point().y()), i->info().height);
+		CDT::Face_circulator circ, stop;
+		circ = stop = ioMesh.incident_faces(i);
 
 		do {
-			last = nowi;
-			++nowi;
-			if(!ioMesh.is_infinite(last) && !ioMesh.is_infinite(nowi))
+			if(!ioMesh.is_infinite(circ))
 			{
-
-                Point3  lastP(CGAL::to_double(last->point().x()), CGAL::to_double(last->point().y()), last->info().height);
-                Point3  nowiP(CGAL::to_double(nowi->point().x()), CGAL::to_double(nowi->point().y()), nowi->info().height);
-                Vector3 v1(selfP, lastP);
-                Vector3 v2(selfP, nowiP);
-                v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
-                v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
-                v1.dy *= (DEG_TO_MTR_LAT);
-                v2.dy *= (DEG_TO_MTR_LAT);
-				
-				Vector3 normal;
-				
-				if((v1.dx == 0.0 && v1.dy == 0.0 && v1.dz == 0.0) ||
-				   (v2.dx == 0.0 && v2.dy == 0.0 && v2.dz == 0.0))
-				{
-					normal = Vector3(0,0,1);
-				}
-				else 
-				{
-				
-					v1.normalize();
-					v2.normalize();
-					normal = v1.cross(v2);
-					if(normal.dz <= 0.0)
-					{
-						normal = Vector3(0,0,1);
-					} 
-					else
-						normal.normalize();
-
-				}
-
-				CDT::Face_handle	a_face;
-				if (ioMesh.is_face(i, last, nowi, a_face))
-				{
-                    a_face->info().normal[0] = normal.dx;
-                    a_face->info().normal[1] = normal.dy;
-                    a_face->info().normal[2] = normal.dz;
-				}
-				total = total + normal;
+				total.dx += circ->info().normal[0];
+				total.dy += circ->info().normal[1];
+				total.dz += circ->info().normal[2];
 			}
-		} while (nowi != stop);
+		} while (++circ != stop);
+		
         DebugAssert(total.dx != 0.0 || total.dy != 0.0 || total.dz != 0.0);
         DebugAssert(total.dz > 0.0);
         total.normalize();
@@ -1596,12 +1644,17 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	PAUSE_STEP("Finished greedy2")
 
-	SplitConstraints(outMesh, orig, coastlines_markers, gMeshPrefs.max_error);
+	// We no longer do this; constraints are added up front.
+//	SplitConstraints(outMesh, orig, coastlines_markers, gMeshPrefs.max_error);
 
-	PAUSE_STEP("Split Contraints")
+//	PAUSE_STEP("Split Contraints")
 
 #if SPLIT_CLIFFS
 
+	// Cliff splitting: any time we have a triangle that is a cliff whose three neighbors are all NOT a cliff, we have
+	// a problem: since the landuse on the cliff will be bordered by something else on all 3 sides, the cliff will be lost
+	// to borders.  So...we will subdivide the triangle into four by inserting the midpoints of each side of the triangle.
+	// We expect this to produce slightly more 'regular' results than subdiving into three triangles with the centroid.
 	{
 		set<Point_2> splits_needed;
 		for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
@@ -1629,11 +1682,21 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	//		debug_mesh_point(cgal2ben(*n), 1, 0, 0);
 		}
 	}
+	
+	PAUSE_STEP("Split Cliffs")
+	
 #endif
 
-#if !PHONE
+	// BEN SAYS: we are no longer trying to 'conform' the mesh because:
+	// 1. It makes a TON of points.
+	// 2. We don't have sqrt in our NT so we have to hack this to make it work and
+	// 2a. Sometimes the conformer goes insane and inserts like a billion points in one place, which is bad.
+	//	  Instead we simply assure that our mesh lines are reasonably subdivided.
+
+#if !PHONE && 0
 	int n_vert = outMesh.number_of_vertices();					// Ben says: typically the end() iterator for the triangulation is _not_ stable across inserts.
-	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
+	CGAL::make_conforming_Delaunay_2(outMesh);
+//	CGAL::make_conforming_any_2<CDT,LCP>(outMesh);				// Because the finite iterator is a filtered wrapper around the triangulation, it too is not stable
 																// across inserts.  To get around this, simply note how many vertices we inserted.  Note that we are assuming
 	CDT::Vertex_iterator v1,v2,v;								// vertices to be inserted into the END of the iteration list!
 	v1 = outMesh.vertices_begin();
@@ -1648,7 +1711,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	for(v=v1;v!=v2;++v)
 	{
 		v->info().height = orig.value_linear(CGAL::to_double(v->point().x()),CGAL::to_double(v->point().y()));
-//		debug_mesh_point(cgal2ben(v->point()),1,1,0);
+//		debug_mesh_point(cgal2ben(v->point()),1,0,0);
 		#if DEV
 		if(!gMatchBorders[0].vertices.empty())
 			DebugAssert(v->point().x() != orig.mWest);
@@ -1660,42 +1723,91 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 			DebugAssert(v->point().y() != orig.mNorth);
 		#endif	
 	}
+	
+	PAUSE_STEP("Conform")
+	
 #endif
 	
 	/*********************************************************************************************************************
 	 * LAND USE CALC (A LITTLE BIT)
 	 *********************************************************************************************************************/
 
-
-	if (prog) prog(2, 3, "Calculating Wet Areas", 0.2);
+	PROGRESS_START(prog,1,3,"Calculating Wet Areas");
 	{
 		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
 	}
+
+	// To guarantee that the sea floor of wet triangles can be flat (e.g. we don't have three coastal vertices) we 
+	// find two-side coastal triangles and subdivide.  If we have a single wet tri, we insert the centroid; otherwise
+	// we subdivide the 'open' side (to try to get less slivery triangles).
 
 #if SPLIT_BEACHED_WATER
 	set<Point_2> splits_needed;
-	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f)
+	int ctr=0,tot=outMesh.number_of_faces();
+	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f,++ctr)
 	{
 		if( f->info().terrain == terrain_Water)
 		{
-			bool	c0 = outMesh.are_there_incident_constraints(f->vertex(0));
-			bool	c1 = outMesh.are_there_incident_constraints(f->vertex(1));
-			bool	c2 = outMesh.are_there_incident_constraints(f->vertex(2));
-			if(c0 && c1 && !f->is_constrained(2)) splits_needed.insert(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
-			if(c1 && c2 && !f->is_constrained(0)) splits_needed.insert(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
-			if(c2 && c0 && !f->is_constrained(1)) splits_needed.insert(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()));
+			PROGRESS_SHOW(prog,1,3,"Calculating Wet Areas",ctr,tot);
+			CDT::Face_handle f0(f->neighbor(0));
+			CDT::Face_handle f1(f->neighbor(1));
+			CDT::Face_handle f2(f->neighbor(2));
+			
+			bool dry_a = (outMesh.is_infinite(f0) || f0->info().terrain != terrain_Water);
+			bool dry_b = (outMesh.is_infinite(f1) || f1->info().terrain != terrain_Water);
+			bool dry_c = (outMesh.is_infinite(f2) || f2->info().terrain != terrain_Water);
+			
+			if(dry_a && dry_b && dry_c)
+			{
+				Point_2 c(CGAL::centroid(outMesh.triangle(f)));
+				splits_needed.insert(c);
+//				debug_mesh_point(cgal2ben(c),1,1,0);
+			}
+			else if (dry_a && dry_b)
+			{
+				Point_2 c(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
+				splits_needed.insert(c);
+//				debug_mesh_point(cgal2ben(c),1,1,0);
+			}
+			else if (dry_a && dry_c)
+			{
+				Point_2 c(CGAL::midpoint(f->vertex(0)->point(),f->vertex(2)->point()));
+				splits_needed.insert(c);
+//				debug_mesh_point(cgal2ben(c),1,1,0);
+			}
+			else if (dry_b && dry_c)
+			{
+				Point_2 c(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
+				splits_needed.insert(c);
+//				debug_mesh_point(cgal2ben(c),1,1,0);
+			}
 		}
 	}
 
+	PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
+
 	printf("Need %d splits for beaches.\n", splits_needed.size());
 	hint = CDT::Face_handle();
+	set<CDT::Face_handle>	who;
 	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
 	{
-		InsertAnyPoint(orig, outMesh, *n, hint);
+		CDT::Vertex_handle v = InsertAnyPoint(orig, outMesh, *n, hint);
+		CDT::Face_circulator circ,stop;
+		circ=stop=outMesh.incident_faces(v);
+		do {
+			who.insert(circ);
+		} while(++circ != stop);
 	}
 	
-		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
-	
+	SetTerrainForConstraints(outMesh, coastlines_markers, orig);
+
+	for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
+	{
+		DebugAssert((*w)->info().terrain == terrain_Water);
+	}
+
+	PAUSE_STEP("Split Beached Water")
+
 #endif
 
 

@@ -1571,14 +1571,14 @@ void generate_bezier(
 	DebugAssert(len_bc > 0.0);
 	double dot = doblim(ab.dot(bc),-1.0,1.0);
 	
-	if(len_ab < 10.0) printf("WARNING: AB is %lf m.\n", len_ab);
-	if(len_bc < 10.0) printf("WARNING: BC is %lf m.\n", len_bc);
+//	if(len_ab < 10.0) printf("WARNING: AB is %lf m.\n", len_ab);
+//	if(len_bc < 10.0) printf("WARNING: BC is %lf m.\n", len_bc);
 	
 	if(dot < crease_angle_cos)
 	{
 		pts.push_back(b);
 		flags.push_back(0);
-		//printf("   Crease.\n");
+//		printf("   Crease.\n");
 	}
 	else
 	{
@@ -1588,6 +1588,7 @@ void generate_bezier(
 		{
 			pts.push_back(b);
 			flags.push_back(0);
+//			printf("   Near angle.\n");
 		}
 		else
 		{		
@@ -1612,9 +1613,9 @@ void generate_bezier(
 					flags.push_back(0);
 					flags.push_back(1);
 					flags.push_back(0);
-					//printf("   Pull back of %lf mtrs for %lf degs.\n", pull_back, angle);
-					//debug_mesh_line(b1,b,0.5,0.5,0,1,1,0);
-					//debug_mesh_line(b,b2,0.5,0.5,0,1,1,0);				
+//					printf("   Pull back of %lf mtrs for %lf degs.\n", pull_back, angle);
+//					debug_mesh_line(b1,b,0.5,0.5,0,1,1,0);
+//					debug_mesh_line(b,b2,0.5,0.5,0,1,1,0);				
 				}
 				else
 				{
@@ -1625,8 +1626,8 @@ void generate_bezier(
 					pts.push_back(b2);
 					flags.push_back(0);
 					flags.push_back(1);
-					//debug_mesh_line(b,b2,0,0.5,0,0,1,0);
-					//printf("   straight->curve, handle is %lf.\n", 0.33 * len_bc);
+//					debug_mesh_line(b,b2,0,0.5,0,0,1,0);
+//					printf("   straight->curve, handle is %lf.\n", 0.33 * len_bc);
 				}
 			}
 			else
@@ -1640,8 +1641,8 @@ void generate_bezier(
 					pts.push_back(b );
 					flags.push_back(1);
 					flags.push_back(0);
-					//debug_mesh_line(b1,b,0.5,0,0,1,0,0);
-					//printf("   curve->straight, handle is %lf.\n", 0.33 * len_ab);
+//					debug_mesh_line(b1,b,0.5,0,0,1,0,0);
+//					printf("   curve->straight, handle is %lf.\n", 0.33 * len_ab);
 				}
 				else
 				{
@@ -1659,9 +1660,9 @@ void generate_bezier(
 					flags.push_back(1);
 					flags.push_back(0);
 					flags.push_back(1);
-					//printf("   Flow curve, length of %lf, %lf\n", 0.33 * len_ab, 0.33 * len_bc);
-					//debug_mesh_line(b1,b,0,0,0.5,0,0,1);
-					//debug_mesh_line(b,b2,0,0,0.5,0,0,1);				
+//					printf("   Flow curve, length of %lf, %lf\n", 0.33 * len_ab, 0.33 * len_bc);
+//					debug_mesh_line(b1,b,0,0,0.5,0,0,1);
+//					debug_mesh_line(b,b2,0,0,0.5,0,0,1);				
 				}
 			}
 		}
