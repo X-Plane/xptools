@@ -1424,6 +1424,7 @@ void	DSFFileWriterImp::EndPolygon(
 	DSFPointPoolLoc	loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AccumulatePoints(pts);
 	if (loc.first == -1 || loc.second == -1)
 	{
+		printf("Must retry poly.\n");
 		double	ll_extent[4] = { 180.0, 90.0, -180.0, -90.0 };
 		double	st_extent[4] = { 0.0, 0.0, 1.0, 1.0 };
 		for(DSFTupleVector::iterator p = pts.begin(); p != pts.end(); ++p)
@@ -1442,9 +1443,13 @@ void	DSFFileWriterImp::EndPolygon(
 		}
 		
 		float n;
-		for(n = REF(inRef)->mDivisions; n > 1.0; --n)
+		for(n = REF(inRef)->mDivisions; n > 1.0; n /= 2.0)
+		// BEN SAYS: we MUST work in powers of 2.  Otherwise, we will have nasty fractional rounding, and if we fit the point pool perfectly, edge vertices can pop out.
+		// Example: rightmost vertex is on integral right edge of DSF, but we have...THREE pools.  Now offste = 2/3 and scale = 1/3.  The odds of this encoding the 
+		// point properly is, like, zero. :-)
 		{
 			float dim = 1.0 / n;
+			printf("sub_div dim: %f,%f\n", dim, n);
 			if(dim >= (ll_extent[2] - ll_extent[0]) && dim >= ll_extent[3] - ll_extent[1])
 				break;
 		}

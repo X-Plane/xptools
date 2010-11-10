@@ -449,10 +449,10 @@ inline bool DSFTuple::encode(const DSFTuple& offset, const DSFTuple& scale)
 	int c = mLen;
 	while (c--)
 	{
-		if (*k)
 //		printf("   %lf   ->   ", *i);
+		if (*k)
 			*i = ((*i - *j) * 65535.0 / (*k) );
-//		printf("   %lf\n", *i);
+//		printf("   %lf (%lf %lf)\n", *i, *j, *k);
 		if (*i < 0.0 || *i > 65535.0)
 			return false;
 		++i, ++j, ++k;

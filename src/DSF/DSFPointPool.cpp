@@ -328,7 +328,15 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 		{
 			DSFTupleVector	trans(inPoints);
 			for (int n = 0; n < trans.size(); ++n)
-				trans[n].encode(pool->mOffset, pool->mScale);
+			{
+//				trans[n].dump();
+				// BEN SAYS: always hard assert if we fail to encode..this indicates some kind of fubar rounding issue (hence we said we
+				// COULD encode in in_range).  If we just bail out, we end up with half-encoded points, which sometimes will fail to sink, 
+				// but ohter times will just leave junk data in the DSF, which is LOTS OF FUN to debug.
+				if(!trans[n].encode(pool->mOffset, pool->mScale))
+					Assert(!"Internal failure in encode...we should never hit this!\n");
+//				trans[n].dump();
+			}
 			int pos = pool->mPoints.size();
 			pool->mPoints.insert(pool->mPoints.end(), trans.begin(), trans.end());
 			return pair<int, int>(p, pos);
