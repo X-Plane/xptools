@@ -31,6 +31,7 @@
 //#include "GISTool_Globals.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
+
 //#include <CGAL/Snap_rounding_2.h>
 //#include <CGAL/Snap_rounding_traits_2.h>
 
@@ -270,8 +271,8 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 	}
 	if(inTokenLine[0] == "SHAPE_FEATURE" || inTokenLine[0] == "SHAPE_ARC_REVERSE" || inTokenLine[0] == "SHAPE_ARC_BRIDGE")
 	{
-		if((inTokenLine[0] == "SHAPE_FEATURE" && inTokenLine.size() != 4) ||
-		    (inTokenLine[0] != "SHAPE_FEATURE" && inTokenLine.size() != 3))
+		if((inTokenLine[0] == "SHAPE_ARC_REVERSE" && inTokenLine.size() != 3) ||
+		    (inTokenLine[0] != "SHAPE_ARC_REVERSE" && inTokenLine.size() != 4))
 		{
 			printf("Bad shape import line.\n");
 			return false;
@@ -282,7 +283,9 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 		{
 			if(!TokenizeEnum(inTokenLine[3], pat.feature, "Bad enum"))
 				return false;
-		} else 
+		} else if(inTokenLine[0] == "SHAPE_ARC_BRIDGE")
+			pat.feature = atoi(inTokenLine[3].c_str());
+		else
 			pat.feature = 1;
 
 		string::const_iterator e, s = inTokenLine[1].begin();
@@ -382,25 +385,109 @@ static void round_grid(Point2& io_pt, int steps)
 
 struct shape_lock_traits {
 	bool is_locked(Pmwx::Vertex_handle v) const { 
-		return false;
+
 		Pmwx::Halfedge_handle h1(v->incident_halfedges());
 		Pmwx::Halfedge_handle h2(h1->next());
-		Point2 p1(cgal2ben(h1->source()->point()));
-		Point2 p2(cgal2ben(h1->target()->point()));
-		Point2 p3(cgal2ben(h2->target()->point()));
-		Vector2 v1(p1,p2);
-		Vector2 v2(p2,p3);
-		v1.normalize();
-		v2.normalize();
-		if (v1.dot(v2) < 0.7)
+
+		Pmwx::Halfedge_handle t1(h1->twin());
+		Pmwx::Halfedge_handle t2(h2->twin());
+		
+		// Verify our assumption; that all road segments are "flat" on import, that is, source and target height are the same.
+		// This is how shape data comes in these days because we get one layer per SEGMENT.  If we ever get a sr/dst height pair,
+		// our alg will fail, these asserts will squawk, and we will go to the #if 0 code.
+	#if DEV
+		GISNetworkSegmentVector::iterator r;
+		for(r=h1->data().mSegments.begin();r!=h1->data().mSegments.end();++r)
+			DebugAssert(r->mSourceHeight == r->mTargetHeight);
+		for(r=t1->data().mSegments.begin();r!=t1->data().mSegments.end();++r)
+			DebugAssert(r->mSourceHeight == r->mTargetHeight);
+		for(r=h2->data().mSegments.begin();r!=h2->data().mSegments.end();++r)
+			DebugAssert(r->mSourceHeight == r->mTargetHeight);
+		for(r=t2->data().mSegments.begin();r!=t2->data().mSegments.end();++r)
+			DebugAssert(r->mSourceHeight == r->mTargetHeight);
+	#endif
+		
+		// If we don't have matched segments, lock the point so we don't lose the road type data.
+		if(h1->data().mSegments == h2->data().mSegments &&
+		   t1->data().mSegments == t2->data().mSegments)	return false;
+
+		if(h1->data().mSegments == t2->data().mSegments &&
+		   t1->data().mSegments == h2->data().mSegments)	return false;
+		
+//		debug_mesh_point(cgal2ben(v->point()),1,0,0);
+		return true;
+	
+
+	// This is a more correct version of the lock alg: if attempts to check what is happening at the
+	// vertex to be eliminated.  If we ever have 'ramped' data (src height != dst height) we can use this.
+	// Note that in that case when we merge an edge, we would have to 'merge' the segment data's height info too!
+
+#if 0
+
+		double	e1,e2;
+		int		f1, f2;
+
+		int r1 = h1->data().mSegments.size() + t1->data().mSegments.size();
+		int r2 = h2->data().mSegments.size() + t2->data().mSegments.size();
+		if(r1 != r2)
 		{
-//			debug_mesh_point(p2,1,0,0);
+			debug_mesh_point(cgal2ben(v->point()),1,0,0);
 			return true;
+		}
+		
+		if(r1 == 0 || r2 == 0)
+			return false;
+			
+		if(r1 > 1 || r2 > 1)
+		{
+			debug_mesh_point(cgal2ben(v->point()),1,0,1);
+			return true;
+		}
+
+		if(!h1->data().mSegments.empty())
+		{
+			e1 = h1->data().mSegments.front().mTargetHeight;
+			r1 = h1->data().mSegments.front().mFeatType;
+		}
+		else if(!t1->data().mSegments.empty())
+		{
+			e1 = t1->data().mSegments.front().mSourceHeight;
+			r1 = t1->data().mSegments.front().mFeatType;
 		}
 		else
 		{
+			DebugAssert(!"Logic error.");
 			return false;
 		}
+
+		if(!h2->data().mSegments.empty())
+		{
+			e2 = h2->data().mSegments.front().mTargetHeight;
+			r2 = h2->data().mSegments.front().mFeatType;
+		}
+		else if(!t2->data().mSegments.empty())
+		{
+			e2 = t2->data().mSegments.front().mSourceHeight;
+			r2 = t2->data().mSegments.front().mFeatType;
+		}
+		else
+		{
+			DebugAssert(!"Logic error.");
+			return false;
+		}
+
+		if (e1 != e2)
+		{
+			debug_mesh_point(cgal2ben(v->point()), 0, 0, 1);
+			return true;
+		}
+		if(f1 != f2)
+		{
+			debug_mesh_point(cgal2ben(v->point()), 0, 1, 0);
+			return true;
+		}
+		return false;
+#endif
 	}
 	void remove(Pmwx::Vertex_handle v) const { 
 //		debug_mesh_point(cgal2ben(v->point()),0.6,0.6,0.6);
@@ -584,7 +671,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						feature_lay[n] = DBFReadIntegerAttribute(db, obj->nShapeId, sLayerID);
 					if(sLayerTag.empty() || sLayerID == -1 || DBFIsAttributeNULL(db, obj->nShapeId, sLayerID))
 					if(want_this_thing(db,obj->nShapeId,sLineBridge) != -1)
-						feature_lay[n] = 1;
+						feature_lay[n] = want_this_thing(db,obj->nShapeId,sLineBridge);
 				}	
 				for (int part = 0; part < obj->nParts; ++part)
 				{
