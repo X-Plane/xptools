@@ -737,7 +737,12 @@
 	/* Six and four-lane highways...may be together or seprated.  If separated,
 	 * small, and with no trains or brigdeg, there may be no guard rails (for out in Arizona).
 	 * The inner edge line is always yellow, the outer edge line is white. */
-	TOKEN(net_SixLaneHighwayOnewayGraded)
+	TOKEN(net_RampCity)
+	TOKEN(net_RampRural)
+	TOKEN(net_4City)
+	TOKEN(net_4Rural)
+	TOKEN(net_6City)
+	TOKEN(net_6Rural)
 
 	/* Primary road - two lanes in each direction, double yellow lines in the center
 	 * and white lines on the edge.  If there are no sidewalks, there should be a rough

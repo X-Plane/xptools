@@ -44,7 +44,7 @@
 #include <ctype.h>
 #include "MapAlgs.h"
 #include "MapHelpers.h"
-#include "NetPlacement.h"
+#include "NetAlgs.h"
 
 #if OPENGL_MAP
 	#include "RF_Msgs.h"

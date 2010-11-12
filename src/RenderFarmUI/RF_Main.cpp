@@ -57,6 +57,7 @@
 #include "GUI_Window.h"
 #include "MathUtils.h"
 #include "RF_Selection.h"
+#include "NetHelpers.h"
 
 #if APL && defined(__MWERKS__)
 #include "SIOUX.h"
@@ -167,6 +168,26 @@ void	import_tiger_repository(const string& rt)
 }
 #endif
 
+static int DoSelectComplexVertices(const vector<const char *>& args)
+{
+	gVertexSelection.clear();
+	for(Pmwx::Vertex_handle v = gMap.vertices_begin(); v != gMap.vertices_end(); ++v)
+	if(!v->is_isolated())
+	{
+		map<int,vector<Pmwx::Halfedge_handle> > junc;
+		if(levelize_junction(v,junc))
+		{
+			if(junc.size() > 1)
+			for(map<int,vector<Pmwx::Halfedge_handle> >::iterator i = junc.begin(); i != junc.end(); ++i)
+			if(i->second.size() > 2)
+			{
+				gVertexSelection.insert(v);
+				break;
+			}
+		}
+	}
+	return 1;
+}
 
 static int DoSelectFaces(const vector<const char *>& args)
 {
@@ -230,6 +251,7 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 { "-chud_stop",		0, 0, DoChudStop, "stop profiling", "" },
 #endif
 { "-selectf",	3, 3, DoSelectFaces, "Select faces.", "" },
+{ "-select_complex", 0, 0, DoSelectComplexVertices, "Select complex vertices.", "" },
 { "-sel_mode", 1, 1, DoSetSelMode, "Set Selection Mode", "" },
 { "-clear_marks", 0, 0, DoClearMarks, "Clear Markings", "" },
 

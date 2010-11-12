@@ -38,6 +38,8 @@ struct	NetFeatureInfo {
 	int			oneway_feature;
 };
 typedef hash_map<int, NetFeatureInfo>	NetFeatureInfoTable;
+extern	NetFeatureInfoTable				gNetFeatures;
+
 
 struct	NetRepInfo {
 	float		width;
@@ -49,8 +51,12 @@ struct	NetRepInfo {
 //	int			export_type_normal;
 //	int			export_type_overpass;
 	int			export_type_draped;
+	float		crease_angle_cos;
+	float		min_defl_deg_mtr;
 };
 typedef hash_map<int, NetRepInfo>				NetRepInfoTable;
+extern 	NetRepInfoTable							gNetReps;
+
 
 struct	Feature2RepInfo {
 	float		min_density;
@@ -64,6 +70,27 @@ struct	Feature2RepInfo {
 	int			rep_type;
 };
 typedef hash_multimap<int, Feature2RepInfo>		Feature2RepInfoTable;
+extern	Feature2RepInfoTable					gFeature2Rep;
+
+
+struct ForkRule {
+	int			trunk;
+	int			left;
+	int			right;
+	int			new_trunk;
+	int			new_left;
+	int			new_right;
+};
+typedef vector<ForkRule>						ForkRuleTable;
+extern ForkRuleTable							gForkRules;
+
+struct ChangeRule {
+	int			prev;
+	int			next;
+	int			new_mid;
+};
+typedef vector<ChangeRule>						ChangeRuleTable;
+extern ChangeRuleTable							gChangeRules;
 
 struct	BridgeInfo {
 	int			rep_type;
@@ -97,12 +124,9 @@ struct	BridgeInfo {
 	int			export_type;
 };
 typedef	vector<BridgeInfo>				BridgeInfoTable;
-
-
-extern	NetFeatureInfoTable				gNetFeatures;
-extern 	NetRepInfoTable					gNetReps;
-extern	Feature2RepInfoTable			gFeature2Rep;
 extern	BridgeInfoTable					gBridgeInfo;
+
+
 void	LoadNetFeatureTables(void);
 
 //bool	IsSeparatedHighway(int feat_type);

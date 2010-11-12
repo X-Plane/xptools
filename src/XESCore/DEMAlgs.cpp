@@ -67,7 +67,7 @@ static const SnowLineInfo_t kSnowLineInfo[] = {
 
 
 // Spread is approx URBAN_KERN_SIZE / 2 KM
-#define 	URBAN_DENSE_KERN_SIZE	7	// Tried 17 before
+#define 	URBAN_DENSE_KERN_SIZE	4	// Tried 17 before
 #define 	URBAN_RADIAL_KERN_SIZE	33
 #define 	URBAN_TRANS_KERN_SIZE	5
 
@@ -1071,24 +1071,22 @@ void	DeriveDEMs(
 	int reduce_1 = elevation.mWidth / 200;
 	DEMGeo elevation_reduced;
 	DownsampleDEM(elevation, elevation_reduced, reduce_1);
-	DEMGeo	landuseBig;
-	int reduce_2 = elevation.mWidth / 600;
-	UpsampleDEM(landuse, landuseBig, reduce_2);
+//	DEMGeo	landuseBig;
+//	int reduce_2 = elevation.mWidth / 600;
+//	UpsampleDEM(landuse, landuseBig, reduce_2);
 
-	DEMGeo	urban(landuse);
 //	DEMGeo	values(landuse);
 //	DEMGeo	nudeColor(landuse);
 //	DEMGeo	vegetation(elevation_reduced);
-	DEMGeo	urbanRadial(landuse);
-	DEMGeo	urbanTrans(landuse);
+	DEMGeo	urban;
+	DEMGeo	urbanRadial;
+	DEMGeo	urbanTrans;
 	urbanSquare = landuse;
 	DEMGeo		forests(landuse);
 
-
-	urban.mNorth = landuseBig.mNorth;
-	urban.mSouth = landuseBig.mSouth;
-	urban.mEast = landuseBig.mEast;
-	urban.mWest = landuseBig.mWest;
+	urban.copy_geo_from(landuse);
+	urbanRadial.copy_geo_from(landuse);
+	urbanTrans.copy_geo_from(landuse);
 
 //	double lon, lat;
 
@@ -1105,11 +1103,11 @@ void	DeriveDEMs(
 	double	radial_max = 0.0;
 
 	{
-		DEMGeo	urbanTemp(urban);
-		for (y = 0; y < urban.mHeight;++y)
-		for (x = 0; x < urban.mWidth; ++x)
+		DEMGeo	urbanTemp(landuse.mWidth, landuse.mHeight);
+		for (y = 0; y < landuse.mHeight;++y)
+		for (x = 0; x < landuse.mWidth; ++x)
 		{
-			float e = urban.get(x,y);
+			float e = landuse.get(x,y);
 			 if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
 		else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
 		else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
@@ -1130,10 +1128,15 @@ void	DeriveDEMs(
 		else														e = 0.0;		
 			urbanTemp(x,y) = e;
 		}
+		
+		urbanTemp.derez(8);
+		
+		urban.resize(urbanTemp.mWidth,urbanTemp.mHeight);
+		urbanRadial.resize(urbanTemp.mWidth,urbanTemp.mHeight);
+		urbanTrans.resize(urbanTemp.mWidth,urbanTemp.mHeight);
 
-
-		for (y = 0; y < urban.mHeight;++y)
-		for (x = 0; x < urban.mWidth; ++x)
+		for (y = 0; y < urbanTemp.mHeight;++y)
+		for (x = 0; x < urbanTemp.mWidth; ++x)
 		{
 			urban(x,y) 		= urbanTemp.kernelN(x,y, URBAN_DENSE_KERN_SIZE , sUrbanDenseSpreaderKernel);
 			double local 	= urbanTemp.kernelN(x,y, URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel);

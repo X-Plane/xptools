@@ -28,7 +28,7 @@
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
 #include "Airports.h"
-#include "NetPlacement.h"
+#include "NetAlgs.h"
 #include "DSFBuilder.h"
 #include "ObjPlacement.h"
 #include "SceneryPackages.h"
@@ -275,6 +275,7 @@ static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
 	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature],gDem[dem_Rainfall],gProgress);
+	repair_network(gMap);
 	return 0;
 }
 

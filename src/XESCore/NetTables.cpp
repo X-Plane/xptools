@@ -30,6 +30,8 @@
 NetFeatureInfoTable				gNetFeatures;
 NetRepInfoTable					gNetReps;
 Feature2RepInfoTable			gFeature2Rep;
+ForkRuleTable					gForkRules;
+ChangeRuleTable					gChangeRules;
 BridgeInfoTable					gBridgeInfo;
 
 
@@ -55,11 +57,17 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 	NetRepInfo	info;
 	info.export_type_draped = NO_VALUE;	// hack for mesh tool - allow draped param to not be attached!
 
-	if (TokenizeLine(tokens, " efffeii",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped) != 8)
+	float	crease, max_rad;
+
+	if (TokenizeLine(tokens, " efffeiiff",&rep_type,
+		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad) != 10)
 	{
 		return false;
 	}
+	
+	info.crease_angle_cos=cos(crease * DEG_TO_RAD);
+	info.min_defl_deg_mtr = max_rad > 0.0 ? (360.0 / (2 * PI * max_rad)) : 0.0f;
+	
 	if (gNetReps.count(rep_type) > 0)
 		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));
 
@@ -85,6 +93,36 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 	gFeature2Rep.insert(Feature2RepInfoTable::value_type(feature_type, info));
 	return true;
 }
+
+bool	ReadForkRule(const vector<string>& tokens, void * ref)
+{
+	ForkRule r;
+	if(TokenizeLine(tokens," eeeeee",
+						&r.trunk,
+						&r.left,
+						&r.right,
+						&r.new_trunk,
+						&r.new_left,
+						&r.new_right) != 7)
+	return false;
+	gForkRules.push_back(r);
+	return true;
+				
+}
+
+bool	ReadChangeRule(const vector<string>& tokens, void * ref)
+{
+	ChangeRule r;
+	if(TokenizeLine(tokens," eeee",
+						&r.prev,
+						&r.next,
+						&r.new_mid) != 4)
+	return false;
+	gChangeRules.push_back(r);
+	return true;
+				
+}
+
 
 bool	ReadRoadBridge(const vector<string>& tokens, void * ref)
 {
@@ -119,10 +157,14 @@ void	LoadNetFeatureTables(void)
 	gNetReps.clear();
 	gFeature2Rep.clear();
 	gBridgeInfo.clear();
+	gForkRules.clear();
+	gChangeRules.clear();
 
 	RegisterLineHandler("ROAD_GENERAL", RoadGeneralProps, NULL);
 	RegisterLineHandler("ROAD_PROP", ReadRoadSpecificProps, NULL);
 	RegisterLineHandler("ROAD_PICK", ReadRoadPick, NULL);
+	RegisterLineHandler("FORK_RULE",ReadForkRule,NULL);
+	RegisterLineHandler("CHANGE_RULE",ReadChangeRule,NULL);
 	RegisterLineHandler("ROAD_BRIDGE", ReadRoadBridge, NULL);
 	LoadConfigFile("road_properties.txt");
 }

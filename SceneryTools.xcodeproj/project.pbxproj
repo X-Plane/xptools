@@ -297,6 +297,12 @@
 		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
 		D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
+		D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
+		D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
+		D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
+		D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
+		D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
+		D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
 		D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
@@ -1137,6 +1143,10 @@
 		D63F72731180917800AB7C1F /* BlockFill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockFill.h; sourceTree = "<group>"; };
 		D63F72741180917800AB7C1F /* BlockFill.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockFill.cpp; sourceTree = "<group>"; };
 		D6424EFD115948CD0031370E /* WED_DataModel2.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel2.sql; sourceTree = "<group>"; };
+		D64A08A8127AFDC1000D58A7 /* NetAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetAlgs.h; sourceTree = "<group>"; };
+		D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetAlgs.cpp; sourceTree = "<group>"; };
+		D64A08AD127AFDEA000D58A7 /* NetHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetHelpers.h; sourceTree = "<group>"; };
+		D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetHelpers.cpp; sourceTree = "<group>"; };
 		D64A0E83110F820A006172C3 /* ObjPlacement2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjPlacement2.h; sourceTree = "<group>"; };
 		D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement2.cpp; sourceTree = "<group>"; };
 		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
@@ -3075,21 +3085,24 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
-				D6580A86113D8E17004C7C23 /* Bezier.h */,
-				D6580A87113D8E17004C7C23 /* Bezier.cpp */,
-				D6E941D810DC717300192A02 /* ForestTables.cpp */,
-				D6E941D910DC717300192A02 /* ForestTables.h */,
-				D6E941DA10DC717300192A02 /* MapRaster.cpp */,
-				D6E941DB10DC717300192A02 /* MapRaster.h */,
-				D6956EC80F82DBF800F6718E /* MapHelpers.cpp */,
-				D6956EC90F82DBF800F6718E /* MapHelpers.h */,
 				D6BC38300AB22C85003949C5 /* Airports.cpp */,
 				D6BC38310AB22C85003949C5 /* Airports.h */,
 				D6BC38320AB22C85003949C5 /* AptDefs.h */,
 				D6BC38330AB22C85003949C5 /* AptIO.cpp */,
 				D6BC38340AB22C85003949C5 /* AptIO.h */,
+				D6DEB3441055994000C378BE /* AptAlgs.h */,
+				D6DEB3451055994000C378BE /* AptAlgs.cpp */,
+				D6DBA1E010572F33004E1089 /* AptRouting.h */,
+				D6DBA1E110572F33004E1089 /* AptRouting.cpp */,
 				D6BC38350AB22C85003949C5 /* Beaches.cpp */,
 				D6BC38360AB22C85003949C5 /* Beaches.h */,
+				D6580A86113D8E17004C7C23 /* Bezier.h */,
+				D6580A87113D8E17004C7C23 /* Bezier.cpp */,
+				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
+				D63F725A117FB60900AB7C1F /* BlockAlgs.h */,
+				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
+				D63F72731180917800AB7C1F /* BlockFill.h */,
+				D63F72741180917800AB7C1F /* BlockFill.cpp */,
 				D6BC38370AB22C85003949C5 /* CGALTypes.h */,
 				D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */,
 				D6BC383B0AB22C85003949C5 /* ConfigSystem.h */,
@@ -3109,6 +3122,12 @@
 				D6BC384B0AB22C85003949C5 /* EnumSystem.h */,
 				D6BC384E0AB22C85003949C5 /* Forests.cpp */,
 				D6BC384F0AB22C85003949C5 /* Forests.h */,
+				D6E941D810DC717300192A02 /* ForestTables.cpp */,
+				D6E941D910DC717300192A02 /* ForestTables.h */,
+				D6E941DA10DC717300192A02 /* MapRaster.cpp */,
+				D6E941DB10DC717300192A02 /* MapRaster.h */,
+				D6956EC80F82DBF800F6718E /* MapHelpers.cpp */,
+				D6956EC90F82DBF800F6718E /* MapHelpers.h */,
 				D6BC38500AB22C85003949C5 /* GreedyMesh.cpp */,
 				D6BC38510AB22C85003949C5 /* GreedyMesh.h */,
 				D6BC38520AB22C85003949C5 /* Hydro.cpp */,
@@ -3119,6 +3138,16 @@
 				D6BC38580AB22C85003949C5 /* MapDefs.h */,
 				D6BC38590AB22C85003949C5 /* MapIO.cpp */,
 				D6BC385A0AB22C85003949C5 /* MapIO.h */,
+				D6734B330EACE5930002C4C1 /* MapCreate.h */,
+				D6734B340EACE5930002C4C1 /* MapCreate.cpp */,
+				D6734BA30EACFCEE0002C4C1 /* MapOverlay.h */,
+				D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */,
+				D6734D190EAE30A00002C4C1 /* MapBuffer.h */,
+				D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */,
+				D6734D1E0EAE30AF0002C4C1 /* MapPolygon.h */,
+				D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */,
+				D6BB228E0EC13287006499D7 /* MapTopology.h */,
+				D6BB228F0EC13287006499D7 /* MapTopology.cpp */,
 				D6BC385B0AB22C85003949C5 /* MeshAlgs.cpp */,
 				D6BC385C0AB22C85003949C5 /* MeshAlgs.h */,
 				D6BC385E0AB22C85003949C5 /* MeshDefs.cpp */,
@@ -3129,8 +3158,14 @@
 				D6BC38640AB22C85003949C5 /* NetPlacement.h */,
 				D6BC38650AB22C85003949C5 /* NetTables.cpp */,
 				D6BC38660AB22C85003949C5 /* NetTables.h */,
+				D64A08A8127AFDC1000D58A7 /* NetAlgs.h */,
+				D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */,
+				D64A08AD127AFDEA000D58A7 /* NetHelpers.h */,
+				D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */,
 				D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */,
 				D6BC38680AB22C85003949C5 /* ObjPlacement.h */,
+				D64A0E83110F820A006172C3 /* ObjPlacement2.h */,
+				D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */,
 				D6BC38690AB22C85003949C5 /* ObjTables.cpp */,
 				D6BC386A0AB22C85003949C5 /* ObjTables.h */,
 				D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */,
@@ -3139,6 +3174,8 @@
 				D6BC386E0AB22C85003949C5 /* SceneryPackages.h */,
 				D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */,
 				D6BC38700AB22C85003949C5 /* SimpleIO.h */,
+				D67685250CC6A0690032B90C /* TensorRoads.h */,
+				D67685260CC6A0690032B90C /* TensorRoads.cpp */,
 				D6BC38710AB22C85003949C5 /* TriFan.cpp */,
 				D6BC38720AB22C85003949C5 /* TriFan.h */,
 				D6BC38750AB22C85003949C5 /* WTPM.cpp */,
@@ -3150,31 +3187,8 @@
 				D6BC387B0AB22C85003949C5 /* XESIO.h */,
 				D6BC387C0AB22C85003949C5 /* Zoning.cpp */,
 				D6BC387D0AB22C85003949C5 /* Zoning.h */,
-				D67685250CC6A0690032B90C /* TensorRoads.h */,
-				D67685260CC6A0690032B90C /* TensorRoads.cpp */,
-				D6734B330EACE5930002C4C1 /* MapCreate.h */,
-				D6734B340EACE5930002C4C1 /* MapCreate.cpp */,
-				D6734BA30EACFCEE0002C4C1 /* MapOverlay.h */,
-				D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */,
-				D6734D190EAE30A00002C4C1 /* MapBuffer.h */,
-				D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */,
-				D6734D1E0EAE30AF0002C4C1 /* MapPolygon.h */,
-				D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */,
-				D6BB228E0EC13287006499D7 /* MapTopology.h */,
-				D6BB228F0EC13287006499D7 /* MapTopology.cpp */,
-				D6DEB3441055994000C378BE /* AptAlgs.h */,
-				D6DEB3451055994000C378BE /* AptAlgs.cpp */,
-				D6DBA1E010572F33004E1089 /* AptRouting.h */,
-				D6DBA1E110572F33004E1089 /* AptRouting.cpp */,
 				D6DBA33910576739004E1089 /* BugTest.h */,
 				D6DBA33A10576739004E1089 /* BugTest.cpp */,
-				D64A0E83110F820A006172C3 /* ObjPlacement2.h */,
-				D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */,
-				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
-				D63F725A117FB60900AB7C1F /* BlockAlgs.h */,
-				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
-				D63F72731180917800AB7C1F /* BlockFill.h */,
-				D63F72741180917800AB7C1F /* BlockFill.cpp */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
@@ -3943,6 +3957,8 @@
 				D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */,
 				D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
+				D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
+				D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4108,6 +4124,8 @@
 				D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */,
 				D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */,
+				D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
+				D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4212,6 +4230,8 @@
 				D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
 				D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */,
+				D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
+				D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -32,6 +32,7 @@
 #include "MapAlgs.h"
 #include "DEMTables.h"
 #include "GUI_GraphState.h"
+#include "GUI_Fonts.h"
 #include "XESConstants.h"
 #include "ObjTables.h"
 #include "GISUtils.h"
@@ -199,26 +200,41 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, GLubyte color[3])
 	if (border)
 		SetColor(color,1.0, 0.0, 1.0);
 
-	int tp = NO_VALUE;
+	int ft = NO_VALUE, rt = NO_VALUE;
 	for( GISNetworkSegmentVector::const_iterator r = i->data().mSegments.begin(); r != i->data().mSegments.end(); ++r)
-	if(tp == NO_VALUE || r->mFeatType < tp)
-		tp = r->mFeatType;
+	{	
+		if(rt == NO_VALUE || r->mRepType < rt)
+			rt = r->mRepType;
+		if(ft == NO_VALUE || r->mFeatType < ft)
+			ft = r->mFeatType;
+	}
 	for( GISNetworkSegmentVector::const_iterator r = i->twin()->data().mSegments.begin(); r != i->twin()->data().mSegments.end(); ++r)
-	if(tp == NO_VALUE || r->mFeatType < tp)
-		tp = r->mFeatType;
-
-	if(tp != NO_VALUE)
 	{
-		SetColor(color,1.0, 0.0, 1.0);
-		if (Road_IsTrain   (tp))	SetColor(color,0.5, 0.3, 0.1);
-		if (Road_IsPowerline(tp))	SetColor(color,1.0, 1.0, 0.0);
-		if (Road_IsHighway (tp))	SetColor(color,0.0, 1.0, 1.0);
-		if (Road_IsMainDrag(tp))	SetColor(color,1.0, 0.0, 0.0);
-		if (Road_IsLocal   (tp))	SetColor(color,0.7, 0.4, 0.4);
-		if (Road_IsAccess  (tp))	SetColor(color,0.6, 0.6, 0.6);
-		if (Road_IsWalkway (tp))	SetColor(color,0.4, 0.2, 0.1);
-		if (Road_IsDam	   (tp))	SetColor(color,1.0, 1.0, 1.0);
-
+		if(rt == NO_VALUE || r->mRepType < rt)
+			rt = r->mRepType;
+		if(ft == NO_VALUE || r->mFeatType < ft)
+			ft = r->mFeatType;
+	}
+	
+	if(rt != NO_VALUE || ft != NO_VALUE)
+	{
+		if(gEnumColors.count(rt) && rt != NO_VALUE)
+		{
+			RGBColor_t& rgbc = gEnumColors[rt];
+			SetColor(color,rgbc.rgb[0],rgbc.rgb[1],rgbc.rgb[2]);
+		}
+		else
+		{
+			SetColor(color,1.0, 0.0, 1.0);
+			if (Road_IsTrain   (ft))	SetColor(color,0.5, 0.3, 0.1);
+			if (Road_IsPowerline(ft))	SetColor(color,1.0, 1.0, 0.0);
+			if (Road_IsHighway (ft))	SetColor(color,0.0, 1.0, 1.0);
+			if (Road_IsMainDrag(ft))	SetColor(color,1.0, 0.0, 0.0);
+			if (Road_IsLocal   (ft))	SetColor(color,0.7, 0.4, 0.4);
+			if (Road_IsAccess  (ft))	SetColor(color,0.6, 0.6, 0.6);
+			if (Road_IsWalkway (ft))	SetColor(color,0.4, 0.2, 0.1);
+			if (Road_IsDam	   (ft))	SetColor(color,1.0, 1.0, 1.0);
+		}
 	} else {
 //		if (beach)
 //			SetColor(color,0.8, 0.6, 0.2);
@@ -510,6 +526,21 @@ void	DrawMapBucketed(
 				const set<Pmwx::Face_handle>&		faceSel,
 				const set<PointFeatureSelection>&	pointFeatureSel)
 {
+	GLint		vp[4];
+	GLdouble	mv[16];
+	GLdouble	pr[16];
+	glGetDoublev(GL_MODELVIEW_MATRIX,mv);
+	glGetDoublev(GL_PROJECTION_MATRIX,pr);
+	glGetIntegerv(GL_VIEWPORT, vp);
+	vector<double>		label_pts;
+	vector<string>		label_strings;
+
+	#define ACCUM_LABEL(x,y,s) \
+		label_pts.push_back(x); \
+		label_pts.push_back(y); \
+		label_strings.push_back(s);
+							
+
 	state->SetState(0, 0, 0,   0, 1,   0, 0);
 
 	double	mapWidth = mapEast - mapWest;
@@ -645,6 +676,33 @@ void	DrawMapBucketed(
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
 			glVertex2fv((*v)->data().mGL);
+			
+			if(!(*v)->is_isolated())
+			{
+				Pmwx::Halfedge_around_vertex_circulator circ,stop;
+				GISNetworkSegmentVector::iterator r;
+				circ=stop=(*v)->incident_halfedges();
+				char str[25];
+				do {
+					for(r=circ->data().mSegments.begin(); r != circ->data().mSegments.end(); ++r)
+					{
+						sprintf(str,"%d",(int) r->mTargetHeight);
+						ACCUM_LABEL(
+							(*v)->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
+							(*v)->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
+							str);
+					}
+					for(r=circ->twin()->data().mSegments.begin(); r != circ->twin()->data().mSegments.end(); ++r)
+					{
+						sprintf(str,"%d",(int) r->mSourceHeight);
+						ACCUM_LABEL(
+							(*v)->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
+							(*v)->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
+							str);
+					}
+				} while (++circ != stop);
+			}
+			
 		}
 		glEnd();
 		glPointSize(1);
@@ -853,6 +911,33 @@ void	DrawMapBucketed(
 
 //	glPopMatrix();
 
+	if(!label_strings.empty())
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(vp[0],vp[0]+vp[2],vp[1],vp[1]+vp[3],-1.0,1.0);
+
+		float c[4] = { 1,1,1,1 };
+		for(int n = 0; n < label_strings.size(); ++n)
+		{
+			double xyz[3];
+			gluProject(label_pts[n*2],label_pts[n*2+1],0,mv,pr,vp,xyz,xyz+1,xyz+2);
+//			xyz[0] *= (double) vp[2];
+//			xyz[1] *= (double) vp[3];
+//			xyz[0] += vp[0];
+//			xyz[1] += vp[1];
+			GUI_FontDraw(state, font_UI_Small,c,xyz[0],xyz[1],label_strings[n].c_str());
+		}
+
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+	}
 }
 
 

@@ -28,10 +28,6 @@
 #include "ProgressUtils.h"
 
 class	CDT;
-//class	Pmwx;
-struct	DEMGeo;
-
-void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg);
 
 /******************************************************************************************
  * FORMING NETWORK TOPOLOGY FROM GT-POLYGONS
@@ -149,7 +145,3 @@ void generate_bezier(
 
 #endif
 
-#if OPENGL_MAP && DEV
-void	debug_network(Pmwx& io_map);
-#endif
-void	repair_network(Pmwx& io_map);

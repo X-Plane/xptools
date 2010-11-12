@@ -44,11 +44,6 @@
 
  */
 
-// Measured a 500m radius curve for 90 degrees in KSAN
-#define	MIN_DEFL 0.1
-// More than 45 degree turn?  Probably intentional!
-#define CREASE_ANGLE 0.7
-
 #define PROFILE_PERFORMANCE 1
 #if PROFILE_PERFORMANCE
 #define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
@@ -168,9 +163,11 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 //	loc = inMesh.locate(CDT::Point(pm_vs->point().x, pm_vs->point().y), lt, i, loc);
 //	Assert(lt == CDT::VERTEX);
 	CDT::Vertex_handle v_s = edge.edge.first->vertex(CDT::ccw(edge.edge.second));
+	DebugAssert(!inMesh.is_infinite(v_s));
 //	loc = inMesh.locate(CDT::Point(pm_vt->point().x, pm_vt->point().y), lt, i, loc);
 //	Assert(lt == CDT::VERTEX);
 	CDT::Vertex_handle v_t = edge.edge.first->vertex(CDT::cw(edge.edge.second));
+	DebugAssert(!inMesh.is_infinite(v_t));
 
 	if (last)
 	{
@@ -220,7 +217,10 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 		coords[3] = nrml_s.dx;
 		coords[4] =-nrml_s.dy;
 	}
+		
+	DebugAssert(pythag(coords[3],coords[4]) <= 1.01);
 	coords[5] = kind;
+	printf("Beach: %lf,%lf,%lf,%lf,%lf,%lf\n",coords[0],coords[1],coords[2],coords[3],coords[4],coords[5]);
 }
 
 float GetParamConst(const Face_handle face, int e)
@@ -1393,6 +1393,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			cbs.EndPolygonWinding_f(writer1);
 			cbs.EndPolygon_f(writer1);
+			printf("end non-circular.\n");
 		}
 
 	#if DEV
@@ -1744,6 +1745,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			++total_chains;
 			//debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,0);
 
+
+			NetRepInfo * info = &gNetReps[(*ci)->rep_type];
+
 			vector<Point2>	pts;
 			vector<int>		flags;
 			for(int n = 0; n < (*ci)->shape.size(); ++n)
@@ -1753,7 +1757,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->start_junction->location,
 									(*ci)->shape[0  ],
 									(*ci)->end_junction->location,
-									MIN_DEFL, CREASE_ANGLE,
+									info->min_defl_deg_mtr, info->crease_angle_cos,
 									pts,flags);
 				}
 				else if(n == 0)
@@ -1761,7 +1765,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->start_junction->location,
 									(*ci)->shape[n  ],
 									(*ci)->shape[n+1],
-									MIN_DEFL, CREASE_ANGLE,
+									info->min_defl_deg_mtr, info->crease_angle_cos,
 									pts,flags);
 				}
 				else if (n == (*ci)->shape.size()-1)
@@ -1769,7 +1773,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->shape[n-1],
 									(*ci)->shape[n  ],
 									(*ci)->end_junction->location,
-									MIN_DEFL, CREASE_ANGLE,
+									info->min_defl_deg_mtr, info->crease_angle_cos,
 									pts,flags);
 				}
 				else
@@ -1777,7 +1781,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					generate_bezier((*ci)->shape[n-1],
 									(*ci)->shape[n  ],
 									(*ci)->shape[n+1],
-									MIN_DEFL, CREASE_ANGLE,
+									info->min_defl_deg_mtr, info->crease_angle_cos,
 									pts,flags);
 				}
 			}
