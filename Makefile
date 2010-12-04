@@ -1,5 +1,12 @@
+PLATFORM	:= $(shell uname)
+
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter \
+		ac3d XGrinder
+else
 TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm \
 		ac3d XGrinder RenderFarmUI
+endif	
 
 .PHONY: $(TARGETS) all clean distclean libs release linkclean release-test \
 srpm-head

@@ -50,6 +50,7 @@
 #include "ObjTables.h"
 #include "ShapeIO.h"
 #include "FileUtils.h"
+#include "NetAlgs.h"
 
 static DEMGeoMap			sDem;
 static CDT					sMesh;
