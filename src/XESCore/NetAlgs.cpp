@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2010, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -46,7 +46,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 			edge->data().mSegments.erase(edge->data().mSegments.begin() + j);
 			--j;
 			++kill;
-		}	
+		}
 	}
 	if(kill > 0)
 		printf("Killed %d duplicate roads.\n", kill);
@@ -118,7 +118,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 
 		}
 	}
-#endif	
+#endif
 
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
 	{
@@ -167,7 +167,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 				if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
 				if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
 				if(r.zoning_left == NO_VALUE || r.zoning_left == zl)
-				if(r.zoning_right == NO_VALUE || r.zoning_right == zr)				
+				if(r.zoning_right == NO_VALUE || r.zoning_right == zr)
 				{
 					seg->mRepType = p->second.rep_type;
 				}
@@ -224,7 +224,7 @@ int score_for_junction(Pmwx::Vertex_handle v)
 			for(r = l->second.begin(); r != l->second.end(); ++r)
 			if(get_he_road_use(*r) == use_Street)
 				road = true;
-			
+
 			if(l->second.size() == 1)
 				flot = true;
 		}
@@ -233,7 +233,7 @@ int score_for_junction(Pmwx::Vertex_handle v)
 		if(l->second.size() == 1)
 		if(is_level_highway(l->second))
 			term = true;
-			
+
 		if(l->second.size() == 2)
 		if(is_level_highway(l->second))
 		{
@@ -248,7 +248,7 @@ int score_for_junction(Pmwx::Vertex_handle v)
 					plug = true;
 			}
 		}
-			
+
 		if(l->second.size() > 2)
 		if(is_level_highway(l->second))
 		{
@@ -259,16 +259,16 @@ int score_for_junction(Pmwx::Vertex_handle v)
 				for(int i = 0; i < l->second.size(); ++i)
 				for(int j = i+1; j < l->second.size(); ++j)
 					angle += acos(get_he_road_dot(l->second[i],l->second[j])) * RAD_TO_DEG;
-			}	
+			}
 		}
 		if(is_level_mixed(l->second))
 			plug = true;
-			
+
 		for(r = l->second.begin(); r != l->second.end(); ++r)
 		if((*r)->data().mSegments.front().mSourceHeight != (*r)->data().mSegments.front().mTargetHeight)
 		  score += E_VERT;
-		  
-		  
+
+
 //		RAMP CHECK IS OFF.  Ramp check drives things crazy.  For example, we will tend to get a city street that goes over
 //		a highway STAYING at bridge level and bridging over the entire road grid because there are no free nodes to let it 'drop'.
 //		if(l->first == 0)
@@ -286,8 +286,8 @@ int score_for_junction(Pmwx::Vertex_handle v)
 //
 //			}
 //		}
-	}	
-	
+	}
+
 	if(watr) score += E_WATR;
 	if(flot) score += E_FLOT;
 	if(term) score += E_TERM;
@@ -295,7 +295,7 @@ int score_for_junction(Pmwx::Vertex_handle v)
 	if(ramp) score += E_RAMP;
 	if(plug) score += E_HPLG;
 	if(road) score += E_ROAD;
-	
+
 	score += angle;
 
 	return score;
@@ -336,9 +336,9 @@ int	optimize_one_junction(Pmwx::Vertex_handle v)
 	do {
 		if(he_has_any_roads(circ))	he_list.push_back(circ);
 	} while (++circ != stop);
-	
+
 	if(he_list.empty()) return score;
-	
+
 	// now stuff all number combos, score, retry.
 	vector<int>		best;
 	int				best_score=0;
@@ -364,7 +364,7 @@ int	optimize_one_junction(Pmwx::Vertex_handle v)
 		}
 	}
 	DebugAssert(!best.empty());
-	apply_combos_to_roads(v,he_list, best);	
+	apply_combos_to_roads(v,he_list, best);
 	return best_score;
 }
 
@@ -383,7 +383,7 @@ void	debug_network(Pmwx& io_map)
 			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),0,0,1,0,0,1);
 
 		bool bad_type = false;
-		
+
 		map<int,int>	src,trg;
 		GISNetworkSegmentVector::iterator r;
 		for (r=e->data().mSegments.begin(); r != e->data().mSegments.end(); ++r)
@@ -402,7 +402,7 @@ void	debug_network(Pmwx& io_map)
 			trg[(int) r->mSourceHeight]++;
 			src[(int) r->mTargetHeight]++;
 		}
-		
+
 		bool doubled = false;
 		map<int,int>::iterator i;
 		for(i=src.begin(); i != src.end(); ++i)
@@ -416,10 +416,10 @@ void	debug_network(Pmwx& io_map)
 			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,0,1,0,0);
 		else if(e->data().mSegments.size() + e->twin()->data().mSegments.size() > 1)
 			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,1,0,1,1,0);
-			
-							
+
+
 	}
-	
+
 	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
 	#if OPENGL_MAP
 	if(gVertexSelection.empty() || gVertexSelection.count(v))
@@ -455,12 +455,12 @@ static void strip_segments_to_one(GISNetworkSegmentVector& v)
 			best = i;
 	GISNetworkSegment_t keep = *best;
 	v.clear();
-	v.push_back(keep);			
+	v.push_back(keep);
 }
 
 Pmwx::Vertex_handle apply_type_change_forward(Pmwx::Halfedge_handle he, int new_type, bool debug)
 {
-	if(get_he_rep_type(he) == new_type) 
+	if(get_he_rep_type(he) == new_type)
 		return Pmwx::Vertex_handle();
 	double wanted_dist = MIN_DIST_FOR_TYPE;
 	while(wanted_dist > 0.0)
@@ -470,7 +470,7 @@ Pmwx::Vertex_handle apply_type_change_forward(Pmwx::Halfedge_handle he, int new_
 //		debug_mesh_line(cgal2ben(he->source()->point()),cgal2ben(he->target()->point()),1,1,1,0,1,0);
 		set_he_rep_type(he,new_type);
 		Pmwx::Halfedge_handle next = next_contig(he);
-		if(next == Pmwx::Halfedge_handle()) 
+		if(next == Pmwx::Halfedge_handle())
 			break;
 		if(!matches_use(next,he))
 			break;
@@ -481,7 +481,7 @@ Pmwx::Vertex_handle apply_type_change_forward(Pmwx::Halfedge_handle he, int new_
 
 Pmwx::Vertex_handle apply_type_change_reverse(Pmwx::Halfedge_handle he, int new_type, bool debug)
 {
-	if(get_he_rep_type(he) == new_type) 
+	if(get_he_rep_type(he) == new_type)
 		return Pmwx::Vertex_handle();
 	double wanted_dist = MIN_DIST_FOR_TYPE;
 	while(wanted_dist > 0.0)
@@ -491,7 +491,7 @@ Pmwx::Vertex_handle apply_type_change_reverse(Pmwx::Halfedge_handle he, int new_
 //		if(debug)
 //		debug_mesh_line(cgal2ben(he->source()->point()),cgal2ben(he->target()->point()),1,0,0,1,1,1);
 		Pmwx::Halfedge_handle prev = prev_contig(he);
-		if(prev == Pmwx::Halfedge_handle()) 
+		if(prev == Pmwx::Halfedge_handle())
 			break;
 		if(!matches_use(prev,he))
 			break;
@@ -508,7 +508,7 @@ void apply_y_rules(Pmwx::Halfedge_handle trunk, Pmwx::Halfedge_handle left, Pmwx
 	int rr = right->data().mSegments.front().mRepType;
 
 	Pmwx::Vertex_handle v;
-	
+
 	for(ForkRuleTable::iterator r = gForkRules.begin(); r != gForkRules.end(); ++r)
 	if(r->trunk == tr && r->left == lr && r->right == rr)
 	{
@@ -560,7 +560,7 @@ void check_junction_highways(Pmwx::Vertex_handle v, set<Pmwx::Vertex_handle>& ch
 				int j = (i+1)%3;
 				int k = (i+2)%3;
 				if(l->second[i]->target() == v && l->second[j]->target() == v && l->second[k]->source() == v)
-					apply_y_rules(l->second[k], l->second[j], l->second[i],changed);			// Merge				
+					apply_y_rules(l->second[k], l->second[j], l->second[i],changed);			// Merge
 				else if(l->second[i]->target() == v && l->second[j]->source() == v && l->second[k]->source() == v)
 					apply_y_rules(l->second[i], l->second[j], l->second[k],changed);			// Split
 			}
@@ -588,7 +588,7 @@ void check_junction_highways(Pmwx::Vertex_handle v, set<Pmwx::Vertex_handle>& ch
 void repair_network(Pmwx& io_map)
 {
 	// FIRST: cut down any duplicate data.  Road code really needs to NOT have vertically stacked crap!
-	
+
 	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
 	{
 		strip_segments_to_one(e->data().mSegments);
@@ -601,7 +601,7 @@ void repair_network(Pmwx& io_map)
 				e->data().mSegments.clear();
 		}
 	}
-	
+
 	// NEXT: junction optimization...redo levels into junctions to minimize "weird shit".
 	// We are going to save any junctions that had a crash...do not even TRY to fix them until
 	// we have fixed all discontinuous junctions..otherwise we might not see the whole
@@ -609,28 +609,28 @@ void repair_network(Pmwx& io_map)
 	list<Pmwx::Vertex_handle> crsh_starts;
 
 	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
-	#if OPENGL_MAP
+	#if OPENGL_MAP && DEV
 	if(gVertexSelection.empty() || gVertexSelection.count(v))
 	#endif
 	{
 		int score = optimize_one_junction(v);
-		
+
 		#if OPENGL_MAP && DEV
 		if(score >= E_RAMP)
 			debug_mesh_point(cgal2ben(v->point()),1,0,0);
 		#endif
-		
+
 		if(score >= E_CRSH && score < E_RAMP)
 		{
 			crsh_starts.push_back(v);
 		}
 	}
-	
+
 	multimap<double, list<Pmwx::Halfedge_handle> >	crshs;
-	
+
 	// Now: crash collection: run along each 'crash' vertex and collect the entire contiguous road
 	// in both directions and stash it by length.
-				
+
 	for(list<Pmwx::Vertex_handle>::iterator v = crsh_starts.begin(); v != crsh_starts.end(); ++v)
 	{
 		set<Pmwx::Halfedge_handle>	processed;
@@ -666,7 +666,7 @@ void repair_network(Pmwx& io_map)
 				}
 			}
 		} while(++circ != stop);
-		
+
 		DebugAssert(!processed.empty());
 
 	}
@@ -689,12 +689,12 @@ void repair_network(Pmwx& io_map)
 //		printf("Fwd: %d,%d Rev: %d,%d\n",score_f1,score_f2,score_r1,score_r2);
 		if(score_f1+score_f2 < score_r1+score_r2)
 		{
-			set_forward(k->second);		
+			set_forward(k->second);
 			optimize_one_junction(k->second.front()->source());
 			optimize_one_junction(k->second.back()->target());
 		}
 	}
-	
+
 	// WONKY BRIDGE CHECK!!  We may have some roads that go from being OVER another road to ground in....zero time flat.
 	// If the road is also draped, this is not so good.  So: fidn these edges and either lift the down side (making the
 	// bridge longer, or if that won't work, split the edge).
@@ -712,7 +712,7 @@ void repair_network(Pmwx& io_map)
 	if(he_has_any_roads(e))
 	{
 		map<int,vector<Pmwx::Halfedge_handle> > over, gnd;
-		
+
 		double l1 = get_he_level_at(e,e->source());
 		double l2 = get_he_level_at(e,e->target());
 		if(l1 == 0.0 && l2 != 0.0)
@@ -742,13 +742,13 @@ void repair_network(Pmwx& io_map)
 							need_split.push_back(get_he_with_roads(e));
 					}
 					else
-					{						
+					{
 						// "Green" case: on the ground it is just us going into our continuing road and nothing above us, so
 						// we can lift our low end to fix the bridge.
 						//debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),0,0.5,0,0,1,0);
 						set_he_level_at(gnd[l1][0],e->source(),l2);
 						set_he_level_at(gnd[l1][1],e->source(),l2);
-						
+
 					}
 				}
 			}
@@ -775,7 +775,7 @@ void repair_network(Pmwx& io_map)
 						//debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,1,0.5,0,0.5);
 						if(gnd_draped)
 							need_split.push_back(get_he_with_roads(e));
-					}	
+					}
 					else
 					{
 						//debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),0,1,0,0,0.5,0);
@@ -810,21 +810,21 @@ void repair_network(Pmwx& io_map)
 		h1->data().mSegments.back().mTargetHeight = max(hs,ht);
 		h2->data().mSegments.back().mSourceHeight = max(hs,ht);
 	}
-	
-	
+
+
 
 	// FORK CONTROL/CHANGE CONTROL.  First: run fork control over every vertex once.
-	
+
 	set<Pmwx::Vertex_handle>	trial, done, retry;
-	
+
 	for(Pmwx::Vertex_handle v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
 	{
 		check_junction_highways(v,trial);
 	}
-	
+
 	// Now, some set of additional vertices may need to be RE-evaluated.  We keep a 'done' queue to avoid
 	// infinite loops, but we get at least two looks at every vertex.
-	
+
 	while(!trial.empty())
 	{
 		Vertex_handle v = *trial.begin();
@@ -834,7 +834,7 @@ void repair_network(Pmwx& io_map)
 		for(set<Pmwx::Vertex_handle>::iterator i = retry.begin(); i != retry.end(); ++i)
 			if(done.count(*i) == 0)
 			{
-				trial.insert(*i);		
+				trial.insert(*i);
 //				debug_mesh_point(cgal2ben((*i)->point()),1,1,0);
 			}
 	}
@@ -856,13 +856,13 @@ void repair_network(Pmwx& io_map)
 	}
 */
 
-	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)	
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
 	{
 		bool has_road = he_has_any_roads(e) && get_he_limited_access(e);
 		e->data().mMark = e->twin()->data().mMark = has_road;
 	}
-	
-	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)	
+
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
 	if(e->data().mMark)
 	{
 		Pmwx::Halfedge_handle he = get_he_with_roads(e);
@@ -874,7 +874,7 @@ void repair_network(Pmwx& io_map)
 			(*r)->data().mMark = false;
 			(*r)->twin()->data().mMark = false;
 //			debug_mesh_line(cgal2ben((*r)->source()->point()),cgal2ben((*r)->target()->point()),0,0,1,1,0,0);
-			
+
 			int rt = get_he_rep_type(*r);
 			if(rep_types.empty() || rep_types.back() != rt)	rep_types.push_back(rt);
 		}
@@ -882,20 +882,20 @@ void repair_network(Pmwx& io_map)
 		{
 			for(int n = 1; n < rep_types.size(); ++n)
 			for(ChangeRuleTable::iterator r = gChangeRules.begin(); r != gChangeRules.end(); ++r)
-			if(rep_types[n-1] == r->prev && rep_types[n] == r->next)		
+			if(rep_types[n-1] == r->prev && rep_types[n] == r->next)
 			{
 				rep_types.insert(rep_types.begin()+n,r->new_mid);
 				++n;
 				break;
 			}
-			
+
 			DebugAssert(!rep_types.empty());
 			int rm = rep_types.size() / 2;
 			int rf = 0;
 			int rb = rep_types.size()-1;
 			double df = 0.0, db = 0.0;
 			list<Pmwx::Halfedge_handle>::iterator	head = strand.begin(), tail = strand.end();
-			
+
 			while(head != tail)
 			{
 				set_he_rep_type(*head, rep_types[rf]);
@@ -918,7 +918,7 @@ void repair_network(Pmwx& io_map)
 					}
 				}
 			}
-			
+
 			if(rb != rm || rf != rm || db == 0.0 || df == 0.0)
 			for(list<Pmwx::Halfedge_handle>::iterator r = strand.begin(); r != strand.end(); ++r)
 			{
