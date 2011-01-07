@@ -36,6 +36,7 @@ ColorBandTable				gColorBands;
 set<int>					gEnumDEMs;
 
 
+RegionalizationVector			gRegionalizations;
 NaturalTerrainRuleVector		gNaturalTerrainRules;
 NaturalTerrainInfoMap			gNaturalTerrainInfo;
 BeachInfoTable					gBeachInfoTable;
@@ -288,6 +289,12 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			fprintf(stderr,"Rule final terrain name %s is not a real terrain name.\n", FetchTokenString(rule.name));
 			return false;
 		}
+		
+		if(gNaturalTerrainInfo[rule.name].regionalization > 0)
+		{
+			fprintf(stderr,"ERROR: rule uses terrain %s which is NOT a base - it is regionalized as %s\n", FetchTokenString(rule.name), gRegionalizations[gNaturalTerrainInfo[rule.name].regionalization].variant_prefix.c_str());
+			return false;
+		}
 
 		if(lu_set.empty())
 		{
@@ -328,6 +335,24 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		return true;
 	}
 
+	else if(tokens[0] == "REGIONALIZATION")
+	{
+		// REGIONALIZATION prefix string
+		Regionalization_t r;
+		if(TokenizeLine(tokens," ss",&r.variant_prefix,&r.region_png) != 3)
+			return false;
+		
+		for(RegionalizationVector::iterator rr = gRegionalizations.begin(); rr != gRegionalizations.end(); ++rr)
+		if(rr->variant_prefix == r.variant_prefix)
+		{
+			fprintf(stderr,"WARNING: variant prefix %s included twice.\n",r.variant_prefix.c_str());
+			return false;
+		}
+		
+		gRegionalizations.push_back(r);
+		return true;		
+	}
+
 	else if (tokens[0] == "TERRAIN_INFO")
 	{
 		//	TERRAIN_INFO			NAME	LAYER	XON		RGB		BASE TEX	BORDER_TEX	RES	LIT		COMPO		MODE		MODE PARAMS
@@ -349,6 +374,22 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&has_lit,
 			&shader_mode) != 10)
 		return false;
+
+		info.regionalization = -1;
+		string ter_string(FetchTokenString(ter_name));
+		for(int r = 0; r < gRegionalizations.size(); ++r)
+		{
+			if(ter_string.size() >= gRegionalizations[r].variant_prefix.size() &&
+				strncmp(ter_string.c_str(),gRegionalizations[r].variant_prefix.c_str(),gRegionalizations[r].variant_prefix.size()) == 0)
+			{
+				info.regionalization = r;
+			}
+		}
+		if(info.regionalization == -1)
+		{
+			fprintf(stderr,"ERROR: terrain info %s has unknowon region prefix\n", ter_string.c_str());
+			return false;
+		}
 
 		if(has_lit)
 			info.lit_tex = MakeLit(info.base_tex);
@@ -417,6 +458,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.map_rgb.rgb[0] = info.map_rgb.rgb[1] = info.map_rgb.rgb[2] = 0.5;
 	rule.temp_rng_min = rule.temp_rng_max = 0.0;
 	info.custom_ter = tex_not_custom;
+	info.regionalization = 0;
 
 	if (tokens[0] == "STERRAIN")
 	{
@@ -795,6 +837,7 @@ void	LoadDEMTables(void)
 	gEnumDEMs.clear();
 	gNaturalTerrainRules.clear();
 	gNaturalTerrainInfo.clear();
+	gRegionalizations.clear();
 	gBeachInfoTable.clear();
 	gBeachIndex.clear();
 //	sForests.clear();
@@ -811,6 +854,7 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("TERRAIN_RULE", ReadNewTerrainInfo, NULL);
+	RegisterLineHandler("REGIONALIZATION", ReadNewTerrainInfo, NULL);	
 	RegisterLineHandler("TERRAIN_INFO", ReadNewTerrainInfo, NULL);
 	RegisterLineHandler("CLIFF_INFO", ReadNewTerrainInfo, NULL);
 //	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);

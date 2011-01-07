@@ -63,6 +63,20 @@ static void local_path(string& iopath)
 			iopath[n] = DIR_CHAR;
 }
 
+static string FixRegionPrefix(const string& name)
+{
+	for(int r = 0; r < gRegionalizations.size(); ++r)
+	{
+		if(gRegionalizations[r].variant_prefix.size() < name.size() && strncmp(gRegionalizations[r].variant_prefix.c_str(),name.c_str(), gRegionalizations[r].variant_prefix.size())==0)
+		{
+			string ret = name;
+			ret.erase(0,gRegionalizations[r].variant_prefix.size());
+			ret = gRegionalizations[0].variant_prefix + ret;
+			return ret;
+		}
+	}
+	return name;
+}
 
 int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 {
@@ -94,120 +108,131 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	set<string>	imageFiles;
 	set<string> borderFiles;
 
-	for (NaturalTerrainInfoMap::iterator n = gNaturalTerrainInfo.begin(); n != gNaturalTerrainInfo.end(); ++n)
+	for (int r = 0; r < gRegionalizations.size(); ++r)
 	{
-		string	pol_name(FetchTokenString(n->first));
-		string::size_type d = pol_name.find('/');
-		DebugAssert(d != pol_name.npos);
-		pol_name.erase(0,d);
-		pol_name.insert(0,"pol");
-
-		fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
-			FetchTokenString(n->first),FetchTokenString(n->first));
-
-		lib_path = package + FetchTokenString(n->first) + ".ter";
-		local_path(lib_path);
-		dir_path = lib_path;
-		only_dir(dir_path);
-		e = FILE_make_dir_exist(dir_path.c_str());		
-		if(e != 0)
+		if(r == 0)
+			fprintf(lib,"# Default Terrain\n\n");
+		else {
+			fprintf(lib,"\nREGION_DEFINE %s\n", gRegionalizations[r].variant_prefix.c_str());
+			fprintf(lib,"REGION_BITMAP %s\n", gRegionalizations[r].region_png.c_str());
+			fprintf(lib,"REGION %s\n\n", gRegionalizations[r].variant_prefix.c_str());
+		}
+		for (NaturalTerrainInfoMap::iterator n = gNaturalTerrainInfo.begin(); n != gNaturalTerrainInfo.end(); ++n)
+		if (n->second.regionalization == r)
 		{
-			fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
-			return e;
+			string	pol_name(FetchTokenString(n->first));
+			string::size_type d = pol_name.find('/');
+			DebugAssert(d != pol_name.npos);
+			pol_name.erase(0,d);
+			pol_name.insert(0,"pol");
+
+			fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
+				FixRegionPrefix(FetchTokenString(n->first)).c_str(),FetchTokenString(n->first));
+
+			lib_path = package + FetchTokenString(n->first) + ".ter";
+			local_path(lib_path);
+			dir_path = lib_path;
+			only_dir(dir_path);
+			e = FILE_make_dir_exist(dir_path.c_str());		
+			if(e != 0)
+			{
+				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+				return e;
+			}
+			ter = fopen(lib_path.c_str(), "w");
+			if(ter == NULL)
+			{
+				fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
+				return errno;
+			}
+			fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
+			fprintf(ter, "BASE_TEX %s" CRLF, n->second.base_tex.c_str());
+			if (!n->second.lit_tex.empty())
+				fprintf(ter, "LIT_TEX %s" CRLF, n->second.lit_tex.c_str());
+			fprintf(ter, "BORDER_TEX %s" CRLF, n->second.border_tex.c_str());
+			fprintf(ter, "PROJECTED %d %d" CRLF, (int) n->second.base_res.x(), (int) n->second.base_res.y());
+
+			dir_path = string(FetchTokenString(n->first)) + ".ter";
+			only_dir(dir_path);
+			canonical_path(dir_path);
+
+			switch(n->second.shader) {
+			case shader_vary:	
+				if(!n->second.compo_tex.empty())
+					fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
+				fprintf(ter, "AUTO_VARY" CRLF);	
+				break;
+			case shader_tile:	
+				if(!n->second.compo_tex.empty())
+					fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
+				fprintf(ter, "AUTO_TILE %d %d" CRLF, n->second.tiles_x, n->second.tiles_y);	
+				break;
+			case shader_slope:	
+			case shader_slope2:	
+				fprintf(ter, n->second.shader == shader_slope2 ? ("AUTO_SLOPE_HEADING" CRLF) : ("AUTO_SLOPE" CRLF));
+				fprintf(ter,"AUTO_SLOPE_HILL %d %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res.x(), (int) n->second.cliff_info.hill_res.y(), n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
+				fprintf(ter,"AUTO_SLOPE_CLIFF %d %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res.x(), (int) n->second.cliff_info.cliff_res.y(), n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
+				imageFiles.insert(dir_path+n->second.cliff_info.hill_tex);
+				imageFiles.insert(dir_path+n->second.cliff_info.cliff_tex);
+				break;
+			case shader_heading:
+				fprintf(ter, "AUTO_HEADING" CRLF);
+				break;
+			case  shader_normal:
+				if(!n->second.compo_tex.empty())
+					printf("WARNING: terrain %s has unneeded compo tex.\n", FetchTokenString(n->first));
+				break;
+			default:
+				printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
+				break;
+			}
+
+			fprintf(ter, "NO_ALPHA" CRLF);
+
+			fprintf(ter, "COMPOSITE_BORDERS" CRLF);
+
+			imageFiles.insert(dir_path+n->second.base_tex);
+			if (!n->second.compo_tex.empty())	imageFiles.insert(dir_path+n->second.compo_tex);
+			if (!n->second.lit_tex.empty())	imageFiles.insert(dir_path+n->second.lit_tex);
+			borderFiles.insert(dir_path+n->second.border_tex);
+
+			fclose(ter);
 		}
-		ter = fopen(lib_path.c_str(), "w");
-		if(ter == NULL)
+
+		for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
+		if (p->second.regionalization == r)
 		{
-			fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
-			return errno;
+			fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, FixRegionPrefix(FetchTokenString(p->first)).c_str(), FetchTokenString(p->first));
+
+			lib_path = package + FetchTokenString(p->first) + ".pol";
+			local_path(lib_path);
+			dir_path = lib_path;
+			only_dir(dir_path);
+			e = FILE_make_dir_exist(dir_path.c_str());
+			if(e != 0)
+			{
+				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+				return e;
+			}
+
+			pol = fopen(lib_path.c_str(), "w");
+			if(pol == NULL)
+			{
+				fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
+				return errno;
+			}
+			fprintf(pol, "%c" CRLF "850" CRLF "DRAPED_POLYGON" CRLF CRLF, APL ? 'A' : 'I');
+			fprintf(pol, "TEXTURE %s" CRLF, p->second.base_tex.c_str());
+			if (!p->second.lit_tex.empty())
+				fprintf(pol, "TEXTURE_LIT %s" CRLF, p->second.lit_tex.c_str());
+
+			fprintf(pol, "SCALE %d %d" CRLF, (int) p->second.base_res.x(), (int) p->second.base_res.y());
+			fprintf(pol, "NO_ALPHA" CRLF);
+			fprintf(pol, "SURFACE dirt" CRLF);
+			fprintf(pol, "LAYER_GROUP airports -1" CRLF);
+			fclose(pol);
 		}
-		fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
-		fprintf(ter, "BASE_TEX %s" CRLF, n->second.base_tex.c_str());
-		if (!n->second.lit_tex.empty())
-			fprintf(ter, "LIT_TEX %s" CRLF, n->second.lit_tex.c_str());
-		fprintf(ter, "BORDER_TEX %s" CRLF, n->second.border_tex.c_str());
-		fprintf(ter, "PROJECTED %d %d" CRLF, (int) n->second.base_res.x(), (int) n->second.base_res.y());
-
-		dir_path = string(FetchTokenString(n->first)) + ".ter";
-		only_dir(dir_path);
-		canonical_path(dir_path);
-
-		switch(n->second.shader) {
-		case shader_vary:	
-			if(!n->second.compo_tex.empty())
-				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
-			fprintf(ter, "AUTO_VARY" CRLF);	
-			break;
-		case shader_tile:	
-			if(!n->second.compo_tex.empty())
-				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
-			fprintf(ter, "AUTO_TILE %d %d" CRLF, n->second.tiles_x, n->second.tiles_y);	
-			break;
-		case shader_slope:	
-		case shader_slope2:	
-			fprintf(ter, n->second.shader == shader_slope2 ? ("AUTO_SLOPE_HEADING" CRLF) : ("AUTO_SLOPE" CRLF));
-			fprintf(ter,"AUTO_SLOPE_HILL %d %d %f %f %s" CRLF, (int) n->second.cliff_info.hill_res.x(), (int) n->second.cliff_info.hill_res.y(), n->second.cliff_info.hill_angle1, n->second.cliff_info.hill_angle2, n->second.cliff_info.hill_tex.c_str());
-			fprintf(ter,"AUTO_SLOPE_CLIFF %d %d %f %f %s" CRLF, (int) n->second.cliff_info.cliff_res.x(), (int) n->second.cliff_info.cliff_res.y(), n->second.cliff_info.cliff_angle1, n->second.cliff_info.cliff_angle2, n->second.cliff_info.cliff_tex.c_str());
-			imageFiles.insert(dir_path+n->second.cliff_info.hill_tex);
-			imageFiles.insert(dir_path+n->second.cliff_info.cliff_tex);
-			break;
-		case shader_heading:
-			fprintf(ter, "AUTO_HEADING" CRLF);
-			break;
-		case  shader_normal:
-			if(!n->second.compo_tex.empty())
-				printf("WARNING: terrain %s has unneeded compo tex.\n", FetchTokenString(n->first));
-			break;
-		default:
-			printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
-			break;
-		}
-
-		fprintf(ter, "NO_ALPHA" CRLF);
-
-		fprintf(ter, "COMPOSITE_BORDERS" CRLF);
-
-		imageFiles.insert(dir_path+n->second.base_tex);
-		if (!n->second.compo_tex.empty())	imageFiles.insert(dir_path+n->second.compo_tex);
-		if (!n->second.lit_tex.empty())	imageFiles.insert(dir_path+n->second.lit_tex);
-		borderFiles.insert(dir_path+n->second.border_tex);
-
-		fclose(ter);
 	}
-
-	for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
-	{
-		fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, FetchTokenString(p->first), FetchTokenString(p->first));
-
-		lib_path = package + FetchTokenString(p->first) + ".pol";
-		local_path(lib_path);
-		dir_path = lib_path;
-		only_dir(dir_path);
-		e = FILE_make_dir_exist(dir_path.c_str());
-		if(e != 0)
-		{
-			fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
-			return e;
-		}
-
-		pol = fopen(lib_path.c_str(), "w");
-		if(pol == NULL)
-		{
-			fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
-			return errno;
-		}
-		fprintf(pol, "%c" CRLF "850" CRLF "DRAPED_POLYGON" CRLF CRLF, APL ? 'A' : 'I');
-		fprintf(pol, "TEXTURE %s" CRLF, p->second.base_tex.c_str());
-		if (!p->second.lit_tex.empty())
-			fprintf(pol, "TEXTURE_LIT %s" CRLF, p->second.lit_tex.c_str());
-
-		fprintf(pol, "SCALE %d %d" CRLF, (int) p->second.base_res.x(), (int) p->second.base_res.y());
-		fprintf(pol, "NO_ALPHA" CRLF);
-		fprintf(pol, "SURFACE dirt" CRLF);
-		fprintf(pol, "LAYER_GROUP airports -1" CRLF);
-		fclose(pol);
-	}
-
 	fclose(lib);
 
 	if (make_stub_pngs)

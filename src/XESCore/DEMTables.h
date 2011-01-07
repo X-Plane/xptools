@@ -119,8 +119,14 @@ struct CliffInfo_t {
 	string			cliff_tex;
 };
 
+struct	Regionalization_t {
+	string			variant_prefix;
+	string			region_png;
+};
+
 struct	NaturalTerrainInfo_t {
 	// DEFS
+	int				regionalization;	// index into regionalization table for correct library output.
 	int				layer;
 	int				is_city;
 	float			xon_dist;
@@ -159,6 +165,9 @@ struct	NaturalTerrainInfo_t {
 typedef vector<NaturalTerrainRule_t>	NaturalTerrainRuleVector;			// Natural terrain rules ordered by rule priority
 typedef map<int, NaturalTerrainInfo_t>	NaturalTerrainInfoMap;				// Index from .ter enum to line info!
 
+typedef vector<Regionalization_t>		RegionalizationVector;
+
+extern	RegionalizationVector			gRegionalizations;
 extern	NaturalTerrainRuleVector		gNaturalTerrainRules;
 extern	NaturalTerrainInfoMap			gNaturalTerrainInfo;
 
