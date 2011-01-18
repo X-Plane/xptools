@@ -108,11 +108,17 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	set<string>	imageFiles;
 	set<string> borderFiles;
 
-	for (int r = 0; r < gRegionalizations.size(); ++r)
+	if(!gRegionalizations.empty())
+	for (int r = gRegionalizations.size()-1; r >= 0; --r)
 	{
 		if(r == 0)
-			fprintf(lib,"# Default Terrain\n\n");
-		else {
+		{
+			fprintf(lib,"\nREGION_DEFINE all\n");
+			fprintf(lib,"REGION_RECT		-180 -90 179 89\n");
+			fprintf(lib,"REGION all\n\n");
+		}	
+		else 
+		{
 			fprintf(lib,"\nREGION_DEFINE %s\n", gRegionalizations[r].variant_prefix.c_str());
 			fprintf(lib,"REGION_BITMAP %s\n", gRegionalizations[r].region_png.c_str());
 			fprintf(lib,"REGION %s\n\n", gRegionalizations[r].variant_prefix.c_str());
