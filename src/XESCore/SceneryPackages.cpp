@@ -132,7 +132,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			pol_name.erase(0,d);
 			pol_name.insert(0,"pol");
 
-			fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
+			fprintf(lib, "EXPORT_EXCLUDE   lib/g8/%s.ter       %s.ter" CRLF,
 				FixRegionPrefix(FetchTokenString(n->first)).c_str(),FetchTokenString(n->first));
 
 			lib_path = package + FetchTokenString(n->first) + ".ter";
@@ -208,7 +208,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
 		if (p->second.regionalization == r)
 		{
-			fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, FixRegionPrefix(FetchTokenString(p->first)).c_str(), FetchTokenString(p->first));
+			fprintf(lib, "EXPORT_EXCLUDE   lib/g8/%s.pol       %s.pol" CRLF, FixRegionPrefix(FetchTokenString(p->first)).c_str(), FetchTokenString(p->first));
 
 			lib_path = package + FetchTokenString(p->first) + ".pol";
 			local_path(lib_path);
