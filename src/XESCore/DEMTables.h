@@ -61,7 +61,8 @@ enum shader_t {
 	shader_slope,
 	shader_slope2,
 	shader_heading,
-	shader_tile
+	shader_tile,
+	shader_composite
 
 };
 	
@@ -140,7 +141,8 @@ struct	NaturalTerrainInfo_t {
 	Point2			base_res;
 	string			border_tex;			
 	string			compo_tex;		/// ALL modes that can have a second texture jam it here.
-
+	string			decal;
+	
 	// Mode of shader we run in
 	shader_t		shader;
 
@@ -151,6 +153,7 @@ struct	NaturalTerrainInfo_t {
 	int				tiles_x;
 	int				tiles_y;
 
+	float			composite_params[6];
 
 	// 2-D Texturing we don't really use anymore?					
 //	string			vary_tex_;			// variation tex if needed

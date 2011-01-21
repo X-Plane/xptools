@@ -363,7 +363,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 
 		NaturalTerrainInfo_t	info;
 		info.is_city = s_is_city;
-		if(TokenizeLine(tokens," eifcssPis",
+		if(TokenizeLine(tokens," eifcssPiss",
 			&ter_name,	
 			&info.layer,
 			&info.xon_dist,
@@ -372,7 +372,8 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.border_tex,
 			&info.base_res,
 			&has_lit,
-			&shader_mode) != 10)
+			&info.decal,
+			&shader_mode) != 11)
 		return false;
 
 		info.regionalization = -1;
@@ -390,37 +391,49 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			fprintf(stderr,"ERROR: terrain info %s has unknowon region prefix\n", ter_string.c_str());
 			return false;
 		}
+		if(info.decal == "-") info.decal.clear();
 
 		if(has_lit)
 			info.lit_tex = MakeLit(info.base_tex);
 		
-				if(shader_mode == "NORMAL")	info.shader = shader_normal;
-		else	if(shader_mode == "VARY")	info.shader = shader_vary;
-		else	if(shader_mode == "SLOPE")	info.shader = shader_slope;
-		else	if(shader_mode == "SLOPE2")	info.shader = shader_slope2;
-		else	if(shader_mode == "HEADING")info.shader = shader_heading;
-		else	if(shader_mode == "TILE")	info.shader = shader_tile;
+				if(shader_mode == "NORMAL")		info.shader = shader_normal;
+		else	if(shader_mode == "VARY")		info.shader = shader_vary;
+		else	if(shader_mode == "SLOPE")		info.shader = shader_slope;
+		else	if(shader_mode == "SLOPE2")		info.shader = shader_slope2;
+		else	if(shader_mode == "HEADING")	info.shader = shader_heading;
+		else	if(shader_mode == "TILE")		info.shader = shader_tile;
+		else	if(shader_mode == "COMPOSITE")	info.shader = shader_composite;
 		else	{ fprintf(stderr,"Illegal shader: %s.\n",shader_mode.c_str()); return false; }
 		
 		string id;
 		switch(info.shader) {
 		case shader_slope:
 		case shader_slope2:
-			if(TokenizeLine(tokens,"          s", &id) != 11) return false;
+			if(TokenizeLine(tokens,"           s", &id) != 12) return false;
 			if(sCliffs.count(id) == 0) { fprintf(stderr,"Unknown cliff type: %s\n", id.c_str()); return false; }
 			
 			info.cliff_info = sCliffs[id];
 			break;
 		case shader_tile:
-			if(TokenizeLine(tokens,"          iii",
+			if(TokenizeLine(tokens,"           iii",
 				&info.tiles_x,
 				&info.tiles_y,
-				&has_compo) != 13) return false;
+				&has_compo) != 14) return false;
 			if(has_compo)info.compo_tex = MakeCompo(info.base_tex);	
 			break;
 		case shader_vary:
 			info.compo_tex = MakeCompo(info.base_tex);	
 			break;			
+		case shader_composite:
+			if(TokenizeLine(tokens,"           ffffff",
+				&info.composite_params[0],
+				&info.composite_params[1],
+				&info.composite_params[2],
+				&info.composite_params[3],
+				&info.composite_params[4],
+				&info.composite_params[5]) != 17) return false;
+			info.compo_tex = MakeCompo(info.base_tex);	
+			break;
 		}
 		
 		info.proj_angle = proj_Down;

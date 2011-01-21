@@ -188,6 +188,14 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 				if(!n->second.compo_tex.empty())
 					printf("WARNING: terrain %s has unneeded compo tex.\n", FetchTokenString(n->first));
 				break;
+			case shader_composite:
+				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
+				fprintf(ter, "COMPOSITE_PROJECTED %d %d" CRLF, (int) n->second.base_res.x(), (int) n->second.base_res.y());
+				fprintf(ter, "COMPOSITE_PARAMS %f %f %f %f %f %f" CRLF, 
+					n->second.composite_params[0],					n->second.composite_params[1],
+					n->second.composite_params[2],					n->second.composite_params[3],
+					n->second.composite_params[4],					n->second.composite_params[5]);
+				break;
 			default:
 				printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
 				break;
@@ -196,6 +204,9 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			fprintf(ter, "NO_ALPHA" CRLF);
 
 			fprintf(ter, "COMPOSITE_BORDERS" CRLF);
+
+			if(!n->second.decal.empty())
+				fprintf(ter,"DECAL_LIB lib/g8/decals/%s" CRLF, n->second.decal.c_str());
 
 			imageFiles.insert(dir_path+n->second.base_tex);
 			if (!n->second.compo_tex.empty())	imageFiles.insert(dir_path+n->second.compo_tex);
