@@ -141,7 +141,10 @@ struct	NaturalTerrainInfo_t {
 	Point2			base_res;
 	string			border_tex;			
 	string			compo_tex;		/// ALL modes that can have a second texture jam it here.
+
 	string			decal;
+	float			normal_scale;
+	string			normal;
 	
 	// Mode of shader we run in
 	shader_t		shader;
@@ -153,7 +156,10 @@ struct	NaturalTerrainInfo_t {
 	int				tiles_x;
 	int				tiles_y;
 
+	// Composite shader
 	float			composite_params[6];
+	Point2			comp_res;	
+	
 
 	// 2-D Texturing we don't really use anymore?					
 //	string			vary_tex_;			// variation tex if needed

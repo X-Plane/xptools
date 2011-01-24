@@ -363,7 +363,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 
 		NaturalTerrainInfo_t	info;
 		info.is_city = s_is_city;
-		if(TokenizeLine(tokens," eifcssPiss",
+		if(TokenizeLine(tokens," eifcssPisfss",
 			&ter_name,	
 			&info.layer,
 			&info.xon_dist,
@@ -373,7 +373,9 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.base_res,
 			&has_lit,
 			&info.decal,
-			&shader_mode) != 11)
+			&info.normal_scale,
+			&info.normal,
+			&shader_mode) != 13)
 		return false;
 
 		info.regionalization = -1;
@@ -392,6 +394,13 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			return false;
 		}
 		if(info.decal == "-") info.decal.clear();
+		if(info.normal == "-") info.normal.clear();
+		
+		if(!info.normal.empty() && info.normal_scale <= 0.0)
+		{
+			fprintf(stderr,"ERROR: normal %s has illegal scale %f\n", info.normal.c_str(),info.normal_scale);
+			return false;
+		}
 
 		if(has_lit)
 			info.lit_tex = MakeLit(info.base_tex);
@@ -409,30 +418,31 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		switch(info.shader) {
 		case shader_slope:
 		case shader_slope2:
-			if(TokenizeLine(tokens,"           s", &id) != 12) return false;
+			if(TokenizeLine(tokens,"             s", &id) != 14) return false;
 			if(sCliffs.count(id) == 0) { fprintf(stderr,"Unknown cliff type: %s\n", id.c_str()); return false; }
 			
 			info.cliff_info = sCliffs[id];
 			break;
 		case shader_tile:
-			if(TokenizeLine(tokens,"           iii",
+			if(TokenizeLine(tokens,"             iii",
 				&info.tiles_x,
 				&info.tiles_y,
-				&has_compo) != 14) return false;
+				&has_compo) != 16) return false;
 			if(has_compo)info.compo_tex = MakeCompo(info.base_tex);	
 			break;
 		case shader_vary:
 			info.compo_tex = MakeCompo(info.base_tex);	
 			break;			
 		case shader_composite:
-			if(TokenizeLine(tokens,"           ffffff",
+			if(TokenizeLine(tokens,"             sPffffff",
+				&info.compo_tex,
+				&info.comp_res,
 				&info.composite_params[0],
 				&info.composite_params[1],
 				&info.composite_params[2],
 				&info.composite_params[3],
 				&info.composite_params[4],
-				&info.composite_params[5]) != 17) return false;
-			info.compo_tex = MakeCompo(info.base_tex);	
+				&info.composite_params[5]) != 21) return false;
 			break;
 		}
 		

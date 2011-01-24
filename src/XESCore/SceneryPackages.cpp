@@ -105,6 +105,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 
 	fprintf(lib,"%c" CRLF "800" CRLF "LIBRARY" CRLF CRLF, APL ? 'A' : 'I');
 
+	set<string> normalFiles;
 	set<string>	imageFiles;
 	set<string> borderFiles;
 
@@ -190,11 +191,12 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 				break;
 			case shader_composite:
 				fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
-				fprintf(ter, "COMPOSITE_PROJECTED %d %d" CRLF, (int) n->second.base_res.x(), (int) n->second.base_res.y());
+				fprintf(ter, "COMPOSITE_PROJECTED %d %d" CRLF, (int) n->second.comp_res.x(), (int) n->second.comp_res.y());
 				fprintf(ter, "COMPOSITE_PARAMS %f %f %f %f %f %f" CRLF, 
 					n->second.composite_params[0],					n->second.composite_params[1],
 					n->second.composite_params[2],					n->second.composite_params[3],
 					n->second.composite_params[4],					n->second.composite_params[5]);
+				fprintf(ter, "COMPOSITE_NOISE ../textures/noise.png" CRLF);
 				break;
 			default:
 				printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
@@ -208,9 +210,15 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if(!n->second.decal.empty())
 				fprintf(ter,"DECAL_LIB lib/g8/decals/%s" CRLF, n->second.decal.c_str());
 
+			if(!n->second.normal.empty())
+			{
+				fprintf(ter,"\nNORMAL_TEX %f %s" CRLF, n->second.normal_scale, n->second.normal.c_str());
+				normalFiles.insert(dir_path+n->second.normal);
+			}
+
 			imageFiles.insert(dir_path+n->second.base_tex);
 			if (!n->second.compo_tex.empty())	imageFiles.insert(dir_path+n->second.compo_tex);
-			if (!n->second.lit_tex.empty())	imageFiles.insert(dir_path+n->second.lit_tex);
+			if (!n->second.lit_tex.empty())		imageFiles.insert(dir_path+n->second.lit_tex);
 			borderFiles.insert(dir_path+n->second.border_tex);
 
 			fclose(ter);
@@ -255,10 +263,20 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	if (make_stub_pngs)
 	{
 		ImageInfo	image_data;
+		ImageInfo	nrml_data;
 		ImageInfo	border;
 
 		CreateNewBitmap(16, 16, 3, &image_data);
 		memset(image_data.data, 0x7F, 16 * 16 * 3);
+
+		CreateNewBitmap(16, 16, 4, &nrml_data);
+		for(int i = 0; i < 16*16; ++i)
+		{
+			nrml_data.data[i*4  ] = 0;
+			nrml_data.data[i*4+1] = 255;
+			nrml_data.data[i*4+2] = 0;
+			nrml_data.data[i*4+3] = 0;
+		}
 
 		CreateNewBitmap(128, 4, 1, &border);
 		unsigned char * p = border.data;
@@ -294,9 +312,43 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if (!FILE_exists(path_as_dds.c_str()))
 			{
 				++image_ctr;
+				printf("Creating %s.\n",path_as_png.c_str());
 				WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0);		
 			}
 		}
+
+
+		for (set<string>::iterator image = normalFiles.begin(); image != normalFiles.end(); ++image)
+		if (!image->empty())
+		{
+			string path = inPackage;
+			path += *image;
+			for (int n = path.size() - image->size(); n < path.size(); ++n)
+			{
+				if (path[n] == '/' || path[n] == ':' || path[n] == '\\')
+					path[n] = DIR_CHAR;
+			}
+			string end_dir = path.substr(0, path.rfind(DIR_CHAR)+1);
+			e = FILE_make_dir_exist(end_dir.c_str());
+			if(e != 0)
+			{
+				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
+				return e;
+			}
+
+			string path_as_png(path);	path_as_png.erase(path_as_png.length()-3,3);	path_as_png.insert(path_as_png.length(),"png");
+			string path_as_dds(path);	path_as_dds.erase(path_as_dds.length()-3,3);	path_as_dds.insert(path_as_dds.length(),"dds");
+
+			if (!FILE_exists(path_as_png.c_str()))
+			if (!FILE_exists(path_as_dds.c_str()))
+			{
+				++image_ctr;
+				printf("Creating %s.\n",path_as_png.c_str());
+				WriteBitmapToPNG(&nrml_data, path_as_png.c_str(), NULL, 0);		
+			}
+		}
+
+
 
 		for (set<string>::iterator image = borderFiles.begin(); image != borderFiles.end(); ++image)
 		if (!image->empty())
@@ -319,12 +371,14 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if(!FILE_exists(path.c_str()))
 			{
 				++border_ctr;
+				printf("Creating %s.\n",path.c_str());
 				WriteBitmapToPNG(&border, path.c_str(), NULL, 0);
 			}
 		}
 
 
 		DestroyBitmap(&image_data);
+		DestroyBitmap(&nrml_data);
 		DestroyBitmap(&border);
 
 //		char buf[1024];
