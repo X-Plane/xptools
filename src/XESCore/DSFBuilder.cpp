@@ -671,7 +671,7 @@ string		get_terrain_name(int composite)
 #if PHONE		
 			return string(FetchTokenString(composite)) + ".ter";
 #else
-			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
+			return string("lib/g10/") + FetchTokenString(composite) + ".ter";
 #endif
 	}
 

@@ -31,6 +31,7 @@
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 #include <errno.h>
+#include "STLUtils.h"
 
 static void	only_dir(string& iopath)
 {
@@ -133,7 +134,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			pol_name.erase(0,d);
 			pol_name.insert(0,"pol");
 
-			fprintf(lib, "EXPORT_EXCLUDE   lib/g8/%s.ter       %s.ter" CRLF,
+			fprintf(lib, "EXPORT_EXCLUDE   lib/g10/%s.ter       %s.ter" CRLF,
 				FixRegionPrefix(FetchTokenString(n->first)).c_str(),FetchTokenString(n->first));
 
 			lib_path = package + FetchTokenString(n->first) + ".ter";
@@ -196,7 +197,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 					n->second.composite_params[0],					n->second.composite_params[1],
 					n->second.composite_params[2],					n->second.composite_params[3],
 					n->second.composite_params[4],					n->second.composite_params[5]);
-				fprintf(ter, "COMPOSITE_NOISE ../textures/noise.png" CRLF);
+				fprintf(ter, "COMPOSITE_NOISE ../textures10/shared/noise.png" CRLF);
 				break;
 			default:
 				printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));
@@ -208,8 +209,12 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			fprintf(ter, "COMPOSITE_BORDERS" CRLF);
 
 			if(!n->second.decal.empty())
-				fprintf(ter,"DECAL_LIB lib/g8/decals/%s" CRLF, n->second.decal.c_str());
-
+			{
+				vector<string> dcls;
+				tokenize_string(n->second.decal.begin(),n->second.decal.end(),back_inserter(dcls),',');
+				for(vector<string>::iterator d = dcls.begin(); d != dcls.end(); ++d)
+					fprintf(ter,"DECAL_LIB lib/g10/decals/%s" CRLF, d->c_str());
+			}
 			if(!n->second.normal.empty())
 			{
 				fprintf(ter,"\nNORMAL_TEX %f %s" CRLF, n->second.normal_scale, n->second.normal.c_str());
@@ -227,7 +232,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
 		if (p->second.regionalization == r)
 		{
-			fprintf(lib, "EXPORT_EXCLUDE   lib/g8/%s.pol       %s.pol" CRLF, FixRegionPrefix(FetchTokenString(p->first)).c_str(), FetchTokenString(p->first));
+			fprintf(lib, "EXPORT_EXCLUDE   lib/g10/%s.pol       %s.pol" CRLF, FixRegionPrefix(FetchTokenString(p->first)).c_str(), FetchTokenString(p->first));
 
 			lib_path = package + FetchTokenString(p->first) + ".pol";
 			local_path(lib_path);
