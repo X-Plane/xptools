@@ -355,7 +355,9 @@ ifdef PLAT_LINUX
 	rm -f *.so*
 endif
 ifdef PLAT_MINGW
-	@cd "boost_$(VER_BOOST)" && \
+	@cp patches/0001-boost-tss-mingw.patch "boost_$(VER_BOOST)" && \
+	cd "boost_$(VER_BOOST)" && \
+	patch -p1 < ./0001-boost-tss-mingw.patch $(BE_QUIET) && \
 	bjam.exe install --toolset=gcc --prefix=$(DEFAULT_PREFIX) \
 	--libdir=$(DEFAULT_PREFIX)/lib --with-thread $(BE_QUIET)
 	@cd local/include && \
