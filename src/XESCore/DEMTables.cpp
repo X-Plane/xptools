@@ -434,15 +434,16 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			info.compo_tex = MakeCompo(info.base_tex);	
 			break;			
 		case shader_composite:
-			if(TokenizeLine(tokens,"             sPffffff",
+			if(TokenizeLine(tokens,"             sPsffffff",
 				&info.compo_tex,
 				&info.comp_res,
+				&info.noise_tex,
 				&info.composite_params[0],
 				&info.composite_params[1],
 				&info.composite_params[2],
 				&info.composite_params[3],
 				&info.composite_params[4],
-				&info.composite_params[5]) != 21) return false;
+				&info.composite_params[5]) != 22) return false;
 			break;
 		}
 		

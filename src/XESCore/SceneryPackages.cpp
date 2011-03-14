@@ -197,7 +197,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 					n->second.composite_params[0],					n->second.composite_params[1],
 					n->second.composite_params[2],					n->second.composite_params[3],
 					n->second.composite_params[4],					n->second.composite_params[5]);
-				fprintf(ter, "COMPOSITE_NOISE ../textures10/shared/noise.png" CRLF);
+				fprintf(ter, "COMPOSITE_NOISE %s" CRLF, n->second.noise_tex.c_str());
 				break;
 			default:
 				printf("WARNING: terrain %s has unknown shader type.\n",FetchTokenString(n->first));

@@ -141,6 +141,7 @@ struct	NaturalTerrainInfo_t {
 	Point2			base_res;
 	string			border_tex;			
 	string			compo_tex;		/// ALL modes that can have a second texture jam it here.
+	string			noise_tex;
 
 	string			decal;
 	float			normal_scale;
