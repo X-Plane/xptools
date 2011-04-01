@@ -1,6 +1,9 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	3/31/10 2.0 r3
+		Fixed crash on quit in Windows
+		Fixed SHAPEFILE_MASK command.
 	9/23/10 2.0 r2
 		Fixed export with wet-dry masks
 		GEOTIFF command makes DDS using DXT5.

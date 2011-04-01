@@ -804,7 +804,6 @@
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
 		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
-		D6F13F13124BCF3F001F2DFF /* MapBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
 		D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
@@ -1610,7 +1609,7 @@
 		D6BC37800AB22C85003949C5 /* HLCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = HLCamera.cpp; sourceTree = "<group>"; };
 		D6BC37810AB22C85003949C5 /* HLCamera.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = HLCamera.h; sourceTree = "<group>"; };
 		D6BC37820AB22C85003949C5 /* Interpolation.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Interpolation.h; sourceTree = "<group>"; };
-		D6BC37830AB22C85003949C5 /* Interpolation.i */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.interfacer; path = Interpolation.i; sourceTree = "<group>"; };
+		D6BC37830AB22C85003949C5 /* Interpolation.i */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c.preprocessed; path = Interpolation.i; sourceTree = "<group>"; };
 		D6BC37840AB22C85003949C5 /* MacImageToClipboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = MacImageToClipboard.c; sourceTree = "<group>"; };
 		D6BC37850AB22C85003949C5 /* MacImageToClipboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MacImageToClipboard.h; sourceTree = "<group>"; };
 		D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixUtils.cpp; sourceTree = "<group>"; };
@@ -3674,7 +3673,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 20286C29FDCF999611CA2CEA /* SceneryTools */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -4550,7 +4556,6 @@
 				D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */,
 				D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */,
 				D6EAA00F11A19ECA004ADCCC /* WED_RoadEdge.cpp in Sources */,
-				D6F13F13124BCF3F001F2DFF /* MapBuffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4702,7 +4707,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Debug;
 		};
@@ -4745,7 +4750,7 @@
 				OTHER_CFLAGS = "-frounding-math";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Release;
 		};
@@ -4850,7 +4855,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Phone;
 		};
@@ -5645,7 +5650,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = DebugOpt;
 		};

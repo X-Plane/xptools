@@ -370,7 +370,7 @@ int	main(int argc, char * argv[])
 				proj_t[2] = proj_t[3] = 1.0;
 				MT_OrthoPhoto(cus_ter, proj_lon, proj_lat, proj_s,proj_t,use_wat);
 			}
-			if(sscanf(buf,"SHAPEFILE_MASK %s",&shp_path)==1)
+			if(sscanf(buf,"SHAPEFILE_MASK %s",shp_path)==1)
 			{
 				MT_Mask(shp_path);
 			}
