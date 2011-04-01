@@ -74,9 +74,9 @@ static int DoBbox(const vector<const char *>& args)
 
 	for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 	{
-		printf("DEM %s: SW = %lfx%lf, NE = %lfx%lf, %d by %d\n",
+		printf("DEM %s: SW = %lfx%lf, NE = %lfx%lf, %d by %d (%c)\n",
 			FetchTokenString(i->first),
-			i->second.mWest, i->second.mSouth, i->second.mEast, i->second.mNorth, i->second.mWidth, i->second.mHeight);
+			i->second.mWest, i->second.mSouth, i->second.mEast, i->second.mNorth, i->second.mWidth, i->second.mHeight, i->second.mPost ? 'P' : 'A');
 	}
 	if (!gFAAObs.empty())
 	{

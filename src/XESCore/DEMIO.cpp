@@ -36,6 +36,8 @@
 
 #include <tiffio.h>
 #include <xtiffio.h>
+#include <geotiff.h>
+#include <geovalues.h>
 const double one_256 = 1.0 / 256.0;
 
 static	double	ReadReal48(const unsigned char * p)
@@ -682,6 +684,19 @@ void copy_scanline(
 	}
 }
 
+template<typename T>
+void copy_from_scanline(
+				T * v,
+				int y,
+				DEMGeo& dem)
+{
+	for (int x = 0; x < dem.mWidth; ++x, ++v)
+	{
+		float e = dem(x,dem.mHeight-y-1);
+		*v = e;
+	}
+}
+
 /*
 	GeoTiff notes -
 	First of all, Geotiff - unlike our DEMs, the first scanline is the "top" of the image, meaning north-most scanline.
@@ -823,6 +838,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 		}
 		_TIFFfree(aline);
 
+
 		TIFFClose(tif);
 
 		TIFFSetWarningHandler(warnH);
@@ -835,6 +851,141 @@ bail:
 	return false;
 
 }
+
+
+bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName)
+{
+	int result = -1;
+	TIFF * tif;
+	TIFFErrorHandler	warnH = TIFFSetWarningHandler(IgnoreTiffWarnings);
+	TIFFErrorHandler	errH = TIFFSetErrorHandler(IgnoreTiffErrs);
+
+	tif = XTIFFOpen(inFileName, "w");
+
+    if (tif == NULL) goto bail;
+	
+	{
+		uint16 d = 16;
+		uint16 format = SAMPLEFORMAT_INT;
+		
+		result = TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, inMap.mWidth);
+		result = TIFFSetField(tif, TIFFTAG_IMAGELENGTH, inMap.mHeight);
+		result = TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+		result = TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, d);
+		result = TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, format);
+		result = TIFFSetField(tif,TIFFTAG_COMPRESSION,   COMPRESSION_NONE);
+		result = TIFFSetField(tif,TIFFTAG_PHOTOMETRIC,   PHOTOMETRIC_MINISBLACK);
+		result = TIFFSetField(tif,TIFFTAG_PLANARCONFIG,  PLANARCONFIG_CONTIG);
+
+		tsize_t line_size = TIFFScanlineSize(tif);
+		tdata_t aline = _TIFFmalloc(line_size);
+
+		for (int y = 0; y < inMap.mHeight; ++y)
+		{
+			switch(format) {
+			case SAMPLEFORMAT_UINT:
+				switch(d) {
+				case 8:
+					copy_from_scanline<unsigned char>((unsigned char *) aline, y, inMap);
+					break;
+				case 16:
+					copy_from_scanline<unsigned short>((unsigned short *) aline, y, inMap);
+					break;
+				case 32:
+					copy_from_scanline<unsigned int>((unsigned int *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported unsigned int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_INT:
+				switch(d) {
+				case 8:
+					copy_from_scanline<char>((char *) aline, y, inMap);
+					break;
+				case 16:
+					copy_from_scanline<short>((short *) aline, y, inMap);
+					break;
+				case 32:
+					copy_from_scanline<int>((int *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported signed int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_IEEEFP:
+				switch(d) {
+				case 32:
+					copy_from_scanline<float>((float *) aline, y, inMap);
+					break;
+				case 64:
+					copy_from_scanline<double>((double *) aline, y, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported floating point sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			default:
+				printf("TIFF error: unsupported pixel format %d\n", format);
+				break;			
+			}
+
+			result = TIFFWriteScanline(tif, aline, y, 0);
+			if (result == -1) { printf("Tiff error in read.\n"); break; }
+
+		}
+		_TIFFfree(aline);
+
+	double tiepoints[6]={0};
+	double pixscale[3]={0};
+	tiepoints[3] = inMap.mWest;
+	tiepoints[4] = inMap.mNorth;
+	if(inMap.mPost)
+	{
+		pixscale[0] = 1.0 / (double) (inMap.mWidth - 1);
+		pixscale[1] = 1.0 / (double) (inMap.mHeight - 1);
+	}
+	else
+	{
+		pixscale[0] = 1.0 / (double) (inMap.mWidth);
+		pixscale[1] = 1.0 / (double) (inMap.mHeight);
+	}
+		
+	TIFFSetField(tif,TIFFTAG_GEOTIEPOINTS, 6,tiepoints);
+	TIFFSetField(tif,TIFFTAG_GEOPIXELSCALE, 3,pixscale);
+
+	GTIF * gtif = GTIFNew(tif);
+
+	// Ben says: this seems to be the minimum amount of stuff we have to write (so far) to make a happy GeoTIFF file...
+	GTIFKeySet(gtif, GTModelTypeGeoKey, TYPE_SHORT, 1, ModelTypeGeographic);
+	GTIFKeySet(gtif, GTRasterTypeGeoKey, TYPE_SHORT, 1, inMap.mPost ? RasterPixelIsPoint : RasterPixelIsArea);
+	GTIFKeySet(gtif, GeographicTypeGeoKey, TYPE_SHORT, 1,  GCSE_WGS84);
+	GTIFKeySet(gtif, GeogGeodeticDatumGeoKey, TYPE_SHORT, 1, Datum_WGS84);
+
+
+
+	GTIFWriteKeys(gtif);
+	GTIFFree(gtif);
+
+
+
+		XTIFFClose(tif);
+
+		TIFFSetWarningHandler(warnH);
+		TIFFSetErrorHandler(errH);
+		return result != -1;
+	}
+bail:
+	TIFFSetWarningHandler(warnH);
+	TIFFSetErrorHandler(errH);
+	return false;
+
+}
+
+
 
 // DTED - military elevation DEMs.  I found a spec here:
 // http://www.nga.mil/ast/fm/acq/89020B.pdf

@@ -70,12 +70,20 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 	return retVal;
 }
 
+static int pm(char * s, void * v)
+{
+	printf("%s",s);
+	return 0;
+}
+
 bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
 	if (gtif)
 	{
+//		GTIFPrint(gtif, pm, NULL);
+
 		GTIFDefn 	defn;
         if( GTIFGetDefn( gtif, &defn ) )
         {
@@ -91,6 +99,14 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 			
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
+
+			// If we are a 'point sampled' file, the upper right edge _IS_ the last pixels!  Thus
+			// passing in the number of pixels induces an off-by-one.  Cut the size by one to fix this.
+			if(pixel_type == RasterPixelIsPoint)
+			{
+				xsize -= 1.0;
+				ysize -= 1.0;
+			}
 
 			if(pixel_type==RasterPixelIsArea && post_pos == dem_want_Post)
 			{

@@ -268,6 +268,42 @@ static int DoRasterImport(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoRasterExport_HELP \
+"Usage: raster_export <flags> <format> <file> <layer>\n"\
+"File Format must be: tiff\n"
+static int DoRasterExport(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[3]);
+	if(layer == -1)
+	{
+		fprintf(stderr,"Raster Layer %s - unknown layer name.\n",args[3]);
+		return 1;
+	}
+	
+	if(gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"Raster Layer %s does not exist.\n", args[3]);
+		return 1;
+	}
+
+	if(strcmp(args[1],"tiff") == 0)
+	{	
+		if (!WriteGeoTiff(gDem[layer], args[2]))
+		{
+			fprintf(stderr,"Error writing file: %s\n", args[2]);
+			return 1;
+		} else
+			if (gVerbose)	printf("Wrote %s\n",args[2]);
+	}
+	else
+	{
+		fprintf(stderr,"Unknown export file format: %s\n", args[1]);
+		return 1;
+	}
+	return 0;
+}
+
+
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
 {
@@ -533,7 +569,8 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-bulksrtm",		4, 4, DoBulkConvertSRTM,	"Bulk convert SRTM data.", "" },
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },
 { "-readmask",		1, 1, DoMaskRemember,		"Remember the current elevation as overlay.", "" },
-{ "-raster_import",	4, 7, DoRasterImport,		"Import one RASTER DEM file.", DoRasterImport_HELP },
+{ "-raster_import",	4, 7, DoRasterImport,		"Import one raster DEM file.", DoRasterImport_HELP },
+{ "-raster_export", 4, 4, DoRasterExport,		"Export one rater DME file.", DoRasterExport_HELP }, 
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

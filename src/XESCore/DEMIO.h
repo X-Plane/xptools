@@ -63,6 +63,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
 // GeoTiff - must be geographic projected for us to use.
 bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style);
+bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName);
 // DTED - contains its own geo info
 bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
 // 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
