@@ -873,7 +873,8 @@ bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName)
 		result = TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
 		result = TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, d);
 		result = TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, format);
-		result = TIFFSetField(tif,TIFFTAG_COMPRESSION,   COMPRESSION_LZW);
+		result = TIFFSetField(tif,TIFFTAG_COMPRESSION,   COMPRESSION_DEFLATE);
+		result = TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
 		result = TIFFSetField(tif,TIFFTAG_PHOTOMETRIC,   PHOTOMETRIC_MINISBLACK);
 		result = TIFFSetField(tif,TIFFTAG_PLANARCONFIG,  PLANARCONFIG_CONTIG);
 
