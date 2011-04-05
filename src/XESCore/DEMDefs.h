@@ -859,12 +859,12 @@ inline double	DEMGeo::y_dist_to_m(double inY) const
 
 inline int	DEMGeo::map_x_from(const DEMGeo& src, int x) const
 {
-	return lon_to_x(src.x_to_lon_double(x));
+	return round(lon_to_x(src.x_to_lon_double(x)));
 }
 
 inline int	DEMGeo::map_y_from(const DEMGeo& src, int y) const
 {
-	return lat_to_y(src.y_to_lat_double(y));
+	return round(lat_to_y(src.y_to_lat_double(y)));
 }
 
 inline float	DEMGeo::gradient_x(int x, int y) const
