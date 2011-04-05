@@ -254,7 +254,7 @@ int		GetParamHistogram(const Face_handle f, const DEMGeo& dem, map<float, int>& 
  *
  * Given a set of faces, copy the points in the src DEM to the dest DEM only if we're in the faces.
  * Return the bounds (inclusive min, exclusive max) of the copied area.  Returns true if any points
- * were copied, otherwise the Xa and Y params may nto be valid.
+ * were copied, otherwise the X and Y params may nto be valid.
  *
  */
 bool	ClipDEMToFaceSet(const set<Face_handle>& inFaces, const DEMGeo& inSrcDEM, DEMGeo& inDstDEM, int& outX1, int& outY1, int& outX2, int& outY2);

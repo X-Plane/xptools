@@ -53,23 +53,30 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap);
 // SRTM HGT Files
 //	16-bit signed meter heights in geo projection with -32768 = NO_DATA.
 //	DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
-//	This is a big-endian file.
+//	This is a big-endian file.  Origin is NW corner.
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName);
 bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName);
+
 // IDA - a proprietary and rather weird old GIS raster format that we use for climate data.
 // Files contain their location.
 bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
+
 // USGS natural files - ASCII dems type A and B records.  Files contain their bounds.
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
-// GeoTiff - must be geographic projected for us to use.
+
+// GeoTiff - must be geographic projected for us to use.  Origin is NW corner.
 bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style);
 bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName);
+
 // DTED - contains its own geo info
 bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
-// 16-bit signed meter heights in geo projection with -32768 = NO_DATA.
-// DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
-// This is a little-endian file.
-bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName);
+
+// 16-bit signed meter heights in geo projection with some flag as NO_DATA, typically -32768 or -9999.
+// DEM location taken from file name in the N42W073 format if bound is NULL or takes explicit bounds.
+// File can be either endian, reader guesses.  The reader routine guesses resolution from the tile bounds.  
+// Origin is NW corner.
+bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName, int bounds[4]);	
+
 // 32-bit floating point with a 5-byte header - an Austin-invented format, but useful
 // because we have the entire US NED dataset in this form.  DEM position is taken from
 // the header in +42-073 format.
@@ -82,9 +89,9 @@ bool	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int i
 
 // Weird X-Plane specific formats...preferably we'll never need to use these again!
 // "Oz" file - same as above but no header and 16-bit big endian
-bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);
-bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);
+bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);			// 5 byte header, big endian float, column major, SW corner origin.  Really!
 bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName);
+bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);			// No header, little endian signed short, SW corner origin.
 
 /*****************************************************************************
  * DEM TRANSLATION SYSTEM

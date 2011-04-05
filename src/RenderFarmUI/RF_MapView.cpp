@@ -32,6 +32,7 @@
 #include "RF_MapTool.h"
 #include "ObjTables.h"
 #include "AptAlgs.h"
+#include "DEMAlgs.h"
 #include "RF_Progress.h"
 #include "RF_SelectionTool.h"
 #include "RF_CropTool.h"
@@ -1379,14 +1380,30 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		return false;
 	}
 
-	const DEMGeo&	master = gDem[param];
+	const DEMGeo *	master = &gDem[param];
+	DEMGeo	resized;
+	
+	GLint maxDim;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
+	if(maxDim > 4096) maxDim = 4096;
 
-	if (DEMToBitmap(master, image, mode) == 0)
+	int want_x = min(maxDim, master->mWidth);
+	int want_y = min(maxDim, master->mHeight);
+	if(want_x != master->mWidth || want_y != master->mHeight)
 	{
-		mDEMBounds[3] = master.mNorth;
-		mDEMBounds[1] = master.mSouth;
-		mDEMBounds[0] = master.mWest;
-		mDEMBounds[2] = master.mEast;
+		resized.resize(want_x,want_y);
+		resized.copy_geo_from(*master);
+		resized.mPost = master->mPost;
+		ResampleDEM(*master, resized);
+		master = &resized;
+	}
+
+	if (DEMToBitmap(*master, image, mode) == 0)
+	{
+		mDEMBounds[3] = master->mNorth;
+		mDEMBounds[1] = master->mSouth;
+		mDEMBounds[0] = master->mWest;
+		mDEMBounds[2] = master->mEast;
 
 		if (LoadTextureFromImage(image, mTexID, tex_Mipmap + (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
 		{
@@ -1400,14 +1417,25 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 		if (gDem.count(dem_Elevation) == 0)
 			mHasRelief = false;
 		else {
-			const DEMGeo&	master = gDem[dem_Elevation];
-
-			if (DEMToBitmap(master, image, dem_Normals) == 0)
+			const DEMGeo *	master = &gDem[dem_Elevation];
+			DEMGeo resized;
+			int want_x = min(maxDim, master->mWidth);
+			int want_y = min(maxDim, master->mHeight);
+			if(want_x != master->mWidth || want_y != master->mHeight)
 			{
-				mDEMBounds[3] = master.mNorth;
-				mDEMBounds[1] = master.mSouth;
-				mDEMBounds[0] = master.mWest;
-				mDEMBounds[2] = master.mEast;
+				resized.resize(want_x,want_y);
+				resized.copy_geo_from(*master);
+				resized.mPost = master->mPost;
+				ResampleDEM(*master, resized);
+				master = &resized;
+			}
+
+			if (DEMToBitmap(*master, image, dem_Normals) == 0)
+			{
+				mDEMBounds[3] = master->mNorth;
+				mDEMBounds[1] = master->mSouth;
+				mDEMBounds[0] = master->mWest;
+				mDEMBounds[2] = master->mEast;
 
 				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
 				{

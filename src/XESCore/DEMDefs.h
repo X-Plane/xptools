@@ -39,10 +39,17 @@
 	It is applied to a geoprojected area with a constant (but controllable)
 	resolution.
 
-	DEMGeos use center-pixel notation, meaning the lower left pixel is the data
-	that is precisely sampled from the southwest corner of the DEM.  Therefore
-	if we have 1200 samples per degree, the DEM will contain 1201 samples, and
-	two adjacent DEMs will duplicate data by sharing their common edges.
+	DEMGeos can run in either "post" mode (mPost=1) where each pixel sits 
+	use center-pixel notation, meaning the edge pixels sit _on_ the edges of the DEM.
+	(This was the default and only option for RF for years and matches the SRMT data.)
+	If post = 0 the pixels are area-centric - they sit _inside_ the bounds and their
+	sample center is 0.5 pixels in from the edge.
+	
+	The lower left pixel is the data that either sits on the southwest corner (post)
+	or the pixel whose lower left corner touches the sw corner (area).  Therefore
+	if we have 1200 samples per degree, the post-mode DEM will contain 1201 samples and
+	two adjacent DEMs will duplicate data by sharing their common edges.  The area 
+	mode DEM will have 1200 samples and not ovrelap at all.
 
 	While DEM data are floating point, we sometimes stuff integer enumeration
 	coded data into them.
@@ -134,6 +141,7 @@ struct	DEMGeo {
 
 
 	void	resize(int width, int height);					// Resize, reset to 0
+	void	set_rez(double x_res, double y_res);			// Given target res and geo already set, recalc dims and resize.
 	void	resize_save(int width, int height, float fill);	// REsize, save lower left data,  fill with param
 	void	derez(int n);									// Reduce size by a factor of "n".  Averages down (box filter).
 	void	derez_nearest(void);							// Derez by a factor of two with nearest-neighbor down-sampling....good for enums.
@@ -147,7 +155,7 @@ struct	DEMGeo {
 	inline float	operator()(int, int) const;
 	inline float	get(int x, int y) const;									// Get value at x,y, DEM_NO_DATA if out of bonds
 	inline void		set(int x, int y, float v);									// Safe set - no-op if off
-	inline float	get_clamp(int x, int y) const;								// Get value at x,y, clamped to within the DME
+	inline float	get_clamp(int x, int y) const;								// Get value at x,y, clamped to within the DEM
 	inline float	get_dir(int x, int y, int dx, int dy, 						// Get first value in a given direction and dist that doesn't
 						int max_radius, float blank, float& outDist) const;		// Match 'blank'
 	inline float	get_radial(int x, int y, int max, float blank) const;		// Get first value in any direction that doesn't match blank
@@ -169,7 +177,8 @@ struct	DEMGeo {
 	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
 
-	// These routines convert grid positions to lat/lon
+	// These routines convert grid positions to lat/lon.  NOTE: x/y positions are based on pixel _centroids, _not_ the lower left
+	// corner.  Thus for an area-sampled file, the XY of the SW corner is usually -0.5,-0.5.
 	inline double	x_to_lon(int inX) const;
 	inline double	y_to_lat(int inY) const;
 	inline double	x_to_lon_double(double inX) const;
@@ -178,6 +187,9 @@ struct	DEMGeo {
 	inline double	lat_to_y(double inLat) const;
 	inline double	x_dist_to_m(double inX) const;
 	inline double	y_dist_to_m(double inY) const;
+	
+	inline double	x_res(void) const;
+	inline double	y_res(void) const;
 	
 	inline int		map_x_from(const DEMGeo& src, int x) const;
 	inline int		map_y_from(const DEMGeo& src, int y) const;
@@ -190,7 +202,7 @@ struct	DEMGeo {
 	inline int		y_upper(double lat) const;
 
 	// This routine creates an extracted DEM along grid lines.
-	void	subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const;					// This uses INCLUSIVE boundaries!!
+	void	subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const;					// INCLUSIVE for post, EXCLUSIVE for area.
 	void	swap(DEMGeo& otherDEM);															// Swap all params, good for avoiding mem copies
 	void	calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inFunc) const;
 
@@ -769,32 +781,32 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 
 inline double	DEMGeo::x_to_lon(int inX) const
 {
-	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-mPost));
+	return mWest + (((double) inX + pixel_offset())  * (mEast - mWest) / (double) (mWidth-mPost));
 }
 
 inline double	DEMGeo::y_to_lat(int inY) const
 {
-	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-mPost));
+	return mSouth + (((double) inY + pixel_offset()) * (mNorth - mSouth) / (double) (mHeight-mPost));
 }
 
 inline double	DEMGeo::x_to_lon_double(double inX) const
 {
-	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-mPost));
+	return mWest + ((inX + pixel_offset()) * (mEast - mWest) / (double) (mWidth-mPost));
 }
 
 inline double	DEMGeo::y_to_lat_double(double inY) const
 {
-	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-mPost));
+	return mSouth + ((inY + pixel_offset()) * (mNorth - mSouth) / (double) (mHeight-mPost));
 }
 
 inline double	DEMGeo::lon_to_x(double inLon) const
 {
-	return (inLon - mWest) * (double) (mWidth-mPost) / (mEast - mWest);
+	return (inLon - mWest) * (double) (mWidth-mPost) / (mEast - mWest) - pixel_offset();
 }
 
 inline double	DEMGeo::lat_to_y(double inLat) const
 {
-	return (inLat - mSouth) * (double) (mHeight-mPost) / (mNorth - mSouth);
+	return (inLat - mSouth) * (double) (mHeight-mPost) / (mNorth - mSouth) - pixel_offset();
 }
 
 inline int		DEMGeo::x_lower(double lon) const
@@ -843,7 +855,7 @@ inline int		DEMGeo::y_upper(double lat) const
 
 inline double	DEMGeo::x_dist_to_m(double inX) const
 {
-	double	d = inX / (double) mWidth;
+	double	d = inX / (double) (mWidth - mPost);
 	d *= (mEast - mWest);
 	d *= (DEG_TO_MTR_LAT * cos((mSouth+mNorth) * 0.5 * DEG_TO_RAD));
 	return d;
@@ -851,11 +863,22 @@ inline double	DEMGeo::x_dist_to_m(double inX) const
 
 inline double	DEMGeo::y_dist_to_m(double inY) const
 {
-	double	d = inY / (double) mHeight;
+	double	d = inY / (double) (mHeight - mPost);
 	d *= (mNorth - mSouth);
 	d *= (DEG_TO_MTR_LAT);
 	return d;
 }
+
+inline double	DEMGeo::x_res(void) const
+{
+	return (mWidth - mPost) / (mEast - mWest);
+}
+
+inline double	DEMGeo::y_res(void) const
+{
+	return (mHeight - mPost) / (mNorth - mSouth); 
+}
+
 
 inline int	DEMGeo::map_x_from(const DEMGeo& src, int x) const
 {

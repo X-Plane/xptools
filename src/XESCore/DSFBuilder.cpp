@@ -152,7 +152,7 @@ bool	IsCoastal(const CDT& inMesh, CDT::Vertex_handle v)
 }
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
-static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6], int kind)
+static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[3], int kind)
 {
 	CDT::Face_circulator stop, circ;
 //	int	lterrain = NO_VALUE;
@@ -173,12 +173,13 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 	{
 		coords[0] = CGAL::to_double(v_t->point().x());
 		coords[1] = CGAL::to_double(v_t->point().y());
-		coords[2] = v_t->info().height;
+//		coords[2] = v_t->info().height;
 	} else {
 		coords[0] = CGAL::to_double(v_s->point().x());
 		coords[1] = CGAL::to_double(v_s->point().y());
-		coords[2] = v_s->info().height;
+//		coords[2] = v_s->info().height;
 	}
+#if 0
 	Vector3 nrml_s(0.0, 0.0, 0.0);
 	Vector3 nrml_t(0.0, 0.0, 0.0);
 
@@ -219,7 +220,8 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 	}
 		
 	DebugAssert(pythag(coords[3],coords[4]) <= 1.01);
-	coords[5] = kind;
+#endif	
+	coords[2] = kind;
 	printf("Beach: %lf,%lf,%lf,%lf,%lf,%lf\n",coords[0],coords[1],coords[2],coords[3],coords[4],coords[5]);
 }
 
@@ -781,7 +783,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		int		cur_id = 0, tri, tris_this_patch;
 		double	coords3[3];
 		double	coords2[2];
-		double	coords6[6];
+		//double	coords6[6];
 		double	coords8[8];
 		double							x, y, v;
 		CDT::Finite_faces_iterator		fi;
@@ -1369,7 +1371,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			FixBeachContinuity(linkNext, *a_start, all);
 
-			cbs.BeginPolygon_f(0, 0, 6, writer1);
+			cbs.BeginPolygon_f(0, 0, 3, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
 
 			for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
@@ -1378,18 +1380,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				last_beach = beach;
 				DebugAssert(all.count(beach) != 0);
 				beachKind = all[beach];
-				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-				coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
-				coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
-				cbs.AddPolygonPoint_f(coords6, writer1);
+				BeachPtGrab(beach, false, inHiresMesh, coords3, beachKind);
+				coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
+				coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
+				cbs.AddPolygonPoint_f(coords3, writer1);
 				all.erase(beach);
 			}
 			DebugAssert(all.count(*a_start) == 0);
 
-			BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
-			coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
-			coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
-			cbs.AddPolygonPoint_f(coords6, writer1);
+			BeachPtGrab(last_beach, true, inHiresMesh, coords3, beachKind);
+			coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
+			coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
+			cbs.AddPolygonPoint_f(coords3, writer1);
 
 			cbs.EndPolygonWinding_f(writer1);
 			cbs.EndPolygon_f(writer1);
@@ -1408,7 +1410,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			edge_wrapper this_start = all.begin()->first;
 			FixBeachContinuity(linkNext, this_start, all);
-			cbs.BeginPolygon_f(0, 1, 6, writer1);
+			cbs.BeginPolygon_f(0, 1, 3, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
 
 			beach = this_start;
@@ -1417,10 +1419,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(all.count(beach) != 0);
 				DebugAssert(linkNext.count(beach) != 0);
 				beachKind = all.begin()->second;
-				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-				coords6[0] = doblim(coords6[0],inElevation.mWest,  inElevation.mEast);
-				coords6[1] = doblim(coords6[1],inElevation.mSouth, inElevation.mNorth);
-				cbs.AddPolygonPoint_f(coords6, writer1);
+				BeachPtGrab(beach, false, inHiresMesh, coords3, beachKind);
+				coords3[0] = doblim(coords3[0],inElevation.mWest,  inElevation.mEast);
+				coords3[1] = doblim(coords3[1],inElevation.mSouth, inElevation.mNorth);
+				cbs.AddPolygonPoint_f(coords3, writer1);
 				all.erase(beach);
 				beach = linkNext[beach];
 			} while (beach != this_start);

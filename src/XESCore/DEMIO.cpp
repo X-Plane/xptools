@@ -152,41 +152,74 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 
 // RAW HEIGHT FILE: N34W072.HGT
 // These files contian big-endian shorts with -32768 as DEM_NO_DATA
-bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName)
+bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName, int bounds[4])
 {
 	int	lat, lon;
 	char ns, ew;
 	string	fname(inFileName);
 	string::size_type p = fname.find_last_of(":\\/");
-	if (p != fname.npos) fname = fname.substr(p+1);
-	if (sscanf(fname.c_str(), "%c%d%c%d", &ns, &lat, &ew, &lon) == 4)
+	if (bounds == NULL)
 	{
-		if (ns == 'S' || ns == 's' || ns == '-') lat = -lat;
-		if (ew == 'W' || ew == 'w' || ew == '-') lon = -lon;
-		inMap.mWest = lon;
-		inMap.mEast = lon + 1;
-		inMap.mSouth = lat;
-		inMap.mNorth = lat + 1;
+		if (p != fname.npos) fname = fname.substr(p+1);
+		if (sscanf(fname.c_str(), "%c%d%c%d", &ns, &lat, &ew, &lon) == 4)
+		{
+			if (ns == 'S' || ns == 's' || ns == '-') lat = -lat;
+			if (ew == 'W' || ew == 'w' || ew == '-') lon = -lon;
+			if (ns == 'W' || ns == 'w' || ns == 'E' || ns == 'e') 
+				swap(lon, lat);
+			inMap.mWest = lon;
+			inMap.mEast = lon + 1;
+			inMap.mSouth = lat;
+			inMap.mNorth = lat + 1;
+		} else return false;
+	} 
+	else
+	{
+		inMap.mWest = bounds[0];
+		inMap.mSouth = bounds[1];
+		inMap.mEast = bounds[2];
+		inMap.mNorth = bounds[3];
 	}
 
 	MFMemFile *	fi = MemFile_Open(inFileName);
 	if (!fi) return false;
 
-	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_LittleEndian);
+	PlatformType pt  = platform_LittleEndian;
+	{
+		MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_LittleEndian);
+		int wds = (MemFile_GetEnd(fi) - MemFile_GetBegin(fi)) / sizeof(short);
+		short low = SHRT_MAX;
+		while(wds--)
+		{
+			short v;
+			reader.ReadShort(v);
+			low = min(low,v);
+		}
+		if (low < -1000) pt = platform_BigEndian;
+	}
+
+
+	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), pt);
 
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
-	long dim = sqrt((double) words);		// Double?  Yes!  10801 x 10801 DEM (1/3 second) has more than 2^23 samples -- rounding error in xflt.
+	long tiles = (inMap.mEast - inMap.mWest) * (inMap.mNorth - inMap.mSouth);
+	long per_tile = words / tiles;	
+	long dim = sqrt((double) per_tile);		// Double?  Yes!  10801 x 10801 DEM (1/3 second) has more than 2^23 samples -- rounding error in xflt.
 
-	inMap.resize(dim, dim);
+	long xdim = dim * (inMap.mEast - inMap.mWest);
+	long ydim = dim * (inMap.mNorth - inMap.mSouth);
+	inMap.mPost = xdim % 2;
+
+	inMap.resize(xdim, ydim);
 	if (inMap.mData)
 	{
-		for (int y = dim-1; y >= 0; --y)
-		for (int x = 0; x < dim; ++x)
+		for (int y = ydim-1; y >= 0; --y)
+		for (int x = 0; x < xdim; ++x)
 		{
 			short	v;
 			reader.ReadShort(v);
-			inMap.mData[x + y * dim] = v;
+			inMap.mData[x + y * xdim] = v;
 		}
 	}
 
@@ -944,16 +977,8 @@ bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName)
 	double pixscale[3]={0};
 	tiepoints[3] = inMap.mWest;
 	tiepoints[4] = inMap.mNorth;
-	if(inMap.mPost)
-	{
-		pixscale[0] = 1.0 / (double) (inMap.mWidth - 1);
-		pixscale[1] = 1.0 / (double) (inMap.mHeight - 1);
-	}
-	else
-	{
-		pixscale[0] = 1.0 / (double) (inMap.mWidth);
-		pixscale[1] = 1.0 / (double) (inMap.mHeight);
-	}
+	pixscale[0] = (inMap.mEast  - inMap.mWest ) / (double) (inMap.mWidth - inMap.mPost);
+	pixscale[1] = (inMap.mNorth - inMap.mSouth) / (double) (inMap.mHeight - inMap.mPost);
 		
 	TIFFSetField(tif,TIFFTAG_GEOTIEPOINTS, 6,tiepoints);
 	TIFFSetField(tif,TIFFTAG_GEOPIXELSCALE, 3,pixscale);

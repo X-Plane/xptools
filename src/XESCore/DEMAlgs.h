@@ -46,8 +46,15 @@ struct	DEMPrefs_t {
 extern DEMPrefs_t	gDemPrefs;
 
 void	CalculateFilter(int dim, float * k, int kind, bool normalize);
+
+// Sample down or up by ratio.  Downsample via average, upsample via data dupe.
 void	DownsampleDEM(const DEMGeo& inDem, DEMGeo& outSmaller, int ratio);
 void	UpsampleDEM(const DEMGeo& inDem, DEMGeo& outSmaller, int ratio);
+
+// Resample a DEM, changing anything - size, location, postings...does linear interp resample.
+// This will alias if src res is more than 2x dst res.
+void	ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst);
+
 void	InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& outBigger);
 void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM);
 void	SpreadDEMValues(DEMGeo& ioDem);

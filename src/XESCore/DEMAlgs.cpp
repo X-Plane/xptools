@@ -282,7 +282,7 @@ void	CalculateFilter(int dim, float * k, int kind, bool normalize)
  */
 void	DownsampleDEM(const DEMGeo& ioDem, DEMGeo& smaller, int ratio)
 {
-	smaller.resize((ioDem.mWidth-1) / ratio + 1,(ioDem.mHeight-1) / ratio + 1);
+	smaller.resize((ioDem.mWidth-ioDem.mPost) / ratio + ioDem.mPost,(ioDem.mHeight-ioDem.mPost) / ratio + ioDem.mPost);
 	smaller.mNorth = ioDem.mNorth;
 	smaller.mSouth = ioDem.mSouth;
 	smaller.mEast = ioDem.mEast;
@@ -309,14 +309,27 @@ void	DownsampleDEM(const DEMGeo& ioDem, DEMGeo& smaller, int ratio)
 }
 void	UpsampleDEM(const DEMGeo& ioDem, DEMGeo& bigger, int ratio)
 {
-	bigger.resize((ioDem.mWidth-1)*ratio+1,(ioDem.mHeight-1)*ratio+1);
+	bigger.resize((ioDem.mWidth-ioDem.mPost)*ratio+ioDem.mPost,(ioDem.mHeight-ioDem.mPost)*ratio+ioDem.mPost);
 	bigger.mNorth = ioDem.mNorth;
 	bigger.mSouth = ioDem.mSouth;
 	bigger.mEast = ioDem.mEast;
 	bigger.mWest = ioDem.mWest;
 	for (int y = 0; y < bigger.mHeight; ++y)
 	for (int x = 0; x < bigger.mWidth; ++x)
-		bigger(x,y) = ioDem(x/2,y/2);
+		bigger(x,y) = ioDem(x/ratio,y/ratio);
+}
+
+void ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst)
+{
+	for(int y = 0; y < inDst.mHeight; ++y)
+	for(int x = 0; x < inDst.mWidth; ++x)
+	{
+		double lon = inDst.x_to_lon(x);
+		double lat = inDst.y_to_lat(y);
+		
+		double e = inSrc.value_linear(lon, lat);
+		inDst(x,y) = e;
+	}
 }
 
 void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
@@ -826,6 +839,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 {
 	if (!gReplacementClimate.empty())
 	{
+		Assert(!"Why is this code path used?");
 		string	fname = gReplacementClimate;
 		if (!fname.empty())
 		{

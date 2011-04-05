@@ -51,9 +51,11 @@
 " t Translate DEM with translation file.\n"\
 " o Overlay DEM on existing DEM\n"\
 " e Do not use if DEM is empty.\n"\
+" i Ignore DEM file if it does not exist.\n"\
 " c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
-" a GEoTiff only - allow DEM to be area data if file contains area data.\n"\
+" a GeoTiff only - allow DEM to be area data if file contains area data.\n"\
 "Format can be one of: tiff, bil, hgt, ascii\n"\
+"Note: for bil import, the current extent is used to position the DEM.\n"\
 "File is a unix file name.\n"\
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
 "If <translation> is provided it is the name of a translation file name (no path) in the config folder.\n"
@@ -87,6 +89,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	{
 		if(!ReadARCASCII(*dem,args[2]))
 		{
+			if(strstr(args[0],"i")) return 0;
 			fprintf(stderr,"Unable to read ARC-ASCII file %s\n", args[2]);
 			return 1;
 		}
@@ -95,6 +98,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	{
 		if(!ExtractGeoTiff(*dem, args[2], mode))
 		{
+			if(strstr(args[0],"i")) return 0;
 			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[2]);
 			return 1;
 		}
@@ -103,14 +107,17 @@ static int DoRasterImport(const vector<const char *>& args)
 	{
 		if(!ReadRawHGT(*dem, args[2])) 
 		{
+			if(strstr(args[0],"i")) return 0;
 			fprintf(stderr,"Unable to read HGT file %s\n", args[2]);
 			return 1;
 		}
 	}
 	else if(strcmp(args[1],"bil") == 0)
 	{
-		if(!ReadRawBIL(*dem,args[2]))
+		int bounds[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
+		if(!ReadRawBIL(*dem,args[2], bounds))
 		{
+			if(strstr(args[0],"i")) return 0;
 			fprintf(stderr,"Unable to read BIL file %s\n", args[2]);
 			return 1;
 		}
@@ -187,40 +194,55 @@ static int DoRasterImport(const vector<const char *>& args)
 	{
 		DEMGeo * dst = &gDem[layer];
 		
-		if( ((double)(dst->mWidth-1) * (dem->mEast-dem->mWest)) !=
-			((double)(dem->mWidth-1) * (dst->mEast-dst->mWest)))
+		if(dst->x_res() != dem->x_res())
 		{
 			fprintf(stderr,"Unable to overlay %s onto layer %s: horizontal resolution mismatch.\n", args[2], args[3]);
 			return 1;
 		}
-		if( ((double)(dst->mHeight-1) * (dem->mNorth-dem->mSouth)) !=
-			((double)(dem->mHeight-1) * (dst->mNorth-dst->mSouth)))
+		if(dst->y_res() != dem->y_res())
 		{
 			fprintf(stderr,"Unable to overlay %s onto layer %s: vertical resolution mismatch.\n", args[2], args[3]);
 			return 1;
 		}
+		if(dst->mPost != dem->mPost)
+		{
+			fprintf(stderr,"Unable to overlay %s onto layer %s: both DEMs must be area or point based.\n", args[2], args[3]);
+			return 1;
+		}
 			
 		DEMGeo	tmp;
-		tmp.mWest = min(dem->mWest ,dst->mWest );
-		tmp.mSouth= min(dem->mSouth,dst->mSouth);
-		tmp.mEast = max(dem->mEast ,dst->mEast );
-		tmp.mNorth= max(dem->mNorth,dst->mNorth);
 		
-		tmp.resize(
-				1+(double) (dem->mWidth -1) * (tmp.mEast -tmp.mWest ) / (dem->mEast -dem->mWest ),
-				1+(double) (dem->mHeight-1) * (tmp.mNorth-tmp.mSouth) / (dem->mNorth-dem->mSouth));
-		tmp = DEM_NO_DATA;
-		
+		bool in_place = (dst->mWest  <= dem->mWest ) &&
+						(dst->mEast  >= dem->mEast ) &&
+						(dst->mSouth <= dem->mSouth) &&
+						(dst->mNorth >= dem->mNorth);
 		bool err_check = strstr(args[0],"c");
+			
 		
-		for(int y = 0; y < dst->mHeight; ++y)
-		for(int x = 0; x < dst->mWidth ; ++x)
+		if (in_place)
 		{
-			int xp = tmp.map_x_from(*dst,x);
-			int yp = tmp.map_y_from(*dst,y);			
-			tmp(xp,yp)=dst->get(x,y);
+			tmp.swap(*dst);
 		}
-
+		else
+		{		
+			tmp.mWest = min(dem->mWest ,dst->mWest );
+			tmp.mSouth= min(dem->mSouth,dst->mSouth);
+			tmp.mEast = max(dem->mEast ,dst->mEast );
+			tmp.mNorth= max(dem->mNorth,dst->mNorth);
+			tmp.mPost = dem->mPost;
+			
+			tmp.set_rez(dem->x_res(),dem->y_res());
+			tmp = DEM_NO_DATA;
+			
+			for(int y = 0; y < dst->mHeight; ++y)
+			for(int x = 0; x < dst->mWidth ; ++x)
+			{
+				int xp = tmp.map_x_from(*dst,x);
+				int yp = tmp.map_y_from(*dst,y);
+				tmp(xp,yp)=dst->get(x,y);
+			}
+		}
+		
 		for(int y = 0; y < dem->mHeight; ++y)
 		for(int x = 0; x < dem->mWidth ; ++x)
 		{
@@ -269,8 +291,12 @@ static int DoRasterImport(const vector<const char *>& args)
 }
 
 #define DoRasterExport_HELP \
-"Usage: raster_export <flags> <format> <file> <layer>\n"\
-"File Format must be: tiff\n"
+"Usage: raster_export <flags> <format> <file> <layer> [<res>]\n"\
+"Flags:\n"\
+" x - no special flags.\n"\
+" c - export only a cropping within the extent area.\n"\
+" r - resample - res in samples per DEM on end.  Outputs in post format.\n"\
+"File Format must be: tiff.\n"
 static int DoRasterExport(const vector<const char *>& args)
 {
 	int layer = LookupToken(args[3]);
@@ -286,9 +312,40 @@ static int DoRasterExport(const vector<const char *>& args)
 		return 1;
 	}
 
+	if(strstr(args[0],"c") && strstr(args[0],"r"))
+	{
+		fprintf(stderr,"You cannot use crop and resample in the same export.\n");
+		return 1;
+	}
+
+	DEMGeo * src = &gDem[layer];
+	DEMGeo	chopped;
+	
+	if (strstr(args[0],"c"))
+	{	
+		src->subset(chopped,
+						 src->x_lower(gMapWest),
+						 src->y_lower(gMapSouth),
+						 src->x_upper(gMapEast),
+						 src->y_upper(gMapNorth));
+		src = &chopped;
+	} 
+	else if (strstr(args[0],"r"))
+	{
+		chopped.mNorth = gMapNorth;
+		chopped.mSouth = gMapSouth;
+		chopped.mWest = gMapWest;
+		chopped.mEast = gMapEast;
+		chopped.mPost = 1;
+		int rz = atoi(args[4]);
+		chopped.set_rez(rz,rz);
+		ResampleDEM(*src, chopped);
+		src = &chopped;
+	}
+
 	if(strcmp(args[1],"tiff") == 0)
 	{	
-		if (!WriteGeoTiff(gDem[layer], args[2]))
+		if (!WriteGeoTiff(*src, args[2]))
 		{
 			fprintf(stderr,"Error writing file: %s\n", args[2]);
 			return 1;
@@ -303,6 +360,64 @@ static int DoRasterExport(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoRasterInit_HELP \
+"USAGE: -raster_init x_res y_res post layer [init value]\n"
+int DoRasterInit(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[3]);
+	if (layer == -1)
+	{
+		fprintf(stderr,"Layer %s unknown.\n",args[3]);
+		return 1;
+	}	
+
+	DEMGeo& dem = gDem[layer];
+	dem.mWest = gMapWest;
+	dem.mEast = gMapEast;
+	dem.mNorth = gMapNorth;
+	dem.mSouth = gMapSouth;
+	dem.mPost = atoi(args[2]);
+	dem.set_rez(atoi(args[0]),atoi(args[1]));
+	if (args.size() > 4)
+		dem = atof(args[4]);
+	return 0;
+}
+
+#define DoRasterResample_HELP \
+"USAGE: -raster_resample x_res y_res post layer\n"
+int DoRasterResample(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[3]);
+	if (layer == -1)
+	{
+		fprintf(stderr,"Layer %s unknown.\n",args[3]);
+		return 1;
+	}	
+
+	if (gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"Layer %s not initialized.\n",args[3]);
+		return 1;
+	}
+
+	DEMGeo& src = gDem[layer];
+	DEMGeo	dem;
+	dem.mWest = gMapWest;
+	dem.mEast = gMapEast;
+	dem.mNorth = gMapNorth;
+	dem.mSouth = gMapSouth;
+	dem.mPost = atoi(args[2]);
+	dem.set_rez(atoi(args[0]),atoi(args[1]));
+
+	ResampleDEM(src, dem);
+	swap(src,dem);
+
+	#if OPENGL_MAP
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
+	#endif
+
+	return 0;
+}
 
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
@@ -570,7 +685,9 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },
 { "-readmask",		1, 1, DoMaskRemember,		"Remember the current elevation as overlay.", "" },
 { "-raster_import",	4, 7, DoRasterImport,		"Import one raster DEM file.", DoRasterImport_HELP },
-{ "-raster_export", 4, 4, DoRasterExport,		"Export one rater DME file.", DoRasterExport_HELP }, 
+{ "-raster_export", 4, 5, DoRasterExport,		"Export one raster DEM file.", DoRasterExport_HELP }, 
+{ "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
+{ "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

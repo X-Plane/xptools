@@ -281,17 +281,19 @@ void	DEMGeo::copy_geo_from(const DEMGeo& rhs)
 	mNorth = rhs.mNorth;
 	mSouth = rhs.mSouth;
 	mEast  = rhs.mEast ;
-	mWest  = rhs.mWest ;
+	mWest  = rhs.mWest ;	
 }
 
 
 void DEMGeo::derez(int r)
 {	
-	DEMGeo	smaller((mWidth+r-1) / r, (mHeight+r-1) / r);
+	DEMGeo	smaller((mWidth+r-1-mPost) / r + mPost, (mHeight+r-1-mPost) / r + mPost);
 	smaller.mNorth = mNorth;
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
 	smaller.mWest = mWest;
+	
+	int so = mPost * r / 2;
 
 	for(int x = 0; x < smaller.mWidth; ++x)
 	for(int y=  0; y < smaller.mHeight; ++y)
@@ -301,13 +303,9 @@ void DEMGeo::derez(int r)
 		for (int dx = 0; dx < r; ++dx)
 		for (int dy = 0; dy < r; ++dy)
 		{
-			if ((x * r + dx) < mWidth)
-			if ((y * r + dy) < mHeight)
-			{
-				float e = get(x * r + dx,y * r + dy);
-				if (e != DEM_NO_DATA)
-					tot += 1, ct += e;
-			}
+			float e = get(x * r + dx - so,y * r + dy - so);
+			if (e != DEM_NO_DATA)
+				tot += 1, ct += e;
 		}
 		if (tot > 0.0)
 			smaller(x,y) = (ct / tot);
@@ -320,7 +318,7 @@ void DEMGeo::derez(int r)
 
 void DEMGeo::derez_nearest(DEMGeo& smaller)
 {
-	smaller.resize((mWidth-1) / 2 + 1, (mHeight-1) / 2 + 1);
+	smaller.resize((mWidth-mPost) / 2 + mPost, (mHeight-mPost) / 2 + mPost);
 	smaller.mNorth = mNorth;
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
@@ -365,12 +363,19 @@ void	DEMGeo::resize(int width, int height)
 	{
 		mData = 0;
 	} else {
-		mData = (float *) malloc(mWidth * mHeight * sizeof(float));
+		mData = (float *) malloc((size_t) mWidth * (size_t) mHeight * sizeof(float));
 		if (mData == NULL)
 			mWidth = mHeight = 0;
 		else
-			memset(mData, 0, mWidth * mHeight * sizeof(float));
+			memset(mData, 0, (size_t) mWidth * (size_t) mHeight * sizeof(float));
 	}
+}
+
+void DEMGeo::set_rez(double x_res, double y_res)
+{
+	int want_x = x_res * (mEast - mWest) + mPost;
+	int want_y = y_res * (mNorth - mSouth) + mPost;
+	this->resize(want_x,want_y);
 }
 
 void DEMGeo::resize_save(int w, int h, float fill_value)
@@ -394,28 +399,17 @@ void DEMGeo::resize_save(int w, int h, float fill_value)
 
 void	DEMGeo::subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const
 {
-	newDEM.resize(x2 - x1 + 1, y2 - y1 + 1);
+	newDEM.resize(x2 - x1 + mPost, y2 - y1 + mPost);
 	newDEM.mPost = mPost;
-	for (int x = x1; x <= x2; ++x)
-	for (int y = y1; y <= y2; ++y)
-		newDEM(x - x1, y - y1) = (*this)(x, y);
+	for (int x = 0; x < newDEM.mWidth; ++x)
+	for (int y = 0; y < newDEM.mHeight; ++y)
+		newDEM(x, y) = (*this)(x + x1, y + y1);
 
-	if(mPost)
-	{
-		// On post?  The coordinates of the pixels ARE the edges of the boundary.
-		newDEM.mSouth = y_to_lat(y1);
-		newDEM.mNorth = y_to_lat(y2);
-		newDEM.mWest = x_to_lon(x1);
-		newDEM.mEast = x_to_lon(x2);
-	} 
-	else 
-	{
-		// Area pixels?  The edge of the pixel is 1/2 pixel on either side.
-		newDEM.mSouth = y_to_lat_double((double) y1 - 0.5);
-		newDEM.mNorth = y_to_lat_double((double) y2 + 0.5);
-		newDEM.mWest = x_to_lon_double((double) x1 - 0.5);
-		newDEM.mEast = x_to_lon_double((double) x2 + 0.5);
-	}
+	// x2,y2 are _exclusive_ (past the edge) if we are area pixe, so SUBTRACT.
+	newDEM.mSouth = y_to_lat_double((double) y1 - pixel_offset());
+	newDEM.mNorth = y_to_lat_double((double) y2 - pixel_offset());
+	newDEM.mWest = x_to_lon_double((double) x1 - pixel_offset());
+	newDEM.mEast = x_to_lon_double((double) x2 - pixel_offset());
 }
 
 void	DEMGeo::swap(DEMGeo& rhs)
@@ -694,8 +688,8 @@ void	DEMGeo_ReduceMinMax(
 	outMax.mEast = inMax.mEast;
 	outMax.mWest = inMax.mWest;
 
-	outMin.resize((inMin.mWidth-1) / 2 + 1, (inMin.mHeight-1) / 2 + 1);
-	outMax.resize((inMax.mWidth-1) / 2 + 1, (inMax.mHeight-1) / 2 + 1);
+	outMin.resize((inMin.mWidth-inMin.mPost) / 2 + inMin.mPost, (inMin.mHeight-inMin.mPost) / 2 + inMin.mPost);
+	outMax.resize((inMax.mWidth-inMax.mPost) / 2 + inMax.mPost, (inMax.mHeight-inMax.mPost) / 2 + inMax.mPost);
 
 	int x, y;
 	float e1, e2, e3, e4;
@@ -737,8 +731,8 @@ void	DEMGeo_ReduceMinMaxN(
 	outMin.copy_geo_from(inDEM);
 	outMax.copy_geo_from(inDEM);
 
-	outMin.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
-	outMax.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
+	outMin.resize((inDEM.mWidth-inDEM.mPost) / N + inDEM.mPost, (inDEM.mHeight-1) / N + inDEM.mPost);
+	outMax.resize((inDEM.mWidth-inDEM.mPost) / N + inDEM.mPost, (inDEM.mHeight-1) / N + inDEM.mPost);
 
 	int x, y, dx, dy;
 	float e1, e2, e3;
