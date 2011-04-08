@@ -214,7 +214,7 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 
 	unsigned char * storage = (unsigned char *) malloc(totalSize);
 	unsigned char * base_ptr = storage;
-	
+
 	while(mip_count--)
 	{
 		for(int y = 0; y < img.height; ++y)
@@ -253,11 +253,11 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 					dstb[3]=srcb[3];
 			}
 		}
-		
+
 		base_ptr += size_for_image(img.width,img.height,bpp,1);
-		AdvanceMipmapStack(&img);		
+		AdvanceMipmapStack(&img);
 	}
-	
+
 	FILE * fi = fopen(outf,"wb");
 	if(fi)
 	{
@@ -336,7 +336,7 @@ int main(int argc, char * argv[])
 	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
-		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
 		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
@@ -347,7 +347,7 @@ int main(int argc, char * argv[])
 		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
 
 #if WANT_ATI
-		printf("CMD .png .atc \"%s\" ATC_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .atc \"%s\" ATC_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("DIV\n");
 		printf("RADIO ATC_MODE 1 --png2atc4 4-bit ATC compression\n");
 		printf("RADIO ATC_MODE 0 --png2atc_raw16 ATC uses 16-bit color\n");
@@ -497,7 +497,7 @@ int main(int argc, char * argv[])
 
 		return 1;
 	}
-#if PHONE	
+#if PHONE
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
 	{
@@ -545,7 +545,7 @@ int main(int argc, char * argv[])
 		int mc = 1;
 		if(want_mips)
 		mc = MakeMipmapStack(&info);
-		
+
 		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0, true, mc)!=0)
 		{
 			printf("Unable to write raw PVR file %s\n", argv[n+1]);
@@ -553,21 +553,35 @@ int main(int argc, char * argv[])
 		}
 		return 0;
 	}
-#endif	
+#endif
 	else if(strcmp(argv[1],"--png2dxt")==0 ||
 	   strcmp(argv[1],"--png2dxt1")==0 ||
 	   strcmp(argv[1],"--png2dxt3")==0 ||
 	   strcmp(argv[1],"--png2dxt5")==0)
 	{
-
 		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
+
 		int arg_base = has_mips ? 3 : 2;
+
+		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
+		arg_base +=1;
 
 		ImageInfo	info;
 		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
+		}
+
+		if (!HandleScale(info, scale_up, scale_down, false))
+		{
+			// Image does NOT meet our power of 2 needs.
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
 		}
 
 		char buf[1024];
@@ -660,13 +674,25 @@ int main(int argc, char * argv[])
 #if PHONE && WANT_ATI
 	else if(strcmp(argv[1],"--png2atc4")==0)
 	{
-		int n = 2;
+		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		int n = 3;
 
 		ImageInfo	info;
 		if(CreateBitmapFromPNG(argv[n], &info, true))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
+		}
+
+		if (!HandleScale(info, scale_up, scale_down, false))
+		{
+			// Image does NOT meet our power of 2 needs.
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
 		}
 
 		// We need to save our channel count because MakeMipmapStack is going to
@@ -748,13 +774,27 @@ int main(int argc, char * argv[])
 	}
 	else if(strcmp(argv[1],"--png2atc_raw16")==0)
 	{
-		int n = 2;
+		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		int n = 3;
+
 		ImageInfo	info;
 		if(CreateBitmapFromPNG(argv[n], &info, true))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
 		}
+
+		if (!HandleScale(info, scale_up, scale_down, false))
+		{
+			// Image does NOT meet our power of 2 needs.
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
+		}
+
 		const char * outf = argv[++n];
 		// TODO: mipmaps?
 		if (WriteToRaw(info, outf, true, false,1/*only one mipmap level*/)!=0)
