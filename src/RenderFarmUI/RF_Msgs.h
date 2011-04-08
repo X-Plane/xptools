@@ -63,9 +63,11 @@ enum {
 
 	viewCmd_DEMChoice = GUI_APP_MENUS,
 	viewCmd_ShowShading,
+	viewCmd_ShowGrids,
 	viewCmd_ShowTensor,
 	viewCmd_DEMDataChoice,
-
+	viewCmd_ShowExtent,
+	
 	viewCmd_RecalcDEM,
 	viewCmd_PrevDEM,
 	viewCmd_NextDEM,
@@ -78,7 +80,10 @@ enum {
 	viewCmd_MeshTerrains,
 
 	viewCmd_ZoomSel,
-
+	viewCmd_ZoomExt,	
+	viewCmd_ZoomProj,
+	viewCmd_ZoomLoad,
+	
 	viewCmd_DEMChoice_Start,
 	viewCmd_DEMChoice_Stop = viewCmd_DEMChoice_Start + num_dem_cmds,
 	

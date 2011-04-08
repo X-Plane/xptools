@@ -116,6 +116,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 {		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"MSL=%fm "		},
+{		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_ForestType,			"Forests"						,	dem_Enum,					false,  true,	"Forest=%s"		},
@@ -145,9 +146,11 @@ const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 
 GUI_MenuItem_t	kViewItems[] = {
 {	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
-{	"Show Shading on Raster Layer",			0,				0,										0,	viewCmd_ShowShading		},
-{	"Show Tensors",							0,				0,										0,	viewCmd_ShowTensor		},
+{	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
+{	"Show Grid lines on Raster Layer",		'G',			gui_ControlFlag,						0,	viewCmd_ShowGrids		},
+{	"Show Tensors",							'T',			gui_ControlFlag,						0,	viewCmd_ShowTensor		},
 {	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
+{	"Show Extent",							'E',			gui_ControlFlag,						0,	viewCmd_ShowExtent		},
 {	"-",									0,				0,										0,	0						},
 {	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
 {	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
@@ -160,7 +163,10 @@ GUI_MenuItem_t	kViewItems[] = {
 {	"Mesh (Hires)",							'5',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTrisHi		},
 {	"Mesh Terrains (Hires)",				'6',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_MeshTerrains	},
 {	"-",									0,				0,										0,	0						},
-{	"Move To Selection",					0,				0,										0,	viewCmd_ZoomSel			},
+{	"Zoom To Selection",					'/',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_ZoomSel			},
+{	"Zoom To Extent",						'/',			gui_ControlFlag + gui_ShiftFlag,		0,	viewCmd_ZoomExt			},
+{	"Zoom To Project",						'/',			gui_ControlFlag,						0,	viewCmd_ZoomProj		},
+{	"Zoom On Load",							'L',			gui_ControlFlag,						0,	viewCmd_ZoomLoad		},
 {	0,										0,				0,										0,	0						}};
 
 void	RF_MapView::MakeMenus(void)
@@ -184,19 +190,22 @@ void	RF_MapView::MakeMenus(void)
 	for(int n = 0; n < DEMChoiceCount; ++n)
 		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
-	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 3);
+	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 4);
 
 }
 
 static	int			sDEMType = 0;
 static	int			sShowMeshPoints = 1;
 static	int			sShowMeshLines  = 1;
+static	int			sShowExtent = 1;
+static	int			sZoomLoad = 1;
 
 int			sShowMap = 1;
 int			sShowMeshTrisHi = 1;
 int			sShowMeshAlphas = 1;
 int			sShowAirports =1;
 int			sShowShading = 1;
+int			sShowGrids = 0;
 int			sShowTensors = 1;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
@@ -218,9 +227,14 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_PrevDEM:
 	case viewCmd_NextDEM:
 	case viewCmd_ZoomSel:										return 1;
+	case viewCmd_ZoomExt:										return 1;
+	case viewCmd_ZoomProj:										return 1;
+	case viewCmd_ZoomLoad:		ioCheck = sZoomLoad;			return 1;
+	case viewCmd_ShowExtent:	ioCheck = sShowExtent;			return 1;
 	case viewCmd_VecMap:		ioCheck = sShowMap;				return 1;
 	case viewCmd_Airports:		ioCheck = sShowAirports;		return 1;
 	case viewCmd_ShowShading:	ioCheck = sShowShading;			return 1;
+	case viewCmd_ShowGrids:		ioCheck = sShowGrids;			return 1;
 	case viewCmd_ShowTensor:	ioCheck = sShowTensors;			return 1;
 	case viewCmd_MeshPoints:	ioCheck = sShowMeshPoints;		return 1;
 	case viewCmd_MeshLines:		ioCheck = sShowMeshLines;		return 1;
@@ -282,6 +296,7 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_VecMap:		sShowMap = !sShowMap;				return 1;
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		return 1;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		return 1;
+	case viewCmd_ShowGrids:		sShowGrids = !sShowGrids;			return 1;
 	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		return 1;
 	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	return 1;
 	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	return 1;
@@ -289,37 +304,47 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_MeshTrisHi:	sShowMeshTrisHi = !sShowMeshTrisHi;	return 1;
 	case viewCmd_MeshTerrains:	sShowMeshAlphas = !sShowMeshAlphas;	return 1;
 //	case viewCmd_MeshBorders:	sShowMeshBorders = !sShowMeshBorders;	return 1;
+	case viewCmd_ShowExtent:	sShowExtent = !sShowExtent;			return 1;
+	case viewCmd_ZoomLoad:		sZoomLoad = !sZoomLoad;				return 1;
 	case viewCmd_ZoomSel:
+	case viewCmd_ZoomExt:
+	case viewCmd_ZoomProj:
 		{
 			Bbox2	bounds;
-			bool	has = false;
-			for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
-			if (!(*f)->is_unbounded())
+			
+			if(command == viewCmd_ZoomSel)
 			{
-				if (has)	bounds += cgal2ben((*f)->outer_ccb()->target()->point());
-				else		bounds  = cgal2ben((*f)->outer_ccb()->target()->point());
-				Pmwx::Ccb_halfedge_circulator iter, stop;
-				iter = stop = (*f)->outer_ccb();
-				do {
-					bounds += cgal2ben(iter->target()->point());
-					++iter;
-				} while (iter != stop);
-				has = true;
+				for (set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+				if (!(*f)->is_unbounded())
+				{
+					bounds += cgal2ben((*f)->outer_ccb()->target()->point());
+					Pmwx::Ccb_halfedge_circulator iter, stop;
+					iter = stop = (*f)->outer_ccb();
+					do {
+						bounds += cgal2ben(iter->target()->point());
+						++iter;
+					} while (iter != stop);
+				}
+				for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+				{
+					bounds += cgal2ben((*e)->target()->point());
+					bounds += cgal2ben((*e)->source()->point());
+				}
+				for (set<Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
+				{
+					bounds += cgal2ben((*v)->point());
+				}
 			}
-			for (set<Halfedge_handle>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+			if(command == viewCmd_ZoomExt)
 			{
-				if (has)	bounds += cgal2ben((*e)->target()->point());
-				else		bounds  = cgal2ben((*e)->target()->point());
-				bounds += cgal2ben((*e)->source()->point());
-				has = true;
+				bounds = Bbox2(gMapWest,gMapSouth,gMapEast,gMapNorth);
 			}
-			for (set<Vertex_handle>::iterator v = gVertexSelection.begin(); v != gVertexSelection.end(); ++v)
+			if(command == viewCmd_ZoomProj)
 			{
-				if (has)	bounds += cgal2ben((*v)->point());
-				else		bounds  = cgal2ben((*v)->point());
-				has = true;
+				for(DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
+					bounds += Bbox2(i->second.mWest,i->second.mSouth,i->second.mEast,i->second.mNorth);
 			}
-			if (has)
+			if (!bounds.is_null())
 			{
 				mZoomer->ScrollReveal(bounds.p1.x(), bounds.p1.y(), bounds.p2.x(), bounds.p2.y());
 			}
@@ -852,6 +877,41 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		glEnd();
 		glLineWidth(1);
 	}
+	
+	if(sShowGrids)
+	{
+		int my_dem = kDEMs[sDEMType].dem;
+		if(gDem.count(my_dem))
+		{
+			DEMGeo& d(gDem[my_dem]);
+			glColor4f(1,1,1,0.2);
+			glBegin(GL_LINES);
+			for(int x = 0; x <= (d.mWidth - d.mPost); ++x)
+			{
+				double ew = d.x_to_lon_double((double) x - d.pixel_offset());
+				glVertex2f(ew,d.mSouth);
+				glVertex2f(ew,d.mNorth);
+			}
+			for(int y = 0; y <= (d.mHeight - d.mPost); ++y)			
+			{
+				double ns = d.y_to_lat_double((double) y - d.pixel_offset());
+				glVertex2f(d.mEast,ns);
+				glVertex2f(d.mWest,ns);
+			}
+			glEnd();
+		}
+	}
+	
+	if (sShowExtent)
+	{
+		glColor3f(1,1,0);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(gMapWest,gMapSouth);
+		glVertex2f(gMapEast,gMapSouth);
+		glVertex2f(gMapEast,gMapNorth);
+		glVertex2f(gMapWest,gMapNorth);
+		glEnd();
+	}
 
 	/***************************************************************************************************************************************
 	 * MESH AS LINES AND TERRAIN (DISPLAY LISTS - EASY)
@@ -1314,7 +1374,8 @@ void	RF_MapView::HandleNotification(int catagory, int message, void * param)
 					mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * PI / 180.0));
 					full = Bbox2(gDem[e].mWest, gDem[e].mSouth, gDem[e].mEast, gDem[e].mNorth);
 				}
-				mZoomer->ZoomShowAll();
+				if(sZoomLoad)
+					mZoomer->ZoomShowAll();
 
 				for (int y = 0; y < MESH_BUCKET_SIZE; ++y)
 				for (int x = 0; x < MESH_BUCKET_SIZE; ++x)
@@ -1400,16 +1461,29 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 
 	if (DEMToBitmap(*master, image, mode) == 0)
 	{
-		mDEMBounds[3] = master->mNorth;
-		mDEMBounds[1] = master->mSouth;
-		mDEMBounds[0] = master->mWest;
-		mDEMBounds[2] = master->mEast;
+		mDEMBounds[0] = master->x_to_lon_double(-0.5);
+		mDEMBounds[1] = master->y_to_lat_double(-0.5);
+		mDEMBounds[2] = master->x_to_lon_double((double) master->mWidth - 0.5);
+		mDEMBounds[3] = master->y_to_lat_double((double) master->mHeight - 0.5);
 
 		if (LoadTextureFromImage(image, mTexID, tex_Mipmap + (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
 		{
 			mHasTex = true;
 		}
 		DestroyBitmap(&image);
+		
+		if(mode == dem_Elevation)
+		{
+			if (DEMToBitmap(*master, image, dem_Normals) == 0)
+			{
+				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
+				{
+					mHasRelief = true;
+				}
+				DestroyBitmap(&image);			
+				do_relief = false;
+			}
+		}
 	}
 
 	if (do_relief)
@@ -1432,11 +1506,6 @@ bool	RF_MapView::RecalcDEM(bool do_relief)
 
 			if (DEMToBitmap(*master, image, dem_Normals) == 0)
 			{
-				mDEMBounds[3] = master->mNorth;
-				mDEMBounds[1] = master->mSouth;
-				mDEMBounds[0] = master->mWest;
-				mDEMBounds[2] = master->mEast;
-
 				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
 				{
 					mHasRelief = true;
