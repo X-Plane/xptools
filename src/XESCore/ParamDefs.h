@@ -36,7 +36,8 @@
 
 	/* These are continuous data DEMs. */
 	TOKEN(dem_Elevation)			//	Height above sea level, meters from a DEM (raw elevation)
-	TOKEN(dem_Bathymetry)			// Height of water bottom, raw.
+	TOKEN(dem_Bathymetry)			//	Height of water bottom, raw.
+	TOKEN(dem_ElevationOverlay)		//	For merge operations...
 
 	TOKEN(dem_Temperature)			//	Average Temperature Data
 	TOKEN(dem_TemperatureRange)		//	Average Temperature Range over a year Data
