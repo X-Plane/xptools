@@ -117,6 +117,7 @@ int		MFS_done(MFScanner * scanner);
 void	MFS_string_eol(MFScanner * scanner, string * out_string);
 void	MFS_string(MFScanner * scanner, string * out_string);
 int		MFS_string_match(MFScanner * s, const char * input, int eol_ok);
+int		MFS_string_match_no_case(MFScanner * s, const char * input, int eol_ok);
 int		MFS_int(MFScanner * scanner);
 double	MFS_double(MFScanner * scanner);
 int		MFS_xplane_header(MFScanner * scanner, int * versions, const char * identifier, string * copyright);
