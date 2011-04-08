@@ -30,6 +30,7 @@
 #include "MeshAlgs.h"
 #include "PolyRasterUtils.h"
 #include "WED_Document.h"
+#include "XESConstants.h"
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "DEMAlgs.h"
@@ -1824,3 +1825,117 @@ void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles)
 	}
 }
 
+#pragma mark -
+
+void DifferenceDEM(const DEMGeo& bottom, const DEMGeo& top, DEMGeo& diff)
+{
+	DebugAssert(bottom.mWidth == top.mWidth);
+	DebugAssert(bottom.mHeight == top.mHeight);
+	diff.resize(bottom.mWidth,top.mWidth);
+	diff.copy_geo_from(bottom);
+	diff.mPost = bottom.mPost;
+	
+	for(int y = 0; y < bottom.mHeight; ++y)
+	for(int x = 0; x < bottom.mWidth; ++x)
+	{
+		float eb = bottom.get(x,y);
+		float et = top.get(x,y);
+		if (eb == DEM_NO_DATA || et == DEM_NO_DATA)
+			diff(x,y) = 0;
+		else
+			diff(x,y) = et - eb;
+	}
+}
+
+
+static void make_gaussian_kernel(float k[], int width, double sigma)
+{
+	for(int w = -width; w <= width; ++w)
+	{
+		double x = w;
+		double f = (1.0 / sqrt(2.0 * PI * sigma * sigma)) * exp(-(x * x) / (2.0 * sigma * sigma));
+		*k++ = f;
+	}
+}
+
+static void normalize_kernel(float k[], int w)
+{
+	int s = w*2+1;
+	float sum = 0.0f;
+	for(int i = 0; i < s; ++i)
+		sum += k[i];
+	if (sum != 0.0f)
+	{
+		sum = 1.0f / sum;
+		for (int i = 0; i < s; ++i)
+			k[i] *= sum;
+	}
+}
+
+static float sample_kernel_h(const DEMGeo& src, int x, int y, float k[], int width)
+{
+	float s = 0.0f;
+	float wt = 0.0f;
+	for(int w = -width; w <= width; ++w)
+	{
+		float e = src.get(x+w,y);
+		if(e != DEM_NO_DATA)
+		{
+			wt += *k;
+			s += e * *k;
+		}
+		++k;
+	}
+	if (wt == 0.0f) wt = 1.0;
+	return s / wt;
+}
+
+static float sample_kernel_v(const DEMGeo& src, int x, int y, float k[], int width)
+{
+	float s = 0.0f;
+	float wt = 0.0f;
+	for(int w = -width; w <= width; ++w)
+	{
+		float e = src.get(x,y+w);
+		if(e != DEM_NO_DATA)
+		{
+			wt += *k;
+			s += e * *k;
+		}
+		++k;
+	}
+	if (wt == 0.0f) wt = 1.0;
+	return s / wt;
+}
+
+static void copy_kernel_h(const DEMGeo& src, DEMGeo& dst, float k[], int width)
+{
+	for(int y = 0; y < src.mHeight; ++y)
+	for(int x = 0; x < src.mWidth; ++x)
+		dst(x,y) = sample_kernel_h(src,x,y,k,width);
+}
+
+static void copy_kernel_v(const DEMGeo& src, DEMGeo& dst, float k[], int width)
+{
+	for(int y = 0; y < src.mHeight; ++y)
+	for(int x = 0; x < src.mWidth; ++x)
+		dst(x,y) = sample_kernel_v(src,x,y,k,width);
+}
+
+void GaussianBlurDEM(DEMGeo& dem, float sigma)
+{
+	// Technically the gaussian filter NEVER drops to zero...in practice, it's too expensive to run a filter the size of the DEM.
+	// (Note this would _not_ be true if we used an FFT, but..whatever.)  So...pick a filter size that captures 3 sigmas...error
+	// is less than 0.3%.
+	
+	#define SIGMAS_NEEDED	3.0f
+	
+	int width = ceilf(sigma * SIGMAS_NEEDED);
+	
+	DEMGeo	temp(dem.mWidth, dem.mHeight);
+	vector<float> k(width*2+1);
+	make_gaussian_kernel(&*k.begin(),width,sigma);
+	normalize_kernel(&*k.begin(),width);
+	copy_kernel_v(dem,temp,&*k.begin(),width);
+	copy_kernel_h(temp,dem,&*k.begin(),width);
+}

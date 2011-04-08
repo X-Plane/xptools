@@ -33,6 +33,22 @@ enum {
 	dem_want_File	// Use whatever the file has.
 };
 
+struct	DEMSpec {
+	// ASSUMED: row major, north-west corner is data start.  Nearly all public DEM formats except for LR's are like htis.
+	double			mWest;					// Outer bbox of DEM
+	double			mSouth;
+	double			mEast;
+	double			mNorth;					
+	int				mPost;					// Post vs. area pixels
+	int				mWidth;					// Image dimensions
+	int				mHeight;
+	int				mBits;					// Bits per post (8, 16 or 32)
+	bool			mBigEndian;				// True if big-endian, false for little endian
+	bool			mFloat;					// True if floating point, false for integral types
+	float			mNoData;				// No-data value, usually -9999 or -32768
+	int				mHeaderBytes;			// Pre-data header size - usually 0, except for oz floats
+};
+
 /*****************************************************************************
  * BASIC DEM IO FOR XES FILE FORMAT
  *****************************************************************************/
@@ -49,6 +65,8 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap);
 /*****************************************************************************
  * DEM IMPORTERS
  *****************************************************************************/
+
+bool	ReadRawWithHeader(DEMGeo& inMap, const char * inFilename, const DEMSpec& spec);
 
 // SRTM HGT Files
 //	16-bit signed meter heights in geo projection with -32768 = NO_DATA.
@@ -92,6 +110,8 @@ bool	ExtractRawIMGFile(DEMGeo& inMap, const char * inFileName, int inWest, int i
 bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);			// 5 byte header, big endian float, column major, SW corner origin.  Really!
 bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName);
 bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);			// No header, little endian signed short, SW corner origin.
+
+void	ReadHDR(const string& in_real_file, DEMSpec& io_header, bool force_area);
 
 /*****************************************************************************
  * DEM TRANSLATION SYSTEM

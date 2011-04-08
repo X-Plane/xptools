@@ -54,7 +54,13 @@
 " i Ignore DEM file if it does not exist.\n"\
 " c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
 " a GeoTiff only - allow DEM to be area data if file contains area data.\n"\
-"Format can be one of: tiff, bil, hgt, ascii\n"\
+" a bil/hgt only - force area-style DEM.  Otherwise area/point comes from the particular .hdr file.\n"\
+"Format can be one of: \n"\
+"tiff\n"\
+"hgt\n"\
+"ascii\n"\
+"bil\n"\
+"flt\n"\
 "Note: for bil import, the current extent is used to position the DEM.\n"\
 "File is a unix file name.\n"\
 "Layer is the string name of the layer to import.  Usuallye one of: dem_Elevation, dem_LandUse\n"\
@@ -76,7 +82,7 @@ static int DoRasterImport(const vector<const char *>& args)
 		mode = dem_want_File;
 
 	DEMGeo * kill = NULL, * dem = NULL;
-	if(strstr(args[0],"o") || strstr(args[0],"e"))
+	if((strstr(args[0],"o") || strstr(args[0],"e")) && gDem.count(layer))
 	{
 		kill = dem = new DEMGeo;
 	}
@@ -103,6 +109,28 @@ static int DoRasterImport(const vector<const char *>& args)
 			return 1;
 		}
 	}
+	else if(strcmp(args[1],"flt") == 0)
+	{
+		DEMSpec spec;
+		spec.mWest = gMapWest;
+		spec.mEast = gMapEast;
+		spec.mNorth = gMapNorth;
+		spec.mSouth = gMapSouth;
+		spec.mPost = 1;
+		spec.mBigEndian = true;
+		spec.mBits = 32;
+		spec.mNoData = DEM_NO_DATA;	// Use OUR no data flag...this means that no data is re-flagged if the header doesn't have a void flag.  User can fix this later with the n flag.
+		spec.mFloat = true;
+		spec.mHeaderBytes = 0;
+		
+		ReadHDR(args[2], spec, strstr(args[0],"a"));
+		if(!ReadRawWithHeader(*dem, args[2], spec))
+		{
+			if(strstr(args[0],"i")) return 0;
+			fprintf(stderr,"Unable to read flt file %s\n", args[2]);
+			return 1;			
+		}
+	}
 	else if(strcmp(args[1],"hgt") == 0)
 	{
 		if(!ReadRawHGT(*dem, args[2])) 
@@ -114,12 +142,25 @@ static int DoRasterImport(const vector<const char *>& args)
 	}
 	else if(strcmp(args[1],"bil") == 0)
 	{
-		int bounds[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
-		if(!ReadRawBIL(*dem,args[2], bounds))
+		DEMSpec spec;
+		spec.mWest = gMapWest;
+		spec.mEast = gMapEast;
+		spec.mNorth = gMapNorth;
+		spec.mSouth = gMapSouth;
+		spec.mPost = 1;
+		spec.mBigEndian = true;
+		spec.mBits = 16;
+		spec.mNoData = DEM_NO_DATA; // Use OUR no data flag...this means that no data is re-flagged if the header doesn't have a void flag.  User can fix this later with the n flag.
+		spec.mFloat = false;
+		spec.mHeaderBytes = 0;
+		
+		ReadHDR(args[2], spec, strstr(args[0],"a"));
+		
+		if(!ReadRawWithHeader(*dem, args[2], spec))
 		{
 			if(strstr(args[0],"i")) return 0;
-			fprintf(stderr,"Unable to read BIL file %s\n", args[2]);
-			return 1;
+			fprintf(stderr,"Unable to read bil file %s\n", args[2]);
+			return 1;			
 		}
 	}
 	else
@@ -257,7 +298,7 @@ static int DoRasterImport(const vector<const char *>& args)
 					float bot_val = tmp.get(xp,yp);
 					if(top_val != bot_val && bot_val != DEM_NO_DATA)
 					{
-						fprintf(stderr,"Error: DEMs do not match at %d,%d\n", x,y);
+						fprintf(stderr,"Error: DEMs do not match at %d,%d: %f over %f\n", x,y, top_val, bot_val);
 						return 1;
 					}					
 				}
@@ -296,6 +337,7 @@ static int DoRasterImport(const vector<const char *>& args)
 " x - no special flags.\n"\
 " c - export only a cropping within the extent area.\n"\
 " r - resample - res in samples per DEM on end.  Outputs in post format.\n"\
+" f - generate filename based on location of export.  Pass a path with trailing /.\n"\
 "File Format must be: tiff.\n"
 static int DoRasterExport(const vector<const char *>& args)
 {
@@ -342,15 +384,36 @@ static int DoRasterExport(const vector<const char *>& args)
 		ResampleDEM(*src, chopped);
 		src = &chopped;
 	}
+	
+	string fname(args[2]);
+	string suffix;
+	if(strcmp(args[1],"tiff") == 0)	suffix = "tif";
+	if(strstr(args[0],"f"))
+	{
+		if(suffix.empty())
+		{
+			fprintf(stderr,"Cannot use 'f' option - the file type %s is unknown.\n", args[1]);
+			return 1;
+		}
+		int s = round(src->mSouth);
+		int w = round(src->mWest);
+		char path[50];
+		sprintf(path,"%+03d%+04d",latlon_bucket(s),latlon_bucket(w));
+		fname += path;
+		FILE_make_dir(fname.c_str());
+		sprintf(path,"/%+03d%+04d.%s",s,w,suffix.c_str());
+		fname += path;
+		if(gVerbose)	printf("Will save %s.\n", fname.c_str());
+	}
 
 	if(strcmp(args[1],"tiff") == 0)
 	{	
-		if (!WriteGeoTiff(*src, args[2]))
+		if (!WriteGeoTiff(*src, fname.c_str()))
 		{
-			fprintf(stderr,"Error writing file: %s\n", args[2]);
+			fprintf(stderr,"Error writing file: %s\n", fname.c_str());
 			return 1;
 		} else
-			if (gVerbose)	printf("Wrote %s\n",args[2]);
+			if (gVerbose)	printf("Wrote %s\n",fname.c_str());
 	}
 	else
 	{
@@ -419,6 +482,35 @@ int DoRasterResample(const vector<const char *>& args)
 	return 0;
 }
 
+
+int DoRasterAdjust(const vector<const char *>& args)
+{
+	int layer1 = LookupToken(args[0]);
+	int layer2 = LookupToken(args[1]);
+	int layer3 = LookupToken(args[2]);
+	if (layer1 == -1 || layer2 == -1 || layer3 == -1) return 1;
+	
+	if (gDem.count(layer1) == 0) return 1;
+	if (gDem.count(layer2) == 0) return 1;
+
+	DifferenceDEM(gDem[layer1],gDem[layer2],gDem[layer3]);
+	
+	if(atof(args[3]) > 0.0)
+		GaussianBlurDEM(gDem[layer3], atof(args[3]));
+	
+	gDem[layer1] += gDem[layer3];
+	
+	DifferenceDEM(gDem[layer1],gDem[layer2],gDem[layer3]);
+	
+	#if OPENGL_MAP
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
+	#endif
+	
+	return 0;
+
+}
+
+
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
 {
@@ -428,6 +520,11 @@ static int DoAnyImport(const vector<const char *>& args,
 		fprintf(stderr, "Unable to load file %s\n", args[0]);
 	else
 		printf("Loaded file %s (%dx%d).\n", args[0], dem.mWidth, dem.mHeight);
+
+	#if OPENGL_MAP
+	if(ok)
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
+	#endif
 	return ok ? 0 : 1;
 }
 
@@ -688,6 +785,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_export", 4, 5, DoRasterExport,		"Export one raster DEM file.", DoRasterExport_HELP }, 
 { "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
 { "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
+{ "-raster_adjust", 4, 4, DoRasterAdjust,		"Raster Blur", "" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

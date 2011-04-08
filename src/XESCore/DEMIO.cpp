@@ -106,6 +106,70 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap)
 #pragma mark -
 
 
+bool	ReadRawWithHeader(DEMGeo& inMap, const char * inFilename, const DEMSpec& spec)
+{
+	MFMemFile * fi = MemFile_Open(inFilename);
+	if(!fi) return false;
+	MemFileReader reader(MemFile_GetBegin(fi) + spec.mHeaderBytes,MemFile_GetEnd(fi),spec.mBigEndian ? platform_BigEndian : platform_LittleEndian);
+	inMap.mPost = spec.mPost;
+	inMap.mEast = spec.mEast;
+	inMap.mWest = spec.mWest;
+	inMap.mNorth = spec.mNorth;
+	inMap.mSouth = spec.mSouth;
+	inMap.resize(spec.mWidth, spec.mHeight);
+
+	if((spec.mWidth * spec.mHeight * (spec.mBits / 8) - spec.mHeaderBytes) != (MemFile_GetEnd(fi) - MemFile_GetBegin(fi)))
+		goto fail;
+
+	for(int y = inMap.mHeight-1; y >= 0; --y)
+	for(int x = 0; x < inMap.mWidth; ++x)
+	{
+		float vp;
+		short s;
+		int i;
+		float f;
+		double d;
+		if(spec.mFloat)
+		{
+			switch(spec.mBits) {
+			case 32:
+				reader.ReadFloat(f);
+				vp = f;
+				break;
+			case 64:
+				reader.ReadDouble(d);
+				vp = d;
+				break;
+			default:
+				goto fail;
+			}
+		}
+		else
+		{
+			switch(spec.mBits) {
+			case 16:
+				reader.ReadShort(s);
+				vp = s;
+				break;
+			case 32:
+				reader.ReadInt(i);
+				vp = i;
+				break;
+			default:
+				goto fail;
+			}
+		}
+		if(vp == spec.mNoData) vp = DEM_NO_DATA;
+		inMap(x,y) = vp;
+	}
+	MemFile_Close(fi);
+	return true;
+fail:
+	MemFile_Close(fi);
+	return false;
+}
+
+
 // RAW HEIGHT FILE: N34W072.HGT
 // These files contian big-endian shorts with -32768 as DEM_NO_DATA
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
@@ -278,14 +342,18 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_BigEndian);
 
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
-	long words = len / sizeof(float);
+	int header_size = (len % 2) ? 5 : 0;
+	long words = (len-header_size) / sizeof(float);
 	long dim = sqrt((double)words);
 
 	inMap.resize(dim, dim);
 	int dummy1;
 	char dummy2;
-	reader.ReadInt(dummy1);
-	reader.ReadBulk(&dummy2,1,false);
+	if(header_size)
+	{
+		reader.ReadInt(dummy1);
+		reader.ReadBulk(&dummy2,1,false);
+	}
 	{
 		if (inMap.mData)
 		{
@@ -294,7 +362,10 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 			{
 				float	v;
 				reader.ReadFloat(v);
-				inMap.mData[x + y * dim] = v;
+				if(header_size)
+					inMap.mData[x + y * dim] = v;
+				else
+					inMap.mData[y + (dim-x-1) *dim] = v;
 			}
 		}
 	}
@@ -1191,6 +1262,11 @@ bool	ReadARCASCII(DEMGeo& inMap, const char * inFileName)
 	
 	inMap.resize(ncols,nrows);
 	
+	// Note to futur self:
+	// http://resources.esri.com/help/9.3/arcgisengine/java/GP_ToolRef/spatial_analyst_tools/esri_ascii_raster_format.htm
+	// for point-centric data we'd have XLLCENTER and YLLCENTER.  The use of point-centric vs area-centric rounding
+	// could be solved with this...
+	
 	if(!MFS_string_match(&s,"xllcorner",false))	goto bail;
 	xllcorner = MFS_double(&s);
 	MFS_string_eol(&s, NULL);
@@ -1236,6 +1312,133 @@ bool	ReadARCASCII(DEMGeo& inMap, const char * inFileName)
 bail:
 	MemFile_Close(f);
 	return false;
+}
+
+void	ReadHDR(const string& in_real_file, DEMSpec& io_header, bool force_area)
+{
+	string fname(in_real_file);
+	string::size_type p = fname.rfind('.');
+	if(p != fname.npos) fname.erase(p);
+	fname += ".hdr";
+
+	MFMemFile * f = MemFile_Open(fname.c_str());
+	if(f == NULL)
+		return;
+
+	MFScanner	s;
+	MFS_init(&s,f);
+
+	double cell_size_x = 0.0;
+	double cell_size_y = 0.0;
+	double bounds[4];
+	int has_ll = 0;
+	int has_ul = 0;
+	
+
+	while(!MFS_done(&s))
+	{
+		if(MFS_string_match_no_case(&s,"ncols",false))
+			io_header.mWidth = MFS_int(&s);
+		else if(MFS_string_match_no_case(&s,"nrows",false))
+			io_header.mHeight = MFS_int(&s);
+		else if(MFS_string_match_no_case(&s,"xllcorner",false))
+		{
+			bounds[0] = MFS_double(&s);
+			io_header.mPost = false;
+			++has_ll;
+		}
+		else if(MFS_string_match_no_case(&s,"yllcorner",false))
+		{
+			bounds[1] = MFS_double(&s);
+			io_header.mPost = false;
+			++has_ll;
+		}
+		else if(MFS_string_match_no_case(&s,"xllcenter",false))
+		{
+			bounds[0] = MFS_double(&s);
+			io_header.mPost = true;
+			++has_ll;
+		}
+		else if(MFS_string_match_no_case(&s,"yllcenter",false))
+		{
+			bounds[1] = MFS_double(&s);
+			io_header.mPost = true;
+			++has_ll;
+		}
+		else if(MFS_string_match_no_case(&s,"cellsize",false))
+		{
+			cell_size_x = cell_size_y = MFS_double(&s);
+		}
+		else if(MFS_string_match_no_case(&s,"xdim",false))
+		{
+			cell_size_x = MFS_double(&s);
+		}
+		else if(MFS_string_match_no_case(&s,"ydim",false))
+		{
+			cell_size_y = MFS_double(&s);
+		}
+		else if(MFS_string_match_no_case(&s,"ulxmap",false))
+		{
+			bounds[0] = MFS_double(&s);
+			io_header.mPost = 1;
+			++has_ul;
+		}
+		else if(MFS_string_match_no_case(&s,"ulymap",false))
+		{
+			bounds[3] = MFS_double(&s);
+			io_header.mPost = 1;
+			++has_ul;
+		}
+		else if(MFS_string_match_no_case(&s,"NODATA_value",false))
+		{
+			io_header.mNoData = MFS_double(&s);
+		}
+		else if(MFS_string_match_no_case(&s,"byteorder",false))
+		{
+			string token;
+			MFS_string(&s, &token);
+			char t = token.empty() ? 0 : token[0];
+			switch(t) {
+			case 'm':
+			case 'M':
+				io_header.mBigEndian = true;
+				break;
+			case 'l':
+			case 'L':
+			case 'i':
+			case 'I':
+				io_header.mBigEndian = false;
+				break;
+			}
+		}
+	
+		MFS_string_eol(&s, NULL);
+	}
+	MemFile_Close(f);
+	
+	if(force_area && io_header.mPost)
+	{
+		io_header.mPost = 0;
+		bounds[0] -= (cell_size_x * 0.5);
+		bounds[1] -= (cell_size_y * 0.5);
+		bounds[2] += (cell_size_x * 0.5);
+		bounds[3] += (cell_size_y * 0.5);
+	}
+
+	if(has_ll)
+	{		
+		io_header.mWest = bounds[0];
+		io_header.mSouth = bounds[1];
+		io_header.mEast = bounds[0] + (io_header.mWidth - io_header.mPost) * cell_size_x;
+		io_header.mNorth = bounds[1] + (io_header.mHeight - io_header.mPost) * cell_size_y;
+	}
+	if(has_ul)
+	{
+		io_header.mWest = bounds[0];
+		io_header.mSouth = bounds[3] - (io_header.mHeight - io_header.mPost) * cell_size_y;
+		io_header.mEast = bounds[0] + (io_header.mWidth - io_header.mPost) * cell_size_x;
+		io_header.mNorth = bounds[3];
+	}
 }
 
 #pragma mark -

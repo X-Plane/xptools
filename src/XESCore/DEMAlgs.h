@@ -80,4 +80,8 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, AptVector& ioApts, AptInde
 
 void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles);
 
+
+void	DifferenceDEM(const DEMGeo& bottom, const DEMGeo& top, DEMGeo& diff);
+void	GaussianBlurDEM(DEMGeo& dem, float sigma);
+
 #endif
