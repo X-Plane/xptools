@@ -46,6 +46,7 @@
 #include "DEMAlgs.h"
 #include "Zoning.h"
 #include "NetPlacement.h"
+#include "NetAlgs.h"
 #include "ObjPlacement.h"
 #include "ObjTables.h"
 #include "ShapeIO.h"

@@ -115,7 +115,18 @@ int	main(int argc, char * argv[])
 
 		if(strstr(argv[3],".bil"))
 		{
-			if (!ReadRawBIL(dem_elev, argv[3]))
+			DEMSpec	spec;
+
+			spec.mPost = 1;
+			spec.mBigEndian = true;
+			spec.mBits = 16;
+			spec.mNoData = DEM_NO_DATA; // Use OUR no data flag...this means that no data is re-flagged if the header doesn't have a void flag.  User can fix this later with the n flag.
+			spec.mFloat = false;
+			spec.mHeaderBytes = 0;
+		
+			ReadHDR(argv[3], spec, false);
+		
+			if(!ReadRawWithHeader(dem_elev, argv[3], spec))
 			{
 				fprintf(stderr,"Could not read bil file: %s\n", argv[3]);
 				exit(1);

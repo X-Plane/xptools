@@ -1,6 +1,8 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	4/8/11	2.1d1
+		.bil files now require the .hdr file to be in the same folder.
 	9/23/10 2.0 r2
 		Fixed export with wet-dry masks
 		GEOTIFF command makes DDS using DXT5.
