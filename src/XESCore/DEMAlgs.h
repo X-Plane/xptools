@@ -23,6 +23,8 @@
 #ifndef DEMALGS_H
 #define DEMALGS_H
 
+// Now you give dem algs to hypno-nerd...
+
 #include "MapDefs.h"
 
 struct	DEMGeo;

@@ -40,7 +40,7 @@
 
 
 #define DoRasterImport_HELP \
-"Usage: raster_import <flags> <format> <file> <layer> [<null>] [<fill>] [<translation>]\n"\
+"USAGE: raster_import <flags> <format> <file> <layer> [<null>] [<fill>] [<translation>]\n"\
 "Imports a single raster file.  The file must be in geographic projection\n"\
 "and have an axis-aligned bounding box.\n"\
 "Flagged special ops (done in this order):\n"\
@@ -332,7 +332,8 @@ static int DoRasterImport(const vector<const char *>& args)
 }
 
 #define DoRasterExport_HELP \
-"Usage: raster_export <flags> <format> <file> <layer> [<res>]\n"\
+"USAGE: raster_export <flags> <format> <file> <layer> [<res>]\n"\
+"This exports a raster layer to a raster file.\n"\
 "Flags:\n"\
 " x - no special flags.\n"\
 " c - export only a cropping within the extent area.\n"\
@@ -424,7 +425,11 @@ static int DoRasterExport(const vector<const char *>& args)
 }
 
 #define DoRasterInit_HELP \
-"USAGE: -raster_init x_res y_res post layer [init value]\n"
+"USAGE: -raster_init x_res y_res post layer [init value]\n"\
+"This initializes a raster layer to a given resolution.  The bounds\n"\
+"of the raster layer is set by the global extent.  If post is 1 then\n"\
+"the size of the raster layer will be one pixel larger than the resolutions\n"\
+"provided.\n"
 int DoRasterInit(const vector<const char *>& args)
 {
 	int layer = LookupToken(args[3]);
@@ -447,7 +452,11 @@ int DoRasterInit(const vector<const char *>& args)
 }
 
 #define DoRasterResample_HELP \
-"USAGE: -raster_resample x_res y_res post layer\n"
+"USAGE: -raster_resample x_res y_res post layer\n"\
+"This resamples a raster layer.  The resampling occurs over\n"\
+"the current global extent (which becomes the new DEM bounds.\n"\
+"DEM_NO_DATA is set for samples inside the resampling region\n"\
+"but outside the old layer data.\n"
 int DoRasterResample(const vector<const char *>& args)
 {
 	int layer = LookupToken(args[3]);
@@ -482,7 +491,14 @@ int DoRasterResample(const vector<const char *>& args)
 	return 0;
 }
 
-
+#define DoRasterAdjust_HELP \
+"USAGE:  -raster_adjust base_layer overlay_layer temp_layer radius\n"\
+"This adjusts the heights of the base layer to more closely match the\n"\
+"overlay layer (for areas where the overlay layer is non-void).  The\n"\
+"radius parameter is the radius (in pixels) for a gaussian blur that is\n"\
+"used to ensure that adjustments are low frequency - thus a larger\n"\
+"radius will mean a lower frequency adjustment to the base layer.\n"\
+"The temporary layer will end up containing the adjustment mask.\n"
 int DoRasterAdjust(const vector<const char *>& args)
 {
 	int layer1 = LookupToken(args[0]);
@@ -500,7 +516,7 @@ int DoRasterAdjust(const vector<const char *>& args)
 	
 	gDem[layer1] += gDem[layer3];
 	
-	DifferenceDEM(gDem[layer1],gDem[layer2],gDem[layer3]);
+	//DifferenceDEM(gDem[layer1],gDem[layer2],gDem[layer3]);
 	
 	#if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_RasterChange, NULL);
@@ -508,6 +524,69 @@ int DoRasterAdjust(const vector<const char *>& args)
 	
 	return 0;
 
+}
+
+#define DoRasterMerge_HELP \
+"USAGE: -raster_merge base overlay temp radius\n"\
+"This merges the overlay layer into the base layer; roughly the\n"\
+"original bottom layer is visible only where the top layer is void.\n"\
+"Radius is the number of pixels of feathering to use to soften the\n"\
+"transition between the bottom and top layers when there is a void in\n"\
+"the top layer.  Larger numbers provide smoother blending.\n"\
+"The temporary layer will contain the blending mask when the operation\n"\
+"completes.\n"
+int DoRasterMerge(const vector<const char *>& args)
+{
+	int fs = 2 * atoi(args[3]) + 1;
+	vector<float> fd(fs*fs);
+	float * k = &*fd.begin();
+	
+	int layer1 = LookupToken(args[0]);
+	int layer2 = LookupToken(args[1]);
+	int layer3 = LookupToken(args[2]);
+	if (layer1 == -1 || layer2 == -1 || layer3 == -1) return 1;
+	
+	if (gDem.count(layer1) == 0) return 1;
+	if (gDem.count(layer2) == 0) return 1;
+
+	DEMGeo& base(gDem[layer1]);
+	DEMGeo& over(gDem[layer2]);
+	DEMGeo& mask(gDem[layer3]);
+
+	mask = over;
+
+	int	vc = BinaryDEMFromEnum(mask, DEM_NO_DATA, 1.0, 0.0);
+	if(vc == 0)
+	{
+		base = over;
+	}
+	else
+	{
+		DEMGeo	weighted(mask.mWidth, mask.mHeight);
+		weighted.copy_geo_from(mask);
+		weighted.mPost = mask.mPost;
+		CalculateFilter(fs, k, demFilter_Linear, false);
+		for(int y = 0; y < mask.mHeight; ++y)
+		for(int x = 0; x < mask.mWidth; ++x)
+			weighted(x,y) = mask.kernelmaxN(x,y,fs,k);
+		mask.swap(weighted);
+		
+		// Now we merge -- zero is top, 1 is bottom
+		for(int y = 0; y < mask.mHeight; ++y)
+		for(int x = 0; x < mask.mWidth; ++x)
+		{
+			float w = mask.get(x,y);
+			if(w < 0.0f) w = 0.0f;
+			if(w > 1.0f) w = 1.0f;
+			float t = over.get(x,y);
+			float b = base.get(x,y);
+			DebugAssert(t != DEM_NO_DATA || w == 1.0);
+			DebugAssert(b != DEM_NO_DATA || w == 0.0);
+			if(t != DEM_NO_DATA)
+				base(x,y) = b * w + t * (1.0f - w);
+		}
+	}
+	return 0;
 }
 
 
@@ -785,7 +864,8 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_export", 4, 5, DoRasterExport,		"Export one raster DEM file.", DoRasterExport_HELP }, 
 { "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
 { "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
-{ "-raster_adjust", 4, 4, DoRasterAdjust,		"Raster Blur", "" },
+{ "-raster_adjust", 4, 4, DoRasterAdjust,		"Adjust levels of raster layers to match.", DoRasterAdjust_HELP },
+{ "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", "DoRasterMerge_HELP" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

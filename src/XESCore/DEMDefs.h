@@ -122,7 +122,8 @@ struct	DEMGeo {
 	int		mHeight;
 	int		mPost;		// If 1, pixels sit "on" grid-lines, e.g. 1201 samples on a 90m DEM. If 0, a pixel is an _area_ between grid-lines.
 	inline	float	pixel_offset() const { return mPost ? 0.0 : 0.5; }	// distance from the coordinate defining a pixel to its sampling center.
-
+	inline	int		pixel_area() const { return mWidth * mHeight; }
+	
 	// An array of width*height data points in floating point format.
 	// The first sample is the southwest corner, we then proceed east.
 	float *	mData;
@@ -139,6 +140,12 @@ struct	DEMGeo {
 	DEMGeo& operator*=(float);
 	DEMGeo& operator*=(const DEMGeo&);
 
+	typedef float *			iterator;
+	typedef	const float *	const_iterator;
+	iterator begin(void) { return mData; }
+	iterator end(void) { return mData + mWidth * mHeight; }
+	const_iterator begin(void) const { return mData; }
+	const_iterator end(void) const { return mData + mWidth * mHeight; }
 
 	void	resize(int width, int height);					// Resize, reset to 0
 	void	set_rez(double x_res, double y_res);			// Given target res and geo already set, recalc dims and resize.

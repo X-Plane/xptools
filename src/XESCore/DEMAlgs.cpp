@@ -243,7 +243,7 @@ void	CalculateFilter(int dim, float * k, int kind, bool normalize)
 {
 	int hdim = dim / 2;
 	int x, y;
-	double max_dist = sqrt((float)hdim * hdim * 2);
+	double max_dist = hdim + 1;//sqrt((float)hdim * hdim * 2);
 	for (y = 0; y < dim; ++y)
 	for (x = 0; x < dim; ++x)
 	{
