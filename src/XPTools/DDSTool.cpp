@@ -618,14 +618,29 @@ int main(int argc, char * argv[])
 	}
 	else if(strcmp(argv[1],"--png2rgb")==0)
 	{
-		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
+		bool has_mips 	= strcmp(argv[2], "--has_mips") == 0;
+
 		int arg_base = has_mips ? 3 : 2;
+
+		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
+		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
+		arg_base +=1;
 
 		ImageInfo	info;
 		if (CreateBitmapFromPNG(argv[arg_base], &info, true)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
+		}
+
+		if (!HandleScale(info, scale_up, scale_down, false))
+		{
+			// Image does NOT meet our power of 2 needs.
+			if(!scale_up && !scale_down)
+			{
+				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				return 1;
+			}
 		}
 
 		char buf[1024];
