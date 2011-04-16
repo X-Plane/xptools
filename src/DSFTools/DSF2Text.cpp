@@ -128,6 +128,18 @@ void DSF2Text_AddObject(
 	fprintf(fi, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
 }
 
+void DSF2Text_AddObjectAbsolute(
+	unsigned int	inObjectType,
+	double			inCoordinates[3],
+	double			inRotation,
+	void *			inRef)
+{
+	if(inObjectType >= count_obj)
+		printf("WARNING: out of bounds obj.\n");
+	FILE * fi = (FILE *) inRef;
+	fprintf(fi, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2], inRotation);
+}
+
 void DSF2Text_BeginSegment(
 	unsigned int	inNetworkType,
 	unsigned int	inNetworkSubtype,
@@ -243,6 +255,7 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	cbs.EndPrimitive_f				=DSF2Text_EndPrimitive				;
 	cbs.EndPatch_f					=DSF2Text_EndPatch					;
 	cbs.AddObject_f					=DSF2Text_AddObject					;
+	cbs.AddObjectAbsolute_f			=DSF2Text_AddObjectAbsolute			;
 	cbs.BeginSegment_f				=DSF2Text_BeginSegment				;
 	cbs.AddSegmentShapePoint_f		=DSF2Text_AddSegmentShapePoint		;
 	cbs.EndSegment_f				=DSF2Text_EndSegment				;
@@ -367,6 +380,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		char * ptr = strip_and_clean(buf);
 			 if (sscanf(ptr, "PATCH_VERTEX %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7], &coords[8], &coords[9]) == depth)		cbs.AddPatchVertex_f(coords, writer);
 		else if (sscanf(ptr, "OBJECT %d %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2]) == 4)		cbs.AddObject_f(ptype, coords, coords[2], writer);
+		else if (sscanf(ptr, "OBJECT_MSL %d %lf %lf %lf %lf", &ptype, &coords[0],&coords[1],&coords[2],&coords[3]) == 5)		cbs.AddObjectAbsolute_f(ptype, coords, coords[3], writer);
 
 		else if (sscanf(ptr,"BEGIN_SEGMENT %d %d %d %lf %lf %lf", &ptype, &subtype, &nodeid,  &coords[0],&coords[1],&coords[2]) == 6)							cbs.BeginSegment_f(ptype, subtype, nodeid, coords, false, writer);
 		else if (sscanf(ptr,"SHAPE_POINT %lf %lf %lf", &coords[0], &coords[1], &coords[2])== 3) 			cbs.AddSegmentShapePoint_f(coords, false, writer);
